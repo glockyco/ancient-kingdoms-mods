@@ -1,0 +1,40 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30114.105
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "mods", "mods", "{9E37D60B-4B6A-4575-BEC8-7B857A069441}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BossTracker", "mods\BossTracker\BossTracker.csproj", "{B443EF2D-8D51-42CA-8829-A2B7F1947F7D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapEnhancer", "mods\MapEnhancer\MapEnhancer.csproj", "{BBD830F9-767F-4ECF-8CAE-67C07B42666C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "build-tool", "build-tool\build-tool.csproj", "{1E4AAE36-FB59-4B6A-B117-3795A4CC2C1F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B443EF2D-8D51-42CA-8829-A2B7F1947F7D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B443EF2D-8D51-42CA-8829-A2B7F1947F7D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B443EF2D-8D51-42CA-8829-A2B7F1947F7D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B443EF2D-8D51-42CA-8829-A2B7F1947F7D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BBD830F9-767F-4ECF-8CAE-67C07B42666C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BBD830F9-767F-4ECF-8CAE-67C07B42666C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BBD830F9-767F-4ECF-8CAE-67C07B42666C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BBD830F9-767F-4ECF-8CAE-67C07B42666C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1E4AAE36-FB59-4B6A-B117-3795A4CC2C1F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1E4AAE36-FB59-4B6A-B117-3795A4CC2C1F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1E4AAE36-FB59-4B6A-B117-3795A4CC2C1F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1E4AAE36-FB59-4B6A-B117-3795A4CC2C1F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{B443EF2D-8D51-42CA-8829-A2B7F1947F7D} = {9E37D60B-4B6A-4575-BEC8-7B857A069441}
+		{BBD830F9-767F-4ECF-8CAE-67C07B42666C} = {9E37D60B-4B6A-4575-BEC8-7B857A069441}
+	EndGlobalSection
+EndGlobal

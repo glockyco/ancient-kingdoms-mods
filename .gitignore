@@ -1,0 +1,38 @@
+# Local configuration
+Local.props
+
+# .NET build artifacts
+bin/
+obj/
+*.dll
+*.pdb
+*.deps.json
+
+# Visual Studio / Rider
+.vs/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+
+# NuGet
+*.nupkg
+*.snupkg
+packages/
+.nuget/
+
+# Rider
+.idea/
+*.sln.iml
+
+# VS Code
+.vscode/

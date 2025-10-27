@@ -1,0 +1,21 @@
+<Project>
+
+  <!-- Import local configuration (git-ignored) -->
+  <Import Project="Local.props" Condition="Exists('Local.props')" />
+
+  <PropertyGroup>
+    <!-- Derive paths from ANCIENT_KINGDOMS_PATH -->
+    <MelonLoaderPath Condition="'$(MelonLoaderPath)' == ''">$(ANCIENT_KINGDOMS_PATH)\MelonLoader</MelonLoaderPath>
+    <Il2CppAssembliesPath Condition="'$(Il2CppAssembliesPath)' == ''">$(MelonLoaderPath)\Il2CppAssemblies</Il2CppAssembliesPath>
+    <ModsPath Condition="'$(ModsPath)' == ''">$(ANCIENT_KINGDOMS_PATH)\Mods</ModsPath>
+  </PropertyGroup>
+
+  <!-- Validate required paths are set -->
+  <Target Name="ValidatePaths" BeforeTargets="BeforeBuild">
+    <Error Condition="'$(ANCIENT_KINGDOMS_PATH)' == '' And !Exists('Local.props')"
+           Text="Local.props not found. Copy Local.props.example to Local.props and set ANCIENT_KINGDOMS_PATH." />
+    <Error Condition="'$(ANCIENT_KINGDOMS_PATH)' == ''"
+           Text="ANCIENT_KINGDOMS_PATH not set in Local.props. Check your configuration." />
+  </Target>
+
+</Project>

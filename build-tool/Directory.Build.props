@@ -1,0 +1,4 @@
+<Project>
+  <!-- Override parent Directory.Build.props for build-tool -->
+  <!-- Build tool doesn't need game references -->
+</Project>
