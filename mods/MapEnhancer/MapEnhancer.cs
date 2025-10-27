@@ -2,6 +2,8 @@ using MelonLoader;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Il2Cpp;
+using Il2CppInterop.Runtime.InteropTypes;
+using Il2CppFoW;
 
 [assembly: MelonInfo(typeof(MapEnhancer.MapEnhancer), "MapEnhancer", "0.1.0", "WoW_Much")]
 [assembly: MelonGame("ancientpixels", "ancientkingdoms")]
@@ -13,7 +15,8 @@ namespace MapEnhancer
         private Il2CppSystem.Object[] cachedMonsters = null;
         private string lastSceneName = "";
         private float lastCacheRefreshTime = 0f;
-        private const float CACHE_REFRESH_INTERVAL = 5f; // Refresh every 5 seconds to catch new spawns
+        private const float CACHE_REFRESH_INTERVAL = 5f;
+        private bool fogCleared = false;
 
         public override void OnInitializeMelon()
         {
@@ -30,16 +33,35 @@ namespace MapEnhancer
                 if (lastSceneName == "World")
                 {
                     cachedMonsters = null;
+                    fogCleared = false;
                 }
                 lastSceneName = currentScene;
                 return;
             }
 
-            // Enable Veteran Awareness on local player
+            // Enable Veteran Awareness and remove fog of war
             var player = Il2Cpp.Player.localPlayer;
-            if (player != null && !player.hasVeteranAwareness)
+            if (player != null)
             {
-                player.hasVeteranAwareness = true;
+                if (!player.hasVeteranAwareness)
+                {
+                    player.hasVeteranAwareness = true;
+                }
+
+                if (!fogCleared)
+                {
+                    var fogManagerObj = GameObject.Find("FogOfWarManager");
+                    if (fogManagerObj != null)
+                    {
+                        var fogTeam = fogManagerObj.GetComponent<FogOfWarTeam>();
+                        if (fogTeam != null)
+                        {
+                            fogTeam.SetAll(FogOfWarValueType.Visible, 0);
+                            fogTeam.SetAll(FogOfWarValueType.Partial, 0);
+                            fogCleared = true;
+                        }
+                    }
+                }
             }
 
             // Refresh cache on scene change or periodically

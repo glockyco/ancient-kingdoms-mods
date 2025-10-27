@@ -7,6 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 MapEnhancer is a MelonLoader mod for Ancient Kingdoms (IL2CPP Unity game) that enhances the map visibility.
 
 **Key Features:**
+- Removes fog of war from entire map
 - Enables Veteran Awareness skill to reveal nearby monsters on map
 - Shows all monsters on map with full opacity
 - Color codes monsters (cyan=bosses, purple=elites, red=regular)
@@ -33,12 +34,18 @@ dotnet run --project build-tool all
 
 **Key Components:**
 
-1. **Veteran Awareness System**
+1. **Fog of War Removal**
+   - Uses `FogOfWarTeam.SetAll()` to clear fog visibility
+   - Sets both Visible and Partial fog values to 0 (fully visible)
+   - Called once when entering World scene
+   - Non-destructive: fog returns to normal when mod is disabled
+
+2. **Veteran Awareness System**
    - Automatically enables Veteran Awareness on local player every frame
    - This reveals all nearby monsters on the map
    - No skill points required
 
-2. **Map Mark Enhancement**
+3. **Map Mark Enhancement**
    - Runs in `OnUpdate()` only in "World" scene
    - Caches monster list to avoid expensive `FindObjectsOfType` calls every frame
    - Refreshes cache on scene entry and periodically (every 5 seconds) to catch new spawns
