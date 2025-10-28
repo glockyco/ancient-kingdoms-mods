@@ -17,7 +17,14 @@ Enhances map visibility by:
 - Highlighting bosses (cyan) and elites (purple)
 - Showing dead boss/elite locations as grey markers
 
-Both mods work independently or together.
+### MonsterRespawner
+Allows instant respawning of dead monsters:
+- Hold **Alt** to show respawn markers at death locations
+- Displays monster name, level, and countdown timer
+- Left-click marker to instantly respawn the monster
+- Color-coded text matches minimap colors
+
+All mods work independently or together.
 
 ## Installation
 
@@ -39,6 +46,7 @@ For detailed installation instructions, see the [MelonLoader documentation](http
 2. Copy the DLL files to `Ancient Kingdoms/Mods/`
    - `BossTracker.dll`
    - `MapEnhancer.dll`
+   - `MonsterRespawner.dll`
 3. Launch Ancient Kingdoms
 
 Mods will load automatically. Check `MelonLoader/Latest.log` if you encounter issues.
@@ -65,6 +73,13 @@ Compatibility with future game updates is not guaranteed. If mods stop working a
 - Works automatically - no configuration needed
 - Open the in-game map to see enhanced visibility
 - Monster colors: Cyan = Boss, Purple = Elite, Red = Regular
+
+### MonsterRespawner
+
+- Hold **Alt** to reveal respawn markers for dead monsters
+- Markers show name, level, and countdown timer
+- Left-click a marker to instantly respawn that monster
+- Works automatically - no configuration needed
 
 ## Building from Source
 

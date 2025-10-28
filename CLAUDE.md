@@ -9,6 +9,7 @@ This repository contains MelonLoader mods for Ancient Kingdoms, an IL2CPP Unity 
 **Available Mods:**
 - **BossTracker** - Tracks boss/elite monsters and displays respawn timers in a draggable UI panel
 - **MapEnhancer** - Enhances map visibility by enabling Veteran Awareness and color-coding monsters
+- **MonsterRespawner** - Allows instant respawning of dead monsters via clickable world-space markers
 
 Each mod is independent and can be used standalone or together.
 
@@ -77,9 +78,13 @@ ancient-kingdoms-data-mining/
     │   ├── BossTracker.cs
     │   ├── BossTracker.csproj
     │   └── CLAUDE.md             # Mod-specific documentation
-    └── MapEnhancer/              # Map enhancement mod
-        ├── MapEnhancer.cs
-        ├── MapEnhancer.csproj
+    ├── MapEnhancer/              # Map enhancement mod
+    │   ├── MapEnhancer.cs
+    │   ├── MapEnhancer.csproj
+    │   └── CLAUDE.md             # Mod-specific documentation
+    └── MonsterRespawner/         # Monster respawning mod
+        ├── MonsterRespawner.cs
+        ├── MonsterRespawner.csproj
         └── CLAUDE.md             # Mod-specific documentation
 ```
 
@@ -196,5 +201,6 @@ var keyboard = UnityEngine.InputSystem.Keyboard.current;
 Each mod has its own `CLAUDE.md` with detailed information:
 - **mods/BossTracker/CLAUDE.md** - Boss tracking implementation details
 - **mods/MapEnhancer/CLAUDE.md** - Map enhancement details
+- **mods/MonsterRespawner/CLAUDE.md** - Monster respawning implementation details
 
 Refer to those files for mod-specific architecture and features.
