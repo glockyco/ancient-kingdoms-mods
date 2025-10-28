@@ -22,7 +22,7 @@ Allows instant respawning of dead monsters:
 - Hold **Alt** to show respawn markers at death locations
 - Displays monster name, level, and countdown timer
 - Left-click marker to instantly respawn the monster
-- Color-coded text matches minimap colors
+- Color-coded text (cyan=boss, purple=elite, red=regular)
 
 All mods work independently or together.
 

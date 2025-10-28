@@ -218,14 +218,13 @@ namespace MonsterRespawner
             {
                 textColor = new Color(0f, 1f, 1f, 1f);
             }
-            else if (monster.hasMinimapMark && monster.minimapMark != null)
+            else if (monster.isElite)
             {
-                textColor = monster.minimapMark.color;
-                textColor.a = 1f;
+                textColor = new Color(0.8f, 0.4f, 1f, 1f);
             }
             else
             {
-                textColor = Color.white;
+                textColor = new Color(0.988f, 0.192f, 0.264f, 1f);
             }
 
             GameObject markerObj = new GameObject($"RespawnMarker_{monster.netId}");

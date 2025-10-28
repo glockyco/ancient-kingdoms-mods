@@ -11,7 +11,7 @@ MonsterRespawner is a MelonLoader mod for Ancient Kingdoms (IL2CPP Unity game) t
 - Displays monster name, level, and respawn countdown timer
 - Alt-key toggle to show/hide markers
 - Click-to-respawn functionality
-- Color-coded text matching minimap colors
+- Color-coded text (cyan=boss, purple=elite, red=regular)
 
 ## Build and Deploy
 
@@ -36,7 +36,7 @@ dotnet run --project build-tool all
 1. **World-Space Text Markers**
    - Uses `TextMesh` for 3D world-space text rendering
    - Each marker shows: monster name, level, and countdown timer
-   - Text color matches minimap mark color for consistency
+   - Text color hardcoded by monster type for consistency
 
 2. **Monster Tracking System**
    - Runs in `OnUpdate()` only in "World" scene
@@ -88,9 +88,10 @@ dotnet run --project build-tool all
 - Game's built-in respawn system handles the actual monster spawn
 
 **Color Coding:**
-- **Bosses**: Cyan `(0, 1, 1, 1)` - hardcoded to match BossTracker/MapEnhancer
-- **Elites & Regular**: Uses actual `monster.minimapMark.color` for accuracy
-- Fallback: White if minimap mark not available
+- **Bosses**: Cyan `(0, 1, 1, 1)`
+- **Elites**: Purple `(0.8, 0.4, 1, 1)`
+- **Regular**: Red `(0.988, 0.192, 0.264, 1)`
+- All colors hardcoded to match BossTracker/MapEnhancer conventions
 
 ## Assembly References
 
