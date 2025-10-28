@@ -16,8 +16,8 @@ namespace MonsterRespawner
         private Il2CppSystem.Object[] cachedMonsters = null;
         private Il2Cpp.NetworkManagerMMO cachedNetworkManager = null;
         private string lastSceneName = "";
-        private float lastCacheRefreshTime = 0f;
-        private const float CACHE_REFRESH_INTERVAL = 5f;
+        private Vector3 lastPlayerPosition = Vector3.zero;
+        private const float TELEPORT_DISTANCE_THRESHOLD = 50f;
 
         private Dictionary<uint, RespawnMarker> respawnMarkers = new Dictionary<uint, RespawnMarker>();
         private Camera mainCamera;
@@ -72,13 +72,30 @@ namespace MonsterRespawner
             }
 
             bool sceneChanged = lastSceneName != currentScene;
-            bool timeToRefresh = Time.time - lastCacheRefreshTime >= CACHE_REFRESH_INTERVAL;
 
-            if (cachedMonsters == null || sceneChanged || timeToRefresh)
+            bool playerTeleported = false;
+            var player = Il2Cpp.Player.localPlayer;
+            if (player != null)
+            {
+                Vector3 currentPos = player.transform.position;
+                float distanceMoved = Vector3.Distance(currentPos, lastPlayerPosition);
+
+                if (distanceMoved > TELEPORT_DISTANCE_THRESHOLD)
+                {
+                    playerTeleported = true;
+                    lastPlayerPosition = currentPos;
+                }
+            }
+
+            if (cachedMonsters == null || sceneChanged || playerTeleported)
             {
                 cachedMonsters = UnityEngine.Object.FindObjectsOfType(Il2CppInterop.Runtime.Il2CppType.Of<Il2Cpp.Monster>());
-                lastCacheRefreshTime = Time.time;
                 lastSceneName = currentScene;
+
+                if (sceneChanged && player != null)
+                {
+                    lastPlayerPosition = player.transform.position;
+                }
             }
 
             double currentTime = 0;

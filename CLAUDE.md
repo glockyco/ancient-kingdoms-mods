@@ -2,6 +2,22 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Code Style Guidelines
+
+**Logging:**
+- ALWAYS add comprehensive logging when debugging or developing new features
+- Log: whether objects/fields were found, current values before changes, success/failure of operations
+- Don't be stingy with logging - iteration cycles are slow, so proactive logging saves time
+
+**Comments:**
+- NO historical/change comments (e.g., "Added fog removal", "Updated to fix bug")
+- NO superfluous comments explaining obvious code
+- ONLY add comments for complex logic that genuinely needs explanation
+
+**Code Quality:**
+- Write clean, straightforward code without unnecessary abstractions
+- Prefer simple solutions over complex ones
+
 ## Project Overview
 
 This repository contains MelonLoader mods for Ancient Kingdoms, an IL2CPP Unity game.
