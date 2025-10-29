@@ -98,6 +98,10 @@ ancient-kingdoms-data-mining/
     │   ├── MapEnhancer.cs
     │   ├── MapEnhancer.csproj
     │   └── CLAUDE.md             # Mod-specific documentation
+    ├── MapTeleporter/            # Map teleportation mod
+    │   ├── MapTeleporter.cs
+    │   ├── MapTeleporter.csproj
+    │   └── CLAUDE.md             # Mod-specific documentation
     └── MonsterRespawner/         # Monster respawning mod
         ├── MonsterRespawner.cs
         ├── MonsterRespawner.csproj
@@ -217,6 +221,7 @@ var keyboard = UnityEngine.InputSystem.Keyboard.current;
 Each mod has its own `CLAUDE.md` with detailed information:
 - **mods/BossTracker/CLAUDE.md** - Boss tracking implementation details
 - **mods/MapEnhancer/CLAUDE.md** - Map enhancement details
+- **mods/MapTeleporter/CLAUDE.md** - Map teleportation and coordinate systems
 - **mods/MonsterRespawner/CLAUDE.md** - Monster respawning implementation details
 
 Refer to those files for mod-specific architecture and features.

@@ -24,7 +24,8 @@ Allows instant respawning of dead monsters:
 - Left-click marker to instantly respawn the monster
 - Color-coded text (cyan=boss, purple=elite, red=regular)
 
-All mods work independently or together.
+### MapTeleporter
+Alt+click on the map to teleport to that location.
 
 ## Installation
 
@@ -46,6 +47,7 @@ For detailed installation instructions, see the [MelonLoader documentation](http
 2. Copy the DLL files to `Ancient Kingdoms/Mods/`
    - `BossTracker.dll`
    - `MapEnhancer.dll`
+   - `MapTeleporter.dll`
    - `MonsterRespawner.dll`
 3. Launch Ancient Kingdoms
 
@@ -80,6 +82,10 @@ Compatibility with future game updates is not guaranteed. If mods stop working a
 - Markers show name, level, and countdown timer
 - Left-click a marker to instantly respawn that monster
 - Works automatically - no configuration needed
+
+### MapTeleporter
+
+- Open the map (M key), hold **Alt**, and click to teleport
 
 ## Building from Source
 
