@@ -53,7 +53,9 @@ public class PortalExporter : BaseExporter
                     : new Position(0, 0, 0),
                 required_item_id = portal.key != null ? portal.key.name.ToLowerInvariant().Replace(" ", "_") : "",
                 level_required = portal.itemLevelRequired,
-                is_closed = portal.isClosed
+                is_closed = portal.isClosed,
+                orientation = new Position(portal.orientation.x, portal.orientation.y, 0),
+                need_monster_dead_id = portal.needMonsterDead != null ? portal.needMonsterDead.name.ToLowerInvariant().Replace(" ", "_") : ""
             };
 
             portalList.Add(portalData);
