@@ -33,7 +33,7 @@ public class ItemExporter : BaseExporter
                 id = scriptableItem.name.ToLowerInvariant().Replace(" ", "_"),
                 name = scriptableItem.nameItem ?? scriptableItem.name,
                 type = DetermineItemType(scriptableItem),
-                quality = GetQualityName(scriptableItem.quality),
+                quality = scriptableItem.quality,
                 level_required = 0,
                 buy_price = (int)scriptableItem.buyPrice,
                 sell_price = (int)scriptableItem.sellPrice,
@@ -163,18 +163,5 @@ public class ItemExporter : BaseExporter
         }
 
         return "general";
-    }
-
-    private string GetQualityName(byte quality)
-    {
-        return quality switch
-        {
-            0 => "common",
-            1 => "uncommon",
-            2 => "rare",
-            3 => "epic",
-            4 => "legendary",
-            _ => "unknown"
-        };
     }
 }

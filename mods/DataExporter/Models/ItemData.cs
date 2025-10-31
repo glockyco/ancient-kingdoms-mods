@@ -9,7 +9,7 @@ public class ItemData
     public string type { get; set; }
     public string weapon_category { get; set; }
     public string slot { get; set; }
-    public string quality { get; set; }
+    public byte quality { get; set; }
     public int level_required { get; set; }
     public List<string> class_required { get; set; } = new();
 
