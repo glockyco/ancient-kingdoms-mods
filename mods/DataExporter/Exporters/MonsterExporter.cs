@@ -22,7 +22,6 @@ public class MonsterExporter : BaseExporter
 
         Logger.Msg($"Found {monsters.Length} monster objects total");
 
-        var seenMonsters = new HashSet<string>();
         var monsterList = new List<MonsterData>();
         var templateCount = 0;
 
@@ -34,13 +33,6 @@ public class MonsterExporter : BaseExporter
 
             var isTemplate = monster.gameObject == null || !monster.gameObject.scene.IsValid();
             var zoneId = GetMonsterZoneId(monster);
-            var uniqueKey = $"{zoneId}|{monster.name}|{isTemplate}";
-
-            // Deduplicate by zone + name + template status
-            if (seenMonsters.Contains(uniqueKey))
-                continue;
-
-            seenMonsters.Add(uniqueKey);
 
             if (isTemplate)
                 templateCount++;
@@ -49,7 +41,7 @@ public class MonsterExporter : BaseExporter
             {
                 id = isTemplate
                     ? $"{monster.name.ToLowerInvariant().Replace(" ", "_")}_template"
-                    : $"{monster.name.ToLowerInvariant().Replace(" ", "_")}_{zoneId}",
+                    : $"{monster.name.ToLowerInvariant().Replace(" ", "_")}_{zoneId}_{monster.GetInstanceID()}",
                 name = monster.name,
                 zone_id = zoneId,
                 position = isTemplate

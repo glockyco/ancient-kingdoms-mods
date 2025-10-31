@@ -28,7 +28,6 @@ public class GatherItemExporter : BaseExporter
         Logger.Msg($"Found {objects.Length} gather item objects total");
         Logger.Msg($"Found {zoneTriggers.Length} zone triggers for zone detection");
 
-        var seenGatherItems = new HashSet<string>();
         var gatherItems = new List<GatherItemData>();
         var templateCount = 0;
 
@@ -40,20 +39,13 @@ public class GatherItemExporter : BaseExporter
 
             var isTemplate = gatherItem.gameObject == null || !gatherItem.gameObject.scene.IsValid();
             var zoneId = isTemplate ? "unknown" : GetZoneIdFromPosition(gatherItem.transform.position, zoneTriggers);
-            var uniqueKey = $"{zoneId}|{gatherItem.name}|{isTemplate}";
-
-            // Deduplicate by zone + name + template status
-            if (seenGatherItems.Contains(uniqueKey))
-                continue;
-
-            seenGatherItems.Add(uniqueKey);
 
             if (isTemplate)
                 templateCount++;
 
             var id = isTemplate
                 ? $"{gatherItem.name.ToLowerInvariant().Replace(" ", "_")}_template"
-                : $"{gatherItem.name.ToLowerInvariant().Replace(" ", "_")}_{zoneId}";
+                : $"{gatherItem.name.ToLowerInvariant().Replace(" ", "_")}_{zoneId}_{gatherItem.GetInstanceID()}";
             var name = string.IsNullOrEmpty(gatherItem.nameGatherItem) ? gatherItem.name : gatherItem.nameGatherItem;
 
             var gatherItemData = new GatherItemData

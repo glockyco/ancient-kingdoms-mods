@@ -22,7 +22,6 @@ public class NpcExporter : BaseExporter
 
         Logger.Msg($"Found {npcs.Length} NPC objects total");
 
-        var seenNpcs = new HashSet<string>();
         var npcList = new List<NpcData>();
         var templateCount = 0;
 
@@ -34,13 +33,6 @@ public class NpcExporter : BaseExporter
 
             var isTemplate = npc.gameObject == null || !npc.gameObject.scene.IsValid();
             var zoneId = GetNpcZoneId(npc);
-            var uniqueKey = $"{zoneId}|{npc.name}|{isTemplate}";
-
-            // Deduplicate by zone + name + template status
-            if (seenNpcs.Contains(uniqueKey))
-                continue;
-
-            seenNpcs.Add(uniqueKey);
 
             if (isTemplate)
                 templateCount++;
@@ -49,7 +41,7 @@ public class NpcExporter : BaseExporter
             {
                 id = isTemplate
                     ? $"{npc.name.ToLowerInvariant().Replace(" ", "_")}_template"
-                    : $"{npc.name.ToLowerInvariant().Replace(" ", "_")}_{zoneId}",
+                    : $"{npc.name.ToLowerInvariant().Replace(" ", "_")}_{zoneId}_{npc.GetInstanceID()}",
                 name = npc.name,
                 zone_id = zoneId,
                 position = isTemplate
