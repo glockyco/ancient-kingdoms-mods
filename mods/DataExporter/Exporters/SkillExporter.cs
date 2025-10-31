@@ -47,6 +47,7 @@ public class SkillExporter : BaseExporter
                     : null,
                 prerequisite2_level = skill.predecessorLevel2,
                 required_weapon_category = skill.requiredWeaponCategory ?? "",
+                required_weapon_category2 = skill.requiredWeaponCategory2 ?? "",
                 mana_cost = skill.manaCosts.Get(1),
                 energy_cost = skill.energyCosts.Get(1),
                 cooldown = skill.cooldown.Get(1),
@@ -61,6 +62,7 @@ public class SkillExporter : BaseExporter
                 is_mercenary_skill = skill.isMercenarySkill,
                 is_pet_skill = skill.isPetSkill,
                 followup_default_attack = skill.followupDefaultAttack,
+                spell_runic_name = skill.spellRunicName ?? "",
                 skill_aggro_message = skill.skillAggroMessage ?? "",
                 tooltip = skill.ToolTip(1, false, false) ?? "",
                 icon_path = skill.image != null ? skill.image.name : ""
@@ -296,5 +298,6 @@ public class SkillExporter : BaseExporter
         if (summonSkill == null) return;
 
         skillData.is_familiar = summonSkill.isFamiliar;
+        skillData.pet_prefab_name = summonSkill.petPrefab != null ? summonSkill.petPrefab.name : "";
     }
 }

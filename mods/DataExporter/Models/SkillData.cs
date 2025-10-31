@@ -30,6 +30,7 @@ public class SkillData
     public string prerequisite2_skill_id { get; set; }
     public int prerequisite2_level { get; set; }
     public string required_weapon_category { get; set; }
+    public string required_weapon_category2 { get; set; }
 
     // Costs and timing
     public int mana_cost { get; set; }
@@ -50,6 +51,7 @@ public class SkillData
     public bool followup_default_attack { get; set; }
 
     // UI
+    public string spell_runic_name { get; set; }
     public string skill_aggro_message { get; set; }
     public string tooltip { get; set; }
     public string icon_path { get; set; }
@@ -143,4 +145,5 @@ public class SkillData
 
     // === SummonSkill fields (when skill_type = summon) ===
     public bool is_familiar { get; set; }
+    public string pet_prefab_name { get; set; }
 }
