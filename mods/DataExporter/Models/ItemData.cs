@@ -99,6 +99,41 @@ public class ItemData
     // === CustomStructureItem fields (when item_type = structure) ===
     public long structure_price { get; set; }
     public List<Position> structure_available_rotations { get; set; }
+
+    // === WeaponItem fields (when item_type = weapon) ===
+    public string weapon_required_ammo_id { get; set; }
+    public string weapon_proc_effect_id { get; set; }
+    public float weapon_proc_effect_probability { get; set; }
+    public int weapon_delay { get; set; }
+
+    // === AugmentItem fields (when item_type = augment) ===
+    public string augment_armor_set_name { get; set; }
+    public List<string> augment_armor_set_item_ids { get; set; }
+    public List<AugmentSkillBonus> augment_skill_bonuses { get; set; }
+
+    // === TreasureMapItem fields (when item_type = treasure_map) ===
+    public string treasure_map_reward_id { get; set; }
+    public string treasure_map_image_location { get; set; }
+
+    // === FragmentItem fields (when item_type = fragment) ===
+    public int fragment_amount_needed { get; set; }
+    public string fragment_result_item_id { get; set; }
+
+    // === MergeItem fields (when item_type = merge) ===
+    public List<string> merge_items_needed_ids { get; set; }
+    public string merge_result_item_id { get; set; }
+
+    // === RecipeItem fields (when item_type = recipe) ===
+    public string recipe_potion_learned_id { get; set; }
+
+    // === AmmoItem fields (when item_type = ammo) ===
+    // AmmoItem extends EquipmentItem with no additional fields
+}
+
+public class AugmentSkillBonus
+{
+    public string skill_id { get; set; }
+    public int level_bonus { get; set; }
 }
 
 public class SpawnedMonster

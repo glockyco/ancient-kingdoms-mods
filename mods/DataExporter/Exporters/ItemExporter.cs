@@ -80,6 +80,12 @@ public class ItemExporter : BaseExporter
             PopulateRelicFields(scriptableItem, itemData);
             PopulateMonsterScrollFields(scriptableItem, itemData);
             PopulateStructureFields(scriptableItem, itemData);
+            PopulateWeaponFields(scriptableItem, itemData);
+            PopulateAugmentFields(scriptableItem, itemData);
+            PopulateTreasureMapFields(scriptableItem, itemData);
+            PopulateFragmentFields(scriptableItem, itemData);
+            PopulateMergeFields(scriptableItem, itemData);
+            PopulateRecipeFields(scriptableItem, itemData);
 
             itemList.Add(itemData);
         }
@@ -90,6 +96,7 @@ public class ItemExporter : BaseExporter
 
     private string DetermineItemType(Il2Cpp.ScriptableItem item)
     {
+        // Check most specific types first (order matters for inheritance)
         if (item.TryCast<Il2Cpp.CustomStructureItem>() != null) return "structure";
         if (item.TryCast<Il2Cpp.MonsterScrollItem>() != null) return "monster_scroll";
         if (item.TryCast<Il2Cpp.RelicItem>() != null) return "relic";
@@ -103,7 +110,21 @@ public class ItemExporter : BaseExporter
         if (item.TryCast<Il2Cpp.BookItem>() != null) return "book";
         if (item.TryCast<Il2Cpp.FoodItem>() != null) return "food";
         if (item.TryCast<Il2Cpp.PotionItem>() != null) return "potion";
+
+        // UsableItem subtypes (check before base EquipmentItem)
+        if (item.TryCast<Il2CppuMMORPG.Scripts.ScriptableItems.RecipeItem>() != null) return "recipe";
+        if (item.TryCast<Il2CppuMMORPG.Scripts.ScriptableItems.MergeItem>() != null) return "merge";
+        if (item.TryCast<Il2CppuMMORPG.Scripts.ScriptableItems.FragmentItem>() != null) return "fragment";
+        if (item.TryCast<Il2CppuMMORPG.Scripts.ScriptableItems.TreasureMapItem>() != null) return "treasure_map";
+
+        // EquipmentItem subtypes (check before base EquipmentItem)
+        if (item.TryCast<Il2Cpp.WeaponItem>() != null) return "weapon";
+        if (item.TryCast<Il2Cpp.AugmentItem>() != null) return "augment";
+        if (item.TryCast<Il2Cpp.AmmoItem>() != null) return "ammo";
+
+        // Base types
         if (item.TryCast<Il2Cpp.EquipmentItem>() != null) return "equipment";
+
         return "general";
     }
 
@@ -350,6 +371,119 @@ public class ItemExporter : BaseExporter
             {
                 itemData.structure_available_rotations.Add(new Position(rotation.x, rotation.y, rotation.z));
             }
+        }
+    }
+
+    private void PopulateWeaponFields(Il2Cpp.ScriptableItem item, ItemData itemData)
+    {
+        var weaponItem = item.TryCast<Il2Cpp.WeaponItem>();
+        if (weaponItem == null) return;
+
+        if (weaponItem.requiredAmmo != null)
+        {
+            itemData.weapon_required_ammo_id = weaponItem.requiredAmmo.name.ToLowerInvariant().Replace(" ", "_");
+        }
+        if (weaponItem.procEffect != null)
+        {
+            itemData.weapon_proc_effect_id = weaponItem.procEffect.name.ToLowerInvariant().Replace(" ", "_");
+        }
+        itemData.weapon_proc_effect_probability = weaponItem.procEffectProbability;
+        itemData.weapon_delay = weaponItem.delay;
+    }
+
+    private void PopulateAugmentFields(Il2Cpp.ScriptableItem item, ItemData itemData)
+    {
+        var augmentItem = item.TryCast<Il2Cpp.AugmentItem>();
+        if (augmentItem == null) return;
+
+        itemData.augment_armor_set_name = augmentItem.nameArmorSet ?? "";
+
+        if (augmentItem.armorSet != null)
+        {
+            itemData.augment_armor_set_item_ids = new List<string>();
+            foreach (var armorPiece in augmentItem.armorSet)
+            {
+                if (armorPiece != null)
+                {
+                    itemData.augment_armor_set_item_ids.Add(armorPiece.name.ToLowerInvariant().Replace(" ", "_"));
+                }
+            }
+        }
+
+        if (augmentItem.skillsBonusArmorSet != null)
+        {
+            itemData.augment_skill_bonuses = new List<AugmentSkillBonus>();
+            foreach (var skillBonus in augmentItem.skillsBonusArmorSet)
+            {
+                if (skillBonus?.skill != null)
+                {
+                    itemData.augment_skill_bonuses.Add(new AugmentSkillBonus
+                    {
+                        skill_id = skillBonus.skill.name.ToLowerInvariant().Replace(" ", "_"),
+                        level_bonus = skillBonus.levelBonus
+                    });
+                }
+            }
+        }
+    }
+
+    private void PopulateTreasureMapFields(Il2Cpp.ScriptableItem item, ItemData itemData)
+    {
+        var treasureMapItem = item.TryCast<Il2CppuMMORPG.Scripts.ScriptableItems.TreasureMapItem>();
+        if (treasureMapItem == null) return;
+
+        if (treasureMapItem.reward != null)
+        {
+            itemData.treasure_map_reward_id = treasureMapItem.reward.name.ToLowerInvariant().Replace(" ", "_");
+        }
+        if (treasureMapItem.imageLocation != null)
+        {
+            itemData.treasure_map_image_location = treasureMapItem.imageLocation.name ?? "";
+        }
+    }
+
+    private void PopulateFragmentFields(Il2Cpp.ScriptableItem item, ItemData itemData)
+    {
+        var fragmentItem = item.TryCast<Il2CppuMMORPG.Scripts.ScriptableItems.FragmentItem>();
+        if (fragmentItem == null) return;
+
+        itemData.fragment_amount_needed = fragmentItem.amountNeeded;
+        if (fragmentItem.resultItem != null)
+        {
+            itemData.fragment_result_item_id = fragmentItem.resultItem.name.ToLowerInvariant().Replace(" ", "_");
+        }
+    }
+
+    private void PopulateMergeFields(Il2Cpp.ScriptableItem item, ItemData itemData)
+    {
+        var mergeItem = item.TryCast<Il2CppuMMORPG.Scripts.ScriptableItems.MergeItem>();
+        if (mergeItem == null) return;
+
+        if (mergeItem.itemsNeeded != null)
+        {
+            itemData.merge_items_needed_ids = new List<string>();
+            foreach (var neededItem in mergeItem.itemsNeeded)
+            {
+                if (neededItem != null)
+                {
+                    itemData.merge_items_needed_ids.Add(neededItem.name.ToLowerInvariant().Replace(" ", "_"));
+                }
+            }
+        }
+        if (mergeItem.resultItem != null)
+        {
+            itemData.merge_result_item_id = mergeItem.resultItem.name.ToLowerInvariant().Replace(" ", "_");
+        }
+    }
+
+    private void PopulateRecipeFields(Il2Cpp.ScriptableItem item, ItemData itemData)
+    {
+        var recipeItem = item.TryCast<Il2CppuMMORPG.Scripts.ScriptableItems.RecipeItem>();
+        if (recipeItem == null) return;
+
+        if (recipeItem.potionLearned != null)
+        {
+            itemData.recipe_potion_learned_id = recipeItem.potionLearned.name.ToLowerInvariant().Replace(" ", "_");
         }
     }
 }
