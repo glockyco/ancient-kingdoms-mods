@@ -67,14 +67,69 @@ public class NpcExporter : BaseExporter
                     is_merchant = npc.trading != null && npc.trading.saleItems != null && npc.trading.saleItems.Length > 0,
                     is_quest_giver = npc.quests != null && npc.quests.quests != null && npc.quests.quests.Length > 0,
                     can_repair_equipment = npc.canRepairEquipment,
-                    is_bank = npc.isBank
+                    is_bank = npc.isBank,
+                    is_skill_master = npc.isSkillMaster,
+                    is_veteran_master = npc.isVeteranMaster,
+                    is_reset_attributes = npc.isResetAttributes,
+                    is_soul_binder = npc.isSoulBinder,
+                    is_inkeeper = npc.isInkeeper,
+                    is_taskgiver_adventurer = npc.isTaskgiverAdventurer,
+                    is_merchant_adventurer = npc.isMerchantAdventurer,
+                    is_recruiter_mercenaries = npc.isRecruiterMercenaries,
+                    is_guard = npc.isGuard,
+                    is_faction_vendor = npc.isFactionVendor,
+                    is_essence_trader = npc.isEssenceTrader,
+                    is_priestess = npc.isPriestess,
+                    is_augmenter = npc.isAugmenter
                 },
                 respawn_dungeon_id = npc.respawnDungeonId,
                 gold_required_respawn_dungeon = npc.goldRequiredRespawnDungeon,
                 respawn_probability = npc.probabilityRespawn,
                 can_hide_after_spawn = npc.canHideAfterSpawn,
-                respawn_time = npc.respawnTime
+                respawn_time = npc.respawnTime,
+
+                // Interaction and behavior
+                origin_follow_position = new Position(npc.originFollowPosition.x, npc.originFollowPosition.y, 0),
+                follow_distance = npc.followDistance,
+                flee_on_low_hp = npc.fleeOnLowHP,
+                aggro_message_probability = npc.aggroMessageProbability
             };
+
+            // Export welcome messages
+            if (npc.welcomeMessages != null && npc.welcomeMessages.Count > 0)
+            {
+                foreach (var msg in npc.welcomeMessages)
+                {
+                    if (!string.IsNullOrEmpty(msg))
+                    {
+                        npcData.welcome_messages.Add(msg);
+                    }
+                }
+            }
+
+            // Export shout messages
+            if (npc.shoutMessages != null && npc.shoutMessages.Count > 0)
+            {
+                foreach (var msg in npc.shoutMessages)
+                {
+                    if (!string.IsNullOrEmpty(msg))
+                    {
+                        npcData.shout_messages.Add(msg);
+                    }
+                }
+            }
+
+            // Export aggro messages
+            if (npc.aggroMessages != null && npc.aggroMessages.Count > 0)
+            {
+                foreach (var msg in npc.aggroMessages)
+                {
+                    if (!string.IsNullOrEmpty(msg))
+                    {
+                        npcData.aggro_messages.Add(msg);
+                    }
+                }
+            }
 
             // Export quests offered
             if (npc.quests != null && npc.quests.quests != null)
