@@ -19,6 +19,10 @@ public class PortalExporter : BaseExporter
         var type = Il2CppType.Of<Il2Cpp.Portal>();
         var portals = Resources.FindObjectsOfTypeAll(type);
 
+        // Load all zone triggers for destination matching
+        var zoneTriggerType = Il2CppType.Of<Il2Cpp.ZoneTrigger>();
+        var zoneTriggers = Resources.FindObjectsOfTypeAll(zoneTriggerType);
+
         var portalList = new List<PortalData>();
 
         foreach (var obj in portals)
@@ -28,7 +32,7 @@ public class PortalExporter : BaseExporter
                 continue;
 
             var fromZoneId = GetZoneIdFromByte(portal.idZone);
-            var toZoneId = "unknown";  // Destination zone ID not directly available from portal
+            var toZoneId = GetDestinationZoneId(portal, zoneTriggers);
 
             var portalData = new PortalData
             {
@@ -68,6 +72,48 @@ public class PortalExporter : BaseExporter
             {
                 return zone.name.ToLowerInvariant().Replace(" ", "_");
             }
+        }
+
+        return "unknown";
+    }
+
+    private string GetDestinationZoneId(Il2Cpp.Portal portal, Il2CppSystem.Object[] zoneTriggers)
+    {
+        // If no destination, return unknown
+        if (portal.destination == null)
+            return "unknown";
+
+        var destPos = portal.destination.position;
+
+        // Find nearest zone trigger to destination
+        Il2Cpp.ZoneTrigger nearestTrigger = null;
+        float nearestDistance = float.MaxValue;
+
+        foreach (var triggerObj in zoneTriggers)
+        {
+            var trigger = triggerObj.TryCast<Il2Cpp.ZoneTrigger>();
+            if (trigger == null)
+                continue;
+
+            var triggerPos = trigger.transform.position;
+            var distance = UnityEngine.Vector3.Distance(destPos, triggerPos);
+
+            if (distance < nearestDistance)
+            {
+                nearestDistance = distance;
+                nearestTrigger = trigger;
+            }
+        }
+
+        // Use the nearest trigger's zone name
+        if (nearestTrigger != null)
+        {
+            if (!string.IsNullOrEmpty(nearestTrigger.nameZone))
+            {
+                return nearestTrigger.nameZone.ToLowerInvariant().Replace(" ", "_");
+            }
+            // Fallback to zone ID lookup
+            return GetZoneIdFromByte(nearestTrigger.idZone);
         }
 
         return "unknown";
