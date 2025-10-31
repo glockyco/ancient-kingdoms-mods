@@ -145,7 +145,10 @@ public class NpcExporter : BaseExporter
                         npcData.items_sold.Add(new ItemSold
                         {
                             item_id = item.name.ToLowerInvariant().Replace(" ", "_"),
-                            price = (int)item.buyPrice
+                            price = (int)item.buyPrice,
+                            currency_item_id = item.buyToken != null && !string.IsNullOrEmpty(item.buyToken.name)
+                                ? item.buyToken.name.ToLowerInvariant().Replace(" ", "_")
+                                : null
                         });
                     }
                 }

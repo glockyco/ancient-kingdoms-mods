@@ -27,6 +27,7 @@ public class ItemSold
 {
     public string item_id { get; set; }
     public int price { get; set; }
+    public string currency_item_id { get; set; }
 }
 
 public class NpcData
