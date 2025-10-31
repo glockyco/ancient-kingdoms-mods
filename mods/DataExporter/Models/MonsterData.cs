@@ -16,8 +16,8 @@ public class MonsterData
     public Position position { get; set; }
     public int level { get; set; }
     public int health { get; set; }
-    public string type { get; set; }
-    public string @class { get; set; }
+    public string typeName { get; set; }
+    public string className { get; set; }
     public bool is_boss { get; set; }
     public bool is_elite { get; set; }
     public bool is_hunt { get; set; }
