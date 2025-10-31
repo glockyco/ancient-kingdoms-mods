@@ -10,6 +10,9 @@
     <!-- Required: Path to your Ancient Kingdoms installation -->
     <ANCIENT_KINGDOMS_PATH>E:\SteamLibrary\steamapps\common\Ancient Kingdoms</ANCIENT_KINGDOMS_PATH>
 
+    <!-- Required: Path where DataExporter mod should save JSON files -->
+    <DATA_EXPORT_PATH>E:\Projects\ancient-kingdoms-data-mining\exported-data</DATA_EXPORT_PATH>
+
     <!-- Optional: Override derived paths if needed -->
     <!-- <MelonLoaderPath>$(ANCIENT_KINGDOMS_PATH)\MelonLoader</MelonLoaderPath> -->
     <!-- <Il2CppAssembliesPath>$(MelonLoaderPath)\Il2CppAssemblies</Il2CppAssembliesPath> -->

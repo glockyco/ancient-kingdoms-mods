@@ -1,6 +1,9 @@
 # Local configuration
 Local.props
 
+# Generated files
+*.g.cs
+
 # .NET build artifacts
 bin/
 obj/
