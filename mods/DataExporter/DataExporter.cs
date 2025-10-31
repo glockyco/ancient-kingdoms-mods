@@ -89,6 +89,10 @@ namespace DataExporter
                 var zoneTriggerExporter = new ZoneTriggerExporter(LoggerInstance, ExportPath);
                 zoneTriggerExporter.Export();
 
+                // Export gather items (herbs, ores, etc.)
+                var gatherItemExporter = new GatherItemExporter(LoggerInstance, ExportPath);
+                gatherItemExporter.Export();
+
                 var elapsed = DateTime.Now - startTime;
 
                 LoggerInstance.Msg("========================================");
