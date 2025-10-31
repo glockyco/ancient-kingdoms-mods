@@ -39,6 +39,7 @@ public class MonsterExporter : BaseExporter
 
             var monsterData = new MonsterData
             {
+                // Identity
                 id = isTemplate
                     ? $"{monster.name.ToLowerInvariant().Replace(" ", "_")}_template"
                     : $"{monster.name.ToLowerInvariant().Replace(" ", "_")}_{zoneId}_{monster.GetInstanceID()}",
@@ -52,13 +53,29 @@ public class MonsterExporter : BaseExporter
                         monster.transform.position.z
                     ),
                 is_template = isTemplate,
+
+                // Base stats
                 level = monster.level.current,
                 health = monster.health.max,
                 typeName = monster.typeMonster ?? "Unknown",
                 className = monster.classMonster ?? "Unknown",
+
+                // Classification flags
                 is_boss = monster.isBoss,
                 is_elite = monster.isElite,
                 is_hunt = monster.isHunt,
+                is_dummy = monster.isDummy,
+                is_summonable = monster.isSummonable,
+                is_halloween = monster.isHalloween,
+
+                // Combat flags
+                see_invisibility = monster.seeInvisibility,
+                is_immune_debuffs = monster.isImmuneDebuffs,
+                yell_friends = monster.yellFriends,
+                flee_on_low_hp = monster.fleeOnLowHP,
+                no_aggro_monster = monster.noAggroMonster,
+
+                // Spawning and respawn
                 does_respawn = monster.respawn,
                 respawn_time = (int)monster.respawnTime,
                 respawn_probability = monster.probabilityRespawn,
@@ -68,8 +85,11 @@ public class MonsterExporter : BaseExporter
                 placeholder_monster_id = monster.monsterPH != null && !string.IsNullOrEmpty(monster.monsterPH.name)
                     ? monster.monsterPH.name.ToLowerInvariant().Replace(" ", "_")
                     : null,
+
+                // Loot and rewards
                 gold_min = monster.lootGoldMin,
                 gold_max = monster.lootGoldMax,
+                probability_drop_gold = monster.probabilityDropGold,
                 exp_multiplier = monster.expMultiplier,
 
                 // Movement and patrol
@@ -77,13 +97,12 @@ public class MonsterExporter : BaseExporter
                 move_distance = monster.moveDistance,
                 is_patrolling = monster.isPatrolling,
 
-                // Behavior flags
-                yell_friends = monster.yellFriends,
-                flee_on_low_hp = monster.fleeOnLowHP,
-                no_aggro_monster = monster.noAggroMonster,
+                // Messages and interactions
+                aggro_message_probability = monster.aggroMessageProbability,
+                summon_message = monster.summonMessage,
 
-                // Aggro messages
-                aggro_message_probability = monster.aggroMessageProbability
+                // Lore and visuals (boss-specific)
+                lore_boss = monster.loreBoss
             };
 
             // Export patrol waypoints

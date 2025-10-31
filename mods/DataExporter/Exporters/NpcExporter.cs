@@ -39,6 +39,7 @@ public class NpcExporter : BaseExporter
 
             var npcData = new NpcData
             {
+                // Identity
                 id = isTemplate
                     ? $"{npc.name.ToLowerInvariant().Replace(" ", "_")}_template"
                     : $"{npc.name.ToLowerInvariant().Replace(" ", "_")}_{zoneId}_{npc.GetInstanceID()}",
@@ -54,6 +55,8 @@ public class NpcExporter : BaseExporter
                 is_template = isTemplate,
                 faction = npc.faction ?? "Neutral",
                 race = npc.race ?? "Unknown",
+
+                // Roles and services
                 roles = new NpcRoles
                 {
                     is_merchant = npc.trading != null && npc.trading.saleItems != null && npc.trading.saleItems.Length > 0,
@@ -74,17 +77,33 @@ public class NpcExporter : BaseExporter
                     is_priestess = npc.isPriestess,
                     is_augmenter = npc.isAugmenter
                 },
+
+                // Spawning and respawn
                 respawn_dungeon_id = npc.respawnDungeonId,
                 gold_required_respawn_dungeon = npc.goldRequiredRespawnDungeon,
                 respawn_probability = npc.probabilityRespawn,
                 can_hide_after_spawn = npc.canHideAfterSpawn,
                 respawn_time = npc.respawnTime,
 
-                // Interaction and behavior
+                // Loot and rewards (when killed)
+                gold_min = npc.lootGoldMin,
+                gold_max = npc.lootGoldMax,
+                probability_drop_gold = npc.probabilityDropGold,
+
+                // Movement and patrol
                 origin_follow_position = new Position(npc.originFollowPosition.x, npc.originFollowPosition.y, 0),
                 follow_distance = npc.followDistance,
+                move_probability = npc.moveProbability,
+                move_distance = npc.moveDistance,
+
+                // Combat flags
+                see_invisibility = npc.seeInvisibility,
+                is_summonable = npc.isSummonable,
                 flee_on_low_hp = npc.fleeOnLowHP,
-                aggro_message_probability = npc.aggroMessageProbability
+
+                // Messages and interactions
+                aggro_message_probability = npc.aggroMessageProbability,
+                summon_message = npc.summonMessage
             };
 
             // Export welcome messages
@@ -149,6 +168,31 @@ public class NpcExporter : BaseExporter
                             currency_item_id = item.buyToken != null && !string.IsNullOrEmpty(item.buyToken.name)
                                 ? item.buyToken.name.ToLowerInvariant().Replace(" ", "_")
                                 : null
+                        });
+                    }
+                }
+            }
+
+            // Export patrol waypoints
+            if (npc.waypointsPatrol != null && npc.waypointsPatrol.Length > 0)
+            {
+                foreach (var waypoint in npc.waypointsPatrol)
+                {
+                    npcData.patrol_waypoints.Add(new Position(waypoint.x, waypoint.y, 0));
+                }
+            }
+
+            // Export item drops (when NPC is killed)
+            if (npc.dropChances != null && npc.dropChances.Count > 0)
+            {
+                foreach (var drop in npc.dropChances)
+                {
+                    if (drop.item != null)
+                    {
+                        npcData.drops.Add(new ItemDrop
+                        {
+                            item_id = drop.item.name.ToLowerInvariant().Replace(" ", "_"),
+                            rate = drop.probability
                         });
                     }
                 }

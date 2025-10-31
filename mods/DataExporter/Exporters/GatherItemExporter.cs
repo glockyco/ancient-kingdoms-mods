@@ -50,9 +50,10 @@ public class GatherItemExporter : BaseExporter
 
             var gatherItemData = new GatherItemData
             {
+                // Identity
                 id = id,
                 name = name,
-                level = gatherItem.levelItem,
+                zone_id = zoneId,
                 position = isTemplate
                     ? null
                     : new Position(
@@ -60,20 +61,37 @@ public class GatherItemExporter : BaseExporter
                         gatherItem.transform.position.y,
                         gatherItem.transform.position.z
                     ),
-                zone_id = zoneId,
                 is_template = isTemplate,
-                respawn_time = gatherItem.timeToWaitReady,
-                item_reward_id = null,
-                item_reward_amount = 0,
-                gold_min = gatherItem.lootGoldMin,
-                gold_max = gatherItem.lootGoldMax,
+
+                // Type flags
                 is_plant = gatherItem.isPlant,
                 is_mineral = gatherItem.isMineral,
                 is_chest = gatherItem.isChest,
                 is_radiant_spark = gatherItem.isRadiantSpark,
+
+                // Requirements and level
+                level = gatherItem.levelItem,
                 tool_required_id = null,
+
+                // Spawning and respawn
+                respawn_time = gatherItem.timeToWaitReady,
+                spawn_ready = gatherItem.spawnReady,
+                prob_despawn = gatherItem.probDespawn,
+
+                // Rewards
+                item_reward_id = null,
+                item_reward_amount = 0,
+                gold_min = gatherItem.lootGoldMin,
+                gold_max = gatherItem.lootGoldMax,
+
+                // Chest-specific
                 chest_reward_probability = gatherItem.probChestReward,
-                decrease_faction = gatherItem.decreaseFaction ?? ""
+
+                // Faction impact
+                decrease_faction = gatherItem.decreaseFaction ?? "",
+
+                // Description and UI
+                description = gatherItem.descriptionItem
             };
 
             // Export chest interaction messages

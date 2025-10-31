@@ -32,6 +32,7 @@ public class ItemSold
 
 public class NpcData
 {
+    // Identity
     public string id { get; set; }
     public string name { get; set; }
     public string zone_id { get; set; }
@@ -39,21 +40,41 @@ public class NpcData
     public bool is_template { get; set; }
     public string faction { get; set; }
     public string race { get; set; }
+
+    // Roles and services
     public NpcRoles roles { get; set; } = new();
+    public List<string> quests_offered { get; set; } = new();
+    public List<ItemSold> items_sold { get; set; } = new();
+
+    // Spawning and respawn
     public int respawn_dungeon_id { get; set; }
     public int gold_required_respawn_dungeon { get; set; }
     public float respawn_probability { get; set; }
     public bool can_hide_after_spawn { get; set; }
     public float respawn_time { get; set; }
-    public List<string> quests_offered { get; set; } = new();
-    public List<ItemSold> items_sold { get; set; } = new();
 
-    // Interaction and behavior
+    // Loot and rewards (when killed)
+    public int gold_min { get; set; }
+    public int gold_max { get; set; }
+    public float probability_drop_gold { get; set; }
+    public List<ItemDrop> drops { get; set; } = new();
+
+    // Movement and patrol
     public Position origin_follow_position { get; set; }
     public float follow_distance { get; set; }
+    public float move_probability { get; set; }
+    public float move_distance { get; set; }
+    public List<Position> patrol_waypoints { get; set; } = new();
+
+    // Combat flags
+    public bool see_invisibility { get; set; }
+    public bool is_summonable { get; set; }
     public bool flee_on_low_hp { get; set; }
+
+    // Messages and interactions
     public List<string> welcome_messages { get; set; } = new();
     public List<string> shout_messages { get; set; } = new();
     public List<string> aggro_messages { get; set; } = new();
     public float aggro_message_probability { get; set; }
+    public string summon_message { get; set; }
 }
