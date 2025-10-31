@@ -41,6 +41,11 @@ internal static class ExportConfig
       <Private>False</Private>
     </Reference>
 
+    <Reference Include="UnityEngine.AudioModule">
+      <HintPath>$(Il2CppAssembliesPath)\UnityEngine.AudioModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+
     <!-- Game Assembly -->
     <Reference Include="Assembly-CSharp">
       <HintPath>$(Il2CppAssembliesPath)\Assembly-CSharp.dll</HintPath>

@@ -85,6 +85,10 @@ namespace DataExporter
                 var zoneExporter = new ZoneExporter(LoggerInstance, ExportPath);
                 zoneExporter.Export();
 
+                // Export zone triggers
+                var zoneTriggerExporter = new ZoneTriggerExporter(LoggerInstance, ExportPath);
+                zoneTriggerExporter.Export();
+
                 var elapsed = DateTime.Now - startTime;
 
                 LoggerInstance.Msg("========================================");
