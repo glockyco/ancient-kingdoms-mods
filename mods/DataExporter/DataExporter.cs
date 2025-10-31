@@ -97,10 +97,6 @@ namespace DataExporter
                 var craftingRecipeExporter = new CraftingRecipeExporter(LoggerInstance, ExportPath);
                 craftingRecipeExporter.Export();
 
-                // Export buffs/debuffs
-                var buffExporter = new BuffExporter(LoggerInstance, ExportPath);
-                buffExporter.Export();
-
                 var elapsed = DateTime.Now - startTime;
 
                 LoggerInstance.Msg("========================================");
