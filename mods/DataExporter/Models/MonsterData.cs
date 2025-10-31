@@ -28,6 +28,7 @@ public class MonsterData
     public int spawn_time_start { get; set; }
     public int spawn_time_end { get; set; }
     public float placeholder_spawn_probability { get; set; }
+    public string placeholder_monster_id { get; set; }
     public int gold_min { get; set; }
     public int gold_max { get; set; }
     public float exp_multiplier { get; set; }

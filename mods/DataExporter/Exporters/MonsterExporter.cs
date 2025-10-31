@@ -73,6 +73,9 @@ public class MonsterExporter : BaseExporter
                 spawn_time_start = monster.startSpawnTime,
                 spawn_time_end = monster.endSpawnTime,
                 placeholder_spawn_probability = monster.probSpawnPH,
+                placeholder_monster_id = monster.monsterPH != null && !string.IsNullOrEmpty(monster.monsterPH.name)
+                    ? monster.monsterPH.name.ToLowerInvariant().Replace(" ", "_")
+                    : null,
                 gold_min = monster.lootGoldMin,
                 gold_max = monster.lootGoldMax,
                 exp_multiplier = monster.expMultiplier
