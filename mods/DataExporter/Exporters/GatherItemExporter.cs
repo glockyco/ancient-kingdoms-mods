@@ -21,25 +21,39 @@ public class GatherItemExporter : BaseExporter
         var type = Il2CppType.Of<Il2Cpp.GatherItem>();
         var objects = Resources.FindObjectsOfTypeAll(type);
 
-        Logger.Msg($"Found {objects.Length} gather item objects total");
+        // Load all zone triggers for zone determination
+        var zoneTriggerType = Il2CppType.Of<Il2Cpp.ZoneTrigger>();
+        var zoneTriggers = Resources.FindObjectsOfTypeAll(zoneTriggerType);
 
+        Logger.Msg($"Found {objects.Length} gather item objects total");
+        Logger.Msg($"Found {zoneTriggers.Length} zone triggers for zone detection");
+
+        var seenGatherItems = new HashSet<string>();
         var gatherItems = new List<GatherItemData>();
-        var skippedNonScene = 0;
+        var templateCount = 0;
 
         foreach (var obj in objects)
         {
             var gatherItem = obj.TryCast<Il2Cpp.GatherItem>();
-            if (gatherItem == null)
+            if (gatherItem == null || string.IsNullOrEmpty(gatherItem.name))
                 continue;
 
-            // Skip objects not in a scene (prefabs, assets)
-            if (gatherItem.gameObject == null || !gatherItem.gameObject.scene.IsValid())
-            {
-                skippedNonScene++;
-                continue;
-            }
+            var isTemplate = gatherItem.gameObject == null || !gatherItem.gameObject.scene.IsValid();
+            var zoneId = isTemplate ? "unknown" : GetZoneIdFromPosition(gatherItem.transform.position, zoneTriggers);
+            var uniqueKey = $"{zoneId}|{gatherItem.name}|{isTemplate}";
 
-            var id = gatherItem.name.ToLowerInvariant().Replace(" ", "_");
+            // Deduplicate by zone + name + template status
+            if (seenGatherItems.Contains(uniqueKey))
+                continue;
+
+            seenGatherItems.Add(uniqueKey);
+
+            if (isTemplate)
+                templateCount++;
+
+            var id = isTemplate
+                ? $"{gatherItem.name.ToLowerInvariant().Replace(" ", "_")}_template"
+                : $"{gatherItem.name.ToLowerInvariant().Replace(" ", "_")}_{zoneId}";
             var name = string.IsNullOrEmpty(gatherItem.nameGatherItem) ? gatherItem.name : gatherItem.nameGatherItem;
 
             var gatherItemData = new GatherItemData
@@ -47,12 +61,15 @@ public class GatherItemExporter : BaseExporter
                 id = id,
                 name = name,
                 level = gatherItem.levelItem,
-                position = new Position(
-                    gatherItem.transform.position.x,
-                    gatherItem.transform.position.y,
-                    gatherItem.transform.position.z
-                ),
-                zone_id = "unknown",
+                position = isTemplate
+                    ? null
+                    : new Position(
+                        gatherItem.transform.position.x,
+                        gatherItem.transform.position.y,
+                        gatherItem.transform.position.z
+                    ),
+                zone_id = zoneId,
+                is_template = isTemplate,
                 respawn_time = gatherItem.timeToWaitReady,
                 item_reward_id = "unknown",
                 item_reward_amount = 0,
@@ -62,8 +79,22 @@ public class GatherItemExporter : BaseExporter
                 is_mineral = gatherItem.isMineral,
                 is_chest = gatherItem.isChest,
                 is_radiant_spark = gatherItem.isRadiantSpark,
-                tool_required_id = "unknown"
+                tool_required_id = "unknown",
+                chest_reward_probability = gatherItem.probChestReward,
+                decrease_faction = gatherItem.decreaseFaction ?? ""
             };
+
+            // Export chest interaction messages
+            if (gatherItem.interactingChestMessages != null && gatherItem.interactingChestMessages.Count > 0)
+            {
+                foreach (var msg in gatherItem.interactingChestMessages)
+                {
+                    if (!string.IsNullOrEmpty(msg))
+                    {
+                        gatherItemData.chest_interaction_messages.Add(msg);
+                    }
+                }
+            }
 
             if (gatherItem.giftToPlayer != null && gatherItem.giftToPlayer.item != null)
             {
@@ -94,9 +125,53 @@ public class GatherItemExporter : BaseExporter
             gatherItems.Add(gatherItemData);
         }
 
-        Logger.Msg($"Skipped {skippedNonScene} non-scene objects (prefabs/assets)");
+        Logger.Msg($"Found {templateCount} templates");
 
         WriteJson(gatherItems, "gather_items.json");
         Logger.Msg($"✓ Exported {gatherItems.Count} gather items");
+    }
+
+    private string GetZoneIdFromPosition(UnityEngine.Vector3 position, Il2CppSystem.Object[] zoneTriggers)
+    {
+        // Find nearest zone trigger to this position
+        Il2Cpp.ZoneTrigger nearestTrigger = null;
+        float nearestDistance = float.MaxValue;
+
+        foreach (var triggerObj in zoneTriggers)
+        {
+            var trigger = triggerObj.TryCast<Il2Cpp.ZoneTrigger>();
+            if (trigger == null)
+                continue;
+
+            var triggerPos = trigger.transform.position;
+            var distance = UnityEngine.Vector3.Distance(position, triggerPos);
+
+            if (distance < nearestDistance)
+            {
+                nearestDistance = distance;
+                nearestTrigger = trigger;
+            }
+        }
+
+        if (nearestTrigger != null)
+        {
+            return GetZoneIdFromByte(nearestTrigger.idZone);
+        }
+
+        return "unknown";
+    }
+
+    private string GetZoneIdFromByte(byte zoneId)
+    {
+        if (Il2Cpp.ZoneInfo.zones != null && Il2Cpp.ZoneInfo.zones.ContainsKey(zoneId))
+        {
+            var zone = Il2Cpp.ZoneInfo.zones[zoneId];
+            if (zone != null && !string.IsNullOrEmpty(zone.name))
+            {
+                return zone.name.ToLowerInvariant().Replace(" ", "_");
+            }
+        }
+
+        return "unknown";
     }
 }

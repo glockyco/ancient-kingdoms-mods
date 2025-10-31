@@ -9,6 +9,7 @@ public class GatherItemData
     public int level { get; set; }
     public Position position { get; set; }
     public string zone_id { get; set; }
+    public bool is_template { get; set; }
     public double respawn_time { get; set; }
     public string item_reward_id { get; set; }
     public int item_reward_amount { get; set; }
@@ -20,4 +21,11 @@ public class GatherItemData
     public bool is_radiant_spark { get; set; }
     public string tool_required_id { get; set; }
     public List<ItemDrop> random_drops { get; set; } = new();
+
+    // Chest-specific
+    public float chest_reward_probability { get; set; }
+    public List<string> chest_interaction_messages { get; set; } = new();
+
+    // Faction impact
+    public string decrease_faction { get; set; }
 }
