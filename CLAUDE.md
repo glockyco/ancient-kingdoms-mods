@@ -11,12 +11,29 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Comments:**
 - NO historical/change comments (e.g., "Added fog removal", "Updated to fix bug")
+- NO temporal language in comments (e.g., "Changed from X", "Previously was Y", "Now uses Z")
 - NO superfluous comments explaining obvious code
 - ONLY add comments for complex logic that genuinely needs explanation
 
 **Code Quality:**
 - Write clean, straightforward code without unnecessary abstractions
 - Prefer simple solutions over complex ones
+
+**Consistency:**
+- ALWAYS maintain consistency with existing code patterns
+- When adding new features, study existing implementations first
+- Match logging patterns, error handling, code structure, and naming conventions
+- Consistency is critical - don't introduce new patterns without strong justification
+
+**Data Export Guidelines (DataExporter mod):**
+- ONLY export authoritative data from game object fields
+- NO guesses, heuristics, or name-based inferences
+- Use `"unknown"` for missing/unavailable data instead of making assumptions
+- Acceptable derivations:
+  - IL2CPP type checking with `TryCast` or `GetIl2CppType()` to determine subclass types
+  - Spatial algorithms when no authoritative field exists (e.g., nearest zone trigger for portal destinations)
+  - Calculations from authoritative data (e.g., bounding boxes from positions)
+- Document any non-authoritative derivations in code comments
 
 ## Project Overview
 
