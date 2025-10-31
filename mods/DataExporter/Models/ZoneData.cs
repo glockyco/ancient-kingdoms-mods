@@ -4,6 +4,8 @@ public class ZoneBounds
 {
     public float min_x { get; set; }
     public float max_x { get; set; }
+    public float min_y { get; set; }
+    public float max_y { get; set; }
     public float min_z { get; set; }
     public float max_z { get; set; }
 }

@@ -81,6 +81,8 @@ public class ZoneExporter : BaseExporter
                 {
                     min_x = positions.Min(p => p.x),
                     max_x = positions.Max(p => p.x),
+                    min_y = positions.Min(p => p.y),
+                    max_y = positions.Max(p => p.y),
                     min_z = positions.Min(p => p.z),
                     max_z = positions.Max(p => p.z)
                 }
