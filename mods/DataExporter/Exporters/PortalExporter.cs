@@ -19,11 +19,14 @@ public class PortalExporter : BaseExporter
         var type = Il2CppType.Of<Il2Cpp.Portal>();
         var portals = Resources.FindObjectsOfTypeAll(type);
 
+        Logger.Msg($"Found {portals.Length} portal objects total");
+
         // Load all zone triggers for destination matching
         var zoneTriggerType = Il2CppType.Of<Il2Cpp.ZoneTrigger>();
         var zoneTriggers = Resources.FindObjectsOfTypeAll(zoneTriggerType);
 
         var portalList = new List<PortalData>();
+        var templateCount = 0;
 
         foreach (var obj in portals)
         {
@@ -31,12 +34,17 @@ public class PortalExporter : BaseExporter
             if (portal == null)
                 continue;
 
+            var isTemplate = portal.gameObject == null || !portal.gameObject.scene.IsValid();
+            if (isTemplate)
+                templateCount++;
+
             var fromZoneId = GetZoneIdFromByte(portal.idZone);
             var toZoneId = GetDestinationZoneId(portal, zoneTriggers);
 
             var portalData = new PortalData
             {
                 id = $"portal_{fromZoneId}_to_{toZoneId}_{portal.GetInstanceID()}",
+                is_template = isTemplate,
                 from_zone_id = fromZoneId,
                 to_zone_id = toZoneId,
                 position = new Position(
@@ -50,16 +58,18 @@ public class PortalExporter : BaseExporter
                         portal.destination.position.y,
                         portal.destination.position.z
                     )
-                    : new Position(0, 0, 0),
-                required_item_id = portal.key != null ? portal.key.name.ToLowerInvariant().Replace(" ", "_") : "",
+                    : null,
+                required_item_id = portal.key != null ? portal.key.name.ToLowerInvariant().Replace(" ", "_") : null,
                 level_required = portal.itemLevelRequired,
                 is_closed = portal.isClosed,
                 orientation = new Position(portal.orientation.x, portal.orientation.y, 0),
-                need_monster_dead_id = portal.needMonsterDead != null ? portal.needMonsterDead.name.ToLowerInvariant().Replace(" ", "_") : ""
+                need_monster_dead_id = portal.needMonsterDead != null ? portal.needMonsterDead.name.ToLowerInvariant().Replace(" ", "_") : null
             };
 
             portalList.Add(portalData);
         }
+
+        Logger.Msg($"Included {templateCount} template portals (no spawn location)");
 
         WriteJson(portalList, "portals.json");
         Logger.Msg($"✓ Exported {portalList.Count} portals");
