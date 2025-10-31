@@ -37,15 +37,4 @@ public abstract class BaseExporter
             Logger.Error($"Failed to export {filename}: {ex.Message}");
         }
     }
-
-    protected string GetZoneId(UnityEngine.Transform transform, string zoneMonsterField)
-    {
-        // Use zoneMonster field if populated, otherwise return "unknown"
-        if (!string.IsNullOrEmpty(zoneMonsterField))
-        {
-            return zoneMonsterField.ToLowerInvariant().Replace(" ", "_");
-        }
-
-        return "unknown";
-    }
 }

@@ -34,7 +34,7 @@ public class ItemExporter : BaseExporter
                 name = scriptableItem.nameItem ?? scriptableItem.name,
                 type = DetermineItemType(scriptableItem),
                 quality = GetQualityName(scriptableItem.quality),
-                level_required = 0, // ScriptableItem doesn't have level requirement directly
+                level_required = 0,
                 buy_price = (int)scriptableItem.buyPrice,
                 sell_price = (int)scriptableItem.sellPrice,
                 tradable = scriptableItem.tradable,
@@ -43,13 +43,19 @@ public class ItemExporter : BaseExporter
                 tooltip = scriptableItem.ToolTip(false, false) ?? ""
             };
 
+            // Try to cast to UsableItem for level requirement
+            var usableItem = obj.TryCast<Il2Cpp.UsableItem>();
+            if (usableItem != null)
+            {
+                itemData.level_required = usableItem.minLevel;
+            }
+
             // Try to cast to EquipmentItem for stats
             var equipItem = obj.TryCast<Il2Cpp.EquipmentItem>();
             if (equipItem != null)
             {
                 itemData.weapon_category = equipItem.category ?? "";
-                itemData.slot = equipItem.category ?? ""; // Slot is same as category in this game
-                itemData.level_required = equipItem.minLevel; // Get level requirement at skill level 1
+                itemData.slot = equipItem.category ?? "";
 
                 // Parse required class
                 if (!string.IsNullOrEmpty(equipItem.requiredClass))
@@ -85,7 +91,8 @@ public class ItemExporter : BaseExporter
                     haste = equipItem.hasteBonus,
                     fire_resist = equipItem.fireResistBonus,
                     ice_resist = equipItem.coldResistBonus,
-                    poison_resist = equipItem.poisonResistBonus
+                    poison_resist = equipItem.poisonResistBonus,
+                    disease_resist = equipItem.diseaseResistBonus
                 };
             }
 
@@ -122,7 +129,7 @@ public class ItemExporter : BaseExporter
             2 => "rare",
             3 => "epic",
             4 => "legendary",
-            _ => "common"
+            _ => "unknown"
         };
     }
 }

@@ -29,7 +29,7 @@ public class NpcExporter : BaseExporter
             if (npc == null || string.IsNullOrEmpty(npc.name))
                 continue;
 
-            var zoneId = GetZoneId(npc.transform, "");
+            var zoneId = GetNpcZoneId(npc);
             var uniqueKey = $"{zoneId}|{npc.name}";
 
             // Deduplicate by zone + name
@@ -92,5 +92,19 @@ public class NpcExporter : BaseExporter
 
         WriteJson(npcList, "npcs.json");
         Logger.Msg($"✓ Exported {npcList.Count} unique NPCs");
+    }
+
+    private string GetNpcZoneId(Il2Cpp.Npc npc)
+    {
+        if (Il2Cpp.ZoneInfo.zones != null && Il2Cpp.ZoneInfo.zones.ContainsKey((byte)npc.idZone))
+        {
+            var zone = Il2Cpp.ZoneInfo.zones[(byte)npc.idZone];
+            if (zone != null && !string.IsNullOrEmpty(zone.name))
+            {
+                return zone.name.ToLowerInvariant().Replace(" ", "_");
+            }
+        }
+
+        return "unknown";
     }
 }

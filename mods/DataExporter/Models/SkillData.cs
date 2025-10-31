@@ -4,7 +4,6 @@ public class SkillData
 {
     public string id { get; set; }
     public string name { get; set; }
-    public string className { get; set; }
     public int tier { get; set; }
     public int max_level { get; set; }
     public int level_required { get; set; }

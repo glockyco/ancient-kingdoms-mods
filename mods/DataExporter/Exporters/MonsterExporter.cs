@@ -29,7 +29,7 @@ public class MonsterExporter : BaseExporter
             if (monster == null || string.IsNullOrEmpty(monster.name))
                 continue;
 
-            var zoneId = GetZoneId(monster.transform, monster.zoneMonster);
+            var zoneId = GetMonsterZoneId(monster);
             var uniqueKey = $"{zoneId}|{monster.name}";
 
             // Deduplicate by zone + name
@@ -82,5 +82,19 @@ public class MonsterExporter : BaseExporter
 
         WriteJson(monsterList, "monsters.json");
         Logger.Msg($"✓ Exported {monsterList.Count} unique monsters");
+    }
+
+    private string GetMonsterZoneId(Il2Cpp.Monster monster)
+    {
+        if (Il2Cpp.ZoneInfo.zones != null && Il2Cpp.ZoneInfo.zones.ContainsKey((byte)monster.idZone))
+        {
+            var zone = Il2Cpp.ZoneInfo.zones[(byte)monster.idZone];
+            if (zone != null && !string.IsNullOrEmpty(zone.name))
+            {
+                return zone.name.ToLowerInvariant().Replace(" ", "_");
+            }
+        }
+
+        return "unknown";
     }
 }

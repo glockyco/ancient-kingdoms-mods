@@ -105,14 +105,8 @@ public class PortalExporter : BaseExporter
             }
         }
 
-        // Use the nearest trigger's zone name
         if (nearestTrigger != null)
         {
-            if (!string.IsNullOrEmpty(nearestTrigger.nameZone))
-            {
-                return nearestTrigger.nameZone.ToLowerInvariant().Replace(" ", "_");
-            }
-            // Fallback to zone ID lookup
             return GetZoneIdFromByte(nearestTrigger.idZone);
         }
 

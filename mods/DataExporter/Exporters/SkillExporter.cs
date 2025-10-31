@@ -31,7 +31,6 @@ public class SkillExporter : BaseExporter
             {
                 id = skill.name.ToLowerInvariant().Replace(" ", "_"),
                 name = skill.nameSkill ?? skill.name,
-                className = DetermineSkillClass(skill),
                 tier = skill.tier,
                 max_level = skill.maxLevel,
                 level_required = skill.requiredLevel.Get(1), // Get at skill level 1
@@ -51,26 +50,5 @@ public class SkillExporter : BaseExporter
 
         WriteJson(skillList, "skills.json");
         Logger.Msg($"✓ Exported {skillList.Count} skills");
-    }
-
-    private string DetermineSkillClass(Il2Cpp.ScriptableSkill skill)
-    {
-        // Try to determine class from skill name or type
-        var name = skill.name.ToLower();
-
-        if (name.Contains("warrior"))
-            return "Warrior";
-        if (name.Contains("cleric") || name.Contains("heal"))
-            return "Cleric";
-        if (name.Contains("ranger") || name.Contains("bow"))
-            return "Ranger";
-        if (name.Contains("rogue"))
-            return "Rogue";
-        if (name.Contains("wizard") || name.Contains("mage"))
-            return "Wizard";
-        if (name.Contains("druid"))
-            return "Druid";
-
-        return "General";
     }
 }

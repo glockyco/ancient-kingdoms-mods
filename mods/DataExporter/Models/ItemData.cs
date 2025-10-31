@@ -43,6 +43,6 @@ public class ItemStats
     public float haste { get; set; }
     public int fire_resist { get; set; }
     public int ice_resist { get; set; }
-    public int lightning_resist { get; set; }
     public int poison_resist { get; set; }
+    public int disease_resist { get; set; }
 }

@@ -27,9 +27,7 @@ public class ZoneTriggerExporter : BaseExporter
             if (zoneTrigger == null)
                 continue;
 
-            var zoneName = !string.IsNullOrEmpty(zoneTrigger.nameZone)
-                ? zoneTrigger.nameZone
-                : GetZoneNameFromId(zoneTrigger.idZone);
+            var zoneName = GetZoneNameFromId(zoneTrigger.idZone);
 
             var zoneTriggerData = new ZoneTriggerData
             {
