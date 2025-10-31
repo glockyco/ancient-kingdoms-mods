@@ -19,6 +19,8 @@ public class ZoneTriggerExporter : BaseExporter
         var type = Il2CppType.Of<Il2Cpp.ZoneTrigger>();
         var zoneTriggers = Resources.FindObjectsOfTypeAll(type);
 
+        Logger.Msg($"Found {zoneTriggers.Length} zone trigger objects total");
+
         var zoneTriggerList = new List<ZoneTriggerData>();
 
         foreach (var obj in zoneTriggers)
@@ -42,8 +44,8 @@ public class ZoneTriggerExporter : BaseExporter
                 ),
                 bloom_color = ColorToHex(zoneTrigger.bloomColor),
                 light_intensity = zoneTrigger.globalLightIntensity,
-                audio_zone = zoneTrigger.audioZone != null ? zoneTrigger.audioZone.name : "",
-                loop_sounds_zone = zoneTrigger.loopSoundsZone != null ? zoneTrigger.loopSoundsZone.name : ""
+                audio_zone = zoneTrigger.audioZone != null ? zoneTrigger.audioZone.name : null,
+                loop_sounds_zone = zoneTrigger.loopSoundsZone != null ? zoneTrigger.loopSoundsZone.name : null
             };
 
             zoneTriggerList.Add(zoneTriggerData);

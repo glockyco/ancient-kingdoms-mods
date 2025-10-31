@@ -164,9 +164,14 @@ public class MonsterExporter : BaseExporter
 
     private string GetMonsterZoneId(Il2Cpp.Monster monster)
     {
-        if (Il2Cpp.ZoneInfo.zones != null && Il2Cpp.ZoneInfo.zones.ContainsKey((byte)monster.idZone))
+        return GetZoneIdFromByte((byte)monster.idZone);
+    }
+
+    private string GetZoneIdFromByte(byte zoneId)
+    {
+        if (Il2Cpp.ZoneInfo.zones != null && Il2Cpp.ZoneInfo.zones.ContainsKey(zoneId))
         {
-            var zone = Il2Cpp.ZoneInfo.zones[(byte)monster.idZone];
+            var zone = Il2Cpp.ZoneInfo.zones[zoneId];
             if (zone != null && !string.IsNullOrEmpty(zone.name))
             {
                 return zone.name.ToLowerInvariant().Replace(" ", "_");

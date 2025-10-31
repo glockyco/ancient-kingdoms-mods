@@ -20,6 +20,8 @@ public class ItemExporter : BaseExporter
         var type = Il2CppType.Of<Il2Cpp.ScriptableItem>();
         var items = Resources.FindObjectsOfTypeAll(type);
 
+        Logger.Msg($"Found {items.Length} item objects total");
+
         var itemList = new List<ItemData>();
 
         foreach (var obj in items)
@@ -178,7 +180,7 @@ public class ItemExporter : BaseExporter
             haste = equipItem.hasteBonus,
             spell_haste = equipItem.spellHasteBonus,
             max_durability = equipItem.maxDurability,
-            augment_bonus_set = equipItem.augmentArmorBonusSet != null ? equipItem.augmentArmorBonusSet.name : "",
+            augment_bonus_set = equipItem.augmentArmorBonusSet != null ? equipItem.augmentArmorBonusSet.name : null,
             has_serenity = equipItem.hasSerenity,
             is_costume = equipItem.isCostume
         };

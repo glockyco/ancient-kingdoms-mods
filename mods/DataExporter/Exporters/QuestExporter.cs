@@ -19,6 +19,8 @@ public class QuestExporter : BaseExporter
         var type = Il2CppType.Of<Il2Cpp.ScriptableQuest>();
         var quests = Resources.FindObjectsOfTypeAll(type);
 
+        Logger.Msg($"Found {quests.Length} quest objects total");
+
         var questList = new List<QuestData>();
 
         foreach (var obj in quests)
@@ -34,14 +36,14 @@ public class QuestExporter : BaseExporter
                 quest_type = DetermineQuestType(quest),
                 level_required = quest.requiredLevel,
                 level_recommended = quest.recommendedLevel,
-                start_npc_id = quest.startQuestNPC != null ? quest.startQuestNPC.name.ToLowerInvariant().Replace(" ", "_") : "",
-                end_npc_id = quest.finishQuestNPC != null ? quest.finishQuestNPC.name.ToLowerInvariant().Replace(" ", "_") : "",
+                start_npc_id = quest.startQuestNPC != null ? quest.startQuestNPC.name.ToLowerInvariant().Replace(" ", "_") : null,
+                end_npc_id = quest.finishQuestNPC != null ? quest.finishQuestNPC.name.ToLowerInvariant().Replace(" ", "_") : null,
                 zone_id_final_npc = quest.idZoneFinalNPC,
                 zone_id_quest_action = quest.idZoneQuestAction,
-                given_item_on_start_id = quest.givenItemOnStartQuest != null ? quest.givenItemOnStartQuest.name.ToLowerInvariant().Replace(" ", "_") : "",
+                given_item_on_start_id = quest.givenItemOnStartQuest != null ? quest.givenItemOnStartQuest.name.ToLowerInvariant().Replace(" ", "_") : null,
                 predecessor_id = quest.predecessor != null && quest.predecessor.Length > 0 && quest.predecessor[0] != null
                     ? quest.predecessor[0].name.ToLowerInvariant().Replace(" ", "_")
-                    : "",
+                    : null,
                 is_main_quest = quest.mainQuest,
                 is_epic_quest = quest.epicQuest,
                 is_adventurer_quest = quest.adventurerQuest,

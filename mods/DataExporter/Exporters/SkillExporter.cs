@@ -19,6 +19,8 @@ public class SkillExporter : BaseExporter
         var type = Il2CppType.Of<Il2Cpp.ScriptableSkill>();
         var skills = Resources.FindObjectsOfTypeAll(type);
 
+        Logger.Msg($"Found {skills.Length} skill objects total");
+
         var skillList = new List<SkillData>();
 
         foreach (var obj in skills)
@@ -65,7 +67,7 @@ public class SkillExporter : BaseExporter
                 spell_runic_name = skill.spellRunicName ?? "",
                 skill_aggro_message = skill.skillAggroMessage ?? "",
                 tooltip = skill.ToolTip(1, false, false) ?? "",
-                icon_path = skill.image != null ? skill.image.name : ""
+                icon_path = skill.image != null ? skill.image.name : null
             };
 
             // Try to cast to specific skill types and populate type-specific fields
@@ -298,6 +300,6 @@ public class SkillExporter : BaseExporter
         if (summonSkill == null) return;
 
         skillData.is_familiar = summonSkill.isFamiliar;
-        skillData.pet_prefab_name = summonSkill.petPrefab != null ? summonSkill.petPrefab.name : "";
+        skillData.pet_prefab_name = summonSkill.petPrefab != null ? summonSkill.petPrefab.name : null;
     }
 }

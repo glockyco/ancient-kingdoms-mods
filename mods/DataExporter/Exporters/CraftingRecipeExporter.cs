@@ -21,6 +21,8 @@ public class CraftingRecipeExporter : BaseExporter
         var type = Il2CppType.Of<Il2Cpp.CraftingStation>();
         var objects = Resources.FindObjectsOfTypeAll(type);
 
+        Logger.Msg($"Found {objects.Length} crafting station objects total");
+
         var recipes = new List<CraftingRecipeData>();
         var recipeIdCounter = 0;
 

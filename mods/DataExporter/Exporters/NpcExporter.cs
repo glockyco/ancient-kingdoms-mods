@@ -170,9 +170,14 @@ public class NpcExporter : BaseExporter
 
     private string GetNpcZoneId(Il2Cpp.Npc npc)
     {
-        if (Il2Cpp.ZoneInfo.zones != null && Il2Cpp.ZoneInfo.zones.ContainsKey((byte)npc.idZone))
+        return GetZoneIdFromByte((byte)npc.idZone);
+    }
+
+    private string GetZoneIdFromByte(byte zoneId)
+    {
+        if (Il2Cpp.ZoneInfo.zones != null && Il2Cpp.ZoneInfo.zones.ContainsKey(zoneId))
         {
-            var zone = Il2Cpp.ZoneInfo.zones[(byte)npc.idZone];
+            var zone = Il2Cpp.ZoneInfo.zones[zoneId];
             if (zone != null && !string.IsNullOrEmpty(zone.name))
             {
                 return zone.name.ToLowerInvariant().Replace(" ", "_");
