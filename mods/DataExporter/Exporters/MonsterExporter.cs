@@ -24,7 +24,7 @@ public class MonsterExporter : BaseExporter
 
         var seenMonsters = new HashSet<string>();
         var monsterList = new List<MonsterData>();
-        var skippedNonScene = 0;
+        var templateCount = 0;
 
         foreach (var obj in monsters)
         {
@@ -32,32 +32,34 @@ public class MonsterExporter : BaseExporter
             if (monster == null || string.IsNullOrEmpty(monster.name))
                 continue;
 
-            // Skip objects not in a scene (prefabs, assets)
-            if (monster.gameObject == null || !monster.gameObject.scene.IsValid())
-            {
-                skippedNonScene++;
-                continue;
-            }
-
+            var isTemplate = monster.gameObject == null || !monster.gameObject.scene.IsValid();
             var zoneId = GetMonsterZoneId(monster);
-            var uniqueKey = $"{zoneId}|{monster.name}";
+            var uniqueKey = $"{zoneId}|{monster.name}|{isTemplate}";
 
-            // Deduplicate by zone + name
+            // Deduplicate by zone + name + template status
             if (seenMonsters.Contains(uniqueKey))
                 continue;
 
             seenMonsters.Add(uniqueKey);
 
+            if (isTemplate)
+                templateCount++;
+
             var monsterData = new MonsterData
             {
-                id = $"{monster.name.ToLowerInvariant().Replace(" ", "_")}_{zoneId}",
+                id = isTemplate
+                    ? $"{monster.name.ToLowerInvariant().Replace(" ", "_")}_template"
+                    : $"{monster.name.ToLowerInvariant().Replace(" ", "_")}_{zoneId}",
                 name = monster.name,
                 zone_id = zoneId,
-                position = new Position(
-                    monster.transform.position.x,
-                    monster.transform.position.y,
-                    monster.transform.position.z
-                ),
+                position = isTemplate
+                    ? null
+                    : new Position(
+                        monster.transform.position.x,
+                        monster.transform.position.y,
+                        monster.transform.position.z
+                    ),
+                is_template = isTemplate,
                 level = monster.level.current,
                 health = monster.health.max,
                 typeName = monster.typeMonster ?? "Unknown",
@@ -90,7 +92,7 @@ public class MonsterExporter : BaseExporter
             monsterList.Add(monsterData);
         }
 
-        Logger.Msg($"Skipped {skippedNonScene} non-scene objects (prefabs/assets)");
+        Logger.Msg($"Included {templateCount} template monsters (no spawn location)");
 
         WriteJson(monsterList, "monsters.json");
         Logger.Msg($"✓ Exported {monsterList.Count} unique monsters");

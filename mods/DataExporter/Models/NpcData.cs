@@ -22,6 +22,7 @@ public class NpcData
     public string name { get; set; }
     public string zone_id { get; set; }
     public Position position { get; set; }
+    public bool is_template { get; set; }
     public string faction { get; set; }
     public string race { get; set; }
     public NpcRoles roles { get; set; } = new();

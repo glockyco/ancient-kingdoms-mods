@@ -24,7 +24,7 @@ public class NpcExporter : BaseExporter
 
         var seenNpcs = new HashSet<string>();
         var npcList = new List<NpcData>();
-        var skippedNonScene = 0;
+        var templateCount = 0;
 
         foreach (var obj in npcs)
         {
@@ -32,32 +32,34 @@ public class NpcExporter : BaseExporter
             if (npc == null || string.IsNullOrEmpty(npc.name))
                 continue;
 
-            // Skip objects not in a scene (prefabs, assets)
-            if (npc.gameObject == null || !npc.gameObject.scene.IsValid())
-            {
-                skippedNonScene++;
-                continue;
-            }
-
+            var isTemplate = npc.gameObject == null || !npc.gameObject.scene.IsValid();
             var zoneId = GetNpcZoneId(npc);
-            var uniqueKey = $"{zoneId}|{npc.name}";
+            var uniqueKey = $"{zoneId}|{npc.name}|{isTemplate}";
 
-            // Deduplicate by zone + name
+            // Deduplicate by zone + name + template status
             if (seenNpcs.Contains(uniqueKey))
                 continue;
 
             seenNpcs.Add(uniqueKey);
 
+            if (isTemplate)
+                templateCount++;
+
             var npcData = new NpcData
             {
-                id = $"{npc.name.ToLowerInvariant().Replace(" ", "_")}_{zoneId}",
+                id = isTemplate
+                    ? $"{npc.name.ToLowerInvariant().Replace(" ", "_")}_template"
+                    : $"{npc.name.ToLowerInvariant().Replace(" ", "_")}_{zoneId}",
                 name = npc.name,
                 zone_id = zoneId,
-                position = new Position(
-                    npc.transform.position.x,
-                    npc.transform.position.y,
-                    npc.transform.position.z
-                ),
+                position = isTemplate
+                    ? null
+                    : new Position(
+                        npc.transform.position.x,
+                        npc.transform.position.y,
+                        npc.transform.position.z
+                    ),
+                is_template = isTemplate,
                 faction = npc.faction ?? "Neutral",
                 race = npc.race ?? "Unknown",
                 roles = new NpcRoles
@@ -100,7 +102,7 @@ public class NpcExporter : BaseExporter
             npcList.Add(npcData);
         }
 
-        Logger.Msg($"Skipped {skippedNonScene} non-scene objects (prefabs/assets)");
+        Logger.Msg($"Included {templateCount} template NPCs (no spawn location)");
 
         WriteJson(npcList, "npcs.json");
         Logger.Msg($"✓ Exported {npcList.Count} unique NPCs");

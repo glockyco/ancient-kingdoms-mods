@@ -14,6 +14,7 @@ public class MonsterData
     public string name { get; set; }
     public string zone_id { get; set; }
     public Position position { get; set; }
+    public bool is_template { get; set; }
     public int level { get; set; }
     public int health { get; set; }
     public string typeName { get; set; }
