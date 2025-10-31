@@ -40,38 +40,12 @@ public abstract class BaseExporter
 
     protected string GetZoneId(UnityEngine.Transform transform, string zoneMonsterField)
     {
-        // Priority 1: Use zoneMonster field if populated
+        // Use zoneMonster field if populated, otherwise return "unknown"
         if (!string.IsNullOrEmpty(zoneMonsterField))
         {
             return zoneMonsterField.ToLowerInvariant().Replace(" ", "_");
         }
 
-        // Priority 2: Walk up GameObject hierarchy to find zone
-        UnityEngine.Transform root = transform;
-        UnityEngine.Transform potentialZone = null;
-
-        while (root.parent != null)
-        {
-            potentialZone = root;
-            root = root.parent;
-        }
-
-        string zoneName;
-        if (potentialZone != null && potentialZone != transform)
-        {
-            zoneName = potentialZone.name;
-        }
-        else
-        {
-            zoneName = root.name;
-        }
-
-        // Clean up "Entities" suffix
-        if (zoneName.EndsWith(" Entities"))
-        {
-            zoneName = zoneName.Substring(0, zoneName.Length - 9);
-        }
-
-        return zoneName.ToLowerInvariant().Replace(" ", "_");
+        return "unknown";
     }
 }
