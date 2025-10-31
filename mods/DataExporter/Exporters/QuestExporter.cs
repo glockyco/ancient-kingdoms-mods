@@ -16,7 +16,7 @@ public class QuestExporter : BaseExporter
     {
         Logger.Msg("Exporting quests...");
 
-        var type = IL2CPPType.Of<Il2Cpp.ScriptableQuest>();
+        var type = Il2CppType.Of<Il2Cpp.ScriptableQuest>();
         var quests = Resources.FindObjectsOfTypeAll(type);
 
         var questList = new List<QuestData>();
@@ -41,8 +41,8 @@ public class QuestExporter : BaseExporter
                 type = DetermineQuestType(quest),
                 is_main_quest = quest.mainQuest,
                 is_epic_quest = quest.epicQuest,
-                tooltip = quest.ToolTip(null, null) ?? "",
-                tooltip_complete = quest.ToolTipComplete(null, null) ?? ""
+                tooltip = "",  // Skip tooltip for now - requires Player and Quest instances
+                tooltip_complete = ""  // Skip tooltip for now - requires Player and Quest instances
             };
 
             // Set rewards

@@ -16,7 +16,7 @@ public class PortalExporter : BaseExporter
     {
         Logger.Msg("Exporting portals...");
 
-        var type = IL2CPPType.Of<Il2Cpp.Portal>();
+        var type = Il2CppType.Of<Il2Cpp.Portal>();
         var portals = Resources.FindObjectsOfTypeAll(type);
 
         var portalList = new List<PortalData>();

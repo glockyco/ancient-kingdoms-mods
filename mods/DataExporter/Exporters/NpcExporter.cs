@@ -17,7 +17,7 @@ public class NpcExporter : BaseExporter
     {
         Logger.Msg("Exporting NPCs...");
 
-        var type = IL2CPPType.Of<Il2Cpp.Npc>();
+        var type = Il2CppType.Of<Il2Cpp.Npc>();
         var npcs = Resources.FindObjectsOfTypeAll(type);
 
         var seenNpcs = new HashSet<string>();
@@ -62,11 +62,11 @@ public class NpcExporter : BaseExporter
             // Export quests offered
             if (npc.quests != null && npc.quests.quests != null)
             {
-                foreach (var quest in npc.quests.quests)
+                foreach (var questOffer in npc.quests.quests)
                 {
-                    if (quest != null && !string.IsNullOrEmpty(quest.name))
+                    if (questOffer != null && questOffer.quest != null && !string.IsNullOrEmpty(questOffer.quest.name))
                     {
-                        npcData.quests_offered.Add(quest.name.ToLowerInvariant().Replace(" ", "_"));
+                        npcData.quests_offered.Add(questOffer.quest.name.ToLowerInvariant().Replace(" ", "_"));
                     }
                 }
             }
@@ -74,14 +74,14 @@ public class NpcExporter : BaseExporter
             // Export items sold
             if (npc.trading != null && npc.trading.saleItems != null)
             {
-                foreach (var sale in npc.trading.saleItems)
+                foreach (var item in npc.trading.saleItems)
                 {
-                    if (sale.item != null)
+                    if (item != null)
                     {
                         npcData.items_sold.Add(new ItemSold
                         {
-                            item_id = sale.item.name.ToLowerInvariant().Replace(" ", "_"),
-                            price = (int)sale.item.buyPrice
+                            item_id = item.name.ToLowerInvariant().Replace(" ", "_"),
+                            price = (int)item.buyPrice
                         });
                     }
                 }

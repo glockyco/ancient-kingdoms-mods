@@ -16,7 +16,7 @@ public class SkillExporter : BaseExporter
     {
         Logger.Msg("Exporting skills...");
 
-        var type = IL2CPPType.Of<Il2Cpp.ScriptableSkill>();
+        var type = Il2CppType.Of<Il2Cpp.ScriptableSkill>();
         var skills = Resources.FindObjectsOfTypeAll(type);
 
         var skillList = new List<SkillData>();

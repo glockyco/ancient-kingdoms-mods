@@ -17,7 +17,7 @@ public class MonsterExporter : BaseExporter
     {
         Logger.Msg("Exporting monsters...");
 
-        var type = IL2CPPType.Of<Il2Cpp.Monster>();
+        var type = Il2CppType.Of<Il2Cpp.Monster>();
         var monsters = Resources.FindObjectsOfTypeAll(type);
 
         var seenMonsters = new HashSet<string>();
@@ -48,7 +48,7 @@ public class MonsterExporter : BaseExporter
                     monster.transform.position.y,
                     monster.transform.position.z
                 ),
-                level = monster.level,
+                level = monster.level.current,
                 health = monster.health.max,
                 typeName = monster.typeMonster ?? "Unknown",
                 className = monster.classMonster ?? "Unknown",

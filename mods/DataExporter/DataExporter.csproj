@@ -43,6 +43,12 @@
       <Private>False</Private>
     </Reference>
 
+    <!-- Mirror Networking -->
+    <Reference Include="Il2CppMirror">
+      <HintPath>$(Il2CppAssembliesPath)\Il2CppMirror.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+
     <!-- JSON Serialization -->
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>

@@ -22,7 +22,7 @@ public class ZoneExporter : BaseExporter
         var zoneLevels = new Dictionary<string, List<int>>();
 
         // Gather monster data
-        var monsterType = IL2CPPType.Of<Il2Cpp.Monster>();
+        var monsterType = Il2CppType.Of<Il2Cpp.Monster>();
         var monsters = Resources.FindObjectsOfTypeAll(monsterType);
 
         foreach (var obj in monsters)
@@ -39,11 +39,11 @@ public class ZoneExporter : BaseExporter
             }
 
             zoneEntities[zoneId].Add(monster.transform.position);
-            zoneLevels[zoneId].Add(monster.level);
+            zoneLevels[zoneId].Add(monster.level.current);
         }
 
         // Gather NPC data
-        var npcType = IL2CPPType.Of<Il2Cpp.Npc>();
+        var npcType = Il2CppType.Of<Il2Cpp.Npc>();
         var npcs = Resources.FindObjectsOfTypeAll(npcType);
 
         foreach (var obj in npcs)

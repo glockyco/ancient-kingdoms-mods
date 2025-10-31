@@ -17,7 +17,7 @@ public class ItemExporter : BaseExporter
     {
         Logger.Msg("Exporting items...");
 
-        var type = IL2CPPType.Of<Il2Cpp.ScriptableItem>();
+        var type = Il2CppType.Of<Il2Cpp.ScriptableItem>();
         var items = Resources.FindObjectsOfTypeAll(type);
 
         var itemList = new List<ItemData>();
@@ -49,7 +49,7 @@ public class ItemExporter : BaseExporter
             {
                 itemData.weapon_category = equipItem.category ?? "";
                 itemData.slot = equipItem.category ?? ""; // Slot is same as category in this game
-                itemData.level_required = equipItem.requiredLevel.Get(1); // Get level requirement at skill level 1
+                itemData.level_required = equipItem.minLevel; // Get level requirement at skill level 1
 
                 // Parse required class
                 if (!string.IsNullOrEmpty(equipItem.requiredClass))
