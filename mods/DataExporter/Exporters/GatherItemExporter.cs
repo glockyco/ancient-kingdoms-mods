@@ -125,8 +125,6 @@ public class GatherItemExporter : BaseExporter
             gatherItems.Add(gatherItemData);
         }
 
-        Logger.Msg($"Found {templateCount} templates");
-
         WriteJson(gatherItems, "gather_items.json");
         Logger.Msg($"✓ Exported {gatherItems.Count} gather items");
     }

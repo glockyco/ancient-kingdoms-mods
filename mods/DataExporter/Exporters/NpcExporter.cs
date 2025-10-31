@@ -162,8 +162,6 @@ public class NpcExporter : BaseExporter
             npcList.Add(npcData);
         }
 
-        Logger.Msg($"Included {templateCount} template NPCs (no spawn location)");
-
         WriteJson(npcList, "npcs.json");
         Logger.Msg($"✓ Exported {npcList.Count} unique NPCs");
     }

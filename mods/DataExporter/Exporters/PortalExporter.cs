@@ -69,8 +69,6 @@ public class PortalExporter : BaseExporter
             portalList.Add(portalData);
         }
 
-        Logger.Msg($"Included {templateCount} template portals (no spawn location)");
-
         WriteJson(portalList, "portals.json");
         Logger.Msg($"✓ Exported {portalList.Count} portals");
     }

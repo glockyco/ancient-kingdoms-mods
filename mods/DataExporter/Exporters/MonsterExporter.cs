@@ -156,8 +156,6 @@ public class MonsterExporter : BaseExporter
             monsterList.Add(monsterData);
         }
 
-        Logger.Msg($"Included {templateCount} template monsters (no spawn location)");
-
         WriteJson(monsterList, "monsters.json");
         Logger.Msg($"✓ Exported {monsterList.Count} unique monsters");
     }
