@@ -81,17 +81,13 @@ namespace DataExporter
                 var portalExporter = new PortalExporter(LoggerInstance, ExportPath);
                 portalExporter.Export();
 
-                // Export zones
-                var zoneExporter = new ZoneExporter(LoggerInstance, ExportPath);
-                zoneExporter.Export();
-
-                // Export zone triggers
-                var zoneTriggerExporter = new ZoneTriggerExporter(LoggerInstance, ExportPath);
-                zoneTriggerExporter.Export();
-
-                // Export zone info
+                // Export zone info (official zone data)
                 var zoneInfoExporter = new ZoneInfoExporter(LoggerInstance, ExportPath);
                 zoneInfoExporter.Export();
+
+                // Export zone triggers (zone boundaries)
+                var zoneTriggerExporter = new ZoneTriggerExporter(LoggerInstance, ExportPath);
+                zoneTriggerExporter.Export();
 
                 var elapsed = DateTime.Now - startTime;
 
