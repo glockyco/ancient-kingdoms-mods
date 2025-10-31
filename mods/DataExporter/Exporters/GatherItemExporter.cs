@@ -71,7 +71,7 @@ public class GatherItemExporter : BaseExporter
                 zone_id = zoneId,
                 is_template = isTemplate,
                 respawn_time = gatherItem.timeToWaitReady,
-                item_reward_id = "unknown",
+                item_reward_id = null,
                 item_reward_amount = 0,
                 gold_min = gatherItem.lootGoldMin,
                 gold_max = gatherItem.lootGoldMax,
@@ -79,7 +79,7 @@ public class GatherItemExporter : BaseExporter
                 is_mineral = gatherItem.isMineral,
                 is_chest = gatherItem.isChest,
                 is_radiant_spark = gatherItem.isRadiantSpark,
-                tool_required_id = "unknown",
+                tool_required_id = null,
                 chest_reward_probability = gatherItem.probChestReward,
                 decrease_faction = gatherItem.decreaseFaction ?? ""
             };
