@@ -7,7 +7,7 @@ public class ItemData
     // === Base ScriptableItem fields (always present) ===
     public string id { get; set; }
     public string name { get; set; }
-    public string item_type { get; set; }  // equipment/potion/food/book/scroll/mount/backpack/travel/pack/random/chest/relic/monster_scroll/structure
+    public string item_type { get; set; }  // equipment/potion/food/book/scroll/mount/backpack/travel/pack/random/chest/relic/monster_scroll/structure/weapon/augment/treasure_map/fragment/merge/recipe/ammo
     public string weapon_category { get; set; }
     public string slot { get; set; }
     public byte quality { get; set; }
@@ -19,10 +19,20 @@ public class ItemData
     public bool is_chest_key { get; set; }
     public bool has_gather_quest { get; set; }
 
-    public int buy_price { get; set; }
-    public int sell_price { get; set; }
+    // Economy
+    public int max_stack { get; set; }
+    public long buy_price { get; set; }
+    public long sell_price { get; set; }
+    public string buy_token_id { get; set; }
+    public bool sellable { get; set; }
     public bool tradable { get; set; }
+    public bool destroyable { get; set; }
     public bool is_quest_item { get; set; }
+
+    // UsableItem fields (when applicable)
+    public bool infinite_charges { get; set; }
+    public float cooldown { get; set; }
+    public string cooldown_category { get; set; }
 
     public string icon_path { get; set; }
     public string tooltip { get; set; }

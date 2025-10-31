@@ -40,19 +40,29 @@ public class ItemExporter : BaseExporter
                 is_key = scriptableItem.isKey,
                 is_chest_key = scriptableItem.isChestKey,
                 has_gather_quest = scriptableItem.hasGatherQuest,
-                buy_price = (int)scriptableItem.buyPrice,
-                sell_price = (int)scriptableItem.sellPrice,
+
+                // Economy
+                max_stack = scriptableItem.maxStack,
+                buy_price = scriptableItem.buyPrice,
+                sell_price = scriptableItem.sellPrice,
+                buy_token_id = scriptableItem.buyToken != null ? scriptableItem.buyToken.name.ToLowerInvariant().Replace(" ", "_") : null,
+                sellable = scriptableItem.sellable,
                 tradable = scriptableItem.tradable,
+                destroyable = scriptableItem.destroyable,
                 is_quest_item = scriptableItem.isOnlyQuestItem,
+
                 icon_path = scriptableItem.image_name ?? "",
                 tooltip = scriptableItem.ToolTip(false, false) ?? ""
             };
 
-            // Try to cast to UsableItem for level requirement
+            // Try to cast to UsableItem for level requirement and cooldown fields
             var usableItem = obj.TryCast<Il2Cpp.UsableItem>();
             if (usableItem != null)
             {
                 itemData.level_required = usableItem.minLevel;
+                itemData.infinite_charges = usableItem.infiniteCharges;
+                itemData.cooldown = usableItem.cooldown;
+                itemData.cooldown_category = usableItem.cooldownCategory ?? "";
             }
 
             // Populate item type-specific fields
