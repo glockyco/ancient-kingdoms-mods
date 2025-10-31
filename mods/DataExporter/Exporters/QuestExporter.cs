@@ -31,6 +31,7 @@ public class QuestExporter : BaseExporter
             {
                 id = quest.name.ToLowerInvariant().Replace(" ", "_"),
                 name = quest.nameQuest ?? quest.name,
+                quest_type = DetermineQuestType(quest),
                 level_required = quest.requiredLevel,
                 level_recommended = quest.recommendedLevel,
                 start_npc_id = quest.startQuestNPC != null ? quest.startQuestNPC.name.ToLowerInvariant().Replace(" ", "_") : "",
@@ -38,7 +39,6 @@ public class QuestExporter : BaseExporter
                 predecessor_id = quest.predecessor != null && quest.predecessor.Length > 0 && quest.predecessor[0] != null
                     ? quest.predecessor[0].name.ToLowerInvariant().Replace(" ", "_")
                     : "",
-                type = DetermineQuestType(quest),
                 is_main_quest = quest.mainQuest,
                 is_epic_quest = quest.epicQuest,
                 is_adventurer_quest = quest.adventurerQuest,
@@ -131,6 +131,14 @@ public class QuestExporter : BaseExporter
                 }
             }
 
+            // Populate quest type-specific fields
+            PopulateKillQuestFields(quest, questData);
+            PopulateGatherQuestFields(quest, questData);
+            PopulateGatherInventoryQuestFields(quest, questData);
+            PopulateLocationQuestFields(quest, questData);
+            PopulateEquipItemQuestFields(quest, questData);
+            PopulateAlchemyQuestFields(quest, questData);
+
             questList.Add(questData);
         }
 
@@ -152,16 +160,143 @@ public class QuestExporter : BaseExporter
 
     private string DetermineQuestType(Il2Cpp.ScriptableQuest quest)
     {
-        var typeName = quest.GetIl2CppType().Name;
-
-        if (typeName.Contains("Kill"))
-            return "kill";
-        if (typeName.Contains("Gather"))
-            return "gather";
-        if (typeName.Contains("Location"))
+        if (quest.TryCast<Il2Cpp.AlchemyQuest>() != null)
+            return "alchemy";
+        if (quest.TryCast<Il2Cpp.EquipItemQuest>() != null)
+            return "equip_item";
+        if (quest.TryCast<Il2Cpp.LocationQuest>() != null)
             return "location";
+        if (quest.TryCast<Il2Cpp.GatherInventoryQuest>() != null)
+            return "gather_inventory";
+        if (quest.TryCast<Il2Cpp.GatherQuest>() != null)
+            return "gather";
+        if (quest.TryCast<Il2Cpp.KillQuest>() != null)
+            return "kill";
 
         return "general";
+    }
+
+    private void PopulateKillQuestFields(Il2Cpp.ScriptableQuest quest, QuestData questData)
+    {
+        var killQuest = quest.TryCast<Il2Cpp.KillQuest>();
+        if (killQuest == null) return;
+
+        if (killQuest.killTarget != null)
+        {
+            questData.kill_target_1_id = killQuest.killTarget.name.ToLowerInvariant().Replace(" ", "_");
+            questData.kill_amount_1 = killQuest.killAmount;
+        }
+
+        if (killQuest.killTarget2 != null)
+        {
+            questData.kill_target_2_id = killQuest.killTarget2.name.ToLowerInvariant().Replace(" ", "_");
+            questData.kill_amount_2 = killQuest.killAmount2;
+        }
+    }
+
+    private void PopulateGatherQuestFields(Il2Cpp.ScriptableQuest quest, QuestData questData)
+    {
+        var gatherQuest = quest.TryCast<Il2Cpp.GatherQuest>();
+        if (gatherQuest == null) return;
+
+        if (gatherQuest.gatherItem != null)
+        {
+            questData.gather_item_1_id = gatherQuest.gatherItem.name.ToLowerInvariant().Replace(" ", "_");
+            questData.gather_amount_1 = gatherQuest.gatherAmount;
+        }
+
+        if (gatherQuest.gatherItem2 != null)
+        {
+            questData.gather_item_2_id = gatherQuest.gatherItem2.name.ToLowerInvariant().Replace(" ", "_");
+            questData.gather_amount_2 = gatherQuest.gatherAmount2;
+        }
+
+        if (gatherQuest.gatherItem3 != null)
+        {
+            questData.gather_item_3_id = gatherQuest.gatherItem3.name.ToLowerInvariant().Replace(" ", "_");
+            questData.gather_amount_3 = gatherQuest.gatherAmount3;
+        }
+    }
+
+    private void PopulateGatherInventoryQuestFields(Il2Cpp.ScriptableQuest quest, QuestData questData)
+    {
+        var gatherInvQuest = quest.TryCast<Il2Cpp.GatherInventoryQuest>();
+        if (gatherInvQuest == null) return;
+
+        questData.remove_items_on_complete = gatherInvQuest.removeItemsOnComplete;
+
+        if (gatherInvQuest.gatherItems != null)
+        {
+            questData.gather_items = new List<GatherItemAmount>();
+            foreach (var item in gatherInvQuest.gatherItems)
+            {
+                if (item.item != null)
+                {
+                    questData.gather_items.Add(new GatherItemAmount
+                    {
+                        item_id = item.item.name.ToLowerInvariant().Replace(" ", "_"),
+                        amount = item.amount
+                    });
+                }
+            }
+        }
+
+        if (gatherInvQuest.requiredItems != null)
+        {
+            questData.required_items = new List<GatherItemAmount>();
+            foreach (var item in gatherInvQuest.requiredItems)
+            {
+                if (item.item != null)
+                {
+                    questData.required_items.Add(new GatherItemAmount
+                    {
+                        item_id = item.item.name.ToLowerInvariant().Replace(" ", "_"),
+                        amount = item.amount
+                    });
+                }
+            }
+        }
+    }
+
+    private void PopulateLocationQuestFields(Il2Cpp.ScriptableQuest quest, QuestData questData)
+    {
+        var locationQuest = quest.TryCast<Il2Cpp.LocationQuest>();
+        if (locationQuest == null) return;
+
+        questData.tracking_quest_location = locationQuest.trackingQuestLocationString ?? "";
+        questData.discovered_location = locationQuest.discoveredLocationString ?? "";
+        questData.is_find_npc_quest = locationQuest.isFindNpcQuest;
+    }
+
+    private void PopulateEquipItemQuestFields(Il2Cpp.ScriptableQuest quest, QuestData questData)
+    {
+        var equipItemQuest = quest.TryCast<Il2Cpp.EquipItemQuest>();
+        if (equipItemQuest == null) return;
+
+        if (equipItemQuest.equipItems != null)
+        {
+            questData.equip_items = new List<string>();
+            foreach (var item in equipItemQuest.equipItems)
+            {
+                if (item != null)
+                {
+                    questData.equip_items.Add(item.name.ToLowerInvariant().Replace(" ", "_"));
+                }
+            }
+        }
+    }
+
+    private void PopulateAlchemyQuestFields(Il2Cpp.ScriptableQuest quest, QuestData questData)
+    {
+        var alchemyQuest = quest.TryCast<Il2Cpp.AlchemyQuest>();
+        if (alchemyQuest == null) return;
+
+        if (alchemyQuest.potionItem != null)
+        {
+            questData.potion_item_id = alchemyQuest.potionItem.name.ToLowerInvariant().Replace(" ", "_");
+        }
+        questData.potions_amount = alchemyQuest.potionsAmount;
+        questData.increase_alchemy_skill = alchemyQuest.increaseAlchemySkill;
     }
 
     private string GetZoneIdFromByte(byte idZone)
