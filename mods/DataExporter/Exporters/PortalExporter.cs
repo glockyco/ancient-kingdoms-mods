@@ -27,8 +27,8 @@ public class PortalExporter : BaseExporter
             if (portal == null)
                 continue;
 
-            var fromZoneId = GetZoneId(portal.transform, "");
-            var toZoneId = portal.destination != null ? GetZoneId(portal.destination, "") : "unknown";
+            var fromZoneId = GetZoneIdFromByte(portal.idZone);
+            var toZoneId = "unknown";  // Destination zone ID not directly available from portal
 
             var portalData = new PortalData
             {
@@ -57,5 +57,19 @@ public class PortalExporter : BaseExporter
 
         WriteJson(portalList, "portals.json");
         Logger.Msg($"✓ Exported {portalList.Count} portals");
+    }
+
+    private string GetZoneIdFromByte(byte zoneId)
+    {
+        if (Il2Cpp.ZoneInfo.zones != null && Il2Cpp.ZoneInfo.zones.ContainsKey(zoneId))
+        {
+            var zone = Il2Cpp.ZoneInfo.zones[zoneId];
+            if (zone != null && !string.IsNullOrEmpty(zone.name))
+            {
+                return zone.name.ToLowerInvariant().Replace(" ", "_");
+            }
+        }
+
+        return "unknown";
     }
 }
