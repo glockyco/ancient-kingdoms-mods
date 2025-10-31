@@ -12,6 +12,11 @@ public class ItemData
     public byte quality { get; set; }
     public int level_required { get; set; }
     public List<string> class_required { get; set; } = new();
+    public int faction_required_to_buy { get; set; }
+    public float adventuring_level_needed { get; set; }
+    public bool is_key { get; set; }
+    public bool is_chest_key { get; set; }
+    public bool has_gather_quest { get; set; }
 
     public ItemStats stats { get; set; } = new();
 

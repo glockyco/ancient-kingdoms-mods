@@ -25,6 +25,12 @@ public class QuestRewards
     public List<QuestRewardItem> items { get; set; } = new();
 }
 
+public class FactionRequirement
+{
+    public string faction { get; set; }
+    public double faction_value { get; set; }
+}
+
 public class QuestData
 {
     public string id { get; set; }
@@ -37,6 +43,10 @@ public class QuestData
     public string type { get; set; }
     public bool is_main_quest { get; set; }
     public bool is_epic_quest { get; set; }
+    public bool is_adventurer_quest { get; set; }
+    public List<string> race_requirements { get; set; } = new();
+    public List<string> class_requirements { get; set; } = new();
+    public List<FactionRequirement> faction_requirements { get; set; } = new();
     public List<QuestObjective> objectives { get; set; } = new();
     public QuestRewards rewards { get; set; } = new();
     public string tooltip { get; set; }

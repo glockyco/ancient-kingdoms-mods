@@ -41,9 +41,50 @@ public class QuestExporter : BaseExporter
                 type = DetermineQuestType(quest),
                 is_main_quest = quest.mainQuest,
                 is_epic_quest = quest.epicQuest,
+                is_adventurer_quest = quest.adventurerQuest,
                 tooltip = "",  // Skip tooltip for now - requires Player and Quest instances
                 tooltip_complete = ""  // Skip tooltip for now - requires Player and Quest instances
             };
+
+            // Add race requirements
+            if (quest.raceRequirements != null)
+            {
+                foreach (var race in quest.raceRequirements)
+                {
+                    if (!string.IsNullOrEmpty(race))
+                    {
+                        questData.race_requirements.Add(race);
+                    }
+                }
+            }
+
+            // Add class requirements
+            if (quest.classRequirements != null)
+            {
+                foreach (var className in quest.classRequirements)
+                {
+                    if (!string.IsNullOrEmpty(className))
+                    {
+                        questData.class_requirements.Add(className);
+                    }
+                }
+            }
+
+            // Add faction requirements
+            if (quest.factionsRequirements != null)
+            {
+                foreach (var factionReq in quest.factionsRequirements)
+                {
+                    if (factionReq != null && !string.IsNullOrEmpty(factionReq.faction))
+                    {
+                        questData.faction_requirements.Add(new FactionRequirement
+                        {
+                            faction = factionReq.faction,
+                            faction_value = factionReq.factionValue
+                        });
+                    }
+                }
+            }
 
             // Set rewards
             questData.rewards = new QuestRewards
