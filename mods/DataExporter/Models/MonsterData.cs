@@ -33,4 +33,23 @@ public class MonsterData
     public int gold_max { get; set; }
     public float exp_multiplier { get; set; }
     public List<ItemDrop> drops { get; set; } = new();
+
+    // Movement and patrol
+    public float move_probability { get; set; }
+    public float move_distance { get; set; }
+    public bool is_patrolling { get; set; }
+    public List<Position> patrol_waypoints { get; set; } = new();
+
+    // Behavior flags
+    public bool yell_friends { get; set; }
+    public bool flee_on_low_hp { get; set; }
+    public bool no_aggro_monster { get; set; }
+
+    // Aggro messages
+    public List<string> aggro_messages { get; set; } = new();
+    public float aggro_message_probability { get; set; }
+
+    // Faction changes
+    public List<string> improve_faction { get; set; } = new();
+    public List<string> decrease_faction { get; set; } = new();
 }

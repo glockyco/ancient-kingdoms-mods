@@ -78,8 +78,64 @@ public class MonsterExporter : BaseExporter
                     : null,
                 gold_min = monster.lootGoldMin,
                 gold_max = monster.lootGoldMax,
-                exp_multiplier = monster.expMultiplier
+                exp_multiplier = monster.expMultiplier,
+
+                // Movement and patrol
+                move_probability = monster.moveProbability,
+                move_distance = monster.moveDistance,
+                is_patrolling = monster.isPatrolling,
+
+                // Behavior flags
+                yell_friends = monster.yellFriends,
+                flee_on_low_hp = monster.fleeOnLowHP,
+                no_aggro_monster = monster.noAggroMonster,
+
+                // Aggro messages
+                aggro_message_probability = monster.aggroMessageProbability
             };
+
+            // Export patrol waypoints
+            if (monster.waypointsPatrol != null && monster.waypointsPatrol.Length > 0)
+            {
+                foreach (var waypoint in monster.waypointsPatrol)
+                {
+                    monsterData.patrol_waypoints.Add(new Position(waypoint.x, waypoint.y, 0));
+                }
+            }
+
+            // Export aggro messages
+            if (monster.aggroMessages != null && monster.aggroMessages.Count > 0)
+            {
+                foreach (var msg in monster.aggroMessages)
+                {
+                    if (!string.IsNullOrEmpty(msg))
+                    {
+                        monsterData.aggro_messages.Add(msg);
+                    }
+                }
+            }
+
+            // Export faction changes
+            if (monster.improveFaction != null && monster.improveFaction.Count > 0)
+            {
+                foreach (var faction in monster.improveFaction)
+                {
+                    if (!string.IsNullOrEmpty(faction))
+                    {
+                        monsterData.improve_faction.Add(faction);
+                    }
+                }
+            }
+            if (monster.decreaseFaction != null && monster.decreaseFaction.Count > 0)
+            {
+                foreach (var faction in monster.decreaseFaction)
+                {
+                    if (!string.IsNullOrEmpty(faction))
+                    {
+                        monsterData.decrease_faction.Add(faction);
+                    }
+                }
+            }
 
             // Export drops
             if (monster.dropChances != null && monster.dropChances.Count > 0)
