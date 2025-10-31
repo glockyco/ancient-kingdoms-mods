@@ -7,6 +7,27 @@
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
+  <!-- Generate constants file with export path from Local.props -->
+  <Target Name="GenerateExportConfig" BeforeTargets="BeforeBuild">
+    <PropertyGroup>
+      <ExportConfigFile>$(MSBuildProjectDirectory)\ExportConfig.g.cs</ExportConfigFile>
+      <ExportConfigContent>// This file is auto-generated during build from Local.props
+// Do not edit manually - changes will be overwritten
+
+namespace DataExporter%3B
+
+internal static class ExportConfig
+{
+    public const string ExportPath = @"$(DATA_EXPORT_PATH)"%3B
+}</ExportConfigContent>
+    </PropertyGroup>
+    <WriteLinesToFile
+      File="$(ExportConfigFile)"
+      Lines="$(ExportConfigContent)"
+      Overwrite="true"
+      WriteOnlyWhenDifferent="true" />
+  </Target>
+
   <ItemGroup>
     <!-- MelonLoader -->
     <Reference Include="MelonLoader">

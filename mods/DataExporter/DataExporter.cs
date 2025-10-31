@@ -11,7 +11,7 @@ namespace DataExporter
 {
     public class DataExporter : MelonMod
     {
-        private const string ExportPath = @"E:\ancient-kingdoms-export";
+        private static readonly string ExportPath = ExportConfig.ExportPath;
 
         public override void OnInitializeMelon()
         {
