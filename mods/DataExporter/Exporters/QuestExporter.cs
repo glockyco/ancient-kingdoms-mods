@@ -70,6 +70,26 @@ public class QuestExporter : BaseExporter
             AddClassReward(questData, quest.rewardItemWizard, "Wizard");
             AddClassReward(questData, quest.rewardItemDruid, "Druid");
 
+            // Quest locations (objectives)
+            if (quest.questLocation != null && quest.questLocation.Length > 0)
+            {
+                foreach (var loc in quest.questLocation)
+                {
+                    if (loc != null)
+                    {
+                        questData.objectives.Add(new QuestObjective
+                        {
+                            type = "location",
+                            target_monster_id = null,
+                            target_item_id = null,
+                            amount = 1,
+                            zone_id = GetZoneIdFromByte((byte)loc.idZone),
+                            position = new Position(loc.location.x, loc.location.y, loc.location.z)
+                        });
+                    }
+                }
+            }
+
             questList.Add(questData);
         }
 
@@ -101,5 +121,18 @@ public class QuestExporter : BaseExporter
             return "location";
 
         return "general";
+    }
+
+    private string GetZoneIdFromByte(byte idZone)
+    {
+        if (Il2Cpp.ZoneInfo.zones != null && Il2Cpp.ZoneInfo.zones.ContainsKey(idZone))
+        {
+            var zone = Il2Cpp.ZoneInfo.zones[idZone];
+            if (zone != null && !string.IsNullOrEmpty(zone.name))
+            {
+                return zone.name.ToLowerInvariant().Replace(" ", "_");
+            }
+        }
+        return "unknown";
     }
 }
