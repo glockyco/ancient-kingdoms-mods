@@ -93,6 +93,10 @@ namespace DataExporter
                 var gatherItemExporter = new GatherItemExporter(LoggerInstance, ExportPath);
                 gatherItemExporter.Export();
 
+                // Export crafting recipes
+                var craftingRecipeExporter = new CraftingRecipeExporter(LoggerInstance, ExportPath);
+                craftingRecipeExporter.Export();
+
                 var elapsed = DateTime.Now - startTime;
 
                 LoggerInstance.Msg("========================================");
