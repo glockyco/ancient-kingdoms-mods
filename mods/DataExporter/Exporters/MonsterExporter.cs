@@ -149,7 +149,7 @@ public class MonsterExporter : BaseExporter
         }
 
         WriteJson(monsterList, "monsters.json");
-        Logger.Msg($"✓ Exported {monsterList.Count} unique monsters");
+        Logger.Msg($"✓ Exported {monsterList.Count} monsters");
     }
 
     private string GetMonsterZoneId(Il2Cpp.Monster monster)

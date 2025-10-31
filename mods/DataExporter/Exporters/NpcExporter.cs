@@ -155,7 +155,7 @@ public class NpcExporter : BaseExporter
         }
 
         WriteJson(npcList, "npcs.json");
-        Logger.Msg($"✓ Exported {npcList.Count} unique NPCs");
+        Logger.Msg($"✓ Exported {npcList.Count} NPCs");
     }
 
     private string GetNpcZoneId(Il2Cpp.Npc npc)
