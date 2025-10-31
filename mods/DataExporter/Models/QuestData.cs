@@ -37,6 +37,12 @@ public class GatherItemAmount
     public int amount { get; set; }
 }
 
+public class QuestLocation
+{
+    public int zone_id { get; set; }
+    public Position position { get; set; }
+}
+
 public class QuestData
 {
     // === Base ScriptableQuest fields (always present) ===
@@ -47,6 +53,10 @@ public class QuestData
     public int level_recommended { get; set; }
     public string start_npc_id { get; set; }
     public string end_npc_id { get; set; }
+    public int zone_id_final_npc { get; set; }
+    public int zone_id_quest_action { get; set; }
+    public List<QuestLocation> finish_quest_locations { get; set; } = new();
+    public string given_item_on_start_id { get; set; }
     public string predecessor_id { get; set; }
     public bool is_main_quest { get; set; }
     public bool is_epic_quest { get; set; }

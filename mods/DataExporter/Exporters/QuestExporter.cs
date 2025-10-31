@@ -29,13 +29,16 @@ public class QuestExporter : BaseExporter
 
             var questData = new QuestData
             {
-                id = quest.name.ToLowerInvariant().Replace(" ", "_"),
+                id = quest.idQuest,
                 name = quest.nameQuest ?? quest.name,
                 quest_type = DetermineQuestType(quest),
                 level_required = quest.requiredLevel,
                 level_recommended = quest.recommendedLevel,
                 start_npc_id = quest.startQuestNPC != null ? quest.startQuestNPC.name.ToLowerInvariant().Replace(" ", "_") : "",
                 end_npc_id = quest.finishQuestNPC != null ? quest.finishQuestNPC.name.ToLowerInvariant().Replace(" ", "_") : "",
+                zone_id_final_npc = quest.idZoneFinalNPC,
+                zone_id_quest_action = quest.idZoneQuestAction,
+                given_item_on_start_id = quest.givenItemOnStartQuest != null ? quest.givenItemOnStartQuest.name.ToLowerInvariant().Replace(" ", "_") : "",
                 predecessor_id = quest.predecessor != null && quest.predecessor.Length > 0 && quest.predecessor[0] != null
                     ? quest.predecessor[0].name.ToLowerInvariant().Replace(" ", "_")
                     : "",
@@ -66,6 +69,22 @@ public class QuestExporter : BaseExporter
                     if (!string.IsNullOrEmpty(className))
                     {
                         questData.class_requirements.Add(className);
+                    }
+                }
+            }
+
+            // Add finish quest locations
+            if (quest.finishQuestLocation != null)
+            {
+                foreach (var loc in quest.finishQuestLocation)
+                {
+                    if (loc != null)
+                    {
+                        questData.finish_quest_locations.Add(new QuestLocation
+                        {
+                            zone_id = loc.idZone,
+                            position = new Position(loc.location.x, loc.location.y, loc.location.z)
+                        });
                     }
                 }
             }
