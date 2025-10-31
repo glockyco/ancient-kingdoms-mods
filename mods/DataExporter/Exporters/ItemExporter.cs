@@ -96,6 +96,51 @@ public class ItemExporter : BaseExporter
                 };
             }
 
+            // Check for specialized item types
+            var mountItem = obj.TryCast<Il2Cpp.MountItem>();
+            if (mountItem != null)
+            {
+                itemData.mount_speed = mountItem.speedMount;
+            }
+
+            var foodItem = obj.TryCast<Il2Cpp.FoodItem>();
+            if (foodItem != null)
+            {
+                itemData.food_type = foodItem.typeFood ?? "unknown";
+                itemData.food_buff_level = foodItem.buffLevel;
+                if (foodItem.buffEffect != null)
+                {
+                    itemData.food_buff_id = foodItem.buffEffect.name.ToLowerInvariant().Replace(" ", "_");
+                }
+            }
+
+            var bookItem = obj.TryCast<Il2Cpp.BookItem>();
+            if (bookItem != null)
+            {
+                itemData.book_strength_gain = bookItem.strengthGain;
+                itemData.book_dexterity_gain = bookItem.dexterityGain;
+                itemData.book_constitution_gain = bookItem.constitutionGain;
+                itemData.book_intelligence_gain = bookItem.intelligenceGain;
+                itemData.book_wisdom_gain = bookItem.wisdomGain;
+                itemData.book_charisma_gain = bookItem.charismaGain;
+            }
+
+            var scrollItem = obj.TryCast<Il2Cpp.MonsterScrollItem>();
+            if (scrollItem != null && scrollItem.spawns != null && scrollItem.spawns.Length > 0)
+            {
+                foreach (var spawn in scrollItem.spawns)
+                {
+                    if (spawn.monster != null)
+                    {
+                        itemData.spawned_monsters.Add(new SpawnedMonster
+                        {
+                            monster_id = spawn.monster.name.ToLowerInvariant().Replace(" ", "_"),
+                            amount = spawn.amount
+                        });
+                    }
+                }
+            }
+
             itemList.Add(itemData);
         }
 

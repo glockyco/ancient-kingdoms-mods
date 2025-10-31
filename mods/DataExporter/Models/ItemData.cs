@@ -22,6 +22,31 @@ public class ItemData
 
     public string icon_path { get; set; }
     public string tooltip { get; set; }
+
+    // Mount-specific
+    public float? mount_speed { get; set; }
+
+    // Food-specific
+    public string food_buff_id { get; set; }
+    public string food_type { get; set; }
+    public int? food_buff_level { get; set; }
+
+    // Book-specific (stat tomes)
+    public int? book_strength_gain { get; set; }
+    public int? book_dexterity_gain { get; set; }
+    public int? book_constitution_gain { get; set; }
+    public int? book_intelligence_gain { get; set; }
+    public int? book_wisdom_gain { get; set; }
+    public int? book_charisma_gain { get; set; }
+
+    // Monster scroll-specific
+    public List<SpawnedMonster> spawned_monsters { get; set; } = new();
+}
+
+public class SpawnedMonster
+{
+    public string monster_id { get; set; }
+    public int amount { get; set; }
 }
 
 public class ItemStats
