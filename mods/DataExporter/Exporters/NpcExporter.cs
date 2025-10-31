@@ -68,7 +68,12 @@ public class NpcExporter : BaseExporter
                     is_quest_giver = npc.quests != null && npc.quests.quests != null && npc.quests.quests.Length > 0,
                     can_repair_equipment = npc.canRepairEquipment,
                     is_bank = npc.isBank
-                }
+                },
+                respawn_dungeon_id = npc.respawnDungeonId,
+                gold_required_respawn_dungeon = npc.goldRequiredRespawnDungeon,
+                respawn_probability = npc.probabilityRespawn,
+                can_hide_after_spawn = npc.canHideAfterSpawn,
+                respawn_time = npc.respawnTime
             };
 
             // Export quests offered

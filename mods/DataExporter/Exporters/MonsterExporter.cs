@@ -67,7 +67,12 @@ public class MonsterExporter : BaseExporter
                 is_boss = monster.isBoss,
                 is_elite = monster.isElite,
                 is_hunt = monster.isHunt,
+                does_respawn = monster.respawn,
                 respawn_time = (int)monster.respawnTime,
+                respawn_probability = monster.probabilityRespawn,
+                spawn_time_start = monster.startSpawnTime,
+                spawn_time_end = monster.endSpawnTime,
+                placeholder_spawn_probability = monster.probSpawnPH,
                 gold_min = monster.lootGoldMin,
                 gold_max = monster.lootGoldMax,
                 exp_multiplier = monster.expMultiplier

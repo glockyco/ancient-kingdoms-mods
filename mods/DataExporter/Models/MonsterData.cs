@@ -22,7 +22,12 @@ public class MonsterData
     public bool is_boss { get; set; }
     public bool is_elite { get; set; }
     public bool is_hunt { get; set; }
+    public bool does_respawn { get; set; }
     public int respawn_time { get; set; }
+    public float respawn_probability { get; set; }
+    public int spawn_time_start { get; set; }
+    public int spawn_time_end { get; set; }
+    public float placeholder_spawn_probability { get; set; }
     public int gold_min { get; set; }
     public int gold_max { get; set; }
     public float exp_multiplier { get; set; }

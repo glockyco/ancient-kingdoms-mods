@@ -26,6 +26,11 @@ public class NpcData
     public string faction { get; set; }
     public string race { get; set; }
     public NpcRoles roles { get; set; } = new();
+    public int respawn_dungeon_id { get; set; }
+    public int gold_required_respawn_dungeon { get; set; }
+    public float respawn_probability { get; set; }
+    public bool can_hide_after_spawn { get; set; }
+    public float respawn_time { get; set; }
     public List<string> quests_offered { get; set; } = new();
     public List<ItemSold> items_sold { get; set; } = new();
 }
