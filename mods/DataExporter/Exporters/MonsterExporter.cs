@@ -20,14 +20,24 @@ public class MonsterExporter : BaseExporter
         var type = Il2CppType.Of<Il2Cpp.Monster>();
         var monsters = Resources.FindObjectsOfTypeAll(type);
 
+        Logger.Msg($"Found {monsters.Length} monster objects total");
+
         var seenMonsters = new HashSet<string>();
         var monsterList = new List<MonsterData>();
+        var skippedNonScene = 0;
 
         foreach (var obj in monsters)
         {
             var monster = obj.TryCast<Il2Cpp.Monster>();
             if (monster == null || string.IsNullOrEmpty(monster.name))
                 continue;
+
+            // Skip objects not in a scene (prefabs, assets)
+            if (monster.gameObject == null || !monster.gameObject.scene.IsValid())
+            {
+                skippedNonScene++;
+                continue;
+            }
 
             var zoneId = GetMonsterZoneId(monster);
             var uniqueKey = $"{zoneId}|{monster.name}";
@@ -79,6 +89,8 @@ public class MonsterExporter : BaseExporter
 
             monsterList.Add(monsterData);
         }
+
+        Logger.Msg($"Skipped {skippedNonScene} non-scene objects (prefabs/assets)");
 
         WriteJson(monsterList, "monsters.json");
         Logger.Msg($"✓ Exported {monsterList.Count} unique monsters");

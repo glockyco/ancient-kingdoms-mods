@@ -20,14 +20,24 @@ public class NpcExporter : BaseExporter
         var type = Il2CppType.Of<Il2Cpp.Npc>();
         var npcs = Resources.FindObjectsOfTypeAll(type);
 
+        Logger.Msg($"Found {npcs.Length} NPC objects total");
+
         var seenNpcs = new HashSet<string>();
         var npcList = new List<NpcData>();
+        var skippedNonScene = 0;
 
         foreach (var obj in npcs)
         {
             var npc = obj.TryCast<Il2Cpp.Npc>();
             if (npc == null || string.IsNullOrEmpty(npc.name))
                 continue;
+
+            // Skip objects not in a scene (prefabs, assets)
+            if (npc.gameObject == null || !npc.gameObject.scene.IsValid())
+            {
+                skippedNonScene++;
+                continue;
+            }
 
             var zoneId = GetNpcZoneId(npc);
             var uniqueKey = $"{zoneId}|{npc.name}";
@@ -89,6 +99,8 @@ public class NpcExporter : BaseExporter
 
             npcList.Add(npcData);
         }
+
+        Logger.Msg($"Skipped {skippedNonScene} non-scene objects (prefabs/assets)");
 
         WriteJson(npcList, "npcs.json");
         Logger.Msg($"✓ Exported {npcList.Count} unique NPCs");
