@@ -281,12 +281,18 @@ Since all zones exist on a single "World" scene with real coordinates, we can cr
 **New Mod:** `MapScreenshotter` (separate from DataExporter)
 
 **Functionality:**
-1. Loads "World" scene
-2. Disables UI/HUD
-3. **Teleports/freezes player to origin and disables all entities** (clean map)
-4. Positions orthographic camera at fixed height looking down
-5. Takes grid of overlapping screenshots covering entire world
+1. Activates all zones via `ZoneInfo.singleton.fullZones` and `staticEnviroment`
+2. Disables UI/HUD via camera culling mask
+3. **Hides all entities** (monsters, NPCs, gather items) for clean map
+4. Creates dedicated orthographic camera (separate from main camera to avoid game script interference)
+5. Takes grid of **non-overlapping** 200-unit world tiles (1024x1024px each)
 6. Exports with world coordinate metadata
+
+**Implementation Notes:**
+- Uses RenderTexture (1024x1024) for offscreen rendering
+- Camera positioned at depth -50 looking down at XY plane
+- Optimized bounds: X[-880, 900] Y[-740, 1300] based on renderer analysis
+- Grid indices in filenames (world_x000_y000.png) for simple stitching
 
 **Note:** Monster/NPC positions are captured via DataExporter (Shift+F9), not shown in screenshots. Screenshots are just the terrain/environment.
 
@@ -294,30 +300,32 @@ Since all zones exist on a single "World" scene with real coordinates, we can cr
 
 **Output Format:**
 ```
-E:\ancient-kingdoms-export\screenshots\
+<DATA_EXPORT_PATH>\screenshots\
 ├── metadata.json              # Camera config + world bounds
-├── screenshot_x000_z000.png   # Top-left corner
-├── screenshot_x000_z100.png
-├── screenshot_x100_z000.png
+├── world_x000_y000.png        # Grid-based filenames (200-unit tiles, 1024x1024px each)
+├── world_x001_y000.png
+├── world_x000_y001.png
 └── ...
 ```
 
 **metadata.json:**
 ```json
 {
-  "camera_height": 200.0,
-  "orthographic_size": 50.0,
+  "timestamp": "2024-11-01T02:00:00.000Z",
+  "camera_height": 50.0,
+  "orthographic_size": 100.0,
+  "tile_resolution": 1024,
   "world_bounds": {
-    "min_x": -500.0,
-    "max_x": 2000.0,
-    "min_z": -300.0,
-    "max_z": 1500.0
+    "min_x": -880.0,
+    "max_x": 900.0,
+    "min_z": -740.0,
+    "max_z": 1300.0
   },
   "screenshots": [
     {
-      "file": "screenshot_x000_z000.png",
-      "world_position": {"x": 0.0, "z": 0.0},
-      "coverage": {"width": 100.0, "height": 100.0}
+      "file": "world_x000_y000.png",
+      "world_position": {"x": -780.0, "z": -640.0},
+      "coverage": {"width": 200.0, "height": 200.0}
     }
   ]
 }
@@ -325,7 +333,7 @@ E:\ancient-kingdoms-export\screenshots\
 
 ### Tile Generation Pipeline
 
-**Python Script:** `build_pipeline/generate_tiles.py`
+**Python Script:** `build-pipeline/generate_tiles.py`
 
 **Process:**
 1. Stitch screenshots into single large image (using world coordinates from metadata)
@@ -366,7 +374,7 @@ We'll monitor actual sizes and adjust `max_zoom` in config accordingly.
 ### Directory Structure
 
 ```
-build_pipeline/
+build-pipeline/
 ├── src/
 │   └── compendium/
 │       ├── __init__.py
@@ -442,7 +450,7 @@ icon_format = "webp"  # webp, png
 
 **Optional config file parameter:**
 ```bash
-# Use default config.toml in build_pipeline/
+# Use default config.toml in build-pipeline/
 uv run compendium build
 
 # Use custom config (for testing different setups)
@@ -1054,7 +1062,7 @@ export async function load({ params }) {
 
 **Build Pipeline (Python):**
 ```bash
-cd build_pipeline
+cd build-pipeline
 uv sync                         # Install dependencies
 cp config.toml.example config.toml  # Copy config template
 # Edit config.toml with your paths
@@ -1093,14 +1101,14 @@ cd website && pnpm lint-staged
 }
 ```
 
-For Python (in `build_pipeline/`), add separate git hook:
+For Python (in `build-pipeline/`), add separate git hook:
 **`.husky/pre-commit`** (extended):
 ```bash
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
 # Lint Python
-cd build_pipeline && uv run ruff check --fix && uv run ruff format
+cd build-pipeline && uv run ruff check --fix && uv run ruff format
 
 # Lint TypeScript
 cd website && pnpm lint-staged
@@ -1113,7 +1121,7 @@ cd website && pnpm lint-staged
 # 1. In-game: Press Shift+F9 (export data) + Shift+F10 (take screenshots)
 
 # 2. Build everything + deploy to website
-cd build_pipeline
+cd build-pipeline
 compendium all
 ```
 
@@ -1174,7 +1182,7 @@ pnpm dev                   # Start dev server at http://localhost:5173
 # 2. (Optional) Press Shift+F10 if map changed
 
 # 3. Rebuild + deploy
-cd build_pipeline
+cd build-pipeline
 compendium all
 
 # 4. Git commit + push → auto-deploy to Cloudflare Pages
@@ -1196,9 +1204,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v3
-      - run: cd build_pipeline && uv sync
-      - run: cd build_pipeline && uv run ruff check
-      - run: cd build_pipeline && uv run ruff format --check
+      - run: cd build-pipeline && uv sync
+      - run: cd build-pipeline && uv run ruff check
+      - run: cd build-pipeline && uv run ruff format --check
 
   lint-typescript:
     runs-on: ubuntu-latest
