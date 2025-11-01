@@ -1,0 +1,15 @@
+# Python virtual environment (uv)
+.venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+*.egg-info/
+dist/
+build/
+
+# uv lock file (commit this)
+# uv.lock is intentionally NOT ignored - it should be committed for reproducibility

@@ -1,0 +1,19 @@
+[project]
+name = "ancient-kingdoms-compendium"
+version = "0.1.0"
+description = "Build pipeline for Ancient Kingdoms Compendium"
+requires-python = ">=3.12"
+dependencies = [
+    "typer>=0.12.0",
+    "rich>=13.7.0",
+    "pydantic>=2.5.0",
+    "pillow>=10.0.0",
+    "unitypy>=1.10.0",
+]
+
+[project.scripts]
+compendium = "compendium.cli:app"
+
+[tool.uv]
+dev-dependencies = []
+package = true

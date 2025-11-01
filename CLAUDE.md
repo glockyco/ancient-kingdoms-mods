@@ -47,21 +47,40 @@ This repository contains MelonLoader mods for Ancient Kingdoms, an IL2CPP Unity 
 
 Each mod is independent and can be used standalone or together.
 
+## Configuration
+
+The project uses **two configuration files**:
+
+**`Local.props`** (MSBuild/C# projects):
+- Game installation path only
+- Used by build-tool and mod projects
+
+**`config.toml`** (Python build-pipeline):
+- All other settings (export paths, tile generation, icons, etc.)
+- Used by build-pipeline CLI tool
+
+**Setup:**
+```bash
+cp Local.props.example Local.props
+cp config.toml.example config.toml
+# Edit both files with your paths
+```
+
+Both files are gitignored. Templates are committed.
+
 ## Getting Started
 
 ### 1. Initial Setup
 
-Copy the environment configuration file:
+Copy configuration templates and edit paths:
 ```bash
 cp Local.props.example Local.props
+cp config.toml.example config.toml
 ```
 
-Edit `Local.props` and set your game installation path:
-```
-ANCIENT_KINGDOMS_PATH=E:\SteamLibrary\steamapps\common\Ancient Kingdoms
-```
+**Local.props:** Set `ANCIENT_KINGDOMS_PATH` to your game installation.
 
-The other paths are automatically derived from `ANCIENT_KINGDOMS_PATH` and usually don't need changes.
+**config.toml:** Paths default to repository-relative locations and usually don't need changes.
 
 ### 2. Building Mods
 

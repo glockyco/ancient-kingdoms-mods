@@ -1,5 +1,6 @@
 # Local configuration
 Local.props
+config.toml
 
 # Generated files
 *.g.cs

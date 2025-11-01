@@ -1,0 +1,60 @@
+# Ancient Kingdoms Compendium - Central Configuration
+#
+# Copy this file to config.toml and update paths for your system.
+# This configuration is used by the Python build-pipeline.
+#
+# For C# build configuration, see Local.props.example
+
+[game]
+# Game installation directory
+install_path = "E:/SteamLibrary/steamapps/common/Ancient Kingdoms"
+
+[paths]
+# Data export directory (where mods write JSON/screenshots)
+# This is set in mods/DataExporter/ExportConfig.g.cs
+export_dir = "./exported-data"
+
+# Website source directory (relative to repository root)
+website_dir = "./website"
+
+# Build output directory (relative to repository root)
+# Intermediate artifacts are stored here before deployment
+build_dir = "./build"
+
+[build_pipeline]
+# Database settings
+db_name = "compendium.db"
+
+# Map tile generation
+[build_pipeline.tiles]
+min_zoom = 0
+max_zoom = 6
+tile_size = 256
+
+# JPEG quality for map tiles (1-100, higher = better quality but larger files)
+# Recommended: 85 for good balance between quality and size
+jpeg_quality = 85
+
+# Icon extraction from Unity assets
+[build_pipeline.icons]
+# Enable icon extraction (requires UnityPy)
+enabled = true
+
+# Icon format: webp (smaller) or png (more compatible)
+format = "webp"
+
+# Icon size in pixels (square)
+size = 64
+
+# Map bounds (from MapScreenshotter)
+# These are hardcoded in MapScreenshotter.cs but documented here for reference
+# Update these if you change the bounds in the C# mod
+[map]
+bounds_min_x = -880.0
+bounds_max_x = 900.0
+bounds_min_y = -740.0
+bounds_max_y = 1300.0
+
+# Screenshot tile settings (from MapScreenshotter)
+tile_world_size = 200.0
+tile_resolution = 1024
