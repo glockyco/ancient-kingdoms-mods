@@ -1,0 +1,104 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <AssemblyName>MapScreenshotter</AssemblyName>
+    <RootNamespace>MapScreenshotter</RootNamespace>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+  <!-- Generate constants file with screenshot output path from Local.props -->
+  <Target Name="GenerateScreenshotConfig" BeforeTargets="BeforeBuild">
+    <PropertyGroup>
+      <ScreenshotConfigFile>$(MSBuildProjectDirectory)\ScreenshotConfig.g.cs</ScreenshotConfigFile>
+      <ScreenshotConfigContent>// This file is auto-generated during build from Local.props
+// Do not edit manually - changes will be overwritten
+
+namespace MapScreenshotter%3B
+
+internal static class ScreenshotConfig
+{
+    public const string ScreenshotPath = @"$(DATA_EXPORT_PATH)\screenshots"%3B
+}</ScreenshotConfigContent>
+    </PropertyGroup>
+    <WriteLinesToFile
+      File="$(ScreenshotConfigFile)"
+      Lines="$(ScreenshotConfigContent)"
+      Overwrite="true"
+      WriteOnlyWhenDifferent="true" />
+  </Target>
+
+  <ItemGroup>
+    <!-- MelonLoader -->
+    <Reference Include="MelonLoader">
+      <HintPath>$(MelonLoaderPath)\net6\MelonLoader.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+
+    <!-- Unity Engine -->
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>$(Il2CppAssembliesPath)\UnityEngine.CoreModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+
+    <Reference Include="UnityEngine.ScreenCaptureModule">
+      <HintPath>$(Il2CppAssembliesPath)\UnityEngine.ScreenCaptureModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+
+    <Reference Include="UnityEngine.IMGUIModule">
+      <HintPath>$(Il2CppAssembliesPath)\UnityEngine.IMGUIModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+
+    <Reference Include="UnityEngine.ImageConversionModule">
+      <HintPath>$(Il2CppAssembliesPath)\UnityEngine.ImageConversionModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+
+    <!-- Game Assembly -->
+    <Reference Include="Assembly-CSharp">
+      <HintPath>$(Il2CppAssembliesPath)\Assembly-CSharp.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+
+    <!-- IL2CPP Dependencies -->
+    <Reference Include="Il2Cppmscorlib">
+      <HintPath>$(Il2CppAssembliesPath)\Il2Cppmscorlib.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+
+    <Reference Include="Il2CppInterop.Runtime">
+      <HintPath>$(MelonLoaderPath)\net6\Il2CppInterop.Runtime.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+
+    <!-- Unity Input System -->
+    <Reference Include="Unity.InputSystem">
+      <HintPath>$(Il2CppAssembliesPath)\Unity.InputSystem.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+
+    <!-- Mirror Networking -->
+    <Reference Include="Il2CppMirror">
+      <HintPath>$(Il2CppAssembliesPath)\Il2CppMirror.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+
+    <!-- Cinemachine -->
+    <Reference Include="Il2CppCinemachine">
+      <HintPath>$(Il2CppAssembliesPath)\Il2CppCinemachine.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+
+    <!-- Unity UI -->
+    <Reference Include="UnityEngine.UI">
+      <HintPath>$(Il2CppAssembliesPath)\UnityEngine.UI.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+
+    <!-- JSON Serialization -->
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+
+</Project>
