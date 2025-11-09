@@ -97,6 +97,10 @@ namespace DataExporter
                 var craftingRecipeExporter = new CraftingRecipeExporter(LoggerInstance, ExportPath);
                 craftingRecipeExporter.Export();
 
+                // Export summon triggers
+                var summonTriggerExporter = new SummonTriggerExporter(LoggerInstance, ExportPath);
+                summonTriggerExporter.Export();
+
                 var elapsed = DateTime.Now - startTime;
 
                 LoggerInstance.Msg("========================================");
