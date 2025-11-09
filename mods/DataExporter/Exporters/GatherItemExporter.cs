@@ -38,7 +38,7 @@ public class GatherItemExporter : BaseExporter
                 continue;
 
             var isTemplate = gatherItem.gameObject == null || !gatherItem.gameObject.scene.IsValid();
-            var zoneId = isTemplate ? "unknown" : GetZoneIdFromPosition(gatherItem.transform.position, zoneTriggers);
+            var zoneId = isTemplate ? null : GetZoneIdFromPosition(gatherItem.transform.position, zoneTriggers);
 
             if (isTemplate)
                 templateCount++;
