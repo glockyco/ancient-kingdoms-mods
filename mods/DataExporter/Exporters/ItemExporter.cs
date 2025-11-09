@@ -40,6 +40,7 @@ public class ItemExporter : BaseExporter
                 faction_required_to_buy = scriptableItem.requiredFactionToBuy,
                 adventuring_level_needed = scriptableItem.adventuringLevelNeeded,
                 is_key = scriptableItem.isKey,
+                ignore_journal = scriptableItem.ignoreJournal,
                 is_chest_key = scriptableItem.isChestKey,
                 has_gather_quest = scriptableItem.hasGatherQuest,
 

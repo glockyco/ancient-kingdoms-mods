@@ -16,6 +16,7 @@ public class ItemData
     public int faction_required_to_buy { get; set; }
     public float adventuring_level_needed { get; set; }
     public bool is_key { get; set; }
+    public bool ignore_journal { get; set; }
     public bool is_chest_key { get; set; }
     public bool has_gather_quest { get; set; }
 
