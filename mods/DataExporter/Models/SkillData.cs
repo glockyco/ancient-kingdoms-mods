@@ -51,7 +51,6 @@ public class SkillData
     public bool followup_default_attack { get; set; }
 
     // UI
-    public string spell_runic_name { get; set; }
     public string skill_aggro_message { get; set; }
     public string tooltip { get; set; }
     public string icon_path { get; set; }
@@ -72,6 +71,9 @@ public class SkillData
     public LinearStatBonus aggro { get; set; }
     public float break_armor_prob { get; set; }
     public bool affects_random_target { get; set; }  // AreaDamageSkill only
+    public float area_object_size { get; set; }  // AreaObjectSpawnSkill only
+    public float area_object_delay_damage { get; set; }  // AreaObjectSpawnSkill only
+    public int area_objects_to_spawn { get; set; }  // AreaObjectSpawnSkill only
 
     // === HealSkill fields (when skill_type contains "heal") ===
     public LinearStatBonus heals_health { get; set; }
@@ -95,6 +97,7 @@ public class SkillData
     public bool is_cold_debuff { get; set; }
     public bool is_disease_debuff { get; set; }
     public bool is_melee_debuff { get; set; }
+    public bool is_magic_debuff { get; set; }
     public bool is_cleanse { get; set; }
     public bool is_dispel { get; set; }
     public bool is_ward { get; set; }

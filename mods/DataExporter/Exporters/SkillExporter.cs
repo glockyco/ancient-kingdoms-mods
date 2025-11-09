@@ -64,7 +64,6 @@ public class SkillExporter : BaseExporter
                 is_mercenary_skill = skill.isMercenarySkill,
                 is_pet_skill = skill.isPetSkill,
                 followup_default_attack = skill.followupDefaultAttack,
-                spell_runic_name = skill.spellRunicName ?? "",
                 skill_aggro_message = skill.skillAggroMessage ?? "",
                 tooltip = skill.ToolTip(1, false, false) ?? "",
                 icon_path = skill.image != null ? skill.image.name : null
@@ -89,6 +88,7 @@ public class SkillExporter : BaseExporter
         var damageSkill = skill.TryCast<Il2Cpp.DamageSkill>();
         if (damageSkill != null)
         {
+            if (skill.TryCast<Il2Cpp.AreaObjectSpawnSkill>() != null) return "area_object_spawn";
             if (skill.TryCast<Il2Cpp.AreaDamageSkill>() != null) return "area_damage";
             if (skill.TryCast<Il2Cpp.FrontalDamageSkill>() != null) return "frontal_damage";
             if (skill.TryCast<Il2Cpp.FrontalProjectilesSkill>() != null) return "frontal_projectiles";
@@ -111,7 +111,7 @@ public class SkillExporter : BaseExporter
             // Check debuff flags to classify as buff or debuff
             bool isDebuff = buffSkill.isPoisonDebuff || buffSkill.isFireDebuff ||
                            buffSkill.isColdDebuff || buffSkill.isDiseaseDebuff ||
-                           buffSkill.isMeleeDebuff;
+                           buffSkill.isMeleeDebuff || buffSkill.isMagicDebuff;
 
             if (skill.TryCast<Il2Cpp.AreaBuffSkill>() != null) return isDebuff ? "area_debuff" : "area_buff";
             if (skill.TryCast<Il2Cpp.AreaDebuffSkill>() != null) return "area_debuff";
@@ -190,6 +190,15 @@ public class SkillExporter : BaseExporter
         if (areaDamageSkill != null)
         {
             skillData.affects_random_target = areaDamageSkill.affectsRandomTarget;
+        }
+
+        // AreaObjectSpawnSkill specific
+        var areaObjectSpawnSkill = skill.TryCast<Il2Cpp.AreaObjectSpawnSkill>();
+        if (areaObjectSpawnSkill != null)
+        {
+            skillData.area_object_size = areaObjectSpawnSkill.sizeObject;
+            skillData.area_object_delay_damage = areaObjectSpawnSkill.delayDamage;
+            skillData.area_objects_to_spawn = areaObjectSpawnSkill.objectsToSpawn;
         }
     }
 
@@ -276,6 +285,7 @@ public class SkillExporter : BaseExporter
             skillData.is_cold_debuff = buffSkill.isColdDebuff;
             skillData.is_disease_debuff = buffSkill.isDiseaseDebuff;
             skillData.is_melee_debuff = buffSkill.isMeleeDebuff;
+            skillData.is_magic_debuff = buffSkill.isMagicDebuff;
             skillData.is_cleanse = buffSkill.isCleanseSpell;
             skillData.is_dispel = buffSkill.isDispel;
             skillData.is_ward = buffSkill.isWard;
