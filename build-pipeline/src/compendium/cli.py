@@ -44,8 +44,9 @@ def main(
 @app.command()
 def build(ctx: typer.Context):
     """Build SQLite database from JSON exports."""
-    console.print("[yellow]build command not yet implemented[/yellow]")
-    console.print(f"Config loaded: {len(ctx.obj)} sections")
+    from compendium.commands import build as build_cmd
+
+    build_cmd.run(ctx.obj)
 
 
 @app.command()

@@ -4,6 +4,8 @@ import tomllib
 from pathlib import Path
 from typing import Any
 
+from compendium.utils import get_repo_root
+
 
 def load_config(config_path: Path | None = None) -> dict[str, Any]:
     """Load configuration from TOML file.
@@ -19,10 +21,7 @@ def load_config(config_path: Path | None = None) -> dict[str, Any]:
         tomllib.TOMLDecodeError: If config file is invalid TOML.
     """
     if config_path is None:
-        # Default: look for config.toml in repository root
-        # build-pipeline/src/compendium/config.py -> ../../..
-        repo_root = Path(__file__).parent.parent.parent.parent
-        config_path = repo_root / "config.toml"
+        config_path = get_repo_root() / "config.toml"
 
     if not config_path.exists():
         raise FileNotFoundError(
@@ -50,5 +49,4 @@ def resolve_path(config: dict[str, Any], path_str: str) -> Path:
         return path
 
     # Resolve relative to repository root
-    repo_root = Path(__file__).parent.parent.parent.parent
-    return (repo_root / path).resolve()
+    return (get_repo_root() / path).resolve()
