@@ -42,7 +42,7 @@ public class QuestExporter : BaseExporter
                 zone_id_quest_action = quest.idZoneQuestAction,
                 given_item_on_start_id = quest.givenItemOnStartQuest != null ? quest.givenItemOnStartQuest.name.ToLowerInvariant().Replace(" ", "_") : null,
                 predecessor_id = quest.predecessor != null && quest.predecessor.Length > 0 && quest.predecessor[0] != null
-                    ? quest.predecessor[0].name.ToLowerInvariant().Replace(" ", "_")
+                    ? quest.predecessor[0].idQuest
                     : null,
                 is_main_quest = quest.mainQuest,
                 is_epic_quest = quest.epicQuest,
