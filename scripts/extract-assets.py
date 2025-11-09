@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """AssetRipper automation script for Ancient Kingdoms.
 
 This script automates the extraction of Unity assets from the Ancient Kingdoms
@@ -273,6 +274,16 @@ class AssetRipper:
 
 def main():
     """Main entry point."""
+    # Fix Windows console encoding for Unicode characters
+    import sys
+    if sys.platform == "win32":
+        try:
+            sys.stdout.reconfigure(encoding='utf-8')
+            sys.stderr.reconfigure(encoding='utf-8')
+        except AttributeError:
+            import io
+            sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+            sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
     # Configuration
     assetripper_path = Path(os.environ.get(
         "ASSETRIPPER_PATH",
