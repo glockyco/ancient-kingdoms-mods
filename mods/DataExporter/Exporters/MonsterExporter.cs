@@ -41,7 +41,7 @@ public class MonsterExporter : BaseExporter
             {
                 // Identity
                 id = isTemplate
-                    ? $"{monster.name.ToLowerInvariant().Replace(" ", "_")}_template"
+                    ? monster.name.ToLowerInvariant().Replace(" ", "_")
                     : $"{monster.name.ToLowerInvariant().Replace(" ", "_")}_{zoneId}_{monster.GetInstanceID()}",
                 name = monster.name,
                 zone_id = zoneId,

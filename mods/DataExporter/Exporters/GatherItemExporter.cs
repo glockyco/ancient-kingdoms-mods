@@ -44,7 +44,7 @@ public class GatherItemExporter : BaseExporter
                 templateCount++;
 
             var id = isTemplate
-                ? $"{gatherItem.name.ToLowerInvariant().Replace(" ", "_")}_template"
+                ? gatherItem.name.ToLowerInvariant().Replace(" ", "_")
                 : $"{gatherItem.name.ToLowerInvariant().Replace(" ", "_")}_{zoneId}_{gatherItem.GetInstanceID()}";
             var name = string.IsNullOrEmpty(gatherItem.nameGatherItem) ? gatherItem.name : gatherItem.nameGatherItem;
 

@@ -41,7 +41,7 @@ public class NpcExporter : BaseExporter
             {
                 // Identity
                 id = isTemplate
-                    ? $"{npc.name.ToLowerInvariant().Replace(" ", "_")}_template"
+                    ? npc.name.ToLowerInvariant().Replace(" ", "_")
                     : $"{npc.name.ToLowerInvariant().Replace(" ", "_")}_{zoneId}_{npc.GetInstanceID()}",
                 name = npc.name,
                 zone_id = zoneId,
