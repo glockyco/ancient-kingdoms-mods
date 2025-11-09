@@ -183,6 +183,7 @@ Converts JSON exports to SQLite database.
 - `{export_dir}/zone_triggers.json`
 - `{export_dir}/gather_items.json`
 - `{export_dir}/crafting_recipes.json`
+- `{export_dir}/summon_triggers.json`
 
 **Output:**
 - `{build_dir}/compendium.db` - SQLite database with FTS5 search

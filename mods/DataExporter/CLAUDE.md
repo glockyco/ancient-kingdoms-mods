@@ -20,6 +20,7 @@ The mod exports the following game data:
 - **zone_triggers.json** - Zone boundaries and environmental settings
 - **gather_items.json** - Gathering nodes (type flags, tool requirements, random drops, positions)
 - **crafting_recipes.json** - Crafting recipes (materials, results, station types)
+- **summon_triggers.json** - Summon triggers (boss summon mechanics, placeholder relationships)
 
 ## Architecture
 
@@ -56,6 +57,7 @@ JSON file (written to disk)
 - `ZoneTriggerExporter.cs` - Zone boundary triggers
 - `GatherItemExporter.cs` - Gathering nodes with type flags and tool requirements
 - `CraftingRecipeExporter.cs` - Crafting recipes
+- `SummonTriggerExporter.cs` - Summon triggers and placeholder relationships
 
 **Models/** - Data transfer objects
 - Plain C# classes with JSON-serializable properties
