@@ -15,7 +15,6 @@ The mod exports the following game data:
 - **items.json** - Items (stats, requirements, prices, quality, mount speed, food buffs, book stat gains, monster scroll spawns)
 - **quests.json** - Quests (requirements, rewards, quest chains, location objectives)
 - **skills.json** - Skills (costs, cooldowns, requirements, prerequisites)
-- **buffs.json** - Buffs/debuffs (duration, category, effect flags)
 - **portals.json** - Portal locations and destinations
 - **zone_info.json** - Zone metadata (level requirements, weather, descriptions)
 - **zone_triggers.json** - Zone boundaries and environmental settings
@@ -52,7 +51,6 @@ JSON file (written to disk)
 - `ItemExporter.cs` - Item definitions including mount/food/book/scroll specializations
 - `QuestExporter.cs` - Quest data including location objectives
 - `SkillExporter.cs` - Skill definitions
-- `BuffExporter.cs` - Buff/debuff effects
 - `PortalExporter.cs` - Portal locations with automatic destination zone detection
 - `ZoneInfoExporter.cs` - Zone metadata from ZoneInfo.zones
 - `ZoneTriggerExporter.cs` - Zone boundary triggers
