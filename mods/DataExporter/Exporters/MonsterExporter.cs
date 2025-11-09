@@ -57,8 +57,8 @@ public class MonsterExporter : BaseExporter
                 // Base stats
                 level = monster.level.current,
                 health = monster.health.max,
-                typeName = monster.typeMonster ?? "Unknown",
-                className = monster.classMonster ?? "Unknown",
+                type_name = monster.typeMonster ?? "Unknown",
+                class_name = monster.classMonster ?? "Unknown",
 
                 // Classification flags
                 is_boss = monster.isBoss,

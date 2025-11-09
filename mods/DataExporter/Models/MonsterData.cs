@@ -20,8 +20,8 @@ public class MonsterData
     // Base stats
     public int level { get; set; }
     public int health { get; set; }
-    public string typeName { get; set; }
-    public string className { get; set; }
+    public string type_name { get; set; }
+    public string class_name { get; set; }
 
     // Classification flags
     public bool is_boss { get; set; }
