@@ -82,7 +82,9 @@ def validate(ctx: typer.Context):
 @app.command()
 def stats(ctx: typer.Context):
     """Show database statistics."""
-    console.print("[yellow]stats command not yet implemented[/yellow]")
+    from compendium.commands import stats as stats_cmd
+
+    stats_cmd.run(ctx.obj)
 
 
 @app.command()
