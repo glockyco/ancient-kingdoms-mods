@@ -42,20 +42,20 @@
 These need migration into the proper `build-pipeline/` structure below.
 
 ### Project Setup
-- [ ] Create `build-pipeline/` directory structure
-- [ ] Migrate tools/pyproject.toml → build-pipeline/pyproject.toml with full dependencies (uv, Typer, Rich, Pydantic, Pillow, tomli, UnityPy)
-- [ ] Create `config.toml.example` template
-- [ ] Create `.python-version` file
+- [x] Create `build-pipeline/` directory structure
+- [x] Migrate tools/pyproject.toml → build-pipeline/pyproject.toml with full dependencies (uv, Typer, Rich, Pydantic, Pillow, UnityPy)
+- [x] Create `config.toml.example` template
+- [x] Create `.python-version` file
 
 ### CLI Framework
-- [ ] Implement `compendium/cli.py` with Typer
-- [ ] Implement `compendium/config.py` (load TOML config)
-- [ ] Implement `compendium/models.py` (Pydantic validation models)
-- [ ] Add `--config` option for custom config files
+- [x] Implement `compendium/cli.py` with Typer
+- [x] Implement `compendium/config.py` (load TOML config)
+- [x] Implement `compendium/models.py` (Pydantic validation models)
+- [x] Add `--config` option for custom config files
 
 ### Core Commands
-- [ ] Implement `compendium build` (JSON → SQLite)
-- [ ] Create `schema.sql` with full database schema
+- [x] Implement `compendium build` (JSON → SQLite)
+- [x] Create `schema.sql` with full database schema
 - [ ] Implement `compendium tiles` (screenshots → tile pyramid)
   - [ ] Migrate tools/stitch_screenshots.py logic
   - [ ] Add tile pyramid generation (zoom levels 0-6)
@@ -64,7 +64,7 @@ These need migration into the proper `build-pipeline/` structure below.
 - [ ] Implement `compendium types` (SQLite → TypeScript types)
 - [ ] Implement `compendium deploy` (copy to website)
 - [ ] Implement `compendium validate` (JSON validation only)
-- [ ] Implement `compendium stats` (database statistics)
+- [x] Implement `compendium stats` (database statistics)
 - [ ] Implement `compendium all` (run everything)
 
 ### Testing
