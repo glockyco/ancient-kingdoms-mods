@@ -98,7 +98,7 @@ These need migration into the proper `build-pipeline/` structure below.
 - [x] Add +layout.ts with prerender=true
 - [x] Create website/CLAUDE.md documentation
 - [x] Configure Tailwind CSS v4.1 (tailwindcss, @tailwindcss/postcss, postcss)
-- [ ] Install and configure shadcn-svelte (component library)
+- [x] Install and configure shadcn-svelte (component library)
 - [ ] Set up light/dark theme system (mode-watcher or similar)
 - [ ] Configure ESLint + Prettier (with Svelte plugins)
 - [ ] Set up Husky + lint-staged for pre-commit hooks:
