@@ -40,3 +40,6 @@ packages/
 
 # VS Code
 .vscode/
+
+# Build pipeline output
+build/
