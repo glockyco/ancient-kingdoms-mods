@@ -37,15 +37,43 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This repository contains MelonLoader mods for Ancient Kingdoms, an IL2CPP Unity game.
+This repository contains:
+1. **MelonLoader Mods** - In-game mods for Ancient Kingdoms (IL2CPP Unity game)
+2. **Build Pipeline** - Python CLI for processing game data exports
+3. **Website** - Static compendium site for browsing game data
 
-**Available Mods:**
+### Subprojects
+
+Each subproject has its own `CLAUDE.md` with detailed documentation:
+
+**Mods** (`mods/*/`):
 - **BossTracker** - Tracks boss/elite monsters and displays respawn timers in a draggable UI panel
 - **DataExporter** - Exports game data (monsters, NPCs, items, quests, skills, zones, portals) to JSON files
 - **MapEnhancer** - Enhances map visibility by enabling Veteran Awareness and color-coding monsters
+- **MapScreenshotter** - Captures high-resolution map screenshots with grid-based rendering
+- **MapTeleporter** - Alt+click teleportation on map
 - **MonsterRespawner** - Allows instant respawning of dead monsters via clickable world-space markers
+- **HierarchyLogger** - Development utility for logging Unity hierarchy
 
-Each mod is independent and can be used standalone or together.
+See individual `mods/*/CLAUDE.md` files for mod-specific details.
+
+**Build Pipeline** (`build-pipeline/`):
+- Python CLI tool for processing game data exports
+- Transforms JSON → SQLite database with FTS5 search
+- Generates map tiles from screenshots
+- Extracts game icons using UnityPy
+- See `build-pipeline/CLAUDE.md` for architecture details
+
+**Website** (`website/`):
+- SvelteKit static site for browsing game data
+- Client-side SQLite with Leaflet map integration
+- Deployed to Cloudflare Pages
+- See `website/CLAUDE.md` for development workflow
+
+Each subproject is independent but they work together in a pipeline:
+```
+Game → Mods (export data) → Build Pipeline (process) → Website (display)
+```
 
 ## Configuration
 
