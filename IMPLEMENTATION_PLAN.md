@@ -97,7 +97,7 @@ These need migration into the proper `build-pipeline/` structure below.
 - [x] Configure svelte.config.js for static build
 - [x] Add +layout.ts with prerender=true
 - [x] Create website/CLAUDE.md documentation
-- [ ] Configure Tailwind CSS
+- [x] Configure Tailwind CSS v4.1 (tailwindcss, @tailwindcss/postcss, postcss)
 - [ ] Install and configure shadcn-svelte (component library)
 - [ ] Set up light/dark theme system (mode-watcher or similar)
 - [ ] Configure ESLint + Prettier (with Svelte plugins)
