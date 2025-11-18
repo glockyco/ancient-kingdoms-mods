@@ -91,9 +91,12 @@ These need migration into the proper `build-pipeline/` structure below.
 **Target: Gamer-friendly aesthetic (cool/fancy) with functional focus**
 
 ### Project Setup
-- [ ] Initialize SvelteKit project with TypeScript
-- [ ] Install @sveltejs/adapter-static for Cloudflare Pages
-- [ ] Set up pnpm workspace
+- [x] Initialize SvelteKit project with TypeScript
+- [x] Install @sveltejs/adapter-static for Cloudflare Pages
+- [x] Set up pnpm workspace
+- [x] Configure svelte.config.js for static build
+- [x] Add +layout.ts with prerender=true
+- [x] Create website/CLAUDE.md documentation
 - [ ] Configure Tailwind CSS
 - [ ] Install and configure shadcn-svelte (component library)
 - [ ] Set up light/dark theme system (mode-watcher or similar)
@@ -107,7 +110,6 @@ These need migration into the proper `build-pipeline/` structure below.
   - [ ] sql.js-httpvfs (client-side SQLite)
   - [ ] Leaflet (map)
   - [ ] Lucide Svelte (icons)
-- [ ] Configure svelte.config.js for static build
 - [ ] Set up proper paths.base for deployment
 
 ### Design System
