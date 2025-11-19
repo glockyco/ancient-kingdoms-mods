@@ -2,7 +2,19 @@
   "name": "ancient-kingdoms-mods",
   "private": true,
   "scripts": {
-    "prepare": "husky"
+    "prepare": "husky",
+    "dev": "pnpm --filter website dev",
+    "build": "pnpm --filter website build",
+    "preview": "pnpm --filter website preview",
+    "lint": "pnpm lint:ts && pnpm lint:py",
+    "lint:ts": "pnpm --filter website lint",
+    "lint:py": "cd build-pipeline && uv run ruff check .",
+    "format": "pnpm format:ts && pnpm format:py",
+    "format:ts": "pnpm --filter website format",
+    "format:py": "cd build-pipeline && uv run ruff format .",
+    "check": "pnpm check:ts && pnpm check:py",
+    "check:ts": "pnpm --filter website check",
+    "check:py": "cd build-pipeline && uv run mypy ."
   },
   "packageManager": "pnpm@10.22.0",
   "devDependencies": {
