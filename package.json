@@ -1,0 +1,12 @@
+{
+  "name": "ancient-kingdoms-mods",
+  "private": true,
+  "scripts": {
+    "prepare": "husky"
+  },
+  "packageManager": "pnpm@10.22.0",
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.6"
+  }
+}

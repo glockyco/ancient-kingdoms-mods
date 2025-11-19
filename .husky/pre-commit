@@ -1,0 +1,1 @@
+cd website && pnpm exec lint-staged

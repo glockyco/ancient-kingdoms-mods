@@ -49,3 +49,6 @@ exported-data/
 
 # macOS
 .DS_Store
+
+# Node.js (root workspace)
+node_modules/
