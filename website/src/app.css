@@ -37,6 +37,18 @@
   --sidebar-accent-foreground: oklch(0.208 0.042 265.755);
   --sidebar-border: oklch(0.929 0.013 255.508);
   --sidebar-ring: oklch(0.704 0.04 256.788);
+
+  /* Item quality colors (0-4) */
+  --quality-0: oklch(0.6 0.02 264);
+  --quality-1: oklch(0.65 0.15 145);
+  --quality-2: oklch(0.6 0.18 250);
+  --quality-3: oklch(0.6 0.2 295);
+  --quality-4: oklch(0.7 0.2 50);
+
+  /* Monster type colors */
+  --monster-regular: oklch(0.6 0.22 25);
+  --monster-elite: oklch(0.65 0.2 295);
+  --monster-boss: oklch(0.7 0.18 195);
 }
 
 .dark {
@@ -109,6 +121,14 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-quality-0: var(--quality-0);
+  --color-quality-1: var(--quality-1);
+  --color-quality-2: var(--quality-2);
+  --color-quality-3: var(--quality-3);
+  --color-quality-4: var(--quality-4);
+  --color-monster-regular: var(--monster-regular);
+  --color-monster-elite: var(--monster-elite);
+  --color-monster-boss: var(--monster-boss);
 }
 
 @layer base {
