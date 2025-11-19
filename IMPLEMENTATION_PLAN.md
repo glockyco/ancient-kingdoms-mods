@@ -97,29 +97,30 @@ These need migration into the proper `build-pipeline/` structure below.
 - [x] Configure svelte.config.js for static build
 - [x] Add +layout.ts with prerender=true
 - [x] Create website/CLAUDE.md documentation
-- [x] Configure Tailwind CSS v4.1 (tailwindcss, @tailwindcss/postcss, postcss)
+- [x] Configure Tailwind CSS v4.1 with @tailwindcss/vite plugin
 - [x] Install and configure shadcn-svelte (component library)
 - [x] Set up light/dark theme system (mode-watcher)
 - [x] Configure ESLint + Prettier (with Svelte plugins)
-- [ ] Set up Husky + lint-staged for pre-commit hooks:
-  - [ ] Prettier (format staged files)
-  - [ ] ESLint (lint and auto-fix staged files)
-  - [ ] TypeScript check (`tsc --noEmit`)
-  - [ ] svelte-check (Svelte validation)
-- [ ] Install dependencies:
-  - [ ] sql.js-httpvfs (client-side SQLite)
-  - [ ] Leaflet (map)
-  - [ ] Lucide Svelte (icons)
+- [x] Set up EditorConfig rules for consistent TypeScript/JavaScript/JSON formatting
+- [x] Set up Husky + lint-staged for pre-commit hooks:
+  - [x] Prettier (format staged files)
+  - [x] ESLint (lint and auto-fix staged files)
+- [x] Install dependencies:
+  - [x] sql.js-httpvfs (client-side SQLite)
+  - [x] Leaflet (map)
+  - [x] Lucide Svelte (icons - @lucide/svelte)
+- [x] Create internal demo page at /demo for UI/UX testing
 - [ ] Set up proper paths.base for deployment
 
 ### Design System
-- [ ] Define color palette (gamer aesthetic + RPG quality colors)
-  - [ ] Item quality colors (common/uncommon/rare/epic/legendary)
-  - [ ] Monster type colors (boss=cyan, elite=purple, regular=red)
-  - [ ] Semantic colors (success/warning/error/info)
-  - [ ] Dark mode variants
-- [ ] Set up base shadcn-svelte components:
-  - [ ] Button, Card, Badge
+- [x] Define color palette (gamer aesthetic + RPG quality colors)
+  - [x] Item quality colors: Quality 0-4 (Gray, Green, Blue, Purple, Orange) - based on actual game data
+  - [x] Monster type colors: Regular (Red), Elite (Purple), Boss (Cyan)
+  - [ ] Semantic colors (success/warning/error/info) - using shadcn-svelte defaults for now
+  - [x] Dark mode variants (via mode-watcher + shadcn-svelte)
+- [x] Set up base shadcn-svelte components:
+  - [x] Button, Card
+  - [ ] Badge
   - [ ] Table, Dialog, Dropdown
   - [ ] Input, Select, Checkbox
   - [ ] Skeleton (loading states)
