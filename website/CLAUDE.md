@@ -7,6 +7,7 @@ Ancient Kingdoms Compendium website - a static site for browsing game data.
 This is a SvelteKit static site that provides a searchable, filterable compendium of Ancient Kingdoms game data. The site runs entirely client-side with no backend server required.
 
 **Architecture:**
+
 - **Frontend**: SvelteKit 2 with TypeScript and Svelte 5
 - **Styling**: Tailwind CSS + shadcn-svelte components
 - **Database**: Client-side SQLite via sql.js-httpvfs (15MB database loaded in browser)
@@ -91,6 +92,7 @@ pnpm preview
 ### Testing Before Commit
 
 **Always test before committing:**
+
 1. Run `pnpm check` - Verify no TypeScript/Svelte errors
 2. Run `pnpm build` - Ensure static build succeeds
 3. Test in browser - Verify functionality works
@@ -103,6 +105,7 @@ pnpm preview
 **Why:** Cloudflare Pages deployment, no server costs, fast CDN delivery
 
 **Implementation:**
+
 - Use `@sveltejs/adapter-static`
 - Set `export const prerender = true` in `+layout.ts`
 - All routes must be prerenderable (no dynamic server-side rendering)
@@ -112,6 +115,7 @@ pnpm preview
 **Why:** No backend needed, full SQL query power in browser, works offline
 
 **Implementation:**
+
 - `sql.js-httpvfs` - SQLite compiled to WASM with HTTP range request support
 - Database loaded lazily (only fetch needed chunks)
 - FTS5 full-text search indexes for fast searching
@@ -121,6 +125,7 @@ pnpm preview
 ### Component Patterns
 
 **EntityCard** - Consistent card for all entity types (items, monsters, NPCs)
+
 ```svelte
 <EntityCard
   icon={item.icon}
@@ -133,6 +138,7 @@ pnpm preview
 ```
 
 **EntityHeader** - Page header with icon + metadata
+
 ```svelte
 <EntityHeader
   icon={monster.icon}
@@ -144,6 +150,7 @@ pnpm preview
 ```
 
 **FilterPanel** - Reusable sidebar filters
+
 ```svelte
 <FilterPanel
   filters={[
@@ -157,31 +164,37 @@ pnpm preview
 ### Design System
 
 **Color Palette:**
+
 - Item quality: Standard RPG colors (gray/white/green/blue/purple/orange)
 - Monster types: Boss=cyan, Elite=purple, Regular=red
 - Dark mode + light mode support
 
 **Typography:**
+
 - System font stack for performance
 - Clear hierarchy (H1/H2/H3)
 
 **Components:**
+
 - shadcn-svelte for base components (buttons, cards, dialogs, etc.)
 - Custom components built on top for domain-specific needs
 
 ### Map Integration
 
 **Leaflet with CRS.Simple:**
+
 - Game coordinates mapped to pixel coordinates
 - Placeholder tiles initially (solid color/grid)
 - Real tiles swapped in when available from `compendium tiles`
 
 **Markers:**
+
 - Color-coded by type (monsters, NPCs, portals)
 - Layer toggles (show/hide by type)
 - Click marker → popup with entity info + detail link
 
 **Bounds from config:**
+
 - X: [-880, 900]
 - Y: [-740, 1300]
 - Matches MapScreenshotter export bounds
@@ -189,12 +202,14 @@ pnpm preview
 ## Code Style
 
 **Follow main repository guidelines:**
+
 - No historical/temporal comments
 - Clean, straightforward code
 - Consistency > novelty
 - Mobile-first responsive design
 
 **Svelte-specific:**
+
 - Use Svelte 5 runes (`$state`, `$derived`, `$effect`)
 - Prefer composition over inheritance
 - Keep components small and focused
@@ -215,20 +230,25 @@ const item = await db.query(`SELECT * FROM items WHERE id = ?`, [id]);
 ```
 
 **Use FTS5 for search:**
+
 ```typescript
 export async function searchEntities(db: Database, query: string) {
-  return db.query(`
+  return db.query(
+    `
     SELECT * FROM items_fts
     WHERE items_fts MATCH ?
     ORDER BY rank
     LIMIT 50
-  `, [query]);
+  `,
+    [query],
+  );
 }
 ```
 
 ## SEO Best Practices
 
 **Every page needs:**
+
 - Unique `<title>`
 - Meta description
 - Open Graph tags
@@ -236,6 +256,7 @@ export async function searchEntities(db: Database, query: string) {
 - JSON-LD structured data
 
 **Use SEO component:**
+
 ```svelte
 <SEO
   title="Dragon Sword - Item Details"
@@ -248,12 +269,14 @@ export async function searchEntities(db: Database, query: string) {
 ## Deployment
 
 **Cloudflare Pages:**
+
 1. Build command: `pnpm build`
 2. Output directory: `build`
 3. Node version: 20
 4. Environment: Production
 
 **Before deploying:**
+
 - Run full build locally
 - Test with `pnpm preview`
 - Verify database is in `static/`
@@ -263,15 +286,18 @@ export async function searchEntities(db: Database, query: string) {
 ## Performance Considerations
 
 **Lazy loading:**
+
 - Use dynamic imports for heavy components
 - Lazy load map library
 - Defer non-critical CSS
 
 **Virtual scrolling:**
+
 - Use for long lists (>100 items)
 - Render only visible rows
 
 **Image optimization:**
+
 - WebP icons (64x64)
 - Lazy load images below the fold
 - Use placeholder while loading
@@ -279,20 +305,24 @@ export async function searchEntities(db: Database, query: string) {
 ## Troubleshooting
 
 **Build fails with "routes are dynamic":**
+
 - Ensure `export const prerender = true` in `+layout.ts`
 - Check no dynamic API routes without prerender
 
 **SQLite database not loading:**
+
 - Verify `compendium.db` is in `static/`
 - Check browser console for fetch errors
 - Ensure CORS headers allow range requests
 
 **Map tiles not showing:**
+
 - Check tile URL format in Leaflet config
 - Verify bounds match game coordinates
 - Use browser network tab to debug tile requests
 
 **TypeScript errors:**
+
 - Run `pnpm check` to see all errors
 - Regenerate types with `compendium types` if schema changed
 - Check `tsconfig.json` paths are correct
@@ -302,6 +332,7 @@ export async function searchEntities(db: Database, query: string) {
 See `IMPLEMENTATION_PLAN.md` Phase 3 for full roadmap.
 
 **Post-MVP:**
+
 - Quest pages
 - Skill pages
 - Build planner tool
