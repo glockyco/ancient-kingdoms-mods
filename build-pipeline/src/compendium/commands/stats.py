@@ -42,16 +42,18 @@ def run(config: dict) -> None:
     ]
 
     table_data = []
-    for table in tables:
-        cursor.execute(f"SELECT COUNT(*) FROM {table}")
+    for table_name in tables:
+        cursor.execute(f"SELECT COUNT(*) FROM {table_name}")
         count = cursor.fetchone()[0]
-        table_data.append((table, count))
+        table_data.append((table_name, count))
 
     # Sort by count descending
     table_data.sort(key=lambda x: x[1], reverse=True)
 
     # Create table
-    table = Table(title="Database Statistics", show_header=True, header_style="bold cyan")
+    table = Table(
+        title="Database Statistics", show_header=True, header_style="bold cyan"
+    )
     table.add_column("Table", style="white")
     table.add_column("Rows", justify="right", style="green")
 

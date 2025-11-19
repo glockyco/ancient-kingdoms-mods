@@ -11,8 +11,10 @@ from pydantic import BaseModel, Field
 # Common Models
 # =============================================================================
 
+
 class Position(BaseModel):
     """3D position in world space."""
+
     x: float
     y: float
     z: float
@@ -22,14 +24,17 @@ class Position(BaseModel):
 # Monster Models
 # =============================================================================
 
+
 class MonsterDrop(BaseModel):
     """Item drop from a monster."""
+
     item_id: str
     rate: float = Field(ge=0.0, le=1.0)
 
 
 class MonsterData(BaseModel):
     """Monster data from monsters.json"""
+
     id: str
     name: str
     zone_id: str
@@ -79,14 +84,17 @@ class MonsterData(BaseModel):
 # Item Models
 # =============================================================================
 
+
 class ChestReward(BaseModel):
     """Reward from opening a chest."""
+
     item_id: str
     probability: float
 
 
 class ItemData(BaseModel):
     """Item data from items.json"""
+
     id: str
     name: str
     item_type: str
@@ -146,7 +154,9 @@ class ItemData(BaseModel):
     # Equipment properties (continued)
     slot: str = ""  # e.g., "Ammo", "Head", "Chest"
     weapon_category: str = ""  # e.g., "Ammo", "Sword", "Bow"
-    stats: dict[str, Any] = {}  # Equipment stats (strength, constitution, defense, etc.)
+    stats: dict[
+        str, Any
+    ] = {}  # Equipment stats (strength, constitution, defense, etc.)
 
     # Consumable/special item properties (continued)
     potion_buff_id: str | None = None  # Buff applied by potion (e.g., "bandages")
@@ -164,22 +174,32 @@ class ItemData(BaseModel):
     # Augment properties
     augment_armor_set_item_ids: list[str] = []  # Items in armor set
     augment_armor_set_name: str | None = None  # Display name of armor set
-    augment_skill_bonuses: list[Any] = []  # Skill bonuses from set (e.g., [{'skill_id': 'tactics_of_war', 'level_bonus': 1}])
+    augment_skill_bonuses: list[
+        Any
+    ] = []  # Skill bonuses from set (e.g., [{'skill_id': 'tactics_of_war', 'level_bonus': 1}])
     recipe_potion_learned_id: str | None = None  # Potion unlocked by recipe
 
     # Weapon properties
-    weapon_proc_effect_id: str | None = None  # Effect triggered on hit (e.g., "plaguebringer_touch")
+    weapon_proc_effect_id: str | None = (
+        None  # Effect triggered on hit (e.g., "plaguebringer_touch")
+    )
     weapon_required_ammo_id: str | None = None  # Ammo type required (e.g., "arrow")
 
     # Structure properties
-    structure_available_rotations: list[Any] = []  # Available rotation angles (e.g., [{'x': 0.0, 'y': 180.0, 'z': 0.0}])
+    structure_available_rotations: list[
+        Any
+    ] = []  # Available rotation angles (e.g., [{'x': 0.0, 'y': 180.0, 'z': 0.0}])
 
     # Travel item properties
-    travel_destination: dict[str, Any] | None = None  # Teleport coordinates (e.g., {'x': -31.0, 'y': 0.0, 'z': 0.0})
+    travel_destination: dict[str, Any] | None = (
+        None  # Teleport coordinates (e.g., {'x': -31.0, 'y': 0.0, 'z': 0.0})
+    )
     travel_destination_name: str | None = None  # Display name of destination
 
     # Treasure map properties
-    treasure_map_image_location: str | None = None  # Image identifier (e.g., "TreasureMap4")
+    treasure_map_image_location: str | None = (
+        None  # Image identifier (e.g., "TreasureMap4")
+    )
     treasure_map_reward_id: str | None = None  # Reward chest item ID
 
     # Chest rewards
@@ -190,8 +210,10 @@ class ItemData(BaseModel):
 # NPC Models
 # =============================================================================
 
+
 class NpcItemSale(BaseModel):
     """Item sold by NPC."""
+
     item_id: str
     price: int
     currency_item_id: str | None = None
@@ -199,6 +221,7 @@ class NpcItemSale(BaseModel):
 
 class NpcRoles(BaseModel):
     """NPC roles/functions."""
+
     is_merchant: bool = False
     is_quest_giver: bool = False
     can_repair_equipment: bool = False
@@ -220,6 +243,7 @@ class NpcRoles(BaseModel):
 
 class NpcData(BaseModel):
     """NPC data from npcs.json"""
+
     id: str
     name: str
     zone_id: str
@@ -270,8 +294,10 @@ class NpcData(BaseModel):
 # Quest Models
 # =============================================================================
 
+
 class QuestObjective(BaseModel):
     """Quest objective."""
+
     type: str
     target_id: str | None = None
     amount: int = 1
@@ -281,12 +307,14 @@ class QuestObjective(BaseModel):
 
 class QuestRewardItem(BaseModel):
     """Item reward from quest."""
+
     item_id: str
     class_specific: str | None = None
 
 
 class QuestRewards(BaseModel):
     """Quest rewards."""
+
     gold: int = 0
     exp: int = 0
     items: list[QuestRewardItem] = []
@@ -294,6 +322,7 @@ class QuestRewards(BaseModel):
 
 class QuestData(BaseModel):
     """Quest data from quests.json"""
+
     id: str
     name: str
     quest_type: str
@@ -346,14 +375,17 @@ class QuestData(BaseModel):
 # Skill Models
 # =============================================================================
 
+
 class SkillBonus(BaseModel):
     """Skill bonus value that scales with level."""
+
     base_value: int | float = 0
     bonus_per_level: int | float = 0
 
 
 class SkillData(BaseModel):
     """Skill data from skills.json"""
+
     id: str
     name: str
     skill_type: str
@@ -485,8 +517,10 @@ class SkillData(BaseModel):
 # Portal Models
 # =============================================================================
 
+
 class PortalData(BaseModel):
     """Portal data from portals.json"""
+
     id: str
     is_template: bool = False
     from_zone_id: str
@@ -495,7 +529,9 @@ class PortalData(BaseModel):
     destination: Position
     orientation: Position | None = None
     required_item_id: str | None = None
-    need_monster_dead_id: str | None = None  # Monster that must be dead to activate (e.g., "thalassor")
+    need_monster_dead_id: str | None = (
+        None  # Monster that must be dead to activate (e.g., "thalassor")
+    )
     level_required: int = 0
     is_closed: bool = False
 
@@ -504,8 +540,10 @@ class PortalData(BaseModel):
 # Zone Models
 # =============================================================================
 
+
 class ZoneBounds(BaseModel):
     """Zone boundary box."""
+
     min_x: float
     max_x: float
     min_z: float
@@ -514,6 +552,7 @@ class ZoneBounds(BaseModel):
 
 class ZoneData(BaseModel):
     """Zone data from zone_info.json"""
+
     zone_id: int
     id: str
     name: str
@@ -530,6 +569,7 @@ class ZoneData(BaseModel):
 
 class ZoneTriggerData(BaseModel):
     """Zone trigger data from zone_triggers.json"""
+
     id: str
     name: str
     zone_id: int
@@ -545,14 +585,17 @@ class ZoneTriggerData(BaseModel):
 # Gather Item Models
 # =============================================================================
 
+
 class GatherRandomDrop(BaseModel):
     """Random bonus drop from gathering."""
+
     item_id: str
     rate: float = Field(ge=0.0, le=1.0)
 
 
 class GatherItemData(BaseModel):
     """Gather item data from gather_items.json"""
+
     id: str
     name: str
     zone_id: str | None = None
@@ -585,21 +628,26 @@ class GatherItemData(BaseModel):
     # Misc
     decrease_faction: str = ""
     description: str = ""
-    tool_required_id: str | None = None  # Tool/key required to access (e.g., "dragonfire_chest_key")
+    tool_required_id: str | None = (
+        None  # Tool/key required to access (e.g., "dragonfire_chest_key")
+    )
 
 
 # =============================================================================
 # Crafting Recipe Models
 # =============================================================================
 
+
 class CraftingMaterial(BaseModel):
     """Material needed for crafting."""
+
     item_id: str
     amount: int = 1
 
 
 class CraftingRecipeData(BaseModel):
     """Crafting recipe data from crafting_recipes.json"""
+
     id: str
     result_item_id: str
     result_amount: int = 1
@@ -611,8 +659,10 @@ class CraftingRecipeData(BaseModel):
 # Summon Trigger Models
 # =============================================================================
 
+
 class SummonTriggerData(BaseModel):
     """Summon trigger data from summon_triggers.json"""
+
     id: str
     summoned_entity_type: str  # "Monster" or "Npc"
     summoned_entity_id: str
