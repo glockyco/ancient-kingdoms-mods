@@ -100,7 +100,7 @@ These need migration into the proper `build-pipeline/` structure below.
 - [x] Configure Tailwind CSS v4.1 (tailwindcss, @tailwindcss/postcss, postcss)
 - [x] Install and configure shadcn-svelte (component library)
 - [x] Set up light/dark theme system (mode-watcher)
-- [ ] Configure ESLint + Prettier (with Svelte plugins)
+- [x] Configure ESLint + Prettier (with Svelte plugins)
 - [ ] Set up Husky + lint-staged for pre-commit hooks:
   - [ ] Prettier (format staged files)
   - [ ] ESLint (lint and auto-fix staged files)
