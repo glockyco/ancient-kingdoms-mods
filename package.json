@@ -8,5 +8,14 @@
   "devDependencies": {
     "husky": "^9.1.7",
     "lint-staged": "^16.2.6"
+  },
+  "lint-staged": {
+    "website/**/*.{js,ts,svelte}": [
+      "cd website && pnpm exec eslint --fix",
+      "cd website && pnpm exec prettier --write"
+    ],
+    "website/**/*.{css,json,md}": [
+      "cd website && pnpm exec prettier --write"
+    ]
   }
 }
