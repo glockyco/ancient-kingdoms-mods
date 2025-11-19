@@ -35,6 +35,50 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   - Calculations from authoritative data (e.g., bounding boxes from positions)
 - Document any non-authoritative derivations in code comments
 
+## Development Practices
+
+**Modern Standards First:**
+- ALWAYS follow modern best practices and community standards
+- Research current conventions before implementing (web search for "2025 best practices")
+- Use official tooling defaults wherever possible
+- NO custom configuration without strong justification
+- When unsure, use the official CLI tools and let them set things up
+
+**Testing Before Committing:**
+- ALWAYS test your changes before committing
+- For website changes:
+  - Run `pnpm check` (TypeScript + Svelte validation)
+  - Run `pnpm lint` (ESLint)
+  - Run `pnpm build` (production build)
+  - Test in browser
+- For Python changes:
+  - Run relevant commands to verify functionality
+  - Check for errors and warnings
+
+**Atomic Commits:**
+- Each commit should be single-purpose and independently functional
+- One logical change per commit
+- Don't batch unrelated changes together
+- Update documentation in the same commit as the related code change
+
+**Pre-commit Hooks:**
+- Husky + lint-staged automatically run on staged files before each commit
+- For website files, hooks run: ESLint (with --fix) and Prettier (with --write)
+- Hooks run from repository root, scoped to website/ subdirectory
+- If hooks fail, fix the issues and stage the fixes before committing again
+
+**Directory Awareness:**
+- ALWAYS check your current working directory with `pwd` before running commands
+- Be explicit about directory changes
+- Don't jump between directories without verification
+- Use absolute paths when unsure
+
+**Package Management:**
+- Let pnpm handle dependency installation and version management
+- Don't manually write dependency versions to package.json
+- Use `pnpm add` or `pnpm add -D` to install packages within workspace packages
+- For workspace root dependencies (like Husky), use `pnpm add -D -w` from root
+
 ## Project Overview
 
 This repository contains:
