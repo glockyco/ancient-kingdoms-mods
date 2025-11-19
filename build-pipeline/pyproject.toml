@@ -15,7 +15,17 @@ dependencies = [
 compendium = "compendium.cli:app"
 
 [dependency-groups]
-dev = []
+dev = [
+    "mypy>=1.18.2",
+    "ruff>=0.14.5",
+]
 
 [tool.uv]
 package = true
+
+[tool.ruff]
+target-version = "py312"
+
+[tool.mypy]
+python_version = "3.12"
+plugins = ["pydantic.mypy"]
