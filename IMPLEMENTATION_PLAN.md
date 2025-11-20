@@ -180,6 +180,10 @@ These need migration into the proper `build-pipeline/` structure below.
   - [ ] Filters: quality, type, level range, class, slot, weapon category
   - [ ] Sort: name, level, quality
   - [ ] Search within results
+  - [ ] Check why "Slot" and "Weapon" always show the same information
+  - [ ] Show size of backpack items
+  - [ ] Remove "Sells for"
+  - [ ] preserve filters when going "Back to Items"
 - [ ] Implement Monsters browser:
   - [ ] `monsters/+page.svelte` (list with filters)
   - [ ] `monsters/+page.ts` (load data)
@@ -199,7 +203,19 @@ These need migration into the proper `build-pipeline/` structure below.
   - [ ] `items/[id]/+page.ts` (SEO + data)
   - [ ] Show: stats, requirements, description
   - [ ] Show relationships: dropped by, sold by, quest reward, crafting recipe, used in recipes
-  - [ ] Show location on mini-map preview
+  - [ ] Show drops of chest items
+  - [ ] Deduplicate monsters in "Dropped By" (check if all enemies with the same name always have the same drop chances)
+  - [ ] Show zones of monsters?
+  - [ ] Show zones in which gather items appear?
+  - [ ] Correctly render description tooltips
+  - [ ] Check why recipes are duplicated (e.g., recipe_4, recipe_263, recipe_406, recipe_433, recipe_460, recipe_545, recipe_630)
+  - [ ] Show locations of dropping monsters, selling vendors, etc. on mini-map preview
+  - [ ] Show received stats for "merge" items
+  - [ ] Show buffs given by "food" items
+  - [ ] Link to corresponding items in "augment" item sets
+  - [ ] Show bonuses provided by "augment" item sets on each contained item's page
+  - [ ] Link to corresponding items in "merge" item sets
+  - [ ] Replace placeholders ({MAGICRESISTBONUS}, {DURABILITY}, etc.) in item tooltips / descriptions
   - [ ] Add "View on Map" link
 - [ ] Implement Monster detail page:
   - [ ] `monsters/[id]/+page.svelte`
