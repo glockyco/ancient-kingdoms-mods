@@ -763,8 +763,50 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
             (json.dumps(items), skill_id),
         )
 
+    # Denormalize armor set data from augment items to armor pieces
+    console.print("  Denormalizing armor set data...")
+    cursor.execute("""
+        SELECT name, augment_skill_bonuses, augment_armor_set_item_ids, augment_armor_set_name
+        FROM items
+        WHERE item_type = 'augment' AND augment_skill_bonuses IS NOT NULL
+    """)
+
+    # Build mapping of augment item name -> (skill bonuses, set item IDs, set name)
+    # Armor pieces reference augments by their name field, not ID
+    set_data: dict[str, tuple[str, str, str]] = {}
+    for augment_name, skill_bonuses_json, set_item_ids_json, set_name in cursor.fetchall():
+        set_data[augment_name] = (skill_bonuses_json, set_item_ids_json, set_name)
+
+    # Find all items with augment_bonus_set in stats and copy the set data
+    cursor.execute("SELECT id, stats FROM items WHERE stats IS NOT NULL")
+    update_count = 0
+
+    for item_id, stats_json in cursor.fetchall():
+        try:
+            stats = json.loads(stats_json)
+            augment_set_name = stats.get("augment_bonus_set")
+
+            if augment_set_name and augment_set_name in set_data:
+                skill_bonuses, set_item_ids, set_name = set_data[augment_set_name]
+                # Copy skill bonuses, set member IDs, and set name to this item
+                cursor.execute(
+                    """UPDATE items
+                       SET augment_skill_bonuses = ?,
+                           augment_armor_set_item_ids = ?,
+                           augment_armor_set_name = ?
+                       WHERE id = ?""",
+                    (skill_bonuses, set_item_ids, set_name, item_id),
+                )
+                update_count += 1
+        except (json.JSONDecodeError, KeyError):
+            # Invalid JSON or missing field, skip
+            pass
+
     conn.commit()
 
+    console.print(
+        f"  [green]OK[/green] Updated {update_count} items with armor set data (bonuses, members, name)"
+    )
     console.print(
         f"  [green]OK[/green] Updated {len(dropped_by)} items with monster drops"
     )
