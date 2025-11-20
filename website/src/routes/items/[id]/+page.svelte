@@ -27,7 +27,57 @@
 		}
 	}
 
-	const stats = parseJson<Record<string, number>>(item.stats);
+	// Percentage stats that should be displayed as percentages (0.05 → 5%)
+	const percentageStats = new Set([
+		'block_chance',
+		'accuracy',
+		'critical_chance',
+		'haste',
+		'spell_haste'
+	]);
+
+	function formatStatName(stat: string): string {
+		return stat
+			.split('_')
+			.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+			.join(' ');
+	}
+
+	function formatStatValue(stat: string, value: number | boolean | string): string {
+		if (typeof value === 'boolean') return value ? 'Yes' : 'No';
+		if (typeof value === 'string') return value;
+
+		// Format percentage stats
+		if (percentageStats.has(stat)) {
+			return `${(value * 100).toFixed(1)}%`;
+		}
+
+		// Add + prefix for positive numeric stats
+		return `${value > 0 ? '+' : ''}${value}`;
+	}
+
+	// Stats include both numeric stats and metadata fields
+	const allStats = parseJson<Record<string, number | boolean | string>>(item.stats);
+
+	// Extract metadata fields
+	const maxDurability = allStats?.max_durability as number | undefined;
+	const hasSerenity = allStats?.has_serenity as boolean | undefined;
+	const isCostume = allStats?.is_costume as boolean | undefined;
+	const augmentBonusSet = allStats?.augment_bonus_set as string | undefined;
+
+	// Filter stats for display: remove zeros and metadata fields
+	const stats = allStats
+		? Object.fromEntries(
+				Object.entries(allStats).filter(([key, value]) => {
+					// Exclude metadata fields
+					if (['max_durability', 'has_serenity', 'is_costume', 'augment_bonus_set'].includes(key)) {
+						return false;
+					}
+					// Exclude zero values
+					return value !== 0 && value !== 0.0 && value !== false;
+				})
+			)
+		: null;
 	const classRequired = parseJson<string[]>(item.class_required) || [];
 	const droppedBy = parseJson<Array<{ monster_id: string; rate: number; zone_id: string }>>(
 		item.dropped_by
@@ -83,11 +133,6 @@
 			<Card.Title>Basic Information</Card.Title>
 		</Card.Header>
 		<Card.Content class="grid grid-cols-2 gap-4">
-			<div>
-				<div class="text-sm text-muted-foreground">Item ID</div>
-				<div class="font-mono text-sm">{item.id}</div>
-			</div>
-
 			{#if item.level_required > 0}
 				<div>
 					<div class="text-sm text-muted-foreground">Level Required</div>
@@ -109,17 +154,40 @@
 				</div>
 			{/if}
 
-			{#if item.weapon_category}
+			{#if item.max_stack > 1}
 				<div>
-					<div class="text-sm text-muted-foreground">Weapon Type</div>
-					<div class="font-medium">{item.weapon_category}</div>
+					<div class="text-sm text-muted-foreground">Max Stack</div>
+					<div class="font-medium">{item.max_stack}</div>
 				</div>
 			{/if}
 
-			<div>
-				<div class="text-sm text-muted-foreground">Max Stack</div>
-				<div class="font-medium">{item.max_stack}</div>
-			</div>
+			{#if maxDurability}
+				<div>
+					<div class="text-sm text-muted-foreground">Max Durability</div>
+					<div class="font-medium">{maxDurability}</div>
+				</div>
+			{/if}
+
+			{#if hasSerenity}
+				<div>
+					<div class="text-sm text-muted-foreground">Special Effect</div>
+					<div class="font-medium text-green-600 dark:text-green-400">Serenity</div>
+				</div>
+			{/if}
+
+			{#if isCostume}
+				<div>
+					<div class="text-sm text-muted-foreground">Item Type</div>
+					<div class="font-medium text-purple-600 dark:text-purple-400">Cosmetic</div>
+				</div>
+			{/if}
+
+			{#if augmentBonusSet}
+				<div>
+					<div class="text-sm text-muted-foreground">Set Bonus</div>
+					<div class="font-medium text-blue-600 dark:text-blue-400">{augmentBonusSet}</div>
+				</div>
+			{/if}
 
 			{#if item.buy_price > 0}
 				<div>
@@ -157,8 +225,8 @@
 				<div class="grid grid-cols-2 md:grid-cols-3 gap-3">
 					{#each Object.entries(stats) as [stat, value] (stat)}
 						<div class="flex justify-between items-center p-2 rounded bg-muted">
-							<span class="text-sm font-medium">{stat}</span>
-							<span class="text-sm font-bold">{value > 0 ? '+' : ''}{value}</span>
+							<span class="text-sm font-medium">{formatStatName(stat)}</span>
+							<span class="text-sm font-bold">{formatStatValue(stat, value)}</span>
 						</div>
 					{/each}
 				</div>
