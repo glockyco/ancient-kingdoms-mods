@@ -175,13 +175,6 @@
 							</div>
 						{/if}
 
-						{#if item.weapon_category}
-							<div class="text-sm">
-								<span class="text-muted-foreground">Weapon:</span>
-								<span class="font-medium">{item.weapon_category}</span>
-							</div>
-						{/if}
-
 						{#if parseClassRequired(item.class_required).length > 0}
 							<div class="text-sm">
 								<span class="text-muted-foreground">Class:</span>
