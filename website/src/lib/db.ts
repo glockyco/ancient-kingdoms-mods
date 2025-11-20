@@ -1,6 +1,13 @@
 import { browser } from "$app/environment";
 
-let dbWorker: any = null;
+// Type for the database worker from sql.js-httpvfs (no official types available)
+interface DbWorker {
+  db: {
+    query: (sql: string, params: unknown[]) => Promise<unknown[]>;
+  };
+}
+
+let dbWorker: DbWorker | null = null;
 
 /**
  * Initialize and return the database worker.
@@ -27,7 +34,8 @@ export async function getDb() {
 
   const wasmUrl = new URL("sql.js-httpvfs/dist/sql-wasm.wasm", import.meta.url);
 
-  dbWorker = await createDbWorker(
+  // Type assertion at I/O boundary - sql.js-httpvfs has no official types
+  dbWorker = (await createDbWorker(
     [
       {
         from: "inline",
@@ -40,7 +48,7 @@ export async function getDb() {
     ],
     workerUrl.toString(),
     wasmUrl.toString(),
-  );
+  )) as DbWorker;
 
   return dbWorker;
 }

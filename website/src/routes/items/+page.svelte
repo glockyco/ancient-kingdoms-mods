@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
+	import { SvelteURLSearchParams } from 'svelte/reactivity';
 	import * as Card from '$lib/components/ui/card';
 	import { Button } from '$lib/components/ui/button';
-	import type { Item } from '$lib/queries/items';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
@@ -21,7 +22,7 @@
 	const qualityNames = ['Common', 'Uncommon', 'Rare', 'Epic', 'Legendary'];
 
 	function updateFilters(params: Record<string, string | undefined>) {
-		const newParams = new URLSearchParams($page.url.searchParams);
+		const newParams = new SvelteURLSearchParams($page.url.searchParams);
 
 		Object.entries(params).forEach(([key, value]) => {
 			if (value === undefined || value === '') {
@@ -36,6 +37,8 @@
 			newParams.delete('page');
 		}
 
+		// Query-only navigation - stays on current route, only updates search params
+		// eslint-disable-next-line svelte/no-navigation-without-resolve
 		goto(`?${newParams.toString()}`, { replaceState: true });
 	}
 
@@ -85,7 +88,7 @@
 			<div>
 				<div class="text-sm font-medium mb-2">Quality</div>
 				<div class="flex gap-2 flex-wrap">
-					{#each [0, 1, 2, 3, 4] as quality}
+					{#each [0, 1, 2, 3, 4] as quality (quality)}
 						<button
 							type="button"
 							class="px-3 py-1 rounded text-sm font-medium transition-all border-2 {data.filters
@@ -104,7 +107,7 @@
 			<div>
 				<div class="text-sm font-medium mb-2">Type</div>
 				<div class="flex gap-2 flex-wrap">
-					{#each data.availableTypes.slice(0, 10) as type}
+					{#each data.availableTypes.slice(0, 10) as type (type)}
 						<button
 							type="button"
 							class="px-3 py-1 rounded text-sm font-medium transition-all border-2 {data.filters.itemType?.includes(
@@ -132,7 +135,7 @@
 					<Button
 						variant="outline"
 						onclick={() =>
-							goto('/items', {
+							goto(resolve('/items'), {
 								replaceState: true
 							})}
 					>
@@ -146,7 +149,7 @@
 	<!-- Items Grid -->
 	<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
 		{#each items as item (item.id)}
-			<a href="/items/{item.id}" class="block">
+			<a href={resolve('/items/[id]', { id: item.id })} class="block">
 				<Card.Root class="h-full hover:border-primary transition-colors">
 					<Card.Header>
 						<div class="flex items-start justify-between gap-2">

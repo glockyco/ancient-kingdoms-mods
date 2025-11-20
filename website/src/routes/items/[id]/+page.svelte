@@ -1,6 +1,7 @@
 <script lang="ts">
 	import * as Card from '$lib/components/ui/card';
 	import { Button } from '$lib/components/ui/button';
+	import { resolve } from '$app/paths';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
@@ -26,21 +27,21 @@
 		}
 	}
 
-	$: stats = parseJson<Record<string, number>>(item.stats);
-	$: classRequired = parseJson<string[]>(item.class_required) || [];
-	$: droppedBy = parseJson<Array<{ monster_id: string; rate: number; zone_id: string }>>(
+	const stats = parseJson<Record<string, number>>(item.stats);
+	const classRequired = parseJson<string[]>(item.class_required) || [];
+	const droppedBy = parseJson<Array<{ monster_id: string; rate: number; zone_id: string }>>(
 		item.dropped_by
 	);
-	$: soldBy = parseJson<
+	const soldBy = parseJson<
 		Array<{ npc_id: string; price: number; currency_item_id: string | null; zone_id: string }>
 	>(item.sold_by);
-	$: rewardedBy = parseJson<Array<{ quest_id: string }>>(item.rewarded_by);
-	$: craftedFrom = parseJson<Array<{ recipe_id: string; result_amount: number }>>(
+	const rewardedBy = parseJson<Array<{ quest_id: string }>>(item.rewarded_by);
+	const craftedFrom = parseJson<Array<{ recipe_id: string; result_amount: number }>>(
 		item.crafted_from
 	);
-	$: gatheredFrom = parseJson<Array<{ gather_item_id: string; rate: number }>>(item.gathered_from);
-	$: usedInRecipes = parseJson<Array<{ recipe_id: string; amount: number }>>(item.used_in_recipes);
-	$: neededForQuests = parseJson<Array<{ quest_id: string; purpose: string; amount: number }>>(
+	const gatheredFrom = parseJson<Array<{ gather_item_id: string; rate: number }>>(item.gathered_from);
+	const usedInRecipes = parseJson<Array<{ recipe_id: string; amount: number }>>(item.used_in_recipes);
+	const neededForQuests = parseJson<Array<{ quest_id: string; purpose: string; amount: number }>>(
 		item.needed_for_quests
 	);
 </script>
@@ -147,7 +148,7 @@
 			</Card.Header>
 			<Card.Content>
 				<div class="grid grid-cols-2 md:grid-cols-3 gap-3">
-					{#each Object.entries(stats) as [stat, value]}
+					{#each Object.entries(stats) as [stat, value] (stat)}
 						<div class="flex justify-between items-center p-2 rounded bg-muted">
 							<span class="text-sm font-medium">{stat}</span>
 							<span class="text-sm font-bold">{value > 0 ? '+' : ''}{value}</span>
@@ -180,9 +181,12 @@
 				</Card.Header>
 				<Card.Content>
 					<div class="space-y-2">
-						{#each droppedBy as drop}
+						{#each droppedBy as drop (drop.monster_id)}
 							<div class="flex justify-between items-center text-sm">
-								<a href="/monsters/{drop.monster_id}" class="hover:underline font-medium">
+								<a
+									href={resolve('/monsters/[id]', { id: drop.monster_id })}
+									class="hover:underline font-medium"
+								>
 									{drop.monster_id}
 								</a>
 								<span class="text-muted-foreground">{(drop.rate * 100).toFixed(1)}%</span>
@@ -201,9 +205,12 @@
 				</Card.Header>
 				<Card.Content>
 					<div class="space-y-2">
-						{#each soldBy as vendor}
+						{#each soldBy as vendor (vendor.npc_id)}
 							<div class="flex justify-between items-center text-sm">
-								<a href="/npcs/{vendor.npc_id}" class="hover:underline font-medium">
+								<a
+									href={resolve('/npcs/[id]', { id: vendor.npc_id })}
+									class="hover:underline font-medium"
+								>
 									{vendor.npc_id}
 								</a>
 								<span class="text-yellow-600 dark:text-yellow-400">{vendor.price}g</span>
@@ -222,9 +229,12 @@
 				</Card.Header>
 				<Card.Content>
 					<div class="space-y-2">
-						{#each rewardedBy as quest}
+						{#each rewardedBy as quest (quest.quest_id)}
 							<div class="text-sm">
-								<a href="/quests/{quest.quest_id}" class="hover:underline font-medium">
+								<a
+									href={resolve('/quests/[id]', { id: quest.quest_id })}
+									class="hover:underline font-medium"
+								>
 									{quest.quest_id}
 								</a>
 							</div>
@@ -242,7 +252,7 @@
 				</Card.Header>
 				<Card.Content>
 					<div class="space-y-2">
-						{#each craftedFrom as recipe}
+						{#each craftedFrom as recipe (recipe.recipe_id)}
 							<div class="flex justify-between items-center text-sm">
 								<span class="font-medium">{recipe.recipe_id}</span>
 								<span class="text-muted-foreground">x{recipe.result_amount}</span>
@@ -261,7 +271,7 @@
 				</Card.Header>
 				<Card.Content>
 					<div class="space-y-2">
-						{#each gatheredFrom as gather}
+						{#each gatheredFrom as gather (gather.gather_item_id)}
 							<div class="flex justify-between items-center text-sm">
 								<span class="font-medium">{gather.gather_item_id}</span>
 								<span class="text-muted-foreground">{(gather.rate * 100).toFixed(1)}%</span>
@@ -280,7 +290,7 @@
 				</Card.Header>
 				<Card.Content>
 					<div class="space-y-2">
-						{#each usedInRecipes as recipe}
+						{#each usedInRecipes as recipe (recipe.recipe_id)}
 							<div class="flex justify-between items-center text-sm">
 								<span class="font-medium">{recipe.recipe_id}</span>
 								<span class="text-muted-foreground">x{recipe.amount}</span>
@@ -299,9 +309,12 @@
 				</Card.Header>
 				<Card.Content>
 					<div class="space-y-2">
-						{#each neededForQuests as quest}
+						{#each neededForQuests as quest (quest.quest_id)}
 							<div class="flex justify-between items-center text-sm">
-								<a href="/quests/{quest.quest_id}" class="hover:underline font-medium">
+								<a
+									href={resolve('/quests/[id]', { id: quest.quest_id })}
+									class="hover:underline font-medium"
+								>
 									{quest.quest_id}
 								</a>
 								<span class="text-muted-foreground"

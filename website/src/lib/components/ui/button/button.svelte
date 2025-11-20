@@ -2,6 +2,7 @@
 	import { cn, type WithElementRef } from "$lib/utils.js";
 	import type { HTMLAnchorAttributes, HTMLButtonAttributes } from "svelte/elements";
 	import { type VariantProps, tv } from "tailwind-variants";
+	import type { RouteId } from "$app/types";
 
 	export const buttonVariants = tv({
 		base: "focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium outline-none transition-all focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0",
@@ -34,14 +35,28 @@
 	export type ButtonVariant = VariantProps<typeof buttonVariants>["variant"];
 	export type ButtonSize = VariantProps<typeof buttonVariants>["size"];
 
+	// Button href can be either:
+	// 1. A simple route string: "/items"
+	// 2. An object with route + params: { route: "/items/[id]", params: { id: "123" } }
+	// Using a discriminated union for better type narrowing
+	export type ButtonHref =
+		| RouteId
+		| {
+				route: RouteId;
+				params: Record<string, string>;
+		  };
+
 	export type ButtonProps = WithElementRef<HTMLButtonAttributes> &
-		WithElementRef<HTMLAnchorAttributes> & {
+		Omit<WithElementRef<HTMLAnchorAttributes>, "href"> & {
 			variant?: ButtonVariant;
 			size?: ButtonSize;
+			href?: ButtonHref;
 		};
 </script>
 
 <script lang="ts">
+	import { resolve } from "$app/paths";
+
 	let {
 		class: className,
 		variant = "default",
@@ -53,14 +68,34 @@
 		children,
 		...restProps
 	}: ButtonProps = $props();
+
+	// Resolve href based on whether it's a simple string or route object
+	const resolvedHref = $derived(() => {
+		if (!href) return undefined;
+
+		// Handle route object with params: { route: "/items/[id]", params: { id: "123" } }
+		if (typeof href === "object" && "route" in href) {
+			// Type assertions at I/O boundary - resolve() has complex overloaded types that
+			// TypeScript cannot narrow from our union type
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			return resolve(href.route as any, href.params as any);
+		}
+
+		// Handle simple string route: "/items"
+		// Type assertion at I/O boundary - resolve() has complex overloaded types
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		return resolve(href as any);
+	});
 </script>
 
 {#if href}
+	<!-- eslint-disable svelte/no-navigation-without-resolve -->
+	<!-- href is resolved via resolvedHref() which calls resolve() -->
 	<a
 		bind:this={ref}
 		data-slot="button"
 		class={cn(buttonVariants({ variant, size }), className)}
-		href={disabled ? undefined : href}
+		href={resolvedHref()}
 		aria-disabled={disabled}
 		role={disabled ? "link" : undefined}
 		tabindex={disabled ? -1 : undefined}
@@ -68,6 +103,7 @@
 	>
 		{@render children?.()}
 	</a>
+	<!-- eslint-enable svelte/no-navigation-without-resolve -->
 {:else}
 	<button
 		bind:this={ref}
