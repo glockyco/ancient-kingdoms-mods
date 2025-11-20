@@ -797,13 +797,14 @@ def run(config: dict) -> None:
     """
     repo_root = get_repo_root()
     export_dir = repo_root / config["paths"]["export_dir"]
-    build_dir = repo_root / config["paths"]["build_dir"]
+    website_dir = repo_root / config["paths"]["website_dir"]
+    static_dir = website_dir / "static"
     schema_path = repo_root / "build-pipeline" / "schema.sql"
 
-    # Ensure build directory exists
-    build_dir.mkdir(parents=True, exist_ok=True)
+    # Ensure static directory exists
+    static_dir.mkdir(parents=True, exist_ok=True)
 
-    db_path = build_dir / config["build_pipeline"]["db_name"]
+    db_path = static_dir / config["build_pipeline"]["db_name"]
 
     console.print("[bold]Building database from JSON exports...[/bold]\n")
 
