@@ -175,6 +175,13 @@
 							</div>
 						{/if}
 
+						{#if item.backpack_slots > 0}
+							<div class="text-sm">
+								<span class="text-muted-foreground">Capacity:</span>
+								<span class="font-medium">{item.backpack_slots} slot{item.backpack_slots !== 1 ? 's' : ''}</span>
+							</div>
+						{/if}
+
 						{#if parseClassRequired(item.class_required).length > 0}
 							<div class="text-sm">
 								<span class="text-muted-foreground">Class:</span>
