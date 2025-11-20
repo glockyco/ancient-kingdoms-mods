@@ -45,12 +45,13 @@
 		if (typeof value === 'boolean') return value ? 'Yes' : 'No';
 		if (typeof value === 'string') return value;
 
-		// Format percentage stats
+		// Format percentage stats with +/- prefix
 		if (percentageStats.has(stat)) {
-			return `${(value * 100).toFixed(1)}%`;
+			const percentage = (value * 100).toFixed(1);
+			return `${value > 0 ? '+' : ''}${percentage}%`;
 		}
 
-		// Add + prefix for positive numeric stats
+		// Add +/- prefix for all numeric stats
 		return `${value > 0 ? '+' : ''}${value}`;
 	}
 
