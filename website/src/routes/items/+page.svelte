@@ -195,17 +195,6 @@
 								{Object.keys(stats).length} stat{Object.keys(stats).length !== 1 ? 's' : ''}
 							</div>
 						{/if}
-
-						{#if item.buy_price > 0 || item.sell_price > 0}
-							<div class="text-sm">
-								{#if item.sell_price > 0}
-									<span class="text-muted-foreground">Sells for: </span>
-									<span class="font-medium text-yellow-600 dark:text-yellow-400"
-										>{item.sell_price}g</span
-									>
-								{/if}
-							</div>
-						{/if}
 					</Card.Content>
 				</Card.Root>
 			</a>
