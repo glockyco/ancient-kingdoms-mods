@@ -4,9 +4,7 @@
 	import Breadcrumb from '$lib/components/Breadcrumb.svelte';
 	import type { PageData } from './$types';
 
-	export let data: PageData;
-
-	const { item } = data;
+	let { data }: { data: PageData } = $props();
 
 	const qualityColors = [
 		'bg-quality-0',
@@ -56,48 +54,66 @@
 		return `${value > 0 ? '+' : ''}${value}`;
 	}
 
-	// Stats include both numeric stats and metadata fields
-	const allStats = parseJson<Record<string, number | boolean | string>>(item.stats);
+	// Compute all derived values from item data
+	const computed = $derived.by(() => {
+		// Stats include both numeric stats and metadata fields
+		const allStats = parseJson<Record<string, number | boolean | string>>(data.item.stats);
 
-	// Extract metadata fields
-	const maxDurability = allStats?.max_durability as number | undefined;
-	const hasSerenity = allStats?.has_serenity as boolean | undefined;
-	const isCostume = allStats?.is_costume as boolean | undefined;
-	const augmentBonusSet = allStats?.augment_bonus_set as string | undefined;
+		// Extract metadata fields
+		const maxDurability = allStats?.max_durability as number | undefined;
+		const hasSerenity = allStats?.has_serenity as boolean | undefined;
+		const isCostume = allStats?.is_costume as boolean | undefined;
+		const augmentBonusSet = allStats?.augment_bonus_set as string | undefined;
 
-	// Filter stats for display: remove zeros and metadata fields
-	const stats = allStats
-		? Object.fromEntries(
-				Object.entries(allStats).filter(([key, value]) => {
-					// Exclude metadata fields
-					if (['max_durability', 'has_serenity', 'is_costume', 'augment_bonus_set'].includes(key)) {
-						return false;
-					}
-					// Exclude zero values
-					return value !== 0 && value !== 0.0 && value !== false;
-				})
-			)
-		: null;
-	const classRequired = parseJson<string[]>(item.class_required) || [];
-	const droppedBy = parseJson<Array<{ monster_id: string; rate: number; zone_id: string }>>(
-		item.dropped_by
-	);
-	const soldBy = parseJson<
-		Array<{ npc_id: string; price: number; currency_item_id: string | null; zone_id: string }>
-	>(item.sold_by);
-	const rewardedBy = parseJson<Array<{ quest_id: string }>>(item.rewarded_by);
-	const craftedFrom = parseJson<Array<{ recipe_id: string; result_amount: number }>>(
-		item.crafted_from
-	);
-	const gatheredFrom = parseJson<Array<{ gather_item_id: string; rate: number }>>(item.gathered_from);
-	const usedInRecipes = parseJson<Array<{ recipe_id: string; amount: number }>>(item.used_in_recipes);
-	const neededForQuests = parseJson<Array<{ quest_id: string; purpose: string; amount: number }>>(
-		item.needed_for_quests
-	);
+		// Filter stats for display: remove zeros and metadata fields
+		const stats = allStats
+			? Object.fromEntries(
+					Object.entries(allStats).filter(([key, value]) => {
+						if (['max_durability', 'has_serenity', 'is_costume', 'augment_bonus_set'].includes(key)) {
+							return false;
+						}
+						return value !== 0 && value !== 0.0 && value !== false;
+					})
+				)
+			: null;
+
+		return {
+			allStats,
+			maxDurability,
+			hasSerenity,
+			isCostume,
+			augmentBonusSet,
+			stats,
+			classRequired: parseJson<string[]>(data.item.class_required) || [],
+			droppedBy: parseJson<Array<{ monster_id: string; rate: number; zone_id: string }>>(
+				data.item.dropped_by
+			),
+			soldBy: parseJson<
+				Array<{ npc_id: string; price: number; currency_item_id: string | null; zone_id: string }>
+			>(data.item.sold_by),
+			rewardedBy: parseJson<Array<{ quest_id: string }>>(data.item.rewarded_by),
+			craftedFrom: parseJson<Array<{ recipe_id: string; result_amount: number }>>(
+				data.item.crafted_from
+			),
+			gatheredFrom: parseJson<Array<{ gather_item_id: string; rate: number }>>(
+				data.item.gathered_from
+			),
+			usedInRecipes: parseJson<Array<{ recipe_id: string; amount: number }>>(
+				data.item.used_in_recipes
+			),
+			neededForQuests: parseJson<Array<{ quest_id: string; purpose: string; amount: number }>>(
+				data.item.needed_for_quests
+			),
+			armorSetSkillBonuses: parseJson<Array<{ skill_id: string; level_bonus: number }>>(
+				data.item.augment_skill_bonuses
+			),
+			armorSetMembers: parseJson<string[]>(data.item.augment_armor_set_item_ids)
+		};
+	});
 </script>
 
 <svelte:head>
-	<title>{item.name} - Ancient Kingdoms Compendium</title>
+	<title>{data.item.name} - Ancient Kingdoms Compendium</title>
 </svelte:head>
 
 <div class="container mx-auto p-8 space-y-8 max-w-5xl">
@@ -106,7 +122,7 @@
 		items={[
 			{ label: 'Home', href: '/' },
 			{ label: 'Items', href: '/items' },
-			{ label: item.name }
+			{ label: data.item.name }
 		]}
 	/>
 
@@ -115,13 +131,13 @@
 		<div class="flex items-start gap-4">
 			<div class="flex-1">
 				<div class="flex items-center gap-3 mb-2">
-					<h1 class="text-4xl font-bold">{item.name}</h1>
-					<span class="px-3 py-1 rounded text-sm font-medium {qualityColors[item.quality]}">
-						{qualityNames[item.quality]}
+					<h1 class="text-4xl font-bold">{data.item.name}</h1>
+					<span class="px-3 py-1 rounded text-sm font-medium {qualityColors[data.item.quality]}">
+						{qualityNames[data.item.quality]}
 					</span>
 				</div>
 				<p class="text-xl text-muted-foreground">
-					{item.item_type || 'Unknown type'}
+					{data.item.item_type || 'Unknown type'}
 				</p>
 			</div>
 		</div>
@@ -133,97 +149,97 @@
 			<Card.Title>Basic Information</Card.Title>
 		</Card.Header>
 		<Card.Content class="grid grid-cols-2 gap-4">
-			{#if item.level_required > 0}
+			{#if data.item.level_required > 0}
 				<div>
 					<div class="text-sm text-muted-foreground">Level Required</div>
-					<div class="font-medium">{item.level_required}</div>
+					<div class="font-medium">{data.item.level_required}</div>
 				</div>
 			{/if}
 
-			{#if classRequired.length > 0}
+			{#if computed.classRequired.length > 0}
 				<div>
 					<div class="text-sm text-muted-foreground">Class Required</div>
-					<div class="font-medium">{classRequired.join(', ')}</div>
+					<div class="font-medium">{computed.classRequired.join(', ')}</div>
 				</div>
 			{/if}
 
-			{#if item.slot}
+			{#if data.item.slot}
 				<div>
 					<div class="text-sm text-muted-foreground">Equipment Slot</div>
-					<div class="font-medium">{item.slot}</div>
+					<div class="font-medium">{data.item.slot}</div>
 				</div>
 			{/if}
 
-			{#if item.max_stack > 1}
+			{#if data.item.max_stack > 1}
 				<div>
 					<div class="text-sm text-muted-foreground">Max Stack</div>
-					<div class="font-medium">{item.max_stack}</div>
+					<div class="font-medium">{data.item.max_stack}</div>
 				</div>
 			{/if}
 
-			{#if maxDurability}
+			{#if computed.maxDurability}
 				<div>
 					<div class="text-sm text-muted-foreground">Max Durability</div>
-					<div class="font-medium">{maxDurability}</div>
+					<div class="font-medium">{computed.maxDurability}</div>
 				</div>
 			{/if}
 
-			{#if hasSerenity}
+			{#if computed.hasSerenity}
 				<div>
 					<div class="text-sm text-muted-foreground">Special Effect</div>
 					<div class="font-medium text-green-600 dark:text-green-400">Serenity</div>
 				</div>
 			{/if}
 
-			{#if isCostume}
+			{#if computed.isCostume}
 				<div>
 					<div class="text-sm text-muted-foreground">Item Type</div>
 					<div class="font-medium text-purple-600 dark:text-purple-400">Cosmetic</div>
 				</div>
 			{/if}
 
-			{#if augmentBonusSet}
+			{#if computed.augmentBonusSet}
 				<div>
 					<div class="text-sm text-muted-foreground">Set Bonus</div>
-					<div class="font-medium text-blue-600 dark:text-blue-400">{augmentBonusSet}</div>
+					<div class="font-medium text-blue-600 dark:text-blue-400">{computed.augmentBonusSet}</div>
 				</div>
 			{/if}
 
-			{#if item.buy_price > 0}
+			{#if data.item.buy_price > 0}
 				<div>
 					<div class="text-sm text-muted-foreground">Buy Price</div>
-					<div class="font-medium text-yellow-600 dark:text-yellow-400">{item.buy_price}g</div>
+					<div class="font-medium text-yellow-600 dark:text-yellow-400">{data.item.buy_price}g</div>
 				</div>
 			{/if}
 
-			{#if item.sell_price > 0}
+			{#if data.item.sell_price > 0}
 				<div>
 					<div class="text-sm text-muted-foreground">Sell Price</div>
-					<div class="font-medium text-yellow-600 dark:text-yellow-400">{item.sell_price}g</div>
+					<div class="font-medium text-yellow-600 dark:text-yellow-400">{data.item.sell_price}g</div>
 				</div>
 			{/if}
 
 			<div>
 				<div class="text-sm text-muted-foreground">Tradable</div>
-				<div class="font-medium">{item.tradable ? 'Yes' : 'No'}</div>
+				<div class="font-medium">{data.item.tradable ? 'Yes' : 'No'}</div>
 			</div>
 
 			<div>
 				<div class="text-sm text-muted-foreground">Sellable</div>
-				<div class="font-medium">{item.sellable ? 'Yes' : 'No'}</div>
+				<div class="font-medium">{data.item.sellable ? 'Yes' : 'No'}</div>
 			</div>
 		</Card.Content>
 	</Card.Root>
 
 	<!-- Stats -->
-	{#if stats && Object.keys(stats).length > 0}
+	{#if computed.stats && Object.keys(computed.stats).length > 0}
 		<Card.Root>
 			<Card.Header>
 				<Card.Title>Stats</Card.Title>
 			</Card.Header>
 			<Card.Content>
 				<div class="grid grid-cols-2 md:grid-cols-3 gap-3">
-					{#each Object.entries(stats) as [stat, value] (stat)}
+					{#each Object.entries(computed.stats) as [stat, value] (stat)}
 						<div class="flex justify-between items-center p-2 rounded bg-muted">
 							<span class="text-sm font-medium">{formatStatName(stat)}</span>
 							<span class="text-sm font-bold">{formatStatValue(stat, value)}</span>
@@ -234,14 +250,63 @@
 		</Card.Root>
 	{/if}
 
+	<!-- Armor Set Bonuses -->
+	{#if computed.armorSetSkillBonuses && computed.armorSetSkillBonuses.length > 0}
+		<Card.Root>
+			<Card.Header>
+				<Card.Title>
+					{data.item.augment_armor_set_name || 'Set Bonuses'}
+				</Card.Title>
+				{#if computed.armorSetMembers && computed.armorSetMembers.length > 0}
+					<Card.Description>
+						Requires {computed.armorSetMembers.length} pieces
+					</Card.Description>
+				{/if}
+			</Card.Header>
+			<Card.Content class="space-y-4">
+				<!-- Skill Bonuses -->
+				<div>
+					<h4 class="text-sm font-semibold mb-2">Skill Bonuses</h4>
+					<div class="space-y-2">
+						{#each computed.armorSetSkillBonuses as bonus (bonus.skill_id)}
+							<div class="flex items-center justify-between p-2 rounded bg-muted">
+								<span class="text-sm font-medium">{bonus.skill_id.replace(/_/g, ' ')}</span>
+								<span class="text-sm font-bold text-green-600 dark:text-green-400">
+									+{bonus.level_bonus} level{bonus.level_bonus !== 1 ? 's' : ''}
+								</span>
+							</div>
+						{/each}
+					</div>
+				</div>
+
+				<!-- Set Members -->
+				{#if computed.armorSetMembers && computed.armorSetMembers.length > 0}
+					<div>
+						<h4 class="text-sm font-semibold mb-2">Set Pieces ({computed.armorSetMembers.length})</h4>
+						<div class="grid grid-cols-2 gap-2">
+							{#each computed.armorSetMembers as memberId (memberId)}
+								<a
+									href="/items/{memberId}"
+									class="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+								>
+									{memberId.replace(/_/g, ' ')}
+								</a>
+							{/each}
+						</div>
+					</div>
+				{/if}
+			</Card.Content>
+		</Card.Root>
+	{/if}
+
 	<!-- Tooltip/Description -->
-	{#if item.tooltip}
+	{#if data.item.tooltip}
 		<Card.Root>
 			<Card.Header>
 				<Card.Title>Description</Card.Title>
 			</Card.Header>
 			<Card.Content>
-				<p class="text-sm whitespace-pre-wrap">{item.tooltip}</p>
+				<p class="text-sm whitespace-pre-wrap">{data.item.tooltip}</p>
 			</Card.Content>
 		</Card.Root>
 	{/if}
@@ -249,14 +314,14 @@
 	<!-- Relationships -->
 	<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 		<!-- Dropped By -->
-		{#if droppedBy && droppedBy.length > 0}
+		{#if computed.droppedBy && computed.droppedBy.length > 0}
 			<Card.Root>
 				<Card.Header>
 					<Card.Title>Dropped By</Card.Title>
 				</Card.Header>
 				<Card.Content>
 					<div class="space-y-2">
-						{#each droppedBy as drop (drop.monster_id)}
+						{#each computed.droppedBy as drop (drop.monster_id)}
 							<div class="flex justify-between items-center text-sm">
 								<a
 									href={resolve('/monsters/[id]', { id: drop.monster_id })}
@@ -273,14 +338,14 @@
 		{/if}
 
 		<!-- Sold By -->
-		{#if soldBy && soldBy.length > 0}
+		{#if computed.soldBy && computed.soldBy.length > 0}
 			<Card.Root>
 				<Card.Header>
 					<Card.Title>Sold By</Card.Title>
 				</Card.Header>
 				<Card.Content>
 					<div class="space-y-2">
-						{#each soldBy as vendor (vendor.npc_id)}
+						{#each computed.soldBy as vendor (vendor.npc_id)}
 							<div class="flex justify-between items-center text-sm">
 								<a
 									href={resolve('/npcs/[id]', { id: vendor.npc_id })}
@@ -297,14 +362,14 @@
 		{/if}
 
 		<!-- Quest Reward -->
-		{#if rewardedBy && rewardedBy.length > 0}
+		{#if computed.rewardedBy && computed.rewardedBy.length > 0}
 			<Card.Root>
 				<Card.Header>
 					<Card.Title>Quest Reward</Card.Title>
 				</Card.Header>
 				<Card.Content>
 					<div class="space-y-2">
-						{#each rewardedBy as quest (quest.quest_id)}
+						{#each computed.rewardedBy as quest (quest.quest_id)}
 							<div class="text-sm">
 								<a
 									href={resolve('/quests/[id]', { id: quest.quest_id })}
@@ -320,14 +385,14 @@
 		{/if}
 
 		<!-- Crafted From -->
-		{#if craftedFrom && craftedFrom.length > 0}
+		{#if computed.craftedFrom && computed.craftedFrom.length > 0}
 			<Card.Root>
 				<Card.Header>
 					<Card.Title>Crafted From Recipe</Card.Title>
 				</Card.Header>
 				<Card.Content>
 					<div class="space-y-2">
-						{#each craftedFrom as recipe (recipe.recipe_id)}
+						{#each computed.craftedFrom as recipe (recipe.recipe_id)}
 							<div class="flex justify-between items-center text-sm">
 								<span class="font-medium">{recipe.recipe_id}</span>
 								<span class="text-muted-foreground">x{recipe.result_amount}</span>
@@ -339,14 +404,14 @@
 		{/if}
 
 		<!-- Gathered From -->
-		{#if gatheredFrom && gatheredFrom.length > 0}
+		{#if computed.gatheredFrom && computed.gatheredFrom.length > 0}
 			<Card.Root>
 				<Card.Header>
 					<Card.Title>Gathered From</Card.Title>
 				</Card.Header>
 				<Card.Content>
 					<div class="space-y-2">
-						{#each gatheredFrom as gather (gather.gather_item_id)}
+						{#each computed.gatheredFrom as gather (gather.gather_item_id)}
 							<div class="flex justify-between items-center text-sm">
 								<span class="font-medium">{gather.gather_item_id}</span>
 								<span class="text-muted-foreground">{(gather.rate * 100).toFixed(1)}%</span>
@@ -358,14 +423,14 @@
 		{/if}
 
 		<!-- Used In Recipes -->
-		{#if usedInRecipes && usedInRecipes.length > 0}
+		{#if computed.usedInRecipes && computed.usedInRecipes.length > 0}
 			<Card.Root>
 				<Card.Header>
 					<Card.Title>Used In Recipes</Card.Title>
 				</Card.Header>
 				<Card.Content>
 					<div class="space-y-2">
-						{#each usedInRecipes as recipe (recipe.recipe_id)}
+						{#each computed.usedInRecipes as recipe (recipe.recipe_id)}
 							<div class="flex justify-between items-center text-sm">
 								<span class="font-medium">{recipe.recipe_id}</span>
 								<span class="text-muted-foreground">x{recipe.amount}</span>
@@ -377,14 +442,14 @@
 		{/if}
 
 		<!-- Needed For Quests -->
-		{#if neededForQuests && neededForQuests.length > 0}
+		{#if computed.neededForQuests && computed.neededForQuests.length > 0}
 			<Card.Root>
 				<Card.Header>
 					<Card.Title>Needed For Quests</Card.Title>
 				</Card.Header>
 				<Card.Content>
 					<div class="space-y-2">
-						{#each neededForQuests as quest (quest.quest_id)}
+						{#each computed.neededForQuests as quest (quest.quest_id)}
 							<div class="flex justify-between items-center text-sm">
 								<a
 									href={resolve('/quests/[id]', { id: quest.quest_id })}
