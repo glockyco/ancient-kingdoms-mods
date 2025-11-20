@@ -3,6 +3,37 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      /* Instant theme based on system preference - no JS delay */
+      /* Match Tailwind's actual background colors */
+      html {
+        background-color: oklch(1 0 0);
+        color: oklch(0.129 0.042 264.695);
+      }
+      @media (prefers-color-scheme: dark) {
+        html:not(.light) {
+          background-color: oklch(0.129 0.042 264.695);
+          color: oklch(0.984 0.003 247.858);
+        }
+      }
+      /* Explicit dark mode */
+      html.dark {
+        background-color: oklch(0.129 0.042 264.695);
+        color: oklch(0.984 0.003 247.858);
+      }
+    </style>
+    <script>
+      // Handle explicit user preference (overrides system preference)
+      (function() {
+        const theme = localStorage.getItem('mode-watcher-mode');
+        if (theme === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else if (theme === 'light') {
+          document.documentElement.classList.add('light');
+        }
+        // If no explicit preference, CSS media query handles it
+      })();
+    </script>
     %sveltekit.head%
   </head>
   <body data-sveltekit-preload-data="hover">
