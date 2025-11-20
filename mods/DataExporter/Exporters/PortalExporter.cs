@@ -59,11 +59,11 @@ public class PortalExporter : BaseExporter
                         portal.destination.position.z
                     )
                     : null,
-                required_item_id = portal.key != null ? portal.key.name.ToLowerInvariant().Replace(" ", "_") : null,
+                required_item_id = portal.key != null ? SanitizeId(portal.key.name) : null,
                 level_required = portal.itemLevelRequired,
                 is_closed = portal.isClosed,
                 orientation = new Position(portal.orientation.x, portal.orientation.y, 0),
-                need_monster_dead_id = portal.needMonsterDead != null ? portal.needMonsterDead.name.ToLowerInvariant().Replace(" ", "_") : null
+                need_monster_dead_id = portal.needMonsterDead != null ? SanitizeId(portal.needMonsterDead.name) : null
             };
 
             portalList.Add(portalData);
@@ -80,7 +80,7 @@ public class PortalExporter : BaseExporter
             var zone = Il2Cpp.ZoneInfo.zones[zoneId];
             if (zone != null && !string.IsNullOrEmpty(zone.name))
             {
-                return zone.name.ToLowerInvariant().Replace(" ", "_");
+                return SanitizeId(zone.name);
             }
         }
 

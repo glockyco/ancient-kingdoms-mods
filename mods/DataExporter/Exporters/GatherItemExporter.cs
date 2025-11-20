@@ -44,8 +44,8 @@ public class GatherItemExporter : BaseExporter
                 templateCount++;
 
             var id = isTemplate
-                ? gatherItem.name.ToLowerInvariant().Replace(" ", "_")
-                : $"{gatherItem.name.ToLowerInvariant().Replace(" ", "_")}_{zoneId}_{gatherItem.GetInstanceID()}";
+                ? SanitizeId(gatherItem.name)
+                : $"{SanitizeId(gatherItem.name)}_{zoneId}_{gatherItem.GetInstanceID()}";
             var name = string.IsNullOrEmpty(gatherItem.nameGatherItem) ? gatherItem.name : gatherItem.nameGatherItem;
 
             var gatherItemData = new GatherItemData
@@ -108,13 +108,13 @@ public class GatherItemExporter : BaseExporter
 
             if (gatherItem.giftToPlayer != null && gatherItem.giftToPlayer.item != null)
             {
-                gatherItemData.item_reward_id = gatherItem.giftToPlayer.item.name.ToLowerInvariant().Replace(" ", "_");
+                gatherItemData.item_reward_id = SanitizeId(gatherItem.giftToPlayer.item.name);
                 gatherItemData.item_reward_amount = gatherItem.giftToPlayer.amount;
             }
 
             if (gatherItem.itemConsumption != null)
             {
-                gatherItemData.tool_required_id = gatherItem.itemConsumption.name.ToLowerInvariant().Replace(" ", "_");
+                gatherItemData.tool_required_id = SanitizeId(gatherItem.itemConsumption.name);
             }
 
             if (gatherItem.randomDrops != null && gatherItem.randomDrops.Length > 0)
@@ -125,7 +125,7 @@ public class GatherItemExporter : BaseExporter
                     {
                         gatherItemData.random_drops.Add(new ItemDrop
                         {
-                            item_id = drop.item.name.ToLowerInvariant().Replace(" ", "_"),
+                            item_id = SanitizeId(drop.item.name),
                             rate = drop.probability
                         });
                     }
@@ -176,7 +176,7 @@ public class GatherItemExporter : BaseExporter
             var zone = Il2Cpp.ZoneInfo.zones[zoneId];
             if (zone != null && !string.IsNullOrEmpty(zone.name))
             {
-                return zone.name.ToLowerInvariant().Replace(" ", "_");
+                return SanitizeId(zone.name);
             }
         }
 

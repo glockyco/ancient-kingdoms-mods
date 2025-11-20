@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Text.RegularExpressions;
 using MelonLoader;
 using Newtonsoft.Json;
 
@@ -17,6 +18,24 @@ public abstract class BaseExporter
     }
 
     public abstract void Export();
+
+    /// <summary>
+    /// Sanitizes a Unity object name to create a URL-safe ID.
+    /// Converts to lowercase, replaces spaces with underscores, and removes special characters.
+    /// </summary>
+    protected static string SanitizeId(string input)
+    {
+        if (string.IsNullOrEmpty(input))
+            return input;
+
+        // Convert to lowercase and replace spaces with underscores
+        var sanitized = input.ToLowerInvariant().Replace(" ", "_");
+
+        // Remove URL-unsafe characters: # % ? & / \ and other special chars except _ and -
+        sanitized = Regex.Replace(sanitized, @"[^a-z0-9_\-]", "");
+
+        return sanitized;
+    }
 
     protected void WriteJson<T>(T data, string filename)
     {

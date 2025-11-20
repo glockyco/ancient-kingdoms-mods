@@ -41,8 +41,8 @@ public class MonsterExporter : BaseExporter
             {
                 // Identity
                 id = isTemplate
-                    ? monster.name.ToLowerInvariant().Replace(" ", "_")
-                    : $"{monster.name.ToLowerInvariant().Replace(" ", "_")}_{zoneId}_{monster.GetInstanceID()}",
+                    ? SanitizeId(monster.name)
+                    : $"{SanitizeId(monster.name)}_{zoneId}_{monster.GetInstanceID()}",
                 name = monster.name,
                 zone_id = zoneId,
                 position = isTemplate
@@ -83,7 +83,7 @@ public class MonsterExporter : BaseExporter
                 spawn_time_end = monster.endSpawnTime,
                 placeholder_spawn_probability = monster.probSpawnPH,
                 placeholder_monster_id = monster.monsterPH != null && !string.IsNullOrEmpty(monster.monsterPH.name)
-                    ? monster.monsterPH.name.ToLowerInvariant().Replace(" ", "_")
+                    ? SanitizeId(monster.monsterPH.name)
                     : null,
 
                 // Loot and rewards
@@ -157,7 +157,7 @@ public class MonsterExporter : BaseExporter
                     {
                         monsterData.drops.Add(new ItemDrop
                         {
-                            item_id = drop.item.name.ToLowerInvariant().Replace(" ", "_"),
+                            item_id = SanitizeId(drop.item.name),
                             rate = drop.probability
                         });
                     }
@@ -183,7 +183,7 @@ public class MonsterExporter : BaseExporter
             var zone = Il2Cpp.ZoneInfo.zones[zoneId];
             if (zone != null && !string.IsNullOrEmpty(zone.name))
             {
-                return zone.name.ToLowerInvariant().Replace(" ", "_");
+                return SanitizeId(zone.name);
             }
         }
 

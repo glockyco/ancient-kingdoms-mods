@@ -33,7 +33,7 @@ public class ZoneInfoExporter : BaseExporter
             var zoneInfoData = new ZoneInfoData
             {
                 zone_id = zone.id,
-                id = zone.name.ToLowerInvariant().Replace(" ", "_"),
+                id = SanitizeId(zone.name),
                 name = zone.name,
                 is_dungeon = zone.isDungeon,
                 weather_type = zone.weatherType.ToString(),

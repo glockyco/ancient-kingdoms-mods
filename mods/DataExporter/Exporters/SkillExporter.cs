@@ -32,7 +32,7 @@ public class SkillExporter : BaseExporter
             var skillData = new SkillData
             {
                 // Base ScriptableSkill fields
-                id = skill.name.ToLowerInvariant().Replace(" ", "_"),
+                id = SanitizeId(skill.name),
                 name = skill.nameSkill ?? skill.name,
                 skill_type = DetermineSkillType(skill),
                 tier = skill.tier,
@@ -41,11 +41,11 @@ public class SkillExporter : BaseExporter
                 required_skill_points = skill.requiredSkillPoints.Get(1),
                 required_spent_points = skill.requiredSpentPoints,
                 prerequisite_skill_id = skill.predecessor != null && !string.IsNullOrEmpty(skill.predecessor.name)
-                    ? skill.predecessor.name.ToLowerInvariant().Replace(" ", "_")
+                    ? SanitizeId(skill.predecessor.name)
                     : null,
                 prerequisite_level = skill.predecessorLevel,
                 prerequisite2_skill_id = skill.predecessor2 != null && !string.IsNullOrEmpty(skill.predecessor2.name)
-                    ? skill.predecessor2.name.ToLowerInvariant().Replace(" ", "_")
+                    ? SanitizeId(skill.predecessor2.name)
                     : null,
                 prerequisite2_level = skill.predecessorLevel2,
                 required_weapon_category = skill.requiredWeaponCategory ?? "",

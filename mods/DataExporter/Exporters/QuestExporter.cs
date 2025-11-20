@@ -36,11 +36,11 @@ public class QuestExporter : BaseExporter
                 quest_type = DetermineQuestType(quest),
                 level_required = quest.requiredLevel,
                 level_recommended = quest.recommendedLevel,
-                start_npc_id = quest.startQuestNPC != null ? quest.startQuestNPC.name.ToLowerInvariant().Replace(" ", "_") : null,
-                end_npc_id = quest.finishQuestNPC != null ? quest.finishQuestNPC.name.ToLowerInvariant().Replace(" ", "_") : null,
+                start_npc_id = quest.startQuestNPC != null ? SanitizeId(quest.startQuestNPC.name) : null,
+                end_npc_id = quest.finishQuestNPC != null ? SanitizeId(quest.finishQuestNPC.name) : null,
                 zone_id_final_npc = quest.idZoneFinalNPC,
                 zone_id_quest_action = quest.idZoneQuestAction,
-                given_item_on_start_id = quest.givenItemOnStartQuest != null ? quest.givenItemOnStartQuest.name.ToLowerInvariant().Replace(" ", "_") : null,
+                given_item_on_start_id = quest.givenItemOnStartQuest != null ? SanitizeId(quest.givenItemOnStartQuest.name) : null,
                 predecessor_id = quest.predecessor != null && quest.predecessor.Length > 0 && quest.predecessor[0] != null
                     ? quest.predecessor[0].idQuest
                     : null,
@@ -119,7 +119,7 @@ public class QuestExporter : BaseExporter
             {
                 questData.rewards.items.Add(new QuestRewardItem
                 {
-                    item_id = quest.rewardItem.name.ToLowerInvariant().Replace(" ", "_"),
+                    item_id = SanitizeId(quest.rewardItem.name),
                     class_specific = null
                 });
             }
@@ -173,7 +173,7 @@ public class QuestExporter : BaseExporter
         {
             questData.rewards.items.Add(new QuestRewardItem
             {
-                item_id = item.name.ToLowerInvariant().Replace(" ", "_"),
+                item_id = SanitizeId(item.name),
                 class_specific = className
             });
         }
@@ -204,13 +204,13 @@ public class QuestExporter : BaseExporter
 
         if (killQuest.killTarget != null)
         {
-            questData.kill_target_1_id = killQuest.killTarget.name.ToLowerInvariant().Replace(" ", "_");
+            questData.kill_target_1_id = SanitizeId(killQuest.killTarget.name);
             questData.kill_amount_1 = killQuest.killAmount;
         }
 
         if (killQuest.killTarget2 != null)
         {
-            questData.kill_target_2_id = killQuest.killTarget2.name.ToLowerInvariant().Replace(" ", "_");
+            questData.kill_target_2_id = SanitizeId(killQuest.killTarget2.name);
             questData.kill_amount_2 = killQuest.killAmount2;
         }
     }
@@ -222,19 +222,19 @@ public class QuestExporter : BaseExporter
 
         if (gatherQuest.gatherItem != null)
         {
-            questData.gather_item_1_id = gatherQuest.gatherItem.name.ToLowerInvariant().Replace(" ", "_");
+            questData.gather_item_1_id = SanitizeId(gatherQuest.gatherItem.name);
             questData.gather_amount_1 = gatherQuest.gatherAmount;
         }
 
         if (gatherQuest.gatherItem2 != null)
         {
-            questData.gather_item_2_id = gatherQuest.gatherItem2.name.ToLowerInvariant().Replace(" ", "_");
+            questData.gather_item_2_id = SanitizeId(gatherQuest.gatherItem2.name);
             questData.gather_amount_2 = gatherQuest.gatherAmount2;
         }
 
         if (gatherQuest.gatherItem3 != null)
         {
-            questData.gather_item_3_id = gatherQuest.gatherItem3.name.ToLowerInvariant().Replace(" ", "_");
+            questData.gather_item_3_id = SanitizeId(gatherQuest.gatherItem3.name);
             questData.gather_amount_3 = gatherQuest.gatherAmount3;
         }
     }
@@ -255,7 +255,7 @@ public class QuestExporter : BaseExporter
                 {
                     questData.gather_items.Add(new GatherItemAmount
                     {
-                        item_id = item.item.name.ToLowerInvariant().Replace(" ", "_"),
+                        item_id = SanitizeId(item.item.name),
                         amount = item.amount
                     });
                 }
@@ -271,7 +271,7 @@ public class QuestExporter : BaseExporter
                 {
                     questData.required_items.Add(new GatherItemAmount
                     {
-                        item_id = item.item.name.ToLowerInvariant().Replace(" ", "_"),
+                        item_id = SanitizeId(item.item.name),
                         amount = item.amount
                     });
                 }
@@ -301,7 +301,7 @@ public class QuestExporter : BaseExporter
             {
                 if (item != null)
                 {
-                    questData.equip_items.Add(item.name.ToLowerInvariant().Replace(" ", "_"));
+                    questData.equip_items.Add(SanitizeId(item.name));
                 }
             }
         }
@@ -314,7 +314,7 @@ public class QuestExporter : BaseExporter
 
         if (alchemyQuest.potionItem != null)
         {
-            questData.potion_item_id = alchemyQuest.potionItem.name.ToLowerInvariant().Replace(" ", "_");
+            questData.potion_item_id = SanitizeId(alchemyQuest.potionItem.name);
         }
         questData.potions_amount = alchemyQuest.potionsAmount;
         questData.increase_alchemy_skill = alchemyQuest.increaseAlchemySkill;
@@ -327,7 +327,7 @@ public class QuestExporter : BaseExporter
             var zone = Il2Cpp.ZoneInfo.zones[idZone];
             if (zone != null && !string.IsNullOrEmpty(zone.name))
             {
-                return zone.name.ToLowerInvariant().Replace(" ", "_");
+                return SanitizeId(zone.name);
             }
         }
         return "unknown";

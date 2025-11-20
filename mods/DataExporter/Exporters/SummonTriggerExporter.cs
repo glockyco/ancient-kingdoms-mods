@@ -57,12 +57,12 @@ public class SummonTriggerExporter : BaseExporter
                 var isTemplate = asMonster.gameObject == null || !asMonster.gameObject.scene.IsValid();
                 if (isTemplate)
                 {
-                    triggerData.summoned_entity_id = asMonster.name.ToLowerInvariant().Replace(" ", "_");
+                    triggerData.summoned_entity_id = SanitizeId(asMonster.name);
                 }
                 else
                 {
                     var zoneId = GetZoneId((byte)asMonster.idZone);
-                    triggerData.summoned_entity_id = $"{asMonster.name.ToLowerInvariant().Replace(" ", "_")}_{zoneId}_{asMonster.GetInstanceID()}";
+                    triggerData.summoned_entity_id = $"{SanitizeId(asMonster.name)}_{zoneId}_{asMonster.GetInstanceID()}";
                 }
             }
             else
@@ -77,12 +77,12 @@ public class SummonTriggerExporter : BaseExporter
                     var isTemplate = asNpc.gameObject == null || !asNpc.gameObject.scene.IsValid();
                     if (isTemplate)
                     {
-                        triggerData.summoned_entity_id = asNpc.name.ToLowerInvariant().Replace(" ", "_");
+                        triggerData.summoned_entity_id = SanitizeId(asNpc.name);
                     }
                     else
                     {
                         var zoneId = GetZoneId((byte)asNpc.idZone);
-                        triggerData.summoned_entity_id = $"{asNpc.name.ToLowerInvariant().Replace(" ", "_")}_{zoneId}_{asNpc.GetInstanceID()}";
+                        triggerData.summoned_entity_id = $"{SanitizeId(asNpc.name)}_{zoneId}_{asNpc.GetInstanceID()}";
                     }
                 }
                 else
@@ -113,7 +113,7 @@ public class SummonTriggerExporter : BaseExporter
                     continue;
 
                 var phZoneId = GetZoneId((byte)placeholder.idZone);
-                var placeholderId = $"{placeholder.name.ToLowerInvariant().Replace(" ", "_")}_{phZoneId}_{placeholder.GetInstanceID()}";
+                var placeholderId = $"{SanitizeId(placeholder.name)}_{phZoneId}_{placeholder.GetInstanceID()}";
 
                 triggerData.placeholder_monster_ids.Add(placeholderId);
             }
@@ -132,7 +132,7 @@ public class SummonTriggerExporter : BaseExporter
             var zone = Il2Cpp.ZoneInfo.zones[zoneId];
             if (zone != null && !string.IsNullOrEmpty(zone.name))
             {
-                return zone.name.ToLowerInvariant().Replace(" ", "_");
+                return SanitizeId(zone.name);
             }
         }
 

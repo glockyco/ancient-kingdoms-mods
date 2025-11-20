@@ -41,8 +41,8 @@ public class NpcExporter : BaseExporter
             {
                 // Identity
                 id = isTemplate
-                    ? npc.name.ToLowerInvariant().Replace(" ", "_")
-                    : $"{npc.name.ToLowerInvariant().Replace(" ", "_")}_{zoneId}_{npc.GetInstanceID()}",
+                    ? SanitizeId(npc.name)
+                    : $"{SanitizeId(npc.name)}_{zoneId}_{npc.GetInstanceID()}",
                 name = npc.name,
                 zone_id = zoneId,
                 position = isTemplate
@@ -149,7 +149,7 @@ public class NpcExporter : BaseExporter
                 {
                     if (questOffer != null && questOffer.quest != null && !string.IsNullOrEmpty(questOffer.quest.name))
                     {
-                        npcData.quests_offered.Add(questOffer.quest.name.ToLowerInvariant().Replace(" ", "_"));
+                        npcData.quests_offered.Add(SanitizeId(questOffer.quest.name));
                     }
                 }
             }
@@ -163,10 +163,10 @@ public class NpcExporter : BaseExporter
                     {
                         npcData.items_sold.Add(new ItemSold
                         {
-                            item_id = item.name.ToLowerInvariant().Replace(" ", "_"),
+                            item_id = SanitizeId(item.name),
                             price = (int)item.buyPrice,
                             currency_item_id = item.buyToken != null && !string.IsNullOrEmpty(item.buyToken.name)
-                                ? item.buyToken.name.ToLowerInvariant().Replace(" ", "_")
+                                ? SanitizeId(item.buyToken.name)
                                 : null
                         });
                     }
@@ -191,7 +191,7 @@ public class NpcExporter : BaseExporter
                     {
                         npcData.drops.Add(new ItemDrop
                         {
-                            item_id = drop.item.name.ToLowerInvariant().Replace(" ", "_"),
+                            item_id = SanitizeId(drop.item.name),
                             rate = drop.probability
                         });
                     }
@@ -217,7 +217,7 @@ public class NpcExporter : BaseExporter
             var zone = Il2Cpp.ZoneInfo.zones[zoneId];
             if (zone != null && !string.IsNullOrEmpty(zone.name))
             {
-                return zone.name.ToLowerInvariant().Replace(" ", "_");
+                return SanitizeId(zone.name);
             }
         }
 

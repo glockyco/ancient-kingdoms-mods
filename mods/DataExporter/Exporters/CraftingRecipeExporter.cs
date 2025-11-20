@@ -42,7 +42,7 @@ public class CraftingRecipeExporter : BaseExporter
                 if (craftingItem == null || craftingItem.itemResult == null)
                     continue;
 
-                var resultId = craftingItem.itemResult.name.ToLowerInvariant().Replace(" ", "_");
+                var resultId = SanitizeId(craftingItem.itemResult.name);
 
                 var recipe = new CraftingRecipeData
                 {
@@ -62,7 +62,7 @@ public class CraftingRecipeExporter : BaseExporter
 
                         recipe.materials.Add(new CraftingMaterial
                         {
-                            item_id = material.item.name.ToLowerInvariant().Replace(" ", "_"),
+                            item_id = SanitizeId(material.item.name),
                             amount = material.amount
                         });
                     }

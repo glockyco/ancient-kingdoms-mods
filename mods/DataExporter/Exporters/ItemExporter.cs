@@ -32,7 +32,7 @@ public class ItemExporter : BaseExporter
 
             var itemData = new ItemData
             {
-                id = scriptableItem.name.ToLowerInvariant().Replace(" ", "_"),
+                id = SanitizeId(scriptableItem.name),
                 name = scriptableItem.nameItem ?? scriptableItem.name,
                 item_type = DetermineItemType(scriptableItem),
                 quality = scriptableItem.quality,
@@ -48,7 +48,7 @@ public class ItemExporter : BaseExporter
                 max_stack = scriptableItem.maxStack,
                 buy_price = scriptableItem.buyPrice,
                 sell_price = scriptableItem.sellPrice,
-                buy_token_id = scriptableItem.buyToken != null ? scriptableItem.buyToken.name.ToLowerInvariant().Replace(" ", "_") : null,
+                buy_token_id = scriptableItem.buyToken != null ? SanitizeId(scriptableItem.buyToken.name) : null,
                 sellable = scriptableItem.sellable,
                 tradable = scriptableItem.tradable,
                 destroyable = scriptableItem.destroyable,
@@ -200,7 +200,7 @@ public class ItemExporter : BaseExporter
         itemData.potion_buff_level = potionItem.buffLevel;
         if (potionItem.buffEffect != null)
         {
-            itemData.potion_buff_id = potionItem.buffEffect.name.ToLowerInvariant().Replace(" ", "_");
+            itemData.potion_buff_id = SanitizeId(potionItem.buffEffect.name);
         }
     }
 
@@ -213,7 +213,7 @@ public class ItemExporter : BaseExporter
         itemData.food_buff_level = foodItem.buffLevel;
         if (foodItem.buffEffect != null)
         {
-            itemData.food_buff_id = foodItem.buffEffect.name.ToLowerInvariant().Replace(" ", "_");
+            itemData.food_buff_id = SanitizeId(foodItem.buffEffect.name);
         }
     }
 
@@ -239,7 +239,7 @@ public class ItemExporter : BaseExporter
         itemData.is_repair_kit = scrollItem.isRepairKit;
         if (scrollItem.skillEffect != null)
         {
-            itemData.scroll_skill_id = scrollItem.skillEffect.name.ToLowerInvariant().Replace(" ", "_");
+            itemData.scroll_skill_id = SanitizeId(scrollItem.skillEffect.name);
         }
     }
 
@@ -280,7 +280,7 @@ public class ItemExporter : BaseExporter
 
         if (packItem.finalItemReceived != null)
         {
-            itemData.pack_final_item_id = packItem.finalItemReceived.name.ToLowerInvariant().Replace(" ", "_");
+            itemData.pack_final_item_id = SanitizeId(packItem.finalItemReceived.name);
         }
         itemData.pack_final_amount = packItem.finalAmountReceived;
     }
@@ -297,7 +297,7 @@ public class ItemExporter : BaseExporter
             {
                 if (randItem != null)
                 {
-                    itemData.random_items.Add(randItem.name.ToLowerInvariant().Replace(" ", "_"));
+                    itemData.random_items.Add(SanitizeId(randItem.name));
                 }
             }
         }
@@ -318,7 +318,7 @@ public class ItemExporter : BaseExporter
                 {
                     itemData.chest_rewards.Add(new ItemDropChance
                     {
-                        item_id = reward.item.name.ToLowerInvariant().Replace(" ", "_"),
+                        item_id = SanitizeId(reward.item.name),
                         probability = reward.probability
                     });
                 }
@@ -334,7 +334,7 @@ public class ItemExporter : BaseExporter
         itemData.relic_buff_level = relicItem.buffLevel;
         if (relicItem.buffEffect != null)
         {
-            itemData.relic_buff_id = relicItem.buffEffect.name.ToLowerInvariant().Replace(" ", "_");
+            itemData.relic_buff_id = SanitizeId(relicItem.buffEffect.name);
         }
     }
 
@@ -352,7 +352,7 @@ public class ItemExporter : BaseExporter
                 {
                     itemData.spawned_monsters.Add(new SpawnedMonster
                     {
-                        monster_id = spawn.monster.name.ToLowerInvariant().Replace(" ", "_"),
+                        monster_id = SanitizeId(spawn.monster.name),
                         amount = spawn.amount,
                         distance_multiplier = spawn.distanceMultiplier
                     });
@@ -384,11 +384,11 @@ public class ItemExporter : BaseExporter
 
         if (weaponItem.requiredAmmo != null)
         {
-            itemData.weapon_required_ammo_id = weaponItem.requiredAmmo.name.ToLowerInvariant().Replace(" ", "_");
+            itemData.weapon_required_ammo_id = SanitizeId(weaponItem.requiredAmmo.name);
         }
         if (weaponItem.procEffect != null)
         {
-            itemData.weapon_proc_effect_id = weaponItem.procEffect.name.ToLowerInvariant().Replace(" ", "_");
+            itemData.weapon_proc_effect_id = SanitizeId(weaponItem.procEffect.name);
         }
         itemData.weapon_proc_effect_probability = weaponItem.procEffectProbability;
         itemData.weapon_delay = weaponItem.delay;
@@ -408,7 +408,7 @@ public class ItemExporter : BaseExporter
             {
                 if (armorPiece != null)
                 {
-                    itemData.augment_armor_set_item_ids.Add(armorPiece.name.ToLowerInvariant().Replace(" ", "_"));
+                    itemData.augment_armor_set_item_ids.Add(SanitizeId(armorPiece.name));
                 }
             }
         }
@@ -422,7 +422,7 @@ public class ItemExporter : BaseExporter
                 {
                     itemData.augment_skill_bonuses.Add(new AugmentSkillBonus
                     {
-                        skill_id = skillBonus.skill.name.ToLowerInvariant().Replace(" ", "_"),
+                        skill_id = SanitizeId(skillBonus.skill.name),
                         level_bonus = skillBonus.levelBonus
                     });
                 }
@@ -437,7 +437,7 @@ public class ItemExporter : BaseExporter
 
         if (treasureMapItem.reward != null)
         {
-            itemData.treasure_map_reward_id = treasureMapItem.reward.name.ToLowerInvariant().Replace(" ", "_");
+            itemData.treasure_map_reward_id = SanitizeId(treasureMapItem.reward.name);
         }
         if (treasureMapItem.imageLocation != null)
         {
@@ -453,7 +453,7 @@ public class ItemExporter : BaseExporter
         itemData.fragment_amount_needed = fragmentItem.amountNeeded;
         if (fragmentItem.resultItem != null)
         {
-            itemData.fragment_result_item_id = fragmentItem.resultItem.name.ToLowerInvariant().Replace(" ", "_");
+            itemData.fragment_result_item_id = SanitizeId(fragmentItem.resultItem.name);
         }
     }
 
@@ -469,13 +469,13 @@ public class ItemExporter : BaseExporter
             {
                 if (neededItem != null)
                 {
-                    itemData.merge_items_needed_ids.Add(neededItem.name.ToLowerInvariant().Replace(" ", "_"));
+                    itemData.merge_items_needed_ids.Add(SanitizeId(neededItem.name));
                 }
             }
         }
         if (mergeItem.resultItem != null)
         {
-            itemData.merge_result_item_id = mergeItem.resultItem.name.ToLowerInvariant().Replace(" ", "_");
+            itemData.merge_result_item_id = SanitizeId(mergeItem.resultItem.name);
         }
     }
 
@@ -486,7 +486,7 @@ public class ItemExporter : BaseExporter
 
         if (recipeItem.potionLearned != null)
         {
-            itemData.recipe_potion_learned_id = recipeItem.potionLearned.name.ToLowerInvariant().Replace(" ", "_");
+            itemData.recipe_potion_learned_id = SanitizeId(recipeItem.potionLearned.name);
         }
     }
 }
