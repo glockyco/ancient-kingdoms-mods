@@ -27,8 +27,7 @@ website/
 │   │   │   ├── EntityCard.svelte
 │   │   │   ├── EntityHeader.svelte
 │   │   │   ├── FilterPanel.svelte
-│   │   │   ├── LoadingOverlay.svelte  # Navigation loading indicator
-│   │   │   └── SEO.svelte
+│   │   │   └── LoadingOverlay.svelte  # Navigation loading indicator
 │   │   ├── types/            # Shared TypeScript types
 │   │   │   └── items.ts      # Item page data types
 │   │   ├── db.ts             # SQLite wrapper (sql.js-httpvfs)
@@ -58,7 +57,6 @@ website/
 │   └── robots.txt
 ├── build/                    # Static build output (gitignored)
 ├── svelte.config.js          # SvelteKit configuration
-├── tailwind.config.ts        # Tailwind configuration
 ├── vite.config.ts            # Vite configuration
 ├── tsconfig.json             # TypeScript configuration
 └── package.json              # Dependencies and scripts
@@ -308,27 +306,6 @@ export async function searchEntities(db: Database, query: string) {
 }
 ```
 
-## SEO Best Practices
-
-**Every page needs:**
-
-- Unique `<title>`
-- Meta description
-- Open Graph tags
-- Canonical URL
-- JSON-LD structured data
-
-**Use SEO component:**
-
-```svelte
-<SEO
-  title="Dragon Sword - Item Details"
-  description="Level 45 Epic Sword with +85 damage and +12 strength"
-  type="article"
-  image="/icons/dragon_sword.webp"
-/>
-```
-
 ## Deployment
 
 **Cloudflare Pages:**
@@ -428,16 +405,3 @@ export const load = async () => {
 - Run `pnpm check` to see all errors
 - Regenerate types with `compendium types` if schema changed
 - Check `tsconfig.json` paths are correct
-
-## Future Enhancements
-
-See `IMPLEMENTATION_PLAN.md` Phase 3 for full roadmap.
-
-**Post-MVP:**
-
-- Quest pages
-- Skill pages
-- Build planner tool
-- Item comparison
-- PWA support (offline mode)
-- User notes/annotations
