@@ -38,7 +38,6 @@
 		}
 
 		// Query-only navigation - stays on current route, only updates search params
-		// eslint-disable-next-line svelte/no-navigation-without-resolve
 		goto(`?${newParams.toString()}`, { replaceState: true });
 	}
 
@@ -132,15 +131,7 @@
 			<!-- Clear Filters -->
 			{#if data.filters.quality || data.filters.itemType || data.filters.search}
 				<div>
-					<Button
-						variant="outline"
-						onclick={() =>
-							goto(resolve('/items'), {
-								replaceState: true
-							})}
-					>
-						Clear Filters
-					</Button>
+					<Button variant="outline" href="/items">Clear Filters</Button>
 				</div>
 			{/if}
 		</Card.Content>

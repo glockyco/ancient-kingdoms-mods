@@ -30,5 +30,12 @@ export default ts.config(
         parser: ts.parser,
       },
     },
+    rules: {
+      // Disable navigation check - resolve() doesn't support query params/hash yet
+      // https://github.com/sveltejs/kit/issues/14750
+      // Also causes false positives when resolve() is called in functions/variables
+      // https://github.com/sveltejs/eslint-plugin-svelte/issues/1314
+      "svelte/no-navigation-without-resolve": "off",
+    },
   },
 );
