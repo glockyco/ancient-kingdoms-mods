@@ -1,13 +1,18 @@
+import { browser } from "$app/environment";
 import { getItems, getItemTypes, getItemCount } from "$lib/queries/items";
+import { PAGINATION } from "$lib/config";
 import type { PageLoad } from "./$types";
 
-export const load: PageLoad = async ({ url }) => {
+export const load: PageLoad = async ({ url, data }) => {
+  // During SSR/prerendering, always use server data
+  if (!browser) {
+    return data;
+  }
+
   // Parse URL search params for filters
   const search = url.searchParams.get("search") || undefined;
   const qualityParam = url.searchParams.get("quality");
-  const quality = qualityParam
-    ? qualityParam.split(",").map(Number)
-    : undefined;
+  const quality = qualityParam ? qualityParam.split(",").map(Number) : undefined;
   const itemTypeParam = url.searchParams.get("type");
   const itemType = itemTypeParam ? itemTypeParam.split(",") : undefined;
   const minLevel = url.searchParams.get("minLevel")
@@ -17,16 +22,24 @@ export const load: PageLoad = async ({ url }) => {
     ? Number(url.searchParams.get("maxLevel"))
     : undefined;
   const page = Number(url.searchParams.get("page") || "1");
-  const pageSize = 50;
 
+  // Check if any filters are applied
+  const hasFilters = search || quality || itemType || minLevel || maxLevel || page > 1;
+
+  // If no filters, use prerendered server data
+  if (!hasFilters) {
+    return data;
+  }
+
+  // Otherwise, use client-side queries for filtering (browser only)
   const filters = {
     search,
     quality,
     itemType,
     minLevel,
     maxLevel,
-    limit: pageSize,
-    offset: (page - 1) * pageSize,
+    limit: PAGINATION.PAGE_SIZE,
+    offset: (page - 1) * PAGINATION.PAGE_SIZE,
   };
 
   const [items, totalCount, availableTypes] = await Promise.all([
@@ -48,8 +61,8 @@ export const load: PageLoad = async ({ url }) => {
     },
     pagination: {
       page,
-      pageSize,
-      totalPages: Math.ceil(totalCount / pageSize),
+      pageSize: PAGINATION.PAGE_SIZE,
+      totalPages: Math.ceil(totalCount / PAGINATION.PAGE_SIZE),
     },
   };
 };
