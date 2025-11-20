@@ -8,6 +8,11 @@ node_modules
 /.svelte-kit
 /build
 
+# Generated files (from build-pipeline)
+/static/compendium.db
+/static/tiles/
+/static/icons/
+
 # OS
 .DS_Store
 Thumbs.db
