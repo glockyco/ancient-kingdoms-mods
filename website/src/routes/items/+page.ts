@@ -1,4 +1,4 @@
-import { getItems, getItemTypes, getItemCount } from "$lib/queries/items";
+import { getItems, getItemTypesWithCounts, getQualityCounts, getItemCount } from "$lib/queries/items";
 import { PAGINATION } from "$lib/config";
 import type { PageLoad } from "./$types";
 import type { ItemsPageData } from "$lib/types/items";
@@ -6,9 +6,6 @@ import type { ItemsPageData } from "$lib/types/items";
 // Disable SSR to prevent flash of wrong content
 // Page renders as empty shell, then client-side load fetches correct data
 export const ssr = false;
-
-// Cache item types - they don't change between page loads
-let cachedItemTypes: string[] | null = null;
 
 export const load: PageLoad = async ({ url }): Promise<ItemsPageData> => {
   // Parse URL search params for filters
@@ -36,20 +33,19 @@ export const load: PageLoad = async ({ url }): Promise<ItemsPageData> => {
     offset: (page - 1) * PAGINATION.PAGE_SIZE,
   };
 
-  // Fetch types only once and cache
-  if (!cachedItemTypes) {
-    cachedItemTypes = await getItemTypes();
-  }
-
-  const [items, totalCount] = await Promise.all([
+  // Fetch type counts based on current quality filter, and quality counts based on current type filter
+  const [items, totalCount, availableTypes, qualityCounts] = await Promise.all([
     getItems(filters),
     getItemCount(filters),
+    getItemTypesWithCounts(quality),
+    getQualityCounts(itemType),
   ]);
 
   return {
     items,
     totalCount,
-    availableTypes: cachedItemTypes,
+    availableTypes,
+    qualityCounts,
     filters: {
       search,
       quality,

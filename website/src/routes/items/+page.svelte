@@ -11,6 +11,9 @@
 
 	$: items = data.items;
 
+	// Create lookup map for quality counts
+	$: qualityCountMap = new Map(data.qualityCounts.map((q) => [q.quality, q.count]));
+
 	const qualityColors = [
 		'bg-quality-0',
 		'bg-quality-1',
@@ -96,7 +99,7 @@
 								: 'bg-muted border-transparent'}"
 							on:click={() => toggleQuality(quality)}
 						>
-							{qualityNames[quality]}
+							{qualityNames[quality]} ({qualityCountMap.get(quality) ?? 0})
 						</button>
 					{/each}
 				</div>
@@ -106,7 +109,7 @@
 			<div>
 				<div class="text-sm font-medium mb-2">Type</div>
 				<div class="flex gap-2 flex-wrap">
-					{#each data.availableTypes.slice(0, 10) as type (type)}
+					{#each data.availableTypes as { type, count } (type)}
 						<button
 							type="button"
 							class="px-3 py-1 rounded text-sm font-medium transition-all border-2 {data.filters.itemType?.includes(
@@ -122,7 +125,7 @@
 								updateFilters({ type: newTypes.length > 0 ? newTypes.join(',') : undefined });
 							}}
 						>
-							{type}
+							{type} ({count})
 						</button>
 					{/each}
 				</div>
