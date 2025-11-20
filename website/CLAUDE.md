@@ -27,7 +27,10 @@ website/
 │   │   │   ├── EntityCard.svelte
 │   │   │   ├── EntityHeader.svelte
 │   │   │   ├── FilterPanel.svelte
+│   │   │   ├── LoadingOverlay.svelte  # Navigation loading indicator
 │   │   │   └── SEO.svelte
+│   │   ├── types/            # Shared TypeScript types
+│   │   │   └── items.ts      # Item page data types
 │   │   ├── db.ts             # SQLite wrapper (sql.js-httpvfs)
 │   │   ├── queries.ts        # SQL queries
 │   │   ├── types.ts          # TypeScript types (generated from DB schema)
@@ -97,6 +100,66 @@ pnpm preview
 2. Run `pnpm build` - Ensure static build succeeds
 3. Test in browser - Verify functionality works
 4. Check for console errors
+
+**Pre-commit hooks automatically run:**
+
+- ESLint with auto-fix
+- Prettier with auto-format
+- `pnpm check` for type checking (TypeScript + Svelte validation)
+
+If hooks fail, fix the issues and stage the fixes before committing again.
+
+### TypeScript and Type Safety
+
+**Strict mode is ALWAYS enabled** (`"strict": true` in tsconfig.json). This provides maximum compile-time guarantees.
+
+**Type assertion guidelines:**
+
+- **ONLY use type assertions at I/O boundaries** where TypeScript fundamentally cannot provide guarantees:
+  - Database queries (better-sqlite3 returns `unknown`)
+  - JSON parsing (`JSON.parse` returns `any`)
+  - External API responses
+- **NEVER use type assertions in:**
+  - Component code
+  - Business logic
+  - Data transformations
+  - Internal function calls
+
+**Proper type patterns:**
+
+```typescript
+// ✅ GOOD: Explicit return types on load functions
+export const load: PageServerLoad = (): ItemsPageData => {
+  const items = db.prepare("SELECT * FROM items").all() as Item[]; // OK - I/O boundary
+  return { items }; // Type-checked against ItemsPageData
+};
+
+// ✅ GOOD: Shared type definitions (no duplication)
+// Define once in src/lib/types/
+export interface ItemsPageData {
+  items: Item[];
+  totalCount: number;
+  // ...
+}
+
+// ❌ BAD: Type assertions in components
+const { item } = data as { item: Item }; // Should use proper typing instead
+
+// ❌ BAD: Duplicate interface definitions
+// Don't define ItemsPageData in both +page.ts and +page.server.ts
+```
+
+**Configuration constants:**
+
+- Extract magic numbers to `src/lib/config.ts`
+- Use `as const` for readonly configuration
+- Single source of truth for settings
+
+```typescript
+export const PAGINATION = {
+  PAGE_SIZE: 50,
+} as const;
+```
 
 ## Key Architectural Decisions
 
@@ -284,6 +347,45 @@ export async function searchEntities(db: Database, query: string) {
 - Test on mobile viewport
 
 ## Performance Considerations
+
+**Client-side navigation:**
+
+- Loading indicator is handled globally in `+layout.svelte` - automatically shows for all navigations
+- The `LoadingOverlay` component subscribes to `$navigating` store internally
+- Cache expensive query results (e.g., item types that don't change)
+- Minimize database queries - reduce from 3 to 2 where possible
+
+**Global UI components:**
+
+For UI elements that should appear site-wide (loading indicators, navigation, footers), add them to `src/routes/+layout.svelte`:
+
+```svelte
+<!-- src/routes/+layout.svelte -->
+<script>
+  import LoadingOverlay from "$lib/components/LoadingOverlay.svelte";
+  let { children } = $props();
+</script>
+
+<LoadingOverlay />
+{@render children()}
+```
+
+This is better than adding to individual pages because:
+- Single source of truth (DRY principle)
+- Automatically applies to all routes
+- No imports needed on individual pages
+
+```typescript
+// Caching pattern for static data
+let cachedItemTypes: string[] | null = null;
+
+export const load = async () => {
+  if (!cachedItemTypes) {
+    cachedItemTypes = await getItemTypes();
+  }
+  return { types: cachedItemTypes };
+};
+```
 
 **Lazy loading:**
 

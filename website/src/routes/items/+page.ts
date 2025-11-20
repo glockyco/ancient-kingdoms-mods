@@ -1,14 +1,16 @@
-import { browser } from "$app/environment";
 import { getItems, getItemTypes, getItemCount } from "$lib/queries/items";
 import { PAGINATION } from "$lib/config";
 import type { PageLoad } from "./$types";
+import type { ItemsPageData } from "$lib/types/items";
 
-export const load: PageLoad = async ({ url, data }) => {
-  // During SSR/prerendering, always use server data
-  if (!browser) {
-    return data;
-  }
+// Disable SSR to prevent flash of wrong content
+// Page renders as empty shell, then client-side load fetches correct data
+export const ssr = false;
 
+// Cache item types - they don't change between page loads
+let cachedItemTypes: string[] | null = null;
+
+export const load: PageLoad = async ({ url }): Promise<ItemsPageData> => {
   // Parse URL search params for filters
   const search = url.searchParams.get("search") || undefined;
   const qualityParam = url.searchParams.get("quality");
@@ -23,15 +25,7 @@ export const load: PageLoad = async ({ url, data }) => {
     : undefined;
   const page = Number(url.searchParams.get("page") || "1");
 
-  // Check if any filters are applied
-  const hasFilters = search || quality || itemType || minLevel || maxLevel || page > 1;
-
-  // If no filters, use prerendered server data
-  if (!hasFilters) {
-    return data;
-  }
-
-  // Otherwise, use client-side queries for filtering (browser only)
+  // Client-side queries
   const filters = {
     search,
     quality,
@@ -42,16 +36,20 @@ export const load: PageLoad = async ({ url, data }) => {
     offset: (page - 1) * PAGINATION.PAGE_SIZE,
   };
 
-  const [items, totalCount, availableTypes] = await Promise.all([
+  // Fetch types only once and cache
+  if (!cachedItemTypes) {
+    cachedItemTypes = await getItemTypes();
+  }
+
+  const [items, totalCount] = await Promise.all([
     getItems(filters),
     getItemCount(filters),
-    getItemTypes(),
   ]);
 
   return {
     items,
     totalCount,
-    availableTypes,
+    availableTypes: cachedItemTypes,
     filters: {
       search,
       quality,

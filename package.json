@@ -24,7 +24,8 @@
   "lint-staged": {
     "website/**/*.{js,ts,svelte}": [
       "cd website && pnpm exec eslint --fix",
-      "cd website && pnpm exec prettier --write"
+      "cd website && pnpm exec prettier --write",
+      "cd website && pnpm check"
     ],
     "website/**/*.{css,json,md}": [
       "cd website && pnpm exec prettier --write"

@@ -3,9 +3,12 @@
 	import { goto } from '$app/navigation';
 	import * as Card from '$lib/components/ui/card';
 	import { Button } from '$lib/components/ui/button';
+	import type { Item } from '$lib/queries/items';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
+
+	$: items = data.items;
 
 	const qualityColors = [
 		'bg-quality-0',
@@ -68,7 +71,7 @@
 	<div>
 		<h1 class="text-4xl font-bold mb-2">Items</h1>
 		<p class="text-muted-foreground">
-			Showing {data.items.length} of {data.totalCount} items
+			Showing {items.length} of {data.totalCount} items
 		</p>
 	</div>
 
@@ -142,7 +145,7 @@
 
 	<!-- Items Grid -->
 	<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-		{#each data.items as item}
+		{#each items as item (item.id)}
 			<a href="/items/{item.id}" class="block">
 				<Card.Root class="h-full hover:border-primary transition-colors">
 					<Card.Header>

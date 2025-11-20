@@ -1,6 +1,8 @@
 import Database from "better-sqlite3";
 import { error } from "@sveltejs/kit";
 import type { PageServerLoad, EntryGenerator } from "./$types";
+import type { ItemDetailPageData } from "$lib/types/items";
+import type { Item } from "$lib/queries/items";
 
 export const prerender = true;
 
@@ -14,10 +16,10 @@ export const entries: EntryGenerator = () => {
 };
 
 // Load item data at build time (for SSR/prerendering)
-export const load: PageServerLoad = ({ params }) => {
+export const load: PageServerLoad = ({ params }): ItemDetailPageData => {
   const db = new Database("static/compendium.db", { readonly: true });
 
-  const item = db.prepare("SELECT * FROM items WHERE id = ?").get(params.id);
+  const item = db.prepare("SELECT * FROM items WHERE id = ?").get(params.id) as Item | undefined;
   db.close();
 
   if (!item) {

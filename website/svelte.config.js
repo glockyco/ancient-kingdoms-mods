@@ -9,7 +9,6 @@ const config = {
     adapter: adapter({
       pages: "build",
       assets: "build",
-      // No fallback - all routes are prerendered, 404s return proper HTTP status
       precompress: false,
     }),
     prerender: {
