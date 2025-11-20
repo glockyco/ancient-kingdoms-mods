@@ -56,10 +56,48 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   - Check for errors and warnings
 
 **Atomic Commits:**
-- Each commit should be single-purpose and independently functional
-- One logical change per commit
+- ALWAYS create atomic commits - each commit should be single-purpose and independently functional
+- One logical change per commit (e.g., "add feature X" OR "fix bug Y", not both)
 - Don't batch unrelated changes together
 - Update documentation in the same commit as the related code change
+- Each commit should compile and pass tests independently
+
+**Commit Messages:**
+- MUST use Conventional Commits format: `type(scope): description`
+- Use prose style in body, NOT bullet points
+- Explain WHY changes were made, not just WHAT changed (diffs show the what)
+- Max 80 characters per line
+- Structure: subject line, blank line, body paragraphs
+- Subject: imperative mood (e.g., "fix flash of stale content")
+- Body: explain the problem, why it existed, and how the solution works
+
+**Conventional Commit Types:**
+- `feat:` - New feature
+- `fix:` - Bug fix
+- `refactor:` - Code change that neither fixes a bug nor adds a feature
+- `perf:` - Performance improvement
+- `docs:` - Documentation changes
+- `style:` - Formatting, missing semicolons, etc (not CSS)
+- `test:` - Adding or updating tests
+- `chore:` - Build process, tooling, dependencies
+
+Example:
+```
+feat(website): fix flash of stale content and strengthen type safety
+
+Accessing the items page with query parameters (e.g., /items?page=6)
+showed a brief flash of page 1 content before switching to the correct
+filtered results. This happened because the prerendered HTML embedded
+page 1 data, which displayed immediately while JavaScript fetched the
+correct data. Disabling SSR for the items page prerenders only an empty
+HTML shell, eliminating the flash while maintaining SEO benefits.
+
+Adding `pnpm check` to lint-staged revealed 48 TypeScript errors from
+loose typing in the data loading pipeline. Components used type
+assertions to work around unknown types. The fix creates explicit typed
+interfaces in src/lib/types/items.ts, adds return types to load
+functions, and removes assertions from components.
+```
 
 **Pre-commit Hooks:**
 - Husky + lint-staged automatically run on staged files before each commit
