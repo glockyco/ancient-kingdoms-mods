@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as Card from '$lib/components/ui/card';
-	import { Button } from '$lib/components/ui/button';
 	import { resolve } from '$app/paths';
+	import Breadcrumb from '$lib/components/Breadcrumb.svelte';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
@@ -51,10 +51,17 @@
 </svelte:head>
 
 <div class="container mx-auto p-8 space-y-8 max-w-5xl">
+	<!-- Breadcrumb -->
+	<Breadcrumb
+		items={[
+			{ label: 'Home', href: '/' },
+			{ label: 'Items', href: '/items' },
+			{ label: item.name }
+		]}
+	/>
+
 	<!-- Header -->
 	<div>
-		<Button href="/items" variant="outline" class="mb-4">← Back to Items</Button>
-
 		<div class="flex items-start gap-4">
 			<div class="flex-1">
 				<div class="flex items-center gap-3 mb-2">
