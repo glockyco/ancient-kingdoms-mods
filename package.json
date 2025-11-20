@@ -23,7 +23,7 @@
   },
   "lint-staged": {
     "website/**/*.{js,ts,svelte}": [
-      "cd website && pnpm exec eslint --fix",
+      "cd website && pnpm exec eslint --fix --max-warnings 0",
       "cd website && pnpm exec prettier --write",
       "cd website && pnpm check"
     ],
