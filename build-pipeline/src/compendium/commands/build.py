@@ -1096,10 +1096,29 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
             # Invalid JSON or missing field, skip
             pass
 
+    # Denormalize buff names from skills table
+    console.print("  Denormalizing buff names...")
+    cursor.execute("""
+        UPDATE items
+        SET food_buff_name = (SELECT name FROM skills WHERE skills.id = items.food_buff_id)
+        WHERE food_buff_id IS NOT NULL
+    """)
+    food_buff_count = cursor.rowcount
+
+    cursor.execute("""
+        UPDATE items
+        SET relic_buff_name = (SELECT name FROM skills WHERE skills.id = items.relic_buff_id)
+        WHERE relic_buff_id IS NOT NULL
+    """)
+    relic_buff_count = cursor.rowcount
+
     conn.commit()
 
     console.print(
         f"  [green]OK[/green] Updated {update_count} items with armor set data (bonuses, members, name)"
+    )
+    console.print(
+        f"  [green]OK[/green] Updated {food_buff_count} items with food buff names, {relic_buff_count} items with relic buff names"
     )
     console.print(
         f"  [green]OK[/green] Updated {len(dropped_by)} items with monster drops"

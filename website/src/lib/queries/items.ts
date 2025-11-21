@@ -40,6 +40,7 @@ export interface Item {
   potion_buff_id: string | null;
   food_buff_level: number;
   food_buff_id: string | null;
+  food_buff_name: string | null;
   food_type: string | null;
   // Book stat gains
   book_strength_gain: number;
@@ -97,6 +98,7 @@ export interface Item {
   recipe_potion_learned_id: string | null;
   // Relic buff
   relic_buff_id: string | null;
+  relic_buff_name: string | null;
   // Denormalized relationships
   dropped_by: string | null; // JSON
   sold_by: string | null; // JSON

@@ -73,6 +73,7 @@ CREATE TABLE items (
     potion_buff_id TEXT REFERENCES skills(id),
     food_buff_level INTEGER DEFAULT 0,
     food_buff_id TEXT REFERENCES skills(id),
+    food_buff_name TEXT,
     food_type TEXT,
     book_strength_gain INTEGER DEFAULT 0,
     book_dexterity_gain INTEGER DEFAULT 0,
@@ -117,6 +118,7 @@ CREATE TABLE items (
     pack_final_item_id TEXT REFERENCES items(id),
     recipe_potion_learned_id TEXT REFERENCES items(id),
     relic_buff_id TEXT REFERENCES skills(id),
+    relic_buff_name TEXT,
 
     -- Denormalized: Where to get this item (as JSON arrays)
     dropped_by TEXT,                -- JSON: [{"monster_id": "fire_ele", "rate": 0.15, "zone_id": "volcanic"}]
