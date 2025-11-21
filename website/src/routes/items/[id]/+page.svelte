@@ -435,8 +435,17 @@
                   {vendor.npc_name}
                 </a>
                 <span class="text-yellow-600 dark:text-yellow-400">
-                  {vendor.price}
-                  {vendor.currency_item_name || "g"}
+                  {#if vendor.currency_item_id}
+                    {vendor.price}
+                    <a
+                      href={resolve("/items/[id]", { id: vendor.currency_item_id })}
+                      class="hover:underline"
+                    >
+                      {vendor.currency_item_name}
+                    </a>
+                  {:else}
+                    {vendor.price}g
+                  {/if}
                 </span>
               </div>
             {/each}
