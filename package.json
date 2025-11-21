@@ -21,6 +21,22 @@
   },
   "packageManager": "pnpm@10.22.0",
   "devDependencies": {
-    "husky": "^9.1.7"
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.6"
+  },
+  "lint-staged": {
+    "website/**/*.{js,ts,svelte}": [
+      "cd website && pnpm exec prettier --write",
+      "cd website && pnpm exec eslint --fix --max-warnings 0",
+      "cd website && pnpm check"
+    ],
+    "website/**/*.{css,json,md}": [
+      "cd website && pnpm exec prettier --write"
+    ],
+    "build-pipeline/**/*.py": [
+      "cd build-pipeline && uv run ruff format",
+      "cd build-pipeline && uv run ruff check --fix",
+      "cd build-pipeline && uv run mypy ."
+    ]
   }
 }
