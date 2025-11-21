@@ -29,7 +29,6 @@ from compendium.utils import get_repo_root
 class DropInfo(TypedDict):
     monster_id: str
     rate: float
-    zone_id: str
 
 
 class GatherDropInfo(TypedDict):
@@ -41,7 +40,6 @@ class SoldByInfo(TypedDict):
     npc_id: str
     price: int
     currency_item_id: str | None
-    zone_id: str
 
 
 class RewardedByInfo(TypedDict):
@@ -453,18 +451,17 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
 
     cursor = conn.cursor()
 
-    # Build dropped_by from monsters.drops joined with monster_spawns for zone info
+    # Build dropped_by from monsters.drops
     console.print("  Processing monster drops...")
     cursor.execute("""
-        SELECT m.id, ms.zone_id, m.drops
-        FROM monsters m
-        JOIN monster_spawns ms ON m.id = ms.monster_id
-        WHERE m.drops IS NOT NULL AND m.drops != '[]'
+        SELECT id, drops
+        FROM monsters
+        WHERE drops IS NOT NULL AND drops != '[]'
     """)
 
     dropped_by: dict[str, list[DropInfo]] = {}
 
-    for monster_id, zone_id, drops_json in cursor.fetchall():
+    for monster_id, drops_json in cursor.fetchall():
         drops = json.loads(drops_json)
         for drop in drops:
             item_id = drop.get("item_id")
@@ -475,7 +472,6 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
                     {
                         "monster_id": monster_id,
                         "rate": drop.get("rate", 0.0),
-                        "zone_id": zone_id,
                     }
                 )
 
@@ -500,18 +496,17 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
                     {"gather_item_id": gather_item_id, "rate": drop.get("rate", 0.0)}
                 )
 
-    # Build sold_by from npcs.items_sold joined with npc_spawns for zone info
+    # Build sold_by from npcs.items_sold
     console.print("  Processing NPC vendors...")
     cursor.execute("""
-        SELECT n.id, ns.zone_id, n.items_sold
-        FROM npcs n
-        JOIN npc_spawns ns ON n.id = ns.npc_id
-        WHERE n.items_sold IS NOT NULL AND n.items_sold != '[]'
+        SELECT id, items_sold
+        FROM npcs
+        WHERE items_sold IS NOT NULL AND items_sold != '[]'
     """)
 
     sold_by: dict[str, list[SoldByInfo]] = {}
 
-    for npc_id, zone_id, items_sold_json in cursor.fetchall():
+    for npc_id, items_sold_json in cursor.fetchall():
         items_sold = json.loads(items_sold_json)
         for item_sale in items_sold:
             item_id = item_sale.get("item_id")
@@ -523,7 +518,6 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
                         "npc_id": npc_id,
                         "price": item_sale.get("price", 0),
                         "currency_item_id": item_sale.get("currency_item_id"),
-                        "zone_id": zone_id,
                     }
                 )
 
