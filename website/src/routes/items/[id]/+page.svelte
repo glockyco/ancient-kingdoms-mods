@@ -323,7 +323,7 @@
 				</Card.Header>
 				<Card.Content>
 					<div class="space-y-2">
-						{#each computed.droppedBy as drop (drop.monster_id)}
+						{#each computed.droppedBy as drop, index (`${drop.monster_id}_${drop.zone_id}_${index}`)}
 							<div class="flex justify-between items-center text-sm">
 								<a
 									href={resolve('/monsters/[id]', { id: drop.monster_id })}
@@ -347,7 +347,7 @@
 				</Card.Header>
 				<Card.Content>
 					<div class="space-y-2">
-						{#each computed.soldBy as vendor (vendor.npc_id)}
+						{#each computed.soldBy as vendor, index (`${vendor.npc_id}_${vendor.zone_id}_${index}`)}
 							<div class="flex justify-between items-center text-sm">
 								<a
 									href={resolve('/npcs/[id]', { id: vendor.npc_id })}
@@ -371,7 +371,7 @@
 				</Card.Header>
 				<Card.Content>
 					<div class="space-y-2">
-						{#each computed.rewardedBy as quest (quest.quest_id)}
+						{#each computed.rewardedBy as quest, index (`${quest.quest_id}_${index}`)}
 							<div class="text-sm">
 								<a
 									href={resolve('/quests/[id]', { id: quest.quest_id })}
@@ -394,7 +394,7 @@
 				</Card.Header>
 				<Card.Content>
 					<div class="space-y-2">
-						{#each computed.craftedFrom as recipe (recipe.recipe_id)}
+						{#each computed.craftedFrom as recipe, index (`${recipe.recipe_id}_${index}`)}
 							<div class="flex justify-between items-center text-sm">
 								<span class="font-medium">{recipe.recipe_id}</span>
 								<span class="text-muted-foreground">x{recipe.result_amount}</span>
@@ -413,7 +413,7 @@
 				</Card.Header>
 				<Card.Content>
 					<div class="space-y-2">
-						{#each computed.gatheredFrom as gather (gather.gather_item_id)}
+						{#each computed.gatheredFrom as gather, index (`${gather.gather_item_id}_${index}`)}
 							<div class="flex justify-between items-center text-sm">
 								<span class="font-medium">{gather.gather_item_id}</span>
 								<span class="text-muted-foreground">{(gather.rate * 100).toFixed(1)}%</span>
@@ -432,7 +432,7 @@
 				</Card.Header>
 				<Card.Content>
 					<div class="space-y-2">
-						{#each computed.usedInRecipes as recipe (recipe.recipe_id)}
+						{#each computed.usedInRecipes as recipe, index (`${recipe.recipe_id}_${index}`)}
 							<div class="flex justify-between items-center text-sm">
 								<span class="font-medium">{recipe.recipe_id}</span>
 								<span class="text-muted-foreground">x{recipe.amount}</span>
@@ -451,7 +451,7 @@
 				</Card.Header>
 				<Card.Content>
 					<div class="space-y-2">
-						{#each computed.neededForQuests as quest (quest.quest_id)}
+						{#each computed.neededForQuests as quest, index (`${quest.quest_id}_${quest.purpose}_${index}`)}
 							<div class="flex justify-between items-center text-sm">
 								<a
 									href={resolve('/quests/[id]', { id: quest.quest_id })}
