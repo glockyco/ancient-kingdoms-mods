@@ -103,11 +103,6 @@ public class MonsterExporter : BaseExporter
                 probability_drop_gold = canonical.probabilityDropGold,
                 exp_multiplier = canonical.expMultiplier,
 
-                // Movement and patrol
-                move_probability = canonical.moveProbability,
-                move_distance = canonical.moveDistance,
-                is_patrolling = canonical.isPatrolling,
-
                 // Messages and interactions
                 aggro_message_probability = canonical.aggroMessageProbability,
                 summon_message = canonical.summonMessage,
