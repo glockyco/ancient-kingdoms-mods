@@ -222,16 +222,16 @@ CREATE TABLE summon_triggers (
 CREATE INDEX idx_summon_triggers_zone ON summon_triggers(zone_id);
 CREATE INDEX idx_summon_triggers_entity ON summon_triggers(summoned_entity_id);
 
--- Junction table for placeholder monsters
+-- Junction table for placeholder monsters (specific spawns that must be killed)
 CREATE TABLE summon_trigger_placeholders (
     trigger_id TEXT NOT NULL REFERENCES summon_triggers(id) ON DELETE CASCADE,
-    monster_id TEXT NOT NULL REFERENCES monsters(id),
+    spawn_id TEXT NOT NULL REFERENCES monster_spawns(id),
     placeholder_order INTEGER NOT NULL,    -- Preserve list order
-    PRIMARY KEY (trigger_id, monster_id)
+    PRIMARY KEY (trigger_id, spawn_id)
 );
 
 CREATE INDEX idx_summon_placeholders_trigger ON summon_trigger_placeholders(trigger_id);
-CREATE INDEX idx_summon_placeholders_monster ON summon_trigger_placeholders(monster_id);
+CREATE INDEX idx_summon_placeholders_spawn ON summon_trigger_placeholders(spawn_id);
 
 -- =============================================================================
 -- NPCS

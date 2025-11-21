@@ -51,19 +51,8 @@ public class SummonTriggerExporter : BaseExporter
             {
                 triggerData.summoned_entity_type = "Monster";
                 triggerData.summoned_entity_name = asMonster.name;
+                triggerData.summoned_entity_id = SanitizeId(asMonster.name);
                 triggerData.summon_message = asMonster.summonMessage ?? "";
-
-                // Check if it's a template or scene instance
-                var isTemplate = asMonster.gameObject == null || !asMonster.gameObject.scene.IsValid();
-                if (isTemplate)
-                {
-                    triggerData.summoned_entity_id = SanitizeId(asMonster.name);
-                }
-                else
-                {
-                    var zoneId = GetZoneId((byte)asMonster.idZone);
-                    triggerData.summoned_entity_id = $"{SanitizeId(asMonster.name)}_{zoneId}_{asMonster.GetInstanceID()}";
-                }
             }
             else
             {
@@ -72,18 +61,8 @@ public class SummonTriggerExporter : BaseExporter
                 {
                     triggerData.summoned_entity_type = "Npc";
                     triggerData.summoned_entity_name = asNpc.name;
+                    triggerData.summoned_entity_id = SanitizeId(asNpc.name);
                     triggerData.summon_message = "";
-
-                    var isTemplate = asNpc.gameObject == null || !asNpc.gameObject.scene.IsValid();
-                    if (isTemplate)
-                    {
-                        triggerData.summoned_entity_id = SanitizeId(asNpc.name);
-                    }
-                    else
-                    {
-                        var zoneId = GetZoneId((byte)asNpc.idZone);
-                        triggerData.summoned_entity_id = $"{SanitizeId(asNpc.name)}_{zoneId}_{asNpc.GetInstanceID()}";
-                    }
                 }
                 else
                 {

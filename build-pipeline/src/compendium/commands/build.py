@@ -433,10 +433,10 @@ def load_summon_triggers(conn: sqlite3.Connection, export_dir: Path) -> None:
         cursor.execute(sql, tuple(values.values()))
 
         # Insert placeholder relationships into junction table
-        for order, monster_id in enumerate(placeholder_ids):
+        for order, spawn_id in enumerate(placeholder_ids):
             cursor.execute(
-                "INSERT INTO summon_trigger_placeholders (trigger_id, monster_id, placeholder_order) VALUES (?, ?, ?)",
-                (trigger.id, monster_id, order),
+                "INSERT INTO summon_trigger_placeholders (trigger_id, spawn_id, placeholder_order) VALUES (?, ?, ?)",
+                (trigger.id, spawn_id, order),
             )
             placeholder_count += 1
 
