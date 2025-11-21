@@ -594,6 +594,25 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
             }
         )
 
+    console.print("  Processing guaranteed resource rewards...")
+    cursor.execute("""
+        SELECT id, name, item_reward_id
+        FROM gathering_resources
+        WHERE item_reward_id IS NOT NULL
+    """)
+
+    for resource_id, resource_name, item_id in cursor.fetchall():
+        if item_id not in gathered_from:
+            gathered_from[item_id] = []
+        gathered_from[item_id].append(
+            {
+                "gather_item_id": resource_id,
+                "gather_item_name": resource_name,
+                "rate": 1.0,
+                "type": "resource",
+            }
+        )
+
     console.print("  Processing chest drops...")
     cursor.execute("""
         SELECT c.id, c.name, cd.item_id, cd.drop_rate,
@@ -728,9 +747,11 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
         )
 
     for item_id, gathers in gathered_from.items():
+        # Sort by drop rate descending (highest first), then by name
+        gathers_sorted = sorted(gathers, key=lambda x: (-x["rate"], x["gather_item_name"]))
         cursor.execute(
             "UPDATE items SET gathered_from = ? WHERE id = ?",
-            (json.dumps(gathers), item_id),
+            (json.dumps(gathers_sorted), item_id),
         )
 
     # Build used_in_recipes from crafting_recipes.materials

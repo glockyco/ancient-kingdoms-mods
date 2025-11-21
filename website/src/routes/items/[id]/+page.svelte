@@ -111,7 +111,16 @@
         Array<{ recipe_id: string; result_amount: number }>
       >(data.item.crafted_from),
       gatheredFrom: parseJson<
-        Array<{ gather_item_id: string; gather_item_name: string; rate: number }>
+        Array<{
+          gather_item_id: string;
+          gather_item_name: string;
+          rate: number;
+          type: "resource" | "chest";
+          zone_id?: string;
+          zone_name?: string;
+          key_required_id?: string;
+          key_name?: string;
+        }>
       >(data.item.gathered_from),
       usedInRecipes: parseJson<Array<{ recipe_id: string; amount: number }>>(
         data.item.used_in_recipes,
@@ -465,12 +474,31 @@
         <Card.Content>
           <div class="space-y-2">
             {#each computed.gatheredFrom as gather, index (`${gather.gather_item_id}_${index}`)}
-              <div class="flex justify-between items-center text-sm">
-                <span class="font-medium">{gather.gather_item_name}</span>
-                <span class="text-muted-foreground"
-                  >{(gather.rate * 100).toFixed(1)}%</span
-                >
-              </div>
+              {#if gather.type === "chest"}
+                <div class="space-y-1 text-sm">
+                  <div class="flex justify-between items-center">
+                    <span class="font-medium">Chest</span>
+                    <span class="text-muted-foreground"
+                      >{(gather.rate * 100).toFixed(1)}%</span
+                    >
+                  </div>
+                  <div class="text-xs text-muted-foreground pl-2 space-y-0.5">
+                    {#if gather.zone_name}
+                      <div>Zone: {gather.zone_name}</div>
+                    {/if}
+                    {#if gather.key_name}
+                      <div>Key: {gather.key_name}</div>
+                    {/if}
+                  </div>
+                </div>
+              {:else}
+                <div class="flex justify-between items-center text-sm">
+                  <span class="font-medium">{gather.gather_item_name}</span>
+                  <span class="text-muted-foreground"
+                    >{(gather.rate * 100).toFixed(1)}%</span
+                  >
+                </div>
+              {/if}
             {/each}
           </div>
         </Card.Content>
