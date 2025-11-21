@@ -298,21 +298,29 @@
   </Card.Root>
 
   <!-- Stats -->
-  {#if computed.stats && Object.keys(computed.stats).length > 0}
+  {#if (computed.stats && Object.keys(computed.stats).length > 0) || data.item.weapon_delay > 0}
     <Card.Root>
       <Card.Header>
         <Card.Title>Stats</Card.Title>
       </Card.Header>
       <Card.Content>
         <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {#each Object.entries(computed.stats) as [stat, value] (stat)}
+          {#if data.item.weapon_delay > 0}
             <div class="flex justify-between items-center p-2 rounded bg-muted">
-              <span class="text-sm font-medium">{formatStatName(stat)}</span>
-              <span class="text-sm font-bold"
-                >{formatStatValue(stat, value)}</span
-              >
+              <span class="text-sm font-medium">Attack Delay</span>
+              <span class="text-sm font-bold">{data.item.weapon_delay}</span>
             </div>
-          {/each}
+          {/if}
+          {#if computed.stats}
+            {#each Object.entries(computed.stats) as [stat, value] (stat)}
+              <div class="flex justify-between items-center p-2 rounded bg-muted">
+                <span class="text-sm font-medium">{formatStatName(stat)}</span>
+                <span class="text-sm font-bold"
+                  >{formatStatValue(stat, value)}</span
+                >
+              </div>
+            {/each}
+          {/if}
         </div>
       </Card.Content>
     </Card.Root>
