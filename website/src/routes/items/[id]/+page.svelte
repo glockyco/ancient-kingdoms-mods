@@ -110,9 +110,9 @@
       craftedFrom: parseJson<
         Array<{ recipe_id: string; result_amount: number }>
       >(data.item.crafted_from),
-      gatheredFrom: parseJson<Array<{ gather_item_id: string; rate: number }>>(
-        data.item.gathered_from,
-      ),
+      gatheredFrom: parseJson<
+        Array<{ gather_item_id: string; gather_item_name: string; rate: number }>
+      >(data.item.gathered_from),
       usedInRecipes: parseJson<Array<{ recipe_id: string; amount: number }>>(
         data.item.used_in_recipes,
       ),
@@ -466,7 +466,7 @@
           <div class="space-y-2">
             {#each computed.gatheredFrom as gather, index (`${gather.gather_item_id}_${index}`)}
               <div class="flex justify-between items-center text-sm">
-                <span class="font-medium">{gather.gather_item_id}</span>
+                <span class="font-medium">{gather.gather_item_name}</span>
                 <span class="text-muted-foreground"
                   >{(gather.rate * 100).toFixed(1)}%</span
                 >

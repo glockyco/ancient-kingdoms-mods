@@ -486,14 +486,14 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
     # Build gathered_from from gather_items.random_drops
     console.print("  Processing gather item drops...")
     cursor.execute("""
-        SELECT id, random_drops
+        SELECT id, name, random_drops
         FROM gather_items
         WHERE random_drops IS NOT NULL AND random_drops != '[]'
     """)
 
     gathered_from: dict[str, list[GatherDropInfo]] = {}
 
-    for gather_item_id, drops_json in cursor.fetchall():
+    for gather_item_id, gather_item_name, drops_json in cursor.fetchall():
         drops = json.loads(drops_json)
         for drop in drops:
             item_id = drop.get("item_id")
@@ -501,7 +501,11 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
                 if item_id not in gathered_from:
                     gathered_from[item_id] = []
                 gathered_from[item_id].append(
-                    {"gather_item_id": gather_item_id, "rate": drop.get("rate", 0.0)}
+                    {
+                        "gather_item_id": gather_item_id,
+                        "gather_item_name": gather_item_name,
+                        "rate": drop.get("rate", 0.0),
+                    }
                 )
 
     # Build sold_by from npcs.items_sold
