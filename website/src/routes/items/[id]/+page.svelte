@@ -93,17 +93,20 @@
       stats,
       classRequired: parseJson<string[]>(data.item.class_required) || [],
       droppedBy: parseJson<
-        Array<{ monster_id: string; rate: number; zone_id: string }>
+        Array<{ monster_id: string; monster_name: string; rate: number }>
       >(data.item.dropped_by),
       soldBy: parseJson<
         Array<{
           npc_id: string;
+          npc_name: string;
           price: number;
           currency_item_id: string | null;
-          zone_id: string;
+          currency_item_name: string | null;
         }>
       >(data.item.sold_by),
-      rewardedBy: parseJson<Array<{ quest_id: string }>>(data.item.rewarded_by),
+      rewardedBy: parseJson<Array<{ quest_id: string; quest_name: string }>>(
+        data.item.rewarded_by,
+      ),
       craftedFrom: parseJson<
         Array<{ recipe_id: string; result_amount: number }>
       >(data.item.crafted_from),
@@ -114,7 +117,12 @@
         data.item.used_in_recipes,
       ),
       neededForQuests: parseJson<
-        Array<{ quest_id: string; purpose: string; amount: number }>
+        Array<{
+          quest_id: string;
+          quest_name: string;
+          purpose: string;
+          amount: number;
+        }>
       >(data.item.needed_for_quests),
       armorSetSkillBonuses: parseJson<
         Array<{ skill_id: string; level_bonus: number }>
@@ -359,13 +367,13 @@
         </Card.Header>
         <Card.Content>
           <div class="space-y-2">
-            {#each computed.droppedBy as drop, index (`${drop.monster_id}_${drop.zone_id}_${index}`)}
+            {#each computed.droppedBy as drop, index (`${drop.monster_id}_${index}`)}
               <div class="flex justify-between items-center text-sm">
                 <a
                   href={resolve("/monsters/[id]", { id: drop.monster_id })}
                   class="hover:underline font-medium"
                 >
-                  {drop.monster_id}
+                  {drop.monster_name}
                 </a>
                 <span class="text-muted-foreground"
                   >{(drop.rate * 100).toFixed(1)}%</span
@@ -385,17 +393,18 @@
         </Card.Header>
         <Card.Content>
           <div class="space-y-2">
-            {#each computed.soldBy as vendor, index (`${vendor.npc_id}_${vendor.zone_id}_${index}`)}
+            {#each computed.soldBy as vendor, index (`${vendor.npc_id}_${index}`)}
               <div class="flex justify-between items-center text-sm">
                 <a
                   href={resolve("/npcs/[id]", { id: vendor.npc_id })}
                   class="hover:underline font-medium"
                 >
-                  {vendor.npc_id}
+                  {vendor.npc_name}
                 </a>
-                <span class="text-yellow-600 dark:text-yellow-400"
-                  >{vendor.price}g</span
-                >
+                <span class="text-yellow-600 dark:text-yellow-400">
+                  {vendor.price}
+                  {vendor.currency_item_name || "g"}
+                </span>
               </div>
             {/each}
           </div>
@@ -417,7 +426,7 @@
                   href={resolve("/quests/[id]", { id: quest.quest_id })}
                   class="hover:underline font-medium"
                 >
-                  {quest.quest_id}
+                  {quest.quest_name}
                 </a>
               </div>
             {/each}
@@ -501,7 +510,7 @@
                   href={resolve("/quests/[id]", { id: quest.quest_id })}
                   class="hover:underline font-medium"
                 >
-                  {quest.quest_id}
+                  {quest.quest_name}
                 </a>
                 <span class="text-muted-foreground"
                   >{quest.purpose} (x{quest.amount})</span
