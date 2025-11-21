@@ -86,15 +86,13 @@
 		syncFilters();
 	});
 
-	const qualityColors = [
-		'bg-quality-0',
-		'bg-quality-1',
-		'bg-quality-2',
-		'bg-quality-3',
-		'bg-quality-4'
+	const qualities = [
+		{ name: 'Common', color: 'bg-quality-0' },
+		{ name: 'Uncommon', color: 'bg-quality-1' },
+		{ name: 'Rare', color: 'bg-quality-2' },
+		{ name: 'Epic', color: 'bg-quality-3' },
+		{ name: 'Legendary', color: 'bg-quality-4' }
 	];
-
-	const qualityNames = ['Common', 'Uncommon', 'Rare', 'Epic', 'Legendary'];
 
 	// Helper to check if item name matches search
 	function matchesSearch(itemName: string): boolean {
@@ -126,7 +124,7 @@
 
 	// Calculate quality counts
 	const qualityCounts = $derived(
-		Array.from({ length: qualityNames.length }, (_, i) => i).map((quality) => {
+		qualities.map((_, quality) => {
 			const count = data.items.filter((item) =>
 				matchesFilters(item, { includeQuality: false }) && item.quality === quality
 			).length;
@@ -251,11 +249,11 @@
 							class="px-3 py-1 rounded text-sm font-medium transition-all border-2 flex justify-between items-center {qualityFilter.includes(
 								quality
 							)
-								? `${qualityColors[quality]} border-foreground`
+								? `${qualities[quality].color} border-foreground`
 								: 'bg-muted border-transparent'} {count === 0 ? 'opacity-40' : ''}"
 							onclick={() => toggleQuality(quality)}
 						>
-							<span>{qualityNames[quality]}</span>
+							<span>{qualities[quality].name}</span>
 							<span class="font-mono">({count})</span>
 						</button>
 					{/each}
@@ -295,7 +293,7 @@
 						<div class="flex items-start justify-between gap-2">
 							<Card.Title class="text-lg">{item.name}</Card.Title>
 							<span
-								class="px-2 py-1 rounded text-xs font-medium {qualityColors[item.quality]} flex-shrink-0"
+								class="px-2 py-1 rounded text-xs font-medium {qualities[item.quality].color} flex-shrink-0"
 							>
 								Q{item.quality}
 							</span>
