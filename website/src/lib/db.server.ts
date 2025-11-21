@@ -18,10 +18,7 @@ function getDb(): Database.Database {
 /**
  * Execute a SELECT query and return all rows.
  */
-export function query<T = unknown>(
-  sql: string,
-  params: unknown[] = [],
-): T[] {
+export function query<T = unknown>(sql: string, params: unknown[] = []): T[] {
   const db = getDb();
   const stmt = db.prepare(sql);
   const result = stmt.all(...params);

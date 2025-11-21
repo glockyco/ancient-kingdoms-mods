@@ -1,4 +1,4 @@
-import { query, queryOne, queryScalar } from "$lib/db";
+import { query, queryOne } from "$lib/db";
 
 export interface Item {
   id: string;
@@ -106,7 +106,6 @@ export interface Item {
   used_in_recipes: string | null; // JSON
   needed_for_quests: string | null; // JSON
 }
-
 
 /**
  * Get all items.

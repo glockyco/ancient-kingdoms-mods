@@ -24,12 +24,12 @@
     </style>
     <script>
       // Handle explicit user preference (overrides system preference)
-      (function() {
-        const theme = localStorage.getItem('mode-watcher-mode');
-        if (theme === 'dark') {
-          document.documentElement.classList.add('dark');
-        } else if (theme === 'light') {
-          document.documentElement.classList.add('light');
+      (function () {
+        const theme = localStorage.getItem("mode-watcher-mode");
+        if (theme === "dark") {
+          document.documentElement.classList.add("dark");
+        } else if (theme === "light") {
+          document.documentElement.classList.add("light");
         }
         // If no explicit preference, CSS media query handles it
       })();

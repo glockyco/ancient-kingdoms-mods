@@ -9,6 +9,9 @@
     "lint": "pnpm lint:ts && pnpm lint:py",
     "lint:ts": "pnpm --filter website lint",
     "lint:py": "cd build-pipeline && uv run ruff check .",
+    "lint:fix": "pnpm lint:fix:ts && pnpm lint:fix:py",
+    "lint:fix:ts": "pnpm --filter website lint:fix",
+    "lint:fix:py": "cd build-pipeline && uv run ruff check --fix .",
     "format": "pnpm format:ts && pnpm format:py",
     "format:ts": "pnpm --filter website format",
     "format:py": "cd build-pipeline && uv run ruff format .",
@@ -18,21 +21,6 @@
   },
   "packageManager": "pnpm@10.22.0",
   "devDependencies": {
-    "husky": "^9.1.7",
-    "lint-staged": "^16.2.6"
-  },
-  "lint-staged": {
-    "website/**/*.{js,ts,svelte}": [
-      "cd website && pnpm exec eslint --fix --max-warnings 0",
-      "cd website && pnpm exec prettier --write",
-      "cd website && pnpm check"
-    ],
-    "website/**/*.{css,json,md}": [
-      "cd website && pnpm exec prettier --write"
-    ],
-    "build-pipeline/**/*.py": [
-      "cd build-pipeline && uv run ruff check --fix",
-      "cd build-pipeline && uv run ruff format"
-    ]
+    "husky": "^9.1.7"
   }
 }

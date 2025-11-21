@@ -348,6 +348,7 @@ For UI elements that should appear site-wide (loading indicators, navigation, fo
 ```
 
 This is better than adding to individual pages because:
+
 - Single source of truth (DRY principle)
 - Automatically applies to all routes
 - No imports needed on individual pages

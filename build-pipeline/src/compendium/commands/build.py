@@ -533,7 +533,9 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
                         "npc_name": npc_name,
                         "price": item_sale.get("price", 0),
                         "currency_item_id": currency_id,
-                        "currency_item_name": item_name_lookup.get(currency_id) if currency_id else None,
+                        "currency_item_name": item_name_lookup.get(currency_id)
+                        if currency_id
+                        else None,
                     }
                 )
 
@@ -555,7 +557,9 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
             if item_id:
                 if item_id not in rewarded_by:
                     rewarded_by[item_id] = []
-                rewarded_by[item_id].append({"quest_id": quest_id, "quest_name": quest_name})
+                rewarded_by[item_id].append(
+                    {"quest_id": quest_id, "quest_name": quest_name}
+                )
 
     # Build crafted_from from crafting_recipes
     console.print("  Processing crafting recipes...")
@@ -616,7 +620,12 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
 
     used_in_recipes: dict[str, list[UsedInRecipeInfo]] = {}
 
-    for recipe_id, result_item_id, result_item_name, materials_json in cursor.fetchall():
+    for (
+        recipe_id,
+        result_item_id,
+        result_item_name,
+        materials_json,
+    ) in cursor.fetchall():
         materials = json.loads(materials_json)
         for material in materials:
             item_id = material.get("item_id")
@@ -727,7 +736,12 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
                     if item_id not in needed_for_quests:
                         needed_for_quests[item_id] = []
                     needed_for_quests[item_id].append(
-                        {"quest_id": quest_id, "quest_name": quest_name, "purpose": "equip", "amount": 1}
+                        {
+                            "quest_id": quest_id,
+                            "quest_name": quest_name,
+                            "purpose": "equip",
+                            "amount": 1,
+                        }
                     )
 
     # Build granted_by_items for skills
@@ -778,7 +792,9 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
             skill_id = row[6]
             if skill_id not in granted_by_items:
                 granted_by_items[skill_id] = []
-            granted_by_items[skill_id].append({"item_id": item_id, "item_name": item_name, "type": "scroll"})
+            granted_by_items[skill_id].append(
+                {"item_id": item_id, "item_name": item_name, "type": "scroll"}
+            )
 
         # Weapon proc effect
         if row[7]:  # weapon_proc_effect_id
@@ -840,7 +856,12 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
     # Build mapping of augment item name -> (skill bonuses, set item IDs, set name)
     # Armor pieces reference augments by their name field, not ID
     set_data: dict[str, tuple[str, str, str]] = {}
-    for augment_name, skill_bonuses_json, set_item_ids_json, set_name in cursor.fetchall():
+    for (
+        augment_name,
+        skill_bonuses_json,
+        set_item_ids_json,
+        set_name,
+    ) in cursor.fetchall():
         set_data[augment_name] = (skill_bonuses_json, set_item_ids_json, set_name)
 
     # Find all items with augment_bonus_set in stats and copy the set data

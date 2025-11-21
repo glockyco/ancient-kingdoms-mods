@@ -26,7 +26,9 @@ function countDisplayedStats(statsJson: string | null): number {
  * Get all items with minimal fields for list view (server-side, for prerendering).
  */
 export function getItems(): ItemListView[] {
-  const rows = query<Omit<ItemListView, "stats_count"> & { stats: string | null }>(
+  const rows = query<
+    Omit<ItemListView, "stats_count"> & { stats: string | null }
+  >(
     `SELECT
       id,
       name,

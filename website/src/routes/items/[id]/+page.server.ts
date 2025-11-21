@@ -9,7 +9,9 @@ export const prerender = true;
 // Generate entries for all items at build time
 export const entries: EntryGenerator = () => {
   const db = new Database("static/compendium.db", { readonly: true });
-  const items = db.prepare("SELECT id FROM items").all() as Array<{ id: string }>;
+  const items = db.prepare("SELECT id FROM items").all() as Array<{
+    id: string;
+  }>;
   db.close();
 
   return items.map((item) => ({ id: item.id }));
@@ -19,7 +21,9 @@ export const entries: EntryGenerator = () => {
 export const load: PageServerLoad = ({ params }): ItemDetailPageData => {
   const db = new Database("static/compendium.db", { readonly: true });
 
-  const item = db.prepare("SELECT * FROM items WHERE id = ?").get(params.id) as Item | undefined;
+  const item = db.prepare("SELECT * FROM items WHERE id = ?").get(params.id) as
+    | Item
+    | undefined;
   db.close();
 
   if (!item) {
