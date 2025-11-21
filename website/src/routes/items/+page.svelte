@@ -18,6 +18,11 @@
 	let searchFilter = $state('');
 	let currentPage = $state(1);
 
+	// Derived state
+	const hasActiveFilters = $derived(
+		qualityFilter.length > 0 || typeFilter.length > 0 || !!searchFilter
+	);
+
 	// Sync filters to URL and localStorage
 	function syncFilters() {
 		if (!isHydrated) return;
@@ -79,10 +84,6 @@
 
 	// Sync whenever filters change
 	$effect(() => {
-		qualityFilter;
-		typeFilter;
-		searchFilter;
-		currentPage;
 		syncFilters();
 	});
 
@@ -216,9 +217,7 @@
 				<Button
 					variant="outline"
 					size="sm"
-					class={qualityFilter.length === 0 && typeFilter.length === 0 && !searchFilter
-						? 'invisible'
-						: ''}
+					class={!hasActiveFilters ? 'invisible' : ''}
 					onclick={clearFilters}
 				>
 					Clear Filters
