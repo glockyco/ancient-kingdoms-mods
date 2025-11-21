@@ -159,18 +159,19 @@
 			<!-- Quality Filter -->
 			<div>
 				<div class="text-sm font-medium mb-2">Quality</div>
-				<div class="flex gap-2 flex-wrap">
+				<div class="grid grid-cols-[repeat(auto-fit,minmax(140px,1fr))] gap-2">
 					{#each qualityCounts as { quality, count } (quality)}
 						<button
 							type="button"
-							class="px-3 py-1 rounded text-sm font-medium transition-all border-2 {filters.quality.includes(
+							class="px-3 py-1 rounded text-sm font-medium transition-all border-2 flex justify-between items-center {filters.quality.includes(
 								quality
 							)
 								? `${qualityColors[quality]} border-foreground`
-								: 'bg-muted border-transparent'}"
+								: 'bg-muted border-transparent'} {count === 0 ? 'opacity-40' : ''}"
 							onclick={() => toggleQuality(quality)}
 						>
-							{qualityNames[quality]} ({count})
+							<span>{qualityNames[quality]}</span>
+							<span class="font-mono">({count})</span>
 						</button>
 					{/each}
 				</div>
@@ -179,18 +180,19 @@
 			<!-- Item Type Filter -->
 			<div>
 				<div class="text-sm font-medium mb-2">Type</div>
-				<div class="flex gap-2 flex-wrap">
+				<div class="grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-2">
 					{#each typeCounts as { type, count } (type)}
 						<button
 							type="button"
-							class="px-3 py-1 rounded text-sm font-medium transition-all border-2 {filters.itemType.includes(
+							class="px-3 py-1 rounded text-sm font-medium transition-all border-2 flex justify-between items-center {filters.itemType.includes(
 								type
 							)
 								? 'bg-primary text-primary-foreground border-primary'
-								: 'bg-muted border-transparent'}"
+								: 'bg-muted border-transparent'} {count === 0 ? 'opacity-40' : ''}"
 							onclick={() => toggleType(type)}
 						>
-							{type} ({count})
+							<span>{type}</span>
+							<span class="font-mono">({count})</span>
 						</button>
 					{/each}
 				</div>
