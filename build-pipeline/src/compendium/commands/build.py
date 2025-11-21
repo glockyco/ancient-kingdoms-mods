@@ -29,6 +29,7 @@ from compendium.utils import get_repo_root
 class DropInfo(TypedDict):
     monster_id: str
     monster_name: str
+    monster_level: int
     rate: float
 
 
@@ -54,15 +55,25 @@ class SoldByInfo(TypedDict):
 class RewardedByInfo(TypedDict):
     quest_id: str
     quest_name: str
+    level_required: int
+    level_recommended: int
+
+
+class MaterialInfo(TypedDict):
+    item_id: str
+    item_name: str
+    amount: int
 
 
 class CraftedFromInfo(TypedDict):
     recipe_id: str
     result_amount: int
+    materials: list[MaterialInfo]
 
 
 class UsedInRecipeInfo(TypedDict):
     recipe_id: str
+    result_item_id: str
     result_item_name: str
     amount: int
 
@@ -70,6 +81,8 @@ class UsedInRecipeInfo(TypedDict):
 class NeededForQuestInfo(TypedDict):
     quest_id: str
     quest_name: str
+    level_required: int
+    level_recommended: int
     purpose: str
     amount: int
 
@@ -725,7 +738,7 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
 
             # Parse materials and add item names
             materials = json.loads(materials_json) if materials_json else []
-            materials_with_names = []
+            materials_with_names: list[MaterialInfo] = []
             for material in materials:
                 material_id = material.get("item_id")
                 amount = material.get("amount", 1)
