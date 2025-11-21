@@ -28,6 +28,7 @@ from compendium.utils import get_repo_root
 
 class DropInfo(TypedDict):
     monster_id: str
+    monster_name: str
     rate: float
 
 
@@ -38,12 +39,15 @@ class GatherDropInfo(TypedDict):
 
 class SoldByInfo(TypedDict):
     npc_id: str
+    npc_name: str
     price: int
     currency_item_id: str | None
+    currency_item_name: str | None
 
 
 class RewardedByInfo(TypedDict):
     quest_id: str
+    quest_name: str
 
 
 class CraftedFromInfo(TypedDict):
@@ -53,17 +57,20 @@ class CraftedFromInfo(TypedDict):
 
 class UsedInRecipeInfo(TypedDict):
     recipe_id: str
+    result_item_name: str
     amount: int
 
 
 class NeededForQuestInfo(TypedDict):
     quest_id: str
+    quest_name: str
     purpose: str
     amount: int
 
 
 class GrantedByItemInfo(TypedDict):
     item_id: str
+    item_name: str
     type: str
     level: NotRequired[int]
     probability: NotRequired[float]
@@ -454,14 +461,14 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
     # Build dropped_by from monsters.drops
     console.print("  Processing monster drops...")
     cursor.execute("""
-        SELECT id, drops
+        SELECT id, name, drops
         FROM monsters
         WHERE drops IS NOT NULL AND drops != '[]'
     """)
 
     dropped_by: dict[str, list[DropInfo]] = {}
 
-    for monster_id, drops_json in cursor.fetchall():
+    for monster_id, monster_name, drops_json in cursor.fetchall():
         drops = json.loads(drops_json)
         for drop in drops:
             item_id = drop.get("item_id")
@@ -471,6 +478,7 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
                 dropped_by[item_id].append(
                     {
                         "monster_id": monster_id,
+                        "monster_name": monster_name,
                         "rate": drop.get("rate", 0.0),
                     }
                 )
@@ -498,40 +506,48 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
 
     # Build sold_by from npcs.items_sold
     console.print("  Processing NPC vendors...")
+
+    # Build a lookup for item names
+    cursor.execute("SELECT id, name FROM items")
+    item_name_lookup = {row[0]: row[1] for row in cursor.fetchall()}
+
     cursor.execute("""
-        SELECT id, items_sold
+        SELECT id, name, items_sold
         FROM npcs
         WHERE items_sold IS NOT NULL AND items_sold != '[]'
     """)
 
     sold_by: dict[str, list[SoldByInfo]] = {}
 
-    for npc_id, items_sold_json in cursor.fetchall():
+    for npc_id, npc_name, items_sold_json in cursor.fetchall():
         items_sold = json.loads(items_sold_json)
         for item_sale in items_sold:
             item_id = item_sale.get("item_id")
             if item_id:
                 if item_id not in sold_by:
                     sold_by[item_id] = []
+                currency_id = item_sale.get("currency_item_id")
                 sold_by[item_id].append(
                     {
                         "npc_id": npc_id,
+                        "npc_name": npc_name,
                         "price": item_sale.get("price", 0),
-                        "currency_item_id": item_sale.get("currency_item_id"),
+                        "currency_item_id": currency_id,
+                        "currency_item_name": item_name_lookup.get(currency_id) if currency_id else None,
                     }
                 )
 
     # Build rewarded_by from quests.rewards
     console.print("  Processing quest rewards...")
     cursor.execute("""
-        SELECT id, rewards
+        SELECT id, name, rewards
         FROM quests
         WHERE rewards IS NOT NULL
     """)
 
     rewarded_by: dict[str, list[RewardedByInfo]] = {}
 
-    for quest_id, rewards_json in cursor.fetchall():
+    for quest_id, quest_name, rewards_json in cursor.fetchall():
         rewards = json.loads(rewards_json)
         items = rewards.get("items", [])
         for item in items:
@@ -539,7 +555,7 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
             if item_id:
                 if item_id not in rewarded_by:
                     rewarded_by[item_id] = []
-                rewarded_by[item_id].append({"quest_id": quest_id})
+                rewarded_by[item_id].append({"quest_id": quest_id, "quest_name": quest_name})
 
     # Build crafted_from from crafting_recipes
     console.print("  Processing crafting recipes...")
@@ -592,14 +608,15 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
     # Build used_in_recipes from crafting_recipes.materials
     console.print("  Processing recipe materials...")
     cursor.execute("""
-        SELECT id, materials
-        FROM crafting_recipes
-        WHERE materials IS NOT NULL AND materials != '[]'
+        SELECT cr.id, cr.result_item_id, i.name, cr.materials
+        FROM crafting_recipes cr
+        LEFT JOIN items i ON cr.result_item_id = i.id
+        WHERE cr.materials IS NOT NULL AND cr.materials != '[]'
     """)
 
     used_in_recipes: dict[str, list[UsedInRecipeInfo]] = {}
 
-    for recipe_id, materials_json in cursor.fetchall():
+    for recipe_id, result_item_id, result_item_name, materials_json in cursor.fetchall():
         materials = json.loads(materials_json)
         for material in materials:
             item_id = material.get("item_id")
@@ -607,13 +624,17 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
                 if item_id not in used_in_recipes:
                     used_in_recipes[item_id] = []
                 used_in_recipes[item_id].append(
-                    {"recipe_id": recipe_id, "amount": material.get("amount", 1)}
+                    {
+                        "recipe_id": recipe_id,
+                        "result_item_name": result_item_name or "Unknown",
+                        "amount": material.get("amount", 1),
+                    }
                 )
 
     # Build needed_for_quests from quest objectives
     console.print("  Processing quest item requirements...")
     cursor.execute("""
-        SELECT id, gather_item_1_id, gather_amount_1, gather_item_2_id, gather_amount_2,
+        SELECT id, name, gather_item_1_id, gather_amount_1, gather_item_2_id, gather_amount_2,
                gather_item_3_id, gather_amount_3, gather_items, required_items, equip_items
         FROM quests
     """)
@@ -622,47 +643,51 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
 
     for row in cursor.fetchall():
         quest_id = row[0]
+        quest_name = row[1]
 
         # Process gather_item_1, 2, 3
-        if row[1]:  # gather_item_1_id
-            item_id = row[1]
+        if row[2]:  # gather_item_1_id
+            item_id = row[2]
             if item_id not in needed_for_quests:
                 needed_for_quests[item_id] = []
             needed_for_quests[item_id].append(
                 {
                     "quest_id": quest_id,
+                    "quest_name": quest_name,
                     "purpose": "gather",
-                    "amount": row[2] or 1,  # gather_amount_1
+                    "amount": row[3] or 1,  # gather_amount_1
                 }
             )
 
-        if row[3]:  # gather_item_2_id
-            item_id = row[3]
+        if row[4]:  # gather_item_2_id
+            item_id = row[4]
             if item_id not in needed_for_quests:
                 needed_for_quests[item_id] = []
             needed_for_quests[item_id].append(
                 {
                     "quest_id": quest_id,
+                    "quest_name": quest_name,
                     "purpose": "gather",
-                    "amount": row[4] or 1,  # gather_amount_2
+                    "amount": row[5] or 1,  # gather_amount_2
                 }
             )
 
-        if row[5]:  # gather_item_3_id
-            item_id = row[5]
+        if row[6]:  # gather_item_3_id
+            item_id = row[6]
             if item_id not in needed_for_quests:
                 needed_for_quests[item_id] = []
             needed_for_quests[item_id].append(
                 {
                     "quest_id": quest_id,
+                    "quest_name": quest_name,
                     "purpose": "gather",
-                    "amount": row[6] or 1,  # gather_amount_3
+                    "amount": row[7] or 1,  # gather_amount_3
                 }
             )
 
         # Process gather_items (JSON array)
-        if row[7]:  # gather_items
-            gather_items_list = json.loads(row[7])
+        if row[8]:  # gather_items
+            gather_items_list = json.loads(row[8])
             for item_obj in gather_items_list:
                 item_id = item_obj.get("item_id")
                 if item_id:
@@ -671,14 +696,15 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
                     needed_for_quests[item_id].append(
                         {
                             "quest_id": quest_id,
+                            "quest_name": quest_name,
                             "purpose": "gather",
                             "amount": item_obj.get("amount", 1),
                         }
                     )
 
         # Process required_items (JSON array)
-        if row[8]:  # required_items
-            required_items_list = json.loads(row[8])
+        if row[9]:  # required_items
+            required_items_list = json.loads(row[9])
             for item_obj in required_items_list:
                 item_id = item_obj.get("item_id")
                 if item_id:
@@ -687,26 +713,27 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
                     needed_for_quests[item_id].append(
                         {
                             "quest_id": quest_id,
+                            "quest_name": quest_name,
                             "purpose": "required",
                             "amount": item_obj.get("amount", 1),
                         }
                     )
 
         # Process equip_items (JSON array of item IDs)
-        if row[9]:  # equip_items
-            equip_items_list = json.loads(row[9])
+        if row[10]:  # equip_items
+            equip_items_list = json.loads(row[10])
             for item_id in equip_items_list:
                 if item_id:
                     if item_id not in needed_for_quests:
                         needed_for_quests[item_id] = []
                     needed_for_quests[item_id].append(
-                        {"quest_id": quest_id, "purpose": "equip", "amount": 1}
+                        {"quest_id": quest_id, "quest_name": quest_name, "purpose": "equip", "amount": 1}
                     )
 
     # Build granted_by_items for skills
     console.print("  Processing items that grant skills...")
     cursor.execute("""
-        SELECT id, potion_buff_id, potion_buff_level, food_buff_id, food_buff_level,
+        SELECT id, name, potion_buff_id, potion_buff_level, food_buff_id, food_buff_level,
                scroll_skill_id, weapon_proc_effect_id, weapon_proc_effect_probability,
                relic_buff_id, relic_buff_level
         FROM items
@@ -716,63 +743,68 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
 
     for row in cursor.fetchall():
         item_id = row[0]
+        item_name = row[1]
 
         # Potion buff
-        if row[1]:  # potion_buff_id
-            skill_id = row[1]
+        if row[2]:  # potion_buff_id
+            skill_id = row[2]
             if skill_id not in granted_by_items:
                 granted_by_items[skill_id] = []
             granted_by_items[skill_id].append(
                 {
                     "item_id": item_id,
+                    "item_name": item_name,
                     "type": "potion_buff",
-                    "level": row[2] or 0,  # potion_buff_level
+                    "level": row[3] or 0,  # potion_buff_level
                 }
             )
 
         # Food buff
-        if row[3]:  # food_buff_id
-            skill_id = row[3]
+        if row[4]:  # food_buff_id
+            skill_id = row[4]
             if skill_id not in granted_by_items:
                 granted_by_items[skill_id] = []
             granted_by_items[skill_id].append(
                 {
                     "item_id": item_id,
+                    "item_name": item_name,
                     "type": "food_buff",
-                    "level": row[4] or 0,  # food_buff_level
+                    "level": row[5] or 0,  # food_buff_level
                 }
             )
 
         # Scroll skill
-        if row[5]:  # scroll_skill_id
-            skill_id = row[5]
+        if row[6]:  # scroll_skill_id
+            skill_id = row[6]
             if skill_id not in granted_by_items:
                 granted_by_items[skill_id] = []
-            granted_by_items[skill_id].append({"item_id": item_id, "type": "scroll"})
+            granted_by_items[skill_id].append({"item_id": item_id, "item_name": item_name, "type": "scroll"})
 
         # Weapon proc effect
-        if row[6]:  # weapon_proc_effect_id
-            skill_id = row[6]
+        if row[7]:  # weapon_proc_effect_id
+            skill_id = row[7]
             if skill_id not in granted_by_items:
                 granted_by_items[skill_id] = []
             granted_by_items[skill_id].append(
                 {
                     "item_id": item_id,
+                    "item_name": item_name,
                     "type": "weapon_proc",
-                    "probability": row[7] or 0.0,  # weapon_proc_effect_probability
+                    "probability": row[8] or 0.0,  # weapon_proc_effect_probability
                 }
             )
 
         # Relic buff
-        if row[8]:  # relic_buff_id
-            skill_id = row[8]
+        if row[9]:  # relic_buff_id
+            skill_id = row[9]
             if skill_id not in granted_by_items:
                 granted_by_items[skill_id] = []
             granted_by_items[skill_id].append(
                 {
                     "item_id": item_id,
+                    "item_name": item_name,
                     "type": "relic_buff",
-                    "level": row[9] or 0,  # relic_buff_level
+                    "level": row[10] or 0,  # relic_buff_level
                 }
             )
 
