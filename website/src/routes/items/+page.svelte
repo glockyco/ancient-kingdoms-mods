@@ -38,34 +38,40 @@
 		page: isHydrated ? Number($page.url.searchParams.get('page') || '1') : 1
 	});
 
+	// Helper to check if item name matches search
+	function matchesSearch(itemName: string): boolean {
+		if (!searchInput) return true;
+		return itemName.toLowerCase().includes(searchInput.toLowerCase());
+	}
+
+	// Helper to check if item matches all filters
+	function matchesFilters(
+		item: { quality: number; item_type: string; name: string },
+		options: { includeQuality?: boolean; includeType?: boolean } = {}
+	): boolean {
+		const { includeQuality = true, includeType = true } = options;
+
+		if (includeQuality && filters.quality.length > 0 && !filters.quality.includes(item.quality)) {
+			return false;
+		}
+		if (includeType && filters.itemType.length > 0 && !filters.itemType.includes(item.item_type)) {
+			return false;
+		}
+		if (!matchesSearch(item.name)) {
+			return false;
+		}
+		return true;
+	}
+
 	// Filter items based on current filters (use searchInput directly for instant feedback)
-	const filteredItems = $derived(
-		data.items.filter((item) => {
-			if (filters.quality.length > 0 && !filters.quality.includes(item.quality)) {
-				return false;
-			}
-			if (filters.itemType.length > 0 && !filters.itemType.includes(item.item_type)) {
-				return false;
-			}
-			if (searchInput && !item.name.toLowerCase().includes(searchInput.toLowerCase())) {
-				return false;
-			}
-			return true;
-		})
-	);
+	const filteredItems = $derived(data.items.filter((item) => matchesFilters(item)));
 
 	// Calculate quality counts based on current type and search filters
 	const qualityCounts = $derived(
-		[0, 1, 2, 3, 4].map((quality) => {
-			const count = data.items.filter((item) => {
-				if (filters.itemType.length > 0 && !filters.itemType.includes(item.item_type)) {
-					return false;
-				}
-				if (searchInput && !item.name.toLowerCase().includes(searchInput.toLowerCase())) {
-					return false;
-				}
-				return item.quality === quality;
-			}).length;
+		Array.from({ length: qualityNames.length }, (_, i) => i).map((quality) => {
+			const count = data.items.filter((item) =>
+				matchesFilters(item, { includeQuality: false }) && item.quality === quality
+			).length;
 			return { quality, count };
 		})
 	);
@@ -74,15 +80,9 @@
 	const typeCounts = $derived.by(() => {
 		const allTypes = Array.from(new Set(data.items.map((item) => item.item_type))).sort();
 		return allTypes.map((type) => {
-			const count = data.items.filter((item) => {
-				if (filters.quality.length > 0 && !filters.quality.includes(item.quality)) {
-					return false;
-				}
-				if (searchInput && !item.name.toLowerCase().includes(searchInput.toLowerCase())) {
-					return false;
-				}
-				return item.item_type === type;
-			}).length;
+			const count = data.items.filter((item) =>
+				matchesFilters(item, { includeType: false }) && item.item_type === type
+			).length;
 			return { type, count };
 		});
 	});
@@ -166,6 +166,13 @@
 				: window.location.pathname;
 			window.history.replaceState(history.state, '', newUrl);
 		}, 300);
+
+		// Cleanup function to clear timeout on effect re-run or unmount
+		return () => {
+			if (searchDebounceTimer) {
+				clearTimeout(searchDebounceTimer);
+			}
+		};
 	});
 
 	function parseClassRequired(classJson: string): string[] {
@@ -278,6 +285,7 @@
 	<!-- Items Grid -->
 	<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
 		{#each paginatedItems as item (item.id)}
+			{@const classRequired = parseClassRequired(item.class_required)}
 			<a href={resolve('/items/[id]', { id: item.id })} class="block">
 				<Card.Root class="h-full hover:border-primary transition-colors">
 					<Card.Header>
@@ -313,10 +321,10 @@
 							</div>
 						{/if}
 
-						{#if parseClassRequired(item.class_required).length > 0}
+						{#if classRequired.length > 0}
 							<div class="text-sm">
 								<span class="text-muted-foreground">Class:</span>
-								<span class="font-medium">{parseClassRequired(item.class_required).join(', ')}</span>
+								<span class="font-medium">{classRequired.join(', ')}</span>
 							</div>
 						{/if}
 
