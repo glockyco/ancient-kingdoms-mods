@@ -208,7 +208,22 @@
 	<!-- Filters -->
 	<Card.Root>
 		<Card.Header>
-			<Card.Title>Filters</Card.Title>
+			<div class="flex items-center justify-between">
+				<Card.Title>Filters</Card.Title>
+				<Button
+					variant="outline"
+					size="sm"
+					class={filters.quality.length === 0 && filters.itemType.length === 0 && !searchInput
+						? 'invisible'
+						: ''}
+					onclick={() => {
+						searchInput = '';
+						goto('/items', { replaceState: true });
+					}}
+				>
+					Clear Filters
+				</Button>
+			</div>
 		</Card.Header>
 		<Card.Content class="space-y-4">
 			<!-- Search Filter -->
@@ -264,21 +279,6 @@
 					{/each}
 				</div>
 			</div>
-
-			<!-- Clear Filters -->
-			{#if filters.quality.length > 0 || filters.itemType.length > 0 || searchInput}
-				<div>
-					<Button
-						variant="outline"
-						onclick={() => {
-							searchInput = '';
-							goto('/items', { replaceState: true });
-						}}
-					>
-						Clear Filters
-					</Button>
-				</div>
-			{/if}
 		</Card.Content>
 	</Card.Root>
 
