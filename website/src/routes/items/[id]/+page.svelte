@@ -2,6 +2,7 @@
 	import * as Card from '$lib/components/ui/card';
 	import { resolve } from '$app/paths';
 	import Breadcrumb from '$lib/components/Breadcrumb.svelte';
+	import { STATS_METADATA_FIELDS } from '$lib/constants/items';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
@@ -70,7 +71,7 @@
 		const stats = allStats
 			? Object.fromEntries(
 					Object.entries(allStats).filter(([key, value]) => {
-						if (['max_durability', 'has_serenity', 'is_costume', 'augment_bonus_set'].includes(key)) {
+						if ((STATS_METADATA_FIELDS as readonly string[]).includes(key)) {
 							return false;
 						}
 						return value !== 0 && value !== 0.0 && value !== false;
