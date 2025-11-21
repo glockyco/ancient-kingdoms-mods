@@ -1,25 +1,25 @@
 import type { Item } from "$lib/queries/items";
 
 /**
- * Data structure returned by the items page load functions
+ * Minimal item data for list view - only fields displayed on items page
+ */
+export interface ItemListView {
+	id: string;
+	name: string;
+	item_type: string;
+	quality: number;
+	level_required: number;
+	slot: string | null;
+	backpack_slots: number;
+	class_required: string;
+	stats_count: number;
+}
+
+/**
+ * Data structure returned by the items page load function
  */
 export interface ItemsPageData {
-	items: Item[];
-	totalCount: number;
-	availableTypes: Array<{ type: string; count: number }>;
-	qualityCounts: Array<{ quality: number; count: number }>;
-	filters: {
-		search: string | undefined;
-		quality: number[] | undefined;
-		itemType: string[] | undefined;
-		minLevel: number | undefined;
-		maxLevel: number | undefined;
-	};
-	pagination: {
-		page: number;
-		pageSize: number;
-		totalPages: number;
-	};
+	items: ItemListView[];
 }
 
 /**
