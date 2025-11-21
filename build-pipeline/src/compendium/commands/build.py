@@ -550,14 +550,14 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
     # Build dropped_by from monsters.drops
     console.print("  Processing monster drops...")
     cursor.execute("""
-        SELECT id, name, drops
+        SELECT id, name, level, drops
         FROM monsters
         WHERE drops IS NOT NULL AND drops != '[]'
     """)
 
     dropped_by: dict[str, list[DropInfo]] = {}
 
-    for monster_id, monster_name, drops_json in cursor.fetchall():
+    for monster_id, monster_name, monster_level, drops_json in cursor.fetchall():
         drops = json.loads(drops_json)
         for drop in drops:
             item_id = drop.get("item_id")
@@ -568,6 +568,7 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
                     {
                         "monster_id": monster_id,
                         "monster_name": monster_name,
+                        "monster_level": monster_level,
                         "rate": drop.get("rate", 0.0),
                     }
                 )
@@ -746,8 +747,10 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
     # Update items table
     console.print("  Updating items table...")
     for item_id, drops in dropped_by.items():
+        # Sort by drop rate descending (highest first), then by monster name
+        drops_sorted = sorted(drops, key=lambda x: (-x["rate"], x["monster_name"]))
         cursor.execute(
-            "UPDATE items SET dropped_by = ? WHERE id = ?", (json.dumps(drops), item_id)
+            "UPDATE items SET dropped_by = ? WHERE id = ?", (json.dumps(drops_sorted), item_id)
         )
 
     for item_id, vendors in sold_by.items():

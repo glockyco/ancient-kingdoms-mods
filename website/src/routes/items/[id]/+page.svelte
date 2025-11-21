@@ -93,7 +93,12 @@
       stats,
       classRequired: parseJson<string[]>(data.item.class_required) || [],
       droppedBy: parseJson<
-        Array<{ monster_id: string; monster_name: string; rate: number }>
+        Array<{
+          monster_id: string;
+          monster_name: string;
+          monster_level: number;
+          rate: number;
+        }>
       >(data.item.dropped_by),
       soldBy: parseJson<
         Array<{
@@ -392,6 +397,9 @@
                   class="hover:underline font-medium"
                 >
                   {drop.monster_name}
+                  <span class="text-muted-foreground font-normal"
+                    >(Lv {drop.monster_level})</span
+                  >
                 </a>
                 <span class="text-muted-foreground"
                   >{(drop.rate * 100).toFixed(1)}%</span
