@@ -12,9 +12,13 @@
 	let { data }: { data: PageData } = $props();
 
 	let isHydrated = $state(false);
+	let searchInput = $state('');
+	let searchDebounceTimer: ReturnType<typeof setTimeout> | null = null;
 
 	onMount(() => {
 		isHydrated = true;
+		// Initialize searchInput from URL on mount (for direct links)
+		searchInput = $page.url.searchParams.get('search') || '';
 	});
 
 	const qualityColors = [
@@ -34,7 +38,7 @@
 		page: isHydrated ? Number($page.url.searchParams.get('page') || '1') : 1
 	});
 
-	// Filter items based on current filters
+	// Filter items based on current filters (use searchInput directly for instant feedback)
 	const filteredItems = $derived(
 		data.items.filter((item) => {
 			if (filters.quality.length > 0 && !filters.quality.includes(item.quality)) {
@@ -43,15 +47,21 @@
 			if (filters.itemType.length > 0 && !filters.itemType.includes(item.item_type)) {
 				return false;
 			}
+			if (searchInput && !item.name.toLowerCase().includes(searchInput.toLowerCase())) {
+				return false;
+			}
 			return true;
 		})
 	);
 
-	// Calculate quality counts based on current type filter
+	// Calculate quality counts based on current type and search filters
 	const qualityCounts = $derived(
 		[0, 1, 2, 3, 4].map((quality) => {
 			const count = data.items.filter((item) => {
 				if (filters.itemType.length > 0 && !filters.itemType.includes(item.item_type)) {
+					return false;
+				}
+				if (searchInput && !item.name.toLowerCase().includes(searchInput.toLowerCase())) {
 					return false;
 				}
 				return item.quality === quality;
@@ -60,12 +70,15 @@
 		})
 	);
 
-	// Calculate type counts based on current quality filter
+	// Calculate type counts based on current quality and search filters
 	const typeCounts = $derived.by(() => {
 		const allTypes = Array.from(new Set(data.items.map((item) => item.item_type))).sort();
 		return allTypes.map((type) => {
 			const count = data.items.filter((item) => {
 				if (filters.quality.length > 0 && !filters.quality.includes(item.quality)) {
+					return false;
+				}
+				if (searchInput && !item.name.toLowerCase().includes(searchInput.toLowerCase())) {
 					return false;
 				}
 				return item.item_type === type;
@@ -120,6 +133,41 @@
 		updateFilters({ type: newTypes.length > 0 ? newTypes.join(',') : undefined });
 	}
 
+	// Debounce URL update when searchInput changes
+	$effect(() => {
+		const currentSearch = searchInput; // Read here so effect tracks changes
+
+		// Don't update URL on initial mount
+		if (!isHydrated) return;
+
+		// Clear existing timer
+		if (searchDebounceTimer) {
+			clearTimeout(searchDebounceTimer);
+		}
+
+		// Schedule URL update (for bookmarking/sharing)
+		searchDebounceTimer = setTimeout(() => {
+			// Update URL without triggering navigation (preserves focus)
+			const newParams = new SvelteURLSearchParams($page.url.searchParams);
+
+			if (currentSearch) {
+				newParams.set('search', currentSearch);
+			} else {
+				newParams.delete('search');
+			}
+
+			// Reset to page 1 when search changes
+			newParams.delete('page');
+
+			// Use History API directly to avoid SvelteKit navigation
+			const queryString = newParams.toString();
+			const newUrl = queryString
+				? `${window.location.pathname}?${queryString}`
+				: window.location.pathname;
+			window.history.replaceState(history.state, '', newUrl);
+		}, 300);
+	});
+
 	function parseClassRequired(classJson: string): string[] {
 		try {
 			const parsed = JSON.parse(classJson);
@@ -156,6 +204,18 @@
 			<Card.Title>Filters</Card.Title>
 		</Card.Header>
 		<Card.Content class="space-y-4">
+			<!-- Search Filter -->
+			<div>
+				<label for="search" class="text-sm font-medium mb-2 block">Search</label>
+				<input
+					id="search"
+					type="text"
+					placeholder="Search items by name..."
+					bind:value={searchInput}
+					class="w-full px-3 py-2 rounded-md border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+				/>
+			</div>
+
 			<!-- Quality Filter -->
 			<div>
 				<div class="text-sm font-medium mb-2">Quality</div>
@@ -199,9 +259,17 @@
 			</div>
 
 			<!-- Clear Filters -->
-			{#if filters.quality.length > 0 || filters.itemType.length > 0}
+			{#if filters.quality.length > 0 || filters.itemType.length > 0 || searchInput}
 				<div>
-					<Button variant="outline" href="/items">Clear Filters</Button>
+					<Button
+						variant="outline"
+						onclick={() => {
+							searchInput = '';
+							goto('/items', { replaceState: true });
+						}}
+					>
+						Clear Filters
+					</Button>
 				</div>
 			{/if}
 		</Card.Content>
