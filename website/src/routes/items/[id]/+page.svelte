@@ -109,9 +109,14 @@
           currency_item_name: string | null;
         }>
       >(data.item.sold_by),
-      rewardedBy: parseJson<Array<{ quest_id: string; quest_name: string }>>(
-        data.item.rewarded_by,
-      ),
+      rewardedBy: parseJson<
+        Array<{
+          quest_id: string;
+          quest_name: string;
+          level_required: number;
+          level_recommended: number;
+        }>
+      >(data.item.rewarded_by),
       craftedFrom: parseJson<
         Array<{
           recipe_id: string;
@@ -143,6 +148,8 @@
         Array<{
           quest_id: string;
           quest_name: string;
+          level_required: number;
+          level_recommended: number;
           purpose: string;
           amount: number;
         }>
@@ -453,6 +460,9 @@
                   class="hover:underline font-medium"
                 >
                   {quest.quest_name}
+                  <span class="text-muted-foreground font-normal"
+                    >(Lv {quest.level_required})</span
+                  >
                 </a>
               </div>
             {/each}
@@ -564,6 +574,9 @@
                   class="hover:underline font-medium"
                 >
                   {quest.quest_name}
+                  <span class="text-muted-foreground font-normal"
+                    >(Lv {quest.level_required})</span
+                  >
                 </a>
                 <span class="text-muted-foreground"
                   >{quest.purpose} (x{quest.amount})</span

@@ -686,14 +686,14 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
     # Build rewarded_by from quests.rewards
     console.print("  Processing quest rewards...")
     cursor.execute("""
-        SELECT id, name, rewards
+        SELECT id, name, level_required, level_recommended, rewards
         FROM quests
         WHERE rewards IS NOT NULL
     """)
 
     rewarded_by: dict[str, list[RewardedByInfo]] = {}
 
-    for quest_id, quest_name, rewards_json in cursor.fetchall():
+    for quest_id, quest_name, level_required, level_recommended, rewards_json in cursor.fetchall():
         rewards = json.loads(rewards_json)
         items = rewards.get("items", [])
         for item in items:
@@ -701,9 +701,12 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
             if item_id:
                 if item_id not in rewarded_by:
                     rewarded_by[item_id] = []
-                rewarded_by[item_id].append(
-                    {"quest_id": quest_id, "quest_name": quest_name}
-                )
+                rewarded_by[item_id].append({
+                    "quest_id": quest_id,
+                    "quest_name": quest_name,
+                    "level_required": level_required,
+                    "level_recommended": level_recommended
+                })
 
     # Build crafted_from from crafting_recipes
     console.print("  Processing crafting recipes...")
@@ -813,7 +816,8 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
     # Build needed_for_quests from quest objectives
     console.print("  Processing quest item requirements...")
     cursor.execute("""
-        SELECT id, name, gather_item_1_id, gather_amount_1, gather_item_2_id, gather_amount_2,
+        SELECT id, name, level_required, level_recommended,
+               gather_item_1_id, gather_amount_1, gather_item_2_id, gather_amount_2,
                gather_item_3_id, gather_amount_3, gather_items, required_items, equip_items
         FROM quests
     """)
@@ -823,22 +827,11 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
     for row in cursor.fetchall():
         quest_id = row[0]
         quest_name = row[1]
+        level_required = row[2]
+        level_recommended = row[3]
 
         # Process gather_item_1, 2, 3
-        if row[2]:  # gather_item_1_id
-            item_id = row[2]
-            if item_id not in needed_for_quests:
-                needed_for_quests[item_id] = []
-            needed_for_quests[item_id].append(
-                {
-                    "quest_id": quest_id,
-                    "quest_name": quest_name,
-                    "purpose": "gather",
-                    "amount": row[3] or 1,  # gather_amount_1
-                }
-            )
-
-        if row[4]:  # gather_item_2_id
+        if row[4]:  # gather_item_1_id
             item_id = row[4]
             if item_id not in needed_for_quests:
                 needed_for_quests[item_id] = []
@@ -846,12 +839,14 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
                 {
                     "quest_id": quest_id,
                     "quest_name": quest_name,
+                    "level_required": level_required,
+                    "level_recommended": level_recommended,
                     "purpose": "gather",
-                    "amount": row[5] or 1,  # gather_amount_2
+                    "amount": row[5] or 1,  # gather_amount_1
                 }
             )
 
-        if row[6]:  # gather_item_3_id
+        if row[6]:  # gather_item_2_id
             item_id = row[6]
             if item_id not in needed_for_quests:
                 needed_for_quests[item_id] = []
@@ -859,14 +854,31 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
                 {
                     "quest_id": quest_id,
                     "quest_name": quest_name,
+                    "level_required": level_required,
+                    "level_recommended": level_recommended,
                     "purpose": "gather",
-                    "amount": row[7] or 1,  # gather_amount_3
+                    "amount": row[7] or 1,  # gather_amount_2
+                }
+            )
+
+        if row[8]:  # gather_item_3_id
+            item_id = row[8]
+            if item_id not in needed_for_quests:
+                needed_for_quests[item_id] = []
+            needed_for_quests[item_id].append(
+                {
+                    "quest_id": quest_id,
+                    "quest_name": quest_name,
+                    "level_required": level_required,
+                    "level_recommended": level_recommended,
+                    "purpose": "gather",
+                    "amount": row[9] or 1,  # gather_amount_3
                 }
             )
 
         # Process gather_items (JSON array)
-        if row[8]:  # gather_items
-            gather_items_list = json.loads(row[8])
+        if row[10]:  # gather_items
+            gather_items_list = json.loads(row[10])
             for item_obj in gather_items_list:
                 item_id = item_obj.get("item_id")
                 if item_id:
@@ -876,14 +888,16 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
                         {
                             "quest_id": quest_id,
                             "quest_name": quest_name,
+                            "level_required": level_required,
+                            "level_recommended": level_recommended,
                             "purpose": "gather",
                             "amount": item_obj.get("amount", 1),
                         }
                     )
 
         # Process required_items (JSON array)
-        if row[9]:  # required_items
-            required_items_list = json.loads(row[9])
+        if row[11]:  # required_items
+            required_items_list = json.loads(row[11])
             for item_obj in required_items_list:
                 item_id = item_obj.get("item_id")
                 if item_id:
@@ -893,14 +907,16 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
                         {
                             "quest_id": quest_id,
                             "quest_name": quest_name,
+                            "level_required": level_required,
+                            "level_recommended": level_recommended,
                             "purpose": "required",
                             "amount": item_obj.get("amount", 1),
                         }
                     )
 
         # Process equip_items (JSON array of item IDs)
-        if row[10]:  # equip_items
-            equip_items_list = json.loads(row[10])
+        if row[12]:  # equip_items
+            equip_items_list = json.loads(row[12])
             for item_id in equip_items_list:
                 if item_id:
                     if item_id not in needed_for_quests:
@@ -909,6 +925,8 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
                         {
                             "quest_id": quest_id,
                             "quest_name": quest_name,
+                            "level_required": level_required,
+                            "level_recommended": level_recommended,
                             "purpose": "equip",
                             "amount": 1,
                         }
