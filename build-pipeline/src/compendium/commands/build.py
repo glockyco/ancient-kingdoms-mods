@@ -707,20 +707,41 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
     # Build crafted_from from crafting_recipes
     console.print("  Processing crafting recipes...")
     cursor.execute("""
-        SELECT id, result_item_id, result_amount
+        SELECT id, result_item_id, result_amount, materials
         FROM crafting_recipes
         WHERE result_item_id IS NOT NULL
     """)
 
     crafted_from: dict[str, list[CraftedFromInfo]] = {}
 
-    for recipe_id, result_item_id, result_amount in cursor.fetchall():
+    for recipe_id, result_item_id, result_amount, materials_json in cursor.fetchall():
         if result_item_id:
             if result_item_id not in crafted_from:
                 crafted_from[result_item_id] = []
-            crafted_from[result_item_id].append(
-                {"recipe_id": recipe_id, "result_amount": result_amount}
-            )
+
+            # Parse materials and add item names
+            materials = json.loads(materials_json) if materials_json else []
+            materials_with_names = []
+            for material in materials:
+                material_id = material.get("item_id")
+                amount = material.get("amount", 1)
+
+                # Get item name
+                cursor.execute("SELECT name FROM items WHERE id = ?", (material_id,))
+                result = cursor.fetchone()
+                material_name = result[0] if result else "Unknown"
+
+                materials_with_names.append({
+                    "item_id": material_id,
+                    "item_name": material_name,
+                    "amount": amount
+                })
+
+            crafted_from[result_item_id].append({
+                "recipe_id": recipe_id,
+                "result_amount": result_amount,
+                "materials": materials_with_names
+            })
 
     # Update items table
     console.print("  Updating items table...")
@@ -780,6 +801,7 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
                 used_in_recipes[item_id].append(
                     {
                         "recipe_id": recipe_id,
+                        "result_item_id": result_item_id,
                         "result_item_name": result_item_name or "Unknown",
                         "amount": material.get("amount", 1),
                     }

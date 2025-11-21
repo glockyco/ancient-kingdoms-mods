@@ -108,7 +108,11 @@
         data.item.rewarded_by,
       ),
       craftedFrom: parseJson<
-        Array<{ recipe_id: string; result_amount: number }>
+        Array<{
+          recipe_id: string;
+          result_amount: number;
+          materials: Array<{ item_id: string; item_name: string; amount: number }>;
+        }>
       >(data.item.crafted_from),
       gatheredFrom: parseJson<
         Array<{
@@ -122,9 +126,14 @@
           key_name?: string;
         }>
       >(data.item.gathered_from),
-      usedInRecipes: parseJson<Array<{ recipe_id: string; amount: number }>>(
-        data.item.used_in_recipes,
-      ),
+      usedInRecipes: parseJson<
+        Array<{
+          recipe_id: string;
+          result_item_id: string;
+          result_item_name: string;
+          amount: number;
+        }>
+      >(data.item.used_in_recipes),
       neededForQuests: parseJson<
         Array<{
           quest_id: string;
@@ -451,13 +460,16 @@
           <Card.Title>Crafted From Recipe</Card.Title>
         </Card.Header>
         <Card.Content>
-          <div class="space-y-2">
-            {#each computed.craftedFrom as recipe, index (`${recipe.recipe_id}_${index}`)}
+          <div class="space-y-1">
+            {#each computed.craftedFrom[0].materials as material}
               <div class="flex justify-between items-center text-sm">
-                <span class="font-medium">{recipe.recipe_id}</span>
-                <span class="text-muted-foreground"
-                  >x{recipe.result_amount}</span
+                <a
+                  href={resolve("/items/[id]", { id: material.item_id })}
+                  class="hover:underline"
                 >
+                  {material.item_name}
+                </a>
+                <span class="text-muted-foreground">x{material.amount}</span>
               </div>
             {/each}
           </div>
@@ -515,7 +527,12 @@
           <div class="space-y-2">
             {#each computed.usedInRecipes as recipe, index (`${recipe.recipe_id}_${index}`)}
               <div class="flex justify-between items-center text-sm">
-                <span class="font-medium">{recipe.recipe_id}</span>
+                <a
+                  href={resolve("/items/[id]", { id: recipe.result_item_id })}
+                  class="hover:underline"
+                >
+                  {recipe.result_item_name}
+                </a>
                 <span class="text-muted-foreground">x{recipe.amount}</span>
               </div>
             {/each}
