@@ -757,8 +757,10 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
         )
 
     for item_id, vendors in sold_by.items():
+        # Sort by NPC name alphabetically
+        vendors_sorted = sorted(vendors, key=lambda x: x["npc_name"])
         cursor.execute(
-            "UPDATE items SET sold_by = ? WHERE id = ?", (json.dumps(vendors), item_id)
+            "UPDATE items SET sold_by = ? WHERE id = ?", (json.dumps(vendors_sorted), item_id)
         )
 
     for item_id, quests in rewarded_by.items():
