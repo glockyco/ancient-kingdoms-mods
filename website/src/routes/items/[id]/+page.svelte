@@ -395,6 +395,83 @@
     </Card.Root>
   {/if}
 
+  <!-- Use Effects -->
+  {#if data.item.usage_health > 0 || data.item.usage_mana > 0 || data.item.usage_energy > 0 || data.item.food_buff_id || data.item.relic_buff_id}
+    <Card.Root>
+      <Card.Header>
+        <Card.Title>Use Effects</Card.Title>
+      </Card.Header>
+      <Card.Content class="grid grid-cols-2 md:grid-cols-3 gap-4">
+        {#if data.item.usage_health > 0}
+          <div>
+            <div class="text-sm text-muted-foreground">Restores Health</div>
+            <div class="font-medium text-green-600 dark:text-green-400">
+              +{data.item.usage_health} HP
+            </div>
+          </div>
+        {/if}
+
+        {#if data.item.usage_mana > 0}
+          <div>
+            <div class="text-sm text-muted-foreground">Restores Mana</div>
+            <div class="font-medium text-blue-600 dark:text-blue-400">
+              +{data.item.usage_mana} MP
+            </div>
+          </div>
+        {/if}
+
+        {#if data.item.usage_energy > 0}
+          <div>
+            <div class="text-sm text-muted-foreground">Restores Energy</div>
+            <div class="font-medium text-yellow-600 dark:text-yellow-400">
+              +{data.item.usage_energy} Energy
+            </div>
+          </div>
+        {/if}
+
+        {#if data.item.food_buff_id}
+          <div>
+            <div class="text-sm text-muted-foreground">Grants Buff</div>
+            <div class="font-medium">
+              <a
+                href="/skills/{data.item.food_buff_id}"
+                class="hover:underline"
+              >
+                {data.item.food_buff_name || data.item.food_buff_id.replace(/_/g, " ")}
+              </a>
+            </div>
+          </div>
+        {/if}
+
+        {#if data.item.relic_buff_id}
+          <div>
+            <div class="text-sm text-muted-foreground">Activates</div>
+            <div class="font-medium">
+              <a
+                href="/skills/{data.item.relic_buff_id}"
+                class="hover:underline"
+              >
+                {data.item.relic_buff_name || data.item.relic_buff_id.replace(/_/g, " ")}
+              </a>
+            </div>
+          </div>
+        {/if}
+
+        <div>
+          <div class="text-sm text-muted-foreground">Consumed on Use</div>
+          <div class="font-medium">{data.item.infinite_charges ? "No" : "Yes"}</div>
+        </div>
+
+        {#if data.item.cooldown > 0}
+          <div>
+            <div class="text-sm text-muted-foreground">Recharge Time</div>
+            <div class="font-medium">{data.item.cooldown}s</div>
+          </div>
+        {/if}
+      </Card.Content>
+    </Card.Root>
+  {/if}
+
   <!-- Relationships -->
   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
     <!-- Dropped By -->
