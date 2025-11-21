@@ -29,6 +29,10 @@
     ],
     "website/**/*.{css,json,md}": [
       "cd website && pnpm exec prettier --write"
+    ],
+    "build-pipeline/**/*.py": [
+      "cd build-pipeline && uv run ruff check --fix",
+      "cd build-pipeline && uv run ruff format"
     ]
   }
 }
