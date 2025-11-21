@@ -2,6 +2,21 @@ using System.Collections.Generic;
 
 namespace DataExporter.Models;
 
+public class NpcSpawnData
+{
+    public string id { get; set; }
+    public string npc_id { get; set; }
+    public string zone_id { get; set; }
+    public Position position { get; set; }
+
+    // Movement and patrol
+    public Position origin_follow_position { get; set; }
+    public float follow_distance { get; set; }
+    public float move_distance { get; set; }
+    public float move_probability { get; set; }
+    public List<Position> patrol_waypoints { get; set; } = new();
+}
+
 public class NpcRoles
 {
     public bool is_merchant { get; set; }
@@ -35,9 +50,6 @@ public class NpcData
     // Identity
     public string id { get; set; }
     public string name { get; set; }
-    public string zone_id { get; set; }
-    public Position position { get; set; }
-    public bool is_template { get; set; }
     public string faction { get; set; }
     public string race { get; set; }
 
@@ -58,13 +70,6 @@ public class NpcData
     public int gold_max { get; set; }
     public float probability_drop_gold { get; set; }
     public List<ItemDrop> drops { get; set; } = new();
-
-    // Movement and patrol
-    public Position origin_follow_position { get; set; }
-    public float follow_distance { get; set; }
-    public float move_probability { get; set; }
-    public float move_distance { get; set; }
-    public List<Position> patrol_waypoints { get; set; } = new();
 
     // Combat flags
     public bool see_invisibility { get; set; }

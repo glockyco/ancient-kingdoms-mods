@@ -8,14 +8,25 @@ public class ItemDrop
     public float rate { get; set; }
 }
 
+public class MonsterSpawnData
+{
+    public string id { get; set; }
+    public string monster_id { get; set; }
+    public string zone_id { get; set; }
+    public Position position { get; set; }
+
+    // Movement and patrol
+    public float move_probability { get; set; }
+    public float move_distance { get; set; }
+    public bool is_patrolling { get; set; }
+    public List<Position> patrol_waypoints { get; set; } = new();
+}
+
 public class MonsterData
 {
     // Identity
     public string id { get; set; }
     public string name { get; set; }
-    public string zone_id { get; set; }
-    public Position position { get; set; }
-    public bool is_template { get; set; }
 
     // Base stats
     public int level { get; set; }
@@ -53,12 +64,6 @@ public class MonsterData
     public float probability_drop_gold { get; set; }
     public float exp_multiplier { get; set; }
     public List<ItemDrop> drops { get; set; } = new();
-
-    // Movement and patrol
-    public float move_probability { get; set; }
-    public float move_distance { get; set; }
-    public bool is_patrolling { get; set; }
-    public List<Position> patrol_waypoints { get; set; } = new();
 
     // Messages and interactions
     public List<string> aggro_messages { get; set; } = new();

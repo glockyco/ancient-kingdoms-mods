@@ -22,8 +22,10 @@ public class NpcExporter : BaseExporter
 
         Logger.Msg($"Found {npcs.Length} NPC objects total");
 
-        var npcList = new List<NpcData>();
+        // Group NPCs by name to identify canonical entities
+        var npcsByName = new Dictionary<string, List<Il2Cpp.Npc>>();
         var templateCount = 0;
+        var spawnCount = 0;
 
         foreach (var obj in npcs)
         {
@@ -31,85 +33,88 @@ public class NpcExporter : BaseExporter
             if (npc == null || string.IsNullOrEmpty(npc.name))
                 continue;
 
-            var isTemplate = npc.gameObject == null || !npc.gameObject.scene.IsValid();
-            var zoneId = GetNpcZoneId(npc);
+            var sanitizedName = SanitizeId(npc.name);
+            if (!npcsByName.ContainsKey(sanitizedName))
+            {
+                npcsByName[sanitizedName] = new List<Il2Cpp.Npc>();
+            }
+            npcsByName[sanitizedName].Add(npc);
 
+            var isTemplate = npc.gameObject == null || !npc.gameObject.scene.IsValid();
             if (isTemplate)
                 templateCount++;
+            else
+                spawnCount++;
+        }
+
+        Logger.Msg($"Found {npcsByName.Count} unique NPCs ({templateCount} templates, {spawnCount} spawns)");
+
+        var npcList = new List<NpcData>();
+        var spawnList = new List<NpcSpawnData>();
+
+        // Process each NPC group
+        foreach (var (name, group) in npcsByName)
+        {
+            // Find canonical NPC (prefer template)
+            Il2Cpp.Npc canonical = group.FirstOrDefault(n => n.gameObject == null || !n.gameObject.scene.IsValid())
+                                 ?? group.First();
 
             var npcData = new NpcData
             {
                 // Identity
-                id = isTemplate
-                    ? SanitizeId(npc.name)
-                    : $"{SanitizeId(npc.name)}_{zoneId}_{npc.GetInstanceID()}",
-                name = npc.name,
-                zone_id = zoneId,
-                position = isTemplate
-                    ? null
-                    : new Position(
-                        npc.transform.position.x,
-                        npc.transform.position.y,
-                        npc.transform.position.z
-                    ),
-                is_template = isTemplate,
-                faction = npc.faction ?? "Neutral",
-                race = npc.race ?? "Unknown",
+                id = name,  // canonical ID (sanitized name)
+                name = canonical.name,
+                faction = canonical.faction ?? "Neutral",
+                race = canonical.race ?? "Unknown",
 
                 // Roles and services
                 roles = new NpcRoles
                 {
-                    is_merchant = npc.trading != null && npc.trading.saleItems != null && npc.trading.saleItems.Length > 0,
-                    is_quest_giver = npc.quests != null && npc.quests.quests != null && npc.quests.quests.Length > 0,
-                    can_repair_equipment = npc.canRepairEquipment,
-                    is_bank = npc.isBank,
-                    is_skill_master = npc.isSkillMaster,
-                    is_veteran_master = npc.isVeteranMaster,
-                    is_reset_attributes = npc.isResetAttributes,
-                    is_soul_binder = npc.isSoulBinder,
-                    is_inkeeper = npc.isInkeeper,
-                    is_taskgiver_adventurer = npc.isTaskgiverAdventurer,
-                    is_merchant_adventurer = npc.isMerchantAdventurer,
-                    is_recruiter_mercenaries = npc.isRecruiterMercenaries,
-                    is_guard = npc.isGuard,
-                    is_faction_vendor = npc.isFactionVendor,
-                    is_essence_trader = npc.isEssenceTrader,
-                    is_priestess = npc.isPriestess,
-                    is_augmenter = npc.isAugmenter
+                    is_merchant = canonical.trading != null && canonical.trading.saleItems != null && canonical.trading.saleItems.Length > 0,
+                    is_quest_giver = canonical.quests != null && canonical.quests.quests != null && canonical.quests.quests.Length > 0,
+                    can_repair_equipment = canonical.canRepairEquipment,
+                    is_bank = canonical.isBank,
+                    is_skill_master = canonical.isSkillMaster,
+                    is_veteran_master = canonical.isVeteranMaster,
+                    is_reset_attributes = canonical.isResetAttributes,
+                    is_soul_binder = canonical.isSoulBinder,
+                    is_inkeeper = canonical.isInkeeper,
+                    is_taskgiver_adventurer = canonical.isTaskgiverAdventurer,
+                    is_merchant_adventurer = canonical.isMerchantAdventurer,
+                    is_recruiter_mercenaries = canonical.isRecruiterMercenaries,
+                    is_guard = canonical.isGuard,
+                    is_faction_vendor = canonical.isFactionVendor,
+                    is_essence_trader = canonical.isEssenceTrader,
+                    is_priestess = canonical.isPriestess,
+                    is_augmenter = canonical.isAugmenter
                 },
 
                 // Spawning and respawn
-                respawn_dungeon_id = npc.respawnDungeonId,
-                gold_required_respawn_dungeon = npc.goldRequiredRespawnDungeon,
-                respawn_probability = npc.probabilityRespawn,
-                can_hide_after_spawn = npc.canHideAfterSpawn,
-                respawn_time = npc.respawnTime,
+                respawn_dungeon_id = canonical.respawnDungeonId,
+                gold_required_respawn_dungeon = canonical.goldRequiredRespawnDungeon,
+                respawn_probability = canonical.probabilityRespawn,
+                can_hide_after_spawn = canonical.canHideAfterSpawn,
+                respawn_time = canonical.respawnTime,
 
                 // Loot and rewards (when killed)
-                gold_min = npc.lootGoldMin,
-                gold_max = npc.lootGoldMax,
-                probability_drop_gold = npc.probabilityDropGold,
-
-                // Movement and patrol
-                origin_follow_position = new Position(npc.originFollowPosition.x, npc.originFollowPosition.y, 0),
-                follow_distance = npc.followDistance,
-                move_probability = npc.moveProbability,
-                move_distance = npc.moveDistance,
+                gold_min = canonical.lootGoldMin,
+                gold_max = canonical.lootGoldMax,
+                probability_drop_gold = canonical.probabilityDropGold,
 
                 // Combat flags
-                see_invisibility = npc.seeInvisibility,
-                is_summonable = npc.isSummonable,
-                flee_on_low_hp = npc.fleeOnLowHP,
+                see_invisibility = canonical.seeInvisibility,
+                is_summonable = canonical.isSummonable,
+                flee_on_low_hp = canonical.fleeOnLowHP,
 
                 // Messages and interactions
-                aggro_message_probability = npc.aggroMessageProbability,
-                summon_message = npc.summonMessage
+                aggro_message_probability = canonical.aggroMessageProbability,
+                summon_message = canonical.summonMessage
             };
 
             // Export welcome messages
-            if (npc.welcomeMessages != null && npc.welcomeMessages.Count > 0)
+            if (canonical.welcomeMessages != null && canonical.welcomeMessages.Count > 0)
             {
-                foreach (var msg in npc.welcomeMessages)
+                foreach (var msg in canonical.welcomeMessages)
                 {
                     if (!string.IsNullOrEmpty(msg))
                     {
@@ -119,9 +124,9 @@ public class NpcExporter : BaseExporter
             }
 
             // Export shout messages
-            if (npc.shoutMessages != null && npc.shoutMessages.Count > 0)
+            if (canonical.shoutMessages != null && canonical.shoutMessages.Count > 0)
             {
-                foreach (var msg in npc.shoutMessages)
+                foreach (var msg in canonical.shoutMessages)
                 {
                     if (!string.IsNullOrEmpty(msg))
                     {
@@ -131,9 +136,9 @@ public class NpcExporter : BaseExporter
             }
 
             // Export aggro messages
-            if (npc.aggroMessages != null && npc.aggroMessages.Count > 0)
+            if (canonical.aggroMessages != null && canonical.aggroMessages.Count > 0)
             {
-                foreach (var msg in npc.aggroMessages)
+                foreach (var msg in canonical.aggroMessages)
                 {
                     if (!string.IsNullOrEmpty(msg))
                     {
@@ -143,9 +148,9 @@ public class NpcExporter : BaseExporter
             }
 
             // Export quests offered
-            if (npc.quests != null && npc.quests.quests != null)
+            if (canonical.quests != null && canonical.quests.quests != null)
             {
-                foreach (var questOffer in npc.quests.quests)
+                foreach (var questOffer in canonical.quests.quests)
                 {
                     if (questOffer != null && questOffer.quest != null && !string.IsNullOrEmpty(questOffer.quest.name))
                     {
@@ -155,9 +160,9 @@ public class NpcExporter : BaseExporter
             }
 
             // Export items sold
-            if (npc.trading != null && npc.trading.saleItems != null)
+            if (canonical.trading != null && canonical.trading.saleItems != null)
             {
-                foreach (var item in npc.trading.saleItems)
+                foreach (var item in canonical.trading.saleItems)
                 {
                     if (item != null)
                     {
@@ -173,19 +178,10 @@ public class NpcExporter : BaseExporter
                 }
             }
 
-            // Export patrol waypoints
-            if (npc.waypointsPatrol != null && npc.waypointsPatrol.Length > 0)
-            {
-                foreach (var waypoint in npc.waypointsPatrol)
-                {
-                    npcData.patrol_waypoints.Add(new Position(waypoint.x, waypoint.y, 0));
-                }
-            }
-
             // Export item drops (when NPC is killed)
-            if (npc.dropChances != null && npc.dropChances.Count > 0)
+            if (canonical.dropChances != null && canonical.dropChances.Count > 0)
             {
-                foreach (var drop in npc.dropChances)
+                foreach (var drop in canonical.dropChances)
                 {
                     if (drop.item != null)
                     {
@@ -199,10 +195,51 @@ public class NpcExporter : BaseExporter
             }
 
             npcList.Add(npcData);
+
+            // Export spawn points for all instances (excluding templates)
+            foreach (var npc in group)
+            {
+                var isTemplate = npc.gameObject == null || !npc.gameObject.scene.IsValid();
+                if (isTemplate)
+                    continue;  // Skip templates - they don't have spawn locations
+
+                var zoneId = GetNpcZoneId(npc);
+                var spawnData = new NpcSpawnData
+                {
+                    id = $"{name}_{zoneId}_{npc.GetInstanceID()}",
+                    npc_id = name,  // reference to canonical NPC
+                    zone_id = zoneId,
+                    position = new Position(
+                        npc.transform.position.x,
+                        npc.transform.position.y,
+                        npc.transform.position.z
+                    ),
+                    origin_follow_position = new Position(
+                        npc.originFollowPosition.x,
+                        npc.originFollowPosition.y,
+                        0
+                    ),
+                    follow_distance = npc.followDistance,
+                    move_distance = npc.moveDistance,
+                    move_probability = npc.moveProbability
+                };
+
+                // Export patrol waypoints for this spawn
+                if (npc.waypointsPatrol != null && npc.waypointsPatrol.Length > 0)
+                {
+                    foreach (var waypoint in npc.waypointsPatrol)
+                    {
+                        spawnData.patrol_waypoints.Add(new Position(waypoint.x, waypoint.y, 0));
+                    }
+                }
+
+                spawnList.Add(spawnData);
+            }
         }
 
         WriteJson(npcList, "npcs.json");
-        Logger.Msg($"✓ Exported {npcList.Count} NPCs");
+        WriteJson(spawnList, "npc_spawns.json");
+        Logger.Msg($"✓ Exported {npcList.Count} canonical NPCs and {spawnList.Count} spawn points");
     }
 
     private string GetNpcZoneId(Il2Cpp.Npc npc)
