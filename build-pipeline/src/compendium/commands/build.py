@@ -13,7 +13,9 @@ from compendium.models import (
     GatherItemData,
     ItemData,
     MonsterData,
+    MonsterSpawnData,
     NpcData,
+    NpcSpawnData,
     PortalData,
     QuestData,
     SkillData,
@@ -262,6 +264,24 @@ def load_monsters(conn: sqlite3.Connection, export_dir: Path) -> None:
     console.print(f"  [green]OK[/green] Loaded {len(monsters)} monsters")
 
 
+def load_monster_spawns(conn: sqlite3.Connection, export_dir: Path) -> None:
+    """Load monster spawn points into database."""
+    console.print("Loading monster spawn points...")
+
+    filepath = export_dir / "monster_spawns.json"
+    with open(filepath, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    spawns = [MonsterSpawnData(**item) for item in data]
+
+    cursor = conn.cursor()
+    for spawn in spawns:
+        insert_model(cursor, "monster_spawns", spawn)
+
+    conn.commit()
+    console.print(f"  [green]OK[/green] Loaded {len(spawns)} monster spawn points")
+
+
 def load_npcs(conn: sqlite3.Connection, export_dir: Path) -> None:
     """Load NPCs into database."""
     console.print("Loading NPCs...")
@@ -278,6 +298,24 @@ def load_npcs(conn: sqlite3.Connection, export_dir: Path) -> None:
 
     conn.commit()
     console.print(f"  [green]OK[/green] Loaded {len(npcs)} NPCs")
+
+
+def load_npc_spawns(conn: sqlite3.Connection, export_dir: Path) -> None:
+    """Load NPC spawn points into database."""
+    console.print("Loading NPC spawn points...")
+
+    filepath = export_dir / "npc_spawns.json"
+    with open(filepath, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    spawns = [NpcSpawnData(**item) for item in data]
+
+    cursor = conn.cursor()
+    for spawn in spawns:
+        insert_model(cursor, "npc_spawns", spawn)
+
+    conn.commit()
+    console.print(f"  [green]OK[/green] Loaded {len(spawns)} NPC spawn points")
 
 
 def load_quests(conn: sqlite3.Connection, export_dir: Path) -> None:
@@ -415,12 +453,13 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
 
     cursor = conn.cursor()
 
-    # Build dropped_by from monsters.drops
+    # Build dropped_by from monsters.drops joined with monster_spawns for zone info
     console.print("  Processing monster drops...")
     cursor.execute("""
-        SELECT id, zone_id, drops
-        FROM monsters
-        WHERE drops IS NOT NULL AND drops != '[]'
+        SELECT m.id, ms.zone_id, m.drops
+        FROM monsters m
+        JOIN monster_spawns ms ON m.id = ms.monster_id
+        WHERE m.drops IS NOT NULL AND m.drops != '[]'
     """)
 
     dropped_by: dict[str, list[DropInfo]] = {}
@@ -461,12 +500,13 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
                     {"gather_item_id": gather_item_id, "rate": drop.get("rate", 0.0)}
                 )
 
-    # Build sold_by from npcs.items_sold
+    # Build sold_by from npcs.items_sold joined with npc_spawns for zone info
     console.print("  Processing NPC vendors...")
     cursor.execute("""
-        SELECT id, zone_id, items_sold
-        FROM npcs
-        WHERE items_sold IS NOT NULL AND items_sold != '[]'
+        SELECT n.id, ns.zone_id, n.items_sold
+        FROM npcs n
+        JOIN npc_spawns ns ON n.id = ns.npc_id
+        WHERE n.items_sold IS NOT NULL AND n.items_sold != '[]'
     """)
 
     sold_by: dict[str, list[SoldByInfo]] = {}
@@ -860,7 +900,9 @@ def run(config: dict) -> None:
         load_skills(conn, export_dir)
         load_items(conn, export_dir)
         load_monsters(conn, export_dir)
+        load_monster_spawns(conn, export_dir)  # After monsters
         load_npcs(conn, export_dir)
+        load_npc_spawns(conn, export_dir)  # After NPCs
         load_summon_triggers(conn, export_dir)  # After monsters/NPCs
         load_quests(conn, export_dir)
         load_portals(conn, export_dir)

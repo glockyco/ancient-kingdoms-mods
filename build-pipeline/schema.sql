@@ -143,8 +143,6 @@ CREATE INDEX idx_items_weapon_category ON items(weapon_category);
 CREATE TABLE monsters (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
-    zone_id TEXT REFERENCES zones(id),
-    is_template BOOLEAN DEFAULT 0,
     level INTEGER,
     health INTEGER,
     type_name TEXT,                 -- Humanoid, Beast, Undead, Elemental, etc.
@@ -172,14 +170,6 @@ CREATE TABLE monsters (
     probability_drop_gold REAL DEFAULT 1.0,
     exp_multiplier REAL DEFAULT 1.0,
     drops TEXT,                     -- JSON array
-    position_x REAL,
-    position_y REAL,
-    position_z REAL,
-
-    move_probability REAL DEFAULT 0.0,
-    move_distance REAL DEFAULT 0.0,
-    is_patrolling BOOLEAN DEFAULT 0,
-    patrol_waypoints TEXT,          -- JSON array
     aggro_messages TEXT,            -- JSON array
     aggro_message_probability REAL DEFAULT 0.0,
     summon_message TEXT DEFAULT '',
@@ -188,11 +178,30 @@ CREATE TABLE monsters (
     lore_boss TEXT DEFAULT ''
 );
 
-CREATE INDEX idx_monsters_zone ON monsters(zone_id);
 CREATE INDEX idx_monsters_level ON monsters(level);
 CREATE INDEX idx_monsters_type_name ON monsters(type_name);
 CREATE INDEX idx_monsters_boss ON monsters(is_boss) WHERE is_boss = 1;
 CREATE INDEX idx_monsters_elite ON monsters(is_elite) WHERE is_elite = 1;
+
+-- =============================================================================
+-- MONSTER SPAWNS
+-- =============================================================================
+
+CREATE TABLE monster_spawns (
+    id TEXT PRIMARY KEY,
+    monster_id TEXT NOT NULL REFERENCES monsters(id),
+    zone_id TEXT NOT NULL REFERENCES zones(id),
+    position_x REAL,
+    position_y REAL,
+    position_z REAL,
+    move_probability REAL DEFAULT 0.0,
+    move_distance REAL DEFAULT 0.0,
+    is_patrolling BOOLEAN DEFAULT 0,
+    patrol_waypoints TEXT           -- JSON array
+);
+
+CREATE INDEX idx_monster_spawns_monster ON monster_spawns(monster_id);
+CREATE INDEX idx_monster_spawns_zone ON monster_spawns(zone_id);
 
 -- =============================================================================
 -- SUMMON TRIGGERS
@@ -231,11 +240,6 @@ CREATE INDEX idx_summon_placeholders_monster ON summon_trigger_placeholders(mons
 CREATE TABLE npcs (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
-    zone_id TEXT REFERENCES zones(id),
-    is_template BOOLEAN DEFAULT 0,
-    position_x REAL,
-    position_y REAL,
-    position_z REAL,
     faction TEXT,
     race TEXT,
 
@@ -259,15 +263,6 @@ CREATE TABLE npcs (
     probability_drop_gold REAL DEFAULT 0.25,
     drops TEXT,                     -- JSON array
 
-    -- Movement
-    origin_follow_position_x REAL DEFAULT 0.0,
-    origin_follow_position_y REAL DEFAULT 0.0,
-    origin_follow_position_z REAL DEFAULT 0.0,
-    follow_distance REAL DEFAULT 30.0,
-    move_probability REAL DEFAULT 0.0,
-    move_distance REAL DEFAULT 0.0,
-    patrol_waypoints TEXT,          -- JSON array
-
     -- Combat flags
     see_invisibility BOOLEAN DEFAULT 0,
     is_summonable BOOLEAN DEFAULT 0,
@@ -281,7 +276,28 @@ CREATE TABLE npcs (
     summon_message TEXT DEFAULT ''
 );
 
-CREATE INDEX idx_npcs_zone ON npcs(zone_id);
+-- =============================================================================
+-- NPC SPAWNS
+-- =============================================================================
+
+CREATE TABLE npc_spawns (
+    id TEXT PRIMARY KEY,
+    npc_id TEXT NOT NULL REFERENCES npcs(id),
+    zone_id TEXT NOT NULL REFERENCES zones(id),
+    position_x REAL,
+    position_y REAL,
+    position_z REAL,
+    origin_follow_position_x REAL DEFAULT 0.0,
+    origin_follow_position_y REAL DEFAULT 0.0,
+    origin_follow_position_z REAL DEFAULT 0.0,
+    follow_distance REAL DEFAULT 30.0,
+    move_probability REAL DEFAULT 0.0,
+    move_distance REAL DEFAULT 0.0,
+    patrol_waypoints TEXT           -- JSON array
+);
+
+CREATE INDEX idx_npc_spawns_npc ON npc_spawns(npc_id);
+CREATE INDEX idx_npc_spawns_zone ON npc_spawns(zone_id);
 
 -- =============================================================================
 -- QUESTS

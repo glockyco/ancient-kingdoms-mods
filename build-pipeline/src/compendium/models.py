@@ -32,13 +32,26 @@ class MonsterDrop(BaseModel):
     rate: float = Field(ge=0.0, le=1.0)
 
 
+class MonsterSpawnData(BaseModel):
+    """Monster spawn point from monster_spawns.json"""
+
+    id: str
+    monster_id: str
+    zone_id: str
+    position: Position
+
+    # Movement and patrol
+    move_probability: float = 0.0
+    move_distance: float = 0.0
+    is_patrolling: bool = False
+    patrol_waypoints: list[Any] = []
+
+
 class MonsterData(BaseModel):
     """Monster data from monsters.json"""
 
     id: str
     name: str
-    zone_id: str
-    is_template: bool = False
     level: int
     health: int
     type_name: str
@@ -66,12 +79,8 @@ class MonsterData(BaseModel):
     probability_drop_gold: float = 1.0
     exp_multiplier: float = 1.0
     drops: list[MonsterDrop] = []
-    position: Position | None = None
 
-    move_probability: float = 0.0
-    move_distance: float = 0.0
-    is_patrolling: bool = False
-    patrol_waypoints: list[Any] = []
+    # Messages and interactions
     aggro_messages: list[str] = []
     aggro_message_probability: float = 0.0
     summon_message: str = ""
@@ -241,14 +250,27 @@ class NpcRoles(BaseModel):
     is_augmenter: bool = False
 
 
+class NpcSpawnData(BaseModel):
+    """NPC spawn point from npc_spawns.json"""
+
+    id: str
+    npc_id: str
+    zone_id: str
+    position: Position
+
+    # Movement and patrol (location-specific)
+    origin_follow_position: Position | None = None
+    follow_distance: float = 0.0
+    move_distance: float = 0.0
+    move_probability: float = 0.0
+    patrol_waypoints: list[Any] = []
+
+
 class NpcData(BaseModel):
     """NPC data from npcs.json"""
 
     id: str
     name: str
-    zone_id: str
-    is_template: bool = False
-    position: Position | None = None
     faction: str | None = None
     race: str | None = None
 
@@ -269,13 +291,6 @@ class NpcData(BaseModel):
     gold_max: int = 0
     probability_drop_gold: float = 0.0
     drops: list[MonsterDrop] = []
-
-    # Movement
-    origin_follow_position: Position | None = None
-    follow_distance: float = 0.0
-    move_probability: float = 0.0
-    move_distance: float = 0.0
-    patrol_waypoints: list[Any] = []
 
     # Combat
     see_invisibility: bool = False
