@@ -34,7 +34,13 @@ class DropInfo(TypedDict):
 
 class GatherDropInfo(TypedDict):
     gather_item_id: str
+    gather_item_name: str
     rate: float
+    type: str  # "resource" or "chest"
+    zone_id: NotRequired[str]  # For chests only
+    zone_name: NotRequired[str]  # For chests only
+    key_required_id: NotRequired[str]  # For chests only
+    key_name: NotRequired[str]  # For chests only
 
 
 class SoldByInfo(TypedDict):
@@ -363,7 +369,7 @@ def load_portals(conn: sqlite3.Connection, export_dir: Path) -> None:
 
 
 def load_gather_items(conn: sqlite3.Connection, export_dir: Path) -> None:
-    """Load gather items into database."""
+    """Load gather items, splitting into gathering_resources and chests."""
     console.print("Loading gather items...")
 
     filepath = export_dir / "gather_items.json"
@@ -373,11 +379,94 @@ def load_gather_items(conn: sqlite3.Connection, export_dir: Path) -> None:
     gather_items = [GatherItemData(**item) for item in data]
 
     cursor = conn.cursor()
+
+    # Split into chests vs gathering resources
+    chests = []
+    resources = []
+    resources_seen = {}  # Track resources by name for deduplication
+
     for gather_item in gather_items:
-        insert_model(cursor, "gather_items", gather_item)
+        if gather_item.is_chest:
+            chests.append(gather_item)
+        else:
+            # Deduplicate resources by name (prefer templates)
+            if gather_item.name not in resources_seen:
+                resources_seen[gather_item.name] = gather_item
+                resources.append(gather_item)
+            elif gather_item.is_template and not resources_seen[gather_item.name].is_template:
+                # Replace spawn with template if we find one later
+                old_idx = resources.index(resources_seen[gather_item.name])
+                resources[old_idx] = gather_item
+                resources_seen[gather_item.name] = gather_item
+
+    # Insert gathering resources
+    for resource in resources:
+        # Insert main resource record
+        values = {
+            'id': resource.id,
+            'name': resource.name,
+            'is_plant': resource.is_plant,
+            'is_mineral': resource.is_mineral,
+            'is_radiant_spark': resource.is_radiant_spark,
+            'level': resource.level,
+            'tool_required_id': resource.tool_required_id,
+            'respawn_time': resource.respawn_time,
+            'spawn_ready': resource.spawn_ready,
+            'prob_despawn': resource.prob_despawn,
+            'item_reward_id': resource.item_reward_id,
+            'item_reward_amount': resource.item_reward_amount,
+            'decrease_faction': resource.decrease_faction,
+            'description': resource.description,
+        }
+
+        columns = ", ".join(values.keys())
+        placeholders = ", ".join(["?"] * len(values))
+        sql = f"INSERT INTO gathering_resources ({columns}) VALUES ({placeholders})"
+        cursor.execute(sql, tuple(values.values()))
+
+        # Insert random drops into junction table
+        for drop in resource.random_drops:
+            cursor.execute(
+                "INSERT INTO gathering_resource_drops (resource_id, item_id, drop_rate) VALUES (?, ?, ?)",
+                (resource.id, drop.item_id, drop.rate)
+            )
+
+    # Insert chests
+    for chest in chests:
+        # Insert main chest record
+        values = {
+            'id': chest.id,
+            'name': chest.name,
+            'zone_id': chest.zone_id,
+            'key_required_id': chest.tool_required_id,  # tool_required_id is the key for chests
+            'gold_min': chest.gold_min,
+            'gold_max': chest.gold_max,
+            'chest_reward_probability': chest.chest_reward_probability,
+            'respawn_time': chest.respawn_time,
+            'decrease_faction': chest.decrease_faction,
+        }
+
+        # Add position if present
+        if chest.position:
+            values['position_x'] = chest.position.x
+            values['position_y'] = chest.position.y
+            values['position_z'] = chest.position.z
+
+        columns = ", ".join(values.keys())
+        placeholders = ", ".join(["?"] * len(values))
+        sql = f"INSERT INTO chests ({columns}) VALUES ({placeholders})"
+        cursor.execute(sql, tuple(values.values()))
+
+        # Insert random drops into junction table
+        for drop in chest.random_drops:
+            cursor.execute(
+                "INSERT INTO chest_drops (chest_id, item_id, drop_rate) VALUES (?, ?, ?)",
+                (chest.id, drop.item_id, drop.rate)
+            )
 
     conn.commit()
-    console.print(f"  [green]OK[/green] Loaded {len(gather_items)} gather items")
+    console.print(f"  [green]OK[/green] Loaded {len(resources)} gathering resources (deduplicated)")
+    console.print(f"  [green]OK[/green] Loaded {len(chests)} chests")
 
 
 def load_crafting_recipes(conn: sqlite3.Connection, export_dir: Path) -> None:
@@ -483,30 +572,61 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
                     }
                 )
 
-    # Build gathered_from from gather_items.random_drops
-    console.print("  Processing gather item drops...")
+    # Build gathered_from from gathering_resource_drops and chest_drops
+    console.print("  Processing gathering resource drops...")
     cursor.execute("""
-        SELECT id, name, random_drops
-        FROM gather_items
-        WHERE random_drops IS NOT NULL AND random_drops != '[]'
+        SELECT gr.id, gr.name, grd.item_id, grd.drop_rate
+        FROM gathering_resources gr
+        JOIN gathering_resource_drops grd ON gr.id = grd.resource_id
     """)
 
     gathered_from: dict[str, list[GatherDropInfo]] = {}
 
-    for gather_item_id, gather_item_name, drops_json in cursor.fetchall():
-        drops = json.loads(drops_json)
-        for drop in drops:
-            item_id = drop.get("item_id")
-            if item_id:
-                if item_id not in gathered_from:
-                    gathered_from[item_id] = []
-                gathered_from[item_id].append(
-                    {
-                        "gather_item_id": gather_item_id,
-                        "gather_item_name": gather_item_name,
-                        "rate": drop.get("rate", 0.0),
-                    }
-                )
+    for resource_id, resource_name, item_id, drop_rate in cursor.fetchall():
+        if item_id not in gathered_from:
+            gathered_from[item_id] = []
+        gathered_from[item_id].append(
+            {
+                "gather_item_id": resource_id,
+                "gather_item_name": resource_name,
+                "rate": drop_rate,
+                "type": "resource",
+            }
+        )
+
+    console.print("  Processing chest drops...")
+    cursor.execute("""
+        SELECT c.id, c.name, cd.item_id, cd.drop_rate,
+               c.zone_id, z.name as zone_name,
+               c.key_required_id, k.name as key_name
+        FROM chests c
+        JOIN chest_drops cd ON c.id = cd.chest_id
+        LEFT JOIN zones z ON c.zone_id = z.id
+        LEFT JOIN items k ON c.key_required_id = k.id
+    """)
+
+    for chest_id, chest_name, item_id, drop_rate, zone_id, zone_name, key_id, key_name in cursor.fetchall():
+        if item_id not in gathered_from:
+            gathered_from[item_id] = []
+
+        chest_info: GatherDropInfo = {
+            "gather_item_id": chest_id,
+            "gather_item_name": chest_name,
+            "rate": drop_rate,
+            "type": "chest",
+        }
+
+        # Add chest-specific fields
+        if zone_id:
+            chest_info["zone_id"] = zone_id
+        if zone_name:
+            chest_info["zone_name"] = zone_name
+        if key_id:
+            chest_info["key_required_id"] = key_id
+        if key_name:
+            chest_info["key_name"] = key_name
+
+        gathered_from[item_id].append(chest_info)
 
     # Build sold_by from npcs.items_sold
     console.print("  Processing NPC vendors...")

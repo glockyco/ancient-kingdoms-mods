@@ -571,53 +571,96 @@ CREATE INDEX idx_zone_triggers_zone ON zone_triggers(zone_id);
 CREATE INDEX idx_zone_triggers_is_outdoor ON zone_triggers(is_outdoor);
 
 -- =============================================================================
--- GATHER ITEMS
+-- GATHERING RESOURCES
 -- =============================================================================
 
-CREATE TABLE gather_items (
+CREATE TABLE gathering_resources (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
-    zone_id TEXT REFERENCES zones(id),
-    position_x REAL,
-    position_y REAL,
-    position_z REAL,
-    is_template BOOLEAN DEFAULT 0,
+
+    -- Type flags
     is_plant BOOLEAN DEFAULT 0,
     is_mineral BOOLEAN DEFAULT 0,
-    is_chest BOOLEAN DEFAULT 0,
     is_radiant_spark BOOLEAN DEFAULT 0,
-    level INTEGER DEFAULT 1,
+
+    -- Gathering properties
+    level INTEGER DEFAULT 0,
+    tool_required_id TEXT REFERENCES items(id),
     respawn_time REAL DEFAULT 0.0,
     spawn_ready BOOLEAN DEFAULT 0,
     prob_despawn REAL DEFAULT 0.0,
 
-    -- Primary reward (always get this)
+    -- Guaranteed reward (some nodes give fixed item)
     item_reward_id TEXT REFERENCES items(id),
-    item_reward_amount INTEGER DEFAULT 1,
+    item_reward_amount INTEGER DEFAULT 0,
 
-    -- Optional gold drop
-    gold_min INTEGER DEFAULT 0,
-    gold_max INTEGER DEFAULT 0,
-
-    -- Random bonus drops (JSON array)
-    -- Example: [{"item_id": "rare_herb", "rate": 0.05}]
-    random_drops TEXT,              -- JSON array
-
-    -- Chest-specific
-    chest_reward_probability REAL DEFAULT 0.0,
-    chest_interaction_messages TEXT,  -- JSON array
-
-    -- Misc
+    -- Metadata
     decrease_faction TEXT DEFAULT '',
-    description TEXT DEFAULT '',
-    tool_required_id TEXT REFERENCES items(id)
+    description TEXT DEFAULT ''
 );
 
-CREATE INDEX idx_gather_items_zone ON gather_items(zone_id);
-CREATE INDEX idx_gather_items_is_template ON gather_items(is_template) WHERE is_template = 0;
-CREATE INDEX idx_gather_items_is_plant ON gather_items(is_plant) WHERE is_plant = 1;
-CREATE INDEX idx_gather_items_is_mineral ON gather_items(is_mineral) WHERE is_mineral = 1;
-CREATE INDEX idx_gather_items_is_chest ON gather_items(is_chest) WHERE is_chest = 1;
+CREATE INDEX idx_gathering_resources_type ON gathering_resources(is_plant, is_mineral, is_radiant_spark);
+CREATE INDEX idx_gathering_resources_tool ON gathering_resources(tool_required_id);
+
+-- =============================================================================
+-- GATHERING RESOURCE DROPS
+-- =============================================================================
+
+CREATE TABLE gathering_resource_drops (
+    resource_id TEXT NOT NULL REFERENCES gathering_resources(id),
+    item_id TEXT NOT NULL REFERENCES items(id),
+    drop_rate REAL NOT NULL,
+
+    PRIMARY KEY (resource_id, item_id)
+);
+
+CREATE INDEX idx_gathering_resource_drops_item ON gathering_resource_drops(item_id);
+
+-- =============================================================================
+-- CHESTS
+-- =============================================================================
+
+CREATE TABLE chests (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+
+    -- Location
+    zone_id TEXT NOT NULL REFERENCES zones(id),
+    position_x REAL,
+    position_y REAL,
+    position_z REAL,
+
+    -- Requirements
+    key_required_id TEXT REFERENCES items(id),
+
+    -- Rewards
+    gold_min INTEGER DEFAULT 0,
+    gold_max INTEGER DEFAULT 0,
+    chest_reward_probability REAL DEFAULT 0.0,
+
+    -- Respawn
+    respawn_time REAL DEFAULT 0.0,
+
+    -- Metadata
+    decrease_faction TEXT DEFAULT ''
+);
+
+CREATE INDEX idx_chests_zone ON chests(zone_id);
+CREATE INDEX idx_chests_key ON chests(key_required_id);
+
+-- =============================================================================
+-- CHEST DROPS
+-- =============================================================================
+
+CREATE TABLE chest_drops (
+    chest_id TEXT NOT NULL REFERENCES chests(id),
+    item_id TEXT NOT NULL REFERENCES items(id),
+    drop_rate REAL NOT NULL,
+
+    PRIMARY KEY (chest_id, item_id)
+);
+
+CREATE INDEX idx_chest_drops_item ON chest_drops(item_id);
 
 -- =============================================================================
 -- CRAFTING RECIPES
