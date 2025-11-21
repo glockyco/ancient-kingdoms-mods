@@ -1,8 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { SvelteURLSearchParams } from 'svelte/reactivity';
 	import { onMount } from 'svelte';
 	import * as Card from '$lib/components/ui/card';
 	import { Button } from '$lib/components/ui/button';
@@ -11,14 +9,81 @@
 
 	let { data }: { data: PageData } = $props();
 
-	let isHydrated = $state(false);
-	let searchInput = $state('');
-	let searchDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+	const STORAGE_KEY = 'items-filters';
 
+	// Local state is source of truth
+	let isHydrated = $state(false);
+	let qualityFilter = $state<number[]>([]);
+	let typeFilter = $state<string[]>([]);
+	let searchFilter = $state('');
+	let currentPage = $state(1);
+
+	// Sync filters to URL and localStorage
+	function syncFilters() {
+		if (!isHydrated) return;
+
+		const params = new URLSearchParams();
+
+		if (qualityFilter.length > 0) params.set('quality', qualityFilter.join(','));
+		if (typeFilter.length > 0) params.set('type', typeFilter.join(','));
+		if (searchFilter) params.set('search', searchFilter);
+		if (currentPage > 1) params.set('page', String(currentPage));
+
+		// Update URL
+		const queryString = params.toString();
+		const newUrl = queryString ? `${window.location.pathname}?${queryString}` : window.location.pathname;
+		window.history.replaceState(history.state, '', newUrl);
+
+		// Update localStorage (excluding page)
+		try {
+			localStorage.setItem(STORAGE_KEY, JSON.stringify({
+				quality: qualityFilter,
+				itemType: typeFilter,
+				search: searchFilter
+			}));
+		} catch (e) {
+			// Ignore errors
+		}
+	}
+
+	// Load from URL or localStorage
 	onMount(() => {
+		const urlQuality = $page.url.searchParams.get('quality');
+		const urlType = $page.url.searchParams.get('type');
+		const urlSearch = $page.url.searchParams.get('search');
+		const urlPage = $page.url.searchParams.get('page');
+
+		if (urlQuality || urlType || urlSearch) {
+			// URL has params - use them
+			qualityFilter = urlQuality ? urlQuality.split(',').map(Number) : [];
+			typeFilter = urlType ? urlType.split(',') : [];
+			searchFilter = urlSearch || '';
+			currentPage = urlPage ? Number(urlPage) : 1;
+		} else {
+			// No URL params - try localStorage
+			try {
+				const stored = localStorage.getItem(STORAGE_KEY);
+				if (stored) {
+					const parsed = JSON.parse(stored);
+					qualityFilter = parsed.quality || [];
+					typeFilter = parsed.itemType || [];
+					searchFilter = parsed.search || '';
+				}
+			} catch (e) {
+				// Ignore errors
+			}
+		}
+
 		isHydrated = true;
-		// Initialize searchInput from URL on mount (for direct links)
-		searchInput = $page.url.searchParams.get('search') || '';
+	});
+
+	// Sync whenever filters change
+	$effect(() => {
+		qualityFilter;
+		typeFilter;
+		searchFilter;
+		currentPage;
+		syncFilters();
 	});
 
 	const qualityColors = [
@@ -31,17 +96,10 @@
 
 	const qualityNames = ['Common', 'Uncommon', 'Rare', 'Epic', 'Legendary'];
 
-	// Parse URL params for current filters (only client-side)
-	const filters = $derived({
-		quality: isHydrated ? ($page.url.searchParams.get('quality')?.split(',').map(Number) || []) : [],
-		itemType: isHydrated ? ($page.url.searchParams.get('type')?.split(',') || []) : [],
-		page: isHydrated ? Number($page.url.searchParams.get('page') || '1') : 1
-	});
-
 	// Helper to check if item name matches search
 	function matchesSearch(itemName: string): boolean {
-		if (!searchInput) return true;
-		return itemName.toLowerCase().includes(searchInput.toLowerCase());
+		if (!searchFilter) return true;
+		return itemName.toLowerCase().includes(searchFilter.toLowerCase());
 	}
 
 	// Helper to check if item matches all filters
@@ -51,10 +109,10 @@
 	): boolean {
 		const { includeQuality = true, includeType = true } = options;
 
-		if (includeQuality && filters.quality.length > 0 && !filters.quality.includes(item.quality)) {
+		if (includeQuality && qualityFilter.length > 0 && !qualityFilter.includes(item.quality)) {
 			return false;
 		}
-		if (includeType && filters.itemType.length > 0 && !filters.itemType.includes(item.item_type)) {
+		if (includeType && typeFilter.length > 0 && !typeFilter.includes(item.item_type)) {
 			return false;
 		}
 		if (!matchesSearch(item.name)) {
@@ -63,10 +121,10 @@
 		return true;
 	}
 
-	// Filter items based on current filters (use searchInput directly for instant feedback)
+	// Filter items
 	const filteredItems = $derived(data.items.filter((item) => matchesFilters(item)));
 
-	// Calculate quality counts based on current type and search filters
+	// Calculate quality counts
 	const qualityCounts = $derived(
 		Array.from({ length: qualityNames.length }, (_, i) => i).map((quality) => {
 			const count = data.items.filter((item) =>
@@ -76,7 +134,7 @@
 		})
 	);
 
-	// Calculate type counts based on current quality and search filters
+	// Calculate type counts
 	const typeCounts = $derived.by(() => {
 		const allTypes = Array.from(new Set(data.items.map((item) => item.item_type))).sort();
 		return allTypes.map((type) => {
@@ -91,89 +149,36 @@
 	const totalPages = $derived(Math.ceil(filteredItems.length / PAGINATION.PAGE_SIZE));
 	const paginatedItems = $derived(
 		filteredItems.slice(
-			(filters.page - 1) * PAGINATION.PAGE_SIZE,
-			filters.page * PAGINATION.PAGE_SIZE
+			(currentPage - 1) * PAGINATION.PAGE_SIZE,
+			currentPage * PAGINATION.PAGE_SIZE
 		)
 	);
 
-	function updateFilters(params: Record<string, string | undefined>) {
-		const newParams = new SvelteURLSearchParams($page.url.searchParams);
-
-		Object.entries(params).forEach(([key, value]) => {
-			if (value === undefined || value === '') {
-				newParams.delete(key);
-			} else {
-				newParams.set(key, value);
-			}
-		});
-
-		// Reset to page 1 when filters change
-		if (!params.page) {
-			newParams.delete('page');
-		}
-
-		goto(`?${newParams.toString()}`, { replaceState: true });
-	}
-
 	function toggleQuality(quality: number) {
-		const current = filters.quality;
-		const newQuality = current.includes(quality)
-			? current.filter((q) => q !== quality)
-			: [...current, quality];
-
-		updateFilters({ quality: newQuality.length > 0 ? newQuality.join(',') : undefined });
+		qualityFilter = qualityFilter.includes(quality)
+			? qualityFilter.filter((q) => q !== quality)
+			: [...qualityFilter, quality];
+		currentPage = 1; // Reset to page 1
 	}
 
 	function toggleType(type: string) {
-		const current = filters.itemType;
-		const newTypes = current.includes(type)
-			? current.filter((t) => t !== type)
-			: [...current, type];
-
-		updateFilters({ type: newTypes.length > 0 ? newTypes.join(',') : undefined });
+		typeFilter = typeFilter.includes(type)
+			? typeFilter.filter((t) => t !== type)
+			: [...typeFilter, type];
+		currentPage = 1; // Reset to page 1
 	}
 
-	// Debounce URL update when searchInput changes
-	$effect(() => {
-		const currentSearch = searchInput; // Read here so effect tracks changes
-
-		// Don't update URL on initial mount
-		if (!isHydrated) return;
-
-		// Clear existing timer
-		if (searchDebounceTimer) {
-			clearTimeout(searchDebounceTimer);
+	function clearFilters() {
+		qualityFilter = [];
+		typeFilter = [];
+		searchFilter = '';
+		currentPage = 1;
+		try {
+			localStorage.removeItem(STORAGE_KEY);
+		} catch (e) {
+			// Ignore errors
 		}
-
-		// Schedule URL update (for bookmarking/sharing)
-		searchDebounceTimer = setTimeout(() => {
-			// Update URL without triggering navigation (preserves focus)
-			const newParams = new SvelteURLSearchParams($page.url.searchParams);
-
-			if (currentSearch) {
-				newParams.set('search', currentSearch);
-			} else {
-				newParams.delete('search');
-			}
-
-			// Reset to page 1 when search changes
-			newParams.delete('page');
-
-			// Use History API directly to avoid SvelteKit navigation
-			const queryString = newParams.toString();
-			const newUrl = queryString
-				? `${window.location.pathname}?${queryString}`
-				: window.location.pathname;
-			window.history.replaceState(history.state, '', newUrl);
-		}, 300);
-
-		// Cleanup function to clear timeout on effect re-run or unmount
-		return () => {
-			if (searchDebounceTimer) {
-				clearTimeout(searchDebounceTimer);
-			}
-		};
-	});
+	}
 
 	function parseClassRequired(classJson: string): string[] {
 		try {
@@ -213,13 +218,10 @@
 				<Button
 					variant="outline"
 					size="sm"
-					class={filters.quality.length === 0 && filters.itemType.length === 0 && !searchInput
+					class={qualityFilter.length === 0 && typeFilter.length === 0 && !searchFilter
 						? 'invisible'
 						: ''}
-					onclick={() => {
-						searchInput = '';
-						goto('/items', { replaceState: true });
-					}}
+					onclick={clearFilters}
 				>
 					Clear Filters
 				</Button>
@@ -233,7 +235,8 @@
 					id="search"
 					type="text"
 					placeholder="Search items by name..."
-					bind:value={searchInput}
+					bind:value={searchFilter}
+					oninput={() => (currentPage = 1)}
 					class="w-full px-3 py-2 rounded-md border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 				/>
 			</div>
@@ -245,7 +248,7 @@
 					{#each qualityCounts as { quality, count } (quality)}
 						<button
 							type="button"
-							class="px-3 py-1 rounded text-sm font-medium transition-all border-2 flex justify-between items-center {filters.quality.includes(
+							class="px-3 py-1 rounded text-sm font-medium transition-all border-2 flex justify-between items-center {qualityFilter.includes(
 								quality
 							)
 								? `${qualityColors[quality]} border-foreground`
@@ -266,7 +269,7 @@
 					{#each typeCounts as { type, count } (type)}
 						<button
 							type="button"
-							class="px-3 py-1 rounded text-sm font-medium transition-all border-2 flex justify-between items-center {filters.itemType.includes(
+							class="px-3 py-1 rounded text-sm font-medium transition-all border-2 flex justify-between items-center {typeFilter.includes(
 								type
 							)
 								? 'bg-primary text-primary-foreground border-primary'
@@ -344,20 +347,20 @@
 		<div class="flex justify-center gap-2">
 			<Button
 				variant="outline"
-				disabled={filters.page <= 1}
-				onclick={() => updateFilters({ page: String(filters.page - 1) })}
+				disabled={currentPage <= 1}
+				onclick={() => (currentPage = currentPage - 1)}
 			>
 				Previous
 			</Button>
 
 			<div class="flex items-center px-4">
-				Page {filters.page} of {totalPages}
+				Page {currentPage} of {totalPages}
 			</div>
 
 			<Button
 				variant="outline"
-				disabled={filters.page >= totalPages}
-				onclick={() => updateFilters({ page: String(filters.page + 1) })}
+				disabled={currentPage >= totalPages}
+				onclick={() => (currentPage = currentPage + 1)}
 			>
 				Next
 			</Button>
