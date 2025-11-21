@@ -24,6 +24,7 @@ public class CraftingRecipeExporter : BaseExporter
         Logger.Msg($"Found {objects.Length} crafting station objects total");
 
         var recipes = new List<CraftingRecipeData>();
+        var seenRecipes = new HashSet<string>();
         var recipeIdCounter = 0;
 
         foreach (var obj in objects)
@@ -68,12 +69,18 @@ public class CraftingRecipeExporter : BaseExporter
                     }
                 }
 
-                recipes.Add(recipe);
+                var recipeHash = $"{resultId}|{stationType}|{string.Join(",", recipe.materials.Select(m => $"{m.item_id}:{m.amount}"))}";
+
+                if (!seenRecipes.Contains(recipeHash))
+                {
+                    seenRecipes.Add(recipeHash);
+                    recipes.Add(recipe);
+                }
             }
         }
 
         WriteJson(recipes, "crafting_recipes.json");
-        Logger.Msg($"✓ Exported {recipes.Count} crafting recipes");
+        Logger.Msg($"✓ Exported {recipes.Count} unique crafting recipes (deduplicated from {recipeIdCounter} total)");
     }
 
     private string DetermineStationType(Il2Cpp.CraftingStation station)
