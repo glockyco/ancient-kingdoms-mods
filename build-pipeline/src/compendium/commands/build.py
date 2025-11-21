@@ -762,9 +762,11 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
         )
 
     for item_id, quests in rewarded_by.items():
+        # Sort by quest name alphabetically
+        quests_sorted = sorted(quests, key=lambda x: x["quest_name"])
         cursor.execute(
             "UPDATE items SET rewarded_by = ? WHERE id = ?",
-            (json.dumps(quests), item_id),
+            (json.dumps(quests_sorted), item_id),
         )
 
     for item_id, recipes in crafted_from.items():
@@ -1020,9 +1022,11 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
         )
 
     for item_id, quest_list in needed_for_quests.items():
+        # Sort by quest name alphabetically
+        quest_list_sorted = sorted(quest_list, key=lambda x: x["quest_name"])
         cursor.execute(
             "UPDATE items SET needed_for_quests = ? WHERE id = ?",
-            (json.dumps(quest_list), item_id),
+            (json.dumps(quest_list_sorted), item_id),
         )
 
     # Update skills table
