@@ -221,7 +221,7 @@
     <Card.Header>
       <Card.Title>Basic Information</Card.Title>
     </Card.Header>
-    <Card.Content class="grid grid-cols-2 gap-4">
+    <Card.Content class="grid grid-cols-2 md:grid-cols-3 gap-4">
       {#if data.item.level_required > 0}
         <div>
           <div class="text-sm text-muted-foreground">Level Required</div>
