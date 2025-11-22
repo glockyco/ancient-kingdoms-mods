@@ -167,7 +167,8 @@ CREATE TABLE items (
     luck_token_fragment_name TEXT,
     luck_token_fragments_needed INTEGER,
 
-    random_items TEXT,              -- JSON array
+    random_items TEXT,              -- JSON array of item IDs
+    random_items_with_names TEXT,   -- JSON: [{"item_id": "agate", "item_name": "Agate"}, ...]
     merge_items_needed_ids TEXT,
     merge_items_needed TEXT,        -- JSON: [{"item_id": "a_cunning_society", "item_name": "A Cunning Society"}, ...]
     merge_result_item_id TEXT REFERENCES items(id),
@@ -204,7 +205,8 @@ CREATE TABLE items (
     -- Denormalized: Where this item is used (as JSON arrays)
     used_in_recipes TEXT,           -- JSON: [{"recipe_id": "recipe_5", "amount": 3}]
     needed_for_quests TEXT,         -- JSON: [{"quest_id": "quest_blacksmith_1", "purpose": "gather", "amount": 5}]
-    used_as_currency_for TEXT       -- JSON: [{"item_id": "item_123", "item_name": "Cool Sword", "price": 50}]
+    used_as_currency_for TEXT,      -- JSON: [{"item_id": "item_123", "item_name": "Cool Sword", "price": 50}]
+    found_in_random_items TEXT      -- JSON: [{"random_item_id": "random_gem_1", "random_item_name": "Random Gem 1"}]
 );
 
 CREATE INDEX idx_items_item_type ON items(item_type);

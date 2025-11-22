@@ -93,6 +93,7 @@ export interface Item {
   luck_token_fragments_needed: number | null;
   // Random items
   random_items: string | null; // JSON
+  random_items_with_names: string | null; // JSON: [{"item_id": "agate", "item_name": "Agate", "probability": 0.25}, ...]
   // Merge
   merge_items_needed: string | null; // JSON
   merge_result_item_id: string | null;
@@ -127,6 +128,7 @@ export interface Item {
   created_from_merge: string | null; // JSON
   found_in_chests: string | null; // JSON
   found_in_packs: string | null; // JSON
+  found_in_random_items: string | null; // JSON: [{"random_item_id": "random_gem_1", "random_item_name": "Random Gem 1", "probability": 0.2}, ...]
   used_in_recipes: string | null; // JSON
   needed_for_quests: string | null; // JSON
   used_as_currency_for: string | null; // JSON

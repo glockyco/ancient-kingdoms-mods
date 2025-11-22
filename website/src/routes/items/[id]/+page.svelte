@@ -241,6 +241,16 @@
           actual_drop_chance: number;
         }>
       >(data.item.chest_rewards),
+      randomItemsPossible: parseJson<
+        Array<{ item_id: string; item_name: string; probability: number }>
+      >(data.item.random_items_with_names),
+      foundInRandomLoot: parseJson<
+        Array<{
+          random_item_id: string;
+          random_item_name: string;
+          probability: number;
+        }>
+      >(data.item.found_in_random_items),
     };
   });
 </script>
@@ -1075,6 +1085,29 @@
       </Card.Root>
     {/if}
 
+    <!-- Possible Items (from random items) -->
+    {#if computed.randomItemsPossible && computed.randomItemsPossible.length > 0}
+      <Card.Root>
+        <Card.Header>
+          <Card.Title>Possible Items</Card.Title>
+        </Card.Header>
+        <Card.Content>
+          <div class="space-y-2">
+            {#each computed.randomItemsPossible as item}
+              <div class="flex justify-between items-center">
+                <a href="/items/{item.item_id}" class={styles.link}>
+                  {item.item_name}
+                </a>
+                <span class={styles.label}>
+                  {(item.probability * 100).toFixed(1)}%
+                </span>
+              </div>
+            {/each}
+          </div>
+        </Card.Content>
+      </Card.Root>
+    {/if}
+
     <!-- Found in Chests -->
     {#if computed.foundInChests && computed.foundInChests.length > 0}
       <Card.Root>
@@ -1094,6 +1127,29 @@
                 <span class={styles.label}
                   >{(chest.rate * 100).toFixed(1)}%</span
                 >
+              </div>
+            {/each}
+          </div>
+        </Card.Content>
+      </Card.Root>
+    {/if}
+
+    <!-- Found in Random Loot -->
+    {#if computed.foundInRandomLoot && computed.foundInRandomLoot.length > 0}
+      <Card.Root>
+        <Card.Header>
+          <Card.Title>Found in Random Loot</Card.Title>
+        </Card.Header>
+        <Card.Content>
+          <div class="space-y-2">
+            {#each computed.foundInRandomLoot as randomItem}
+              <div class="flex justify-between items-center">
+                <a href="/items/{randomItem.random_item_id}" class={styles.link}>
+                  {randomItem.random_item_name}
+                </a>
+                <span class={styles.label}>
+                  {(randomItem.probability * 100).toFixed(1)}%
+                </span>
               </div>
             {/each}
           </div>

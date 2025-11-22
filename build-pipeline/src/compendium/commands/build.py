@@ -1601,6 +1601,96 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
 
     conn.commit()
 
+    # Denormalize random item data
+    console.print("  Denormalizing random item data...")
+    random_items_updated = 0
+    found_in_random_updated = 0
+
+    # Update random items with full item names
+    cursor.execute("""
+        SELECT id, random_items
+        FROM items
+        WHERE random_items IS NOT NULL AND length(random_items) > 2
+    """)
+
+    for item_id, random_items_json in cursor.fetchall():
+        if not random_items_json:
+            continue
+
+        random_item_ids = json.loads(random_items_json)
+        if not random_item_ids:
+            continue
+
+        item_count = len(random_item_ids)
+        probability = 1.0 / item_count if item_count > 0 else 0.0
+
+        # Fetch names for all random items
+        random_items_with_names = []
+        for random_id in random_item_ids:
+            name_cursor = conn.cursor()
+            name_result = name_cursor.execute("SELECT name FROM items WHERE id = ?", (random_id,)).fetchone()
+            if name_result:
+                random_items_with_names.append({
+                    "item_id": random_id,
+                    "item_name": name_result[0],
+                    "probability": probability
+                })
+
+        # Sort alphabetically by name
+        random_items_with_names_sorted = sorted(random_items_with_names, key=lambda x: x["item_name"])
+
+        # Update the random item
+        update_cursor = conn.cursor()
+        update_cursor.execute("""
+            UPDATE items
+            SET random_items_with_names = ?
+            WHERE id = ?
+        """, (json.dumps(random_items_with_names_sorted), item_id))
+
+        if update_cursor.rowcount > 0:
+            random_items_updated += 1
+
+    # Update items that can come from random items (reverse relationship)
+    cursor.execute("""
+        SELECT DISTINCT id, name, random_items
+        FROM items
+        WHERE random_items IS NOT NULL AND length(random_items) > 2
+    """)
+
+    found_in_random: dict[str, list[dict]] = {}
+
+    for random_item_id, random_item_name, random_items_json in cursor.fetchall():
+        if not random_items_json:
+            continue
+
+        random_item_ids = json.loads(random_items_json)
+        item_count = len(random_item_ids)
+        probability = 1.0 / item_count if item_count > 0 else 0.0
+        for outcome_id in random_item_ids:
+            if outcome_id not in found_in_random:
+                found_in_random[outcome_id] = []
+
+            found_in_random[outcome_id].append({
+                "random_item_id": random_item_id,
+                "random_item_name": random_item_name,
+                "probability": probability
+            })
+
+    for outcome_id, random_sources in found_in_random.items():
+        # Sort by name alphabetically
+        random_sources_sorted = sorted(random_sources, key=lambda x: x["random_item_name"])
+        update_cursor = conn.cursor()
+        update_cursor.execute("""
+            UPDATE items
+            SET found_in_random_items = ?
+            WHERE id = ?
+        """, (json.dumps(random_sources_sorted), outcome_id))
+
+        if update_cursor.rowcount > 0:
+            found_in_random_updated += 1
+
+    conn.commit()
+
     # Denormalize luck token data
     console.print("  Denormalizing luck token data...")
     cursor.execute("""
@@ -1779,6 +1869,9 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
     )
     console.print(
         f"  [green]OK[/green] Denormalized item names in {chest_rewards_updated} chest reward lists"
+    )
+    console.print(
+        f"  [green]OK[/green] Denormalized {random_items_updated} random items with names, {found_in_random_updated} items with random sources"
     )
     console.print(
         f"  [green]OK[/green] Updated {fragment_count} fragment luck tokens, {boss_token_count} boss luck tokens with zone data"
