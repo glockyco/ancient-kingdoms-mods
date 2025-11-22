@@ -18,6 +18,20 @@
 
   const qualityNames = ["Common", "Uncommon", "Rare", "Epic", "Legendary"];
 
+  // Consistent styling patterns - use these throughout the page
+  const styles = {
+    // All links (base size = 16px, blue color for visibility)
+    link: "text-blue-600 dark:text-blue-400 hover:underline",
+    // Labels for data fields
+    label: "text-sm text-muted-foreground",
+    // Regular values
+    value: "font-medium",
+    // Positive values (bonuses, gains, health/mana)
+    valuePositive: "font-medium text-green-600 dark:text-green-400",
+    // Currency/gold values
+    valueCurrency: "font-medium text-yellow-600 dark:text-yellow-400",
+  } as const;
+
   function parseJson<T>(json: string | null): T | null {
     if (!json) return null;
     try {
@@ -231,92 +245,82 @@
     <Card.Content class="grid grid-cols-2 md:grid-cols-3 gap-4">
       {#if data.item.level_required > 0}
         <div>
-          <div class="text-sm text-muted-foreground">Level Required</div>
-          <div class="font-medium">{data.item.level_required}</div>
+          <div class={styles.label}>Level Required</div>
+          <div class={styles.value}>{data.item.level_required}</div>
         </div>
       {/if}
 
       {#if computed.classRequired.length > 0}
         <div>
-          <div class="text-sm text-muted-foreground">Class Required</div>
-          <div class="font-medium">{computed.classRequired.join(", ")}</div>
+          <div class={styles.label}>Class Required</div>
+          <div class={styles.value}>{computed.classRequired.join(", ")}</div>
         </div>
       {/if}
 
       {#if data.item.slot}
         <div>
-          <div class="text-sm text-muted-foreground">Equipment Slot</div>
-          <div class="font-medium">{data.item.slot}</div>
+          <div class={styles.label}>Equipment Slot</div>
+          <div class={styles.value}>{data.item.slot}</div>
         </div>
       {/if}
 
       {#if data.item.max_stack > 1}
         <div>
-          <div class="text-sm text-muted-foreground">Max Stack</div>
-          <div class="font-medium">{data.item.max_stack}</div>
+          <div class={styles.label}>Max Stack</div>
+          <div class={styles.value}>{data.item.max_stack}</div>
         </div>
       {/if}
 
       {#if computed.maxDurability}
         <div>
-          <div class="text-sm text-muted-foreground">Max Durability</div>
-          <div class="font-medium">{computed.maxDurability}</div>
+          <div class={styles.label}>Max Durability</div>
+          <div class={styles.value}>{computed.maxDurability}</div>
         </div>
       {/if}
 
       {#if computed.hasSerenity}
         <div>
-          <div class="text-sm text-muted-foreground">Special Effect</div>
-          <div class="font-medium text-green-600 dark:text-green-400">
-            Serenity
-          </div>
+          <div class={styles.label}>Special Effect</div>
+          <div class={styles.valuePositive}>Serenity</div>
         </div>
       {/if}
 
       {#if computed.isCostume}
         <div>
-          <div class="text-sm text-muted-foreground">Item Type</div>
-          <div class="font-medium text-purple-600 dark:text-purple-400">
-            Cosmetic
-          </div>
+          <div class={styles.label}>Item Type</div>
+          <div class="font-medium text-purple-600 dark:text-purple-400">Cosmetic</div>
         </div>
       {/if}
 
       {#if computed.augmentBonusSet}
         <div>
-          <div class="text-sm text-muted-foreground">Set Bonus</div>
-          <div class="font-medium text-blue-600 dark:text-blue-400">
-            {computed.augmentBonusSet}
-          </div>
+          <div class={styles.label}>Set Bonus</div>
+          <div class="font-medium text-blue-600 dark:text-blue-400">{computed.augmentBonusSet}</div>
         </div>
       {/if}
 
       {#if data.item.buy_price > 0}
         <div>
-          <div class="text-sm text-muted-foreground">Buy Price</div>
-          <div class="font-medium text-yellow-600 dark:text-yellow-400">
-            {data.item.buy_price}g
-          </div>
+          <div class={styles.label}>Buy Price</div>
+          <div class={styles.valueCurrency}>{data.item.buy_price}g</div>
         </div>
       {/if}
 
       {#if data.item.sell_price > 0}
         <div>
-          <div class="text-sm text-muted-foreground">Sell Price</div>
-          <div class="font-medium text-yellow-600 dark:text-yellow-400">
-            {data.item.sell_price}g
-          </div>
+          <div class={styles.label}>Sell Price</div>
+          <div class={styles.valueCurrency}>{data.item.sell_price}g</div>
         </div>
       {/if}
 
       <div>
-        <div class="text-sm text-muted-foreground">Tradable</div>
-        <div class="font-medium">{data.item.tradable ? "Yes" : "No"}</div>
+        <div class={styles.label}>Tradable</div>
+        <div class={styles.value}>{data.item.tradable ? "Yes" : "No"}</div>
       </div>
 
       <div>
-        <div class="text-sm text-muted-foreground">Sellable</div>
-        <div class="font-medium">{data.item.sellable ? "Yes" : "No"}</div>
+        <div class={styles.label}>Sellable</div>
+        <div class={styles.value}>{data.item.sellable ? "Yes" : "No"}</div>
       </div>
     </Card.Content>
   </Card.Root>
@@ -365,22 +369,18 @@
         </Card.Content>
       </Card.Root>
     {:else if data.item.merge_result_item_id && data.item.merge_items_needed}
-      <!-- Merge Quest (shown when no stats) -->
+      <!-- Combine To Create (shown when no stats) -->
       {@const mergeItems = JSON.parse(data.item.merge_items_needed)}
       <Card.Root>
         <Card.Header>
-          <Card.Title>Merge Quest</Card.Title>
-          <Card.Description>Collect all pieces to create the complete item.</Card.Description>
+          <Card.Title>Combine To Create</Card.Title>
         </Card.Header>
         <Card.Content class="space-y-4">
           <div>
-            <div class="text-sm text-muted-foreground mb-2">Items Needed ({mergeItems.length})</div>
+            <div class="{styles.label} mb-2">Components</div>
             <div class="grid grid-cols-1 gap-2">
               {#each mergeItems as mergeItem}
-                <a
-                  href="/items/{mergeItem.item_id}"
-                  class="text-sm hover:underline text-blue-600 dark:text-blue-400"
-                >
+                <a href="/items/{mergeItem.item_id}" class={styles.link}>
                   {mergeItem.item_name}
                 </a>
               {/each}
@@ -388,33 +388,29 @@
           </div>
 
           <div>
-            <div class="text-sm text-muted-foreground mb-2">Creates</div>
-            <a
-              href="/items/{data.item.merge_result_item_id}"
-              class="font-medium hover:underline text-blue-600 dark:text-blue-400"
-            >
+            <div class="{styles.label} mb-2">Creates</div>
+            <a href="/items/{data.item.merge_result_item_id}" class={styles.link}>
               {data.item.merge_result_item_name || data.item.merge_result_item_id}
             </a>
           </div>
         </Card.Content>
       </Card.Root>
     {:else if computed.createdFromMerge && computed.createdFromMerge.length > 0}
-      <!-- Created From Merge (shown when no stats and not a merge item) -->
+      <!-- Created From (shown when no stats and not a merge item) -->
       <Card.Root>
         <Card.Header>
-          <Card.Title>Created From Merge</Card.Title>
-          <Card.Description>Collect and combine these items to create this item.</Card.Description>
+          <Card.Title>Created From</Card.Title>
         </Card.Header>
         <Card.Content>
-          <div class="grid grid-cols-1 gap-2">
-            {#each computed.createdFromMerge as mergeItem}
-              <a
-                href="/items/{mergeItem.item_id}"
-                class="text-sm hover:underline text-blue-600 dark:text-blue-400"
-              >
-                {mergeItem.item_name}
-              </a>
-            {/each}
+          <div>
+            <div class="{styles.label} mb-2">Components</div>
+            <div class="grid grid-cols-1 gap-2">
+              {#each computed.createdFromMerge as mergeItem}
+                <a href="/items/{mergeItem.item_id}" class={styles.link}>
+                  {mergeItem.item_name}
+                </a>
+              {/each}
+            </div>
           </div>
         </Card.Content>
       </Card.Root>
@@ -464,10 +460,7 @@
             </h4>
             <div class="grid grid-cols-2 gap-2">
               {#each computed.armorSetMembers as memberId (memberId)}
-                <a
-                  href="/items/{memberId}"
-                  class="text-sm text-blue-600 dark:text-blue-400 hover:underline"
-                >
+                <a href="/items/{memberId}" class={styles.link}>
                   {memberId.replace(/_/g, " ")}
                 </a>
               {/each}
@@ -487,68 +480,52 @@
       <Card.Content class="grid grid-cols-2 md:grid-cols-3 gap-4">
         {#if data.item.usage_health > 0}
           <div>
-            <div class="text-sm text-muted-foreground">Restores Health</div>
-            <div class="font-medium text-green-600 dark:text-green-400">
-              +{data.item.usage_health} HP
-            </div>
+            <div class={styles.label}>Restores Health</div>
+            <div class={styles.valuePositive}>+{data.item.usage_health} HP</div>
           </div>
         {/if}
 
         {#if data.item.usage_mana > 0}
           <div>
-            <div class="text-sm text-muted-foreground">Restores Mana</div>
-            <div class="font-medium text-blue-600 dark:text-blue-400">
-              +{data.item.usage_mana} MP
-            </div>
+            <div class={styles.label}>Restores Mana</div>
+            <div class="font-medium text-blue-600 dark:text-blue-400">+{data.item.usage_mana} MP</div>
           </div>
         {/if}
 
         {#if data.item.usage_energy > 0}
           <div>
-            <div class="text-sm text-muted-foreground">Restores Energy</div>
-            <div class="font-medium text-yellow-600 dark:text-yellow-400">
-              +{data.item.usage_energy} Energy
-            </div>
+            <div class={styles.label}>Restores Energy</div>
+            <div class={styles.valueCurrency}>+{data.item.usage_energy} Energy</div>
           </div>
         {/if}
 
         {#if data.item.food_buff_id}
           <div>
-            <div class="text-sm text-muted-foreground">Grants Buff</div>
-            <div class="font-medium">
-              <a
-                href="/skills/{data.item.food_buff_id}"
-                class="hover:underline"
-              >
-                {data.item.food_buff_name || data.item.food_buff_id.replace(/_/g, " ")}
-              </a>
-            </div>
+            <div class={styles.label}>Grants Buff</div>
+            <a href="/skills/{data.item.food_buff_id}" class={styles.link}>
+              {data.item.food_buff_name || data.item.food_buff_id.replace(/_/g, " ")}
+            </a>
           </div>
         {/if}
 
         {#if data.item.relic_buff_id}
           <div>
-            <div class="text-sm text-muted-foreground">Activates</div>
-            <div class="font-medium">
-              <a
-                href="/skills/{data.item.relic_buff_id}"
-                class="hover:underline"
-              >
-                {data.item.relic_buff_name || data.item.relic_buff_id.replace(/_/g, " ")}
-              </a>
-            </div>
+            <div class={styles.label}>Activates</div>
+            <a href="/skills/{data.item.relic_buff_id}" class={styles.link}>
+              {data.item.relic_buff_name || data.item.relic_buff_id.replace(/_/g, " ")}
+            </a>
           </div>
         {/if}
 
         <div>
-          <div class="text-sm text-muted-foreground">Consumed on Use</div>
-          <div class="font-medium">{data.item.infinite_charges ? "No" : "Yes"}</div>
+          <div class={styles.label}>Consumed on Use</div>
+          <div class={styles.value}>{data.item.infinite_charges ? "No" : "Yes"}</div>
         </div>
 
         {#if data.item.cooldown > 0}
           <div>
-            <div class="text-sm text-muted-foreground">Recharge Time</div>
-            <div class="font-medium">{data.item.cooldown}s</div>
+            <div class={styles.label}>Recharge Time</div>
+            <div class={styles.value}>{data.item.cooldown}s</div>
           </div>
         {/if}
       </Card.Content>
@@ -560,60 +537,48 @@
     <Card.Root>
       <Card.Header>
         <Card.Title>Permanent Stat Gains</Card.Title>
-        <Card.Description>Reading this book grants permanent stat increases</Card.Description>
+        <Card.Description>Reading this book grants permanent stat increases.</Card.Description>
       </Card.Header>
       <Card.Content class="grid grid-cols-2 md:grid-cols-3 gap-4">
         {#if data.item.book_strength_gain > 0}
           <div>
-            <div class="text-sm text-muted-foreground">Strength</div>
-            <div class="font-medium text-green-600 dark:text-green-400">
-              +{data.item.book_strength_gain}
-            </div>
+            <div class={styles.label}>Strength</div>
+            <div class={styles.valuePositive}>+{data.item.book_strength_gain}</div>
           </div>
         {/if}
 
         {#if data.item.book_dexterity_gain > 0}
           <div>
-            <div class="text-sm text-muted-foreground">Dexterity</div>
-            <div class="font-medium text-green-600 dark:text-green-400">
-              +{data.item.book_dexterity_gain}
-            </div>
+            <div class={styles.label}>Dexterity</div>
+            <div class={styles.valuePositive}>+{data.item.book_dexterity_gain}</div>
           </div>
         {/if}
 
         {#if data.item.book_constitution_gain > 0}
           <div>
-            <div class="text-sm text-muted-foreground">Constitution</div>
-            <div class="font-medium text-green-600 dark:text-green-400">
-              +{data.item.book_constitution_gain}
-            </div>
+            <div class={styles.label}>Constitution</div>
+            <div class={styles.valuePositive}>+{data.item.book_constitution_gain}</div>
           </div>
         {/if}
 
         {#if data.item.book_intelligence_gain > 0}
           <div>
-            <div class="text-sm text-muted-foreground">Intelligence</div>
-            <div class="font-medium text-green-600 dark:text-green-400">
-              +{data.item.book_intelligence_gain}
-            </div>
+            <div class={styles.label}>Intelligence</div>
+            <div class={styles.valuePositive}>+{data.item.book_intelligence_gain}</div>
           </div>
         {/if}
 
         {#if data.item.book_wisdom_gain > 0}
           <div>
-            <div class="text-sm text-muted-foreground">Wisdom</div>
-            <div class="font-medium text-green-600 dark:text-green-400">
-              +{data.item.book_wisdom_gain}
-            </div>
+            <div class={styles.label}>Wisdom</div>
+            <div class={styles.valuePositive}>+{data.item.book_wisdom_gain}</div>
           </div>
         {/if}
 
         {#if data.item.book_charisma_gain > 0}
           <div>
-            <div class="text-sm text-muted-foreground">Charisma</div>
-            <div class="font-medium text-green-600 dark:text-green-400">
-              +{data.item.book_charisma_gain}
-            </div>
+            <div class={styles.label}>Charisma</div>
+            <div class={styles.valuePositive}>+{data.item.book_charisma_gain}</div>
           </div>
         {/if}
       </Card.Content>
@@ -628,25 +593,20 @@
       </Card.Header>
       <Card.Content class="grid grid-cols-2 md:grid-cols-3 gap-4">
         <div>
-          <div class="text-sm text-muted-foreground">Zone</div>
-          <div class="font-medium">{data.item.luck_token_zone_name || "Unknown"}</div>
+          <div class={styles.label}>Zone</div>
+          <div class={styles.value}>{data.item.luck_token_zone_name || "Unknown"}</div>
         </div>
 
         <div>
-          <div class="text-sm text-muted-foreground">Amount Needed</div>
-          <div class="font-medium">{data.item.fragment_amount_needed}</div>
+          <div class={styles.label}>Amount Needed</div>
+          <div class={styles.value}>{data.item.fragment_amount_needed}</div>
         </div>
 
         <div>
-          <div class="text-sm text-muted-foreground">Creates</div>
-          <div class="font-medium">
-            <a
-              href="/items/{data.item.fragment_result_item_id}"
-              class="hover:underline"
-            >
-              {data.item.fragment_result_item_name || "Unknown"}
-            </a>
-          </div>
+          <div class={styles.label}>Creates</div>
+          <a href="/items/{data.item.fragment_result_item_id}" class={styles.link}>
+            {data.item.fragment_result_item_name || "Unknown"}
+          </a>
         </div>
       </Card.Content>
     </Card.Root>
@@ -660,29 +620,24 @@
       </Card.Header>
       <Card.Content class="grid grid-cols-2 md:grid-cols-3 gap-4">
         <div>
-          <div class="text-sm text-muted-foreground">Zone</div>
-          <div class="font-medium">{data.item.luck_token_zone_name || "Unknown"}</div>
+          <div class={styles.label}>Zone</div>
+          <div class={styles.value}>{data.item.luck_token_zone_name || "Unknown"}</div>
         </div>
 
         <div>
-          <div class="text-sm text-muted-foreground">Boss Drop Bonus</div>
-          <div class="font-medium text-green-600 dark:text-green-400">
-            +{(data.item.luck_token_bonus * 100).toFixed(0)}%
-          </div>
+          <div class={styles.label}>Boss Drop Bonus</div>
+          <div class={styles.valuePositive}>+{(data.item.luck_token_bonus * 100).toFixed(0)}%</div>
         </div>
 
         {#if data.item.luck_token_fragment_id && data.item.luck_token_fragment_name}
           <div>
-            <div class="text-sm text-muted-foreground">Created From</div>
-            <div class="font-medium">
-              <a
-                href="/items/{data.item.luck_token_fragment_id}"
-                class="hover:underline"
-              >
+            <div class={styles.label}>Created From</div>
+            <div>
+              <a href="/items/{data.item.luck_token_fragment_id}" class={styles.link}>
                 {data.item.luck_token_fragment_name}
               </a>
               {#if data.item.luck_token_fragments_needed}
-                <span class="text-muted-foreground"> (x{data.item.luck_token_fragments_needed})</span>
+                <span class={styles.label}> (x{data.item.luck_token_fragments_needed})</span>
               {/if}
             </div>
           </div>
@@ -702,19 +657,12 @@
         <Card.Content>
           <div class="space-y-2">
             {#each computed.droppedBy as drop, index (`${drop.monster_id}_${index}`)}
-              <div class="flex justify-between items-center text-sm">
-                <a
-                  href={resolve("/monsters/[id]", { id: drop.monster_id })}
-                  class="hover:underline font-medium"
-                >
+              <div class="flex justify-between items-center">
+                <a href={resolve("/monsters/[id]", { id: drop.monster_id })} class={styles.link}>
                   {drop.monster_name}
-                  <span class="text-muted-foreground font-normal"
-                    >(Lv {drop.monster_level})</span
-                  >
+                  <span class={styles.label}>(Lv {drop.monster_level})</span>
                 </a>
-                <span class="text-muted-foreground"
-                  >{(drop.rate * 100).toFixed(1)}%</span
-                >
+                <span class={styles.label}>{(drop.rate * 100).toFixed(1)}%</span>
               </div>
             {/each}
           </div>
@@ -731,20 +679,14 @@
         <Card.Content>
           <div class="space-y-2">
             {#each computed.soldBy as vendor, index (`${vendor.npc_id}_${index}`)}
-              <div class="flex justify-between items-center text-sm">
-                <a
-                  href={resolve("/npcs/[id]", { id: vendor.npc_id })}
-                  class="hover:underline font-medium"
-                >
+              <div class="flex justify-between items-center">
+                <a href={resolve("/npcs/[id]", { id: vendor.npc_id })} class={styles.link}>
                   {vendor.npc_name}
                 </a>
-                <span class="text-yellow-600 dark:text-yellow-400">
+                <span class={styles.valueCurrency}>
                   {#if vendor.currency_item_id}
                     {vendor.price}
-                    <a
-                      href={resolve("/items/[id]", { id: vendor.currency_item_id })}
-                      class="hover:underline"
-                    >
+                    <a href={resolve("/items/[id]", { id: vendor.currency_item_id })} class={styles.link}>
                       {vendor.currency_item_name}
                     </a>
                   {:else}
@@ -767,15 +709,10 @@
         <Card.Content>
           <div class="space-y-2">
             {#each computed.rewardedBy as quest, index (`${quest.quest_id}_${index}`)}
-              <div class="text-sm">
-                <a
-                  href={resolve("/quests/[id]", { id: quest.quest_id })}
-                  class="hover:underline font-medium"
-                >
+              <div>
+                <a href={resolve("/quests/[id]", { id: quest.quest_id })} class={styles.link}>
                   {quest.quest_name}
-                  <span class="text-muted-foreground font-normal"
-                    >(Lv {quest.level_required})</span
-                  >
+                  <span class={styles.label}>(Lv {quest.level_required})</span>
                 </a>
               </div>
             {/each}
@@ -793,14 +730,11 @@
         <Card.Content>
           <div class="space-y-1">
             {#each computed.craftedFrom[0].materials as material}
-              <div class="flex justify-between items-center text-sm">
-                <a
-                  href={resolve("/items/[id]", { id: material.item_id })}
-                  class="hover:underline"
-                >
+              <div class="flex justify-between items-center">
+                <a href={resolve("/items/[id]", { id: material.item_id })} class={styles.link}>
                   {material.item_name}
                 </a>
-                <span class="text-muted-foreground">x{material.amount}</span>
+                <span class={styles.label}>x{material.amount}</span>
               </div>
             {/each}
           </div>
@@ -818,14 +752,12 @@
           <div class="space-y-2">
             {#each computed.gatheredFrom as gather, index (`${gather.gather_item_id}_${index}`)}
               {#if gather.type === "chest"}
-                <div class="space-y-1 text-sm">
+                <div class="space-y-1">
                   <div class="flex justify-between items-center">
-                    <span class="font-medium">Chest</span>
-                    <span class="text-muted-foreground"
-                      >{(gather.rate * 100).toFixed(1)}%</span
-                    >
+                    <span class={styles.value}>Chest</span>
+                    <span class={styles.label}>{(gather.rate * 100).toFixed(1)}%</span>
                   </div>
-                  <div class="text-xs text-muted-foreground pl-2 space-y-0.5">
+                  <div class="{styles.label} pl-2 space-y-0.5">
                     {#if gather.zone_name}
                       <div>Zone: {gather.zone_name}</div>
                     {/if}
@@ -835,9 +767,9 @@
                   </div>
                 </div>
               {:else}
-                <div class="flex justify-between items-center text-sm">
-                  <span class="font-medium">{gather.gather_item_name}</span>
-                  <span class="text-muted-foreground">
+                <div class="flex justify-between items-center">
+                  <span class={styles.value}>{gather.gather_item_name}</span>
+                  <span class={styles.label}>
                     {(gather.rate * 100).toFixed(1)}%
                     {#if gather.amount_min !== undefined && gather.amount_max !== undefined}
                       ({gather.amount_min}-{gather.amount_max}×)
@@ -856,23 +788,18 @@
       <Card.Root>
         <Card.Header>
           <Card.Title>Found In Chests</Card.Title>
-          <p class="text-sm text-muted-foreground mt-1">
+          <Card.Description>
             Drop chances calculated via simulation (100k trials).
-          </p>
+          </Card.Description>
         </Card.Header>
         <Card.Content>
           <div class="space-y-2">
             {#each computed.foundInChests as chest, index (`${chest.chest_id}_${index}`)}
-              <div class="flex justify-between items-center text-sm">
-                <a
-                  href="/items/{chest.chest_id}"
-                  class="font-medium hover:underline"
-                >
+              <div class="flex justify-between items-center">
+                <a href="/items/{chest.chest_id}" class={styles.link}>
                   {chest.chest_name}
                 </a>
-                <span class="text-muted-foreground"
-                  >{(chest.rate * 100).toFixed(1)}%</span
-                >
+                <span class={styles.label}>{(chest.rate * 100).toFixed(1)}%</span>
               </div>
             {/each}
           </div>
@@ -885,23 +812,18 @@
       <Card.Root>
         <Card.Header>
           <Card.Title>Chest Rewards</Card.Title>
-          <p class="text-sm text-muted-foreground mt-1">
+          <Card.Description>
             Gives up to {data.item.chest_num_items} {data.item.chest_num_items === 1 ? 'item' : 'items'} per opening. Each item can only appear once. Drop chances calculated via simulation (100k trials).
-          </p>
+          </Card.Description>
         </Card.Header>
         <Card.Content>
           <div class="space-y-2">
             {#each computed.chestRewards as reward, index (`${reward.item_id}_${index}`)}
-              <div class="flex justify-between items-center text-sm">
-                <a
-                  href="/items/{reward.item_id}"
-                  class="font-medium hover:underline"
-                >
+              <div class="flex justify-between items-center">
+                <a href="/items/{reward.item_id}" class={styles.link}>
                   {reward.item_name}
                 </a>
-                <span class="text-muted-foreground"
-                  >{(reward.actual_drop_chance * 100).toFixed(1)}%</span
-                >
+                <span class={styles.label}>{(reward.actual_drop_chance * 100).toFixed(1)}%</span>
               </div>
             {/each}
           </div>
@@ -918,14 +840,11 @@
         <Card.Content>
           <div class="space-y-2">
             {#each computed.usedInRecipes as recipe, index (`${recipe.recipe_id}_${index}`)}
-              <div class="flex justify-between items-center text-sm">
-                <a
-                  href={resolve("/items/[id]", { id: recipe.result_item_id })}
-                  class="hover:underline"
-                >
+              <div class="flex justify-between items-center">
+                <a href={resolve("/items/[id]", { id: recipe.result_item_id })} class={styles.link}>
                   {recipe.result_item_name}
                 </a>
-                <span class="text-muted-foreground">x{recipe.amount}</span>
+                <span class={styles.label}>x{recipe.amount}</span>
               </div>
             {/each}
           </div>
@@ -942,19 +861,12 @@
         <Card.Content>
           <div class="space-y-2">
             {#each computed.neededForQuests as quest, index (`${quest.quest_id}_${quest.purpose}_${index}`)}
-              <div class="flex justify-between items-center text-sm">
-                <a
-                  href={resolve("/quests/[id]", { id: quest.quest_id })}
-                  class="hover:underline font-medium"
-                >
+              <div class="flex justify-between items-center">
+                <a href={resolve("/quests/[id]", { id: quest.quest_id })} class={styles.link}>
                   {quest.quest_name}
-                  <span class="text-muted-foreground font-normal"
-                    >(Lv {quest.level_required})</span
-                  >
+                  <span class={styles.label}>(Lv {quest.level_required})</span>
                 </a>
-                <span class="text-muted-foreground"
-                  >{quest.purpose} (x{quest.amount})</span
-                >
+                <span class={styles.label}>{quest.purpose} (x{quest.amount})</span>
               </div>
             {/each}
           </div>
