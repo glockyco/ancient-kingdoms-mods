@@ -94,6 +94,28 @@ public class GatherItemExporter : BaseExporter
                 description = gatherItem.descriptionItem
             };
 
+            // Calculate respawn variance based on item type
+            if (gatherItem.isMineral)
+            {
+                gatherItemData.respawn_min = (float)gatherItem.timeToWaitReady / 2f;
+                gatherItemData.respawn_max = (float)gatherItem.timeToWaitReady;
+            }
+            else if (gatherItem.isRadiantSpark)
+            {
+                gatherItemData.respawn_min = 100f;
+                gatherItemData.respawn_max = 3600f;
+            }
+            else if (gatherItem.isPlant)
+            {
+                gatherItemData.respawn_min = (float)gatherItem.timeToWaitReady / 2f;
+                gatherItemData.respawn_max = (float)gatherItem.timeToWaitReady;
+            }
+            else // Chest or other
+            {
+                gatherItemData.respawn_min = (float)gatherItem.timeToWaitReady;
+                gatherItemData.respawn_max = (float)gatherItem.timeToWaitReady;
+            }
+
             // Export chest interaction messages
             if (gatherItem.interactingChestMessages != null && gatherItem.interactingChestMessages.Count > 0)
             {

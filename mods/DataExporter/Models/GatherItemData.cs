@@ -23,6 +23,8 @@ public class GatherItemData
 
     // Spawning and respawn
     public double respawn_time { get; set; }
+    public float respawn_min { get; set; }
+    public float respawn_max { get; set; }
     public bool spawn_ready { get; set; }
     public float prob_despawn { get; set; }
 
