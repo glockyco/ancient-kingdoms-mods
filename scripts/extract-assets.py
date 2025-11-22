@@ -276,6 +276,7 @@ def main():
     """Main entry point."""
     # Fix Windows console encoding for Unicode characters
     import sys
+    import argparse
     if sys.platform == "win32":
         try:
             sys.stdout.reconfigure(encoding='utf-8')
@@ -284,6 +285,17 @@ def main():
             import io
             sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
             sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
+
+    # Parse arguments
+    parser = argparse.ArgumentParser(description="Extract Ancient Kingdoms assets using AssetRipper")
+    parser.add_argument(
+        "--target",
+        choices=["client", "server"],
+        default="client",
+        help="Extract from client or server directory (default: client)"
+    )
+    args = parser.parse_args()
+
     # Configuration
     assetripper_path = Path(os.environ.get(
         "ASSETRIPPER_PATH",
@@ -297,10 +309,16 @@ def main():
 
     # Paths
     project_root = Path(__file__).parent.parent
-    source_dir = game_install_dir / "ancientkingdoms_Data"
     timestamp = datetime.now().strftime("%Y_%m_%d")
-    # AssetRipper creates ExportedProject and AuxiliaryFiles subdirectories
-    target_dir = Path(f"E:/Projects/{timestamp}_AncientKingdoms_AssetRipper")
+
+    # Choose source directory and output name based on target
+    if args.target == "server":
+        source_dir = game_install_dir / "server" / "server_Data"
+        target_dir = Path(f"E:/Projects/{timestamp}_AncientKingdomsServer_AssetRipper")
+    else:
+        source_dir = game_install_dir / "ancientkingdoms_Data"
+        target_dir = Path(f"E:/Projects/{timestamp}_AncientKingdoms_AssetRipper")
+
     log_dir = project_root / "logs" / "assetripper"
 
     # Run extraction
