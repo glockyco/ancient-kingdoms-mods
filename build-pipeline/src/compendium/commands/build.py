@@ -1234,9 +1234,11 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
 
     # Update items table with new denormalized fields
     for item_id, recipe_list in used_in_recipes.items():
+        # Sort by result item name alphabetically
+        recipe_list_sorted = sorted(recipe_list, key=lambda x: x["result_item_name"])
         cursor.execute(
             "UPDATE items SET used_in_recipes = ? WHERE id = ?",
-            (json.dumps(recipe_list), item_id),
+            (json.dumps(recipe_list_sorted), item_id),
         )
 
     for item_id, quest_list in needed_for_quests.items():
