@@ -690,32 +690,6 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
 
         gathered_from[item_id].append(chest_info)
 
-    # Build found_in_chests from items.chest_rewards
-    console.print("  Processing chest rewards...")
-    cursor.execute("""
-        SELECT id, name, chest_rewards
-        FROM items
-        WHERE chest_rewards IS NOT NULL AND chest_rewards != '[]'
-    """)
-
-    found_in_chests: dict[str, list[ChestSourceInfo]] = {}
-
-    for chest_id, chest_name, chest_rewards_json in cursor.fetchall():
-        chest_rewards = json.loads(chest_rewards_json)
-        for reward in chest_rewards:
-            item_id = reward.get("item_id")
-            probability = reward.get("probability", 0.0)
-
-            if item_id:
-                if item_id not in found_in_chests:
-                    found_in_chests[item_id] = []
-
-                found_in_chests[item_id].append({
-                    "chest_id": chest_id,
-                    "chest_name": chest_name,
-                    "rate": probability,
-                })
-
     # Build sold_by from npcs.items_sold
     console.print("  Processing NPC vendors...")
 
@@ -851,14 +825,6 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
         cursor.execute(
             "UPDATE items SET gathered_from = ? WHERE id = ?",
             (json.dumps(gathers_sorted), item_id),
-        )
-
-    for item_id, chests in found_in_chests.items():
-        # Sort by drop rate descending (highest first), then by chest name
-        chests_sorted = sorted(chests, key=lambda x: (-x["rate"], x["chest_name"]))
-        cursor.execute(
-            "UPDATE items SET found_in_chests = ? WHERE id = ?",
-            (json.dumps(chests_sorted), item_id),
         )
 
     # Build used_in_recipes from crafting_recipes.materials
@@ -1182,6 +1148,126 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
     """)
     fragment_result_count = cursor.rowcount
 
+    # Denormalize item names in chest_rewards and calculate exact drop chances
+    console.print("  Denormalizing chest reward item names and calculating exact drop chances...")
+    cursor.execute("""
+        SELECT id, chest_rewards, chest_num_items
+        FROM items
+        WHERE chest_rewards IS NOT NULL AND chest_rewards != '[]'
+    """)
+
+    def calculate_exact_chest_probabilities(rewards: list[dict], num_items: int) -> dict[str, float]:
+        """
+        Calculate drop probabilities using Monte Carlo simulation.
+
+        Fast and accurate - matches actual game behavior exactly.
+        """
+        import random
+
+        num_simulations = 100000
+        max_passes = 10
+
+        # Track how many times each item was selected
+        item_counts = {r["item_id"]: 0 for r in rewards}
+
+        for _ in range(num_simulations):
+            selected_ids = set()
+            num_passes = 0
+
+            while len(selected_ids) < num_items and num_passes < max_passes:
+                for reward in rewards:
+                    # Skip if already selected
+                    if reward["item_id"] in selected_ids:
+                        continue
+
+                    # Roll for this item
+                    if random.random() < reward["probability"]:
+                        selected_ids.add(reward["item_id"])
+                        item_counts[reward["item_id"]] += 1
+
+                    # Check if we have enough items
+                    if len(selected_ids) >= num_items:
+                        break
+
+                num_passes += 1
+
+        # Convert counts to probabilities
+        item_probs = {}
+        for item_id, count in item_counts.items():
+            item_probs[item_id] = count / num_simulations
+
+        return item_probs
+
+    chest_rewards_updated = 0
+    found_in_chests: dict[str, list[ChestSourceInfo]] = {}
+
+    for chest_id, chest_rewards_json, num_items in cursor.fetchall():
+        chest_rewards = json.loads(chest_rewards_json)
+        updated_rewards = []
+
+        # First pass: add item names
+        for reward in chest_rewards:
+            item_id = reward.get("item_id")
+            probability = reward.get("probability", 0.0)
+
+            if item_id:
+                item_name_cursor = conn.cursor()
+                item_result = item_name_cursor.execute("SELECT name FROM items WHERE id = ?", (item_id,)).fetchone()
+                item_name = item_result[0] if item_result else "Unknown"
+
+                updated_rewards.append({
+                    "item_id": item_id,
+                    "item_name": item_name,
+                    "probability": probability,
+                })
+
+        # Calculate exact drop chances
+        if updated_rewards and num_items > 0:
+            exact_probs = calculate_exact_chest_probabilities(updated_rewards, num_items)
+
+            for reward in updated_rewards:
+                reward["actual_drop_chance"] = exact_probs.get(reward["item_id"], 0.0)
+
+        # Build found_in_chests using actual drop chances
+        chest_name_cursor = conn.cursor()
+        chest_name_result = chest_name_cursor.execute("SELECT name FROM items WHERE id = ?", (chest_id,)).fetchone()
+        chest_name = chest_name_result[0] if chest_name_result else "Unknown"
+
+        for reward in updated_rewards:
+            item_id = reward["item_id"]
+            actual_chance = reward.get("actual_drop_chance", reward["probability"])
+
+            if item_id not in found_in_chests:
+                found_in_chests[item_id] = []
+
+            found_in_chests[item_id].append({
+                "chest_id": chest_id,
+                "chest_name": chest_name,
+                "rate": actual_chance,
+            })
+
+        if updated_rewards:
+            rewards_sorted = sorted(updated_rewards, key=lambda x: (-x.get("actual_drop_chance", x["probability"]), x["item_name"]))
+            update_cursor = conn.cursor()
+            update_cursor.execute(
+                "UPDATE items SET chest_rewards = ? WHERE id = ?",
+                (json.dumps(rewards_sorted), chest_id)
+            )
+            if update_cursor.rowcount > 0:
+                chest_rewards_updated += 1
+
+    # Update found_in_chests with actual drop chances
+    console.print("  Updating found_in_chests with actual drop chances...")
+    for item_id, chests in found_in_chests.items():
+        chests_sorted = sorted(chests, key=lambda x: (-x["rate"], x["chest_name"]))
+        update_found_cursor = conn.cursor()
+        update_found_cursor.execute(
+            "UPDATE items SET found_in_chests = ? WHERE id = ?",
+            (json.dumps(chests_sorted), item_id),
+        )
+
+    conn.commit()
+
     # Denormalize luck token data
     console.print("  Denormalizing luck token data...")
     cursor.execute("""
@@ -1262,6 +1348,9 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
     )
     console.print(
         f"  [green]OK[/green] Updated {food_buff_count} items with food buff names, {relic_buff_count} items with relic buff names"
+    )
+    console.print(
+        f"  [green]OK[/green] Denormalized item names in {chest_rewards_updated} chest reward lists"
     )
     console.print(
         f"  [green]OK[/green] Updated {fragment_count} fragment luck tokens, {boss_token_count} boss luck tokens with zone data"

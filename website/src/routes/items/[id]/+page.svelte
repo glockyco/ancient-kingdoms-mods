@@ -167,6 +167,14 @@
       armorSetMembers: parseJson<string[]>(
         data.item.augment_armor_set_item_ids,
       ),
+      chestRewards: parseJson<
+        Array<{
+          item_id: string;
+          item_name: string;
+          probability: number;
+          actual_drop_chance: number;
+        }>
+      >(data.item.chest_rewards),
     };
   });
 </script>
@@ -712,6 +720,9 @@
       <Card.Root>
         <Card.Header>
           <Card.Title>Found In Chests</Card.Title>
+          <p class="text-sm text-muted-foreground mt-1">
+            Drop chances calculated via simulation (100k trials).
+          </p>
         </Card.Header>
         <Card.Content>
           <div class="space-y-2">
@@ -725,6 +736,35 @@
                 </a>
                 <span class="text-muted-foreground"
                   >{(chest.rate * 100).toFixed(1)}%</span
+                >
+              </div>
+            {/each}
+          </div>
+        </Card.Content>
+      </Card.Root>
+    {/if}
+
+    <!-- Chest Rewards -->
+    {#if computed.chestRewards && computed.chestRewards.length > 0}
+      <Card.Root>
+        <Card.Header>
+          <Card.Title>Chest Rewards</Card.Title>
+          <p class="text-sm text-muted-foreground mt-1">
+            Gives up to {data.item.chest_num_items} {data.item.chest_num_items === 1 ? 'item' : 'items'} per opening. Each item can only appear once. Drop chances calculated via simulation (100k trials).
+          </p>
+        </Card.Header>
+        <Card.Content>
+          <div class="space-y-2">
+            {#each computed.chestRewards as reward, index (`${reward.item_id}_${index}`)}
+              <div class="flex justify-between items-center text-sm">
+                <a
+                  href="/items/{reward.item_id}"
+                  class="font-medium hover:underline"
+                >
+                  {reward.item_name}
+                </a>
+                <span class="text-muted-foreground"
+                  >{(reward.actual_drop_chance * 100).toFixed(1)}%</span
                 >
               </div>
             {/each}
