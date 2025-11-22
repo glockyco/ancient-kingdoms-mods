@@ -73,11 +73,11 @@ public class LuckTokenExporter : BaseExporter
         Logger.Msg($"✓ Exported {luckTokenList.Count} luck token configurations");
     }
 
-    private string GetZoneIdFromByte(byte zoneId)
+    private string GetZoneIdFromByte(int zoneId)
     {
-        if (Il2Cpp.ZoneInfo.zones != null && Il2Cpp.ZoneInfo.zones.ContainsKey(zoneId))
+        if (Il2Cpp.ZoneInfo.zones != null && Il2Cpp.ZoneInfo.zones.ContainsKey((byte)zoneId))
         {
-            var zone = Il2Cpp.ZoneInfo.zones[zoneId];
+            var zone = Il2Cpp.ZoneInfo.zones[(byte)zoneId];
             if (zone != null && !string.IsNullOrEmpty(zone.name))
             {
                 return SanitizeId(zone.name);
@@ -87,11 +87,11 @@ public class LuckTokenExporter : BaseExporter
         return "unknown";
     }
 
-    private string GetZoneNameFromByte(byte zoneId)
+    private string GetZoneNameFromByte(int zoneId)
     {
-        if (Il2Cpp.ZoneInfo.zones != null && Il2Cpp.ZoneInfo.zones.ContainsKey(zoneId))
+        if (Il2Cpp.ZoneInfo.zones != null && Il2Cpp.ZoneInfo.zones.ContainsKey((byte)zoneId))
         {
-            var zone = Il2Cpp.ZoneInfo.zones[zoneId];
+            var zone = Il2Cpp.ZoneInfo.zones[(byte)zoneId];
             if (zone != null && !string.IsNullOrEmpty(zone.name))
             {
                 return zone.name;
