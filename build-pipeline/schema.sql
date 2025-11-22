@@ -163,7 +163,8 @@ CREATE TABLE items (
 
     -- Denormalized: Where this item is used (as JSON arrays)
     used_in_recipes TEXT,           -- JSON: [{"recipe_id": "recipe_5", "amount": 3}]
-    needed_for_quests TEXT          -- JSON: [{"quest_id": "quest_blacksmith_1", "purpose": "gather", "amount": 5}]
+    needed_for_quests TEXT,         -- JSON: [{"quest_id": "quest_blacksmith_1", "purpose": "gather", "amount": 5}]
+    used_as_currency_for TEXT       -- JSON: [{"item_id": "item_123", "item_name": "Cool Sword", "price": 50}]
 );
 
 CREATE INDEX idx_items_item_type ON items(item_type);

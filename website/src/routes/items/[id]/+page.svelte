@@ -194,6 +194,9 @@
           amount: number;
         }>
       >(data.item.needed_for_quests),
+      usedAsCurrencyFor: parseJson<
+        Array<{ item_id: string; item_name: string; price: number }>
+      >(data.item.used_as_currency_for),
       armorSetSkillBonuses: parseJson<
         Array<{ skill_id: string; skill_name: string; level_bonus: number }>
       >(data.item.augment_skill_bonuses_with_names),
@@ -345,8 +348,8 @@
     </Card.Content>
   </Card.Root>
 
-  <!-- Tooltip and Stats/Merge side-by-side (hide entire section if both would be empty) -->
-  {#if (data.item.tooltip && data.item.item_type !== "augment") || ((data.item.item_type !== "augment" || !data.item.augment_armor_set_name) && ((computed.stats && Object.keys(computed.stats).length > 0) || data.item.weapon_delay > 0)) || data.item.merge_result_item_id || (computed.createdFromMerge && computed.createdFromMerge.length > 0)}
+  <!-- Tooltip and Stats/Merge/Currency side-by-side (hide entire section if all would be empty) -->
+  {#if (data.item.tooltip && data.item.item_type !== "augment") || ((data.item.item_type !== "augment" || !data.item.augment_armor_set_name) && ((computed.stats && Object.keys(computed.stats).length > 0) || data.item.weapon_delay > 0)) || data.item.merge_result_item_id || (computed.createdFromMerge && computed.createdFromMerge.length > 0) || (computed.usedAsCurrencyFor && computed.usedAsCurrencyFor.length > 0)}
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
       <!-- Tooltip (don't show for augments - they're metadata items never shown to players) -->
       {#if data.item.tooltip && data.item.item_type !== "augment"}
@@ -443,6 +446,32 @@
                   </a>
                 {/each}
               </div>
+            </div>
+          </Card.Content>
+        </Card.Root>
+      {/if}
+
+      <!-- Currency For -->
+      {#if computed.usedAsCurrencyFor && computed.usedAsCurrencyFor.length > 0}
+        <Card.Root>
+          <Card.Header>
+            <Card.Title>Currency For</Card.Title>
+          </Card.Header>
+          <Card.Content>
+            <div class="space-y-2">
+              {#each computed.usedAsCurrencyFor as item}
+                <div class="flex justify-between items-center">
+                  <a
+                    href={resolve("/items/[id]", { id: item.item_id })}
+                    class={styles.link}
+                  >
+                    {item.item_name}
+                  </a>
+                  <span class={styles.label}>
+                    {item.price === 0 ? "Free" : `${item.price}x`}
+                  </span>
+                </div>
+              {/each}
             </div>
           </Card.Content>
         </Card.Root>
@@ -795,11 +824,11 @@
       </Card.Root>
     {/if}
 
-    <!-- Quest Reward -->
+    <!-- Quest Reward From -->
     {#if computed.rewardedBy && computed.rewardedBy.length > 0}
       <Card.Root>
         <Card.Header>
-          <Card.Title>Quest Reward</Card.Title>
+          <Card.Title>Quest Reward From</Card.Title>
         </Card.Header>
         <Card.Content>
           <div class="space-y-2">

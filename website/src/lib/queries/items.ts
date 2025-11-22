@@ -124,6 +124,7 @@ export interface Item {
   found_in_chests: string | null; // JSON
   used_in_recipes: string | null; // JSON
   needed_for_quests: string | null; // JSON
+  used_as_currency_for: string | null; // JSON
 }
 
 /**

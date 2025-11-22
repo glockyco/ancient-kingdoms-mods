@@ -1085,6 +1085,26 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
                 }
             )
 
+    # Build used_as_currency_for from items.buy_token_id (only for items actually sold by vendors)
+    console.print("  Processing currency usage...")
+    cursor.execute("""
+        SELECT id, name, buy_token_id, buy_price
+        FROM items
+        WHERE buy_token_id IS NOT NULL AND buy_token_id != ''
+          AND sold_by IS NOT NULL AND sold_by != '[]'
+    """)
+
+    used_as_currency_for: dict[str, list[dict]] = {}
+
+    for item_id, item_name, currency_id, price in cursor.fetchall():
+        if currency_id not in used_as_currency_for:
+            used_as_currency_for[currency_id] = []
+        used_as_currency_for[currency_id].append({
+            "item_id": item_id,
+            "item_name": item_name,
+            "price": price
+        })
+
     # Update items table with new denormalized fields
     for item_id, recipe_list in used_in_recipes.items():
         cursor.execute(
@@ -1098,6 +1118,14 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
         cursor.execute(
             "UPDATE items SET needed_for_quests = ? WHERE id = ?",
             (json.dumps(quest_list_sorted), item_id),
+        )
+
+    for currency_id, item_list in used_as_currency_for.items():
+        # Sort by item name alphabetically
+        item_list_sorted = sorted(item_list, key=lambda x: x["item_name"])
+        cursor.execute(
+            "UPDATE items SET used_as_currency_for = ? WHERE id = ?",
+            (json.dumps(item_list_sorted), currency_id),
         )
 
     # Update skills table
@@ -1668,6 +1696,9 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
     )
     console.print(
         f"  [green]OK[/green] Updated {len(used_in_recipes)} items used in recipes"
+    )
+    console.print(
+        f"  [green]OK[/green] Updated {len(used_as_currency_for)} currency items"
     )
     console.print(
         f"  [green]OK[/green] Updated {len(needed_for_quests)} items needed for quests"
