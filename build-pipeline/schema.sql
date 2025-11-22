@@ -135,6 +135,7 @@ CREATE TABLE items (
     book_charisma_gain INTEGER DEFAULT 0,
     book_text TEXT,
     scroll_skill_id TEXT REFERENCES skills(id),
+    scroll_skill_name TEXT,
     is_repair_kit BOOLEAN DEFAULT 0,
     mount_speed REAL DEFAULT 0.0,
     backpack_slots INTEGER DEFAULT 0,

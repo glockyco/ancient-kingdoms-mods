@@ -759,7 +759,7 @@
   {/if}
 
   <!-- Use Effects -->
-  {#if data.item.usage_health > 0 || data.item.usage_mana > 0 || data.item.usage_energy > 0 || data.item.potion_buff_id || data.item.food_buff_id || data.item.relic_buff_id}
+  {#if data.item.usage_health > 0 || data.item.usage_mana > 0 || data.item.usage_energy > 0 || data.item.potion_buff_id || data.item.food_buff_id || data.item.relic_buff_id || data.item.scroll_skill_id}
     <Card.Root>
       <Card.Header>
         <Card.Title>Use Effects</Card.Title>
@@ -814,6 +814,15 @@
             <a href="/skills/{data.item.relic_buff_id}" class={styles.link}>
               {data.item.relic_buff_name ||
                 data.item.relic_buff_id.replace(/_/g, " ")}
+            </a>
+          </div>
+        {/if}
+
+        {#if data.item.scroll_skill_id && data.item.scroll_skill_name}
+          <div>
+            <div class={styles.label}>Casts</div>
+            <a href="/skills/{data.item.scroll_skill_id}" class={styles.link}>
+              {data.item.scroll_skill_name}
             </a>
           </div>
         {/if}

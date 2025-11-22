@@ -1534,6 +1534,13 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
 
     cursor.execute("""
         UPDATE items
+        SET scroll_skill_name = (SELECT name FROM skills WHERE skills.id = items.scroll_skill_id)
+        WHERE scroll_skill_id IS NOT NULL
+    """)
+    scroll_skill_count = cursor.rowcount
+
+    cursor.execute("""
+        UPDATE items
         SET fragment_result_item_name = (SELECT name FROM items AS i WHERE i.id = items.fragment_result_item_id)
         WHERE fragment_result_item_id IS NOT NULL
     """)

@@ -55,6 +55,7 @@ export interface Item {
   book_text: string | null;
   // Scroll
   scroll_skill_id: string | null;
+  scroll_skill_name: string | null;
   // Equipment
   is_repair_kit: boolean;
   // Mount
