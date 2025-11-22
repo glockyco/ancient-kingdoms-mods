@@ -1392,6 +1392,64 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
     console.print(
         f"  [green]OK[/green] Updated {len(crafted_from)} items with crafting recipes"
     )
+    # Calculate item levels for all equipment
+    console.print("  Calculating item levels...")
+    cursor.execute("""
+        SELECT id, stats, weapon_delay
+        FROM items
+        WHERE stats IS NOT NULL
+    """)
+
+    item_levels_updated = 0
+    for item_id, stats_json, weapon_delay in cursor.fetchall():
+        if not stats_json:
+            continue
+
+        stats = json.loads(stats_json)
+
+        # Calculate weapon bonus if applicable
+        weapon_bonus = 0
+        if weapon_delay and weapon_delay > 0:
+            import math
+            d = -0.0365 * math.pow(weapon_delay - 15, 2)
+            weapon_bonus_float = 38.017 * math.exp(d) - 0.1983 * (weapon_delay - 25)
+            # C# casts to int (truncates toward zero)
+            weapon_bonus = int(weapon_bonus_float)
+
+        # Calculate item level using game formula
+        item_level = round(
+            stats.get('defense', 0) +
+            (stats.get('strength', 0) + stats.get('constitution', 0) + stats.get('dexterity', 0) +
+             stats.get('charisma', 0) + stats.get('intelligence', 0) + stats.get('wisdom', 0)) * 5 +
+            stats.get('health_bonus', 0) / 10 +
+            stats.get('hp_regen_bonus', 0) * 10 +
+            stats.get('mana_regen_bonus', 0) * 10 +
+            stats.get('mana_bonus', 0) / 10 +
+            stats.get('energy_bonus', 0) / 10 +
+            stats.get('damage', 0) * 0.7 +
+            stats.get('magic_damage', 0) +
+            stats.get('magic_resist', 0) +
+            stats.get('poison_resist', 0) +
+            stats.get('fire_resist', 0) +
+            stats.get('cold_resist', 0) +
+            stats.get('disease_resist', 0) +
+            stats.get('block_chance', 0) * 200 +
+            stats.get('accuracy', 0) * 200 +
+            stats.get('critical_chance', 0) * 200 +
+            stats.get('haste', 0) * 200 +
+            stats.get('spell_haste', 0) * 200 +
+            weapon_bonus
+        )
+
+        if item_level > 0:
+            cursor.execute(
+                "UPDATE items SET item_level = ? WHERE id = ?",
+                (item_level, item_id)
+            )
+            item_levels_updated += 1
+
+    conn.commit()
+
     console.print(
         f"  [green]OK[/green] Updated {len(gathered_from)} items with gather sources"
     )
@@ -1406,6 +1464,9 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
     )
     console.print(
         f"  [green]OK[/green] Updated {len(granted_by_items)} skills granted by items"
+    )
+    console.print(
+        f"  [green]OK[/green] Calculated item levels for {item_levels_updated} items"
     )
 
 

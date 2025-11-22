@@ -29,6 +29,7 @@ export interface Item {
   slot: string | null;
   weapon_category: string | null;
   stats: string | null; // JSON
+  item_level: number;
   // Usage effects
   usage_health: number;
   usage_mana: number;

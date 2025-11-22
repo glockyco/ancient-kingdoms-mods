@@ -3,6 +3,7 @@
   import { resolve } from "$app/paths";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import { STATS_METADATA_FIELDS } from "$lib/constants/items";
+  import { parseTooltip } from "$lib/utils/tooltip";
   import type { PageData } from "./$types";
 
   let { data }: { data: PageData } = $props();
@@ -314,34 +315,51 @@
     </Card.Content>
   </Card.Root>
 
-  <!-- Stats -->
-  {#if (computed.stats && Object.keys(computed.stats).length > 0) || data.item.weapon_delay > 0}
-    <Card.Root>
-      <Card.Header>
-        <Card.Title>Stats</Card.Title>
-      </Card.Header>
-      <Card.Content>
-        <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {#if data.item.weapon_delay > 0}
-            <div class="flex justify-between items-center p-2 rounded bg-muted">
-              <span class="text-sm font-medium">Attack Delay</span>
-              <span class="text-sm font-bold">{data.item.weapon_delay}</span>
-            </div>
-          {/if}
-          {#if computed.stats}
-            {#each Object.entries(computed.stats) as [stat, value] (stat)}
+  <!-- Tooltip and Stats side-by-side -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <!-- Tooltip (don't show for augments - they're metadata items never shown to players) -->
+    {#if data.item.tooltip && data.item.item_type !== "augment"}
+      <Card.Root>
+        <Card.Header>
+          <Card.Title>Tooltip</Card.Title>
+        </Card.Header>
+        <Card.Content>
+          <div class="text-sm whitespace-pre-wrap tooltip-content">
+            {@html parseTooltip(data.item.tooltip, data.item)}
+          </div>
+        </Card.Content>
+      </Card.Root>
+    {/if}
+
+    <!-- Stats -->
+    {#if (computed.stats && Object.keys(computed.stats).length > 0) || data.item.weapon_delay > 0}
+      <Card.Root>
+        <Card.Header>
+          <Card.Title>Stats</Card.Title>
+        </Card.Header>
+        <Card.Content>
+          <div class="grid grid-cols-2 gap-3">
+            {#if data.item.weapon_delay > 0}
               <div class="flex justify-between items-center p-2 rounded bg-muted">
-                <span class="text-sm font-medium">{formatStatName(stat)}</span>
-                <span class="text-sm font-bold"
-                  >{formatStatValue(stat, value)}</span
-                >
+                <span class="text-sm font-medium">Attack Delay</span>
+                <span class="text-sm font-bold">{data.item.weapon_delay}</span>
               </div>
-            {/each}
-          {/if}
-        </div>
-      </Card.Content>
-    </Card.Root>
-  {/if}
+            {/if}
+            {#if computed.stats}
+              {#each Object.entries(computed.stats) as [stat, value] (stat)}
+                <div class="flex justify-between items-center p-2 rounded bg-muted">
+                  <span class="text-sm font-medium">{formatStatName(stat)}</span>
+                  <span class="text-sm font-bold"
+                    >{formatStatValue(stat, value)}</span
+                  >
+                </div>
+              {/each}
+            {/if}
+          </div>
+        </Card.Content>
+      </Card.Root>
+    {/if}
+  </div>
 
   <!-- Armor Set Bonuses -->
   {#if computed.armorSetSkillBonuses && computed.armorSetSkillBonuses.length > 0}
@@ -396,18 +414,6 @@
             </div>
           </div>
         {/if}
-      </Card.Content>
-    </Card.Root>
-  {/if}
-
-  <!-- Tooltip/Description -->
-  {#if data.item.tooltip}
-    <Card.Root>
-      <Card.Header>
-        <Card.Title>Description</Card.Title>
-      </Card.Header>
-      <Card.Content>
-        <p class="text-sm whitespace-pre-wrap">{data.item.tooltip}</p>
       </Card.Content>
     </Card.Root>
   {/if}
@@ -832,3 +838,14 @@
     {/if}
   </div>
 </div>
+
+<style>
+  :global(.tooltip-content) {
+    /* Semi-transparent dark blue-gray background matching game */
+    background: rgba(20, 25, 35);
+    border: 2px solid rgba(60, 70, 85, 0.8);
+    border-radius: 6px;
+    padding: 14px 18px;
+    color: #f0f0f0;
+  }
+</style>

@@ -76,6 +76,7 @@ CREATE TABLE items (
     slot TEXT,
     weapon_category TEXT,
     stats TEXT,                     -- JSON object with equipment stats
+    item_level INTEGER DEFAULT 0,   -- Calculated from stats using game formula
 
     -- Consumable properties
     usage_health INTEGER DEFAULT 0,
