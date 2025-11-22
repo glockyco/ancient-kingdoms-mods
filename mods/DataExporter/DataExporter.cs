@@ -101,6 +101,10 @@ namespace DataExporter
                 var summonTriggerExporter = new SummonTriggerExporter(LoggerInstance, ExportPath);
                 summonTriggerExporter.Export();
 
+                // Export luck tokens (boss and fragment tokens)
+                var luckTokenExporter = new LuckTokenExporter(LoggerInstance, ExportPath);
+                luckTokenExporter.Export();
+
                 var elapsed = DateTime.Now - startTime;
 
                 LoggerInstance.Msg("========================================");
