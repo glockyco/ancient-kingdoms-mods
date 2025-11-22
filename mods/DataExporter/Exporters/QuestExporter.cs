@@ -319,17 +319,4 @@ public class QuestExporter : BaseExporter
         questData.potions_amount = alchemyQuest.potionsAmount;
         questData.increase_alchemy_skill = alchemyQuest.increaseAlchemySkill;
     }
-
-    private string GetZoneIdFromByte(byte idZone)
-    {
-        if (Il2Cpp.ZoneInfo.zones != null && Il2Cpp.ZoneInfo.zones.ContainsKey(idZone))
-        {
-            var zone = Il2Cpp.ZoneInfo.zones[idZone];
-            if (zone != null && !string.IsNullOrEmpty(zone.name))
-            {
-                return SanitizeId(zone.name);
-            }
-        }
-        return "unknown";
-    }
 }

@@ -21,12 +21,7 @@ public class GatherItemExporter : BaseExporter
         var type = Il2CppType.Of<Il2Cpp.GatherItem>();
         var objects = Resources.FindObjectsOfTypeAll(type);
 
-        // Load all zone triggers for zone determination
-        var zoneTriggerType = Il2CppType.Of<Il2Cpp.ZoneTrigger>();
-        var zoneTriggers = Resources.FindObjectsOfTypeAll(zoneTriggerType);
-
         Logger.Msg($"Found {objects.Length} gather item objects total");
-        Logger.Msg($"Found {zoneTriggers.Length} zone triggers for zone detection");
 
         var gatherItems = new List<GatherItemData>();
         var templateCount = 0;
@@ -38,7 +33,7 @@ public class GatherItemExporter : BaseExporter
                 continue;
 
             var isTemplate = gatherItem.gameObject == null || !gatherItem.gameObject.scene.IsValid();
-            var zoneId = isTemplate ? null : GetZoneIdFromPosition(gatherItem.transform.position, zoneTriggers);
+            var zoneId = isTemplate ? null : GetZoneIdFromPosition(gatherItem.transform.position);
 
             if (isTemplate)
                 templateCount++;
@@ -161,47 +156,4 @@ public class GatherItemExporter : BaseExporter
         Logger.Msg($"✓ Exported {gatherItems.Count} gather items");
     }
 
-    private string GetZoneIdFromPosition(UnityEngine.Vector3 position, Il2CppSystem.Object[] zoneTriggers)
-    {
-        // Find nearest zone trigger to this position
-        Il2Cpp.ZoneTrigger nearestTrigger = null;
-        float nearestDistance = float.MaxValue;
-
-        foreach (var triggerObj in zoneTriggers)
-        {
-            var trigger = triggerObj.TryCast<Il2Cpp.ZoneTrigger>();
-            if (trigger == null)
-                continue;
-
-            var triggerPos = trigger.transform.position;
-            var distance = UnityEngine.Vector3.Distance(position, triggerPos);
-
-            if (distance < nearestDistance)
-            {
-                nearestDistance = distance;
-                nearestTrigger = trigger;
-            }
-        }
-
-        if (nearestTrigger != null)
-        {
-            return GetZoneIdFromByte(nearestTrigger.idZone);
-        }
-
-        return "unknown";
-    }
-
-    private string GetZoneIdFromByte(byte zoneId)
-    {
-        if (Il2Cpp.ZoneInfo.zones != null && Il2Cpp.ZoneInfo.zones.ContainsKey(zoneId))
-        {
-            var zone = Il2Cpp.ZoneInfo.zones[zoneId];
-            if (zone != null && !string.IsNullOrEmpty(zone.name))
-            {
-                return SanitizeId(zone.name);
-            }
-        }
-
-        return "unknown";
-    }
 }

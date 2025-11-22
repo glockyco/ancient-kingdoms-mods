@@ -21,10 +21,6 @@ public class PortalExporter : BaseExporter
 
         Logger.Msg($"Found {portals.Length} portal objects total");
 
-        // Load all zone triggers for destination matching
-        var zoneTriggerType = Il2CppType.Of<Il2Cpp.ZoneTrigger>();
-        var zoneTriggers = Resources.FindObjectsOfTypeAll(zoneTriggerType);
-
         var portalList = new List<PortalData>();
         var templateCount = 0;
 
@@ -36,15 +32,18 @@ public class PortalExporter : BaseExporter
 
             var isTemplate = portal.gameObject == null || !portal.gameObject.scene.IsValid();
             if (isTemplate)
+            {
                 templateCount++;
+                continue;
+            }
 
-            var fromZoneId = GetZoneIdFromByte(portal.idZone);
-            var toZoneId = GetDestinationZoneId(portal, zoneTriggers);
+            var fromZoneId = GetZoneIdFromPosition(portal.transform.position);
+            var toZoneId = GetZoneIdFromByte(portal.idZone);
 
             var portalData = new PortalData
             {
                 id = $"portal_{fromZoneId}_to_{toZoneId}_{portal.GetInstanceID()}",
-                is_template = isTemplate,
+                is_template = false,
                 from_zone_id = fromZoneId,
                 to_zone_id = toZoneId,
                 position = new Position(
@@ -71,55 +70,5 @@ public class PortalExporter : BaseExporter
 
         WriteJson(portalList, "portals.json");
         Logger.Msg($"✓ Exported {portalList.Count} portals");
-    }
-
-    private string GetZoneIdFromByte(byte zoneId)
-    {
-        if (Il2Cpp.ZoneInfo.zones != null && Il2Cpp.ZoneInfo.zones.ContainsKey(zoneId))
-        {
-            var zone = Il2Cpp.ZoneInfo.zones[zoneId];
-            if (zone != null && !string.IsNullOrEmpty(zone.name))
-            {
-                return SanitizeId(zone.name);
-            }
-        }
-
-        return "unknown";
-    }
-
-    private string GetDestinationZoneId(Il2Cpp.Portal portal, Il2CppSystem.Object[] zoneTriggers)
-    {
-        // If no destination, return unknown
-        if (portal.destination == null)
-            return "unknown";
-
-        var destPos = portal.destination.position;
-
-        // Find nearest zone trigger to destination
-        Il2Cpp.ZoneTrigger nearestTrigger = null;
-        float nearestDistance = float.MaxValue;
-
-        foreach (var triggerObj in zoneTriggers)
-        {
-            var trigger = triggerObj.TryCast<Il2Cpp.ZoneTrigger>();
-            if (trigger == null)
-                continue;
-
-            var triggerPos = trigger.transform.position;
-            var distance = UnityEngine.Vector3.Distance(destPos, triggerPos);
-
-            if (distance < nearestDistance)
-            {
-                nearestDistance = distance;
-                nearestTrigger = trigger;
-            }
-        }
-
-        if (nearestTrigger != null)
-        {
-            return GetZoneIdFromByte(nearestTrigger.idZone);
-        }
-
-        return "unknown";
     }
 }

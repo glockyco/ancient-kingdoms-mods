@@ -203,7 +203,7 @@ public class NpcExporter : BaseExporter
                 if (isTemplate)
                     continue;  // Skip templates - they don't have spawn locations
 
-                var zoneId = GetNpcZoneId(npc);
+                var zoneId = GetZoneIdFromPosition(npc.transform.position);
                 var spawnData = new NpcSpawnData
                 {
                     id = $"{name}_{zoneId}_{npc.GetInstanceID()}",
@@ -240,24 +240,5 @@ public class NpcExporter : BaseExporter
         WriteJson(npcList, "npcs.json");
         WriteJson(spawnList, "npc_spawns.json");
         Logger.Msg($"✓ Exported {npcList.Count} canonical NPCs and {spawnList.Count} spawn points");
-    }
-
-    private string GetNpcZoneId(Il2Cpp.Npc npc)
-    {
-        return GetZoneIdFromByte((byte)npc.idZone);
-    }
-
-    private string GetZoneIdFromByte(byte zoneId)
-    {
-        if (Il2Cpp.ZoneInfo.zones != null && Il2Cpp.ZoneInfo.zones.ContainsKey(zoneId))
-        {
-            var zone = Il2Cpp.ZoneInfo.zones[zoneId];
-            if (zone != null && !string.IsNullOrEmpty(zone.name))
-            {
-                return SanitizeId(zone.name);
-            }
-        }
-
-        return "unknown";
     }
 }

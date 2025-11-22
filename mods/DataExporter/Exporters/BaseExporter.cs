@@ -1,8 +1,10 @@
 using System;
 using System.IO;
 using System.Text.RegularExpressions;
+using Il2CppInterop.Runtime;
 using MelonLoader;
 using Newtonsoft.Json;
+using UnityEngine;
 
 namespace DataExporter.Exporters;
 
@@ -10,6 +12,24 @@ public abstract class BaseExporter
 {
     protected readonly MelonLogger.Instance Logger;
     protected readonly string ExportPath;
+
+    private static Il2CppSystem.Object[] _zoneTriggers;
+
+    /// <summary>
+    /// Gets zone triggers from the scene. Loaded once and cached for all exporters.
+    /// </summary>
+    protected static Il2CppSystem.Object[] ZoneTriggers
+    {
+        get
+        {
+            if (_zoneTriggers == null)
+            {
+                var zoneTriggerType = Il2CppType.Of<Il2Cpp.ZoneTrigger>();
+                _zoneTriggers = Resources.FindObjectsOfTypeAll(zoneTriggerType);
+            }
+            return _zoneTriggers;
+        }
+    }
 
     protected BaseExporter(MelonLogger.Instance logger, string exportPath)
     {
@@ -55,5 +75,81 @@ public abstract class BaseExporter
         {
             Logger.Error($"Failed to export {filename}: {ex.Message}");
         }
+    }
+
+    /// <summary>
+    /// Determines zone ID from a position using area containment checking.
+    /// Tests if the position falls within any ZoneTrigger's Collider2D boundary.
+    /// Falls back to nearest zone collider if not inside any zone.
+    /// Filters for scene zone triggers only (not templates).
+    /// </summary>
+    protected static string GetZoneIdFromPosition(Vector3 position)
+    {
+        var position2D = new Vector2(position.x, position.y);
+
+        // First pass: check if position is inside any zone
+        foreach (var triggerObj in ZoneTriggers)
+        {
+            var trigger = triggerObj.TryCast<Il2Cpp.ZoneTrigger>();
+            if (trigger == null || trigger.gameObject == null || !trigger.gameObject.scene.IsValid())
+                continue;
+
+            var collider = trigger.GetComponent<Collider2D>();
+            if (collider == null)
+                continue;
+
+            if (collider.OverlapPoint(position2D))
+            {
+                return GetZoneIdFromByte(trigger.idZone);
+            }
+        }
+
+        // Second pass: find nearest zone collider boundary
+        Il2Cpp.ZoneTrigger nearestTrigger = null;
+        float nearestDistance = float.MaxValue;
+
+        foreach (var triggerObj in ZoneTriggers)
+        {
+            var trigger = triggerObj.TryCast<Il2Cpp.ZoneTrigger>();
+            if (trigger == null || trigger.gameObject == null || !trigger.gameObject.scene.IsValid())
+                continue;
+
+            var collider = trigger.GetComponent<Collider2D>();
+            if (collider == null)
+                continue;
+
+            var closestPoint = collider.ClosestPoint(position2D);
+            var distance = Vector2.Distance(position2D, closestPoint);
+
+            if (distance < nearestDistance)
+            {
+                nearestDistance = distance;
+                nearestTrigger = trigger;
+            }
+        }
+
+        if (nearestTrigger != null)
+        {
+            return GetZoneIdFromByte(nearestTrigger.idZone);
+        }
+
+        return "unknown";
+    }
+
+    /// <summary>
+    /// Converts a byte zone ID to a sanitized string zone ID using ZoneInfo lookup.
+    /// </summary>
+    protected static string GetZoneIdFromByte(byte zoneId)
+    {
+        if (Il2Cpp.ZoneInfo.zones != null && Il2Cpp.ZoneInfo.zones.ContainsKey(zoneId))
+        {
+            var zone = Il2Cpp.ZoneInfo.zones[zoneId];
+            if (zone != null && !string.IsNullOrEmpty(zone.name))
+            {
+                return SanitizeId(zone.name);
+            }
+        }
+
+        return "unknown";
     }
 }
