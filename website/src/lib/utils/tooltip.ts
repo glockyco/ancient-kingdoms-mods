@@ -9,11 +9,17 @@ export function parseTooltip(tooltip: string, item: Item): string {
   let parsed = tooltip;
 
   // Parse item stats if available
-  const stats = item.stats ? (typeof item.stats === "string" ? JSON.parse(item.stats) : item.stats) : {};
+  const stats = item.stats
+    ? typeof item.stats === "string"
+      ? JSON.parse(item.stats)
+      : item.stats
+    : {};
 
   // Add set bonus information before {DURABILITY} placeholder (if this item has a set)
   if (item.augment_armor_set_name) {
-    const setMembers = item.augment_armor_set_members ? JSON.parse(item.augment_armor_set_members) : [];
+    const setMembers = item.augment_armor_set_members
+      ? JSON.parse(item.augment_armor_set_members)
+      : [];
     const totalPieces = setMembers.length;
 
     // Show as if only this item is equipped (1 piece)
@@ -31,7 +37,9 @@ export function parseTooltip(tooltip: string, item: Item): string {
     }
 
     // Add attribute bonuses (3-piece) - grayed out since we only have 1 piece
-    const attributeBonuses = item.augment_attribute_bonuses ? JSON.parse(item.augment_attribute_bonuses) : [];
+    const attributeBonuses = item.augment_attribute_bonuses
+      ? JSON.parse(item.augment_attribute_bonuses)
+      : [];
     if (attributeBonuses.length > 0) {
       for (const bonus of attributeBonuses) {
         setBonus += `\n<color=#676a75>Set (3): Increases ${bonus.attribute} by ${bonus.bonus}</color>`;
@@ -39,7 +47,9 @@ export function parseTooltip(tooltip: string, item: Item): string {
     }
 
     // Add skill bonuses (5-piece) - grayed out since we only have 1 piece
-    const skillBonuses = item.augment_skill_bonuses_with_names ? JSON.parse(item.augment_skill_bonuses_with_names) : [];
+    const skillBonuses = item.augment_skill_bonuses_with_names
+      ? JSON.parse(item.augment_skill_bonuses_with_names)
+      : [];
     if (skillBonuses.length > 0) {
       for (const bonus of skillBonuses) {
         setBonus += `\n<color=#676a75>Set (5): Increases ${bonus.skill_name} by ${bonus.level_bonus}</color>`;
@@ -59,14 +69,18 @@ export function parseTooltip(tooltip: string, item: Item): string {
 
   // Add sell price if sellable (format with space separator like in-game)
   if (item.sellable && item.sell_price > 0) {
-    const formattedPrice = item.sell_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+    const formattedPrice = item.sell_price
+      .toString()
+      .replace(/\B(?=(\d{3})+(?!\d))/g, " ");
     parsed += `\n\n<align="right">${formattedPrice} <color=#FFD700>●</color></align>`;
   }
 
   // Replace placeholders with actual values
   const replacements: Record<string, string | number> = {
     // Equipment stats
-    DURABILITY: stats.max_durability ? `<color=#DA4ADC>Durability: 100%</color>` : "",
+    DURABILITY: stats.max_durability
+      ? `<color=#DA4ADC>Durability: 100%</color>`
+      : "",
     DEFENSEBONUS: stats.defense || 0,
     HEALTHBONUS: stats.health_bonus || 0,
     MANABONUS: stats.mana_bonus || 0,
@@ -97,7 +111,9 @@ export function parseTooltip(tooltip: string, item: Item): string {
     SPELLHASTEBONUS: stats.spell_haste ? `${stats.spell_haste}%` : 0,
     ACCURACYBONUS: stats.accuracy ? `${stats.accuracy}%` : 0,
     BLOCKCHANCEBONUS: stats.block_chance ? `${stats.block_chance}%` : 0,
-    CRITICALCHANCEBONUS: stats.critical_chance ? `${stats.critical_chance}%` : 0,
+    CRITICALCHANCEBONUS: stats.critical_chance
+      ? `${stats.critical_chance}%`
+      : 0,
     HPREGENBONUS: stats.hp_regen_bonus || 0,
     MANAREGENBONUS: stats.mana_regen_bonus || 0,
 
@@ -111,10 +127,7 @@ export function parseTooltip(tooltip: string, item: Item): string {
   }
 
   // Remove red color from "Requires Level" (we're not checking player level)
-  parsed = parsed.replace(
-    /<color=red>(Requires Level \d+)<\/color>/g,
-    "$1"
-  );
+  parsed = parsed.replace(/<color=red>(Requires Level \d+)<\/color>/g, "$1");
 
   // Convert Unity TextMeshPro markup to HTML
   parsed = convertUnityMarkupToHtml(parsed);

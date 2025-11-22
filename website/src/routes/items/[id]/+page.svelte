@@ -406,6 +406,7 @@
           </Card.Header>
           <Card.Content>
             <div class="text-sm whitespace-pre-wrap tooltip-content">
+              <!-- eslint-disable-next-line svelte/no-at-html-tags -->
               {@html parseTooltip(data.item.tooltip, data.item)}
             </div>
           </Card.Content>
@@ -457,7 +458,7 @@
             <div>
               <div class="{styles.label} mb-2">Components</div>
               <div class="grid grid-cols-1 gap-2">
-                {#each mergeItems as mergeItem}
+                {#each mergeItems as mergeItem (mergeItem.item_id)}
                   <a href="/items/{mergeItem.item_id}" class={styles.link}>
                     {mergeItem.item_name}
                   </a>
@@ -487,7 +488,7 @@
             <div>
               <div class="{styles.label} mb-2">Components</div>
               <div class="grid grid-cols-1 gap-2">
-                {#each computed.createdFromMerge as mergeItem}
+                {#each computed.createdFromMerge as mergeItem (mergeItem.item_id)}
                   <a href="/items/{mergeItem.item_id}" class={styles.link}>
                     {mergeItem.item_name}
                   </a>
@@ -506,7 +507,7 @@
           </Card.Header>
           <Card.Content>
             <div class="space-y-2">
-              {#each computed.usedAsCurrencyFor as item}
+              {#each computed.usedAsCurrencyFor as item (item.item_id)}
                 <div class="flex justify-between items-center">
                   <a
                     href={resolve("/items/[id]", { id: item.item_id })}
@@ -533,7 +534,7 @@
               <div>
                 <div class={styles.label}>Trade equipment to</div>
                 <div class="space-y-1 mt-1">
-                  {#each data.essenceTraders as trader}
+                  {#each data.essenceTraders as trader (trader.id)}
                     <a href="/npcs/{trader.id}" class={styles.link}>
                       {trader.name}
                     </a>
@@ -564,7 +565,10 @@
           </Card.Header>
           <Card.Content>
             <div class="flex justify-between items-center">
-              <a href="/items/{data.item.pack_final_item_id}" class={styles.link}>
+              <a
+                href="/items/{data.item.pack_final_item_id}"
+                class={styles.link}
+              >
                 {data.item.pack_final_item_name || data.item.pack_final_item_id}
               </a>
               <span class={styles.value}>×{data.item.pack_final_amount}</span>
@@ -619,12 +623,14 @@
             </div>
 
             {#if data.item.alchemy_recipe_materials}
-              {@const materials = JSON.parse(data.item.alchemy_recipe_materials)}
+              {@const materials = JSON.parse(
+                data.item.alchemy_recipe_materials,
+              )}
               {#if materials.length > 0}
                 <div>
                   <div class={styles.label}>Materials</div>
                   <div class="space-y-1 mt-2">
-                    {#each materials as material}
+                    {#each materials as material (material.item_id)}
                       <div class="flex items-center justify-between">
                         <a href="/items/{material.item_id}" class={styles.link}>
                           {material.item_name}
@@ -667,12 +673,14 @@
             </div>
 
             {#if data.item.alchemy_recipe_materials}
-              {@const materials = JSON.parse(data.item.alchemy_recipe_materials)}
+              {@const materials = JSON.parse(
+                data.item.alchemy_recipe_materials,
+              )}
               {#if materials.length > 0}
                 <div>
                   <div class={styles.label}>Materials</div>
                   <div class="space-y-1 mt-2">
-                    {#each materials as material}
+                    {#each materials as material (material.item_id)}
                       <div class="flex items-center justify-between">
                         <a href="/items/{material.item_id}" class={styles.link}>
                           {material.item_name}
@@ -720,7 +728,7 @@
           <div>
             <h4 class="text-sm font-semibold mb-2">Set Bonuses (3 pieces)</h4>
             <div class="space-y-2">
-              {#each computed.armorSetAttributeBonuses as bonus}
+              {#each computed.armorSetAttributeBonuses as bonus (bonus.attribute)}
                 <div
                   class="flex items-center justify-between p-2 rounded bg-muted"
                 >
@@ -1139,7 +1147,7 @@
         </Card.Header>
         <Card.Content>
           <div class="space-y-1">
-            {#each computed.craftedFrom[0].materials as material}
+            {#each computed.craftedFrom[0].materials as material (material.item_id)}
               <div class="flex justify-between items-center">
                 <a
                   href={resolve("/items/[id]", { id: material.item_id })}
@@ -1206,7 +1214,7 @@
         </Card.Header>
         <Card.Content>
           <div class="space-y-2">
-            {#each computed.randomItemsPossible as item}
+            {#each computed.randomItemsPossible as item (item.item_id)}
               <div class="flex justify-between items-center">
                 <a href="/items/{item.item_id}" class={styles.link}>
                   {item.item_name}
@@ -1255,9 +1263,12 @@
         </Card.Header>
         <Card.Content>
           <div class="space-y-2">
-            {#each computed.foundInRandomLoot as randomItem}
+            {#each computed.foundInRandomLoot as randomItem (randomItem.random_item_id)}
               <div class="flex justify-between items-center">
-                <a href="/items/{randomItem.random_item_id}" class={styles.link}>
+                <a
+                  href="/items/{randomItem.random_item_id}"
+                  class={styles.link}
+                >
                   {randomItem.random_item_name}
                 </a>
                 <span class={styles.label}>
