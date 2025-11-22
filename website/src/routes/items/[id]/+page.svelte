@@ -138,6 +138,25 @@
           level_recommended: number;
         }>
       >(data.item.rewarded_by),
+      rewardedByAltars: parseJson<
+        Array<{
+          altar_id: string;
+          altar_name: string;
+          reward_tier: string;
+          min_effective_level: number;
+          zone_id: string;
+          zone_name: string;
+        }>
+      >(data.item.rewarded_by_altars),
+      requiredForAltars: parseJson<
+        Array<{
+          altar_id: string;
+          altar_name: string;
+          min_level_required: number;
+          zone_id: string;
+          zone_name: string;
+        }>
+      >(data.item.required_for_altars),
       craftedFrom: parseJson<
         Array<{
           recipe_id: string;
@@ -841,6 +860,61 @@
                   {quest.quest_name}
                   <span class={styles.label}>(Lv {quest.level_required})</span>
                 </a>
+              </div>
+            {/each}
+          </div>
+        </Card.Content>
+      </Card.Root>
+    {/if}
+
+    <!-- Rewarded by Altars -->
+    {#if computed.rewardedByAltars && computed.rewardedByAltars.length > 0}
+      <Card.Root>
+        <Card.Header>
+          <Card.Title>Rewarded by Altars</Card.Title>
+        </Card.Header>
+        <Card.Content>
+          <div class="space-y-2">
+            {#each computed.rewardedByAltars as altar, index (`${altar.altar_id}_${index}`)}
+              <div class="space-y-1">
+                <a href={`/altars/${altar.altar_id}`} class={styles.link}>
+                  {altar.altar_name}
+                </a>
+                <div class="{styles.label} pl-2 space-y-0.5">
+                  <div>Zone: {altar.zone_name}</div>
+                  {#if altar.reward_tier === "normal"}
+                    <div>Required Level: 0-34</div>
+                  {:else if altar.reward_tier === "magic"}
+                    <div>Required Level: 35-44</div>
+                  {:else if altar.reward_tier === "epic"}
+                    <div>Required Level: 45-50</div>
+                    <div>Required Veteran Level: 0-99</div>
+                  {:else}
+                    <div>Required Level: 50</div>
+                    <div>Required Veteran Level: 100+</div>
+                  {/if}
+                </div>
+              </div>
+            {/each}
+          </div>
+        </Card.Content>
+      </Card.Root>
+    {/if}
+
+    <!-- Required to Activate Altars -->
+    {#if computed.requiredForAltars && computed.requiredForAltars.length > 0}
+      <Card.Root>
+        <Card.Header>
+          <Card.Title>Required to Activate Altars</Card.Title>
+        </Card.Header>
+        <Card.Content>
+          <div class="space-y-2">
+            {#each computed.requiredForAltars as altar, index (`${altar.altar_id}_${index}`)}
+              <div>
+                <a href={`/altars/${altar.altar_id}`} class={styles.link}>
+                  {altar.altar_name}
+                </a>
+                <span class={styles.label}>({altar.zone_name})</span>
               </div>
             {/each}
           </div>

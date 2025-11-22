@@ -842,16 +842,17 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
     # Build rewarded_by_altars from altars
     console.print("  Processing altar rewards...")
     cursor.execute("""
-        SELECT id, name, type,
-               reward_normal_id, reward_magic_id, reward_epic_id, reward_legendary_id
-        FROM altars
-        WHERE reward_normal_id IS NOT NULL OR reward_magic_id IS NOT NULL
-           OR reward_epic_id IS NOT NULL OR reward_legendary_id IS NOT NULL
+        SELECT a.id, a.name, a.type, a.zone_id, z.name,
+               a.reward_normal_id, a.reward_magic_id, a.reward_epic_id, a.reward_legendary_id
+        FROM altars a
+        LEFT JOIN zones z ON a.zone_id = z.id
+        WHERE a.reward_normal_id IS NOT NULL OR a.reward_magic_id IS NOT NULL
+           OR a.reward_epic_id IS NOT NULL OR a.reward_legendary_id IS NOT NULL
     """)
 
     rewarded_by_altars: dict[str, list[dict]] = {}
 
-    for altar_id, altar_name, altar_type, normal_id, magic_id, epic_id, legendary_id in cursor.fetchall():
+    for altar_id, altar_name, altar_type, zone_id, zone_name, normal_id, magic_id, epic_id, legendary_id in cursor.fetchall():
         # Normal tier (effective level < 35)
         if normal_id:
             if normal_id not in rewarded_by_altars:
@@ -860,7 +861,9 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
                 "altar_id": altar_id,
                 "altar_name": altar_name,
                 "reward_tier": "normal",
-                "min_effective_level": 0
+                "min_effective_level": 0,
+                "zone_id": zone_id,
+                "zone_name": zone_name if zone_name else zone_id
             })
 
         # Magic tier (effective level 35-44)
@@ -871,7 +874,9 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
                 "altar_id": altar_id,
                 "altar_name": altar_name,
                 "reward_tier": "magic",
-                "min_effective_level": 35
+                "min_effective_level": 35,
+                "zone_id": zone_id,
+                "zone_name": zone_name if zone_name else zone_id
             })
 
         # Epic tier (effective level 45-54)
@@ -882,7 +887,9 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
                 "altar_id": altar_id,
                 "altar_name": altar_name,
                 "reward_tier": "epic",
-                "min_effective_level": 45
+                "min_effective_level": 45,
+                "zone_id": zone_id,
+                "zone_name": zone_name if zone_name else zone_id
             })
 
         # Legendary tier (effective level >= 55)
@@ -893,8 +900,32 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
                 "altar_id": altar_id,
                 "altar_name": altar_name,
                 "reward_tier": "legendary",
-                "min_effective_level": 55
+                "min_effective_level": 55,
+                "zone_id": zone_id,
+                "zone_name": zone_name if zone_name else zone_id
             })
+
+    # Build required_for_altars from altars
+    console.print("  Processing altar activation items...")
+    cursor.execute("""
+        SELECT a.id, a.name, a.required_activation_item_id, a.min_level_required, a.zone_id, z.name
+        FROM altars a
+        LEFT JOIN zones z ON a.zone_id = z.id
+        WHERE a.required_activation_item_id IS NOT NULL
+    """)
+
+    required_for_altars: dict[str, list[dict]] = {}
+
+    for altar_id, altar_name, activation_item_id, min_level_required, zone_id, zone_name in cursor.fetchall():
+        if activation_item_id not in required_for_altars:
+            required_for_altars[activation_item_id] = []
+        required_for_altars[activation_item_id].append({
+            "altar_id": altar_id,
+            "altar_name": altar_name,
+            "min_level_required": min_level_required,
+            "zone_id": zone_id,
+            "zone_name": zone_name if zone_name else zone_id
+        })
 
     # Update items table
     console.print("  Updating items table...")
@@ -925,6 +956,14 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
         altars_sorted = sorted(altars, key=lambda x: x["altar_name"])
         cursor.execute(
             "UPDATE items SET rewarded_by_altars = ? WHERE id = ?",
+            (json.dumps(altars_sorted), item_id),
+        )
+
+    for item_id, altars in required_for_altars.items():
+        # Sort by altar name, then by zone name
+        altars_sorted = sorted(altars, key=lambda x: (x["altar_name"], x["zone_name"]))
+        cursor.execute(
+            "UPDATE items SET required_for_altars = ? WHERE id = ?",
             (json.dumps(altars_sorted), item_id),
         )
 
@@ -1793,6 +1832,9 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
     )
     console.print(
         f"  [green]OK[/green] Updated {len(rewarded_by_altars)} items rewarded by altars"
+    )
+    console.print(
+        f"  [green]OK[/green] Updated {len(required_for_altars)} items required for altars"
     )
     console.print(
         f"  [green]OK[/green] Updated {len(granted_by_items)} skills granted by items"
