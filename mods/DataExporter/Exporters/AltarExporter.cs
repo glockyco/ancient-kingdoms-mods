@@ -18,6 +18,11 @@ public class AltarExporter : BaseExporter
 
         var altarList = new List<AltarData>();
 
+        // Load zone triggers for position-based zone detection
+        var zoneTriggerType = Il2CppType.Of<Il2Cpp.ZoneTrigger>();
+        var zoneTriggers = Resources.FindObjectsOfTypeAll(zoneTriggerType);
+        Logger.Msg($"Found {zoneTriggers.Length} zone triggers for zone detection");
+
         // Export Forgotten Altars (EventAltar)
         var forgottenAltarType = Il2CppType.Of<Il2Cpp.EventAltar>();
         var forgottenAltars = Resources.FindObjectsOfTypeAll(forgottenAltarType);
@@ -29,7 +34,7 @@ public class AltarExporter : BaseExporter
             if (altar == null || altar.gameObject == null || !altar.gameObject.scene.IsValid())
                 continue;
 
-            var altarData = ExportForgottenAltar(altar);
+            var altarData = ExportForgottenAltar(altar, zoneTriggers);
             if (altarData != null)
                 altarList.Add(altarData);
         }
@@ -45,7 +50,7 @@ public class AltarExporter : BaseExporter
             if (altar == null || altar.gameObject == null || !altar.gameObject.scene.IsValid())
                 continue;
 
-            var altarData = ExportAvatarAltar(altar);
+            var altarData = ExportAvatarAltar(altar, zoneTriggers);
             if (altarData != null)
                 altarList.Add(altarData);
         }
@@ -54,7 +59,7 @@ public class AltarExporter : BaseExporter
         Logger.Msg($"✓ Exported {altarList.Count} altars");
     }
 
-    private AltarData ExportForgottenAltar(Il2Cpp.EventAltar altar)
+    private AltarData ExportForgottenAltar(Il2Cpp.EventAltar altar, Il2CppSystem.Object[] zoneTriggers)
     {
         if (altar.defaultEvent == null)
         {
@@ -71,7 +76,7 @@ public class AltarExporter : BaseExporter
             id = altarId,
             name = nameText,
             type = "forgotten",
-            zone_id = GetZoneIdFromByte(0), // EventAltar doesn't have idZone, need to detect from position
+            zone_id = GetZoneIdFromPosition(altar.transform.position, zoneTriggers),
             position = new Position(
                 altar.transform.position.x,
                 altar.transform.position.y,
@@ -118,7 +123,7 @@ public class AltarExporter : BaseExporter
         return altarData;
     }
 
-    private AltarData ExportAvatarAltar(Il2Cpp.AvatarEventAltar altar)
+    private AltarData ExportAvatarAltar(Il2Cpp.AvatarEventAltar altar, Il2CppSystem.Object[] zoneTriggers)
     {
         if (altar.avatarEvent == null)
         {
@@ -135,7 +140,7 @@ public class AltarExporter : BaseExporter
             id = altarId,
             name = nameText,
             type = "avatar",
-            zone_id = GetZoneIdFromByte(0), // AvatarEventAltar doesn't have idZone, need to detect from position
+            zone_id = GetZoneIdFromPosition(altar.transform.position, zoneTriggers),
             position = new Position(
                 altar.transform.position.x,
                 altar.transform.position.y,
@@ -214,6 +219,29 @@ public class AltarExporter : BaseExporter
         }
 
         altarData.estimated_duration_seconds = totalDuration;
+    }
+
+    private string GetZoneIdFromPosition(UnityEngine.Vector3 position, Il2CppSystem.Object[] zoneTriggers)
+    {
+        var position2D = new UnityEngine.Vector2(position.x, position.y);
+
+        foreach (var triggerObj in zoneTriggers)
+        {
+            var trigger = triggerObj.TryCast<Il2Cpp.ZoneTrigger>();
+            if (trigger == null || trigger.gameObject == null)
+                continue;
+
+            var collider = trigger.GetComponent<UnityEngine.Collider2D>();
+            if (collider == null)
+                continue;
+
+            if (collider.OverlapPoint(position2D))
+            {
+                return GetZoneIdFromByte(trigger.idZone);
+            }
+        }
+
+        return "unknown";
     }
 
     private string GetZoneIdFromByte(byte zoneId)

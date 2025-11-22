@@ -46,6 +46,11 @@ internal static class ExportConfig
       <Private>False</Private>
     </Reference>
 
+    <Reference Include="UnityEngine.Physics2DModule">
+      <HintPath>$(Il2CppAssembliesPath)\UnityEngine.Physics2DModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+
     <!-- Game Assembly -->
     <Reference Include="Assembly-CSharp">
       <HintPath>$(Il2CppAssembliesPath)\Assembly-CSharp.dll</HintPath>
@@ -66,6 +71,18 @@ internal static class ExportConfig
     <!-- Unity Input System -->
     <Reference Include="Unity.InputSystem">
       <HintPath>$(Il2CppAssembliesPath)\Unity.InputSystem.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+
+    <!-- Unity UI -->
+    <Reference Include="UnityEngine.UI">
+      <HintPath>$(Il2CppAssembliesPath)\UnityEngine.UI.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+
+    <!-- Unity TextMeshPro -->
+    <Reference Include="Unity.TextMeshPro">
+      <HintPath>$(Il2CppAssembliesPath)\Unity.TextMeshPro.dll</HintPath>
       <Private>False</Private>
     </Reference>
 
