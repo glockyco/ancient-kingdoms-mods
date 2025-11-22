@@ -88,7 +88,8 @@ public class MonsterExporter : BaseExporter
 
                 // Spawning and respawn
                 does_respawn = canonical.respawn,
-                respawn_time = (int)canonical.respawnTime,
+                death_time = canonical.deathTime,
+                respawn_time = canonical.respawnTime,
                 respawn_probability = canonical.probabilityRespawn,
                 spawn_time_start = canonical.startSpawnTime,
                 spawn_time_end = canonical.endSpawnTime,
