@@ -590,6 +590,102 @@
             </div>
           </Card.Content>
         </Card.Root>
+      {:else if data.item.recipe_potion_learned_id && data.item.recipe_potion_learned_name}
+        <!-- Teaches Recipe -->
+        <Card.Root>
+          <Card.Header>
+            <Card.Title>Teaches Recipe</Card.Title>
+          </Card.Header>
+          <Card.Content class="space-y-4">
+            <div class="grid grid-cols-3 gap-4">
+              <div class="col-span-2">
+                <div class={styles.label}>Potion</div>
+                <a
+                  href="/items/{data.item.recipe_potion_learned_id}"
+                  class={styles.link}
+                >
+                  {data.item.recipe_potion_learned_name}
+                </a>
+              </div>
+
+              {#if data.item.alchemy_recipe_level_required}
+                <div class="text-right">
+                  <div class={styles.label}>Recipe Tier</div>
+                  <div class={styles.value}>
+                    {data.item.alchemy_recipe_level_required}
+                  </div>
+                </div>
+              {/if}
+            </div>
+
+            {#if data.item.alchemy_recipe_materials}
+              {@const materials = JSON.parse(data.item.alchemy_recipe_materials)}
+              {#if materials.length > 0}
+                <div>
+                  <div class={styles.label}>Materials</div>
+                  <div class="space-y-1 mt-2">
+                    {#each materials as material}
+                      <div class="flex items-center justify-between">
+                        <a href="/items/{material.item_id}" class={styles.link}>
+                          {material.item_name}
+                        </a>
+                        <span class={styles.value}>×{material.amount}</span>
+                      </div>
+                    {/each}
+                  </div>
+                </div>
+              {/if}
+            {/if}
+          </Card.Content>
+        </Card.Root>
+      {:else if data.item.taught_by_recipe_id && data.item.taught_by_recipe_name}
+        <!-- Crafted by -->
+        <Card.Root>
+          <Card.Header>
+            <Card.Title>Crafted by</Card.Title>
+          </Card.Header>
+          <Card.Content class="space-y-4">
+            <div class="grid grid-cols-3 gap-4">
+              <div class="col-span-2">
+                <div class={styles.label}>Recipe</div>
+                <a
+                  href="/items/{data.item.taught_by_recipe_id}"
+                  class={styles.link}
+                >
+                  {data.item.taught_by_recipe_name}
+                </a>
+              </div>
+
+              {#if data.item.alchemy_recipe_level_required}
+                <div class="text-right">
+                  <div class={styles.label}>Recipe Tier</div>
+                  <div class={styles.value}>
+                    {data.item.alchemy_recipe_level_required}
+                  </div>
+                </div>
+              {/if}
+            </div>
+
+            {#if data.item.alchemy_recipe_materials}
+              {@const materials = JSON.parse(data.item.alchemy_recipe_materials)}
+              {#if materials.length > 0}
+                <div>
+                  <div class={styles.label}>Materials</div>
+                  <div class="space-y-1 mt-2">
+                    {#each materials as material}
+                      <div class="flex items-center justify-between">
+                        <a href="/items/{material.item_id}" class={styles.link}>
+                          {material.item_name}
+                        </a>
+                        <span class={styles.value}>×{material.amount}</span>
+                      </div>
+                    {/each}
+                  </div>
+                </div>
+              {/if}
+            {/if}
+          </Card.Content>
+        </Card.Root>
       {/if}
     </div>
   {/if}
@@ -663,7 +759,7 @@
   {/if}
 
   <!-- Use Effects -->
-  {#if data.item.usage_health > 0 || data.item.usage_mana > 0 || data.item.usage_energy > 0 || data.item.food_buff_id || data.item.relic_buff_id}
+  {#if data.item.usage_health > 0 || data.item.usage_mana > 0 || data.item.usage_energy > 0 || data.item.potion_buff_id || data.item.food_buff_id || data.item.relic_buff_id}
     <Card.Root>
       <Card.Header>
         <Card.Title>Use Effects</Card.Title>
@@ -694,12 +790,20 @@
           </div>
         {/if}
 
-        {#if data.item.food_buff_id}
+        {#if data.item.potion_buff_id && data.item.potion_buff_name}
+          <div>
+            <div class={styles.label}>Grants Buff</div>
+            <a href="/skills/{data.item.potion_buff_id}" class={styles.link}>
+              {data.item.potion_buff_name}
+            </a>
+          </div>
+        {/if}
+
+        {#if data.item.food_buff_id && data.item.food_buff_name}
           <div>
             <div class={styles.label}>Grants Buff</div>
             <a href="/skills/{data.item.food_buff_id}" class={styles.link}>
-              {data.item.food_buff_name ||
-                data.item.food_buff_id.replace(/_/g, " ")}
+              {data.item.food_buff_name}
             </a>
           </div>
         {/if}
@@ -793,59 +897,6 @@
               +{data.item.book_charisma_gain}
             </div>
           </div>
-        {/if}
-      </Card.Content>
-    </Card.Root>
-  {/if}
-
-  <!-- Alchemy Recipe -->
-  {#if data.item.recipe_potion_learned_id && data.item.recipe_potion_learned_name}
-    <Card.Root>
-      <Card.Header>
-        <Card.Title>Teaches Recipe</Card.Title>
-        <Card.Description
-          >Using this recipe teaches you how to craft an alchemy potion.</Card.Description
-        >
-      </Card.Header>
-      <Card.Content class="space-y-4">
-        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-          <div>
-            <div class={styles.label}>Potion</div>
-            <a
-              href="/items/{data.item.recipe_potion_learned_id}"
-              class={styles.link}
-            >
-              {data.item.recipe_potion_learned_name}
-            </a>
-          </div>
-
-          {#if data.item.alchemy_recipe_level_required}
-            <div>
-              <div class={styles.label}>Alchemy Level Required</div>
-              <div class={styles.value}>
-                {data.item.alchemy_recipe_level_required}
-              </div>
-            </div>
-          {/if}
-        </div>
-
-        {#if data.item.alchemy_recipe_materials}
-          {@const materials = JSON.parse(data.item.alchemy_recipe_materials)}
-          {#if materials.length > 0}
-            <div>
-              <div class={styles.label}>Materials Required</div>
-              <div class="space-y-1 mt-2">
-                {#each materials as material}
-                  <div class="flex items-center justify-between">
-                    <a href="/items/{material.item_id}" class={styles.link}>
-                      {material.item_name}
-                    </a>
-                    <span class={styles.value}>×{material.amount}</span>
-                  </div>
-                {/each}
-              </div>
-            </div>
-          {/if}
         {/if}
       </Card.Content>
     </Card.Root>

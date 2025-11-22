@@ -122,6 +122,7 @@ CREATE TABLE items (
     usage_pet_health INTEGER DEFAULT 0,
     potion_buff_level INTEGER DEFAULT 0,
     potion_buff_id TEXT REFERENCES skills(id),
+    potion_buff_name TEXT,
     food_buff_level INTEGER DEFAULT 0,
     food_buff_id TEXT REFERENCES skills(id),
     food_buff_name TEXT,
@@ -190,6 +191,8 @@ CREATE TABLE items (
     recipe_potion_learned_name TEXT,
     alchemy_recipe_level_required INTEGER,
     alchemy_recipe_materials TEXT,  -- JSON: [{"item_id": "water", "item_name": "Water", "amount": 1}, ...]
+    taught_by_recipe_id TEXT REFERENCES items(id),  -- Reverse: which recipe teaches this potion
+    taught_by_recipe_name TEXT,
     relic_buff_id TEXT REFERENCES skills(id),
     relic_buff_name TEXT,
 

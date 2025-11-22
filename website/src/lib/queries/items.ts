@@ -40,6 +40,7 @@ export interface Item {
   // Buffs
   potion_buff_level: number;
   potion_buff_id: string | null;
+  potion_buff_name: string | null;
   food_buff_level: number;
   food_buff_id: string | null;
   food_buff_name: string | null;
@@ -112,11 +113,14 @@ export interface Item {
   // Pack final
   pack_final_item_id: string | null;
   pack_final_item_name: string | null;
-  // Recipe
+  // Alchemy recipe (for recipe items)
   recipe_potion_learned_id: string | null;
   recipe_potion_learned_name: string | null;
   alchemy_recipe_level_required: number | null;
   alchemy_recipe_materials: string | null; // JSON
+  // Alchemy recipe (for potion items)
+  taught_by_recipe_id: string | null;
+  taught_by_recipe_name: string | null;
   // Relic buff
   relic_buff_id: string | null;
   relic_buff_name: string | null;

@@ -858,7 +858,7 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
                 "materials": materials_with_names
             })
 
-    # Denormalize alchemy recipe data onto recipe items
+    # Denormalize alchemy recipe data onto recipe items and potion items
     console.print("  Processing alchemy recipes...")
     cursor.execute("""
         SELECT result_item_id, level_required, materials
@@ -891,18 +891,41 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
             })
 
         # Update the recipe item with denormalized alchemy recipe data
-        cursor.execute("""
-            UPDATE items
-            SET recipe_potion_learned_name = ?,
-                alchemy_recipe_level_required = ?,
-                alchemy_recipe_materials = ?
-            WHERE recipe_potion_learned_id = ?
-        """, (
-            potion_name,
-            level_required,
-            json.dumps(materials_with_names),
-            result_item_id
-        ))
+        cursor.execute("SELECT id, name FROM items WHERE recipe_potion_learned_id = ?", (result_item_id,))
+        recipe_result = cursor.fetchone()
+
+        if recipe_result:
+            recipe_id, recipe_name = recipe_result
+
+            # Update recipe item with potion info
+            cursor.execute("""
+                UPDATE items
+                SET recipe_potion_learned_name = ?,
+                    alchemy_recipe_level_required = ?,
+                    alchemy_recipe_materials = ?
+                WHERE id = ?
+            """, (
+                potion_name,
+                level_required,
+                json.dumps(materials_with_names),
+                recipe_id
+            ))
+
+            # Update potion item with recipe info (reverse relationship)
+            cursor.execute("""
+                UPDATE items
+                SET taught_by_recipe_id = ?,
+                    taught_by_recipe_name = ?,
+                    alchemy_recipe_level_required = ?,
+                    alchemy_recipe_materials = ?
+                WHERE id = ?
+            """, (
+                recipe_id,
+                recipe_name,
+                level_required,
+                json.dumps(materials_with_names),
+                result_item_id
+            ))
 
     # Build rewarded_by_altars from altars
     console.print("  Processing altar rewards...")
@@ -1490,6 +1513,13 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
     console.print("  Denormalizing buff names...")
     cursor.execute("""
         UPDATE items
+        SET potion_buff_name = (SELECT name FROM skills WHERE skills.id = items.potion_buff_id)
+        WHERE potion_buff_id IS NOT NULL
+    """)
+    potion_buff_count = cursor.rowcount
+
+    cursor.execute("""
+        UPDATE items
         SET food_buff_name = (SELECT name FROM skills WHERE skills.id = items.food_buff_id)
         WHERE food_buff_id IS NOT NULL
     """)
@@ -1930,7 +1960,7 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
         f"  [green]OK[/green] Denormalized {skill_bonuses_updated} armor sets with skill names, {set_members_updated} armor sets with member names"
     )
     console.print(
-        f"  [green]OK[/green] Updated {food_buff_count} items with food buff names, {relic_buff_count} items with relic buff names, {pack_final_count} pack items with final item names"
+        f"  [green]OK[/green] Updated {potion_buff_count} items with potion buff names, {food_buff_count} items with food buff names, {relic_buff_count} items with relic buff names, {pack_final_count} pack items with final item names"
     )
     console.print(
         f"  [green]OK[/green] Denormalized item names in {chest_rewards_updated} chest reward lists"
