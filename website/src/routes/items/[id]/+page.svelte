@@ -434,7 +434,7 @@
         {@const mergeItems = JSON.parse(data.item.merge_items_needed)}
         <Card.Root>
           <Card.Header>
-            <Card.Title>Combine To Create</Card.Title>
+            <Card.Title>Combine to Create</Card.Title>
           </Card.Header>
           <Card.Content class="space-y-4">
             <div>
@@ -464,7 +464,7 @@
         <!-- Created From (shown when no stats and not a merge item) -->
         <Card.Root>
           <Card.Header>
-            <Card.Title>Created From</Card.Title>
+            <Card.Title>Created from</Card.Title>
           </Card.Header>
           <Card.Content>
             <div>
@@ -485,7 +485,7 @@
       {#if computed.usedAsCurrencyFor && computed.usedAsCurrencyFor.length > 0}
         <Card.Root>
           <Card.Header>
-            <Card.Title>Currency For</Card.Title>
+            <Card.Title>Currency for</Card.Title>
           </Card.Header>
           <Card.Content>
             <div class="space-y-2">
@@ -828,7 +828,7 @@
     {#if computed.droppedBy && computed.droppedBy.length > 0}
       <Card.Root>
         <Card.Header>
-          <Card.Title>Dropped By</Card.Title>
+          <Card.Title>Dropped by</Card.Title>
         </Card.Header>
         <Card.Content>
           <div class="space-y-2">
@@ -854,7 +854,7 @@
     {#if computed.soldBy && computed.soldBy.length > 0}
       <Card.Root>
         <Card.Header>
-          <Card.Title>Sold By</Card.Title>
+          <Card.Title>Sold by</Card.Title>
         </Card.Header>
         <Card.Content>
           <div class="space-y-2">
@@ -888,11 +888,11 @@
       </Card.Root>
     {/if}
 
-    <!-- Quest Reward From -->
+    <!-- Rewarded by Quests -->
     {#if computed.rewardedBy && computed.rewardedBy.length > 0}
       <Card.Root>
         <Card.Header>
-          <Card.Title>Quest Reward From</Card.Title>
+          <Card.Title>Rewarded by Quests</Card.Title>
         </Card.Header>
         <Card.Content>
           <div class="space-y-2">
@@ -971,7 +971,7 @@
     {#if computed.craftedFrom && computed.craftedFrom.length > 0}
       <Card.Root>
         <Card.Header>
-          <Card.Title>Crafted From Recipe</Card.Title>
+          <Card.Title>Crafted from Recipe</Card.Title>
         </Card.Header>
         <Card.Content>
           <div class="space-y-1">
@@ -995,7 +995,7 @@
     {#if computed.gatheredFrom && computed.gatheredFrom.length > 0}
       <Card.Root>
         <Card.Header>
-          <Card.Title>Gathered From</Card.Title>
+          <Card.Title>Gathered from</Card.Title>
         </Card.Header>
         <Card.Content>
           <div class="space-y-2">
@@ -1034,11 +1034,11 @@
       </Card.Root>
     {/if}
 
-    <!-- Found In Chests -->
+    <!-- Found in Chests -->
     {#if computed.foundInChests && computed.foundInChests.length > 0}
       <Card.Root>
         <Card.Header>
-          <Card.Title>Found In Chests</Card.Title>
+          <Card.Title>Found in Chests</Card.Title>
           <Card.Description>
             Drop chances calculated via simulation (100k trials).
           </Card.Description>
@@ -1089,11 +1089,11 @@
       </Card.Root>
     {/if}
 
-    <!-- Used In Recipes -->
+    <!-- Used in Recipes -->
     {#if computed.usedInRecipes && computed.usedInRecipes.length > 0}
       <Card.Root>
         <Card.Header>
-          <Card.Title>Used In Recipes</Card.Title>
+          <Card.Title>Used in Recipes</Card.Title>
         </Card.Header>
         <Card.Content>
           <div class="space-y-2">
@@ -1113,11 +1113,11 @@
       </Card.Root>
     {/if}
 
-    <!-- Needed For Quests -->
+    <!-- Needed for Quests -->
     {#if computed.neededForQuests && computed.neededForQuests.length > 0}
       <Card.Root>
         <Card.Header>
-          <Card.Title>Needed For Quests</Card.Title>
+          <Card.Title>Needed for Quests</Card.Title>
         </Card.Header>
         <Card.Content>
           <div class="space-y-2">
