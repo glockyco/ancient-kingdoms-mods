@@ -30,9 +30,20 @@ export const load: PageServerLoad = ({ params }): ItemDetailPageData => {
     throw error(404, `Item not found: ${params.id}`);
   }
 
+  // For primal essence, get all essence trader NPCs
+  let essenceTraders: Array<{ id: string; name: string }> = [];
+  if (params.id === "primal_essence") {
+    essenceTraders = db
+      .prepare(
+        `SELECT id, name FROM npcs WHERE json_extract(roles, '$.is_essence_trader') = 1`,
+      )
+      .all() as Array<{ id: string; name: string }>;
+  }
+
   db.close();
 
   return {
     item,
+    essenceTraders,
   };
 };

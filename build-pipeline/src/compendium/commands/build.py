@@ -1813,6 +1813,29 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
             )
             item_levels_updated += 1
 
+    # Calculate primal essence values for tradeable equipment
+    console.print("  Calculating primal essence values...")
+    cursor.execute("""
+        SELECT id, sell_price
+        FROM items
+        WHERE item_type = 'equipment'
+          AND quality >= 1
+          AND sellable = 1
+          AND sell_price > 0
+    """)
+
+    primal_essence_updated = 0
+    for item_id, sell_price in cursor.fetchall():
+        # Primal essence = ceil(sell_price * 0.06)
+        import math
+        primal_essence = math.ceil(sell_price * 0.06)
+
+        cursor.execute(
+            "UPDATE items SET primal_essence_value = ? WHERE id = ?",
+            (primal_essence, item_id)
+        )
+        primal_essence_updated += 1
+
     conn.commit()
 
     console.print(
@@ -1841,6 +1864,9 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
     )
     console.print(
         f"  [green]OK[/green] Calculated item levels for {item_levels_updated} items"
+    )
+    console.print(
+        f"  [green]OK[/green] Calculated primal essence for {primal_essence_updated} items"
     )
 
 

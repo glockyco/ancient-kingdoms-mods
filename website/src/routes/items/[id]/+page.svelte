@@ -353,6 +353,17 @@
         </div>
       {/if}
 
+      {#if data.item.primal_essence_value}
+        <div>
+          <div class={styles.label}>Primal Essence</div>
+          <div class={styles.value}>
+            <a href="/items/primal_essence" class={styles.link}>
+              {data.item.primal_essence_value}
+            </a>
+          </div>
+        </div>
+      {/if}
+
       {#if data.item.item_type !== "augment"}
         <div>
           <div class={styles.label}>Tradable</div>
@@ -368,7 +379,7 @@
   </Card.Root>
 
   <!-- Tooltip and Stats/Merge/Currency side-by-side (hide entire section if all would be empty) -->
-  {#if (data.item.tooltip && data.item.item_type !== "augment") || ((data.item.item_type !== "augment" || !data.item.augment_armor_set_name) && ((computed.stats && Object.keys(computed.stats).length > 0) || data.item.weapon_delay > 0)) || data.item.merge_result_item_id || (computed.createdFromMerge && computed.createdFromMerge.length > 0) || (computed.usedAsCurrencyFor && computed.usedAsCurrencyFor.length > 0)}
+  {#if (data.item.tooltip && data.item.item_type !== "augment") || ((data.item.item_type !== "augment" || !data.item.augment_armor_set_name) && ((computed.stats && Object.keys(computed.stats).length > 0) || data.item.weapon_delay > 0)) || data.item.merge_result_item_id || (computed.createdFromMerge && computed.createdFromMerge.length > 0) || (computed.usedAsCurrencyFor && computed.usedAsCurrencyFor.length > 0) || data.item.id === "primal_essence"}
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
       <!-- Tooltip (don't show for augments - they're metadata items never shown to players) -->
       {#if data.item.tooltip && data.item.item_type !== "augment"}
@@ -491,6 +502,40 @@
                   </span>
                 </div>
               {/each}
+            </div>
+          </Card.Content>
+        </Card.Root>
+      {:else if data.item.id === "primal_essence" && data.essenceTraders.length > 0}
+        <!-- Primal Essence Acquisition -->
+        <Card.Root>
+          <Card.Header>
+            <Card.Title>How to Acquire</Card.Title>
+          </Card.Header>
+          <Card.Content>
+            <div class="space-y-3">
+              <div>
+                <div class={styles.label}>Trade equipment to</div>
+                <div class="space-y-1 mt-1">
+                  {#each data.essenceTraders as trader}
+                    <a href="/npcs/{trader.id}" class={styles.link}>
+                      {trader.name}
+                    </a>
+                  {/each}
+                </div>
+              </div>
+              <div>
+                <div class={styles.label}>Requirements</div>
+                <div class={styles.value}>
+                  <ul class="list-disc list-inside space-y-0.5">
+                    <li>Equipment items only</li>
+                    <li>Uncommon quality or higher</li>
+                  </ul>
+                </div>
+              </div>
+              <div>
+                <div class={styles.label}>Amount received</div>
+                <div class={styles.value}>6% of sell price</div>
+              </div>
             </div>
           </Card.Content>
         </Card.Root>

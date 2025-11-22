@@ -16,6 +16,7 @@ export interface Item {
   max_stack: number;
   buy_price: number;
   sell_price: number;
+  primal_essence_value: number | null;
   buy_token_id: string | null;
   sellable: boolean;
   tradable: boolean;

@@ -96,6 +96,7 @@ CREATE TABLE items (
     max_stack INTEGER DEFAULT 1,
     buy_price INTEGER DEFAULT 0,
     sell_price INTEGER DEFAULT 0,
+    primal_essence_value INTEGER,        -- Primal essence obtained from trading this item (equipment quality >= 1, sellable, sell_price > 0): ceil(sell_price * 0.06)
     buy_token_id TEXT REFERENCES items(id),
     sellable BOOLEAN DEFAULT 1,
     tradable BOOLEAN DEFAULT 1,
