@@ -45,6 +45,12 @@ class GatherDropInfo(TypedDict):
     key_name: NotRequired[str]  # For chests only
 
 
+class ChestSourceInfo(TypedDict):
+    chest_id: str
+    chest_name: str
+    rate: float
+
+
 class SoldByInfo(TypedDict):
     npc_id: str
     npc_name: str
@@ -684,6 +690,32 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
 
         gathered_from[item_id].append(chest_info)
 
+    # Build found_in_chests from items.chest_rewards
+    console.print("  Processing chest rewards...")
+    cursor.execute("""
+        SELECT id, name, chest_rewards
+        FROM items
+        WHERE chest_rewards IS NOT NULL AND chest_rewards != '[]'
+    """)
+
+    found_in_chests: dict[str, list[ChestSourceInfo]] = {}
+
+    for chest_id, chest_name, chest_rewards_json in cursor.fetchall():
+        chest_rewards = json.loads(chest_rewards_json)
+        for reward in chest_rewards:
+            item_id = reward.get("item_id")
+            probability = reward.get("probability", 0.0)
+
+            if item_id:
+                if item_id not in found_in_chests:
+                    found_in_chests[item_id] = []
+
+                found_in_chests[item_id].append({
+                    "chest_id": chest_id,
+                    "chest_name": chest_name,
+                    "rate": probability,
+                })
+
     # Build sold_by from npcs.items_sold
     console.print("  Processing NPC vendors...")
 
@@ -819,6 +851,14 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
         cursor.execute(
             "UPDATE items SET gathered_from = ? WHERE id = ?",
             (json.dumps(gathers_sorted), item_id),
+        )
+
+    for item_id, chests in found_in_chests.items():
+        # Sort by drop rate descending (highest first), then by chest name
+        chests_sorted = sorted(chests, key=lambda x: (-x["rate"], x["chest_name"]))
+        cursor.execute(
+            "UPDATE items SET found_in_chests = ? WHERE id = ?",
+            (json.dumps(chests_sorted), item_id),
         )
 
     # Build used_in_recipes from crafting_recipes.materials
@@ -1238,6 +1278,9 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
     )
     console.print(
         f"  [green]OK[/green] Updated {len(gathered_from)} items with gather sources"
+    )
+    console.print(
+        f"  [green]OK[/green] Updated {len(found_in_chests)} items with chest sources"
     )
     console.print(
         f"  [green]OK[/green] Updated {len(used_in_recipes)} items used in recipes"

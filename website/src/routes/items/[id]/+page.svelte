@@ -136,6 +136,13 @@
           key_name?: string;
         }>
       >(data.item.gathered_from),
+      foundInChests: parseJson<
+        Array<{
+          chest_id: string;
+          chest_name: string;
+          rate: number;
+        }>
+      >(data.item.found_in_chests),
       usedInRecipes: parseJson<
         Array<{
           recipe_id: string;
@@ -694,6 +701,32 @@
                   >
                 </div>
               {/if}
+            {/each}
+          </div>
+        </Card.Content>
+      </Card.Root>
+    {/if}
+
+    <!-- Found In Chests -->
+    {#if computed.foundInChests && computed.foundInChests.length > 0}
+      <Card.Root>
+        <Card.Header>
+          <Card.Title>Found In Chests</Card.Title>
+        </Card.Header>
+        <Card.Content>
+          <div class="space-y-2">
+            {#each computed.foundInChests as chest, index (`${chest.chest_id}_${index}`)}
+              <div class="flex justify-between items-center text-sm">
+                <a
+                  href="/items/{chest.chest_id}"
+                  class="font-medium hover:underline"
+                >
+                  {chest.chest_name}
+                </a>
+                <span class="text-muted-foreground"
+                  >{(chest.rate * 100).toFixed(1)}%</span
+                >
+              </div>
             {/each}
           </div>
         </Card.Content>

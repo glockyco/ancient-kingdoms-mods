@@ -151,6 +151,7 @@ CREATE TABLE items (
     rewarded_by TEXT,               -- JSON: [{"quest_id": "quest_blacksmith_1"}]
     crafted_from TEXT,              -- JSON: [{"recipe_id": "recipe_0", "result_amount": 1}]
     gathered_from TEXT,             -- JSON: [{"gather_item_id": "iron_ore", "rate": 0.1}]
+    found_in_chests TEXT,           -- JSON: [{"chest_id": "chest_of_lost_adventurers_dwarves", "chest_name": "Chest of Lost Adventurers (Dwarves)", "rate": 0.02}]
 
     -- Denormalized: Where this item is used (as JSON arrays)
     used_in_recipes TEXT,           -- JSON: [{"recipe_id": "recipe_5", "amount": 3}]

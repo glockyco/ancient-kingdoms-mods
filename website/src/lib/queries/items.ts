@@ -114,6 +114,7 @@ export interface Item {
   rewarded_by: string | null; // JSON
   crafted_from: string | null; // JSON
   gathered_from: string | null; // JSON
+  found_in_chests: string | null; // JSON
   used_in_recipes: string | null; // JSON
   needed_for_quests: string | null; // JSON
 }
