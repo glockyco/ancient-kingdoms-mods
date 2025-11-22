@@ -334,7 +334,7 @@
       {#if computed.hasSerenity}
         <div>
           <div class={styles.label}>Special Effect</div>
-          <div class={styles.valuePositive}>Serenity</div>
+          <a href="/skills/serenity" class={styles.link}>Serenity</a>
         </div>
       {/if}
 
