@@ -25,7 +25,7 @@ export function parseTooltip(tooltip: string, item: Item): string {
   // Replace placeholders with actual values
   const replacements: Record<string, string | number> = {
     // Equipment stats
-    DURABILITY: stats.max_durability ? `<color=#DA4ADC>Durability: ${stats.max_durability * 10}%</color>` : "",
+    DURABILITY: stats.max_durability ? `<color=#DA4ADC>Durability: 100%</color>` : "",
     DEFENSEBONUS: stats.defense || 0,
     HEALTHBONUS: stats.health_bonus || 0,
     MANABONUS: stats.mana_bonus || 0,
