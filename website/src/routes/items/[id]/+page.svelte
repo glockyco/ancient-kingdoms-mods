@@ -134,6 +134,8 @@
           zone_name?: string;
           key_required_id?: string;
           key_name?: string;
+          amount_min?: number;
+          amount_max?: number;
         }>
       >(data.item.gathered_from),
       foundInChests: parseJson<
@@ -704,9 +706,12 @@
               {:else}
                 <div class="flex justify-between items-center text-sm">
                   <span class="font-medium">{gather.gather_item_name}</span>
-                  <span class="text-muted-foreground"
-                    >{(gather.rate * 100).toFixed(1)}%</span
-                  >
+                  <span class="text-muted-foreground">
+                    {(gather.rate * 100).toFixed(1)}%
+                    {#if gather.amount_min !== undefined && gather.amount_max !== undefined}
+                      ({gather.amount_min}-{gather.amount_max}×)
+                    {/if}
+                  </span>
                 </div>
               {/if}
             {/each}

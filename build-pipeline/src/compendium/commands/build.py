@@ -43,6 +43,8 @@ class GatherDropInfo(TypedDict):
     zone_name: NotRequired[str]  # For chests only
     key_required_id: NotRequired[str]  # For chests only
     key_name: NotRequired[str]  # For chests only
+    amount_min: NotRequired[int]  # For guaranteed rewards with variable amount
+    amount_max: NotRequired[int]  # For guaranteed rewards with variable amount
 
 
 class ChestSourceInfo(TypedDict):
@@ -506,6 +508,24 @@ def load_gather_items(conn: sqlite3.Connection, export_dir: Path) -> None:
                 (chest.id, drop.item_id, drop.rate)
             )
 
+    # Calculate actual drop chances for gathering resource drops
+    # Game logic: picks ONE random drop uniformly, then rolls its probability
+    # Actual drop chance = (1 / num_drops) * drop_rate
+    console.print("  Calculating actual drop chances for gathering resources...")
+    cursor.execute("""
+        SELECT resource_id, COUNT(*) as num_drops
+        FROM gathering_resource_drops
+        GROUP BY resource_id
+    """)
+
+    for resource_id, num_drops in cursor.fetchall():
+        selection_probability = 1.0 / num_drops
+        cursor.execute("""
+            UPDATE gathering_resource_drops
+            SET actual_drop_chance = drop_rate * ?
+            WHERE resource_id = ?
+        """, (selection_probability, resource_id))
+
     conn.commit()
     console.print(f"  [green]OK[/green] Loaded {len(resources)} gathering resources (deduplicated)")
     console.print(f"  [green]OK[/green] Loaded {len(chests)} chests")
@@ -618,43 +638,50 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
     # Build gathered_from from gathering_resource_drops and chest_drops
     console.print("  Processing gathering resource drops...")
     cursor.execute("""
-        SELECT gr.id, gr.name, grd.item_id, grd.drop_rate
+        SELECT gr.id, gr.name, grd.item_id, grd.actual_drop_chance
         FROM gathering_resources gr
         JOIN gathering_resource_drops grd ON gr.id = grd.resource_id
     """)
 
     gathered_from: dict[str, list[GatherDropInfo]] = {}
 
-    for resource_id, resource_name, item_id, drop_rate in cursor.fetchall():
+    for resource_id, resource_name, item_id, actual_drop_chance in cursor.fetchall():
         if item_id not in gathered_from:
             gathered_from[item_id] = []
         gathered_from[item_id].append(
             {
                 "gather_item_id": resource_id,
                 "gather_item_name": resource_name,
-                "rate": drop_rate,
+                "rate": actual_drop_chance,
                 "type": "resource",
             }
         )
 
     console.print("  Processing guaranteed resource rewards...")
     cursor.execute("""
-        SELECT id, name, item_reward_id
+        SELECT id, name, item_reward_id, item_reward_amount
         FROM gathering_resources
         WHERE item_reward_id IS NOT NULL
     """)
 
-    for resource_id, resource_name, item_id in cursor.fetchall():
+    for resource_id, resource_name, item_id, item_reward_amount in cursor.fetchall():
         if item_id not in gathered_from:
             gathered_from[item_id] = []
-        gathered_from[item_id].append(
-            {
-                "gather_item_id": resource_id,
-                "gather_item_name": resource_name,
-                "rate": 1.0,
-                "type": "resource",
-            }
-        )
+
+        # Amount is random: Random.Range(1, amount + 1) in game code
+        gather_info: GatherDropInfo = {
+            "gather_item_id": resource_id,
+            "gather_item_name": resource_name,
+            "rate": 1.0,
+            "type": "resource",
+        }
+
+        # Add amount range if variable
+        if item_reward_amount > 1:
+            gather_info["amount_min"] = 1
+            gather_info["amount_max"] = item_reward_amount
+
+        gathered_from[item_id].append(gather_info)
 
     console.print("  Processing chest drops...")
     cursor.execute("""

@@ -637,7 +637,8 @@ CREATE INDEX idx_gathering_resources_tool ON gathering_resources(tool_required_i
 CREATE TABLE gathering_resource_drops (
     resource_id TEXT NOT NULL REFERENCES gathering_resources(id),
     item_id TEXT NOT NULL REFERENCES items(id),
-    drop_rate REAL NOT NULL,
+    drop_rate REAL NOT NULL,  -- Per-roll probability from game data
+    actual_drop_chance REAL,  -- Calculated: (1 / num_drops) * drop_rate
 
     PRIMARY KEY (resource_id, item_id)
 );
