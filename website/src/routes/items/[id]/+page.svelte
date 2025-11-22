@@ -472,6 +472,77 @@
     </Card.Root>
   {/if}
 
+  <!-- Fatecharm Fragment -->
+  {#if data.item.luck_token_drop_chance && data.item.fragment_result_item_id}
+    <Card.Root>
+      <Card.Header>
+        <Card.Title>Fatecharm Fragment</Card.Title>
+      </Card.Header>
+      <Card.Content class="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div>
+          <div class="text-sm text-muted-foreground">Zone</div>
+          <div class="font-medium">{data.item.luck_token_zone_name || "Unknown"}</div>
+        </div>
+
+        <div>
+          <div class="text-sm text-muted-foreground">Amount Needed</div>
+          <div class="font-medium">{data.item.fragment_amount_needed}</div>
+        </div>
+
+        <div>
+          <div class="text-sm text-muted-foreground">Creates</div>
+          <div class="font-medium">
+            <a
+              href="/items/{data.item.fragment_result_item_id}"
+              class="hover:underline"
+            >
+              {data.item.fragment_result_item_name || "Unknown"}
+            </a>
+          </div>
+        </div>
+      </Card.Content>
+    </Card.Root>
+  {/if}
+
+  <!-- Fatecharm -->
+  {#if data.item.luck_token_bonus}
+    <Card.Root>
+      <Card.Header>
+        <Card.Title>Fatecharm</Card.Title>
+      </Card.Header>
+      <Card.Content class="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div>
+          <div class="text-sm text-muted-foreground">Zone</div>
+          <div class="font-medium">{data.item.luck_token_zone_name || "Unknown"}</div>
+        </div>
+
+        <div>
+          <div class="text-sm text-muted-foreground">Boss Drop Bonus</div>
+          <div class="font-medium text-green-600 dark:text-green-400">
+            +{(data.item.luck_token_bonus * 100).toFixed(0)}%
+          </div>
+        </div>
+
+        {#if data.item.luck_token_fragment_id && data.item.luck_token_fragment_name}
+          <div>
+            <div class="text-sm text-muted-foreground">Created From</div>
+            <div class="font-medium">
+              <a
+                href="/items/{data.item.luck_token_fragment_id}"
+                class="hover:underline"
+              >
+                {data.item.luck_token_fragment_name}
+              </a>
+              {#if data.item.luck_token_fragments_needed}
+                <span class="text-muted-foreground"> (x{data.item.luck_token_fragments_needed})</span>
+              {/if}
+            </div>
+          </div>
+        {/if}
+      </Card.Content>
+    </Card.Root>
+  {/if}
+
   <!-- Relationships -->
   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
     <!-- Dropped By -->

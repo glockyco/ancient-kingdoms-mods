@@ -28,6 +28,20 @@ CREATE INDEX idx_zones_is_dungeon ON zones(is_dungeon);
 CREATE INDEX idx_zones_required_level ON zones(required_level);
 
 -- =============================================================================
+-- LUCK TOKENS
+-- =============================================================================
+
+CREATE TABLE luck_tokens (
+    zone_id TEXT PRIMARY KEY REFERENCES zones(id),
+    zone_name TEXT NOT NULL,
+    boss_luck_token_id TEXT REFERENCES items(id),
+    fragment_token_id TEXT REFERENCES items(id),
+    fragment_amount_needed INTEGER DEFAULT 0,
+    boss_luck_bonus REAL DEFAULT 0.05,
+    fragment_drop_chance REAL DEFAULT 0.02
+);
+
+-- =============================================================================
 -- ITEMS
 -- =============================================================================
 
@@ -105,6 +119,17 @@ CREATE TABLE items (
     weapon_required_ammo_id TEXT REFERENCES items(id),
     fragment_amount_needed INTEGER DEFAULT 0,
     fragment_result_item_id TEXT REFERENCES items(id),
+    fragment_result_item_name TEXT,
+
+    -- Luck token properties
+    luck_token_zone_id TEXT,
+    luck_token_zone_name TEXT,
+    luck_token_drop_chance REAL,
+    luck_token_bonus REAL,
+    luck_token_fragment_id TEXT REFERENCES items(id),
+    luck_token_fragment_name TEXT,
+    luck_token_fragments_needed INTEGER,
+
     random_items TEXT,              -- JSON array
     merge_items_needed_ids TEXT,    -- JSON array
     merge_result_item_id TEXT REFERENCES items(id),

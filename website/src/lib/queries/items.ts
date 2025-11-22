@@ -80,6 +80,15 @@ export interface Item {
   // Fragment
   fragment_amount_needed: number;
   fragment_result_item_id: string | null;
+  fragment_result_item_name: string | null;
+  // Luck tokens
+  luck_token_zone_id: string | null;
+  luck_token_zone_name: string | null;
+  luck_token_drop_chance: number | null;
+  luck_token_bonus: number | null;
+  luck_token_fragment_id: string | null;
+  luck_token_fragment_name: string | null;
+  luck_token_fragments_needed: number | null;
   // Random items
   random_items: string | null; // JSON
   // Merge

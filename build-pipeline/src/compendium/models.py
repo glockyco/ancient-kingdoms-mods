@@ -686,3 +686,15 @@ class SummonTriggerData(BaseModel):
     spawn_position: Position | None = None
     zone_id: str | None = None
     placeholder_monster_ids: list[str] = []
+
+
+class LuckTokenData(BaseModel):
+    """Luck token data from luck_tokens.json"""
+
+    zone_id: str
+    zone_name: str
+    boss_luck_token_id: str
+    fragment_token_id: str | None = None
+    fragment_amount_needed: int = 0
+    boss_luck_bonus: float = 0.05
+    fragment_drop_chance: float = 0.02

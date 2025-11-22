@@ -12,6 +12,7 @@ from compendium.models import (
     CraftingRecipeData,
     GatherItemData,
     ItemData,
+    LuckTokenData,
     MonsterData,
     MonsterSpawnData,
     NpcData,
@@ -208,6 +209,28 @@ def load_zones(conn: sqlite3.Connection, export_dir: Path) -> None:
 
     conn.commit()
     console.print(f"  [green]OK[/green] Loaded {len(zones)} zones")
+
+
+def load_luck_tokens(conn: sqlite3.Connection, export_dir: Path) -> None:
+    """Load luck tokens into database."""
+    console.print("Loading luck tokens...")
+
+    filepath = export_dir / "luck_tokens.json"
+    if not filepath.exists():
+        console.print("  [yellow]SKIP[/yellow] No luck_tokens.json found")
+        return
+
+    with open(filepath, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    tokens = [LuckTokenData(**item) for item in data]
+
+    cursor = conn.cursor()
+    for token in tokens:
+        insert_model(cursor, "luck_tokens", token)
+
+    conn.commit()
+    console.print(f"  [green]OK[/green] Loaded {len(tokens)} luck token configurations")
 
 
 def load_zone_triggers(conn: sqlite3.Connection, export_dir: Path) -> None:
@@ -1112,6 +1135,86 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
     """)
     relic_buff_count = cursor.rowcount
 
+    cursor.execute("""
+        UPDATE items
+        SET fragment_result_item_name = (SELECT name FROM items AS i WHERE i.id = items.fragment_result_item_id)
+        WHERE fragment_result_item_id IS NOT NULL
+    """)
+    fragment_result_count = cursor.rowcount
+
+    # Denormalize luck token data
+    console.print("  Denormalizing luck token data...")
+    cursor.execute("""
+        SELECT zone_id, zone_name, boss_luck_token_id, fragment_token_id,
+               fragment_amount_needed, fragment_drop_chance, boss_luck_bonus
+        FROM luck_tokens
+    """)
+
+    fragment_count = 0
+    boss_token_count = 0
+
+    for zone_id, zone_name, boss_token_id, fragment_token_id, fragment_amount, fragment_drop_chance, boss_bonus in cursor.fetchall():
+        if fragment_token_id:
+            monsters_cursor = conn.cursor()
+            monsters_cursor.execute("""
+                SELECT DISTINCT m.id, m.name, m.level
+                FROM monsters m
+                JOIN monster_spawns ms ON m.id = ms.monster_id
+                WHERE ms.zone_id = ? AND m.is_boss = 0 AND m.is_elite = 0
+            """, (zone_id,))
+
+            fragment_drops = []
+            for monster_id, monster_name, monster_level in monsters_cursor.fetchall():
+                fragment_drops.append({
+                    "monster_id": monster_id,
+                    "monster_name": monster_name,
+                    "monster_level": monster_level,
+                    "rate": fragment_drop_chance,
+                    "zone_id": zone_id,
+                })
+
+            existing_drops_cursor = conn.cursor()
+            existing_dropped_by = existing_drops_cursor.execute("SELECT dropped_by FROM items WHERE id = ?", (fragment_token_id,)).fetchone()
+            if existing_dropped_by and existing_dropped_by[0]:
+                existing = json.loads(existing_dropped_by[0])
+                fragment_drops.extend(existing)
+
+            fragment_drops_sorted = sorted(fragment_drops, key=lambda x: (-x["rate"], x["monster_name"]))
+
+            update_fragment_cursor = conn.cursor()
+            update_fragment_cursor.execute("""
+                UPDATE items
+                SET luck_token_zone_id = ?,
+                    luck_token_zone_name = ?,
+                    luck_token_drop_chance = ?,
+                    dropped_by = ?
+                WHERE id = ?
+            """, (zone_id, zone_name, fragment_drop_chance, json.dumps(fragment_drops_sorted), fragment_token_id))
+            if update_fragment_cursor.rowcount > 0:
+                fragment_count += 1
+
+        if boss_token_id:
+            fragment_name = None
+            if fragment_token_id:
+                fragment_name_cursor = conn.cursor()
+                fragment_result = fragment_name_cursor.execute("SELECT name FROM items WHERE id = ?", (fragment_token_id,)).fetchone()
+                if fragment_result:
+                    fragment_name = fragment_result[0]
+
+            update_boss_cursor = conn.cursor()
+            update_boss_cursor.execute("""
+                UPDATE items
+                SET luck_token_zone_id = ?,
+                    luck_token_zone_name = ?,
+                    luck_token_bonus = ?,
+                    luck_token_fragment_id = ?,
+                    luck_token_fragment_name = ?,
+                    luck_token_fragments_needed = ?
+                WHERE id = ?
+            """, (zone_id, zone_name, boss_bonus, fragment_token_id, fragment_name, fragment_amount, boss_token_id))
+            if update_boss_cursor.rowcount > 0:
+                boss_token_count += 1
+
     conn.commit()
 
     console.print(
@@ -1119,6 +1222,9 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
     )
     console.print(
         f"  [green]OK[/green] Updated {food_buff_count} items with food buff names, {relic_buff_count} items with relic buff names"
+    )
+    console.print(
+        f"  [green]OK[/green] Updated {fragment_count} fragment luck tokens, {boss_token_count} boss luck tokens with zone data"
     )
     console.print(
         f"  [green]OK[/green] Updated {len(dropped_by)} items with monster drops"
@@ -1172,6 +1278,7 @@ def run(config: dict) -> None:
         load_zone_triggers(conn, export_dir)
         load_skills(conn, export_dir)
         load_items(conn, export_dir)
+        load_luck_tokens(conn, export_dir)  # After zones + items
         load_monsters(conn, export_dir)
         load_monster_spawns(conn, export_dir)  # After monsters
         load_npcs(conn, export_dir)
