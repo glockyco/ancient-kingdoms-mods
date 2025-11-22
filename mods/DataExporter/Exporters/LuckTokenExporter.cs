@@ -63,6 +63,13 @@ public class LuckTokenExporter : BaseExporter
                 if (fragmentToken != null)
                 {
                     luckTokenData.fragment_token_id = SanitizeId(fragmentToken.name);
+
+                    // Get fragment amount needed from FragmentItem
+                    var fragmentItem = fragmentToken.TryCast<Il2CppuMMORPG.Scripts.ScriptableItems.FragmentItem>();
+                    if (fragmentItem != null)
+                    {
+                        luckTokenData.fragment_amount_needed = fragmentItem.amountNeeded;
+                    }
                 }
             }
 
