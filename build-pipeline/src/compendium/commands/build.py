@@ -258,10 +258,7 @@ def load_altars(conn: sqlite3.Connection, export_dir: Path) -> None:
 
     cursor = conn.cursor()
     for altar in altars:
-        # Convert waves list to JSON string for storage
-        altar_dict = altar.model_dump()
-        altar_dict["waves"] = json.dumps(altar_dict["waves"])
-        insert_dict(cursor, "altars", altar_dict)
+        insert_model(cursor, "altars", altar)
 
     conn.commit()
     console.print(f"  [green]OK[/green] Loaded {len(altars)} altars")
