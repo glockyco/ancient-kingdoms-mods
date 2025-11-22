@@ -118,6 +118,7 @@ export interface Item {
   dropped_by: string | null; // JSON
   sold_by: string | null; // JSON
   rewarded_by: string | null; // JSON
+  rewarded_by_altars: string | null; // JSON
   crafted_from: string | null; // JSON
   gathered_from: string | null; // JSON
   created_from_merge: string | null; // JSON

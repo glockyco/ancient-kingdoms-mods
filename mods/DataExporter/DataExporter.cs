@@ -105,6 +105,10 @@ namespace DataExporter
                 var luckTokenExporter = new LuckTokenExporter(LoggerInstance, ExportPath);
                 luckTokenExporter.Export();
 
+                // Export altars (forgotten altar events)
+                var altarExporter = new AltarExporter(LoggerInstance, ExportPath);
+                altarExporter.Export();
+
                 var elapsed = DateTime.Now - startTime;
 
                 LoggerInstance.Msg("========================================");

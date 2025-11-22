@@ -9,6 +9,7 @@ from pydantic import BaseModel
 from rich.console import Console
 
 from compendium.models import (
+    AltarData,
     CraftingRecipeData,
     GatherItemData,
     ItemData,
@@ -239,6 +240,31 @@ def load_luck_tokens(conn: sqlite3.Connection, export_dir: Path) -> None:
 
     conn.commit()
     console.print(f"  [green]OK[/green] Loaded {len(tokens)} luck token configurations")
+
+
+def load_altars(conn: sqlite3.Connection, export_dir: Path) -> None:
+    """Load altars into database."""
+    console.print("Loading altars...")
+
+    filepath = export_dir / "altars.json"
+    if not filepath.exists():
+        console.print("  [yellow]SKIP[/yellow] No altars.json found")
+        return
+
+    with open(filepath, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    altars = [AltarData(**item) for item in data]
+
+    cursor = conn.cursor()
+    for altar in altars:
+        # Convert waves list to JSON string for storage
+        altar_dict = altar.model_dump()
+        altar_dict["waves"] = json.dumps(altar_dict["waves"])
+        insert_dict(cursor, "altars", altar_dict)
+
+    conn.commit()
+    console.print(f"  [green]OK[/green] Loaded {len(altars)} altars")
 
 
 def load_zone_triggers(conn: sqlite3.Connection, export_dir: Path) -> None:
@@ -816,6 +842,63 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
                 "materials": materials_with_names
             })
 
+    # Build rewarded_by_altars from altars
+    console.print("  Processing altar rewards...")
+    cursor.execute("""
+        SELECT id, name, type,
+               reward_normal_id, reward_magic_id, reward_epic_id, reward_legendary_id
+        FROM altars
+        WHERE reward_normal_id IS NOT NULL OR reward_magic_id IS NOT NULL
+           OR reward_epic_id IS NOT NULL OR reward_legendary_id IS NOT NULL
+    """)
+
+    rewarded_by_altars: dict[str, list[dict]] = {}
+
+    for altar_id, altar_name, altar_type, normal_id, magic_id, epic_id, legendary_id in cursor.fetchall():
+        # Normal tier (effective level < 35)
+        if normal_id:
+            if normal_id not in rewarded_by_altars:
+                rewarded_by_altars[normal_id] = []
+            rewarded_by_altars[normal_id].append({
+                "altar_id": altar_id,
+                "altar_name": altar_name,
+                "reward_tier": "normal",
+                "min_effective_level": 0
+            })
+
+        # Magic tier (effective level 35-44)
+        if magic_id:
+            if magic_id not in rewarded_by_altars:
+                rewarded_by_altars[magic_id] = []
+            rewarded_by_altars[magic_id].append({
+                "altar_id": altar_id,
+                "altar_name": altar_name,
+                "reward_tier": "magic",
+                "min_effective_level": 35
+            })
+
+        # Epic tier (effective level 45-54)
+        if epic_id:
+            if epic_id not in rewarded_by_altars:
+                rewarded_by_altars[epic_id] = []
+            rewarded_by_altars[epic_id].append({
+                "altar_id": altar_id,
+                "altar_name": altar_name,
+                "reward_tier": "epic",
+                "min_effective_level": 45
+            })
+
+        # Legendary tier (effective level >= 55)
+        if legendary_id:
+            if legendary_id not in rewarded_by_altars:
+                rewarded_by_altars[legendary_id] = []
+            rewarded_by_altars[legendary_id].append({
+                "altar_id": altar_id,
+                "altar_name": altar_name,
+                "reward_tier": "legendary",
+                "min_effective_level": 55
+            })
+
     # Update items table
     console.print("  Updating items table...")
     for item_id, drops in dropped_by.items():
@@ -838,6 +921,14 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
         cursor.execute(
             "UPDATE items SET rewarded_by = ? WHERE id = ?",
             (json.dumps(quests_sorted), item_id),
+        )
+
+    for item_id, altars in rewarded_by_altars.items():
+        # Sort by altar name alphabetically
+        altars_sorted = sorted(altars, key=lambda x: x["altar_name"])
+        cursor.execute(
+            "UPDATE items SET rewarded_by_altars = ? WHERE id = ?",
+            (json.dumps(altars_sorted), item_id),
         )
 
     for item_id, recipes in crafted_from.items():
@@ -1704,6 +1795,9 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
         f"  [green]OK[/green] Updated {len(needed_for_quests)} items needed for quests"
     )
     console.print(
+        f"  [green]OK[/green] Updated {len(rewarded_by_altars)} items rewarded by altars"
+    )
+    console.print(
         f"  [green]OK[/green] Updated {len(granted_by_items)} skills granted by items"
     )
     console.print(
@@ -1740,6 +1834,7 @@ def run(config: dict) -> None:
         load_skills(conn, export_dir)
         load_items(conn, export_dir)
         load_luck_tokens(conn, export_dir)  # After zones + items
+        load_altars(conn, export_dir)  # After zones + items
         load_monsters(conn, export_dir)
         load_monster_spawns(conn, export_dir)  # After monsters
         load_npcs(conn, export_dir)

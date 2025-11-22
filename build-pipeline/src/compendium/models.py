@@ -698,3 +698,56 @@ class LuckTokenData(BaseModel):
     fragment_amount_needed: int = 0
     boss_luck_bonus: float = 0.05
     fragment_drop_chance: float = 0.02
+
+
+# =============================================================================
+# Altar Models
+# =============================================================================
+
+
+class AltarWaveMonster(BaseModel):
+    """Monster spawn in an altar wave."""
+
+    monster_id: str
+    monster_name: str
+    base_level: int
+    spawn_location: Position
+
+
+class AltarWave(BaseModel):
+    """Wave configuration for altar events."""
+
+    wave_number: int
+    init_wave_message: str = ""
+    finish_wave_message: str = ""
+    seconds_before_start: int = 0
+    seconds_to_complete_wave: int
+    require_all_monsters_cleared: bool = False
+    monsters: list[AltarWaveMonster] = []
+
+
+class AltarData(BaseModel):
+    """Altar data from altars.json"""
+
+    id: str
+    name: str
+    type: str  # "forgotten" or "avatar"
+    zone_id: str = "unknown"
+    position: Position
+    min_level_required: int = 0
+    required_activation_item_id: str | None = None
+    required_activation_item_name: str | None = None
+    init_event_message: str = ""
+    radius_event: int = 0
+    uses_veteran_scaling: bool = False
+    reward_normal_id: str | None = None
+    reward_normal_name: str | None = None
+    reward_magic_id: str | None = None
+    reward_magic_name: str | None = None
+    reward_epic_id: str | None = None
+    reward_epic_name: str | None = None
+    reward_legendary_id: str | None = None
+    reward_legendary_name: str | None = None
+    total_waves: int = 0
+    estimated_duration_seconds: int = 0
+    waves: list[AltarWave] = []

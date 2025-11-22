@@ -42,6 +42,41 @@ CREATE TABLE luck_tokens (
 );
 
 -- =============================================================================
+-- ALTARS (Forgotten Altar Events)
+-- =============================================================================
+
+CREATE TABLE altars (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    type TEXT NOT NULL,                     -- "forgotten" or "avatar"
+    zone_id TEXT REFERENCES zones(id),
+    position_x REAL,
+    position_y REAL,
+    position_z REAL,
+    min_level_required INTEGER DEFAULT 0,
+    required_activation_item_id TEXT,
+    required_activation_item_name TEXT,
+    init_event_message TEXT,
+    radius_event INTEGER DEFAULT 0,
+    uses_veteran_scaling BOOLEAN DEFAULT 0,
+    reward_normal_id TEXT,
+    reward_normal_name TEXT,
+    reward_magic_id TEXT,
+    reward_magic_name TEXT,
+    reward_epic_id TEXT,
+    reward_epic_name TEXT,
+    reward_legendary_id TEXT,
+    reward_legendary_name TEXT,
+    total_waves INTEGER DEFAULT 0,
+    estimated_duration_seconds INTEGER DEFAULT 0,
+    waves TEXT                              -- JSON: full wave data with monsters
+);
+
+CREATE INDEX idx_altars_zone_id ON altars(zone_id);
+CREATE INDEX idx_altars_type ON altars(type);
+CREATE INDEX idx_altars_min_level ON altars(min_level_required);
+
+-- =============================================================================
 -- ITEMS
 -- =============================================================================
 
@@ -156,6 +191,7 @@ CREATE TABLE items (
     dropped_by TEXT,                -- JSON: [{"monster_id": "fire_ele", "rate": 0.15, "zone_id": "volcanic"}]
     sold_by TEXT,                   -- JSON: [{"npc_id": "kara", "price": 500, "zone_id": "stonewatch"}]
     rewarded_by TEXT,               -- JSON: [{"quest_id": "quest_blacksmith_1"}]
+    rewarded_by_altars TEXT,        -- JSON: [{"altar_id": "altar_forgotten_kings", "altar_name": "Altar of the Forgotten Kings", "reward_tier": "legendary", "min_effective_level": 55}]
     crafted_from TEXT,              -- JSON: [{"recipe_id": "recipe_0", "result_amount": 1}]
     gathered_from TEXT,             -- JSON: [{"gather_item_id": "iron_ore", "rate": 0.1}]
     created_from_merge TEXT,        -- JSON: [{"item_id": "a_cunning_society", "item_name": "A Cunning Society"}, ...]
