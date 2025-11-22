@@ -195,6 +195,13 @@
           rate: number;
         }>
       >(data.item.found_in_chests),
+      foundInPacks: parseJson<
+        Array<{
+          pack_id: string;
+          pack_name: string;
+          amount: number;
+        }>
+      >(data.item.found_in_packs),
       usedInRecipes: parseJson<
         Array<{
           recipe_id: string;
@@ -379,7 +386,7 @@
   </Card.Root>
 
   <!-- Tooltip and Stats/Merge/Currency side-by-side (hide entire section if all would be empty) -->
-  {#if (data.item.tooltip && data.item.item_type !== "augment") || ((data.item.item_type !== "augment" || !data.item.augment_armor_set_name) && ((computed.stats && Object.keys(computed.stats).length > 0) || data.item.weapon_delay > 0)) || data.item.merge_result_item_id || (computed.createdFromMerge && computed.createdFromMerge.length > 0) || (computed.usedAsCurrencyFor && computed.usedAsCurrencyFor.length > 0) || data.item.id === "primal_essence"}
+  {#if (data.item.tooltip && data.item.item_type !== "augment") || ((data.item.item_type !== "augment" || !data.item.augment_armor_set_name) && ((computed.stats && Object.keys(computed.stats).length > 0) || data.item.weapon_delay > 0)) || data.item.merge_result_item_id || (computed.createdFromMerge && computed.createdFromMerge.length > 0) || (computed.usedAsCurrencyFor && computed.usedAsCurrencyFor.length > 0) || data.item.id === "primal_essence" || data.item.pack_final_item_id}
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
       <!-- Tooltip (don't show for augments - they're metadata items never shown to players) -->
       {#if data.item.tooltip && data.item.item_type !== "augment"}
@@ -536,6 +543,40 @@
                 <div class={styles.label}>Amount received</div>
                 <div class={styles.value}>6% of sell price</div>
               </div>
+            </div>
+          </Card.Content>
+        </Card.Root>
+      {:else if data.item.pack_final_item_id}
+        <!-- Pack Contents -->
+        <Card.Root>
+          <Card.Header>
+            <Card.Title>Pack Contents</Card.Title>
+          </Card.Header>
+          <Card.Content>
+            <div class="flex justify-between items-center">
+              <a href="/items/{data.item.pack_final_item_id}" class={styles.link}>
+                {data.item.pack_final_item_name || data.item.pack_final_item_id}
+              </a>
+              <span class={styles.value}>×{data.item.pack_final_amount}</span>
+            </div>
+          </Card.Content>
+        </Card.Root>
+      {:else if computed.foundInPacks && computed.foundInPacks.length > 0}
+        <!-- Found in Packs -->
+        <Card.Root>
+          <Card.Header>
+            <Card.Title>Found in Packs</Card.Title>
+          </Card.Header>
+          <Card.Content>
+            <div class="space-y-2">
+              {#each computed.foundInPacks as pack, index (`${pack.pack_id}_${index}`)}
+                <div class="flex justify-between items-center">
+                  <a href="/items/{pack.pack_id}" class={styles.link}>
+                    {pack.pack_name}
+                  </a>
+                  <span class={styles.value}>×{pack.amount}</span>
+                </div>
+              {/each}
             </div>
           </Card.Content>
         </Card.Root>

@@ -184,6 +184,7 @@ CREATE TABLE items (
     augment_skill_bonuses_with_names TEXT,  -- JSON: [{"skill_id": "combat_training", "skill_name": "Combat Training", "level_bonus": 2}, ...]
     augment_attribute_bonuses TEXT,   -- JSON: [{"attribute": "strength", "bonus": 10}, ...]
     pack_final_item_id TEXT REFERENCES items(id),
+    pack_final_item_name TEXT,
     recipe_potion_learned_id TEXT REFERENCES items(id),
     relic_buff_id TEXT REFERENCES skills(id),
     relic_buff_name TEXT,
@@ -198,6 +199,7 @@ CREATE TABLE items (
     gathered_from TEXT,             -- JSON: [{"gather_item_id": "iron_ore", "rate": 0.1}]
     created_from_merge TEXT,        -- JSON: [{"item_id": "a_cunning_society", "item_name": "A Cunning Society"}, ...]
     found_in_chests TEXT,           -- JSON: [{"chest_id": "chest_of_lost_adventurers_dwarves", "chest_name": "Chest of Lost Adventurers (Dwarves)", "rate": 0.02}]
+    found_in_packs TEXT,            -- JSON: [{"pack_id": "pack_10_arrows", "pack_name": "Pack 10 Arrows", "amount": 10}]
 
     -- Denormalized: Where this item is used (as JSON arrays)
     used_in_recipes TEXT,           -- JSON: [{"recipe_id": "recipe_5", "amount": 3}]

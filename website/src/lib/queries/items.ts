@@ -110,6 +110,7 @@ export interface Item {
   augment_attribute_bonuses: string | null; // JSON
   // Pack final
   pack_final_item_id: string | null;
+  pack_final_item_name: string | null;
   // Recipe
   recipe_potion_learned_id: string | null;
   // Relic buff
@@ -125,6 +126,7 @@ export interface Item {
   gathered_from: string | null; // JSON
   created_from_merge: string | null; // JSON
   found_in_chests: string | null; // JSON
+  found_in_packs: string | null; // JSON
   used_in_recipes: string | null; // JSON
   needed_for_quests: string | null; // JSON
   used_as_currency_for: string | null; // JSON

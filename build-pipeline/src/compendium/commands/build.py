@@ -1442,6 +1442,13 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
     """)
     fragment_result_count = cursor.rowcount
 
+    cursor.execute("""
+        UPDATE items
+        SET pack_final_item_name = (SELECT name FROM items AS i WHERE i.id = items.pack_final_item_id)
+        WHERE pack_final_item_id IS NOT NULL
+    """)
+    pack_final_count = cursor.rowcount
+
     # Denormalize item names in chest_rewards and calculate exact drop chances
     console.print("  Denormalizing chest reward item names and calculating exact drop chances...")
     cursor.execute("""
@@ -1558,6 +1565,36 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
         update_found_cursor.execute(
             "UPDATE items SET found_in_chests = ? WHERE id = ?",
             (json.dumps(chests_sorted), item_id),
+        )
+
+    conn.commit()
+
+    # Denormalize pack item sources
+    console.print("  Denormalizing pack item sources...")
+    found_in_packs: dict[str, list[dict]] = {}
+
+    cursor.execute("""
+        SELECT id, name, pack_final_item_id, pack_final_amount
+        FROM items
+        WHERE pack_final_item_id IS NOT NULL
+    """)
+
+    for pack_id, pack_name, item_id, amount in cursor.fetchall():
+        if item_id not in found_in_packs:
+            found_in_packs[item_id] = []
+
+        found_in_packs[item_id].append({
+            "pack_id": pack_id,
+            "pack_name": pack_name,
+            "amount": amount,
+        })
+
+    for item_id, packs in found_in_packs.items():
+        packs_sorted = sorted(packs, key=lambda x: x["pack_name"])
+        update_pack_cursor = conn.cursor()
+        update_pack_cursor.execute(
+            "UPDATE items SET found_in_packs = ? WHERE id = ?",
+            (json.dumps(packs_sorted), item_id),
         )
 
     conn.commit()
@@ -1736,7 +1773,7 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
         f"  [green]OK[/green] Denormalized {skill_bonuses_updated} armor sets with skill names, {set_members_updated} armor sets with member names"
     )
     console.print(
-        f"  [green]OK[/green] Updated {food_buff_count} items with food buff names, {relic_buff_count} items with relic buff names"
+        f"  [green]OK[/green] Updated {food_buff_count} items with food buff names, {relic_buff_count} items with relic buff names, {pack_final_count} pack items with final item names"
     )
     console.print(
         f"  [green]OK[/green] Denormalized item names in {chest_rewards_updated} chest reward lists"
