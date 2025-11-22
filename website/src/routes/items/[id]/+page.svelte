@@ -798,6 +798,59 @@
     </Card.Root>
   {/if}
 
+  <!-- Alchemy Recipe -->
+  {#if data.item.recipe_potion_learned_id && data.item.recipe_potion_learned_name}
+    <Card.Root>
+      <Card.Header>
+        <Card.Title>Teaches Recipe</Card.Title>
+        <Card.Description
+          >Using this recipe teaches you how to craft an alchemy potion.</Card.Description
+        >
+      </Card.Header>
+      <Card.Content class="space-y-4">
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <div>
+            <div class={styles.label}>Potion</div>
+            <a
+              href="/items/{data.item.recipe_potion_learned_id}"
+              class={styles.link}
+            >
+              {data.item.recipe_potion_learned_name}
+            </a>
+          </div>
+
+          {#if data.item.alchemy_recipe_level_required}
+            <div>
+              <div class={styles.label}>Alchemy Level Required</div>
+              <div class={styles.value}>
+                {data.item.alchemy_recipe_level_required}
+              </div>
+            </div>
+          {/if}
+        </div>
+
+        {#if data.item.alchemy_recipe_materials}
+          {@const materials = JSON.parse(data.item.alchemy_recipe_materials)}
+          {#if materials.length > 0}
+            <div>
+              <div class={styles.label}>Materials Required</div>
+              <div class="space-y-1 mt-2">
+                {#each materials as material}
+                  <div class="flex items-center justify-between">
+                    <a href="/items/{material.item_id}" class={styles.link}>
+                      {material.item_name}
+                    </a>
+                    <span class={styles.value}>×{material.amount}</span>
+                  </div>
+                {/each}
+              </div>
+            </div>
+          {/if}
+        {/if}
+      </Card.Content>
+    </Card.Root>
+  {/if}
+
   <!-- Fatecharm Fragment -->
   {#if data.item.luck_token_drop_chance && data.item.fragment_result_item_id}
     <Card.Root>

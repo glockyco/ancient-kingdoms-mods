@@ -187,6 +187,9 @@ CREATE TABLE items (
     pack_final_item_id TEXT REFERENCES items(id),
     pack_final_item_name TEXT,
     recipe_potion_learned_id TEXT REFERENCES items(id),
+    recipe_potion_learned_name TEXT,
+    alchemy_recipe_level_required INTEGER,
+    alchemy_recipe_materials TEXT,  -- JSON: [{"item_id": "water", "item_name": "Water", "amount": 1}, ...]
     relic_buff_id TEXT REFERENCES skills(id),
     relic_buff_name TEXT,
 
@@ -760,6 +763,23 @@ CREATE TABLE crafting_recipes (
 );
 
 CREATE INDEX idx_crafting_result ON crafting_recipes(result_item_id);
+
+-- =============================================================================
+-- ALCHEMY RECIPES
+-- =============================================================================
+
+CREATE TABLE alchemy_recipes (
+    id TEXT PRIMARY KEY,
+    result_item_id TEXT REFERENCES items(id),
+    level_required INTEGER DEFAULT 0,
+
+    -- Materials as JSON (denormalized)
+    -- Example: [{"item_id": "healing_herb", "amount": 3}, {"item_id": "water", "amount": 1}]
+    materials TEXT                  -- JSON array
+);
+
+CREATE INDEX idx_alchemy_result ON alchemy_recipes(result_item_id);
+CREATE INDEX idx_alchemy_level ON alchemy_recipes(level_required);
 
 -- =============================================================================
 -- FULL-TEXT SEARCH

@@ -9,6 +9,7 @@ from pydantic import BaseModel
 from rich.console import Console
 
 from compendium.models import (
+    AlchemyRecipeData,
     AltarData,
     CraftingRecipeData,
     GatherItemData,
@@ -572,6 +573,24 @@ def load_crafting_recipes(conn: sqlite3.Connection, export_dir: Path) -> None:
     console.print(f"  [green]OK[/green] Loaded {len(recipes)} crafting recipes")
 
 
+def load_alchemy_recipes(conn: sqlite3.Connection, export_dir: Path) -> None:
+    """Load alchemy recipes into database."""
+    console.print("Loading alchemy recipes...")
+
+    filepath = export_dir / "alchemy_recipes.json"
+    with open(filepath, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    recipes = [AlchemyRecipeData(**item) for item in data]
+
+    cursor = conn.cursor()
+    for recipe in recipes:
+        insert_model(cursor, "alchemy_recipes", recipe)
+
+    conn.commit()
+    console.print(f"  [green]OK[/green] Loaded {len(recipes)} alchemy recipes")
+
+
 def load_summon_triggers(conn: sqlite3.Connection, export_dir: Path) -> None:
     """Load summon triggers into database."""
     console.print("Loading summon triggers...")
@@ -838,6 +857,52 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
                 "result_amount": result_amount,
                 "materials": materials_with_names
             })
+
+    # Denormalize alchemy recipe data onto recipe items
+    console.print("  Processing alchemy recipes...")
+    cursor.execute("""
+        SELECT result_item_id, level_required, materials
+        FROM alchemy_recipes
+        WHERE result_item_id IS NOT NULL
+    """)
+
+    for result_item_id, level_required, materials_json in cursor.fetchall():
+        # Get the potion name
+        cursor.execute("SELECT name FROM items WHERE id = ?", (result_item_id,))
+        potion_result = cursor.fetchone()
+        potion_name = potion_result[0] if potion_result else "Unknown"
+
+        # Parse materials and add item names
+        materials = json.loads(materials_json) if materials_json else []
+        materials_with_names: list[MaterialInfo] = []
+        for material in materials:
+            material_id = material.get("item_id")
+            amount = material.get("amount", 1)
+
+            # Get material item name
+            cursor.execute("SELECT name FROM items WHERE id = ?", (material_id,))
+            result = cursor.fetchone()
+            material_name = result[0] if result else "Unknown"
+
+            materials_with_names.append({
+                "item_id": material_id,
+                "item_name": material_name,
+                "amount": amount
+            })
+
+        # Update the recipe item with denormalized alchemy recipe data
+        cursor.execute("""
+            UPDATE items
+            SET recipe_potion_learned_name = ?,
+                alchemy_recipe_level_required = ?,
+                alchemy_recipe_materials = ?
+            WHERE recipe_potion_learned_id = ?
+        """, (
+            potion_name,
+            level_required,
+            json.dumps(materials_with_names),
+            result_item_id
+        ))
 
     # Build rewarded_by_altars from altars
     console.print("  Processing altar rewards...")
@@ -2041,6 +2106,7 @@ def run(config: dict) -> None:
         load_portals(conn, export_dir)
         load_gather_items(conn, export_dir)
         load_crafting_recipes(conn, export_dir)
+        load_alchemy_recipes(conn, export_dir)
 
         # Denormalize data (must be done after all data is loaded)
         console.print()

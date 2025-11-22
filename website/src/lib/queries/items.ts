@@ -114,6 +114,9 @@ export interface Item {
   pack_final_item_name: string | null;
   // Recipe
   recipe_potion_learned_id: string | null;
+  recipe_potion_learned_name: string | null;
+  alchemy_recipe_level_required: number | null;
+  alchemy_recipe_materials: string | null; // JSON
   // Relic buff
   relic_buff_id: string | null;
   relic_buff_name: string | null;

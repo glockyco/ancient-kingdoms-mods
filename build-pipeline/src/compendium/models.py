@@ -671,6 +671,27 @@ class CraftingRecipeData(BaseModel):
 
 
 # =============================================================================
+# Alchemy Recipe Models
+# =============================================================================
+
+
+class AlchemyMaterial(BaseModel):
+    """Material needed for alchemy."""
+
+    item_id: str
+    amount: int = 1
+
+
+class AlchemyRecipeData(BaseModel):
+    """Alchemy recipe data from alchemy_recipes.json"""
+
+    id: str
+    result_item_id: str
+    level_required: int = 0
+    materials: list[AlchemyMaterial] = []
+
+
+# =============================================================================
 # Summon Trigger Models
 # =============================================================================
 
