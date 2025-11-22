@@ -1111,21 +1111,55 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
     # Denormalize armor set data from augment items to armor pieces
     console.print("  Denormalizing armor set data...")
     cursor.execute("""
-        SELECT name, augment_skill_bonuses, augment_armor_set_item_ids, augment_armor_set_name
+        SELECT id, name, augment_skill_bonuses, augment_armor_set_item_ids, augment_armor_set_name, stats
         FROM items
         WHERE item_type = 'augment' AND augment_skill_bonuses IS NOT NULL
     """)
 
-    # Build mapping of augment item name -> (skill bonuses, set item IDs, set name)
+    # Build mapping of augment item name -> (augment_id, skill bonuses, set item IDs, set name, attribute bonuses)
     # Armor pieces reference augments by their name field, not ID
-    set_data: dict[str, tuple[str, str, str]] = {}
+    set_data: dict[str, tuple[str, str, str, str, str]] = {}
+    augment_items_updated = 0
     for (
+        augment_id,
         augment_name,
         skill_bonuses_json,
         set_item_ids_json,
         set_name,
+        stats_json,
     ) in cursor.fetchall():
-        set_data[augment_name] = (skill_bonuses_json, set_item_ids_json, set_name)
+        # Extract attribute bonuses from stats
+        attribute_bonuses = []
+        if stats_json:
+            try:
+                stats = json.loads(stats_json)
+                attributes = {
+                    "strength": "Strength",
+                    "dexterity": "Dexterity",
+                    "constitution": "Constitution",
+                    "intelligence": "Intelligence",
+                    "wisdom": "Wisdom",
+                    "charisma": "Charisma"
+                }
+                for attr_key, attr_name in attributes.items():
+                    value = stats.get(attr_key, 0)
+                    if value > 0:
+                        attribute_bonuses.append({"attribute": attr_name, "bonus": value})
+            except json.JSONDecodeError:
+                pass
+
+        attribute_bonuses_json = json.dumps(attribute_bonuses) if attribute_bonuses else None
+        set_data[augment_name] = (augment_id, skill_bonuses_json, set_item_ids_json, set_name, attribute_bonuses_json)
+
+        # Also update the augment item itself with attribute bonuses
+        if attribute_bonuses_json:
+            cursor.execute(
+                """UPDATE items
+                   SET augment_attribute_bonuses = ?
+                   WHERE id = ?""",
+                (attribute_bonuses_json, augment_id),
+            )
+            augment_items_updated += 1
 
     # Find all items with augment_bonus_set in stats and copy the set data
     cursor.execute("SELECT id, stats FROM items WHERE stats IS NOT NULL")
@@ -1137,20 +1171,98 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
             augment_set_name = stats.get("augment_bonus_set")
 
             if augment_set_name and augment_set_name in set_data:
-                skill_bonuses, set_item_ids, set_name = set_data[augment_set_name]
-                # Copy skill bonuses, set member IDs, and set name to this item
+                augment_id, skill_bonuses, set_item_ids, set_name, attribute_bonuses = set_data[augment_set_name]
+                # Copy augment ID, skill bonuses, set member IDs, set name, and attribute bonuses to this item
                 cursor.execute(
                     """UPDATE items
-                       SET augment_skill_bonuses = ?,
+                       SET augment_armor_set_id = ?,
+                           augment_skill_bonuses = ?,
                            augment_armor_set_item_ids = ?,
-                           augment_armor_set_name = ?
+                           augment_armor_set_name = ?,
+                           augment_attribute_bonuses = ?
                        WHERE id = ?""",
-                    (skill_bonuses, set_item_ids, set_name, item_id),
+                    (augment_id, skill_bonuses, set_item_ids, set_name, attribute_bonuses, item_id),
                 )
                 update_count += 1
         except (json.JSONDecodeError, KeyError):
             # Invalid JSON or missing field, skip
             pass
+
+    # Denormalize skill names and item names in armor sets
+    console.print("  Denormalizing armor set skill and item names...")
+    cursor.execute("""
+        SELECT id, augment_skill_bonuses, augment_armor_set_item_ids
+        FROM items
+        WHERE augment_skill_bonuses IS NOT NULL OR augment_armor_set_item_ids IS NOT NULL
+    """)
+
+    skill_bonuses_updated = 0
+    set_members_updated = 0
+
+    for item_id, skill_bonuses_json, set_item_ids_json in cursor.fetchall():
+        # Denormalize skill bonuses with skill names
+        if skill_bonuses_json:
+            try:
+                skill_bonuses = json.loads(skill_bonuses_json)
+                skill_bonuses_with_names = []
+
+                for bonus in skill_bonuses:
+                    skill_id = bonus.get("skill_id")
+                    level_bonus = bonus.get("level_bonus", 0)
+
+                    if skill_id:
+                        skill_name_cursor = conn.cursor()
+                        skill_result = skill_name_cursor.execute("SELECT name FROM skills WHERE id = ?", (skill_id,)).fetchone()
+                        skill_name = skill_result[0] if skill_result else skill_id.replace("_", " ").title()
+
+                        skill_bonuses_with_names.append({
+                            "skill_id": skill_id,
+                            "skill_name": skill_name,
+                            "level_bonus": level_bonus
+                        })
+
+                if skill_bonuses_with_names:
+                    update_skill_cursor = conn.cursor()
+                    update_skill_cursor.execute("""
+                        UPDATE items
+                        SET augment_skill_bonuses_with_names = ?
+                        WHERE id = ?
+                    """, (json.dumps(skill_bonuses_with_names), item_id))
+                    if update_skill_cursor.rowcount > 0:
+                        skill_bonuses_updated += 1
+            except (json.JSONDecodeError, KeyError):
+                pass
+
+        # Denormalize armor set members with item names
+        if set_item_ids_json:
+            try:
+                set_item_ids = json.loads(set_item_ids_json)
+                set_members_with_names = []
+
+                for member_id in set_item_ids:
+                    if member_id:
+                        member_name_cursor = conn.cursor()
+                        member_result = member_name_cursor.execute("SELECT name FROM items WHERE id = ?", (member_id,)).fetchone()
+                        member_name = member_result[0] if member_result else member_id.replace("_", " ").title()
+
+                        set_members_with_names.append({
+                            "item_id": member_id,
+                            "item_name": member_name
+                        })
+
+                if set_members_with_names:
+                    update_members_cursor = conn.cursor()
+                    update_members_cursor.execute("""
+                        UPDATE items
+                        SET augment_armor_set_members = ?
+                        WHERE id = ?
+                    """, (json.dumps(set_members_with_names), item_id))
+                    if update_members_cursor.rowcount > 0:
+                        set_members_updated += 1
+            except (json.JSONDecodeError, KeyError):
+                pass
+
+    conn.commit()
 
     # Denormalize buff names from skills table
     console.print("  Denormalizing buff names...")
@@ -1460,7 +1572,13 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
     conn.commit()
 
     console.print(
-        f"  [green]OK[/green] Updated {update_count} items with armor set data (bonuses, members, name)"
+        f"  [green]OK[/green] Updated {augment_items_updated} augment items with attribute bonuses"
+    )
+    console.print(
+        f"  [green]OK[/green] Updated {update_count} armor pieces with set data (bonuses, members, name)"
+    )
+    console.print(
+        f"  [green]OK[/green] Denormalized {skill_bonuses_updated} armor sets with skill names, {set_members_updated} armor sets with member names"
     )
     console.print(
         f"  [green]OK[/green] Updated {food_buff_count} items with food buff names, {relic_buff_count} items with relic buff names"

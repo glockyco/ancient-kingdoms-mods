@@ -11,6 +11,47 @@ export function parseTooltip(tooltip: string, item: Item): string {
   // Parse item stats if available
   const stats = item.stats ? (typeof item.stats === "string" ? JSON.parse(item.stats) : item.stats) : {};
 
+  // Add set bonus information before {DURABILITY} placeholder (if this item has a set)
+  if (item.augment_armor_set_name) {
+    const setMembers = item.augment_armor_set_members ? JSON.parse(item.augment_armor_set_members) : [];
+    const totalPieces = setMembers.length;
+
+    // Show as if only this item is equipped (1 piece)
+    let setBonus = `<color=#dccb77>${item.augment_armor_set_name} (1/${totalPieces})</color>\n`;
+
+    // Add set members - highlight current item, gray out others
+    for (const member of setMembers) {
+      if (member.item_id === item.id) {
+        // Current item - highlighted
+        setBonus += ` <color=#d8ddb6>${member.item_name}</color>\n`;
+      } else {
+        // Other items - grayed out
+        setBonus += ` <color=#676a75>${member.item_name}</color>\n`;
+      }
+    }
+
+    // Add attribute bonuses (3-piece) - grayed out since we only have 1 piece
+    const attributeBonuses = item.augment_attribute_bonuses ? JSON.parse(item.augment_attribute_bonuses) : [];
+    if (attributeBonuses.length > 0) {
+      for (const bonus of attributeBonuses) {
+        setBonus += `\n<color=#676a75>Set (3): Increases ${bonus.attribute} by ${bonus.bonus}</color>`;
+      }
+    }
+
+    // Add skill bonuses (5-piece) - grayed out since we only have 1 piece
+    const skillBonuses = item.augment_skill_bonuses_with_names ? JSON.parse(item.augment_skill_bonuses_with_names) : [];
+    if (skillBonuses.length > 0) {
+      for (const bonus of skillBonuses) {
+        setBonus += `\n<color=#676a75>Set (5): Increases ${bonus.skill_name} by ${bonus.level_bonus}</color>`;
+      }
+    }
+
+    setBonus += "\n\n";
+
+    // Replace {DURABILITY} with set bonus + {DURABILITY}
+    parsed = parsed.replace("{DURABILITY}", setBonus + "{DURABILITY}");
+  }
+
   // Add item level if it's > 0 (pre-calculated in database)
   if (item.item_level > 0) {
     parsed += `\n\n<color=#F1D65A>Item Level: ${item.item_level}</color>`;

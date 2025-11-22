@@ -140,9 +140,13 @@ CREATE TABLE items (
     treasure_map_reward_id TEXT REFERENCES items(id),
 
     -- Optional augment/recipe properties
-    augment_armor_set_item_ids TEXT,  -- JSON array
+    augment_armor_set_id TEXT,        -- ID of the set bonus item (e.g., "cobalt_armor_bonus_set")
+    augment_armor_set_item_ids TEXT,
+    augment_armor_set_members TEXT,   -- JSON: [{"item_id": "cobalt_helmet", "item_name": "Cobalt Helmet"}, ...]
     augment_armor_set_name TEXT,
-    augment_skill_bonuses TEXT,     -- JSON array
+    augment_skill_bonuses TEXT,
+    augment_skill_bonuses_with_names TEXT,  -- JSON: [{"skill_id": "combat_training", "skill_name": "Combat Training", "level_bonus": 2}, ...]
+    augment_attribute_bonuses TEXT,   -- JSON: [{"attribute": "strength", "bonus": 10}, ...]
     pack_final_item_id TEXT REFERENCES items(id),
     recipe_potion_learned_id TEXT REFERENCES items(id),
     relic_buff_id TEXT REFERENCES skills(id),

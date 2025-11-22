@@ -100,9 +100,13 @@ export interface Item {
   treasure_map_image_location: string | null;
   treasure_map_reward_id: string | null;
   // Augment
+  augment_armor_set_id: string | null;
   augment_armor_set_item_ids: string | null; // JSON
+  augment_armor_set_members: string | null; // JSON
   augment_armor_set_name: string | null;
   augment_skill_bonuses: string | null; // JSON
+  augment_skill_bonuses_with_names: string | null; // JSON
+  augment_attribute_bonuses: string | null; // JSON
   // Pack final
   pack_final_item_id: string | null;
   // Recipe
