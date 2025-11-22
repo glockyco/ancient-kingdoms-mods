@@ -139,6 +139,12 @@
           amount_max?: number;
         }>
       >(data.item.gathered_from),
+      createdFromMerge: parseJson<
+        Array<{
+          item_id: string;
+          item_name: string;
+        }>
+      >(data.item.created_from_merge),
       foundInChests: parseJson<
         Array<{
           chest_id: string;
@@ -315,7 +321,7 @@
     </Card.Content>
   </Card.Root>
 
-  <!-- Tooltip and Stats side-by-side -->
+  <!-- Tooltip and Stats/Merge side-by-side -->
   <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
     <!-- Tooltip (don't show for augments - they're metadata items never shown to players) -->
     {#if data.item.tooltip && data.item.item_type !== "augment"}
@@ -355,6 +361,60 @@
                 </div>
               {/each}
             {/if}
+          </div>
+        </Card.Content>
+      </Card.Root>
+    {:else if data.item.merge_result_item_id && data.item.merge_items_needed}
+      <!-- Merge Quest (shown when no stats) -->
+      {@const mergeItems = JSON.parse(data.item.merge_items_needed)}
+      <Card.Root>
+        <Card.Header>
+          <Card.Title>Merge Quest</Card.Title>
+          <Card.Description>Collect all pieces to create the complete item.</Card.Description>
+        </Card.Header>
+        <Card.Content class="space-y-4">
+          <div>
+            <div class="text-sm text-muted-foreground mb-2">Items Needed ({mergeItems.length})</div>
+            <div class="grid grid-cols-1 gap-2">
+              {#each mergeItems as mergeItem}
+                <a
+                  href="/items/{mergeItem.item_id}"
+                  class="text-sm hover:underline text-blue-600 dark:text-blue-400"
+                >
+                  {mergeItem.item_name}
+                </a>
+              {/each}
+            </div>
+          </div>
+
+          <div>
+            <div class="text-sm text-muted-foreground mb-2">Creates</div>
+            <a
+              href="/items/{data.item.merge_result_item_id}"
+              class="font-medium hover:underline text-blue-600 dark:text-blue-400"
+            >
+              {data.item.merge_result_item_name || data.item.merge_result_item_id}
+            </a>
+          </div>
+        </Card.Content>
+      </Card.Root>
+    {:else if computed.createdFromMerge && computed.createdFromMerge.length > 0}
+      <!-- Created From Merge (shown when no stats and not a merge item) -->
+      <Card.Root>
+        <Card.Header>
+          <Card.Title>Created From Merge</Card.Title>
+          <Card.Description>Collect and combine these items to create this item.</Card.Description>
+        </Card.Header>
+        <Card.Content>
+          <div class="grid grid-cols-1 gap-2">
+            {#each computed.createdFromMerge as mergeItem}
+              <a
+                href="/items/{mergeItem.item_id}"
+                class="text-sm hover:underline text-blue-600 dark:text-blue-400"
+              >
+                {mergeItem.item_name}
+              </a>
+            {/each}
           </div>
         </Card.Content>
       </Card.Root>
@@ -489,6 +549,71 @@
           <div>
             <div class="text-sm text-muted-foreground">Recharge Time</div>
             <div class="font-medium">{data.item.cooldown}s</div>
+          </div>
+        {/if}
+      </Card.Content>
+    </Card.Root>
+  {/if}
+
+  <!-- Book Effects (Permanent Stat Gains) -->
+  {#if data.item.book_strength_gain > 0 || data.item.book_dexterity_gain > 0 || data.item.book_constitution_gain > 0 || data.item.book_intelligence_gain > 0 || data.item.book_wisdom_gain > 0 || data.item.book_charisma_gain > 0}
+    <Card.Root>
+      <Card.Header>
+        <Card.Title>Permanent Stat Gains</Card.Title>
+        <Card.Description>Reading this book grants permanent stat increases</Card.Description>
+      </Card.Header>
+      <Card.Content class="grid grid-cols-2 md:grid-cols-3 gap-4">
+        {#if data.item.book_strength_gain > 0}
+          <div>
+            <div class="text-sm text-muted-foreground">Strength</div>
+            <div class="font-medium text-green-600 dark:text-green-400">
+              +{data.item.book_strength_gain}
+            </div>
+          </div>
+        {/if}
+
+        {#if data.item.book_dexterity_gain > 0}
+          <div>
+            <div class="text-sm text-muted-foreground">Dexterity</div>
+            <div class="font-medium text-green-600 dark:text-green-400">
+              +{data.item.book_dexterity_gain}
+            </div>
+          </div>
+        {/if}
+
+        {#if data.item.book_constitution_gain > 0}
+          <div>
+            <div class="text-sm text-muted-foreground">Constitution</div>
+            <div class="font-medium text-green-600 dark:text-green-400">
+              +{data.item.book_constitution_gain}
+            </div>
+          </div>
+        {/if}
+
+        {#if data.item.book_intelligence_gain > 0}
+          <div>
+            <div class="text-sm text-muted-foreground">Intelligence</div>
+            <div class="font-medium text-green-600 dark:text-green-400">
+              +{data.item.book_intelligence_gain}
+            </div>
+          </div>
+        {/if}
+
+        {#if data.item.book_wisdom_gain > 0}
+          <div>
+            <div class="text-sm text-muted-foreground">Wisdom</div>
+            <div class="font-medium text-green-600 dark:text-green-400">
+              +{data.item.book_wisdom_gain}
+            </div>
+          </div>
+        {/if}
+
+        {#if data.item.book_charisma_gain > 0}
+          <div>
+            <div class="text-sm text-muted-foreground">Charisma</div>
+            <div class="font-medium text-green-600 dark:text-green-400">
+              +{data.item.book_charisma_gain}
+            </div>
           </div>
         {/if}
       </Card.Content>

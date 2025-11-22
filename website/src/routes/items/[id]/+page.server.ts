@@ -24,11 +24,13 @@ export const load: PageServerLoad = ({ params }): ItemDetailPageData => {
   const item = db.prepare("SELECT * FROM items WHERE id = ?").get(params.id) as
     | Item
     | undefined;
-  db.close();
 
   if (!item) {
+    db.close();
     throw error(404, `Item not found: ${params.id}`);
   }
+
+  db.close();
 
   return {
     item,

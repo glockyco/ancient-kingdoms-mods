@@ -132,8 +132,10 @@ CREATE TABLE items (
     luck_token_fragments_needed INTEGER,
 
     random_items TEXT,              -- JSON array
-    merge_items_needed_ids TEXT,    -- JSON array
+    merge_items_needed_ids TEXT,
+    merge_items_needed TEXT,        -- JSON: [{"item_id": "a_cunning_society", "item_name": "A Cunning Society"}, ...]
     merge_result_item_id TEXT REFERENCES items(id),
+    merge_result_item_name TEXT,
     treasure_map_image_location TEXT,
     treasure_map_reward_id TEXT REFERENCES items(id),
 
@@ -152,6 +154,7 @@ CREATE TABLE items (
     rewarded_by TEXT,               -- JSON: [{"quest_id": "quest_blacksmith_1"}]
     crafted_from TEXT,              -- JSON: [{"recipe_id": "recipe_0", "result_amount": 1}]
     gathered_from TEXT,             -- JSON: [{"gather_item_id": "iron_ore", "rate": 0.1}]
+    created_from_merge TEXT,        -- JSON: [{"item_id": "a_cunning_society", "item_name": "A Cunning Society"}, ...]
     found_in_chests TEXT,           -- JSON: [{"chest_id": "chest_of_lost_adventurers_dwarves", "chest_name": "Chest of Lost Adventurers (Dwarves)", "rate": 0.02}]
 
     -- Denormalized: Where this item is used (as JSON arrays)

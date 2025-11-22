@@ -93,8 +93,9 @@ export interface Item {
   // Random items
   random_items: string | null; // JSON
   // Merge
-  merge_items_needed_ids: string | null; // JSON
+  merge_items_needed: string | null; // JSON
   merge_result_item_id: string | null;
+  merge_result_item_name: string | null;
   // Treasure map
   treasure_map_image_location: string | null;
   treasure_map_reward_id: string | null;
@@ -115,6 +116,7 @@ export interface Item {
   rewarded_by: string | null; // JSON
   crafted_from: string | null; // JSON
   gathered_from: string | null; // JSON
+  created_from_merge: string | null; // JSON
   found_in_chests: string | null; // JSON
   used_in_recipes: string | null; // JSON
   needed_for_quests: string | null; // JSON

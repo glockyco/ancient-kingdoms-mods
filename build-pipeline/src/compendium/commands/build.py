@@ -1370,6 +1370,95 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
 
     conn.commit()
 
+    # Denormalize merge item data
+    console.print("  Denormalizing merge item data...")
+    merge_items_updated = 0
+    merge_result_updated = 0
+    created_from_merge_updated = 0
+
+    # Update merge items with full item data (items needed + result item name)
+    cursor.execute("""
+        SELECT id, merge_items_needed_ids, merge_result_item_id
+        FROM items
+        WHERE merge_items_needed_ids IS NOT NULL
+    """)
+
+    for item_id, items_needed_json, result_item_id in cursor.fetchall():
+        if not items_needed_json:
+            continue
+
+        items_needed_ids = json.loads(items_needed_json)
+        if not items_needed_ids:
+            continue
+
+        # Fetch names for all needed items
+        merge_items_needed = []
+        for needed_id in items_needed_ids:
+            name_cursor = conn.cursor()
+            name_result = name_cursor.execute("SELECT name FROM items WHERE id = ?", (needed_id,)).fetchone()
+            if name_result:
+                merge_items_needed.append({
+                    "item_id": needed_id,
+                    "item_name": name_result[0]
+                })
+
+        # Fetch result item name
+        result_item_name = None
+        if result_item_id:
+            result_cursor = conn.cursor()
+            result = result_cursor.execute("SELECT name FROM items WHERE id = ?", (result_item_id,)).fetchone()
+            if result:
+                result_item_name = result[0]
+
+        # Update the merge item
+        update_cursor = conn.cursor()
+        update_cursor.execute("""
+            UPDATE items
+            SET merge_items_needed = ?,
+                merge_result_item_name = ?
+            WHERE id = ?
+        """, (json.dumps(merge_items_needed), result_item_name, item_id))
+
+        if update_cursor.rowcount > 0:
+            merge_items_updated += 1
+            merge_result_updated += 1 if result_item_name else 0
+
+    # Update result items with source merge items (reverse relationship)
+    cursor.execute("""
+        SELECT DISTINCT merge_result_item_id
+        FROM items
+        WHERE merge_result_item_id IS NOT NULL
+    """)
+
+    for (result_item_id,) in cursor.fetchall():
+        # Find all merge items that create this result
+        sources_cursor = conn.cursor()
+        sources_cursor.execute("""
+            SELECT id, name
+            FROM items
+            WHERE merge_result_item_id = ?
+        """, (result_item_id,))
+
+        created_from = []
+        for merge_item_id, merge_item_name in sources_cursor.fetchall():
+            created_from.append({
+                "item_id": merge_item_id,
+                "item_name": merge_item_name
+            })
+
+        if created_from:
+            update_cursor = conn.cursor()
+            update_cursor.execute("""
+                UPDATE items
+                SET created_from_merge = ?
+                WHERE id = ?
+            """, (json.dumps(created_from), result_item_id))
+
+            if update_cursor.rowcount > 0:
+                created_from_merge_updated += 1
+
+    conn.commit()
+
     console.print(
         f"  [green]OK[/green] Updated {update_count} items with armor set data (bonuses, members, name)"
     )
@@ -1381,6 +1470,9 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
     )
     console.print(
         f"  [green]OK[/green] Updated {fragment_count} fragment luck tokens, {boss_token_count} boss luck tokens with zone data"
+    )
+    console.print(
+        f"  [green]OK[/green] Updated {merge_items_updated} merge items with denormalized data, {created_from_merge_updated} result items with merge sources"
     )
     console.print(
         f"  [green]OK[/green] Updated {len(dropped_by)} items with monster drops"
