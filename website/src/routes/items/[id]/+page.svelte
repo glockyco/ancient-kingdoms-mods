@@ -136,6 +136,7 @@
           quest_name: string;
           level_required: number;
           level_recommended: number;
+          is_repeatable: boolean;
         }>
       >(data.item.rewarded_by),
       rewardedByAltars: parseJson<
@@ -1062,24 +1063,50 @@
 
     <!-- Rewarded by Quests -->
     {#if computed.rewardedBy && computed.rewardedBy.length > 0}
+      {@const repeatableQuests = computed.rewardedBy.filter((q) => q.is_repeatable)}
+      {@const oneTimeQuests = computed.rewardedBy.filter((q) => !q.is_repeatable)}
       <Card.Root>
         <Card.Header>
           <Card.Title>Rewarded by Quests</Card.Title>
         </Card.Header>
-        <Card.Content>
-          <div class="space-y-2">
-            {#each computed.rewardedBy as quest, index (`${quest.quest_id}_${index}`)}
-              <div>
-                <a
-                  href={resolve("/quests/[id]", { id: quest.quest_id })}
-                  class={styles.link}
-                >
-                  {quest.quest_name}
-                  <span class={styles.label}>(Lv {quest.level_required})</span>
-                </a>
+        <Card.Content class="space-y-4">
+          {#if repeatableQuests.length > 0}
+            <div>
+              <div class="{styles.label} mb-2">Repeatable Quests</div>
+              <div class="space-y-2">
+                {#each repeatableQuests as quest, index (`${quest.quest_id}_${index}`)}
+                  <div>
+                    <a
+                      href={resolve("/quests/[id]", { id: quest.quest_id })}
+                      class={styles.link}
+                    >
+                      {quest.quest_name}
+                      <span class={styles.label}>(Lv {quest.level_required})</span>
+                    </a>
+                  </div>
+                {/each}
               </div>
-            {/each}
-          </div>
+            </div>
+          {/if}
+
+          {#if oneTimeQuests.length > 0}
+            <div>
+              <div class="{styles.label} mb-2">One-Time Quests</div>
+              <div class="space-y-2">
+                {#each oneTimeQuests as quest, index (`${quest.quest_id}_${index}`)}
+                  <div>
+                    <a
+                      href={resolve("/quests/[id]", { id: quest.quest_id })}
+                      class={styles.link}
+                    >
+                      {quest.quest_name}
+                      <span class={styles.label}>(Lv {quest.level_required})</span>
+                    </a>
+                  </div>
+                {/each}
+              </div>
+            </div>
+          {/if}
         </Card.Content>
       </Card.Root>
     {/if}

@@ -888,7 +888,7 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
     # Build rewarded_by from quests.rewards
     console.print("  Processing quest rewards...")
     cursor.execute("""
-        SELECT id, name, level_required, level_recommended, rewards
+        SELECT id, name, level_required, level_recommended, rewards, is_adventurer_quest
         FROM quests
         WHERE rewards IS NOT NULL
     """)
@@ -901,6 +901,7 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
         level_required,
         level_recommended,
         rewards_json,
+        is_adventurer_quest,
     ) in cursor.fetchall():
         rewards = json.loads(rewards_json)
         items = rewards.get("items", [])
@@ -915,6 +916,7 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
                         "quest_name": quest_name,
                         "level_required": level_required,
                         "level_recommended": level_recommended,
+                        "is_repeatable": bool(is_adventurer_quest),
                     }
                 )
 
