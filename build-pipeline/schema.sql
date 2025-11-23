@@ -203,6 +203,7 @@ CREATE TABLE items (
     rewarded_by TEXT,               -- JSON: [{"quest_id": "quest_blacksmith_1"}]
     rewarded_by_altars TEXT,        -- JSON: [{"altar_id": "altar_forgotten_kings", "altar_name": "Altar of the Forgotten Kings", "reward_tier": "legendary", "min_effective_level": 55, "zone_id": "twilight_forest", "zone_name": "Twilight Forest"}]
     required_for_altars TEXT,       -- JSON: [{"altar_id": "altar_forgotten_kings", "altar_name": "Altar of the Forgotten Kings", "min_level_required": 30, "zone_id": "twilight_forest", "zone_name": "Twilight Forest"}]
+    required_for_portals TEXT,      -- JSON: [{"portal_id": "portal_123", "from_zone_id": "krom_razz", "from_zone_name": "Krom Razz", "to_zone_id": "krom_razz", "to_zone_name": "Krom Razz", "position_x": 743.55, "position_y": 350.82, "destination_x": 761.4, "destination_y": 357.42}]
     crafted_from TEXT,              -- JSON: [{"recipe_id": "recipe_0", "result_amount": 1}]
     gathered_from TEXT,             -- JSON: [{"gather_item_id": "iron_ore", "rate": 0.1}]
     created_from_merge TEXT,        -- JSON: [{"item_id": "a_cunning_society", "item_name": "A Cunning Society"}, ...]

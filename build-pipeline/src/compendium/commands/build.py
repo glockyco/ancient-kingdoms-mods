@@ -1184,6 +1184,47 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
             }
         )
 
+    # Build required_for_portals from portals
+    console.print("  Processing portal requirements...")
+    cursor.execute("""
+        SELECT p.id, p.required_item_id, p.from_zone_id, z1.name, p.to_zone_id, z2.name,
+               p.position_x, p.position_y, p.destination_x, p.destination_y
+        FROM portals p
+        LEFT JOIN zones z1 ON p.from_zone_id = z1.id
+        LEFT JOIN zones z2 ON p.to_zone_id = z2.id
+        WHERE p.required_item_id IS NOT NULL
+    """)
+
+    required_for_portals: dict[str, list[dict]] = {}
+
+    for (
+        portal_id,
+        required_item_id,
+        from_zone_id,
+        from_zone_name,
+        to_zone_id,
+        to_zone_name,
+        position_x,
+        position_y,
+        destination_x,
+        destination_y,
+    ) in cursor.fetchall():
+        if required_item_id not in required_for_portals:
+            required_for_portals[required_item_id] = []
+        required_for_portals[required_item_id].append(
+            {
+                "portal_id": portal_id,
+                "from_zone_id": from_zone_id,
+                "from_zone_name": from_zone_name if from_zone_name else from_zone_id,
+                "to_zone_id": to_zone_id,
+                "to_zone_name": to_zone_name if to_zone_name else to_zone_id,
+                "position_x": position_x,
+                "position_y": position_y,
+                "destination_x": destination_x,
+                "destination_y": destination_y,
+            }
+        )
+
     # Update items table
     console.print("  Updating items table...")
     for item_id, drops in dropped_by.items():
@@ -1224,6 +1265,16 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
         cursor.execute(
             "UPDATE items SET required_for_altars = ? WHERE id = ?",
             (json.dumps(altars_sorted), item_id),
+        )
+
+    for item_id, portals in required_for_portals.items():
+        # Sort by from zone name, then to zone name
+        portals_sorted = sorted(
+            portals, key=lambda x: (x["from_zone_name"], x["to_zone_name"])
+        )
+        cursor.execute(
+            "UPDATE items SET required_for_portals = ? WHERE id = ?",
+            (json.dumps(portals_sorted), item_id),
         )
 
     for item_id, recipes in crafted_from.items():
@@ -2400,6 +2451,9 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
     )
     console.print(
         f"  [green]OK[/green] Updated {len(required_for_altars)} items required for altars"
+    )
+    console.print(
+        f"  [green]OK[/green] Updated {len(required_for_portals)} items required for portals"
     )
     console.print(
         f"  [green]OK[/green] Updated {len(granted_by_items)} skills granted by items"

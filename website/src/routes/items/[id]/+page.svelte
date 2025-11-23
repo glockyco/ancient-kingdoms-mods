@@ -159,6 +159,19 @@
           zone_name: string;
         }>
       >(data.item.required_for_altars),
+      requiredForPortals: parseJson<
+        Array<{
+          portal_id: string;
+          from_zone_id: string;
+          from_zone_name: string;
+          to_zone_id: string;
+          to_zone_name: string;
+          position_x: number;
+          position_y: number;
+          destination_x: number;
+          destination_y: number;
+        }>
+      >(data.item.required_for_portals),
       craftedFrom: parseJson<
         Array<{
           recipe_id: string;
@@ -1171,6 +1184,32 @@
       </Card.Root>
     {/if}
 
+    <!-- Required for Portals -->
+    {#if computed.requiredForPortals && computed.requiredForPortals.length > 0}
+      <Card.Root>
+        <Card.Header>
+          <Card.Title>Required for Portals</Card.Title>
+        </Card.Header>
+        <Card.Content>
+          <div class="space-y-2">
+            {#each computed.requiredForPortals as portal, index (`${portal.portal_id}_${index}`)}
+              <div class="space-y-1">
+                <div>
+                  <span class={styles.value}>{portal.from_zone_name}</span>
+                  <span class={styles.label}>
+                    ({Math.round(portal.position_x)}, {Math.round(portal.position_y)})
+                  </span>
+                </div>
+                <div class="{styles.label} pl-2">
+                  → {portal.to_zone_name} ({Math.round(portal.destination_x)}, {Math.round(portal.destination_y)})
+                </div>
+              </div>
+            {/each}
+          </div>
+        </Card.Content>
+      </Card.Root>
+    {/if}
+
     <!-- Crafted From -->
     {#if computed.craftedFrom && computed.craftedFrom.length > 0}
       <Card.Root>
@@ -1373,11 +1412,11 @@
       </Card.Root>
     {/if}
 
-    <!-- Needed for Quests -->
+    <!-- Required for Quests -->
     {#if computed.neededForQuests && computed.neededForQuests.length > 0}
       <Card.Root>
         <Card.Header>
-          <Card.Title>Needed for Quests</Card.Title>
+          <Card.Title>Required for Quests</Card.Title>
         </Card.Header>
         <Card.Content>
           <div class="space-y-2">
