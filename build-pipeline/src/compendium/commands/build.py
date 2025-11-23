@@ -888,7 +888,7 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
     # Build rewarded_by from quests.rewards
     console.print("  Processing quest rewards...")
     cursor.execute("""
-        SELECT id, name, level_required, level_recommended, rewards, is_adventurer_quest
+        SELECT id, name, level_required, level_recommended, rewards, is_adventurer_quest, class_requirements
         FROM quests
         WHERE rewards IS NOT NULL
     """)
@@ -902,9 +902,17 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
         level_recommended,
         rewards_json,
         is_adventurer_quest,
+        quest_class_requirements_json,
     ) in cursor.fetchall():
         rewards = json.loads(rewards_json)
         items = rewards.get("items", [])
+
+        # Parse quest-level class requirements
+        quest_class_requirements = (
+            json.loads(quest_class_requirements_json)
+            if quest_class_requirements_json
+            else None
+        )
 
         # Group items by item_id to collect class restrictions
         item_groups: dict[str, list[str | None]] = {}
@@ -921,11 +929,14 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
             if item_id not in rewarded_by:
                 rewarded_by[item_id] = []
 
-            # If any class_specific is None, it's a general reward (no restrictions)
-            # Otherwise, filter out None values and keep only class names
+            # Determine class restrictions by combining quest-level and reward-level
             class_restrictions = None
-            if None not in class_list:
-                # Only class-specific rewards, filter to unique class names
+
+            if quest_class_requirements:
+                # Quest has class requirements - all rewards inherit them
+                class_restrictions = sorted(quest_class_requirements)
+            elif None not in class_list:
+                # No quest-level restrictions, but reward has class-specific variants
                 class_restrictions = sorted(set(c for c in class_list if c is not None))
 
             rewarded_by[item_id].append(
