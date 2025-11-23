@@ -137,6 +137,7 @@
           level_required: number;
           level_recommended: number;
           is_repeatable: boolean;
+          class_restrictions: string[] | null;
         }>
       >(data.item.rewarded_by),
       rewardedByAltars: parseJson<
@@ -1081,7 +1082,9 @@
                       class={styles.link}
                     >
                       {quest.quest_name}
-                      <span class={styles.label}>(Lv {quest.level_required})</span>
+                      <span class={styles.label}>
+                        (Lv {quest.level_required}{#if quest.class_restrictions && quest.class_restrictions.length < 6}, {quest.class_restrictions.join(", ")}{/if})
+                      </span>
                     </a>
                   </div>
                 {/each}
@@ -1100,7 +1103,9 @@
                       class={styles.link}
                     >
                       {quest.quest_name}
-                      <span class={styles.label}>(Lv {quest.level_required})</span>
+                      <span class={styles.label}>
+                        (Lv {quest.level_required}{#if quest.class_restrictions && quest.class_restrictions.length < 6}, {quest.class_restrictions.join(", ")}{/if})
+                      </span>
                     </a>
                   </div>
                 {/each}

@@ -905,20 +905,39 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
     ) in cursor.fetchall():
         rewards = json.loads(rewards_json)
         items = rewards.get("items", [])
+
+        # Group items by item_id to collect class restrictions
+        item_groups: dict[str, list[str | None]] = {}
         for item in items:
             item_id = item.get("item_id")
+            class_specific = item.get("class_specific")
             if item_id:
-                if item_id not in rewarded_by:
-                    rewarded_by[item_id] = []
-                rewarded_by[item_id].append(
-                    {
-                        "quest_id": quest_id,
-                        "quest_name": quest_name,
-                        "level_required": level_required,
-                        "level_recommended": level_recommended,
-                        "is_repeatable": bool(is_adventurer_quest),
-                    }
-                )
+                if item_id not in item_groups:
+                    item_groups[item_id] = []
+                item_groups[item_id].append(class_specific)
+
+        # Create one entry per unique item_id
+        for item_id, class_list in item_groups.items():
+            if item_id not in rewarded_by:
+                rewarded_by[item_id] = []
+
+            # If any class_specific is None, it's a general reward (no restrictions)
+            # Otherwise, filter out None values and keep only class names
+            class_restrictions = None
+            if None not in class_list:
+                # Only class-specific rewards, filter to unique class names
+                class_restrictions = sorted(set(c for c in class_list if c is not None))
+
+            rewarded_by[item_id].append(
+                {
+                    "quest_id": quest_id,
+                    "quest_name": quest_name,
+                    "level_required": level_required,
+                    "level_recommended": level_recommended,
+                    "is_repeatable": bool(is_adventurer_quest),
+                    "class_restrictions": class_restrictions,
+                }
+            )
 
     # Build crafted_from from crafting_recipes
     console.print("  Processing crafting recipes...")
