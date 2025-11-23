@@ -512,6 +512,8 @@ def load_gather_items(conn: sqlite3.Connection, export_dir: Path) -> None:
             "key_required_id": chest.tool_required_id,  # tool_required_id is the key for chests
             "gold_min": chest.gold_min,
             "gold_max": chest.gold_max,
+            "item_reward_id": chest.item_reward_id,
+            "item_reward_amount": chest.item_reward_amount,
             "chest_reward_probability": chest.chest_reward_probability,
             "respawn_time": chest.respawn_time,
             "decrease_faction": chest.decrease_faction,
@@ -554,6 +556,25 @@ def load_gather_items(conn: sqlite3.Connection, export_dir: Path) -> None:
             WHERE resource_id = ?
         """,
             (selection_probability, resource_id),
+        )
+
+    # Calculate actual drop chances for chest drops using same logic
+    console.print("  Calculating actual drop chances for chests...")
+    cursor.execute("""
+        SELECT chest_id, COUNT(*) as num_drops
+        FROM chest_drops
+        GROUP BY chest_id
+    """)
+
+    for chest_id, num_drops in cursor.fetchall():
+        selection_probability = 1.0 / num_drops
+        cursor.execute(
+            """
+            UPDATE chest_drops
+            SET actual_drop_chance = drop_rate * ?
+            WHERE chest_id = ?
+        """,
+            (selection_probability, chest_id),
         )
 
     conn.commit()
@@ -691,6 +712,7 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
         SELECT gr.id, gr.name, grd.item_id, grd.actual_drop_chance
         FROM gathering_resources gr
         JOIN gathering_resource_drops grd ON gr.id = grd.resource_id
+        ORDER BY grd.actual_drop_chance DESC
     """)
 
     gathered_from: dict[str, list[GatherDropInfo]] = {}
@@ -733,22 +755,24 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
 
         gathered_from[item_id].append(gather_info)
 
-    console.print("  Processing chest drops...")
+    # Process guaranteed chest rewards (item_reward_id)
+    console.print("  Processing guaranteed chest rewards...")
     cursor.execute("""
-        SELECT c.id, c.name, cd.item_id, cd.drop_rate,
+        SELECT c.id, c.name, c.item_reward_id, c.item_reward_amount,
                c.zone_id, z.name as zone_name,
                c.key_required_id, k.name as key_name
         FROM chests c
-        JOIN chest_drops cd ON c.id = cd.chest_id
         LEFT JOIN zones z ON c.zone_id = z.id
         LEFT JOIN items k ON c.key_required_id = k.id
+        WHERE c.item_reward_id IS NOT NULL
+        ORDER BY z.name, k.name
     """)
 
     for (
         chest_id,
         chest_name,
         item_id,
-        drop_rate,
+        item_reward_amount,
         zone_id,
         zone_name,
         key_id,
@@ -760,7 +784,57 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
         chest_info: GatherDropInfo = {
             "gather_item_id": chest_id,
             "gather_item_name": chest_name,
-            "rate": drop_rate,
+            "rate": 1.0,  # Guaranteed reward
+            "type": "chest",
+        }
+
+        # Add chest-specific fields
+        if zone_id:
+            chest_info["zone_id"] = zone_id
+        if zone_name:
+            chest_info["zone_name"] = zone_name
+        if key_id:
+            chest_info["key_required_id"] = key_id
+        if key_name:
+            chest_info["key_name"] = key_name
+
+        # Add amount range if variable
+        if item_reward_amount > 1:
+            chest_info["amount_min"] = 1
+            chest_info["amount_max"] = item_reward_amount
+
+        gathered_from[item_id].append(chest_info)
+
+    # Process random chest drops (chest_drops table)
+    console.print("  Processing random chest drops...")
+    cursor.execute("""
+        SELECT c.id, c.name, cd.item_id, cd.actual_drop_chance,
+               c.zone_id, z.name as zone_name,
+               c.key_required_id, k.name as key_name
+        FROM chests c
+        JOIN chest_drops cd ON c.id = cd.chest_id
+        LEFT JOIN zones z ON c.zone_id = z.id
+        LEFT JOIN items k ON c.key_required_id = k.id
+        ORDER BY cd.actual_drop_chance DESC, z.name, k.name
+    """)
+
+    for (
+        chest_id,
+        chest_name,
+        item_id,
+        actual_drop_chance,
+        zone_id,
+        zone_name,
+        key_id,
+        key_name,
+    ) in cursor.fetchall():
+        if item_id not in gathered_from:
+            gathered_from[item_id] = []
+
+        chest_info: GatherDropInfo = {
+            "gather_item_id": chest_id,
+            "gather_item_name": chest_name,
+            "rate": actual_drop_chance,  # Use calculated drop chance
             "type": "chest",
         }
 

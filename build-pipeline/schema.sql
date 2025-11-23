@@ -723,6 +723,8 @@ CREATE TABLE chests (
     -- Rewards
     gold_min INTEGER DEFAULT 0,
     gold_max INTEGER DEFAULT 0,
+    item_reward_id TEXT REFERENCES items(id),
+    item_reward_amount INTEGER DEFAULT 0,
     chest_reward_probability REAL DEFAULT 0.0,
 
     -- Respawn
@@ -742,7 +744,8 @@ CREATE INDEX idx_chests_key ON chests(key_required_id);
 CREATE TABLE chest_drops (
     chest_id TEXT NOT NULL REFERENCES chests(id),
     item_id TEXT NOT NULL REFERENCES items(id),
-    drop_rate REAL NOT NULL,
+    drop_rate REAL NOT NULL,  -- Per-roll probability from game data
+    actual_drop_chance REAL,  -- Calculated: (1 / num_drops) * drop_rate
 
     PRIMARY KEY (chest_id, item_id)
 );

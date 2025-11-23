@@ -1185,7 +1185,14 @@
                       <div>Zone: {gather.zone_name}</div>
                     {/if}
                     {#if gather.key_name}
-                      <div>Key: {gather.key_name}</div>
+                      <div>
+                        Key: <a
+                          href={resolve("/items/[id]", {
+                            id: gather.key_required_id,
+                          })}
+                          class={styles.link}>{gather.key_name}</a
+                        >
+                      </div>
                     {/if}
                   </div>
                 </div>
