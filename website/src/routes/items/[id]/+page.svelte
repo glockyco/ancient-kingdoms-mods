@@ -452,11 +452,6 @@
           <div class={styles.label}>Tradable</div>
           <div class={styles.value}>{data.item.tradable ? "Yes" : "No"}</div>
         </div>
-
-        <div>
-          <div class={styles.label}>Sellable</div>
-          <div class={styles.value}>{data.item.sellable ? "Yes" : "No"}</div>
-        </div>
       {/if}
     </Card.Content>
   </Card.Root>
