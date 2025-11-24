@@ -327,14 +327,14 @@
       <Card.Title>Basic Information</Card.Title>
     </Card.Header>
     <Card.Content class="grid grid-cols-2 md:grid-cols-3 gap-4">
-      {#if data.item.level_required > 0}
+      {#if data.item.level_required > 1}
         <div>
           <div class={styles.label}>Level Required</div>
           <div class={styles.value}>{data.item.level_required}</div>
         </div>
       {/if}
 
-      {#if computed.classRequired.length > 0}
+      {#if computed.classRequired.length > 0 && computed.classRequired.length < 6 && !computed.classRequired.includes("All")}
         <div>
           <div class={styles.label}>Class Required</div>
           <div class={styles.value}>{computed.classRequired.join(", ")}</div>
