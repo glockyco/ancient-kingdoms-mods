@@ -228,6 +228,8 @@
           level_recommended: number;
           purpose: string;
           amount: number;
+          is_repeatable: boolean;
+          class_restrictions: string[] | null;
         }>
       >(data.item.needed_for_quests),
       usedAsCurrencyFor: parseJson<
@@ -1409,27 +1411,60 @@
 
     <!-- Required for Quests -->
     {#if computed.neededForQuests && computed.neededForQuests.length > 0}
+      {@const repeatableQuests = computed.neededForQuests.filter((q) => q.is_repeatable)}
+      {@const oneTimeQuests = computed.neededForQuests.filter((q) => !q.is_repeatable)}
       <Card.Root>
         <Card.Header>
           <Card.Title>Required for Quests</Card.Title>
         </Card.Header>
-        <Card.Content>
-          <div class="space-y-2">
-            {#each computed.neededForQuests as quest, index (`${quest.quest_id}_${quest.purpose}_${index}`)}
-              <div class="flex justify-between items-center">
-                <a
-                  href={resolve("/quests/[id]", { id: quest.quest_id })}
-                  class={styles.link}
-                >
-                  {quest.quest_name}
-                  <span class={styles.label}>(Lv {quest.level_required})</span>
-                </a>
-                <span class={styles.label}
-                  >{quest.purpose} (x{quest.amount})</span
-                >
+        <Card.Content class="space-y-4">
+          {#if repeatableQuests.length > 0}
+            <div>
+              <div class="{styles.label} mb-2">Repeatable Quests</div>
+              <div class="space-y-2">
+                {#each repeatableQuests as quest, index (`${quest.quest_id}_${quest.purpose}_${index}`)}
+                  <div class="flex justify-between items-center">
+                    <a
+                      href={resolve("/quests/[id]", { id: quest.quest_id })}
+                      class={styles.link}
+                    >
+                      {quest.quest_name}
+                      <span class={styles.label}>
+                        (Lv {quest.level_required}{#if quest.class_restrictions && quest.class_restrictions.length < 6}, {quest.class_restrictions.join(", ")}{/if})
+                      </span>
+                    </a>
+                    <span class={styles.label}
+                      >{quest.purpose} (x{quest.amount})</span
+                    >
+                  </div>
+                {/each}
               </div>
-            {/each}
-          </div>
+            </div>
+          {/if}
+
+          {#if oneTimeQuests.length > 0}
+            <div>
+              <div class="{styles.label} mb-2">One-Time Quests</div>
+              <div class="space-y-2">
+                {#each oneTimeQuests as quest, index (`${quest.quest_id}_${quest.purpose}_${index}`)}
+                  <div class="flex justify-between items-center">
+                    <a
+                      href={resolve("/quests/[id]", { id: quest.quest_id })}
+                      class={styles.link}
+                    >
+                      {quest.quest_name}
+                      <span class={styles.label}>
+                        (Lv {quest.level_required}{#if quest.class_restrictions && quest.class_restrictions.length < 6}, {quest.class_restrictions.join(", ")}{/if})
+                      </span>
+                    </a>
+                    <span class={styles.label}
+                      >{quest.purpose} (x{quest.amount})</span
+                    >
+                  </div>
+                {/each}
+              </div>
+            </div>
+          {/if}
         </Card.Content>
       </Card.Root>
     {/if}

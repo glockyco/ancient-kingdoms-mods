@@ -1330,7 +1330,8 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
     cursor.execute("""
         SELECT id, name, level_required, level_recommended,
                gather_item_1_id, gather_amount_1, gather_item_2_id, gather_amount_2,
-               gather_item_3_id, gather_amount_3, gather_items, required_items, equip_items
+               gather_item_3_id, gather_amount_3, gather_items, required_items, equip_items,
+               is_adventurer_quest, class_requirements
         FROM quests
     """)
 
@@ -1341,6 +1342,15 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
         quest_name = row[1]
         level_required = row[2]
         level_recommended = row[3]
+        is_adventurer_quest = row[13]
+        class_requirements_json = row[14]
+
+        # Parse class requirements
+        class_restrictions = (
+            sorted(json.loads(class_requirements_json))
+            if class_requirements_json
+            else None
+        )
 
         # Process gather_item_1, 2, 3
         if row[4]:  # gather_item_1_id
@@ -1355,6 +1365,8 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
                     "level_recommended": level_recommended,
                     "purpose": "gather",
                     "amount": row[5] or 1,  # gather_amount_1
+                    "is_repeatable": bool(is_adventurer_quest),
+                    "class_restrictions": class_restrictions,
                 }
             )
 
@@ -1370,6 +1382,8 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
                     "level_recommended": level_recommended,
                     "purpose": "gather",
                     "amount": row[7] or 1,  # gather_amount_2
+                    "is_repeatable": bool(is_adventurer_quest),
+                    "class_restrictions": class_restrictions,
                 }
             )
 
@@ -1385,6 +1399,8 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
                     "level_recommended": level_recommended,
                     "purpose": "gather",
                     "amount": row[9] or 1,  # gather_amount_3
+                    "is_repeatable": bool(is_adventurer_quest),
+                    "class_restrictions": class_restrictions,
                 }
             )
 
@@ -1404,6 +1420,8 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
                             "level_recommended": level_recommended,
                             "purpose": "gather",
                             "amount": item_obj.get("amount", 1),
+                            "is_repeatable": bool(is_adventurer_quest),
+                            "class_restrictions": class_restrictions,
                         }
                     )
 
@@ -1423,6 +1441,8 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
                             "level_recommended": level_recommended,
                             "purpose": "required",
                             "amount": item_obj.get("amount", 1),
+                            "is_repeatable": bool(is_adventurer_quest),
+                            "class_restrictions": class_restrictions,
                         }
                     )
 
@@ -1441,6 +1461,8 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
                             "level_recommended": level_recommended,
                             "purpose": "equip",
                             "amount": 1,
+                            "is_repeatable": bool(is_adventurer_quest),
+                            "class_restrictions": class_restrictions,
                         }
                     )
 
