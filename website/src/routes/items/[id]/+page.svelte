@@ -51,7 +51,6 @@
     "spell_haste",
   ]);
 
-
   function formatStatValue(
     stat: string,
     value: number | boolean | string,
@@ -837,14 +836,18 @@
       <Card.Content class="grid grid-cols-2 md:grid-cols-3 gap-4">
         {#if data.item.usage_health > 0}
           <div>
-            <div class={styles.label}>Restores {formatResourceName("health")}</div>
+            <div class={styles.label}>
+              Restores {formatResourceName("health")}
+            </div>
             <div class={styles.valuePositive}>+{data.item.usage_health} HP</div>
           </div>
         {/if}
 
         {#if data.item.usage_mana > 0}
           <div>
-            <div class={styles.label}>Restores {formatResourceName("mana")}</div>
+            <div class={styles.label}>
+              Restores {formatResourceName("mana")}
+            </div>
             <div class="font-medium text-blue-600 dark:text-blue-400">
               +{data.item.usage_mana} MP
             </div>
@@ -853,9 +856,12 @@
 
         {#if data.item.usage_energy > 0}
           <div>
-            <div class={styles.label}>Restores {formatResourceName("energy")}</div>
+            <div class={styles.label}>
+              Restores {formatResourceName("energy")}
+            </div>
             <div class={styles.valueCurrency}>
-              +{data.item.usage_energy} {formatResourceName("energy")}
+              +{data.item.usage_energy}
+              {formatResourceName("energy")}
             </div>
           </div>
         {/if}
@@ -1124,8 +1130,12 @@
 
     <!-- Rewarded by Quests -->
     {#if computed.rewardedBy && computed.rewardedBy.length > 0}
-      {@const repeatableQuests = computed.rewardedBy.filter((q) => q.is_repeatable)}
-      {@const oneTimeQuests = computed.rewardedBy.filter((q) => !q.is_repeatable)}
+      {@const repeatableQuests = computed.rewardedBy.filter(
+        (q) => q.is_repeatable,
+      )}
+      {@const oneTimeQuests = computed.rewardedBy.filter(
+        (q) => !q.is_repeatable,
+      )}
       <Card.Root>
         <Card.Header>
           <Card.Title>Rewarded by Quests</Card.Title>
@@ -1143,7 +1153,8 @@
                     >
                       {quest.quest_name}
                       <span class={styles.label}>
-                        (Lv {quest.level_required}{#if quest.class_restrictions && quest.class_restrictions.length > 0 && quest.class_restrictions.length < 6}, {quest.class_restrictions.join(", ")}{/if})
+                        (Lv {quest.level_required}{#if quest.class_restrictions && quest.class_restrictions.length > 0 && quest.class_restrictions.length < 6},
+                          {quest.class_restrictions.join(", ")}{/if})
                       </span>
                     </a>
                   </div>
@@ -1164,7 +1175,8 @@
                     >
                       {quest.quest_name}
                       <span class={styles.label}>
-                        (Lv {quest.level_required}{#if quest.class_restrictions && quest.class_restrictions.length > 0 && quest.class_restrictions.length < 6}, {quest.class_restrictions.join(", ")}{/if})
+                        (Lv {quest.level_required}{#if quest.class_restrictions && quest.class_restrictions.length > 0 && quest.class_restrictions.length < 6},
+                          {quest.class_restrictions.join(", ")}{/if})
                       </span>
                     </a>
                   </div>
@@ -1244,11 +1256,15 @@
                 <div>
                   <span class={styles.value}>{portal.from_zone_name}</span>
                   <span class={styles.label}>
-                    ({Math.round(portal.position_x)}, {Math.round(portal.position_y)})
+                    ({Math.round(portal.position_x)}, {Math.round(
+                      portal.position_y,
+                    )})
                   </span>
                 </div>
                 <div class="{styles.label} pl-2">
-                  → {portal.to_zone_name} ({Math.round(portal.destination_x)}, {Math.round(portal.destination_y)})
+                  → {portal.to_zone_name} ({Math.round(portal.destination_x)}, {Math.round(
+                    portal.destination_y,
+                  )})
                 </div>
               </div>
             {/each}
@@ -1461,8 +1477,12 @@
 
     <!-- Required for Quests -->
     {#if computed.neededForQuests && computed.neededForQuests.length > 0}
-      {@const repeatableQuests = computed.neededForQuests.filter((q) => q.is_repeatable)}
-      {@const oneTimeQuests = computed.neededForQuests.filter((q) => !q.is_repeatable)}
+      {@const repeatableQuests = computed.neededForQuests.filter(
+        (q) => q.is_repeatable,
+      )}
+      {@const oneTimeQuests = computed.neededForQuests.filter(
+        (q) => !q.is_repeatable,
+      )}
       <Card.Root>
         <Card.Header>
           <Card.Title>Required for Quests</Card.Title>
@@ -1480,7 +1500,8 @@
                     >
                       {quest.quest_name}
                       <span class={styles.label}>
-                        (Lv {quest.level_required}{#if quest.class_restrictions && quest.class_restrictions.length > 0 && quest.class_restrictions.length < 6}, {quest.class_restrictions.join(", ")}{/if})
+                        (Lv {quest.level_required}{#if quest.class_restrictions && quest.class_restrictions.length > 0 && quest.class_restrictions.length < 6},
+                          {quest.class_restrictions.join(", ")}{/if})
                       </span>
                     </a>
                     <span class={styles.label}
@@ -1504,7 +1525,8 @@
                     >
                       {quest.quest_name}
                       <span class={styles.label}>
-                        (Lv {quest.level_required}{#if quest.class_restrictions && quest.class_restrictions.length > 0 && quest.class_restrictions.length < 6}, {quest.class_restrictions.join(", ")}{/if})
+                        (Lv {quest.level_required}{#if quest.class_restrictions && quest.class_restrictions.length > 0 && quest.class_restrictions.length < 6},
+                          {quest.class_restrictions.join(", ")}{/if})
                       </span>
                     </a>
                     <span class={styles.label}
