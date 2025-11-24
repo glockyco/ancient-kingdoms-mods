@@ -40,10 +40,21 @@ export const load: PageServerLoad = ({ params }): ItemDetailPageData => {
       .all() as Array<{ id: string; name: string }>;
   }
 
+  // For token of redemption, get all veteran master NPCs
+  let veteranMasters: Array<{ id: string; name: string }> = [];
+  if (params.id === "token_of_redemption") {
+    veteranMasters = db
+      .prepare(
+        `SELECT id, name FROM npcs WHERE json_extract(roles, '$.is_veteran_master') = 1`,
+      )
+      .all() as Array<{ id: string; name: string }>;
+  }
+
   db.close();
 
   return {
     item,
     essenceTraders,
+    veteranMasters,
   };
 };

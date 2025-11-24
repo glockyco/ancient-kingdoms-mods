@@ -569,6 +569,35 @@
             </div>
           </Card.Content>
         </Card.Root>
+      {:else if data.item.id === "token_of_redemption" && data.veteranMasters.length > 0}
+        <!-- Token of Redemption Usage -->
+        <Card.Root>
+          <Card.Header>
+            <Card.Title>Usage</Card.Title>
+          </Card.Header>
+          <Card.Content>
+            <div class="space-y-3">
+              <div>
+                <div class={styles.label}>Purpose</div>
+                <div class={styles.value}>Resets veteran skill points</div>
+              </div>
+              <div>
+                <div class={styles.label}>Cost</div>
+                <div class={styles.value}>10,000g + Token of Redemption</div>
+              </div>
+              <div>
+                <div class={styles.label}>Available from</div>
+                <div class="space-y-1 mt-1">
+                  {#each data.veteranMasters as master (master.id)}
+                    <a href="/npcs/{master.id}" class={styles.link}>
+                      {master.name}
+                    </a>
+                  {/each}
+                </div>
+              </div>
+            </div>
+          </Card.Content>
+        </Card.Root>
       {:else if data.item.pack_final_item_id}
         <!-- Pack Contents -->
         <Card.Root>

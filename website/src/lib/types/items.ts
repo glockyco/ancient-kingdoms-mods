@@ -28,4 +28,5 @@ export interface ItemsPageData {
 export interface ItemDetailPageData {
   item: Item;
   essenceTraders: Array<{ id: string; name: string }>;
+  veteranMasters: Array<{ id: string; name: string }>;
 }
