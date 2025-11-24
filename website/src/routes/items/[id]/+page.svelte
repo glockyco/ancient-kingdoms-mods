@@ -1302,7 +1302,7 @@
                     {#if gather.zone_name}
                       <div>Zone: {gather.zone_name}</div>
                     {/if}
-                    {#if gather.key_name}
+                    {#if gather.key_name && gather.key_required_id}
                       <div>
                         Key: <a
                           href={resolve("/items/[id]", {
