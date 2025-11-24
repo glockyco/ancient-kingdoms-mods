@@ -2075,9 +2075,9 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
             )
 
     for outcome_id, random_sources in found_in_random.items():
-        # Sort by name alphabetically
+        # Sort by probability (descending), then by name (ascending)
         random_sources_sorted = sorted(
-            random_sources, key=lambda x: x["random_item_name"]
+            random_sources, key=lambda x: (-x["probability"], x["random_item_name"])
         )
         update_cursor = conn.cursor()
         update_cursor.execute(
