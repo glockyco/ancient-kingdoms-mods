@@ -1093,7 +1093,7 @@
                     >
                       {quest.quest_name}
                       <span class={styles.label}>
-                        (Lv {quest.level_required}{#if quest.class_restrictions && quest.class_restrictions.length < 6}, {quest.class_restrictions.join(", ")}{/if})
+                        (Lv {quest.level_required}{#if quest.class_restrictions && quest.class_restrictions.length > 0 && quest.class_restrictions.length < 6}, {quest.class_restrictions.join(", ")}{/if})
                       </span>
                     </a>
                   </div>
@@ -1114,7 +1114,7 @@
                     >
                       {quest.quest_name}
                       <span class={styles.label}>
-                        (Lv {quest.level_required}{#if quest.class_restrictions && quest.class_restrictions.length < 6}, {quest.class_restrictions.join(", ")}{/if})
+                        (Lv {quest.level_required}{#if quest.class_restrictions && quest.class_restrictions.length > 0 && quest.class_restrictions.length < 6}, {quest.class_restrictions.join(", ")}{/if})
                       </span>
                     </a>
                   </div>
@@ -1430,7 +1430,7 @@
                     >
                       {quest.quest_name}
                       <span class={styles.label}>
-                        (Lv {quest.level_required}{#if quest.class_restrictions && quest.class_restrictions.length < 6}, {quest.class_restrictions.join(", ")}{/if})
+                        (Lv {quest.level_required}{#if quest.class_restrictions && quest.class_restrictions.length > 0 && quest.class_restrictions.length < 6}, {quest.class_restrictions.join(", ")}{/if})
                       </span>
                     </a>
                     <span class={styles.label}
@@ -1454,7 +1454,7 @@
                     >
                       {quest.quest_name}
                       <span class={styles.label}>
-                        (Lv {quest.level_required}{#if quest.class_restrictions && quest.class_restrictions.length < 6}, {quest.class_restrictions.join(", ")}{/if})
+                        (Lv {quest.level_required}{#if quest.class_restrictions && quest.class_restrictions.length > 0 && quest.class_restrictions.length < 6}, {quest.class_restrictions.join(", ")}{/if})
                       </span>
                     </a>
                     <span class={styles.label}

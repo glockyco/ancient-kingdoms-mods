@@ -908,11 +908,13 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
         items = rewards.get("items", [])
 
         # Parse quest-level class requirements
-        quest_class_requirements = (
-            json.loads(quest_class_requirements_json)
-            if quest_class_requirements_json
-            else None
-        )
+        if quest_class_requirements_json:
+            parsed_quest_class_req = json.loads(quest_class_requirements_json)
+            quest_class_requirements = (
+                sorted(parsed_quest_class_req) if parsed_quest_class_req else None
+            )
+        else:
+            quest_class_requirements = None
 
         # Group items by item_id to collect class restrictions
         item_groups: dict[str, list[str | None]] = {}
@@ -1346,11 +1348,11 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
         class_requirements_json = row[14]
 
         # Parse class requirements
-        class_restrictions = (
-            sorted(json.loads(class_requirements_json))
-            if class_requirements_json
-            else None
-        )
+        if class_requirements_json:
+            parsed_class_req = json.loads(class_requirements_json)
+            class_restrictions = sorted(parsed_class_req) if parsed_class_req else None
+        else:
+            class_restrictions = None
 
         # Process gather_item_1, 2, 3
         if row[4]:  # gather_item_1_id
