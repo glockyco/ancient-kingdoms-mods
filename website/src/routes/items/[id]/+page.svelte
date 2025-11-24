@@ -68,6 +68,14 @@
     return `${value > 0 ? "+" : ""}${value}`;
   }
 
+  /**
+   * Format gold amounts with narrow space thousands separator (U+202F).
+   * Examples: 1234 → "1 234", 10000 → "10 000"
+   */
+  function formatGold(amount: number): string {
+    return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "\u202F");
+  }
+
   // Compute all derived values from item data
   const computed = $derived.by(() => {
     // Stats include both numeric stats and metadata fields
@@ -388,17 +396,31 @@
         </div>
       {/if}
 
-      {#if data.item.buy_price > 0}
+      {#if data.item.buy_price > 0 && computed.soldBy && computed.soldBy.length > 0}
         <div>
           <div class={styles.label}>Buy Price</div>
-          <div class={styles.valueCurrency}>{data.item.buy_price}g</div>
+          <div class={styles.valueCurrency}>
+            {#if computed.soldBy[0].currency_item_id}
+              {formatGold(data.item.buy_price)}
+              <a
+                href={resolve("/items/[id]", {
+                  id: computed.soldBy[0].currency_item_id,
+                })}
+                class={styles.link}
+              >
+                {computed.soldBy[0].currency_item_name}
+              </a>
+            {:else}
+              {formatGold(data.item.buy_price)}g
+            {/if}
+          </div>
         </div>
       {/if}
 
-      {#if data.item.sell_price > 0}
+      {#if data.item.sell_price > 0 && data.item.sellable}
         <div>
           <div class={styles.label}>Sell Price</div>
-          <div class={styles.valueCurrency}>{data.item.sell_price}g</div>
+          <div class={styles.valueCurrency}>{formatGold(data.item.sell_price)}g</div>
         </div>
       {/if}
 
@@ -603,7 +625,7 @@
               </div>
               <div>
                 <div class={styles.label}>Cost</div>
-                <div class={styles.value}>10,000g + Token of Redemption</div>
+                <div class={styles.value}>{formatGold(10000)}g + Token of Redemption</div>
               </div>
               <div>
                 <div class={styles.label}>Available from</div>
@@ -1118,7 +1140,7 @@
                       {vendor.currency_item_name}
                     </a>
                   {:else}
-                    {vendor.price}g
+                    {formatGold(vendor.price)}g
                   {/if}
                 </span>
               </div>
