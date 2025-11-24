@@ -1885,6 +1885,13 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
 
     cursor.execute("""
         UPDATE items
+        SET weapon_proc_effect_name = (SELECT name FROM skills WHERE skills.id = items.weapon_proc_effect_id)
+        WHERE weapon_proc_effect_id IS NOT NULL
+    """)
+    weapon_proc_count = cursor.rowcount
+
+    cursor.execute("""
+        UPDATE items
         SET fragment_result_item_name = (SELECT name FROM items AS i WHERE i.id = items.fragment_result_item_id)
         WHERE fragment_result_item_id IS NOT NULL
     """)

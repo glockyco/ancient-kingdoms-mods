@@ -154,6 +154,7 @@ CREATE TABLE items (
     structure_available_rotations TEXT,  -- JSON array
     weapon_proc_effect_probability REAL DEFAULT 0.0,
     weapon_proc_effect_id TEXT REFERENCES skills(id),
+    weapon_proc_effect_name TEXT,
     weapon_delay INTEGER DEFAULT 0,
     weapon_required_ammo_id TEXT REFERENCES items(id),
     fragment_amount_needed INTEGER DEFAULT 0,

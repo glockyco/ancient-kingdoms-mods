@@ -480,13 +480,31 @@
       {/if}
 
       <!-- Stats (hidden for set bonus augments since those stats are shown as set bonuses) -->
-      {#if (data.item.item_type !== "augment" || !data.item.augment_armor_set_name) && ((computed.stats && Object.keys(computed.stats).length > 0) || data.item.weapon_delay > 0)}
+      {#if (data.item.item_type !== "augment" || !data.item.augment_armor_set_name) && ((computed.stats && Object.keys(computed.stats).length > 0) || data.item.weapon_delay > 0 || data.item.weapon_proc_effect_id)}
         <Card.Root>
           <Card.Header>
             <Card.Title>Stats</Card.Title>
           </Card.Header>
           <Card.Content>
             <div class="grid grid-cols-2 gap-3">
+              {#if data.item.weapon_proc_effect_id}
+                <div
+                  class="flex justify-between items-center p-2 rounded bg-muted col-span-2"
+                >
+                  <span class="text-sm font-medium">On-Hit Effect</span>
+                  <span class="text-sm">
+                    <a
+                      href="/skills/{data.item.weapon_proc_effect_id}"
+                      class={styles.link}
+                    >
+                      {data.item.weapon_proc_effect_name || data.item.weapon_proc_effect_id}
+                    </a>
+                    <span class={styles.label}>
+                      ({(data.item.weapon_proc_effect_probability * 100).toFixed(0)}% chance)
+                    </span>
+                  </span>
+                </div>
+              {/if}
               {#if data.item.weapon_delay > 0}
                 <div
                   class="flex justify-between items-center p-2 rounded bg-muted"
