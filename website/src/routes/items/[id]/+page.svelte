@@ -199,6 +199,14 @@
           amount_max?: number;
         }>
       >(data.item.gathered_from),
+      opensChests: parseJson<
+        Array<{
+          chest_id: string;
+          chest_name: string;
+          zone_id?: string;
+          zone_name?: string;
+        }>
+      >(data.item.opens_chests),
       createdFromMerge: parseJson<
         Array<{
           item_id: string;
@@ -1363,6 +1371,29 @@
                   </span>
                 </div>
               {/if}
+            {/each}
+          </div>
+        </Card.Content>
+      </Card.Root>
+    {/if}
+
+    <!-- Opens Chests -->
+    {#if computed.opensChests && computed.opensChests.length > 0}
+      <Card.Root>
+        <Card.Header>
+          <Card.Title>Opens Chests</Card.Title>
+        </Card.Header>
+        <Card.Content>
+          <div class="space-y-2">
+            {#each computed.opensChests as chest (chest.chest_id)}
+              <div class="space-y-0.5">
+                <div class={styles.value}>Chest</div>
+                {#if chest.zone_name}
+                  <div class="{styles.label} pl-2">
+                    Zone: {chest.zone_name}
+                  </div>
+                {/if}
+              </div>
             {/each}
           </div>
         </Card.Content>

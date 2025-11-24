@@ -134,6 +134,7 @@ export interface Item {
   required_for_portals: string | null; // JSON
   crafted_from: string | null; // JSON
   gathered_from: string | null; // JSON
+  opens_chests: string | null; // JSON
   created_from_merge: string | null; // JSON
   found_in_chests: string | null; // JSON
   found_in_packs: string | null; // JSON

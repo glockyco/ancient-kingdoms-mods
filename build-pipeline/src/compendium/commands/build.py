@@ -1295,6 +1295,41 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
             (json.dumps(gathers_sorted), item_id),
         )
 
+    # Build opens_chests from chests.key_required_id
+    console.print("  Processing key-chest relationships...")
+    cursor.execute("""
+        SELECT c.key_required_id, c.id, c.name, c.zone_id, z.name as zone_name
+        FROM chests c
+        LEFT JOIN zones z ON c.zone_id = z.id
+        WHERE c.key_required_id IS NOT NULL AND c.key_required_id != ''
+        ORDER BY z.name, c.name
+    """)
+
+    opens_chests: dict[str, list[dict]] = {}
+
+    for key_id, chest_id, chest_name, zone_id, zone_name in cursor.fetchall():
+        if key_id not in opens_chests:
+            opens_chests[key_id] = []
+
+        chest_info = {
+            "chest_id": chest_id,
+            "chest_name": chest_name,
+        }
+
+        if zone_id:
+            chest_info["zone_id"] = zone_id
+        if zone_name:
+            chest_info["zone_name"] = zone_name
+
+        opens_chests[key_id].append(chest_info)
+
+    for key_id, chests in opens_chests.items():
+        # Already sorted by zone_name, chest_name in query
+        cursor.execute(
+            "UPDATE items SET opens_chests = ? WHERE id = ?",
+            (json.dumps(chests), key_id),
+        )
+
     # Build used_in_recipes from crafting_recipes.materials
     console.print("  Processing recipe materials...")
     cursor.execute("""
