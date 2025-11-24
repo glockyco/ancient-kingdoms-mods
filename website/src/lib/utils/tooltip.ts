@@ -1,4 +1,5 @@
 import type { Item } from "$lib/queries/items";
+import { formatStatName } from "$lib/terminology";
 
 /**
  * Parse Unity TextMeshPro markup and replace placeholders with actual item values.
@@ -42,7 +43,8 @@ export function parseTooltip(tooltip: string, item: Item): string {
       : [];
     if (attributeBonuses.length > 0) {
       for (const bonus of attributeBonuses) {
-        setBonus += `\n<color=#676a75>Set (3): Increases ${bonus.attribute} by ${bonus.bonus}</color>`;
+        const formattedAttribute = formatStatName(bonus.attribute);
+        setBonus += `\n<color=#676a75>Set (3): Increases ${formattedAttribute} by ${bonus.bonus}</color>`;
       }
     }
 

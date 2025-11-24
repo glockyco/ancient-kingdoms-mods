@@ -4,6 +4,7 @@
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import { STATS_METADATA_FIELDS } from "$lib/constants/items";
   import { parseTooltip } from "$lib/utils/tooltip";
+  import { formatStatName, formatResourceName } from "$lib/terminology";
   import type { PageData } from "./$types";
 
   let { data }: { data: PageData } = $props();
@@ -50,12 +51,6 @@
     "spell_haste",
   ]);
 
-  function formatStatName(stat: string): string {
-    return stat
-      .split("_")
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(" ");
-  }
 
   function formatStatValue(
     stat: string,
@@ -747,7 +742,7 @@
                 <div
                   class="flex items-center justify-between p-2 rounded bg-muted"
                 >
-                  <span>{bonus.attribute}</span>
+                  <span>{formatStatName(bonus.attribute)}</span>
                   <span class={styles.valuePositive}>+{bonus.bonus}</span>
                 </div>
               {/each}
@@ -790,14 +785,14 @@
       <Card.Content class="grid grid-cols-2 md:grid-cols-3 gap-4">
         {#if data.item.usage_health > 0}
           <div>
-            <div class={styles.label}>Restores Health</div>
+            <div class={styles.label}>Restores {formatResourceName("health")}</div>
             <div class={styles.valuePositive}>+{data.item.usage_health} HP</div>
           </div>
         {/if}
 
         {#if data.item.usage_mana > 0}
           <div>
-            <div class={styles.label}>Restores Mana</div>
+            <div class={styles.label}>Restores {formatResourceName("mana")}</div>
             <div class="font-medium text-blue-600 dark:text-blue-400">
               +{data.item.usage_mana} MP
             </div>
@@ -806,9 +801,9 @@
 
         {#if data.item.usage_energy > 0}
           <div>
-            <div class={styles.label}>Restores Energy</div>
+            <div class={styles.label}>Restores {formatResourceName("energy")}</div>
             <div class={styles.valueCurrency}>
-              +{data.item.usage_energy} Energy
+              +{data.item.usage_energy} {formatResourceName("energy")}
             </div>
           </div>
         {/if}
