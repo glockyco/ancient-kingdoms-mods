@@ -336,10 +336,31 @@
         </div>
       {/if}
 
+      {#if data.item.backpack_slots > 0}
+        <div>
+          <div class={styles.label}>Backpack Slots</div>
+          <div class={styles.value}>{data.item.backpack_slots}</div>
+        </div>
+      {/if}
+
       {#if computed.maxDurability}
         <div>
           <div class={styles.label}>Max Durability</div>
           <div class={styles.value}>{computed.maxDurability}</div>
+        </div>
+      {/if}
+
+      {#if data.item.mount_speed > 0}
+        <div>
+          <div class={styles.label}>Mount Speed</div>
+          <div class={styles.value}>{data.item.mount_speed}</div>
+        </div>
+      {/if}
+
+      {#if data.item.food_type}
+        <div>
+          <div class={styles.label}>Food Type</div>
+          <div class={styles.value}>{data.item.food_type}</div>
         </div>
       {/if}
 
