@@ -197,6 +197,8 @@
           key_name?: string;
           amount_min?: number;
           amount_max?: number;
+          position_x?: number;
+          position_y?: number;
         }>
       >(data.item.gathered_from),
       opensChests: parseJson<
@@ -205,6 +207,8 @@
           chest_name: string;
           zone_id?: string;
           zone_name?: string;
+          position_x: number;
+          position_y: number;
         }>
       >(data.item.opens_chests),
       createdFromMerge: parseJson<
@@ -1339,14 +1343,26 @@
               {#if gather.type === "chest"}
                 <div class="space-y-1">
                   <div class="flex justify-between items-center">
-                    <span class={styles.value}>Chest</span>
+                    <a
+                      href="/gather-items/{gather.gather_item_id}"
+                      class={styles.link}
+                    >
+                      Chest
+                    </a>
                     <span class={styles.label}
                       >{(gather.rate * 100).toFixed(1)}%</span
                     >
                   </div>
                   <div class="{styles.label} pl-2 space-y-0.5">
                     {#if gather.zone_name}
-                      <div>Zone: {gather.zone_name}</div>
+                      <div>
+                        <span class={styles.value}>{gather.zone_name}</span>
+                        {#if gather.position_x !== undefined && gather.position_y !== undefined}
+                          <span class={styles.label}>
+                            ({Math.round(gather.position_x)}, {Math.round(gather.position_y)})
+                          </span>
+                        {/if}
+                      </div>
                     {/if}
                     {#if gather.key_name && gather.key_required_id}
                       <div>
@@ -1362,7 +1378,12 @@
                 </div>
               {:else}
                 <div class="flex justify-between items-center">
-                  <span class={styles.value}>{gather.gather_item_name}</span>
+                  <a
+                    href="/gather-items/{gather.gather_item_id}"
+                    class={styles.link}
+                  >
+                    {gather.gather_item_name}
+                  </a>
                   <span class={styles.label}>
                     {(gather.rate * 100).toFixed(1)}%
                     {#if gather.amount_min !== undefined && gather.amount_max !== undefined}
@@ -1387,10 +1408,18 @@
           <div class="space-y-2">
             {#each computed.opensChests as chest (chest.chest_id)}
               <div class="space-y-0.5">
-                <div class={styles.value}>Chest</div>
+                <a
+                  href="/gather-items/{chest.chest_id}"
+                  class={styles.link}
+                >
+                  Chest
+                </a>
                 {#if chest.zone_name}
                   <div class="{styles.label} pl-2">
-                    Zone: {chest.zone_name}
+                    <span class={styles.value}>{chest.zone_name}</span>
+                    <span class={styles.label}>
+                      ({Math.round(chest.position_x)}, {Math.round(chest.position_y)})
+                    </span>
                   </div>
                 {/if}
               </div>

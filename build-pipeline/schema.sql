@@ -206,7 +206,7 @@ CREATE TABLE items (
     required_for_portals TEXT,      -- JSON: [{"portal_id": "portal_123", "from_zone_id": "krom_razz", "from_zone_name": "Krom Razz", "to_zone_id": "krom_razz", "to_zone_name": "Krom Razz", "position_x": 743.55, "position_y": 350.82, "destination_x": 761.4, "destination_y": 357.42}]
     crafted_from TEXT,              -- JSON: [{"recipe_id": "recipe_0", "result_amount": 1}]
     gathered_from TEXT,             -- JSON: [{"gather_item_id": "iron_ore", "rate": 0.1}]
-    opens_chests TEXT,              -- JSON: [{"chest_id": "chest_rf_greendungeon1_reward3", "chest_name": "Chest RF GreenDungeon1", "zone_id": "the_twisted_haunt", "zone_name": "The Twisted Haunt"}]
+    opens_chests TEXT,              -- JSON: [{"chest_id": "chest_rf_greendungeon1_reward3", "chest_name": "Chest RF GreenDungeon1", "zone_id": "the_twisted_haunt", "zone_name": "The Twisted Haunt", "position_x": 527.9929, "position_y": 55.8}]
     created_from_merge TEXT,        -- JSON: [{"item_id": "a_cunning_society", "item_name": "A Cunning Society"}, ...]
     found_in_chests TEXT,           -- JSON: [{"chest_id": "chest_of_lost_adventurers_dwarves", "chest_name": "Chest of Lost Adventurers (Dwarves)", "rate": 0.02}]
     found_in_packs TEXT,            -- JSON: [{"pack_id": "pack_10_arrows", "pack_name": "Pack 10 Arrows", "amount": 10}]

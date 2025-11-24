@@ -760,7 +760,8 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
     cursor.execute("""
         SELECT c.id, c.name, c.item_reward_id, c.item_reward_amount,
                c.zone_id, z.name as zone_name,
-               c.key_required_id, k.name as key_name
+               c.key_required_id, k.name as key_name,
+               c.position_x, c.position_y
         FROM chests c
         LEFT JOIN zones z ON c.zone_id = z.id
         LEFT JOIN items k ON c.key_required_id = k.id
@@ -777,6 +778,8 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
         zone_name,
         key_id,
         key_name,
+        position_x,
+        position_y,
     ) in cursor.fetchall():
         if item_id not in gathered_from:
             gathered_from[item_id] = []
@@ -786,6 +789,8 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
             "gather_item_name": chest_name,
             "rate": 1.0,  # Guaranteed reward
             "type": "chest",
+            "position_x": position_x,
+            "position_y": position_y,
         }
 
         # Add chest-specific fields
@@ -810,7 +815,8 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
     cursor.execute("""
         SELECT c.id, c.name, cd.item_id, cd.actual_drop_chance,
                c.zone_id, z.name as zone_name,
-               c.key_required_id, k.name as key_name
+               c.key_required_id, k.name as key_name,
+               c.position_x, c.position_y
         FROM chests c
         JOIN chest_drops cd ON c.id = cd.chest_id
         LEFT JOIN zones z ON c.zone_id = z.id
@@ -827,6 +833,8 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
         zone_name,
         key_id,
         key_name,
+        position_x,
+        position_y,
     ) in cursor.fetchall():
         if item_id not in gathered_from:
             gathered_from[item_id] = []
@@ -836,6 +844,8 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
             "gather_item_name": chest_name,
             "rate": actual_drop_chance,  # Use calculated drop chance
             "type": "chest",
+            "position_x": position_x,
+            "position_y": position_y,
         }
 
         # Add chest-specific fields
@@ -1298,7 +1308,8 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
     # Build opens_chests from chests.key_required_id
     console.print("  Processing key-chest relationships...")
     cursor.execute("""
-        SELECT c.key_required_id, c.id, c.name, c.zone_id, z.name as zone_name
+        SELECT c.key_required_id, c.id, c.name, c.zone_id, z.name as zone_name,
+               c.position_x, c.position_y
         FROM chests c
         LEFT JOIN zones z ON c.zone_id = z.id
         WHERE c.key_required_id IS NOT NULL AND c.key_required_id != ''
@@ -1307,13 +1318,23 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
 
     opens_chests: dict[str, list[dict]] = {}
 
-    for key_id, chest_id, chest_name, zone_id, zone_name in cursor.fetchall():
+    for (
+        key_id,
+        chest_id,
+        chest_name,
+        zone_id,
+        zone_name,
+        position_x,
+        position_y,
+    ) in cursor.fetchall():
         if key_id not in opens_chests:
             opens_chests[key_id] = []
 
         chest_info = {
             "chest_id": chest_id,
             "chest_name": chest_name,
+            "position_x": position_x,
+            "position_y": position_y,
         }
 
         if zone_id:
