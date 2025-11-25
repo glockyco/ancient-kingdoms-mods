@@ -23,6 +23,7 @@ from compendium.models import (
     QuestData,
     SkillData,
     SummonTriggerData,
+    TreasureLocationData,
     ZoneData,
     ZoneTriggerData,
 )
@@ -480,6 +481,28 @@ def load_portals(conn: sqlite3.Connection, export_dir: Path) -> None:
 
     conn.commit()
     console.print(f"  [green]OK[/green] Loaded {len(portals)} portals")
+
+
+def load_treasure_locations(conn: sqlite3.Connection, export_dir: Path) -> None:
+    """Load treasure dig locations into database."""
+    console.print("Loading treasure locations...")
+
+    filepath = export_dir / "treasure_locations.json"
+    if not filepath.exists():
+        console.print("  [yellow]SKIP[/yellow] No treasure_locations.json found")
+        return
+
+    with open(filepath, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    locations = [TreasureLocationData(**item) for item in data]
+
+    cursor = conn.cursor()
+    for loc in locations:
+        insert_model(cursor, "treasure_locations", loc)
+
+    conn.commit()
+    console.print(f"  [green]OK[/green] Loaded {len(locations)} treasure locations")
 
 
 def load_gather_items(conn: sqlite3.Connection, export_dir: Path) -> None:
@@ -2612,8 +2635,79 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
         )
         primal_essence_updated += 1
 
+    # Denormalize treasure location data onto treasure map items
+    console.print("  Denormalizing treasure map locations...")
+    cursor.execute("""
+        SELECT tl.required_map_id, tl.zone_id, z.name, tl.position_x, tl.position_y
+        FROM treasure_locations tl
+        LEFT JOIN zones z ON z.id = tl.zone_id
+    """)
+
+    treasure_maps_updated = 0
+    for map_id, zone_id, zone_name, pos_x, pos_y in cursor.fetchall():
+        cursor.execute(
+            """
+            UPDATE items
+            SET treasure_map_zone_id = ?,
+                treasure_map_zone_name = ?,
+                treasure_map_position_x = ?,
+                treasure_map_position_y = ?
+            WHERE id = ?
+        """,
+            (zone_id, zone_name, pos_x, pos_y, map_id),
+        )
+        if cursor.rowcount > 0:
+            treasure_maps_updated += 1
+
+    # Denormalize treasure map reward names
+    cursor.execute("""
+        UPDATE items
+        SET treasure_map_reward_name = (
+            SELECT reward.name FROM items reward
+            WHERE reward.id = items.treasure_map_reward_id
+        )
+        WHERE treasure_map_reward_id IS NOT NULL
+    """)
+
+    # Denormalize reverse relationship: which maps reward each item
+    console.print("  Denormalizing treasure map rewards (reverse)...")
+    cursor.execute("""
+        SELECT
+            i.treasure_map_reward_id,
+            i.id as map_id,
+            i.name as map_name,
+            i.treasure_map_zone_id,
+            i.treasure_map_zone_name
+        FROM items i
+        WHERE i.treasure_map_reward_id IS NOT NULL
+        ORDER BY i.treasure_map_reward_id, i.name
+    """)
+
+    rewarded_by_maps: dict[str, list[dict]] = {}
+    for reward_id, map_id, map_name, zone_id, zone_name in cursor.fetchall():
+        if reward_id not in rewarded_by_maps:
+            rewarded_by_maps[reward_id] = []
+        rewarded_by_maps[reward_id].append({
+            "map_id": map_id,
+            "map_name": map_name,
+            "zone_id": zone_id,
+            "zone_name": zone_name,
+        })
+
+    for reward_id, maps in rewarded_by_maps.items():
+        cursor.execute(
+            "UPDATE items SET rewarded_by_treasure_maps = ? WHERE id = ?",
+            (json.dumps(maps), reward_id),
+        )
+
     conn.commit()
 
+    console.print(
+        f"  [green]OK[/green] Updated {treasure_maps_updated} treasure maps with dig locations"
+    )
+    console.print(
+        f"  [green]OK[/green] Updated {len(rewarded_by_maps)} items with treasure map sources"
+    )
     console.print(
         f"  [green]OK[/green] Updated {len(gathered_from)} items with gather sources"
     )
@@ -2687,6 +2781,7 @@ def run(config: dict) -> None:
         load_summon_triggers(conn, export_dir)  # After monsters/NPCs
         load_quests(conn, export_dir)
         load_portals(conn, export_dir)
+        load_treasure_locations(conn, export_dir)  # After items
         load_gather_items(conn, export_dir)
         load_crafting_recipes(conn, export_dir)
         load_alchemy_recipes(conn, export_dir)

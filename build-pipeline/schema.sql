@@ -196,6 +196,11 @@ CREATE TABLE items (
     merge_result_item_name TEXT,
     treasure_map_image_location TEXT,
     treasure_map_reward_id TEXT REFERENCES items(id),
+    treasure_map_reward_name TEXT,
+    treasure_map_zone_id TEXT REFERENCES zones(id),
+    treasure_map_zone_name TEXT,
+    treasure_map_position_x REAL,
+    treasure_map_position_y REAL,
 
     -- Optional augment/recipe properties
     augment_armor_set_id TEXT,        -- ID of the set bonus item (e.g., "cobalt_armor_bonus_set")
@@ -234,7 +239,8 @@ CREATE TABLE items (
     used_in_recipes TEXT,           -- JSON: [{"recipe_id": "recipe_5", "amount": 3}]
     needed_for_quests TEXT,         -- JSON: [{"quest_id": "quest_blacksmith_1", "purpose": "gather", "amount": 5}]
     used_as_currency_for TEXT,      -- JSON: [{"item_id": "item_123", "item_name": "Cool Sword", "price": 50}]
-    found_in_random_items TEXT      -- JSON: [{"random_item_id": "random_gem_1", "random_item_name": "Random Gem 1"}]
+    found_in_random_items TEXT,     -- JSON: [{"random_item_id": "random_gem_1", "random_item_name": "Random Gem 1"}]
+    rewarded_by_treasure_maps TEXT  -- JSON: [{"map_id": "red_scabbard_map", "map_name": "Red Scabbard Map", "zone_id": "everfrost", "zone_name": "Everfrost"}]
 );
 
 CREATE INDEX idx_items_item_type ON items(item_type);
@@ -686,6 +692,23 @@ CREATE TABLE portals (
 CREATE INDEX idx_portals_from_zone ON portals(from_zone_id);
 CREATE INDEX idx_portals_to_zone ON portals(to_zone_id);
 CREATE INDEX idx_portals_is_template ON portals(is_template) WHERE is_template = 0;
+
+-- =============================================================================
+-- TREASURE LOCATIONS (dig spots for treasure maps)
+-- =============================================================================
+
+CREATE TABLE treasure_locations (
+    id TEXT PRIMARY KEY,
+    zone_id TEXT REFERENCES zones(id),
+    position_x REAL,
+    position_y REAL,
+    position_z REAL,
+    required_map_id TEXT REFERENCES items(id),
+    reward_id TEXT REFERENCES items(id)
+);
+
+CREATE INDEX idx_treasure_locations_zone ON treasure_locations(zone_id);
+CREATE INDEX idx_treasure_locations_map ON treasure_locations(required_map_id);
 
 -- =============================================================================
 -- ZONE TRIGGERS

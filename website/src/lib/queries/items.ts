@@ -105,6 +105,11 @@ export interface Item {
   // Treasure map
   treasure_map_image_location: string | null;
   treasure_map_reward_id: string | null;
+  treasure_map_reward_name: string | null;
+  treasure_map_zone_id: string | null;
+  treasure_map_zone_name: string | null;
+  treasure_map_position_x: number | null;
+  treasure_map_position_y: number | null;
   // Augment
   augment_armor_set_id: string | null;
   augment_armor_set_item_ids: string | null; // JSON
@@ -144,6 +149,7 @@ export interface Item {
   used_in_recipes: string | null; // JSON
   needed_for_quests: string | null; // JSON
   used_as_currency_for: string | null; // JSON
+  rewarded_by_treasure_maps: string | null; // JSON: [{"map_id": "...", "map_name": "...", "zone_id": "...", "zone_name": "..."}]
 }
 
 /**

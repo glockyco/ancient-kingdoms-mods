@@ -583,6 +583,16 @@ class PortalData(BaseModel):
     is_closed: bool = False
 
 
+class TreasureLocationData(BaseModel):
+    """Treasure dig location from treasure_locations.json"""
+
+    id: str
+    zone_id: str
+    position: Position
+    required_map_id: str
+    reward_id: str | None = None
+
+
 # =============================================================================
 # Zone Models
 # =============================================================================

@@ -113,6 +113,10 @@ namespace DataExporter
                 var altarExporter = new AltarExporter(LoggerInstance, ExportPath);
                 altarExporter.Export();
 
+                // Export treasure locations (dig spots for treasure maps)
+                var treasureLocationExporter = new TreasureLocationExporter(LoggerInstance, ExportPath);
+                treasureLocationExporter.Export();
+
                 var elapsed = DateTime.Now - startTime;
 
                 LoggerInstance.Msg("========================================");

@@ -285,6 +285,14 @@
           probability: number;
         }>
       >(data.item.found_in_random_items),
+      rewardedByTreasureMaps: parseJson<
+        Array<{
+          map_id: string;
+          map_name: string;
+          zone_id: string;
+          zone_name: string;
+        }>
+      >(data.item.rewarded_by_treasure_maps),
     };
   });
 </script>
@@ -579,6 +587,40 @@
                 {/each}
               </div>
             </div>
+          </Card.Content>
+        </Card.Root>
+      {/if}
+
+      <!-- Treasure Map Location -->
+      {#if data.item.item_type === "treasure_map" && (data.item.treasure_map_zone_id || data.item.treasure_map_reward_id)}
+        <Card.Root>
+          <Card.Header>
+            <Card.Title>Treasure Location</Card.Title>
+          </Card.Header>
+          <Card.Content class="space-y-4">
+            {#if data.item.treasure_map_zone_id}
+              <div>
+                <div class={styles.label}>Dig Location</div>
+                <div>
+                  <a href="/zones/{data.item.treasure_map_zone_id}" class={styles.link}>
+                    {data.item.treasure_map_zone_name}
+                  </a>
+                  {#if data.item.treasure_map_position_x != null && data.item.treasure_map_position_y != null}
+                    <span class={styles.label}>
+                      ({data.item.treasure_map_position_x.toFixed(1)}, {data.item.treasure_map_position_y.toFixed(1)})
+                    </span>
+                  {/if}
+                </div>
+              </div>
+            {/if}
+            {#if data.item.treasure_map_reward_id}
+              <div>
+                <div class={styles.label}>Reward</div>
+                <a href="/items/{data.item.treasure_map_reward_id}" class={styles.link}>
+                  {data.item.treasure_map_reward_name || data.item.treasure_map_reward_id}
+                </a>
+              </div>
+            {/if}
           </Card.Content>
         </Card.Root>
       {/if}
@@ -1274,6 +1316,29 @@
                     <div>Required Veteran Level: 100+</div>
                   {/if}
                 </div>
+              </div>
+            {/each}
+          </div>
+        </Card.Content>
+      </Card.Root>
+    {/if}
+
+    <!-- Rewarded by Treasure Maps -->
+    {#if computed.rewardedByTreasureMaps && computed.rewardedByTreasureMaps.length > 0}
+      <Card.Root>
+        <Card.Header>
+          <Card.Title>Rewarded by Treasure Maps</Card.Title>
+        </Card.Header>
+        <Card.Content>
+          <div class="space-y-2">
+            {#each computed.rewardedByTreasureMaps as map (map.map_id)}
+              <div>
+                <a href="/items/{map.map_id}" class={styles.link}>
+                  {map.map_name}
+                </a>
+                {#if map.zone_name}
+                  <span class={styles.label}>({map.zone_name})</span>
+                {/if}
               </div>
             {/each}
           </div>
