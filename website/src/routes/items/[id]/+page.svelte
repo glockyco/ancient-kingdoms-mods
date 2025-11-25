@@ -4,6 +4,7 @@
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import { STATS_METADATA_FIELDS } from "$lib/constants/items";
   import { parseTooltip } from "$lib/utils/tooltip";
+  import { formatItemType } from "$lib/utils/format";
   import { formatStatName, formatResourceName } from "$lib/terminology";
   import type { PageData } from "./$types";
 
@@ -306,7 +307,7 @@
   <div>
     <div class="flex items-start gap-4">
       <div class="flex-1">
-        <div class="flex items-center gap-3 mb-2">
+        <div class="flex items-center gap-3">
           <h1 class="text-4xl font-bold">{data.item.name}</h1>
           <span
             class="px-3 py-1 rounded text-sm font-medium {qualityColors[
@@ -316,9 +317,6 @@
             {qualityNames[data.item.quality]}
           </span>
         </div>
-        <p class="text-xl text-muted-foreground">
-          {data.item.item_type || "Unknown type"}
-        </p>
       </div>
     </div>
   </div>
@@ -329,6 +327,11 @@
       <Card.Title>Basic Information</Card.Title>
     </Card.Header>
     <Card.Content class="grid grid-cols-2 md:grid-cols-3 gap-4">
+      <div>
+        <div class={styles.label}>Type</div>
+        <div class={styles.value}>{formatItemType(data.item.item_type)}</div>
+      </div>
+
       {#if data.item.level_required > 1}
         <div>
           <div class={styles.label}>Level Required</div>

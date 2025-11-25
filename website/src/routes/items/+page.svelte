@@ -6,6 +6,7 @@
   import * as Card from "$lib/components/ui/card";
   import { Button } from "$lib/components/ui/button";
   import { PAGINATION } from "$lib/config";
+  import { formatItemType } from "$lib/utils/format";
   import type { PageData } from "./$types";
 
   let { data }: { data: PageData } = $props();
@@ -307,7 +308,7 @@
                 : ''}"
               onclick={() => toggleType(type)}
             >
-              <span>{type}</span>
+              <span>{formatItemType(type)}</span>
               <span class="font-mono">({count})</span>
             </button>
           {/each}
@@ -336,7 +337,7 @@
               </span>
             </div>
             <Card.Description>
-              {item.item_type || "Unknown type"}
+              {formatItemType(item.item_type)}
               {#if item.level_required > 0}
                 · Level {item.level_required}
               {/if}
