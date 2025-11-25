@@ -127,6 +127,8 @@
         Array<{
           npc_id: string;
           npc_name: string;
+          npc_faction: string | null;
+          is_faction_vendor: boolean;
           price: number;
           currency_item_id: string | null;
           currency_item_name: string | null;
@@ -1146,28 +1148,35 @@
         <Card.Content>
           <div class="space-y-2">
             {#each computed.soldBy as vendor, index (`${vendor.npc_id}_${index}`)}
-              <div class="flex justify-between items-center">
-                <a
-                  href={resolve("/npcs/[id]", { id: vendor.npc_id })}
-                  class={styles.link}
-                >
-                  {vendor.npc_name}
-                </a>
-                <span class={styles.valueCurrency}>
-                  {#if vendor.currency_item_id}
-                    {vendor.price}
-                    <a
-                      href={resolve("/items/[id]", {
-                        id: vendor.currency_item_id,
-                      })}
-                      class={styles.link}
-                    >
-                      {vendor.currency_item_name}
-                    </a>
-                  {:else}
-                    {formatGold(vendor.price)}g
-                  {/if}
-                </span>
+              <div class="space-y-1">
+                <div class="flex justify-between items-center">
+                  <a
+                    href={resolve("/npcs/[id]", { id: vendor.npc_id })}
+                    class={styles.link}
+                  >
+                    {vendor.npc_name}
+                  </a>
+                  <span class={styles.valueCurrency}>
+                    {#if vendor.currency_item_id}
+                      {vendor.price}
+                      <a
+                        href={resolve("/items/[id]", {
+                          id: vendor.currency_item_id,
+                        })}
+                        class={styles.link}
+                      >
+                        {vendor.currency_item_name}
+                      </a>
+                    {:else}
+                      {formatGold(vendor.price)}g
+                    {/if}
+                  </span>
+                </div>
+                {#if vendor.npc_faction && (data.item.faction_required_tier_name || vendor.is_faction_vendor)}
+                  <div class="{styles.label} pl-2">
+                    Requires {data.item.faction_required_tier_name ?? "Friendly"} with {vendor.npc_faction}
+                  </div>
+                {/if}
               </div>
             {/each}
           </div>

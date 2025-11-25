@@ -8,6 +8,7 @@ export interface Item {
   level_required: number;
   class_required: string; // JSON array
   faction_required_to_buy: number;
+  faction_required_tier_name: string | null;
   adventuring_level_needed: number;
   is_key: boolean;
   ignore_journal: boolean;

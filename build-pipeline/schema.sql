@@ -105,6 +105,7 @@ CREATE TABLE items (
     level_required INTEGER DEFAULT 0,
     class_required TEXT,            -- JSON array: ["Warrior", "Mage"]
     faction_required_to_buy INTEGER DEFAULT 0,
+    faction_required_tier_name TEXT,  -- Denormalized from reputation_tiers
     adventuring_level_needed REAL DEFAULT 0.0,
     is_key BOOLEAN DEFAULT 0,
     ignore_journal BOOLEAN DEFAULT 0,

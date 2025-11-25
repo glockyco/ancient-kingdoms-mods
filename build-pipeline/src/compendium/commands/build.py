@@ -58,6 +58,8 @@ class ChestSourceInfo(TypedDict):
 class SoldByInfo(TypedDict):
     npc_id: str
     npc_name: str
+    npc_faction: str | None
+    is_faction_vendor: bool
     price: int
     currency_item_id: str | None
     currency_item_name: str | None
@@ -912,15 +914,17 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
     item_name_lookup = {row[0]: row[1] for row in cursor.fetchall()}
 
     cursor.execute("""
-        SELECT id, name, items_sold
+        SELECT id, name, faction, roles, items_sold
         FROM npcs
         WHERE items_sold IS NOT NULL AND items_sold != '[]'
     """)
 
     sold_by: dict[str, list[SoldByInfo]] = {}
 
-    for npc_id, npc_name, items_sold_json in cursor.fetchall():
+    for npc_id, npc_name, npc_faction, roles_json, items_sold_json in cursor.fetchall():
         items_sold = json.loads(items_sold_json)
+        roles = json.loads(roles_json) if roles_json else {}
+        is_faction_vendor = roles.get("is_faction_vendor", False)
         for item_sale in items_sold:
             item_id = item_sale.get("item_id")
             if item_id:
@@ -931,6 +935,8 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
                     {
                         "npc_id": npc_id,
                         "npc_name": npc_name,
+                        "npc_faction": npc_faction,
+                        "is_faction_vendor": is_faction_vendor,
                         "price": item_sale.get("price", 0),
                         "currency_item_id": currency_id,
                         "currency_item_name": item_name_lookup.get(currency_id)
@@ -1698,6 +1704,23 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
             "UPDATE skills SET granted_by_items = ? WHERE id = ?",
             (json.dumps(items), skill_id),
         )
+
+    # Denormalize faction required tier name from reputation_tiers
+    console.print("  Denormalizing faction reputation tier names...")
+    cursor.execute("""
+        UPDATE items
+        SET faction_required_tier_name = (
+            SELECT name FROM reputation_tiers
+            WHERE reputation_tiers.min_value <= items.faction_required_to_buy
+            ORDER BY reputation_tiers.min_value DESC
+            LIMIT 1
+        )
+        WHERE faction_required_to_buy > 0
+    """)
+    faction_tier_updated = cursor.rowcount
+    console.print(
+        f"  [green]OK[/green] Updated {faction_tier_updated} items with faction tier names"
+    )
 
     # Denormalize armor set data from augment items to armor pieces
     console.print("  Denormalizing armor set data...")
