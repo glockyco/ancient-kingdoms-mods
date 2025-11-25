@@ -292,7 +292,7 @@
   <title>{data.item.name} - Ancient Kingdoms Compendium</title>
 </svelte:head>
 
-<div class="container mx-auto p-8 space-y-8 max-w-5xl">
+<div class="container mx-auto p-8 space-y-4 max-w-5xl">
   <!-- Breadcrumb -->
   <Breadcrumb
     items={[
@@ -460,7 +460,7 @@
 
   <!-- Tooltip and Stats/Merge/Currency side-by-side (hide entire section if all would be empty) -->
   {#if (data.item.tooltip && data.item.item_type !== "augment") || ((data.item.item_type !== "augment" || !data.item.augment_armor_set_name) && ((computed.stats && Object.keys(computed.stats).length > 0) || data.item.weapon_delay > 0)) || data.item.merge_result_item_id || (computed.createdFromMerge && computed.createdFromMerge.length > 0) || (computed.usedAsCurrencyFor && computed.usedAsCurrencyFor.length > 0) || data.item.id === "primal_essence" || data.item.pack_final_item_id}
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <!-- Tooltip (don't show for augments - they're metadata items never shown to players) -->
       {#if data.item.tooltip && data.item.item_type !== "augment"}
         <Card.Root>
