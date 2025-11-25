@@ -1433,6 +1433,35 @@ def denormalize_data(conn: sqlite3.Connection) -> None:
                     }
                 )
 
+    # Also add alchemy_recipes to used_in_recipes
+    cursor.execute("""
+        SELECT ar.id, ar.result_item_id, i.name, ar.materials
+        FROM alchemy_recipes ar
+        LEFT JOIN items i ON ar.result_item_id = i.id
+        WHERE ar.materials IS NOT NULL AND ar.materials != '[]'
+    """)
+
+    for (
+        recipe_id,
+        result_item_id,
+        result_item_name,
+        materials_json,
+    ) in cursor.fetchall():
+        materials = json.loads(materials_json)
+        for material in materials:
+            item_id = material.get("item_id")
+            if item_id:
+                if item_id not in used_in_recipes:
+                    used_in_recipes[item_id] = []
+                used_in_recipes[item_id].append(
+                    {
+                        "recipe_id": recipe_id,
+                        "result_item_id": result_item_id,
+                        "result_item_name": result_item_name or "Unknown",
+                        "amount": material.get("amount", 1),
+                    }
+                )
+
     # Build needed_for_quests from quest objectives
     console.print("  Processing quest item requirements...")
     cursor.execute("""
