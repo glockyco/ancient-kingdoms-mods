@@ -29,12 +29,15 @@ public class ZoneTriggerExporter : BaseExporter
             if (zoneTrigger == null)
                 continue;
 
-            var zoneName = GetZoneNameFromId(zoneTrigger.idZone);
+            // Use nameZone directly - this is the discoverable area name shown to players
+            // idZone references the parent zone in ZoneInfo.zones
+            var discoverableName = zoneTrigger.nameZone;
+            var sanitizedName = SanitizeId(discoverableName);
 
             var zoneTriggerData = new ZoneTriggerData
             {
-                id = $"zone_trigger_{zoneTrigger.idZone}_{zoneTrigger.GetInstanceID()}",
-                name = zoneName,
+                id = $"zone_trigger_{sanitizedName}",
+                name = discoverableName,
                 zone_id = zoneTrigger.idZone,
                 is_outdoor = zoneTrigger.outdoorZone,
                 position = new Position(
@@ -53,20 +56,6 @@ public class ZoneTriggerExporter : BaseExporter
 
         WriteJson(zoneTriggerList, "zone_triggers.json");
         Logger.Msg($"✓ Exported {zoneTriggerList.Count} zone triggers");
-    }
-
-    private string GetZoneNameFromId(byte zoneId)
-    {
-        if (Il2Cpp.ZoneInfo.zones != null && Il2Cpp.ZoneInfo.zones.ContainsKey(zoneId))
-        {
-            var zone = Il2Cpp.ZoneInfo.zones[zoneId];
-            if (zone != null && !string.IsNullOrEmpty(zone.name))
-            {
-                return zone.name;
-            }
-        }
-
-        return "Unknown";
     }
 
     private string ColorToHex(Color color)
