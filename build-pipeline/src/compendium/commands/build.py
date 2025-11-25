@@ -224,8 +224,9 @@ def load_static_data(conn: sqlite3.Connection, export_dir: Path) -> None:
 
     cursor = conn.cursor()
 
-    # Load factions
-    factions = data.get("factions", [])
+    # Load factions (nested under factions.list)
+    factions_data = data.get("factions", {})
+    factions = factions_data.get("list", [])
     for faction in factions:
         cursor.execute(
             "INSERT INTO factions (id, name) VALUES (?, ?)",
@@ -233,8 +234,8 @@ def load_static_data(conn: sqlite3.Connection, export_dir: Path) -> None:
         )
     console.print(f"  [green]OK[/green] Loaded {len(factions)} factions")
 
-    # Load reputation tiers
-    tiers = data.get("reputation_tiers", [])
+    # Load reputation tiers (nested under factions.reputation_tiers)
+    tiers = factions_data.get("reputation_tiers", [])
     for i, tier in enumerate(tiers):
         cursor.execute(
             """INSERT INTO reputation_tiers (id, name, min_value, max_value, is_hostile)
