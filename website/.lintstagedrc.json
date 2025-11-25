@@ -1,0 +1,8 @@
+{
+  "*.{js,ts,svelte}": [
+    "prettier --write",
+    "eslint --fix --max-warnings 0",
+    "pnpm check"
+  ],
+  "*.{css,json,md}": ["prettier --write"]
+}

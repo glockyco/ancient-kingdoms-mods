@@ -445,7 +445,9 @@
       {#if data.item.sell_price > 0 && data.item.sellable}
         <div>
           <div class={styles.label}>Sell Price</div>
-          <div class={styles.valueCurrency}>{formatGold(data.item.sell_price)}g</div>
+          <div class={styles.valueCurrency}>
+            {formatGold(data.item.sell_price)}g
+          </div>
         </div>
       {/if}
 
@@ -505,10 +507,13 @@
                       href="/skills/{data.item.weapon_proc_effect_id}"
                       class={styles.link}
                     >
-                      {data.item.weapon_proc_effect_name || data.item.weapon_proc_effect_id}
+                      {data.item.weapon_proc_effect_name ||
+                        data.item.weapon_proc_effect_id}
                     </a>
                     <span class={styles.label}>
-                      ({(data.item.weapon_proc_effect_probability * 100).toFixed(0)}% chance)
+                      ({(
+                        data.item.weapon_proc_effect_probability * 100
+                      ).toFixed(0)}% chance)
                     </span>
                   </span>
                 </div>
@@ -602,12 +607,17 @@
               <div>
                 <div class={styles.label}>Dig Location</div>
                 <div>
-                  <a href="/zones/{data.item.treasure_map_zone_id}" class={styles.link}>
+                  <a
+                    href="/zones/{data.item.treasure_map_zone_id}"
+                    class={styles.link}
+                  >
                     {data.item.treasure_map_zone_name}
                   </a>
                   {#if data.item.treasure_map_position_x != null && data.item.treasure_map_position_y != null}
                     <span class={styles.label}>
-                      ({data.item.treasure_map_position_x.toFixed(1)}, {data.item.treasure_map_position_y.toFixed(1)})
+                      ({data.item.treasure_map_position_x.toFixed(1)}, {data.item.treasure_map_position_y.toFixed(
+                        1,
+                      )})
                     </span>
                   {/if}
                 </div>
@@ -616,8 +626,12 @@
             {#if data.item.treasure_map_reward_id}
               <div>
                 <div class={styles.label}>Reward</div>
-                <a href="/items/{data.item.treasure_map_reward_id}" class={styles.link}>
-                  {data.item.treasure_map_reward_name || data.item.treasure_map_reward_id}
+                <a
+                  href="/items/{data.item.treasure_map_reward_id}"
+                  class={styles.link}
+                >
+                  {data.item.treasure_map_reward_name ||
+                    data.item.treasure_map_reward_id}
                 </a>
               </div>
             {/if}
@@ -697,7 +711,9 @@
               </div>
               <div>
                 <div class={styles.label}>Cost</div>
-                <div class={styles.value}>{formatGold(10000)}g + Token of Redemption</div>
+                <div class={styles.value}>
+                  {formatGold(10000)}g + Token of Redemption
+                </div>
               </div>
               <div>
                 <div class={styles.label}>Available from</div>
@@ -1219,7 +1235,8 @@
                 </div>
                 {#if vendor.npc_faction && (data.item.faction_required_tier_name || vendor.is_faction_vendor)}
                   <div class="{styles.label} pl-2">
-                    Requires {data.item.faction_required_tier_name ?? "Friendly"} with {vendor.npc_faction}
+                    Requires {data.item.faction_required_tier_name ??
+                      "Friendly"} with {vendor.npc_faction}
                   </div>
                 {/if}
               </div>
@@ -1449,7 +1466,9 @@
                         <span class={styles.value}>{gather.zone_name}</span>
                         {#if gather.position_x !== undefined && gather.position_y !== undefined}
                           <span class={styles.label}>
-                            ({Math.round(gather.position_x)}, {Math.round(gather.position_y)})
+                            ({Math.round(gather.position_x)}, {Math.round(
+                              gather.position_y,
+                            )})
                           </span>
                         {/if}
                       </div>
@@ -1498,17 +1517,16 @@
           <div class="space-y-2">
             {#each computed.opensChests as chest (chest.chest_id)}
               <div class="space-y-0.5">
-                <a
-                  href="/gather-items/{chest.chest_id}"
-                  class={styles.link}
-                >
+                <a href="/gather-items/{chest.chest_id}" class={styles.link}>
                   Chest
                 </a>
                 {#if chest.zone_name}
                   <div class="{styles.label} pl-2">
                     <span class={styles.value}>{chest.zone_name}</span>
                     <span class={styles.label}>
-                      ({Math.round(chest.position_x)}, {Math.round(chest.position_y)})
+                      ({Math.round(chest.position_x)}, {Math.round(
+                        chest.position_y,
+                      )})
                     </span>
                   </div>
                 {/if}

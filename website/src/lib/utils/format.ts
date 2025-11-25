@@ -38,5 +38,7 @@ export function formatItemType(type: string | null | undefined): string {
     return itemTypeDisplayNames[type];
   }
 
-  throw new Error(`Unknown item type: "${type}". Add it to itemTypeDisplayNames.`);
+  throw new Error(
+    `Unknown item type: "${type}". Add it to itemTypeDisplayNames.`,
+  );
 }
