@@ -720,7 +720,7 @@
                 </a>
               </div>
 
-              {#if data.item.alchemy_recipe_level_required}
+              {#if data.item.alchemy_recipe_level_required != null}
                 <div class="text-right">
                   <div class={styles.label}>Recipe Tier</div>
                   <div class={styles.value}>
@@ -770,7 +770,7 @@
                 </a>
               </div>
 
-              {#if data.item.alchemy_recipe_level_required}
+              {#if data.item.alchemy_recipe_level_required != null}
                 <div class="text-right">
                   <div class={styles.label}>Recipe Tier</div>
                   <div class={styles.value}>
