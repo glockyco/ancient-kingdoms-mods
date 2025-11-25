@@ -380,12 +380,32 @@ build-pipeline/
 │       ├── __init__.py
 │       ├── cli.py             # Main CLI entry point (Typer)
 │       ├── config.py          # Configuration management
-│       ├── models.py          # Pydantic models for validation
-│       ├── build.py           # JSON → SQLite conversion
-│       ├── tiles.py           # Screenshots → tile pyramid
-│       ├── deploy.py          # Copy files to website
-│       ├── icons.py           # Icon extraction from Unity
-│       └── types_gen.py       # Generate TypeScript types from schema
+│       ├── db.py              # Database utilities (create_database, insert_model)
+│       ├── models.py          # Pydantic models for JSON validation
+│       │
+│       ├── commands/          # CLI command implementations
+│       │   ├── build.py       # JSON → SQLite (orchestrates loaders + denormalizers)
+│       │   └── stats.py       # Database statistics
+│       │
+│       ├── loaders/           # Data loading from JSON exports
+│       │   └── core.py        # All load_* functions (items, monsters, etc.)
+│       │
+│       ├── denormalizers/     # Post-load denormalization by target entity
+│       │   ├── items/         # Denormalizations that UPDATE items table
+│       │   │   ├── sources.py     # dropped_by, gathered_from, sold_by, etc.
+│       │   │   ├── usages.py      # used_in_recipes, needed_for_quests, etc.
+│       │   │   ├── equipment.py   # armor sets, buff names, faction tiers
+│       │   │   ├── special_types.py # chests, packs, treasure maps
+│       │   │   └── calculations.py  # item_level, primal_essence
+│       │   └── skills/        # Denormalizations that UPDATE skills table
+│       │       └── sources.py     # granted_by_items
+│       │
+│       ├── types/             # TypedDict definitions for JSON structures
+│       │   └── denormalized.py
+│       │
+│       └── utils/             # Shared utilities
+│           └── paths.py
+│
 ├── schema.sql                  # Database schema definition
 ├── config.toml                 # Configuration file (paths, options)
 ├── pyproject.toml              # Python project config (uv)

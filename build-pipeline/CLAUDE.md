@@ -27,21 +27,39 @@ build-pipeline/
 │       ├── __init__.py
 │       ├── cli.py              # Main CLI entry (Typer app)
 │       ├── config.py           # Configuration loading
-│       ├── models.py           # Pydantic validation models
-│       ├── commands/
+│       ├── db.py               # Database utilities (create_database, insert_model, etc.)
+│       ├── models.py           # Pydantic validation models for JSON loading
+│       │
+│       ├── commands/           # CLI command implementations
 │       │   ├── __init__.py
-│       │   ├── build.py        # JSON → SQLite
-│       │   ├── tiles.py        # Screenshots → tile pyramid
-│       │   ├── icons.py        # UnityPy icon extraction
-│       │   ├── types.py        # TypeScript type generation
-│       │   ├── deploy.py       # Deploy to website
-│       │   ├── validate.py     # JSON validation
+│       │   ├── build.py        # JSON → SQLite (orchestrates loaders + denormalizers)
 │       │   └── stats.py        # Database statistics
-│       └── utils/
+│       │
+│       ├── loaders/            # Data loading from JSON exports
+│       │   ├── __init__.py     # Re-exports all load_* functions
+│       │   └── core.py         # All load_* functions (items, monsters, npcs, etc.)
+│       │
+│       ├── denormalizers/      # Post-load denormalization by target entity
+│       │   ├── __init__.py     # Orchestrates all denormalizers via run_all()
+│       │   ├── items/          # Denormalizations that UPDATE items table
+│       │   │   ├── __init__.py
+│       │   │   ├── sources.py      # dropped_by, gathered_from, sold_by, rewarded_by, etc.
+│       │   │   ├── usages.py       # used_in_recipes, needed_for_quests, opens_chests, etc.
+│       │   │   ├── equipment.py    # armor sets, buff names, faction tiers
+│       │   │   ├── special_types.py # chests, packs, treasure maps, luck tokens
+│       │   │   └── calculations.py  # item_level, primal_essence
+│       │   └── skills/         # Denormalizations that UPDATE skills table
+│       │       ├── __init__.py
+│       │       └── sources.py      # granted_by_items (potions, food, scrolls, etc.)
+│       │
+│       ├── types/              # TypedDict definitions for denormalized JSON structures
+│       │   ├── __init__.py
+│       │   └── denormalized.py # DropInfo, GatherSourceInfo, SoldByInfo, etc.
+│       │
+│       └── utils/              # Shared utilities
 │           ├── __init__.py
-│           ├── db.py           # SQLite utilities
-│           ├── image.py        # Image processing helpers
-│           └── files.py        # File operations
+│           └── paths.py        # Path utilities
+│
 ├── schema.sql                   # Database schema definition
 ├── pyproject.toml               # uv project configuration
 ├── .python-version              # Python version (3.12)
@@ -60,7 +78,6 @@ Each command is a self-contained module that:
 
 ```python
 # commands/example.py
-import typer
 from rich.console import Console
 
 console = Console()
@@ -71,6 +88,71 @@ def run(config: dict) -> None:
     # Do work
     console.print("[green]✓[/green] Complete!")
 ```
+
+### Denormalizer Architecture
+
+The denormalizer system builds reverse relationships and derived fields after all data is loaded. It's organized by **target entity** - the entity being UPDATED, not read.
+
+#### Organization Principle
+
+**Rule**: Denormalization code lives with the entity being UPDATED, not the entity being READ.
+
+For example:
+- `dropped_by` on items → lives in `denormalizers/items/sources.py` (updates items)
+- `drops` on monsters → would live in `denormalizers/monsters/` (updates monsters)
+- Both read monsters table to build these relationships
+
+This means bidirectional relationships naturally split between folders.
+
+#### Denormalizer Categories
+
+**Items** (`denormalizers/items/`):
+- `sources.py` - Where items come from: drops, gathering, vendors, quests, altars, crafting
+- `usages.py` - Where items are used: recipes, quests, currency, altars, portals, chest keys
+- `equipment.py` - Equipment-specific: armor sets, buff names, faction tiers
+- `special_types.py` - Special item behavior: chests, packs, treasure maps, luck tokens
+- `calculations.py` - Derived values: item_level, primal_essence
+
+**Skills** (`denormalizers/skills/`):
+- `sources.py` - What grants skills: potions, food, scrolls, weapon procs, relics
+
+#### Adding a New Denormalizer
+
+1. Create module in appropriate entity folder (or new folder if new entity)
+2. Implement `run(conn: sqlite3.Connection) -> None`
+3. Add to entity's `__init__.py` `run_all()` function
+4. Use TypedDicts from `types/denormalized.py` for JSON structures
+
+```python
+# denormalizers/items/new_feature.py
+import json
+import sqlite3
+from rich.console import Console
+
+console = Console()
+
+def run(conn: sqlite3.Connection) -> None:
+    """Run new feature denormalization."""
+    console.print("Denormalizing new feature...")
+    cursor = conn.cursor()
+
+    # Query and process data
+    # ...
+
+    conn.commit()
+    console.print(f"  [green]OK[/green] Updated X items")
+```
+
+#### Extending to New Entities
+
+When adding entity pages (e.g., zones, monsters, NPCs):
+
+1. Create `denormalizers/{entity}/` folder
+2. Organize by what that entity needs:
+   - `sources.py` - Where it comes from
+   - `usages.py` - Where it's referenced
+   - etc.
+3. Register in `denormalizers/__init__.py`
 
 ### Configuration System
 
@@ -429,10 +511,15 @@ def new():
 
 ### Adding a New Data Type
 
-1. Add Pydantic model to `models.py`
+1. Add Pydantic model to `models.py` for JSON validation
 2. Update `schema.sql` with table definition
-3. Update `commands/build.py` to process new JSON file
-4. Update `commands/types.py` to generate TypeScript interface
+3. Add `load_{entity}()` function to `loaders/core.py`
+4. Export from `loaders/__init__.py`
+5. Call loader in `commands/build.py` (order matters for foreign keys)
+6. If entity needs denormalized fields:
+   - Add TypedDicts to `types/denormalized.py`
+   - Create denormalizer in `denormalizers/{entity}/`
+   - Register in `denormalizers/__init__.py`
 
 ## Future Enhancements
 

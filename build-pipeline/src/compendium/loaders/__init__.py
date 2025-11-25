@@ -1,0 +1,43 @@
+"""Data loaders for the compendium build pipeline."""
+
+from compendium.loaders.core import (
+    load_alchemy_recipes,
+    load_altars,
+    load_crafting_recipes,
+    load_gather_items,
+    load_items,
+    load_luck_tokens,
+    load_monster_spawns,
+    load_monsters,
+    load_npc_spawns,
+    load_npcs,
+    load_portals,
+    load_quests,
+    load_skills,
+    load_static_data,
+    load_summon_triggers,
+    load_treasure_locations,
+    load_zone_triggers,
+    load_zones,
+)
+
+__all__ = [
+    "load_alchemy_recipes",
+    "load_altars",
+    "load_crafting_recipes",
+    "load_gather_items",
+    "load_items",
+    "load_luck_tokens",
+    "load_monster_spawns",
+    "load_monsters",
+    "load_npc_spawns",
+    "load_npcs",
+    "load_portals",
+    "load_quests",
+    "load_skills",
+    "load_static_data",
+    "load_summon_triggers",
+    "load_treasure_locations",
+    "load_zone_triggers",
+    "load_zones",
+]
