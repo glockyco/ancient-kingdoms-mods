@@ -33,6 +33,19 @@ public class MonsterData
     public int health { get; set; }
     public string type_name { get; set; }
     public string class_name { get; set; }
+    public string zone_bestiary { get; set; }  // Manually set zone name for bestiary display
+
+    // Combat stats
+    public int damage { get; set; }
+    public int magic_damage { get; set; }
+    public int defense { get; set; }
+    public int magic_resist { get; set; }
+    public int poison_resist { get; set; }
+    public int fire_resist { get; set; }
+    public int cold_resist { get; set; }
+    public int disease_resist { get; set; }
+    public float block_chance { get; set; }
+    public float critical_chance { get; set; }
 
     // Classification flags
     public bool is_boss { get; set; }
@@ -41,6 +54,7 @@ public class MonsterData
     public bool is_dummy { get; set; }
     public bool is_summonable { get; set; }
     public bool is_halloween { get; set; }
+    public bool is_forgotten_altar_event { get; set; }
 
     // Combat flags
     public bool see_invisibility { get; set; }
@@ -48,6 +62,8 @@ public class MonsterData
     public bool yell_friends { get; set; }
     public bool flee_on_low_hp { get; set; }
     public bool no_aggro_monster { get; set; }
+    public bool has_aura { get; set; }
+    public float follow_distance { get; set; }
 
     // Spawning and respawn
     public bool does_respawn { get; set; }

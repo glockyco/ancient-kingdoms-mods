@@ -70,6 +70,19 @@ public class MonsterExporter : BaseExporter
                 health = canonical.health.max,
                 type_name = canonical.typeMonster ?? "Unknown",
                 class_name = canonical.classMonster ?? "Unknown",
+                zone_bestiary = canonical.zoneMonster ?? "",
+
+                // Combat stats
+                damage = canonical.combat?.damage ?? 0,
+                magic_damage = canonical.combat?.magicDamage ?? 0,
+                defense = canonical.combat?.defense ?? 0,
+                magic_resist = canonical.combat?.magicResist ?? 0,
+                poison_resist = canonical.combat?.poisonResist ?? 0,
+                fire_resist = canonical.combat?.fireResist ?? 0,
+                cold_resist = canonical.combat?.coldResist ?? 0,
+                disease_resist = canonical.combat?.diseaseResist ?? 0,
+                block_chance = canonical.combat?.blockChance ?? 0,
+                critical_chance = canonical.combat?.criticalChance ?? 0,
 
                 // Classification flags
                 is_boss = canonical.isBoss,
@@ -78,6 +91,7 @@ public class MonsterExporter : BaseExporter
                 is_dummy = canonical.isDummy,
                 is_summonable = canonical.isSummonable,
                 is_halloween = canonical.isHalloween,
+                is_forgotten_altar_event = canonical.isForgotttenAltarEvent,
 
                 // Combat flags
                 see_invisibility = canonical.seeInvisibility,
@@ -85,6 +99,8 @@ public class MonsterExporter : BaseExporter
                 yell_friends = canonical.yellFriends,
                 flee_on_low_hp = canonical.fleeOnLowHP,
                 no_aggro_monster = canonical.noAggroMonster,
+                has_aura = canonical.hasAura,
+                follow_distance = canonical.followDistance,
 
                 // Spawning and respawn
                 does_respawn = canonical.respawn,

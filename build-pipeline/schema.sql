@@ -253,34 +253,65 @@ CREATE TABLE monsters (
     health INTEGER,
     type_name TEXT,                 -- Humanoid, Beast, Undead, Elemental, etc.
     class_name TEXT,                -- specific class within type
+    zone_bestiary TEXT DEFAULT '',  -- manually set zone name for bestiary display
+
+    -- Combat stats
+    damage INTEGER DEFAULT 0,
+    magic_damage INTEGER DEFAULT 0,
+    defense INTEGER DEFAULT 0,
+    magic_resist INTEGER DEFAULT 0,
+    poison_resist INTEGER DEFAULT 0,
+    fire_resist INTEGER DEFAULT 0,
+    cold_resist INTEGER DEFAULT 0,
+    disease_resist INTEGER DEFAULT 0,
+    block_chance REAL DEFAULT 0.0,
+    critical_chance REAL DEFAULT 0.0,
+
+    -- Classification flags
     is_boss BOOLEAN DEFAULT 0,
     is_elite BOOLEAN DEFAULT 0,
     is_hunt BOOLEAN DEFAULT 0,
     is_dummy BOOLEAN DEFAULT 0,
     is_summonable BOOLEAN DEFAULT 0,
     is_halloween BOOLEAN DEFAULT 0,
+    is_forgotten_altar_event BOOLEAN DEFAULT 0,
+
+    -- Combat flags
     see_invisibility BOOLEAN DEFAULT 0,
     is_immune_debuffs BOOLEAN DEFAULT 0,
     yell_friends BOOLEAN DEFAULT 0,
     flee_on_low_hp BOOLEAN DEFAULT 0,
     no_aggro_monster BOOLEAN DEFAULT 0,
+    has_aura BOOLEAN DEFAULT 0,
+    follow_distance REAL DEFAULT 0.0,
+
+    -- Spawning and respawn
     does_respawn BOOLEAN DEFAULT 1,
-    respawn_time INTEGER,           -- seconds
+    death_time REAL DEFAULT 0.0,
+    respawn_time REAL DEFAULT 0.0,
     respawn_probability REAL DEFAULT 1.0,
     spawn_time_start INTEGER DEFAULT 0,
     spawn_time_end INTEGER DEFAULT 0,
     placeholder_spawn_probability REAL DEFAULT 0.0,
     placeholder_monster_id TEXT REFERENCES monsters(id),
+
+    -- Loot and rewards
     gold_min INTEGER,
     gold_max INTEGER,
     probability_drop_gold REAL DEFAULT 1.0,
     exp_multiplier REAL DEFAULT 1.0,
     drops TEXT,                     -- JSON array
+
+    -- Messages and interactions
     aggro_messages TEXT,            -- JSON array
     aggro_message_probability REAL DEFAULT 0.0,
     summon_message TEXT DEFAULT '',
+
+    -- Faction changes
     improve_faction TEXT,           -- JSON array
     decrease_faction TEXT,          -- JSON array
+
+    -- Lore (boss-specific)
     lore_boss TEXT DEFAULT ''
 );
 

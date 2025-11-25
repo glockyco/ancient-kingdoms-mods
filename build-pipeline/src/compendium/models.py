@@ -50,32 +50,60 @@ class MonsterSpawnData(BaseModel):
 class MonsterData(BaseModel):
     """Monster data from monsters.json"""
 
+    # Identity
     id: str
     name: str
+
+    # Base stats
     level: int
     health: int
     type_name: str
     class_name: str
+    zone_bestiary: str = ""  # Manually set zone name for bestiary display
+
+    # Combat stats
+    damage: int = 0
+    magic_damage: int = 0
+    defense: int = 0
+    magic_resist: int = 0
+    poison_resist: int = 0
+    fire_resist: int = 0
+    cold_resist: int = 0
+    disease_resist: int = 0
+    block_chance: float = 0.0
+    critical_chance: float = 0.0
+
+    # Classification flags
     is_boss: bool = False
     is_elite: bool = False
     is_hunt: bool = False
     is_dummy: bool = False
     is_summonable: bool = False
     is_halloween: bool = False
+    is_forgotten_altar_event: bool = False
+
+    # Combat flags
     see_invisibility: bool = False
     is_immune_debuffs: bool = False
     yell_friends: bool = False
     flee_on_low_hp: bool = False
     no_aggro_monster: bool = False
+    has_aura: bool = False
+    follow_distance: float = 0.0
+
+    # Spawning and respawn
     does_respawn: bool = True
-    respawn_time: int
+    death_time: float = 0.0
+    respawn_time: float = 0.0
     respawn_probability: float = 1.0
     spawn_time_start: int = 0
     spawn_time_end: int = 0
     placeholder_spawn_probability: float = 0.0
     placeholder_monster_id: str | None = None
-    gold_min: int
-    gold_max: int
+
+    # Loot and rewards
+    gold_min: int = 0
+    gold_max: int = 0
     probability_drop_gold: float = 1.0
     exp_multiplier: float = 1.0
     drops: list[MonsterDrop] = []
@@ -84,8 +112,12 @@ class MonsterData(BaseModel):
     aggro_messages: list[str] = []
     aggro_message_probability: float = 0.0
     summon_message: str = ""
+
+    # Faction changes
     improve_faction: list[str] = []
     decrease_faction: list[str] = []
+
+    # Lore (boss-specific)
     lore_boss: str = ""
 
 
