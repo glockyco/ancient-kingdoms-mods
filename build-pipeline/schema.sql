@@ -5,6 +5,23 @@
 PRAGMA foreign_keys = ON;
 
 -- =============================================================================
+-- FACTIONS (static data from static_data.json)
+-- =============================================================================
+
+CREATE TABLE factions (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL UNIQUE
+);
+
+CREATE TABLE reputation_tiers (
+    id INTEGER PRIMARY KEY,
+    name TEXT NOT NULL,
+    min_value INTEGER,          -- NULL means negative infinity
+    max_value INTEGER,          -- NULL means positive infinity
+    is_hostile BOOLEAN DEFAULT 0
+);
+
+-- =============================================================================
 -- ZONES
 -- =============================================================================
 
@@ -329,7 +346,7 @@ CREATE INDEX idx_summon_placeholders_spawn ON summon_trigger_placeholders(spawn_
 CREATE TABLE npcs (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
-    faction TEXT,
+    faction TEXT REFERENCES factions(name),
     race TEXT,
 
     -- Roles as JSON object

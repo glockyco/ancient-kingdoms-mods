@@ -164,6 +164,9 @@ def insert_model(cursor: sqlite3.Cursor, table: str, model: BaseModel) -> None:
         # Handle QuestRewards object
         elif field_name == "rewards" and value is not None:
             values["rewards"] = json.dumps(value.model_dump())
+        # Handle faction field - convert empty string to NULL for FK constraint
+        elif field_name == "faction":
+            values[field_name] = value if value else None
         else:
             values[field_name] = serialize_value(value)
 
@@ -201,6 +204,46 @@ def create_database(db_path: Path, schema_path: Path) -> sqlite3.Connection:
 
     console.print("  [green]OK[/green] Database created with schema")
     return conn
+
+
+def load_static_data(conn: sqlite3.Connection, export_dir: Path) -> None:
+    """Load static data (factions, reputation tiers) into database.
+
+    This data is manually maintained in static_data.json since it's hardcoded
+    in the game client and not exportable from game objects.
+    """
+    console.print("Loading static data...")
+
+    filepath = export_dir / "static_data.json"
+    if not filepath.exists():
+        console.print("  [yellow]SKIP[/yellow] No static_data.json found")
+        return
+
+    with open(filepath, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    cursor = conn.cursor()
+
+    # Load factions
+    factions = data.get("factions", [])
+    for faction in factions:
+        cursor.execute(
+            "INSERT INTO factions (id, name) VALUES (?, ?)",
+            (faction["id"], faction["name"]),
+        )
+    console.print(f"  [green]OK[/green] Loaded {len(factions)} factions")
+
+    # Load reputation tiers
+    tiers = data.get("reputation_tiers", [])
+    for i, tier in enumerate(tiers):
+        cursor.execute(
+            """INSERT INTO reputation_tiers (id, name, min_value, max_value, is_hostile)
+               VALUES (?, ?, ?, ?, ?)""",
+            (i, tier["name"], tier["min_value"], tier["max_value"], tier["is_hostile"]),
+        )
+    console.print(f"  [green]OK[/green] Loaded {len(tiers)} reputation tiers")
+
+    conn.commit()
 
 
 def load_zones(conn: sqlite3.Connection, export_dir: Path) -> None:
@@ -2577,6 +2620,7 @@ def run(config: dict) -> None:
 
     try:
         # Load data in order (respecting foreign keys)
+        load_static_data(conn, export_dir)  # Factions, reputation tiers (before NPCs)
         load_zones(conn, export_dir)
         load_zone_triggers(conn, export_dir)
         load_skills(conn, export_dir)

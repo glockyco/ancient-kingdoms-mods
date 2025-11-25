@@ -64,7 +64,7 @@ public class NpcExporter : BaseExporter
                 // Identity
                 id = name,  // canonical ID (sanitized name)
                 name = canonical.name,
-                faction = canonical.faction ?? "Neutral",
+                faction = string.IsNullOrEmpty(canonical.faction) ? null : canonical.faction,
                 race = canonical.race ?? "Unknown",
 
                 // Roles and services

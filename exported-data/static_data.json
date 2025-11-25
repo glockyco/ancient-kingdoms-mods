@@ -1,0 +1,24 @@
+{
+  "_comment": "MANUAL MAINTENANCE REQUIRED: This file contains static game data that is hardcoded in the game client and not exportable from game objects. Must be manually updated when the game changes.",
+  "_last_verified": "2025-11-25",
+
+  "factions": [
+    { "id": "elven_kingdom", "name": "Elven Kingdom" },
+    { "id": "children_of_illithor", "name": "Children of Illithor" },
+    { "id": "army_of_order", "name": "Army of Order" },
+    { "id": "the_forsaken", "name": "The Forsaken" },
+    { "id": "dark_alliance", "name": "Dark Alliance" },
+    { "id": "ancient_gods", "name": "Ancient Gods" }
+  ],
+
+  "reputation_tiers": [
+    { "name": "Hated", "min_value": null, "max_value": -3000, "is_hostile": true },
+    { "name": "Hostile", "min_value": -3000, "max_value": -500, "is_hostile": true },
+    { "name": "Unfriendly", "min_value": -500, "max_value": 0, "is_hostile": true },
+    { "name": "Neutral", "min_value": 0, "max_value": 1000, "is_hostile": false },
+    { "name": "Friendly", "min_value": 1000, "max_value": 21000, "is_hostile": false },
+    { "name": "Honored", "min_value": 21000, "max_value": 221000, "is_hostile": false },
+    { "name": "Ally", "min_value": 221000, "max_value": 721000, "is_hostile": false },
+    { "name": "Revered", "min_value": 721000, "max_value": null, "is_hostile": false }
+  ]
+}
