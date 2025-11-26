@@ -27,11 +27,11 @@
     // Labels for data fields
     label: "text-sm text-muted-foreground",
     // Regular values
-    value: "font-medium",
+    value: "",
     // Positive values (bonuses, gains, health/mana)
-    valuePositive: "font-medium text-green-600 dark:text-green-400",
+    valuePositive: "text-green-600 dark:text-green-400",
     // Currency/gold values
-    valueCurrency: "font-medium text-yellow-600 dark:text-yellow-400",
+    valueCurrency: "text-yellow-600 dark:text-yellow-400",
   } as const;
 
   function parseJson<T>(json: string | null): T | null {
@@ -407,9 +407,7 @@
       {#if computed.isCostume}
         <div>
           <div class={styles.label}>Item Type</div>
-          <div class="font-medium text-purple-600 dark:text-purple-400">
-            Cosmetic
-          </div>
+          <div class="text-purple-600 dark:text-purple-400">Cosmetic</div>
         </div>
       {/if}
 
@@ -1029,7 +1027,7 @@
             <div class={styles.label}>
               Restores {formatResourceName("mana")}
             </div>
-            <div class="font-medium text-blue-600 dark:text-blue-400">
+            <div class="text-blue-600 dark:text-blue-400">
               +{data.item.usage_mana} MP
             </div>
           </div>
