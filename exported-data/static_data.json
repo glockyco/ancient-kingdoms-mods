@@ -65,6 +65,55 @@
         { "tier": 3, "base_success": 0.0, "skill_multiplier": 0.4, "tool_multiplier": 0.1, "skill_cap": 1.0 },
         { "tier": 4, "base_success": 0.0, "skill_multiplier": 0.2, "tool_multiplier": 0.05, "skill_cap": 1.0 }
       ]
+    },
+    "slayer": {
+      "_comment": "Source: Combat.cs:554-561. Reduces damage taken from boss/elite monsters. Only activates at >= 10% skill.",
+      "effect": "damage_reduction_from_bosses",
+      "formula": "damage_reduction = slayerLevel * 0.1",
+      "min_skill_to_activate": 0.1,
+      "max_reduction": 0.1,
+      "leveling": {
+        "_comment": "Source: Player.cs:8683-8696, GameManager.cs:470. Gained by killing bosses/elites, up to 50 kills each.",
+        "formula": "slayerLevel = total_capped_kills / (num_bosses_elites * 50)",
+        "max_kills_per_monster": 50
+      }
+    },
+    "hunter": {
+      "_comment": "Source: Monster.cs:2297. Increases drop rate for quality items (quality > 0) when killing hunt-type monsters.",
+      "effect": "drop_rate_bonus",
+      "formula": "effective_drop_rate = base_rate + (hunterLevel / 2)",
+      "max_bonus": 0.5,
+      "conditions": ["monster must be hunt type (isHunt)", "item quality > 0"]
+    },
+    "radiant_seeker": {
+      "_comment": "Source: GatherItem.cs:362. Chance to receive Radiant Aether when gathering Radiant Sparks.",
+      "effect": "radiant_aether_drop_chance",
+      "formula": "drop_chance = radiantSekeerLevel * 0.05",
+      "max_chance": 0.05
+    },
+    "adventuring": {
+      "_comment": "Source: ScriptableItem.cs:50, UINpcTrading.cs:357. Required level to purchase certain items from vendors.",
+      "effect": "vendor_item_unlock",
+      "formula": "can_buy = adventuringLevel >= item.adventuringLevelNeeded"
+    },
+    "treasure_hunter": {
+      "_comment": "Source: TreasureLocation.cs:87-94. Tracks treasure maps found. No direct gameplay bonus found.",
+      "effect": "tracking_only",
+      "leveling": {
+        "formula": "treasureHunterLevel += 0.005 per treasure found"
+      }
+    },
+    "lore_keeping": {
+      "_comment": "Source: UIProfessions.cs:262-268. Tracks books collected. No direct gameplay bonus found.",
+      "effect": "tracking_only",
+      "formula": "progress = books.Count / 13",
+      "total_books": 13
+    },
+    "exploring": {
+      "_comment": "Source: UIProfessions.cs:270-276. Tracks zones discovered. No direct gameplay bonus found.",
+      "effect": "tracking_only",
+      "formula": "progress = zonesDiscovered.Count / 38",
+      "total_zones": 38
     }
   }
 }
