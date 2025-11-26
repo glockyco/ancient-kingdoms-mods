@@ -50,11 +50,22 @@ export const load: PageServerLoad = ({ params }): ItemDetailPageData => {
       .all() as Array<{ id: string; name: string }>;
   }
 
+  // For non-set augments (gems that add stats to equipment), get augmenter NPCs
+  let augmenters: Array<{ id: string; name: string }> = [];
+  if (item.item_type === "augment" && !item.augment_armor_set_name) {
+    augmenters = db
+      .prepare(
+        `SELECT id, name FROM npcs WHERE json_extract(roles, '$.is_augmenter') = 1`,
+      )
+      .all() as Array<{ id: string; name: string }>;
+  }
+
   db.close();
 
   return {
     item,
     essenceTraders,
     veteranMasters,
+    augmenters,
   };
 };

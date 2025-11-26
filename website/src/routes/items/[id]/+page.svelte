@@ -473,7 +473,7 @@
   </Card.Root>
 
   <!-- Tooltip and Stats/Merge/Currency side-by-side (hide entire section if all would be empty) -->
-  {#if (data.item.tooltip && data.item.item_type !== "augment") || ((data.item.item_type !== "augment" || !data.item.augment_armor_set_name) && ((computed.stats && Object.keys(computed.stats).length > 0) || data.item.weapon_delay > 0)) || data.item.merge_result_item_id || (computed.createdFromMerge && computed.createdFromMerge.length > 0) || (computed.usedAsCurrencyFor && computed.usedAsCurrencyFor.length > 0) || data.item.id === "primal_essence" || data.item.id === "radiant_aether" || data.item.pack_final_item_id}
+  {#if (data.item.tooltip && data.item.item_type !== "augment") || ((data.item.item_type !== "augment" || !data.item.augment_armor_set_name) && ((computed.stats && Object.keys(computed.stats).length > 0) || data.item.weapon_delay > 0)) || data.item.merge_result_item_id || (computed.createdFromMerge && computed.createdFromMerge.length > 0) || (computed.usedAsCurrencyFor && computed.usedAsCurrencyFor.length > 0) || data.item.id === "primal_essence" || data.item.id === "radiant_aether" || data.item.pack_final_item_id || (data.item.item_type === "augment" && !data.item.augment_armor_set_name && data.augmenters.length > 0)}
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <!-- Tooltip (don't show for augments - they're metadata items never shown to players) -->
       {#if data.item.tooltip && data.item.item_type !== "augment"}
@@ -756,6 +756,44 @@
                 <div class={styles.value}>
                   <span class={styles.valuePositive}>Full heal to max HP</span>
                   instead of dying
+                </div>
+              </div>
+            </div>
+          </Card.Content>
+        </Card.Root>
+      {:else if data.item.item_type === "augment" && !data.item.augment_armor_set_name && data.augmenters.length > 0}
+        <!-- Augment (Non-Set) Usage -->
+        <Card.Root>
+          <Card.Header>
+            <Card.Title>How to Use</Card.Title>
+          </Card.Header>
+          <Card.Content>
+            <div class="space-y-3">
+              <div>
+                <div class={styles.label}>Socketing</div>
+                <div class={styles.value}>
+                  Place the augment and an armor or weapon in a crafting
+                  station, then craft. The augment is consumed and its stats are
+                  permanently added. You must have only one copy of the target
+                  item in your inventory.
+                </div>
+              </div>
+              <div>
+                <div class={styles.label}>Removing</div>
+                <div class={styles.value}>
+                  Visit an Augmenter NPC to remove a socketed augment. This
+                  costs gold ({formatGold(5000)}-{formatGold(15000)}g depending
+                  on augment quality) and returns the augment to your inventory.
+                </div>
+              </div>
+              <div>
+                <div class={styles.label}>Augmenter NPCs</div>
+                <div class="space-y-1 mt-1">
+                  {#each data.augmenters as augmenter (augmenter.id)}
+                    <a href="/npcs/{augmenter.id}" class={styles.link}>
+                      {augmenter.name}
+                    </a>
+                  {/each}
                 </div>
               </div>
             </div>
