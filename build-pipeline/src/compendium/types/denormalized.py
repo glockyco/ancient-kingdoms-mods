@@ -23,6 +23,7 @@ class GatherDropInfo(TypedDict):
     gather_item_name: str
     rate: float
     type: str  # "resource" or "chest"
+    rate_note: NotRequired[str]  # Explanation for variable rates
     zone_id: NotRequired[str]
     zone_name: NotRequired[str]
     key_required_id: NotRequired[str]

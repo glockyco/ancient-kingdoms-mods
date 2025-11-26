@@ -96,22 +96,39 @@ def _denormalize_gathered_from(
     # Process guaranteed resource rewards
     console.print("  Processing guaranteed resource rewards...")
     cursor.execute("""
-        SELECT id, name, item_reward_id, item_reward_amount
+        SELECT id, name, item_reward_id, item_reward_amount, is_radiant_spark
         FROM gathering_resources
         WHERE item_reward_id IS NOT NULL
     """)
 
-    for resource_id, resource_name, item_id, item_reward_amount in cursor.fetchall():
+    for (
+        resource_id,
+        resource_name,
+        item_id,
+        item_reward_amount,
+        is_radiant_spark,
+    ) in cursor.fetchall():
         if item_id not in gathered_from:
             gathered_from[item_id] = []
 
-        # Amount is random: Random.Range(1, amount + 1) in game code
+        # Radiant Sparks have special drop logic: radiantSekeerLevel * 0.05
+        # At max level (100%), this gives 5% chance. Show as variable rate.
+        if is_radiant_spark:
+            rate = 0.05  # Max rate at 100% Radiant Seeker
+            rate_note = "0-5% based on Radiant Seeker level"
+        else:
+            rate = 1.0
+            rate_note = None
+
         gather_info: GatherDropInfo = {
             "gather_item_id": resource_id,
             "gather_item_name": resource_name,
-            "rate": 1.0,
+            "rate": rate,
             "type": "resource",
         }
+
+        if rate_note:
+            gather_info["rate_note"] = rate_note
 
         # Add amount range if variable
         if item_reward_amount > 1:

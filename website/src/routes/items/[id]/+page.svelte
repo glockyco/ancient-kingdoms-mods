@@ -194,6 +194,7 @@
           gather_item_name: string;
           rate: number;
           type: "resource" | "chest";
+          rate_note?: string;
           zone_id?: string;
           zone_name?: string;
           key_required_id?: string;
@@ -472,7 +473,7 @@
   </Card.Root>
 
   <!-- Tooltip and Stats/Merge/Currency side-by-side (hide entire section if all would be empty) -->
-  {#if (data.item.tooltip && data.item.item_type !== "augment") || ((data.item.item_type !== "augment" || !data.item.augment_armor_set_name) && ((computed.stats && Object.keys(computed.stats).length > 0) || data.item.weapon_delay > 0)) || data.item.merge_result_item_id || (computed.createdFromMerge && computed.createdFromMerge.length > 0) || (computed.usedAsCurrencyFor && computed.usedAsCurrencyFor.length > 0) || data.item.id === "primal_essence" || data.item.pack_final_item_id}
+  {#if (data.item.tooltip && data.item.item_type !== "augment") || ((data.item.item_type !== "augment" || !data.item.augment_armor_set_name) && ((computed.stats && Object.keys(computed.stats).length > 0) || data.item.weapon_delay > 0)) || data.item.merge_result_item_id || (computed.createdFromMerge && computed.createdFromMerge.length > 0) || (computed.usedAsCurrencyFor && computed.usedAsCurrencyFor.length > 0) || data.item.id === "primal_essence" || data.item.id === "radiant_aether" || data.item.pack_final_item_id}
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <!-- Tooltip (don't show for augments - they're metadata items never shown to players) -->
       {#if data.item.tooltip && data.item.item_type !== "augment"}
@@ -723,6 +724,38 @@
                       {master.name}
                     </a>
                   {/each}
+                </div>
+              </div>
+            </div>
+          </Card.Content>
+        </Card.Root>
+      {:else if data.item.id === "radiant_aether"}
+        <!-- Radiant Aether Effects -->
+        <Card.Root>
+          <Card.Header>
+            <Card.Title>Passive Effects</Card.Title>
+          </Card.Header>
+          <Card.Content>
+            <div class="space-y-3">
+              <div>
+                <div class={styles.label}>How it works</div>
+                <div class={styles.value}>
+                  Keep in inventory. 15% chance to activate on critical hits or
+                  lethal damage. Consumes 1 when triggered.
+                </div>
+              </div>
+              <div>
+                <div class={styles.label}>On Critical Hit</div>
+                <div class={styles.value}>
+                  <span class={styles.valuePositive}>3× damage</span>
+                  instead of 1.5×
+                </div>
+              </div>
+              <div>
+                <div class={styles.label}>On Lethal Damage</div>
+                <div class={styles.value}>
+                  <span class={styles.valuePositive}>Full heal to max HP</span>
+                  instead of dying
                 </div>
               </div>
             </div>
@@ -1494,7 +1527,11 @@
                     {gather.gather_item_name}
                   </a>
                   <span class={styles.label}>
-                    {(gather.rate * 100).toFixed(1)}%
+                    {#if gather.rate_note}
+                      {gather.rate_note}
+                    {:else}
+                      {(gather.rate * 100).toFixed(1)}%
+                    {/if}
                     {#if gather.amount_min !== undefined && gather.amount_max !== undefined}
                       ({gather.amount_min}-{gather.amount_max}×)
                     {/if}
