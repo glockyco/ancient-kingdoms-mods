@@ -1304,7 +1304,7 @@
                     >
                       {quest.quest_name}
                       <span class={styles.label}>
-                        (Lv {quest.level_required}{#if quest.class_restrictions && quest.class_restrictions.length > 0 && quest.class_restrictions.length < 6},
+                        (Lv {quest.level_recommended}{#if quest.class_restrictions && quest.class_restrictions.length > 0 && quest.class_restrictions.length < 6},
                           {quest.class_restrictions.join(", ")}{/if})
                       </span>
                     </a>
@@ -1326,7 +1326,7 @@
                     >
                       {quest.quest_name}
                       <span class={styles.label}>
-                        (Lv {quest.level_required}{#if quest.class_restrictions && quest.class_restrictions.length > 0 && quest.class_restrictions.length < 6},
+                        (Lv {quest.level_recommended}{#if quest.class_restrictions && quest.class_restrictions.length > 0 && quest.class_restrictions.length < 6},
                           {quest.class_restrictions.join(", ")}{/if})
                       </span>
                     </a>
@@ -1727,7 +1727,7 @@
                     >
                       {quest.quest_name}
                       <span class={styles.label}>
-                        (Lv {quest.level_required}{#if quest.class_restrictions && quest.class_restrictions.length > 0 && quest.class_restrictions.length < 6},
+                        (Lv {quest.level_recommended}{#if quest.class_restrictions && quest.class_restrictions.length > 0 && quest.class_restrictions.length < 6},
                           {quest.class_restrictions.join(", ")}{/if})
                       </span>
                     </a>
@@ -1752,7 +1752,7 @@
                     >
                       {quest.quest_name}
                       <span class={styles.label}>
-                        (Lv {quest.level_required}{#if quest.class_restrictions && quest.class_restrictions.length > 0 && quest.class_restrictions.length < 6},
+                        (Lv {quest.level_recommended}{#if quest.class_restrictions && quest.class_restrictions.length > 0 && quest.class_restrictions.length < 6},
                           {quest.class_restrictions.join(", ")}{/if})
                       </span>
                     </a>
