@@ -59,22 +59,22 @@
     {
       accessorKey: "boss_count",
       header: "Bosses",
-      size: 150,
+      size: 130,
     },
     {
       accessorKey: "elite_count",
       header: "Elites",
-      size: 150,
+      size: 110,
     },
     {
       accessorKey: "altar_count",
       header: "Altars",
-      size: 150,
+      size: 110,
     },
     {
       accessorKey: "npc_count",
       header: "NPCs",
-      size: 150,
+      size: 110,
     },
     {
       accessorKey: "gather_count",

@@ -233,6 +233,19 @@
   const toggleableColumns = $derived(
     allColumns.filter((col) => col.getCanHide()),
   );
+
+  // Calculate minimum table width based on visible columns only
+  const visibleColumnIds = $derived(
+    new Set(table.getVisibleLeafColumns().map((c) => c.id)),
+  );
+  const tableMinWidth = $derived(
+    columns
+      .filter((col) => {
+        const id = "accessorKey" in col ? col.accessorKey : col.id;
+        return visibleColumnIds.has(id as string);
+      })
+      .reduce((sum, col) => sum + (col.size || col.minSize || 100), 0),
+  );
 </script>
 
 <div class={className}>
@@ -288,23 +301,26 @@
   {/if}
 
   <div class="rounded-md border">
-    <Table.Root class="table-fixed">
-      <colgroup>
-        {#each columns as col, i (i)}
-          {@const styles = [
-            col.size ? `width: ${col.size}px` : null,
-            col.minSize ? `min-width: ${col.minSize}px` : null,
-          ]
-            .filter(Boolean)
-            .join("; ")}
-          <col style={styles || undefined} />
-        {/each}
-      </colgroup>
+    <Table.Root style="min-width: {tableMinWidth}px">
       <Table.Header>
         {#each headerGroups as headerGroup (headerGroup.id)}
           <Table.Row>
             {#each headerGroup.headers as header (header.id)}
-              <Table.Head>
+              {@const originalCol = columns.find(
+                (c) =>
+                  ("accessorKey" in c && c.accessorKey === header.id) ||
+                  ("id" in c && c.id === header.id),
+              )}
+              {@const colStyle =
+                [
+                  originalCol?.size ? `width: ${originalCol.size}px` : null,
+                  originalCol?.minSize
+                    ? `min-width: ${originalCol.minSize}px`
+                    : null,
+                ]
+                  .filter(Boolean)
+                  .join("; ") || undefined}
+              <Table.Head style={colStyle}>
                 {#if !header.isPlaceholder}
                   {#if header.column.getCanSort()}
                     <button
