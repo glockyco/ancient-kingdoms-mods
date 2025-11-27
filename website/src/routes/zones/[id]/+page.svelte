@@ -21,6 +21,9 @@
   import MapPin from "@lucide/svelte/icons/map-pin";
   import Scroll from "@lucide/svelte/icons/scroll";
   import Flame from "@lucide/svelte/icons/flame";
+  import Layers from "@lucide/svelte/icons/layers";
+  import Castle from "@lucide/svelte/icons/castle";
+  import Trees from "@lucide/svelte/icons/trees";
 
   let { data } = $props();
 
@@ -588,6 +591,30 @@
     </section>
   {/if}
 
+  <!-- Sub-Zones Section -->
+  {#if data.subZones.length > 0}
+    <section>
+      <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
+        <Layers class="h-5 w-5 text-slate-500" />
+        Areas ({data.subZones.length})
+      </h2>
+      <div class="flex flex-wrap gap-2">
+        {#each data.subZones as subZone (subZone.id)}
+          <span
+            class="inline-flex items-center gap-1.5 rounded-md border bg-muted/30 px-3 py-1.5 text-sm"
+          >
+            {#if subZone.is_outdoor}
+              <Trees class="h-3.5 w-3.5 text-green-500" />
+            {:else}
+              <Castle class="h-3.5 w-3.5 text-purple-500" />
+            {/if}
+            {subZone.name}
+          </span>
+        {/each}
+      </div>
+    </section>
+  {/if}
+
   <!-- Zone Connections Section -->
   {#if data.connectedZones.length > 0}
     <section class="mb-8">
@@ -599,8 +626,13 @@
         {#each data.connectedZones as zone (zone.id)}
           <a
             href="/zones/{zone.id}"
-            class="inline-flex items-center rounded-md border bg-muted/50 px-3 py-1.5 text-sm transition-colors hover:bg-muted"
+            class="inline-flex items-center gap-1.5 rounded-md border bg-muted/50 px-3 py-1.5 text-sm transition-colors hover:bg-muted"
           >
+            {#if zone.is_dungeon}
+              <Castle class="h-3.5 w-3.5 text-purple-500" />
+            {:else}
+              <Trees class="h-3.5 w-3.5 text-green-500" />
+            {/if}
             {zone.name}
           </a>
         {/each}

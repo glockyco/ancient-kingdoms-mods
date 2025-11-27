@@ -8,6 +8,7 @@ import type {
   ZoneGatherResource,
   ZoneAltar,
   ZoneConnection,
+  ZoneSubZone,
 } from "$lib/types/zones";
 
 export const prerender = true;
@@ -211,7 +212,8 @@ export const load: PageServerLoad = ({ params }): ZoneDetailData => {
       `
     SELECT DISTINCT
       z.id,
-      z.name
+      z.name,
+      z.is_dungeon
     FROM portals p
     JOIN zones z ON z.id = p.to_zone_id
     WHERE p.from_zone_id = ? AND p.to_zone_id IS NOT NULL AND p.to_zone_id != ?
@@ -219,6 +221,24 @@ export const load: PageServerLoad = ({ params }): ZoneDetailData => {
   `,
     )
     .all(params.id, params.id) as ZoneConnection[];
+
+  // Get sub-zones (zone triggers) for this zone
+  const subZones = db
+    .prepare(
+      `
+    SELECT
+      zt.id,
+      zt.name,
+      zt.is_outdoor,
+      zt.position_x,
+      zt.position_y
+    FROM zone_triggers zt
+    JOIN zones z ON z.zone_id = zt.zone_id
+    WHERE z.id = ?
+    ORDER BY zt.name
+  `,
+    )
+    .all(params.id) as ZoneSubZone[];
 
   db.close();
 
@@ -229,5 +249,6 @@ export const load: PageServerLoad = ({ params }): ZoneDetailData => {
     gatherResources,
     altars,
     connectedZones,
+    subZones,
   };
 };

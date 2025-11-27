@@ -82,6 +82,18 @@ export interface ZoneGatherResource {
 export interface ZoneConnection {
   id: string;
   name: string;
+  is_dungeon: boolean;
+}
+
+/**
+ * Sub-zone (zone trigger) info for zone detail page
+ */
+export interface ZoneSubZone {
+  id: string;
+  name: string;
+  is_outdoor: boolean;
+  position_x: number | null;
+  position_y: number | null;
 }
 
 /**
@@ -117,6 +129,7 @@ export interface ZoneDetailData {
   gatherResources: ZoneGatherResource[];
   altars: ZoneAltar[];
   connectedZones: ZoneConnection[];
+  subZones: ZoneSubZone[];
 }
 
 /**
