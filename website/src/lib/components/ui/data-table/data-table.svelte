@@ -90,8 +90,8 @@
   let globalFilter = $state("");
   let isHydrated = $state(false);
 
-  // URL-based filter persistence using {urlKey}.{columnId} format
-  function syncFiltersToUrl() {
+  // URL-based state persistence using {urlKey}.{key} format
+  function syncStateToUrl() {
     if (!urlKey || !isHydrated) return;
 
     const currentParams = new URL(window.location.href).searchParams;
@@ -107,7 +107,24 @@
       }
     });
 
-    // Add current filters with prefixed keys
+    // Add search text
+    if (globalFilter) {
+      newParams.push(
+        `${encodeURIComponent(`${prefix}search`)}=${encodeURIComponent(globalFilter)}`,
+      );
+    }
+
+    // Add hidden columns
+    const hiddenCols = Object.entries(columnVisibility)
+      .filter(([, visible]) => !visible)
+      .map(([id]) => id);
+    if (hiddenCols.length > 0) {
+      newParams.push(
+        `${encodeURIComponent(`${prefix}hide`)}=${encodeURIComponent(hiddenCols.join(","))}`,
+      );
+    }
+
+    // Add column filters with prefixed keys
     for (const filter of columnFilters) {
       const values = filter.value as string[] | undefined;
       if (values && values.length > 0) {
@@ -129,20 +146,34 @@
     if (urlKey) {
       const prefix = `${urlKey}.`;
       const restoredFilters: ColumnFiltersState = [];
+      const restoredVisibility: VisibilityState = {};
 
       // Find all URL params that match our prefix
       $page.url.searchParams.forEach((value, key) => {
         if (key.startsWith(prefix)) {
-          const columnId = key.slice(prefix.length);
-          const values = value.split(",").filter(Boolean);
-          if (values.length > 0) {
-            restoredFilters.push({ id: columnId, value: values });
+          const paramKey = key.slice(prefix.length);
+
+          if (paramKey === "search") {
+            globalFilter = value;
+          } else if (paramKey === "hide") {
+            const hiddenCols = value.split(",").filter(Boolean);
+            for (const col of hiddenCols) {
+              restoredVisibility[col] = false;
+            }
+          } else {
+            const values = value.split(",").filter(Boolean);
+            if (values.length > 0) {
+              restoredFilters.push({ id: paramKey, value: values });
+            }
           }
         }
       });
 
       if (restoredFilters.length > 0) {
         columnFilters = restoredFilters;
+      }
+      if (Object.keys(restoredVisibility).length > 0) {
+        columnVisibility = restoredVisibility;
       }
     }
     isHydrated = true;
@@ -178,18 +209,19 @@
           typeof updater === "function" ? updater(columnFilters) : updater;
         // Reset to first page when filters change to avoid being on an invalid page
         pagination = { ...pagination, pageIndex: 0 };
-        // Sync to URL if enabled
-        syncFiltersToUrl();
+        syncStateToUrl();
       },
       onColumnVisibilityChange: (updater) => {
         columnVisibility =
           typeof updater === "function" ? updater(columnVisibility) : updater;
+        syncStateToUrl();
       },
       onGlobalFilterChange: (updater) => {
         globalFilter =
           typeof updater === "function" ? updater(globalFilter) : updater;
         // Reset to first page when search changes
         pagination = { ...pagination, pageIndex: 0 };
+        syncStateToUrl();
       },
     }),
   );
@@ -204,13 +236,26 @@
 </script>
 
 <div class={className}>
+  {#if urlKey && !isHydrated}
+    <div
+      class="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm"
+    >
+      <div class="text-center">
+        <div
+          class="inline-block h-8 w-8 animate-spin rounded-full border-b-2 border-primary"
+        ></div>
+        <p class="mt-2 text-sm text-muted-foreground">Loading...</p>
+      </div>
+    </div>
+  {/if}
+
   {#if renderToolbar || showSearch || showColumnToggle}
     <div class="flex items-center gap-2 pb-4">
       {#if showSearch}
         <Input
           placeholder={searchPlaceholder}
           value={globalFilter}
-          oninput={(e) => (globalFilter = e.currentTarget.value)}
+          oninput={(e) => table.setGlobalFilter(e.currentTarget.value)}
           class="max-w-sm"
         />
       {/if}

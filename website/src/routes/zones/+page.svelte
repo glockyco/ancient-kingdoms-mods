@@ -209,6 +209,7 @@
       { id: "level_min", desc: false },
       { id: "name", desc: false },
     ]}
+    urlKey="zones"
     showPagination={true}
     showSearch={true}
     showColumnToggle={true}
