@@ -88,6 +88,11 @@
   let globalFilter = $state("");
   let isHydrated = $state(false);
 
+  // Reset pagination when data changes (e.g., navigating to a different detail page)
+  $effect(() => {
+    if (data) pagination = { pageIndex: 0, pageSize };
+  });
+
   // URL-based state persistence using {urlKey}.{key} format
   function syncStateToUrl() {
     if (!urlKey || !isHydrated) return;
