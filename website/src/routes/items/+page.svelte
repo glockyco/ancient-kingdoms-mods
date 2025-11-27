@@ -240,7 +240,7 @@
   </div>
 
   <!-- Filters -->
-  <Card.Root>
+  <Card.Root class="bg-muted/30">
     <Card.Header>
       <div class="flex items-center justify-between">
         <Card.Title>Filters</Card.Title>

@@ -331,7 +331,7 @@
   </div>
 
   <!-- Basic Info -->
-  <Card.Root>
+  <Card.Root class="bg-muted/30">
     <Card.Header>
       <Card.Title>Basic Information</Card.Title>
     </Card.Header>
@@ -475,7 +475,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <!-- Tooltip (don't show for augments - they're metadata items never shown to players) -->
       {#if data.item.tooltip && data.item.item_type !== "augment"}
-        <Card.Root>
+        <Card.Root class="bg-muted/30">
           <Card.Header>
             <Card.Title>Tooltip</Card.Title>
           </Card.Header>
@@ -490,7 +490,7 @@
 
       <!-- Stats (hidden for set bonus augments since those stats are shown as set bonuses) -->
       {#if (data.item.item_type !== "augment" || !data.item.augment_armor_set_name) && ((computed.stats && Object.keys(computed.stats).length > 0) || data.item.weapon_delay > 0 || data.item.weapon_proc_effect_id)}
-        <Card.Root>
+        <Card.Root class="bg-muted/30">
           <Card.Header>
             <Card.Title>Stats</Card.Title>
           </Card.Header>
@@ -546,7 +546,7 @@
       {:else if data.item.merge_result_item_id && data.item.merge_items_needed}
         <!-- Combine To Create (shown when no stats) -->
         {@const mergeItems = JSON.parse(data.item.merge_items_needed)}
-        <Card.Root>
+        <Card.Root class="bg-muted/30">
           <Card.Header>
             <Card.Title>Combine to Create</Card.Title>
           </Card.Header>
@@ -576,7 +576,7 @@
         </Card.Root>
       {:else if computed.createdFromMerge && computed.createdFromMerge.length > 0}
         <!-- Created From (shown when no stats and not a merge item) -->
-        <Card.Root>
+        <Card.Root class="bg-muted/30">
           <Card.Header>
             <Card.Title>Created from</Card.Title>
           </Card.Header>
@@ -597,7 +597,7 @@
 
       <!-- Treasure Map Location -->
       {#if data.item.item_type === "treasure_map" && (data.item.treasure_map_zone_id || data.item.treasure_map_reward_id)}
-        <Card.Root>
+        <Card.Root class="bg-muted/30">
           <Card.Header>
             <Card.Title>Treasure Location</Card.Title>
           </Card.Header>
@@ -640,7 +640,7 @@
 
       <!-- Currency For -->
       {#if computed.usedAsCurrencyFor && computed.usedAsCurrencyFor.length > 0}
-        <Card.Root>
+        <Card.Root class="bg-muted/30">
           <Card.Header>
             <Card.Title>Currency for</Card.Title>
           </Card.Header>
@@ -664,7 +664,7 @@
         </Card.Root>
       {:else if data.item.id === "primal_essence" && data.essenceTraders.length > 0}
         <!-- Primal Essence Acquisition -->
-        <Card.Root>
+        <Card.Root class="bg-muted/30">
           <Card.Header>
             <Card.Title>How to Acquire</Card.Title>
           </Card.Header>
@@ -698,7 +698,7 @@
         </Card.Root>
       {:else if data.item.id === "token_of_redemption" && data.veteranMasters.length > 0}
         <!-- Token of Redemption Usage -->
-        <Card.Root>
+        <Card.Root class="bg-muted/30">
           <Card.Header>
             <Card.Title>Usage</Card.Title>
           </Card.Header>
@@ -729,7 +729,7 @@
         </Card.Root>
       {:else if data.item.id === "radiant_aether"}
         <!-- Radiant Aether Effects -->
-        <Card.Root>
+        <Card.Root class="bg-muted/30">
           <Card.Header>
             <Card.Title>Passive Effects</Card.Title>
           </Card.Header>
@@ -761,7 +761,7 @@
         </Card.Root>
       {:else if data.item.item_type === "augment" && !data.item.augment_armor_set_name && data.augmenters.length > 0}
         <!-- Augment (Non-Set) Usage -->
-        <Card.Root>
+        <Card.Root class="bg-muted/30">
           <Card.Header>
             <Card.Title>How to Use</Card.Title>
           </Card.Header>
@@ -799,7 +799,7 @@
         </Card.Root>
       {:else if data.item.pack_final_item_id}
         <!-- Pack Contents -->
-        <Card.Root>
+        <Card.Root class="bg-muted/30">
           <Card.Header>
             <Card.Title>Pack Contents</Card.Title>
           </Card.Header>
@@ -817,7 +817,7 @@
         </Card.Root>
       {:else if computed.foundInPacks && computed.foundInPacks.length > 0}
         <!-- Found in Packs -->
-        <Card.Root>
+        <Card.Root class="bg-muted/30">
           <Card.Header>
             <Card.Title>Found in Packs</Card.Title>
           </Card.Header>
@@ -836,7 +836,7 @@
         </Card.Root>
       {:else if data.item.recipe_potion_learned_id && data.item.recipe_potion_learned_name}
         <!-- Teaches Recipe -->
-        <Card.Root>
+        <Card.Root class="bg-muted/30">
           <Card.Header>
             <Card.Title>Teaches Recipe</Card.Title>
           </Card.Header>
@@ -886,7 +886,7 @@
         </Card.Root>
       {:else if data.item.taught_by_recipe_id && data.item.taught_by_recipe_name}
         <!-- Crafted by -->
-        <Card.Root>
+        <Card.Root class="bg-muted/30">
           <Card.Header>
             <Card.Title>Crafted by</Card.Title>
           </Card.Header>
@@ -940,7 +940,7 @@
 
   <!-- Armor Set Bonuses (shown on augment items and armor pieces) -->
   {#if data.item.augment_armor_set_name}
-    <Card.Root>
+    <Card.Root class="bg-muted/30">
       <Card.Header>
         <Card.Title>
           {data.item.augment_armor_set_name}
@@ -1008,7 +1008,7 @@
 
   <!-- Use Effects -->
   {#if data.item.usage_health > 0 || data.item.usage_mana > 0 || data.item.usage_energy > 0 || data.item.potion_buff_id || data.item.food_buff_id || data.item.relic_buff_id || data.item.scroll_skill_id}
-    <Card.Root>
+    <Card.Root class="bg-muted/30">
       <Card.Header>
         <Card.Title>Use Effects</Card.Title>
       </Card.Header>
@@ -1101,7 +1101,7 @@
 
   <!-- Book Effects (Permanent Stat Gains) -->
   {#if data.item.book_strength_gain > 0 || data.item.book_dexterity_gain > 0 || data.item.book_constitution_gain > 0 || data.item.book_intelligence_gain > 0 || data.item.book_wisdom_gain > 0 || data.item.book_charisma_gain > 0}
-    <Card.Root>
+    <Card.Root class="bg-muted/30">
       <Card.Header>
         <Card.Title>Permanent Stat Gains</Card.Title>
         <Card.Description
@@ -1168,7 +1168,7 @@
 
   <!-- Fatecharm Fragment -->
   {#if data.item.luck_token_drop_chance && data.item.fragment_result_item_id}
-    <Card.Root>
+    <Card.Root class="bg-muted/30">
       <Card.Header>
         <Card.Title>Fatecharm Fragment</Card.Title>
       </Card.Header>
@@ -1200,7 +1200,7 @@
 
   <!-- Fatecharm -->
   {#if data.item.luck_token_bonus}
-    <Card.Root>
+    <Card.Root class="bg-muted/30">
       <Card.Header>
         <Card.Title>Fatecharm</Card.Title>
       </Card.Header>
@@ -1245,7 +1245,7 @@
   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
     <!-- Dropped By -->
     {#if computed.droppedBy && computed.droppedBy.length > 0}
-      <Card.Root>
+      <Card.Root class="bg-muted/30">
         <Card.Header>
           <Card.Title>Dropped by</Card.Title>
         </Card.Header>
@@ -1271,7 +1271,7 @@
 
     <!-- Sold By -->
     {#if computed.soldBy && computed.soldBy.length > 0}
-      <Card.Root>
+      <Card.Root class="bg-muted/30">
         <Card.Header>
           <Card.Title>Sold by</Card.Title>
         </Card.Header>
@@ -1323,7 +1323,7 @@
       {@const oneTimeQuests = computed.rewardedBy.filter(
         (q) => !q.is_repeatable,
       )}
-      <Card.Root>
+      <Card.Root class="bg-muted/30">
         <Card.Header>
           <Card.Title>Rewarded by Quests</Card.Title>
         </Card.Header>
@@ -1377,7 +1377,7 @@
 
     <!-- Rewarded by Altars -->
     {#if computed.rewardedByAltars && computed.rewardedByAltars.length > 0}
-      <Card.Root>
+      <Card.Root class="bg-muted/30">
         <Card.Header>
           <Card.Title>Rewarded by Altars</Card.Title>
         </Card.Header>
@@ -1411,7 +1411,7 @@
 
     <!-- Rewarded by Treasure Maps -->
     {#if computed.rewardedByTreasureMaps && computed.rewardedByTreasureMaps.length > 0}
-      <Card.Root>
+      <Card.Root class="bg-muted/30">
         <Card.Header>
           <Card.Title>Rewarded by Treasure Maps</Card.Title>
         </Card.Header>
@@ -1434,7 +1434,7 @@
 
     <!-- Required to Activate Altars -->
     {#if computed.requiredForAltars && computed.requiredForAltars.length > 0}
-      <Card.Root>
+      <Card.Root class="bg-muted/30">
         <Card.Header>
           <Card.Title>Required to Activate Altars</Card.Title>
         </Card.Header>
@@ -1455,7 +1455,7 @@
 
     <!-- Required for Portals -->
     {#if computed.requiredForPortals && computed.requiredForPortals.length > 0}
-      <Card.Root>
+      <Card.Root class="bg-muted/30">
         <Card.Header>
           <Card.Title>Required for Portals</Card.Title>
         </Card.Header>
@@ -1485,7 +1485,7 @@
 
     <!-- Crafted From -->
     {#if computed.craftedFrom && computed.craftedFrom.length > 0}
-      <Card.Root>
+      <Card.Root class="bg-muted/30">
         <Card.Header>
           <Card.Title>Crafted from Recipe</Card.Title>
         </Card.Header>
@@ -1509,7 +1509,7 @@
 
     <!-- Gathered From -->
     {#if computed.gatheredFrom && computed.gatheredFrom.length > 0}
-      <Card.Root>
+      <Card.Root class="bg-muted/30">
         <Card.Header>
           <Card.Title>Gathered from</Card.Title>
         </Card.Header>
@@ -1582,7 +1582,7 @@
 
     <!-- Opens Chests -->
     {#if computed.opensChests && computed.opensChests.length > 0}
-      <Card.Root>
+      <Card.Root class="bg-muted/30">
         <Card.Header>
           <Card.Title>Opens Chests</Card.Title>
         </Card.Header>
@@ -1612,7 +1612,7 @@
 
     <!-- Possible Items (from random items) -->
     {#if computed.randomItemsPossible && computed.randomItemsPossible.length > 0}
-      <Card.Root>
+      <Card.Root class="bg-muted/30">
         <Card.Header>
           <Card.Title>Possible Items</Card.Title>
         </Card.Header>
@@ -1635,7 +1635,7 @@
 
     <!-- Found in Chests -->
     {#if computed.foundInChests && computed.foundInChests.length > 0}
-      <Card.Root>
+      <Card.Root class="bg-muted/30">
         <Card.Header>
           <Card.Title>Found in Chests</Card.Title>
           <Card.Description>
@@ -1661,7 +1661,7 @@
 
     <!-- Found in Random Loot -->
     {#if computed.foundInRandomLoot && computed.foundInRandomLoot.length > 0}
-      <Card.Root>
+      <Card.Root class="bg-muted/30">
         <Card.Header>
           <Card.Title>Found in Random Loot</Card.Title>
         </Card.Header>
@@ -1687,7 +1687,7 @@
 
     <!-- Chest Rewards -->
     {#if computed.chestRewards && computed.chestRewards.length > 0}
-      <Card.Root>
+      <Card.Root class="bg-muted/30">
         <Card.Header>
           <Card.Title>Chest Rewards</Card.Title>
           <Card.Description>
@@ -1716,7 +1716,7 @@
 
     <!-- Used in Recipes -->
     {#if computed.usedInRecipes && computed.usedInRecipes.length > 0}
-      <Card.Root>
+      <Card.Root class="bg-muted/30">
         <Card.Header>
           <Card.Title>Used in Recipes</Card.Title>
         </Card.Header>
@@ -1746,7 +1746,7 @@
       {@const oneTimeQuests = computed.neededForQuests.filter(
         (q) => !q.is_repeatable,
       )}
-      <Card.Root>
+      <Card.Root class="bg-muted/30">
         <Card.Header>
           <Card.Title>Required for Quests</Card.Title>
         </Card.Header>

@@ -215,5 +215,6 @@
     showColumnToggle={true}
     zebraStripe={true}
     searchPlaceholder="Search zones..."
+    class="bg-muted/30"
   />
 </div>

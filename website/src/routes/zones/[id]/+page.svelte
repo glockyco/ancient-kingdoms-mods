@@ -355,7 +355,7 @@
         ]}
         pageSize={10}
         zebraStripe={true}
-        accentColor="rgb(6 182 212)"
+        class="bg-muted/30"
       />
     </section>
   {/if}
@@ -379,7 +379,7 @@
         ]}
         pageSize={10}
         zebraStripe={true}
-        accentColor="rgb(168 85 247)"
+        class="bg-muted/30"
       />
     </section>
   {/if}
@@ -403,7 +403,7 @@
         ]}
         pageSize={10}
         zebraStripe={true}
-        accentColor="rgb(239 68 68)"
+        class="bg-muted/30"
       />
     </section>
   {/if}
@@ -422,7 +422,7 @@
         renderHeader={renderAltarHeader}
         pageSize={10}
         zebraStripe={true}
-        accentColor="rgb(249 115 22)"
+        class="bg-muted/30"
       />
     </section>
   {/if}
@@ -446,7 +446,7 @@
         ]}
         pageSize={10}
         zebraStripe={true}
-        accentColor="rgb(34 197 94)"
+        class="bg-muted/30"
       />
     </section>
   {/if}
@@ -467,7 +467,7 @@
         urlKey="npcs"
         pageSize={10}
         zebraStripe={true}
-        accentColor="rgb(59 130 246)"
+        class="bg-muted/30"
       />
     </section>
   {/if}
@@ -482,7 +482,7 @@
 
       <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {#if plants.length > 0}
-          <div class="rounded-md border p-4">
+          <div class="rounded-md border bg-muted/30 p-4">
             <h3
               class="mb-3 font-medium text-green-600 dark:text-green-400 flex items-center gap-2"
             >
@@ -508,7 +508,7 @@
         {/if}
 
         {#if minerals.length > 0}
-          <div class="rounded-md border p-4">
+          <div class="rounded-md border bg-muted/30 p-4">
             <h3
               class="mb-3 font-medium text-amber-600 dark:text-amber-400 flex items-center gap-2"
             >
@@ -534,7 +534,7 @@
         {/if}
 
         {#if radiantSparks.length > 0}
-          <div class="rounded-md border p-4">
+          <div class="rounded-md border bg-muted/30 p-4">
             <h3
               class="mb-3 font-medium text-purple-600 dark:text-purple-400 flex items-center gap-2"
             >
@@ -560,7 +560,7 @@
         {/if}
 
         {#if otherResources.length > 0}
-          <div class="rounded-md border p-4">
+          <div class="rounded-md border bg-muted/30 p-4">
             <h3
               class="mb-3 font-medium text-slate-600 dark:text-slate-400 flex items-center gap-2"
             >
