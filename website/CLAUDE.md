@@ -240,6 +240,48 @@ export const PAGINATION = {
 - shadcn-svelte for base components (buttons, cards, dialogs, etc.)
 - Custom components built on top for domain-specific needs
 
+### Graceful No-JS Support
+
+The site provides a functional experience for users with JavaScript disabled, while offering enhanced interactivity when JS is available.
+
+**Approach:**
+
+- **Detail pages**: Render ALL table rows in pre-rendered HTML (DataTable uses `getPrePaginationRowModel()`)
+- **Overview pages**: Render only paginated subset (full list would bloat page size unacceptably - items page was 1.8MB with all rows)
+- **Loading overlays**: Hidden via `<noscript>` CSS in `+layout.svelte`
+- **JS-only features**: Use `js-only` class (hidden by same noscript block)
+
+**Key patterns:**
+
+```svelte
+<!-- Hide loading spinners for no-JS users -->
+<div class="loading-overlay ...">
+
+<!-- Hide JS-only interactive elements -->
+<form class="js-only" ...>
+
+<!-- In +layout.svelte -->
+<noscript>
+  <style>
+    .loading-overlay, .js-only { display: none !important; }
+  </style>
+</noscript>
+```
+
+**DataTable hydration:**
+
+- `isHydrated` state tracks whether JS has initialized
+- Before hydration: show all rows, hide toolbar/pagination
+- After hydration: show paginated rows with full interactivity
+- Loading overlay shows until hydrated (prevents flash of wrong pagination)
+
+**When adding new features:**
+
+- Ask: "Does this work without JS?" If not, wrap in `js-only`
+- Loading spinners must have `loading-overlay` class
+- Don't render excessive HTML for no-JS (keep page size reasonable)
+- Filters/pagination should remain visible even without JS (shows users what they're missing)
+
 ### Map Integration
 
 **Leaflet with CRS.Simple:**
