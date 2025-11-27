@@ -7,6 +7,7 @@
     type Header,
   } from "$lib/components/ui/data-table";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
+  import ItemLink from "$lib/components/ItemLink.svelte";
   import type {
     MonsterDrop,
     MonsterSpawnZone,
@@ -182,12 +183,11 @@
       <BookOpen class="h-4 w-4 text-amber-500" />
     {/if}
   {:else if cell.column.id === "item_name"}
-    <a
-      href="/items/{row.original.item_id}"
-      class="text-blue-600 dark:text-blue-400 hover:underline"
-    >
-      {row.original.item_name}
-    </a>
+    <ItemLink
+      itemId={row.original.item_id}
+      itemName={row.original.item_name}
+      tooltipHtml={row.original.tooltip_html}
+    />
   {:else if cell.column.id === "rate"}
     <div class="text-right">{formatPercent(row.original.rate)}</div>
   {:else}
@@ -557,7 +557,7 @@
                     Waves: {altar.waves.map((w) => w + 1).join(", ")}
                   </div>
                 {/if}
-                {#if altar.activation_item_id}
+                {#if altar.activation_item_id && altar.activation_item_name}
                   <div class="text-sm mt-1">
                     <span class="text-muted-foreground">Requires: </span>
                     <a

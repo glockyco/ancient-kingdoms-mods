@@ -2,8 +2,8 @@
   import * as Card from "$lib/components/ui/card";
   import { resolve } from "$app/paths";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
+  import ItemLink from "$lib/components/ItemLink.svelte";
   import { STATS_METADATA_FIELDS } from "$lib/constants/items";
-  import { parseTooltip } from "$lib/utils/tooltip";
   import { formatItemType } from "$lib/utils/format";
   import { formatStatName, formatResourceName } from "$lib/terminology";
   import type { PageData } from "./$types";
@@ -261,9 +261,9 @@
       armorSetSkillBonuses: parseJson<
         Array<{ skill_id: string; skill_name: string; level_bonus: number }>
       >(data.item.augment_skill_bonuses_with_names),
-      armorSetMembers: parseJson<Array<{ item_id: string; item_name: string }>>(
-        data.item.augment_armor_set_members,
-      ),
+      armorSetMembers: parseJson<
+        Array<{ item_id: string; item_name: string; tooltip_html?: string }>
+      >(data.item.augment_armor_set_members),
       // Armor set attribute bonuses (denormalized from augment item)
       armorSetAttributeBonuses: parseJson<
         Array<{ attribute: string; bonus: number }>
@@ -471,10 +471,10 @@
   </Card.Root>
 
   <!-- Tooltip and Stats/Merge/Currency side-by-side (hide entire section if all would be empty) -->
-  {#if (data.item.tooltip && data.item.item_type !== "augment") || ((data.item.item_type !== "augment" || !data.item.augment_armor_set_name) && ((computed.stats && Object.keys(computed.stats).length > 0) || data.item.weapon_delay > 0)) || data.item.merge_result_item_id || (computed.createdFromMerge && computed.createdFromMerge.length > 0) || (computed.usedAsCurrencyFor && computed.usedAsCurrencyFor.length > 0) || data.item.id === "primal_essence" || data.item.id === "radiant_aether" || data.item.pack_final_item_id || (data.item.item_type === "augment" && !data.item.augment_armor_set_name && data.augmenters.length > 0)}
+  {#if (data.item.tooltip_html && data.item.item_type !== "augment") || ((data.item.item_type !== "augment" || !data.item.augment_armor_set_name) && ((computed.stats && Object.keys(computed.stats).length > 0) || data.item.weapon_delay > 0)) || data.item.merge_result_item_id || (computed.createdFromMerge && computed.createdFromMerge.length > 0) || (computed.usedAsCurrencyFor && computed.usedAsCurrencyFor.length > 0) || data.item.id === "primal_essence" || data.item.id === "radiant_aether" || data.item.pack_final_item_id || (data.item.item_type === "augment" && !data.item.augment_armor_set_name && data.augmenters.length > 0)}
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <!-- Tooltip (don't show for augments - they're metadata items never shown to players) -->
-      {#if data.item.tooltip && data.item.item_type !== "augment"}
+      {#if data.item.tooltip_html && data.item.item_type !== "augment"}
         <Card.Root class="bg-muted/30">
           <Card.Header>
             <Card.Title>Tooltip</Card.Title>
@@ -482,7 +482,7 @@
           <Card.Content>
             <div class="text-sm whitespace-pre-wrap tooltip-content">
               <!-- eslint-disable-next-line svelte/no-at-html-tags -->
-              {@html parseTooltip(data.item.tooltip, data.item)}
+              {@html data.item.tooltip_html}
             </div>
           </Card.Content>
         </Card.Root>
@@ -953,11 +953,13 @@
             <h4 class="text-sm font-semibold mb-2">
               Set Pieces ({computed.armorSetMembers.length})
             </h4>
-            <div class="grid grid-cols-3 gap-2">
+            <div class="flex flex-wrap gap-x-4 gap-y-1">
               {#each computed.armorSetMembers as member (member.item_id)}
-                <a href="/items/{member.item_id}" class={styles.link}>
-                  {member.item_name}
-                </a>
+                <ItemLink
+                  itemId={member.item_id}
+                  itemName={member.item_name}
+                  tooltipHtml={member.tooltip_html}
+                />
               {/each}
             </div>
           </div>

@@ -7,6 +7,7 @@ from compendium.denormalizers.items import (
     equipment,
     sources,
     special_types,
+    tooltips,
     usages,
 )
 
@@ -29,5 +30,8 @@ def run_all(conn: sqlite3.Connection) -> None:
     # Phase 4: Special item types (packs, random, merge, treasure maps, luck tokens)
     special_types.run(conn)
 
-    # Phase 5: Calculated values (must be last - depends on other data)
+    # Phase 5: Calculated values (depends on other data)
     calculations.run(conn)
+
+    # Phase 6: Tooltips (must be last - needs item_level from calculations)
+    tooltips.run(conn)

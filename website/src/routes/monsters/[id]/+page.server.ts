@@ -64,18 +64,19 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
     ? JSON.parse(monsterRaw.decrease_faction as string)
     : [];
 
-  // Resolve drop item names and get bestiary flag from items table
+  // Resolve drop item names, bestiary flag, and tooltip from items table
   if (drops.length > 0) {
     const itemIds = drops.map((d) => d.item_id);
     const placeholders = itemIds.map(() => "?").join(",");
     const itemInfo = db
       .prepare(
-        `SELECT id, name, is_bestiary_drop FROM items WHERE id IN (${placeholders})`,
+        `SELECT id, name, is_bestiary_drop, tooltip_html FROM items WHERE id IN (${placeholders})`,
       )
       .all(...itemIds) as Array<{
       id: string;
       name: string;
       is_bestiary_drop: boolean;
+      tooltip_html: string | null;
     }>;
     const infoMap = new Map(itemInfo.map((i) => [i.id, i]));
 
@@ -83,6 +84,7 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
       const info = infoMap.get(drop.item_id);
       drop.item_name = info?.name || drop.item_id;
       drop.is_bestiary = info?.is_bestiary_drop ?? false;
+      drop.tooltip_html = info?.tooltip_html ?? null;
     }
   }
 

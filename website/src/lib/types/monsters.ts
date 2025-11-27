@@ -3,7 +3,8 @@
  */
 export interface MonsterDrop {
   item_id: string;
-  item_name?: string;
+  item_name: string;
+  tooltip_html: string | null;
   rate: number;
   is_bestiary: boolean;
 }

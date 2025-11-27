@@ -126,6 +126,7 @@ CREATE TABLE items (
     cooldown_category TEXT,
     icon_path TEXT DEFAULT '',
     tooltip TEXT DEFAULT '',
+    tooltip_html TEXT DEFAULT '',  -- Pre-rendered HTML tooltip
 
     -- Equipment properties
     slot TEXT,

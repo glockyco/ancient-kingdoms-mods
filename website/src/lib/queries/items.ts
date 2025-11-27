@@ -28,6 +28,7 @@ export interface Item {
   cooldown_category: string | null;
   icon_path: string;
   tooltip: string;
+  tooltip_html: string;
   slot: string | null;
   weapon_category: string | null;
   stats: string | null; // JSON
