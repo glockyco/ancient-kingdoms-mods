@@ -4,6 +4,8 @@
     getSortedRowModel,
     getPaginationRowModel,
     getFilteredRowModel,
+    getFacetedRowModel,
+    getFacetedUniqueValues,
     type ColumnDef,
     type SortingState,
     type PaginationState,
@@ -13,6 +15,7 @@
     type Cell,
     type Row,
     type Header,
+    type Table as TanstackTable,
   } from "@tanstack/table-core";
   import { createSvelteTable } from "./create-table.js";
   import FlexRender from "./flex-render.svelte";
@@ -42,6 +45,7 @@
     class?: string;
     renderCell?: Snippet<[{ cell: Cell<TData, unknown>; row: Row<TData> }]>;
     renderHeader?: Snippet<[{ header: Header<TData, unknown> }]>;
+    renderToolbar?: Snippet<[{ table: TanstackTable<TData> }]>;
   };
 
   let {
@@ -59,6 +63,7 @@
     class: className,
     renderCell,
     renderHeader,
+    renderToolbar,
   }: Props = $props();
 
   function getColumnLabel(columnId: string): string {
@@ -88,6 +93,8 @@
       getSortedRowModel: getSortedRowModel(),
       getPaginationRowModel: getPaginationRowModel(),
       getFilteredRowModel: getFilteredRowModel(),
+      getFacetedRowModel: getFacetedRowModel(),
+      getFacetedUniqueValues: getFacetedUniqueValues(),
       state: {
         sorting,
         pagination,
@@ -106,6 +113,8 @@
       onColumnFiltersChange: (updater) => {
         columnFilters =
           typeof updater === "function" ? updater(columnFilters) : updater;
+        // Reset to first page when filters change to avoid being on an invalid page
+        pagination = { ...pagination, pageIndex: 0 };
       },
       onColumnVisibilityChange: (updater) => {
         columnVisibility =
@@ -114,6 +123,8 @@
       onGlobalFilterChange: (updater) => {
         globalFilter =
           typeof updater === "function" ? updater(globalFilter) : updater;
+        // Reset to first page when search changes
+        pagination = { ...pagination, pageIndex: 0 };
       },
     }),
   );
@@ -128,7 +139,7 @@
 </script>
 
 <div class={className}>
-  {#if showSearch || showColumnToggle}
+  {#if renderToolbar || showSearch || showColumnToggle}
     <div class="flex items-center gap-2 pb-4">
       {#if showSearch}
         <Input
@@ -137,6 +148,9 @@
           oninput={(e) => (globalFilter = e.currentTarget.value)}
           class="max-w-sm"
         />
+      {/if}
+      {#if renderToolbar}
+        {@render renderToolbar({ table })}
       {/if}
       {#if showColumnToggle}
         <DropdownMenu.Root>
@@ -241,7 +255,7 @@
               {/each}
             </Table.Row>
           {/each}
-          {#if pageCount > 1}
+          {#if rowModel.rows.length < pageSize && (pageCount > 1 || columnFilters.length > 0)}
             {#each Array.from({ length: pageSize - rowModel.rows.length }, (_, i) => i) as i (i)}
               <Table.Row class="pointer-events-none">
                 {#each columns as col (col)}
@@ -261,38 +275,41 @@
     </Table.Root>
   </div>
 
-  {#if showPagination && pageCount > 1}
-    <Pagination.Root
-      count={data.length}
-      perPage={pageSize}
-      page={pagination.pageIndex + 1}
-      onPageChange={(page) => table.setPageIndex(page - 1)}
-      class="pt-4"
-    >
-      {#snippet children({ pages })}
-        <Pagination.Content>
-          <Pagination.Item>
-            <Pagination.PrevButton />
-          </Pagination.Item>
-          {#each pages as page (page.key)}
-            {#if page.type === "ellipsis"}
+  {#if showPagination && data.length > pageSize}
+    <div class="h-10 pt-4">
+      {#if pageCount > 1}
+        <Pagination.Root
+          count={table.getFilteredRowModel().rows.length}
+          perPage={pageSize}
+          page={pagination.pageIndex + 1}
+          onPageChange={(page) => table.setPageIndex(page - 1)}
+        >
+          {#snippet children({ pages })}
+            <Pagination.Content>
               <Pagination.Item>
-                <Pagination.Ellipsis />
+                <Pagination.PrevButton />
               </Pagination.Item>
-            {:else}
+              {#each pages as page (page.key)}
+                {#if page.type === "ellipsis"}
+                  <Pagination.Item>
+                    <Pagination.Ellipsis />
+                  </Pagination.Item>
+                {:else}
+                  <Pagination.Item>
+                    <Pagination.Link
+                      {page}
+                      isActive={pagination.pageIndex + 1 === page.value}
+                    />
+                  </Pagination.Item>
+                {/if}
+              {/each}
               <Pagination.Item>
-                <Pagination.Link
-                  {page}
-                  isActive={pagination.pageIndex + 1 === page.value}
-                />
+                <Pagination.NextButton />
               </Pagination.Item>
-            {/if}
-          {/each}
-          <Pagination.Item>
-            <Pagination.NextButton />
-          </Pagination.Item>
-        </Pagination.Content>
-      {/snippet}
-    </Pagination.Root>
+            </Pagination.Content>
+          {/snippet}
+        </Pagination.Root>
+      {/if}
+    </div>
   {/if}
 </div>

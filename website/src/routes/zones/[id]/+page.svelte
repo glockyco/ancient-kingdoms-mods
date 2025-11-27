@@ -2,6 +2,7 @@
   import type { ZoneNpc, ZoneMonster, ZoneAltar } from "$lib/types/zones";
   import {
     DataTable,
+    DataTableFacetedFilter,
     type ColumnDef,
     type Cell,
     type Row,
@@ -98,10 +99,15 @@
       size: 220,
     },
     {
-      accessorKey: "roles",
+      id: "roles",
       header: "Roles",
+      accessorFn: (row) => getNpcRoles(row),
       enableSorting: false,
       minSize: 220,
+      filterFn: (row, columnId, filterValue: string[]) => {
+        const roles = row.getValue(columnId) as string[];
+        return filterValue.some((v) => roles.includes(v));
+      },
     },
   ];
 
@@ -126,6 +132,19 @@
     if (npc.roles.is_augmenter) roles.push("Augmenter");
     return roles;
   }
+
+  // Derive unique roles from the NPCs in this zone
+  const roleOptions = $derived.by(() => {
+    const allRoles: string[] = [];
+    for (const npc of data.npcs) {
+      for (const role of getNpcRoles(npc)) {
+        if (!allRoles.includes(role)) {
+          allRoles.push(role);
+        }
+      }
+    }
+    return allRoles.sort().map((role) => ({ value: role, label: role }));
+  });
 
   // Group gathering resources by type
   const plants = $derived(data.gatherResources.filter((r) => r.is_plant));
@@ -237,7 +256,7 @@
       {row.original.name}
     </a>
   {:else if cell.column.id === "roles"}
-    {@const roles = getNpcRoles(row.original)}
+    {@const roles = cell.getValue() as string[]}
     {#if roles.length > 0}
       <div class="flex flex-wrap gap-1">
         {#each roles as role (role)}
@@ -257,7 +276,15 @@
 {/snippet}
 
 {#snippet renderNpcHeader({ header }: { header: Header<ZoneNpc, unknown> })}
-  {header.column.columnDef.header}
+  {#if header.column.id === "roles" && roleOptions.length > 0}
+    <DataTableFacetedFilter
+      column={header.column}
+      title="Roles"
+      options={roleOptions}
+    />
+  {:else}
+    {header.column.columnDef.header}
+  {/if}
 {/snippet}
 
 <svelte:head>
