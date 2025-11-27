@@ -51,6 +51,17 @@ public class ZoneTriggerExporter : BaseExporter
                 loop_sounds_zone = zoneTrigger.loopSoundsZone != null ? zoneTrigger.loopSoundsZone.name : null
             };
 
+            // Export collider bounds for position-based zone detection
+            var collider = zoneTrigger.GetComponent<Collider2D>();
+            if (collider != null)
+            {
+                var bounds = collider.bounds;
+                zoneTriggerData.bounds_min_x = bounds.min.x;
+                zoneTriggerData.bounds_min_y = bounds.min.y;
+                zoneTriggerData.bounds_max_x = bounds.max.x;
+                zoneTriggerData.bounds_max_y = bounds.max.y;
+            }
+
             zoneTriggerList.Add(zoneTriggerData);
         }
 
