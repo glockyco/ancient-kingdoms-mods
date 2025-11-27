@@ -779,6 +779,22 @@ CREATE TABLE gathering_resource_drops (
 CREATE INDEX idx_gathering_resource_drops_item ON gathering_resource_drops(item_id);
 
 -- =============================================================================
+-- GATHERING RESOURCE SPAWNS
+-- =============================================================================
+
+CREATE TABLE gathering_resource_spawns (
+    id TEXT PRIMARY KEY,
+    resource_id TEXT NOT NULL REFERENCES gathering_resources(id),
+    zone_id TEXT NOT NULL REFERENCES zones(id),
+    position_x REAL,
+    position_y REAL,
+    position_z REAL
+);
+
+CREATE INDEX idx_gathering_resource_spawns_resource ON gathering_resource_spawns(resource_id);
+CREATE INDEX idx_gathering_resource_spawns_zone ON gathering_resource_spawns(zone_id);
+
+-- =============================================================================
 -- CHESTS
 -- =============================================================================
 

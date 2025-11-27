@@ -345,12 +345,17 @@ def load_gather_items(conn: sqlite3.Connection, export_dir: Path) -> None:
     # Split into chests vs gathering resources
     chests = []
     resources = []
+    resource_spawns = []  # All non-chest spawns with zone/position
     resources_seen: dict[str, GatherItemData] = {}
 
     for gather_item in gather_items:
         if gather_item.is_chest:
             chests.append(gather_item)
         else:
+            # Track all spawns with zone/position for the spawns table
+            if gather_item.zone_id and gather_item.position:
+                resource_spawns.append(gather_item)
+
             # Deduplicate resources by name (prefer templates)
             if gather_item.name not in resources_seen:
                 resources_seen[gather_item.name] = gather_item
@@ -395,6 +400,24 @@ def load_gather_items(conn: sqlite3.Connection, export_dir: Path) -> None:
                 "INSERT INTO gathering_resource_drops (resource_id, item_id, drop_rate) VALUES (?, ?, ?)",
                 (resource.id, drop.item_id, drop.rate),
             )
+
+    # Insert gathering resource spawns (links to deduplicated resources)
+    for spawn in resource_spawns:
+        # Map spawn to its deduplicated resource ID
+        deduplicated_resource = resources_seen[spawn.name]
+        cursor.execute(
+            """INSERT INTO gathering_resource_spawns
+               (id, resource_id, zone_id, position_x, position_y, position_z)
+               VALUES (?, ?, ?, ?, ?, ?)""",
+            (
+                spawn.id,
+                deduplicated_resource.id,
+                spawn.zone_id,
+                spawn.position.x if spawn.position else None,
+                spawn.position.y if spawn.position else None,
+                spawn.position.z if spawn.position else None,
+            ),
+        )
 
     # Insert chests
     for chest in chests:
@@ -474,6 +497,9 @@ def load_gather_items(conn: sqlite3.Connection, export_dir: Path) -> None:
     conn.commit()
     console.print(
         f"  [green]OK[/green] Loaded {len(resources)} gathering resources (deduplicated)"
+    )
+    console.print(
+        f"  [green]OK[/green] Loaded {len(resource_spawns)} gathering resource spawns"
     )
     console.print(f"  [green]OK[/green] Loaded {len(chests)} chests")
 
