@@ -18,13 +18,12 @@
   import FlexRender from "./flex-render.svelte";
   import * as Table from "$lib/components/ui/table";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
+  import * as Pagination from "$lib/components/ui/pagination";
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
   import ChevronUp from "@lucide/svelte/icons/chevron-up";
   import ChevronDown from "@lucide/svelte/icons/chevron-down";
   import ChevronsUpDown from "@lucide/svelte/icons/chevrons-up-down";
-  import ChevronLeft from "@lucide/svelte/icons/chevron-left";
-  import ChevronRight from "@lucide/svelte/icons/chevron-right";
   import Settings2 from "@lucide/svelte/icons/settings-2";
   import type { Snippet } from "svelte";
 
@@ -39,6 +38,7 @@
     searchPlaceholder?: string;
     columnLabels?: Record<string, string>;
     zebraStripe?: boolean;
+    accentColor?: string;
     class?: string;
     renderCell?: Snippet<[{ cell: Cell<TData, unknown>; row: Row<TData> }]>;
     renderHeader?: Snippet<[{ header: Header<TData, unknown> }]>;
@@ -55,6 +55,7 @@
     searchPlaceholder = "Search...",
     columnLabels = {},
     zebraStripe = false,
+    accentColor,
     class: className,
     renderCell,
     renderHeader,
@@ -119,8 +120,6 @@
 
   const headerGroups = $derived(table.getHeaderGroups());
   const rowModel = $derived(table.getRowModel());
-  const canPreviousPage = $derived(table.getCanPreviousPage());
-  const canNextPage = $derived(table.getCanNextPage());
   const pageCount = $derived(table.getPageCount());
   const allColumns = $derived(table.getAllColumns());
   const toggleableColumns = $derived(
@@ -165,7 +164,18 @@
   {/if}
 
   <div class="rounded-md border">
-    <Table.Root>
+    <Table.Root class="table-fixed">
+      <colgroup>
+        {#each columns as col, i (i)}
+          {@const styles = [
+            col.size ? `width: ${col.size}px` : null,
+            col.minSize ? `min-width: ${col.minSize}px` : null,
+          ]
+            .filter(Boolean)
+            .join("; ")}
+          <col style={styles || undefined} />
+        {/each}
+      </colgroup>
       <Table.Header>
         {#each headerGroups as headerGroup (headerGroup.id)}
           <Table.Row>
@@ -175,7 +185,7 @@
                   {#if header.column.getCanSort()}
                     <button
                       type="button"
-                      class="flex items-center gap-1 hover:text-foreground"
+                      class="flex w-full items-center gap-1 hover:text-foreground"
                       onclick={() => header.column.toggleSorting()}
                     >
                       {#if renderHeader}
@@ -211,7 +221,12 @@
       <Table.Body>
         {#if rowModel.rows.length > 0}
           {#each rowModel.rows as row, i (row.id)}
-            <Table.Row class={zebraStripe && i % 2 === 1 ? "bg-muted/30" : ""}>
+            <Table.Row
+              class="{zebraStripe && i % 2 === 1
+                ? 'bg-muted/30'
+                : ''} {accentColor ? 'border-l-4' : ''}"
+              style={accentColor ? `border-left-color: ${accentColor}` : ""}
+            >
               {#each row.getVisibleCells() as cell (cell.id)}
                 <Table.Cell>
                   {#if renderCell}
@@ -226,6 +241,15 @@
               {/each}
             </Table.Row>
           {/each}
+          {#if pageCount > 1}
+            {#each Array.from({ length: pageSize - rowModel.rows.length }, (_, i) => i) as i (i)}
+              <Table.Row class="pointer-events-none">
+                {#each columns as col (col)}
+                  <Table.Cell>&nbsp;</Table.Cell>
+                {/each}
+              </Table.Row>
+            {/each}
+          {/if}
         {:else}
           <Table.Row>
             <Table.Cell colspan={columns.length} class="h-24 text-center">
@@ -238,28 +262,37 @@
   </div>
 
   {#if showPagination && pageCount > 1}
-    <div class="flex items-center justify-between pt-4">
-      <div class="text-muted-foreground">
-        Page {pagination.pageIndex + 1} of {pageCount}
-      </div>
-      <div class="flex gap-2">
-        <Button
-          variant="outline"
-          onclick={() => table.previousPage()}
-          disabled={!canPreviousPage}
-        >
-          <ChevronLeft class="h-4 w-4" />
-          Previous
-        </Button>
-        <Button
-          variant="outline"
-          onclick={() => table.nextPage()}
-          disabled={!canNextPage}
-        >
-          Next
-          <ChevronRight class="h-4 w-4" />
-        </Button>
-      </div>
-    </div>
+    <Pagination.Root
+      count={data.length}
+      perPage={pageSize}
+      page={pagination.pageIndex + 1}
+      onPageChange={(page) => table.setPageIndex(page - 1)}
+      class="pt-4"
+    >
+      {#snippet children({ pages })}
+        <Pagination.Content>
+          <Pagination.Item>
+            <Pagination.PrevButton />
+          </Pagination.Item>
+          {#each pages as page (page.key)}
+            {#if page.type === "ellipsis"}
+              <Pagination.Item>
+                <Pagination.Ellipsis />
+              </Pagination.Item>
+            {:else}
+              <Pagination.Item>
+                <Pagination.Link
+                  {page}
+                  isActive={pagination.pageIndex + 1 === page.value}
+                />
+              </Pagination.Item>
+            {/if}
+          {/each}
+          <Pagination.Item>
+            <Pagination.NextButton />
+          </Pagination.Item>
+        </Pagination.Content>
+      {/snippet}
+    </Pagination.Root>
   {/if}
 </div>

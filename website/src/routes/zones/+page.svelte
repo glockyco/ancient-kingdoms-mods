@@ -22,15 +22,18 @@
       accessorKey: "is_dungeon",
       header: "Type",
       enableHiding: false,
+      size: 70,
     },
     {
       accessorKey: "name",
       header: "Name",
       enableHiding: false,
+      minSize: 220,
     },
     {
       accessorKey: "level_min",
       header: "Min",
+      size: 150,
       sortingFn: (rowA, rowB) => {
         const a = rowA.original.level_min;
         const b = rowB.original.level_min;
@@ -43,6 +46,7 @@
     {
       accessorKey: "level_max",
       header: "Max",
+      size: 150,
       sortingFn: (rowA, rowB) => {
         const a = rowA.original.level_max;
         const b = rowB.original.level_max;
@@ -55,22 +59,27 @@
     {
       accessorKey: "boss_count",
       header: "Bosses",
+      size: 150,
     },
     {
       accessorKey: "elite_count",
       header: "Elites",
+      size: 150,
     },
     {
       accessorKey: "altar_count",
       header: "Altars",
+      size: 150,
     },
     {
       accessorKey: "npc_count",
       header: "NPCs",
+      size: 150,
     },
     {
       accessorKey: "gather_count",
       header: "Resources",
+      size: 150,
     },
   ];
 
@@ -89,30 +98,42 @@
 
 {#snippet renderHeader({ header }: { header: Header<ZoneListView, unknown> })}
   {#if header.id === "boss_count"}
-    <span class="flex items-center gap-1 text-cyan-600 dark:text-cyan-400">
+    <span
+      class="ml-auto flex items-center gap-1 text-cyan-600 dark:text-cyan-400"
+    >
       <Crown class="h-4 w-4" />
       Bosses
     </span>
   {:else if header.id === "elite_count"}
-    <span class="flex items-center gap-1 text-purple-600 dark:text-purple-400">
+    <span
+      class="ml-auto flex items-center gap-1 text-purple-600 dark:text-purple-400"
+    >
       <Shield class="h-4 w-4" />
       Elites
     </span>
   {:else if header.id === "altar_count"}
-    <span class="flex items-center gap-1 text-orange-600 dark:text-orange-400">
+    <span
+      class="ml-auto flex items-center gap-1 text-orange-600 dark:text-orange-400"
+    >
       <Flame class="h-4 w-4" />
       Altars
     </span>
   {:else if header.id === "npc_count"}
-    <span class="flex items-center gap-1 text-blue-600 dark:text-blue-400">
+    <span
+      class="ml-auto flex items-center gap-1 text-blue-600 dark:text-blue-400"
+    >
       <Users class="h-4 w-4" />
       NPCs
     </span>
   {:else if header.id === "gather_count"}
-    <span class="flex items-center gap-1 text-amber-600 dark:text-amber-400">
+    <span
+      class="ml-auto flex items-center gap-1 text-amber-600 dark:text-amber-400"
+    >
       <Gem class="h-4 w-4" />
       Resources
     </span>
+  {:else if header.id === "level_min" || header.id === "level_max"}
+    <span class="ml-auto">{columnLabels[header.id] ?? header.id}</span>
   {:else}
     {columnLabels[header.id] ?? header.id}
   {/if}
@@ -141,7 +162,7 @@
       {row.original.name}
     </a>
   {:else if cell.column.id === "level_min"}
-    <div class="text-center">
+    <div class="text-right">
       {#if row.original.level_min !== null}
         {row.original.level_min}
       {:else}
@@ -149,7 +170,7 @@
       {/if}
     </div>
   {:else if cell.column.id === "level_max"}
-    <div class="text-center">
+    <div class="text-right">
       {#if row.original.level_max !== null}
         {row.original.level_max}
       {:else}
@@ -158,7 +179,7 @@
     </div>
   {:else if cell.column.id === "boss_count" || cell.column.id === "elite_count" || cell.column.id === "altar_count" || cell.column.id === "npc_count" || cell.column.id === "gather_count"}
     {@const value = cell.getValue() as number}
-    <div class="text-center">
+    <div class="text-right">
       {#if value > 0}
         {value}
       {:else}

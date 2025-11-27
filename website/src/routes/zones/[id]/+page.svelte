@@ -1,12 +1,13 @@
 <script lang="ts">
-  import type { ZoneNpc, ZoneMonster } from "$lib/types/zones";
-  import { Button } from "$lib/components/ui/button";
+  import type { ZoneNpc, ZoneMonster, ZoneAltar } from "$lib/types/zones";
+  import {
+    DataTable,
+    type ColumnDef,
+    type Cell,
+    type Row,
+    type Header,
+  } from "$lib/components/ui/data-table";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
-  import ChevronUp from "@lucide/svelte/icons/chevron-up";
-  import ChevronDown from "@lucide/svelte/icons/chevron-down";
-  import ChevronsUpDown from "@lucide/svelte/icons/chevrons-up-down";
-  import ChevronLeft from "@lucide/svelte/icons/chevron-left";
-  import ChevronRight from "@lucide/svelte/icons/chevron-right";
   import Crown from "@lucide/svelte/icons/crown";
   import Shield from "@lucide/svelte/icons/shield";
   import Sword from "@lucide/svelte/icons/sword";
@@ -23,7 +24,6 @@
   let { data } = $props();
 
   // Split monsters by type
-  // Critters are: type_name='Critter' OR (level 1 ambient creatures with no gold drops)
   function isCritter(m: ZoneMonster): boolean {
     return (
       m.type_name === "Critter" ||
@@ -42,71 +42,68 @@
     data.monsters.filter((m) => !m.is_boss && !m.is_elite && !isCritter(m)),
   );
 
-  // Sort monsters by level desc, health desc, name asc
-  function sortMonsters(a: ZoneMonster, b: ZoneMonster): number {
-    if (a.level !== b.level) return b.level - a.level;
-    if (a.health !== b.health) return b.health - a.health;
-    return a.name.localeCompare(b.name);
-  }
+  // Monster column definitions
+  const monsterColumns: ColumnDef<ZoneMonster>[] = [
+    {
+      accessorKey: "name",
+      header: "Name",
+      minSize: 220,
+    },
+    {
+      accessorKey: "level",
+      header: "Level",
+      size: 150,
+    },
+    {
+      accessorKey: "health",
+      header: "Health",
+      size: 150,
+    },
+    {
+      accessorKey: "drop_count",
+      header: "Drops",
+      size: 150,
+    },
+  ];
 
-  const sortedBosses = $derived([...bosses].sort(sortMonsters));
-  const sortedElites = $derived([...elites].sort(sortMonsters));
-  const sortedCreatures = $derived([...creatures].sort(sortMonsters));
-  const sortedCritters = $derived([...critters].sort(sortMonsters));
+  // Altar column definitions
+  const altarColumns: ColumnDef<ZoneAltar>[] = [
+    {
+      accessorKey: "name",
+      header: "Name",
+      size: 220,
+    },
+    {
+      accessorKey: "required_activation_item_name",
+      header: "Activation Item",
+      minSize: 220,
+    },
+    {
+      accessorKey: "min_level_required",
+      header: "Level",
+      size: 150,
+    },
+    {
+      accessorKey: "total_waves",
+      header: "Waves",
+      size: 150,
+    },
+  ];
 
-  // Monster pagination
-  const monsterPageSize = 10;
-  let bossPage = $state(0);
-  let elitePage = $state(0);
-  let creaturePage = $state(0);
-  let critterPage = $state(0);
-
-  const paginatedBosses = $derived(
-    sortedBosses.slice(
-      bossPage * monsterPageSize,
-      (bossPage + 1) * monsterPageSize,
-    ),
-  );
-  const bossPageCount = $derived(
-    Math.ceil(sortedBosses.length / monsterPageSize),
-  );
-
-  const paginatedElites = $derived(
-    sortedElites.slice(
-      elitePage * monsterPageSize,
-      (elitePage + 1) * monsterPageSize,
-    ),
-  );
-  const elitePageCount = $derived(
-    Math.ceil(sortedElites.length / monsterPageSize),
-  );
-
-  const paginatedCreatures = $derived(
-    sortedCreatures.slice(
-      creaturePage * monsterPageSize,
-      (creaturePage + 1) * monsterPageSize,
-    ),
-  );
-  const creaturePageCount = $derived(
-    Math.ceil(sortedCreatures.length / monsterPageSize),
-  );
-
-  const paginatedCritters = $derived(
-    sortedCritters.slice(
-      critterPage * monsterPageSize,
-      (critterPage + 1) * monsterPageSize,
-    ),
-  );
-  const critterPageCount = $derived(
-    Math.ceil(sortedCritters.length / monsterPageSize),
-  );
-
-  // NPC sorting and pagination
-  type NpcSortKey = "name" | "roles";
-  let npcSortKey = $state<NpcSortKey>("name");
-  let npcSortAsc = $state(true);
-  let npcPage = $state(0);
-  const npcPageSize = 10;
+  // NPC column definitions
+  const npcColumns: ColumnDef<ZoneNpc>[] = [
+    {
+      accessorKey: "name",
+      header: "Name",
+      size: 220,
+    },
+    {
+      accessorKey: "roles",
+      header: "Roles",
+      enableSorting: false,
+      minSize: 220,
+    },
+  ];
 
   function getNpcRoles(npc: ZoneNpc): string[] {
     const roles: string[] = [];
@@ -130,33 +127,6 @@
     return roles;
   }
 
-  const sortedNpcs = $derived.by(() => {
-    return [...data.npcs].sort((a, b) => {
-      let cmp = 0;
-      if (npcSortKey === "name") {
-        cmp = a.name.localeCompare(b.name);
-      } else if (npcSortKey === "roles") {
-        cmp = getNpcRoles(a).length - getNpcRoles(b).length;
-      }
-      return npcSortAsc ? cmp : -cmp;
-    });
-  });
-
-  const paginatedNpcs = $derived(
-    sortedNpcs.slice(npcPage * npcPageSize, (npcPage + 1) * npcPageSize),
-  );
-  const npcPageCount = $derived(Math.ceil(data.npcs.length / npcPageSize));
-
-  function toggleNpcSort(key: NpcSortKey) {
-    if (npcSortKey === key) {
-      npcSortAsc = !npcSortAsc;
-    } else {
-      npcSortKey = key;
-      npcSortAsc = true;
-    }
-    npcPage = 0;
-  }
-
   // Group gathering resources by type
   const plants = $derived(data.gatherResources.filter((r) => r.is_plant));
   const minerals = $derived(data.gatherResources.filter((r) => r.is_mineral));
@@ -169,6 +139,126 @@
     ),
   );
 </script>
+
+{#snippet renderMonsterCell({
+  cell,
+  row,
+}: {
+  cell: Cell<ZoneMonster, unknown>;
+  row: Row<ZoneMonster>;
+})}
+  {#if cell.column.id === "name"}
+    <a
+      href="/monsters/{row.original.id}"
+      class="text-blue-600 dark:text-blue-400 hover:underline"
+    >
+      {row.original.name}
+    </a>
+  {:else if cell.column.id === "level"}
+    <div class="text-right">{row.original.level}</div>
+  {:else if cell.column.id === "health"}
+    <div class="text-right tabular-nums">
+      {row.original.health.toLocaleString()}
+    </div>
+  {:else if cell.column.id === "drop_count"}
+    <div class="text-right">{row.original.drop_count}</div>
+  {:else}
+    {cell.getValue()}
+  {/if}
+{/snippet}
+
+{#snippet renderMonsterHeader({
+  header,
+}: {
+  header: Header<ZoneMonster, unknown>;
+})}
+  {#if header.id === "level" || header.id === "health" || header.id === "drop_count"}
+    <span class="ml-auto">{header.column.columnDef.header}</span>
+  {:else}
+    {header.column.columnDef.header}
+  {/if}
+{/snippet}
+
+{#snippet renderAltarCell({
+  cell,
+  row,
+}: {
+  cell: Cell<ZoneAltar, unknown>;
+  row: Row<ZoneAltar>;
+})}
+  {#if cell.column.id === "name"}
+    {row.original.name}
+  {:else if cell.column.id === "required_activation_item_name"}
+    {#if row.original.required_activation_item_id}
+      <a
+        href="/items/{row.original.required_activation_item_id}"
+        class="text-blue-600 dark:text-blue-400 hover:underline"
+      >
+        {row.original.required_activation_item_name}
+      </a>
+    {:else}
+      <span class="text-muted-foreground">-</span>
+    {/if}
+  {:else if cell.column.id === "min_level_required"}
+    <div class="text-right">
+      {#if row.original.min_level_required > 1}
+        {row.original.min_level_required}
+      {:else}
+        <span class="text-muted-foreground">-</span>
+      {/if}
+    </div>
+  {:else if cell.column.id === "total_waves"}
+    <div class="text-right">{row.original.total_waves}</div>
+  {:else}
+    {cell.getValue()}
+  {/if}
+{/snippet}
+
+{#snippet renderAltarHeader({ header }: { header: Header<ZoneAltar, unknown> })}
+  {#if header.id === "min_level_required" || header.id === "total_waves"}
+    <span class="ml-auto">{header.column.columnDef.header}</span>
+  {:else}
+    {header.column.columnDef.header}
+  {/if}
+{/snippet}
+
+{#snippet renderNpcCell({
+  cell,
+  row,
+}: {
+  cell: Cell<ZoneNpc, unknown>;
+  row: Row<ZoneNpc>;
+})}
+  {#if cell.column.id === "name"}
+    <a
+      href="/npcs/{row.original.id}"
+      class="text-blue-600 dark:text-blue-400 hover:underline"
+    >
+      {row.original.name}
+    </a>
+  {:else if cell.column.id === "roles"}
+    {@const roles = getNpcRoles(row.original)}
+    {#if roles.length > 0}
+      <div class="flex flex-wrap gap-1">
+        {#each roles as role (role)}
+          <span
+            class="inline-flex min-w-[90px] items-center justify-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+          >
+            {role}
+          </span>
+        {/each}
+      </div>
+    {:else}
+      <span class="text-muted-foreground">-</span>
+    {/if}
+  {:else}
+    {cell.getValue()}
+  {/if}
+{/snippet}
+
+{#snippet renderNpcHeader({ header }: { header: Header<ZoneNpc, unknown> })}
+  {header.column.columnDef.header}
+{/snippet}
 
 <svelte:head>
   <title>{data.zone.name} - Ancient Kingdoms Compendium</title>
@@ -220,535 +310,137 @@
   </div>
 
   <!-- Bosses Section -->
-  {#if sortedBosses.length > 0}
+  {#if bosses.length > 0}
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <Crown class="h-5 w-5 text-cyan-500" />
-        Bosses ({sortedBosses.length})
+        Bosses ({bosses.length})
       </h2>
-      <div class="rounded-md border">
-        <table class="w-full table-fixed">
-          <thead>
-            <tr class="border-b bg-muted/50">
-              <th class="px-3 py-2 text-left font-medium">Name</th>
-              <th class="w-[150px] px-3 py-2 text-right font-medium">Level</th>
-              <th class="w-[150px] px-3 py-2 text-right font-medium">Health</th>
-              <th class="w-[150px] px-3 py-2 text-right font-medium">Drops</th>
-            </tr>
-          </thead>
-          <tbody>
-            {#each paginatedBosses as monster, i (monster.id)}
-              <tr
-                class="border-b border-l-4 border-l-cyan-500 transition-colors hover:bg-muted/50 {i %
-                  2 ===
-                1
-                  ? 'bg-muted/30'
-                  : ''}"
-              >
-                <td class="px-3 py-2">
-                  <a
-                    href="/monsters/{monster.id}"
-                    class="text-blue-600 dark:text-blue-400 hover:underline"
-                  >
-                    {monster.name}
-                  </a>
-                </td>
-                <td class="px-3 py-2 text-right">{monster.level}</td>
-                <td class="px-3 py-2 text-right tabular-nums"
-                  >{monster.health.toLocaleString()}</td
-                >
-                <td class="px-3 py-2 text-right">{monster.drop_count}</td>
-              </tr>
-            {/each}
-            {#each Array.from({ length: bossPageCount > 1 ? monsterPageSize - paginatedBosses.length : 0 }, (_, i) => i) as i (i)}
-              <tr
-                class="border-b border-l-4 border-l-transparent {(paginatedBosses.length +
-                  i) %
-                  2 ===
-                1
-                  ? 'bg-muted/30'
-                  : ''}"
-                ><td class="px-3 py-2">&nbsp;</td><td></td><td></td><td
-                ></td></tr
-              >
-            {/each}
-          </tbody>
-        </table>
-      </div>
-      {#if bossPageCount > 1}
-        <div class="flex items-center justify-between pt-4">
-          <div class="text-sm text-muted-foreground">
-            Page {bossPage + 1} of {bossPageCount}
-          </div>
-          <div class="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onclick={() => (bossPage = Math.max(0, bossPage - 1))}
-              disabled={bossPage === 0}
-            >
-              <ChevronLeft class="h-4 w-4" />
-              Previous
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onclick={() =>
-                (bossPage = Math.min(bossPageCount - 1, bossPage + 1))}
-              disabled={bossPage >= bossPageCount - 1}
-            >
-              Next
-              <ChevronRight class="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      {/if}
+      <DataTable
+        data={bosses}
+        columns={monsterColumns}
+        renderCell={renderMonsterCell}
+        renderHeader={renderMonsterHeader}
+        initialSorting={[
+          { id: "level", desc: true },
+          { id: "health", desc: true },
+          { id: "name", desc: false },
+        ]}
+        pageSize={10}
+        zebraStripe={true}
+        accentColor="rgb(6 182 212)"
+      />
     </section>
   {/if}
 
   <!-- Elites Section -->
-  {#if sortedElites.length > 0}
+  {#if elites.length > 0}
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <Shield class="h-5 w-5 text-purple-500" />
-        Elites ({sortedElites.length})
+        Elites ({elites.length})
       </h2>
-      <div class="rounded-md border">
-        <table class="w-full table-fixed">
-          <thead>
-            <tr class="border-b bg-muted/50">
-              <th class="px-3 py-2 text-left font-medium">Name</th>
-              <th class="w-[150px] px-3 py-2 text-right font-medium">Level</th>
-              <th class="w-[150px] px-3 py-2 text-right font-medium">Health</th>
-              <th class="w-[150px] px-3 py-2 text-right font-medium">Drops</th>
-            </tr>
-          </thead>
-          <tbody>
-            {#each paginatedElites as monster, i (monster.id)}
-              <tr
-                class="border-b border-l-4 border-l-purple-500 transition-colors hover:bg-muted/50 {i %
-                  2 ===
-                1
-                  ? 'bg-muted/30'
-                  : ''}"
-              >
-                <td class="px-3 py-2">
-                  <a
-                    href="/monsters/{monster.id}"
-                    class="text-blue-600 dark:text-blue-400 hover:underline"
-                  >
-                    {monster.name}
-                  </a>
-                </td>
-                <td class="px-3 py-2 text-right">{monster.level}</td>
-                <td class="px-3 py-2 text-right tabular-nums"
-                  >{monster.health.toLocaleString()}</td
-                >
-                <td class="px-3 py-2 text-right">{monster.drop_count}</td>
-              </tr>
-            {/each}
-            {#each Array.from({ length: elitePageCount > 1 ? monsterPageSize - paginatedElites.length : 0 }, (_, i) => i) as i (i)}
-              <tr
-                class="border-b border-l-4 border-l-transparent {(paginatedElites.length +
-                  i) %
-                  2 ===
-                1
-                  ? 'bg-muted/30'
-                  : ''}"
-                ><td class="px-3 py-2">&nbsp;</td><td></td><td></td><td
-                ></td></tr
-              >
-            {/each}
-          </tbody>
-        </table>
-      </div>
-      {#if elitePageCount > 1}
-        <div class="flex items-center justify-between pt-4">
-          <div class="text-sm text-muted-foreground">
-            Page {elitePage + 1} of {elitePageCount}
-          </div>
-          <div class="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onclick={() => (elitePage = Math.max(0, elitePage - 1))}
-              disabled={elitePage === 0}
-            >
-              <ChevronLeft class="h-4 w-4" />
-              Previous
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onclick={() =>
-                (elitePage = Math.min(elitePageCount - 1, elitePage + 1))}
-              disabled={elitePage >= elitePageCount - 1}
-            >
-              Next
-              <ChevronRight class="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      {/if}
+      <DataTable
+        data={elites}
+        columns={monsterColumns}
+        renderCell={renderMonsterCell}
+        renderHeader={renderMonsterHeader}
+        initialSorting={[
+          { id: "level", desc: true },
+          { id: "health", desc: true },
+          { id: "name", desc: false },
+        ]}
+        pageSize={10}
+        zebraStripe={true}
+        accentColor="rgb(168 85 247)"
+      />
     </section>
   {/if}
 
   <!-- Creatures Section -->
-  {#if sortedCreatures.length > 0}
+  {#if creatures.length > 0}
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <Sword class="h-5 w-5 text-red-500" />
-        Creatures ({sortedCreatures.length})
+        Creatures ({creatures.length})
       </h2>
-      <div class="rounded-md border">
-        <table class="w-full table-fixed">
-          <thead>
-            <tr class="border-b bg-muted/50">
-              <th class="px-3 py-2 text-left font-medium">Name</th>
-              <th class="w-[150px] px-3 py-2 text-right font-medium">Level</th>
-              <th class="w-[150px] px-3 py-2 text-right font-medium">Health</th>
-              <th class="w-[150px] px-3 py-2 text-right font-medium">Drops</th>
-            </tr>
-          </thead>
-          <tbody>
-            {#each paginatedCreatures as monster, i (monster.id)}
-              <tr
-                class="border-b border-l-4 border-l-red-500 transition-colors hover:bg-muted/50 {i %
-                  2 ===
-                1
-                  ? 'bg-muted/30'
-                  : ''}"
-              >
-                <td class="px-3 py-2">
-                  <a
-                    href="/monsters/{monster.id}"
-                    class="text-blue-600 dark:text-blue-400 hover:underline"
-                  >
-                    {monster.name}
-                  </a>
-                </td>
-                <td class="px-3 py-2 text-right">{monster.level}</td>
-                <td class="px-3 py-2 text-right tabular-nums"
-                  >{monster.health.toLocaleString()}</td
-                >
-                <td class="px-3 py-2 text-right">{monster.drop_count}</td>
-              </tr>
-            {/each}
-            {#each Array.from({ length: creaturePageCount > 1 ? monsterPageSize - paginatedCreatures.length : 0 }, (_, i) => i) as i (i)}
-              <tr
-                class="border-b border-l-4 border-l-transparent {(paginatedCreatures.length +
-                  i) %
-                  2 ===
-                1
-                  ? 'bg-muted/30'
-                  : ''}"
-                ><td class="px-3 py-2">&nbsp;</td><td></td><td></td><td
-                ></td></tr
-              >
-            {/each}
-          </tbody>
-        </table>
-      </div>
-      {#if creaturePageCount > 1}
-        <div class="flex items-center justify-between pt-4">
-          <div class="text-sm text-muted-foreground">
-            Page {creaturePage + 1} of {creaturePageCount}
-          </div>
-          <div class="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onclick={() => (creaturePage = Math.max(0, creaturePage - 1))}
-              disabled={creaturePage === 0}
-            >
-              <ChevronLeft class="h-4 w-4" />
-              Previous
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onclick={() =>
-                (creaturePage = Math.min(
-                  creaturePageCount - 1,
-                  creaturePage + 1,
-                ))}
-              disabled={creaturePage >= creaturePageCount - 1}
-            >
-              Next
-              <ChevronRight class="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      {/if}
+      <DataTable
+        data={creatures}
+        columns={monsterColumns}
+        renderCell={renderMonsterCell}
+        renderHeader={renderMonsterHeader}
+        initialSorting={[
+          { id: "level", desc: true },
+          { id: "health", desc: true },
+          { id: "name", desc: false },
+        ]}
+        pageSize={10}
+        zebraStripe={true}
+        accentColor="rgb(239 68 68)"
+      />
     </section>
   {/if}
 
   <!-- Altars Section -->
   {#if data.altars.length > 0}
-    <section class="mb-8">
+    <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <Flame class="h-5 w-5 text-orange-500" />
         Altars ({data.altars.length})
       </h2>
-      <div class="rounded-md border">
-        <table class="w-full table-fixed">
-          <thead>
-            <tr class="border-b bg-muted/50">
-              <th class="w-[220px] px-3 py-2 text-left font-medium">Name</th>
-              <th class="px-3 py-2 text-left font-medium">Activation Item</th>
-              <th class="w-[100px] px-3 py-2 text-right font-medium">Level</th>
-              <th class="w-[100px] px-3 py-2 text-right font-medium">Waves</th>
-            </tr>
-          </thead>
-          <tbody>
-            {#each data.altars as altar, i (altar.id)}
-              <tr
-                class="border-b border-l-4 border-l-orange-500 transition-colors hover:bg-muted/50 {i %
-                  2 ===
-                1
-                  ? 'bg-muted/30'
-                  : ''}"
-              >
-                <td class="px-3 py-2">{altar.name}</td>
-                <td class="px-3 py-2">
-                  {#if altar.required_activation_item_id}
-                    <a
-                      href="/items/{altar.required_activation_item_id}"
-                      class="text-blue-600 dark:text-blue-400 hover:underline"
-                    >
-                      {altar.required_activation_item_name}
-                    </a>
-                  {:else}
-                    <span class="text-muted-foreground">-</span>
-                  {/if}
-                </td>
-                <td class="px-3 py-2 text-right">
-                  {#if altar.min_level_required > 1}
-                    {altar.min_level_required}
-                  {:else}
-                    <span class="text-muted-foreground">-</span>
-                  {/if}
-                </td>
-                <td class="px-3 py-2 text-right">{altar.total_waves}</td>
-              </tr>
-            {/each}
-          </tbody>
-        </table>
-      </div>
+      <DataTable
+        data={data.altars}
+        columns={altarColumns}
+        renderCell={renderAltarCell}
+        renderHeader={renderAltarHeader}
+        pageSize={10}
+        zebraStripe={true}
+        accentColor="rgb(249 115 22)"
+      />
     </section>
   {/if}
 
   <!-- Critters Section -->
-  {#if sortedCritters.length > 0}
+  {#if critters.length > 0}
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <PawPrint class="h-5 w-5 text-green-500" />
-        Critters ({sortedCritters.length})
+        Critters ({critters.length})
       </h2>
-      <div class="rounded-md border">
-        <table class="w-full table-fixed">
-          <thead>
-            <tr class="border-b bg-muted/50">
-              <th class="px-3 py-2 text-left font-medium">Name</th>
-              <th class="w-[150px] px-3 py-2 text-right font-medium">Level</th>
-              <th class="w-[150px] px-3 py-2 text-right font-medium">Health</th>
-              <th class="w-[150px] px-3 py-2 text-right font-medium">Drops</th>
-            </tr>
-          </thead>
-          <tbody>
-            {#each paginatedCritters as monster, i (monster.id)}
-              <tr
-                class="border-b border-l-4 border-l-green-500 transition-colors hover:bg-muted/50 {i %
-                  2 ===
-                1
-                  ? 'bg-muted/30'
-                  : ''}"
-              >
-                <td class="px-3 py-2">
-                  <a
-                    href="/monsters/{monster.id}"
-                    class="text-blue-600 dark:text-blue-400 hover:underline"
-                  >
-                    {monster.name}
-                  </a>
-                </td>
-                <td class="px-3 py-2 text-right">{monster.level}</td>
-                <td class="px-3 py-2 text-right tabular-nums"
-                  >{monster.health.toLocaleString()}</td
-                >
-                <td class="px-3 py-2 text-right">{monster.drop_count}</td>
-              </tr>
-            {/each}
-            {#each Array.from({ length: critterPageCount > 1 ? monsterPageSize - paginatedCritters.length : 0 }, (_, i) => i) as i (i)}
-              <tr
-                class="border-b border-l-4 border-l-transparent {(paginatedCritters.length +
-                  i) %
-                  2 ===
-                1
-                  ? 'bg-muted/30'
-                  : ''}"
-                ><td class="px-3 py-2">&nbsp;</td><td></td><td></td><td
-                ></td></tr
-              >
-            {/each}
-          </tbody>
-        </table>
-      </div>
-      {#if critterPageCount > 1}
-        <div class="flex items-center justify-between pt-4">
-          <div class="text-sm text-muted-foreground">
-            Page {critterPage + 1} of {critterPageCount}
-          </div>
-          <div class="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onclick={() => (critterPage = Math.max(0, critterPage - 1))}
-              disabled={critterPage === 0}
-            >
-              <ChevronLeft class="h-4 w-4" />
-              Previous
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onclick={() =>
-                (critterPage = Math.min(critterPageCount - 1, critterPage + 1))}
-              disabled={critterPage >= critterPageCount - 1}
-            >
-              Next
-              <ChevronRight class="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      {/if}
+      <DataTable
+        data={critters}
+        columns={monsterColumns}
+        renderCell={renderMonsterCell}
+        renderHeader={renderMonsterHeader}
+        initialSorting={[
+          { id: "level", desc: true },
+          { id: "health", desc: true },
+          { id: "name", desc: false },
+        ]}
+        pageSize={10}
+        zebraStripe={true}
+        accentColor="rgb(34 197 94)"
+      />
     </section>
   {/if}
 
   <!-- NPCs Section -->
   {#if data.npcs.length > 0}
-    <section class="mb-8">
+    <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <Users class="h-5 w-5 text-blue-500" />
         NPCs ({data.npcs.length})
       </h2>
-      <div class="rounded-md border">
-        <table class="w-full table-fixed">
-          <thead>
-            <tr class="border-b bg-muted/50">
-              <th class="w-[220px] px-3 py-2 text-left font-medium">
-                <button
-                  type="button"
-                  class="flex items-center gap-1 hover:text-foreground"
-                  onclick={() => toggleNpcSort("name")}
-                >
-                  Name
-                  {#if npcSortKey === "name"}
-                    {#if npcSortAsc}
-                      <ChevronUp class="h-4 w-4" />
-                    {:else}
-                      <ChevronDown class="h-4 w-4" />
-                    {/if}
-                  {:else}
-                    <ChevronsUpDown class="h-4 w-4 opacity-50" />
-                  {/if}
-                </button>
-              </th>
-              <th class="px-3 py-2 text-left font-medium">
-                <button
-                  type="button"
-                  class="flex items-center gap-1 hover:text-foreground"
-                  onclick={() => toggleNpcSort("roles")}
-                >
-                  Roles
-                  {#if npcSortKey === "roles"}
-                    {#if npcSortAsc}
-                      <ChevronUp class="h-4 w-4" />
-                    {:else}
-                      <ChevronDown class="h-4 w-4" />
-                    {/if}
-                  {:else}
-                    <ChevronsUpDown class="h-4 w-4 opacity-50" />
-                  {/if}
-                </button>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {#each paginatedNpcs as npc, i (npc.id)}
-              <tr
-                class="border-b border-l-4 border-l-blue-500 transition-colors hover:bg-muted/50 {i %
-                  2 ===
-                1
-                  ? 'bg-muted/30'
-                  : ''}"
-              >
-                <td class="px-3 py-2">
-                  <a
-                    href="/npcs/{npc.id}"
-                    class="text-blue-600 dark:text-blue-400 hover:underline"
-                  >
-                    {npc.name}
-                  </a>
-                </td>
-                <td class="px-3 py-2">
-                  {#if getNpcRoles(npc).length > 0}
-                    <div class="flex flex-wrap gap-1">
-                      {#each getNpcRoles(npc) as role (role)}
-                        <span
-                          class="inline-flex items-center justify-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200 min-w-[150px]"
-                        >
-                          {role}
-                        </span>
-                      {/each}
-                    </div>
-                  {:else}
-                    <span class="text-muted-foreground">-</span>
-                  {/if}
-                </td>
-              </tr>
-            {/each}
-            {#each Array.from({ length: npcPageCount > 1 ? npcPageSize - paginatedNpcs.length : 0 }, (_, i) => i) as i (i)}
-              <tr
-                class="border-b border-l-4 border-l-transparent {(paginatedNpcs.length +
-                  i) %
-                  2 ===
-                1
-                  ? 'bg-muted/30'
-                  : ''}"><td class="px-3 py-2">&nbsp;</td><td></td></tr
-              >
-            {/each}
-          </tbody>
-        </table>
-      </div>
-      {#if npcPageCount > 1}
-        <div class="flex items-center justify-between pt-4">
-          <div class="text-sm text-muted-foreground">
-            Page {npcPage + 1} of {npcPageCount}
-          </div>
-          <div class="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onclick={() => (npcPage = Math.max(0, npcPage - 1))}
-              disabled={npcPage === 0}
-            >
-              <ChevronLeft class="h-4 w-4" />
-              Previous
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onclick={() =>
-                (npcPage = Math.min(npcPageCount - 1, npcPage + 1))}
-              disabled={npcPage >= npcPageCount - 1}
-            >
-              Next
-              <ChevronRight class="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      {/if}
+      <DataTable
+        data={data.npcs}
+        columns={npcColumns}
+        renderCell={renderNpcCell}
+        renderHeader={renderNpcHeader}
+        initialSorting={[{ id: "name", desc: false }]}
+        pageSize={10}
+        zebraStripe={true}
+        accentColor="rgb(59 130 246)"
+      />
     </section>
   {/if}
 

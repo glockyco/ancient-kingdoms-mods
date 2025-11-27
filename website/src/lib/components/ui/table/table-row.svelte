@@ -5,6 +5,7 @@
   let {
     ref = $bindable(null),
     class: className,
+    style,
     children,
     ...restProps
   }: WithElementRef<HTMLAttributes<HTMLTableRowElement>> = $props();
@@ -17,6 +18,7 @@
     "hover:[&,&>svelte-css-wrapper]:[&>th,td]:bg-muted/50 data-[state=selected]:bg-muted border-b transition-colors",
     className,
   )}
+  {style}
   {...restProps}
 >
   {@render children?.()}

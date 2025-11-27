@@ -1,20 +1,20 @@
 <script lang="ts">
-  import { cn, type WithElementRef } from "$lib/utils.js";
   import type { HTMLAttributes } from "svelte/elements";
+  import { cn, type WithElementRef } from "$lib/utils.js";
 
   let {
     ref = $bindable(null),
     class: className,
     children,
     ...restProps
-  }: WithElementRef<HTMLAttributes<HTMLTableSectionElement>> = $props();
+  }: WithElementRef<HTMLAttributes<HTMLUListElement>> = $props();
 </script>
 
-<tbody
+<ul
   bind:this={ref}
-  data-slot="table-body"
-  class={cn("[&_tr:last-child]:border-b-0", className)}
+  data-slot="pagination-content"
+  class={cn("flex flex-row items-center gap-1", className)}
   {...restProps}
 >
   {@render children?.()}
-</tbody>
+</ul>
