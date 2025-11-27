@@ -4,6 +4,7 @@
   import { onMount } from "svelte";
   import { SvelteURLSearchParams } from "svelte/reactivity";
   import * as Card from "$lib/components/ui/card";
+  import * as Pagination from "$lib/components/ui/pagination";
   import { Button } from "$lib/components/ui/button";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import { PAGINATION } from "$lib/config";
@@ -67,7 +68,7 @@
     const urlSearch = $page.url.searchParams.get("search");
     const urlPage = $page.url.searchParams.get("page");
 
-    if (urlQuality || urlType || urlSearch) {
+    if (urlQuality || urlType || urlSearch || urlPage) {
       // URL has params - use them
       qualityFilter = urlQuality ? urlQuality.split(",").map(Number) : [];
       typeFilter = urlType ? urlType.split(",") : [];
@@ -180,6 +181,9 @@
     ),
   );
 
+  // Always use paginated items (full list is too large for no-JS)
+  const displayItems = $derived(paginatedItems);
+
   function toggleQuality(quality: number) {
     qualityFilter = qualityFilter.includes(quality)
       ? qualityFilter.filter((q) => q !== quality)
@@ -218,7 +222,7 @@
 
 {#if !isHydrated}
   <div
-    class="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center"
+    class="loading-overlay fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center"
   >
     <div class="text-center">
       <div
@@ -324,7 +328,7 @@
   <div
     class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
   >
-    {#each paginatedItems as item (item.id)}
+    {#each displayItems as item (item.id)}
       {@const classRequired = parseClassRequired(item.class_required)}
       <a href={resolve("/items/[id]", { id: item.id })} class="block">
         <Card.Root class="h-full hover:border-primary transition-colors">
@@ -385,26 +389,38 @@
 
   <!-- Pagination -->
   {#if totalPages > 1}
-    <div class="flex justify-center gap-2">
-      <Button
-        variant="outline"
-        disabled={currentPage <= 1}
-        onclick={() => (currentPage = currentPage - 1)}
+    <div>
+      <Pagination.Root
+        count={filteredItems.length}
+        perPage={PAGINATION.PAGE_SIZE}
+        page={currentPage}
+        onPageChange={(page) => (currentPage = page)}
       >
-        Previous
-      </Button>
-
-      <div class="flex items-center px-4">
-        Page {currentPage} of {totalPages}
-      </div>
-
-      <Button
-        variant="outline"
-        disabled={currentPage >= totalPages}
-        onclick={() => (currentPage = currentPage + 1)}
-      >
-        Next
-      </Button>
+        {#snippet children({ pages })}
+          <Pagination.Content>
+            <Pagination.Item>
+              <Pagination.PrevButton />
+            </Pagination.Item>
+            {#each pages as page (page.key)}
+              {#if page.type === "ellipsis"}
+                <Pagination.Item>
+                  <Pagination.Ellipsis />
+                </Pagination.Item>
+              {:else}
+                <Pagination.Item>
+                  <Pagination.Link
+                    {page}
+                    isActive={currentPage === page.value}
+                  />
+                </Pagination.Item>
+              {/if}
+            {/each}
+            <Pagination.Item>
+              <Pagination.NextButton />
+            </Pagination.Item>
+          </Pagination.Content>
+        {/snippet}
+      </Pagination.Root>
     </div>
   {/if}
 </div>

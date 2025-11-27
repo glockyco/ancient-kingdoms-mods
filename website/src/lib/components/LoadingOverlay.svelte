@@ -4,7 +4,7 @@
 
 {#if $navigating}
   <div
-    class="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center"
+    class="loading-overlay fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center"
   >
     <div class="text-center">
       <div

@@ -33,7 +33,7 @@
       Your guide to items, zones, monsters, and more
     </p>
 
-    <form onsubmit={handleSearch} class="max-w-md mx-auto">
+    <form onsubmit={handleSearch} class="js-only max-w-md mx-auto">
       <div class="relative">
         <Search
           class="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground"

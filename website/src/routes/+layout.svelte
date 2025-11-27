@@ -9,6 +9,14 @@
 
 <svelte:head>
   <link rel="icon" href={favicon} />
+  <noscript>
+    <style>
+      .loading-overlay,
+      .js-only {
+        display: none !important;
+      }
+    </style>
+  </noscript>
 </svelte:head>
 
 <ModeWatcher />

@@ -231,11 +231,15 @@
 
   const headerGroups = $derived(table.getHeaderGroups());
   const rowModel = $derived(table.getRowModel());
+  const allRowModel = $derived(table.getPrePaginationRowModel());
   const pageCount = $derived(table.getPageCount());
   const allColumns = $derived(table.getAllColumns());
   const toggleableColumns = $derived(
     allColumns.filter((col) => col.getCanHide()),
   );
+
+  // For no-JS support: render all rows, hide with CSS, JS reveals paginated subset
+  const displayRows = $derived(isHydrated ? rowModel.rows : allRowModel.rows);
 
   // Calculate minimum table width based on visible columns only
   const visibleColumnIds = $derived(
@@ -252,9 +256,9 @@
 </script>
 
 <div>
-  {#if urlKey && !isHydrated}
+  {#if !isHydrated}
     <div
-      class="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm"
+      class="loading-overlay fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm"
     >
       <div class="text-center">
         <div
@@ -265,7 +269,7 @@
     </div>
   {/if}
 
-  {#if renderToolbar || showSearch || showColumnToggle}
+  {#if isHydrated && (renderToolbar || showSearch || showColumnToggle)}
     <div class="flex items-center gap-2 pb-4">
       {#if showSearch}
         <Input
@@ -362,8 +366,8 @@
         {/each}
       </Table.Header>
       <Table.Body>
-        {#if rowModel.rows.length > 0}
-          {#each rowModel.rows as row, i (row.id)}
+        {#if displayRows.length > 0}
+          {#each displayRows as row, i (row.id)}
             <Table.Row class={zebraStripe && i % 2 === 1 ? "bg-muted/30" : ""}>
               {#each row.getVisibleCells() as cell (cell.id)}
                 <Table.Cell>
@@ -379,8 +383,8 @@
               {/each}
             </Table.Row>
           {/each}
-          {#if rowModel.rows.length < pageSize && (pageCount > 1 || columnFilters.length > 0)}
-            {#each Array.from({ length: pageSize - rowModel.rows.length }, (_, i) => i) as i (i)}
+          {#if isHydrated && displayRows.length < pageSize && (pageCount > 1 || columnFilters.length > 0)}
+            {#each Array.from({ length: pageSize - displayRows.length }, (_, i) => i) as i (i)}
               <Table.Row class="pointer-events-none">
                 {#each columns as col (col)}
                   <Table.Cell>&nbsp;</Table.Cell>
@@ -399,7 +403,7 @@
     </Table.Root>
   </div>
 
-  {#if showPagination && data.length > pageSize}
+  {#if isHydrated && showPagination && data.length > pageSize}
     <div class="h-10 pt-4">
       {#if pageCount > 1}
         <Pagination.Root
