@@ -9,7 +9,7 @@ Execution order matters - some denormalizers depend on others having run first.
 
 import sqlite3
 
-from compendium.denormalizers import items, skills
+from compendium.denormalizers import items, monsters, skills
 
 
 def run_all(conn: sqlite3.Connection) -> None:
@@ -24,7 +24,5 @@ def run_all(conn: sqlite3.Connection) -> None:
     # Phase 2: Skill denormalizations
     skills.run_all(conn)
 
-    # Future phases for other entities:
-    # zones.run_all(conn)
-    # monsters.run_all(conn)
-    # npcs.run_all(conn)
+    # Phase 3: Monster denormalizations (spawn inference)
+    monsters.run_all(conn)

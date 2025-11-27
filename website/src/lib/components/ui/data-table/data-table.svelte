@@ -44,7 +44,6 @@
     searchPlaceholder?: string;
     columnLabels?: Record<string, string>;
     zebraStripe?: boolean;
-    accentColor?: string;
     class?: string;
     renderCell?: Snippet<[{ cell: Cell<TData, unknown>; row: Row<TData> }]>;
     renderHeader?: Snippet<[{ header: Header<TData, unknown> }]>;
@@ -63,7 +62,6 @@
     searchPlaceholder = "Search...",
     columnLabels = {},
     zebraStripe = false,
-    accentColor,
     class: className,
     renderCell,
     renderHeader,
@@ -248,7 +246,7 @@
   );
 </script>
 
-<div class={className}>
+<div>
   {#if urlKey && !isHydrated}
     <div
       class="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm"
@@ -300,7 +298,7 @@
     </div>
   {/if}
 
-  <div class="rounded-md border">
+  <div class="rounded-md border {className}">
     <Table.Root style="min-width: {tableMinWidth}px">
       <Table.Header>
         {#each headerGroups as headerGroup (headerGroup.id)}
@@ -361,12 +359,7 @@
       <Table.Body>
         {#if rowModel.rows.length > 0}
           {#each rowModel.rows as row, i (row.id)}
-            <Table.Row
-              class="{zebraStripe && i % 2 === 1
-                ? 'bg-muted/30'
-                : ''} {accentColor ? 'border-l-4' : ''}"
-              style={accentColor ? `border-left-color: ${accentColor}` : ""}
-            >
+            <Table.Row class={zebraStripe && i % 2 === 1 ? "bg-muted/30" : ""}>
               {#each row.getVisibleCells() as cell (cell.id)}
                 <Table.Cell>
                   {#if renderCell}

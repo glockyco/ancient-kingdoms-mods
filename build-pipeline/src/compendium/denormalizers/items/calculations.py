@@ -87,6 +87,38 @@ def _calculate_item_levels(conn: sqlite3.Connection) -> int:
     return item_levels_updated
 
 
+def _calculate_bestiary_drop(conn: sqlite3.Connection) -> int:
+    """Calculate is_bestiary_drop for all items.
+
+    Bestiary shows items that are:
+    - NOT potions
+    - NOT quest-only items
+    - AND (quality > 0 OR is_key OR recipe OR equipment/weapon)
+
+    Returns:
+        Count of updated items
+    """
+    console.print("  Calculating bestiary drop flags...")
+    cursor = conn.cursor()
+
+    # Update items that SHOULD appear in bestiary
+    cursor.execute("""
+        UPDATE items
+        SET is_bestiary_drop = 1
+        WHERE item_type != 'potion'
+          AND is_quest_item = 0
+          AND (
+            quality > 0
+            OR is_key = 1
+            OR item_type = 'recipe'
+            OR item_type = 'equipment'
+            OR item_type = 'weapon'
+          )
+    """)
+
+    return cursor.rowcount
+
+
 def _calculate_primal_essence(conn: sqlite3.Connection) -> int:
     """Calculate primal essence values for tradeable equipment.
 
@@ -126,11 +158,13 @@ def run(conn: sqlite3.Connection) -> None:
     Updates items table with:
     - item_level: Calculated from stats
     - primal_essence_value: Calculated from sell_price
+    - is_bestiary_drop: Whether item appears in monster bestiary UI
     """
     console.print("Calculating derived item values...")
 
     item_levels_updated = _calculate_item_levels(conn)
     primal_essence_updated = _calculate_primal_essence(conn)
+    bestiary_updated = _calculate_bestiary_drop(conn)
 
     conn.commit()
 
@@ -139,4 +173,7 @@ def run(conn: sqlite3.Connection) -> None:
     )
     console.print(
         f"  [green]OK[/green] Calculated primal essence for {primal_essence_updated} items"
+    )
+    console.print(
+        f"  [green]OK[/green] Calculated bestiary flags for {bestiary_updated} items"
     )

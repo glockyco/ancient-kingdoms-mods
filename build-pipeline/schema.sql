@@ -120,6 +120,7 @@ CREATE TABLE items (
     tradable BOOLEAN DEFAULT 1,
     destroyable BOOLEAN DEFAULT 1,
     is_quest_item BOOLEAN DEFAULT 0,
+    is_bestiary_drop BOOLEAN DEFAULT 0,  -- Whether this item appears in monster bestiary UI
     infinite_charges BOOLEAN DEFAULT 0,
     cooldown REAL DEFAULT 0.0,
     cooldown_category TEXT,
@@ -341,7 +342,23 @@ CREATE TABLE monster_spawns (
     move_probability REAL DEFAULT 0.0,
     move_distance REAL DEFAULT 0.0,
     is_patrolling BOOLEAN DEFAULT 0,
-    patrol_waypoints TEXT           -- JSON array
+    patrol_waypoints TEXT,          -- JSON array
+
+    -- Spawn source info (for non-regular spawns)
+    spawn_type TEXT DEFAULT 'regular',      -- 'regular', 'placeholder', 'altar', 'summon'
+    source_monster_id TEXT,                 -- placeholder: parent monster that triggers spawn
+    source_monster_name TEXT,
+    source_spawn_probability REAL,          -- placeholder: chance when parent dies
+    source_altar_id TEXT,                   -- altar: which altar event
+    source_altar_name TEXT,
+    source_altar_wave INTEGER,              -- altar: which wave (0-indexed)
+    source_altar_activation_item_id TEXT,   -- altar: item needed to start event
+    source_altar_activation_item_name TEXT,
+    source_summon_trigger_id TEXT,          -- summon: trigger that spawns this
+    source_summon_kill_monster_id TEXT,     -- summon: monster to kill (FK to monsters)
+    source_summon_kill_monster_name TEXT,   -- summon: denormalized name for display
+    source_summon_kill_count INTEGER,       -- summon: how many to kill
+    source_summon_message TEXT              -- summon: message shown when summoned
 );
 
 CREATE INDEX idx_monster_spawns_monster ON monster_spawns(monster_id);
