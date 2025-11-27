@@ -500,36 +500,16 @@
       <div class="space-y-4">
         <!-- World Spawns (regular) -->
         {#if data.spawns.regular.length > 0}
-          <div>
-            <DataTable
-              data={data.spawns.regular}
-              columns={spawnColumns}
-              renderCell={renderSpawnCell}
-              renderHeader={renderSpawnHeader}
-              initialSorting={[{ id: "spawn_count", desc: true }]}
-              pageSize={10}
-              zebraStripe={true}
-              class="bg-muted/30"
-            />
-            {#if hasSpawnsOnDeath}
-              <div class="mt-3 text-sm">
-                <span class="text-muted-foreground">Spawns on Death:</span>
-                <a
-                  href="/monsters/{data.monster.placeholder_monster_id}"
-                  class="text-blue-600 dark:text-blue-400 hover:underline"
-                >
-                  {data.monster.placeholder_monster_name ||
-                    data.monster.placeholder_monster_id}
-                </a>
-                {#if data.monster.placeholder_spawn_probability > 0 && data.monster.placeholder_spawn_probability < 1}
-                  <span class="text-muted-foreground">
-                    ({formatPercent(data.monster.placeholder_spawn_probability)}
-                    chance)
-                  </span>
-                {/if}
-              </div>
-            {/if}
-          </div>
+          <DataTable
+            data={data.spawns.regular}
+            columns={spawnColumns}
+            renderCell={renderSpawnCell}
+            renderHeader={renderSpawnHeader}
+            initialSorting={[{ id: "spawn_count", desc: true }]}
+            pageSize={10}
+            zebraStripe={true}
+            class="bg-muted/30"
+          />
         {/if}
 
         <!-- Summoned By Killing -->
@@ -537,12 +517,12 @@
           <div class="space-y-2">
             {#each data.spawns.summon as summon (summon.zone_id)}
               <div class="bg-muted/30 rounded-md border p-3">
-                <span>Kill {summon.kill_count}x </span>
+                <span>Kill {summon.kill_count} </span>
                 <a
                   href="/monsters/{summon.kill_monster_id}"
                   class="text-blue-600 dark:text-blue-400 hover:underline"
                 >
-                  {summon.kill_monster_name}
+                  {summon.kill_monster_name}s
                 </a>
                 <span class="text-muted-foreground"> in </span>
                 <a
@@ -551,6 +531,7 @@
                 >
                   {summon.zone_name}
                 </a>
+                <span class="text-muted-foreground"> to summon</span>
               </div>
             {/each}
           </div>
@@ -592,31 +573,47 @@
           </div>
         {/if}
 
-        <!-- Spawned On Death -->
+        <!-- Spawned On Death (how this monster spawns) -->
         {#if data.spawns.placeholder}
           <div class="bg-muted/30 rounded-md border p-3">
-            <span>Spawns when </span>
+            <span>Appears after killing </span>
             <a
               href="/monsters/{data.spawns.placeholder.source_monster_id}"
               class="text-blue-600 dark:text-blue-400 hover:underline"
             >
               {data.spawns.placeholder.source_monster_name}
             </a>
-            <span> dies</span>
+            <span class="text-muted-foreground"> in </span>
+            <a
+              href="/zones/{data.spawns.placeholder.zone_id}"
+              class="text-blue-600 dark:text-blue-400 hover:underline"
+            >
+              {data.spawns.placeholder.zone_name}
+            </a>
             {#if data.spawns.placeholder.spawn_probability < 1}
               <span class="text-muted-foreground">
                 ({formatPercent(data.spawns.placeholder.spawn_probability)} chance)
               </span>
             {/if}
-            <div class="text-sm text-muted-foreground mt-1">
-              Zone:
-              <a
-                href="/zones/{data.spawns.placeholder.zone_id}"
-                class="text-blue-600 dark:text-blue-400 hover:underline"
-              >
-                {data.spawns.placeholder.zone_name}
-              </a>
-            </div>
+          </div>
+        {/if}
+
+        <!-- On Death Spawns (what spawns when this monster dies) -->
+        {#if hasSpawnsOnDeath}
+          <div class="bg-muted/30 rounded-md border p-3">
+            <span>Killing this spawns </span>
+            <a
+              href="/monsters/{data.monster.placeholder_monster_id}"
+              class="text-blue-600 dark:text-blue-400 hover:underline"
+            >
+              {data.monster.placeholder_monster_name ||
+                data.monster.placeholder_monster_id}
+            </a>
+            {#if data.monster.placeholder_spawn_probability > 0 && data.monster.placeholder_spawn_probability < 1}
+              <span class="text-muted-foreground">
+                ({formatPercent(data.monster.placeholder_spawn_probability)} chance)
+              </span>
+            {/if}
           </div>
         {/if}
       </div>
@@ -653,22 +650,21 @@
       <div class="space-y-2">
         {#each data.summons as summon (summon.summoned_monster_id + summon.zone_id)}
           <div class="bg-muted/30 rounded-md border p-3">
-            <span>Kill {summon.kill_count} to summon </span>
+            <span>Kill {summon.kill_count}</span>
+            <span class="text-muted-foreground"> in </span>
+            <a
+              href="/zones/{summon.zone_id}"
+              class="text-blue-600 dark:text-blue-400 hover:underline"
+            >
+              {summon.zone_name}
+            </a>
+            <span class="text-muted-foreground"> to summon </span>
             <a
               href="/monsters/{summon.summoned_monster_id}"
               class="text-blue-600 dark:text-blue-400 hover:underline"
             >
               {summon.summoned_monster_name}
             </a>
-            <div class="text-sm text-muted-foreground mt-1">
-              Zone:
-              <a
-                href="/zones/{summon.zone_id}"
-                class="text-blue-600 dark:text-blue-400 hover:underline"
-              >
-                {summon.zone_name}
-              </a>
-            </div>
           </div>
         {/each}
       </div>
