@@ -2,7 +2,7 @@
 
 import sqlite3
 
-from compendium.denormalizers.monsters import spawns
+from compendium.denormalizers.monsters import drops, spawns
 
 
 def run_all(conn: sqlite3.Connection) -> None:
@@ -13,3 +13,6 @@ def run_all(conn: sqlite3.Connection) -> None:
     """
     # Infer spawn entries for placeholder monsters
     spawns.run(conn)
+
+    # Denormalize monster drops (add item names, fragment drops)
+    drops.run(conn)

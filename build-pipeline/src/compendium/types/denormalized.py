@@ -111,3 +111,11 @@ class GrantedByItemInfo(TypedDict):
     type: str  # "potion_buff", "food_buff", "scroll", "weapon_proc", "relic_buff"
     level: NotRequired[int]
     probability: NotRequired[float]
+
+
+class MonsterDropInfo(TypedDict):
+    """Item drop information for monsters.drops (denormalized with item name)."""
+
+    item_id: str
+    item_name: str
+    rate: float
