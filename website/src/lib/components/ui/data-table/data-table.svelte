@@ -1,4 +1,6 @@
 <script lang="ts" generics="TData">
+  import { onMount } from "svelte";
+  import { page } from "$app/stores";
   import {
     getCoreRowModel,
     getSortedRowModel,
@@ -35,6 +37,7 @@
     columns: ColumnDef<TData, unknown>[];
     pageSize?: number;
     initialSorting?: SortingState;
+    urlKey?: string;
     showPagination?: boolean;
     showSearch?: boolean;
     showColumnToggle?: boolean;
@@ -53,6 +56,7 @@
     columns,
     pageSize = 10,
     initialSorting = [],
+    urlKey,
     showPagination = true,
     showSearch = false,
     showColumnToggle = false,
@@ -84,6 +88,65 @@
   let columnVisibility = $state<VisibilityState>({});
   let columnPinning = $state<ColumnPinningState>({ left: [], right: [] });
   let globalFilter = $state("");
+  let isHydrated = $state(false);
+
+  // URL-based filter persistence using {urlKey}.{columnId} format
+  function syncFiltersToUrl() {
+    if (!urlKey || !isHydrated) return;
+
+    const currentParams = new URL(window.location.href).searchParams;
+    const newParams: string[] = [];
+    const prefix = `${urlKey}.`;
+
+    // Keep params that don't belong to this table
+    currentParams.forEach((value, key) => {
+      if (!key.startsWith(prefix)) {
+        newParams.push(
+          `${encodeURIComponent(key)}=${encodeURIComponent(value)}`,
+        );
+      }
+    });
+
+    // Add current filters with prefixed keys
+    for (const filter of columnFilters) {
+      const values = filter.value as string[] | undefined;
+      if (values && values.length > 0) {
+        const paramKey = `${prefix}${filter.id}`;
+        newParams.push(
+          `${encodeURIComponent(paramKey)}=${encodeURIComponent(values.join(","))}`,
+        );
+      }
+    }
+
+    const queryString = newParams.join("&");
+    const newUrl = queryString
+      ? `${window.location.pathname}?${queryString}`
+      : window.location.pathname;
+    window.history.replaceState(history.state, "", newUrl);
+  }
+
+  onMount(() => {
+    if (urlKey) {
+      const prefix = `${urlKey}.`;
+      const restoredFilters: ColumnFiltersState = [];
+
+      // Find all URL params that match our prefix
+      $page.url.searchParams.forEach((value, key) => {
+        if (key.startsWith(prefix)) {
+          const columnId = key.slice(prefix.length);
+          const values = value.split(",").filter(Boolean);
+          if (values.length > 0) {
+            restoredFilters.push({ id: columnId, value: values });
+          }
+        }
+      });
+
+      if (restoredFilters.length > 0) {
+        columnFilters = restoredFilters;
+      }
+    }
+    isHydrated = true;
+  });
 
   const table = $derived(
     createSvelteTable({
@@ -115,6 +178,8 @@
           typeof updater === "function" ? updater(columnFilters) : updater;
         // Reset to first page when filters change to avoid being on an invalid page
         pagination = { ...pagination, pageIndex: 0 };
+        // Sync to URL if enabled
+        syncFiltersToUrl();
       },
       onColumnVisibilityChange: (updater) => {
         columnVisibility =

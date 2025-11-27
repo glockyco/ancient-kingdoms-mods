@@ -464,6 +464,7 @@
         renderCell={renderNpcCell}
         renderHeader={renderNpcHeader}
         initialSorting={[{ id: "name", desc: false }]}
+        urlKey="npcs"
         pageSize={10}
         zebraStripe={true}
         accentColor="rgb(59 130 246)"
