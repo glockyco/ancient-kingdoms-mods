@@ -1,8 +1,174 @@
-<div class="flex min-h-screen items-center justify-center bg-gray-900">
-  <div class="text-center">
-    <h1 class="text-4xl font-bold text-white mb-4">
-      Ancient Kingdoms Compendium
-    </h1>
-    <p class="text-gray-400">Game data browser - Coming Soon</p>
+<script lang="ts">
+  import { goto } from "$app/navigation";
+  import * as Card from "$lib/components/ui/card";
+  import { Input } from "$lib/components/ui/input";
+  import Gem from "@lucide/svelte/icons/gem";
+  import MapPin from "@lucide/svelte/icons/map-pin";
+  import Skull from "@lucide/svelte/icons/skull";
+  import Users from "@lucide/svelte/icons/users";
+  import Scroll from "@lucide/svelte/icons/scroll";
+  import Zap from "@lucide/svelte/icons/zap";
+  import Search from "@lucide/svelte/icons/search";
+  import ArrowRight from "@lucide/svelte/icons/arrow-right";
+
+  let searchQuery = $state("");
+
+  function handleSearch(e: SubmitEvent) {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      goto(`/items?search=${encodeURIComponent(searchQuery.trim())}`);
+    }
+  }
+</script>
+
+<svelte:head>
+  <title>Ancient Kingdoms Compendium</title>
+</svelte:head>
+
+<div class="container mx-auto p-8 space-y-12">
+  <!-- Hero Section -->
+  <div class="text-center py-12 space-y-6">
+    <h1 class="text-4xl md:text-5xl font-bold">Ancient Kingdoms Compendium</h1>
+    <p class="text-xl text-muted-foreground">
+      Your guide to items, zones, monsters, and more
+    </p>
+
+    <form onsubmit={handleSearch} class="max-w-md mx-auto">
+      <div class="relative">
+        <Search
+          class="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground"
+        />
+        <Input
+          type="text"
+          placeholder="Search items, zones, monsters..."
+          bind:value={searchQuery}
+          class="pl-10 h-12 text-lg"
+        />
+      </div>
+    </form>
   </div>
+
+  <!-- Available Sections -->
+  <section class="space-y-6">
+    <h2 class="text-2xl font-semibold">Browse</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <a href="/items" class="block group">
+        <Card.Root
+          class="h-full transition-colors hover:bg-muted/50 bg-muted/30"
+        >
+          <Card.Header>
+            <div class="flex items-center gap-3">
+              <div class="p-2 rounded-lg bg-amber-500/10">
+                <Gem class="h-6 w-6 text-amber-500" />
+              </div>
+              <div>
+                <Card.Title class="group-hover:underline">Items</Card.Title>
+                <Card.Description
+                  >Browse equipment, consumables, and treasures</Card.Description
+                >
+              </div>
+            </div>
+          </Card.Header>
+          <Card.Content>
+            <div
+              class="flex items-center text-sm text-muted-foreground group-hover:text-foreground transition-colors"
+            >
+              Browse all items
+              <ArrowRight class="ml-2 h-4 w-4" />
+            </div>
+          </Card.Content>
+        </Card.Root>
+      </a>
+
+      <a href="/zones" class="block group">
+        <Card.Root
+          class="h-full transition-colors hover:bg-muted/50 bg-muted/30"
+        >
+          <Card.Header>
+            <div class="flex items-center gap-3">
+              <div class="p-2 rounded-lg bg-emerald-500/10">
+                <MapPin class="h-6 w-6 text-emerald-500" />
+              </div>
+              <div>
+                <Card.Title class="group-hover:underline">Zones</Card.Title>
+                <Card.Description
+                  >Explore overworld areas and dungeons</Card.Description
+                >
+              </div>
+            </div>
+          </Card.Header>
+          <Card.Content>
+            <div
+              class="flex items-center text-sm text-muted-foreground group-hover:text-foreground transition-colors"
+            >
+              Browse all zones
+              <ArrowRight class="ml-2 h-4 w-4" />
+            </div>
+          </Card.Content>
+        </Card.Root>
+      </a>
+    </div>
+  </section>
+
+  <!-- Coming Soon Sections -->
+  <section class="space-y-6">
+    <h2 class="text-2xl font-semibold text-muted-foreground">Coming Soon</h2>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <Card.Root class="opacity-50 bg-muted/30">
+        <Card.Header>
+          <div class="flex flex-col items-center text-center gap-2">
+            <div class="p-2 rounded-lg bg-red-500/10">
+              <Skull class="h-5 w-5 text-red-500" />
+            </div>
+            <Card.Title class="text-base">Monsters</Card.Title>
+            <Card.Description class="text-xs"
+              >Creatures and bosses</Card.Description
+            >
+          </div>
+        </Card.Header>
+      </Card.Root>
+
+      <Card.Root class="opacity-50 bg-muted/30">
+        <Card.Header>
+          <div class="flex flex-col items-center text-center gap-2">
+            <div class="p-2 rounded-lg bg-blue-500/10">
+              <Users class="h-5 w-5 text-blue-500" />
+            </div>
+            <Card.Title class="text-base">NPCs</Card.Title>
+            <Card.Description class="text-xs"
+              >Vendors and trainers</Card.Description
+            >
+          </div>
+        </Card.Header>
+      </Card.Root>
+
+      <Card.Root class="opacity-50 bg-muted/30">
+        <Card.Header>
+          <div class="flex flex-col items-center text-center gap-2">
+            <div class="p-2 rounded-lg bg-orange-500/10">
+              <Scroll class="h-5 w-5 text-orange-500" />
+            </div>
+            <Card.Title class="text-base">Quests</Card.Title>
+            <Card.Description class="text-xs"
+              >Adventures and objectives</Card.Description
+            >
+          </div>
+        </Card.Header>
+      </Card.Root>
+
+      <Card.Root class="opacity-50 bg-muted/30">
+        <Card.Header>
+          <div class="flex flex-col items-center text-center gap-2">
+            <div class="p-2 rounded-lg bg-purple-500/10">
+              <Zap class="h-5 w-5 text-purple-500" />
+            </div>
+            <Card.Title class="text-base">Skills</Card.Title>
+            <Card.Description class="text-xs"
+              >Abilities and spells</Card.Description
+            >
+          </div>
+        </Card.Header>
+      </Card.Root>
+    </div>
+  </section>
 </div>
