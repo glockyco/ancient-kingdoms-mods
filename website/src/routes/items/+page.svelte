@@ -5,6 +5,7 @@
   import { SvelteURLSearchParams } from "svelte/reactivity";
   import * as Card from "$lib/components/ui/card";
   import { Button } from "$lib/components/ui/button";
+  import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import { PAGINATION } from "$lib/config";
   import { formatItemType } from "$lib/utils/format";
   import type { PageData } from "./$types";
@@ -228,7 +229,9 @@
   </div>
 {/if}
 
-<div class="container mx-auto p-8 space-y-8">
+<div class="container mx-auto p-8 space-y-6">
+  <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Items" }]} />
+
   <div>
     <h1 class="text-4xl font-bold mb-2">Items</h1>
     <p class="text-muted-foreground">

@@ -6,6 +6,7 @@
     type Row,
     type Header,
   } from "$lib/components/ui/data-table";
+  import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import type { ZoneListView } from "$lib/types/zones";
   import Crown from "@lucide/svelte/icons/crown";
   import Shield from "@lucide/svelte/icons/shield";
@@ -195,8 +196,10 @@
   <title>Zones - Ancient Kingdoms Compendium</title>
 </svelte:head>
 
-<div class="container mx-auto p-8">
-  <h1 class="mb-6 text-3xl font-bold">Zones</h1>
+<div class="container mx-auto p-8 space-y-6">
+  <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Zones" }]} />
+
+  <h1 class="text-3xl font-bold">Zones</h1>
 
   <DataTable
     data={data.zones}
