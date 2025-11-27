@@ -223,6 +223,7 @@ public class MonsterExporter : BaseExporter
 
     private string GetMonsterZoneId(Il2Cpp.Monster monster)
     {
-        return GetZoneIdFromByte((byte)monster.idZone);
+        // Use position-based zone detection (checks zone trigger colliders)
+        return GetZoneIdFromPosition(monster.transform.position);
     }
 }
