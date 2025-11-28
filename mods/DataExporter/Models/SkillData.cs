@@ -32,12 +32,12 @@ public class SkillData
     public string required_weapon_category { get; set; }
     public string required_weapon_category2 { get; set; }
 
-    // Costs and timing
-    public int mana_cost { get; set; }
-    public int energy_cost { get; set; }
-    public float cooldown { get; set; }
-    public float cast_time { get; set; }
-    public float cast_range { get; set; }
+    // Costs and timing (Linear values for per-level calculation)
+    public LinearStatBonus mana_cost { get; set; }
+    public LinearStatBonus energy_cost { get; set; }
+    public LinearStatBonusFloat cooldown { get; set; }
+    public LinearStatBonusFloat cast_time { get; set; }
+    public LinearStatBonusFloat cast_range { get; set; }
 
     // Behavior flags
     public bool learn_default { get; set; }
@@ -52,7 +52,7 @@ public class SkillData
 
     // UI
     public string skill_aggro_message { get; set; }
-    public string tooltip { get; set; }
+    public string tooltip_template { get; set; }  // Raw tooltip with placeholders like {DAMAGE}, {MANACOSTS}
     public string icon_path { get; set; }
 
     // === DamageSkill fields (when skill_type contains "damage") ===

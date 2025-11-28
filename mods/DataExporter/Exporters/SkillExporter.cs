@@ -50,11 +50,31 @@ public class SkillExporter : BaseExporter
                 prerequisite2_level = skill.predecessorLevel2,
                 required_weapon_category = skill.requiredWeaponCategory ?? "",
                 required_weapon_category2 = skill.requiredWeaponCategory2 ?? "",
-                mana_cost = skill.manaCosts.Get(1),
-                energy_cost = skill.energyCosts.Get(1),
-                cooldown = skill.cooldown.Get(1),
-                cast_time = skill.castTime.Get(1),
-                cast_range = skill.castRange.Get(1),
+                mana_cost = new LinearStatBonus
+                {
+                    base_value = skill.manaCosts.baseValue,
+                    bonus_per_level = skill.manaCosts.bonusPerLevel
+                },
+                energy_cost = new LinearStatBonus
+                {
+                    base_value = skill.energyCosts.baseValue,
+                    bonus_per_level = skill.energyCosts.bonusPerLevel
+                },
+                cooldown = new LinearStatBonusFloat
+                {
+                    base_value = skill.cooldown.baseValue,
+                    bonus_per_level = skill.cooldown.bonusPerLevel
+                },
+                cast_time = new LinearStatBonusFloat
+                {
+                    base_value = skill.castTime.baseValue,
+                    bonus_per_level = skill.castTime.bonusPerLevel
+                },
+                cast_range = new LinearStatBonusFloat
+                {
+                    base_value = skill.castRange.baseValue,
+                    bonus_per_level = skill.castRange.bonusPerLevel
+                },
                 learn_default = skill.learnDefault,
                 show_cast_bar = skill.showCastBar,
                 cancel_cast_if_target_died = skill.cancelCastIfTargetDied,
@@ -65,7 +85,7 @@ public class SkillExporter : BaseExporter
                 is_pet_skill = skill.isPetSkill,
                 followup_default_attack = skill.followupDefaultAttack,
                 skill_aggro_message = skill.skillAggroMessage ?? "",
-                tooltip = skill.ToolTip(1, false, false) ?? "",
+                tooltip_template = skill.toolTip ?? "",
                 icon_path = skill.image != null ? skill.image.name : null
             };
 
