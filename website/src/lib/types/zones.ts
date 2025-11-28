@@ -29,6 +29,7 @@ export interface ZoneMonster {
   gold_min: number | null;
   gold_max: number | null;
   drop_count: number;
+  spawn_count: number;
   position_x: number | null;
   position_y: number | null;
   position_z: number | null;

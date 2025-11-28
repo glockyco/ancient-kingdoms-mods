@@ -58,8 +58,8 @@ export const load: PageServerLoad = ({ params }): ZoneDetailData => {
     throw error(404, `Zone not found: ${params.id}`);
   }
 
-  // Get monsters in this zone with health, drop count, and coordinates
-  const monstersRaw = db
+  // Get monsters in this zone with health, drop count, spawn count, and sample coordinates
+  const monsters = db
     .prepare(
       `
     SELECT
@@ -73,37 +73,37 @@ export const load: PageServerLoad = ({ params }): ZoneDetailData => {
       m.gold_min,
       m.gold_max,
       m.drops,
-      ms.position_x,
-      ms.position_y,
-      ms.position_z
+      COUNT(ms.id) as spawn_count,
+      MIN(ms.position_x) as position_x,
+      MIN(ms.position_y) as position_y,
+      MIN(ms.position_z) as position_z
     FROM monsters m
     JOIN monster_spawns ms ON ms.monster_id = m.id
     WHERE ms.zone_id = ?
+    GROUP BY m.id
     ORDER BY m.level DESC, m.name
   `,
     )
-    .all(params.id) as Array<{
-    id: string;
-    name: string;
-    level: number;
-    health: number;
-    is_boss: boolean;
-    is_elite: boolean;
-    type_name: string | null;
-    gold_min: number | null;
-    gold_max: number | null;
-    drops: string | null;
-    position_x: number | null;
-    position_y: number | null;
-    position_z: number | null;
-  }>;
-
-  // Deduplicate monsters by id (keep first spawn's coordinates)
-  const monsterMap = new Map<string, ZoneMonster>();
-  for (const m of monstersRaw) {
-    if (!monsterMap.has(m.id)) {
+    .all(params.id)
+    .map((row) => {
+      const m = row as {
+        id: string;
+        name: string;
+        level: number;
+        health: number;
+        is_boss: boolean;
+        is_elite: boolean;
+        type_name: string | null;
+        gold_min: number | null;
+        gold_max: number | null;
+        drops: string | null;
+        spawn_count: number;
+        position_x: number | null;
+        position_y: number | null;
+        position_z: number | null;
+      };
       const drops = m.drops ? JSON.parse(m.drops) : [];
-      monsterMap.set(m.id, {
+      return {
         id: m.id,
         name: m.name,
         level: m.level,
@@ -114,13 +114,12 @@ export const load: PageServerLoad = ({ params }): ZoneDetailData => {
         gold_min: m.gold_min,
         gold_max: m.gold_max,
         drop_count: drops.length,
+        spawn_count: m.spawn_count,
         position_x: m.position_x,
         position_y: m.position_y,
         position_z: m.position_z,
-      });
-    }
-  }
-  const monsters = Array.from(monsterMap.values());
+      } as ZoneMonster;
+    });
 
   // Get NPCs in this zone with coordinates
   const npcsRaw = db

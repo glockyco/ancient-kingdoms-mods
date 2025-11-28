@@ -64,6 +64,11 @@
       size: 150,
     },
     {
+      accessorKey: "spawn_count",
+      header: "Spawns",
+      size: 150,
+    },
+    {
       accessorKey: "drop_count",
       header: "Drops",
       size: 150,
@@ -182,6 +187,8 @@
     <span class="ml-auto tabular-nums">
       {row.original.health.toLocaleString()}
     </span>
+  {:else if cell.column.id === "spawn_count"}
+    <span class="ml-auto">{row.original.spawn_count}</span>
   {:else if cell.column.id === "drop_count"}
     <span class="ml-auto">{row.original.drop_count}</span>
   {:else}
@@ -194,7 +201,7 @@
 }: {
   header: Header<ZoneMonster, unknown>;
 })}
-  {#if header.id === "level" || header.id === "health" || header.id === "drop_count"}
+  {#if header.id === "level" || header.id === "health" || header.id === "spawn_count" || header.id === "drop_count"}
     <span class="ml-auto">{header.column.columnDef.header}</span>
   {:else}
     {header.column.columnDef.header}
