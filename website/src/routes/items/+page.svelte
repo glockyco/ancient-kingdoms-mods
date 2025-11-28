@@ -1,215 +1,70 @@
 <script lang="ts">
-  import { page } from "$app/stores";
-  import { resolve } from "$app/paths";
-  import { onMount } from "svelte";
-  import { SvelteURLSearchParams } from "svelte/reactivity";
-  import * as Card from "$lib/components/ui/card";
-  import * as Pagination from "$lib/components/ui/pagination";
-  import { Button } from "$lib/components/ui/button";
+  import {
+    DataTable,
+    DataTableFacetedFilter,
+    type ColumnDef,
+    type Cell,
+    type Row,
+    type Header,
+    type TanstackTable,
+  } from "$lib/components/ui/data-table";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
-  import { PAGINATION } from "$lib/config";
   import { formatItemType } from "$lib/utils/format";
-  import type { PageData } from "./$types";
+  import type { ItemListView } from "$lib/types/items";
 
-  let { data }: { data: PageData } = $props();
+  let { data } = $props();
 
-  const STORAGE_KEY = "items-filters";
+  const PAGE_SIZE = 20;
 
-  // Local state is source of truth
-  let isHydrated = $state(false);
-  let qualityFilter = $state<number[]>([]);
-  let typeFilter = $state<string[]>([]);
-  let searchFilter = $state("");
-  let currentPage = $state(1);
+  // Class display config: abbreviation and color (muted versions of game colors)
+  const CLASS_CONFIG: Record<string, { abbrev: string; color: string }> = {
+    All: { abbrev: "All", color: "#6b6b6b" },
+    Cleric: { abbrev: "CLR", color: "#b8993a" },
+    Druid: { abbrev: "DRU", color: "#4a8f58" },
+    Ranger: { abbrev: "RNG", color: "#7a3a16" },
+    Rogue: { abbrev: "ROG", color: "#74498c" },
+    Warrior: { abbrev: "WAR", color: "#702a21" },
+    Wizard: { abbrev: "WIZ", color: "#2a5073" },
+  };
 
-  // Derived state
-  const hasActiveFilters = $derived(
-    qualityFilter.length > 0 || typeFilter.length > 0 || !!searchFilter,
-  );
-
-  // Sync filters to URL and localStorage
-  function syncFilters() {
-    if (!isHydrated) return;
-
-    const params = new SvelteURLSearchParams();
-
-    if (qualityFilter.length > 0)
-      params.set("quality", qualityFilter.join(","));
-    if (typeFilter.length > 0) params.set("type", typeFilter.join(","));
-    if (searchFilter) params.set("search", searchFilter);
-    if (currentPage > 1) params.set("page", String(currentPage));
-
-    // Update URL
-    const queryString = params.toString();
-    const newUrl = queryString
-      ? `${window.location.pathname}?${queryString}`
-      : window.location.pathname;
-    window.history.replaceState(history.state, "", newUrl);
-
-    // Update localStorage (excluding page)
-    try {
-      localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify({
-          quality: qualityFilter,
-          itemType: typeFilter,
-          search: searchFilter,
-        }),
-      );
-    } catch {
-      // Ignore errors
-    }
-  }
-
-  // Load from URL or localStorage
-  onMount(() => {
-    const urlQuality = $page.url.searchParams.get("quality");
-    const urlType = $page.url.searchParams.get("type");
-    const urlSearch = $page.url.searchParams.get("search");
-    const urlPage = $page.url.searchParams.get("page");
-
-    if (urlQuality || urlType || urlSearch || urlPage) {
-      // URL has params - use them
-      qualityFilter = urlQuality ? urlQuality.split(",").map(Number) : [];
-      typeFilter = urlType ? urlType.split(",") : [];
-      searchFilter = urlSearch || "";
-      currentPage = urlPage ? Number(urlPage) : 1;
-    } else {
-      // No URL params - try localStorage
-      try {
-        const stored = localStorage.getItem(STORAGE_KEY);
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          qualityFilter = parsed.quality || [];
-          typeFilter = parsed.itemType || [];
-          searchFilter = parsed.search || "";
-        }
-      } catch {
-        // Ignore errors
-      }
-    }
-
-    isHydrated = true;
-  });
-
-  // Sync whenever filters change
-  $effect(() => {
-    syncFilters();
-  });
-
+  // Quality display names and colors
   const qualities = [
-    { name: "Common", color: "bg-quality-0" },
-    { name: "Uncommon", color: "bg-quality-1" },
-    { name: "Rare", color: "bg-quality-2" },
-    { name: "Epic", color: "bg-quality-3" },
-    { name: "Legendary", color: "bg-quality-4" },
+    { name: "Common", value: 0 },
+    { name: "Uncommon", value: 1 },
+    { name: "Rare", value: 2 },
+    { name: "Epic", value: 3 },
+    { name: "Legendary", value: 4 },
   ];
 
-  // Helper to check if item name matches search
-  function matchesSearch(itemName: string): boolean {
-    if (!searchFilter) return true;
-    return itemName.toLowerCase().includes(searchFilter.toLowerCase());
-  }
+  // Generate notes for an item based on its type
+  function getNotes(item: ItemListView): string {
+    const type = item.item_type;
 
-  // Helper to check if item matches all filters
-  function matchesFilters(
-    item: { quality: number; item_type: string; name: string },
-    options: { includeQuality?: boolean; includeType?: boolean } = {},
-  ): boolean {
-    const { includeQuality = true, includeType = true } = options;
-
-    if (
-      includeQuality &&
-      qualityFilter.length > 0 &&
-      !qualityFilter.includes(item.quality)
-    ) {
-      return false;
+    // Equipment/weapons: show stat count (pre-computed in SQL)
+    if (type === "equipment" || type === "weapon") {
+      if (item.stat_count > 0) return `${item.stat_count} stats`;
+      return "-";
     }
-    if (
-      includeType &&
-      typeFilter.length > 0 &&
-      !typeFilter.includes(item.item_type)
-    ) {
-      return false;
+
+    // Mounts: show movement speed
+    if (type === "mount" && item.mount_speed > 0) {
+      return `${item.mount_speed} speed`;
     }
-    if (!matchesSearch(item.name)) {
-      return false;
+
+    // Potions: show tier from alchemy recipe level
+    if (type === "potion" && item.alchemy_recipe_level_required != null) {
+      return `Tier ${item.alchemy_recipe_level_required}`;
     }
-    return true;
-  }
 
-  // Filter items
-  const filteredItems = $derived(
-    data.items.filter((item) => matchesFilters(item)),
-  );
-
-  // Calculate quality counts
-  const qualityCounts = $derived(
-    qualities.map((_, quality) => {
-      const count = data.items.filter(
-        (item) =>
-          matchesFilters(item, { includeQuality: false }) &&
-          item.quality === quality,
-      ).length;
-      return { quality, count };
-    }),
-  );
-
-  // Calculate type counts
-  const typeCounts = $derived.by(() => {
-    const allTypes = Array.from(
-      new Set(data.items.map((item) => item.item_type)),
-    ).sort();
-    return allTypes.map((type) => {
-      const count = data.items.filter(
-        (item) =>
-          matchesFilters(item, { includeType: false }) &&
-          item.item_type === type,
-      ).length;
-      return { type, count };
-    });
-  });
-
-  // Pagination
-  const totalPages = $derived(
-    Math.ceil(filteredItems.length / PAGINATION.PAGE_SIZE),
-  );
-  const paginatedItems = $derived(
-    filteredItems.slice(
-      (currentPage - 1) * PAGINATION.PAGE_SIZE,
-      currentPage * PAGINATION.PAGE_SIZE,
-    ),
-  );
-
-  // Always use paginated items (full list is too large for no-JS)
-  const displayItems = $derived(paginatedItems);
-
-  function toggleQuality(quality: number) {
-    qualityFilter = qualityFilter.includes(quality)
-      ? qualityFilter.filter((q) => q !== quality)
-      : [...qualityFilter, quality];
-    currentPage = 1; // Reset to page 1
-  }
-
-  function toggleType(type: string) {
-    typeFilter = typeFilter.includes(type)
-      ? typeFilter.filter((t) => t !== type)
-      : [...typeFilter, type];
-    currentPage = 1; // Reset to page 1
-  }
-
-  function clearFilters() {
-    qualityFilter = [];
-    typeFilter = [];
-    searchFilter = "";
-    currentPage = 1;
-    try {
-      localStorage.removeItem(STORAGE_KEY);
-    } catch {
-      // Ignore errors
+    // Backpacks: show capacity
+    if (type === "backpack" && item.backpack_slots > 0) {
+      return `${item.backpack_slots} slots`;
     }
+
+    return "-";
   }
 
+  // Parse class required JSON
   function parseClassRequired(classJson: string): string[] {
     try {
       const parsed = JSON.parse(classJson);
@@ -218,211 +73,259 @@
       return [];
     }
   }
+
+  // Get unique item types for filter
+  const uniqueTypes = $derived(
+    Array.from(new Set(data.items.map((item) => item.item_type))).sort(),
+  );
+
+  // Get unique slots for filter
+  const uniqueSlots = $derived(
+    Array.from(
+      new Set(data.items.map((item) => item.slot).filter((s) => s != null)),
+    ).sort() as string[],
+  );
+
+  // Get unique classes for filter
+  const uniqueClasses = $derived(
+    Array.from(
+      new Set(
+        data.items.flatMap((item) => parseClassRequired(item.class_required)),
+      ),
+    ).sort(),
+  );
+
+  type ItemRow = ItemListView;
+
+  const columns: ColumnDef<ItemRow>[] = [
+    {
+      accessorKey: "quality",
+      header: "Quality",
+      size: 120,
+      filterFn: (row, columnId, filterValue: string[]) => {
+        const value = row.getValue(columnId) as number;
+        if (!filterValue || filterValue.length === 0) return true;
+        return filterValue.includes(String(value));
+      },
+    },
+    {
+      accessorKey: "name",
+      header: "Name",
+      enableHiding: false,
+      minSize: 350,
+    },
+    {
+      accessorKey: "item_level",
+      header: "iLvl",
+      size: 150,
+    },
+    {
+      accessorKey: "level_required",
+      header: "Level",
+      size: 100,
+    },
+    {
+      accessorKey: "slot",
+      header: "Slot",
+      size: 160,
+      filterFn: (row, columnId, filterValue: string[]) => {
+        const value = row.getValue(columnId) as string | null;
+        if (!filterValue || filterValue.length === 0) return true;
+        return value != null && filterValue.includes(value);
+      },
+    },
+    {
+      id: "class",
+      header: "Class",
+      size: 240,
+      enableSorting: false,
+      accessorFn: (row) => parseClassRequired(row.class_required).join(", "),
+      filterFn: (row, columnId, filterValue: string[]) => {
+        const classes = parseClassRequired(row.original.class_required);
+        if (!filterValue || filterValue.length === 0) return true;
+        return classes.some((c) => filterValue.includes(c));
+      },
+    },
+    {
+      id: "notes",
+      header: "Notes",
+      size: 150,
+      enableSorting: false,
+      accessorFn: (row) => getNotes(row),
+    },
+    // Hidden - for filtering only
+    {
+      accessorKey: "item_type",
+      header: "Type",
+      enableHiding: false,
+      filterFn: (row, columnId, filterValue: string[]) => {
+        const value = row.getValue(columnId) as string;
+        if (!filterValue || filterValue.length === 0) return true;
+        return filterValue.includes(value);
+      },
+    },
+  ];
+
+  const columnLabels: Record<string, string> = {
+    quality: "Quality",
+    name: "Name",
+    item_level: "Item Level",
+    level_required: "Level",
+    slot: "Slot",
+    class: "Class",
+    notes: "Notes",
+    item_type: "Type",
+  };
 </script>
 
-{#if !isHydrated}
-  <div
-    class="loading-overlay fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center"
-  >
-    <div class="text-center">
-      <div
-        class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"
-      ></div>
-      <p class="mt-2 text-sm text-muted-foreground">Loading...</p>
-    </div>
-  </div>
-{/if}
+{#snippet renderHeader({ header }: { header: Header<ItemRow, unknown> })}
+  {#if header.id === "item_level" || header.id === "level_required"}
+    <span class="ml-auto">{columnLabels[header.id] ?? header.id}</span>
+  {:else if header.id === "item_type"}
+    <span></span>
+  {:else}
+    {columnLabels[header.id] ?? header.id}
+  {/if}
+{/snippet}
+
+{#snippet renderCell({
+  cell,
+  row,
+}: {
+  cell: Cell<ItemRow, unknown>;
+  row: Row<ItemRow>;
+})}
+  {#if cell.column.id === "quality"}
+    {@const q = row.original.quality}
+    <span class="px-2 py-0.5 rounded text-xs font-medium bg-quality-{q}">
+      {qualities[q]?.name ?? `Q${q}`}
+    </span>
+  {:else if cell.column.id === "name"}
+    <a
+      href="/items/{row.original.id}"
+      class="text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap"
+    >
+      {row.original.name}
+    </a>
+  {:else if cell.column.id === "item_level"}
+    <span class="ml-auto">{row.original.item_level || "-"}</span>
+  {:else if cell.column.id === "level_required"}
+    <span class="ml-auto">{row.original.level_required || "-"}</span>
+  {:else if cell.column.id === "slot"}
+    <span class={row.original.slot ? "" : "text-muted-foreground"}
+      >{row.original.slot || "-"}</span
+    >
+  {:else if cell.column.id === "class"}
+    {@const classes = parseClassRequired(row.original.class_required)
+      .filter((c) => c !== "All")
+      .sort()}
+    {#if classes.length > 0}
+      <span class="flex flex-wrap gap-1">
+        {#each classes as cls (cls)}
+          {@const config = CLASS_CONFIG[cls] ?? {
+            abbrev: cls,
+            color: "#6b6b6b",
+          }}
+          <span
+            class="px-1.5 py-0.5 rounded text-xs font-medium text-white"
+            style="background-color: {config.color}"
+          >
+            {config.abbrev}
+          </span>
+        {/each}
+      </span>
+    {:else}
+      <span class="text-muted-foreground">-</span>
+    {/if}
+  {:else if cell.column.id === "notes"}
+    {@const notes = getNotes(row.original)}
+    <span class={notes === "-" ? "text-muted-foreground" : ""}>{notes}</span>
+  {:else if cell.column.id === "item_type"}
+    <!-- Hidden filter column -->
+  {:else}
+    {cell.getValue()}
+  {/if}
+{/snippet}
+
+{#snippet renderToolbar({ table }: { table: TanstackTable<ItemRow> })}
+  {@const qualityCol = table.getColumn("quality")}
+  {@const typeCol = table.getColumn("item_type")}
+  {@const slotCol = table.getColumn("slot")}
+  {@const classCol = table.getColumn("class")}
+  {#if qualityCol}
+    <DataTableFacetedFilter
+      column={qualityCol}
+      title="Quality"
+      options={qualities.map((q) => ({
+        label: q.name,
+        value: String(q.value),
+      }))}
+    />
+  {/if}
+  {#if typeCol}
+    <DataTableFacetedFilter
+      column={typeCol}
+      title="Type"
+      options={uniqueTypes.map((t) => ({
+        label: formatItemType(t),
+        value: t,
+      }))}
+    />
+  {/if}
+  {#if slotCol}
+    <DataTableFacetedFilter
+      column={slotCol}
+      title="Slot"
+      options={uniqueSlots.map((s) => ({
+        label: s,
+        value: s,
+      }))}
+    />
+  {/if}
+  {#if classCol}
+    <DataTableFacetedFilter
+      column={classCol}
+      title="Class"
+      options={uniqueClasses.map((c) => ({
+        label: c,
+        value: c,
+      }))}
+    />
+  {/if}
+{/snippet}
+
+<svelte:head>
+  <title>Items - Ancient Kingdoms Compendium</title>
+  <meta
+    name="description"
+    content="Browse all items in Ancient Kingdoms. Filter by quality and type. View stats, level requirements, and equipment slots."
+  />
+</svelte:head>
 
 <div class="container mx-auto p-8 space-y-6">
   <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Items" }]} />
 
-  <div>
-    <h1 class="text-4xl font-bold mb-2">Items</h1>
-    <p class="text-muted-foreground">
-      Showing {paginatedItems.length} of {filteredItems.length} items
-      {#if filteredItems.length !== data.items.length}
-        (filtered from {data.items.length} total)
-      {/if}
-    </p>
-  </div>
+  <h1 class="text-3xl font-bold">Items</h1>
 
-  <!-- Filters -->
-  <Card.Root class="bg-muted/30">
-    <Card.Header>
-      <div class="flex items-center justify-between">
-        <Card.Title>Filters</Card.Title>
-        <Button
-          variant="outline"
-          size="sm"
-          class={!hasActiveFilters ? "invisible" : ""}
-          onclick={clearFilters}
-        >
-          Clear Filters
-        </Button>
-      </div>
-    </Card.Header>
-    <Card.Content class="space-y-4">
-      <!-- Search Filter -->
-      <div>
-        <label for="search" class="text-sm font-medium mb-2 block">Search</label
-        >
-        <input
-          id="search"
-          type="text"
-          placeholder="Search items by name..."
-          bind:value={searchFilter}
-          oninput={() => (currentPage = 1)}
-          class="w-full px-3 py-2 rounded-md border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-        />
-      </div>
-
-      <!-- Quality Filter -->
-      <div>
-        <div class="text-sm font-medium mb-2">Quality</div>
-        <div class="grid grid-cols-[repeat(auto-fit,minmax(140px,1fr))] gap-2">
-          {#each qualityCounts as { quality, count } (quality)}
-            <button
-              type="button"
-              class="px-3 py-1 rounded text-sm font-medium transition-all border-2 flex justify-between items-center {qualityFilter.includes(
-                quality,
-              )
-                ? `${qualities[quality].color} border-foreground`
-                : 'bg-muted border-transparent'} {count === 0
-                ? 'opacity-40'
-                : ''}"
-              onclick={() => toggleQuality(quality)}
-            >
-              <span>{qualities[quality].name}</span>
-              <span class="font-mono">({count})</span>
-            </button>
-          {/each}
-        </div>
-      </div>
-
-      <!-- Item Type Filter -->
-      <div>
-        <div class="text-sm font-medium mb-2">Type</div>
-        <div class="grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-2">
-          {#each typeCounts as { type, count } (type)}
-            <button
-              type="button"
-              class="px-3 py-1 rounded text-sm font-medium transition-all border-2 flex justify-between items-center {typeFilter.includes(
-                type,
-              )
-                ? 'bg-primary text-primary-foreground border-primary'
-                : 'bg-muted border-transparent'} {count === 0
-                ? 'opacity-40'
-                : ''}"
-              onclick={() => toggleType(type)}
-            >
-              <span>{formatItemType(type)}</span>
-              <span class="font-mono">({count})</span>
-            </button>
-          {/each}
-        </div>
-      </div>
-    </Card.Content>
-  </Card.Root>
-
-  <!-- Items Grid -->
-  <div
-    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
-  >
-    {#each displayItems as item (item.id)}
-      {@const classRequired = parseClassRequired(item.class_required)}
-      <a href={resolve("/items/[id]", { id: item.id })} class="block">
-        <Card.Root class="h-full hover:border-primary transition-colors">
-          <Card.Header>
-            <div class="flex items-start justify-between gap-2">
-              <Card.Title class="text-lg">{item.name}</Card.Title>
-              <span
-                class="px-2 py-1 rounded text-xs font-medium {qualities[
-                  item.quality
-                ].color} flex-shrink-0"
-              >
-                Q{item.quality}
-              </span>
-            </div>
-            <Card.Description>
-              {formatItemType(item.item_type)}
-              {#if item.alchemy_recipe_level_required != null}
-                · Tier {item.alchemy_recipe_level_required}
-              {:else if item.level_required > 0}
-                · Level {item.level_required}
-              {/if}
-            </Card.Description>
-          </Card.Header>
-          <Card.Content class="space-y-2">
-            {#if item.slot}
-              <div class="text-sm">
-                <span class="text-muted-foreground">Slot:</span>
-                <span class="font-medium">{item.slot}</span>
-              </div>
-            {/if}
-
-            {#if item.backpack_slots > 0}
-              <div class="text-sm">
-                <span class="text-muted-foreground">Capacity:</span>
-                <span class="font-medium"
-                  >{item.backpack_slots} slot{item.backpack_slots !== 1
-                    ? "s"
-                    : ""}</span
-                >
-              </div>
-            {/if}
-
-            {#if classRequired.length > 0}
-              <div class="text-sm">
-                <span class="text-muted-foreground">Class:</span>
-                <span class="font-medium">{classRequired.join(", ")}</span>
-              </div>
-            {/if}
-
-            {#if item.stats_count > 0}
-              <div class="text-sm text-muted-foreground">
-                {item.stats_count} stat{item.stats_count !== 1 ? "s" : ""}
-              </div>
-            {/if}
-          </Card.Content>
-        </Card.Root>
-      </a>
-    {/each}
-  </div>
-
-  <!-- Pagination -->
-  {#if totalPages > 1}
-    <div>
-      <Pagination.Root
-        count={filteredItems.length}
-        perPage={PAGINATION.PAGE_SIZE}
-        page={currentPage}
-        onPageChange={(page) => (currentPage = page)}
-      >
-        {#snippet children({ pages })}
-          <Pagination.Content>
-            <Pagination.Item>
-              <Pagination.PrevButton />
-            </Pagination.Item>
-            {#each pages as page (page.key)}
-              {#if page.type === "ellipsis"}
-                <Pagination.Item>
-                  <Pagination.Ellipsis />
-                </Pagination.Item>
-              {:else}
-                <Pagination.Item>
-                  <Pagination.Link
-                    {page}
-                    isActive={currentPage === page.value}
-                  />
-                </Pagination.Item>
-              {/if}
-            {/each}
-            <Pagination.Item>
-              <Pagination.NextButton />
-            </Pagination.Item>
-          </Pagination.Content>
-        {/snippet}
-      </Pagination.Root>
-    </div>
-  {/if}
+  <DataTable
+    data={data.items}
+    {columns}
+    {columnLabels}
+    {renderCell}
+    {renderHeader}
+    {renderToolbar}
+    pageSize={PAGE_SIZE}
+    initialSorting={[{ id: "name", desc: false }]}
+    initialColumnVisibility={{
+      item_type: false,
+    }}
+    urlKey="items"
+    showPagination={true}
+    showSearch={true}
+    showColumnToggle={true}
+    zebraStripe={true}
+    paginateStaticHtml={true}
+    searchPlaceholder="Search items..."
+    class="bg-muted/30"
+  />
 </div>

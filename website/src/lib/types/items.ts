@@ -9,11 +9,13 @@ export interface ItemListView {
   item_type: string;
   quality: number;
   level_required: number;
+  item_level: number;
   slot: string | null;
   backpack_slots: number;
   class_required: string;
-  stats_count: number;
+  stat_count: number;
   alchemy_recipe_level_required: number | null;
+  mount_speed: number;
 }
 
 /**
