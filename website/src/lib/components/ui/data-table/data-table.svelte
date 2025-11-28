@@ -30,6 +30,7 @@
   import ChevronDown from "@lucide/svelte/icons/chevron-down";
   import ChevronsUpDown from "@lucide/svelte/icons/chevrons-up-down";
   import Settings2 from "@lucide/svelte/icons/settings-2";
+  import RotateCcw from "@lucide/svelte/icons/rotate-ccw";
   import type { Snippet } from "svelte";
 
   type Props = {
@@ -37,6 +38,7 @@
     columns: ColumnDef<TData, unknown>[];
     pageSize?: number;
     initialSorting?: SortingState;
+    initialColumnVisibility?: VisibilityState;
     urlKey?: string;
     showPagination?: boolean;
     showSearch?: boolean;
@@ -44,6 +46,7 @@
     searchPlaceholder?: string;
     columnLabels?: Record<string, string>;
     zebraStripe?: boolean;
+    paginateStaticHtml?: boolean;
     class?: string;
     renderCell?: Snippet<[{ cell: Cell<TData, unknown>; row: Row<TData> }]>;
     renderHeader?: Snippet<[{ header: Header<TData, unknown> }]>;
@@ -55,6 +58,7 @@
     columns,
     pageSize = 10,
     initialSorting = [],
+    initialColumnVisibility = {},
     urlKey,
     showPagination = true,
     showSearch = false,
@@ -62,6 +66,7 @@
     searchPlaceholder = "Search...",
     columnLabels = {},
     zebraStripe = false,
+    paginateStaticHtml = false,
     class: className,
     renderCell,
     renderHeader,
@@ -83,19 +88,145 @@
     pageSize,
   });
   let columnFilters = $state<ColumnFiltersState>([]);
-  let columnVisibility = $state<VisibilityState>({});
+  let columnVisibility = $state<VisibilityState>(initialColumnVisibility);
   let columnPinning = $state<ColumnPinningState>({ left: [], right: [] });
   let globalFilter = $state("");
   let isHydrated = $state(false);
 
+  // Track previous data reference to detect actual data changes
+  let previousData: TData[] | null = null;
+
   // Reset pagination when data changes (e.g., navigating to a different detail page)
+  // Skip on initial mount to allow URL restoration to set the page
   $effect(() => {
-    if (data) pagination = { pageIndex: 0, pageSize };
+    if (data && previousData !== null && data !== previousData) {
+      pagination = { pageIndex: 0, pageSize };
+    }
+    previousData = data;
   });
+
+  // Storage key for localStorage persistence
+  const storageKey = urlKey ? `table-state-${urlKey}` : null;
+  const STORAGE_PREFIX = "table-state-";
+  const MAX_AGE_DAYS = 30;
+  const MAX_ENTRIES = 100;
+
+  // State shape for localStorage
+  interface StoredState {
+    search?: string;
+    filters?: ColumnFiltersState;
+    visibility?: VisibilityState;
+    page?: number;
+    ts?: number; // timestamp for cleanup
+  }
+
+  // Clean up old table state entries from localStorage
+  function cleanupOldEntries() {
+    try {
+      const now = Date.now();
+      const maxAge = MAX_AGE_DAYS * 24 * 60 * 60 * 1000;
+      const entries: Array<{ key: string; ts: number }> = [];
+
+      // Collect all table-state entries
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key?.startsWith(STORAGE_PREFIX)) {
+          try {
+            const data = JSON.parse(
+              localStorage.getItem(key) || "{}",
+            ) as StoredState;
+            const ts = data.ts || 0;
+            entries.push({ key, ts });
+
+            // Remove entries older than MAX_AGE_DAYS
+            if (now - ts > maxAge) {
+              localStorage.removeItem(key);
+            }
+          } catch {
+            // Remove corrupted entries
+            localStorage.removeItem(key);
+          }
+        }
+      }
+
+      // If still too many entries, remove oldest ones
+      if (entries.length > MAX_ENTRIES) {
+        entries.sort((a, b) => a.ts - b.ts);
+        const toRemove = entries.slice(0, entries.length - MAX_ENTRIES);
+        for (const entry of toRemove) {
+          localStorage.removeItem(entry.key);
+        }
+      }
+    } catch {
+      // localStorage may be unavailable
+    }
+  }
+
+  // Save state to localStorage
+  function saveToStorage() {
+    if (!storageKey) return;
+    try {
+      const state: StoredState = {};
+      if (globalFilter) state.search = globalFilter;
+      if (columnFilters.length > 0) state.filters = columnFilters;
+
+      // Only store visibility diffs from initial
+      const visibilityDiff: VisibilityState = {};
+      for (const [id, visible] of Object.entries(columnVisibility)) {
+        if (visible !== (initialColumnVisibility[id] ?? true)) {
+          visibilityDiff[id] = visible;
+        }
+      }
+      if (Object.keys(visibilityDiff).length > 0)
+        state.visibility = visibilityDiff;
+
+      if (pagination.pageIndex > 0) state.page = pagination.pageIndex;
+
+      if (Object.keys(state).length > 0) {
+        state.ts = Date.now();
+        localStorage.setItem(storageKey, JSON.stringify(state));
+      } else {
+        localStorage.removeItem(storageKey);
+      }
+    } catch {
+      // localStorage may be unavailable
+    }
+  }
+
+  // Touch timestamp to keep entry alive on revisit
+  function touchStorage(state: StoredState) {
+    if (!storageKey) return;
+    try {
+      state.ts = Date.now();
+      localStorage.setItem(storageKey, JSON.stringify(state));
+    } catch {
+      // localStorage may be unavailable
+    }
+  }
+
+  // Load state from localStorage
+  function loadFromStorage(): StoredState | null {
+    if (!storageKey) return null;
+    try {
+      const stored = localStorage.getItem(storageKey);
+      if (stored) {
+        const state = JSON.parse(stored) as StoredState;
+        // Touch timestamp to keep entry alive
+        touchStorage(state);
+        return state;
+      }
+    } catch {
+      // localStorage may be unavailable or corrupted
+    }
+    return null;
+  }
 
   // URL-based state persistence using {urlKey}.{key} format
   function syncStateToUrl() {
     if (!urlKey || !isHydrated) return;
+
+    // Also save to localStorage
+    saveToStorage();
 
     const currentParams = new URL(window.location.href).searchParams;
     const newParams: string[] = [];
@@ -117,13 +248,25 @@
       );
     }
 
-    // Add hidden columns
+    // Add hidden columns (only those that differ from initial visibility)
     const hiddenCols = Object.entries(columnVisibility)
-      .filter(([, visible]) => !visible)
+      .filter(
+        ([id, visible]) => !visible && initialColumnVisibility[id] !== false,
+      )
       .map(([id]) => id);
+    // Add shown columns that were initially hidden
+    const shownCols = Object.keys(initialColumnVisibility).filter(
+      (id) =>
+        initialColumnVisibility[id] === false && columnVisibility[id] !== false,
+    );
     if (hiddenCols.length > 0) {
       newParams.push(
         `${encodeURIComponent(`${prefix}hide`)}=${encodeURIComponent(hiddenCols.join(","))}`,
+      );
+    }
+    if (shownCols.length > 0) {
+      newParams.push(
+        `${encodeURIComponent(`${prefix}show`)}=${encodeURIComponent(shownCols.join(","))}`,
       );
     }
 
@@ -138,6 +281,13 @@
       }
     }
 
+    // Add page number (only if not on first page)
+    if (pagination.pageIndex > 0) {
+      newParams.push(
+        `${encodeURIComponent(`${prefix}page`)}=${pagination.pageIndex + 1}`,
+      );
+    }
+
     const queryString = newParams.join("&");
     const newUrl = queryString
       ? `${window.location.pathname}?${queryString}`
@@ -150,10 +300,13 @@
       const prefix = `${urlKey}.`;
       const restoredFilters: ColumnFiltersState = [];
       const restoredVisibility: VisibilityState = {};
+      let hasUrlState = false;
+      let restoredPage: number | null = null;
 
       // Find all URL params that match our prefix
       $page.url.searchParams.forEach((value, key) => {
         if (key.startsWith(prefix)) {
+          hasUrlState = true;
           const paramKey = key.slice(prefix.length);
 
           if (paramKey === "search") {
@@ -162,6 +315,16 @@
             const hiddenCols = value.split(",").filter(Boolean);
             for (const col of hiddenCols) {
               restoredVisibility[col] = false;
+            }
+          } else if (paramKey === "show") {
+            const shownCols = value.split(",").filter(Boolean);
+            for (const col of shownCols) {
+              restoredVisibility[col] = true;
+            }
+          } else if (paramKey === "page") {
+            const pageNum = parseInt(value, 10);
+            if (!isNaN(pageNum) && pageNum > 0) {
+              restoredPage = pageNum - 1;
             }
           } else {
             const values = value.split(",").filter(Boolean);
@@ -172,11 +335,49 @@
         }
       });
 
-      if (restoredFilters.length > 0) {
-        columnFilters = restoredFilters;
+      // If URL has state, use it; otherwise fall back to localStorage
+      if (hasUrlState) {
+        if (restoredFilters.length > 0) {
+          columnFilters = restoredFilters;
+        }
+        if (Object.keys(restoredVisibility).length > 0) {
+          columnVisibility = {
+            ...initialColumnVisibility,
+            ...restoredVisibility,
+          };
+        }
+        if (restoredPage !== null) {
+          pagination = { ...pagination, pageIndex: restoredPage };
+        }
+      } else {
+        // No URL state, try localStorage
+        const stored = loadFromStorage();
+        if (stored) {
+          if (stored.search) globalFilter = stored.search;
+          if (stored.filters && stored.filters.length > 0) {
+            columnFilters = stored.filters;
+          }
+          if (stored.visibility && Object.keys(stored.visibility).length > 0) {
+            columnVisibility = {
+              ...initialColumnVisibility,
+              ...stored.visibility,
+            };
+          }
+          if (stored.page !== undefined && stored.page > 0) {
+            pagination = { ...pagination, pageIndex: stored.page };
+          }
+        }
       }
-      if (Object.keys(restoredVisibility).length > 0) {
-        columnVisibility = restoredVisibility;
+
+      // Periodically clean up old entries (roughly once per session)
+      const lastCleanup = localStorage.getItem("table-state-last-cleanup");
+      const now = Date.now();
+      if (
+        !lastCleanup ||
+        now - parseInt(lastCleanup, 10) > 24 * 60 * 60 * 1000
+      ) {
+        cleanupOldEntries();
+        localStorage.setItem("table-state-last-cleanup", String(now));
       }
     }
     isHydrated = true;
@@ -206,6 +407,7 @@
       onPaginationChange: (updater) => {
         pagination =
           typeof updater === "function" ? updater(pagination) : updater;
+        syncStateToUrl();
       },
       onColumnFiltersChange: (updater) => {
         columnFilters =
@@ -238,20 +440,58 @@
     allColumns.filter((col) => col.getCanHide()),
   );
 
-  // For no-JS support: render all rows, hide with CSS, JS reveals paginated subset
-  const displayRows = $derived(isHydrated ? rowModel.rows : allRowModel.rows);
+  // Check if any filters/search/visibility have been modified from defaults
+  const hasModifiedVisibility = $derived(
+    Object.entries(columnVisibility).some(
+      ([key, value]) => value !== (initialColumnVisibility[key] ?? true),
+    ),
+  );
+  const hasActiveFilters = $derived(
+    globalFilter !== "" || columnFilters.length > 0 || hasModifiedVisibility,
+  );
 
-  // Calculate minimum table width based on visible columns only
+  // Reset all filters, search, and column visibility to defaults
+  function resetFilters() {
+    globalFilter = "";
+    columnFilters = [];
+    columnVisibility = { ...initialColumnVisibility };
+    pagination = { pageIndex: 0, pageSize };
+    // Clear localStorage
+    if (storageKey) {
+      try {
+        localStorage.removeItem(storageKey);
+      } catch {
+        // localStorage may be unavailable
+      }
+    }
+    syncStateToUrl();
+  }
+
+  // For no-JS support: render all rows by default, or just first page if paginateStaticHtml is true
+  const displayRows = $derived(
+    isHydrated
+      ? rowModel.rows
+      : paginateStaticHtml
+        ? allRowModel.rows.slice(0, pageSize)
+        : allRowModel.rows,
+  );
+
+  // Calculate grid template columns for visible columns
   const visibleColumnIds = $derived(
     new Set(table.getVisibleLeafColumns().map((c) => c.id)),
   );
-  const tableMinWidth = $derived(
+  const gridTemplateColumns = $derived(
     columns
       .filter((col) => {
         const id = "accessorKey" in col ? col.accessorKey : col.id;
         return visibleColumnIds.has(id as string);
       })
-      .reduce((sum, col) => sum + (col.size || col.minSize || 100), 0),
+      .map((col) => {
+        if (col.size) return `${col.size}px`;
+        if (col.minSize) return `minmax(${col.minSize}px, 1fr)`;
+        return "auto";
+      })
+      .join(" "),
   );
 </script>
 
@@ -270,64 +510,65 @@
   {/if}
 
   {#if isHydrated && (renderToolbar || showSearch || showColumnToggle)}
-    <div class="flex items-center gap-2 pb-4">
+    <div class="flex flex-wrap items-stretch gap-2 pb-4">
       {#if showSearch}
         <Input
           placeholder={searchPlaceholder}
           value={globalFilter}
           oninput={(e) => table.setGlobalFilter(e.currentTarget.value)}
-          class="max-w-sm"
+          class="min-w-[150px] max-w-full flex-1 sm:max-w-sm"
         />
       {/if}
       {#if renderToolbar}
         {@render renderToolbar({ table })}
       {/if}
-      {#if showColumnToggle}
-        <DropdownMenu.Root>
-          <DropdownMenu.Trigger>
-            {#snippet child({ props })}
-              <Button variant="outline" {...props}>
-                <Settings2 class="mr-2 h-4 w-4" />
-                Columns
-              </Button>
-            {/snippet}
-          </DropdownMenu.Trigger>
-          <DropdownMenu.Content align="end">
-            {#each toggleableColumns as column (column.id)}
-              <DropdownMenu.CheckboxItem
-                checked={column.getIsVisible()}
-                onCheckedChange={(value) => column.toggleVisibility(!!value)}
-              >
-                {getColumnLabel(column.id)}
-              </DropdownMenu.CheckboxItem>
-            {/each}
-          </DropdownMenu.Content>
-        </DropdownMenu.Root>
-      {/if}
+      <div class="flex items-center gap-2 flex-wrap">
+        {#if showColumnToggle}
+          <DropdownMenu.Root>
+            <DropdownMenu.Trigger>
+              {#snippet child({ props })}
+                <Button variant="outline" {...props}>
+                  <Settings2 class="mr-2 h-4 w-4" />
+                  Columns
+                </Button>
+              {/snippet}
+            </DropdownMenu.Trigger>
+            <DropdownMenu.Content align="end">
+              {#each toggleableColumns as column (column.id)}
+                <DropdownMenu.CheckboxItem
+                  checked={column.getIsVisible()}
+                  onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                >
+                  {getColumnLabel(column.id)}
+                </DropdownMenu.CheckboxItem>
+              {/each}
+            </DropdownMenu.Content>
+          </DropdownMenu.Root>
+        {/if}
+        {#if hasActiveFilters}
+          <Button
+            variant="ghost"
+            onclick={resetFilters}
+            class="h-8 px-2 lg:px-3"
+          >
+            Reset
+            <RotateCcw class="ml-2 h-4 w-4" />
+          </Button>
+        {/if}
+      </div>
     </div>
   {/if}
 
   <div class="rounded-md border {className}">
-    <Table.Root style="min-width: {tableMinWidth}px">
-      <Table.Header>
+    <Table.Root
+      class="w-full grid"
+      style="grid-template-columns: {gridTemplateColumns}"
+    >
+      <Table.Header class="contents">
         {#each headerGroups as headerGroup (headerGroup.id)}
-          <Table.Row>
+          <Table.Row class="contents">
             {#each headerGroup.headers as header (header.id)}
-              {@const originalCol = columns.find(
-                (c) =>
-                  ("accessorKey" in c && c.accessorKey === header.id) ||
-                  ("id" in c && c.id === header.id),
-              )}
-              {@const colStyle =
-                [
-                  originalCol?.size ? `width: ${originalCol.size}px` : null,
-                  originalCol?.minSize
-                    ? `min-width: ${originalCol.minSize}px`
-                    : null,
-                ]
-                  .filter(Boolean)
-                  .join("; ") || undefined}
-              <Table.Head style={colStyle}>
+              <Table.Head class="whitespace-nowrap">
                 {#if !header.isPlaceholder}
                   {#if header.column.getCanSort()}
                     <button
@@ -365,12 +606,16 @@
           </Table.Row>
         {/each}
       </Table.Header>
-      <Table.Body>
+      <Table.Body class="contents">
         {#if displayRows.length > 0}
           {#each displayRows as row, i (row.id)}
-            <Table.Row class={zebraStripe && i % 2 === 1 ? "bg-muted/30" : ""}>
+            <Table.Row
+              class="contents {zebraStripe && i % 2 === 1
+                ? '[&>td]:bg-muted/30'
+                : ''}"
+            >
               {#each row.getVisibleCells() as cell (cell.id)}
-                <Table.Cell>
+                <Table.Cell class="whitespace-nowrap">
                   {#if renderCell}
                     {@render renderCell({ cell, row })}
                   {:else}
@@ -383,18 +628,21 @@
               {/each}
             </Table.Row>
           {/each}
-          {#if isHydrated && displayRows.length < pageSize && (pageCount > 1 || columnFilters.length > 0)}
+          {#if isHydrated && displayRows.length < pageSize && (pageCount > 1 || columnFilters.length > 0 || globalFilter !== "")}
             {#each Array.from({ length: pageSize - displayRows.length }, (_, i) => i) as i (i)}
-              <Table.Row class="pointer-events-none">
-                {#each columns as col (col)}
+              <Table.Row class="contents pointer-events-none">
+                {#each table.getVisibleLeafColumns() as col (col.id)}
                   <Table.Cell>&nbsp;</Table.Cell>
                 {/each}
               </Table.Row>
             {/each}
           {/if}
         {:else}
-          <Table.Row>
-            <Table.Cell colspan={columns.length} class="h-24 text-center">
+          <Table.Row class="contents">
+            <Table.Cell
+              style="grid-column: span {table.getVisibleLeafColumns().length}"
+              class="h-24 text-center"
+            >
               No results.
             </Table.Cell>
           </Table.Row>
