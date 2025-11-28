@@ -51,7 +51,7 @@
   <!-- Available Sections -->
   <section class="space-y-6">
     <h2 class="text-2xl font-semibold">Browse</h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
       <a href="/items" class="block group">
         <Card.Root
           class="h-full transition-colors hover:bg-muted/50 bg-muted/30"
@@ -107,27 +107,41 @@
           </Card.Content>
         </Card.Root>
       </a>
+
+      <a href="/monsters" class="block group">
+        <Card.Root
+          class="h-full transition-colors hover:bg-muted/50 bg-muted/30"
+        >
+          <Card.Header>
+            <div class="flex items-center gap-3">
+              <div class="p-2 rounded-lg bg-red-500/10">
+                <Skull class="h-6 w-6 text-red-500" />
+              </div>
+              <div>
+                <Card.Title class="group-hover:underline">Monsters</Card.Title>
+                <Card.Description
+                  >Discover creatures, elites, and bosses</Card.Description
+                >
+              </div>
+            </div>
+          </Card.Header>
+          <Card.Content>
+            <div
+              class="flex items-center text-sm text-muted-foreground group-hover:text-foreground transition-colors"
+            >
+              Browse all monsters
+              <ArrowRight class="ml-2 h-4 w-4" />
+            </div>
+          </Card.Content>
+        </Card.Root>
+      </a>
     </div>
   </section>
 
   <!-- Coming Soon Sections -->
   <section class="space-y-6">
     <h2 class="text-2xl font-semibold text-muted-foreground">Coming Soon</h2>
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-      <Card.Root class="opacity-50 bg-muted/30">
-        <Card.Header>
-          <div class="flex flex-col items-center text-center gap-2">
-            <div class="p-2 rounded-lg bg-red-500/10">
-              <Skull class="h-5 w-5 text-red-500" />
-            </div>
-            <Card.Title class="text-base">Monsters</Card.Title>
-            <Card.Description class="text-xs"
-              >Creatures and bosses</Card.Description
-            >
-          </div>
-        </Card.Header>
-      </Card.Root>
-
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-6">
       <Card.Root class="opacity-50 bg-muted/30">
         <Card.Header>
           <div class="flex flex-col items-center text-center gap-2">
