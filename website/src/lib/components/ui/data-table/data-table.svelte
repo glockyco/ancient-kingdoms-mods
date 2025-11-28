@@ -436,6 +436,7 @@
   const allRowModel = $derived(table.getPrePaginationRowModel());
   const pageCount = $derived(table.getPageCount());
   const allColumns = $derived(table.getAllColumns());
+
   const toggleableColumns = $derived(
     allColumns.filter((col) => col.getCanHide()),
   );
@@ -657,8 +658,9 @@
         <Pagination.Root
           count={table.getFilteredRowModel().rows.length}
           perPage={pageSize}
-          page={pagination.pageIndex + 1}
-          onPageChange={(page) => table.setPageIndex(page - 1)}
+          bind:page={
+            () => pagination.pageIndex + 1, (p) => table.setPageIndex(p - 1)
+          }
         >
           {#snippet children({ pages })}
             <Pagination.Content>
