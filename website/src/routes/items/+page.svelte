@@ -9,6 +9,7 @@
     type TanstackTable,
   } from "$lib/components/ui/data-table";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
+  import ItemLink from "$lib/components/ItemLink.svelte";
   import { formatItemType } from "$lib/utils/format";
   import type { ItemListView } from "$lib/types/items";
 
@@ -201,12 +202,12 @@
       {qualities[q]?.name ?? `Q${q}`}
     </span>
   {:else if cell.column.id === "name"}
-    <a
-      href="/items/{row.original.id}"
-      class="text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap"
-    >
-      {row.original.name}
-    </a>
+    <ItemLink
+      itemId={row.original.id}
+      itemName={row.original.name}
+      tooltipHtml={row.original.tooltip_html}
+      class="whitespace-nowrap"
+    />
   {:else if cell.column.id === "item_level"}
     <span class="ml-auto">{row.original.item_level || "-"}</span>
   {:else if cell.column.id === "level_required"}

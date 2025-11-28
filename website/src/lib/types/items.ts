@@ -16,6 +16,7 @@ export interface ItemListView {
   stat_count: number;
   alchemy_recipe_level_required: number | null;
   mount_speed: number;
+  tooltip_html: string | null;
 }
 
 /**

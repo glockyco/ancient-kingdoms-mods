@@ -27,7 +27,8 @@ export function getItems(): ItemListView[] {
           AND json_each.value != 0
           AND json_each.value != 0.0
           AND json_each.value != 'false'
-      ) as stat_count
+      ) as stat_count,
+      tooltip_html
     FROM items
     ORDER BY name`,
   );
