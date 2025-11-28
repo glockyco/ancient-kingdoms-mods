@@ -78,12 +78,21 @@ public abstract class BaseExporter
     }
 
     /// <summary>
-    /// Determines zone ID from a position using area containment checking.
+    /// Result of zone detection containing both main zone and sub-zone IDs.
+    /// </summary>
+    protected struct ZoneInfo
+    {
+        public string ZoneId;
+        public string SubZoneId;
+    }
+
+    /// <summary>
+    /// Determines zone and sub-zone IDs from a position using area containment checking.
     /// Tests if the position falls within any ZoneTrigger's Collider2D boundary.
     /// Falls back to nearest zone collider if not inside any zone.
     /// Filters for scene zone triggers only (not templates).
     /// </summary>
-    protected static string GetZoneIdFromPosition(Vector3 position)
+    protected static ZoneInfo GetZoneInfoFromPosition(Vector3 position)
     {
         var position2D = new Vector2(position.x, position.y);
 
@@ -100,7 +109,11 @@ public abstract class BaseExporter
 
             if (collider.OverlapPoint(position2D))
             {
-                return GetZoneIdFromByte(trigger.idZone);
+                return new ZoneInfo
+                {
+                    ZoneId = GetZoneIdFromByte(trigger.idZone),
+                    SubZoneId = GetSubZoneId(trigger)
+                };
             }
         }
 
@@ -130,10 +143,33 @@ public abstract class BaseExporter
 
         if (nearestTrigger != null)
         {
-            return GetZoneIdFromByte(nearestTrigger.idZone);
+            return new ZoneInfo
+            {
+                ZoneId = GetZoneIdFromByte(nearestTrigger.idZone),
+                SubZoneId = GetSubZoneId(nearestTrigger)
+            };
         }
 
-        return "unknown";
+        return new ZoneInfo { ZoneId = "unknown", SubZoneId = null };
+    }
+
+    /// <summary>
+    /// Legacy method for backwards compatibility - returns only the main zone ID.
+    /// </summary>
+    protected static string GetZoneIdFromPosition(Vector3 position)
+    {
+        return GetZoneInfoFromPosition(position).ZoneId;
+    }
+
+    /// <summary>
+    /// Gets the sub-zone ID from a zone trigger using its nameZone field.
+    /// </summary>
+    private static string GetSubZoneId(Il2Cpp.ZoneTrigger trigger)
+    {
+        var name = trigger.nameZone;
+        if (string.IsNullOrEmpty(name))
+            return null;
+        return $"zone_trigger_{SanitizeId(name)}";
     }
 
     /// <summary>

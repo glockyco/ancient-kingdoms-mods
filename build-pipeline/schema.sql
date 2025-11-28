@@ -337,6 +337,7 @@ CREATE TABLE monster_spawns (
     id TEXT PRIMARY KEY,
     monster_id TEXT NOT NULL REFERENCES monsters(id),
     zone_id TEXT NOT NULL REFERENCES zones(id),
+    sub_zone_id TEXT REFERENCES zone_triggers(id),
     position_x REAL,
     position_y REAL,
     position_z REAL,
@@ -364,6 +365,7 @@ CREATE TABLE monster_spawns (
 
 CREATE INDEX idx_monster_spawns_monster ON monster_spawns(monster_id);
 CREATE INDEX idx_monster_spawns_zone ON monster_spawns(zone_id);
+CREATE INDEX idx_monster_spawns_sub_zone ON monster_spawns(sub_zone_id);
 
 -- =============================================================================
 -- SUMMON TRIGGERS
@@ -740,6 +742,10 @@ CREATE TABLE zone_triggers (
     position_x REAL,
     position_y REAL,
     position_z REAL,
+    bounds_min_x REAL,
+    bounds_min_y REAL,
+    bounds_max_x REAL,
+    bounds_max_y REAL,
     bloom_color TEXT DEFAULT '#FFFFFFFF',
     light_intensity REAL DEFAULT 0.5,
     audio_zone TEXT,

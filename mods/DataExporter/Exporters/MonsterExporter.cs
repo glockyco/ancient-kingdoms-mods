@@ -187,12 +187,13 @@ public class MonsterExporter : BaseExporter
                 if (isTemplate)
                     continue;  // Skip templates - they don't have spawn locations
 
-                var zoneId = GetMonsterZoneId(monster);
+                var zoneInfo = GetZoneInfoFromPosition(monster.transform.position);
                 var spawnData = new MonsterSpawnData
                 {
-                    id = $"{name}_{zoneId}_{monster.GetInstanceID()}",
+                    id = $"{name}_{zoneInfo.ZoneId}_{monster.GetInstanceID()}",
                     monster_id = name,  // reference to canonical monster
-                    zone_id = zoneId,
+                    zone_id = zoneInfo.ZoneId,
+                    sub_zone_id = zoneInfo.SubZoneId,
                     position = new Position(
                         monster.transform.position.x,
                         monster.transform.position.y,
@@ -219,11 +220,5 @@ public class MonsterExporter : BaseExporter
         WriteJson(monsterList, "monsters.json");
         WriteJson(spawnList, "monster_spawns.json");
         Logger.Msg($"✓ Exported {monsterList.Count} canonical monsters and {spawnList.Count} spawn points");
-    }
-
-    private string GetMonsterZoneId(Il2Cpp.Monster monster)
-    {
-        // Use position-based zone detection (checks zone trigger colliders)
-        return GetZoneIdFromPosition(monster.transform.position);
     }
 }

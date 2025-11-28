@@ -38,6 +38,7 @@ class MonsterSpawnData(BaseModel):
     id: str
     monster_id: str
     zone_id: str
+    sub_zone_id: str | None = None
     position: Position
 
     # Movement and patrol
@@ -636,6 +637,10 @@ class ZoneTriggerData(BaseModel):
     light_intensity: float = 0.5
     audio_zone: str = ""
     loop_sounds_zone: str = ""
+    bounds_min_x: float | None = None
+    bounds_min_y: float | None = None
+    bounds_max_x: float | None = None
+    bounds_max_y: float | None = None
 
 
 # =============================================================================
