@@ -75,7 +75,7 @@
       cols.push({
         accessorKey: "is_bestiary",
         header: "",
-        size: 40,
+        size: 50,
         enableSorting: true,
       });
     }
@@ -89,7 +89,7 @@
       {
         accessorKey: "rate",
         header: "Drop Rate",
-        size: 120,
+        size: 140,
       },
     );
 
@@ -189,7 +189,7 @@
       tooltipHtml={row.original.tooltip_html}
     />
   {:else if cell.column.id === "rate"}
-    <div class="text-right">{formatPercent(row.original.rate)}</div>
+    <span class="ml-auto">{formatPercent(row.original.rate)}</span>
   {:else}
     {cell.getValue()}
   {/if}
@@ -222,17 +222,17 @@
       {row.original.zone_name}
     </a>
   {:else if cell.column.id === "respawn"}
-    <div class="text-right">{formatTime(totalRespawnTime)}</div>
+    <span class="ml-auto">{formatTime(totalRespawnTime)}</span>
   {:else if cell.column.id === "chance"}
-    <div class="text-right">
+    <span class="ml-auto">
       {formatPercent(data.monster.respawn_probability)}
-    </div>
+    </span>
   {:else if cell.column.id === "active"}
-    <div class="text-right">
+    <span class="ml-auto">
       {data.monster.spawn_time_start}:00-{data.monster.spawn_time_end}:00
-    </div>
+    </span>
   {:else if cell.column.id === "spawn_count"}
-    <div class="text-right">{row.original.spawn_count}</div>
+    <span class="ml-auto">{row.original.spawn_count}</span>
   {:else}
     {cell.getValue()}
   {/if}
@@ -265,9 +265,9 @@
       {row.original.name}
     </a>
   {:else if cell.column.id === "level_recommended"}
-    <div class="text-right">{row.original.level_recommended}</div>
+    <span class="ml-auto">{row.original.level_recommended}</span>
   {:else if cell.column.id === "kill_amount"}
-    <div class="text-right">{row.original.kill_amount}</div>
+    <span class="ml-auto">{row.original.kill_amount}</span>
   {:else}
     {cell.getValue()}
   {/if}
@@ -294,7 +294,7 @@
   <Breadcrumb
     items={[
       { label: "Home", href: "/" },
-      { label: "Monsters" },
+      { label: "Monsters", href: "/monsters" },
       { label: data.monster.name },
     ]}
   />
@@ -481,6 +481,7 @@
                 { id: "rate", desc: true },
                 { id: "item_name", desc: false },
               ]}
+          urlKey="monster-{data.monster.id}-drops"
           pageSize={10}
           zebraStripe={true}
           class="bg-muted/30"
@@ -506,6 +507,7 @@
             renderCell={renderSpawnCell}
             renderHeader={renderSpawnHeader}
             initialSorting={[{ id: "spawn_count", desc: true }]}
+            urlKey="monster-{data.monster.id}-spawns"
             pageSize={10}
             zebraStripe={true}
             class="bg-muted/30"
@@ -633,6 +635,7 @@
         renderCell={renderQuestCell}
         renderHeader={renderQuestHeader}
         initialSorting={[{ id: "level_recommended", desc: false }]}
+        urlKey="monster-{data.monster.id}-quests"
         pageSize={10}
         zebraStripe={true}
         class="bg-muted/30"

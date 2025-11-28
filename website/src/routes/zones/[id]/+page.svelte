@@ -177,13 +177,13 @@
       {row.original.name}
     </a>
   {:else if cell.column.id === "level"}
-    <div class="text-right">{row.original.level}</div>
+    <span class="ml-auto">{row.original.level}</span>
   {:else if cell.column.id === "health"}
-    <div class="text-right tabular-nums">
+    <span class="ml-auto tabular-nums">
       {row.original.health.toLocaleString()}
-    </div>
+    </span>
   {:else if cell.column.id === "drop_count"}
-    <div class="text-right">{row.original.drop_count}</div>
+    <span class="ml-auto">{row.original.drop_count}</span>
   {:else}
     {cell.getValue()}
   {/if}
@@ -222,15 +222,15 @@
       <span class="text-muted-foreground">-</span>
     {/if}
   {:else if cell.column.id === "min_level_required"}
-    <div class="text-right">
+    <span class="ml-auto">
       {#if row.original.min_level_required > 1}
         {row.original.min_level_required}
       {:else}
         <span class="text-muted-foreground">-</span>
       {/if}
-    </div>
+    </span>
   {:else if cell.column.id === "total_waves"}
-    <div class="text-right">{row.original.total_waves}</div>
+    <span class="ml-auto">{row.original.total_waves}</span>
   {:else}
     {cell.getValue()}
   {/if}
@@ -356,6 +356,7 @@
           { id: "health", desc: true },
           { id: "name", desc: false },
         ]}
+        urlKey="zone-{data.zone.id}-bosses"
         pageSize={10}
         zebraStripe={true}
         class="bg-muted/30"
@@ -380,6 +381,7 @@
           { id: "health", desc: true },
           { id: "name", desc: false },
         ]}
+        urlKey="zone-{data.zone.id}-elites"
         pageSize={10}
         zebraStripe={true}
         class="bg-muted/30"
@@ -404,6 +406,7 @@
           { id: "health", desc: true },
           { id: "name", desc: false },
         ]}
+        urlKey="zone-{data.zone.id}-creatures"
         pageSize={10}
         zebraStripe={true}
         class="bg-muted/30"
@@ -423,6 +426,7 @@
         columns={altarColumns}
         renderCell={renderAltarCell}
         renderHeader={renderAltarHeader}
+        urlKey="zone-{data.zone.id}-altars"
         pageSize={10}
         zebraStripe={true}
         class="bg-muted/30"
@@ -447,6 +451,7 @@
           { id: "health", desc: true },
           { id: "name", desc: false },
         ]}
+        urlKey="zone-{data.zone.id}-critters"
         pageSize={10}
         zebraStripe={true}
         class="bg-muted/30"
@@ -467,7 +472,7 @@
         renderCell={renderNpcCell}
         renderHeader={renderNpcHeader}
         initialSorting={[{ id: "name", desc: false }]}
-        urlKey="npcs"
+        urlKey="zone-{data.zone.id}-npcs"
         pageSize={10}
         zebraStripe={true}
         class="bg-muted/30"

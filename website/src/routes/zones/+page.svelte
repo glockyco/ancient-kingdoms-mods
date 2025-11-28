@@ -163,30 +163,30 @@
       {row.original.name}
     </a>
   {:else if cell.column.id === "level_min"}
-    <div class="text-right">
+    <span class="ml-auto">
       {#if row.original.level_min !== null}
         {row.original.level_min}
       {:else}
         <span class="text-muted-foreground">-</span>
       {/if}
-    </div>
+    </span>
   {:else if cell.column.id === "level_max"}
-    <div class="text-right">
+    <span class="ml-auto">
       {#if row.original.level_max !== null}
         {row.original.level_max}
       {:else}
         <span class="text-muted-foreground">-</span>
       {/if}
-    </div>
+    </span>
   {:else if cell.column.id === "boss_count" || cell.column.id === "elite_count" || cell.column.id === "altar_count" || cell.column.id === "npc_count" || cell.column.id === "gather_count"}
     {@const value = cell.getValue() as number}
-    <div class="text-right">
+    <span class="ml-auto">
       {#if value > 0}
         {value}
       {:else}
         <span class="text-muted-foreground">-</span>
       {/if}
-    </div>
+    </span>
   {:else}
     {cell.getValue()}
   {/if}
