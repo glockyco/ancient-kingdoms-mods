@@ -667,7 +667,7 @@
             </a>{#if summon.sub_zone_name && summon.sub_zone_name.toLowerCase() !== summon.zone_name.toLowerCase()}<span
                 class="text-muted-foreground"
                 >&nbsp;({summon.sub_zone_name})</span
-              >{/if}.
+              >{/if}
           </div>
         {/each}
       </div>
@@ -704,7 +704,7 @@
             </a>{#if summon.sub_zone_name && summon.sub_zone_name.toLowerCase() !== summon.zone_name.toLowerCase()}<span
                 class="text-muted-foreground"
                 >&nbsp;({summon.sub_zone_name})</span
-              >{/if}.
+              >{/if}
           </div>
         {/each}
       </div>
