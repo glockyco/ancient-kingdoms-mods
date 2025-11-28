@@ -198,7 +198,9 @@
 })}
   {#if cell.column.id === "quality"}
     {@const q = row.original.quality}
-    <span class="px-2 py-0.5 rounded text-xs font-medium bg-quality-{q}">
+    <span
+      class="px-2 py-0.5 rounded text-xs font-medium text-white bg-quality-{q}"
+    >
       {qualities[q]?.name ?? `Q${q}`}
     </span>
   {:else if cell.column.id === "name"}
