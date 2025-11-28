@@ -92,7 +92,7 @@
     {
       accessorKey: "magic_damage",
       header: "Magic Dmg",
-      size: 150,
+      size: 180,
     },
     {
       accessorKey: "defense",
