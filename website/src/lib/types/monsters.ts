@@ -229,7 +229,10 @@ export interface MonsterListView {
   death_time: number;
   respawn_time: number;
   respawn_probability: number;
-  has_special_spawn: boolean;
+  spawn_time_start: number;
+  spawn_time_end: number;
+  special_spawn_type: "summon" | "altar" | "placeholder" | null;
+  no_respawn: boolean;
 }
 
 /**

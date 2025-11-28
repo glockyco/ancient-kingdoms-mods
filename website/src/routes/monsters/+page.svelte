@@ -16,7 +16,6 @@
   import Sword from "@lucide/svelte/icons/sword";
   import Castle from "@lucide/svelte/icons/castle";
   import Trees from "@lucide/svelte/icons/trees";
-  import Sparkles from "@lucide/svelte/icons/sparkles";
 
   let { data } = $props();
 
@@ -125,13 +124,28 @@
       size: 150,
     },
     {
-      id: "respawn",
+      id: "respawn_time",
       header: "Respawn",
-      size: 150,
-      sortingFn: (rowA, rowB) => {
-        const timeA = rowA.original.death_time + rowA.original.respawn_time;
-        const timeB = rowB.original.death_time + rowB.original.respawn_time;
-        return timeA - timeB;
+      size: 120,
+      accessorFn: (row) => row.death_time + row.respawn_time,
+    },
+    {
+      id: "respawn_chance",
+      header: "Chance",
+      size: 120,
+      accessorFn: (row) =>
+        row.respawn_probability === 1 ? -1 : row.respawn_probability,
+    },
+    {
+      id: "special",
+      header: "Special",
+      size: 130,
+      accessorFn: (row) => {
+        if (row.spawn_time_start !== 0 || row.spawn_time_end !== 0) return 1;
+        if (row.special_spawn_type === "altar") return 2;
+        if (row.special_spawn_type === "summon") return 3;
+        if (row.special_spawn_type === "placeholder") return 4;
+        return 0;
       },
     },
     {
@@ -177,14 +191,17 @@
     fire_resist: "Fire Resist",
     cold_resist: "Cold Resist",
     disease_resist: "Disease Resist",
-    respawn: "Respawn",
+    respawn_time: "Respawn",
+    respawn_chance: "Chance",
+    special: "Special",
     zones: "Zones",
     classification: "Classification",
     zone_ids: "Zone Filter",
   };
 
-  function formatRespawnTime(deathTime: number, respawnTime: number): string {
-    const totalSeconds = deathTime + respawnTime;
+  function formatRespawnTime(row: MonsterRow): string {
+    if (row.no_respawn) return "-";
+    const totalSeconds = row.death_time + row.respawn_time;
     if (totalSeconds === 0) return "-";
     const minutes = Math.floor(totalSeconds / 60);
     const hours = Math.floor(minutes / 60);
@@ -197,9 +214,20 @@
     return `${minutes}m`;
   }
 
-  function formatRespawnChance(probability: number): string {
-    if (probability === 1) return "";
-    return ` (${Math.round(probability * 100)}%)`;
+  function formatChance(row: MonsterRow): string {
+    if (row.no_respawn) return "-";
+    if (row.respawn_probability === 1) return "-";
+    return `${Math.round(row.respawn_probability * 100)}%`;
+  }
+
+  function formatSpecial(row: MonsterRow): string {
+    if (row.spawn_time_start !== 0 || row.spawn_time_end !== 0) {
+      return `${row.spawn_time_start}:00-${row.spawn_time_end}:00`;
+    }
+    if (row.special_spawn_type === "altar") return "Altar";
+    if (row.special_spawn_type === "summon") return "Blocked";
+    if (row.special_spawn_type === "placeholder") return "On Death";
+    return "-";
   }
 
   function formatNumber(n: number): string {
@@ -210,7 +238,7 @@
 {#snippet renderHeader({ header }: { header: Header<MonsterRow, unknown> })}
   {#if header.id === "icon" || header.id === "classification" || header.id === "zone_ids"}
     <span></span>
-  {:else if header.id === "level" || header.id === "health" || header.id === "damage" || header.id === "magic_damage" || header.id === "defense" || header.id === "magic_resist" || header.id === "poison_resist" || header.id === "fire_resist" || header.id === "cold_resist" || header.id === "disease_resist" || header.id === "respawn"}
+  {:else if header.id === "level" || header.id === "health" || header.id === "damage" || header.id === "magic_damage" || header.id === "defense" || header.id === "magic_resist" || header.id === "poison_resist" || header.id === "fire_resist" || header.id === "cold_resist" || header.id === "disease_resist" || header.id === "respawn_time" || header.id === "respawn_chance" || header.id === "special"}
     <span class="ml-auto">{columnLabels[header.id] ?? header.id}</span>
   {:else}
     {columnLabels[header.id] ?? header.id}
@@ -250,19 +278,14 @@
     <span class="ml-auto">{row.original.level}</span>
   {:else if cell.column.id === "health" || cell.column.id === "damage" || cell.column.id === "magic_damage" || cell.column.id === "defense" || cell.column.id === "magic_resist" || cell.column.id === "poison_resist" || cell.column.id === "fire_resist" || cell.column.id === "cold_resist" || cell.column.id === "disease_resist"}
     <span class="ml-auto">{formatNumber(cell.getValue() as number)}</span>
-  {:else if cell.column.id === "respawn"}
-    <span class="ml-auto whitespace-nowrap">
-      {#if row.original.has_special_spawn}
-        <span class="text-amber-600 dark:text-amber-400">
-          <Sparkles class="h-3 w-3 inline mr-1" />Special
-        </span>
-      {:else}
-        {formatRespawnTime(
-          row.original.death_time,
-          row.original.respawn_time,
-        )}{formatRespawnChance(row.original.respawn_probability)}
-      {/if}
-    </span>
+  {:else if cell.column.id === "respawn_time"}
+    <span class="ml-auto whitespace-nowrap"
+      >{formatRespawnTime(row.original)}</span
+    >
+  {:else if cell.column.id === "respawn_chance"}
+    <span class="ml-auto">{formatChance(row.original)}</span>
+  {:else if cell.column.id === "special"}
+    <span class="ml-auto whitespace-nowrap">{formatSpecial(row.original)}</span>
   {:else if cell.column.id === "zones"}
     {@const zones = row.original.zones}
     <div class="flex gap-1 whitespace-nowrap">

@@ -110,7 +110,7 @@
       cols.push({
         id: "respawn",
         header: "Respawn",
-        size: 90,
+        size: 150,
       });
     }
 
@@ -118,7 +118,7 @@
       cols.push({
         id: "chance",
         header: "Chance",
-        size: 80,
+        size: 150,
       });
     }
 
@@ -126,14 +126,14 @@
       cols.push({
         id: "active",
         header: "Active",
-        size: 110,
+        size: 150,
       });
     }
 
     cols.push({
       accessorKey: "spawn_count",
       header: "Spawns",
-      size: 80,
+      size: 150,
     });
 
     return cols;
@@ -224,9 +224,9 @@
   {:else if cell.column.id === "respawn"}
     <span class="ml-auto">{formatTime(totalRespawnTime)}</span>
   {:else if cell.column.id === "chance"}
-    <span class="ml-auto">
-      {formatPercent(data.monster.respawn_probability)}
-    </span>
+    <span class="ml-auto"
+      >{formatPercent(data.monster.respawn_probability)}</span
+    >
   {:else if cell.column.id === "active"}
     <span class="ml-auto">
       {data.monster.spawn_time_start}:00-{data.monster.spawn_time_end}:00
@@ -514,32 +514,24 @@
           />
         {/if}
 
-        <!-- Summoned By Killing -->
+        <!-- Summon Spawns (blocked spawning zones) -->
         {#if data.spawns.summon.length > 0}
-          <div class="space-y-2">
-            {#each data.spawns.summon as summon (summon.zone_id)}
-              <div class="bg-muted/30 rounded-md border p-3">
-                <span>Kill {summon.kill_count} </span>
-                <a
-                  href="/monsters/{summon.kill_monster_id}"
-                  class="text-blue-600 dark:text-blue-400 hover:underline"
-                >
-                  {summon.kill_monster_name}s
-                </a>
-                <span class="text-muted-foreground"> in </span>
-                <a
-                  href="/zones/{summon.zone_id}"
-                  class="text-blue-600 dark:text-blue-400 hover:underline"
-                >
-                  {summon.zone_name}
-                </a>{#if summon.sub_zone_name && summon.sub_zone_name.toLowerCase() !== summon.zone_name.toLowerCase()}
-                  <span class="text-muted-foreground"
-                    >&nbsp;({summon.sub_zone_name})</span
-                  >{/if}
-                <span class="text-muted-foreground"> to summon</span>
-              </div>
-            {/each}
-          </div>
+          {@const summonAsSpawnZones = data.spawns.summon.map((s) => ({
+            zone_id: s.zone_id,
+            zone_name: s.zone_name,
+            spawn_count: 1,
+            spawn_type: "summon" as const,
+          }))}
+          <DataTable
+            data={summonAsSpawnZones}
+            columns={spawnColumns}
+            renderCell={renderSpawnCell}
+            renderHeader={renderSpawnHeader}
+            urlKey="monster-{data.monster.id}-summon-spawns"
+            pageSize={10}
+            zebraStripe={true}
+            class="bg-muted/30"
+          />
         {/if}
 
         <!-- Altar Events -->
@@ -646,34 +638,73 @@
     </section>
   {/if}
 
-  <!-- Summons Section (what killing this monster summons) -->
-  {#if data.summons.length > 0}
+  <!-- Blocked Spawning Section (what blocks this monster from respawning) -->
+  {#if data.spawns.summon.length > 0}
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <Sparkles class="h-5 w-5 text-purple-500" />
-        Summons
+        Blocked Spawning
       </h2>
       <div class="space-y-2">
-        {#each data.summons as summon (summon.summoned_monster_id + summon.zone_id)}
+        {#each data.spawns.summon as summon (summon.zone_id)}
           <div class="bg-muted/30 rounded-md border p-3">
-            <span>Kill {summon.kill_count}</span>
-            <span class="text-muted-foreground"> in </span>
+            <span
+              >Blocked from spawning while {summon.kill_count > 1
+                ? `${summon.kill_count} `
+                : ""}</span
+            >
+            <a
+              href="/monsters/{summon.kill_monster_id}"
+              class="text-blue-600 dark:text-blue-400 hover:underline"
+              >{summon.kill_monster_name}{summon.kill_count > 1 ? "s" : ""}</a
+            >
+            <span>{summon.kill_count > 1 ? " are" : " is"} alive in </span>
             <a
               href="/zones/{summon.zone_id}"
               class="text-blue-600 dark:text-blue-400 hover:underline"
             >
               {summon.zone_name}
-            </a>{#if summon.sub_zone_name && summon.sub_zone_name.toLowerCase() !== summon.zone_name.toLowerCase()}
-              <span class="text-muted-foreground"
+            </a>{#if summon.sub_zone_name && summon.sub_zone_name.toLowerCase() !== summon.zone_name.toLowerCase()}<span
+                class="text-muted-foreground"
                 >&nbsp;({summon.sub_zone_name})</span
-              >{/if}
-            <span class="text-muted-foreground"> to summon </span>
+              >{/if}.
+          </div>
+        {/each}
+      </div>
+    </section>
+  {/if}
+
+  <!-- Blocks Spawning Section (what this monster being alive blocks) -->
+  {#if data.summons.length > 0}
+    <section>
+      <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
+        <Sparkles class="h-5 w-5 text-purple-500" />
+        Blocks Spawning
+      </h2>
+      <div class="space-y-2">
+        {#each data.summons as summon (summon.summoned_monster_id + summon.zone_id)}
+          <div class="bg-muted/30 rounded-md border p-3">
+            <span
+              >{summon.kill_count > 1
+                ? `While ${summon.kill_count} are alive, blocks `
+                : "While alive, blocks "}</span
+            >
             <a
               href="/monsters/{summon.summoned_monster_id}"
               class="text-blue-600 dark:text-blue-400 hover:underline"
             >
               {summon.summoned_monster_name}
             </a>
+            <span> from respawning in </span>
+            <a
+              href="/zones/{summon.zone_id}"
+              class="text-blue-600 dark:text-blue-400 hover:underline"
+            >
+              {summon.zone_name}
+            </a>{#if summon.sub_zone_name && summon.sub_zone_name.toLowerCase() !== summon.zone_name.toLowerCase()}<span
+                class="text-muted-foreground"
+                >&nbsp;({summon.sub_zone_name})</span
+              >{/if}.
           </div>
         {/each}
       </div>

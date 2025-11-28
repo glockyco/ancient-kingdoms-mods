@@ -33,10 +33,17 @@ export const load: PageServerLoad = (): MonstersPageData => {
       m.death_time,
       m.respawn_time,
       m.respawn_probability,
-      CASE WHEN EXISTS (
-        SELECT 1 FROM monster_spawns ms
+      m.spawn_time_start,
+      m.spawn_time_end,
+      (
+        SELECT ms.spawn_type FROM monster_spawns ms
         WHERE ms.monster_id = m.id AND ms.spawn_type != 'regular'
-      ) THEN 1 ELSE 0 END as has_special_spawn
+        LIMIT 1
+      ) as special_spawn_type,
+      CASE WHEN NOT EXISTS (
+        SELECT 1 FROM monster_spawns ms
+        WHERE ms.monster_id = m.id AND ms.spawn_type IN ('regular', 'summon')
+      ) THEN 1 ELSE 0 END as no_respawn
     FROM monsters m
     WHERE m.is_dummy = 0
     ORDER BY m.level DESC, m.name ASC
