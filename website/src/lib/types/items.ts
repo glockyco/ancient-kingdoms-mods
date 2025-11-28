@@ -13,6 +13,7 @@ export interface ItemListView {
   backpack_slots: number;
   class_required: string;
   stats_count: number;
+  alchemy_recipe_level_required: number | null;
 }
 
 /**

@@ -38,7 +38,8 @@ export function getItems(): ItemListView[] {
       slot,
       backpack_slots,
       class_required,
-      stats
+      stats,
+      alchemy_recipe_level_required
     FROM items
     ORDER BY name`,
   );
@@ -53,6 +54,7 @@ export function getItems(): ItemListView[] {
     backpack_slots: row.backpack_slots,
     class_required: row.class_required,
     stats_count: countDisplayedStats(row.stats),
+    alchemy_recipe_level_required: row.alchemy_recipe_level_required,
   }));
 }
 

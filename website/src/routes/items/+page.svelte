@@ -345,7 +345,9 @@
             </div>
             <Card.Description>
               {formatItemType(item.item_type)}
-              {#if item.level_required > 0}
+              {#if item.alchemy_recipe_level_required != null}
+                · Tier {item.alchemy_recipe_level_required}
+              {:else if item.level_required > 0}
                 · Level {item.level_required}
               {/if}
             </Card.Description>
