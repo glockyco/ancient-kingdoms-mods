@@ -201,3 +201,46 @@ export interface MonsterDetailData {
   quests: MonsterQuest[];
   summons: SummonsInfo[];
 }
+
+/**
+ * Monster list view for overview page (minimal fields for table display)
+ */
+export interface MonsterListView {
+  id: string;
+  name: string;
+  level: number;
+  health: number;
+  is_boss: boolean;
+  is_elite: boolean;
+  is_hunt: boolean;
+  damage: number;
+  magic_damage: number;
+  defense: number;
+  magic_resist: number;
+  poison_resist: number;
+  fire_resist: number;
+  cold_resist: number;
+  disease_resist: number;
+  death_time: number;
+  respawn_time: number;
+  respawn_probability: number;
+  has_special_spawn: boolean;
+}
+
+/**
+ * Zone info for monster spawn display
+ */
+export interface MonsterZoneInfo {
+  monster_id: string;
+  zone_id: string;
+  zone_name: string;
+  is_dungeon: boolean;
+}
+
+/**
+ * Monsters overview page data
+ */
+export interface MonstersPageData {
+  monsters: MonsterListView[];
+  monsterZones: MonsterZoneInfo[];
+}
