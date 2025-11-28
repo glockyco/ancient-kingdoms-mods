@@ -133,6 +133,7 @@
         return total === 0 ? null : total;
       },
       sortUndefined: "last",
+      enableGlobalFilter: false,
     },
     {
       id: "respawn_chance",
@@ -140,17 +141,30 @@
       size: 120,
       accessorFn: (row) =>
         row.respawn_probability === 1 ? -1 : row.respawn_probability,
+      enableGlobalFilter: false,
     },
     {
       id: "special",
       header: "Special",
       size: 130,
       accessorFn: (row) => {
-        if (row.spawn_time_start !== 0 || row.spawn_time_end !== 0) return 1;
-        if (row.special_spawn_type === "altar") return 2;
-        if (row.special_spawn_type === "summon") return 3;
-        if (row.special_spawn_type === "placeholder") return 4;
-        return 0;
+        if (row.spawn_time_start !== 0 || row.spawn_time_end !== 0) {
+          return `${row.spawn_time_start}:00-${row.spawn_time_end}:00`;
+        }
+        if (row.special_spawn_type === "altar") return "Altar";
+        if (row.special_spawn_type === "summon") return "Blocked";
+        if (row.special_spawn_type === "placeholder") return "On Death";
+        return "";
+      },
+      sortingFn: (rowA, rowB) => {
+        const order = (row: MonsterRow) => {
+          if (row.spawn_time_start !== 0 || row.spawn_time_end !== 0) return 1;
+          if (row.special_spawn_type === "altar") return 2;
+          if (row.special_spawn_type === "summon") return 3;
+          if (row.special_spawn_type === "placeholder") return 4;
+          return 0;
+        };
+        return order(rowA.original) - order(rowB.original);
       },
     },
     {
@@ -158,6 +172,7 @@
       header: "Zones",
       size: 230,
       enableSorting: false,
+      accessorFn: (row) => row.zones.map((z) => z.zone_name).join(" "),
     },
     {
       id: "classification",
