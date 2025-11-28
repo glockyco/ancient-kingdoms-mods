@@ -115,5 +115,81 @@
       "formula": "progress = zonesDiscovered.Count / 38",
       "total_zones": 38
     }
+  },
+
+  "experience": {
+    "_comment": "Source: Experience.cs, Monster.cs, Player.cs, GatherItem.cs, ZoneTrigger.cs. EXP formulas and lookup tables.",
+
+    "monster_kill": {
+      "_comment": "Source: Monster.cs:2802-2829. Base EXP formula with type and health multipliers.",
+      "base_formula_lte_40": "15 * 1.12^(level-1)",
+      "base_formula_gt_40": "15 * 1.12^39 * 1.07^(level-40)",
+      "boss_multiplier": 5.0,
+      "elite_multiplier": 3.0,
+      "no_aggro_multiplier": 0.5,
+      "health_bonus": {
+        "_comment": "Source: Monster.cs:2817-2826. Additional EXP based on monster max health.",
+        "threshold": 100000,
+        "formula_above_threshold": "base * (10 + (health - 100000) / 5000 * 0.01)",
+        "formula_below_threshold": "base * (health / 1000 * 0.1)"
+      }
+    },
+
+    "level_difference_scaling": {
+      "_comment": "Source: Experience.cs:430-466. Multiplier applied based on player vs monster level difference.",
+      "table": {
+        "-10": 1.50, "-9": 1.45, "-8": 1.40, "-7": 1.35, "-6": 1.30,
+        "-5": 1.25, "-4": 1.20, "-3": 1.15, "-2": 1.10, "-1": 1.05,
+        "0": 1.00, "1": 0.99, "2": 0.97, "3": 0.95, "4": 0.90,
+        "5": 0.80, "6": 0.70, "7": 0.60, "8": 0.50, "9": 0.40,
+        "10": 0.30, "11": 0.25, "12": 0.20, "13": 0.15, "14": 0.14,
+        "15": 0.13, "16": 0.12, "17": 0.11, "18": 0.10, "19": 0.08, "20": 0.05
+      },
+      "above_20_multiplier": 0.0,
+      "dungeon_bonus": 0.10
+    },
+
+    "crafting_exp_by_quality": {
+      "_comment": "Source: Player.cs:10309-10318. EXP granted when crafting items.",
+      "1": 150, "2": 750, "3": 3500, "4": 10000, "default": 15
+    },
+
+    "alchemy_exp_by_quality": {
+      "_comment": "Source: Player.cs:10085-10096. EXP granted when crafting potions.",
+      "1": 300, "2": 2000, "3": 5000, "4": 12000, "default": 20
+    },
+
+    "augment_exp_by_quality": {
+      "_comment": "Source: Player.cs:10238-10246. EXP granted when applying augments.",
+      "1": 150, "2": 750, "3": 3500, "4": 6000, "default": 15
+    },
+
+    "gathering_exp_by_level": {
+      "_comment": "Source: GatherItem.cs:533-546. EXP granted when gathering resources.",
+      "0": 15, "1": 150, "2": 750, "3": 4000, "4": 10000, "default": 15
+    },
+
+    "zone_discovery": {
+      "_comment": "Source: ZoneTrigger.cs:148-174. EXP granted when discovering new zones.",
+      "regular": 25,
+      "dungeon": 150,
+      "city": 10,
+      "cities": ["alaenanore_village", "thogh_maldur", "milldenn", "bonebreach", "felarii_village"]
+    },
+
+    "level_thresholds": {
+      "_comment": "Source: Experience.cs:26-30, 325-335. EXP needed to reach next level.",
+      "formula": "65 * 1.26^level",
+      "max_level": 50,
+      "veteran_threshold": 3000000
+    },
+
+    "modifiers": {
+      "_comment": "Source: Various. Buffs/debuffs that modify EXP gains.",
+      "double_exp_buff": 2.0,
+      "exhausted_debuff": 0.5,
+      "forgotten_altar_event": 1.3,
+      "party_bonus_per_member": 0.25
+    }
   }
 }

@@ -124,6 +124,7 @@ export interface ZoneDetailData {
     weather_type: string | null;
     level_min: number | null;
     level_max: number | null;
+    discovery_exp: number;
   };
   monsters: ZoneMonster[];
   npcs: ZoneNpc[];

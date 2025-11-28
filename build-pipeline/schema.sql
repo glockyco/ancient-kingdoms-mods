@@ -37,7 +37,8 @@ CREATE TABLE zones (
     min_zoom_map REAL DEFAULT 80.0,
     max_zoom_map REAL DEFAULT 80.0,
     level_min INTEGER DEFAULT 0,
-    level_max INTEGER DEFAULT 0
+    level_max INTEGER DEFAULT 0,
+    discovery_exp INTEGER              -- EXP granted when discovering this zone
 );
 
 CREATE INDEX idx_zones_zone_id ON zones(zone_id);
@@ -222,6 +223,7 @@ CREATE TABLE items (
     alchemy_recipe_materials TEXT,  -- JSON: [{"item_id": "water", "item_name": "Water", "amount": 1}, ...]
     taught_by_recipe_id TEXT REFERENCES items(id),  -- Reverse: which recipe teaches this potion
     taught_by_recipe_name TEXT,
+    alchemy_exp INTEGER,              -- EXP granted when crafting this potion (from alchemy_recipes)
     relic_buff_id TEXT REFERENCES skills(id),
     relic_buff_name TEXT,
 
@@ -311,6 +313,7 @@ CREATE TABLE monsters (
     gold_max INTEGER,
     probability_drop_gold REAL DEFAULT 1.0,
     exp_multiplier REAL DEFAULT 1.0,
+    base_exp INTEGER,               -- Pre-computed base EXP reward (before level scaling)
     drops TEXT,                     -- JSON array
 
     -- Messages and interactions
@@ -789,6 +792,9 @@ CREATE TABLE gathering_resources (
     item_reward_id TEXT REFERENCES items(id),
     item_reward_amount INTEGER DEFAULT 0,
 
+    -- EXP reward
+    gathering_exp INTEGER,             -- EXP granted when gathering this resource
+
     -- Metadata
     decrease_faction TEXT DEFAULT '',
     description TEXT DEFAULT ''
@@ -895,7 +901,10 @@ CREATE TABLE crafting_recipes (
     materials TEXT,                 -- JSON array
 
     -- Crafting station requirement
-    station_type TEXT               -- cooking, forge, alchemy_table, etc.
+    station_type TEXT,              -- cooking, forge, alchemy_table, etc.
+
+    -- EXP reward
+    crafting_exp INTEGER            -- EXP granted when crafting this recipe
 );
 
 CREATE INDEX idx_crafting_result ON crafting_recipes(result_item_id);
@@ -911,7 +920,10 @@ CREATE TABLE alchemy_recipes (
 
     -- Materials as JSON (denormalized)
     -- Example: [{"item_id": "healing_herb", "amount": 3}, {"item_id": "water", "amount": 1}]
-    materials TEXT                  -- JSON array
+    materials TEXT,                 -- JSON array
+
+    -- EXP reward
+    alchemy_exp INTEGER             -- EXP granted when crafting this potion
 );
 
 CREATE INDEX idx_alchemy_result ON alchemy_recipes(result_item_id);

@@ -37,6 +37,7 @@ export const load: PageServerLoad = ({ params }): ZoneDetailData => {
       z.name,
       z.is_dungeon,
       z.weather_type,
+      z.discovery_exp,
       (SELECT MIN(m.level) FROM monster_spawns ms
        JOIN monsters m ON m.id = ms.monster_id
        WHERE ms.zone_id = z.id AND m.level > 0

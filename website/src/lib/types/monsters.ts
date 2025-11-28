@@ -141,6 +141,7 @@ export interface MonsterInfo {
   gold_max: number | null;
   probability_drop_gold: number;
   exp_multiplier: number;
+  base_exp: number;
 
   // Spawning
   does_respawn: boolean;

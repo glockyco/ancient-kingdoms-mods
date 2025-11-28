@@ -340,6 +340,9 @@
           {/if}
         </span>
       {/if}
+      {#if data.zone.discovery_exp > 0}
+        <span>Discovery XP: {data.zone.discovery_exp}</span>
+      {/if}
       {#if data.zone.weather_type}
         <span>Weather: {data.zone.weather_type}</span>
       {/if}

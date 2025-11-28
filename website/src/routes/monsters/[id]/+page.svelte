@@ -338,8 +338,8 @@
       {#if data.monster.class_name && data.monster.class_name !== data.monster.type_name}
         <span>Class: {data.monster.class_name}</span>
       {/if}
-      {#if data.monster.exp_multiplier !== 1}
-        <span>XP: {data.monster.exp_multiplier}x</span>
+      {#if data.monster.base_exp > 0}
+        <span>Base XP: {data.monster.base_exp.toLocaleString()}</span>
       {/if}
       {#if data.monster.improve_faction.length > 0 || data.monster.decrease_faction.length > 0}
         <span>

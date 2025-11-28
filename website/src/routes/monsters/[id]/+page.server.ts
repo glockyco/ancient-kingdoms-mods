@@ -113,6 +113,7 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
     gold_max: monsterRaw.gold_max as number | null,
     probability_drop_gold: (monsterRaw.probability_drop_gold as number) || 0,
     exp_multiplier: (monsterRaw.exp_multiplier as number) || 1,
+    base_exp: (monsterRaw.base_exp as number) || 0,
     does_respawn: Boolean(monsterRaw.does_respawn),
     death_time: (monsterRaw.death_time as number) || 0,
     respawn_time: (monsterRaw.respawn_time as number) || 0,
