@@ -127,7 +127,12 @@
       id: "respawn_time",
       header: "Respawn",
       size: 120,
-      accessorFn: (row) => row.death_time + row.respawn_time,
+      accessorFn: (row) => {
+        if (row.no_respawn) return null;
+        const total = row.death_time + row.respawn_time;
+        return total === 0 ? null : total;
+      },
+      sortUndefined: "last",
     },
     {
       id: "respawn_chance",
