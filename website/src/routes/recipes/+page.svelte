@@ -1,0 +1,212 @@
+<script lang="ts">
+  import {
+    DataTable,
+    DataTableFacetedFilter,
+    type ColumnDef,
+    type Cell,
+    type Row,
+    type Header,
+    type TanstackTable,
+  } from "$lib/components/ui/data-table";
+  import Breadcrumb from "$lib/components/Breadcrumb.svelte";
+  import ItemLink from "$lib/components/ItemLink.svelte";
+
+  let { data } = $props();
+
+  const PAGE_SIZE = 20;
+
+  // Roman numerals for tier display
+  const romanNumerals = ["I", "II", "III", "IV", "V"];
+
+  // Add virtual column for type sorting (numeric for stable sort order)
+  const dataWithVirtual = data.recipes.map((r) => ({
+    ...r,
+    type_order: r.type === "Alchemy" ? 1 : r.type === "Cooking" ? 2 : 3,
+  }));
+
+  type RecipeRow = (typeof dataWithVirtual)[number];
+
+  const columns: ColumnDef<RecipeRow>[] = [
+    {
+      accessorKey: "type",
+      header: "Type",
+      size: 100,
+      filterFn: (row, columnId, filterValue: string[]) => {
+        const value = row.getValue(columnId) as string;
+        if (!filterValue || filterValue.length === 0) return true;
+        return filterValue.includes(value);
+      },
+      sortingFn: (rowA, rowB) => {
+        return rowA.original.type_order - rowB.original.type_order;
+      },
+    },
+    {
+      accessorKey: "tier",
+      header: "Tier",
+      size: 80,
+    },
+    {
+      accessorKey: "result_item_name",
+      header: "Output",
+      enableHiding: false,
+    },
+    {
+      id: "ingredient1",
+      header: "Ingredient 1",
+      size: 270,
+      enableSorting: false,
+      accessorFn: (row) => row.ingredients[0]?.item_name ?? "",
+    },
+    {
+      id: "ingredient2",
+      header: "Ingredient 2",
+      size: 220,
+      enableSorting: false,
+      accessorFn: (row) => row.ingredients[1]?.item_name ?? "",
+    },
+    {
+      id: "ingredient3",
+      header: "Ingredient 3",
+      size: 220,
+      enableSorting: false,
+      accessorFn: (row) => row.ingredients[2]?.item_name ?? "",
+    },
+  ];
+
+  const columnLabels: Record<string, string> = {
+    type: "Type",
+    tier: "Tier",
+    result_item_name: "Output",
+    ingredient1: "Ingredient 1",
+    ingredient2: "Ingredient 2",
+    ingredient3: "Ingredient 3",
+  };
+</script>
+
+{#snippet renderHeader({ header }: { header: Header<RecipeRow, unknown> })}
+  {columnLabels[header.id] ?? header.id}
+{/snippet}
+
+{#snippet renderCell({
+  cell,
+  row,
+}: {
+  cell: Cell<RecipeRow, unknown>;
+  row: Row<RecipeRow>;
+})}
+  {#if cell.column.id === "type"}
+    {row.original.type}
+  {:else if cell.column.id === "tier"}
+    <span class="font-medium">{romanNumerals[row.original.tier] ?? "-"}</span>
+  {:else if cell.column.id === "result_item_name"}
+    <ItemLink
+      itemId={row.original.result_item_id}
+      itemName={row.original.result_item_name}
+      tooltipHtml={row.original.result_tooltip_html}
+    />
+    {#if row.original.result_amount > 1}
+      <span class="text-muted-foreground ml-1"
+        >x{row.original.result_amount}</span
+      >
+    {/if}
+  {:else if cell.column.id === "ingredient1"}
+    {#if row.original.ingredients[0]}
+      <span class="whitespace-nowrap">
+        <a
+          href="/items/{row.original.ingredients[0].item_id}"
+          class="text-blue-600 dark:text-blue-400 hover:underline"
+          >{row.original.ingredients[0].item_name}</a
+        >
+        <span class="text-muted-foreground">
+          x{row.original.ingredients[0].amount}</span
+        >
+      </span>
+    {:else}
+      <span class="text-muted-foreground">-</span>
+    {/if}
+  {:else if cell.column.id === "ingredient2"}
+    {#if row.original.ingredients[1]}
+      <span class="whitespace-nowrap">
+        <a
+          href="/items/{row.original.ingredients[1].item_id}"
+          class="text-blue-600 dark:text-blue-400 hover:underline"
+          >{row.original.ingredients[1].item_name}</a
+        >
+        <span class="text-muted-foreground">
+          x{row.original.ingredients[1].amount}</span
+        >
+      </span>
+    {:else}
+      <span class="text-muted-foreground">-</span>
+    {/if}
+  {:else if cell.column.id === "ingredient3"}
+    {#if row.original.ingredients[2]}
+      <span class="whitespace-nowrap">
+        <a
+          href="/items/{row.original.ingredients[2].item_id}"
+          class="text-blue-600 dark:text-blue-400 hover:underline"
+          >{row.original.ingredients[2].item_name}</a
+        >
+        <span class="text-muted-foreground">
+          x{row.original.ingredients[2].amount}</span
+        >
+      </span>
+    {:else}
+      <span class="text-muted-foreground">-</span>
+    {/if}
+  {:else}
+    {cell.getValue()}
+  {/if}
+{/snippet}
+
+{#snippet renderToolbar({ table }: { table: TanstackTable<RecipeRow> })}
+  {@const typeCol = table.getColumn("type")}
+  {#if typeCol}
+    <DataTableFacetedFilter
+      column={typeCol}
+      title="Type"
+      options={[
+        { label: "Alchemy", value: "Alchemy" },
+        { label: "Cooking", value: "Cooking" },
+        { label: "Crafting", value: "Crafting" },
+      ]}
+    />
+  {/if}
+{/snippet}
+
+<svelte:head>
+  <title>Recipes - Ancient Kingdoms Compendium</title>
+  <meta
+    name="description"
+    content="Browse all crafting recipes in Ancient Kingdoms. Filter by type: Alchemy, Cooking, and Crafting."
+  />
+</svelte:head>
+
+<div class="container mx-auto p-8 space-y-6">
+  <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Recipes" }]} />
+
+  <h1 class="text-3xl font-bold">Recipes</h1>
+
+  <DataTable
+    data={dataWithVirtual}
+    {columns}
+    {columnLabels}
+    {renderCell}
+    {renderHeader}
+    {renderToolbar}
+    pageSize={PAGE_SIZE}
+    initialSorting={[
+      { id: "type", desc: false },
+      { id: "tier", desc: false },
+      { id: "result_item_name", desc: false },
+    ]}
+    urlKey="recipes"
+    showPagination={true}
+    showSearch={true}
+    showColumnToggle={false}
+    zebraStripe={true}
+    paginateStaticHtml={true}
+    searchPlaceholder="Search recipes..."
+    class="bg-muted/30"
+  />
+</div>
