@@ -8,6 +8,7 @@ public class GatherItemData
     public string id { get; set; }
     public string name { get; set; }
     public string zone_id { get; set; }
+    public string sub_zone_id { get; set; }
     public Position position { get; set; }
     public bool is_template { get; set; }
 

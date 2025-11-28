@@ -60,7 +60,7 @@ def _infer_placeholder_spawns(conn: sqlite3.Connection) -> int:
         # Get all spawn locations of the parent monster
         cursor.execute(
             """
-            SELECT zone_id, position_x, position_y, position_z
+            SELECT zone_id, sub_zone_id, position_x, position_y, position_z
             FROM monster_spawns
             WHERE monster_id = ?
         """,
@@ -69,22 +69,23 @@ def _infer_placeholder_spawns(conn: sqlite3.Connection) -> int:
 
         parent_spawns = cursor.fetchall()
 
-        for zone_id, pos_x, pos_y, pos_z in parent_spawns:
+        for zone_id, sub_zone_id, pos_x, pos_y, pos_z in parent_spawns:
             spawn_id = f"{placeholder_id}_{zone_id}_from_{parent_id}"
 
             cursor.execute(
                 """
                 INSERT INTO monster_spawns (
-                    id, monster_id, zone_id,
+                    id, monster_id, zone_id, sub_zone_id,
                     position_x, position_y, position_z,
                     move_probability, move_distance, is_patrolling, patrol_waypoints,
                     spawn_type, source_monster_id, source_monster_name, source_spawn_probability
-                ) VALUES (?, ?, ?, ?, ?, ?, 0, 0, 0, '[]', 'placeholder', ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, 0, 0, 0, '[]', 'placeholder', ?, ?, ?)
             """,
                 (
                     spawn_id,
                     placeholder_id,
                     zone_id,
+                    sub_zone_id,
                     pos_x,
                     pos_y,
                     pos_z,
@@ -117,7 +118,7 @@ def _infer_altar_spawns(conn: sqlite3.Connection) -> int:
 
     # Get all altars with their wave data
     cursor.execute("""
-        SELECT id, name, zone_id, waves,
+        SELECT id, name, zone_id, sub_zone_id, waves,
                required_activation_item_id, required_activation_item_name
         FROM altars
         WHERE waves IS NOT NULL
@@ -131,6 +132,7 @@ def _infer_altar_spawns(conn: sqlite3.Connection) -> int:
         altar_id,
         altar_name,
         zone_id,
+        sub_zone_id,
         waves_json,
         activation_item_id,
         activation_item_name,
@@ -176,17 +178,18 @@ def _infer_altar_spawns(conn: sqlite3.Connection) -> int:
                 cursor.execute(
                     """
                     INSERT INTO monster_spawns (
-                        id, monster_id, zone_id,
+                        id, monster_id, zone_id, sub_zone_id,
                         position_x, position_y, position_z,
                         move_probability, move_distance, is_patrolling, patrol_waypoints,
                         spawn_type, source_altar_id, source_altar_name, source_altar_wave,
                         source_altar_activation_item_id, source_altar_activation_item_name
-                    ) VALUES (?, ?, ?, ?, ?, ?, 0, 0, 0, '[]', 'altar', ?, ?, ?, ?, ?)
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, 0, 0, 0, '[]', 'altar', ?, ?, ?, ?, ?)
                 """,
                     (
                         spawn_id,
                         monster_id,
                         zone_id,
+                        sub_zone_id,
                         pos_x,
                         pos_y,
                         pos_z,

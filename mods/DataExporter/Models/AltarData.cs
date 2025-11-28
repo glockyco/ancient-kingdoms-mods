@@ -30,6 +30,7 @@ public class AltarData
 
     // Location
     public string zone_id { get; set; }
+    public string sub_zone_id { get; set; }
     public Position position { get; set; }
 
     // Requirements

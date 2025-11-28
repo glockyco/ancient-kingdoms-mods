@@ -289,6 +289,7 @@ class NpcSpawnData(BaseModel):
     id: str
     npc_id: str
     zone_id: str
+    sub_zone_id: str | None = None
     position: Position
 
     # Movement and patrol (location-specific)
@@ -572,7 +573,9 @@ class PortalData(BaseModel):
     id: str
     is_template: bool = False
     from_zone_id: str
+    from_sub_zone_id: str | None = None
     to_zone_id: str
+    to_sub_zone_id: str | None = None
     position: Position
     destination: Position
     orientation: Position | None = None
@@ -589,6 +592,7 @@ class TreasureLocationData(BaseModel):
 
     id: str
     zone_id: str
+    sub_zone_id: str | None = None
     position: Position
     required_map_id: str
     reward_id: str | None = None
@@ -661,6 +665,7 @@ class GatherItemData(BaseModel):
     id: str
     name: str
     zone_id: str | None = None
+    sub_zone_id: str | None = None
     position: Position | None = None
     is_template: bool = False
     is_plant: bool = False
@@ -801,6 +806,7 @@ class AltarData(BaseModel):
     name: str
     type: str  # "forgotten" or "avatar"
     zone_id: str = "unknown"
+    sub_zone_id: str | None = None
     position: Position
     min_level_required: int = 0
     required_activation_item_id: str | None = None

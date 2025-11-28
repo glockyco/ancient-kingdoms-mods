@@ -407,12 +407,13 @@ def load_gather_items(conn: sqlite3.Connection, export_dir: Path) -> None:
         deduplicated_resource = resources_seen[spawn.name]
         cursor.execute(
             """INSERT INTO gathering_resource_spawns
-               (id, resource_id, zone_id, position_x, position_y, position_z)
-               VALUES (?, ?, ?, ?, ?, ?)""",
+               (id, resource_id, zone_id, sub_zone_id, position_x, position_y, position_z)
+               VALUES (?, ?, ?, ?, ?, ?, ?)""",
             (
                 spawn.id,
                 deduplicated_resource.id,
                 spawn.zone_id,
+                spawn.sub_zone_id,
                 spawn.position.x if spawn.position else None,
                 spawn.position.y if spawn.position else None,
                 spawn.position.z if spawn.position else None,
@@ -426,6 +427,7 @@ def load_gather_items(conn: sqlite3.Connection, export_dir: Path) -> None:
             "id": chest.id,
             "name": chest.name,
             "zone_id": chest.zone_id,
+            "sub_zone_id": chest.sub_zone_id,
             "key_required_id": chest.tool_required_id,  # tool_required_id is the key for chests
             "gold_min": chest.gold_min,
             "gold_max": chest.gold_max,

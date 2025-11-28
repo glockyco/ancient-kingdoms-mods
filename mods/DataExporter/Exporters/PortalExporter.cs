@@ -37,27 +37,33 @@ public class PortalExporter : BaseExporter
                 continue;
             }
 
-            var fromZoneId = GetZoneIdFromPosition(portal.transform.position);
-            var toZoneId = GetZoneIdFromByte(portal.idZone);
+            if (portal.destination == null)
+            {
+                Logger.Warning($"Portal at {portal.transform.position} has no destination, skipping");
+                continue;
+            }
+
+            var fromZoneInfo = GetZoneInfoFromPosition(portal.transform.position);
+            var toZoneInfo = GetZoneInfoFromPosition(portal.destination.position);
 
             var portalData = new PortalData
             {
-                id = $"portal_{fromZoneId}_to_{toZoneId}_{portal.GetInstanceID()}",
+                id = $"portal_{fromZoneInfo.ZoneId}_to_{toZoneInfo.ZoneId}_{portal.GetInstanceID()}",
                 is_template = false,
-                from_zone_id = fromZoneId,
-                to_zone_id = toZoneId,
+                from_zone_id = fromZoneInfo.ZoneId,
+                from_sub_zone_id = fromZoneInfo.SubZoneId,
+                to_zone_id = toZoneInfo.ZoneId,
+                to_sub_zone_id = toZoneInfo.SubZoneId,
                 position = new Position(
                     portal.transform.position.x,
                     portal.transform.position.y,
                     portal.transform.position.z
                 ),
-                destination = portal.destination != null
-                    ? new Position(
-                        portal.destination.position.x,
-                        portal.destination.position.y,
-                        portal.destination.position.z
-                    )
-                    : null,
+                destination = new Position(
+                    portal.destination.position.x,
+                    portal.destination.position.y,
+                    portal.destination.position.z
+                ),
                 required_item_id = portal.key != null ? SanitizeId(portal.key.name) : null,
                 level_required = portal.itemLevelRequired,
                 is_closed = portal.isClosed,

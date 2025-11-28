@@ -7,10 +7,12 @@ public class PortalData
 
     // Location
     public string from_zone_id { get; set; }
+    public string from_sub_zone_id { get; set; }
     public Position position { get; set; }
 
     // Destination
     public string to_zone_id { get; set; }
+    public string to_sub_zone_id { get; set; }
     public Position destination { get; set; }
     public Position orientation { get; set; }
 

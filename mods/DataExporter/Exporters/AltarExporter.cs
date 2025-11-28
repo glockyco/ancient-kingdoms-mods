@@ -66,12 +66,14 @@ public class AltarExporter : BaseExporter
         var nameText = altar.nameOverlay != null ? altar.nameOverlay.text : "Unknown Altar";
         var altarId = $"altar_{SanitizeId(nameText)}_{altar.GetInstanceID()}";
 
+        var zoneInfo = GetZoneInfoFromPosition(altar.transform.position);
         var altarData = new AltarData
         {
             id = altarId,
             name = nameText,
             type = "forgotten",
-            zone_id = GetZoneIdFromPosition(altar.transform.position),
+            zone_id = zoneInfo.ZoneId,
+            sub_zone_id = zoneInfo.SubZoneId,
             position = new Position(
                 altar.transform.position.x,
                 altar.transform.position.y,
@@ -130,12 +132,14 @@ public class AltarExporter : BaseExporter
         var nameText = altar.nameOverlay != null ? altar.nameOverlay.text : "Unknown Altar";
         var altarId = $"altar_{SanitizeId(nameText)}_{altar.GetInstanceID()}";
 
+        var zoneInfo = GetZoneInfoFromPosition(altar.transform.position);
         var altarData = new AltarData
         {
             id = altarId,
             name = nameText,
             type = "avatar",
-            zone_id = GetZoneIdFromPosition(altar.transform.position),
+            zone_id = zoneInfo.ZoneId,
+            sub_zone_id = zoneInfo.SubZoneId,
             position = new Position(
                 altar.transform.position.x,
                 altar.transform.position.y,

@@ -203,12 +203,13 @@ public class NpcExporter : BaseExporter
                 if (isTemplate)
                     continue;  // Skip templates - they don't have spawn locations
 
-                var zoneId = GetZoneIdFromPosition(npc.transform.position);
+                var zoneInfo = GetZoneInfoFromPosition(npc.transform.position);
                 var spawnData = new NpcSpawnData
                 {
-                    id = $"{name}_{zoneId}_{npc.GetInstanceID()}",
+                    id = $"{name}_{zoneInfo.ZoneId}_{npc.GetInstanceID()}",
                     npc_id = name,  // reference to canonical NPC
-                    zone_id = zoneId,
+                    zone_id = zoneInfo.ZoneId,
+                    sub_zone_id = zoneInfo.SubZoneId,
                     position = new Position(
                         npc.transform.position.x,
                         npc.transform.position.y,

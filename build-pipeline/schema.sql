@@ -67,6 +67,7 @@ CREATE TABLE altars (
     name TEXT NOT NULL,
     type TEXT NOT NULL,                     -- "forgotten" or "avatar"
     zone_id TEXT REFERENCES zones(id),
+    sub_zone_id TEXT REFERENCES zone_triggers(id),
     position_x REAL,
     position_y REAL,
     position_z REAL,
@@ -90,6 +91,7 @@ CREATE TABLE altars (
 );
 
 CREATE INDEX idx_altars_zone_id ON altars(zone_id);
+CREATE INDEX idx_altars_sub_zone ON altars(sub_zone_id);
 CREATE INDEX idx_altars_type ON altars(type);
 CREATE INDEX idx_altars_min_level ON altars(min_level_required);
 
@@ -448,6 +450,7 @@ CREATE TABLE npc_spawns (
     id TEXT PRIMARY KEY,
     npc_id TEXT NOT NULL REFERENCES npcs(id),
     zone_id TEXT NOT NULL REFERENCES zones(id),
+    sub_zone_id TEXT REFERENCES zone_triggers(id),
     position_x REAL,
     position_y REAL,
     position_z REAL,
@@ -462,6 +465,7 @@ CREATE TABLE npc_spawns (
 
 CREATE INDEX idx_npc_spawns_npc ON npc_spawns(npc_id);
 CREATE INDEX idx_npc_spawns_zone ON npc_spawns(zone_id);
+CREATE INDEX idx_npc_spawns_sub_zone ON npc_spawns(sub_zone_id);
 
 -- =============================================================================
 -- QUESTS
@@ -693,7 +697,9 @@ CREATE TABLE portals (
     id TEXT PRIMARY KEY,
     is_template BOOLEAN DEFAULT 0,
     from_zone_id TEXT REFERENCES zones(id),
+    from_sub_zone_id TEXT REFERENCES zone_triggers(id),
     to_zone_id TEXT REFERENCES zones(id),
+    to_sub_zone_id TEXT REFERENCES zone_triggers(id),
     position_x REAL,
     position_y REAL,
     position_z REAL,
@@ -710,7 +716,9 @@ CREATE TABLE portals (
 );
 
 CREATE INDEX idx_portals_from_zone ON portals(from_zone_id);
+CREATE INDEX idx_portals_from_sub_zone ON portals(from_sub_zone_id);
 CREATE INDEX idx_portals_to_zone ON portals(to_zone_id);
+CREATE INDEX idx_portals_to_sub_zone ON portals(to_sub_zone_id);
 CREATE INDEX idx_portals_is_template ON portals(is_template) WHERE is_template = 0;
 
 -- =============================================================================
@@ -720,6 +728,7 @@ CREATE INDEX idx_portals_is_template ON portals(is_template) WHERE is_template =
 CREATE TABLE treasure_locations (
     id TEXT PRIMARY KEY,
     zone_id TEXT REFERENCES zones(id),
+    sub_zone_id TEXT REFERENCES zone_triggers(id),
     position_x REAL,
     position_y REAL,
     position_z REAL,
@@ -728,6 +737,7 @@ CREATE TABLE treasure_locations (
 );
 
 CREATE INDEX idx_treasure_locations_zone ON treasure_locations(zone_id);
+CREATE INDEX idx_treasure_locations_sub_zone ON treasure_locations(sub_zone_id);
 CREATE INDEX idx_treasure_locations_map ON treasure_locations(required_map_id);
 
 -- =============================================================================
@@ -810,6 +820,7 @@ CREATE TABLE gathering_resource_spawns (
     id TEXT PRIMARY KEY,
     resource_id TEXT NOT NULL REFERENCES gathering_resources(id),
     zone_id TEXT NOT NULL REFERENCES zones(id),
+    sub_zone_id TEXT REFERENCES zone_triggers(id),
     position_x REAL,
     position_y REAL,
     position_z REAL
@@ -817,6 +828,7 @@ CREATE TABLE gathering_resource_spawns (
 
 CREATE INDEX idx_gathering_resource_spawns_resource ON gathering_resource_spawns(resource_id);
 CREATE INDEX idx_gathering_resource_spawns_zone ON gathering_resource_spawns(zone_id);
+CREATE INDEX idx_gathering_resource_spawns_sub_zone ON gathering_resource_spawns(sub_zone_id);
 
 -- =============================================================================
 -- CHESTS
@@ -828,6 +840,7 @@ CREATE TABLE chests (
 
     -- Location
     zone_id TEXT NOT NULL REFERENCES zones(id),
+    sub_zone_id TEXT REFERENCES zone_triggers(id),
     position_x REAL,
     position_y REAL,
     position_z REAL,
@@ -850,6 +863,7 @@ CREATE TABLE chests (
 );
 
 CREATE INDEX idx_chests_zone ON chests(zone_id);
+CREATE INDEX idx_chests_sub_zone ON chests(sub_zone_id);
 CREATE INDEX idx_chests_key ON chests(key_required_id);
 
 -- =============================================================================

@@ -45,13 +45,14 @@ public class TreasureLocationExporter : BaseExporter
             }
 
             var mapId = SanitizeId(mapItem.name);
-            var zoneId = GetZoneIdFromPosition(location.transform.position);
+            var zoneInfo = GetZoneInfoFromPosition(location.transform.position);
             var rewardId = mapItem.reward != null ? SanitizeId(mapItem.reward.name) : null;
 
             var locationData = new TreasureLocationData
             {
                 id = $"treasure_{mapId}_{location.GetInstanceID()}",
-                zone_id = zoneId,
+                zone_id = zoneInfo.ZoneId,
+                sub_zone_id = zoneInfo.SubZoneId,
                 position = new Position(
                     location.transform.position.x,
                     location.transform.position.y,
@@ -62,7 +63,7 @@ public class TreasureLocationExporter : BaseExporter
             };
 
             locationList.Add(locationData);
-            Logger.Msg($"  Found treasure location for {mapId} in {zoneId} at ({location.transform.position.x:F1}, {location.transform.position.y:F1})");
+            Logger.Msg($"  Found treasure location for {mapId} in {zoneInfo.ZoneId} at ({location.transform.position.x:F1}, {location.transform.position.y:F1})");
         }
 
         WriteJson(locationList, "treasure_locations.json");
