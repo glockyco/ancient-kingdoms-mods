@@ -117,6 +117,7 @@
     filters?: ColumnFiltersState;
     visibility?: VisibilityState;
     page?: number;
+    sorting?: SortingState;
     ts?: number; // timestamp for cleanup
   }
 
@@ -181,6 +182,11 @@
         state.visibility = visibilityDiff;
 
       if (pagination.pageIndex > 0) state.page = pagination.pageIndex;
+
+      // Only store sorting if different from initial
+      const sortingChanged =
+        JSON.stringify(sorting) !== JSON.stringify(initialSorting);
+      if (sortingChanged && sorting.length > 0) state.sorting = sorting;
 
       if (Object.keys(state).length > 0) {
         state.ts = Date.now();
@@ -288,6 +294,18 @@
       );
     }
 
+    // Add sorting (only if different from initial)
+    const sortingChanged =
+      JSON.stringify(sorting) !== JSON.stringify(initialSorting);
+    if (sortingChanged && sorting.length > 0) {
+      const sortStr = sorting
+        .map((s) => `${s.id}:${s.desc ? "desc" : "asc"}`)
+        .join(",");
+      newParams.push(
+        `${encodeURIComponent(`${prefix}sort`)}=${encodeURIComponent(sortStr)}`,
+      );
+    }
+
     const queryString = newParams.join("&");
     const newUrl = queryString
       ? `${window.location.pathname}?${queryString}`
@@ -302,6 +320,7 @@
       const restoredVisibility: VisibilityState = {};
       let hasUrlState = false;
       let restoredPage: number | null = null;
+      let restoredSorting: SortingState | null = null;
 
       // Find all URL params that match our prefix
       $page.url.searchParams.forEach((value, key) => {
@@ -326,6 +345,12 @@
             if (!isNaN(pageNum) && pageNum > 0) {
               restoredPage = pageNum - 1;
             }
+          } else if (paramKey === "sort") {
+            const sortParts = value.split(",").filter(Boolean);
+            restoredSorting = sortParts.map((part) => {
+              const [id, dir] = part.split(":");
+              return { id, desc: dir === "desc" };
+            });
           } else {
             const values = value.split(",").filter(Boolean);
             if (values.length > 0) {
@@ -334,6 +359,9 @@
           }
         }
       });
+
+      // Track if we restored from localStorage (need to sync URL after hydration)
+      let restoredFromStorage = false;
 
       // If URL has state, use it; otherwise fall back to localStorage
       if (hasUrlState) {
@@ -349,10 +377,14 @@
         if (restoredPage !== null) {
           pagination = { ...pagination, pageIndex: restoredPage };
         }
+        if (restoredSorting !== null) {
+          sorting = restoredSorting;
+        }
       } else {
         // No URL state, try localStorage
         const stored = loadFromStorage();
         if (stored) {
+          restoredFromStorage = true;
           if (stored.search) globalFilter = stored.search;
           if (stored.filters && stored.filters.length > 0) {
             columnFilters = stored.filters;
@@ -366,6 +398,9 @@
           if (stored.page !== undefined && stored.page > 0) {
             pagination = { ...pagination, pageIndex: stored.page };
           }
+          if (stored.sorting && stored.sorting.length > 0) {
+            sorting = stored.sorting;
+          }
         }
       }
 
@@ -378,6 +413,13 @@
       ) {
         cleanupOldEntries();
         localStorage.setItem("table-state-last-cleanup", String(now));
+      }
+
+      // Sync URL after setting isHydrated if we restored from localStorage
+      if (restoredFromStorage) {
+        isHydrated = true;
+        syncStateToUrl();
+        return;
       }
     }
     isHydrated = true;
@@ -403,6 +445,9 @@
       },
       onSortingChange: (updater) => {
         sorting = typeof updater === "function" ? updater(sorting) : updater;
+        // Reset to first page when sorting changes
+        pagination = { ...pagination, pageIndex: 0 };
+        syncStateToUrl();
       },
       onPaginationChange: (updater) => {
         pagination =
@@ -441,21 +486,28 @@
     allColumns.filter((col) => col.getCanHide()),
   );
 
-  // Check if any filters/search/visibility have been modified from defaults
+  // Check if any filters/search/visibility/sorting have been modified from defaults
   const hasModifiedVisibility = $derived(
     Object.entries(columnVisibility).some(
       ([key, value]) => value !== (initialColumnVisibility[key] ?? true),
     ),
   );
+  const hasModifiedSorting = $derived(
+    JSON.stringify(sorting) !== JSON.stringify(initialSorting),
+  );
   const hasActiveFilters = $derived(
-    globalFilter !== "" || columnFilters.length > 0 || hasModifiedVisibility,
+    globalFilter !== "" ||
+      columnFilters.length > 0 ||
+      hasModifiedVisibility ||
+      hasModifiedSorting,
   );
 
-  // Reset all filters, search, and column visibility to defaults
+  // Reset all filters, search, sorting, and column visibility to defaults
   function resetFilters() {
     globalFilter = "";
     columnFilters = [];
     columnVisibility = { ...initialColumnVisibility };
+    sorting = [...initialSorting];
     pagination = { pageIndex: 0, pageSize };
     // Clear localStorage
     if (storageKey) {
