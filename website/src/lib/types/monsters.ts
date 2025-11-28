@@ -17,6 +17,8 @@ export interface MonsterSpawnZone {
   zone_name: string;
   spawn_count: number;
   spawn_type: "regular" | "placeholder" | "altar" | "summon";
+  // Sub-zone info (only shown when zone has multiple sub-zones but monster spawns in single one)
+  sub_zone_name?: string | null;
   // Placeholder spawn source
   source_monster_id?: string;
   source_monster_name?: string;

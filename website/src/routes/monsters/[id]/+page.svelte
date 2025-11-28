@@ -220,7 +220,9 @@
       class="text-blue-600 dark:text-blue-400 hover:underline"
     >
       {row.original.zone_name}
-    </a>
+    </a>{#if row.original.sub_zone_name}<span class="text-muted-foreground"
+        >&nbsp;({row.original.sub_zone_name})</span
+      >{/if}
   {:else if cell.column.id === "respawn"}
     <span class="ml-auto">{formatTime(totalRespawnTime)}</span>
   {:else if cell.column.id === "chance"}

@@ -192,8 +192,11 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
     placeholder: null,
   };
 
-  // Aggregate regular spawns by zone
-  const regularByZone = new Map<string, MonsterSpawnZone>();
+  // Aggregate regular spawns by zone, tracking sub-zones
+  const regularByZone = new Map<
+    string,
+    MonsterSpawnZone & { sub_zone_ids: Set<string | null> }
+  >();
   // Aggregate summon spawns by zone (all summon spawns in a zone have same kill req)
   const summonByZone = new Map<string, SummonSpawnInfo>();
   // Aggregate altar spawns by altar (collect wave numbers)
@@ -206,12 +209,18 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
       const existing = regularByZone.get(spawn.zone_id);
       if (existing) {
         existing.spawn_count++;
+        existing.sub_zone_ids.add(spawn.sub_zone_id);
+        if (spawn.sub_zone_name) {
+          existing.sub_zone_name = spawn.sub_zone_name;
+        }
       } else {
         regularByZone.set(spawn.zone_id, {
           zone_id: spawn.zone_id,
           zone_name: spawn.zone_name,
           spawn_count: 1,
           spawn_type: "regular",
+          sub_zone_ids: new Set([spawn.sub_zone_id]),
+          sub_zone_name: spawn.sub_zone_name,
         });
       }
     } else if (
@@ -263,10 +272,46 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
     }
   }
 
-  // Convert maps to arrays
-  spawns.regular = Array.from(regularByZone.values()).sort((a, b) =>
-    a.zone_name.localeCompare(b.zone_name),
-  );
+  // Get sub-zone counts per zone for determining whether to show sub-zone
+  const zoneIdsWithRegularSpawns = Array.from(regularByZone.keys());
+  const subZoneCounts = new Map<string, number>();
+  if (zoneIdsWithRegularSpawns.length > 0) {
+    const placeholders = zoneIdsWithRegularSpawns.map(() => "?").join(",");
+    const subZoneCountsRaw = db
+      .prepare(
+        `SELECT z.id as zone_text_id, COUNT(DISTINCT zt.id) as count
+         FROM zones z
+         JOIN zone_triggers zt ON zt.zone_id = z.zone_id
+         WHERE z.id IN (${placeholders})
+         GROUP BY z.id`,
+      )
+      .all(...zoneIdsWithRegularSpawns) as Array<{
+      zone_text_id: string;
+      count: number;
+    }>;
+    for (const row of subZoneCountsRaw) {
+      subZoneCounts.set(row.zone_text_id, row.count);
+    }
+  }
+
+  // Convert maps to arrays, filtering sub_zone_name based on criteria
+  spawns.regular = Array.from(regularByZone.values())
+    .map((spawn) => {
+      const zoneSubZoneCount = subZoneCounts.get(spawn.zone_id) || 0;
+      const monsterSubZoneCount = spawn.sub_zone_ids.size;
+      // Only show sub-zone if zone has >1 sub-zones AND monster spawns in exactly 1
+      const showSubZone =
+        zoneSubZoneCount > 1 &&
+        monsterSubZoneCount === 1 &&
+        !spawn.sub_zone_ids.has(null);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { sub_zone_ids, ...rest } = spawn;
+      return {
+        ...rest,
+        sub_zone_name: showSubZone ? spawn.sub_zone_name : null,
+      };
+    })
+    .sort((a, b) => a.zone_name.localeCompare(b.zone_name));
   spawns.summon = Array.from(summonByZone.values()).sort((a, b) =>
     a.zone_name.localeCompare(b.zone_name),
   );
