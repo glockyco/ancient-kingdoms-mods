@@ -532,7 +532,10 @@
                   class="text-blue-600 dark:text-blue-400 hover:underline"
                 >
                   {summon.zone_name}
-                </a>
+                </a>{#if summon.sub_zone_name && summon.sub_zone_name.toLowerCase() !== summon.zone_name.toLowerCase()}
+                  <span class="text-muted-foreground"
+                    >&nbsp;({summon.sub_zone_name})</span
+                  >{/if}
                 <span class="text-muted-foreground"> to summon</span>
               </div>
             {/each}
@@ -660,7 +663,10 @@
               class="text-blue-600 dark:text-blue-400 hover:underline"
             >
               {summon.zone_name}
-            </a>
+            </a>{#if summon.sub_zone_name && summon.sub_zone_name.toLowerCase() !== summon.zone_name.toLowerCase()}
+              <span class="text-muted-foreground"
+                >&nbsp;({summon.sub_zone_name})</span
+              >{/if}
             <span class="text-muted-foreground"> to summon </span>
             <a
               href="/monsters/{summon.summoned_monster_id}"

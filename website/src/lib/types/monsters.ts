@@ -49,6 +49,8 @@ export interface MonsterSpawnData {
 export interface SummonSpawnInfo {
   zone_id: string;
   zone_name: string;
+  sub_zone_id: string | null;
+  sub_zone_name: string | null;
   kill_monster_id: string;
   kill_monster_name: string;
   kill_count: number;
@@ -190,6 +192,8 @@ export interface SummonsInfo {
   kill_count: number;
   zone_id: string;
   zone_name: string;
+  sub_zone_id: string | null;
+  sub_zone_name: string | null;
 }
 
 /**

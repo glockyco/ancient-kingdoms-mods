@@ -145,6 +145,8 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
     SELECT
       z.id as zone_id,
       z.name as zone_name,
+      ms.sub_zone_id,
+      zt.name as sub_zone_name,
       ms.spawn_type,
       ms.source_monster_id,
       ms.source_monster_name,
@@ -159,12 +161,15 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
       ms.source_summon_kill_count
     FROM monster_spawns ms
     JOIN zones z ON z.id = ms.zone_id
+    LEFT JOIN zone_triggers zt ON zt.id = ms.sub_zone_id
     WHERE ms.monster_id = ?
   `,
     )
     .all(params.id) as Array<{
     zone_id: string;
     zone_name: string;
+    sub_zone_id: string | null;
+    sub_zone_name: string | null;
     spawn_type: string;
     source_monster_id: string | null;
     source_monster_name: string | null;
@@ -217,6 +222,8 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
         summonByZone.set(spawn.zone_id, {
           zone_id: spawn.zone_id,
           zone_name: spawn.zone_name,
+          sub_zone_id: spawn.sub_zone_id,
+          sub_zone_name: spawn.sub_zone_name,
           kill_monster_id: spawn.source_summon_kill_monster_id,
           kill_monster_name: spawn.source_summon_kill_monster_name || "",
           kill_count: spawn.source_summon_kill_count || 0,
@@ -319,10 +326,13 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
       m.name as summoned_monster_name,
       ms.source_summon_kill_count as kill_count,
       z.id as zone_id,
-      z.name as zone_name
+      z.name as zone_name,
+      ms.sub_zone_id,
+      zt.name as sub_zone_name
     FROM monster_spawns ms
     JOIN monsters m ON m.id = ms.monster_id
     JOIN zones z ON z.id = ms.zone_id
+    LEFT JOIN zone_triggers zt ON zt.id = ms.sub_zone_id
     WHERE ms.source_summon_kill_monster_id = ?
   `,
     )
