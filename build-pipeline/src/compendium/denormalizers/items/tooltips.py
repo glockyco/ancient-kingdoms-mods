@@ -181,17 +181,33 @@ def _parse_tooltip(item: dict) -> str:
         "DAMAGEBONUS": str(stats.get("damage", 0)),
         "MAGICDAMAGEBONUS": str(stats.get("magic_damage", 0)),
         "DELAY": str(item.get("weapon_delay") or 0),
-        # Combat mechanics (with % suffix for percentage values)
-        "HASTEBONUS": f"{stats['haste']}%" if stats.get("haste") else "0",
-        "SPELLHASTEBONUS": (
-            f"{stats['spell_haste']}%" if stats.get("spell_haste") else "0"
+        # Combat mechanics (percentage values stored as 0.0-1.0, display as 0-100)
+        # Matches C#'s "0.##" format: up to 2 decimal places, trailing zeros removed
+        # Note: The raw tooltips already include % suffix, so we only output the number
+        "HASTEBONUS": (
+            f"{abs(stats['haste'] * 100):.2f}".rstrip("0").rstrip(".")
+            if stats.get("haste")
+            else "0"
         ),
-        "ACCURACYBONUS": f"{stats['accuracy']}%" if stats.get("accuracy") else "0",
+        "SPELLHASTEBONUS": (
+            f"{abs(stats['spell_haste'] * 100):.2f}".rstrip("0").rstrip(".")
+            if stats.get("spell_haste")
+            else "0"
+        ),
+        "ACCURACYBONUS": (
+            f"{abs(stats['accuracy'] * 100):.2f}".rstrip("0").rstrip(".")
+            if stats.get("accuracy")
+            else "0"
+        ),
         "BLOCKCHANCEBONUS": (
-            f"{stats['block_chance']}%" if stats.get("block_chance") else "0"
+            f"{abs(stats['block_chance'] * 100):.2f}".rstrip("0").rstrip(".")
+            if stats.get("block_chance")
+            else "0"
         ),
         "CRITICALCHANCEBONUS": (
-            f"{stats['critical_chance']}%" if stats.get("critical_chance") else "0"
+            f"{abs(stats['critical_chance'] * 100):.2f}".rstrip("0").rstrip(".")
+            if stats.get("critical_chance")
+            else "0"
         ),
         "HPREGENBONUS": str(stats.get("hp_regen_bonus", 0)),
         "MANAREGENBONUS": str(stats.get("mana_regen_bonus", 0)),
