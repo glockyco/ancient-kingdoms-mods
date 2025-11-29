@@ -3,7 +3,7 @@ namespace DataExporter.Models;
 public class PortalData
 {
     public string id { get; set; }
-    public bool is_template { get; set; }
+    public bool is_interactable { get; set; }
 
     // Location
     public string from_zone_id { get; set; }
