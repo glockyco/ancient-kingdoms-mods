@@ -1,7 +1,5 @@
 <script lang="ts">
-  import { goto } from "$app/navigation";
   import * as Card from "$lib/components/ui/card";
-  import { Input } from "$lib/components/ui/input";
   import Gem from "@lucide/svelte/icons/gem";
   import MapPin from "@lucide/svelte/icons/map-pin";
   import Skull from "@lucide/svelte/icons/skull";
@@ -10,18 +8,10 @@
   import Zap from "@lucide/svelte/icons/zap";
   import FlaskConical from "@lucide/svelte/icons/flask-conical";
   import Search from "@lucide/svelte/icons/search";
+  import Map from "@lucide/svelte/icons/map";
   import ArrowRight from "@lucide/svelte/icons/arrow-right";
 
   let { data } = $props();
-
-  let searchQuery = $state("");
-
-  function handleSearch(e: SubmitEvent) {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      goto(`/items?search=${encodeURIComponent(searchQuery.trim())}`);
-    }
-  }
 </script>
 
 <svelte:head>
@@ -35,20 +25,6 @@
     <p class="text-xl text-muted-foreground">
       Your guide to items, zones, monsters, and more
     </p>
-
-    <form onsubmit={handleSearch} class="js-only max-w-md mx-auto">
-      <div class="relative">
-        <Search
-          class="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground"
-        />
-        <Input
-          type="text"
-          placeholder="Search items, zones, monsters..."
-          bind:value={searchQuery}
-          class="pl-10 h-12 text-lg"
-        />
-      </div>
-    </form>
   </div>
 
   <!-- Available Sections -->
@@ -179,9 +155,6 @@
               <Users class="h-5 w-5 text-blue-500" />
             </div>
             <Card.Title class="text-base">NPCs</Card.Title>
-            <Card.Description class="text-xs"
-              >Vendors and trainers</Card.Description
-            >
           </div>
         </Card.Header>
       </Card.Root>
@@ -193,9 +166,6 @@
               <Scroll class="h-5 w-5 text-orange-500" />
             </div>
             <Card.Title class="text-base">Quests</Card.Title>
-            <Card.Description class="text-xs"
-              >Adventures and objectives</Card.Description
-            >
           </div>
         </Card.Header>
       </Card.Root>
@@ -207,9 +177,28 @@
               <Zap class="h-5 w-5 text-purple-500" />
             </div>
             <Card.Title class="text-base">Skills</Card.Title>
-            <Card.Description class="text-xs"
-              >Abilities and spells</Card.Description
-            >
+          </div>
+        </Card.Header>
+      </Card.Root>
+
+      <Card.Root class="opacity-50 bg-muted/30">
+        <Card.Header>
+          <div class="flex flex-col items-center text-center gap-2">
+            <div class="p-2 rounded-lg bg-cyan-500/10">
+              <Search class="h-5 w-5 text-cyan-500" />
+            </div>
+            <Card.Title class="text-base">Global Search</Card.Title>
+          </div>
+        </Card.Header>
+      </Card.Root>
+
+      <Card.Root class="opacity-50 bg-muted/30">
+        <Card.Header>
+          <div class="flex flex-col items-center text-center gap-2">
+            <div class="p-2 rounded-lg bg-teal-500/10">
+              <Map class="h-5 w-5 text-teal-500" />
+            </div>
+            <Card.Title class="text-base">Maps</Card.Title>
           </div>
         </Card.Header>
       </Card.Root>
