@@ -8,6 +8,7 @@
   import Zap from "@lucide/svelte/icons/zap";
   import FlaskConical from "@lucide/svelte/icons/flask-conical";
   import Flag from "@lucide/svelte/icons/flag";
+  import Leaf from "@lucide/svelte/icons/leaf";
   import Hammer from "@lucide/svelte/icons/hammer";
   import Search from "@lucide/svelte/icons/search";
   import Map from "@lucide/svelte/icons/map";
@@ -190,6 +191,17 @@
               <Flag class="h-5 w-5 text-rose-500" />
             </div>
             <Card.Title class="text-base">Factions</Card.Title>
+          </div>
+        </Card.Header>
+      </Card.Root>
+
+      <Card.Root class="opacity-50 bg-muted/30">
+        <Card.Header>
+          <div class="flex flex-col items-center text-center gap-2">
+            <div class="p-2 rounded-lg bg-lime-500/10">
+              <Leaf class="h-5 w-5 text-lime-500" />
+            </div>
+            <Card.Title class="text-base">Gatherables</Card.Title>
           </div>
         </Card.Header>
       </Card.Root>
