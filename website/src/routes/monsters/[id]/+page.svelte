@@ -73,11 +73,13 @@
   );
 
   // Player level input (for altar scaling calculation)
-  let playerLevelInput = $state(50);
-  let veteranLevelInput = $state(200);
+  // Default to monster's base level (clamped to 1-50) so users see baseline stats
+  const defaultPlayerLevel = Math.min(50, Math.max(1, data.monster.level));
+  let playerLevelInput = $state(defaultPlayerLevel);
+  let veteranLevelInput = $state(0);
 
   // Clamp inputs to valid ranges
-  const playerLevel = $derived(Math.min(50, Math.max(30, playerLevelInput)));
+  const playerLevel = $derived(Math.min(50, Math.max(1, playerLevelInput)));
   const veteranLevel = $derived(Math.min(200, Math.max(0, veteranLevelInput)));
 
   // Calculate effective monster level for altar scaling
@@ -716,7 +718,7 @@
             <input
               id="player-level"
               type="number"
-              min="30"
+              min="1"
               max="50"
               bind:value={playerLevelInput}
               class="w-20 px-2 py-1 rounded border bg-background text-foreground"

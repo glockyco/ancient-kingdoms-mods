@@ -105,10 +105,10 @@ def _infer_placeholder_spawns(conn: sqlite3.Connection) -> int:
 
 
 def _infer_altar_spawns(conn: sqlite3.Connection) -> int:
-    """Create spawn entries for altar-exclusive monsters.
+    """Create spawn entries for all altar wave monsters.
 
-    Some monsters only appear during altar wave events. This creates spawn
-    entries for those monsters based on the altar wave data.
+    Creates spawn entries for monsters that appear during altar wave events,
+    regardless of whether they also have regular world spawns.
 
     Returns:
         Count of spawn entries created
@@ -149,17 +149,6 @@ def _infer_altar_spawns(conn: sqlite3.Connection) -> int:
             for monster_data in monsters:
                 monster_id = monster_data.get("monster_id")
                 if not monster_id:
-                    continue
-
-                # Check if this monster has any regular spawns
-                cursor.execute(
-                    "SELECT COUNT(*) FROM monster_spawns WHERE monster_id = ? AND spawn_type = 'regular'",
-                    (monster_id,),
-                )
-                regular_spawn_count = cursor.fetchone()[0]
-
-                # Only create altar spawns for monsters with no regular spawns
-                if regular_spawn_count > 0:
                     continue
 
                 spawn_location = monster_data.get("spawn_location", {})
@@ -206,10 +195,10 @@ def _infer_altar_spawns(conn: sqlite3.Connection) -> int:
 
     if monsters_processed:
         console.print(
-            f"    Created spawns for {len(monsters_processed)} altar-exclusive monsters"
+            f"    Created spawns for {len(monsters_processed)} altar wave monsters"
         )
     else:
-        console.print("    No altar-exclusive monsters need spawn inference")
+        console.print("    No altar wave monsters found")
 
     return spawns_created
 
