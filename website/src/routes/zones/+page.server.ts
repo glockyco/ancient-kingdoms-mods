@@ -51,7 +51,7 @@ export const load: PageServerLoad = (): ZonesPageData => {
       (SELECT COUNT(DISTINCT p.to_zone_id) FROM portals p
        WHERE p.from_zone_id = z.id AND p.to_zone_id IS NOT NULL AND p.to_zone_id != z.id) as connection_count
     FROM zones z
-    ORDER BY z.name
+    ORDER BY level_min, level_max, z.name
   `,
     )
     .all() as ZoneListView[];

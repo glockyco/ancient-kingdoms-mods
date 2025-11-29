@@ -210,6 +210,7 @@
     pageSize={50}
     initialSorting={[
       { id: "level_min", desc: false },
+      { id: "level_max", desc: false },
       { id: "name", desc: false },
     ]}
     urlKey="zones"
