@@ -15,18 +15,28 @@ export const load: PageServerLoad = (): ZonesPageData => {
       z.name,
       z.is_dungeon,
       z.weather_type,
-      -- Level range from monsters (excluding critters)
+      -- Level range from monsters (excluding critters, unless zone only has critters)
       -- Critters are: type_name='Critter' OR (level 1 ambient creatures with no gold drops)
-      (SELECT MIN(m.level) FROM monster_spawns ms
-       JOIN monsters m ON m.id = ms.monster_id
-       WHERE ms.zone_id = z.id AND m.level > 0
-         AND m.type_name != 'Critter'
-         AND NOT (m.level = 1 AND m.gold_min = 0 AND m.gold_max = 0)) as level_min,
-      (SELECT MAX(m.level) FROM monster_spawns ms
-       JOIN monsters m ON m.id = ms.monster_id
-       WHERE ms.zone_id = z.id
-         AND m.type_name != 'Critter'
-         AND NOT (m.level = 1 AND m.gold_min = 0 AND m.gold_max = 0)) as level_max,
+      COALESCE(
+        (SELECT MIN(m.level) FROM monster_spawns ms
+         JOIN monsters m ON m.id = ms.monster_id
+         WHERE ms.zone_id = z.id AND m.level > 0
+           AND m.type_name != 'Critter'
+           AND NOT (m.level = 1 AND m.gold_min = 0 AND m.gold_max = 0)),
+        (SELECT MIN(m.level) FROM monster_spawns ms
+         JOIN monsters m ON m.id = ms.monster_id
+         WHERE ms.zone_id = z.id AND m.level > 0)
+      ) as level_min,
+      COALESCE(
+        (SELECT MAX(m.level) FROM monster_spawns ms
+         JOIN monsters m ON m.id = ms.monster_id
+         WHERE ms.zone_id = z.id
+           AND m.type_name != 'Critter'
+           AND NOT (m.level = 1 AND m.gold_min = 0 AND m.gold_max = 0)),
+        (SELECT MAX(m.level) FROM monster_spawns ms
+         JOIN monsters m ON m.id = ms.monster_id
+         WHERE ms.zone_id = z.id)
+      ) as level_max,
       -- Monster counts by type
       (SELECT COUNT(DISTINCT ms.monster_id) FROM monster_spawns ms
        JOIN monsters m ON m.id = ms.monster_id
