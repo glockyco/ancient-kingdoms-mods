@@ -83,4 +83,7 @@ public class NpcData
     public List<string> aggro_messages { get; set; } = new();
     public float aggro_message_probability { get; set; }
     public string summon_message { get; set; }
+
+    // Skills (for guards and hostile NPCs)
+    public List<string> skill_ids { get; set; } = new();
 }

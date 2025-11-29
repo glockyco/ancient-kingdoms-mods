@@ -157,4 +157,10 @@ public class SkillData
     // === SummonSkill fields (when skill_type = summon) ===
     public bool is_familiar { get; set; }
     public string pet_prefab_name { get; set; }
+
+    // === SummonSkillMonsters fields (when skill_type = summon_monsters, for boss monster-summoning) ===
+    public string summoned_monster_id { get; set; }
+    public int? summoned_monster_level { get; set; }
+    public int? summon_count_per_cast { get; set; }  // -1 = based on aggro count
+    public int? max_active_summons { get; set; }
 }

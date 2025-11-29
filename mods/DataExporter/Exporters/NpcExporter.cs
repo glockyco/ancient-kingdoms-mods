@@ -194,6 +194,18 @@ public class NpcExporter : BaseExporter
                 }
             }
 
+            // Export skill IDs (for guards and hostile NPCs)
+            if (canonical.skills != null && canonical.skills.skillTemplates != null)
+            {
+                foreach (var skillTemplate in canonical.skills.skillTemplates)
+                {
+                    if (skillTemplate != null && !string.IsNullOrEmpty(skillTemplate.name))
+                    {
+                        npcData.skill_ids.Add(SanitizeId(skillTemplate.name));
+                    }
+                }
+            }
+
             npcList.Add(npcData);
 
             // Export spawn points for all instances (excluding templates)

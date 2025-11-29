@@ -155,6 +155,10 @@ public class SkillExporter : BaseExporter
         var summonSkill = skill.TryCast<Il2Cpp.SummonSkill>();
         if (summonSkill != null) return "summon";
 
+        // SummonSkillMonsters inherits from ScriptableSkill directly, NOT from SummonSkill
+        var summonMonstersSkill = skill.TryCast<Il2Cpp.SummonSkillMonsters>();
+        if (summonMonstersSkill != null) return "summon_monsters";
+
         return "unknown";
     }
 
@@ -343,11 +347,26 @@ public class SkillExporter : BaseExporter
 
     private void PopulateSummonSkillFields(Il2Cpp.ScriptableSkill skill, SkillData skillData)
     {
+        // Handle SummonSkill (player pet summoning)
         var summonSkill = skill.TryCast<Il2Cpp.SummonSkill>();
-        if (summonSkill == null) return;
+        if (summonSkill != null)
+        {
+            skillData.is_familiar = summonSkill.isFamiliar;
+            skillData.pet_prefab_name = summonSkill.petPrefab != null ? summonSkill.petPrefab.name : null;
+            return;
+        }
 
-        skillData.is_familiar = summonSkill.isFamiliar;
-        skillData.pet_prefab_name = summonSkill.petPrefab != null ? summonSkill.petPrefab.name : null;
+        // Handle SummonSkillMonsters (boss monster summoning)
+        var summonMonstersSkill = skill.TryCast<Il2Cpp.SummonSkillMonsters>();
+        if (summonMonstersSkill != null)
+        {
+            skillData.summoned_monster_id = summonMonstersSkill.monster != null
+                ? SanitizeId(summonMonstersSkill.monster.name)
+                : null;
+            skillData.summoned_monster_level = summonMonstersSkill.levelMonster;
+            skillData.summon_count_per_cast = summonMonstersSkill.numberPetsBySummon;
+            skillData.max_active_summons = summonMonstersSkill.maxActivePets;
+        }
     }
 
     private Dictionary<string, List<string>> BuildSkillToClassesMapping()

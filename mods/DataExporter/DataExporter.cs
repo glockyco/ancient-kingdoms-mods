@@ -117,6 +117,10 @@ namespace DataExporter
                 var treasureLocationExporter = new TreasureLocationExporter(LoggerInstance, ExportPath);
                 treasureLocationExporter.Export();
 
+                // Export pets (mercenaries and familiars)
+                var petExporter = new PetExporter(LoggerInstance, ExportPath);
+                petExporter.Export();
+
                 var elapsed = DateTime.Now - startTime;
 
                 LoggerInstance.Msg("========================================");

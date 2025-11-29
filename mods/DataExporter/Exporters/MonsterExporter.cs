@@ -178,6 +178,18 @@ public class MonsterExporter : BaseExporter
                 }
             }
 
+            // Export skill IDs (skill_ids[0] is default attack, [1+] are special abilities)
+            if (canonical.skills != null && canonical.skills.skillTemplates != null)
+            {
+                foreach (var skillTemplate in canonical.skills.skillTemplates)
+                {
+                    if (skillTemplate != null && !string.IsNullOrEmpty(skillTemplate.name))
+                    {
+                        monsterData.skill_ids.Add(SanitizeId(skillTemplate.name));
+                    }
+                }
+            }
+
             monsterList.Add(monsterData);
 
             // Export spawn points for all instances (including non-templates)

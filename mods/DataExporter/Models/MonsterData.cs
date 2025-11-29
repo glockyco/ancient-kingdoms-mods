@@ -94,4 +94,7 @@ public class MonsterData
 
     // Lore and visuals (boss-specific)
     public string lore_boss { get; set; }
+
+    // Skills (skill_ids[0] is default attack, [1+] are special abilities)
+    public List<string> skill_ids { get; set; } = new();
 }
