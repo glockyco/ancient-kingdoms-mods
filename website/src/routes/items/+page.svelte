@@ -2,6 +2,7 @@
   import {
     DataTable,
     DataTableFacetedFilter,
+    DataTableRangeFilter,
     type ColumnDef,
     type Cell,
     type Row,
@@ -114,6 +115,20 @@
       accessorKey: "level_required",
       header: "Level",
       size: 100,
+      filterFn: (
+        row,
+        columnId,
+        filterValue: [number | null, number | null],
+      ) => {
+        const value = row.getValue(columnId) as number | null;
+        if (!filterValue) return true;
+        const [min, max] = filterValue;
+        if (min === null && max === null) return true;
+        if (value === null || value === 0) return min === null || min === 0;
+        if (min !== null && value < min) return false;
+        if (max !== null && value > max) return false;
+        return true;
+      },
     },
     {
       accessorKey: "slot",
@@ -226,6 +241,7 @@
   {@const typeCol = table.getColumn("item_type")}
   {@const slotCol = table.getColumn("slot")}
   {@const classCol = table.getColumn("class")}
+  {@const levelCol = table.getColumn("level_required")}
   {#if qualityCol}
     <DataTableFacetedFilter
       column={qualityCol}
@@ -265,6 +281,9 @@
         value: c,
       }))}
     />
+  {/if}
+  {#if levelCol}
+    <DataTableRangeFilter column={levelCol} title="Level" />
   {/if}
 {/snippet}
 
