@@ -80,7 +80,10 @@
     ].filter((r) => r.value !== 0),
   );
 
-  // Drop columns (bestiary column only for bosses/elites)
+  // Check if any drop has a note
+  const hasDropNotes = $derived(data.drops.some((d) => d.note !== null));
+
+  // Drop columns (bestiary column only for bosses/elites, note column if any drops have notes)
   const dropColumns = $derived.by(() => {
     const cols: ColumnDef<MonsterDrop>[] = [];
 
@@ -93,16 +96,30 @@
       });
     }
 
+    cols.push({
+      accessorKey: "item_name",
+      header: "Item",
+      minSize: 220,
+    });
+
+    if (hasDropNotes) {
+      cols.push({
+        accessorKey: "note",
+        header: "Note",
+        size: 230,
+      });
+    }
+
     cols.push(
-      {
-        accessorKey: "item_name",
-        header: "Item",
-        minSize: 220,
-      },
       {
         accessorKey: "rate",
         header: "Drop Rate",
         size: 140,
+      },
+      {
+        accessorKey: "quality",
+        header: "Quality",
+        enableHiding: false,
       },
     );
 
@@ -201,8 +218,12 @@
       itemName={row.original.item_name}
       tooltipHtml={row.original.tooltip_html}
     />
+  {:else if cell.column.id === "note"}
+    <span class="text-muted-foreground">{row.original.note ?? ""}</span>
   {:else if cell.column.id === "rate"}
     <span class="ml-auto">{formatPercent(row.original.rate)}</span>
+  {:else if cell.column.id === "quality"}
+    <!-- Hidden column used for sorting -->
   {:else}
     {cell.getValue()}
   {/if}
@@ -662,16 +683,19 @@
             ? [
                 { id: "is_bestiary", desc: true },
                 { id: "rate", desc: true },
+                { id: "quality", desc: true },
                 { id: "item_name", desc: false },
               ]
             : [
                 { id: "rate", desc: true },
+                { id: "quality", desc: true },
                 { id: "item_name", desc: false },
               ]}
           urlKey="monster-{data.monster.id}-drops"
           pageSize={10}
           zebraStripe={true}
           class="bg-muted/30"
+          initialColumnVisibility={{ quality: false }}
         />
       {/if}
     </section>

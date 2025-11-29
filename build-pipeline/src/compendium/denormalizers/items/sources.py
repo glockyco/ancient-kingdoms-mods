@@ -29,6 +29,9 @@ console = Console()
 def _denormalize_dropped_by(conn: sqlite3.Connection) -> dict[str, list[DropInfo]]:
     """Build dropped_by from monsters.drops.
 
+    Skips drops with is_altar_reward=True since those are shown in
+    rewarded_by_altars instead.
+
     Returns:
         Dict mapping item_id to list of monster drop info
     """
@@ -46,7 +49,8 @@ def _denormalize_dropped_by(conn: sqlite3.Connection) -> dict[str, list[DropInfo
         drops = json.loads(drops_json)
         for drop in drops:
             item_id = drop.get("item_id")
-            if item_id:
+            # Skip altar reward variants (shown in rewarded_by_altars)
+            if item_id and not drop.get("is_altar_reward"):
                 if item_id not in dropped_by:
                     dropped_by[item_id] = []
                 dropped_by[item_id].append(
@@ -374,6 +378,8 @@ def _denormalize_rewarded_by(
 def _denormalize_rewarded_by_altars(conn: sqlite3.Connection) -> dict[str, list[dict]]:
     """Build rewarded_by_altars from altars reward tiers.
 
+    Includes the final wave boss monster info and drop rate for each altar.
+
     Returns:
         Dict mapping item_id to list of altar reward info
     """
@@ -381,12 +387,20 @@ def _denormalize_rewarded_by_altars(conn: sqlite3.Connection) -> dict[str, list[
     cursor = conn.cursor()
     cursor.execute("""
         SELECT a.id, a.name, a.type, a.zone_id, z.name,
-               a.reward_normal_id, a.reward_magic_id, a.reward_epic_id, a.reward_legendary_id
+               a.reward_normal_id, a.reward_magic_id, a.reward_epic_id, a.reward_legendary_id,
+               a.waves
         FROM altars a
         LEFT JOIN zones z ON a.zone_id = z.id
         WHERE a.reward_normal_id IS NOT NULL OR a.reward_magic_id IS NOT NULL
            OR a.reward_epic_id IS NOT NULL OR a.reward_legendary_id IS NOT NULL
     """)
+
+    # Build monster name and drops lookup
+    cursor2 = conn.cursor()
+    cursor2.execute("SELECT id, name, drops FROM monsters")
+    monster_info: dict[str, dict] = {}
+    for row in cursor2.fetchall():
+        monster_info[row[0]] = {"name": row[1], "drops": row[2]}
 
     rewarded_by_altars: dict[str, list[dict]] = {}
 
@@ -400,19 +414,51 @@ def _denormalize_rewarded_by_altars(conn: sqlite3.Connection) -> dict[str, list[
         magic_id,
         epic_id,
         legendary_id,
+        waves_json,
     ) in cursor.fetchall():
+        # Extract final wave boss monster and drop rate
+        boss_monster_id = None
+        boss_monster_name = None
+        drop_rate = 1.0  # Default to 100%
+        if waves_json:
+            waves = json.loads(waves_json)
+            if waves:
+                final_wave = waves[-1]
+                monsters = final_wave.get("monsters", [])
+                if monsters:
+                    boss_monster_id = monsters[0].get("monster_id")
+                    info = monster_info.get(boss_monster_id, {})
+                    boss_monster_name = info.get("name")
+                    # Get drop rate from boss's drops (altar rewards have is_altar_reward flag)
+                    if info.get("drops"):
+                        boss_drops = json.loads(info["drops"])
+                        for drop in boss_drops:
+                            if (
+                                drop.get("is_altar_reward")
+                                and drop.get("item_id") == normal_id
+                            ):
+                                drop_rate = drop.get("rate", 1.0)
+                                break
+
+        base_info = {
+            "altar_id": altar_id,
+            "altar_name": altar_name,
+            "zone_id": zone_id,
+            "zone_name": zone_name if zone_name else zone_id,
+            "boss_monster_id": boss_monster_id,
+            "boss_monster_name": boss_monster_name,
+            "drop_rate": drop_rate,
+        }
+
         # Normal tier (effective level < 35)
         if normal_id:
             if normal_id not in rewarded_by_altars:
                 rewarded_by_altars[normal_id] = []
             rewarded_by_altars[normal_id].append(
                 {
-                    "altar_id": altar_id,
-                    "altar_name": altar_name,
+                    **base_info,
                     "reward_tier": "normal",
                     "min_effective_level": 0,
-                    "zone_id": zone_id,
-                    "zone_name": zone_name if zone_name else zone_id,
                 }
             )
 
@@ -422,12 +468,9 @@ def _denormalize_rewarded_by_altars(conn: sqlite3.Connection) -> dict[str, list[
                 rewarded_by_altars[magic_id] = []
             rewarded_by_altars[magic_id].append(
                 {
-                    "altar_id": altar_id,
-                    "altar_name": altar_name,
+                    **base_info,
                     "reward_tier": "magic",
                     "min_effective_level": 35,
-                    "zone_id": zone_id,
-                    "zone_name": zone_name if zone_name else zone_id,
                 }
             )
 
@@ -437,12 +480,9 @@ def _denormalize_rewarded_by_altars(conn: sqlite3.Connection) -> dict[str, list[
                 rewarded_by_altars[epic_id] = []
             rewarded_by_altars[epic_id].append(
                 {
-                    "altar_id": altar_id,
-                    "altar_name": altar_name,
+                    **base_info,
                     "reward_tier": "epic",
                     "min_effective_level": 45,
-                    "zone_id": zone_id,
-                    "zone_name": zone_name if zone_name else zone_id,
                 }
             )
 
@@ -452,12 +492,9 @@ def _denormalize_rewarded_by_altars(conn: sqlite3.Connection) -> dict[str, list[
                 rewarded_by_altars[legendary_id] = []
             rewarded_by_altars[legendary_id].append(
                 {
-                    "altar_id": altar_id,
-                    "altar_name": altar_name,
+                    **base_info,
                     "reward_tier": "legendary",
                     "min_effective_level": 55,
-                    "zone_id": zone_id,
-                    "zone_name": zone_name if zone_name else zone_id,
                 }
             )
 

@@ -153,6 +153,9 @@
           min_effective_level: number;
           zone_id: string;
           zone_name: string;
+          boss_monster_id: string | null;
+          boss_monster_name: string | null;
+          drop_rate: number;
         }>
       >(data.item.rewarded_by_altars),
       requiredForAltars: parseJson<
@@ -1377,11 +1380,11 @@
       </Card.Root>
     {/if}
 
-    <!-- Rewarded by Altars -->
+    <!-- Dropped by Altar Boss -->
     {#if computed.rewardedByAltars && computed.rewardedByAltars.length > 0}
       <Card.Root class="bg-muted/30">
         <Card.Header>
-          <Card.Title>Rewarded by Altars</Card.Title>
+          <Card.Title>Dropped by Altar Boss</Card.Title>
         </Card.Header>
         <Card.Content>
           <div class="space-y-2">
@@ -1391,9 +1394,22 @@
                   {altar.altar_name}
                 </a>
                 <div class="{styles.label} pl-2 space-y-0.5">
-                  <div>Zone: {altar.zone_name}</div>
+                  <div>
+                    Zone: <a
+                      href={`/zones/${altar.zone_id}`}
+                      class={styles.link}>{altar.zone_name}</a
+                    >
+                  </div>
+                  {#if altar.boss_monster_id && altar.boss_monster_name}
+                    <div>
+                      Boss: <a
+                        href={`/monsters/${altar.boss_monster_id}`}
+                        class={styles.link}>{altar.boss_monster_name}</a
+                      >
+                    </div>
+                  {/if}
                   {#if altar.reward_tier === "normal"}
-                    <div>Required Level: 0-34</div>
+                    <div>Required Level: 30-34</div>
                   {:else if altar.reward_tier === "magic"}
                     <div>Required Level: 35-44</div>
                   {:else if altar.reward_tier === "epic"}
@@ -1403,6 +1419,7 @@
                     <div>Required Level: 50</div>
                     <div>Required Veteran Level: 100+</div>
                   {/if}
+                  <div>Drop Rate: {(altar.drop_rate * 100).toFixed(0)}%</div>
                 </div>
               </div>
             {/each}

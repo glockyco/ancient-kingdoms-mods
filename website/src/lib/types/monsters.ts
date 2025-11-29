@@ -5,8 +5,10 @@ export interface MonsterDrop {
   item_id: string;
   item_name: string;
   tooltip_html: string | null;
+  quality: number;
   rate: number;
   is_bestiary: boolean;
+  note: string | null;
 }
 
 /**

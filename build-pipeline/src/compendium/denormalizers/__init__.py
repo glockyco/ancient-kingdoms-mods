@@ -18,14 +18,17 @@ def run_all(conn: sqlite3.Connection) -> None:
     Args:
         conn: Database connection with all base data loaded
     """
-    # Phase 1: Item denormalizations
+    # Phase 1: Monster drops (expand altar variants before item sources read drops)
+    monsters.run_drops(conn)
+
+    # Phase 2: Item denormalizations (reads monster drops for dropped_by)
     items.run_all(conn)
 
-    # Phase 2: Skill denormalizations
+    # Phase 3: Skill denormalizations
     skills.run_all(conn)
 
-    # Phase 3: Monster denormalizations (spawn inference)
-    monsters.run_all(conn)
+    # Phase 4: Monster spawn inference
+    monsters.run_spawns(conn)
 
-    # Phase 4: Experience calculations (pre-compute EXP values)
+    # Phase 5: Experience calculations (pre-compute EXP values)
     experience.run_all(conn)
