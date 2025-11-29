@@ -555,6 +555,7 @@ CREATE TABLE skills (
     skill_type TEXT NOT NULL,
     tier INTEGER DEFAULT 0,
     max_level INTEGER DEFAULT 1,
+    player_classes TEXT,             -- JSON array: ["cleric", "druid"] - classes that have this skill
     level_required INTEGER DEFAULT 0,
     required_skill_points INTEGER DEFAULT 1,
     required_spent_points INTEGER DEFAULT 0,
@@ -564,14 +565,12 @@ CREATE TABLE skills (
     required_weapon_category TEXT,
     required_weapon_category2 TEXT,
 
-    -- Costs
-    mana_cost INTEGER DEFAULT 0,
-    energy_cost INTEGER DEFAULT 0,
-    cooldown REAL DEFAULT 0.0,      -- seconds
-
-    -- Targeting
-    cast_time REAL DEFAULT 0.0,     -- seconds
-    cast_range REAL DEFAULT 0.0,    -- units
+    -- Costs and timing (stored as JSON for SkillBonus: {"base_value": X, "bonus_per_level": Y})
+    mana_cost TEXT,
+    energy_cost TEXT,
+    cooldown TEXT,
+    cast_time TEXT,
+    cast_range TEXT,
 
     -- Flags
     learn_default BOOLEAN DEFAULT 0,
@@ -585,7 +584,7 @@ CREATE TABLE skills (
     followup_default_attack BOOLEAN DEFAULT 0,
 
     -- UI
-    tooltip TEXT,
+    tooltip_template TEXT,
     icon_path TEXT,
     skill_aggro_message TEXT,
     pet_prefab_name TEXT,
@@ -641,6 +640,7 @@ CREATE TABLE skills (
     is_only_for_magic_classes BOOLEAN DEFAULT 0,
     is_permanent BOOLEAN DEFAULT 0,
     prob_ignore_cleanse REAL DEFAULT 0.0,
+    is_decrease_resists_skill BOOLEAN DEFAULT 0,
 
     -- Stat bonuses (all stored as JSON for SkillBonusValue)
     health_max_bonus TEXT,
@@ -671,6 +671,7 @@ CREATE TABLE skills (
     speed_bonus TEXT,
     damage_shield TEXT,
     cooldown_reduction_percent TEXT,
+    heal_on_hit_percent TEXT,
     strength_bonus TEXT,
     intelligence_bonus TEXT,
     dexterity_bonus TEXT,

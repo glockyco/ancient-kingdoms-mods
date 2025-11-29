@@ -16,6 +16,11 @@ public class SkillExporter : BaseExporter
     {
         Logger.Msg("Exporting skills...");
 
+        // Build skill-to-classes mapping from NetworkManagerMMO.playerClasses
+        // A skill can appear in multiple class skill trees (e.g., shared veteran skills)
+        var skillToClasses = BuildSkillToClassesMapping();
+        Logger.Msg($"Built skill-to-classes mapping with {skillToClasses.Count} entries");
+
         var type = Il2CppType.Of<Il2Cpp.ScriptableSkill>();
         var skills = Resources.FindObjectsOfTypeAll(type);
 
@@ -29,8 +34,12 @@ public class SkillExporter : BaseExporter
             if (skill == null || string.IsNullOrEmpty(skill.name))
                 continue;
 
+            var skillId = SanitizeId(skill.name);
+            skillToClasses.TryGetValue(skillId, out var playerClasses);
+
             var skillData = new SkillData
             {
+                player_classes = playerClasses ?? new List<string>(),
                 // Base ScriptableSkill fields
                 id = SanitizeId(skill.name),
                 name = skill.nameSkill ?? skill.name,
@@ -314,7 +323,15 @@ public class SkillExporter : BaseExporter
             skillData.is_only_for_magic_classes = buffSkill.isOnlyForMagicClasses;
             skillData.is_permanent = buffSkill.isPermanent;
             skillData.prob_ignore_cleanse = buffSkill.probIgnoreCleanse;
+            skillData.is_decrease_resists_skill = buffSkill.isDecreaseResistsSkill;
         }
+
+        // heal_on_hit_percent is on BonusSkill
+        skillData.heal_on_hit_percent = new LinearStatBonusFloat
+        {
+            base_value = bonusSkill.healOnHitPercent.baseValue,
+            bonus_per_level = bonusSkill.healOnHitPercent.bonusPerLevel
+        };
 
         // PassiveSkill-specific fields
         var passiveSkill = skill.TryCast<Il2Cpp.PassiveSkill>();
@@ -331,5 +348,100 @@ public class SkillExporter : BaseExporter
 
         skillData.is_familiar = summonSkill.isFamiliar;
         skillData.pet_prefab_name = summonSkill.petPrefab != null ? summonSkill.petPrefab.name : null;
+    }
+
+    private Dictionary<string, List<string>> BuildSkillToClassesMapping()
+    {
+        var mapping = new Dictionary<string, List<string>>();
+
+        try
+        {
+            var networkManager = Il2CppMirror.NetworkManager.singleton;
+            if (networkManager == null)
+            {
+                Logger.Warning("NetworkManager.singleton is null, cannot build skill-to-classes mapping");
+                return mapping;
+            }
+
+            var nmmo = networkManager.TryCast<Il2Cpp.NetworkManagerMMO>();
+            if (nmmo == null)
+            {
+                Logger.Warning("Could not cast to NetworkManagerMMO, cannot build skill-to-classes mapping");
+                return mapping;
+            }
+
+            var playerClasses = nmmo.playerClasses;
+            if (playerClasses == null)
+            {
+                Logger.Warning("playerClasses is null, cannot build skill-to-classes mapping");
+                return mapping;
+            }
+
+            Logger.Msg($"Found {playerClasses.Count} player classes");
+
+            foreach (var player in playerClasses)
+            {
+                if (player == null) continue;
+
+                var className = player.name;
+                if (string.IsNullOrEmpty(className)) continue;
+
+                // Sanitize class name (e.g., "Player Cleric" -> "cleric")
+                var sanitizedClass = className.ToLowerInvariant()
+                    .Replace("player ", "")
+                    .Replace(" ", "_")
+                    .Trim();
+
+                var playerSkills = player.skills;
+                if (playerSkills == null)
+                {
+                    Logger.Msg($"  {className}: skills component is null");
+                    continue;
+                }
+
+                var skillTemplates = playerSkills.skillTemplates;
+                if (skillTemplates == null)
+                {
+                    Logger.Msg($"  {className}: skillTemplates is null");
+                    continue;
+                }
+
+                Logger.Msg($"  {className}: {skillTemplates.Length} skills");
+
+                foreach (var skillTemplate in skillTemplates)
+                {
+                    if (skillTemplate == null || string.IsNullOrEmpty(skillTemplate.name)) continue;
+
+                    var skillId = SanitizeId(skillTemplate.name);
+
+                    // Add this class to the skill's class list
+                    if (!mapping.ContainsKey(skillId))
+                    {
+                        mapping[skillId] = new List<string>();
+                    }
+                    if (!mapping[skillId].Contains(sanitizedClass))
+                    {
+                        mapping[skillId].Add(sanitizedClass);
+                    }
+                }
+            }
+
+            // Log skills that appear in multiple classes
+            var multiClassSkills = 0;
+            foreach (var kvp in mapping)
+            {
+                if (kvp.Value.Count > 1)
+                {
+                    multiClassSkills++;
+                }
+            }
+            Logger.Msg($"  Skills shared across multiple classes: {multiClassSkills}");
+        }
+        catch (System.Exception ex)
+        {
+            Logger.Error($"Error building skill-to-classes mapping: {ex.Message}");
+        }
+
+        return mapping;
     }
 }

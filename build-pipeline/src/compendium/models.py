@@ -440,6 +440,7 @@ class SkillData(BaseModel):
     skill_type: str
     tier: int = 0
     max_level: int = 1
+    player_classes: list[str] = []  # Classes that have this skill
     level_required: int = 0
     required_skill_points: int = 0
     required_spent_points: int = 0
@@ -448,16 +449,16 @@ class SkillData(BaseModel):
     prerequisite2_level: int = 0
     required_weapon_category: str = ""
     required_weapon_category2: str = ""
-    mana_cost: int = 0
-    energy_cost: int = 0
-    cooldown: float = 0.0
-    cast_time: float = 0.0
-    cast_range: float = 0.0
+    mana_cost: SkillBonus | None = None
+    energy_cost: SkillBonus | None = None
+    cooldown: SkillBonus | None = None
+    cast_time: SkillBonus | None = None
+    cast_range: SkillBonus | None = None
     learn_default: bool = False
     show_cast_bar: bool = False
     cancel_cast_if_target_died: bool = True
     allow_dungeon: bool = True
-    tooltip: str = ""
+    tooltip_template: str = ""
     icon_path: str = ""
 
     # Skill types and flags
@@ -520,6 +521,7 @@ class SkillData(BaseModel):
     is_ward: bool = False
     is_blindness: bool = False
     prob_ignore_cleanse: float = 0.0
+    is_decrease_resists_skill: bool = False
 
     # Stat bonuses
     health_max_bonus: SkillBonus | None = None
@@ -550,6 +552,7 @@ class SkillData(BaseModel):
     speed_bonus: SkillBonus | None = None
     damage_shield: SkillBonus | None = None
     cooldown_reduction_percent: SkillBonus | None = None
+    heal_on_hit_percent: SkillBonus | None = None
     strength_bonus: SkillBonus | None = None
     intelligence_bonus: SkillBonus | None = None
     dexterity_bonus: SkillBonus | None = None

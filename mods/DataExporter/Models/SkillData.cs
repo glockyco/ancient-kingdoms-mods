@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace DataExporter.Models;
 
 public class LinearStatBonus
@@ -20,6 +22,10 @@ public class SkillData
     public string skill_type { get; set; }  // damage/heal/buff/debuff/passive/summon
     public int tier { get; set; }
     public int max_level { get; set; }
+
+    // Player class associations (from NetworkManagerMMO.playerClasses -> skillTemplates)
+    // A skill can appear in multiple class skill trees (e.g., shared veteran skills)
+    public List<string> player_classes { get; set; }
 
     // Requirements
     public int level_required { get; set; }
@@ -106,6 +112,7 @@ public class SkillData
     public bool is_only_for_magic_classes { get; set; }
     public bool is_permanent { get; set; }
     public float prob_ignore_cleanse { get; set; }
+    public bool is_decrease_resists_skill { get; set; }
 
     // Buff/Passive stat bonuses (BonusSkill = BuffSkill + PassiveSkill)
     public LinearStatBonus health_max_bonus { get; set; }
@@ -136,6 +143,7 @@ public class SkillData
     public LinearStatBonusFloat speed_bonus { get; set; }
     public LinearStatBonus damage_shield { get; set; }
     public LinearStatBonusFloat cooldown_reduction_percent { get; set; }
+    public LinearStatBonusFloat heal_on_hit_percent { get; set; }
     public LinearStatBonus strength_bonus { get; set; }
     public LinearStatBonus intelligence_bonus { get; set; }
     public LinearStatBonus dexterity_bonus { get; set; }
