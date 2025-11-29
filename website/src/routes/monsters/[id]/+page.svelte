@@ -209,7 +209,7 @@
   );
 
   // Check if any drop has a note
-  const hasDropNotes = $derived(data.drops.some((d) => d.note !== null));
+  const hasDropNotes = $derived(data.drops.some((d) => d.note));
 
   // Drop columns (bestiary column only for bosses/elites, note column if any drops have notes)
   const dropColumns = $derived.by(() => {
