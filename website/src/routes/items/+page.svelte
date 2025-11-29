@@ -10,23 +10,13 @@
   } from "$lib/components/ui/data-table";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
+  import ClassPills from "$lib/components/ClassPills.svelte";
   import { formatItemType } from "$lib/utils/format";
   import type { ItemListView } from "$lib/types/items";
 
   let { data } = $props();
 
   const PAGE_SIZE = 20;
-
-  // Class display config: abbreviation and color (muted versions of game colors)
-  const CLASS_CONFIG: Record<string, { abbrev: string; color: string }> = {
-    All: { abbrev: "All", color: "#6b6b6b" },
-    Cleric: { abbrev: "CLR", color: "#b8993a" },
-    Druid: { abbrev: "DRU", color: "#4a8f58" },
-    Ranger: { abbrev: "RNG", color: "#7a3a16" },
-    Rogue: { abbrev: "ROG", color: "#74498c" },
-    Warrior: { abbrev: "WAR", color: "#702a21" },
-    Wizard: { abbrev: "WIZ", color: "#2a5073" },
-  };
 
   // Quality display names and colors
   const qualities = [
@@ -219,27 +209,8 @@
       >{row.original.slot || "-"}</span
     >
   {:else if cell.column.id === "class"}
-    {@const classes = parseClassRequired(row.original.class_required)
-      .filter((c) => c !== "All")
-      .sort()}
-    {#if classes.length > 0}
-      <span class="flex flex-wrap gap-1">
-        {#each classes as cls (cls)}
-          {@const config = CLASS_CONFIG[cls] ?? {
-            abbrev: cls,
-            color: "#6b6b6b",
-          }}
-          <span
-            class="px-1.5 py-0.5 rounded text-xs font-medium text-white"
-            style="background-color: {config.color}"
-          >
-            {config.abbrev}
-          </span>
-        {/each}
-      </span>
-    {:else}
-      <span class="text-muted-foreground">-</span>
-    {/if}
+    {@const classes = parseClassRequired(row.original.class_required)}
+    <ClassPills classes={classes.map((c) => c.toLowerCase())} />
   {:else if cell.column.id === "notes"}
     {@const notes = getNotes(row.original)}
     <span class={notes === "-" ? "text-muted-foreground" : ""}>{notes}</span>
