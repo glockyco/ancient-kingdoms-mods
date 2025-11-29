@@ -8,6 +8,7 @@
   import Zap from "@lucide/svelte/icons/zap";
   import FlaskConical from "@lucide/svelte/icons/flask-conical";
   import Flag from "@lucide/svelte/icons/flag";
+  import Hammer from "@lucide/svelte/icons/hammer";
   import Search from "@lucide/svelte/icons/search";
   import Map from "@lucide/svelte/icons/map";
   import ArrowRight from "@lucide/svelte/icons/arrow-right";
@@ -148,7 +149,7 @@
   <!-- Coming Soon Sections -->
   <section class="space-y-6">
     <h2 class="text-2xl font-semibold text-muted-foreground">Coming Soon</h2>
-    <div class="grid grid-cols-2 md:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
       <Card.Root class="opacity-50 bg-muted/30">
         <Card.Header>
           <div class="flex flex-col items-center text-center gap-2">
@@ -189,6 +190,17 @@
               <Flag class="h-5 w-5 text-rose-500" />
             </div>
             <Card.Title class="text-base">Factions</Card.Title>
+          </div>
+        </Card.Header>
+      </Card.Root>
+
+      <Card.Root class="opacity-50 bg-muted/30">
+        <Card.Header>
+          <div class="flex flex-col items-center text-center gap-2">
+            <div class="p-2 rounded-lg bg-yellow-500/10">
+              <Hammer class="h-5 w-5 text-yellow-500" />
+            </div>
+            <Card.Title class="text-base">Professions</Card.Title>
           </div>
         </Card.Header>
       </Card.Root>
