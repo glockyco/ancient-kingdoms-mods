@@ -62,7 +62,7 @@ class MonsterData(BaseModel):
     class_name: str
     zone_bestiary: str = ""  # Manually set zone name for bestiary display
 
-    # Combat stats
+    # Combat stats (calculated at base level)
     damage: int = 0
     magic_damage: int = 0
     defense: int = 0
@@ -73,6 +73,26 @@ class MonsterData(BaseModel):
     disease_resist: int = 0
     block_chance: float = 0.0
     critical_chance: float = 0.0
+
+    # Stat scaling (LinearInt: actual = base + per_level * (level - 1))
+    health_base: int = 0
+    health_per_level: int = 0
+    damage_base: int = 0
+    damage_per_level: int = 0
+    magic_damage_base: int = 0
+    magic_damage_per_level: int = 0
+    defense_base: int = 0
+    defense_per_level: int = 0
+    magic_resist_base: int = 0
+    magic_resist_per_level: int = 0
+    poison_resist_base: int = 0
+    poison_resist_per_level: int = 0
+    fire_resist_base: int = 0
+    fire_resist_per_level: int = 0
+    cold_resist_base: int = 0
+    cold_resist_per_level: int = 0
+    disease_resist_base: int = 0
+    disease_resist_per_level: int = 0
 
     # Classification flags
     is_boss: bool = False

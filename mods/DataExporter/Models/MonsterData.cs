@@ -36,7 +36,7 @@ public class MonsterData
     public string class_name { get; set; }
     public string zone_bestiary { get; set; }  // Manually set zone name for bestiary display
 
-    // Combat stats
+    // Combat stats (calculated at base level)
     public int damage { get; set; }
     public int magic_damage { get; set; }
     public int defense { get; set; }
@@ -47,6 +47,26 @@ public class MonsterData
     public int disease_resist { get; set; }
     public float block_chance { get; set; }
     public float critical_chance { get; set; }
+
+    // Stat scaling (LinearInt: actual = base + bonus_per_level * (level - 1))
+    public int health_base { get; set; }
+    public int health_per_level { get; set; }
+    public int damage_base { get; set; }
+    public int damage_per_level { get; set; }
+    public int magic_damage_base { get; set; }
+    public int magic_damage_per_level { get; set; }
+    public int defense_base { get; set; }
+    public int defense_per_level { get; set; }
+    public int magic_resist_base { get; set; }
+    public int magic_resist_per_level { get; set; }
+    public int poison_resist_base { get; set; }
+    public int poison_resist_per_level { get; set; }
+    public int fire_resist_base { get; set; }
+    public int fire_resist_per_level { get; set; }
+    public int cold_resist_base { get; set; }
+    public int cold_resist_per_level { get; set; }
+    public int disease_resist_base { get; set; }
+    public int disease_resist_per_level { get; set; }
 
     // Classification flags
     public bool is_boss { get; set; }

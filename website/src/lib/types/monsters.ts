@@ -130,7 +130,7 @@ export interface MonsterInfo {
   is_hunt: boolean;
   is_summonable: boolean;
 
-  // Combat stats
+  // Combat stats (calculated at base level)
   damage: number;
   magic_damage: number;
   defense: number;
@@ -141,6 +141,26 @@ export interface MonsterInfo {
   disease_resist: number;
   block_chance: number;
   critical_chance: number;
+
+  // Stat scaling (LinearInt: actual = base + per_level * (level - 1))
+  health_base: number;
+  health_per_level: number;
+  damage_base: number;
+  damage_per_level: number;
+  magic_damage_base: number;
+  magic_damage_per_level: number;
+  defense_base: number;
+  defense_per_level: number;
+  magic_resist_base: number;
+  magic_resist_per_level: number;
+  poison_resist_base: number;
+  poison_resist_per_level: number;
+  fire_resist_base: number;
+  fire_resist_per_level: number;
+  cold_resist_base: number;
+  cold_resist_per_level: number;
+  disease_resist_base: number;
+  disease_resist_per_level: number;
 
   // Loot
   gold_min: number | null;

@@ -58,6 +58,114 @@
     })),
   ]);
 
+  // Altar scaling: check if any stat scales per level
+  const hasStatScaling = $derived(
+    data.monster.health_per_level > 0 ||
+      data.monster.damage_per_level > 0 ||
+      data.monster.magic_damage_per_level > 0 ||
+      data.monster.defense_per_level > 0 ||
+      data.monster.magic_resist_per_level > 0,
+  );
+
+  // Is this an altar monster that can scale?
+  const isAltarMonster = $derived(
+    data.spawns.altar.length > 0 && hasStatScaling,
+  );
+
+  // Player level input (for altar scaling calculation)
+  let playerLevelInput = $state(50);
+  let veteranLevelInput = $state(200);
+
+  // Clamp inputs to valid ranges
+  const playerLevel = $derived(Math.min(50, Math.max(30, playerLevelInput)));
+  const veteranLevel = $derived(Math.min(200, Math.max(0, veteranLevelInput)));
+
+  // Calculate effective monster level for altar scaling
+  // From DefaultEvent.cs SummonMonsters():
+  //   veteranBonus = round(veteranPoints / 20)
+  //   levelBonus = playerLevel + veteranBonus - 30
+  //   scaledLevel = baseLevel + levelBonus
+  const veteranBonus = $derived(Math.round(veteranLevel / 20));
+  const effectivePlayerLevel = $derived(playerLevel + veteranBonus);
+  const scaledLevel = $derived.by(() => {
+    if (!isAltarMonster) return data.monster.level;
+    const levelBonus = effectivePlayerLevel - 30;
+    return Math.max(data.monster.level, data.monster.level + levelBonus);
+  });
+
+  // Calculate scaled stats using LinearInt formula: base + per_level * (level - 1)
+  function calculateStat(
+    base: number,
+    perLevel: number,
+    level: number,
+  ): number {
+    return base + perLevel * (level - 1);
+  }
+
+  const scaledHealth = $derived(
+    calculateStat(
+      data.monster.health_base,
+      data.monster.health_per_level,
+      scaledLevel,
+    ),
+  );
+  const scaledDamage = $derived(
+    calculateStat(
+      data.monster.damage_base,
+      data.monster.damage_per_level,
+      scaledLevel,
+    ),
+  );
+  const scaledMagicDamage = $derived(
+    calculateStat(
+      data.monster.magic_damage_base,
+      data.monster.magic_damage_per_level,
+      scaledLevel,
+    ),
+  );
+  const scaledDefense = $derived(
+    calculateStat(
+      data.monster.defense_base,
+      data.monster.defense_per_level,
+      scaledLevel,
+    ),
+  );
+  const scaledMagicResist = $derived(
+    calculateStat(
+      data.monster.magic_resist_base,
+      data.monster.magic_resist_per_level,
+      scaledLevel,
+    ),
+  );
+  const scaledPoisonResist = $derived(
+    calculateStat(
+      data.monster.poison_resist_base,
+      data.monster.poison_resist_per_level,
+      scaledLevel,
+    ),
+  );
+  const scaledFireResist = $derived(
+    calculateStat(
+      data.monster.fire_resist_base,
+      data.monster.fire_resist_per_level,
+      scaledLevel,
+    ),
+  );
+  const scaledColdResist = $derived(
+    calculateStat(
+      data.monster.cold_resist_base,
+      data.monster.cold_resist_per_level,
+      scaledLevel,
+    ),
+  );
+  const scaledDiseaseResist = $derived(
+    calculateStat(
+      data.monster.disease_resist_base,
+      data.monster.disease_resist_per_level,
+      scaledLevel,
+    ),
+  );
+
   // Special combat abilities
   const abilities = $derived(
     [
@@ -70,13 +178,31 @@
     ].filter((a) => a.flag),
   );
 
-  // Check for any non-zero resistances
+  // Check for any non-zero resistances (use scaled values for altar monsters)
   const resistances = $derived(
     [
-      { name: "Poison", value: data.monster.poison_resist },
-      { name: "Fire", value: data.monster.fire_resist },
-      { name: "Cold", value: data.monster.cold_resist },
-      { name: "Disease", value: data.monster.disease_resist },
+      {
+        name: "Magic",
+        value: isAltarMonster ? scaledMagicResist : data.monster.magic_resist,
+      },
+      {
+        name: "Poison",
+        value: isAltarMonster ? scaledPoisonResist : data.monster.poison_resist,
+      },
+      {
+        name: "Fire",
+        value: isAltarMonster ? scaledFireResist : data.monster.fire_resist,
+      },
+      {
+        name: "Cold",
+        value: isAltarMonster ? scaledColdResist : data.monster.cold_resist,
+      },
+      {
+        name: "Disease",
+        value: isAltarMonster
+          ? scaledDiseaseResist
+          : data.monster.disease_resist,
+      },
     ].filter((r) => r.value !== 0),
   );
 
@@ -573,27 +699,76 @@
       <Sword class="h-5 w-5 text-red-500" />
       Combat Stats
     </h2>
+    {#if isAltarMonster}
+      <div class="mb-4 bg-muted/30 rounded-md border p-4">
+        <div class="text-sm text-muted-foreground mb-3">
+          Stats scale with player level during Forgotten Altar events. Enter
+          your level to see scaled stats.
+        </div>
+        <div class="flex flex-wrap gap-4 items-end js-only">
+          <div>
+            <label
+              for="player-level"
+              class="text-sm text-muted-foreground block mb-1"
+            >
+              Player Level
+            </label>
+            <input
+              id="player-level"
+              type="number"
+              min="30"
+              max="50"
+              bind:value={playerLevelInput}
+              class="w-20 px-2 py-1 rounded border bg-background text-foreground"
+            />
+          </div>
+          <div>
+            <label
+              for="veteran-level"
+              class="text-sm text-muted-foreground block mb-1"
+            >
+              Veteran Level
+            </label>
+            <input
+              id="veteran-level"
+              type="number"
+              min="0"
+              max="200"
+              bind:value={veteranLevelInput}
+              class="w-20 px-2 py-1 rounded border bg-background text-foreground"
+            />
+          </div>
+        </div>
+      </div>
+    {/if}
     <div class="bg-muted/30 rounded-md border p-4">
       <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         <div>
           <div class="text-sm text-muted-foreground">Health</div>
-          <div class="font-medium">{data.monster.health.toLocaleString()}</div>
+          <div class="font-medium">
+            {(isAltarMonster
+              ? scaledHealth
+              : data.monster.health
+            ).toLocaleString()}
+          </div>
         </div>
         <div>
           <div class="text-sm text-muted-foreground">Damage</div>
-          <div class="font-medium">{data.monster.damage}</div>
+          <div class="font-medium">
+            {isAltarMonster ? scaledDamage : data.monster.damage}
+          </div>
         </div>
         <div>
           <div class="text-sm text-muted-foreground">Magic Damage</div>
-          <div class="font-medium">{data.monster.magic_damage}</div>
+          <div class="font-medium">
+            {isAltarMonster ? scaledMagicDamage : data.monster.magic_damage}
+          </div>
         </div>
         <div>
           <div class="text-sm text-muted-foreground">Defense</div>
-          <div class="font-medium">{data.monster.defense}</div>
-        </div>
-        <div>
-          <div class="text-sm text-muted-foreground">Magic Resist</div>
-          <div class="font-medium">{data.monster.magic_resist}</div>
+          <div class="font-medium">
+            {isAltarMonster ? scaledDefense : data.monster.defense}
+          </div>
         </div>
         {#if data.monster.block_chance > 0}
           <div>
@@ -614,9 +789,9 @@
       </div>
 
       {#if resistances.length > 0 || abilities.length > 0}
-        <div class="mt-4 pt-4 border-t grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="mt-4 pt-4 border-t flex flex-col md:flex-row gap-4">
           {#if resistances.length > 0}
-            <div>
+            <div class="md:w-[500px] shrink-0">
               <div class="text-sm text-muted-foreground mb-2">Resistances</div>
               <div class="flex flex-wrap gap-2">
                 {#each resistances as resist (resist.name)}
@@ -626,14 +801,14 @@
                       ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
                       : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'}"
                   >
-                    {resist.name}: {resist.value > 0 ? "+" : ""}{resist.value}
+                    {resist.name}: {resist.value}
                   </span>
                 {/each}
               </div>
             </div>
           {/if}
           {#if abilities.length > 0}
-            <div>
+            <div class="flex-1">
               <div class="text-sm text-muted-foreground mb-2">Special</div>
               <div class="flex flex-wrap gap-2">
                 {#each abilities as ability (ability.label)}

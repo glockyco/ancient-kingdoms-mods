@@ -268,7 +268,7 @@ CREATE TABLE monsters (
     class_name TEXT,                -- specific class within type
     zone_bestiary TEXT DEFAULT '',  -- manually set zone name for bestiary display
 
-    -- Combat stats
+    -- Combat stats (calculated at base level)
     damage INTEGER DEFAULT 0,
     magic_damage INTEGER DEFAULT 0,
     defense INTEGER DEFAULT 0,
@@ -279,6 +279,26 @@ CREATE TABLE monsters (
     disease_resist INTEGER DEFAULT 0,
     block_chance REAL DEFAULT 0.0,
     critical_chance REAL DEFAULT 0.0,
+
+    -- Stat scaling (LinearInt: actual = base + per_level * (level - 1))
+    health_base INTEGER DEFAULT 0,
+    health_per_level INTEGER DEFAULT 0,
+    damage_base INTEGER DEFAULT 0,
+    damage_per_level INTEGER DEFAULT 0,
+    magic_damage_base INTEGER DEFAULT 0,
+    magic_damage_per_level INTEGER DEFAULT 0,
+    defense_base INTEGER DEFAULT 0,
+    defense_per_level INTEGER DEFAULT 0,
+    magic_resist_base INTEGER DEFAULT 0,
+    magic_resist_per_level INTEGER DEFAULT 0,
+    poison_resist_base INTEGER DEFAULT 0,
+    poison_resist_per_level INTEGER DEFAULT 0,
+    fire_resist_base INTEGER DEFAULT 0,
+    fire_resist_per_level INTEGER DEFAULT 0,
+    cold_resist_base INTEGER DEFAULT 0,
+    cold_resist_per_level INTEGER DEFAULT 0,
+    disease_resist_base INTEGER DEFAULT 0,
+    disease_resist_per_level INTEGER DEFAULT 0,
 
     -- Classification flags
     is_boss BOOLEAN DEFAULT 0,
