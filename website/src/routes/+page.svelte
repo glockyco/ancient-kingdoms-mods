@@ -7,6 +7,7 @@
   import Scroll from "@lucide/svelte/icons/scroll";
   import Zap from "@lucide/svelte/icons/zap";
   import FlaskConical from "@lucide/svelte/icons/flask-conical";
+  import Flag from "@lucide/svelte/icons/flag";
   import Search from "@lucide/svelte/icons/search";
   import Map from "@lucide/svelte/icons/map";
   import ArrowRight from "@lucide/svelte/icons/arrow-right";
@@ -177,6 +178,17 @@
               <Zap class="h-5 w-5 text-purple-500" />
             </div>
             <Card.Title class="text-base">Skills</Card.Title>
+          </div>
+        </Card.Header>
+      </Card.Root>
+
+      <Card.Root class="opacity-50 bg-muted/30">
+        <Card.Header>
+          <div class="flex flex-col items-center text-center gap-2">
+            <div class="p-2 rounded-lg bg-rose-500/10">
+              <Flag class="h-5 w-5 text-rose-500" />
+            </div>
+            <Card.Title class="text-base">Factions</Card.Title>
           </div>
         </Card.Header>
       </Card.Root>
