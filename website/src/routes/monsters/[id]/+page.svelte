@@ -227,7 +227,7 @@
     cols.push({
       accessorKey: "item_name",
       header: "Item",
-      minSize: 220,
+      minSize: 350,
     });
 
     if (hasDropNotes) {
