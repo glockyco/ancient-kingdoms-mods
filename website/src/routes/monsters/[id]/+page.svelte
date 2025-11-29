@@ -415,7 +415,9 @@
                 </div>
                 {#if altar.waves.length > 0}
                   <div class="text-sm text-muted-foreground mt-1">
-                    Waves: {altar.waves.map((w) => w + 1).join(", ")}
+                    {altar.waves.length === 1 ? "Wave" : "Waves"}: {altar.waves
+                      .map((w) => w + 1)
+                      .join(", ")}
                   </div>
                 {/if}
                 {#if altar.activation_item_id && altar.activation_item_name}
