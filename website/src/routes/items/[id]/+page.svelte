@@ -1466,7 +1466,9 @@
             {#each computed.requiredForPortals as portal, index (`${portal.portal_id}_${index}`)}
               <div class="space-y-1">
                 <div>
-                  <span class={styles.value}>{portal.from_zone_name}</span>
+                  <a href="/zones/{portal.from_zone_id}" class={styles.link}>
+                    {portal.from_zone_name}
+                  </a>
                   <span class={styles.label}>
                     ({Math.round(portal.position_x)}, {Math.round(
                       portal.position_y,
@@ -1474,9 +1476,14 @@
                   </span>
                 </div>
                 <div class="{styles.label} pl-2">
-                  → {portal.to_zone_name} ({Math.round(portal.destination_x)}, {Math.round(
-                    portal.destination_y,
-                  )})
+                  → <a href="/zones/{portal.to_zone_id}" class={styles.link}>
+                    {portal.to_zone_name}
+                  </a>
+                  <span class={styles.label}>
+                    ({Math.round(portal.destination_x)}, {Math.round(
+                      portal.destination_y,
+                    )})
+                  </span>
                 </div>
               </div>
             {/each}
