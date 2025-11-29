@@ -3,6 +3,7 @@
   import {
     DataTable,
     DataTableFacetedFilter,
+    DataTableRangeFilter,
     type ColumnDef,
     type Cell,
     type Row,
@@ -77,6 +78,19 @@
       accessorKey: "level",
       header: "Level",
       size: 150,
+      filterFn: (
+        row,
+        columnId,
+        filterValue: [number | null, number | null],
+      ) => {
+        const value = row.getValue(columnId) as number;
+        if (!filterValue) return true;
+        const [min, max] = filterValue;
+        if (min === null && max === null) return true;
+        if (min !== null && value < min) return false;
+        if (max !== null && value > max) return false;
+        return true;
+      },
     },
     {
       accessorKey: "health",
@@ -340,6 +354,7 @@
 {#snippet renderToolbar({ table }: { table: TanstackTable<MonsterRow> })}
   {@const classificationCol = table.getColumn("classification")}
   {@const zoneIdsCol = table.getColumn("zone_ids")}
+  {@const levelCol = table.getColumn("level")}
   {#if classificationCol}
     <DataTableFacetedFilter
       column={classificationCol}
@@ -360,6 +375,9 @@
         value: z.zone_id,
       }))}
     />
+  {/if}
+  {#if levelCol}
+    <DataTableRangeFilter column={levelCol} title="Level" />
   {/if}
 {/snippet}
 
