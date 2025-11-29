@@ -374,137 +374,6 @@
     </div>
   </div>
 
-  <!-- Combat Stats Section -->
-  <section>
-    <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
-      <Sword class="h-5 w-5 text-red-500" />
-      Combat Stats
-    </h2>
-    <div class="bg-muted/30 rounded-md border p-4">
-      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        <div>
-          <div class="text-sm text-muted-foreground">Health</div>
-          <div class="font-medium">{data.monster.health.toLocaleString()}</div>
-        </div>
-        <div>
-          <div class="text-sm text-muted-foreground">Damage</div>
-          <div class="font-medium">{data.monster.damage}</div>
-        </div>
-        <div>
-          <div class="text-sm text-muted-foreground">Magic Damage</div>
-          <div class="font-medium">{data.monster.magic_damage}</div>
-        </div>
-        <div>
-          <div class="text-sm text-muted-foreground">Defense</div>
-          <div class="font-medium">{data.monster.defense}</div>
-        </div>
-        <div>
-          <div class="text-sm text-muted-foreground">Magic Resist</div>
-          <div class="font-medium">{data.monster.magic_resist}</div>
-        </div>
-        {#if data.monster.block_chance > 0}
-          <div>
-            <div class="text-sm text-muted-foreground">Block Chance</div>
-            <div class="font-medium">
-              {formatPercent(data.monster.block_chance)}
-            </div>
-          </div>
-        {/if}
-        {#if data.monster.critical_chance > 0}
-          <div>
-            <div class="text-sm text-muted-foreground">Critical Chance</div>
-            <div class="font-medium">
-              {formatPercent(data.monster.critical_chance)}
-            </div>
-          </div>
-        {/if}
-      </div>
-
-      {#if resistances.length > 0 || abilities.length > 0}
-        <div class="mt-4 pt-4 border-t grid grid-cols-1 md:grid-cols-2 gap-4">
-          {#if resistances.length > 0}
-            <div>
-              <div class="text-sm text-muted-foreground mb-2">Resistances</div>
-              <div class="flex flex-wrap gap-2">
-                {#each resistances as resist (resist.name)}
-                  <span
-                    class="inline-flex items-center rounded-md px-2 py-1 text-sm
-                      {resist.value > 0
-                      ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                      : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'}"
-                  >
-                    {resist.name}: {resist.value > 0 ? "+" : ""}{resist.value}
-                  </span>
-                {/each}
-              </div>
-            </div>
-          {/if}
-          {#if abilities.length > 0}
-            <div>
-              <div class="text-sm text-muted-foreground mb-2">Special</div>
-              <div class="flex flex-wrap gap-2">
-                {#each abilities as ability (ability.label)}
-                  <span
-                    class="inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-sm text-slate-800 dark:bg-slate-800 dark:text-slate-200"
-                  >
-                    {ability.label}
-                  </span>
-                {/each}
-              </div>
-            </div>
-          {/if}
-        </div>
-      {/if}
-    </div>
-  </section>
-
-  <!-- Loot Section -->
-  {#if (data.monster.gold_min !== null && data.monster.gold_max !== null && data.monster.gold_max > 0) || data.drops.length > 0}
-    <section>
-      <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
-        <Gem class="h-5 w-5 text-amber-500" />
-        Loot
-      </h2>
-
-      {#if data.monster.gold_min !== null && data.monster.gold_max !== null && data.monster.gold_max > 0}
-        <div class="mb-4 bg-muted/30 rounded-md border p-4">
-          <div class="font-medium text-yellow-600 dark:text-yellow-400">
-            {data.monster.gold_min.toLocaleString()} - {data.monster.gold_max.toLocaleString()}
-            gold
-            {#if data.monster.probability_drop_gold < 1}
-              <span class="text-muted-foreground font-normal">
-                ({formatPercent(data.monster.probability_drop_gold)} chance)
-              </span>
-            {/if}
-          </div>
-        </div>
-      {/if}
-
-      {#if data.drops.length > 0}
-        <DataTable
-          data={data.drops}
-          columns={dropColumns}
-          renderCell={renderDropCell}
-          renderHeader={renderDropHeader}
-          initialSorting={data.monster.is_boss || data.monster.is_elite
-            ? [
-                { id: "is_bestiary", desc: true },
-                { id: "rate", desc: true },
-                { id: "item_name", desc: false },
-              ]
-            : [
-                { id: "rate", desc: true },
-                { id: "item_name", desc: false },
-              ]}
-          urlKey="monster-{data.monster.id}-drops"
-          pageSize={10}
-          zebraStripe={true}
-          class="bg-muted/30"
-        />
-      {/if}
-    </section>
-  {/if}
-
   <!-- Spawns Section -->
   {#if hasAnySpawns}
     <section>
@@ -672,6 +541,137 @@
           </div>
         {/if}
       </div>
+    </section>
+  {/if}
+
+  <!-- Combat Stats Section -->
+  <section>
+    <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
+      <Sword class="h-5 w-5 text-red-500" />
+      Combat Stats
+    </h2>
+    <div class="bg-muted/30 rounded-md border p-4">
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div>
+          <div class="text-sm text-muted-foreground">Health</div>
+          <div class="font-medium">{data.monster.health.toLocaleString()}</div>
+        </div>
+        <div>
+          <div class="text-sm text-muted-foreground">Damage</div>
+          <div class="font-medium">{data.monster.damage}</div>
+        </div>
+        <div>
+          <div class="text-sm text-muted-foreground">Magic Damage</div>
+          <div class="font-medium">{data.monster.magic_damage}</div>
+        </div>
+        <div>
+          <div class="text-sm text-muted-foreground">Defense</div>
+          <div class="font-medium">{data.monster.defense}</div>
+        </div>
+        <div>
+          <div class="text-sm text-muted-foreground">Magic Resist</div>
+          <div class="font-medium">{data.monster.magic_resist}</div>
+        </div>
+        {#if data.monster.block_chance > 0}
+          <div>
+            <div class="text-sm text-muted-foreground">Block Chance</div>
+            <div class="font-medium">
+              {formatPercent(data.monster.block_chance)}
+            </div>
+          </div>
+        {/if}
+        {#if data.monster.critical_chance > 0}
+          <div>
+            <div class="text-sm text-muted-foreground">Critical Chance</div>
+            <div class="font-medium">
+              {formatPercent(data.monster.critical_chance)}
+            </div>
+          </div>
+        {/if}
+      </div>
+
+      {#if resistances.length > 0 || abilities.length > 0}
+        <div class="mt-4 pt-4 border-t grid grid-cols-1 md:grid-cols-2 gap-4">
+          {#if resistances.length > 0}
+            <div>
+              <div class="text-sm text-muted-foreground mb-2">Resistances</div>
+              <div class="flex flex-wrap gap-2">
+                {#each resistances as resist (resist.name)}
+                  <span
+                    class="inline-flex items-center rounded-md px-2 py-1 text-sm
+                      {resist.value > 0
+                      ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                      : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'}"
+                  >
+                    {resist.name}: {resist.value > 0 ? "+" : ""}{resist.value}
+                  </span>
+                {/each}
+              </div>
+            </div>
+          {/if}
+          {#if abilities.length > 0}
+            <div>
+              <div class="text-sm text-muted-foreground mb-2">Special</div>
+              <div class="flex flex-wrap gap-2">
+                {#each abilities as ability (ability.label)}
+                  <span
+                    class="inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-sm text-slate-800 dark:bg-slate-800 dark:text-slate-200"
+                  >
+                    {ability.label}
+                  </span>
+                {/each}
+              </div>
+            </div>
+          {/if}
+        </div>
+      {/if}
+    </div>
+  </section>
+
+  <!-- Loot Section -->
+  {#if (data.monster.gold_min !== null && data.monster.gold_max !== null && data.monster.gold_max > 0) || data.drops.length > 0}
+    <section>
+      <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
+        <Gem class="h-5 w-5 text-amber-500" />
+        Loot
+      </h2>
+
+      {#if data.monster.gold_min !== null && data.monster.gold_max !== null && data.monster.gold_max > 0}
+        <div class="mb-4 bg-muted/30 rounded-md border p-4">
+          <div class="font-medium text-yellow-600 dark:text-yellow-400">
+            {data.monster.gold_min.toLocaleString()} - {data.monster.gold_max.toLocaleString()}
+            gold
+            {#if data.monster.probability_drop_gold < 1}
+              <span class="text-muted-foreground font-normal">
+                ({formatPercent(data.monster.probability_drop_gold)} chance)
+              </span>
+            {/if}
+          </div>
+        </div>
+      {/if}
+
+      {#if data.drops.length > 0}
+        <DataTable
+          data={data.drops}
+          columns={dropColumns}
+          renderCell={renderDropCell}
+          renderHeader={renderDropHeader}
+          initialSorting={data.monster.is_boss || data.monster.is_elite
+            ? [
+                { id: "is_bestiary", desc: true },
+                { id: "rate", desc: true },
+                { id: "item_name", desc: false },
+              ]
+            : [
+                { id: "rate", desc: true },
+                { id: "item_name", desc: false },
+              ]}
+          urlKey="monster-{data.monster.id}-drops"
+          pageSize={10}
+          zebraStripe={true}
+          class="bg-muted/30"
+        />
+      {/if}
     </section>
   {/if}
 
