@@ -16,9 +16,6 @@
     title: string;
   } = $props();
 
-  let minValue = $state<string>("");
-  let maxValue = $state<string>("");
-
   const filterValue = $derived(
     column?.getFilterValue() as [number | null, number | null] | undefined,
   );
@@ -26,17 +23,37 @@
     filterValue && (filterValue[0] !== null || filterValue[1] !== null),
   );
 
-  function applyFilter() {
-    const min = minValue ? parseInt(minValue) : null;
+  // Derive input values from filter state to stay in sync with URL restoration
+  const minValue = $derived(
+    filterValue?.[0] !== null && filterValue?.[0] !== undefined
+      ? String(filterValue[0])
+      : "",
+  );
+  const maxValue = $derived(
+    filterValue?.[1] !== null && filterValue?.[1] !== undefined
+      ? String(filterValue[1])
+      : "",
+  );
+
+  function handleMinInput(e: Event) {
+    const target = e.target as HTMLInputElement;
+    const min = target.value ? parseInt(target.value) : null;
     const max = maxValue ? parseInt(maxValue) : null;
     column?.setFilterValue(
       min !== null || max !== null ? [min, max] : undefined,
     );
   }
 
+  function handleMaxInput(e: Event) {
+    const target = e.target as HTMLInputElement;
+    const min = minValue ? parseInt(minValue) : null;
+    const max = target.value ? parseInt(target.value) : null;
+    column?.setFilterValue(
+      min !== null || max !== null ? [min, max] : undefined,
+    );
+  }
+
   function clearFilter() {
-    minValue = "";
-    maxValue = "";
     column?.setFilterValue(undefined);
   }
 
@@ -77,16 +94,16 @@
           <Input
             type="number"
             placeholder="Min"
-            bind:value={minValue}
-            oninput={applyFilter}
+            value={minValue}
+            oninput={handleMinInput}
             class="h-8"
           />
           <span class="text-muted-foreground">—</span>
           <Input
             type="number"
             placeholder="Max"
-            bind:value={maxValue}
-            oninput={applyFilter}
+            value={maxValue}
+            oninput={handleMaxInput}
             class="h-8"
           />
         </div>
