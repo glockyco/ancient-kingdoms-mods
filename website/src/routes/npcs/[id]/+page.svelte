@@ -144,7 +144,7 @@
       description: "Hire and manage mercenaries (up to 6 stored).",
       details: [
         "Requires level 10",
-        "Active limit: 1 (lvl 10-19), 2 (20-29), 3 (30-39), 4 (40+)",
+        "Active limit: 1 (lvl 10-19), 2 (20-29), 3 (30-49), 4 (50)",
       ],
     },
     {
