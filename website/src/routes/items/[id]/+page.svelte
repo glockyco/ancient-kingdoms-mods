@@ -3,6 +3,7 @@
   import { resolve } from "$app/paths";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
+  import MonsterTypeIcon from "$lib/components/MonsterTypeIcon.svelte";
   import { STATS_METADATA_FIELDS } from "$lib/constants/items";
   import { formatItemType } from "$lib/utils/format";
   import { formatStatName, formatResourceName } from "$lib/terminology";
@@ -121,6 +122,8 @@
           monster_id: string;
           monster_name: string;
           monster_level: number;
+          is_boss: boolean;
+          is_elite: boolean;
           rate: number;
         }>
       >(data.item.dropped_by),
@@ -1328,13 +1331,19 @@
           <div class="space-y-2">
             {#each computed.droppedBy as drop, index (`${drop.monster_id}_${index}`)}
               <div class="flex justify-between items-center">
-                <a
-                  href={resolve("/monsters/[id]", { id: drop.monster_id })}
-                  class={styles.link}
-                >
-                  {drop.monster_name}
-                  <span class={styles.label}>(Lv {drop.monster_level})</span>
-                </a>
+                <div class="flex items-center gap-2">
+                  <MonsterTypeIcon
+                    isBoss={drop.is_boss}
+                    isElite={drop.is_elite}
+                  />
+                  <a
+                    href={resolve("/monsters/[id]", { id: drop.monster_id })}
+                    class={styles.link}
+                  >
+                    {drop.monster_name}
+                    <span class={styles.label}>(Lv {drop.monster_level})</span>
+                  </a>
+                </div>
                 <span class={styles.label}>{(drop.rate * 100).toFixed(1)}%</span
                 >
               </div>

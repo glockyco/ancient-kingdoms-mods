@@ -13,6 +13,8 @@ class DropInfo(TypedDict):
     monster_id: str
     monster_name: str
     monster_level: int
+    is_boss: bool
+    is_elite: bool
     rate: float
 
 

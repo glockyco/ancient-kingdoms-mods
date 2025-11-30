@@ -11,10 +11,8 @@
     type TanstackTable,
   } from "$lib/components/ui/data-table";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
+  import MonsterTypeIcon from "$lib/components/MonsterTypeIcon.svelte";
   import type { MonsterZoneInfo } from "$lib/types/monsters";
-  import Crown from "@lucide/svelte/icons/crown";
-  import Shield from "@lucide/svelte/icons/shield";
-  import Sword from "@lucide/svelte/icons/sword";
   import Castle from "@lucide/svelte/icons/castle";
   import Trees from "@lucide/svelte/icons/trees";
 
@@ -287,19 +285,11 @@
   row: Row<MonsterRow>;
 })}
   {#if cell.column.id === "icon"}
-    {@const color = row.original.is_boss
-      ? "text-cyan-600 dark:text-cyan-400"
-      : row.original.is_elite
-        ? "text-purple-600 dark:text-purple-400"
-        : "text-red-600 dark:text-red-400"}
     <div class="flex justify-center">
-      {#if row.original.is_boss}
-        <Crown class="h-4 w-4 {color}" />
-      {:else if row.original.is_elite}
-        <Shield class="h-4 w-4 {color}" />
-      {:else}
-        <Sword class="h-4 w-4 {color}" />
-      {/if}
+      <MonsterTypeIcon
+        isBoss={row.original.is_boss}
+        isElite={row.original.is_elite}
+      />
     </div>
   {:else if cell.column.id === "name"}
     <a

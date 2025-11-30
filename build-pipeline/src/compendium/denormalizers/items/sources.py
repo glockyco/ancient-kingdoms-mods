@@ -38,14 +38,21 @@ def _denormalize_dropped_by(conn: sqlite3.Connection) -> dict[str, list[DropInfo
     console.print("  Processing monster drops...")
     cursor = conn.cursor()
     cursor.execute("""
-        SELECT id, name, level, drops
+        SELECT id, name, level, is_boss, is_elite, drops
         FROM monsters
         WHERE drops IS NOT NULL AND drops != '[]'
     """)
 
     dropped_by: dict[str, list[DropInfo]] = {}
 
-    for monster_id, monster_name, monster_level, drops_json in cursor.fetchall():
+    for (
+        monster_id,
+        monster_name,
+        monster_level,
+        is_boss,
+        is_elite,
+        drops_json,
+    ) in cursor.fetchall():
         drops = json.loads(drops_json)
         for drop in drops:
             item_id = drop.get("item_id")
@@ -58,6 +65,8 @@ def _denormalize_dropped_by(conn: sqlite3.Connection) -> dict[str, list[DropInfo
                         "monster_id": monster_id,
                         "monster_name": monster_name,
                         "monster_level": monster_level,
+                        "is_boss": bool(is_boss),
+                        "is_elite": bool(is_elite),
                         "rate": drop.get("rate", 0.0),
                     }
                 )
