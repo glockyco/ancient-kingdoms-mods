@@ -42,11 +42,21 @@ export interface NpcInfo {
   summon_message: string;
 }
 
+export interface NpcQuestFactionRequirement {
+  faction: string;
+  faction_value: number;
+  tier_name: string;
+}
+
 export interface NpcQuestOffered {
   id: string;
   name: string;
   level_required: number;
   level_recommended: number;
+  is_adventurer_quest: boolean;
+  race_requirements?: string[];
+  class_requirements?: string[];
+  faction_requirements?: NpcQuestFactionRequirement[];
 }
 
 export interface NpcItemSold {

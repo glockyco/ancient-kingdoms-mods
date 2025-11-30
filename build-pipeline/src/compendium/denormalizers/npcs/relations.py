@@ -33,17 +33,46 @@ def _denormalize_quests_offered(conn: sqlite3.Connection) -> int:
     )
     npcs = cursor.fetchall()
 
+    # Build reputation tier lookup for faction requirements
+    cursor.execute(
+        "SELECT name, min_value FROM reputation_tiers ORDER BY min_value DESC"
+    )
+    rep_tiers = [(row[0], row[1]) for row in cursor.fetchall()]
+
+    def get_tier_name(value: float) -> str:
+        for name, min_val in rep_tiers:
+            if min_val is not None and value >= min_val:
+                return name
+        return "Neutral"
+
     # Build quest lookup
-    cursor.execute("SELECT id, name, level_required, level_recommended FROM quests")
-    quest_info = {
-        row[0]: {
+    cursor.execute(
+        """SELECT id, name, level_required, level_recommended,
+                  is_adventurer_quest, race_requirements, class_requirements,
+                  faction_requirements
+           FROM quests"""
+    )
+    quest_info = {}
+    for row in cursor.fetchall():
+        info: dict = {
             "id": row[0],
             "name": row[1],
             "level_required": row[2],
             "level_recommended": row[3],
+            "is_adventurer_quest": bool(row[4]),
         }
-        for row in cursor.fetchall()
-    }
+        # Only include non-empty requirements
+        if row[5] and row[5] != "[]":
+            info["race_requirements"] = json.loads(row[5])
+        if row[6] and row[6] != "[]":
+            info["class_requirements"] = json.loads(row[6])
+        if row[7] and row[7] != "[]":
+            faction_reqs = json.loads(row[7])
+            # Add tier name to each faction requirement
+            for fr in faction_reqs:
+                fr["tier_name"] = get_tier_name(fr["faction_value"])
+            info["faction_requirements"] = faction_reqs
+        quest_info[row[0]] = info
 
     updated_count = 0
 
@@ -58,9 +87,8 @@ def _denormalize_quests_offered(conn: sqlite3.Connection) -> int:
         # Expand quest IDs to full quest info
         expanded_quests = []
         for quest_id in quest_ids:
-            info = quest_info.get(quest_id)
-            if info:
-                expanded_quests.append(info)
+            if quest_id in quest_info:
+                expanded_quests.append(quest_info[quest_id])
 
         if expanded_quests:
             cursor.execute(
@@ -262,7 +290,8 @@ def _add_quests_completed_here(conn: sqlite3.Connection) -> int:
 
     # Get all quests grouped by their end NPC
     cursor.execute("""
-        SELECT end_npc_id, id, name, level_required, level_recommended
+        SELECT end_npc_id, id, name, level_required, level_recommended,
+               is_adventurer_quest, race_requirements, class_requirements
         FROM quests
         WHERE end_npc_id IS NOT NULL
         ORDER BY end_npc_id, level_recommended
@@ -274,14 +303,19 @@ def _add_quests_completed_here(conn: sqlite3.Connection) -> int:
         npc_id = row[0]
         if npc_id not in npc_quests:
             npc_quests[npc_id] = []
-        npc_quests[npc_id].append(
-            {
-                "id": row[1],
-                "name": row[2],
-                "level_required": row[3],
-                "level_recommended": row[4],
-            }
-        )
+        quest_info: dict = {
+            "id": row[1],
+            "name": row[2],
+            "level_required": row[3],
+            "level_recommended": row[4],
+            "is_adventurer_quest": bool(row[5]),
+        }
+        # Only include non-empty requirements
+        if row[6] and row[6] != "[]":
+            quest_info["race_requirements"] = json.loads(row[6])
+        if row[7] and row[7] != "[]":
+            quest_info["class_requirements"] = json.loads(row[7])
+        npc_quests[npc_id].append(quest_info)
 
     # Update each NPC
     for npc_id, quests in npc_quests.items():

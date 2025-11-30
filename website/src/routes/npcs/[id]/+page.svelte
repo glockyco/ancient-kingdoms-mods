@@ -193,19 +193,67 @@
     data.itemsSold.some((item) => item.faction_required > 0),
   );
 
+  // Check if any quests have requirements
+  const hasQuestRequirements = $derived(
+    data.questsOffered.some(
+      (q) =>
+        (q.race_requirements && q.race_requirements.length > 0) ||
+        (q.class_requirements && q.class_requirements.length > 0) ||
+        (q.faction_requirements && q.faction_requirements.length > 0),
+    ),
+  );
+
+  // Helper to format quest requirements
+  function formatQuestRequirements(quest: NpcQuestOffered): string {
+    const reqs: string[] = [];
+    if (quest.class_requirements?.length) {
+      reqs.push(...quest.class_requirements);
+    }
+    if (quest.race_requirements?.length) {
+      reqs.push(...quest.race_requirements);
+    }
+    if (quest.faction_requirements?.length) {
+      for (const fr of quest.faction_requirements) {
+        reqs.push(`${fr.faction} (${fr.tier_name})`);
+      }
+    }
+    return reqs.join(", ");
+  }
+
   // Quest columns
-  const questColumns: ColumnDef<NpcQuestOffered>[] = [
-    {
-      accessorKey: "name",
-      header: "Quest",
-      minSize: 250,
-    },
-    {
-      accessorKey: "level_recommended",
-      header: "Level",
-      size: 100,
-    },
-  ];
+  const questColumns = $derived.by(() => {
+    const cols: ColumnDef<NpcQuestOffered>[] = [
+      {
+        accessorKey: "name",
+        header: "Quest",
+        minSize: 250,
+      },
+    ];
+
+    if (hasQuestRequirements) {
+      cols.push({
+        id: "requirements",
+        header: "Requirements",
+        size: 220,
+        accessorFn: (row) => formatQuestRequirements(row),
+      });
+    }
+
+    cols.push(
+      {
+        accessorKey: "level_required",
+        header: "Req. Level",
+        size: 130,
+      },
+      {
+        accessorKey: "level_recommended",
+        header: "Rec. Level",
+        size: 130,
+      },
+    );
+
+    return cols;
+  });
 
   // Items sold columns - dynamic based on faction requirements
   const itemsSoldColumns = $derived.by(() => {
@@ -307,14 +355,29 @@
   row: Row<NpcQuestOffered>;
 })}
   {#if cell.column.id === "name"}
-    <a
-      href="/quests/{row.original.id}"
-      class="text-blue-600 dark:text-blue-400 hover:underline"
-    >
-      {row.original.name}
-    </a>
+    <div class="flex items-center gap-2">
+      <a
+        href="/quests/{row.original.id}"
+        class="text-blue-600 dark:text-blue-400 hover:underline"
+      >
+        {row.original.name}
+      </a>
+      {#if row.original.is_adventurer_quest}
+        <span
+          class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200"
+        >
+          Daily
+        </span>
+      {/if}
+    </div>
+  {:else if cell.column.id === "level_required"}
+    <span class="ml-auto">{row.original.level_required}</span>
   {:else if cell.column.id === "level_recommended"}
     <span class="ml-auto">{row.original.level_recommended}</span>
+  {:else if cell.column.id === "requirements"}
+    <span class="text-muted-foreground">
+      {formatQuestRequirements(row.original)}
+    </span>
   {:else}
     {cell.getValue()}
   {/if}
@@ -325,7 +388,7 @@
 }: {
   header: Header<NpcQuestOffered, unknown>;
 })}
-  {#if header.id === "level_recommended"}
+  {#if header.id === "level_required" || header.id === "level_recommended"}
     <span class="ml-auto">{header.column.columnDef.header}</span>
   {:else}
     {header.column.columnDef.header}
@@ -648,7 +711,10 @@
         columns={questColumns}
         renderCell={renderQuestCell}
         renderHeader={renderQuestHeader}
-        initialSorting={[{ id: "level_recommended", desc: false }]}
+        initialSorting={[
+          { id: "level_recommended", desc: false },
+          { id: "name", desc: false },
+        ]}
         urlKey="npc-{data.npc.id}-quests"
         pageSize={10}
         zebraStripe={true}
