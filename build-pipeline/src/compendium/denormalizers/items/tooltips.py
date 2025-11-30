@@ -284,7 +284,11 @@ def run(conn: sqlite3.Connection) -> None:
     console.print("Generating item tooltips...")
     cursor = conn.cursor()
 
+    # Clear any existing tooltip_html for augmentations (they should never have tooltips)
+    cursor.execute("UPDATE items SET tooltip_html = NULL WHERE item_type = 'augment'")
+
     # Fetch all items with fields needed for tooltip generation
+    # Exclude augmentations - they should never have tooltips rendered
     cursor.execute("""
         SELECT
             id,
@@ -301,6 +305,7 @@ def run(conn: sqlite3.Connection) -> None:
             augment_skill_bonuses_with_names
         FROM items
         WHERE tooltip IS NOT NULL AND tooltip != ''
+          AND item_type != 'augment'
     """)
 
     columns = [desc[0] for desc in cursor.description]
