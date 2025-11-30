@@ -48,6 +48,7 @@
     {
       accessorKey: "result_item_name",
       header: "Output",
+      minSize: 220,
       enableHiding: false,
     },
     {
@@ -67,7 +68,7 @@
     {
       id: "ingredient3",
       header: "Ingredient 3",
-      size: 220,
+      minSize: 220,
       enableSorting: false,
       accessorFn: (row) => row.ingredients[2]?.item_name ?? "",
     },
