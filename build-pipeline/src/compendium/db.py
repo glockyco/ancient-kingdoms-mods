@@ -78,6 +78,16 @@ def insert_model(cursor: sqlite3.Cursor, table: str, model: BaseModel) -> None:
                 values["origin_follow_position_x"] = value.x
                 values["origin_follow_position_y"] = value.y
                 values["origin_follow_position_z"] = value.z
+        elif field_name == "teleport_destination":
+            if value is not None:
+                values["teleport_destination_x"] = value.x
+                values["teleport_destination_y"] = value.y
+                values["teleport_destination_z"] = value.z
+        elif field_name == "travel_destination":
+            if value is not None:
+                values["travel_destination_x"] = value.x
+                values["travel_destination_y"] = value.y
+                values["travel_destination_z"] = value.z
         # Handle NpcRoles object
         elif field_name == "roles" and value is not None:
             values["roles"] = json.dumps(value.model_dump())

@@ -253,9 +253,7 @@ class ItemData(BaseModel):
     ] = []  # Available rotation angles (e.g., [{'x': 0.0, 'y': 180.0, 'z': 0.0}])
 
     # Travel item properties
-    travel_destination: dict[str, Any] | None = (
-        None  # Teleport coordinates (e.g., {'x': -31.0, 'y': 0.0, 'z': 0.0})
-    )
+    travel_destination: Position | None = None  # Teleport coordinates
     travel_destination_name: str | None = None  # Display name of destination
 
     # Treasure map properties
@@ -357,6 +355,15 @@ class NpcData(BaseModel):
     aggro_messages: list[str] = []
     aggro_message_probability: float = 0.0
     summon_message: str = ""
+
+    # Skills (for guards and hostile NPCs)
+    skill_ids: list[str] = []
+
+    # Teleport (for NPCs that teleport players)
+    teleport_zone_id: str | None = None
+    teleport_destination: Position | None = None
+    teleport_price: int = 0
+    teleport_message: str | None = None
 
 
 # =============================================================================

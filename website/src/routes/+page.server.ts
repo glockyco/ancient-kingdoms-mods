@@ -8,6 +8,7 @@ interface HomePageData {
     items: number;
     zones: number;
     monsters: number;
+    npcs: number;
     recipes: number;
   };
 }
@@ -29,6 +30,10 @@ export const load: PageServerLoad = (): HomePageData => {
       .get() as { count: number }
   ).count;
 
+  const npcCount = (
+    db.prepare("SELECT COUNT(*) as count FROM npcs").get() as { count: number }
+  ).count;
+
   const alchemyCount = (
     db.prepare("SELECT COUNT(*) as count FROM alchemy_recipes").get() as {
       count: number;
@@ -48,6 +53,7 @@ export const load: PageServerLoad = (): HomePageData => {
       items: itemCount,
       zones: zoneCount,
       monsters: monsterCount,
+      npcs: npcCount,
       recipes: alchemyCount + craftingCount,
     },
   };

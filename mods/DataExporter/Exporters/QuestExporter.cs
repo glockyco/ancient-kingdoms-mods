@@ -31,7 +31,7 @@ public class QuestExporter : BaseExporter
 
             var questData = new QuestData
             {
-                id = quest.idQuest,
+                id = SanitizeId(quest.name),
                 name = quest.nameQuest ?? quest.name,
                 quest_type = DetermineQuestType(quest),
                 level_required = quest.requiredLevel,
@@ -42,7 +42,7 @@ public class QuestExporter : BaseExporter
                 zone_id_quest_action = quest.idZoneQuestAction,
                 given_item_on_start_id = quest.givenItemOnStartQuest != null ? SanitizeId(quest.givenItemOnStartQuest.name) : null,
                 predecessor_id = quest.predecessor != null && quest.predecessor.Length > 0 && quest.predecessor[0] != null
-                    ? quest.predecessor[0].idQuest
+                    ? SanitizeId(quest.predecessor[0].name)
                     : null,
                 is_main_quest = quest.mainQuest,
                 is_epic_quest = quest.epicQuest,

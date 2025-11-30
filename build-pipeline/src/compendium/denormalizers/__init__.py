@@ -9,7 +9,7 @@ Execution order matters - some denormalizers depend on others having run first.
 
 import sqlite3
 
-from compendium.denormalizers import experience, items, monsters, skills
+from compendium.denormalizers import experience, items, monsters, npcs, skills
 
 
 def run_all(conn: sqlite3.Connection) -> None:
@@ -32,3 +32,6 @@ def run_all(conn: sqlite3.Connection) -> None:
 
     # Phase 5: Experience calculations (pre-compute EXP values)
     experience.run_all(conn)
+
+    # Phase 6: NPC denormalizations (quest/item/skill names, quests_completed_here)
+    npcs.run_all(conn)

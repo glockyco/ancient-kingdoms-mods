@@ -163,7 +163,9 @@ CREATE TABLE items (
     mount_speed REAL DEFAULT 0.0,
     backpack_slots INTEGER DEFAULT 0,
     travel_zone_id INTEGER DEFAULT 0 REFERENCES zones(zone_id),
-    travel_destination TEXT,        -- JSON object
+    travel_destination_x REAL,
+    travel_destination_y REAL,
+    travel_destination_z REAL,
     travel_destination_name TEXT,
     pack_final_amount INTEGER DEFAULT 0,
 
@@ -206,6 +208,7 @@ CREATE TABLE items (
     treasure_map_zone_name TEXT,
     treasure_map_position_x REAL,
     treasure_map_position_y REAL,
+    treasure_map_position_z REAL,
 
     -- Optional augment/recipe properties
     augment_armor_set_id TEXT,        -- ID of the set bonus item (e.g., "cobalt_armor_bonus_set")
@@ -436,8 +439,9 @@ CREATE TABLE npcs (
     roles TEXT,                     -- JSON object
 
     -- What they offer
-    quests_offered TEXT,            -- JSON array: ["quest_id1", "quest_id2"]
-    items_sold TEXT,                -- JSON array: [{"item_id": "sword", "price": 500, "currency_item_id": "gold"}]
+    quests_offered TEXT,            -- JSON array: [{id, name, level_required, level_recommended}]
+    quests_completed_here TEXT,     -- JSON array: [{id, name, level_required, level_recommended}] - denormalized
+    items_sold TEXT,                -- JSON array: [{item_id, item_name, quality, price, currency_item_id, currency_item_name, required_faction}]
 
     -- Respawn and behavior
     respawn_dungeon_id INTEGER DEFAULT 0 REFERENCES zones(zone_id),
@@ -462,7 +466,18 @@ CREATE TABLE npcs (
     shout_messages TEXT,            -- JSON array
     aggro_messages TEXT,            -- JSON array
     aggro_message_probability REAL DEFAULT 0.0,
-    summon_message TEXT DEFAULT ''
+    summon_message TEXT DEFAULT '',
+
+    -- Skills (for guards and hostile NPCs)
+    skill_ids TEXT,                 -- JSON array: ["skill_id1", "skill_id2"]
+
+    -- Teleport (for NPCs that teleport players)
+    teleport_zone_id TEXT REFERENCES zones(id),
+    teleport_destination_x REAL,
+    teleport_destination_y REAL,
+    teleport_destination_z REAL,
+    teleport_price INTEGER DEFAULT 0,
+    teleport_message TEXT
 );
 
 -- =============================================================================

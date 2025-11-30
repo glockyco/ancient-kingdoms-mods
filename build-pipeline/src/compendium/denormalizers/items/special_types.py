@@ -410,23 +410,24 @@ def _denormalize_treasure_maps(conn: sqlite3.Connection) -> tuple[int, int]:
     console.print("  Denormalizing treasure map locations...")
     cursor = conn.cursor()
     cursor.execute("""
-        SELECT tl.required_map_id, tl.zone_id, z.name, tl.position_x, tl.position_y
+        SELECT tl.required_map_id, tl.zone_id, z.name, tl.position_x, tl.position_y, tl.position_z
         FROM treasure_locations tl
         LEFT JOIN zones z ON z.id = tl.zone_id
     """)
 
     treasure_maps_updated = 0
-    for map_id, zone_id, zone_name, pos_x, pos_y in cursor.fetchall():
+    for map_id, zone_id, zone_name, pos_x, pos_y, pos_z in cursor.fetchall():
         cursor.execute(
             """
             UPDATE items
             SET treasure_map_zone_id = ?,
                 treasure_map_zone_name = ?,
                 treasure_map_position_x = ?,
-                treasure_map_position_y = ?
+                treasure_map_position_y = ?,
+                treasure_map_position_z = ?
             WHERE id = ?
         """,
-            (zone_id, zone_name, pos_x, pos_y, map_id),
+            (zone_id, zone_name, pos_x, pos_y, pos_z, map_id),
         )
         if cursor.rowcount > 0:
             treasure_maps_updated += 1
