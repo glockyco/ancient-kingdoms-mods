@@ -12,6 +12,7 @@
   import Hammer from "@lucide/svelte/icons/hammer";
   import Search from "@lucide/svelte/icons/search";
   import Map from "@lucide/svelte/icons/map";
+  import Image from "@lucide/svelte/icons/image";
   import ArrowRight from "@lucide/svelte/icons/arrow-right";
 
   let { data } = $props();
@@ -241,6 +242,17 @@
               <Search class="h-5 w-5 text-cyan-500" />
             </div>
             <Card.Title class="text-base">Global Search</Card.Title>
+          </div>
+        </Card.Header>
+      </Card.Root>
+
+      <Card.Root class="opacity-50 bg-muted/30">
+        <Card.Header>
+          <div class="flex flex-col items-center text-center gap-2">
+            <div class="p-2 rounded-lg bg-pink-500/10">
+              <Image class="h-5 w-5 text-pink-500" />
+            </div>
+            <Card.Title class="text-base">Images</Card.Title>
           </div>
         </Card.Header>
       </Card.Root>
