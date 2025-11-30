@@ -283,7 +283,7 @@
       {
         id: "currency",
         header: "Currency",
-        size: 120,
+        size: 140,
         accessorFn: (row) => row.currency_item_name ?? "Gold",
       },
     );
