@@ -26,7 +26,7 @@
   <div class="text-center py-12 space-y-6">
     <h1 class="text-4xl md:text-5xl font-bold">Ancient Kingdoms Compendium</h1>
     <p class="text-xl text-muted-foreground">
-      Your guide to items, zones, monsters, and more
+      Your guide to items, monsters, npcs, and more
     </p>
   </div>
 
