@@ -89,6 +89,49 @@ public class NpcExporter : BaseExporter
                     is_augmenter = canonical.isAugmenter
                 },
 
+                // Base stats
+                level = canonical.level?.current ?? 1,
+                health = canonical.health?.max ?? 0,
+                mana = canonical.mana?.max ?? 0,
+
+                // Combat stats (calculated at base level)
+                damage = canonical.combat?.damage ?? 0,
+                magic_damage = canonical.combat?.magicDamage ?? 0,
+                defense = canonical.combat?.defense ?? 0,
+                magic_resist = canonical.combat?.magicResist ?? 0,
+                poison_resist = canonical.combat?.poisonResist ?? 0,
+                fire_resist = canonical.combat?.fireResist ?? 0,
+                cold_resist = canonical.combat?.coldResist ?? 0,
+                disease_resist = canonical.combat?.diseaseResist ?? 0,
+                block_chance = canonical.combat?.blockChance ?? 0,
+                critical_chance = canonical.combat?.criticalChance ?? 0,
+                accuracy = canonical.combat?.accuracy ?? 0,
+
+                // Stat scaling (LinearInt: actual = base + bonus_per_level * (level - 1))
+                health_base = canonical.health?.baseHealth.baseValue ?? 0,
+                health_per_level = canonical.health?.baseHealth.bonusPerLevel ?? 0,
+                mana_base = canonical.mana?.baseMana.baseValue ?? 0,
+                mana_per_level = canonical.mana?.baseMana.bonusPerLevel ?? 0,
+                damage_base = canonical.combat?.baseDamage.baseValue ?? 0,
+                damage_per_level = canonical.combat?.baseDamage.bonusPerLevel ?? 0,
+                magic_damage_base = canonical.combat?.baseMagicDamage.baseValue ?? 0,
+                magic_damage_per_level = canonical.combat?.baseMagicDamage.bonusPerLevel ?? 0,
+                defense_base = canonical.combat?.baseDefense.baseValue ?? 0,
+                defense_per_level = canonical.combat?.baseDefense.bonusPerLevel ?? 0,
+                magic_resist_base = canonical.combat?.baseMagicResist.baseValue ?? 0,
+                magic_resist_per_level = canonical.combat?.baseMagicResist.bonusPerLevel ?? 0,
+                poison_resist_base = canonical.combat?.basePoisonResist.baseValue ?? 0,
+                poison_resist_per_level = canonical.combat?.basePoisonResist.bonusPerLevel ?? 0,
+                fire_resist_base = canonical.combat?.baseFireResist.baseValue ?? 0,
+                fire_resist_per_level = canonical.combat?.baseFireResist.bonusPerLevel ?? 0,
+                cold_resist_base = canonical.combat?.baseColdResist.baseValue ?? 0,
+                cold_resist_per_level = canonical.combat?.baseColdResist.bonusPerLevel ?? 0,
+                disease_resist_base = canonical.combat?.baseDiseaseResist.baseValue ?? 0,
+                disease_resist_per_level = canonical.combat?.baseDiseaseResist.bonusPerLevel ?? 0,
+
+                // Combat flags
+                invincible = canonical.combat?.invincible ?? false,
+
                 // Spawning and respawn
                 respawn_dungeon_id = canonical.respawnDungeonId,
                 gold_required_respawn_dungeon = canonical.goldRequiredRespawnDungeon,

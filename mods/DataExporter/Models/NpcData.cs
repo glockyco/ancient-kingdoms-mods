@@ -59,6 +59,52 @@ public class NpcData
     public List<string> quests_offered { get; set; } = new();
     public List<ItemSold> items_sold { get; set; } = new();
 
+    // Base stats
+    public int level { get; set; }
+    public int health { get; set; }
+    public int mana { get; set; }
+
+    // Combat stats (calculated at base level)
+    public int damage { get; set; }
+    public int magic_damage { get; set; }
+    public int defense { get; set; }
+    public int magic_resist { get; set; }
+    public int poison_resist { get; set; }
+    public int fire_resist { get; set; }
+    public int cold_resist { get; set; }
+    public int disease_resist { get; set; }
+    public float block_chance { get; set; }
+    public float critical_chance { get; set; }
+    public float accuracy { get; set; }
+
+    // Stat scaling (LinearInt: actual = base + bonus_per_level * (level - 1))
+    public int health_base { get; set; }
+    public int health_per_level { get; set; }
+    public int mana_base { get; set; }
+    public int mana_per_level { get; set; }
+    public int damage_base { get; set; }
+    public int damage_per_level { get; set; }
+    public int magic_damage_base { get; set; }
+    public int magic_damage_per_level { get; set; }
+    public int defense_base { get; set; }
+    public int defense_per_level { get; set; }
+    public int magic_resist_base { get; set; }
+    public int magic_resist_per_level { get; set; }
+    public int poison_resist_base { get; set; }
+    public int poison_resist_per_level { get; set; }
+    public int fire_resist_base { get; set; }
+    public int fire_resist_per_level { get; set; }
+    public int cold_resist_base { get; set; }
+    public int cold_resist_per_level { get; set; }
+    public int disease_resist_base { get; set; }
+    public int disease_resist_per_level { get; set; }
+
+    // Combat flags
+    public bool invincible { get; set; }
+    public bool see_invisibility { get; set; }
+    public bool is_summonable { get; set; }
+    public bool flee_on_low_hp { get; set; }
+
     // Spawning and respawn
     public int respawn_dungeon_id { get; set; }
     public int gold_required_respawn_dungeon { get; set; }
@@ -71,11 +117,6 @@ public class NpcData
     public int gold_max { get; set; }
     public float probability_drop_gold { get; set; }
     public List<ItemDrop> drops { get; set; } = new();
-
-    // Combat flags
-    public bool see_invisibility { get; set; }
-    public bool is_summonable { get; set; }
-    public bool flee_on_low_hp { get; set; }
 
     // Messages and interactions
     public List<string> welcome_messages { get; set; } = new();

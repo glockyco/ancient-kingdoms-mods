@@ -184,6 +184,35 @@
     data.npc.welcome_messages.length > 0 || data.npc.shout_messages.length > 0,
   );
 
+  // Check if NPC has combat stats (health > 0 indicates a combatant)
+  const hasCombatStats = $derived(data.npc.health > 0);
+
+  // Build resistances array for display (only non-zero values)
+  const resistances = $derived.by(() => {
+    const resists: { name: string; value: number }[] = [];
+    if (data.npc.magic_resist !== 0)
+      resists.push({ name: "Magic", value: data.npc.magic_resist });
+    if (data.npc.poison_resist !== 0)
+      resists.push({ name: "Poison", value: data.npc.poison_resist });
+    if (data.npc.fire_resist !== 0)
+      resists.push({ name: "Fire", value: data.npc.fire_resist });
+    if (data.npc.cold_resist !== 0)
+      resists.push({ name: "Cold", value: data.npc.cold_resist });
+    if (data.npc.disease_resist !== 0)
+      resists.push({ name: "Disease", value: data.npc.disease_resist });
+    return resists;
+  });
+
+  // Build abilities array for display
+  const abilities = $derived.by(() => {
+    const abs: { label: string }[] = [];
+    if (data.npc.invincible) abs.push({ label: "Invincible" });
+    if (data.npc.see_invisibility) abs.push({ label: "Sees Invisibility" });
+    if (data.npc.flee_on_low_hp) abs.push({ label: "Flees on Low HP" });
+    if (data.npc.is_summonable) abs.push({ label: "Summonable" });
+    return abs;
+  });
+
   // Check which spawn columns to show
   const showRespawnColumn = $derived(data.npc.respawn_time > 0);
   const showChanceColumn = $derived(data.npc.respawn_probability < 1);
@@ -588,62 +617,125 @@
     </section>
   {/if}
 
-  <!-- Combat Section (below spawns) -->
-  <section>
-    <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
-      <Sword class="h-5 w-5 text-red-500" />
-      Combat
-    </h2>
-    <div class="bg-muted/30 rounded-md border p-4 space-y-4">
-      <!-- Gold Drop -->
-      <div>
-        <div class="text-sm text-muted-foreground mb-1">Gold Drop</div>
-        {#if data.npc.gold_max > 0}
-          <div class="font-medium text-yellow-600 dark:text-yellow-400">
-            {data.npc.gold_min.toLocaleString()} - {data.npc.gold_max.toLocaleString()}
-            gold
-            {#if data.npc.probability_drop_gold < 1}
-              <span class="text-muted-foreground font-normal">
-                ({formatPercent(data.npc.probability_drop_gold)} chance)
-              </span>
+  <!-- Combat Stats Section -->
+  {#if hasCombatStats}
+    <section>
+      <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
+        <Sword class="h-5 w-5 text-red-500" />
+        Combat Stats
+      </h2>
+      <div class="bg-muted/30 rounded-md border p-4">
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div>
+            <div class="text-sm text-muted-foreground">Level</div>
+            <div class="font-medium">{data.npc.level}</div>
+          </div>
+          <div>
+            <div class="text-sm text-muted-foreground">Health</div>
+            <div class="font-medium">{data.npc.health.toLocaleString()}</div>
+          </div>
+          {#if data.npc.mana > 0}
+            <div>
+              <div class="text-sm text-muted-foreground">Mana</div>
+              <div class="font-medium">{data.npc.mana.toLocaleString()}</div>
+            </div>
+          {/if}
+          <div>
+            <div class="text-sm text-muted-foreground">Damage</div>
+            <div class="font-medium">{data.npc.damage}</div>
+          </div>
+          {#if data.npc.magic_damage > 0}
+            <div>
+              <div class="text-sm text-muted-foreground">Magic Damage</div>
+              <div class="font-medium">{data.npc.magic_damage}</div>
+            </div>
+          {/if}
+          <div>
+            <div class="text-sm text-muted-foreground">Defense</div>
+            <div class="font-medium">{data.npc.defense}</div>
+          </div>
+          {#if data.npc.block_chance > 0}
+            <div>
+              <div class="text-sm text-muted-foreground">Block Chance</div>
+              <div class="font-medium">
+                {formatPercent(data.npc.block_chance)}
+              </div>
+            </div>
+          {/if}
+          {#if data.npc.critical_chance > 0}
+            <div>
+              <div class="text-sm text-muted-foreground">Critical Chance</div>
+              <div class="font-medium">
+                {formatPercent(data.npc.critical_chance)}
+              </div>
+            </div>
+          {/if}
+          {#if data.npc.accuracy > 0}
+            <div>
+              <div class="text-sm text-muted-foreground">Accuracy</div>
+              <div class="font-medium">
+                {formatPercent(data.npc.accuracy)}
+              </div>
+            </div>
+          {/if}
+        </div>
+
+        {#if resistances.length > 0 || abilities.length > 0}
+          <div class="mt-4 pt-4 border-t flex flex-col md:flex-row gap-4">
+            {#if resistances.length > 0}
+              <div class="md:w-[500px] shrink-0">
+                <div class="text-sm text-muted-foreground mb-2">
+                  Resistances
+                </div>
+                <div class="flex flex-wrap gap-2">
+                  {#each resistances as resist (resist.name)}
+                    <span
+                      class="inline-flex items-center rounded-md px-2 py-1 text-sm
+                        {resist.value > 0
+                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                        : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'}"
+                    >
+                      {resist.name}: {resist.value}
+                    </span>
+                  {/each}
+                </div>
+              </div>
+            {/if}
+            {#if abilities.length > 0}
+              <div class="flex-1">
+                <div class="text-sm text-muted-foreground mb-2">Special</div>
+                <div class="flex flex-wrap gap-2">
+                  {#each abilities as ability (ability.label)}
+                    <span
+                      class="inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-sm text-slate-800 dark:bg-slate-800 dark:text-slate-200"
+                    >
+                      {ability.label}
+                    </span>
+                  {/each}
+                </div>
+              </div>
             {/if}
           </div>
-        {:else}
-          <div class="text-muted-foreground">No gold drops</div>
+        {/if}
+
+        <!-- Gold Drop (if any) -->
+        {#if data.npc.gold_max > 0}
+          <div class="mt-4 pt-4 border-t">
+            <div class="text-sm text-muted-foreground mb-1">Gold Drop</div>
+            <div class="font-medium text-yellow-600 dark:text-yellow-400">
+              {data.npc.gold_min.toLocaleString()} - {data.npc.gold_max.toLocaleString()}
+              gold
+              {#if data.npc.probability_drop_gold < 1}
+                <span class="text-muted-foreground font-normal">
+                  ({formatPercent(data.npc.probability_drop_gold)} chance)
+                </span>
+              {/if}
+            </div>
+          </div>
         {/if}
       </div>
-
-      <!-- Combat Flags -->
-      {#if data.npc.see_invisibility || data.npc.flee_on_low_hp || data.npc.is_summonable}
-        <div>
-          <div class="text-sm text-muted-foreground mb-2">Abilities</div>
-          <div class="flex flex-wrap gap-2">
-            {#if data.npc.see_invisibility}
-              <span
-                class="inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-sm text-slate-800 dark:bg-slate-800 dark:text-slate-200"
-              >
-                Sees Invisibility
-              </span>
-            {/if}
-            {#if data.npc.flee_on_low_hp}
-              <span
-                class="inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-sm text-slate-800 dark:bg-slate-800 dark:text-slate-200"
-              >
-                Flees on Low HP
-              </span>
-            {/if}
-            {#if data.npc.is_summonable}
-              <span
-                class="inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-sm text-slate-800 dark:bg-slate-800 dark:text-slate-200"
-              >
-                Summonable
-              </span>
-            {/if}
-          </div>
-        </div>
-      {/if}
-    </div>
-  </section>
+    </section>
+  {/if}
 
   <!-- Roles Section -->
   {#if activeRoles.length > 0}

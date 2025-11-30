@@ -24,17 +24,66 @@ export interface NpcInfo {
   faction: string | null;
   race: string | null;
   roles: NpcRoles;
+
+  // Base stats
+  level: number;
+  health: number;
+  mana: number;
+
+  // Combat stats (calculated at base level)
+  damage: number;
+  magic_damage: number;
+  defense: number;
+  magic_resist: number;
+  poison_resist: number;
+  fire_resist: number;
+  cold_resist: number;
+  disease_resist: number;
+  block_chance: number;
+  critical_chance: number;
+  accuracy: number;
+
+  // Stat scaling (LinearInt: actual = base + bonus_per_level * (level - 1))
+  health_base: number;
+  health_per_level: number;
+  mana_base: number;
+  mana_per_level: number;
+  damage_base: number;
+  damage_per_level: number;
+  magic_damage_base: number;
+  magic_damage_per_level: number;
+  defense_base: number;
+  defense_per_level: number;
+  magic_resist_base: number;
+  magic_resist_per_level: number;
+  poison_resist_base: number;
+  poison_resist_per_level: number;
+  fire_resist_base: number;
+  fire_resist_per_level: number;
+  cold_resist_base: number;
+  cold_resist_per_level: number;
+  disease_resist_base: number;
+  disease_resist_per_level: number;
+
+  // Combat flags
+  invincible: boolean;
+  see_invisibility: boolean;
+  is_summonable: boolean;
+  flee_on_low_hp: boolean;
+
+  // Respawn and behavior
   respawn_time: number;
   respawn_probability: number;
   respawn_dungeon_id: number;
   gold_required_respawn_dungeon: number;
   can_hide_after_spawn: boolean;
+
+  // Loot
   gold_min: number;
   gold_max: number;
   probability_drop_gold: number;
-  see_invisibility: boolean;
-  is_summonable: boolean;
-  flee_on_low_hp: boolean;
+
+  // Messages
   welcome_messages: string[];
   shout_messages: string[];
   aggro_messages: string[];

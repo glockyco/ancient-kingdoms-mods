@@ -443,6 +443,52 @@ CREATE TABLE npcs (
     quests_completed_here TEXT,     -- JSON array: [{id, name, level_required, level_recommended}] - denormalized
     items_sold TEXT,                -- JSON array: [{item_id, item_name, quality, price, currency_item_id, currency_item_name, required_faction}]
 
+    -- Base stats
+    level INTEGER DEFAULT 1,
+    health INTEGER DEFAULT 0,
+    mana INTEGER DEFAULT 0,
+
+    -- Combat stats (calculated at base level)
+    damage INTEGER DEFAULT 0,
+    magic_damage INTEGER DEFAULT 0,
+    defense INTEGER DEFAULT 0,
+    magic_resist INTEGER DEFAULT 0,
+    poison_resist INTEGER DEFAULT 0,
+    fire_resist INTEGER DEFAULT 0,
+    cold_resist INTEGER DEFAULT 0,
+    disease_resist INTEGER DEFAULT 0,
+    block_chance REAL DEFAULT 0.0,
+    critical_chance REAL DEFAULT 0.0,
+    accuracy REAL DEFAULT 0.0,
+
+    -- Stat scaling (LinearInt: actual = base + bonus_per_level * (level - 1))
+    health_base INTEGER DEFAULT 0,
+    health_per_level INTEGER DEFAULT 0,
+    mana_base INTEGER DEFAULT 0,
+    mana_per_level INTEGER DEFAULT 0,
+    damage_base INTEGER DEFAULT 0,
+    damage_per_level INTEGER DEFAULT 0,
+    magic_damage_base INTEGER DEFAULT 0,
+    magic_damage_per_level INTEGER DEFAULT 0,
+    defense_base INTEGER DEFAULT 0,
+    defense_per_level INTEGER DEFAULT 0,
+    magic_resist_base INTEGER DEFAULT 0,
+    magic_resist_per_level INTEGER DEFAULT 0,
+    poison_resist_base INTEGER DEFAULT 0,
+    poison_resist_per_level INTEGER DEFAULT 0,
+    fire_resist_base INTEGER DEFAULT 0,
+    fire_resist_per_level INTEGER DEFAULT 0,
+    cold_resist_base INTEGER DEFAULT 0,
+    cold_resist_per_level INTEGER DEFAULT 0,
+    disease_resist_base INTEGER DEFAULT 0,
+    disease_resist_per_level INTEGER DEFAULT 0,
+
+    -- Combat flags
+    invincible BOOLEAN DEFAULT 0,
+    see_invisibility BOOLEAN DEFAULT 0,
+    is_summonable BOOLEAN DEFAULT 0,
+    flee_on_low_hp BOOLEAN DEFAULT 0,
+
     -- Respawn and behavior
     respawn_dungeon_id INTEGER DEFAULT 0 REFERENCES zones(zone_id),
     gold_required_respawn_dungeon INTEGER DEFAULT 0,
@@ -455,11 +501,6 @@ CREATE TABLE npcs (
     gold_max INTEGER DEFAULT 0,
     probability_drop_gold REAL DEFAULT 0.25,
     drops TEXT,                     -- JSON array
-
-    -- Combat flags
-    see_invisibility BOOLEAN DEFAULT 0,
-    is_summonable BOOLEAN DEFAULT 0,
-    flee_on_low_hp BOOLEAN DEFAULT 0,
 
     -- Messages
     welcome_messages TEXT,          -- JSON array

@@ -333,6 +333,52 @@ class NpcData(BaseModel):
     quests_offered: list[str] = []
     items_sold: list[NpcItemSale] = []
 
+    # Base stats
+    level: int = 1
+    health: int = 0
+    mana: int = 0
+
+    # Combat stats (calculated at base level)
+    damage: int = 0
+    magic_damage: int = 0
+    defense: int = 0
+    magic_resist: int = 0
+    poison_resist: int = 0
+    fire_resist: int = 0
+    cold_resist: int = 0
+    disease_resist: int = 0
+    block_chance: float = 0.0
+    critical_chance: float = 0.0
+    accuracy: float = 0.0
+
+    # Stat scaling (LinearInt: actual = base + bonus_per_level * (level - 1))
+    health_base: int = 0
+    health_per_level: int = 0
+    mana_base: int = 0
+    mana_per_level: int = 0
+    damage_base: int = 0
+    damage_per_level: int = 0
+    magic_damage_base: int = 0
+    magic_damage_per_level: int = 0
+    defense_base: int = 0
+    defense_per_level: int = 0
+    magic_resist_base: int = 0
+    magic_resist_per_level: int = 0
+    poison_resist_base: int = 0
+    poison_resist_per_level: int = 0
+    fire_resist_base: int = 0
+    fire_resist_per_level: int = 0
+    cold_resist_base: int = 0
+    cold_resist_per_level: int = 0
+    disease_resist_base: int = 0
+    disease_resist_per_level: int = 0
+
+    # Combat flags
+    invincible: bool = False
+    see_invisibility: bool = False
+    is_summonable: bool = False
+    flee_on_low_hp: bool = False
+
     # Monster-like properties
     respawn_dungeon_id: int = 0
     gold_required_respawn_dungeon: int = 0
@@ -343,11 +389,6 @@ class NpcData(BaseModel):
     gold_max: int = 0
     probability_drop_gold: float = 0.0
     drops: list[MonsterDrop] = []
-
-    # Combat
-    see_invisibility: bool = False
-    is_summonable: bool = False
-    flee_on_low_hp: bool = False
 
     # Messages
     welcome_messages: list[str] = []
