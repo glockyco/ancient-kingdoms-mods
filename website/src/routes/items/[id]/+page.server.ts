@@ -60,6 +60,16 @@ export const load: PageServerLoad = ({ params }): ItemDetailPageData => {
       .all() as Array<{ id: string; name: string }>;
   }
 
+  // For cursed/blessed runes, get priestess NPCs who can bless cursed runes
+  let priestesses: Array<{ id: string; name: string }> = [];
+  if (params.id === "cursed_rune" || params.id === "blessed_rune") {
+    priestesses = db
+      .prepare(
+        `SELECT id, name FROM npcs WHERE json_extract(roles, '$.is_priestess') = 1`,
+      )
+      .all() as Array<{ id: string; name: string }>;
+  }
+
   db.close();
 
   return {
@@ -67,5 +77,6 @@ export const load: PageServerLoad = ({ params }): ItemDetailPageData => {
     essenceTraders,
     veteranMasters,
     augmenters,
+    priestesses,
   };
 };

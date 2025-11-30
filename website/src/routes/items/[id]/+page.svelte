@@ -762,6 +762,76 @@
             </div>
           </Card.Content>
         </Card.Root>
+      {:else if data.item.id === "cursed_rune" && data.priestesses.length > 0}
+        <!-- Cursed Rune Blessing -->
+        <Card.Root class="bg-muted/30">
+          <Card.Header>
+            <Card.Title>Blessing</Card.Title>
+          </Card.Header>
+          <Card.Content>
+            <div class="space-y-3">
+              <div>
+                <div class={styles.label}>Converts to</div>
+                <a href="/items/blessed_rune" class={styles.link}>
+                  Blessed Rune
+                </a>
+              </div>
+              <div>
+                <div class={styles.label}>Cost</div>
+                <div class={styles.valueCurrency}>
+                  {formatGold(75)}g per rune
+                </div>
+              </div>
+              <div>
+                <div class={styles.label}>Available from</div>
+                <div class="space-y-1 mt-1">
+                  {#each data.priestesses as priestess (priestess.id)}
+                    <div>
+                      <a href="/npcs/{priestess.id}" class={styles.link}>
+                        {priestess.name}
+                      </a>
+                    </div>
+                  {/each}
+                </div>
+              </div>
+            </div>
+          </Card.Content>
+        </Card.Root>
+      {:else if data.item.id === "blessed_rune" && data.priestesses.length > 0}
+        <!-- Blessed Rune Origin -->
+        <Card.Root class="bg-muted/30">
+          <Card.Header>
+            <Card.Title>Acquisition</Card.Title>
+          </Card.Header>
+          <Card.Content>
+            <div class="space-y-3">
+              <div>
+                <div class={styles.label}>Created from</div>
+                <a href="/items/cursed_rune" class={styles.link}>
+                  Cursed Rune
+                </a>
+              </div>
+              <div>
+                <div class={styles.label}>Blessing cost</div>
+                <div class={styles.valueCurrency}>
+                  {formatGold(75)}g per rune
+                </div>
+              </div>
+              <div>
+                <div class={styles.label}>Blessed by</div>
+                <div class="space-y-1 mt-1">
+                  {#each data.priestesses as priestess (priestess.id)}
+                    <div>
+                      <a href="/npcs/{priestess.id}" class={styles.link}>
+                        {priestess.name}
+                      </a>
+                    </div>
+                  {/each}
+                </div>
+              </div>
+            </div>
+          </Card.Content>
+        </Card.Root>
       {:else if data.item.item_type === "augment" && !data.item.augment_armor_set_name && data.augmenters.length > 0}
         <!-- Augment (Non-Set) Usage -->
         <Card.Root class="bg-muted/30">
