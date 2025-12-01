@@ -546,24 +546,30 @@
                 {/if}
               </div>
             {:else if data.quest.discovered_location}
-              <div class="flex items-center gap-2">
+              <div class="flex items-center gap-2 flex-wrap">
                 <span
                   class="inline-flex items-center justify-center rounded px-2 py-0.5 text-xs font-medium w-16 bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200"
                 >
                   Discover
                 </span>
+                {#if data.quest.discovered_location_sub_zone}
+                  <span>{data.quest.discovered_location_sub_zone.name}</span>
+                {/if}
                 {#if data.quest.discovered_location_zone}
+                  <span class="text-muted-foreground">in</span>
                   <a
                     href="/zones/{data.quest.discovered_location_zone.id}"
                     class="text-blue-600 dark:text-blue-400 hover:underline"
                   >
                     {data.quest.discovered_location_zone.name}
                   </a>
-                  <span class="text-muted-foreground"
-                    >({data.quest.discovered_location})</span
-                  >
-                {:else}
-                  <span>{data.quest.discovered_location}</span>
+                {/if}
+                {#if data.quest.discovered_location_position}
+                  <span class="text-muted-foreground text-sm">
+                    at ({data.quest.discovered_location_position.x.toFixed(0)}, {data.quest.discovered_location_position.y.toFixed(
+                      0,
+                    )})
+                  </span>
                 {/if}
               </div>
             {/if}

@@ -87,6 +87,13 @@ export interface QuestZone {
   name: string;
 }
 
+// Position in game world
+export interface QuestPosition {
+  x: number;
+  y: number;
+  z: number;
+}
+
 // Full quest info for detail page
 export interface QuestInfo {
   id: string;
@@ -110,6 +117,8 @@ export interface QuestInfo {
   // Location quest fields
   discovered_location: string | null;
   discovered_location_zone: QuestZone | null;
+  discovered_location_sub_zone: QuestZone | null;
+  discovered_location_position: QuestPosition | null;
   tracking_quest_location: string | null;
   is_find_npc_quest: boolean;
   // Gather inventory quest fields

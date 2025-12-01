@@ -6,6 +6,14 @@ using UnityEngine;
 
 namespace DataExporter.Exporters;
 
+public class QuestLocationTriggerInfo
+{
+    public string ZoneId { get; set; }
+    public string SubZoneId { get; set; }
+    public Position Position { get; set; }
+    public BoundingBox Bounds { get; set; }
+}
+
 public class QuestExporter : BaseExporter
 {
     public QuestExporter(MelonLogger.Instance logger, string exportPath) : base(logger, exportPath)
@@ -294,7 +302,7 @@ public class QuestExporter : BaseExporter
         }
     }
 
-    private void PopulateLocationQuestFields(Il2Cpp.ScriptableQuest quest, QuestData questData, Dictionary<string, ZoneInfo> questLocationTriggers)
+    private void PopulateLocationQuestFields(Il2Cpp.ScriptableQuest quest, QuestData questData, Dictionary<string, QuestLocationTriggerInfo> questLocationTriggers)
     {
         var locationQuest = quest.TryCast<Il2Cpp.LocationQuest>();
         if (locationQuest == null) return;
@@ -303,36 +311,84 @@ public class QuestExporter : BaseExporter
         questData.discovered_location = locationQuest.discoveredLocationString ?? "";
         questData.is_find_npc_quest = locationQuest.isFindNpcQuest;
 
-        // Look up the zone from the QuestLocation trigger matching this quest's ID
-        if (questLocationTriggers.TryGetValue(questData.id, out var zoneInfo))
+        // Look up the zone and position from the QuestLocation trigger matching this quest's ID
+        if (questLocationTriggers.TryGetValue(questData.id, out var triggerInfo))
         {
-            questData.discovered_location_zone_id = zoneInfo.ZoneId;
-            questData.discovered_location_sub_zone_id = zoneInfo.SubZoneId;
+            questData.discovered_location_zone_id = triggerInfo.ZoneId;
+            questData.discovered_location_sub_zone_id = triggerInfo.SubZoneId;
+            questData.discovered_location_position = triggerInfo.Position;
+            questData.discovered_location_bounds = triggerInfo.Bounds;
         }
     }
 
     /// <summary>
-    /// Builds a map of quest IDs to their discovery zone info by finding all QuestLocation triggers in the scene.
+    /// Builds a map of quest IDs to their discovery trigger info by finding all QuestLocation triggers in the scene.
     /// QuestLocation triggers are GameObjects tagged "QuestLocation" whose name matches the quest ID they complete.
+    /// Captures position and collider bounds for displaying discovery areas on the map.
     /// </summary>
-    private Dictionary<string, ZoneInfo> BuildQuestLocationTriggerMap()
+    private Dictionary<string, QuestLocationTriggerInfo> BuildQuestLocationTriggerMap()
     {
-        var map = new Dictionary<string, ZoneInfo>();
+        var map = new Dictionary<string, QuestLocationTriggerInfo>();
 
-        var questLocationObjects = GameObject.FindGameObjectsWithTag("QuestLocation");
-        foreach (var go in questLocationObjects)
+        // Find all GameObjects and check for QuestLocation tag
+        // We use FindObjectsOfTypeAll on Transform to get all scene objects
+        // then check the tag manually to avoid IL2CPP interop issues with FindGameObjectsWithTag
+        var type = Il2CppType.Of<Transform>();
+        var allTransforms = Resources.FindObjectsOfTypeAll(type);
+
+        foreach (var obj in allTransforms)
         {
+            var transform = obj.TryCast<Transform>();
+            if (transform == null)
+                continue;
+
+            var go = transform.gameObject;
             if (go == null || !go.scene.IsValid())
                 continue;
+
+            // Check if this object has the QuestLocation tag
+            try
+            {
+                if (go.tag != "QuestLocation")
+                    continue;
+            }
+            catch
+            {
+                // Tag access can throw if the tag doesn't exist
+                continue;
+            }
 
             var questId = SanitizeId(go.name);
             if (string.IsNullOrEmpty(questId))
                 continue;
 
-            var zoneInfo = GetZoneInfoFromPosition(go.transform.position);
-            map[questId] = zoneInfo;
+            var pos = go.transform.position;
+            var zoneInfo = GetZoneInfoFromPosition(pos);
 
-            Logger.Msg($"  QuestLocation trigger '{go.name}' -> zone: {zoneInfo.ZoneId}, sub-zone: {zoneInfo.SubZoneId}");
+            var triggerInfo = new QuestLocationTriggerInfo
+            {
+                ZoneId = zoneInfo.ZoneId,
+                SubZoneId = zoneInfo.SubZoneId,
+                Position = new Position(pos.x, pos.y, pos.z)
+            };
+
+            // Try to get collider bounds for the discovery area
+            var collider = go.GetComponent<Collider2D>();
+            if (collider != null)
+            {
+                var bounds = collider.bounds;
+                triggerInfo.Bounds = new BoundingBox(
+                    bounds.min.x, bounds.min.y,
+                    bounds.max.x, bounds.max.y
+                );
+            }
+
+            map[questId] = triggerInfo;
+
+            var boundsStr = triggerInfo.Bounds != null
+                ? $"bounds: ({triggerInfo.Bounds.min_x:F1}, {triggerInfo.Bounds.min_y:F1}) to ({triggerInfo.Bounds.max_x:F1}, {triggerInfo.Bounds.max_y:F1})"
+                : "no collider";
+            Logger.Msg($"  QuestLocation trigger '{go.name}' -> zone: {zoneInfo.ZoneId}, pos: ({pos.x:F1}, {pos.y:F1}), {boundsStr}");
         }
 
         return map;

@@ -619,6 +619,8 @@ CREATE TABLE quests (
     discovered_location TEXT,
     discovered_location_zone_id TEXT REFERENCES zones(id),
     discovered_location_sub_zone_id TEXT REFERENCES zone_triggers(id),
+    discovered_location_position TEXT,    -- JSON: {x, y, z}
+    discovered_location_bounds TEXT,      -- JSON: {min_x, min_y, max_x, max_y}
     tracking_quest_location TEXT
 );
 

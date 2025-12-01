@@ -13,3 +13,19 @@ public class Position
         this.z = z;
     }
 }
+
+public class BoundingBox
+{
+    public float min_x { get; set; }
+    public float min_y { get; set; }
+    public float max_x { get; set; }
+    public float max_y { get; set; }
+
+    public BoundingBox(float minX, float minY, float maxX, float maxY)
+    {
+        min_x = minX;
+        min_y = minY;
+        max_x = maxX;
+        max_y = maxY;
+    }
+}

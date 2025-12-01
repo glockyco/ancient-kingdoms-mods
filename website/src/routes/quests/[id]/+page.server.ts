@@ -13,6 +13,7 @@ import type {
   QuestChainGraph,
   QuestGraphNode,
   QuestGraphEdge,
+  QuestPosition,
 } from "$lib/types/quests";
 import type { ObtainabilityNode } from "$lib/types/recipes";
 import { buildObtainabilityTree } from "$lib/server/obtainability";
@@ -156,6 +157,23 @@ export const load: PageServerLoad = ({ params }): QuestDetailPageData => {
       }
       return null;
     })(),
+    discovered_location_sub_zone: (() => {
+      // Look up the sub-zone (area) from discovered_location_sub_zone_id
+      if (questRaw.discovered_location_sub_zone_id) {
+        const subZone = db
+          .prepare("SELECT id, name FROM zone_triggers WHERE id = ?")
+          .get(questRaw.discovered_location_sub_zone_id) as
+          | { id: string; name: string }
+          | undefined;
+        return subZone ? { id: subZone.id, name: subZone.name } : null;
+      }
+      return null;
+    })(),
+    discovered_location_position: questRaw.discovered_location_position
+      ? (JSON.parse(
+          questRaw.discovered_location_position as string,
+        ) as QuestPosition)
+      : null,
     tracking_quest_location:
       (questRaw.tracking_quest_location as string) || null,
     is_find_npc_quest: Boolean(questRaw.is_find_npc_quest),

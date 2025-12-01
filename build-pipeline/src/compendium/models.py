@@ -20,6 +20,15 @@ class Position(BaseModel):
     z: float
 
 
+class BoundingBox(BaseModel):
+    """2D bounding box for collider bounds."""
+
+    min_x: float
+    min_y: float
+    max_x: float
+    max_y: float
+
+
 # =============================================================================
 # Monster Models
 # =============================================================================
@@ -489,6 +498,12 @@ class QuestData(BaseModel):
     )
     discovered_location_sub_zone_id: str | None = (
         None  # Sub-zone where discovery trigger is located
+    )
+    discovered_location_position: Position | None = (
+        None  # Position of discovery trigger
+    )
+    discovered_location_bounds: BoundingBox | None = (
+        None  # Collider bounds of discovery area
     )
     tracking_quest_location: str | None = None  # Location tracking text
 
