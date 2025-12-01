@@ -31,14 +31,14 @@
     {
       id: "details",
       header: "",
-      size: 30,
+      size: 32,
       enableSorting: false,
       enableHiding: false,
     },
     {
       accessorKey: "type",
       header: "Type",
-      size: 100,
+      size: 90,
       filterFn: (row, columnId, filterValue: string[]) => {
         const value = row.getValue(columnId) as string;
         if (!filterValue || filterValue.length === 0) return true;
