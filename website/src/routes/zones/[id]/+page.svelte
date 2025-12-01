@@ -457,7 +457,7 @@
         <p>
           <a
             href="/npcs/{data.renewalSage.id}"
-            class="text-blue-600 dark:text-blue-400 hover:underline font-medium"
+            class="text-blue-600 dark:text-blue-400 hover:underline"
           >
             {data.renewalSage.name}
           </a>
