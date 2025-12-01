@@ -24,6 +24,7 @@
   import Layers from "@lucide/svelte/icons/layers";
   import Castle from "@lucide/svelte/icons/castle";
   import Trees from "@lucide/svelte/icons/trees";
+  import RefreshCw from "@lucide/svelte/icons/refresh-cw";
 
   let { data } = $props();
 
@@ -138,6 +139,7 @@
     if (npc.roles.is_essence_trader) roles.push("Essence Trader");
     if (npc.roles.is_priestess) roles.push("Priestess");
     if (npc.roles.is_augmenter) roles.push("Augmenter");
+    if (npc.roles.is_renewal_sage) roles.push("Renewal Sage");
     return roles;
   }
 
@@ -441,6 +443,37 @@
         zebraStripe={true}
         class="bg-muted/30"
       />
+    </section>
+  {/if}
+
+  <!-- Renewal Sage Section -->
+  {#if data.renewalSage}
+    <section>
+      <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
+        <RefreshCw class="h-5 w-5 text-emerald-500" />
+        Renewal Sage
+      </h2>
+      <div class="bg-muted/30 rounded-md border p-4">
+        <p>
+          <a
+            href="/npcs/{data.renewalSage.id}"
+            class="text-blue-600 dark:text-blue-400 hover:underline font-medium"
+          >
+            {data.renewalSage.name}
+          </a>
+          in
+          <a
+            href="/zones/{data.renewalSage.zone_id}"
+            class="text-blue-600 dark:text-blue-400 hover:underline"
+          >
+            {data.renewalSage.zone_name}
+          </a>
+          can reset all spawns in this dungeon{#if data.renewalSage.gold_cost > 0}&nbsp;for
+            <span class="text-yellow-600 dark:text-yellow-400"
+              >{data.renewalSage.gold_cost.toLocaleString()} gold</span
+            >{/if}.
+        </p>
+      </div>
     </section>
   {/if}
 

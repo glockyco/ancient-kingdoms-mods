@@ -40,6 +40,7 @@ const defaultRoles: NpcRoles = {
   is_essence_trader: false,
   is_priestess: false,
   is_augmenter: false,
+  is_renewal_sage: false,
 };
 
 export const load: PageServerLoad = ({ params }): NpcDetailPageData => {
@@ -114,13 +115,17 @@ export const load: PageServerLoad = ({ params }): NpcDetailPageData => {
     )
     .all(params.id) as NpcSpawnLocation[];
 
-  // Get respawn dungeon name if applicable
+  // Get respawn dungeon info if applicable
   let respawnDungeonName: string | null = null;
+  let respawnDungeonZoneId: string | null = null;
   if (npcRaw.respawn_dungeon_id && (npcRaw.respawn_dungeon_id as number) > 0) {
     const dungeonData = db
-      .prepare("SELECT name FROM zones WHERE zone_id = ?")
-      .get(npcRaw.respawn_dungeon_id) as { name: string } | undefined;
+      .prepare("SELECT id, name FROM zones WHERE zone_id = ?")
+      .get(npcRaw.respawn_dungeon_id) as
+      | { id: string; name: string }
+      | undefined;
     respawnDungeonName = dungeonData?.name || null;
+    respawnDungeonZoneId = dungeonData?.id || null;
   }
 
   const npc: NpcInfo = {
@@ -209,5 +214,6 @@ export const load: PageServerLoad = ({ params }): NpcDetailPageData => {
     drops,
     skills,
     respawnDungeonName,
+    respawnDungeonZoneId,
   };
 };

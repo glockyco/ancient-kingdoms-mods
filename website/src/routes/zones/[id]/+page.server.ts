@@ -9,6 +9,7 @@ import type {
   ZoneAltar,
   ZoneConnection,
   ZoneSubZone,
+  ZoneRenewalSage,
 } from "$lib/types/zones";
 
 export const prerender = true;
@@ -240,6 +241,28 @@ export const load: PageServerLoad = ({ params }): ZoneDetailData => {
     )
     .all(params.id) as ZoneSubZone[];
 
+  // Get Renewal Sage NPC that can reset spawns in this zone (for dungeons)
+  // The NPC has respawn_dungeon_id matching this zone's zone_id
+  // Also get the zone where the Renewal Sage is located
+  const renewalSage = db
+    .prepare(
+      `
+    SELECT
+      n.id,
+      n.name,
+      n.gold_required_respawn_dungeon as gold_cost,
+      sage_zone.id as zone_id,
+      sage_zone.name as zone_name
+    FROM npcs n
+    JOIN zones z ON z.zone_id = n.respawn_dungeon_id
+    JOIN npc_spawns ns ON ns.npc_id = n.id
+    JOIN zones sage_zone ON sage_zone.id = ns.zone_id
+    WHERE z.id = ? AND n.respawn_dungeon_id > 0
+    LIMIT 1
+  `,
+    )
+    .get(params.id) as ZoneRenewalSage | undefined;
+
   db.close();
 
   return {
@@ -250,5 +273,6 @@ export const load: PageServerLoad = ({ params }): ZoneDetailData => {
     altars,
     connectedZones,
     subZones,
+    renewalSage: renewalSage ?? null,
   };
 };

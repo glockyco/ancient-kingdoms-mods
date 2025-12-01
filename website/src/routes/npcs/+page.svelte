@@ -113,6 +113,12 @@
       label: "Guard",
       color: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
     },
+    {
+      key: "is_renewal_sage",
+      label: "Renewal Sage",
+      color:
+        "bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200",
+    },
   ] as const;
 
   // Build zone lookup for each NPC
@@ -143,10 +149,10 @@
     ).sort(),
   );
 
-  // Get role keys that have at least one NPC
+  // Get role keys that are active for an NPC
   function getActiveRoleKeys(roles: NpcRoles): string[] {
     return roleConfig
-      .filter((role) => roles[role.key as keyof NpcRoles])
+      .filter((role) => roles[role.key as keyof NpcRoles] === true)
       .map((role) => role.key);
   }
 

@@ -327,6 +327,40 @@ def _add_quests_completed_here(conn: sqlite3.Connection) -> int:
     return len(npc_quests)
 
 
+def _add_renewal_sage_role(conn: sqlite3.Connection) -> int:
+    """Add is_renewal_sage to roles JSON for all NPCs.
+
+    NPCs with respawn_dungeon_id > 0 are "Renewal Sages" that can reset all
+    monster and boss spawns in their associated dungeon for a gold fee.
+    All other NPCs get is_renewal_sage: false for consistency.
+
+    Returns:
+        Count of Renewal Sage NPCs
+    """
+    console.print("  Adding is_renewal_sage to roles...")
+    cursor = conn.cursor()
+
+    # Get all NPCs with their respawn_dungeon_id
+    cursor.execute("SELECT id, roles, respawn_dungeon_id FROM npcs")
+    npcs = cursor.fetchall()
+
+    renewal_sage_count = 0
+    for npc_id, roles_json, respawn_dungeon_id in npcs:
+        roles = json.loads(roles_json) if roles_json else {}
+        is_renewal_sage = respawn_dungeon_id is not None and respawn_dungeon_id > 0
+        roles["is_renewal_sage"] = is_renewal_sage
+
+        cursor.execute(
+            "UPDATE npcs SET roles = ? WHERE id = ?",
+            (json.dumps(roles), npc_id),
+        )
+
+        if is_renewal_sage:
+            renewal_sage_count += 1
+
+    return renewal_sage_count
+
+
 def run(conn: sqlite3.Connection) -> None:
     """Run all NPC relations denormalizations."""
     console.print("Denormalizing NPC relations...")
@@ -336,6 +370,7 @@ def run(conn: sqlite3.Connection) -> None:
     drops_count = _denormalize_drops(conn)
     skills_count = _denormalize_skills(conn)
     quests_completed_count = _add_quests_completed_here(conn)
+    renewal_sage_count = _add_renewal_sage_role(conn)
 
     conn.commit()
 
@@ -349,4 +384,7 @@ def run(conn: sqlite3.Connection) -> None:
     console.print(f"  [green]OK[/green] Expanded skills for {skills_count} NPCs")
     console.print(
         f"  [green]OK[/green] Added quests_completed_here for {quests_completed_count} NPCs"
+    )
+    console.print(
+        f"  [green]OK[/green] Added is_renewal_sage role to {renewal_sage_count} NPCs"
     )

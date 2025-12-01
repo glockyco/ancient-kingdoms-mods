@@ -25,13 +25,13 @@
   let { data } = $props();
 
   // Role display configuration with descriptions
-  // description: main function, details: costs/requirements (optional)
+  // description: main function (can be function for dynamic content), details: costs/requirements (optional)
   interface RoleConfig {
     key: string;
     label: string;
     color: string;
-    description: string;
-    details?: string[];
+    description: string | (() => string);
+    details?: string[] | (() => string[]);
   }
 
   const roleConfig: RoleConfig[] = [
@@ -169,6 +169,16 @@
       label: "Guard",
       color: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
       description: "Protects the area and may attack hostile players.",
+    },
+    {
+      key: "is_renewal_sage",
+      label: "Renewal Sage",
+      color:
+        "bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200",
+      description: () =>
+        data.npc.gold_required_respawn_dungeon > 0
+          ? `Resets all spawns in <a href="/zones/${data.respawnDungeonZoneId}" class="text-blue-600 dark:text-blue-400 hover:underline">${data.respawnDungeonName}</a> for <span class="text-yellow-600 dark:text-yellow-400">${data.npc.gold_required_respawn_dungeon.toLocaleString()} gold</span>.`
+          : `Resets all spawns in <a href="/zones/${data.respawnDungeonZoneId}" class="text-blue-600 dark:text-blue-400 hover:underline">${data.respawnDungeonName}</a>.`,
     },
   ];
 
@@ -600,19 +610,6 @@
           zebraStripe={true}
           class="bg-muted/30"
         />
-
-        <!-- Dungeon Respawn info -->
-        {#if data.npc.respawn_dungeon_id > 0 && data.respawnDungeonName}
-          <div class="bg-muted/30 rounded-md border p-3">
-            <span>Can be respawned in </span>
-            <span class="font-medium">{data.respawnDungeonName}</span>
-            {#if data.npc.gold_required_respawn_dungeon > 0}
-              <span class="text-yellow-600 dark:text-yellow-400">
-                ({data.npc.gold_required_respawn_dungeon.toLocaleString()} gold)
-              </span>
-            {/if}
-          </div>
-        {/if}
       </div>
     </section>
   {/if}
@@ -746,6 +743,12 @@
       </h2>
       <div class="bg-muted/30 rounded-md border p-4 space-y-4">
         {#each activeRoles as role (role.key)}
+          {@const description =
+            typeof role.description === "function"
+              ? role.description()
+              : role.description}
+          {@const details =
+            typeof role.details === "function" ? role.details() : role.details}
           <div>
             <span
               class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium {role.color}"
@@ -753,10 +756,10 @@
               {role.label}
             </span>
             <!-- eslint-disable-next-line svelte/no-at-html-tags -- trusted static content -->
-            <p class="mt-1 text-sm">{@html role.description}</p>
-            {#if role.details}
+            <p class="mt-1 text-sm">{@html description}</p>
+            {#if details && details.length > 0}
               <ul class="mt-1 space-y-0.5">
-                {#each role.details as detail, i (i)}
+                {#each details as detail, i (i)}
                   <li class="text-xs text-muted-foreground">
                     <!-- eslint-disable-next-line svelte/no-at-html-tags -- trusted static content -->
                     {@html detail}

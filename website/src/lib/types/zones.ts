@@ -59,6 +59,7 @@ export interface ZoneNpc {
     is_essence_trader?: boolean;
     is_priestess?: boolean;
     is_augmenter?: boolean;
+    is_renewal_sage?: boolean;
   };
   position_x: number | null;
   position_y: number | null;
@@ -114,6 +115,17 @@ export interface ZoneAltar {
 }
 
 /**
+ * Renewal Sage NPC that can reset all spawns in a dungeon
+ */
+export interface ZoneRenewalSage {
+  id: string;
+  name: string;
+  gold_cost: number;
+  zone_id: string;
+  zone_name: string;
+}
+
+/**
  * Full zone detail data
  */
 export interface ZoneDetailData {
@@ -132,6 +144,7 @@ export interface ZoneDetailData {
   altars: ZoneAltar[];
   connectedZones: ZoneConnection[];
   subZones: ZoneSubZone[];
+  renewalSage: ZoneRenewalSage | null;
 }
 
 /**

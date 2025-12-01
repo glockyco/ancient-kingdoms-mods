@@ -16,6 +16,7 @@ export interface NpcRoles {
   is_essence_trader: boolean;
   is_priestess: boolean;
   is_augmenter: boolean;
+  is_renewal_sage: boolean;
 }
 
 export interface NpcInfo {
@@ -149,6 +150,7 @@ export interface NpcDetailPageData {
   drops: NpcDrop[];
   skills: NpcSkill[];
   respawnDungeonName: string | null;
+  respawnDungeonZoneId: string | null;
 }
 
 // List page types
