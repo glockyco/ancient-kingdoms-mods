@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { SvelteMap } from "svelte/reactivity";
   import {
     DataTable,
     DataTableFacetedFilter,
@@ -242,6 +243,17 @@
   {@const slotCol = table.getColumn("slot")}
   {@const classCol = table.getColumn("class")}
   {@const levelCol = table.getColumn("level_required")}
+  {@const classCountsFiltered = (() => {
+    const counts = new SvelteMap<string, number>();
+    // Use getFacetedRowModel() to get rows filtered by everything EXCEPT the class filter
+    const facetedRows = classCol?.getFacetedRowModel()?.rows ?? [];
+    for (const row of facetedRows) {
+      for (const cls of parseClassRequired(row.original.class_required)) {
+        counts.set(cls, (counts.get(cls) ?? 0) + 1);
+      }
+    }
+    return counts;
+  })()}
   {#if qualityCol}
     <DataTableFacetedFilter
       column={qualityCol}
@@ -283,6 +295,7 @@
         label: c,
         value: c,
       }))}
+      counts={classCountsFiltered}
     />
   {/if}
 {/snippet}
