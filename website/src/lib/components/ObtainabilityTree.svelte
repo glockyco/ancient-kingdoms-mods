@@ -170,18 +170,17 @@
           <ObtainabilityTree node={child} />
         {/each}
         {#if node.recipe?.learningRequirement}
-          <div class="ml-6 py-1">
-            <div class="flex items-center gap-1.5">
-              <BookOpen class="h-4 w-4 shrink-0 text-orange-500" />
-              <span class="text-muted-foreground text-sm">Requires recipe:</span
-              >
-            </div>
-            <ObtainabilityTree node={node.recipe.learningRequirement} />
+          <div class="ml-6 py-1.5 flex items-center gap-1.5">
+            <BookOpen class="h-4 w-4 shrink-0 text-orange-500" />
+            <span class="text-muted-foreground text-sm">Requires recipe:</span>
           </div>
+          <ObtainabilityTree node={node.recipe.learningRequirement} />
         {/if}
       {:else if hasServiceChildren}
         {#if node.sources.length > 0}
-          {@render sourceList()}
+          <div class="ml-3.5">
+            {@render sourceList()}
+          </div>
         {/if}
         {#each node.service?.materials ?? [] as child (child.item_id)}
           <ObtainabilityTree node={child} />
