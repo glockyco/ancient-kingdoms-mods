@@ -291,6 +291,9 @@
       ]}
     />
   {/if}
+  {#if levelCol}
+    <DataTableRangeFilter column={levelCol} title="Level" />
+  {/if}
   {#if classCol}
     <DataTableFacetedFilter
       column={classCol}
@@ -301,9 +304,6 @@
       }))}
       counts={classCountsFiltered}
     />
-  {/if}
-  {#if levelCol}
-    <DataTableRangeFilter column={levelCol} title="Level" />
   {/if}
 {/snippet}
 
