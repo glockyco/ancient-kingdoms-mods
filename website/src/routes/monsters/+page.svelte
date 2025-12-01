@@ -270,6 +270,16 @@
   {@const classificationCol = table.getColumn("classification")}
   {@const zoneIdsCol = table.getColumn("zone_ids")}
   {@const levelCol = table.getColumn("level")}
+  {@const zoneCountsFiltered = (() => {
+    const counts = new SvelteMap<string, number>();
+    const facetedRows = zoneIdsCol?.getFacetedRowModel()?.rows ?? [];
+    for (const row of facetedRows) {
+      for (const zoneId of row.original.zone_ids) {
+        counts.set(zoneId, (counts.get(zoneId) ?? 0) + 1);
+      }
+    }
+    return counts;
+  })()}
   {#if classificationCol}
     <DataTableFacetedFilter
       column={classificationCol}
@@ -289,6 +299,7 @@
         label: z.zone_name,
         value: z.zone_id,
       }))}
+      counts={zoneCountsFiltered}
     />
   {/if}
   {#if levelCol}

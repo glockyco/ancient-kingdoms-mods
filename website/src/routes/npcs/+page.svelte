@@ -209,6 +209,26 @@
   {@const factionCol = table.getColumn("faction_filter")}
   {@const roleKeysCol = table.getColumn("role_keys")}
   {@const zoneIdsCol = table.getColumn("zone_ids")}
+  {@const roleCountsFiltered = (() => {
+    const counts = new SvelteMap<string, number>();
+    const facetedRows = roleKeysCol?.getFacetedRowModel()?.rows ?? [];
+    for (const row of facetedRows) {
+      for (const role of row.original.role_keys) {
+        counts.set(role, (counts.get(role) ?? 0) + 1);
+      }
+    }
+    return counts;
+  })()}
+  {@const zoneCountsFiltered = (() => {
+    const counts = new SvelteMap<string, number>();
+    const facetedRows = zoneIdsCol?.getFacetedRowModel()?.rows ?? [];
+    for (const row of facetedRows) {
+      for (const zoneId of row.original.zone_ids) {
+        counts.set(zoneId, (counts.get(zoneId) ?? 0) + 1);
+      }
+    }
+    return counts;
+  })()}
   {#if factionCol}
     <DataTableFacetedFilter
       column={factionCol}
@@ -227,6 +247,7 @@
         label: r.label,
         value: r.key,
       })).sort((a, b) => a.label.localeCompare(b.label))}
+      counts={roleCountsFiltered}
     />
   {/if}
   {#if zoneIdsCol}
@@ -237,6 +258,7 @@
         label: z.zone_name,
         value: z.zone_id,
       }))}
+      counts={zoneCountsFiltered}
     />
   {/if}
 {/snippet}
