@@ -107,7 +107,7 @@ def _denormalize_needed_for_quests(
         SELECT id, name, level_required, level_recommended,
                gather_item_1_id, gather_amount_1, gather_item_2_id, gather_amount_2,
                gather_item_3_id, gather_amount_3, gather_items, required_items, equip_items,
-               is_adventurer_quest, class_requirements
+               is_adventurer_quest, class_requirements, display_type
         FROM quests
     """)
 
@@ -120,6 +120,7 @@ def _denormalize_needed_for_quests(
         level_recommended = row[3]
         is_adventurer_quest = row[13]
         class_requirements_json = row[14]
+        display_type = row[15]
 
         # Parse class requirements
         if class_requirements_json:
@@ -139,7 +140,7 @@ def _denormalize_needed_for_quests(
                     "quest_name": quest_name,
                     "level_required": level_required,
                     "level_recommended": level_recommended,
-                    "purpose": "gather",
+                    "purpose": display_type,
                     "amount": row[5] or 1,  # gather_amount_1
                     "is_repeatable": bool(is_adventurer_quest),
                     "class_restrictions": class_restrictions,
@@ -156,7 +157,7 @@ def _denormalize_needed_for_quests(
                     "quest_name": quest_name,
                     "level_required": level_required,
                     "level_recommended": level_recommended,
-                    "purpose": "gather",
+                    "purpose": display_type,
                     "amount": row[7] or 1,  # gather_amount_2
                     "is_repeatable": bool(is_adventurer_quest),
                     "class_restrictions": class_restrictions,
@@ -173,7 +174,7 @@ def _denormalize_needed_for_quests(
                     "quest_name": quest_name,
                     "level_required": level_required,
                     "level_recommended": level_recommended,
-                    "purpose": "gather",
+                    "purpose": display_type,
                     "amount": row[9] or 1,  # gather_amount_3
                     "is_repeatable": bool(is_adventurer_quest),
                     "class_restrictions": class_restrictions,
@@ -194,7 +195,7 @@ def _denormalize_needed_for_quests(
                             "quest_name": quest_name,
                             "level_required": level_required,
                             "level_recommended": level_recommended,
-                            "purpose": "gather",
+                            "purpose": display_type,
                             "amount": item_obj.get("amount", 1),
                             "is_repeatable": bool(is_adventurer_quest),
                             "class_restrictions": class_restrictions,
@@ -209,14 +210,17 @@ def _denormalize_needed_for_quests(
                 if item_id:
                     if item_id not in needed_for_quests:
                         needed_for_quests[item_id] = []
+                    amount = item_obj.get("amount", 1)
+                    # amount=0 means "must possess but not consumed" -> Have
+                    purpose = "Have" if amount == 0 else display_type
                     needed_for_quests[item_id].append(
                         {
                             "quest_id": quest_id,
                             "quest_name": quest_name,
                             "level_required": level_required,
                             "level_recommended": level_recommended,
-                            "purpose": "required",
-                            "amount": item_obj.get("amount", 1),
+                            "purpose": purpose,
+                            "amount": amount,
                             "is_repeatable": bool(is_adventurer_quest),
                             "class_restrictions": class_restrictions,
                         }
@@ -235,7 +239,7 @@ def _denormalize_needed_for_quests(
                             "quest_name": quest_name,
                             "level_required": level_required,
                             "level_recommended": level_recommended,
-                            "purpose": "equip",
+                            "purpose": display_type,
                             "amount": 1,
                             "is_repeatable": bool(is_adventurer_quest),
                             "class_restrictions": class_restrictions,

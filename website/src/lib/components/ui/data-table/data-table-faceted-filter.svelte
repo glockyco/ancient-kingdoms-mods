@@ -16,6 +16,7 @@
     column,
     title,
     options,
+    counts,
   }: {
     column: Column<TData, TValue>;
     title: string;
@@ -24,9 +25,11 @@
       value: string;
       icon?: Component;
     }[];
+    counts?: Map<string, number>;
   } = $props();
 
-  const facets = $derived(column?.getFacetedUniqueValues());
+  const autoFacets = $derived(column?.getFacetedUniqueValues());
+  const facets = $derived(counts ?? autoFacets);
   const selectedValues = $derived(
     new SvelteSet(column?.getFilterValue() as string[]),
   );

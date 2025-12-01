@@ -57,7 +57,7 @@ public class QuestData
     public int zone_id_quest_action { get; set; }
     public List<QuestLocation> finish_quest_locations { get; set; } = new();
     public string given_item_on_start_id { get; set; }
-    public string predecessor_id { get; set; }
+    public List<string> predecessor_ids { get; set; } = new();
     public bool is_main_quest { get; set; }
     public bool is_epic_quest { get; set; }
     public bool is_adventurer_quest { get; set; }
@@ -91,6 +91,8 @@ public class QuestData
     // === LocationQuest fields (when quest_type = location) ===
     public string tracking_quest_location { get; set; }
     public string discovered_location { get; set; }
+    public string discovered_location_zone_id { get; set; }
+    public string discovered_location_sub_zone_id { get; set; }
     public bool is_find_npc_quest { get; set; }
 
     // === EquipItemQuest fields (when quest_type = equip_item) ===

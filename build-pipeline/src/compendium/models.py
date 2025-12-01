@@ -459,10 +459,9 @@ class QuestData(BaseModel):
     tooltip: str = ""
     tooltip_complete: str = ""
 
-    # Legacy field names for backwards compatibility
     start_npc_id: str | None = None
     end_npc_id: str | None = None
-    predecessor_id: str | None = None
+    predecessor_ids: list[str] = []
 
     # Quest specifics
     kill_target_1_id: str | None = None
@@ -485,6 +484,12 @@ class QuestData(BaseModel):
     potion_item_id: str | None = None  # Potion brewing quest
     increase_alchemy_skill: float = 0.0
     discovered_location: str | None = None  # Discovery text
+    discovered_location_zone_id: str | None = (
+        None  # Zone where discovery trigger is located
+    )
+    discovered_location_sub_zone_id: str | None = (
+        None  # Sub-zone where discovery trigger is located
+    )
     tracking_quest_location: str | None = None  # Location tracking text
 
 

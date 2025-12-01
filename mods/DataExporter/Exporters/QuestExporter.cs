@@ -16,6 +16,12 @@ public class QuestExporter : BaseExporter
     {
         Logger.Msg("Exporting quests...");
 
+        // Find QuestLocation scene triggers (GameObjects tagged "QuestLocation")
+        // These triggers complete location quests when the player enters them
+        // The trigger's name matches the quest ID it completes
+        var questLocationTriggers = BuildQuestLocationTriggerMap();
+        Logger.Msg($"Found {questLocationTriggers.Count} QuestLocation triggers in scene");
+
         var type = Il2CppType.Of<Il2Cpp.ScriptableQuest>();
         var quests = Resources.FindObjectsOfTypeAll(type);
 
@@ -41,15 +47,24 @@ public class QuestExporter : BaseExporter
                 zone_id_final_npc = quest.idZoneFinalNPC,
                 zone_id_quest_action = quest.idZoneQuestAction,
                 given_item_on_start_id = quest.givenItemOnStartQuest != null ? SanitizeId(quest.givenItemOnStartQuest.name) : null,
-                predecessor_id = quest.predecessor != null && quest.predecessor.Length > 0 && quest.predecessor[0] != null
-                    ? SanitizeId(quest.predecessor[0].name)
-                    : null,
                 is_main_quest = quest.mainQuest,
                 is_epic_quest = quest.epicQuest,
                 is_adventurer_quest = quest.adventurerQuest,
-                tooltip = "",  // Skip tooltip for now - requires Player and Quest instances
-                tooltip_complete = ""  // Skip tooltip for now - requires Player and Quest instances
+                tooltip = quest.toolTip ?? "",
+                tooltip_complete = quest.toolTipComplete ?? ""
             };
+
+            // Add predecessor quest IDs
+            if (quest.predecessor != null)
+            {
+                foreach (var pred in quest.predecessor)
+                {
+                    if (pred != null && !string.IsNullOrEmpty(pred.name))
+                    {
+                        questData.predecessor_ids.Add(SanitizeId(pred.name));
+                    }
+                }
+            }
 
             // Add race requirements
             if (quest.raceRequirements != null)
@@ -156,7 +171,7 @@ public class QuestExporter : BaseExporter
             PopulateKillQuestFields(quest, questData);
             PopulateGatherQuestFields(quest, questData);
             PopulateGatherInventoryQuestFields(quest, questData);
-            PopulateLocationQuestFields(quest, questData);
+            PopulateLocationQuestFields(quest, questData, questLocationTriggers);
             PopulateEquipItemQuestFields(quest, questData);
             PopulateAlchemyQuestFields(quest, questData);
 
@@ -279,7 +294,7 @@ public class QuestExporter : BaseExporter
         }
     }
 
-    private void PopulateLocationQuestFields(Il2Cpp.ScriptableQuest quest, QuestData questData)
+    private void PopulateLocationQuestFields(Il2Cpp.ScriptableQuest quest, QuestData questData, Dictionary<string, ZoneInfo> questLocationTriggers)
     {
         var locationQuest = quest.TryCast<Il2Cpp.LocationQuest>();
         if (locationQuest == null) return;
@@ -287,6 +302,40 @@ public class QuestExporter : BaseExporter
         questData.tracking_quest_location = locationQuest.trackingQuestLocationString ?? "";
         questData.discovered_location = locationQuest.discoveredLocationString ?? "";
         questData.is_find_npc_quest = locationQuest.isFindNpcQuest;
+
+        // Look up the zone from the QuestLocation trigger matching this quest's ID
+        if (questLocationTriggers.TryGetValue(questData.id, out var zoneInfo))
+        {
+            questData.discovered_location_zone_id = zoneInfo.ZoneId;
+            questData.discovered_location_sub_zone_id = zoneInfo.SubZoneId;
+        }
+    }
+
+    /// <summary>
+    /// Builds a map of quest IDs to their discovery zone info by finding all QuestLocation triggers in the scene.
+    /// QuestLocation triggers are GameObjects tagged "QuestLocation" whose name matches the quest ID they complete.
+    /// </summary>
+    private Dictionary<string, ZoneInfo> BuildQuestLocationTriggerMap()
+    {
+        var map = new Dictionary<string, ZoneInfo>();
+
+        var questLocationObjects = GameObject.FindGameObjectsWithTag("QuestLocation");
+        foreach (var go in questLocationObjects)
+        {
+            if (go == null || !go.scene.IsValid())
+                continue;
+
+            var questId = SanitizeId(go.name);
+            if (string.IsNullOrEmpty(questId))
+                continue;
+
+            var zoneInfo = GetZoneInfoFromPosition(go.transform.position);
+            map[questId] = zoneInfo;
+
+            Logger.Msg($"  QuestLocation trigger '{go.name}' -> zone: {zoneInfo.ZoneId}, sub-zone: {zoneInfo.SubZoneId}");
+        }
+
+        return map;
     }
 
     private void PopulateEquipItemQuestFields(Il2Cpp.ScriptableQuest quest, QuestData questData)

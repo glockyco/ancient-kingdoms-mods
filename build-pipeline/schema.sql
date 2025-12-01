@@ -554,7 +554,8 @@ CREATE INDEX idx_npc_spawns_sub_zone ON npc_spawns(sub_zone_id);
 CREATE TABLE quests (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
-    quest_type TEXT NOT NULL,       -- kill, gather, location, etc.
+    quest_type TEXT NOT NULL,       -- kill, gather, gather_inventory, location, equip_item, alchemy
+    display_type TEXT,              -- Denormalized: Kill, Collect, Deliver, Obtain, Find, Discover, Equip, Alchemy
     level_required INTEGER DEFAULT 0,
     level_recommended INTEGER DEFAULT 0,
     zone_id_final_npc INTEGER DEFAULT -1,
@@ -582,11 +583,14 @@ CREATE TABLE quests (
     -- UI
     tooltip TEXT,
     tooltip_complete TEXT,
+    -- Pre-rendered HTML tooltips per class (JSON object: {"Warrior": "...", "Cleric": "...", etc.})
+    tooltip_html TEXT,
+    tooltip_complete_html TEXT,
 
     -- Quest NPCs and quest chains
     start_npc_id TEXT REFERENCES npcs(id),
     end_npc_id TEXT REFERENCES npcs(id),
-    predecessor_id TEXT REFERENCES quests(id),  -- prerequisite quest for quest chains
+    predecessor_ids TEXT,  -- JSON array of prerequisite quest IDs (any one unlocks this quest)
 
     -- Kill quest fields
     kill_target_1_id TEXT REFERENCES monsters(id),
@@ -613,6 +617,8 @@ CREATE TABLE quests (
     potion_item_id TEXT REFERENCES items(id),
     increase_alchemy_skill REAL DEFAULT 0.0,
     discovered_location TEXT,
+    discovered_location_zone_id TEXT REFERENCES zones(id),
+    discovered_location_sub_zone_id TEXT REFERENCES zone_triggers(id),
     tracking_quest_location TEXT
 );
 

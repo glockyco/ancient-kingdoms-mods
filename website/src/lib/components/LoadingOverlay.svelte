@@ -1,8 +1,29 @@
 <script lang="ts">
   import { navigating } from "$app/stores";
+
+  // Delay showing the spinner to avoid flash on fast navigations
+  const DELAY_MS = 150;
+  let showSpinner = $state(false);
+  let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+  $effect(() => {
+    if ($navigating) {
+      // Start timer to show spinner after delay
+      timeoutId = setTimeout(() => {
+        showSpinner = true;
+      }, DELAY_MS);
+    } else {
+      // Navigation complete, hide spinner and clear timer
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
+      showSpinner = false;
+    }
+  });
 </script>
 
-{#if $navigating}
+{#if showSpinner}
   <div
     class="loading-overlay fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center"
   >
