@@ -12,32 +12,13 @@
   } from "$lib/components/ui/data-table";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ClassPills from "$lib/components/ClassPills.svelte";
+  import QuestTypeBadge from "$lib/components/QuestTypeBadge.svelte";
+  import QuestFlagBadges from "$lib/components/QuestFlagBadges.svelte";
+  import { QUEST_FLAG_CONFIG } from "$lib/utils/quests";
 
   let { data } = $props();
 
   const PAGE_SIZE = 20;
-
-  // Display type styling (display_type is pre-computed in denormalization)
-  const displayTypeStyles: Record<string, string> = {
-    Kill: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
-    Gather: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-    Deliver:
-      "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200",
-    Have: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-    Find: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-    Discover:
-      "bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200",
-    Equip:
-      "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
-    Brew: "bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-200",
-  };
-
-  function getDisplayTypeStyle(displayType: string): string {
-    return (
-      displayTypeStyles[displayType] ||
-      "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200"
-    );
-  }
 
   // Get unique display types from data for filter options
   const uniqueDisplayTypes = $derived(
@@ -205,13 +186,7 @@
       {row.original.name}
     </a>
   {:else if cell.column.id === "display_type"}
-    <span
-      class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium {getDisplayTypeStyle(
-        row.original.display_type,
-      )}"
-    >
-      {row.original.display_type}
-    </span>
+    <QuestTypeBadge type={row.original.display_type} />
   {:else if cell.column.id === "level_required"}
     <span class="ml-auto"
       >{row.original.level_required > 0
@@ -225,29 +200,7 @@
         : "-"}</span
     >
   {:else if cell.column.id === "flags"}
-    <div class="flex flex-wrap gap-1">
-      {#if row.original.is_main_quest}
-        <span
-          class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
-        >
-          Main
-        </span>
-      {/if}
-      {#if row.original.is_epic_quest}
-        <span
-          class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200"
-        >
-          Epic
-        </span>
-      {/if}
-      {#if row.original.is_adventurer_quest}
-        <span
-          class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200"
-        >
-          Daily
-        </span>
-      {/if}
-    </div>
+    <QuestFlagBadges quest={row.original} />
   {:else if cell.column.id === "class"}
     <ClassPills
       classes={row.original.class_requirements.map((c) => c.toLowerCase())}
@@ -317,9 +270,7 @@
       column={flagsCol}
       title="Flags"
       options={[
-        { label: "Main Quest", value: "main" },
-        { label: "Epic", value: "epic" },
-        { label: "Daily", value: "daily" },
+        ...QUEST_FLAG_CONFIG.map((f) => ({ label: f.label, value: f.key })),
         { label: "Regular", value: "regular" },
       ]}
       counts={flagsCountsFiltered}

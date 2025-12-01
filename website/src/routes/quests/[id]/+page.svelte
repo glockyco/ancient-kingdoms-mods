@@ -4,6 +4,8 @@
   import ClassPills from "$lib/components/ClassPills.svelte";
   import QuestChainGraph from "$lib/components/QuestChainGraph.svelte";
   import MonsterTypeIcon from "$lib/components/MonsterTypeIcon.svelte";
+  import QuestTypeBadge from "$lib/components/QuestTypeBadge.svelte";
+  import QuestFlagBadges from "$lib/components/QuestFlagBadges.svelte";
   import * as Tabs from "$lib/components/ui/tabs";
   import Scroll from "@lucide/svelte/icons/scroll";
   import Target from "@lucide/svelte/icons/target";
@@ -13,26 +15,6 @@
   import FileText from "@lucide/svelte/icons/file-text";
 
   let { data } = $props();
-
-  // Display type styling (display_type is pre-computed in denormalization)
-  const displayTypeStyles: Record<string, string> = {
-    Kill: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
-    Gather: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-    Deliver:
-      "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200",
-    Have: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-    Find: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-    Discover:
-      "bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200",
-    Equip:
-      "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
-    Brew: "bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-200",
-  };
-
-  const displayTypeColor = $derived(
-    displayTypeStyles[data.quest.display_type] ||
-      "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200",
-  );
 
   // Check if quest has any requirements (start conditions)
   const hasRequirements = $derived(
@@ -131,32 +113,8 @@
   <div>
     <div class="flex items-center gap-3 flex-wrap">
       <h1 class="text-3xl font-bold">{data.quest.name}</h1>
-      <span
-        class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium {displayTypeColor}"
-      >
-        {data.quest.display_type}
-      </span>
-      {#if data.quest.is_main_quest}
-        <span
-          class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
-        >
-          Main Quest
-        </span>
-      {/if}
-      {#if data.quest.is_epic_quest}
-        <span
-          class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200"
-        >
-          Epic
-        </span>
-      {/if}
-      {#if data.quest.is_adventurer_quest}
-        <span
-          class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200"
-        >
-          Daily
-        </span>
-      {/if}
+      <QuestTypeBadge type={data.quest.display_type} />
+      <QuestFlagBadges quest={data.quest} />
     </div>
 
     <div class="mt-2 flex flex-wrap gap-4 text-sm text-muted-foreground">
