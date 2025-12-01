@@ -67,6 +67,17 @@ class RewardedByInfo(TypedDict):
     class_restrictions: NotRequired[list[str] | None]
 
 
+class ProvidedByQuestInfo(TypedDict):
+    """Quest provided item information for items.provided_by_quests."""
+
+    quest_id: str
+    quest_name: str
+    level_required: int
+    level_recommended: int
+    is_repeatable: NotRequired[bool]
+    class_restrictions: NotRequired[list[str] | None]
+
+
 class MaterialInfo(TypedDict):
     """Recipe material information."""
 

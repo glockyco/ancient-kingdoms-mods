@@ -137,6 +137,7 @@ export interface Item {
   dropped_by: string | null; // JSON
   sold_by: string | null; // JSON
   rewarded_by: string | null; // JSON
+  provided_by_quests: string | null; // JSON
   rewarded_by_altars: string | null; // JSON
   required_for_altars: string | null; // JSON
   required_for_portals: string | null; // JSON

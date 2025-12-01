@@ -148,6 +148,16 @@
           class_restrictions: string[] | null;
         }>
       >(data.item.rewarded_by),
+      providedByQuests: parseJson<
+        Array<{
+          quest_id: string;
+          quest_name: string;
+          level_required: number;
+          level_recommended: number;
+          is_repeatable: boolean;
+          class_restrictions: string[] | null;
+        }>
+      >(data.item.provided_by_quests),
       rewardedByAltars: parseJson<
         Array<{
           altar_id: string;
@@ -1410,6 +1420,66 @@
       <Card.Root class="bg-muted/30">
         <Card.Header>
           <Card.Title>Rewarded by Quests</Card.Title>
+        </Card.Header>
+        <Card.Content class="space-y-4">
+          {#if repeatableQuests.length > 0}
+            <div>
+              <div class="{styles.label} mb-2">Repeatable Quests</div>
+              <div class="space-y-2">
+                {#each repeatableQuests as quest, index (`${quest.quest_id}_${index}`)}
+                  <div>
+                    <a
+                      href={resolve("/quests/[id]", { id: quest.quest_id })}
+                      class={styles.link}
+                    >
+                      {quest.quest_name}
+                      <span class={styles.label}>
+                        (Lv {quest.level_recommended}{#if quest.class_restrictions && quest.class_restrictions.length > 0 && quest.class_restrictions.length < 6},
+                          {quest.class_restrictions.join(", ")}{/if})
+                      </span>
+                    </a>
+                  </div>
+                {/each}
+              </div>
+            </div>
+          {/if}
+
+          {#if oneTimeQuests.length > 0}
+            <div>
+              <div class="{styles.label} mb-2">One-Time Quests</div>
+              <div class="space-y-2">
+                {#each oneTimeQuests as quest, index (`${quest.quest_id}_${index}`)}
+                  <div>
+                    <a
+                      href={resolve("/quests/[id]", { id: quest.quest_id })}
+                      class={styles.link}
+                    >
+                      {quest.quest_name}
+                      <span class={styles.label}>
+                        (Lv {quest.level_recommended}{#if quest.class_restrictions && quest.class_restrictions.length > 0 && quest.class_restrictions.length < 6},
+                          {quest.class_restrictions.join(", ")}{/if})
+                      </span>
+                    </a>
+                  </div>
+                {/each}
+              </div>
+            </div>
+          {/if}
+        </Card.Content>
+      </Card.Root>
+    {/if}
+
+    <!-- Provided by Quests -->
+    {#if computed.providedByQuests && computed.providedByQuests.length > 0}
+      {@const repeatableQuests = computed.providedByQuests.filter(
+        (q) => q.is_repeatable,
+      )}
+      {@const oneTimeQuests = computed.providedByQuests.filter(
+        (q) => !q.is_repeatable,
+      )}
+      <Card.Root class="bg-muted/30">
+        <Card.Header>
+          <Card.Title>Provided by Quests</Card.Title>
         </Card.Header>
         <Card.Content class="space-y-4">
           {#if repeatableQuests.length > 0}

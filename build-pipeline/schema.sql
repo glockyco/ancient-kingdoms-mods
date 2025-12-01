@@ -234,6 +234,7 @@ CREATE TABLE items (
     dropped_by TEXT,                -- JSON: [{"monster_id": "fire_ele", "rate": 0.15, "zone_id": "volcanic"}]
     sold_by TEXT,                   -- JSON: [{"npc_id": "kara", "price": 500, "zone_id": "stonewatch"}]
     rewarded_by TEXT,               -- JSON: [{"quest_id": "quest_blacksmith_1"}]
+    provided_by_quests TEXT,        -- JSON: [{"quest_id": "quest_123", "quest_name": "...", "level_recommended": 10, "is_repeatable": false, "class_restrictions": null}]
     rewarded_by_altars TEXT,        -- JSON: [{"altar_id": "altar_forgotten_kings", "altar_name": "Altar of the Forgotten Kings", "reward_tier": "legendary", "min_effective_level": 55, "zone_id": "twilight_forest", "zone_name": "Twilight Forest"}]
     required_for_altars TEXT,       -- JSON: [{"altar_id": "altar_forgotten_kings", "altar_name": "Altar of the Forgotten Kings", "min_level_required": 30, "zone_id": "twilight_forest", "zone_name": "Twilight Forest"}]
     required_for_portals TEXT,      -- JSON: [{"portal_id": "portal_123", "from_zone_id": "krom_razz", "from_zone_name": "Krom Razz", "to_zone_id": "krom_razz", "to_zone_name": "Krom Razz", "position_x": 743.55, "position_y": 350.82, "destination_x": 761.4, "destination_y": 357.42}]

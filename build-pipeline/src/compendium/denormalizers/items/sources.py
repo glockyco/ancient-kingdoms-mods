@@ -5,6 +5,7 @@ This module handles all denormalizations that populate "source" fields on items:
 - gathered_from: Which gathering resources/chests yield this item
 - sold_by: Which NPCs sell this item
 - rewarded_by: Which quests reward this item
+- provided_by_quests: Which quests give this item on start
 - rewarded_by_altars: Which altars reward this item
 - crafted_from: Which recipes create this item
 """
@@ -19,6 +20,7 @@ from compendium.types.denormalized import (
     DropInfo,
     GatherDropInfo,
     MaterialInfo,
+    ProvidedByQuestInfo,
     RewardedByInfo,
     SoldByInfo,
 )
@@ -384,6 +386,58 @@ def _denormalize_rewarded_by(
     return rewarded_by
 
 
+def _denormalize_provided_by_quests(
+    conn: sqlite3.Connection,
+) -> dict[str, list[ProvidedByQuestInfo]]:
+    """Build provided_by_quests from quests.given_item_on_start_id.
+
+    Returns:
+        Dict mapping item_id to list of quest info
+    """
+    console.print("  Processing quest provided items...")
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT id, name, level_required, level_recommended, given_item_on_start_id,
+               is_adventurer_quest, class_requirements
+        FROM quests
+        WHERE given_item_on_start_id IS NOT NULL
+    """)
+
+    provided_by: dict[str, list[ProvidedByQuestInfo]] = {}
+
+    for (
+        quest_id,
+        quest_name,
+        level_required,
+        level_recommended,
+        given_item_id,
+        is_adventurer_quest,
+        class_requirements_json,
+    ) in cursor.fetchall():
+        # Parse class requirements
+        class_restrictions = None
+        if class_requirements_json:
+            parsed = json.loads(class_requirements_json)
+            if parsed:
+                class_restrictions = sorted(parsed)
+
+        if given_item_id not in provided_by:
+            provided_by[given_item_id] = []
+
+        provided_by[given_item_id].append(
+            {
+                "quest_id": quest_id,
+                "quest_name": quest_name,
+                "level_required": level_required,
+                "level_recommended": level_recommended,
+                "is_repeatable": bool(is_adventurer_quest),
+                "class_restrictions": class_restrictions,
+            }
+        )
+
+    return provided_by
+
+
 def _denormalize_rewarded_by_altars(conn: sqlite3.Connection) -> dict[str, list[dict]]:
     """Build rewarded_by_altars from altars reward tiers.
 
@@ -651,6 +705,7 @@ def run(conn: sqlite3.Connection) -> None:
     - gathered_from
     - sold_by
     - rewarded_by
+    - provided_by_quests
     - rewarded_by_altars
     - crafted_from
     - alchemy recipe data
@@ -664,6 +719,7 @@ def run(conn: sqlite3.Connection) -> None:
     gathered_from = _denormalize_gathered_from(conn)
     sold_by = _denormalize_sold_by(conn)
     rewarded_by = _denormalize_rewarded_by(conn)
+    provided_by_quests = _denormalize_provided_by_quests(conn)
     rewarded_by_altars = _denormalize_rewarded_by_altars(conn)
     crafted_from = _denormalize_crafted_from(conn)
 
@@ -704,6 +760,14 @@ def run(conn: sqlite3.Connection) -> None:
             (json.dumps(quests_sorted), item_id),
         )
 
+    for item_id, quests in provided_by_quests.items():
+        # Sort by quest name alphabetically
+        quests_sorted = sorted(quests, key=lambda x: x["quest_name"])
+        cursor.execute(
+            "UPDATE items SET provided_by_quests = ? WHERE id = ?",
+            (json.dumps(quests_sorted), item_id),
+        )
+
     for item_id, altars in rewarded_by_altars.items():
         # Sort by altar name alphabetically
         altars_sorted = sorted(altars, key=lambda x: x["altar_name"])
@@ -733,6 +797,9 @@ def run(conn: sqlite3.Connection) -> None:
     console.print(f"  [green]OK[/green] Updated {len(sold_by)} items with vendor info")
     console.print(
         f"  [green]OK[/green] Updated {len(rewarded_by)} items as quest rewards"
+    )
+    console.print(
+        f"  [green]OK[/green] Updated {len(provided_by_quests)} items provided by quests"
     )
     console.print(
         f"  [green]OK[/green] Updated {len(rewarded_by_altars)} items rewarded by altars"
