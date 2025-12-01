@@ -14,6 +14,8 @@
     type Header,
   } from "$lib/components/ui/data-table";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
+  import RoleBadges from "$lib/components/RoleBadges.svelte";
+  import { ROLE_CONFIG, getActiveRoles } from "$lib/utils/roles";
   import Crown from "@lucide/svelte/icons/crown";
   import Shield from "@lucide/svelte/icons/shield";
   import Sword from "@lucide/svelte/icons/sword";
@@ -111,50 +113,29 @@
     {
       id: "roles",
       header: "Roles",
-      accessorFn: (row) => getNpcRoles(row),
+      accessorFn: (row) => getActiveRoles(row.roles).map((r) => r.key),
       enableSorting: false,
       minSize: 220,
       filterFn: (row, columnId, filterValue: string[]) => {
-        const roles = row.getValue(columnId) as string[];
-        return filterValue.some((v) => roles.includes(v));
+        const roleKeys = row.getValue(columnId) as string[];
+        return filterValue.some((v) => roleKeys.includes(v));
       },
     },
   ];
 
-  function getNpcRoles(npc: ZoneNpc): string[] {
-    const roles: string[] = [];
-    if (npc.roles.is_merchant) roles.push("Merchant");
-    if (npc.roles.is_quest_giver) roles.push("Quest Giver");
-    if (npc.roles.can_repair_equipment) roles.push("Repairs");
-    if (npc.roles.is_bank) roles.push("Banker");
-    if (npc.roles.is_skill_master) roles.push("Skill Master");
-    if (npc.roles.is_veteran_master) roles.push("Veteran Master");
-    if (npc.roles.is_reset_attributes) roles.push("Respec");
-    if (npc.roles.is_soul_binder) roles.push("Soul Binder");
-    if (npc.roles.is_inkeeper) roles.push("Innkeeper");
-    if (npc.roles.is_taskgiver_adventurer) roles.push("Tasks");
-    if (npc.roles.is_merchant_adventurer) roles.push("Adventurer Merchant");
-    if (npc.roles.is_recruiter_mercenaries) roles.push("Mercenary Recruiter");
-    if (npc.roles.is_guard) roles.push("Guard");
-    if (npc.roles.is_faction_vendor) roles.push("Faction Vendor");
-    if (npc.roles.is_essence_trader) roles.push("Essence Trader");
-    if (npc.roles.is_priestess) roles.push("Priestess");
-    if (npc.roles.is_augmenter) roles.push("Augmenter");
-    if (npc.roles.is_renewal_sage) roles.push("Renewal Sage");
-    return roles;
-  }
-
-  // Derive unique roles from the NPCs in this zone
+  // Derive unique roles from the NPCs in this zone for filtering
   const roleOptions = $derived.by(() => {
-    const allRoles: string[] = [];
+    const allRoleKeys: string[] = [];
     for (const npc of data.npcs) {
-      for (const role of getNpcRoles(npc)) {
-        if (!allRoles.includes(role)) {
-          allRoles.push(role);
+      for (const role of getActiveRoles(npc.roles)) {
+        if (!allRoleKeys.includes(role.key)) {
+          allRoleKeys.push(role.key);
         }
       }
     }
-    return allRoles.sort().map((role) => ({ value: role, label: role }));
+    return ROLE_CONFIG.filter((r) => allRoleKeys.includes(r.key))
+      .map((r) => ({ value: r.key, label: r.label }))
+      .sort((a, b) => a.label.localeCompare(b.label));
   });
 
   // Group gathering resources by type
@@ -269,20 +250,7 @@
       {row.original.name}
     </a>
   {:else if cell.column.id === "roles"}
-    {@const roles = cell.getValue() as string[]}
-    {#if roles.length > 0}
-      <div class="flex flex-wrap gap-1">
-        {#each roles as role (role)}
-          <span
-            class="inline-flex min-w-[90px] items-center justify-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200"
-          >
-            {role}
-          </span>
-        {/each}
-      </div>
-    {:else}
-      <span class="text-muted-foreground">-</span>
-    {/if}
+    <RoleBadges roles={row.original.roles} />
   {:else}
     {cell.getValue()}
   {/if}
@@ -650,7 +618,7 @@
       <div class="flex flex-wrap gap-2">
         {#each data.subZones as subZone (subZone.id)}
           <span
-            class="inline-flex items-center gap-1.5 rounded-md border bg-muted/30 px-3 py-1.5 text-sm"
+            class="inline-flex items-center gap-1.5 rounded-md bg-muted/40 px-3 py-1.5 text-sm"
           >
             {#if subZone.is_outdoor}
               <Trees class="h-3.5 w-3.5 text-green-500" />

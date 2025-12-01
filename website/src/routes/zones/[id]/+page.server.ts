@@ -11,6 +11,7 @@ import type {
   ZoneSubZone,
   ZoneRenewalSage,
 } from "$lib/types/zones";
+import { normalizeRoles } from "$lib/utils/roles";
 
 export const prerender = true;
 
@@ -185,7 +186,7 @@ export const load: PageServerLoad = ({ params }): ZoneDetailData => {
       npcMap.set(npc.id, {
         id: npc.id,
         name: npc.name,
-        roles: npc.roles ? JSON.parse(npc.roles) : {},
+        roles: normalizeRoles(npc.roles ? JSON.parse(npc.roles) : {}),
         position_x: npc.position_x,
         position_y: npc.position_y,
         position_z: npc.position_z,

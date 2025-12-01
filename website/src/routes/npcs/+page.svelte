@@ -10,116 +10,19 @@
     type TanstackTable,
   } from "$lib/components/ui/data-table";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
-  import type { NpcZoneInfo, NpcRoles } from "$lib/types/npcs";
+  import RoleBadges from "$lib/components/RoleBadges.svelte";
+  import type { NpcZoneInfo } from "$lib/types/npcs";
+  import {
+    ROLE_CONFIG,
+    getActiveRoles,
+    getActiveRoleKeys,
+  } from "$lib/utils/roles";
   import Castle from "@lucide/svelte/icons/castle";
   import Trees from "@lucide/svelte/icons/trees";
 
   let { data } = $props();
 
   const PAGE_SIZE = 20;
-
-  // Role display configuration (matches detail page)
-  const roleConfig = [
-    {
-      key: "is_quest_giver",
-      label: "Quest Giver",
-      color:
-        "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
-    },
-    {
-      key: "is_taskgiver_adventurer",
-      label: "Daily Quests",
-      color:
-        "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
-    },
-    {
-      key: "is_merchant",
-      label: "Merchant",
-      color:
-        "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-    },
-    {
-      key: "is_merchant_adventurer",
-      label: "Adv. Merchant",
-      color:
-        "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-    },
-    {
-      key: "is_faction_vendor",
-      label: "Faction Vendor",
-      color:
-        "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-    },
-    {
-      key: "is_essence_trader",
-      label: "Essence Trader",
-      color:
-        "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-    },
-    {
-      key: "is_bank",
-      label: "Banker",
-      color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-    },
-    {
-      key: "can_repair_equipment",
-      label: "Repairs",
-      color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-    },
-    {
-      key: "is_skill_master",
-      label: "Skill Master",
-      color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-    },
-    {
-      key: "is_veteran_master",
-      label: "Veteran Master",
-      color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-    },
-    {
-      key: "is_reset_attributes",
-      label: "Attribute Reset",
-      color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-    },
-    {
-      key: "is_soul_binder",
-      label: "Soul Binder",
-      color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-    },
-    {
-      key: "is_inkeeper",
-      label: "Innkeeper",
-      color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-    },
-    {
-      key: "is_recruiter_mercenaries",
-      label: "Mercenary Recruiter",
-      color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-    },
-    {
-      key: "is_priestess",
-      label: "Priestess",
-      color:
-        "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
-    },
-    {
-      key: "is_augmenter",
-      label: "Augmenter",
-      color:
-        "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
-    },
-    {
-      key: "is_guard",
-      label: "Guard",
-      color: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
-    },
-    {
-      key: "is_renewal_sage",
-      label: "Renewal Sage",
-      color:
-        "bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200",
-    },
-  ] as const;
 
   // Build zone lookup for each NPC
   const npcZoneMap = $derived.by(() => {
@@ -148,13 +51,6 @@
       ),
     ).sort(),
   );
-
-  // Get role keys that are active for an NPC
-  function getActiveRoleKeys(roles: NpcRoles): string[] {
-    return roleConfig
-      .filter((role) => roles[role.key as keyof NpcRoles] === true)
-      .map((role) => role.key);
-  }
 
   // Add virtual columns for filtering
   const dataWithVirtual = data.npcs.map((n) => ({
@@ -189,11 +85,10 @@
     {
       id: "roles",
       header: "Roles",
-      size: 300,
+      size: 320,
       enableSorting: false,
       accessorFn: (row) =>
-        roleConfig
-          .filter((role) => row.roles[role.key as keyof NpcRoles])
+        getActiveRoles(row.roles)
           .map((role) => role.label)
           .join(" "),
     },
@@ -278,23 +173,7 @@
   {:else if cell.column.id === "race"}
     <span class="whitespace-nowrap">{row.original.race || "-"}</span>
   {:else if cell.column.id === "roles"}
-    {@const activeRoles = roleConfig.filter(
-      (role) => row.original.roles[role.key as keyof NpcRoles],
-    )}
-    <div class="flex flex-wrap gap-1">
-      {#each activeRoles.slice(0, 3) as role (role.key)}
-        <span
-          class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium {role.color}"
-        >
-          {role.label}
-        </span>
-      {/each}
-      {#if activeRoles.length > 3}
-        <span class="text-muted-foreground text-xs self-center"
-          >+{activeRoles.length - 3}</span
-        >
-      {/if}
-    </div>
+    <RoleBadges roles={row.original.roles} />
   {:else if cell.column.id === "zones"}
     {@const zones = row.original.zones}
     <div class="flex gap-1 whitespace-nowrap">
@@ -344,12 +223,10 @@
     <DataTableFacetedFilter
       column={roleKeysCol}
       title="Role"
-      options={roleConfig
-        .map((r) => ({
-          label: r.label,
-          value: r.key,
-        }))
-        .sort((a, b) => a.label.localeCompare(b.label))}
+      options={ROLE_CONFIG.map((r) => ({
+        label: r.label,
+        value: r.key,
+      })).sort((a, b) => a.label.localeCompare(b.label))}
     />
   {/if}
   {#if zoneIdsCol}

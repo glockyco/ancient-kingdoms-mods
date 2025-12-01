@@ -7,6 +7,7 @@
     type Header,
   } from "$lib/components/ui/data-table";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
+  import RoleBadges from "$lib/components/RoleBadges.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import type {
     NpcQuestOffered,
@@ -14,6 +15,12 @@
     NpcDrop,
     NpcSpawnLocation,
   } from "$lib/types/npcs";
+  import {
+    getActiveRoles,
+    ROLE_DESCRIPTIONS,
+    type RoleConfig,
+    type RoleCategory,
+  } from "$lib/utils/roles";
   import MapPin from "@lucide/svelte/icons/map-pin";
   import Scroll from "@lucide/svelte/icons/scroll";
   import ShoppingBag from "@lucide/svelte/icons/shopping-bag";
@@ -21,173 +28,39 @@
   import MessageCircle from "@lucide/svelte/icons/message-circle";
   import Sword from "@lucide/svelte/icons/sword";
   import User from "@lucide/svelte/icons/user";
+  import Wrench from "@lucide/svelte/icons/wrench";
+  import Sparkles from "@lucide/svelte/icons/sparkles";
+  import Shield from "@lucide/svelte/icons/shield";
+  import RefreshCw from "@lucide/svelte/icons/refresh-cw";
+
+  const categoryColors: Record<RoleCategory, string> = {
+    quest: "text-orange-500",
+    merchant: "text-green-500",
+    service: "text-blue-500",
+    special: "text-purple-500",
+    combat: "text-red-500",
+    renewal: "text-teal-500",
+  };
 
   let { data } = $props();
 
-  // Role display configuration with descriptions
-  // description: main function (can be function for dynamic content), details: costs/requirements (optional)
-  interface RoleConfig {
-    key: string;
-    label: string;
-    color: string;
-    description: string | (() => string);
-    details?: string[] | (() => string[]);
+  // Get active roles for this NPC
+  const activeRoles = $derived(getActiveRoles(data.npc.roles));
+
+  // Get description for a role (with dynamic handling for renewal sage)
+  function getRoleDescription(role: RoleConfig): string {
+    if (role.key === "is_renewal_sage") {
+      return data.npc.gold_required_respawn_dungeon > 0
+        ? `Resets all spawns in <a href="/zones/${data.respawnDungeonZoneId}" class="text-blue-600 dark:text-blue-400 hover:underline">${data.respawnDungeonName}</a> for <span class="text-yellow-600 dark:text-yellow-400">${data.npc.gold_required_respawn_dungeon.toLocaleString()} gold</span>.`
+        : `Resets all spawns in <a href="/zones/${data.respawnDungeonZoneId}" class="text-blue-600 dark:text-blue-400 hover:underline">${data.respawnDungeonName}</a>.`;
+    }
+    return ROLE_DESCRIPTIONS[role.key]?.description ?? "";
   }
 
-  const roleConfig: RoleConfig[] = [
-    {
-      key: "is_quest_giver",
-      label: "Quest Giver",
-      color:
-        "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
-      description: "Offers quests to players.",
-    },
-    {
-      key: "is_taskgiver_adventurer",
-      label: "Daily Quests",
-      color:
-        "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
-      description: "Offers daily adventurer quests.",
-      details: ["Requires level 40"],
-    },
-    {
-      key: "is_merchant",
-      label: "Merchant",
-      color:
-        "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-      description: "Sells items to players.",
-    },
-    {
-      key: "is_merchant_adventurer",
-      label: "Adventurer Merchant",
-      color:
-        "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-      description: "Sells adventurer-related items and rewards.",
-    },
-    {
-      key: "is_faction_vendor",
-      label: "Faction Vendor",
-      color:
-        "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-      description: "Sells faction-exclusive items.",
-      details: ["Requires 15,000+ faction reputation"],
-    },
-    {
-      key: "is_essence_trader",
-      label: "Essence Trader",
-      color:
-        "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-      description:
-        'Trades magic+ equipment for <a href="/items/adventurers_essence" class="text-blue-600 dark:text-blue-400 hover:underline">Adventurer\'s Essence</a>.',
-      details: ["Requires magic or better gear in inventory"],
-    },
-    {
-      key: "is_bank",
-      label: "Banker",
-      color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-      description: "Provides access to your bank storage.",
-      details: [
-        "30 slots per tab, up to 10 tabs",
-        "Tab costs: 1k → 5k → 10k → 25k → 50k → 75k → 100k → 250k → 500k gold",
-      ],
-    },
-    {
-      key: "can_repair_equipment",
-      label: "Repairs Equipment",
-      color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-      description: "Repairs damaged equipment for gold.",
-    },
-    {
-      key: "is_skill_master",
-      label: "Skill Master",
-      color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-      description: "Resets your class skill points.",
-      details: [
-        "Cost: 100g (lvl 1-9), 250g (10-19), 500g (20-29), 1k (30-39), 3k (40+)",
-      ],
-    },
-    {
-      key: "is_veteran_master",
-      label: "Veteran Master",
-      color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-      description: "Resets your veteran skill points.",
-      details: [
-        'Cost: 10,000 gold + <a href="/items/token_of_redemption" class="text-blue-600 dark:text-blue-400 hover:underline">Token of Redemption</a>',
-      ],
-    },
-    {
-      key: "is_reset_attributes",
-      label: "Attribute Reset",
-      color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-      description: "Resets your attribute points.",
-      details: [
-        "Cost: 100g (lvl 1-9), 250g (10-19), 500g (20-29), 1k (30-39), 3k (40+)",
-      ],
-    },
-    {
-      key: "is_soul_binder",
-      label: "Soul Binder",
-      color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-      description: "Binds your respawn point to the current area.",
-    },
-    {
-      key: "is_inkeeper",
-      label: "Innkeeper",
-      color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-      description: "Sells food and drinks.",
-      details: ["Cost: 25 gold"],
-    },
-    {
-      key: "is_recruiter_mercenaries",
-      label: "Mercenary Recruiter",
-      color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-      description: "Hire and manage mercenaries (up to 6 stored).",
-      details: [
-        "Requires level 10",
-        "Active limit: 1 (lvl 10-19), 2 (20-29), 3 (30-49), 4 (50)",
-      ],
-    },
-    {
-      key: "is_priestess",
-      label: "Priestess",
-      color:
-        "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
-      description:
-        'Converts <a href="/items/cursed_rune" class="text-blue-600 dark:text-blue-400 hover:underline">Cursed Runes</a> into <a href="/items/blessed_rune" class="text-blue-600 dark:text-blue-400 hover:underline">Blessed Runes</a>.',
-      details: ["Cost: 75 gold per rune", "Requires Cursed Runes in inventory"],
-    },
-    {
-      key: "is_augmenter",
-      label: "Augmenter",
-      color:
-        "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
-      description: "Removes augments from equipment.",
-      details: ["Requires augmented gear in inventory or equipped"],
-    },
-    {
-      key: "is_guard",
-      label: "Guard",
-      color: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
-      description: "Protects the area and may attack hostile players.",
-    },
-    {
-      key: "is_renewal_sage",
-      label: "Renewal Sage",
-      color:
-        "bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200",
-      description: () =>
-        data.npc.gold_required_respawn_dungeon > 0
-          ? `Resets all spawns in <a href="/zones/${data.respawnDungeonZoneId}" class="text-blue-600 dark:text-blue-400 hover:underline">${data.respawnDungeonName}</a> for <span class="text-yellow-600 dark:text-yellow-400">${data.npc.gold_required_respawn_dungeon.toLocaleString()} gold</span>.`
-          : `Resets all spawns in <a href="/zones/${data.respawnDungeonZoneId}" class="text-blue-600 dark:text-blue-400 hover:underline">${data.respawnDungeonName}</a>.`,
-    },
-  ];
-
-  // Get active roles for badges
-  const activeRoles = $derived(
-    roleConfig.filter(
-      (role) => data.npc.roles[role.key as keyof typeof data.npc.roles],
-    ),
-  );
+  // Get details for a role
+  function getRoleDetails(role: RoleConfig): string[] | undefined {
+    return ROLE_DESCRIPTIONS[role.key]?.details;
+  }
 
   // Check if NPC has any messages
   const hasMessages = $derived(
@@ -571,13 +444,7 @@
   <div>
     <div class="flex items-center gap-3 flex-wrap">
       <h1 class="text-3xl font-bold">{data.npc.name}</h1>
-      {#each activeRoles as role (role.key)}
-        <span
-          class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium {role.color}"
-        >
-          {role.label}
-        </span>
-      {/each}
+      <RoleBadges roles={data.npc.roles} />
     </div>
 
     <div class="mt-2 flex flex-wrap gap-4 text-sm text-muted-foreground">
@@ -743,16 +610,25 @@
       </h2>
       <div class="bg-muted/30 rounded-md border p-4 space-y-4">
         {#each activeRoles as role (role.key)}
-          {@const description =
-            typeof role.description === "function"
-              ? role.description()
-              : role.description}
-          {@const details =
-            typeof role.details === "function" ? role.details() : role.details}
+          {@const description = getRoleDescription(role)}
+          {@const details = getRoleDetails(role)}
           <div>
             <span
-              class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium {role.color}"
+              class="inline-flex items-center gap-1 rounded-md bg-muted/40 px-2 py-0.5 text-xs"
             >
+              {#if role.category === "quest"}
+                <Scroll class="h-3 w-3 {categoryColors[role.category]}" />
+              {:else if role.category === "merchant"}
+                <ShoppingBag class="h-3 w-3 {categoryColors[role.category]}" />
+              {:else if role.category === "service"}
+                <Wrench class="h-3 w-3 {categoryColors[role.category]}" />
+              {:else if role.category === "special"}
+                <Sparkles class="h-3 w-3 {categoryColors[role.category]}" />
+              {:else if role.category === "combat"}
+                <Shield class="h-3 w-3 {categoryColors[role.category]}" />
+              {:else if role.category === "renewal"}
+                <RefreshCw class="h-3 w-3 {categoryColors[role.category]}" />
+              {/if}
               {role.label}
             </span>
             <!-- eslint-disable-next-line svelte/no-at-html-tags -- trusted static content -->

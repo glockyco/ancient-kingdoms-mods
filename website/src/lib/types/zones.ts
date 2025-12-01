@@ -1,4 +1,5 @@
 import type { RespawnInfo } from "./respawn";
+import type { NpcRoles } from "./npcs";
 
 /**
  * Zone data as displayed in the zones overview table
@@ -42,26 +43,7 @@ export interface ZoneMonster extends RespawnInfo {
 export interface ZoneNpc {
   id: string;
   name: string;
-  roles: {
-    is_merchant?: boolean;
-    is_quest_giver?: boolean;
-    can_repair_equipment?: boolean;
-    is_bank?: boolean;
-    is_skill_master?: boolean;
-    is_veteran_master?: boolean;
-    is_reset_attributes?: boolean;
-    is_soul_binder?: boolean;
-    is_inkeeper?: boolean;
-    is_taskgiver_adventurer?: boolean;
-    is_merchant_adventurer?: boolean;
-    is_recruiter_mercenaries?: boolean;
-    is_guard?: boolean;
-    is_faction_vendor?: boolean;
-    is_essence_trader?: boolean;
-    is_priestess?: boolean;
-    is_augmenter?: boolean;
-    is_renewal_sage?: boolean;
-  };
+  roles: NpcRoles;
   position_x: number | null;
   position_y: number | null;
   position_z: number | null;
