@@ -23,7 +23,7 @@
     {#each displayClasses as cls (cls)}
       {@const config = getClassConfig(cls)}
       <span
-        class="px-1.5 py-0.5 rounded text-xs font-medium text-white"
+        class="px-1.5 py-0.5 rounded text-xs font-medium text-white text-center min-w-10"
         style="background-color: {config.color}"
       >
         {abbreviated ? config.abbrev : config.name}

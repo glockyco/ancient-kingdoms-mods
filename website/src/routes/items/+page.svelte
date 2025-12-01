@@ -143,7 +143,7 @@
     {
       id: "class",
       header: "Class",
-      size: 240,
+      size: 250,
       enableSorting: false,
       accessorFn: (row) => parseClassRequired(row.class_required).join(", "),
       filterFn: (row, columnId, filterValue: string[]) => {
@@ -308,7 +308,10 @@
     {renderHeader}
     {renderToolbar}
     pageSize={PAGE_SIZE}
-    initialSorting={[{ id: "name", desc: false }]}
+    initialSorting={[
+      { id: "item_level", desc: true },
+      { id: "name", desc: false },
+    ]}
     initialColumnVisibility={{
       item_type: false,
     }}
