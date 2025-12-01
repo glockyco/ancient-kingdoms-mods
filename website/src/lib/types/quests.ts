@@ -1,3 +1,5 @@
+import type { ObtainabilityNode } from "./recipes";
+
 // Quest reward item
 export interface QuestRewardItem {
   item_id: string;
@@ -133,6 +135,7 @@ export interface QuestDetailPageData {
   equipItems: QuestItemTarget[];
   potionItem: QuestItemTarget | null;
   givenItemOnStart: QuestItemTarget | null;
+  itemObtainabilityTrees: ObtainabilityNode[];
 }
 
 // List page types

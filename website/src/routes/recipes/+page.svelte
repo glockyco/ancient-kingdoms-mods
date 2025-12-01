@@ -10,6 +10,7 @@
   } from "$lib/components/ui/data-table";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
+  import ExternalLink from "@lucide/svelte/icons/external-link";
 
   let { data } = $props();
 
@@ -27,6 +28,13 @@
   type RecipeRow = (typeof dataWithVirtual)[number];
 
   const columns: ColumnDef<RecipeRow>[] = [
+    {
+      id: "details",
+      header: "",
+      size: 30,
+      enableSorting: false,
+      enableHiding: false,
+    },
     {
       accessorKey: "type",
       header: "Type",
@@ -75,6 +83,7 @@
   ];
 
   const columnLabels: Record<string, string> = {
+    details: "",
     type: "Type",
     tier: "Tier",
     result_item_name: "Output",
@@ -95,7 +104,15 @@
   cell: Cell<RecipeRow, unknown>;
   row: Row<RecipeRow>;
 })}
-  {#if cell.column.id === "type"}
+  {#if cell.column.id === "details"}
+    <a
+      href="/recipes/{row.original.id}"
+      class="inline-flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+      title="View recipe details"
+    >
+      <ExternalLink class="h-4 w-4" />
+    </a>
+  {:else if cell.column.id === "type"}
     {row.original.type}
   {:else if cell.column.id === "tier"}
     <span class="font-medium">{romanNumerals[row.original.tier] ?? "-"}</span>

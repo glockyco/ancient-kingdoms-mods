@@ -567,16 +567,22 @@ def _denormalize_rewarded_by_altars(conn: sqlite3.Connection) -> dict[str, list[
 def _denormalize_crafted_from(
     conn: sqlite3.Connection,
 ) -> dict[str, list[CraftedFromInfo]]:
-    """Build crafted_from from crafting_recipes.
+    """Build crafted_from from crafting_recipes and alchemy_recipes.
 
     Returns:
         Dict mapping item_id to list of recipe info
     """
     console.print("  Processing crafting recipes...")
     cursor = conn.cursor()
+
+    # Query both crafting and alchemy recipes
     cursor.execute("""
         SELECT id, result_item_id, result_amount, materials
         FROM crafting_recipes
+        WHERE result_item_id IS NOT NULL
+        UNION ALL
+        SELECT id, result_item_id, 1 as result_amount, materials
+        FROM alchemy_recipes
         WHERE result_item_id IS NOT NULL
     """)
 

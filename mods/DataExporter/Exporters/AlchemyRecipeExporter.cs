@@ -25,7 +25,7 @@ public class AlchemyRecipeExporter : BaseExporter
 
         var recipes = new List<AlchemyRecipeData>();
         var seenRecipes = new HashSet<string>();
-        var recipeIdCounter = 0;
+        var totalCount = 0;
 
         foreach (var obj in objects)
         {
@@ -41,11 +41,12 @@ public class AlchemyRecipeExporter : BaseExporter
                 if (tableItem == null || tableItem.itemResult == null)
                     continue;
 
+                totalCount++;
                 var resultId = SanitizeId(tableItem.itemResult.name);
 
                 var recipe = new AlchemyRecipeData
                 {
-                    id = $"alchemy_recipe_{recipeIdCounter++}",
+                    id = resultId,
                     result_item_id = resultId,
                     level_required = tableItem.level,
                     materials = new List<AlchemyMaterial>()
@@ -77,6 +78,6 @@ public class AlchemyRecipeExporter : BaseExporter
         }
 
         WriteJson(recipes, "alchemy_recipes.json");
-        Logger.Msg($"✓ Exported {recipes.Count} unique alchemy recipes (deduplicated from {recipeIdCounter} total)");
+        Logger.Msg($"✓ Exported {recipes.Count} unique alchemy recipes (deduplicated from {totalCount} total)");
     }
 }

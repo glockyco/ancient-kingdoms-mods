@@ -25,7 +25,7 @@ public class CraftingRecipeExporter : BaseExporter
 
         var recipes = new List<CraftingRecipeData>();
         var seenRecipes = new HashSet<string>();
-        var recipeIdCounter = 0;
+        var totalCount = 0;
 
         foreach (var obj in objects)
         {
@@ -43,11 +43,12 @@ public class CraftingRecipeExporter : BaseExporter
                 if (craftingItem == null || craftingItem.itemResult == null)
                     continue;
 
+                totalCount++;
                 var resultId = SanitizeId(craftingItem.itemResult.name);
 
                 var recipe = new CraftingRecipeData
                 {
-                    id = $"recipe_{recipeIdCounter++}",
+                    id = resultId,
                     result_item_id = resultId,
                     result_amount = 1,
                     materials = new List<CraftingMaterial>(),
@@ -80,7 +81,7 @@ public class CraftingRecipeExporter : BaseExporter
         }
 
         WriteJson(recipes, "crafting_recipes.json");
-        Logger.Msg($"✓ Exported {recipes.Count} unique crafting recipes (deduplicated from {recipeIdCounter} total)");
+        Logger.Msg($"✓ Exported {recipes.Count} unique crafting recipes (deduplicated from {totalCount} total)");
     }
 
     private string DetermineStationType(Il2Cpp.CraftingStation station)

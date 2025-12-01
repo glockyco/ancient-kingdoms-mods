@@ -4,6 +4,7 @@
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import MonsterTypeIcon from "$lib/components/MonsterTypeIcon.svelte";
+  import ExternalLink from "@lucide/svelte/icons/external-link";
   import { STATS_METADATA_FIELDS } from "$lib/constants/items";
   import { formatItemType } from "$lib/utils/format";
   import { formatStatName, formatResourceName } from "$lib/terminology";
@@ -974,7 +975,18 @@
         <!-- Crafted by -->
         <Card.Root class="bg-muted/30">
           <Card.Header>
-            <Card.Title>Crafted by</Card.Title>
+            <Card.Title class="flex items-center gap-2">
+              Crafted by
+              {#if computed.craftedFrom && computed.craftedFrom.length > 0}
+                <a
+                  href="/recipes/{computed.craftedFrom[0].recipe_id}"
+                  class="text-muted-foreground hover:text-foreground transition-colors"
+                  title="View recipe details"
+                >
+                  <ExternalLink class="h-4 w-4" />
+                </a>
+              {/if}
+            </Card.Title>
           </Card.Header>
           <Card.Content class="space-y-4">
             <div class="grid grid-cols-3 gap-4">
@@ -1658,11 +1670,20 @@
       </Card.Root>
     {/if}
 
-    <!-- Crafted From -->
-    {#if computed.craftedFrom && computed.craftedFrom.length > 0}
+    <!-- Crafted From (exclude alchemy items which have their own "Crafted by" section) -->
+    {#if computed.craftedFrom && computed.craftedFrom.length > 0 && !data.item.taught_by_recipe_id}
       <Card.Root class="bg-muted/30">
         <Card.Header>
-          <Card.Title>Crafted from Recipe</Card.Title>
+          <Card.Title class="flex items-center gap-2">
+            Crafted from Recipe
+            <a
+              href="/recipes/{computed.craftedFrom[0].recipe_id}"
+              class="text-muted-foreground hover:text-foreground transition-colors"
+              title="View recipe details"
+            >
+              <ExternalLink class="h-4 w-4" />
+            </a>
+          </Card.Title>
         </Card.Header>
         <Card.Content>
           <div class="space-y-1">
