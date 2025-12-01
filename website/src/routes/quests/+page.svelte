@@ -258,6 +258,17 @@
   {@const flagsCol = table.getColumn("flags_filter")}
   {@const classCol = table.getColumn("class")}
   {@const levelCol = table.getColumn("level_required")}
+  {@const flagsCountsFiltered = (() => {
+    const counts = new SvelteMap<string, number>();
+    // Use getFacetedRowModel() to get rows filtered by everything EXCEPT the flags filter
+    const facetedRows = flagsCol?.getFacetedRowModel()?.rows ?? [];
+    for (const row of facetedRows) {
+      for (const flag of row.original.flags_filter) {
+        counts.set(flag, (counts.get(flag) ?? 0) + 1);
+      }
+    }
+    return counts;
+  })()}
   {@const classCountsFiltered = (() => {
     const counts = new SvelteMap<string, number>();
     // Use getFacetedRowModel() to get rows filtered by everything EXCEPT the class filter
@@ -289,6 +300,7 @@
         { label: "Daily", value: "daily" },
         { label: "Regular", value: "regular" },
       ]}
+      counts={flagsCountsFiltered}
     />
   {/if}
   {#if levelCol}
