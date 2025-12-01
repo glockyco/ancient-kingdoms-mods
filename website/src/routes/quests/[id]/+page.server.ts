@@ -498,6 +498,7 @@ const NODE_WIDTH = 180;
 const NODE_HEIGHT = 36;
 const HORIZONTAL_GAP = 60;
 const VERTICAL_GAP = 20;
+const PADDING = 16;
 
 /**
  * Build a complete quest chain graph with proper layout.
@@ -715,8 +716,8 @@ function buildQuestChainGraph(
         id: questData.id,
         name: questData.name,
         quest_type: questData.quest_type,
-        x: depth * (NODE_WIDTH + HORIZONTAL_GAP),
-        y: startY + i * (NODE_HEIGHT + VERTICAL_GAP),
+        x: PADDING + depth * (NODE_WIDTH + HORIZONTAL_GAP),
+        y: PADDING + startY + i * (NODE_HEIGHT + VERTICAL_GAP),
         isCurrent: questId === currentQuestId,
       });
     }
@@ -725,8 +726,8 @@ function buildQuestChainGraph(
   return {
     nodes,
     edges,
-    width: totalWidth + NODE_WIDTH,
-    height: totalHeight + NODE_HEIGHT,
+    width: totalWidth + PADDING * 2,
+    height: totalHeight + PADDING * 2,
     currentDepth: currentQuestDepth,
     maxDepth,
   };
