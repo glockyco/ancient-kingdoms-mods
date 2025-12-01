@@ -156,7 +156,7 @@ export const ROLE_DESCRIPTIONS: Partial<
   },
   is_essence_trader: {
     description:
-      'Trades magic+ equipment for <a href="/items/adventurers_essence" class="text-blue-600 dark:text-blue-400 hover:underline">Adventurer\'s Essence</a>.',
+      'Trades magic+ equipment for <a href="/items/primal_essence" class="text-blue-600 dark:text-blue-400 hover:underline">Primal Essence</a>.',
     details: ["Requires magic or better gear in inventory"],
   },
   is_bank: {
