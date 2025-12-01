@@ -262,6 +262,9 @@
       }))}
     />
   {/if}
+  {#if levelCol}
+    <DataTableRangeFilter column={levelCol} title="Level" />
+  {/if}
   {#if slotCol}
     <DataTableFacetedFilter
       column={slotCol}
@@ -281,9 +284,6 @@
         value: c,
       }))}
     />
-  {/if}
-  {#if levelCol}
-    <DataTableRangeFilter column={levelCol} title="Level" />
   {/if}
 {/snippet}
 
