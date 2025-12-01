@@ -6,13 +6,17 @@
   import MonsterTypeIcon from "$lib/components/MonsterTypeIcon.svelte";
   import QuestTypeBadge from "$lib/components/QuestTypeBadge.svelte";
   import QuestFlagBadges from "$lib/components/QuestFlagBadges.svelte";
+  import ObtainabilityTree from "$lib/components/ObtainabilityTree.svelte";
   import * as Tabs from "$lib/components/ui/tabs";
+  import ChevronDown from "@lucide/svelte/icons/chevron-down";
+  import ChevronRight from "@lucide/svelte/icons/chevron-right";
   import Scroll from "@lucide/svelte/icons/scroll";
   import Target from "@lucide/svelte/icons/target";
   import Gift from "@lucide/svelte/icons/gift";
   import User from "@lucide/svelte/icons/user";
   import GitBranch from "@lucide/svelte/icons/git-branch";
   import FileText from "@lucide/svelte/icons/file-text";
+  import ListTree from "@lucide/svelte/icons/list-tree";
 
   let { data } = $props();
 
@@ -76,6 +80,9 @@
 
   // Selected class for tooltip display (for class-specific quests)
   let selectedTooltipClass = $state<PlayerClass>("Warrior");
+
+  // Toggle for obtainability section
+  let showObtainability = $state(false);
 
   // Get the current tooltip HTML based on selection
   const currentTooltipHtml = $derived(() => {
@@ -561,6 +568,35 @@
               </div>
             {/if}
           </div>
+        </section>
+      {/if}
+
+      <!-- How to Obtain Items -->
+      {#if data.itemObtainabilityTrees.length > 0}
+        <section>
+          <button
+            onclick={() => (showObtainability = !showObtainability)}
+            class="flex items-center gap-2 text-xl font-semibold hover:text-foreground/80 transition-colors"
+          >
+            <ListTree class="h-5 w-5 text-muted-foreground" />
+            How to Obtain Items
+            {#if showObtainability}
+              <ChevronDown class="h-5 w-5 text-muted-foreground" />
+            {:else}
+              <ChevronRight class="h-5 w-5 text-muted-foreground" />
+            {/if}
+          </button>
+          {#if showObtainability}
+            <div class="bg-muted/30 rounded-md border p-4 mt-4">
+              <div class="bg-background rounded-md p-4 border overflow-x-auto">
+                <div class="w-fit pr-2 space-y-4">
+                  {#each data.itemObtainabilityTrees as tree (tree.item_id)}
+                    <ObtainabilityTree node={tree} />
+                  {/each}
+                </div>
+              </div>
+            </div>
+          {/if}
         </section>
       {/if}
 

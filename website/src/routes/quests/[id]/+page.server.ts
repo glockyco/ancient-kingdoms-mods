@@ -14,6 +14,8 @@ import type {
   QuestGraphNode,
   QuestGraphEdge,
 } from "$lib/types/quests";
+import type { ObtainabilityNode } from "$lib/types/recipes";
+import { buildObtainabilityTree } from "$lib/server/obtainability";
 
 export const prerender = true;
 
@@ -465,6 +467,32 @@ export const load: PageServerLoad = ({ params }): QuestDetailPageData => {
     }
   }
 
+  // Build obtainability trees for items that need to be gathered/delivered/equipped
+  // Combine all item objectives that players need to obtain
+  const allObjectiveItems = [
+    ...gatherItems,
+    ...gatherInventoryItems,
+    ...requiredItems,
+    ...equipItems,
+  ];
+
+  const itemObtainabilityTrees: ObtainabilityNode[] = [];
+  for (const item of allObjectiveItems) {
+    const visited = new Set<string>();
+    const tree = buildObtainabilityTree(
+      db,
+      item.id,
+      item.amount,
+      0,
+      visited,
+      true,
+    );
+    // Only include if the item has sources or is craftable
+    if (tree.sources.length > 0 || tree.recipe) {
+      itemObtainabilityTrees.push(tree);
+    }
+  }
+
   db.close();
 
   return {
@@ -482,6 +510,7 @@ export const load: PageServerLoad = ({ params }): QuestDetailPageData => {
     equipItems,
     potionItem,
     givenItemOnStart,
+    itemObtainabilityTrees,
   };
 };
 
