@@ -32,6 +32,7 @@ export interface QuestGraphNode {
   id: string;
   name: string;
   quest_type: string;
+  display_type: string;
   x: number;
   y: number;
   isCurrent: boolean;

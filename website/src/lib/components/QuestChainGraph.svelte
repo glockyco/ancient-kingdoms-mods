@@ -1,5 +1,15 @@
 <script lang="ts">
   import type { QuestChainGraph } from "$lib/types/quests";
+  import { getQuestTypeConfig } from "$lib/utils/quests";
+  import Skull from "@lucide/svelte/icons/skull";
+  import Leaf from "@lucide/svelte/icons/leaf";
+  import Package from "@lucide/svelte/icons/package";
+  import Backpack from "@lucide/svelte/icons/backpack";
+  import Search from "@lucide/svelte/icons/search";
+  import Compass from "@lucide/svelte/icons/compass";
+  import Shirt from "@lucide/svelte/icons/shirt";
+  import FlaskConical from "@lucide/svelte/icons/flask-conical";
+  import CircleHelp from "@lucide/svelte/icons/circle-help";
 
   interface Props {
     graph: QuestChainGraph;
@@ -47,20 +57,47 @@
     return `M ${startX} ${startY} C ${midX} ${startY}, ${midX} ${endY}, ${endX} ${endY}`;
   }
 
-  // Quest type colors for the left border
-  const questTypeColors: Record<string, string> = {
-    kill: "rgb(239 68 68)",
-    gather: "rgb(34 197 94)",
-    gather_inventory: "rgb(34 197 94)",
-    location: "rgb(59 130 246)",
-    equip_item: "rgb(168 85 247)",
-    alchemy: "rgb(6 182 212)",
+  // Map Tailwind color classes to RGB values for SVG fill
+  const colorClassToRgb: Record<string, string> = {
+    "text-red-500": "rgb(239 68 68)",
+    "text-green-500": "rgb(34 197 94)",
+    "text-amber-500": "rgb(245 158 11)",
+    "text-blue-500": "rgb(59 130 246)",
+    "text-indigo-500": "rgb(99 102 241)",
+    "text-purple-500": "rgb(168 85 247)",
+    "text-cyan-500": "rgb(6 182 212)",
   };
 
-  function getQuestTypeColor(questType: string): string {
-    return questTypeColors[questType] || "rgb(107 114 128)";
+  function getQuestTypeColor(displayType: string): string {
+    const config = getQuestTypeConfig(displayType);
+    if (config) {
+      return colorClassToRgb[config.iconColor] || "rgb(107 114 128)";
+    }
+    return "rgb(107 114 128)";
   }
 </script>
+
+{#snippet questTypeIcon(displayType: string, color: string)}
+  {#if displayType === "Kill"}
+    <Skull class="w-3.5 h-3.5" style="color: {color}" />
+  {:else if displayType === "Gather"}
+    <Leaf class="w-3.5 h-3.5" style="color: {color}" />
+  {:else if displayType === "Have"}
+    <Backpack class="w-3.5 h-3.5" style="color: {color}" />
+  {:else if displayType === "Deliver"}
+    <Package class="w-3.5 h-3.5" style="color: {color}" />
+  {:else if displayType === "Find"}
+    <Search class="w-3.5 h-3.5" style="color: {color}" />
+  {:else if displayType === "Discover"}
+    <Compass class="w-3.5 h-3.5" style="color: {color}" />
+  {:else if displayType === "Equip"}
+    <Shirt class="w-3.5 h-3.5" style="color: {color}" />
+  {:else if displayType === "Brew"}
+    <FlaskConical class="w-3.5 h-3.5" style="color: {color}" />
+  {:else}
+    <CircleHelp class="w-3.5 h-3.5" style="color: {color}" />
+  {/if}
+{/snippet}
 
 <div bind:this={scrollContainer} class="overflow-x-auto scrollbar-thin">
   <svg
@@ -92,6 +129,7 @@
 
     <!-- Nodes -->
     {#each graph.nodes as node (node.id)}
+      {@const typeColor = getQuestTypeColor(node.display_type)}
       <g>
         <!-- Node background -->
         <rect
@@ -104,15 +142,10 @@
             ? "fill-primary/20 stroke-primary stroke-2"
             : "fill-muted/50 stroke-border"}
         />
-        <!-- Quest type indicator (left border) -->
-        <rect
-          x={node.x}
-          y={node.y}
-          width="4"
-          height={NODE_HEIGHT}
-          rx="2"
-          fill={getQuestTypeColor(node.quest_type)}
-        />
+        <!-- Quest type icon -->
+        <foreignObject x={node.x + 7} y={node.y + 9} width={16} height={16}>
+          {@render questTypeIcon(node.display_type, typeColor)}
+        </foreignObject>
         <!-- Clickable link overlay -->
         <a href="/quests/{node.id}">
           <rect
@@ -125,14 +158,14 @@
           />
           <!-- Text -->
           <text
-            x={node.x + 12}
+            x={node.x + 28}
             y={node.y + NODE_HEIGHT / 2}
             dominant-baseline="middle"
             class={node.isCurrent
               ? "fill-foreground font-medium text-sm"
               : "fill-foreground text-sm hover:fill-primary"}
           >
-            {node.name.length > 22 ? node.name.slice(0, 20) + "..." : node.name}
+            {node.name.length > 20 ? node.name.slice(0, 18) + "..." : node.name}
           </text>
         </a>
       </g>

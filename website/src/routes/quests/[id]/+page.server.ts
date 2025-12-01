@@ -490,6 +490,7 @@ interface QuestNodeData {
   id: string;
   name: string;
   quest_type: string;
+  display_type: string;
   predecessor_ids: string[];
 }
 
@@ -529,13 +530,14 @@ function buildQuestChainGraph(
 
     const questData = db
       .prepare(
-        "SELECT id, name, quest_type, predecessor_ids FROM quests WHERE id = ?",
+        "SELECT id, name, quest_type, display_type, predecessor_ids FROM quests WHERE id = ?",
       )
       .get(questId) as
       | {
           id: string;
           name: string;
           quest_type: string;
+          display_type: string | null;
           predecessor_ids: string | null;
         }
       | undefined;
@@ -550,6 +552,7 @@ function buildQuestChainGraph(
       id: questData.id,
       name: questData.name,
       quest_type: questData.quest_type,
+      display_type: questData.display_type || questData.quest_type,
       predecessor_ids: predecessorIds,
     });
 
@@ -716,6 +719,7 @@ function buildQuestChainGraph(
         id: questData.id,
         name: questData.name,
         quest_type: questData.quest_type,
+        display_type: questData.display_type,
         x: PADDING + depth * (NODE_WIDTH + HORIZONTAL_GAP),
         y: PADDING + startY + i * (NODE_HEIGHT + VERTICAL_GAP),
         isCurrent: questId === currentQuestId,
