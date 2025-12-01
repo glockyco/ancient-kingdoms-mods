@@ -1,5 +1,6 @@
 <script lang="ts">
   import { getQuestTypeConfig } from "$lib/utils/quests";
+  import { ICON_BADGE } from "$lib/styles/badge";
   import Skull from "@lucide/svelte/icons/skull";
   import Leaf from "@lucide/svelte/icons/leaf";
   import Package from "@lucide/svelte/icons/package";
@@ -25,29 +26,27 @@
 
 {#snippet typeIcon(displayType: string)}
   {#if displayType === "Kill"}
-    <Skull class="h-4 w-4 {iconColor}" />
+    <Skull class="{ICON_BADGE.iconSize} {iconColor}" />
   {:else if displayType === "Gather"}
-    <Leaf class="h-4 w-4 {iconColor}" />
+    <Leaf class="{ICON_BADGE.iconSize} {iconColor}" />
   {:else if displayType === "Have"}
-    <Backpack class="h-4 w-4 {iconColor}" />
+    <Backpack class="{ICON_BADGE.iconSize} {iconColor}" />
   {:else if displayType === "Deliver"}
-    <Package class="h-4 w-4 {iconColor}" />
+    <Package class="{ICON_BADGE.iconSize} {iconColor}" />
   {:else if displayType === "Find"}
-    <Search class="h-4 w-4 {iconColor}" />
+    <Search class="{ICON_BADGE.iconSize} {iconColor}" />
   {:else if displayType === "Discover"}
-    <Compass class="h-4 w-4 {iconColor}" />
+    <Compass class="{ICON_BADGE.iconSize} {iconColor}" />
   {:else if displayType === "Equip"}
-    <Shirt class="h-4 w-4 {iconColor}" />
+    <Shirt class="{ICON_BADGE.iconSize} {iconColor}" />
   {:else if displayType === "Brew"}
-    <FlaskConical class="h-4 w-4 {iconColor}" />
+    <FlaskConical class="{ICON_BADGE.iconSize} {iconColor}" />
   {:else}
-    <CircleHelp class="h-4 w-4 {iconColor}" />
+    <CircleHelp class="{ICON_BADGE.iconSize} {iconColor}" />
   {/if}
 {/snippet}
 
-<span
-  class="inline-flex items-center gap-1 rounded-md bg-muted/40 px-2 py-0.5 text-xs {className}"
->
+<span class="{ICON_BADGE.base} {ICON_BADGE.static} {className}">
   {@render typeIcon(type)}
   {type}
 </span>

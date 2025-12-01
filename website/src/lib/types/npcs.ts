@@ -104,6 +104,9 @@ export interface NpcQuestOffered {
   level_required: number;
   level_recommended: number;
   is_adventurer_quest: boolean;
+  is_main_quest: boolean;
+  is_epic_quest: boolean;
+  display_type: string;
   race_requirements?: string[];
   class_requirements?: string[];
   faction_requirements?: NpcQuestFactionRequirement[];

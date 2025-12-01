@@ -21,7 +21,11 @@
     type RoleConfig,
     type RoleCategory,
   } from "$lib/utils/roles";
+  import ClassPills from "$lib/components/ClassPills.svelte";
+  import QuestTypeBadge from "$lib/components/QuestTypeBadge.svelte";
+  import QuestFlagBadges from "$lib/components/QuestFlagBadges.svelte";
   import MapPin from "@lucide/svelte/icons/map-pin";
+  import { ICON_BADGE } from "$lib/styles/badge";
   import Scroll from "@lucide/svelte/icons/scroll";
   import ShoppingBag from "@lucide/svelte/icons/shopping-bag";
   import Gem from "@lucide/svelte/icons/gem";
@@ -105,49 +109,60 @@
     data.itemsSold.some((item) => item.faction_required > 0),
   );
 
-  // Check if any quests have requirements
-  const hasQuestRequirements = $derived(
+  // Check if any quests have class requirements (for conditional column)
+  const hasClassRequirements = $derived(
     data.questsOffered.some(
-      (q) =>
-        (q.race_requirements && q.race_requirements.length > 0) ||
-        (q.class_requirements && q.class_requirements.length > 0) ||
-        (q.faction_requirements && q.faction_requirements.length > 0),
+      (q) => q.class_requirements && q.class_requirements.length > 0,
     ),
   );
 
-  // Helper to format quest requirements
-  function formatQuestRequirements(quest: NpcQuestOffered): string {
-    const reqs: string[] = [];
-    if (quest.class_requirements?.length) {
-      reqs.push(...quest.class_requirements);
-    }
-    if (quest.race_requirements?.length) {
-      reqs.push(...quest.race_requirements);
-    }
-    if (quest.faction_requirements?.length) {
-      for (const fr of quest.faction_requirements) {
-        reqs.push(`${fr.faction} (${fr.tier_name})`);
-      }
-    }
-    return reqs.join(", ");
-  }
+  // Check if any quests have flags (for conditional column)
+  const hasQuestFlags = $derived(
+    data.questsOffered.some(
+      (q) => q.is_main_quest || q.is_epic_quest || q.is_adventurer_quest,
+    ),
+  );
 
   // Quest columns
   const questColumns = $derived.by(() => {
     const cols: ColumnDef<NpcQuestOffered>[] = [
       {
-        accessorKey: "name",
-        header: "Quest",
-        minSize: 250,
+        id: "type",
+        header: "Type",
+        size: 100,
+        accessorFn: (row) => row.display_type,
       },
     ];
 
-    if (hasQuestRequirements) {
+    if (hasQuestFlags) {
       cols.push({
-        id: "requirements",
-        header: "Requirements",
-        size: 220,
-        accessorFn: (row) => formatQuestRequirements(row),
+        id: "flags",
+        header: "Flags",
+        size: 100,
+        enableSorting: false,
+        accessorFn: (row) => {
+          const flags: string[] = [];
+          if (row.is_main_quest) flags.push("Main");
+          if (row.is_epic_quest) flags.push("Epic");
+          if (row.is_adventurer_quest) flags.push("Daily");
+          return flags.join(" ");
+        },
+      });
+    }
+
+    cols.push({
+      accessorKey: "name",
+      header: "Name",
+      minSize: 200,
+    });
+
+    if (hasClassRequirements) {
+      cols.push({
+        id: "class",
+        header: "Class",
+        size: 180,
+        enableSorting: false,
+        accessorFn: (row) => (row.class_requirements || []).join(", "),
       });
     }
 
@@ -266,30 +281,35 @@
   cell: Cell<NpcQuestOffered, unknown>;
   row: Row<NpcQuestOffered>;
 })}
-  {#if cell.column.id === "name"}
-    <div class="flex items-center gap-2">
-      <a
-        href="/quests/{row.original.id}"
-        class="text-blue-600 dark:text-blue-400 hover:underline"
-      >
-        {row.original.name}
-      </a>
-      {#if row.original.is_adventurer_quest}
-        <span
-          class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200"
-        >
-          Daily
-        </span>
-      {/if}
-    </div>
+  {#if cell.column.id === "type"}
+    <QuestTypeBadge type={row.original.display_type} />
+  {:else if cell.column.id === "flags"}
+    <QuestFlagBadges quest={row.original} />
+  {:else if cell.column.id === "name"}
+    <a
+      href="/quests/{row.original.id}"
+      class="text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap"
+    >
+      {row.original.name}
+    </a>
+  {:else if cell.column.id === "class"}
+    <ClassPills
+      classes={(row.original.class_requirements || []).map((c) =>
+        c.toLowerCase(),
+      )}
+    />
   {:else if cell.column.id === "level_required"}
-    <span class="ml-auto">{row.original.level_required}</span>
+    <span class="ml-auto"
+      >{row.original.level_required > 0
+        ? row.original.level_required
+        : "-"}</span
+    >
   {:else if cell.column.id === "level_recommended"}
-    <span class="ml-auto">{row.original.level_recommended}</span>
-  {:else if cell.column.id === "requirements"}
-    <span class="text-muted-foreground">
-      {formatQuestRequirements(row.original)}
-    </span>
+    <span class="ml-auto"
+      >{row.original.level_recommended > 0
+        ? row.original.level_recommended
+        : "-"}</span
+    >
   {:else}
     {cell.getValue()}
   {/if}
@@ -613,30 +633,40 @@
           {@const description = getRoleDescription(role)}
           {@const details = getRoleDetails(role)}
           <div>
-            <span
-              class="inline-flex items-center gap-1 rounded-md bg-muted/40 px-2 py-0.5 text-xs"
-            >
+            <span class="{ICON_BADGE.base} {ICON_BADGE.static}">
               {#if role.category === "quest"}
-                <Scroll class="h-3 w-3 {categoryColors[role.category]}" />
+                <Scroll
+                  class="{ICON_BADGE.iconSize} {categoryColors[role.category]}"
+                />
               {:else if role.category === "merchant"}
-                <ShoppingBag class="h-3 w-3 {categoryColors[role.category]}" />
+                <ShoppingBag
+                  class="{ICON_BADGE.iconSize} {categoryColors[role.category]}"
+                />
               {:else if role.category === "service"}
-                <Wrench class="h-3 w-3 {categoryColors[role.category]}" />
+                <Wrench
+                  class="{ICON_BADGE.iconSize} {categoryColors[role.category]}"
+                />
               {:else if role.category === "special"}
-                <Sparkles class="h-3 w-3 {categoryColors[role.category]}" />
+                <Sparkles
+                  class="{ICON_BADGE.iconSize} {categoryColors[role.category]}"
+                />
               {:else if role.category === "combat"}
-                <Shield class="h-3 w-3 {categoryColors[role.category]}" />
+                <Shield
+                  class="{ICON_BADGE.iconSize} {categoryColors[role.category]}"
+                />
               {:else if role.category === "renewal"}
-                <RefreshCw class="h-3 w-3 {categoryColors[role.category]}" />
+                <RefreshCw
+                  class="{ICON_BADGE.iconSize} {categoryColors[role.category]}"
+                />
               {/if}
               {role.label}
             </span>
             <!-- eslint-disable-next-line svelte/no-at-html-tags -- trusted static content -->
-            <p class="mt-1 text-sm">{@html description}</p>
+            <p class="mt-1">{@html description}</p>
             {#if details && details.length > 0}
               <ul class="mt-1 space-y-0.5">
                 {#each details as detail, i (i)}
-                  <li class="text-xs text-muted-foreground">
+                  <li class="text-sm text-muted-foreground">
                     <!-- eslint-disable-next-line svelte/no-at-html-tags -- trusted static content -->
                     {@html detail}
                   </li>

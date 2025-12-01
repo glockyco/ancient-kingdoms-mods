@@ -81,6 +81,18 @@
       accessorFn: (row) => row.quest_giver_name || "",
     },
     {
+      id: "class",
+      header: "Class",
+      size: 220,
+      enableSorting: false,
+      accessorFn: (row) => row.class_requirements.join(", "),
+      filterFn: (row, _columnId, filterValue: string[]) => {
+        const classes = row.original.class_requirements;
+        if (!filterValue || filterValue.length === 0) return true;
+        return classes.some((c) => filterValue.includes(c));
+      },
+    },
+    {
       accessorKey: "level_required",
       header: "Req. Level",
       size: 140,
@@ -111,18 +123,6 @@
       accessorKey: "level_recommended",
       header: "Rec. Level",
       size: 140,
-    },
-    {
-      id: "class",
-      header: "Class",
-      size: 220,
-      enableSorting: false,
-      accessorFn: (row) => row.class_requirements.join(", "),
-      filterFn: (row, _columnId, filterValue: string[]) => {
-        const classes = row.original.class_requirements;
-        if (!filterValue || filterValue.length === 0) return true;
-        return classes.some((c) => filterValue.includes(c));
-      },
     },
     {
       id: "display_type_filter",
@@ -276,9 +276,6 @@
       counts={flagsCountsFiltered}
     />
   {/if}
-  {#if levelCol}
-    <DataTableRangeFilter column={levelCol} title="Level" />
-  {/if}
   {#if classCol}
     <DataTableFacetedFilter
       column={classCol}
@@ -289,6 +286,9 @@
       }))}
       counts={classCountsFiltered}
     />
+  {/if}
+  {#if levelCol}
+    <DataTableRangeFilter column={levelCol} title="Level" />
   {/if}
 {/snippet}
 

@@ -8,6 +8,7 @@
   } from "$lib/components/ui/data-table";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import type { ZoneListView } from "$lib/types/zones";
+  import { ICON_BADGE } from "$lib/styles/badge";
   import Crown from "@lucide/svelte/icons/crown";
   import Shield from "@lucide/svelte/icons/shield";
   import Flame from "@lucide/svelte/icons/flame";
@@ -150,9 +151,9 @@
   {#if cell.column.id === "is_dungeon"}
     <div class="flex justify-center">
       {#if row.original.is_dungeon}
-        <Castle class="h-4 w-4 text-purple-500" />
+        <Castle class="{ICON_BADGE.iconSize} text-purple-500" />
       {:else}
-        <Trees class="h-4 w-4 text-green-500" />
+        <Trees class="{ICON_BADGE.iconSize} text-green-500" />
       {/if}
     </div>
   {:else if cell.column.id === "name"}

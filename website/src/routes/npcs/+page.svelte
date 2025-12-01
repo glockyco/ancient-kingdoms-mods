@@ -9,6 +9,7 @@
     type Header,
     type TanstackTable,
   } from "$lib/components/ui/data-table";
+  import { IconBadge } from "$lib/components/ui/icon-badge";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import RoleBadges from "$lib/components/RoleBadges.svelte";
   import type { NpcZoneInfo } from "$lib/types/npcs";
@@ -85,7 +86,7 @@
     {
       id: "roles",
       header: "Roles",
-      size: 320,
+      size: 330,
       enableSorting: false,
       accessorFn: (row) =>
         getActiveRoles(row.roles)
@@ -178,17 +179,13 @@
     {@const zones = row.original.zones}
     <div class="flex gap-1 whitespace-nowrap">
       {#if zones.length > 0}
-        <a
+        <IconBadge
           href="/zones/{zones[0].zone_id}"
-          class="inline-flex items-center gap-1 rounded-md border bg-muted/50 px-2 py-0.5 text-xs transition-colors hover:bg-muted"
+          icon={zones[0].is_dungeon ? Castle : Trees}
+          iconClass={zones[0].is_dungeon ? "text-purple-500" : "text-green-500"}
         >
-          {#if zones[0].is_dungeon}
-            <Castle class="h-3 w-3 text-purple-500" />
-          {:else}
-            <Trees class="h-3 w-3 text-green-500" />
-          {/if}
           {zones[0].zone_name}
-        </a>
+        </IconBadge>
         {#if zones.length > 1}
           <span class="text-muted-foreground text-xs self-center"
             >+{zones.length - 1}</span

@@ -1,5 +1,6 @@
 <script lang="ts">
   import { getActiveQuestFlags, type QuestFlag } from "$lib/utils/quests";
+  import { ICON_BADGE } from "$lib/styles/badge";
   import Star from "@lucide/svelte/icons/star";
   import Sparkles from "@lucide/svelte/icons/sparkles";
   import CalendarClock from "@lucide/svelte/icons/calendar-clock";
@@ -22,20 +23,18 @@
 
 {#snippet flagIcon(key: QuestFlag, iconColor: string)}
   {#if key === "main"}
-    <Star class="h-4 w-4 {iconColor}" />
+    <Star class="{ICON_BADGE.iconSize} {iconColor}" />
   {:else if key === "epic"}
-    <Sparkles class="h-4 w-4 {iconColor}" />
+    <Sparkles class="{ICON_BADGE.iconSize} {iconColor}" />
   {:else if key === "daily"}
-    <CalendarClock class="h-4 w-4 {iconColor}" />
+    <CalendarClock class="{ICON_BADGE.iconSize} {iconColor}" />
   {/if}
 {/snippet}
 
 {#if activeFlags.length > 0}
   <div class="flex flex-wrap gap-1 {className}">
     {#each activeFlags as flag (flag.key)}
-      <span
-        class="inline-flex items-center gap-1 rounded-md bg-muted/40 px-2 py-0.5 text-xs"
-      >
+      <span class="{ICON_BADGE.base} {ICON_BADGE.static}">
         {@render flagIcon(flag.key, flag.iconColor)}
         {flag.label}
       </span>

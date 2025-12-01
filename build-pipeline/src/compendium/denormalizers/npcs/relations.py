@@ -48,7 +48,8 @@ def _denormalize_quests_offered(conn: sqlite3.Connection) -> int:
     # Build quest lookup
     cursor.execute(
         """SELECT id, name, level_required, level_recommended,
-                  is_adventurer_quest, race_requirements, class_requirements,
+                  is_adventurer_quest, is_main_quest, is_epic_quest,
+                  display_type, race_requirements, class_requirements,
                   faction_requirements
            FROM quests"""
     )
@@ -60,14 +61,17 @@ def _denormalize_quests_offered(conn: sqlite3.Connection) -> int:
             "level_required": row[2],
             "level_recommended": row[3],
             "is_adventurer_quest": bool(row[4]),
+            "is_main_quest": bool(row[5]),
+            "is_epic_quest": bool(row[6]),
+            "display_type": row[7],
         }
         # Only include non-empty requirements
-        if row[5] and row[5] != "[]":
-            info["race_requirements"] = json.loads(row[5])
-        if row[6] and row[6] != "[]":
-            info["class_requirements"] = json.loads(row[6])
-        if row[7] and row[7] != "[]":
-            faction_reqs = json.loads(row[7])
+        if row[8] and row[8] != "[]":
+            info["race_requirements"] = json.loads(row[8])
+        if row[9] and row[9] != "[]":
+            info["class_requirements"] = json.loads(row[9])
+        if row[10] and row[10] != "[]":
+            faction_reqs = json.loads(row[10])
             # Add tier name to each faction requirement
             for fr in faction_reqs:
                 fr["tier_name"] = get_tier_name(fr["faction_value"])
@@ -291,7 +295,8 @@ def _add_quests_completed_here(conn: sqlite3.Connection) -> int:
     # Get all quests grouped by their end NPC
     cursor.execute("""
         SELECT end_npc_id, id, name, level_required, level_recommended,
-               is_adventurer_quest, race_requirements, class_requirements
+               is_adventurer_quest, is_main_quest, is_epic_quest, display_type,
+               race_requirements, class_requirements
         FROM quests
         WHERE end_npc_id IS NOT NULL
         ORDER BY end_npc_id, level_recommended
@@ -309,12 +314,15 @@ def _add_quests_completed_here(conn: sqlite3.Connection) -> int:
             "level_required": row[3],
             "level_recommended": row[4],
             "is_adventurer_quest": bool(row[5]),
+            "is_main_quest": bool(row[6]),
+            "is_epic_quest": bool(row[7]),
+            "display_type": row[8],
         }
         # Only include non-empty requirements
-        if row[6] and row[6] != "[]":
-            quest_info["race_requirements"] = json.loads(row[6])
-        if row[7] and row[7] != "[]":
-            quest_info["class_requirements"] = json.loads(row[7])
+        if row[9] and row[9] != "[]":
+            quest_info["race_requirements"] = json.loads(row[9])
+        if row[10] and row[10] != "[]":
+            quest_info["class_requirements"] = json.loads(row[10])
         npc_quests[npc_id].append(quest_info)
 
     # Update each NPC
