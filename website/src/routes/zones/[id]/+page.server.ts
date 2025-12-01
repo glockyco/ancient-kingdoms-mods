@@ -60,7 +60,8 @@ export const load: PageServerLoad = ({ params }): ZoneDetailData => {
     throw error(404, `Zone not found: ${params.id}`);
   }
 
-  // Get monsters in this zone with health, drop count, spawn count, and sample coordinates
+  // Get monsters in this zone with health, spawn count, respawn info, and sample coordinates
+  // For altar spawns, count each altar only once (not per-wave)
   const monsters = db
     .prepare(
       `
@@ -74,11 +75,25 @@ export const load: PageServerLoad = ({ params }): ZoneDetailData => {
       m.type_name,
       m.gold_min,
       m.gold_max,
-      m.drops,
-      COUNT(ms.id) as spawn_count,
+      m.does_respawn,
+      m.death_time,
+      m.respawn_time,
+      m.respawn_probability,
+      m.spawn_time_start,
+      m.spawn_time_end,
+      m.placeholder_monster_id,
+      (SELECT COUNT(*) FROM monster_spawns ms2
+       WHERE ms2.monster_id = m.id AND ms2.zone_id = ?
+       AND ms2.spawn_type != 'altar') +
+      (SELECT COUNT(DISTINCT ms3.source_altar_id) FROM monster_spawns ms3
+       WHERE ms3.monster_id = m.id AND ms3.zone_id = ?
+       AND ms3.spawn_type = 'altar') as spawn_count,
       MIN(ms.position_x) as position_x,
       MIN(ms.position_y) as position_y,
-      MIN(ms.position_z) as position_z
+      MIN(ms.position_z) as position_z,
+      (SELECT ms4.spawn_type FROM monster_spawns ms4
+       WHERE ms4.monster_id = m.id AND ms4.zone_id = ?
+       AND ms4.spawn_type != 'regular' LIMIT 1) as special_spawn_type
     FROM monsters m
     JOIN monster_spawns ms ON ms.monster_id = m.id
     WHERE ms.zone_id = ?
@@ -86,7 +101,7 @@ export const load: PageServerLoad = ({ params }): ZoneDetailData => {
     ORDER BY m.level DESC, m.name
   `,
     )
-    .all(params.id)
+    .all(params.id, params.id, params.id, params.id)
     .map((row) => {
       const m = row as {
         id: string;
@@ -98,13 +113,19 @@ export const load: PageServerLoad = ({ params }): ZoneDetailData => {
         type_name: string | null;
         gold_min: number | null;
         gold_max: number | null;
-        drops: string | null;
+        does_respawn: boolean;
+        death_time: number;
+        respawn_time: number;
+        respawn_probability: number;
+        spawn_time_start: number;
+        spawn_time_end: number;
+        placeholder_monster_id: string | null;
         spawn_count: number;
         position_x: number | null;
         position_y: number | null;
         position_z: number | null;
+        special_spawn_type: string | null;
       };
-      const drops = m.drops ? JSON.parse(m.drops) : [];
       return {
         id: m.id,
         name: m.name,
@@ -115,11 +136,19 @@ export const load: PageServerLoad = ({ params }): ZoneDetailData => {
         type_name: m.type_name,
         gold_min: m.gold_min,
         gold_max: m.gold_max,
-        drop_count: drops.length,
         spawn_count: m.spawn_count,
         position_x: m.position_x,
         position_y: m.position_y,
         position_z: m.position_z,
+        no_respawn: !m.does_respawn,
+        death_time: m.death_time,
+        respawn_time: m.respawn_time,
+        respawn_probability: m.respawn_probability,
+        spawn_time_start: m.spawn_time_start,
+        spawn_time_end: m.spawn_time_end,
+        special_spawn_type:
+          m.special_spawn_type ??
+          (m.placeholder_monster_id ? "placeholder" : null),
       } as ZoneMonster;
     });
 

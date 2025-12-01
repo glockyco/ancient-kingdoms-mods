@@ -28,11 +28,17 @@ export interface ZoneMonster {
   type_name: string | null;
   gold_min: number | null;
   gold_max: number | null;
-  drop_count: number;
   spawn_count: number;
   position_x: number | null;
   position_y: number | null;
   position_z: number | null;
+  no_respawn: boolean;
+  death_time: number;
+  respawn_time: number;
+  respawn_probability: number;
+  spawn_time_start: number;
+  spawn_time_end: number;
+  special_spawn_type: string | null;
 }
 
 /**
