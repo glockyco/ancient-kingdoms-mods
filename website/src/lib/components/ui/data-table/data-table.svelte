@@ -614,7 +614,7 @@
 
   <div class="rounded-md border {className}">
     <Table.Root
-      class="w-full grid"
+      class="min-w-full w-max grid"
       style="grid-template-columns: {gridTemplateColumns}"
     >
       <Table.Header class="contents">
