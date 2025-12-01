@@ -13,6 +13,7 @@
     MonsterSpawnZone,
     MonsterQuest,
   } from "$lib/types/monsters";
+  import { formatPercent, formatDuration } from "$lib/utils/format";
   import Sword from "@lucide/svelte/icons/sword";
   import Gem from "@lucide/svelte/icons/gem";
   import MapPin from "@lucide/svelte/icons/map-pin";
@@ -315,18 +316,6 @@
       size: 80,
     },
   ];
-
-  function formatPercent(value: number): string {
-    return `${(value * 100).toFixed(1)}%`;
-  }
-
-  function formatTime(seconds: number): string {
-    if (seconds < 60) return `${seconds}s`;
-    if (seconds < 3600) return `${Math.floor(seconds / 60)}m`;
-    const hours = Math.floor(seconds / 3600);
-    const mins = Math.floor((seconds % 3600) / 60);
-    return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
-  }
 </script>
 
 {#snippet renderDropCell({
@@ -386,7 +375,7 @@
         >&nbsp;({row.original.sub_zone_name})</span
       >{/if}
   {:else if cell.column.id === "respawn"}
-    <span class="ml-auto">{formatTime(totalRespawnTime)}</span>
+    <span class="ml-auto">{formatDuration(totalRespawnTime)}</span>
   {:else if cell.column.id === "chance"}
     <span class="ml-auto"
       >{formatPercent(data.monster.respawn_probability)}</span

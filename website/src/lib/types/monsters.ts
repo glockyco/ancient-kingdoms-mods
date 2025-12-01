@@ -1,3 +1,5 @@
+import type { RespawnInfo } from "./respawn";
+
 /**
  * Item drop from a monster
  */
@@ -234,7 +236,7 @@ export interface MonsterDetailData {
 /**
  * Monster list view for overview page (minimal fields for table display)
  */
-export interface MonsterListView {
+export interface MonsterListView extends RespawnInfo {
   id: string;
   name: string;
   level: number;
@@ -250,13 +252,6 @@ export interface MonsterListView {
   fire_resist: number;
   cold_resist: number;
   disease_resist: number;
-  death_time: number;
-  respawn_time: number;
-  respawn_probability: number;
-  spawn_time_start: number;
-  spawn_time_end: number;
-  special_spawn_type: "summon" | "altar" | "placeholder" | null;
-  no_respawn: boolean;
 }
 
 /**

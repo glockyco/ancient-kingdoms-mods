@@ -1,6 +1,11 @@
 <script lang="ts">
   import type { ZoneNpc, ZoneMonster, ZoneAltar } from "$lib/types/zones";
   import {
+    createRespawnColumns,
+    isRespawnColumn,
+    RespawnCells,
+  } from "$lib/components/monster-table";
+  import {
     DataTable,
     DataTableFacetedFilter,
     type ColumnDef,
@@ -69,48 +74,7 @@
       header: "Spawns",
       size: 110,
     },
-    {
-      id: "respawn_time",
-      header: "Respawn",
-      size: 120,
-      accessorFn: (row) => {
-        if (row.no_respawn) return null;
-        const total = row.death_time + row.respawn_time;
-        return total === 0 ? null : total;
-      },
-      sortUndefined: "last",
-    },
-    {
-      id: "respawn_chance",
-      header: "Chance",
-      size: 110,
-      accessorFn: (row) =>
-        row.respawn_probability === 1 ? -1 : row.respawn_probability,
-    },
-    {
-      id: "special",
-      header: "Special",
-      size: 120,
-      accessorFn: (row) => {
-        if (row.spawn_time_start !== 0 || row.spawn_time_end !== 0) {
-          return `${row.spawn_time_start}:00-${row.spawn_time_end}:00`;
-        }
-        if (row.special_spawn_type === "altar") return "Altar";
-        if (row.special_spawn_type === "summon") return "Blocked";
-        if (row.special_spawn_type === "placeholder") return "On Death";
-        return "";
-      },
-      sortingFn: (rowA, rowB) => {
-        const order = (row: ZoneMonster) => {
-          if (row.spawn_time_start !== 0 || row.spawn_time_end !== 0) return 1;
-          if (row.special_spawn_type === "altar") return 2;
-          if (row.special_spawn_type === "summon") return 3;
-          if (row.special_spawn_type === "placeholder") return 4;
-          return 0;
-        };
-        return order(rowA.original) - order(rowB.original);
-      },
-    },
+    ...createRespawnColumns<ZoneMonster>(),
   ];
 
   // Altar column definitions
@@ -204,37 +168,6 @@
       (r) => !r.is_plant && !r.is_mineral && !r.is_radiant_spark,
     ),
   );
-
-  function formatRespawnTime(row: ZoneMonster): string {
-    if (row.no_respawn) return "-";
-    const totalSeconds = row.death_time + row.respawn_time;
-    if (totalSeconds === 0) return "-";
-    const minutes = Math.floor(totalSeconds / 60);
-    const hours = Math.floor(minutes / 60);
-    if (hours > 0) {
-      const remainingMinutes = minutes % 60;
-      return remainingMinutes > 0
-        ? `${hours}h ${remainingMinutes}m`
-        : `${hours}h`;
-    }
-    return `${minutes}m`;
-  }
-
-  function formatChance(row: ZoneMonster): string {
-    if (row.no_respawn) return "-";
-    if (row.respawn_probability === 1) return "-";
-    return `${Math.round(row.respawn_probability * 100)}%`;
-  }
-
-  function formatSpecial(row: ZoneMonster): string {
-    if (row.spawn_time_start !== 0 || row.spawn_time_end !== 0) {
-      return `${row.spawn_time_start}:00-${row.spawn_time_end}:00`;
-    }
-    if (row.special_spawn_type === "altar") return "Altar";
-    if (row.special_spawn_type === "summon") return "Blocked";
-    if (row.special_spawn_type === "placeholder") return "On Death";
-    return "-";
-  }
 </script>
 
 {#snippet renderMonsterCell({
@@ -259,14 +192,8 @@
     </span>
   {:else if cell.column.id === "spawn_count"}
     <span class="ml-auto">{row.original.spawn_count}</span>
-  {:else if cell.column.id === "respawn_time"}
-    <span class="ml-auto whitespace-nowrap"
-      >{formatRespawnTime(row.original)}</span
-    >
-  {:else if cell.column.id === "respawn_chance"}
-    <span class="ml-auto">{formatChance(row.original)}</span>
-  {:else if cell.column.id === "special"}
-    <span class="ml-auto whitespace-nowrap">{formatSpecial(row.original)}</span>
+  {:else if isRespawnColumn(cell.column.id)}
+    <RespawnCells columnId={cell.column.id} row={row.original} />
   {:else}
     {cell.getValue()}
   {/if}

@@ -13,6 +13,11 @@
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import MonsterTypeIcon from "$lib/components/MonsterTypeIcon.svelte";
   import type { MonsterZoneInfo } from "$lib/types/monsters";
+  import {
+    createRespawnColumns,
+    isRespawnColumn,
+    RespawnCells,
+  } from "$lib/components/monster-table";
   import Castle from "@lucide/svelte/icons/castle";
   import Trees from "@lucide/svelte/icons/trees";
 
@@ -135,50 +140,7 @@
       header: "Disease Res",
       size: 150,
     },
-    {
-      id: "respawn_time",
-      header: "Respawn",
-      size: 120,
-      accessorFn: (row) => {
-        if (row.no_respawn) return null;
-        const total = row.death_time + row.respawn_time;
-        return total === 0 ? null : total;
-      },
-      sortUndefined: "last",
-      enableGlobalFilter: false,
-    },
-    {
-      id: "respawn_chance",
-      header: "Chance",
-      size: 120,
-      accessorFn: (row) =>
-        row.respawn_probability === 1 ? -1 : row.respawn_probability,
-      enableGlobalFilter: false,
-    },
-    {
-      id: "special",
-      header: "Special",
-      size: 130,
-      accessorFn: (row) => {
-        if (row.spawn_time_start !== 0 || row.spawn_time_end !== 0) {
-          return `${row.spawn_time_start}:00-${row.spawn_time_end}:00`;
-        }
-        if (row.special_spawn_type === "altar") return "Altar";
-        if (row.special_spawn_type === "summon") return "Blocked";
-        if (row.special_spawn_type === "placeholder") return "On Death";
-        return "";
-      },
-      sortingFn: (rowA, rowB) => {
-        const order = (row: MonsterRow) => {
-          if (row.spawn_time_start !== 0 || row.spawn_time_end !== 0) return 1;
-          if (row.special_spawn_type === "altar") return 2;
-          if (row.special_spawn_type === "summon") return 3;
-          if (row.special_spawn_type === "placeholder") return 4;
-          return 0;
-        };
-        return order(rowA.original) - order(rowB.original);
-      },
-    },
+    ...createRespawnColumns<MonsterRow>(),
     {
       id: "zones",
       header: "Zones",
@@ -231,37 +193,6 @@
     zone_ids: "Zone Filter",
   };
 
-  function formatRespawnTime(row: MonsterRow): string {
-    if (row.no_respawn) return "-";
-    const totalSeconds = row.death_time + row.respawn_time;
-    if (totalSeconds === 0) return "-";
-    const minutes = Math.floor(totalSeconds / 60);
-    const hours = Math.floor(minutes / 60);
-    if (hours > 0) {
-      const remainingMinutes = minutes % 60;
-      return remainingMinutes > 0
-        ? `${hours}h ${remainingMinutes}m`
-        : `${hours}h`;
-    }
-    return `${minutes}m`;
-  }
-
-  function formatChance(row: MonsterRow): string {
-    if (row.no_respawn) return "-";
-    if (row.respawn_probability === 1) return "-";
-    return `${Math.round(row.respawn_probability * 100)}%`;
-  }
-
-  function formatSpecial(row: MonsterRow): string {
-    if (row.spawn_time_start !== 0 || row.spawn_time_end !== 0) {
-      return `${row.spawn_time_start}:00-${row.spawn_time_end}:00`;
-    }
-    if (row.special_spawn_type === "altar") return "Altar";
-    if (row.special_spawn_type === "summon") return "Blocked";
-    if (row.special_spawn_type === "placeholder") return "On Death";
-    return "-";
-  }
-
   function formatNumber(n: number): string {
     return n.toLocaleString();
   }
@@ -302,14 +233,8 @@
     <span class="ml-auto">{row.original.level}</span>
   {:else if cell.column.id === "health" || cell.column.id === "damage" || cell.column.id === "magic_damage" || cell.column.id === "defense" || cell.column.id === "magic_resist" || cell.column.id === "poison_resist" || cell.column.id === "fire_resist" || cell.column.id === "cold_resist" || cell.column.id === "disease_resist"}
     <span class="ml-auto">{formatNumber(cell.getValue() as number)}</span>
-  {:else if cell.column.id === "respawn_time"}
-    <span class="ml-auto whitespace-nowrap"
-      >{formatRespawnTime(row.original)}</span
-    >
-  {:else if cell.column.id === "respawn_chance"}
-    <span class="ml-auto">{formatChance(row.original)}</span>
-  {:else if cell.column.id === "special"}
-    <span class="ml-auto whitespace-nowrap">{formatSpecial(row.original)}</span>
+  {:else if isRespawnColumn(cell.column.id)}
+    <RespawnCells columnId={cell.column.id} row={row.original} />
   {:else if cell.column.id === "zones"}
     {@const zones = row.original.zones}
     <div class="flex gap-1 whitespace-nowrap">

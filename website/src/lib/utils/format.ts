@@ -1,4 +1,28 @@
 /**
+ * Format a decimal value as a percentage string (e.g., 0.5 -> "50.0%")
+ */
+export function formatPercent(value: number): string {
+  return `${(value * 100).toFixed(1)}%`;
+}
+
+/**
+ * Format a duration in seconds to a human-readable string (e.g., "5m", "1h 30m")
+ */
+export function formatDuration(seconds: number): string {
+  if (seconds <= 0) return "-";
+  if (seconds < 60) return `${seconds}s`;
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  if (hours > 0) {
+    const remainingMinutes = minutes % 60;
+    return remainingMinutes > 0
+      ? `${hours}h ${remainingMinutes}m`
+      : `${hours}h`;
+  }
+  return `${minutes}m`;
+}
+
+/**
  * Maps internal item type identifiers to display names.
  */
 const itemTypeDisplayNames: Record<string, string> = {

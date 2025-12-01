@@ -1,3 +1,5 @@
+import type { RespawnInfo } from "./respawn";
+
 /**
  * Zone data as displayed in the zones overview table
  */
@@ -18,7 +20,7 @@ export interface ZoneListView {
 /**
  * Monster info for zone detail page
  */
-export interface ZoneMonster {
+export interface ZoneMonster extends RespawnInfo {
   id: string;
   name: string;
   level: number;
@@ -32,13 +34,6 @@ export interface ZoneMonster {
   position_x: number | null;
   position_y: number | null;
   position_z: number | null;
-  no_respawn: boolean;
-  death_time: number;
-  respawn_time: number;
-  respawn_probability: number;
-  spawn_time_start: number;
-  spawn_time_end: number;
-  special_spawn_type: string | null;
 }
 
 /**
