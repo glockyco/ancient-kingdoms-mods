@@ -103,6 +103,28 @@
       accessorKey: "level_required",
       header: "Req. Level",
       size: 140,
+      filterFn: (
+        row,
+        _columnId,
+        filterValue: [number | null, number | null],
+      ) => {
+        // Filter matches if quest level range overlaps with filter range
+        const reqLevel = row.original.level_required || 0;
+        const recLevel = row.original.level_recommended || reqLevel;
+        if (!filterValue) return true;
+        const [filterMin, filterMax] = filterValue;
+        if (filterMin === null && filterMax === null) return true;
+
+        // Quest range: [reqLevel, recLevel]
+        // Filter range: [filterMin, filterMax]
+        // Ranges overlap if: questMin <= filterMax AND questMax >= filterMin
+        const questMin = Math.min(reqLevel, recLevel);
+        const questMax = Math.max(reqLevel, recLevel);
+
+        if (filterMax !== null && questMin > filterMax) return false;
+        if (filterMin !== null && questMax < filterMin) return false;
+        return true;
+      },
     },
     {
       accessorKey: "level_recommended",
