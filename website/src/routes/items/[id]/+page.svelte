@@ -45,6 +45,11 @@
     }
   }
 
+  const romanNumerals = ["I", "II", "III", "IV", "V"];
+  function formatTier(tier: number): string {
+    return romanNumerals[tier] ?? String(tier);
+  }
+
   // Percentage stats that should be displayed as percentages (0.05 → 5%)
   const percentageStats = new Set([
     "block_chance",
@@ -943,7 +948,7 @@
                 <div class="text-right">
                   <div class={styles.label}>Recipe Tier</div>
                   <div class={styles.value}>
-                    {data.item.alchemy_recipe_level_required}
+                    {formatTier(data.item.alchemy_recipe_level_required)}
                   </div>
                 </div>
               {/if}
@@ -1004,7 +1009,7 @@
                 <div class="text-right">
                   <div class={styles.label}>Recipe Tier</div>
                   <div class={styles.value}>
-                    {data.item.alchemy_recipe_level_required}
+                    {formatTier(data.item.alchemy_recipe_level_required)}
                   </div>
                 </div>
               {/if}
