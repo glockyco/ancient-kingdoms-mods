@@ -88,18 +88,24 @@ def _denormalize_quests_offered(conn: sqlite3.Connection) -> int:
         if not quest_ids:
             continue
 
-        # Expand quest IDs to full quest info
+        # Expand quest IDs to full quest info (skip deleted quests)
         expanded_quests = []
         for quest_id in quest_ids:
             if quest_id in quest_info:
                 expanded_quests.append(quest_info[quest_id])
 
+        # Always update - set to expanded list or NULL if all quests were deleted
         if expanded_quests:
             cursor.execute(
                 "UPDATE npcs SET quests_offered = ? WHERE id = ?",
                 (json.dumps(expanded_quests), npc_id),
             )
             updated_count += 1
+        else:
+            cursor.execute(
+                "UPDATE npcs SET quests_offered = NULL WHERE id = ?",
+                (npc_id,),
+            )
 
     return updated_count
 

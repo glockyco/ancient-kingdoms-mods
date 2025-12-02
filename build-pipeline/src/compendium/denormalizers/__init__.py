@@ -7,9 +7,78 @@ entity (the table being updated).
 Execution order matters - some denormalizers depend on others having run first.
 """
 
+import json
 import sqlite3
 
+from rich.console import Console
+
 from compendium.denormalizers import experience, items, monsters, npcs, quests, skills
+from compendium.redaction import RedactionConfig, load_redactions
+
+console = Console()
+
+
+def _apply_quest_exclusions(
+    conn: sqlite3.Connection, redactions: RedactionConfig
+) -> None:
+    """Delete excluded quests and remove references to them."""
+    cursor = conn.cursor()
+
+    for quest_id in redactions.exclude_quest_ids:
+        cursor.execute("DELETE FROM quests WHERE id = ?", (quest_id,))
+        if cursor.rowcount > 0:
+            console.print(f"  [dim]Excluded quest: {quest_id}[/dim]")
+
+    # Filter predecessor_ids on remaining quests to remove references to deleted quests
+    cursor.execute(
+        "SELECT id, predecessor_ids FROM quests WHERE predecessor_ids IS NOT NULL"
+    )
+    quests_with_predecessors = cursor.fetchall()
+
+    for quest_id, pred_ids_json in quests_with_predecessors:
+        if not pred_ids_json:
+            continue
+
+        pred_ids = json.loads(pred_ids_json)
+        filtered_ids = [
+            q_id for q_id in pred_ids if q_id not in redactions.exclude_quest_ids
+        ]
+
+        if filtered_ids != pred_ids:
+            if filtered_ids:
+                cursor.execute(
+                    "UPDATE quests SET predecessor_ids = ? WHERE id = ?",
+                    (json.dumps(filtered_ids), quest_id),
+                )
+            else:
+                cursor.execute(
+                    "UPDATE quests SET predecessor_ids = NULL WHERE id = ?",
+                    (quest_id,),
+                )
+
+    conn.commit()
+
+
+def _apply_crafting_exclusions(
+    conn: sqlite3.Connection, redactions: RedactionConfig
+) -> None:
+    """Delete crafting/alchemy recipes for items with hidden crafting."""
+    cursor = conn.cursor()
+
+    for item_id in redactions.hide_crafting_item_ids:
+        cursor.execute(
+            "DELETE FROM crafting_recipes WHERE result_item_id = ?", (item_id,)
+        )
+        if cursor.rowcount > 0:
+            console.print(f"  [dim]Excluded crafting recipe for: {item_id}[/dim]")
+
+        cursor.execute(
+            "DELETE FROM alchemy_recipes WHERE result_item_id = ?", (item_id,)
+        )
+        if cursor.rowcount > 0:
+            console.print(f"  [dim]Excluded alchemy recipe for: {item_id}[/dim]")
+
+    conn.commit()
 
 
 def run_all(conn: sqlite3.Connection) -> None:
@@ -18,6 +87,15 @@ def run_all(conn: sqlite3.Connection) -> None:
     Args:
         conn: Database connection with all base data loaded
     """
+    # Load redaction config
+    redactions = load_redactions()
+
+    # Apply exclusions before any denormalizer reads the data
+    if redactions.exclude_quest_ids:
+        _apply_quest_exclusions(conn, redactions)
+    if redactions.hide_crafting_item_ids:
+        _apply_crafting_exclusions(conn, redactions)
+
     # Phase 1: Monster drops (expand altar variants before item sources read drops)
     monsters.run_drops(conn)
 
@@ -25,7 +103,7 @@ def run_all(conn: sqlite3.Connection) -> None:
     quests.run_display_type(conn)
 
     # Phase 3: Item denormalizations (reads monster drops for dropped_by)
-    items.run_all(conn)
+    items.run_all(conn, redactions)
 
     # Phase 4: Skill denormalizations
     skills.run_all(conn)

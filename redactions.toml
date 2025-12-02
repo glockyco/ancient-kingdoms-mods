@@ -1,0 +1,24 @@
+# Items where crafting information should be hidden.
+# The item itself remains visible, but:
+# - crafted_from field is cleared
+# - used_in_recipes entries for recipes producing this item are removed
+# - Materials don't show "used to craft X" for these recipes
+[items.hide_crafting]
+ids = [
+    "divine_essence",
+    "draconium_wyrmguard",
+    "draconium_scaleplate",
+    "draconium_crownhelm",
+    "draconium_wyrmtreads",
+    "draconium_scalegrasp",
+    "steel_of_ancient_dragons",
+    "valaark_ancient_coin",
+]
+
+# Quests to completely exclude from the database.
+# These quests won't appear in any listings or relationships.
+[quests.exclude]
+ids = [
+    "relics_of_the_ancient_faith",
+    "the_lost_warden",
+]

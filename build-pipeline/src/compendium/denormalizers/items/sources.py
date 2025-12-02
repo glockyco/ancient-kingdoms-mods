@@ -10,8 +10,11 @@ This module handles all denormalizations that populate "source" fields on items:
 - crafted_from: Which recipes create this item
 """
 
+from __future__ import annotations
+
 import json
 import sqlite3
+from typing import TYPE_CHECKING
 
 from rich.console import Console
 
@@ -24,6 +27,9 @@ from compendium.types.denormalized import (
     RewardedByInfo,
     SoldByInfo,
 )
+
+if TYPE_CHECKING:
+    from compendium.redaction import RedactionConfig
 
 console = Console()
 
@@ -566,14 +572,21 @@ def _denormalize_rewarded_by_altars(conn: sqlite3.Connection) -> dict[str, list[
 
 def _denormalize_crafted_from(
     conn: sqlite3.Connection,
+    redactions: RedactionConfig | None = None,
 ) -> dict[str, list[CraftedFromInfo]]:
     """Build crafted_from from crafting_recipes and alchemy_recipes.
+
+    Args:
+        conn: Database connection
+        redactions: Optional redaction config for filtering crafting info
 
     Returns:
         Dict mapping item_id to list of recipe info
     """
     console.print("  Processing crafting recipes...")
     cursor = conn.cursor()
+
+    hide_crafting = redactions.hide_crafting_item_ids if redactions else set()
 
     # Query both crafting and alchemy recipes
     cursor.execute("""
@@ -589,6 +602,10 @@ def _denormalize_crafted_from(
     crafted_from: dict[str, list[CraftedFromInfo]] = {}
 
     for recipe_id, result_item_id, result_amount, materials_json in cursor.fetchall():
+        # Skip if this item's crafting should be hidden
+        if result_item_id in hide_crafting:
+            continue
+
         if result_item_id:
             if result_item_id not in crafted_from:
                 crafted_from[result_item_id] = []
@@ -703,7 +720,7 @@ def _denormalize_alchemy_recipes(conn: sqlite3.Connection) -> None:
             )
 
 
-def run(conn: sqlite3.Connection) -> None:
+def run(conn: sqlite3.Connection, redactions: RedactionConfig | None = None) -> None:
     """Run all item source denormalizations.
 
     Updates items table with:
@@ -715,6 +732,10 @@ def run(conn: sqlite3.Connection) -> None:
     - rewarded_by_altars
     - crafted_from
     - alchemy recipe data
+
+    Args:
+        conn: Database connection
+        redactions: Optional redaction config for filtering crafting info
     """
     console.print("Denormalizing item sources...")
 
@@ -727,7 +748,7 @@ def run(conn: sqlite3.Connection) -> None:
     rewarded_by = _denormalize_rewarded_by(conn)
     provided_by_quests = _denormalize_provided_by_quests(conn)
     rewarded_by_altars = _denormalize_rewarded_by_altars(conn)
-    crafted_from = _denormalize_crafted_from(conn)
+    crafted_from = _denormalize_crafted_from(conn, redactions)
 
     # Update items table
     console.print("  Updating items table with source data...")

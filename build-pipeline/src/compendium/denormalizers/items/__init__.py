@@ -1,6 +1,9 @@
 """Item denormalizations - updates to the items table."""
 
+from __future__ import annotations
+
 import sqlite3
+from typing import TYPE_CHECKING
 
 from compendium.denormalizers.items import (
     calculations,
@@ -11,18 +14,24 @@ from compendium.denormalizers.items import (
     usages,
 )
 
+if TYPE_CHECKING:
+    from compendium.redaction import RedactionConfig
 
-def run_all(conn: sqlite3.Connection) -> None:
+
+def run_all(
+    conn: sqlite3.Connection, redactions: RedactionConfig | None = None
+) -> None:
     """Run all item denormalizations in dependency order.
 
     Args:
         conn: Database connection with all base data loaded
+        redactions: Optional redaction config for filtering crafting info
     """
     # Phase 1: Where items come from
-    sources.run(conn)
+    sources.run(conn, redactions)
 
     # Phase 2: What items are used for
-    usages.run(conn)
+    usages.run(conn, redactions)
 
     # Phase 3: Equipment-specific (armor sets, buff names)
     equipment.run(conn)

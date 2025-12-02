@@ -9,26 +9,39 @@ This module handles all denormalizations that populate "usage" fields on items:
 - opens_chests: Which chests this key opens
 """
 
+from __future__ import annotations
+
 import json
 import sqlite3
+from typing import TYPE_CHECKING
 
 from rich.console import Console
 
 from compendium.types.denormalized import NeededForQuestInfo, UsedInRecipeInfo
+
+if TYPE_CHECKING:
+    from compendium.redaction import RedactionConfig
 
 console = Console()
 
 
 def _denormalize_used_in_recipes(
     conn: sqlite3.Connection,
+    redactions: RedactionConfig | None = None,
 ) -> dict[str, list[UsedInRecipeInfo]]:
     """Build used_in_recipes from crafting and alchemy recipe materials.
+
+    Args:
+        conn: Database connection
+        redactions: Optional redaction config for filtering recipes
 
     Returns:
         Dict mapping item_id to list of recipe usage info
     """
     console.print("  Processing recipe materials...")
     cursor = conn.cursor()
+
+    hide_crafting = redactions.hide_crafting_item_ids if redactions else set()
 
     used_in_recipes: dict[str, list[UsedInRecipeInfo]] = {}
 
@@ -46,6 +59,10 @@ def _denormalize_used_in_recipes(
         result_item_name,
         materials_json,
     ) in cursor.fetchall():
+        # Skip if this recipe's result has hidden crafting
+        if result_item_id in hide_crafting:
+            continue
+
         materials = json.loads(materials_json)
         for material in materials:
             item_id = material.get("item_id")
@@ -75,6 +92,10 @@ def _denormalize_used_in_recipes(
         result_item_name,
         materials_json,
     ) in cursor.fetchall():
+        # Skip if this recipe's result has hidden crafting
+        if result_item_id in hide_crafting:
+            continue
+
         materials = json.loads(materials_json)
         for material in materials:
             item_id = material.get("item_id")
@@ -420,7 +441,7 @@ def _denormalize_opens_chests(conn: sqlite3.Connection) -> dict[str, list[dict]]
     return opens_chests
 
 
-def run(conn: sqlite3.Connection) -> None:
+def run(conn: sqlite3.Connection, redactions: RedactionConfig | None = None) -> None:
     """Run all item usage denormalizations.
 
     Updates items table with:
@@ -430,13 +451,17 @@ def run(conn: sqlite3.Connection) -> None:
     - required_for_altars
     - required_for_portals
     - opens_chests
+
+    Args:
+        conn: Database connection
+        redactions: Optional redaction config for filtering recipes
     """
     console.print("Denormalizing item usages...")
 
     cursor = conn.cursor()
 
     # Build all usage dictionaries
-    used_in_recipes = _denormalize_used_in_recipes(conn)
+    used_in_recipes = _denormalize_used_in_recipes(conn, redactions)
     needed_for_quests = _denormalize_needed_for_quests(conn)
     used_as_currency_for = _denormalize_used_as_currency_for(conn)
     required_for_altars = _denormalize_required_for_altars(conn)
