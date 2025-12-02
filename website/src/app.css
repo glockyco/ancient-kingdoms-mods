@@ -40,10 +40,10 @@
 
   /* Item quality colors (0-4) */
   --quality-0: oklch(0.55 0.02 264);
-  --quality-1: oklch(0.55 0.1 145);
-  --quality-2: oklch(0.5 0.15 230);
-  --quality-3: oklch(0.55 0.17 310);
-  --quality-4: oklch(0.58 0.14 50);
+  --quality-1: oklch(0.56 0.12 145);
+  --quality-2: oklch(0.52 0.16 240);
+  --quality-3: oklch(0.55 0.18 310);
+  --quality-4: oklch(0.58 0.15 55);
 
   /* Monster type colors */
   --monster-regular: oklch(0.6 0.22 25);
