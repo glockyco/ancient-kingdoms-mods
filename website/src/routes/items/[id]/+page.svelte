@@ -341,7 +341,7 @@
         <div class="flex items-center gap-3">
           <h1 class="text-4xl font-bold">{data.item.name}</h1>
           <span
-            class="px-3 py-1 rounded text-sm font-medium {qualityColors[
+            class="px-3 py-1 rounded text-sm font-medium text-white {qualityColors[
               data.item.quality
             ]}"
           >
