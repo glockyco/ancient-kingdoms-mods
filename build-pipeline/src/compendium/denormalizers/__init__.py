@@ -81,6 +81,67 @@ def _apply_crafting_exclusions(
     conn.commit()
 
 
+def _apply_ignore_journal_exclusions(conn: sqlite3.Connection) -> None:
+    """Delete items with ignore_journal=true and clean up references."""
+    cursor = conn.cursor()
+
+    # Get IDs of items to exclude
+    cursor.execute("SELECT id FROM items WHERE ignore_journal = 1")
+    excluded_ids = {row[0] for row in cursor.fetchall()}
+
+    if not excluded_ids:
+        return
+
+    # Delete the items
+    cursor.execute("DELETE FROM items WHERE ignore_journal = 1")
+    console.print(
+        f"  [dim]Excluded {cursor.rowcount} items with ignore_journal=true[/dim]"
+    )
+
+    # Filter monster drops JSON to remove references to deleted items
+    cursor.execute("SELECT id, drops FROM monsters WHERE drops IS NOT NULL")
+    monsters_with_drops = cursor.fetchall()
+
+    drops_updated = 0
+    for monster_id, drops_json in monsters_with_drops:
+        if not drops_json:
+            continue
+        drops = json.loads(drops_json)
+        filtered_drops = [d for d in drops if d.get("item_id") not in excluded_ids]
+        if len(filtered_drops) != len(drops):
+            cursor.execute(
+                "UPDATE monsters SET drops = ? WHERE id = ?",
+                (json.dumps(filtered_drops) if filtered_drops else None, monster_id),
+            )
+            drops_updated += 1
+
+    if drops_updated > 0:
+        console.print(f"  [dim]Updated drops on {drops_updated} monsters[/dim]")
+
+    # Delete crafting recipes where result item is excluded
+    placeholders = ",".join("?" * len(excluded_ids))
+    cursor.execute(
+        f"DELETE FROM crafting_recipes WHERE result_item_id IN ({placeholders})",
+        tuple(excluded_ids),
+    )
+    if cursor.rowcount > 0:
+        console.print(
+            f"  [dim]Excluded {cursor.rowcount} crafting recipes for ignore_journal items[/dim]"
+        )
+
+    # Delete alchemy recipes where result item is excluded
+    cursor.execute(
+        f"DELETE FROM alchemy_recipes WHERE result_item_id IN ({placeholders})",
+        tuple(excluded_ids),
+    )
+    if cursor.rowcount > 0:
+        console.print(
+            f"  [dim]Excluded {cursor.rowcount} alchemy recipes for ignore_journal items[/dim]"
+        )
+
+    conn.commit()
+
+
 def run_all(conn: sqlite3.Connection) -> None:
     """Run all denormalizations in dependency order.
 
@@ -95,6 +156,8 @@ def run_all(conn: sqlite3.Connection) -> None:
         _apply_quest_exclusions(conn, redactions)
     if redactions.hide_crafting_item_ids:
         _apply_crafting_exclusions(conn, redactions)
+    if redactions.exclude_ignore_journal:
+        _apply_ignore_journal_exclusions(conn)
 
     # Phase 1: Monster drops (expand altar variants before item sources read drops)
     monsters.run_drops(conn)

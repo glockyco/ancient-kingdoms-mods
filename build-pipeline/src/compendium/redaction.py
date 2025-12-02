@@ -15,6 +15,7 @@ class RedactionConfig:
 
     hide_crafting_item_ids: set[str] = field(default_factory=set)
     exclude_quest_ids: set[str] = field(default_factory=set)
+    exclude_ignore_journal: bool = False
 
 
 def load_redactions(config_path: Path | None = None) -> RedactionConfig:
@@ -37,8 +38,13 @@ def load_redactions(config_path: Path | None = None) -> RedactionConfig:
             data.get("items", {}).get("hide_crafting", {}).get("ids", [])
         ),
         exclude_quest_ids=set(data.get("quests", {}).get("exclude", {}).get("ids", [])),
+        exclude_ignore_journal=data.get("items", {}).get(
+            "exclude_ignore_journal", False
+        ),
     )
 
+    if config.exclude_ignore_journal:
+        console.print("  Excluding items with ignore_journal=true")
     if config.hide_crafting_item_ids:
         console.print(
             f"  Hiding crafting for {len(config.hide_crafting_item_ids)} items"

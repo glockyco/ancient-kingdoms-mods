@@ -1,3 +1,8 @@
+# Exclude items with ignore_journal=true from the database.
+# These are internal/meta items that shouldn't appear in the compendium.
+[items]
+exclude_ignore_journal = true
+
 # Items where crafting information should be hidden.
 # The item itself remains visible, but:
 # - crafted_from field is cleared
