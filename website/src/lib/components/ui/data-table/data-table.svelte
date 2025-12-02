@@ -278,9 +278,31 @@
 
     // Add column filters with prefixed keys
     for (const filter of columnFilters) {
+      const paramKey = `${prefix}${filter.id}`;
+
+      // Handle range filters (arrays of [min, max] where values can be numbers or null)
+      if (
+        Array.isArray(filter.value) &&
+        filter.value.length === 2 &&
+        (typeof filter.value[0] === "number" ||
+          filter.value[0] === null ||
+          typeof filter.value[1] === "number" ||
+          filter.value[1] === null) &&
+        !Array.isArray(filter.value[0])
+      ) {
+        const [min, max] = filter.value as [number | null, number | null];
+        if (min !== null || max !== null) {
+          const rangeStr = `${min ?? ""}-${max ?? ""}`;
+          newParams.push(
+            `${encodeURIComponent(paramKey)}=${encodeURIComponent(rangeStr)}`,
+          );
+        }
+        continue;
+      }
+
+      // Handle faceted filters (string arrays)
       const values = filter.value as string[] | undefined;
       if (values && values.length > 0) {
-        const paramKey = `${prefix}${filter.id}`;
         newParams.push(
           `${encodeURIComponent(paramKey)}=${encodeURIComponent(values.join(","))}`,
         );
@@ -352,9 +374,22 @@
               return { id, desc: dir === "desc" };
             });
           } else {
-            const values = value.split(",").filter(Boolean);
-            if (values.length > 0) {
-              restoredFilters.push({ id: paramKey, value: values });
+            // Check if it's a range filter (format: "min-max", "-max", "min-")
+            const rangeMatch = value.match(/^(-?\d*)-(-?\d*)$/);
+            if (rangeMatch) {
+              const min =
+                rangeMatch[1] !== "" ? parseInt(rangeMatch[1], 10) : null;
+              const max =
+                rangeMatch[2] !== "" ? parseInt(rangeMatch[2], 10) : null;
+              if (min !== null || max !== null) {
+                restoredFilters.push({ id: paramKey, value: [min, max] });
+              }
+            } else {
+              // Faceted filter (comma-separated values)
+              const values = value.split(",").filter(Boolean);
+              if (values.length > 0) {
+                restoredFilters.push({ id: paramKey, value: values });
+              }
             }
           }
         }
