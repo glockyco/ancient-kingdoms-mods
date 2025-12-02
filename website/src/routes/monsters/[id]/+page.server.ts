@@ -346,7 +346,7 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
   spawns.placeholder = placeholderInfo;
 
   // Get quests that require killing this monster
-  const questsRaw = db
+  const killQuestsRaw = db
     .prepare(
       `
     SELECT
@@ -354,6 +354,9 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
       name,
       level_required,
       level_recommended,
+      is_main_quest,
+      is_epic_quest,
+      is_adventurer_quest,
       kill_target_1_id,
       kill_amount_1,
       kill_target_2_id,
@@ -368,20 +371,143 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
     name: string;
     level_required: number;
     level_recommended: number;
+    is_main_quest: number;
+    is_epic_quest: number;
+    is_adventurer_quest: number;
     kill_target_1_id: string | null;
     kill_amount_1: number;
     kill_target_2_id: string | null;
     kill_amount_2: number;
   }>;
 
-  const quests: MonsterQuest[] = questsRaw.map((q) => ({
+  const quests: MonsterQuest[] = killQuestsRaw.map((q) => ({
     id: q.id,
     name: q.name,
     level_required: q.level_required,
     level_recommended: q.level_recommended,
-    kill_amount:
+    display_type: "Kill",
+    amount:
       q.kill_target_1_id === params.id ? q.kill_amount_1 : q.kill_amount_2,
+    is_main_quest: Boolean(q.is_main_quest),
+    is_epic_quest: Boolean(q.is_epic_quest),
+    is_adventurer_quest: Boolean(q.is_adventurer_quest),
   }));
+
+  // Get quests that require items dropped by this monster
+  // Use the denormalized items.needed_for_quests field which already tracks all quest-item relationships
+  const dropItemIds = drops.map((d) => d.item_id);
+  const questIdsSeen = new Set(quests.map((q) => q.id));
+
+  if (dropItemIds.length > 0) {
+    const placeholders = dropItemIds.map(() => "?").join(",");
+    const itemsWithQuests = db
+      .prepare(
+        `
+      SELECT id, name, needed_for_quests
+      FROM items
+      WHERE id IN (${placeholders})
+        AND needed_for_quests IS NOT NULL
+        AND needed_for_quests != '[]'
+    `,
+      )
+      .all(...dropItemIds) as Array<{
+      id: string;
+      name: string;
+      needed_for_quests: string;
+    }>;
+
+    // Collect all quest IDs we need to fetch
+    const questIdsToFetch = new Set<string>();
+    const questInfoMap = new Map<
+      string,
+      { itemId: string; itemName: string; amount: number; purpose: string }
+    >();
+
+    for (const item of itemsWithQuests) {
+      const neededFor = JSON.parse(item.needed_for_quests) as Array<{
+        quest_id: string;
+        quest_name: string;
+        level_required: number;
+        level_recommended: number;
+        purpose: string;
+        amount: number;
+        is_repeatable: boolean;
+        class_restrictions: string[] | null;
+      }>;
+
+      for (const questRef of neededFor) {
+        if (!questIdsSeen.has(questRef.quest_id)) {
+          questIdsToFetch.add(questRef.quest_id);
+          // Store item info for this quest (first item wins if multiple drops needed)
+          if (!questInfoMap.has(questRef.quest_id)) {
+            questInfoMap.set(questRef.quest_id, {
+              itemId: item.id,
+              itemName: item.name,
+              amount: questRef.amount,
+              purpose: questRef.purpose,
+            });
+          }
+        }
+      }
+    }
+
+    // Fetch full quest data for quests we found
+    if (questIdsToFetch.size > 0) {
+      const questPlaceholders = Array.from(questIdsToFetch)
+        .map(() => "?")
+        .join(",");
+      const itemQuestsRaw = db
+        .prepare(
+          `
+        SELECT
+          id,
+          name,
+          level_required,
+          level_recommended,
+          display_type,
+          is_main_quest,
+          is_epic_quest,
+          is_adventurer_quest
+        FROM quests
+        WHERE id IN (${questPlaceholders})
+        ORDER BY level_recommended
+      `,
+        )
+        .all(...questIdsToFetch) as Array<{
+        id: string;
+        name: string;
+        level_required: number;
+        level_recommended: number;
+        display_type: string;
+        is_main_quest: number;
+        is_epic_quest: number;
+        is_adventurer_quest: number;
+      }>;
+
+      for (const q of itemQuestsRaw) {
+        const itemInfo = questInfoMap.get(q.id);
+        if (!itemInfo) continue;
+
+        questIdsSeen.add(q.id);
+        quests.push({
+          id: q.id,
+          name: q.name,
+          level_required: q.level_required,
+          level_recommended: q.level_recommended,
+          display_type: itemInfo.purpose,
+          amount: itemInfo.amount,
+          item_id: itemInfo.itemId,
+          item_name: itemInfo.itemName,
+          is_main_quest: Boolean(q.is_main_quest),
+          is_epic_quest: Boolean(q.is_epic_quest),
+          is_adventurer_quest: Boolean(q.is_adventurer_quest),
+        });
+      }
+
+      // Sort by level_recommended after combining
+      quests.sort((a, b) => a.level_recommended - b.level_recommended);
+    }
+  }
 
   // Get what killing this monster can summon (reverse lookup)
   const summons = db

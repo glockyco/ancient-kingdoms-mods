@@ -8,6 +8,8 @@
   } from "$lib/components/ui/data-table";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
+  import QuestTypeBadge from "$lib/components/QuestTypeBadge.svelte";
+  import QuestFlagBadges from "$lib/components/QuestFlagBadges.svelte";
   import type {
     MonsterDrop,
     MonsterSpawnZone,
@@ -298,24 +300,61 @@
     return cols;
   });
 
-  // Quest columns
-  const questColumns: ColumnDef<MonsterQuest>[] = [
-    {
-      accessorKey: "name",
-      header: "Quest",
-      minSize: 220,
-    },
-    {
-      accessorKey: "level_recommended",
-      header: "Level",
-      size: 100,
-    },
-    {
-      accessorKey: "kill_amount",
-      header: "Kill",
-      size: 80,
-    },
-  ];
+  // Check if any quests have flags (for conditional column)
+  const hasQuestFlags = $derived(
+    data.quests.some(
+      (q) => q.is_main_quest || q.is_epic_quest || q.is_adventurer_quest,
+    ),
+  );
+
+  // Quest columns: Type > Flags > Name > Level > Objective
+  const questColumns = $derived.by(() => {
+    const cols: ColumnDef<MonsterQuest>[] = [
+      {
+        id: "type",
+        header: "Type",
+        size: 100,
+        accessorFn: (row) => row.display_type,
+      },
+    ];
+
+    if (hasQuestFlags) {
+      cols.push({
+        id: "flags",
+        header: "Flags",
+        size: 100,
+        enableSorting: false,
+        accessorFn: (row) => {
+          const flags: string[] = [];
+          if (row.is_main_quest) flags.push("Main");
+          if (row.is_epic_quest) flags.push("Epic");
+          if (row.is_adventurer_quest) flags.push("Daily");
+          return flags.join(" ");
+        },
+      });
+    }
+
+    cols.push(
+      {
+        accessorKey: "name",
+        header: "Name",
+        minSize: 220,
+      },
+      {
+        accessorKey: "level_recommended",
+        header: "Level",
+        size: 100,
+      },
+      {
+        id: "objective",
+        header: "Objective",
+        minSize: 220,
+        accessorFn: (row) => row.amount,
+      },
+    );
+
+    return cols;
+  });
 </script>
 
 {#snippet renderDropCell({
@@ -410,17 +449,35 @@
   cell: Cell<MonsterQuest, unknown>;
   row: Row<MonsterQuest>;
 })}
-  {#if cell.column.id === "name"}
+  {#if cell.column.id === "type"}
+    <QuestTypeBadge type={row.original.display_type} />
+  {:else if cell.column.id === "flags"}
+    <QuestFlagBadges quest={row.original} />
+  {:else if cell.column.id === "name"}
     <a
       href="/quests/{row.original.id}"
-      class="text-blue-600 dark:text-blue-400 hover:underline"
+      class="text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap"
     >
       {row.original.name}
     </a>
   {:else if cell.column.id === "level_recommended"}
     <span class="ml-auto">{row.original.level_recommended}</span>
-  {:else if cell.column.id === "kill_amount"}
-    <span class="ml-auto">{row.original.kill_amount}</span>
+  {:else if cell.column.id === "objective"}
+    {#if row.original.display_type === "Kill"}
+      <span
+        >Kill{#if row.original.amount > 0}&nbsp;×{row.original
+            .amount}{/if}</span
+      >
+    {:else if row.original.item_id && row.original.item_name}
+      <span
+        ><ItemLink
+          itemId={row.original.item_id}
+          itemName={row.original.item_name}
+        />{#if row.original.amount > 0}&nbsp;×{row.original.amount}{/if}</span
+      >
+    {:else if row.original.amount > 0}
+      <span>×{row.original.amount}</span>
+    {/if}
   {:else}
     {cell.getValue()}
   {/if}
@@ -431,7 +488,7 @@
 }: {
   header: Header<MonsterQuest, unknown>;
 })}
-  {#if header.id === "level_recommended" || header.id === "kill_amount"}
+  {#if header.id === "level_recommended"}
     <span class="ml-auto">{header.column.columnDef.header}</span>
   {:else}
     {header.column.columnDef.header}
@@ -879,7 +936,10 @@
         columns={questColumns}
         renderCell={renderQuestCell}
         renderHeader={renderQuestHeader}
-        initialSorting={[{ id: "level_recommended", desc: false }]}
+        initialSorting={[
+          { id: "level_recommended", desc: false },
+          { id: "name", desc: false },
+        ]}
         urlKey="monster-{data.monster.id}-quests"
         pageSize={10}
         zebraStripe={true}

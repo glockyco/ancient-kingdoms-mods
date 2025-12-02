@@ -87,14 +87,25 @@ export interface PlaceholderSpawnInfo {
 }
 
 /**
- * Quest that requires killing this monster
+ * Quest related to this monster (kill quest or item quest requiring a drop)
  */
 export interface MonsterQuest {
   id: string;
   name: string;
   level_required: number;
   level_recommended: number;
-  kill_amount: number;
+  /** Display type: Kill, Gather, Deliver, Have, etc. */
+  display_type: string;
+  /** For kill quests: number of kills required. For item quests: number of items required. */
+  amount: number;
+  /** For item quests: the item ID being collected */
+  item_id?: string;
+  /** For item quests: the item name being collected */
+  item_name?: string;
+  /** Quest flags */
+  is_main_quest: boolean;
+  is_epic_quest: boolean;
+  is_adventurer_quest: boolean;
 }
 
 /**
