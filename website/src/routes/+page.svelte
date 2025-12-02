@@ -25,7 +25,7 @@
 
 <div class="container mx-auto p-8 space-y-12">
   <!-- Hero Section -->
-  <div class="text-center py-2 space-y-2 relative">
+  <div class="text-center py-2 space-y-4 relative">
     <div class="absolute top-0 right-0">
       <ThemeToggle />
     </div>
