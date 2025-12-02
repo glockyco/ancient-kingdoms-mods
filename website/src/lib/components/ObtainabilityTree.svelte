@@ -23,7 +23,8 @@
   }
 
   let { node, defaultExpanded = true, hideRootLink = false }: Props = $props();
-  let isExpanded = $state(defaultExpanded && node.depth < 2);
+  let isExpanded = $state(defaultExpanded);
+  let isServiceExpanded = $state(defaultExpanded);
 
   const hasRecipeChildren = $derived(
     !!node.recipe && node.recipe.materials.length > 0,
@@ -32,8 +33,12 @@
     !!node.service && node.service.materials.length > 0,
   );
   const hasLearningRequirement = $derived(!!node.recipe?.learningRequirement);
+  const hasSources = $derived(node.sources.length > 0);
   const hasChildren = $derived(
-    hasRecipeChildren || hasServiceChildren || hasLearningRequirement,
+    hasRecipeChildren ||
+      hasServiceChildren ||
+      hasLearningRequirement ||
+      hasSources,
   );
 
   // Group sources by type
@@ -152,16 +157,10 @@
       <span class="text-muted-foreground text-sm">x{node.amount}</span>
     {/if}
 
-    {#if !hasChildren && node.sources.length === 0}
+    {#if !hasChildren}
       <span class="text-xs text-muted-foreground ml-2">Unknown source</span>
     {/if}
   </div>
-
-  {#if !hasChildren && node.sources.length > 0}
-    <div class="ml-6 border-l-2 border-muted">
-      {@render sourceList()}
-    </div>
-  {/if}
 
   {#if hasChildren && isExpanded}
     <div class="border-l-2 border-muted ml-2.5">
@@ -177,14 +176,54 @@
           <ObtainabilityTree node={node.recipe.learningRequirement} />
         {/if}
       {:else if hasServiceChildren}
-        {#if node.sources.length > 0}
-          <div class="ml-3.5">
-            {@render sourceList()}
+        {#each sourcesByType as [type, sources] (type)}
+          {@const config = sourceConfig[type]}
+          {@const totalForType =
+            node.sourceCountsByType[type] || sources.length}
+          {@const moreCount = totalForType - sources.length}
+          <div class="ml-6">
+            <div class="flex items-center gap-1.5 py-1.5">
+              <button
+                onclick={() => (isServiceExpanded = !isServiceExpanded)}
+                class="p-0.5 rounded hover:bg-muted transition-colors"
+                aria-label={isServiceExpanded ? "Collapse" : "Expand"}
+              >
+                {#if isServiceExpanded}
+                  <ChevronDown class="h-4 w-4 text-muted-foreground" />
+                {:else}
+                  <ChevronRight class="h-4 w-4 text-muted-foreground" />
+                {/if}
+              </button>
+              <config.icon class="h-4 w-4 shrink-0 {config.color}" />
+              <span class="text-muted-foreground">{config.label}:</span>
+              <div class="flex items-center gap-1">
+                {#each sources as source, i (source.id)}
+                  <a
+                    href="{config.linkPrefix}{source.id}"
+                    class="text-blue-600 dark:text-blue-400 hover:underline"
+                  >
+                    {source.name}
+                  </a>
+                  {#if i < sources.length - 1 || moreCount > 0}
+                    <span class="text-muted-foreground">,</span>
+                  {/if}
+                {/each}
+                {#if moreCount > 0}
+                  <span class="text-muted-foreground">+{moreCount} more</span>
+                {/if}
+              </div>
+            </div>
+            {#if isServiceExpanded}
+              <div class="border-l-2 border-muted ml-2.5">
+                {#each node.service?.materials ?? [] as child (child.item_id)}
+                  <ObtainabilityTree node={child} />
+                {/each}
+              </div>
+            {/if}
           </div>
-        {/if}
-        {#each node.service?.materials ?? [] as child (child.item_id)}
-          <ObtainabilityTree node={child} />
         {/each}
+      {:else if hasSources}
+        {@render sourceList()}
       {/if}
     </div>
   {/if}
