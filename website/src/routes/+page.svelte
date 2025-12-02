@@ -24,7 +24,8 @@
 
 <div class="container mx-auto p-8 space-y-12">
   <!-- Hero Section -->
-  <div class="text-center py-12 space-y-6">
+  <div class="text-center py-2 space-y-2">
+    <img src="/favicon.png" alt="" class="w-28 h-28 mx-auto" />
     <h1 class="text-4xl md:text-5xl font-bold">Ancient Kingdoms Compendium</h1>
     <p class="text-xl text-muted-foreground">
       Your guide to items, monsters, npcs, and more
