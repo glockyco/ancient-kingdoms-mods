@@ -32,7 +32,7 @@
     <img src="/favicon.png" alt="" class="w-28 h-28 mx-auto" />
     <h1 class="text-4xl md:text-5xl font-bold">Ancient Kingdoms Compendium</h1>
     <p class="text-xl text-muted-foreground">
-      Your guide to items, monsters, npcs, and more
+      Your guide to items, monsters, zones, quests, and more
     </p>
   </div>
 
