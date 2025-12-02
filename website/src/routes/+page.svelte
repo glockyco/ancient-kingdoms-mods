@@ -1,5 +1,6 @@
 <script lang="ts">
   import * as Card from "$lib/components/ui/card";
+  import ThemeToggle from "$lib/components/ThemeToggle.svelte";
   import Gem from "@lucide/svelte/icons/gem";
   import MapPin from "@lucide/svelte/icons/map-pin";
   import Skull from "@lucide/svelte/icons/skull";
@@ -24,7 +25,10 @@
 
 <div class="container mx-auto p-8 space-y-12">
   <!-- Hero Section -->
-  <div class="text-center py-2 space-y-2">
+  <div class="text-center py-2 space-y-2 relative">
+    <div class="absolute top-0 right-0">
+      <ThemeToggle />
+    </div>
     <img src="/favicon.png" alt="" class="w-28 h-28 mx-auto" />
     <h1 class="text-4xl md:text-5xl font-bold">Ancient Kingdoms Compendium</h1>
     <p class="text-xl text-muted-foreground">
