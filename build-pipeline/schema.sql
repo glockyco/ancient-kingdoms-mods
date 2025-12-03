@@ -267,6 +267,8 @@ CREATE TABLE monsters (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
     level INTEGER,
+    level_min INTEGER,              -- Min level from spawns (denormalized)
+    level_max INTEGER,              -- Max level from spawns (denormalized)
     health INTEGER,
     type_name TEXT,                 -- Humanoid, Beast, Undead, Elemental, etc.
     class_name TEXT,                -- specific class within type
@@ -370,6 +372,7 @@ CREATE TABLE monster_spawns (
     position_x REAL,
     position_y REAL,
     position_z REAL,
+    level INTEGER,                  -- Level of this specific spawn (may differ from canonical monster)
     move_probability REAL DEFAULT 0.0,
     move_distance REAL DEFAULT 0.0,
     is_patrolling BOOLEAN DEFAULT 0,

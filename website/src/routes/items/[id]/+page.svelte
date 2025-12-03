@@ -128,6 +128,8 @@
           monster_id: string;
           monster_name: string;
           monster_level: number;
+          monster_level_min: number;
+          monster_level_max: number;
           is_boss: boolean;
           is_elite: boolean;
           rate: number;
@@ -1368,7 +1370,11 @@
                     class={styles.link}
                   >
                     {drop.monster_name}
-                    <span class={styles.label}>(Lv {drop.monster_level})</span>
+                    <span class={styles.label}
+                      >(Lv {drop.monster_level_min === drop.monster_level_max
+                        ? drop.monster_level_min
+                        : `${drop.monster_level_min}-${drop.monster_level_max}`})</span
+                    >
                   </a>
                 </div>
                 <span class={styles.label}>{(drop.rate * 100).toFixed(1)}%</span

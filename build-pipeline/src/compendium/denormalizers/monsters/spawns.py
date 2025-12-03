@@ -156,6 +156,10 @@ def _infer_altar_spawns(conn: sqlite3.Connection) -> int:
                 pos_y = spawn_location.get("y", 0)
                 pos_z = spawn_location.get("z", 0)
 
+                # Get base_level from wave data (this is the wave-configured level,
+                # not the monster's canonical level)
+                base_level = monster_data.get("base_level")
+
                 # Create unique spawn ID
                 spawn_id = f"{monster_id}_{altar_id}_wave{wave_number}_{int(pos_x)}_{int(pos_y)}"
 
@@ -168,11 +172,11 @@ def _infer_altar_spawns(conn: sqlite3.Connection) -> int:
                     """
                     INSERT INTO monster_spawns (
                         id, monster_id, zone_id, sub_zone_id,
-                        position_x, position_y, position_z,
+                        position_x, position_y, position_z, level,
                         move_probability, move_distance, is_patrolling, patrol_waypoints,
                         spawn_type, source_altar_id, source_altar_name, source_altar_wave,
                         source_altar_activation_item_id, source_altar_activation_item_name
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, 0, 0, 0, '[]', 'altar', ?, ?, ?, ?, ?)
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 0, 0, '[]', 'altar', ?, ?, ?, ?, ?)
                 """,
                     (
                         spawn_id,
@@ -182,6 +186,7 @@ def _infer_altar_spawns(conn: sqlite3.Connection) -> int:
                         pos_x,
                         pos_y,
                         pos_z,
+                        base_level,
                         altar_id,
                         altar_name,
                         wave_number,

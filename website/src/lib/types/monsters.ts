@@ -19,6 +19,8 @@ export interface MonsterDrop {
 export interface MonsterSpawnZone {
   zone_id: string;
   zone_name: string;
+  level_min: number;
+  level_max: number;
   spawn_count: number;
   spawn_type: "regular" | "placeholder" | "altar" | "summon";
   // Sub-zone info (only shown when zone has multiple sub-zones but monster spawns in single one)
@@ -135,6 +137,8 @@ export interface MonsterInfo {
   id: string;
   name: string;
   level: number;
+  level_min: number;
+  level_max: number;
   health: number;
   type_name: string | null;
   class_name: string | null;
@@ -251,7 +255,11 @@ export interface MonsterListView extends RespawnInfo {
   id: string;
   name: string;
   level: number;
+  level_min: number;
+  level_max: number;
   health: number;
+  health_base: number;
+  health_per_level: number;
   is_boss: boolean;
   is_elite: boolean;
   is_hunt: boolean;

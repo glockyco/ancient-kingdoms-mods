@@ -505,56 +505,22 @@ def _denormalize_luck_tokens(conn: sqlite3.Connection) -> tuple[int, int]:
         boss_bonus,
     ) in cursor.fetchall():
         if fragment_token_id:
-            monsters_cursor = conn.cursor()
-            monsters_cursor.execute(
-                """
-                SELECT DISTINCT m.id, m.name, m.level
-                FROM monsters m
-                JOIN monster_spawns ms ON m.id = ms.monster_id
-                WHERE ms.zone_id = ? AND m.is_boss = 0 AND m.is_elite = 0
-            """,
-                (zone_id,),
-            )
-
-            fragment_drops = []
-            for monster_id, monster_name, monster_level in monsters_cursor.fetchall():
-                fragment_drops.append(
-                    {
-                        "monster_id": monster_id,
-                        "monster_name": monster_name,
-                        "monster_level": monster_level,
-                        "rate": fragment_drop_chance,
-                        "zone_id": zone_id,
-                    }
-                )
-
-            existing_drops_cursor = conn.cursor()
-            existing_dropped_by = existing_drops_cursor.execute(
-                "SELECT dropped_by FROM items WHERE id = ?", (fragment_token_id,)
-            ).fetchone()
-            if existing_dropped_by and existing_dropped_by[0]:
-                existing = json.loads(existing_dropped_by[0])
-                fragment_drops.extend(existing)
-
-            fragment_drops_sorted = sorted(
-                fragment_drops, key=lambda x: (-x["rate"], x["monster_name"])
-            )
-
+            # Update luck token metadata only - dropped_by is handled by
+            # monsters/drops.py adding fragments to monster drops, then
+            # items/sources.py building dropped_by from all monster drops
             update_fragment_cursor = conn.cursor()
             update_fragment_cursor.execute(
                 """
                 UPDATE items
                 SET luck_token_zone_id = ?,
                     luck_token_zone_name = ?,
-                    luck_token_drop_chance = ?,
-                    dropped_by = ?
+                    luck_token_drop_chance = ?
                 WHERE id = ?
             """,
                 (
                     zone_id,
                     zone_name,
                     fragment_drop_chance,
-                    json.dumps(fragment_drops_sorted),
                     fragment_token_id,
                 ),
             )

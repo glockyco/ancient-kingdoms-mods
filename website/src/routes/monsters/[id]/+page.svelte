@@ -55,48 +55,29 @@
     ...data.spawns.summon.map((s) => ({
       zone_id: s.zone_id,
       zone_name: s.zone_name,
+      level_min: data.monster.level,
+      level_max: data.monster.level,
       spawn_count: 1,
       spawn_type: "summon" as const,
       sub_zone_name: s.sub_zone_name,
     })),
   ]);
 
-  // Altar scaling: check if any stat scales per level
-  const hasStatScaling = $derived(
-    data.monster.health_per_level > 0 ||
-      data.monster.damage_per_level > 0 ||
-      data.monster.magic_damage_per_level > 0 ||
-      data.monster.defense_per_level > 0 ||
-      data.monster.magic_resist_per_level > 0,
+  // Does this monster have level variance from world spawns?
+  const hasLevelVariance = $derived(
+    data.monster.level_min !== data.monster.level_max,
   );
 
-  // Is this an altar monster that can scale?
-  const isAltarMonster = $derived(
-    data.spawns.altar.length > 0 && hasStatScaling,
+  // Monster level slider (for monsters with level variance)
+  let monsterLevelInput = $state(data.monster.level_min);
+
+  // Clamp input to valid range
+  const displayLevel = $derived(
+    Math.min(
+      data.monster.level_max,
+      Math.max(data.monster.level_min, monsterLevelInput),
+    ),
   );
-
-  // Player level input (for altar scaling calculation)
-  // Default to monster's base level (clamped to 1-50) so users see baseline stats
-  const defaultPlayerLevel = Math.min(50, Math.max(1, data.monster.level));
-  let playerLevelInput = $state(defaultPlayerLevel);
-  let veteranLevelInput = $state(0);
-
-  // Clamp inputs to valid ranges
-  const playerLevel = $derived(Math.min(50, Math.max(1, playerLevelInput)));
-  const veteranLevel = $derived(Math.min(200, Math.max(0, veteranLevelInput)));
-
-  // Calculate effective monster level for altar scaling
-  // From DefaultEvent.cs SummonMonsters():
-  //   veteranBonus = round(veteranPoints / 20)
-  //   levelBonus = playerLevel + veteranBonus - 30
-  //   scaledLevel = baseLevel + levelBonus
-  const veteranBonus = $derived(Math.round(veteranLevel / 20));
-  const effectivePlayerLevel = $derived(playerLevel + veteranBonus);
-  const scaledLevel = $derived.by(() => {
-    if (!isAltarMonster) return data.monster.level;
-    const levelBonus = effectivePlayerLevel - 30;
-    return Math.max(data.monster.level, data.monster.level + levelBonus);
-  });
 
   // Calculate scaled stats using LinearInt formula: base + per_level * (level - 1)
   function calculateStat(
@@ -107,67 +88,67 @@
     return base + perLevel * (level - 1);
   }
 
-  const scaledHealth = $derived(
+  const displayHealth = $derived(
     calculateStat(
       data.monster.health_base,
       data.monster.health_per_level,
-      scaledLevel,
+      displayLevel,
     ),
   );
-  const scaledDamage = $derived(
+  const displayDamage = $derived(
     calculateStat(
       data.monster.damage_base,
       data.monster.damage_per_level,
-      scaledLevel,
+      displayLevel,
     ),
   );
-  const scaledMagicDamage = $derived(
+  const displayMagicDamage = $derived(
     calculateStat(
       data.monster.magic_damage_base,
       data.monster.magic_damage_per_level,
-      scaledLevel,
+      displayLevel,
     ),
   );
-  const scaledDefense = $derived(
+  const displayDefense = $derived(
     calculateStat(
       data.monster.defense_base,
       data.monster.defense_per_level,
-      scaledLevel,
+      displayLevel,
     ),
   );
-  const scaledMagicResist = $derived(
+  const displayMagicResist = $derived(
     calculateStat(
       data.monster.magic_resist_base,
       data.monster.magic_resist_per_level,
-      scaledLevel,
+      displayLevel,
     ),
   );
-  const scaledPoisonResist = $derived(
+  const displayPoisonResist = $derived(
     calculateStat(
       data.monster.poison_resist_base,
       data.monster.poison_resist_per_level,
-      scaledLevel,
+      displayLevel,
     ),
   );
-  const scaledFireResist = $derived(
+  const displayFireResist = $derived(
     calculateStat(
       data.monster.fire_resist_base,
       data.monster.fire_resist_per_level,
-      scaledLevel,
+      displayLevel,
     ),
   );
-  const scaledColdResist = $derived(
+  const displayColdResist = $derived(
     calculateStat(
       data.monster.cold_resist_base,
       data.monster.cold_resist_per_level,
-      scaledLevel,
+      displayLevel,
     ),
   );
-  const scaledDiseaseResist = $derived(
+  const displayDiseaseResist = $derived(
     calculateStat(
       data.monster.disease_resist_base,
       data.monster.disease_resist_per_level,
-      scaledLevel,
+      displayLevel,
     ),
   );
 
@@ -183,31 +164,14 @@
     ].filter((a) => a.flag),
   );
 
-  // Check for any non-zero resistances (use scaled values for altar monsters)
+  // Check for any non-zero resistances (always use display values now)
   const resistances = $derived(
     [
-      {
-        name: "Magic",
-        value: isAltarMonster ? scaledMagicResist : data.monster.magic_resist,
-      },
-      {
-        name: "Poison",
-        value: isAltarMonster ? scaledPoisonResist : data.monster.poison_resist,
-      },
-      {
-        name: "Fire",
-        value: isAltarMonster ? scaledFireResist : data.monster.fire_resist,
-      },
-      {
-        name: "Cold",
-        value: isAltarMonster ? scaledColdResist : data.monster.cold_resist,
-      },
-      {
-        name: "Disease",
-        value: isAltarMonster
-          ? scaledDiseaseResist
-          : data.monster.disease_resist,
-      },
+      { name: "Magic", value: displayMagicResist },
+      { name: "Poison", value: displayPoisonResist },
+      { name: "Fire", value: displayFireResist },
+      { name: "Cold", value: displayColdResist },
+      { name: "Disease", value: displayDiseaseResist },
     ].filter((r) => r.value !== 0),
   );
 
@@ -257,6 +221,11 @@
     return cols;
   });
 
+  // Check if we should show the level column (when there's level variance)
+  const showLevelColumn = $derived(
+    data.monster.level_min !== data.monster.level_max,
+  );
+
   // Spawn location columns (dynamic based on monster properties)
   const spawnColumns = $derived.by(() => {
     const cols: ColumnDef<MonsterSpawnZone>[] = [
@@ -267,11 +236,26 @@
       },
     ];
 
+    if (showLevelColumn) {
+      cols.push(
+        {
+          accessorKey: "level_min",
+          header: "Min Lv",
+          size: 120,
+        },
+        {
+          accessorKey: "level_max",
+          header: "Max Lv",
+          size: 120,
+        },
+      );
+    }
+
     if (showRespawnColumn) {
       cols.push({
         id: "respawn",
         header: "Respawn",
-        size: 150,
+        size: 120,
       });
     }
 
@@ -279,7 +263,7 @@
       cols.push({
         id: "chance",
         header: "Chance",
-        size: 150,
+        size: 120,
       });
     }
 
@@ -294,7 +278,7 @@
     cols.push({
       accessorKey: "spawn_count",
       header: "Spawns",
-      size: 150,
+      size: 120,
     });
 
     return cols;
@@ -413,6 +397,10 @@
     </a>{#if row.original.sub_zone_name}<span class="text-muted-foreground"
         >&nbsp;({row.original.sub_zone_name})</span
       >{/if}
+  {:else if cell.column.id === "level_min"}
+    <span class="ml-auto">{row.original.level_min}</span>
+  {:else if cell.column.id === "level_max"}
+    <span class="ml-auto">{row.original.level_max}</span>
   {:else if cell.column.id === "respawn"}
     <span class="ml-auto">{formatDuration(totalRespawnTime)}</span>
   {:else if cell.column.id === "chance"}
@@ -435,7 +423,7 @@
 }: {
   header: Header<MonsterSpawnZone, unknown>;
 })}
-  {#if header.id === "respawn" || header.id === "chance" || header.id === "active" || header.id === "spawn_count"}
+  {#if header.id === "level_min" || header.id === "level_max" || header.id === "respawn" || header.id === "chance" || header.id === "active" || header.id === "spawn_count"}
     <span class="ml-auto">{header.column.columnDef.header}</span>
   {:else}
     {header.column.columnDef.header}
@@ -544,7 +532,11 @@
     </div>
 
     <div class="mt-2 flex flex-wrap gap-4 text-sm text-muted-foreground">
-      <span>Level {data.monster.level}</span>
+      <span
+        >Level {data.monster.level_min === data.monster.level_max
+          ? data.monster.level_min
+          : `${data.monster.level_min}-${data.monster.level_max}`}</span
+      >
       {#if data.monster.class_name && data.monster.class_name !== data.monster.type_name}
         <span>Class: {data.monster.class_name}</span>
       {/if}
@@ -747,45 +739,21 @@
       <Sword class="h-5 w-5 text-red-500" />
       Combat Stats
     </h2>
-    {#if isAltarMonster}
-      <div class="mb-4 bg-muted/30 rounded-md border p-4">
-        <div class="text-sm text-muted-foreground mb-3">
-          Stats scale with player level during Forgotten Altar events. Enter
-          your level to see scaled stats.
-        </div>
-        <div class="flex flex-wrap gap-4 items-end js-only">
-          <div>
-            <label
-              for="player-level"
-              class="text-sm text-muted-foreground block mb-1"
-            >
-              Player Level
-            </label>
-            <input
-              id="player-level"
-              type="number"
-              min="1"
-              max="50"
-              bind:value={playerLevelInput}
-              class="w-20 px-2 py-1 rounded border bg-background text-foreground"
-            />
-          </div>
-          <div>
-            <label
-              for="veteran-level"
-              class="text-sm text-muted-foreground block mb-1"
-            >
-              Veteran Level
-            </label>
-            <input
-              id="veteran-level"
-              type="number"
-              min="0"
-              max="200"
-              bind:value={veteranLevelInput}
-              class="w-20 px-2 py-1 rounded border bg-background text-foreground"
-            />
-          </div>
+    {#if hasLevelVariance}
+      <div class="mb-4 bg-muted/30 rounded-md border p-4 js-only">
+        <div class="flex flex-wrap items-center gap-4">
+          <label for="monster-level" class="text-sm text-muted-foreground">
+            Monster Level
+          </label>
+          <input
+            id="monster-level"
+            type="range"
+            min={data.monster.level_min}
+            max={data.monster.level_max}
+            bind:value={monsterLevelInput}
+            class="flex-1 max-w-xs"
+          />
+          <span class="text-sm font-medium w-8">{displayLevel}</span>
         </div>
       </div>
     {/if}
@@ -794,28 +762,25 @@
         <div>
           <div class="text-sm text-muted-foreground">Health</div>
           <div class="font-medium">
-            {(isAltarMonster
-              ? scaledHealth
-              : data.monster.health
-            ).toLocaleString()}
+            {displayHealth.toLocaleString()}
           </div>
         </div>
         <div>
           <div class="text-sm text-muted-foreground">Damage</div>
           <div class="font-medium">
-            {isAltarMonster ? scaledDamage : data.monster.damage}
+            {displayDamage}
           </div>
         </div>
         <div>
           <div class="text-sm text-muted-foreground">Magic Damage</div>
           <div class="font-medium">
-            {isAltarMonster ? scaledMagicDamage : data.monster.magic_damage}
+            {displayMagicDamage}
           </div>
         </div>
         <div>
           <div class="text-sm text-muted-foreground">Defense</div>
           <div class="font-medium">
-            {isAltarMonster ? scaledDefense : data.monster.defense}
+            {displayDefense}
           </div>
         </div>
         {#if data.monster.block_chance > 0}

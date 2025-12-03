@@ -16,6 +16,9 @@ public class MonsterSpawnData
     public string sub_zone_id { get; set; }
     public Position position { get; set; }
 
+    // Level of this specific spawn (may differ from canonical monster level)
+    public int level { get; set; }
+
     // Movement and patrol
     public float move_probability { get; set; }
     public float move_distance { get; set; }

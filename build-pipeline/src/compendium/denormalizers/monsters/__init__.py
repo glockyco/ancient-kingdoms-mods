@@ -2,7 +2,7 @@
 
 import sqlite3
 
-from compendium.denormalizers.monsters import drops, spawns
+from compendium.denormalizers.monsters import drops, levels, spawns
 
 
 def run_drops(conn: sqlite3.Connection) -> None:
@@ -24,3 +24,14 @@ def run_spawns(conn: sqlite3.Connection) -> None:
         conn: Database connection with all base data loaded
     """
     spawns.run(conn)
+
+
+def run_levels(conn: sqlite3.Connection) -> None:
+    """Run monster level range denormalization.
+
+    Populates level_min/level_max from monster_spawns.
+
+    Args:
+        conn: Database connection with monsters and monster_spawns loaded
+    """
+    levels.run(conn)

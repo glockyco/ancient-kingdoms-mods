@@ -30,7 +30,6 @@ export const load: PageServerLoad = ({ params }): ZoneDetailData => {
   const db = new Database("static/compendium.db", { readonly: true });
 
   // Get zone basic info with level range (excluding critters)
-  // Critters are: type_name='Critter' OR (level 1 ambient creatures with no gold drops)
   const zone = db
     .prepare(
       `
@@ -40,16 +39,14 @@ export const load: PageServerLoad = ({ params }): ZoneDetailData => {
       z.is_dungeon,
       z.weather_type,
       z.discovery_exp,
-      (SELECT MIN(m.level) FROM monster_spawns ms
+      (SELECT MIN(ms.level) FROM monster_spawns ms
        JOIN monsters m ON m.id = ms.monster_id
-       WHERE ms.zone_id = z.id AND m.level > 0
-         AND m.type_name != 'Critter'
-         AND NOT (m.level = 1 AND m.gold_min = 0 AND m.gold_max = 0)) as level_min,
-      (SELECT MAX(m.level) FROM monster_spawns ms
+       WHERE ms.zone_id = z.id AND ms.level > 0
+         AND m.type_name != 'Critter') as level_min,
+      (SELECT MAX(ms.level) FROM monster_spawns ms
        JOIN monsters m ON m.id = ms.monster_id
        WHERE ms.zone_id = z.id
-         AND m.type_name != 'Critter'
-         AND NOT (m.level = 1 AND m.gold_min = 0 AND m.gold_max = 0)) as level_max
+         AND m.type_name != 'Critter') as level_max
     FROM zones z
     WHERE z.id = ?
   `,
@@ -63,6 +60,7 @@ export const load: PageServerLoad = ({ params }): ZoneDetailData => {
 
   // Get monsters in this zone with health, spawn count, respawn info, and sample coordinates
   // For altar spawns, count each altar only once (not per-wave)
+  // Get level range specific to this zone from monster_spawns
   const monsters = db
     .prepare(
       `
@@ -71,6 +69,8 @@ export const load: PageServerLoad = ({ params }): ZoneDetailData => {
       m.name,
       m.level,
       m.health,
+      m.health_base,
+      m.health_per_level,
       m.is_boss,
       m.is_elite,
       m.type_name,
@@ -83,6 +83,8 @@ export const load: PageServerLoad = ({ params }): ZoneDetailData => {
       m.spawn_time_start,
       m.spawn_time_end,
       m.placeholder_monster_id,
+      MIN(ms.level) as level_min,
+      MAX(ms.level) as level_max,
       (SELECT COUNT(*) FROM monster_spawns ms2
        WHERE ms2.monster_id = m.id AND ms2.zone_id = ?
        AND ms2.spawn_type != 'altar') +
@@ -109,6 +111,8 @@ export const load: PageServerLoad = ({ params }): ZoneDetailData => {
         name: string;
         level: number;
         health: number;
+        health_base: number;
+        health_per_level: number;
         is_boss: boolean;
         is_elite: boolean;
         type_name: string | null;
@@ -121,17 +125,26 @@ export const load: PageServerLoad = ({ params }): ZoneDetailData => {
         spawn_time_start: number;
         spawn_time_end: number;
         placeholder_monster_id: string | null;
+        level_min: number | null;
+        level_max: number | null;
         spawn_count: number;
         position_x: number | null;
         position_y: number | null;
         position_z: number | null;
         special_spawn_type: string | null;
       };
+      // Use spawn level range if available, otherwise canonical level
+      const levelMin = m.level_min ?? m.level;
+      const levelMax = m.level_max ?? m.level;
       return {
         id: m.id,
         name: m.name,
-        level: m.level,
+        level: levelMin,
+        level_min: levelMin,
+        level_max: levelMax,
         health: m.health,
+        health_base: m.health_base,
+        health_per_level: m.health_per_level,
         is_boss: m.is_boss,
         is_elite: m.is_elite,
         type_name: m.type_name,

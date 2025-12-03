@@ -92,6 +92,8 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
     id: monsterRaw.id as string,
     name: monsterRaw.name as string,
     level: monsterRaw.level as number,
+    level_min: (monsterRaw.level_min as number) || (monsterRaw.level as number),
+    level_max: (monsterRaw.level_max as number) || (monsterRaw.level as number),
     health: monsterRaw.health as number,
     type_name: monsterRaw.type_name as string | null,
     class_name: monsterRaw.class_name as string | null,
@@ -166,6 +168,7 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
     SELECT
       z.id as zone_id,
       z.name as zone_name,
+      ms.level,
       ms.sub_zone_id,
       zt.name as sub_zone_name,
       ms.spawn_type,
@@ -189,6 +192,7 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
     .all(params.id) as Array<{
     zone_id: string;
     zone_name: string;
+    level: number | null;
     sub_zone_id: string | null;
     sub_zone_name: string | null;
     spawn_type: string;
@@ -213,7 +217,7 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
     placeholder: null,
   };
 
-  // Aggregate regular spawns by zone, tracking sub-zones
+  // Aggregate regular spawns by zone, tracking sub-zones and level range
   const regularByZone = new Map<
     string,
     MonsterSpawnZone & { sub_zone_ids: Set<string | null> }
@@ -227,9 +231,13 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
 
   for (const spawn of spawnsRaw) {
     if (spawn.spawn_type === "regular") {
+      // Use level from spawn, fallback to monster's canonical level
+      const level = spawn.level || monster.level;
       const existing = regularByZone.get(spawn.zone_id);
       if (existing) {
         existing.spawn_count++;
+        existing.level_min = Math.min(existing.level_min, level);
+        existing.level_max = Math.max(existing.level_max, level);
         existing.sub_zone_ids.add(spawn.sub_zone_id);
         if (spawn.sub_zone_name) {
           existing.sub_zone_name = spawn.sub_zone_name;
@@ -238,6 +246,8 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
         regularByZone.set(spawn.zone_id, {
           zone_id: spawn.zone_id,
           zone_name: spawn.zone_name,
+          level_min: level,
+          level_max: level,
           spawn_count: 1,
           spawn_type: "regular",
           sub_zone_ids: new Set([spawn.sub_zone_id]),
@@ -293,7 +303,7 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
     }
   }
 
-  // Get sub-zone counts per zone for determining whether to show sub-zone
+  // Get zone IDs with regular spawns
   const zoneIdsWithRegularSpawns = Array.from(regularByZone.keys());
   const subZoneCounts = new Map<string, number>();
   if (zoneIdsWithRegularSpawns.length > 0) {
@@ -316,23 +326,21 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
   }
 
   // Convert maps to arrays, filtering sub_zone_name based on criteria
-  spawns.regular = Array.from(regularByZone.values())
-    .map((spawn) => {
-      const zoneSubZoneCount = subZoneCounts.get(spawn.zone_id) || 0;
-      const monsterSubZoneCount = spawn.sub_zone_ids.size;
-      // Only show sub-zone if zone has >1 sub-zones AND monster spawns in exactly 1
-      const showSubZone =
-        zoneSubZoneCount > 1 &&
-        monsterSubZoneCount === 1 &&
-        !spawn.sub_zone_ids.has(null);
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { sub_zone_ids, ...rest } = spawn;
-      return {
-        ...rest,
-        sub_zone_name: showSubZone ? spawn.sub_zone_name : null,
-      };
-    })
-    .sort((a, b) => a.zone_name.localeCompare(b.zone_name));
+  spawns.regular = Array.from(regularByZone.values()).map((spawn) => {
+    const zoneSubZoneCount = subZoneCounts.get(spawn.zone_id) || 0;
+    const monsterSubZoneCount = spawn.sub_zone_ids.size;
+    // Only show sub-zone if zone has >1 sub-zones AND monster spawns in exactly 1
+    const showSubZone =
+      zoneSubZoneCount > 1 &&
+      monsterSubZoneCount === 1 &&
+      !spawn.sub_zone_ids.has(null);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { sub_zone_ids, ...rest } = spawn;
+    return {
+      ...rest,
+      sub_zone_name: showSubZone ? spawn.sub_zone_name : null,
+    };
+  });
   spawns.summon = Array.from(summonByZone.values()).sort((a, b) =>
     a.zone_name.localeCompare(b.zone_name),
   );

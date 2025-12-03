@@ -231,6 +231,7 @@ public class MonsterExporter : BaseExporter
                         monster.transform.position.y,
                         monster.transform.position.z
                     ),
+                    level = monster.level.current,
                     move_probability = monster.moveProbability,
                     move_distance = monster.moveDistance,
                     is_patrolling = monster.isPatrolling

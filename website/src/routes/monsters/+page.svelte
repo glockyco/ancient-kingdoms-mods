@@ -79,15 +79,15 @@
       minSize: 220,
     },
     {
-      accessorKey: "level",
+      accessorKey: "level_min",
       header: "Level",
       size: 150,
       filterFn: (
         row,
-        columnId,
+        _columnId,
         filterValue: [number | null, number | null],
       ) => {
-        const value = row.getValue(columnId) as number;
+        const value = row.getValue("level_min") as number;
         if (!filterValue) return true;
         const [min, max] = filterValue;
         if (min === null && max === null) return true;
@@ -176,7 +176,7 @@
   const columnLabels: Record<string, string> = {
     icon: "",
     name: "Name",
-    level: "Level",
+    level_min: "Level",
     health: "Health",
     damage: "Damage",
     magic_damage: "Magic Damage",
@@ -202,7 +202,7 @@
 {#snippet renderHeader({ header }: { header: Header<MonsterRow, unknown> })}
   {#if header.id === "icon" || header.id === "classification" || header.id === "zone_ids"}
     <span></span>
-  {:else if header.id === "level" || header.id === "health" || header.id === "damage" || header.id === "magic_damage" || header.id === "defense" || header.id === "magic_resist" || header.id === "poison_resist" || header.id === "fire_resist" || header.id === "cold_resist" || header.id === "disease_resist" || header.id === "respawn_time" || header.id === "respawn_chance" || header.id === "special"}
+  {:else if header.id === "level_min" || header.id === "health" || header.id === "damage" || header.id === "magic_damage" || header.id === "defense" || header.id === "magic_resist" || header.id === "poison_resist" || header.id === "fire_resist" || header.id === "cold_resist" || header.id === "disease_resist" || header.id === "respawn_time" || header.id === "respawn_chance" || header.id === "special"}
     <span class="ml-auto">{columnLabels[header.id] ?? header.id}</span>
   {:else}
     {columnLabels[header.id] ?? header.id}
@@ -230,9 +230,24 @@
     >
       {row.original.name}
     </a>
-  {:else if cell.column.id === "level"}
-    <span class="ml-auto">{row.original.level}</span>
-  {:else if cell.column.id === "health" || cell.column.id === "damage" || cell.column.id === "magic_damage" || cell.column.id === "defense" || cell.column.id === "magic_resist" || cell.column.id === "poison_resist" || cell.column.id === "fire_resist" || cell.column.id === "cold_resist" || cell.column.id === "disease_resist"}
+  {:else if cell.column.id === "level_min"}
+    {@const hasVariance = row.original.level_min !== row.original.level_max}
+    <span class="ml-auto"
+      >{row.original.level_min}<span class={hasVariance ? "" : "invisible"}
+        >+</span
+      ></span
+    >
+  {:else if cell.column.id === "health"}
+    {@const hasVariance = row.original.level_min !== row.original.level_max}
+    {@const minHealth =
+      row.original.health_base +
+      row.original.health_per_level * (row.original.level_min - 1)}
+    <span class="ml-auto"
+      >{formatNumber(minHealth)}<span class={hasVariance ? "" : "invisible"}
+        >+</span
+      ></span
+    >
+  {:else if cell.column.id === "damage" || cell.column.id === "magic_damage" || cell.column.id === "defense" || cell.column.id === "magic_resist" || cell.column.id === "poison_resist" || cell.column.id === "fire_resist" || cell.column.id === "cold_resist" || cell.column.id === "disease_resist"}
     <span class="ml-auto">{formatNumber(cell.getValue() as number)}</span>
   {:else if isRespawnColumn(cell.column.id)}
     <RespawnCells columnId={cell.column.id} row={row.original} />
@@ -266,7 +281,7 @@
 {#snippet renderToolbar({ table }: { table: TanstackTable<MonsterRow> })}
   {@const classificationCol = table.getColumn("classification")}
   {@const zoneIdsCol = table.getColumn("zone_ids")}
-  {@const levelCol = table.getColumn("level")}
+  {@const levelCol = table.getColumn("level_min")}
   {@const zoneCountsFiltered = (() => {
     const counts = new SvelteMap<string, number>();
     const facetedRows = zoneIdsCol?.getFacetedRowModel()?.rows ?? [];
@@ -326,7 +341,7 @@
     {renderToolbar}
     pageSize={PAGE_SIZE}
     initialSorting={[
-      { id: "level", desc: true },
+      { id: "level_min", desc: true },
       { id: "health", desc: true },
       { id: "name", desc: false },
     ]}

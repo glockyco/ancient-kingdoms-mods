@@ -54,6 +54,11 @@
     data.monsters.filter((m) => !m.is_boss && !m.is_elite && !isCritter(m)),
   );
 
+  // Check if ANY monster in this zone has level variance (for consistent column alignment)
+  const anyMonsterHasVariance = $derived(
+    data.monsters.some((m) => m.level_min !== m.level_max),
+  );
+
   // Monster column definitions
   const monsterColumns: ColumnDef<ZoneMonster>[] = [
     {
@@ -158,6 +163,7 @@
   cell: Cell<ZoneMonster, unknown>;
   row: Row<ZoneMonster>;
 })}
+  {@const hasVariance = row.original.level_min !== row.original.level_max}
   {#if cell.column.id === "name"}
     <a
       href="/monsters/{row.original.id}"
@@ -166,10 +172,27 @@
       {row.original.name}
     </a>
   {:else if cell.column.id === "level"}
-    <span class="ml-auto">{row.original.level}</span>
+    <span class="ml-auto"
+      >{row.original.level_min}<span
+        class={anyMonsterHasVariance
+          ? hasVariance
+            ? ""
+            : "invisible"
+          : "hidden"}>+</span
+      ></span
+    >
   {:else if cell.column.id === "health"}
-    <span class="ml-auto tabular-nums">
-      {row.original.health.toLocaleString()}
+    {@const minHealth =
+      row.original.health_base +
+      row.original.health_per_level * (row.original.level_min - 1)}
+    <span class="ml-auto">
+      {minHealth.toLocaleString()}<span
+        class={anyMonsterHasVariance
+          ? hasVariance
+            ? ""
+            : "invisible"
+          : "hidden"}>+</span
+      >
     </span>
   {:else if cell.column.id === "spawn_count"}
     <span class="ml-auto">{row.original.spawn_count}</span>

@@ -162,6 +162,9 @@ def run_all(conn: sqlite3.Connection) -> None:
     # Phase 1: Monster drops (expand altar variants before item sources read drops)
     monsters.run_drops(conn)
 
+    # Phase 1b: Monster level ranges (from spawns, needed before dropped_by)
+    monsters.run_levels(conn)
+
     # Phase 2: Quest display_type (needed before item usages reads it)
     quests.run_display_type(conn)
 

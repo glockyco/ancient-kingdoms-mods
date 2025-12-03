@@ -25,7 +25,11 @@ export interface ZoneMonster extends RespawnInfo {
   id: string;
   name: string;
   level: number;
+  level_min: number;
+  level_max: number;
   health: number;
+  health_base: number;
+  health_per_level: number;
   is_boss: boolean;
   is_elite: boolean;
   type_name: string | null;

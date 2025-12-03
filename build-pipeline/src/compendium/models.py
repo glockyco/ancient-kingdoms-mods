@@ -50,6 +50,9 @@ class MonsterSpawnData(BaseModel):
     sub_zone_id: str | None = None
     position: Position
 
+    # Level of this specific spawn (may differ from canonical monster)
+    level: int = 0
+
     # Movement and patrol
     move_probability: float = 0.0
     move_distance: float = 0.0
