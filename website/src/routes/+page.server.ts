@@ -11,6 +11,7 @@ interface HomePageData {
     npcs: number;
     quests: number;
     recipes: number;
+    professions: number;
   };
 }
 
@@ -53,6 +54,12 @@ export const load: PageServerLoad = (): HomePageData => {
     }
   ).count;
 
+  const professionCount = (
+    db.prepare("SELECT COUNT(*) as count FROM professions").get() as {
+      count: number;
+    }
+  ).count;
+
   db.close();
 
   return {
@@ -63,6 +70,7 @@ export const load: PageServerLoad = (): HomePageData => {
       npcs: npcCount,
       quests: questCount,
       recipes: alchemyCount + craftingCount,
+      professions: professionCount,
     },
   };
 };

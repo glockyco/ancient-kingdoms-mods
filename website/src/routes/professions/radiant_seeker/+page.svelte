@@ -1,0 +1,131 @@
+<script lang="ts">
+  import Breadcrumb from "$lib/components/Breadcrumb.svelte";
+  import Pickaxe from "@lucide/svelte/icons/pickaxe";
+  import Trophy from "@lucide/svelte/icons/trophy";
+
+  let { data } = $props();
+
+  // Skill level state (0-100%)
+  let skillLevel = $state(0);
+
+  // Skill gain chance: 70% at 0 skill, down to 20% at 100% skill
+  function getSkillGainChance(): number {
+    const skill = skillLevel / 100;
+    return Math.max(0, (0.7 - skill / 2) * 100);
+  }
+</script>
+
+<svelte:head>
+  <title>{data.profession.name} - Ancient Kingdoms Compendium</title>
+  <meta
+    name="description"
+    content="{data.profession.description} View all radiant spark locations."
+  />
+</svelte:head>
+
+<div class="container mx-auto p-8 space-y-8">
+  <Breadcrumb
+    items={[
+      { label: "Home", href: "/" },
+      { label: "Professions", href: "/professions" },
+      { label: data.profession.name },
+    ]}
+  />
+
+  <!-- Header -->
+  <div class="flex items-start gap-4">
+    <div
+      class="w-16 h-16 rounded-lg bg-muted flex items-center justify-center shrink-0"
+    >
+      <Pickaxe class="h-8 w-8 text-green-500 dark:text-green-400" />
+    </div>
+    <div>
+      <div class="flex items-center gap-2">
+        <h1 class="text-3xl font-bold">{data.profession.name}</h1>
+        <span
+          class="px-2 py-0.5 text-xs rounded-full bg-muted text-green-500 dark:text-green-400 font-medium"
+        >
+          Gathering
+        </span>
+      </div>
+      <p class="text-muted-foreground mt-1">{data.profession.description}</p>
+
+      <div class="flex items-center gap-4 mt-3 text-muted-foreground">
+        <span>Max Level: {data.profession.max_level}%</span>
+        {#if data.profession.steam_achievement_id}
+          <span class="flex items-center gap-1">
+            <Trophy class="h-4 w-4" />
+            Steam Achievement
+          </span>
+        {/if}
+      </div>
+    </div>
+  </div>
+
+  <!-- Calculator -->
+  <section class="rounded-lg border bg-card p-4 space-y-4">
+    <h3 class="font-semibold">Calculator</h3>
+
+    <div class="flex items-center gap-4">
+      <label for="skill-slider" class="w-40 shrink-0">
+        Radiant Seeker Skill:
+      </label>
+      <input
+        id="skill-slider"
+        type="range"
+        min="0"
+        max="100"
+        step="1"
+        bind:value={skillLevel}
+        class="flex-1 h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+      />
+      <span class="font-mono w-16 text-right">{skillLevel}%</span>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <span class="text-muted-foreground">Skill gain chance:</span>
+      <span class="font-mono font-medium">{getSkillGainChance().toFixed(0)}%</span>
+      <span class="text-muted-foreground text-xs">(per successful collect)</span>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <span class="text-muted-foreground">Skill gain amount:</span>
+      <span class="font-mono font-medium">0.10% – 0.30%</span>
+      <span class="text-muted-foreground text-xs">(fixed)</span>
+    </div>
+  </section>
+
+  <!-- Resources Table -->
+  <section class="space-y-4">
+    <h2 class="text-xl font-semibold">
+      Radiant Sparks ({data.resources.length})
+    </h2>
+    <div class="rounded-lg border overflow-hidden">
+      <table class="w-full">
+        <thead class="bg-muted/50">
+          <tr>
+            <th class="text-left p-3 font-medium">Name</th>
+            <th class="text-left p-3 font-medium">Skill Gain</th>
+          </tr>
+        </thead>
+        <tbody>
+          {#each data.resources as resource (resource.id)}
+            <tr class="border-t hover:bg-muted/30">
+              <td class="p-3">
+                <a
+                  href="/gather-items/{resource.id}"
+                  class="text-blue-600 dark:text-blue-400 hover:underline"
+                >
+                  {resource.name}
+                </a>
+              </td>
+              <td class="p-3">
+                <span class="font-mono">0.10% – 0.30%</span>
+              </td>
+            </tr>
+          {/each}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>

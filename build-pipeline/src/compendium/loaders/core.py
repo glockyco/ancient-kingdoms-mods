@@ -23,6 +23,7 @@ from compendium.models import (
     NpcData,
     NpcSpawnData,
     PortalData,
+    ProfessionData,
     QuestData,
     SkillData,
     SummonTriggerData,
@@ -91,6 +92,28 @@ def load_zones(conn: sqlite3.Connection, export_dir: Path) -> None:
 
     conn.commit()
     console.print(f"  [green]OK[/green] Loaded {len(zones)} zones")
+
+
+def load_professions(conn: sqlite3.Connection, export_dir: Path) -> None:
+    """Load professions into database."""
+    console.print("Loading professions...")
+
+    filepath = export_dir / "professions.json"
+    if not filepath.exists():
+        console.print("  [yellow]SKIP[/yellow] No professions.json found")
+        return
+
+    with open(filepath, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    professions = [ProfessionData(**item) for item in data]
+
+    cursor = conn.cursor()
+    for profession in professions:
+        insert_model(cursor, "professions", profession)
+
+    conn.commit()
+    console.print(f"  [green]OK[/green] Loaded {len(professions)} professions")
 
 
 def load_luck_tokens(conn: sqlite3.Connection, export_dir: Path) -> None:

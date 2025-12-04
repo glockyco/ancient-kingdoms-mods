@@ -7,6 +7,7 @@
   import ChefHat from "@lucide/svelte/icons/chef-hat";
   import Package from "@lucide/svelte/icons/package";
   import ListTree from "@lucide/svelte/icons/list-tree";
+  import ExternalLink from "@lucide/svelte/icons/external-link";
 
   let { data } = $props();
 
@@ -74,13 +75,25 @@
     <div class="flex items-center gap-3 flex-wrap">
       <RecipeIcon class="h-8 w-8 text-muted-foreground" />
       <h1 class="text-3xl font-bold">{data.recipe.result_item_name}</h1>
-      <span
-        class="px-2 py-1 rounded text-sm font-medium {getTypeColor(
-          data.recipe.type,
-        )}"
-      >
-        {data.recipe.type}
-      </span>
+      {#if data.recipe.type === "Alchemy" || data.recipe.type === "Cooking"}
+        <a
+          href="/professions/{data.recipe.type.toLowerCase()}"
+          class="inline-flex items-center gap-1 px-2 py-1 rounded text-sm font-medium {getTypeColor(
+            data.recipe.type,
+          )} hover:underline"
+        >
+          {data.recipe.type}
+          <ExternalLink class="h-3 w-3" />
+        </a>
+      {:else}
+        <span
+          class="px-2 py-1 rounded text-sm font-medium {getTypeColor(
+            data.recipe.type,
+          )}"
+        >
+          {data.recipe.type}
+        </span>
+      {/if}
       <span class="px-2 py-1 rounded text-sm font-medium bg-muted">
         {formatTier(data.recipe.tier)}
       </span>

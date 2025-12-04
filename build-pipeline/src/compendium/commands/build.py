@@ -23,6 +23,7 @@ from compendium.loaders import (
     load_npc_spawns,
     load_npcs,
     load_portals,
+    load_professions,
     load_quests,
     load_skills,
     load_static_data,
@@ -61,6 +62,7 @@ def run(config: dict) -> None:
         # Load data in order (respecting foreign keys)
         load_static_data(conn, export_dir)  # Factions, reputation tiers (before NPCs)
         load_zones(conn, export_dir)
+        load_professions(conn, export_dir)
         load_zone_triggers(conn, export_dir)
         load_skills(conn, export_dir)
         load_items(conn, export_dir)

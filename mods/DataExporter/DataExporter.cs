@@ -121,6 +121,10 @@ namespace DataExporter
                 var petExporter = new PetExporter(LoggerInstance, ExportPath);
                 petExporter.Export();
 
+                // Export professions
+                var professionExporter = new ProfessionExporter(LoggerInstance, ExportPath);
+                professionExporter.Export();
+
                 var elapsed = DateTime.Now - startTime;
 
                 LoggerInstance.Msg("========================================");

@@ -919,3 +919,22 @@ class AltarData(BaseModel):
     total_waves: int = 0
     estimated_duration_seconds: int = 0
     waves: list[AltarWave] = []
+
+
+# =============================================================================
+# Profession Models
+# =============================================================================
+
+
+class ProfessionData(BaseModel):
+    """Profession data from professions.json"""
+
+    id: str
+    name: str
+    description: str = ""
+    category: str  # crafting, gathering, exploration, combat
+    icon_path: str | None = None
+    steam_achievement_id: str | None = None
+    max_level: int = 100
+    tracking_type: str  # float_level, count_based
+    tracking_denominator: int | None = None
