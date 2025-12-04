@@ -14,6 +14,7 @@
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import type { GatherItemListView } from "$lib/types/gather-items";
   import type { ResourceZoneInfo } from "$lib/queries/gather-items.server";
+  import { formatDuration } from "$lib/utils/format";
   import Leaf from "@lucide/svelte/icons/leaf";
   import Trees from "@lucide/svelte/icons/trees";
   import Castle from "@lucide/svelte/icons/castle";
@@ -52,12 +53,17 @@
     "Radiant Spark": "bg-purple-600",
   };
 
-  // Format respawn time in human-readable format
-  function formatRespawnTime(seconds: number): string {
-    if (seconds <= 0) return "-";
-    if (seconds < 60) return `${Math.round(seconds)}s`;
-    if (seconds < 3600) return `${Math.round(seconds / 60)}m`;
-    return `${(seconds / 3600).toFixed(1)}h`;
+  // Format respawn time based on resource type
+  function formatRespawnForType(type: string, respawnTime: number): string {
+    if (type === "Radiant Spark") {
+      return "1m40s – 1h";
+    }
+    if (type === "Mineral" && respawnTime > 0) {
+      const min = formatDuration(Math.floor(respawnTime / 2));
+      const max = formatDuration(respawnTime);
+      return `${min} – ${max}`;
+    }
+    return formatDuration(respawnTime);
   }
 
   // Get unique types for filter
@@ -112,6 +118,15 @@
       accessorKey: "respawn_time",
       header: "Respawn",
       size: 120,
+      sortingFn: (rowA, rowB) => {
+        // Radiant sparks have random 100-3600s respawn regardless of database value
+        // Use midpoint (1850s) for sorting
+        const getEffectiveRespawn = (row: Row<ResourceWithZones>) => {
+          if (row.original.type === "Radiant Spark") return 1850;
+          return row.original.respawn_time;
+        };
+        return getEffectiveRespawn(rowA) - getEffectiveRespawn(rowB);
+      },
     },
     {
       id: "zones",
@@ -182,7 +197,7 @@
       {/if}
     </span>
   {:else if cell.column.id === "respawn_time"}
-    {formatRespawnTime(row.original.respawn_time)}
+    {formatRespawnForType(row.original.type, row.original.respawn_time)}
   {:else if cell.column.id === "zones"}
     {@const zones = row.original.zones}
     <div class="flex flex-wrap gap-1">

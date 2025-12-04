@@ -285,7 +285,14 @@
       {:else if data.resource.level > 0}
         <span>Tier {data.resource.level}</span>
       {/if}
-      {#if data.resource.respawn_time > 0}
+      {#if data.resource.is_radiant_spark}
+        <span>Respawn: 1m40s – 1h (random)</span>
+      {:else if data.resource.is_mineral && data.resource.respawn_time > 0}
+        <span>
+          Respawn: {formatDuration(Math.floor(data.resource.respawn_time / 2))} –
+          {formatDuration(data.resource.respawn_time)}
+        </span>
+      {:else if data.resource.respawn_time > 0}
         <span>Respawn: {formatDuration(data.resource.respawn_time)}</span>
       {/if}
       {#if data.resource.gathering_exp && data.resource.gathering_exp > 0}

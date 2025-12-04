@@ -14,18 +14,11 @@
   import Box from "@lucide/svelte/icons/box";
   import Trees from "@lucide/svelte/icons/trees";
   import Castle from "@lucide/svelte/icons/castle";
+  import { formatDuration } from "$lib/utils/format";
 
   let { data } = $props();
 
   const PAGE_SIZE = 20;
-
-  // Format respawn time in human-readable format
-  function formatRespawnTime(seconds: number): string {
-    if (seconds <= 0) return "-";
-    if (seconds < 60) return `${Math.round(seconds)}s`;
-    if (seconds < 3600) return `${Math.round(seconds / 60)}m`;
-    return `${(seconds / 3600).toFixed(1)}h`;
-  }
 
   // Format gold amounts with narrow space thousands separator
   function formatGold(amount: number): string {
@@ -183,7 +176,7 @@
       Chest
     </a>
   {:else if cell.column.id === "respawn_time"}
-    {formatRespawnTime(row.original.respawn_time)}
+    {formatDuration(row.original.respawn_time)}
   {:else if cell.column.id === "key"}
     {#if row.original.tool_or_key_id && row.original.tool_or_key_name}
       <a
