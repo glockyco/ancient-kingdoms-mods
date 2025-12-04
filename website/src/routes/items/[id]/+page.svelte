@@ -1853,7 +1853,7 @@
           <div class="space-y-2">
             {#each computed.foundInChests as chest, index (`${chest.chest_id}_${index}`)}
               <div class="flex justify-between items-center">
-                <a href="/chests/{chest.chest_id}" class={styles.link}>
+                <a href="/items/{chest.chest_id}" class={styles.link}>
                   {chest.chest_name}
                 </a>
                 <span class={styles.label}
