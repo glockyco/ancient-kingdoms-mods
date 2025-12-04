@@ -1931,12 +1931,21 @@
           <div class="space-y-2">
             {#each computed.usedInRecipes as recipe, index (`${recipe.recipe_id}_${index}`)}
               <div class="flex justify-between items-center">
-                <a
-                  href={resolve("/items/[id]", { id: recipe.result_item_id })}
-                  class={styles.link}
-                >
-                  {recipe.result_item_name}
-                </a>
+                <div class="flex items-center gap-1">
+                  <a
+                    href="/recipes/{recipe.recipe_id}"
+                    class="text-muted-foreground hover:text-foreground transition-colors"
+                    title="View recipe details"
+                  >
+                    <ExternalLink class="h-4 w-4" />
+                  </a>
+                  <a
+                    href={resolve("/items/[id]", { id: recipe.result_item_id })}
+                    class={styles.link}
+                  >
+                    {recipe.result_item_name}
+                  </a>
+                </div>
                 <span class={styles.label}>x{recipe.amount}</span>
               </div>
             {/each}
