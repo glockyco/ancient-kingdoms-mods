@@ -88,7 +88,7 @@
           </Card.Header>
           <Card.Content>
             <div
-              class="flex items-center text-muted-foreground group-hover:text-foreground transition-colors"
+              class="flex items-center text-sm text-muted-foreground group-hover:text-foreground transition-colors"
             >
               Browse all {data.counts.monsters.toLocaleString()} monsters
               <ArrowRight class="ml-2 h-4 w-4" />
@@ -116,7 +116,7 @@
           </Card.Header>
           <Card.Content>
             <div
-              class="flex items-center text-muted-foreground group-hover:text-foreground transition-colors"
+              class="flex items-center text-sm text-muted-foreground group-hover:text-foreground transition-colors"
             >
               Browse all {data.counts.npcs.toLocaleString()} NPCs
               <ArrowRight class="ml-2 h-4 w-4" />
@@ -143,7 +143,7 @@
           </Card.Header>
           <Card.Content>
             <div
-              class="flex items-center text-muted-foreground group-hover:text-foreground transition-colors"
+              class="flex items-center text-sm text-muted-foreground group-hover:text-foreground transition-colors"
             >
               Browse all {data.counts.zones.toLocaleString()} zones
               <ArrowRight class="ml-2 h-4 w-4" />
@@ -171,7 +171,7 @@
           </Card.Header>
           <Card.Content>
             <div
-              class="flex items-center text-muted-foreground group-hover:text-foreground transition-colors"
+              class="flex items-center text-sm text-muted-foreground group-hover:text-foreground transition-colors"
             >
               Browse all {data.counts.quests.toLocaleString()} quests
               <ArrowRight class="ml-2 h-4 w-4" />
@@ -199,7 +199,7 @@
           </Card.Header>
           <Card.Content>
             <div
-              class="flex items-center text-muted-foreground group-hover:text-foreground transition-colors"
+              class="flex items-center text-sm text-muted-foreground group-hover:text-foreground transition-colors"
             >
               Browse all {data.counts.recipes.toLocaleString()} recipes
               <ArrowRight class="ml-2 h-4 w-4" />
