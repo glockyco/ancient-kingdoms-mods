@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { SvelteMap } from "svelte/reactivity";
   import {
     DataTable,
     DataTableFacetedFilter,
@@ -117,6 +118,26 @@
 {#snippet renderToolbar({ table }: { table: TanstackTable<ChestListView> })}
   {@const zoneCol = table.getColumn("zone")}
   {@const keyCol = table.getColumn("key")}
+  {@const zoneCountsFiltered = (() => {
+    const counts = new SvelteMap<string, number>();
+    const facetedRows = zoneCol?.getFacetedRowModel()?.rows ?? [];
+    for (const row of facetedRows) {
+      const zoneId = row.original.zone_id;
+      counts.set(zoneId, (counts.get(zoneId) ?? 0) + 1);
+    }
+    return counts;
+  })()}
+  {@const keyCountsFiltered = (() => {
+    const counts = new SvelteMap<string, number>();
+    const facetedRows = keyCol?.getFacetedRowModel()?.rows ?? [];
+    for (const row of facetedRows) {
+      const keyId = row.original.tool_or_key_id;
+      if (keyId) {
+        counts.set(keyId, (counts.get(keyId) ?? 0) + 1);
+      }
+    }
+    return counts;
+  })()}
   {#if zoneCol}
     <DataTableFacetedFilter
       column={zoneCol}
@@ -125,6 +146,7 @@
         label: c.zone_name,
         value: c.zone_id,
       }))}
+      counts={zoneCountsFiltered}
     />
   {/if}
   {#if keyCol}
@@ -135,6 +157,7 @@
         label: name!,
         value: id!,
       }))}
+      counts={keyCountsFiltered}
     />
   {/if}
 {/snippet}
