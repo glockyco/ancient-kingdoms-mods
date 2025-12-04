@@ -11,7 +11,10 @@
   } from "$lib/components/ui/data-table";
   import { IconBadge } from "$lib/components/ui/icon-badge";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
-  import type { ChestListView } from "$lib/queries/gather-items.server";
+  import type {
+    ChestListView,
+    ChestDropListView,
+  } from "$lib/queries/gather-items.server";
   import Box from "@lucide/svelte/icons/box";
   import Trees from "@lucide/svelte/icons/trees";
   import Castle from "@lucide/svelte/icons/castle";
@@ -20,6 +23,26 @@
   let { data } = $props();
 
   const PAGE_SIZE = 20;
+
+  // Build a map of chest_id -> drops
+  const chestDropsMap = $derived.by(() => {
+    const map = new SvelteMap<string, ChestDropListView[]>();
+    for (const drop of data.chestDrops) {
+      const existing = map.get(drop.chest_id) || [];
+      existing.push(drop);
+      map.set(drop.chest_id, existing);
+    }
+    return map;
+  });
+
+  // Extend chests with drops array
+  type ChestWithDrops = ChestListView & { drops: ChestDropListView[] };
+  const chestsWithDrops = $derived(
+    data.chests.map((c) => ({
+      ...c,
+      drops: chestDropsMap.get(c.id) || [],
+    })),
+  );
 
   // Format gold amounts with narrow space thousands separator
   function formatGold(amount: number): string {
@@ -44,7 +67,7 @@
     ).sort((a, b) => a[1]!.localeCompare(b[1]!)),
   );
 
-  const columns: ColumnDef<ChestListView>[] = [
+  const columns: ColumnDef<ChestWithDrops>[] = [
     {
       id: "name",
       header: "Name",
@@ -82,6 +105,12 @@
       accessorFn: (row) => row.item_reward_name || "",
     },
     {
+      id: "drops",
+      header: "Random Drops",
+      minSize: 200,
+      accessorFn: (row) => row.drops.map((d) => d.item_name).join(" "),
+    },
+    {
       accessorKey: "respawn_time",
       header: "Respawn",
       size: 100,
@@ -112,10 +141,11 @@
     key: "Key",
     gold: "Gold",
     item: "Item",
+    drops: "Random Drops",
   };
 </script>
 
-{#snippet renderToolbar({ table }: { table: TanstackTable<ChestListView> })}
+{#snippet renderToolbar({ table }: { table: TanstackTable<ChestWithDrops> })}
   {@const zoneCol = table.getColumn("zone")}
   {@const keyCol = table.getColumn("key")}
   {@const zoneCountsFiltered = (() => {
@@ -162,7 +192,7 @@
   {/if}
 {/snippet}
 
-{#snippet renderHeader({ header }: { header: Header<ChestListView, unknown> })}
+{#snippet renderHeader({ header }: { header: Header<ChestWithDrops, unknown> })}
   {columnLabels[header.id] ?? header.id}
 {/snippet}
 
@@ -170,8 +200,8 @@
   cell,
   row,
 }: {
-  cell: Cell<ChestListView, unknown>;
-  row: Row<ChestListView>;
+  cell: Cell<ChestWithDrops, unknown>;
+  row: Row<ChestWithDrops>;
 })}
   {#if cell.column.id === "zone"}
     <IconBadge
@@ -241,6 +271,13 @@
     {:else}
       <span class="text-muted-foreground">-</span>
     {/if}
+  {:else if cell.column.id === "drops"}
+    {@const drops = row.original.drops}
+    {#if drops.length > 0}
+      <span class="text-muted-foreground">{drops.length} items</span>
+    {:else}
+      <span class="text-muted-foreground">-</span>
+    {/if}
   {:else}
     {cell.getValue()}
   {/if}
@@ -263,7 +300,7 @@
   </h1>
 
   <DataTable
-    data={data.chests}
+    data={chestsWithDrops}
     {columns}
     {columnLabels}
     {renderCell}
@@ -271,9 +308,11 @@
     {renderToolbar}
     pageSize={PAGE_SIZE}
     initialSorting={[{ id: "zone", desc: false }]}
+    initialColumnVisibility={{ coordinates: false }}
     urlKey="chests"
     showPagination={true}
     showSearch={true}
+    showColumnToggle={true}
     zebraStripe={true}
     paginateStaticHtml={true}
     searchPlaceholder="Search chests..."

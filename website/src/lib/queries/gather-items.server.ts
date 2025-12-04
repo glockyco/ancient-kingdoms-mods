@@ -205,6 +205,58 @@ export function getResourceZones(): ResourceZoneInfo[] {
 }
 
 /**
+ * Drop info for chests
+ */
+export interface ChestDrop {
+  item_id: string;
+  item_name: string;
+  drop_rate: number;
+  actual_drop_chance: number | null;
+}
+
+/**
+ * Get drops for a chest.
+ */
+export function getChestDrops(chestId: string): ChestDrop[] {
+  return query<ChestDrop>(
+    `SELECT
+      cd.item_id,
+      i.name as item_name,
+      cd.drop_rate,
+      cd.actual_drop_chance
+    FROM chest_drops cd
+    JOIN items i ON cd.item_id = i.id
+    WHERE cd.chest_id = ?
+    ORDER BY cd.drop_rate DESC`,
+    [chestId],
+  );
+}
+
+/**
+ * Chest drop info for list view (includes chest_id)
+ */
+export interface ChestDropListView {
+  chest_id: string;
+  item_id: string;
+  item_name: string;
+}
+
+/**
+ * Get all chest drops for list view.
+ */
+export function getAllChestDrops(): ChestDropListView[] {
+  return query<ChestDropListView>(
+    `SELECT
+      cd.chest_id,
+      cd.item_id,
+      i.name as item_name
+    FROM chest_drops cd
+    JOIN items i ON cd.item_id = i.id
+    ORDER BY cd.chest_id, i.name`,
+  );
+}
+
+/**
  * Get a chest by ID.
  */
 export function getChestById(id: string): Chest | null {

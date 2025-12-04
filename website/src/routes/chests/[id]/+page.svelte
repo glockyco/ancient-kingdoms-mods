@@ -1,10 +1,12 @@
 <script lang="ts">
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ObtainabilityTree from "$lib/components/ObtainabilityTree.svelte";
-  import { formatDuration } from "$lib/utils/format";
+  import ItemLink from "$lib/components/ItemLink.svelte";
+  import { formatDuration, formatPercent } from "$lib/utils/format";
   import Key from "@lucide/svelte/icons/key";
   import ListTree from "@lucide/svelte/icons/list-tree";
   import Gem from "@lucide/svelte/icons/gem";
+  import Dices from "@lucide/svelte/icons/dices";
   import type { PageData } from "./$types";
 
   let { data }: { data: PageData } = $props();
@@ -141,6 +143,42 @@
             </div>
           </div>
         {/if}
+      </div>
+    </section>
+  {/if}
+
+  <!-- Random Drops -->
+  {#if data.drops.length > 0}
+    <section>
+      <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
+        <Dices class="h-5 w-5 text-purple-500" />
+        Random Drops
+      </h2>
+      <div class="bg-muted/30 rounded-md border overflow-hidden">
+        <table class="w-full">
+          <thead>
+            <tr class="border-b bg-muted/50">
+              <th class="text-left font-medium p-3">Item</th>
+              <th class="text-right font-medium p-3 w-28">Drop Rate</th>
+            </tr>
+          </thead>
+          <tbody>
+            {#each data.drops as drop (drop.item_id)}
+              <tr class="border-b last:border-b-0 hover:bg-muted/30">
+                <td class="p-3">
+                  <ItemLink itemId={drop.item_id} itemName={drop.item_name} />
+                </td>
+                <td class="p-3 text-right font-mono">
+                  {#if drop.actual_drop_chance != null}
+                    {formatPercent(drop.actual_drop_chance)}
+                  {:else}
+                    {formatPercent(drop.drop_rate)}
+                  {/if}
+                </td>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
       </div>
     </section>
   {/if}

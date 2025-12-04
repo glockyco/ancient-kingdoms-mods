@@ -1,6 +1,6 @@
 import Database from "better-sqlite3";
 import { error } from "@sveltejs/kit";
-import { getChestById } from "$lib/queries/gather-items.server";
+import { getChestById, getChestDrops } from "$lib/queries/gather-items.server";
 import { buildObtainabilityTree } from "$lib/server/obtainability";
 import type { PageServerLoad } from "./$types";
 import type { ObtainabilityNode } from "$lib/types/recipes";
@@ -13,6 +13,9 @@ export const load: PageServerLoad = ({ params }) => {
   if (!chest) {
     throw error(404, "Chest not found");
   }
+
+  // Get chest drops
+  const drops = getChestDrops(params.id);
 
   // Build obtainability tree for key if one is required
   let keyObtainabilityTree: ObtainabilityNode | null = null;
@@ -30,5 +33,5 @@ export const load: PageServerLoad = ({ params }) => {
     db.close();
   }
 
-  return { chest, keyObtainabilityTree };
+  return { chest, drops, keyObtainabilityTree };
 };
