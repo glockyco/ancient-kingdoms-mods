@@ -137,8 +137,10 @@
               </a>
               {#if data.chest.item_reward_amount > 1}
                 <span class="text-muted-foreground">
-                  ×{data.chest.item_reward_amount}
+                  ×1–{data.chest.item_reward_amount}
                 </span>
+              {:else}
+                <span class="text-muted-foreground"> ×1 </span>
               {/if}
             </div>
           </div>

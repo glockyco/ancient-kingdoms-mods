@@ -481,8 +481,10 @@
           </a>
           {#if data.resource.item_reward_amount > 1}
             <span class="text-muted-foreground">
-              ×{data.resource.item_reward_amount}
+              ×1–{data.resource.item_reward_amount}
             </span>
+          {:else}
+            <span class="text-muted-foreground"> ×1 </span>
           {/if}
         </div>
       {/if}
