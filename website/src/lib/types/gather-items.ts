@@ -10,6 +10,9 @@ export interface GatherItemListView {
   tool_or_key_id: string | null;
   tool_or_key_name: string | null;
   zone_count: number;
+  item_reward_id: string | null;
+  item_reward_name: string | null;
+  item_reward_amount: number;
 }
 
 /**
@@ -47,6 +50,15 @@ export interface GatheringResourceDrop {
   item_name: string;
   drop_rate: number;
   actual_drop_chance: number | null;
+}
+
+/**
+ * Resource drop info for list view (includes resource_id)
+ */
+export interface ResourceDropListView {
+  resource_id: string;
+  item_id: string;
+  item_name: string;
 }
 
 /**

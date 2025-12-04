@@ -12,7 +12,10 @@
   } from "$lib/components/ui/data-table";
   import { IconBadge } from "$lib/components/ui/icon-badge";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
-  import type { GatherItemListView } from "$lib/types/gather-items";
+  import type {
+    GatherItemListView,
+    ResourceDropListView,
+  } from "$lib/types/gather-items";
   import type { ResourceZoneInfo } from "$lib/queries/gather-items.server";
   import { formatDuration } from "$lib/utils/format";
   import Leaf from "@lucide/svelte/icons/leaf";
@@ -32,12 +35,27 @@
     return map;
   });
 
-  // Extend resources with zones array
-  type ResourceWithZones = GatherItemListView & { zones: ResourceZoneInfo[] };
-  const resourcesWithZones = $derived(
+  // Build a map of resource_id -> drops
+  const resourceDropsMap = $derived.by(() => {
+    const map = new SvelteMap<string, ResourceDropListView[]>();
+    for (const drop of data.resourceDrops) {
+      const existing = map.get(drop.resource_id) || [];
+      existing.push(drop);
+      map.set(drop.resource_id, existing);
+    }
+    return map;
+  });
+
+  // Extend resources with zones and drops arrays
+  type ResourceWithZonesAndDrops = GatherItemListView & {
+    zones: ResourceZoneInfo[];
+    drops: ResourceDropListView[];
+  };
+  const resourcesWithZonesAndDrops = $derived(
     data.resources.map((r) => ({
       ...r,
       zones: resourceZoneMap.get(r.id) || [],
+      drops: resourceDropsMap.get(r.id) || [],
     })),
   );
 
@@ -78,7 +96,7 @@
     ).sort((a, b) => a.zone_name.localeCompare(b.zone_name)),
   );
 
-  const columns: ColumnDef<ResourceWithZones>[] = [
+  const columns: ColumnDef<ResourceWithZonesAndDrops>[] = [
     {
       accessorKey: "type",
       header: "Type",
@@ -115,13 +133,25 @@
       size: 180,
     },
     {
+      id: "item",
+      header: "Item",
+      minSize: 180,
+      accessorFn: (row) => row.item_reward_name || "",
+    },
+    {
+      id: "drops",
+      header: "Random Drops",
+      size: 170,
+      accessorFn: (row) => row.drops.map((d) => d.item_name).join(" "),
+    },
+    {
       accessorKey: "respawn_time",
       header: "Respawn",
       size: 120,
       sortingFn: (rowA, rowB) => {
         // Radiant sparks have random 100-3600s respawn regardless of database value
         // Use midpoint (1850s) for sorting
-        const getEffectiveRespawn = (row: Row<ResourceWithZones>) => {
+        const getEffectiveRespawn = (row: Row<ResourceWithZonesAndDrops>) => {
           if (row.original.type === "Radiant Spark") return 1850;
           return row.original.respawn_time;
         };
@@ -131,7 +161,8 @@
     {
       id: "zones",
       header: "Zones",
-      minSize: 300,
+      size: 230,
+      enableSorting: false,
       accessorFn: (row) => row.zones.map((z) => z.zone_name).join(" "),
       filterFn: (row, columnId, filterValue: string[]) => {
         const zones = row.original.zones;
@@ -145,6 +176,8 @@
     type: "Type",
     name: "Name",
     level: "Tier",
+    item: "Item",
+    drops: "Random Drops",
     respawn_time: "Respawn",
     zones: "Zones",
   };
@@ -153,7 +186,7 @@
 {#snippet renderHeader({
   header,
 }: {
-  header: Header<ResourceWithZones, unknown>;
+  header: Header<ResourceWithZonesAndDrops, unknown>;
 })}
   {#if header.id === "level"}
     <span class="ml-auto">{columnLabels[header.id] ?? header.id}</span>
@@ -166,8 +199,8 @@
   cell,
   row,
 }: {
-  cell: Cell<ResourceWithZones, unknown>;
-  row: Row<ResourceWithZones>;
+  cell: Cell<ResourceWithZonesAndDrops, unknown>;
+  row: Row<ResourceWithZonesAndDrops>;
 })}
   {#if cell.column.id === "type"}
     {@const t = row.original.type}
@@ -196,21 +229,49 @@
         -
       {/if}
     </span>
+  {:else if cell.column.id === "item"}
+    {#if row.original.item_reward_id && row.original.item_reward_name}
+      <a
+        href="/items/{row.original.item_reward_id}"
+        class="text-blue-600 dark:text-blue-400 hover:underline"
+      >
+        {row.original.item_reward_name}
+      </a>
+      {#if row.original.item_reward_amount > 1}
+        <span class="text-muted-foreground"
+          >&nbsp;×1–{row.original.item_reward_amount}</span
+        >
+      {:else}
+        <span class="text-muted-foreground">&nbsp;×1</span>
+      {/if}
+    {:else}
+      <span class="text-muted-foreground">-</span>
+    {/if}
+  {:else if cell.column.id === "drops"}
+    {@const drops = row.original.drops}
+    {#if drops.length > 0}
+      <span class="text-muted-foreground">{drops.length} items</span>
+    {:else}
+      <span class="text-muted-foreground">-</span>
+    {/if}
   {:else if cell.column.id === "respawn_time"}
     {formatRespawnForType(row.original.type, row.original.respawn_time)}
   {:else if cell.column.id === "zones"}
     {@const zones = row.original.zones}
-    <div class="flex flex-wrap gap-1">
+    <div class="flex gap-1 whitespace-nowrap">
       {#if zones.length > 0}
-        {#each zones as zone (zone.zone_id)}
-          <IconBadge
-            href="/zones/{zone.zone_id}"
-            icon={zone.is_dungeon ? Castle : Trees}
-            iconClass={zone.is_dungeon ? "text-purple-500" : "text-green-500"}
+        <IconBadge
+          href="/zones/{zones[0].zone_id}"
+          icon={zones[0].is_dungeon ? Castle : Trees}
+          iconClass={zones[0].is_dungeon ? "text-purple-500" : "text-green-500"}
+        >
+          {zones[0].zone_name}
+        </IconBadge>
+        {#if zones.length > 1}
+          <span class="text-muted-foreground text-xs self-center"
+            >+{zones.length - 1}</span
           >
-            {zone.zone_name}
-          </IconBadge>
-        {/each}
+        {/if}
       {:else}
         <span class="text-muted-foreground">-</span>
       {/if}
@@ -220,7 +281,11 @@
   {/if}
 {/snippet}
 
-{#snippet renderToolbar({ table }: { table: TanstackTable<ResourceWithZones> })}
+{#snippet renderToolbar({
+  table,
+}: {
+  table: TanstackTable<ResourceWithZonesAndDrops>;
+})}
   {@const typeCol = table.getColumn("type")}
   {@const levelCol = table.getColumn("level")}
   {@const zonesCol = table.getColumn("zones")}
@@ -279,7 +344,7 @@
   </h1>
 
   <DataTable
-    data={resourcesWithZones}
+    data={resourcesWithZonesAndDrops}
     {columns}
     {columnLabels}
     {renderCell}

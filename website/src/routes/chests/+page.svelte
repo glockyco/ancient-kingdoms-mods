@@ -107,7 +107,7 @@
     {
       id: "drops",
       header: "Random Drops",
-      minSize: 200,
+      size: 170,
       accessorFn: (row) => row.drops.map((d) => d.item_name).join(" "),
     },
     {
@@ -265,10 +265,10 @@
       </a>
       {#if row.original.item_reward_amount > 1}
         <span class="text-muted-foreground"
-          >×1–{row.original.item_reward_amount}</span
+          >&nbsp;×1–{row.original.item_reward_amount}</span
         >
       {:else}
-        <span class="text-muted-foreground"> ×1 </span>
+        <span class="text-muted-foreground">&nbsp;×1</span>
       {/if}
     {:else}
       <span class="text-muted-foreground">-</span>

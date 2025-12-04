@@ -6,6 +6,7 @@ import type {
   GatheringResourceSpawn,
   Chest,
   GatherItemDetail,
+  ResourceDropListView,
 } from "$lib/types/gather-items";
 
 /**
@@ -21,7 +22,10 @@ export function getGatherItems(): GatherItemListView[] {
       respawn_time,
       tool_or_key_id,
       tool_or_key_name,
-      zone_count
+      zone_count,
+      item_reward_id,
+      item_reward_name,
+      item_reward_amount
     FROM (
       -- Gathering resources
       SELECT
@@ -37,9 +41,13 @@ export function getGatherItems(): GatherItemListView[] {
         gr.respawn_time,
         gr.tool_required_id as tool_or_key_id,
         t.name as tool_or_key_name,
-        (SELECT COUNT(DISTINCT zone_id) FROM gathering_resource_spawns WHERE resource_id = gr.id) as zone_count
+        (SELECT COUNT(DISTINCT zone_id) FROM gathering_resource_spawns WHERE resource_id = gr.id) as zone_count,
+        gr.item_reward_id,
+        r.name as item_reward_name,
+        gr.item_reward_amount
       FROM gathering_resources gr
       LEFT JOIN items t ON gr.tool_required_id = t.id
+      LEFT JOIN items r ON gr.item_reward_id = r.id
 
       UNION ALL
 
@@ -52,9 +60,13 @@ export function getGatherItems(): GatherItemListView[] {
         c.respawn_time,
         c.key_required_id as tool_or_key_id,
         k.name as tool_or_key_name,
-        1 as zone_count
+        1 as zone_count,
+        c.item_reward_id,
+        r.name as item_reward_name,
+        c.item_reward_amount
       FROM chests c
       LEFT JOIN items k ON c.key_required_id = k.id
+      LEFT JOIN items r ON c.item_reward_id = r.id
     )
     ORDER BY type, name`,
   );
@@ -155,6 +167,21 @@ export function getGatheringResourceDrops(
     WHERE grd.resource_id = ?
     ORDER BY grd.drop_rate DESC`,
     [resourceId],
+  );
+}
+
+/**
+ * Get all resource drops for list view.
+ */
+export function getAllResourceDrops(): ResourceDropListView[] {
+  return query<ResourceDropListView>(
+    `SELECT
+      grd.resource_id,
+      grd.item_id,
+      i.name as item_name
+    FROM gathering_resource_drops grd
+    JOIN items i ON grd.item_id = i.id
+    ORDER BY grd.resource_id, i.name`,
   );
 }
 
