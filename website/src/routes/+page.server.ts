@@ -11,6 +11,8 @@ interface HomePageData {
     npcs: number;
     quests: number;
     recipes: number;
+    gatheringResources: number;
+    chests: number;
     professions: number;
   };
 }
@@ -54,6 +56,18 @@ export const load: PageServerLoad = (): HomePageData => {
     }
   ).count;
 
+  const gatheringResourceCount = (
+    db.prepare("SELECT COUNT(*) as count FROM gathering_resources").get() as {
+      count: number;
+    }
+  ).count;
+
+  const chestCount = (
+    db.prepare("SELECT COUNT(*) as count FROM chests").get() as {
+      count: number;
+    }
+  ).count;
+
   const professionCount = (
     db.prepare("SELECT COUNT(*) as count FROM professions").get() as {
       count: number;
@@ -70,6 +84,8 @@ export const load: PageServerLoad = (): HomePageData => {
       npcs: npcCount,
       quests: questCount,
       recipes: alchemyCount + craftingCount,
+      gatheringResources: gatheringResourceCount,
+      chests: chestCount,
       professions: professionCount,
     },
   };

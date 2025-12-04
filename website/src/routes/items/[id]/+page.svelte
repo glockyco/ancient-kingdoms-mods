@@ -1797,7 +1797,7 @@
           <div class="space-y-2">
             {#each computed.opensChests as chest (chest.chest_id)}
               <div class="space-y-0.5">
-                <a href="/gather-items/{chest.chest_id}" class={styles.link}>
+                <a href="/chests/{chest.chest_id}" class={styles.link}>
                   Chest
                 </a>
                 {#if chest.zone_name}

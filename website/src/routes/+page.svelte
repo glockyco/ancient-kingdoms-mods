@@ -10,6 +10,7 @@
   import FlaskConical from "@lucide/svelte/icons/flask-conical";
   import Flag from "@lucide/svelte/icons/flag";
   import Leaf from "@lucide/svelte/icons/leaf";
+  import Box from "@lucide/svelte/icons/box";
   import Hammer from "@lucide/svelte/icons/hammer";
   import Search from "@lucide/svelte/icons/search";
   import Map from "@lucide/svelte/icons/map";
@@ -59,7 +60,7 @@
           </Card.Header>
           <Card.Content>
             <div
-              class="flex items-center text-muted-foreground group-hover:text-foreground transition-colors"
+              class="flex items-center text-sm text-muted-foreground group-hover:text-foreground transition-colors"
             >
               Browse all {data.counts.items.toLocaleString()} items
               <ArrowRight class="ml-2 h-4 w-4" />
@@ -207,30 +208,58 @@
         </Card.Root>
       </a>
 
-      <a href="/professions" class="block group">
+      <a href="/gather-items" class="block group">
         <Card.Root
           class="h-full transition-colors hover:bg-muted/50 bg-muted/30"
         >
           <Card.Header>
             <div class="flex items-center gap-3">
-              <div class="p-2 rounded-lg bg-yellow-500/10">
-                <Hammer class="h-6 w-6 text-yellow-500" />
+              <div class="p-2 rounded-lg bg-lime-500/10">
+                <Leaf class="h-6 w-6 text-lime-500" />
               </div>
               <div>
                 <Card.Title class="group-hover:underline"
-                  >Professions</Card.Title
+                  >Gathering Resources</Card.Title
                 >
                 <Card.Description
-                  >Crafting, gathering, combat, and exploration</Card.Description
+                  >Plants, minerals, and radiant sparks</Card.Description
                 >
               </div>
             </div>
           </Card.Header>
           <Card.Content>
             <div
-              class="flex items-center text-muted-foreground group-hover:text-foreground transition-colors"
+              class="flex items-center text-sm text-muted-foreground group-hover:text-foreground transition-colors"
             >
-              Browse all {data.counts.professions.toLocaleString()} professions
+              Browse all {data.counts.gatheringResources.toLocaleString()} resources
+              <ArrowRight class="ml-2 h-4 w-4" />
+            </div>
+          </Card.Content>
+        </Card.Root>
+      </a>
+
+      <a href="/chests" class="block group">
+        <Card.Root
+          class="h-full transition-colors hover:bg-muted/50 bg-muted/30"
+        >
+          <Card.Header>
+            <div class="flex items-center gap-3">
+              <div class="p-2 rounded-lg bg-sky-500/10">
+                <Box class="h-6 w-6 text-sky-500" />
+              </div>
+              <div>
+                <Card.Title class="group-hover:underline">Chests</Card.Title>
+                <Card.Description
+                  >Treasure chests, their keys, and contents</Card.Description
+                >
+              </div>
+            </div>
+          </Card.Header>
+          <Card.Content>
+            <div
+              class="flex items-center text-sm text-muted-foreground group-hover:text-foreground transition-colors"
+            >
+              Browse all {data.counts.chests.toLocaleString()} chests
               <ArrowRight class="ml-2 h-4 w-4" />
             </div>
           </Card.Content>
@@ -242,7 +271,18 @@
   <!-- Coming Soon Sections -->
   <section class="space-y-6">
     <h2 class="text-2xl font-semibold text-muted-foreground">Coming Soon</h2>
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-6">
+      <Card.Root class="opacity-50 bg-muted/30">
+        <Card.Header>
+          <div class="flex flex-col items-center text-center gap-2">
+            <div class="p-2 rounded-lg bg-yellow-500/10">
+              <Hammer class="h-5 w-5 text-yellow-500" />
+            </div>
+            <Card.Title class="text-base">Professions</Card.Title>
+          </div>
+        </Card.Header>
+      </Card.Root>
+
       <Card.Root class="opacity-50 bg-muted/30">
         <Card.Header>
           <div class="flex flex-col items-center text-center gap-2">
@@ -261,17 +301,6 @@
               <Flag class="h-5 w-5 text-rose-500" />
             </div>
             <Card.Title class="text-base">Factions</Card.Title>
-          </div>
-        </Card.Header>
-      </Card.Root>
-
-      <Card.Root class="opacity-50 bg-muted/30">
-        <Card.Header>
-          <div class="flex flex-col items-center text-center gap-2">
-            <div class="p-2 rounded-lg bg-lime-500/10">
-              <Leaf class="h-5 w-5 text-lime-500" />
-            </div>
-            <Card.Title class="text-base">Gatherables</Card.Title>
           </div>
         </Card.Header>
       </Card.Root>
