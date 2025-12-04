@@ -113,6 +113,22 @@ export interface ZoneRenewalSage {
 }
 
 /**
+ * Chest info for zone detail page
+ */
+export interface ZoneChest {
+  id: string;
+  respawn_time: number;
+  key_required_id: string | null;
+  key_required_name: string | null;
+  item_reward_id: string | null;
+  item_reward_name: string | null;
+  item_reward_amount: number;
+  drop_count: number;
+  position_x: number | null;
+  position_y: number | null;
+}
+
+/**
  * Full zone detail data
  */
 export interface ZoneDetailData {
@@ -128,6 +144,7 @@ export interface ZoneDetailData {
   monsters: ZoneMonster[];
   npcs: ZoneNpc[];
   gatherResources: ZoneGatherResource[];
+  chests: ZoneChest[];
   altars: ZoneAltar[];
   connectedZones: ZoneConnection[];
   subZones: ZoneSubZone[];

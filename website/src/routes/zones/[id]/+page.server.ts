@@ -6,6 +6,7 @@ import type {
   ZoneMonster,
   ZoneNpc,
   ZoneGatherResource,
+  ZoneChest,
   ZoneAltar,
   ZoneConnection,
   ZoneSubZone,
@@ -228,6 +229,30 @@ export const load: PageServerLoad = ({ params }): ZoneDetailData => {
     )
     .all(params.id) as ZoneGatherResource[];
 
+  // Get chests in this zone
+  const chests = db
+    .prepare(
+      `
+    SELECT
+      c.id,
+      c.respawn_time,
+      c.key_required_id,
+      k.name as key_required_name,
+      c.item_reward_id,
+      r.name as item_reward_name,
+      c.item_reward_amount,
+      (SELECT COUNT(*) FROM chest_drops cd WHERE cd.chest_id = c.id) as drop_count,
+      c.position_x,
+      c.position_y
+    FROM chests c
+    LEFT JOIN items k ON c.key_required_id = k.id
+    LEFT JOIN items r ON c.item_reward_id = r.id
+    WHERE c.zone_id = ?
+    ORDER BY k.name, c.position_x, c.position_y
+  `,
+    )
+    .all(params.id) as ZoneChest[];
+
   // Get altars in this zone
   const altars = db
     .prepare(
@@ -313,6 +338,7 @@ export const load: PageServerLoad = ({ params }): ZoneDetailData => {
     monsters,
     npcs,
     gatherResources,
+    chests,
     altars,
     connectedZones,
     subZones,

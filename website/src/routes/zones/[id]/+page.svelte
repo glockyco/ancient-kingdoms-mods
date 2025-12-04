@@ -1,5 +1,10 @@
 <script lang="ts">
-  import type { ZoneNpc, ZoneMonster, ZoneAltar } from "$lib/types/zones";
+  import type {
+    ZoneNpc,
+    ZoneMonster,
+    ZoneAltar,
+    ZoneChest,
+  } from "$lib/types/zones";
   import {
     createRespawnColumns,
     isRespawnColumn,
@@ -32,6 +37,8 @@
   import Castle from "@lucide/svelte/icons/castle";
   import Trees from "@lucide/svelte/icons/trees";
   import RefreshCw from "@lucide/svelte/icons/refresh-cw";
+  import Box from "@lucide/svelte/icons/box";
+  import { formatDuration } from "$lib/utils/format";
 
   let { data } = $props();
 
@@ -125,6 +132,46 @@
         const roleKeys = row.getValue(columnId) as string[];
         return filterValue.some((v) => roleKeys.includes(v));
       },
+    },
+  ];
+
+  // Chest column definitions
+  const chestColumns: ColumnDef<ZoneChest>[] = [
+    {
+      id: "name",
+      header: "Chest",
+      size: 80,
+    },
+    {
+      id: "key",
+      header: "Key",
+      minSize: 200,
+      accessorFn: (row) => row.key_required_name || "",
+      sortingFn: (rowA, rowB) => {
+        const a = rowA.original.key_required_name;
+        const b = rowB.original.key_required_name;
+        if (a === null && b === null) return 0;
+        if (a === null) return 1;
+        if (b === null) return -1;
+        return a.localeCompare(b);
+      },
+    },
+    {
+      id: "item",
+      header: "Item",
+      minSize: 150,
+      accessorFn: (row) => row.item_reward_name || "",
+    },
+    {
+      id: "drops",
+      header: "Random Drops",
+      size: 170,
+      accessorFn: (row) => row.drop_count,
+    },
+    {
+      accessorKey: "respawn_time",
+      header: "Respawn",
+      size: 100,
     },
   ];
 
@@ -286,6 +333,70 @@
       title="Roles"
       options={roleOptions}
     />
+  {:else}
+    {header.column.columnDef.header}
+  {/if}
+{/snippet}
+
+{#snippet renderChestCell({
+  cell,
+  row,
+}: {
+  cell: Cell<ZoneChest, unknown>;
+  row: Row<ZoneChest>;
+})}
+  {#if cell.column.id === "name"}
+    <a
+      href="/chests/{row.original.id}"
+      class="text-blue-600 dark:text-blue-400 hover:underline"
+    >
+      Chest
+    </a>
+  {:else if cell.column.id === "key"}
+    {#if row.original.key_required_id && row.original.key_required_name}
+      <a
+        href="/items/{row.original.key_required_id}"
+        class="text-blue-600 dark:text-blue-400 hover:underline"
+      >
+        {row.original.key_required_name}
+      </a>
+    {:else}
+      <span class="text-muted-foreground">-</span>
+    {/if}
+  {:else if cell.column.id === "item"}
+    {#if row.original.item_reward_id && row.original.item_reward_name}
+      <a
+        href="/items/{row.original.item_reward_id}"
+        class="text-blue-600 dark:text-blue-400 hover:underline"
+      >
+        {row.original.item_reward_name}
+      </a>
+      {#if row.original.item_reward_amount > 1}
+        <span class="text-muted-foreground"
+          >&nbsp;×1–{row.original.item_reward_amount}</span
+        >
+      {:else}
+        <span class="text-muted-foreground">&nbsp;×1</span>
+      {/if}
+    {:else}
+      <span class="text-muted-foreground">-</span>
+    {/if}
+  {:else if cell.column.id === "drops"}
+    {#if row.original.drop_count > 0}
+      <span class="text-muted-foreground">{row.original.drop_count} items</span>
+    {:else}
+      <span class="text-muted-foreground">-</span>
+    {/if}
+  {:else if cell.column.id === "respawn_time"}
+    <span class="ml-auto">{formatDuration(row.original.respawn_time)}</span>
+  {:else}
+    {cell.getValue()}
+  {/if}
+{/snippet}
+
+{#snippet renderChestHeader({ header }: { header: Header<ZoneChest, unknown> })}
+  {#if header.id === "respawn_time"}
+    <span class="ml-auto">{header.column.columnDef.header}</span>
   {:else}
     {header.column.columnDef.header}
   {/if}
@@ -508,6 +619,27 @@
         renderHeader={renderNpcHeader}
         initialSorting={[{ id: "name", desc: false }]}
         urlKey="zone-{data.zone.id}-npcs"
+        pageSize={10}
+        zebraStripe={true}
+        class="bg-muted/30"
+      />
+    </section>
+  {/if}
+
+  <!-- Chests Section -->
+  {#if data.chests.length > 0}
+    <section>
+      <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
+        <Box class="h-5 w-5 text-sky-500" />
+        Chests ({data.chests.length})
+      </h2>
+      <DataTable
+        data={data.chests}
+        columns={chestColumns}
+        renderCell={renderChestCell}
+        renderHeader={renderChestHeader}
+        initialSorting={[{ id: "key", desc: false }]}
+        urlKey="zone-{data.zone.id}-chests"
         pageSize={10}
         zebraStripe={true}
         class="bg-muted/30"
