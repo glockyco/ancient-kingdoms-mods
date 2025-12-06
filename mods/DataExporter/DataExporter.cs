@@ -125,6 +125,26 @@ namespace DataExporter
                 var professionExporter = new ProfessionExporter(LoggerInstance, ExportPath);
                 professionExporter.Export();
 
+                // Export crafting stations
+                var craftingStationExporter = new CraftingStationExporter(LoggerInstance, ExportPath);
+                craftingStationExporter.Export();
+
+                // Export alchemy tables
+                var alchemyTableExporter = new AlchemyTableExporter(LoggerInstance, ExportPath);
+                alchemyTableExporter.Export();
+
+                // Export traps (disarmable, dangerous ground, wall traps)
+                var trapExporter = new TrapExporter(LoggerInstance, ExportPath);
+                trapExporter.Export();
+
+                // Export doors
+                var doorExporter = new DoorExporter(LoggerInstance, ExportPath);
+                doorExporter.Export();
+
+                // Export interactive objects
+                var interactiveObjectExporter = new InteractiveObjectExporter(LoggerInstance, ExportPath);
+                interactiveObjectExporter.Export();
+
                 var elapsed = DateTime.Now - startTime;
 
                 LoggerInstance.Msg("========================================");
