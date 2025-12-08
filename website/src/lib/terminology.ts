@@ -35,6 +35,7 @@ export const STAT_DISPLAY_NAMES: Record<string, string> = {
   poison_resist: "Poison Resist",
   disease_resist: "Disease Resist",
   magic_resist: "Magic Resist",
+  resist_fear_chance: "Fear Resistance",
 
   // Attributes
   strength: "Strength",

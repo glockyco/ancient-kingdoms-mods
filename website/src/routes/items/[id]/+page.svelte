@@ -57,6 +57,7 @@
     "critical_chance",
     "haste",
     "spell_haste",
+    "resist_fear_chance",
   ]);
 
   function formatStatValue(
