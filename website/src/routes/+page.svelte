@@ -36,7 +36,7 @@
       Your guide to items, monsters, zones, quests, and more
     </p>
     <p class="text-sm text-muted-foreground">
-      Updated for v0.9.0.2 (2025-12-04)
+      Updated for v0.9.1.3 (2025-12-08)
     </p>
   </div>
 
