@@ -74,6 +74,7 @@ public class PortalExporter : BaseExporter
                     portal.destination.position.z
                 ),
                 required_item_id = portal.key != null ? SanitizeId(portal.key.name) : null,
+                requires_everyone_key = portal.requiresEveryoneKey,
                 level_required = portal.itemLevelRequired,
                 is_closed = portal.isClosed,
                 orientation = new Position(portal.orientation.x, portal.orientation.y, 0),

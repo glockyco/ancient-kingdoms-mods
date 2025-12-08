@@ -18,6 +18,7 @@ public class PortalData
 
     // Requirements
     public string required_item_id { get; set; }
+    public bool requires_everyone_key { get; set; }
     public int level_required { get; set; }
     public string need_monster_dead_id { get; set; }
     public bool is_closed { get; set; }
