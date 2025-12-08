@@ -181,66 +181,69 @@
   {/if}
 
   <!-- Calculator -->
-  <section class="rounded-lg border bg-card p-4 space-y-4">
-    <h3 class="font-semibold">Calculator</h3>
-
-    <div class="flex items-center gap-4">
-      <label for="skill-slider" class="w-32 shrink-0"> Alchemy Skill: </label>
-      <input
-        id="skill-slider"
-        type="range"
-        min="0"
-        max="100"
-        step="1"
-        bind:value={skillLevel}
-        class="flex-1 h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
-      />
-      <span class="font-mono w-16 text-right">{skillLevel}%</span>
+  <section class="space-y-4">
+    <h2 class="text-xl font-semibold">Calculator</h2>
+    <div
+      class="rounded-lg border p-3 flex flex-wrap items-center gap-x-6 gap-y-2"
+    >
+      <div class="flex items-center gap-3">
+        <label for="skill-slider" class="shrink-0">Alchemy Skill:</label>
+        <input
+          id="skill-slider"
+          type="range"
+          min="0"
+          max="100"
+          step="1"
+          bind:value={skillLevel}
+          class="w-32 h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+        />
+        <span class="font-mono w-12">{skillLevel}%</span>
+      </div>
+      <div class="flex items-center gap-2 text-muted-foreground">
+        <span>Skill gain chance:</span>
+        <span class="font-mono text-foreground"
+          >{getSkillGainChance().toFixed(0)}%</span
+        >
+        <span class="text-xs">(per success)</span>
+      </div>
     </div>
-
-    <div class="flex items-center gap-2">
-      <span class="text-muted-foreground">Skill gain chance:</span>
-      <span class="font-mono font-medium"
-        >{getSkillGainChance().toFixed(0)}%</span
-      >
-      <span class="text-muted-foreground text-xs">(per successful craft)</span>
-    </div>
-
-    <table class="w-full">
-      <thead>
-        <tr class="text-muted-foreground">
-          <th class="text-left font-medium py-1">Tier</th>
-          <th class="text-left font-medium py-1">Success</th>
-          <th class="text-left font-medium py-1">Skill Gain</th>
-        </tr>
-      </thead>
-      <tbody>
-        {#each [0, 1, 2, 3, 4] as tier (tier)}
-          {@const successChance = getSuccessChance(tier)}
-          {@const effortless = isEffortless(tier)}
-          {@const [minGain, maxGain] = getSkillGainAmount(successChance)}
+    <div class="rounded-lg border overflow-hidden">
+      <table class="w-full">
+        <thead class="bg-muted/50">
           <tr>
-            <td class="py-1 font-medium">{romanNumerals[tier]}</td>
-            <td class="py-1">
-              <span class="font-mono {getSuccessChanceColor(successChance)}">
-                {successChance.toFixed(2)}%
-              </span>
-            </td>
-            <td class="py-1">
-              {#if effortless}
-                <span class="text-muted-foreground italic">Effortless</span>
-              {:else if successChance > 0}
-                <span class="font-mono"
-                  >{minGain.toFixed(2)}% – {maxGain.toFixed(2)}%</span
-                >
-              {:else}
-                <span class="text-muted-foreground">—</span>
-              {/if}
-            </td>
+            <th class="text-left p-3 font-medium">Tier</th>
+            <th class="text-left p-3 font-medium">Success</th>
+            <th class="text-left p-3 font-medium">Skill Gain</th>
           </tr>
-        {/each}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {#each [0, 1, 2, 3, 4] as tier (tier)}
+            {@const successChance = getSuccessChance(tier)}
+            {@const effortless = isEffortless(tier)}
+            {@const [minGain, maxGain] = getSkillGainAmount(successChance)}
+            <tr class="border-t hover:bg-muted/30">
+              <td class="p-3 font-medium">{romanNumerals[tier]}</td>
+              <td class="p-3">
+                <span class="font-mono {getSuccessChanceColor(successChance)}">
+                  {successChance.toFixed(2)}%
+                </span>
+              </td>
+              <td class="p-3">
+                {#if effortless}
+                  <span class="text-muted-foreground italic">Effortless</span>
+                {:else if successChance > 0}
+                  <span class="font-mono"
+                    >{minGain.toFixed(2)}% – {maxGain.toFixed(2)}%</span
+                  >
+                {:else}
+                  <span class="text-muted-foreground">—</span>
+                {/if}
+              </td>
+            </tr>
+          {/each}
+        </tbody>
+      </table>
+    </div>
   </section>
 
   <!-- Recipes Table -->

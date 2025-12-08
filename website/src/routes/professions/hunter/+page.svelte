@@ -28,7 +28,8 @@
   <title>{data.profession.name} - Ancient Kingdoms Compendium</title>
   <meta
     name="description"
-    content="{data.profession.description} View all hunt targets for the Hunter profession."
+    content="{data.profession
+      .description} View all hunt targets for the Hunter profession."
   />
 </svelte:head>
 
@@ -72,29 +73,31 @@
   </div>
 
   <!-- Calculator -->
-  <section class="rounded-lg border bg-card p-4 space-y-4">
-    <h3 class="font-semibold">Calculator</h3>
-
-    <div class="flex items-center gap-4">
-      <label for="skill-slider" class="w-32 shrink-0">
-        Hunter Skill:
-      </label>
-      <input
-        id="skill-slider"
-        type="range"
-        min="0"
-        max="100"
-        step="1"
-        bind:value={skillLevel}
-        class="flex-1 h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
-      />
-      <span class="font-mono w-16 text-right">{skillLevel}%</span>
-    </div>
-
-    <div class="flex items-center gap-2">
-      <span class="text-muted-foreground">Skill gain chance:</span>
-      <span class="font-mono font-medium">{getSkillGainChance().toFixed(0)}%</span>
-      <span class="text-muted-foreground text-xs">(per kill)</span>
+  <section class="space-y-4">
+    <h2 class="text-xl font-semibold">Calculator</h2>
+    <div
+      class="rounded-lg border p-3 flex flex-wrap items-center gap-x-6 gap-y-2"
+    >
+      <div class="flex items-center gap-3">
+        <label for="skill-slider" class="shrink-0">Hunter Skill:</label>
+        <input
+          id="skill-slider"
+          type="range"
+          min="0"
+          max="100"
+          step="1"
+          bind:value={skillLevel}
+          class="w-32 h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+        />
+        <span class="font-mono w-12">{skillLevel}%</span>
+      </div>
+      <div class="flex items-center gap-2 text-muted-foreground">
+        <span>Skill gain chance:</span>
+        <span class="font-mono text-foreground"
+          >{getSkillGainChance().toFixed(0)}%</span
+        >
+        <span class="text-xs">(per kill)</span>
+      </div>
     </div>
   </section>
 
