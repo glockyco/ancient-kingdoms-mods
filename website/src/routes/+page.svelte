@@ -35,6 +35,9 @@
     <p class="text-xl text-muted-foreground">
       Your guide to items, monsters, zones, quests, and more
     </p>
+    <p class="text-sm text-muted-foreground">
+      Updated for v0.9.0.2 (2025-12-04)
+    </p>
   </div>
 
   <!-- Available Sections -->
