@@ -60,8 +60,8 @@
 
   // Category order for display
   const categoryOrder: ProfessionCategory[] = [
-    "crafting",
     "gathering",
+    "crafting",
     "combat",
     "exploration",
   ];
@@ -80,13 +80,7 @@
     items={[{ label: "Home", href: "/" }, { label: "Professions" }]}
   />
 
-  <div>
-    <h1 class="text-3xl font-bold">Professions</h1>
-    <p class="text-muted-foreground mt-2">
-      Track your progress across {data.professions.length} professions in Ancient
-      Kingdoms.
-    </p>
-  </div>
+  <h1 class="text-3xl font-bold">Professions</h1>
 
   {#each categoryOrder as category (category)}
     {@const professions = groupedProfessions[category]}
@@ -129,13 +123,15 @@
                       <Card.Title class="group-hover:underline"
                         >{profession.name}</Card.Title
                       >
-                      <Card.Description>{profession.description}</Card.Description>
+                      <Card.Description
+                        >{profession.description}</Card.Description
+                      >
                     </div>
                   </div>
                 </Card.Header>
                 <Card.Content>
                   <div
-                    class="flex items-center text-muted-foreground group-hover:text-foreground transition-colors"
+                    class="flex items-center text-sm text-muted-foreground group-hover:text-foreground transition-colors"
                   >
                     {#if profession.tracking_type === "count_based" && profession.tracking_denominator}
                       {profession.tracking_denominator}
