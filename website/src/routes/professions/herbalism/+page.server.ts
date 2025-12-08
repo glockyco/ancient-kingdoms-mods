@@ -11,6 +11,11 @@ interface HerbalismResource {
   tool_required_name: string | null;
 }
 
+interface TierCount {
+  tier: number;
+  count: number;
+}
+
 interface HerbalismPageData {
   profession: {
     id: string;
@@ -21,6 +26,7 @@ interface HerbalismPageData {
     steam_achievement_id: string | null;
   };
   resources: HerbalismResource[];
+  resourceCounts: TierCount[];
 }
 
 export const load: PageServerLoad = (): HerbalismPageData => {
@@ -59,7 +65,20 @@ export const load: PageServerLoad = (): HerbalismPageData => {
     )
     .all() as HerbalismResource[];
 
+  // Get resource counts per tier
+  const resourceCounts = db
+    .prepare(
+      `
+    SELECT level as tier, COUNT(*) as count
+    FROM gathering_resources
+    WHERE is_plant = 1
+    GROUP BY level
+    ORDER BY level
+  `,
+    )
+    .all() as TierCount[];
+
   db.close();
 
-  return { profession, resources };
+  return { profession, resources, resourceCounts };
 };

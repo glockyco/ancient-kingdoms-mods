@@ -53,6 +53,11 @@ interface AlchemyQuest {
   reward_alchemy_skill: number;
 }
 
+interface TierCount {
+  tier: number;
+  count: number;
+}
+
 interface AlchemyPageData {
   profession: {
     id: string;
@@ -65,6 +70,7 @@ interface AlchemyPageData {
   recipes: AlchemyRecipe[];
   locations: StationLocation[];
   quests: AlchemyQuest[];
+  recipeCounts: TierCount[];
 }
 
 export const load: PageServerLoad = (): AlchemyPageData => {
@@ -287,7 +293,19 @@ export const load: PageServerLoad = (): AlchemyPageData => {
     currentQuestId = nextQuest?.id ?? null;
   }
 
+  // Get recipe counts per tier
+  const recipeCounts = db
+    .prepare(
+      `
+    SELECT level_required as tier, COUNT(*) as count
+    FROM alchemy_recipes
+    GROUP BY level_required
+    ORDER BY level_required
+  `,
+    )
+    .all() as TierCount[];
+
   db.close();
 
-  return { profession, recipes, locations, quests };
+  return { profession, recipes, locations, quests, recipeCounts };
 };

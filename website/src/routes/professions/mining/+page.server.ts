@@ -11,6 +11,11 @@ interface MiningResource {
   tool_required_name: string | null;
 }
 
+interface TierCount {
+  tier: number;
+  count: number;
+}
+
 interface MiningPageData {
   profession: {
     id: string;
@@ -21,6 +26,7 @@ interface MiningPageData {
     steam_achievement_id: string | null;
   };
   resources: MiningResource[];
+  resourceCounts: TierCount[];
 }
 
 export const load: PageServerLoad = (): MiningPageData => {
@@ -59,7 +65,20 @@ export const load: PageServerLoad = (): MiningPageData => {
     )
     .all() as MiningResource[];
 
+  // Get resource counts per tier
+  const resourceCounts = db
+    .prepare(
+      `
+    SELECT level as tier, COUNT(*) as count
+    FROM gathering_resources
+    WHERE is_mineral = 1
+    GROUP BY level
+    ORDER BY level
+  `,
+    )
+    .all() as TierCount[];
+
   db.close();
 
-  return { profession, resources };
+  return { profession, resources, resourceCounts };
 };

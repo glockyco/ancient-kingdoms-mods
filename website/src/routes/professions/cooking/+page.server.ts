@@ -22,6 +22,11 @@ interface StationLocation {
   position_y: number;
 }
 
+interface TierCount {
+  tier: number;
+  count: number;
+}
+
 interface CookingPageData {
   profession: {
     id: string;
@@ -33,6 +38,7 @@ interface CookingPageData {
   };
   recipes: CookingRecipe[];
   locations: StationLocation[];
+  recipeCounts: TierCount[];
 }
 
 export const load: PageServerLoad = (): CookingPageData => {
@@ -96,7 +102,21 @@ export const load: PageServerLoad = (): CookingPageData => {
     )
     .all() as StationLocation[];
 
+  // Get recipe counts per tier (using item quality as tier)
+  const recipeCounts = db
+    .prepare(
+      `
+    SELECT i.quality as tier, COUNT(*) as count
+    FROM crafting_recipes cr
+    JOIN items i ON i.id = cr.result_item_id
+    WHERE cr.station_type = 'cooking'
+    GROUP BY i.quality
+    ORDER BY i.quality
+  `,
+    )
+    .all() as TierCount[];
+
   db.close();
 
-  return { profession, recipes, locations };
+  return { profession, recipes, locations, recipeCounts };
 };

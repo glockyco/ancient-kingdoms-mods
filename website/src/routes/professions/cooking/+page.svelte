@@ -36,6 +36,11 @@
   // Roman numerals for tier display
   const romanNumerals = ["I", "II", "III", "IV", "V"];
 
+  // Create a map of tier -> recipe count
+  const recipeCountMap = $derived(
+    new Map(data.recipeCounts.map((rc) => [rc.tier, rc.count])),
+  );
+
   // Cooking success chance formula from game code (same as alchemy)
   function getSuccessChance(recipeLevel: number): number {
     const skill = skillLevel / 100;
@@ -221,6 +226,7 @@
             <th class="text-left p-3 font-medium">Tier</th>
             <th class="text-left p-3 font-medium">Success</th>
             <th class="text-left p-3 font-medium">Skill Gain</th>
+            <th class="text-right p-3 font-medium">Recipes</th>
           </tr>
         </thead>
         <tbody>
@@ -228,6 +234,7 @@
             {@const successChance = getSuccessChance(tier)}
             {@const effortless = isEffortless(tier)}
             {@const [minGain, maxGain] = getSkillGainAmount(successChance)}
+            {@const recipeCount = recipeCountMap.get(tier) ?? 0}
             <tr class="border-t hover:bg-muted/30">
               <td class="p-3 font-medium">{romanNumerals[tier]}</td>
               <td class="p-3">
@@ -246,6 +253,7 @@
                   <span class="text-muted-foreground">—</span>
                 {/if}
               </td>
+              <td class="p-3 text-right">{recipeCount}</td>
             </tr>
           {/each}
         </tbody>
