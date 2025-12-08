@@ -2,6 +2,8 @@
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import ObtainabilityTree from "$lib/components/ObtainabilityTree.svelte";
+  import QuestTypeBadge from "$lib/components/QuestTypeBadge.svelte";
+  import QuestFlagBadges from "$lib/components/QuestFlagBadges.svelte";
   import Hammer from "@lucide/svelte/icons/hammer";
   import Trophy from "@lucide/svelte/icons/trophy";
   import ChevronRight from "@lucide/svelte/icons/chevron-right";
@@ -176,6 +178,115 @@
                     location.position_y,
                   )})
                 </td>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  {/if}
+
+  <!-- Quest Line -->
+  {#if data.quests.length > 0}
+    <section class="space-y-4">
+      <h2 class="text-xl font-semibold flex items-center gap-2">
+        <ScrollIcon class="h-5 w-5 text-orange-500" />
+        Quest Line ({data.quests.length})
+      </h2>
+      <div class="rounded-lg border overflow-hidden">
+        <table class="w-full">
+          <thead class="bg-muted/50">
+            <tr>
+              <th class="text-left p-3 font-medium w-12">#</th>
+              <th class="text-left p-3 font-medium">Type</th>
+              <th class="text-left p-3 font-medium">Quest</th>
+              <th class="text-left p-3 font-medium">Objective</th>
+              <th class="text-left p-3 font-medium">Rewards</th>
+              <th class="text-right p-3 font-medium">Level</th>
+            </tr>
+          </thead>
+          <tbody>
+            {#each data.quests as quest, i (quest.id)}
+              <tr class="border-t hover:bg-muted/30">
+                <td class="p-3 text-muted-foreground">{i + 1}</td>
+                <td class="p-3">
+                  <QuestTypeBadge type={quest.display_type} />
+                </td>
+                <td class="p-3">
+                  <div class="flex flex-col gap-1">
+                    <a
+                      href="/quests/{quest.id}"
+                      class="text-blue-600 dark:text-blue-400 hover:underline"
+                    >
+                      {quest.name}
+                    </a>
+                    <QuestFlagBadges {quest} />
+                  </div>
+                </td>
+                <td class="p-3">
+                  {#if quest.objective_items.length > 0}
+                    <div class="flex flex-wrap gap-x-3 gap-y-1">
+                      {#each quest.objective_items as item (item.item_id)}
+                        <span class="whitespace-nowrap">
+                          <ItemLink
+                            itemId={item.item_id}
+                            itemName={item.item_name}
+                            tooltipHtml={item.tooltip_html}
+                          />
+                          <span class="text-muted-foreground"
+                            >×{item.amount}</span
+                          >
+                        </span>
+                      {/each}
+                    </div>
+                  {:else if quest.potion_to_brew}
+                    <span class="whitespace-nowrap">
+                      <ItemLink
+                        itemId={quest.potion_to_brew.item_id}
+                        itemName={quest.potion_to_brew.item_name}
+                        tooltipHtml={quest.potion_to_brew.tooltip_html}
+                      />
+                      <span class="text-muted-foreground"
+                        >×{quest.potion_to_brew.amount}</span
+                      >
+                    </span>
+                  {:else if quest.display_type === "Find" && quest.npc_to_find}
+                    <a
+                      href="/npcs/{quest.npc_to_find.npc_id}"
+                      class="text-blue-600 dark:text-blue-400 hover:underline"
+                    >
+                      {quest.npc_to_find.npc_name}
+                    </a>
+                  {:else}
+                    <span class="text-muted-foreground">—</span>
+                  {/if}
+                </td>
+                <td class="p-3">
+                  <div class="flex flex-col gap-1">
+                    {#if quest.reward_gold > 0}
+                      <span class="text-amber-600 dark:text-amber-400"
+                        >{quest.reward_gold.toLocaleString()} Gold</span
+                      >
+                    {/if}
+                    {#each quest.reward_items as item (item.item_id)}
+                      <ItemLink
+                        itemId={item.item_id}
+                        itemName={item.item_name}
+                        tooltipHtml={item.tooltip_html}
+                      />
+                    {/each}
+                    {#if quest.reward_alchemy_skill > 0}
+                      <span class="text-green-600 dark:text-green-400"
+                        >+{Math.round(quest.reward_alchemy_skill * 100)}%
+                        Alchemy</span
+                      >
+                    {/if}
+                    {#if quest.reward_gold === 0 && quest.reward_items.length === 0 && quest.reward_alchemy_skill === 0}
+                      <span class="text-muted-foreground">—</span>
+                    {/if}
+                  </div>
+                </td>
+                <td class="p-3 text-right">{quest.level_recommended}</td>
               </tr>
             {/each}
           </tbody>
