@@ -13,6 +13,12 @@
     const skill = skillLevel / 100;
     return Math.max(0, (0.7 - skill / 2) * 100);
   }
+
+  // Radiant Aether drop chance: radiantSeekerLevel * 5%
+  function getRadiantAetherChance(): number {
+    const skill = skillLevel / 100;
+    return skill * 5;
+  }
 </script>
 
 <svelte:head>
@@ -89,9 +95,10 @@
         <span class="text-xs">(per success)</span>
       </div>
       <div class="flex items-center gap-2 text-muted-foreground">
-        <span>Skill gain amount:</span>
-        <span class="font-mono text-foreground">0.10% – 0.30%</span>
-        <span class="text-xs">(fixed)</span>
+        <span>Radiant Aether chance:</span>
+        <span class="font-mono text-foreground"
+          >{getRadiantAetherChance().toFixed(1)}%</span
+        >
       </div>
     </div>
   </section>
