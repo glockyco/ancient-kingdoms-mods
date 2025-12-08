@@ -138,6 +138,48 @@
     </div>
   </div>
 
+  <!-- Station Locations -->
+  {#if data.locations.length > 0}
+    <section class="space-y-4">
+      <h2 class="text-xl font-semibold">
+        Cooking Oven Locations ({data.locations.length})
+      </h2>
+      <div class="rounded-lg border overflow-hidden">
+        <table class="w-full">
+          <thead class="bg-muted/50">
+            <tr>
+              <th class="text-left p-3 font-medium">Zone</th>
+              <th class="text-left p-3 font-medium">Sub-zone</th>
+              <th class="text-left p-3 font-medium">Coordinates</th>
+            </tr>
+          </thead>
+          <tbody>
+            {#each data.locations as location (location.zone_id + location.sub_zone_name)}
+              <tr class="border-t hover:bg-muted/30">
+                <td class="p-3">
+                  <a
+                    href="/zones/{location.zone_id}"
+                    class="text-blue-600 dark:text-blue-400 hover:underline"
+                  >
+                    {location.zone_name}
+                  </a>
+                </td>
+                <td class="p-3 text-muted-foreground">
+                  {location.sub_zone_name ?? "—"}
+                </td>
+                <td class="p-3 font-mono text-muted-foreground">
+                  ({Math.round(location.position_x)}, {Math.round(
+                    location.position_y,
+                  )})
+                </td>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  {/if}
+
   <!-- Calculator -->
   <section class="rounded-lg border bg-card p-4 space-y-4">
     <h3 class="font-semibold">Calculator</h3>

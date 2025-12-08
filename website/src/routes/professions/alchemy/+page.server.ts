@@ -15,6 +15,14 @@ interface AlchemyRecipe {
   obtainabilityTree: ObtainabilityNode;
 }
 
+interface StationLocation {
+  zone_id: string;
+  zone_name: string;
+  sub_zone_name: string | null;
+  position_x: number;
+  position_y: number;
+}
+
 interface AlchemyPageData {
   profession: {
     id: string;
@@ -25,6 +33,7 @@ interface AlchemyPageData {
     steam_achievement_id: string | null;
   };
   recipes: AlchemyRecipe[];
+  locations: StationLocation[];
 }
 
 export const load: PageServerLoad = (): AlchemyPageData => {
@@ -76,7 +85,17 @@ export const load: PageServerLoad = (): AlchemyPageData => {
     return { ...recipe, obtainabilityTree };
   });
 
+  const locations = db
+    .prepare(
+      `
+    SELECT zone_id, zone_name, sub_zone_name, position_x, position_y
+    FROM alchemy_tables
+    ORDER BY zone_name, sub_zone_name
+  `,
+    )
+    .all() as StationLocation[];
+
   db.close();
 
-  return { profession, recipes };
+  return { profession, recipes, locations };
 };

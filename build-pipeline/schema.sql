@@ -1037,6 +1037,44 @@ CREATE INDEX idx_alchemy_result ON alchemy_recipes(result_item_id);
 CREATE INDEX idx_alchemy_level ON alchemy_recipes(level_required);
 
 -- =============================================================================
+-- ALCHEMY TABLES (world locations)
+-- =============================================================================
+
+CREATE TABLE alchemy_tables (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    zone_id TEXT REFERENCES zones(id),
+    zone_name TEXT,
+    sub_zone_id TEXT REFERENCES zone_triggers(id),
+    sub_zone_name TEXT,
+    position_x REAL,
+    position_y REAL,
+    position_z REAL
+);
+
+CREATE INDEX idx_alchemy_tables_zone ON alchemy_tables(zone_id);
+
+-- =============================================================================
+-- CRAFTING STATIONS (world locations)
+-- =============================================================================
+
+CREATE TABLE crafting_stations (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    zone_id TEXT REFERENCES zones(id),
+    zone_name TEXT,
+    sub_zone_id TEXT REFERENCES zone_triggers(id),
+    sub_zone_name TEXT,
+    position_x REAL,
+    position_y REAL,
+    position_z REAL,
+    is_cooking_oven BOOLEAN DEFAULT 0
+);
+
+CREATE INDEX idx_crafting_stations_zone ON crafting_stations(zone_id);
+CREATE INDEX idx_crafting_stations_cooking ON crafting_stations(is_cooking_oven);
+
+-- =============================================================================
 -- FULL-TEXT SEARCH
 -- =============================================================================
 

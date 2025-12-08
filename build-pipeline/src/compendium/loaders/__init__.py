@@ -2,8 +2,10 @@
 
 from compendium.loaders.core import (
     load_alchemy_recipes,
+    load_alchemy_tables,
     load_altars,
     load_crafting_recipes,
+    load_crafting_stations,
     load_gather_items,
     load_items,
     load_luck_tokens,
@@ -24,8 +26,10 @@ from compendium.loaders.core import (
 
 __all__ = [
     "load_alchemy_recipes",
+    "load_alchemy_tables",
     "load_altars",
     "load_crafting_recipes",
+    "load_crafting_stations",
     "load_gather_items",
     "load_items",
     "load_luck_tokens",

@@ -13,8 +13,10 @@ from compendium.db import create_database
 from compendium.denormalizers import run_all as denormalize_all
 from compendium.loaders import (
     load_alchemy_recipes,
+    load_alchemy_tables,
     load_altars,
     load_crafting_recipes,
+    load_crafting_stations,
     load_gather_items,
     load_items,
     load_luck_tokens,
@@ -79,6 +81,8 @@ def run(config: dict) -> None:
         load_gather_items(conn, export_dir)
         load_crafting_recipes(conn, export_dir)
         load_alchemy_recipes(conn, export_dir)
+        load_alchemy_tables(conn, export_dir)  # After zones + zone_triggers
+        load_crafting_stations(conn, export_dir)  # After zones + zone_triggers
 
         # Denormalize data (must be done after all data is loaded)
         console.print()

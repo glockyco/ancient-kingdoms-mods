@@ -14,6 +14,14 @@ interface CookingRecipe {
   obtainabilityTree: ObtainabilityNode;
 }
 
+interface StationLocation {
+  zone_id: string;
+  zone_name: string;
+  sub_zone_name: string | null;
+  position_x: number;
+  position_y: number;
+}
+
 interface CookingPageData {
   profession: {
     id: string;
@@ -24,6 +32,7 @@ interface CookingPageData {
     steam_achievement_id: string | null;
   };
   recipes: CookingRecipe[];
+  locations: StationLocation[];
 }
 
 export const load: PageServerLoad = (): CookingPageData => {
@@ -76,7 +85,18 @@ export const load: PageServerLoad = (): CookingPageData => {
     return { ...recipe, obtainabilityTree };
   });
 
+  const locations = db
+    .prepare(
+      `
+    SELECT zone_id, zone_name, sub_zone_name, position_x, position_y
+    FROM crafting_stations
+    WHERE is_cooking_oven = 1
+    ORDER BY zone_name, sub_zone_name
+  `,
+    )
+    .all() as StationLocation[];
+
   db.close();
 
-  return { profession, recipes };
+  return { profession, recipes, locations };
 };

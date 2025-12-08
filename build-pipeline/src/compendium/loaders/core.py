@@ -13,8 +13,10 @@ from rich.console import Console
 from compendium.db import insert_model, serialize_value
 from compendium.models import (
     AlchemyRecipeData,
+    AlchemyTableData,
     AltarData,
     CraftingRecipeData,
+    CraftingStationData,
     GatherItemData,
     ItemData,
     LuckTokenData,
@@ -617,3 +619,94 @@ def load_summon_triggers(conn: sqlite3.Connection, export_dir: Path) -> None:
     console.print(
         f"  [green]OK[/green] Loaded {placeholder_count} placeholder relationships"
     )
+
+
+def load_alchemy_tables(conn: sqlite3.Connection, export_dir: Path) -> None:
+    """Load alchemy table world locations into database."""
+    console.print("Loading alchemy tables...")
+
+    filepath = export_dir / "alchemy_tables.json"
+    if not filepath.exists():
+        console.print("  [yellow]SKIP[/yellow] No alchemy_tables.json found")
+        return
+
+    with open(filepath, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    tables = [AlchemyTableData(**item) for item in data]
+
+    # Build lookup maps for zone/sub-zone names
+    cursor = conn.cursor()
+    zone_names = dict(cursor.execute("SELECT id, name FROM zones").fetchall())
+    sub_zone_names = dict(
+        cursor.execute("SELECT id, name FROM zone_triggers").fetchall()
+    )
+
+    for table in tables:
+        cursor.execute(
+            """INSERT INTO alchemy_tables
+               (id, name, zone_id, zone_name, sub_zone_id, sub_zone_name,
+                position_x, position_y, position_z)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            (
+                table.id,
+                table.name,
+                table.zone_id,
+                zone_names.get(table.zone_id),
+                table.sub_zone_id,
+                sub_zone_names.get(table.sub_zone_id) if table.sub_zone_id else None,
+                table.position.x,
+                table.position.y,
+                table.position.z,
+            ),
+        )
+
+    conn.commit()
+    console.print(f"  [green]OK[/green] Loaded {len(tables)} alchemy tables")
+
+
+def load_crafting_stations(conn: sqlite3.Connection, export_dir: Path) -> None:
+    """Load crafting station world locations into database."""
+    console.print("Loading crafting stations...")
+
+    filepath = export_dir / "crafting_stations.json"
+    if not filepath.exists():
+        console.print("  [yellow]SKIP[/yellow] No crafting_stations.json found")
+        return
+
+    with open(filepath, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    stations = [CraftingStationData(**item) for item in data]
+
+    # Build lookup maps for zone/sub-zone names
+    cursor = conn.cursor()
+    zone_names = dict(cursor.execute("SELECT id, name FROM zones").fetchall())
+    sub_zone_names = dict(
+        cursor.execute("SELECT id, name FROM zone_triggers").fetchall()
+    )
+
+    for station in stations:
+        cursor.execute(
+            """INSERT INTO crafting_stations
+               (id, name, zone_id, zone_name, sub_zone_id, sub_zone_name,
+                position_x, position_y, position_z, is_cooking_oven)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            (
+                station.id,
+                station.name,
+                station.zone_id,
+                zone_names.get(station.zone_id),
+                station.sub_zone_id,
+                sub_zone_names.get(station.sub_zone_id)
+                if station.sub_zone_id
+                else None,
+                station.position.x,
+                station.position.y,
+                station.position.z,
+                station.is_cooking_oven,
+            ),
+        )
+
+    conn.commit()
+    console.print(f"  [green]OK[/green] Loaded {len(stations)} crafting stations")

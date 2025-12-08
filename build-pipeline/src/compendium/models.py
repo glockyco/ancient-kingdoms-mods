@@ -838,6 +838,37 @@ class AlchemyRecipeData(BaseModel):
 
 
 # =============================================================================
+# Alchemy Table Models
+# =============================================================================
+
+
+class AlchemyTableData(BaseModel):
+    """Alchemy table world location from alchemy_tables.json"""
+
+    id: str
+    name: str
+    zone_id: str
+    sub_zone_id: str | None = None
+    position: Position
+
+
+# =============================================================================
+# Crafting Station Models
+# =============================================================================
+
+
+class CraftingStationData(BaseModel):
+    """Crafting station world location from crafting_stations.json"""
+
+    id: str
+    name: str
+    zone_id: str
+    sub_zone_id: str | None = None
+    position: Position
+    is_cooking_oven: bool = False
+
+
+# =============================================================================
 # Summon Trigger Models
 # =============================================================================
 
