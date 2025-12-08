@@ -106,7 +106,8 @@ public class SkillData
     public bool is_magic_debuff { get; set; }
     public bool is_cleanse { get; set; }
     public bool is_dispel { get; set; }
-    public bool is_ward { get; set; }
+    public LinearStatBonus ward_bonus { get; set; }
+    public LinearStatBonusFloat fear_resist_chance_bonus { get; set; }
     public bool is_blindness { get; set; }
     public bool is_avatar_war { get; set; }
     public bool is_only_for_magic_classes { get; set; }

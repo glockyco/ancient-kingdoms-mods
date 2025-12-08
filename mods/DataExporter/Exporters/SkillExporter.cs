@@ -321,7 +321,8 @@ public class SkillExporter : BaseExporter
             skillData.is_magic_debuff = buffSkill.isMagicDebuff;
             skillData.is_cleanse = buffSkill.isCleanseSpell;
             skillData.is_dispel = buffSkill.isDispel;
-            skillData.is_ward = buffSkill.isWard;
+            skillData.ward_bonus = new LinearStatBonus { base_value = buffSkill.wardBonus.baseValue, bonus_per_level = buffSkill.wardBonus.bonusPerLevel };
+            skillData.fear_resist_chance_bonus = new LinearStatBonusFloat { base_value = buffSkill.fearResistChanceBonus.baseValue, bonus_per_level = buffSkill.fearResistChanceBonus.bonusPerLevel };
             skillData.is_blindness = buffSkill.isBlindness;
             skillData.is_avatar_war = buffSkill.isAvatarWar;
             skillData.is_only_for_magic_classes = buffSkill.isOnlyForMagicClasses;
