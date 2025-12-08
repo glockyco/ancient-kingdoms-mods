@@ -2,6 +2,7 @@
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import Swords from "@lucide/svelte/icons/swords";
   import Trophy from "@lucide/svelte/icons/trophy";
+  import Skull from "@lucide/svelte/icons/skull";
 
   let { data } = $props();
 </script>
@@ -10,7 +11,8 @@
   <title>{data.profession.name} - Ancient Kingdoms Compendium</title>
   <meta
     name="description"
-    content="{data.profession.description} View all bosses and elite monsters for the Slayer profession."
+    content="{data.profession
+      .description} View all bosses and elite monsters for the Slayer profession."
   />
 </svelte:head>
 
@@ -55,7 +57,8 @@
 
   <!-- Monsters Table -->
   <section class="space-y-4">
-    <h2 class="text-xl font-semibold">
+    <h2 class="text-xl font-semibold flex items-center gap-2">
+      <Skull class="h-5 w-5 text-red-500" />
       Bosses & Elites ({data.monsters.length})
     </h2>
     <div class="rounded-lg border overflow-hidden">

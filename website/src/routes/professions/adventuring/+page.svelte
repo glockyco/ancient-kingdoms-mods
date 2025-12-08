@@ -2,6 +2,7 @@
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import Compass from "@lucide/svelte/icons/compass";
   import Trophy from "@lucide/svelte/icons/trophy";
+  import ScrollIcon from "@lucide/svelte/icons/scroll";
 
   let { data } = $props();
 </script>
@@ -55,7 +56,8 @@
 
   <!-- Quests Table -->
   <section class="space-y-4">
-    <h2 class="text-xl font-semibold">
+    <h2 class="text-xl font-semibold flex items-center gap-2">
+      <ScrollIcon class="h-5 w-5 text-orange-500" />
       Adventurer Quests ({data.quests.length})
     </h2>
     <div class="rounded-lg border overflow-hidden">

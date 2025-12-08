@@ -2,6 +2,7 @@
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import Compass from "@lucide/svelte/icons/compass";
   import Trophy from "@lucide/svelte/icons/trophy";
+  import MapIcon from "@lucide/svelte/icons/map";
 
   let { data } = $props();
 </script>
@@ -43,8 +44,7 @@
 
       <div class="flex items-center gap-4 mt-3 text-muted-foreground">
         {#if data.profession.tracking_type === "count_based" && data.profession.tracking_denominator}
-          <span
-            >Progress: 0 / {data.profession.tracking_denominator} zones</span
+          <span>Progress: 0 / {data.profession.tracking_denominator} zones</span
           >
         {/if}
         {#if data.profession.steam_achievement_id}
@@ -59,7 +59,8 @@
 
   <!-- Zones Table -->
   <section class="space-y-4">
-    <h2 class="text-xl font-semibold">
+    <h2 class="text-xl font-semibold flex items-center gap-2">
+      <MapIcon class="h-5 w-5 text-blue-500" />
       Zones to Discover ({data.zones.length})
     </h2>
     <div class="rounded-lg border overflow-hidden">

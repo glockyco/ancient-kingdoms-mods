@@ -3,6 +3,7 @@
   import ItemLink from "$lib/components/ItemLink.svelte";
   import Compass from "@lucide/svelte/icons/compass";
   import Trophy from "@lucide/svelte/icons/trophy";
+  import MapIcon from "@lucide/svelte/icons/map";
 
   let { data } = $props();
 
@@ -62,7 +63,8 @@
 
   <!-- Treasure Maps Table -->
   <section class="space-y-4">
-    <h2 class="text-xl font-semibold">
+    <h2 class="text-xl font-semibold flex items-center gap-2">
+      <MapIcon class="h-5 w-5 text-amber-500" />
       Treasure Maps ({data.treasureMaps.length})
     </h2>
     <div class="rounded-lg border overflow-hidden">

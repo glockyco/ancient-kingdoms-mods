@@ -3,6 +3,7 @@
   import ItemLink from "$lib/components/ItemLink.svelte";
   import Compass from "@lucide/svelte/icons/compass";
   import Trophy from "@lucide/svelte/icons/trophy";
+  import BookOpen from "@lucide/svelte/icons/book-open";
 
   let { data } = $props();
 
@@ -50,8 +51,7 @@
 
       <div class="flex items-center gap-4 mt-3 text-muted-foreground">
         {#if data.profession.tracking_type === "count_based" && data.profession.tracking_denominator}
-          <span
-            >Progress: 0 / {data.profession.tracking_denominator} books</span
+          <span>Progress: 0 / {data.profession.tracking_denominator} books</span
           >
         {/if}
         {#if data.profession.steam_achievement_id}
@@ -66,7 +66,8 @@
 
   <!-- Books Table -->
   <section class="space-y-4">
-    <h2 class="text-xl font-semibold">
+    <h2 class="text-xl font-semibold flex items-center gap-2">
+      <BookOpen class="h-5 w-5 text-indigo-500" />
       Books ({data.books.length})
     </h2>
     <div class="rounded-lg border overflow-hidden">

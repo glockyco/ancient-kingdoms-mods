@@ -2,6 +2,8 @@
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import Pickaxe from "@lucide/svelte/icons/pickaxe";
   import Trophy from "@lucide/svelte/icons/trophy";
+  import CalculatorIcon from "@lucide/svelte/icons/calculator";
+  import Leaf from "@lucide/svelte/icons/leaf";
 
   let { data } = $props();
 
@@ -118,7 +120,10 @@
 
   <!-- Calculator -->
   <section class="space-y-4">
-    <h2 class="text-xl font-semibold">Calculator</h2>
+    <h2 class="text-xl font-semibold flex items-center gap-2">
+      <CalculatorIcon class="h-5 w-5 text-cyan-500" />
+      Calculator
+    </h2>
     <div
       class="rounded-lg border p-3 flex flex-wrap items-center gap-x-6 gap-y-2"
     >
@@ -184,7 +189,8 @@
 
   <!-- Plants Table -->
   <section class="space-y-4">
-    <h2 class="text-xl font-semibold">
+    <h2 class="text-xl font-semibold flex items-center gap-2">
+      <Leaf class="h-5 w-5 text-green-500" />
       Plants ({data.resources.length})
     </h2>
     <div class="rounded-lg border overflow-hidden">

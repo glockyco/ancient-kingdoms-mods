@@ -6,6 +6,9 @@
   import Trophy from "@lucide/svelte/icons/trophy";
   import ChevronRight from "@lucide/svelte/icons/chevron-right";
   import ChevronDown from "@lucide/svelte/icons/chevron-down";
+  import CalculatorIcon from "@lucide/svelte/icons/calculator";
+  import MapPin from "@lucide/svelte/icons/map-pin";
+  import ScrollIcon from "@lucide/svelte/icons/scroll";
   import { SvelteSet } from "svelte/reactivity";
 
   let { data } = $props();
@@ -141,7 +144,8 @@
   <!-- Station Locations -->
   {#if data.locations.length > 0}
     <section class="space-y-4">
-      <h2 class="text-xl font-semibold">
+      <h2 class="text-xl font-semibold flex items-center gap-2">
+        <MapPin class="h-5 w-5 text-emerald-500" />
         Alchemy Table Locations ({data.locations.length})
       </h2>
       <div class="rounded-lg border overflow-hidden">
@@ -182,7 +186,10 @@
 
   <!-- Calculator -->
   <section class="space-y-4">
-    <h2 class="text-xl font-semibold">Calculator</h2>
+    <h2 class="text-xl font-semibold flex items-center gap-2">
+      <CalculatorIcon class="h-5 w-5 text-cyan-500" />
+      Calculator
+    </h2>
     <div
       class="rounded-lg border p-3 flex flex-wrap items-center gap-x-6 gap-y-2"
     >
@@ -248,7 +255,8 @@
 
   <!-- Recipes Table -->
   <section class="space-y-4">
-    <h2 class="text-xl font-semibold">
+    <h2 class="text-xl font-semibold flex items-center gap-2">
+      <ScrollIcon class="h-5 w-5 text-orange-500" />
       Recipes ({data.recipes.length})
     </h2>
     <div class="rounded-lg border overflow-hidden">
