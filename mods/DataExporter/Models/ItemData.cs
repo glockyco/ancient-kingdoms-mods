@@ -191,4 +191,7 @@ public class ItemStats
     public string augment_bonus_set { get; set; }
     public bool has_serenity { get; set; }
     public bool is_costume { get; set; }
+
+    // Fear resistance
+    public float resist_fear_chance { get; set; }
 }
