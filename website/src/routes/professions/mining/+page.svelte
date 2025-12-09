@@ -172,44 +172,36 @@
       </div>
     </div>
     <div class="rounded-lg border overflow-hidden">
-      <table class="w-full">
-        <thead class="bg-muted/50">
-          <tr>
-            <th class="text-left p-3 font-medium">Tier</th>
-            <th class="text-left p-3 font-medium">Success</th>
-            <th class="text-left p-3 font-medium">Skill Gain</th>
-            <th class="text-right p-3 font-medium">Ores</th>
-          </tr>
-        </thead>
-        <tbody>
-          {#each [0, 1, 2, 3, 4] as tier (tier)}
-            {@const successChance = getSuccessChance(tier)}
-            {@const effortless = isEffortless(tier)}
-            {@const [minGain, maxGain] = getSkillGainAmount(successChance)}
-            {@const resourceCount = resourceCountMap.get(tier) ?? 0}
-            <tr class="border-t hover:bg-muted/30">
-              <td class="p-3 font-medium">{romanNumerals[tier]}</td>
-              <td class="p-3">
-                <span class="font-mono {getSuccessChanceColor(successChance)}">
-                  {successChance.toFixed(0)}%
-                </span>
-              </td>
-              <td class="p-3">
-                {#if effortless}
-                  <span class="text-muted-foreground italic">Effortless</span>
-                {:else if successChance > 0}
-                  <span class="font-mono"
-                    >{minGain.toFixed(2)}% – {maxGain.toFixed(2)}%</span
-                  >
-                {:else}
-                  <span class="text-muted-foreground">—</span>
-                {/if}
-              </td>
-              <td class="p-3 text-right">{resourceCount}</td>
-            </tr>
-          {/each}
-        </tbody>
-      </table>
+      <div class="grid" style="grid-template-columns: 60px 80px 1fr 80px;">
+        <div class="bg-muted/50 p-3 font-medium">Tier</div>
+        <div class="bg-muted/50 p-3 font-medium">Success</div>
+        <div class="bg-muted/50 p-3 font-medium">Skill Gain</div>
+        <div class="bg-muted/50 p-3 font-medium text-right">Ores</div>
+        {#each [0, 1, 2, 3, 4] as tier (tier)}
+          {@const successChance = getSuccessChance(tier)}
+          {@const effortless = isEffortless(tier)}
+          {@const [minGain, maxGain] = getSkillGainAmount(successChance)}
+          {@const resourceCount = resourceCountMap.get(tier) ?? 0}
+          <div class="p-3 font-medium border-t">{romanNumerals[tier]}</div>
+          <div class="p-3 border-t">
+            <span class="font-mono {getSuccessChanceColor(successChance)}">
+              {successChance.toFixed(0)}%
+            </span>
+          </div>
+          <div class="p-3 border-t">
+            {#if effortless}
+              <span class="text-muted-foreground italic">Effortless</span>
+            {:else if successChance > 0}
+              <span class="font-mono"
+                >{minGain.toFixed(2)}% – {maxGain.toFixed(2)}%</span
+              >
+            {:else}
+              <span class="text-muted-foreground">—</span>
+            {/if}
+          </div>
+          <div class="p-3 text-right border-t">{resourceCount}</div>
+        {/each}
+      </div>
     </div>
   </section>
 
@@ -220,52 +212,44 @@
       Ores ({data.resources.length})
     </h2>
     <div class="rounded-lg border overflow-hidden">
-      <table class="w-full">
-        <thead class="bg-muted/50">
-          <tr>
-            <th class="text-left p-3 font-medium">Name</th>
-            <th class="text-left p-3 font-medium">Tier</th>
-            <th class="text-left p-3 font-medium">Success</th>
-            <th class="text-left p-3 font-medium">Skill Gain</th>
-          </tr>
-        </thead>
-        <tbody>
-          {#each data.resources as resource (resource.id)}
-            {@const successChance = getSuccessChance(resource.level)}
-            {@const effortless = isEffortless(resource.level)}
-            {@const [minGain, maxGain] = getSkillGainAmount(successChance)}
-            <tr class="border-t hover:bg-muted/30">
-              <td class="p-3">
-                <a
-                  href="/gather-items/{resource.id}"
-                  class="text-blue-600 dark:text-blue-400 hover:underline"
-                >
-                  {resource.name}
-                </a>
-              </td>
-              <td class="p-3 font-medium">
-                {romanNumerals[resource.level] ?? resource.level}
-              </td>
-              <td class="p-3">
-                <span class="font-mono {getSuccessChanceColor(successChance)}">
-                  {successChance.toFixed(0)}%
-                </span>
-              </td>
-              <td class="p-3">
-                {#if effortless}
-                  <span class="text-muted-foreground italic">Effortless</span>
-                {:else if successChance > 0}
-                  <span class="font-mono">
-                    {minGain.toFixed(2)}% – {maxGain.toFixed(2)}%
-                  </span>
-                {:else}
-                  <span class="text-muted-foreground">—</span>
-                {/if}
-              </td>
-            </tr>
-          {/each}
-        </tbody>
-      </table>
+      <div class="grid" style="grid-template-columns: 60px 1fr 80px 160px;">
+        <div class="bg-muted/50 p-3 font-medium">Tier</div>
+        <div class="bg-muted/50 p-3 font-medium">Name</div>
+        <div class="bg-muted/50 p-3 font-medium">Success</div>
+        <div class="bg-muted/50 p-3 font-medium">Skill Gain</div>
+        {#each data.resources as resource (resource.id)}
+          {@const successChance = getSuccessChance(resource.level)}
+          {@const effortless = isEffortless(resource.level)}
+          {@const [minGain, maxGain] = getSkillGainAmount(successChance)}
+          <div class="p-3 font-medium border-t">
+            {romanNumerals[resource.level] ?? resource.level}
+          </div>
+          <div class="p-3 border-t">
+            <a
+              href="/gather-items/{resource.id}"
+              class="text-blue-600 dark:text-blue-400 hover:underline"
+            >
+              {resource.name}
+            </a>
+          </div>
+          <div class="p-3 border-t">
+            <span class="font-mono {getSuccessChanceColor(successChance)}">
+              {successChance.toFixed(0)}%
+            </span>
+          </div>
+          <div class="p-3 border-t">
+            {#if effortless}
+              <span class="text-muted-foreground italic">Effortless</span>
+            {:else if successChance > 0}
+              <span class="font-mono">
+                {minGain.toFixed(2)}% – {maxGain.toFixed(2)}%
+              </span>
+            {:else}
+              <span class="text-muted-foreground">—</span>
+            {/if}
+          </div>
+        {/each}
+      </div>
     </div>
   </section>
 </div>

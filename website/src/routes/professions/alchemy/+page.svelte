@@ -331,44 +331,36 @@
       </div>
     </div>
     <div class="rounded-lg border overflow-hidden">
-      <table class="w-full">
-        <thead class="bg-muted/50">
-          <tr>
-            <th class="text-left p-3 font-medium">Tier</th>
-            <th class="text-left p-3 font-medium">Success</th>
-            <th class="text-left p-3 font-medium">Skill Gain</th>
-            <th class="text-right p-3 font-medium">Recipes</th>
-          </tr>
-        </thead>
-        <tbody>
-          {#each [0, 1, 2, 3, 4] as tier (tier)}
-            {@const successChance = getSuccessChance(tier)}
-            {@const effortless = isEffortless(tier)}
-            {@const [minGain, maxGain] = getSkillGainAmount(successChance)}
-            {@const recipeCount = recipeCountMap.get(tier) ?? 0}
-            <tr class="border-t hover:bg-muted/30">
-              <td class="p-3 font-medium">{romanNumerals[tier]}</td>
-              <td class="p-3">
-                <span class="font-mono {getSuccessChanceColor(successChance)}">
-                  {successChance.toFixed(2)}%
-                </span>
-              </td>
-              <td class="p-3">
-                {#if effortless}
-                  <span class="text-muted-foreground italic">Effortless</span>
-                {:else if successChance > 0}
-                  <span class="font-mono"
-                    >{minGain.toFixed(2)}% – {maxGain.toFixed(2)}%</span
-                  >
-                {:else}
-                  <span class="text-muted-foreground">—</span>
-                {/if}
-              </td>
-              <td class="p-3 text-right">{recipeCount}</td>
-            </tr>
-          {/each}
-        </tbody>
-      </table>
+      <div class="grid" style="grid-template-columns: 60px 80px 1fr 80px;">
+        <div class="bg-muted/50 p-3 font-medium">Tier</div>
+        <div class="bg-muted/50 p-3 font-medium">Success</div>
+        <div class="bg-muted/50 p-3 font-medium">Skill Gain</div>
+        <div class="bg-muted/50 p-3 font-medium text-right">Recipes</div>
+        {#each [0, 1, 2, 3, 4] as tier (tier)}
+          {@const successChance = getSuccessChance(tier)}
+          {@const effortless = isEffortless(tier)}
+          {@const [minGain, maxGain] = getSkillGainAmount(successChance)}
+          {@const recipeCount = recipeCountMap.get(tier) ?? 0}
+          <div class="p-3 font-medium border-t">{romanNumerals[tier]}</div>
+          <div class="p-3 border-t">
+            <span class="font-mono {getSuccessChanceColor(successChance)}">
+              {successChance.toFixed(0)}%
+            </span>
+          </div>
+          <div class="p-3 border-t">
+            {#if effortless}
+              <span class="text-muted-foreground italic">Effortless</span>
+            {:else if successChance > 0}
+              <span class="font-mono"
+                >{minGain.toFixed(2)}% – {maxGain.toFixed(2)}%</span
+              >
+            {:else}
+              <span class="text-muted-foreground">—</span>
+            {/if}
+          </div>
+          <div class="p-3 text-right border-t">{recipeCount}</div>
+        {/each}
+      </div>
     </div>
   </section>
 
@@ -379,118 +371,118 @@
       Recipes ({data.recipes.length})
     </h2>
     <div class="rounded-lg border overflow-hidden">
-      <table class="w-full">
-        <thead class="bg-muted/50">
-          <tr>
-            <th class="text-left p-3 font-medium">Tier</th>
-            <th class="text-left p-3 font-medium">Output</th>
-            <th class="text-left p-3 font-medium">Ingredients</th>
-            <th class="text-left p-3 font-medium">Success</th>
-            <th class="text-left p-3 font-medium">Skill Gain</th>
-          </tr>
-        </thead>
-        <tbody>
-          {#each data.recipes as recipe (recipe.id)}
-            {@const successChance = getSuccessChance(recipe.level_required)}
-            {@const effortless = isEffortless(recipe.level_required)}
-            {@const [minGain, maxGain] = getSkillGainAmount(successChance)}
-            {@const isExpanded = expandedRecipes.has(recipe.id)}
-            {@const canExpand = hasIngredients(recipe)}
-            <tr
-              class="border-t hover:bg-muted/30 {canExpand
-                ? 'cursor-pointer'
-                : ''}"
-              onclick={() => canExpand && toggleRecipe(recipe.id)}
-            >
-              <td class="p-3 font-medium">
-                <div class="flex items-center gap-1">
-                  {#if canExpand}
-                    <button
-                      class="p-0.5 rounded hover:bg-muted transition-colors"
-                      aria-label={isExpanded ? "Collapse" : "Expand"}
-                    >
-                      {#if isExpanded}
-                        <ChevronDown class="h-4 w-4 text-muted-foreground" />
-                      {:else}
-                        <ChevronRight class="h-4 w-4 text-muted-foreground" />
-                      {/if}
-                    </button>
-                  {:else}
-                    <span class="w-5"></span>
-                  {/if}
-                  {romanNumerals[recipe.level_required] ??
-                    recipe.level_required}
-                </div>
-              </td>
-              <td class="p-3">
-                <a
-                  href="/recipes/{recipe.id}"
-                  class="text-blue-600 dark:text-blue-400 hover:underline"
-                  onclick={(e) => e.stopPropagation()}
+      <div
+        class="grid"
+        style="grid-template-columns: 70px minmax(120px, 1fr) minmax(200px, 2fr) 80px 160px;"
+      >
+        <div class="bg-muted/50 p-3 font-medium">Tier</div>
+        <div class="bg-muted/50 p-3 font-medium">Output</div>
+        <div class="bg-muted/50 p-3 font-medium">Ingredients</div>
+        <div class="bg-muted/50 p-3 font-medium">Success</div>
+        <div class="bg-muted/50 p-3 font-medium">Skill Gain</div>
+        {#each data.recipes as recipe (recipe.id)}
+          {@const successChance = getSuccessChance(recipe.level_required)}
+          {@const effortless = isEffortless(recipe.level_required)}
+          {@const [minGain, maxGain] = getSkillGainAmount(successChance)}
+          {@const isExpanded = expandedRecipes.has(recipe.id)}
+          {@const canExpand = hasIngredients(recipe)}
+          <div
+            class="p-3 font-medium border-t {canExpand ? 'cursor-pointer' : ''}"
+            onclick={() => canExpand && toggleRecipe(recipe.id)}
+          >
+            <div class="flex items-center gap-1">
+              {#if canExpand}
+                <button
+                  class="p-0.5 rounded hover:bg-muted transition-colors"
+                  aria-label={isExpanded ? "Collapse" : "Expand"}
                 >
-                  <ItemLink
-                    itemId={recipe.result_item_id}
-                    itemName={recipe.result_item_name}
-                    tooltipHtml={recipe.result_tooltip_html}
-                  />
-                </a>
-              </td>
-              <td class="p-3">
-                {#if recipe.obtainabilityTree.recipe?.materials}
-                  <div class="flex flex-wrap gap-x-3 gap-y-1">
-                    {#each recipe.obtainabilityTree.recipe.materials as mat (mat.item_id)}
-                      <span class="whitespace-nowrap">
-                        <ItemLink
-                          itemId={mat.item_id}
-                          itemName={mat.item_name}
-                          tooltipHtml={mat.tooltip_html}
-                        />
-                        <span class="text-muted-foreground">×{mat.amount}</span>
-                      </span>
-                    {/each}
-                  </div>
-                {:else}
-                  <span class="text-muted-foreground">—</span>
-                {/if}
-              </td>
-              <td class="p-3">
-                <span class="font-mono {getSuccessChanceColor(successChance)}">
-                  {successChance.toFixed(2)}%
-                </span>
-              </td>
-              <td class="p-3">
-                {#if effortless}
-                  <span class="text-muted-foreground italic">Effortless</span>
-                {:else if successChance > 0}
-                  <span class="font-mono">
-                    {minGain.toFixed(2)}% – {maxGain.toFixed(2)}%
-                  </span>
-                {:else}
-                  <span class="text-muted-foreground">—</span>
-                {/if}
-              </td>
-            </tr>
-            {#if isExpanded && canExpand}
-              <tr class="bg-muted/20">
-                <td colspan="5" class="p-4">
-                  <div class="text-muted-foreground mb-2">
-                    How to obtain ingredients:
-                  </div>
-                  <div
-                    class="bg-background rounded-md p-3 border overflow-x-auto"
-                  >
-                    <ObtainabilityTree
-                      node={recipe.obtainabilityTree}
-                      defaultExpanded={true}
-                      hideRootLink={true}
+                  {#if isExpanded}
+                    <ChevronDown class="h-4 w-4 text-muted-foreground" />
+                  {:else}
+                    <ChevronRight class="h-4 w-4 text-muted-foreground" />
+                  {/if}
+                </button>
+              {:else}
+                <span class="w-5"></span>
+              {/if}
+              {romanNumerals[recipe.level_required] ?? recipe.level_required}
+            </div>
+          </div>
+          <div
+            class="p-3 border-t {canExpand ? 'cursor-pointer' : ''}"
+            onclick={() => canExpand && toggleRecipe(recipe.id)}
+          >
+            <a
+              href="/recipes/{recipe.id}"
+              class="text-blue-600 dark:text-blue-400 hover:underline"
+              onclick={(e) => e.stopPropagation()}
+            >
+              <ItemLink
+                itemId={recipe.result_item_id}
+                itemName={recipe.result_item_name}
+                tooltipHtml={recipe.result_tooltip_html}
+              />
+            </a>
+          </div>
+          <div
+            class="p-3 border-t {canExpand ? 'cursor-pointer' : ''}"
+            onclick={() => canExpand && toggleRecipe(recipe.id)}
+          >
+            {#if recipe.obtainabilityTree.recipe?.materials}
+              <div class="flex flex-wrap gap-x-3 gap-y-1">
+                {#each recipe.obtainabilityTree.recipe.materials as mat (mat.item_id)}
+                  <span class="whitespace-nowrap">
+                    <ItemLink
+                      itemId={mat.item_id}
+                      itemName={mat.item_name}
+                      tooltipHtml={mat.tooltip_html}
                     />
-                  </div>
-                </td>
-              </tr>
+                    <span class="text-muted-foreground">×{mat.amount}</span>
+                  </span>
+                {/each}
+              </div>
+            {:else}
+              <span class="text-muted-foreground">—</span>
             {/if}
-          {/each}
-        </tbody>
-      </table>
+          </div>
+          <div
+            class="p-3 border-t {canExpand ? 'cursor-pointer' : ''}"
+            onclick={() => canExpand && toggleRecipe(recipe.id)}
+          >
+            <span class="font-mono {getSuccessChanceColor(successChance)}">
+              {successChance.toFixed(0)}%
+            </span>
+          </div>
+          <div
+            class="p-3 border-t {canExpand ? 'cursor-pointer' : ''}"
+            onclick={() => canExpand && toggleRecipe(recipe.id)}
+          >
+            {#if effortless}
+              <span class="text-muted-foreground italic">Effortless</span>
+            {:else if successChance > 0}
+              <span class="font-mono">
+                {minGain.toFixed(2)}% – {maxGain.toFixed(2)}%
+              </span>
+            {:else}
+              <span class="text-muted-foreground">—</span>
+            {/if}
+          </div>
+          {#if isExpanded && canExpand}
+            <div class="bg-muted/20 p-4" style="grid-column: 1 / -1;">
+              <div class="text-muted-foreground mb-2">
+                How to obtain ingredients:
+              </div>
+              <div class="bg-background rounded-md p-3 border overflow-x-auto">
+                <ObtainabilityTree
+                  node={recipe.obtainabilityTree}
+                  defaultExpanded={true}
+                  hideRootLink={true}
+                />
+              </div>
+            </div>
+          {/if}
+        {/each}
+      </div>
     </div>
   </section>
 </div>
