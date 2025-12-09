@@ -153,8 +153,8 @@
         <MapPin class="h-5 w-5 text-emerald-500" />
         Cooking Oven Locations ({data.locations.length})
       </h2>
-      <div class="rounded-lg border overflow-hidden">
-        <table class="w-full">
+      <div class="rounded-lg border overflow-x-auto">
+        <table class="w-full whitespace-nowrap">
           <thead class="bg-muted/50">
             <tr>
               <th class="text-left p-3 font-medium">Zone</th>
@@ -219,8 +219,11 @@
         <span class="text-xs">(per success)</span>
       </div>
     </div>
-    <div class="rounded-lg border overflow-hidden">
-      <div class="grid" style="grid-template-columns: 60px 80px 1fr 80px;">
+    <div class="rounded-lg border overflow-x-auto">
+      <div
+        class="grid whitespace-nowrap"
+        style="grid-template-columns: 1fr 1fr 2fr 1fr;"
+      >
         <div class="bg-muted/50 p-3 font-medium">Tier</div>
         <div class="bg-muted/50 p-3 font-medium">Success</div>
         <div class="bg-muted/50 p-3 font-medium">Skill Gain</div>
@@ -259,10 +262,10 @@
       <ScrollIcon class="h-5 w-5 text-orange-500" />
       Recipes ({data.recipes.length})
     </h2>
-    <div class="rounded-lg border overflow-hidden">
+    <div class="rounded-lg border overflow-x-auto">
       <div
-        class="grid"
-        style="grid-template-columns: 70px minmax(120px, 1fr) minmax(200px, 2fr) 80px 160px;"
+        class="grid whitespace-nowrap"
+        style="grid-template-columns: 1fr 2fr 4fr 1fr 2fr;"
       >
         <div class="bg-muted/50 p-3 font-medium">Tier</div>
         <div class="bg-muted/50 p-3 font-medium">Output</div>
@@ -318,9 +321,9 @@
             onclick={() => canExpand && toggleRecipe(recipe.id)}
           >
             {#if recipe.obtainabilityTree.recipe?.materials}
-              <div class="flex flex-wrap gap-x-3 gap-y-1">
+              <div class="flex gap-3">
                 {#each recipe.obtainabilityTree.recipe.materials as mat (mat.item_id)}
-                  <span class="whitespace-nowrap">
+                  <span>
                     <ItemLink
                       itemId={mat.item_id}
                       itemName={mat.item_name}

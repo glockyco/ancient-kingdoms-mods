@@ -153,8 +153,11 @@
         <span class="text-xs">(per success)</span>
       </div>
     </div>
-    <div class="rounded-lg border overflow-hidden">
-      <div class="grid" style="grid-template-columns: 60px 80px 1fr 80px;">
+    <div class="rounded-lg border overflow-x-auto">
+      <div
+        class="grid whitespace-nowrap"
+        style="grid-template-columns: 1fr 1fr 2fr 1fr;"
+      >
         <div class="bg-muted/50 p-3 font-medium">Tier</div>
         <div class="bg-muted/50 p-3 font-medium">Success</div>
         <div class="bg-muted/50 p-3 font-medium">Skill Gain</div>
@@ -193,8 +196,11 @@
       <Leaf class="h-5 w-5 text-green-500" />
       Plants ({data.resources.length})
     </h2>
-    <div class="rounded-lg border overflow-hidden">
-      <div class="grid" style="grid-template-columns: 60px 1fr 80px 160px;">
+    <div class="rounded-lg border overflow-x-auto">
+      <div
+        class="grid whitespace-nowrap"
+        style="grid-template-columns: 1fr 3fr 1fr 2fr;"
+      >
         <div class="bg-muted/50 p-3 font-medium">Tier</div>
         <div class="bg-muted/50 p-3 font-medium">Name</div>
         <div class="bg-muted/50 p-3 font-medium">Success</div>
