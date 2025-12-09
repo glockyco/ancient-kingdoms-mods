@@ -396,9 +396,17 @@ def load_gather_items(conn: sqlite3.Connection, export_dir: Path) -> None:
 
     # Insert gathering resources
     for resource in resources:
+        # For non-template resources, derive a clean ID from the name
+        # This handles cases like radiant sparks which only exist as scene instances
+        resource_id = (
+            resource.id
+            if resource.is_template
+            else resource.name.lower().replace(" ", "_")
+        )
+
         # Insert main resource record
         values = {
-            "id": resource.id,
+            "id": resource_id,
             "name": resource.name,
             "is_plant": resource.is_plant,
             "is_mineral": resource.is_mineral,
@@ -423,20 +431,25 @@ def load_gather_items(conn: sqlite3.Connection, export_dir: Path) -> None:
         for drop in resource.random_drops:
             cursor.execute(
                 "INSERT INTO gathering_resource_drops (resource_id, item_id, drop_rate) VALUES (?, ?, ?)",
-                (resource.id, drop.item_id, drop.rate),
+                (resource_id, drop.item_id, drop.rate),
             )
 
     # Insert gathering resource spawns (links to deduplicated resources)
     for spawn in resource_spawns:
-        # Map spawn to its deduplicated resource ID
+        # Map spawn to its deduplicated resource - derive normalized ID from name
         deduplicated_resource = resources_seen[spawn.name]
+        normalized_resource_id = (
+            deduplicated_resource.id
+            if deduplicated_resource.is_template
+            else deduplicated_resource.name.lower().replace(" ", "_")
+        )
         cursor.execute(
             """INSERT INTO gathering_resource_spawns
                (id, resource_id, zone_id, sub_zone_id, position_x, position_y, position_z)
                VALUES (?, ?, ?, ?, ?, ?, ?)""",
             (
                 spawn.id,
-                deduplicated_resource.id,
+                normalized_resource_id,
                 spawn.zone_id,
                 spawn.sub_zone_id,
                 spawn.position.x if spawn.position else None,
