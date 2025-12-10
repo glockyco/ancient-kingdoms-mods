@@ -37,6 +37,97 @@
     }
   });
 
+  // Drag-to-scroll state
+  let isDragging = $state(false);
+  let hasDragged = $state(false);
+  let startX = $state(0);
+  let scrollLeftStart = $state(0);
+  let lastX = $state(0);
+  let lastTime = $state(0);
+  let velocity = $state(0);
+  let animationId: number | null = null;
+  const DRAG_THRESHOLD = 5;
+  const FRICTION = 0.95;
+  const MIN_VELOCITY = 0.5;
+
+  function handleMouseDown(e: MouseEvent) {
+    if (!scrollContainer) return;
+    // Stop any ongoing momentum animation
+    if (animationId) {
+      cancelAnimationFrame(animationId);
+      animationId = null;
+    }
+    isDragging = true;
+    hasDragged = false;
+    startX = e.pageX - scrollContainer.offsetLeft;
+    lastX = startX;
+    lastTime = Date.now();
+    scrollLeftStart = scrollContainer.scrollLeft;
+    velocity = 0;
+  }
+
+  function handleMouseMove(e: MouseEvent) {
+    if (!isDragging || !scrollContainer) return;
+    e.preventDefault();
+    const x = e.pageX - scrollContainer.offsetLeft;
+    const walk = x - startX;
+    if (Math.abs(walk) > DRAG_THRESHOLD) {
+      hasDragged = true;
+    }
+    scrollContainer.scrollLeft = scrollLeftStart - walk;
+
+    // Calculate velocity
+    const now = Date.now();
+    const dt = now - lastTime;
+    if (dt > 0) {
+      velocity = (lastX - x) / dt;
+    }
+    lastX = x;
+    lastTime = now;
+  }
+
+  function handleMouseUp() {
+    if (!isDragging) return;
+    isDragging = false;
+    // Start momentum animation if there's velocity
+    if (Math.abs(velocity) > 0.1 && hasDragged) {
+      animateMomentum();
+    }
+  }
+
+  function handleMouseLeave() {
+    if (!isDragging) return;
+    isDragging = false;
+    if (Math.abs(velocity) > 0.1 && hasDragged) {
+      animateMomentum();
+    }
+  }
+
+  function animateMomentum() {
+    if (!scrollContainer) return;
+    // Scale velocity for smoother feel
+    let momentumVelocity = velocity * 15;
+
+    function step() {
+      if (!scrollContainer || Math.abs(momentumVelocity) < MIN_VELOCITY) {
+        animationId = null;
+        return;
+      }
+      scrollContainer.scrollLeft += momentumVelocity;
+      momentumVelocity *= FRICTION;
+      animationId = requestAnimationFrame(step);
+    }
+    animationId = requestAnimationFrame(step);
+  }
+
+  function handleClick(e: MouseEvent) {
+    if (hasDragged) {
+      e.preventDefault();
+      e.stopPropagation();
+      hasDragged = false;
+    }
+  }
+
   // Create a map of node positions for edge drawing
   const nodePositions = $derived(
     new Map(graph.nodes.map((n) => [n.id, { x: n.x, y: n.y }])),
@@ -99,7 +190,19 @@
   {/if}
 {/snippet}
 
-<div bind:this={scrollContainer} class="overflow-x-auto scrollbar-thin">
+<div
+  bind:this={scrollContainer}
+  class="overflow-x-auto scrollbar-thin select-none"
+  class:cursor-grab={!isDragging}
+  class:cursor-grabbing={isDragging}
+  onmousedown={handleMouseDown}
+  onmousemove={handleMouseMove}
+  onmouseup={handleMouseUp}
+  onmouseleave={handleMouseLeave}
+  onclickcapture={handleClick}
+  role="region"
+  aria-label="Quest chain graph"
+>
   <svg
     width={graph.width}
     height={graph.height}
