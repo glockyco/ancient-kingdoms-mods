@@ -190,6 +190,7 @@
   {/if}
 {/snippet}
 
+<!-- svelte-ignore a11y_no_noninteractive_tabindex, a11y_no_noninteractive_element_interactions -->
 <div
   bind:this={scrollContainer}
   class="overflow-x-auto scrollbar-thin select-none"
@@ -200,8 +201,15 @@
   onmouseup={handleMouseUp}
   onmouseleave={handleMouseLeave}
   onclickcapture={handleClick}
-  role="region"
-  aria-label="Quest chain graph"
+  role="application"
+  aria-label="Quest chain graph - drag to scroll, use arrow keys to navigate"
+  tabindex="0"
+  onkeydown={(e) => {
+    if (!scrollContainer) return;
+    const scrollAmount = 50;
+    if (e.key === "ArrowLeft") scrollContainer.scrollLeft -= scrollAmount;
+    if (e.key === "ArrowRight") scrollContainer.scrollLeft += scrollAmount;
+  }}
 >
   <svg
     width={graph.width}

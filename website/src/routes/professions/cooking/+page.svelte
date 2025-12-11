@@ -30,6 +30,25 @@
     );
   }
 
+  function handleCellKeydown(e: KeyboardEvent, recipeId: string) {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      toggleRecipe(recipeId);
+    }
+  }
+
+  function cellProps(canExpand: boolean, recipeId: string, extraClass = "") {
+    return {
+      class:
+        `p-3 border-t ${canExpand ? "cursor-pointer" : ""} ${extraClass}`.trim(),
+      role: canExpand ? ("button" as const) : undefined,
+      tabindex: canExpand ? 0 : undefined,
+      onclick: () => canExpand && toggleRecipe(recipeId),
+      onkeydown: (e: KeyboardEvent) =>
+        canExpand && handleCellKeydown(e, recipeId),
+    };
+  }
+
   // Skill level state (0-100%)
   let skillLevel = $state(0);
 
@@ -278,10 +297,7 @@
           {@const [minGain, maxGain] = getSkillGainAmount(successChance)}
           {@const isExpanded = expandedRecipes.has(recipe.id)}
           {@const canExpand = hasIngredients(recipe)}
-          <div
-            class="p-3 font-medium border-t {canExpand ? 'cursor-pointer' : ''}"
-            onclick={() => canExpand && toggleRecipe(recipe.id)}
-          >
+          <div {...cellProps(canExpand, recipe.id, "font-medium")}>
             <div class="flex items-center gap-1">
               {#if canExpand}
                 <button
@@ -300,10 +316,7 @@
               {romanNumerals[recipe.result_quality] ?? recipe.result_quality}
             </div>
           </div>
-          <div
-            class="p-3 border-t {canExpand ? 'cursor-pointer' : ''}"
-            onclick={() => canExpand && toggleRecipe(recipe.id)}
-          >
+          <div {...cellProps(canExpand, recipe.id)}>
             <a
               href="/recipes/{recipe.id}"
               class="text-blue-600 dark:text-blue-400 hover:underline"
@@ -316,10 +329,7 @@
               />
             </a>
           </div>
-          <div
-            class="p-3 border-t {canExpand ? 'cursor-pointer' : ''}"
-            onclick={() => canExpand && toggleRecipe(recipe.id)}
-          >
+          <div {...cellProps(canExpand, recipe.id)}>
             {#if recipe.obtainabilityTree.recipe?.materials}
               <div class="flex gap-3">
                 {#each recipe.obtainabilityTree.recipe.materials as mat (mat.item_id)}
@@ -337,18 +347,12 @@
               <span class="text-muted-foreground">—</span>
             {/if}
           </div>
-          <div
-            class="p-3 border-t {canExpand ? 'cursor-pointer' : ''}"
-            onclick={() => canExpand && toggleRecipe(recipe.id)}
-          >
+          <div {...cellProps(canExpand, recipe.id)}>
             <span class="font-mono {getSuccessChanceColor(successChance)}">
               {successChance.toFixed(0)}%
             </span>
           </div>
-          <div
-            class="p-3 border-t {canExpand ? 'cursor-pointer' : ''}"
-            onclick={() => canExpand && toggleRecipe(recipe.id)}
-          >
+          <div {...cellProps(canExpand, recipe.id)}>
             {#if effortless}
               <span class="text-muted-foreground italic">Effortless</span>
             {:else if successChance > 0}
