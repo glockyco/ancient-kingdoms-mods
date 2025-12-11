@@ -90,7 +90,7 @@
             <tr>
               <th class="text-left p-3 font-medium">Name</th>
               <th class="text-left p-3 font-medium">Zone</th>
-              <th class="text-left p-3 font-medium">Sub-zone</th>
+              <th class="text-left p-3 font-medium">Area</th>
               <th class="text-left p-3 font-medium">Coordinates</th>
             </tr>
           </thead>
@@ -142,7 +142,7 @@
             <tr>
               <th class="text-left p-3 font-medium">Name</th>
               <th class="text-left p-3 font-medium">Zone</th>
-              <th class="text-left p-3 font-medium">Sub-zone</th>
+              <th class="text-left p-3 font-medium">Area</th>
               <th class="text-left p-3 font-medium">Coordinates</th>
             </tr>
           </thead>
