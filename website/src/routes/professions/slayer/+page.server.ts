@@ -1,14 +1,23 @@
 import Database from "better-sqlite3";
 import type { PageServerLoad } from "./$types";
+import type { RespawnInfo } from "$lib/types/respawn";
 
 export const prerender = true;
 
-interface SlayerMonster {
+interface SlayerMonster extends RespawnInfo {
   id: string;
   name: string;
-  level: number;
+  level_min: number;
+  level_max: number;
   is_boss: boolean;
   is_elite: boolean;
+}
+
+interface MonsterZoneInfo {
+  monster_id: string;
+  zone_id: string;
+  zone_name: string;
+  is_dungeon: boolean;
 }
 
 interface SlayerPageData {
@@ -21,6 +30,8 @@ interface SlayerPageData {
     steam_achievement_id: string | null;
   };
   monsters: SlayerMonster[];
+  monsterZones: MonsterZoneInfo[];
+  skillGainPerKill: number;
 }
 
 export const load: PageServerLoad = (): SlayerPageData => {
@@ -48,17 +59,54 @@ export const load: PageServerLoad = (): SlayerPageData => {
     SELECT DISTINCT
       m.id,
       m.name,
-      m.level,
+      m.level_min,
+      m.level_max,
       m.is_boss,
-      m.is_elite
+      m.is_elite,
+      m.death_time,
+      m.respawn_time,
+      m.respawn_probability,
+      m.spawn_time_start,
+      m.spawn_time_end,
+      (
+        SELECT ms.spawn_type FROM monster_spawns ms
+        WHERE ms.monster_id = m.id AND ms.spawn_type != 'regular'
+        LIMIT 1
+      ) as special_spawn_type,
+      CASE WHEN NOT EXISTS (
+        SELECT 1 FROM monster_spawns ms
+        WHERE ms.monster_id = m.id AND ms.spawn_type IN ('regular', 'summon')
+      ) THEN 1 ELSE 0 END as no_respawn
     FROM monsters m
     WHERE (m.is_boss = 1 OR m.is_elite = 1) AND m.is_dummy = 0
-    ORDER BY m.level, m.name
+    ORDER BY m.level_min, m.name
   `,
     )
     .all() as SlayerMonster[];
 
+  const monsterZones = db
+    .prepare(
+      `
+    SELECT DISTINCT
+      ms.monster_id,
+      z.id as zone_id,
+      z.name as zone_name,
+      z.is_dungeon
+    FROM monster_spawns ms
+    JOIN zones z ON z.id = ms.zone_id
+    JOIN monsters m ON m.id = ms.monster_id
+    WHERE (m.is_boss = 1 OR m.is_elite = 1) AND m.is_dummy = 0
+    ORDER BY z.name
+  `,
+    )
+    .all() as MonsterZoneInfo[];
+
   db.close();
 
-  return { profession, monsters };
+  // Slayer skill formula: maxLevelSlayer = uniqueCount * 50
+  // Each kill = 1 point (up to 50 per monster)
+  // Skill gain per kill = 1 / (count * 50) = 100 / (count * 50) %
+  const skillGainPerKill = (1 / (monsters.length * 50)) * 100;
+
+  return { profession, monsters, monsterZones, skillGainPerKill };
 };
