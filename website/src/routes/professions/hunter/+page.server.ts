@@ -6,7 +6,8 @@ export const prerender = true;
 interface HunterMonster {
   id: string;
   name: string;
-  level: number;
+  level_min: number;
+  level_max: number;
 }
 
 interface HunterPageData {
@@ -46,10 +47,11 @@ export const load: PageServerLoad = (): HunterPageData => {
     SELECT DISTINCT
       m.id,
       m.name,
-      m.level
+      m.level_min,
+      m.level_max
     FROM monsters m
     WHERE m.is_hunt = 1 AND m.is_dummy = 0
-    ORDER BY m.level, m.name
+    ORDER BY m.level_min, m.name
   `,
     )
     .all() as HunterMonster[];
