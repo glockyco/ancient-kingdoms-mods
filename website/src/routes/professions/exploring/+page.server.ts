@@ -3,11 +3,14 @@ import type { PageServerLoad } from "./$types";
 
 export const prerender = true;
 
-interface ExploringZone {
+interface ExploringArea {
   id: string;
   name: string;
+  zone_id: string;
+  zone_name: string;
   is_dungeon: boolean;
-  required_level: number;
+  level_min: number | null;
+  level_max: number | null;
   discovery_exp: number | null;
 }
 
@@ -21,7 +24,7 @@ interface ExploringPageData {
     tracking_denominator: number | null;
     steam_achievement_id: string | null;
   };
-  zones: ExploringZone[];
+  areas: ExploringArea[];
 }
 
 export const load: PageServerLoad = (): ExploringPageData => {
@@ -44,22 +47,42 @@ export const load: PageServerLoad = (): ExploringPageData => {
     )
     .get() as ExploringPageData["profession"];
 
-  const zones = db
+  const areas = db
     .prepare(
       `
     SELECT
-      id,
-      name,
-      is_dungeon,
-      required_level,
-      discovery_exp
-    FROM zones
-    ORDER BY required_level, name
+      zt.id,
+      zt.name,
+      z.id as zone_id,
+      z.name as zone_name,
+      z.is_dungeon,
+      COALESCE(
+        (SELECT MIN(ms.level) FROM monster_spawns ms
+         JOIN monsters m ON m.id = ms.monster_id
+         WHERE ms.zone_id = z.id AND ms.level > 0
+           AND m.type_name != 'Critter'),
+        (SELECT MIN(ms.level) FROM monster_spawns ms
+         JOIN monsters m ON m.id = ms.monster_id
+         WHERE ms.zone_id = z.id AND ms.level > 0)
+      ) as level_min,
+      COALESCE(
+        (SELECT MAX(ms.level) FROM monster_spawns ms
+         JOIN monsters m ON m.id = ms.monster_id
+         WHERE ms.zone_id = z.id
+           AND m.type_name != 'Critter'),
+        (SELECT MAX(ms.level) FROM monster_spawns ms
+         JOIN monsters m ON m.id = ms.monster_id
+         WHERE ms.zone_id = z.id)
+      ) as level_max,
+      z.discovery_exp
+    FROM zone_triggers zt
+    JOIN zones z ON zt.zone_id = z.zone_id
+    ORDER BY z.name, zt.name
   `,
     )
-    .all() as ExploringZone[];
+    .all() as ExploringArea[];
 
   db.close();
 
-  return { profession, zones };
+  return { profession, areas };
 };
