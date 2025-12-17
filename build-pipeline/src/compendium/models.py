@@ -642,6 +642,7 @@ class SkillData(BaseModel):
     mana_percent_per_second_bonus: SkillBonus | None = None
     mana_per_second_bonus: SkillBonus | None = None
     energy_percent_per_second_bonus: SkillBonus | None = None
+    energy_per_second_bonus: SkillBonus | None = None
     speed_bonus: SkillBonus | None = None
     damage_shield: SkillBonus | None = None
     cooldown_reduction_percent: SkillBonus | None = None

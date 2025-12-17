@@ -776,6 +776,7 @@ CREATE TABLE skills (
     mana_percent_per_second_bonus TEXT,
     mana_per_second_bonus TEXT,
     energy_percent_per_second_bonus TEXT,
+    energy_per_second_bonus TEXT,
     speed_bonus TEXT,
     damage_shield TEXT,
     cooldown_reduction_percent TEXT,

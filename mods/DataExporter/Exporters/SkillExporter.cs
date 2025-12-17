@@ -293,6 +293,7 @@ public class SkillExporter : BaseExporter
         skillData.mana_percent_per_second_bonus = new LinearStatBonusFloat { base_value = bonusSkill.manaPercentPerSecondBonus.baseValue, bonus_per_level = bonusSkill.manaPercentPerSecondBonus.bonusPerLevel };
         skillData.mana_per_second_bonus = new LinearStatBonus { base_value = bonusSkill.manaPerSecondBonus.baseValue, bonus_per_level = bonusSkill.manaPerSecondBonus.bonusPerLevel };
         skillData.energy_percent_per_second_bonus = new LinearStatBonusFloat { base_value = bonusSkill.energyPercentPerSecondBonus.baseValue, bonus_per_level = bonusSkill.energyPercentPerSecondBonus.bonusPerLevel };
+        skillData.energy_per_second_bonus = new LinearStatBonus { base_value = bonusSkill.energyPerSecondBonus.baseValue, bonus_per_level = bonusSkill.energyPerSecondBonus.bonusPerLevel };
         skillData.speed_bonus = new LinearStatBonusFloat { base_value = bonusSkill.speedBonus.baseValue, bonus_per_level = bonusSkill.speedBonus.bonusPerLevel };
         skillData.damage_shield = new LinearStatBonus { base_value = bonusSkill.damageShield.baseValue, bonus_per_level = bonusSkill.damageShield.bonusPerLevel };
         skillData.cooldown_reduction_percent = new LinearStatBonusFloat { base_value = bonusSkill.cooldownReductionPercent.baseValue, bonus_per_level = bonusSkill.cooldownReductionPercent.bonusPerLevel };

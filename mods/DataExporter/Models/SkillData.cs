@@ -141,6 +141,7 @@ public class SkillData
     public LinearStatBonusFloat mana_percent_per_second_bonus { get; set; }
     public LinearStatBonus mana_per_second_bonus { get; set; }
     public LinearStatBonusFloat energy_percent_per_second_bonus { get; set; }
+    public LinearStatBonus energy_per_second_bonus { get; set; }
     public LinearStatBonusFloat speed_bonus { get; set; }
     public LinearStatBonus damage_shield { get; set; }
     public LinearStatBonusFloat cooldown_reduction_percent { get; set; }
