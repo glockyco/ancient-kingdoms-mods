@@ -587,6 +587,7 @@ CREATE TABLE quests (
     is_main_quest BOOLEAN DEFAULT 0,
     is_epic_quest BOOLEAN DEFAULT 0,
     is_adventurer_quest BOOLEAN DEFAULT 0,
+    is_repeatable BOOLEAN DEFAULT 0,
 
     -- Requirements (stored as JSON arrays)
     race_requirements TEXT,         -- JSON array: ["Human", "Elf"]

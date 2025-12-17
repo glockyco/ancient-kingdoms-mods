@@ -44,6 +44,7 @@ interface AlchemyQuest {
   is_main_quest: boolean;
   is_epic_quest: boolean;
   is_adventurer_quest: boolean;
+  is_repeatable: boolean;
   objective_items: QuestItem[];
   potion_to_brew: QuestItem | null;
   npc_to_find: QuestNpc | null;
@@ -142,6 +143,7 @@ export const load: PageServerLoad = (): AlchemyPageData => {
     is_main_quest: number;
     is_epic_quest: number;
     is_adventurer_quest: number;
+    is_repeatable: number;
     gather_items: string | null;
     rewards: string | null;
     potion_item_id: string | null;
@@ -232,6 +234,7 @@ export const load: PageServerLoad = (): AlchemyPageData => {
         is_main_quest,
         is_epic_quest,
         is_adventurer_quest,
+        is_repeatable,
         gather_items,
         rewards,
         potion_item_id,
@@ -268,6 +271,7 @@ export const load: PageServerLoad = (): AlchemyPageData => {
       is_main_quest: !!rawQuest.is_main_quest,
       is_epic_quest: !!rawQuest.is_epic_quest,
       is_adventurer_quest: !!rawQuest.is_adventurer_quest,
+      is_repeatable: !!rawQuest.is_repeatable,
       objective_items: lookupItems(gatherItems),
       potion_to_brew: lookupPotion(
         rawQuest.potion_item_id,

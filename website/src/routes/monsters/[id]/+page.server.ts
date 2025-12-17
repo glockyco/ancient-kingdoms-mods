@@ -365,6 +365,7 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
       is_main_quest,
       is_epic_quest,
       is_adventurer_quest,
+      is_repeatable,
       kill_target_1_id,
       kill_amount_1,
       kill_target_2_id,
@@ -382,6 +383,7 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
     is_main_quest: number;
     is_epic_quest: number;
     is_adventurer_quest: number;
+    is_repeatable: number;
     kill_target_1_id: string | null;
     kill_amount_1: number;
     kill_target_2_id: string | null;
@@ -399,6 +401,7 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
     is_main_quest: Boolean(q.is_main_quest),
     is_epic_quest: Boolean(q.is_epic_quest),
     is_adventurer_quest: Boolean(q.is_adventurer_quest),
+    is_repeatable: Boolean(q.is_repeatable),
   }));
 
   // Get quests that require items dropped by this monster
@@ -475,7 +478,8 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
           display_type,
           is_main_quest,
           is_epic_quest,
-          is_adventurer_quest
+          is_adventurer_quest,
+          is_repeatable
         FROM quests
         WHERE id IN (${questPlaceholders})
         ORDER BY level_recommended
@@ -490,6 +494,7 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
         is_main_quest: number;
         is_epic_quest: number;
         is_adventurer_quest: number;
+        is_repeatable: number;
       }>;
 
       for (const q of itemQuestsRaw) {
@@ -509,6 +514,7 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
           is_main_quest: Boolean(q.is_main_quest),
           is_epic_quest: Boolean(q.is_epic_quest),
           is_adventurer_quest: Boolean(q.is_adventurer_quest),
+          is_repeatable: Boolean(q.is_repeatable),
         });
       }
 

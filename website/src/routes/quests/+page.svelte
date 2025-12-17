@@ -43,6 +43,7 @@
       q.is_main_quest ? "main" : null,
       q.is_epic_quest ? "epic" : null,
       q.is_adventurer_quest ? "daily" : null,
+      q.is_repeatable ? "repeatable" : null,
       isRegularQuest(q) ? "regular" : null,
     ].filter(Boolean) as string[],
   }));
@@ -58,13 +59,14 @@
     {
       id: "flags",
       header: "Flags",
-      size: 100,
+      size: 130,
       enableSorting: false,
       accessorFn: (row) => {
         const flags: string[] = [];
         if (row.is_main_quest) flags.push("Main");
         if (row.is_epic_quest) flags.push("Epic");
         if (row.is_adventurer_quest) flags.push("Daily");
+        if (row.is_repeatable) flags.push("Repeatable");
         return flags.join(" ");
       },
     },

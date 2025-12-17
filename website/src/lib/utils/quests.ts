@@ -14,7 +14,7 @@ export type QuestDisplayType =
   | "Brew";
 
 /** Quest flag type */
-export type QuestFlag = "main" | "epic" | "daily";
+export type QuestFlag = "main" | "epic" | "daily" | "repeatable";
 
 export interface QuestTypeConfig {
   /** Display type value */
@@ -55,6 +55,7 @@ export const QUEST_FLAG_CONFIG: QuestFlagConfig[] = [
   { key: "main", label: "Main", iconColor: "text-yellow-500" },
   { key: "epic", label: "Epic", iconColor: "text-purple-500" },
   { key: "daily", label: "Daily", iconColor: "text-orange-500" },
+  { key: "repeatable", label: "Repeatable", iconColor: "text-green-500" },
 ];
 
 /**
@@ -73,6 +74,7 @@ export function getActiveQuestFlags(quest: {
   is_main_quest: boolean;
   is_epic_quest: boolean;
   is_adventurer_quest: boolean;
+  is_repeatable: boolean;
 }): QuestFlagConfig[] {
   const flags: QuestFlagConfig[] = [];
   if (quest.is_main_quest) {
@@ -85,6 +87,10 @@ export function getActiveQuestFlags(quest: {
   }
   if (quest.is_adventurer_quest) {
     const config = QUEST_FLAG_CONFIG.find((f) => f.key === "daily");
+    if (config) flags.push(config);
+  }
+  if (quest.is_repeatable) {
+    const config = QUEST_FLAG_CONFIG.find((f) => f.key === "repeatable");
     if (config) flags.push(config);
   }
   return flags;

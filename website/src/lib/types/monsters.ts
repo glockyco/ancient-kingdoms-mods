@@ -108,6 +108,7 @@ export interface MonsterQuest {
   is_main_quest: boolean;
   is_epic_quest: boolean;
   is_adventurer_quest: boolean;
+  is_repeatable: boolean;
 }
 
 /**

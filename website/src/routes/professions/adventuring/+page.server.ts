@@ -26,6 +26,7 @@ interface AdventurerQuest {
   is_main_quest: boolean;
   is_epic_quest: boolean;
   is_adventurer_quest: boolean;
+  is_repeatable: boolean;
   objective: QuestObjective | null;
   reward_items: QuestRewardItem[];
   reward_adventuring_skill: number;
@@ -126,6 +127,7 @@ export const load: PageServerLoad = (): AdventuringPageData => {
     is_main_quest: number;
     is_epic_quest: number;
     is_adventurer_quest: number;
+    is_repeatable: number;
     quest_type: string;
     kill_target_1_id: string | null;
     kill_amount_1: number;
@@ -146,6 +148,7 @@ export const load: PageServerLoad = (): AdventuringPageData => {
       is_main_quest,
       is_epic_quest,
       is_adventurer_quest,
+      is_repeatable,
       quest_type,
       kill_target_1_id,
       kill_amount_1,
@@ -236,6 +239,7 @@ export const load: PageServerLoad = (): AdventuringPageData => {
       is_main_quest: !!raw.is_main_quest,
       is_epic_quest: !!raw.is_epic_quest,
       is_adventurer_quest: !!raw.is_adventurer_quest,
+      is_repeatable: !!raw.is_repeatable,
       objective,
       reward_items: rewardItems,
       reward_adventuring_skill: adventuringSkillIncrease,

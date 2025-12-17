@@ -107,6 +107,7 @@ export interface NpcQuestOffered {
   is_adventurer_quest: boolean;
   is_main_quest: boolean;
   is_epic_quest: boolean;
+  is_repeatable: boolean;
   display_type: string;
   race_requirements?: string[];
   class_requirements?: string[];

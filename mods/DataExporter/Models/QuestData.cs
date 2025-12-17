@@ -61,6 +61,7 @@ public class QuestData
     public bool is_main_quest { get; set; }
     public bool is_epic_quest { get; set; }
     public bool is_adventurer_quest { get; set; }
+    public bool is_repeatable { get; set; }
     public List<string> race_requirements { get; set; } = new();
     public List<string> class_requirements { get; set; } = new();
     public List<FactionRequirement> faction_requirements { get; set; } = new();

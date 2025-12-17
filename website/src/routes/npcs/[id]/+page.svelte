@@ -120,7 +120,11 @@
   // Check if any quests have flags (for conditional column)
   const hasQuestFlags = $derived(
     data.questsOffered.some(
-      (q) => q.is_main_quest || q.is_epic_quest || q.is_adventurer_quest,
+      (q) =>
+        q.is_main_quest ||
+        q.is_epic_quest ||
+        q.is_adventurer_quest ||
+        q.is_repeatable,
     ),
   );
 
@@ -139,13 +143,14 @@
       cols.push({
         id: "flags",
         header: "Flags",
-        size: 100,
+        size: 130,
         enableSorting: false,
         accessorFn: (row) => {
           const flags: string[] = [];
           if (row.is_main_quest) flags.push("Main");
           if (row.is_epic_quest) flags.push("Epic");
           if (row.is_adventurer_quest) flags.push("Daily");
+          if (row.is_repeatable) flags.push("Repeatable");
           return flags.join(" ");
         },
       });

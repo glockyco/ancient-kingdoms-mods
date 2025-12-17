@@ -58,6 +58,7 @@ public class QuestExporter : BaseExporter
                 is_main_quest = quest.mainQuest,
                 is_epic_quest = quest.epicQuest,
                 is_adventurer_quest = quest.adventurerQuest,
+                is_repeatable = quest.repeatableQuest,
                 tooltip = quest.toolTip ?? "",
                 tooltip_complete = quest.toolTipComplete ?? ""
             };

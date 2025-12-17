@@ -464,6 +464,7 @@ class QuestData(BaseModel):
     is_main_quest: bool = False
     is_epic_quest: bool = False
     is_adventurer_quest: bool = False
+    is_repeatable: bool = False
     race_requirements: list[str] = []
     class_requirements: list[str] = []
     faction_requirements: list[Any] = []

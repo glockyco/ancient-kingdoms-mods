@@ -125,6 +125,7 @@ export const load: PageServerLoad = ({ params }): QuestDetailPageData => {
     is_main_quest: Boolean(questRaw.is_main_quest),
     is_epic_quest: Boolean(questRaw.is_epic_quest),
     is_adventurer_quest: Boolean(questRaw.is_adventurer_quest),
+    is_repeatable: Boolean(questRaw.is_repeatable),
     race_requirements: raceRequirements,
     class_requirements: classRequirements,
     faction_requirements: factionRequirements,

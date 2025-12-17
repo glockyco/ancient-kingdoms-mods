@@ -4,6 +4,7 @@
   import Star from "@lucide/svelte/icons/star";
   import Sparkles from "@lucide/svelte/icons/sparkles";
   import CalendarClock from "@lucide/svelte/icons/calendar-clock";
+  import RefreshCw from "@lucide/svelte/icons/refresh-cw";
 
   interface Props {
     /** Quest flags data */
@@ -11,6 +12,7 @@
       is_main_quest: boolean;
       is_epic_quest: boolean;
       is_adventurer_quest: boolean;
+      is_repeatable: boolean;
     };
     /** Additional CSS classes for the container */
     class?: string;
@@ -28,6 +30,8 @@
     <Sparkles class="{ICON_BADGE.iconSize} {iconColor}" />
   {:else if key === "daily"}
     <CalendarClock class="{ICON_BADGE.iconSize} {iconColor}" />
+  {:else if key === "repeatable"}
+    <RefreshCw class="{ICON_BADGE.iconSize} {iconColor}" />
   {/if}
 {/snippet}
 

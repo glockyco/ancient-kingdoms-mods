@@ -55,6 +55,7 @@ export const load: PageServerLoad = (): QuestsPageData => {
       q.is_main_quest,
       q.is_epic_quest,
       q.is_adventurer_quest,
+      q.is_repeatable,
       q.class_requirements,
       q.start_npc_id,
       n.name as start_npc_name
@@ -73,6 +74,7 @@ export const load: PageServerLoad = (): QuestsPageData => {
     is_main_quest: number;
     is_epic_quest: number;
     is_adventurer_quest: number;
+    is_repeatable: number;
     class_requirements: string | null;
     start_npc_id: string | null;
     start_npc_name: string | null;
@@ -116,6 +118,7 @@ export const load: PageServerLoad = (): QuestsPageData => {
       is_main_quest: Boolean(q.is_main_quest),
       is_epic_quest: Boolean(q.is_epic_quest),
       is_adventurer_quest: Boolean(q.is_adventurer_quest),
+      is_repeatable: Boolean(q.is_repeatable),
       class_requirements: classRequirements,
       quest_giver_id: questGiverId,
       quest_giver_name: questGiverName,

@@ -49,8 +49,8 @@ def _denormalize_quests_offered(conn: sqlite3.Connection) -> int:
     cursor.execute(
         """SELECT id, name, level_required, level_recommended,
                   is_adventurer_quest, is_main_quest, is_epic_quest,
-                  display_type, race_requirements, class_requirements,
-                  faction_requirements
+                  is_repeatable, display_type, race_requirements,
+                  class_requirements, faction_requirements
            FROM quests"""
     )
     quest_info = {}
@@ -63,15 +63,16 @@ def _denormalize_quests_offered(conn: sqlite3.Connection) -> int:
             "is_adventurer_quest": bool(row[4]),
             "is_main_quest": bool(row[5]),
             "is_epic_quest": bool(row[6]),
-            "display_type": row[7],
+            "is_repeatable": bool(row[7]),
+            "display_type": row[8],
         }
         # Only include non-empty requirements
-        if row[8] and row[8] != "[]":
-            info["race_requirements"] = json.loads(row[8])
         if row[9] and row[9] != "[]":
-            info["class_requirements"] = json.loads(row[9])
+            info["race_requirements"] = json.loads(row[9])
         if row[10] and row[10] != "[]":
-            faction_reqs = json.loads(row[10])
+            info["class_requirements"] = json.loads(row[10])
+        if row[11] and row[11] != "[]":
+            faction_reqs = json.loads(row[11])
             # Add tier name to each faction requirement
             for fr in faction_reqs:
                 fr["tier_name"] = get_tier_name(fr["faction_value"])

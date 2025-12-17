@@ -105,6 +105,7 @@ export interface QuestInfo {
   is_main_quest: boolean;
   is_epic_quest: boolean;
   is_adventurer_quest: boolean;
+  is_repeatable: boolean;
   race_requirements: string[];
   class_requirements: string[];
   faction_requirements: QuestFactionRequirement[];
@@ -158,6 +159,7 @@ export interface QuestListView {
   is_main_quest: boolean;
   is_epic_quest: boolean;
   is_adventurer_quest: boolean;
+  is_repeatable: boolean;
   class_requirements: string[];
   quest_giver_id: string | null;
   quest_giver_name: string | null;
