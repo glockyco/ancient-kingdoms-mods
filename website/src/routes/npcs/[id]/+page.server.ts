@@ -180,6 +180,7 @@ export const load: PageServerLoad = ({ params }): NpcDetailPageData => {
     see_invisibility: Boolean(npcRaw.see_invisibility),
     is_summonable: Boolean(npcRaw.is_summonable),
     flee_on_low_hp: Boolean(npcRaw.flee_on_low_hp),
+    is_christmas_npc: Boolean(npcRaw.is_christmas_npc),
 
     // Respawn and behavior
     respawn_time: (npcRaw.respawn_time as number) || 600,

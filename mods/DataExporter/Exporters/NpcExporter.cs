@@ -148,6 +148,7 @@ public class NpcExporter : BaseExporter
                 see_invisibility = canonical.seeInvisibility,
                 is_summonable = canonical.isSummonable,
                 flee_on_low_hp = canonical.fleeOnLowHP,
+                is_christmas_npc = canonical.isChristmasNPC,
 
                 // Messages and interactions
                 aggro_message_probability = canonical.aggroMessageProbability,

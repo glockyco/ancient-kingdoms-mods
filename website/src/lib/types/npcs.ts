@@ -71,6 +71,7 @@ export interface NpcInfo {
   see_invisibility: boolean;
   is_summonable: boolean;
   flee_on_low_hp: boolean;
+  is_christmas_npc: boolean;
 
   // Respawn and behavior
   respawn_time: number;

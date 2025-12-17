@@ -36,6 +36,7 @@
   import Sparkles from "@lucide/svelte/icons/sparkles";
   import Shield from "@lucide/svelte/icons/shield";
   import RefreshCw from "@lucide/svelte/icons/refresh-cw";
+  import Snowflake from "@lucide/svelte/icons/snowflake";
 
   const categoryColors: Record<RoleCategory, string> = {
     quest: "text-orange-500",
@@ -465,6 +466,12 @@
     <div class="flex items-center gap-3 flex-wrap">
       <h1 class="text-3xl font-bold">{data.npc.name}</h1>
       <RoleBadges roles={data.npc.roles} />
+      {#if data.npc.is_christmas_npc}
+        <span class="{ICON_BADGE.base} {ICON_BADGE.static}">
+          <Snowflake class="{ICON_BADGE.iconSize} text-red-500" />
+          Winter Festival
+        </span>
+      {/if}
     </div>
 
     <div class="mt-2 flex flex-wrap gap-4 text-sm text-muted-foreground">

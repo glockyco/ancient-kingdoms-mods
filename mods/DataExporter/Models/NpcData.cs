@@ -104,6 +104,7 @@ public class NpcData
     public bool see_invisibility { get; set; }
     public bool is_summonable { get; set; }
     public bool flee_on_low_hp { get; set; }
+    public bool is_christmas_npc { get; set; }
 
     // Spawning and respawn
     public int respawn_dungeon_id { get; set; }

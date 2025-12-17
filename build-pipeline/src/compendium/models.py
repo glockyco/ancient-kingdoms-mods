@@ -390,6 +390,7 @@ class NpcData(BaseModel):
     see_invisibility: bool = False
     is_summonable: bool = False
     flee_on_low_hp: bool = False
+    is_christmas_npc: bool = False
 
     # Monster-like properties
     respawn_dungeon_id: int = 0
