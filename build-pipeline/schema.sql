@@ -513,7 +513,8 @@ CREATE TABLE npcs (
     is_christmas_npc BOOLEAN DEFAULT 0,
 
     -- Respawn and behavior
-    respawn_dungeon_id INTEGER DEFAULT 0 REFERENCES zones(zone_id),
+    -- Note: respawn_dungeon_id = 100 is special "World Bosses" case, not a real zone
+    respawn_dungeon_id INTEGER DEFAULT 0,
     gold_required_respawn_dungeon INTEGER DEFAULT 0,
     respawn_probability REAL DEFAULT 1.0,
     can_hide_after_spawn BOOLEAN DEFAULT 0,

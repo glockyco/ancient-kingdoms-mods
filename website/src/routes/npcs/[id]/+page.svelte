@@ -55,9 +55,25 @@
   // Get description for a role (with dynamic handling for renewal sage)
   function getRoleDescription(role: RoleConfig): string {
     if (role.key === "is_renewal_sage") {
+      const isWorldBoss = data.npc.respawn_dungeon_id === 100;
+
+      // World Boss resets use Adventurer's Essences (link to item page)
+      // Regular dungeon resets use gold
+      const currency = isWorldBoss
+        ? `<a href="/items/adventurers_essence" class="text-blue-600 dark:text-blue-400 hover:underline">Adventurer's Essences</a>`
+        : `<span class="text-yellow-600 dark:text-yellow-400">gold</span>`;
+
+      if (isWorldBoss) {
+        return data.npc.gold_required_respawn_dungeon > 0
+          ? `Resets all World Bosses for <span class="text-yellow-600 dark:text-yellow-400">${data.npc.gold_required_respawn_dungeon.toLocaleString()}</span> ${currency}.`
+          : `Resets all World Bosses.`;
+      }
+
+      const target = `<a href="/zones/${data.respawnDungeonZoneId}" class="text-blue-600 dark:text-blue-400 hover:underline">${data.respawnDungeonName}</a>`;
+
       return data.npc.gold_required_respawn_dungeon > 0
-        ? `Resets all spawns in <a href="/zones/${data.respawnDungeonZoneId}" class="text-blue-600 dark:text-blue-400 hover:underline">${data.respawnDungeonName}</a> for <span class="text-yellow-600 dark:text-yellow-400">${data.npc.gold_required_respawn_dungeon.toLocaleString()} gold</span>.`
-        : `Resets all spawns in <a href="/zones/${data.respawnDungeonZoneId}" class="text-blue-600 dark:text-blue-400 hover:underline">${data.respawnDungeonName}</a>.`;
+        ? `Resets all spawns in ${target} for <span class="text-yellow-600 dark:text-yellow-400">${data.npc.gold_required_respawn_dungeon.toLocaleString()}</span> ${currency}.`
+        : `Resets all spawns in ${target}.`;
     }
     return ROLE_DESCRIPTIONS[role.key]?.description ?? "";
   }

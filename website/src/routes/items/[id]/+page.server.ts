@@ -70,6 +70,23 @@ export const load: PageServerLoad = ({ params }): ItemDetailPageData => {
       .all() as Array<{ id: string; name: string }>;
   }
 
+  // For adventurer's essence, get World Boss Renewal Sage NPCs
+  let worldBossRenewalSages: Array<{
+    id: string;
+    name: string;
+    gold_required: number;
+  }> = [];
+  if (params.id === "adventurers_essence") {
+    worldBossRenewalSages = db
+      .prepare(
+        `SELECT id, name, gold_required_respawn_dungeon as gold_required
+         FROM npcs
+         WHERE json_extract(roles, '$.is_renewal_sage') = 1
+           AND respawn_dungeon_id = 100`,
+      )
+      .all() as Array<{ id: string; name: string; gold_required: number }>;
+  }
+
   db.close();
 
   return {
@@ -78,5 +95,6 @@ export const load: PageServerLoad = ({ params }): ItemDetailPageData => {
     veteranMasters,
     augmenters,
     priestesses,
+    worldBossRenewalSages,
   };
 };

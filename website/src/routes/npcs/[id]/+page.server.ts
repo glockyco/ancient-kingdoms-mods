@@ -116,14 +116,17 @@ export const load: PageServerLoad = ({ params }): NpcDetailPageData => {
     .all(params.id) as NpcSpawnLocation[];
 
   // Get respawn dungeon info if applicable
+  // respawn_dungeon_id == 100 is a special case for World Bosses (not a real zone)
   let respawnDungeonName: string | null = null;
   let respawnDungeonZoneId: string | null = null;
-  if (npcRaw.respawn_dungeon_id && (npcRaw.respawn_dungeon_id as number) > 0) {
+  const respawnDungeonId = npcRaw.respawn_dungeon_id as number;
+  if (respawnDungeonId === 100) {
+    respawnDungeonName = "World Bosses";
+    respawnDungeonZoneId = null;
+  } else if (respawnDungeonId > 0) {
     const dungeonData = db
       .prepare("SELECT id, name FROM zones WHERE zone_id = ?")
-      .get(npcRaw.respawn_dungeon_id) as
-      | { id: string; name: string }
-      | undefined;
+      .get(respawnDungeonId) as { id: string; name: string } | undefined;
     respawnDungeonName = dungeonData?.name || null;
     respawnDungeonZoneId = dungeonData?.id || null;
   }

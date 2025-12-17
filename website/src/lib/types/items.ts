@@ -35,4 +35,9 @@ export interface ItemDetailPageData {
   veteranMasters: Array<{ id: string; name: string }>;
   augmenters: Array<{ id: string; name: string }>;
   priestesses: Array<{ id: string; name: string }>;
+  worldBossRenewalSages: Array<{
+    id: string;
+    name: string;
+    gold_required: number;
+  }>;
 }

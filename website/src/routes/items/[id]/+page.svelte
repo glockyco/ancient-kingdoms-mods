@@ -496,7 +496,7 @@
   </Card.Root>
 
   <!-- Tooltip and Stats/Merge/Currency side-by-side (hide entire section if all would be empty) -->
-  {#if (data.item.tooltip_html && data.item.item_type !== "augment") || ((data.item.item_type !== "augment" || !data.item.augment_armor_set_name) && ((computed.stats && Object.keys(computed.stats).length > 0) || data.item.weapon_delay > 0)) || data.item.merge_result_item_id || (computed.createdFromMerge && computed.createdFromMerge.length > 0) || (computed.usedAsCurrencyFor && computed.usedAsCurrencyFor.length > 0) || data.item.id === "primal_essence" || data.item.id === "radiant_aether" || data.item.pack_final_item_id || (data.item.item_type === "augment" && !data.item.augment_armor_set_name && data.augmenters.length > 0)}
+  {#if (data.item.tooltip_html && data.item.item_type !== "augment") || ((data.item.item_type !== "augment" || !data.item.augment_armor_set_name) && ((computed.stats && Object.keys(computed.stats).length > 0) || data.item.weapon_delay > 0)) || data.item.merge_result_item_id || (computed.createdFromMerge && computed.createdFromMerge.length > 0) || (computed.usedAsCurrencyFor && computed.usedAsCurrencyFor.length > 0) || data.item.id === "primal_essence" || data.item.id === "radiant_aether" || data.item.id === "adventurers_essence" || data.item.pack_final_item_id || (data.item.item_type === "augment" && !data.item.augment_armor_set_name && data.augmenters.length > 0)}
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <!-- Tooltip (don't show for augments - they're metadata items never shown to players) -->
       {#if data.item.tooltip_html && data.item.item_type !== "augment"}
@@ -779,6 +779,34 @@
                 <div class={styles.value}>
                   <span class={styles.valuePositive}>Full heal to max HP</span>
                   instead of dying
+                </div>
+              </div>
+            </div>
+          </Card.Content>
+        </Card.Root>
+      {:else if data.item.id === "adventurers_essence" && data.worldBossRenewalSages.length > 0}
+        <!-- Adventurer's Essence - World Boss Reset -->
+        <Card.Root class="bg-muted/30">
+          <Card.Header>
+            <Card.Title>World Boss Reset</Card.Title>
+          </Card.Header>
+          <Card.Content>
+            <div class="space-y-3">
+              <div>
+                <div class={styles.label}>Cost</div>
+                <div class={styles.value}>
+                  {data.worldBossRenewalSages[0].gold_required.toLocaleString()} Adventurer's
+                  Essences
+                </div>
+              </div>
+              <div>
+                <div class={styles.label}>Available from</div>
+                <div class="space-y-1 mt-1">
+                  {#each data.worldBossRenewalSages as sage (sage.id)}
+                    <a href="/npcs/{sage.id}" class={styles.link}>
+                      {sage.name}
+                    </a>
+                  {/each}
                 </div>
               </div>
             </div>
