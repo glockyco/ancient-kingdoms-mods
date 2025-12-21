@@ -103,7 +103,6 @@
             <th class="text-right p-3 font-medium">Chance</th>
             <th class="text-right p-3 font-medium">Special</th>
             <th class="text-right p-3 font-medium">Zone</th>
-            <th class="text-right p-3 font-medium">Skill Gain</th>
           </tr>
         </thead>
         <tbody>
@@ -156,11 +155,6 @@
                 {:else}
                   <span class="text-muted-foreground">—</span>
                 {/if}
-              </td>
-              <td class="p-3 text-right">
-                <span class="font-mono text-green-600 dark:text-green-400">
-                  +{data.skillGainPerKill.toFixed(4)}%
-                </span>
               </td>
             </tr>
           {/each}
