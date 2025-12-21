@@ -100,7 +100,12 @@
         <span class="text-xs">(per success)</span>
       </div>
       <div class="flex items-center gap-2 text-muted-foreground">
-        <span>Radiant Aether chance:</span>
+        <a
+          href="/items/radiant_aether"
+          class="text-blue-600 dark:text-blue-400 hover:underline"
+          >Radiant Aether</a
+        >
+        <span>chance:</span>
         <span class="font-mono text-foreground"
           >{getRadiantAetherChance().toFixed(1)}%</span
         >
