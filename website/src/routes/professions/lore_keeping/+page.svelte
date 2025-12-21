@@ -50,10 +50,7 @@
       <p class="text-muted-foreground mt-1">{data.profession.description}</p>
 
       <div class="flex items-center gap-4 mt-3 text-muted-foreground">
-        {#if data.profession.tracking_type === "count_based" && data.profession.tracking_denominator}
-          <span>Progress: 0 / {data.profession.tracking_denominator} books</span
-          >
-        {/if}
+        <span class="whitespace-nowrap">Books: {data.books.length}</span>
         {#if data.profession.steam_achievement_id}
           <span class="flex items-center gap-1">
             <Trophy class="h-4 w-4" />
