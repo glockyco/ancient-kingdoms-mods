@@ -20,7 +20,7 @@ public class ProfessionExporter : BaseExporter
             {
                 id = "alchemy",
                 name = "Alchemy",
-                description = "Create potions and elixirs at an alchemy table.",
+                description = "Brew potions and elixirs.",
                 category = "crafting",
                 icon_path = GetIconPath("alchemy"),
                 steam_achievement_id = "ALCHEMY_MASTER",
@@ -34,7 +34,7 @@ public class ProfessionExporter : BaseExporter
             {
                 id = "cooking",
                 name = "Cooking",
-                description = "Prepare food that provides powerful buffs.",
+                description = "Prepare food at cooking stations.",
                 category = "crafting",
                 icon_path = GetIconPath("cooking"),
                 steam_achievement_id = "COOKING_MASTER",
@@ -48,7 +48,7 @@ public class ProfessionExporter : BaseExporter
             {
                 id = "herbalism",
                 name = "Herbalism",
-                description = "Gather plants and herbs from the world.",
+                description = "Gather plants and herbs.",
                 category = "gathering",
                 icon_path = GetIconPath("herbalism"),
                 steam_achievement_id = "FORAGING_MASTER",
@@ -62,7 +62,7 @@ public class ProfessionExporter : BaseExporter
             {
                 id = "mining",
                 name = "Mining",
-                description = "Extract ore and minerals from mining nodes.",
+                description = "Mine ore and minerals.",
                 category = "gathering",
                 icon_path = GetIconPath("mining"),
                 steam_achievement_id = "MINING_MASTER",
@@ -76,7 +76,7 @@ public class ProfessionExporter : BaseExporter
             {
                 id = "adventuring",
                 name = "Adventuring",
-                description = "Complete quests from the Adventurer's Guild.",
+                description = "Complete Adventurer's Guild quests.",
                 category = "combat",
                 icon_path = GetIconPath("adventuring"),
                 steam_achievement_id = "ADVENTURING_MASTER",
@@ -90,7 +90,7 @@ public class ProfessionExporter : BaseExporter
             {
                 id = "lore_keeping",
                 name = "Lore Keeping",
-                description = "Collect books and uncover the lore of the world.",
+                description = "Collect books and uncover lore.",
                 category = "exploration",
                 icon_path = GetIconPath("lore_keeping"),
                 steam_achievement_id = "LOREKEEPING_MASTER",
@@ -104,7 +104,7 @@ public class ProfessionExporter : BaseExporter
             {
                 id = "exploring",
                 name = "Exploring",
-                description = "Discover all areas in the world.",
+                description = "Discover areas of the world.",
                 category = "exploration",
                 icon_path = GetIconPath("exploring"),
                 steam_achievement_id = "EXPLORING_MASTER",
@@ -118,7 +118,7 @@ public class ProfessionExporter : BaseExporter
             {
                 id = "slayer",
                 name = "Slayer",
-                description = "Defeat powerful bosses and elites.",
+                description = "Defeat bosses and elites.",
                 category = "combat",
                 icon_path = GetIconPath("slayer"),
                 steam_achievement_id = "SLAYER_MASTER",
@@ -132,7 +132,7 @@ public class ProfessionExporter : BaseExporter
             {
                 id = "treasure_hunter",
                 name = "Treasure Hunter",
-                description = "Find treasure chests throughout the world.",
+                description = "Find treasure chests.",
                 category = "exploration",
                 icon_path = GetIconPath("treasure_hunter"),
                 steam_achievement_id = "TREASURE_HUNTER_MASTER",
@@ -146,7 +146,7 @@ public class ProfessionExporter : BaseExporter
             {
                 id = "radiant_seeker",
                 name = "Radiant Seeker",
-                description = "Collect radiant sparks scattered across the world.",
+                description = "Collect scattered radiant sparks.",
                 category = "gathering",
                 icon_path = GetIconPath("radiant_seeker"),
                 steam_achievement_id = "RADIANT_SEEKER_MASTER",
@@ -160,7 +160,7 @@ public class ProfessionExporter : BaseExporter
             {
                 id = "hunter",
                 name = "Hunter",
-                description = "Track and hunt special creatures.",
+                description = "Track and hunt creatures.",
                 category = "combat",
                 icon_path = GetIconPath("hunter"),
                 steam_achievement_id = "HUNTER_MASTER",
