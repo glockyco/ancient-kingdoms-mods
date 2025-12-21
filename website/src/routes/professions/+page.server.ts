@@ -13,6 +13,7 @@ interface ProfessionListView {
   tracking_type: string;
   tracking_denominator: number | null;
   steam_achievement_id: string | null;
+  steam_achievement_name: string | null;
 }
 
 interface ProfessionsPageData {
@@ -34,7 +35,8 @@ export const load: PageServerLoad = (): ProfessionsPageData => {
         max_level,
         tracking_type,
         tracking_denominator,
-        steam_achievement_id
+        steam_achievement_id,
+      steam_achievement_name
       FROM professions
       ORDER BY
         CASE category

@@ -19,6 +19,7 @@ interface LoreKeepingPageData {
     tracking_type: string;
     tracking_denominator: number | null;
     steam_achievement_id: string | null;
+    steam_achievement_name: string | null;
   };
   books: LoreBook[];
 }
@@ -36,7 +37,8 @@ export const load: PageServerLoad = (): LoreKeepingPageData => {
       category,
       tracking_type,
       tracking_denominator,
-      steam_achievement_id
+      steam_achievement_id,
+      steam_achievement_name
     FROM professions
     WHERE id = 'lore_keeping'
   `,

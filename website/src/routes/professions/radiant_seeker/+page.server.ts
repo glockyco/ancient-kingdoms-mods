@@ -17,6 +17,7 @@ interface RadiantSeekerPageData {
     category: string;
     max_level: number;
     steam_achievement_id: string | null;
+    steam_achievement_name: string | null;
   };
   resources: RadiantSparkResource[];
 }
@@ -33,7 +34,8 @@ export const load: PageServerLoad = (): RadiantSeekerPageData => {
       description,
       category,
       max_level,
-      steam_achievement_id
+      steam_achievement_id,
+      steam_achievement_name
     FROM professions
     WHERE id = 'radiant_seeker'
   `,

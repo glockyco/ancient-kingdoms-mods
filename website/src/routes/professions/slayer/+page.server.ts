@@ -28,6 +28,7 @@ interface SlayerPageData {
     category: string;
     max_level: number;
     steam_achievement_id: string | null;
+    steam_achievement_name: string | null;
   };
   monsters: SlayerMonster[];
   monsterZones: MonsterZoneInfo[];
@@ -46,7 +47,8 @@ export const load: PageServerLoad = (): SlayerPageData => {
       description,
       category,
       max_level,
-      steam_achievement_id
+      steam_achievement_id,
+      steam_achievement_name
     FROM professions
     WHERE id = 'slayer'
   `,

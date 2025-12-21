@@ -67,6 +67,7 @@ interface AlchemyPageData {
     category: string;
     max_level: number;
     steam_achievement_id: string | null;
+    steam_achievement_name: string | null;
   };
   recipes: AlchemyRecipe[];
   locations: StationLocation[];
@@ -86,7 +87,8 @@ export const load: PageServerLoad = (): AlchemyPageData => {
       description,
       category,
       max_level,
-      steam_achievement_id
+      steam_achievement_id,
+      steam_achievement_name
     FROM professions
     WHERE id = 'alchemy'
   `,

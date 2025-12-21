@@ -56,6 +56,8 @@ CREATE TABLE professions (
     category TEXT NOT NULL,             -- 'crafting', 'gathering', 'exploration', 'combat'
     icon_path TEXT,
     steam_achievement_id TEXT,
+    steam_achievement_name TEXT,
+    steam_achievement_description TEXT,
     max_level INTEGER DEFAULT 100,
     tracking_type TEXT NOT NULL,        -- 'float_level', 'count_based'
     tracking_denominator INTEGER        -- For count_based professions (e.g., 13 books, 38 zones)

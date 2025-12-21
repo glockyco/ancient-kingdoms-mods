@@ -969,6 +969,8 @@ class ProfessionData(BaseModel):
     category: str  # crafting, gathering, exploration, combat
     icon_path: str | None = None
     steam_achievement_id: str | None = None
+    steam_achievement_name: str | None = None
+    steam_achievement_description: str | None = None
     max_level: int = 100
     tracking_type: str  # float_level, count_based
     tracking_denominator: int | None = None
