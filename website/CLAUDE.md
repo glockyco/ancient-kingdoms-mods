@@ -11,7 +11,7 @@ This is a SvelteKit static site that provides a searchable, filterable compendiu
 - **Frontend**: SvelteKit 2 with TypeScript and Svelte 5
 - **Styling**: Tailwind CSS + shadcn-svelte components
 - **Database**: Client-side SQLite via sql.js-httpvfs (15MB database loaded in browser)
-- **Map**: Leaflet with custom tiles and markers
+- **Map**: deck.gl with OrthographicView for WebGL rendering
 - **Deployment**: Cloudflare Pages (static hosting)
 
 **Key Principle**: Data clarity > aesthetics. Gamer-friendly design with functional focus.
@@ -24,14 +24,25 @@ website/
 │   ├── lib/
 │   │   ├── components/        # Reusable Svelte components
 │   │   │   ├── ui/           # shadcn-svelte base components
+│   │   │   ├── map/          # Map UI components
+│   │   │   │   ├── MapControls.svelte   # Layer toggles
+│   │   │   │   ├── MapLegend.svelte     # Color legend
+│   │   │   │   ├── MapTooltip.svelte    # Hover tooltip
+│   │   │   │   └── EntityPopup.svelte   # Click detail panel
 │   │   │   ├── EntityCard.svelte
 │   │   │   ├── EntityHeader.svelte
 │   │   │   ├── FilterPanel.svelte
 │   │   │   └── LoadingOverlay.svelte  # Navigation loading indicator
 │   │   ├── types/            # Shared TypeScript types
-│   │   │   └── items.ts      # Item page data types
+│   │   │   ├── items.ts      # Item page data types
+│   │   │   └── map.ts        # Map entity types
+│   │   ├── map/              # deck.gl map utilities
+│   │   │   ├── config.ts     # World bounds, colors, view settings
+│   │   │   └── layers.ts     # Layer factory functions
+│   │   ├── queries/          # SQL queries
+│   │   │   └── map.ts        # Map entity queries
 │   │   ├── db.ts             # SQLite wrapper (sql.js-httpvfs)
-│   │   ├── queries.ts        # SQL queries
+│   │   ├── queries.ts        # General SQL queries
 │   │   ├── types.ts          # TypeScript types (generated from DB schema)
 │   │   ├── stores.ts         # Svelte stores
 │   │   └── utils/
