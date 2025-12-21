@@ -261,6 +261,16 @@ export function buildObtainabilityTree(
     }
   }
 
+  // Check for merge (item created by merging other items)
+  let merge: ObtainabilityNode["merge"] | undefined;
+
+  if (!recipe && !service && depth < maxDepth) {
+    const mergeData = getMergeComponents(db, itemId, depth, visited, maxDepth);
+    if (mergeData) {
+      merge = mergeData;
+    }
+  }
+
   return {
     item_id: item.id,
     item_name: item.name,
@@ -271,6 +281,7 @@ export function buildObtainabilityTree(
     isRoot,
     recipe,
     service,
+    merge,
     sources,
     sourceCountsByType,
   };
@@ -397,4 +408,61 @@ function determineRecipeType(
 
   if (crafting?.station_type === "cooking") return "Cooking";
   return "Crafting";
+}
+
+// Get merge components for items created by merging other items
+function getMergeComponents(
+  db: Database.Database,
+  itemId: string,
+  depth: number,
+  visited: Set<string>,
+  maxDepth: number,
+): ObtainabilityNode["merge"] | undefined {
+  const visitKey = `merge:${itemId}`;
+  if (visited.has(visitKey)) {
+    return undefined;
+  }
+
+  // Find items that merge into this item (any item with merge_result_item_id = itemId)
+  const mergeComponent = db
+    .prepare(
+      `
+      SELECT id, merge_items_needed
+      FROM items
+      WHERE merge_result_item_id = ?
+      LIMIT 1
+    `,
+    )
+    .get(itemId) as
+    | { id: string; merge_items_needed: string | null }
+    | undefined;
+
+  if (!mergeComponent?.merge_items_needed) {
+    return undefined;
+  }
+
+  visited.add(visitKey);
+
+  // Parse the merge_items_needed JSON to get all components
+  const mergeItems = JSON.parse(mergeComponent.merge_items_needed) as Array<{
+    item_id: string;
+    item_name: string;
+  }>;
+
+  // Build obtainability nodes for each merge component
+  const materials: ObtainabilityNode[] = mergeItems.map((m) =>
+    buildObtainabilityTree(
+      db,
+      m.item_id,
+      1,
+      depth + 1,
+      visited,
+      false,
+      maxDepth,
+    ),
+  );
+
+  return {
+    materials,
+  };
 }

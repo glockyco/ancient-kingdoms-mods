@@ -91,6 +91,10 @@ export interface ObtainabilityNode {
     service_type: ServiceType;
     materials: ObtainabilityNode[];
   };
+  /** If this item is created by merging other items */
+  merge?: {
+    materials: ObtainabilityNode[];
+  };
   /** Sources for obtaining this item (for leaf nodes or alternative sources) */
   sources: SourceSummary[];
   /** Total count of sources per type (before limiting) */

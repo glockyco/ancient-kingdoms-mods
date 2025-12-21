@@ -15,6 +15,7 @@
   import Package from "@lucide/svelte/icons/package";
   import Sparkles from "@lucide/svelte/icons/sparkles";
   import BookOpen from "@lucide/svelte/icons/book-open";
+  import Combine from "@lucide/svelte/icons/combine";
 
   interface Props {
     node: ObtainabilityNode;
@@ -32,11 +33,15 @@
   const hasServiceChildren = $derived(
     !!node.service && node.service.materials.length > 0,
   );
+  const hasMergeChildren = $derived(
+    !!node.merge && node.merge.materials.length > 0,
+  );
   const hasLearningRequirement = $derived(!!node.recipe?.learningRequirement);
   const hasSources = $derived(node.sources.length > 0);
   const hasChildren = $derived(
     hasRecipeChildren ||
       hasServiceChildren ||
+      hasMergeChildren ||
       hasLearningRequirement ||
       hasSources,
   );
@@ -221,6 +226,14 @@
               </div>
             {/if}
           </div>
+        {/each}
+      {:else if hasMergeChildren}
+        <div class="ml-6 py-1.5 flex items-center gap-1.5">
+          <Combine class="h-4 w-4 shrink-0 text-purple-500" />
+          <span class="text-muted-foreground text-sm">Merge components:</span>
+        </div>
+        {#each node.merge?.materials ?? [] as child (child.item_id)}
+          <ObtainabilityTree node={child} />
         {/each}
       {:else if hasSources}
         {@render sourceList()}
