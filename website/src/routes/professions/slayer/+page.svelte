@@ -8,7 +8,6 @@
     formatRespawnChance,
     formatSpecialSpawn,
   } from "$lib/utils/respawn";
-  import Swords from "@lucide/svelte/icons/swords";
   import Trophy from "@lucide/svelte/icons/trophy";
   import Skull from "@lucide/svelte/icons/skull";
   import Castle from "@lucide/svelte/icons/castle";
@@ -55,7 +54,7 @@
     <div
       class="w-16 h-16 rounded-lg bg-muted flex items-center justify-center shrink-0"
     >
-      <Swords class="h-8 w-8 text-red-500 dark:text-red-400" />
+      <Skull class="h-8 w-8 text-red-500 dark:text-red-400" />
     </div>
     <div>
       <div class="flex items-center gap-2">

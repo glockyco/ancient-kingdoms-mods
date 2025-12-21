@@ -4,7 +4,7 @@
   import ObtainabilityTree from "$lib/components/ObtainabilityTree.svelte";
   import QuestTypeBadge from "$lib/components/QuestTypeBadge.svelte";
   import QuestFlagBadges from "$lib/components/QuestFlagBadges.svelte";
-  import Hammer from "@lucide/svelte/icons/hammer";
+  import FlaskConical from "@lucide/svelte/icons/flask-conical";
   import Trophy from "@lucide/svelte/icons/trophy";
   import ChevronRight from "@lucide/svelte/icons/chevron-right";
   import ChevronDown from "@lucide/svelte/icons/chevron-down";
@@ -142,13 +142,13 @@
     <div
       class="w-16 h-16 rounded-lg bg-muted flex items-center justify-center shrink-0"
     >
-      <Hammer class="h-8 w-8 text-orange-500 dark:text-orange-400" />
+      <FlaskConical class="h-8 w-8 text-purple-500 dark:text-purple-400" />
     </div>
     <div>
       <div class="flex items-center gap-2">
         <h1 class="text-3xl font-bold">{data.profession.name}</h1>
         <span
-          class="px-2 py-0.5 text-xs rounded-full bg-muted text-orange-500 dark:text-orange-400 font-medium"
+          class="px-2 py-0.5 text-xs rounded-full bg-muted text-purple-500 dark:text-purple-400 font-medium"
         >
           Crafting
         </span>

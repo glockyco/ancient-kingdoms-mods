@@ -2,9 +2,8 @@
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import QuestTypeBadge from "$lib/components/QuestTypeBadge.svelte";
   import { getClassConfig } from "$lib/utils/classes";
-  import Compass from "@lucide/svelte/icons/compass";
+  import Scroll from "@lucide/svelte/icons/scroll";
   import Trophy from "@lucide/svelte/icons/trophy";
-  import ScrollIcon from "@lucide/svelte/icons/scroll";
   import MapPin from "@lucide/svelte/icons/map-pin";
   import Store from "@lucide/svelte/icons/store";
 
@@ -52,13 +51,13 @@
     <div
       class="w-16 h-16 rounded-lg bg-muted flex items-center justify-center shrink-0"
     >
-      <Compass class="h-8 w-8 text-blue-500 dark:text-blue-400" />
+      <Scroll class="h-8 w-8 text-orange-500 dark:text-orange-400" />
     </div>
     <div>
       <div class="flex items-center gap-2">
         <h1 class="text-3xl font-bold">{data.profession.name}</h1>
         <span
-          class="px-2 py-0.5 text-xs rounded-full bg-muted text-blue-500 dark:text-blue-400 font-medium"
+          class="px-2 py-0.5 text-xs rounded-full bg-muted text-orange-500 dark:text-orange-400 font-medium"
         >
           Exploration
         </span>
@@ -185,7 +184,7 @@
   <section class="space-y-4">
     <div class="flex flex-wrap items-center justify-between gap-4">
       <h2 class="text-xl font-semibold flex items-center gap-2">
-        <ScrollIcon class="h-5 w-5 text-orange-500" />
+        <Scroll class="h-5 w-5 text-orange-500" />
         Adventurer Quests ({data.quests.length})
       </h2>
       <div class="flex flex-wrap gap-1">

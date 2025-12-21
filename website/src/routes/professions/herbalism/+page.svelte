@@ -1,6 +1,5 @@
 <script lang="ts">
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
-  import Pickaxe from "@lucide/svelte/icons/pickaxe";
   import Trophy from "@lucide/svelte/icons/trophy";
   import CalculatorIcon from "@lucide/svelte/icons/calculator";
   import Leaf from "@lucide/svelte/icons/leaf";
@@ -98,7 +97,7 @@
     <div
       class="w-16 h-16 rounded-lg bg-muted flex items-center justify-center shrink-0"
     >
-      <Pickaxe class="h-8 w-8 text-green-500 dark:text-green-400" />
+      <Leaf class="h-8 w-8 text-green-500 dark:text-green-400" />
     </div>
     <div>
       <div class="flex items-center gap-2">

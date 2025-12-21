@@ -1,6 +1,5 @@
 <script lang="ts">
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
-  import Pickaxe from "@lucide/svelte/icons/pickaxe";
   import Trophy from "@lucide/svelte/icons/trophy";
   import CalculatorIcon from "@lucide/svelte/icons/calculator";
   import Sparkles from "@lucide/svelte/icons/sparkles";
@@ -45,13 +44,13 @@
     <div
       class="w-16 h-16 rounded-lg bg-muted flex items-center justify-center shrink-0"
     >
-      <Pickaxe class="h-8 w-8 text-green-500 dark:text-green-400" />
+      <Sparkles class="h-8 w-8 text-yellow-500 dark:text-yellow-400" />
     </div>
     <div>
       <div class="flex items-center gap-2">
         <h1 class="text-3xl font-bold">{data.profession.name}</h1>
         <span
-          class="px-2 py-0.5 text-xs rounded-full bg-muted text-green-500 dark:text-green-400 font-medium"
+          class="px-2 py-0.5 text-xs rounded-full bg-muted text-yellow-500 dark:text-yellow-400 font-medium"
         >
           Gathering
         </span>

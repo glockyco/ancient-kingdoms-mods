@@ -1,11 +1,22 @@
 <script lang="ts">
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import * as Card from "$lib/components/ui/card";
+  import ArrowRight from "@lucide/svelte/icons/arrow-right";
+  // Category icons
   import Hammer from "@lucide/svelte/icons/hammer";
   import Pickaxe from "@lucide/svelte/icons/pickaxe";
   import Swords from "@lucide/svelte/icons/swords";
   import Compass from "@lucide/svelte/icons/compass";
-  import ArrowRight from "@lucide/svelte/icons/arrow-right";
+  // Profession-specific icons
+  import FlaskConical from "@lucide/svelte/icons/flask-conical";
+  import ChefHat from "@lucide/svelte/icons/chef-hat";
+  import Leaf from "@lucide/svelte/icons/leaf";
+  import Sparkles from "@lucide/svelte/icons/sparkles";
+  import Scroll from "@lucide/svelte/icons/scroll";
+  import Crosshair from "@lucide/svelte/icons/crosshair";
+  import Skull from "@lucide/svelte/icons/skull";
+  import BookOpen from "@lucide/svelte/icons/book-open";
+  import Map from "@lucide/svelte/icons/map";
 
   type ProfessionCategory = "crafting" | "gathering" | "combat" | "exploration";
 
@@ -65,6 +76,78 @@
     "combat",
     "exploration",
   ];
+
+  // Profession-specific icon configuration
+  const professionIconConfig: Record<
+    string,
+    { icon: typeof Hammer; color: string; bgColor: string }
+  > = {
+    alchemy: {
+      icon: FlaskConical,
+      color: "text-purple-500 dark:text-purple-400",
+      bgColor: "bg-purple-500/10",
+    },
+    cooking: {
+      icon: ChefHat,
+      color: "text-orange-500 dark:text-orange-400",
+      bgColor: "bg-orange-500/10",
+    },
+    mining: {
+      icon: Pickaxe,
+      color: "text-stone-500 dark:text-stone-400",
+      bgColor: "bg-stone-500/10",
+    },
+    herbalism: {
+      icon: Leaf,
+      color: "text-green-500 dark:text-green-400",
+      bgColor: "bg-green-500/10",
+    },
+    radiant_seeker: {
+      icon: Sparkles,
+      color: "text-yellow-500 dark:text-yellow-400",
+      bgColor: "bg-yellow-500/10",
+    },
+    adventuring: {
+      icon: Scroll,
+      color: "text-orange-500 dark:text-orange-400",
+      bgColor: "bg-orange-500/10",
+    },
+    hunter: {
+      icon: Crosshair,
+      color: "text-red-500 dark:text-red-400",
+      bgColor: "bg-red-500/10",
+    },
+    slayer: {
+      icon: Skull,
+      color: "text-red-500 dark:text-red-400",
+      bgColor: "bg-red-500/10",
+    },
+    exploring: {
+      icon: Compass,
+      color: "text-blue-500 dark:text-blue-400",
+      bgColor: "bg-blue-500/10",
+    },
+    lore_keeping: {
+      icon: BookOpen,
+      color: "text-indigo-500 dark:text-indigo-400",
+      bgColor: "bg-indigo-500/10",
+    },
+    treasure_hunter: {
+      icon: Map,
+      color: "text-amber-500 dark:text-amber-400",
+      bgColor: "bg-amber-500/10",
+    },
+  };
+
+  function getProfessionIcon(professionId: string) {
+    return (
+      professionIconConfig[professionId] ?? {
+        icon: Compass,
+        color: categoryConfig.exploration.color,
+        bgColor: categoryConfig.exploration.bgColor,
+      }
+    );
+  }
 </script>
 
 <svelte:head>
@@ -102,22 +185,15 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {#each professions as profession (profession.id)}
+            {@const iconConfig = getProfessionIcon(profession.id)}
             <a href="/professions/{profession.id}" class="block group">
               <Card.Root
                 class="h-full transition-colors hover:bg-muted/50 bg-muted/30"
               >
                 <Card.Header>
                   <div class="flex items-center gap-3">
-                    <div class="p-2 rounded-lg {config.bgColor}">
-                      {#if category === "crafting"}
-                        <Hammer class="h-6 w-6 {config.color}" />
-                      {:else if category === "gathering"}
-                        <Pickaxe class="h-6 w-6 {config.color}" />
-                      {:else if category === "combat"}
-                        <Swords class="h-6 w-6 {config.color}" />
-                      {:else}
-                        <Compass class="h-6 w-6 {config.color}" />
-                      {/if}
+                    <div class="p-2 rounded-lg {iconConfig.bgColor}">
+                      <iconConfig.icon class="h-6 w-6 {iconConfig.color}" />
                     </div>
                     <div>
                       <Card.Title class="group-hover:underline"

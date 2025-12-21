@@ -2,7 +2,7 @@
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import ObtainabilityTree from "$lib/components/ObtainabilityTree.svelte";
-  import Hammer from "@lucide/svelte/icons/hammer";
+  import ChefHat from "@lucide/svelte/icons/chef-hat";
   import Trophy from "@lucide/svelte/icons/trophy";
   import ChevronRight from "@lucide/svelte/icons/chevron-right";
   import ChevronDown from "@lucide/svelte/icons/chevron-down";
@@ -140,7 +140,7 @@
     <div
       class="w-16 h-16 rounded-lg bg-muted flex items-center justify-center shrink-0"
     >
-      <Hammer class="h-8 w-8 text-orange-500 dark:text-orange-400" />
+      <ChefHat class="h-8 w-8 text-orange-500 dark:text-orange-400" />
     </div>
     <div>
       <div class="flex items-center gap-2">

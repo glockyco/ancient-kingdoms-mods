@@ -1,6 +1,5 @@
 <script lang="ts">
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
-  import Swords from "@lucide/svelte/icons/swords";
   import Trophy from "@lucide/svelte/icons/trophy";
   import CalculatorIcon from "@lucide/svelte/icons/calculator";
   import Crosshair from "@lucide/svelte/icons/crosshair";
@@ -62,7 +61,7 @@
     <div
       class="w-16 h-16 rounded-lg bg-muted flex items-center justify-center shrink-0"
     >
-      <Swords class="h-8 w-8 text-red-500 dark:text-red-400" />
+      <Crosshair class="h-8 w-8 text-red-500 dark:text-red-400" />
     </div>
     <div>
       <div class="flex items-center gap-2">

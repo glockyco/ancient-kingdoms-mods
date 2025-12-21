@@ -1,7 +1,6 @@
 <script lang="ts">
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
-  import Compass from "@lucide/svelte/icons/compass";
   import Trophy from "@lucide/svelte/icons/trophy";
   import MapIcon from "@lucide/svelte/icons/map";
   import Gem from "@lucide/svelte/icons/gem";
@@ -32,13 +31,13 @@
     <div
       class="w-16 h-16 rounded-lg bg-muted flex items-center justify-center shrink-0"
     >
-      <Compass class="h-8 w-8 text-blue-500 dark:text-blue-400" />
+      <MapIcon class="h-8 w-8 text-amber-500 dark:text-amber-400" />
     </div>
     <div>
       <div class="flex items-center gap-2">
         <h1 class="text-3xl font-bold">{data.profession.name}</h1>
         <span
-          class="px-2 py-0.5 text-xs rounded-full bg-muted text-blue-500 dark:text-blue-400 font-medium"
+          class="px-2 py-0.5 text-xs rounded-full bg-muted text-amber-500 dark:text-amber-400 font-medium"
         >
           Exploration
         </span>
