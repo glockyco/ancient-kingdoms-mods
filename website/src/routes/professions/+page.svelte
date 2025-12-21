@@ -135,7 +135,9 @@
                   >
                     {#if profession.tracking_type === "count_based" && profession.tracking_denominator}
                       {profession.tracking_denominator}
-                      {profession.id === "lore_keeping" ? "books" : "zones"} to collect
+                      {profession.id === "lore_keeping"
+                        ? "books to collect"
+                        : "areas to discover"}
                     {:else}
                       Max level: {profession.max_level}%
                     {/if}

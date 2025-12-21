@@ -92,7 +92,7 @@ public class ProfessionExporter : BaseExporter
             {
                 id = "exploring",
                 name = "Exploring",
-                description = "Discover all zones in the world.",
+                description = "Discover all areas in the world.",
                 category = "exploration",
                 icon_path = GetIconPath("exploring"),
                 steam_achievement_id = "EXPLORING_MASTER",
