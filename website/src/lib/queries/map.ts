@@ -8,24 +8,65 @@ import type {
   AltarMapEntity,
   GatheringMapEntity,
   CraftingMapEntity,
+  ZoneBoundary,
+  LevelRanges,
 } from "$lib/types/map";
+
+/**
+ * Compute level ranges from loaded entity data
+ */
+function computeLevelRanges(
+  monsters: MonsterMapEntity[],
+  gathering: GatheringMapEntity[],
+): LevelRanges {
+  const monsterLevels = monsters.map((m) => m.level);
+  const gatheringLevels = gathering.map((g) => g.level);
+
+  return {
+    monsterMin: monsterLevels.length ? Math.min(...monsterLevels) : 1,
+    monsterMax: monsterLevels.length ? Math.max(...monsterLevels) : 100,
+    gatheringMin: gatheringLevels.length ? Math.min(...gatheringLevels) : 0,
+    gatheringMax: gatheringLevels.length ? Math.max(...gatheringLevels) : 10,
+  };
+}
 
 /**
  * Load all map entities in parallel
  */
 export async function loadAllMapEntities(): Promise<MapEntityData> {
-  const [monsters, npcs, portals, chests, altars, gathering, crafting] =
-    await Promise.all([
-      loadMonsterSpawns(),
-      loadNpcSpawns(),
-      loadPortals(),
-      loadChests(),
-      loadAltars(),
-      loadGatheringSpawns(),
-      loadCraftingStations(),
-    ]);
+  const [
+    monsters,
+    npcs,
+    portals,
+    chests,
+    altars,
+    gathering,
+    crafting,
+    subZones,
+  ] = await Promise.all([
+    loadMonsterSpawns(),
+    loadNpcSpawns(),
+    loadPortals(),
+    loadChests(),
+    loadAltars(),
+    loadGatheringSpawns(),
+    loadCraftingStations(),
+    loadZoneTriggers(),
+  ]);
 
-  return { monsters, npcs, portals, chests, altars, gathering, crafting };
+  const levelRanges = computeLevelRanges(monsters, gathering);
+
+  return {
+    monsters,
+    npcs,
+    portals,
+    chests,
+    altars,
+    gathering,
+    crafting,
+    subZones,
+    levelRanges,
+  };
 }
 
 interface MonsterSpawnRow {
@@ -352,5 +393,50 @@ async function loadCraftingStations(): Promise<CraftingMapEntity[]> {
     position: [r.position_x, -r.position_y] as [number, number],
     zoneId: r.zone_id,
     zoneName: r.zone_name,
+  }));
+}
+
+interface ZoneTriggerRow {
+  id: string;
+  name: string;
+  zone_id: string;
+  zone_name: string;
+  bounds_min_x: number;
+  bounds_min_y: number;
+  bounds_max_x: number;
+  bounds_max_y: number;
+}
+
+async function loadZoneTriggers(): Promise<ZoneBoundary[]> {
+  const rows = await query<ZoneTriggerRow>(`
+    SELECT
+      zt.id,
+      zt.name,
+      zt.zone_id,
+      z.name as zone_name,
+      zt.bounds_min_x,
+      zt.bounds_min_y,
+      zt.bounds_max_x,
+      zt.bounds_max_y
+    FROM zone_triggers zt
+    JOIN zones z ON z.zone_id = zt.zone_id
+    WHERE zt.bounds_min_x IS NOT NULL
+      AND zt.bounds_min_y IS NOT NULL
+      AND zt.bounds_max_x IS NOT NULL
+      AND zt.bounds_max_y IS NOT NULL
+  `);
+
+  return rows.map((r) => ({
+    id: r.id,
+    name: r.name,
+    zoneId: r.zone_id,
+    zoneName: r.zone_name,
+    // Convert bounds to polygon (Y negated for display)
+    polygon: [
+      [r.bounds_min_x, -r.bounds_max_y],
+      [r.bounds_max_x, -r.bounds_max_y],
+      [r.bounds_max_x, -r.bounds_min_y],
+      [r.bounds_min_x, -r.bounds_min_y],
+    ] as [number, number][],
   }));
 }

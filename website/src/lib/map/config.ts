@@ -12,12 +12,17 @@ export const WORLD_BOUNDS = {
 /**
  * Initial view state for the deck.gl map
  */
-export const INITIAL_VIEW_STATE = {
-  target: [10, -280, 0] as [number, number, number],
+export const INITIAL_VIEW_STATE: {
+  target: [number, number, number];
+  zoom: number;
+  minZoom: number;
+  maxZoom: number;
+} = {
+  target: [10, -280, 0],
   zoom: 0,
   minZoom: -2,
   maxZoom: 6,
-} as const;
+};
 
 /**
  * Layer colors matching the design system (Tailwind colors as RGB)
@@ -55,3 +60,31 @@ export const LAYER_RADII = {
  * Background color for the map (when tiles are not available)
  */
 export const BACKGROUND_COLOR = [24, 24, 27, 255] as const; // zinc-900
+
+/**
+ * Zone boundary colors
+ */
+export const ZONE_COLORS = {
+  subZone: {
+    fill: [100, 116, 139, 30] as [number, number, number, number], // slate-500 with low alpha
+    stroke: [100, 116, 139, 150] as [number, number, number, number],
+  },
+  parentZone: {
+    fill: [168, 85, 247, 20] as [number, number, number, number], // purple-500 with low alpha
+    stroke: [168, 85, 247, 120] as [number, number, number, number],
+  },
+} as const;
+
+/**
+ * Portal arc colors
+ */
+export const ARC_COLORS = {
+  portal: {
+    source: [34, 197, 94, 200] as [number, number, number, number], // green-500
+    target: [34, 197, 94, 100] as [number, number, number, number],
+  },
+  portalHighlight: {
+    source: [34, 250, 94, 255] as [number, number, number, number], // brighter green
+    target: [34, 250, 94, 200] as [number, number, number, number],
+  },
+} as const;

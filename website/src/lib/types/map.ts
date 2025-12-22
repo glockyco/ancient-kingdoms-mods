@@ -112,12 +112,46 @@ export interface LayerVisibility {
   elites: boolean;
   npcs: boolean;
   portals: boolean;
+  portalArcs: boolean;
   chests: boolean;
   altars: boolean;
   gatheringPlants: boolean;
   gatheringMinerals: boolean;
   gatheringSparks: boolean;
   crafting: boolean;
+  subZones: boolean;
+  parentZones: boolean;
+}
+
+/**
+ * Level filter ranges
+ */
+export interface LevelFilter {
+  monsterMin: number;
+  monsterMax: number;
+  gatheringMin: number;
+  gatheringMax: number;
+}
+
+/**
+ * Zone boundary polygon for visualization
+ */
+export interface ZoneBoundary {
+  id: string;
+  name: string;
+  zoneId: string;
+  zoneName: string;
+  polygon: [number, number][];
+}
+
+/**
+ * Level ranges derived from actual data
+ */
+export interface LevelRanges {
+  monsterMin: number;
+  monsterMax: number;
+  gatheringMin: number;
+  gatheringMax: number;
 }
 
 /**
@@ -131,4 +165,20 @@ export interface MapEntityData {
   altars: AltarMapEntity[];
   gathering: GatheringMapEntity[];
   crafting: CraftingMapEntity[];
+  subZones: ZoneBoundary[];
+  levelRanges: LevelRanges;
+}
+
+/**
+ * Pre-filtered entity data (computed once, not on every render)
+ */
+export interface FilteredMapData {
+  regularMonsters: MonsterMapEntity[];
+  elites: MonsterMapEntity[];
+  bosses: MonsterMapEntity[];
+  plants: GatheringMapEntity[];
+  minerals: GatheringMapEntity[];
+  sparks: GatheringMapEntity[];
+  portalsWithDestinations: PortalMapEntity[];
+  parentZones: ZoneBoundary[];
 }

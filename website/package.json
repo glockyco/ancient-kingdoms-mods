@@ -50,6 +50,7 @@
   },
   "dependencies": {
     "@deck.gl/core": "^9.2.5",
+    "@deck.gl/extensions": "^9.2.5",
     "@deck.gl/layers": "^9.2.5",
     "@tanstack/table-core": "^8.21.3",
     "bits-ui": "^2.14.4",

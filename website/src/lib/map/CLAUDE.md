@@ -155,12 +155,50 @@ initialViewState: {
 - Altars: ~50
 - **Total: ~16,000 points**
 
-deck.gl handles millions of points efficiently, so performance is not a concern.
+deck.gl handles millions of points efficiently, but **layer recreation is expensive**.
+
+## Performance Design
+
+**Problem**: Toggling visibility or selecting entities caused multi-second freezes because every state change triggered full layer recreation.
+
+**Solution**: Pre-filter once, create all layers always, use deck.gl's optimization features.
+
+1. **Pre-filter data on load** (`FilteredMapData` type):
+   - Split monsters into regular/elite/boss arrays once
+   - Split gathering into plant/mineral/spark arrays once
+   - Filter portals with destinations once
+   - Calculate parent zone bounds once
+
+2. **Create all layers always** with `visible` prop:
+   - Don't conditionally create layers based on visibility
+   - Set `visible: visibility.monsters` on each layer
+   - deck.gl skips rendering invisible layers efficiently
+
+3. **Use `updateTriggers`** for dynamic properties:
+   - Tells deck.gl which accessor changed
+   - Avoids full data re-upload to GPU
+
+   ```typescript
+   updateTriggers: {
+     getColor: selectedPortalId,  // re-evaluate getColor when this changes
+   }
+   ```
+
+4. **Use `DataFilterExtension`** for level filtering:
+   - GPU-based filtering, no JS array recreation
+   - Pass all data, filter on GPU with `filterRange`
+   ```typescript
+   extensions: [new DataFilterExtension({ filterSize: 1 })],
+   getFilterValue: d => d.level,
+   filterRange: [levelFilter.min, levelFilter.max],
+   ```
+
+**Key insight**: deck.gl is fast at rendering; the bottleneck was JS layer/array recreation.
 
 ## Future Enhancements
 
 - [ ] TileLayer for terrain imagery (requires `compendium tiles` implementation)
 - [ ] Search functionality with FTS5 and fly-to
-- [ ] URL state for sharing map positions
-- [ ] Zone boundary polygons from zone_triggers
+- [x] URL state for sharing map positions
+- [x] Zone boundary polygons from zone_triggers
 - [ ] Patrol path visualization for monsters
