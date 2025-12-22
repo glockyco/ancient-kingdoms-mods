@@ -187,13 +187,32 @@ deck.gl handles millions of points efficiently, but **layer recreation is expens
 4. **Use `DataFilterExtension`** for level filtering:
    - GPU-based filtering, no JS array recreation
    - Pass all data, filter on GPU with `filterRange`
+
    ```typescript
    extensions: [new DataFilterExtension({ filterSize: 1 })],
    getFilterValue: d => d.level,
    filterRange: [levelFilter.min, levelFilter.max],
    ```
 
-**Key insight**: deck.gl is fast at rendering; the bottleneck was JS layer/array recreation.
+5. **Pre-compute derived data with `$derived`** (Svelte 5):
+   - Never compute data inside `createLayers()` - it runs on every state change
+   - Use `$derived` in the page component for data that depends on specific state
+   - Svelte caches the result; only recomputes when dependencies change
+
+   ```typescript
+   // selection.ts - pure function
+   export function computeSelectionData(data, type, id): AnyMapEntity[];
+
+   // +page.svelte - cached via $derived
+   let selectionData = $derived(
+     computeSelectionData(entityData, selectedEntityType, selectedEntityId),
+   );
+   ```
+
+   - Pass pre-computed arrays to `createLayers()` as parameters
+   - Use `EMPTY_SELECTION` constant for stable empty array references
+
+**Key insight**: deck.gl is fast at rendering; the bottleneck is JS computation inside `createLayers()`.
 
 ## Future Enhancements
 

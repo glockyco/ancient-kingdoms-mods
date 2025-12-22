@@ -11,17 +11,6 @@
 
   let { label, min, max, value, onchange }: Props = $props();
 
-  // Local state for the slider (supports binding)
-  let sliderValue = $state<number[]>([value[0], value[1]]);
-
-  // Sync external value changes
-  $effect(() => {
-    if (sliderValue[0] !== value[0] || sliderValue[1] !== value[1]) {
-      sliderValue = [value[0], value[1]];
-    }
-  });
-
-  // Notify parent of changes
   function handleChange(newValue: number[] | undefined) {
     if (newValue && newValue.length === 2) {
       onchange([newValue[0], newValue[1]]);
@@ -36,13 +25,15 @@
       {value[0]} - {value[1]}
     </span>
   </div>
-  <Slider
-    type="multiple"
-    {min}
-    {max}
-    step={1}
-    bind:value={sliderValue}
-    onValueChange={handleChange}
-    class="w-full"
-  />
+  {#key `${min}-${max}`}
+    <Slider
+      type="multiple"
+      {min}
+      {max}
+      step={1}
+      value={[...value]}
+      onValueChange={handleChange}
+      class="w-full"
+    />
+  {/key}
 </div>

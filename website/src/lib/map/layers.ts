@@ -18,6 +18,7 @@ import {
   ARC_COLORS,
   HIGHLIGHT_COLORS,
 } from "./config";
+import { EMPTY_SELECTION } from "./selection";
 
 // Type for deck.gl layer constructor (we use any since deck.gl types are complex)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -101,15 +102,9 @@ function calculateParentZoneBounds(data: MapEntityData): ZoneBoundary[] {
 }
 
 /**
- * Selection state for entity highlighting
- */
-interface SelectionState {
-  entityId: string | null;
-  entityType: string | null; // Search category: "monster", "npc", "resource", etc.
-}
-
-/**
  * Create all deck.gl layers (optimized: uses pre-filtered data, visible prop, updateTriggers)
+ *
+ * @param selectionData - Pre-computed array of entities to highlight (use EMPTY_SELECTION when none)
  */
 export function createLayers(
   data: MapEntityData,
@@ -120,7 +115,7 @@ export function createLayers(
   callbacks: { onHover: (info: any) => void; onClick: (info: any) => void },
   levelFilter: LevelFilter,
   selectedPortalId: string | null,
-  selection: SelectionState = { entityId: null, entityType: null },
+  selectionData: AnyMapEntity[] = EMPTY_SELECTION,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): any[] {
   const { ScatterplotLayer, PolygonLayer, LineLayer, DataFilterExtension } =
@@ -499,14 +494,11 @@ export function createLayers(
     }),
 
     // Selection highlight layer (on top of everything)
+    // Data is pre-computed by caller and passed in - no filtering here!
     new ScatterplotLayer({
       id: "selection-highlight",
-      data: selection.entityId
-        ? getAllEntitiesForCategory(data, selection.entityType).filter(
-            (e) => e.id === selection.entityId,
-          )
-        : [],
-      visible: !!selection.entityId,
+      data: selectionData,
+      visible: selectionData.length > 0,
       getPosition: (d: AnyMapEntity) => d.position,
       getFillColor: HIGHLIGHT_COLORS.fill,
       getLineColor: HIGHLIGHT_COLORS.ring,
@@ -518,50 +510,6 @@ export function createLayers(
       lineWidthMaxPixels: 3,
       stroked: true,
       pickable: false,
-      updateTriggers: {
-        data: [selection.entityId, selection.entityType],
-      },
     }),
   ];
-}
-
-/**
- * Get all entities that belong to a search category or entity type.
- * Handles both search categories ("monster", "resource") and
- * entity types ("boss", "elite", "gathering_plant", etc.)
- */
-function getAllEntitiesForCategory(
-  data: MapEntityData,
-  categoryOrType: string | null,
-): AnyMapEntity[] {
-  if (!categoryOrType) return [];
-
-  switch (categoryOrType) {
-    // Search categories
-    case "monster":
-      return data.monsters;
-    case "npc":
-      return data.npcs;
-    case "resource":
-      return data.gathering;
-    case "chest":
-      return data.chests;
-    case "altar":
-      return data.altars;
-    case "portal":
-      return data.portals;
-    // Entity types (when clicking directly on map)
-    case "boss":
-    case "elite":
-      return data.monsters;
-    case "gathering_plant":
-    case "gathering_mineral":
-    case "gathering_spark":
-      return data.gathering;
-    case "alchemy_table":
-    case "crafting_station":
-      return data.crafting;
-    default:
-      return [];
-  }
 }

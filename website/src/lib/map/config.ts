@@ -33,11 +33,11 @@ export const LAYER_COLORS = {
   elite: [168, 85, 247] as [number, number, number], // purple-500
   npc: [59, 130, 246] as [number, number, number], // blue-500
   portal: [34, 197, 94] as [number, number, number], // green-500
-  chest: [234, 179, 8] as [number, number, number], // yellow-500
+  chest: [14, 165, 233] as [number, number, number], // sky-500
   altar: [249, 115, 22] as [number, number, number], // orange-500
   gathering_plant: [132, 204, 22] as [number, number, number], // lime-500
-  gathering_mineral: [156, 163, 175] as [number, number, number], // gray-400
-  gathering_spark: [236, 72, 153] as [number, number, number], // pink-500
+  gathering_mineral: [245, 158, 11] as [number, number, number], // amber-500
+  gathering_spark: [168, 85, 247] as [number, number, number], // purple-500
   crafting: [139, 92, 246] as [number, number, number], // violet-500
 } as const;
 

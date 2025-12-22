@@ -1,12 +1,12 @@
 <script lang="ts">
   import { browser } from "$app/environment";
-  import MapControls from "$lib/components/map/MapControls.svelte";
+  import { MapSidebar } from "$lib/components/map/sidebar";
   import MapTooltip from "$lib/components/map/MapTooltip.svelte";
   import EntityPopup from "$lib/components/map/EntityPopup.svelte";
   import MapSearch from "$lib/components/map/MapSearch.svelte";
-  import MapSearchTrigger from "$lib/components/map/MapSearchTrigger.svelte";
   import { loadAllMapEntities } from "$lib/queries/map";
   import { createLayers, createFilteredData } from "$lib/map/layers";
+  import { computeSelectionData } from "$lib/map/selection";
   import { INITIAL_VIEW_STATE } from "$lib/map/config";
   import { flyToBounds } from "$lib/map/flyto";
   import {
@@ -84,6 +84,12 @@
     selectedEntity?.type === "portal" ? selectedEntity.id : null,
   );
 
+  // Derived: pre-computed selection data for highlighting
+  // This is only recomputed when selection changes, not on every visibility toggle
+  let selectionData = $derived(
+    computeSelectionData(entityData, selectedEntityType, selectedEntityId),
+  );
+
   function handleVisibilityChange(newVisibility: LayerVisibility) {
     layerVisibility = newVisibility;
   }
@@ -106,7 +112,7 @@
       },
       levelFilter,
       selectedPortalId,
-      { entityId: selectedEntityId, entityType: selectedEntityType },
+      selectionData,
     );
 
     deckInstance.setProps({ layers });
@@ -307,7 +313,7 @@
           },
           levelFilter,
           null,
-          { entityId: selectedEntityId, entityType: selectedEntityType },
+          selectionData,
         );
 
         // Determine initial view state
@@ -370,8 +376,7 @@
     void layerVisibility;
     void levelFilter;
     void selectedPortalId;
-    void selectedEntityId;
-    void selectedEntityType;
+    void selectionData; // Pre-computed, only changes when selection changes
     updateLayers();
   });
 
@@ -401,7 +406,12 @@
 </svelte:head>
 
 <div class="relative h-screen w-full">
-  <div use:initDeckMap class="absolute inset-0"></div>
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
+  <div
+    use:initDeckMap
+    class="absolute inset-0"
+    onmouseleave={() => (hoveredEntity = null)}
+  ></div>
 
   {#if isLoading}
     <div
@@ -430,12 +440,13 @@
   {/if}
 
   {#if !isLoading && !loadError && entityData}
-    <MapControls
+    <MapSidebar
       visibility={layerVisibility}
       onVisibilityChange={handleVisibilityChange}
       {levelFilter}
       onLevelFilterChange={handleLevelFilterChange}
       levelRanges={entityData.levelRanges}
+      onSearchClick={() => (searchOpen = true)}
     />
 
     {#if hoveredEntity}
@@ -446,7 +457,6 @@
       <EntityPopup entity={selectedEntity} onClose={handleClosePopup} />
     {/if}
 
-    <MapSearchTrigger onclick={() => (searchOpen = true)} />
     <MapSearch bind:open={searchOpen} onselect={handleSearchSelect} />
   {/if}
 </div>
