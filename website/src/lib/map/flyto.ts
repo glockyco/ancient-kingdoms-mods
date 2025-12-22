@@ -72,3 +72,63 @@ export function flyToPosition(
   });
   return true;
 }
+
+export interface Bounds {
+  minX: number;
+  maxX: number;
+  minY: number;
+  maxY: number;
+}
+
+/**
+ * Fly to fit a bounding box in the viewport.
+ * Calculates appropriate zoom level to show all content with padding.
+ */
+export function flyToBounds(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  deckInstance: any,
+  bounds: Bounds,
+  options: { duration?: number; padding?: number; maxZoom?: number } = {},
+): void {
+  if (!deckInstance) return;
+
+  const { duration = 1000, padding = 1.1, maxZoom = 4 } = options;
+
+  // Get actual viewport dimensions from deck instance
+  const viewportWidth = deckInstance.width || 1000;
+  const viewportHeight = deckInstance.height || 800;
+
+  // Calculate center
+  const centerX = (bounds.minX + bounds.maxX) / 2;
+  const centerY = (bounds.minY + bounds.maxY) / 2;
+
+  // Calculate bounds size with 10% padding
+  const boundsWidth = (bounds.maxX - bounds.minX) * padding;
+  const boundsHeight = (bounds.maxY - bounds.minY) * padding;
+
+  // Calculate zoom to fit bounds in viewport
+  // In OrthographicView at zoom=0, 1 world unit = 1 pixel
+  // At zoom=n, 1 world unit = 2^n pixels
+  // So: zoom = log2(viewportPx / worldUnits)
+  const zoomX =
+    boundsWidth > 0 ? Math.log2(viewportWidth / boundsWidth) : maxZoom;
+  const zoomY =
+    boundsHeight > 0 ? Math.log2(viewportHeight / boundsHeight) : maxZoom;
+
+  // Use the smaller zoom to ensure both dimensions fit
+  let zoom = Math.min(zoomX, zoomY);
+
+  // Clamp to valid zoom range
+  zoom = Math.max(INITIAL_VIEW_STATE.minZoom, Math.min(zoom, maxZoom));
+
+  deckInstance.setProps({
+    initialViewState: {
+      target: [centerX, centerY, 0],
+      zoom,
+      minZoom: INITIAL_VIEW_STATE.minZoom,
+      maxZoom: INITIAL_VIEW_STATE.maxZoom,
+      transitionDuration: duration,
+      transitionEasing: (t: number) => t * (2 - t),
+    },
+  });
+}

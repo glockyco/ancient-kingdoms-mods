@@ -30,17 +30,22 @@
   <Icon class="h-4 w-4 text-muted-foreground shrink-0" />
   <div class="flex-1 min-w-0">
     <div class="font-medium truncate">{result.name}</div>
-    {#if result.zoneName && result.category !== "zone"}
+    {#if result.zoneName && result.category !== "zone" && !result.spawnCount}
       <div class="text-xs text-muted-foreground truncate">
         {result.zoneName}
       </div>
     {/if}
   </div>
+  {#if result.spawnCount}
+    <span class="text-xs text-muted-foreground shrink-0"
+      >{result.spawnCount} locations</span
+    >
+  {/if}
   {#if result.level}
     <span class="text-xs text-muted-foreground shrink-0">Lv.{result.level}</span
     >
   {/if}
-  {#if !result.position}
+  {#if !result.bounds}
     <span
       class="text-xs text-muted-foreground italic flex items-center gap-1 shrink-0"
     >

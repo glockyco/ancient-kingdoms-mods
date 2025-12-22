@@ -88,3 +88,11 @@ export const ARC_COLORS = {
     target: [34, 250, 94, 200] as [number, number, number, number],
   },
 } as const;
+
+/**
+ * Selection highlight colors
+ */
+export const HIGHLIGHT_COLORS = {
+  ring: [255, 255, 255, 255] as [number, number, number, number], // white
+  fill: [255, 255, 255, 60] as [number, number, number, number], // white with low alpha
+} as const;

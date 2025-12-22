@@ -8,7 +8,7 @@
   import { loadAllMapEntities } from "$lib/queries/map";
   import { createLayers, createFilteredData } from "$lib/map/layers";
   import { INITIAL_VIEW_STATE } from "$lib/map/config";
-  import { flyToPosition } from "$lib/map/flyto";
+  import { flyToBounds } from "$lib/map/flyto";
   import {
     parseUrlState,
     urlStateToLayerVisibility,
@@ -43,8 +43,12 @@
   let hoverX = $state(0);
   let hoverY = $state(0);
 
-  // Selected entity
+  // Selected entity (for popup display)
   let selectedEntity = $state<AnyMapEntity | null>(null);
+
+  // Selection state for highlighting (synced with URL)
+  let selectedEntityId = $state<string | null>(null);
+  let selectedEntityType = $state<string | null>(null);
 
   // Search state
   let searchOpen = $state(false);
@@ -102,6 +106,7 @@
       },
       levelFilter,
       selectedPortalId,
+      { entityId: selectedEntityId, entityType: selectedEntityType },
     );
 
     deckInstance.setProps({ layers });
@@ -121,27 +126,70 @@
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function handleClick(info: any) {
     if (info.object) {
-      selectedEntity = info.object as AnyMapEntity;
+      const entity = info.object as AnyMapEntity;
+      selectedEntity = entity;
+      selectedEntityId = entity.id;
+      selectedEntityType = entity.type;
+    } else {
+      // Click on empty space clears selection
+      selectedEntity = null;
+      selectedEntityId = null;
+      selectedEntityType = null;
     }
   }
 
   function handleClosePopup() {
     selectedEntity = null;
+    selectedEntityId = null;
+    selectedEntityType = null;
   }
 
-  // Search handlers
+  // Keyboard handlers
   function handleKeydown(e: KeyboardEvent) {
     if ((e.metaKey || e.ctrlKey) && e.key === "k") {
       e.preventDefault();
       searchOpen = true;
+    } else if (e.key === "Escape" && selectedEntityId) {
+      selectedEntity = null;
+      selectedEntityId = null;
+      selectedEntityType = null;
     }
   }
 
   function handleSearchSelect(result: MapSearchResult) {
-    if (result.position && deckInstance) {
-      flyToPosition(deckInstance, result.position, currentViewState.zoom, {
-        zoom: 4,
-      });
+    // Use selectTarget if provided (for altar/placeholder spawns that redirect to another entity)
+    // Otherwise use the result itself
+    const target = result.selectTarget ?? {
+      category: result.category,
+      id: result.id,
+    };
+
+    // Set selection state for highlighting
+    selectedEntityId = target.id;
+    selectedEntityType = target.category;
+
+    // Find and show popup for the TARGET entity (not the search result)
+    // This shows the altar popup when searching for altar-spawned monsters
+    if (entityData && target.category !== "zone") {
+      const dataArrays: Record<string, AnyMapEntity[]> = {
+        monster: entityData.monsters,
+        npc: entityData.npcs,
+        resource: entityData.gathering,
+        chest: entityData.chests,
+        altar: entityData.altars,
+      };
+      const entity = dataArrays[target.category]?.find(
+        (e) => e.id === target.id,
+      );
+      if (entity) {
+        selectedEntity = entity;
+      }
+    }
+
+    // Fly to bounds (uses result.bounds, NOT target bounds)
+    // This flies to where the searched monster spawns, even if we select the altar
+    if (result.bounds && deckInstance) {
+      flyToBounds(deckInstance, result.bounds);
     }
   }
 
@@ -172,6 +220,10 @@
         }
         if (urlState.levelFilter) {
           levelFilter = urlState.levelFilter;
+        }
+        if (urlState.entity && urlState.etype) {
+          selectedEntityId = urlState.entity;
+          selectedEntityType = urlState.etype;
         }
         currentViewState = {
           x: urlState.x,
@@ -214,6 +266,35 @@
           }
         }
 
+        // Restore popup from URL state (after entity data is loaded)
+        if (
+          selectedEntityId &&
+          selectedEntityType &&
+          selectedEntityType !== "zone"
+        ) {
+          // Map both search categories and entity types to their data arrays
+          const dataArrays: Record<string, AnyMapEntity[]> = {
+            // Search categories
+            monster: entityData.monsters,
+            npc: entityData.npcs,
+            resource: entityData.gathering,
+            chest: entityData.chests,
+            altar: entityData.altars,
+            // Entity types (from clicking on map)
+            boss: entityData.monsters,
+            elite: entityData.monsters,
+            gathering_plant: entityData.gathering,
+            gathering_mineral: entityData.gathering,
+            gathering_spark: entityData.gathering,
+          };
+          const entity = dataArrays[selectedEntityType]?.find(
+            (e) => e.id === selectedEntityId,
+          );
+          if (entity) {
+            selectedEntity = entity;
+          }
+        }
+
         // Create initial layers
         const layers = createLayers(
           entityData,
@@ -226,6 +307,7 @@
           },
           levelFilter,
           null,
+          { entityId: selectedEntityId, entityType: selectedEntityType },
         );
 
         // Determine initial view state
@@ -283,15 +365,17 @@
     };
   }
 
-  // Re-render layers when visibility, level filter, or selected portal changes
+  // Re-render layers when visibility, level filter, selection, or portal changes
   $effect(() => {
     void layerVisibility;
     void levelFilter;
     void selectedPortalId;
+    void selectedEntityId;
+    void selectedEntityType;
     updateLayers();
   });
 
-  // Sync URL when view state, layer visibility, or level filter changes
+  // Sync URL when view state, layer visibility, level filter, or selection changes
   $effect(() => {
     if (!isLoading && entityData) {
       debouncedUpdateUrlState(
@@ -299,6 +383,8 @@
         layerVisibility,
         levelFilter,
         entityData.levelRanges,
+        selectedEntityId,
+        selectedEntityType,
       );
     }
   });

@@ -96,6 +96,8 @@ interface MonsterSpawnRow {
 }
 
 async function loadMonsterSpawns(): Promise<MonsterMapEntity[]> {
+  // Include both regular and summon spawns on the map
+  // Altar and placeholder spawns are excluded (too many overlapping dots)
   const rows = await query<MonsterSpawnRow>(`
     SELECT
       ms.id,
@@ -113,7 +115,7 @@ async function loadMonsterSpawns(): Promise<MonsterMapEntity[]> {
     JOIN zones z ON z.id = ms.zone_id
     WHERE ms.position_x IS NOT NULL
       AND ms.position_y IS NOT NULL
-      AND ms.spawn_type = 'regular'
+      AND ms.spawn_type IN ('regular', 'summon')
       ${getZoneExclusionClause("ms.zone_id")}
   `);
 
@@ -336,7 +338,7 @@ interface GatheringRow {
 async function loadGatheringSpawns(): Promise<GatheringMapEntity[]> {
   const rows = await query<GatheringRow>(`
     SELECT
-      gs.id,
+      gs.resource_id as id,
       gr.name,
       gs.position_x,
       gs.position_y,

@@ -23,6 +23,10 @@ export interface MapUrlState {
   zoom: number;
   layers?: (keyof LayerVisibility)[];
   levelFilter?: LevelFilter;
+  /** Selected entity ID for highlighting/deep linking */
+  entity?: string;
+  /** Selected entity type (monster, npc, gathering, etc.) */
+  etype?: string;
 }
 
 /**
@@ -92,6 +96,12 @@ export function parseUrlState(): MapUrlState | null {
     };
   }
 
+  // Parse entity selection for deep linking
+  if (params.has("entity") && params.has("etype")) {
+    state.entity = params.get("entity")!;
+    state.etype = params.get("etype")!;
+  }
+
   return state;
 }
 
@@ -103,6 +113,8 @@ export function updateUrlState(
   layers: LayerVisibility,
   levelFilter: LevelFilter,
   levelRanges?: LevelRanges,
+  selectedEntityId?: string | null,
+  selectedEntityType?: string | null,
 ): void {
   if (!browser) return;
 
@@ -140,6 +152,12 @@ export function updateUrlState(
       "gtier",
       `${levelFilter.gatheringMin}-${levelFilter.gatheringMax}`,
     );
+  }
+
+  // Entity selection for deep linking
+  if (selectedEntityId && selectedEntityType) {
+    params.set("entity", selectedEntityId);
+    params.set("etype", selectedEntityType);
   }
 
   const url = `${base}/map?${params.toString()}`;
@@ -203,6 +221,8 @@ export function debouncedUpdateUrlState(
   layers: LayerVisibility,
   levelFilter: LevelFilter,
   levelRanges?: LevelRanges,
+  selectedEntityId?: string | null,
+  selectedEntityType?: string | null,
   delay = 500,
 ): void {
   if (urlUpdateTimer) {
@@ -210,7 +230,14 @@ export function debouncedUpdateUrlState(
   }
 
   urlUpdateTimer = setTimeout(() => {
-    updateUrlState(viewState, layers, levelFilter, levelRanges);
+    updateUrlState(
+      viewState,
+      layers,
+      levelFilter,
+      levelRanges,
+      selectedEntityId,
+      selectedEntityType,
+    );
     urlUpdateTimer = null;
   }, delay);
 }
