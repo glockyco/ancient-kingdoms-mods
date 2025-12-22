@@ -43,9 +43,7 @@ export function createFilteredData(data: MapEntityData): FilteredMapData {
     plants: data.gathering.filter((g) => g.type === "gathering_plant"),
     minerals: data.gathering.filter((g) => g.type === "gathering_mineral"),
     sparks: data.gathering.filter((g) => g.type === "gathering_spark"),
-    portalsWithDestinations: data.portals.filter(
-      (p) => p.destination !== null && !p.isClosed,
-    ),
+    portalsWithDestinations: data.portals.filter((p) => p.destination !== null),
     parentZones: calculateParentZoneBounds(data),
   };
 }
