@@ -66,7 +66,7 @@
     }
   }
 
-  const url = getEntityUrl(entity);
+  const url = $derived(getEntityUrl(entity));
 </script>
 
 <Card.Root
