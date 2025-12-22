@@ -1,4 +1,5 @@
 import { query } from "$lib/db";
+import { EXCLUDED_ZONE_IDS } from "$lib/constants/exclusions";
 import type {
   MapEntityData,
   MonsterMapEntity,
@@ -11,6 +12,18 @@ import type {
   ZoneBoundary,
   LevelRanges,
 } from "$lib/types/map";
+
+/**
+ * Generate SQL placeholder string for excluded zones.
+ * Returns empty string if no exclusions, otherwise " AND zone_id NOT IN (...)"
+ */
+function getZoneExclusionClause(zoneColumn = "zone_id"): string {
+  if (EXCLUDED_ZONE_IDS.size === 0) return "";
+  const placeholders = Array.from(EXCLUDED_ZONE_IDS)
+    .map((id) => `'${id}'`)
+    .join(", ");
+  return ` AND ${zoneColumn} NOT IN (${placeholders})`;
+}
 
 /**
  * Compute level ranges from loaded entity data
@@ -101,6 +114,7 @@ async function loadMonsterSpawns(): Promise<MonsterMapEntity[]> {
     WHERE ms.position_x IS NOT NULL
       AND ms.position_y IS NOT NULL
       AND ms.spawn_type = 'regular'
+      ${getZoneExclusionClause("ms.zone_id")}
   `);
 
   return rows.map((r) => ({
@@ -143,6 +157,7 @@ async function loadNpcSpawns(): Promise<NpcMapEntity[]> {
     JOIN zones z ON z.id = ns.zone_id
     WHERE ns.position_x IS NOT NULL
       AND ns.position_y IS NOT NULL
+      ${getZoneExclusionClause("ns.zone_id")}
   `);
 
   return rows.map((r) => {
@@ -174,6 +189,8 @@ interface PortalRow {
 }
 
 async function loadPortals(): Promise<PortalMapEntity[]> {
+  // Filter out portals FROM excluded zones, but keep portals TO excluded zones
+  // (we'll null out their destination below)
   const rows = await query<PortalRow>(`
     SELECT
       p.id,
@@ -192,23 +209,32 @@ async function loadPortals(): Promise<PortalMapEntity[]> {
     WHERE p.position_x IS NOT NULL
       AND p.position_y IS NOT NULL
       AND p.is_template = 0
+      ${getZoneExclusionClause("p.from_zone_id")}
   `);
 
-  return rows.map((r) => ({
-    id: r.id,
-    type: "portal" as const,
-    name: r.to_zone_name ? `Portal to ${r.to_zone_name}` : "Portal",
-    position: [r.position_x, -r.position_y] as [number, number],
-    zoneId: r.from_zone_id,
-    zoneName: r.from_zone_name,
-    destination:
-      r.destination_x !== null && r.destination_y !== null
-        ? ([r.destination_x, -r.destination_y] as [number, number])
-        : null,
-    destinationZoneId: r.to_zone_id,
-    destinationZoneName: r.to_zone_name,
-    isClosed: Boolean(r.is_closed),
-  }));
+  return rows.map((r) => {
+    // If destination zone is excluded, hide destination coordinates (no arc/marker)
+    // but keep the zone name so users know where it leads
+    const destExcluded = r.to_zone_id && EXCLUDED_ZONE_IDS.has(r.to_zone_id);
+
+    return {
+      id: r.id,
+      type: "portal" as const,
+      name: r.to_zone_name ? `Portal to ${r.to_zone_name}` : "Portal",
+      position: [r.position_x, -r.position_y] as [number, number],
+      zoneId: r.from_zone_id,
+      zoneName: r.from_zone_name,
+      // Null out coordinates for excluded destinations (hides arc and destination marker)
+      destination: destExcluded
+        ? null
+        : r.destination_x !== null && r.destination_y !== null
+          ? ([r.destination_x, -r.destination_y] as [number, number])
+          : null,
+      destinationZoneId: r.to_zone_id,
+      destinationZoneName: r.to_zone_name,
+      isClosed: Boolean(r.is_closed),
+    };
+  });
 }
 
 interface ChestRow {
@@ -238,6 +264,7 @@ async function loadChests(): Promise<ChestMapEntity[]> {
     LEFT JOIN items i ON i.id = c.key_required_id
     WHERE c.position_x IS NOT NULL
       AND c.position_y IS NOT NULL
+      ${getZoneExclusionClause("c.zone_id")}
   `);
 
   return rows.map((r) => ({
@@ -278,6 +305,7 @@ async function loadAltars(): Promise<AltarMapEntity[]> {
     JOIN zones z ON z.id = a.zone_id
     WHERE a.position_x IS NOT NULL
       AND a.position_y IS NOT NULL
+      ${getZoneExclusionClause("a.zone_id")}
   `);
 
   return rows.map((r) => ({
@@ -323,6 +351,7 @@ async function loadGatheringSpawns(): Promise<GatheringMapEntity[]> {
     JOIN zones z ON z.id = gs.zone_id
     WHERE gs.position_x IS NOT NULL
       AND gs.position_y IS NOT NULL
+      ${getZoneExclusionClause("gs.zone_id")}
   `);
 
   return rows.map((r) => {
@@ -369,6 +398,7 @@ async function loadCraftingStations(): Promise<CraftingMapEntity[]> {
     JOIN zones z ON z.id = at.zone_id
     WHERE at.position_x IS NOT NULL
       AND at.position_y IS NOT NULL
+      ${getZoneExclusionClause("at.zone_id")}
   `);
 
   const craftingRows = await query<CraftingRow>(`
@@ -384,6 +414,7 @@ async function loadCraftingStations(): Promise<CraftingMapEntity[]> {
     JOIN zones z ON z.id = cs.zone_id
     WHERE cs.position_x IS NOT NULL
       AND cs.position_y IS NOT NULL
+      ${getZoneExclusionClause("cs.zone_id")}
   `);
 
   return [...alchemyRows, ...craftingRows].map((r) => ({
@@ -424,6 +455,7 @@ async function loadZoneTriggers(): Promise<ZoneBoundary[]> {
       AND zt.bounds_min_y IS NOT NULL
       AND zt.bounds_max_x IS NOT NULL
       AND zt.bounds_max_y IS NOT NULL
+      ${getZoneExclusionClause("z.id")}
   `);
 
   return rows.map((r) => ({
