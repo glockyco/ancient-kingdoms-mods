@@ -3,9 +3,12 @@
   import MapControls from "$lib/components/map/MapControls.svelte";
   import MapTooltip from "$lib/components/map/MapTooltip.svelte";
   import EntityPopup from "$lib/components/map/EntityPopup.svelte";
+  import MapSearch from "$lib/components/map/MapSearch.svelte";
+  import MapSearchTrigger from "$lib/components/map/MapSearchTrigger.svelte";
   import { loadAllMapEntities } from "$lib/queries/map";
   import { createLayers, createFilteredData } from "$lib/map/layers";
   import { INITIAL_VIEW_STATE } from "$lib/map/config";
+  import { flyToPosition } from "$lib/map/flyto";
   import {
     parseUrlState,
     urlStateToLayerVisibility,
@@ -19,6 +22,7 @@
     FilteredMapData,
     AnyMapEntity,
   } from "$lib/types/map";
+  import type { MapSearchResult } from "$lib/queries/map-search";
 
   // deck.gl instance and modules (not reactive - managed imperatively)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -41,6 +45,9 @@
 
   // Selected entity
   let selectedEntity = $state<AnyMapEntity | null>(null);
+
+  // Search state
+  let searchOpen = $state(false);
 
   // Map state (initialized in onMount from URL or defaults)
   let layerVisibility = $state<LayerVisibility>({
@@ -120,6 +127,22 @@
 
   function handleClosePopup() {
     selectedEntity = null;
+  }
+
+  // Search handlers
+  function handleKeydown(e: KeyboardEvent) {
+    if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+      e.preventDefault();
+      searchOpen = true;
+    }
+  }
+
+  function handleSearchSelect(result: MapSearchResult) {
+    if (result.position && deckInstance) {
+      flyToPosition(deckInstance, result.position, currentViewState.zoom, {
+        zoom: 4,
+      });
+    }
   }
 
   /**
@@ -281,6 +304,8 @@
   });
 </script>
 
+<svelte:window onkeydown={handleKeydown} />
+
 <svelte:head>
   <title>World Map - Ancient Kingdoms Compendium</title>
   <meta
@@ -334,5 +359,8 @@
     {#if selectedEntity}
       <EntityPopup entity={selectedEntity} onClose={handleClosePopup} />
     {/if}
+
+    <MapSearchTrigger onclick={() => (searchOpen = true)} />
+    <MapSearch bind:open={searchOpen} onselect={handleSearchSelect} />
   {/if}
 </div>

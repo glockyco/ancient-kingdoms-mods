@@ -1088,26 +1088,30 @@ CREATE VIRTUAL TABLE items_fts USING fts5(
     name,
     tooltip,
     content=items,
-    content_rowid=rowid
+    content_rowid=rowid,
+    prefix='2,3'
 );
 
 CREATE VIRTUAL TABLE monsters_fts USING fts5(
     name,
     content=monsters,
-    content_rowid=rowid
+    content_rowid=rowid,
+    prefix='2,3'
 );
 
 CREATE VIRTUAL TABLE npcs_fts USING fts5(
     name,
     content=npcs,
-    content_rowid=rowid
+    content_rowid=rowid,
+    prefix='2,3'
 );
 
 CREATE VIRTUAL TABLE quests_fts USING fts5(
     name,
     tooltip,
     content=quests,
-    content_rowid=rowid
+    content_rowid=rowid,
+    prefix='2,3'
 );
 
 -- Triggers to keep FTS tables in sync
@@ -1162,4 +1166,88 @@ END;
 CREATE TRIGGER quests_au AFTER UPDATE ON quests BEGIN
     INSERT INTO quests_fts(quests_fts, rowid, name, tooltip) VALUES ('delete', old.rowid, old.name, old.tooltip);
     INSERT INTO quests_fts(rowid, name, tooltip) VALUES (new.rowid, new.name, new.tooltip);
+END;
+
+-- Zones FTS5 (for map search)
+CREATE VIRTUAL TABLE zones_fts USING fts5(
+    name,
+    content=zones,
+    content_rowid=rowid,
+    prefix='2,3'
+);
+
+CREATE TRIGGER zones_ai AFTER INSERT ON zones BEGIN
+    INSERT INTO zones_fts(rowid, name) VALUES (new.rowid, new.name);
+END;
+
+CREATE TRIGGER zones_ad AFTER DELETE ON zones BEGIN
+    INSERT INTO zones_fts(zones_fts, rowid, name) VALUES ('delete', old.rowid, old.name);
+END;
+
+CREATE TRIGGER zones_au AFTER UPDATE ON zones BEGIN
+    INSERT INTO zones_fts(zones_fts, rowid, name) VALUES ('delete', old.rowid, old.name);
+    INSERT INTO zones_fts(rowid, name) VALUES (new.rowid, new.name);
+END;
+
+-- Gathering Resources FTS5 (for map search)
+CREATE VIRTUAL TABLE gathering_resources_fts USING fts5(
+    name,
+    content=gathering_resources,
+    content_rowid=rowid,
+    prefix='2,3'
+);
+
+CREATE TRIGGER gathering_resources_ai AFTER INSERT ON gathering_resources BEGIN
+    INSERT INTO gathering_resources_fts(rowid, name) VALUES (new.rowid, new.name);
+END;
+
+CREATE TRIGGER gathering_resources_ad AFTER DELETE ON gathering_resources BEGIN
+    INSERT INTO gathering_resources_fts(gathering_resources_fts, rowid, name) VALUES ('delete', old.rowid, old.name);
+END;
+
+CREATE TRIGGER gathering_resources_au AFTER UPDATE ON gathering_resources BEGIN
+    INSERT INTO gathering_resources_fts(gathering_resources_fts, rowid, name) VALUES ('delete', old.rowid, old.name);
+    INSERT INTO gathering_resources_fts(rowid, name) VALUES (new.rowid, new.name);
+END;
+
+-- Chests FTS5 (for map search)
+CREATE VIRTUAL TABLE chests_fts USING fts5(
+    name,
+    content=chests,
+    content_rowid=rowid,
+    prefix='2,3'
+);
+
+CREATE TRIGGER chests_ai AFTER INSERT ON chests BEGIN
+    INSERT INTO chests_fts(rowid, name) VALUES (new.rowid, new.name);
+END;
+
+CREATE TRIGGER chests_ad AFTER DELETE ON chests BEGIN
+    INSERT INTO chests_fts(chests_fts, rowid, name) VALUES ('delete', old.rowid, old.name);
+END;
+
+CREATE TRIGGER chests_au AFTER UPDATE ON chests BEGIN
+    INSERT INTO chests_fts(chests_fts, rowid, name) VALUES ('delete', old.rowid, old.name);
+    INSERT INTO chests_fts(rowid, name) VALUES (new.rowid, new.name);
+END;
+
+-- Altars FTS5 (for map search)
+CREATE VIRTUAL TABLE altars_fts USING fts5(
+    name,
+    content=altars,
+    content_rowid=rowid,
+    prefix='2,3'
+);
+
+CREATE TRIGGER altars_ai AFTER INSERT ON altars BEGIN
+    INSERT INTO altars_fts(rowid, name) VALUES (new.rowid, new.name);
+END;
+
+CREATE TRIGGER altars_ad AFTER DELETE ON altars BEGIN
+    INSERT INTO altars_fts(altars_fts, rowid, name) VALUES ('delete', old.rowid, old.name);
+END;
+
+CREATE TRIGGER altars_au AFTER UPDATE ON altars BEGIN
+    INSERT INTO altars_fts(altars_fts, rowid, name) VALUES ('delete', old.rowid, old.name);
+    INSERT INTO altars_fts(rowid, name) VALUES (new.rowid, new.name);
 END;
