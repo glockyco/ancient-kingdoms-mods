@@ -108,7 +108,8 @@ CREATE TABLE altars (
     reward_legendary_name TEXT,
     total_waves INTEGER DEFAULT 0,
     estimated_duration_seconds INTEGER DEFAULT 0,
-    waves TEXT                              -- JSON: full wave data with monsters
+    waves TEXT,                             -- JSON: full wave data with monsters
+    keywords TEXT                           -- FTS5 search keywords
 );
 
 CREATE INDEX idx_altars_zone_id ON altars(zone_id);
@@ -372,7 +373,10 @@ CREATE TABLE monsters (
     decrease_faction TEXT,          -- JSON array
 
     -- Lore (boss-specific)
-    lore_boss TEXT DEFAULT ''
+    lore_boss TEXT DEFAULT '',
+
+    -- Search keywords (generated: boss/elite/hunt/creature based on flags)
+    keywords TEXT
 );
 
 CREATE INDEX idx_monsters_level ON monsters(level);
@@ -544,7 +548,10 @@ CREATE TABLE npcs (
     teleport_destination_y REAL,
     teleport_destination_z REAL,
     teleport_price INTEGER DEFAULT 0,
-    teleport_message TEXT
+    teleport_message TEXT,
+
+    -- Search keywords (generated: service types from roles JSON)
+    keywords TEXT
 );
 
 -- =============================================================================
@@ -828,7 +835,10 @@ CREATE TABLE portals (
     required_item_id TEXT REFERENCES items(id),
     need_monster_dead_id TEXT REFERENCES monsters(id),
     level_required INTEGER DEFAULT 0,
-    is_closed BOOLEAN DEFAULT 0
+    is_closed BOOLEAN DEFAULT 0,
+
+    -- Search keywords (generated: "portal" + destination zone name)
+    keywords TEXT
 );
 
 CREATE INDEX idx_portals_from_zone ON portals(from_zone_id);
@@ -910,7 +920,10 @@ CREATE TABLE gathering_resources (
 
     -- Metadata
     decrease_faction TEXT DEFAULT '',
-    description TEXT DEFAULT ''
+    description TEXT DEFAULT '',
+
+    -- Search keywords (generated: plant/mineral/spark based on type flags)
+    keywords TEXT
 );
 
 CREATE INDEX idx_gathering_resources_type ON gathering_resources(is_plant, is_mineral, is_radiant_spark);
@@ -978,7 +991,8 @@ CREATE TABLE chests (
     respawn_time REAL DEFAULT 0.0,
 
     -- Metadata
-    decrease_faction TEXT DEFAULT ''
+    decrease_faction TEXT DEFAULT '',
+    keywords TEXT                           -- FTS5 search keywords
 );
 
 CREATE INDEX idx_chests_zone ON chests(zone_id);
@@ -1055,7 +1069,10 @@ CREATE TABLE alchemy_tables (
     sub_zone_name TEXT,
     position_x REAL,
     position_y REAL,
-    position_z REAL
+    position_z REAL,
+
+    -- Search keywords (generated: "alchemy crafting")
+    keywords TEXT
 );
 
 CREATE INDEX idx_alchemy_tables_zone ON alchemy_tables(zone_id);
@@ -1074,7 +1091,10 @@ CREATE TABLE crafting_stations (
     position_x REAL,
     position_y REAL,
     position_z REAL,
-    is_cooking_oven BOOLEAN DEFAULT 0
+    is_cooking_oven BOOLEAN DEFAULT 0,
+
+    -- Search keywords (generated: "forge crafting" or "cooking crafting" based on type)
+    keywords TEXT
 );
 
 CREATE INDEX idx_crafting_stations_zone ON crafting_stations(zone_id);
@@ -1094,6 +1114,7 @@ CREATE VIRTUAL TABLE items_fts USING fts5(
 
 CREATE VIRTUAL TABLE monsters_fts USING fts5(
     name,
+    keywords,
     content=monsters,
     content_rowid=rowid,
     prefix='2,3'
@@ -1101,6 +1122,7 @@ CREATE VIRTUAL TABLE monsters_fts USING fts5(
 
 CREATE VIRTUAL TABLE npcs_fts USING fts5(
     name,
+    keywords,
     content=npcs,
     content_rowid=rowid,
     prefix='2,3'
@@ -1130,29 +1152,29 @@ END;
 
 -- Similar triggers for other FTS tables
 CREATE TRIGGER monsters_ai AFTER INSERT ON monsters BEGIN
-    INSERT INTO monsters_fts(rowid, name) VALUES (new.rowid, new.name);
+    INSERT INTO monsters_fts(rowid, name, keywords) VALUES (new.rowid, new.name, new.keywords);
 END;
 
 CREATE TRIGGER monsters_ad AFTER DELETE ON monsters BEGIN
-    INSERT INTO monsters_fts(monsters_fts, rowid, name) VALUES ('delete', old.rowid, old.name);
+    INSERT INTO monsters_fts(monsters_fts, rowid, name, keywords) VALUES ('delete', old.rowid, old.name, old.keywords);
 END;
 
 CREATE TRIGGER monsters_au AFTER UPDATE ON monsters BEGIN
-    INSERT INTO monsters_fts(monsters_fts, rowid, name) VALUES ('delete', old.rowid, old.name);
-    INSERT INTO monsters_fts(rowid, name) VALUES (new.rowid, new.name);
+    INSERT INTO monsters_fts(monsters_fts, rowid, name, keywords) VALUES ('delete', old.rowid, old.name, old.keywords);
+    INSERT INTO monsters_fts(rowid, name, keywords) VALUES (new.rowid, new.name, new.keywords);
 END;
 
 CREATE TRIGGER npcs_ai AFTER INSERT ON npcs BEGIN
-    INSERT INTO npcs_fts(rowid, name) VALUES (new.rowid, new.name);
+    INSERT INTO npcs_fts(rowid, name, keywords) VALUES (new.rowid, new.name, new.keywords);
 END;
 
 CREATE TRIGGER npcs_ad AFTER DELETE ON npcs BEGIN
-    INSERT INTO npcs_fts(npcs_fts, rowid, name) VALUES ('delete', old.rowid, old.name);
+    INSERT INTO npcs_fts(npcs_fts, rowid, name, keywords) VALUES ('delete', old.rowid, old.name, old.keywords);
 END;
 
 CREATE TRIGGER npcs_au AFTER UPDATE ON npcs BEGIN
-    INSERT INTO npcs_fts(npcs_fts, rowid, name) VALUES ('delete', old.rowid, old.name);
-    INSERT INTO npcs_fts(rowid, name) VALUES (new.rowid, new.name);
+    INSERT INTO npcs_fts(npcs_fts, rowid, name, keywords) VALUES ('delete', old.rowid, old.name, old.keywords);
+    INSERT INTO npcs_fts(rowid, name, keywords) VALUES (new.rowid, new.name, new.keywords);
 END;
 
 CREATE TRIGGER quests_ai AFTER INSERT ON quests BEGIN
@@ -1192,62 +1214,130 @@ END;
 -- Gathering Resources FTS5 (for map search)
 CREATE VIRTUAL TABLE gathering_resources_fts USING fts5(
     name,
+    keywords,
     content=gathering_resources,
     content_rowid=rowid,
     prefix='2,3'
 );
 
 CREATE TRIGGER gathering_resources_ai AFTER INSERT ON gathering_resources BEGIN
-    INSERT INTO gathering_resources_fts(rowid, name) VALUES (new.rowid, new.name);
+    INSERT INTO gathering_resources_fts(rowid, name, keywords) VALUES (new.rowid, new.name, new.keywords);
 END;
 
 CREATE TRIGGER gathering_resources_ad AFTER DELETE ON gathering_resources BEGIN
-    INSERT INTO gathering_resources_fts(gathering_resources_fts, rowid, name) VALUES ('delete', old.rowid, old.name);
+    INSERT INTO gathering_resources_fts(gathering_resources_fts, rowid, name, keywords) VALUES ('delete', old.rowid, old.name, old.keywords);
 END;
 
 CREATE TRIGGER gathering_resources_au AFTER UPDATE ON gathering_resources BEGIN
-    INSERT INTO gathering_resources_fts(gathering_resources_fts, rowid, name) VALUES ('delete', old.rowid, old.name);
-    INSERT INTO gathering_resources_fts(rowid, name) VALUES (new.rowid, new.name);
+    INSERT INTO gathering_resources_fts(gathering_resources_fts, rowid, name, keywords) VALUES ('delete', old.rowid, old.name, old.keywords);
+    INSERT INTO gathering_resources_fts(rowid, name, keywords) VALUES (new.rowid, new.name, new.keywords);
 END;
 
 -- Chests FTS5 (for map search)
 CREATE VIRTUAL TABLE chests_fts USING fts5(
     name,
+    keywords,
     content=chests,
     content_rowid=rowid,
     prefix='2,3'
 );
 
 CREATE TRIGGER chests_ai AFTER INSERT ON chests BEGIN
-    INSERT INTO chests_fts(rowid, name) VALUES (new.rowid, new.name);
+    INSERT INTO chests_fts(rowid, name, keywords) VALUES (new.rowid, new.name, new.keywords);
 END;
 
 CREATE TRIGGER chests_ad AFTER DELETE ON chests BEGIN
-    INSERT INTO chests_fts(chests_fts, rowid, name) VALUES ('delete', old.rowid, old.name);
+    INSERT INTO chests_fts(chests_fts, rowid, name, keywords) VALUES ('delete', old.rowid, old.name, old.keywords);
 END;
 
 CREATE TRIGGER chests_au AFTER UPDATE ON chests BEGIN
-    INSERT INTO chests_fts(chests_fts, rowid, name) VALUES ('delete', old.rowid, old.name);
-    INSERT INTO chests_fts(rowid, name) VALUES (new.rowid, new.name);
+    INSERT INTO chests_fts(chests_fts, rowid, name, keywords) VALUES ('delete', old.rowid, old.name, old.keywords);
+    INSERT INTO chests_fts(rowid, name, keywords) VALUES (new.rowid, new.name, new.keywords);
 END;
 
 -- Altars FTS5 (for map search)
 CREATE VIRTUAL TABLE altars_fts USING fts5(
     name,
+    keywords,
     content=altars,
     content_rowid=rowid,
     prefix='2,3'
 );
 
 CREATE TRIGGER altars_ai AFTER INSERT ON altars BEGIN
-    INSERT INTO altars_fts(rowid, name) VALUES (new.rowid, new.name);
+    INSERT INTO altars_fts(rowid, name, keywords) VALUES (new.rowid, new.name, new.keywords);
 END;
 
 CREATE TRIGGER altars_ad AFTER DELETE ON altars BEGIN
-    INSERT INTO altars_fts(altars_fts, rowid, name) VALUES ('delete', old.rowid, old.name);
+    INSERT INTO altars_fts(altars_fts, rowid, name, keywords) VALUES ('delete', old.rowid, old.name, old.keywords);
 END;
 
 CREATE TRIGGER altars_au AFTER UPDATE ON altars BEGIN
-    INSERT INTO altars_fts(altars_fts, rowid, name) VALUES ('delete', old.rowid, old.name);
-    INSERT INTO altars_fts(rowid, name) VALUES (new.rowid, new.name);
+    INSERT INTO altars_fts(altars_fts, rowid, name, keywords) VALUES ('delete', old.rowid, old.name, old.keywords);
+    INSERT INTO altars_fts(rowid, name, keywords) VALUES (new.rowid, new.name, new.keywords);
+END;
+
+-- Portals FTS5 (for map search - "portal" + destination zone name)
+CREATE VIRTUAL TABLE portals_fts USING fts5(
+    keywords,
+    content=portals,
+    content_rowid=rowid,
+    prefix='2,3'
+);
+
+CREATE TRIGGER portals_ai AFTER INSERT ON portals BEGIN
+    INSERT INTO portals_fts(rowid, keywords) VALUES (new.rowid, new.keywords);
+END;
+
+CREATE TRIGGER portals_ad AFTER DELETE ON portals BEGIN
+    INSERT INTO portals_fts(portals_fts, rowid, keywords) VALUES ('delete', old.rowid, old.keywords);
+END;
+
+CREATE TRIGGER portals_au AFTER UPDATE ON portals BEGIN
+    INSERT INTO portals_fts(portals_fts, rowid, keywords) VALUES ('delete', old.rowid, old.keywords);
+    INSERT INTO portals_fts(rowid, keywords) VALUES (new.rowid, new.keywords);
+END;
+
+-- Crafting Stations FTS5 (for map search)
+CREATE VIRTUAL TABLE crafting_stations_fts USING fts5(
+    name,
+    keywords,
+    content=crafting_stations,
+    content_rowid=rowid,
+    prefix='2,3'
+);
+
+CREATE TRIGGER crafting_stations_ai AFTER INSERT ON crafting_stations BEGIN
+    INSERT INTO crafting_stations_fts(rowid, name, keywords) VALUES (new.rowid, new.name, new.keywords);
+END;
+
+CREATE TRIGGER crafting_stations_ad AFTER DELETE ON crafting_stations BEGIN
+    INSERT INTO crafting_stations_fts(crafting_stations_fts, rowid, name, keywords) VALUES ('delete', old.rowid, old.name, old.keywords);
+END;
+
+CREATE TRIGGER crafting_stations_au AFTER UPDATE ON crafting_stations BEGIN
+    INSERT INTO crafting_stations_fts(crafting_stations_fts, rowid, name, keywords) VALUES ('delete', old.rowid, old.name, old.keywords);
+    INSERT INTO crafting_stations_fts(rowid, name, keywords) VALUES (new.rowid, new.name, new.keywords);
+END;
+
+-- Alchemy Tables FTS5 (for map search)
+CREATE VIRTUAL TABLE alchemy_tables_fts USING fts5(
+    name,
+    keywords,
+    content=alchemy_tables,
+    content_rowid=rowid,
+    prefix='2,3'
+);
+
+CREATE TRIGGER alchemy_tables_ai AFTER INSERT ON alchemy_tables BEGIN
+    INSERT INTO alchemy_tables_fts(rowid, name, keywords) VALUES (new.rowid, new.name, new.keywords);
+END;
+
+CREATE TRIGGER alchemy_tables_ad AFTER DELETE ON alchemy_tables BEGIN
+    INSERT INTO alchemy_tables_fts(alchemy_tables_fts, rowid, name, keywords) VALUES ('delete', old.rowid, old.name, old.keywords);
+END;
+
+CREATE TRIGGER alchemy_tables_au AFTER UPDATE ON alchemy_tables BEGIN
+    INSERT INTO alchemy_tables_fts(alchemy_tables_fts, rowid, name, keywords) VALUES ('delete', old.rowid, old.name, old.keywords);
+    INSERT INTO alchemy_tables_fts(rowid, name, keywords) VALUES (new.rowid, new.name, new.keywords);
 END;

@@ -65,6 +65,8 @@
     resource: "Gathering",
     chest: "Chests",
     altar: "Altars",
+    crafting: "Crafting Stations",
+    portal: "Portals",
   };
 
   const categoryOrder: Category[] = [
@@ -74,6 +76,8 @@
     "resource",
     "chest",
     "altar",
+    "crafting",
+    "portal",
   ];
 
   function groupByCategory(

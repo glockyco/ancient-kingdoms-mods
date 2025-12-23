@@ -200,6 +200,8 @@
         resource: entityData.gathering,
         chest: entityData.chests,
         altar: entityData.altars,
+        portal: entityData.portals,
+        crafting: entityData.crafting,
       };
       const entity = dataArrays[target.category]?.find(
         (e) => e.id === target.id,

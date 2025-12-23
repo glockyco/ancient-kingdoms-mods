@@ -180,6 +180,8 @@ function getIndexForType(
       return index.altars;
     case "portal":
       return index.portals;
+    case "crafting":
+      return index.crafting;
     // Entity types (when clicking directly on map)
     case "boss":
     case "elite":

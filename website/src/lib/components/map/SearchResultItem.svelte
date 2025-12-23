@@ -1,11 +1,18 @@
 <script lang="ts">
   import type { MapSearchResult } from "$lib/queries/map-search";
-  import Skull from "@lucide/svelte/icons/skull";
-  import User from "@lucide/svelte/icons/user";
+  import Sword from "@lucide/svelte/icons/sword";
+  import Shield from "@lucide/svelte/icons/shield";
+  import Crown from "@lucide/svelte/icons/crown";
+  import Crosshair from "@lucide/svelte/icons/crosshair";
+  import Users from "@lucide/svelte/icons/users";
   import MapIcon from "@lucide/svelte/icons/map";
-  import Flower2 from "@lucide/svelte/icons/flower-2";
-  import Package from "@lucide/svelte/icons/package";
+  import Leaf from "@lucide/svelte/icons/leaf";
+  import Pickaxe from "@lucide/svelte/icons/pickaxe";
   import Sparkles from "@lucide/svelte/icons/sparkles";
+  import Box from "@lucide/svelte/icons/box";
+  import Flame from "@lucide/svelte/icons/flame";
+  import Hammer from "@lucide/svelte/icons/hammer";
+  import CircleDot from "@lucide/svelte/icons/circle-dot";
   import MapPinOff from "@lucide/svelte/icons/map-pin-off";
   import type { Component } from "svelte";
 
@@ -14,22 +21,58 @@
   }
   let { result }: Props = $props();
 
-  const icons: Record<MapSearchResult["category"], Component> = {
-    monster: Skull,
-    npc: User,
-    zone: MapIcon,
-    resource: Flower2,
-    chest: Package,
-    altar: Sparkles,
-  };
+  function getIcon(result: MapSearchResult): Component {
+    if (result.category === "monster") {
+      switch (result.subcategory) {
+        case "boss":
+          return Crown;
+        case "elite":
+          return Shield;
+        case "hunt":
+          return Crosshair;
+        default:
+          return Sword;
+      }
+    }
+    if (result.category === "resource" && result.keywords) {
+      if (result.keywords.includes("mineral")) return Pickaxe;
+      if (result.keywords.includes("spark")) return Sparkles;
+      return Leaf;
+    }
+    const icons: Record<MapSearchResult["category"], Component> = {
+      monster: Sword,
+      npc: Users,
+      zone: MapIcon,
+      resource: Leaf,
+      chest: Box,
+      altar: Flame,
+      crafting: Hammer,
+      portal: CircleDot,
+    };
+    return icons[result.category];
+  }
 
-  let Icon = $derived(icons[result.category]);
+  let Icon = $derived(getIcon(result));
+
+  function getDisplayName(result: MapSearchResult): string {
+    if (result.category === "crafting" && result.subcategory) {
+      switch (result.subcategory) {
+        case "alchemy":
+          return "Alchemy Table";
+        case "cooking":
+          return "Cooking Oven";
+        case "forge":
+          return "Forge";
+      }
+    }
+    return result.name;
+  }
 </script>
 
 <div class="flex items-center gap-3 w-full">
   <Icon class="h-4 w-4 text-muted-foreground shrink-0" />
   <div class="flex-1 min-w-0">
-    <div class="font-medium truncate">{result.name}</div>
+    <div class="font-medium truncate">{getDisplayName(result)}</div>
     {#if result.zoneName && result.category !== "zone" && !result.spawnCount}
       <div class="text-xs text-muted-foreground truncate">
         {result.zoneName}

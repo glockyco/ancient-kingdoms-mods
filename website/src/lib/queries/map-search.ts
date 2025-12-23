@@ -23,7 +23,15 @@ export interface MapSearchBounds {
 export interface MapSearchResult {
   id: string;
   name: string;
-  category: "monster" | "npc" | "zone" | "resource" | "chest" | "altar";
+  category:
+    | "monster"
+    | "npc"
+    | "zone"
+    | "resource"
+    | "chest"
+    | "altar"
+    | "crafting"
+    | "portal";
   subcategory?: string;
   /** Bounding box containing all spawn locations (null if no mappable location) */
   bounds: MapSearchBounds | null;
@@ -37,6 +45,8 @@ export interface MapSearchResult {
     category: "monster" | "altar";
     id: string;
   };
+  /** Keywords matched (for displaying type badges) */
+  keywords?: string;
 }
 
 /**
@@ -52,14 +62,17 @@ export async function searchMapEntities(
 
   const ftsQuery = searchQuery.trim() + "*";
 
-  const [monsters, npcs, zones, resources, chests, altars] = await Promise.all([
-    searchMonsters(ftsQuery, limit),
-    searchNpcs(ftsQuery, limit),
-    searchZones(ftsQuery, limit),
-    searchGatheringResources(ftsQuery, limit),
-    searchChests(ftsQuery, limit),
-    searchAltars(ftsQuery, limit),
-  ]);
+  const [monsters, npcs, zones, resources, chests, altars, crafting, portals] =
+    await Promise.all([
+      searchMonsters(ftsQuery, limit),
+      searchNpcs(ftsQuery, limit),
+      searchZones(ftsQuery, limit),
+      searchGatheringResources(ftsQuery, limit),
+      searchChests(ftsQuery, limit),
+      searchAltars(ftsQuery, limit),
+      searchCraftingStations(ftsQuery, limit),
+      searchPortals(ftsQuery, limit),
+    ]);
 
   return [
     ...monsters,
@@ -68,6 +81,8 @@ export async function searchMapEntities(
     ...resources,
     ...chests,
     ...altars,
+    ...crafting,
+    ...portals,
   ].slice(0, limit);
 }
 
@@ -77,6 +92,7 @@ interface MonsterSearchRow {
   is_boss: number;
   is_elite: number;
   is_hunt: number;
+  keywords: string | null;
   min_x: number | null;
   max_x: number | null;
   min_y: number | null;
@@ -107,6 +123,7 @@ async function searchMonsters(
       m.is_boss,
       m.is_elite,
       m.is_hunt,
+      m.keywords,
       -- Spawn positions (all spawn types have their own positions)
       MIN(ms.position_x) as min_x,
       MAX(ms.position_x) as max_x,
@@ -138,7 +155,7 @@ async function searchMonsters(
     LEFT JOIN altars a ON a.id = ms.source_altar_id
     LEFT JOIN zones az ON az.id = a.zone_id
     LEFT JOIN zones z ON z.id = ms.zone_id
-    WHERE mf.name MATCH ?
+    WHERE monsters_fts MATCH ?
     GROUP BY m.id
     ORDER BY rank
     LIMIT ?
@@ -184,6 +201,7 @@ async function searchMonsters(
           : r.redirect_type === "placeholder" && r.parent_monster_id
             ? { category: "monster" as const, id: r.parent_monster_id }
             : undefined,
+      keywords: r.keywords ?? undefined,
     };
   });
 }
@@ -192,6 +210,7 @@ interface NpcSearchRow {
   id: string;
   name: string;
   roles: string | null;
+  keywords: string | null;
   min_x: number | null;
   max_x: number | null;
   min_y: number | null;
@@ -211,6 +230,7 @@ async function searchNpcs(
       n.id,
       n.name,
       n.roles,
+      n.keywords,
       MIN(ns.position_x) as min_x,
       MAX(ns.position_x) as max_x,
       MIN(ns.position_y) as min_y,
@@ -224,7 +244,7 @@ async function searchNpcs(
       AND ns.position_x IS NOT NULL
       ${getZoneExclusionClause("ns.zone_id")}
     LEFT JOIN zones z ON z.id = ns.zone_id
-    WHERE nf.name MATCH ?
+    WHERE npcs_fts MATCH ?
     GROUP BY n.id
     ORDER BY rank
     LIMIT ?
@@ -255,6 +275,7 @@ async function searchNpcs(
       zoneId: r.zone_id ?? undefined,
       zoneName: r.zone_name ?? undefined,
       spawnCount: r.spawn_count > 1 ? r.spawn_count : undefined,
+      keywords: r.keywords ?? undefined,
     };
   });
 }
@@ -316,6 +337,7 @@ interface ResourceSearchRow {
   id: string;
   name: string;
   level: number;
+  keywords: string | null;
   min_x: number | null;
   max_x: number | null;
   min_y: number | null;
@@ -335,6 +357,7 @@ async function searchGatheringResources(
       gr.id,
       gr.name,
       gr.level,
+      gr.keywords,
       MIN(gs.position_x) as min_x,
       MAX(gs.position_x) as max_x,
       MIN(gs.position_y) as min_y,
@@ -348,7 +371,7 @@ async function searchGatheringResources(
       AND gs.position_x IS NOT NULL
       ${getZoneExclusionClause("gs.zone_id")}
     LEFT JOIN zones z ON z.id = gs.zone_id
-    WHERE grf.name MATCH ?
+    WHERE gathering_resources_fts MATCH ?
     GROUP BY gr.id
     ORDER BY rank
     LIMIT ?
@@ -373,6 +396,7 @@ async function searchGatheringResources(
     zoneName: r.zone_name ?? undefined,
     level: r.level,
     spawnCount: r.spawn_count > 1 ? r.spawn_count : undefined,
+    keywords: r.keywords ?? undefined,
   }));
 }
 
@@ -476,6 +500,149 @@ async function searchAltars(
       zoneId: r.zone_id ?? undefined,
       zoneName: r.zone_name ?? undefined,
       level: r.min_level_required,
+    };
+  });
+}
+
+interface CraftingStationSearchRow {
+  id: string;
+  name: string;
+  keywords: string | null;
+  is_cooking_oven: number;
+  position_x: number | null;
+  position_y: number | null;
+  zone_id: string | null;
+  zone_name: string | null;
+}
+
+async function searchCraftingStations(
+  ftsQuery: string,
+  limit: number,
+): Promise<MapSearchResult[]> {
+  // Search both crafting_stations and alchemy_tables
+  const [craftingRows, alchemyRows] = await Promise.all([
+    query<CraftingStationSearchRow>(
+      `
+      SELECT
+        cs.id,
+        cs.name,
+        cs.keywords,
+        cs.is_cooking_oven,
+        cs.position_x,
+        cs.position_y,
+        cs.zone_id,
+        cs.zone_name
+      FROM crafting_stations_fts csf
+      JOIN crafting_stations cs ON csf.rowid = cs.rowid
+      WHERE crafting_stations_fts MATCH ?
+        ${getZoneExclusionClause("cs.zone_id")}
+      ORDER BY rank
+      LIMIT ?
+    `,
+      [ftsQuery, limit],
+    ),
+    query<CraftingStationSearchRow>(
+      `
+      SELECT
+        at.id,
+        at.name,
+        at.keywords,
+        0 as is_cooking_oven,
+        at.position_x,
+        at.position_y,
+        at.zone_id,
+        at.zone_name
+      FROM alchemy_tables_fts atf
+      JOIN alchemy_tables at ON atf.rowid = at.rowid
+      WHERE alchemy_tables_fts MATCH ?
+        ${getZoneExclusionClause("at.zone_id")}
+      ORDER BY rank
+      LIMIT ?
+    `,
+      [ftsQuery, limit],
+    ),
+  ]);
+
+  const allRows = [...craftingRows, ...alchemyRows].slice(0, limit);
+
+  return allRows.map((r) => {
+    const y = r.position_y !== null ? -r.position_y : null;
+    const subcategory = r.keywords?.includes("alchemy")
+      ? "alchemy"
+      : r.is_cooking_oven
+        ? "cooking"
+        : "forge";
+
+    return {
+      id: r.id,
+      name: r.name,
+      category: "crafting" as const,
+      subcategory,
+      bounds:
+        r.position_x !== null && y !== null
+          ? { minX: r.position_x, maxX: r.position_x, minY: y, maxY: y }
+          : null,
+      zoneId: r.zone_id ?? undefined,
+      zoneName: r.zone_name ?? undefined,
+      keywords: r.keywords ?? undefined,
+    };
+  });
+}
+
+interface PortalSearchRow {
+  id: string;
+  keywords: string | null;
+  position_x: number | null;
+  position_y: number | null;
+  from_zone_id: string | null;
+  from_zone_name: string | null;
+  to_zone_id: string | null;
+  to_zone_name: string | null;
+}
+
+async function searchPortals(
+  ftsQuery: string,
+  limit: number,
+): Promise<MapSearchResult[]> {
+  const rows = await query<PortalSearchRow>(
+    `
+    SELECT
+      p.id,
+      p.keywords,
+      p.position_x,
+      p.position_y,
+      p.from_zone_id,
+      fz.name as from_zone_name,
+      p.to_zone_id,
+      tz.name as to_zone_name
+    FROM portals_fts pf
+    JOIN portals p ON pf.rowid = p.rowid
+    LEFT JOIN zones fz ON fz.id = p.from_zone_id
+    LEFT JOIN zones tz ON tz.id = p.to_zone_id
+    WHERE portals_fts MATCH ?
+      AND p.is_template = 0
+      ${getZoneExclusionClause("p.from_zone_id")}
+    ORDER BY rank
+    LIMIT ?
+  `,
+    [ftsQuery, limit],
+  );
+
+  return rows.map((r) => {
+    const y = r.position_y !== null ? -r.position_y : null;
+    const name = r.to_zone_name ? `Portal to ${r.to_zone_name}` : "Portal";
+
+    return {
+      id: r.id,
+      name,
+      category: "portal" as const,
+      bounds:
+        r.position_x !== null && y !== null
+          ? { minX: r.position_x, maxX: r.position_x, minY: y, maxY: y }
+          : null,
+      zoneId: r.from_zone_id ?? undefined,
+      zoneName: r.from_zone_name ?? undefined,
+      keywords: r.keywords ?? undefined,
     };
   });
 }

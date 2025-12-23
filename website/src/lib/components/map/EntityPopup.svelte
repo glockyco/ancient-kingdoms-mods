@@ -9,6 +9,7 @@
     ChestMapEntity,
     AltarMapEntity,
     GatheringMapEntity,
+    CraftingMapEntity,
   } from "$lib/types/map";
 
   interface Props {
@@ -61,12 +62,22 @@
       case "gathering_spark":
         return "Spark";
       case "alchemy_table":
-        return "Alchemy Table";
       case "crafting_station":
         return "Crafting Station";
       default:
         return "Unknown";
     }
+  }
+
+  function getDisplayName(entity: AnyMapEntity): string {
+    if (entity.type === "alchemy_table") {
+      return "Alchemy Table";
+    }
+    if (entity.type === "crafting_station") {
+      const crafting = entity as CraftingMapEntity;
+      return crafting.isCookingOven ? "Cooking Oven" : "Forge";
+    }
+    return entity.name;
   }
 
   const url = $derived(getEntityUrl(entity));
@@ -78,7 +89,7 @@
   <Card.Header class="pb-2">
     <div class="flex items-start justify-between gap-2">
       <div>
-        <Card.Title class="text-base">{entity.name}</Card.Title>
+        <Card.Title class="text-base">{getDisplayName(entity)}</Card.Title>
         <p class="text-sm text-muted-foreground">{getEntityTypeName(entity)}</p>
       </div>
       <Button variant="ghost" size="sm" onclick={onClose} class="h-6 w-6 p-0">

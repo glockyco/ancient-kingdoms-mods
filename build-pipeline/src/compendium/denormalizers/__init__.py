@@ -12,7 +12,15 @@ import sqlite3
 
 from rich.console import Console
 
-from compendium.denormalizers import experience, items, monsters, npcs, quests, skills
+from compendium.denormalizers import (
+    experience,
+    items,
+    monsters,
+    npcs,
+    quests,
+    search,
+    skills,
+)
 from compendium.redaction import RedactionConfig, load_redactions
 
 console = Console()
@@ -185,3 +193,6 @@ def run_all(conn: sqlite3.Connection) -> None:
 
     # Phase 8: Quest denormalizations (tooltips - display_type already done in Phase 2)
     quests.run_tooltips(conn)
+
+    # Phase 9: Search keywords for FTS5 indexing
+    search.run_all(conn)
