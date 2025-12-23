@@ -17,11 +17,13 @@
   import FlaskConical from "@lucide/svelte/icons/flask-conical";
   import ChefHat from "@lucide/svelte/icons/chef-hat";
   import MapSidebarSection from "./MapSidebarSection.svelte";
+  import ZoneFocusSelect from "./ZoneFocusSelect.svelte";
   import LevelFilter from "../LevelFilter.svelte";
   import type {
     LayerVisibility,
     LevelFilter as LevelFilterType,
     LevelRanges,
+    ZoneListItem,
   } from "$lib/types/map";
   import { LAYER_COLORS, ZONE_COLORS } from "$lib/map/config";
   import {
@@ -37,6 +39,12 @@
     onLevelFilterChange: (filter: LevelFilterType) => void;
     levelRanges: LevelRanges;
     onSearchClick?: () => void;
+    /** Zone list for zone focus dropdown */
+    zones?: ZoneListItem[];
+    /** Currently focused zone ID */
+    focusedZoneId?: string | null;
+    /** Callback when zone focus changes */
+    onZoneFocusChange?: (zoneId: string | null) => void;
     /** Persisted expanded sections */
     expandedSections?: string[];
     onExpandedSectionsChange?: (sections: string[]) => void;
@@ -49,6 +57,9 @@
     onLevelFilterChange,
     levelRanges,
     onSearchClick,
+    zones = [],
+    focusedZoneId = null,
+    onZoneFocusChange,
     expandedSections = [
       "monsters",
       "npcs",
@@ -340,6 +351,15 @@
         {navigator?.platform?.includes("Mac") ? "⌘" : "Ctrl"}K
       </kbd>
     </button>
+  {/if}
+
+  <!-- Zone Focus -->
+  {#if zones.length > 0 && onZoneFocusChange}
+    <ZoneFocusSelect
+      {zones}
+      value={focusedZoneId}
+      onchange={onZoneFocusChange}
+    />
   {/if}
 
   <!-- Monsters section -->

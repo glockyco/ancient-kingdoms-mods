@@ -241,3 +241,11 @@ export interface FilteredMapData {
   portalsWithDestinations: PortalMapEntity[];
   parentZones: ZoneBoundary[];
 }
+
+/**
+ * Zone list item for dropdown selection
+ */
+export interface ZoneListItem {
+  id: string;
+  name: string;
+}

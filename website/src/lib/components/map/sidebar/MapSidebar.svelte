@@ -28,6 +28,7 @@
     LayerVisibility,
     LevelFilter,
     LevelRanges,
+    ZoneListItem,
   } from "$lib/types/map";
   import { LAYER_COLORS } from "$lib/map/config";
   import {
@@ -45,6 +46,12 @@
     onLevelFilterChange: (filter: LevelFilter) => void;
     levelRanges: LevelRanges;
     onSearchClick: () => void;
+    /** Zone list for zone focus dropdown */
+    zones?: ZoneListItem[];
+    /** Currently focused zone ID */
+    focusedZoneId?: string | null;
+    /** Callback when zone focus changes */
+    onZoneFocusChange?: (zoneId: string | null) => void;
     /** Bindable: current sidebar width in pixels (0 on mobile) */
     sidebarWidth?: number;
   }
@@ -56,6 +63,9 @@
     onLevelFilterChange,
     levelRanges,
     onSearchClick,
+    zones = [],
+    focusedZoneId = null,
+    onZoneFocusChange,
     sidebarWidth = $bindable(SIDEBAR_WIDTH_EXPANDED),
   }: Props = $props();
 
@@ -256,6 +266,9 @@
             drawerOpen = false;
             onSearchClick();
           }}
+          {zones}
+          {focusedZoneId}
+          {onZoneFocusChange}
           {expandedSections}
           onExpandedSectionsChange={handleExpandedSectionsChange}
         />
@@ -415,6 +428,9 @@
           {onLevelFilterChange}
           {levelRanges}
           {onSearchClick}
+          {zones}
+          {focusedZoneId}
+          {onZoneFocusChange}
           {expandedSections}
           onExpandedSectionsChange={handleExpandedSectionsChange}
         />

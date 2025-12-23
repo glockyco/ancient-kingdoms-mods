@@ -4,7 +4,7 @@
   import MapTooltip from "$lib/components/map/MapTooltip.svelte";
   import EntityPopup from "$lib/components/map/EntityPopup.svelte";
   import MapSearch from "$lib/components/map/MapSearch.svelte";
-  import { loadAllMapEntities } from "$lib/queries/map";
+  import { loadAllMapEntities, loadZoneList } from "$lib/queries/map";
   import { createLayers, createFilteredData } from "$lib/map/layers";
   import {
     computeSelectionData,
@@ -12,6 +12,7 @@
     createEntityIndex,
     type EntityIndex,
   } from "$lib/map/selection";
+  import { createZoneFocusedData } from "$lib/map/zone-filter";
   import { INITIAL_VIEW_STATE } from "$lib/map/config";
   import { flyToBounds } from "$lib/map/flyto";
   import {
@@ -27,6 +28,7 @@
     MapEntityData,
     FilteredMapData,
     AnyMapEntity,
+    ZoneListItem,
   } from "$lib/types/map";
   import type { MapSearchResult } from "$lib/queries/map-search";
 
@@ -44,6 +46,10 @@
   let entityData = $state<MapEntityData | null>(null);
   let filteredData = $state<FilteredMapData | null>(null);
   let entityIndex = $state<EntityIndex | null>(null);
+
+  // Zone focus state
+  let zoneList = $state<ZoneListItem[]>([]);
+  let focusedZoneId = $state<string | null>(null);
 
   // Hover state
   let hoveredEntity = $state<AnyMapEntity | null>(null);
@@ -87,6 +93,13 @@
   // Only recomputed when selectionData changes
   let patrolPathData = $derived(computePatrolPathData(selectionData));
 
+  // Derived: combined data for layer rendering (stable array references)
+  let zoneFocusedData = $derived(
+    entityData && filteredData
+      ? createZoneFocusedData(filteredData, entityData)
+      : null,
+  );
+
   function handleVisibilityChange(newVisibility: LayerVisibility) {
     layerVisibility = newVisibility;
   }
@@ -95,12 +108,15 @@
     levelFilter = newFilter;
   }
 
+  function handleZoneFocusChange(zoneId: string | null) {
+    focusedZoneId = zoneId;
+  }
+
   function updateLayers() {
-    if (!deckInstance || !entityData || !filteredData || !deckModules) return;
+    if (!deckInstance || !zoneFocusedData || !deckModules) return;
 
     const layers = createLayers(
-      entityData,
-      filteredData,
+      zoneFocusedData,
       layerVisibility,
       deckModules,
       {
@@ -109,6 +125,7 @@
       },
       levelFilter,
       selectedPortalId,
+      focusedZoneId,
       selectionData,
       patrolPathData,
     );
@@ -231,6 +248,9 @@
           selectedEntityId = urlState.entity;
           selectedEntityType = urlState.etype;
         }
+        if (urlState.zone) {
+          focusedZoneId = urlState.zone;
+        }
         currentViewState = {
           x: urlState.x,
           y: urlState.y,
@@ -261,9 +281,14 @@
           };
         }
 
-        // Load entity data (only load once)
+        // Load entity data and zone list (only load once)
         if (!entityData) {
-          entityData = await loadAllMapEntities();
+          const [loadedEntityData, loadedZoneList] = await Promise.all([
+            loadAllMapEntities(),
+            loadZoneList(),
+          ]);
+          entityData = loadedEntityData;
+          zoneList = loadedZoneList;
           filteredData = createFilteredData(entityData);
           entityIndex = createEntityIndex(entityData);
 
@@ -303,10 +328,13 @@
           }
         }
 
-        // Create initial layers
-        const layers = createLayers(
-          entityData,
+        // Create initial layers with zone-focused data
+        const initialZoneFocusedData = createZoneFocusedData(
           filteredData!,
+          entityData,
+        );
+        const layers = createLayers(
+          initialZoneFocusedData,
           layerVisibility,
           deckModules,
           {
@@ -315,6 +343,7 @@
           },
           levelFilter,
           null,
+          focusedZoneId,
           selectionData,
           patrolPathData,
         );
@@ -374,17 +403,18 @@
     };
   }
 
-  // Re-render layers when visibility, level filter, or selection changes
+  // Re-render layers when visibility, level filter, selection, or zone focus changes
   $effect(() => {
     void layerVisibility;
     void levelFilter;
     void selectedPortalId;
     void selectionData; // Pre-computed, only changes when selection changes
     void patrolPathData; // Pre-computed, only changes when selectionData changes
+    void zoneFocusedData; // Pre-computed, only changes when focusedZoneId changes
     updateLayers();
   });
 
-  // Sync URL when view state, layer visibility, level filter, or selection changes
+  // Sync URL when view state, layer visibility, level filter, selection, or zone focus changes
   $effect(() => {
     if (!isLoading && entityData) {
       debouncedUpdateUrlState(
@@ -394,6 +424,7 @@
         entityData.levelRanges,
         selectedEntityId,
         selectedEntityType,
+        focusedZoneId,
       );
     }
   });
@@ -451,6 +482,9 @@
       onLevelFilterChange={handleLevelFilterChange}
       levelRanges={entityData.levelRanges}
       onSearchClick={() => (searchOpen = true)}
+      zones={zoneList}
+      {focusedZoneId}
+      onZoneFocusChange={handleZoneFocusChange}
     />
 
     {#if hoveredEntity}

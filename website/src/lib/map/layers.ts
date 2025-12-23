@@ -10,7 +10,10 @@ import type {
   CraftingMapEntity,
   ZoneBoundary,
   PortalMapEntity,
+  ChestMapEntity,
+  AltarMapEntity,
 } from "$lib/types/map";
+import type { ZoneFocusedData } from "./zone-filter";
 import { isAnyNpcTypeVisible } from "./visibility";
 import {
   LAYER_COLORS,
@@ -178,18 +181,20 @@ function createPatrolPathLayers(
 /**
  * Create all deck.gl layers (optimized: uses pre-filtered data, visible prop, updateTriggers)
  *
+ * @param filtered - Combined filtered data (includes all entity arrays)
+ * @param focusedZoneId - Zone ID to filter by (null = show all zones)
  * @param selectionData - Pre-computed array of entities to highlight (use EMPTY_SELECTION when none)
  * @param patrolPathData - Pre-computed patrol path data (use EMPTY_PATROL_DATA when none)
  */
 export function createLayers(
-  data: MapEntityData,
-  filtered: FilteredMapData,
+  filtered: ZoneFocusedData,
   visibility: LayerVisibility,
   modules: DeckModules,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   callbacks: { onHover: (info: any) => void; onClick: (info: any) => void },
   levelFilter: LevelFilter,
   selectedPortalId: string | null,
+  focusedZoneId: string | null,
   selectionData: AnyMapEntity[] = EMPTY_SELECTION,
   patrolPathData: PatrolPathData = EMPTY_PATROL_DATA,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -197,8 +202,15 @@ export function createLayers(
   const { ScatterplotLayer, PolygonLayer, LineLayer, DataFilterExtension } =
     modules;
 
-  // Shared extension instance for level filtering
-  const dataFilterExt = new DataFilterExtension({ filterSize: 1 });
+  // Shared extension instances for GPU filtering
+  // filterSize: 1 for zone-only filtering
+  const zoneFilterExt = new DataFilterExtension({ filterSize: 1 });
+  // filterSize: 2 for level+zone filtering (monsters, gathering)
+  const levelZoneFilterExt = new DataFilterExtension({ filterSize: 2 });
+
+  // Helper to check if entity is in focused zone (or if no zone is focused)
+  const isInZone = (zoneId: string): number =>
+    !focusedZoneId || zoneId === focusedZoneId ? 1 : 0;
 
   // Background data (static, never changes)
   const backgroundData = [
@@ -237,12 +249,18 @@ export function createLayers(
       filled: true,
       pickable: true,
       onHover: callbacks.onHover,
+      extensions: [zoneFilterExt],
+      getFilterValue: (d: ZoneBoundary) => isInZone(d.zoneId),
+      filterRange: [1, 1],
+      updateTriggers: {
+        getFilterValue: focusedZoneId,
+      },
     }),
 
     // Sub-zone boundaries
     new PolygonLayer({
       id: "sub-zones",
-      data: data.subZones,
+      data: filtered.subZones,
       visible: visibility.subZones,
       getPolygon: (d: ZoneBoundary) => d.polygon,
       getFillColor: ZONE_COLORS.subZone.fill,
@@ -253,9 +271,15 @@ export function createLayers(
       filled: true,
       pickable: true,
       onHover: callbacks.onHover,
+      extensions: [zoneFilterExt],
+      getFilterValue: (d: ZoneBoundary) => isInZone(d.zoneId),
+      filterRange: [1, 1],
+      updateTriggers: {
+        getFilterValue: focusedZoneId,
+      },
     }),
 
-    // Gathering plants (GPU-filtered by tier)
+    // Gathering plants (GPU-filtered by tier and zone)
     new ScatterplotLayer({
       id: "gathering-plants",
       data: filtered.plants,
@@ -269,10 +293,14 @@ export function createLayers(
       pickable: true,
       onHover: callbacks.onHover,
       onClick: callbacks.onClick,
-      extensions: [dataFilterExt],
-      getFilterValue: (d: GatheringMapEntity) => d.level,
-      filterRange: [levelFilter.gatheringMin, levelFilter.gatheringMax],
+      extensions: [levelZoneFilterExt],
+      getFilterValue: (d: GatheringMapEntity) => [d.level, isInZone(d.zoneId)],
+      filterRange: [
+        [levelFilter.gatheringMin, levelFilter.gatheringMax],
+        [1, 1],
+      ],
       updateTriggers: {
+        getFilterValue: focusedZoneId,
         filterRange: [levelFilter.gatheringMin, levelFilter.gatheringMax],
       },
     }),
@@ -291,10 +319,14 @@ export function createLayers(
       pickable: true,
       onHover: callbacks.onHover,
       onClick: callbacks.onClick,
-      extensions: [dataFilterExt],
-      getFilterValue: (d: GatheringMapEntity) => d.level,
-      filterRange: [levelFilter.gatheringMin, levelFilter.gatheringMax],
+      extensions: [levelZoneFilterExt],
+      getFilterValue: (d: GatheringMapEntity) => [d.level, isInZone(d.zoneId)],
+      filterRange: [
+        [levelFilter.gatheringMin, levelFilter.gatheringMax],
+        [1, 1],
+      ],
       updateTriggers: {
+        getFilterValue: focusedZoneId,
         filterRange: [levelFilter.gatheringMin, levelFilter.gatheringMax],
       },
     }),
@@ -313,10 +345,14 @@ export function createLayers(
       pickable: true,
       onHover: callbacks.onHover,
       onClick: callbacks.onClick,
-      extensions: [dataFilterExt],
-      getFilterValue: (d: GatheringMapEntity) => d.level,
-      filterRange: [levelFilter.gatheringMin, levelFilter.gatheringMax],
+      extensions: [levelZoneFilterExt],
+      getFilterValue: (d: GatheringMapEntity) => [d.level, isInZone(d.zoneId)],
+      filterRange: [
+        [levelFilter.gatheringMin, levelFilter.gatheringMax],
+        [1, 1],
+      ],
       updateTriggers: {
+        getFilterValue: focusedZoneId,
         filterRange: [levelFilter.gatheringMin, levelFilter.gatheringMax],
       },
     }),
@@ -335,6 +371,12 @@ export function createLayers(
       pickable: true,
       onHover: callbacks.onHover,
       onClick: callbacks.onClick,
+      extensions: [zoneFilterExt],
+      getFilterValue: (d: CraftingMapEntity) => isInZone(d.zoneId),
+      filterRange: [1, 1],
+      updateTriggers: {
+        getFilterValue: focusedZoneId,
+      },
     }),
 
     // Forges (crafting stations that are not cooking ovens)
@@ -351,6 +393,12 @@ export function createLayers(
       pickable: true,
       onHover: callbacks.onHover,
       onClick: callbacks.onClick,
+      extensions: [zoneFilterExt],
+      getFilterValue: (d: CraftingMapEntity) => isInZone(d.zoneId),
+      filterRange: [1, 1],
+      updateTriggers: {
+        getFilterValue: focusedZoneId,
+      },
     }),
 
     // Cooking Ovens
@@ -367,14 +415,20 @@ export function createLayers(
       pickable: true,
       onHover: callbacks.onHover,
       onClick: callbacks.onClick,
+      extensions: [zoneFilterExt],
+      getFilterValue: (d: CraftingMapEntity) => isInZone(d.zoneId),
+      filterRange: [1, 1],
+      updateTriggers: {
+        getFilterValue: focusedZoneId,
+      },
     }),
 
     // Chests
     new ScatterplotLayer({
       id: "chests",
-      data: data.chests,
+      data: filtered.chests,
       visible: visibility.chests,
-      getPosition: (d: AnyMapEntity) => d.position,
+      getPosition: (d: ChestMapEntity) => d.position,
       getFillColor: LAYER_COLORS.chest,
       getRadius: LAYER_RADII.chest,
       radiusUnits: "pixels",
@@ -383,14 +437,20 @@ export function createLayers(
       pickable: true,
       onHover: callbacks.onHover,
       onClick: callbacks.onClick,
+      extensions: [zoneFilterExt],
+      getFilterValue: (d: ChestMapEntity) => isInZone(d.zoneId),
+      filterRange: [1, 1],
+      updateTriggers: {
+        getFilterValue: focusedZoneId,
+      },
     }),
 
     // Altars
     new ScatterplotLayer({
       id: "altars",
-      data: data.altars,
+      data: filtered.altars,
       visible: visibility.altars,
-      getPosition: (d: AnyMapEntity) => d.position,
+      getPosition: (d: AltarMapEntity) => d.position,
       getFillColor: LAYER_COLORS.altar,
       getRadius: LAYER_RADII.altar,
       radiusUnits: "pixels",
@@ -399,13 +459,20 @@ export function createLayers(
       pickable: true,
       onHover: callbacks.onHover,
       onClick: callbacks.onClick,
+      extensions: [zoneFilterExt],
+      getFilterValue: (d: AltarMapEntity) => isInZone(d.zoneId),
+      filterRange: [1, 1],
+      updateTriggers: {
+        getFilterValue: focusedZoneId,
+      },
     }),
 
     // Portal connection lines (rendered first, below markers)
+    // Show if EITHER source or destination is in focused zone
     new LineLayer({
       id: "portal-arcs",
       data: filtered.portalsWithDestinations,
-      visible: visibility.portalArcs,
+      visible: visibility.portals,
       getSourcePosition: (d: PortalMapEntity) => d.position,
       getTargetPosition: (d: PortalMapEntity) => d.destination,
       getColor: (d: PortalMapEntity) =>
@@ -417,18 +484,28 @@ export function createLayers(
       pickable: true,
       onHover: callbacks.onHover,
       onClick: callbacks.onClick,
+      extensions: [zoneFilterExt],
+      getFilterValue: (d: PortalMapEntity) =>
+        !focusedZoneId ||
+        d.zoneId === focusedZoneId ||
+        d.destinationZoneId === focusedZoneId
+          ? 1
+          : 0,
+      filterRange: [1, 1],
       updateTriggers: {
         getColor: selectedPortalId,
         getWidth: selectedPortalId,
+        getFilterValue: focusedZoneId,
       },
     }),
 
     // Portal entry points - white fill with green stroke
+    // Show if portal is IN zone OR leads TO zone
     new ScatterplotLayer({
       id: "portals",
-      data: data.portals,
+      data: filtered.portals,
       visible: visibility.portals,
-      getPosition: (d: AnyMapEntity) => d.position,
+      getPosition: (d: PortalMapEntity) => d.position,
       filled: true,
       stroked: true,
       getFillColor: [255, 255, 255, 255] as [number, number, number, number],
@@ -442,13 +519,25 @@ export function createLayers(
       pickable: true,
       onHover: callbacks.onHover,
       onClick: callbacks.onClick,
+      extensions: [zoneFilterExt],
+      getFilterValue: (d: PortalMapEntity) =>
+        !focusedZoneId ||
+        d.zoneId === focusedZoneId ||
+        d.destinationZoneId === focusedZoneId
+          ? 1
+          : 0,
+      filterRange: [1, 1],
+      updateTriggers: {
+        getFilterValue: focusedZoneId,
+      },
     }),
 
     // Portal destination markers - dark gray fill with green stroke
+    // Show if EITHER source or destination is in focused zone
     new ScatterplotLayer({
       id: "portal-destinations",
       data: filtered.portalsWithDestinations,
-      visible: visibility.portalArcs,
+      visible: visibility.portals,
       getPosition: (d: PortalMapEntity) => d.destination,
       filled: true,
       stroked: true,
@@ -467,17 +556,26 @@ export function createLayers(
       pickable: true,
       onHover: callbacks.onHover,
       onClick: callbacks.onClick,
+      extensions: [zoneFilterExt],
+      getFilterValue: (d: PortalMapEntity) =>
+        !focusedZoneId ||
+        d.zoneId === focusedZoneId ||
+        d.destinationZoneId === focusedZoneId
+          ? 1
+          : 0,
+      filterRange: [1, 1],
       updateTriggers: {
         getLineColor: selectedPortalId,
         getRadius: selectedPortalId,
         getLineWidth: selectedPortalId,
+        getFilterValue: focusedZoneId,
       },
     }),
 
     // Patrol path layers (rendered below monsters so paths don't obscure them)
     ...createPatrolPathLayers(patrolPathData, ScatterplotLayer, LineLayer),
 
-    // Creatures (regular monsters, not boss/elite/hunt) - GPU-filtered by level
+    // Creatures (regular monsters, not boss/elite/hunt) - GPU-filtered by level and zone
     new ScatterplotLayer({
       id: "creatures",
       data: filtered.creatures,
@@ -491,15 +589,19 @@ export function createLayers(
       pickable: true,
       onHover: callbacks.onHover,
       onClick: callbacks.onClick,
-      extensions: [dataFilterExt],
-      getFilterValue: (d: MonsterMapEntity) => d.level,
-      filterRange: [levelFilter.monsterMin, levelFilter.monsterMax],
+      extensions: [levelZoneFilterExt],
+      getFilterValue: (d: MonsterMapEntity) => [d.level, isInZone(d.zoneId)],
+      filterRange: [
+        [levelFilter.monsterMin, levelFilter.monsterMax],
+        [1, 1],
+      ],
       updateTriggers: {
+        getFilterValue: focusedZoneId,
         filterRange: [levelFilter.monsterMin, levelFilter.monsterMax],
       },
     }),
 
-    // Hunts (huntable animals) - GPU-filtered by level
+    // Hunts (huntable animals) - GPU-filtered by level and zone
     new ScatterplotLayer({
       id: "hunts",
       data: filtered.hunts,
@@ -513,10 +615,14 @@ export function createLayers(
       pickable: true,
       onHover: callbacks.onHover,
       onClick: callbacks.onClick,
-      extensions: [dataFilterExt],
-      getFilterValue: (d: MonsterMapEntity) => d.level,
-      filterRange: [levelFilter.monsterMin, levelFilter.monsterMax],
+      extensions: [levelZoneFilterExt],
+      getFilterValue: (d: MonsterMapEntity) => [d.level, isInZone(d.zoneId)],
+      filterRange: [
+        [levelFilter.monsterMin, levelFilter.monsterMax],
+        [1, 1],
+      ],
       updateTriggers: {
+        getFilterValue: focusedZoneId,
         filterRange: [levelFilter.monsterMin, levelFilter.monsterMax],
       },
     }),
@@ -533,10 +639,14 @@ export function createLayers(
       radiusMinPixels: 5,
       radiusMaxPixels: 14,
       pickable: false,
-      extensions: [dataFilterExt],
-      getFilterValue: (d: MonsterMapEntity) => d.level,
-      filterRange: [levelFilter.monsterMin, levelFilter.monsterMax],
+      extensions: [levelZoneFilterExt],
+      getFilterValue: (d: MonsterMapEntity) => [d.level, isInZone(d.zoneId)],
+      filterRange: [
+        [levelFilter.monsterMin, levelFilter.monsterMax],
+        [1, 1],
+      ],
       updateTriggers: {
+        getFilterValue: focusedZoneId,
         filterRange: [levelFilter.monsterMin, levelFilter.monsterMax],
       },
     }),
@@ -555,10 +665,14 @@ export function createLayers(
       pickable: true,
       onHover: callbacks.onHover,
       onClick: callbacks.onClick,
-      extensions: [dataFilterExt],
-      getFilterValue: (d: MonsterMapEntity) => d.level,
-      filterRange: [levelFilter.monsterMin, levelFilter.monsterMax],
+      extensions: [levelZoneFilterExt],
+      getFilterValue: (d: MonsterMapEntity) => [d.level, isInZone(d.zoneId)],
+      filterRange: [
+        [levelFilter.monsterMin, levelFilter.monsterMax],
+        [1, 1],
+      ],
       updateTriggers: {
+        getFilterValue: focusedZoneId,
         filterRange: [levelFilter.monsterMin, levelFilter.monsterMax],
       },
     }),
@@ -575,10 +689,14 @@ export function createLayers(
       radiusMinPixels: 7,
       radiusMaxPixels: 19,
       pickable: false,
-      extensions: [dataFilterExt],
-      getFilterValue: (d: MonsterMapEntity) => d.level,
-      filterRange: [levelFilter.monsterMin, levelFilter.monsterMax],
+      extensions: [levelZoneFilterExt],
+      getFilterValue: (d: MonsterMapEntity) => [d.level, isInZone(d.zoneId)],
+      filterRange: [
+        [levelFilter.monsterMin, levelFilter.monsterMax],
+        [1, 1],
+      ],
       updateTriggers: {
+        getFilterValue: focusedZoneId,
         filterRange: [levelFilter.monsterMin, levelFilter.monsterMax],
       },
     }),
@@ -597,19 +715,23 @@ export function createLayers(
       pickable: true,
       onHover: callbacks.onHover,
       onClick: callbacks.onClick,
-      extensions: [dataFilterExt],
-      getFilterValue: (d: MonsterMapEntity) => d.level,
-      filterRange: [levelFilter.monsterMin, levelFilter.monsterMax],
+      extensions: [levelZoneFilterExt],
+      getFilterValue: (d: MonsterMapEntity) => [d.level, isInZone(d.zoneId)],
+      filterRange: [
+        [levelFilter.monsterMin, levelFilter.monsterMax],
+        [1, 1],
+      ],
       updateTriggers: {
+        getFilterValue: focusedZoneId,
         filterRange: [levelFilter.monsterMin, levelFilter.monsterMax],
       },
     }),
 
-    // NPCs (single layer, filtered by visible role types using OR logic)
-    // An NPC is visible if ANY of its roles match an enabled role toggle
+    // NPCs (single layer, filtered by visible role types and zone using OR logic)
+    // An NPC is visible if ANY of its roles match an enabled role toggle AND it's in the focused zone
     new ScatterplotLayer({
       id: "npcs",
-      data: data.npcs,
+      data: filtered.npcs,
       visible: isAnyNpcTypeVisible(visibility),
       getPosition: (d: NpcMapEntity) => d.position,
       getFillColor: LAYER_COLORS.npc,
@@ -620,32 +742,42 @@ export function createLayers(
       pickable: true,
       onHover: callbacks.onHover,
       onClick: callbacks.onClick,
-      // GPU-based filtering: return 1 if NPC matches any enabled role, 0 otherwise
-      extensions: [dataFilterExt],
+      // GPU-based filtering: [roleMatch, zoneMatch]
+      extensions: [levelZoneFilterExt],
       getFilterValue: (d: NpcMapEntity) => {
         // Check each role against visibility toggles
-        if (visibility.npcVendors && d.isVendor) return 1;
-        if (visibility.npcQuestGivers && d.isQuestGiver) return 1;
-        if (visibility.npcRepair && d.canRepair) return 1;
-        if (visibility.npcBanks && d.isBank) return 1;
-        if (visibility.npcInnkeepers && d.isInnkeeper) return 1;
-        if (visibility.npcSoulBinders && d.isSoulBinder) return 1;
-        if (visibility.npcSkillTrainers && d.isSkillTrainer) return 1;
-        if (visibility.npcVeteranTrainers && d.isVeteranTrainer) return 1;
-        if (visibility.npcAttributeReset && d.isAttributeReset) return 1;
-        if (visibility.npcFactionVendors && d.isFactionVendor) return 1;
-        if (visibility.npcEssenceTraders && d.isEssenceTrader) return 1;
-        if (visibility.npcAugmenters && d.isAugmenter) return 1;
-        if (visibility.npcPriestesses && d.isPriestess) return 1;
-        if (visibility.npcRenewalSages && d.isRenewalSage) return 1;
-        if (visibility.npcAdventurerTasks && d.isAdventurerTaskgiver) return 1;
-        if (visibility.npcAdventurerVendors && d.isAdventurerVendor) return 1;
-        if (visibility.npcMercenaryRecruiters && d.isMercenaryRecruiter)
-          return 1;
-        if (visibility.npcGuards && d.isGuard) return 1;
-        return 0;
+        let roleMatch = 0;
+        if (visibility.npcVendors && d.isVendor) roleMatch = 1;
+        else if (visibility.npcQuestGivers && d.isQuestGiver) roleMatch = 1;
+        else if (visibility.npcRepair && d.canRepair) roleMatch = 1;
+        else if (visibility.npcBanks && d.isBank) roleMatch = 1;
+        else if (visibility.npcInnkeepers && d.isInnkeeper) roleMatch = 1;
+        else if (visibility.npcSoulBinders && d.isSoulBinder) roleMatch = 1;
+        else if (visibility.npcSkillTrainers && d.isSkillTrainer) roleMatch = 1;
+        else if (visibility.npcVeteranTrainers && d.isVeteranTrainer)
+          roleMatch = 1;
+        else if (visibility.npcAttributeReset && d.isAttributeReset)
+          roleMatch = 1;
+        else if (visibility.npcFactionVendors && d.isFactionVendor)
+          roleMatch = 1;
+        else if (visibility.npcEssenceTraders && d.isEssenceTrader)
+          roleMatch = 1;
+        else if (visibility.npcAugmenters && d.isAugmenter) roleMatch = 1;
+        else if (visibility.npcPriestesses && d.isPriestess) roleMatch = 1;
+        else if (visibility.npcRenewalSages && d.isRenewalSage) roleMatch = 1;
+        else if (visibility.npcAdventurerTasks && d.isAdventurerTaskgiver)
+          roleMatch = 1;
+        else if (visibility.npcAdventurerVendors && d.isAdventurerVendor)
+          roleMatch = 1;
+        else if (visibility.npcMercenaryRecruiters && d.isMercenaryRecruiter)
+          roleMatch = 1;
+        else if (visibility.npcGuards && d.isGuard) roleMatch = 1;
+        return [roleMatch, isInZone(d.zoneId)];
       },
-      filterRange: [1, 1], // Only show NPCs with filter value = 1
+      filterRange: [
+        [1, 1],
+        [1, 1],
+      ],
       updateTriggers: {
         getFilterValue: [
           visibility.npcVendors,
@@ -666,6 +798,7 @@ export function createLayers(
           visibility.npcAdventurerVendors,
           visibility.npcMercenaryRecruiters,
           visibility.npcGuards,
+          focusedZoneId,
         ],
       },
     }),

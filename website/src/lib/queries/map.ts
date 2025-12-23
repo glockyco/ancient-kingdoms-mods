@@ -11,6 +11,7 @@ import type {
   CraftingMapEntity,
   ZoneBoundary,
   LevelRanges,
+  ZoneListItem,
 } from "$lib/types/map";
 
 /**
@@ -530,5 +531,34 @@ async function loadZoneTriggers(): Promise<ZoneBoundary[]> {
       [r.bounds_max_x, -r.bounds_min_y],
       [r.bounds_min_x, -r.bounds_min_y],
     ] as [number, number][],
+  }));
+}
+
+interface ZoneRow {
+  id: string;
+  name: string;
+}
+
+/**
+ * Load all zones for the zone focus dropdown
+ */
+export async function loadZoneList(): Promise<ZoneListItem[]> {
+  const exclusionList =
+    EXCLUDED_ZONE_IDS.size > 0
+      ? Array.from(EXCLUDED_ZONE_IDS)
+          .map((id) => `'${id}'`)
+          .join(", ")
+      : null;
+
+  const rows = await query<ZoneRow>(`
+    SELECT id, name
+    FROM zones
+    ${exclusionList ? `WHERE id NOT IN (${exclusionList})` : ""}
+    ORDER BY name
+  `);
+
+  return rows.map((r) => ({
+    id: r.id,
+    name: r.name,
   }));
 }

@@ -27,6 +27,8 @@ export interface MapUrlState {
   entity?: string;
   /** Selected entity type (monster, npc, gathering, etc.) */
   etype?: string;
+  /** Focused zone ID for filtering content */
+  zone?: string;
 }
 
 /**
@@ -174,6 +176,11 @@ export function parseUrlState(): MapUrlState | null {
     state.etype = params.get("etype")!;
   }
 
+  // Parse zone focus
+  if (params.has("zone")) {
+    state.zone = params.get("zone")!;
+  }
+
   return state;
 }
 
@@ -187,6 +194,7 @@ export function updateUrlState(
   levelRanges?: LevelRanges,
   selectedEntityId?: string | null,
   selectedEntityType?: string | null,
+  focusedZoneId?: string | null,
 ): void {
   if (!browser) return;
 
@@ -230,6 +238,11 @@ export function updateUrlState(
   if (selectedEntityId && selectedEntityType) {
     params.set("entity", selectedEntityId);
     params.set("etype", selectedEntityType);
+  }
+
+  // Zone focus
+  if (focusedZoneId) {
+    params.set("zone", focusedZoneId);
   }
 
   const url = `${base}/map?${params.toString()}`;
@@ -305,6 +318,7 @@ export function debouncedUpdateUrlState(
   levelRanges?: LevelRanges,
   selectedEntityId?: string | null,
   selectedEntityType?: string | null,
+  focusedZoneId?: string | null,
   delay = 500,
 ): void {
   if (urlUpdateTimer) {
@@ -319,6 +333,7 @@ export function debouncedUpdateUrlState(
       levelRanges,
       selectedEntityId,
       selectedEntityType,
+      focusedZoneId,
     );
     urlUpdateTimer = null;
   }, delay);
