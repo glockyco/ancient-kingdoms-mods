@@ -24,7 +24,11 @@
     LevelRanges,
   } from "$lib/types/map";
   import { LAYER_COLORS, ZONE_COLORS } from "$lib/map/config";
-  import { toggleLayerVisibility } from "$lib/map/visibility";
+  import {
+    toggleLayerVisibility,
+    getToggleState,
+    setAllLayers,
+  } from "$lib/map/visibility";
 
   interface Props {
     visibility: LayerVisibility;
@@ -286,6 +290,22 @@
       : expandedSections.filter((s) => s !== section);
     onExpandedSectionsChange?.(newSections);
   }
+
+  // Extract keys from layer arrays for toggle state calculation
+  const monsterKeys = monsterLayers.map((l) => l.key);
+  const npcKeys = npcLayers.map((l) => l.key);
+  const interactableKeys = interactableLayers.map((l) => l.key);
+  const craftingKeys = craftingLayers.map((l) => l.key);
+  const gatheringKeys = gatheringLayers.map((l) => l.key);
+  const zoneKeys = zoneLayers.map((l) => l.key);
+
+  // Toggle all layers in a section (sets to opposite of "all visible" state)
+  function handleToggleAll(keys: (keyof LayerVisibility)[]) {
+    const state = getToggleState(visibility, keys);
+    // If all are on, turn all off; otherwise turn all on
+    const newValue = state !== "all";
+    onVisibilityChange(setAllLayers(visibility, keys, newValue));
+  }
 </script>
 
 {#snippet layerToggle(layer: LayerOption)}
@@ -328,6 +348,8 @@
     icon={Sword}
     expanded={isSectionExpanded("monsters")}
     onExpandedChange={(expanded) => handleSectionToggle("monsters", expanded)}
+    toggleState={getToggleState(visibility, monsterKeys)}
+    onToggleAll={() => handleToggleAll(monsterKeys)}
   >
     <div class="space-y-0.5">
       {#each monsterLayers as layer (layer.key)}
@@ -342,6 +364,8 @@
     icon={Users}
     expanded={isSectionExpanded("npcs")}
     onExpandedChange={(expanded) => handleSectionToggle("npcs", expanded)}
+    toggleState={getToggleState(visibility, npcKeys)}
+    onToggleAll={() => handleToggleAll(npcKeys)}
   >
     <div class="space-y-0.5">
       {#each npcLayers as layer (layer.key)}
@@ -357,6 +381,8 @@
     expanded={isSectionExpanded("interactables")}
     onExpandedChange={(expanded) =>
       handleSectionToggle("interactables", expanded)}
+    toggleState={getToggleState(visibility, interactableKeys)}
+    onToggleAll={() => handleToggleAll(interactableKeys)}
   >
     <div class="space-y-0.5">
       {#each interactableLayers as layer (layer.key)}
@@ -371,6 +397,8 @@
     icon={Hammer}
     expanded={isSectionExpanded("crafting")}
     onExpandedChange={(expanded) => handleSectionToggle("crafting", expanded)}
+    toggleState={getToggleState(visibility, craftingKeys)}
+    onToggleAll={() => handleToggleAll(craftingKeys)}
   >
     <div class="space-y-0.5">
       {#each craftingLayers as layer (layer.key)}
@@ -385,6 +413,8 @@
     icon={Leaf}
     expanded={isSectionExpanded("gathering")}
     onExpandedChange={(expanded) => handleSectionToggle("gathering", expanded)}
+    toggleState={getToggleState(visibility, gatheringKeys)}
+    onToggleAll={() => handleToggleAll(gatheringKeys)}
   >
     <div class="space-y-0.5">
       {#each gatheringLayers as layer (layer.key)}
@@ -399,6 +429,8 @@
     icon={MapPin}
     expanded={isSectionExpanded("zones")}
     onExpandedChange={(expanded) => handleSectionToggle("zones", expanded)}
+    toggleState={getToggleState(visibility, zoneKeys)}
+    onToggleAll={() => handleToggleAll(zoneKeys)}
   >
     <div class="space-y-0.5">
       {#each zoneLayers as layer (layer.key)}

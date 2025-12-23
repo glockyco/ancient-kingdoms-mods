@@ -108,3 +108,92 @@ export function toggleAllCraftingTypes(
     ...updates,
   };
 }
+
+/**
+ * Set all NPC types to a specific value
+ */
+export function setAllNpcTypes(
+  visibility: LayerVisibility,
+  value: boolean,
+): LayerVisibility {
+  const updates: Partial<LayerVisibility> = {};
+  for (const key of NPC_TYPE_KEYS) {
+    updates[key] = value;
+  }
+
+  return {
+    ...visibility,
+    ...updates,
+  };
+}
+
+/**
+ * Set all crafting types to a specific value
+ */
+export function setAllCraftingTypes(
+  visibility: LayerVisibility,
+  value: boolean,
+): LayerVisibility {
+  const updates: Partial<LayerVisibility> = {};
+  for (const key of CRAFTING_TYPE_KEYS) {
+    updates[key] = value;
+  }
+
+  return {
+    ...visibility,
+    ...updates,
+  };
+}
+
+/**
+ * Check if all layers in a list are visible
+ */
+export function areAllLayersVisible(
+  visibility: LayerVisibility,
+  keys: (keyof LayerVisibility)[],
+): boolean {
+  return keys.every((key) => visibility[key]);
+}
+
+/**
+ * Check if any layer in a list is visible
+ */
+export function isAnyLayerVisible(
+  visibility: LayerVisibility,
+  keys: (keyof LayerVisibility)[],
+): boolean {
+  return keys.some((key) => visibility[key]);
+}
+
+/**
+ * Get toggle state for a list of layers
+ */
+export function getToggleState(
+  visibility: LayerVisibility,
+  keys: (keyof LayerVisibility)[],
+): "all" | "some" | "none" {
+  const allVisible = areAllLayersVisible(visibility, keys);
+  if (allVisible) return "all";
+  const anyVisible = isAnyLayerVisible(visibility, keys);
+  if (anyVisible) return "some";
+  return "none";
+}
+
+/**
+ * Set all layers in a list to a specific value
+ */
+export function setAllLayers(
+  visibility: LayerVisibility,
+  keys: (keyof LayerVisibility)[],
+  value: boolean,
+): LayerVisibility {
+  const updates: Partial<LayerVisibility> = {};
+  for (const key of keys) {
+    updates[key] = value;
+  }
+
+  return {
+    ...visibility,
+    ...updates,
+  };
+}

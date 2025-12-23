@@ -10,6 +10,10 @@
     expanded?: boolean;
     /** Callback when expanded state changes */
     onExpandedChange?: (expanded: boolean) => void;
+    /** Toggle state: "all" = all checked, "some" = indeterminate, "none" = none checked */
+    toggleState?: "all" | "some" | "none";
+    /** Callback when toggle is clicked */
+    onToggleAll?: () => void;
     /** Children to render inside the section */
     children: import("svelte").Snippet;
   }
@@ -20,6 +24,8 @@
     iconColor,
     expanded = $bindable(true),
     onExpandedChange,
+    toggleState,
+    onToggleAll,
     children,
   }: Props = $props();
 
@@ -28,6 +34,11 @@
   function toggle() {
     expanded = !expanded;
     onExpandedChange?.(expanded);
+  }
+
+  function handleToggleClick(e: MouseEvent) {
+    e.stopPropagation();
+    onToggleAll?.();
   }
 </script>
 
@@ -40,6 +51,16 @@
     onclick={toggle}
   >
     <div class="flex items-center gap-2">
+      {#if toggleState !== undefined && onToggleAll}
+        <input
+          type="checkbox"
+          checked={toggleState === "all"}
+          indeterminate={toggleState === "some"}
+          onclick={handleToggleClick}
+          class="h-4 w-4 rounded border-border accent-primary cursor-pointer"
+          aria-label="Toggle all {title.toLowerCase()}"
+        />
+      {/if}
       {#if Icon}
         <Icon
           class="h-4 w-4"
