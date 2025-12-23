@@ -121,7 +121,20 @@ function createPatrolPathLayers(
   }
 
   return [
-    // Patrol path lines
+    // Spawn-to-patrol connections (dimmer, rendered first/below)
+    new LineLayer({
+      id: "patrol-spawn-connections",
+      data: patrolData.spawnConnections,
+      visible: true,
+      getSourcePosition: (d: PatrolPathData["spawnConnections"][0]) => d.source,
+      getTargetPosition: (d: PatrolPathData["spawnConnections"][0]) => d.target,
+      getColor: PATROL_COLORS.spawnConnection,
+      getWidth: 2,
+      widthUnits: "pixels",
+      pickable: false,
+    }),
+
+    // Patrol path lines (closed loop)
     new LineLayer({
       id: "patrol-paths",
       data: patrolData.segments,

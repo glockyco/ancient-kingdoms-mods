@@ -13,8 +13,15 @@ export const EMPTY_SELECTION: AnyMapEntity[] = [];
  * Pre-computed patrol path data for rendering
  */
 export interface PatrolPathData {
+  /** Segments connecting patrol waypoints (closed loop) */
   segments: Array<{ source: [number, number]; target: [number, number] }>;
+  /** All patrol waypoints */
   waypoints: [number, number][];
+  /** Segments from spawn position to first waypoint */
+  spawnConnections: Array<{
+    source: [number, number];
+    target: [number, number];
+  }>;
 }
 
 /**
@@ -23,6 +30,7 @@ export interface PatrolPathData {
 export const EMPTY_PATROL_DATA: PatrolPathData = {
   segments: [],
   waypoints: [],
+  spawnConnections: [],
 };
 
 /**
@@ -123,9 +131,17 @@ export function computePatrolPathData(
   // Build line segments for all patrol paths (closed loops)
   const segments: PatrolPathData["segments"] = [];
   const waypoints: [number, number][] = [];
+  const spawnConnections: PatrolPathData["spawnConnections"] = [];
 
   for (const monster of patrollingMonsters) {
     const wp = monster.patrolWaypoints!;
+
+    // Add spawn-to-first-waypoint connection
+    spawnConnections.push({
+      source: monster.position,
+      target: wp[0],
+    });
+
     // Add segments connecting waypoints in order
     for (let i = 0; i < wp.length; i++) {
       const next = (i + 1) % wp.length; // Loop back to first
@@ -137,7 +153,7 @@ export function computePatrolPathData(
     }
   }
 
-  return { segments, waypoints };
+  return { segments, waypoints, spawnConnections };
 }
 
 /**

@@ -103,4 +103,5 @@ export const HIGHLIGHT_COLORS = {
 export const PATROL_COLORS = {
   path: [250, 204, 21, 200] as [number, number, number, number], // yellow-400
   waypoint: [250, 204, 21, 255] as [number, number, number, number], // yellow-400 solid
+  spawnConnection: [250, 204, 21, 100] as [number, number, number, number], // yellow-400 dimmer
 } as const;
