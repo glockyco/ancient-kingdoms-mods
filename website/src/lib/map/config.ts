@@ -96,3 +96,11 @@ export const HIGHLIGHT_COLORS = {
   ring: [255, 255, 255, 255] as [number, number, number, number], // white
   fill: [255, 255, 255, 60] as [number, number, number, number], // white with low alpha
 } as const;
+
+/**
+ * Patrol path colors
+ */
+export const PATROL_COLORS = {
+  path: [250, 204, 21, 200] as [number, number, number, number], // yellow-400
+  waypoint: [250, 204, 21, 255] as [number, number, number, number], // yellow-400 solid
+} as const;

@@ -35,6 +35,8 @@ export interface MonsterMapEntity extends MapEntity {
   level: number;
   isBoss: boolean;
   isElite: boolean;
+  isPatrolling: boolean;
+  patrolWaypoints: [number, number][] | null;
 }
 
 /**

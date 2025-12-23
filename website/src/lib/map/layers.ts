@@ -17,8 +17,13 @@ import {
   ZONE_COLORS,
   ARC_COLORS,
   HIGHLIGHT_COLORS,
+  PATROL_COLORS,
 } from "./config";
-import { EMPTY_SELECTION } from "./selection";
+import {
+  EMPTY_SELECTION,
+  EMPTY_PATROL_DATA,
+  type PatrolPathData,
+} from "./selection";
 
 // Type for deck.gl layer constructor (we use any since deck.gl types are complex)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -102,9 +107,54 @@ function calculateParentZoneBounds(data: MapEntityData): ZoneBoundary[] {
 }
 
 /**
+ * Create patrol path layers from pre-computed data.
+ * Data should be computed via $derived using computePatrolPathData().
+ */
+function createPatrolPathLayers(
+  patrolData: PatrolPathData,
+  ScatterplotLayer: LayerConstructor,
+  LineLayer: LayerConstructor,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): any[] {
+  if (patrolData === EMPTY_PATROL_DATA || patrolData.segments.length === 0) {
+    return [];
+  }
+
+  return [
+    // Patrol path lines
+    new LineLayer({
+      id: "patrol-paths",
+      data: patrolData.segments,
+      visible: true,
+      getSourcePosition: (d: PatrolPathData["segments"][0]) => d.source,
+      getTargetPosition: (d: PatrolPathData["segments"][0]) => d.target,
+      getColor: PATROL_COLORS.path,
+      getWidth: 2,
+      widthUnits: "pixels",
+      pickable: false,
+    }),
+
+    // Patrol waypoint markers
+    new ScatterplotLayer({
+      id: "patrol-waypoints",
+      data: patrolData.waypoints,
+      visible: true,
+      getPosition: (d: [number, number]) => d,
+      getFillColor: PATROL_COLORS.waypoint,
+      getRadius: 3,
+      radiusUnits: "pixels",
+      radiusMinPixels: 2,
+      radiusMaxPixels: 6,
+      pickable: false,
+    }),
+  ];
+}
+
+/**
  * Create all deck.gl layers (optimized: uses pre-filtered data, visible prop, updateTriggers)
  *
  * @param selectionData - Pre-computed array of entities to highlight (use EMPTY_SELECTION when none)
+ * @param patrolPathData - Pre-computed patrol path data (use EMPTY_PATROL_DATA when none)
  */
 export function createLayers(
   data: MapEntityData,
@@ -116,6 +166,7 @@ export function createLayers(
   levelFilter: LevelFilter,
   selectedPortalId: string | null,
   selectionData: AnyMapEntity[] = EMPTY_SELECTION,
+  patrolPathData: PatrolPathData = EMPTY_PATROL_DATA,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): any[] {
   const { ScatterplotLayer, PolygonLayer, LineLayer, DataFilterExtension } =
@@ -365,6 +416,9 @@ export function createLayers(
         getLineWidth: selectedPortalId,
       },
     }),
+
+    // Patrol path layers (rendered below monsters so paths don't obscure them)
+    ...createPatrolPathLayers(patrolPathData, ScatterplotLayer, LineLayer),
 
     // Regular monsters (GPU-filtered by level)
     new ScatterplotLayer({

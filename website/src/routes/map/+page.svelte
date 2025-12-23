@@ -6,7 +6,12 @@
   import MapSearch from "$lib/components/map/MapSearch.svelte";
   import { loadAllMapEntities } from "$lib/queries/map";
   import { createLayers, createFilteredData } from "$lib/map/layers";
-  import { computeSelectionData } from "$lib/map/selection";
+  import {
+    computeSelectionData,
+    computePatrolPathData,
+    createEntityIndex,
+    type EntityIndex,
+  } from "$lib/map/selection";
   import { INITIAL_VIEW_STATE } from "$lib/map/config";
   import { flyToBounds } from "$lib/map/flyto";
   import {
@@ -37,6 +42,7 @@
   // Entity data (loaded once, cached)
   let entityData = $state<MapEntityData | null>(null);
   let filteredData = $state<FilteredMapData | null>(null);
+  let entityIndex = $state<EntityIndex | null>(null);
 
   // Hover state
   let hoveredEntity = $state<AnyMapEntity | null>(null);
@@ -85,11 +91,15 @@
     selectedEntity?.type === "portal" ? selectedEntity.id : null,
   );
 
-  // Derived: pre-computed selection data for highlighting
+  // Derived: pre-computed selection data for highlighting (O(1) lookup via index)
   // This is only recomputed when selection changes, not on every visibility toggle
   let selectionData = $derived(
-    computeSelectionData(entityData, selectedEntityType, selectedEntityId),
+    computeSelectionData(entityIndex, selectedEntityType, selectedEntityId),
   );
+
+  // Derived: pre-computed patrol path data for patrolling monsters
+  // Only recomputed when selectionData changes
+  let patrolPathData = $derived(computePatrolPathData(selectionData));
 
   function handleVisibilityChange(newVisibility: LayerVisibility) {
     layerVisibility = newVisibility;
@@ -114,6 +124,7 @@
       levelFilter,
       selectedPortalId,
       selectionData,
+      patrolPathData,
     );
 
     deckInstance.setProps({ layers });
@@ -268,6 +279,7 @@
         if (!entityData) {
           entityData = await loadAllMapEntities();
           filteredData = createFilteredData(entityData);
+          entityIndex = createEntityIndex(entityData);
 
           // Set level filter to data-derived defaults if not specified in URL
           if (!urlState?.levelFilter) {
@@ -317,6 +329,7 @@
           levelFilter,
           null,
           selectionData,
+          patrolPathData,
         );
 
         // Determine initial view state
@@ -380,6 +393,7 @@
     void levelFilter;
     void selectedPortalId;
     void selectionData; // Pre-computed, only changes when selection changes
+    void patrolPathData; // Pre-computed, only changes when selectionData changes
     updateLayers();
   });
 

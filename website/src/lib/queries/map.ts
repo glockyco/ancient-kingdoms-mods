@@ -93,6 +93,8 @@ interface MonsterSpawnRow {
   level: number;
   is_boss: number;
   is_elite: number;
+  is_patrolling: number;
+  patrol_waypoints: string | null;
 }
 
 async function loadMonsterSpawns(): Promise<MonsterMapEntity[]> {
@@ -109,7 +111,9 @@ async function loadMonsterSpawns(): Promise<MonsterMapEntity[]> {
       z.name as zone_name,
       COALESCE(ms.level, m.level) as level,
       m.is_boss,
-      m.is_elite
+      m.is_elite,
+      ms.is_patrolling,
+      ms.patrol_waypoints
     FROM monster_spawns ms
     JOIN monsters m ON m.id = ms.monster_id
     JOIN zones z ON z.id = ms.zone_id
@@ -119,17 +123,37 @@ async function loadMonsterSpawns(): Promise<MonsterMapEntity[]> {
       ${getZoneExclusionClause("ms.zone_id")}
   `);
 
-  return rows.map((r) => ({
-    id: r.monster_id,
-    type: r.is_boss ? "boss" : r.is_elite ? "elite" : "monster",
-    name: r.name,
-    position: [r.position_x, -r.position_y] as [number, number],
-    zoneId: r.zone_id,
-    zoneName: r.zone_name,
-    level: r.level,
-    isBoss: Boolean(r.is_boss),
-    isElite: Boolean(r.is_elite),
-  }));
+  return rows.map((r) => {
+    // Parse patrol waypoints and transform Y coordinates
+    let patrolWaypoints: [number, number][] | null = null;
+    if (r.is_patrolling && r.patrol_waypoints) {
+      try {
+        const waypoints = JSON.parse(r.patrol_waypoints) as Array<{
+          x: number;
+          y: number;
+        }>;
+        if (waypoints.length > 0) {
+          patrolWaypoints = waypoints.map((wp) => [wp.x, -wp.y]);
+        }
+      } catch {
+        // Invalid JSON, skip patrol data
+      }
+    }
+
+    return {
+      id: r.monster_id,
+      type: r.is_boss ? "boss" : r.is_elite ? "elite" : "monster",
+      name: r.name,
+      position: [r.position_x, -r.position_y] as [number, number],
+      zoneId: r.zone_id,
+      zoneName: r.zone_name,
+      level: r.level,
+      isBoss: Boolean(r.is_boss),
+      isElite: Boolean(r.is_elite),
+      isPatrolling: Boolean(r.is_patrolling),
+      patrolWaypoints,
+    };
+  });
 }
 
 interface NpcSpawnRow {
