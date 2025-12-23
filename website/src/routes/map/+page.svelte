@@ -5,7 +5,12 @@
   import EntityPopup from "$lib/components/map/EntityPopup.svelte";
   import MapSearch from "$lib/components/map/MapSearch.svelte";
   import { loadAllMapEntities, loadZoneList } from "$lib/queries/map";
-  import { createLayers, createFilteredData } from "$lib/map/layers";
+  import {
+    createLayers,
+    createFilteredData,
+    type IconAtlasData,
+  } from "$lib/map/layers";
+  import { createIconAtlas } from "$lib/map/icons";
   import {
     computeSelectionData,
     computePatrolPathData,
@@ -46,6 +51,7 @@
   let entityData = $state<MapEntityData | null>(null);
   let filteredData = $state<FilteredMapData | null>(null);
   let entityIndex = $state<EntityIndex | null>(null);
+  let iconAtlas = $state<IconAtlasData | null>(null);
 
   // Zone focus state
   let zoneList = $state<ZoneListItem[]>([]);
@@ -128,6 +134,7 @@
       focusedZoneId,
       selectionData,
       patrolPathData,
+      iconAtlas ?? undefined,
     );
 
     deckInstance.setProps({ layers });
@@ -263,24 +270,29 @@
       try {
         // Dynamic imports for deck.gl (only load once)
         if (!deckModules) {
-          const [deckCore, deckLayers, deckExtensions] = await Promise.all([
-            import("@deck.gl/core"),
-            import("@deck.gl/layers"),
-            import("@deck.gl/extensions"),
-          ]);
+          const [deckCore, deckLayers, deckExtensions, atlas] =
+            await Promise.all([
+              import("@deck.gl/core"),
+              import("@deck.gl/layers"),
+              import("@deck.gl/extensions"),
+              createIconAtlas(),
+            ]);
 
           const { Deck, OrthographicView } = deckCore;
-          const { ScatterplotLayer, PolygonLayer, LineLayer } = deckLayers;
+          const { ScatterplotLayer, IconLayer, PolygonLayer, LineLayer } =
+            deckLayers;
           const { DataFilterExtension } = deckExtensions;
 
           deckModules = {
             Deck,
             OrthographicView,
             ScatterplotLayer,
+            IconLayer,
             PolygonLayer,
             LineLayer,
             DataFilterExtension,
           };
+          iconAtlas = atlas;
         }
 
         // Load entity data and zone list (only load once)
@@ -348,6 +360,7 @@
           focusedZoneId,
           selectionData,
           patrolPathData,
+          iconAtlas ?? undefined,
         );
 
         // Determine initial view state

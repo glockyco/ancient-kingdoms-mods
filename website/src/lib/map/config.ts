@@ -37,13 +37,13 @@ export const LAYER_COLORS = {
   chest: [14, 165, 233] as [number, number, number], // sky-500
   altar: [249, 115, 22] as [number, number, number], // orange-500
   gathering_plant: [132, 204, 22] as [number, number, number], // lime-500
-  gathering_mineral: [245, 158, 11] as [number, number, number], // amber-500
+  gathering_mineral: [120, 113, 108] as [number, number, number], // stone-500
   gathering_spark: [168, 85, 247] as [number, number, number], // purple-500
   crafting: [139, 92, 246] as [number, number, number], // violet-500
 } as const;
 
 /**
- * Layer radii in pixels
+ * Layer radii in pixels (used for ScatterplotLayer fallback)
  */
 export const LAYER_RADII = {
   monster: 4,
@@ -55,6 +55,34 @@ export const LAYER_RADII = {
   altar: 7,
   gathering: 3,
   crafting: 5,
+} as const;
+
+/**
+ * Icon sizes for IconLayer.
+ * Size hierarchy: rare/important entities larger, common entities smaller.
+ * - base: Base size in pixels at zoom 0
+ * - min: Minimum size in pixels (prevents icons from disappearing when zoomed out)
+ * - max: Maximum size in pixels (prevents oversizing when zoomed in)
+ *
+ * Note: These are CSS pixels. On high-DPI screens (2x, 3x), the actual rendered
+ * pixels will be multiplied by devicePixelRatio, so these values should be
+ * generous enough to remain visible and clickable.
+ */
+export const ICON_SIZES = {
+  boss: { base: 32, min: 28, max: 64 },
+  elite: { base: 26, min: 24, max: 56 },
+  altar: { base: 26, min: 24, max: 56 },
+  npc: { base: 18, min: 16, max: 40 },
+  portal: { base: 22, min: 20, max: 48 },
+  chest: { base: 20, min: 18, max: 44 },
+  crafting_station: { base: 20, min: 18, max: 44 },
+  alchemy_table: { base: 20, min: 18, max: 44 },
+  cooking_oven: { base: 20, min: 18, max: 44 },
+  hunt: { base: 18, min: 16, max: 40 },
+  monster: { base: 18, min: 16, max: 40 },
+  gathering_plant: { base: 16, min: 14, max: 36 },
+  gathering_mineral: { base: 16, min: 14, max: 36 },
+  gathering_spark: { base: 16, min: 14, max: 36 },
 } as const;
 
 /**
@@ -95,7 +123,7 @@ export const ARC_COLORS = {
  */
 export const HIGHLIGHT_COLORS = {
   ring: [255, 255, 255, 255] as [number, number, number, number], // white
-  fill: [255, 255, 255, 60] as [number, number, number, number], // white with low alpha
+  fill: [255, 255, 255, 40] as [number, number, number, number], // white with low alpha
 } as const;
 
 /**
