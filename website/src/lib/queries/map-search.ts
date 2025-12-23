@@ -64,6 +64,7 @@ export async function searchMapEntities(
 
   const ftsQuery = searchQuery.trim() + "*";
 
+  // Fetch up to limit from each category to allow redistribution
   const [monsters, npcs, zones, resources, chests, altars, crafting, portals] =
     await Promise.all([
       searchMonsters(ftsQuery, limit),
@@ -76,16 +77,37 @@ export async function searchMapEntities(
       searchPortals(ftsQuery, limit),
     ]);
 
-  return [
-    ...monsters,
-    ...npcs,
-    ...zones,
-    ...resources,
-    ...chests,
-    ...altars,
-    ...crafting,
-    ...portals,
-  ].slice(0, limit);
+  // Round-robin distribution: take 1 from each category per round
+  // This ensures even distribution across all categories with results
+  const categories = [
+    monsters,
+    npcs,
+    zones,
+    resources,
+    chests,
+    altars,
+    crafting,
+    portals,
+  ];
+  const results: MapSearchResult[] = [];
+  const taken = categories.map(() => 0);
+
+  while (results.length < limit) {
+    let addedThisRound = false;
+
+    for (let i = 0; i < categories.length; i++) {
+      if (results.length >= limit) break;
+      if (taken[i] < categories[i].length) {
+        results.push(categories[i][taken[i]]);
+        taken[i]++;
+        addedThisRound = true;
+      }
+    }
+
+    if (!addedThisRound) break;
+  }
+
+  return results;
 }
 
 interface MonsterSearchRow {
