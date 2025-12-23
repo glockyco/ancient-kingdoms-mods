@@ -31,21 +31,93 @@ export interface MapUrlState {
 
 /**
  * Default layers that are enabled when no URL parameter is present
- * Note: subZones and parentZones are off by default
+ * Note: zones and areas are off by default
  */
 const DEFAULT_LAYERS: (keyof LayerVisibility)[] = [
-  "monsters",
+  // Monsters
   "bosses",
   "elites",
-  "npcs",
+  "creatures",
+  "hunts",
+  // NPCs (all enabled by default)
+  "npcVendors",
+  "npcQuestGivers",
+  "npcRepair",
+  "npcBanks",
+  "npcInnkeepers",
+  "npcSoulBinders",
+  "npcSkillTrainers",
+  "npcVeteranTrainers",
+  "npcAttributeReset",
+  "npcFactionVendors",
+  "npcEssenceTraders",
+  "npcAugmenters",
+  "npcPriestesses",
+  "npcRenewalSages",
+  "npcAdventurerTasks",
+  "npcAdventurerVendors",
+  "npcMercenaryRecruiters",
+  "npcGuards",
+  // Interactables
   "portals",
+  "portalArcs",
   "chests",
   "altars",
+  "alchemyTables",
+  "forges",
+  "cookingOvens",
+  // Resources
   "gatheringPlants",
   "gatheringMinerals",
   "gatheringSparks",
-  "crafting",
 ];
+
+/**
+ * Get default LayerVisibility state (all enabled except zones and areas)
+ */
+export function getDefaultLayerVisibility(): LayerVisibility {
+  return {
+    // Monsters
+    bosses: true,
+    elites: true,
+    creatures: true,
+    hunts: true,
+    // NPCs (all enabled by default)
+    npcVendors: true,
+    npcQuestGivers: true,
+    npcRepair: true,
+    npcBanks: true,
+    npcInnkeepers: true,
+    npcSoulBinders: true,
+    npcSkillTrainers: true,
+    npcVeteranTrainers: true,
+    npcAttributeReset: true,
+    npcFactionVendors: true,
+    npcEssenceTraders: true,
+    npcAugmenters: true,
+    npcPriestesses: true,
+    npcRenewalSages: true,
+    npcAdventurerTasks: true,
+    npcAdventurerVendors: true,
+    npcMercenaryRecruiters: true,
+    npcGuards: true,
+    // Interactables
+    portals: true,
+    portalArcs: true,
+    chests: true,
+    altars: true,
+    alchemyTables: true,
+    forges: true,
+    cookingOvens: true,
+    // Resources
+    gatheringPlants: true,
+    gatheringMinerals: true,
+    gatheringSparks: true,
+    // Zones
+    subZones: false,
+    parentZones: false,
+  };
+}
 
 /**
  * Parse URL parameters to restore map state
@@ -171,40 +243,50 @@ export function updateUrlState(
 export function urlStateToLayerVisibility(
   urlLayers: (keyof LayerVisibility)[] | undefined,
 ): LayerVisibility {
-  // If no layers specified in URL, use defaults (all enabled except zones and arcs)
+  // If no layers specified in URL, use defaults
   if (!urlLayers) {
-    return {
-      monsters: true,
-      bosses: true,
-      elites: true,
-      npcs: true,
-      portals: true,
-      portalArcs: false,
-      chests: true,
-      altars: true,
-      gatheringPlants: true,
-      gatheringMinerals: true,
-      gatheringSparks: true,
-      crafting: true,
-      subZones: false,
-      parentZones: false,
-    };
+    return getDefaultLayerVisibility();
   }
 
   // Otherwise, only enable layers specified in URL
   return {
-    monsters: urlLayers.includes("monsters"),
+    // Monsters
     bosses: urlLayers.includes("bosses"),
     elites: urlLayers.includes("elites"),
-    npcs: urlLayers.includes("npcs"),
+    creatures: urlLayers.includes("creatures"),
+    hunts: urlLayers.includes("hunts"),
+    // NPCs
+    npcVendors: urlLayers.includes("npcVendors"),
+    npcQuestGivers: urlLayers.includes("npcQuestGivers"),
+    npcRepair: urlLayers.includes("npcRepair"),
+    npcBanks: urlLayers.includes("npcBanks"),
+    npcInnkeepers: urlLayers.includes("npcInnkeepers"),
+    npcSoulBinders: urlLayers.includes("npcSoulBinders"),
+    npcSkillTrainers: urlLayers.includes("npcSkillTrainers"),
+    npcVeteranTrainers: urlLayers.includes("npcVeteranTrainers"),
+    npcAttributeReset: urlLayers.includes("npcAttributeReset"),
+    npcFactionVendors: urlLayers.includes("npcFactionVendors"),
+    npcEssenceTraders: urlLayers.includes("npcEssenceTraders"),
+    npcAugmenters: urlLayers.includes("npcAugmenters"),
+    npcPriestesses: urlLayers.includes("npcPriestesses"),
+    npcRenewalSages: urlLayers.includes("npcRenewalSages"),
+    npcAdventurerTasks: urlLayers.includes("npcAdventurerTasks"),
+    npcAdventurerVendors: urlLayers.includes("npcAdventurerVendors"),
+    npcMercenaryRecruiters: urlLayers.includes("npcMercenaryRecruiters"),
+    npcGuards: urlLayers.includes("npcGuards"),
+    // Interactables
     portals: urlLayers.includes("portals"),
     portalArcs: urlLayers.includes("portalArcs"),
     chests: urlLayers.includes("chests"),
     altars: urlLayers.includes("altars"),
+    alchemyTables: urlLayers.includes("alchemyTables"),
+    forges: urlLayers.includes("forges"),
+    cookingOvens: urlLayers.includes("cookingOvens"),
+    // Resources
     gatheringPlants: urlLayers.includes("gatheringPlants"),
     gatheringMinerals: urlLayers.includes("gatheringMinerals"),
     gatheringSparks: urlLayers.includes("gatheringSparks"),
-    crafting: urlLayers.includes("crafting"),
+    // Zones
     subZones: urlLayers.includes("subZones"),
     parentZones: urlLayers.includes("parentZones"),
   };

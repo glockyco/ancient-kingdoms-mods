@@ -22,6 +22,8 @@
         return "Boss";
       case "elite":
         return "Elite";
+      case "hunt":
+        return "Hunt";
       case "npc":
         return "NPC";
       case "portal":
@@ -64,7 +66,7 @@
   <div class="font-medium">{entity.name}</div>
   <div class="text-muted-foreground">
     {getEntityTypeName(entity)}
-    {#if entity.type === "monster" || entity.type === "boss" || entity.type === "elite"}
+    {#if entity.type === "monster" || entity.type === "boss" || entity.type === "elite" || entity.type === "hunt"}
       {@const monster = entity as MonsterMapEntity}
       <span class="ml-1">Lv. {monster.level}</span>
     {/if}

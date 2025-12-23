@@ -19,6 +19,7 @@
     urlStateToLayerVisibility,
     debouncedUpdateUrlState,
     getDefaultLevelFilter,
+    getDefaultLayerVisibility,
   } from "$lib/map/url-state";
   import type {
     LayerVisibility,
@@ -61,22 +62,7 @@
   let searchOpen = $state(false);
 
   // Map state (initialized in onMount from URL or defaults)
-  let layerVisibility = $state<LayerVisibility>({
-    monsters: true,
-    bosses: true,
-    elites: true,
-    npcs: true,
-    portals: true,
-    portalArcs: true,
-    chests: true,
-    altars: true,
-    gatheringPlants: true,
-    gatheringMinerals: true,
-    gatheringSparks: true,
-    crafting: true,
-    subZones: false,
-    parentZones: false,
-  });
+  let layerVisibility = $state<LayerVisibility>(getDefaultLayerVisibility());
 
   let levelFilter = $state<LevelFilter>(getDefaultLevelFilter());
 
@@ -304,6 +290,7 @@
             // Entity types (from clicking on map)
             boss: entityData.monsters,
             elite: entityData.monsters,
+            hunt: entityData.monsters,
             gathering_plant: entityData.gathering,
             gathering_mineral: entityData.gathering,
             gathering_spark: entityData.gathering,
@@ -387,7 +374,7 @@
     };
   }
 
-  // Re-render layers when visibility, level filter, selection, or portal changes
+  // Re-render layers when visibility, level filter, or selection changes
   $effect(() => {
     void layerVisibility;
     void levelFilter;

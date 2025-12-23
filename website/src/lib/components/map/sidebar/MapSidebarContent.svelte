@@ -13,6 +13,9 @@
   import MapPin from "@lucide/svelte/icons/map-pin";
   import Search from "@lucide/svelte/icons/search";
   import MousePointerClick from "@lucide/svelte/icons/mouse-pointer-click";
+  import Crosshair from "@lucide/svelte/icons/crosshair";
+  import FlaskConical from "@lucide/svelte/icons/flask-conical";
+  import ChefHat from "@lucide/svelte/icons/chef-hat";
   import MapSidebarSection from "./MapSidebarSection.svelte";
   import LevelFilter from "../LevelFilter.svelte";
   import type {
@@ -42,7 +45,14 @@
     onLevelFilterChange,
     levelRanges,
     onSearchClick,
-    expandedSections = ["entities", "interactables", "gathering", "filters"],
+    expandedSections = [
+      "monsters",
+      "npcs",
+      "interactables",
+      "crafting",
+      "gathering",
+      "filters",
+    ],
     onExpandedSectionsChange,
   }: Props = $props();
 
@@ -86,18 +96,117 @@
     icon: typeof Sword;
   }
 
-  const entityLayers: LayerOption[] = [
+  // Monster layers
+  const monsterLayers: LayerOption[] = [
     { key: "bosses", label: "Bosses", color: LAYER_COLORS.boss, icon: Crown },
     { key: "elites", label: "Elites", color: LAYER_COLORS.elite, icon: Shield },
     {
-      key: "monsters",
-      label: "Monsters",
+      key: "creatures",
+      label: "Creatures",
       color: LAYER_COLORS.monster,
       icon: Sword,
     },
-    { key: "npcs", label: "NPCs", color: LAYER_COLORS.npc, icon: Users },
+    { key: "hunts", label: "Hunts", color: LAYER_COLORS.hunt, icon: Crosshair },
   ];
 
+  // NPC layers - all 18 types as separate toggles
+  const npcLayers: LayerOption[] = [
+    {
+      key: "npcVendors",
+      label: "Vendors",
+      color: LAYER_COLORS.npc,
+      icon: Users,
+    },
+    {
+      key: "npcQuestGivers",
+      label: "Quest Givers",
+      color: LAYER_COLORS.npc,
+      icon: Users,
+    },
+    { key: "npcRepair", label: "Repair", color: LAYER_COLORS.npc, icon: Users },
+    { key: "npcBanks", label: "Banks", color: LAYER_COLORS.npc, icon: Users },
+    {
+      key: "npcInnkeepers",
+      label: "Innkeepers",
+      color: LAYER_COLORS.npc,
+      icon: Users,
+    },
+    {
+      key: "npcSoulBinders",
+      label: "Soul Binders",
+      color: LAYER_COLORS.npc,
+      icon: Users,
+    },
+    {
+      key: "npcSkillTrainers",
+      label: "Skill Trainers",
+      color: LAYER_COLORS.npc,
+      icon: Users,
+    },
+    {
+      key: "npcVeteranTrainers",
+      label: "Veteran Trainers",
+      color: LAYER_COLORS.npc,
+      icon: Users,
+    },
+    {
+      key: "npcAttributeReset",
+      label: "Attribute Reset",
+      color: LAYER_COLORS.npc,
+      icon: Users,
+    },
+    {
+      key: "npcFactionVendors",
+      label: "Faction Vendors",
+      color: LAYER_COLORS.npc,
+      icon: Users,
+    },
+    {
+      key: "npcEssenceTraders",
+      label: "Essence Traders",
+      color: LAYER_COLORS.npc,
+      icon: Users,
+    },
+    {
+      key: "npcAugmenters",
+      label: "Augmenters",
+      color: LAYER_COLORS.npc,
+      icon: Users,
+    },
+    {
+      key: "npcPriestesses",
+      label: "Priestesses",
+      color: LAYER_COLORS.npc,
+      icon: Users,
+    },
+    {
+      key: "npcRenewalSages",
+      label: "Renewal Sages",
+      color: LAYER_COLORS.npc,
+      icon: Users,
+    },
+    {
+      key: "npcAdventurerTasks",
+      label: "Adventurer Tasks",
+      color: LAYER_COLORS.npc,
+      icon: Users,
+    },
+    {
+      key: "npcAdventurerVendors",
+      label: "Adventurer Vendors",
+      color: LAYER_COLORS.npc,
+      icon: Users,
+    },
+    {
+      key: "npcMercenaryRecruiters",
+      label: "Mercenary Recruiters",
+      color: LAYER_COLORS.npc,
+      icon: Users,
+    },
+    { key: "npcGuards", label: "Guards", color: LAYER_COLORS.npc, icon: Users },
+  ];
+
+  // Interactable layers
   const interactableLayers: LayerOption[] = [
     { key: "altars", label: "Altars", color: LAYER_COLORS.altar, icon: Flame },
     {
@@ -107,11 +216,27 @@
       icon: CircleDot,
     },
     { key: "chests", label: "Chests", color: LAYER_COLORS.chest, icon: Box },
+  ];
+
+  // Crafting station layers
+  const craftingLayers: LayerOption[] = [
     {
-      key: "crafting",
-      label: "Crafting Stations",
+      key: "alchemyTables",
+      label: "Alchemy Tables",
+      color: LAYER_COLORS.crafting,
+      icon: FlaskConical,
+    },
+    {
+      key: "forges",
+      label: "Forges",
       color: LAYER_COLORS.crafting,
       icon: Hammer,
+    },
+    {
+      key: "cookingOvens",
+      label: "Cooking Ovens",
+      color: LAYER_COLORS.crafting,
+      icon: ChefHat,
     },
   ];
 
@@ -197,15 +322,29 @@
     </button>
   {/if}
 
-  <!-- Entities section -->
+  <!-- Monsters section -->
   <MapSidebarSection
-    title="Entities"
+    title="Monsters"
     icon={Sword}
-    expanded={isSectionExpanded("entities")}
-    onExpandedChange={(expanded) => handleSectionToggle("entities", expanded)}
+    expanded={isSectionExpanded("monsters")}
+    onExpandedChange={(expanded) => handleSectionToggle("monsters", expanded)}
   >
     <div class="space-y-0.5">
-      {#each entityLayers as layer (layer.key)}
+      {#each monsterLayers as layer (layer.key)}
+        {@render layerToggle(layer)}
+      {/each}
+    </div>
+  </MapSidebarSection>
+
+  <!-- NPCs section (all 18 types as top-level toggles) -->
+  <MapSidebarSection
+    title="NPCs"
+    icon={Users}
+    expanded={isSectionExpanded("npcs")}
+    onExpandedChange={(expanded) => handleSectionToggle("npcs", expanded)}
+  >
+    <div class="space-y-0.5">
+      {#each npcLayers as layer (layer.key)}
         {@render layerToggle(layer)}
       {/each}
     </div>
@@ -221,6 +360,20 @@
   >
     <div class="space-y-0.5">
       {#each interactableLayers as layer (layer.key)}
+        {@render layerToggle(layer)}
+      {/each}
+    </div>
+  </MapSidebarSection>
+
+  <!-- Crafting Stations section -->
+  <MapSidebarSection
+    title="Crafting Stations"
+    icon={Hammer}
+    expanded={isSectionExpanded("crafting")}
+    onExpandedChange={(expanded) => handleSectionToggle("crafting", expanded)}
+  >
+    <div class="space-y-0.5">
+      {#each craftingLayers as layer (layer.key)}
         {@render layerToggle(layer)}
       {/each}
     </div>

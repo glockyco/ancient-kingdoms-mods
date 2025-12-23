@@ -23,6 +23,7 @@
       case "monster":
       case "boss":
       case "elite":
+      case "hunt":
         return `/monsters/${entity.id}`;
       case "npc":
         return `/npcs/${entity.id}`;
@@ -43,6 +44,8 @@
         return "Boss";
       case "elite":
         return "Elite";
+      case "hunt":
+        return "Hunt";
       case "npc":
         return "NPC";
       case "portal":
@@ -103,7 +106,7 @@
       <span>{entity.zoneName}</span>
     </div>
 
-    {#if entity.type === "monster" || entity.type === "boss" || entity.type === "elite"}
+    {#if entity.type === "monster" || entity.type === "boss" || entity.type === "elite" || entity.type === "hunt"}
       {@const monster = entity as MonsterMapEntity}
       <div class="flex justify-between">
         <span class="text-muted-foreground">Level</span>

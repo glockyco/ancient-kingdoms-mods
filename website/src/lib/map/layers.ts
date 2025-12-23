@@ -5,10 +5,13 @@ import type {
   LevelFilter,
   AnyMapEntity,
   MonsterMapEntity,
+  NpcMapEntity,
   GatheringMapEntity,
+  CraftingMapEntity,
   ZoneBoundary,
   PortalMapEntity,
 } from "$lib/types/map";
+import { isAnyNpcTypeVisible } from "./visibility";
 import {
   LAYER_COLORS,
   LAYER_RADII,
@@ -44,12 +47,21 @@ interface DeckModules {
  */
 export function createFilteredData(data: MapEntityData): FilteredMapData {
   return {
-    regularMonsters: data.monsters.filter((m) => !m.isBoss && !m.isElite),
+    // Creatures = regular monsters (not boss, not elite, not hunt)
+    creatures: data.monsters.filter(
+      (m) => !m.isBoss && !m.isElite && !m.isHunt,
+    ),
     elites: data.monsters.filter((m) => m.isElite && !m.isBoss),
     bosses: data.monsters.filter((m) => m.isBoss),
+    hunts: data.monsters.filter((m) => m.isHunt && !m.isBoss && !m.isElite),
     plants: data.gathering.filter((g) => g.type === "gathering_plant"),
     minerals: data.gathering.filter((g) => g.type === "gathering_mineral"),
     sparks: data.gathering.filter((g) => g.type === "gathering_spark"),
+    alchemyTables: data.crafting.filter((c) => c.type === "alchemy_table"),
+    forges: data.crafting.filter(
+      (c) => c.type === "crafting_station" && !c.isCookingOven,
+    ),
+    cookingOvens: data.crafting.filter((c) => c.isCookingOven),
     portalsWithDestinations: data.portals.filter((p) => p.destination !== null),
     parentZones: calculateParentZoneBounds(data),
   };
@@ -309,12 +321,44 @@ export function createLayers(
       },
     }),
 
-    // Crafting stations
+    // Alchemy Tables
     new ScatterplotLayer({
-      id: "crafting-stations",
-      data: data.crafting,
-      visible: visibility.crafting,
-      getPosition: (d: AnyMapEntity) => d.position,
+      id: "alchemy-tables",
+      data: filtered.alchemyTables,
+      visible: visibility.alchemyTables,
+      getPosition: (d: CraftingMapEntity) => d.position,
+      getFillColor: LAYER_COLORS.crafting,
+      getRadius: LAYER_RADII.crafting,
+      radiusUnits: "pixels",
+      radiusMinPixels: 3,
+      radiusMaxPixels: 10,
+      pickable: true,
+      onHover: callbacks.onHover,
+      onClick: callbacks.onClick,
+    }),
+
+    // Forges (crafting stations that are not cooking ovens)
+    new ScatterplotLayer({
+      id: "forges",
+      data: filtered.forges,
+      visible: visibility.forges,
+      getPosition: (d: CraftingMapEntity) => d.position,
+      getFillColor: LAYER_COLORS.crafting,
+      getRadius: LAYER_RADII.crafting,
+      radiusUnits: "pixels",
+      radiusMinPixels: 3,
+      radiusMaxPixels: 10,
+      pickable: true,
+      onHover: callbacks.onHover,
+      onClick: callbacks.onClick,
+    }),
+
+    // Cooking Ovens
+    new ScatterplotLayer({
+      id: "cooking-ovens",
+      data: filtered.cookingOvens,
+      visible: visibility.cookingOvens,
+      getPosition: (d: CraftingMapEntity) => d.position,
       getFillColor: LAYER_COLORS.crafting,
       getRadius: LAYER_RADII.crafting,
       radiusUnits: "pixels",
@@ -433,13 +477,35 @@ export function createLayers(
     // Patrol path layers (rendered below monsters so paths don't obscure them)
     ...createPatrolPathLayers(patrolPathData, ScatterplotLayer, LineLayer),
 
-    // Regular monsters (GPU-filtered by level)
+    // Creatures (regular monsters, not boss/elite/hunt) - GPU-filtered by level
     new ScatterplotLayer({
-      id: "monsters",
-      data: filtered.regularMonsters,
-      visible: visibility.monsters,
+      id: "creatures",
+      data: filtered.creatures,
+      visible: visibility.creatures,
       getPosition: (d: MonsterMapEntity) => d.position,
       getFillColor: LAYER_COLORS.monster,
+      getRadius: LAYER_RADII.monster,
+      radiusUnits: "pixels",
+      radiusMinPixels: 2,
+      radiusMaxPixels: 10,
+      pickable: true,
+      onHover: callbacks.onHover,
+      onClick: callbacks.onClick,
+      extensions: [dataFilterExt],
+      getFilterValue: (d: MonsterMapEntity) => d.level,
+      filterRange: [levelFilter.monsterMin, levelFilter.monsterMax],
+      updateTriggers: {
+        filterRange: [levelFilter.monsterMin, levelFilter.monsterMax],
+      },
+    }),
+
+    // Hunts (huntable animals) - GPU-filtered by level
+    new ScatterplotLayer({
+      id: "hunts",
+      data: filtered.hunts,
+      visible: visibility.hunts,
+      getPosition: (d: MonsterMapEntity) => d.position,
+      getFillColor: LAYER_COLORS.hunt,
       getRadius: LAYER_RADII.monster,
       radiusUnits: "pixels",
       radiusMinPixels: 2,
@@ -539,12 +605,13 @@ export function createLayers(
       },
     }),
 
-    // NPCs (on top for visibility)
+    // NPCs (single layer, filtered by visible role types using OR logic)
+    // An NPC is visible if ANY of its roles match an enabled role toggle
     new ScatterplotLayer({
       id: "npcs",
       data: data.npcs,
-      visible: visibility.npcs,
-      getPosition: (d: AnyMapEntity) => d.position,
+      visible: isAnyNpcTypeVisible(visibility),
+      getPosition: (d: NpcMapEntity) => d.position,
       getFillColor: LAYER_COLORS.npc,
       getRadius: LAYER_RADII.npc,
       radiusUnits: "pixels",
@@ -553,6 +620,54 @@ export function createLayers(
       pickable: true,
       onHover: callbacks.onHover,
       onClick: callbacks.onClick,
+      // GPU-based filtering: return 1 if NPC matches any enabled role, 0 otherwise
+      extensions: [dataFilterExt],
+      getFilterValue: (d: NpcMapEntity) => {
+        // Check each role against visibility toggles
+        if (visibility.npcVendors && d.isVendor) return 1;
+        if (visibility.npcQuestGivers && d.isQuestGiver) return 1;
+        if (visibility.npcRepair && d.canRepair) return 1;
+        if (visibility.npcBanks && d.isBank) return 1;
+        if (visibility.npcInnkeepers && d.isInnkeeper) return 1;
+        if (visibility.npcSoulBinders && d.isSoulBinder) return 1;
+        if (visibility.npcSkillTrainers && d.isSkillTrainer) return 1;
+        if (visibility.npcVeteranTrainers && d.isVeteranTrainer) return 1;
+        if (visibility.npcAttributeReset && d.isAttributeReset) return 1;
+        if (visibility.npcFactionVendors && d.isFactionVendor) return 1;
+        if (visibility.npcEssenceTraders && d.isEssenceTrader) return 1;
+        if (visibility.npcAugmenters && d.isAugmenter) return 1;
+        if (visibility.npcPriestesses && d.isPriestess) return 1;
+        if (visibility.npcRenewalSages && d.isRenewalSage) return 1;
+        if (visibility.npcAdventurerTasks && d.isAdventurerTaskgiver) return 1;
+        if (visibility.npcAdventurerVendors && d.isAdventurerVendor) return 1;
+        if (visibility.npcMercenaryRecruiters && d.isMercenaryRecruiter)
+          return 1;
+        if (visibility.npcGuards && d.isGuard) return 1;
+        return 0;
+      },
+      filterRange: [1, 1], // Only show NPCs with filter value = 1
+      updateTriggers: {
+        getFilterValue: [
+          visibility.npcVendors,
+          visibility.npcQuestGivers,
+          visibility.npcRepair,
+          visibility.npcBanks,
+          visibility.npcInnkeepers,
+          visibility.npcSoulBinders,
+          visibility.npcSkillTrainers,
+          visibility.npcVeteranTrainers,
+          visibility.npcAttributeReset,
+          visibility.npcFactionVendors,
+          visibility.npcEssenceTraders,
+          visibility.npcAugmenters,
+          visibility.npcPriestesses,
+          visibility.npcRenewalSages,
+          visibility.npcAdventurerTasks,
+          visibility.npcAdventurerVendors,
+          visibility.npcMercenaryRecruiters,
+          visibility.npcGuards,
+        ],
+      },
     }),
 
     // Selection highlight layer (on top of everything)

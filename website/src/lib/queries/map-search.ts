@@ -76,6 +76,7 @@ interface MonsterSearchRow {
   name: string;
   is_boss: number;
   is_elite: number;
+  is_hunt: number;
   min_x: number | null;
   max_x: number | null;
   min_y: number | null;
@@ -105,6 +106,7 @@ async function searchMonsters(
       m.name,
       m.is_boss,
       m.is_elite,
+      m.is_hunt,
       -- Spawn positions (all spawn types have their own positions)
       MIN(ms.position_x) as min_x,
       MAX(ms.position_x) as max_x,
@@ -155,7 +157,13 @@ async function searchMonsters(
       id: r.id,
       name: r.name,
       category: "monster" as const,
-      subcategory: r.is_boss ? "boss" : r.is_elite ? "elite" : undefined,
+      subcategory: r.is_boss
+        ? "boss"
+        : r.is_elite
+          ? "elite"
+          : r.is_hunt
+            ? "hunt"
+            : undefined,
       bounds:
         boundsX !== null
           ? {

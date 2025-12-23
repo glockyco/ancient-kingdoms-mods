@@ -118,7 +118,10 @@ export function computePatrolPathData(
   // Filter to monsters with patrol waypoints
   const patrollingMonsters = selectionData.filter(
     (e): e is MonsterMapEntity =>
-      (e.type === "monster" || e.type === "boss" || e.type === "elite") &&
+      (e.type === "monster" ||
+        e.type === "boss" ||
+        e.type === "elite" ||
+        e.type === "hunt") &&
       (e as MonsterMapEntity).isPatrolling &&
       (e as MonsterMapEntity).patrolWaypoints !== null &&
       (e as MonsterMapEntity).patrolWaypoints!.length > 1,
@@ -180,6 +183,7 @@ function getIndexForType(
     // Entity types (when clicking directly on map)
     case "boss":
     case "elite":
+    case "hunt":
       return index.monsters;
     case "gathering_plant":
     case "gathering_mineral":

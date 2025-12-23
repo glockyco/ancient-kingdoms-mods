@@ -20,6 +20,7 @@
   import Hammer from "@lucide/svelte/icons/hammer";
   import Menu from "@lucide/svelte/icons/menu";
   import Search from "@lucide/svelte/icons/search";
+  import Crosshair from "@lucide/svelte/icons/crosshair";
   import * as Drawer from "$lib/components/ui/drawer";
   import { Button } from "$lib/components/ui/button";
   import MapSidebarContent from "./MapSidebarContent.svelte";
@@ -29,7 +30,13 @@
     LevelRanges,
   } from "$lib/types/map";
   import { LAYER_COLORS } from "$lib/map/config";
-  import { toggleLayerVisibility } from "$lib/map/visibility";
+  import {
+    toggleLayerVisibility,
+    isAnyNpcTypeVisible,
+    isAnyCraftingTypeVisible,
+    toggleAllNpcTypes,
+    toggleAllCraftingTypes,
+  } from "$lib/map/visibility";
 
   interface Props {
     visibility: LayerVisibility;
@@ -55,8 +62,10 @@
   // State initialized once on mount
   let isCollapsed = $state(false);
   let expandedSections = $state<string[]>([
-    "entities",
+    "monsters",
+    "npcs",
     "interactables",
+    "crafting",
     "gathering",
     "filters",
   ]);
@@ -102,7 +111,7 @@
 
   // Quick toggle icons for collapsed state
   interface QuickToggle {
-    key: keyof LayerVisibility;
+    key: keyof LayerVisibility | "allNpcs" | "allCrafting";
     icon: typeof Sword;
     color:
       | readonly [number, number, number]
@@ -110,17 +119,24 @@
     label: string;
   }
 
-  const entityToggles: QuickToggle[] = [
+  const monsterToggles: QuickToggle[] = [
     { key: "bosses", icon: Crown, color: LAYER_COLORS.boss, label: "Bosses" },
     { key: "elites", icon: Shield, color: LAYER_COLORS.elite, label: "Elites" },
     {
-      key: "monsters",
+      key: "creatures",
       icon: Sword,
       color: LAYER_COLORS.monster,
-      label: "Monsters",
+      label: "Creatures",
     },
-    { key: "npcs", icon: Users, color: LAYER_COLORS.npc, label: "NPCs" },
+    { key: "hunts", icon: Crosshair, color: LAYER_COLORS.hunt, label: "Hunts" },
   ];
+
+  const npcToggle: QuickToggle = {
+    key: "allNpcs",
+    icon: Users,
+    color: LAYER_COLORS.npc,
+    label: "All NPCs",
+  };
 
   const interactableToggles: QuickToggle[] = [
     { key: "altars", icon: Flame, color: LAYER_COLORS.altar, label: "Altars" },
@@ -131,13 +147,14 @@
       label: "Portals",
     },
     { key: "chests", icon: Box, color: LAYER_COLORS.chest, label: "Chests" },
-    {
-      key: "crafting",
-      icon: Hammer,
-      color: LAYER_COLORS.crafting,
-      label: "Crafting Stations",
-    },
   ];
+
+  const craftingToggle: QuickToggle = {
+    key: "allCrafting",
+    icon: Hammer,
+    color: LAYER_COLORS.crafting,
+    label: "Crafting Stations",
+  };
 
   const resourceToggles: QuickToggle[] = [
     {
@@ -160,8 +177,23 @@
     },
   ];
 
-  function toggleLayer(key: keyof LayerVisibility) {
-    onVisibilityChange(toggleLayerVisibility(visibility, key));
+  function toggleLayer(key: QuickToggle["key"]) {
+    if (key === "allNpcs") {
+      onVisibilityChange(toggleAllNpcTypes(visibility));
+    } else if (key === "allCrafting") {
+      onVisibilityChange(toggleAllCraftingTypes(visibility));
+    } else {
+      onVisibilityChange(toggleLayerVisibility(visibility, key));
+    }
+  }
+
+  function isToggleActive(key: QuickToggle["key"]): boolean {
+    if (key === "allNpcs") {
+      return isAnyNpcTypeVisible(visibility);
+    } else if (key === "allCrafting") {
+      return isAnyCraftingTypeVisible(visibility);
+    }
+    return visibility[key];
   }
 
   function rgbToColor(
@@ -272,14 +304,16 @@
           type="button"
           class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-muted text-muted-foreground hover:text-foreground mb-1"
           onclick={onSearchClick}
-          title="Search (⌘K)"
+          title="Search (Cmd+K)"
         >
           <Search class="h-5 w-5" />
         </button>
         <div class="w-8 border-t border-border mb-1"></div>
-        {#each entityToggles as toggle (toggle.key)}
+
+        <!-- Monster toggles -->
+        {#each monsterToggles as toggle (toggle.key)}
           {@const Icon = toggle.icon}
-          {@const isActive = visibility[toggle.key]}
+          {@const isActive = isToggleActive(toggle.key)}
           <button
             type="button"
             class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-md transition-colors {isActive
@@ -292,10 +326,33 @@
             <Icon class="h-5 w-5" />
           </button>
         {/each}
+
         <div class="w-8 border-t border-border my-1"></div>
+
+        <!-- NPCs (toggles all) -->
+        {#if true}
+          {@const npcActive = isToggleActive(npcToggle.key)}
+          <button
+            type="button"
+            class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-md transition-colors {npcActive
+              ? 'bg-muted'
+              : 'hover:bg-muted/50 opacity-50'}"
+            style={npcActive
+              ? `color: ${rgbToColor(npcToggle.color)}`
+              : undefined}
+            onclick={() => toggleLayer(npcToggle.key)}
+            title="{npcToggle.label} ({npcActive ? 'on' : 'off'})"
+          >
+            <Users class="h-5 w-5" />
+          </button>
+        {/if}
+
+        <div class="w-8 border-t border-border my-1"></div>
+
+        <!-- Interactable toggles -->
         {#each interactableToggles as toggle (toggle.key)}
           {@const Icon = toggle.icon}
-          {@const isActive = visibility[toggle.key]}
+          {@const isActive = isToggleActive(toggle.key)}
           <button
             type="button"
             class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-md transition-colors {isActive
@@ -308,10 +365,33 @@
             <Icon class="h-5 w-5" />
           </button>
         {/each}
+
         <div class="w-8 border-t border-border my-1"></div>
+
+        <!-- Crafting Stations (toggles all) -->
+        {#if true}
+          {@const craftingActive = isToggleActive(craftingToggle.key)}
+          <button
+            type="button"
+            class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-md transition-colors {craftingActive
+              ? 'bg-muted'
+              : 'hover:bg-muted/50 opacity-50'}"
+            style={craftingActive
+              ? `color: ${rgbToColor(craftingToggle.color)}`
+              : undefined}
+            onclick={() => toggleLayer(craftingToggle.key)}
+            title="{craftingToggle.label} ({craftingActive ? 'on' : 'off'})"
+          >
+            <Hammer class="h-5 w-5" />
+          </button>
+        {/if}
+
+        <div class="w-8 border-t border-border my-1"></div>
+
+        <!-- Resource toggles -->
         {#each resourceToggles as toggle (toggle.key)}
           {@const Icon = toggle.icon}
-          {@const isActive = visibility[toggle.key]}
+          {@const isActive = isToggleActive(toggle.key)}
           <button
             type="button"
             class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-md transition-colors {isActive

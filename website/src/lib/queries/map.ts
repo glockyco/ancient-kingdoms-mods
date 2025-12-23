@@ -93,6 +93,7 @@ interface MonsterSpawnRow {
   level: number;
   is_boss: number;
   is_elite: number;
+  is_hunt: number;
   is_patrolling: number;
   patrol_waypoints: string | null;
 }
@@ -112,6 +113,7 @@ async function loadMonsterSpawns(): Promise<MonsterMapEntity[]> {
       COALESCE(ms.level, m.level) as level,
       m.is_boss,
       m.is_elite,
+      m.is_hunt,
       ms.is_patrolling,
       ms.patrol_waypoints
     FROM monster_spawns ms
@@ -140,9 +142,15 @@ async function loadMonsterSpawns(): Promise<MonsterMapEntity[]> {
       }
     }
 
+    // Determine type: boss > elite > hunt > creature (monster)
+    let type: "boss" | "elite" | "hunt" | "monster" = "monster";
+    if (r.is_boss) type = "boss";
+    else if (r.is_elite) type = "elite";
+    else if (r.is_hunt) type = "hunt";
+
     return {
       id: r.monster_id,
-      type: r.is_boss ? "boss" : r.is_elite ? "elite" : "monster",
+      type,
       name: r.name,
       position: [r.position_x, -r.position_y] as [number, number],
       zoneId: r.zone_id,
@@ -150,6 +158,7 @@ async function loadMonsterSpawns(): Promise<MonsterMapEntity[]> {
       level: r.level,
       isBoss: Boolean(r.is_boss),
       isElite: Boolean(r.is_elite),
+      isHunt: Boolean(r.is_hunt),
       isPatrolling: Boolean(r.is_patrolling),
       patrolWaypoints,
     };
@@ -195,8 +204,29 @@ async function loadNpcSpawns(): Promise<NpcMapEntity[]> {
       position: [r.position_x, -r.position_y] as [number, number],
       zoneId: r.zone_id,
       zoneName: r.zone_name,
-      isVendor: Boolean(roles.isVendor),
-      isQuestGiver: Boolean(roles.isQuestGiver),
+      // Service roles
+      isVendor: Boolean(roles.is_merchant),
+      isQuestGiver: Boolean(roles.is_quest_giver),
+      canRepair: Boolean(roles.can_repair_equipment),
+      isBank: Boolean(roles.is_bank),
+      isInnkeeper: Boolean(roles.is_inkeeper),
+      isSoulBinder: Boolean(roles.is_soul_binder),
+      // Training roles
+      isSkillTrainer: Boolean(roles.is_skill_master),
+      isVeteranTrainer: Boolean(roles.is_veteran_master),
+      isAttributeReset: Boolean(roles.is_reset_attributes),
+      // Specialized roles
+      isFactionVendor: Boolean(roles.is_faction_vendor),
+      isEssenceTrader: Boolean(roles.is_essence_trader),
+      isAugmenter: Boolean(roles.is_augmenter),
+      isPriestess: Boolean(roles.is_priestess),
+      isRenewalSage: Boolean(roles.is_renewal_sage),
+      // Adventuring roles
+      isAdventurerTaskgiver: Boolean(roles.is_taskgiver_adventurer),
+      isAdventurerVendor: Boolean(roles.is_merchant_adventurer),
+      isMercenaryRecruiter: Boolean(roles.is_recruiter_mercenaries),
+      // Other
+      isGuard: Boolean(roles.is_guard),
     };
   });
 }
@@ -407,6 +437,7 @@ interface CraftingRow {
   zone_id: string;
   zone_name: string;
   table_type: string;
+  is_cooking_oven: number;
 }
 
 async function loadCraftingStations(): Promise<CraftingMapEntity[]> {
@@ -419,7 +450,8 @@ async function loadCraftingStations(): Promise<CraftingMapEntity[]> {
       at.position_y,
       at.zone_id,
       z.name as zone_name,
-      'alchemy_table' as table_type
+      'alchemy_table' as table_type,
+      0 as is_cooking_oven
     FROM alchemy_tables at
     JOIN zones z ON z.id = at.zone_id
     WHERE at.position_x IS NOT NULL
@@ -435,7 +467,8 @@ async function loadCraftingStations(): Promise<CraftingMapEntity[]> {
       cs.position_y,
       cs.zone_id,
       z.name as zone_name,
-      'crafting_station' as table_type
+      'crafting_station' as table_type,
+      cs.is_cooking_oven
     FROM crafting_stations cs
     JOIN zones z ON z.id = cs.zone_id
     WHERE cs.position_x IS NOT NULL
@@ -450,6 +483,7 @@ async function loadCraftingStations(): Promise<CraftingMapEntity[]> {
     position: [r.position_x, -r.position_y] as [number, number],
     zoneId: r.zone_id,
     zoneName: r.zone_name,
+    isCookingOven: Boolean(r.is_cooking_oven),
   }));
 }
 

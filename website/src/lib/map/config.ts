@@ -31,6 +31,7 @@ export const LAYER_COLORS = {
   monster: [239, 68, 68] as [number, number, number], // red-500
   boss: [6, 182, 212] as [number, number, number], // cyan-500
   elite: [168, 85, 247] as [number, number, number], // purple-500
+  hunt: [234, 179, 8] as [number, number, number], // yellow-500
   npc: [59, 130, 246] as [number, number, number], // blue-500
   portal: [34, 197, 94] as [number, number, number], // green-500
   chest: [14, 165, 233] as [number, number, number], // sky-500

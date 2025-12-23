@@ -5,6 +5,7 @@ export type EntityType =
   | "monster"
   | "boss"
   | "elite"
+  | "hunt"
   | "npc"
   | "portal"
   | "chest"
@@ -31,10 +32,11 @@ export interface MapEntity {
  * Monster-specific entity data
  */
 export interface MonsterMapEntity extends MapEntity {
-  type: "monster" | "boss" | "elite";
+  type: "monster" | "boss" | "elite" | "hunt";
   level: number;
   isBoss: boolean;
   isElite: boolean;
+  isHunt: boolean;
   isPatrolling: boolean;
   patrolWaypoints: [number, number][] | null;
 }
@@ -44,8 +46,29 @@ export interface MonsterMapEntity extends MapEntity {
  */
 export interface NpcMapEntity extends MapEntity {
   type: "npc";
+  // Service roles
   isVendor: boolean;
   isQuestGiver: boolean;
+  canRepair: boolean;
+  isBank: boolean;
+  isInnkeeper: boolean;
+  isSoulBinder: boolean;
+  // Training roles
+  isSkillTrainer: boolean;
+  isVeteranTrainer: boolean;
+  isAttributeReset: boolean;
+  // Specialized roles
+  isFactionVendor: boolean;
+  isEssenceTrader: boolean;
+  isAugmenter: boolean;
+  isPriestess: boolean;
+  isRenewalSage: boolean;
+  // Adventuring roles
+  isAdventurerTaskgiver: boolean;
+  isAdventurerVendor: boolean;
+  isMercenaryRecruiter: boolean;
+  // Other
+  isGuard: boolean;
 }
 
 /**
@@ -91,6 +114,7 @@ export interface GatheringMapEntity extends MapEntity {
  */
 export interface CraftingMapEntity extends MapEntity {
   type: "alchemy_table" | "crafting_station";
+  isCookingOven: boolean;
 }
 
 /**
@@ -109,18 +133,47 @@ export type AnyMapEntity =
  * Layer visibility toggle state
  */
 export interface LayerVisibility {
-  monsters: boolean;
+  // Monsters section
   bosses: boolean;
   elites: boolean;
-  npcs: boolean;
+  creatures: boolean; // renamed from "monsters"
+  hunts: boolean;
+
+  // NPCs section (all 18 types as separate toggles)
+  npcVendors: boolean;
+  npcQuestGivers: boolean;
+  npcRepair: boolean;
+  npcBanks: boolean;
+  npcInnkeepers: boolean;
+  npcSoulBinders: boolean;
+  npcSkillTrainers: boolean;
+  npcVeteranTrainers: boolean;
+  npcAttributeReset: boolean;
+  npcFactionVendors: boolean;
+  npcEssenceTraders: boolean;
+  npcAugmenters: boolean;
+  npcPriestesses: boolean;
+  npcRenewalSages: boolean;
+  npcAdventurerTasks: boolean;
+  npcAdventurerVendors: boolean;
+  npcMercenaryRecruiters: boolean;
+  npcGuards: boolean;
+
+  // Interactables section
   portals: boolean;
   portalArcs: boolean;
   chests: boolean;
   altars: boolean;
+  alchemyTables: boolean;
+  forges: boolean;
+  cookingOvens: boolean;
+
+  // Resources section
   gatheringPlants: boolean;
   gatheringMinerals: boolean;
   gatheringSparks: boolean;
-  crafting: boolean;
+
+  // Zones section
   subZones: boolean;
   parentZones: boolean;
 }
@@ -175,12 +228,16 @@ export interface MapEntityData {
  * Pre-filtered entity data (computed once, not on every render)
  */
 export interface FilteredMapData {
-  regularMonsters: MonsterMapEntity[];
+  creatures: MonsterMapEntity[]; // renamed from regularMonsters
   elites: MonsterMapEntity[];
   bosses: MonsterMapEntity[];
+  hunts: MonsterMapEntity[];
   plants: GatheringMapEntity[];
   minerals: GatheringMapEntity[];
   sparks: GatheringMapEntity[];
+  alchemyTables: CraftingMapEntity[];
+  forges: CraftingMapEntity[];
+  cookingOvens: CraftingMapEntity[];
   portalsWithDestinations: PortalMapEntity[];
   parentZones: ZoneBoundary[];
 }
