@@ -1,13 +1,18 @@
 <script lang="ts">
-  import type { AnyMapEntity, MonsterMapEntity } from "$lib/types/map";
+  import type {
+    AnyMapEntity,
+    MonsterMapEntity,
+    PortalMapEntity,
+  } from "$lib/types/map";
 
   interface Props {
     entity: AnyMapEntity;
     x: number;
     y: number;
+    isHoveringDestination?: boolean;
   }
 
-  let { entity, x, y }: Props = $props();
+  let { entity, x, y, isHoveringDestination = false }: Props = $props();
 
   function getEntityTypeName(entity: AnyMapEntity): string {
     switch (entity.type) {
@@ -20,7 +25,7 @@
       case "npc":
         return "NPC";
       case "portal":
-        return "Portal";
+        return isHoveringDestination ? "Portal Destination" : "Portal";
       case "chest":
         return "Chest";
       case "altar":
@@ -39,6 +44,17 @@
         return "Unknown";
     }
   }
+
+  function getPortalDescription(entity: AnyMapEntity): string | null {
+    if (entity.type !== "portal") return null;
+    const portal = entity as PortalMapEntity;
+    if (isHoveringDestination) {
+      return `From ${portal.zoneName}`;
+    } else if (portal.destinationZoneName) {
+      return `To ${portal.destinationZoneName}`;
+    }
+    return null;
+  }
 </script>
 
 <div
@@ -53,5 +69,12 @@
       <span class="ml-1">Lv. {monster.level}</span>
     {/if}
   </div>
-  <div class="text-xs text-muted-foreground">{entity.zoneName}</div>
+  {#if entity.type === "portal"}
+    {@const portalDesc = getPortalDescription(entity)}
+    {#if portalDesc}
+      <div class="text-xs text-muted-foreground">{portalDesc}</div>
+    {/if}
+  {:else}
+    <div class="text-xs text-muted-foreground">{entity.zoneName}</div>
+  {/if}
 </div>

@@ -42,6 +42,7 @@
   let hoveredEntity = $state<AnyMapEntity | null>(null);
   let hoverX = $state(0);
   let hoverY = $state(0);
+  let isHoveringDestination = $state(false);
 
   // Selected entity (for popup display)
   let selectedEntity = $state<AnyMapEntity | null>(null);
@@ -124,8 +125,10 @@
       hoveredEntity = info.object as AnyMapEntity;
       hoverX = info.x;
       hoverY = info.y;
+      isHoveringDestination = info.layer?.id === "portal-destinations";
     } else {
       hoveredEntity = null;
+      isHoveringDestination = false;
     }
   }
 
@@ -450,7 +453,12 @@
     />
 
     {#if hoveredEntity}
-      <MapTooltip entity={hoveredEntity} x={hoverX} y={hoverY} />
+      <MapTooltip
+        entity={hoveredEntity}
+        x={hoverX}
+        y={hoverY}
+        {isHoveringDestination}
+      />
     {/if}
 
     {#if selectedEntity}

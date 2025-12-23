@@ -293,23 +293,7 @@ export function createLayers(
       onClick: callbacks.onClick,
     }),
 
-    // Portals
-    new ScatterplotLayer({
-      id: "portals",
-      data: data.portals,
-      visible: visibility.portals,
-      getPosition: (d: AnyMapEntity) => d.position,
-      getFillColor: LAYER_COLORS.portal,
-      getRadius: LAYER_RADII.portal,
-      radiusUnits: "pixels",
-      radiusMinPixels: 4,
-      radiusMaxPixels: 12,
-      pickable: true,
-      onHover: callbacks.onHover,
-      onClick: callbacks.onClick,
-    }),
-
-    // Portal connection lines (pre-filtered, with updateTriggers for highlight)
+    // Portal connection lines (rendered first, below markers)
     new LineLayer({
       id: "portal-arcs",
       data: filtered.portalsWithDestinations,
@@ -331,43 +315,54 @@ export function createLayers(
       },
     }),
 
-    // Portal destination markers - background (green ring)
+    // Portal entry points - white fill with green stroke
     new ScatterplotLayer({
-      id: "portal-destinations-bg",
-      data: filtered.portalsWithDestinations,
-      visible: visibility.portalArcs,
-      getPosition: (d: PortalMapEntity) => d.destination,
-      getFillColor: LAYER_COLORS.portal,
-      getRadius: (d: PortalMapEntity) => (d.id === selectedPortalId ? 6 : 4),
+      id: "portals",
+      data: data.portals,
+      visible: visibility.portals,
+      getPosition: (d: AnyMapEntity) => d.position,
+      filled: true,
+      stroked: true,
+      getFillColor: [255, 255, 255, 255] as [number, number, number, number],
+      getLineColor: LAYER_COLORS.portal,
+      getRadius: LAYER_RADII.portal,
+      lineWidthUnits: "pixels",
+      getLineWidth: 2,
       radiusUnits: "pixels",
-      radiusMinPixels: 3,
-      radiusMaxPixels: 9,
-      pickable: false,
-      updateTriggers: {
-        getRadius: selectedPortalId,
-      },
+      radiusMinPixels: 4,
+      radiusMaxPixels: 12,
+      pickable: true,
+      onHover: callbacks.onHover,
+      onClick: callbacks.onClick,
     }),
 
-    // Portal destination markers - fill
+    // Portal destination markers - dark gray fill with green stroke
     new ScatterplotLayer({
       id: "portal-destinations",
       data: filtered.portalsWithDestinations,
       visible: visibility.portalArcs,
       getPosition: (d: PortalMapEntity) => d.destination,
-      getFillColor: (d: PortalMapEntity) =>
+      filled: true,
+      stroked: true,
+      getFillColor: [60, 60, 60, 255] as [number, number, number, number],
+      getLineColor: (d: PortalMapEntity) =>
         d.id === selectedPortalId
-          ? ARC_COLORS.portalHighlight.target
-          : ARC_COLORS.portal.target,
-      getRadius: (d: PortalMapEntity) => (d.id === selectedPortalId ? 5 : 3),
+          ? ARC_COLORS.portalHighlight.source
+          : ARC_COLORS.portal.source,
+      getRadius: (d: PortalMapEntity) => (d.id === selectedPortalId ? 6 : 4),
+      lineWidthUnits: "pixels",
+      getLineWidth: (d: PortalMapEntity) =>
+        d.id === selectedPortalId ? 2 : 1.5,
       radiusUnits: "pixels",
-      radiusMinPixels: 2,
-      radiusMaxPixels: 8,
+      radiusMinPixels: 3,
+      radiusMaxPixels: 10,
       pickable: true,
       onHover: callbacks.onHover,
       onClick: callbacks.onClick,
       updateTriggers: {
-        getFillColor: selectedPortalId,
+        getLineColor: selectedPortalId,
         getRadius: selectedPortalId,
+        getLineWidth: selectedPortalId,
       },
     }),
 
