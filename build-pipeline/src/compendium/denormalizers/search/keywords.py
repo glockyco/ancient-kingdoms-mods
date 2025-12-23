@@ -15,22 +15,23 @@ console = Console()
 # NPC role flags mapped to searchable keywords (including synonyms)
 NPC_ROLE_KEYWORDS = {
     "is_merchant": "vendor shop merchant buy sell store",
-    "is_quest_giver": "quest giver",
+    "is_quest_giver": "quest giver quests",
     "can_repair_equipment": "repair",
     "is_bank": "bank storage vault deposit",
-    "is_skill_master": "skill trainer skills teacher train",
-    "is_veteran_master": "veteran trainer",
-    "is_reset_attributes": "attribute reset",
+    "is_skill_master": "skill trainer skills teacher train respec",
+    "is_veteran_master": "veteran trainer respec",
+    "is_reset_attributes": "attribute reset respec",
     "is_soul_binder": "soul binder bind respawn",
     "is_inkeeper": "innkeeper inn rest tavern",
-    "is_taskgiver_adventurer": "adventurer tasks",
+    "is_taskgiver_adventurer": "adventurer tasks daily dailies",
     "is_merchant_adventurer": "adventurer vendor",
-    "is_recruiter_mercenaries": "mercenary recruiter",
+    "is_recruiter_mercenaries": "mercenary recruiter hire companion pet",
     "is_guard": "guard",
-    "is_faction_vendor": "faction vendor",
-    "is_essence_trader": "essence trader",
-    "is_priestess": "priestess renewal sage",
-    "is_augmenter": "augmenter",
+    "is_faction_vendor": "faction vendor reputation rep",
+    "is_essence_trader": "essence trader primal salvage",
+    "is_priestess": "priestess rune runes cursed blessed bless",
+    "is_augmenter": "augmenter socket remove",
+    "is_renewal_sage": "renewal sage reset respawn",
 }
 
 
@@ -45,8 +46,6 @@ def _generate_monster_keywords(
         keywords.append("elite")
     if is_hunt:
         keywords.append("hunt")
-    if not keywords:
-        keywords.append("creature")
     return " ".join(keywords) if keywords else None
 
 
