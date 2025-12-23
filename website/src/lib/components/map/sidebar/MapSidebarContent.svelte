@@ -19,7 +19,8 @@
     LevelFilter as LevelFilterType,
     LevelRanges,
   } from "$lib/types/map";
-  import { LAYER_COLORS, ZONE_COLORS, ARC_COLORS } from "$lib/map/config";
+  import { LAYER_COLORS, ZONE_COLORS } from "$lib/map/config";
+  import { toggleLayerVisibility } from "$lib/map/visibility";
 
   interface Props {
     visibility: LayerVisibility;
@@ -61,10 +62,7 @@
   }
 
   function toggle(key: keyof LayerVisibility) {
-    onVisibilityChange({
-      ...visibility,
-      [key]: !visibility[key],
-    });
+    onVisibilityChange(toggleLayerVisibility(visibility, key));
   }
 
   function rgbToColor(
@@ -101,12 +99,6 @@
       key: "portals",
       label: "Portals",
       color: LAYER_COLORS.portal,
-      icon: CircleDot,
-    },
-    {
-      key: "portalArcs",
-      label: "Portal Arcs",
-      color: ARC_COLORS.portal.source,
       icon: CircleDot,
     },
     { key: "chests", label: "Chests", color: LAYER_COLORS.chest, icon: Box },

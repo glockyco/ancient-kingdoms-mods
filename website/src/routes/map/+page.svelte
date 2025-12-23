@@ -60,7 +60,7 @@
     elites: true,
     npcs: true,
     portals: true,
-    portalArcs: false,
+    portalArcs: true,
     chests: true,
     altars: true,
     gatheringPlants: true,

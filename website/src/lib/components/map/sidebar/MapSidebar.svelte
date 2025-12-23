@@ -30,6 +30,7 @@
     LevelRanges,
   } from "$lib/types/map";
   import { LAYER_COLORS, ZONE_COLORS } from "$lib/map/config";
+  import { toggleLayerVisibility } from "$lib/map/visibility";
 
   interface Props {
     visibility: LayerVisibility;
@@ -156,10 +157,7 @@
   ];
 
   function toggleLayer(key: keyof LayerVisibility) {
-    onVisibilityChange({
-      ...visibility,
-      [key]: !visibility[key],
-    });
+    onVisibilityChange(toggleLayerVisibility(visibility, key));
   }
 
   function rgbToColor(
