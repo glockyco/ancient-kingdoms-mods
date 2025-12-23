@@ -296,7 +296,7 @@ async function loadChests(): Promise<ChestMapEntity[]> {
   return rows.map((r) => ({
     id: r.id,
     type: "chest" as const,
-    name: r.name,
+    name: "Chest",
     position: [r.position_x, -r.position_y] as [number, number],
     zoneId: r.zone_id,
     zoneName: r.zone_name,
