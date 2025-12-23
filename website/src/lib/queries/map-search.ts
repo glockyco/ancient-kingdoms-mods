@@ -405,7 +405,7 @@ async function searchChests(
     const y = -r.position_y!;
     return {
       id: r.id,
-      name: r.name,
+      name: "Chest",
       category: "chest" as const,
       bounds:
         r.position_x !== null
