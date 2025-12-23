@@ -1,5 +1,10 @@
 <script lang="ts">
   import type { MapSearchResult } from "$lib/queries/map-search";
+  import {
+    getActiveRoles,
+    normalizeRoles,
+    type RoleCategory,
+  } from "$lib/utils/roles";
   import Sword from "@lucide/svelte/icons/sword";
   import Shield from "@lucide/svelte/icons/shield";
   import Crown from "@lucide/svelte/icons/crown";
@@ -14,7 +19,31 @@
   import Hammer from "@lucide/svelte/icons/hammer";
   import CircleDot from "@lucide/svelte/icons/circle-dot";
   import MapPinOff from "@lucide/svelte/icons/map-pin-off";
+  import Scroll from "@lucide/svelte/icons/scroll";
+  import ShoppingBag from "@lucide/svelte/icons/shopping-bag";
+  import Wrench from "@lucide/svelte/icons/wrench";
+  import RefreshCw from "@lucide/svelte/icons/refresh-cw";
   import type { Component } from "svelte";
+
+  // Role category colors (matching RoleBadges.svelte)
+  const categoryColors: Record<RoleCategory, string> = {
+    quest: "text-orange-500",
+    merchant: "text-green-500",
+    service: "text-blue-500",
+    special: "text-purple-500",
+    combat: "text-red-500",
+    renewal: "text-teal-500",
+  };
+
+  // Role category icons (matching RoleBadges.svelte)
+  const categoryIcons: Record<RoleCategory, Component> = {
+    quest: Scroll,
+    merchant: ShoppingBag,
+    service: Wrench,
+    special: Sparkles,
+    combat: Shield,
+    renewal: RefreshCw,
+  };
 
   interface Props {
     result: MapSearchResult;
@@ -67,6 +96,15 @@
     }
     return result.name;
   }
+
+  // Get unique role categories for NPC results
+  let roleCategories = $derived.by(() => {
+    if (result.category !== "npc" || !result.roles) return [];
+    const normalizedRoles = normalizeRoles(result.roles);
+    const activeRoles = getActiveRoles(normalizedRoles);
+    const categories = new Set(activeRoles.map((r) => r.category));
+    return Array.from(categories) as RoleCategory[];
+  });
 </script>
 
 <div class="flex items-center gap-3 w-full">
@@ -79,6 +117,14 @@
       </div>
     {/if}
   </div>
+  {#if roleCategories.length > 0}
+    <div class="flex gap-1 shrink-0">
+      {#each roleCategories as cat (cat)}
+        {@const RoleIcon = categoryIcons[cat]}
+        <RoleIcon class="h-3.5 w-3.5 {categoryColors[cat]}" />
+      {/each}
+    </div>
+  {/if}
   {#if result.spawnCount}
     <span class="text-xs text-muted-foreground shrink-0"
       >{result.spawnCount} locations</span

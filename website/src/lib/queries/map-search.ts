@@ -47,6 +47,8 @@ export interface MapSearchResult {
   };
   /** Keywords matched (for displaying type badges) */
   keywords?: string;
+  /** NPC roles (only for category="npc") */
+  roles?: Record<string, boolean>;
 }
 
 /**
@@ -276,6 +278,7 @@ async function searchNpcs(
       zoneName: r.zone_name ?? undefined,
       spawnCount: r.spawn_count > 1 ? r.spawn_count : undefined,
       keywords: r.keywords ?? undefined,
+      roles: r.roles ? roles : undefined,
     };
   });
 }
