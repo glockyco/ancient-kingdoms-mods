@@ -7,6 +7,7 @@ import type {
   AltarMapEntity,
   ZoneBoundary,
 } from "$lib/types/map";
+import { EXCLUDED_ZONE_IDS } from "$lib/constants/exclusions";
 
 /**
  * Combined data type including all entity arrays needed for rendering.
@@ -24,6 +25,7 @@ export interface ZoneFocusedData extends FilteredMapData {
  * Combine pre-filtered data with raw entity arrays.
  * Returns STABLE array references - zone filtering is done on GPU, not here.
  * This prevents freezes when switching zones by keeping data arrays constant.
+ * Filters out entities without positions (they're kept in entityData for popups).
  */
 export function createZoneFocusedData(
   filtered: FilteredMapData,
@@ -31,10 +33,10 @@ export function createZoneFocusedData(
 ): ZoneFocusedData {
   return {
     ...filtered,
-    npcs: rawData.npcs,
-    portals: rawData.portals,
-    chests: rawData.chests,
-    altars: rawData.altars,
-    subZones: rawData.subZones,
+    npcs: rawData.npcs.filter((n) => n.position !== null),
+    portals: rawData.portals.filter((p) => p.position !== null),
+    chests: rawData.chests.filter((c) => c.position !== null),
+    altars: rawData.altars.filter((a) => a.position !== null),
+    subZones: rawData.subZones.filter((z) => !EXCLUDED_ZONE_IDS.has(z.zoneId)),
   };
 }

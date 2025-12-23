@@ -1,18 +1,6 @@
 import { query } from "$lib/db";
 import { EXCLUDED_ZONE_IDS } from "$lib/constants/exclusions";
 
-/**
- * Generate SQL clause to exclude spawns in excluded zones.
- * Returns empty string if no exclusions.
- */
-function getZoneExclusionClause(zoneColumn = "zone_id"): string {
-  if (EXCLUDED_ZONE_IDS.size === 0) return "";
-  const placeholders = Array.from(EXCLUDED_ZONE_IDS)
-    .map((id) => `'${id}'`)
-    .join(", ");
-  return ` AND ${zoneColumn} NOT IN (${placeholders})`;
-}
-
 export interface MapSearchBounds {
   minX: number;
   maxX: number;
@@ -266,7 +254,6 @@ async function searchNpcs(
     JOIN npcs n ON nf.rowid = n.rowid
     LEFT JOIN npc_spawns ns ON ns.npc_id = n.id
       AND ns.position_x IS NOT NULL
-      ${getZoneExclusionClause("ns.zone_id")}
     LEFT JOIN zones z ON z.id = ns.zone_id
     WHERE npcs_fts MATCH ?
     GROUP BY n.id
@@ -394,7 +381,6 @@ async function searchGatheringResources(
     JOIN gathering_resources gr ON grf.rowid = gr.rowid
     LEFT JOIN gathering_resource_spawns gs ON gs.resource_id = gr.id
       AND gs.position_x IS NOT NULL
-      ${getZoneExclusionClause("gs.zone_id")}
     LEFT JOIN zones z ON z.id = gs.zone_id
     WHERE gathering_resources_fts MATCH ?
     GROUP BY gr.id
@@ -451,7 +437,6 @@ async function searchChests(
     JOIN chests c ON cf.rowid = c.rowid
     LEFT JOIN zones z ON z.id = c.zone_id
     WHERE cf.name MATCH ?
-      ${getZoneExclusionClause("c.zone_id")}
     ORDER BY rank
     LIMIT ?
   `,
@@ -459,13 +444,13 @@ async function searchChests(
   );
 
   return rows.map((r) => {
-    const y = -r.position_y!;
+    const y = r.position_y !== null ? -r.position_y : null;
     return {
       id: r.id,
       name: "Chest",
       category: "chest" as const,
       bounds:
-        r.position_x !== null
+        r.position_x !== null && y !== null
           ? { minX: r.position_x, maxX: r.position_x, minY: y, maxY: y }
           : null,
       zoneId: r.zone_id ?? undefined,
@@ -504,7 +489,6 @@ async function searchAltars(
     JOIN altars a ON af.rowid = a.rowid
     LEFT JOIN zones z ON z.id = a.zone_id
     WHERE af.name MATCH ?
-      ${getZoneExclusionClause("a.zone_id")}
     ORDER BY rank
     LIMIT ?
   `,
@@ -512,14 +496,14 @@ async function searchAltars(
   );
 
   return rows.map((r) => {
-    const y = -r.position_y!;
+    const y = r.position_y !== null ? -r.position_y : null;
     return {
       id: r.id,
       name: r.name,
       category: "altar" as const,
       subcategory: r.type,
       bounds:
-        r.position_x !== null
+        r.position_x !== null && y !== null
           ? { minX: r.position_x, maxX: r.position_x, minY: y, maxY: y }
           : null,
       zoneId: r.zone_id ?? undefined,
@@ -560,7 +544,6 @@ async function searchCraftingStations(
       FROM crafting_stations_fts csf
       JOIN crafting_stations cs ON csf.rowid = cs.rowid
       WHERE crafting_stations_fts MATCH ?
-        ${getZoneExclusionClause("cs.zone_id")}
       ORDER BY rank
       LIMIT ?
     `,
@@ -580,7 +563,6 @@ async function searchCraftingStations(
       FROM alchemy_tables_fts atf
       JOIN alchemy_tables at ON atf.rowid = at.rowid
       WHERE alchemy_tables_fts MATCH ?
-        ${getZoneExclusionClause("at.zone_id")}
       ORDER BY rank
       LIMIT ?
     `,
@@ -646,7 +628,6 @@ async function searchPortals(
     LEFT JOIN zones tz ON tz.id = p.to_zone_id
     WHERE portals_fts MATCH ?
       AND p.is_template = 0
-      ${getZoneExclusionClause("p.from_zone_id")}
     ORDER BY rank
     LIMIT ?
   `,

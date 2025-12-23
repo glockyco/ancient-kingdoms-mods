@@ -101,7 +101,14 @@ export function computeSelectionData(
     return EMPTY_SELECTION;
   }
 
-  return entityIndex.get(entityId) ?? EMPTY_SELECTION;
+  const entities = entityIndex.get(entityId);
+  if (!entities) {
+    return EMPTY_SELECTION;
+  }
+
+  // Filter out entities without positions (can't highlight on map)
+  const renderable = entities.filter((e) => e.position !== null);
+  return renderable.length > 0 ? renderable : EMPTY_SELECTION;
 }
 
 /**
@@ -137,6 +144,7 @@ export function computePatrolPathData(
   const spawnConnections: PatrolPathData["spawnConnections"] = [];
 
   for (const monster of patrollingMonsters) {
+    if (!monster.position) continue;
     const wp = monster.patrolWaypoints!;
 
     // Add spawn-to-first-waypoint connection

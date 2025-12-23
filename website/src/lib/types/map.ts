@@ -23,7 +23,7 @@ export interface MapEntity {
   id: string;
   type: EntityType;
   name: string;
-  position: [number, number]; // [x, y] in game coordinates
+  position: [number, number] | null; // [x, y] in game coordinates, null for excluded zones
   zoneId: string;
   zoneName: string;
 }

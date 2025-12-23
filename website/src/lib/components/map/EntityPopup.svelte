@@ -192,12 +192,16 @@
       </div>
     {/if}
 
-    <div class="flex justify-between">
-      <span class="text-muted-foreground">Position</span>
-      <span class="font-mono text-xs"
-        >{entity.position[0].toFixed(0)}, {entity.position[1].toFixed(0)}</span
-      >
-    </div>
+    {#if entity.position}
+      <div class="flex justify-between">
+        <span class="text-muted-foreground">Position</span>
+        <span class="font-mono text-xs"
+          >{entity.position[0].toFixed(0)}, {entity.position[1].toFixed(
+            0,
+          )}</span
+        >
+      </div>
+    {/if}
 
     {#if url}
       <a

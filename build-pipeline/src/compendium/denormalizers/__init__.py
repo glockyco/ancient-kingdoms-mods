@@ -13,6 +13,7 @@ import sqlite3
 from rich.console import Console
 
 from compendium.denormalizers import (
+    exclusions,
     experience,
     items,
     monsters,
@@ -166,6 +167,9 @@ def run_all(conn: sqlite3.Connection) -> None:
         _apply_crafting_exclusions(conn, redactions)
     if redactions.exclude_ignore_journal:
         _apply_ignore_journal_exclusions(conn)
+
+    # Null coordinates for zones without in-game maps
+    exclusions.run(conn)
 
     # Phase 1: Monster drops (expand altar variants before item sources read drops)
     monsters.run_drops(conn)

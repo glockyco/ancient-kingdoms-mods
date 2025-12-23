@@ -127,7 +127,7 @@
   {/if}
   {#if result.spawnCount}
     <span class="text-xs text-muted-foreground shrink-0"
-      >{result.spawnCount} locations</span
+      >{result.spawnCount} spawns</span
     >
   {/if}
   {#if result.level}

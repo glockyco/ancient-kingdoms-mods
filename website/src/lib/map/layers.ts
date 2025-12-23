@@ -47,25 +47,36 @@ interface DeckModules {
 
 /**
  * Pre-filter entity data once on load (expensive operation, do once)
+ * Filters out entities without positions (they're kept in entityData for popups)
  */
 export function createFilteredData(data: MapEntityData): FilteredMapData {
+  // Only include entities with valid positions for rendering
+  const renderableMonsters = data.monsters.filter((m) => m.position !== null);
+  const renderableGathering = data.gathering.filter((g) => g.position !== null);
+  const renderableCrafting = data.crafting.filter((c) => c.position !== null);
+  const renderablePortals = data.portals.filter((p) => p.position !== null);
+
   return {
     // Creatures = regular monsters (not boss, not elite, not hunt)
-    creatures: data.monsters.filter(
+    creatures: renderableMonsters.filter(
       (m) => !m.isBoss && !m.isElite && !m.isHunt,
     ),
-    elites: data.monsters.filter((m) => m.isElite && !m.isBoss),
-    bosses: data.monsters.filter((m) => m.isBoss),
-    hunts: data.monsters.filter((m) => m.isHunt && !m.isBoss && !m.isElite),
-    plants: data.gathering.filter((g) => g.type === "gathering_plant"),
-    minerals: data.gathering.filter((g) => g.type === "gathering_mineral"),
-    sparks: data.gathering.filter((g) => g.type === "gathering_spark"),
-    alchemyTables: data.crafting.filter((c) => c.type === "alchemy_table"),
-    forges: data.crafting.filter(
+    elites: renderableMonsters.filter((m) => m.isElite && !m.isBoss),
+    bosses: renderableMonsters.filter((m) => m.isBoss),
+    hunts: renderableMonsters.filter(
+      (m) => m.isHunt && !m.isBoss && !m.isElite,
+    ),
+    plants: renderableGathering.filter((g) => g.type === "gathering_plant"),
+    minerals: renderableGathering.filter((g) => g.type === "gathering_mineral"),
+    sparks: renderableGathering.filter((g) => g.type === "gathering_spark"),
+    alchemyTables: renderableCrafting.filter((c) => c.type === "alchemy_table"),
+    forges: renderableCrafting.filter(
       (c) => c.type === "crafting_station" && !c.isCookingOven,
     ),
-    cookingOvens: data.crafting.filter((c) => c.isCookingOven),
-    portalsWithDestinations: data.portals.filter((p) => p.destination !== null),
+    cookingOvens: renderableCrafting.filter((c) => c.isCookingOven),
+    portalsWithDestinations: renderablePortals.filter(
+      (p) => p.destination !== null,
+    ),
     parentZones: calculateParentZoneBounds(data),
   };
 }
@@ -90,7 +101,7 @@ function calculateParentZoneBounds(data: MapEntityData): ZoneBoundary[] {
   >();
 
   for (const entity of allEntities) {
-    if (!entity.zoneName) continue;
+    if (!entity.zoneName || !entity.position) continue;
     const existing = byZone.get(entity.zoneName);
     if (existing) {
       existing.positions.push(entity.position);
