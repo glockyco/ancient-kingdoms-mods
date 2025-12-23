@@ -12,6 +12,7 @@
   import Hammer from "@lucide/svelte/icons/hammer";
   import MapPin from "@lucide/svelte/icons/map-pin";
   import Search from "@lucide/svelte/icons/search";
+  import MousePointerClick from "@lucide/svelte/icons/mouse-pointer-click";
   import MapSidebarSection from "./MapSidebarSection.svelte";
   import LevelFilter from "../LevelFilter.svelte";
   import type {
@@ -41,7 +42,7 @@
     onLevelFilterChange,
     levelRanges,
     onSearchClick,
-    expandedSections = ["entities", "gathering", "filters"],
+    expandedSections = ["entities", "interactables", "gathering", "filters"],
     onExpandedSectionsChange,
   }: Props = $props();
 
@@ -86,15 +87,19 @@
   }
 
   const entityLayers: LayerOption[] = [
+    { key: "bosses", label: "Bosses", color: LAYER_COLORS.boss, icon: Crown },
+    { key: "elites", label: "Elites", color: LAYER_COLORS.elite, icon: Shield },
     {
       key: "monsters",
       label: "Monsters",
       color: LAYER_COLORS.monster,
       icon: Sword,
     },
-    { key: "elites", label: "Elites", color: LAYER_COLORS.elite, icon: Shield },
-    { key: "bosses", label: "Bosses", color: LAYER_COLORS.boss, icon: Crown },
     { key: "npcs", label: "NPCs", color: LAYER_COLORS.npc, icon: Users },
+  ];
+
+  const interactableLayers: LayerOption[] = [
+    { key: "altars", label: "Altars", color: LAYER_COLORS.altar, icon: Flame },
     {
       key: "portals",
       label: "Portals",
@@ -102,10 +107,9 @@
       icon: CircleDot,
     },
     { key: "chests", label: "Chests", color: LAYER_COLORS.chest, icon: Box },
-    { key: "altars", label: "Altars", color: LAYER_COLORS.altar, icon: Flame },
     {
       key: "crafting",
-      label: "Crafting",
+      label: "Crafting Stations",
       color: LAYER_COLORS.crafting,
       icon: Hammer,
     },
@@ -126,7 +130,7 @@
     },
     {
       key: "gatheringSparks",
-      label: "Sparks",
+      label: "Radiant Sparks",
       color: LAYER_COLORS.gathering_spark,
       icon: Sparkles,
     },
@@ -134,15 +138,15 @@
 
   const zoneLayers: LayerOption[] = [
     {
-      key: "subZones",
-      label: "Sub-zones",
-      color: ZONE_COLORS.subZone.stroke,
+      key: "parentZones",
+      label: "Zones",
+      color: ZONE_COLORS.parentZone.stroke,
       icon: MapPin,
     },
     {
-      key: "parentZones",
-      label: "Parent Zones",
-      color: ZONE_COLORS.parentZone.stroke,
+      key: "subZones",
+      label: "Areas",
+      color: ZONE_COLORS.subZone.stroke,
       icon: MapPin,
     },
   ];
@@ -207,9 +211,24 @@
     </div>
   </MapSidebarSection>
 
-  <!-- Gathering section -->
+  <!-- Interactables section -->
   <MapSidebarSection
-    title="Gathering"
+    title="Interactables"
+    icon={MousePointerClick}
+    expanded={isSectionExpanded("interactables")}
+    onExpandedChange={(expanded) =>
+      handleSectionToggle("interactables", expanded)}
+  >
+    <div class="space-y-0.5">
+      {#each interactableLayers as layer (layer.key)}
+        {@render layerToggle(layer)}
+      {/each}
+    </div>
+  </MapSidebarSection>
+
+  <!-- Resources section -->
+  <MapSidebarSection
+    title="Resources"
     icon={Leaf}
     expanded={isSectionExpanded("gathering")}
     onExpandedChange={(expanded) => handleSectionToggle("gathering", expanded)}

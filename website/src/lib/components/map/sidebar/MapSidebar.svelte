@@ -18,7 +18,6 @@
   import Pickaxe from "@lucide/svelte/icons/pickaxe";
   import Sparkles from "@lucide/svelte/icons/sparkles";
   import Hammer from "@lucide/svelte/icons/hammer";
-  import MapPin from "@lucide/svelte/icons/map-pin";
   import Menu from "@lucide/svelte/icons/menu";
   import Search from "@lucide/svelte/icons/search";
   import * as Drawer from "$lib/components/ui/drawer";
@@ -29,7 +28,7 @@
     LevelFilter,
     LevelRanges,
   } from "$lib/types/map";
-  import { LAYER_COLORS, ZONE_COLORS } from "$lib/map/config";
+  import { LAYER_COLORS } from "$lib/map/config";
   import { toggleLayerVisibility } from "$lib/map/visibility";
 
   interface Props {
@@ -55,7 +54,12 @@
 
   // State initialized once on mount
   let isCollapsed = $state(false);
-  let expandedSections = $state<string[]>(["entities", "gathering", "filters"]);
+  let expandedSections = $state<string[]>([
+    "entities",
+    "interactables",
+    "gathering",
+    "filters",
+  ]);
   let drawerOpen = $state(false);
   let initialized = $state(false);
 
@@ -106,16 +110,20 @@
     label: string;
   }
 
-  const quickToggles: QuickToggle[] = [
+  const entityToggles: QuickToggle[] = [
+    { key: "bosses", icon: Crown, color: LAYER_COLORS.boss, label: "Bosses" },
+    { key: "elites", icon: Shield, color: LAYER_COLORS.elite, label: "Elites" },
     {
       key: "monsters",
       icon: Sword,
       color: LAYER_COLORS.monster,
       label: "Monsters",
     },
-    { key: "elites", icon: Shield, color: LAYER_COLORS.elite, label: "Elites" },
-    { key: "bosses", icon: Crown, color: LAYER_COLORS.boss, label: "Bosses" },
     { key: "npcs", icon: Users, color: LAYER_COLORS.npc, label: "NPCs" },
+  ];
+
+  const interactableToggles: QuickToggle[] = [
+    { key: "altars", icon: Flame, color: LAYER_COLORS.altar, label: "Altars" },
     {
       key: "portals",
       icon: CircleDot,
@@ -123,7 +131,15 @@
       label: "Portals",
     },
     { key: "chests", icon: Box, color: LAYER_COLORS.chest, label: "Chests" },
-    { key: "altars", icon: Flame, color: LAYER_COLORS.altar, label: "Altars" },
+    {
+      key: "crafting",
+      icon: Hammer,
+      color: LAYER_COLORS.crafting,
+      label: "Crafting Stations",
+    },
+  ];
+
+  const resourceToggles: QuickToggle[] = [
     {
       key: "gatheringPlants",
       icon: Leaf,
@@ -140,19 +156,7 @@
       key: "gatheringSparks",
       icon: Sparkles,
       color: LAYER_COLORS.gathering_spark,
-      label: "Sparks",
-    },
-    {
-      key: "crafting",
-      icon: Hammer,
-      color: LAYER_COLORS.crafting,
-      label: "Crafting",
-    },
-    {
-      key: "subZones",
-      icon: MapPin,
-      color: ZONE_COLORS.subZone.stroke,
-      label: "Zones",
+      label: "Radiant Sparks",
     },
   ];
 
@@ -273,7 +277,39 @@
           <Search class="h-5 w-5" />
         </button>
         <div class="w-8 border-t border-border mb-1"></div>
-        {#each quickToggles as toggle (toggle.key)}
+        {#each entityToggles as toggle (toggle.key)}
+          {@const Icon = toggle.icon}
+          {@const isActive = visibility[toggle.key]}
+          <button
+            type="button"
+            class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-md transition-colors {isActive
+              ? 'bg-muted'
+              : 'hover:bg-muted/50 opacity-50'}"
+            style={isActive ? `color: ${rgbToColor(toggle.color)}` : undefined}
+            onclick={() => toggleLayer(toggle.key)}
+            title="{toggle.label} ({isActive ? 'on' : 'off'})"
+          >
+            <Icon class="h-5 w-5" />
+          </button>
+        {/each}
+        <div class="w-8 border-t border-border my-1"></div>
+        {#each interactableToggles as toggle (toggle.key)}
+          {@const Icon = toggle.icon}
+          {@const isActive = visibility[toggle.key]}
+          <button
+            type="button"
+            class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-md transition-colors {isActive
+              ? 'bg-muted'
+              : 'hover:bg-muted/50 opacity-50'}"
+            style={isActive ? `color: ${rgbToColor(toggle.color)}` : undefined}
+            onclick={() => toggleLayer(toggle.key)}
+            title="{toggle.label} ({isActive ? 'on' : 'off'})"
+          >
+            <Icon class="h-5 w-5" />
+          </button>
+        {/each}
+        <div class="w-8 border-t border-border my-1"></div>
+        {#each resourceToggles as toggle (toggle.key)}
           {@const Icon = toggle.icon}
           {@const isActive = visibility[toggle.key]}
           <button
