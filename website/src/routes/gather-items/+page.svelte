@@ -17,7 +17,7 @@
     ResourceDropListView,
   } from "$lib/types/gather-items";
   import type { ResourceZoneInfo } from "$lib/queries/gather-items.server";
-  import { formatDuration } from "$lib/utils/format";
+  import { formatGatheringRespawn } from "$lib/utils/format";
   import Leaf from "@lucide/svelte/icons/leaf";
   import Trees from "@lucide/svelte/icons/trees";
   import Castle from "@lucide/svelte/icons/castle";
@@ -71,19 +71,6 @@
     "Radiant Spark": "bg-purple-600",
     Resource: "bg-gray-400",
   };
-
-  // Format respawn time based on resource type
-  function formatRespawnForType(type: string, respawnTime: number): string {
-    if (type === "Radiant Spark") {
-      return "1m40s – 1h";
-    }
-    if (type === "Mineral" && respawnTime > 0) {
-      const min = formatDuration(Math.floor(respawnTime / 2));
-      const max = formatDuration(respawnTime);
-      return `${min} – ${max}`;
-    }
-    return formatDuration(respawnTime);
-  }
 
   // Get unique types for filter
   const uniqueTypes = $derived(
@@ -256,7 +243,7 @@
       <span class="text-muted-foreground">-</span>
     {/if}
   {:else if cell.column.id === "respawn_time"}
-    {formatRespawnForType(row.original.type, row.original.respawn_time)}
+    {formatGatheringRespawn(row.original.type, row.original.respawn_time)}
   {:else if cell.column.id === "zones"}
     {@const zones = row.original.zones}
     <div class="flex gap-1 whitespace-nowrap">

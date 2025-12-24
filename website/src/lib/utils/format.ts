@@ -104,6 +104,30 @@ export function getQualityTextColorClass(quality: number): string {
 }
 
 /**
+ * Format gathering resource respawn time with type-specific logic:
+ * - Radiant Sparks: Fixed "1m40s – 1h" range
+ * - Minerals: Range from half respawn to full respawn
+ * - Plants/Other: Single value
+ *
+ * @param type - Entity type (gathering_spark, gathering_mineral) or display name (Radiant Spark, Mineral)
+ * @param respawnTime - Respawn time in seconds
+ */
+export function formatGatheringRespawn(
+  type: string,
+  respawnTime: number,
+): string {
+  if (type === "gathering_spark" || type === "Radiant Spark") {
+    return "1m40s – 1h";
+  }
+  if ((type === "gathering_mineral" || type === "Mineral") && respawnTime > 0) {
+    const min = formatDuration(Math.floor(respawnTime / 2));
+    const max = formatDuration(respawnTime);
+    return `${min} – ${max}`;
+  }
+  return formatDuration(respawnTime);
+}
+
+/**
  * Roman numerals for gathering resource tiers (0-4 maps to I-V)
  */
 const ROMAN_NUMERALS = ["I", "II", "III", "IV", "V"] as const;

@@ -8,6 +8,7 @@
     formatPercent,
     formatSpawnTimeWindow,
     getQualityTextColorClass,
+    formatGatheringRespawn,
   } from "$lib/utils/format";
   import { hasNpcRole, getNpcRoles } from "$lib/utils/tooltip";
   import {
@@ -690,7 +691,8 @@
       {/if}
       <div class="flex justify-between">
         <span class="text-muted-foreground">Respawn</span>
-        <span>{formatDuration(gathering.respawnTime)}</span>
+        <span>{formatGatheringRespawn(entity.type, gathering.respawnTime)}</span
+        >
       </div>
 
       <!-- Drops (lazy-loaded) -->
