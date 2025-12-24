@@ -166,6 +166,8 @@ interface NpcSpawnRow {
   zone_id: string;
   zone_name: string;
   role_bitmask: number;
+  respawn_dungeon_id: number;
+  renewal_dungeon_name: string | null;
 }
 
 async function loadNpcSpawns(): Promise<NpcMapEntity[]> {
@@ -178,10 +180,13 @@ async function loadNpcSpawns(): Promise<NpcMapEntity[]> {
       ns.position_y,
       ns.zone_id,
       z.name as zone_name,
-      ns.role_bitmask
+      ns.role_bitmask,
+      n.respawn_dungeon_id,
+      rz.name as renewal_dungeon_name
     FROM npc_spawns ns
     JOIN npcs n ON n.id = ns.npc_id
     JOIN zones z ON z.id = ns.zone_id
+    LEFT JOIN zones rz ON rz.zone_id = n.respawn_dungeon_id
   `);
 
   return rows.map((r) => ({
@@ -195,6 +200,9 @@ async function loadNpcSpawns(): Promise<NpcMapEntity[]> {
     zoneId: r.zone_id,
     zoneName: r.zone_name,
     roleBitmask: r.role_bitmask,
+    // respawn_dungeon_id = 100 is a special case for World Bosses, not a real zone
+    renewalDungeonName:
+      r.respawn_dungeon_id === 100 ? "World Bosses" : r.renewal_dungeon_name,
   }));
 }
 
@@ -209,6 +217,9 @@ interface PortalRow {
   to_zone_id: string | null;
   to_zone_name: string | null;
   is_closed: number;
+  required_item_name: string | null;
+  required_level: number;
+  required_item_level: number;
 }
 
 async function loadPortals(): Promise<PortalMapEntity[]> {
@@ -223,10 +234,14 @@ async function loadPortals(): Promise<PortalMapEntity[]> {
       p.destination_y,
       p.to_zone_id,
       tz.name as to_zone_name,
-      p.is_closed
+      p.is_closed,
+      i.name as required_item_name,
+      COALESCE(tz.required_level, 0) as required_level,
+      p.level_required as required_item_level
     FROM portals p
     JOIN zones fz ON fz.id = p.from_zone_id
     LEFT JOIN zones tz ON tz.id = p.to_zone_id
+    LEFT JOIN items i ON i.id = p.required_item_id
     WHERE p.is_template = 0
   `);
 
@@ -247,6 +262,9 @@ async function loadPortals(): Promise<PortalMapEntity[]> {
     destinationZoneId: r.to_zone_id,
     destinationZoneName: r.to_zone_name,
     isClosed: Boolean(r.is_closed),
+    requiredItemName: r.required_item_name,
+    requiredLevel: r.required_level,
+    requiredItemLevel: r.required_item_level,
   }));
 }
 
@@ -301,6 +319,7 @@ interface AltarRow {
   zone_id: string;
   zone_name: string;
   min_level_required: number;
+  required_activation_item_name: string | null;
 }
 
 async function loadAltars(): Promise<AltarMapEntity[]> {
@@ -313,7 +332,8 @@ async function loadAltars(): Promise<AltarMapEntity[]> {
       a.position_y,
       a.zone_id,
       z.name as zone_name,
-      a.min_level_required
+      a.min_level_required,
+      a.required_activation_item_name
     FROM altars a
     JOIN zones z ON z.id = a.zone_id
   `);
@@ -330,6 +350,7 @@ async function loadAltars(): Promise<AltarMapEntity[]> {
     zoneName: r.zone_name,
     altarType: r.type as "forgotten" | "avatar",
     minLevel: r.min_level_required,
+    activationItemName: r.required_activation_item_name,
   }));
 }
 

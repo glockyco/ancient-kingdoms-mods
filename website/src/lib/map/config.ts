@@ -145,3 +145,22 @@ export const PATROL_COLORS = {
   waypoint: [250, 204, 21, 255] as [number, number, number, number], // yellow-400 solid
   spawnConnection: [250, 204, 21, 100] as [number, number, number, number], // yellow-400 dimmer
 } as const;
+
+/**
+ * Tailwind border color classes for tooltip left border by entity type
+ */
+export const ENTITY_BORDER_COLORS: Record<string, string> = {
+  monster: "border-l-red-500",
+  boss: "border-l-cyan-500",
+  elite: "border-l-purple-500",
+  hunt: "border-l-yellow-500",
+  npc: "border-l-blue-500",
+  portal: "border-l-green-500",
+  chest: "border-l-sky-500",
+  altar: "border-l-orange-500",
+  gathering_plant: "border-l-lime-500",
+  gathering_mineral: "border-l-stone-500",
+  gathering_spark: "border-l-purple-500",
+  alchemy_table: "border-l-violet-500",
+  crafting_station: "border-l-violet-500",
+};

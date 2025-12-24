@@ -71,6 +71,7 @@ export const NPC_ROLE_BITS = {
 export interface NpcMapEntity extends MapEntity {
   type: "npc";
   roleBitmask: number;
+  renewalDungeonName: string | null;
 }
 
 /**
@@ -82,6 +83,9 @@ export interface PortalMapEntity extends MapEntity {
   destinationZoneId: string | null;
   destinationZoneName: string | null;
   isClosed: boolean;
+  requiredItemName: string | null;
+  requiredLevel: number;
+  requiredItemLevel: number;
 }
 
 /**
@@ -100,6 +104,7 @@ export interface AltarMapEntity extends MapEntity {
   type: "altar";
   altarType: "forgotten" | "avatar";
   minLevel: number;
+  activationItemName: string | null;
 }
 
 /**

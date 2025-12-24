@@ -2,10 +2,20 @@
   import type {
     AnyMapEntity,
     MonsterMapEntity,
+    NpcMapEntity,
     PortalMapEntity,
+    ChestMapEntity,
+    AltarMapEntity,
     GatheringMapEntity,
+    CraftingMapEntity,
   } from "$lib/types/map";
   import { toRomanNumeral } from "$lib/utils/format";
+  import {
+    calculateTooltipPosition,
+    getNpcRoles,
+    hasNpcRole,
+  } from "$lib/utils/tooltip";
+  import { ENTITY_BORDER_COLORS } from "$lib/map/config";
 
   interface Props {
     entity: AnyMapEntity;
@@ -16,10 +26,40 @@
 
   let { entity, x, y, isHoveringDestination = false }: Props = $props();
 
-  function getEntityTypeName(entity: AnyMapEntity): string {
+  let tooltipRef: HTMLDivElement | null = $state(null);
+  let tooltipWidth = $state(200);
+  let tooltipHeight = $state(80);
+
+  $effect(() => {
+    if (tooltipRef) {
+      tooltipWidth = tooltipRef.offsetWidth;
+      tooltipHeight = tooltipRef.offsetHeight;
+    }
+  });
+
+  let position = $derived(
+    calculateTooltipPosition(x, y, tooltipWidth, tooltipHeight),
+  );
+
+  let borderColorClass = $derived(
+    ENTITY_BORDER_COLORS[entity.type] ?? "border-l-gray-500",
+  );
+
+  let typeName = $derived(getEntityTypeName(entity));
+
+  function getDisplayName(entity: AnyMapEntity): string {
+    if (entity.type === "alchemy_table") return "Alchemy Table";
+    if (entity.type === "crafting_station") {
+      const crafting = entity as CraftingMapEntity;
+      return crafting.isCookingOven ? "Cooking Oven" : "Forge";
+    }
+    return entity.name;
+  }
+
+  function getEntityTypeName(entity: AnyMapEntity): string | null {
     switch (entity.type) {
       case "monster":
-        return "Monster";
+        return "Creature";
       case "boss":
         return "Boss";
       case "elite":
@@ -29,67 +69,113 @@
       case "npc":
         return "NPC";
       case "portal":
-        return isHoveringDestination ? "Portal Destination" : "Portal";
-      case "chest":
-        return "Chest";
-      case "altar":
-        return "Altar";
+        return isHoveringDestination ? "Portal Destination" : null;
       case "gathering_plant":
         return "Plant";
       case "gathering_mineral":
         return "Mineral";
-      case "gathering_spark":
-        return "Spark";
       case "alchemy_table":
-        return "Alchemy Table";
       case "crafting_station":
         return "Crafting Station";
+      case "chest":
+      case "altar":
+      case "gathering_spark":
+        return null;
       default:
-        return "Unknown";
+        return null;
     }
-  }
-
-  function getPortalDescription(entity: AnyMapEntity): string | null {
-    if (entity.type !== "portal") return null;
-    const portal = entity as PortalMapEntity;
-    if (isHoveringDestination) {
-      return `From ${portal.zoneName}`;
-    } else if (portal.destinationZoneName) {
-      return `To ${portal.destinationZoneName}`;
-    }
-    return null;
   }
 </script>
 
 <div
-  class="pointer-events-none fixed z-50 rounded-lg border bg-popover px-3 py-2 text-sm shadow-lg"
-  style="left: {x + 12}px; top: {y + 12}px;"
+  bind:this={tooltipRef}
+  class="pointer-events-none fixed z-50 rounded-lg border border-l-[3px] {borderColorClass} bg-popover px-3 py-2 text-sm shadow-lg"
+  style="left: {position.left}px; top: {position.top}px;"
 >
-  <div class="font-medium">{entity.name}</div>
-  <div class="text-muted-foreground">
-    {getEntityTypeName(
-      entity,
-    )}<!--
-    -->{#if entity.type === "monster" || entity.type === "boss" || entity.type === "elite" || entity.type === "hunt"}<!--
-      -->{@const monster =
-        entity as MonsterMapEntity}<!--
-      --><span class="ml-1"
-        >Lv. {monster.level}</span
-      ><!--
-    -->{:else if entity.type === "gathering_plant" || entity.type === "gathering_mineral"}<!--
-      -->{@const gathering =
-        entity as GatheringMapEntity}<!--
-      -->, Tier {toRomanNumeral(
-        gathering.level,
-      )}<!--
-    -->{/if}
-  </div>
-  {#if entity.type === "portal"}
-    {@const portalDesc = getPortalDescription(entity)}
-    {#if portalDesc}
-      <div class="text-xs text-muted-foreground">{portalDesc}</div>
-    {/if}
-  {:else}
-    <div class="text-xs text-muted-foreground">{entity.zoneName}</div>
+  <!-- Name -->
+  <div class="font-medium">{getDisplayName(entity)}</div>
+
+  <!-- Type + Level line (only for entities that have a type subtitle) -->
+  {#if typeName || entity.type === "monster" || entity.type === "boss" || entity.type === "elite" || entity.type === "hunt" || entity.type === "gathering_plant" || entity.type === "gathering_mineral"}
+    <div class="text-muted-foreground">
+      {typeName ??
+        ""}<!--
+      -->{#if entity.type === "monster" || entity.type === "boss" || entity.type === "elite" || entity.type === "hunt"}<!--
+        -->{@const monster =
+          entity as MonsterMapEntity}<!--
+        -->{#if typeName}<span
+            class="ml-1">Lv. {monster.level}</span
+          >{:else}Lv. {monster.level}{/if}<!--
+      -->{:else if entity.type === "gathering_plant" || entity.type === "gathering_mineral"}<!--
+        -->{@const gathering =
+          entity as GatheringMapEntity}<!--
+        -->, Tier {toRomanNumeral(
+          gathering.level,
+        )}<!--
+      -->{/if}
+    </div>
   {/if}
+
+  <!-- Status indicators -->
+  {#if entity.type === "npc"}
+    {@const npc = entity as NpcMapEntity}
+    {@const roles = getNpcRoles(npc.roleBitmask)}
+    {#if roles.length > 0}
+      <div class="mt-0.5 flex flex-wrap gap-1">
+        {#each roles as role (role)}
+          <span
+            class="rounded bg-blue-500/20 px-1 py-0.5 text-[10px] text-blue-400"
+          >
+            {role}
+          </span>
+        {/each}
+      </div>
+    {/if}
+    {#if npc.renewalDungeonName && hasNpcRole(npc.roleBitmask, "isRenewalSage")}
+      <div class="text-xs text-muted-foreground">
+        Resets: {npc.renewalDungeonName}
+      </div>
+    {/if}
+  {:else if entity.type === "chest"}
+    {@const chest = entity as ChestMapEntity}
+    {#if chest.keyRequiredName}
+      <div class="text-xs text-amber-400">Key: {chest.keyRequiredName}</div>
+    {/if}
+  {:else if entity.type === "altar"}
+    {@const altar = entity as AltarMapEntity}
+    {#if altar.activationItemName}
+      <div class="text-xs text-amber-400">
+        Requires: {altar.activationItemName}
+      </div>
+    {/if}
+    {#if altar.minLevel > 0}
+      <div class="text-xs text-muted-foreground">Lv. {altar.minLevel}+</div>
+    {/if}
+  {:else if entity.type === "monster" || entity.type === "boss" || entity.type === "elite" || entity.type === "hunt"}
+    {@const monster = entity as MonsterMapEntity}
+    {#if monster.isPatrolling}
+      <div class="text-xs text-muted-foreground">Patrolling</div>
+    {/if}
+  {:else if entity.type === "portal"}
+    {@const portal = entity as PortalMapEntity}
+    {#if portal.isClosed}
+      <div class="text-xs text-red-400">Closed</div>
+    {/if}
+    {#if portal.requiredItemName}
+      <div class="text-xs text-amber-400">Key: {portal.requiredItemName}</div>
+    {/if}
+    {#if portal.requiredLevel > 0}
+      <div class="text-xs text-muted-foreground">
+        Lv. {portal.requiredLevel}+
+      </div>
+    {/if}
+    {#if portal.requiredItemLevel > 0}
+      <div class="text-xs text-muted-foreground">
+        Item Lv. {portal.requiredItemLevel}+
+      </div>
+    {/if}
+  {/if}
+
+  <!-- Zone -->
+  <div class="text-xs text-muted-foreground">{entity.zoneName}</div>
 </div>
