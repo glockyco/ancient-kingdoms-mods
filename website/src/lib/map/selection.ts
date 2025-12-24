@@ -241,6 +241,7 @@ export function computeRelatedEntities(
   if (selected.type === "portal") {
     const portal = selected as PortalMapEntity;
     if (
+      portal.isClosed ||
       !portal.killRequirementSpawnIds ||
       portal.killRequirementSpawnIds.length === 0
     ) {
