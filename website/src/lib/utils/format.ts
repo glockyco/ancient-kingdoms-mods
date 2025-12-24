@@ -66,3 +66,19 @@ export function formatItemType(type: string | null | undefined): string {
     `Unknown item type: "${type}". Add it to itemTypeDisplayNames.`,
   );
 }
+
+/**
+ * Roman numerals for gathering resource tiers (0-4 maps to I-V)
+ */
+const ROMAN_NUMERALS = ["I", "II", "III", "IV", "V"] as const;
+
+/**
+ * Converts a gathering resource tier (0-4) to a roman numeral (I-V).
+ * Falls back to numeric string for values outside the expected range.
+ */
+export function toRomanNumeral(tier: number): string {
+  if (tier >= 0 && tier < ROMAN_NUMERALS.length) {
+    return ROMAN_NUMERALS[tier];
+  }
+  return String(tier);
+}

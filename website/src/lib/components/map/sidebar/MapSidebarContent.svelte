@@ -447,6 +447,7 @@
       max={levelRanges.gatheringMax}
       value={[levelFilter.gatheringMin, levelFilter.gatheringMax]}
       onchange={handleGatheringLevelChange}
+      useRomanNumerals
     />
     <div class="space-y-0.5">
       {#each gatheringLayers as layer (layer.key)}

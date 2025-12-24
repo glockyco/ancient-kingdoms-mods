@@ -1,6 +1,7 @@
 <script lang="ts">
   import * as Card from "$lib/components/ui/card";
   import { Button } from "$lib/components/ui/button";
+  import { toRomanNumeral } from "$lib/utils/format";
   import type {
     AnyMapEntity,
     MonsterMapEntity,
@@ -184,11 +185,11 @@
       {/if}
     {/if}
 
-    {#if entity.type === "gathering_plant" || entity.type === "gathering_mineral" || entity.type === "gathering_spark"}
+    {#if entity.type === "gathering_plant" || entity.type === "gathering_mineral"}
       {@const gathering = entity as GatheringMapEntity}
       <div class="flex justify-between">
-        <span class="text-muted-foreground">Level</span>
-        <span>{gathering.level}</span>
+        <span class="text-muted-foreground">Tier</span>
+        <span>{toRomanNumeral(gathering.level)}</span>
       </div>
     {/if}
 

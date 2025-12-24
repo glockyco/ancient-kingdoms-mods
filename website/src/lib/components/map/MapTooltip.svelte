@@ -3,7 +3,9 @@
     AnyMapEntity,
     MonsterMapEntity,
     PortalMapEntity,
+    GatheringMapEntity,
   } from "$lib/types/map";
+  import { toRomanNumeral } from "$lib/utils/format";
 
   interface Props {
     entity: AnyMapEntity;
@@ -65,11 +67,22 @@
 >
   <div class="font-medium">{entity.name}</div>
   <div class="text-muted-foreground">
-    {getEntityTypeName(entity)}
-    {#if entity.type === "monster" || entity.type === "boss" || entity.type === "elite" || entity.type === "hunt"}
-      {@const monster = entity as MonsterMapEntity}
-      <span class="ml-1">Lv. {monster.level}</span>
-    {/if}
+    {getEntityTypeName(
+      entity,
+    )}<!--
+    -->{#if entity.type === "monster" || entity.type === "boss" || entity.type === "elite" || entity.type === "hunt"}<!--
+      -->{@const monster =
+        entity as MonsterMapEntity}<!--
+      --><span class="ml-1"
+        >Lv. {monster.level}</span
+      ><!--
+    -->{:else if entity.type === "gathering_plant" || entity.type === "gathering_mineral"}<!--
+      -->{@const gathering =
+        entity as GatheringMapEntity}<!--
+      -->, Tier {toRomanNumeral(
+        gathering.level,
+      )}<!--
+    -->{/if}
   </div>
   {#if entity.type === "portal"}
     {@const portalDesc = getPortalDescription(entity)}

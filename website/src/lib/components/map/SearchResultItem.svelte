@@ -5,6 +5,7 @@
     normalizeRoles,
     type RoleCategory,
   } from "$lib/utils/roles";
+  import { toRomanNumeral } from "$lib/utils/format";
   import Sword from "@lucide/svelte/icons/sword";
   import Shield from "@lucide/svelte/icons/shield";
   import Crown from "@lucide/svelte/icons/crown";
@@ -130,9 +131,16 @@
       >{result.spawnCount} spawns</span
     >
   {/if}
-  {#if result.level}
-    <span class="text-xs text-muted-foreground shrink-0">Lv.{result.level}</span
-    >
+  {#if result.level != null}
+    {#if result.category === "resource" && !result.keywords?.includes("spark")}
+      <span class="text-xs text-muted-foreground shrink-0"
+        >{toRomanNumeral(result.level)}</span
+      >
+    {:else if result.category !== "resource"}
+      <span class="text-xs text-muted-foreground shrink-0"
+        >Lv.{result.level}</span
+      >
+    {/if}
   {/if}
   {#if !result.bounds}
     <span

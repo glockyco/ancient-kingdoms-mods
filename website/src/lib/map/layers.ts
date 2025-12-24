@@ -462,6 +462,7 @@ export function createLayers(
     },
   });
 
+  // Radiant sparks use zone-only filtering (excluded from tier filter)
   const gatheringSparksLayer = createEntityLayer<GatheringMapEntity>({
     id: "gathering-sparks",
     data: filtered.sparks,
@@ -469,15 +470,11 @@ export function createLayers(
     iconType: "gathering_spark",
     color: LAYER_COLORS.gathering_spark,
     radius: LAYER_RADII.gathering,
-    extensions: [levelZoneFilterExt],
-    getFilterValue: (d) => [d.level, isInZone(d.zoneId)],
-    filterRange: [
-      [levelFilter.gatheringMin, levelFilter.gatheringMax],
-      [1, 1],
-    ],
+    extensions: [zoneFilterExt],
+    getFilterValue: (d) => isInZone(d.zoneId),
+    filterRange: [1, 1],
     updateTriggers: {
       getFilterValue: focusedZoneId,
-      filterRange: [levelFilter.gatheringMin, levelFilter.gatheringMax],
     },
   });
 
