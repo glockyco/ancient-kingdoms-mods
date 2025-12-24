@@ -92,7 +92,7 @@ export function flyToBounds(
 ): void {
   if (!deckInstance) return;
 
-  const { duration = 1000, padding = 1.1, maxZoom = 4 } = options;
+  const { duration = 1000, padding = 1.1, maxZoom = 2 } = options;
 
   // Get actual viewport dimensions from deck instance
   const viewportWidth = deckInstance.width || 1000;
