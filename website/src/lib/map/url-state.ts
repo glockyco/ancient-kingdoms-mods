@@ -313,7 +313,42 @@ export function urlStateToLayerVisibility(
 let urlUpdateTimer: ReturnType<typeof setTimeout> | null = null;
 
 /**
- * Debounced URL update to avoid excessive history entries during pan/zoom
+ * Cancel any pending debounced URL update
+ */
+export function cancelPendingUrlUpdate(): void {
+  if (urlUpdateTimer) {
+    clearTimeout(urlUpdateTimer);
+    urlUpdateTimer = null;
+  }
+}
+
+/**
+ * Immediate URL update, cancels any pending debounced update.
+ * Use for discrete changes like filter toggles, selection changes.
+ */
+export function immediateUpdateUrlState(
+  viewState: { x: number; y: number; zoom: number },
+  layers: LayerVisibility,
+  levelFilter: LevelFilter,
+  levelRanges?: LevelRanges,
+  selectedEntityId?: string | null,
+  selectedEntityType?: string | null,
+  focusedZoneId?: string | null,
+): void {
+  cancelPendingUrlUpdate();
+  updateUrlState(
+    viewState,
+    layers,
+    levelFilter,
+    levelRanges,
+    selectedEntityId,
+    selectedEntityType,
+    focusedZoneId,
+  );
+}
+
+/**
+ * Debounced URL update for continuous changes like pan/zoom.
  */
 export function debouncedUpdateUrlState(
   viewState: { x: number; y: number; zoom: number },
@@ -323,7 +358,7 @@ export function debouncedUpdateUrlState(
   selectedEntityId?: string | null,
   selectedEntityType?: string | null,
   focusedZoneId?: string | null,
-  delay = 500,
+  delay = 150,
 ): void {
   if (urlUpdateTimer) {
     clearTimeout(urlUpdateTimer);

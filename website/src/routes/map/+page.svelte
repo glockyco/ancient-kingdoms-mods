@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { untrack } from "svelte";
   import { browser } from "$app/environment";
   import { MapSidebar } from "$lib/components/map/sidebar";
   import MapTooltip from "$lib/components/map/MapTooltip.svelte";
@@ -24,6 +25,7 @@
     parseUrlState,
     urlStateToLayerVisibility,
     debouncedUpdateUrlState,
+    immediateUpdateUrlState,
     getDefaultLevelFilter,
     getDefaultLayerVisibility,
   } from "$lib/map/url-state";
@@ -438,13 +440,37 @@
     updateLayers();
   });
 
-  // Sync URL when view state, layer visibility, level filter, selection, or zone focus changes
+  // Sync URL with debounce for continuous changes (pan/zoom, level sliders)
   $effect(() => {
+    void currentViewState;
+    void levelFilter;
     if (!isLoading && entityData) {
       debouncedUpdateUrlState(
         currentViewState,
         layerVisibility,
         levelFilter,
+        entityData.levelRanges,
+        selectedEntityId,
+        selectedEntityType,
+        focusedZoneId,
+      );
+    }
+  });
+
+  // Sync URL immediately for discrete changes (layer toggles, selection, zone focus)
+  $effect(() => {
+    void layerVisibility;
+    void selectedEntityId;
+    void selectedEntityType;
+    void focusedZoneId;
+    if (!isLoading && entityData) {
+      // Use untrack to read non-tracked values without making them dependencies
+      const viewState = untrack(() => currentViewState);
+      const filter = untrack(() => levelFilter);
+      immediateUpdateUrlState(
+        viewState,
+        layerVisibility,
+        filter,
         entityData.levelRanges,
         selectedEntityId,
         selectedEntityType,
