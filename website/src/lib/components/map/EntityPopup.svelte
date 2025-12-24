@@ -377,13 +377,15 @@
           </div>
           <div class="max-h-48 space-y-0.5 overflow-y-auto pr-2">
             {#each npcDetails.itemsSold as item, i (i)}
-              <ItemLink
-                itemId={item.itemId}
-                itemName={item.itemName}
-                tooltipHtml={item.tooltipHtml}
-                colorClass={getQualityTextColorClass(item.quality)}
-                class="truncate"
-              />
+              <div>
+                <ItemLink
+                  itemId={item.itemId}
+                  itemName={item.itemName}
+                  tooltipHtml={item.tooltipHtml}
+                  colorClass={getQualityTextColorClass(item.quality)}
+                  class="truncate"
+                />
+              </div>
             {/each}
           </div>
         </div>
