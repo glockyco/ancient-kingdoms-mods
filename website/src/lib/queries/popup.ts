@@ -81,10 +81,20 @@ export interface GatheringPopupDetails {
 }
 
 /**
+ * Boss drop info for altar popup
+ */
+export interface PopupAltarBossDrop {
+  monsterId: string;
+  monsterName: string;
+  drops: PopupDropItem[];
+}
+
+/**
  * Altar popup details (lazy-loaded)
  */
 export interface AltarPopupDetails {
   rewards: PopupAltarReward[];
+  bossDrops: PopupAltarBossDrop[];
 }
 
 interface MonsterDropRow {
@@ -413,11 +423,22 @@ export async function loadAltarPopupDetails(
   );
 
   if (!altar) {
-    return { rewards: [] };
+    return { rewards: [], bossDrops: [] };
   }
+
+  // Collect altar reward item IDs to exclude from boss drops
+  const altarRewardIds = new Set<string>(
+    [
+      altar.reward_normal_id,
+      altar.reward_magic_id,
+      altar.reward_epic_id,
+      altar.reward_legendary_id,
+    ].filter((id): id is string => id !== null),
+  );
 
   // Extract boss monster ID from final wave
   const bossMonsterDrops: Map<string, number> = new Map();
+  const bossDrops: PopupAltarBossDrop[] = [];
   if (altar.waves) {
     try {
       const waves = JSON.parse(altar.waves) as Array<{
@@ -429,23 +450,78 @@ export async function loadAltarPopupDetails(
         const bossIds = [
           ...new Set(finalWave.monsters.map((m) => m.monster_id)),
         ];
-        // Look up each boss's drops
-        for (const bossId of bossIds) {
-          const [boss] = await query<{ drops: string | null }>(
-            `SELECT drops FROM monsters WHERE id = ?`,
-            [bossId],
+        // Look up each monster's drops
+        for (const monsterId of bossIds) {
+          const [monster] = await query<{
+            name: string;
+            drops: string | null;
+            is_boss: number;
+            is_elite: number;
+          }>(
+            `SELECT name, drops, is_boss, is_elite FROM monsters WHERE id = ?`,
+            [monsterId],
           );
-          if (boss?.drops) {
+          if (monster?.drops) {
             try {
-              const drops = JSON.parse(boss.drops) as Array<{
+              const drops = JSON.parse(monster.drops) as Array<{
                 item_id: string;
+                item_name: string;
+                quality: number;
                 rate: number;
               }>;
               for (const drop of drops) {
-                // Keep the highest rate if item appears in multiple boss drops
+                // Keep the highest rate if item appears in multiple monster drops
                 const existing = bossMonsterDrops.get(drop.item_id);
                 if (!existing || drop.rate > existing) {
                   bossMonsterDrops.set(drop.item_id, drop.rate);
+                }
+              }
+
+              // Only show bestiary drops for bosses/elites
+              if (monster.is_boss || monster.is_elite) {
+                const itemIds = drops.map((d) => d.item_id);
+                if (itemIds.length > 0) {
+                  const bestiaryItems = await query<{
+                    id: string;
+                    is_bestiary_drop: number;
+                    tooltip_html: string | null;
+                  }>(
+                    `SELECT id, is_bestiary_drop, tooltip_html FROM items WHERE id IN (${itemIds.map(() => "?").join(",")})`,
+                    itemIds,
+                  );
+                  const bestiaryMap = new Map(
+                    bestiaryItems.map((i) => [
+                      i.id,
+                      {
+                        isBestiary: i.is_bestiary_drop,
+                        tooltipHtml: i.tooltip_html,
+                      },
+                    ]),
+                  );
+
+                  const bestiaryDrops = drops
+                    .filter(
+                      (d) =>
+                        bestiaryMap.get(d.item_id)?.isBestiary &&
+                        !altarRewardIds.has(d.item_id),
+                    )
+                    .map((d) => ({
+                      itemId: d.item_id,
+                      itemName: d.item_name,
+                      quality: d.quality,
+                      dropRate: d.rate,
+                      tooltipHtml:
+                        bestiaryMap.get(d.item_id)?.tooltipHtml ?? null,
+                      isBestiary: true,
+                    }));
+
+                  if (bestiaryDrops.length > 0) {
+                    bossDrops.push({
+                      monsterId,
+                      monsterName: monster.name,
+                      drops: bestiaryDrops,
+                    });
+                  }
                 }
               }
             } catch {
@@ -517,5 +593,5 @@ export async function loadAltarPopupDetails(
     }
   }
 
-  return { rewards };
+  return { rewards, bossDrops };
 }

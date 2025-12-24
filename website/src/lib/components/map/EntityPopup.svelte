@@ -628,6 +628,36 @@
           </div>
         </div>
       {/if}
+
+      <!-- Boss bestiary drops (lazy-loaded) -->
+      {#if altarDetails && altarDetails.bossDrops.length > 0}
+        {#each altarDetails.bossDrops as bossDrop (bossDrop.monsterId)}
+          <div class="border-t pt-2">
+            <div class="mb-1 font-medium text-muted-foreground">
+              <a href="/monsters/{bossDrop.monsterId}" class="hover:underline">
+                {bossDrop.monsterName}
+              </a>
+              Drops
+            </div>
+            <div class="max-h-48 space-y-0.5 overflow-y-auto pr-2">
+              {#each bossDrop.drops as drop, i (i)}
+                <div class="flex justify-between gap-2">
+                  <ItemLink
+                    itemId={drop.itemId}
+                    itemName={drop.itemName}
+                    tooltipHtml={drop.tooltipHtml}
+                    colorClass={getQualityTextColorClass(drop.quality)}
+                    class="truncate"
+                  />
+                  <span class="shrink-0 text-muted-foreground"
+                    >{formatPercent(drop.dropRate)}</span
+                  >
+                </div>
+              {/each}
+            </div>
+          </div>
+        {/each}
+      {/if}
     {/if}
 
     <!-- Gathering Section -->
