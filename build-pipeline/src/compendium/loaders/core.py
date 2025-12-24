@@ -471,7 +471,11 @@ def load_gather_items(conn: sqlite3.Connection, export_dir: Path) -> None:
             "gold_max": chest.gold_max,
             "item_reward_id": chest.item_reward_id,
             "item_reward_amount": chest.item_reward_amount,
-            "chest_reward_probability": chest.chest_reward_probability,
+            # Game uses 0 = guaranteed (100%), >0 = actual probability
+            # Convert to standard: 0 = 0%, 1 = 100%
+            "chest_reward_probability": 1.0
+            if chest.chest_reward_probability == 0
+            else chest.chest_reward_probability,
             "respawn_time": chest.respawn_time,
             "decrease_faction": chest.decrease_faction,
         }

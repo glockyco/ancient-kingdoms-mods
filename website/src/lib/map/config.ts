@@ -135,6 +135,9 @@ export const ARC_COLORS = {
 export const HIGHLIGHT_COLORS = {
   ring: [255, 255, 255, 255] as [number, number, number, number], // white
   fill: [255, 255, 255, 40] as [number, number, number, number], // white with low alpha
+  // Related entity colors (for blocker spawns when selecting a summon spawn)
+  relatedRing: [251, 146, 60, 255] as [number, number, number, number], // orange-400
+  relatedFill: [251, 146, 60, 60] as [number, number, number, number], // orange-400 with low alpha
 } as const;
 
 /**
@@ -144,6 +147,13 @@ export const PATROL_COLORS = {
   path: [250, 204, 21, 200] as [number, number, number, number], // yellow-400
   waypoint: [250, 204, 21, 255] as [number, number, number, number], // yellow-400 solid
   spawnConnection: [250, 204, 21, 100] as [number, number, number, number], // yellow-400 dimmer
+} as const;
+
+/**
+ * Relation arc colors (summon spawn → blocker connections)
+ */
+export const RELATION_ARC_COLORS = {
+  arc: [251, 146, 60, 180] as [number, number, number, number], // orange-400 with some transparency
 } as const;
 
 /**

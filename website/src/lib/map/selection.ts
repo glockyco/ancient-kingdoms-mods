@@ -34,11 +34,30 @@ export const EMPTY_PATROL_DATA: PatrolPathData = {
 };
 
 /**
+ * Pre-computed relation arc data for rendering (summon spawn → blockers)
+ */
+export interface RelationArcData {
+  /** Arcs from selected summon spawn(s) to blocker spawn(s) */
+  arcs: Array<{ source: [number, number]; target: [number, number] }>;
+}
+
+/**
+ * Stable empty relation arc data
+ */
+export const EMPTY_RELATION_ARCS: RelationArcData = {
+  arcs: [],
+};
+
+/**
  * Pre-indexed entity data for O(1) selection lookup.
- * Maps entity ID to array of entities with that ID (for multi-spawn highlighting).
+ * For monsters: indexed by monsterId (groups all spawns of same monster)
+ * For others: indexed by entity id
  */
 export interface EntityIndex {
-  monsters: Map<string, AnyMapEntity[]>;
+  /** Monsters indexed by monsterId (for selection highlighting) */
+  monsters: Map<string, MonsterMapEntity[]>;
+  /** Monsters indexed by spawn ID (for blocker lookup) */
+  monstersBySpawnId: Map<string, MonsterMapEntity>;
   npcs: Map<string, AnyMapEntity[]>;
   portals: Map<string, AnyMapEntity[]>;
   chests: Map<string, AnyMapEntity[]>;
@@ -67,8 +86,37 @@ export function createEntityIndex(data: MapEntityData): EntityIndex {
     return index;
   }
 
+  // Index monsters by monsterId (groups all spawns of same monster)
+  function indexMonstersByMonsterId(
+    monsters: MonsterMapEntity[],
+  ): Map<string, MonsterMapEntity[]> {
+    const index = new Map<string, MonsterMapEntity[]>();
+    for (const monster of monsters) {
+      const key = monster.monsterId;
+      const existing = index.get(key);
+      if (existing) {
+        existing.push(monster);
+      } else {
+        index.set(key, [monster]);
+      }
+    }
+    return index;
+  }
+
+  // Index monsters by spawn ID (for blocker lookup)
+  function indexMonstersBySpawnId(
+    monsters: MonsterMapEntity[],
+  ): Map<string, MonsterMapEntity> {
+    const index = new Map<string, MonsterMapEntity>();
+    for (const monster of monsters) {
+      index.set(monster.id, monster);
+    }
+    return index;
+  }
+
   return {
-    monsters: indexEntities(data.monsters),
+    monsters: indexMonstersByMonsterId(data.monsters),
+    monstersBySpawnId: indexMonstersBySpawnId(data.monsters),
     npcs: indexEntities(data.npcs),
     portals: indexEntities(data.portals),
     chests: indexEntities(data.chests),
@@ -168,6 +216,47 @@ export function computePatrolPathData(
 }
 
 /**
+ * Compute related entities (blockers for summon spawns).
+ * When a summon spawn is selected, returns the specific blocker spawns.
+ * Uses pre-built index for O(1) lookup.
+ * Call via $derived so it's cached and only recomputed when selection changes.
+ */
+export function computeRelatedEntities(
+  selectionData: AnyMapEntity[],
+  index: EntityIndex | null,
+): AnyMapEntity[] {
+  if (
+    !index ||
+    selectionData === EMPTY_SELECTION ||
+    selectionData.length === 0
+  ) {
+    return EMPTY_SELECTION;
+  }
+
+  // Check if the selected entity is a summon spawn with blocker spawn IDs
+  const selectedMonster = selectionData[0] as MonsterMapEntity;
+  if (
+    !selectedMonster ||
+    selectedMonster.spawnType !== "summon" ||
+    !selectedMonster.blockerSpawnIds ||
+    selectedMonster.blockerSpawnIds.length === 0
+  ) {
+    return EMPTY_SELECTION;
+  }
+
+  // Look up each blocker spawn by its specific ID
+  const blockers: MonsterMapEntity[] = [];
+  for (const spawnId of selectedMonster.blockerSpawnIds) {
+    const monster = index.monstersBySpawnId.get(spawnId);
+    if (monster && monster.position !== null) {
+      blockers.push(monster);
+    }
+  }
+
+  return blockers.length > 0 ? blockers : EMPTY_SELECTION;
+}
+
+/**
  * Get the entity index for a given type/category.
  */
 function getIndexForType(
@@ -205,4 +294,40 @@ function getIndexForType(
     default:
       return null;
   }
+}
+
+/**
+ * Compute relation arcs from selected summon spawns to their blocker spawns.
+ * Call via $derived so it's cached and only recomputed when selection changes.
+ */
+export function computeRelationArcs(
+  selectionData: AnyMapEntity[],
+  relatedEntities: AnyMapEntity[],
+): RelationArcData {
+  if (
+    selectionData === EMPTY_SELECTION ||
+    selectionData.length === 0 ||
+    relatedEntities === EMPTY_SELECTION ||
+    relatedEntities.length === 0
+  ) {
+    return EMPTY_RELATION_ARCS;
+  }
+
+  const arcs: RelationArcData["arcs"] = [];
+
+  // Create arcs from each selected summon spawn to each blocker spawn
+  for (const selected of selectionData) {
+    if (!selected.position) continue;
+
+    for (const related of relatedEntities) {
+      if (!related.position) continue;
+
+      arcs.push({
+        source: selected.position,
+        target: related.position,
+      });
+    }
+  }
+
+  return arcs.length > 0 ? { arcs } : EMPTY_RELATION_ARCS;
 }

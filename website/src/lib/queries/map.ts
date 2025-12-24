@@ -88,6 +88,40 @@ interface MonsterSpawnRow {
   is_hunt: number;
   is_patrolling: number;
   patrol_waypoints: string | null;
+  // Popup fields
+  respawn_time: number;
+  respawn_probability: number;
+  spawn_time_start: number;
+  spawn_time_end: number;
+  base_exp: number;
+  drops: string | null;
+  spawn_type: string;
+  source_monster_id: string | null;
+  source_monster_name: string | null;
+  source_spawn_probability: number | null;
+  source_summon_kill_monster_id: string | null;
+  source_summon_kill_monster_name: string | null;
+  source_summon_kill_count: number | null;
+  blocker_spawn_ids: string | null;
+}
+
+/**
+ * Count total drops and bestiary drops from monster drops JSON
+ */
+function countDrops(dropsJson: string | null): {
+  dropCount: number;
+  bestiaryDropCount: number;
+} {
+  if (!dropsJson) return { dropCount: 0, bestiaryDropCount: 0 };
+  try {
+    const drops = JSON.parse(dropsJson) as Array<{ is_bestiary?: boolean }>;
+    return {
+      dropCount: drops.length,
+      bestiaryDropCount: drops.filter((d) => d.is_bestiary).length,
+    };
+  } catch {
+    return { dropCount: 0, bestiaryDropCount: 0 };
+  }
 }
 
 async function loadMonsterSpawns(): Promise<MonsterMapEntity[]> {
@@ -107,7 +141,27 @@ async function loadMonsterSpawns(): Promise<MonsterMapEntity[]> {
       m.is_elite,
       m.is_hunt,
       ms.is_patrolling,
-      ms.patrol_waypoints
+      ms.patrol_waypoints,
+      -- Popup fields
+      (m.death_time + m.respawn_time) as respawn_time,
+      m.respawn_probability,
+      m.spawn_time_start,
+      m.spawn_time_end,
+      m.base_exp,
+      m.drops,
+      ms.spawn_type,
+      ms.source_monster_id,
+      ms.source_monster_name,
+      ms.source_spawn_probability,
+      ms.source_summon_kill_monster_id,
+      ms.source_summon_kill_monster_name,
+      ms.source_summon_kill_count,
+      -- Blocker spawn IDs for summon spawns (specific spawns that block this)
+      (
+        SELECT json_group_array(stp.spawn_id)
+        FROM summon_trigger_placeholders stp
+        WHERE stp.trigger_id = ms.source_summon_trigger_id
+      ) as blocker_spawn_ids
     FROM monster_spawns ms
     JOIN monsters m ON m.id = ms.monster_id
     JOIN zones z ON z.id = ms.zone_id
@@ -137,8 +191,12 @@ async function loadMonsterSpawns(): Promise<MonsterMapEntity[]> {
     else if (r.is_elite) type = "elite";
     else if (r.is_hunt) type = "hunt";
 
+    // Count drops
+    const { dropCount, bestiaryDropCount } = countDrops(r.drops);
+
     return {
-      id: r.monster_id,
+      id: r.id, // Use spawn ID for individual spawn tracking
+      monsterId: r.monster_id, // Original monster ID for finding related spawns
       type,
       name: r.name,
       position:
@@ -153,8 +211,42 @@ async function loadMonsterSpawns(): Promise<MonsterMapEntity[]> {
       isHunt: Boolean(r.is_hunt),
       isPatrolling: Boolean(r.is_patrolling),
       patrolWaypoints,
+      // Popup fields
+      respawnTime: r.respawn_time,
+      respawnProbability: r.respawn_probability,
+      spawnTimeStart: r.spawn_time_start,
+      spawnTimeEnd: r.spawn_time_end,
+      baseExp: r.base_exp,
+      dropCount,
+      bestiaryDropCount,
+      spawnType: r.spawn_type as "regular" | "summon" | "placeholder" | "altar",
+      sourceMonsterName: r.source_monster_name,
+      sourceMonsterId: r.source_monster_id,
+      sourceSpawnProbability: r.source_spawn_probability,
+      summonKillMonsterName: r.source_summon_kill_monster_name,
+      summonKillMonsterId: r.source_summon_kill_monster_id,
+      summonKillCount: r.source_summon_kill_count,
+      blockerSpawnIds: parseBlockerSpawnIds(r.blocker_spawn_ids),
     };
   });
+}
+
+/**
+ * Parse blocker spawn IDs from JSON array string.
+ * Returns null if empty or invalid.
+ */
+function parseBlockerSpawnIds(json: string | null): string[] | null {
+  if (!json) return null;
+  try {
+    const ids = JSON.parse(json) as string[];
+    // json_group_array returns [null] when there are no matches
+    if (ids.length === 0 || (ids.length === 1 && ids[0] === null)) {
+      return null;
+    }
+    return ids;
+  } catch {
+    return null;
+  }
 }
 
 interface NpcSpawnRow {
@@ -168,6 +260,11 @@ interface NpcSpawnRow {
   role_bitmask: number;
   respawn_dungeon_id: number;
   renewal_dungeon_name: string | null;
+  // Popup fields
+  quests_offered: string | null;
+  items_sold: string | null;
+  teleport_zone_id: string | null;
+  teleport_zone_name: string | null;
 }
 
 async function loadNpcSpawns(): Promise<NpcMapEntity[]> {
@@ -182,28 +279,59 @@ async function loadNpcSpawns(): Promise<NpcMapEntity[]> {
       z.name as zone_name,
       ns.role_bitmask,
       n.respawn_dungeon_id,
-      rz.name as renewal_dungeon_name
+      rz.name as renewal_dungeon_name,
+      -- Popup fields
+      n.quests_offered,
+      n.items_sold,
+      n.teleport_zone_id,
+      tz.name as teleport_zone_name
     FROM npc_spawns ns
     JOIN npcs n ON n.id = ns.npc_id
     JOIN zones z ON z.id = ns.zone_id
     LEFT JOIN zones rz ON rz.zone_id = n.respawn_dungeon_id
+    LEFT JOIN zones tz ON tz.id = n.teleport_zone_id
   `);
 
-  return rows.map((r) => ({
-    id: r.npc_id,
-    type: "npc" as const,
-    name: r.name,
-    position:
-      r.position_x !== null && r.position_y !== null
-        ? [r.position_x, -r.position_y]
-        : null,
-    zoneId: r.zone_id,
-    zoneName: r.zone_name,
-    roleBitmask: r.role_bitmask,
-    // respawn_dungeon_id = 100 is a special case for World Bosses, not a real zone
-    renewalDungeonName:
-      r.respawn_dungeon_id === 100 ? "World Bosses" : r.renewal_dungeon_name,
-  }));
+  return rows.map((r) => {
+    // Count quests and items
+    let questCount = 0;
+    let itemsSoldCount = 0;
+    try {
+      if (r.quests_offered) {
+        questCount = JSON.parse(r.quests_offered).length;
+      }
+    } catch {
+      /* empty */
+    }
+    try {
+      if (r.items_sold) {
+        itemsSoldCount = JSON.parse(r.items_sold).length;
+      }
+    } catch {
+      /* empty */
+    }
+
+    return {
+      id: r.npc_id,
+      type: "npc" as const,
+      name: r.name,
+      position:
+        r.position_x !== null && r.position_y !== null
+          ? [r.position_x, -r.position_y]
+          : null,
+      zoneId: r.zone_id,
+      zoneName: r.zone_name,
+      roleBitmask: r.role_bitmask,
+      // respawn_dungeon_id = 100 is a special case for World Bosses, not a real zone
+      renewalDungeonName:
+        r.respawn_dungeon_id === 100 ? "World Bosses" : r.renewal_dungeon_name,
+      // Popup fields
+      questCount,
+      itemsSoldCount,
+      hasTeleport: r.teleport_zone_id !== null,
+      teleportDestName: r.teleport_zone_name,
+    };
+  });
 }
 
 interface PortalRow {
@@ -277,6 +405,10 @@ interface ChestRow {
   zone_name: string;
   key_required_id: string | null;
   key_required_name: string | null;
+  // Popup fields
+  respawn_time: number;
+  drop_count: number;
+  random_drop_count: number;
 }
 
 async function loadChests(): Promise<ChestMapEntity[]> {
@@ -289,7 +421,13 @@ async function loadChests(): Promise<ChestMapEntity[]> {
       c.zone_id,
       z.name as zone_name,
       c.key_required_id,
-      i.name as key_required_name
+      i.name as key_required_name,
+      -- Popup fields
+      c.respawn_time,
+      (SELECT COUNT(*) FROM chest_drops cd WHERE cd.chest_id = c.id) as drop_count,
+      (SELECT COUNT(*) FROM chest_drops cd
+       JOIN items di ON di.id = cd.item_id
+       WHERE cd.chest_id = c.id AND di.random_items IS NOT NULL) as random_drop_count
     FROM chests c
     JOIN zones z ON z.id = c.zone_id
     LEFT JOIN items i ON i.id = c.key_required_id
@@ -307,6 +445,10 @@ async function loadChests(): Promise<ChestMapEntity[]> {
     zoneName: r.zone_name,
     keyRequiredId: r.key_required_id,
     keyRequiredName: r.key_required_name,
+    // Popup fields
+    respawnTime: r.respawn_time,
+    dropCount: r.drop_count,
+    randomDropCount: r.random_drop_count,
   }));
 }
 
@@ -320,6 +462,34 @@ interface AltarRow {
   zone_name: string;
   min_level_required: number;
   required_activation_item_name: string | null;
+  // Popup fields
+  total_waves: number;
+  reward_normal_name: string | null;
+  reward_magic_name: string | null;
+  reward_epic_name: string | null;
+  reward_legendary_name: string | null;
+  waves: string | null;
+}
+
+/**
+ * Extract final wave boss names from altar waves JSON.
+ * Final wave typically has a single boss monster (or a unique monster type).
+ */
+function extractFinalBossNames(wavesJson: string | null): string[] {
+  if (!wavesJson) return [];
+  try {
+    const waves = JSON.parse(wavesJson) as Array<{
+      monsters: Array<{ monster_id: string; monster_name: string }>;
+    }>;
+    if (waves.length === 0) return [];
+    // Get the last wave - the boss is typically the unique monster in the final wave
+    const finalWave = waves[waves.length - 1];
+    // Get unique monster names from final wave
+    const names = finalWave.monsters.map((m) => m.monster_name);
+    return [...new Set(names)];
+  } catch {
+    return [];
+  }
 }
 
 async function loadAltars(): Promise<AltarMapEntity[]> {
@@ -333,7 +503,14 @@ async function loadAltars(): Promise<AltarMapEntity[]> {
       a.zone_id,
       z.name as zone_name,
       a.min_level_required,
-      a.required_activation_item_name
+      a.required_activation_item_name,
+      -- Popup fields
+      a.total_waves,
+      a.reward_normal_name,
+      a.reward_magic_name,
+      a.reward_epic_name,
+      a.reward_legendary_name,
+      a.waves
     FROM altars a
     JOIN zones z ON z.id = a.zone_id
   `);
@@ -351,6 +528,13 @@ async function loadAltars(): Promise<AltarMapEntity[]> {
     altarType: r.type as "forgotten" | "avatar",
     minLevel: r.min_level_required,
     activationItemName: r.required_activation_item_name,
+    // Popup fields
+    totalWaves: r.total_waves,
+    rewardNormalName: r.reward_normal_name,
+    rewardMagicName: r.reward_magic_name,
+    rewardEpicName: r.reward_epic_name,
+    rewardLegendaryName: r.reward_legendary_name,
+    finalBossNames: extractFinalBossNames(r.waves),
   }));
 }
 
@@ -365,6 +549,10 @@ interface GatheringRow {
   is_plant: number;
   is_mineral: number;
   is_radiant_spark: number;
+  // Popup fields
+  respawn_time: number;
+  tool_required_name: string | null;
+  drop_count: number;
 }
 
 async function loadGatheringSpawns(): Promise<GatheringMapEntity[]> {
@@ -379,10 +567,15 @@ async function loadGatheringSpawns(): Promise<GatheringMapEntity[]> {
       gr.level,
       gr.is_plant,
       gr.is_mineral,
-      gr.is_radiant_spark
+      gr.is_radiant_spark,
+      -- Popup fields
+      gr.respawn_time,
+      t.name as tool_required_name,
+      (SELECT COUNT(*) FROM gathering_resource_drops grd WHERE grd.resource_id = gr.id) as drop_count
     FROM gathering_resource_spawns gs
     JOIN gathering_resources gr ON gr.id = gs.resource_id
     JOIN zones z ON z.id = gs.zone_id
+    LEFT JOIN items t ON t.id = gr.tool_required_id
   `);
 
   return rows.map((r) => {
@@ -403,6 +596,10 @@ async function loadGatheringSpawns(): Promise<GatheringMapEntity[]> {
       zoneName: r.zone_name,
       resourceName: r.name,
       level: r.level,
+      // Popup fields
+      respawnTime: r.respawn_time,
+      toolRequiredName: r.tool_required_name,
+      dropCount: r.drop_count,
     };
   });
 }

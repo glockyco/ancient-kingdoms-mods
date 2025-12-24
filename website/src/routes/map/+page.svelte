@@ -15,7 +15,11 @@
   import {
     computeSelectionData,
     computePatrolPathData,
+    computeRelatedEntities,
+    computeRelationArcs,
     createEntityIndex,
+    EMPTY_SELECTION,
+    EMPTY_RELATION_ARCS,
     type EntityIndex,
   } from "$lib/map/selection";
   import { createZoneFocusedData } from "$lib/map/zone-filter";
@@ -118,6 +122,18 @@
   // Only recomputed when selectionData changes
   let patrolPathData = $derived(computePatrolPathData(selectionData));
 
+  // Derived: pre-computed related entities (blockers for summon spawns)
+  // These get a different highlight color (orange instead of white)
+  // Uses pre-built index for O(1) lookup
+  let relatedEntities = $derived(
+    computeRelatedEntities(selectionData, entityIndex),
+  );
+
+  // Derived: pre-computed relation arcs (from summon spawns to their blockers)
+  let relationArcData = $derived(
+    computeRelationArcs(selectionData, relatedEntities),
+  );
+
   // Derived: combined data for layer rendering (stable array references)
   let zoneFocusedData = $derived(
     entityData && filteredData
@@ -153,6 +169,8 @@
       focusedZoneId,
       selectionData,
       patrolPathData,
+      relatedEntities,
+      relationArcData,
       iconAtlas ?? undefined,
     );
 
@@ -177,7 +195,9 @@
     if (info.object) {
       const entity = info.object as AnyMapEntity;
       selectedEntity = entity;
-      selectedEntityId = entity.id;
+      // For monsters, use monsterId to group all spawns of the same monster
+      // For other entities, use the entity id
+      selectedEntityId = getSelectionId(entity);
       selectedEntityType = entity.type;
     } else {
       // Click on empty space clears selection
@@ -187,10 +207,42 @@
     }
   }
 
+  /**
+   * Get the ID to use for selection highlighting.
+   * For monsters: use monsterId (groups all spawns)
+   * For others: use entity id
+   */
+  function getSelectionId(entity: AnyMapEntity): string {
+    if (
+      entity.type === "monster" ||
+      entity.type === "boss" ||
+      entity.type === "elite" ||
+      entity.type === "hunt"
+    ) {
+      return (entity as import("$lib/types/map").MonsterMapEntity).monsterId;
+    }
+    return entity.id;
+  }
+
   function handleClosePopup() {
     selectedEntity = null;
     selectedEntityId = null;
     selectedEntityType = null;
+  }
+
+  function handleSelectMonster(monsterId: string) {
+    // Find a monster spawn with this monsterId and select it
+    if (!entityData) return;
+
+    const monster = entityData.monsters.find(
+      (m) => m.monsterId === monsterId && m.position !== null,
+    );
+    if (monster) {
+      selectedEntity = monster;
+      // Use monsterId for selection (groups all spawns of the same monster)
+      selectedEntityId = monster.monsterId;
+      selectedEntityType = monster.type;
+    }
   }
 
   // Keyboard handlers
@@ -220,20 +272,32 @@
     // Find and show popup for the TARGET entity (not the search result)
     // This shows the altar popup when searching for altar-spawned monsters
     if (entityData && target.category !== "zone") {
-      const dataArrays: Record<string, AnyMapEntity[]> = {
-        monster: entityData.monsters,
-        npc: entityData.npcs,
-        resource: entityData.gathering,
-        chest: entityData.chests,
-        altar: entityData.altars,
-        portal: entityData.portals,
-        crafting: entityData.crafting,
-      };
-      const entity = dataArrays[target.category]?.find(
-        (e) => e.id === target.id,
-      );
-      if (entity) {
-        selectedEntity = entity;
+      // Check if this is a monster category (uses monsterId instead of id)
+      if (target.category === "monster") {
+        // For monsters, search by monsterId
+        const monster = entityData.monsters.find(
+          (m) =>
+            (m as import("$lib/types/map").MonsterMapEntity).monsterId ===
+            target.id,
+        );
+        if (monster) {
+          selectedEntity = monster;
+        }
+      } else {
+        const dataArrays: Record<string, AnyMapEntity[]> = {
+          npc: entityData.npcs,
+          resource: entityData.gathering,
+          chest: entityData.chests,
+          altar: entityData.altars,
+          portal: entityData.portals,
+          crafting: entityData.crafting,
+        };
+        const entity = dataArrays[target.category]?.find(
+          (e) => e.id === target.id,
+        );
+        if (entity) {
+          selectedEntity = entity;
+        }
       }
     }
 
@@ -346,27 +410,43 @@
           selectedEntityType &&
           selectedEntityType !== "zone"
         ) {
-          // Map both search categories and entity types to their data arrays
-          const dataArrays: Record<string, AnyMapEntity[]> = {
-            // Search categories
-            monster: entityData.monsters,
-            npc: entityData.npcs,
-            resource: entityData.gathering,
-            chest: entityData.chests,
-            altar: entityData.altars,
-            // Entity types (from clicking on map)
-            boss: entityData.monsters,
-            elite: entityData.monsters,
-            hunt: entityData.monsters,
-            gathering_plant: entityData.gathering,
-            gathering_mineral: entityData.gathering,
-            gathering_spark: entityData.gathering,
-          };
-          const entity = dataArrays[selectedEntityType]?.find(
-            (e) => e.id === selectedEntityId,
+          // Check if this is a monster type (uses monsterId instead of id)
+          const isMonsterType = ["monster", "boss", "elite", "hunt"].includes(
+            selectedEntityType,
           );
-          if (entity) {
-            selectedEntity = entity;
+
+          if (isMonsterType) {
+            // Find monster by monsterId
+            const monster = entityData.monsters.find(
+              (m) =>
+                (m as import("$lib/types/map").MonsterMapEntity).monsterId ===
+                selectedEntityId,
+            );
+            if (monster) {
+              selectedEntity = monster;
+            }
+          } else {
+            // Map other categories to their data arrays
+            const dataArrays: Record<string, AnyMapEntity[]> = {
+              // Search categories
+              npc: entityData.npcs,
+              resource: entityData.gathering,
+              chest: entityData.chests,
+              altar: entityData.altars,
+              portal: entityData.portals,
+              // Entity types
+              gathering_plant: entityData.gathering,
+              gathering_mineral: entityData.gathering,
+              gathering_spark: entityData.gathering,
+              alchemy_table: entityData.crafting,
+              crafting_station: entityData.crafting,
+            };
+            const entity = dataArrays[selectedEntityType]?.find(
+              (e) => e.id === selectedEntityId,
+            );
+            if (entity) {
+              selectedEntity = entity;
+            }
           }
         }
 
@@ -388,6 +468,8 @@
           focusedZoneId,
           selectionData,
           patrolPathData,
+          EMPTY_SELECTION,
+          EMPTY_RELATION_ARCS,
           iconAtlas ?? undefined,
         );
 
@@ -453,6 +535,7 @@
     void selectedPortalId;
     void selectionData; // Pre-computed, only changes when selection changes
     void patrolPathData; // Pre-computed, only changes when selectionData changes
+    void relatedEntities; // Pre-computed, only changes when selection changes
     void zoneFocusedData; // Pre-computed, only changes when focusedZoneId changes
     updateLayers();
   });
@@ -569,7 +652,11 @@
     {/if}
 
     {#if selectedEntity}
-      <EntityPopup entity={selectedEntity} onClose={handleClosePopup} />
+      <EntityPopup
+        entity={selectedEntity}
+        onClose={handleClosePopup}
+        onSelectMonster={handleSelectMonster}
+      />
     {/if}
 
     <MapSearch bind:open={searchOpen} onselect={handleSearchSelect} />

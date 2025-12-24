@@ -29,16 +29,41 @@ export interface MapEntity {
 }
 
 /**
+ * Spawn type for monsters
+ */
+export type MonsterSpawnType = "regular" | "summon" | "placeholder" | "altar";
+
+/**
  * Monster-specific entity data
  */
 export interface MonsterMapEntity extends MapEntity {
   type: "monster" | "boss" | "elite" | "hunt";
+  monsterId: string; // Original monster ID (id field is spawn ID for individual tracking)
   level: number;
   isBoss: boolean;
   isElite: boolean;
   isHunt: boolean;
   isPatrolling: boolean;
   patrolWaypoints: [number, number][] | null;
+  // Popup fields
+  respawnTime: number;
+  respawnProbability: number;
+  spawnTimeStart: number;
+  spawnTimeEnd: number;
+  baseExp: number;
+  dropCount: number;
+  bestiaryDropCount: number;
+  spawnType: MonsterSpawnType;
+  // For placeholder spawns
+  sourceMonsterName: string | null;
+  sourceMonsterId: string | null;
+  sourceSpawnProbability: number | null;
+  // For summon spawns (blocked while X alive)
+  summonKillMonsterName: string | null;
+  summonKillMonsterId: string | null;
+  summonKillCount: number | null;
+  // Specific spawn IDs that block this summon (for arc rendering)
+  blockerSpawnIds: string[] | null;
 }
 
 /**
@@ -72,6 +97,11 @@ export interface NpcMapEntity extends MapEntity {
   type: "npc";
   roleBitmask: number;
   renewalDungeonName: string | null;
+  // Popup fields
+  questCount: number;
+  itemsSoldCount: number;
+  hasTeleport: boolean;
+  teleportDestName: string | null;
 }
 
 /**
@@ -95,6 +125,10 @@ export interface ChestMapEntity extends MapEntity {
   type: "chest";
   keyRequiredId: string | null;
   keyRequiredName: string | null;
+  // Popup fields
+  respawnTime: number;
+  dropCount: number;
+  randomDropCount: number;
 }
 
 /**
@@ -105,6 +139,13 @@ export interface AltarMapEntity extends MapEntity {
   altarType: "forgotten" | "avatar";
   minLevel: number;
   activationItemName: string | null;
+  // Popup fields
+  totalWaves: number;
+  rewardNormalName: string | null;
+  rewardMagicName: string | null;
+  rewardEpicName: string | null;
+  rewardLegendaryName: string | null;
+  finalBossNames: string[];
 }
 
 /**
@@ -114,6 +155,10 @@ export interface GatheringMapEntity extends MapEntity {
   type: "gathering_plant" | "gathering_mineral" | "gathering_spark";
   resourceName: string;
   level: number;
+  // Popup fields
+  respawnTime: number;
+  toolRequiredName: string | null;
+  dropCount: number;
 }
 
 /**

@@ -26,12 +26,15 @@ import {
   ARC_COLORS,
   PATROL_COLORS,
   HIGHLIGHT_COLORS,
+  RELATION_ARC_COLORS,
   TILE_CONFIG,
 } from "./config";
 import {
   EMPTY_SELECTION,
   EMPTY_PATROL_DATA,
+  EMPTY_RELATION_ARCS,
   type PatrolPathData,
+  type RelationArcData,
 } from "./selection";
 
 // Type for deck.gl layer constructor (we use any since deck.gl types are complex)
@@ -202,6 +205,8 @@ export function createLayers(
   focusedZoneId: string | null,
   selectionData: AnyMapEntity[] = EMPTY_SELECTION,
   patrolPathData: PatrolPathData = EMPTY_PATROL_DATA,
+  relatedEntities: AnyMapEntity[] = EMPTY_SELECTION,
+  relationArcData: RelationArcData = EMPTY_RELATION_ARCS,
   iconAtlas?: IconAtlasData,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): any[] {
@@ -781,14 +786,50 @@ export function createLayers(
     },
   });
 
+  // Relation arcs layer (connects summon spawns to blocker spawns)
+  const relationArcsLayer = new LineLayer({
+    id: "relation-arcs",
+    data: relationArcData.arcs,
+    visible: relationArcData.arcs.length > 0,
+    getSourcePosition: (d: RelationArcData["arcs"][0]) => d.source,
+    getTargetPosition: (d: RelationArcData["arcs"][0]) => d.target,
+    getColor: RELATION_ARC_COLORS.arc,
+    getWidth: 2,
+    widthUnits: "pixels",
+    pickable: false,
+  });
+
+  // Related entities highlight layer (orange color for blocker spawns)
+  // Data is pre-computed via $derived in the page component
+  const relatedHighlightLayer = new ScatterplotLayer({
+    id: "related-highlight",
+    data: relatedEntities,
+    visible: relatedEntities.length > 0,
+    getPosition: (d: AnyMapEntity) => d.position,
+    getFillColor: HIGHLIGHT_COLORS.relatedFill,
+    getLineColor: HIGHLIGHT_COLORS.relatedRing,
+    getRadius: getRingRadius,
+    radiusUnits: "pixels",
+    radiusMinPixels: 7,
+    radiusMaxPixels: 48,
+    stroked: true,
+    lineWidthUnits: "pixels",
+    getLineWidth: 3,
+    pickable: false,
+    updateTriggers: {
+      getRadius: relatedEntities,
+    },
+  });
+
   // Later in array = rendered on top (higher priority)
-  // Order: background (fallback) → tiles → zones → entities
+  // Order: background (fallback) → tiles → zones → paths/arcs → entities → highlights
   return [
     backgroundLayer,
     tileLayer,
     parentZonesLayer,
     subZonesLayer,
     ...patrolPathLayers,
+    relationArcsLayer,
     portalArcsLayer,
     creaturesLayer,
     gatheringPlantsLayer,
@@ -805,6 +846,7 @@ export function createLayers(
     altarsLayer,
     elitesLayer,
     bossesLayer,
+    relatedHighlightLayer,
     selectionHighlightLayer,
   ];
 }

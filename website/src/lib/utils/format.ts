@@ -68,6 +68,42 @@ export function formatItemType(type: string | null | undefined): string {
 }
 
 /**
+ * Format spawn time window (e.g., "18:00-06:00")
+ * Returns null if spawn time is not limited (0-0 or both same)
+ */
+export function formatSpawnTimeWindow(
+  start: number,
+  end: number,
+): string | null {
+  // 0-0 or both same means no restriction (24h spawn)
+  if ((start === 0 && end === 0) || start === end) return null;
+  const formatHour = (h: number) => `${h.toString().padStart(2, "0")}:00`;
+  return `${formatHour(start)}-${formatHour(end)}`;
+}
+
+/**
+ * Get CSS class for item quality color
+ */
+export function getQualityColorClass(quality: number): string {
+  switch (quality) {
+    case 0:
+      return "text-gray-400"; // Common
+    case 1:
+      return "text-white"; // Uncommon
+    case 2:
+      return "text-green-400"; // Magic
+    case 3:
+      return "text-blue-400"; // Rare
+    case 4:
+      return "text-purple-400"; // Epic
+    case 5:
+      return "text-orange-400"; // Legendary
+    default:
+      return "text-gray-400";
+  }
+}
+
+/**
  * Roman numerals for gathering resource tiers (0-4 maps to I-V)
  */
 const ROMAN_NUMERALS = ["I", "II", "III", "IV", "V"] as const;

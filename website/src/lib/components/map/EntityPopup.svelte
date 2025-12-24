@@ -1,7 +1,13 @@
 <script lang="ts">
   import * as Card from "$lib/components/ui/card";
   import { Button } from "$lib/components/ui/button";
-  import { toRomanNumeral } from "$lib/utils/format";
+  import {
+    toRomanNumeral,
+    formatDuration,
+    formatPercent,
+    formatSpawnTimeWindow,
+    getQualityColorClass,
+  } from "$lib/utils/format";
   import { hasNpcRole } from "$lib/utils/tooltip";
   import {
     type AnyMapEntity,
@@ -13,21 +19,93 @@
     type GatheringMapEntity,
     type CraftingMapEntity,
   } from "$lib/types/map";
+  import {
+    loadMonsterPopupDetails,
+    loadNpcPopupDetails,
+    loadChestPopupDetails,
+    loadGatheringPopupDetails,
+    loadAltarPopupDetails,
+    type MonsterPopupDetails,
+    type NpcPopupDetails,
+    type ChestPopupDetails,
+    type GatheringPopupDetails,
+    type AltarPopupDetails,
+  } from "$lib/queries/popup";
 
   interface Props {
     entity: AnyMapEntity;
     onClose: () => void;
+    onSelectMonster?: (monsterId: string) => void;
   }
 
-  let { entity, onClose }: Props = $props();
+  let { entity, onClose, onSelectMonster }: Props = $props();
+
+  // Lazy-loaded details state
+  let monsterDetails = $state<MonsterPopupDetails | null>(null);
+  let npcDetails = $state<NpcPopupDetails | null>(null);
+  let chestDetails = $state<ChestPopupDetails | null>(null);
+  let gatheringDetails = $state<GatheringPopupDetails | null>(null);
+  let altarDetails = $state<AltarPopupDetails | null>(null);
+  let isLoading = $state(false);
+
+  // Load details when entity changes
+  $effect(() => {
+    const currentEntity = entity;
+    monsterDetails = null;
+    npcDetails = null;
+    chestDetails = null;
+    gatheringDetails = null;
+    altarDetails = null;
+
+    async function loadDetails() {
+      isLoading = true;
+      try {
+        if (isMonster(currentEntity)) {
+          // Only load drops for bosses, elites, and hunts (not regular creatures)
+          const shouldLoadDrops =
+            currentEntity.isBoss ||
+            currentEntity.isElite ||
+            currentEntity.isHunt;
+          if (shouldLoadDrops) {
+            // Hunts show all drops, bosses/elites show bestiary drops
+            const showBestiaryOnly = !currentEntity.isHunt;
+            monsterDetails = await loadMonsterPopupDetails(
+              currentEntity.monsterId,
+              showBestiaryOnly,
+            );
+          }
+        } else if (currentEntity.type === "npc") {
+          npcDetails = await loadNpcPopupDetails(currentEntity.id);
+        } else if (currentEntity.type === "chest") {
+          chestDetails = await loadChestPopupDetails(currentEntity.id);
+        } else if (isGathering(currentEntity)) {
+          gatheringDetails = await loadGatheringPopupDetails(currentEntity.id);
+        } else if (currentEntity.type === "altar") {
+          altarDetails = await loadAltarPopupDetails(currentEntity.id);
+        }
+      } finally {
+        isLoading = false;
+      }
+    }
+
+    loadDetails();
+  });
+
+  function isMonster(e: AnyMapEntity): e is MonsterMapEntity {
+    return ["monster", "boss", "elite", "hunt"].includes(e.type);
+  }
+
+  function isGathering(e: AnyMapEntity): e is GatheringMapEntity {
+    return ["gathering_plant", "gathering_mineral", "gathering_spark"].includes(
+      e.type,
+    );
+  }
 
   function getEntityUrl(entity: AnyMapEntity): string | null {
+    if (isMonster(entity)) {
+      return `/monsters/${entity.monsterId}`;
+    }
     switch (entity.type) {
-      case "monster":
-      case "boss":
-      case "elite":
-      case "hunt":
-        return `/monsters/${entity.id}`;
       case "npc":
         return `/npcs/${entity.id}`;
       case "chest":
@@ -42,7 +120,7 @@
   function getEntityTypeName(entity: AnyMapEntity): string {
     switch (entity.type) {
       case "monster":
-        return "Monster";
+        return "Creature";
       case "boss":
         return "Boss";
       case "elite":
@@ -82,13 +160,19 @@
     return entity.name;
   }
 
+  function handleSelectMonster(monsterId: string) {
+    if (onSelectMonster) {
+      onSelectMonster(monsterId);
+    }
+  }
+
   const url = $derived(getEntityUrl(entity));
 </script>
 
 <Card.Root
-  class="absolute right-4 top-4 z-10 w-72 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80"
+  class="absolute right-4 top-4 z-10 w-80 gap-0 bg-background/95 py-0 backdrop-blur supports-[backdrop-filter]:bg-background/80"
 >
-  <Card.Header class="pb-2">
+  <Card.Header class="!gap-0 border-b !py-2">
     <div class="flex items-start justify-between gap-2">
       <div>
         <Card.Title class="text-base">{getDisplayName(entity)}</Card.Title>
@@ -113,40 +197,174 @@
       </Button>
     </div>
   </Card.Header>
-  <Card.Content class="space-y-2 pb-3 text-sm">
+  <Card.Content class="space-y-1.5 py-2 text-sm">
     <div class="flex justify-between">
       <span class="text-muted-foreground">Zone</span>
       <span>{entity.zoneName}</span>
     </div>
 
-    {#if entity.type === "monster" || entity.type === "boss" || entity.type === "elite" || entity.type === "hunt"}
+    <!-- Monster Section -->
+    {#if isMonster(entity)}
       {@const monster = entity as MonsterMapEntity}
       <div class="flex justify-between">
         <span class="text-muted-foreground">Level</span>
         <span>{monster.level}</span>
       </div>
+
+      <div class="flex justify-between">
+        <span class="text-muted-foreground">Respawn</span>
+        <span>{formatDuration(monster.respawnTime)}</span>
+      </div>
+
+      <!-- Spawn time window (only if limited) - shown prominently -->
+      {@const spawnWindow = formatSpawnTimeWindow(
+        monster.spawnTimeStart,
+        monster.spawnTimeEnd,
+      )}
+      {#if spawnWindow}
+        <div class="rounded bg-sky-500/20 px-2 py-1 text-sky-300">
+          <span class="text-sky-400">Active</span>
+          <span class="text-sky-200">{spawnWindow}</span>
+          <span class="text-sky-400">only</span>
+        </div>
+      {/if}
+
+      <!-- Rare spawn probability -->
+      {#if monster.respawnProbability < 1}
+        <div class="rounded bg-amber-500/20 px-2 py-1 text-amber-400">
+          Rare spawn ({formatPercent(monster.respawnProbability)} chance)
+        </div>
+      {/if}
+
+      <!-- Special spawn info -->
+      {#if monster.spawnType === "summon" && monster.summonKillMonsterName}
+        {@const count = monster.summonKillCount ?? 1}
+        <div class="rounded bg-purple-500/20 px-2 py-1 text-purple-300">
+          <span class="text-purple-400">Blocked from respawning while</span>
+          {#if count > 1}{count}x{/if}
+          {#if onSelectMonster && monster.summonKillMonsterId}
+            <button
+              class="text-purple-200 underline hover:text-purple-100"
+              onclick={() => handleSelectMonster(monster.summonKillMonsterId!)}
+            >
+              {monster.summonKillMonsterName}
+            </button>
+          {:else}
+            <span class="text-purple-200">{monster.summonKillMonsterName}</span>
+          {/if}
+          <span class="text-purple-400">{count > 1 ? "are" : "is"} alive</span>
+        </div>
+      {/if}
+
+      {#if monster.spawnType === "placeholder" && monster.sourceMonsterName}
+        <div class="rounded bg-cyan-500/20 px-2 py-1 text-cyan-300">
+          <span class="text-cyan-400">Spawns after killing</span>
+          {#if onSelectMonster && monster.sourceMonsterId}
+            <button
+              class="text-cyan-200 underline hover:text-cyan-100"
+              onclick={() => handleSelectMonster(monster.sourceMonsterId!)}
+            >
+              {monster.sourceMonsterName}
+            </button>
+          {:else}
+            <span class="text-cyan-200">{monster.sourceMonsterName}</span>
+          {/if}
+          {#if monster.sourceSpawnProbability && monster.sourceSpawnProbability < 1}
+            <span class="text-cyan-400"
+              >({formatPercent(monster.sourceSpawnProbability)})</span
+            >
+          {/if}
+        </div>
+      {/if}
+
+      <!-- Drops (lazy-loaded) - only for boss/elite/hunt -->
+      {#if isLoading && (monster.isBoss || monster.isElite || monster.isHunt)}
+        <div class="text-muted-foreground">Loading drops...</div>
+      {:else if monsterDetails && monsterDetails.drops.length > 0}
+        <div class="border-t pt-2">
+          <div class="mb-1 font-medium text-muted-foreground">
+            {monster.isBoss || monster.isElite ? "Bestiary Drops" : "Drops"}
+          </div>
+          <div class="space-y-0.5">
+            {#each monsterDetails.drops as drop, i (i)}
+              <div class="flex justify-between">
+                <span class={getQualityColorClass(drop.quality)}
+                  >{drop.itemName}</span
+                >
+                <span class="text-muted-foreground"
+                  >{formatPercent(drop.dropRate)}</span
+                >
+              </div>
+            {/each}
+          </div>
+        </div>
+      {/if}
     {/if}
 
+    <!-- NPC Section -->
     {#if entity.type === "npc"}
       {@const npc = entity as NpcMapEntity}
+
+      <!-- Role badges -->
       {#if hasNpcRole(npc.roleBitmask, "isVendor") || hasNpcRole(npc.roleBitmask, "isQuestGiver")}
         <div class="flex gap-2">
           {#if hasNpcRole(npc.roleBitmask, "isVendor")}
-            <span
-              class="rounded bg-blue-500/20 px-1.5 py-0.5 text-xs text-blue-400"
+            <span class="rounded bg-blue-500/20 px-1.5 py-0.5 text-blue-400"
               >Vendor</span
             >
           {/if}
           {#if hasNpcRole(npc.roleBitmask, "isQuestGiver")}
-            <span
-              class="rounded bg-yellow-500/20 px-1.5 py-0.5 text-xs text-yellow-400"
+            <span class="rounded bg-yellow-500/20 px-1.5 py-0.5 text-yellow-400"
               >Quests</span
             >
           {/if}
         </div>
       {/if}
+
+      <!-- Teleport destination -->
+      {#if npc.hasTeleport && npc.teleportDestName}
+        <div class="flex justify-between">
+          <span class="text-muted-foreground">Teleports to</span>
+          <span class="text-cyan-400">{npc.teleportDestName}</span>
+        </div>
+      {/if}
+
+      <!-- Quest/Item counts -->
+      {#if npc.questCount > 0}
+        <div class="flex justify-between">
+          <span class="text-muted-foreground">Quests</span>
+          <span>{npc.questCount}</span>
+        </div>
+      {/if}
+      {#if npc.itemsSoldCount > 0}
+        <div class="flex justify-between">
+          <span class="text-muted-foreground">Items for sale</span>
+          <span>{npc.itemsSoldCount}</span>
+        </div>
+      {/if}
+
+      <!-- Quest/item details (lazy-loaded) -->
+      {#if !isLoading && npcDetails}
+        {#if npcDetails.quests.length > 0}
+          <div class="mt-1">
+            <span class="text-muted-foreground">Quests: </span>
+            <span>{npcDetails.quests.map((q) => q.name).join(", ")}</span>
+          </div>
+        {/if}
+        {#if npcDetails.itemsSold.length > 0}
+          <div class="mt-1">
+            <span class="text-muted-foreground">Sells: </span>
+            {#each npcDetails.itemsSold as item, i (i)}
+              <span class={getQualityColorClass(item.quality)}
+                >{item.itemName}</span
+              >{i < npcDetails.itemsSold.length - 1 ? ", " : ""}
+            {/each}
+          </div>
+        {/if}
+      {/if}
     {/if}
 
+    <!-- Portal Section -->
     {#if entity.type === "portal"}
       {@const portal = entity as PortalMapEntity}
       {#if portal.destinationZoneName}
@@ -155,23 +373,74 @@
           <span>{portal.destinationZoneName}</span>
         </div>
       {/if}
+      {#if portal.requiredLevel > 0}
+        <div class="flex justify-between">
+          <span class="text-muted-foreground">Level</span>
+          <span>{portal.requiredLevel}+</span>
+        </div>
+      {/if}
+      {#if portal.requiredItemName}
+        <div class="flex justify-between">
+          <span class="text-muted-foreground">Key</span>
+          <span>{portal.requiredItemName}</span>
+        </div>
+      {/if}
       {#if portal.isClosed}
-        <span class="rounded bg-red-500/20 px-1.5 py-0.5 text-xs text-red-400"
+        <span class="rounded bg-red-500/20 px-1.5 py-0.5 text-red-400"
           >Closed</span
         >
       {/if}
     {/if}
 
+    <!-- Chest Section -->
     {#if entity.type === "chest"}
       {@const chest = entity as ChestMapEntity}
       {#if chest.keyRequiredName}
         <div class="flex justify-between">
-          <span class="text-muted-foreground">Key Required</span>
+          <span class="text-muted-foreground">Key</span>
           <span>{chest.keyRequiredName}</span>
+        </div>
+      {/if}
+      <div class="flex justify-between">
+        <span class="text-muted-foreground">Respawn</span>
+        <span>{formatDuration(chest.respawnTime)}</span>
+      </div>
+
+      <!-- Drops (lazy-loaded) -->
+      {#if isLoading}
+        <div class="text-muted-foreground">Loading drops...</div>
+      {:else if chestDetails && chestDetails.drops.length > 0}
+        <div class="border-t pt-2">
+          <div class="mb-1 font-medium text-muted-foreground">Drops</div>
+          <div class="space-y-0.5">
+            {#each chestDetails.drops as drop, i (i)}
+              <div>
+                <div class="flex justify-between">
+                  <span class={getQualityColorClass(drop.quality)}
+                    >{drop.itemName}</span
+                  >
+                  <span class="text-muted-foreground"
+                    >{formatPercent(drop.dropRate)}</span
+                  >
+                </div>
+                {#if drop.isRandomItem && drop.randomItemOutcomes}
+                  <div class="ml-2 text-muted-foreground">
+                    Can be: {drop.randomItemOutcomes
+                      .map((o) => o.itemName)
+                      .slice(0, 3)
+                      .join(", ")}{drop.randomItemOutcomes.length > 3
+                      ? "..."
+                      : ""}
+                  </div>
+                {/if}
+              </div>
+            {/each}
+          </div>
         </div>
       {/if}
     {/if}
 
+    <!-- Altar Section -->
     {#if entity.type === "altar"}
       {@const altar = entity as AltarMapEntity}
       <div class="flex justify-between">
@@ -180,38 +449,113 @@
       </div>
       {#if altar.minLevel > 0}
         <div class="flex justify-between">
-          <span class="text-muted-foreground">Min Level</span>
-          <span>{altar.minLevel}</span>
+          <span class="text-muted-foreground">Level</span>
+          <span>{altar.minLevel}+</span>
+        </div>
+      {/if}
+      <div class="flex justify-between">
+        <span class="text-muted-foreground">Waves</span>
+        <span>{altar.totalWaves}</span>
+      </div>
+      {#if altar.activationItemName}
+        <div class="flex justify-between">
+          <span class="text-muted-foreground">Requires</span>
+          <span>{altar.activationItemName}</span>
+        </div>
+      {/if}
+
+      <!-- Boss names prominently -->
+      {#if altar.finalBossNames.length > 0}
+        <div class="mt-1 rounded bg-red-500/20 px-2 py-1">
+          <span class="text-red-400">Boss: </span>
+          <span class="text-red-200">{altar.finalBossNames.join(", ")}</span>
+        </div>
+      {/if}
+
+      <!-- Rewards by tier (lazy-loaded) -->
+      {#if isLoading}
+        <div class="text-muted-foreground">Loading rewards...</div>
+      {:else if altarDetails && altarDetails.rewards.length > 0}
+        <div class="border-t pt-2">
+          <div class="mb-1 font-medium text-muted-foreground">Rewards</div>
+          <div class="space-y-2">
+            {#each altarDetails.rewards as reward (reward.tier)}
+              <div>
+                <div class={getQualityColorClass(reward.quality)}>
+                  {reward.itemName}
+                </div>
+                <div class="text-xs text-muted-foreground">
+                  {#if reward.tier === "normal"}
+                    Lv 30-34
+                  {:else if reward.tier === "magic"}
+                    Lv 35-44
+                  {:else if reward.tier === "epic"}
+                    Lv 45-50, Vet 0-99
+                  {:else}
+                    Lv 50, Vet 100+
+                  {/if}
+                  {#if reward.dropRate !== null}
+                    · {formatPercent(reward.dropRate)}
+                  {/if}
+                </div>
+              </div>
+            {/each}
+          </div>
         </div>
       {/if}
     {/if}
 
-    {#if entity.type === "gathering_plant" || entity.type === "gathering_mineral"}
+    <!-- Gathering Section -->
+    {#if isGathering(entity)}
       {@const gathering = entity as GatheringMapEntity}
       <div class="flex justify-between">
         <span class="text-muted-foreground">Tier</span>
         <span>{toRomanNumeral(gathering.level)}</span>
       </div>
-    {/if}
-
-    {#if entity.position}
+      {#if gathering.toolRequiredName}
+        <div class="flex justify-between">
+          <span class="text-muted-foreground">Tool</span>
+          <span>{gathering.toolRequiredName}</span>
+        </div>
+      {/if}
       <div class="flex justify-between">
-        <span class="text-muted-foreground">Position</span>
-        <span class="font-mono text-xs"
-          >{entity.position[0].toFixed(0)}, {entity.position[1].toFixed(
-            0,
-          )}</span
-        >
+        <span class="text-muted-foreground">Respawn</span>
+        <span>{formatDuration(gathering.respawnTime)}</span>
       </div>
+
+      <!-- Drops (lazy-loaded) -->
+      {#if isLoading}
+        <div class="text-muted-foreground">Loading drops...</div>
+      {:else if gatheringDetails && gatheringDetails.drops.length > 0}
+        <div class="border-t pt-2">
+          <div class="mb-1 font-medium text-muted-foreground">Drops</div>
+          <div class="space-y-0.5">
+            {#each gatheringDetails.drops as drop, i (i)}
+              <div class="flex justify-between">
+                <span class={getQualityColorClass(drop.quality)}
+                  >{drop.itemName}</span
+                >
+                <span class="text-muted-foreground"
+                  >{formatPercent(drop.dropRate)}</span
+                >
+              </div>
+            {/each}
+          </div>
+        </div>
+      {/if}
     {/if}
 
-    {#if url}
-      <a
-        href={url}
-        class="mt-2 block text-center text-sm text-primary hover:underline"
-      >
-        View Details
-      </a>
+    <!-- Crafting Station Section -->
+    {#if entity.type === "alchemy_table" || entity.type === "crafting_station"}
+      <!-- Nothing extra needed - name and zone shown in header -->
     {/if}
   </Card.Content>
+  {#if url}
+    <a
+      href={url}
+      class="block border-t py-2 text-center text-sm text-primary hover:underline"
+    >
+      View Details
+    </a>
+  {/if}
 </Card.Root>
