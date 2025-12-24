@@ -5,6 +5,7 @@
 
 <script lang="ts">
   import { onMount } from "svelte";
+  import Home from "@lucide/svelte/icons/home";
   import PanelLeftClose from "@lucide/svelte/icons/panel-left-close";
   import PanelLeftOpen from "@lucide/svelte/icons/panel-left-open";
   import Sword from "@lucide/svelte/icons/sword";
@@ -228,6 +229,15 @@
 <svelte:window onkeydown={handleKeydown} />
 
 {#if initialized}
+  <!-- Mobile: Home button (top-left) -->
+  <a
+    href="/"
+    class="fixed top-4 left-4 z-20 flex h-12 w-12 items-center justify-center rounded-full bg-secondary text-secondary-foreground shadow-lg hover:bg-secondary/80 transition-colors md:hidden"
+    aria-label="Home"
+  >
+    <Home class="h-5 w-5" />
+  </a>
+
   <!-- Mobile: Floating buttons (hidden on md+) -->
   <div class="fixed bottom-4 left-4 z-20 flex gap-2 md:hidden">
     <Button
@@ -289,7 +299,13 @@
       class="flex h-14 items-center justify-between border-b border-border px-3"
     >
       {#if !isCollapsed}
-        <span class="text-sm font-semibold">Map Layers</span>
+        <a
+          href="/"
+          class="flex items-center gap-2 rounded-md px-2 py-1 hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+        >
+          <Home class="h-4 w-4" />
+          <span class="text-sm font-medium">Home</span>
+        </a>
       {/if}
       <button
         type="button"
@@ -310,9 +326,19 @@
     </div>
 
     {#if isCollapsed}
-      <!-- Collapsed: Search button + Quick toggle icon strip -->
+      <!-- Collapsed: Home, Search + Quick toggle icon strip -->
       <div class="flex flex-col items-center gap-1 py-2 overflow-y-auto">
-        <!-- Search button always at top -->
+        <!-- Home button at top -->
+        <a
+          href="/"
+          class="flex h-10 w-10 items-center justify-center rounded-md transition-colors hover:bg-muted text-muted-foreground hover:text-foreground"
+          aria-label="Home"
+          title="Home"
+        >
+          <Home class="h-5 w-5" />
+        </a>
+        <div class="w-8 border-t border-border my-1"></div>
+        <!-- Search button -->
         <button
           type="button"
           class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-muted text-muted-foreground hover:text-foreground mb-1"
