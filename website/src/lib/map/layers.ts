@@ -801,6 +801,20 @@ export function createLayers(
     pickable: false,
   });
 
+  // Relation arc endpoint markers (small dots at target positions)
+  const relationArcEndpointsLayer = new ScatterplotLayer({
+    id: "relation-arc-endpoints",
+    data: relationArcData.endpoints,
+    visible: relationArcData.endpoints.length > 0,
+    getPosition: (d: [number, number]) => d,
+    getFillColor: RELATION_ARC_COLORS.endpoint,
+    getRadius: 3,
+    radiusUnits: "pixels",
+    radiusMinPixels: 2,
+    radiusMaxPixels: 6,
+    pickable: false,
+  });
+
   // Related entities highlight layer (orange color for blocker spawns)
   // Data is pre-computed via $derived in the page component
   const relatedHighlightLayer = new ScatterplotLayer({
@@ -832,6 +846,7 @@ export function createLayers(
     subZonesLayer,
     ...patrolPathLayers,
     relationArcsLayer,
+    relationArcEndpointsLayer,
     portalArcsLayer,
     creaturesLayer,
     gatheringPlantsLayer,

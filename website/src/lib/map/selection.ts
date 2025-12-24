@@ -40,6 +40,8 @@ export const EMPTY_PATROL_DATA: PatrolPathData = {
 export interface RelationArcData {
   /** Arcs from selected summon spawn(s) to blocker spawn(s) */
   arcs: Array<{ source: [number, number]; target: [number, number] }>;
+  /** Unique endpoint positions (for rendering small dots) */
+  endpoints: Array<[number, number]>;
 }
 
 /**
@@ -47,6 +49,7 @@ export interface RelationArcData {
  */
 export const EMPTY_RELATION_ARCS: RelationArcData = {
   arcs: [],
+  endpoints: [],
 };
 
 /**
@@ -357,6 +360,8 @@ export function computeRelationArcs(
   }
 
   const arcs: RelationArcData["arcs"] = [];
+  const endpointSet = new Set<string>();
+  const endpoints: RelationArcData["endpoints"] = [];
 
   // Create arcs from each selected summon spawn to each blocker spawn
   for (const selected of selectionData) {
@@ -369,8 +374,15 @@ export function computeRelationArcs(
         source: selected.position,
         target: related.position,
       });
+
+      // Collect unique endpoints
+      const key = `${related.position[0]},${related.position[1]}`;
+      if (!endpointSet.has(key)) {
+        endpointSet.add(key);
+        endpoints.push(related.position);
+      }
     }
   }
 
-  return arcs.length > 0 ? { arcs } : EMPTY_RELATION_ARCS;
+  return arcs.length > 0 ? { arcs, endpoints } : EMPTY_RELATION_ARCS;
 }

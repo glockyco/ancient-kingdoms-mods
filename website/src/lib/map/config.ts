@@ -154,6 +154,7 @@ export const PATROL_COLORS = {
  */
 export const RELATION_ARC_COLORS = {
   arc: [251, 146, 60, 180] as [number, number, number, number], // orange-400 with some transparency
+  endpoint: [251, 146, 60, 255] as [number, number, number, number], // orange-400 solid
 } as const;
 
 /**
