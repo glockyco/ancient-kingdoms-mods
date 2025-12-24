@@ -196,13 +196,6 @@ def generate_tiles(
             num_x = tx_max - tx_min + 1
             num_y = ty_max - ty_min + 1
 
-            # Scale factor: output pixels per source pixel at this zoom
-            # A full tile covers tile_world_size world units = tile_size output pixels
-            # In source: tile_world_size * px_per_unit source pixels
-            # Scale = output_px / source_px = tile_size / (tile_world_size * px_per_unit)
-            scale_x = tile_size / (tile_world_size * px_per_unit_x)
-            scale_y = tile_size / (tile_world_size * px_per_unit_y)
-
             task = progress.add_task(f"Zoom {z}", total=num_x * num_y)
 
             for tx in range(tx_min, tx_max + 1):
@@ -252,9 +245,40 @@ def generate_tiles(
                     )
                     cropped = source.crop(crop_box)
 
-                    # Calculate output size for this crop (preserving aspect ratio)
-                    out_w = int(round(cropped.width * scale_x))
-                    out_h = int(round(cropped.height * scale_y))
+                    # Calculate output rectangle bounds directly from world coords
+                    # This ensures offset + size exactly matches the intended region
+                    out_left = int(
+                        round(
+                            (clamped_min_x - full_tile_min_x)
+                            / tile_world_size
+                            * tile_size
+                        )
+                    )
+                    out_right = int(
+                        round(
+                            (clamped_max_x - full_tile_min_x)
+                            / tile_world_size
+                            * tile_size
+                        )
+                    )
+                    out_top = int(
+                        round(
+                            (full_tile_max_y - clamped_max_y)
+                            / tile_world_size
+                            * tile_size
+                        )
+                    )
+                    out_bottom = int(
+                        round(
+                            (full_tile_max_y - clamped_min_y)
+                            / tile_world_size
+                            * tile_size
+                        )
+                    )
+
+                    # Derive size from bounds (guarantees no gaps)
+                    out_w = out_right - out_left
+                    out_h = out_bottom - out_top
 
                     # Resize cropped content
                     if out_w > 0 and out_h > 0:
@@ -270,27 +294,8 @@ def generate_tiles(
                         "RGB", (tile_size, tile_size), background_color
                     )
 
-                    # Calculate paste position within the tile
-                    # X offset: how far the clamped region is from the tile's left edge
-                    offset_x = int(
-                        round(
-                            (clamped_min_x - full_tile_min_x)
-                            / tile_world_size
-                            * tile_size
-                        )
-                    )
-                    # Y offset: in image coords Y=0 is top, but in world coords higher Y is up
-                    # So we measure from the TOP of the tile (full_tile_max_y) to content TOP (clamped_max_y)
-                    offset_y = int(
-                        round(
-                            (full_tile_max_y - clamped_max_y)
-                            / tile_world_size
-                            * tile_size
-                        )
-                    )
-
-                    # Paste resized content at correct position
-                    tile_img.paste(resized, (offset_x, offset_y))
+                    # Paste resized content at calculated position
+                    tile_img.paste(resized, (out_left, out_top))
 
                     # Save as WebP (use string for negative indices)
                     tile_path = tiles_dir / str(z) / str(tx) / f"{ty}.webp"
