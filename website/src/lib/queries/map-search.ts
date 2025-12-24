@@ -28,9 +28,9 @@ export interface MapSearchResult {
   level?: number;
   /** Number of spawn locations on the map (for entities with multiple spawns) */
   spawnCount?: number;
-  /** Override selection target (for altar/placeholder spawns that redirect to another entity) */
+  /** Override selection target (for altar-only monsters that redirect to the altar) */
   selectTarget?: {
-    category: "monster" | "altar";
+    category: "altar";
     id: string;
   };
   /** Keywords matched (for displaying type badges) */
@@ -113,8 +113,7 @@ interface MonsterSearchRow {
   zone_name: string | null;
   level: number;
   spawn_count: number;
-  redirect_type: string | null;
-  parent_monster_id: string | null;
+  is_altar_only: number;
   altar_id: string | null;
   altar_x: number | null;
   altar_y: number | null;
@@ -124,9 +123,8 @@ async function searchMonsters(
   ftsQuery: string,
   limit: number,
 ): Promise<MapSearchResult[]> {
-  // Query handles all spawn types (regular, summon, altar, placeholder)
-  // redirect_type indicates if selection should redirect to altar/parent
-  // For altar-only monsters, we also get altar position for fly-to
+  // Query handles all spawn types (regular, summon, placeholder, altar)
+  // Altar-only monsters redirect selection to the altar marker
   const rows = await query<MonsterSearchRow>(
     `
     SELECT
@@ -145,20 +143,16 @@ async function searchMonsters(
       COALESCE(z.name, az.name) as zone_name,
       COALESCE(ms.level, m.level) as level,
       COUNT(ms.id) as spawn_count,
-      -- Determine redirect type: if monster has regular/summon spawns, no redirect
-      -- Otherwise redirect to placeholder's parent or altar
+      -- Check if monster only appears in altars (no regular/summon/placeholder spawns)
       CASE
-        WHEN SUM(CASE WHEN ms.spawn_type IN ('regular', 'summon') THEN 1 ELSE 0 END) > 0
-          THEN NULL
-        WHEN SUM(CASE WHEN ms.spawn_type = 'placeholder' THEN 1 ELSE 0 END) > 0
-          THEN 'placeholder'
+        WHEN SUM(CASE WHEN ms.spawn_type IN ('regular', 'summon', 'placeholder') THEN 1 ELSE 0 END) > 0
+          THEN 0
         WHEN SUM(CASE WHEN ms.spawn_type = 'altar' THEN 1 ELSE 0 END) > 0
-          THEN 'altar'
-        ELSE NULL
-      END as redirect_type,
-      MAX(CASE WHEN ms.spawn_type = 'placeholder' THEN ms.source_monster_id END) as parent_monster_id,
+          THEN 1
+        ELSE 0
+      END as is_altar_only,
       MAX(CASE WHEN ms.spawn_type = 'altar' THEN ms.source_altar_id END) as altar_id,
-      -- Altar position for fly-to (used when redirect_type = 'altar')
+      -- Altar position for fly-to (used when is_altar_only = 1)
       MAX(a.position_x) as altar_x,
       MAX(a.position_y) as altar_y
     FROM monsters_fts mf
@@ -178,9 +172,9 @@ async function searchMonsters(
   return rows.map((r) => {
     // For altar-only monsters, use altar position for bounds (fly-to target)
     // This centers the view on the altar marker, not the spawn positions
-    const useAltarPosition = r.redirect_type === "altar" && r.altar_x !== null;
-    const boundsX = useAltarPosition ? r.altar_x! : r.min_x;
-    const boundsY = useAltarPosition ? r.altar_y! : r.min_y;
+    const isAltarOnly = Boolean(r.is_altar_only) && r.altar_x !== null;
+    const boundsX = isAltarOnly ? r.altar_x! : r.min_x;
+    const boundsY = isAltarOnly ? r.altar_y! : r.min_y;
 
     return {
       id: r.id,
@@ -196,23 +190,21 @@ async function searchMonsters(
       bounds:
         boundsX !== null
           ? {
-              minX: useAltarPosition ? boundsX : r.min_x!,
-              maxX: useAltarPosition ? boundsX : r.max_x!,
-              minY: useAltarPosition ? -boundsY! : -r.max_y!,
-              maxY: useAltarPosition ? -boundsY! : -r.min_y!,
+              minX: isAltarOnly ? boundsX : r.min_x!,
+              maxX: isAltarOnly ? boundsX : r.max_x!,
+              minY: isAltarOnly ? -boundsY! : -r.max_y!,
+              maxY: isAltarOnly ? -boundsY! : -r.min_y!,
             }
           : null,
       zoneId: r.zone_id ?? undefined,
       zoneName: r.zone_name ?? undefined,
       level: r.level,
       spawnCount: r.spawn_count > 1 ? r.spawn_count : undefined,
-      // Set selectTarget for altar/placeholder spawns
+      // Altar-only monsters redirect selection to the altar marker
       selectTarget:
-        r.redirect_type === "altar" && r.altar_id
+        isAltarOnly && r.altar_id
           ? { category: "altar" as const, id: r.altar_id }
-          : r.redirect_type === "placeholder" && r.parent_monster_id
-            ? { category: "monster" as const, id: r.parent_monster_id }
-            : undefined,
+          : undefined,
       keywords: r.keywords ?? undefined,
     };
   });

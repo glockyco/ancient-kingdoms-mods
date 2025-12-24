@@ -103,6 +103,7 @@ interface MonsterSpawnRow {
   source_summon_kill_monster_name: string | null;
   source_summon_kill_count: number | null;
   blocker_spawn_ids: string | null;
+  source_spawn_ids: string | null;
 }
 
 /**
@@ -125,11 +126,11 @@ function countDrops(dropsJson: string | null): {
 }
 
 async function loadMonsterSpawns(): Promise<MonsterMapEntity[]> {
-  // Include both regular and summon spawns on the map
-  // Altar and placeholder spawns are excluded (too many overlapping dots)
-  // But we include monsters without regular/summon spawns (with null position) for popup support
+  // Include regular, summon, and placeholder spawns on the map
+  // Altar spawns are excluded (too many overlapping dots)
+  // Monsters without visible spawns are included with null position for popup support
   const rows = await query<MonsterSpawnRow>(`
-    -- Monsters with regular/summon spawns (rendered on map)
+    -- Monsters with regular/summon/placeholder spawns (rendered on map)
     SELECT
       ms.id,
       ms.monster_id,
@@ -163,15 +164,23 @@ async function loadMonsterSpawns(): Promise<MonsterMapEntity[]> {
         SELECT json_group_array(stp.spawn_id)
         FROM summon_trigger_placeholders stp
         WHERE stp.trigger_id = ms.source_summon_trigger_id
-      ) as blocker_spawn_ids
+      ) as blocker_spawn_ids,
+      -- Source spawn IDs for placeholder spawns (spawns of the monster that must be killed)
+      (
+        SELECT json_group_array(src_ms.id)
+        FROM monster_spawns src_ms
+        WHERE src_ms.monster_id = ms.source_monster_id
+          AND src_ms.zone_id = ms.zone_id
+          AND src_ms.spawn_type IN ('regular', 'summon')
+      ) as source_spawn_ids
     FROM monster_spawns ms
     JOIN monsters m ON m.id = ms.monster_id
     JOIN zones z ON z.id = ms.zone_id
-    WHERE ms.spawn_type IN ('regular', 'summon')
+    WHERE ms.spawn_type IN ('regular', 'summon', 'placeholder')
 
     UNION ALL
 
-    -- Monsters without regular/summon spawns (for popup support, not rendered)
+    -- Monsters without visible spawns (for popup support, not rendered)
     SELECT
       m.id as id,
       m.id as monster_id,
@@ -199,11 +208,12 @@ async function loadMonsterSpawns(): Promise<MonsterMapEntity[]> {
       NULL as source_summon_kill_monster_id,
       NULL as source_summon_kill_monster_name,
       NULL as source_summon_kill_count,
-      NULL as blocker_spawn_ids
+      NULL as blocker_spawn_ids,
+      NULL as source_spawn_ids
     FROM monsters m
     WHERE NOT EXISTS (
       SELECT 1 FROM monster_spawns ms
-      WHERE ms.monster_id = m.id AND ms.spawn_type IN ('regular', 'summon')
+      WHERE ms.monster_id = m.id AND ms.spawn_type IN ('regular', 'summon', 'placeholder')
     )
   `);
 
@@ -266,6 +276,7 @@ async function loadMonsterSpawns(): Promise<MonsterMapEntity[]> {
       summonKillMonsterId: r.source_summon_kill_monster_id,
       summonKillCount: r.source_summon_kill_count,
       blockerSpawnIds: parseBlockerSpawnIds(r.blocker_spawn_ids),
+      sourceSpawnIds: parseBlockerSpawnIds(r.source_spawn_ids),
     };
   });
 }

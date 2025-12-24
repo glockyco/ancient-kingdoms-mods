@@ -64,6 +64,8 @@ export interface MonsterMapEntity extends MapEntity {
   summonKillCount: number | null;
   // Specific spawn IDs that block this summon (for arc rendering)
   blockerSpawnIds: string[] | null;
+  // Specific spawn IDs of the source monster for placeholders (for arc rendering)
+  sourceSpawnIds: string[] | null;
 }
 
 /**

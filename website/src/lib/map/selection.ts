@@ -259,8 +259,26 @@ export function computeRelatedEntities(
     return relatedMonsters.length > 0 ? relatedMonsters : EMPTY_SELECTION;
   }
 
-  // Check if the selected entity is a summon spawn with blocker spawn IDs
+  // Check if the selected entity is a monster
   const selectedMonster = selected as MonsterMapEntity;
+
+  // Check if the selected entity is a placeholder spawn with source spawn IDs
+  if (
+    selectedMonster.spawnType === "placeholder" &&
+    selectedMonster.sourceSpawnIds &&
+    selectedMonster.sourceSpawnIds.length > 0
+  ) {
+    const sources: MonsterMapEntity[] = [];
+    for (const spawnId of selectedMonster.sourceSpawnIds) {
+      const monster = index.monstersBySpawnId.get(spawnId);
+      if (monster && monster.position !== null) {
+        sources.push(monster);
+      }
+    }
+    return sources.length > 0 ? sources : EMPTY_SELECTION;
+  }
+
+  // Check if the selected entity is a summon spawn with blocker spawn IDs
   if (
     selectedMonster.spawnType !== "summon" ||
     !selectedMonster.blockerSpawnIds ||

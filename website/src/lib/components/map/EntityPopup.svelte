@@ -215,10 +215,12 @@
         <span>{monster.level}</span>
       </div>
 
-      <div class="flex justify-between">
-        <span class="text-muted-foreground">Respawn</span>
-        <span>{formatDuration(monster.respawnTime)}</span>
-      </div>
+      {#if monster.spawnType !== "placeholder"}
+        <div class="flex justify-between">
+          <span class="text-muted-foreground">Respawn</span>
+          <span>{formatDuration(monster.respawnTime)}</span>
+        </div>
+      {/if}
 
       <!-- Spawn time window (only if limited) - shown prominently -->
       {@const spawnWindow = formatSpawnTimeWindow(

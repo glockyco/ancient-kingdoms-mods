@@ -16,12 +16,17 @@ from rich.console import Console
 console = Console()
 
 
+PLACEHOLDER_OFFSET_X = 3.0
+PLACEHOLDER_OFFSET_Y = 0.0
+
+
 def _infer_placeholder_spawns(conn: sqlite3.Connection) -> int:
     """Create spawn entries for placeholder monsters.
 
     When a monster has placeholder_monster_id set, killing it spawns that
     placeholder monster at the same position. This creates spawn entries
-    for those placeholder monsters based on their parent's spawn locations.
+    for those placeholder monsters based on their parent's spawn locations,
+    offset slightly so they don't overlap on the map.
 
     Returns:
         Count of spawn entries created
@@ -86,8 +91,8 @@ def _infer_placeholder_spawns(conn: sqlite3.Connection) -> int:
                     placeholder_id,
                     zone_id,
                     sub_zone_id,
-                    pos_x,
-                    pos_y,
+                    pos_x + PLACEHOLDER_OFFSET_X,
+                    pos_y + PLACEHOLDER_OFFSET_Y,
                     pos_z,
                     parent_id,
                     parent_name,

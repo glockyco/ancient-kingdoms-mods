@@ -153,6 +153,11 @@
     {/if}
   {:else if entity.type === "monster" || entity.type === "boss" || entity.type === "elite" || entity.type === "hunt"}
     {@const monster = entity as MonsterMapEntity}
+    {#if monster.spawnType === "placeholder" && monster.sourceMonsterName}
+      <div class="text-xs text-cyan-400">
+        Kill: {monster.sourceMonsterName}
+      </div>
+    {/if}
     {#if monster.isPatrolling}
       <div class="text-xs text-muted-foreground">Patrolling</div>
     {/if}
