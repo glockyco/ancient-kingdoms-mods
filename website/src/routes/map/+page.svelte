@@ -389,7 +389,7 @@
           parent: container,
           views: new deckModules.OrthographicView({}),
           initialViewState,
-          controller: true,
+          controller: { inertia: 500 },
           layers,
           getCursor: ({ isHovering }: { isHovering: boolean }) =>
             isHovering ? "pointer" : "grab",
