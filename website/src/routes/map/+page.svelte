@@ -86,6 +86,23 @@
     zoom: INITIAL_VIEW_STATE.zoom,
   });
 
+  // Batch view state updates using requestAnimationFrame to reduce reactivity overhead
+  let pendingViewState: { x: number; y: number; zoom: number } | null = null;
+  let rafId: number | null = null;
+
+  function batchedUpdateViewState(x: number, y: number, zoom: number) {
+    pendingViewState = { x, y, zoom };
+    if (rafId === null) {
+      rafId = requestAnimationFrame(() => {
+        if (pendingViewState) {
+          currentViewState = pendingViewState;
+          pendingViewState = null;
+        }
+        rafId = null;
+      });
+    }
+  }
+
   // Derived: selected portal ID for arc highlighting
   let selectedPortalId = $derived(
     selectedEntity?.type === "portal" ? selectedEntity.id : null,
@@ -400,11 +417,11 @@
             viewState: any;
           }) => {
             if (viewState.target) {
-              currentViewState = {
-                x: viewState.target[0],
-                y: viewState.target[1],
-                zoom: viewState.zoom,
-              };
+              batchedUpdateViewState(
+                viewState.target[0],
+                viewState.target[1],
+                viewState.zoom,
+              );
             }
           },
         });
@@ -445,14 +462,19 @@
     void currentViewState;
     void levelFilter;
     if (!isLoading && entityData) {
+      // Use untrack for values that shouldn't trigger this effect
+      const layers = untrack(() => layerVisibility);
+      const entityId = untrack(() => selectedEntityId);
+      const entityType = untrack(() => selectedEntityType);
+      const zoneId = untrack(() => focusedZoneId);
       debouncedUpdateUrlState(
         currentViewState,
-        layerVisibility,
+        layers,
         levelFilter,
         entityData.levelRanges,
-        selectedEntityId,
-        selectedEntityType,
-        focusedZoneId,
+        entityId,
+        entityType,
+        zoneId,
       );
     }
   });

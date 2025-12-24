@@ -42,33 +42,35 @@ export interface MonsterMapEntity extends MapEntity {
 }
 
 /**
+ * Bit positions for NPC role bitmask (must match build-pipeline ROLE_BITS)
+ */
+export const NPC_ROLE_BITS = {
+  isVendor: 0,
+  isQuestGiver: 1,
+  canRepair: 2,
+  isBank: 3,
+  isInnkeeper: 4,
+  isSoulBinder: 5,
+  isSkillTrainer: 6,
+  isVeteranTrainer: 7,
+  isAttributeReset: 8,
+  isFactionVendor: 9,
+  isEssenceTrader: 10,
+  isAugmenter: 11,
+  isPriestess: 12,
+  isRenewalSage: 13,
+  isAdventurerTaskgiver: 14,
+  isAdventurerVendor: 15,
+  isMercenaryRecruiter: 16,
+  isGuard: 17,
+} as const;
+
+/**
  * NPC-specific entity data
  */
 export interface NpcMapEntity extends MapEntity {
   type: "npc";
-  // Service roles
-  isVendor: boolean;
-  isQuestGiver: boolean;
-  canRepair: boolean;
-  isBank: boolean;
-  isInnkeeper: boolean;
-  isSoulBinder: boolean;
-  // Training roles
-  isSkillTrainer: boolean;
-  isVeteranTrainer: boolean;
-  isAttributeReset: boolean;
-  // Specialized roles
-  isFactionVendor: boolean;
-  isEssenceTrader: boolean;
-  isAugmenter: boolean;
-  isPriestess: boolean;
-  isRenewalSage: boolean;
-  // Adventuring roles
-  isAdventurerTaskgiver: boolean;
-  isAdventurerVendor: boolean;
-  isMercenaryRecruiter: boolean;
-  // Other
-  isGuard: boolean;
+  roleBitmask: number;
 }
 
 /**
@@ -222,6 +224,7 @@ export interface MapEntityData {
   gathering: GatheringMapEntity[];
   crafting: CraftingMapEntity[];
   subZones: ZoneBoundary[];
+  parentZones: ZoneBoundary[];
   levelRanges: LevelRanges;
 }
 

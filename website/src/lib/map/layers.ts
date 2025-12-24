@@ -1,17 +1,18 @@
-import type {
-  MapEntityData,
-  FilteredMapData,
-  LayerVisibility,
-  LevelFilter,
-  AnyMapEntity,
-  MonsterMapEntity,
-  NpcMapEntity,
-  GatheringMapEntity,
-  CraftingMapEntity,
-  ZoneBoundary,
-  PortalMapEntity,
-  ChestMapEntity,
-  AltarMapEntity,
+import {
+  NPC_ROLE_BITS,
+  type MapEntityData,
+  type FilteredMapData,
+  type LayerVisibility,
+  type LevelFilter,
+  type AnyMapEntity,
+  type MonsterMapEntity,
+  type NpcMapEntity,
+  type GatheringMapEntity,
+  type CraftingMapEntity,
+  type ZoneBoundary,
+  type PortalMapEntity,
+  type ChestMapEntity,
+  type AltarMapEntity,
 } from "$lib/types/map";
 import type { ZoneFocusedData } from "./zone-filter";
 import { isAnyNpcTypeVisible } from "./visibility";
@@ -90,59 +91,39 @@ export function createFilteredData(data: MapEntityData): FilteredMapData {
     portalsWithDestinations: renderablePortals.filter(
       (p) => p.destination !== null,
     ),
-    parentZones: calculateParentZoneBounds(data),
+    parentZones: data.parentZones,
   };
 }
 
 /**
- * Calculate parent zone boundaries from entity positions (cached, called once)
+ * Create visibility bitmask from current layer visibility state.
+ * Each bit position corresponds to an NPC role (must match NPC_ROLE_BITS).
  */
-function calculateParentZoneBounds(data: MapEntityData): ZoneBoundary[] {
-  const allEntities: AnyMapEntity[] = [
-    ...data.monsters,
-    ...data.npcs,
-    ...data.portals,
-    ...data.chests,
-    ...data.altars,
-    ...data.gathering,
-    ...data.crafting,
-  ];
-
-  const byZone = new Map<
-    string,
-    { zoneName: string; positions: [number, number][] }
-  >();
-
-  for (const entity of allEntities) {
-    if (!entity.zoneName || !entity.position) continue;
-    const existing = byZone.get(entity.zoneName);
-    if (existing) {
-      existing.positions.push(entity.position);
-    } else {
-      byZone.set(entity.zoneName, {
-        zoneName: entity.zoneName,
-        positions: [entity.position],
-      });
-    }
-  }
-
-  const padding = 20;
-  return Array.from(byZone.entries()).map(([zoneName, { positions }]) => {
-    const xs = positions.map((p) => p[0]);
-    const ys = positions.map((p) => p[1]);
-    return {
-      id: `parent-${zoneName}`,
-      name: zoneName,
-      zoneId: zoneName,
-      zoneName,
-      polygon: [
-        [Math.min(...xs) - padding, Math.min(...ys) - padding],
-        [Math.max(...xs) + padding, Math.min(...ys) - padding],
-        [Math.max(...xs) + padding, Math.max(...ys) + padding],
-        [Math.min(...xs) - padding, Math.max(...ys) + padding],
-      ] as [number, number][],
-    };
-  });
+function createNpcVisibilityBitmask(visibility: LayerVisibility): number {
+  let mask = 0;
+  if (visibility.npcVendors) mask |= 1 << NPC_ROLE_BITS.isVendor;
+  if (visibility.npcQuestGivers) mask |= 1 << NPC_ROLE_BITS.isQuestGiver;
+  if (visibility.npcRepair) mask |= 1 << NPC_ROLE_BITS.canRepair;
+  if (visibility.npcBanks) mask |= 1 << NPC_ROLE_BITS.isBank;
+  if (visibility.npcInnkeepers) mask |= 1 << NPC_ROLE_BITS.isInnkeeper;
+  if (visibility.npcSoulBinders) mask |= 1 << NPC_ROLE_BITS.isSoulBinder;
+  if (visibility.npcSkillTrainers) mask |= 1 << NPC_ROLE_BITS.isSkillTrainer;
+  if (visibility.npcVeteranTrainers)
+    mask |= 1 << NPC_ROLE_BITS.isVeteranTrainer;
+  if (visibility.npcAttributeReset) mask |= 1 << NPC_ROLE_BITS.isAttributeReset;
+  if (visibility.npcFactionVendors) mask |= 1 << NPC_ROLE_BITS.isFactionVendor;
+  if (visibility.npcEssenceTraders) mask |= 1 << NPC_ROLE_BITS.isEssenceTrader;
+  if (visibility.npcAugmenters) mask |= 1 << NPC_ROLE_BITS.isAugmenter;
+  if (visibility.npcPriestesses) mask |= 1 << NPC_ROLE_BITS.isPriestess;
+  if (visibility.npcRenewalSages) mask |= 1 << NPC_ROLE_BITS.isRenewalSage;
+  if (visibility.npcAdventurerTasks)
+    mask |= 1 << NPC_ROLE_BITS.isAdventurerTaskgiver;
+  if (visibility.npcAdventurerVendors)
+    mask |= 1 << NPC_ROLE_BITS.isAdventurerVendor;
+  if (visibility.npcMercenaryRecruiters)
+    mask |= 1 << NPC_ROLE_BITS.isMercenaryRecruiter;
+  if (visibility.npcGuards) mask |= 1 << NPC_ROLE_BITS.isGuard;
+  return mask;
 }
 
 /**
@@ -316,6 +297,9 @@ export function createLayers(
   // Helper to check if entity is in focused zone (or if no zone is focused)
   const isInZone = (zoneId: string): number =>
     !focusedZoneId || zoneId === focusedZoneId ? 1 : 0;
+
+  // Pre-compute NPC visibility bitmask for GPU filtering
+  const npcVisibilityMask = createNpcVisibilityBitmask(visibility);
 
   // === LAYER DEFINITIONS ===
   // Define all layers as variables, then compose render order at the end
@@ -718,59 +702,17 @@ export function createLayers(
     color: LAYER_COLORS.npc,
     radius: LAYER_RADII.npc,
     extensions: [levelZoneFilterExt],
-    getFilterValue: (d) => {
-      let roleMatch = 0;
-      if (visibility.npcVendors && d.isVendor) roleMatch = 1;
-      else if (visibility.npcQuestGivers && d.isQuestGiver) roleMatch = 1;
-      else if (visibility.npcRepair && d.canRepair) roleMatch = 1;
-      else if (visibility.npcBanks && d.isBank) roleMatch = 1;
-      else if (visibility.npcInnkeepers && d.isInnkeeper) roleMatch = 1;
-      else if (visibility.npcSoulBinders && d.isSoulBinder) roleMatch = 1;
-      else if (visibility.npcSkillTrainers && d.isSkillTrainer) roleMatch = 1;
-      else if (visibility.npcVeteranTrainers && d.isVeteranTrainer)
-        roleMatch = 1;
-      else if (visibility.npcAttributeReset && d.isAttributeReset)
-        roleMatch = 1;
-      else if (visibility.npcFactionVendors && d.isFactionVendor) roleMatch = 1;
-      else if (visibility.npcEssenceTraders && d.isEssenceTrader) roleMatch = 1;
-      else if (visibility.npcAugmenters && d.isAugmenter) roleMatch = 1;
-      else if (visibility.npcPriestesses && d.isPriestess) roleMatch = 1;
-      else if (visibility.npcRenewalSages && d.isRenewalSage) roleMatch = 1;
-      else if (visibility.npcAdventurerTasks && d.isAdventurerTaskgiver)
-        roleMatch = 1;
-      else if (visibility.npcAdventurerVendors && d.isAdventurerVendor)
-        roleMatch = 1;
-      else if (visibility.npcMercenaryRecruiters && d.isMercenaryRecruiter)
-        roleMatch = 1;
-      else if (visibility.npcGuards && d.isGuard) roleMatch = 1;
-      return [roleMatch, isInZone(d.zoneId)];
-    },
+    getFilterValue: (d) => [
+      // Bitwise AND: if any visible role matches the NPC's roles, result > 0
+      (d.roleBitmask & npcVisibilityMask) > 0 ? 1 : 0,
+      isInZone(d.zoneId),
+    ],
     filterRange: [
       [1, 1],
       [1, 1],
     ],
     updateTriggers: {
-      getFilterValue: [
-        visibility.npcVendors,
-        visibility.npcQuestGivers,
-        visibility.npcRepair,
-        visibility.npcBanks,
-        visibility.npcInnkeepers,
-        visibility.npcSoulBinders,
-        visibility.npcSkillTrainers,
-        visibility.npcVeteranTrainers,
-        visibility.npcAttributeReset,
-        visibility.npcFactionVendors,
-        visibility.npcEssenceTraders,
-        visibility.npcAugmenters,
-        visibility.npcPriestesses,
-        visibility.npcRenewalSages,
-        visibility.npcAdventurerTasks,
-        visibility.npcAdventurerVendors,
-        visibility.npcMercenaryRecruiters,
-        visibility.npcGuards,
-        focusedZoneId,
-      ],
+      getFilterValue: [npcVisibilityMask, focusedZoneId],
     },
   });
 

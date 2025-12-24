@@ -21,6 +21,7 @@ from compendium.denormalizers import (
     quests,
     search,
     skills,
+    zones,
 )
 from compendium.redaction import RedactionConfig, load_redactions
 
@@ -171,32 +172,35 @@ def run_all(conn: sqlite3.Connection) -> None:
     # Null coordinates for zones without in-game maps
     exclusions.run(conn)
 
-    # Phase 1: Monster drops (expand altar variants before item sources read drops)
+    # Monster drops (expand altar variants before item sources read drops)
     monsters.run_drops(conn)
 
-    # Phase 1b: Monster level ranges (from spawns, needed before dropped_by)
+    # Monster level ranges (from spawns, needed before dropped_by)
     monsters.run_levels(conn)
 
-    # Phase 2: Quest display_type (needed before item usages reads it)
+    # Quest display_type (needed before item usages reads it)
     quests.run_display_type(conn)
 
-    # Phase 3: Item denormalizations (reads monster drops for dropped_by)
+    # Item denormalizations (reads monster drops for dropped_by)
     items.run_all(conn, redactions)
 
-    # Phase 4: Skill denormalizations
+    # Skill denormalizations
     skills.run_all(conn)
 
-    # Phase 5: Monster spawn inference
+    # Monster spawn inference
     monsters.run_spawns(conn)
 
-    # Phase 6: Experience calculations (pre-compute EXP values)
+    # Experience calculations (pre-compute EXP values)
     experience.run_all(conn)
 
-    # Phase 7: NPC denormalizations (quest/item/skill names, quests_completed_here)
+    # NPC denormalizations (quest/item/skill names, quests_completed_here, role bitmasks)
     npcs.run_all(conn)
 
-    # Phase 8: Quest denormalizations (tooltips - display_type already done in Phase 2)
+    # Zone bounds (computed from all entity positions for map rendering)
+    zones.run_all(conn)
+
+    # Quest denormalizations (tooltips)
     quests.run_tooltips(conn)
 
-    # Phase 9: Search keywords for FTS5 indexing
+    # Search keywords for FTS5 indexing
     search.run_all(conn)

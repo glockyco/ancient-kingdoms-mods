@@ -38,7 +38,12 @@ CREATE TABLE zones (
     max_zoom_map REAL DEFAULT 80.0,
     level_min INTEGER DEFAULT 0,
     level_max INTEGER DEFAULT 0,
-    discovery_exp INTEGER              -- EXP granted when discovering this zone
+    discovery_exp INTEGER,             -- EXP granted when discovering this zone
+    -- Denormalized bounds from entity positions (monsters, npcs, portals, etc.)
+    bounds_min_x REAL,
+    bounds_min_y REAL,
+    bounds_max_x REAL,
+    bounds_max_y REAL
 );
 
 CREATE INDEX idx_zones_zone_id ON zones(zone_id);
@@ -572,7 +577,8 @@ CREATE TABLE npc_spawns (
     follow_distance REAL DEFAULT 30.0,
     move_probability REAL DEFAULT 0.0,
     move_distance REAL DEFAULT 0.0,
-    patrol_waypoints TEXT           -- JSON array
+    patrol_waypoints TEXT,          -- JSON array
+    role_bitmask INTEGER DEFAULT 0  -- Denormalized from npcs.roles for GPU filtering
 );
 
 CREATE INDEX idx_npc_spawns_npc ON npc_spawns(npc_id);

@@ -45,6 +45,7 @@ export async function loadAllMapEntities(): Promise<MapEntityData> {
     gathering,
     crafting,
     subZones,
+    parentZones,
   ] = await Promise.all([
     loadMonsterSpawns(),
     loadNpcSpawns(),
@@ -54,6 +55,7 @@ export async function loadAllMapEntities(): Promise<MapEntityData> {
     loadGatheringSpawns(),
     loadCraftingStations(),
     loadZoneTriggers(),
+    loadZoneBounds(),
   ]);
 
   const levelRanges = computeLevelRanges(monsters, gathering);
@@ -67,6 +69,7 @@ export async function loadAllMapEntities(): Promise<MapEntityData> {
     gathering,
     crafting,
     subZones,
+    parentZones,
     levelRanges,
   };
 }
@@ -162,7 +165,7 @@ interface NpcSpawnRow {
   position_y: number | null;
   zone_id: string;
   zone_name: string;
-  roles: string | null;
+  role_bitmask: number;
 }
 
 async function loadNpcSpawns(): Promise<NpcMapEntity[]> {
@@ -175,49 +178,24 @@ async function loadNpcSpawns(): Promise<NpcMapEntity[]> {
       ns.position_y,
       ns.zone_id,
       z.name as zone_name,
-      n.roles
+      ns.role_bitmask
     FROM npc_spawns ns
     JOIN npcs n ON n.id = ns.npc_id
     JOIN zones z ON z.id = ns.zone_id
   `);
 
-  return rows.map((r) => {
-    const roles = r.roles ? JSON.parse(r.roles) : {};
-    return {
-      id: r.npc_id,
-      type: "npc" as const,
-      name: r.name,
-      position:
-        r.position_x !== null && r.position_y !== null
-          ? [r.position_x, -r.position_y]
-          : null,
-      zoneId: r.zone_id,
-      zoneName: r.zone_name,
-      // Service roles
-      isVendor: Boolean(roles.is_merchant),
-      isQuestGiver: Boolean(roles.is_quest_giver),
-      canRepair: Boolean(roles.can_repair_equipment),
-      isBank: Boolean(roles.is_bank),
-      isInnkeeper: Boolean(roles.is_inkeeper),
-      isSoulBinder: Boolean(roles.is_soul_binder),
-      // Training roles
-      isSkillTrainer: Boolean(roles.is_skill_master),
-      isVeteranTrainer: Boolean(roles.is_veteran_master),
-      isAttributeReset: Boolean(roles.is_reset_attributes),
-      // Specialized roles
-      isFactionVendor: Boolean(roles.is_faction_vendor),
-      isEssenceTrader: Boolean(roles.is_essence_trader),
-      isAugmenter: Boolean(roles.is_augmenter),
-      isPriestess: Boolean(roles.is_priestess),
-      isRenewalSage: Boolean(roles.is_renewal_sage),
-      // Adventuring roles
-      isAdventurerTaskgiver: Boolean(roles.is_taskgiver_adventurer),
-      isAdventurerVendor: Boolean(roles.is_merchant_adventurer),
-      isMercenaryRecruiter: Boolean(roles.is_recruiter_mercenaries),
-      // Other
-      isGuard: Boolean(roles.is_guard),
-    };
-  });
+  return rows.map((r) => ({
+    id: r.npc_id,
+    type: "npc" as const,
+    name: r.name,
+    position:
+      r.position_x !== null && r.position_y !== null
+        ? [r.position_x, -r.position_y]
+        : null,
+    zoneId: r.zone_id,
+    zoneName: r.zone_name,
+    roleBitmask: r.role_bitmask,
+  }));
 }
 
 interface PortalRow {
@@ -499,6 +477,45 @@ async function loadZoneTriggers(): Promise<ZoneBoundary[]> {
     zoneId: r.parent_zone_id,
     zoneName: r.zone_name,
     // Convert bounds to polygon (Y negated for display)
+    polygon: [
+      [r.bounds_min_x, -r.bounds_max_y],
+      [r.bounds_max_x, -r.bounds_max_y],
+      [r.bounds_max_x, -r.bounds_min_y],
+      [r.bounds_min_x, -r.bounds_min_y],
+    ] as [number, number][],
+  }));
+}
+
+interface ZoneBoundsRow {
+  id: string;
+  name: string;
+  bounds_min_x: number;
+  bounds_min_y: number;
+  bounds_max_x: number;
+  bounds_max_y: number;
+}
+
+async function loadZoneBounds(): Promise<ZoneBoundary[]> {
+  const rows = await query<ZoneBoundsRow>(`
+    SELECT
+      id,
+      name,
+      bounds_min_x,
+      bounds_min_y,
+      bounds_max_x,
+      bounds_max_y
+    FROM zones
+    WHERE bounds_min_x IS NOT NULL
+      AND bounds_min_y IS NOT NULL
+      AND bounds_max_x IS NOT NULL
+      AND bounds_max_y IS NOT NULL
+  `);
+
+  return rows.map((r) => ({
+    id: `parent-${r.name}`,
+    name: r.name,
+    zoneId: r.id,
+    zoneName: r.name,
     polygon: [
       [r.bounds_min_x, -r.bounds_max_y],
       [r.bounds_max_x, -r.bounds_max_y],

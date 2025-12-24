@@ -2,16 +2,24 @@
   import * as Card from "$lib/components/ui/card";
   import { Button } from "$lib/components/ui/button";
   import { toRomanNumeral } from "$lib/utils/format";
-  import type {
-    AnyMapEntity,
-    MonsterMapEntity,
-    NpcMapEntity,
-    PortalMapEntity,
-    ChestMapEntity,
-    AltarMapEntity,
-    GatheringMapEntity,
-    CraftingMapEntity,
+  import {
+    NPC_ROLE_BITS,
+    type AnyMapEntity,
+    type MonsterMapEntity,
+    type NpcMapEntity,
+    type PortalMapEntity,
+    type ChestMapEntity,
+    type AltarMapEntity,
+    type GatheringMapEntity,
+    type CraftingMapEntity,
   } from "$lib/types/map";
+
+  function hasNpcRole(
+    npc: NpcMapEntity,
+    role: keyof typeof NPC_ROLE_BITS,
+  ): boolean {
+    return (npc.roleBitmask & (1 << NPC_ROLE_BITS[role])) !== 0;
+  }
 
   interface Props {
     entity: AnyMapEntity;
@@ -128,15 +136,15 @@
 
     {#if entity.type === "npc"}
       {@const npc = entity as NpcMapEntity}
-      {#if npc.isVendor || npc.isQuestGiver}
+      {#if hasNpcRole(npc, "isVendor") || hasNpcRole(npc, "isQuestGiver")}
         <div class="flex gap-2">
-          {#if npc.isVendor}
+          {#if hasNpcRole(npc, "isVendor")}
             <span
               class="rounded bg-blue-500/20 px-1.5 py-0.5 text-xs text-blue-400"
               >Vendor</span
             >
           {/if}
-          {#if npc.isQuestGiver}
+          {#if hasNpcRole(npc, "isQuestGiver")}
             <span
               class="rounded bg-yellow-500/20 px-1.5 py-0.5 text-xs text-yellow-400"
               >Quests</span
