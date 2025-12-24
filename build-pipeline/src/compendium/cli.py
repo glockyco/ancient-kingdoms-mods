@@ -52,7 +52,9 @@ def build(ctx: typer.Context):
 @app.command()
 def tiles(ctx: typer.Context):
     """Generate map tile pyramid from screenshots."""
-    console.print("[yellow]tiles command not yet implemented[/yellow]")
+    from compendium.commands import tiles as tiles_cmd
+
+    tiles_cmd.run(ctx.obj)
 
 
 @app.command()

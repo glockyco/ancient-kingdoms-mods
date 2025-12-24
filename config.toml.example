@@ -28,12 +28,12 @@ db_name = "compendium.db"
 # Map tile generation
 [build_pipeline.tiles]
 min_zoom = 0
-max_zoom = 6
+max_zoom = 3
 tile_size = 256
 
-# JPEG quality for map tiles (1-100, higher = better quality but larger files)
+# WebP quality for map tiles (1-100, higher = better quality but larger files)
 # Recommended: 85 for good balance between quality and size
-jpeg_quality = 85
+webp_quality = 85
 
 # Icon extraction from Unity assets
 [build_pipeline.icons]
