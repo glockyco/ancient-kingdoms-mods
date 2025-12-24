@@ -32,7 +32,7 @@ export const INITIAL_VIEW_STATE: {
   target: [10, -280, 0],
   zoom: 0,
   minZoom: -2,
-  maxZoom: 6,
+  maxZoom: 4,
 };
 
 /**
