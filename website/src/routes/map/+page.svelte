@@ -438,6 +438,7 @@
               gathering_plant: entityData.gathering,
               gathering_mineral: entityData.gathering,
               gathering_spark: entityData.gathering,
+              gathering_other: entityData.gathering,
               alchemy_table: entityData.crafting,
               crafting_station: entityData.crafting,
             };

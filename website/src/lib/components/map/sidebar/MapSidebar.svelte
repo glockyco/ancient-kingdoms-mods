@@ -18,6 +18,7 @@
   import Leaf from "@lucide/svelte/icons/leaf";
   import Pickaxe from "@lucide/svelte/icons/pickaxe";
   import Sparkles from "@lucide/svelte/icons/sparkles";
+  import Package from "@lucide/svelte/icons/package";
   import Hammer from "@lucide/svelte/icons/hammer";
   import Menu from "@lucide/svelte/icons/menu";
   import Search from "@lucide/svelte/icons/search";
@@ -185,6 +186,12 @@
       icon: Sparkles,
       color: LAYER_COLORS.gathering_spark,
       label: "Radiant Sparks",
+    },
+    {
+      key: "gatheringOther",
+      icon: Package,
+      color: LAYER_COLORS.gathering_other,
+      label: "Other",
     },
   ];
 

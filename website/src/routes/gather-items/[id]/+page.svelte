@@ -30,10 +30,10 @@
   // Type colors for badges
   const typeColors: Record<string, string> = {
     Plant: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-    Mineral:
-      "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200",
+    Mineral: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200",
     "Radiant Spark":
       "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
+    Resource: "bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200",
   };
 
   // Quality names for pickaxe

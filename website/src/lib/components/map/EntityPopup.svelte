@@ -97,9 +97,12 @@
   }
 
   function isGathering(e: AnyMapEntity): e is GatheringMapEntity {
-    return ["gathering_plant", "gathering_mineral", "gathering_spark"].includes(
-      e.type,
-    );
+    return [
+      "gathering_plant",
+      "gathering_mineral",
+      "gathering_spark",
+      "gathering_other",
+    ].includes(e.type);
   }
 
   function getEntityUrl(entity: AnyMapEntity): string | null {
@@ -145,6 +148,8 @@
         return "Mineral";
       case "gathering_spark":
         return "Spark";
+      case "gathering_other":
+        return "Resource";
       case "alchemy_table":
       case "crafting_station":
         return "Crafting Station";
@@ -663,10 +668,12 @@
     <!-- Gathering Section -->
     {#if isGathering(entity)}
       {@const gathering = entity as GatheringMapEntity}
-      <div class="flex justify-between">
-        <span class="text-muted-foreground">Tier</span>
-        <span>{toRomanNumeral(gathering.level)}</span>
-      </div>
+      {#if entity.type === "gathering_plant" || entity.type === "gathering_mineral"}
+        <div class="flex justify-between">
+          <span class="text-muted-foreground">Tier</span>
+          <span>{toRomanNumeral(gathering.level)}</span>
+        </div>
+      {/if}
       {#if gathering.toolRequiredName && gathering.toolRequiredId}
         <div class="flex justify-between">
           <span class="text-muted-foreground">Tool</span>

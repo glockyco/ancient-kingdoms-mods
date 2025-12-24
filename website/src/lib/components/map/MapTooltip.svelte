@@ -74,6 +74,8 @@
         return "Plant";
       case "gathering_mineral":
         return "Mineral";
+      case "gathering_other":
+        return "Resource";
       case "alchemy_table":
       case "crafting_station":
         return "Crafting Station";

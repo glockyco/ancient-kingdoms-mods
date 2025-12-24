@@ -67,8 +67,9 @@
   // Type colors for badges
   const typeColors: Record<string, string> = {
     Plant: "bg-green-600",
-    Mineral: "bg-amber-600",
+    Mineral: "bg-gray-500",
     "Radiant Spark": "bg-purple-600",
+    Resource: "bg-gray-400",
   };
 
   // Format respawn time based on resource type

@@ -86,6 +86,9 @@ export function createFilteredData(data: MapEntityData): FilteredMapData {
     plants: renderableGathering.filter((g) => g.type === "gathering_plant"),
     minerals: renderableGathering.filter((g) => g.type === "gathering_mineral"),
     sparks: renderableGathering.filter((g) => g.type === "gathering_spark"),
+    otherGathering: renderableGathering.filter(
+      (g) => g.type === "gathering_other",
+    ),
     alchemyTables: renderableCrafting.filter((c) => c.type === "alchemy_table"),
     forges: renderableCrafting.filter(
       (c) => c.type === "crafting_station" && !c.isCookingOven,
@@ -459,6 +462,22 @@ export function createLayers(
     visible: visibility.gatheringSparks,
     iconType: "gathering_spark",
     color: LAYER_COLORS.gathering_spark,
+    radius: LAYER_RADII.gathering,
+    extensions: [zoneFilterExt],
+    getFilterValue: (d) => isInZone(d.zoneId),
+    filterRange: [1, 1],
+    updateTriggers: {
+      getFilterValue: focusedZoneId,
+    },
+  });
+
+  // Other gathering resources use zone-only filtering (excluded from tier filter)
+  const gatheringOtherLayer = createEntityLayer<GatheringMapEntity>({
+    id: "gathering-other",
+    data: filtered.otherGathering,
+    visible: visibility.gatheringOther,
+    iconType: "gathering_other",
+    color: LAYER_COLORS.gathering_other,
     radius: LAYER_RADII.gathering,
     extensions: [zoneFilterExt],
     getFilterValue: (d) => isInZone(d.zoneId),
@@ -852,6 +871,7 @@ export function createLayers(
     gatheringPlantsLayer,
     gatheringMineralsLayer,
     gatheringSparksLayer,
+    gatheringOtherLayer,
     alchemyTablesLayer,
     forgesLayer,
     cookingOvensLayer,

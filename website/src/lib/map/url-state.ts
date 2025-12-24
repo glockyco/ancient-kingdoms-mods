@@ -72,6 +72,7 @@ const DEFAULT_LAYERS: (keyof LayerVisibility)[] = [
   "gatheringPlants",
   "gatheringMinerals",
   "gatheringSparks",
+  "gatheringOther",
   // Zones
   "tiles",
 ];
@@ -117,6 +118,7 @@ export function getDefaultLayerVisibility(): LayerVisibility {
     gatheringPlants: true,
     gatheringMinerals: true,
     gatheringSparks: true,
+    gatheringOther: true,
     // Zones
     subZones: false,
     parentZones: false,
@@ -302,6 +304,7 @@ export function urlStateToLayerVisibility(
     gatheringPlants: urlLayers.includes("gatheringPlants"),
     gatheringMinerals: urlLayers.includes("gatheringMinerals"),
     gatheringSparks: urlLayers.includes("gatheringSparks"),
+    gatheringOther: urlLayers.includes("gatheringOther"),
     // Zones
     subZones: urlLayers.includes("subZones"),
     parentZones: urlLayers.includes("parentZones"),

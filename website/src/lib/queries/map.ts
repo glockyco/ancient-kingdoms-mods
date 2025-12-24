@@ -673,10 +673,11 @@ async function loadGatheringSpawns(): Promise<GatheringMapEntity[]> {
   `);
 
   return rows.map((r) => {
-    let type: "gathering_plant" | "gathering_mineral" | "gathering_spark";
+    let type: GatheringMapEntity["type"];
     if (r.is_plant) type = "gathering_plant";
     else if (r.is_mineral) type = "gathering_mineral";
-    else type = "gathering_spark";
+    else if (r.is_radiant_spark) type = "gathering_spark";
+    else type = "gathering_other";
 
     return {
       id: r.id,
