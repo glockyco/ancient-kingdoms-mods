@@ -80,7 +80,7 @@ interface MonsterSpawnRow {
   name: string;
   position_x: number | null;
   position_y: number | null;
-  zone_id: string;
+  zone_id: string | null;
   zone_name: string;
   level: number;
   is_boss: number;
@@ -127,7 +127,9 @@ function countDrops(dropsJson: string | null): {
 async function loadMonsterSpawns(): Promise<MonsterMapEntity[]> {
   // Include both regular and summon spawns on the map
   // Altar and placeholder spawns are excluded (too many overlapping dots)
+  // But we include monsters without regular/summon spawns (with null position) for popup support
   const rows = await query<MonsterSpawnRow>(`
+    -- Monsters with regular/summon spawns (rendered on map)
     SELECT
       ms.id,
       ms.monster_id,
@@ -166,6 +168,43 @@ async function loadMonsterSpawns(): Promise<MonsterMapEntity[]> {
     JOIN monsters m ON m.id = ms.monster_id
     JOIN zones z ON z.id = ms.zone_id
     WHERE ms.spawn_type IN ('regular', 'summon')
+
+    UNION ALL
+
+    -- Monsters without regular/summon spawns (for popup support, not rendered)
+    SELECT
+      m.id as id,
+      m.id as monster_id,
+      m.name,
+      NULL as position_x,
+      NULL as position_y,
+      NULL as zone_id,
+      'Unknown' as zone_name,
+      m.level,
+      m.is_boss,
+      m.is_elite,
+      m.is_hunt,
+      0 as is_patrolling,
+      NULL as patrol_waypoints,
+      (m.death_time + m.respawn_time) as respawn_time,
+      m.respawn_probability,
+      m.spawn_time_start,
+      m.spawn_time_end,
+      m.base_exp,
+      m.drops,
+      'regular' as spawn_type,
+      NULL as source_monster_id,
+      NULL as source_monster_name,
+      NULL as source_spawn_probability,
+      NULL as source_summon_kill_monster_id,
+      NULL as source_summon_kill_monster_name,
+      NULL as source_summon_kill_count,
+      NULL as blocker_spawn_ids
+    FROM monsters m
+    WHERE NOT EXISTS (
+      SELECT 1 FROM monster_spawns ms
+      WHERE ms.monster_id = m.id AND ms.spawn_type IN ('regular', 'summon')
+    )
   `);
 
   return rows.map((r) => {
@@ -250,12 +289,12 @@ function parseBlockerSpawnIds(json: string | null): string[] | null {
 }
 
 interface NpcSpawnRow {
-  id: string;
+  id: string | null;
   npc_id: string;
   name: string;
   position_x: number | null;
   position_y: number | null;
-  zone_id: string;
+  zone_id: string | null;
   zone_name: string;
   role_bitmask: number;
   respawn_dungeon_id: number;
@@ -271,13 +310,13 @@ async function loadNpcSpawns(): Promise<NpcMapEntity[]> {
   const rows = await query<NpcSpawnRow>(`
     SELECT
       ns.id,
-      ns.npc_id,
+      n.id as npc_id,
       n.name,
       ns.position_x,
       ns.position_y,
       ns.zone_id,
-      z.name as zone_name,
-      ns.role_bitmask,
+      COALESCE(z.name, 'Unknown') as zone_name,
+      COALESCE(ns.role_bitmask, 0) as role_bitmask,
       n.respawn_dungeon_id,
       rz.name as renewal_dungeon_name,
       -- Popup fields
@@ -285,9 +324,9 @@ async function loadNpcSpawns(): Promise<NpcMapEntity[]> {
       n.items_sold,
       n.teleport_zone_id,
       tz.name as teleport_zone_name
-    FROM npc_spawns ns
-    JOIN npcs n ON n.id = ns.npc_id
-    JOIN zones z ON z.id = ns.zone_id
+    FROM npcs n
+    LEFT JOIN npc_spawns ns ON ns.npc_id = n.id
+    LEFT JOIN zones z ON z.id = ns.zone_id
     LEFT JOIN zones rz ON rz.zone_id = n.respawn_dungeon_id
     LEFT JOIN zones tz ON tz.id = n.teleport_zone_id
   `);
@@ -345,9 +384,12 @@ interface PortalRow {
   to_zone_id: string | null;
   to_zone_name: string | null;
   is_closed: number;
+  required_item_id: string | null;
   required_item_name: string | null;
   required_level: number;
   required_item_level: number;
+  need_monster_dead_id: string | null;
+  need_monster_dead_name: string | null;
 }
 
 async function loadPortals(): Promise<PortalMapEntity[]> {
@@ -363,37 +405,53 @@ async function loadPortals(): Promise<PortalMapEntity[]> {
       p.to_zone_id,
       tz.name as to_zone_name,
       p.is_closed,
+      p.required_item_id,
       i.name as required_item_name,
       COALESCE(tz.required_level, 0) as required_level,
-      p.level_required as required_item_level
+      p.level_required as required_item_level,
+      p.need_monster_dead_id,
+      m.name as need_monster_dead_name
     FROM portals p
     JOIN zones fz ON fz.id = p.from_zone_id
     LEFT JOIN zones tz ON tz.id = p.to_zone_id
     LEFT JOIN items i ON i.id = p.required_item_id
+    LEFT JOIN monsters m ON m.id = p.need_monster_dead_id
     WHERE p.is_template = 0
   `);
 
-  return rows.map((r) => ({
-    id: r.id,
-    type: "portal" as const,
-    name: r.to_zone_name ? `Portal to ${r.to_zone_name}` : "Portal",
-    position:
-      r.position_x !== null && r.position_y !== null
-        ? [r.position_x, -r.position_y]
-        : null,
-    zoneId: r.from_zone_id,
-    zoneName: r.from_zone_name,
-    destination:
-      r.destination_x !== null && r.destination_y !== null
-        ? [r.destination_x, -r.destination_y]
-        : null,
-    destinationZoneId: r.to_zone_id,
-    destinationZoneName: r.to_zone_name,
-    isClosed: Boolean(r.is_closed),
-    requiredItemName: r.required_item_name,
-    requiredLevel: r.required_level,
-    requiredItemLevel: r.required_item_level,
-  }));
+  return rows.map((r) => {
+    const isClosed = Boolean(r.is_closed);
+    const name = isClosed
+      ? "Closed Portal"
+      : r.to_zone_name
+        ? `Portal to ${r.to_zone_name}`
+        : "Portal";
+
+    return {
+      id: r.id,
+      type: "portal" as const,
+      name,
+      position:
+        r.position_x !== null && r.position_y !== null
+          ? [r.position_x, -r.position_y]
+          : null,
+      zoneId: r.from_zone_id,
+      zoneName: r.from_zone_name,
+      destination:
+        r.destination_x !== null && r.destination_y !== null
+          ? [r.destination_x, -r.destination_y]
+          : null,
+      destinationZoneId: r.to_zone_id,
+      destinationZoneName: r.to_zone_name,
+      isClosed,
+      requiredItemId: r.required_item_id,
+      requiredItemName: r.required_item_name,
+      requiredLevel: r.required_level,
+      requiredItemLevel: r.required_item_level,
+      needMonsterDeadId: r.need_monster_dead_id,
+      needMonsterDeadName: r.need_monster_dead_name,
+    };
+  });
 }
 
 interface ChestRow {
@@ -472,23 +530,34 @@ interface AltarRow {
 }
 
 /**
- * Extract final wave boss names from altar waves JSON.
+ * Extract final wave boss info from altar waves JSON.
  * Final wave typically has a single boss monster (or a unique monster type).
  */
-function extractFinalBossNames(wavesJson: string | null): string[] {
-  if (!wavesJson) return [];
+function extractFinalBossInfo(wavesJson: string | null): {
+  names: string[];
+  ids: string[];
+} {
+  if (!wavesJson) return { names: [], ids: [] };
   try {
     const waves = JSON.parse(wavesJson) as Array<{
       monsters: Array<{ monster_id: string; monster_name: string }>;
     }>;
-    if (waves.length === 0) return [];
+    if (waves.length === 0) return { names: [], ids: [] };
     // Get the last wave - the boss is typically the unique monster in the final wave
     const finalWave = waves[waves.length - 1];
-    // Get unique monster names from final wave
-    const names = finalWave.monsters.map((m) => m.monster_name);
-    return [...new Set(names)];
+    // Build map of id -> name for unique monsters
+    const bossMap = new Map<string, string>();
+    for (const m of finalWave.monsters) {
+      if (!bossMap.has(m.monster_id)) {
+        bossMap.set(m.monster_id, m.monster_name);
+      }
+    }
+    return {
+      names: [...bossMap.values()],
+      ids: [...bossMap.keys()],
+    };
   } catch {
-    return [];
+    return { names: [], ids: [] };
   }
 }
 
@@ -515,27 +584,31 @@ async function loadAltars(): Promise<AltarMapEntity[]> {
     JOIN zones z ON z.id = a.zone_id
   `);
 
-  return rows.map((r) => ({
-    id: r.id,
-    type: "altar" as const,
-    name: r.name,
-    position:
-      r.position_x !== null && r.position_y !== null
-        ? [r.position_x, -r.position_y]
-        : null,
-    zoneId: r.zone_id,
-    zoneName: r.zone_name,
-    altarType: r.type as "forgotten" | "avatar",
-    minLevel: r.min_level_required,
-    activationItemName: r.required_activation_item_name,
-    // Popup fields
-    totalWaves: r.total_waves,
-    rewardNormalName: r.reward_normal_name,
-    rewardMagicName: r.reward_magic_name,
-    rewardEpicName: r.reward_epic_name,
-    rewardLegendaryName: r.reward_legendary_name,
-    finalBossNames: extractFinalBossNames(r.waves),
-  }));
+  return rows.map((r) => {
+    const bossInfo = extractFinalBossInfo(r.waves);
+    return {
+      id: r.id,
+      type: "altar" as const,
+      name: r.name,
+      position:
+        r.position_x !== null && r.position_y !== null
+          ? [r.position_x, -r.position_y]
+          : null,
+      zoneId: r.zone_id,
+      zoneName: r.zone_name,
+      altarType: r.type as "forgotten" | "avatar",
+      minLevel: r.min_level_required,
+      activationItemName: r.required_activation_item_name,
+      // Popup fields
+      totalWaves: r.total_waves,
+      rewardNormalName: r.reward_normal_name,
+      rewardMagicName: r.reward_magic_name,
+      rewardEpicName: r.reward_epic_name,
+      rewardLegendaryName: r.reward_legendary_name,
+      finalBossNames: bossInfo.names,
+      finalBossIds: bossInfo.ids,
+    };
+  });
 }
 
 interface GatheringRow {
@@ -543,7 +616,7 @@ interface GatheringRow {
   name: string;
   position_x: number | null;
   position_y: number | null;
-  zone_id: string;
+  zone_id: string | null;
   zone_name: string;
   level: number;
   is_plant: number;
@@ -551,6 +624,7 @@ interface GatheringRow {
   is_radiant_spark: number;
   // Popup fields
   respawn_time: number;
+  tool_required_id: string | null;
   tool_required_name: string | null;
   drop_count: number;
 }
@@ -558,23 +632,24 @@ interface GatheringRow {
 async function loadGatheringSpawns(): Promise<GatheringMapEntity[]> {
   const rows = await query<GatheringRow>(`
     SELECT
-      gs.resource_id as id,
+      gr.id,
       gr.name,
       gs.position_x,
       gs.position_y,
       gs.zone_id,
-      z.name as zone_name,
+      COALESCE(z.name, 'Unknown') as zone_name,
       gr.level,
       gr.is_plant,
       gr.is_mineral,
       gr.is_radiant_spark,
       -- Popup fields
       gr.respawn_time,
+      gr.tool_required_id,
       t.name as tool_required_name,
       (SELECT COUNT(*) FROM gathering_resource_drops grd WHERE grd.resource_id = gr.id) as drop_count
-    FROM gathering_resource_spawns gs
-    JOIN gathering_resources gr ON gr.id = gs.resource_id
-    JOIN zones z ON z.id = gs.zone_id
+    FROM gathering_resources gr
+    LEFT JOIN gathering_resource_spawns gs ON gs.resource_id = gr.id
+    LEFT JOIN zones z ON z.id = gs.zone_id
     LEFT JOIN items t ON t.id = gr.tool_required_id
   `);
 
@@ -598,6 +673,7 @@ async function loadGatheringSpawns(): Promise<GatheringMapEntity[]> {
       level: r.level,
       // Popup fields
       respawnTime: r.respawn_time,
+      toolRequiredId: r.tool_required_id,
       toolRequiredName: r.tool_required_name,
       dropCount: r.drop_count,
     };

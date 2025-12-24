@@ -92,7 +92,7 @@ export function createFilteredData(data: MapEntityData): FilteredMapData {
     ),
     cookingOvens: renderableCrafting.filter((c) => c.isCookingOven),
     portalsWithDestinations: renderablePortals.filter(
-      (p) => p.destination !== null,
+      (p) => p.destination !== null && !p.isClosed,
     ),
     parentZones: data.parentZones,
   };
@@ -300,7 +300,8 @@ export function createLayers(
   const levelZoneFilterExt = new DataFilterExtension({ filterSize: 2 });
 
   // Helper to check if entity is in focused zone (or if no zone is focused)
-  const isInZone = (zoneId: string): number =>
+  // Returns 0 for entities without a zone (they won't be rendered anyway due to null position)
+  const isInZone = (zoneId: string | null): number =>
     !focusedZoneId || zoneId === focusedZoneId ? 1 : 0;
 
   // Pre-compute NPC visibility bitmask for GPU filtering

@@ -23,8 +23,8 @@ export interface MapEntity {
   id: string;
   type: EntityType;
   name: string;
-  position: [number, number] | null; // [x, y] in game coordinates, null for excluded zones
-  zoneId: string;
+  position: [number, number] | null; // [x, y] in game coordinates, null for entities without spawns
+  zoneId: string | null; // null for entities without spawns
   zoneName: string;
 }
 
@@ -113,9 +113,12 @@ export interface PortalMapEntity extends MapEntity {
   destinationZoneId: string | null;
   destinationZoneName: string | null;
   isClosed: boolean;
+  requiredItemId: string | null;
   requiredItemName: string | null;
   requiredLevel: number;
   requiredItemLevel: number;
+  needMonsterDeadId: string | null;
+  needMonsterDeadName: string | null;
 }
 
 /**
@@ -146,6 +149,7 @@ export interface AltarMapEntity extends MapEntity {
   rewardEpicName: string | null;
   rewardLegendaryName: string | null;
   finalBossNames: string[];
+  finalBossIds: string[];
 }
 
 /**
@@ -157,6 +161,7 @@ export interface GatheringMapEntity extends MapEntity {
   level: number;
   // Popup fields
   respawnTime: number;
+  toolRequiredId: string | null;
   toolRequiredName: string | null;
   dropCount: number;
 }

@@ -82,25 +82,25 @@ export function formatSpawnTimeWindow(
 }
 
 /**
- * Get CSS class for item quality color
+ * Get CSS class for item quality color (uses custom CSS variables)
+ * Use for backgrounds/badges
  */
 export function getQualityColorClass(quality: number): string {
-  switch (quality) {
-    case 0:
-      return "text-gray-400"; // Common
-    case 1:
-      return "text-white"; // Uncommon
-    case 2:
-      return "text-green-400"; // Magic
-    case 3:
-      return "text-blue-400"; // Rare
-    case 4:
-      return "text-purple-400"; // Epic
-    case 5:
-      return "text-orange-400"; // Legendary
-    default:
-      return "text-gray-400";
+  if (quality >= 0 && quality <= 4) {
+    return `text-quality-${quality}`;
   }
+  return "text-quality-0";
+}
+
+/**
+ * Get CSS class for item quality text color (brighter, for readability)
+ * Use for text/links
+ */
+export function getQualityTextColorClass(quality: number): string {
+  if (quality >= 0 && quality <= 4) {
+    return `text-quality-text-${quality}`;
+  }
+  return "text-quality-text-0";
 }
 
 /**

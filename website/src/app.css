@@ -38,12 +38,19 @@
   --sidebar-border: oklch(0.929 0.013 255.508);
   --sidebar-ring: oklch(0.704 0.04 256.788);
 
-  /* Item quality colors (0-4) */
+  /* Item quality colors (0-4) - for backgrounds/badges */
   --quality-0: oklch(0.55 0.02 264);
   --quality-1: oklch(0.56 0.12 145);
   --quality-2: oklch(0.52 0.16 240);
   --quality-3: oklch(0.55 0.18 310);
   --quality-4: oklch(0.58 0.15 55);
+
+  /* Item quality text colors (0-4) - brighter for readability */
+  --quality-text-0: oklch(0.95 0 0);
+  --quality-text-1: oklch(0.72 0.15 145);
+  --quality-text-2: oklch(0.7 0.18 240);
+  --quality-text-3: oklch(0.72 0.2 310);
+  --quality-text-4: oklch(0.75 0.18 55);
 
   /* Monster type colors */
   --monster-regular: oklch(0.6 0.22 25);
@@ -126,6 +133,11 @@
   --color-quality-2: var(--quality-2);
   --color-quality-3: var(--quality-3);
   --color-quality-4: var(--quality-4);
+  --color-quality-text-0: var(--quality-text-0);
+  --color-quality-text-1: var(--quality-text-1);
+  --color-quality-text-2: var(--quality-text-2);
+  --color-quality-text-3: var(--quality-text-3);
+  --color-quality-text-4: var(--quality-text-4);
   --color-monster-regular: var(--monster-regular);
   --color-monster-elite: var(--monster-elite);
   --color-monster-boss: var(--monster-boss);
@@ -137,5 +149,24 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+/* Quality text color utilities (must be explicit for Tailwind to generate) */
+@layer utilities {
+  .text-quality-text-0 {
+    color: var(--quality-text-0);
+  }
+  .text-quality-text-1 {
+    color: var(--quality-text-1);
+  }
+  .text-quality-text-2 {
+    color: var(--quality-text-2);
+  }
+  .text-quality-text-3 {
+    color: var(--quality-text-3);
+  }
+  .text-quality-text-4 {
+    color: var(--quality-text-4);
   }
 }

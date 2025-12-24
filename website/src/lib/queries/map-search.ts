@@ -605,6 +605,7 @@ interface PortalSearchRow {
   from_zone_name: string | null;
   to_zone_id: string | null;
   to_zone_name: string | null;
+  is_closed: number;
 }
 
 async function searchPortals(
@@ -621,7 +622,8 @@ async function searchPortals(
       p.from_zone_id,
       fz.name as from_zone_name,
       p.to_zone_id,
-      tz.name as to_zone_name
+      tz.name as to_zone_name,
+      p.is_closed
     FROM portals_fts pf
     JOIN portals p ON pf.rowid = p.rowid
     LEFT JOIN zones fz ON fz.id = p.from_zone_id
@@ -636,7 +638,12 @@ async function searchPortals(
 
   return rows.map((r) => {
     const y = r.position_y !== null ? -r.position_y : null;
-    const name = r.to_zone_name ? `Portal to ${r.to_zone_name}` : "Portal";
+    const isClosed = Boolean(r.is_closed);
+    const name = isClosed
+      ? "Closed Portal"
+      : r.to_zone_name
+        ? `Portal to ${r.to_zone_name}`
+        : "Portal";
 
     return {
       id: r.id,

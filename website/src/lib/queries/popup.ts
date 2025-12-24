@@ -8,6 +8,8 @@ export interface PopupDropItem {
   itemName: string;
   quality: number;
   dropRate: number;
+  dropRateMax?: number;
+  tooltipHtml: string | null;
   isBestiary?: boolean;
   isRandomItem?: boolean;
   randomItemOutcomes?: Array<{
@@ -33,6 +35,7 @@ export interface PopupItemSoldInfo {
   itemName: string;
   quality: number;
   price: number;
+  tooltipHtml: string | null;
 }
 
 /**
@@ -45,6 +48,7 @@ export interface PopupAltarReward {
   itemName: string;
   quality: number;
   dropRate: number | null;
+  tooltipHtml: string | null;
 }
 
 /**
@@ -89,6 +93,7 @@ interface MonsterDropRow {
   quality: number;
   rate: number;
   is_bestiary_drop: number;
+  tooltip_html: string | null;
 }
 
 /**
@@ -99,7 +104,7 @@ export async function loadMonsterPopupDetails(
   monsterId: string,
   showBestiaryOnly: boolean,
 ): Promise<MonsterPopupDetails> {
-  // Query drops from JSON and join with items to get is_bestiary_drop flag
+  // Query drops from JSON and join with items to get is_bestiary_drop flag and tooltip
   const drops = await query<MonsterDropRow>(
     `
     SELECT
@@ -107,7 +112,8 @@ export async function loadMonsterPopupDetails(
       json_extract(d.value, '$.item_name') as item_name,
       COALESCE(i.quality, json_extract(d.value, '$.quality')) as quality,
       json_extract(d.value, '$.rate') as rate,
-      COALESCE(i.is_bestiary_drop, 0) as is_bestiary_drop
+      COALESCE(i.is_bestiary_drop, 0) as is_bestiary_drop,
+      i.tooltip_html
     FROM monsters m, json_each(m.drops) d
     LEFT JOIN items i ON i.id = json_extract(d.value, '$.item_id')
     WHERE m.id = ?
@@ -138,6 +144,7 @@ export async function loadMonsterPopupDetails(
       itemName: d.item_name,
       quality: d.quality,
       dropRate: d.rate,
+      tooltipHtml: d.tooltip_html,
       isBestiary: Boolean(d.is_bestiary_drop),
     })),
   };
@@ -157,7 +164,7 @@ interface NpcItemSoldRow {
 }
 
 /**
- * Load NPC details for popup (top 3 quests, top 3 items sold)
+ * Load NPC details for popup (all quests and items sold)
  */
 export async function loadNpcPopupDetails(
   npcId: string,
@@ -177,11 +184,19 @@ export async function loadNpcPopupDetails(
   try {
     if (npc.quests_offered) {
       const questsData = JSON.parse(npc.quests_offered) as NpcQuestRow[];
-      quests = questsData.slice(0, 3).map((q) => ({
-        id: q.id,
-        name: q.name,
-        levelRecommended: q.level_recommended,
-      }));
+      quests = questsData
+        .map((q) => ({
+          id: q.id,
+          name: q.name,
+          levelRecommended: q.level_recommended,
+        }))
+        .sort((a, b) => {
+          // Sort by level ascending, then by name alphabetically
+          if (a.levelRecommended !== b.levelRecommended) {
+            return a.levelRecommended - b.levelRecommended;
+          }
+          return a.name.localeCompare(b.name);
+        });
     }
   } catch {
     /* empty */
@@ -190,12 +205,29 @@ export async function loadNpcPopupDetails(
   try {
     if (npc.items_sold) {
       const itemsData = JSON.parse(npc.items_sold) as NpcItemSoldRow[];
-      itemsSold = itemsData.slice(0, 3).map((i) => ({
-        itemId: i.item_id,
-        itemName: i.item_name,
-        quality: i.quality,
-        price: i.price,
-      }));
+      // Fetch tooltips for all items in one query
+      const itemIds = itemsData.map((i) => i.item_id);
+      const tooltips = await query<{ id: string; tooltip_html: string | null }>(
+        `SELECT id, tooltip_html FROM items WHERE id IN (${itemIds.map(() => "?").join(",")})`,
+        itemIds,
+      );
+      const tooltipMap = new Map(tooltips.map((t) => [t.id, t.tooltip_html]));
+
+      itemsSold = itemsData
+        .map((i) => ({
+          itemId: i.item_id,
+          itemName: i.item_name,
+          quality: i.quality,
+          price: i.price,
+          tooltipHtml: tooltipMap.get(i.item_id) ?? null,
+        }))
+        .sort((a, b) => {
+          // Sort by quality descending, then by name alphabetically
+          if (a.quality !== b.quality) {
+            return b.quality - a.quality;
+          }
+          return a.itemName.localeCompare(b.itemName);
+        });
     }
   } catch {
     /* empty */
@@ -210,6 +242,7 @@ interface ChestDropRow {
   quality: number;
   drop_rate: number;
   random_items_with_names: string | null;
+  tooltip_html: string | null;
 }
 
 /**
@@ -227,7 +260,8 @@ export async function loadChestPopupDetails(
       i.name as item_name,
       i.quality,
       c.chest_reward_probability as drop_rate,
-      i.random_items_with_names
+      i.random_items_with_names,
+      i.tooltip_html
     FROM chests c
     JOIN items i ON i.id = c.item_reward_id
     WHERE c.id = ? AND c.item_reward_id IS NOT NULL
@@ -240,7 +274,8 @@ export async function loadChestPopupDetails(
       i.name as item_name,
       i.quality,
       cd.drop_rate,
-      i.random_items_with_names
+      i.random_items_with_names,
+      i.tooltip_html
     FROM chest_drops cd
     JOIN items i ON i.id = cd.item_id
     WHERE cd.chest_id = ?
@@ -257,6 +292,7 @@ export async function loadChestPopupDetails(
         itemName: r.item_name,
         quality: r.quality,
         dropRate: r.drop_rate,
+        tooltipHtml: r.tooltip_html,
       };
 
       // Check if this is a random item
@@ -286,28 +322,52 @@ interface GatheringDropRow {
   item_name: string;
   quality: number;
   drop_rate: number;
+  drop_rate_max: number | null;
+  tooltip_html: string | null;
 }
 
 /**
- * Load gathering resource drops for popup (top 3)
+ * Load gathering resource drops for popup.
+ * Includes the primary (guaranteed) drop and secondary random drops.
+ * For secondary drops, uses actual_drop_chance = (1/N) * drop_rate.
+ * For radiant sparks, radiant aether drop is 0-5% based on skill, not guaranteed.
  */
 export async function loadGatheringPopupDetails(
   resourceId: string,
 ): Promise<GatheringPopupDetails> {
   const rows = await query<GatheringDropRow>(
     `
+    -- Primary drop from gathering_resources
+    -- For radiant sparks, radiant aether is 0-5% based on skill
+    -- For plants/minerals, it's guaranteed (100%)
+    SELECT
+      gr.item_reward_id as item_id,
+      i.name as item_name,
+      i.quality,
+      CASE WHEN gr.is_radiant_spark = 1 THEN 0.0 ELSE 1.0 END as drop_rate,
+      CASE WHEN gr.is_radiant_spark = 1 THEN 0.05 ELSE NULL END as drop_rate_max,
+      i.tooltip_html
+    FROM gathering_resources gr
+    JOIN items i ON i.id = gr.item_reward_id
+    WHERE gr.id = ? AND gr.item_reward_id IS NOT NULL
+
+    UNION ALL
+
+    -- Secondary random drops with actual drop chance
     SELECT
       grd.item_id,
       i.name as item_name,
       i.quality,
-      grd.drop_rate
+      COALESCE(grd.actual_drop_chance, grd.drop_rate) as drop_rate,
+      NULL as drop_rate_max,
+      i.tooltip_html
     FROM gathering_resource_drops grd
     JOIN items i ON i.id = grd.item_id
     WHERE grd.resource_id = ?
-    ORDER BY grd.drop_rate DESC
-    LIMIT 3
+
+    ORDER BY drop_rate DESC
   `,
-    [resourceId],
+    [resourceId, resourceId],
   );
 
   return {
@@ -316,6 +376,8 @@ export async function loadGatheringPopupDetails(
       itemName: r.item_name,
       quality: r.quality,
       dropRate: r.drop_rate,
+      dropRateMax: r.drop_rate_max ?? undefined,
+      tooltipHtml: r.tooltip_html,
     })),
   };
 }
@@ -436,11 +498,11 @@ export async function loadAltarPopupDetails(
     const itemId = altar[idKey];
     const itemName = altar[nameKey];
     if (itemId && itemName) {
-      // Get item quality
-      const [item] = await query<{ quality: number }>(
-        `SELECT quality FROM items WHERE id = ?`,
-        [itemId],
-      );
+      // Get item quality and tooltip
+      const [item] = await query<{
+        quality: number;
+        tooltip_html: string | null;
+      }>(`SELECT quality, tooltip_html FROM items WHERE id = ?`, [itemId]);
       // Get drop rate from boss monster drops
       const dropRate = bossMonsterDrops.get(itemId as string) ?? null;
       rewards.push({
@@ -450,6 +512,7 @@ export async function loadAltarPopupDetails(
         itemName: itemName as string,
         quality: item?.quality ?? 0,
         dropRate,
+        tooltipHtml: item?.tooltip_html ?? null,
       });
     }
   }

@@ -1,3 +1,8 @@
+<script lang="ts" module>
+  // Shared state to ensure only one tooltip is open at a time
+  let currentOpenId = $state<string | null>(null);
+</script>
+
 <script lang="ts">
   import { browser } from "$app/environment";
   import { MediaQuery } from "svelte/reactivity";
@@ -8,6 +13,7 @@
     itemName: string;
     tooltipHtml?: string | null;
     class?: string;
+    colorClass?: string;
   }
 
   let {
@@ -15,40 +21,64 @@
     itemName,
     tooltipHtml = null,
     class: className,
+    colorClass,
   }: Props = $props();
+
+  const instanceId = crypto.randomUUID();
 
   const isSmallScreen = new MediaQuery("(max-width: 640px)");
   const showTooltip = $derived(
     tooltipHtml && browser && !isSmallScreen.current,
   );
+
+  const effectiveColorClass = $derived(
+    colorClass ?? "text-blue-600 dark:text-blue-400",
+  );
+
+  const isOpen = $derived(currentOpenId === instanceId);
+
+  function handleOpenChange(open: boolean) {
+    if (open) {
+      currentOpenId = instanceId;
+    } else if (currentOpenId === instanceId) {
+      currentOpenId = null;
+    }
+  }
 </script>
 
-{#if showTooltip}
-  <HoverCard.Root openDelay={200} closeDelay={0}>
-    <HoverCard.Trigger>
-      <a
-        href="/items/{itemId}"
-        class="text-blue-600 dark:text-blue-400 underline decoration-dotted hover:decoration-solid {className}"
-      >
-        {itemName}
-      </a>
-    </HoverCard.Trigger>
-    <HoverCard.Content
-      class="w-80 border-0 p-0 rounded-none shadow-lg"
-      side="right"
-      collisionPadding={16}
+<span class="min-w-0">
+  {#if showTooltip}
+    <HoverCard.Root
+      openDelay={200}
+      closeDelay={0}
+      open={isOpen}
+      onOpenChange={handleOpenChange}
     >
-      <div class="text-sm whitespace-pre-wrap tooltip-content">
-        <!-- eslint-disable-next-line svelte/no-at-html-tags -->
-        {@html tooltipHtml}
-      </div>
-    </HoverCard.Content>
-  </HoverCard.Root>
-{:else}
-  <a
-    href="/items/{itemId}"
-    class="text-blue-600 dark:text-blue-400 hover:underline {className}"
-  >
-    {itemName}
-  </a>
-{/if}
+      <HoverCard.Trigger>
+        <a
+          href="/items/{itemId}"
+          class="inline-block max-w-full underline decoration-dotted hover:decoration-solid {effectiveColorClass} {className}"
+        >
+          {itemName}
+        </a>
+      </HoverCard.Trigger>
+      <HoverCard.Content
+        class="w-80 border-0 p-0 overflow-hidden shadow-lg"
+        side="right"
+        collisionPadding={16}
+      >
+        <div class="text-sm whitespace-pre-wrap tooltip-content">
+          <!-- eslint-disable-next-line svelte/no-at-html-tags -->
+          {@html tooltipHtml}
+        </div>
+      </HoverCard.Content>
+    </HoverCard.Root>
+  {:else}
+    <a
+      href="/items/{itemId}"
+      class="inline-block max-w-full hover:underline {effectiveColorClass} {className}"
+    >
+      {itemName}
+    </a>
+  {/if}
+</span>

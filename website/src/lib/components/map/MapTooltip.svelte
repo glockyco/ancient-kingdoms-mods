@@ -160,19 +160,25 @@
     {@const portal = entity as PortalMapEntity}
     {#if portal.isClosed}
       <div class="text-xs text-red-400">Closed</div>
-    {/if}
-    {#if portal.requiredItemName}
-      <div class="text-xs text-amber-400">Key: {portal.requiredItemName}</div>
-    {/if}
-    {#if portal.requiredLevel > 0}
-      <div class="text-xs text-muted-foreground">
-        Lv. {portal.requiredLevel}+
-      </div>
-    {/if}
-    {#if portal.requiredItemLevel > 0}
-      <div class="text-xs text-muted-foreground">
-        Item Lv. {portal.requiredItemLevel}+
-      </div>
+    {:else}
+      {#if portal.requiredItemName}
+        <div class="text-xs text-amber-400">Key: {portal.requiredItemName}</div>
+      {/if}
+      {#if portal.needMonsterDeadName}
+        <div class="text-xs text-amber-400">
+          Kill: {portal.needMonsterDeadName}
+        </div>
+      {/if}
+      {#if portal.requiredLevel > 0}
+        <div class="text-xs text-muted-foreground">
+          Lv. {portal.requiredLevel}+
+        </div>
+      {/if}
+      {#if portal.requiredItemLevel > 0}
+        <div class="text-xs text-muted-foreground">
+          Item Lv. {portal.requiredItemLevel}+
+        </div>
+      {/if}
     {/if}
   {/if}
 

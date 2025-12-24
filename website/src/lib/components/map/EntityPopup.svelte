@@ -1,14 +1,15 @@
 <script lang="ts">
   import * as Card from "$lib/components/ui/card";
   import { Button } from "$lib/components/ui/button";
+  import ItemLink from "$lib/components/ItemLink.svelte";
   import {
     toRomanNumeral,
     formatDuration,
     formatPercent,
     formatSpawnTimeWindow,
-    getQualityColorClass,
+    getQualityTextColorClass,
   } from "$lib/utils/format";
-  import { hasNpcRole } from "$lib/utils/tooltip";
+  import { hasNpcRole, getNpcRoles } from "$lib/utils/tooltip";
   import {
     type AnyMapEntity,
     type MonsterMapEntity,
@@ -104,6 +105,9 @@
   function getEntityUrl(entity: AnyMapEntity): string | null {
     if (isMonster(entity)) {
       return `/monsters/${entity.monsterId}`;
+    }
+    if (isGathering(entity)) {
+      return `/gather-items/${entity.id}`;
     }
     switch (entity.type) {
       case "npc":
@@ -285,13 +289,17 @@
           <div class="mb-1 font-medium text-muted-foreground">
             {monster.isBoss || monster.isElite ? "Bestiary Drops" : "Drops"}
           </div>
-          <div class="space-y-0.5">
+          <div class="max-h-48 space-y-0.5 overflow-y-auto pr-2">
             {#each monsterDetails.drops as drop, i (i)}
-              <div class="flex justify-between">
-                <span class={getQualityColorClass(drop.quality)}
-                  >{drop.itemName}</span
-                >
-                <span class="text-muted-foreground"
+              <div class="flex justify-between gap-2">
+                <ItemLink
+                  itemId={drop.itemId}
+                  itemName={drop.itemName}
+                  tooltipHtml={drop.tooltipHtml}
+                  colorClass={getQualityTextColorClass(drop.quality)}
+                  class="truncate"
+                />
+                <span class="shrink-0 text-muted-foreground"
                   >{formatPercent(drop.dropRate)}</span
                 >
               </div>
@@ -304,20 +312,17 @@
     <!-- NPC Section -->
     {#if entity.type === "npc"}
       {@const npc = entity as NpcMapEntity}
+      {@const roles = getNpcRoles(npc.roleBitmask)}
 
       <!-- Role badges -->
-      {#if hasNpcRole(npc.roleBitmask, "isVendor") || hasNpcRole(npc.roleBitmask, "isQuestGiver")}
-        <div class="flex gap-2">
-          {#if hasNpcRole(npc.roleBitmask, "isVendor")}
-            <span class="rounded bg-blue-500/20 px-1.5 py-0.5 text-blue-400"
-              >Vendor</span
+      {#if roles.length > 0}
+        <div class="flex flex-wrap gap-1">
+          {#each roles as role (role)}
+            <span
+              class="rounded bg-blue-500/20 px-1.5 py-0.5 text-xs text-blue-400"
+              >{role}</span
             >
-          {/if}
-          {#if hasNpcRole(npc.roleBitmask, "isQuestGiver")}
-            <span class="rounded bg-yellow-500/20 px-1.5 py-0.5 text-yellow-400"
-              >Quests</span
-            >
-          {/if}
+          {/each}
         </div>
       {/if}
 
@@ -329,73 +334,129 @@
         </div>
       {/if}
 
-      <!-- Quest/Item counts -->
-      {#if npc.questCount > 0}
+      <!-- Renewal Sage dungeon -->
+      {#if hasNpcRole(npc.roleBitmask, "isRenewalSage") && npc.renewalDungeonName}
         <div class="flex justify-between">
-          <span class="text-muted-foreground">Quests</span>
-          <span>{npc.questCount}</span>
-        </div>
-      {/if}
-      {#if npc.itemsSoldCount > 0}
-        <div class="flex justify-between">
-          <span class="text-muted-foreground">Items for sale</span>
-          <span>{npc.itemsSoldCount}</span>
+          <span class="text-muted-foreground">Resets</span>
+          <span class="text-purple-400">{npc.renewalDungeonName}</span>
         </div>
       {/if}
 
-      <!-- Quest/item details (lazy-loaded) -->
-      {#if !isLoading && npcDetails}
-        {#if npcDetails.quests.length > 0}
-          <div class="mt-1">
-            <span class="text-muted-foreground">Quests: </span>
-            <span>{npcDetails.quests.map((q) => q.name).join(", ")}</span>
-          </div>
-        {/if}
-        {#if npcDetails.itemsSold.length > 0}
-          <div class="mt-1">
-            <span class="text-muted-foreground">Sells: </span>
-            {#each npcDetails.itemsSold as item, i (i)}
-              <span class={getQualityColorClass(item.quality)}
-                >{item.itemName}</span
-              >{i < npcDetails.itemsSold.length - 1 ? ", " : ""}
+      <!-- Quests (lazy-loaded) -->
+      {#if isLoading && npc.questCount > 0}
+        <div class="text-muted-foreground">Loading quests...</div>
+      {:else if npcDetails && npcDetails.quests.length > 0}
+        <div class="border-t pt-2">
+          <div class="mb-1 font-medium text-muted-foreground">Quests</div>
+          <div class="max-h-48 space-y-0.5 overflow-y-auto pr-2">
+            {#each npcDetails.quests as quest, i (i)}
+              <div class="flex justify-between gap-2">
+                <a
+                  href="/quests/{quest.id}"
+                  class="truncate text-blue-600 hover:underline dark:text-blue-400"
+                  >{quest.name}</a
+                >
+                <span class="shrink-0 text-muted-foreground"
+                  >Lv {quest.levelRecommended}</span
+                >
+              </div>
             {/each}
           </div>
-        {/if}
+        </div>
+      {/if}
+
+      <!-- Items sold (lazy-loaded) -->
+      {#if isLoading && npc.itemsSoldCount > 0}
+        <div class="text-muted-foreground">Loading items...</div>
+      {:else if npcDetails && npcDetails.itemsSold.length > 0}
+        <div class="border-t pt-2">
+          <div class="mb-1 font-medium text-muted-foreground">
+            Items for Sale
+          </div>
+          <div class="max-h-48 space-y-0.5 overflow-y-auto pr-2">
+            {#each npcDetails.itemsSold as item, i (i)}
+              <ItemLink
+                itemId={item.itemId}
+                itemName={item.itemName}
+                tooltipHtml={item.tooltipHtml}
+                colorClass={getQualityTextColorClass(item.quality)}
+                class="truncate"
+              />
+            {/each}
+          </div>
+        </div>
       {/if}
     {/if}
 
     <!-- Portal Section -->
     {#if entity.type === "portal"}
       {@const portal = entity as PortalMapEntity}
-      {#if portal.destinationZoneName}
-        <div class="flex justify-between">
-          <span class="text-muted-foreground">Destination</span>
-          <span>{portal.destinationZoneName}</span>
-        </div>
-      {/if}
-      {#if portal.requiredLevel > 0}
-        <div class="flex justify-between">
-          <span class="text-muted-foreground">Level</span>
-          <span>{portal.requiredLevel}+</span>
-        </div>
-      {/if}
-      {#if portal.requiredItemName}
-        <div class="flex justify-between">
-          <span class="text-muted-foreground">Key</span>
-          <span>{portal.requiredItemName}</span>
-        </div>
-      {/if}
       {#if portal.isClosed}
         <span class="rounded bg-red-500/20 px-1.5 py-0.5 text-red-400"
           >Closed</span
         >
+      {:else}
+        {#if portal.destinationZoneName}
+          <div class="flex justify-between">
+            <span class="text-muted-foreground">Destination</span>
+            <span>{portal.destinationZoneName}</span>
+          </div>
+        {/if}
+        {#if portal.requiredLevel > 0}
+          <div class="flex justify-between">
+            <span class="text-muted-foreground">Level</span>
+            <span>{portal.requiredLevel}+</span>
+          </div>
+        {/if}
+        {#if portal.requiredItemLevel > 0}
+          <div class="flex justify-between">
+            <span class="text-muted-foreground">Item Level</span>
+            <span>{portal.requiredItemLevel}+</span>
+          </div>
+        {/if}
+        {#if portal.requiredItemName}
+          <div class="flex justify-between">
+            <span class="text-muted-foreground">Key</span>
+            {#if portal.requiredItemId}
+              <a
+                href="/items/{portal.requiredItemId}"
+                class="text-blue-600 hover:underline dark:text-blue-400"
+                >{portal.requiredItemName}</a
+              >
+            {:else}
+              <span>{portal.requiredItemName}</span>
+            {/if}
+          </div>
+        {/if}
+        {#if portal.needMonsterDeadName}
+          <div class="flex justify-between">
+            <span class="text-muted-foreground">Kill</span>
+            {#if portal.needMonsterDeadId}
+              <a
+                href="/monsters/{portal.needMonsterDeadId}"
+                class="text-blue-600 hover:underline dark:text-blue-400"
+                >{portal.needMonsterDeadName}</a
+              >
+            {:else}
+              <span>{portal.needMonsterDeadName}</span>
+            {/if}
+          </div>
+        {/if}
       {/if}
     {/if}
 
     <!-- Chest Section -->
     {#if entity.type === "chest"}
       {@const chest = entity as ChestMapEntity}
-      {#if chest.keyRequiredName}
+      {#if chest.keyRequiredName && chest.keyRequiredId}
+        <div class="flex justify-between">
+          <span class="text-muted-foreground">Key</span>
+          <ItemLink
+            itemId={chest.keyRequiredId}
+            itemName={chest.keyRequiredName}
+          />
+        </div>
+      {:else if chest.keyRequiredName}
         <div class="flex justify-between">
           <span class="text-muted-foreground">Key</span>
           <span>{chest.keyRequiredName}</span>
@@ -412,25 +473,35 @@
       {:else if chestDetails && chestDetails.drops.length > 0}
         <div class="border-t pt-2">
           <div class="mb-1 font-medium text-muted-foreground">Drops</div>
-          <div class="space-y-0.5">
+          <div class="max-h-48 space-y-0.5 overflow-y-auto pr-2">
             {#each chestDetails.drops as drop, i (i)}
               <div>
-                <div class="flex justify-between">
-                  <span class={getQualityColorClass(drop.quality)}
-                    >{drop.itemName}</span
-                  >
-                  <span class="text-muted-foreground"
+                <div class="flex justify-between gap-2">
+                  <ItemLink
+                    itemId={drop.itemId}
+                    itemName={drop.itemName}
+                    tooltipHtml={drop.tooltipHtml}
+                    colorClass={getQualityTextColorClass(drop.quality)}
+                    class="truncate"
+                  />
+                  <span class="shrink-0 text-muted-foreground"
                     >{formatPercent(drop.dropRate)}</span
                   >
                 </div>
                 {#if drop.isRandomItem && drop.randomItemOutcomes}
-                  <div class="ml-2 text-muted-foreground">
-                    Can be: {drop.randomItemOutcomes
-                      .map((o) => o.itemName)
-                      .slice(0, 3)
-                      .join(", ")}{drop.randomItemOutcomes.length > 3
-                      ? "..."
-                      : ""}
+                  <div class="ml-2 truncate text-muted-foreground">
+                    <span>Can be:</span>
+                    {#each drop.randomItemOutcomes.slice(0, 3) as outcome, j (outcome.itemId)}
+                      <a
+                        href="/items/{outcome.itemId}"
+                        class="text-blue-600 hover:underline dark:text-blue-400"
+                        >{outcome.itemName}{j <
+                        Math.min(drop.randomItemOutcomes.length, 3) - 1
+                          ? ","
+                          : ""}</a
+                      >
+                    {/each}
+                    {#if drop.randomItemOutcomes.length > 3}...{/if}
                   </div>
                 {/if}
               </div>
@@ -468,7 +539,18 @@
       {#if altar.finalBossNames.length > 0}
         <div class="mt-1 rounded bg-red-500/20 px-2 py-1">
           <span class="text-red-400">Boss: </span>
-          <span class="text-red-200">{altar.finalBossNames.join(", ")}</span>
+          {#each altar.finalBossNames as bossName, i (i)}
+            {#if altar.finalBossIds[i]}
+              <a
+                href="/monsters/{altar.finalBossIds[i]}"
+                class="text-red-200 hover:underline">{bossName}</a
+              >
+            {:else}
+              <span class="text-red-200">{bossName}</span>
+            {/if}
+            {#if i < altar.finalBossNames.length - 1},
+            {/if}
+          {/each}
         </div>
       {/if}
 
@@ -481,9 +563,13 @@
           <div class="space-y-2">
             {#each altarDetails.rewards as reward (reward.tier)}
               <div>
-                <div class={getQualityColorClass(reward.quality)}>
-                  {reward.itemName}
-                </div>
+                <ItemLink
+                  itemId={reward.itemId}
+                  itemName={reward.itemName}
+                  tooltipHtml={reward.tooltipHtml}
+                  colorClass={getQualityTextColorClass(reward.quality)}
+                  class="truncate"
+                />
                 <div class="text-xs text-muted-foreground">
                   {#if reward.tier === "normal"}
                     Lv 30-34
@@ -512,7 +598,15 @@
         <span class="text-muted-foreground">Tier</span>
         <span>{toRomanNumeral(gathering.level)}</span>
       </div>
-      {#if gathering.toolRequiredName}
+      {#if gathering.toolRequiredName && gathering.toolRequiredId}
+        <div class="flex justify-between">
+          <span class="text-muted-foreground">Tool</span>
+          <ItemLink
+            itemId={gathering.toolRequiredId}
+            itemName={gathering.toolRequiredName}
+          />
+        </div>
+      {:else if gathering.toolRequiredName}
         <div class="flex justify-between">
           <span class="text-muted-foreground">Tool</span>
           <span>{gathering.toolRequiredName}</span>
@@ -529,15 +623,25 @@
       {:else if gatheringDetails && gatheringDetails.drops.length > 0}
         <div class="border-t pt-2">
           <div class="mb-1 font-medium text-muted-foreground">Drops</div>
-          <div class="space-y-0.5">
+          <div class="max-h-48 space-y-0.5 overflow-y-auto pr-2">
             {#each gatheringDetails.drops as drop, i (i)}
-              <div class="flex justify-between">
-                <span class={getQualityColorClass(drop.quality)}
-                  >{drop.itemName}</span
-                >
-                <span class="text-muted-foreground"
-                  >{formatPercent(drop.dropRate)}</span
-                >
+              <div class="flex justify-between gap-2">
+                <ItemLink
+                  itemId={drop.itemId}
+                  itemName={drop.itemName}
+                  tooltipHtml={drop.tooltipHtml}
+                  colorClass={getQualityTextColorClass(drop.quality)}
+                  class="truncate"
+                />
+                <span class="shrink-0 text-muted-foreground">
+                  {#if drop.dropRateMax !== undefined}
+                    {formatPercent(drop.dropRate)}–{formatPercent(
+                      drop.dropRateMax,
+                    )}
+                  {:else}
+                    {formatPercent(drop.dropRate)}
+                  {/if}
+                </span>
               </div>
             {/each}
           </div>
