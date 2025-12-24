@@ -402,44 +402,71 @@
             <span>{portal.destinationZoneName}</span>
           </div>
         {/if}
-        {#if portal.requiredLevel > 0}
-          <div class="flex justify-between">
-            <span class="text-muted-foreground">Level</span>
-            <span>{portal.requiredLevel}+</span>
-          </div>
-        {/if}
-        {#if portal.requiredItemLevel > 0}
-          <div class="flex justify-between">
-            <span class="text-muted-foreground">Item Level</span>
-            <span>{portal.requiredItemLevel}+</span>
-          </div>
-        {/if}
-        {#if portal.requiredItemName && portal.requiredItemId}
-          <div class="flex justify-between">
-            <span class="text-muted-foreground">Key</span>
-            <ItemLink
-              itemId={portal.requiredItemId}
-              itemName={portal.requiredItemName}
-            />
-          </div>
-        {:else if portal.requiredItemName}
-          <div class="flex justify-between">
-            <span class="text-muted-foreground">Key</span>
-            <span>{portal.requiredItemName}</span>
-          </div>
-        {/if}
-        {#if portal.needMonsterDeadName}
-          <div class="flex justify-between">
-            <span class="text-muted-foreground">Kill</span>
-            {#if portal.needMonsterDeadId}
-              <a
-                href="/monsters/{portal.needMonsterDeadId}"
-                class="text-blue-600 hover:underline dark:text-blue-400"
-                >{portal.needMonsterDeadName}</a
-              >
-            {:else}
-              <span>{portal.needMonsterDeadName}</span>
-            {/if}
+
+        <!-- Requirements section -->
+        {@const hasRequirements =
+          portal.requiredLevel > 0 ||
+          portal.requiredItemLevel > 0 ||
+          portal.requiredItemName ||
+          portal.needMonsterDeadName}
+        {#if hasRequirements}
+          <div class="border-t pt-2">
+            <div class="mb-1 font-medium text-muted-foreground">
+              Requirements
+            </div>
+            <div class="space-y-1">
+              {#if portal.requiredLevel > 0}
+                <div class="flex justify-between">
+                  <span class="text-muted-foreground">Level</span>
+                  <span>{portal.requiredLevel}+</span>
+                </div>
+              {/if}
+              {#if portal.requiredItemLevel > 0}
+                <div class="flex justify-between">
+                  <span class="text-muted-foreground">Item Level</span>
+                  <span>{portal.requiredItemLevel}+</span>
+                </div>
+              {/if}
+              {#if portal.requiredItemName && portal.requiredItemId}
+                <div class="flex justify-between">
+                  <span class="text-muted-foreground">Key</span>
+                  <ItemLink
+                    itemId={portal.requiredItemId}
+                    itemName={portal.requiredItemName}
+                  />
+                </div>
+              {:else if portal.requiredItemName}
+                <div class="flex justify-between">
+                  <span class="text-muted-foreground">Key</span>
+                  <span>{portal.requiredItemName}</span>
+                </div>
+              {/if}
+              {#if portal.needMonsterDeadName}
+                <div class="rounded bg-red-500/20 px-2 py-1 text-red-300">
+                  <span class="text-red-400">Kill</span>
+                  {#if onSelectMonster && portal.needMonsterDeadId}
+                    <button
+                      class="text-red-200 underline hover:text-red-100"
+                      onclick={() =>
+                        handleSelectMonster(portal.needMonsterDeadId!)}
+                    >
+                      {portal.needMonsterDeadName}
+                    </button>
+                  {:else if portal.needMonsterDeadId}
+                    <a
+                      href="/monsters/{portal.needMonsterDeadId}"
+                      class="text-red-200 underline hover:text-red-100"
+                      >{portal.needMonsterDeadName}</a
+                    >
+                  {:else}
+                    <span class="text-red-200"
+                      >{portal.needMonsterDeadName}</span
+                    >
+                  {/if}
+                  <span class="text-red-400">to unlock</span>
+                </div>
+              {/if}
+            </div>
           </div>
         {/if}
       {/if}
