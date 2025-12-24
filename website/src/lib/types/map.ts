@@ -141,6 +141,7 @@ export interface AltarMapEntity extends MapEntity {
   type: "altar";
   altarType: "forgotten" | "avatar";
   minLevel: number;
+  activationItemId: string | null;
   activationItemName: string | null;
   // Popup fields
   totalWaves: number;

@@ -414,18 +414,18 @@
             <span>{portal.requiredItemLevel}+</span>
           </div>
         {/if}
-        {#if portal.requiredItemName}
+        {#if portal.requiredItemName && portal.requiredItemId}
           <div class="flex justify-between">
             <span class="text-muted-foreground">Key</span>
-            {#if portal.requiredItemId}
-              <a
-                href="/items/{portal.requiredItemId}"
-                class="text-blue-600 hover:underline dark:text-blue-400"
-                >{portal.requiredItemName}</a
-              >
-            {:else}
-              <span>{portal.requiredItemName}</span>
-            {/if}
+            <ItemLink
+              itemId={portal.requiredItemId}
+              itemName={portal.requiredItemName}
+            />
+          </div>
+        {:else if portal.requiredItemName}
+          <div class="flex justify-between">
+            <span class="text-muted-foreground">Key</span>
+            <span>{portal.requiredItemName}</span>
           </div>
         {/if}
         {#if portal.needMonsterDeadName}
@@ -528,7 +528,15 @@
         <span class="text-muted-foreground">Waves</span>
         <span>{altar.totalWaves}</span>
       </div>
-      {#if altar.activationItemName}
+      {#if altar.activationItemName && altar.activationItemId}
+        <div class="flex justify-between">
+          <span class="text-muted-foreground">Requires</span>
+          <ItemLink
+            itemId={altar.activationItemId}
+            itemName={altar.activationItemName}
+          />
+        </div>
+      {:else if altar.activationItemName}
         <div class="flex justify-between">
           <span class="text-muted-foreground">Requires</span>
           <span>{altar.activationItemName}</span>

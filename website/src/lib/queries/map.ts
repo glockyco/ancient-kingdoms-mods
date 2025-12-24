@@ -519,6 +519,7 @@ interface AltarRow {
   zone_id: string;
   zone_name: string;
   min_level_required: number;
+  required_activation_item_id: string | null;
   required_activation_item_name: string | null;
   // Popup fields
   total_waves: number;
@@ -572,6 +573,7 @@ async function loadAltars(): Promise<AltarMapEntity[]> {
       a.zone_id,
       z.name as zone_name,
       a.min_level_required,
+      a.required_activation_item_id,
       a.required_activation_item_name,
       -- Popup fields
       a.total_waves,
@@ -598,6 +600,7 @@ async function loadAltars(): Promise<AltarMapEntity[]> {
       zoneName: r.zone_name,
       altarType: r.type as "forgotten" | "avatar",
       minLevel: r.min_level_required,
+      activationItemId: r.required_activation_item_id,
       activationItemName: r.required_activation_item_name,
       // Popup fields
       totalWaves: r.total_waves,
