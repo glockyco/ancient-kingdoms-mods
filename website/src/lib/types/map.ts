@@ -119,6 +119,8 @@ export interface PortalMapEntity extends MapEntity {
   requiredItemLevel: number;
   needMonsterDeadId: string | null;
   needMonsterDeadName: string | null;
+  // Specific spawn IDs of the kill requirement monster (for arc rendering)
+  killRequirementSpawnIds: string[] | null;
 }
 
 /**

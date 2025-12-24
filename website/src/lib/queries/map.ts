@@ -390,6 +390,7 @@ interface PortalRow {
   required_item_level: number;
   need_monster_dead_id: string | null;
   need_monster_dead_name: string | null;
+  kill_requirement_spawn_ids: string | null;
 }
 
 async function loadPortals(): Promise<PortalMapEntity[]> {
@@ -410,7 +411,15 @@ async function loadPortals(): Promise<PortalMapEntity[]> {
       COALESCE(tz.required_level, 0) as required_level,
       p.level_required as required_item_level,
       p.need_monster_dead_id,
-      m.name as need_monster_dead_name
+      m.name as need_monster_dead_name,
+      -- Spawn IDs for the kill requirement monster in the portal's zone (for arc rendering)
+      (
+        SELECT json_group_array(ms.id)
+        FROM monster_spawns ms
+        WHERE ms.monster_id = p.need_monster_dead_id
+          AND ms.zone_id = p.from_zone_id
+          AND ms.spawn_type IN ('regular', 'summon')
+      ) as kill_requirement_spawn_ids
     FROM portals p
     JOIN zones fz ON fz.id = p.from_zone_id
     LEFT JOIN zones tz ON tz.id = p.to_zone_id
@@ -450,6 +459,9 @@ async function loadPortals(): Promise<PortalMapEntity[]> {
       requiredItemLevel: r.required_item_level,
       needMonsterDeadId: r.need_monster_dead_id,
       needMonsterDeadName: r.need_monster_dead_name,
+      killRequirementSpawnIds: parseBlockerSpawnIds(
+        r.kill_requirement_spawn_ids,
+      ),
     };
   });
 }

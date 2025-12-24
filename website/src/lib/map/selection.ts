@@ -2,6 +2,7 @@ import type {
   MapEntityData,
   AnyMapEntity,
   MonsterMapEntity,
+  PortalMapEntity,
 } from "$lib/types/map";
 
 /**
@@ -216,8 +217,9 @@ export function computePatrolPathData(
 }
 
 /**
- * Compute related entities (blockers for summon spawns).
- * When a summon spawn is selected, returns the specific blocker spawns.
+ * Compute related entities for arc rendering.
+ * - For summon spawns: returns the blocker spawns that prevent respawning
+ * - For portals with kill requirements: returns the spawns of the monster that must be killed
  * Uses pre-built index for O(1) lookup.
  * Call via $derived so it's cached and only recomputed when selection changes.
  */
@@ -233,10 +235,32 @@ export function computeRelatedEntities(
     return EMPTY_SELECTION;
   }
 
+  const selected = selectionData[0];
+
+  // Check if the selected entity is a portal with kill requirements
+  if (selected.type === "portal") {
+    const portal = selected as PortalMapEntity;
+    if (
+      !portal.killRequirementSpawnIds ||
+      portal.killRequirementSpawnIds.length === 0
+    ) {
+      return EMPTY_SELECTION;
+    }
+
+    const relatedMonsters: MonsterMapEntity[] = [];
+    for (const spawnId of portal.killRequirementSpawnIds) {
+      const monster = index.monstersBySpawnId.get(spawnId);
+      if (monster && monster.position !== null) {
+        relatedMonsters.push(monster);
+      }
+    }
+
+    return relatedMonsters.length > 0 ? relatedMonsters : EMPTY_SELECTION;
+  }
+
   // Check if the selected entity is a summon spawn with blocker spawn IDs
-  const selectedMonster = selectionData[0] as MonsterMapEntity;
+  const selectedMonster = selected as MonsterMapEntity;
   if (
-    !selectedMonster ||
     selectedMonster.spawnType !== "summon" ||
     !selectedMonster.blockerSpawnIds ||
     selectedMonster.blockerSpawnIds.length === 0
