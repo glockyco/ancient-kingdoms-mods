@@ -136,7 +136,7 @@
       <span class="text-xs text-muted-foreground shrink-0"
         >Tier {toRomanNumeral(result.level)}</span
       >
-    {:else if result.category !== "resource"}
+    {:else if result.category !== "resource" && result.level > 0}
       <span class="text-xs text-muted-foreground shrink-0"
         >Lv.{result.level}</span
       >
