@@ -42,7 +42,7 @@ export async function getDb() {
         config: {
           serverMode: "full",
           url: "/compendium.db",
-          requestChunkSize: 4096,
+          requestChunkSize: 65536,
         },
       },
     ],

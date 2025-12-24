@@ -398,8 +398,7 @@ interface CraftingRow {
 }
 
 async function loadCraftingStations(): Promise<CraftingMapEntity[]> {
-  // Load both alchemy tables and crafting stations
-  const alchemyRows = await query<CraftingRow>(`
+  const rows = await query<CraftingRow>(`
     SELECT
       at.id,
       at.name,
@@ -411,9 +410,7 @@ async function loadCraftingStations(): Promise<CraftingMapEntity[]> {
       0 as is_cooking_oven
     FROM alchemy_tables at
     JOIN zones z ON z.id = at.zone_id
-  `);
-
-  const craftingRows = await query<CraftingRow>(`
+    UNION ALL
     SELECT
       cs.id,
       cs.name,
@@ -427,7 +424,7 @@ async function loadCraftingStations(): Promise<CraftingMapEntity[]> {
     JOIN zones z ON z.id = cs.zone_id
   `);
 
-  return [...alchemyRows, ...craftingRows].map((r) => ({
+  return rows.map((r) => ({
     id: r.id,
     type: r.table_type as "alchemy_table" | "crafting_station",
     name: r.name,
