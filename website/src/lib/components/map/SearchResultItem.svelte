@@ -134,7 +134,7 @@
   {#if result.level != null}
     {#if result.category === "resource" && !result.keywords?.includes("spark")}
       <span class="text-xs text-muted-foreground shrink-0"
-        >{toRomanNumeral(result.level)}</span
+        >Tier {toRomanNumeral(result.level)}</span
       >
     {:else if result.category !== "resource"}
       <span class="text-xs text-muted-foreground shrink-0"
