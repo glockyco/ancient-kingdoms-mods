@@ -66,16 +66,18 @@ def _generate_npc_keywords(roles_json: str | None) -> str | None:
 
 def _generate_resource_keywords(
     is_plant: bool, is_mineral: bool, is_radiant_spark: bool
-) -> str | None:
+) -> str:
     """Generate keywords for a gathering resource based on type (including synonyms)."""
     keywords = []
     if is_plant:
         keywords.extend(["plant", "herb", "herbs", "herbalism", "forage"])
-    if is_mineral:
+    elif is_mineral:
         keywords.extend(["mineral", "ore", "mining", "vein", "node"])
-    if is_radiant_spark:
+    elif is_radiant_spark:
         keywords.extend(["spark", "aether"])
-    return " ".join(keywords) if keywords else None
+    else:
+        keywords.extend(["other", "misc", "miscellaneous", "resource"])
+    return " ".join(keywords)
 
 
 def run(conn: sqlite3.Connection) -> None:

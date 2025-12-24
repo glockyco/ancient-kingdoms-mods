@@ -16,6 +16,7 @@
   import Pickaxe from "@lucide/svelte/icons/pickaxe";
   import Sparkles from "@lucide/svelte/icons/sparkles";
   import Box from "@lucide/svelte/icons/box";
+  import Package from "@lucide/svelte/icons/package";
   import Flame from "@lucide/svelte/icons/flame";
   import Hammer from "@lucide/svelte/icons/hammer";
   import CircleDot from "@lucide/svelte/icons/circle-dot";
@@ -64,10 +65,11 @@
           return Sword;
       }
     }
-    if (result.category === "resource" && result.keywords) {
-      if (result.keywords.includes("mineral")) return Pickaxe;
-      if (result.keywords.includes("spark")) return Sparkles;
-      return Leaf;
+    if (result.category === "resource") {
+      if (result.keywords?.includes("plant")) return Leaf;
+      if (result.keywords?.includes("mineral")) return Pickaxe;
+      if (result.keywords?.includes("spark")) return Sparkles;
+      return Package; // "other" resources
     }
     const icons: Record<MapSearchResult["category"], Component> = {
       monster: Sword,
@@ -132,7 +134,7 @@
     >
   {/if}
   {#if result.level != null}
-    {#if result.category === "resource" && !result.keywords?.includes("spark")}
+    {#if result.category === "resource" && (result.keywords?.includes("plant") || result.keywords?.includes("mineral"))}
       <span class="text-xs text-muted-foreground shrink-0"
         >Tier {toRomanNumeral(result.level)}</span
       >
