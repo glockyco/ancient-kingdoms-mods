@@ -584,7 +584,8 @@ export function createLayers(
     getFilterValue: (d) =>
       !focusedZoneId ||
       d.zoneId === focusedZoneId ||
-      d.destinationZoneId === focusedZoneId
+      // Don't show closed portals based on destination (spoils where they lead)
+      (!d.isClosed && d.destinationZoneId === focusedZoneId)
         ? 1
         : 0,
     filterRange: [1, 1],
