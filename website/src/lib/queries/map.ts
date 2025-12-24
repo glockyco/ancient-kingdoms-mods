@@ -527,35 +527,22 @@ interface AltarRow {
   reward_magic_name: string | null;
   reward_epic_name: string | null;
   reward_legendary_name: string | null;
-  waves: string | null;
+  final_bosses: string | null;
 }
 
 /**
- * Extract final wave boss info from altar waves JSON.
- * Final wave typically has a single boss monster (or a unique monster type).
+ * Parse final bosses JSON array into names and IDs.
  */
-function extractFinalBossInfo(wavesJson: string | null): {
+function parseFinalBosses(json: string | null): {
   names: string[];
   ids: string[];
 } {
-  if (!wavesJson) return { names: [], ids: [] };
+  if (!json) return { names: [], ids: [] };
   try {
-    const waves = JSON.parse(wavesJson) as Array<{
-      monsters: Array<{ monster_id: string; monster_name: string }>;
-    }>;
-    if (waves.length === 0) return { names: [], ids: [] };
-    // Get the last wave - the boss is typically the unique monster in the final wave
-    const finalWave = waves[waves.length - 1];
-    // Build map of id -> name for unique monsters
-    const bossMap = new Map<string, string>();
-    for (const m of finalWave.monsters) {
-      if (!bossMap.has(m.monster_id)) {
-        bossMap.set(m.monster_id, m.monster_name);
-      }
-    }
+    const bosses = JSON.parse(json) as Array<{ id: string; name: string }>;
     return {
-      names: [...bossMap.values()],
-      ids: [...bossMap.keys()],
+      names: bosses.map((b) => b.name),
+      ids: bosses.map((b) => b.id),
     };
   } catch {
     return { names: [], ids: [] };
@@ -581,13 +568,19 @@ async function loadAltars(): Promise<AltarMapEntity[]> {
       a.reward_magic_name,
       a.reward_epic_name,
       a.reward_legendary_name,
-      a.waves
+      -- Final wave bosses/elites (not regular monsters)
+      (
+        SELECT json_group_array(json_object('id', m.id, 'name', m.name))
+        FROM json_each(a.waves, '$[' || (json_array_length(a.waves) - 1) || '].monsters') as jm
+        JOIN monsters m ON m.id = json_extract(jm.value, '$.monster_id')
+        WHERE m.is_boss = 1 OR m.is_elite = 1
+      ) as final_bosses
     FROM altars a
     JOIN zones z ON z.id = a.zone_id
   `);
 
   return rows.map((r) => {
-    const bossInfo = extractFinalBossInfo(r.waves);
+    const bossInfo = parseFinalBosses(r.final_bosses);
     return {
       id: r.id,
       type: "altar" as const,
