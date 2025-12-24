@@ -176,6 +176,7 @@ export interface LayerVisibility {
   // Zones section
   subZones: boolean;
   parentZones: boolean;
+  tiles: boolean;
 }
 
 /**

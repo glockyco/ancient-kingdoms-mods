@@ -25,6 +25,7 @@ import {
   ARC_COLORS,
   PATROL_COLORS,
   HIGHLIGHT_COLORS,
+  TILE_CONFIG,
 } from "./config";
 import {
   EMPTY_SELECTION,
@@ -44,6 +45,8 @@ interface DeckModules {
   IconLayer: LayerConstructor;
   PolygonLayer: LayerConstructor;
   LineLayer: LayerConstructor;
+  TileLayer: LayerConstructor;
+  BitmapLayer: LayerConstructor;
   DataFilterExtension: ExtensionConstructor;
 }
 
@@ -226,6 +229,8 @@ export function createLayers(
     IconLayer,
     PolygonLayer,
     LineLayer,
+    TileLayer,
+    BitmapLayer,
     DataFilterExtension,
   } = modules;
 
@@ -239,9 +244,9 @@ export function createLayers(
     radius: number;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     extensions?: any[];
-     
+
     getFilterValue?: (d: T) => number | number[];
-     
+
     filterRange?: [number, number] | [number, number][];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     updateTriggers?: Record<string, any>;
@@ -312,7 +317,52 @@ export function createLayers(
   const isInZone = (zoneId: string): number =>
     !focusedZoneId || zoneId === focusedZoneId ? 1 : 0;
 
-  // Background data (static, never changes)
+  // === LAYER DEFINITIONS ===
+  // Define all layers as variables, then compose render order at the end
+
+  // Tile extent: [minX, minY, maxX, maxY] for deck.gl TileLayer
+  const tileExtent: [number, number, number, number] = [
+    WORLD_BOUNDS.minX,
+    WORLD_BOUNDS.minY,
+    WORLD_BOUNDS.maxX,
+    WORLD_BOUNDS.maxY,
+  ];
+
+  // Map tiles layer - displays terrain imagery
+  // Tiles are generated with deck.gl's coordinate system (tile 0,0 at world origin)
+  const tileLayer = new TileLayer({
+    id: "map-tiles",
+    data: TILE_CONFIG.url,
+    visible: visibility.tiles,
+    minZoom: TILE_CONFIG.minZoom,
+    maxZoom: TILE_CONFIG.maxZoom,
+    tileSize: TILE_CONFIG.tileSize,
+    extent: tileExtent,
+    renderSubLayers: (
+      props: {
+        id: string;
+        data: ImageBitmap | null;
+        tile: {
+          boundingBox: [[number, number], [number, number]];
+        };
+      } & Record<string, unknown>,
+    ) => {
+      if (!props.data) return null;
+
+      const {
+        boundingBox: [[west, south], [east, north]],
+      } = props.tile;
+
+      return new BitmapLayer({
+        ...props,
+        data: undefined,
+        image: props.data,
+        bounds: [west, south, east, north],
+      });
+    },
+  });
+
+  // Fallback background (solid color, renders behind tiles when they're loading)
   const backgroundData = [
     {
       polygon: [
@@ -323,9 +373,6 @@ export function createLayers(
       ],
     },
   ];
-
-  // === LAYER DEFINITIONS ===
-  // Define all layers as variables, then compose render order at the end
 
   const backgroundLayer = new PolygonLayer({
     id: "background",
@@ -796,8 +843,10 @@ export function createLayers(
   });
 
   // Later in array = rendered on top (higher priority)
+  // Order: background (fallback) → tiles → zones → entities
   return [
     backgroundLayer,
+    tileLayer,
     parentZonesLayer,
     subZonesLayer,
     ...patrolPathLayers,

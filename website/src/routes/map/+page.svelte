@@ -270,17 +270,24 @@
       try {
         // Dynamic imports for deck.gl (only load once)
         if (!deckModules) {
-          const [deckCore, deckLayers, deckExtensions, atlas] =
+          const [deckCore, deckLayers, deckGeoLayers, deckExtensions, atlas] =
             await Promise.all([
               import("@deck.gl/core"),
               import("@deck.gl/layers"),
+              import("@deck.gl/geo-layers"),
               import("@deck.gl/extensions"),
               createIconAtlas(),
             ]);
 
           const { Deck, OrthographicView } = deckCore;
-          const { ScatterplotLayer, IconLayer, PolygonLayer, LineLayer } =
-            deckLayers;
+          const {
+            ScatterplotLayer,
+            IconLayer,
+            PolygonLayer,
+            LineLayer,
+            BitmapLayer,
+          } = deckLayers;
+          const { TileLayer } = deckGeoLayers;
           const { DataFilterExtension } = deckExtensions;
 
           deckModules = {
@@ -290,6 +297,8 @@
             IconLayer,
             PolygonLayer,
             LineLayer,
+            TileLayer,
+            BitmapLayer,
             DataFilterExtension,
           };
           iconAtlas = atlas;

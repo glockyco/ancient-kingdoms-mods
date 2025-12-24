@@ -11,6 +11,7 @@
   import Sparkles from "@lucide/svelte/icons/sparkles";
   import Hammer from "@lucide/svelte/icons/hammer";
   import MapPin from "@lucide/svelte/icons/map-pin";
+  import ImageIcon from "@lucide/svelte/icons/image";
   import Search from "@lucide/svelte/icons/search";
   import MousePointerClick from "@lucide/svelte/icons/mouse-pointer-click";
   import Crosshair from "@lucide/svelte/icons/crosshair";
@@ -288,6 +289,12 @@
       label: "Areas",
       color: ZONE_COLORS.subZone.stroke,
       icon: MapPin,
+    },
+    {
+      key: "tiles",
+      label: "Terrain",
+      color: [100, 116, 139, 200] as const, // slate-500
+      icon: ImageIcon,
     },
   ];
 

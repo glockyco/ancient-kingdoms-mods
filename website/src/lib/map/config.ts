@@ -1,12 +1,23 @@
 /**
  * World bounds from the game (Y is negated for display)
- * Original game bounds: X [-880, 900], Y [-740, 1300]
+ * Original game bounds: X [-880, 920], Z [-740, 1460]
+ * deck.gl Y = -game Z, so: Y [-1460, 740]
  */
 export const WORLD_BOUNDS = {
   minX: -880,
-  maxX: 900,
-  minY: -1300,
+  maxX: 920,
+  minY: -1460,
   maxY: 740,
+} as const;
+
+/**
+ * Map tile configuration
+ */
+export const TILE_CONFIG = {
+  url: "/tiles/{z}/{x}/{y}.webp",
+  minZoom: 0,
+  maxZoom: 3,
+  tileSize: 256,
 } as const;
 
 /**
@@ -86,9 +97,9 @@ export const ICON_SIZES = {
 } as const;
 
 /**
- * Background color for the map (when tiles are not available)
+ * Background color for the map
  */
-export const BACKGROUND_COLOR = [24, 24, 27, 255] as const; // zinc-900
+export const BACKGROUND_COLOR = [0, 0, 0, 255] as const;
 
 /**
  * Zone boundary colors
