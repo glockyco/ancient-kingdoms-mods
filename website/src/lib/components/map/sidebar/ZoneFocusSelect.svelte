@@ -1,7 +1,6 @@
 <script lang="ts">
   import CheckIcon from "@lucide/svelte/icons/check";
   import ChevronsUpDown from "@lucide/svelte/icons/chevrons-up-down";
-  import MapPin from "@lucide/svelte/icons/map-pin";
   import * as Command from "$lib/components/ui/command";
   import * as Popover from "$lib/components/ui/popover";
   import { Button } from "$lib/components/ui/button";
@@ -28,11 +27,8 @@
   }
 </script>
 
-<div class="px-4 py-3 border-b border-border">
-  <div class="flex items-center gap-2 mb-2">
-    <MapPin class="h-4 w-4 text-muted-foreground" />
-    <span class="text-sm font-medium">Zone Focus</span>
-  </div>
+<div class="mb-2">
+  <div class="text-xs text-muted-foreground mb-1">Focus</div>
   <Popover.Root bind:open>
     <Popover.Trigger>
       {#snippet child({ props })}

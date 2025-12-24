@@ -67,7 +67,7 @@
       "interactables",
       "crafting",
       "gathering",
-      "filters",
+      "zones",
     ],
     onExpandedSectionsChange,
   }: Props = $props();
@@ -360,15 +360,6 @@
     </button>
   {/if}
 
-  <!-- Zone Focus -->
-  {#if zones.length > 0 && onZoneFocusChange}
-    <ZoneFocusSelect
-      {zones}
-      value={focusedZoneId}
-      onchange={onZoneFocusChange}
-    />
-  {/if}
-
   <!-- Monsters section -->
   <MapSidebarSection
     title="Monsters"
@@ -378,6 +369,13 @@
     toggleState={getToggleState(visibility, monsterKeys)}
     onToggleAll={() => handleToggleAll(monsterKeys)}
   >
+    <LevelFilter
+      label="Level"
+      min={levelRanges.monsterMin}
+      max={levelRanges.monsterMax}
+      value={[levelFilter.monsterMin, levelFilter.monsterMax]}
+      onchange={handleMonsterLevelChange}
+    />
     <div class="space-y-0.5">
       {#each monsterLayers as layer (layer.key)}
         {@render layerToggle(layer)}
@@ -443,6 +441,13 @@
     toggleState={getToggleState(visibility, gatheringKeys)}
     onToggleAll={() => handleToggleAll(gatheringKeys)}
   >
+    <LevelFilter
+      label="Tier"
+      min={levelRanges.gatheringMin}
+      max={levelRanges.gatheringMax}
+      value={[levelFilter.gatheringMin, levelFilter.gatheringMax]}
+      onchange={handleGatheringLevelChange}
+    />
     <div class="space-y-0.5">
       {#each gatheringLayers as layer (layer.key)}
         {@render layerToggle(layer)}
@@ -459,35 +464,17 @@
     toggleState={getToggleState(visibility, zoneKeys)}
     onToggleAll={() => handleToggleAll(zoneKeys)}
   >
+    {#if zones.length > 0 && onZoneFocusChange}
+      <ZoneFocusSelect
+        {zones}
+        value={focusedZoneId}
+        onchange={onZoneFocusChange}
+      />
+    {/if}
     <div class="space-y-0.5">
       {#each zoneLayers as layer (layer.key)}
         {@render layerToggle(layer)}
       {/each}
-    </div>
-  </MapSidebarSection>
-
-  <!-- Level Filters section -->
-  <MapSidebarSection
-    title="Level Filters"
-    icon={Sparkles}
-    expanded={isSectionExpanded("filters")}
-    onExpandedChange={(expanded) => handleSectionToggle("filters", expanded)}
-  >
-    <div class="space-y-4">
-      <LevelFilter
-        label="Monster Level"
-        min={levelRanges.monsterMin}
-        max={levelRanges.monsterMax}
-        value={[levelFilter.monsterMin, levelFilter.monsterMax]}
-        onchange={handleMonsterLevelChange}
-      />
-      <LevelFilter
-        label="Gathering Tier"
-        min={levelRanges.gatheringMin}
-        max={levelRanges.gatheringMax}
-        value={[levelFilter.gatheringMin, levelFilter.gatheringMax]}
-        onchange={handleGatheringLevelChange}
-      />
     </div>
   </MapSidebarSection>
 </div>

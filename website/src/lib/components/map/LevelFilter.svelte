@@ -18,11 +18,11 @@
   }
 </script>
 
-<div class="space-y-2">
+<div class="space-y-1 mb-2">
   <div class="flex items-center justify-between text-xs">
     <span class="text-muted-foreground">{label}</span>
     <span class="font-mono text-muted-foreground">
-      {value[0]} - {value[1]}
+      {value[0]} – {value[1]}
     </span>
   </div>
   {#key `${min}-${max}`}
