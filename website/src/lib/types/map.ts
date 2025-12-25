@@ -100,6 +100,8 @@ export interface NpcMapEntity extends MapEntity {
   type: "npc";
   roleBitmask: number;
   renewalDungeonName: string | null;
+  isPatrolling: boolean;
+  patrolWaypoints: [number, number][] | null;
   // Popup fields
   questCount: number;
   itemsSoldCount: number;

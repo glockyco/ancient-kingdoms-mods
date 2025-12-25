@@ -310,6 +310,7 @@ interface NpcSpawnRow {
   role_bitmask: number;
   respawn_dungeon_id: number;
   renewal_dungeon_name: string | null;
+  patrol_waypoints: string | null;
   // Popup fields
   quests_offered: string | null;
   items_sold: string | null;
@@ -330,6 +331,7 @@ async function loadNpcSpawns(): Promise<NpcMapEntity[]> {
       COALESCE(ns.role_bitmask, 0) as role_bitmask,
       n.respawn_dungeon_id,
       rz.name as renewal_dungeon_name,
+      ns.patrol_waypoints,
       -- Popup fields
       n.quests_offered,
       n.items_sold,
@@ -361,6 +363,22 @@ async function loadNpcSpawns(): Promise<NpcMapEntity[]> {
       /* empty */
     }
 
+    // Parse patrol waypoints and transform Y coordinates
+    let patrolWaypoints: [number, number][] | null = null;
+    if (r.patrol_waypoints) {
+      try {
+        const waypoints = JSON.parse(r.patrol_waypoints) as Array<{
+          x: number;
+          y: number;
+        }>;
+        if (waypoints.length > 0) {
+          patrolWaypoints = waypoints.map((wp) => [wp.x, -wp.y]);
+        }
+      } catch {
+        // Invalid JSON, skip patrol data
+      }
+    }
+
     return {
       id: r.npc_id,
       type: "npc" as const,
@@ -375,6 +393,8 @@ async function loadNpcSpawns(): Promise<NpcMapEntity[]> {
       // respawn_dungeon_id = 100 is a special case for World Bosses, not a real zone
       renewalDungeonName:
         r.respawn_dungeon_id === 100 ? "World Bosses" : r.renewal_dungeon_name,
+      isPatrolling: patrolWaypoints !== null && patrolWaypoints.length > 1,
+      patrolWaypoints,
       // Popup fields
       questCount,
       itemsSoldCount,

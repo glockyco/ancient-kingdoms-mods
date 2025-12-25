@@ -220,4 +220,4 @@ deck.gl handles millions of points efficiently, but **layer recreation is expens
 - [ ] Search functionality with FTS5 and fly-to
 - [x] URL state for sharing map positions
 - [x] Zone boundary polygons from zone_triggers
-- [ ] Patrol path visualization for monsters
+- [x] Patrol path visualization for monsters and NPCs

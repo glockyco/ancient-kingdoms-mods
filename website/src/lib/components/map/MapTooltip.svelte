@@ -138,6 +138,9 @@
         Resets: {npc.renewalDungeonName}
       </div>
     {/if}
+    {#if npc.isPatrolling}
+      <div class="text-xs text-muted-foreground">Patrolling</div>
+    {/if}
   {:else if entity.type === "chest"}
     {@const chest = entity as ChestMapEntity}
     {#if chest.keyRequiredName}

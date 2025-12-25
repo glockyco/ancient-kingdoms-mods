@@ -2,6 +2,7 @@ import type {
   MapEntityData,
   AnyMapEntity,
   MonsterMapEntity,
+  NpcMapEntity,
   PortalMapEntity,
 } from "$lib/types/map";
 
@@ -164,6 +165,24 @@ export function computeSelectionData(
 }
 
 /**
+ * Entity types that can have patrol paths
+ */
+type PatrollingEntity = MonsterMapEntity | NpcMapEntity;
+
+/**
+ * Type guard for entities with patrol capability
+ */
+function isPatrollingEntity(e: AnyMapEntity): e is PatrollingEntity {
+  return (
+    e.type === "monster" ||
+    e.type === "boss" ||
+    e.type === "elite" ||
+    e.type === "hunt" ||
+    e.type === "npc"
+  );
+}
+
+/**
  * Compute patrol path data from selection.
  * Call via $derived so it's cached and only recomputed when selection changes.
  */
@@ -174,19 +193,16 @@ export function computePatrolPathData(
     return EMPTY_PATROL_DATA;
   }
 
-  // Filter to monsters with patrol waypoints
-  const patrollingMonsters = selectionData.filter(
-    (e): e is MonsterMapEntity =>
-      (e.type === "monster" ||
-        e.type === "boss" ||
-        e.type === "elite" ||
-        e.type === "hunt") &&
-      (e as MonsterMapEntity).isPatrolling &&
-      (e as MonsterMapEntity).patrolWaypoints !== null &&
-      (e as MonsterMapEntity).patrolWaypoints!.length > 1,
+  // Filter to entities with patrol waypoints (monsters and NPCs)
+  const patrollingEntities = selectionData.filter(
+    (e): e is PatrollingEntity =>
+      isPatrollingEntity(e) &&
+      (e as PatrollingEntity).isPatrolling &&
+      (e as PatrollingEntity).patrolWaypoints !== null &&
+      (e as PatrollingEntity).patrolWaypoints!.length > 1,
   );
 
-  if (patrollingMonsters.length === 0) {
+  if (patrollingEntities.length === 0) {
     return EMPTY_PATROL_DATA;
   }
 
@@ -195,13 +211,13 @@ export function computePatrolPathData(
   const waypoints: [number, number][] = [];
   const spawnConnections: PatrolPathData["spawnConnections"] = [];
 
-  for (const monster of patrollingMonsters) {
-    if (!monster.position) continue;
-    const wp = monster.patrolWaypoints!;
+  for (const entity of patrollingEntities) {
+    if (!entity.position) continue;
+    const wp = entity.patrolWaypoints!;
 
     // Add spawn-to-first-waypoint connection
     spawnConnections.push({
-      source: monster.position,
+      source: entity.position,
       target: wp[0],
     });
 
