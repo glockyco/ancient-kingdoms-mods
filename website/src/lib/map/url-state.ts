@@ -35,96 +35,60 @@ export interface MapUrlState {
 
 /**
  * Default layers that are enabled when no URL parameter is present
- * Note: zones and areas are off by default
+ * Minimal view: bosses, elites, altars, and terrain only
  */
 const DEFAULT_LAYERS: (keyof LayerVisibility)[] = [
-  // Monsters
   "bosses",
   "elites",
-  "creatures",
-  "hunts",
-  // NPCs (all enabled by default)
-  "npcVendors",
-  "npcQuestGivers",
-  "npcRepair",
-  "npcBanks",
-  "npcInnkeepers",
-  "npcSoulBinders",
-  "npcSkillTrainers",
-  "npcVeteranTrainers",
-  "npcAttributeReset",
-  "npcFactionVendors",
-  "npcEssenceTraders",
-  "npcAugmenters",
-  "npcPriestesses",
-  "npcRenewalSages",
-  "npcAdventurerTasks",
-  "npcAdventurerVendors",
-  "npcMercenaryRecruiters",
-  "npcGuards",
-  "npcTeleporters",
-  // npcVillagers intentionally excluded from defaults (hidden by default)
-  // Interactables
-  "portals",
-  "portalArcs",
-  "chests",
   "altars",
-  "alchemyTables",
-  "forges",
-  "cookingOvens",
-  // Resources
-  "gatheringPlants",
-  "gatheringMinerals",
-  "gatheringSparks",
-  "gatheringOther",
-  // Zones
   "tiles",
 ];
 
 /**
- * Get default LayerVisibility state (all enabled except zones and areas)
+ * Get default LayerVisibility state
+ * Minimal view: bosses, elites, altars, and terrain only
  */
 export function getDefaultLayerVisibility(): LayerVisibility {
   return {
     // Monsters
     bosses: true,
     elites: true,
-    creatures: true,
-    hunts: true,
-    // NPCs (all enabled by default)
-    npcVendors: true,
-    npcQuestGivers: true,
-    npcRepair: true,
-    npcBanks: true,
-    npcInnkeepers: true,
-    npcSoulBinders: true,
-    npcSkillTrainers: true,
-    npcVeteranTrainers: true,
-    npcAttributeReset: true,
-    npcFactionVendors: true,
-    npcEssenceTraders: true,
-    npcAugmenters: true,
-    npcPriestesses: true,
-    npcRenewalSages: true,
-    npcAdventurerTasks: true,
-    npcAdventurerVendors: true,
-    npcMercenaryRecruiters: true,
-    npcGuards: true,
-    npcTeleporters: true,
+    creatures: false,
+    hunts: false,
+    // NPCs
+    npcVendors: false,
+    npcQuestGivers: false,
+    npcRepair: false,
+    npcBanks: false,
+    npcInnkeepers: false,
+    npcSoulBinders: false,
+    npcSkillTrainers: false,
+    npcVeteranTrainers: false,
+    npcAttributeReset: false,
+    npcFactionVendors: false,
+    npcEssenceTraders: false,
+    npcAugmenters: false,
+    npcPriestesses: false,
+    npcRenewalSages: false,
+    npcAdventurerTasks: false,
+    npcAdventurerVendors: false,
+    npcMercenaryRecruiters: false,
+    npcGuards: false,
+    npcTeleporters: false,
     npcVillagers: false,
     // Interactables
-    portals: true,
-    portalArcs: true,
-    chests: true,
+    portals: false,
+    portalArcs: false,
+    chests: false,
     altars: true,
-    alchemyTables: true,
-    forges: true,
-    cookingOvens: true,
+    alchemyTables: false,
+    forges: false,
+    cookingOvens: false,
     // Resources
-    gatheringPlants: true,
-    gatheringMinerals: true,
-    gatheringSparks: true,
-    gatheringOther: true,
+    gatheringPlants: false,
+    gatheringMinerals: false,
+    gatheringSparks: false,
+    gatheringOther: false,
     // Zones
     subZones: false,
     parentZones: false,
