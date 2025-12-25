@@ -1,5 +1,8 @@
 import { query } from "$lib/db";
-import { EXCLUDED_ZONE_IDS } from "$lib/constants/constants";
+import {
+  EXCLUDED_ZONE_IDS,
+  WORLD_BOSS_DUNGEON_ID,
+} from "$lib/constants/constants";
 
 export interface MapSearchBounds {
   minX: number;
@@ -245,7 +248,10 @@ async function searchNpcs(
       ns.zone_id,
       z.name as zone_name,
       COUNT(ns.id) as spawn_count,
-      rz.name as renewal_dungeon_name
+      CASE
+        WHEN n.respawn_dungeon_id = ${WORLD_BOSS_DUNGEON_ID} THEN 'World Bosses'
+        ELSE rz.name
+      END as renewal_dungeon_name
     FROM npcs_fts nf
     JOIN npcs n ON nf.rowid = n.rowid
     LEFT JOIN npc_spawns ns ON ns.npc_id = n.id

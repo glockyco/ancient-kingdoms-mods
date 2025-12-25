@@ -9,6 +9,8 @@ import sqlite3
 
 from rich.console import Console
 
+from compendium.constants import WORLD_BOSS_DUNGEON_ID
+
 console = Console()
 
 
@@ -100,12 +102,28 @@ def run(conn: sqlite3.Connection) -> None:
         f"  [green]OK[/green] Generated keywords for {monster_count} monsters"
     )
 
-    # NPC keywords (service types from roles)
-    cursor.execute("SELECT id, roles FROM npcs")
+    # NPC keywords (service types from roles + renewal dungeon name for sages)
+    cursor.execute("""
+        SELECT n.id, n.roles, n.respawn_dungeon_id, z.name as dungeon_name
+        FROM npcs n
+        LEFT JOIN zones z ON z.zone_id = n.respawn_dungeon_id
+    """)
     npcs = cursor.fetchall()
     npc_count = 0
-    for npc_id, roles_json in npcs:
+    for npc_id, roles_json, respawn_dungeon_id, dungeon_name in npcs:
         keywords = _generate_npc_keywords(roles_json)
+        # Add dungeon name for renewal sages (or "world boss" for special ID)
+        if roles_json:
+            roles = json.loads(roles_json)
+            if roles.get("is_renewal_sage"):
+                if respawn_dungeon_id == WORLD_BOSS_DUNGEON_ID:
+                    extra = "world boss"
+                elif dungeon_name:
+                    extra = dungeon_name
+                else:
+                    extra = None
+                if extra:
+                    keywords = f"{keywords} {extra}" if keywords else extra
         if keywords:
             cursor.execute(
                 "UPDATE npcs SET keywords = ? WHERE id = ?", (keywords, npc_id)
