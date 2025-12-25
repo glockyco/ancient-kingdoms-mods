@@ -249,8 +249,12 @@ async function searchNpcs(
       z.name as zone_name,
       COUNT(ns.id) as spawn_count,
       CASE
-        WHEN n.respawn_dungeon_id = ${WORLD_BOSS_DUNGEON_ID} THEN 'World Bosses'
-        ELSE rz.name
+        WHEN json_extract(n.roles, '$.is_renewal_sage') = 1 THEN
+          CASE
+            WHEN n.respawn_dungeon_id = ${WORLD_BOSS_DUNGEON_ID} THEN 'World Bosses'
+            ELSE rz.name
+          END
+        ELSE NULL
       END as renewal_dungeon_name
     FROM npcs_fts nf
     JOIN npcs n ON nf.rowid = n.rowid
