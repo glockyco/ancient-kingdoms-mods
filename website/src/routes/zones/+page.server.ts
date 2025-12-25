@@ -15,25 +15,8 @@ export const load: PageServerLoad = (): ZonesPageData => {
       z.name,
       z.is_dungeon,
       z.weather_type,
-      -- Level range from spawns (excluding critters, unless zone only has critters)
-      COALESCE(
-        (SELECT MIN(ms.level) FROM monster_spawns ms
-         JOIN monsters m ON m.id = ms.monster_id
-         WHERE ms.zone_id = z.id AND ms.level > 0
-           AND m.type_name != 'Critter'),
-        (SELECT MIN(ms.level) FROM monster_spawns ms
-         JOIN monsters m ON m.id = ms.monster_id
-         WHERE ms.zone_id = z.id AND ms.level > 0)
-      ) as level_min,
-      COALESCE(
-        (SELECT MAX(ms.level) FROM monster_spawns ms
-         JOIN monsters m ON m.id = ms.monster_id
-         WHERE ms.zone_id = z.id
-           AND m.type_name != 'Critter'),
-        (SELECT MAX(ms.level) FROM monster_spawns ms
-         JOIN monsters m ON m.id = ms.monster_id
-         WHERE ms.zone_id = z.id)
-      ) as level_max,
+      z.level_min,
+      z.level_max,
       -- Monster counts by type
       (SELECT COUNT(DISTINCT ms.monster_id) FROM monster_spawns ms
        JOIN monsters m ON m.id = ms.monster_id

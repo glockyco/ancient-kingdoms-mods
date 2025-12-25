@@ -30,7 +30,7 @@ export const entries: EntryGenerator = () => {
 export const load: PageServerLoad = ({ params }): ZoneDetailData => {
   const db = new Database("static/compendium.db", { readonly: true });
 
-  // Get zone basic info with level range (excluding critters)
+  // Get zone basic info with pre-computed level range
   const zone = db
     .prepare(
       `
@@ -40,14 +40,8 @@ export const load: PageServerLoad = ({ params }): ZoneDetailData => {
       z.is_dungeon,
       z.weather_type,
       z.discovery_exp,
-      (SELECT MIN(ms.level) FROM monster_spawns ms
-       JOIN monsters m ON m.id = ms.monster_id
-       WHERE ms.zone_id = z.id AND ms.level > 0
-         AND m.type_name != 'Critter') as level_min,
-      (SELECT MAX(ms.level) FROM monster_spawns ms
-       JOIN monsters m ON m.id = ms.monster_id
-       WHERE ms.zone_id = z.id
-         AND m.type_name != 'Critter') as level_max
+      z.level_min,
+      z.level_max
     FROM zones z
     WHERE z.id = ?
   `,

@@ -36,8 +36,8 @@ CREATE TABLE zones (
     description TEXT DEFAULT '',
     min_zoom_map REAL DEFAULT 80.0,
     max_zoom_map REAL DEFAULT 80.0,
-    level_min INTEGER DEFAULT 0,
-    level_max INTEGER DEFAULT 0,
+    level_min INTEGER,                 -- Min monster level (denormalized, NULL if no monsters)
+    level_max INTEGER,                 -- Max monster level (denormalized, NULL if no monsters)
     discovery_exp INTEGER,             -- EXP granted when discovering this zone
     -- Denormalized bounds from entity positions (monsters, npcs, portals, etc.)
     bounds_min_x REAL,
