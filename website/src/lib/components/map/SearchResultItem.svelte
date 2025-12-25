@@ -114,7 +114,11 @@
   <Icon class="h-4 w-4 text-muted-foreground shrink-0" />
   <div class="flex-1 min-w-0">
     <div class="font-medium truncate">{getDisplayName(result)}</div>
-    {#if result.zoneName && result.category !== "zone" && !result.spawnCount}
+    {#if result.renewalDungeonName}
+      <div class="text-xs text-muted-foreground truncate">
+        Resets {result.renewalDungeonName}
+      </div>
+    {:else if result.zoneName && result.category !== "zone" && !result.spawnCount}
       <div class="text-xs text-muted-foreground truncate">
         {result.zoneName}
       </div>

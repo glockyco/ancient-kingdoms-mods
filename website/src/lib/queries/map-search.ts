@@ -37,6 +37,8 @@ export interface MapSearchResult {
   keywords?: string;
   /** NPC roles (only for category="npc") */
   roles?: Record<string, boolean>;
+  /** Dungeon name that this renewal sage resets (only for renewal sage NPCs) */
+  renewalDungeonName?: string;
 }
 
 /**
@@ -222,6 +224,7 @@ interface NpcSearchRow {
   zone_id: string | null;
   zone_name: string | null;
   spawn_count: number;
+  renewal_dungeon_name: string | null;
 }
 
 async function searchNpcs(
@@ -241,12 +244,14 @@ async function searchNpcs(
       MAX(ns.position_y) as max_y,
       ns.zone_id,
       z.name as zone_name,
-      COUNT(ns.id) as spawn_count
+      COUNT(ns.id) as spawn_count,
+      rz.name as renewal_dungeon_name
     FROM npcs_fts nf
     JOIN npcs n ON nf.rowid = n.rowid
     LEFT JOIN npc_spawns ns ON ns.npc_id = n.id
       AND ns.position_x IS NOT NULL
     LEFT JOIN zones z ON z.id = ns.zone_id
+    LEFT JOIN zones rz ON rz.zone_id = n.respawn_dungeon_id
     WHERE npcs_fts MATCH ?
     GROUP BY n.id
     ORDER BY rank
@@ -280,6 +285,7 @@ async function searchNpcs(
       spawnCount: r.spawn_count > 1 ? r.spawn_count : undefined,
       keywords: r.keywords ?? undefined,
       roles: r.roles ? roles : undefined,
+      renewalDungeonName: r.renewal_dungeon_name ?? undefined,
     };
   });
 }
