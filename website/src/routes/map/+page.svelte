@@ -273,10 +273,14 @@
     if ((e.metaKey || e.ctrlKey) && e.key === "k") {
       e.preventDefault();
       searchOpen = true;
-    } else if (e.key === "Escape" && selectedEntityId) {
-      selectedEntity = null;
-      selectedEntityId = null;
-      selectedEntityType = null;
+    } else if (e.key === "Escape") {
+      if (selectedEntityId) {
+        selectedEntity = null;
+        selectedEntityId = null;
+        selectedEntityType = null;
+      } else if (selectedZone) {
+        selectedZone = null;
+      }
     }
   }
 
