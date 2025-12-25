@@ -70,6 +70,7 @@
   let hoverX = $state(0);
   let hoverY = $state(0);
   let isHoveringDestination = $state(false);
+  let isPanning = $state(false);
 
   // Selected entity (for popup display)
   let selectedEntity = $state<AnyMapEntity | null>(null);
@@ -541,10 +542,18 @@
             isHovering ? "pointer" : "grab",
           onViewStateChange: ({
             viewState,
+            interactionState,
           }: {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             viewState: any;
+            interactionState?: { isPanning?: boolean };
           }) => {
+            const wasPanning = isPanning;
+            isPanning = interactionState?.isPanning ?? false;
+            // Clear stale hover data when panning starts
+            if (isPanning && !wasPanning) {
+              hoveredEntity = null;
+            }
             if (viewState.target) {
               batchedUpdateViewState(
                 viewState.target[0],
@@ -693,7 +702,7 @@
       onZoneFocusChange={handleZoneFocusChange}
     />
 
-    {#if hoveredEntity}
+    {#if hoveredEntity && !isPanning}
       <MapTooltip
         entity={hoveredEntity}
         x={hoverX}
