@@ -13,6 +13,7 @@ import type {
   GatheringMapEntity,
   CraftingMapEntity,
   ZoneBoundary,
+  ParentZoneBoundary,
   LevelRanges,
   ZoneListItem,
 } from "$lib/types/map";
@@ -830,17 +831,23 @@ async function loadZoneTriggers(): Promise<ZoneBoundary[]> {
 interface ZoneBoundsRow {
   id: string;
   name: string;
+  level_min: number | null;
+  level_max: number | null;
+  is_dungeon: number;
   bounds_min_x: number;
   bounds_min_y: number;
   bounds_max_x: number;
   bounds_max_y: number;
 }
 
-async function loadZoneBounds(): Promise<ZoneBoundary[]> {
+async function loadZoneBounds(): Promise<ParentZoneBoundary[]> {
   const rows = await query<ZoneBoundsRow>(`
     SELECT
       id,
       name,
+      level_min,
+      level_max,
+      is_dungeon,
       bounds_min_x,
       bounds_min_y,
       bounds_max_x,
@@ -857,6 +864,9 @@ async function loadZoneBounds(): Promise<ZoneBoundary[]> {
     name: r.name,
     zoneId: r.id,
     zoneName: r.name,
+    levelMin: r.level_min,
+    levelMax: r.level_max,
+    isDungeon: Boolean(r.is_dungeon),
     polygon: [
       [r.bounds_min_x, -r.bounds_max_y],
       [r.bounds_max_x, -r.bounds_max_y],

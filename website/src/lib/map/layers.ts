@@ -388,6 +388,7 @@ export function createLayers(
     filled: true,
     pickable: true,
     onHover: callbacks.onHover,
+    onClick: callbacks.onClick,
     extensions: [zoneFilterExt],
     getFilterValue: (d: ZoneBoundary) => isInZone(d.zoneId),
     filterRange: [1, 1],

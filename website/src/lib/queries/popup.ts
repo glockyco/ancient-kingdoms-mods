@@ -1,4 +1,5 @@
 import { query } from "$lib/db";
+import { WORLD_BOSS_DUNGEON_ID } from "$lib/constants/constants";
 
 /**
  * Drop item for popup display
@@ -594,4 +595,120 @@ export async function loadAltarPopupDetails(
   }
 
   return { rewards, bossDrops };
+}
+
+/**
+ * Monster info for zone popup (bosses/elites)
+ */
+export interface ZonePopupMonster {
+  id: string;
+  name: string;
+  level: number;
+}
+
+/**
+ * Altar info for zone popup
+ */
+export interface ZonePopupAltar {
+  id: string;
+  name: string;
+}
+
+/**
+ * Renewal sage info for zone popup (dungeons only)
+ */
+export interface ZonePopupRenewalSage {
+  id: string;
+  name: string;
+  zoneId: string;
+  zoneName: string;
+  goldCost: number;
+}
+
+/**
+ * Zone popup details (lazy-loaded)
+ */
+export interface ZonePopupDetails {
+  bosses: ZonePopupMonster[];
+  elites: ZonePopupMonster[];
+  altars: ZonePopupAltar[];
+  renewalSage: ZonePopupRenewalSage | null;
+}
+
+/**
+ * Load zone details for popup
+ */
+export async function loadZonePopupDetails(
+  zoneId: string,
+): Promise<ZonePopupDetails> {
+  // Query bosses in zone (deduplicated by monster_id, show lowest level)
+  const bosses = await query<{ id: string; name: string; level: number }>(
+    `
+    SELECT m.id, m.name, MIN(ms.level) as level
+    FROM monster_spawns ms
+    JOIN monsters m ON m.id = ms.monster_id
+    WHERE ms.zone_id = ? AND m.is_boss = 1
+    GROUP BY m.id
+    ORDER BY level, m.name
+    `,
+    [zoneId],
+  );
+
+  // Query elites in zone (deduplicated by monster_id, show lowest level)
+  const elites = await query<{ id: string; name: string; level: number }>(
+    `
+    SELECT m.id, m.name, MIN(ms.level) as level
+    FROM monster_spawns ms
+    JOIN monsters m ON m.id = ms.monster_id
+    WHERE ms.zone_id = ? AND m.is_elite = 1 AND m.is_boss = 0
+    GROUP BY m.id
+    ORDER BY level, m.name
+    `,
+    [zoneId],
+  );
+
+  // Query altars in zone
+  const altars = await query<{ id: string; name: string }>(
+    `
+    SELECT id, name FROM altars WHERE zone_id = ? ORDER BY name
+    `,
+    [zoneId],
+  );
+
+  // Query renewal sage for this dungeon (if applicable)
+  // Find NPCs whose respawn_dungeon_id points to this zone
+  const sages = await query<{
+    id: string;
+    name: string;
+    zone_id: string;
+    zone_name: string;
+    gold_cost: number;
+  }>(
+    `
+    SELECT n.id, n.name, ns.zone_id, z.name as zone_name, n.gold_required_respawn_dungeon as gold_cost
+    FROM npcs n
+    JOIN npc_spawns ns ON ns.npc_id = n.id
+    JOIN zones z ON z.id = ns.zone_id
+    JOIN zones dz ON dz.zone_id = n.respawn_dungeon_id
+    WHERE dz.id = ?
+      AND n.respawn_dungeon_id != ?
+    LIMIT 1
+    `,
+    [zoneId, WORLD_BOSS_DUNGEON_ID],
+  );
+
+  return {
+    bosses: bosses.map((b) => ({ id: b.id, name: b.name, level: b.level })),
+    elites: elites.map((e) => ({ id: e.id, name: e.name, level: e.level })),
+    altars: altars.map((a) => ({ id: a.id, name: a.name })),
+    renewalSage: sages[0]
+      ? {
+          id: sages[0].id,
+          name: sages[0].name,
+          zoneId: sages[0].zone_id,
+          zoneName: sages[0].zone_name,
+          goldCost: sages[0].gold_cost,
+        }
+      : null,
+  };
 }

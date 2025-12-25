@@ -29,6 +29,8 @@ export interface MapUrlState {
   etype?: string;
   /** Focused zone ID for filtering content */
   zone?: string;
+  /** Selected zone ID for popup display */
+  selectedZone?: string;
 }
 
 /**
@@ -186,6 +188,11 @@ export function parseUrlState(): MapUrlState | null {
     state.zone = params.get("zone")!;
   }
 
+  // Parse selected zone for popup
+  if (params.has("szone")) {
+    state.selectedZone = params.get("szone")!;
+  }
+
   return state;
 }
 
@@ -200,6 +207,7 @@ export function updateUrlState(
   selectedEntityId?: string | null,
   selectedEntityType?: string | null,
   focusedZoneId?: string | null,
+  selectedZoneId?: string | null,
 ): void {
   if (!browser) return;
 
@@ -248,6 +256,11 @@ export function updateUrlState(
   // Zone focus
   if (focusedZoneId) {
     params.set("zone", focusedZoneId);
+  }
+
+  // Selected zone for popup
+  if (selectedZoneId) {
+    params.set("szone", selectedZoneId);
   }
 
   const url = `${base}/map?${params.toString()}`;
@@ -337,6 +350,7 @@ export function immediateUpdateUrlState(
   selectedEntityId?: string | null,
   selectedEntityType?: string | null,
   focusedZoneId?: string | null,
+  selectedZoneId?: string | null,
 ): void {
   cancelPendingUrlUpdate();
   updateUrlState(
@@ -347,6 +361,7 @@ export function immediateUpdateUrlState(
     selectedEntityId,
     selectedEntityType,
     focusedZoneId,
+    selectedZoneId,
   );
 }
 
@@ -361,6 +376,7 @@ export function debouncedUpdateUrlState(
   selectedEntityId?: string | null,
   selectedEntityType?: string | null,
   focusedZoneId?: string | null,
+  selectedZoneId?: string | null,
   delay = 150,
 ): void {
   if (urlUpdateTimer) {
@@ -376,6 +392,7 @@ export function debouncedUpdateUrlState(
       selectedEntityId,
       selectedEntityType,
       focusedZoneId,
+      selectedZoneId,
     );
     urlUpdateTimer = null;
   }, delay);

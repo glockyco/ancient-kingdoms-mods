@@ -4,6 +4,7 @@
   import { MapSidebar } from "$lib/components/map/sidebar";
   import MapTooltip from "$lib/components/map/MapTooltip.svelte";
   import EntityPopup from "$lib/components/map/EntityPopup.svelte";
+  import ZonePopup from "$lib/components/map/ZonePopup.svelte";
   import MapSearch from "$lib/components/map/MapSearch.svelte";
   import { loadAllMapEntities, loadZoneList } from "$lib/queries/map";
   import {
@@ -40,6 +41,7 @@
     FilteredMapData,
     AnyMapEntity,
     ZoneListItem,
+    ParentZoneBoundary,
   } from "$lib/types/map";
   import type { MapSearchResult } from "$lib/queries/map-search";
 
@@ -71,6 +73,9 @@
 
   // Selected entity (for popup display)
   let selectedEntity = $state<AnyMapEntity | null>(null);
+
+  // Selected zone (for zone popup display)
+  let selectedZone = $state<ParentZoneBoundary | null>(null);
 
   // Selection state for highlighting (synced with URL)
   let selectedEntityId = $state<string | null>(null);
@@ -192,9 +197,22 @@
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function handleClick(info: any) {
+    // Check if clicking on a parent zone polygon
+    if (info.layer?.id === "parent-zones" && info.object) {
+      const zone = info.object as ParentZoneBoundary;
+      selectedZone = zone;
+      // Clear entity selection when selecting a zone
+      selectedEntity = null;
+      selectedEntityId = null;
+      selectedEntityType = null;
+      return;
+    }
+
     if (info.object) {
       const entity = info.object as AnyMapEntity;
       selectedEntity = entity;
+      // Clear zone selection when selecting an entity
+      selectedZone = null;
       // For monsters, use monsterId to group all spawns of the same monster
       // For other entities, use the entity id
       selectedEntityId = getSelectionId(entity);
@@ -202,6 +220,7 @@
     } else {
       // Click on empty space clears selection
       selectedEntity = null;
+      selectedZone = null;
       selectedEntityId = null;
       selectedEntityType = null;
     }
@@ -228,6 +247,10 @@
     selectedEntity = null;
     selectedEntityId = null;
     selectedEntityType = null;
+  }
+
+  function handleCloseZonePopup() {
+    selectedZone = null;
   }
 
   function handleSelectMonster(monsterId: string) {
@@ -271,9 +294,15 @@
 
     // Find and show popup for the TARGET entity (not the search result)
     // This shows the altar popup when searching for altar-spawned monsters
-    if (entityData && target.category !== "zone") {
-      // Check if this is a monster category (uses monsterId instead of id)
-      if (target.category === "monster") {
+    if (entityData) {
+      if (target.category === "zone") {
+        // Handle zone selection
+        const zone = entityData.parentZones.find((z) => z.zoneId === target.id);
+        if (zone) {
+          selectedZone = zone;
+          selectedEntity = null;
+        }
+      } else if (target.category === "monster") {
         // For monsters, search by monsterId
         const monster = entityData.monsters.find(
           (m) =>
@@ -282,6 +311,7 @@
         );
         if (monster) {
           selectedEntity = monster;
+          selectedZone = null;
         }
       } else {
         const dataArrays: Record<string, AnyMapEntity[]> = {
@@ -297,6 +327,7 @@
         );
         if (entity) {
           selectedEntity = entity;
+          selectedZone = null;
         }
       }
     }
@@ -343,6 +374,7 @@
         if (urlState.zone) {
           focusedZoneId = urlState.zone;
         }
+        // Note: selectedZone is restored after data is loaded
         currentViewState = {
           x: urlState.x,
           y: urlState.y,
@@ -451,6 +483,16 @@
           }
         }
 
+        // Restore zone popup from URL state (after entity data is loaded)
+        if (urlState?.selectedZone) {
+          const zone = entityData.parentZones.find(
+            (z) => z.zoneId === urlState.selectedZone,
+          );
+          if (zone) {
+            selectedZone = zone;
+          }
+        }
+
         // Create initial layers with zone-focused data
         const initialZoneFocusedData = createZoneFocusedData(
           filteredData!,
@@ -551,6 +593,7 @@
       const entityId = untrack(() => selectedEntityId);
       const entityType = untrack(() => selectedEntityType);
       const zoneId = untrack(() => focusedZoneId);
+      const selZoneId = untrack(() => selectedZone?.zoneId ?? null);
       debouncedUpdateUrlState(
         currentViewState,
         layers,
@@ -559,6 +602,7 @@
         entityId,
         entityType,
         zoneId,
+        selZoneId,
       );
     }
   });
@@ -569,6 +613,7 @@
     void selectedEntityId;
     void selectedEntityType;
     void focusedZoneId;
+    void selectedZone;
     if (!isLoading && entityData) {
       // Use untrack to read non-tracked values without making them dependencies
       const viewState = untrack(() => currentViewState);
@@ -581,6 +626,7 @@
         selectedEntityId,
         selectedEntityType,
         focusedZoneId,
+        selectedZone?.zoneId ?? null,
       );
     }
   });
@@ -652,7 +698,9 @@
       />
     {/if}
 
-    {#if selectedEntity}
+    {#if selectedZone}
+      <ZonePopup zone={selectedZone} onClose={handleCloseZonePopup} />
+    {:else if selectedEntity}
       <EntityPopup
         entity={selectedEntity}
         onClose={handleClosePopup}

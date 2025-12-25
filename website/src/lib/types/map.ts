@@ -272,6 +272,15 @@ export interface ZoneBoundary {
 }
 
 /**
+ * Parent zone boundary with level range (for popup display)
+ */
+export interface ParentZoneBoundary extends ZoneBoundary {
+  levelMin: number | null;
+  levelMax: number | null;
+  isDungeon: boolean;
+}
+
+/**
  * Level ranges derived from actual data
  */
 export interface LevelRanges {
@@ -293,7 +302,7 @@ export interface MapEntityData {
   gathering: GatheringMapEntity[];
   crafting: CraftingMapEntity[];
   subZones: ZoneBoundary[];
-  parentZones: ZoneBoundary[];
+  parentZones: ParentZoneBoundary[];
   levelRanges: LevelRanges;
 }
 
@@ -313,7 +322,7 @@ export interface FilteredMapData {
   forges: CraftingMapEntity[];
   cookingOvens: CraftingMapEntity[];
   portalsWithDestinations: PortalMapEntity[];
-  parentZones: ZoneBoundary[];
+  parentZones: ParentZoneBoundary[];
 }
 
 /**
