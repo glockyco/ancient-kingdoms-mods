@@ -11,7 +11,7 @@ import type {
   NpcSpawnLocation,
   NpcSkill,
 } from "$lib/types/npcs";
-import { WORLD_BOSS_DUNGEON_ID } from "$lib/constants/exclusions";
+import { WORLD_BOSS_DUNGEON_ID } from "$lib/constants/constants";
 
 export const prerender = true;
 

@@ -2,7 +2,7 @@ import { query } from "$lib/db";
 import {
   EXCLUDED_ZONE_IDS,
   WORLD_BOSS_DUNGEON_ID,
-} from "$lib/constants/exclusions";
+} from "$lib/constants/constants";
 import type {
   MapEntityData,
   MonsterMapEntity,

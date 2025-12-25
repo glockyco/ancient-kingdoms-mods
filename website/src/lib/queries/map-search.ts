@@ -1,5 +1,5 @@
 import { query } from "$lib/db";
-import { EXCLUDED_ZONE_IDS } from "$lib/constants/exclusions";
+import { EXCLUDED_ZONE_IDS } from "$lib/constants/constants";
 
 export interface MapSearchBounds {
   minX: number;

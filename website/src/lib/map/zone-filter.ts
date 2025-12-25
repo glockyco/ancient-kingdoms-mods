@@ -7,7 +7,7 @@ import type {
   AltarMapEntity,
   ZoneBoundary,
 } from "$lib/types/map";
-import { EXCLUDED_ZONE_IDS } from "$lib/constants/exclusions";
+import { EXCLUDED_ZONE_IDS } from "$lib/constants/constants";
 
 /**
  * Combined data type including all entity arrays needed for rendering.

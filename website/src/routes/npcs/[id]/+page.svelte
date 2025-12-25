@@ -37,7 +37,7 @@
   import Shield from "@lucide/svelte/icons/shield";
   import RefreshCw from "@lucide/svelte/icons/refresh-cw";
   import Snowflake from "@lucide/svelte/icons/snowflake";
-  import { WORLD_BOSS_DUNGEON_ID } from "$lib/constants/exclusions";
+  import { WORLD_BOSS_DUNGEON_ID } from "$lib/constants/constants";
 
   const categoryColors: Record<RoleCategory, string> = {
     quest: "text-orange-500",
