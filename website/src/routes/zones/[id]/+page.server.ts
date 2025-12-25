@@ -319,7 +319,7 @@ export const load: PageServerLoad = ({ params }): ZoneDetailData => {
     JOIN zones z ON z.zone_id = n.respawn_dungeon_id
     JOIN npc_spawns ns ON ns.npc_id = n.id
     JOIN zones sage_zone ON sage_zone.id = ns.zone_id
-    WHERE z.id = ? AND n.respawn_dungeon_id > 0
+    WHERE z.id = ?
     LIMIT 1
   `,
     )

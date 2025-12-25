@@ -349,6 +349,9 @@ def _add_renewal_sage_role(conn: sqlite3.Connection) -> int:
     monster and boss spawns in their associated dungeon for a gold fee.
     All other NPCs get is_renewal_sage: false for consistency.
 
+    Also nulls out respawn_dungeon_id and gold_required_respawn_dungeon for
+    non-sages to keep data clean.
+
     Returns:
         Count of Renewal Sage NPCs
     """
@@ -372,6 +375,13 @@ def _add_renewal_sage_role(conn: sqlite3.Connection) -> int:
 
         if is_renewal_sage:
             renewal_sage_count += 1
+
+    # Null out dungeon fields for non-sages
+    cursor.execute("""
+        UPDATE npcs
+        SET respawn_dungeon_id = NULL, gold_required_respawn_dungeon = NULL
+        WHERE respawn_dungeon_id = 0 OR respawn_dungeon_id IS NULL
+    """)
 
     return renewal_sage_count
 
