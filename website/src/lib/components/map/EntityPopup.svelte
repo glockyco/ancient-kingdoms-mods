@@ -291,10 +291,12 @@
 
       <!-- Drops (lazy-loaded) - only for boss/elite/hunt -->
       {#if isLoading && (monster.isBoss || monster.isElite || monster.isHunt)}
-        <div class="text-muted-foreground">Loading drops...</div>
+        <div class="py-2 text-center text-xs text-muted-foreground">
+          Loading...
+        </div>
       {:else if monsterDetails && monsterDetails.drops.length > 0}
         <div class="border-t pt-2">
-          <div class="mb-1 font-medium text-muted-foreground">
+          <div class="mb-1 text-xs font-medium text-muted-foreground">
             {monster.isBoss || monster.isElite ? "Bestiary Drops" : "Drops"}
           </div>
           <div class="max-h-48 space-y-0.5 overflow-y-auto pr-2">
@@ -361,10 +363,14 @@
 
       <!-- Quests (lazy-loaded) -->
       {#if isLoading && npc.questCount > 0}
-        <div class="text-muted-foreground">Loading quests...</div>
+        <div class="py-2 text-center text-xs text-muted-foreground">
+          Loading...
+        </div>
       {:else if npcDetails && npcDetails.quests.length > 0}
         <div class="border-t pt-2">
-          <div class="mb-1 font-medium text-muted-foreground">Quests</div>
+          <div class="mb-1 text-xs font-medium text-muted-foreground">
+            Quests
+          </div>
           <div class="max-h-48 space-y-0.5 overflow-y-auto pr-2">
             {#each npcDetails.quests as quest, i (i)}
               <div class="flex justify-between gap-2">
@@ -373,8 +379,8 @@
                   class="truncate text-blue-600 hover:underline dark:text-blue-400"
                   >{quest.name}</a
                 >
-                <span class="shrink-0 text-muted-foreground"
-                  >Lv {quest.levelRecommended}</span
+                <span class="shrink-0 text-xs text-muted-foreground"
+                  >Lv. {quest.levelRecommended}</span
                 >
               </div>
             {/each}
@@ -384,10 +390,12 @@
 
       <!-- Items sold (lazy-loaded) -->
       {#if isLoading && npc.itemsSoldCount > 0}
-        <div class="text-muted-foreground">Loading items...</div>
+        <div class="py-2 text-center text-xs text-muted-foreground">
+          Loading...
+        </div>
       {:else if npcDetails && npcDetails.itemsSold.length > 0}
         <div class="border-t pt-2">
-          <div class="mb-1 font-medium text-muted-foreground">
+          <div class="mb-1 text-xs font-medium text-muted-foreground">
             Items for Sale
           </div>
           <div class="max-h-48 space-y-0.5 overflow-y-auto pr-2">
@@ -430,7 +438,7 @@
           portal.needMonsterDeadName}
         {#if hasRequirements}
           <div class="border-t pt-2">
-            <div class="mb-1 font-medium text-muted-foreground">
+            <div class="mb-1 text-xs font-medium text-muted-foreground">
               Requirements
             </div>
             <div class="space-y-1">
@@ -515,10 +523,14 @@
 
       <!-- Drops (lazy-loaded) -->
       {#if isLoading}
-        <div class="text-muted-foreground">Loading drops...</div>
+        <div class="py-2 text-center text-xs text-muted-foreground">
+          Loading...
+        </div>
       {:else if chestDetails && chestDetails.drops.length > 0}
         <div class="border-t pt-2">
-          <div class="mb-1 font-medium text-muted-foreground">Drops</div>
+          <div class="mb-1 text-xs font-medium text-muted-foreground">
+            Drops
+          </div>
           <div class="max-h-48 space-y-0.5 overflow-y-auto pr-2">
             {#each chestDetails.drops as drop, i (i)}
               <div>
@@ -610,10 +622,14 @@
 
       <!-- Rewards by tier (lazy-loaded) -->
       {#if isLoading}
-        <div class="text-muted-foreground">Loading rewards...</div>
+        <div class="py-2 text-center text-xs text-muted-foreground">
+          Loading...
+        </div>
       {:else if altarDetails && altarDetails.rewards.length > 0}
         <div class="border-t pt-2">
-          <div class="mb-1 font-medium text-muted-foreground">Rewards</div>
+          <div class="mb-1 text-xs font-medium text-muted-foreground">
+            Rewards
+          </div>
           <div class="space-y-2">
             {#each altarDetails.rewards as reward (reward.tier)}
               <div>
@@ -648,7 +664,7 @@
       {#if altarDetails && altarDetails.bossDrops.length > 0}
         {#each altarDetails.bossDrops as bossDrop (bossDrop.monsterId)}
           <div class="border-t pt-2">
-            <div class="mb-1 font-medium text-muted-foreground">
+            <div class="mb-1 text-xs font-medium text-muted-foreground">
               <a href="/monsters/{bossDrop.monsterId}" class="hover:underline">
                 {bossDrop.monsterName}
               </a>
@@ -706,10 +722,14 @@
 
       <!-- Drops (lazy-loaded) -->
       {#if isLoading}
-        <div class="text-muted-foreground">Loading drops...</div>
+        <div class="py-2 text-center text-xs text-muted-foreground">
+          Loading...
+        </div>
       {:else if gatheringDetails && gatheringDetails.drops.length > 0}
         <div class="border-t pt-2">
-          <div class="mb-1 font-medium text-muted-foreground">Drops</div>
+          <div class="mb-1 text-xs font-medium text-muted-foreground">
+            Drops
+          </div>
           <div class="max-h-48 space-y-0.5 overflow-y-auto pr-2">
             {#each gatheringDetails.drops as drop, i (i)}
               <div class="flex justify-between gap-2">
