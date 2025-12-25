@@ -555,6 +555,29 @@
           },
         });
 
+        // Fit to content bounds on initial load (no URL state)
+        if (!urlState && entityData.parentZones.length > 0) {
+          // Calculate bounds from all parent zones
+          const contentBounds = entityData.parentZones.reduce(
+            (bounds, zone) => {
+              for (const [x, y] of zone.polygon) {
+                bounds.minX = Math.min(bounds.minX, x);
+                bounds.maxX = Math.max(bounds.maxX, x);
+                bounds.minY = Math.min(bounds.minY, y);
+                bounds.maxY = Math.max(bounds.maxY, y);
+              }
+              return bounds;
+            },
+            {
+              minX: Infinity,
+              maxX: -Infinity,
+              minY: Infinity,
+              maxY: -Infinity,
+            },
+          );
+          flyToBounds(deckInstance, contentBounds, { duration: 0 });
+        }
+
         isLoading = false;
       } catch (err) {
         console.error("Failed to initialize map:", err);
