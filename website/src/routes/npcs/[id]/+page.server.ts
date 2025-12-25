@@ -11,6 +11,7 @@ import type {
   NpcSpawnLocation,
   NpcSkill,
 } from "$lib/types/npcs";
+import { WORLD_BOSS_DUNGEON_ID } from "$lib/constants/exclusions";
 
 export const prerender = true;
 
@@ -116,11 +117,10 @@ export const load: PageServerLoad = ({ params }): NpcDetailPageData => {
     .all(params.id) as NpcSpawnLocation[];
 
   // Get respawn dungeon info if applicable
-  // respawn_dungeon_id == 100 is a special case for World Bosses (not a real zone)
   let respawnDungeonName: string | null = null;
   let respawnDungeonZoneId: string | null = null;
   const respawnDungeonId = npcRaw.respawn_dungeon_id as number;
-  if (respawnDungeonId === 100) {
+  if (respawnDungeonId === WORLD_BOSS_DUNGEON_ID) {
     respawnDungeonName = "World Bosses";
     respawnDungeonZoneId = null;
   } else if (respawnDungeonId > 0) {

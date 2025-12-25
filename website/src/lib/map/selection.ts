@@ -65,6 +65,8 @@ export interface EntityIndex {
   monstersBySpawnId: Map<string, MonsterMapEntity>;
   npcs: Map<string, AnyMapEntity[]>;
   portals: Map<string, AnyMapEntity[]>;
+  /** Portals indexed by "sourceZoneId:destZoneId" for Renewal Sage linking */
+  portalsByZoneAndDest: Map<string, PortalMapEntity[]>;
   chests: Map<string, AnyMapEntity[]>;
   altars: Map<string, AnyMapEntity[]>;
   gathering: Map<string, AnyMapEntity[]>;
@@ -119,11 +121,34 @@ export function createEntityIndex(data: MapEntityData): EntityIndex {
     return index;
   }
 
+  // Index portals by "sourceZoneId:destZoneId" for Renewal Sage linking
+  function indexPortalsByZoneAndDest(
+    portals: PortalMapEntity[],
+  ): Map<string, PortalMapEntity[]> {
+    const index = new Map<string, PortalMapEntity[]>();
+    for (const portal of portals) {
+      if (!portal.zoneId || !portal.destinationZoneId || !portal.position) {
+        continue;
+      }
+      const key = `${portal.zoneId}:${portal.destinationZoneId}`;
+      const existing = index.get(key);
+      if (existing) {
+        existing.push(portal);
+      } else {
+        index.set(key, [portal]);
+      }
+    }
+    return index;
+  }
+
   return {
     monsters: indexMonstersByMonsterId(data.monsters),
     monstersBySpawnId: indexMonstersBySpawnId(data.monsters),
     npcs: indexEntities(data.npcs),
     portals: indexEntities(data.portals),
+    portalsByZoneAndDest: indexPortalsByZoneAndDest(
+      data.portals as PortalMapEntity[],
+    ),
     chests: indexEntities(data.chests),
     altars: indexEntities(data.altars),
     gathering: indexEntities(data.gathering),
@@ -238,7 +263,9 @@ export function computePatrolPathData(
 /**
  * Compute related entities for arc rendering.
  * - For summon spawns: returns the blocker spawns that prevent respawning
+ * - For placeholder spawns: returns the source monster spawns
  * - For portals with kill requirements: returns the spawns of the monster that must be killed
+ * - For Renewal Sage NPCs: returns portals in the same zone leading to their dungeon
  * Uses pre-built index for O(1) lookup.
  * Call via $derived so it's cached and only recomputed when selection changes.
  */
@@ -276,6 +303,21 @@ export function computeRelatedEntities(
     }
 
     return relatedMonsters.length > 0 ? relatedMonsters : EMPTY_SELECTION;
+  }
+
+  // Check if the selected entity is a Renewal Sage NPC with a dungeon zone
+  if (selected.type === "npc") {
+    const npc = selected as NpcMapEntity;
+    // Only link if they have a renewal dungeon zone (excludes World Boss sages)
+    if (!npc.renewalDungeonZoneId || !npc.zoneId) {
+      return EMPTY_SELECTION;
+    }
+
+    // Find portals in the same zone that lead to the dungeon
+    const key = `${npc.zoneId}:${npc.renewalDungeonZoneId}`;
+    const portals = index.portalsByZoneAndDest.get(key);
+
+    return portals && portals.length > 0 ? portals : EMPTY_SELECTION;
   }
 
   // Check if the selected entity is a monster

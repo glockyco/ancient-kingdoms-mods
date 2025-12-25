@@ -37,6 +37,7 @@
   import Shield from "@lucide/svelte/icons/shield";
   import RefreshCw from "@lucide/svelte/icons/refresh-cw";
   import Snowflake from "@lucide/svelte/icons/snowflake";
+  import { WORLD_BOSS_DUNGEON_ID } from "$lib/constants/exclusions";
 
   const categoryColors: Record<RoleCategory, string> = {
     quest: "text-orange-500",
@@ -55,7 +56,7 @@
   // Get description for a role (with dynamic handling for renewal sage)
   function getRoleDescription(role: RoleConfig): string {
     if (role.key === "is_renewal_sage") {
-      const isWorldBoss = data.npc.respawn_dungeon_id === 100;
+      const isWorldBoss = data.npc.respawn_dungeon_id === WORLD_BOSS_DUNGEON_ID;
 
       // World Boss resets use Adventurer's Essences (link to item page)
       // Regular dungeon resets use gold

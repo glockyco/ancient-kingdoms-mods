@@ -1,5 +1,8 @@
 import { query } from "$lib/db";
-import { EXCLUDED_ZONE_IDS } from "$lib/constants/exclusions";
+import {
+  EXCLUDED_ZONE_IDS,
+  WORLD_BOSS_DUNGEON_ID,
+} from "$lib/constants/exclusions";
 import type {
   MapEntityData,
   MonsterMapEntity,
@@ -310,6 +313,7 @@ interface NpcSpawnRow {
   role_bitmask: number;
   respawn_dungeon_id: number;
   renewal_dungeon_name: string | null;
+  renewal_dungeon_zone_id: string | null;
   patrol_waypoints: string | null;
   // Popup fields
   quests_offered: string | null;
@@ -331,6 +335,7 @@ async function loadNpcSpawns(): Promise<NpcMapEntity[]> {
       COALESCE(ns.role_bitmask, 0) as role_bitmask,
       n.respawn_dungeon_id,
       rz.name as renewal_dungeon_name,
+      rz.id as renewal_dungeon_zone_id,
       ns.patrol_waypoints,
       -- Popup fields
       n.quests_offered,
@@ -390,9 +395,14 @@ async function loadNpcSpawns(): Promise<NpcMapEntity[]> {
       zoneId: r.zone_id,
       zoneName: r.zone_name,
       roleBitmask: r.role_bitmask,
-      // respawn_dungeon_id = 100 is a special case for World Bosses, not a real zone
       renewalDungeonName:
-        r.respawn_dungeon_id === 100 ? "World Bosses" : r.renewal_dungeon_name,
+        r.respawn_dungeon_id === WORLD_BOSS_DUNGEON_ID
+          ? "World Bosses"
+          : r.renewal_dungeon_name,
+      renewalDungeonZoneId:
+        r.respawn_dungeon_id === WORLD_BOSS_DUNGEON_ID
+          ? null
+          : r.renewal_dungeon_zone_id,
       isPatrolling: patrolWaypoints !== null && patrolWaypoints.length > 1,
       patrolWaypoints,
       // Popup fields
