@@ -346,7 +346,16 @@
       {#if hasNpcRole(npc.roleBitmask, "isRenewalSage") && npc.renewalDungeonName}
         <div class="flex justify-between">
           <span class="text-muted-foreground">Resets</span>
-          <span class="text-purple-400">{npc.renewalDungeonName}</span>
+          {#if npc.renewalDungeonZoneId}
+            <a
+              href="/zones/{npc.renewalDungeonZoneId}"
+              class="text-blue-600 hover:underline dark:text-blue-400"
+            >
+              {npc.renewalDungeonName}
+            </a>
+          {:else}
+            <span class="text-purple-400">{npc.renewalDungeonName}</span>
+          {/if}
         </div>
       {/if}
 
