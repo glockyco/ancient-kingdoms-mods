@@ -72,6 +72,7 @@ export function createFilteredData(data: MapEntityData): FilteredMapData {
   const renderableGathering = data.gathering.filter((g) => g.position !== null);
   const renderableCrafting = data.crafting.filter((c) => c.position !== null);
   const renderablePortals = data.portals.filter((p) => p.position !== null);
+  const renderableNpcs = data.npcs.filter((n) => n.position !== null);
 
   return {
     // Creatures = regular monsters (not boss, not elite, not hunt)
@@ -96,6 +97,9 @@ export function createFilteredData(data: MapEntityData): FilteredMapData {
     cookingOvens: renderableCrafting.filter((c) => c.isCookingOven),
     portalsWithDestinations: renderablePortals.filter(
       (p) => p.destination !== null && !p.isClosed,
+    ),
+    teleportersWithDestinations: renderableNpcs.filter(
+      (n) => n.hasTeleport && n.teleportDestination !== null,
     ),
     parentZones: data.parentZones,
   };
@@ -129,6 +133,8 @@ function createNpcVisibilityBitmask(visibility: LayerVisibility): number {
   if (visibility.npcMercenaryRecruiters)
     mask |= 1 << NPC_ROLE_BITS.isMercenaryRecruiter;
   if (visibility.npcGuards) mask |= 1 << NPC_ROLE_BITS.isGuard;
+  if (visibility.npcTeleporters) mask |= 1 << NPC_ROLE_BITS.isTeleporter;
+  if (visibility.npcVillagers) mask |= 1 << NPC_ROLE_BITS.isVillager;
   return mask;
 }
 
@@ -639,6 +645,59 @@ export function createLayers(
     },
   });
 
+  // Teleporter NPC arcs - connect NPC to teleport destination
+  const teleporterArcsLayer = new LineLayer({
+    id: "teleporter-arcs",
+    data: filtered.teleportersWithDestinations,
+    visible: visibility.npcTeleporters,
+    getSourcePosition: (d: NpcMapEntity) => d.position,
+    getTargetPosition: (d: NpcMapEntity) => d.teleportDestination,
+    getColor: ARC_COLORS.teleporter.source,
+    getWidth: 2,
+    widthUnits: "pixels",
+    pickable: false,
+    extensions: [zoneFilterExt],
+    getFilterValue: (d: NpcMapEntity) =>
+      !focusedZoneId ||
+      d.zoneId === focusedZoneId ||
+      d.teleportZoneId === focusedZoneId
+        ? 1
+        : 0,
+    filterRange: [1, 1],
+    updateTriggers: {
+      getFilterValue: focusedZoneId,
+    },
+  });
+
+  // Teleporter destination markers - small dots at destination
+  const teleporterDestinationsLayer = new ScatterplotLayer({
+    id: "teleporter-destinations",
+    data: filtered.teleportersWithDestinations,
+    visible: visibility.npcTeleporters,
+    getPosition: (d: NpcMapEntity) => d.teleportDestination,
+    getFillColor: ARC_COLORS.teleporter.source.slice(0, 3) as [
+      number,
+      number,
+      number,
+    ],
+    getRadius: 3,
+    radiusUnits: "pixels",
+    radiusMinPixels: 2,
+    radiusMaxPixels: 6,
+    pickable: false,
+    extensions: [zoneFilterExt],
+    getFilterValue: (d: NpcMapEntity) =>
+      !focusedZoneId ||
+      d.zoneId === focusedZoneId ||
+      d.teleportZoneId === focusedZoneId
+        ? 1
+        : 0,
+    filterRange: [1, 1],
+    updateTriggers: {
+      getFilterValue: focusedZoneId,
+    },
+  });
+
   const patrolPathLayers = createPatrolPathLayers(
     patrolPathData,
     ScatterplotLayer,
@@ -868,6 +927,7 @@ export function createLayers(
     relationArcsLayer,
     relationArcEndpointsLayer,
     portalArcsLayer,
+    teleporterArcsLayer,
     creaturesLayer,
     gatheringPlantsLayer,
     gatheringMineralsLayer,
@@ -880,6 +940,7 @@ export function createLayers(
     chestsLayer,
     portalsLayer,
     portalDestinationsLayer,
+    teleporterDestinationsLayer,
     npcsLayer,
     altarsLayer,
     elitesLayer,

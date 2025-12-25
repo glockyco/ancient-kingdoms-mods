@@ -11,7 +11,8 @@ export type RoleCategory =
   | "service"
   | "special"
   | "combat"
-  | "renewal";
+  | "renewal"
+  | "travel";
 
 export interface RoleConfig {
   /** Database key (e.g., "is_merchant") */
@@ -68,6 +69,7 @@ export const ROLE_CONFIG: RoleConfig[] = [
   { key: "is_augmenter", label: "Augmenter", category: "special" },
   { key: "is_guard", label: "Guard", category: "combat" },
   { key: "is_renewal_sage", label: "Renewal Sage", category: "renewal" },
+  { key: "is_teleporter", label: "Teleporter", category: "travel" },
 ];
 
 /**
@@ -126,6 +128,8 @@ export function normalizeRoles(partial: Partial<NpcRoles>): NpcRoles {
     is_priestess: partial.is_priestess ?? false,
     is_augmenter: partial.is_augmenter ?? false,
     is_renewal_sage: partial.is_renewal_sage ?? false,
+    is_teleporter: partial.is_teleporter ?? false,
+    is_villager: partial.is_villager ?? false,
   };
 }
 
@@ -214,4 +218,6 @@ export const ROLE_DESCRIPTIONS: Partial<
     description: "Protects the area and may attack hostile players.",
   },
   // is_renewal_sage: handled dynamically in NPC detail page
+  // is_teleporter: handled dynamically in NPC detail page (destination varies)
+  // is_villager: no description needed (not shown in Services section)
 };

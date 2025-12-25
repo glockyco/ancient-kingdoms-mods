@@ -25,6 +25,7 @@
   import ShoppingBag from "@lucide/svelte/icons/shopping-bag";
   import Wrench from "@lucide/svelte/icons/wrench";
   import RefreshCw from "@lucide/svelte/icons/refresh-cw";
+  import Compass from "@lucide/svelte/icons/compass";
   import type { Component } from "svelte";
 
   // Role category colors (matching RoleBadges.svelte)
@@ -35,6 +36,7 @@
     special: "text-purple-500",
     combat: "text-red-500",
     renewal: "text-teal-500",
+    travel: "text-cyan-500",
   };
 
   // Role category icons (matching RoleBadges.svelte)
@@ -45,6 +47,7 @@
     special: Sparkles,
     combat: Shield,
     renewal: RefreshCw,
+    travel: Compass,
   };
 
   interface Props {

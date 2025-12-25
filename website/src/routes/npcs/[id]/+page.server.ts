@@ -42,6 +42,8 @@ const defaultRoles: NpcRoles = {
   is_priestess: false,
   is_augmenter: false,
   is_renewal_sage: false,
+  is_teleporter: false,
+  is_villager: false,
 };
 
 export const load: PageServerLoad = ({ params }): NpcDetailPageData => {
@@ -131,6 +133,19 @@ export const load: PageServerLoad = ({ params }): NpcDetailPageData => {
     respawnDungeonZoneId = dungeonData?.id || null;
   }
 
+  // Get teleport destination info if applicable
+  let teleportZoneName: string | null = null;
+  let teleportZoneId: string | null = null;
+  const teleportRawZoneId = npcRaw.teleport_zone_id as string | null;
+  if (teleportRawZoneId) {
+    const teleportData = db
+      .prepare("SELECT id, name FROM zones WHERE id = ?")
+      .get(teleportRawZoneId) as { id: string; name: string } | undefined;
+    teleportZoneName = teleportData?.name || null;
+    teleportZoneId = teleportData?.id || null;
+  }
+  const teleportPrice = (npcRaw.teleport_price as number) || 0;
+
   const npc: NpcInfo = {
     id: npcRaw.id as string,
     name: npcRaw.name as string,
@@ -219,5 +234,8 @@ export const load: PageServerLoad = ({ params }): NpcDetailPageData => {
     skills,
     respawnDungeonName,
     respawnDungeonZoneId,
+    teleportZoneName,
+    teleportZoneId,
+    teleportPrice,
   };
 };

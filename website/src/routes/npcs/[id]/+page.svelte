@@ -36,6 +36,7 @@
   import Sparkles from "@lucide/svelte/icons/sparkles";
   import Shield from "@lucide/svelte/icons/shield";
   import RefreshCw from "@lucide/svelte/icons/refresh-cw";
+  import Compass from "@lucide/svelte/icons/compass";
   import Snowflake from "@lucide/svelte/icons/snowflake";
   import { WORLD_BOSS_DUNGEON_ID } from "$lib/constants/constants";
 
@@ -46,6 +47,7 @@
     special: "text-purple-500",
     combat: "text-red-500",
     renewal: "text-teal-500",
+    travel: "text-cyan-500",
   };
 
   let { data } = $props();
@@ -53,7 +55,7 @@
   // Get active roles for this NPC
   const activeRoles = $derived(getActiveRoles(data.npc.roles));
 
-  // Get description for a role (with dynamic handling for renewal sage)
+  // Get description for a role (with dynamic handling for renewal sage and teleporter)
   function getRoleDescription(role: RoleConfig): string {
     if (role.key === "is_renewal_sage") {
       const isWorldBoss = data.npc.respawn_dungeon_id === WORLD_BOSS_DUNGEON_ID;
@@ -76,6 +78,19 @@
         ? `Resets all spawns in ${target} for <span class="text-yellow-600 dark:text-yellow-400">${data.npc.gold_required_respawn_dungeon.toLocaleString()}</span> ${currency}.`
         : `Resets all spawns in ${target}.`;
     }
+
+    if (role.key === "is_teleporter") {
+      if (!data.teleportZoneName) {
+        return "Teleports players to another location.";
+      }
+
+      const destination = `<a href="/zones/${data.teleportZoneId}" class="text-blue-600 dark:text-blue-400 hover:underline">${data.teleportZoneName}</a>`;
+
+      return data.teleportPrice > 0
+        ? `Teleports players to ${destination} for <span class="text-yellow-600 dark:text-yellow-400">${data.teleportPrice.toLocaleString()}</span> gold.`
+        : `Teleports players to ${destination}.`;
+    }
+
     return ROLE_DESCRIPTIONS[role.key]?.description ?? "";
   }
 
@@ -685,6 +700,10 @@
                 />
               {:else if role.category === "renewal"}
                 <RefreshCw
+                  class="{ICON_BADGE.iconSize} {categoryColors[role.category]}"
+                />
+              {:else if role.category === "travel"}
+                <Compass
                   class="{ICON_BADGE.iconSize} {categoryColors[role.category]}"
                 />
               {/if}

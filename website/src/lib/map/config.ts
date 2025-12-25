@@ -129,6 +129,14 @@ export const ARC_COLORS = {
     source: [34, 250, 94, 255] as [number, number, number, number], // brighter green
     target: [34, 250, 94, 200] as [number, number, number, number],
   },
+  teleporter: {
+    source: [6, 182, 212, 200] as [number, number, number, number], // cyan-500
+    target: [6, 182, 212, 100] as [number, number, number, number],
+  },
+  teleporterHighlight: {
+    source: [6, 250, 212, 255] as [number, number, number, number], // brighter cyan
+    target: [6, 250, 212, 200] as [number, number, number, number],
+  },
 } as const;
 
 /**

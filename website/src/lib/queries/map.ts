@@ -321,6 +321,9 @@ interface NpcSpawnRow {
   items_sold: string | null;
   teleport_zone_id: string | null;
   teleport_zone_name: string | null;
+  teleport_destination_x: number | null;
+  teleport_destination_y: number | null;
+  teleport_price: number | null;
 }
 
 async function loadNpcSpawns(): Promise<NpcMapEntity[]> {
@@ -342,7 +345,10 @@ async function loadNpcSpawns(): Promise<NpcMapEntity[]> {
       n.quests_offered,
       n.items_sold,
       n.teleport_zone_id,
-      tz.name as teleport_zone_name
+      tz.name as teleport_zone_name,
+      n.teleport_destination_x,
+      n.teleport_destination_y,
+      n.teleport_price
     FROM npcs n
     LEFT JOIN npc_spawns ns ON ns.npc_id = n.id
     LEFT JOIN zones z ON z.id = ns.zone_id
@@ -411,6 +417,12 @@ async function loadNpcSpawns(): Promise<NpcMapEntity[]> {
       itemsSoldCount,
       hasTeleport: r.teleport_zone_id !== null,
       teleportDestName: r.teleport_zone_name,
+      teleportZoneId: r.teleport_zone_id,
+      teleportDestination:
+        r.teleport_destination_x !== null && r.teleport_destination_y !== null
+          ? [r.teleport_destination_x, -r.teleport_destination_y]
+          : null,
+      teleportPrice: r.teleport_price ?? 0,
     };
   });
 }

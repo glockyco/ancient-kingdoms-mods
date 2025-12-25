@@ -342,6 +342,14 @@
           <span class="text-muted-foreground">Teleports to</span>
           <span class="text-cyan-400">{npc.teleportDestName}</span>
         </div>
+        {#if npc.teleportPrice > 0}
+          <div class="flex justify-between">
+            <span class="text-muted-foreground">Cost</span>
+            <span class="text-yellow-500"
+              >{npc.teleportPrice.toLocaleString()} gold</span
+            >
+          </div>
+        {/if}
       {/if}
 
       <!-- Renewal Sage dungeon -->

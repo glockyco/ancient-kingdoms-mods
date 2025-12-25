@@ -17,6 +17,8 @@ export interface NpcRoles {
   is_priestess: boolean;
   is_augmenter: boolean;
   is_renewal_sage: boolean;
+  is_teleporter: boolean;
+  is_villager: boolean;
 }
 
 export interface NpcInfo {
@@ -156,6 +158,9 @@ export interface NpcDetailPageData {
   skills: NpcSkill[];
   respawnDungeonName: string | null;
   respawnDungeonZoneId: string | null;
+  teleportZoneName: string | null;
+  teleportZoneId: string | null;
+  teleportPrice: number;
 }
 
 // List page types

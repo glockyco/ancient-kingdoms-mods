@@ -34,6 +34,8 @@ NPC_ROLE_KEYWORDS = {
     "is_priestess": "priestess rune runes cursed blessed bless",
     "is_augmenter": "augmenter socket remove",
     "is_renewal_sage": "renewal sage reset respawn",
+    "is_teleporter": "teleporter teleport travel transport",
+    "is_villager": "villager citizen townsfolk",
 }
 
 
@@ -102,19 +104,27 @@ def run(conn: sqlite3.Connection) -> None:
         f"  [green]OK[/green] Generated keywords for {monster_count} monsters"
     )
 
-    # NPC keywords (service types from roles + renewal dungeon name for sages)
+    # NPC keywords (service types from roles + destination names for special roles)
     cursor.execute("""
-        SELECT n.id, n.roles, n.respawn_dungeon_id, z.name as dungeon_name
+        SELECT n.id, n.roles, n.respawn_dungeon_id, z.name as dungeon_name,
+               tz.name as teleport_zone_name
         FROM npcs n
         LEFT JOIN zones z ON z.zone_id = n.respawn_dungeon_id
+        LEFT JOIN zones tz ON tz.id = n.teleport_zone_id
     """)
     npcs = cursor.fetchall()
     npc_count = 0
-    for npc_id, roles_json, respawn_dungeon_id, dungeon_name in npcs:
+    for (
+        npc_id,
+        roles_json,
+        respawn_dungeon_id,
+        dungeon_name,
+        teleport_zone_name,
+    ) in npcs:
         keywords = _generate_npc_keywords(roles_json)
-        # Add dungeon name for renewal sages (or "world boss" for special ID)
         if roles_json:
             roles = json.loads(roles_json)
+            # Add dungeon name for renewal sages (or "world boss" for special ID)
             if roles.get("is_renewal_sage"):
                 if respawn_dungeon_id == WORLD_BOSS_DUNGEON_ID:
                     extra = "world boss"
@@ -124,6 +134,13 @@ def run(conn: sqlite3.Connection) -> None:
                     extra = None
                 if extra:
                     keywords = f"{keywords} {extra}" if keywords else extra
+            # Add destination zone name for teleporters
+            if roles.get("is_teleporter") and teleport_zone_name:
+                keywords = (
+                    f"{keywords} {teleport_zone_name}"
+                    if keywords
+                    else teleport_zone_name
+                )
         if keywords:
             cursor.execute(
                 "UPDATE npcs SET keywords = ? WHERE id = ?", (keywords, npc_id)

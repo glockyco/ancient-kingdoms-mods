@@ -342,6 +342,37 @@ def _add_quests_completed_here(conn: sqlite3.Connection) -> int:
     return len(npc_quests)
 
 
+def _add_teleporter_role(conn: sqlite3.Connection) -> int:
+    """Add is_teleporter to roles JSON for NPCs that can teleport players.
+
+    NPCs with teleport_zone_id set are teleporters.
+
+    Returns:
+        Count of Teleporter NPCs
+    """
+    console.print("  Adding is_teleporter to roles...")
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT id, roles, teleport_zone_id FROM npcs")
+    npcs = cursor.fetchall()
+
+    teleporter_count = 0
+    for npc_id, roles_json, teleport_zone_id in npcs:
+        roles = json.loads(roles_json) if roles_json else {}
+        is_teleporter = teleport_zone_id is not None
+        roles["is_teleporter"] = is_teleporter
+
+        cursor.execute(
+            "UPDATE npcs SET roles = ? WHERE id = ?",
+            (json.dumps(roles), npc_id),
+        )
+
+        if is_teleporter:
+            teleporter_count += 1
+
+    return teleporter_count
+
+
 def _add_renewal_sage_role(conn: sqlite3.Connection) -> int:
     """Add is_renewal_sage to roles JSON for all NPCs.
 
@@ -386,6 +417,64 @@ def _add_renewal_sage_role(conn: sqlite3.Connection) -> int:
     return renewal_sage_count
 
 
+def _add_villager_role(conn: sqlite3.Connection) -> int:
+    """Add is_villager to roles JSON for NPCs with no other roles.
+
+    This must run AFTER all other role denormalizations. NPCs with no service
+    roles (all role flags false except is_villager itself) are villagers.
+
+    Returns:
+        Count of Villager NPCs
+    """
+    console.print("  Adding is_villager to roles...")
+    cursor = conn.cursor()
+
+    # All role keys that indicate a "service" (excludes is_villager itself)
+    service_roles = [
+        "is_merchant",
+        "is_quest_giver",
+        "can_repair_equipment",
+        "is_bank",
+        "is_skill_master",
+        "is_veteran_master",
+        "is_reset_attributes",
+        "is_soul_binder",
+        "is_inkeeper",
+        "is_taskgiver_adventurer",
+        "is_merchant_adventurer",
+        "is_recruiter_mercenaries",
+        "is_guard",
+        "is_faction_vendor",
+        "is_essence_trader",
+        "is_priestess",
+        "is_augmenter",
+        "is_renewal_sage",
+        "is_teleporter",
+    ]
+
+    cursor.execute("SELECT id, roles FROM npcs")
+    npcs = cursor.fetchall()
+
+    villager_count = 0
+    for npc_id, roles_json in npcs:
+        roles = json.loads(roles_json) if roles_json else {}
+
+        # Check if NPC has any service role
+        has_service_role = any(roles.get(role, False) for role in service_roles)
+        is_villager = not has_service_role
+        roles["is_villager"] = is_villager
+
+        cursor.execute(
+            "UPDATE npcs SET roles = ? WHERE id = ?",
+            (json.dumps(roles), npc_id),
+        )
+
+        if is_villager:
+            villager_count += 1
+
+    return villager_count
+
+
 def run(conn: sqlite3.Connection) -> None:
     """Run all NPC relations denormalizations."""
     console.print("Denormalizing NPC relations...")
@@ -395,7 +484,10 @@ def run(conn: sqlite3.Connection) -> None:
     drops_count = _denormalize_drops(conn)
     skills_count = _denormalize_skills(conn)
     quests_completed_count = _add_quests_completed_here(conn)
+    teleporter_count = _add_teleporter_role(conn)
     renewal_sage_count = _add_renewal_sage_role(conn)
+    # Must run last - checks if NPC has any other roles
+    villager_count = _add_villager_role(conn)
 
     conn.commit()
 
@@ -411,5 +503,11 @@ def run(conn: sqlite3.Connection) -> None:
         f"  [green]OK[/green] Added quests_completed_here for {quests_completed_count} NPCs"
     )
     console.print(
+        f"  [green]OK[/green] Added is_teleporter role to {teleporter_count} NPCs"
+    )
+    console.print(
         f"  [green]OK[/green] Added is_renewal_sage role to {renewal_sage_count} NPCs"
+    )
+    console.print(
+        f"  [green]OK[/green] Added is_villager role to {villager_count} NPCs"
     )

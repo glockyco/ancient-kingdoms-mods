@@ -62,6 +62,8 @@ const DEFAULT_LAYERS: (keyof LayerVisibility)[] = [
   "npcAdventurerVendors",
   "npcMercenaryRecruiters",
   "npcGuards",
+  "npcTeleporters",
+  // npcVillagers intentionally excluded from defaults (hidden by default)
   // Interactables
   "portals",
   "portalArcs",
@@ -108,6 +110,8 @@ export function getDefaultLayerVisibility(): LayerVisibility {
     npcAdventurerVendors: true,
     npcMercenaryRecruiters: true,
     npcGuards: true,
+    npcTeleporters: true,
+    npcVillagers: false,
     // Interactables
     portals: true,
     portalArcs: true,
@@ -305,6 +309,8 @@ export function urlStateToLayerVisibility(
     npcAdventurerVendors: urlLayers.includes("npcAdventurerVendors"),
     npcMercenaryRecruiters: urlLayers.includes("npcMercenaryRecruiters"),
     npcGuards: urlLayers.includes("npcGuards"),
+    npcTeleporters: urlLayers.includes("npcTeleporters"),
+    npcVillagers: urlLayers.includes("npcVillagers"),
     // Interactables
     portals: urlLayers.includes("portals"),
     portalArcs: urlLayers.includes("portalArcs"),

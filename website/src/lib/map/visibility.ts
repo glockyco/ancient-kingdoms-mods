@@ -44,6 +44,8 @@ export const NPC_TYPE_KEYS: (keyof LayerVisibility)[] = [
   "npcAdventurerVendors",
   "npcMercenaryRecruiters",
   "npcGuards",
+  "npcTeleporters",
+  "npcVillagers",
 ];
 
 /**

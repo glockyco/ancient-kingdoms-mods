@@ -8,6 +8,7 @@
   import Sparkles from "@lucide/svelte/icons/sparkles";
   import Shield from "@lucide/svelte/icons/shield";
   import RefreshCw from "@lucide/svelte/icons/refresh-cw";
+  import Compass from "@lucide/svelte/icons/compass";
 
   interface Props {
     /** NPC roles object */
@@ -27,6 +28,7 @@
     special: "text-purple-500",
     combat: "text-red-500",
     renewal: "text-teal-500",
+    travel: "text-cyan-500",
   };
 </script>
 
@@ -43,6 +45,8 @@
     <Shield class="{ICON_BADGE.iconSize} {categoryColors[category]}" />
   {:else if category === "renewal"}
     <RefreshCw class="{ICON_BADGE.iconSize} {categoryColors[category]}" />
+  {:else if category === "travel"}
+    <Compass class="{ICON_BADGE.iconSize} {categoryColors[category]}" />
   {/if}
 {/snippet}
 

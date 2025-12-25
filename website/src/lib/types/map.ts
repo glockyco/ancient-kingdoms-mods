@@ -91,6 +91,8 @@ export const NPC_ROLE_BITS = {
   isAdventurerVendor: 15,
   isMercenaryRecruiter: 16,
   isGuard: 17,
+  isTeleporter: 18,
+  isVillager: 19,
 } as const;
 
 /**
@@ -108,6 +110,9 @@ export interface NpcMapEntity extends MapEntity {
   itemsSoldCount: number;
   hasTeleport: boolean;
   teleportDestName: string | null;
+  teleportZoneId: string | null;
+  teleportDestination: [number, number] | null;
+  teleportPrice: number;
 }
 
 /**
@@ -228,6 +233,8 @@ export interface LayerVisibility {
   npcAdventurerVendors: boolean;
   npcMercenaryRecruiters: boolean;
   npcGuards: boolean;
+  npcTeleporters: boolean;
+  npcVillagers: boolean;
 
   // Interactables section
   portals: boolean;
@@ -322,6 +329,7 @@ export interface FilteredMapData {
   forges: CraftingMapEntity[];
   cookingOvens: CraftingMapEntity[];
   portalsWithDestinations: PortalMapEntity[];
+  teleportersWithDestinations: NpcMapEntity[];
   parentZones: ParentZoneBoundary[];
 }
 

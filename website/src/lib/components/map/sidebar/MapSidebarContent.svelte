@@ -12,6 +12,7 @@
   import Package from "@lucide/svelte/icons/package";
   import Hammer from "@lucide/svelte/icons/hammer";
   import MapPin from "@lucide/svelte/icons/map-pin";
+  import Compass from "@lucide/svelte/icons/compass";
   import ImageIcon from "@lucide/svelte/icons/image";
   import Search from "@lucide/svelte/icons/search";
   import MousePointerClick from "@lucide/svelte/icons/mouse-pointer-click";
@@ -221,6 +222,18 @@
       icon: Users,
     },
     { key: "npcGuards", label: "Guards", color: LAYER_COLORS.npc, icon: Users },
+    {
+      key: "npcTeleporters",
+      label: "Teleporters",
+      color: LAYER_COLORS.npc,
+      icon: Compass,
+    },
+    {
+      key: "npcVillagers",
+      label: "Villagers",
+      color: LAYER_COLORS.npc,
+      icon: Users,
+    },
   ];
 
   // Interactable layers

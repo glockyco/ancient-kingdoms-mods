@@ -31,6 +31,8 @@ ROLE_BITS = {
     "is_merchant_adventurer": 15,
     "is_recruiter_mercenaries": 16,
     "is_guard": 17,
+    "is_teleporter": 18,
+    "is_villager": 19,
 }
 
 
