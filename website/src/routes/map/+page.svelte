@@ -176,6 +176,7 @@
       patrolPathData,
       relatedEntities,
       relationArcData,
+      selectedEntity,
       iconAtlas ?? undefined,
     );
 
@@ -517,6 +518,7 @@
           patrolPathData,
           EMPTY_SELECTION,
           EMPTY_RELATION_ARCS,
+          selectedEntity,
           iconAtlas ?? undefined,
         );
 
@@ -607,6 +609,7 @@
     void patrolPathData; // Pre-computed, only changes when selectionData changes
     void relatedEntities; // Pre-computed, only changes when selection changes
     void zoneFocusedData; // Pre-computed, only changes when focusedZoneId changes
+    void selectedEntity; // The actual clicked entity (for primary highlight)
     updateLayers();
   });
 

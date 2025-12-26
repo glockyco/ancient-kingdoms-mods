@@ -202,6 +202,7 @@ function createPatrolPathLayers(
  * @param focusedZoneId - Zone ID to filter by (null = show all zones)
  * @param selectionData - Pre-computed array of entities to highlight (use EMPTY_SELECTION when none)
  * @param patrolPathData - Pre-computed patrol path data (use EMPTY_PATROL_DATA when none)
+ * @param selectedEntity - The actual clicked entity (for primary highlight)
  */
 export function createLayers(
   filtered: ZoneFocusedData,
@@ -216,6 +217,7 @@ export function createLayers(
   patrolPathData: PatrolPathData = EMPTY_PATROL_DATA,
   relatedEntities: AnyMapEntity[] = EMPTY_SELECTION,
   relationArcData: RelationArcData = EMPTY_RELATION_ARCS,
+  selectedEntity: AnyMapEntity | null = null,
   iconAtlas?: IconAtlasData,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): any[] {
@@ -867,6 +869,31 @@ export function createLayers(
     },
   });
 
+  // Primary selection highlight - the actual clicked entity (distinct from group)
+  const primarySelectionData =
+    selectedEntity?.position !== null && selectedEntity?.position !== undefined
+      ? [selectedEntity]
+      : [];
+  const primarySelectionHighlightLayer = new ScatterplotLayer({
+    id: "primary-selection-highlight",
+    data: primarySelectionData,
+    visible: primarySelectionData.length > 0,
+    getPosition: (d: AnyMapEntity) => d.position,
+    getFillColor: HIGHLIGHT_COLORS.primaryFill,
+    getLineColor: HIGHLIGHT_COLORS.primaryRing,
+    getRadius: (d: AnyMapEntity) => getRingRadius(d) + 4,
+    radiusUnits: "pixels",
+    radiusMinPixels: 11,
+    radiusMaxPixels: 52,
+    stroked: true,
+    lineWidthUnits: "pixels",
+    getLineWidth: 3,
+    pickable: false,
+    updateTriggers: {
+      getRadius: selectedEntity,
+    },
+  });
+
   // Relation arcs layer (connects summon spawns to blocker spawns)
   const relationArcsLayer = new LineLayer({
     id: "relation-arcs",
@@ -947,5 +974,6 @@ export function createLayers(
     bossesLayer,
     relatedHighlightLayer,
     selectionHighlightLayer,
+    primarySelectionHighlightLayer,
   ];
 }

@@ -143,8 +143,12 @@ export const ARC_COLORS = {
  * Selection highlight colors
  */
 export const HIGHLIGHT_COLORS = {
+  // Group highlight (all spawns of the same entity type)
   ring: [255, 255, 255, 255] as [number, number, number, number], // white
   fill: [255, 255, 255, 40] as [number, number, number, number], // white with low alpha
+  // Primary highlight (the actual clicked entity)
+  primaryRing: [250, 204, 21, 255] as [number, number, number, number], // yellow-400
+  primaryFill: [250, 204, 21, 80] as [number, number, number, number], // yellow-400 with alpha
   // Related entity colors (for blocker spawns when selecting a summon spawn)
   relatedRing: [251, 146, 60, 255] as [number, number, number, number], // orange-400
   relatedFill: [251, 146, 60, 60] as [number, number, number, number], // orange-400 with low alpha
