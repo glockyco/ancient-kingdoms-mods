@@ -52,10 +52,11 @@
       });
   });
 
-  // Split NPCs into givers and turn-ins
-  let givers = $derived(details?.npcs.filter((n) => n.isGiver) ?? []);
-  let turnIns = $derived(
-    details?.npcs.filter((n) => n.isTurnIn && !n.isGiver) ?? [],
+  // Get start and end NPCs (matching detail page pattern)
+  let startNpc = $derived(details?.npcs.find((n) => n.isGiver) ?? null);
+  let endNpc = $derived(
+    // Different turn-in NPC if available, otherwise use start NPC
+    details?.npcs.find((n) => n.isTurnIn && !n.isGiver) ?? startNpc,
   );
 
   // Split reward items into regular and class-specific
@@ -86,9 +87,39 @@
     detailsUrl="/quests/{details.id}"
     {onClose}
   >
+    <!-- NPCs -->
+    {#if startNpc}
+      <div class="space-y-0.5">
+        <div class="flex justify-between">
+          <span class="text-muted-foreground">Start</span>
+          <MapEntityButton
+            onSelect={() => onSelectNpc(startNpc.npcId)}
+            onHoverStart={() => onHoverNpc?.(startNpc.npcId)}
+            onHoverEnd={() => onHoverNpc?.(null)}
+            class="text-blue-400"
+          >
+            {startNpc.npcName}
+          </MapEntityButton>
+        </div>
+        {#if endNpc}
+          <div class="flex justify-between">
+            <span class="text-muted-foreground">End</span>
+            <MapEntityButton
+              onSelect={() => onSelectNpc(endNpc.npcId)}
+              onHoverStart={() => onHoverNpc?.(endNpc.npcId)}
+              onHoverEnd={() => onHoverNpc?.(null)}
+              class="text-blue-400"
+            >
+              {endNpc.npcName}
+            </MapEntityButton>
+          </div>
+        {/if}
+      </div>
+    {/if}
+
     <!-- Objectives -->
     {#if details.objectives.length > 0}
-      <div>
+      <div class="border-t pt-2">
         <div class="mb-1 text-xs font-medium text-muted-foreground">
           Objectives
         </div>
@@ -236,61 +267,6 @@
               <span class="shrink-0 text-muted-foreground"
                 >{item.classSpecific}</span
               >
-            </div>
-          {/each}
-        </div>
-      </div>
-    {/if}
-
-    <!-- NPCs -->
-    {#if givers.length > 0}
-      <div class="border-t pt-2">
-        <div class="mb-1 text-xs font-medium text-muted-foreground">
-          Given by
-        </div>
-        <div class="space-y-0.5">
-          {#each givers as npc (npc.npcId)}
-            <div class="flex items-center justify-between gap-2">
-              <MapEntityButton
-                onSelect={() => onSelectNpc(npc.npcId)}
-                onHoverStart={() => onHoverNpc?.(npc.npcId)}
-                onHoverEnd={() => onHoverNpc?.(null)}
-                class="text-blue-400 dark:text-blue-400"
-              >
-                <span class="truncate">{npc.npcName}</span>
-              </MapEntityButton>
-              {#if npc.zoneName}
-                <span class="shrink-0 text-xs text-muted-foreground"
-                  >{npc.zoneName}</span
-                >
-              {/if}
-            </div>
-          {/each}
-        </div>
-      </div>
-    {/if}
-
-    {#if turnIns.length > 0}
-      <div class="border-t pt-2">
-        <div class="mb-1 text-xs font-medium text-muted-foreground">
-          Turn in to
-        </div>
-        <div class="space-y-0.5">
-          {#each turnIns as npc (npc.npcId)}
-            <div class="flex items-center justify-between gap-2">
-              <MapEntityButton
-                onSelect={() => onSelectNpc(npc.npcId)}
-                onHoverStart={() => onHoverNpc?.(npc.npcId)}
-                onHoverEnd={() => onHoverNpc?.(null)}
-                class="text-blue-400 dark:text-blue-400"
-              >
-                <span class="truncate">{npc.npcName}</span>
-              </MapEntityButton>
-              {#if npc.zoneName}
-                <span class="shrink-0 text-xs text-muted-foreground"
-                  >{npc.zoneName}</span
-                >
-              {/if}
             </div>
           {/each}
         </div>
