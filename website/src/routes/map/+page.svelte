@@ -72,11 +72,20 @@
   let zoneList = $state<ZoneListItem[]>([]);
   let focusedZoneId = $state<string | null>(null);
 
-  // Hover state
+  // Hover state (for tooltip display)
   let hoveredEntity = $state<AnyMapEntity | null>(null);
   let hoverX = $state(0);
   let hoverY = $state(0);
   let isHoveringDestination = $state(false);
+
+  // Hover preview state (for popup link highlights - ephemeral, not URL-persisted)
+  let hoverEntityId = $state<string | null>(null);
+  let hoverEntityCategory = $state<"monster" | "npc" | "altar" | "zone" | null>(
+    null,
+  );
+  // For altar-only monsters: override to highlight altars instead
+  let hoverOverrideIds = $state<string[] | null>(null);
+  let hoverOverrideCategory = $state<"monster" | "npc" | "altar" | null>(null);
 
   // Selected entity (for popup display)
   let selectedEntity = $state<AnyMapEntity | null>(null);
@@ -113,6 +122,11 @@
     selectedEntityType = null;
     highlightEntityIds = null;
     highlightEntityCategory = null;
+    // Clear hover state (link was clicked, no longer hovering)
+    hoverEntityId = null;
+    hoverEntityCategory = null;
+    hoverOverrideIds = null;
+    hoverOverrideCategory = null;
 
     // Set popup state based on popup type
     if (resolved.popup) {
@@ -218,6 +232,40 @@
     computeRelationArcs(selectionData, relatedEntities),
   );
 
+  // Derived: hover preview data for popup link highlights
+  let hoverSelectionData = $derived.by(() => {
+    // Use override for altar-only monsters
+    if (hoverOverrideIds && hoverOverrideCategory && entityIndex) {
+      return hoverOverrideIds.flatMap((id) =>
+        computeSelectionData(entityIndex, hoverOverrideCategory!, id),
+      );
+    }
+    // Normal case
+    if (
+      hoverEntityId &&
+      hoverEntityCategory &&
+      hoverEntityCategory !== "zone" &&
+      entityIndex
+    ) {
+      return computeSelectionData(
+        entityIndex,
+        hoverEntityCategory,
+        hoverEntityId,
+      );
+    }
+    return EMPTY_SELECTION;
+  });
+
+  // Derived: hover zone for zone link highlights
+  let hoverZone = $derived.by(() => {
+    if (!hoverEntityId || hoverEntityCategory !== "zone" || !entityData) {
+      return null;
+    }
+    return (
+      entityData.parentZones.find((z) => z.zoneId === hoverEntityId) ?? null
+    );
+  });
+
   // Derived: combined data for layer rendering (stable array references)
   let zoneFocusedData = $derived(
     entityData && filteredData
@@ -257,6 +305,8 @@
       relationArcData,
       selectedEntity,
       selectedZone,
+      hoverSelectionData,
+      hoverZone,
       iconAtlas ?? undefined,
     );
 
@@ -362,6 +412,55 @@
   async function handleSelectQuest(questId: string) {
     const resolved = await resolveVirtualSelection("quest", questId);
     applySelection(resolved);
+  }
+
+  // Hover handlers (for popup link preview highlights)
+  function handleHoverMonster(monsterId: string | null) {
+    // Clear override state
+    hoverOverrideIds = null;
+    hoverOverrideCategory = null;
+
+    if (!monsterId) {
+      hoverEntityId = null;
+      hoverEntityCategory = null;
+      return;
+    }
+
+    // Check if this is an altar-only monster (no position, has altarIds)
+    const monster = entityData?.monsters.find((m) => m.monsterId === monsterId);
+    if (
+      monster?.altarIds &&
+      monster.altarIds.length > 0 &&
+      monster.position === null
+    ) {
+      // Altar-only monster - highlight the altar(s) instead
+      hoverOverrideIds = monster.altarIds;
+      hoverOverrideCategory = "altar";
+    }
+
+    hoverEntityId = monsterId;
+    hoverEntityCategory = "monster";
+  }
+
+  function handleHoverAltar(altarId: string | null) {
+    hoverOverrideIds = null;
+    hoverOverrideCategory = null;
+    hoverEntityId = altarId;
+    hoverEntityCategory = altarId ? "altar" : null;
+  }
+
+  function handleHoverNpc(npcId: string | null) {
+    hoverOverrideIds = null;
+    hoverOverrideCategory = null;
+    hoverEntityId = npcId;
+    hoverEntityCategory = npcId ? "npc" : null;
+  }
+
+  function handleHoverZone(zoneId: string | null) {
+    hoverOverrideIds = null;
+    hoverOverrideCategory = null;
+    hoverEntityId = zoneId;
+    hoverEntityCategory = zoneId ? "zone" : null;
   }
 
   // Keyboard handlers
@@ -543,6 +642,8 @@
           EMPTY_RELATION_ARCS,
           selectedEntity,
           selectedZone,
+          EMPTY_SELECTION,
+          null,
           iconAtlas ?? undefined,
         );
 
@@ -635,6 +736,8 @@
     void zoneFocusedData; // Pre-computed, only changes when focusedZoneId changes
     void selectedEntity; // The actual clicked entity (for primary highlight)
     void selectedZone; // The selected zone (for zone highlight)
+    void hoverSelectionData; // Hover preview highlights
+    void hoverZone; // Hover preview zone highlight
     updateLayers();
   });
 
@@ -760,6 +863,9 @@
         onSelectMonster={handleSelectMonster}
         onSelectAltar={handleSelectAltar}
         onSelectNpc={handleSelectNpc}
+        onHoverMonster={handleHoverMonster}
+        onHoverAltar={handleHoverAltar}
+        onHoverNpc={handleHoverNpc}
       />
     {:else if selectedEntity}
       <EntityPopup
@@ -770,12 +876,16 @@
         onSelectItem={handleSelectItem}
         onSelectQuest={handleSelectQuest}
         onSelectZone={handleSelectZone}
+        onHoverMonster={handleHoverMonster}
+        onHoverAltar={handleHoverAltar}
+        onHoverZone={handleHoverZone}
       />
     {:else if selectedEntityType === "item" && selectedEntityId}
       <ItemPopup
         itemId={selectedEntityId}
         onClose={handleClosePopup}
         onSelectMonster={handleSelectMonster}
+        onHoverMonster={handleHoverMonster}
       />
     {:else if selectedEntityType === "quest" && selectedEntityId}
       <QuestPopup
@@ -783,6 +893,7 @@
         onClose={handleClosePopup}
         onSelectNpc={handleSelectNpc}
         onSelectItem={handleSelectItem}
+        onHoverNpc={handleHoverNpc}
       />
     {/if}
 

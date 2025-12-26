@@ -13,10 +13,21 @@
     onSelectMonster: (monsterId: string) => void;
     onSelectAltar: (altarId: string) => void;
     onSelectNpc: (npcId: string) => void;
+    onHoverMonster?: (monsterId: string | null) => void;
+    onHoverAltar?: (altarId: string | null) => void;
+    onHoverNpc?: (npcId: string | null) => void;
   }
 
-  let { zone, onClose, onSelectMonster, onSelectAltar, onSelectNpc }: Props =
-    $props();
+  let {
+    zone,
+    onClose,
+    onSelectMonster,
+    onSelectAltar,
+    onSelectNpc,
+    onHoverMonster,
+    onHoverAltar,
+    onHoverNpc,
+  }: Props = $props();
 
   // Lazy-loaded details state
   let details = $state<ZonePopupDetails | null>(null);
@@ -78,6 +89,8 @@
             <li class="flex items-center justify-between gap-2">
               <MapEntityButton
                 onSelect={() => onSelectMonster(boss.id)}
+                onHoverStart={() => onHoverMonster?.(boss.id)}
+                onHoverEnd={() => onHoverMonster?.(null)}
                 class="truncate text-cyan-400"
               >
                 {boss.name}
@@ -100,6 +113,8 @@
             <li class="flex items-center justify-between gap-2">
               <MapEntityButton
                 onSelect={() => onSelectMonster(elite.id)}
+                onHoverStart={() => onHoverMonster?.(elite.id)}
+                onHoverEnd={() => onHoverMonster?.(null)}
                 class="truncate text-purple-400"
               >
                 {elite.name}
@@ -122,6 +137,8 @@
             <li>
               <MapEntityButton
                 onSelect={() => onSelectAltar(altar.id)}
+                onHoverStart={() => onHoverAltar?.(altar.id)}
+                onHoverEnd={() => onHoverAltar?.(null)}
                 class="text-orange-400"
               >
                 {altar.name}
@@ -142,6 +159,8 @@
         <div class="flex items-center justify-between gap-2">
           <MapEntityButton
             onSelect={() => onSelectNpc(sage.id)}
+            onHoverStart={() => onHoverNpc?.(sage.id)}
+            onHoverEnd={() => onHoverNpc?.(null)}
             class="truncate text-blue-400"
           >
             {sage.name}

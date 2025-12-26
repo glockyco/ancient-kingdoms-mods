@@ -12,9 +12,10 @@
     itemId: string;
     onClose: () => void;
     onSelectMonster: (monsterId: string) => void;
+    onHoverMonster?: (monsterId: string | null) => void;
   }
 
-  let { itemId, onClose, onSelectMonster }: Props = $props();
+  let { itemId, onClose, onSelectMonster, onHoverMonster }: Props = $props();
 
   let details = $state<ItemPopupDetails | null>(null);
   let isLoading = $state(true);
@@ -77,6 +78,8 @@
                 />
                 <MapEntityButton
                   onSelect={() => onSelectMonster(dropper.monsterId)}
+                  onHoverStart={() => onHoverMonster?.(dropper.monsterId)}
+                  onHoverEnd={() => onHoverMonster?.(null)}
                   class={dropper.isBoss
                     ? "text-cyan-400"
                     : dropper.isElite

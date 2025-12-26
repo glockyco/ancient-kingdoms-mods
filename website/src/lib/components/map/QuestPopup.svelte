@@ -13,9 +13,11 @@
     onClose: () => void;
     onSelectNpc: (npcId: string) => void;
     onSelectItem: (itemId: string) => void;
+    onHoverNpc?: (npcId: string | null) => void;
   }
 
-  let { questId, onClose, onSelectNpc, onSelectItem }: Props = $props();
+  let { questId, onClose, onSelectNpc, onSelectItem, onHoverNpc }: Props =
+    $props();
 
   let details = $state<QuestPopupDetails | null>(null);
   let isLoading = $state(true);
@@ -220,6 +222,8 @@
             <div class="flex items-center justify-between gap-2">
               <MapEntityButton
                 onSelect={() => onSelectNpc(npc.npcId)}
+                onHoverStart={() => onHoverNpc?.(npc.npcId)}
+                onHoverEnd={() => onHoverNpc?.(null)}
                 class="text-blue-400 dark:text-blue-400"
               >
                 <span class="truncate">{npc.npcName}</span>
@@ -245,6 +249,8 @@
             <div class="flex items-center justify-between gap-2">
               <MapEntityButton
                 onSelect={() => onSelectNpc(npc.npcId)}
+                onHoverStart={() => onHoverNpc?.(npc.npcId)}
+                onHoverEnd={() => onHoverNpc?.(null)}
                 class="text-blue-400 dark:text-blue-400"
               >
                 <span class="truncate">{npc.npcName}</span>

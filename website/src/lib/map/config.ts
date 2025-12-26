@@ -157,6 +157,9 @@ export const HIGHLIGHT_COLORS = {
   // Related entity colors (for blocker spawns when selecting a summon spawn)
   relatedRing: [251, 146, 60, 255] as [number, number, number, number], // orange-400
   relatedFill: [251, 146, 60, 60] as [number, number, number, number], // orange-400 with low alpha
+  // Hover preview (yellow to contrast with white selection highlights)
+  hoverRing: [250, 204, 21, 255] as [number, number, number, number], // yellow-400
+  hoverFill: [250, 204, 21, 40] as [number, number, number, number], // yellow-400 with low alpha
 } as const;
 
 /**

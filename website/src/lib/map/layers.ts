@@ -220,6 +220,8 @@ export function createLayers(
   relationArcData: RelationArcData = EMPTY_RELATION_ARCS,
   selectedEntity: AnyMapEntity | null = null,
   selectedZone: ParentZoneBoundary | null = null,
+  hoverSelectionData: AnyMapEntity[] = EMPTY_SELECTION,
+  hoverZone: ParentZoneBoundary | null = null,
   iconAtlas?: IconAtlasData,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): any[] {
@@ -961,6 +963,43 @@ export function createLayers(
     pickable: false,
   });
 
+  // Hover preview highlight layer (dimmer than selection, renders below)
+  const hoverHighlightLayer = new ScatterplotLayer({
+    id: "hover-highlight",
+    data: hoverSelectionData,
+    visible: hoverSelectionData.length > 0,
+    getPosition: (d: AnyMapEntity) => d.position,
+    getFillColor: HIGHLIGHT_COLORS.hoverFill,
+    getLineColor: HIGHLIGHT_COLORS.hoverRing,
+    getRadius: getRingRadius,
+    radiusUnits: "pixels",
+    radiusMinPixels: 7,
+    radiusMaxPixels: 48,
+    stroked: true,
+    lineWidthUnits: "pixels",
+    getLineWidth: 3,
+    pickable: false,
+    updateTriggers: {
+      getRadius: hoverSelectionData,
+    },
+  });
+
+  // Zone hover highlight layer
+  const zoneHoverHighlightData = hoverZone ? [hoverZone] : [];
+  const zoneHoverHighlightLayer = new PolygonLayer({
+    id: "zone-hover-highlight",
+    data: zoneHoverHighlightData,
+    visible: zoneHoverHighlightData.length > 0,
+    getPolygon: (d: ParentZoneBoundary) => d.polygon,
+    getFillColor: ZONE_COLORS.selectedZone.fill,
+    getLineColor: HIGHLIGHT_COLORS.hoverRing,
+    getLineWidth: 2,
+    lineWidthUnits: "pixels",
+    stroked: true,
+    filled: true,
+    pickable: false,
+  });
+
   // Later in array = rendered on top (higher priority)
   // Order: background (fallback) → tiles → zones → paths/arcs → entities → highlights
   return [
@@ -994,5 +1033,7 @@ export function createLayers(
     relatedHighlightLayer,
     selectionHighlightLayer,
     primarySelectionHighlightLayer,
+    hoverHighlightLayer,
+    zoneHoverHighlightLayer,
   ];
 }

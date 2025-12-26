@@ -43,6 +43,9 @@
     onSelectItem: (itemId: string) => void;
     onSelectQuest: (questId: string) => void;
     onSelectZone: (zoneId: string) => void;
+    onHoverMonster?: (monsterId: string | null) => void;
+    onHoverAltar?: (altarId: string | null) => void;
+    onHoverZone?: (zoneId: string | null) => void;
   }
 
   let {
@@ -53,6 +56,9 @@
     onSelectItem,
     onSelectQuest,
     onSelectZone,
+    onHoverMonster,
+    onHoverAltar,
+    onHoverZone,
   }: Props = $props();
 
   // Lazy-loaded details state
@@ -277,6 +283,8 @@
     {#if displayZoneId}
       <MapEntityButton
         onSelect={() => onSelectZone(displayZoneId!)}
+        onHoverStart={() => onHoverZone?.(displayZoneId!)}
+        onHoverEnd={() => onHoverZone?.(null)}
         class="text-blue-400"
       >
         {displayZoneName}
@@ -332,6 +340,8 @@
             type="button"
             class="cursor-pointer text-purple-200 underline hover:opacity-80"
             onclick={() => onSelectMonster(monster.summonKillMonsterId!)}
+            onmouseenter={() => onHoverMonster?.(monster.summonKillMonsterId!)}
+            onmouseleave={() => onHoverMonster?.(null)}
           >
             {monster.summonKillMonsterName}
           </button>
@@ -350,6 +360,8 @@
             type="button"
             class="cursor-pointer text-cyan-200 underline hover:opacity-80"
             onclick={() => onSelectMonster(monster.sourceMonsterId!)}
+            onmouseenter={() => onHoverMonster?.(monster.sourceMonsterId!)}
+            onmouseleave={() => onHoverMonster?.(null)}
           >
             {monster.sourceMonsterName}
           </button>
@@ -375,12 +387,16 @@
             <div class="flex items-center justify-between gap-2">
               <MapEntityButton
                 onSelect={() => onSelectAltar(altar.id)}
+                onHoverStart={() => onHoverAltar?.(altar.id)}
+                onHoverEnd={() => onHoverAltar?.(null)}
                 class="text-amber-400 dark:text-amber-400"
               >
                 <span class="truncate">{altar.name}</span>
               </MapEntityButton>
               <MapEntityButton
                 onSelect={() => onSelectZone(altar.zoneId)}
+                onHoverStart={() => onHoverZone?.(altar.zoneId)}
+                onHoverEnd={() => onHoverZone?.(null)}
                 class="shrink-0 text-xs text-blue-400"
               >
                 {altar.zoneName}
@@ -486,6 +502,8 @@
         {#if npc.renewalDungeonZoneId}
           <MapEntityButton
             onSelect={() => onSelectZone(npc.renewalDungeonZoneId!)}
+            onHoverStart={() => onHoverZone?.(npc.renewalDungeonZoneId!)}
+            onHoverEnd={() => onHoverZone?.(null)}
             class="text-blue-400"
           >
             {npc.renewalDungeonName}
@@ -564,6 +582,8 @@
           {#if portal.destinationZoneId}
             <MapEntityButton
               onSelect={() => onSelectZone(portal.destinationZoneId!)}
+              onHoverStart={() => onHoverZone?.(portal.destinationZoneId!)}
+              onHoverEnd={() => onHoverZone?.(null)}
               class="text-blue-400"
             >
               {portal.destinationZoneName}
@@ -622,6 +642,9 @@
                     type="button"
                     class="cursor-pointer text-red-200 underline hover:opacity-80"
                     onclick={() => onSelectMonster(portal.needMonsterDeadId!)}
+                    onmouseenter={() =>
+                      onHoverMonster?.(portal.needMonsterDeadId!)}
+                    onmouseleave={() => onHoverMonster?.(null)}
                   >
                     {portal.needMonsterDeadName}
                   </button>
@@ -748,6 +771,8 @@
             <button
               type="button"
               onclick={() => onSelectMonster(altar.finalBossIds[i])}
+              onmouseenter={() => onHoverMonster?.(altar.finalBossIds[i])}
+              onmouseleave={() => onHoverMonster?.(null)}
               class="cursor-pointer text-red-200 underline hover:opacity-80"
               >{bossName}</button
             >
@@ -809,6 +834,8 @@
             <button
               type="button"
               onclick={() => onSelectMonster(bossDrop.monsterId)}
+              onmouseenter={() => onHoverMonster?.(bossDrop.monsterId)}
+              onmouseleave={() => onHoverMonster?.(null)}
               class="cursor-pointer underline hover:opacity-80"
             >
               {bossDrop.monsterName}
