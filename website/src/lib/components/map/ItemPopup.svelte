@@ -11,11 +11,18 @@
   interface Props {
     itemId: string;
     onClose: () => void;
+    onFocusClick?: () => void;
     onSelectMonster: (monsterId: string) => void;
     onHoverMonster?: (monsterId: string | null) => void;
   }
 
-  let { itemId, onClose, onSelectMonster, onHoverMonster }: Props = $props();
+  let {
+    itemId,
+    onClose,
+    onFocusClick,
+    onSelectMonster,
+    onHoverMonster,
+  }: Props = $props();
 
   let details = $state<ItemPopupDetails | null>(null);
   let isLoading = $state(true);
@@ -61,6 +68,7 @@
     titleClass={getQualityTextColorClass(details.quality)}
     detailsUrl="/items/{details.id}"
     {onClose}
+    onFocusClick={details.droppers.length > 0 ? onFocusClick : undefined}
   >
     {#if details.droppers.length > 0}
       <div>

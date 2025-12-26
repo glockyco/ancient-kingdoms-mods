@@ -6,10 +6,12 @@
     loadZonePopupDetails,
     type ZonePopupDetails,
   } from "$lib/queries/popup";
+  import { boundsFromPolygon, type Bounds } from "$lib/map/flyto";
 
   interface Props {
     zone: ParentZoneBoundary;
     onClose: () => void;
+    onFocusClick?: (bounds: Bounds) => void;
     onSelectMonster: (monsterId: string) => void;
     onSelectAltar: (altarId: string) => void;
     onSelectNpc: (npcId: string) => void;
@@ -21,6 +23,7 @@
   let {
     zone,
     onClose,
+    onFocusClick,
     onSelectMonster,
     onSelectAltar,
     onSelectNpc,
@@ -28,6 +31,12 @@
     onHoverAltar,
     onHoverNpc,
   }: Props = $props();
+
+  function handleFocus() {
+    if (!onFocusClick) return;
+    const bounds = boundsFromPolygon(zone.polygon);
+    onFocusClick(bounds);
+  }
 
   // Lazy-loaded details state
   let details = $state<ZonePopupDetails | null>(null);
@@ -68,6 +77,7 @@
   subtitle={zone.isDungeon ? "Dungeon" : undefined}
   detailsUrl="/zones/{zone.zoneId}"
   {onClose}
+  onFocusClick={handleFocus}
 >
   <!-- Level Range -->
   {#if levelRange}

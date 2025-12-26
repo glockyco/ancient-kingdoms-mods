@@ -27,7 +27,11 @@
   } from "$lib/map/selection";
   import { createZoneFocusedData } from "$lib/map/zone-filter";
   import { INITIAL_VIEW_STATE } from "$lib/map/config";
-  import { flyToBounds } from "$lib/map/flyto";
+  import {
+    flyToBounds,
+    boundsFromPositions,
+    type Bounds,
+  } from "$lib/map/flyto";
   import {
     parseUrlState,
     urlStateToLayerVisibility,
@@ -378,6 +382,22 @@
 
   function handleCloseZonePopup() {
     applySelection({ popup: null, highlight: null });
+  }
+
+  function handleFocusBounds(bounds: Bounds) {
+    if (!deckInstance) return;
+    flyToBounds(deckInstance, bounds);
+  }
+
+  function handleFocusHighlighted() {
+    if (!deckInstance) return;
+    const positions = selectionData
+      .map((e) => e.position)
+      .filter((p): p is [number, number] => p !== null);
+    const bounds = boundsFromPositions(positions);
+    if (bounds) {
+      flyToBounds(deckInstance, bounds);
+    }
   }
 
   function handleSelectMonster(monsterId: string) {
@@ -860,6 +880,7 @@
       <ZonePopup
         zone={selectedZone}
         onClose={handleCloseZonePopup}
+        onFocusClick={handleFocusBounds}
         onSelectMonster={handleSelectMonster}
         onSelectAltar={handleSelectAltar}
         onSelectNpc={handleSelectNpc}
@@ -871,6 +892,7 @@
       <EntityPopup
         entity={selectedEntity}
         onClose={handleClosePopup}
+        onFocusClick={handleFocusBounds}
         onSelectMonster={handleSelectMonster}
         onSelectAltar={handleSelectAltar}
         onSelectItem={handleSelectItem}
@@ -884,6 +906,7 @@
       <ItemPopup
         itemId={selectedEntityId}
         onClose={handleClosePopup}
+        onFocusClick={handleFocusHighlighted}
         onSelectMonster={handleSelectMonster}
         onHoverMonster={handleHoverMonster}
       />
@@ -891,6 +914,7 @@
       <QuestPopup
         questId={selectedEntityId}
         onClose={handleClosePopup}
+        onFocusClick={handleFocusHighlighted}
         onSelectNpc={handleSelectNpc}
         onSelectMonster={handleSelectMonster}
         onSelectItem={handleSelectItem}

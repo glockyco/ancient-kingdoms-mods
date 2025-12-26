@@ -81,6 +81,49 @@ export interface Bounds {
 }
 
 /**
+ * Create bounds from a single position with padding.
+ */
+export function boundsFromPosition(
+  position: [number, number],
+  padding = 50,
+): Bounds {
+  return {
+    minX: position[0] - padding,
+    maxX: position[0] + padding,
+    minY: position[1] - padding,
+    maxY: position[1] + padding,
+  };
+}
+
+/**
+ * Create bounds that encompass multiple positions.
+ * Returns null if no positions provided.
+ */
+export function boundsFromPositions(
+  positions: Array<[number, number]>,
+): Bounds | null {
+  if (positions.length === 0) return null;
+  return {
+    minX: Math.min(...positions.map((p) => p[0])),
+    maxX: Math.max(...positions.map((p) => p[0])),
+    minY: Math.min(...positions.map((p) => p[1])),
+    maxY: Math.max(...positions.map((p) => p[1])),
+  };
+}
+
+/**
+ * Create bounds from a polygon's vertices.
+ */
+export function boundsFromPolygon(polygon: Array<[number, number]>): Bounds {
+  return {
+    minX: Math.min(...polygon.map((p) => p[0])),
+    maxX: Math.max(...polygon.map((p) => p[0])),
+    minY: Math.min(...polygon.map((p) => p[1])),
+    maxY: Math.max(...polygon.map((p) => p[1])),
+  };
+}
+
+/**
  * Fly to fit a bounding box in the viewport.
  * Calculates appropriate zoom level to show all content with padding.
  */

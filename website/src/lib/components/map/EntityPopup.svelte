@@ -34,10 +34,12 @@
     type GatheringPopupDetails,
     type AltarPopupDetails,
   } from "$lib/queries/popup";
+  import { boundsFromPosition, type Bounds } from "$lib/map/flyto";
 
   interface Props {
     entity: AnyMapEntity;
     onClose: () => void;
+    onFocusClick?: (bounds: Bounds) => void;
     onSelectMonster: (monsterId: string) => void;
     onSelectAltar: (altarId: string) => void;
     onSelectItem: (itemId: string) => void;
@@ -51,6 +53,7 @@
   let {
     entity,
     onClose,
+    onFocusClick,
     onSelectMonster,
     onSelectAltar,
     onSelectItem,
@@ -60,6 +63,12 @@
     onHoverAltar,
     onHoverZone,
   }: Props = $props();
+
+  function handleFocus() {
+    if (!entity.position || !onFocusClick) return;
+    const bounds = boundsFromPosition(entity.position);
+    onFocusClick(bounds);
+  }
 
   // Lazy-loaded details state
   let monsterDetails = $state<MonsterPopupDetails | null>(null);
@@ -263,6 +272,7 @@
   subtitle={getEntityTypeName(entity)}
   detailsUrl={url}
   {onClose}
+  onFocusClick={entity.position ? handleFocus : undefined}
 >
   <!-- NPC Roles (shown first, before Zone) -->
   {#if entity.type === "npc"}

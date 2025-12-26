@@ -9,6 +9,7 @@
     titleClass?: string;
     detailsUrl?: string | null;
     onClose: () => void;
+    onFocusClick?: () => void;
     children: Snippet;
   }
 
@@ -18,6 +19,7 @@
     titleClass = "",
     detailsUrl = null,
     onClose,
+    onFocusClick,
     children,
   }: Props = $props();
 </script>
@@ -33,28 +35,58 @@
           <p class="text-sm text-muted-foreground">{subtitle}</p>
         {/if}
       </div>
-      <Button
-        variant="ghost"
-        size="sm"
-        onclick={onClose}
-        class="h-6 w-6 cursor-pointer p-0"
-      >
-        <span class="sr-only">Close</span>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
+      <div class="flex shrink-0 gap-1">
+        {#if onFocusClick}
+          <Button
+            variant="ghost"
+            size="sm"
+            onclick={onFocusClick}
+            class="h-6 w-6 cursor-pointer p-0"
+            title="Focus on map"
+          >
+            <span class="sr-only">Focus on map</span>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <circle cx="12" cy="12" r="3" />
+              <path d="M12 2v4" />
+              <path d="M12 18v4" />
+              <path d="M2 12h4" />
+              <path d="M18 12h4" />
+            </svg>
+          </Button>
+        {/if}
+        <Button
+          variant="ghost"
+          size="sm"
+          onclick={onClose}
+          class="h-6 w-6 cursor-pointer p-0"
         >
-          <path d="M18 6 6 18" />
-          <path d="m6 6 12 12" />
-        </svg>
-      </Button>
+          <span class="sr-only">Close</span>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M18 6 6 18" />
+            <path d="m6 6 12 12" />
+          </svg>
+        </Button>
+      </div>
     </div>
   </Card.Header>
 

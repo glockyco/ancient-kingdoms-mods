@@ -11,6 +11,7 @@
   interface Props {
     questId: string;
     onClose: () => void;
+    onFocusClick?: () => void;
     onSelectNpc: (npcId: string) => void;
     onSelectMonster: (monsterId: string) => void;
     onSelectItem: (itemId: string) => void;
@@ -21,6 +22,7 @@
   let {
     questId,
     onClose,
+    onFocusClick,
     onSelectNpc,
     onSelectMonster,
     onSelectItem,
@@ -94,11 +96,15 @@
     <p class="text-destructive">{error}</p>
   </PopupCard>
 {:else if details}
+  {@const hasHighlightedEntities =
+    details.npcs.length > 0 ||
+    details.objectives.some((o) => o.type === "kill" && o.targetId)}
   <PopupCard
     title={details.name}
     subtitle="Quest · Lv.{details.levelRecommended}"
     detailsUrl="/quests/{details.id}"
     {onClose}
+    onFocusClick={hasHighlightedEntities ? onFocusClick : undefined}
   >
     <!-- NPCs -->
     {#if adventurerNpcs.length > 0}
