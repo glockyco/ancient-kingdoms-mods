@@ -228,8 +228,12 @@
   // Derived: pre-computed related entities (blockers for summon spawns)
   // These get a different highlight color (orange instead of white)
   // Uses pre-built index for O(1) lookup
+  // Skip for virtual entities (items/quests) - they aggregate multiple monsters
+  // and showing blocker relations doesn't make sense
   let relatedEntities = $derived(
-    computeRelatedEntities(selectionData, entityIndex),
+    highlightEntityIds
+      ? EMPTY_SELECTION
+      : computeRelatedEntities(selectionData, entityIndex),
   );
 
   // Derived: pre-computed relation arcs (from summon spawns to their blockers)
