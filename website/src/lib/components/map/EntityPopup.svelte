@@ -711,7 +711,7 @@
               {#if drop.isRandomItem && drop.randomItemOutcomes}
                 <div class="ml-2 truncate text-muted-foreground">
                   <span>Can be:</span>
-                  {#each drop.randomItemOutcomes.slice(0, 3) as outcome, j (outcome.itemId)}
+                  {#each drop.randomItemOutcomes.slice(0, 3) as outcome, j (j)}
                     <button
                       type="button"
                       onclick={() => onSelectItem(outcome.itemId)}

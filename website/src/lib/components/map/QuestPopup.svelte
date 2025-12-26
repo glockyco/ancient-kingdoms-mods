@@ -171,7 +171,7 @@
               >
             </div>
           {/if}
-          {#each regularRewards as item (item.itemId)}
+          {#each regularRewards as item, i (i)}
             <ItemButton
               itemId={item.itemId}
               itemName={item.itemName}
@@ -192,7 +192,7 @@
           Class Rewards
         </div>
         <div class="space-y-0.5">
-          {#each classRewards as item (item.itemId)}
+          {#each classRewards as item, i (i)}
             <div class="flex items-center justify-between gap-2">
               <ItemButton
                 itemId={item.itemId}
