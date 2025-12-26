@@ -526,7 +526,18 @@
     {#if npc.hasTeleport && npc.teleportDestName}
       <div class="flex justify-between">
         <span class="text-muted-foreground">Teleports to</span>
-        <span class="text-cyan-400">{npc.teleportDestName}</span>
+        {#if npc.teleportZoneId}
+          <MapEntityButton
+            onSelect={() => onSelectZone(npc.teleportZoneId!)}
+            onHoverStart={() => onHoverZone?.(npc.teleportZoneId!)}
+            onHoverEnd={() => onHoverZone?.(null)}
+            class="text-blue-400"
+          >
+            {npc.teleportDestName}
+          </MapEntityButton>
+        {:else}
+          <span>{npc.teleportDestName}</span>
+        {/if}
       </div>
       {#if npc.teleportPrice > 0}
         <div class="flex justify-between">
