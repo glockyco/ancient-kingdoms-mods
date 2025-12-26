@@ -115,6 +115,11 @@ export const ZONE_COLORS = {
     fill: [168, 85, 247, 20] as [number, number, number, number], // purple-500 with low alpha
     stroke: [168, 85, 247, 120] as [number, number, number, number],
   },
+  // Selection highlight (subtle fill, visible stroke)
+  selectedZone: {
+    fill: [250, 204, 21, 10] as [number, number, number, number], // yellow-400 with very low alpha
+    stroke: [250, 204, 21, 200] as [number, number, number, number], // yellow-400
+  },
 } as const;
 
 /**

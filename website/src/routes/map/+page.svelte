@@ -256,6 +256,7 @@
       relatedEntities,
       relationArcData,
       selectedEntity,
+      selectedZone,
       iconAtlas ?? undefined,
     );
 
@@ -541,6 +542,7 @@
           EMPTY_SELECTION,
           EMPTY_RELATION_ARCS,
           selectedEntity,
+          selectedZone,
           iconAtlas ?? undefined,
         );
 
@@ -632,6 +634,7 @@
     void relatedEntities; // Pre-computed, only changes when selection changes
     void zoneFocusedData; // Pre-computed, only changes when focusedZoneId changes
     void selectedEntity; // The actual clicked entity (for primary highlight)
+    void selectedZone; // The selected zone (for zone highlight)
     updateLayers();
   });
 

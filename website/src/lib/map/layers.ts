@@ -10,6 +10,7 @@ import {
   type GatheringMapEntity,
   type CraftingMapEntity,
   type ZoneBoundary,
+  type ParentZoneBoundary,
   type PortalMapEntity,
   type ChestMapEntity,
   type AltarMapEntity,
@@ -218,6 +219,7 @@ export function createLayers(
   relatedEntities: AnyMapEntity[] = EMPTY_SELECTION,
   relationArcData: RelationArcData = EMPTY_RELATION_ARCS,
   selectedEntity: AnyMapEntity | null = null,
+  selectedZone: ParentZoneBoundary | null = null,
   iconAtlas?: IconAtlasData,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): any[] {
@@ -943,6 +945,22 @@ export function createLayers(
     },
   });
 
+  // Zone selection highlight layer (separate from zone layers so it shows even when zones hidden)
+  const zoneHighlightData = selectedZone ? [selectedZone] : [];
+  const zoneHighlightLayer = new PolygonLayer({
+    id: "zone-highlight",
+    data: zoneHighlightData,
+    visible: zoneHighlightData.length > 0,
+    getPolygon: (d: ParentZoneBoundary) => d.polygon,
+    getFillColor: ZONE_COLORS.selectedZone.fill,
+    getLineColor: ZONE_COLORS.selectedZone.stroke,
+    getLineWidth: 3,
+    lineWidthUnits: "pixels",
+    stroked: true,
+    filled: true,
+    pickable: false,
+  });
+
   // Later in array = rendered on top (higher priority)
   // Order: background (fallback) → tiles → zones → paths/arcs → entities → highlights
   return [
@@ -950,6 +968,7 @@ export function createLayers(
     tileLayer,
     parentZonesLayer,
     subZonesLayer,
+    zoneHighlightLayer,
     ...patrolPathLayers,
     relationArcsLayer,
     relationArcEndpointsLayer,
