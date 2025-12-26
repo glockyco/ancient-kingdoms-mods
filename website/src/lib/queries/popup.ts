@@ -1184,6 +1184,32 @@ export async function loadQuestPopupDetails(
         isTurnIn: quest.end_npc_id === quest.start_npc_id || !quest.end_npc_id,
       });
     }
+  } else if (quest.is_adventurer_quest) {
+    // Adventurer quests don't have start_npc_id - find NPCs that offer this quest
+    const adventurerNpcs = await query<{
+      npc_id: string;
+      npc_name: string;
+    }>(
+      `
+      SELECT n.id as npc_id, n.name as npc_name
+      FROM npcs n
+      WHERE EXISTS (
+        SELECT 1 FROM json_each(n.quests_offered)
+        WHERE json_extract(value, '$.id') = ?
+      )
+      ORDER BY n.name
+      `,
+      [questId],
+    );
+    for (const npc of adventurerNpcs) {
+      npcs.push({
+        npcId: npc.npc_id,
+        npcName: npc.npc_name,
+        zoneName: null,
+        isGiver: true,
+        isTurnIn: true,
+      });
+    }
   }
 
   // Get end NPC (turn-in) if different from start

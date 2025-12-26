@@ -52,11 +52,24 @@
       });
   });
 
-  // Get start and end NPCs (matching detail page pattern)
-  let startNpc = $derived(details?.npcs.find((n) => n.isGiver) ?? null);
+  // For adventurer quests, all NPCs are givers+turn-ins (show as list)
+  // For regular quests, show Start/End pattern
+  let isAdventurerQuest = $derived(
+    details?.isAdventurerQuest &&
+      details.npcs.length > 0 &&
+      details.npcs.every((n) => n.isGiver && n.isTurnIn),
+  );
+  let adventurerNpcs = $derived(isAdventurerQuest ? (details?.npcs ?? []) : []);
+
+  // Get start and end NPCs for regular quests
+  let startNpc = $derived(
+    !isAdventurerQuest ? (details?.npcs.find((n) => n.isGiver) ?? null) : null,
+  );
   let endNpc = $derived(
-    // Different turn-in NPC if available, otherwise use start NPC
-    details?.npcs.find((n) => n.isTurnIn && !n.isGiver) ?? startNpc,
+    !isAdventurerQuest
+      ? // Different turn-in NPC if available, otherwise use start NPC
+        (details?.npcs.find((n) => n.isTurnIn && !n.isGiver) ?? startNpc)
+      : null,
   );
 
   // Split reward items into regular and class-specific
@@ -88,7 +101,27 @@
     {onClose}
   >
     <!-- NPCs -->
-    {#if startNpc}
+    {#if adventurerNpcs.length > 0}
+      <!-- Adventurer quests: list of NPCs (all are giver+turn-in) -->
+      <div>
+        <div class="mb-1 text-xs font-medium text-muted-foreground">
+          Start / End
+        </div>
+        <div class="flex flex-col items-start gap-0.5">
+          {#each adventurerNpcs as npc (npc.npcId)}
+            <MapEntityButton
+              onSelect={() => onSelectNpc(npc.npcId)}
+              onHoverStart={() => onHoverNpc?.(npc.npcId)}
+              onHoverEnd={() => onHoverNpc?.(null)}
+              class="text-blue-400"
+            >
+              {npc.npcName}
+            </MapEntityButton>
+          {/each}
+        </div>
+      </div>
+    {:else if startNpc}
+      <!-- Regular quests: Start/End pattern -->
       <div class="space-y-0.5">
         <div class="flex justify-between">
           <span class="text-muted-foreground">Start</span>
