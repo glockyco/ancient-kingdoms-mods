@@ -969,7 +969,7 @@
               />
               <span class="shrink-0 text-muted-foreground">
                 {#if drop.dropRateMax !== undefined}
-                  {formatPercent(drop.dropRate)}–{formatPercent(
+                  {formatPercent(drop.dropRate)} – {formatPercent(
                     drop.dropRateMax,
                   )}
                 {:else}
