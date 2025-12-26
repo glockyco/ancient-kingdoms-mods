@@ -5,6 +5,8 @@
   import MapTooltip from "$lib/components/map/MapTooltip.svelte";
   import EntityPopup from "$lib/components/map/EntityPopup.svelte";
   import ZonePopup from "$lib/components/map/ZonePopup.svelte";
+  import ItemPopup from "$lib/components/map/ItemPopup.svelte";
+  import QuestPopup from "$lib/components/map/QuestPopup.svelte";
   import MapSearch from "$lib/components/map/MapSearch.svelte";
   import { loadAllMapEntities, loadZoneList } from "$lib/queries/map";
   import {
@@ -44,6 +46,11 @@
     ParentZoneBoundary,
   } from "$lib/types/map";
   import type { MapSearchResult } from "$lib/queries/map-search";
+  import {
+    resolvePhysicalSelection,
+    resolveVirtualSelection,
+    type ResolvedSelection,
+  } from "$lib/map/resolve-selection";
 
   // deck.gl instance and modules (not reactive - managed imperatively)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -80,6 +87,65 @@
   // Selection state for highlighting (synced with URL)
   let selectedEntityId = $state<string | null>(null);
   let selectedEntityType = $state<string | null>(null);
+
+  // For virtual entities (items, quests): physical entities to highlight
+  let highlightEntityIds = $state<string[] | null>(null);
+  let highlightEntityCategory = $state<
+    | "monster"
+    | "npc"
+    | "altar"
+    | "portal"
+    | "chest"
+    | "resource"
+    | "crafting"
+    | null
+  >(null);
+
+  /**
+   * Apply a resolved selection to state variables.
+   * This is the single point where all selection state is updated.
+   */
+  function applySelection(resolved: ResolvedSelection) {
+    // Clear all state first
+    selectedEntity = null;
+    selectedZone = null;
+    selectedEntityId = null;
+    selectedEntityType = null;
+    highlightEntityIds = null;
+    highlightEntityCategory = null;
+
+    // Set popup state based on popup type
+    if (resolved.popup) {
+      switch (resolved.popup.type) {
+        case "entity":
+          selectedEntity = resolved.popup.entity;
+          break;
+        case "zone":
+          selectedZone = resolved.popup.zone;
+          break;
+        case "item":
+        case "quest":
+        case "monster":
+          // Virtual entities - set ID/type for future popup components
+          selectedEntityId = resolved.popup.id;
+          selectedEntityType = resolved.popup.type;
+          break;
+      }
+    }
+
+    // Set highlight state
+    if (resolved.highlight) {
+      // Always set entityId/entityType for URL state persistence
+      selectedEntityId = resolved.highlight.entityId;
+      selectedEntityType = resolved.highlight.entityType;
+
+      if (resolved.highlight.overrideIds) {
+        // Virtual entity or altar-only monster - use override IDs for highlighting
+        highlightEntityIds = resolved.highlight.overrideIds;
+        highlightEntityCategory = resolved.highlight.overrideCategory ?? null;
+      }
+    }
+  }
 
   // Search state
   let searchOpen = $state(false);
@@ -119,8 +185,21 @@
 
   // Derived: pre-computed selection data for highlighting (O(1) lookup via index)
   // This is only recomputed when selection changes, not on every visibility toggle
+  // For virtual entities (items, quests), use highlightEntityIds instead of normal lookup
   let selectionData = $derived(
-    computeSelectionData(entityIndex, selectedEntityType, selectedEntityId),
+    highlightEntityIds && highlightEntityCategory
+      ? computeSelectionData(
+          entityIndex,
+          highlightEntityCategory,
+          highlightEntityIds[0],
+        ).concat(
+          ...highlightEntityIds
+            .slice(1)
+            .map((id) =>
+              computeSelectionData(entityIndex, highlightEntityCategory!, id),
+            ),
+        )
+      : computeSelectionData(entityIndex, selectedEntityType, selectedEntityId),
   );
 
   // Derived: pre-computed patrol path data for patrolling monsters
@@ -198,32 +277,30 @@
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function handleClick(info: any) {
+    if (!entityData) return;
+
     // Check if clicking on a parent zone polygon
     if (info.layer?.id === "parent-zones" && info.object) {
       const zone = info.object as ParentZoneBoundary;
-      selectedZone = zone;
-      // Clear entity selection when selecting a zone
-      selectedEntity = null;
-      selectedEntityId = null;
-      selectedEntityType = null;
+      applySelection({
+        popup: { type: "zone", zone },
+        highlight: null,
+      });
       return;
     }
 
     if (info.object) {
       const entity = info.object as AnyMapEntity;
-      selectedEntity = entity;
-      // Clear zone selection when selecting an entity
-      selectedZone = null;
-      // For monsters, use monsterId to group all spawns of the same monster
-      // For other entities, use the entity id
-      selectedEntityId = getSelectionId(entity);
-      selectedEntityType = entity.type;
+      const id = getSelectionId(entity);
+      const resolved = resolvePhysicalSelection(entity.type, id, entityData);
+      // Override popup with the clicked entity (for primary highlight)
+      if (resolved.popup?.type === "entity") {
+        resolved.popup.entity = entity;
+      }
+      applySelection(resolved);
     } else {
       // Click on empty space clears selection
-      selectedEntity = null;
-      selectedZone = null;
-      selectedEntityId = null;
-      selectedEntityType = null;
+      applySelection({ popup: null, highlight: null });
     }
   }
 
@@ -245,28 +322,45 @@
   }
 
   function handleClosePopup() {
-    selectedEntity = null;
-    selectedEntityId = null;
-    selectedEntityType = null;
+    applySelection({ popup: null, highlight: null });
   }
 
   function handleCloseZonePopup() {
-    selectedZone = null;
+    applySelection({ popup: null, highlight: null });
   }
 
   function handleSelectMonster(monsterId: string) {
-    // Find a monster spawn with this monsterId and select it
     if (!entityData) return;
+    const resolved = resolvePhysicalSelection("monster", monsterId, entityData);
+    applySelection(resolved);
+  }
 
-    const monster = entityData.monsters.find(
-      (m) => m.monsterId === monsterId && m.position !== null,
-    );
-    if (monster) {
-      selectedEntity = monster;
-      // Use monsterId for selection (groups all spawns of the same monster)
-      selectedEntityId = monster.monsterId;
-      selectedEntityType = monster.type;
-    }
+  function handleSelectAltar(altarId: string) {
+    if (!entityData) return;
+    const resolved = resolvePhysicalSelection("altar", altarId, entityData);
+    applySelection(resolved);
+  }
+
+  function handleSelectNpc(npcId: string) {
+    if (!entityData) return;
+    const resolved = resolvePhysicalSelection("npc", npcId, entityData);
+    applySelection(resolved);
+  }
+
+  function handleSelectZone(zoneId: string) {
+    if (!entityData) return;
+    const resolved = resolvePhysicalSelection("zone", zoneId, entityData);
+    applySelection(resolved);
+  }
+
+  async function handleSelectItem(itemId: string) {
+    const resolved = await resolveVirtualSelection("item", itemId);
+    applySelection(resolved);
+  }
+
+  async function handleSelectQuest(questId: string) {
+    const resolved = await resolveVirtualSelection("quest", questId);
+    applySelection(resolved);
   }
 
   // Keyboard handlers
@@ -275,70 +369,30 @@
       e.preventDefault();
       searchOpen = true;
     } else if (e.key === "Escape") {
-      if (selectedEntityId) {
-        selectedEntity = null;
-        selectedEntityId = null;
-        selectedEntityType = null;
-      } else if (selectedZone) {
-        selectedZone = null;
+      if (selectedEntity || selectedEntityId || selectedZone) {
+        applySelection({ popup: null, highlight: null });
       }
     }
   }
 
   function handleSearchSelect(result: MapSearchResult) {
-    // Use selectTarget if provided (for altar/placeholder spawns that redirect to another entity)
-    // Otherwise use the result itself
-    const target = result.selectTarget ?? {
-      category: result.category,
-      id: result.id,
-    };
+    if (!entityData) return;
 
-    // Set selection state for highlighting
-    selectedEntityId = target.id;
-    selectedEntityType = target.category;
-
-    // Find and show popup for the TARGET entity (not the search result)
-    // This shows the altar popup when searching for altar-spawned monsters
-    if (entityData) {
-      if (target.category === "zone") {
-        // Handle zone selection
-        const zone = entityData.parentZones.find((z) => z.zoneId === target.id);
-        if (zone) {
-          selectedZone = zone;
-          selectedEntity = null;
-        }
-      } else if (target.category === "monster") {
-        // For monsters, search by monsterId
-        const monster = entityData.monsters.find(
-          (m) =>
-            (m as import("$lib/types/map").MonsterMapEntity).monsterId ===
-            target.id,
-        );
-        if (monster) {
-          selectedEntity = monster;
-          selectedZone = null;
-        }
-      } else {
-        const dataArrays: Record<string, AnyMapEntity[]> = {
-          npc: entityData.npcs,
-          resource: entityData.gathering,
-          chest: entityData.chests,
-          altar: entityData.altars,
-          portal: entityData.portals,
-          crafting: entityData.crafting,
-        };
-        const entity = dataArrays[target.category]?.find(
-          (e) => e.id === target.id,
-        );
-        if (entity) {
-          selectedEntity = entity;
-          selectedZone = null;
-        }
-      }
+    // Handle virtual entities (items, quests) - use async resolver
+    if (result.category === "item" || result.category === "quest") {
+      resolveVirtualSelection(result.category, result.id).then(applySelection);
+    } else {
+      // Physical entities - use sync resolver
+      // The resolver handles altar-only monsters, zones, and all other entity types
+      const resolved = resolvePhysicalSelection(
+        result.category,
+        result.id,
+        entityData,
+      );
+      applySelection(resolved);
     }
 
-    // Fly to bounds (uses result.bounds, NOT target bounds)
-    // This flies to where the searched monster spawns, even if we select the altar
+    // Fly to bounds if available
     if (result.bounds && deckInstance) {
       flyToBounds(deckInstance, result.bounds);
     }
@@ -372,14 +426,10 @@
         if (urlState.levelFilter) {
           levelFilter = urlState.levelFilter;
         }
-        if (urlState.entity && urlState.etype) {
-          selectedEntityId = urlState.entity;
-          selectedEntityType = urlState.etype;
-        }
         if (urlState.zone) {
           focusedZoneId = urlState.zone;
         }
-        // Note: selectedZone is restored after data is loaded
+        // Note: Entity/zone selection is restored after data is loaded via applySelection
         currentViewState = {
           x: urlState.x,
           y: urlState.y,
@@ -441,60 +491,32 @@
           }
         }
 
-        // Restore popup from URL state (after entity data is loaded)
-        if (
-          selectedEntityId &&
-          selectedEntityType &&
-          selectedEntityType !== "zone"
-        ) {
-          // Check if this is a monster type (uses monsterId instead of id)
-          const isMonsterType = ["monster", "boss", "elite", "hunt"].includes(
-            selectedEntityType,
-          );
-
-          if (isMonsterType) {
-            // Find monster by monsterId
-            const monster = entityData.monsters.find(
-              (m) =>
-                (m as import("$lib/types/map").MonsterMapEntity).monsterId ===
-                selectedEntityId,
+        // Restore selection from URL state (after entity data is loaded)
+        if (urlState?.entity && urlState?.etype) {
+          if (urlState.etype === "item" || urlState.etype === "quest") {
+            // Virtual entities need async resolution
+            resolveVirtualSelection(urlState.etype, urlState.entity).then(
+              applySelection,
             );
-            if (monster) {
-              selectedEntity = monster;
-            }
           } else {
-            // Map other categories to their data arrays
-            const dataArrays: Record<string, AnyMapEntity[]> = {
-              // Search categories
-              npc: entityData.npcs,
-              resource: entityData.gathering,
-              chest: entityData.chests,
-              altar: entityData.altars,
-              portal: entityData.portals,
-              // Entity types
-              gathering_plant: entityData.gathering,
-              gathering_mineral: entityData.gathering,
-              gathering_spark: entityData.gathering,
-              gathering_other: entityData.gathering,
-              alchemy_table: entityData.crafting,
-              crafting_station: entityData.crafting,
-            };
-            const entity = dataArrays[selectedEntityType]?.find(
-              (e) => e.id === selectedEntityId,
+            // Physical entities (including altar-only monsters) use sync resolution
+            const resolved = resolvePhysicalSelection(
+              urlState.etype,
+              urlState.entity,
+              entityData,
             );
-            if (entity) {
-              selectedEntity = entity;
-            }
+            applySelection(resolved);
           }
-        }
-
-        // Restore zone popup from URL state (after entity data is loaded)
-        if (urlState?.selectedZone) {
+        } else if (urlState?.selectedZone) {
+          // Restore zone popup from URL state
           const zone = entityData.parentZones.find(
             (z) => z.zoneId === urlState.selectedZone,
           );
           if (zone) {
-            selectedZone = zone;
+            applySelection({
+              popup: { type: "zone", zone },
+              highlight: null,
+            });
           }
         }
 
@@ -672,7 +694,7 @@
   />
 </svelte:head>
 
-<div class="relative h-screen w-full">
+<div class="dark relative h-screen w-full bg-background text-foreground">
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div
     use:initDeckMap
@@ -729,12 +751,35 @@
     {/if}
 
     {#if selectedZone}
-      <ZonePopup zone={selectedZone} onClose={handleCloseZonePopup} />
+      <ZonePopup
+        zone={selectedZone}
+        onClose={handleCloseZonePopup}
+        onSelectMonster={handleSelectMonster}
+        onSelectAltar={handleSelectAltar}
+        onSelectNpc={handleSelectNpc}
+      />
     {:else if selectedEntity}
       <EntityPopup
         entity={selectedEntity}
         onClose={handleClosePopup}
         onSelectMonster={handleSelectMonster}
+        onSelectAltar={handleSelectAltar}
+        onSelectItem={handleSelectItem}
+        onSelectQuest={handleSelectQuest}
+        onSelectZone={handleSelectZone}
+      />
+    {:else if selectedEntityType === "item" && selectedEntityId}
+      <ItemPopup
+        itemId={selectedEntityId}
+        onClose={handleClosePopup}
+        onSelectMonster={handleSelectMonster}
+      />
+    {:else if selectedEntityType === "quest" && selectedEntityId}
+      <QuestPopup
+        questId={selectedEntityId}
+        onClose={handleClosePopup}
+        onSelectNpc={handleSelectNpc}
+        onSelectItem={handleSelectItem}
       />
     {/if}
 

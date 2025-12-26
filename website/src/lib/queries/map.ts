@@ -108,6 +108,7 @@ interface MonsterSpawnRow {
   source_summon_kill_count: number | null;
   blocker_spawn_ids: string | null;
   source_spawn_ids: string | null;
+  altar_ids: string | null;
 }
 
 /**
@@ -176,7 +177,18 @@ async function loadMonsterSpawns(): Promise<MonsterMapEntity[]> {
         WHERE src_ms.monster_id = ms.source_monster_id
           AND src_ms.zone_id = ms.zone_id
           AND src_ms.spawn_type IN ('regular', 'summon')
-      ) as source_spawn_ids
+      ) as source_spawn_ids,
+      -- Altar IDs where this monster spawns as a final boss
+      (
+        SELECT json_group_array(a.id)
+        FROM altars a
+        WHERE EXISTS (
+          SELECT 1
+          FROM json_each(a.waves, '$[' || (json_array_length(a.waves) - 1) || '].monsters') as jm
+          JOIN monsters fm ON fm.id = json_extract(jm.value, '$.monster_id')
+          WHERE fm.id = ms.monster_id AND (fm.is_boss = 1 OR fm.is_elite = 1)
+        )
+      ) as altar_ids
     FROM monster_spawns ms
     JOIN monsters m ON m.id = ms.monster_id
     JOIN zones z ON z.id = ms.zone_id
@@ -213,7 +225,18 @@ async function loadMonsterSpawns(): Promise<MonsterMapEntity[]> {
       NULL as source_summon_kill_monster_name,
       NULL as source_summon_kill_count,
       NULL as blocker_spawn_ids,
-      NULL as source_spawn_ids
+      NULL as source_spawn_ids,
+      -- Altar IDs where this monster spawns as a final boss
+      (
+        SELECT json_group_array(a.id)
+        FROM altars a
+        WHERE EXISTS (
+          SELECT 1
+          FROM json_each(a.waves, '$[' || (json_array_length(a.waves) - 1) || '].monsters') as jm
+          JOIN monsters fm ON fm.id = json_extract(jm.value, '$.monster_id')
+          WHERE fm.id = m.id AND (fm.is_boss = 1 OR fm.is_elite = 1)
+        )
+      ) as altar_ids
     FROM monsters m
     WHERE NOT EXISTS (
       SELECT 1 FROM monster_spawns ms
@@ -279,17 +302,18 @@ async function loadMonsterSpawns(): Promise<MonsterMapEntity[]> {
       summonKillMonsterName: r.source_summon_kill_monster_name,
       summonKillMonsterId: r.source_summon_kill_monster_id,
       summonKillCount: r.source_summon_kill_count,
-      blockerSpawnIds: parseBlockerSpawnIds(r.blocker_spawn_ids),
-      sourceSpawnIds: parseBlockerSpawnIds(r.source_spawn_ids),
+      blockerSpawnIds: parseIdArrayJson(r.blocker_spawn_ids),
+      sourceSpawnIds: parseIdArrayJson(r.source_spawn_ids),
+      altarIds: parseIdArrayJson(r.altar_ids),
     };
   });
 }
 
 /**
- * Parse blocker spawn IDs from JSON array string.
- * Returns null if empty or invalid.
+ * Parse JSON array of strings (e.g., from json_group_array).
+ * Returns null if empty, invalid, or contains only null.
  */
-function parseBlockerSpawnIds(json: string | null): string[] | null {
+function parseIdArrayJson(json: string | null): string[] | null {
   if (!json) return null;
   try {
     const ids = JSON.parse(json) as string[];
@@ -513,9 +537,7 @@ async function loadPortals(): Promise<PortalMapEntity[]> {
       requiredItemLevel: r.required_item_level,
       needMonsterDeadId: r.need_monster_dead_id,
       needMonsterDeadName: r.need_monster_dead_name,
-      killRequirementSpawnIds: parseBlockerSpawnIds(
-        r.kill_requirement_spawn_ids,
-      ),
+      killRequirementSpawnIds: parseIdArrayJson(r.kill_requirement_spawn_ids),
     };
   });
 }

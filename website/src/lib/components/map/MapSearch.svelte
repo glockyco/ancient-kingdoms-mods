@@ -3,7 +3,9 @@
   import * as Drawer from "$lib/components/ui/drawer";
   import {
     searchMapEntities,
+    SEARCH_CATEGORY_ORDER,
     type MapSearchResult,
+    type MapSearchCategory,
   } from "$lib/queries/map-search";
   import SearchResultItem from "./SearchResultItem.svelte";
 
@@ -57,8 +59,7 @@
   }
 
   // Group results by category
-  type Category = MapSearchResult["category"];
-  const categoryLabels: Record<Category, string> = {
+  const categoryLabels: Record<MapSearchCategory, string> = {
     monster: "Monsters",
     npc: "NPCs",
     zone: "Zones",
@@ -67,29 +68,21 @@
     altar: "Altars",
     crafting: "Crafting Stations",
     portal: "Portals",
+    item: "Items",
+    quest: "Quests",
   };
-
-  const categoryOrder: Category[] = [
-    "monster",
-    "npc",
-    "zone",
-    "resource",
-    "chest",
-    "altar",
-    "crafting",
-    "portal",
-  ];
 
   function groupByCategory(
     items: MapSearchResult[],
-  ): [Category, MapSearchResult[]][] {
-    const groups: Partial<Record<Category, MapSearchResult[]>> = {};
+  ): [MapSearchCategory, MapSearchResult[]][] {
+    const groups: Partial<Record<MapSearchCategory, MapSearchResult[]>> = {};
     for (const item of items) {
       (groups[item.category] ??= []).push(item);
     }
-    return categoryOrder
-      .filter((cat) => groups[cat])
-      .map((cat) => [cat, groups[cat]!]);
+    return SEARCH_CATEGORY_ORDER.filter((cat) => groups[cat]).map((cat) => [
+      cat,
+      groups[cat]!,
+    ]);
   }
 
   // Workaround: bits-ui Command doesn't fully scroll selected items into view

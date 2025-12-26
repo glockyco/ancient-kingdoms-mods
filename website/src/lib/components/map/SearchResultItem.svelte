@@ -5,7 +5,7 @@
     normalizeRoles,
     type RoleCategory,
   } from "$lib/utils/roles";
-  import { toRomanNumeral } from "$lib/utils/format";
+  import { toRomanNumeral, getQualityTextColorClass } from "$lib/utils/format";
   import Sword from "@lucide/svelte/icons/sword";
   import Shield from "@lucide/svelte/icons/shield";
   import Crown from "@lucide/svelte/icons/crown";
@@ -83,6 +83,8 @@
       altar: Flame,
       crafting: Hammer,
       portal: CircleDot,
+      quest: Scroll,
+      item: Package,
     };
     return icons[result.category];
   }
@@ -111,12 +113,21 @@
     const categories = new Set(activeRoles.map((r) => r.category));
     return Array.from(categories) as RoleCategory[];
   });
+
+  // Item quality color class
+  let itemColorClass = $derived(
+    result.category === "item" && result.subcategory
+      ? getQualityTextColorClass(Number(result.subcategory))
+      : "",
+  );
 </script>
 
 <div class="flex items-center gap-3 w-full">
   <Icon class="h-4 w-4 text-muted-foreground shrink-0" />
   <div class="flex-1 min-w-0">
-    <div class="font-medium truncate">{getDisplayName(result)}</div>
+    <div class="font-medium truncate {itemColorClass}">
+      {getDisplayName(result)}
+    </div>
     {#if result.renewalDungeonName}
       <div class="text-xs text-muted-foreground truncate">
         Resets {result.renewalDungeonName}

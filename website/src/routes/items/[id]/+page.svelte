@@ -795,8 +795,8 @@
               <div>
                 <div class={styles.label}>Cost</div>
                 <div class={styles.value}>
-                  {data.worldBossRenewalSages[0].gold_required.toLocaleString()} Adventurer's
-                  Essences
+                  {data.worldBossRenewalSages[0].gold_required.toLocaleString()}
+                  Adventurer's Essences
                 </div>
               </div>
               <div>
@@ -2050,14 +2050,3 @@
     {/if}
   </div>
 </div>
-
-<style>
-  :global(.tooltip-content) {
-    /* Semi-transparent dark blue-gray background matching game */
-    background: rgba(20, 25, 35);
-    border: 2px solid rgba(60, 70, 85, 0.8);
-    border-radius: 6px;
-    padding: 14px 18px;
-    color: #f0f0f0;
-  }
-</style>

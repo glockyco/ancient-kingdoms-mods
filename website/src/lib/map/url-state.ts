@@ -104,8 +104,14 @@ export function parseUrlState(): MapUrlState | null {
 
   const params = new URLSearchParams(window.location.search);
 
-  // Only return state if at least one map param is present
-  if (!params.has("x") && !params.has("y") && !params.has("z")) {
+  // Only return state if at least one relevant map param is present
+  const hasPositionParams =
+    params.has("x") || params.has("y") || params.has("z");
+  const hasEntityParams = params.has("entity") && params.has("etype");
+  const hasOtherParams =
+    params.has("layers") || params.has("zone") || params.has("szone");
+
+  if (!hasPositionParams && !hasEntityParams && !hasOtherParams) {
     return null;
   }
 

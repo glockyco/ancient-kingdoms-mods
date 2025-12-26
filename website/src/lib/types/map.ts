@@ -67,6 +67,8 @@ export interface MonsterMapEntity extends MapEntity {
   blockerSpawnIds: string[] | null;
   // Specific spawn IDs of the source monster for placeholders (for arc rendering)
   sourceSpawnIds: string[] | null;
+  // Altars where this monster spawns as a final boss (for altar-only monster highlighting)
+  altarIds: string[] | null;
 }
 
 /**

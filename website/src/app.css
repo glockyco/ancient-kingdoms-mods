@@ -45,12 +45,12 @@
   --quality-3: oklch(0.55 0.18 310);
   --quality-4: oklch(0.58 0.15 55);
 
-  /* Item quality text colors (0-4) - brighter for readability */
-  --quality-text-0: oklch(0.95 0 0);
-  --quality-text-1: oklch(0.72 0.15 145);
-  --quality-text-2: oklch(0.7 0.18 240);
-  --quality-text-3: oklch(0.72 0.2 310);
-  --quality-text-4: oklch(0.75 0.18 55);
+  /* Item quality text colors (0-4) - darker for light mode backgrounds */
+  --quality-text-0: oklch(0.45 0 0);
+  --quality-text-1: oklch(0.45 0.15 145);
+  --quality-text-2: oklch(0.45 0.18 240);
+  --quality-text-3: oklch(0.5 0.2 310);
+  --quality-text-4: oklch(0.55 0.18 55);
 
   /* Monster type colors */
   --monster-regular: oklch(0.6 0.22 25);
@@ -90,6 +90,13 @@
   --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.551 0.027 264.364);
+
+  /* Item quality text colors (0-4) - brighter for dark mode backgrounds */
+  --quality-text-0: oklch(0.98 0 0);
+  --quality-text-1: oklch(0.72 0.15 145);
+  --quality-text-2: oklch(0.7 0.18 240);
+  --quality-text-3: oklch(0.72 0.2 310);
+  --quality-text-4: oklch(0.75 0.18 55);
 }
 
 @theme inline {
@@ -169,4 +176,13 @@
   .text-quality-text-4 {
     color: var(--quality-text-4);
   }
+}
+
+/* Item tooltip styling (game-style appearance) */
+.tooltip-content {
+  background: rgba(20, 25, 35);
+  border: 2px solid rgba(60, 70, 85, 0.8);
+  border-radius: 6px;
+  padding: 14px 18px;
+  color: #f0f0f0;
 }

@@ -11,18 +11,39 @@ export interface MapSearchBounds {
   maxY: number;
 }
 
+export type MapSearchCategory =
+  | "monster"
+  | "npc"
+  | "zone"
+  | "resource"
+  | "chest"
+  | "altar"
+  | "crafting"
+  | "portal"
+  | "item"
+  | "quest";
+
+/**
+ * Display order for search result categories.
+ * Used for both round-robin result distribution and UI grouping.
+ */
+export const SEARCH_CATEGORY_ORDER: MapSearchCategory[] = [
+  "zone",
+  "altar",
+  "monster",
+  "npc",
+  "resource",
+  "item",
+  "quest",
+  "crafting",
+  "chest",
+  "portal",
+];
+
 export interface MapSearchResult {
   id: string;
   name: string;
-  category:
-    | "monster"
-    | "npc"
-    | "zone"
-    | "resource"
-    | "chest"
-    | "altar"
-    | "crafting"
-    | "portal";
+  category: MapSearchCategory;
   subcategory?: string;
   /** Bounding box containing all spawn locations (null if no mappable location) */
   bounds: MapSearchBounds | null;
@@ -31,11 +52,6 @@ export interface MapSearchResult {
   level?: number;
   /** Number of spawn locations on the map (for entities with multiple spawns) */
   spawnCount?: number;
-  /** Override selection target (for altar-only monsters that redirect to the altar) */
-  selectTarget?: {
-    category: "altar";
-    id: string;
-  };
   /** Keywords matched (for displaying type badges) */
   keywords?: string;
   /** NPC roles (only for category="npc") */
@@ -55,24 +71,13 @@ export async function searchMapEntities(
 ): Promise<MapSearchResult[]> {
   if (!searchQuery.trim()) return [];
 
-  const ftsQuery = searchQuery.trim() + "*";
+  // Wrap in double quotes to escape FTS5 special characters (apostrophes, etc.)
+  // and add * for prefix matching
+  const escaped = searchQuery.trim().replace(/"/g, '""');
+  const ftsQuery = `"${escaped}"*`;
 
   // Fetch up to limit from each category to allow redistribution
-  const [monsters, npcs, zones, resources, chests, altars, crafting, portals] =
-    await Promise.all([
-      searchMonsters(ftsQuery, limit),
-      searchNpcs(ftsQuery, limit),
-      searchZones(ftsQuery, limit),
-      searchGatheringResources(ftsQuery, limit),
-      searchChests(ftsQuery, limit),
-      searchAltars(ftsQuery, limit),
-      searchCraftingStations(ftsQuery, limit),
-      searchPortals(ftsQuery, limit),
-    ]);
-
-  // Round-robin distribution: take 1 from each category per round
-  // This ensures even distribution across all categories with results
-  const categories = [
+  const [
     monsters,
     npcs,
     zones,
@@ -81,7 +86,37 @@ export async function searchMapEntities(
     altars,
     crafting,
     portals,
-  ];
+    items,
+    quests,
+  ] = await Promise.all([
+    searchMonsters(ftsQuery, limit),
+    searchNpcs(ftsQuery, limit),
+    searchZones(ftsQuery, limit),
+    searchGatheringResources(ftsQuery, limit),
+    searchChests(ftsQuery, limit),
+    searchAltars(ftsQuery, limit),
+    searchCraftingStations(ftsQuery, limit),
+    searchPortals(ftsQuery, limit),
+    searchItems(ftsQuery, limit),
+    searchQuests(ftsQuery, limit),
+  ]);
+
+  // Round-robin distribution: take 1 from each category per round
+  // This ensures even distribution across all categories with results
+  // Order defined by SEARCH_CATEGORY_ORDER
+  const resultsByCategory: Record<MapSearchCategory, MapSearchResult[]> = {
+    monster: monsters,
+    npc: npcs,
+    zone: zones,
+    resource: resources,
+    chest: chests,
+    altar: altars,
+    crafting: crafting,
+    portal: portals,
+    item: items,
+    quest: quests,
+  };
+  const categories = SEARCH_CATEGORY_ORDER.map((cat) => resultsByCategory[cat]);
   const results: MapSearchResult[] = [];
   const taken = categories.map(() => 0);
 
@@ -205,11 +240,6 @@ async function searchMonsters(
       zoneName: r.zone_name ?? undefined,
       level: r.level,
       spawnCount: r.spawn_count > 1 ? r.spawn_count : undefined,
-      // Altar-only monsters redirect selection to the altar marker
-      selectTarget:
-        isAltarOnly && r.altar_id
-          ? { category: "altar" as const, id: r.altar_id }
-          : undefined,
       keywords: r.keywords ?? undefined,
     };
   });
@@ -662,4 +692,132 @@ async function searchPortals(
       keywords: r.keywords ?? undefined,
     };
   });
+}
+
+interface ItemSearchRow {
+  id: string;
+  name: string;
+  quality: number;
+  level_required: number;
+  min_x: number | null;
+  max_x: number | null;
+  min_y: number | null;
+  max_y: number | null;
+}
+
+async function searchItems(
+  ftsQuery: string,
+  limit: number,
+): Promise<MapSearchResult[]> {
+  // Search items that have monster droppers
+  // Bounds come from dropper monster positions
+  // Use subquery to expand monster drops JSON, then join with items
+  const rows = await query<ItemSearchRow>(
+    `
+    SELECT
+      i.id,
+      i.name,
+      i.quality,
+      i.level_required,
+      MIN(ms.position_x) as min_x,
+      MAX(ms.position_x) as max_x,
+      MIN(ms.position_y) as min_y,
+      MAX(ms.position_y) as max_y
+    FROM items_fts itf
+    JOIN items i ON itf.rowid = i.rowid
+    LEFT JOIN (
+      SELECT m.id as monster_id, json_extract(d.value, '$.item_id') as item_id
+      FROM monsters m, json_each(m.drops) d
+    ) md ON md.item_id = i.id
+    LEFT JOIN monster_spawns ms ON ms.monster_id = md.monster_id
+      AND ms.spawn_type IN ('regular', 'summon', 'placeholder')
+    WHERE items_fts MATCH ?
+    GROUP BY i.id
+    ORDER BY rank
+    LIMIT ?
+  `,
+    [ftsQuery, limit],
+  );
+
+  return rows.map((r) => ({
+    id: r.id,
+    name: r.name,
+    category: "item" as const,
+    subcategory: String(r.quality), // Quality as subcategory for coloring
+    bounds:
+      r.min_x !== null
+        ? {
+            minX: r.min_x,
+            maxX: r.max_x!,
+            minY: -r.max_y!,
+            maxY: -r.min_y!,
+          }
+        : null,
+    level: r.level_required > 0 ? r.level_required : undefined,
+  }));
+}
+
+interface QuestSearchRow {
+  id: string;
+  name: string;
+  level_recommended: number;
+  display_type: string;
+  min_x: number | null;
+  max_x: number | null;
+  min_y: number | null;
+  max_y: number | null;
+}
+
+async function searchQuests(
+  ftsQuery: string,
+  limit: number,
+): Promise<MapSearchResult[]> {
+  // Search quests and get bounds from associated NPC positions
+  // Quest-NPC relationships are in npcs.quests_offered and npcs.quests_completed_here JSON
+  const rows = await query<QuestSearchRow>(
+    `
+    SELECT
+      q.id,
+      q.name,
+      q.level_recommended,
+      q.display_type,
+      MIN(ns.position_x) as min_x,
+      MAX(ns.position_x) as max_x,
+      MIN(ns.position_y) as min_y,
+      MAX(ns.position_y) as max_y
+    FROM quests_fts qf
+    JOIN quests q ON qf.rowid = q.rowid
+    LEFT JOIN (
+      SELECT n.id as npc_id, json_extract(qo.value, '$.id') as quest_id
+      FROM npcs n, json_each(n.quests_offered) qo
+      UNION
+      SELECT n.id as npc_id, json_extract(qc.value, '$.id') as quest_id
+      FROM npcs n, json_each(n.quests_completed_here) qc
+    ) nq ON nq.quest_id = q.id
+    LEFT JOIN npc_spawns ns ON ns.npc_id = nq.npc_id
+      AND ns.position_x IS NOT NULL
+    WHERE quests_fts MATCH ?
+    GROUP BY q.id
+    ORDER BY rank
+    LIMIT ?
+  `,
+    [ftsQuery, limit],
+  );
+
+  return rows.map((r) => ({
+    id: r.id,
+    name: r.name,
+    category: "quest" as const,
+    subcategory: r.display_type,
+    bounds:
+      r.min_x !== null
+        ? {
+            minX: r.min_x,
+            maxX: r.max_x!,
+            minY: -r.max_y!,
+            maxY: -r.min_y!,
+          }
+        : null,
+    level: r.level_recommended,
+  }));
 }
