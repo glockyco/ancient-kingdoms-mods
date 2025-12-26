@@ -12,12 +12,21 @@
     questId: string;
     onClose: () => void;
     onSelectNpc: (npcId: string) => void;
+    onSelectMonster: (monsterId: string) => void;
     onSelectItem: (itemId: string) => void;
     onHoverNpc?: (npcId: string | null) => void;
+    onHoverMonster?: (monsterId: string | null) => void;
   }
 
-  let { questId, onClose, onSelectNpc, onSelectItem, onHoverNpc }: Props =
-    $props();
+  let {
+    questId,
+    onClose,
+    onSelectNpc,
+    onSelectMonster,
+    onSelectItem,
+    onHoverNpc,
+    onHoverMonster,
+  }: Props = $props();
 
   let details = $state<QuestPopupDetails | null>(null);
   let isLoading = $state(true);
@@ -89,7 +98,18 @@
               {#if obj.type === "kill"}
                 <span class="text-muted-foreground">Kill</span>
                 <span>{obj.amount}×</span>
-                <span class="truncate">{obj.targetName}</span>
+                {#if obj.targetId}
+                  <MapEntityButton
+                    onSelect={() => onSelectMonster(obj.targetId!)}
+                    onHoverStart={() => onHoverMonster?.(obj.targetId!)}
+                    onHoverEnd={() => onHoverMonster?.(null)}
+                    class="truncate text-red-400"
+                  >
+                    {obj.targetName}
+                  </MapEntityButton>
+                {:else}
+                  <span class="truncate">{obj.targetName}</span>
+                {/if}
               {:else if obj.type === "gather" && obj.targetId}
                 <span class="text-muted-foreground">Gather</span>
                 <span>{obj.amount}×</span>
@@ -135,7 +155,18 @@
                 />
               {:else if obj.type === "find"}
                 <span class="text-muted-foreground">Find</span>
-                <span class="truncate">{obj.targetName}</span>
+                {#if obj.targetId}
+                  <MapEntityButton
+                    onSelect={() => onSelectNpc(obj.targetId!)}
+                    onHoverStart={() => onHoverNpc?.(obj.targetId!)}
+                    onHoverEnd={() => onHoverNpc?.(null)}
+                    class="truncate text-blue-400"
+                  >
+                    {obj.targetName}
+                  </MapEntityButton>
+                {:else}
+                  <span class="truncate">{obj.targetName}</span>
+                {/if}
               {:else if obj.type === "discover"}
                 <span class="text-muted-foreground">Discover</span>
                 <span class="truncate">{obj.targetName}</span>

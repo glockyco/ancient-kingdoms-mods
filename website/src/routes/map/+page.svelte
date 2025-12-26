@@ -892,8 +892,10 @@
         questId={selectedEntityId}
         onClose={handleClosePopup}
         onSelectNpc={handleSelectNpc}
+        onSelectMonster={handleSelectMonster}
         onSelectItem={handleSelectItem}
         onHoverNpc={handleHoverNpc}
+        onHoverMonster={handleHoverMonster}
       />
     {/if}
 
