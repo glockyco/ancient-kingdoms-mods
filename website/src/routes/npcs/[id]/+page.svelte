@@ -9,6 +9,7 @@
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import RoleBadges from "$lib/components/RoleBadges.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
+  import MapLink from "$lib/components/MapLink.svelte";
   import type {
     NpcQuestOffered,
     NpcItemSold,
@@ -506,6 +507,7 @@
   <div>
     <div class="flex items-center gap-3 flex-wrap">
       <h1 class="text-3xl font-bold">{data.npc.name}</h1>
+      <MapLink entityId={data.npc.id} entityType="npc" />
       <RoleBadges roles={data.npc.roles} />
       {#if data.npc.is_christmas_npc}
         <span class="{ICON_BADGE.base} {ICON_BADGE.static}">

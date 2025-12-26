@@ -8,6 +8,7 @@
   } from "$lib/components/ui/data-table";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
+  import MapLink from "$lib/components/MapLink.svelte";
   import ObtainabilityTree from "$lib/components/ObtainabilityTree.svelte";
   import type {
     GatheringResourceDrop,
@@ -270,6 +271,7 @@
   <div>
     <div class="flex items-center gap-3 flex-wrap">
       <h1 class="text-3xl font-bold">{data.resource.name}</h1>
+      <MapLink entityId={data.resource.id} entityType="resource" />
       <span
         class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium {typeColors[
           resourceType

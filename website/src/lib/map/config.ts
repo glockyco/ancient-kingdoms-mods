@@ -180,6 +180,20 @@ export const RELATION_ARC_COLORS = {
 } as const;
 
 /**
+ * Fly-to animation configuration
+ */
+export const FLY_TO_CONFIG = {
+  /** Duration in ms for animated fly-to transitions */
+  duration: 800,
+  /** Padding multiplier for bounds (1.2 = 20% extra space around content) */
+  padding: 1.2,
+  /** Maximum zoom level when flying to bounds */
+  maxZoom: 2,
+  /** World units of padding when creating bounds from a single position */
+  singlePointPadding: 50,
+} as const;
+
+/**
  * Tailwind border color classes for tooltip left border by entity type
  */
 export const ENTITY_BORDER_COLORS: Record<string, string> = {

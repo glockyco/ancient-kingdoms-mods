@@ -8,6 +8,7 @@
   } from "$lib/components/ui/data-table";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
+  import MapLink from "$lib/components/MapLink.svelte";
   import QuestTypeBadge from "$lib/components/QuestTypeBadge.svelte";
   import QuestFlagBadges from "$lib/components/QuestFlagBadges.svelte";
   import type {
@@ -506,6 +507,7 @@
   <div>
     <div class="flex items-center gap-3 flex-wrap">
       <h1 class="text-3xl font-bold">{data.monster.name}</h1>
+      <MapLink entityId={data.monster.id} entityType="monster" />
       {#if data.monster.is_boss}
         <span
           class="inline-flex items-center rounded-full bg-cyan-100 px-2.5 py-0.5 text-xs font-medium text-cyan-800 dark:bg-cyan-900 dark:text-cyan-200"

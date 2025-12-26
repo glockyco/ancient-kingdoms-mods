@@ -30,6 +30,7 @@
   import {
     flyToBounds,
     boundsFromPositions,
+    boundsFromPolygon,
     type Bounds,
   } from "$lib/map/flyto";
   import {
@@ -538,6 +539,11 @@
       // Parse URL state fresh
       const urlState = parseUrlState();
 
+      // Check if URL has explicit position params
+      const urlParams = new URLSearchParams(window.location.search);
+      const hasPositionParams =
+        urlParams.has("x") || urlParams.has("y") || urlParams.has("z");
+
       // Initialize state from URL if present
       if (urlState) {
         if (urlState.layers) {
@@ -549,12 +555,15 @@
         if (urlState.zone) {
           focusedZoneId = urlState.zone;
         }
-        // Note: Entity/zone selection is restored after data is loaded via applySelection
-        currentViewState = {
-          x: urlState.x,
-          y: urlState.y,
-          zoom: urlState.zoom,
-        };
+        // Only update view state if position was explicitly in URL
+        // Otherwise flyToBounds will set it after computing entity bounds
+        if (hasPositionParams) {
+          currentViewState = {
+            x: urlState.x,
+            y: urlState.y,
+            zoom: urlState.zoom,
+          };
+        }
       }
 
       try {
@@ -616,7 +625,41 @@
           if (urlState.etype === "item" || urlState.etype === "quest") {
             // Virtual entities need async resolution
             resolveVirtualSelection(urlState.etype, urlState.entity).then(
-              applySelection,
+              (resolved) => {
+                applySelection(resolved);
+                // Fly to bounds after async resolution if deck exists and no explicit position
+                if (
+                  !hasPositionParams &&
+                  deckInstance &&
+                  resolved.highlight?.overrideIds &&
+                  resolved.highlight?.overrideCategory
+                ) {
+                  const selection = resolved.highlight.overrideIds.flatMap(
+                    (id) =>
+                      computeSelectionData(
+                        entityIndex,
+                        resolved.highlight!.overrideCategory!,
+                        id,
+                      ),
+                  );
+                  const positions = selection
+                    .filter((e) => e.position !== null)
+                    .map((e) => e.position!);
+                  const bounds = boundsFromPositions(positions);
+                  if (bounds) {
+                    const result = flyToBounds(deckInstance, bounds, {
+                      duration: 0,
+                    });
+                    if (result) {
+                      currentViewState = {
+                        x: result.x,
+                        y: result.y,
+                        zoom: result.zoom,
+                      };
+                    }
+                  }
+                }
+              },
             );
           } else {
             // Physical entities (including altar-only monsters) use sync resolution
@@ -668,14 +711,17 @@
         );
 
         // Determine initial view state
-        const initialViewState = urlState
-          ? {
-              target: [urlState.x, urlState.y, 0] as [number, number, number],
-              zoom: urlState.zoom,
-              minZoom: INITIAL_VIEW_STATE.minZoom,
-              maxZoom: INITIAL_VIEW_STATE.maxZoom,
-            }
-          : INITIAL_VIEW_STATE;
+        // Only use URL position if explicitly provided (x/y/z params present)
+        // Otherwise use defaults - flyToBounds will position the view after creation
+        const initialViewState =
+          urlState && hasPositionParams
+            ? {
+                target: [urlState.x, urlState.y, 0] as [number, number, number],
+                zoom: urlState.zoom,
+                minZoom: INITIAL_VIEW_STATE.minZoom,
+                maxZoom: INITIAL_VIEW_STATE.maxZoom,
+              }
+            : INITIAL_VIEW_STATE;
 
         // Initialize deck.gl
         deckInstance = new deckModules.Deck({
@@ -702,10 +748,47 @@
           },
         });
 
-        // Fit to content bounds on initial load (no URL state)
-        if (!urlState && entityData.parentZones.length > 0) {
-          // Calculate bounds from all parent zones
-          const contentBounds = entityData.parentZones.reduce(
+        // Determine initial view bounds based on URL state
+        let initialBounds: Bounds | null = null;
+
+        if (!hasPositionParams) {
+          // Try to compute bounds from URL selection
+          if (
+            urlState?.entity &&
+            urlState?.etype &&
+            urlState.etype !== "item" &&
+            urlState.etype !== "quest" &&
+            entityIndex
+          ) {
+            // Physical entity - compute bounds from selection
+            const selection = computeSelectionData(
+              entityIndex,
+              urlState.etype,
+              urlState.entity,
+            );
+            const positions = selection
+              .filter((e) => e.position !== null)
+              .map((e) => e.position!);
+            initialBounds = boundsFromPositions(positions);
+          } else if (urlState?.selectedZone) {
+            // Zone - compute bounds from polygon
+            const zone = entityData.parentZones.find(
+              (z) => z.zoneId === urlState.selectedZone,
+            );
+            if (zone) {
+              initialBounds = boundsFromPolygon(zone.polygon);
+            }
+          }
+        }
+
+        // If no bounds computed (no positions or excluded zone), use full map
+        // But skip if URL has explicit position params (respect those instead)
+        if (
+          !initialBounds &&
+          !hasPositionParams &&
+          entityData.parentZones.length > 0
+        ) {
+          initialBounds = entityData.parentZones.reduce(
             (bounds, zone) => {
               for (const [x, y] of zone.polygon) {
                 bounds.minX = Math.min(bounds.minX, x);
@@ -722,7 +805,17 @@
               maxY: -Infinity,
             },
           );
-          flyToBounds(deckInstance, contentBounds, { duration: 0 });
+        }
+
+        // Fly to computed bounds (selection, zone, or full map)
+        // Update currentViewState synchronously so URL sync uses correct coords
+        if (initialBounds) {
+          const result = flyToBounds(deckInstance, initialBounds, {
+            duration: 0,
+          });
+          if (result) {
+            currentViewState = { x: result.x, y: result.y, zoom: result.zoom };
+          }
         }
 
         isLoading = false;

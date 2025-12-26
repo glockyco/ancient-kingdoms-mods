@@ -19,6 +19,7 @@
     type Header,
   } from "$lib/components/ui/data-table";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
+  import MapLink from "$lib/components/MapLink.svelte";
   import RoleBadges from "$lib/components/RoleBadges.svelte";
   import { ROLE_CONFIG, getActiveRoles } from "$lib/utils/roles";
   import Crown from "@lucide/svelte/icons/crown";
@@ -420,6 +421,7 @@
   <div>
     <div class="flex items-center gap-3">
       <h1 class="text-3xl font-bold">{data.zone.name}</h1>
+      <MapLink entityId={data.zone.id} entityType="zone" />
       {#if data.zone.is_dungeon}
         <span
           class="inline-flex items-center rounded-full bg-purple-100 px-2.5 py-0.5 text-xs font-medium text-purple-800 dark:bg-purple-900 dark:text-purple-200"

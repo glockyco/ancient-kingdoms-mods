@@ -1,5 +1,6 @@
 <script lang="ts">
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
+  import MapLink from "$lib/components/MapLink.svelte";
   import ObtainabilityTree from "$lib/components/ObtainabilityTree.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import { formatDuration, formatPercent } from "$lib/utils/format";
@@ -35,6 +36,7 @@
   <div>
     <div class="flex items-center gap-3 flex-wrap">
       <h1 class="text-3xl font-bold">Chest</h1>
+      <MapLink entityId={data.chest.id} entityType="chest" />
       <span
         class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
       >

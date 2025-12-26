@@ -1,6 +1,7 @@
 <script lang="ts">
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
+  import MapLink from "$lib/components/MapLink.svelte";
   import ClassPills from "$lib/components/ClassPills.svelte";
   import QuestChainGraph from "$lib/components/QuestChainGraph.svelte";
   import MonsterTypeIcon from "$lib/components/MonsterTypeIcon.svelte";
@@ -120,6 +121,7 @@
   <div>
     <div class="flex items-center gap-3 flex-wrap">
       <h1 class="text-3xl font-bold">{data.quest.name}</h1>
+      <MapLink entityId={data.quest.id} entityType="quest" />
       <QuestTypeBadge type={data.quest.display_type} />
       <QuestFlagBadges quest={data.quest} />
     </div>

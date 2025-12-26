@@ -1,4 +1,4 @@
-import { INITIAL_VIEW_STATE } from "./config";
+import { FLY_TO_CONFIG, INITIAL_VIEW_STATE } from "./config";
 
 export interface FlyToOptions {
   duration?: number; // ms, default 1000
@@ -19,7 +19,7 @@ export function flyTo(
 ): void {
   if (!deckInstance) return;
 
-  const { duration = 1000, zoom } = options;
+  const { duration = FLY_TO_CONFIG.duration, zoom } = options;
 
   deckInstance.setProps({
     initialViewState: {
@@ -43,7 +43,7 @@ export function resetView(
 ): void {
   if (!deckInstance) return;
 
-  const { duration = 800 } = options;
+  const { duration = FLY_TO_CONFIG.duration } = options;
 
   deckInstance.setProps({
     initialViewState: {
@@ -67,8 +67,8 @@ export function flyToPosition(
 ): boolean {
   if (!position) return false;
   flyTo(deckInstance, position[0], position[1], currentZoom, {
-    zoom: options.zoom ?? 4, // Default to closer zoom for search results
-    duration: options.duration ?? 800,
+    zoom: options.zoom ?? FLY_TO_CONFIG.maxZoom,
+    duration: options.duration ?? FLY_TO_CONFIG.duration,
   });
   return true;
 }
@@ -85,7 +85,7 @@ export interface Bounds {
  */
 export function boundsFromPosition(
   position: [number, number],
-  padding = 50,
+  padding = FLY_TO_CONFIG.singlePointPadding,
 ): Bounds {
   return {
     minX: position[0] - padding,
@@ -124,18 +124,32 @@ export function boundsFromPolygon(polygon: Array<[number, number]>): Bounds {
 }
 
 /**
+ * Computed view state from flyToBounds
+ */
+export interface FlyToBoundsResult {
+  x: number;
+  y: number;
+  zoom: number;
+}
+
+/**
  * Fly to fit a bounding box in the viewport.
  * Calculates appropriate zoom level to show all content with padding.
+ * Returns the computed view state for manual state updates.
  */
 export function flyToBounds(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   deckInstance: any,
   bounds: Bounds,
   options: { duration?: number; padding?: number; maxZoom?: number } = {},
-): void {
-  if (!deckInstance) return;
+): FlyToBoundsResult | null {
+  if (!deckInstance) return null;
 
-  const { duration = 1000, padding = 1.1, maxZoom = 2 } = options;
+  const {
+    duration = FLY_TO_CONFIG.duration,
+    padding = FLY_TO_CONFIG.padding,
+    maxZoom = FLY_TO_CONFIG.maxZoom,
+  } = options;
 
   // Get actual viewport dimensions from deck instance
   const viewportWidth = deckInstance.width || 1000;
@@ -174,4 +188,6 @@ export function flyToBounds(
       transitionEasing: (t: number) => t * (2 - t),
     },
   });
+
+  return { x: centerX, y: centerY, zoom };
 }
