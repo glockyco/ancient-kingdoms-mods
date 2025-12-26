@@ -63,14 +63,7 @@
     zones = [],
     focusedZoneId = null,
     onZoneFocusChange,
-    expandedSections = [
-      "monsters",
-      "npcs",
-      "interactables",
-      "crafting",
-      "gathering",
-      "zones",
-    ],
+    expandedSections = ["monsters", "interactables", "gathering", "zones"],
     onExpandedSectionsChange,
   }: Props = $props();
 
