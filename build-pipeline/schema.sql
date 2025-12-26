@@ -547,14 +547,6 @@ CREATE TABLE npcs (
     -- Skills (for guards and hostile NPCs)
     skill_ids TEXT,                 -- JSON array: ["skill_id1", "skill_id2"]
 
-    -- Teleport (for NPCs that teleport players)
-    teleport_zone_id TEXT REFERENCES zones(id),
-    teleport_destination_x REAL,
-    teleport_destination_y REAL,
-    teleport_destination_z REAL,
-    teleport_price INTEGER DEFAULT 0,
-    teleport_message TEXT,
-
     -- Search keywords (generated: service types from roles JSON)
     keywords TEXT
 );
@@ -578,7 +570,14 @@ CREATE TABLE npc_spawns (
     move_probability REAL DEFAULT 0.0,
     move_distance REAL DEFAULT 0.0,
     patrol_waypoints TEXT,          -- JSON array
-    role_bitmask INTEGER DEFAULT 0  -- Denormalized from npcs.roles for GPU filtering
+    role_bitmask INTEGER DEFAULT 0, -- Denormalized from npcs.roles for GPU filtering
+
+    teleport_zone_id TEXT REFERENCES zones(id),
+    teleport_destination_x REAL,
+    teleport_destination_y REAL,
+    teleport_destination_z REAL,
+    teleport_price INTEGER DEFAULT 0,
+    teleport_message TEXT
 );
 
 CREATE INDEX idx_npc_spawns_npc ON npc_spawns(npc_id);

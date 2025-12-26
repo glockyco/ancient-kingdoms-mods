@@ -16,6 +16,12 @@ public class NpcSpawnData
     public float move_distance { get; set; }
     public float move_probability { get; set; }
     public List<Position> patrol_waypoints { get; set; } = new();
+
+    // Teleport
+    public string teleport_zone_id { get; set; }
+    public Position teleport_destination { get; set; }
+    public int teleport_price { get; set; }
+    public string teleport_message { get; set; }
 }
 
 public class NpcRoles
@@ -128,10 +134,4 @@ public class NpcData
 
     // Skills (for guards and hostile NPCs)
     public List<string> skill_ids { get; set; } = new();
-
-    // Teleport (for NPCs that teleport players)
-    public string teleport_zone_id { get; set; }
-    public Position teleport_destination { get; set; }
-    public int teleport_price { get; set; }
-    public string teleport_message { get; set; }
 }

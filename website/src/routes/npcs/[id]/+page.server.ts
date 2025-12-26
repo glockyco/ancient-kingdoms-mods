@@ -133,18 +133,37 @@ export const load: PageServerLoad = ({ params }): NpcDetailPageData => {
     respawnDungeonZoneId = dungeonData?.id || null;
   }
 
-  // Get teleport destination info if applicable
-  let teleportZoneName: string | null = null;
-  let teleportZoneId: string | null = null;
-  const teleportRawZoneId = npcRaw.teleport_zone_id as string | null;
-  if (teleportRawZoneId) {
-    const teleportData = db
-      .prepare("SELECT id, name FROM zones WHERE id = ?")
-      .get(teleportRawZoneId) as { id: string; name: string } | undefined;
-    teleportZoneName = teleportData?.name || null;
-    teleportZoneId = teleportData?.id || null;
-  }
-  const teleportPrice = (npcRaw.teleport_price as number) || 0;
+  // Get teleport routes from spawns
+  const teleportRows = db
+    .prepare(
+      `
+      SELECT
+        ns.zone_id as from_zone_id,
+        fz.name as from_zone_name,
+        ns.teleport_zone_id as to_zone_id,
+        tz.name as to_zone_name,
+        ns.teleport_price as price
+      FROM npc_spawns ns
+      JOIN zones fz ON fz.id = ns.zone_id
+      JOIN zones tz ON tz.id = ns.teleport_zone_id
+      WHERE ns.npc_id = ? AND ns.teleport_zone_id IS NOT NULL
+      ORDER BY fz.name
+    `,
+    )
+    .all(params.id) as Array<{
+    from_zone_id: string;
+    from_zone_name: string;
+    to_zone_id: string;
+    to_zone_name: string;
+    price: number;
+  }>;
+  const teleportRoutes = teleportRows.map((r) => ({
+    fromZoneId: r.from_zone_id,
+    fromZoneName: r.from_zone_name,
+    toZoneId: r.to_zone_id,
+    toZoneName: r.to_zone_name,
+    price: r.price || 0,
+  }));
 
   const npc: NpcInfo = {
     id: npcRaw.id as string,
@@ -234,8 +253,6 @@ export const load: PageServerLoad = ({ params }): NpcDetailPageData => {
     skills,
     respawnDungeonName,
     respawnDungeonZoneId,
-    teleportZoneName,
-    teleportZoneId,
-    teleportPrice,
+    teleportRoutes,
   };
 };

@@ -344,16 +344,16 @@ async function loadNpcSpawns(): Promise<NpcMapEntity[]> {
       -- Popup fields
       n.quests_offered,
       n.items_sold,
-      n.teleport_zone_id,
+      ns.teleport_zone_id,
       tz.name as teleport_zone_name,
-      n.teleport_destination_x,
-      n.teleport_destination_y,
-      n.teleport_price
+      ns.teleport_destination_x,
+      ns.teleport_destination_y,
+      ns.teleport_price
     FROM npcs n
     LEFT JOIN npc_spawns ns ON ns.npc_id = n.id
     LEFT JOIN zones z ON z.id = ns.zone_id
     LEFT JOIN zones rz ON rz.zone_id = n.respawn_dungeon_id
-    LEFT JOIN zones tz ON tz.id = n.teleport_zone_id
+    LEFT JOIN zones tz ON tz.id = ns.teleport_zone_id
   `);
 
   return rows.map((r) => {

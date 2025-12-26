@@ -148,6 +148,14 @@ export interface NpcSpawnLocation {
   sub_zone_name: string | null;
 }
 
+export interface TeleportRoute {
+  fromZoneId: string;
+  fromZoneName: string;
+  toZoneId: string;
+  toZoneName: string;
+  price: number;
+}
+
 export interface NpcDetailPageData {
   npc: NpcInfo;
   questsOffered: NpcQuestOffered[];
@@ -158,9 +166,7 @@ export interface NpcDetailPageData {
   skills: NpcSkill[];
   respawnDungeonName: string | null;
   respawnDungeonZoneId: string | null;
-  teleportZoneName: string | null;
-  teleportZoneId: string | null;
-  teleportPrice: number;
+  teleportRoutes: TeleportRoute[];
 }
 
 // List page types

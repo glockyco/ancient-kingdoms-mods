@@ -80,15 +80,19 @@
     }
 
     if (role.key === "is_teleporter") {
-      if (!data.teleportZoneName) {
+      if (data.teleportRoutes.length === 0) {
         return "Teleports players to another location.";
       }
 
-      const destination = `<a href="/zones/${data.teleportZoneId}" class="text-blue-600 dark:text-blue-400 hover:underline">${data.teleportZoneName}</a>`;
-
-      return data.teleportPrice > 0
-        ? `Teleports players to ${destination} for <span class="text-yellow-600 dark:text-yellow-400">${data.teleportPrice.toLocaleString()}</span> gold.`
-        : `Teleports players to ${destination}.`;
+      return data.teleportRoutes
+        .map((route) => {
+          const from = `<a href="/zones/${route.fromZoneId}" class="text-blue-600 dark:text-blue-400 hover:underline">${route.fromZoneName}</a>`;
+          const to = `<a href="/zones/${route.toZoneId}" class="text-blue-600 dark:text-blue-400 hover:underline">${route.toZoneName}</a>`;
+          return route.price > 0
+            ? `Teleports players from ${from} to ${to} for <span class="text-yellow-600 dark:text-yellow-400">${route.price.toLocaleString()}</span> gold.`
+            : `Teleports players from ${from} to ${to}.`;
+        })
+        .join("<br>");
     }
 
     return ROLE_DESCRIPTIONS[role.key]?.description ?? "";

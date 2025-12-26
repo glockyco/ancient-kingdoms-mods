@@ -250,22 +250,6 @@ public class NpcExporter : BaseExporter
                 }
             }
 
-            // Export teleport data (for NPCs that teleport players)
-            if (canonical.teleport != null && canonical.teleport.destinationPosition != UnityEngine.Vector2.zero)
-            {
-                var destPos = canonical.teleport.destinationPosition;
-                var teleportZoneInfo = GetZoneInfoFromPosition(new Vector3(destPos.x, destPos.y, 0));
-                if (teleportZoneInfo.ZoneId != "unknown")
-                {
-                    npcData.teleport_zone_id = teleportZoneInfo.ZoneId;
-                    npcData.teleport_destination = new Position(destPos.x, destPos.y, 0);
-                    npcData.teleport_price = canonical.teleport.priceTravel;
-                    npcData.teleport_message = string.IsNullOrEmpty(canonical.teleport.messageText)
-                        ? null
-                        : canonical.teleport.messageText;
-                }
-            }
-
             npcList.Add(npcData);
 
             // Export spawn points for all instances (excluding templates)
@@ -303,6 +287,22 @@ public class NpcExporter : BaseExporter
                     foreach (var waypoint in npc.waypointsPatrol)
                     {
                         spawnData.patrol_waypoints.Add(new Position(waypoint.x, waypoint.y, 0));
+                    }
+                }
+
+                // Export teleport data for this spawn
+                if (npc.teleport != null && npc.teleport.destinationPosition != UnityEngine.Vector2.zero)
+                {
+                    var destPos = npc.teleport.destinationPosition;
+                    var teleportZoneInfo = GetZoneInfoFromPosition(new Vector3(destPos.x, destPos.y, 0));
+                    if (teleportZoneInfo.ZoneId != "unknown")
+                    {
+                        spawnData.teleport_zone_id = teleportZoneInfo.ZoneId;
+                        spawnData.teleport_destination = new Position(destPos.x, destPos.y, 0);
+                        spawnData.teleport_price = npc.teleport.priceTravel;
+                        spawnData.teleport_message = string.IsNullOrEmpty(npc.teleport.messageText)
+                            ? null
+                            : npc.teleport.messageText;
                     }
                 }
 

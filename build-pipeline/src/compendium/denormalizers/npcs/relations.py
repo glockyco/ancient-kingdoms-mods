@@ -345,7 +345,7 @@ def _add_quests_completed_here(conn: sqlite3.Connection) -> int:
 def _add_teleporter_role(conn: sqlite3.Connection) -> int:
     """Add is_teleporter to roles JSON for NPCs that can teleport players.
 
-    NPCs with teleport_zone_id set are teleporters.
+    NPCs with any spawn that has teleport_zone_id set are teleporters.
 
     Returns:
         Count of Teleporter NPCs
@@ -353,13 +353,23 @@ def _add_teleporter_role(conn: sqlite3.Connection) -> int:
     console.print("  Adding is_teleporter to roles...")
     cursor = conn.cursor()
 
-    cursor.execute("SELECT id, roles, teleport_zone_id FROM npcs")
+    # Get NPCs that have at least one spawn with teleport data
+    cursor.execute(
+        """
+        SELECT DISTINCT npc_id
+        FROM npc_spawns
+        WHERE teleport_zone_id IS NOT NULL
+        """
+    )
+    teleporter_npc_ids = {row[0] for row in cursor.fetchall()}
+
+    cursor.execute("SELECT id, roles FROM npcs")
     npcs = cursor.fetchall()
 
     teleporter_count = 0
-    for npc_id, roles_json, teleport_zone_id in npcs:
+    for npc_id, roles_json in npcs:
         roles = json.loads(roles_json) if roles_json else {}
-        is_teleporter = teleport_zone_id is not None
+        is_teleporter = npc_id in teleporter_npc_ids
         roles["is_teleporter"] = is_teleporter
 
         cursor.execute(

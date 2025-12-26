@@ -329,6 +329,12 @@ class NpcSpawnData(BaseModel):
     move_probability: float = 0.0
     patrol_waypoints: list[Any] = []
 
+    # Teleport (spawn-specific destination for teleporter NPCs)
+    teleport_zone_id: str | None = None
+    teleport_destination: Position | None = None
+    teleport_price: int = 0
+    teleport_message: str | None = None
+
 
 class NpcData(BaseModel):
     """NPC data from npcs.json"""
@@ -412,12 +418,6 @@ class NpcData(BaseModel):
 
     # Skills (for guards and hostile NPCs)
     skill_ids: list[str] = []
-
-    # Teleport (for NPCs that teleport players)
-    teleport_zone_id: str | None = None
-    teleport_destination: Position | None = None
-    teleport_price: int = 0
-    teleport_message: str | None = None
 
 
 # =============================================================================

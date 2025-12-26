@@ -105,22 +105,27 @@ def run(conn: sqlite3.Connection) -> None:
     )
 
     # NPC keywords (service types from roles + destination names for special roles)
+    # First, build a lookup of teleport destination zone names per NPC
     cursor.execute("""
-        SELECT n.id, n.roles, n.respawn_dungeon_id, z.name as dungeon_name,
-               tz.name as teleport_zone_name
+        SELECT ns.npc_id, GROUP_CONCAT(tz.name, ' ') as teleport_zone_names
+        FROM (
+            SELECT DISTINCT npc_id, teleport_zone_id
+            FROM npc_spawns
+            WHERE teleport_zone_id IS NOT NULL
+        ) ns
+        JOIN zones tz ON tz.id = ns.teleport_zone_id
+        GROUP BY ns.npc_id
+    """)
+    npc_teleport_zones = {row[0]: row[1] for row in cursor.fetchall()}
+
+    cursor.execute("""
+        SELECT n.id, n.roles, n.respawn_dungeon_id, z.name as dungeon_name
         FROM npcs n
         LEFT JOIN zones z ON z.zone_id = n.respawn_dungeon_id
-        LEFT JOIN zones tz ON tz.id = n.teleport_zone_id
     """)
     npcs = cursor.fetchall()
     npc_count = 0
-    for (
-        npc_id,
-        roles_json,
-        respawn_dungeon_id,
-        dungeon_name,
-        teleport_zone_name,
-    ) in npcs:
+    for npc_id, roles_json, respawn_dungeon_id, dungeon_name in npcs:
         keywords = _generate_npc_keywords(roles_json)
         if roles_json:
             roles = json.loads(roles_json)
@@ -134,12 +139,13 @@ def run(conn: sqlite3.Connection) -> None:
                     extra = None
                 if extra:
                     keywords = f"{keywords} {extra}" if keywords else extra
-            # Add destination zone name for teleporters
-            if roles.get("is_teleporter") and teleport_zone_name:
+            # Add destination zone names for teleporters
+            teleport_zone_names = npc_teleport_zones.get(npc_id)
+            if roles.get("is_teleporter") and teleport_zone_names:
                 keywords = (
-                    f"{keywords} {teleport_zone_name}"
+                    f"{keywords} {teleport_zone_names}"
                     if keywords
-                    else teleport_zone_name
+                    else teleport_zone_names
                 )
         if keywords:
             cursor.execute(
