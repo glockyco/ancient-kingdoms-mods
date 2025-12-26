@@ -92,8 +92,10 @@
       isLoading = true;
       try {
         if (isMonster(currentEntity)) {
+          const isBossOrElite = currentEntity.isBoss || currentEntity.isElite;
           monsterDetails = await loadMonsterPopupDetails(
             currentEntity.monsterId,
+            isBossOrElite,
           );
 
           // Load altar info if monster spawns in altars

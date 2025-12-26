@@ -108,12 +108,18 @@ interface MonsterDropRow {
 }
 
 /**
- * Load monster drops for popup - all drops, bestiary items first
+ * Load monster drops for popup.
+ * For bosses/elites: bestiary items first, then by drop rate.
+ * For other monsters: just by drop rate (they don't have bestiary entries).
  */
 export async function loadMonsterPopupDetails(
   monsterId: string,
+  isBossOrElite: boolean = false,
 ): Promise<MonsterPopupDetails> {
-  // Query all drops, ordered with bestiary items first, then by drop rate
+  const orderBy = isBossOrElite
+    ? "ORDER BY is_bestiary_drop DESC, rate DESC"
+    : "ORDER BY rate DESC";
+
   const drops = await query<MonsterDropRow>(
     `
     SELECT
@@ -126,7 +132,7 @@ export async function loadMonsterPopupDetails(
     FROM monsters m, json_each(m.drops) d
     LEFT JOIN items i ON i.id = json_extract(d.value, '$.item_id')
     WHERE m.id = ?
-    ORDER BY is_bestiary_drop DESC, rate DESC
+    ${orderBy}
     `,
     [monsterId],
   );
