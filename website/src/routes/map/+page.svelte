@@ -892,7 +892,7 @@
       <EntityPopup
         entity={selectedEntity}
         onClose={handleClosePopup}
-        onFocusClick={handleFocusBounds}
+        onFocusClick={handleFocusHighlighted}
         onSelectMonster={handleSelectMonster}
         onSelectAltar={handleSelectAltar}
         onSelectItem={handleSelectItem}

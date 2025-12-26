@@ -389,11 +389,10 @@ export interface AltarBasicInfo {
   name: string;
   zoneId: string;
   zoneName: string;
-  position: [number, number] | null;
 }
 
 /**
- * Load basic altar info (id, name, zone, position)
+ * Load basic altar info (id, name, zone)
  */
 export async function loadAltarBasicInfo(
   altarId: string,
@@ -403,10 +402,8 @@ export async function loadAltarBasicInfo(
     name: string;
     zone_id: string;
     zone_name: string;
-    position_x: number | null;
-    position_y: number | null;
   }>(
-    `SELECT a.id, a.name, a.zone_id, z.name as zone_name, a.position_x, a.position_y FROM altars a JOIN zones z ON z.id = a.zone_id WHERE a.id = ?`,
+    `SELECT a.id, a.name, a.zone_id, z.name as zone_name FROM altars a JOIN zones z ON z.id = a.zone_id WHERE a.id = ?`,
     [altarId],
   );
   return altar
@@ -415,10 +412,6 @@ export async function loadAltarBasicInfo(
         name: altar.name,
         zoneId: altar.zone_id,
         zoneName: altar.zone_name,
-        position:
-          altar.position_x !== null && altar.position_y !== null
-            ? [altar.position_x, -altar.position_y]
-            : null,
       }
     : null;
 }

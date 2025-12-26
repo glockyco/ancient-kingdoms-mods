@@ -34,16 +34,10 @@
     type GatheringPopupDetails,
     type AltarPopupDetails,
   } from "$lib/queries/popup";
-  import {
-    boundsFromPosition,
-    boundsFromPositions,
-    type Bounds,
-  } from "$lib/map/flyto";
-
   interface Props {
     entity: AnyMapEntity;
     onClose: () => void;
-    onFocusClick?: (bounds: Bounds) => void;
+    onFocusClick?: () => void;
     onSelectMonster: (monsterId: string) => void;
     onSelectAltar: (altarId: string) => void;
     onSelectItem: (itemId: string) => void;
@@ -76,7 +70,6 @@
       name: string;
       zoneId: string;
       zoneName: string;
-      position: [number, number] | null;
       details: AltarPopupDetails;
     }>
   >([]);
@@ -120,7 +113,6 @@
                     name: info.name,
                     zoneId: info.zoneId,
                     zoneName: info.zoneName,
-                    position: info.position,
                     details,
                   };
                 }
@@ -136,7 +128,6 @@
                 name: string;
                 zoneId: string;
                 zoneName: string;
-                position: [number, number] | null;
                 details: AltarPopupDetails;
               } => r !== null,
             );
@@ -266,36 +257,6 @@
   }
 
   const url = $derived(getEntityUrl(entity));
-
-  // Compute altar positions for altar-only monsters
-  let altarPositions = $derived(
-    monsterAltarDetails
-      .map((a) => a.position)
-      .filter((p): p is [number, number] => p !== null),
-  );
-
-  // Can focus if entity has position or altar positions
-  let canFocus = $derived(
-    entity.position !== null || altarPositions.length > 0,
-  );
-
-  function handleFocus() {
-    if (!onFocusClick) return;
-
-    // Use entity position if available
-    if (entity.position) {
-      onFocusClick(boundsFromPosition(entity.position));
-      return;
-    }
-
-    // Fall back to altar positions for altar-only monsters
-    if (altarPositions.length > 0) {
-      const bounds = boundsFromPositions(altarPositions);
-      if (bounds) {
-        onFocusClick(bounds);
-      }
-    }
-  }
 </script>
 
 <PopupCard
@@ -303,7 +264,7 @@
   subtitle={getEntityTypeName(entity)}
   detailsUrl={url}
   {onClose}
-  onFocusClick={canFocus ? handleFocus : undefined}
+  {onFocusClick}
 >
   <!-- NPC Roles (shown first, before Zone) -->
   {#if entity.type === "npc"}
