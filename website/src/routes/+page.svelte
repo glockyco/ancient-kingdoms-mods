@@ -41,10 +41,39 @@
     </p>
   </div>
 
-  <!-- Available Sections -->
+  <!-- Browse Section -->
   <section class="space-y-6">
-    <h2 class="text-2xl font-semibold">Browse</h2>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <!-- World Map (spanning full width) -->
+      <a href="/map" class="block group md:col-span-3">
+        <Card.Root
+          class="h-full transition-colors hover:bg-muted/50 bg-muted/30"
+        >
+          <Card.Header>
+            <div class="flex flex-col md:flex-row items-center gap-4 md:gap-6">
+              <div class="p-3 rounded-xl bg-teal-500/10">
+                <Map class="h-8 w-8 text-teal-500" />
+              </div>
+              <div class="flex-1 text-center md:text-left">
+                <Card.Title class="text-xl group-hover:underline"
+                  >Interactive World Map</Card.Title
+                >
+                <Card.Description class="text-base">
+                  Explore the world of Eratiath — every monster, NPC, and
+                  resource at your fingertips
+                </Card.Description>
+              </div>
+              <div
+                class="flex items-center text-sm text-muted-foreground group-hover:text-foreground transition-colors"
+              >
+                <span class="font-medium">Explore</span>
+                <ArrowRight class="ml-2 h-4 w-4" />
+              </div>
+            </div>
+          </Card.Header>
+        </Card.Root>
+      </a>
+
       <a href="/items" class="block group">
         <Card.Root
           class="h-full transition-colors hover:bg-muted/50 bg-muted/30"
@@ -305,7 +334,7 @@
   <!-- Coming Soon Sections -->
   <section class="space-y-6">
     <h2 class="text-2xl font-semibold text-muted-foreground">Coming Soon</h2>
-    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-6">
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6">
       <Card.Root class="opacity-50 bg-muted/30">
         <Card.Header>
           <div class="flex flex-col items-center text-center gap-2">
@@ -357,17 +386,6 @@
               <Image class="h-5 w-5 text-pink-500" />
             </div>
             <Card.Title class="text-base">Images</Card.Title>
-          </div>
-        </Card.Header>
-      </Card.Root>
-
-      <Card.Root class="opacity-50 bg-muted/30">
-        <Card.Header>
-          <div class="flex flex-col items-center text-center gap-2">
-            <div class="p-2 rounded-lg bg-teal-500/10">
-              <Map class="h-5 w-5 text-teal-500" />
-            </div>
-            <Card.Title class="text-base">Maps</Card.Title>
           </div>
         </Card.Header>
       </Card.Root>
