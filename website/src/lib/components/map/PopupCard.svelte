@@ -33,7 +33,12 @@
           <p class="text-sm text-muted-foreground">{subtitle}</p>
         {/if}
       </div>
-      <Button variant="ghost" size="sm" onclick={onClose} class="h-6 w-6 p-0">
+      <Button
+        variant="ghost"
+        size="sm"
+        onclick={onClose}
+        class="h-6 w-6 cursor-pointer p-0"
+      >
         <span class="sr-only">Close</span>
         <svg
           xmlns="http://www.w3.org/2000/svg"
