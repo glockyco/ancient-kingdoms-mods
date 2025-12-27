@@ -11,6 +11,8 @@
     onClose: () => void;
     onFocusClick?: () => void;
     children: Snippet;
+    /** When true, removes absolute positioning for use inside a drawer */
+    mode?: "card" | "drawer";
   }
 
   let {
@@ -21,12 +23,17 @@
     onClose,
     onFocusClick,
     children,
+    mode = "card",
   }: Props = $props();
+
+  let cardClass = $derived(
+    mode === "drawer"
+      ? "w-full gap-0 border-0 bg-transparent py-0 shadow-none"
+      : "absolute right-4 top-4 z-10 w-80 gap-0 bg-background/95 py-0 backdrop-blur supports-[backdrop-filter]:bg-background/80",
+  );
 </script>
 
-<Card.Root
-  class="absolute right-4 top-4 z-10 w-80 gap-0 bg-background/95 py-0 backdrop-blur supports-[backdrop-filter]:bg-background/80"
->
+<Card.Root class={cardClass}>
   <Card.Header class="!gap-0 border-b !py-2">
     <div class="flex items-start justify-between gap-2">
       <div>

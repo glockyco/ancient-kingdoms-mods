@@ -46,6 +46,7 @@
     onHoverMonster?: (monsterId: string | null) => void;
     onHoverAltar?: (altarId: string | null) => void;
     onHoverZone?: (zoneId: string | null) => void;
+    mode?: "card" | "drawer";
   }
 
   let {
@@ -60,6 +61,7 @@
     onHoverMonster,
     onHoverAltar,
     onHoverZone,
+    mode = "card",
   }: Props = $props();
 
   // Lazy-loaded details state
@@ -265,6 +267,7 @@
   detailsUrl={url}
   {onClose}
   {onFocusClick}
+  {mode}
 >
   <!-- NPC Roles (shown first, before Zone) -->
   {#if entity.type === "npc"}

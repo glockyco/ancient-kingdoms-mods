@@ -14,6 +14,7 @@
   import ItemPopup from "$lib/components/map/ItemPopup.svelte";
   import QuestPopup from "$lib/components/map/QuestPopup.svelte";
   import MapSearch from "$lib/components/map/MapSearch.svelte";
+  import * as Drawer from "$lib/components/ui/drawer";
   import type { PageData } from "./$types";
   import {
     createLayers,
@@ -141,16 +142,19 @@
     | null
   >(null);
 
-  // Popup is open when any entity/zone/item/quest is selected
-  let isPopupOpen = $derived(
+  // Track if there's an active selection (for showing reopen button on mobile)
+  let hasSelection = $derived(
     selectedZone !== null ||
       selectedEntity !== null ||
       selectedEntityType === "item" ||
       selectedEntityType === "quest",
   );
 
+  // Mobile drawer state (separate from selection so drawer can be dismissed without clearing selection)
+  let mobileDrawerOpen = $state(false);
+
   // Right padding for flyToBounds (popup width when popup is open, on desktop only)
-  let flyToRightPadding = $derived(isPopupOpen && isDesktop ? POPUP_WIDTH : 0);
+  let flyToRightPadding = $derived(hasSelection && isDesktop ? POPUP_WIDTH : 0);
 
   /**
    * Apply a resolved selection to state variables.
@@ -186,6 +190,10 @@
           selectedEntityId = resolved.popup.id;
           selectedEntityType = resolved.popup.type;
           break;
+      }
+      // Open mobile drawer when a new selection is made
+      if (!isDesktop) {
+        mobileDrawerOpen = true;
       }
     }
 
@@ -1010,51 +1018,142 @@
       />
     {/if}
 
-    {#if selectedZone}
-      <ZonePopup
-        zone={selectedZone}
-        onClose={handleCloseZonePopup}
-        onFocusClick={handleFocusBounds}
-        onSelectMonster={handleSelectMonster}
-        onSelectAltar={handleSelectAltar}
-        onSelectNpc={handleSelectNpc}
-        onHoverMonster={handleHoverMonster}
-        onHoverAltar={handleHoverAltar}
-        onHoverNpc={handleHoverNpc}
-      />
-    {:else if selectedEntity}
-      <EntityPopup
-        entity={selectedEntity}
-        onClose={handleClosePopup}
-        onFocusClick={handleFocusHighlighted}
-        onSelectMonster={handleSelectMonster}
-        onSelectAltar={handleSelectAltar}
-        onSelectItem={handleSelectItem}
-        onSelectQuest={handleSelectQuest}
-        onSelectZone={handleSelectZone}
-        onHoverMonster={handleHoverMonster}
-        onHoverAltar={handleHoverAltar}
-        onHoverZone={handleHoverZone}
-      />
-    {:else if selectedEntityType === "item" && selectedEntityId}
-      <ItemPopup
-        itemId={selectedEntityId}
-        onClose={handleClosePopup}
-        onFocusClick={handleFocusHighlighted}
-        onSelectMonster={handleSelectMonster}
-        onHoverMonster={handleHoverMonster}
-      />
-    {:else if selectedEntityType === "quest" && selectedEntityId}
-      <QuestPopup
-        questId={selectedEntityId}
-        onClose={handleClosePopup}
-        onFocusClick={handleFocusHighlighted}
-        onSelectNpc={handleSelectNpc}
-        onSelectMonster={handleSelectMonster}
-        onSelectItem={handleSelectItem}
-        onHoverNpc={handleHoverNpc}
-        onHoverMonster={handleHoverMonster}
-      />
+    <!-- Desktop: show popups as absolute-positioned cards -->
+    {#if isDesktop}
+      {#if selectedZone}
+        <ZonePopup
+          zone={selectedZone}
+          onClose={handleCloseZonePopup}
+          onFocusClick={handleFocusBounds}
+          onSelectMonster={handleSelectMonster}
+          onSelectAltar={handleSelectAltar}
+          onSelectNpc={handleSelectNpc}
+          onHoverMonster={handleHoverMonster}
+          onHoverAltar={handleHoverAltar}
+          onHoverNpc={handleHoverNpc}
+        />
+      {:else if selectedEntity}
+        <EntityPopup
+          entity={selectedEntity}
+          onClose={handleClosePopup}
+          onFocusClick={handleFocusHighlighted}
+          onSelectMonster={handleSelectMonster}
+          onSelectAltar={handleSelectAltar}
+          onSelectItem={handleSelectItem}
+          onSelectQuest={handleSelectQuest}
+          onSelectZone={handleSelectZone}
+          onHoverMonster={handleHoverMonster}
+          onHoverAltar={handleHoverAltar}
+          onHoverZone={handleHoverZone}
+        />
+      {:else if selectedEntityType === "item" && selectedEntityId}
+        <ItemPopup
+          itemId={selectedEntityId}
+          onClose={handleClosePopup}
+          onFocusClick={handleFocusHighlighted}
+          onSelectMonster={handleSelectMonster}
+          onHoverMonster={handleHoverMonster}
+        />
+      {:else if selectedEntityType === "quest" && selectedEntityId}
+        <QuestPopup
+          questId={selectedEntityId}
+          onClose={handleClosePopup}
+          onFocusClick={handleFocusHighlighted}
+          onSelectNpc={handleSelectNpc}
+          onSelectMonster={handleSelectMonster}
+          onSelectItem={handleSelectItem}
+          onHoverNpc={handleHoverNpc}
+          onHoverMonster={handleHoverMonster}
+        />
+      {/if}
+    {:else}
+      <!-- Mobile: show popups in a bottom drawer -->
+      <Drawer.Root bind:open={mobileDrawerOpen}>
+        <Drawer.Content class="max-h-[85vh]">
+          <Drawer.Header class="sr-only">
+            <Drawer.Title>Details</Drawer.Title>
+          </Drawer.Header>
+          <div class="overflow-y-auto px-4 pb-4">
+            {#if selectedZone}
+              <ZonePopup
+                zone={selectedZone}
+                onClose={() => {
+                  mobileDrawerOpen = false;
+                  handleCloseZonePopup();
+                }}
+                onFocusClick={handleFocusBounds}
+                onSelectMonster={handleSelectMonster}
+                onSelectAltar={handleSelectAltar}
+                onSelectNpc={handleSelectNpc}
+                mode="drawer"
+              />
+            {:else if selectedEntity}
+              <EntityPopup
+                entity={selectedEntity}
+                onClose={() => {
+                  mobileDrawerOpen = false;
+                  handleClosePopup();
+                }}
+                onFocusClick={handleFocusHighlighted}
+                onSelectMonster={handleSelectMonster}
+                onSelectAltar={handleSelectAltar}
+                onSelectItem={handleSelectItem}
+                onSelectQuest={handleSelectQuest}
+                onSelectZone={handleSelectZone}
+                mode="drawer"
+              />
+            {:else if selectedEntityType === "item" && selectedEntityId}
+              <ItemPopup
+                itemId={selectedEntityId}
+                onClose={() => {
+                  mobileDrawerOpen = false;
+                  handleClosePopup();
+                }}
+                onFocusClick={handleFocusHighlighted}
+                onSelectMonster={handleSelectMonster}
+                mode="drawer"
+              />
+            {:else if selectedEntityType === "quest" && selectedEntityId}
+              <QuestPopup
+                questId={selectedEntityId}
+                onClose={() => {
+                  mobileDrawerOpen = false;
+                  handleClosePopup();
+                }}
+                onFocusClick={handleFocusHighlighted}
+                onSelectNpc={handleSelectNpc}
+                onSelectMonster={handleSelectMonster}
+                onSelectItem={handleSelectItem}
+                mode="drawer"
+              />
+            {/if}
+          </div>
+        </Drawer.Content>
+      </Drawer.Root>
+
+      <!-- Mobile: floating button to reopen drawer when selection exists but drawer is closed -->
+      {#if hasSelection && !mobileDrawerOpen}
+        <button
+          type="button"
+          class="fixed bottom-4 right-4 z-20 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full bg-secondary text-secondary-foreground shadow-lg transition-colors hover:bg-secondary/80"
+          onclick={() => (mobileDrawerOpen = true)}
+          aria-label="Show details"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="m18 15-6-6-6 6" />
+          </svg>
+        </button>
+      {/if}
     {/if}
 
     <MapSearch bind:open={searchOpen} onselect={handleSearchSelect} />

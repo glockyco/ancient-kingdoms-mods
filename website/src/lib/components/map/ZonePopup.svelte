@@ -18,6 +18,7 @@
     onHoverMonster?: (monsterId: string | null) => void;
     onHoverAltar?: (altarId: string | null) => void;
     onHoverNpc?: (npcId: string | null) => void;
+    mode?: "card" | "drawer";
   }
 
   let {
@@ -30,6 +31,7 @@
     onHoverMonster,
     onHoverAltar,
     onHoverNpc,
+    mode = "card",
   }: Props = $props();
 
   function handleFocus() {
@@ -78,6 +80,7 @@
   detailsUrl="/zones/{zone.zoneId}"
   {onClose}
   onFocusClick={handleFocus}
+  {mode}
 >
   <!-- Level Range -->
   {#if levelRange}

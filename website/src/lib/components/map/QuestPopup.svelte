@@ -17,6 +17,7 @@
     onSelectItem: (itemId: string) => void;
     onHoverNpc?: (npcId: string | null) => void;
     onHoverMonster?: (monsterId: string | null) => void;
+    mode?: "card" | "drawer";
   }
 
   let {
@@ -28,6 +29,7 @@
     onSelectItem,
     onHoverNpc,
     onHoverMonster,
+    mode = "card",
   }: Props = $props();
 
   let details = $state<QuestPopupDetails | null>(null);
@@ -84,7 +86,7 @@
 </script>
 
 {#if isLoading}
-  <PopupCard title="Loading..." {onClose}>
+  <PopupCard title="Loading..." {onClose} {mode}>
     <div class="flex items-center justify-center py-4">
       <div
         class="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent"
@@ -92,7 +94,7 @@
     </div>
   </PopupCard>
 {:else if error}
-  <PopupCard title="Error" {onClose}>
+  <PopupCard title="Error" {onClose} {mode}>
     <p class="text-destructive">{error}</p>
   </PopupCard>
 {:else if details}
@@ -105,6 +107,7 @@
     detailsUrl="/quests/{details.id}"
     {onClose}
     onFocusClick={hasHighlightedEntities ? onFocusClick : undefined}
+    {mode}
   >
     <!-- NPCs -->
     {#if adventurerNpcs.length > 0}
