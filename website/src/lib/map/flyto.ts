@@ -132,6 +132,14 @@ export interface FlyToBoundsResult {
   zoom: number;
 }
 
+export interface FlyToBoundsOptions {
+  duration?: number;
+  padding?: number;
+  maxZoom?: number;
+  /** Pixels reserved on right side (e.g., popup width). Shifts center left. */
+  rightPadding?: number;
+}
+
 /**
  * Fly to fit a bounding box in the viewport.
  * Calculates appropriate zoom level to show all content with padding.
@@ -141,7 +149,7 @@ export function flyToBounds(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   deckInstance: any,
   bounds: Bounds,
-  options: { duration?: number; padding?: number; maxZoom?: number } = {},
+  options: FlyToBoundsOptions = {},
 ): FlyToBoundsResult | null {
   if (!deckInstance) return null;
 
@@ -149,14 +157,18 @@ export function flyToBounds(
     duration = FLY_TO_CONFIG.duration,
     padding = FLY_TO_CONFIG.padding,
     maxZoom = FLY_TO_CONFIG.maxZoom,
+    rightPadding = 0,
   } = options;
 
   // Get actual viewport dimensions from deck instance
   const viewportWidth = deckInstance.width || 1000;
   const viewportHeight = deckInstance.height || 800;
 
+  // Effective viewport width accounting for right padding (popup)
+  const effectiveWidth = viewportWidth - rightPadding;
+
   // Calculate center
-  const centerX = (bounds.minX + bounds.maxX) / 2;
+  let centerX = (bounds.minX + bounds.maxX) / 2;
   const centerY = (bounds.minY + bounds.maxY) / 2;
 
   // Calculate bounds size with 10% padding
@@ -168,7 +180,7 @@ export function flyToBounds(
   // At zoom=n, 1 world unit = 2^n pixels
   // So: zoom = log2(viewportPx / worldUnits)
   const zoomX =
-    boundsWidth > 0 ? Math.log2(viewportWidth / boundsWidth) : maxZoom;
+    boundsWidth > 0 ? Math.log2(effectiveWidth / boundsWidth) : maxZoom;
   const zoomY =
     boundsHeight > 0 ? Math.log2(viewportHeight / boundsHeight) : maxZoom;
 
@@ -177,6 +189,12 @@ export function flyToBounds(
 
   // Clamp to valid zoom range
   zoom = Math.max(INITIAL_VIEW_STATE.minZoom, Math.min(zoom, maxZoom));
+
+  // Offset center to account for right padding (shift view right so entity appears left)
+  // At zoom level Z, 1 pixel = 1/2^Z world units
+  if (rightPadding > 0) {
+    centerX += rightPadding / 2 / Math.pow(2, zoom);
+  }
 
   deckInstance.setProps({
     initialViewState: {

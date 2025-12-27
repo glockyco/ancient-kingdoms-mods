@@ -5,6 +5,9 @@
     MapSidebar,
     SIDEBAR_WIDTH_EXPANDED,
   } from "$lib/components/map/sidebar";
+
+  // Popup width (w-80 = 320px) + right margin (right-4 = 16px)
+  const POPUP_WIDTH = 336;
   import MapTooltip from "$lib/components/map/MapTooltip.svelte";
   import EntityPopup from "$lib/components/map/EntityPopup.svelte";
   import ZonePopup from "$lib/components/map/ZonePopup.svelte";
@@ -137,6 +140,17 @@
     | "crafting"
     | null
   >(null);
+
+  // Popup is open when any entity/zone/item/quest is selected
+  let isPopupOpen = $derived(
+    selectedZone !== null ||
+      selectedEntity !== null ||
+      selectedEntityType === "item" ||
+      selectedEntityType === "quest",
+  );
+
+  // Right padding for flyToBounds (popup width when popup is open, on desktop only)
+  let flyToRightPadding = $derived(isPopupOpen && isDesktop ? POPUP_WIDTH : 0);
 
   /**
    * Apply a resolved selection to state variables.
@@ -414,7 +428,7 @@
 
   function handleFocusBounds(bounds: Bounds) {
     if (!deckInstance) return;
-    flyToBounds(deckInstance, bounds);
+    flyToBounds(deckInstance, bounds, { rightPadding: flyToRightPadding });
   }
 
   function handleFocusHighlighted() {
@@ -424,7 +438,7 @@
       .filter((p): p is [number, number] => p !== null);
     const bounds = boundsFromPositions(positions);
     if (bounds) {
-      flyToBounds(deckInstance, bounds);
+      flyToBounds(deckInstance, bounds, { rightPadding: flyToRightPadding });
     }
   }
 
@@ -542,7 +556,9 @@
 
     // Fly to bounds if available
     if (result.bounds && deckInstance) {
-      flyToBounds(deckInstance, result.bounds);
+      flyToBounds(deckInstance, result.bounds, {
+        rightPadding: flyToRightPadding,
+      });
     }
   }
 
@@ -668,6 +684,7 @@
                   if (bounds) {
                     const result = flyToBounds(deckInstance, bounds, {
                       duration: 0,
+                      rightPadding: flyToRightPadding,
                     });
                     if (result) {
                       currentViewState = {
@@ -831,6 +848,7 @@
         if (initialBounds) {
           const result = flyToBounds(deckInstance, initialBounds, {
             duration: 0,
+            rightPadding: flyToRightPadding,
           });
           if (result) {
             currentViewState = { x: result.x, y: result.y, zoom: result.zoom };
