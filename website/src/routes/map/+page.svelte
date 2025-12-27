@@ -1,7 +1,10 @@
 <script lang="ts">
   import { untrack } from "svelte";
   import { browser } from "$app/environment";
-  import { MapSidebar } from "$lib/components/map/sidebar";
+  import {
+    MapSidebar,
+    SIDEBAR_WIDTH_EXPANDED,
+  } from "$lib/components/map/sidebar";
   import MapTooltip from "$lib/components/map/MapTooltip.svelte";
   import EntityPopup from "$lib/components/map/EntityPopup.svelte";
   import ZonePopup from "$lib/components/map/ZonePopup.svelte";
@@ -82,6 +85,20 @@
   // Zone focus state
   let zoneList = $state<ZoneListItem[]>(data.zoneList);
   let focusedZoneId = $state<string | null>(null);
+
+  // Sidebar width (for map container offset on desktop)
+  let sidebarWidth = $state(SIDEBAR_WIDTH_EXPANDED);
+
+  // Track if we're on desktop (md breakpoint) for tooltip offset
+  let isDesktop = $state(false);
+  $effect(() => {
+    if (!browser) return;
+    const mediaQuery = window.matchMedia("(min-width: 768px)");
+    isDesktop = mediaQuery.matches;
+    const handler = (e: MediaQueryListEvent) => (isDesktop = e.matches);
+    mediaQuery.addEventListener("change", handler);
+    return () => mediaQuery.removeEventListener("change", handler);
+  });
 
   // Hover state (for tooltip display)
   let hoveredEntity = $state<AnyMapEntity | null>(null);
@@ -919,7 +936,8 @@
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div
     use:initDeckMap
-    class="absolute inset-0"
+    class="absolute inset-0 map-container"
+    style="--sidebar-width: {sidebarWidth}px"
     onmouseleave={() => (hoveredEntity = null)}
   ></div>
 
@@ -960,12 +978,13 @@
       zones={zoneList}
       {focusedZoneId}
       onZoneFocusChange={handleZoneFocusChange}
+      bind:sidebarWidth
     />
 
     {#if hoveredEntity}
       <MapTooltip
         entity={hoveredEntity}
-        x={hoverX}
+        x={hoverX + (isDesktop ? sidebarWidth : 0)}
         y={hoverY}
         {isHoveringDestination}
       />

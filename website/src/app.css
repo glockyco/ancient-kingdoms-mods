@@ -178,6 +178,13 @@
   }
 }
 
+/* Map container - offset by sidebar width on desktop */
+.map-container {
+  @media (min-width: 768px) {
+    left: var(--sidebar-width, 0);
+  }
+}
+
 /* Item tooltip styling (game-style appearance) */
 .tooltip-content {
   background: rgba(20, 25, 35);
