@@ -555,9 +555,11 @@
     }
 
     // Fly to bounds if available
+    // Use POPUP_WIDTH directly since we know a popup will open after applySelection
+    // (flyToRightPadding derived value hasn't updated yet in this execution)
     if (result.bounds && deckInstance) {
       flyToBounds(deckInstance, result.bounds, {
-        rightPadding: flyToRightPadding,
+        rightPadding: isDesktop ? POPUP_WIDTH : 0,
       });
     }
   }
