@@ -169,7 +169,10 @@
       <Drawer.Header class="sr-only">
         <Drawer.Title>Search Map</Drawer.Title>
       </Drawer.Header>
-      <Command.Root shouldFilter={false} class="rounded-t-lg border-none">
+      <Command.Root
+        shouldFilter={false}
+        class="rounded-t-lg border-none bg-background"
+      >
         {@render searchContent()}
       </Command.Root>
     </Drawer.Content>
