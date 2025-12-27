@@ -1001,10 +1001,10 @@
       bind:sidebarWidth
     />
 
-    {#if hoveredEntity}
+    {#if hoveredEntity && isDesktop}
       <MapTooltip
         entity={hoveredEntity}
-        x={hoverX + (isDesktop ? sidebarWidth : 0)}
+        x={hoverX + sidebarWidth}
         y={hoverY}
         {isHoveringDestination}
       />
