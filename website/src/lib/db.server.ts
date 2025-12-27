@@ -1,5 +1,6 @@
 import Database from "better-sqlite3";
 import { resolve } from "path";
+import { DB_STATIC_PATH } from "$lib/constants/constants";
 
 let db: Database.Database | null = null;
 
@@ -9,7 +10,7 @@ let db: Database.Database | null = null;
  */
 function getDb(): Database.Database {
   if (!db) {
-    const dbPath = resolve("static/compendium.db");
+    const dbPath = resolve(DB_STATIC_PATH);
     db = new Database(dbPath, { readonly: true });
   }
   return db;

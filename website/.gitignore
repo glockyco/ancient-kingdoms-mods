@@ -9,7 +9,8 @@ node_modules
 /build
 
 # Generated files (from build-pipeline)
-/static/compendium.db
+/static/compendium.db*
+/static/db-metadata.json
 /static/tiles/
 /static/icons/
 

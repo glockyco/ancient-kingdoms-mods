@@ -8,7 +8,7 @@
   import ItemPopup from "$lib/components/map/ItemPopup.svelte";
   import QuestPopup from "$lib/components/map/QuestPopup.svelte";
   import MapSearch from "$lib/components/map/MapSearch.svelte";
-  import { loadAllMapEntities, loadZoneList } from "$lib/queries/map";
+  import type { PageData } from "./$types";
   import {
     createLayers,
     createFilteredData,
@@ -57,24 +57,29 @@
     type ResolvedSelection,
   } from "$lib/map/resolve-selection";
 
+  // Prerendered data from server
+  let { data }: { data: PageData } = $props();
+
   // deck.gl instance and modules (not reactive - managed imperatively)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let deckInstance: any = null;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let deckModules: any = null;
 
-  // Loading state
+  // Loading state (data is prerendered, only deck.gl needs loading)
   let isLoading = $state(true);
   let loadError = $state<string | null>(null);
 
-  // Entity data (loaded once, cached)
-  let entityData = $state<MapEntityData | null>(null);
-  let filteredData = $state<FilteredMapData | null>(null);
-  let entityIndex = $state<EntityIndex | null>(null);
+  // Entity data from prerendered props
+  let entityData = $state<MapEntityData>(data.entityData);
+  let filteredData = $state<FilteredMapData>(
+    createFilteredData(data.entityData),
+  );
+  let entityIndex = $state<EntityIndex>(createEntityIndex(data.entityData));
   let iconAtlas = $state<IconAtlasData | null>(null);
 
   // Zone focus state
-  let zoneList = $state<ZoneListItem[]>([]);
+  let zoneList = $state<ZoneListItem[]>(data.zoneList);
   let focusedZoneId = $state<string | null>(null);
 
   // Hover state (for tooltip display)
@@ -607,21 +612,10 @@
           iconAtlas = atlas;
         }
 
-        // Load entity data and zone list (only load once)
-        if (!entityData) {
-          const [loadedEntityData, loadedZoneList] = await Promise.all([
-            loadAllMapEntities(),
-            loadZoneList(),
-          ]);
-          entityData = loadedEntityData;
-          zoneList = loadedZoneList;
-          filteredData = createFilteredData(entityData);
-          entityIndex = createEntityIndex(entityData);
-
-          // Set level filter to data-derived defaults if not specified in URL
-          if (!urlState?.levelFilter) {
-            levelFilter = getDefaultLevelFilter(entityData.levelRanges);
-          }
+        // Set level filter to data-derived defaults if not specified in URL
+        // (entity data is prerendered, no need to load)
+        if (!urlState?.levelFilter) {
+          levelFilter = getDefaultLevelFilter(entityData.levelRanges);
         }
 
         // Restore selection from URL state (after entity data is loaded)

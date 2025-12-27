@@ -5,6 +5,7 @@ import {
   getGatheringResourceDrops,
   getGatheringResourceSpawns,
 } from "$lib/queries/gather-items.server";
+import { DB_STATIC_PATH } from "$lib/constants/constants";
 import { buildObtainabilityTree } from "$lib/server/obtainability";
 import type { PageServerLoad } from "./$types";
 import type { ObtainabilityNode } from "$lib/types/recipes";
@@ -24,7 +25,7 @@ export const load: PageServerLoad = ({ params }) => {
   // Build obtainability tree for tool if one is required
   let toolObtainabilityTree: ObtainabilityNode | null = null;
   if (resource.tool_required_id) {
-    const db = new Database("static/compendium.db", { readonly: true });
+    const db = new Database(DB_STATIC_PATH, { readonly: true });
     const visited = new Set<string>();
     toolObtainabilityTree = buildObtainabilityTree(
       db,

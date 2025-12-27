@@ -1,5 +1,6 @@
 import Database from "better-sqlite3";
 import type { PageServerLoad } from "./$types";
+import { DB_STATIC_PATH } from "$lib/constants/constants";
 
 export const prerender = true;
 
@@ -18,7 +19,7 @@ interface HomePageData {
 }
 
 export const load: PageServerLoad = (): HomePageData => {
-  const db = new Database("static/compendium.db", { readonly: true });
+  const db = new Database(DB_STATIC_PATH, { readonly: true });
 
   const itemCount = (
     db.prepare("SELECT COUNT(*) as count FROM items").get() as { count: number }

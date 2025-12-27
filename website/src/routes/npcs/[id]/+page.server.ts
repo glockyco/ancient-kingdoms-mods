@@ -11,12 +11,15 @@ import type {
   NpcSpawnLocation,
   NpcSkill,
 } from "$lib/types/npcs";
-import { WORLD_BOSS_DUNGEON_ID } from "$lib/constants/constants";
+import {
+  WORLD_BOSS_DUNGEON_ID,
+  DB_STATIC_PATH,
+} from "$lib/constants/constants";
 
 export const prerender = true;
 
 export const entries: EntryGenerator = () => {
-  const db = new Database("static/compendium.db", { readonly: true });
+  const db = new Database(DB_STATIC_PATH, { readonly: true });
   const npcs = db.prepare("SELECT id FROM npcs").all() as Array<{ id: string }>;
   db.close();
 
@@ -47,7 +50,7 @@ const defaultRoles: NpcRoles = {
 };
 
 export const load: PageServerLoad = ({ params }): NpcDetailPageData => {
-  const db = new Database("static/compendium.db", { readonly: true });
+  const db = new Database(DB_STATIC_PATH, { readonly: true });
 
   const npcRaw = db
     .prepare("SELECT * FROM npcs WHERE id = ?")

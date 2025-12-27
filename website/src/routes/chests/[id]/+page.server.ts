@@ -1,6 +1,7 @@
 import Database from "better-sqlite3";
 import { error } from "@sveltejs/kit";
 import { getChestById, getChestDrops } from "$lib/queries/gather-items.server";
+import { DB_STATIC_PATH } from "$lib/constants/constants";
 import { buildObtainabilityTree } from "$lib/server/obtainability";
 import type { PageServerLoad } from "./$types";
 import type { ObtainabilityNode } from "$lib/types/recipes";
@@ -20,7 +21,7 @@ export const load: PageServerLoad = ({ params }) => {
   // Build obtainability tree for key if one is required
   let keyObtainabilityTree: ObtainabilityNode | null = null;
   if (chest.key_required_id) {
-    const db = new Database("static/compendium.db", { readonly: true });
+    const db = new Database(DB_STATIC_PATH, { readonly: true });
     const visited = new Set<string>();
     keyObtainabilityTree = buildObtainabilityTree(
       db,

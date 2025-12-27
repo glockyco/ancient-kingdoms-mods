@@ -88,6 +88,27 @@ def run(config: dict) -> None:
         console.print()
         denormalize_all(conn)
 
+        # Optimize FTS5 indexes (merges segments, reduces size)
+        console.print("\nOptimizing database...")
+        cursor = conn.cursor()
+        fts_tables = [
+            "items_fts",
+            "monsters_fts",
+            "npcs_fts",
+            "quests_fts",
+            "zones_fts",
+            "gathering_resources_fts",
+            "chests_fts",
+            "altars_fts",
+            "portals_fts",
+            "crafting_stations_fts",
+            "alchemy_tables_fts",
+        ]
+        for table in fts_tables:
+            cursor.execute(f"INSERT INTO {table}({table}) VALUES ('optimize')")
+        console.print(f"  [green]OK[/green] Optimized {len(fts_tables)} FTS5 indexes")
+
+        conn.commit()
         console.print(
             f"\n[bold green]OK Database built successfully:[/bold green] {db_path}"
         )
@@ -97,3 +118,29 @@ def run(config: dict) -> None:
         raise
     finally:
         conn.close()
+
+    # VACUUM and ANALYZE must run outside of any transaction
+    import sqlite3
+
+    vacuum_conn = sqlite3.connect(db_path, isolation_level=None)
+    vacuum_conn.execute("VACUUM")
+    console.print("  [green]OK[/green] Vacuumed database")
+    vacuum_conn.execute("ANALYZE")
+    console.print("  [green]OK[/green] Analyzed query statistics")
+    vacuum_conn.close()
+
+    # Post-processing for sql.js-httpvfs chunked mode
+    # Cloudflare doesn't expose Content-Length header, so we use chunked mode
+    # which requires the file to have a numeric suffix and a metadata file
+    import json
+    import shutil
+
+    db_size = db_path.stat().st_size
+    chunked_path = db_path.parent / (db_path.name + "0")
+    shutil.move(db_path, chunked_path)
+    console.print(f"  [green]OK[/green] Renamed to chunked format: {chunked_path.name}")
+
+    metadata_path = static_dir / "db-metadata.json"
+    with open(metadata_path, "w") as f:
+        json.dump({"size": db_size}, f)
+    console.print(f"  [green]OK[/green] Wrote database metadata: {metadata_path}")

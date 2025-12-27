@@ -1,11 +1,12 @@
 import Database from "better-sqlite3";
 import type { PageServerLoad } from "./$types";
+import { DB_STATIC_PATH } from "$lib/constants/constants";
 import type { QuestsPageData, QuestListView } from "$lib/types/quests";
 
 export const prerender = true;
 
 export const load: PageServerLoad = (): QuestsPageData => {
-  const db = new Database("static/compendium.db", { readonly: true });
+  const db = new Database(DB_STATIC_PATH, { readonly: true });
 
   // Build a map of adventurer quest IDs to their NPCs (first NPC + count)
   const adventurerQuestNpcs = new Map<

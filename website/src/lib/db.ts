@@ -1,4 +1,5 @@
 import { browser } from "$app/environment";
+import { DB_URL_PREFIX } from "$lib/constants/constants";
 
 // Type for the database worker from sql.js-httpvfs (no official types available)
 interface DbWorker {
@@ -23,6 +24,11 @@ export async function getDb() {
     return dbWorker;
   }
 
+  // Fetch database metadata to get file size
+  // Cloudflare doesn't expose Content-Length, so we provide it via metadata
+  const metadataResponse = await fetch("/db-metadata.json");
+  const metadata = (await metadataResponse.json()) as { size: number };
+
   // Dynamic import to avoid loading in SSR
   const sqlJsHttpvfs = await import("sql.js-httpvfs");
   const { createDbWorker } = sqlJsHttpvfs.default || sqlJsHttpvfs;
@@ -35,14 +41,21 @@ export async function getDb() {
   const wasmUrl = new URL("sql.js-httpvfs/dist/sql-wasm.wasm", import.meta.url);
 
   // Type assertion at I/O boundary - sql.js-httpvfs has no official types
+  // Using chunked mode as workaround for Cloudflare not exposing Content-Length.
+  // The library's "full" mode ignores fileLength param, but "chunked" mode
+  // reads databaseLengthBytes. We use a single chunk (file ends with "0").
+  // See: https://github.com/phiresky/sql.js-httpvfs/issues/13
   dbWorker = (await createDbWorker(
     [
       {
         from: "inline",
         config: {
-          serverMode: "full",
-          url: "/compendium.db",
-          requestChunkSize: 65536,
+          serverMode: "chunked",
+          urlPrefix: DB_URL_PREFIX,
+          serverChunkSize: metadata.size,
+          databaseLengthBytes: metadata.size,
+          suffixLength: 1,
+          requestChunkSize: 4096,
         },
       },
     ],
