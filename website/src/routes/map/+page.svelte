@@ -56,6 +56,7 @@
     resolveVirtualSelection,
     type ResolvedSelection,
   } from "$lib/map/resolve-selection";
+  import { preloadDb } from "$lib/db";
 
   // Prerendered data from server
   let { data }: { data: PageData } = $props();
@@ -534,6 +535,9 @@
    */
   function initDeckMap(container: HTMLDivElement) {
     if (!browser) return;
+
+    // Start database download immediately in background
+    preloadDb();
 
     async function initialize() {
       // Clean up any existing instance first

@@ -12,8 +12,6 @@ export const WORLD_BOSS_DUNGEON_ID = 100;
 
 /**
  * Database file paths.
- * sql.js-httpvfs chunked mode requires numeric suffix (0) on the file.
  */
-export const DB_FILENAME = "compendium.db0";
-export const DB_URL_PREFIX = "/compendium.db";
-export const DB_STATIC_PATH = "static/compendium.db0";
+export const DB_FILENAME = "compendium.db";
+export const DB_STATIC_PATH = "static/compendium.db";

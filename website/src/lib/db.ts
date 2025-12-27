@@ -1,69 +1,35 @@
 import { browser } from "$app/environment";
-import { DB_URL_PREFIX } from "$lib/constants/constants";
+import initSqlJs, { type Database, type SqlValue } from "sql.js";
 
-// Type for the database worker from sql.js-httpvfs (no official types available)
-interface DbWorker {
-  db: {
-    query: (sql: string, params: unknown[]) => Promise<unknown[]>;
-  };
-}
-
-let dbWorker: DbWorker | null = null;
+let db: Database | null = null;
+let dbPromise: Promise<Database> | null = null;
 
 /**
- * Initialize and return the database worker.
- * This function is called once and cached.
- * Only works in browser environment.
+ * Initialize and return the database.
+ * Downloads full DB on first call, then cached in memory.
  */
-export async function getDb() {
+export async function getDb(): Promise<Database> {
   if (!browser) {
     throw new Error("Database can only be accessed in the browser");
   }
 
-  if (dbWorker) {
-    return dbWorker;
-  }
+  if (db) return db;
+  if (dbPromise) return dbPromise;
 
-  // Fetch database metadata to get file size
-  // Cloudflare doesn't expose Content-Length, so we provide it via metadata
-  const metadataResponse = await fetch("/db-metadata.json");
-  const metadata = (await metadataResponse.json()) as { size: number };
+  dbPromise = (async () => {
+    const [SQL, response] = await Promise.all([
+      initSqlJs({
+        locateFile: (file) => `https://sql.js.org/dist/${file}`,
+      }),
+      fetch("/compendium.db"),
+    ]);
 
-  // Dynamic import to avoid loading in SSR
-  const sqlJsHttpvfs = await import("sql.js-httpvfs");
-  const { createDbWorker } = sqlJsHttpvfs.default || sqlJsHttpvfs;
+    const buffer = await response.arrayBuffer();
+    db = new SQL.Database(new Uint8Array(buffer));
+    return db;
+  })();
 
-  const workerUrl = new URL(
-    "sql.js-httpvfs/dist/sqlite.worker.js",
-    import.meta.url,
-  );
-
-  const wasmUrl = new URL("sql.js-httpvfs/dist/sql-wasm.wasm", import.meta.url);
-
-  // Type assertion at I/O boundary - sql.js-httpvfs has no official types
-  // Using chunked mode as workaround for Cloudflare not exposing Content-Length.
-  // The library's "full" mode ignores fileLength param, but "chunked" mode
-  // reads databaseLengthBytes. We use a single chunk (file ends with "0").
-  // See: https://github.com/phiresky/sql.js-httpvfs/issues/13
-  dbWorker = (await createDbWorker(
-    [
-      {
-        from: "inline",
-        config: {
-          serverMode: "chunked",
-          urlPrefix: DB_URL_PREFIX,
-          serverChunkSize: metadata.size,
-          databaseLengthBytes: metadata.size,
-          suffixLength: 1,
-          requestChunkSize: 4096,
-        },
-      },
-    ],
-    workerUrl.toString(),
-    wasmUrl.toString(),
-  )) as DbWorker;
-
-  return dbWorker;
+  return dbPromise;
 }
 
 /**
@@ -71,11 +37,18 @@ export async function getDb() {
  */
 export async function query<T = unknown>(
   sql: string,
-  params: unknown[] = [],
+  params: SqlValue[] = [],
 ): Promise<T[]> {
-  const db = await getDb();
-  const result = await db.db.query(sql, params);
-  return result as T[];
+  const database = await getDb();
+  const stmt = database.prepare(sql);
+  stmt.bind(params);
+
+  const results: T[] = [];
+  while (stmt.step()) {
+    results.push(stmt.getAsObject() as T);
+  }
+  stmt.free();
+  return results;
 }
 
 /**
@@ -83,7 +56,7 @@ export async function query<T = unknown>(
  */
 export async function queryOne<T = unknown>(
   sql: string,
-  params: unknown[] = [],
+  params: SqlValue[] = [],
 ): Promise<T | null> {
   const rows = await query<T>(sql, params);
   return rows[0] || null;
@@ -94,14 +67,19 @@ export async function queryOne<T = unknown>(
  */
 export async function queryScalar<T = unknown>(
   sql: string,
-  params: unknown[] = [],
+  params: SqlValue[] = [],
 ): Promise<T | null> {
-  const db = await getDb();
-  const result = await db.db.query(sql, params);
-  if (result.length === 0) {
-    return null;
+  const row = await queryOne<Record<string, unknown>>(sql, params);
+  if (!row) return null;
+  return Object.values(row)[0] as T;
+}
+
+/**
+ * Preload the database (call on map page mount).
+ * Returns immediately if already loaded.
+ */
+export function preloadDb(): void {
+  if (browser) {
+    getDb().catch(console.error);
   }
-  const firstRow = result[0] as Record<string, unknown>;
-  const firstValue = Object.values(firstRow)[0];
-  return firstValue as T;
 }
