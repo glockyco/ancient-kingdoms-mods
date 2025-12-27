@@ -1,5 +1,6 @@
 import { browser } from "$app/environment";
-import initSqlJs, { type Database, type SqlValue } from "sql.js";
+import initSqlJs, { type Database, type SqlValue } from "sql.js-fts5";
+import sqlWasmUrl from "sql.js-fts5/dist/sql-wasm.wasm?url";
 
 let db: Database | null = null;
 let dbPromise: Promise<Database> | null = null;
@@ -19,7 +20,7 @@ export async function getDb(): Promise<Database> {
   dbPromise = (async () => {
     const [SQL, response] = await Promise.all([
       initSqlJs({
-        locateFile: (file) => `https://sql.js.org/dist/${file}`,
+        locateFile: () => sqlWasmUrl,
       }),
       fetch("/compendium.db"),
     ]);

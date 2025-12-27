@@ -29,9 +29,9 @@ importers:
       lucide:
         specifier: ^0.562.0
         version: 0.562.0
-      sql.js:
-        specifier: ^1.13.0
-        version: 1.13.0
+      sql.js-fts5:
+        specifier: ^1.4.0
+        version: 1.4.0
     devDependencies:
       '@eslint/compat':
         specifier: ^2.0.0
@@ -2206,8 +2206,8 @@ packages:
   sprintf-js@1.0.3:
     resolution: {integrity: sha512-D9cPgkvLlV3t3IzL0D0YLvGA9Ahk4PcvVwUbN0dSGr1aP0Nrt4AEnTUbuGvquEC0mA64Gqt1fzirlRs5ibXx8g==}
 
-  sql.js@1.13.0:
-    resolution: {integrity: sha512-RJbVP1HRDlUUXahJ7VMTcu9Rm1Nzw+EBpoPr94vnbD4LwR715F3CcxE2G2k45PewcaZ57pjetYa+LoSJLAASgA==}
+  sql.js-fts5@1.4.0:
+    resolution: {integrity: sha512-O9VQo/LSt+cteAbkLJAJIkFMIEg63Quw8OeZjc60qw5JWpZ2JhCB0RHrDvcjWxstixxFx2/GXYYatwrtmue5ww==}
 
   stoppable@1.1.0:
     resolution: {integrity: sha512-KXDYZ9dszj6bzvnEMRYvxgeTHU74QBFL54XKtP3nyMuJ81CFYtABZ3bAzL2EdFUaEwJOBOgENyFj3R7oTzDyyw==}
@@ -4503,7 +4503,7 @@ snapshots:
 
   sprintf-js@1.0.3: {}
 
-  sql.js@1.13.0: {}
+  sql.js-fts5@1.4.0: {}
 
   stoppable@1.1.0: {}
 

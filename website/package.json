@@ -58,6 +58,6 @@
     "@tanstack/table-core": "^8.21.3",
     "bits-ui": "^2.14.4",
     "lucide": "^0.562.0",
-    "sql.js": "^1.13.0"
+    "sql.js-fts5": "^1.4.0"
   }
 }
