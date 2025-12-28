@@ -775,21 +775,15 @@
         // Otherwise use defaults - flyToBounds will position the view after creation
         // Check media query directly since isDesktop state may not be set yet
         const isDesktopNow = window.matchMedia("(min-width: 768px)").matches;
-        let initialViewState = INITIAL_VIEW_STATE;
-        if (urlState && hasPositionParams) {
-          let targetX = urlState.x;
-          // Offset center to account for popup width on desktop
-          // Same formula as flyToBounds: rightPadding / 2 / 2^zoom
-          if (urlState.entity && isDesktopNow) {
-            targetX += POPUP_WIDTH / 2 / Math.pow(2, urlState.zoom);
-          }
-          initialViewState = {
-            target: [targetX, urlState.y, 0] as [number, number, number],
-            zoom: urlState.zoom,
-            minZoom: INITIAL_VIEW_STATE.minZoom,
-            maxZoom: INITIAL_VIEW_STATE.maxZoom,
-          };
-        }
+        const initialViewState =
+          urlState && hasPositionParams
+            ? {
+                target: [urlState.x, urlState.y, 0] as [number, number, number],
+                zoom: urlState.zoom,
+                minZoom: INITIAL_VIEW_STATE.minZoom,
+                maxZoom: INITIAL_VIEW_STATE.maxZoom,
+              }
+            : INITIAL_VIEW_STATE;
 
         // Initialize deck.gl
         deckInstance = new deckModules.Deck({
