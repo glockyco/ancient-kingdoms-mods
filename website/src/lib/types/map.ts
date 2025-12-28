@@ -281,9 +281,11 @@ export interface ZoneBoundary {
 }
 
 /**
- * Parent zone boundary with level range (for popup display)
+ * Parent zone boundary with level range (for popup display).
+ * Zones without map bounds (e.g., excluded zones) have polygon: null.
  */
-export interface ParentZoneBoundary extends ZoneBoundary {
+export interface ParentZoneBoundary extends Omit<ZoneBoundary, "polygon"> {
+  polygon: [number, number][] | null;
   levelMin: number | null;
   levelMax: number | null;
   isDungeon: boolean;

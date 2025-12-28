@@ -35,7 +35,7 @@
   }: Props = $props();
 
   function handleFocus() {
-    if (!onFocusClick) return;
+    if (!onFocusClick || !zone.polygon) return;
     const bounds = boundsFromPolygon(zone.polygon);
     onFocusClick(bounds);
   }
@@ -79,7 +79,7 @@
   subtitle={zone.isDungeon ? "Dungeon" : undefined}
   detailsUrl="/zones/{zone.zoneId}"
   {onClose}
-  onFocusClick={handleFocus}
+  onFocusClick={zone.polygon ? handleFocus : undefined}
   {mode}
 >
   <!-- Level Range -->

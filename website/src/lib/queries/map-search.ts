@@ -1,8 +1,5 @@
 import { query } from "$lib/db";
-import {
-  EXCLUDED_ZONE_IDS,
-  WORLD_BOSS_DUNGEON_ID,
-} from "$lib/constants/constants";
+import { WORLD_BOSS_DUNGEON_ID } from "$lib/constants/constants";
 
 export interface MapSearchBounds {
   minX: number;
@@ -344,39 +341,35 @@ async function searchZones(
     SELECT
       z.id,
       z.name,
-      MIN(zt.bounds_min_x) as min_x,
-      MAX(zt.bounds_max_x) as max_x,
-      MIN(zt.bounds_min_y) as min_y,
-      MAX(zt.bounds_max_y) as max_y
+      z.bounds_min_x as min_x,
+      z.bounds_max_x as max_x,
+      z.bounds_min_y as min_y,
+      z.bounds_max_y as max_y
     FROM zones_fts zf
     JOIN zones z ON zf.rowid = z.rowid
-    LEFT JOIN zone_triggers zt ON zt.zone_id = z.zone_id
     WHERE zf.name MATCH ?
-    GROUP BY z.id
     ORDER BY rank
     LIMIT ?
   `,
     [ftsQuery, limit],
   );
 
-  return rows
-    .filter((r) => !EXCLUDED_ZONE_IDS.has(r.id))
-    .map((r) => ({
-      id: r.id,
-      name: r.name,
-      category: "zone" as const,
-      bounds:
-        r.min_x !== null
-          ? {
-              minX: r.min_x,
-              maxX: r.max_x!,
-              minY: -r.max_y!,
-              maxY: -r.min_y!,
-            }
-          : null,
-      zoneId: r.id,
-      zoneName: r.name,
-    }));
+  return rows.map((r) => ({
+    id: r.id,
+    name: r.name,
+    category: "zone" as const,
+    bounds:
+      r.min_x !== null
+        ? {
+            minX: r.min_x,
+            maxX: r.max_x!,
+            minY: -r.max_y!,
+            maxY: -r.min_y!,
+          }
+        : null,
+    zoneId: r.id,
+    zoneName: r.name,
+  }));
 }
 
 interface ResourceSearchRow {

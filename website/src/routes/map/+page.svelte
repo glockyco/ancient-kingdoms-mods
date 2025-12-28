@@ -839,11 +839,11 @@
               .map((e) => e.position!);
             initialBounds = boundsFromPositions(positions);
           } else if (urlState?.selectedZone) {
-            // Zone - compute bounds from polygon
+            // Zone - compute bounds from polygon (if zone has one)
             const zone = entityData.parentZones.find(
               (z) => z.zoneId === urlState.selectedZone,
             );
-            if (zone) {
+            if (zone?.polygon) {
               initialBounds = boundsFromPolygon(zone.polygon);
             }
           }
@@ -851,14 +851,17 @@
 
         // If no bounds computed (no positions or excluded zone), use full map
         // But skip if URL has explicit position params (respect those instead)
+        const zonesWithPolygons = entityData.parentZones.filter(
+          (z) => z.polygon !== null,
+        );
         if (
           !initialBounds &&
           !hasPositionParams &&
-          entityData.parentZones.length > 0
+          zonesWithPolygons.length > 0
         ) {
-          initialBounds = entityData.parentZones.reduce(
+          initialBounds = zonesWithPolygons.reduce(
             (bounds, zone) => {
-              for (const [x, y] of zone.polygon) {
+              for (const [x, y] of zone.polygon!) {
                 bounds.minX = Math.min(bounds.minX, x);
                 bounds.maxX = Math.max(bounds.maxX, x);
                 bounds.minY = Math.min(bounds.minY, y);

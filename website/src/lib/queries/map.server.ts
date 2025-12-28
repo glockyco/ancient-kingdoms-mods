@@ -911,13 +911,14 @@ interface ZoneBoundsRow {
   level_min: number | null;
   level_max: number | null;
   is_dungeon: number;
-  bounds_min_x: number;
-  bounds_min_y: number;
-  bounds_max_x: number;
-  bounds_max_y: number;
+  bounds_min_x: number | null;
+  bounds_min_y: number | null;
+  bounds_max_x: number | null;
+  bounds_max_y: number | null;
 }
 
 function loadZoneBoundsServer(db: Database.Database): ParentZoneBoundary[] {
+  // Load ALL zones so excluded zones (without bounds) can still show popups
   const rows = db
     .prepare(
       `
@@ -932,27 +933,33 @@ function loadZoneBoundsServer(db: Database.Database): ParentZoneBoundary[] {
       bounds_max_x,
       bounds_max_y
     FROM zones
-    WHERE bounds_min_x IS NOT NULL
-      AND bounds_min_y IS NOT NULL
-      AND bounds_max_x IS NOT NULL
-      AND bounds_max_y IS NOT NULL
   `,
     )
     .all() as ZoneBoundsRow[];
 
-  return rows.map((r) => ({
-    id: `parent-${r.name}`,
-    name: r.name,
-    zoneId: r.id,
-    zoneName: r.name,
-    levelMin: r.level_min,
-    levelMax: r.level_max,
-    isDungeon: Boolean(r.is_dungeon),
-    polygon: [
-      [r.bounds_min_x, -r.bounds_max_y],
-      [r.bounds_max_x, -r.bounds_max_y],
-      [r.bounds_max_x, -r.bounds_min_y],
-      [r.bounds_min_x, -r.bounds_min_y],
-    ] as [number, number][],
-  }));
+  return rows.map((r) => {
+    const hasBounds =
+      r.bounds_min_x !== null &&
+      r.bounds_min_y !== null &&
+      r.bounds_max_x !== null &&
+      r.bounds_max_y !== null;
+
+    return {
+      id: `parent-${r.name}`,
+      name: r.name,
+      zoneId: r.id,
+      zoneName: r.name,
+      levelMin: r.level_min,
+      levelMax: r.level_max,
+      isDungeon: Boolean(r.is_dungeon),
+      polygon: hasBounds
+        ? ([
+            [r.bounds_min_x!, -r.bounds_max_y!],
+            [r.bounds_max_x!, -r.bounds_max_y!],
+            [r.bounds_max_x!, -r.bounds_min_y!],
+            [r.bounds_min_x!, -r.bounds_min_y!],
+          ] as [number, number][])
+        : null,
+    };
+  });
 }

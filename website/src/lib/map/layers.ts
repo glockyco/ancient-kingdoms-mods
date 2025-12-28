@@ -387,9 +387,13 @@ export function createLayers(
     pickable: false,
   });
 
+  // Filter out zones without polygons (excluded zones like Temple of Valaark)
+  const renderableParentZones = filtered.parentZones.filter(
+    (z) => z.polygon !== null,
+  );
   const parentZonesLayer = new PolygonLayer({
     id: "parent-zones",
-    data: filtered.parentZones,
+    data: renderableParentZones,
     visible: visibility.parentZones,
     getPolygon: (d: ZoneBoundary) => d.polygon,
     getFillColor: ZONE_COLORS.parentZone.fill,
@@ -948,7 +952,8 @@ export function createLayers(
   });
 
   // Zone selection highlight layer (separate from zone layers so it shows even when zones hidden)
-  const zoneHighlightData = selectedZone ? [selectedZone] : [];
+  // Only highlight zones with polygons (excluded zones have polygon: null)
+  const zoneHighlightData = selectedZone?.polygon ? [selectedZone] : [];
   const zoneHighlightLayer = new PolygonLayer({
     id: "zone-highlight",
     data: zoneHighlightData,
@@ -984,8 +989,8 @@ export function createLayers(
     },
   });
 
-  // Zone hover highlight layer
-  const zoneHoverHighlightData = hoverZone ? [hoverZone] : [];
+  // Zone hover highlight layer (excluded zones have polygon: null)
+  const zoneHoverHighlightData = hoverZone?.polygon ? [hoverZone] : [];
   const zoneHoverHighlightLayer = new PolygonLayer({
     id: "zone-hover-highlight",
     data: zoneHoverHighlightData,
