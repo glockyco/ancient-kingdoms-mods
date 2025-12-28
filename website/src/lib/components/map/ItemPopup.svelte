@@ -333,15 +333,18 @@
         <div class="mb-1 text-xs font-medium text-muted-foreground">
           Crafted from
         </div>
-        <div class="max-h-32 space-y-1 overflow-y-auto pr-2">
+        <div class="max-h-32 space-y-0.5 overflow-y-auto pr-2">
           {#each details.craftingSources as recipe (recipe.recipeId)}
-            <div class="text-xs text-muted-foreground">
-              {#each recipe.materials as material, i (material.itemId)}
-                <span>{material.amount}x {material.itemName}</span
-                >{#if i < recipe.materials.length - 1},
-                {/if}
-              {/each}
-            </div>
+            {#each recipe.materials as material (material.itemId)}
+              <div class="flex items-center gap-1">
+                <span class="text-muted-foreground">{material.amount}x</span>
+                <ItemButton
+                  itemId={material.itemId}
+                  itemName={material.itemName}
+                  onSelect={onSelectItem}
+                />
+              </div>
+            {/each}
           {/each}
         </div>
       </div>
