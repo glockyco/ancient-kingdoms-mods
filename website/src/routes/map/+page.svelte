@@ -246,6 +246,12 @@
       : computeSelectionData(entityIndex, selectedEntityType, selectedEntityId),
   );
 
+  // Derived: whether there are any highlight positions to focus on
+  // Used to conditionally show the focus button in popups
+  let hasHighlightPositions = $derived(
+    selectionData.some((e) => e.position !== null),
+  );
+
   // Derived: pre-computed patrol path data for patrolling monsters
   // Only recomputed when selectionData changes
   let patrolPathData = $derived(computePatrolPathData(selectionData));
@@ -1058,7 +1064,9 @@
         <EntityPopup
           entity={selectedEntity}
           onClose={handleClosePopup}
-          onFocusClick={handleFocusHighlighted}
+          onFocusClick={hasHighlightPositions
+            ? handleFocusHighlighted
+            : undefined}
           onSelectMonster={handleSelectMonster}
           onSelectAltar={handleSelectAltar}
           onSelectItem={handleSelectItem}
@@ -1072,7 +1080,9 @@
         <ItemPopup
           itemId={selectedEntityId}
           onClose={handleClosePopup}
-          onFocusClick={handleFocusHighlighted}
+          onFocusClick={hasHighlightPositions
+            ? handleFocusHighlighted
+            : undefined}
           onSelectMonster={handleSelectMonster}
           onHoverMonster={handleHoverMonster}
           onSelectAltar={handleSelectAltar}
@@ -1090,7 +1100,9 @@
         <QuestPopup
           questId={selectedEntityId}
           onClose={handleClosePopup}
-          onFocusClick={handleFocusHighlighted}
+          onFocusClick={hasHighlightPositions
+            ? handleFocusHighlighted
+            : undefined}
           onSelectNpc={handleSelectNpc}
           onSelectMonster={handleSelectMonster}
           onSelectItem={handleSelectItem}
@@ -1126,7 +1138,9 @@
                   mobileDrawerOpen = false;
                   handleClosePopup();
                 }}
-                onFocusClick={handleFocusHighlighted}
+                onFocusClick={hasHighlightPositions
+                  ? handleFocusHighlighted
+                  : undefined}
                 onSelectMonster={handleSelectMonster}
                 onSelectAltar={handleSelectAltar}
                 onSelectItem={handleSelectItem}
@@ -1141,7 +1155,9 @@
                   mobileDrawerOpen = false;
                   handleClosePopup();
                 }}
-                onFocusClick={handleFocusHighlighted}
+                onFocusClick={hasHighlightPositions
+                  ? handleFocusHighlighted
+                  : undefined}
                 onSelectMonster={handleSelectMonster}
                 onHoverMonster={handleHoverMonster}
                 onSelectAltar={handleSelectAltar}
@@ -1163,7 +1179,9 @@
                   mobileDrawerOpen = false;
                   handleClosePopup();
                 }}
-                onFocusClick={handleFocusHighlighted}
+                onFocusClick={hasHighlightPositions
+                  ? handleFocusHighlighted
+                  : undefined}
                 onSelectNpc={handleSelectNpc}
                 onSelectMonster={handleSelectMonster}
                 onSelectItem={handleSelectItem}
