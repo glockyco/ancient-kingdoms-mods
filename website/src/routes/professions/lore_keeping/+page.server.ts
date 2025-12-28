@@ -19,6 +19,14 @@ interface LoreBook {
   book_text: string;
   obtainabilityTree: ObtainabilityNode;
   sourceSummary: SourceSummary;
+  statGains: {
+    strength: number;
+    dexterity: number;
+    constitution: number;
+    intelligence: number;
+    wisdom: number;
+    charisma: number;
+  };
 }
 
 interface LoreKeepingPageData {
@@ -42,6 +50,12 @@ interface RawBook {
   book_text: string;
   dropped_by: string | null;
   rewarded_by: string | null;
+  book_strength_gain: number;
+  book_dexterity_gain: number;
+  book_constitution_gain: number;
+  book_intelligence_gain: number;
+  book_wisdom_gain: number;
+  book_charisma_gain: number;
 }
 
 interface DropInfo {
@@ -84,7 +98,13 @@ export const load: PageServerLoad = (): LoreKeepingPageData => {
       tooltip_html,
       book_text,
       dropped_by,
-      rewarded_by
+      rewarded_by,
+      book_strength_gain,
+      book_dexterity_gain,
+      book_constitution_gain,
+      book_intelligence_gain,
+      book_wisdom_gain,
+      book_charisma_gain
     FROM items
     WHERE book_text IS NOT NULL AND book_text != ''
     ORDER BY name
@@ -113,6 +133,14 @@ export const load: PageServerLoad = (): LoreKeepingPageData => {
       book_text: raw.book_text,
       obtainabilityTree,
       sourceSummary,
+      statGains: {
+        strength: raw.book_strength_gain,
+        dexterity: raw.book_dexterity_gain,
+        constitution: raw.book_constitution_gain,
+        intelligence: raw.book_intelligence_gain,
+        wisdom: raw.book_wisdom_gain,
+        charisma: raw.book_charisma_gain,
+      },
     };
   });
 

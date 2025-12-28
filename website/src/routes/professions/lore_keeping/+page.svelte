@@ -54,6 +54,30 @@
       !!tree.merge
     );
   }
+
+  function formatStatGains(
+    stats: (typeof data.books)[0]["statGains"],
+  ): string[] {
+    const gains: string[] = [];
+    if (stats.strength > 0) gains.push(`+${stats.strength} STR`);
+    if (stats.dexterity > 0) gains.push(`+${stats.dexterity} DEX`);
+    if (stats.constitution > 0) gains.push(`+${stats.constitution} CON`);
+    if (stats.intelligence > 0) gains.push(`+${stats.intelligence} INT`);
+    if (stats.wisdom > 0) gains.push(`+${stats.wisdom} WIS`);
+    if (stats.charisma > 0) gains.push(`+${stats.charisma} CHA`);
+    return gains;
+  }
+
+  function hasStatGains(stats: (typeof data.books)[0]["statGains"]): boolean {
+    return (
+      stats.strength > 0 ||
+      stats.dexterity > 0 ||
+      stats.constitution > 0 ||
+      stats.intelligence > 0 ||
+      stats.wisdom > 0 ||
+      stats.charisma > 0
+    );
+  }
 </script>
 
 <svelte:head>
@@ -110,11 +134,18 @@
       Books ({data.books.length})
     </h2>
     <div class="rounded-lg border overflow-hidden">
-      <table class="w-full">
+      <table class="w-full table-fixed">
+        <colgroup>
+          <col class="w-10" />
+          <col class="w-[35%]" />
+          <col class="w-[30%]" />
+          <col />
+        </colgroup>
         <thead class="bg-muted/50">
           <tr>
-            <th class="w-10 p-3"></th>
+            <th class="p-3"></th>
             <th class="text-left p-3 font-medium">Name</th>
+            <th class="text-left p-3 font-medium">Stats</th>
             <th class="text-left p-3 font-medium">Source</th>
           </tr>
         </thead>
@@ -155,6 +186,15 @@
                 </span>
               </td>
               <td class="p-3">
+                {#if hasStatGains(book.statGains)}
+                  <span class="text-green-600 dark:text-green-400 text-sm">
+                    {formatStatGains(book.statGains).join(", ")}
+                  </span>
+                {:else}
+                  <span class="text-muted-foreground">—</span>
+                {/if}
+              </td>
+              <td class="p-3">
                 <div class="flex items-center gap-2">
                   <SourceIcon
                     class="h-4 w-4 shrink-0 {sourceColors[
@@ -183,7 +223,7 @@
             </tr>
             {#if isExpanded}
               <tr class="border-t bg-muted/20">
-                <td colspan="3" class="p-4">
+                <td colspan="4" class="p-4">
                   <div class="space-y-4">
                     <!-- Obtainability Section -->
                     {#if hasObtainabilityInfo(book)}
