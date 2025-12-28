@@ -723,6 +723,66 @@ export interface ItemPopupDropper {
 }
 
 /**
+ * Altar that yields an item (via tier rewards or boss drops)
+ */
+export interface ItemPopupAltarSource {
+  altarId: string;
+  altarName: string;
+  altarType: string;
+  /** Tier for tier rewards, null for boss bestiary drops */
+  tier: "normal" | "magic" | "epic" | "legendary" | null;
+  dropRate: number;
+}
+
+/**
+ * NPC vendor that sells an item
+ */
+export interface ItemPopupVendor {
+  npcId: string;
+  npcName: string;
+  price: number;
+  currencyItemId: string | null;
+  currencyItemName: string | null;
+}
+
+/**
+ * Quest that rewards an item
+ */
+export interface ItemPopupQuestReward {
+  questId: string;
+  questName: string;
+  levelRecommended: number;
+}
+
+/**
+ * Gathering resource that drops an item
+ */
+export interface ItemPopupGatherSource {
+  resourceId: string;
+  resourceName: string;
+  resourceType: "resource" | "chest";
+  rate: number;
+}
+
+/**
+ * Chest that contains an item
+ */
+export interface ItemPopupChestSource {
+  chestId: string;
+  chestName: string;
+  rate: number;
+}
+
+/**
+ * Crafting recipe that produces an item
+ */
+export interface ItemPopupCraftSource {
+  recipeId: string;
+  resultAmount: number;
+  materials: Array<{ itemId: string; itemName: string; amount: number }>;
+}
+
+/**
  * Item popup details (virtual entity - no map position)
  */
 export interface ItemPopupDetails {
@@ -731,6 +791,12 @@ export interface ItemPopupDetails {
   quality: number;
   tooltipHtml: string | null;
   droppers: ItemPopupDropper[];
+  altarSources: ItemPopupAltarSource[];
+  vendors: ItemPopupVendor[];
+  questRewards: ItemPopupQuestReward[];
+  gatheringSources: ItemPopupGatherSource[];
+  chestSources: ItemPopupChestSource[];
+  craftingSources: ItemPopupCraftSource[];
 }
 
 interface ItemPopupRow {
@@ -738,6 +804,11 @@ interface ItemPopupRow {
   name: string;
   quality: number;
   tooltip_html: string | null;
+  sold_by: string | null;
+  rewarded_by: string | null;
+  gathered_from: string | null;
+  found_in_chests: string | null;
+  crafted_from: string | null;
 }
 
 interface ItemDropperRow {
@@ -750,16 +821,50 @@ interface ItemDropperRow {
   zone_name: string | null;
 }
 
+// JSON types for denormalized item columns
+interface SoldByJson {
+  npc_id: string;
+  npc_name: string;
+  price: number;
+  currency_item_id: string | null;
+  currency_item_name: string | null;
+}
+
+interface RewardedByJson {
+  quest_id: string;
+  quest_name: string;
+  level_recommended: number;
+}
+
+interface GatheredFromJson {
+  gather_item_id: string;
+  gather_item_name: string;
+  rate: number;
+  type: "resource" | "chest";
+}
+
+interface FoundInChestJson {
+  chest_id: string;
+  chest_name: string;
+  rate: number;
+}
+
+interface CraftedFromJson {
+  recipe_id: string;
+  result_amount: number;
+  materials: Array<{ item_id: string; item_name: string; amount: number }>;
+}
+
 /**
  * Load item details for popup (virtual entity).
- * Shows item info and monsters that drop it.
+ * Shows item info and all obtainability sources.
  */
 export async function loadItemPopupDetails(
   itemId: string,
 ): Promise<ItemPopupDetails | null> {
-  // Get item info
+  // Get item info with denormalized JSON columns
   const [item] = await query<ItemPopupRow>(
-    `SELECT id, name, quality, tooltip_html FROM items WHERE id = ?`,
+    `SELECT id, name, quality, tooltip_html, sold_by, rewarded_by, gathered_from, found_in_chests, crafted_from FROM items WHERE id = ?`,
     [itemId],
   );
 
@@ -767,7 +872,8 @@ export async function loadItemPopupDetails(
     return null;
   }
 
-  // Get monsters that drop this item (from monsters.drops JSON column)
+  // Get monsters that drop this item (excluding altar-only monsters)
+  // Altar-only monsters are shown via altarSources instead
   const droppers = await query<ItemDropperRow>(
     `
     SELECT DISTINCT
@@ -783,11 +889,144 @@ export async function loadItemPopupDetails(
       AND ms.spawn_type IN ('regular', 'summon', 'placeholder')
     LEFT JOIN zones z ON z.id = ms.zone_id
     WHERE json_extract(d.value, '$.item_id') = ?
+      -- Exclude altar-only monsters (those with no regular/summon/placeholder spawns)
+      AND EXISTS (
+        SELECT 1 FROM monster_spawns ms2
+        WHERE ms2.monster_id = m.id
+          AND ms2.spawn_type IN ('regular', 'summon', 'placeholder')
+      )
     GROUP BY m.id
     ORDER BY drop_rate DESC, m.level ASC
     `,
     [itemId],
   );
+
+  // Get altars that yield this item (via tier rewards)
+  interface AltarSourceRow {
+    altar_id: string;
+    altar_name: string;
+    altar_type: string;
+    tier: "normal" | "magic" | "epic" | "legendary";
+    drop_rate: number | null;
+  }
+  const altarSourceRows = await query<AltarSourceRow>(
+    `
+    SELECT
+      a.id as altar_id,
+      a.name as altar_name,
+      a.type as altar_type,
+      CASE
+        WHEN a.reward_normal_id = ? THEN 'normal'
+        WHEN a.reward_magic_id = ? THEN 'magic'
+        WHEN a.reward_epic_id = ? THEN 'epic'
+        WHEN a.reward_legendary_id = ? THEN 'legendary'
+      END as tier,
+      -- Get drop rate from altar boss monster drops (for display)
+      (
+        SELECT MAX(json_extract(d.value, '$.rate'))
+        FROM monster_spawns ms
+        JOIN monsters m ON m.id = ms.monster_id
+        JOIN json_each(m.drops) d ON json_extract(d.value, '$.item_id') = ?
+        WHERE ms.source_altar_id = a.id AND ms.spawn_type = 'altar'
+      ) as drop_rate
+    FROM altars a
+    WHERE a.reward_normal_id = ?
+       OR a.reward_magic_id = ?
+       OR a.reward_epic_id = ?
+       OR a.reward_legendary_id = ?
+    ORDER BY a.min_level_required ASC
+    `,
+    [itemId, itemId, itemId, itemId, itemId, itemId, itemId, itemId, itemId],
+  );
+  const altarSources: ItemPopupAltarSource[] = altarSourceRows.map((r) => ({
+    altarId: r.altar_id,
+    altarName: r.altar_name,
+    altarType: r.altar_type,
+    tier: r.tier,
+    dropRate: r.drop_rate ?? 0,
+  }));
+
+  // Parse vendors from sold_by JSON
+  let vendors: ItemPopupVendor[] = [];
+  if (item.sold_by) {
+    try {
+      const soldByData = JSON.parse(item.sold_by) as SoldByJson[];
+      vendors = soldByData.map((v) => ({
+        npcId: v.npc_id,
+        npcName: v.npc_name,
+        price: v.price,
+        currencyItemId: v.currency_item_id,
+        currencyItemName: v.currency_item_name,
+      }));
+    } catch {
+      /* empty */
+    }
+  }
+
+  // Parse quest rewards from rewarded_by JSON
+  let questRewards: ItemPopupQuestReward[] = [];
+  if (item.rewarded_by) {
+    try {
+      const rewardedByData = JSON.parse(item.rewarded_by) as RewardedByJson[];
+      questRewards = rewardedByData.map((q) => ({
+        questId: q.quest_id,
+        questName: q.quest_name,
+        levelRecommended: q.level_recommended,
+      }));
+    } catch {
+      /* empty */
+    }
+  }
+
+  // Parse gathering sources from gathered_from JSON
+  let gatheringSources: ItemPopupGatherSource[] = [];
+  if (item.gathered_from) {
+    try {
+      const gatheredData = JSON.parse(item.gathered_from) as GatheredFromJson[];
+      gatheringSources = gatheredData.map((g) => ({
+        resourceId: g.gather_item_id,
+        resourceName: g.gather_item_name,
+        resourceType: g.type,
+        rate: g.rate,
+      }));
+    } catch {
+      /* empty */
+    }
+  }
+
+  // Parse chest sources from found_in_chests JSON
+  let chestSources: ItemPopupChestSource[] = [];
+  if (item.found_in_chests) {
+    try {
+      const chestData = JSON.parse(item.found_in_chests) as FoundInChestJson[];
+      chestSources = chestData.map((c) => ({
+        chestId: c.chest_id,
+        chestName: c.chest_name,
+        rate: c.rate,
+      }));
+    } catch {
+      /* empty */
+    }
+  }
+
+  // Parse crafting sources from crafted_from JSON
+  let craftingSources: ItemPopupCraftSource[] = [];
+  if (item.crafted_from) {
+    try {
+      const craftData = JSON.parse(item.crafted_from) as CraftedFromJson[];
+      craftingSources = craftData.map((c) => ({
+        recipeId: c.recipe_id,
+        resultAmount: c.result_amount,
+        materials: c.materials.map((m) => ({
+          itemId: m.item_id,
+          itemName: m.item_name,
+          amount: m.amount,
+        })),
+      }));
+    } catch {
+      /* empty */
+    }
+  }
 
   return {
     id: item.id,
@@ -803,6 +1042,12 @@ export async function loadItemPopupDetails(
       dropRate: d.drop_rate,
       zoneName: d.zone_name,
     })),
+    altarSources,
+    vendors,
+    questRewards,
+    gatheringSources,
+    chestSources,
+    craftingSources,
   };
 }
 

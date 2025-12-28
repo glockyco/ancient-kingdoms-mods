@@ -5,6 +5,7 @@ import type {
   NpcMapEntity,
   PortalMapEntity,
 } from "$lib/types/map";
+import type { OverrideGroup, HighlightCategory } from "./resolve-selection";
 
 /**
  * Stable empty array - use this instead of [] to avoid creating new references
@@ -187,6 +188,72 @@ export function computeSelectionData(
   // Filter out entities without positions (can't highlight on map)
   const renderable = entities.filter((e) => e.position !== null);
   return renderable.length > 0 ? renderable : EMPTY_SELECTION;
+}
+
+/**
+ * Compute the entities to highlight for multiple override groups.
+ * Used for virtual entities (items, quests) that may map to multiple
+ * categories of physical entities (monsters, NPCs, resources, chests).
+ *
+ * @param index - Pre-built entity index (use createEntityIndex)
+ * @param overrideGroups - Array of { ids, category } groups to highlight
+ * @returns Array of entities to highlight (all matching entities from all groups)
+ */
+export function computeSelectionFromGroups(
+  index: EntityIndex | null,
+  overrideGroups: OverrideGroup[] | null,
+): AnyMapEntity[] {
+  if (!index || !overrideGroups || overrideGroups.length === 0) {
+    return EMPTY_SELECTION;
+  }
+
+  const results: AnyMapEntity[] = [];
+
+  for (const group of overrideGroups) {
+    const entityIndex = getIndexForCategory(index, group.category);
+    if (!entityIndex) continue;
+
+    for (const id of group.ids) {
+      const entities = entityIndex.get(id);
+      if (entities) {
+        // Filter out entities without positions
+        for (const entity of entities) {
+          if (entity.position !== null) {
+            results.push(entity);
+          }
+        }
+      }
+    }
+  }
+
+  return results.length > 0 ? results : EMPTY_SELECTION;
+}
+
+/**
+ * Get the entity index map for a specific highlight category.
+ */
+function getIndexForCategory(
+  index: EntityIndex,
+  category: HighlightCategory,
+): Map<string, AnyMapEntity[]> | null {
+  switch (category) {
+    case "monster":
+      return index.monsters;
+    case "npc":
+      return index.npcs;
+    case "portal":
+      return index.portals;
+    case "chest":
+      return index.chests;
+    case "altar":
+      return index.altars;
+    case "resource":
+      return index.gathering;
+    case "crafting":
+      return index.crafting;
+    default:
+      return null;
+  }
 }
 
 /**

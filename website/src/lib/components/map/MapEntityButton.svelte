@@ -20,7 +20,7 @@
 
 <button
   type="button"
-  class="cursor-pointer underline hover:opacity-80 {className}"
+  class="cursor-pointer underline hover:opacity-80 text-blue-400 {className}"
   onclick={onSelect}
   onmouseenter={onHoverStart}
   onmouseleave={onHoverEnd}

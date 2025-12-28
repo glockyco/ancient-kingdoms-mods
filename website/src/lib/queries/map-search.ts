@@ -694,67 +694,131 @@ async function searchPortals(
   });
 }
 
-interface ItemSearchRow {
+interface ItemBasicRow {
   id: string;
   name: string;
   quality: number;
   level_required: number;
-  min_x: number | null;
-  max_x: number | null;
-  min_y: number | null;
-  max_y: number | null;
+}
+
+interface ItemBoundsRow {
+  item_id: string;
+  min_x: number;
+  max_x: number;
+  min_y: number;
+  max_y: number;
 }
 
 async function searchItems(
   ftsQuery: string,
   limit: number,
 ): Promise<MapSearchResult[]> {
-  // Search items that have monster droppers
-  // Bounds come from dropper monster positions
-  // Use subquery to expand monster drops JSON, then join with items
-  const rows = await query<ItemSearchRow>(
+  // Step 1: Fast FTS query to get matching items (no bounds computation)
+  const items = await query<ItemBasicRow>(
     `
-    SELECT
-      i.id,
-      i.name,
-      i.quality,
-      i.level_required,
-      MIN(ms.position_x) as min_x,
-      MAX(ms.position_x) as max_x,
-      MIN(ms.position_y) as min_y,
-      MAX(ms.position_y) as max_y
+    SELECT i.id, i.name, i.quality, i.level_required
     FROM items_fts itf
     JOIN items i ON itf.rowid = i.rowid
-    LEFT JOIN (
-      SELECT m.id as monster_id, json_extract(d.value, '$.item_id') as item_id
-      FROM monsters m, json_each(m.drops) d
-    ) md ON md.item_id = i.id
-    LEFT JOIN monster_spawns ms ON ms.monster_id = md.monster_id
-      AND ms.spawn_type IN ('regular', 'summon', 'placeholder')
     WHERE items_fts MATCH ?
-    GROUP BY i.id
     ORDER BY rank
     LIMIT ?
   `,
     [ftsQuery, limit],
   );
 
-  return rows.map((r) => ({
-    id: r.id,
-    name: r.name,
-    category: "item" as const,
-    subcategory: String(r.quality), // Quality as subcategory for coloring
-    bounds:
-      r.min_x !== null
+  if (items.length === 0) return [];
+
+  // Step 2: Get bounds for ONLY matched items from all physical sources
+  // Uses json_each to safely pass item IDs as parameter
+  const itemIdsJson = JSON.stringify(items.map((i) => i.id));
+  const boundsRows = await query<ItemBoundsRow>(
+    `
+    SELECT
+      item_id,
+      MIN(x) as min_x,
+      MAX(x) as max_x,
+      MIN(y) as min_y,
+      MAX(y) as max_y
+    FROM (
+      -- Monster dropper positions
+      SELECT json_extract(d.value, '$.item_id') as item_id, ms.position_x as x, ms.position_y as y
+      FROM monsters m, json_each(m.drops) d
+      JOIN monster_spawns ms ON ms.monster_id = m.id
+        AND ms.spawn_type IN ('regular', 'summon', 'placeholder')
+        AND ms.position_x IS NOT NULL
+      WHERE json_extract(d.value, '$.item_id') IN (SELECT value FROM json_each(?))
+
+      UNION ALL
+
+      -- Vendor NPC positions
+      SELECT i.id as item_id, ns.position_x as x, ns.position_y as y
+      FROM items i, json_each(i.sold_by) v
+      JOIN npc_spawns ns ON ns.npc_id = json_extract(v.value, '$.npc_id')
+        AND ns.position_x IS NOT NULL
+      WHERE i.id IN (SELECT value FROM json_each(?))
+
+      UNION ALL
+
+      -- Gathering resource positions (type="resource")
+      SELECT i.id as item_id, gs.position_x as x, gs.position_y as y
+      FROM items i, json_each(i.gathered_from) g
+      JOIN gathering_resource_spawns gs ON gs.resource_id = json_extract(g.value, '$.gather_item_id')
+        AND json_extract(g.value, '$.type') = 'resource'
+        AND gs.position_x IS NOT NULL
+      WHERE i.id IN (SELECT value FROM json_each(?))
+
+      UNION ALL
+
+      -- Physical chest positions (type="chest")
+      SELECT i.id as item_id, c.position_x as x, c.position_y as y
+      FROM items i, json_each(i.gathered_from) g
+      JOIN chests c ON c.id = json_extract(g.value, '$.gather_item_id')
+        AND json_extract(g.value, '$.type') = 'chest'
+        AND c.position_x IS NOT NULL
+      WHERE i.id IN (SELECT value FROM json_each(?))
+
+      UNION ALL
+
+      -- Altar positions (items that are tier rewards)
+      SELECT item_id, a.position_x as x, a.position_y as y
+      FROM (
+        SELECT reward_normal_id as item_id, id as altar_id FROM altars WHERE reward_normal_id IS NOT NULL
+        UNION ALL
+        SELECT reward_magic_id, id FROM altars WHERE reward_magic_id IS NOT NULL
+        UNION ALL
+        SELECT reward_epic_id, id FROM altars WHERE reward_epic_id IS NOT NULL
+        UNION ALL
+        SELECT reward_legendary_id, id FROM altars WHERE reward_legendary_id IS NOT NULL
+      ) rewards
+      JOIN altars a ON a.id = rewards.altar_id AND a.position_x IS NOT NULL
+      WHERE rewards.item_id IN (SELECT value FROM json_each(?))
+    )
+    GROUP BY item_id
+  `,
+    [itemIdsJson, itemIdsJson, itemIdsJson, itemIdsJson, itemIdsJson],
+  );
+
+  // Step 3: Create bounds lookup map and combine results
+  const boundsMap = new Map(boundsRows.map((r) => [r.item_id, r]));
+
+  return items.map((item) => {
+    const bounds = boundsMap.get(item.id);
+    return {
+      id: item.id,
+      name: item.name,
+      category: "item" as const,
+      subcategory: String(item.quality),
+      bounds: bounds
         ? {
-            minX: r.min_x,
-            maxX: r.max_x!,
-            minY: -r.max_y!,
-            maxY: -r.min_y!,
+            minX: bounds.min_x,
+            maxX: bounds.max_x,
+            minY: -bounds.max_y,
+            maxY: -bounds.min_y,
           }
         : null,
-    level: r.level_required > 0 ? r.level_required : undefined,
-  }));
+      level: item.level_required > 0 ? item.level_required : undefined,
+    };
+  });
 }
 
 interface QuestSearchRow {

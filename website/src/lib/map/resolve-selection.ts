@@ -46,16 +46,20 @@ export type HighlightCategory =
   | "resource"
   | "crafting";
 
+/** Override group for virtual entity highlighting */
+export interface OverrideGroup {
+  ids: string[];
+  category: HighlightCategory;
+}
+
 /** What to highlight on the map */
 interface SelectionHighlight {
   /** ID for EntityIndex lookup (via computeSelectionData) */
   entityId: string;
   /** Type/category for EntityIndex lookup */
   entityType: string;
-  /** Override IDs for virtual entities (bypasses normal index lookup) */
-  overrideIds?: string[];
-  /** Override category for virtual entities */
-  overrideCategory?: HighlightCategory;
+  /** Override groups for virtual entities (multiple categories of entities to highlight) */
+  overrideGroups?: OverrideGroup[];
 }
 
 /** Result of selection resolution */
@@ -119,17 +123,37 @@ export async function resolveVirtualSelection(
   id: string,
 ): Promise<ResolvedSelection> {
   if (category === "item") {
-    const dropperIds = await queryItemDroppers(id);
+    const [dropperIds, vendorIds, gatheringIds, chestIds, altarIds] =
+      await Promise.all([
+        queryItemDroppers(id),
+        queryItemVendors(id),
+        queryItemGatheringSources(id),
+        queryItemChestSources(id),
+        queryItemAltarSources(id),
+      ]);
+
+    const overrideGroups: OverrideGroup[] = [];
+    if (dropperIds.length > 0) {
+      overrideGroups.push({ ids: dropperIds, category: "monster" });
+    }
+    if (vendorIds.length > 0) {
+      overrideGroups.push({ ids: vendorIds, category: "npc" });
+    }
+    if (gatheringIds.length > 0) {
+      overrideGroups.push({ ids: gatheringIds, category: "resource" });
+    }
+    if (chestIds.length > 0) {
+      overrideGroups.push({ ids: chestIds, category: "chest" });
+    }
+    if (altarIds.length > 0) {
+      overrideGroups.push({ ids: altarIds, category: "altar" });
+    }
+
     return {
       popup: { type: "item", id },
       highlight:
-        dropperIds.length > 0
-          ? {
-              entityId: id,
-              entityType: "item",
-              overrideIds: dropperIds,
-              overrideCategory: "monster",
-            }
+        overrideGroups.length > 0
+          ? { entityId: id, entityType: "item", overrideGroups }
           : null,
     };
   }
@@ -143,8 +167,7 @@ export async function resolveVirtualSelection(
           ? {
               entityId: id,
               entityType: "quest",
-              overrideIds: npcIds,
-              overrideCategory: "npc",
+              overrideGroups: [{ ids: npcIds, category: "npc" }],
             }
           : null,
     };
@@ -192,8 +215,7 @@ function resolveMonsterSelection(
       highlight: {
         entityId: monsterId,
         entityType: "monster",
-        overrideIds: monster.altarIds,
-        overrideCategory: "altar",
+        overrideGroups: [{ ids: monster.altarIds, category: "altar" }],
       },
     };
   }
@@ -401,4 +423,97 @@ async function queryQuestNpcs(questId: string): Promise<string[]> {
   );
 
   return rows.map((r) => r.npc_id);
+}
+
+interface VendorRow {
+  npc_id: string;
+}
+
+/**
+ * Query NPC IDs that sell a specific item.
+ * Vendor relationships are stored as JSON in items.sold_by.
+ */
+async function queryItemVendors(itemId: string): Promise<string[]> {
+  const rows = await query<VendorRow>(
+    `
+    SELECT DISTINCT json_extract(v.value, '$.npc_id') as npc_id
+    FROM items i, json_each(i.sold_by) v
+    WHERE i.id = ?
+      AND json_extract(v.value, '$.npc_id') IS NOT NULL
+  `,
+    [itemId],
+  );
+
+  return rows.map((r) => r.npc_id);
+}
+
+interface GatheringRow {
+  resource_id: string;
+}
+
+/**
+ * Query gathering resource IDs that yield a specific item.
+ * Gathering relationships are stored as JSON in items.gathered_from with type="resource".
+ */
+async function queryItemGatheringSources(itemId: string): Promise<string[]> {
+  const rows = await query<GatheringRow>(
+    `
+    SELECT DISTINCT json_extract(g.value, '$.gather_item_id') as resource_id
+    FROM items i, json_each(i.gathered_from) g
+    WHERE i.id = ?
+      AND json_extract(g.value, '$.type') = 'resource'
+      AND json_extract(g.value, '$.gather_item_id') IS NOT NULL
+  `,
+    [itemId],
+  );
+
+  return rows.map((r) => r.resource_id);
+}
+
+interface ChestRow {
+  chest_id: string;
+}
+
+/**
+ * Query physical chest IDs (gatherable chests on the map) that yield a specific item.
+ * These are stored in items.gathered_from with type="chest" (not to be confused with
+ * found_in_chests which contains item chest IDs - those are virtual entities).
+ */
+async function queryItemChestSources(itemId: string): Promise<string[]> {
+  const rows = await query<ChestRow>(
+    `
+    SELECT DISTINCT json_extract(g.value, '$.gather_item_id') as chest_id
+    FROM items i, json_each(i.gathered_from) g
+    WHERE i.id = ?
+      AND json_extract(g.value, '$.type') = 'chest'
+      AND json_extract(g.value, '$.gather_item_id') IS NOT NULL
+  `,
+    [itemId],
+  );
+
+  return rows.map((r) => r.chest_id);
+}
+
+interface AltarRow {
+  altar_id: string;
+}
+
+/**
+ * Query altar IDs where the item is a tier reward.
+ * Altars are physical entities that can be highlighted on the map.
+ */
+async function queryItemAltarSources(itemId: string): Promise<string[]> {
+  const rows = await query<AltarRow>(
+    `
+    SELECT a.id as altar_id
+    FROM altars a
+    WHERE a.reward_normal_id = ?
+       OR a.reward_magic_id = ?
+       OR a.reward_epic_id = ?
+       OR a.reward_legendary_id = ?
+  `,
+    [itemId, itemId, itemId, itemId],
+  );
+
+  return rows.map((r) => r.altar_id);
 }

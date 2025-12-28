@@ -24,6 +24,7 @@
   import { createIconAtlas } from "$lib/map/icons";
   import {
     computeSelectionData,
+    computeSelectionFromGroups,
     computePatrolPathData,
     computeRelatedEntities,
     computeRelationArcs,
@@ -62,6 +63,7 @@
     resolvePhysicalSelection,
     resolveVirtualSelection,
     type ResolvedSelection,
+    type OverrideGroup,
   } from "$lib/map/resolve-selection";
   import { preloadDb } from "$lib/db";
 
@@ -112,9 +114,9 @@
 
   // Hover preview state (for popup link highlights - ephemeral, not URL-persisted)
   let hoverEntityId = $state<string | null>(null);
-  let hoverEntityCategory = $state<"monster" | "npc" | "altar" | "zone" | null>(
-    null,
-  );
+  let hoverEntityCategory = $state<
+    "monster" | "npc" | "altar" | "zone" | "chest" | "resource" | null
+  >(null);
   // For altar-only monsters: override to highlight altars instead
   let hoverOverrideIds = $state<string[] | null>(null);
   let hoverOverrideCategory = $state<"monster" | "npc" | "altar" | null>(null);
@@ -129,18 +131,8 @@
   let selectedEntityId = $state<string | null>(null);
   let selectedEntityType = $state<string | null>(null);
 
-  // For virtual entities (items, quests): physical entities to highlight
-  let highlightEntityIds = $state<string[] | null>(null);
-  let highlightEntityCategory = $state<
-    | "monster"
-    | "npc"
-    | "altar"
-    | "portal"
-    | "chest"
-    | "resource"
-    | "crafting"
-    | null
-  >(null);
+  // For virtual entities (items, quests): physical entities to highlight (multiple categories)
+  let highlightOverrideGroups = $state<OverrideGroup[] | null>(null);
 
   // Track if there's an active selection (for showing reopen button on mobile)
   let hasSelection = $derived(
@@ -166,8 +158,7 @@
     selectedZone = null;
     selectedEntityId = null;
     selectedEntityType = null;
-    highlightEntityIds = null;
-    highlightEntityCategory = null;
+    highlightOverrideGroups = null;
     // Clear hover state (link was clicked, no longer hovering)
     hoverEntityId = null;
     hoverEntityCategory = null;
@@ -203,10 +194,9 @@
       selectedEntityId = resolved.highlight.entityId;
       selectedEntityType = resolved.highlight.entityType;
 
-      if (resolved.highlight.overrideIds) {
-        // Virtual entity or altar-only monster - use override IDs for highlighting
-        highlightEntityIds = resolved.highlight.overrideIds;
-        highlightEntityCategory = resolved.highlight.overrideCategory ?? null;
+      if (resolved.highlight.overrideGroups) {
+        // Virtual entity or altar-only monster - use override groups for highlighting
+        highlightOverrideGroups = resolved.highlight.overrideGroups;
       }
     }
   }
@@ -249,20 +239,10 @@
 
   // Derived: pre-computed selection data for highlighting (O(1) lookup via index)
   // This is only recomputed when selection changes, not on every visibility toggle
-  // For virtual entities (items, quests), use highlightEntityIds instead of normal lookup
+  // For virtual entities (items, quests), use highlightOverrideGroups instead of normal lookup
   let selectionData = $derived(
-    highlightEntityIds && highlightEntityCategory
-      ? computeSelectionData(
-          entityIndex,
-          highlightEntityCategory,
-          highlightEntityIds[0],
-        ).concat(
-          ...highlightEntityIds
-            .slice(1)
-            .map((id) =>
-              computeSelectionData(entityIndex, highlightEntityCategory!, id),
-            ),
-        )
+    highlightOverrideGroups
+      ? computeSelectionFromGroups(entityIndex, highlightOverrideGroups)
       : computeSelectionData(entityIndex, selectedEntityType, selectedEntityId),
   );
 
@@ -276,7 +256,7 @@
   // Skip for virtual entities (items/quests) - they aggregate multiple monsters
   // and showing blocker relations doesn't make sense
   let relatedEntities = $derived(
-    highlightEntityIds
+    highlightOverrideGroups
       ? EMPTY_SELECTION
       : computeRelatedEntities(selectionData, entityIndex),
   );
@@ -484,6 +464,22 @@
     applySelection(resolved);
   }
 
+  function handleSelectChest(chestId: string) {
+    if (!entityData) return;
+    const resolved = resolvePhysicalSelection("chest", chestId, entityData);
+    applySelection(resolved);
+  }
+
+  function handleSelectGathering(resourceId: string) {
+    if (!entityData) return;
+    const resolved = resolvePhysicalSelection(
+      "resource",
+      resourceId,
+      entityData,
+    );
+    applySelection(resolved);
+  }
+
   // Hover handlers (for popup link preview highlights)
   function handleHoverMonster(monsterId: string | null) {
     // Clear override state
@@ -531,6 +527,20 @@
     hoverOverrideCategory = null;
     hoverEntityId = zoneId;
     hoverEntityCategory = zoneId ? "zone" : null;
+  }
+
+  function handleHoverChest(chestId: string | null) {
+    hoverOverrideIds = null;
+    hoverOverrideCategory = null;
+    hoverEntityId = chestId;
+    hoverEntityCategory = chestId ? "chest" : null;
+  }
+
+  function handleHoverGathering(resourceId: string | null) {
+    hoverOverrideIds = null;
+    hoverOverrideCategory = null;
+    hoverEntityId = resourceId;
+    hoverEntityCategory = resourceId ? "resource" : null;
   }
 
   // Keyboard handlers
@@ -676,16 +686,12 @@
                 if (
                   !hasPositionParams &&
                   deckInstance &&
-                  resolved.highlight?.overrideIds &&
-                  resolved.highlight?.overrideCategory
+                  resolved.highlight?.overrideGroups &&
+                  resolved.highlight.overrideGroups.length > 0
                 ) {
-                  const selection = resolved.highlight.overrideIds.flatMap(
-                    (id) =>
-                      computeSelectionData(
-                        entityIndex,
-                        resolved.highlight!.overrideCategory!,
-                        id,
-                      ),
+                  const selection = computeSelectionFromGroups(
+                    entityIndex,
+                    resolved.highlight.overrideGroups,
                   );
                   const positions = selection
                     .filter((e) => e.position !== null)
@@ -1053,6 +1059,16 @@
           onFocusClick={handleFocusHighlighted}
           onSelectMonster={handleSelectMonster}
           onHoverMonster={handleHoverMonster}
+          onSelectAltar={handleSelectAltar}
+          onHoverAltar={handleHoverAltar}
+          onSelectNpc={handleSelectNpc}
+          onHoverNpc={handleHoverNpc}
+          onSelectChest={handleSelectChest}
+          onHoverChest={handleHoverChest}
+          onSelectGathering={handleSelectGathering}
+          onHoverGathering={handleHoverGathering}
+          onSelectQuest={handleSelectQuest}
+          onSelectItem={handleSelectItem}
         />
       {:else if selectedEntityType === "quest" && selectedEntityId}
         <QuestPopup
@@ -1111,6 +1127,17 @@
                 }}
                 onFocusClick={handleFocusHighlighted}
                 onSelectMonster={handleSelectMonster}
+                onHoverMonster={handleHoverMonster}
+                onSelectAltar={handleSelectAltar}
+                onHoverAltar={handleHoverAltar}
+                onSelectNpc={handleSelectNpc}
+                onHoverNpc={handleHoverNpc}
+                onSelectChest={handleSelectChest}
+                onHoverChest={handleHoverChest}
+                onSelectGathering={handleSelectGathering}
+                onHoverGathering={handleHoverGathering}
+                onSelectQuest={handleSelectQuest}
+                onSelectItem={handleSelectItem}
                 mode="drawer"
               />
             {:else if selectedEntityType === "quest" && selectedEntityId}

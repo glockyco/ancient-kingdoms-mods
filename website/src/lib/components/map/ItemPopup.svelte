@@ -1,6 +1,7 @@
 <script lang="ts">
   import PopupCard from "./PopupCard.svelte";
   import MapEntityButton from "./MapEntityButton.svelte";
+  import ItemButton from "./ItemButton.svelte";
   import MonsterTypeIcon from "$lib/components/MonsterTypeIcon.svelte";
   import {
     loadItemPopupDetails,
@@ -14,6 +15,16 @@
     onFocusClick?: () => void;
     onSelectMonster: (monsterId: string) => void;
     onHoverMonster?: (monsterId: string | null) => void;
+    onSelectAltar: (altarId: string) => void;
+    onHoverAltar?: (altarId: string | null) => void;
+    onSelectNpc: (npcId: string) => void;
+    onHoverNpc?: (npcId: string | null) => void;
+    onSelectChest: (chestId: string) => void;
+    onHoverChest?: (chestId: string | null) => void;
+    onSelectGathering: (resourceId: string) => void;
+    onHoverGathering?: (resourceId: string | null) => void;
+    onSelectQuest: (questId: string) => void;
+    onSelectItem: (itemId: string) => void;
     mode?: "card" | "drawer";
   }
 
@@ -23,8 +34,29 @@
     onFocusClick,
     onSelectMonster,
     onHoverMonster,
+    onSelectAltar,
+    onHoverAltar,
+    onSelectNpc,
+    onHoverNpc,
+    onSelectChest,
+    onHoverChest,
+    onSelectGathering,
+    onHoverGathering,
+    onSelectQuest,
+    onSelectItem,
     mode = "card",
   }: Props = $props();
+
+  // Check if any focusable sources exist
+  function hasFocusableSources(details: ItemPopupDetails): boolean {
+    return (
+      details.droppers.length > 0 ||
+      details.altarSources.length > 0 ||
+      details.vendors.length > 0 ||
+      details.gatheringSources.length > 0 ||
+      details.chestSources.length > 0
+    );
+  }
 
   let details = $state<ItemPopupDetails | null>(null);
   let isLoading = $state(true);
@@ -70,15 +102,16 @@
     titleClass={getQualityTextColorClass(details.quality)}
     detailsUrl="/items/{details.id}"
     {onClose}
-    onFocusClick={details.droppers.length > 0 ? onFocusClick : undefined}
+    onFocusClick={hasFocusableSources(details) ? onFocusClick : undefined}
     {mode}
   >
+    <!-- Dropped by -->
     {#if details.droppers.length > 0}
       <div>
         <div class="mb-1 text-xs font-medium text-muted-foreground">
           Dropped by
         </div>
-        <div class="max-h-48 space-y-0.5 overflow-y-auto pr-2">
+        <div class="max-h-32 space-y-0.5 overflow-y-auto pr-2">
           {#each details.droppers as dropper (dropper.monsterId)}
             <div class="flex items-center justify-between gap-2">
               <div class="flex items-center gap-1 min-w-0">
@@ -112,8 +145,221 @@
       </div>
     {/if}
 
-    {#if details.tooltipHtml}
+    <!-- Sold by -->
+    {#if details.vendors.length > 0}
       <div class={details.droppers.length > 0 ? "border-t pt-2" : ""}>
+        <div class="mb-1 text-xs font-medium text-muted-foreground">
+          Sold by
+        </div>
+        <div class="max-h-32 space-y-0.5 overflow-y-auto pr-2">
+          {#each details.vendors as vendor (vendor.npcId)}
+            <div class="flex items-center justify-between gap-2">
+              <MapEntityButton
+                onSelect={() => onSelectNpc(vendor.npcId)}
+                onHoverStart={() => onHoverNpc?.(vendor.npcId)}
+                onHoverEnd={() => onHoverNpc?.(null)}
+              >
+                <span class="truncate">{vendor.npcName}</span>
+              </MapEntityButton>
+              <span class="shrink-0 text-xs text-muted-foreground">
+                {#if vendor.currencyItemId}
+                  {vendor.price}x {vendor.currencyItemName}
+                {:else}
+                  {vendor.price}g
+                {/if}
+              </span>
+            </div>
+          {/each}
+        </div>
+      </div>
+    {/if}
+
+    <!-- Gathered from -->
+    {#if details.gatheringSources.length > 0}
+      <div
+        class={details.droppers.length > 0 || details.vendors.length > 0
+          ? "border-t pt-2"
+          : ""}
+      >
+        <div class="mb-1 text-xs font-medium text-muted-foreground">
+          Gathered from
+        </div>
+        <div class="max-h-32 space-y-0.5 overflow-y-auto pr-2">
+          {#each details.gatheringSources as source (source.resourceId)}
+            <div class="flex items-center justify-between gap-2">
+              <MapEntityButton
+                onSelect={() =>
+                  source.resourceType === "chest"
+                    ? onSelectChest(source.resourceId)
+                    : onSelectGathering(source.resourceId)}
+                onHoverStart={() =>
+                  source.resourceType === "chest"
+                    ? onHoverChest?.(source.resourceId)
+                    : onHoverGathering?.(source.resourceId)}
+                onHoverEnd={() =>
+                  source.resourceType === "chest"
+                    ? onHoverChest?.(null)
+                    : onHoverGathering?.(null)}
+              >
+                <span class="truncate">
+                  {source.resourceType === "chest"
+                    ? "Chest"
+                    : source.resourceName}
+                </span>
+              </MapEntityButton>
+              <span class="shrink-0 text-xs text-muted-foreground">
+                {formatPercent(source.rate)}
+              </span>
+            </div>
+          {/each}
+        </div>
+      </div>
+    {/if}
+
+    <!-- Altar Rewards -->
+    {#if details.altarSources.length > 0}
+      <div
+        class={details.droppers.length > 0 ||
+        details.vendors.length > 0 ||
+        details.gatheringSources.length > 0
+          ? "border-t pt-2"
+          : ""}
+      >
+        <div class="mb-1 text-xs font-medium text-muted-foreground">
+          Altar Rewards
+        </div>
+        <div class="max-h-32 space-y-1 overflow-y-auto pr-2">
+          {#each details.altarSources as altar (altar.altarId)}
+            <div>
+              <MapEntityButton
+                onSelect={() => onSelectAltar(altar.altarId)}
+                onHoverStart={() => onHoverAltar?.(altar.altarId)}
+                onHoverEnd={() => onHoverAltar?.(null)}
+                class="text-orange-400"
+              >
+                <span class="truncate">{altar.altarName}</span>
+              </MapEntityButton>
+              <div class="text-xs text-muted-foreground">
+                {#if altar.tier === "normal"}
+                  Lv 30-34
+                {:else if altar.tier === "magic"}
+                  Lv 35-44
+                {:else if altar.tier === "epic"}
+                  Lv 45-50, Vet 0-99
+                {:else}
+                  Lv 50, Vet 100+
+                {/if}
+                {#if altar.dropRate > 0}
+                  · {formatPercent(altar.dropRate)}
+                {/if}
+              </div>
+            </div>
+          {/each}
+        </div>
+      </div>
+    {/if}
+
+    <!-- Found in Chests -->
+    {#if details.chestSources.length > 0}
+      <div
+        class={details.droppers.length > 0 ||
+        details.vendors.length > 0 ||
+        details.gatheringSources.length > 0 ||
+        details.altarSources.length > 0
+          ? "border-t pt-2"
+          : ""}
+      >
+        <div class="mb-1 text-xs font-medium text-muted-foreground">
+          Found in Chests
+        </div>
+        <div class="max-h-32 space-y-0.5 overflow-y-auto pr-2">
+          {#each details.chestSources as chest (chest.chestId)}
+            <div class="flex items-center justify-between gap-2">
+              <ItemButton
+                itemId={chest.chestId}
+                itemName={chest.chestName}
+                onSelect={onSelectItem}
+              />
+              <span class="shrink-0 text-xs text-muted-foreground">
+                {formatPercent(chest.rate)}
+              </span>
+            </div>
+          {/each}
+        </div>
+      </div>
+    {/if}
+
+    <!-- Quest Rewards -->
+    {#if details.questRewards.length > 0}
+      <div
+        class={details.droppers.length > 0 ||
+        details.vendors.length > 0 ||
+        details.gatheringSources.length > 0 ||
+        details.altarSources.length > 0 ||
+        details.chestSources.length > 0
+          ? "border-t pt-2"
+          : ""}
+      >
+        <div class="mb-1 text-xs font-medium text-muted-foreground">
+          Quest Rewards
+        </div>
+        <div class="max-h-32 space-y-0.5 overflow-y-auto pr-2">
+          {#each details.questRewards as quest (quest.questId)}
+            <div class="flex items-center justify-between gap-2">
+              <MapEntityButton onSelect={() => onSelectQuest(quest.questId)}>
+                <span class="truncate">{quest.questName}</span>
+              </MapEntityButton>
+              <span class="shrink-0 text-xs text-muted-foreground">
+                Lv.{quest.levelRecommended}
+              </span>
+            </div>
+          {/each}
+        </div>
+      </div>
+    {/if}
+
+    <!-- Crafted from -->
+    {#if details.craftingSources.length > 0}
+      <div
+        class={details.droppers.length > 0 ||
+        details.vendors.length > 0 ||
+        details.gatheringSources.length > 0 ||
+        details.altarSources.length > 0 ||
+        details.chestSources.length > 0 ||
+        details.questRewards.length > 0
+          ? "border-t pt-2"
+          : ""}
+      >
+        <div class="mb-1 text-xs font-medium text-muted-foreground">
+          Crafted from
+        </div>
+        <div class="max-h-32 space-y-1 overflow-y-auto pr-2">
+          {#each details.craftingSources as recipe (recipe.recipeId)}
+            <div class="text-xs text-muted-foreground">
+              {#each recipe.materials as material, i (material.itemId)}
+                <span>{material.amount}x {material.itemName}</span
+                >{#if i < recipe.materials.length - 1},
+                {/if}
+              {/each}
+            </div>
+          {/each}
+        </div>
+      </div>
+    {/if}
+
+    <!-- Tooltip -->
+    {#if details.tooltipHtml}
+      <div
+        class={details.droppers.length > 0 ||
+        details.vendors.length > 0 ||
+        details.gatheringSources.length > 0 ||
+        details.altarSources.length > 0 ||
+        details.chestSources.length > 0 ||
+        details.questRewards.length > 0 ||
+        details.craftingSources.length > 0
+          ? "border-t pt-2"
+          : ""}
+      >
         <div class="text-sm whitespace-pre-wrap tooltip-content">
           <!-- eslint-disable-next-line svelte/no-at-html-tags -->
           {@html details.tooltipHtml}
