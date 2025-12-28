@@ -698,9 +698,11 @@
                     .map((e) => e.position!);
                   const bounds = boundsFromPositions(positions);
                   if (bounds) {
+                    // Use POPUP_WIDTH directly since flyToRightPadding derived value
+                    // may not have updated yet after applySelection
                     const result = flyToBounds(deckInstance, bounds, {
                       duration: 0,
-                      rightPadding: flyToRightPadding,
+                      rightPadding: isDesktop ? POPUP_WIDTH : 0,
                     });
                     if (result) {
                       currentViewState = {
@@ -765,15 +767,23 @@
         // Determine initial view state
         // Only use URL position if explicitly provided (x/y/z params present)
         // Otherwise use defaults - flyToBounds will position the view after creation
-        const initialViewState =
-          urlState && hasPositionParams
-            ? {
-                target: [urlState.x, urlState.y, 0] as [number, number, number],
-                zoom: urlState.zoom,
-                minZoom: INITIAL_VIEW_STATE.minZoom,
-                maxZoom: INITIAL_VIEW_STATE.maxZoom,
-              }
-            : INITIAL_VIEW_STATE;
+        // Check media query directly since isDesktop state may not be set yet
+        const isDesktopNow = window.matchMedia("(min-width: 768px)").matches;
+        let initialViewState = INITIAL_VIEW_STATE;
+        if (urlState && hasPositionParams) {
+          let targetX = urlState.x;
+          // Offset center to account for popup width on desktop
+          // Same formula as flyToBounds: rightPadding / 2 / 2^zoom
+          if (urlState.entity && isDesktopNow) {
+            targetX += POPUP_WIDTH / 2 / Math.pow(2, urlState.zoom);
+          }
+          initialViewState = {
+            target: [targetX, urlState.y, 0] as [number, number, number],
+            zoom: urlState.zoom,
+            minZoom: INITIAL_VIEW_STATE.minZoom,
+            maxZoom: INITIAL_VIEW_STATE.maxZoom,
+          };
+        }
 
         // Initialize deck.gl
         deckInstance = new deckModules.Deck({
@@ -861,10 +871,16 @@
 
         // Fly to computed bounds (selection, zone, or full map)
         // Update currentViewState synchronously so URL sync uses correct coords
+        // Use POPUP_WIDTH directly with media query check since isDesktop/flyToRightPadding
+        // may not be set yet during initialization
+        const hasSelectionForPadding = !!(
+          urlState?.entity || urlState?.selectedZone
+        );
         if (initialBounds) {
           const result = flyToBounds(deckInstance, initialBounds, {
             duration: 0,
-            rightPadding: flyToRightPadding,
+            rightPadding:
+              hasSelectionForPadding && isDesktopNow ? POPUP_WIDTH : 0,
           });
           if (result) {
             currentViewState = { x: result.x, y: result.y, zoom: result.zoom };
