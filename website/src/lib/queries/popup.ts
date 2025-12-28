@@ -783,6 +783,14 @@ export interface ItemPopupCraftSource {
 }
 
 /**
+ * Merge source (items that combine to create this item)
+ */
+export interface ItemPopupMergeSource {
+  itemId: string;
+  itemName: string;
+}
+
+/**
  * Item popup details (virtual entity - no map position)
  */
 export interface ItemPopupDetails {
@@ -797,6 +805,7 @@ export interface ItemPopupDetails {
   gatheringSources: ItemPopupGatherSource[];
   chestSources: ItemPopupChestSource[];
   craftingSources: ItemPopupCraftSource[];
+  mergeSources: ItemPopupMergeSource[];
 }
 
 interface ItemPopupRow {
@@ -809,6 +818,7 @@ interface ItemPopupRow {
   gathered_from: string | null;
   found_in_chests: string | null;
   crafted_from: string | null;
+  created_from_merge: string | null;
 }
 
 interface ItemDropperRow {
@@ -855,6 +865,11 @@ interface CraftedFromJson {
   materials: Array<{ item_id: string; item_name: string; amount: number }>;
 }
 
+interface CreatedFromMergeJson {
+  item_id: string;
+  item_name: string;
+}
+
 /**
  * Load item details for popup (virtual entity).
  * Shows item info and all obtainability sources.
@@ -864,7 +879,7 @@ export async function loadItemPopupDetails(
 ): Promise<ItemPopupDetails | null> {
   // Get item info with denormalized JSON columns
   const [item] = await query<ItemPopupRow>(
-    `SELECT id, name, quality, tooltip_html, sold_by, rewarded_by, gathered_from, found_in_chests, crafted_from FROM items WHERE id = ?`,
+    `SELECT id, name, quality, tooltip_html, sold_by, rewarded_by, gathered_from, found_in_chests, crafted_from, created_from_merge FROM items WHERE id = ?`,
     [itemId],
   );
 
@@ -1028,6 +1043,22 @@ export async function loadItemPopupDetails(
     }
   }
 
+  // Parse merge sources from created_from_merge JSON
+  let mergeSources: ItemPopupMergeSource[] = [];
+  if (item.created_from_merge) {
+    try {
+      const mergeData = JSON.parse(
+        item.created_from_merge,
+      ) as CreatedFromMergeJson[];
+      mergeSources = mergeData.map((m) => ({
+        itemId: m.item_id,
+        itemName: m.item_name,
+      }));
+    } catch {
+      /* empty */
+    }
+  }
+
   return {
     id: item.id,
     name: item.name,
@@ -1048,6 +1079,7 @@ export async function loadItemPopupDetails(
     gatheringSources,
     chestSources,
     craftingSources,
+    mergeSources,
   };
 }
 

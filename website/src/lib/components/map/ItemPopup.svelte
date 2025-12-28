@@ -350,6 +350,36 @@
       </div>
     {/if}
 
+    <!-- Merged from -->
+    {#if details.mergeSources.length > 0}
+      <div
+        class={details.droppers.length > 0 ||
+        details.vendors.length > 0 ||
+        details.gatheringSources.length > 0 ||
+        details.altarSources.length > 0 ||
+        details.chestSources.length > 0 ||
+        details.questRewards.length > 0 ||
+        details.craftingSources.length > 0
+          ? "border-t pt-2"
+          : ""}
+      >
+        <div class="mb-1 text-xs font-medium text-muted-foreground">
+          Merged from
+        </div>
+        <div class="max-h-32 space-y-0.5 overflow-y-auto pr-2">
+          {#each details.mergeSources as source (source.itemId)}
+            <div>
+              <ItemButton
+                itemId={source.itemId}
+                itemName={source.itemName}
+                onSelect={onSelectItem}
+              />
+            </div>
+          {/each}
+        </div>
+      </div>
+    {/if}
+
     <!-- Tooltip -->
     {#if details.tooltipHtml}
       <div
@@ -359,7 +389,8 @@
         details.altarSources.length > 0 ||
         details.chestSources.length > 0 ||
         details.questRewards.length > 0 ||
-        details.craftingSources.length > 0
+        details.craftingSources.length > 0 ||
+        details.mergeSources.length > 0
           ? "border-t pt-2"
           : ""}
       >
