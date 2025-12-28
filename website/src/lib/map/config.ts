@@ -15,7 +15,7 @@ export const WORLD_BOUNDS = {
  */
 export const TILE_CONFIG = {
   url: "/tiles/{z}/{x}/{y}.webp",
-  minZoom: 0,
+  minZoom: -3,
   maxZoom: 3,
   tileSize: 256,
 } as const;
@@ -31,7 +31,7 @@ export const INITIAL_VIEW_STATE: {
 } = {
   target: [10, -280, 0],
   zoom: 0,
-  minZoom: -2,
+  minZoom: -3,
   maxZoom: 4,
 };
 
