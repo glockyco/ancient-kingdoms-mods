@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { untrack } from "svelte";
+  import { tick } from "svelte";
   import { browser } from "$app/environment";
   import {
     MapSidebar,
@@ -44,10 +44,10 @@
   import {
     parseUrlState,
     urlStateToLayerVisibility,
-    debouncedUpdateUrlState,
-    immediateUpdateUrlState,
+    urlManager,
     getDefaultLevelFilter,
     getDefaultLayerVisibility,
+    type UrlStateParams,
   } from "$lib/map/url-state";
   import type {
     LayerVisibility,
@@ -149,10 +149,31 @@
   let flyToRightPadding = $derived(hasSelection && isDesktop ? POPUP_WIDTH : 0);
 
   /**
+   * Build URL state params from current state.
+   * Helper to avoid repetition in URL update calls.
+   */
+  function buildUrlParams(
+    entityId: string | null,
+    entityType: string | null,
+    zoneId: string | null,
+  ): UrlStateParams {
+    return {
+      viewState: currentViewState,
+      layers: layerVisibility,
+      levelFilter,
+      levelRanges: entityData?.levelRanges,
+      entityId,
+      entityType,
+      focusedZoneId,
+      selectedZoneId: zoneId,
+    };
+  }
+
+  /**
    * Apply a resolved selection to state variables.
    * This is the single point where all selection state is updated.
    */
-  function applySelection(resolved: ResolvedSelection) {
+  function applySelection(resolved: ResolvedSelection, skipUrlUpdate = false) {
     // Clear all state first
     selectedEntity = null;
     selectedZone = null;
@@ -165,6 +186,11 @@
     hoverOverrideIds = null;
     hoverOverrideCategory = null;
 
+    // Track what selection we're applying (for URL update)
+    let newEntityId: string | null = null;
+    let newEntityType: string | null = null;
+    let newZoneId: string | null = null;
+
     // Set popup state based on popup type
     if (resolved.popup) {
       switch (resolved.popup.type) {
@@ -173,6 +199,7 @@
           break;
         case "zone":
           selectedZone = resolved.popup.zone;
+          newZoneId = resolved.popup.zone.zoneId;
           break;
         case "item":
         case "quest":
@@ -193,11 +220,20 @@
       // Always set entityId/entityType for URL state persistence
       selectedEntityId = resolved.highlight.entityId;
       selectedEntityType = resolved.highlight.entityType;
+      newEntityId = resolved.highlight.entityId;
+      newEntityType = resolved.highlight.entityType;
 
       if (resolved.highlight.overrideGroups) {
         // Virtual entity or altar-only monster - use override groups for highlighting
         highlightOverrideGroups = resolved.highlight.overrideGroups;
       }
+    }
+
+    // Update URL with new selection (unless restoring from popstate)
+    if (!skipUrlUpdate) {
+      urlManager.pushSelection(
+        buildUrlParams(newEntityId, newEntityType, newZoneId),
+      );
     }
   }
 
@@ -225,6 +261,14 @@
       rafId = requestAnimationFrame(() => {
         if (pendingViewState) {
           currentViewState = pendingViewState;
+          // Sync URL with debounce (replaceState, no history)
+          urlManager.syncViewState(
+            buildUrlParams(
+              selectedEntityId,
+              selectedEntityType,
+              selectedZone?.zoneId ?? null,
+            ),
+          );
           pendingViewState = null;
         }
         rafId = null;
@@ -315,14 +359,38 @@
 
   function handleVisibilityChange(newVisibility: LayerVisibility) {
     layerVisibility = newVisibility;
+    // Sync URL immediately (replaceState, no history)
+    urlManager.syncPreferences(
+      buildUrlParams(
+        selectedEntityId,
+        selectedEntityType,
+        selectedZone?.zoneId ?? null,
+      ),
+    );
   }
 
   function handleLevelFilterChange(newFilter: LevelFilter) {
     levelFilter = newFilter;
+    // Sync URL immediately (replaceState, no history)
+    urlManager.syncPreferences(
+      buildUrlParams(
+        selectedEntityId,
+        selectedEntityType,
+        selectedZone?.zoneId ?? null,
+      ),
+    );
   }
 
   function handleZoneFocusChange(zoneId: string | null) {
     focusedZoneId = zoneId;
+    // Sync URL immediately (replaceState, no history)
+    urlManager.syncPreferences(
+      buildUrlParams(
+        selectedEntityId,
+        selectedEntityType,
+        selectedZone?.zoneId ?? null,
+      ),
+    );
   }
 
   function updateLayers() {
@@ -682,12 +750,14 @@
         }
 
         // Restore selection from URL state (after entity data is loaded)
+        // Use passive mode to prevent URL updates during initialization
+        urlManager.enterPassiveMode();
         if (urlState?.entity && urlState?.etype) {
           if (urlState.etype === "item" || urlState.etype === "quest") {
             // Virtual entities need async resolution
             resolveVirtualSelection(urlState.etype, urlState.entity).then(
               (resolved) => {
-                applySelection(resolved);
+                applySelection(resolved, true); // skipUrlUpdate during init
                 // Fly to bounds after async resolution if deck exists and no explicit position
                 if (
                   !hasPositionParams &&
@@ -728,7 +798,7 @@
               urlState.entity,
               entityData,
             );
-            applySelection(resolved);
+            applySelection(resolved, true); // skipUrlUpdate during init
           }
         } else if (urlState?.selectedZone) {
           // Restore zone popup from URL state
@@ -736,12 +806,22 @@
             (z) => z.zoneId === urlState.selectedZone,
           );
           if (zone) {
-            applySelection({
-              popup: { type: "zone", zone },
-              highlight: null,
-            });
+            applySelection(
+              {
+                popup: { type: "zone", zone },
+                highlight: null,
+              },
+              true, // skipUrlUpdate during init
+            );
           }
         }
+
+        // Sync URL manager's tracking to match initial state
+        urlManager.setLastSelection(
+          selectedEntityId,
+          selectedEntityType,
+          selectedZone?.zoneId ?? null,
+        );
 
         // Create initial layers with zone-focused data
         const initialZoneFocusedData = createZoneFocusedData(
@@ -891,17 +971,128 @@
         }
 
         isLoading = false;
+        // Exit passive mode now that initialization is complete
+        urlManager.exitPassiveMode();
       } catch (err) {
         console.error("Failed to initialize map:", err);
         loadError = err instanceof Error ? err.message : "Failed to load map";
         isLoading = false;
+        urlManager.exitPassiveMode();
       }
     }
 
     initialize();
 
+    // Handle browser back/forward navigation
+    async function handlePopState() {
+      // Enter passive mode to prevent URL updates during restoration
+      urlManager.enterPassiveMode();
+
+      try {
+        const urlState = parseUrlState();
+        if (urlState) {
+          // Restore view state
+          currentViewState = {
+            x: urlState.x,
+            y: urlState.y,
+            zoom: urlState.zoom,
+          };
+
+          // Restore layers
+          if (urlState.layers) {
+            layerVisibility = urlStateToLayerVisibility(urlState.layers);
+          }
+
+          // Restore level filter
+          if (urlState.levelFilter) {
+            levelFilter = urlState.levelFilter;
+          }
+
+          // Restore zone focus
+          focusedZoneId = urlState.zone ?? null;
+
+          // Restore selection
+          if (urlState.entity && urlState.etype) {
+            // Clear current selection state first
+            selectedEntity = null;
+            selectedZone = null;
+            highlightOverrideGroups = null;
+
+            if (urlState.etype === "item" || urlState.etype === "quest") {
+              // Virtual entity - resolve asynchronously
+              selectedEntityId = urlState.entity;
+              selectedEntityType = urlState.etype;
+              const resolved = await resolveVirtualSelection(
+                urlState.etype,
+                urlState.entity,
+              );
+              if (resolved.highlight?.overrideGroups) {
+                highlightOverrideGroups = resolved.highlight.overrideGroups;
+              }
+            } else {
+              // Physical entity - resolve synchronously
+              selectedEntityId = urlState.entity;
+              selectedEntityType = urlState.etype;
+              const resolved = resolvePhysicalSelection(
+                urlState.etype,
+                urlState.entity,
+                entityData,
+              );
+              if (resolved.popup?.type === "entity") {
+                selectedEntity = resolved.popup.entity;
+              }
+              if (resolved.highlight?.overrideGroups) {
+                highlightOverrideGroups = resolved.highlight.overrideGroups;
+              }
+            }
+          } else if (urlState.selectedZone) {
+            // Zone selection
+            selectedEntityId = null;
+            selectedEntityType = null;
+            selectedEntity = null;
+            highlightOverrideGroups = null;
+            selectedZone =
+              entityData.parentZones.find(
+                (z) => z.zoneId === urlState.selectedZone,
+              ) ?? null;
+          } else {
+            // No selection
+            selectedEntityId = null;
+            selectedEntityType = null;
+            selectedEntity = null;
+            selectedZone = null;
+            highlightOverrideGroups = null;
+          }
+        } else {
+          // No URL state - clear everything
+          selectedEntityId = null;
+          selectedEntityType = null;
+          selectedEntity = null;
+          selectedZone = null;
+          highlightOverrideGroups = null;
+          focusedZoneId = null;
+        }
+
+        // Sync URL manager's tracking to match restored state
+        urlManager.setLastSelection(
+          selectedEntityId,
+          selectedEntityType,
+          selectedZone?.zoneId ?? null,
+        );
+
+        // Wait for state updates to propagate
+        await tick();
+      } finally {
+        // Exit passive mode to allow URL updates again
+        urlManager.exitPassiveMode();
+      }
+    }
+
+    window.addEventListener("popstate", handlePopState);
+
     return {
       destroy() {
+        window.removeEventListener("popstate", handlePopState);
         if (deckInstance) {
           deckInstance.finalize();
           deckInstance = null;
@@ -924,54 +1115,6 @@
     void hoverSelectionData; // Hover preview highlights
     void hoverZone; // Hover preview zone highlight
     updateLayers();
-  });
-
-  // Sync URL with debounce for continuous changes (pan/zoom, level sliders)
-  $effect(() => {
-    void currentViewState;
-    void levelFilter;
-    if (!isLoading && entityData) {
-      // Use untrack for values that shouldn't trigger this effect
-      const layers = untrack(() => layerVisibility);
-      const entityId = untrack(() => selectedEntityId);
-      const entityType = untrack(() => selectedEntityType);
-      const zoneId = untrack(() => focusedZoneId);
-      const selZoneId = untrack(() => selectedZone?.zoneId ?? null);
-      debouncedUpdateUrlState(
-        currentViewState,
-        layers,
-        levelFilter,
-        entityData.levelRanges,
-        entityId,
-        entityType,
-        zoneId,
-        selZoneId,
-      );
-    }
-  });
-
-  // Sync URL immediately for discrete changes (layer toggles, selection, zone focus)
-  $effect(() => {
-    void layerVisibility;
-    void selectedEntityId;
-    void selectedEntityType;
-    void focusedZoneId;
-    void selectedZone;
-    if (!isLoading && entityData) {
-      // Use untrack to read non-tracked values without making them dependencies
-      const viewState = untrack(() => currentViewState);
-      const filter = untrack(() => levelFilter);
-      immediateUpdateUrlState(
-        viewState,
-        layerVisibility,
-        filter,
-        entityData.levelRanges,
-        selectedEntityId,
-        selectedEntityType,
-        focusedZoneId,
-        selectedZone?.zoneId ?? null,
-      );
-    }
   });
 </script>
 

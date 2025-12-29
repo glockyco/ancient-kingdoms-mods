@@ -1,7 +1,8 @@
 <script lang="ts">
   import PopupCard from "./PopupCard.svelte";
-  import MapEntityButton from "./MapEntityButton.svelte";
-  import ItemButton from "./ItemButton.svelte";
+  import MapEntityLink from "./MapEntityLink.svelte";
+  import MapItemLink from "./MapItemLink.svelte";
+  import { buildEntityUrl } from "$lib/map/url-state";
   import {
     loadQuestPopupDetails,
     type QuestPopupDetails,
@@ -118,14 +119,15 @@
         </div>
         <div class="flex flex-col items-start gap-0.5">
           {#each adventurerNpcs as npc (npc.npcId)}
-            <MapEntityButton
+            <MapEntityLink
+              href={buildEntityUrl(npc.npcId, "npc")}
               onSelect={() => onSelectNpc(npc.npcId)}
               onHoverStart={() => onHoverNpc?.(npc.npcId)}
               onHoverEnd={() => onHoverNpc?.(null)}
               class="text-blue-400"
             >
               {npc.npcName}
-            </MapEntityButton>
+            </MapEntityLink>
           {/each}
         </div>
       </div>
@@ -134,26 +136,28 @@
       <div class="space-y-0.5">
         <div class="flex justify-between">
           <span class="text-muted-foreground">Start</span>
-          <MapEntityButton
+          <MapEntityLink
+            href={buildEntityUrl(startNpc.npcId, "npc")}
             onSelect={() => onSelectNpc(startNpc.npcId)}
             onHoverStart={() => onHoverNpc?.(startNpc.npcId)}
             onHoverEnd={() => onHoverNpc?.(null)}
             class="text-blue-400"
           >
             {startNpc.npcName}
-          </MapEntityButton>
+          </MapEntityLink>
         </div>
         {#if endNpc}
           <div class="flex justify-between">
             <span class="text-muted-foreground">End</span>
-            <MapEntityButton
+            <MapEntityLink
+              href={buildEntityUrl(endNpc.npcId, "npc")}
               onSelect={() => onSelectNpc(endNpc.npcId)}
               onHoverStart={() => onHoverNpc?.(endNpc.npcId)}
               onHoverEnd={() => onHoverNpc?.(null)}
               class="text-blue-400"
             >
               {endNpc.npcName}
-            </MapEntityButton>
+            </MapEntityLink>
           </div>
         {/if}
       </div>
@@ -172,21 +176,22 @@
                 <span class="text-muted-foreground">Kill</span>
                 <span>{obj.amount}×</span>
                 {#if obj.targetId}
-                  <MapEntityButton
+                  <MapEntityLink
+                    href={buildEntityUrl(obj.targetId, "monster")}
                     onSelect={() => onSelectMonster(obj.targetId!)}
                     onHoverStart={() => onHoverMonster?.(obj.targetId!)}
                     onHoverEnd={() => onHoverMonster?.(null)}
                     class="truncate text-red-400"
                   >
                     {obj.targetName}
-                  </MapEntityButton>
+                  </MapEntityLink>
                 {:else}
                   <span class="truncate">{obj.targetName}</span>
                 {/if}
               {:else if obj.type === "gather" && obj.targetId}
                 <span class="text-muted-foreground">Gather</span>
                 <span>{obj.amount}×</span>
-                <ItemButton
+                <MapItemLink
                   itemId={obj.targetId}
                   itemName={obj.targetName}
                   tooltipHtml={obj.tooltipHtml ?? null}
@@ -197,7 +202,7 @@
               {:else if obj.type === "have" && obj.targetId}
                 <span class="text-muted-foreground">Have</span>
                 <span>{obj.amount}×</span>
-                <ItemButton
+                <MapItemLink
                   itemId={obj.targetId}
                   itemName={obj.targetName}
                   tooltipHtml={obj.tooltipHtml ?? null}
@@ -208,7 +213,7 @@
               {:else if obj.type === "deliver" && obj.targetId}
                 <span class="text-muted-foreground">Deliver</span>
                 <span>{obj.amount}×</span>
-                <ItemButton
+                <MapItemLink
                   itemId={obj.targetId}
                   itemName={obj.targetName}
                   tooltipHtml={obj.tooltipHtml ?? null}
@@ -218,7 +223,7 @@
                 />
               {:else if obj.type === "equip" && obj.targetId}
                 <span class="text-muted-foreground">Equip</span>
-                <ItemButton
+                <MapItemLink
                   itemId={obj.targetId}
                   itemName={obj.targetName}
                   tooltipHtml={obj.tooltipHtml ?? null}
@@ -229,14 +234,15 @@
               {:else if obj.type === "find"}
                 <span class="text-muted-foreground">Find</span>
                 {#if obj.targetId}
-                  <MapEntityButton
+                  <MapEntityLink
+                    href={buildEntityUrl(obj.targetId, "npc")}
                     onSelect={() => onSelectNpc(obj.targetId!)}
                     onHoverStart={() => onHoverNpc?.(obj.targetId!)}
                     onHoverEnd={() => onHoverNpc?.(null)}
                     class="truncate text-blue-400"
                   >
                     {obj.targetName}
-                  </MapEntityButton>
+                  </MapEntityLink>
                 {:else}
                   <span class="truncate">{obj.targetName}</span>
                 {/if}
@@ -276,7 +282,7 @@
             </div>
           {/if}
           {#each regularRewards as item, i (i)}
-            <ItemButton
+            <MapItemLink
               itemId={item.itemId}
               itemName={item.itemName}
               tooltipHtml={item.tooltipHtml}
@@ -298,7 +304,7 @@
         <div class="space-y-0.5">
           {#each classRewards as item, i (i)}
             <div class="flex items-center justify-between gap-2">
-              <ItemButton
+              <MapItemLink
                 itemId={item.itemId}
                 itemName={item.itemName}
                 tooltipHtml={item.tooltipHtml}

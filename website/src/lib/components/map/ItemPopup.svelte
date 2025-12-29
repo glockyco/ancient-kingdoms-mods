@@ -1,7 +1,8 @@
 <script lang="ts">
   import PopupCard from "./PopupCard.svelte";
-  import MapEntityButton from "./MapEntityButton.svelte";
-  import ItemButton from "./ItemButton.svelte";
+  import MapEntityLink from "./MapEntityLink.svelte";
+  import MapItemLink from "./MapItemLink.svelte";
+  import { buildEntityUrl } from "$lib/map/url-state";
   import MonsterTypeIcon from "$lib/components/MonsterTypeIcon.svelte";
   import {
     loadItemPopupDetails,
@@ -120,7 +121,8 @@
                   isElite={dropper.isElite}
                   class="h-3.5 w-3.5 shrink-0"
                 />
-                <MapEntityButton
+                <MapEntityLink
+                  href={buildEntityUrl(dropper.monsterId, "monster")}
                   onSelect={() => onSelectMonster(dropper.monsterId)}
                   onHoverStart={() => onHoverMonster?.(dropper.monsterId)}
                   onHoverEnd={() => onHoverMonster?.(null)}
@@ -131,7 +133,7 @@
                       : "text-red-400"}
                 >
                   <span class="truncate">{dropper.monsterName}</span>
-                </MapEntityButton>
+                </MapEntityLink>
               </div>
               <div
                 class="flex items-center gap-2 shrink-0 text-xs text-muted-foreground"
@@ -154,13 +156,14 @@
         <div class="max-h-32 space-y-0.5 overflow-y-auto pr-2">
           {#each details.vendors as vendor (vendor.npcId)}
             <div class="flex items-center justify-between gap-2">
-              <MapEntityButton
+              <MapEntityLink
+                href={buildEntityUrl(vendor.npcId, "npc")}
                 onSelect={() => onSelectNpc(vendor.npcId)}
                 onHoverStart={() => onHoverNpc?.(vendor.npcId)}
                 onHoverEnd={() => onHoverNpc?.(null)}
               >
                 <span class="truncate">{vendor.npcName}</span>
-              </MapEntityButton>
+              </MapEntityLink>
               <span class="shrink-0 text-xs text-muted-foreground">
                 {#if vendor.currencyItemId}
                   {vendor.price}x {vendor.currencyItemName}
@@ -187,7 +190,11 @@
         <div class="max-h-32 space-y-0.5 overflow-y-auto pr-2">
           {#each details.gatheringSources as source (source.resourceId)}
             <div class="flex items-center justify-between gap-2">
-              <MapEntityButton
+              <MapEntityLink
+                href={buildEntityUrl(
+                  source.resourceId,
+                  source.resourceType === "chest" ? "chest" : "gathering",
+                )}
                 onSelect={() =>
                   source.resourceType === "chest"
                     ? onSelectChest(source.resourceId)
@@ -206,7 +213,7 @@
                     ? "Chest"
                     : source.resourceName}
                 </span>
-              </MapEntityButton>
+              </MapEntityLink>
               <span class="shrink-0 text-xs text-muted-foreground">
                 {formatPercent(source.rate)}
               </span>
@@ -231,14 +238,15 @@
         <div class="max-h-32 space-y-1 overflow-y-auto pr-2">
           {#each details.altarSources as altar (altar.altarId)}
             <div>
-              <MapEntityButton
+              <MapEntityLink
+                href={buildEntityUrl(altar.altarId, "altar")}
                 onSelect={() => onSelectAltar(altar.altarId)}
                 onHoverStart={() => onHoverAltar?.(altar.altarId)}
                 onHoverEnd={() => onHoverAltar?.(null)}
                 class="text-orange-400"
               >
                 <span class="truncate">{altar.altarName}</span>
-              </MapEntityButton>
+              </MapEntityLink>
               <div class="text-xs text-muted-foreground">
                 {#if altar.tier === "normal"}
                   Lv 30-34
@@ -275,7 +283,7 @@
         <div class="max-h-32 space-y-0.5 overflow-y-auto pr-2">
           {#each details.chestSources as chest (chest.chestId)}
             <div class="flex items-center justify-between gap-2">
-              <ItemButton
+              <MapItemLink
                 itemId={chest.chestId}
                 itemName={chest.chestName}
                 onSelect={onSelectItem}
@@ -306,9 +314,12 @@
         <div class="max-h-32 space-y-0.5 overflow-y-auto pr-2">
           {#each details.questRewards as quest (quest.questId)}
             <div class="flex items-center justify-between gap-2">
-              <MapEntityButton onSelect={() => onSelectQuest(quest.questId)}>
+              <MapEntityLink
+                href={buildEntityUrl(quest.questId, "quest")}
+                onSelect={() => onSelectQuest(quest.questId)}
+              >
                 <span class="truncate">{quest.questName}</span>
-              </MapEntityButton>
+              </MapEntityLink>
               <span class="shrink-0 text-xs text-muted-foreground">
                 Lv.{quest.levelRecommended}
               </span>
@@ -338,7 +349,7 @@
             {#each recipe.materials as material (material.itemId)}
               <div class="flex items-center gap-1">
                 <span class="text-muted-foreground">{material.amount}x</span>
-                <ItemButton
+                <MapItemLink
                   itemId={material.itemId}
                   itemName={material.itemName}
                   onSelect={onSelectItem}
@@ -369,7 +380,7 @@
         <div class="max-h-32 space-y-0.5 overflow-y-auto pr-2">
           {#each details.mergeSources as source (source.itemId)}
             <div>
-              <ItemButton
+              <MapItemLink
                 itemId={source.itemId}
                 itemName={source.itemName}
                 onSelect={onSelectItem}

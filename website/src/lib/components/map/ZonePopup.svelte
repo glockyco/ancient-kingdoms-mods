@@ -1,6 +1,7 @@
 <script lang="ts">
   import PopupCard from "./PopupCard.svelte";
-  import MapEntityButton from "./MapEntityButton.svelte";
+  import MapEntityLink from "./MapEntityLink.svelte";
+  import { buildEntityUrl } from "$lib/map/url-state";
   import type { ParentZoneBoundary } from "$lib/types/map";
   import {
     loadZonePopupDetails,
@@ -100,14 +101,15 @@
         <ul class="space-y-0.5">
           {#each details.bosses as boss (boss.id)}
             <li class="flex items-center justify-between gap-2">
-              <MapEntityButton
+              <MapEntityLink
+                href={buildEntityUrl(boss.id, "monster")}
                 onSelect={() => onSelectMonster(boss.id)}
                 onHoverStart={() => onHoverMonster?.(boss.id)}
                 onHoverEnd={() => onHoverMonster?.(null)}
                 class="truncate text-cyan-400"
               >
                 {boss.name}
-              </MapEntityButton>
+              </MapEntityLink>
               <span class="text-muted-foreground shrink-0 text-xs">
                 Lv. {boss.level}
               </span>
@@ -124,14 +126,15 @@
         <ul class="space-y-0.5">
           {#each details.elites as elite (elite.id)}
             <li class="flex items-center justify-between gap-2">
-              <MapEntityButton
+              <MapEntityLink
+                href={buildEntityUrl(elite.id, "monster")}
                 onSelect={() => onSelectMonster(elite.id)}
                 onHoverStart={() => onHoverMonster?.(elite.id)}
                 onHoverEnd={() => onHoverMonster?.(null)}
                 class="truncate text-purple-400"
               >
                 {elite.name}
-              </MapEntityButton>
+              </MapEntityLink>
               <span class="text-muted-foreground shrink-0 text-xs">
                 Lv. {elite.level}
               </span>
@@ -148,14 +151,15 @@
         <ul class="space-y-0.5">
           {#each details.altars as altar (altar.id)}
             <li>
-              <MapEntityButton
+              <MapEntityLink
+                href={buildEntityUrl(altar.id, "altar")}
                 onSelect={() => onSelectAltar(altar.id)}
                 onHoverStart={() => onHoverAltar?.(altar.id)}
                 onHoverEnd={() => onHoverAltar?.(null)}
                 class="text-orange-400"
               >
                 {altar.name}
-              </MapEntityButton>
+              </MapEntityLink>
             </li>
           {/each}
         </ul>
@@ -170,14 +174,15 @@
           Renewal Sage
         </div>
         <div class="flex items-center justify-between gap-2">
-          <MapEntityButton
+          <MapEntityLink
+            href={buildEntityUrl(sage.id, "npc")}
             onSelect={() => onSelectNpc(sage.id)}
             onHoverStart={() => onHoverNpc?.(sage.id)}
             onHoverEnd={() => onHoverNpc?.(null)}
             class="truncate text-blue-400"
           >
             {sage.name}
-          </MapEntityButton>
+          </MapEntityLink>
           <span class="text-muted-foreground shrink-0 text-xs">
             in {sage.zoneName}
           </span>

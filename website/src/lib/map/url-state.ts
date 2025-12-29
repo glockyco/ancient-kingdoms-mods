@@ -1,5 +1,5 @@
 import { browser } from "$app/environment";
-import { replaceState } from "$app/navigation";
+import { pushState, replaceState } from "$app/navigation";
 import { base } from "$app/paths";
 import type { LayerVisibility, LevelFilter, LevelRanges } from "$lib/types/map";
 import { INITIAL_VIEW_STATE } from "./config";
@@ -97,6 +97,25 @@ export function getDefaultLayerVisibility(): LayerVisibility {
 }
 
 /**
+ * Build a URL for navigating to a specific entity on the map.
+ * Used for generating href attributes on entity links.
+ */
+export function buildEntityUrl(
+  entityId: string,
+  entityType: string,
+  position?: { x: number; y: number },
+): string {
+  const params = new URLSearchParams();
+  params.set("entity", entityId);
+  params.set("etype", entityType);
+  if (position) {
+    params.set("x", position.x.toFixed(1));
+    params.set("y", position.y.toFixed(1));
+  }
+  return `${base}/map?${params.toString()}`;
+}
+
+/**
  * Parse URL parameters to restore map state
  */
 export function parseUrlState(): MapUrlState | null {
@@ -171,78 +190,6 @@ export function parseUrlState(): MapUrlState | null {
 }
 
 /**
- * Update URL with current map state (without page reload)
- */
-export function updateUrlState(
-  viewState: { x: number; y: number; zoom: number },
-  layers: LayerVisibility,
-  levelFilter: LevelFilter,
-  levelRanges?: LevelRanges,
-  selectedEntityId?: string | null,
-  selectedEntityType?: string | null,
-  focusedZoneId?: string | null,
-  selectedZoneId?: string | null,
-): void {
-  if (!browser) return;
-
-  const params = new URLSearchParams();
-
-  // Position (rounded to 1 decimal for cleaner URLs)
-  params.set("x", viewState.x.toFixed(1));
-  params.set("y", viewState.y.toFixed(1));
-  params.set("z", viewState.zoom.toFixed(2));
-
-  // Active layers (only include if different from default)
-  const activeLayers = (
-    Object.keys(layers) as (keyof LayerVisibility)[]
-  ).filter((k) => layers[k]);
-  const sortedActive = [...activeLayers].sort();
-  const sortedDefault = [...DEFAULT_LAYERS].sort();
-
-  if (JSON.stringify(sortedActive) !== JSON.stringify(sortedDefault)) {
-    params.set("layers", activeLayers.join(","));
-  }
-
-  // Level filters (only include if different from data-derived defaults)
-  const defaultFilter = levelRanges ?? FALLBACK_LEVEL_FILTER;
-  if (
-    levelFilter.monsterMin !== defaultFilter.monsterMin ||
-    levelFilter.monsterMax !== defaultFilter.monsterMax
-  ) {
-    params.set("mlvl", `${levelFilter.monsterMin}-${levelFilter.monsterMax}`);
-  }
-  if (
-    levelFilter.gatheringMin !== defaultFilter.gatheringMin ||
-    levelFilter.gatheringMax !== defaultFilter.gatheringMax
-  ) {
-    params.set(
-      "gtier",
-      `${levelFilter.gatheringMin}-${levelFilter.gatheringMax}`,
-    );
-  }
-
-  // Entity selection for deep linking
-  if (selectedEntityId && selectedEntityType) {
-    params.set("entity", selectedEntityId);
-    params.set("etype", selectedEntityType);
-  }
-
-  // Zone focus
-  if (focusedZoneId) {
-    params.set("zone", focusedZoneId);
-  }
-
-  // Selected zone for popup
-  if (selectedZoneId) {
-    params.set("szone", selectedZoneId);
-  }
-
-  const url = `${base}/map?${params.toString()}`;
-  // eslint-disable-next-line svelte/no-navigation-without-resolve -- static route, no params to resolve
-  replaceState(url, {});
-}
-
-/**
  * Convert URL state to LayerVisibility object
  */
 export function urlStateToLayerVisibility(
@@ -301,79 +248,6 @@ export function urlStateToLayerVisibility(
   };
 }
 
-// Debounce timer for URL updates
-let urlUpdateTimer: ReturnType<typeof setTimeout> | null = null;
-
-/**
- * Cancel any pending debounced URL update
- */
-export function cancelPendingUrlUpdate(): void {
-  if (urlUpdateTimer) {
-    clearTimeout(urlUpdateTimer);
-    urlUpdateTimer = null;
-  }
-}
-
-/**
- * Immediate URL update, cancels any pending debounced update.
- * Use for discrete changes like filter toggles, selection changes.
- */
-export function immediateUpdateUrlState(
-  viewState: { x: number; y: number; zoom: number },
-  layers: LayerVisibility,
-  levelFilter: LevelFilter,
-  levelRanges?: LevelRanges,
-  selectedEntityId?: string | null,
-  selectedEntityType?: string | null,
-  focusedZoneId?: string | null,
-  selectedZoneId?: string | null,
-): void {
-  cancelPendingUrlUpdate();
-  updateUrlState(
-    viewState,
-    layers,
-    levelFilter,
-    levelRanges,
-    selectedEntityId,
-    selectedEntityType,
-    focusedZoneId,
-    selectedZoneId,
-  );
-}
-
-/**
- * Debounced URL update for continuous changes like pan/zoom.
- */
-export function debouncedUpdateUrlState(
-  viewState: { x: number; y: number; zoom: number },
-  layers: LayerVisibility,
-  levelFilter: LevelFilter,
-  levelRanges?: LevelRanges,
-  selectedEntityId?: string | null,
-  selectedEntityType?: string | null,
-  focusedZoneId?: string | null,
-  selectedZoneId?: string | null,
-  delay = 150,
-): void {
-  if (urlUpdateTimer) {
-    clearTimeout(urlUpdateTimer);
-  }
-
-  urlUpdateTimer = setTimeout(() => {
-    updateUrlState(
-      viewState,
-      layers,
-      levelFilter,
-      levelRanges,
-      selectedEntityId,
-      selectedEntityType,
-      focusedZoneId,
-      selectedZoneId,
-    );
-    urlUpdateTimer = null;
-  }, delay);
-}
-
 /**
  * Get default level filter values from data ranges or fallback
  */
@@ -388,3 +262,211 @@ export function getDefaultLevelFilter(ranges?: LevelRanges): LevelFilter {
   }
   return { ...FALLBACK_LEVEL_FILTER };
 }
+
+// ============================================================================
+// URL Manager - Centralized URL state management
+// ============================================================================
+
+/**
+ * Selection state for deduplication and history tracking.
+ */
+interface SelectionState {
+  entityId: string | null;
+  entityType: string | null;
+  zoneId: string | null;
+}
+
+/**
+ * All state needed to build a URL.
+ */
+export interface UrlStateParams {
+  viewState: { x: number; y: number; zoom: number };
+  layers: LayerVisibility;
+  levelFilter: LevelFilter;
+  levelRanges?: LevelRanges;
+  entityId: string | null;
+  entityType: string | null;
+  focusedZoneId: string | null;
+  selectedZoneId: string | null;
+}
+
+// Internal state for the URL manager
+let lastSelection: SelectionState = {
+  entityId: null,
+  entityType: null,
+  zoneId: null,
+};
+let isPassiveMode = false;
+let viewSyncTimer: ReturnType<typeof setTimeout> | null = null;
+
+/**
+ * Build URL from state parameters.
+ */
+function buildUrl(params: UrlStateParams): string {
+  const urlParams = new URLSearchParams();
+
+  // Position (rounded for cleaner URLs)
+  urlParams.set("x", params.viewState.x.toFixed(1));
+  urlParams.set("y", params.viewState.y.toFixed(1));
+  urlParams.set("z", params.viewState.zoom.toFixed(2));
+
+  // Active layers (only include if different from default)
+  const activeLayers = (
+    Object.keys(params.layers) as (keyof LayerVisibility)[]
+  ).filter((k) => params.layers[k]);
+  const sortedActive = [...activeLayers].sort();
+  const sortedDefault = [...DEFAULT_LAYERS].sort();
+  if (JSON.stringify(sortedActive) !== JSON.stringify(sortedDefault)) {
+    urlParams.set("layers", activeLayers.join(","));
+  }
+
+  // Level filters (only include if different from defaults)
+  const defaultFilter = params.levelRanges ?? FALLBACK_LEVEL_FILTER;
+  if (
+    params.levelFilter.monsterMin !== defaultFilter.monsterMin ||
+    params.levelFilter.monsterMax !== defaultFilter.monsterMax
+  ) {
+    urlParams.set(
+      "mlvl",
+      `${params.levelFilter.monsterMin}-${params.levelFilter.monsterMax}`,
+    );
+  }
+  if (
+    params.levelFilter.gatheringMin !== defaultFilter.gatheringMin ||
+    params.levelFilter.gatheringMax !== defaultFilter.gatheringMax
+  ) {
+    urlParams.set(
+      "gtier",
+      `${params.levelFilter.gatheringMin}-${params.levelFilter.gatheringMax}`,
+    );
+  }
+
+  // Entity selection
+  if (params.entityId && params.entityType) {
+    urlParams.set("entity", params.entityId);
+    urlParams.set("etype", params.entityType);
+  }
+
+  // Zone focus
+  if (params.focusedZoneId) {
+    urlParams.set("zone", params.focusedZoneId);
+  }
+
+  // Selected zone popup
+  if (params.selectedZoneId) {
+    urlParams.set("szone", params.selectedZoneId);
+  }
+
+  return `${base}/map?${urlParams.toString()}`;
+}
+
+/**
+ * Cancel any pending view sync timer.
+ */
+function cancelViewSync(): void {
+  if (viewSyncTimer) {
+    clearTimeout(viewSyncTimer);
+    viewSyncTimer = null;
+  }
+}
+
+/**
+ * URL Manager - centralized, explicit URL state management.
+ *
+ * Instead of using reactive effects that race each other, call these methods
+ * explicitly from action handlers. This provides predictable timing and
+ * clear cause-and-effect relationships.
+ */
+export const urlManager = {
+  /**
+   * Enter passive mode during popstate restoration.
+   * While in passive mode, all URL updates are suppressed.
+   */
+  enterPassiveMode(): void {
+    isPassiveMode = true;
+    cancelViewSync();
+  },
+
+  /**
+   * Exit passive mode after popstate restoration is complete.
+   */
+  exitPassiveMode(): void {
+    isPassiveMode = false;
+  },
+
+  /**
+   * Update the last known selection state.
+   * Call this after restoring from URL to sync internal tracking.
+   */
+  setLastSelection(
+    entityId: string | null,
+    entityType: string | null,
+    zoneId: string | null,
+  ): void {
+    lastSelection = { entityId, entityType, zoneId };
+  },
+
+  /**
+   * Get the last known selection state (for debugging/testing).
+   */
+  getLastSelection(): SelectionState {
+    return { ...lastSelection };
+  },
+
+  /**
+   * Debounced URL sync for continuous changes (pan/zoom).
+   * Uses replaceState - does NOT add to browser history.
+   */
+  syncViewState(params: UrlStateParams, delay = 150): void {
+    if (!browser || isPassiveMode) return;
+
+    cancelViewSync();
+    viewSyncTimer = setTimeout(() => {
+      const url = buildUrl(params);
+      // eslint-disable-next-line svelte/no-navigation-without-resolve -- static route
+      replaceState(url, {});
+      viewSyncTimer = null;
+    }, delay);
+  },
+
+  /**
+   * Immediate URL sync for preference changes (layers, filters, zone focus).
+   * Uses replaceState - does NOT add to browser history.
+   */
+  syncPreferences(params: UrlStateParams): void {
+    if (!browser || isPassiveMode) return;
+
+    cancelViewSync();
+    const url = buildUrl(params);
+    // eslint-disable-next-line svelte/no-navigation-without-resolve -- static route
+    replaceState(url, {});
+  },
+
+  /**
+   * Push selection change to browser history.
+   * Handles both opening a selection AND closing (null values).
+   * Deduplicates: skips if selection matches the last pushed state.
+   */
+  pushSelection(params: UrlStateParams): void {
+    if (!browser || isPassiveMode) return;
+
+    const { entityId, entityType, selectedZoneId: zoneId } = params;
+
+    // Deduplicate: skip if same as last pushed selection
+    if (
+      entityId === lastSelection.entityId &&
+      entityType === lastSelection.entityType &&
+      zoneId === lastSelection.zoneId
+    ) {
+      return;
+    }
+
+    cancelViewSync();
+    const url = buildUrl(params);
+    // eslint-disable-next-line svelte/no-navigation-without-resolve -- static route
+    pushState(url, {});
+
+    // Update tracking
+    lastSelection = { entityId, entityType, zoneId };
+  },
+};

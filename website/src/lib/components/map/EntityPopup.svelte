@@ -1,7 +1,8 @@
 <script lang="ts">
   import PopupCard from "$lib/components/map/PopupCard.svelte";
-  import ItemButton from "$lib/components/map/ItemButton.svelte";
-  import MapEntityButton from "$lib/components/map/MapEntityButton.svelte";
+  import MapItemLink from "$lib/components/map/MapItemLink.svelte";
+  import MapEntityLink from "$lib/components/map/MapEntityLink.svelte";
+  import { buildEntityUrl } from "$lib/map/url-state";
   import {
     toRomanNumeral,
     formatDuration,
@@ -288,14 +289,15 @@
   <div class="flex justify-between">
     <span class="text-muted-foreground">Zone</span>
     {#if displayZoneId}
-      <MapEntityButton
+      <MapEntityLink
+        href={buildEntityUrl(displayZoneId, "zone")}
         onSelect={() => onSelectZone(displayZoneId!)}
         onHoverStart={() => onHoverZone?.(displayZoneId!)}
         onHoverEnd={() => onHoverZone?.(null)}
         class="text-blue-400"
       >
         {displayZoneName}
-      </MapEntityButton>
+      </MapEntityLink>
     {:else}
       <span>{displayZoneName}</span>
     {/if}
@@ -392,22 +394,24 @@
         <div class="space-y-0.5">
           {#each monsterAltarDetails as altar (altar.id)}
             <div class="flex items-center justify-between gap-2">
-              <MapEntityButton
+              <MapEntityLink
+                href={buildEntityUrl(altar.id, "altar")}
                 onSelect={() => onSelectAltar(altar.id)}
                 onHoverStart={() => onHoverAltar?.(altar.id)}
                 onHoverEnd={() => onHoverAltar?.(null)}
                 class="text-amber-400 dark:text-amber-400"
               >
                 <span class="truncate">{altar.name}</span>
-              </MapEntityButton>
-              <MapEntityButton
+              </MapEntityLink>
+              <MapEntityLink
+                href={buildEntityUrl(altar.zoneId, "zone")}
                 onSelect={() => onSelectZone(altar.zoneId)}
                 onHoverStart={() => onHoverZone?.(altar.zoneId)}
                 onHoverEnd={() => onHoverZone?.(null)}
                 class="shrink-0 text-xs text-blue-400"
               >
                 {altar.zoneName}
-              </MapEntityButton>
+              </MapEntityLink>
             </div>
           {/each}
         </div>
@@ -423,7 +427,7 @@
             <div class="space-y-1.5">
               {#each altar.details.rewards as reward (reward.tier)}
                 <div>
-                  <ItemButton
+                  <MapItemLink
                     itemId={reward.itemId}
                     itemName={reward.itemName}
                     tooltipHtml={reward.tooltipHtml}
@@ -464,7 +468,7 @@
         <div class="max-h-48 space-y-0.5 overflow-y-auto pr-2">
           {#each filteredMonsterDrops as drop, i (i)}
             <div class="flex justify-between gap-2">
-              <ItemButton
+              <MapItemLink
                 itemId={drop.itemId}
                 itemName={drop.itemName}
                 tooltipHtml={drop.tooltipHtml}
@@ -491,14 +495,15 @@
       <div class="flex justify-between">
         <span class="text-muted-foreground">Teleports to</span>
         {#if npc.teleportZoneId}
-          <MapEntityButton
+          <MapEntityLink
+            href={buildEntityUrl(npc.teleportZoneId, "zone")}
             onSelect={() => onSelectZone(npc.teleportZoneId!)}
             onHoverStart={() => onHoverZone?.(npc.teleportZoneId!)}
             onHoverEnd={() => onHoverZone?.(null)}
             class="text-blue-400"
           >
             {npc.teleportDestName}
-          </MapEntityButton>
+          </MapEntityLink>
         {:else}
           <span>{npc.teleportDestName}</span>
         {/if}
@@ -518,14 +523,15 @@
       <div class="flex justify-between">
         <span class="text-muted-foreground">Resets</span>
         {#if npc.renewalDungeonZoneId}
-          <MapEntityButton
+          <MapEntityLink
+            href={buildEntityUrl(npc.renewalDungeonZoneId, "zone")}
             onSelect={() => onSelectZone(npc.renewalDungeonZoneId!)}
             onHoverStart={() => onHoverZone?.(npc.renewalDungeonZoneId!)}
             onHoverEnd={() => onHoverZone?.(null)}
             class="text-blue-400"
           >
             {npc.renewalDungeonName}
-          </MapEntityButton>
+          </MapEntityLink>
         {:else}
           <span class="text-purple-400">{npc.renewalDungeonName}</span>
         {/if}
@@ -543,12 +549,13 @@
         <div class="max-h-48 space-y-0.5 overflow-y-auto pr-2">
           {#each npcDetails.quests as quest, i (i)}
             <div class="flex justify-between gap-2">
-              <MapEntityButton
+              <MapEntityLink
+                href={buildEntityUrl(quest.id, "quest")}
                 onSelect={() => onSelectQuest(quest.id)}
                 class="truncate text-blue-400"
               >
                 {quest.name}
-              </MapEntityButton>
+              </MapEntityLink>
               <span class="shrink-0 text-xs text-muted-foreground"
                 >Lv. {quest.levelRecommended}</span
               >
@@ -571,7 +578,7 @@
         <div class="max-h-48 space-y-0.5 overflow-y-auto pr-2">
           {#each npcDetails.itemsSold as item, i (i)}
             <div>
-              <ItemButton
+              <MapItemLink
                 itemId={item.itemId}
                 itemName={item.itemName}
                 tooltipHtml={item.tooltipHtml}
@@ -598,14 +605,15 @@
         <div class="flex justify-between">
           <span class="text-muted-foreground">Destination</span>
           {#if portal.destinationZoneId}
-            <MapEntityButton
+            <MapEntityLink
+              href={buildEntityUrl(portal.destinationZoneId, "zone")}
               onSelect={() => onSelectZone(portal.destinationZoneId!)}
               onHoverStart={() => onHoverZone?.(portal.destinationZoneId!)}
               onHoverEnd={() => onHoverZone?.(null)}
               class="text-blue-400"
             >
               {portal.destinationZoneName}
-            </MapEntityButton>
+            </MapEntityLink>
           {:else}
             <span>{portal.destinationZoneName}</span>
           {/if}
@@ -639,7 +647,7 @@
             {#if portal.requiredItemName && portal.requiredItemId}
               <div class="flex justify-between">
                 <span class="text-muted-foreground">Key</span>
-                <ItemButton
+                <MapItemLink
                   itemId={portal.requiredItemId}
                   itemName={portal.requiredItemName}
                   tooltipHtml={null}
@@ -684,7 +692,7 @@
     {#if chest.keyRequiredName && chest.keyRequiredId}
       <div class="flex justify-between">
         <span class="text-muted-foreground">Key</span>
-        <ItemButton
+        <MapItemLink
           itemId={chest.keyRequiredId}
           itemName={chest.keyRequiredName}
           tooltipHtml={null}
@@ -714,7 +722,7 @@
           {#each chestDetails.drops as drop, i (i)}
             <div>
               <div class="flex justify-between gap-2">
-                <ItemButton
+                <MapItemLink
                   itemId={drop.itemId}
                   itemName={drop.itemName}
                   tooltipHtml={drop.tooltipHtml}
@@ -766,7 +774,7 @@
     {#if altar.activationItemName && altar.activationItemId}
       <div class="flex justify-between">
         <span class="text-muted-foreground">Requires</span>
-        <ItemButton
+        <MapItemLink
           itemId={altar.activationItemId}
           itemName={altar.activationItemName}
           tooltipHtml={null}
@@ -816,7 +824,7 @@
         <div class="space-y-2">
           {#each altarDetails.rewards as reward (reward.tier)}
             <div>
-              <ItemButton
+              <MapItemLink
                 itemId={reward.itemId}
                 itemName={reward.itemName}
                 tooltipHtml={reward.tooltipHtml}
@@ -863,7 +871,7 @@
           <div class="max-h-48 space-y-0.5 overflow-y-auto pr-2">
             {#each bossDrop.drops as drop, i (i)}
               <div class="flex justify-between gap-2">
-                <ItemButton
+                <MapItemLink
                   itemId={drop.itemId}
                   itemName={drop.itemName}
                   tooltipHtml={drop.tooltipHtml}
@@ -894,7 +902,7 @@
     {#if gathering.toolRequiredName && gathering.toolRequiredId}
       <div class="flex justify-between">
         <span class="text-muted-foreground">Tool</span>
-        <ItemButton
+        <MapItemLink
           itemId={gathering.toolRequiredId}
           itemName={gathering.toolRequiredName}
           tooltipHtml={null}
@@ -923,7 +931,7 @@
         <div class="max-h-48 space-y-0.5 overflow-y-auto pr-2">
           {#each gatheringDetails.drops as drop, i (i)}
             <div class="flex justify-between gap-2">
-              <ItemButton
+              <MapItemLink
                 itemId={drop.itemId}
                 itemName={drop.itemName}
                 tooltipHtml={drop.tooltipHtml}

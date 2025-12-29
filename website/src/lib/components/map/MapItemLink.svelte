@@ -7,6 +7,7 @@
   import { browser } from "$app/environment";
   import { MediaQuery } from "svelte/reactivity";
   import * as HoverCard from "$lib/components/ui/hover-card";
+  import { buildEntityUrl } from "$lib/map/url-state";
 
   interface Props {
     itemId: string;
@@ -47,9 +48,17 @@
     }
   }
 
-  function handleClick() {
+  function handleClick(e: MouseEvent) {
+    // Allow modifier-clicks to work naturally (open in new tab)
+    if (e.ctrlKey || e.metaKey || e.shiftKey || e.button !== 0) {
+      return;
+    }
+    // Normal click: prevent navigation and use callback
+    e.preventDefault();
     onSelect(itemId);
   }
+
+  const href = $derived(buildEntityUrl(itemId, "item"));
 </script>
 
 <span class="min-w-0">
@@ -61,13 +70,13 @@
       onOpenChange={handleOpenChange}
     >
       <HoverCard.Trigger>
-        <button
-          type="button"
+        <a
+          {href}
           onclick={handleClick}
           class="inline-block max-w-full cursor-pointer text-left underline decoration-dotted hover:decoration-solid {effectiveColorClass} {className}"
         >
           {itemName}
-        </button>
+        </a>
       </HoverCard.Trigger>
       <HoverCard.Content
         class="w-80 border-0 p-0 overflow-hidden shadow-lg"
@@ -81,12 +90,12 @@
       </HoverCard.Content>
     </HoverCard.Root>
   {:else}
-    <button
-      type="button"
+    <a
+      {href}
       onclick={handleClick}
       class="inline-block max-w-full cursor-pointer text-left underline hover:opacity-80 {effectiveColorClass} {className}"
     >
       {itemName}
-    </button>
+    </a>
   {/if}
 </span>
