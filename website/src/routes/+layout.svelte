@@ -1,6 +1,7 @@
 <script lang="ts">
   import "../app.css";
   import { ModeWatcher } from "mode-watcher";
+  import { beforeNavigate } from "$app/navigation";
   import LoadingOverlay from "$lib/components/LoadingOverlay.svelte";
   import { onMount } from "svelte";
 
@@ -11,6 +12,15 @@
       navigator.serviceWorker.register("/service-worker.js", {
         type: "module",
       });
+    }
+  });
+
+  // Auto-update service worker on navigation
+  beforeNavigate(async () => {
+    if (!("serviceWorker" in navigator)) return;
+    const registration = await navigator.serviceWorker.ready;
+    if (registration.waiting) {
+      registration.waiting.postMessage({ type: "SKIP_WAITING" });
     }
   });
 </script>

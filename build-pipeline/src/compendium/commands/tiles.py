@@ -396,8 +396,39 @@ def run(config: dict) -> None:
         quality=quality,
     )
 
-    # Calculate total size
-    total_size = sum(f.stat().st_size for f in tiles_dir.rglob("*.webp"))
+    # Calculate total size and generate manifest
+    console.print("Generating tiles manifest...")
+    manifest: dict = {"zoom_levels": {}}
+    total_size = 0
+
+    for z in range(min_zoom, max_zoom + 1):
+        zoom_dir = tiles_dir / str(z)
+        if not zoom_dir.exists():
+            continue
+
+        tiles_in_zoom = list(zoom_dir.rglob("*.webp"))
+        zoom_size = sum(f.stat().st_size for f in tiles_in_zoom)
+        total_size += zoom_size
+
+        # Build list of tile paths relative to tiles dir
+        tile_paths = [
+            f"/tiles/{z}/{f.parent.name}/{f.stem}.webp" for f in tiles_in_zoom
+        ]
+
+        manifest["zoom_levels"][str(z)] = {
+            "count": len(tiles_in_zoom),
+            "size_bytes": zoom_size,
+            "tiles": sorted(tile_paths),
+        }
+
+    manifest["total_count"] = total_tiles
+    manifest["total_size_bytes"] = total_size
+
+    # Write manifest
+    manifest_path = tiles_dir / "tiles-manifest.json"
+    with open(manifest_path, "w") as f:
+        json.dump(manifest, f, indent=2)
+
     if total_size < 1024 * 1024:
         size_str = f"{total_size / 1024:.1f} KB"
     else:
@@ -406,3 +437,4 @@ def run(config: dict) -> None:
     console.print()
     console.print(f"[green]✓[/green] Generated {total_tiles:,} tiles ({size_str})")
     console.print(f"  Output: {tiles_dir}")
+    console.print(f"  Manifest: {manifest_path}")
