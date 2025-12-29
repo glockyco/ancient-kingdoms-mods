@@ -10,14 +10,14 @@ The map displays all game entities (monsters, NPCs, portals, chests, altars, gat
 
 - **Rendering**: deck.gl with OrthographicView for WebGL performance
 - **Data**: Client-side SQLite queries (~16k entities)
-- **SSR**: Disabled for /map route (deck.gl requires browser APIs)
+- **SSR**: Map data prerendered at build time; deck.gl initializes client-side
 
 ## Key Files
 
 ```
 src/
 ├── routes/map/
-│   ├── +page.ts          # Disables SSR/prerender
+│   ├── +page.server.ts   # Prerenders map data at build time
 │   └── +page.svelte      # Main map component
 ├── lib/
 │   ├── map/
@@ -25,7 +25,8 @@ src/
 │   │   ├── layers.ts     # Layer factory functions
 │   │   └── CLAUDE.md     # This file
 │   ├── queries/
-│   │   └── map.ts        # SQL queries for all entity positions
+│   │   ├── map.server.ts # Server-side queries for prerendering
+│   │   └── popup.ts      # Client-side popup queries
 │   ├── types/
 │   │   └── map.ts        # Map entity type definitions
 │   └── components/map/
@@ -213,11 +214,3 @@ deck.gl handles millions of points efficiently, but **layer recreation is expens
    - Use `EMPTY_SELECTION` constant for stable empty array references
 
 **Key insight**: deck.gl is fast at rendering; the bottleneck is JS computation inside `createLayers()`.
-
-## Future Enhancements
-
-- [ ] TileLayer for terrain imagery (requires `compendium tiles` implementation)
-- [ ] Search functionality with FTS5 and fly-to
-- [x] URL state for sharing map positions
-- [x] Zone boundary polygons from zone_triggers
-- [x] Patrol path visualization for monsters and NPCs
