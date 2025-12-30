@@ -143,10 +143,17 @@ export async function createIconAtlas(): Promise<IconAtlasResult> {
     ctx.fillStyle = bgColor;
     ctx.fill();
 
+    // Add dark outline for better definition
+    ctx.strokeStyle = "rgba(0, 0, 0, 0.4)";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
     // Draw white icon centered (scaled to fit inside circle)
+    // Add dark drop shadow for visibility on bright backgrounds
     const iconSize = ICON_SIZE * 0.55;
     const iconOffset = (ICON_SIZE - iconSize) / 2;
 
+    ctx.filter = "drop-shadow(0 0 1px black) drop-shadow(0 0 1px black)";
     if (flipX) {
       ctx.save();
       ctx.translate(centerX, centerY);
@@ -156,6 +163,7 @@ export async function createIconAtlas(): Promise<IconAtlasResult> {
     } else {
       ctx.drawImage(img, x + iconOffset, y + iconOffset, iconSize, iconSize);
     }
+    ctx.filter = "none";
 
     // Add to mapping
     mapping[entityType] = {
