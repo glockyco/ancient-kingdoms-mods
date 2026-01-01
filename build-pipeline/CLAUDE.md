@@ -7,12 +7,12 @@ Python CLI for processing game data exports into deployment-ready artifacts.
 ```
 exported-data/ (JSON + Screenshots)
     ↓ compendium build
-website/static/compendium.db0 + db-metadata.json
+website/static/compendium.db
     ↓ compendium tiles
 website/static/tiles/
 ```
 
-Output goes directly to `website/static/`. The database is renamed to chunked format (`compendium.db0`) with a `db-metadata.json` file for sql.js-httpvfs (Cloudflare doesn't expose Content-Length).
+Output goes directly to `website/static/`.
 
 ## CLI Commands
 
@@ -62,7 +62,6 @@ src/compendium/
 4. Run denormalizers in dependency order
 5. Optimize 11 FTS5 indexes
 6. VACUUM and ANALYZE
-7. Rename to chunked format + write metadata
 
 ## Denormalizer System
 
