@@ -8,14 +8,18 @@ Game (IL2CPP Unity) → Mods (JSON export) → Build Pipeline (SQLite) → Websi
 
 ## Task Triggers
 
-When editing any CLAUDE.md file, follow docs/claude-md-guide.md.
-When committing code, follow docs/commit-guide.md.
-When exporting game data, follow docs/data-export-guide.md.
-When running CLI commands, see docs/cli-overview.md.
-When exploring the codebase structure, see docs/project-map.md.
-When working on mods, see mods/CLAUDE.md.
-When working on the website, see website/CLAUDE.md.
-When working on the build pipeline, see build-pipeline/CLAUDE.md.
+**IMPORTANT: You MUST read the linked file BEFORE performing these tasks.**
+
+| Task | Required Reading |
+|------|------------------|
+| Committing code | docs/commit-guide.md |
+| Editing any CLAUDE.md | docs/claude-md-guide.md |
+| Exporting game data | docs/data-export-guide.md |
+| Running CLI commands | docs/cli-overview.md |
+| Exploring codebase structure | docs/project-map.md |
+| Working on mods | mods/CLAUDE.md |
+| Working on website | website/CLAUDE.md |
+| Working on build pipeline | build-pipeline/CLAUDE.md |
 
 If you notice stale or incorrect information in any documentation, flag it to the user.
 
