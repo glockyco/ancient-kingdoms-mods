@@ -11,6 +11,7 @@ from rich.console import Console
 console = Console()
 
 # Zones without in-game maps - coordinates should not be exposed
+# Use parent zone IDs (from zones table), not subzone/trigger IDs
 EXCLUDED_ZONE_IDS = ["temple_of_valaark"]
 
 

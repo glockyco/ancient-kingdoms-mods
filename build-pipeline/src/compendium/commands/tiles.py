@@ -2,6 +2,7 @@
 
 import json
 import math
+import shutil
 from pathlib import Path
 
 from PIL import Image, ImageDraw
@@ -13,31 +14,61 @@ from compendium.denormalizers.exclusions import EXCLUDED_ZONE_IDS
 console = Console()
 
 
-def load_excluded_zones(zone_triggers_path: Path) -> list[dict]:
-    """Load bounds for excluded zones from JSON."""
-    if not zone_triggers_path.exists():
-        console.print("  [yellow]Warning:[/yellow] zone_triggers.json not found")
+def load_excluded_zones(export_dir: Path) -> list[dict]:
+    """Load combined bounds for excluded zones.
+
+    Uses zone_info.json to map zone IDs to numeric IDs, then finds all
+    zone_triggers belonging to those zones and combines their bounds.
+    This handles zones with multiple subzones (e.g., temple + northern halls).
+    """
+    zone_info_path = export_dir / "zone_info.json"
+    zone_triggers_path = export_dir / "zone_triggers.json"
+
+    if not zone_info_path.exists() or not zone_triggers_path.exists():
+        console.print("  [yellow]Warning:[/yellow] zone data not found")
         return []
 
+    with open(zone_info_path) as f:
+        zone_info = json.load(f)
     with open(zone_triggers_path) as f:
-        all_zones = json.load(f)
+        zone_triggers = json.load(f)
 
-    # Filter to only excluded zones with valid bounds
-    excluded = []
-    for zone in all_zones:
-        if zone.get("id", "").replace("zone_trigger_", "") in EXCLUDED_ZONE_IDS:
-            if zone.get("bounds_min_x") is not None:
-                excluded.append(
-                    {
-                        "name": zone.get("name"),
-                        "bounds_min_x": zone["bounds_min_x"],
-                        "bounds_min_y": zone["bounds_min_y"],
-                        "bounds_max_x": zone["bounds_max_x"],
-                        "bounds_max_y": zone["bounds_max_y"],
-                    }
-                )
+    # Map excluded zone IDs to their numeric zone_id
+    excluded_zone_ids: set[int] = set()
+    for zone in zone_info:
+        if zone.get("id") in EXCLUDED_ZONE_IDS:
+            excluded_zone_ids.add(zone["zone_id"])
 
-    return excluded
+    if not excluded_zone_ids:
+        return []
+
+    # Combine bounds from all zone_triggers belonging to excluded zones
+    min_x = float("inf")
+    min_y = float("inf")
+    max_x = float("-inf")
+    max_y = float("-inf")
+    names = []
+
+    for trigger in zone_triggers:
+        if trigger.get("zone_id") in excluded_zone_ids:
+            if trigger.get("bounds_min_x") is not None:
+                min_x = min(min_x, trigger["bounds_min_x"])
+                min_y = min(min_y, trigger["bounds_min_y"])
+                max_x = max(max_x, trigger["bounds_max_x"])
+                max_y = max(max_y, trigger["bounds_max_y"])
+                names.append(trigger.get("name", "unknown"))
+
+    if names:
+        return [
+            {
+                "name": " + ".join(names),
+                "bounds_min_x": min_x,
+                "bounds_min_y": min_y,
+                "bounds_max_x": max_x,
+                "bounds_max_y": max_y,
+            }
+        ]
+    return []
 
 
 def blank_excluded_zones(
@@ -322,8 +353,9 @@ def run(config: dict) -> None:
     # Paths
     repo_root = Path(__file__).parent.parent.parent.parent.parent
     export_dir = repo_root / config["paths"]["export_dir"]
-    build_dir = repo_root / config["paths"]["build_dir"]
-    tiles_dir = build_dir / "tiles"
+    website_dir = repo_root / config["paths"]["website_dir"]
+    final_tiles_dir = website_dir / "static" / "tiles"
+    temp_tiles_dir = website_dir / "static" / ".tiles-temp"
 
     screenshots_dir = export_dir / "screenshots"
     stitched_path = screenshots_dir / "stitched" / "world.png"
@@ -368,8 +400,7 @@ def run(config: dict) -> None:
     console.print("Flipped source for deck.gl Y-axis orientation")
 
     # Blank out excluded zones
-    zone_triggers_path = export_dir / "zone_triggers.json"
-    excluded_zones = load_excluded_zones(zone_triggers_path)
+    excluded_zones = load_excluded_zones(export_dir)
     if excluded_zones:
         blank_color = (0, 0, 0)  # black to match map background
         blanked = blank_excluded_zones(
@@ -377,18 +408,16 @@ def run(config: dict) -> None:
         )
         console.print(f"Blanked {blanked} excluded zones")
 
-    # Clear existing tiles
-    if tiles_dir.exists():
-        import shutil
+    # Clear temp directory and generate there
+    if temp_tiles_dir.exists():
+        shutil.rmtree(temp_tiles_dir)
+    temp_tiles_dir.mkdir(parents=True, exist_ok=True)
 
-        shutil.rmtree(tiles_dir)
-    tiles_dir.mkdir(parents=True, exist_ok=True)
-
-    # Generate tile pyramid
+    # Generate tile pyramid to temp directory
     console.print(f"Generating tiles (zoom {min_zoom}-{max_zoom}, {tile_size}px)...")
     total_tiles = generate_tiles(
         source=source,
-        tiles_dir=tiles_dir,
+        tiles_dir=temp_tiles_dir,
         world_bounds=world_bounds,
         min_zoom=min_zoom,
         max_zoom=max_zoom,
@@ -402,7 +431,7 @@ def run(config: dict) -> None:
     total_size = 0
 
     for z in range(min_zoom, max_zoom + 1):
-        zoom_dir = tiles_dir / str(z)
+        zoom_dir = temp_tiles_dir / str(z)
         if not zoom_dir.exists():
             continue
 
@@ -424,10 +453,15 @@ def run(config: dict) -> None:
     manifest["total_count"] = total_tiles
     manifest["total_size_bytes"] = total_size
 
-    # Write manifest
-    manifest_path = tiles_dir / "tiles-manifest.json"
+    # Write manifest to temp directory
+    manifest_path = temp_tiles_dir / "tiles-manifest.json"
     with open(manifest_path, "w") as f:
         json.dump(manifest, f, indent=2)
+
+    # Swap temp directory with final directory (atomic-ish)
+    if final_tiles_dir.exists():
+        shutil.rmtree(final_tiles_dir)
+    temp_tiles_dir.rename(final_tiles_dir)
 
     if total_size < 1024 * 1024:
         size_str = f"{total_size / 1024:.1f} KB"
@@ -436,5 +470,4 @@ def run(config: dict) -> None:
 
     console.print()
     console.print(f"[green]✓[/green] Generated {total_tiles:,} tiles ({size_str})")
-    console.print(f"  Output: {tiles_dir}")
-    console.print(f"  Manifest: {manifest_path}")
+    console.print(f"  Output: {final_tiles_dir}")
