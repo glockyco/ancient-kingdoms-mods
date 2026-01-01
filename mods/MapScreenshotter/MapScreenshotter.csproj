@@ -91,6 +91,12 @@ internal static class ScreenshotConfig
       <Private>False</Private>
     </Reference>
 
+    <!-- URP 2D Runtime (for Light2D) -->
+    <Reference Include="Unity.RenderPipelines.Universal.2D.Runtime">
+      <HintPath>$(Il2CppAssembliesPath)\Unity.RenderPipelines.Universal.2D.Runtime.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+
     <!-- Unity UI -->
     <Reference Include="UnityEngine.UI">
       <HintPath>$(Il2CppAssembliesPath)\UnityEngine.UI.dll</HintPath>

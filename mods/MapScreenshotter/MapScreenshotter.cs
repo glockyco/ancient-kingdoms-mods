@@ -167,6 +167,14 @@ public class MapScreenshotter : MelonMod
             // Hide entities once at the start (they're all in the scene already)
             HideEntities(mod);
 
+            // Disable player to stop its Update from overwriting light settings
+            player.gameObject.SetActive(false);
+
+            // Force consistent daytime lighting for screenshots
+            Il2Cpp.EnviromentSystem.singleton.globalLight.intensity = 1.0f;
+            Il2Cpp.EnviromentSystem.singleton.globalLight.color = Color.white;
+            mod.LoggerInstance.Msg("Set lighting to full daylight (intensity=1.0)");
+
             // Get all zone GameObjects from ZoneInfo.singleton and activate them all
             var zoneInfo = Il2Cpp.ZoneInfo.singleton;
             if (zoneInfo == null)
