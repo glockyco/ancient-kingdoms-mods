@@ -28,6 +28,7 @@ import {
   PATROL_COLORS,
   HIGHLIGHT_COLORS,
   RELATION_ARC_COLORS,
+  MOVEMENT_COLORS,
   TILE_CONFIG,
 } from "./config";
 import {
@@ -714,6 +715,41 @@ export function createLayers(
     LineLayer,
   );
 
+  // Wander range layer - shows movement radius around selected entity
+  // Only visible when selectedEntity has moveDistance > 0 AND is not patrolling
+  // (patrolling entities use waypoints instead of random wandering)
+  const hasWanderRange =
+    selectedEntity &&
+    selectedEntity.position !== null &&
+    "moveDistance" in selectedEntity &&
+    !(selectedEntity as MonsterMapEntity | NpcMapEntity).isPatrolling &&
+    (selectedEntity as MonsterMapEntity | NpcMapEntity).moveDistance > 0;
+  const wanderRangeData = hasWanderRange
+    ? [
+        {
+          position: selectedEntity.position,
+          radius: (selectedEntity as MonsterMapEntity | NpcMapEntity)
+            .moveDistance,
+        },
+      ]
+    : [];
+  const wanderRangeLayer = new ScatterplotLayer({
+    id: "wander-range",
+    data: wanderRangeData,
+    visible: wanderRangeData.length > 0,
+    getPosition: (d: { position: [number, number]; radius: number }) =>
+      d.position,
+    getRadius: (d: { position: [number, number]; radius: number }) => d.radius,
+    radiusUnits: "common",
+    getFillColor: MOVEMENT_COLORS.wanderFill,
+    getLineColor: MOVEMENT_COLORS.wanderStroke,
+    stroked: true,
+    lineWidthUnits: "pixels",
+    lineWidthMinPixels: 1,
+    lineWidthMaxPixels: 2,
+    pickable: false,
+  });
+
   const creaturesLayer = createEntityLayer<MonsterMapEntity>({
     id: "creatures",
     data: filtered.creatures,
@@ -1006,7 +1042,7 @@ export function createLayers(
   });
 
   // Later in array = rendered on top (higher priority)
-  // Order: background (fallback) → tiles → zones → paths/arcs → entities → highlights
+  // Order: background (fallback) → tiles → zones → paths/arcs → movement → entities → highlights
   return [
     backgroundLayer,
     tileLayer,
@@ -1014,6 +1050,7 @@ export function createLayers(
     subZonesLayer,
     zoneHighlightLayer,
     ...patrolPathLayers,
+    wanderRangeLayer,
     relationArcsLayer,
     relationArcEndpointsLayer,
     portalArcsLayer,

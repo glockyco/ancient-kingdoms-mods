@@ -185,6 +185,7 @@ interface MonsterSpawnRow {
   is_hunt: number;
   is_patrolling: number;
   patrol_waypoints: string | null;
+  move_distance: number;
   respawn_time: number;
   respawn_probability: number;
   spawn_time_start: number;
@@ -222,6 +223,7 @@ function loadMonsterSpawnsServer(db: Database.Database): MonsterMapEntity[] {
       m.is_hunt,
       ms.is_patrolling,
       ms.patrol_waypoints,
+      ms.move_distance,
       (m.death_time + m.respawn_time) as respawn_time,
       m.respawn_probability,
       m.spawn_time_start,
@@ -279,6 +281,7 @@ function loadMonsterSpawnsServer(db: Database.Database): MonsterMapEntity[] {
       m.is_hunt,
       0 as is_patrolling,
       NULL as patrol_waypoints,
+      0 as move_distance,
       (m.death_time + m.respawn_time) as respawn_time,
       m.respawn_probability,
       m.spawn_time_start,
@@ -353,6 +356,7 @@ function loadMonsterSpawnsServer(db: Database.Database): MonsterMapEntity[] {
       isHunt: Boolean(r.is_hunt),
       isPatrolling: Boolean(r.is_patrolling),
       patrolWaypoints,
+      moveDistance: r.move_distance ?? 0,
       respawnTime: r.respawn_time,
       respawnProbability: r.respawn_probability,
       spawnTimeStart: r.spawn_time_start,
@@ -387,6 +391,7 @@ interface NpcSpawnRow {
   renewal_dungeon_name: string | null;
   renewal_dungeon_zone_id: string | null;
   patrol_waypoints: string | null;
+  move_distance: number;
   quests_offered: string | null;
   items_sold: string | null;
   teleport_zone_id: string | null;
@@ -413,6 +418,7 @@ function loadNpcSpawnsServer(db: Database.Database): NpcMapEntity[] {
       rz.name as renewal_dungeon_name,
       rz.id as renewal_dungeon_zone_id,
       ns.patrol_waypoints,
+      ns.move_distance,
       n.quests_offered,
       n.items_sold,
       ns.teleport_zone_id,
@@ -483,6 +489,7 @@ function loadNpcSpawnsServer(db: Database.Database): NpcMapEntity[] {
           : r.renewal_dungeon_zone_id,
       isPatrolling: patrolWaypoints !== null && patrolWaypoints.length > 1,
       patrolWaypoints,
+      moveDistance: r.move_distance ?? 0,
       questCount,
       itemsSoldCount,
       hasTeleport: r.teleport_zone_id !== null,

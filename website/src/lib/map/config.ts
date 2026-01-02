@@ -172,6 +172,14 @@ export const PATROL_COLORS = {
 } as const;
 
 /**
+ * Wander range colors (for selected entity)
+ */
+export const MOVEMENT_COLORS = {
+  wanderFill: [96, 165, 250, 25] as [number, number, number, number], // blue-400, 10% fill
+  wanderStroke: [96, 165, 250, 200] as [number, number, number, number], // blue-400, 80% stroke
+} as const;
+
+/**
  * Relation arc colors (summon spawn → blocker connections)
  */
 export const RELATION_ARC_COLORS = {

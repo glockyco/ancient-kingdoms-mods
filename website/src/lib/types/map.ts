@@ -46,6 +46,7 @@ export interface MonsterMapEntity extends MapEntity {
   isHunt: boolean;
   isPatrolling: boolean;
   patrolWaypoints: [number, number][] | null;
+  moveDistance: number; // Wander radius in game units
   // Popup fields
   respawnTime: number;
   respawnProbability: number;
@@ -107,6 +108,7 @@ export interface NpcMapEntity extends MapEntity {
   renewalDungeonZoneId: string | null;
   isPatrolling: boolean;
   patrolWaypoints: [number, number][] | null;
+  moveDistance: number; // Wander radius in game units
   // Popup fields
   questCount: number;
   itemsSoldCount: number;
