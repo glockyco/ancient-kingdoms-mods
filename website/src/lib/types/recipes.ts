@@ -125,5 +125,6 @@ export interface RecipeDetailInfo {
  */
 export interface RecipeDetailPageData {
   recipe: RecipeDetailInfo;
+  description: string;
   obtainabilityTree: ObtainabilityNode;
 }

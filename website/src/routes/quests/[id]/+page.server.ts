@@ -18,6 +18,7 @@ import type {
 } from "$lib/types/quests";
 import type { ObtainabilityNode } from "$lib/types/recipes";
 import { buildObtainabilityTree } from "$lib/server/obtainability";
+import { questDescription } from "$lib/server/meta-description";
 
 export const prerender = true;
 
@@ -513,10 +514,66 @@ export const load: PageServerLoad = ({ params }): QuestDetailPageData => {
     }
   }
 
+  // Build objectives for meta description
+  type ObjectiveType =
+    | "kill"
+    | "gather"
+    | "have"
+    | "equip"
+    | "deliver"
+    | "discover"
+    | "brew"
+    | "find"
+    | "other";
+  const objectives: Array<{
+    type: ObjectiveType;
+    name: string;
+    amount: number;
+  }> = [];
+
+  for (const target of killTargets) {
+    objectives.push({ type: "kill", name: target.name, amount: target.amount });
+  }
+  for (const item of gatherItems) {
+    objectives.push({ type: "gather", name: item.name, amount: item.amount });
+  }
+  for (const item of gatherInventoryItems) {
+    objectives.push({ type: "have", name: item.name, amount: item.amount });
+  }
+  for (const item of requiredItems) {
+    objectives.push({ type: "deliver", name: item.name, amount: item.amount });
+  }
+  for (const item of equipItems) {
+    objectives.push({ type: "equip", name: item.name, amount: item.amount });
+  }
+  if (potionItem) {
+    objectives.push({
+      type: "brew",
+      name: potionItem.name,
+      amount: potionItem.amount,
+    });
+  }
+  if (quest.discovered_location) {
+    objectives.push({
+      type: "discover",
+      name: quest.discovered_location,
+      amount: 1,
+    });
+  }
+  if (quest.is_find_npc_quest && endNpc) {
+    objectives.push({ type: "find", name: endNpc.name, amount: 1 });
+  }
+
+  const description = questDescription(
+    { name: quest.name, level_required: quest.level_required },
+    objectives,
+  );
+
   db.close();
 
   return {
     quest,
+    description,
     startNpc,
     endNpc,
     adventurerNpcs,

@@ -264,7 +264,7 @@
   <title>NPCs - Ancient Kingdoms Compendium</title>
   <meta
     name="description"
-    content="Browse all NPCs in Ancient Kingdoms. Filter by role, zone, and faction. View merchants, quest givers, and services."
+    content="All NPCs in Ancient Kingdoms - merchants, quest givers, trainers, and services across every zone."
   />
 </svelte:head>
 

@@ -154,7 +154,7 @@
   <title>Professions - Ancient Kingdoms Compendium</title>
   <meta
     name="description"
-    content="Browse all professions in Ancient Kingdoms. View crafting, gathering, combat, and exploration professions with related recipes, resources, and content."
+    content="Professions guide for Ancient Kingdoms - crafting, gathering, combat, and exploration professions with related recipes, resources, and content."
   />
 </svelte:head>
 

@@ -5,6 +5,7 @@ import { DB_STATIC_PATH } from "$lib/constants/constants";
 import { buildObtainabilityTree } from "$lib/server/obtainability";
 import type { PageServerLoad, EntryGenerator } from "./$types";
 import type { ObtainabilityNode } from "$lib/types/recipes";
+import { chestDescription } from "$lib/server/meta-description";
 
 export const prerender = true;
 
@@ -41,5 +42,10 @@ export const load: PageServerLoad = ({ params }) => {
     db.close();
   }
 
-  return { chest, drops, keyObtainabilityTree };
+  const description = chestDescription({
+    zone_name: chest.zone_name,
+    key_required_name: chest.key_required_name,
+  });
+
+  return { chest, drops, keyObtainabilityTree, description };
 };

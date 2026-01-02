@@ -304,7 +304,7 @@
   <title>Items - Ancient Kingdoms Compendium</title>
   <meta
     name="description"
-    content="Browse all items in Ancient Kingdoms. Filter by quality and type. View stats, level requirements, and equipment slots."
+    content="Browse all items in Ancient Kingdoms - weapons, armor, consumables, and treasures with stats and drop locations."
   />
 </svelte:head>
 

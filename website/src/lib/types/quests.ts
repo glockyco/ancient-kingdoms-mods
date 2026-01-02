@@ -132,6 +132,7 @@ export interface QuestInfo {
 // Detail page data
 export interface QuestDetailPageData {
   quest: QuestInfo;
+  description: string;
   startNpc: QuestNpc | null;
   endNpc: QuestNpc | null;
   adventurerNpcs: QuestNpc[];

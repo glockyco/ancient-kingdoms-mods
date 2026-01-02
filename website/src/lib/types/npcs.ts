@@ -158,6 +158,7 @@ export interface TeleportRoute {
 
 export interface NpcDetailPageData {
   npc: NpcInfo;
+  description: string;
   questsOffered: NpcQuestOffered[];
   questsCompletedHere: NpcQuestOffered[];
   itemsSold: NpcItemSold[];

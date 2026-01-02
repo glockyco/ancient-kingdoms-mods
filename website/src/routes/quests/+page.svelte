@@ -298,7 +298,7 @@
   <title>Quests - Ancient Kingdoms Compendium</title>
   <meta
     name="description"
-    content="Browse all quests in Ancient Kingdoms. Filter by type, level, and quest flags. View kill quests, gather quests, and main story quests."
+    content="Quest database for Ancient Kingdoms - objectives, rewards, and quest chains."
   />
 </svelte:head>
 

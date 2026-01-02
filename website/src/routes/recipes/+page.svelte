@@ -196,7 +196,7 @@
   <title>Recipes - Ancient Kingdoms Compendium</title>
   <meta
     name="description"
-    content="Browse all crafting recipes in Ancient Kingdoms. Filter by type: Alchemy, Cooking, and Crafting."
+    content="Crafting, alchemy, and cooking recipes for Ancient Kingdoms - ingredients and skill requirements."
   />
 </svelte:head>
 

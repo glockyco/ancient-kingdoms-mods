@@ -8,6 +8,7 @@ import type {
   RecipeType,
 } from "$lib/types/recipes";
 import { buildObtainabilityTree } from "$lib/server/obtainability";
+import { recipeDescription } from "$lib/server/meta-description";
 
 export const prerender = true;
 
@@ -56,10 +57,23 @@ export const load: PageServerLoad = ({ params }): RecipeDetailPageData => {
     true,
   );
 
+  // Build ingredients list for meta description
+  const ingredients =
+    obtainabilityTree.recipe?.materials.map((mat) => ({
+      item_name: mat.item_name,
+      amount: mat.amount,
+    })) ?? [];
+
+  const description = recipeDescription(
+    { result_item_name: recipe.result_item_name, type: recipe.type },
+    ingredients,
+  );
+
   db.close();
 
   return {
     recipe,
+    description,
     obtainabilityTree,
   };
 };

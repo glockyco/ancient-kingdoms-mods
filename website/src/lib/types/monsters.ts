@@ -243,6 +243,7 @@ export interface SummonsInfo {
  */
 export interface MonsterDetailData {
   monster: MonsterInfo;
+  description: string;
   drops: MonsterDrop[];
   spawns: MonsterSpawnData;
   quests: MonsterQuest[];

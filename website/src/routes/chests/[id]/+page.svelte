@@ -20,6 +20,7 @@
 
 <svelte:head>
   <title>Chest - {data.chest.zone_name} - Ancient Kingdoms Compendium</title>
+  <meta name="description" content={data.description} />
 </svelte:head>
 
 <div class="container mx-auto p-8 space-y-6 max-w-5xl">

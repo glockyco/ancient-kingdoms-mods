@@ -14,6 +14,7 @@ import type {
   MonsterQuest,
   SummonsInfo,
 } from "$lib/types/monsters";
+import { monsterDescription } from "$lib/server/meta-description";
 
 export const prerender = true;
 
@@ -547,8 +548,32 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
 
   db.close();
 
+  // Generate meta description
+  const zoneNames = spawns.regular.map((s) => s.zone_name);
+  const altarSpawn =
+    spawns.altar.length > 0
+      ? {
+          altar_name: spawns.altar[0].altar_name,
+          zone_name: spawns.altar[0].zone_name,
+        }
+      : null;
+
+  const description = monsterDescription(
+    {
+      name: monster.name,
+      level_min: monster.level_min,
+      level_max: monster.level_max,
+      is_boss: monster.is_boss,
+      is_elite: monster.is_elite,
+      type_name: monster.type_name,
+    },
+    zoneNames,
+    altarSpawn,
+  );
+
   return {
     monster,
+    description,
     drops,
     spawns,
     quests,

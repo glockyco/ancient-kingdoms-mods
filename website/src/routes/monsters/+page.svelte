@@ -323,7 +323,7 @@
   <title>Monsters - Ancient Kingdoms Compendium</title>
   <meta
     name="description"
-    content="Browse all monsters in Ancient Kingdoms. Filter by level, classification, and zone. View stats and spawn locations."
+    content="Complete bestiary for Ancient Kingdoms - stats, drops, and spawn locations for every creature in Eratiath."
   />
 </svelte:head>
 

@@ -14,6 +14,7 @@ import type {
   ZoneRenewalSage,
 } from "$lib/types/zones";
 import { normalizeRoles } from "$lib/utils/roles";
+import { zoneDescription } from "$lib/server/meta-description";
 
 export const prerender = true;
 
@@ -328,8 +329,28 @@ export const load: PageServerLoad = ({ params }): ZoneDetailData => {
 
   db.close();
 
+  // Count bosses and elites
+  const bossCount = monsters.filter((m) => m.is_boss).length;
+  const eliteCount = monsters.filter((m) => m.is_elite && !m.is_boss).length;
+
+  const description = zoneDescription(
+    {
+      name: zone.name,
+      is_dungeon: zone.is_dungeon,
+      level_min: zone.level_min,
+      level_max: zone.level_max,
+    },
+    {
+      boss_count: bossCount,
+      elite_count: eliteCount,
+      altar_count: altars.length,
+      npc_count: npcs.length,
+    },
+  );
+
   return {
     zone,
+    description,
     monsters,
     npcs,
     gatherResources,

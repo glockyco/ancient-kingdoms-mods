@@ -31,6 +31,7 @@ export interface ItemsPageData {
  */
 export interface ItemDetailPageData {
   item: Item;
+  description: string;
   essenceTraders: Array<{ id: string; name: string }>;
   veteranMasters: Array<{ id: string; name: string }>;
   augmenters: Array<{ id: string; name: string }>;

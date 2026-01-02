@@ -317,7 +317,7 @@
   <title>Gathering Resources - Ancient Kingdoms Compendium</title>
   <meta
     name="description"
-    content="Browse all gathering resources in Ancient Kingdoms. Find plants, minerals, and radiant sparks with locations and rewards."
+    content="Gathering resources in Ancient Kingdoms - plants, minerals, radiant sparks, and spawn locations."
   />
 </svelte:head>
 

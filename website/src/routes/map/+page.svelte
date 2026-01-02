@@ -1124,7 +1124,7 @@
   <title>World Map - Ancient Kingdoms Compendium</title>
   <meta
     name="description"
-    content="Interactive world map showing monsters, NPCs, portals, and other points of interest in Ancient Kingdoms."
+    content="Interactive world map for Ancient Kingdoms - monsters, NPCs, resources, and points of interest across Eratiath."
   />
 </svelte:head>
 

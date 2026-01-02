@@ -326,6 +326,7 @@
 
 <svelte:head>
   <title>{data.item.name} - Ancient Kingdoms Compendium</title>
+  <meta name="description" content={data.description} />
 </svelte:head>
 
 <div class="container mx-auto p-8 space-y-4 max-w-5xl">

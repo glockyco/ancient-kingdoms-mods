@@ -195,6 +195,10 @@
 
 <svelte:head>
   <title>Zones - Ancient Kingdoms Compendium</title>
+  <meta
+    name="description"
+    content="Explore all zones in Ancient Kingdoms - dungeons, overworld areas, level ranges, and what awaits in each location."
+  />
 </svelte:head>
 
 <div class="container mx-auto p-8 space-y-6">

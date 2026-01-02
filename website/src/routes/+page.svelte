@@ -23,6 +23,10 @@
 
 <svelte:head>
   <title>Ancient Kingdoms Compendium</title>
+  <meta
+    name="description"
+    content="Interactive map and wiki-like reference for Ancient Kingdoms - items, monsters, zones, quests, and more, directly extracted from the game files."
+  />
 </svelte:head>
 
 <div class="container mx-auto p-8 space-y-12">

@@ -141,6 +141,7 @@ export interface ZoneDetailData {
     level_max: number | null;
     discovery_exp: number;
   };
+  description: string;
   monsters: ZoneMonster[];
   npcs: ZoneNpc[];
   gatherResources: ZoneGatherResource[];

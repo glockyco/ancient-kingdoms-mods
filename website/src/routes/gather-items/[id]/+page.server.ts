@@ -9,6 +9,7 @@ import { DB_STATIC_PATH } from "$lib/constants/constants";
 import { buildObtainabilityTree } from "$lib/server/obtainability";
 import type { PageServerLoad, EntryGenerator } from "./$types";
 import type { ObtainabilityNode } from "$lib/types/recipes";
+import { gatheringResourceDescription } from "$lib/server/meta-description";
 
 export const prerender = true;
 
@@ -47,5 +48,17 @@ export const load: PageServerLoad = ({ params }) => {
     db.close();
   }
 
-  return { resource, drops, spawns, toolObtainabilityTree };
+  const zoneNames = spawns.map((s) => s.zone_name);
+  const description = gatheringResourceDescription(
+    {
+      name: resource.name,
+      is_plant: resource.is_plant,
+      is_mineral: resource.is_mineral,
+      is_radiant_spark: resource.is_radiant_spark,
+      level: resource.level,
+    },
+    zoneNames,
+  );
+
+  return { resource, drops, spawns, toolObtainabilityTree, description };
 };

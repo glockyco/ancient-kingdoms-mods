@@ -4,6 +4,7 @@ import type { PageServerLoad, EntryGenerator } from "./$types";
 import { DB_STATIC_PATH } from "$lib/constants/constants";
 import type { ItemDetailPageData } from "$lib/types/items";
 import type { Item } from "$lib/queries/items";
+import { itemDescription } from "$lib/server/meta-description";
 
 export const prerender = true;
 
@@ -90,8 +91,17 @@ export const load: PageServerLoad = ({ params }): ItemDetailPageData => {
 
   db.close();
 
+  const description = itemDescription({
+    name: item.name,
+    quality: item.quality,
+    slot: item.slot,
+    item_type: item.item_type,
+    level_required: item.level_required,
+  });
+
   return {
     item,
+    description,
     essenceTraders,
     veteranMasters,
     augmenters,

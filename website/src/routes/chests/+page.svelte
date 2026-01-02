@@ -289,7 +289,7 @@
   <title>Chests - Ancient Kingdoms Compendium</title>
   <meta
     name="description"
-    content="Browse all treasure chests in Ancient Kingdoms. Find chest locations, required keys, gold rewards, and item drops."
+    content="All treasure chests in Ancient Kingdoms - locations, required keys, and loot tables."
   />
 </svelte:head>
 

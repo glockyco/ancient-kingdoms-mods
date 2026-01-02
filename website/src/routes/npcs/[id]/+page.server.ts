@@ -15,6 +15,7 @@ import {
   WORLD_BOSS_DUNGEON_ID,
   DB_STATIC_PATH,
 } from "$lib/constants/constants";
+import { npcDescription } from "$lib/server/meta-description";
 
 export const prerender = true;
 
@@ -246,8 +247,12 @@ export const load: PageServerLoad = ({ params }): NpcDetailPageData => {
 
   db.close();
 
+  const zoneNames = spawns.map((s) => s.zone_name);
+  const description = npcDescription({ name: npc.name, roles }, zoneNames);
+
   return {
     npc,
+    description,
     questsOffered,
     questsCompletedHere,
     itemsSold,
