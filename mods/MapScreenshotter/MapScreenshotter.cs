@@ -164,9 +164,6 @@ public class MapScreenshotter : MelonMod
 
             mod.LoggerInstance.Msg($"Created screenshot camera: depth={cameraDepth}, orthoSize={tileWorldSize / 2f}, near={screenshotCamera.nearClipPlane}, far={screenshotCamera.farClipPlane}");
 
-            // Hide entities once at the start (they're all in the scene already)
-            HideEntities(mod);
-
             // Disable player to stop its Update from overwriting light settings
             player.gameObject.SetActive(false);
 
@@ -243,6 +240,9 @@ public class MapScreenshotter : MelonMod
             // Wait for everything to activate
             yield return new WaitForEndOfFrame();
             mod.LoggerInstance.Msg("All zones and environments activated");
+
+            // Hide entities AFTER all zones are activated (so we catch monsters in all zones)
+            HideEntities(mod);
 
             float boundsMinX = -880f;
             float boundsMaxX = 900f;
