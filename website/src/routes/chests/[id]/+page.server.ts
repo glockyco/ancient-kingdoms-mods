@@ -3,10 +3,17 @@ import { error } from "@sveltejs/kit";
 import { getChestById, getChestDrops } from "$lib/queries/gather-items.server";
 import { DB_STATIC_PATH } from "$lib/constants/constants";
 import { buildObtainabilityTree } from "$lib/server/obtainability";
-import type { PageServerLoad } from "./$types";
+import type { PageServerLoad, EntryGenerator } from "./$types";
 import type { ObtainabilityNode } from "$lib/types/recipes";
 
 export const prerender = true;
+
+export const entries: EntryGenerator = () => {
+  const db = new Database(DB_STATIC_PATH, { readonly: true });
+  const chests = db.prepare("SELECT id FROM chests").all() as { id: string }[];
+  db.close();
+  return chests.map((c) => ({ id: c.id }));
+};
 
 export const load: PageServerLoad = ({ params }) => {
   const chest = getChestById(params.id);
