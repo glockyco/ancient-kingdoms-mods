@@ -11,6 +11,7 @@ const config = {
       assets: "build",
       precompress: false,
     }),
+    inlineStyleThreshold: 100000,
     prerender: {
       handleHttpError: ({ path }) => {
         // During prerendering, ignore 404s for routes that don't exist yet
