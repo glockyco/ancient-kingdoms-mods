@@ -337,9 +337,9 @@
 
   <!-- Coming Soon Sections -->
   <section class="space-y-6">
-    <h2 class="text-2xl font-semibold text-muted-foreground">Coming Soon</h2>
+    <h2 class="text-2xl font-semibold">Coming Soon</h2>
     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6">
-      <Card.Root class="opacity-50 bg-muted/30">
+      <Card.Root class="h-full bg-muted/30">
         <Card.Header>
           <div class="flex flex-col items-center text-center gap-2">
             <div class="p-2 rounded-lg bg-orange-500/10">
@@ -350,7 +350,7 @@
         </Card.Header>
       </Card.Root>
 
-      <Card.Root class="opacity-50 bg-muted/30">
+      <Card.Root class="h-full bg-muted/30">
         <Card.Header>
           <div class="flex flex-col items-center text-center gap-2">
             <div class="p-2 rounded-lg bg-purple-500/10">
@@ -361,7 +361,7 @@
         </Card.Header>
       </Card.Root>
 
-      <Card.Root class="opacity-50 bg-muted/30">
+      <Card.Root class="h-full bg-muted/30">
         <Card.Header>
           <div class="flex flex-col items-center text-center gap-2">
             <div class="p-2 rounded-lg bg-rose-500/10">
@@ -372,7 +372,7 @@
         </Card.Header>
       </Card.Root>
 
-      <Card.Root class="opacity-50 bg-muted/30">
+      <Card.Root class="h-full bg-muted/30">
         <Card.Header>
           <div class="flex flex-col items-center text-center gap-2">
             <div class="p-2 rounded-lg bg-cyan-500/10">
@@ -383,7 +383,7 @@
         </Card.Header>
       </Card.Root>
 
-      <Card.Root class="opacity-50 bg-muted/30">
+      <Card.Root class="h-full bg-muted/30">
         <Card.Header>
           <div class="flex flex-col items-center text-center gap-2">
             <div class="p-2 rounded-lg bg-pink-500/10">
