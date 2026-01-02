@@ -385,6 +385,23 @@
       </div>
     {/if}
 
+    <!-- Movement info -->
+    {#if monster.isPatrolling && monster.patrolWaypoints?.length}
+      <div class="flex items-center gap-2 border-t pt-2">
+        <span class="inline-block h-2 w-2 rounded-full bg-yellow-400"></span>
+        <span class="text-muted-foreground"
+          >Patrols {monster.patrolWaypoints.length} waypoints</span
+        >
+      </div>
+    {:else if monster.moveDistance > 0}
+      <div class="flex items-center gap-2 border-t pt-2">
+        <span class="inline-block h-2 w-2 rounded-full bg-blue-400"></span>
+        <span class="text-muted-foreground"
+          >Wanders {monster.moveDistance.toFixed(0)} units</span
+        >
+      </div>
+    {/if}
+
     <!-- Altar spawn info (for altar-only bosses) -->
     {#if monsterAltarDetails.length > 0}
       <div class="border-t pt-2">
@@ -535,6 +552,23 @@
         {:else}
           <span class="text-purple-400">{npc.renewalDungeonName}</span>
         {/if}
+      </div>
+    {/if}
+
+    <!-- Movement info -->
+    {#if npc.isPatrolling && npc.patrolWaypoints?.length}
+      <div class="flex items-center gap-2 border-t pt-2">
+        <span class="inline-block h-2 w-2 rounded-full bg-yellow-400"></span>
+        <span class="text-muted-foreground"
+          >Patrols {npc.patrolWaypoints.length} waypoints</span
+        >
+      </div>
+    {:else if npc.moveDistance > 0}
+      <div class="flex items-center gap-2 border-t pt-2">
+        <span class="inline-block h-2 w-2 rounded-full bg-blue-400"></span>
+        <span class="text-muted-foreground"
+          >Wanders {npc.moveDistance.toFixed(0)} units</span
+        >
       </div>
     {/if}
 
