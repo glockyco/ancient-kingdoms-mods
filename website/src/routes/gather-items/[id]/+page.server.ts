@@ -7,10 +7,19 @@ import {
 } from "$lib/queries/gather-items.server";
 import { DB_STATIC_PATH } from "$lib/constants/constants";
 import { buildObtainabilityTree } from "$lib/server/obtainability";
-import type { PageServerLoad } from "./$types";
+import type { PageServerLoad, EntryGenerator } from "./$types";
 import type { ObtainabilityNode } from "$lib/types/recipes";
 
 export const prerender = true;
+
+export const entries: EntryGenerator = () => {
+  const db = new Database(DB_STATIC_PATH, { readonly: true });
+  const resources = db.prepare("SELECT id FROM gathering_resources").all() as {
+    id: string;
+  }[];
+  db.close();
+  return resources.map((r) => ({ id: r.id }));
+};
 
 export const load: PageServerLoad = ({ params }) => {
   const resource = getGatheringResourceById(params.id);
