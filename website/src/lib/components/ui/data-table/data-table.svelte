@@ -564,6 +564,10 @@
         : allRowModel.rows,
   );
 
+  // Target height for placeholder rows: the smaller of total data or page size
+  // This maintains consistent table height when filtering or on partial last pages
+  const targetTableHeight = $derived(Math.min(data.length, pageSize));
+
   // Calculate grid template columns for visible columns
   const visibleColumnIds = $derived(
     new Set(table.getVisibleLeafColumns().map((c) => c.id)),
@@ -716,8 +720,8 @@
               {/each}
             </Table.Row>
           {/each}
-          {#if isHydrated && displayRows.length < pageSize && (pageCount > 1 || columnFilters.length > 0 || globalFilter !== "")}
-            {#each Array.from({ length: pageSize - displayRows.length }, (_, i) => i) as i (i)}
+          {#if isHydrated && displayRows.length < targetTableHeight && displayRows.length < data.length}
+            {#each Array.from({ length: targetTableHeight - displayRows.length }, (_, i) => i) as i (i)}
               <Table.Row class="contents pointer-events-none">
                 {#each table.getVisibleLeafColumns() as col (col.id)}
                   <Table.Cell>&nbsp;</Table.Cell>
@@ -729,11 +733,20 @@
           <Table.Row class="contents">
             <Table.Cell
               style="grid-column: span {table.getVisibleLeafColumns().length}"
-              class="h-24 text-center"
+              class="text-center"
             >
               No results.
             </Table.Cell>
           </Table.Row>
+          {#if isHydrated && targetTableHeight > 1}
+            {#each Array.from({ length: targetTableHeight - 1 }, (_, i) => i) as i (i)}
+              <Table.Row class="contents pointer-events-none">
+                {#each table.getVisibleLeafColumns() as col (col.id)}
+                  <Table.Cell>&nbsp;</Table.Cell>
+                {/each}
+              </Table.Row>
+            {/each}
+          {/if}
         {/if}
       </Table.Body>
     </Table.Root>
