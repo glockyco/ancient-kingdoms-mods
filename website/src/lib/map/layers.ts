@@ -29,6 +29,7 @@ import {
   HIGHLIGHT_COLORS,
   RELATION_ARC_COLORS,
   MOVEMENT_COLORS,
+  ALTAR_RADIUS_COLORS,
   TILE_CONFIG,
 } from "./config";
 import {
@@ -750,6 +751,37 @@ export function createLayers(
     pickable: false,
   });
 
+  // Altar event radius layer - shows the area for altar events when an altar is selected
+  const hasAltarRadius =
+    selectedEntity &&
+    selectedEntity.type === "altar" &&
+    selectedEntity.position !== null &&
+    (selectedEntity as AltarMapEntity).radiusEvent > 0;
+  const altarRadiusData = hasAltarRadius
+    ? [
+        {
+          position: selectedEntity.position,
+          radius: (selectedEntity as AltarMapEntity).radiusEvent,
+        },
+      ]
+    : [];
+  const altarEventRadiusLayer = new ScatterplotLayer({
+    id: "altar-event-radius",
+    data: altarRadiusData,
+    visible: altarRadiusData.length > 0,
+    getPosition: (d: { position: [number, number]; radius: number }) =>
+      d.position,
+    getRadius: (d: { position: [number, number]; radius: number }) => d.radius,
+    radiusUnits: "common",
+    getFillColor: ALTAR_RADIUS_COLORS.fill,
+    getLineColor: ALTAR_RADIUS_COLORS.stroke,
+    stroked: true,
+    lineWidthUnits: "pixels",
+    lineWidthMinPixels: 1,
+    lineWidthMaxPixels: 2,
+    pickable: false,
+  });
+
   const creaturesLayer = createEntityLayer<MonsterMapEntity>({
     id: "creatures",
     data: filtered.creatures,
@@ -1051,6 +1083,7 @@ export function createLayers(
     zoneHighlightLayer,
     ...patrolPathLayers,
     wanderRangeLayer,
+    altarEventRadiusLayer,
     relationArcsLayer,
     relationArcEndpointsLayer,
     portalArcsLayer,

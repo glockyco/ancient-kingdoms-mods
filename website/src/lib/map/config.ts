@@ -180,6 +180,14 @@ export const MOVEMENT_COLORS = {
 } as const;
 
 /**
+ * Altar event radius colors (for selected altar)
+ */
+export const ALTAR_RADIUS_COLORS = {
+  fill: [251, 146, 60, 25] as [number, number, number, number], // orange-400, 10% fill
+  stroke: [251, 146, 60, 200] as [number, number, number, number], // orange-400, 80% stroke
+} as const;
+
+/**
  * Relation arc colors (summon spawn → blocker connections)
  */
 export const RELATION_ARC_COLORS = {
