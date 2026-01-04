@@ -198,8 +198,8 @@
           Level Scaling Preview
         </Card.Title>
         <p class="text-muted-foreground">
-          Monster levels scale based on your effective level (player level +
-          veteran level / 20)
+          Monster levels scale based on effective level (player level + veteran
+          level / 20)
         </p>
       </Card.Header>
       <Card.Content class="space-y-4">
