@@ -3,6 +3,8 @@ export interface AltarWaveMonster {
   monster_id: string;
   monster_name: string;
   base_level: number;
+  is_boss: boolean;
+  is_elite: boolean;
 }
 
 // Individual wave data (parsed from waves JSON)

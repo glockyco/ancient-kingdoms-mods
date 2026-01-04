@@ -13,6 +13,7 @@ import sqlite3
 from rich.console import Console
 
 from compendium.denormalizers import (
+    altars,
     exclusions,
     experience,
     items,
@@ -171,6 +172,9 @@ def run_all(conn: sqlite3.Connection) -> None:
 
     # Null coordinates for zones without in-game maps
     exclusions.run(conn)
+
+    # Enrich altar waves with monster boss/elite info (before altar data is read)
+    altars.run_waves(conn)
 
     # Monster drops (expand altar variants before item sources read drops)
     monsters.run_drops(conn)
