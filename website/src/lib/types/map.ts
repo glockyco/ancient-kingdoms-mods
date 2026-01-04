@@ -160,6 +160,7 @@ export interface AltarMapEntity extends MapEntity {
   minLevel: number;
   activationItemId: string | null;
   activationItemName: string | null;
+  radiusEvent: number;
   // Popup fields
   totalWaves: number;
   rewardNormalName: string | null;

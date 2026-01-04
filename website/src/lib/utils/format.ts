@@ -142,3 +142,26 @@ export function toRomanNumeral(tier: number): string {
   }
   return String(tier);
 }
+
+/**
+ * Reward tier type for altar rewards.
+ */
+export type AltarRewardTier = "normal" | "magic" | "epic" | "legendary";
+
+/**
+ * Format altar reward tier as level + veteran requirement string.
+ * Effective level = player level + (veteran points / 20)
+ * Thresholds: <35 normal, 35-44 magic, 45-54 epic, 55+ legendary
+ */
+export function formatAltarRewardTier(tier: AltarRewardTier): string {
+  switch (tier) {
+    case "normal":
+      return "Lv 30-34";
+    case "magic":
+      return "Lv 35-44";
+    case "epic":
+      return "Lv 45-50, Vet 0-99";
+    case "legendary":
+      return "Lv 50, Vet 100+";
+  }
+}

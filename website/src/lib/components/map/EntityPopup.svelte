@@ -10,6 +10,7 @@
     formatSpawnTimeWindow,
     getQualityTextColorClass,
     formatGatheringRespawn,
+    formatAltarRewardTier,
   } from "$lib/utils/format";
   import { hasNpcRole, getNpcRoles } from "$lib/utils/tooltip";
   import {
@@ -453,15 +454,7 @@
                     onSelect={onSelectItem}
                   />
                   <div class="text-xs text-muted-foreground">
-                    {#if reward.tier === "normal"}
-                      Lv 30-34
-                    {:else if reward.tier === "magic"}
-                      Lv 35-44
-                    {:else if reward.tier === "epic"}
-                      Lv 45-50, Vet 0-99
-                    {:else}
-                      Lv 50, Vet 100+
-                    {/if}
+                    {formatAltarRewardTier(reward.tier)}
                     {#if reward.dropRate !== null}
                       · {formatPercent(reward.dropRate)}
                     {/if}
@@ -845,6 +838,16 @@
       </div>
     {/if}
 
+    <!-- Event radius info -->
+    {#if altar.radiusEvent > 0}
+      <div class="flex items-center gap-2 border-t pt-2">
+        <span class="inline-block h-2 w-2 rounded-full bg-amber-400"></span>
+        <span class="text-muted-foreground"
+          >Event radius {altar.radiusEvent} units</span
+        >
+      </div>
+    {/if}
+
     <!-- Rewards by tier (lazy-loaded) -->
     {#if isLoading}
       <div class="py-2 text-center text-xs text-muted-foreground">
@@ -867,15 +870,7 @@
                 onSelect={onSelectItem}
               />
               <div class="text-xs text-muted-foreground">
-                {#if reward.tier === "normal"}
-                  Lv 30-34
-                {:else if reward.tier === "magic"}
-                  Lv 35-44
-                {:else if reward.tier === "epic"}
-                  Lv 45-50, Vet 0-99
-                {:else}
-                  Lv 50, Vet 100+
-                {/if}
+                {formatAltarRewardTier(reward.tier)}
                 {#if reward.dropRate !== null}
                   · {formatPercent(reward.dropRate)}
                 {/if}
