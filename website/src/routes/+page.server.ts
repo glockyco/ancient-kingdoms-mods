@@ -11,6 +11,7 @@ interface HomePageData {
     monsters: number;
     npcs: number;
     quests: number;
+    altars: number;
     recipes: number;
     gatheringResources: number;
     chests: number;
@@ -75,6 +76,12 @@ export const load: PageServerLoad = (): HomePageData => {
     }
   ).count;
 
+  const altarCount = (
+    db.prepare("SELECT COUNT(*) as count FROM altars").get() as {
+      count: number;
+    }
+  ).count;
+
   db.close();
 
   return {
@@ -84,6 +91,7 @@ export const load: PageServerLoad = (): HomePageData => {
       monsters: monsterCount,
       npcs: npcCount,
       quests: questCount,
+      altars: altarCount,
       recipes: alchemyCount + craftingCount,
       gatheringResources: gatheringResourceCount,
       chests: chestCount,

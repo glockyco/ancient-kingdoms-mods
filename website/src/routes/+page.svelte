@@ -217,6 +217,34 @@
         </Card.Root>
       </a>
 
+      <a href="/altars" class="block group">
+        <Card.Root
+          class="h-full transition-colors hover:bg-muted/50 bg-muted/30"
+        >
+          <Card.Header>
+            <div class="flex items-center gap-3">
+              <div class="p-2 rounded-lg bg-orange-500/10">
+                <Flame class="h-6 w-6 text-orange-500" />
+              </div>
+              <div>
+                <Card.Title class="group-hover:underline">Altars</Card.Title>
+                <Card.Description
+                  >Event locations and their rewards</Card.Description
+                >
+              </div>
+            </div>
+          </Card.Header>
+          <Card.Content>
+            <div
+              class="flex items-center text-sm text-muted-foreground group-hover:text-foreground transition-colors"
+            >
+              Browse all {data.counts.altars.toLocaleString()} altars
+              <ArrowRight class="ml-2 h-4 w-4" />
+            </div>
+          </Card.Content>
+        </Card.Root>
+      </a>
+
       <a href="/professions" class="block group">
         <Card.Root
           class="h-full transition-colors hover:bg-muted/50 bg-muted/30"
@@ -277,34 +305,6 @@
         </Card.Root>
       </a>
 
-      <a href="/chests" class="block group">
-        <Card.Root
-          class="h-full transition-colors hover:bg-muted/50 bg-muted/30"
-        >
-          <Card.Header>
-            <div class="flex items-center gap-3">
-              <div class="p-2 rounded-lg bg-sky-500/10">
-                <Box class="h-6 w-6 text-sky-500" />
-              </div>
-              <div>
-                <Card.Title class="group-hover:underline">Chests</Card.Title>
-                <Card.Description
-                  >Treasure chests, their keys, and contents</Card.Description
-                >
-              </div>
-            </div>
-          </Card.Header>
-          <Card.Content>
-            <div
-              class="flex items-center text-sm text-muted-foreground group-hover:text-foreground transition-colors"
-            >
-              Browse all {data.counts.chests.toLocaleString()} chests
-              <ArrowRight class="ml-2 h-4 w-4" />
-            </div>
-          </Card.Content>
-        </Card.Root>
-      </a>
-
       <a href="/recipes" class="block group">
         <Card.Root
           class="h-full transition-colors hover:bg-muted/50 bg-muted/30"
@@ -332,24 +332,41 @@
           </Card.Content>
         </Card.Root>
       </a>
+
+      <a href="/chests" class="block group">
+        <Card.Root
+          class="h-full transition-colors hover:bg-muted/50 bg-muted/30"
+        >
+          <Card.Header>
+            <div class="flex items-center gap-3">
+              <div class="p-2 rounded-lg bg-sky-500/10">
+                <Box class="h-6 w-6 text-sky-500" />
+              </div>
+              <div>
+                <Card.Title class="group-hover:underline">Chests</Card.Title>
+                <Card.Description
+                  >Treasure chests, their keys, and contents</Card.Description
+                >
+              </div>
+            </div>
+          </Card.Header>
+          <Card.Content>
+            <div
+              class="flex items-center text-sm text-muted-foreground group-hover:text-foreground transition-colors"
+            >
+              Browse all {data.counts.chests.toLocaleString()} chests
+              <ArrowRight class="ml-2 h-4 w-4" />
+            </div>
+          </Card.Content>
+        </Card.Root>
+      </a>
     </div>
   </section>
 
   <!-- Coming Soon Sections -->
   <section class="space-y-6">
     <h2 class="text-2xl font-semibold">Coming Soon</h2>
-    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6">
-      <Card.Root class="h-full bg-muted/30">
-        <Card.Header>
-          <div class="flex flex-col items-center text-center gap-2">
-            <div class="p-2 rounded-lg bg-orange-500/10">
-              <Flame class="h-5 w-5 text-orange-500" />
-            </div>
-            <Card.Title class="text-base">Altars</Card.Title>
-          </div>
-        </Card.Header>
-      </Card.Root>
-
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
       <Card.Root class="h-full bg-muted/30">
         <Card.Header>
           <div class="flex flex-col items-center text-center gap-2">
