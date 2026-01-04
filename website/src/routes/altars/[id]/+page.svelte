@@ -205,11 +205,12 @@
       <Card.Content class="space-y-4">
         <div class="grid gap-4 sm:grid-cols-2">
           <div>
-            <label class="flex justify-between mb-2">
+            <label for="player-level" class="flex justify-between mb-2">
               <span>Player Level</span>
               <span class="font-medium">{playerLevel}</span>
             </label>
             <input
+              id="player-level"
               type="range"
               min={data.altar.minLevelRequired || 1}
               max="50"
@@ -218,11 +219,12 @@
             />
           </div>
           <div>
-            <label class="flex justify-between mb-2">
+            <label for="veteran-level" class="flex justify-between mb-2">
               <span>Veteran Level</span>
               <span class="font-medium">{veteranLevel}</span>
             </label>
             <input
+              id="veteran-level"
               type="range"
               min="0"
               max="200"
@@ -380,8 +382,9 @@
                   </span>
                 {/if}
                 {#if timingInfo}
+                  {@const Icon = timingInfo.icon}
                   <span class="flex items-center gap-1">
-                    <svelte:component this={timingInfo.icon} class="h-4 w-4" />
+                    <Icon class="h-4 w-4" />
                     {timingInfo.label}
                   </span>
                 {/if}
