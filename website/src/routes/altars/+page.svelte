@@ -194,7 +194,10 @@
     {renderHeader}
     {renderToolbar}
     pageSize={PAGE_SIZE}
-    initialSorting={[{ id: "minLevelRequired", desc: false }]}
+    initialSorting={[
+      { id: "type", desc: false },
+      { id: "zone", desc: false },
+    ]}
     initialColumnVisibility={{ type: false }}
     urlKey="altars"
     showPagination={true}
