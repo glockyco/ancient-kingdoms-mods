@@ -10,6 +10,21 @@ import type {
 import { EXCLUDED_ZONE_IDS } from "$lib/constants/constants";
 
 /**
+ * Calculate polygon area using the shoelace formula.
+ * Returns absolute value (always positive).
+ */
+function calculatePolygonArea(polygon: [number, number][]): number {
+  let area = 0;
+  const n = polygon.length;
+  for (let i = 0; i < n; i++) {
+    const j = (i + 1) % n;
+    area += polygon[i][0] * polygon[j][1];
+    area -= polygon[j][0] * polygon[i][1];
+  }
+  return Math.abs(area / 2);
+}
+
+/**
  * Combined data type including all entity arrays needed for rendering.
  * Zone filtering happens on GPU via DataFilterExtension for performance.
  */
@@ -37,6 +52,12 @@ export function createZoneFocusedData(
     portals: rawData.portals.filter((p) => p.position !== null),
     chests: rawData.chests.filter((c) => c.position !== null),
     altars: rawData.altars.filter((a) => a.position !== null),
-    subZones: rawData.subZones.filter((z) => !EXCLUDED_ZONE_IDS.has(z.zoneId)),
+    // Sort by area descending so smaller/enclosed zones render on top and remain hoverable
+    subZones: rawData.subZones
+      .filter((z) => !EXCLUDED_ZONE_IDS.has(z.zoneId))
+      .sort(
+        (a, b) =>
+          calculatePolygonArea(b.polygon) - calculatePolygonArea(a.polygon),
+      ),
   };
 }
