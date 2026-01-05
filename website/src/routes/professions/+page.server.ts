@@ -51,7 +51,17 @@ export const load: PageServerLoad = (): ProfessionsPageData => {
     )
     .all() as ProfessionListView[];
 
+  const zoneTriggersCount = db
+    .prepare(`SELECT COUNT(*) as count FROM zone_triggers`)
+    .get() as { count: number };
+
   db.close();
 
-  return { professions };
+  return {
+    professions: professions.map((p) => ({
+      ...p,
+      tracking_denominator:
+        p.id === "exploring" ? zoneTriggersCount.count : p.tracking_denominator,
+    })),
+  };
 };

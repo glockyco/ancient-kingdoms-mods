@@ -45,11 +45,7 @@
       <p class="text-muted-foreground mt-1">{data.profession.description}</p>
 
       <div class="flex flex-wrap items-center gap-4 mt-3 text-muted-foreground">
-        {#if data.profession.tracking_type === "count_based" && data.profession.tracking_denominator}
-          <span class="whitespace-nowrap"
-            >Areas: {data.profession.tracking_denominator}</span
-          >
-        {/if}
+        <span class="whitespace-nowrap">Areas: {data.areas.length}</span>
         {#if data.profession.steam_achievement_id}
           <span class="flex items-center gap-1 whitespace-nowrap">
             <Trophy class="h-4 w-4" />
