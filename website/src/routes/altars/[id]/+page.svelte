@@ -30,8 +30,8 @@
   let veteranLevel = $state(0);
 
   // Computed effective level and scaling
-  // Veteran level contributes 1 point per 20 veteran levels to effective level
-  const veteranBonus = $derived(Math.floor(veteranLevel / 20));
+  // Veteran level contributes 1 point per 40 veteran levels to effective level (updated v0.9.3.4)
+  const veteranBonus = $derived(Math.floor(veteranLevel / 40));
   const effectiveLevel = $derived(playerLevel + veteranBonus);
   const levelAdjustment = $derived(effectiveLevel - 30);
 
@@ -206,7 +206,7 @@
         <Card.Content class="space-y-4">
           <p class="text-muted-foreground">
             Monster levels scale based on effective level (player level +
-            veteran level / 20)
+            veteran level / 40)
           </p>
           <div class="grid gap-4 sm:grid-cols-2">
             <div>
