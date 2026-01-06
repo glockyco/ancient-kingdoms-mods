@@ -166,9 +166,9 @@
               </MapEntityLink>
               <span class="shrink-0 text-xs text-muted-foreground">
                 {#if vendor.currencyItemId}
-                  {vendor.price}x {vendor.currencyItemName}
+                  {vendor.price.toLocaleString()}x {vendor.currencyItemName}
                 {:else}
-                  {vendor.price}g
+                  {vendor.price.toLocaleString()}g
                 {/if}
               </span>
             </div>
