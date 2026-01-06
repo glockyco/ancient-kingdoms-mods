@@ -61,10 +61,10 @@
     if (role.key === "is_renewal_sage") {
       const isWorldBoss = data.npc.respawn_dungeon_id === WORLD_BOSS_DUNGEON_ID;
 
-      // World Boss resets use Adventurer's Essences (link to item page)
+      // World Boss resets use Adventurer's Essence (link to item page)
       // Regular dungeon resets use gold
       const currency = isWorldBoss
-        ? `<a href="/items/adventurers_essence" class="text-blue-600 dark:text-blue-400 hover:underline">Adventurer's Essences</a>`
+        ? `<a href="/items/adventurers_essence" class="text-blue-600 dark:text-blue-400 hover:underline">Adventurer's Essence</a>`
         : `<span class="text-yellow-600 dark:text-yellow-400">gold</span>`;
 
       if (isWorldBoss) {
@@ -727,6 +727,36 @@
                   </li>
                 {/each}
               </ul>
+            {/if}
+            {#if role.key === "is_renewal_sage" && data.worldBosses.length > 0}
+              <div class="mt-3 rounded-md border bg-background/50 p-3">
+                <div class="text-sm font-medium mb-2">World Bosses</div>
+                <div class="space-y-1">
+                  {#each data.worldBosses as boss (boss.id)}
+                    <div class="flex justify-between text-sm gap-2">
+                      <div class="min-w-0">
+                        <a
+                          href="/monsters/{boss.id}"
+                          class="text-blue-600 dark:text-blue-400 hover:underline"
+                        >
+                          {boss.name}
+                        </a>
+                        {#if boss.zone_name}
+                          <span class="text-muted-foreground">
+                            (<a
+                              href="/zones/{boss.zone_id}"
+                              class="hover:underline">{boss.zone_name}</a
+                            >)
+                          </span>
+                        {/if}
+                      </div>
+                      <span class="text-muted-foreground shrink-0"
+                        >Lv {boss.level}</span
+                      >
+                    </div>
+                  {/each}
+                </div>
+              </div>
             {/if}
           </div>
         {/each}

@@ -181,6 +181,7 @@ interface MonsterSpawnRow {
   zone_name: string;
   level: number;
   is_boss: number;
+  is_world_boss: number;
   is_elite: number;
   is_hunt: number;
   is_patrolling: number;
@@ -219,6 +220,7 @@ function loadMonsterSpawnsServer(db: Database.Database): MonsterMapEntity[] {
       z.name as zone_name,
       COALESCE(ms.level, m.level) as level,
       m.is_boss,
+      m.is_world_boss,
       m.is_elite,
       m.is_hunt,
       ms.is_patrolling,
@@ -277,6 +279,7 @@ function loadMonsterSpawnsServer(db: Database.Database): MonsterMapEntity[] {
       'Unknown' as zone_name,
       m.level,
       m.is_boss,
+      m.is_world_boss,
       m.is_elite,
       m.is_hunt,
       0 as is_patrolling,
@@ -352,6 +355,7 @@ function loadMonsterSpawnsServer(db: Database.Database): MonsterMapEntity[] {
       zoneName: r.zone_name,
       level: r.level,
       isBoss: Boolean(r.is_boss),
+      isWorldBoss: Boolean(r.is_world_boss),
       isElite: Boolean(r.is_elite),
       isHunt: Boolean(r.is_hunt),
       isPatrolling: Boolean(r.is_patrolling),
@@ -487,6 +491,7 @@ function loadNpcSpawnsServer(db: Database.Database): NpcMapEntity[] {
         r.respawn_dungeon_id === WORLD_BOSS_DUNGEON_ID
           ? null
           : r.renewal_dungeon_zone_id,
+      isWorldBossReset: r.respawn_dungeon_id === WORLD_BOSS_DUNGEON_ID,
       isPatrolling: patrolWaypoints !== null && patrolWaypoints.length > 1,
       patrolWaypoints,
       moveDistance: r.move_distance ?? 0,

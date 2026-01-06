@@ -1,7 +1,10 @@
 import Database from "better-sqlite3";
 import { error } from "@sveltejs/kit";
 import type { PageServerLoad, EntryGenerator } from "./$types";
-import { DB_STATIC_PATH } from "$lib/constants/constants";
+import {
+  DB_STATIC_PATH,
+  WORLD_BOSS_DUNGEON_ID,
+} from "$lib/constants/constants";
 import type {
   MonsterDetailData,
   MonsterInfo,
@@ -100,6 +103,7 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
     type_name: monsterRaw.type_name as string | null,
     class_name: monsterRaw.class_name as string | null,
     is_boss: Boolean(monsterRaw.is_boss),
+    is_world_boss: Boolean(monsterRaw.is_world_boss),
     is_elite: Boolean(monsterRaw.is_elite),
     is_hunt: Boolean(monsterRaw.is_hunt),
     is_summonable: Boolean(monsterRaw.is_summonable),
@@ -546,6 +550,47 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
     )
     .all(params.id) as SummonsInfo[];
 
+  // Query renewal sages for world bosses (must be before db.close())
+  let renewalSages: Array<{
+    id: string;
+    name: string;
+    zoneId: string | null;
+    zoneName: string | null;
+    cost: number;
+  }> = [];
+  if (monster.is_world_boss) {
+    const sageRows = db
+      .prepare(
+        `
+        SELECT
+          n.id,
+          n.name,
+          ns.zone_id,
+          z.name as zone_name,
+          n.gold_required_respawn_dungeon as cost
+        FROM npcs n
+        LEFT JOIN npc_spawns ns ON ns.npc_id = n.id
+        LEFT JOIN zones z ON z.id = ns.zone_id
+        WHERE n.respawn_dungeon_id = ?
+        ORDER BY z.name, n.name
+        `,
+      )
+      .all(WORLD_BOSS_DUNGEON_ID) as Array<{
+      id: string;
+      name: string;
+      zone_id: string | null;
+      zone_name: string | null;
+      cost: number;
+    }>;
+    renewalSages = sageRows.map((r) => ({
+      id: r.id,
+      name: r.name,
+      zoneId: r.zone_id,
+      zoneName: r.zone_name,
+      cost: r.cost,
+    }));
+  }
+
   db.close();
 
   // Generate meta description
@@ -578,5 +623,6 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
     spawns,
     quests,
     summons,
+    renewalSages,
   };
 };

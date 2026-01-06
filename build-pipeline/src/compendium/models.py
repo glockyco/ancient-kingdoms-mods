@@ -108,6 +108,7 @@ class MonsterData(BaseModel):
 
     # Classification flags
     is_boss: bool = False
+    is_world_boss: bool = False
     is_elite: bool = False
     is_hunt: bool = False
     is_dummy: bool = False

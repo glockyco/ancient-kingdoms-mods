@@ -104,7 +104,7 @@
     details.objectives.some((o) => o.type === "kill" && o.targetId)}
   <PopupCard
     title={details.name}
-    subtitle="Quest · Lv.{details.levelRecommended}"
+    subtitle="Quest · Lv {details.levelRecommended}"
     detailsUrl="/quests/{details.id}"
     {onClose}
     onFocusClick={hasHighlightedEntities ? onFocusClick : undefined}

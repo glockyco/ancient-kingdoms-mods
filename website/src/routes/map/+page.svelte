@@ -1208,11 +1208,13 @@
             ? handleFocusHighlighted
             : undefined}
           onSelectMonster={handleSelectMonster}
+          onSelectNpc={handleSelectNpc}
           onSelectAltar={handleSelectAltar}
           onSelectItem={handleSelectItem}
           onSelectQuest={handleSelectQuest}
           onSelectZone={handleSelectZone}
           onHoverMonster={handleHoverMonster}
+          onHoverNpc={handleHoverNpc}
           onHoverAltar={handleHoverAltar}
           onHoverZone={handleHoverZone}
         />
@@ -1282,10 +1284,15 @@
                   ? handleFocusHighlighted
                   : undefined}
                 onSelectMonster={handleSelectMonster}
+                onSelectNpc={handleSelectNpc}
                 onSelectAltar={handleSelectAltar}
                 onSelectItem={handleSelectItem}
                 onSelectQuest={handleSelectQuest}
                 onSelectZone={handleSelectZone}
+                onHoverMonster={handleHoverMonster}
+                onHoverNpc={handleHoverNpc}
+                onHoverAltar={handleHoverAltar}
+                onHoverZone={handleHoverZone}
                 mode="drawer"
               />
             {:else if selectedEntityType === "item" && selectedEntityId}

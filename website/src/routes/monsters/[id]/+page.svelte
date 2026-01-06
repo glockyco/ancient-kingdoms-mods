@@ -509,7 +509,13 @@
     <div class="flex items-center gap-3 flex-wrap">
       <h1 class="text-3xl font-bold">{data.monster.name}</h1>
       <MapLink entityId={data.monster.id} entityType="monster" />
-      {#if data.monster.is_boss}
+      {#if data.monster.is_world_boss}
+        <span
+          class="inline-flex items-center rounded-full bg-cyan-100 px-2.5 py-0.5 text-xs font-medium text-cyan-800 dark:bg-cyan-900 dark:text-cyan-200"
+        >
+          World Boss
+        </span>
+      {:else if data.monster.is_boss}
         <span
           class="inline-flex items-center rounded-full bg-cyan-100 px-2.5 py-0.5 text-xs font-medium text-cyan-800 dark:bg-cyan-900 dark:text-cyan-200"
         >
@@ -735,6 +741,44 @@
                 ({formatPercent(data.monster.placeholder_spawn_probability)} chance)
               </span>
             {/if}
+          </div>
+        {/if}
+
+        <!-- Renewal Sages (for world bosses) -->
+        {#if data.renewalSages.length > 0}
+          <div class="space-y-2">
+            {#each data.renewalSages as sage (sage.id)}
+              <div class="bg-muted/30 rounded-md border p-3">
+                <span>Reset by </span>
+                <a
+                  href="/npcs/{sage.id}"
+                  class="text-blue-600 dark:text-blue-400 hover:underline"
+                >
+                  {sage.name}
+                </a>
+                {#if sage.zoneName}
+                  <span> in </span>
+                  <a
+                    href="/zones/{sage.zoneId}"
+                    class="text-blue-600 dark:text-blue-400 hover:underline"
+                  >
+                    {sage.zoneName}
+                  </a>
+                {/if}
+                {#if sage.cost > 0}
+                  <span> for </span>
+                  <span class="text-yellow-600 dark:text-yellow-400"
+                    >{sage.cost.toLocaleString()}</span
+                  >
+                  <a
+                    href="/items/adventurers_essence"
+                    class="text-blue-600 dark:text-blue-400 hover:underline"
+                  >
+                    Adventurer's Essence
+                  </a>
+                {/if}
+              </div>
+            {/each}
           </div>
         {/if}
       </div>

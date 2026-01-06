@@ -106,6 +106,7 @@ public class MonsterExporter : BaseExporter
 
                 // Classification flags
                 is_boss = canonical.isBoss,
+                is_world_boss = Il2Cpp.Utils.worldBosses.Contains(canonical.name),
                 is_elite = canonical.isElite,
                 is_hunt = canonical.isHunt,
                 is_dummy = canonical.isDummy,

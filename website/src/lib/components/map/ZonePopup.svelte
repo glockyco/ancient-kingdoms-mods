@@ -111,7 +111,7 @@
                 {boss.name}
               </MapEntityLink>
               <span class="text-muted-foreground shrink-0 text-xs">
-                Lv. {boss.level}
+                Lv {boss.level}
               </span>
             </li>
           {/each}
@@ -136,7 +136,7 @@
                 {elite.name}
               </MapEntityLink>
               <span class="text-muted-foreground shrink-0 text-xs">
-                Lv. {elite.level}
+                Lv {elite.level}
               </span>
             </li>
           {/each}

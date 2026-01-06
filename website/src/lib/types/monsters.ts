@@ -144,6 +144,7 @@ export interface MonsterInfo {
   type_name: string | null;
   class_name: string | null;
   is_boss: boolean;
+  is_world_boss: boolean;
   is_elite: boolean;
   is_hunt: boolean;
   is_summonable: boolean;
@@ -248,6 +249,13 @@ export interface MonsterDetailData {
   spawns: MonsterSpawnData;
   quests: MonsterQuest[];
   summons: SummonsInfo[];
+  renewalSages: Array<{
+    id: string;
+    name: string;
+    zoneId: string | null;
+    zoneName: string | null;
+    cost: number;
+  }>;
 }
 
 /**
@@ -263,6 +271,7 @@ export interface MonsterListView extends RespawnInfo {
   health_base: number;
   health_per_level: number;
   is_boss: boolean;
+  is_world_boss: boolean;
   is_elite: boolean;
   is_hunt: boolean;
   damage: number;

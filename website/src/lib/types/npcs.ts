@@ -167,6 +167,13 @@ export interface NpcDetailPageData {
   skills: NpcSkill[];
   respawnDungeonName: string | null;
   respawnDungeonZoneId: string | null;
+  worldBosses: Array<{
+    id: string;
+    name: string;
+    level: number;
+    zone_id: string | null;
+    zone_name: string | null;
+  }>;
   teleportRoutes: TeleportRoute[];
 }
 

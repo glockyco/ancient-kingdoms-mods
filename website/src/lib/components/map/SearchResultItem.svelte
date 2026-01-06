@@ -158,7 +158,7 @@
       >
     {:else if result.category !== "resource" && result.level > 0}
       <span class="text-xs text-muted-foreground shrink-0"
-        >Lv.{result.level}</span
+        >Lv {result.level}</span
       >
     {/if}
   {/if}

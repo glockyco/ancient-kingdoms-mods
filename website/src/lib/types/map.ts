@@ -42,6 +42,7 @@ export interface MonsterMapEntity extends MapEntity {
   monsterId: string; // Original monster ID (id field is spawn ID for individual tracking)
   level: number;
   isBoss: boolean;
+  isWorldBoss: boolean;
   isElite: boolean;
   isHunt: boolean;
   isPatrolling: boolean;
@@ -106,6 +107,7 @@ export interface NpcMapEntity extends MapEntity {
   roleBitmask: number;
   renewalDungeonName: string | null;
   renewalDungeonZoneId: string | null;
+  isWorldBossReset: boolean;
   isPatrolling: boolean;
   patrolWaypoints: [number, number][] | null;
   moveDistance: number; // Wander radius in game units

@@ -41,11 +41,13 @@
     onClose: () => void;
     onFocusClick?: () => void;
     onSelectMonster: (monsterId: string) => void;
+    onSelectNpc: (npcId: string) => void;
     onSelectAltar: (altarId: string) => void;
     onSelectItem: (itemId: string) => void;
     onSelectQuest: (questId: string) => void;
     onSelectZone: (zoneId: string) => void;
     onHoverMonster?: (monsterId: string | null) => void;
+    onHoverNpc?: (npcId: string | null) => void;
     onHoverAltar?: (altarId: string | null) => void;
     onHoverZone?: (zoneId: string | null) => void;
     mode?: "card" | "drawer";
@@ -56,11 +58,13 @@
     onClose,
     onFocusClick,
     onSelectMonster,
+    onSelectNpc,
     onSelectAltar,
     onSelectItem,
     onSelectQuest,
     onSelectZone,
     onHoverMonster,
+    onHoverNpc,
     onHoverAltar,
     onHoverZone,
     mode = "card",
@@ -101,6 +105,7 @@
           monsterDetails = await loadMonsterPopupDetails(
             currentEntity.monsterId,
             isBossOrElite,
+            currentEntity.isWorldBoss,
           );
 
           // Load altar info if monster spawns in altars
@@ -137,7 +142,8 @@
             );
           }
         } else if (currentEntity.type === "npc") {
-          npcDetails = await loadNpcPopupDetails(currentEntity.id);
+          const npc = currentEntity as NpcMapEntity;
+          npcDetails = await loadNpcPopupDetails(npc.id, npc.isWorldBossReset);
         } else if (currentEntity.type === "chest") {
           chestDetails = await loadChestPopupDetails(currentEntity.id);
         } else if (isGathering(currentEntity)) {
@@ -220,7 +226,7 @@
       case "monster":
         return "Creature";
       case "boss":
-        return "Boss";
+        return (entity as MonsterMapEntity).isWorldBoss ? "World Boss" : "Boss";
       case "elite":
         return "Elite";
       case "hunt":
@@ -494,6 +500,46 @@
         </div>
       </div>
     {/if}
+
+    <!-- Renewal Sage for world bosses -->
+    {#if monsterDetails && monsterDetails.renewalSages.length > 0}
+      <div class="border-t pt-2">
+        <div class="mb-1 text-xs font-medium text-muted-foreground">
+          Reset by
+        </div>
+        <div class="space-y-0.5">
+          {#each monsterDetails.renewalSages as sage (sage.npcId)}
+            <div class="flex justify-between gap-2">
+              <MapEntityLink
+                href={buildEntityUrl(sage.npcId, "npc")}
+                onSelect={() => onSelectNpc(sage.npcId)}
+                onHoverStart={() => onHoverNpc?.(sage.npcId)}
+                onHoverEnd={() => onHoverNpc?.(null)}
+                class="truncate text-blue-400"
+              >
+                {sage.npcName}
+              </MapEntityLink>
+              <span class="shrink-0 text-xs">
+                {#if sage.cost > 0}
+                  <span class="text-muted-foreground"
+                    >{sage.cost.toLocaleString()}</span
+                  >
+                  <button
+                    type="button"
+                    class="cursor-pointer text-blue-400 hover:underline"
+                    onclick={() => onSelectItem("adventurers_essence")}
+                  >
+                    Adv. Essence
+                  </button>
+                {:else}
+                  <span class="text-muted-foreground">Free</span>
+                {/if}
+              </span>
+            </div>
+          {/each}
+        </div>
+      </div>
+    {/if}
   {/if}
 
   <!-- NPC Section -->
@@ -548,6 +594,33 @@
       </div>
     {/if}
 
+    <!-- World Bosses (for Renewal Sages with world boss reset) -->
+    {#if npcDetails && npcDetails.worldBosses.length > 0}
+      <div class="border-t pt-2">
+        <div class="mb-1 text-xs font-medium text-muted-foreground">
+          World Bosses
+        </div>
+        <div class="max-h-48 space-y-0.5 overflow-y-auto pr-2">
+          {#each npcDetails.worldBosses as boss (boss.id)}
+            <div class="flex justify-between gap-2">
+              <MapEntityLink
+                href={buildEntityUrl(boss.id, "monster")}
+                onSelect={() => onSelectMonster(boss.id)}
+                onHoverStart={() => onHoverMonster?.(boss.id)}
+                onHoverEnd={() => onHoverMonster?.(null)}
+                class="truncate text-cyan-400"
+              >
+                {boss.name}
+              </MapEntityLink>
+              <span class="shrink-0 text-xs text-muted-foreground"
+                >Lv {boss.level}</span
+              >
+            </div>
+          {/each}
+        </div>
+      </div>
+    {/if}
+
     <!-- Movement info -->
     {#if npc.isPatrolling && npc.patrolWaypoints?.length}
       <div class="flex items-center gap-2 border-t pt-2">
@@ -584,7 +657,7 @@
                 {quest.name}
               </MapEntityLink>
               <span class="shrink-0 text-xs text-muted-foreground"
-                >Lv. {quest.levelRecommended}</span
+                >Lv {quest.levelRecommended}</span
               >
             </div>
           {/each}

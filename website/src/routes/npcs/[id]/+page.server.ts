@@ -125,10 +125,37 @@ export const load: PageServerLoad = ({ params }): NpcDetailPageData => {
   // Get respawn dungeon info if applicable
   let respawnDungeonName: string | null = null;
   let respawnDungeonZoneId: string | null = null;
+  let worldBosses: Array<{
+    id: string;
+    name: string;
+    level: number;
+    zone_id: string | null;
+    zone_name: string | null;
+  }> = [];
   const respawnDungeonId = npcRaw.respawn_dungeon_id as number;
   if (respawnDungeonId === WORLD_BOSS_DUNGEON_ID) {
     respawnDungeonName = "World Bosses";
     respawnDungeonZoneId = null;
+    // Get all world bosses
+    worldBosses = db
+      .prepare(
+        `
+        SELECT m.id, m.name, m.level, z.id as zone_id, z.name as zone_name
+        FROM monsters m
+        LEFT JOIN monster_spawns ms ON ms.monster_id = m.id
+        LEFT JOIN zones z ON z.id = ms.zone_id
+        WHERE m.is_world_boss = 1
+        GROUP BY m.id
+        ORDER BY m.level, m.name
+      `,
+      )
+      .all() as Array<{
+      id: string;
+      name: string;
+      level: number;
+      zone_id: string | null;
+      zone_name: string | null;
+    }>;
   } else if (respawnDungeonId > 0) {
     const dungeonData = db
       .prepare("SELECT id, name FROM zones WHERE zone_id = ?")
@@ -261,6 +288,7 @@ export const load: PageServerLoad = ({ params }): NpcDetailPageData => {
     skills,
     respawnDungeonName,
     respawnDungeonZoneId,
+    worldBosses,
     teleportRoutes,
   };
 };

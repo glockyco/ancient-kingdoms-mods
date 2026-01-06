@@ -138,7 +138,7 @@
               <div
                 class="flex items-center gap-2 shrink-0 text-xs text-muted-foreground"
               >
-                <span>Lv.{dropper.level}</span>
+                <span>Lv {dropper.level}</span>
                 <span>{formatPercent(dropper.dropRate)}</span>
               </div>
             </div>
@@ -321,7 +321,7 @@
                 <span class="truncate">{quest.questName}</span>
               </MapEntityLink>
               <span class="shrink-0 text-xs text-muted-foreground">
-                Lv.{quest.levelRecommended}
+                Lv {quest.levelRecommended}
               </span>
             </div>
           {/each}

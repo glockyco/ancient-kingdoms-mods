@@ -53,10 +53,31 @@ export interface PopupAltarReward {
 }
 
 /**
+ * Renewal Sage info for world boss popup
+ */
+export interface PopupRenewalSage {
+  npcId: string;
+  npcName: string;
+  zoneId: string | null;
+  zoneName: string | null;
+  cost: number;
+}
+
+/**
  * Monster popup details (lazy-loaded)
  */
 export interface MonsterPopupDetails {
   drops: PopupDropItem[];
+  renewalSages: PopupRenewalSage[];
+}
+
+/**
+ * World boss info for Renewal Sage NPC popup
+ */
+export interface PopupWorldBoss {
+  id: string;
+  name: string;
+  level: number;
 }
 
 /**
@@ -65,6 +86,7 @@ export interface MonsterPopupDetails {
 export interface NpcPopupDetails {
   quests: PopupQuestInfo[];
   itemsSold: PopupItemSoldInfo[];
+  worldBosses: PopupWorldBoss[];
 }
 
 /**
@@ -107,14 +129,24 @@ interface MonsterDropRow {
   tooltip_html: string | null;
 }
 
+interface RenewalSageRow {
+  npc_id: string;
+  npc_name: string;
+  zone_id: string | null;
+  zone_name: string | null;
+  cost: number;
+}
+
 /**
  * Load monster drops for popup.
  * For bosses/elites: bestiary items first, then by drop rate.
  * For other monsters: just by drop rate (they don't have bestiary entries).
+ * For world bosses: also loads renewal sage NPCs that can reset them.
  */
 export async function loadMonsterPopupDetails(
   monsterId: string,
   isBossOrElite: boolean = false,
+  isWorldBoss: boolean = false,
 ): Promise<MonsterPopupDetails> {
   const orderBy = isBossOrElite
     ? "ORDER BY is_bestiary_drop DESC, rate DESC"
@@ -137,6 +169,33 @@ export async function loadMonsterPopupDetails(
     [monsterId],
   );
 
+  // Query renewal sages for world bosses
+  let renewalSages: PopupRenewalSage[] = [];
+  if (isWorldBoss) {
+    const sages = await query<RenewalSageRow>(
+      `
+      SELECT
+        n.id as npc_id,
+        n.name as npc_name,
+        ns.zone_id,
+        z.name as zone_name,
+        n.gold_required_respawn_dungeon as cost
+      FROM npcs n
+      LEFT JOIN npc_spawns ns ON ns.npc_id = n.id
+      LEFT JOIN zones z ON z.id = ns.zone_id
+      WHERE n.respawn_dungeon_id = ?
+      `,
+      [WORLD_BOSS_DUNGEON_ID],
+    );
+    renewalSages = sages.map((s) => ({
+      npcId: s.npc_id,
+      npcName: s.npc_name,
+      zoneId: s.zone_id,
+      zoneName: s.zone_name,
+      cost: s.cost,
+    }));
+  }
+
   return {
     drops: drops.map((d) => ({
       itemId: d.item_id,
@@ -146,6 +205,7 @@ export async function loadMonsterPopupDetails(
       tooltipHtml: d.tooltip_html,
       isBestiary: Boolean(d.is_bestiary_drop),
     })),
+    renewalSages,
   };
 }
 
@@ -167,6 +227,7 @@ interface NpcItemSoldRow {
  */
 export async function loadNpcPopupDetails(
   npcId: string,
+  isWorldBossReset: boolean = false,
 ): Promise<NpcPopupDetails> {
   const [npc] = await query<{
     quests_offered: string | null;
@@ -174,7 +235,7 @@ export async function loadNpcPopupDetails(
   }>(`SELECT quests_offered, items_sold FROM npcs WHERE id = ?`, [npcId]);
 
   if (!npc) {
-    return { quests: [], itemsSold: [] };
+    return { quests: [], itemsSold: [], worldBosses: [] };
   }
 
   let quests: PopupQuestInfo[] = [];
@@ -232,7 +293,16 @@ export async function loadNpcPopupDetails(
     /* empty */
   }
 
-  return { quests, itemsSold };
+  // Query world bosses for Renewal Sages with world boss reset
+  let worldBosses: PopupWorldBoss[] = [];
+  if (isWorldBossReset) {
+    const bosses = await query<{ id: string; name: string; level: number }>(
+      `SELECT id, name, level FROM monsters WHERE is_world_boss = 1 ORDER BY level, name`,
+    );
+    worldBosses = bosses;
+  }
+
+  return { quests, itemsSold, worldBosses };
 }
 
 interface ChestDropRow {

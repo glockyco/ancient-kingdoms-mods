@@ -334,6 +334,7 @@ CREATE TABLE monsters (
 
     -- Classification flags
     is_boss BOOLEAN DEFAULT 0,
+    is_world_boss BOOLEAN DEFAULT 0,
     is_elite BOOLEAN DEFAULT 0,
     is_hunt BOOLEAN DEFAULT 0,
     is_dummy BOOLEAN DEFAULT 0,
