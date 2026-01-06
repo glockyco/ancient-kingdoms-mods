@@ -12,8 +12,9 @@ Game (IL2CPP Unity) → Mods (JSON export) → Build Pipeline (SQLite) → Websi
 
 | Task | Required Reading |
 |------|------------------|
-| Committing code | docs/commit-guide.md |
 | Editing any CLAUDE.md | docs/claude-md-guide.md |
+| Committing code | docs/commit-guide.md |
+| Creating GitHub issues | docs/github-guide.md |
 | Exporting game data | docs/data-export-guide.md |
 | Running CLI commands | docs/cli-overview.md |
 | Exploring codebase structure | docs/project-map.md |
