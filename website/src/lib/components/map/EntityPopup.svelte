@@ -19,6 +19,7 @@
     type NpcMapEntity,
     type PortalMapEntity,
     type ChestMapEntity,
+    type TreasureMapEntity,
     type AltarMapEntity,
     type GatheringMapEntity,
     type CraftingMapEntity,
@@ -216,6 +217,8 @@
         return `/chests/${entity.id}`;
       case "altar":
         return `/altars/${entity.id}`;
+      case "treasure":
+        return `/professions/treasure_hunter`;
       default:
         return null;
     }
@@ -237,6 +240,8 @@
         return "Portal";
       case "chest":
         return "Chest";
+      case "treasure":
+        return "Treasure";
       case "altar":
         return "Altar";
       case "gathering_plant":
@@ -856,6 +861,40 @@
         </div>
       </div>
     {/if}
+  {/if}
+
+  <!-- Treasure Section -->
+  {#if entity.type === "treasure"}
+    {@const treasure = entity as TreasureMapEntity}
+    <div class="flex justify-between">
+      <span class="text-muted-foreground">Map</span>
+      <MapItemLink
+        itemId={treasure.requiredMapId}
+        itemName={treasure.requiredMapName}
+        tooltipHtml={treasure.requiredMapTooltipHtml}
+        onSelect={onSelectItem}
+      />
+    </div>
+    {#if treasure.rewardId && treasure.rewardName}
+      <div class="flex justify-between">
+        <span class="text-muted-foreground">Reward</span>
+        <MapItemLink
+          itemId={treasure.rewardId}
+          itemName={treasure.rewardName}
+          tooltipHtml={treasure.rewardTooltipHtml}
+          onSelect={onSelectItem}
+        />
+      </div>
+    {/if}
+    <div class="flex justify-between">
+      <span class="text-muted-foreground">Tool</span>
+      <MapItemLink
+        itemId="shovel"
+        itemName="Shovel"
+        tooltipHtml={null}
+        onSelect={onSelectItem}
+      />
+    </div>
   {/if}
 
   <!-- Altar Section -->

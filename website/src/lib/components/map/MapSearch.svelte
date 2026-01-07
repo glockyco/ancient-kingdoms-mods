@@ -65,6 +65,7 @@
     zone: "Zones",
     resource: "Gathering",
     chest: "Chests",
+    treasure: "Treasure",
     altar: "Altars",
     crafting: "Crafting Stations",
     portal: "Portals",

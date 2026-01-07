@@ -43,6 +43,7 @@ export type HighlightCategory =
   | "altar"
   | "portal"
   | "chest"
+  | "treasure"
   | "resource"
   | "crafting";
 
@@ -99,6 +100,8 @@ export function resolvePhysicalSelection(
       return resolvePortalSelection(id, entityData);
     case "chest":
       return resolveChestSelection(id, entityData);
+    case "treasure":
+      return resolveTreasureSelection(id, entityData);
     case "resource":
     case "gathering_plant":
     case "gathering_mineral":
@@ -123,14 +126,21 @@ export async function resolveVirtualSelection(
   id: string,
 ): Promise<ResolvedSelection> {
   if (category === "item") {
-    const [dropperIds, vendorIds, gatheringIds, chestIds, altarIds] =
-      await Promise.all([
-        queryItemDroppers(id),
-        queryItemVendors(id),
-        queryItemGatheringSources(id),
-        queryItemChestSources(id),
-        queryItemAltarSources(id),
-      ]);
+    const [
+      dropperIds,
+      vendorIds,
+      gatheringIds,
+      chestIds,
+      altarIds,
+      treasureIds,
+    ] = await Promise.all([
+      queryItemDroppers(id),
+      queryItemVendors(id),
+      queryItemGatheringSources(id),
+      queryItemChestSources(id),
+      queryItemAltarSources(id),
+      queryItemTreasureSources(id),
+    ]);
 
     const overrideGroups: OverrideGroup[] = [];
     if (dropperIds.length > 0) {
@@ -147,6 +157,9 @@ export async function resolveVirtualSelection(
     }
     if (altarIds.length > 0) {
       overrideGroups.push({ ids: altarIds, category: "altar" });
+    }
+    if (treasureIds.length > 0) {
+      overrideGroups.push({ ids: treasureIds, category: "treasure" });
     }
 
     return {
@@ -325,6 +338,27 @@ function resolveChestSelection(
     return {
       popup: { type: "entity", entity: chest },
       highlight: { entityId: chestId, entityType: "chest" },
+    };
+  }
+
+  return { popup: null, highlight: null };
+}
+
+/**
+ * Resolve treasure dig location selection.
+ */
+function resolveTreasureSelection(
+  treasureId: string,
+  entityData: MapEntityData,
+): ResolvedSelection {
+  const treasure = entityData.treasure.find(
+    (t) => t.id === treasureId && t.position !== null,
+  );
+
+  if (treasure) {
+    return {
+      popup: { type: "entity", entity: treasure },
+      highlight: { entityId: treasureId, entityType: "treasure" },
     };
   }
 
@@ -516,4 +550,26 @@ async function queryItemAltarSources(itemId: string): Promise<string[]> {
   );
 
   return rows.map((r) => r.altar_id);
+}
+
+interface TreasureRow {
+  treasure_location_id: string;
+}
+
+/**
+ * Query treasure location IDs where the item is either:
+ * - The reward from digging
+ * - The required treasure map item
+ */
+async function queryItemTreasureSources(itemId: string): Promise<string[]> {
+  const rows = await query<TreasureRow>(
+    `
+    SELECT tl.id as treasure_location_id
+    FROM treasure_locations tl
+    WHERE tl.reward_id = ? OR tl.required_map_id = ?
+  `,
+    [itemId, itemId],
+  );
+
+  return rows.map((r) => r.treasure_location_id);
 }

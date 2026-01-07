@@ -24,6 +24,8 @@
     onHoverChest?: (chestId: string | null) => void;
     onSelectGathering: (resourceId: string) => void;
     onHoverGathering?: (resourceId: string | null) => void;
+    onSelectZone: (zoneId: string) => void;
+    onHoverZone?: (zoneId: string | null) => void;
     onSelectQuest: (questId: string) => void;
     onSelectItem: (itemId: string) => void;
     mode?: "card" | "drawer";
@@ -43,6 +45,8 @@
     onHoverChest,
     onSelectGathering,
     onHoverGathering,
+    onSelectZone,
+    onHoverZone,
     onSelectQuest,
     onSelectItem,
     mode = "card",
@@ -55,7 +59,9 @@
       details.altarSources.length > 0 ||
       details.vendors.length > 0 ||
       details.gatheringSources.length > 0 ||
-      details.chestSources.length > 0
+      details.chestSources.length > 0 ||
+      details.treasureMapSources.length > 0 ||
+      details.treasureDestination !== null
     );
   }
 
@@ -391,6 +397,69 @@
       </div>
     {/if}
 
+    <!-- From Treasure (for items that are rewards from treasure maps) -->
+    {#if details.treasureMapSources.length > 0}
+      <div
+        class={details.droppers.length > 0 ||
+        details.vendors.length > 0 ||
+        details.gatheringSources.length > 0 ||
+        details.altarSources.length > 0 ||
+        details.chestSources.length > 0 ||
+        details.questRewards.length > 0 ||
+        details.craftingSources.length > 0 ||
+        details.mergeSources.length > 0
+          ? "border-t pt-2"
+          : ""}
+      >
+        <div class="mb-1 text-xs font-medium text-muted-foreground">
+          From Treasure
+        </div>
+        <div class="max-h-32 space-y-0.5 overflow-y-auto pr-2">
+          {#each details.treasureMapSources as source (source.mapItemId)}
+            <div class="flex items-center justify-between gap-2">
+              <MapItemLink
+                itemId={source.mapItemId}
+                itemName={source.mapItemName}
+                tooltipHtml={source.mapItemTooltipHtml}
+                onSelect={onSelectItem}
+              />
+              <span class="shrink-0 text-xs text-muted-foreground">
+                {source.zoneName}
+              </span>
+            </div>
+          {/each}
+        </div>
+      </div>
+    {/if}
+
+    <!-- Treasure Destination (for items that ARE treasure maps) -->
+    {#if details.treasureDestination}
+      {@const dest = details.treasureDestination}
+      <div class="flex justify-between">
+        <span class="text-muted-foreground">Zone</span>
+        <MapEntityLink
+          href={buildEntityUrl(dest.zoneId, "zone")}
+          onSelect={() => onSelectZone(dest.zoneId)}
+          onHoverStart={() => onHoverZone?.(dest.zoneId)}
+          onHoverEnd={() => onHoverZone?.(null)}
+          class="text-blue-400"
+        >
+          {dest.zoneName}
+        </MapEntityLink>
+      </div>
+      {#if dest.rewardItemId && dest.rewardItemName}
+        <div class="flex justify-between">
+          <span class="text-muted-foreground">Reward</span>
+          <MapItemLink
+            itemId={dest.rewardItemId}
+            itemName={dest.rewardItemName}
+            tooltipHtml={dest.rewardItemTooltipHtml}
+            onSelect={onSelectItem}
+          />
+        </div>
+      {/if}
+    {/if}
+
     <!-- Tooltip -->
     {#if details.tooltipHtml}
       <div
@@ -401,7 +470,9 @@
         details.chestSources.length > 0 ||
         details.questRewards.length > 0 ||
         details.craftingSources.length > 0 ||
-        details.mergeSources.length > 0
+        details.mergeSources.length > 0 ||
+        details.treasureMapSources.length > 0 ||
+        details.treasureDestination !== null
           ? "border-t pt-2"
           : ""}
       >

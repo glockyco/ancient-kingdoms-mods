@@ -1235,6 +1235,8 @@
           onHoverChest={handleHoverChest}
           onSelectGathering={handleSelectGathering}
           onHoverGathering={handleHoverGathering}
+          onSelectZone={handleSelectZone}
+          onHoverZone={handleHoverZone}
           onSelectQuest={handleSelectQuest}
           onSelectItem={handleSelectItem}
         />
@@ -1315,6 +1317,8 @@
                 onHoverChest={handleHoverChest}
                 onSelectGathering={handleSelectGathering}
                 onHoverGathering={handleHoverGathering}
+                onSelectZone={handleSelectZone}
+                onHoverZone={handleHoverZone}
                 onSelectQuest={handleSelectQuest}
                 onSelectItem={handleSelectItem}
                 mode="drawer"

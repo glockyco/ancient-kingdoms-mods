@@ -5,6 +5,7 @@
   import Users from "@lucide/svelte/icons/users";
   import CircleDot from "@lucide/svelte/icons/circle-dot";
   import Box from "@lucide/svelte/icons/box";
+  import Shovel from "@lucide/svelte/icons/shovel";
   import Flame from "@lucide/svelte/icons/flame";
   import Leaf from "@lucide/svelte/icons/leaf";
   import Pickaxe from "@lucide/svelte/icons/pickaxe";
@@ -239,6 +240,12 @@
       icon: CircleDot,
     },
     { key: "chests", label: "Chests", color: LAYER_COLORS.chest, icon: Box },
+    {
+      key: "treasure",
+      label: "Treasure",
+      color: LAYER_COLORS.treasure,
+      icon: Shovel,
+    },
   ];
 
   // Crafting station layers

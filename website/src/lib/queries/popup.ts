@@ -861,6 +861,28 @@ export interface ItemPopupMergeSource {
 }
 
 /**
+ * Treasure map that leads to this item as a reward
+ */
+export interface ItemPopupTreasureMapSource {
+  mapItemId: string;
+  mapItemName: string;
+  mapItemTooltipHtml: string | null;
+  zoneName: string;
+}
+
+/**
+ * Treasure destination info (for items that ARE treasure maps)
+ */
+export interface ItemPopupTreasureDestination {
+  treasureLocationId: string;
+  zoneId: string;
+  zoneName: string;
+  rewardItemId: string | null;
+  rewardItemName: string | null;
+  rewardItemTooltipHtml: string | null;
+}
+
+/**
  * Item popup details (virtual entity - no map position)
  */
 export interface ItemPopupDetails {
@@ -876,6 +898,10 @@ export interface ItemPopupDetails {
   chestSources: ItemPopupChestSource[];
   craftingSources: ItemPopupCraftSource[];
   mergeSources: ItemPopupMergeSource[];
+  /** Treasure maps that lead to this item as a reward */
+  treasureMapSources: ItemPopupTreasureMapSource[];
+  /** Treasure location info for items that ARE treasure maps */
+  treasureDestination: ItemPopupTreasureDestination | null;
 }
 
 interface ItemPopupRow {
@@ -1129,6 +1155,71 @@ export async function loadItemPopupDetails(
     }
   }
 
+  // Query treasure maps that lead to this item as a reward
+  const treasureMapSourceRows = await query<{
+    map_item_id: string;
+    map_item_name: string;
+    map_item_tooltip_html: string | null;
+    zone_name: string;
+  }>(
+    `
+    SELECT
+      tl.required_map_id as map_item_id,
+      m.name as map_item_name,
+      m.tooltip_html as map_item_tooltip_html,
+      z.name as zone_name
+    FROM treasure_locations tl
+    JOIN items m ON m.id = tl.required_map_id
+    JOIN zones z ON z.id = tl.zone_id
+    WHERE tl.reward_id = ?
+    ORDER BY z.name, m.name
+    `,
+    [itemId],
+  );
+  const treasureMapSources: ItemPopupTreasureMapSource[] =
+    treasureMapSourceRows.map((r) => ({
+      mapItemId: r.map_item_id,
+      mapItemName: r.map_item_name,
+      mapItemTooltipHtml: r.map_item_tooltip_html,
+      zoneName: r.zone_name,
+    }));
+
+  // Query treasure destination if this item IS a treasure map
+  const [treasureDestRow] = await query<{
+    treasure_location_id: string;
+    zone_id: string;
+    zone_name: string;
+    reward_item_id: string | null;
+    reward_item_name: string | null;
+    reward_item_tooltip_html: string | null;
+  }>(
+    `
+    SELECT
+      tl.id as treasure_location_id,
+      tl.zone_id,
+      z.name as zone_name,
+      tl.reward_id as reward_item_id,
+      r.name as reward_item_name,
+      r.tooltip_html as reward_item_tooltip_html
+    FROM treasure_locations tl
+    JOIN zones z ON z.id = tl.zone_id
+    LEFT JOIN items r ON r.id = tl.reward_id
+    WHERE tl.required_map_id = ?
+    `,
+    [itemId],
+  );
+  const treasureDestination: ItemPopupTreasureDestination | null =
+    treasureDestRow
+      ? {
+          treasureLocationId: treasureDestRow.treasure_location_id,
+          zoneId: treasureDestRow.zone_id,
+          zoneName: treasureDestRow.zone_name,
+          rewardItemId: treasureDestRow.reward_item_id,
+          rewardItemName: treasureDestRow.reward_item_name,
+          rewardItemTooltipHtml: treasureDestRow.reward_item_tooltip_html,
+        }
+      : null;
+
   return {
     id: item.id,
     name: item.name,
@@ -1150,6 +1241,8 @@ export async function loadItemPopupDetails(
     chestSources,
     craftingSources,
     mergeSources,
+    treasureMapSources,
+    treasureDestination,
   };
 }
 

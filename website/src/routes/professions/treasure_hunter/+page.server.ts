@@ -10,6 +10,7 @@ interface TreasureMap {
   quality: number;
   tooltip_html: string | null;
   // Destination
+  treasure_location_id: string;
   destination_zone_id: string;
   destination_zone_name: string;
   position_x: number;
@@ -39,6 +40,7 @@ interface RawTreasureMap {
   name: string;
   quality: number;
   tooltip_html: string | null;
+  treasure_location_id: string;
   treasure_map_reward_id: string;
   treasure_map_zone_id: string;
   treasure_map_zone_name: string;
@@ -70,18 +72,20 @@ export const load: PageServerLoad = (): TreasureHunterPageData => {
     .prepare(
       `
     SELECT
-      id,
-      name,
-      quality,
-      tooltip_html,
-      treasure_map_reward_id,
-      treasure_map_zone_id,
-      treasure_map_zone_name,
-      treasure_map_position_x,
-      treasure_map_position_y
-    FROM items
-    WHERE treasure_map_reward_id IS NOT NULL
-    ORDER BY quality DESC, name
+      i.id,
+      i.name,
+      i.quality,
+      i.tooltip_html,
+      tl.id as treasure_location_id,
+      i.treasure_map_reward_id,
+      i.treasure_map_zone_id,
+      i.treasure_map_zone_name,
+      i.treasure_map_position_x,
+      i.treasure_map_position_y
+    FROM items i
+    JOIN treasure_locations tl ON tl.required_map_id = i.id
+    WHERE i.treasure_map_reward_id IS NOT NULL
+    ORDER BY i.quality DESC, i.name
   `,
     )
     .all() as RawTreasureMap[];
@@ -109,6 +113,7 @@ export const load: PageServerLoad = (): TreasureHunterPageData => {
       name: map.name,
       quality: map.quality,
       tooltip_html: map.tooltip_html,
+      treasure_location_id: map.treasure_location_id,
       destination_zone_id: map.treasure_map_zone_id,
       destination_zone_name: map.treasure_map_zone_name,
       position_x: map.treasure_map_position_x,

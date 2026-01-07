@@ -22,6 +22,7 @@
   import CircleDot from "@lucide/svelte/icons/circle-dot";
   import MapPinOff from "@lucide/svelte/icons/map-pin-off";
   import Scroll from "@lucide/svelte/icons/scroll";
+  import Shovel from "@lucide/svelte/icons/shovel";
   import ShoppingBag from "@lucide/svelte/icons/shopping-bag";
   import Wrench from "@lucide/svelte/icons/wrench";
   import RefreshCw from "@lucide/svelte/icons/refresh-cw";
@@ -80,6 +81,7 @@
       zone: MapIcon,
       resource: Leaf,
       chest: Box,
+      treasure: Shovel,
       altar: Flame,
       crafting: Hammer,
       portal: CircleDot,

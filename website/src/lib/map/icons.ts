@@ -11,6 +11,7 @@ import {
   User,
   CircleDot,
   Box,
+  Shovel,
   Flame,
   Leaf,
   Pickaxe,
@@ -55,6 +56,7 @@ const ENTITY_ICONS: Record<
   alchemy_table: { icon: FlaskConical, colorKey: "crafting" },
   crafting_station: { icon: Hammer, colorKey: "crafting" },
   cooking_oven: { icon: ChefHat, colorKey: "crafting" },
+  treasure: { icon: Shovel, colorKey: "treasure" },
 };
 
 export type EntityIconType = keyof typeof ENTITY_ICONS;

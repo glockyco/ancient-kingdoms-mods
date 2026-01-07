@@ -13,6 +13,7 @@ import {
   type ParentZoneBoundary,
   type PortalMapEntity,
   type ChestMapEntity,
+  type TreasureMapEntity,
   type AltarMapEntity,
 } from "$lib/types/map";
 import type { ZoneFocusedData } from "./zone-filter";
@@ -566,6 +567,21 @@ export function createLayers(
     },
   });
 
+  const treasureLayer = createEntityLayer<TreasureMapEntity>({
+    id: "treasure",
+    data: filtered.treasure,
+    visible: visibility.treasure,
+    iconType: "treasure",
+    color: LAYER_COLORS.treasure,
+    radius: LAYER_RADII.chest,
+    extensions: [zoneFilterExt],
+    getFilterValue: (d) => isInZone(d.zoneId),
+    filterRange: [1, 1],
+    updateTriggers: {
+      getFilterValue: focusedZoneId,
+    },
+  });
+
   const altarsLayer = createEntityLayer<AltarMapEntity>({
     id: "altars",
     data: filtered.altars,
@@ -900,6 +916,8 @@ export function createLayers(
         return "portal";
       case "chest":
         return "chest";
+      case "treasure":
+        return "treasure";
       case "altar":
         return "altar";
       case "gathering_plant":
@@ -1098,6 +1116,7 @@ export function createLayers(
     cookingOvensLayer,
     huntsLayer,
     chestsLayer,
+    treasureLayer,
     portalsLayer,
     portalDestinationsLayer,
     teleporterDestinationsLayer,

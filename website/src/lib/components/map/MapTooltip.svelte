@@ -80,6 +80,7 @@
       case "crafting_station":
         return "Crafting Station";
       case "chest":
+      case "treasure":
       case "altar":
       case "gathering_spark":
         return null;

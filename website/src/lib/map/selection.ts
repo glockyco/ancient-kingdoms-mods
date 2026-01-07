@@ -69,6 +69,7 @@ export interface EntityIndex {
   /** Portals indexed by "sourceZoneId:destZoneId" for Renewal Sage linking */
   portalsByZoneAndDest: Map<string, PortalMapEntity[]>;
   chests: Map<string, AnyMapEntity[]>;
+  treasure: Map<string, AnyMapEntity[]>;
   altars: Map<string, AnyMapEntity[]>;
   gathering: Map<string, AnyMapEntity[]>;
   crafting: Map<string, AnyMapEntity[]>;
@@ -151,6 +152,7 @@ export function createEntityIndex(data: MapEntityData): EntityIndex {
       data.portals as PortalMapEntity[],
     ),
     chests: indexEntities(data.chests),
+    treasure: indexEntities(data.treasure),
     altars: indexEntities(data.altars),
     gathering: indexEntities(data.gathering),
     crafting: indexEntities(data.crafting),
@@ -245,6 +247,8 @@ function getIndexForCategory(
       return index.portals;
     case "chest":
       return index.chests;
+    case "treasure":
+      return index.treasure;
     case "altar":
       return index.altars;
     case "resource":
@@ -444,6 +448,8 @@ function getIndexForType(
       return index.gathering;
     case "chest":
       return index.chests;
+    case "treasure":
+      return index.treasure;
     case "altar":
       return index.altars;
     case "portal":

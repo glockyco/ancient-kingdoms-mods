@@ -15,6 +15,7 @@ import type {
   NpcMapEntity,
   PortalMapEntity,
   ChestMapEntity,
+  TreasureMapEntity,
   AltarMapEntity,
   GatheringMapEntity,
   CraftingMapEntity,
@@ -53,6 +54,7 @@ export function loadAllMapEntitiesServer(): MapEntityData {
     const npcs = loadNpcSpawnsServer(db);
     const portals = loadPortalsServer(db);
     const chests = loadChestsServer(db);
+    const treasure = loadTreasureServer(db);
     const altars = loadAltarsServer(db);
     const gathering = loadGatheringSpawnsServer(db);
     const crafting = loadCraftingStationsServer(db);
@@ -66,6 +68,7 @@ export function loadAllMapEntitiesServer(): MapEntityData {
       npcs,
       portals,
       chests,
+      treasure,
       altars,
       gathering,
       crafting,
@@ -657,6 +660,60 @@ function loadChestsServer(db: Database.Database): ChestMapEntity[] {
     respawnTime: r.respawn_time,
     dropCount: r.drop_count,
     randomDropCount: r.random_drop_count,
+  }));
+}
+
+interface TreasureRow {
+  id: string;
+  zone_id: string;
+  zone_name: string;
+  position_x: number;
+  position_y: number;
+  required_map_id: string;
+  required_map_name: string;
+  required_map_tooltip_html: string | null;
+  reward_id: string | null;
+  reward_name: string | null;
+  reward_tooltip_html: string | null;
+}
+
+function loadTreasureServer(db: Database.Database): TreasureMapEntity[] {
+  const rows = db
+    .prepare(
+      `
+    SELECT
+      tl.id,
+      tl.zone_id,
+      z.name as zone_name,
+      tl.position_x,
+      tl.position_y,
+      tl.required_map_id,
+      m.name as required_map_name,
+      m.tooltip_html as required_map_tooltip_html,
+      tl.reward_id,
+      r.name as reward_name,
+      r.tooltip_html as reward_tooltip_html
+    FROM treasure_locations tl
+    JOIN zones z ON z.id = tl.zone_id
+    JOIN items m ON m.id = tl.required_map_id
+    LEFT JOIN items r ON r.id = tl.reward_id
+  `,
+    )
+    .all() as TreasureRow[];
+
+  return rows.map((r) => ({
+    id: r.id,
+    type: "treasure" as const,
+    name: r.required_map_name,
+    position: [r.position_x, -r.position_y] as [number, number],
+    zoneId: r.zone_id,
+    zoneName: r.zone_name,
+    requiredMapId: r.required_map_id,
+    requiredMapName: r.required_map_name,
+    requiredMapTooltipHtml: r.required_map_tooltip_html,
+    rewardId: r.reward_id,
+    rewardName: r.reward_name,
+    rewardTooltipHtml: r.reward_tooltip_html,
   }));
 }
 

@@ -9,6 +9,7 @@ export type EntityType =
   | "npc"
   | "portal"
   | "chest"
+  | "treasure"
   | "altar"
   | "gathering_plant"
   | "gathering_mineral"
@@ -154,6 +155,19 @@ export interface ChestMapEntity extends MapEntity {
 }
 
 /**
+ * Treasure dig location entity data
+ */
+export interface TreasureMapEntity extends MapEntity {
+  type: "treasure";
+  requiredMapId: string;
+  requiredMapName: string;
+  requiredMapTooltipHtml: string | null;
+  rewardId: string | null;
+  rewardName: string | null;
+  rewardTooltipHtml: string | null;
+}
+
+/**
  * Altar entity data
  */
 export interface AltarMapEntity extends MapEntity {
@@ -207,6 +221,7 @@ export type AnyMapEntity =
   | NpcMapEntity
   | PortalMapEntity
   | ChestMapEntity
+  | TreasureMapEntity
   | AltarMapEntity
   | GatheringMapEntity
   | CraftingMapEntity;
@@ -247,6 +262,7 @@ export interface LayerVisibility {
   portals: boolean;
   portalArcs: boolean;
   chests: boolean;
+  treasure: boolean;
   altars: boolean;
   alchemyTables: boolean;
   forges: boolean;
@@ -314,6 +330,7 @@ export interface MapEntityData {
   npcs: NpcMapEntity[];
   portals: PortalMapEntity[];
   chests: ChestMapEntity[];
+  treasure: TreasureMapEntity[];
   altars: AltarMapEntity[];
   gathering: GatheringMapEntity[];
   crafting: CraftingMapEntity[];

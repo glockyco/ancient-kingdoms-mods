@@ -14,6 +14,7 @@ export type MapSearchCategory =
   | "zone"
   | "resource"
   | "chest"
+  | "treasure"
   | "altar"
   | "crafting"
   | "portal"
@@ -34,6 +35,7 @@ export const SEARCH_CATEGORY_ORDER: MapSearchCategory[] = [
   "quest",
   "crafting",
   "chest",
+  "treasure",
   "portal",
 ];
 
@@ -80,6 +82,7 @@ export async function searchMapEntities(
     zones,
     resources,
     chests,
+    treasure,
     altars,
     crafting,
     portals,
@@ -91,6 +94,7 @@ export async function searchMapEntities(
     searchZones(ftsQuery, limit),
     searchGatheringResources(ftsQuery, limit),
     searchChests(ftsQuery, limit),
+    searchTreasure(ftsQuery, limit),
     searchAltars(ftsQuery, limit),
     searchCraftingStations(ftsQuery, limit),
     searchPortals(ftsQuery, limit),
@@ -107,6 +111,7 @@ export async function searchMapEntities(
     zone: zones,
     resource: resources,
     chest: chests,
+    treasure: treasure,
     altar: altars,
     crafting: crafting,
     portal: portals,
@@ -486,6 +491,64 @@ async function searchChests(
   });
 }
 
+interface TreasureSearchRow {
+  id: string;
+  map_name: string;
+  reward_name: string | null;
+  position_x: number | null;
+  position_y: number | null;
+  zone_id: string | null;
+  zone_name: string | null;
+}
+
+async function searchTreasure(
+  ftsQuery: string,
+  limit: number,
+): Promise<MapSearchResult[]> {
+  // Search treasure locations by map name or reward name
+  const rows = await query<TreasureSearchRow>(
+    `
+    SELECT
+      tl.id,
+      m.name as map_name,
+      r.name as reward_name,
+      tl.position_x,
+      tl.position_y,
+      tl.zone_id,
+      z.name as zone_name
+    FROM treasure_locations tl
+    JOIN items m ON m.id = tl.required_map_id
+    LEFT JOIN items r ON r.id = tl.reward_id
+    LEFT JOIN zones z ON z.id = tl.zone_id
+    WHERE m.name LIKE '%' || ? || '%' ESCAPE '\\'
+       OR (r.name IS NOT NULL AND r.name LIKE '%' || ? || '%' ESCAPE '\\')
+       OR (z.name IS NOT NULL AND z.name LIKE '%' || ? || '%' ESCAPE '\\')
+    LIMIT ?
+  `,
+    [
+      ftsQuery.replace(/["*]/g, ""),
+      ftsQuery.replace(/["*]/g, ""),
+      ftsQuery.replace(/["*]/g, ""),
+      limit,
+    ],
+  );
+
+  return rows.map((r) => {
+    const y = r.position_y !== null ? -r.position_y : null;
+    return {
+      id: r.id,
+      name: r.map_name,
+      category: "treasure" as const,
+      bounds:
+        r.position_x !== null && y !== null
+          ? { minX: r.position_x, maxX: r.position_x, minY: y, maxY: y }
+          : null,
+      zoneId: r.zone_id ?? undefined,
+      zoneName: r.zone_name ?? undefined,
+    };
+  });
+}
+
 interface AltarSearchRow {
   id: string;
   name: string;
@@ -785,10 +848,33 @@ async function searchItems(
       ) rewards
       JOIN altars a ON a.id = rewards.altar_id AND a.position_x IS NOT NULL
       WHERE rewards.item_id IN (SELECT value FROM json_each(?))
+
+      UNION ALL
+
+      -- Treasure location positions (items that are treasure maps or rewards)
+      SELECT tl.required_map_id as item_id, tl.position_x as x, tl.position_y as y
+      FROM treasure_locations tl
+      WHERE tl.required_map_id IN (SELECT value FROM json_each(?))
+        AND tl.position_x IS NOT NULL
+
+      UNION ALL
+
+      SELECT tl.reward_id as item_id, tl.position_x as x, tl.position_y as y
+      FROM treasure_locations tl
+      WHERE tl.reward_id IN (SELECT value FROM json_each(?))
+        AND tl.position_x IS NOT NULL
     )
     GROUP BY item_id
   `,
-    [itemIdsJson, itemIdsJson, itemIdsJson, itemIdsJson, itemIdsJson],
+    [
+      itemIdsJson,
+      itemIdsJson,
+      itemIdsJson,
+      itemIdsJson,
+      itemIdsJson,
+      itemIdsJson,
+      itemIdsJson,
+    ],
   );
 
   // Step 3: Create bounds lookup map and combine results

@@ -4,6 +4,7 @@ import type {
   PortalMapEntity,
   NpcMapEntity,
   ChestMapEntity,
+  TreasureMapEntity,
   AltarMapEntity,
   ZoneBoundary,
 } from "$lib/types/map";
@@ -32,6 +33,7 @@ export interface ZoneFocusedData extends FilteredMapData {
   npcs: NpcMapEntity[];
   portals: PortalMapEntity[];
   chests: ChestMapEntity[];
+  treasure: TreasureMapEntity[];
   altars: AltarMapEntity[];
   subZones: ZoneBoundary[];
 }
@@ -51,6 +53,7 @@ export function createZoneFocusedData(
     npcs: rawData.npcs.filter((n) => n.position !== null),
     portals: rawData.portals.filter((p) => p.position !== null),
     chests: rawData.chests.filter((c) => c.position !== null),
+    treasure: rawData.treasure.filter((t) => t.position !== null),
     altars: rawData.altars.filter((a) => a.position !== null),
     // Sort by area descending so smaller/enclosed zones render on top and remain hoverable
     subZones: rawData.subZones

@@ -3,6 +3,7 @@
   import ItemLink from "$lib/components/ItemLink.svelte";
   import Trophy from "@lucide/svelte/icons/trophy";
   import MapIcon from "@lucide/svelte/icons/map";
+  import MapPin from "@lucide/svelte/icons/map-pin";
   import Gem from "@lucide/svelte/icons/gem";
 
   let { data } = $props();
@@ -70,9 +71,9 @@
         <thead class="bg-muted/50">
           <tr>
             <th class="text-left p-3 font-medium">Map</th>
-            <th class="text-left p-3 font-medium">Destination</th>
-            <th class="text-left p-3 font-medium">Coordinates</th>
             <th class="text-left p-3 font-medium">Reward</th>
+            <th class="text-left p-3 font-medium">Destination</th>
+            <th class="text-left p-3 font-medium">Location</th>
           </tr>
         </thead>
         <tbody>
@@ -86,6 +87,13 @@
                 />
               </td>
               <td class="p-3">
+                <ItemLink
+                  itemId={map.reward_item_id}
+                  itemName={map.reward_item_name}
+                  tooltipHtml={map.reward_item_tooltip}
+                />
+              </td>
+              <td class="p-3">
                 <a
                   href="/zones/{map.destination_zone_id}"
                   class="text-blue-600 dark:text-blue-400 hover:underline"
@@ -93,15 +101,14 @@
                   {map.destination_zone_name}
                 </a>
               </td>
-              <td class="p-3 font-mono text-muted-foreground">
-                ({Math.round(map.position_x)}, {Math.round(map.position_y)})
-              </td>
               <td class="p-3">
-                <ItemLink
-                  itemId={map.reward_item_id}
-                  itemName={map.reward_item_name}
-                  tooltipHtml={map.reward_item_tooltip}
-                />
+                <a
+                  href="/map?entity={map.treasure_location_id}&etype=treasure"
+                  class="inline-flex items-center gap-1 text-teal-600 dark:text-teal-400 hover:underline"
+                >
+                  <MapPin class="h-4 w-4" />
+                  View on Map
+                </a>
               </td>
             </tr>
           {/each}
@@ -122,9 +129,9 @@
           <thead class="bg-muted/50">
             <tr>
               <th class="text-left p-3 font-medium">Map</th>
-              <th class="text-left p-3 font-medium">Destination</th>
-              <th class="text-left p-3 font-medium">Coordinates</th>
               <th class="text-left p-3 font-medium">Reward</th>
+              <th class="text-left p-3 font-medium">Destination</th>
+              <th class="text-left p-3 font-medium">Location</th>
             </tr>
           </thead>
           <tbody>
@@ -138,6 +145,13 @@
                   />
                 </td>
                 <td class="p-3">
+                  <ItemLink
+                    itemId={map.reward_item_id}
+                    itemName={map.reward_item_name}
+                    tooltipHtml={map.reward_item_tooltip}
+                  />
+                </td>
+                <td class="p-3">
                   <a
                     href="/zones/{map.destination_zone_id}"
                     class="text-blue-600 dark:text-blue-400 hover:underline"
@@ -145,15 +159,14 @@
                     {map.destination_zone_name}
                   </a>
                 </td>
-                <td class="p-3 font-mono text-muted-foreground">
-                  ({Math.round(map.position_x)}, {Math.round(map.position_y)})
-                </td>
                 <td class="p-3">
-                  <ItemLink
-                    itemId={map.reward_item_id}
-                    itemName={map.reward_item_name}
-                    tooltipHtml={map.reward_item_tooltip}
-                  />
+                  <a
+                    href="/map?entity={map.treasure_location_id}&etype=treasure"
+                    class="inline-flex items-center gap-1 text-teal-600 dark:text-teal-400 hover:underline"
+                  >
+                    <MapPin class="h-4 w-4" />
+                    View on Map
+                  </a>
                 </td>
               </tr>
             {/each}
