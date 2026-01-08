@@ -16,6 +16,7 @@ Game (IL2CPP Unity) → Mods (JSON export) → Build Pipeline (SQLite) → Websi
 | Committing code | docs/commit-guide.md |
 | Creating GitHub issues | docs/github-guide.md |
 | Exporting game data | docs/data-export-guide.md |
+| Updating server scripts | docs/server-scripts-guide.md |
 | Running CLI commands | docs/cli-overview.md |
 | Exploring codebase structure | docs/project-map.md |
 | Working on mods | mods/CLAUDE.md |
