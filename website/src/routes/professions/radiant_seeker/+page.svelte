@@ -9,10 +9,10 @@
   // Skill level state (0-100%)
   let skillLevel = $state(0);
 
-  // Skill gain chance: 70% at 0 skill, down to 20% at 100% skill
+  // Skill gain chance: 90% at 0 skill, down to 40% at 100% skill (updated v0.9.3.6)
   function getSkillGainChance(): number {
     const skill = skillLevel / 100;
-    return Math.max(0, (0.7 - skill / 2) * 100);
+    return Math.max(0, (0.9 - skill / 2) * 100);
   }
 
   // Radiant Aether drop chance: radiantSeekerLevel * 5%
