@@ -317,17 +317,11 @@
             </div>
           </div>
           <div {...cellProps(canExpand, recipe.id)}>
-            <a
-              href="/recipes/{recipe.id}"
-              class="text-blue-600 dark:text-blue-400 hover:underline"
-              onclick={(e) => e.stopPropagation()}
-            >
-              <ItemLink
-                itemId={recipe.result_item_id}
-                itemName={recipe.result_item_name}
-                tooltipHtml={recipe.result_tooltip_html}
-              />
-            </a>
+            <ItemLink
+              itemId={recipe.result_item_id}
+              itemName={recipe.result_item_name}
+              tooltipHtml={recipe.result_tooltip_html}
+            />
           </div>
           <div {...cellProps(canExpand, recipe.id)}>
             {#if recipe.obtainabilityTree.recipe?.materials}
