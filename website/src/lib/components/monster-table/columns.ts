@@ -13,8 +13,7 @@ export function createRespawnColumns<T extends RespawnInfo>(): ColumnDef<T>[] {
       size: 120,
       accessorFn: (row) => {
         if (row.no_respawn) return null;
-        const total = row.death_time + row.respawn_time;
-        return total === 0 ? null : total;
+        return row.respawn_time === 0 ? null : row.respawn_time;
       },
       sortUndefined: "last",
       enableGlobalFilter: false,

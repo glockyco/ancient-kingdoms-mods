@@ -11,12 +11,11 @@ export const SPAWN_TYPE_DISPLAY: Record<string, string> = {
 };
 
 /**
- * Format respawn time from RespawnInfo (death_time + respawn_time)
+ * Format respawn time from RespawnInfo
  */
 export function formatRespawnTime(info: RespawnInfo): string {
   if (info.no_respawn) return "-";
-  const totalSeconds = info.death_time + info.respawn_time;
-  return formatDuration(totalSeconds);
+  return formatDuration(info.respawn_time);
 }
 
 /**

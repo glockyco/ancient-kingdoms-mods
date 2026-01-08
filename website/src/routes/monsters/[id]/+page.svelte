@@ -25,13 +25,10 @@
 
   let { data } = $props();
 
-  // Total respawn time = corpse duration + respawn delay
-  const totalRespawnTime = $derived(
-    data.monster.death_time + data.monster.respawn_time,
-  );
+  const respawnTime = $derived(data.monster.respawn_time);
 
   // Check which spawn columns to show
-  const showRespawnColumn = $derived(totalRespawnTime > 0);
+  const showRespawnColumn = $derived(respawnTime > 0);
   const showChanceColumn = $derived(data.monster.respawn_probability < 1);
   const showActiveColumn = $derived(
     data.monster.spawn_time_start !== 0 || data.monster.spawn_time_end !== 0,
@@ -408,7 +405,7 @@
   {:else if cell.column.id === "level_max"}
     <span class="ml-auto">{row.original.level_max}</span>
   {:else if cell.column.id === "respawn"}
-    <span class="ml-auto">{formatDuration(totalRespawnTime)}</span>
+    <span class="ml-auto">{formatDuration(respawnTime)}</span>
   {:else if cell.column.id === "chance"}
     <span class="ml-auto"
       >{formatPercent(data.monster.respawn_probability)}</span
