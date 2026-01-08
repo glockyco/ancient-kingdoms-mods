@@ -194,9 +194,20 @@
     // Set popup state based on popup type
     if (resolved.popup) {
       switch (resolved.popup.type) {
-        case "entity":
+        case "entity": {
           selectedEntity = resolved.popup.entity;
+          // Extract entity ID/type for URL state (works even without highlight)
+          const entity = resolved.popup.entity;
+          newEntityId = getSelectionId(entity);
+          // Normalize monster subtypes to "monster" for URL
+          newEntityType =
+            entity.type === "boss" ||
+            entity.type === "elite" ||
+            entity.type === "hunt"
+              ? "monster"
+              : entity.type;
           break;
+        }
         case "zone":
           selectedZone = resolved.popup.zone;
           newZoneId = resolved.popup.zone.zoneId;
@@ -204,9 +215,11 @@
         case "item":
         case "quest":
         case "monster":
-          // Virtual entities - set ID/type for future popup components
+          // Virtual entities - set ID/type for URL state
           selectedEntityId = resolved.popup.id;
           selectedEntityType = resolved.popup.type;
+          newEntityId = resolved.popup.id;
+          newEntityType = resolved.popup.type;
           break;
       }
       // Open mobile drawer when a new selection is made
@@ -215,13 +228,10 @@
       }
     }
 
-    // Set highlight state
+    // Set highlight state (for map highlighting, separate from URL state)
     if (resolved.highlight) {
-      // Always set entityId/entityType for URL state persistence
       selectedEntityId = resolved.highlight.entityId;
       selectedEntityType = resolved.highlight.entityType;
-      newEntityId = resolved.highlight.entityId;
-      newEntityType = resolved.highlight.entityType;
 
       if (resolved.highlight.overrideGroups) {
         // Virtual entity or altar-only monster - use override groups for highlighting
