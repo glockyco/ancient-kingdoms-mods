@@ -1,9 +1,11 @@
 <script lang="ts">
-  import { SvelteMap } from "svelte/reactivity";
+  import { onMount } from "svelte";
   import {
     DataTable,
     DataTableFacetedFilter,
     DataTableRangeFilter,
+    DataTableStatPanel,
+    DataTableStatToggle,
     type ColumnDef,
     type Cell,
     type Row,
@@ -14,11 +16,73 @@
   import ItemLink from "$lib/components/ItemLink.svelte";
   import ClassPills from "$lib/components/ClassPills.svelte";
   import { formatItemType } from "$lib/utils/format";
-  import type { ItemListView } from "$lib/types/items";
+  import type { ItemListViewClient } from "$lib/types/items";
 
   let { data } = $props();
 
   const PAGE_SIZE = 20;
+  // Use "statsPanel" (no "items." prefix) to avoid collision with DataTable's URL namespace
+  const STATS_PANEL_URL_KEY = "statsPanel";
+  const STATS_PANEL_STORAGE_KEY = "items-stats-panel-open";
+
+  // Panel open state
+  let statPanelOpen = $state(false);
+  let hasMounted = $state(false);
+
+  onMount(() => {
+    // Clean up any stale URL params from old implementation
+    const url = new URL(window.location.href);
+    let needsUrlUpdate = false;
+    if (url.searchParams.has("items.statsPanel")) {
+      url.searchParams.delete("items.statsPanel");
+      needsUrlUpdate = true;
+    }
+
+    // Restore from URL first
+    const urlValue = url.searchParams.get(STATS_PANEL_URL_KEY);
+    if (urlValue !== null) {
+      statPanelOpen = urlValue === "1";
+    } else {
+      // Fall back to localStorage
+      try {
+        statPanelOpen = localStorage.getItem(STATS_PANEL_STORAGE_KEY) === "1";
+      } catch {
+        // localStorage unavailable
+      }
+    }
+
+    if (needsUrlUpdate) {
+      window.history.replaceState(history.state, "", url.toString());
+    }
+
+    hasMounted = true;
+  });
+
+  // Sync panel state to URL and localStorage (only after mount)
+  $effect(() => {
+    if (!hasMounted) return;
+
+    const url = new URL(window.location.href);
+    if (statPanelOpen) {
+      url.searchParams.set(STATS_PANEL_URL_KEY, "1");
+    } else {
+      url.searchParams.delete(STATS_PANEL_URL_KEY);
+    }
+    window.history.replaceState(history.state, "", url.toString());
+
+    try {
+      if (statPanelOpen) {
+        localStorage.setItem(STATS_PANEL_STORAGE_KEY, "1");
+      } else {
+        localStorage.removeItem(STATS_PANEL_STORAGE_KEY);
+      }
+    } catch {
+      // localStorage unavailable
+    }
+  });
+
+  // Precomputed at build time - no JSON parsing needed on client
+  const { itemStatKeys, itemClassKeys } = data;
 
   // Quality display names and colors
   const qualities = [
@@ -30,7 +94,7 @@
   ];
 
   // Generate notes for an item based on its type
-  function getNotes(item: ItemListView): string {
+  function getNotes(item: ItemListViewClient): string {
     const type = item.item_type;
 
     // Equipment/weapons: show stat count (pre-computed in SQL)
@@ -57,16 +121,6 @@
     return "-";
   }
 
-  // Parse class required JSON
-  function parseClassRequired(classJson: string): string[] {
-    try {
-      const parsed = JSON.parse(classJson);
-      return Array.isArray(parsed) ? parsed : [];
-    } catch {
-      return [];
-    }
-  }
-
   // Get unique item types for filter
   const uniqueTypes = $derived(
     Array.from(new Set(data.items.map((item) => item.item_type))).sort(),
@@ -79,16 +133,12 @@
     ).sort() as string[],
   );
 
-  // Get unique classes for filter
+  // Get unique classes for filter (using precomputed data)
   const uniqueClasses = $derived(
-    Array.from(
-      new Set(
-        data.items.flatMap((item) => parseClassRequired(item.class_required)),
-      ),
-    ).sort(),
+    Array.from(new Set(Object.values(itemClassKeys).flat())).sort(),
   );
 
-  type ItemRow = ItemListView;
+  type ItemRow = ItemListViewClient;
 
   const columns: ColumnDef<ItemRow>[] = [
     {
@@ -146,9 +196,11 @@
       header: "Class",
       size: 250,
       enableSorting: false,
-      accessorFn: (row) => parseClassRequired(row.class_required).join(", "),
+      accessorFn: (row) => (itemClassKeys[row.id] ?? []).join(", "),
+      getUniqueValues: (row) => itemClassKeys[row.id] ?? [],
       filterFn: (row, columnId, filterValue: string[]) => {
-        const classes = parseClassRequired(row.original.class_required);
+        // Use precomputed class keys (no JSON parsing)
+        const classes = itemClassKeys[row.original.id] ?? [];
         if (!filterValue || filterValue.length === 0) return true;
         return classes.some((c) => filterValue.includes(c));
       },
@@ -171,6 +223,31 @@
         return filterValue.includes(value);
       },
     },
+    // Hidden - stats filter column
+    {
+      id: "stats",
+      accessorKey: "stats",
+      header: "Stats",
+      enableHiding: false,
+      enableSorting: false,
+      filterFn: (
+        row,
+        _columnId,
+        filterValue: { stats: string[]; mode: "any" | "all" },
+      ) => {
+        if (!filterValue || filterValue.stats.length === 0) return true;
+
+        // Use precomputed stat keys (no JSON parsing)
+        const rowStatKeys = itemStatKeys[row.original.id] ?? [];
+        const { stats, mode } = filterValue;
+
+        if (mode === "all") {
+          return stats.every((stat) => rowStatKeys.includes(stat));
+        } else {
+          return stats.some((stat) => rowStatKeys.includes(stat));
+        }
+      },
+    },
   ];
 
   const columnLabels: Record<string, string> = {
@@ -182,6 +259,7 @@
     class: "Class",
     notes: "Notes",
     item_type: "Type",
+    stats: "Stats",
   };
 </script>
 
@@ -225,13 +303,13 @@
       >{row.original.slot || "-"}</span
     >
   {:else if cell.column.id === "class"}
-    {@const classes = parseClassRequired(row.original.class_required)}
+    {@const classes = itemClassKeys[row.original.id] ?? []}
     <ClassPills classes={classes.map((c) => c.toLowerCase())} />
   {:else if cell.column.id === "notes"}
     {@const notes = getNotes(row.original)}
     <span class={notes === "-" ? "text-muted-foreground" : ""}>{notes}</span>
-  {:else if cell.column.id === "item_type"}
-    <!-- Hidden filter column -->
+  {:else if cell.column.id === "item_type" || cell.column.id === "stats"}
+    <!-- Hidden filter columns -->
   {:else}
     {cell.getValue()}
   {/if}
@@ -243,16 +321,11 @@
   {@const slotCol = table.getColumn("slot")}
   {@const classCol = table.getColumn("class")}
   {@const levelCol = table.getColumn("level_required")}
-  {@const classCountsFiltered = (() => {
-    const counts = new SvelteMap<string, number>();
-    // Use getFacetedRowModel() to get rows filtered by everything EXCEPT the class filter
-    const facetedRows = classCol?.getFacetedRowModel()?.rows ?? [];
-    for (const row of facetedRows) {
-      for (const cls of parseClassRequired(row.original.class_required)) {
-        counts.set(cls, (counts.get(cls) ?? 0) + 1);
-      }
-    }
-    return counts;
+  {@const statsCol = table.getColumn("stats")}
+  {@const facetedItemIds = (() => {
+    // Get item IDs from faceted rows (filtered by everything except stats filter)
+    const facetedRows = statsCol?.getFacetedRowModel()?.rows ?? [];
+    return facetedRows.map((row) => row.original.id);
   })()}
   {#if qualityCol}
     <DataTableFacetedFilter
@@ -295,9 +368,30 @@
         label: c,
         value: c,
       }))}
-      counts={classCountsFiltered}
     />
   {/if}
+  {#if statsCol}
+    {@const statsFilterValue = statsCol.getFilterValue() as
+      | { stats: string[]; mode: "any" | "all" }
+      | undefined}
+    <DataTableStatToggle
+      bind:open={statPanelOpen}
+      selectedCount={statsFilterValue?.stats.length ?? 0}
+      mode={statsFilterValue?.mode ?? "all"}
+    />
+  {/if}
+  <!-- Stat panel: order-last ensures it appears after Columns button, w-full makes it wrap to new line -->
+  <div class="order-last w-full">
+    {#if statsCol}
+      <DataTableStatPanel
+        column={statsCol}
+        bind:open={statPanelOpen}
+        totalRows={data.items.length}
+        filteredRows={table.getFilteredRowModel().rows.length}
+        {facetedItemIds}
+      />
+    {/if}
+  </div>
 {/snippet}
 
 <svelte:head>
@@ -327,6 +421,7 @@
     ]}
     initialColumnVisibility={{
       item_type: false,
+      stats: false,
     }}
     urlKey="items"
     showPagination={true}

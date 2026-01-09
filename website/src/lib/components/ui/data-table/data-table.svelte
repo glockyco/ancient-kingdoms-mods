@@ -280,6 +280,27 @@
     for (const filter of columnFilters) {
       const paramKey = `${prefix}${filter.id}`;
 
+      // Handle stat filters (object with stats array and mode)
+      if (
+        typeof filter.value === "object" &&
+        filter.value !== null &&
+        !Array.isArray(filter.value) &&
+        "stats" in filter.value &&
+        "mode" in filter.value
+      ) {
+        const { stats, mode } = filter.value as {
+          stats: string[];
+          mode: string;
+        };
+        if (stats.length > 0) {
+          const statStr = `${stats.join(",")};${mode}`;
+          newParams.push(
+            `${encodeURIComponent(paramKey)}=${encodeURIComponent(statStr)}`,
+          );
+        }
+        continue;
+      }
+
       // Handle range filters (arrays of [min, max] where values can be numbers or null)
       if (
         Array.isArray(filter.value) &&
@@ -374,21 +395,31 @@
               return { id, desc: dir === "desc" };
             });
           } else {
-            // Check if it's a range filter (format: "min-max", "-max", "min-")
-            const rangeMatch = value.match(/^(-?\d*)-(-?\d*)$/);
-            if (rangeMatch) {
-              const min =
-                rangeMatch[1] !== "" ? parseInt(rangeMatch[1], 10) : null;
-              const max =
-                rangeMatch[2] !== "" ? parseInt(rangeMatch[2], 10) : null;
-              if (min !== null || max !== null) {
-                restoredFilters.push({ id: paramKey, value: [min, max] });
+            // Check if it's a stat filter (format: "stat1,stat2;mode")
+            const statFilterMatch = value.match(/^(.+);(any|all)$/);
+            if (statFilterMatch) {
+              const stats = statFilterMatch[1].split(",").filter(Boolean);
+              const mode = statFilterMatch[2] as "any" | "all";
+              if (stats.length > 0) {
+                restoredFilters.push({ id: paramKey, value: { stats, mode } });
               }
             } else {
-              // Faceted filter (comma-separated values)
-              const values = value.split(",").filter(Boolean);
-              if (values.length > 0) {
-                restoredFilters.push({ id: paramKey, value: values });
+              // Check if it's a range filter (format: "min-max", "-max", "min-")
+              const rangeMatch = value.match(/^(-?\d*)-(-?\d*)$/);
+              if (rangeMatch) {
+                const min =
+                  rangeMatch[1] !== "" ? parseInt(rangeMatch[1], 10) : null;
+                const max =
+                  rangeMatch[2] !== "" ? parseInt(rangeMatch[2], 10) : null;
+                if (min !== null || max !== null) {
+                  restoredFilters.push({ id: paramKey, value: [min, max] });
+                }
+              } else {
+                // Faceted filter (comma-separated values)
+                const values = value.split(",").filter(Boolean);
+                if (values.length > 0) {
+                  restoredFilters.push({ id: paramKey, value: values });
+                }
               }
             }
           }
@@ -619,7 +650,7 @@
           <DropdownMenu.Root>
             <DropdownMenu.Trigger>
               {#snippet child({ props })}
-                <Button variant="outline" {...props}>
+                <Button variant="outline" size="sm" class="h-8" {...props}>
                   <Settings2 class="mr-2 h-4 w-4" />
                   Columns
                 </Button>

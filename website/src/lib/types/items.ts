@@ -1,7 +1,7 @@
 import type { Item } from "$lib/queries/items";
 
 /**
- * Minimal item data for list view - only fields displayed on items page
+ * Full item data from SQL query (includes JSON fields for parsing)
  */
 export interface ItemListView {
   id: string;
@@ -13,11 +13,21 @@ export interface ItemListView {
   slot: string | null;
   backpack_slots: number;
   class_required: string;
+  stats: string | null;
   stat_count: number;
+  stat_keys: string;
   alchemy_recipe_level_required: number | null;
   mount_speed: number;
   tooltip_html: string | null;
 }
+
+/**
+ * Item data for client-side rendering (bulky JSON fields stripped)
+ */
+export type ItemListViewClient = Omit<
+  ItemListView,
+  "stats" | "stat_keys" | "class_required"
+>;
 
 /**
  * Data structure returned by the items page load function

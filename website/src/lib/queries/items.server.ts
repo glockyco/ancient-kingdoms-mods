@@ -3,8 +3,8 @@ import type { Item } from "./items";
 import type { ItemListView } from "$lib/types/items";
 
 /**
- * Get all items with minimal fields for list view (server-side, for prerendering).
- * Computes stat_count in SQL to avoid sending full stats JSON to client.
+ * Get all items with fields for list view (server-side, for prerendering).
+ * Includes stats JSON for client-side filtering.
  */
 export function getItems(): ItemListView[] {
   return query<ItemListView>(
@@ -20,6 +20,7 @@ export function getItems(): ItemListView[] {
       class_required,
       alchemy_recipe_level_required,
       mount_speed,
+      stats,
       (
         SELECT COUNT(*)
         FROM json_each(stats)
@@ -28,6 +29,14 @@ export function getItems(): ItemListView[] {
           AND json_each.value != 0.0
           AND json_each.value != 'false'
       ) as stat_count,
+      (
+        SELECT json_group_array(json_each.key)
+        FROM json_each(stats)
+        WHERE json_each.key NOT IN ('max_durability', 'has_serenity', 'is_costume', 'augment_bonus_set')
+          AND json_each.value != 0
+          AND json_each.value != 0.0
+          AND json_each.value != 'false'
+      ) as stat_keys,
       tooltip_html
     FROM items
     ORDER BY name`,
