@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { SvelteMap } from "svelte/reactivity";
   import {
     DataTable,
     DataTableFacetedFilter,
@@ -88,6 +87,7 @@
       size: 220,
       enableSorting: false,
       accessorFn: (row) => row.class_requirements.join(", "),
+      getUniqueValues: (row) => row.class_requirements,
       filterFn: (row, _columnId, filterValue: string[]) => {
         const classes = row.original.class_requirements;
         if (!filterValue || filterValue.length === 0) return true;
@@ -142,6 +142,7 @@
       accessorKey: "flags_filter",
       header: "Flags Filter",
       enableHiding: false,
+      getUniqueValues: (row) => row.flags_filter,
       filterFn: (row, columnId, filterValue: string[]) => {
         const flags = row.getValue(columnId) as string[];
         if (!filterValue || filterValue.length === 0) return true;
@@ -235,28 +236,6 @@
   {@const flagsCol = table.getColumn("flags_filter")}
   {@const classCol = table.getColumn("class")}
   {@const levelCol = table.getColumn("level_required")}
-  {@const flagsCountsFiltered = (() => {
-    const counts = new SvelteMap<string, number>();
-    // Use getFacetedRowModel() to get rows filtered by everything EXCEPT the flags filter
-    const facetedRows = flagsCol?.getFacetedRowModel()?.rows ?? [];
-    for (const row of facetedRows) {
-      for (const flag of row.original.flags_filter) {
-        counts.set(flag, (counts.get(flag) ?? 0) + 1);
-      }
-    }
-    return counts;
-  })()}
-  {@const classCountsFiltered = (() => {
-    const counts = new SvelteMap<string, number>();
-    // Use getFacetedRowModel() to get rows filtered by everything EXCEPT the class filter
-    const facetedRows = classCol?.getFacetedRowModel()?.rows ?? [];
-    for (const row of facetedRows) {
-      for (const cls of row.original.class_requirements) {
-        counts.set(cls, (counts.get(cls) ?? 0) + 1);
-      }
-    }
-    return counts;
-  })()}
   {#if typeCol}
     <DataTableFacetedFilter
       column={typeCol}
@@ -275,7 +254,6 @@
         ...QUEST_FLAG_CONFIG.map((f) => ({ label: f.label, value: f.key })),
         { label: "Regular", value: "regular" },
       ]}
-      counts={flagsCountsFiltered}
     />
   {/if}
   {#if classCol}
@@ -286,7 +264,6 @@
         label: c,
         value: c,
       }))}
-      counts={classCountsFiltered}
     />
   {/if}
   {#if levelCol}

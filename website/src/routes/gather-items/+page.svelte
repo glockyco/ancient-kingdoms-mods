@@ -152,6 +152,7 @@
       size: 230,
       enableSorting: false,
       accessorFn: (row) => row.zones.map((z) => z.zone_name).join(" "),
+      getUniqueValues: (row) => row.zones.map((z) => z.zone_id),
       filterFn: (row, columnId, filterValue: string[]) => {
         const zones = row.original.zones;
         if (!filterValue || filterValue.length === 0) return true;
@@ -277,16 +278,6 @@
   {@const typeCol = table.getColumn("type")}
   {@const levelCol = table.getColumn("level")}
   {@const zonesCol = table.getColumn("zones")}
-  {@const zoneCountsFiltered = (() => {
-    const counts = new SvelteMap<string, number>();
-    const facetedRows = zonesCol?.getFacetedRowModel()?.rows ?? [];
-    for (const row of facetedRows) {
-      for (const zone of row.original.zones) {
-        counts.set(zone.zone_id, (counts.get(zone.zone_id) ?? 0) + 1);
-      }
-    }
-    return counts;
-  })()}
   {#if levelCol}
     <DataTableRangeFilter column={levelCol} title="Tier" />
   {/if}
@@ -308,7 +299,6 @@
         label: z.zone_name,
         value: z.zone_id,
       }))}
-      counts={zoneCountsFiltered}
     />
   {/if}
 {/snippet}

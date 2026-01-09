@@ -79,6 +79,8 @@
       header: "Key",
       size: 230,
       accessorFn: (row) => row.tool_or_key_name || "",
+      getUniqueValues: (row) =>
+        row.tool_or_key_id ? [row.tool_or_key_id] : [],
       filterFn: (row, columnId, filterValue: string[]) => {
         const keyId = row.original.tool_or_key_id;
         if (!filterValue || filterValue.length === 0) return true;
@@ -120,6 +122,7 @@
       header: "Zone",
       minSize: 150,
       accessorFn: (row) => row.zone_name,
+      getUniqueValues: (row) => [row.zone_id],
       filterFn: (row, columnId, filterValue: string[]) => {
         const zoneId = row.original.zone_id;
         if (!filterValue || filterValue.length === 0) return true;
@@ -148,26 +151,6 @@
 {#snippet renderToolbar({ table }: { table: TanstackTable<ChestWithDrops> })}
   {@const zoneCol = table.getColumn("zone")}
   {@const keyCol = table.getColumn("key")}
-  {@const zoneCountsFiltered = (() => {
-    const counts = new SvelteMap<string, number>();
-    const facetedRows = zoneCol?.getFacetedRowModel()?.rows ?? [];
-    for (const row of facetedRows) {
-      const zoneId = row.original.zone_id;
-      counts.set(zoneId, (counts.get(zoneId) ?? 0) + 1);
-    }
-    return counts;
-  })()}
-  {@const keyCountsFiltered = (() => {
-    const counts = new SvelteMap<string, number>();
-    const facetedRows = keyCol?.getFacetedRowModel()?.rows ?? [];
-    for (const row of facetedRows) {
-      const keyId = row.original.tool_or_key_id;
-      if (keyId) {
-        counts.set(keyId, (counts.get(keyId) ?? 0) + 1);
-      }
-    }
-    return counts;
-  })()}
   {#if zoneCol}
     <DataTableFacetedFilter
       column={zoneCol}
@@ -176,7 +159,6 @@
         label: c.zone_name,
         value: c.zone_id,
       }))}
-      counts={zoneCountsFiltered}
     />
   {/if}
   {#if keyCol}
@@ -187,7 +169,6 @@
         label: name!,
         value: id!,
       }))}
-      counts={keyCountsFiltered}
     />
   {/if}
 {/snippet}
