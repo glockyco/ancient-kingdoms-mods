@@ -134,9 +134,20 @@
   );
 
   // Get unique classes for filter (using precomputed data)
-  const uniqueClasses = $derived(
-    Array.from(new Set(Object.values(itemClassKeys).flat())).sort(),
-  );
+  // Items with no restriction are stored as ["All"] in the database
+  const allClasses = Array.from(new Set(Object.values(itemClassKeys).flat()))
+    .filter((c) => c !== "All")
+    .sort();
+
+  // Expand items with no class restriction to include all classes (for correct filtering/faceting)
+  for (const id of Object.keys(itemClassKeys)) {
+    if (
+      itemClassKeys[id].length === 0 ||
+      (itemClassKeys[id].length === 1 && itemClassKeys[id][0] === "All")
+    ) {
+      itemClassKeys[id] = allClasses;
+    }
+  }
 
   type ItemRow = ItemListViewClient;
 
@@ -198,8 +209,7 @@
       enableSorting: false,
       accessorFn: (row) => (itemClassKeys[row.id] ?? []).join(", "),
       getUniqueValues: (row) => itemClassKeys[row.id] ?? [],
-      filterFn: (row, columnId, filterValue: string[]) => {
-        // Use precomputed class keys (no JSON parsing)
+      filterFn: (row, _columnId, filterValue: string[]) => {
         const classes = itemClassKeys[row.original.id] ?? [];
         if (!filterValue || filterValue.length === 0) return true;
         return classes.some((c) => filterValue.includes(c));
@@ -304,7 +314,11 @@
     >
   {:else if cell.column.id === "class"}
     {@const classes = itemClassKeys[row.original.id] ?? []}
-    <ClassPills classes={classes.map((c) => c.toLowerCase())} />
+    {#if classes.length === allClasses.length}
+      <span class="text-muted-foreground">-</span>
+    {:else}
+      <ClassPills classes={classes.map((c) => c.toLowerCase())} />
+    {/if}
   {:else if cell.column.id === "notes"}
     {@const notes = getNotes(row.original)}
     <span class={notes === "-" ? "text-muted-foreground" : ""}>{notes}</span>
@@ -364,7 +378,7 @@
     <DataTableFacetedFilter
       column={classCol}
       title="Class"
-      options={uniqueClasses.map((c) => ({
+      options={allClasses.map((c) => ({
         label: c,
         value: c,
       }))}
