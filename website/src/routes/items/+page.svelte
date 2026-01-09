@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from "svelte";
+  import { afterNavigate, replaceState } from "$app/navigation";
   import {
     DataTable,
     DataTableFacetedFilter,
@@ -27,49 +27,33 @@
 
   // Panel open state
   let statPanelOpen = $state(false);
-  let hasMounted = $state(false);
+  let routerReady = $state(false);
 
-  onMount(() => {
-    // Clean up any stale URL params from old implementation
-    const url = new URL(window.location.href);
-    let needsUrlUpdate = false;
-    if (url.searchParams.has("items.statsPanel")) {
-      url.searchParams.delete("items.statsPanel");
-      needsUrlUpdate = true;
-    }
-
-    // Restore from URL first
-    const urlValue = url.searchParams.get(STATS_PANEL_URL_KEY);
-    if (urlValue !== null) {
-      statPanelOpen = urlValue === "1";
-    } else {
-      // Fall back to localStorage
-      try {
-        statPanelOpen = localStorage.getItem(STATS_PANEL_STORAGE_KEY) === "1";
-      } catch {
-        // localStorage unavailable
+  // afterNavigate fires after router is initialized and navigation completes
+  afterNavigate(() => {
+    if (!routerReady) {
+      // First navigation - restore state from URL or localStorage
+      const urlValue = new URL(window.location.href).searchParams.get(
+        STATS_PANEL_URL_KEY,
+      );
+      if (urlValue !== null) {
+        statPanelOpen = urlValue === "1";
+      } else {
+        try {
+          statPanelOpen = localStorage.getItem(STATS_PANEL_STORAGE_KEY) === "1";
+        } catch {
+          // localStorage unavailable
+        }
       }
+      routerReady = true;
     }
-
-    if (needsUrlUpdate) {
-      window.history.replaceState(history.state, "", url.toString());
-    }
-
-    hasMounted = true;
   });
 
-  // Sync panel state to URL and localStorage (only after mount)
+  // Sync panel state to URL and localStorage (only after router is ready)
   $effect(() => {
-    if (!hasMounted) return;
+    if (!routerReady) return;
 
-    const url = new URL(window.location.href);
-    if (statPanelOpen) {
-      url.searchParams.set(STATS_PANEL_URL_KEY, "1");
-    } else {
-      url.searchParams.delete(STATS_PANEL_URL_KEY);
-    }
-    window.history.replaceState(history.state, "", url.toString());
-
+    // Sync to localStorage
     try {
       if (statPanelOpen) {
         localStorage.setItem(STATS_PANEL_STORAGE_KEY, "1");
@@ -79,6 +63,15 @@
     } catch {
       // localStorage unavailable
     }
+
+    // Sync to URL using SvelteKit's replaceState (safe now that router is ready)
+    const url = new URL(window.location.href);
+    if (statPanelOpen) {
+      url.searchParams.set(STATS_PANEL_URL_KEY, "1");
+    } else {
+      url.searchParams.delete(STATS_PANEL_URL_KEY);
+    }
+    replaceState(url, {});
   });
 
   // Precomputed at build time - no JSON parsing needed on client
