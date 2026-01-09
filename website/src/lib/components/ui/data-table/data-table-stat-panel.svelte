@@ -31,11 +31,11 @@
     facetedItemIds: string[];
   } = $props();
 
-  // Validate filter value structure: must have non-empty stats array and valid mode
+  // Validate filter value structure: stats array (can be empty) and valid mode
   function isValidFilterValue(value: unknown): value is StatFilterValue {
     if (!value || typeof value !== "object") return false;
     const v = value as Record<string, unknown>;
-    if (!Array.isArray(v.stats) || v.stats.length === 0) return false;
+    if (!Array.isArray(v.stats)) return false;
     if (v.mode !== "any" && v.mode !== "all") return false;
     return v.stats.every((s) => typeof s === "string");
   }
@@ -93,11 +93,8 @@
 
   function updateFilter(stats: Set<string>, mode: "any" | "all") {
     const statsArray = Array.from(stats);
-    if (statsArray.length === 0) {
-      column?.setFilterValue(undefined);
-    } else {
-      column?.setFilterValue({ stats: statsArray, mode });
-    }
+    // Always keep mode in filter value so it persists to URL
+    column?.setFilterValue({ stats: statsArray, mode });
   }
 
   function toggleStat(stat: string) {

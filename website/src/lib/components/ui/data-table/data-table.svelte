@@ -292,7 +292,9 @@
           stats: string[];
           mode: string;
         };
-        if (stats.length > 0) {
+        // Always serialize mode, even with empty stats (so mode persists across reloads)
+        // Only skip if mode is "all" (default) and no stats selected
+        if (stats.length > 0 || mode !== "all") {
           const statStr = `${stats.join(",")};${mode}`;
           newParams.push(
             `${encodeURIComponent(paramKey)}=${encodeURIComponent(statStr)}`,
@@ -395,14 +397,12 @@
               return { id, desc: dir === "desc" };
             });
           } else {
-            // Check if it's a stat filter (format: "stat1,stat2;mode")
-            const statFilterMatch = value.match(/^(.+);(any|all)$/);
+            // Check if it's a stat filter (format: "stat1,stat2;mode" or ";mode" for mode-only)
+            const statFilterMatch = value.match(/^(.*);(any|all)$/);
             if (statFilterMatch) {
               const stats = statFilterMatch[1].split(",").filter(Boolean);
               const mode = statFilterMatch[2] as "any" | "all";
-              if (stats.length > 0) {
-                restoredFilters.push({ id: paramKey, value: { stats, mode } });
-              }
+              restoredFilters.push({ id: paramKey, value: { stats, mode } });
             } else {
               // Check if it's a range filter (format: "min-max", "-max", "min-")
               const rangeMatch = value.match(/^(-?\d*)-(-?\d*)$/);
