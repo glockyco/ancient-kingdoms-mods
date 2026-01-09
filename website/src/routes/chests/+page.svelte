@@ -11,6 +11,7 @@
   } from "$lib/components/ui/data-table";
   import { IconBadge } from "$lib/components/ui/icon-badge";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
+  import MapLink from "$lib/components/MapLink.svelte";
   import type {
     ChestListView,
     ChestDropListView,
@@ -130,15 +131,15 @@
       },
     },
     {
-      id: "coordinates",
-      header: "Coordinates",
+      id: "location",
+      header: "Location",
       size: 120,
     },
   ];
 
   const columnLabels: Record<string, string> = {
     zone: "Zone",
-    coordinates: "Coordinates",
+    location: "Location",
     name: "Name",
     respawn_time: "Respawn",
     key: "Key",
@@ -192,13 +193,9 @@
     >
       {row.original.zone_name}
     </IconBadge>
-  {:else if cell.column.id === "coordinates"}
+  {:else if cell.column.id === "location"}
     {#if row.original.position_x != null && row.original.position_y != null}
-      <span class="font-mono text-sm">
-        {Math.round(row.original.position_x)}, {Math.round(
-          row.original.position_y,
-        )}
-      </span>
+      <MapLink entityId={row.original.id} entityType="chest" compact />
     {:else}
       <span class="text-muted-foreground">-</span>
     {/if}
@@ -291,7 +288,7 @@
     {renderToolbar}
     pageSize={PAGE_SIZE}
     initialSorting={[{ id: "zone", desc: false }]}
-    initialColumnVisibility={{ coordinates: false }}
+    initialColumnVisibility={{ respawn_time: false }}
     urlKey="chests"
     showPagination={true}
     showSearch={true}

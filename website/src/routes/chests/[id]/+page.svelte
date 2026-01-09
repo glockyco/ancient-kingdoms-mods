@@ -47,20 +47,13 @@
 
     <div class="mt-2 flex flex-wrap gap-4 text-sm text-muted-foreground">
       <span>
-        <a
+        Zone: <a
           href="/zones/{data.chest.zone_id}"
           class="text-blue-600 dark:text-blue-400 hover:underline"
         >
           {data.chest.zone_name}
         </a>
       </span>
-      {#if data.chest.position_x != null && data.chest.position_y != null}
-        <span>
-          Position: ({Math.round(data.chest.position_x)}, {Math.round(
-            data.chest.position_y,
-          )})
-        </span>
-      {/if}
       {#if data.chest.respawn_time > 0}
         <span>Respawn: {formatDuration(data.chest.respawn_time)}</span>
       {/if}

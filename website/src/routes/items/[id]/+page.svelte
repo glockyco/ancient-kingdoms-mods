@@ -1690,25 +1690,20 @@
           <div class="space-y-2">
             {#each computed.requiredForPortals as portal, index (`${portal.portal_id}_${index}`)}
               <div class="space-y-1">
-                <div>
+                <div class="flex items-center gap-2">
                   <a href="/zones/{portal.from_zone_id}" class={styles.link}>
                     {portal.from_zone_name}
                   </a>
-                  <span class={styles.label}>
-                    ({Math.round(portal.position_x)}, {Math.round(
-                      portal.position_y,
-                    )})
-                  </span>
+                  <MapLink
+                    entityId={portal.portal_id}
+                    entityType="portal"
+                    compact
+                  />
                 </div>
                 <div class="{styles.label} pl-2">
                   → <a href="/zones/{portal.to_zone_id}" class={styles.link}>
                     {portal.to_zone_name}
                   </a>
-                  <span class={styles.label}>
-                    ({Math.round(portal.destination_x)}, {Math.round(
-                      portal.destination_y,
-                    )})
-                  </span>
                 </div>
               </div>
             {/each}
@@ -1762,40 +1757,34 @@
               {#if gather.type === "chest"}
                 <div class="space-y-1">
                   <div class="flex justify-between items-center">
-                    <a
-                      href="/chests/{gather.gather_item_id}"
-                      class={styles.link}
-                    >
-                      Chest
-                    </a>
+                    <div class="flex items-center gap-1.5">
+                      <a
+                        href="/chests/{gather.gather_item_id}"
+                        class={styles.link}>Chest</a
+                      >
+                      {#if gather.zone_name}<span class={styles.label}
+                          >({gather.zone_name})</span
+                        >{/if}
+                      <MapLink
+                        entityId={gather.gather_item_id}
+                        entityType="chest"
+                        compact
+                      />
+                    </div>
                     <span class={styles.label}
                       >{(gather.rate * 100).toFixed(1)}%</span
                     >
                   </div>
-                  <div class="{styles.label} pl-2 space-y-0.5">
-                    {#if gather.zone_name}
-                      <div>
-                        <span class={styles.value}>{gather.zone_name}</span>
-                        {#if gather.position_x !== undefined && gather.position_y !== undefined}
-                          <span class={styles.label}>
-                            ({Math.round(gather.position_x)}, {Math.round(
-                              gather.position_y,
-                            )})
-                          </span>
-                        {/if}
-                      </div>
-                    {/if}
-                    {#if gather.key_name && gather.key_required_id}
-                      <div>
-                        Key: <a
-                          href={resolve("/items/[id]", {
-                            id: gather.key_required_id,
-                          })}
-                          class={styles.link}>{gather.key_name}</a
-                        >
-                      </div>
-                    {/if}
-                  </div>
+                  {#if gather.key_name && gather.key_required_id}
+                    <div class="{styles.label} pl-2">
+                      Key: <a
+                        href={resolve("/items/[id]", {
+                          id: gather.key_required_id,
+                        })}
+                        class={styles.link}>{gather.key_name}</a
+                      >
+                    </div>
+                  {/if}
                 </div>
               {:else}
                 <div class="flex justify-between items-center">
@@ -1832,20 +1821,12 @@
         <Card.Content>
           <div class="space-y-2">
             {#each computed.opensChests as chest (chest.chest_id)}
-              <div class="space-y-0.5">
-                <a href="/chests/{chest.chest_id}" class={styles.link}>
-                  Chest
-                </a>
-                {#if chest.zone_name}
-                  <div class="{styles.label} pl-2">
-                    <span class={styles.value}>{chest.zone_name}</span>
-                    <span class={styles.label}>
-                      ({Math.round(chest.position_x)}, {Math.round(
-                        chest.position_y,
-                      )})
-                    </span>
-                  </div>
-                {/if}
+              <div class="flex items-center gap-1.5">
+                <a href="/chests/{chest.chest_id}" class={styles.link}>Chest</a>
+                {#if chest.zone_name}<span class={styles.label}
+                    >({chest.zone_name})</span
+                  >{/if}
+                <MapLink entityId={chest.chest_id} entityType="chest" compact />
               </div>
             {/each}
           </div>

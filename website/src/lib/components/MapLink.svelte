@@ -11,7 +11,8 @@
     | "chest"
     | "altar"
     | "resource"
-    | "treasure";
+    | "treasure"
+    | "portal";
 
   interface Props {
     entityId: string;
@@ -32,10 +33,10 @@
 {#if compact}
   <a
     href={mapUrl}
-    class="inline-flex items-center gap-1 rounded border bg-muted/50 px-2 py-0.5 text-xs transition-colors hover:bg-muted"
+    class="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs border bg-muted/50 transition-colors hover:bg-muted"
     title="View on map"
   >
-    <MapPin class="h-3 w-3" />
+    <MapPin class="h-3.5 w-3.5" />
     Map
   </a>
 {:else}
