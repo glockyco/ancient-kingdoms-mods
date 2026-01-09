@@ -12,7 +12,7 @@
 export const STAT_DISPLAY_NAMES: Record<string, string> = {
   // Core resources
   health_bonus: "Hit Points",
-  energy_bonus: "Rage",
+  energy_bonus: "Rage Points",
   mana_bonus: "Mana",
 
   // Regeneration
@@ -25,7 +25,7 @@ export const STAT_DISPLAY_NAMES: Record<string, string> = {
   magic_damage: "Spell Power",
   accuracy: "Accuracy",
   haste: "Haste",
-  spell_haste: "Spell Casting Haste",
+  spell_haste: "Spell Haste",
   speed_bonus: "Movement Speed",
   critical_chance: "Critical Chance",
   block_chance: "Block Chance",

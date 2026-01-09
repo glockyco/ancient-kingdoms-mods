@@ -15,7 +15,7 @@ console = Console()
 # Maps internal stat field names to their display names (from game tooltips)
 STAT_DISPLAY_NAMES: dict[str, str] = {
     "health_bonus": "Hit Points",
-    "energy_bonus": "Rage",
+    "energy_bonus": "Rage Points",
     "mana_bonus": "Mana",
     "hp_regen_bonus": "Health Regen",
     "mana_regen_bonus": "Mana Regen",
@@ -24,7 +24,7 @@ STAT_DISPLAY_NAMES: dict[str, str] = {
     "magic_damage": "Spell Power",
     "accuracy": "Accuracy",
     "haste": "Haste",
-    "spell_haste": "Spell Casting Haste",
+    "spell_haste": "Spell Haste",
     "speed_bonus": "Movement Speed",
     "critical_chance": "Critical Chance",
     "block_chance": "Block Chance",
