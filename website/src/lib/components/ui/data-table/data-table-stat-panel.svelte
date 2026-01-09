@@ -172,8 +172,8 @@
               {@const delta = deltas.get(stat)}
               {@const newTotal =
                 delta !== undefined ? currentMatchCount + delta : count}
-              {@const isDisabled =
-                (count === undefined || count === 0) && !isSelected}
+              <!-- Only disable if we KNOW count is 0 (not if still loading) -->
+              {@const isDisabled = count === 0 && !isSelected}
               <button
                 type="button"
                 onclick={() => !isDisabled && toggleStat(stat)}
