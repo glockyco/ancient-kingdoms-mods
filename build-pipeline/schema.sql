@@ -235,6 +235,7 @@ CREATE TABLE items (
     treasure_map_position_x REAL,
     treasure_map_position_y REAL,
     treasure_map_position_z REAL,
+    treasure_location_id TEXT REFERENCES treasure_locations(id),
 
     -- Optional augment/recipe properties
     augment_armor_set_id TEXT,        -- ID of the set bonus item (e.g., "cobalt_armor_bonus_set")

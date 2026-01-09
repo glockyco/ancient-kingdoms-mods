@@ -875,6 +875,15 @@
         onSelect={onSelectItem}
       />
     </div>
+    <div class="flex justify-between">
+      <span class="text-muted-foreground">Tool</span>
+      <MapItemLink
+        itemId="shovel"
+        itemName="Shovel"
+        tooltipHtml={null}
+        onSelect={onSelectItem}
+      />
+    </div>
     {#if treasure.rewardId && treasure.rewardName}
       <div class="flex justify-between">
         <span class="text-muted-foreground">Reward</span>
@@ -886,15 +895,6 @@
         />
       </div>
     {/if}
-    <div class="flex justify-between">
-      <span class="text-muted-foreground">Tool</span>
-      <MapItemLink
-        itemId="shovel"
-        itemName="Shovel"
-        tooltipHtml={null}
-        onSelect={onSelectItem}
-      />
-    </div>
   {/if}
 
   <!-- Altar Section -->

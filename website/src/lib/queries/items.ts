@@ -111,6 +111,7 @@ export interface Item {
   treasure_map_zone_name: string | null;
   treasure_map_position_x: number | null;
   treasure_map_position_y: number | null;
+  treasure_location_id: string | null;
   // Augment
   augment_armor_set_id: string | null;
   augment_armor_set_item_ids: string | null; // JSON

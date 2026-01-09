@@ -10,14 +10,16 @@
     | "quest"
     | "chest"
     | "altar"
-    | "resource";
+    | "resource"
+    | "treasure";
 
   interface Props {
     entityId: string;
     entityType: EntityType;
+    compact?: boolean;
   }
 
-  let { entityId, entityType }: Props = $props();
+  let { entityId, entityType, compact = false }: Props = $props();
 
   const mapUrl = $derived.by(() => {
     if (entityType === "zone") {
@@ -27,10 +29,21 @@
   });
 </script>
 
-<a
-  href={mapUrl}
-  class="inline-flex items-center gap-1.5 rounded-md border bg-muted/50 px-3 py-1.5 text-sm transition-colors hover:bg-muted"
->
-  <MapPin class="h-3.5 w-3.5" />
-  View on Map
-</a>
+{#if compact}
+  <a
+    href={mapUrl}
+    class="inline-flex items-center gap-1 rounded border bg-muted/50 px-2 py-0.5 text-xs transition-colors hover:bg-muted"
+    title="View on map"
+  >
+    <MapPin class="h-3 w-3" />
+    Map
+  </a>
+{:else}
+  <a
+    href={mapUrl}
+    class="inline-flex items-center gap-1.5 rounded-md border bg-muted/50 px-3 py-1.5 text-sm transition-colors hover:bg-muted"
+  >
+    <MapPin class="h-3.5 w-3.5" />
+    View on Map
+  </a>
+{/if}

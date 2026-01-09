@@ -633,23 +633,27 @@
             {#if data.item.treasure_map_zone_id}
               <div>
                 <div class={styles.label}>Dig Location</div>
-                <div>
+                <div class="flex items-center gap-2">
                   <a
                     href="/zones/{data.item.treasure_map_zone_id}"
                     class={styles.link}
                   >
                     {data.item.treasure_map_zone_name}
                   </a>
-                  {#if data.item.treasure_map_position_x != null && data.item.treasure_map_position_y != null}
-                    <span class={styles.label}>
-                      ({data.item.treasure_map_position_x.toFixed(1)}, {data.item.treasure_map_position_y.toFixed(
-                        1,
-                      )})
-                    </span>
+                  {#if data.item.treasure_location_id}
+                    <MapLink
+                      entityId={data.item.treasure_location_id}
+                      entityType="treasure"
+                      compact
+                    />
                   {/if}
                 </div>
               </div>
             {/if}
+            <div>
+              <div class={styles.label}>Required Tool</div>
+              <a href="/items/shovel" class={styles.link}>Shovel</a>
+            </div>
             {#if data.item.treasure_map_reward_id}
               <div>
                 <div class={styles.label}>Reward</div>
