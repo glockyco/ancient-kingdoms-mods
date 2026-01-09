@@ -26,6 +26,7 @@ export const STAT_DISPLAY_NAMES: Record<string, string> = {
   accuracy: "Accuracy",
   haste: "Haste",
   spell_haste: "Spell Casting Haste",
+  speed_bonus: "Movement Speed",
   critical_chance: "Critical Chance",
   block_chance: "Block Chance",
 

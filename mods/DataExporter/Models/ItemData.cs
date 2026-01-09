@@ -185,6 +185,7 @@ public class ItemStats
     public float critical_chance { get; set; }
     public float haste { get; set; }
     public float spell_haste { get; set; }
+    public float speed_bonus { get; set; }
 
     // Equipment-specific
     public int max_durability { get; set; }

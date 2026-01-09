@@ -180,6 +180,7 @@ public class ItemExporter : BaseExporter
             critical_chance = equipItem.criticalChanceBonus,
             haste = equipItem.hasteBonus,
             spell_haste = equipItem.spellHasteBonus,
+            speed_bonus = equipItem.speedBonus,
             max_durability = equipItem.maxDurability,
             augment_bonus_set = equipItem.augmentArmorBonusSet != null ? equipItem.augmentArmorBonusSet.name : null,
             has_serenity = equipItem.hasSerenity,

@@ -25,6 +25,7 @@ STAT_DISPLAY_NAMES: dict[str, str] = {
     "accuracy": "Accuracy",
     "haste": "Haste",
     "spell_haste": "Spell Casting Haste",
+    "speed_bonus": "Movement Speed",
     "critical_chance": "Critical Chance",
     "block_chance": "Block Chance",
     "fire_resist": "Fire Resist",
