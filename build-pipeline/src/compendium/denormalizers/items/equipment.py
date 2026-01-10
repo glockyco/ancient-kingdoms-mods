@@ -270,6 +270,46 @@ def _denormalize_buff_names(conn: sqlite3.Connection) -> dict[str, int]:
 
     cursor.execute("""
         UPDATE items
+        SET potion_buff_allow_dungeon = COALESCE(
+            (SELECT allow_dungeon FROM skills WHERE skills.id = items.potion_buff_id),
+            1
+        )
+        WHERE potion_buff_id IS NOT NULL
+    """)
+    counts["potion_allow_dungeon"] = cursor.rowcount
+
+    cursor.execute("""
+        UPDATE items
+        SET food_buff_allow_dungeon = COALESCE(
+            (SELECT allow_dungeon FROM skills WHERE skills.id = items.food_buff_id),
+            1
+        )
+        WHERE food_buff_id IS NOT NULL
+    """)
+    counts["food_allow_dungeon"] = cursor.rowcount
+
+    cursor.execute("""
+        UPDATE items
+        SET scroll_skill_allow_dungeon = COALESCE(
+            (SELECT allow_dungeon FROM skills WHERE skills.id = items.scroll_skill_id),
+            1
+        )
+        WHERE scroll_skill_id IS NOT NULL
+    """)
+    counts["scroll_allow_dungeon"] = cursor.rowcount
+
+    cursor.execute("""
+        UPDATE items
+        SET relic_buff_allow_dungeon = COALESCE(
+            (SELECT allow_dungeon FROM skills WHERE skills.id = items.relic_buff_id),
+            1
+        )
+        WHERE relic_buff_id IS NOT NULL
+    """)
+    counts["relic_allow_dungeon"] = cursor.rowcount
+
+    cursor.execute("""
+        UPDATE items
         SET weapon_proc_effect_name = (SELECT name FROM skills WHERE skills.id = items.weapon_proc_effect_id)
         WHERE weapon_proc_effect_id IS NOT NULL
     """)

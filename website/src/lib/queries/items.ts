@@ -47,6 +47,10 @@ export interface Item {
   food_buff_id: string | null;
   food_buff_name: string | null;
   food_type: string | null;
+  potion_buff_allow_dungeon: boolean;
+  food_buff_allow_dungeon: boolean;
+  scroll_skill_allow_dungeon: boolean;
+  relic_buff_allow_dungeon: boolean;
   // Book stat gains
   book_strength_gain: number;
   book_dexterity_gain: number;

@@ -5,6 +5,7 @@
   import ItemLink from "$lib/components/ItemLink.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
   import MonsterTypeIcon from "$lib/components/MonsterTypeIcon.svelte";
+  import DungeonRestrictionBadge from "$lib/components/DungeonRestrictionBadge.svelte";
   import ExternalLink from "@lucide/svelte/icons/external-link";
   import { STATS_METADATA_FIELDS } from "$lib/constants/items";
   import { formatItemType } from "$lib/utils/format";
@@ -343,7 +344,7 @@
   <div>
     <div class="flex items-start gap-4">
       <div class="flex-1">
-        <div class="flex items-center gap-3">
+        <div class="flex flex-wrap items-center gap-3">
           <h1 class="text-4xl font-bold">{data.item.name}</h1>
           <MapLink entityId={data.item.id} entityType="item" />
           <span
@@ -353,6 +354,10 @@
           >
             {qualityNames[data.item.quality]}
           </span>
+
+          {#if (data.item.item_type === "potion" && !data.item.potion_buff_allow_dungeon) || (data.item.item_type === "food" && !data.item.food_buff_allow_dungeon) || (data.item.item_type === "scroll" && !data.item.scroll_skill_allow_dungeon) || (data.item.item_type === "relic" && !data.item.relic_buff_allow_dungeon) || data.item.mount_speed > 0}
+            <DungeonRestrictionBadge allowDungeon={false} />
+          {/if}
         </div>
       </div>
     </div>

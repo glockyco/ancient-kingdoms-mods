@@ -237,6 +237,14 @@ class ItemData(BaseModel):
     potion_buff_id: str | None = None  # Buff applied by potion (e.g., "bandages")
     food_buff_id: str | None = None  # Buff applied by food (e.g., "burning_tempest")
     food_type: str | None = None  # Type of food (e.g., "Drink")
+    potion_buff_allow_dungeon: bool = (
+        True  # Whether potion's buff is allowed in dungeons
+    )
+    food_buff_allow_dungeon: bool = True  # Whether food's buff is allowed in dungeons
+    scroll_skill_allow_dungeon: bool = (
+        True  # Whether scroll's skill is allowed in dungeons
+    )
+    relic_buff_allow_dungeon: bool = True  # Whether relic's buff is allowed in dungeons
     scroll_skill_id: str | None = None  # Skill granted by scroll (e.g., "blushburst")
     book_text: str | None = None  # Lore text for books
 
