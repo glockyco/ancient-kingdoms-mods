@@ -6,14 +6,14 @@ Exports game data to JSON files for the build pipeline.
 
 Press **Shift+F9** in-game to export all data. Files are written to `exported-data/` (configurable in `Local.props`).
 
-## Exported Data (22 exporters)
+## Exported Data (23 exporters)
 
 | Category | Files |
 |----------|-------|
 | Core | monsters, npcs, items, quests, skills |
 | World | portals, zone_info, zone_triggers, gather_items |
 | Crafting | crafting_recipes, crafting_stations, alchemy_recipes, alchemy_tables |
-| Special | summon_triggers, luck_tokens, altars, treasure_locations, pets, professions |
+| Special | summon_triggers, luck_tokens, altars, treasure_locations, pets, professions, game_config |
 | Objects | traps, doors, interactive_objects |
 
 ## Architecture

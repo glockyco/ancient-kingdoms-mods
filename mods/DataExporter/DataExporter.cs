@@ -145,6 +145,10 @@ namespace DataExporter
                 var interactiveObjectExporter = new InteractiveObjectExporter(LoggerInstance, ExportPath);
                 interactiveObjectExporter.Export();
 
+                // Export game config (bestiary monsters, mounts, seasonal items, special items)
+                var gameConfigExporter = new GameConfigExporter(LoggerInstance, ExportPath);
+                gameConfigExporter.Export();
+
                 var elapsed = DateTime.Now - startTime;
 
                 LoggerInstance.Msg("========================================");
