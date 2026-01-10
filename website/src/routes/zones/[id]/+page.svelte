@@ -420,7 +420,7 @@
 
   <!-- Header -->
   <div>
-    <div class="flex items-center gap-3">
+    <div class="flex items-center gap-3 flex-wrap">
       <h1 class="text-3xl font-bold">{data.zone.name}</h1>
       <MapLink entityId={data.zone.id} entityType="zone" />
       {#if data.zone.is_dungeon}
