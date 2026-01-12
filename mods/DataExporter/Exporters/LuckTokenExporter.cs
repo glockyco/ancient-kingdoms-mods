@@ -54,7 +54,7 @@ public class LuckTokenExporter : BaseExporter
                 zone_name = GetZoneNameFromByte(zoneId),
                 boss_luck_token_id = SanitizeId(bossToken.name),
                 boss_luck_bonus = 0.05f,  // Hardcoded +5% in Monster.cs
-                fragment_drop_chance = 0.02f  // Hardcoded 2% in Monster.cs
+                fragment_drop_chance = 0.05f  // Hardcoded 5% in Monster.cs (v0.9.4.1)
             };
 
             // Check if this zone has a fragment token
