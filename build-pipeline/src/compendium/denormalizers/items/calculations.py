@@ -70,11 +70,11 @@ def _calculate_item_levels(conn: sqlite3.Connection) -> int:
             + stats.get("fire_resist", 0)
             + stats.get("cold_resist", 0)
             + stats.get("disease_resist", 0)
-            + stats.get("block_chance", 0) * 200
-            + stats.get("accuracy", 0) * 200
-            + stats.get("critical_chance", 0) * 200
-            + stats.get("haste", 0) * 200
-            + stats.get("spell_haste", 0) * 200
+            + stats.get("block_chance", 0) * 500
+            + stats.get("accuracy", 0) * 500
+            + stats.get("critical_chance", 0) * 500
+            + stats.get("haste", 0) * 500
+            + stats.get("spell_haste", 0) * 500
             + stats.get("speed_bonus", 0) * 100
             + weapon_bonus
         )
