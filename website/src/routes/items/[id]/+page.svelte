@@ -907,8 +907,8 @@
                 <div class={styles.value}>
                   Place the augment and an armor or weapon in a crafting
                   station, then craft. The augment is consumed and its stats are
-                  permanently added. You must have only one copy of the target
-                  item in your inventory.
+                  permanently added. If you have multiple copies of the item,
+                  the first un-augmented copy will be used.
                 </div>
               </div>
               <div>
