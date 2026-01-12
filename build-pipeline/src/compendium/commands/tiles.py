@@ -1,4 +1,19 @@
-"""Map tile pyramid generation command."""
+"""Map tile pyramid generation command.
+
+Coordinate System
+-----------------
+- Game coordinates: X (horizontal), Z (forward/north), Y (height - ignored)
+- deck.gl coordinates: X (same), Y = -game_Z (negated for correct north-up display)
+
+The stitched source image has north (high game Z) at the top. When generating tiles:
+1. Tile indices are calculated in deck.gl coordinates (Y = -Z)
+2. Each tile's content is extracted from the source using game Z coordinates
+3. Extracted content is flipped vertically because:
+   - Source has high Z at top (row 0)
+   - BitmapLayer maps image top to bounds maxY (which is low game Z after negation)
+
+World bounds: Game X [-880, 920], Z [-740, 1460]
+"""
 
 import json
 import math
@@ -103,11 +118,11 @@ def blank_excluded_zones(
         zone_min_z = zone["bounds_min_y"]  # DB uses Y for game Z
         zone_max_z = zone["bounds_max_y"]
 
-        # Convert to pixel coordinates
+        # Convert to pixel coordinates (source has north/high Z at top)
         px_left = (zone_min_x - world_min_x) * px_per_unit_x
         px_right = (zone_max_x - world_min_x) * px_per_unit_x
-        px_top = (zone_min_z - world_min_z) * px_per_unit_y
-        px_bottom = (zone_max_z - world_min_z) * px_per_unit_y
+        px_top = (world_max_z - zone_max_z) * px_per_unit_y
+        px_bottom = (world_max_z - zone_min_z) * px_per_unit_y
 
         # Draw filled rectangle
         draw.rectangle(
@@ -148,15 +163,16 @@ def stitch_screenshots(screenshots_dir: Path, metadata: dict) -> Image.Image:
     canvas = Image.new("RGB", (canvas_width, canvas_height))
 
     # Paste each screenshot
+    # Invert Y so high Z (north) is at top of canvas
     for screenshot in screenshots:
         # Extract grid indices from filename
         parts = screenshot["file"].split("_")
         x_idx = int(parts[1][1:])  # "x000" -> 0
         y_idx = int(parts[2][1:].split(".")[0])  # "y000.png" -> 0
 
-        # Calculate pixel position
+        # Calculate pixel position (invert Y so north is at top)
         px = x_idx * tile_resolution
-        py = y_idx * tile_resolution
+        py = (max_y_idx - y_idx) * tile_resolution
 
         # Load and paste
         img_path = screenshots_dir / screenshot["file"]
@@ -199,7 +215,7 @@ def generate_tiles(
     world_width = world_max_x - world_min_x
     world_depth = world_max_z - world_min_z
 
-    # deck.gl extent (Y = -game_z)
+    # deck.gl extent (Y = -game_z to match visualization coordinate system)
     extent_min_x = world_min_x
     extent_max_x = world_max_x
     extent_min_y = -world_max_z
@@ -256,10 +272,11 @@ def generate_tiles(
                     tile_game_max_z = -clamped_min_y
 
                     # Convert to source image pixels
+                    # Source has north (high Z) at top, so invert Y
                     px_left = (tile_game_min_x - world_min_x) * px_per_unit_x
                     px_right = (tile_game_max_x - world_min_x) * px_per_unit_x
-                    px_top = (tile_game_min_z - world_min_z) * px_per_unit_y
-                    px_bottom = (tile_game_max_z - world_min_z) * px_per_unit_y
+                    px_top = (world_max_z - tile_game_max_z) * px_per_unit_y
+                    px_bottom = (world_max_z - tile_game_min_z) * px_per_unit_y
 
                     # Clamp to source image bounds (safety)
                     px_left = max(0, px_left)
@@ -311,9 +328,13 @@ def generate_tiles(
                     out_w = out_right - out_left
                     out_h = out_bottom - out_top
 
+                    # Flip cropped content vertically to match BitmapLayer expectations
+                    # Source: north at top, BitmapLayer: maps image top to maxY (low Z)
+                    flipped = cropped.transpose(Image.Transpose.FLIP_TOP_BOTTOM)
+
                     # Resize cropped content
                     if out_w > 0 and out_h > 0:
-                        resized = cropped.resize(
+                        resized = flipped.resize(
                             (out_w, out_h), Image.Resampling.LANCZOS
                         )
                     else:
@@ -392,12 +413,11 @@ def run(config: dict) -> None:
 
     console.print(f"Source image: {source.size[0]}x{source.size[1]} pixels")
 
-    # Flip source vertically: the stitched image has game Z increasing downward,
-    # but deck.gl Y = -Z means Y increases upward. Flipping aligns the source
-    # with deck.gl's coordinate system so tile (x, y_high) gets content from
-    # the top of the flipped image (which was bottom of original = high Z = low Y).
-    source = source.transpose(Image.Transpose.FLIP_TOP_BOTTOM)
-    console.print("Flipped source for deck.gl Y-axis orientation")
+    # Source orientation: high Z (north) at top (from stitching)
+    # BitmapLayer with bounds [minX, minY, maxX, maxY] maps:
+    #   image top → maxY (high deck.gl Y = low game Z)
+    #   image bottom → minY (low deck.gl Y = high game Z)
+    # We flip each tile crop to match this expectation.
 
     # Blank out excluded zones
     excluded_zones = load_excluded_zones(export_dir)
