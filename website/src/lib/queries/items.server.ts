@@ -36,8 +36,7 @@ export function getItems(): ItemListView[] {
           AND json_each.value != 0
           AND json_each.value != 0.0
           AND json_each.value != 'false'
-      ) as stat_keys,
-      tooltip_html
+      ) as stat_keys
     FROM items
     ORDER BY name`,
   );

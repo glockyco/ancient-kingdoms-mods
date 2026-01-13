@@ -1,5 +1,5 @@
 <script lang="ts" generics="TData">
-  import { onMount } from "svelte";
+  import { onMount, untrack } from "svelte";
   import { page } from "$app/stores";
   import {
     getCoreRowModel,
@@ -51,6 +51,7 @@
     renderCell?: Snippet<[{ cell: Cell<TData, unknown>; row: Row<TData> }]>;
     renderHeader?: Snippet<[{ header: Header<TData, unknown> }]>;
     renderToolbar?: Snippet<[{ table: TanstackTable<TData> }]>;
+    onVisibleRowsChange?: (rows: TData[], adjacentRows: TData[]) => void;
   };
 
   let {
@@ -71,6 +72,7 @@
     renderCell,
     renderHeader,
     renderToolbar,
+    onVisibleRowsChange,
   }: Props = $props();
 
   function getColumnLabel(columnId: string): string {
@@ -594,6 +596,46 @@
         ? allRowModel.rows.slice(0, pageSize)
         : allRowModel.rows,
   );
+
+  // Notify parent when visible rows change (for lazy loading)
+  // Track pagination, filter, and sorting changes to trigger re-fetching
+  $effect(() => {
+    if (!isHydrated || !onVisibleRowsChange) return;
+
+    // These reads establish reactive dependencies - the effect re-runs when they change
+    const currentPageIndex = pagination.pageIndex;
+    void globalFilter;
+    void columnFilters;
+    void sorting;
+
+    // Compute and call without creating additional reactive dependencies
+    untrack(() => {
+      // Use getSortedRowModel to get rows after both filtering AND sorting
+      const allSortedRows = table.getSortedRowModel().rows;
+
+      // Guard against table not being fully initialized yet
+      if (allSortedRows.length === 0 && data.length > 0) return;
+
+      const start = currentPageIndex * pageSize;
+      const end = start + pageSize;
+      const visibleRows = allSortedRows
+        .slice(start, end)
+        .map((r) => r.original);
+
+      // Get adjacent page rows (prev + next page) for prefetching
+      const prevPageStart = Math.max(0, (currentPageIndex - 1) * pageSize);
+      const prevPageEnd = currentPageIndex * pageSize;
+      const nextPageStart = (currentPageIndex + 1) * pageSize;
+      const nextPageEnd = (currentPageIndex + 2) * pageSize;
+
+      const adjacentRows = [
+        ...allSortedRows.slice(prevPageStart, prevPageEnd),
+        ...allSortedRows.slice(nextPageStart, nextPageEnd),
+      ].map((r) => r.original);
+
+      onVisibleRowsChange(visibleRows, adjacentRows);
+    });
+  });
 
   // Target height for placeholder rows: the smaller of total data or page size
   // This maintains consistent table height when filtering or on partial last pages

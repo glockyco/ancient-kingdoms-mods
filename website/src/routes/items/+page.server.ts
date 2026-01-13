@@ -32,7 +32,6 @@ export const load: PageServerLoad = () => {
     stat_count: item.stat_count,
     alchemy_recipe_level_required: item.alchemy_recipe_level_required,
     mount_speed: item.mount_speed,
-    tooltip_html: item.tooltip_html,
   }));
 
   return { items, itemStatKeys, itemClassKeys };

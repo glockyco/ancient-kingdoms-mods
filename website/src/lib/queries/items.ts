@@ -172,3 +172,29 @@ export async function getItems(): Promise<Item[]> {
 export async function getItemById(id: string): Promise<Item | null> {
   return queryOne<Item>("SELECT * FROM items WHERE id = ?", [id]);
 }
+
+/**
+ * Get tooltip HTML for a batch of item IDs.
+ * Returns a Map of item ID to tooltip HTML.
+ */
+export async function getItemTooltips(
+  ids: string[],
+): Promise<Map<string, string>> {
+  if (ids.length === 0) return new Map();
+
+  // Use json_each to safely pass array as a single JSON parameter
+  const rows = await query<{ id: string; tooltip_html: string | null }>(
+    `SELECT id, tooltip_html 
+     FROM items 
+     WHERE id IN (SELECT value FROM json_each(?))`,
+    [JSON.stringify(ids)],
+  );
+
+  const result = new Map<string, string>();
+  for (const row of rows) {
+    if (row.tooltip_html) {
+      result.set(row.id, row.tooltip_html);
+    }
+  }
+  return result;
+}

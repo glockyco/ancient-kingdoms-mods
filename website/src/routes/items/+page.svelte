@@ -17,8 +17,49 @@
   import ClassPills from "$lib/components/ClassPills.svelte";
   import { formatItemType } from "$lib/utils/format";
   import type { ItemListViewClient } from "$lib/types/items";
+  import { getItemTooltips } from "$lib/queries/items";
 
   let { data } = $props();
+
+  // Tooltip state - loaded lazily from client-side DB
+  let tooltips = $state<Map<string, string>>(new Map());
+  let tooltipFetchController: AbortController | null = null;
+
+  async function fetchTooltipsForRows(
+    visibleRows: ItemListViewClient[],
+    adjacentRows: ItemListViewClient[],
+  ) {
+    // Cancel any in-flight fetch
+    tooltipFetchController?.abort();
+    tooltipFetchController = new AbortController();
+    const signal = tooltipFetchController.signal;
+
+    // Combine visible and adjacent rows, filter out already-loaded tooltips
+    const allIds = [...visibleRows, ...adjacentRows].map((r) => r.id);
+    const uniqueIds = [...new Set(allIds)];
+    const missingIds = uniqueIds.filter((id) => !tooltips.has(id));
+
+    if (missingIds.length === 0) return;
+
+    try {
+      const newTooltips = await getItemTooltips(missingIds);
+
+      // Check if aborted before updating state
+      if (signal.aborted) return;
+
+      // Merge new tooltips into existing map
+      tooltips = new Map([...tooltips, ...newTooltips]);
+    } catch {
+      // Query failed (e.g., DB not loaded yet) - items will just not have tooltips
+    }
+  }
+
+  function handleVisibleRowsChange(
+    visibleRows: ItemListViewClient[],
+    adjacentRows: ItemListViewClient[],
+  ) {
+    fetchTooltipsForRows(visibleRows, adjacentRows);
+  }
 
   const PAGE_SIZE = 20;
   // Use "statsPanel" (no "items." prefix) to avoid collision with DataTable's URL namespace
@@ -294,7 +335,7 @@
     <ItemLink
       itemId={row.original.id}
       itemName={row.original.name}
-      tooltipHtml={row.original.tooltip_html}
+      tooltipHtml={tooltips.get(row.original.id)}
       class="whitespace-nowrap"
     />
   {:else if cell.column.id === "item_level"}
@@ -438,5 +479,6 @@
     paginateStaticHtml={true}
     searchPlaceholder="Search items..."
     class="bg-muted/30"
+    onVisibleRowsChange={handleVisibleRowsChange}
   />
 </div>
