@@ -541,7 +541,7 @@ async function queryItemAltarSources(itemId: string): Promise<string[]> {
     `
     SELECT a.id as altar_id
     FROM altars a
-    WHERE a.reward_normal_id = ?
+    WHERE a.reward_common_id = ?
        OR a.reward_magic_id = ?
        OR a.reward_epic_id = ?
        OR a.reward_legendary_id = ?

@@ -38,19 +38,19 @@
   --sidebar-border: oklch(0.929 0.013 255.508);
   --sidebar-ring: oklch(0.704 0.04 256.788);
 
-  /* Item quality colors (0-4) - for backgrounds/badges */
-  --quality-0: oklch(0.55 0.02 264);
-  --quality-1: oklch(0.56 0.12 145);
-  --quality-2: oklch(0.52 0.16 240);
-  --quality-3: oklch(0.55 0.18 310);
-  --quality-4: oklch(0.58 0.15 55);
+  /* Item quality colors: Common, Uncommon, Magic, Epic, Legendary */
+  --quality-common: oklch(0.55 0.02 264);
+  --quality-uncommon: oklch(0.56 0.12 145);
+  --quality-magic: oklch(0.52 0.16 240);
+  --quality-epic: oklch(0.55 0.18 310);
+  --quality-legendary: oklch(0.58 0.15 55);
 
-  /* Item quality text colors (0-4) - darker for light mode backgrounds */
-  --quality-text-0: oklch(0.45 0 0);
-  --quality-text-1: oklch(0.45 0.15 145);
-  --quality-text-2: oklch(0.45 0.18 240);
-  --quality-text-3: oklch(0.5 0.2 310);
-  --quality-text-4: oklch(0.55 0.18 55);
+  /* Item quality text colors - darker for light mode backgrounds */
+  --quality-text-common: oklch(0.45 0 0);
+  --quality-text-uncommon: oklch(0.45 0.15 145);
+  --quality-text-magic: oklch(0.45 0.18 240);
+  --quality-text-epic: oklch(0.5 0.2 310);
+  --quality-text-legendary: oklch(0.55 0.18 55);
 
   /* Monster type colors */
   --monster-regular: oklch(0.6 0.22 25);
@@ -91,12 +91,12 @@
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.551 0.027 264.364);
 
-  /* Item quality text colors (0-4) - brighter for dark mode backgrounds */
-  --quality-text-0: oklch(0.98 0 0);
-  --quality-text-1: oklch(0.72 0.15 145);
-  --quality-text-2: oklch(0.7 0.18 240);
-  --quality-text-3: oklch(0.72 0.2 310);
-  --quality-text-4: oklch(0.75 0.18 55);
+  /* Item quality text colors - brighter for dark mode backgrounds */
+  --quality-text-common: oklch(0.98 0 0);
+  --quality-text-uncommon: oklch(0.72 0.15 145);
+  --quality-text-magic: oklch(0.7 0.18 240);
+  --quality-text-epic: oklch(0.72 0.2 310);
+  --quality-text-legendary: oklch(0.75 0.18 55);
 }
 
 @theme inline {
@@ -135,16 +135,16 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
-  --color-quality-0: var(--quality-0);
-  --color-quality-1: var(--quality-1);
-  --color-quality-2: var(--quality-2);
-  --color-quality-3: var(--quality-3);
-  --color-quality-4: var(--quality-4);
-  --color-quality-text-0: var(--quality-text-0);
-  --color-quality-text-1: var(--quality-text-1);
-  --color-quality-text-2: var(--quality-text-2);
-  --color-quality-text-3: var(--quality-text-3);
-  --color-quality-text-4: var(--quality-text-4);
+  --color-quality-common: var(--quality-common);
+  --color-quality-uncommon: var(--quality-uncommon);
+  --color-quality-magic: var(--quality-magic);
+  --color-quality-epic: var(--quality-epic);
+  --color-quality-legendary: var(--quality-legendary);
+  --color-quality-text-common: var(--quality-text-common);
+  --color-quality-text-uncommon: var(--quality-text-uncommon);
+  --color-quality-text-magic: var(--quality-text-magic);
+  --color-quality-text-epic: var(--quality-text-epic);
+  --color-quality-text-legendary: var(--quality-text-legendary);
   --color-monster-regular: var(--monster-regular);
   --color-monster-elite: var(--monster-elite);
   --color-monster-boss: var(--monster-boss);
@@ -161,20 +161,20 @@
 
 /* Quality text color utilities (must be explicit for Tailwind to generate) */
 @layer utilities {
-  .text-quality-text-0 {
-    color: var(--quality-text-0);
+  .text-quality-text-common {
+    color: var(--quality-text-common);
   }
-  .text-quality-text-1 {
-    color: var(--quality-text-1);
+  .text-quality-text-uncommon {
+    color: var(--quality-text-uncommon);
   }
-  .text-quality-text-2 {
-    color: var(--quality-text-2);
+  .text-quality-text-magic {
+    color: var(--quality-text-magic);
   }
-  .text-quality-text-3 {
-    color: var(--quality-text-3);
+  .text-quality-text-epic {
+    color: var(--quality-text-epic);
   }
-  .text-quality-text-4 {
-    color: var(--quality-text-4);
+  .text-quality-text-legendary {
+    color: var(--quality-text-legendary);
   }
 }
 

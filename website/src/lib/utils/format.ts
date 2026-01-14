@@ -1,3 +1,6 @@
+import { QUALITY_IDS, type AltarRewardTier } from "$lib/constants/quality";
+export type { AltarRewardTier };
+
 /**
  * Format a decimal value as a percentage string (e.g., 0.5 -> "50.0%")
  */
@@ -86,10 +89,11 @@ export function formatSpawnTimeWindow(
  * Use for backgrounds/badges
  */
 export function getQualityColorClass(quality: number): string {
-  if (quality >= 0 && quality <= 4) {
-    return `text-quality-${quality}`;
+  const id = QUALITY_IDS[quality];
+  if (id) {
+    return `text-quality-${id}`;
   }
-  return "text-quality-0";
+  return "text-quality-common";
 }
 
 /**
@@ -97,10 +101,11 @@ export function getQualityColorClass(quality: number): string {
  * Use for text/links
  */
 export function getQualityTextColorClass(quality: number): string {
-  if (quality >= 0 && quality <= 4) {
-    return `text-quality-text-${quality}`;
+  const id = QUALITY_IDS[quality];
+  if (id) {
+    return `text-quality-text-${id}`;
   }
-  return "text-quality-text-0";
+  return "text-quality-text-common";
 }
 
 /**
@@ -144,18 +149,13 @@ export function toRomanNumeral(tier: number): string {
 }
 
 /**
- * Reward tier type for altar rewards.
- */
-export type AltarRewardTier = "normal" | "magic" | "epic" | "legendary";
-
-/**
  * Format altar reward tier as level + veteran requirement string.
  * Effective level = player level + (veteran points / 20)
- * Thresholds: <35 normal, 35-44 magic, 45-54 epic, 55+ legendary
+ * Thresholds: <35 common, 35-44 magic, 45-54 epic, 55+ legendary
  */
 export function formatAltarRewardTier(tier: AltarRewardTier): string {
   switch (tier) {
-    case "normal":
+    case "common":
       return "Lv 30-34";
     case "magic":
       return "Lv 35-44";

@@ -460,11 +460,11 @@ def _denormalize_rewarded_by_altars(conn: sqlite3.Connection) -> dict[str, list[
     cursor = conn.cursor()
     cursor.execute("""
         SELECT a.id, a.name, a.type, a.zone_id, z.name,
-               a.reward_normal_id, a.reward_magic_id, a.reward_epic_id, a.reward_legendary_id,
+               a.reward_common_id, a.reward_magic_id, a.reward_epic_id, a.reward_legendary_id,
                a.waves
         FROM altars a
         LEFT JOIN zones z ON a.zone_id = z.id
-        WHERE a.reward_normal_id IS NOT NULL OR a.reward_magic_id IS NOT NULL
+        WHERE a.reward_common_id IS NOT NULL OR a.reward_magic_id IS NOT NULL
            OR a.reward_epic_id IS NOT NULL OR a.reward_legendary_id IS NOT NULL
     """)
 
@@ -483,7 +483,7 @@ def _denormalize_rewarded_by_altars(conn: sqlite3.Connection) -> dict[str, list[
         altar_type,
         zone_id,
         zone_name,
-        normal_id,
+        common_id,
         magic_id,
         epic_id,
         legendary_id,
@@ -508,7 +508,7 @@ def _denormalize_rewarded_by_altars(conn: sqlite3.Connection) -> dict[str, list[
                         for drop in boss_drops:
                             if (
                                 drop.get("is_altar_reward")
-                                and drop.get("item_id") == normal_id
+                                and drop.get("item_id") == common_id
                             ):
                                 drop_rate = drop.get("rate", 1.0)
                                 break
@@ -523,14 +523,14 @@ def _denormalize_rewarded_by_altars(conn: sqlite3.Connection) -> dict[str, list[
             "drop_rate": drop_rate,
         }
 
-        # Normal tier (effective level < 35)
-        if normal_id:
-            if normal_id not in rewarded_by_altars:
-                rewarded_by_altars[normal_id] = []
-            rewarded_by_altars[normal_id].append(
+        # Common tier (effective level < 35)
+        if common_id:
+            if common_id not in rewarded_by_altars:
+                rewarded_by_altars[common_id] = []
+            rewarded_by_altars[common_id].append(
                 {
                     **base_info,
-                    "reward_tier": "normal",
+                    "reward_tier": "common",
                     "min_effective_level": 0,
                 }
             )

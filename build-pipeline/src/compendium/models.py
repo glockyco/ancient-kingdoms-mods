@@ -173,7 +173,7 @@ class ItemData(BaseModel):
     id: str
     name: str
     item_type: str
-    quality: int  # 0-5 (common to legendary)
+    quality: int  # 0-4 (Common, Uncommon, Magic, Epic, Legendary)
     level_required: int = 0
     class_required: list[str] = []
     faction_required_to_buy: int = 0
@@ -951,8 +951,8 @@ class AltarData(BaseModel):
     init_event_message: str = ""
     radius_event: int = 0
     uses_veteran_scaling: bool = False
-    reward_normal_id: str | None = None
-    reward_normal_name: str | None = None
+    reward_common_id: str | None = None
+    reward_common_name: str | None = None
     reward_magic_id: str | None = None
     reward_magic_name: str | None = None
     reward_epic_id: str | None = None

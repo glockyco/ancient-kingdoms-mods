@@ -730,7 +730,7 @@ interface AltarRow {
   required_activation_item_name: string | null;
   radius_event: number;
   total_waves: number;
-  reward_normal_name: string | null;
+  reward_common_name: string | null;
   reward_magic_name: string | null;
   reward_epic_name: string | null;
   reward_legendary_name: string | null;
@@ -754,7 +754,7 @@ function loadAltarsServer(db: Database.Database): AltarMapEntity[] {
       a.required_activation_item_name,
       a.radius_event,
       a.total_waves,
-      a.reward_normal_name,
+      a.reward_common_name,
       a.reward_magic_name,
       a.reward_epic_name,
       a.reward_legendary_name,
@@ -788,7 +788,7 @@ function loadAltarsServer(db: Database.Database): AltarMapEntity[] {
       activationItemName: r.required_activation_item_name,
       radiusEvent: r.radius_event,
       totalWaves: r.total_waves,
-      rewardNormalName: r.reward_normal_name,
+      rewardCommonName: r.reward_common_name,
       rewardMagicName: r.reward_magic_name,
       rewardEpicName: r.reward_epic_name,
       rewardLegendaryName: r.reward_legendary_name,

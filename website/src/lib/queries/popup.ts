@@ -43,7 +43,7 @@ export interface PopupItemSoldInfo {
  * Altar reward info for popup
  */
 export interface PopupAltarReward {
-  tier: "normal" | "magic" | "epic" | "legendary";
+  tier: "common" | "magic" | "epic" | "legendary";
   minEffectiveLevel: number;
   itemId: string;
   itemName: string;
@@ -493,8 +493,8 @@ export async function loadAltarPopupDetails(
   altarId: string,
 ): Promise<AltarPopupDetails> {
   const [altar] = await query<{
-    reward_normal_id: string | null;
-    reward_normal_name: string | null;
+    reward_common_id: string | null;
+    reward_common_name: string | null;
     reward_magic_id: string | null;
     reward_magic_name: string | null;
     reward_epic_id: string | null;
@@ -505,7 +505,7 @@ export async function loadAltarPopupDetails(
   }>(
     `
     SELECT
-      reward_normal_id, reward_normal_name,
+      reward_common_id, reward_common_name,
       reward_magic_id, reward_magic_name,
       reward_epic_id, reward_epic_name,
       reward_legendary_id, reward_legendary_name,
@@ -523,7 +523,7 @@ export async function loadAltarPopupDetails(
   // Collect altar reward item IDs to exclude from boss drops
   const altarRewardIds = new Set<string>(
     [
-      altar.reward_normal_id,
+      altar.reward_common_id,
       altar.reward_magic_id,
       altar.reward_epic_id,
       altar.reward_legendary_id,
@@ -636,16 +636,16 @@ export async function loadAltarPopupDetails(
 
   // Add rewards in order with level thresholds
   const tiers: Array<{
-    tier: "normal" | "magic" | "epic" | "legendary";
+    tier: "common" | "magic" | "epic" | "legendary";
     minLevel: number;
     idKey: keyof typeof altar;
     nameKey: keyof typeof altar;
   }> = [
     {
-      tier: "normal",
+      tier: "common",
       minLevel: 0,
-      idKey: "reward_normal_id",
-      nameKey: "reward_normal_name",
+      idKey: "reward_common_id",
+      nameKey: "reward_common_name",
     },
     {
       tier: "magic",
@@ -800,7 +800,7 @@ export interface ItemPopupAltarSource {
   altarName: string;
   altarType: string;
   /** Tier for tier rewards, null for boss bestiary drops */
-  tier: "normal" | "magic" | "epic" | "legendary" | null;
+  tier: "common" | "magic" | "epic" | "legendary" | null;
   dropRate: number;
 }
 
@@ -1017,7 +1017,7 @@ export async function loadItemPopupDetails(
     altar_id: string;
     altar_name: string;
     altar_type: string;
-    tier: "normal" | "magic" | "epic" | "legendary";
+    tier: "common" | "magic" | "epic" | "legendary";
     drop_rate: number | null;
   }
   const altarSourceRows = await query<AltarSourceRow>(
@@ -1027,7 +1027,7 @@ export async function loadItemPopupDetails(
       a.name as altar_name,
       a.type as altar_type,
       CASE
-        WHEN a.reward_normal_id = ? THEN 'normal'
+        WHEN a.reward_common_id = ? THEN 'common'
         WHEN a.reward_magic_id = ? THEN 'magic'
         WHEN a.reward_epic_id = ? THEN 'epic'
         WHEN a.reward_legendary_id = ? THEN 'legendary'
@@ -1041,7 +1041,7 @@ export async function loadItemPopupDetails(
         WHERE ms.source_altar_id = a.id AND ms.spawn_type = 'altar'
       ) as drop_rate
     FROM altars a
-    WHERE a.reward_normal_id = ?
+    WHERE a.reward_common_id = ?
        OR a.reward_magic_id = ?
        OR a.reward_epic_id = ?
        OR a.reward_legendary_id = ?

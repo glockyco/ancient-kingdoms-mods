@@ -179,7 +179,7 @@ export interface AltarMapEntity extends MapEntity {
   radiusEvent: number;
   // Popup fields
   totalWaves: number;
-  rewardNormalName: string | null;
+  rewardCommonName: string | null;
   rewardMagicName: string | null;
   rewardEpicName: string | null;
   rewardLegendaryName: string | null;

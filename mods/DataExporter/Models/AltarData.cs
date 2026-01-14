@@ -44,8 +44,8 @@ public class AltarData
     public bool uses_veteran_scaling { get; set; }
 
     // Rewards (for forgotten altars only)
-    public string reward_normal_id { get; set; }
-    public string reward_normal_name { get; set; }
+    public string reward_common_id { get; set; }
+    public string reward_common_name { get; set; }
     public string reward_magic_id { get; set; }
     public string reward_magic_name { get; set; }
     public string reward_epic_id { get; set; }

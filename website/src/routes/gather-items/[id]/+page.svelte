@@ -37,8 +37,7 @@
     Resource: "bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200",
   };
 
-  // Quality names for pickaxe
-  const qualityNames = ["Common", "Uncommon", "Rare", "Epic", "Legendary"];
+  import { QUALITY_NAMES } from "$lib/constants/quality";
 
   // Get type string from resource flags
   function getResourceType(resource: {
@@ -370,7 +369,7 @@
                 class="flex-1 h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
               />
               <span class="font-mono w-24 text-right">
-                {qualityNames[pickaxeQuality]}
+                {QUALITY_NAMES[pickaxeQuality]}
               </span>
             </div>
           {/if}

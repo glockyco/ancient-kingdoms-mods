@@ -838,7 +838,7 @@ async function searchItems(
       -- Altar positions (items that are tier rewards)
       SELECT item_id, a.position_x as x, a.position_y as y
       FROM (
-        SELECT reward_normal_id as item_id, id as altar_id FROM altars WHERE reward_normal_id IS NOT NULL
+        SELECT reward_common_id as item_id, id as altar_id FROM altars WHERE reward_common_id IS NOT NULL
         UNION ALL
         SELECT reward_magic_id, id FROM altars WHERE reward_magic_id IS NOT NULL
         UNION ALL

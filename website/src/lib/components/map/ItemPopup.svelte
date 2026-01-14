@@ -254,7 +254,7 @@
                 <span class="truncate">{altar.altarName}</span>
               </MapEntityLink>
               <div class="text-xs text-muted-foreground">
-                {#if altar.tier === "normal"}
+                {#if altar.tier === "common"}
                   Lv 30-34
                 {:else if altar.tier === "magic"}
                   Lv 35-44

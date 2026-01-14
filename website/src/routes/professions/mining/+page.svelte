@@ -11,8 +11,7 @@
   let skillLevel = $state(0);
   let pickaxeQuality = $state(0);
 
-  // Quality names for pickaxe
-  const qualityNames = ["Common", "Uncommon", "Rare", "Epic", "Legendary"];
+  import { QUALITY_NAMES } from "$lib/constants/quality";
 
   // Roman numerals for level display
   const romanNumerals = ["I", "II", "III", "IV", "V"];
@@ -161,7 +160,7 @@
           bind:value={pickaxeQuality}
           class="w-32 h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
         />
-        <span class="font-mono w-24">{qualityNames[pickaxeQuality]}</span>
+        <span class="font-mono w-24">{QUALITY_NAMES[pickaxeQuality]}</span>
       </div>
       <div class="flex items-center gap-2 text-muted-foreground">
         <span>Skill gain chance:</span>

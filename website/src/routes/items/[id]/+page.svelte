@@ -14,15 +14,9 @@
 
   let { data }: { data: PageData } = $props();
 
-  const qualityColors = [
-    "bg-quality-0",
-    "bg-quality-1",
-    "bg-quality-2",
-    "bg-quality-3",
-    "bg-quality-4",
-  ];
+  import { QUALITY_NAMES, QUALITY_IDS } from "$lib/constants/quality";
 
-  const qualityNames = ["Common", "Uncommon", "Rare", "Epic", "Legendary"];
+  const qualityColors = QUALITY_IDS.map((id) => `bg-quality-${id}`);
 
   // Consistent styling patterns - use these throughout the page
   const styles = {
@@ -352,7 +346,7 @@
               data.item.quality
             ]}"
           >
-            {qualityNames[data.item.quality]}
+            {QUALITY_NAMES[data.item.quality]}
           </span>
 
           {#if (data.item.item_type === "potion" && !data.item.potion_buff_allow_dungeon) || (data.item.item_type === "food" && !data.item.food_buff_allow_dungeon) || (data.item.item_type === "scroll" && !data.item.scroll_skill_allow_dungeon) || (data.item.item_type === "relic" && !data.item.relic_buff_allow_dungeon) || data.item.mount_speed > 0}
@@ -722,7 +716,7 @@
                 <div class={styles.value}>
                   <ul class="list-disc list-inside space-y-0.5">
                     <li>Equipment items only</li>
-                    <li>Uncommon quality or higher</li>
+                    <li>Magic quality or higher</li>
                   </ul>
                 </div>
               </div>
@@ -1621,7 +1615,7 @@
                       >
                     </div>
                   {/if}
-                  {#if altar.reward_tier === "normal"}
+                  {#if altar.reward_tier === "common"}
                     <div>Required Level: 30-34</div>
                   {:else if altar.reward_tier === "magic"}
                     <div>Required Level: 35-44</div>

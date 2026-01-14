@@ -14,8 +14,8 @@ export interface Altar {
   init_event_message: string | null;
   radius_event: number;
   uses_veteran_scaling: boolean;
-  reward_normal_id: string | null;
-  reward_normal_name: string | null;
+  reward_common_id: string | null;
+  reward_common_name: string | null;
   reward_magic_id: string | null;
   reward_magic_name: string | null;
   reward_epic_id: string | null;

@@ -66,7 +66,7 @@ export const load: PageServerLoad = ({ params }): AltarDetailPageData => {
 
   // Build rewards array with tooltip lookups (for forgotten altars)
   const rewards: AltarReward[] = [];
-  const rewardTiers = ["normal", "magic", "epic", "legendary"] as const;
+  const rewardTiers = ["common", "magic", "epic", "legendary"] as const;
 
   // Extract boss monster IDs from final wave for drop rate lookup
   const bossMonsterDrops: Map<string, number> = new Map();

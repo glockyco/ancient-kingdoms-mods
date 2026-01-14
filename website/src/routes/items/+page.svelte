@@ -118,14 +118,10 @@
   // Precomputed at build time - no JSON parsing needed on client
   const { itemStatKeys, itemClassKeys } = data;
 
-  // Quality display names and colors
-  const qualities = [
-    { name: "Common", value: 0 },
-    { name: "Uncommon", value: 1 },
-    { name: "Rare", value: 2 },
-    { name: "Epic", value: 3 },
-    { name: "Legendary", value: 4 },
-  ];
+  import { QUALITY_NAMES, QUALITY_IDS } from "$lib/constants/quality";
+
+  // Quality display names and colors (derive from central constant)
+  const qualities = QUALITY_NAMES.map((name, value) => ({ name, value }));
 
   // Generate notes for an item based on its type
   function getNotes(item: ItemListViewClient): string {
@@ -327,7 +323,9 @@
   {#if cell.column.id === "quality"}
     {@const q = row.original.quality}
     <span
-      class="px-2 py-0.5 rounded text-xs font-medium text-white bg-quality-{q}"
+      class="px-2 py-0.5 rounded text-xs font-medium text-white bg-quality-{QUALITY_IDS[
+        q
+      ]}"
     >
       {qualities[q]?.name ?? `Q${q}`}
     </span>

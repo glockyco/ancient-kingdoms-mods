@@ -26,28 +26,28 @@
       <Card.Content class="space-y-6">
         <div class="grid grid-cols-5 gap-4">
           <div class="space-y-2">
-            <div class="h-20 rounded-lg bg-quality-0 border"></div>
-            <p class="text-sm font-medium text-center">Quality 0</p>
+            <div class="h-20 rounded-lg bg-quality-common border"></div>
+            <p class="text-sm font-medium text-center">Common</p>
             <p class="text-xs text-muted-foreground text-center">Gray</p>
           </div>
           <div class="space-y-2">
-            <div class="h-20 rounded-lg bg-quality-1 border"></div>
-            <p class="text-sm font-medium text-center">Quality 1</p>
+            <div class="h-20 rounded-lg bg-quality-uncommon border"></div>
+            <p class="text-sm font-medium text-center">Uncommon</p>
             <p class="text-xs text-muted-foreground text-center">Green</p>
           </div>
           <div class="space-y-2">
-            <div class="h-20 rounded-lg bg-quality-2 border"></div>
-            <p class="text-sm font-medium text-center">Quality 2</p>
+            <div class="h-20 rounded-lg bg-quality-magic border"></div>
+            <p class="text-sm font-medium text-center">Magic</p>
             <p class="text-xs text-muted-foreground text-center">Blue</p>
           </div>
           <div class="space-y-2">
-            <div class="h-20 rounded-lg bg-quality-3 border"></div>
-            <p class="text-sm font-medium text-center">Quality 3</p>
+            <div class="h-20 rounded-lg bg-quality-epic border"></div>
+            <p class="text-sm font-medium text-center">Epic</p>
             <p class="text-xs text-muted-foreground text-center">Purple</p>
           </div>
           <div class="space-y-2">
-            <div class="h-20 rounded-lg bg-quality-4 border"></div>
-            <p class="text-sm font-medium text-center">Quality 4</p>
+            <div class="h-20 rounded-lg bg-quality-legendary border"></div>
+            <p class="text-sm font-medium text-center">Legendary</p>
             <p class="text-xs text-muted-foreground text-center">Orange</p>
           </div>
         </div>
@@ -55,11 +55,11 @@
         <div class="space-y-2">
           <p class="font-medium">Text Colors:</p>
           <div class="flex flex-wrap gap-4">
-            <span class="text-quality-0 font-semibold">Quality 0</span>
-            <span class="text-quality-1 font-semibold">Quality 1</span>
-            <span class="text-quality-2 font-semibold">Quality 2</span>
-            <span class="text-quality-3 font-semibold">Quality 3</span>
-            <span class="text-quality-4 font-semibold">Quality 4</span>
+            <span class="text-quality-common font-semibold">Common</span>
+            <span class="text-quality-uncommon font-semibold">Uncommon</span>
+            <span class="text-quality-magic font-semibold">Magic</span>
+            <span class="text-quality-epic font-semibold">Epic</span>
+            <span class="text-quality-legendary font-semibold">Legendary</span>
           </div>
         </div>
       </Card.Content>
@@ -134,12 +134,12 @@
       </Card.Header>
       <Card.Content>
         <div
-          class="inline-block p-4 bg-background border-2 border-quality-3 rounded-lg"
+          class="inline-block p-4 bg-background border-2 border-quality-epic rounded-lg"
         >
           <div class="flex items-center gap-3">
             <div class="w-12 h-12 bg-muted rounded"></div>
             <div>
-              <p class="font-semibold text-quality-3">Dragon Sword</p>
+              <p class="font-semibold text-quality-epic">Dragon Sword</p>
               <p class="text-sm text-muted-foreground">
                 Level 45 • Epic Quality
               </p>

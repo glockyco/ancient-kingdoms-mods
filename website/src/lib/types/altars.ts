@@ -20,7 +20,7 @@ export interface AltarWave {
 
 // Reward tier info for display
 export interface AltarReward {
-  tier: "normal" | "magic" | "epic" | "legendary";
+  tier: "common" | "magic" | "epic" | "legendary";
   itemId: string | null;
   itemName: string | null;
   quality: number;

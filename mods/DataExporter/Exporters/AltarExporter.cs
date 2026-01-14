@@ -95,8 +95,8 @@ public class AltarExporter : BaseExporter
         // Export rewards
         if (defaultEvent.normalReward != null)
         {
-            altarData.reward_normal_id = SanitizeId(defaultEvent.normalReward.name);
-            altarData.reward_normal_name = defaultEvent.normalReward.nameItem;
+            altarData.reward_common_id = SanitizeId(defaultEvent.normalReward.name);
+            altarData.reward_common_name = defaultEvent.normalReward.nameItem;
         }
         if (defaultEvent.magicReward != null)
         {

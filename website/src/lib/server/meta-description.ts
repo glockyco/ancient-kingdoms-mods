@@ -12,7 +12,7 @@ function truncate(text: string, max = MAX_LENGTH): string {
   return text.slice(0, max - 3).trim() + "...";
 }
 
-const QUALITY_NAMES = ["Common", "Uncommon", "Rare", "Epic", "Legendary"];
+import { QUALITY_NAMES } from "$lib/constants/quality";
 
 // =============================================================================
 // Items
