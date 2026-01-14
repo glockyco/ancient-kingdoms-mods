@@ -11,8 +11,51 @@
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import ExternalLink from "@lucide/svelte/icons/external-link";
+  import { getItemTooltips } from "$lib/queries/items";
 
   let { data } = $props();
+
+  // Tooltip state - loaded lazily from client-side DB
+  let tooltips = $state<Map<string, string>>(new Map());
+  let tooltipFetchController: AbortController | null = null;
+
+  async function fetchTooltipsForRows(
+    visibleRows: RecipeRow[],
+    adjacentRows: RecipeRow[],
+  ) {
+    // Cancel any in-flight fetch
+    tooltipFetchController?.abort();
+    tooltipFetchController = new AbortController();
+    const signal = tooltipFetchController.signal;
+
+    // Combine visible and adjacent rows, filter out already-loaded tooltips
+    const allIds = [...visibleRows, ...adjacentRows].map(
+      (r) => r.result_item_id,
+    );
+    const uniqueIds = [...new Set(allIds)];
+    const missingIds = uniqueIds.filter((id) => !tooltips.has(id));
+
+    if (missingIds.length === 0) return;
+
+    try {
+      const newTooltips = await getItemTooltips(missingIds);
+
+      // Check if aborted before updating state
+      if (signal.aborted) return;
+
+      // Merge new tooltips into existing map
+      tooltips = new Map([...tooltips, ...newTooltips]);
+    } catch {
+      // Query failed (e.g., DB not loaded yet) - items will just not have tooltips
+    }
+  }
+
+  function handleVisibleRowsChange(
+    visibleRows: RecipeRow[],
+    adjacentRows: RecipeRow[],
+  ) {
+    fetchTooltipsForRows(visibleRows, adjacentRows);
+  }
 
   const PAGE_SIZE = 20;
 
@@ -120,7 +163,7 @@
     <ItemLink
       itemId={row.original.result_item_id}
       itemName={row.original.result_item_name}
-      tooltipHtml={row.original.result_tooltip_html}
+      tooltipHtml={tooltips.get(row.original.result_item_id) ?? null}
     />
     {#if row.original.result_amount > 1}
       <span class="text-muted-foreground ml-1"
@@ -226,5 +269,6 @@
     paginateStaticHtml={true}
     searchPlaceholder="Search recipes..."
     class="bg-muted/30"
+    onVisibleRowsChange={handleVisibleRowsChange}
   />
 </div>

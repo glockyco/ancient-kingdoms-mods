@@ -13,7 +13,6 @@ interface RawRecipe {
   id: string;
   result_item_id: string;
   result_item_name: string;
-  result_tooltip_html: string | null;
   result_quality: number;
   result_amount: number;
   materials: string;
@@ -38,7 +37,6 @@ export const load: PageServerLoad = (): RecipesPageData => {
           ar.id,
           ar.result_item_id,
           i.name as result_item_name,
-          i.tooltip_html as result_tooltip_html,
           i.quality as result_quality,
           1 as result_amount,
           ar.materials,
@@ -54,7 +52,6 @@ export const load: PageServerLoad = (): RecipesPageData => {
           cr.id,
           cr.result_item_id,
           i.name as result_item_name,
-          i.tooltip_html as result_tooltip_html,
           i.quality as result_quality,
           cr.result_amount,
           cr.materials,
@@ -117,7 +114,6 @@ export const load: PageServerLoad = (): RecipesPageData => {
       id: raw.id,
       result_item_id: raw.result_item_id,
       result_item_name: raw.result_item_name,
-      result_tooltip_html: raw.result_tooltip_html,
       result_quality: raw.result_quality,
       result_amount: raw.result_amount,
       ingredients,

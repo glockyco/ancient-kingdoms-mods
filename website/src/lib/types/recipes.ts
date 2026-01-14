@@ -14,7 +14,6 @@ export interface RecipeListView {
   id: string;
   result_item_id: string;
   result_item_name: string;
-  result_tooltip_html: string | null;
   result_quality: number;
   result_amount: number;
   ingredients: RecipeIngredient[];
