@@ -150,6 +150,8 @@ export const ARC_COLORS = {
  * Selection highlight colors
  */
 export const HIGHLIGHT_COLORS = {
+  // Dark outline for all rings (improves visibility on bright backgrounds like snow)
+  ringOutline: [0, 0, 0, 255] as [number, number, number, number], // full opacity black
   // Group highlight (all spawns of the same entity type)
   ring: [255, 255, 255, 255] as [number, number, number, number], // white
   fill: [255, 255, 255, 40] as [number, number, number, number], // white with low alpha

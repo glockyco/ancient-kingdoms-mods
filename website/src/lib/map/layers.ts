@@ -943,6 +943,27 @@ export function createLayers(
     return iconSize / 2;
   };
 
+  // Outline layer for selection highlight (dark shadow for visibility on bright backgrounds)
+  const selectionHighlightOutlineLayer = new ScatterplotLayer({
+    id: "selection-highlight-outline",
+    data: selectionData,
+    visible: selectionData.length > 0,
+    getPosition: (d: AnyMapEntity) => d.position,
+    getFillColor: [0, 0, 0, 0],
+    getLineColor: HIGHLIGHT_COLORS.ringOutline,
+    getRadius: getRingRadius,
+    radiusUnits: "pixels",
+    radiusMinPixels: 7,
+    radiusMaxPixels: 48,
+    stroked: true,
+    lineWidthUnits: "pixels",
+    getLineWidth: 5.5,
+    pickable: false,
+    updateTriggers: {
+      getRadius: selectionData,
+    },
+  });
+
   const selectionHighlightLayer = new ScatterplotLayer({
     id: "selection-highlight",
     data: selectionData,
@@ -968,6 +989,28 @@ export function createLayers(
     selectedEntity?.position !== null && selectedEntity?.position !== undefined
       ? [selectedEntity]
       : [];
+
+  // Outline layer for primary selection highlight
+  const primarySelectionHighlightOutlineLayer = new ScatterplotLayer({
+    id: "primary-selection-highlight-outline",
+    data: primarySelectionData,
+    visible: primarySelectionData.length > 0,
+    getPosition: (d: AnyMapEntity) => d.position,
+    getFillColor: [0, 0, 0, 0],
+    getLineColor: HIGHLIGHT_COLORS.ringOutline,
+    getRadius: (d: AnyMapEntity) => getRingRadius(d) + 4,
+    radiusUnits: "pixels",
+    radiusMinPixels: 11,
+    radiusMaxPixels: 52,
+    stroked: true,
+    lineWidthUnits: "pixels",
+    getLineWidth: 5.5,
+    pickable: false,
+    updateTriggers: {
+      getRadius: selectedEntity,
+    },
+  });
+
   const primarySelectionHighlightLayer = new ScatterplotLayer({
     id: "primary-selection-highlight",
     data: primarySelectionData,
@@ -1017,6 +1060,28 @@ export function createLayers(
 
   // Related entities highlight layer (orange color for blocker spawns)
   // Data is pre-computed via $derived in the page component
+
+  // Outline layer for related highlight
+  const relatedHighlightOutlineLayer = new ScatterplotLayer({
+    id: "related-highlight-outline",
+    data: relatedEntities,
+    visible: relatedEntities.length > 0,
+    getPosition: (d: AnyMapEntity) => d.position,
+    getFillColor: [0, 0, 0, 0],
+    getLineColor: HIGHLIGHT_COLORS.ringOutline,
+    getRadius: getRingRadius,
+    radiusUnits: "pixels",
+    radiusMinPixels: 7,
+    radiusMaxPixels: 48,
+    stroked: true,
+    lineWidthUnits: "pixels",
+    getLineWidth: 5.5,
+    pickable: false,
+    updateTriggers: {
+      getRadius: relatedEntities,
+    },
+  });
+
   const relatedHighlightLayer = new ScatterplotLayer({
     id: "related-highlight",
     data: relatedEntities,
@@ -1055,6 +1120,28 @@ export function createLayers(
   });
 
   // Hover preview highlight layer (dimmer than selection, renders below)
+
+  // Outline layer for hover highlight
+  const hoverHighlightOutlineLayer = new ScatterplotLayer({
+    id: "hover-highlight-outline",
+    data: hoverSelectionData,
+    visible: hoverSelectionData.length > 0,
+    getPosition: (d: AnyMapEntity) => d.position,
+    getFillColor: [0, 0, 0, 0],
+    getLineColor: HIGHLIGHT_COLORS.ringOutline,
+    getRadius: getRingRadius,
+    radiusUnits: "pixels",
+    radiusMinPixels: 7,
+    radiusMaxPixels: 48,
+    stroked: true,
+    lineWidthUnits: "pixels",
+    getLineWidth: 5.5,
+    pickable: false,
+    updateTriggers: {
+      getRadius: hoverSelectionData,
+    },
+  });
+
   const hoverHighlightLayer = new ScatterplotLayer({
     id: "hover-highlight",
     data: hoverSelectionData,
@@ -1124,9 +1211,13 @@ export function createLayers(
     altarsLayer,
     elitesLayer,
     bossesLayer,
+    relatedHighlightOutlineLayer,
     relatedHighlightLayer,
+    selectionHighlightOutlineLayer,
     selectionHighlightLayer,
+    primarySelectionHighlightOutlineLayer,
     primarySelectionHighlightLayer,
+    hoverHighlightOutlineLayer,
     hoverHighlightLayer,
     zoneHoverHighlightLayer,
   ];
