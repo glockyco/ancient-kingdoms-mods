@@ -21,8 +21,9 @@ STEAM_DIR="$REPO_DIR/.steam-download"
 OUTPUT_DIR="$REPO_DIR/server-scripts"
 VERSION="$1"
 
-# Required for ilspycmd on macOS with homebrew dotnet
-export DOTNET_ROOT="${DOTNET_ROOT:-/opt/homebrew/opt/dotnet@8/libexec}"
+# ilspycmd requires dotnet 8 (not compatible with dotnet 10+)
+DOTNET8="/opt/homebrew/opt/dotnet@8/libexec/dotnet"
+ILSPYCMD_DLL="$HOME/.dotnet/tools/.store/ilspycmd/9.1.0.7988/ilspycmd/9.1.0.7988/tools/net8.0/any/ilspycmd.dll"
 
 if [ -z "$STEAM_USER" ]; then
   echo "Error: STEAM_USER environment variable not set"
@@ -56,7 +57,7 @@ fi
 
 echo "Decompiling: $DLL"
 rm -rf "$OUTPUT_DIR"
-~/.dotnet/tools/ilspycmd -p -o "$OUTPUT_DIR" "$DLL"
+"$DOTNET8" "$ILSPYCMD_DLL" -p -o "$OUTPUT_DIR" "$DLL"
 
 # Create versioned backup
 BACKUP_DIR="$REPO_DIR/server-scripts-$VERSION"
