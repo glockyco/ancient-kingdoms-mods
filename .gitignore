@@ -53,3 +53,10 @@ exported-data/*
 
 # Node.js (root workspace)
 node_modules/
+
+# Server scripts (decompiled, for reference only)
+server-scripts/
+server-scripts-*/
+
+# Steam download cache
+.steam-download/
