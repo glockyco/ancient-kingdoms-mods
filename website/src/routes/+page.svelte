@@ -42,7 +42,7 @@
       Your guide to items, monsters, zones, quests, and more
     </p>
     <p class="text-sm text-muted-foreground">
-      Updated for v0.9.4.1 (2026-01-12)
+      Updated for v0.9.5.2 (2026-01-20)
     </p>
   </div>
 
