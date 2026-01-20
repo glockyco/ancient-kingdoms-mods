@@ -56,7 +56,8 @@
 
 <svelte:head>
   <title
-    >{data.recipe.result_item_name} Recipe - Ancient Kingdoms Compendium</title
+    >{data.recipe.result_item_name}
+    {data.recipe.type} Recipe - Ancient Kingdoms Compendium</title
   >
   <meta name="description" content={data.description} />
 </svelte:head>
@@ -65,7 +66,7 @@
   <Breadcrumb
     items={[
       { label: "Home", href: "/" },
-      { label: "Recipes", href: "/recipes" },
+      { label: "Crafting Recipes", href: "/recipes" },
       { label: data.recipe.result_item_name },
     ]}
   />

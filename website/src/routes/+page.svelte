@@ -316,9 +316,11 @@
                 <FlaskConical class="h-6 w-6 text-purple-500" />
               </div>
               <div>
-                <Card.Title class="group-hover:underline">Recipes</Card.Title>
+                <Card.Title class="group-hover:underline"
+                  >Crafting Recipes</Card.Title
+                >
                 <Card.Description
-                  >Alchemy, cooking, and crafting recipes</Card.Description
+                  >Alchemy, cooking, and other recipes</Card.Description
                 >
               </div>
             </div>

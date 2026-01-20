@@ -236,7 +236,7 @@
 {/snippet}
 
 <svelte:head>
-  <title>Recipes - Ancient Kingdoms Compendium</title>
+  <title>Crafting Recipes - Ancient Kingdoms Compendium</title>
   <meta
     name="description"
     content="Crafting, alchemy, and cooking recipes for Ancient Kingdoms - ingredients and skill requirements."
@@ -244,9 +244,11 @@
 </svelte:head>
 
 <div class="container mx-auto p-8 space-y-6">
-  <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Recipes" }]} />
+  <Breadcrumb
+    items={[{ label: "Home", href: "/" }, { label: "Crafting Recipes" }]}
+  />
 
-  <h1 class="text-3xl font-bold">Recipes</h1>
+  <h1 class="text-3xl font-bold">Crafting Recipes</h1>
 
   <DataTable
     data={dataWithVirtual}
