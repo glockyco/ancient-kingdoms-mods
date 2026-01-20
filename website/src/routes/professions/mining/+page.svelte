@@ -29,13 +29,13 @@
       case 0:
         return Math.min(100, (0.8 + pickaxeQuality + skill) * 100);
       case 1:
-        return Math.min(100, (0.1 + pickaxeQuality * 0.2 + skill) * 100);
+        return Math.min(100, (0.3 + pickaxeQuality * 0.2 + skill) * 100);
       case 2:
         return Math.min(100, (pickaxeQuality * 0.15 + skill * 0.6) * 100);
       case 3:
-        return Math.min(100, (pickaxeQuality * 0.1 + skill * 0.4) * 100);
+        return Math.min(100, (pickaxeQuality * 0.1 + skill * 0.5) * 100);
       default:
-        return Math.min(100, (pickaxeQuality * 0.05 + skill * 0.2) * 100);
+        return Math.min(100, (pickaxeQuality * 0.05 + skill * 0.4) * 100);
     }
   }
 
@@ -192,7 +192,7 @@
           </div>
           <div class="p-3 border-t">
             {#if effortless}
-              <span class="text-muted-foreground italic">Effortless</span>
+              <span class="text-muted-foreground">—</span>
             {:else if successChance > 0}
               <span class="font-mono"
                 >{minGain.toFixed(2)}% – {maxGain.toFixed(2)}%</span
@@ -244,7 +244,7 @@
           </div>
           <div class="p-3 border-t">
             {#if effortless}
-              <span class="text-muted-foreground italic">Effortless</span>
+              <span class="text-muted-foreground">—</span>
             {:else if successChance > 0}
               <span class="font-mono">
                 {minGain.toFixed(2)}% – {maxGain.toFixed(2)}%

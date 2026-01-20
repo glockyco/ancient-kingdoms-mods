@@ -411,7 +411,7 @@
             <div class="text-sm text-muted-foreground">Skill Gain Amount</div>
             <div class="font-mono">
               {#if effortless}
-                <span class="text-muted-foreground italic">Effortless</span>
+                <span class="text-muted-foreground">—</span>
               {:else if data.resource.is_radiant_spark}
                 0.10% – 0.30%
                 <span class="text-muted-foreground text-xs">(fixed)</span>

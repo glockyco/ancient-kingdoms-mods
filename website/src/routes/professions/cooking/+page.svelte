@@ -73,7 +73,7 @@
       case 3:
         return Math.min(100, skill * 95);
       default:
-        return Math.min(100, skill * 85);
+        return Math.min(100, skill * 90);
     }
   }
 
@@ -260,7 +260,7 @@
           </div>
           <div class="p-3 border-t">
             {#if effortless}
-              <span class="text-muted-foreground italic">Effortless</span>
+              <span class="text-muted-foreground">—</span>
             {:else if successChance > 0}
               <span class="font-mono"
                 >{minGain.toFixed(2)}% – {maxGain.toFixed(2)}%</span
@@ -348,7 +348,7 @@
           </div>
           <div {...cellProps(canExpand, recipe.id)}>
             {#if effortless}
-              <span class="text-muted-foreground italic">Effortless</span>
+              <span class="text-muted-foreground">—</span>
             {:else if successChance > 0}
               <span class="font-mono">
                 {minGain.toFixed(2)}% – {maxGain.toFixed(2)}%
