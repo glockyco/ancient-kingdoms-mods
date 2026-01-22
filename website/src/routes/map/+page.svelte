@@ -47,6 +47,7 @@
     urlManager,
     getDefaultLevelFilter,
     getDefaultLayerVisibility,
+    getNormalizedSearch,
     type UrlStateParams,
   } from "$lib/map/url-state";
   import type {
@@ -690,7 +691,8 @@
       const urlState = parseUrlState();
 
       // Check if URL has explicit position params
-      const urlParams = new URLSearchParams(window.location.search);
+      // Use getNormalizedSearch to fix HTML-encoded ampersands from forum posts
+      const urlParams = new URLSearchParams(getNormalizedSearch());
       const hasPositionParams =
         urlParams.has("x") || urlParams.has("y") || urlParams.has("z");
 
