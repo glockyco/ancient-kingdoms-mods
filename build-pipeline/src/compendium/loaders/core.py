@@ -430,8 +430,8 @@ def load_gather_items(conn: sqlite3.Connection, export_dir: Path) -> None:
         # Insert random drops into junction table
         for drop in resource.random_drops:
             cursor.execute(
-                "INSERT INTO gathering_resource_drops (resource_id, item_id, drop_rate) VALUES (?, ?, ?)",
-                (resource_id, drop.item_id, drop.rate),
+                "INSERT INTO item_sources_gather (item_id, resource_id, drop_rate) VALUES (?, ?, ?)",
+                (drop.item_id, resource_id, drop.rate),
             )
 
     # Insert gathering resource spawns (links to deduplicated resources)
@@ -494,8 +494,8 @@ def load_gather_items(conn: sqlite3.Connection, export_dir: Path) -> None:
         # Insert random drops into junction table
         for drop in chest.random_drops:
             cursor.execute(
-                "INSERT INTO chest_drops (chest_id, item_id, drop_rate) VALUES (?, ?, ?)",
-                (chest.id, drop.item_id, drop.rate),
+                "INSERT INTO item_sources_chest (item_id, chest_id, drop_rate) VALUES (?, ?, ?)",
+                (drop.item_id, chest.id, drop.rate),
             )
 
     # Calculate actual drop chances for gathering resource drops
@@ -504,7 +504,7 @@ def load_gather_items(conn: sqlite3.Connection, export_dir: Path) -> None:
     console.print("  Calculating actual drop chances for gathering resources...")
     cursor.execute("""
         SELECT resource_id, COUNT(*) as num_drops
-        FROM gathering_resource_drops
+        FROM item_sources_gather
         GROUP BY resource_id
     """)
 
@@ -512,7 +512,7 @@ def load_gather_items(conn: sqlite3.Connection, export_dir: Path) -> None:
         selection_probability = 1.0 / num_drops
         cursor.execute(
             """
-            UPDATE gathering_resource_drops
+            UPDATE item_sources_gather
             SET actual_drop_chance = drop_rate * ?
             WHERE resource_id = ?
         """,
@@ -523,7 +523,7 @@ def load_gather_items(conn: sqlite3.Connection, export_dir: Path) -> None:
     console.print("  Calculating actual drop chances for chests...")
     cursor.execute("""
         SELECT chest_id, COUNT(*) as num_drops
-        FROM chest_drops
+        FROM item_sources_chest
         GROUP BY chest_id
     """)
 
@@ -531,7 +531,7 @@ def load_gather_items(conn: sqlite3.Connection, export_dir: Path) -> None:
         selection_probability = 1.0 / num_drops
         cursor.execute(
             """
-            UPDATE chest_drops
+            UPDATE item_sources_chest
             SET actual_drop_chance = drop_rate * ?
             WHERE chest_id = ?
         """,

@@ -19,13 +19,8 @@ from typing import TYPE_CHECKING
 from rich.console import Console
 
 from compendium.types.denormalized import (
-    CraftedFromInfo,
-    DropInfo,
     GatherDropInfo,
     MaterialInfo,
-    ProvidedByQuestInfo,
-    RewardedByInfo,
-    SoldByInfo,
 )
 
 if TYPE_CHECKING:
@@ -34,56 +29,33 @@ if TYPE_CHECKING:
 console = Console()
 
 
-def _denormalize_dropped_by(conn: sqlite3.Connection) -> dict[str, list[DropInfo]]:
-    """Build dropped_by from monsters.drops.
+def _denormalize_dropped_by(conn: sqlite3.Connection) -> None:
+    """Populate item_sources_monster from monsters.drops.
 
     Skips drops with is_altar_reward=True since those are shown in
     rewarded_by_altars instead.
-
-    Returns:
-        Dict mapping item_id to list of monster drop info
     """
     console.print("  Processing monster drops...")
     cursor = conn.cursor()
     cursor.execute("""
-        SELECT id, name, level, level_min, level_max, is_boss, is_elite, drops
+        SELECT id, drops
         FROM monsters
         WHERE drops IS NOT NULL AND drops != '[]'
     """)
 
-    dropped_by: dict[str, list[DropInfo]] = {}
-
-    for (
-        monster_id,
-        monster_name,
-        monster_level,
-        level_min,
-        level_max,
-        is_boss,
-        is_elite,
-        drops_json,
-    ) in cursor.fetchall():
+    for monster_id, drops_json in cursor.fetchall():
         drops = json.loads(drops_json)
         for drop in drops:
             item_id = drop.get("item_id")
             # Skip altar reward variants (shown in rewarded_by_altars)
             if item_id and not drop.get("is_altar_reward"):
-                if item_id not in dropped_by:
-                    dropped_by[item_id] = []
-                dropped_by[item_id].append(
-                    {
-                        "monster_id": monster_id,
-                        "monster_name": monster_name,
-                        "monster_level": monster_level,
-                        "monster_level_min": level_min or monster_level,
-                        "monster_level_max": level_max or monster_level,
-                        "is_boss": bool(is_boss),
-                        "is_elite": bool(is_elite),
-                        "rate": drop.get("rate", 0.0),
-                    }
+                cursor.execute(
+                    """
+                    INSERT INTO item_sources_monster (item_id, monster_id, drop_rate)
+                    VALUES (?, ?, ?)
+                """,
+                    (item_id, monster_id, drop.get("rate", 0.0)),
                 )
-
-    return dropped_by
 
 
 def _denormalize_gathered_from(
@@ -270,81 +242,56 @@ def _denormalize_gathered_from(
     return gathered_from
 
 
-def _denormalize_sold_by(conn: sqlite3.Connection) -> dict[str, list[SoldByInfo]]:
-    """Build sold_by from npcs.items_sold.
-
-    Returns:
-        Dict mapping item_id to list of vendor info
-    """
+def _denormalize_sold_by(conn: sqlite3.Connection) -> None:
+    """Populate item_sources_vendor from npcs.items_sold."""
     console.print("  Processing NPC vendors...")
     cursor = conn.cursor()
 
-    # Build a lookup for item names
-    cursor.execute("SELECT id, name FROM items")
-    item_name_lookup = {row[0]: row[1] for row in cursor.fetchall()}
-
     cursor.execute("""
-        SELECT id, name, faction, roles, items_sold
+        SELECT id, faction, roles, items_sold
         FROM npcs
         WHERE items_sold IS NOT NULL AND items_sold != '[]'
     """)
 
-    sold_by: dict[str, list[SoldByInfo]] = {}
-
-    for npc_id, npc_name, npc_faction, roles_json, items_sold_json in cursor.fetchall():
+    for npc_id, npc_faction, roles_json, items_sold_json in cursor.fetchall():
         items_sold = json.loads(items_sold_json)
         roles = json.loads(roles_json) if roles_json else {}
-        is_faction_vendor = roles.get("is_faction_vendor", False)
+        required_faction = (
+            npc_faction if roles.get("is_faction_vendor", False) else None
+        )
+
         for item_sale in items_sold:
             item_id = item_sale.get("item_id")
             if item_id:
-                if item_id not in sold_by:
-                    sold_by[item_id] = []
-                currency_id = item_sale.get("currency_item_id")
-                sold_by[item_id].append(
-                    {
-                        "npc_id": npc_id,
-                        "npc_name": npc_name,
-                        "npc_faction": npc_faction,
-                        "is_faction_vendor": is_faction_vendor,
-                        "price": item_sale.get("price", 0),
-                        "currency_item_id": currency_id,
-                        "currency_item_name": item_name_lookup.get(currency_id)
-                        if currency_id
-                        else None,
-                    }
+                cursor.execute(
+                    """
+                    INSERT INTO item_sources_vendor (
+                        item_id, npc_id, price, currency_item_id,
+                        required_faction, required_reputation_tier
+                    ) VALUES (?, ?, ?, ?, ?, ?)
+                """,
+                    (
+                        item_id,
+                        npc_id,
+                        item_sale.get("price", 0),
+                        item_sale.get("currency_item_id"),
+                        required_faction,
+                        None,  # required_reputation_tier - not available in current data
+                    ),
                 )
 
-    return sold_by
 
-
-def _denormalize_rewarded_by(
-    conn: sqlite3.Connection,
-) -> dict[str, list[RewardedByInfo]]:
-    """Build rewarded_by from quests.rewards.
-
-    Returns:
-        Dict mapping item_id to list of quest reward info
-    """
+def _denormalize_rewarded_by(conn: sqlite3.Connection) -> None:
+    """Populate item_sources_quest (reward) from quests.rewards."""
     console.print("  Processing quest rewards...")
     cursor = conn.cursor()
     cursor.execute("""
-        SELECT id, name, level_required, level_recommended, rewards, is_adventurer_quest, class_requirements
+        SELECT id, rewards, class_requirements
         FROM quests
         WHERE rewards IS NOT NULL
     """)
 
-    rewarded_by: dict[str, list[RewardedByInfo]] = {}
-
-    for (
-        quest_id,
-        quest_name,
-        level_required,
-        level_recommended,
-        rewards_json,
-        is_adventurer_quest,
-        quest_class_requirements_json,
-    ) in cursor.fetchall():
+    for quest_id, rewards_json, quest_class_requirements_json in cursor.fetchall():
         rewards = json.loads(rewards_json)
         items = rewards.get("items", [])
 
@@ -369,9 +316,6 @@ def _denormalize_rewarded_by(
 
         # Create one entry per unique item_id
         for item_id, class_list in item_groups.items():
-            if item_id not in rewarded_by:
-                rewarded_by[item_id] = []
-
             # Determine class restrictions by combining quest-level and reward-level
             class_restrictions = None
 
@@ -382,48 +326,30 @@ def _denormalize_rewarded_by(
                 # No quest-level restrictions, but reward has class-specific variants
                 class_restrictions = sorted(set(c for c in class_list if c is not None))
 
-            rewarded_by[item_id].append(
-                {
-                    "quest_id": quest_id,
-                    "quest_name": quest_name,
-                    "level_required": level_required,
-                    "level_recommended": level_recommended,
-                    "is_repeatable": bool(is_adventurer_quest),
-                    "class_restrictions": class_restrictions,
-                }
+            cursor.execute(
+                """
+                INSERT INTO item_sources_quest (item_id, quest_id, source_type, class_restriction)
+                VALUES (?, ?, 'reward', ?)
+            """,
+                (
+                    item_id,
+                    quest_id,
+                    json.dumps(class_restrictions) if class_restrictions else None,
+                ),
             )
 
-    return rewarded_by
 
-
-def _denormalize_provided_by_quests(
-    conn: sqlite3.Connection,
-) -> dict[str, list[ProvidedByQuestInfo]]:
-    """Build provided_by_quests from quests.given_item_on_start_id.
-
-    Returns:
-        Dict mapping item_id to list of quest info
-    """
+def _denormalize_provided_by_quests(conn: sqlite3.Connection) -> None:
+    """Populate item_sources_quest (provided) from quests.given_item_on_start_id."""
     console.print("  Processing quest provided items...")
     cursor = conn.cursor()
     cursor.execute("""
-        SELECT id, name, level_required, level_recommended, given_item_on_start_id,
-               is_adventurer_quest, class_requirements
+        SELECT id, given_item_on_start_id, class_requirements
         FROM quests
         WHERE given_item_on_start_id IS NOT NULL
     """)
 
-    provided_by: dict[str, list[ProvidedByQuestInfo]] = {}
-
-    for (
-        quest_id,
-        quest_name,
-        level_required,
-        level_recommended,
-        given_item_id,
-        is_adventurer_quest,
-        class_requirements_json,
-    ) in cursor.fetchall():
+    for quest_id, given_item_id, class_requirements_json in cursor.fetchall():
         # Parse class requirements
         class_restrictions = None
         if class_requirements_json:
@@ -431,58 +357,39 @@ def _denormalize_provided_by_quests(
             if parsed:
                 class_restrictions = sorted(parsed)
 
-        if given_item_id not in provided_by:
-            provided_by[given_item_id] = []
-
-        provided_by[given_item_id].append(
-            {
-                "quest_id": quest_id,
-                "quest_name": quest_name,
-                "level_required": level_required,
-                "level_recommended": level_recommended,
-                "is_repeatable": bool(is_adventurer_quest),
-                "class_restrictions": class_restrictions,
-            }
+        cursor.execute(
+            """
+            INSERT INTO item_sources_quest (item_id, quest_id, source_type, class_restriction)
+            VALUES (?, ?, 'provided', ?)
+        """,
+            (
+                given_item_id,
+                quest_id,
+                json.dumps(class_restrictions) if class_restrictions else None,
+            ),
         )
 
-    return provided_by
 
-
-def _denormalize_rewarded_by_altars(conn: sqlite3.Connection) -> dict[str, list[dict]]:
-    """Build rewarded_by_altars from altars reward tiers.
-
-    Includes the final wave boss monster info and drop rate for each altar.
-
-    Returns:
-        Dict mapping item_id to list of altar reward info
-    """
+def _denormalize_rewarded_by_altars(conn: sqlite3.Connection) -> None:
+    """Populate item_sources_altar from altars reward tiers."""
     console.print("  Processing altar rewards...")
     cursor = conn.cursor()
     cursor.execute("""
-        SELECT a.id, a.name, a.type, a.zone_id, z.name,
-               a.reward_common_id, a.reward_magic_id, a.reward_epic_id, a.reward_legendary_id,
-               a.waves
+        SELECT a.id, a.reward_common_id, a.reward_magic_id, a.reward_epic_id, a.reward_legendary_id, a.waves
         FROM altars a
-        LEFT JOIN zones z ON a.zone_id = z.id
         WHERE a.reward_common_id IS NOT NULL OR a.reward_magic_id IS NOT NULL
            OR a.reward_epic_id IS NOT NULL OR a.reward_legendary_id IS NOT NULL
     """)
 
-    # Build monster name and drops lookup
+    # Build monster drops lookup for drop rates
     cursor2 = conn.cursor()
-    cursor2.execute("SELECT id, name, drops FROM monsters")
-    monster_info: dict[str, dict] = {}
-    for row in cursor2.fetchall():
-        monster_info[row[0]] = {"name": row[1], "drops": row[2]}
-
-    rewarded_by_altars: dict[str, list[dict]] = {}
+    cursor2.execute("SELECT id, drops FROM monsters WHERE drops IS NOT NULL")
+    monster_drops: dict[str, list] = {}
+    for monster_id, drops_json in cursor2.fetchall():
+        monster_drops[monster_id] = json.loads(drops_json)
 
     for (
         altar_id,
-        altar_name,
-        altar_type,
-        zone_id,
-        zone_name,
         common_id,
         magic_id,
         epic_id,
@@ -490,103 +397,70 @@ def _denormalize_rewarded_by_altars(conn: sqlite3.Connection) -> dict[str, list[
         waves_json,
     ) in cursor.fetchall():
         # Extract final wave boss monster and drop rate
-        boss_monster_id = None
-        boss_monster_name = None
         drop_rate = 1.0  # Default to 100%
-        if waves_json:
+        if waves_json and common_id:
             waves = json.loads(waves_json)
             if waves:
                 final_wave = waves[-1]
                 monsters = final_wave.get("monsters", [])
                 if monsters:
                     boss_monster_id = monsters[0].get("monster_id")
-                    info = monster_info.get(boss_monster_id, {})
-                    boss_monster_name = info.get("name")
+                    boss_drops = monster_drops.get(boss_monster_id, [])
                     # Get drop rate from boss's drops (altar rewards have is_altar_reward flag)
-                    if info.get("drops"):
-                        boss_drops = json.loads(info["drops"])
-                        for drop in boss_drops:
-                            if (
-                                drop.get("is_altar_reward")
-                                and drop.get("item_id") == common_id
-                            ):
-                                drop_rate = drop.get("rate", 1.0)
-                                break
-
-        base_info = {
-            "altar_id": altar_id,
-            "altar_name": altar_name,
-            "zone_id": zone_id,
-            "zone_name": zone_name if zone_name else zone_id,
-            "boss_monster_id": boss_monster_id,
-            "boss_monster_name": boss_monster_name,
-            "drop_rate": drop_rate,
-        }
+                    for drop in boss_drops:
+                        if (
+                            drop.get("is_altar_reward")
+                            and drop.get("item_id") == common_id
+                        ):
+                            drop_rate = drop.get("rate", 1.0)
+                            break
 
         # Common tier (effective level < 35)
         if common_id:
-            if common_id not in rewarded_by_altars:
-                rewarded_by_altars[common_id] = []
-            rewarded_by_altars[common_id].append(
-                {
-                    **base_info,
-                    "reward_tier": "common",
-                    "min_effective_level": 0,
-                }
+            cursor.execute(
+                """
+                INSERT INTO item_sources_altar (item_id, altar_id, reward_tier, drop_rate, min_effective_level)
+                VALUES (?, ?, 'common', ?, 0)
+            """,
+                (common_id, altar_id, drop_rate),
             )
 
         # Magic tier (effective level 35-44)
         if magic_id:
-            if magic_id not in rewarded_by_altars:
-                rewarded_by_altars[magic_id] = []
-            rewarded_by_altars[magic_id].append(
-                {
-                    **base_info,
-                    "reward_tier": "magic",
-                    "min_effective_level": 35,
-                }
+            cursor.execute(
+                """
+                INSERT INTO item_sources_altar (item_id, altar_id, reward_tier, drop_rate, min_effective_level)
+                VALUES (?, ?, 'magic', ?, 35)
+            """,
+                (magic_id, altar_id, drop_rate),
             )
 
         # Epic tier (effective level 45-54)
         if epic_id:
-            if epic_id not in rewarded_by_altars:
-                rewarded_by_altars[epic_id] = []
-            rewarded_by_altars[epic_id].append(
-                {
-                    **base_info,
-                    "reward_tier": "epic",
-                    "min_effective_level": 45,
-                }
+            cursor.execute(
+                """
+                INSERT INTO item_sources_altar (item_id, altar_id, reward_tier, drop_rate, min_effective_level)
+                VALUES (?, ?, 'epic', ?, 45)
+            """,
+                (epic_id, altar_id, drop_rate),
             )
 
         # Legendary tier (effective level >= 55)
         if legendary_id:
-            if legendary_id not in rewarded_by_altars:
-                rewarded_by_altars[legendary_id] = []
-            rewarded_by_altars[legendary_id].append(
-                {
-                    **base_info,
-                    "reward_tier": "legendary",
-                    "min_effective_level": 55,
-                }
+            cursor.execute(
+                """
+                INSERT INTO item_sources_altar (item_id, altar_id, reward_tier, drop_rate, min_effective_level)
+                VALUES (?, ?, 'legendary', ?, 55)
+            """,
+                (legendary_id, altar_id, drop_rate),
             )
-
-    return rewarded_by_altars
 
 
 def _denormalize_crafted_from(
     conn: sqlite3.Connection,
     redactions: RedactionConfig | None = None,
-) -> dict[str, list[CraftedFromInfo]]:
-    """Build crafted_from from crafting_recipes and alchemy_recipes.
-
-    Args:
-        conn: Database connection
-        redactions: Optional redaction config for filtering crafting info
-
-    Returns:
-        Dict mapping item_id to list of recipe info
-    """
+) -> None:
+    """Populate item_sources_recipe from crafting_recipes and alchemy_recipes."""
     console.print("  Processing crafting recipes...")
     cursor = conn.cursor()
 
@@ -594,55 +468,27 @@ def _denormalize_crafted_from(
 
     # Query both crafting and alchemy recipes
     cursor.execute("""
-        SELECT id, result_item_id, result_amount, materials
+        SELECT id, result_item_id, result_amount, 'crafting' as recipe_type
         FROM crafting_recipes
         WHERE result_item_id IS NOT NULL
         UNION ALL
-        SELECT id, result_item_id, 1 as result_amount, materials
+        SELECT id, result_item_id, 1 as result_amount, 'alchemy' as recipe_type
         FROM alchemy_recipes
         WHERE result_item_id IS NOT NULL
     """)
 
-    crafted_from: dict[str, list[CraftedFromInfo]] = {}
-
-    for recipe_id, result_item_id, result_amount, materials_json in cursor.fetchall():
+    for recipe_id, result_item_id, result_amount, recipe_type in cursor.fetchall():
         # Skip if this item's crafting should be hidden
         if result_item_id in hide_crafting:
             continue
 
-        if result_item_id:
-            if result_item_id not in crafted_from:
-                crafted_from[result_item_id] = []
-
-            # Parse materials and add item names
-            materials = json.loads(materials_json) if materials_json else []
-            materials_with_names: list[MaterialInfo] = []
-            for material in materials:
-                material_id = material.get("item_id")
-                amount = material.get("amount", 1)
-
-                # Get item name
-                cursor.execute("SELECT name FROM items WHERE id = ?", (material_id,))
-                result = cursor.fetchone()
-                material_name = result[0] if result else "Unknown"
-
-                materials_with_names.append(
-                    {
-                        "item_id": material_id,
-                        "item_name": material_name,
-                        "amount": amount,
-                    }
-                )
-
-            crafted_from[result_item_id].append(
-                {
-                    "recipe_id": recipe_id,
-                    "result_amount": result_amount,
-                    "materials": materials_with_names,
-                }
-            )
-
-    return crafted_from
+        cursor.execute(
+            """
+            INSERT INTO item_sources_recipe (item_id, recipe_id, recipe_type, result_amount)
+            VALUES (?, ?, ?, ?)
+        """,
+            (result_item_id, recipe_id, recipe_type, result_amount),
+        )
 
 
 def _denormalize_alchemy_recipes(conn: sqlite3.Connection) -> None:
@@ -724,18 +570,105 @@ def _denormalize_alchemy_recipes(conn: sqlite3.Connection) -> None:
             )
 
 
+def _populate_item_sources_pack(conn: sqlite3.Connection) -> None:
+    """Populate item_sources_pack from items.found_in_packs JSON."""
+    console.print("  Processing pack contents...")
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT id, found_in_packs FROM items WHERE found_in_packs IS NOT NULL AND found_in_packs != '[]'"
+    )
+
+    for item_id, found_in_packs_json in cursor.fetchall():
+        found_in_packs = json.loads(found_in_packs_json)
+        for pack_info in found_in_packs:
+            pack_item_id = pack_info.get("pack_id")
+            amount = pack_info.get("amount", 1)
+            if pack_item_id:
+                cursor.execute(
+                    """
+                    INSERT INTO item_sources_pack (item_id, pack_item_id, amount)
+                    VALUES (?, ?, ?)
+                """,
+                    (item_id, pack_item_id, amount),
+                )
+
+
+def _populate_item_sources_random(conn: sqlite3.Connection) -> None:
+    """Populate item_sources_random from items.found_in_random_items JSON."""
+    console.print("  Processing random item containers...")
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT id, found_in_random_items FROM items WHERE found_in_random_items IS NOT NULL AND found_in_random_items != '[]'"
+    )
+
+    for item_id, found_in_random_items_json in cursor.fetchall():
+        found_in_random_items = json.loads(found_in_random_items_json)
+        for random_info in found_in_random_items:
+            random_item_id = random_info.get("random_item_id")
+            probability = random_info.get("probability", 0.0)
+            if random_item_id:
+                cursor.execute(
+                    """
+                    INSERT INTO item_sources_random (item_id, random_item_id, probability)
+                    VALUES (?, ?, ?)
+                """,
+                    (item_id, random_item_id, probability),
+                )
+
+
+def _populate_item_sources_merge(conn: sqlite3.Connection) -> None:
+    """Populate item_sources_merge from items.created_from_merge JSON."""
+    console.print("  Processing merge recipes...")
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT id, created_from_merge FROM items WHERE created_from_merge IS NOT NULL AND created_from_merge != '[]'"
+    )
+
+    for item_id, created_from_merge_json in cursor.fetchall():
+        created_from_merge = json.loads(created_from_merge_json)
+        for component_info in created_from_merge:
+            component_item_id = component_info.get("item_id")
+            if component_item_id:
+                cursor.execute(
+                    """
+                    INSERT INTO item_sources_merge (item_id, component_item_id)
+                    VALUES (?, ?)
+                """,
+                    (item_id, component_item_id),
+                )
+
+
+def _populate_item_sources_treasure_map(conn: sqlite3.Connection) -> None:
+    """Populate item_sources_treasure_map from items.rewarded_by_treasure_maps JSON."""
+    console.print("  Processing treasure map rewards...")
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT id, rewarded_by_treasure_maps FROM items WHERE rewarded_by_treasure_maps IS NOT NULL AND rewarded_by_treasure_maps != '[]'"
+    )
+
+    for item_id, rewarded_by_treasure_maps_json in cursor.fetchall():
+        rewarded_by_treasure_maps = json.loads(rewarded_by_treasure_maps_json)
+        for map_info in rewarded_by_treasure_maps:
+            map_item_id = map_info.get("map_id")
+            treasure_location_id = map_info.get("treasure_location_id")
+            if map_item_id:
+                cursor.execute(
+                    """
+                    INSERT INTO item_sources_treasure_map (item_id, map_item_id, treasure_location_id)
+                    VALUES (?, ?, ?)
+                """,
+                    (item_id, map_item_id, treasure_location_id),
+                )
+
+
 def run(conn: sqlite3.Connection, redactions: RedactionConfig | None = None) -> None:
     """Run all item source denormalizations.
 
-    Updates items table with:
-    - dropped_by
-    - gathered_from
-    - sold_by
-    - rewarded_by
-    - provided_by_quests
-    - rewarded_by_altars
-    - crafted_from
-    - alchemy recipe data
+    Populates junction tables instead of JSON columns:
+    - item_sources_monster, item_sources_vendor, item_sources_quest
+    - item_sources_altar, item_sources_recipe, item_sources_gather
+    - item_sources_chest, item_sources_pack, item_sources_random
+    - item_sources_merge, item_sources_treasure_map
 
     Args:
         conn: Database connection
@@ -745,96 +678,42 @@ def run(conn: sqlite3.Connection, redactions: RedactionConfig | None = None) -> 
 
     cursor = conn.cursor()
 
-    # Build all source dictionaries
-    dropped_by = _denormalize_dropped_by(conn)
-    gathered_from = _denormalize_gathered_from(conn)
-    sold_by = _denormalize_sold_by(conn)
-    rewarded_by = _denormalize_rewarded_by(conn)
-    provided_by_quests = _denormalize_provided_by_quests(conn)
-    rewarded_by_altars = _denormalize_rewarded_by_altars(conn)
-    crafted_from = _denormalize_crafted_from(conn, redactions)
+    # Clear all junction tables first
+    console.print("  Clearing junction tables...")
+    junction_tables = [
+        "item_sources_monster",
+        "item_sources_vendor",
+        "item_sources_quest",
+        "item_sources_altar",
+        "item_sources_recipe",
+        "item_sources_gather",
+        "item_sources_chest",
+        "item_sources_pack",
+        "item_sources_random",
+        "item_sources_merge",
+        "item_sources_treasure_map",
+    ]
+    for table in junction_tables:
+        cursor.execute(f"DELETE FROM {table}")
 
-    # Update items table
-    console.print("  Updating items table with source data...")
+    # Populate junction tables
+    _denormalize_dropped_by(conn)
+    _denormalize_gathered_from(conn)
+    _denormalize_sold_by(conn)
+    _denormalize_rewarded_by(conn)
+    _denormalize_provided_by_quests(conn)
+    _denormalize_rewarded_by_altars(conn)
+    _denormalize_crafted_from(conn, redactions)
 
-    for item_id, drops in dropped_by.items():
-        # Sort by drop rate descending (highest first), then by monster name
-        drops_sorted = sorted(drops, key=lambda x: (-x["rate"], x["monster_name"]))
-        cursor.execute(
-            "UPDATE items SET dropped_by = ? WHERE id = ?",
-            (json.dumps(drops_sorted), item_id),
-        )
+    # New functions for additional sources
+    _populate_item_sources_pack(conn)
+    _populate_item_sources_random(conn)
+    _populate_item_sources_merge(conn)
+    _populate_item_sources_treasure_map(conn)
 
-    for item_id, gathers in gathered_from.items():
-        # Sort by drop rate descending (highest first), then by name
-        gathers_sorted = sorted(
-            gathers, key=lambda x: (-x["rate"], x["gather_item_name"])
-        )
-        cursor.execute(
-            "UPDATE items SET gathered_from = ? WHERE id = ?",
-            (json.dumps(gathers_sorted), item_id),
-        )
-
-    for item_id, vendors in sold_by.items():
-        # Sort by NPC name alphabetically
-        vendors_sorted = sorted(vendors, key=lambda x: x["npc_name"])
-        cursor.execute(
-            "UPDATE items SET sold_by = ? WHERE id = ?",
-            (json.dumps(vendors_sorted), item_id),
-        )
-
-    for item_id, quests in rewarded_by.items():
-        # Sort by quest name alphabetically
-        quests_sorted = sorted(quests, key=lambda x: x["quest_name"])
-        cursor.execute(
-            "UPDATE items SET rewarded_by = ? WHERE id = ?",
-            (json.dumps(quests_sorted), item_id),
-        )
-
-    for item_id, quests in provided_by_quests.items():
-        # Sort by quest name alphabetically
-        quests_sorted = sorted(quests, key=lambda x: x["quest_name"])
-        cursor.execute(
-            "UPDATE items SET provided_by_quests = ? WHERE id = ?",
-            (json.dumps(quests_sorted), item_id),
-        )
-
-    for item_id, altars in rewarded_by_altars.items():
-        # Sort by altar name alphabetically
-        altars_sorted = sorted(altars, key=lambda x: x["altar_name"])
-        cursor.execute(
-            "UPDATE items SET rewarded_by_altars = ? WHERE id = ?",
-            (json.dumps(altars_sorted), item_id),
-        )
-
-    for item_id, recipes in crafted_from.items():
-        cursor.execute(
-            "UPDATE items SET crafted_from = ? WHERE id = ?",
-            (json.dumps(recipes), item_id),
-        )
-
-    # Process alchemy recipes (updates both recipe items and potion items)
+    # Legacy alchemy recipe processing (updates JSON columns on recipe/potion items)
     _denormalize_alchemy_recipes(conn)
 
     conn.commit()
 
-    # Print summary
-    console.print(
-        f"  [green]OK[/green] Updated {len(dropped_by)} items with monster drops"
-    )
-    console.print(
-        f"  [green]OK[/green] Updated {len(gathered_from)} items with gather sources"
-    )
-    console.print(f"  [green]OK[/green] Updated {len(sold_by)} items with vendor info")
-    console.print(
-        f"  [green]OK[/green] Updated {len(rewarded_by)} items as quest rewards"
-    )
-    console.print(
-        f"  [green]OK[/green] Updated {len(provided_by_quests)} items provided by quests"
-    )
-    console.print(
-        f"  [green]OK[/green] Updated {len(rewarded_by_altars)} items rewarded by altars"
-    )
-    console.print(
-        f"  [green]OK[/green] Updated {len(crafted_from)} items with crafting recipes"
-    )
+    console.print("  [green]OK[/green] Item source junction tables populated")
