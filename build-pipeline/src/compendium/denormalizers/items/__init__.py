@@ -12,6 +12,7 @@ from compendium.denormalizers.items import (
     special_types,
     tooltips,
     usages,
+    zones,
 )
 
 if TYPE_CHECKING:
@@ -33,14 +34,17 @@ def run_all(
     # Phase 2: What items are used for
     usages.run(conn, redactions)
 
-    # Phase 3: Equipment-specific (armor sets, buff names)
+    # Phase 3: Zone relationships (depends on sources and usages)
+    zones.run(conn)
+
+    # Phase 4: Equipment-specific (armor sets, buff names)
     equipment.run(conn)
 
-    # Phase 4: Special item types (packs, random, merge, treasure maps, luck tokens)
+    # Phase 5: Special item types (packs, random, merge, treasure maps, luck tokens)
     special_types.run(conn)
 
-    # Phase 5: Calculated values (depends on other data)
+    # Phase 6: Calculated values (depends on other data)
     calculations.run(conn)
 
-    # Phase 6: Tooltips (must be last - needs item_level from calculations)
+    # Phase 7: Tooltips (must be last - needs item_level from calculations)
     tooltips.run(conn)
