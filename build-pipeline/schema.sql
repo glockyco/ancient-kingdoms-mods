@@ -512,6 +512,67 @@ CREATE INDEX idx_monsters_boss ON monsters(is_boss) WHERE is_boss = 1;
 CREATE INDEX idx_monsters_elite ON monsters(is_elite) WHERE is_elite = 1;
 
 -- =============================================================================
+-- ITEM USAGES (normalized junction tables for item consumption/requirements)
+-- =============================================================================
+
+-- Items used as materials in recipes
+CREATE TABLE item_usages_recipe (
+    item_id TEXT NOT NULL REFERENCES items(id),
+    recipe_id TEXT NOT NULL,  -- References crafting_recipes or alchemy_recipes
+    recipe_type TEXT NOT NULL CHECK (recipe_type IN ('crafting', 'alchemy')),
+    amount INTEGER NOT NULL DEFAULT 1,
+    PRIMARY KEY (item_id, recipe_id)
+);
+CREATE INDEX idx_item_usages_recipe_recipe ON item_usages_recipe(recipe_id);
+CREATE INDEX idx_item_usages_recipe_type ON item_usages_recipe(recipe_type);
+
+-- Items required for quests
+CREATE TABLE item_usages_quest (
+    item_id TEXT NOT NULL REFERENCES items(id),
+    quest_id TEXT NOT NULL REFERENCES quests(id),
+    purpose TEXT NOT NULL,  -- 'Collect', 'Deliver', 'Equip', 'Have', etc.
+    amount INTEGER NOT NULL DEFAULT 1,
+    PRIMARY KEY (item_id, quest_id)
+);
+CREATE INDEX idx_item_usages_quest_quest ON item_usages_quest(quest_id);
+CREATE INDEX idx_item_usages_quest_purpose ON item_usages_quest(purpose);
+
+-- Items used as currency for purchases
+CREATE TABLE item_usages_currency (
+    currency_item_id TEXT NOT NULL REFERENCES items(id),
+    purchasable_item_id TEXT NOT NULL REFERENCES items(id),
+    npc_id TEXT NOT NULL REFERENCES npcs(id),
+    price INTEGER NOT NULL DEFAULT 0,
+    PRIMARY KEY (currency_item_id, purchasable_item_id, npc_id)
+);
+CREATE INDEX idx_item_usages_currency_purchasable ON item_usages_currency(purchasable_item_id);
+CREATE INDEX idx_item_usages_currency_npc ON item_usages_currency(npc_id);
+
+-- Items required for altar activation
+CREATE TABLE item_usages_altar (
+    item_id TEXT NOT NULL REFERENCES items(id),
+    altar_id TEXT NOT NULL REFERENCES altars(id),
+    PRIMARY KEY (item_id, altar_id)
+);
+CREATE INDEX idx_item_usages_altar_altar ON item_usages_altar(altar_id);
+
+-- Items required for portal access
+CREATE TABLE item_usages_portal (
+    item_id TEXT NOT NULL REFERENCES items(id),
+    portal_id TEXT NOT NULL REFERENCES portals(id),
+    PRIMARY KEY (item_id, portal_id)
+);
+CREATE INDEX idx_item_usages_portal_portal ON item_usages_portal(portal_id);
+
+-- Items that open chests (keys)
+CREATE TABLE item_usages_chest (
+    item_id TEXT NOT NULL REFERENCES items(id),
+    chest_id TEXT NOT NULL REFERENCES chests(id),
+    PRIMARY KEY (item_id, chest_id)
+);
+CREATE INDEX idx_item_usages_chest_chest ON item_usages_chest(chest_id);
+
+-- =============================================================================
 -- MONSTER SPAWNS
 -- =============================================================================
 
