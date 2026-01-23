@@ -290,6 +290,123 @@ CREATE INDEX idx_items_level ON items(level_required);
 CREATE INDEX idx_items_weapon_category ON items(weapon_category);
 
 -- =============================================================================
+-- ITEM SOURCES (normalized junction tables for item obtainability)
+-- =============================================================================
+
+-- Items dropped by monsters
+CREATE TABLE item_sources_monster (
+    item_id TEXT NOT NULL REFERENCES items(id),
+    monster_id TEXT NOT NULL REFERENCES monsters(id),
+    drop_rate REAL NOT NULL,
+    PRIMARY KEY (item_id, monster_id)
+);
+CREATE INDEX idx_item_sources_monster_monster ON item_sources_monster(monster_id);
+
+-- Items sold by NPC vendors
+CREATE TABLE item_sources_vendor (
+    item_id TEXT NOT NULL REFERENCES items(id),
+    npc_id TEXT NOT NULL REFERENCES npcs(id),
+    price INTEGER NOT NULL DEFAULT 0,
+    currency_item_id TEXT REFERENCES items(id),
+    required_faction TEXT REFERENCES factions(name),
+    required_reputation_tier INTEGER,
+    PRIMARY KEY (item_id, npc_id)
+);
+CREATE INDEX idx_item_sources_vendor_npc ON item_sources_vendor(npc_id);
+CREATE INDEX idx_item_sources_vendor_currency ON item_sources_vendor(currency_item_id);
+CREATE INDEX idx_item_sources_vendor_faction ON item_sources_vendor(required_faction);
+
+-- Items obtained from quests (as rewards or provided items)
+CREATE TABLE item_sources_quest (
+    item_id TEXT NOT NULL REFERENCES items(id),
+    quest_id TEXT NOT NULL REFERENCES quests(id),
+    source_type TEXT NOT NULL CHECK (source_type IN ('reward', 'provided')),
+    class_restriction TEXT,  -- JSON array of class names, NULL if no restriction
+    PRIMARY KEY (item_id, quest_id, source_type)
+);
+CREATE INDEX idx_item_sources_quest_quest ON item_sources_quest(quest_id);
+CREATE INDEX idx_item_sources_quest_type ON item_sources_quest(source_type);
+
+-- Items rewarded by altars
+CREATE TABLE item_sources_altar (
+    item_id TEXT NOT NULL REFERENCES items(id),
+    altar_id TEXT NOT NULL REFERENCES altars(id),
+    reward_tier TEXT NOT NULL CHECK (reward_tier IN ('common', 'magic', 'epic', 'legendary')),
+    drop_rate REAL NOT NULL,
+    min_effective_level INTEGER NOT NULL,
+    PRIMARY KEY (item_id, altar_id, reward_tier)
+);
+CREATE INDEX idx_item_sources_altar_altar ON item_sources_altar(altar_id);
+CREATE INDEX idx_item_sources_altar_tier ON item_sources_altar(reward_tier);
+
+-- Items crafted from recipes
+CREATE TABLE item_sources_recipe (
+    item_id TEXT NOT NULL REFERENCES items(id),
+    recipe_id TEXT NOT NULL,  -- References crafting_recipes or alchemy_recipes
+    recipe_type TEXT NOT NULL CHECK (recipe_type IN ('crafting', 'alchemy')),
+    result_amount INTEGER NOT NULL DEFAULT 1,
+    PRIMARY KEY (item_id, recipe_id)
+);
+CREATE INDEX idx_item_sources_recipe_recipe ON item_sources_recipe(recipe_id);
+CREATE INDEX idx_item_sources_recipe_type ON item_sources_recipe(recipe_type);
+
+-- Items found in packs
+CREATE TABLE item_sources_pack (
+    item_id TEXT NOT NULL REFERENCES items(id),
+    pack_item_id TEXT NOT NULL REFERENCES items(id),
+    amount INTEGER NOT NULL DEFAULT 1,
+    PRIMARY KEY (item_id, pack_item_id)
+);
+CREATE INDEX idx_item_sources_pack_pack ON item_sources_pack(pack_item_id);
+
+-- Items found in random item containers
+CREATE TABLE item_sources_random (
+    item_id TEXT NOT NULL REFERENCES items(id),
+    random_item_id TEXT NOT NULL REFERENCES items(id),
+    probability REAL NOT NULL,
+    PRIMARY KEY (item_id, random_item_id)
+);
+CREATE INDEX idx_item_sources_random_random ON item_sources_random(random_item_id);
+
+-- Items created from merge recipes
+CREATE TABLE item_sources_merge (
+    item_id TEXT NOT NULL REFERENCES items(id),
+    component_item_id TEXT NOT NULL REFERENCES items(id),
+    PRIMARY KEY (item_id, component_item_id)
+);
+CREATE INDEX idx_item_sources_merge_component ON item_sources_merge(component_item_id);
+
+-- Items rewarded by treasure maps
+CREATE TABLE item_sources_treasure_map (
+    item_id TEXT NOT NULL REFERENCES items(id),
+    map_item_id TEXT NOT NULL REFERENCES items(id),
+    treasure_location_id TEXT REFERENCES treasure_locations(id),
+    PRIMARY KEY (item_id, map_item_id)
+);
+CREATE INDEX idx_item_sources_treasure_map_map ON item_sources_treasure_map(map_item_id);
+CREATE INDEX idx_item_sources_treasure_map_location ON item_sources_treasure_map(treasure_location_id);
+
+-- Items gathered from resources (renamed from gathering_resource_drops)
+CREATE TABLE item_sources_gather (
+    item_id TEXT NOT NULL REFERENCES items(id),
+    resource_id TEXT NOT NULL REFERENCES gathering_resources(id),
+    drop_rate REAL NOT NULL,
+    actual_drop_chance REAL,
+    PRIMARY KEY (item_id, resource_id)
+);
+CREATE INDEX idx_item_sources_gather_resource ON item_sources_gather(resource_id);
+
+-- Items found in chests (renamed from chest_drops)
+CREATE TABLE item_sources_chest (
+    item_id TEXT NOT NULL REFERENCES items(id),
+    chest_id TEXT NOT NULL REFERENCES chests(id),
+    drop_rate REAL NOT NULL,
+    actual_drop_chance REAL,
+    PRIMARY KEY (item_id, chest_id)
+);
+CREATE INDEX idx_item_sources_chest_chest ON item_sources_chest(chest_id);
+
+-- =============================================================================
 -- MONSTERS
 -- =============================================================================
 
@@ -940,20 +1057,6 @@ CREATE INDEX idx_gathering_resources_type ON gathering_resources(is_plant, is_mi
 CREATE INDEX idx_gathering_resources_tool ON gathering_resources(tool_required_id);
 
 -- =============================================================================
--- GATHERING RESOURCE DROPS
--- =============================================================================
-
-CREATE TABLE gathering_resource_drops (
-    resource_id TEXT NOT NULL REFERENCES gathering_resources(id),
-    item_id TEXT NOT NULL REFERENCES items(id),
-    drop_rate REAL NOT NULL,  -- Per-roll probability from game data
-    actual_drop_chance REAL,  -- Calculated: (1 / num_drops) * drop_rate
-
-    PRIMARY KEY (resource_id, item_id)
-);
-
-CREATE INDEX idx_gathering_resource_drops_item ON gathering_resource_drops(item_id);
-
 -- =============================================================================
 -- GATHERING RESOURCE SPAWNS
 -- =============================================================================
@@ -1008,21 +1111,6 @@ CREATE TABLE chests (
 CREATE INDEX idx_chests_zone ON chests(zone_id);
 CREATE INDEX idx_chests_sub_zone ON chests(sub_zone_id);
 CREATE INDEX idx_chests_key ON chests(key_required_id);
-
--- =============================================================================
--- CHEST DROPS
--- =============================================================================
-
-CREATE TABLE chest_drops (
-    chest_id TEXT NOT NULL REFERENCES chests(id),
-    item_id TEXT NOT NULL REFERENCES items(id),
-    drop_rate REAL NOT NULL,  -- Per-roll probability from game data
-    actual_drop_chance REAL,  -- Calculated: (1 / num_drops) * drop_rate
-
-    PRIMARY KEY (chest_id, item_id)
-);
-
-CREATE INDEX idx_chest_drops_item ON chest_drops(item_id);
 
 -- =============================================================================
 -- CRAFTING RECIPES
