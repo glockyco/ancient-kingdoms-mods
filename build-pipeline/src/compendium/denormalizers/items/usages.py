@@ -17,7 +17,6 @@ from typing import TYPE_CHECKING
 
 from rich.console import Console
 
-from compendium.types.denormalized import NeededForQuestInfo, UsedInRecipeInfo
 
 if TYPE_CHECKING:
     from compendium.redaction import RedactionConfig
@@ -28,37 +27,21 @@ console = Console()
 def _denormalize_used_in_recipes(
     conn: sqlite3.Connection,
     redactions: RedactionConfig | None = None,
-) -> dict[str, list[UsedInRecipeInfo]]:
-    """Build used_in_recipes from crafting and alchemy recipe materials.
-
-    Args:
-        conn: Database connection
-        redactions: Optional redaction config for filtering recipes
-
-    Returns:
-        Dict mapping item_id to list of recipe usage info
-    """
+) -> None:
+    """Populate item_usages_recipe from crafting and alchemy recipe materials."""
     console.print("  Processing recipe materials...")
     cursor = conn.cursor()
 
     hide_crafting = redactions.hide_crafting_item_ids if redactions else set()
 
-    used_in_recipes: dict[str, list[UsedInRecipeInfo]] = {}
-
     # Process crafting recipes
     cursor.execute("""
-        SELECT cr.id, cr.result_item_id, i.name, cr.materials
+        SELECT cr.id, cr.result_item_id, cr.materials
         FROM crafting_recipes cr
-        LEFT JOIN items i ON cr.result_item_id = i.id
         WHERE cr.materials IS NOT NULL AND cr.materials != '[]'
     """)
 
-    for (
-        recipe_id,
-        result_item_id,
-        result_item_name,
-        materials_json,
-    ) in cursor.fetchall():
+    for recipe_id, result_item_id, materials_json in cursor.fetchall():
         # Skip if this recipe's result has hidden crafting
         if result_item_id in hide_crafting:
             continue
@@ -67,31 +50,22 @@ def _denormalize_used_in_recipes(
         for material in materials:
             item_id = material.get("item_id")
             if item_id:
-                if item_id not in used_in_recipes:
-                    used_in_recipes[item_id] = []
-                used_in_recipes[item_id].append(
-                    {
-                        "recipe_id": recipe_id,
-                        "result_item_id": result_item_id,
-                        "result_item_name": result_item_name or "Unknown",
-                        "amount": material.get("amount", 1),
-                    }
+                cursor.execute(
+                    """
+                    INSERT INTO item_usages_recipe (item_id, recipe_id, recipe_type, amount)
+                    VALUES (?, ?, 'crafting', ?)
+                """,
+                    (item_id, recipe_id, material.get("amount", 1)),
                 )
 
     # Process alchemy recipes
     cursor.execute("""
-        SELECT ar.id, ar.result_item_id, i.name, ar.materials
+        SELECT ar.id, ar.result_item_id, ar.materials
         FROM alchemy_recipes ar
-        LEFT JOIN items i ON ar.result_item_id = i.id
         WHERE ar.materials IS NOT NULL AND ar.materials != '[]'
     """)
 
-    for (
-        recipe_id,
-        result_item_id,
-        result_item_name,
-        materials_json,
-    ) in cursor.fetchall():
+    for recipe_id, result_item_id, materials_json in cursor.fetchall():
         # Skip if this recipe's result has hidden crafting
         if result_item_id in hide_crafting:
             continue
@@ -100,357 +74,181 @@ def _denormalize_used_in_recipes(
         for material in materials:
             item_id = material.get("item_id")
             if item_id:
-                if item_id not in used_in_recipes:
-                    used_in_recipes[item_id] = []
-                used_in_recipes[item_id].append(
-                    {
-                        "recipe_id": recipe_id,
-                        "result_item_id": result_item_id,
-                        "result_item_name": result_item_name or "Unknown",
-                        "amount": material.get("amount", 1),
-                    }
+                cursor.execute(
+                    """
+                    INSERT INTO item_usages_recipe (item_id, recipe_id, recipe_type, amount)
+                    VALUES (?, ?, 'alchemy', ?)
+                """,
+                    (item_id, recipe_id, material.get("amount", 1)),
                 )
 
-    return used_in_recipes
 
-
-def _denormalize_needed_for_quests(
-    conn: sqlite3.Connection,
-) -> dict[str, list[NeededForQuestInfo]]:
-    """Build needed_for_quests from quest objectives.
-
-    Returns:
-        Dict mapping item_id to list of quest requirement info
-    """
+def _denormalize_needed_for_quests(conn: sqlite3.Connection) -> None:
+    """Populate item_usages_quest from quest objectives."""
     console.print("  Processing quest item requirements...")
     cursor = conn.cursor()
     cursor.execute("""
-        SELECT id, name, level_required, level_recommended,
-               gather_item_1_id, gather_amount_1, gather_item_2_id, gather_amount_2,
+        SELECT id, gather_item_1_id, gather_amount_1, gather_item_2_id, gather_amount_2,
                gather_item_3_id, gather_amount_3, gather_items, required_items, equip_items,
-               is_adventurer_quest, class_requirements, display_type
+               display_type
         FROM quests
     """)
 
-    needed_for_quests: dict[str, list[NeededForQuestInfo]] = {}
-
     for row in cursor.fetchall():
         quest_id = row[0]
-        quest_name = row[1]
-        level_required = row[2]
-        level_recommended = row[3]
-        is_adventurer_quest = row[13]
-        class_requirements_json = row[14]
-        display_type = row[15]
-
-        # Parse class requirements
-        if class_requirements_json:
-            parsed_class_req = json.loads(class_requirements_json)
-            class_restrictions = sorted(parsed_class_req) if parsed_class_req else None
-        else:
-            class_restrictions = None
+        display_type = row[10]
 
         # Process gather_item_1, 2, 3
-        if row[4]:  # gather_item_1_id
-            item_id = row[4]
-            if item_id not in needed_for_quests:
-                needed_for_quests[item_id] = []
-            needed_for_quests[item_id].append(
-                {
-                    "quest_id": quest_id,
-                    "quest_name": quest_name,
-                    "level_required": level_required,
-                    "level_recommended": level_recommended,
-                    "purpose": display_type,
-                    "amount": row[5] or 1,  # gather_amount_1
-                    "is_repeatable": bool(is_adventurer_quest),
-                    "class_restrictions": class_restrictions,
-                }
-            )
-
-        if row[6]:  # gather_item_2_id
-            item_id = row[6]
-            if item_id not in needed_for_quests:
-                needed_for_quests[item_id] = []
-            needed_for_quests[item_id].append(
-                {
-                    "quest_id": quest_id,
-                    "quest_name": quest_name,
-                    "level_required": level_required,
-                    "level_recommended": level_recommended,
-                    "purpose": display_type,
-                    "amount": row[7] or 1,  # gather_amount_2
-                    "is_repeatable": bool(is_adventurer_quest),
-                    "class_restrictions": class_restrictions,
-                }
-            )
-
-        if row[8]:  # gather_item_3_id
-            item_id = row[8]
-            if item_id not in needed_for_quests:
-                needed_for_quests[item_id] = []
-            needed_for_quests[item_id].append(
-                {
-                    "quest_id": quest_id,
-                    "quest_name": quest_name,
-                    "level_required": level_required,
-                    "level_recommended": level_recommended,
-                    "purpose": display_type,
-                    "amount": row[9] or 1,  # gather_amount_3
-                    "is_repeatable": bool(is_adventurer_quest),
-                    "class_restrictions": class_restrictions,
-                }
-            )
+        for i, (item_idx, amount_idx) in enumerate([(1, 2), (3, 4), (5, 6)]):
+            item_id = row[item_idx]
+            amount = row[amount_idx] or 1
+            if item_id:
+                cursor.execute(
+                    """
+                    INSERT INTO item_usages_quest (item_id, quest_id, purpose, amount)
+                    VALUES (?, ?, ?, ?)
+                """,
+                    (item_id, quest_id, display_type, amount),
+                )
 
         # Process gather_items (JSON array)
-        if row[10]:  # gather_items
-            gather_items_list = json.loads(row[10])
+        if row[7]:  # gather_items
+            gather_items_list = json.loads(row[7])
             for item_obj in gather_items_list:
                 item_id = item_obj.get("item_id")
                 if item_id:
-                    if item_id not in needed_for_quests:
-                        needed_for_quests[item_id] = []
-                    needed_for_quests[item_id].append(
-                        {
-                            "quest_id": quest_id,
-                            "quest_name": quest_name,
-                            "level_required": level_required,
-                            "level_recommended": level_recommended,
-                            "purpose": display_type,
-                            "amount": item_obj.get("amount", 1),
-                            "is_repeatable": bool(is_adventurer_quest),
-                            "class_restrictions": class_restrictions,
-                        }
+                    cursor.execute(
+                        """
+                        INSERT INTO item_usages_quest (item_id, quest_id, purpose, amount)
+                        VALUES (?, ?, ?, ?)
+                    """,
+                        (item_id, quest_id, display_type, item_obj.get("amount", 1)),
                     )
 
         # Process required_items (JSON array)
-        if row[11]:  # required_items
-            required_items_list = json.loads(row[11])
+        if row[8]:  # required_items
+            required_items_list = json.loads(row[8])
             for item_obj in required_items_list:
                 item_id = item_obj.get("item_id")
                 if item_id:
-                    if item_id not in needed_for_quests:
-                        needed_for_quests[item_id] = []
                     amount = item_obj.get("amount", 1)
                     # amount=0 means "must possess but not consumed" -> Have
                     purpose = "Have" if amount == 0 else display_type
-                    needed_for_quests[item_id].append(
-                        {
-                            "quest_id": quest_id,
-                            "quest_name": quest_name,
-                            "level_required": level_required,
-                            "level_recommended": level_recommended,
-                            "purpose": purpose,
-                            "amount": amount,
-                            "is_repeatable": bool(is_adventurer_quest),
-                            "class_restrictions": class_restrictions,
-                        }
+                    cursor.execute(
+                        """
+                        INSERT INTO item_usages_quest (item_id, quest_id, purpose, amount)
+                        VALUES (?, ?, ?, ?)
+                    """,
+                        (item_id, quest_id, purpose, amount),
                     )
 
         # Process equip_items (JSON array of item IDs)
-        if row[12]:  # equip_items
-            equip_items_list = json.loads(row[12])
+        if row[9]:  # equip_items
+            equip_items_list = json.loads(row[9])
             for item_id in equip_items_list:
                 if item_id:
-                    if item_id not in needed_for_quests:
-                        needed_for_quests[item_id] = []
-                    needed_for_quests[item_id].append(
-                        {
-                            "quest_id": quest_id,
-                            "quest_name": quest_name,
-                            "level_required": level_required,
-                            "level_recommended": level_recommended,
-                            "purpose": display_type,
-                            "amount": 1,
-                            "is_repeatable": bool(is_adventurer_quest),
-                            "class_restrictions": class_restrictions,
-                        }
+                    cursor.execute(
+                        """
+                        INSERT INTO item_usages_quest (item_id, quest_id, purpose, amount)
+                        VALUES (?, ?, ?, ?)
+                    """,
+                        (item_id, quest_id, display_type, 1),
                     )
 
-    return needed_for_quests
 
-
-def _denormalize_used_as_currency_for(
-    conn: sqlite3.Connection,
-) -> dict[str, list[dict]]:
-    """Build used_as_currency_for from items with buy_token_id.
-
-    Only includes items that are actually sold by vendors.
-
-    Returns:
-        Dict mapping currency_item_id to list of purchasable items
-    """
+def _denormalize_used_as_currency_for(conn: sqlite3.Connection) -> None:
+    """Populate item_usages_currency from items with buy_token_id."""
     console.print("  Processing currency usage...")
     cursor = conn.cursor()
+
+    # Get items with currency requirements that are actually sold by vendors
     cursor.execute("""
-        SELECT id, name, buy_token_id, buy_price
-        FROM items
-        WHERE buy_token_id IS NOT NULL AND buy_token_id != ''
-          AND sold_by IS NOT NULL AND sold_by != '[]'
+        SELECT i.id, i.buy_token_id, i.buy_price, iv.npc_id
+        FROM items i
+        JOIN item_sources_vendor iv ON i.id = iv.item_id
+        WHERE i.buy_token_id IS NOT NULL AND i.buy_token_id != ''
     """)
 
-    used_as_currency_for: dict[str, list[dict]] = {}
-
-    for item_id, item_name, currency_id, price in cursor.fetchall():
-        if currency_id not in used_as_currency_for:
-            used_as_currency_for[currency_id] = []
-        used_as_currency_for[currency_id].append(
-            {"item_id": item_id, "item_name": item_name, "price": price}
+    for item_id, currency_id, price, npc_id in cursor.fetchall():
+        cursor.execute(
+            """
+            INSERT INTO item_usages_currency (currency_item_id, purchasable_item_id, npc_id, price)
+            VALUES (?, ?, ?, ?)
+        """,
+            (currency_id, item_id, npc_id, price),
         )
 
-    return used_as_currency_for
 
-
-def _denormalize_required_for_altars(conn: sqlite3.Connection) -> dict[str, list[dict]]:
-    """Build required_for_altars from altars.required_activation_item_id.
-
-    Returns:
-        Dict mapping item_id to list of altar info
-    """
+def _denormalize_required_for_altars(conn: sqlite3.Connection) -> None:
+    """Populate item_usages_altar from altars.required_activation_item_id."""
     console.print("  Processing altar activation items...")
     cursor = conn.cursor()
     cursor.execute("""
-        SELECT a.id, a.name, a.required_activation_item_id, a.min_level_required, a.zone_id, z.name
-        FROM altars a
-        LEFT JOIN zones z ON a.zone_id = z.id
-        WHERE a.required_activation_item_id IS NOT NULL
+        SELECT id, required_activation_item_id
+        FROM altars
+        WHERE required_activation_item_id IS NOT NULL
     """)
 
-    required_for_altars: dict[str, list[dict]] = {}
-
-    for (
-        altar_id,
-        altar_name,
-        activation_item_id,
-        min_level_required,
-        zone_id,
-        zone_name,
-    ) in cursor.fetchall():
-        if activation_item_id not in required_for_altars:
-            required_for_altars[activation_item_id] = []
-        required_for_altars[activation_item_id].append(
-            {
-                "altar_id": altar_id,
-                "altar_name": altar_name,
-                "min_level_required": min_level_required,
-                "zone_id": zone_id,
-                "zone_name": zone_name if zone_name else zone_id,
-            }
+    for altar_id, activation_item_id in cursor.fetchall():
+        cursor.execute(
+            """
+            INSERT INTO item_usages_altar (item_id, altar_id)
+            VALUES (?, ?)
+        """,
+            (activation_item_id, altar_id),
         )
 
-    return required_for_altars
 
-
-def _denormalize_required_for_portals(
-    conn: sqlite3.Connection,
-) -> dict[str, list[dict]]:
-    """Build required_for_portals from portals.required_item_id.
-
-    Returns:
-        Dict mapping item_id to list of portal info
-    """
+def _denormalize_required_for_portals(conn: sqlite3.Connection) -> None:
+    """Populate item_usages_portal from portals.required_item_id."""
     console.print("  Processing portal requirements...")
     cursor = conn.cursor()
     cursor.execute("""
-        SELECT p.id, p.required_item_id, p.from_zone_id, z1.name, p.to_zone_id, z2.name,
-               p.position_x, p.position_y, p.destination_x, p.destination_y
-        FROM portals p
-        LEFT JOIN zones z1 ON p.from_zone_id = z1.id
-        LEFT JOIN zones z2 ON p.to_zone_id = z2.id
-        WHERE p.required_item_id IS NOT NULL
+        SELECT id, required_item_id
+        FROM portals
+        WHERE required_item_id IS NOT NULL
     """)
 
-    required_for_portals: dict[str, list[dict]] = {}
-
-    for (
-        portal_id,
-        required_item_id,
-        from_zone_id,
-        from_zone_name,
-        to_zone_id,
-        to_zone_name,
-        position_x,
-        position_y,
-        destination_x,
-        destination_y,
-    ) in cursor.fetchall():
-        if required_item_id not in required_for_portals:
-            required_for_portals[required_item_id] = []
-        required_for_portals[required_item_id].append(
-            {
-                "portal_id": portal_id,
-                "from_zone_id": from_zone_id,
-                "from_zone_name": from_zone_name if from_zone_name else from_zone_id,
-                "to_zone_id": to_zone_id,
-                "to_zone_name": to_zone_name if to_zone_name else to_zone_id,
-                "position_x": position_x,
-                "position_y": position_y,
-                "destination_x": destination_x,
-                "destination_y": destination_y,
-            }
+    for portal_id, required_item_id in cursor.fetchall():
+        cursor.execute(
+            """
+            INSERT INTO item_usages_portal (item_id, portal_id)
+            VALUES (?, ?)
+        """,
+            (required_item_id, portal_id),
         )
 
-    return required_for_portals
 
-
-def _denormalize_opens_chests(conn: sqlite3.Connection) -> dict[str, list[dict]]:
-    """Build opens_chests from chests.key_required_id.
-
-    Returns:
-        Dict mapping key_item_id to list of chest info
-    """
+def _denormalize_opens_chests(conn: sqlite3.Connection) -> None:
+    """Populate item_usages_chest from chests.key_required_id."""
     console.print("  Processing key-chest relationships...")
     cursor = conn.cursor()
     cursor.execute("""
-        SELECT c.key_required_id, c.id, c.name, c.zone_id, z.name as zone_name,
-               c.position_x, c.position_y
-        FROM chests c
-        LEFT JOIN zones z ON c.zone_id = z.id
-        WHERE c.key_required_id IS NOT NULL AND c.key_required_id != ''
-        ORDER BY z.name, c.name
+        SELECT key_required_id, id
+        FROM chests
+        WHERE key_required_id IS NOT NULL AND key_required_id != ''
     """)
 
-    opens_chests: dict[str, list[dict]] = {}
-
-    for (
-        key_id,
-        chest_id,
-        chest_name,
-        zone_id,
-        zone_name,
-        position_x,
-        position_y,
-    ) in cursor.fetchall():
-        if key_id not in opens_chests:
-            opens_chests[key_id] = []
-
-        chest_info = {
-            "chest_id": chest_id,
-            "chest_name": chest_name,
-            "position_x": position_x,
-            "position_y": position_y,
-        }
-
-        if zone_id:
-            chest_info["zone_id"] = zone_id
-        if zone_name:
-            chest_info["zone_name"] = zone_name
-
-        opens_chests[key_id].append(chest_info)
-
-    return opens_chests
+    for key_id, chest_id in cursor.fetchall():
+        cursor.execute(
+            """
+            INSERT INTO item_usages_chest (item_id, chest_id)
+            VALUES (?, ?)
+        """,
+            (key_id, chest_id),
+        )
 
 
 def run(conn: sqlite3.Connection, redactions: RedactionConfig | None = None) -> None:
     """Run all item usage denormalizations.
 
-    Updates items table with:
-    - used_in_recipes
-    - needed_for_quests
-    - used_as_currency_for
-    - required_for_altars
-    - required_for_portals
-    - opens_chests
+    Populates junction tables instead of JSON columns:
+    - item_usages_recipe: Items used as recipe materials
+    - item_usages_quest: Items required for quests
+    - item_usages_currency: Items used as currency for purchases
+    - item_usages_altar: Items required for altar activation
+    - item_usages_portal: Items required for portal access
+    - item_usages_chest: Items that open chests (keys)
 
     Args:
         conn: Database connection
@@ -460,84 +258,27 @@ def run(conn: sqlite3.Connection, redactions: RedactionConfig | None = None) -> 
 
     cursor = conn.cursor()
 
-    # Build all usage dictionaries
-    used_in_recipes = _denormalize_used_in_recipes(conn, redactions)
-    needed_for_quests = _denormalize_needed_for_quests(conn)
-    used_as_currency_for = _denormalize_used_as_currency_for(conn)
-    required_for_altars = _denormalize_required_for_altars(conn)
-    required_for_portals = _denormalize_required_for_portals(conn)
-    opens_chests = _denormalize_opens_chests(conn)
+    # Clear all junction tables first
+    console.print("  Clearing junction tables...")
+    usage_tables = [
+        "item_usages_recipe",
+        "item_usages_quest",
+        "item_usages_currency",
+        "item_usages_altar",
+        "item_usages_portal",
+        "item_usages_chest",
+    ]
+    for table in usage_tables:
+        cursor.execute(f"DELETE FROM {table}")
 
-    # Update items table
-    console.print("  Updating items table with usage data...")
-
-    for item_id, recipe_list in used_in_recipes.items():
-        # Sort by result item name alphabetically
-        recipe_list_sorted = sorted(recipe_list, key=lambda x: x["result_item_name"])
-        cursor.execute(
-            "UPDATE items SET used_in_recipes = ? WHERE id = ?",
-            (json.dumps(recipe_list_sorted), item_id),
-        )
-
-    for item_id, quest_list in needed_for_quests.items():
-        # Sort by quest name alphabetically
-        quest_list_sorted = sorted(quest_list, key=lambda x: x["quest_name"])
-        cursor.execute(
-            "UPDATE items SET needed_for_quests = ? WHERE id = ?",
-            (json.dumps(quest_list_sorted), item_id),
-        )
-
-    for currency_id, item_list in used_as_currency_for.items():
-        # Sort by item name alphabetically
-        item_list_sorted = sorted(item_list, key=lambda x: x["item_name"])
-        cursor.execute(
-            "UPDATE items SET used_as_currency_for = ? WHERE id = ?",
-            (json.dumps(item_list_sorted), currency_id),
-        )
-
-    for item_id, altars in required_for_altars.items():
-        # Sort by altar name, then by zone name
-        altars_sorted = sorted(altars, key=lambda x: (x["altar_name"], x["zone_name"]))
-        cursor.execute(
-            "UPDATE items SET required_for_altars = ? WHERE id = ?",
-            (json.dumps(altars_sorted), item_id),
-        )
-
-    for item_id, portals in required_for_portals.items():
-        # Sort by from zone name, then to zone name
-        portals_sorted = sorted(
-            portals, key=lambda x: (x["from_zone_name"], x["to_zone_name"])
-        )
-        cursor.execute(
-            "UPDATE items SET required_for_portals = ? WHERE id = ?",
-            (json.dumps(portals_sorted), item_id),
-        )
-
-    for key_id, chests in opens_chests.items():
-        # Already sorted by zone_name, chest_name in query
-        cursor.execute(
-            "UPDATE items SET opens_chests = ? WHERE id = ?",
-            (json.dumps(chests), key_id),
-        )
+    # Populate junction tables
+    _denormalize_used_in_recipes(conn, redactions)
+    _denormalize_needed_for_quests(conn)
+    _denormalize_used_as_currency_for(conn)
+    _denormalize_required_for_altars(conn)
+    _denormalize_required_for_portals(conn)
+    _denormalize_opens_chests(conn)
 
     conn.commit()
 
-    # Print summary
-    console.print(
-        f"  [green]OK[/green] Updated {len(used_in_recipes)} items used in recipes"
-    )
-    console.print(
-        f"  [green]OK[/green] Updated {len(needed_for_quests)} items needed for quests"
-    )
-    console.print(
-        f"  [green]OK[/green] Updated {len(used_as_currency_for)} currency items"
-    )
-    console.print(
-        f"  [green]OK[/green] Updated {len(required_for_altars)} items required for altars"
-    )
-    console.print(
-        f"  [green]OK[/green] Updated {len(required_for_portals)} items required for portals"
-    )
-    console.print(
-        f"  [green]OK[/green] Updated {len(opens_chests)} keys with chest info"
-    )
+    console.print("  [green]OK[/green] Item usage junction tables populated")
