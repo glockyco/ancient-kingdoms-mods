@@ -221,6 +221,17 @@ public class MonsterExporter : BaseExporter
                     continue;  // Skip templates - they don't have spawn locations
 
                 var zoneInfo = GetZoneInfoFromPosition(monster.transform.position);
+                
+                // Validate that inferred zone matches authoritative idZone field
+                var authoritativeZoneId = GetZoneIdFromByte((byte)monster.idZone);
+                if (authoritativeZoneId != zoneInfo.ZoneId)
+                {
+                    Logger.Warning($"Zone ID mismatch for '{monster.name}':");
+                    Logger.Warning($"  - Inferred from position: {zoneInfo.ZoneId}");
+                    Logger.Warning($"  - Authoritative idZone: {monster.idZone} ({authoritativeZoneId})");
+                    Logger.Warning($"  - Position: ({monster.transform.position.x:F2}, {monster.transform.position.y:F2}, {monster.transform.position.z:F2})");
+                }
+                
                 var spawnData = new MonsterSpawnData
                 {
                     id = $"{name}_{zoneInfo.ZoneId}_{monster.GetInstanceID()}",
