@@ -573,6 +573,35 @@ CREATE TABLE item_usages_chest (
 CREATE INDEX idx_item_usages_chest_chest ON item_usages_chest(chest_id);
 
 -- =============================================================================
+-- ITEM ZONES (precomputed item-zone relationships for filtering)
+-- =============================================================================
+
+-- Items obtainable in specific zones
+CREATE TABLE item_zones_obtainable (
+    item_id TEXT NOT NULL REFERENCES items(id),
+    zone_id TEXT NOT NULL REFERENCES zones(id),
+    source_type TEXT NOT NULL CHECK (source_type IN (
+        'monster', 'vendor', 'quest', 'altar', 'recipe',
+        'gather', 'chest', 'pack', 'random', 'merge', 'treasure_map'
+    )),
+    PRIMARY KEY (item_id, zone_id, source_type)
+);
+CREATE INDEX idx_item_zones_obtainable_zone ON item_zones_obtainable(zone_id);
+CREATE INDEX idx_item_zones_obtainable_source ON item_zones_obtainable(source_type);
+
+-- Items usable in specific zones
+CREATE TABLE item_zones_usable (
+    item_id TEXT NOT NULL REFERENCES items(id),
+    zone_id TEXT NOT NULL REFERENCES zones(id),
+    usage_type TEXT NOT NULL CHECK (usage_type IN (
+        'recipe', 'quest', 'currency', 'altar', 'portal', 'chest'
+    )),
+    PRIMARY KEY (item_id, zone_id, usage_type)
+);
+CREATE INDEX idx_item_zones_usable_zone ON item_zones_usable(zone_id);
+CREATE INDEX idx_item_zones_usable_usage ON item_zones_usable(usage_type);
+
+-- =============================================================================
 -- MONSTER SPAWNS
 -- =============================================================================
 
