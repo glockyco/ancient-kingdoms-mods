@@ -41,9 +41,14 @@ export type ObtainabilitySourceType =
   | "drop"
   | "vendor"
   | "quest"
+  | "altar"
+  | "recipe"
   | "gather"
   | "chest"
   | "pack"
+  | "random"
+  | "merge"
+  | "treasure_map"
   | "special";
 
 /**

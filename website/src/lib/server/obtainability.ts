@@ -6,57 +6,26 @@ import type {
   RecipeType,
   LearningRequirement,
 } from "$lib/types/recipes";
+import {
+  getMonsterSources,
+  getVendorSources,
+  getQuestSources,
+  getAltarSources,
+  getRecipeSources,
+  getGatherSources,
+  getChestSources,
+  getPackSources,
+  getRandomSources,
+  getMergeSources,
+  getTreasureMapSources,
+} from "./item-sources";
 
-// Raw item data from database for obtainability
-interface RawItemObtainability {
+// Basic item data for obtainability tree building
+interface BasicItemData {
   id: string;
   name: string;
   tooltip_html: string | null;
   quality: number;
-  dropped_by: string | null;
-  sold_by: string | null;
-  rewarded_by: string | null;
-  gathered_from: string | null;
-  crafted_from: string | null;
-  found_in_chests: string | null;
-  found_in_packs: string | null;
-}
-
-// JSON structures from denormalized fields
-interface DropInfo {
-  monster_id: string;
-  monster_name: string;
-}
-
-interface SoldByInfo {
-  npc_id: string;
-  npc_name: string;
-}
-
-interface RewardedByInfo {
-  quest_id: string;
-  quest_name: string;
-}
-
-interface GatherDropInfo {
-  gather_item_id: string;
-  gather_item_name: string;
-}
-
-interface ChestSourceInfo {
-  chest_id: string;
-  chest_name: string;
-}
-
-interface PackSourceInfo {
-  pack_id: string;
-  pack_name: string;
-}
-
-interface CraftedFromInfo {
-  recipe_id: string;
-  result_amount: number;
-  materials: Array<{ item_id: string; item_name: string; amount: number }>;
 }
 
 /**
@@ -71,16 +40,15 @@ export function buildObtainabilityTree(
   isRoot: boolean = false,
   maxDepth: number = 10,
 ): ObtainabilityNode {
-  // Query item obtainability data
+  // Query basic item data
   const item = db
     .prepare(
       `
-      SELECT id, name, tooltip_html, quality, dropped_by, sold_by, rewarded_by,
-             gathered_from, crafted_from, found_in_chests, found_in_packs
+      SELECT id, name, tooltip_html, quality
       FROM items WHERE id = ?
     `,
     )
-    .get(itemId) as RawItemObtainability | undefined;
+    .get(itemId) as BasicItemData | undefined;
 
   if (!item) {
     return {
@@ -111,79 +79,133 @@ export function buildObtainabilityTree(
     addSource(source);
   }
 
-  // Parse dropped_by
-  if (item.dropped_by) {
-    const drops = JSON.parse(item.dropped_by) as DropInfo[];
-    const seen = new Set<string>();
-    for (const d of drops) {
-      if (!seen.has(d.monster_id)) {
-        addSource({ type: "drop", id: d.monster_id, name: d.monster_name });
-        seen.add(d.monster_id);
-      }
+  // Query sources from junction tables
+  const monsters = getMonsterSources(db, itemId);
+  const seen = new Set<string>();
+  for (const m of monsters) {
+    if (!seen.has(m.monster_id)) {
+      addSource({ type: "drop", id: m.monster_id, name: m.monster_name });
+      seen.add(m.monster_id);
     }
   }
 
-  // Parse sold_by
-  if (item.sold_by) {
-    const vendors = JSON.parse(item.sold_by) as SoldByInfo[];
-    const seen = new Set<string>();
-    for (const v of vendors) {
-      if (!seen.has(v.npc_id)) {
-        addSource({ type: "vendor", id: v.npc_id, name: v.npc_name });
-        seen.add(v.npc_id);
-      }
+  // Vendor sources
+  const vendors = getVendorSources(db, itemId);
+  seen.clear();
+  for (const v of vendors) {
+    if (!seen.has(v.npc_id)) {
+      addSource({ type: "vendor", id: v.npc_id, name: v.npc_name });
+      seen.add(v.npc_id);
     }
   }
 
-  // Parse rewarded_by
-  if (item.rewarded_by) {
-    const quests = JSON.parse(item.rewarded_by) as RewardedByInfo[];
-    const seen = new Set<string>();
-    for (const q of quests) {
-      if (!seen.has(q.quest_id)) {
-        addSource({ type: "quest", id: q.quest_id, name: q.quest_name });
-        seen.add(q.quest_id);
-      }
+  // Quest sources
+  const quests = getQuestSources(db, itemId);
+  seen.clear();
+  for (const q of quests) {
+    if (!seen.has(q.quest_id)) {
+      addSource({ type: "quest", id: q.quest_id, name: q.quest_name });
+      seen.add(q.quest_id);
     }
   }
 
-  // Parse gathered_from
-  if (item.gathered_from) {
-    const gathers = JSON.parse(item.gathered_from) as GatherDropInfo[];
-    const seen = new Set<string>();
-    for (const g of gathers) {
-      if (!seen.has(g.gather_item_id)) {
-        addSource({
-          type: "gather",
-          id: g.gather_item_id,
-          name: g.gather_item_name,
-        });
-        seen.add(g.gather_item_id);
-      }
+  // Altar sources
+  const altars = getAltarSources(db, itemId);
+  seen.clear();
+  for (const a of altars) {
+    if (!seen.has(a.altar_id)) {
+      addSource({ type: "altar", id: a.altar_id, name: a.altar_name });
+      seen.add(a.altar_id);
     }
   }
 
-  // Parse found_in_chests
-  if (item.found_in_chests) {
-    const chests = JSON.parse(item.found_in_chests) as ChestSourceInfo[];
-    const seen = new Set<string>();
-    for (const c of chests) {
-      if (!seen.has(c.chest_id)) {
-        addSource({ type: "chest", id: c.chest_id, name: c.chest_name });
-        seen.add(c.chest_id);
-      }
+  // Gather sources
+  const gathers = getGatherSources(db, itemId);
+  seen.clear();
+  for (const g of gathers) {
+    if (!seen.has(g.resource_id)) {
+      addSource({
+        type: "gather",
+        id: g.resource_id,
+        name: g.resource_name,
+      });
+      seen.add(g.resource_id);
     }
   }
 
-  // Parse found_in_packs
-  if (item.found_in_packs) {
-    const packs = JSON.parse(item.found_in_packs) as PackSourceInfo[];
-    const seen = new Set<string>();
-    for (const p of packs) {
-      if (!seen.has(p.pack_id)) {
-        addSource({ type: "pack", id: p.pack_id, name: p.pack_name });
-        seen.add(p.pack_id);
-      }
+  // Chest sources
+  const chests = getChestSources(db, itemId);
+  seen.clear();
+  for (const c of chests) {
+    if (!seen.has(c.chest_id)) {
+      addSource({ type: "chest", id: c.chest_id, name: c.chest_name });
+      seen.add(c.chest_id);
+    }
+  }
+
+  // Pack sources
+  const packs = getPackSources(db, itemId);
+  seen.clear();
+  for (const p of packs) {
+    if (!seen.has(p.pack_item_id)) {
+      addSource({
+        type: "pack",
+        id: p.pack_item_id,
+        name: p.pack_item_name,
+      });
+      seen.add(p.pack_item_id);
+    }
+  }
+
+  // Random sources
+  const randoms = getRandomSources(db, itemId);
+  seen.clear();
+  for (const r of randoms) {
+    if (!seen.has(r.random_item_id)) {
+      addSource({
+        type: "random",
+        id: r.random_item_id,
+        name: r.random_item_name,
+      });
+      seen.add(r.random_item_id);
+    }
+  }
+
+  // Treasure map sources
+  const treasureMaps = getTreasureMapSources(db, itemId);
+  seen.clear();
+  for (const tm of treasureMaps) {
+    if (!seen.has(tm.map_item_id)) {
+      addSource({
+        type: "treasure_map",
+        id: tm.map_item_id,
+        name: tm.map_item_name,
+      });
+      seen.add(tm.map_item_id);
+    }
+  }
+
+  // Add recipe sources (only from first recipe if multiple exist)
+  const recipes = getRecipeSources(db, itemId);
+  if (recipes.length > 0) {
+    const firstRecipe = recipes[0];
+    addSource({
+      type: "recipe",
+      id: firstRecipe.recipe_id,
+      name: `Recipe (Tier ${firstRecipe.tier || 0})`,
+    });
+  }
+
+  // Add merge sources
+  const merges = getMergeSources(db, itemId);
+  if (merges.length > 0) {
+    const firstMerge = merges[0];
+    for (const componentId of firstMerge.component_item_ids) {
+      addSource({
+        type: "merge",
+        id: componentId,
+        name: "", // Will be filled from components
+      });
     }
   }
 
@@ -200,49 +222,50 @@ export function buildObtainabilityTree(
   let recipe: ObtainabilityNode["recipe"] | undefined;
   let service: ObtainabilityNode["service"] | undefined;
 
-  if (item.crafted_from && depth < maxDepth) {
-    const craftedFrom = JSON.parse(item.crafted_from) as CraftedFromInfo[];
+  if (recipes.length > 0 && depth < maxDepth) {
+    const recipeData = recipes[0];
+    const visitKey = itemId;
 
-    if (craftedFrom.length > 0) {
-      const recipeData = craftedFrom[0];
-      const visitKey = itemId;
+    if (!visited.has(visitKey)) {
+      visited.add(visitKey);
 
-      if (!visited.has(visitKey)) {
-        visited.add(visitKey);
+      const recipeType = determineRecipeType(db, recipeData.recipe_id);
 
-        const recipeType = determineRecipeType(db, recipeData.recipe_id);
+      // Query recipe materials
+      const materials = getRecipeMaterials(
+        db,
+        recipeData.recipe_id,
+        recipeData.recipe_type,
+      ).map((m) =>
+        buildObtainabilityTree(
+          db,
+          m.item_id,
+          m.amount,
+          depth + 1,
+          visited,
+          false,
+          maxDepth,
+        ),
+      );
 
-        const materials: ObtainabilityNode[] = recipeData.materials.map((m) =>
-          buildObtainabilityTree(
-            db,
-            m.item_id,
-            m.amount,
-            depth + 1,
-            visited,
-            false,
-            maxDepth,
-          ),
+      // Check if this is an alchemy recipe that requires learning from a recipe item
+      let learningRequirement: LearningRequirement | undefined;
+      if (recipeType === "Alchemy") {
+        learningRequirement = getAlchemyLearningRequirement(
+          db,
+          itemId,
+          depth,
+          visited,
+          maxDepth,
         );
-
-        // Check if this is an alchemy recipe that requires learning from a recipe item
-        let learningRequirement: LearningRequirement | undefined;
-        if (recipeType === "Alchemy") {
-          learningRequirement = getAlchemyLearningRequirement(
-            db,
-            itemId,
-            depth,
-            visited,
-            maxDepth,
-          );
-        }
-
-        recipe = {
-          recipe_id: recipeData.recipe_id,
-          recipe_type: recipeType,
-          materials,
-          learningRequirement,
-        };
       }
+
+      recipe = {
+        recipe_id: recipeData.recipe_id,
+        recipe_type: recipeType,
+        materials,
+        learningRequirement,
+      };
     }
   }
 
@@ -408,6 +431,33 @@ function determineRecipeType(
 
   if (crafting?.station_type === "cooking") return "Cooking";
   return "Crafting";
+}
+
+// Get recipe materials from a recipe (crafting or alchemy)
+function getRecipeMaterials(
+  db: Database.Database,
+  recipeId: string,
+  recipeType: "crafting" | "alchemy",
+): Array<{ item_id: string; amount: number }> {
+  const tableName =
+    recipeType === "crafting" ? "crafting_recipes" : "alchemy_recipes";
+
+  const recipe = db
+    .prepare(`SELECT materials FROM ${tableName} WHERE id = ?`)
+    .get(recipeId) as { materials: string | null } | undefined;
+
+  if (!recipe?.materials) {
+    return [];
+  }
+
+  try {
+    return JSON.parse(recipe.materials) as Array<{
+      item_id: string;
+      amount: number;
+    }>;
+  } catch {
+    return [];
+  }
 }
 
 // Get merge components for items created by merging other items

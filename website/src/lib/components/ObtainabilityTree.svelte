@@ -14,8 +14,12 @@
   import Box from "@lucide/svelte/icons/box";
   import Package from "@lucide/svelte/icons/package";
   import Sparkles from "@lucide/svelte/icons/sparkles";
-  import BookOpen from "@lucide/svelte/icons/book-open";
   import Combine from "@lucide/svelte/icons/combine";
+  import Flame from "@lucide/svelte/icons/flame";
+  import Shovel from "@lucide/svelte/icons/shovel";
+  import Hammer from "@lucide/svelte/icons/hammer";
+  import Dices from "@lucide/svelte/icons/dices";
+  import BookOpen from "@lucide/svelte/icons/book-open";
 
   interface Props {
     node: ObtainabilityNode;
@@ -73,6 +77,18 @@
       label: "Quest",
       linkPrefix: "/quests/",
     },
+    altar: {
+      icon: Flame,
+      color: "text-orange-500",
+      label: "Altar",
+      linkPrefix: "/altars/",
+    },
+    recipe: {
+      icon: Hammer,
+      color: "text-orange-500",
+      label: "Recipe",
+      linkPrefix: "/recipes/",
+    },
     gather: {
       icon: Pickaxe,
       color: "text-amber-500",
@@ -81,14 +97,32 @@
     },
     chest: {
       icon: Box,
-      color: "text-yellow-500",
+      color: "text-blue-500",
       label: "Chest",
-      linkPrefix: "/items/",
+      linkPrefix: "/chests/",
     },
     pack: {
       icon: Package,
       color: "text-cyan-500",
       label: "Pack",
+      linkPrefix: "/items/",
+    },
+    random: {
+      icon: Dices,
+      color: "text-purple-500",
+      label: "Random",
+      linkPrefix: "/items/",
+    },
+    merge: {
+      icon: Combine,
+      color: "text-indigo-500",
+      label: "Merge",
+      linkPrefix: "/items/",
+    },
+    treasure_map: {
+      icon: Shovel,
+      color: "text-teal-500",
+      label: "Treasure",
       linkPrefix: "/items/",
     },
     special: {
