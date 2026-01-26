@@ -765,26 +765,51 @@
             <Card.Title>Passive Effects</Card.Title>
           </Card.Header>
           <Card.Content>
-            <div class="space-y-3">
+            <div class="space-y-4">
               <div>
                 <div class={styles.label}>How it works</div>
                 <div class={styles.value}>
-                  Keep in inventory. 15% chance to activate on critical hits or
-                  lethal damage. Consumes 1 when triggered.
+                  Keep in inventory. Has a 15% chance to activate when you deal
+                  a critical hit, take lethal damage, or are hit by an AoE
+                  attack. Consumes 1 when triggered.
                 </div>
               </div>
-              <div>
-                <div class={styles.label}>On Critical Hit</div>
-                <div class={styles.value}>
-                  <span class={styles.valuePositive}>3× damage</span>
-                  instead of 1.5×
+              <div class="space-y-2">
+                <div>
+                  <div class={styles.label}>On Critical Hit</div>
+                  <div class={styles.value}>
+                    <span class={styles.valuePositive}>3× damage</span>
+                    instead of 1.5×
+                  </div>
+                  <div class="italic text-muted-foreground text-sm mt-1">
+                    "Radiant Aether surges - your strike rends the heavens!"
+                  </div>
                 </div>
               </div>
-              <div>
-                <div class={styles.label}>On Lethal Damage</div>
-                <div class={styles.value}>
-                  <span class={styles.valuePositive}>Full heal to max HP</span>
-                  instead of dying
+              <div class="space-y-2">
+                <div>
+                  <div class={styles.label}>On Lethal Damage</div>
+                  <div class={styles.value}>
+                    <span class={styles.valuePositive}>Full heal to max HP</span
+                    >
+                    instead of dying
+                  </div>
+                  <div class="italic text-muted-foreground text-sm mt-1">
+                    "Radiant Aether flares within you - you rise anew!"
+                  </div>
+                </div>
+              </div>
+              <div class="space-y-2">
+                <div>
+                  <div class={styles.label}>On AoE Attack</div>
+                  <div class={styles.value}>
+                    <span class={styles.valuePositive}>Blocks the AoE</span>,
+                    protecting your party from damage
+                  </div>
+                  <div class="italic text-muted-foreground text-sm mt-1">
+                    "Radiant Aether flares brightly - your party withstand
+                    &#123;SKILL_NAME&#125;!"
+                  </div>
                 </div>
               </div>
             </div>
