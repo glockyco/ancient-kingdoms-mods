@@ -268,11 +268,6 @@ class ItemData(BaseModel):
     )
     weapon_required_ammo_id: str | None = None  # Ammo type required (e.g., "arrow")
 
-    # Structure properties
-    structure_available_rotations: list[
-        Any
-    ] = []  # Available rotation angles (e.g., [{'x': 0.0, 'y': 180.0, 'z': 0.0}])
-
     # Travel item properties
     travel_destination: Position | None = None  # Teleport coordinates
     travel_destination_name: str | None = None  # Display name of destination

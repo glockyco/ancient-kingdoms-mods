@@ -369,14 +369,6 @@ public class ItemExporter : BaseExporter
         if (structureItem == null) return;
 
         itemData.structure_price = structureItem.price;
-        if (structureItem.availableRotations != null)
-        {
-            itemData.structure_available_rotations = new List<Position>();
-            foreach (var rotation in structureItem.availableRotations)
-            {
-                itemData.structure_available_rotations.Add(new Position(rotation.x, rotation.y, rotation.z));
-            }
-        }
     }
 
     private void PopulateWeaponFields(Il2Cpp.ScriptableItem item, ItemData itemData)

@@ -99,7 +99,6 @@ public class ItemData
 
     // === CustomStructureItem fields (when item_type = structure) ===
     public long structure_price { get; set; }
-    public List<Position> structure_available_rotations { get; set; }
 
     // === WeaponItem fields (when item_type = weapon) ===
     public string weapon_required_ammo_id { get; set; }

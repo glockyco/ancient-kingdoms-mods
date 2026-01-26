@@ -81,7 +81,6 @@ export interface Item {
   relic_buff_level: number;
   // Structure
   structure_price: number;
-  structure_available_rotations: string | null; // JSON
   // Weapon
   weapon_proc_effect_probability: number;
   weapon_proc_effect_id: string | null;

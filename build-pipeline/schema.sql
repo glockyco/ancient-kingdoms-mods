@@ -206,7 +206,6 @@ CREATE TABLE items (
     -- Additional item properties
     relic_buff_level INTEGER DEFAULT 0,
     structure_price INTEGER DEFAULT 0,
-    structure_available_rotations TEXT,  -- JSON array
     weapon_proc_effect_probability REAL DEFAULT 0.0,
     weapon_proc_effect_id TEXT REFERENCES skills(id),
     weapon_proc_effect_name TEXT,
