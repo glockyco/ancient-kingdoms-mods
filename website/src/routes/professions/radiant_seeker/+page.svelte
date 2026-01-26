@@ -15,10 +15,10 @@
     return Math.max(0, (0.9 - skill / 2) * 100);
   }
 
-  // Radiant Aether drop chance: radiantSeekerLevel * 5%
+  // Radiant Aether drop chance: radiantSeekerLevel * 10% (increased in v0.9.5.4)
   function getRadiantAetherChance(): number {
     const skill = skillLevel / 100;
-    return skill * 5;
+    return skill * 10;
   }
 </script>
 

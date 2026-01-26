@@ -136,11 +136,11 @@ def _denormalize_gathered_from(
         if item_id not in gathered_from:
             gathered_from[item_id] = []
 
-        # Radiant Sparks have special drop logic: radiantSekeerLevel * 0.05
-        # At max level (100%), this gives 5% chance. Show as variable rate.
+        # Radiant Sparks have special drop logic: radiantSekeerLevel * 0.10 (v0.9.5.4+)
+        # At max level (100%), this gives 10% chance. Show as variable rate.
         if is_radiant_spark:
-            rate = 0.05  # Max rate at 100% Radiant Seeker
-            rate_note = "0-5% based on Radiant Seeker level"
+            rate = 0.10  # Max rate at 100% Radiant Seeker
+            rate_note = "0.0% – 10.0%"
         else:
             rate = 1.0
             rate_note = None

@@ -221,7 +221,11 @@
                 </span>
               </MapEntityLink>
               <span class="shrink-0 text-xs text-muted-foreground">
-                {formatPercent(source.rate)}
+                {#if source.rateNote}
+                  {source.rateNote}
+                {:else}
+                  {formatPercent(source.rate)}
+                {/if}
               </span>
             </div>
           {/each}
