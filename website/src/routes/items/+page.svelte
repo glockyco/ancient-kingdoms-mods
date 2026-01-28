@@ -1,5 +1,6 @@
 <script lang="ts">
   import { afterNavigate, replaceState } from "$app/navigation";
+  import { untrack } from "svelte";
   import { SvelteMap } from "svelte/reactivity";
   import {
     DataTable,
@@ -117,7 +118,8 @@
   });
 
   // Precomputed at build time - no JSON parsing needed on client
-  const { itemStatKeys, itemClassKeys } = data;
+  // Use untrack to capture constants without reactive tracking
+  const { itemStatKeys, itemClassKeys } = untrack(() => data);
 
   import { QUALITY_NAMES, QUALITY_IDS } from "$lib/constants/quality";
 
