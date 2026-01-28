@@ -325,23 +325,34 @@ function resolvePortalSelection(
 
 /**
  * Resolve chest selection.
+ * Chests without map positions (excluded zones) still show popup but no highlight.
  */
 function resolveChestSelection(
   chestId: string,
   entityData: MapEntityData,
 ): ResolvedSelection {
-  const chest = entityData.chests.find(
-    (c) => c.id === chestId && c.position !== null,
-  );
+  // Find ANY chest with this id (may have position or not)
+  const chest = entityData.chests.find((c) => c.id === chestId);
 
-  if (chest) {
+  if (!chest) {
+    return { popup: null, highlight: null };
+  }
+
+  // Check if chest has a map position
+  const hasPosition = chest.position !== null;
+
+  if (hasPosition) {
     return {
       popup: { type: "entity", entity: chest },
       highlight: { entityId: chestId, entityType: "chest" },
     };
   }
 
-  return { popup: null, highlight: null };
+  // Chest has no position (excluded zone) - just show popup, no highlight
+  return {
+    popup: { type: "entity", entity: chest },
+    highlight: null,
+  };
 }
 
 /**
