@@ -101,6 +101,7 @@ export function getVendorSources(
 
 /**
  * Get items obtained from quests (rewards and provided items)
+ * Note: is_repeatable includes both truly repeatable quests AND adventurer quests (daily)
  */
 export function getQuestSources(
   db: Database.Database,
@@ -115,7 +116,7 @@ export function getQuestSources(
 			q.level_recommended as quest_level_recommended,
 			isq.source_type,
 			isq.class_restriction,
-			COALESCE(q.is_repeatable, 0) as is_repeatable
+			(COALESCE(q.is_repeatable, 0) OR COALESCE(q.is_adventurer_quest, 0)) as is_repeatable
 		FROM item_sources_quest isq
 		JOIN quests q ON isq.quest_id = q.id
 		WHERE isq.item_id = ?
