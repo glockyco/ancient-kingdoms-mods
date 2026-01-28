@@ -207,6 +207,10 @@
             entity.type === "hunt"
               ? "monster"
               : entity.type;
+          // Set selectedEntityId/Type directly (not just from highlight)
+          // This preserves URL state for entities in excluded zones with no position
+          selectedEntityId = newEntityId;
+          selectedEntityType = newEntityType;
           break;
         }
         case "zone":
