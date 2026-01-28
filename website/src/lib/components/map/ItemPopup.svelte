@@ -293,11 +293,14 @@
         <div class="max-h-32 space-y-0.5 overflow-y-auto pr-2">
           {#each details.chestSources as chest (chest.chestId)}
             <div class="flex items-center justify-between gap-2">
-              <MapItemLink
-                itemId={chest.chestId}
-                itemName={chest.chestName}
-                onSelect={onSelectItem}
-              />
+              <MapEntityLink
+                href={buildEntityUrl(chest.chestId, "chest")}
+                onSelect={() => onSelectChest(chest.chestId)}
+                onHoverStart={() => onHoverChest?.(chest.chestId)}
+                onHoverEnd={() => onHoverChest?.(null)}
+              >
+                {chest.chestName}
+              </MapEntityLink>
               <span class="shrink-0 text-xs text-muted-foreground">
                 {formatPercent(chest.rate)}
               </span>
