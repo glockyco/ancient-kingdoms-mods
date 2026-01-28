@@ -111,7 +111,7 @@
       id: "drops",
       header: "Random Drops",
       size: 170,
-      accessorFn: (row) => row.drops.map((d) => d.item_name).join(" "),
+      accessorFn: (row) => row.drops.length,
     },
     {
       accessorKey: "respawn_time",
