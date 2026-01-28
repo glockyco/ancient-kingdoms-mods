@@ -84,13 +84,18 @@
     return columnId;
   }
 
-  let sorting = $state<SortingState>(initialSorting);
-  let pagination = $state<PaginationState>({
-    pageIndex: 0,
-    pageSize,
-  });
+  // Capture initial prop values (won't react to prop changes after mount)
+  let sorting = $state<SortingState>(untrack(() => initialSorting));
+  let pagination = $state<PaginationState>(
+    untrack(() => ({
+      pageIndex: 0,
+      pageSize,
+    })),
+  );
   let columnFilters = $state<ColumnFiltersState>([]);
-  let columnVisibility = $state<VisibilityState>(initialColumnVisibility);
+  let columnVisibility = $state<VisibilityState>(
+    untrack(() => initialColumnVisibility),
+  );
   let columnPinning = $state<ColumnPinningState>({ left: [], right: [] });
   let globalFilter = $state("");
   let isHydrated = $state(false);
@@ -107,8 +112,8 @@
     previousData = data;
   });
 
-  // Storage key for localStorage persistence
-  const storageKey = urlKey ? `table-state-${urlKey}` : null;
+  // Storage key for localStorage persistence (derived from urlKey prop)
+  const storageKey = $derived(urlKey ? `table-state-${urlKey}` : null);
   const STORAGE_PREFIX = "table-state-";
   const MAX_AGE_DAYS = 30;
   const MAX_ENTRIES = 100;
