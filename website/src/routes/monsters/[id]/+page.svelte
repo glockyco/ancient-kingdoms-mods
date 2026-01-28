@@ -67,7 +67,8 @@
   );
 
   // Monster level slider (for monsters with level variance)
-  let monsterLevelInput = $state(data.monster.level_min);
+  // Capture initial value only - user controls the slider after mount
+  let monsterLevelInput = $state((() => data.monster.level_min)());
 
   // Clamp input to valid range
   const displayLevel = $derived(

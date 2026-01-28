@@ -25,8 +25,8 @@
   const isForgotten = $derived(data.altar.type === "forgotten");
 
   // Veteran scaling state (only used for Forgotten Altars)
-  // Start at the altar's minimum level requirement
-  let playerLevel = $state(data.altar.minLevelRequired || 30);
+  // Start at the altar's minimum level requirement (capture initial value only)
+  let playerLevel = $state((() => data.altar.minLevelRequired || 30)());
   let veteranLevel = $state(0);
 
   // Computed effective level and scaling

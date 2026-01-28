@@ -28,8 +28,9 @@
   }
 
   let { node, defaultExpanded = true, hideRootLink = false }: Props = $props();
-  let isExpanded = $state(defaultExpanded);
-  let isServiceExpanded = $state(defaultExpanded);
+  // Capture initial prop value only - user controls toggle after mount
+  let isExpanded = $state((() => defaultExpanded)());
+  let isServiceExpanded = $state((() => defaultExpanded)());
 
   const hasRecipeChildren = $derived(
     !!node.recipe && node.recipe.materials.length > 0,
