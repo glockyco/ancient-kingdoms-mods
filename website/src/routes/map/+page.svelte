@@ -31,7 +31,6 @@
     createEntityIndex,
     EMPTY_SELECTION,
     EMPTY_RELATION_ARCS,
-    type EntityIndex,
   } from "$lib/map/selection";
   import { createZoneFocusedData } from "$lib/map/zone-filter";
   import { INITIAL_VIEW_STATE } from "$lib/map/config";
@@ -53,10 +52,7 @@
   import type {
     LayerVisibility,
     LevelFilter,
-    MapEntityData,
-    FilteredMapData,
     AnyMapEntity,
-    ZoneListItem,
     ParentZoneBoundary,
   } from "$lib/types/map";
   import type { MapSearchResult } from "$lib/queries/map-search";
@@ -81,16 +77,14 @@
   let isLoading = $state(true);
   let loadError = $state<string | null>(null);
 
-  // Entity data from prerendered props
-  let entityData = $state<MapEntityData>(data.entityData);
-  let filteredData = $state<FilteredMapData>(
-    createFilteredData(data.entityData),
-  );
-  let entityIndex = $state<EntityIndex>(createEntityIndex(data.entityData));
+  // Entity data from prerendered props (reactive to data prop changes)
+  let entityData = $derived(data.entityData);
+  let filteredData = $derived(createFilteredData(data.entityData));
+  let entityIndex = $derived(createEntityIndex(data.entityData));
   let iconAtlas = $state<IconAtlasData | null>(null);
 
   // Zone focus state
-  let zoneList = $state<ZoneListItem[]>(data.zoneList);
+  let zoneList = $derived(data.zoneList);
   let focusedZoneId = $state<string | null>(null);
 
   // Sidebar width (for map container offset on desktop)
