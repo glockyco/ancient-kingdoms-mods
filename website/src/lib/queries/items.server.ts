@@ -1,6 +1,6 @@
 import { query, queryOne } from "$lib/db.server";
 import type { Item } from "./items";
-import type { ItemListView } from "$lib/types/items";
+import type { ItemListView, ItemZoneInfo } from "$lib/types/items";
 
 /**
  * Get all items with fields for list view (server-side, for prerendering).
@@ -39,6 +39,23 @@ export function getItems(): ItemListView[] {
       ) as stat_keys
     FROM items
     ORDER BY name`,
+  );
+}
+
+/**
+ * Get zones where items can be obtained (server-side, for overview page filtering).
+ * Uses the precomputed item_zones_obtainable junction table.
+ */
+export function getItemZones(): ItemZoneInfo[] {
+  return query<ItemZoneInfo>(
+    `SELECT DISTINCT
+      izo.item_id,
+      z.id as zone_id,
+      z.name as zone_name,
+      z.is_dungeon
+    FROM item_zones_obtainable izo
+    JOIN zones z ON z.id = izo.zone_id
+    ORDER BY z.name`,
   );
 }
 

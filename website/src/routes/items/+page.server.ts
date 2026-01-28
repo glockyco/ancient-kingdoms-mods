@@ -1,10 +1,11 @@
-import { getItems } from "$lib/queries/items.server";
+import { getItems, getItemZones } from "$lib/queries/items.server";
 import type { PageServerLoad } from "./$types";
 
 export const prerender = true;
 
 export const load: PageServerLoad = () => {
   const rawItems = getItems();
+  const itemZones = getItemZones();
 
   // Precompute parsed arrays at build time (avoids JSON.parse on client)
   const itemStatKeys: Record<string, string[]> = {};
@@ -34,5 +35,5 @@ export const load: PageServerLoad = () => {
     mount_speed: item.mount_speed,
   }));
 
-  return { items, itemStatKeys, itemClassKeys };
+  return { items, itemStatKeys, itemClassKeys, itemZones };
 };

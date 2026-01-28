@@ -30,10 +30,21 @@ export type ItemListViewClient = Omit<
 >;
 
 /**
+ * Zone info for item obtainability (overview page filtering)
+ */
+export interface ItemZoneInfo {
+  item_id: string;
+  zone_id: string;
+  zone_name: string;
+  is_dungeon: boolean;
+}
+
+/**
  * Data structure returned by the items page load function
  */
 export interface ItemsPageData {
   items: ItemListView[];
+  itemZones: ItemZoneInfo[];
 }
 
 /**

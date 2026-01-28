@@ -1,5 +1,6 @@
 <script lang="ts">
   import { afterNavigate, replaceState } from "$app/navigation";
+  import { SvelteMap } from "svelte/reactivity";
   import {
     DataTable,
     DataTableFacetedFilter,
@@ -16,7 +17,7 @@
   import ItemLink from "$lib/components/ItemLink.svelte";
   import ClassPills from "$lib/components/ClassPills.svelte";
   import { formatItemType } from "$lib/utils/format";
-  import type { ItemListViewClient } from "$lib/types/items";
+  import type { ItemListViewClient, ItemZoneInfo } from "$lib/types/items";
   import { getItemTooltips } from "$lib/queries/items";
 
   let { data } = $props();
@@ -179,7 +180,36 @@
     }
   }
 
-  type ItemRow = ItemListViewClient;
+  // Build zone lookup for each item (computed once)
+  const itemZoneMap = $derived.by(() => {
+    const map = new SvelteMap<string, ItemZoneInfo[]>();
+    for (const iz of data.itemZones) {
+      if (!map.has(iz.item_id)) {
+        map.set(iz.item_id, []);
+      }
+      map.get(iz.item_id)!.push(iz);
+    }
+    return map;
+  });
+
+  // Get unique zones for filter options
+  const uniqueZones = $derived(
+    Array.from(
+      new Map(data.itemZones.map((iz) => [iz.zone_id, iz])).values(),
+    ).sort((a, b) => a.zone_name.localeCompare(b.zone_name)),
+  );
+
+  // Add virtual columns for zone filtering
+  const dataWithVirtual = $derived(
+    data.items.map((item) => ({
+      ...item,
+      zone_ids: Array.from(
+        new Set((itemZoneMap.get(item.id) ?? []).map((z) => z.zone_id)),
+      ),
+    })),
+  );
+
+  type ItemRow = (typeof dataWithVirtual)[number];
 
   const columns: ColumnDef<ItemRow>[] = [
     {
@@ -288,6 +318,19 @@
         }
       },
     },
+    // Hidden - zone filter column
+    {
+      id: "zone_ids",
+      accessorKey: "zone_ids",
+      header: "Zone Filter",
+      enableHiding: false,
+      getUniqueValues: (row) => row.zone_ids,
+      filterFn: (row, columnId, filterValue: string[]) => {
+        const zoneIds = row.getValue(columnId) as string[];
+        if (!filterValue || filterValue.length === 0) return true;
+        return zoneIds.some((z) => filterValue.includes(z));
+      },
+    },
   ];
 
   const columnLabels: Record<string, string> = {
@@ -300,13 +343,14 @@
     notes: "Notes",
     item_type: "Type",
     stats: "Stats",
+    zone_ids: "Zone Filter",
   };
 </script>
 
 {#snippet renderHeader({ header }: { header: Header<ItemRow, unknown> })}
   {#if header.id === "item_level" || header.id === "level_required"}
     <span class="ml-auto">{columnLabels[header.id] ?? header.id}</span>
-  {:else if header.id === "item_type"}
+  {:else if header.id === "item_type" || header.id === "zone_ids"}
     <span></span>
   {:else}
     {columnLabels[header.id] ?? header.id}
@@ -354,7 +398,7 @@
   {:else if cell.column.id === "notes"}
     {@const notes = getNotes(row.original)}
     <span class={notes === "-" ? "text-muted-foreground" : ""}>{notes}</span>
-  {:else if cell.column.id === "item_type" || cell.column.id === "stats"}
+  {:else if cell.column.id === "item_type" || cell.column.id === "stats" || cell.column.id === "zone_ids"}
     <!-- Hidden filter columns -->
   {:else}
     {cell.getValue()}
@@ -366,6 +410,7 @@
   {@const typeCol = table.getColumn("item_type")}
   {@const slotCol = table.getColumn("slot")}
   {@const classCol = table.getColumn("class")}
+  {@const zoneIdsCol = table.getColumn("zone_ids")}
   {@const levelCol = table.getColumn("level_required")}
   {@const statsCol = table.getColumn("stats")}
   {@const facetedItemIds = (() => {
@@ -416,6 +461,16 @@
       }))}
     />
   {/if}
+  {#if zoneIdsCol}
+    <DataTableFacetedFilter
+      column={zoneIdsCol}
+      title="Zone"
+      options={uniqueZones.map((z) => ({
+        label: z.zone_name,
+        value: z.zone_id,
+      }))}
+    />
+  {/if}
   {#if statsCol}
     {@const statsFilterValue = statsCol.getFilterValue() as
       | { stats: string[]; mode: "any" | "all" }
@@ -432,7 +487,7 @@
       <DataTableStatPanel
         column={statsCol}
         bind:open={statPanelOpen}
-        totalRows={data.items.length}
+        totalRows={dataWithVirtual.length}
         filteredRows={table.getFilteredRowModel().rows.length}
         {facetedItemIds}
       />
@@ -454,7 +509,7 @@
   <h1 class="text-3xl font-bold">Items</h1>
 
   <DataTable
-    data={data.items}
+    data={dataWithVirtual}
     {columns}
     {columnLabels}
     {renderCell}
@@ -468,6 +523,7 @@
     initialColumnVisibility={{
       item_type: false,
       stats: false,
+      zone_ids: false,
     }}
     urlKey="items"
     showPagination={true}
