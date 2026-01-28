@@ -52,15 +52,17 @@
     return "regular";
   }
 
-  // Add virtual columns for filtering (computed once)
-  const dataWithVirtual = data.monsters.map((m) => ({
-    ...m,
-    classification: getClassification(m),
-    zones: monsterZoneMap.get(m.id) || [],
-    zone_ids: Array.from(
-      new Set((monsterZoneMap.get(m.id) || []).map((z) => z.zone_id)),
-    ),
-  }));
+  // Add virtual columns for filtering
+  const dataWithVirtual = $derived(
+    data.monsters.map((m) => ({
+      ...m,
+      classification: getClassification(m),
+      zones: monsterZoneMap.get(m.id) || [],
+      zone_ids: Array.from(
+        new Set((monsterZoneMap.get(m.id) || []).map((z) => z.zone_id)),
+      ),
+    })),
+  );
 
   type MonsterRow = (typeof dataWithVirtual)[number];
 

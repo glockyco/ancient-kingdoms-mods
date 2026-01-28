@@ -54,15 +54,17 @@
   );
 
   // Add virtual columns for filtering
-  const dataWithVirtual = data.npcs.map((n) => ({
-    ...n,
-    zones: npcZoneMap.get(n.id) || [],
-    zone_ids: Array.from(
-      new Set((npcZoneMap.get(n.id) || []).map((z) => z.zone_id)),
-    ),
-    role_keys: getActiveRoleKeys(n.roles),
-    faction_filter: n.faction || "",
-  }));
+  const dataWithVirtual = $derived(
+    data.npcs.map((n) => ({
+      ...n,
+      zones: npcZoneMap.get(n.id) || [],
+      zone_ids: Array.from(
+        new Set((npcZoneMap.get(n.id) || []).map((z) => z.zone_id)),
+      ),
+      role_keys: getActiveRoleKeys(n.roles),
+      faction_filter: n.faction || "",
+    })),
+  );
 
   type NpcRow = (typeof dataWithVirtual)[number];
 

@@ -63,10 +63,12 @@
   const romanNumerals = ["I", "II", "III", "IV", "V"];
 
   // Add virtual column for type sorting (numeric for stable sort order)
-  const dataWithVirtual = data.recipes.map((r) => ({
-    ...r,
-    type_order: r.type === "Alchemy" ? 1 : r.type === "Cooking" ? 2 : 3,
-  }));
+  const dataWithVirtual = $derived(
+    data.recipes.map((r) => ({
+      ...r,
+      type_order: r.type === "Alchemy" ? 1 : r.type === "Cooking" ? 2 : 3,
+    })),
+  );
 
   type RecipeRow = (typeof dataWithVirtual)[number];
 

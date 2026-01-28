@@ -35,17 +35,19 @@
   const isRegularQuest = (q: (typeof data.quests)[number]) =>
     !q.is_main_quest && !q.is_epic_quest && !q.is_adventurer_quest;
 
-  const dataWithVirtual = data.quests.map((q) => ({
-    ...q,
-    display_type_filter: q.display_type,
-    flags_filter: [
-      q.is_main_quest ? "main" : null,
-      q.is_epic_quest ? "epic" : null,
-      q.is_adventurer_quest ? "daily" : null,
-      q.is_repeatable ? "repeatable" : null,
-      isRegularQuest(q) ? "regular" : null,
-    ].filter(Boolean) as string[],
-  }));
+  const dataWithVirtual = $derived(
+    data.quests.map((q) => ({
+      ...q,
+      display_type_filter: q.display_type,
+      flags_filter: [
+        q.is_main_quest ? "main" : null,
+        q.is_epic_quest ? "epic" : null,
+        q.is_adventurer_quest ? "daily" : null,
+        q.is_repeatable ? "repeatable" : null,
+        isRegularQuest(q) ? "regular" : null,
+      ].filter(Boolean) as string[],
+    })),
+  );
 
   type QuestRow = (typeof dataWithVirtual)[number];
 
