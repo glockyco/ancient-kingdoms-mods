@@ -310,79 +310,40 @@ interface ChestDropRow {
   item_name: string;
   quality: number;
   drop_rate: number;
-  random_items_with_names: string | null;
   tooltip_html: string | null;
 }
 
 /**
- * Load chest drops for popup, including the main item reward and additional drops
+ * Load chest drops for popup from item_sources_chest junction table.
+ * This table contains all drops (both guaranteed and random).
  */
 export async function loadChestPopupDetails(
   chestId: string,
 ): Promise<ChestPopupDetails> {
-  // Get main item reward from chest + additional drops from chest_drops
   const rows = await query<ChestDropRow>(
     `
-    -- Main item reward from chest
     SELECT
-      c.item_reward_id as item_id,
+      isc.item_id,
       i.name as item_name,
       i.quality,
-      c.chest_reward_probability as drop_rate,
-      i.random_items_with_names,
+      COALESCE(isc.actual_drop_chance, isc.drop_rate) as drop_rate,
       i.tooltip_html
-    FROM chests c
-    JOIN items i ON i.id = c.item_reward_id
-    WHERE c.id = ? AND c.item_reward_id IS NOT NULL
-
-    UNION ALL
-
-    -- Additional drops from chest_drops
-    SELECT
-      cd.item_id,
-      i.name as item_name,
-      i.quality,
-      cd.drop_rate,
-      i.random_items_with_names,
-      i.tooltip_html
-    FROM chest_drops cd
-    JOIN items i ON i.id = cd.item_id
-    WHERE cd.chest_id = ?
-
-    ORDER BY drop_rate DESC
-  `,
-    [chestId, chestId],
+    FROM item_sources_chest isc
+    JOIN items i ON i.id = isc.item_id
+    WHERE isc.chest_id = ?
+    ORDER BY drop_rate DESC, i.name ASC
+    `,
+    [chestId],
   );
 
   return {
-    drops: rows.map((r) => {
-      const drop: PopupDropItem = {
-        itemId: r.item_id,
-        itemName: r.item_name,
-        quality: r.quality,
-        dropRate: r.drop_rate,
-        tooltipHtml: r.tooltip_html,
-      };
-
-      // Check if this is a random item
-      if (r.random_items_with_names) {
-        try {
-          const outcomes = JSON.parse(r.random_items_with_names) as Array<{
-            item_id: string;
-            item_name: string;
-          }>;
-          drop.isRandomItem = true;
-          drop.randomItemOutcomes = outcomes.map((o) => ({
-            itemId: o.item_id,
-            itemName: o.item_name,
-          }));
-        } catch {
-          /* empty */
-        }
-      }
-
-      return drop;
-    }),
+    drops: rows.map((r) => ({
+      itemId: r.item_id,
+      itemName: r.item_name,
+      quality: r.quality,
+      dropRate: r.drop_rate,
+      tooltipHtml: r.tooltip_html,
+    })),
   };
 }
 
@@ -422,17 +383,19 @@ export async function loadGatheringPopupDetails(
 
     UNION ALL
 
-    -- Secondary random drops with actual drop chance
+    -- Secondary random drops with actual drop chance (excluding primary item)
     SELECT
-      grd.item_id,
+      isg.item_id,
       i.name as item_name,
       i.quality,
-      COALESCE(grd.actual_drop_chance, grd.drop_rate) as drop_rate,
+      COALESCE(isg.actual_drop_chance, isg.drop_rate) as drop_rate,
       NULL as drop_rate_max,
       i.tooltip_html
-    FROM gathering_resource_drops grd
-    JOIN items i ON i.id = grd.item_id
-    WHERE grd.resource_id = ?
+    FROM item_sources_gather isg
+    JOIN items i ON i.id = isg.item_id
+    JOIN gathering_resources gr ON gr.id = isg.resource_id
+    WHERE isg.resource_id = ?
+      AND (gr.item_reward_id IS NULL OR isg.item_id != gr.item_reward_id)
 
     ORDER BY drop_rate DESC
   `,
@@ -910,12 +873,6 @@ interface ItemPopupRow {
   name: string;
   quality: number;
   tooltip_html: string | null;
-  sold_by: string | null;
-  rewarded_by: string | null;
-  gathered_from: string | null;
-  found_in_chests: string | null;
-  crafted_from: string | null;
-  created_from_merge: string | null;
 }
 
 interface ItemDropperRow {
@@ -928,46 +885,6 @@ interface ItemDropperRow {
   zone_name: string | null;
 }
 
-// JSON types for denormalized item columns
-interface SoldByJson {
-  npc_id: string;
-  npc_name: string;
-  price: number;
-  currency_item_id: string | null;
-  currency_item_name: string | null;
-}
-
-interface RewardedByJson {
-  quest_id: string;
-  quest_name: string;
-  level_recommended: number;
-}
-
-interface GatheredFromJson {
-  gather_item_id: string;
-  gather_item_name: string;
-  rate: number;
-  type: "resource" | "chest";
-  rate_note?: string;
-}
-
-interface FoundInChestJson {
-  chest_id: string;
-  chest_name: string;
-  rate: number;
-}
-
-interface CraftedFromJson {
-  recipe_id: string;
-  result_amount: number;
-  materials: Array<{ item_id: string; item_name: string; amount: number }>;
-}
-
-interface CreatedFromMergeJson {
-  item_id: string;
-  item_name: string;
-}
-
 /**
  * Load item details for popup (virtual entity).
  * Shows item info and all obtainability sources.
@@ -975,9 +892,9 @@ interface CreatedFromMergeJson {
 export async function loadItemPopupDetails(
   itemId: string,
 ): Promise<ItemPopupDetails | null> {
-  // Get item info with denormalized JSON columns
+  // Get item info
   const [item] = await query<ItemPopupRow>(
-    `SELECT id, name, quality, tooltip_html, sold_by, rewarded_by, gathered_from, found_in_chests, crafted_from, created_from_merge FROM items WHERE id = ?`,
+    `SELECT id, name, quality, tooltip_html FROM items WHERE id = ?`,
     [itemId],
   );
 
@@ -1059,104 +976,117 @@ export async function loadItemPopupDetails(
     dropRate: r.drop_rate ?? 0,
   }));
 
-  // Parse vendors from sold_by JSON
-  let vendors: ItemPopupVendor[] = [];
-  if (item.sold_by) {
-    try {
-      const soldByData = JSON.parse(item.sold_by) as SoldByJson[];
-      vendors = soldByData.map((v) => ({
-        npcId: v.npc_id,
-        npcName: v.npc_name,
-        price: v.price,
-        currencyItemId: v.currency_item_id,
-        currencyItemName: v.currency_item_name,
-      }));
-    } catch {
-      /* empty */
-    }
-  }
+  // Query vendors from junction table
+  const vendors = await query<ItemPopupVendor>(
+    `
+    SELECT
+      isv.npc_id as npcId,
+      n.name as npcName,
+      isv.price,
+      isv.currency_item_id as currencyItemId,
+      ci.name as currencyItemName
+    FROM item_sources_vendor isv
+    JOIN npcs n ON isv.npc_id = n.id
+    LEFT JOIN items ci ON isv.currency_item_id = ci.id
+    WHERE isv.item_id = ?
+    ORDER BY n.name ASC
+  `,
+    [itemId],
+  );
 
-  // Parse quest rewards from rewarded_by JSON
-  let questRewards: ItemPopupQuestReward[] = [];
-  if (item.rewarded_by) {
-    try {
-      const rewardedByData = JSON.parse(item.rewarded_by) as RewardedByJson[];
-      questRewards = rewardedByData.map((q) => ({
-        questId: q.quest_id,
-        questName: q.quest_name,
-        levelRecommended: q.level_recommended,
-      }));
-    } catch {
-      /* empty */
-    }
-  }
+  // Query quest rewards from junction table
+  const questRewards = await query<ItemPopupQuestReward>(
+    `
+    SELECT
+      isq.quest_id as questId,
+      q.name as questName,
+      q.level_recommended as levelRecommended
+    FROM item_sources_quest isq
+    JOIN quests q ON isq.quest_id = q.id
+    WHERE isq.item_id = ? AND isq.source_type = 'reward'
+    ORDER BY q.name ASC
+  `,
+    [itemId],
+  );
 
-  // Parse gathering sources from gathered_from JSON
-  let gatheringSources: ItemPopupGatherSource[] = [];
-  if (item.gathered_from) {
-    try {
-      const gatheredData = JSON.parse(item.gathered_from) as GatheredFromJson[];
-      gatheringSources = gatheredData.map((g) => ({
-        resourceId: g.gather_item_id,
-        resourceName: g.gather_item_name,
-        resourceType: g.type,
-        rate: g.rate,
-        ...(g.rate_note && { rateNote: g.rate_note }),
-      }));
-    } catch {
-      /* empty */
-    }
-  }
+  // Query gathering sources from junction table
+  const gatheringSources = await query<ItemPopupGatherSource>(
+    `
+    SELECT
+      isg.resource_id as resourceId,
+      gr.name as resourceName,
+      'resource' as resourceType,
+      isg.drop_rate as rate
+    FROM item_sources_gather isg
+    JOIN gathering_resources gr ON isg.resource_id = gr.id
+    WHERE isg.item_id = ?
+    ORDER BY gr.name ASC
+  `,
+    [itemId],
+  );
 
-  // Parse chest sources from found_in_chests JSON
-  let chestSources: ItemPopupChestSource[] = [];
-  if (item.found_in_chests) {
-    try {
-      const chestData = JSON.parse(item.found_in_chests) as FoundInChestJson[];
-      chestSources = chestData.map((c) => ({
-        chestId: c.chest_id,
-        chestName: c.chest_name,
-        rate: c.rate,
-      }));
-    } catch {
-      /* empty */
-    }
-  }
+  // Query chest sources from junction table
+  // Always display as "Chest" regardless of actual chest name
+  const chestSources = await query<ItemPopupChestSource>(
+    `
+    SELECT
+      isc.chest_id as chestId,
+      'Chest' as chestName,
+      isc.drop_rate as rate
+    FROM item_sources_chest isc
+    JOIN chests c ON isc.chest_id = c.id
+    WHERE isc.item_id = ?
+    ORDER BY c.name ASC
+  `,
+    [itemId],
+  );
 
-  // Parse crafting sources from crafted_from JSON
-  let craftingSources: ItemPopupCraftSource[] = [];
-  if (item.crafted_from) {
-    try {
-      const craftData = JSON.parse(item.crafted_from) as CraftedFromJson[];
-      craftingSources = craftData.map((c) => ({
-        recipeId: c.recipe_id,
-        resultAmount: c.result_amount,
-        materials: c.materials.map((m) => ({
-          itemId: m.item_id,
-          itemName: m.item_name,
-          amount: m.amount,
-        })),
-      }));
-    } catch {
-      /* empty */
-    }
-  }
+  // Query crafting/alchemy sources from junction table with materials
+  const craftingSourcesRaw = await query<{
+    recipeId: string;
+    resultAmount: number;
+    materials: string;
+  }>(
+    `
+    SELECT
+      isr.recipe_id as recipeId,
+      isr.result_amount as resultAmount,
+      CASE
+        WHEN isr.recipe_type = 'crafting' THEN (
+          SELECT cr.materials FROM crafting_recipes cr WHERE cr.id = isr.recipe_id
+        )
+        WHEN isr.recipe_type = 'alchemy' THEN (
+          SELECT ar.materials FROM alchemy_recipes ar WHERE ar.id = isr.recipe_id
+        )
+      END as materials
+    FROM item_sources_recipe isr
+    WHERE isr.item_id = ?
+  `,
+    [itemId],
+  );
 
-  // Parse merge sources from created_from_merge JSON
-  let mergeSources: ItemPopupMergeSource[] = [];
-  if (item.created_from_merge) {
-    try {
-      const mergeData = JSON.parse(
-        item.created_from_merge,
-      ) as CreatedFromMergeJson[];
-      mergeSources = mergeData.map((m) => ({
-        itemId: m.item_id,
-        itemName: m.item_name,
-      }));
-    } catch {
-      /* empty */
-    }
-  }
+  // Parse materials JSON for each recipe
+  const craftingSources: ItemPopupCraftSource[] = craftingSourcesRaw.map(
+    (c) => ({
+      recipeId: c.recipeId,
+      resultAmount: c.resultAmount,
+      materials: c.materials ? JSON.parse(c.materials) : [],
+    }),
+  );
+
+  // Query merge sources from junction table
+  const mergeSources = await query<ItemPopupMergeSource>(
+    `
+    SELECT
+      ism.component_item_id as itemId,
+      i.name as itemName
+    FROM item_sources_merge ism
+    JOIN items i ON ism.component_item_id = i.id
+    WHERE ism.item_id = ?
+    ORDER BY i.name ASC
+  `,
+    [itemId],
+  );
 
   // Query treasure maps that lead to this item as a reward
   const treasureMapSourceRows = await query<{

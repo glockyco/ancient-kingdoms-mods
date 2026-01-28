@@ -43,13 +43,34 @@ def insert_model(cursor: sqlite3.Cursor, table: str, model: BaseModel) -> None:
     Handles special cases like Position objects (split into x/y/z columns),
     NpcRoles, QuestRewards, and faction fields.
 
+    Skips fields that are used only for junction table population:
+    - pack_final_item_id, pack_final_amount
+    - random_items
+    - merge_items_needed_ids, merge_result_item_id
+    - treasure_map_reward_id
+
     Args:
         cursor: Database cursor
         table: Target table name
         model: Pydantic model instance to insert
     """
+    # Fields that exist in ItemData model but not in items table schema
+    # These are used by loader to populate junction tables
+    JUNCTION_ONLY_FIELDS = {
+        "pack_final_item_id",
+        "pack_final_amount",
+        "random_items",
+        "merge_items_needed_ids",
+        "merge_result_item_id",
+        "treasure_map_reward_id",
+    }
+
     values = {}
     for field_name in model.model_fields.keys():
+        # Skip junction-only fields when inserting into items table
+        if table == "items" and field_name in JUNCTION_ONLY_FIELDS:
+            continue
+
         value = getattr(model, field_name)
         # Handle Position objects - extract x, y, z (skip if None)
         if field_name == "position":

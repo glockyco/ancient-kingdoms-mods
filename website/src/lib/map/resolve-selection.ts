@@ -465,15 +465,14 @@ interface VendorRow {
 
 /**
  * Query NPC IDs that sell a specific item.
- * Vendor relationships are stored as JSON in items.sold_by.
+ * Vendor relationships are stored in the item_sources_vendor table.
  */
 async function queryItemVendors(itemId: string): Promise<string[]> {
   const rows = await query<VendorRow>(
     `
-    SELECT DISTINCT json_extract(v.value, '$.npc_id') as npc_id
-    FROM items i, json_each(i.sold_by) v
-    WHERE i.id = ?
-      AND json_extract(v.value, '$.npc_id') IS NOT NULL
+    SELECT DISTINCT npc_id
+    FROM item_sources_vendor
+    WHERE item_id = ?
   `,
     [itemId],
   );
@@ -487,16 +486,14 @@ interface GatheringRow {
 
 /**
  * Query gathering resource IDs that yield a specific item.
- * Gathering relationships are stored as JSON in items.gathered_from with type="resource".
+ * Gathering relationships are stored in the item_sources_gather junction table.
  */
 async function queryItemGatheringSources(itemId: string): Promise<string[]> {
   const rows = await query<GatheringRow>(
     `
-    SELECT DISTINCT json_extract(g.value, '$.gather_item_id') as resource_id
-    FROM items i, json_each(i.gathered_from) g
-    WHERE i.id = ?
-      AND json_extract(g.value, '$.type') = 'resource'
-      AND json_extract(g.value, '$.gather_item_id') IS NOT NULL
+    SELECT DISTINCT resource_id
+    FROM item_sources_gather
+    WHERE item_id = ?
   `,
     [itemId],
   );
@@ -510,17 +507,14 @@ interface ChestRow {
 
 /**
  * Query physical chest IDs (gatherable chests on the map) that yield a specific item.
- * These are stored in items.gathered_from with type="chest" (not to be confused with
- * found_in_chests which contains item chest IDs - those are virtual entities).
+ * These are stored in the item_sources_chest junction table.
  */
 async function queryItemChestSources(itemId: string): Promise<string[]> {
   const rows = await query<ChestRow>(
     `
-    SELECT DISTINCT json_extract(g.value, '$.gather_item_id') as chest_id
-    FROM items i, json_each(i.gathered_from) g
-    WHERE i.id = ?
-      AND json_extract(g.value, '$.type') = 'chest'
-      AND json_extract(g.value, '$.gather_item_id') IS NOT NULL
+    SELECT DISTINCT chest_id
+    FROM item_sources_chest
+    WHERE item_id = ?
   `,
     [itemId],
   );

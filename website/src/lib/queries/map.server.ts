@@ -634,10 +634,11 @@ function loadChestsServer(db: Database.Database): ChestMapEntity[] {
       c.key_required_id,
       i.name as key_required_name,
       c.respawn_time,
-      (SELECT COUNT(*) FROM chest_drops cd WHERE cd.chest_id = c.id) as drop_count,
-      (SELECT COUNT(*) FROM chest_drops cd
-       JOIN items di ON di.id = cd.item_id
-       WHERE cd.chest_id = c.id AND di.random_items IS NOT NULL) as random_drop_count
+      (SELECT COUNT(*) FROM item_sources_chest isc WHERE isc.chest_id = c.id) as drop_count,
+      (SELECT COUNT(DISTINCT isr.random_item_id)
+       FROM item_sources_chest isc
+       JOIN item_sources_random isr ON isr.item_id = isc.item_id
+       WHERE isc.chest_id = c.id) as random_drop_count
     FROM chests c
     JOIN zones z ON z.id = c.zone_id
     LEFT JOIN items i ON i.id = c.key_required_id
@@ -835,7 +836,7 @@ function loadGatheringSpawnsServer(
       gr.respawn_time,
       gr.tool_required_id,
       t.name as tool_required_name,
-      (SELECT COUNT(*) FROM gathering_resource_drops grd WHERE grd.resource_id = gr.id) as drop_count
+      (SELECT COUNT(*) FROM item_sources_gather isg WHERE isg.resource_id = gr.id) as drop_count
     FROM gathering_resources gr
     LEFT JOIN gathering_resource_spawns gs ON gs.resource_id = gr.id
     LEFT JOIN zones z ON z.id = gs.zone_id

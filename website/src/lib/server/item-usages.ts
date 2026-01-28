@@ -13,6 +13,7 @@ import type {
   AltarUsage,
   PortalUsage,
   ChestUsage,
+  MergeUsage,
   ItemUsages,
 } from "$lib/types/item-sources";
 
@@ -30,6 +31,7 @@ export function getItemUsages(
     altars: getAltarUsages(db, itemId),
     portals: getPortalUsages(db, itemId),
     chests: getChestUsages(db, itemId),
+    merges: getMergeUsages(db, itemId),
   };
 }
 
@@ -66,21 +68,17 @@ export function getRecipeUsages(
 					)
 				)
 			END as result_item_name,
-			CASE
-				WHEN iur.recipe_type = 'crafting' THEN (
-					SELECT cr.result_amount FROM crafting_recipes cr WHERE cr.id = iur.recipe_id
-				)
-				WHEN iur.recipe_type = 'alchemy' THEN (
-					SELECT ar.result_amount FROM alchemy_recipes ar WHERE ar.id = iur.recipe_id
-				)
-			END as result_amount,
-			CASE
-				WHEN iur.recipe_type = 'crafting' THEN (
-					SELECT cr.tier FROM crafting_recipes cr WHERE cr.id = iur.recipe_id
-				)
-				WHEN iur.recipe_type = 'alchemy' THEN (
-					SELECT ar.tier FROM alchemy_recipes ar WHERE ar.id = iur.recipe_id
-				)
+		CASE
+			WHEN iur.recipe_type = 'crafting' THEN (
+				SELECT cr.result_amount FROM crafting_recipes cr WHERE cr.id = iur.recipe_id
+			)
+			ELSE 1
+		END as result_amount,
+		CASE
+			WHEN iur.recipe_type = 'alchemy' THEN (
+				SELECT ar.level_required FROM alchemy_recipes ar WHERE ar.id = iur.recipe_id
+			)
+			ELSE NULL
 			END as tier
 		FROM item_usages_recipe iur
 		WHERE iur.item_id = ?
@@ -106,8 +104,8 @@ export function getQuestUsages(
 			q.level_recommended as quest_level_recommended,
 			iuq.purpose,
 			iuq.amount,
-			COALESCE(q.is_repeatable, 0) as is_repeatable,
-			iuq.class_restrictions
+			(COALESCE(q.is_repeatable, 0) OR COALESCE(q.is_adventurer_quest, 0)) as is_repeatable,
+			q.class_requirements as class_restrictions
 		FROM item_usages_quest iuq
 		JOIN quests q ON iuq.quest_id = q.id
 		WHERE iuq.item_id = ?
@@ -137,7 +135,7 @@ export function getCurrencyUsages(
 		JOIN items pi ON iuc.purchasable_item_id = pi.id
 		JOIN npcs n ON iuc.npc_id = n.id
 		WHERE iuc.currency_item_id = ?
-		ORDER BY n.name ASC, pi.name ASC
+		ORDER BY pi.name ASC, n.name ASC
 	`);
 
   return stmt.all(itemId) as CurrencyUsage[];
@@ -220,4 +218,52 @@ export function getChestUsages(
 	`);
 
   return stmt.all(itemId) as ChestUsage[];
+}
+
+/**
+ * Get items that are created by merging this item (reverse of merge sources).
+ * Includes all components needed for each merge result.
+ */
+export function getMergeUsages(
+  db: Database.Database,
+  itemId: string,
+): MergeUsage[] {
+  // First, get the result items this can be merged into
+  const resultsStmt = db.prepare(`
+		SELECT
+			ism.component_item_id as item_id,
+			ism.item_id as result_item_id,
+			i.name as result_item_name,
+			i.quality as result_quality
+		FROM item_sources_merge ism
+		JOIN items i ON ism.item_id = i.id
+		WHERE ism.component_item_id = ?
+		ORDER BY i.name ASC
+	`);
+
+  const results = resultsStmt.all(itemId) as Array<{
+    item_id: string;
+    result_item_id: string;
+    result_item_name: string;
+    result_quality: number;
+  }>;
+
+  // For each result, get all components
+  const componentsStmt = db.prepare(`
+		SELECT
+			ism.component_item_id as item_id,
+			i.name as item_name
+		FROM item_sources_merge ism
+		JOIN items i ON ism.component_item_id = i.id
+		WHERE ism.item_id = ?
+		ORDER BY i.name ASC
+	`);
+
+  return results.map((result) => ({
+    ...result,
+    all_components: componentsStmt.all(result.result_item_id) as Array<{
+      item_id: string;
+      item_name: string;
+    }>,
+  }));
 }

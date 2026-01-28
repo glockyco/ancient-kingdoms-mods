@@ -420,11 +420,14 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
     const itemsWithQuests = db
       .prepare(
         `
-      SELECT id, name, needed_for_quests
-      FROM items
-      WHERE id IN (${placeholders})
-        AND needed_for_quests IS NOT NULL
-        AND needed_for_quests != '[]'
+      SELECT DISTINCT i.id, i.name,
+        (SELECT json_group_array(json_object('quest_id', iuq.quest_id, 'quest_name', q.name))
+         FROM item_usages_quest iuq
+         JOIN quests q ON iuq.quest_id = q.id
+         WHERE iuq.item_id = i.id) as needed_for_quests
+      FROM items i
+      WHERE i.id IN (${placeholders})
+        AND EXISTS (SELECT 1 FROM item_usages_quest WHERE item_id = i.id)
     `,
       )
       .all(...dropItemIds) as Array<{

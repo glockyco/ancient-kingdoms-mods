@@ -807,31 +807,29 @@ async function searchItems(
       UNION ALL
 
       -- Vendor NPC positions
-      SELECT i.id as item_id, ns.position_x as x, ns.position_y as y
-      FROM items i, json_each(i.sold_by) v
-      JOIN npc_spawns ns ON ns.npc_id = json_extract(v.value, '$.npc_id')
+      SELECT isv.item_id, ns.position_x as x, ns.position_y as y
+      FROM item_sources_vendor isv
+      JOIN npc_spawns ns ON ns.npc_id = isv.npc_id
         AND ns.position_x IS NOT NULL
-      WHERE i.id IN (SELECT value FROM json_each(?))
+      WHERE isv.item_id IN (SELECT value FROM json_each(?))
 
       UNION ALL
 
-      -- Gathering resource positions (type="resource")
-      SELECT i.id as item_id, gs.position_x as x, gs.position_y as y
-      FROM items i, json_each(i.gathered_from) g
-      JOIN gathering_resource_spawns gs ON gs.resource_id = json_extract(g.value, '$.gather_item_id')
-        AND json_extract(g.value, '$.type') = 'resource'
+      -- Gathering resource positions
+      SELECT isg.item_id, gs.position_x as x, gs.position_y as y
+      FROM item_sources_gather isg
+      JOIN gathering_resource_spawns gs ON gs.resource_id = isg.resource_id
         AND gs.position_x IS NOT NULL
-      WHERE i.id IN (SELECT value FROM json_each(?))
+      WHERE isg.item_id IN (SELECT value FROM json_each(?))
 
       UNION ALL
 
-      -- Physical chest positions (type="chest")
-      SELECT i.id as item_id, c.position_x as x, c.position_y as y
-      FROM items i, json_each(i.gathered_from) g
-      JOIN chests c ON c.id = json_extract(g.value, '$.gather_item_id')
-        AND json_extract(g.value, '$.type') = 'chest'
+      -- Physical chest positions
+      SELECT isc.item_id, c.position_x as x, c.position_y as y
+      FROM item_sources_chest isc
+      JOIN chests c ON c.id = isc.chest_id
         AND c.position_x IS NOT NULL
-      WHERE i.id IN (SELECT value FROM json_each(?))
+      WHERE isc.item_id IN (SELECT value FROM json_each(?))
 
       UNION ALL
 

@@ -1,4 +1,5 @@
 import type { Item } from "$lib/queries/items";
+import type { ItemSources, ItemUsages } from "$lib/types/item-sources";
 
 /**
  * Full item data from SQL query (includes JSON fields for parsing)
@@ -41,6 +42,33 @@ export interface ItemsPageData {
 export interface ItemDetailPageData {
   item: Item;
   description: string;
+  sources: ItemSources;
+  usages: ItemUsages;
+  recipeMaterials: Record<
+    string,
+    Array<{ item_id: string; item_name: string; amount: number }>
+  >;
+  randomOutcomes: Array<{
+    item_id: string;
+    item_name: string;
+    quality: number;
+    probability: number;
+  }>;
+  packContents: Array<{
+    item_id: string;
+    item_name: string;
+    quality: number;
+    amount: number;
+  }>;
+  treasureLocation: {
+    location_id: string;
+    zone_id: string;
+    zone_name: string;
+    reward_id: string | null;
+    reward_name: string | null;
+    position_x: number;
+    position_y: number;
+  } | null;
   essenceTraders: Array<{ id: string; name: string }>;
   veteranMasters: Array<{ id: string; name: string }>;
   augmenters: Array<{ id: string; name: string }>;

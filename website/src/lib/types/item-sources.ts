@@ -143,15 +143,6 @@ export interface GatherSource {
   resource_name: string;
   drop_rate: number;
   actual_drop_chance: number;
-  type: "resource" | "chest";
-  // For chests
-  zone_id: string | null;
-  zone_name: string | null;
-  key_required_id: string | null;
-  key_name: string | null;
-  position_x: number | null;
-  position_y: number | null;
-  // For resource rewards
   is_guaranteed: boolean;
   is_radiant_spark: boolean;
   amount_min: number | null;
@@ -305,6 +296,18 @@ export interface ChestUsage {
   position_y: number;
 }
 
+/**
+ * Item used as component in merge recipe.
+ * Includes all components needed for the merge (not just this item).
+ */
+export interface MergeUsage {
+  item_id: string;
+  result_item_id: string;
+  result_item_name: string;
+  result_quality: number;
+  all_components: Array<{ item_id: string; item_name: string }>;
+}
+
 // ============================================================================
 // AGGREGATED INTERFACES
 // ============================================================================
@@ -336,6 +339,7 @@ export interface ItemUsages {
   altars: AltarUsage[];
   portals: PortalUsage[];
   chests: ChestUsage[];
+  merges: MergeUsage[];
 }
 
 // ============================================================================

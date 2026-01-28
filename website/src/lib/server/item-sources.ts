@@ -143,8 +143,15 @@ export function getAltarSources(
 			isa.reward_tier,
 			isa.drop_rate,
 			isa.min_effective_level,
-			a.final_wave_boss_id,
-			a.final_wave_boss_name
+			-- Extract boss from final wave in waves JSON
+			(SELECT json_extract(value, '$.monsters[0].monster_id')
+			 FROM json_each(a.waves)
+			 WHERE json_extract(value, '$.wave_number') = a.total_waves - 1
+			 LIMIT 1) as final_wave_boss_id,
+			(SELECT json_extract(value, '$.monsters[0].monster_name')
+			 FROM json_each(a.waves)
+			 WHERE json_extract(value, '$.wave_number') = a.total_waves - 1
+			 LIMIT 1) as final_wave_boss_name
 		FROM item_sources_altar isa
 		JOIN altars a ON isa.altar_id = a.id
 		JOIN zones z ON a.zone_id = z.id
@@ -169,31 +176,30 @@ export function getRecipeSources(
 			isr.recipe_type,
 			isr.result_amount,
 			CASE
-				WHEN isr.recipe_type = 'crafting' THEN (
-					SELECT cr.tier FROM crafting_recipes cr WHERE cr.id = isr.recipe_id
-				)
 				WHEN isr.recipe_type = 'alchemy' THEN (
-					SELECT ar.tier FROM alchemy_recipes ar WHERE ar.id = isr.recipe_id
+					SELECT ar.level_required FROM alchemy_recipes ar WHERE ar.id = isr.recipe_id
 				)
+				ELSE NULL
 			END as tier,
 			CASE
 				WHEN isr.recipe_type = 'crafting' THEN (
 					SELECT cr.station_type FROM crafting_recipes cr WHERE cr.id = isr.recipe_id
 				)
-				WHEN isr.recipe_type = 'alchemy' THEN (
-					SELECT ar.table_type FROM alchemy_recipes ar WHERE ar.id = isr.recipe_id
-				)
+				ELSE NULL
 			END as station_type
 		FROM item_sources_recipe isr
 		WHERE isr.item_id = ?
-		ORDER BY isr.recipe_type ASC, tier ASC
+		ORDER BY isr.recipe_type ASC, COALESCE(tier, 0) ASC
 	`);
 
   return stmt.all(itemId) as RecipeSource[];
 }
 
 /**
- * Get items gathered from resources or found in chests
+ * Get items gathered from resources or found in chests.
+ * Amount calculation based on game logic:
+ * - Plants/Minerals: Random.Range(1, item_reward_amount + 1) -> min=1, max=item_reward_amount
+ * - Radiant Sparks: 0 or 1 based on skill -> min=0, max=1
  */
 export function getGatherSources(
   db: Database.Database,
@@ -206,17 +212,16 @@ export function getGatherSources(
 			gr.name as resource_name,
 			isg.drop_rate,
 			COALESCE(isg.actual_drop_chance, isg.drop_rate) as actual_drop_chance,
-			'resource' as type,
-			NULL as zone_id,
-			NULL as zone_name,
-			NULL as key_required_id,
-			NULL as key_name,
-			NULL as position_x,
-			NULL as position_y,
 			0 as is_guaranteed,
 			COALESCE(gr.is_radiant_spark, 0) as is_radiant_spark,
-			NULL as amount_min,
-			NULL as amount_max
+			CASE
+				WHEN gr.is_radiant_spark = 1 THEN 0
+				ELSE 1
+			END as amount_min,
+			CASE
+				WHEN gr.is_radiant_spark = 1 THEN 1
+				ELSE gr.item_reward_amount
+			END as amount_max
 		FROM item_sources_gather isg
 		JOIN gathering_resources gr ON isg.resource_id = gr.id
 		WHERE isg.item_id = ?

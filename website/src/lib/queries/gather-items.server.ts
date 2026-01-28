@@ -152,20 +152,23 @@ export function getGatheringResourceById(id: string): GatheringResource | null {
 
 /**
  * Get drops for a gathering resource.
+ * Excludes the guaranteed reward item (item_reward_id) since that's shown separately.
  */
 export function getGatheringResourceDrops(
   resourceId: string,
 ): GatheringResourceDrop[] {
   return query<GatheringResourceDrop>(
     `SELECT
-      grd.item_id,
+      isg.item_id,
       i.name as item_name,
-      grd.drop_rate,
-      grd.actual_drop_chance
-    FROM gathering_resource_drops grd
-    JOIN items i ON grd.item_id = i.id
-    WHERE grd.resource_id = ?
-    ORDER BY grd.drop_rate DESC`,
+      isg.drop_rate,
+      isg.actual_drop_chance
+    FROM item_sources_gather isg
+    JOIN items i ON isg.item_id = i.id
+    JOIN gathering_resources gr ON gr.id = isg.resource_id
+    WHERE isg.resource_id = ?
+      AND (gr.item_reward_id IS NULL OR isg.item_id != gr.item_reward_id)
+    ORDER BY isg.drop_rate DESC`,
     [resourceId],
   );
 }
@@ -179,7 +182,7 @@ export function getAllResourceDrops(): ResourceDropListView[] {
       grd.resource_id,
       grd.item_id,
       i.name as item_name
-    FROM gathering_resource_drops grd
+    FROM item_sources_gather grd
     JOIN items i ON grd.item_id = i.id
     ORDER BY grd.resource_id, i.name`,
   );
@@ -243,18 +246,21 @@ export interface ChestDrop {
 
 /**
  * Get drops for a chest.
+ * Excludes the guaranteed reward item (item_reward_id) since that's shown separately.
  */
 export function getChestDrops(chestId: string): ChestDrop[] {
   return query<ChestDrop>(
     `SELECT
-      cd.item_id,
+      isc.item_id,
       i.name as item_name,
-      cd.drop_rate,
-      cd.actual_drop_chance
-    FROM chest_drops cd
-    JOIN items i ON cd.item_id = i.id
-    WHERE cd.chest_id = ?
-    ORDER BY cd.drop_rate DESC`,
+      isc.drop_rate,
+      isc.actual_drop_chance
+    FROM item_sources_chest isc
+    JOIN items i ON isc.item_id = i.id
+    JOIN chests c ON c.id = isc.chest_id
+    WHERE isc.chest_id = ?
+      AND (c.item_reward_id IS NULL OR isc.item_id != c.item_reward_id)
+    ORDER BY isc.drop_rate DESC`,
     [chestId],
   );
 }
@@ -269,17 +275,19 @@ export interface ChestDropListView {
 }
 
 /**
- * Get all chest drops for list view.
+ * Get all chest random drops for list view (excludes guaranteed item_reward).
  */
 export function getAllChestDrops(): ChestDropListView[] {
   return query<ChestDropListView>(
     `SELECT
-      cd.chest_id,
-      cd.item_id,
+      isc.chest_id,
+      isc.item_id,
       i.name as item_name
-    FROM chest_drops cd
-    JOIN items i ON cd.item_id = i.id
-    ORDER BY cd.chest_id, i.name`,
+    FROM item_sources_chest isc
+    JOIN items i ON isc.item_id = i.id
+    JOIN chests c ON c.id = isc.chest_id
+    WHERE c.item_reward_id IS NULL OR isc.item_id != c.item_reward_id
+    ORDER BY isc.chest_id, i.name`,
   );
 }
 

@@ -473,34 +473,32 @@ function getMergeComponents(
     return undefined;
   }
 
-  // Find items that merge into this item (any item with merge_result_item_id = itemId)
-  const mergeComponent = db
+  // Find merge components from junction table
+  const mergeComponents = db
     .prepare(
       `
-      SELECT id, merge_items_needed
-      FROM items
-      WHERE merge_result_item_id = ?
-      LIMIT 1
+      SELECT
+        ism.component_item_id as item_id,
+        i.name as item_name
+      FROM item_sources_merge ism
+      JOIN items i ON ism.component_item_id = i.id
+      WHERE ism.item_id = ?
+      ORDER BY i.name ASC
     `,
     )
-    .get(itemId) as
-    | { id: string; merge_items_needed: string | null }
-    | undefined;
+    .all(itemId) as Array<{
+    item_id: string;
+    item_name: string;
+  }>;
 
-  if (!mergeComponent?.merge_items_needed) {
+  if (mergeComponents.length === 0) {
     return undefined;
   }
 
   visited.add(visitKey);
 
-  // Parse the merge_items_needed JSON to get all components
-  const mergeItems = JSON.parse(mergeComponent.merge_items_needed) as Array<{
-    item_id: string;
-    item_name: string;
-  }>;
-
   // Build obtainability nodes for each merge component
-  const materials: ObtainabilityNode[] = mergeItems.map((m) =>
+  const materials: ObtainabilityNode[] = mergeComponents.map((m) =>
     buildObtainabilityTree(
       db,
       m.item_id,

@@ -19,7 +19,6 @@ from typing import TYPE_CHECKING
 from rich.console import Console
 
 from compendium.types.denormalized import (
-    GatherDropInfo,
     MaterialInfo,
 )
 
@@ -58,188 +57,48 @@ def _denormalize_dropped_by(conn: sqlite3.Connection) -> None:
                 )
 
 
-def _denormalize_gathered_from(
-    conn: sqlite3.Connection,
-) -> dict[str, list[GatherDropInfo]]:
-    """Build gathered_from from gathering resources and world chests.
+def _denormalize_gathered_from(conn: sqlite3.Connection) -> None:
+    """Populate item_sources_gather and item_sources_chest from guaranteed drops.
 
-    Returns:
-        Dict mapping item_id to list of gather source info
+    This handles guaranteed drops from gathering_resources.item_reward_id and
+    chests.item_reward_id. Random drops are already populated by loaders directly
+    from JSON exports.
     """
+    console.print("  Processing guaranteed gathering resource rewards...")
     cursor = conn.cursor()
-    gathered_from: dict[str, list[GatherDropInfo]] = {}
 
-    # Process gathering resource random drops
-    console.print("  Processing gathering resource drops...")
+    # Process guaranteed resource rewards (item_reward_id)
     cursor.execute("""
-        SELECT gr.id, gr.name, grd.item_id, grd.actual_drop_chance
-        FROM gathering_resources gr
-        JOIN gathering_resource_drops grd ON gr.id = grd.resource_id
-        ORDER BY grd.actual_drop_chance DESC
-    """)
-
-    for resource_id, resource_name, item_id, actual_drop_chance in cursor.fetchall():
-        if item_id not in gathered_from:
-            gathered_from[item_id] = []
-        gathered_from[item_id].append(
-            {
-                "gather_item_id": resource_id,
-                "gather_item_name": resource_name,
-                "rate": actual_drop_chance,
-                "type": "resource",
-            }
-        )
-
-    # Process guaranteed resource rewards
-    console.print("  Processing guaranteed resource rewards...")
-    cursor.execute("""
-        SELECT id, name, item_reward_id, item_reward_amount, is_radiant_spark
+        SELECT item_reward_id, id
         FROM gathering_resources
         WHERE item_reward_id IS NOT NULL
     """)
 
-    for (
-        resource_id,
-        resource_name,
-        item_id,
-        item_reward_amount,
-        is_radiant_spark,
-    ) in cursor.fetchall():
-        if item_id not in gathered_from:
-            gathered_from[item_id] = []
+    for item_id, resource_id in cursor.fetchall():
+        cursor.execute(
+            """
+            INSERT INTO item_sources_gather (item_id, resource_id, drop_rate, actual_drop_chance)
+            VALUES (?, ?, 1.0, 1.0)
+            """,
+            (item_id, resource_id),
+        )
 
-        # Radiant Sparks have special drop logic: radiantSekeerLevel * 0.10 (v0.9.5.4+)
-        # At max level (100%), this gives 10% chance. Show as variable rate.
-        if is_radiant_spark:
-            rate = 0.10  # Max rate at 100% Radiant Seeker
-            rate_note = "0.0% – 10.0%"
-        else:
-            rate = 1.0
-            rate_note = None
-
-        gather_info: GatherDropInfo = {
-            "gather_item_id": resource_id,
-            "gather_item_name": resource_name,
-            "rate": rate,
-            "type": "resource",
-        }
-
-        if rate_note:
-            gather_info["rate_note"] = rate_note
-
-        # Add amount range if variable
-        if item_reward_amount > 1:
-            gather_info["amount_min"] = 1
-            gather_info["amount_max"] = item_reward_amount
-
-        gathered_from[item_id].append(gather_info)
-
-    # Process guaranteed chest rewards (item_reward_id)
+    # Process guaranteed chest rewards (item_reward_id from chests)
     console.print("  Processing guaranteed chest rewards...")
     cursor.execute("""
-        SELECT c.id, c.name, c.item_reward_id, c.item_reward_amount,
-               c.zone_id, z.name as zone_name,
-               c.key_required_id, k.name as key_name,
-               c.position_x, c.position_y
-        FROM chests c
-        LEFT JOIN zones z ON c.zone_id = z.id
-        LEFT JOIN items k ON c.key_required_id = k.id
-        WHERE c.item_reward_id IS NOT NULL
-        ORDER BY z.name, k.name
+        SELECT item_reward_id, id
+        FROM chests
+        WHERE item_reward_id IS NOT NULL
     """)
 
-    for (
-        chest_id,
-        chest_name,
-        item_id,
-        item_reward_amount,
-        zone_id,
-        zone_name,
-        key_id,
-        key_name,
-        position_x,
-        position_y,
-    ) in cursor.fetchall():
-        if item_id not in gathered_from:
-            gathered_from[item_id] = []
-
-        chest_info: GatherDropInfo = {
-            "gather_item_id": chest_id,
-            "gather_item_name": chest_name,
-            "rate": 1.0,  # Guaranteed reward
-            "type": "chest",
-            "position_x": position_x,
-            "position_y": position_y,
-        }
-
-        # Add chest-specific fields
-        if zone_id:
-            chest_info["zone_id"] = zone_id
-        if zone_name:
-            chest_info["zone_name"] = zone_name
-        if key_id:
-            chest_info["key_required_id"] = key_id
-        if key_name:
-            chest_info["key_name"] = key_name
-
-        # Add amount range if variable
-        if item_reward_amount > 1:
-            chest_info["amount_min"] = 1
-            chest_info["amount_max"] = item_reward_amount
-
-        gathered_from[item_id].append(chest_info)
-
-    # Process random chest drops (chest_drops table)
-    console.print("  Processing random chest drops...")
-    cursor.execute("""
-        SELECT c.id, c.name, cd.item_id, cd.actual_drop_chance,
-               c.zone_id, z.name as zone_name,
-               c.key_required_id, k.name as key_name,
-               c.position_x, c.position_y
-        FROM chests c
-        JOIN chest_drops cd ON c.id = cd.chest_id
-        LEFT JOIN zones z ON c.zone_id = z.id
-        LEFT JOIN items k ON c.key_required_id = k.id
-        ORDER BY cd.actual_drop_chance DESC, z.name, k.name
-    """)
-
-    for (
-        chest_id,
-        chest_name,
-        item_id,
-        actual_drop_chance,
-        zone_id,
-        zone_name,
-        key_id,
-        key_name,
-        position_x,
-        position_y,
-    ) in cursor.fetchall():
-        if item_id not in gathered_from:
-            gathered_from[item_id] = []
-
-        random_chest_info: GatherDropInfo = {
-            "gather_item_id": chest_id,
-            "gather_item_name": chest_name,
-            "rate": actual_drop_chance,
-            "type": "chest",
-            "position_x": position_x,
-            "position_y": position_y,
-        }
-
-        # Add chest-specific fields
-        if zone_id:
-            random_chest_info["zone_id"] = zone_id
-        if zone_name:
-            random_chest_info["zone_name"] = zone_name
-        if key_id:
-            random_chest_info["key_required_id"] = key_id
-        if key_name:
-            random_chest_info["key_name"] = key_name
-
-        gathered_from[item_id].append(random_chest_info)
-
-    return gathered_from
+    for item_id, chest_id in cursor.fetchall():
+        cursor.execute(
+            """
+            INSERT INTO item_sources_chest (item_id, chest_id, drop_rate, actual_drop_chance)
+            VALUES (?, ?, 1.0, 1.0)
+            """,
+            (item_id, chest_id),
+        )
 
 
 def _denormalize_sold_by(conn: sqlite3.Connection) -> None:
@@ -570,97 +429,6 @@ def _denormalize_alchemy_recipes(conn: sqlite3.Connection) -> None:
             )
 
 
-def _populate_item_sources_pack(conn: sqlite3.Connection) -> None:
-    """Populate item_sources_pack from items.found_in_packs JSON."""
-    console.print("  Processing pack contents...")
-    cursor = conn.cursor()
-    cursor.execute(
-        "SELECT id, found_in_packs FROM items WHERE found_in_packs IS NOT NULL AND found_in_packs != '[]'"
-    )
-
-    for item_id, found_in_packs_json in cursor.fetchall():
-        found_in_packs = json.loads(found_in_packs_json)
-        for pack_info in found_in_packs:
-            pack_item_id = pack_info.get("pack_id")
-            amount = pack_info.get("amount", 1)
-            if pack_item_id:
-                cursor.execute(
-                    """
-                    INSERT INTO item_sources_pack (item_id, pack_item_id, amount)
-                    VALUES (?, ?, ?)
-                """,
-                    (item_id, pack_item_id, amount),
-                )
-
-
-def _populate_item_sources_random(conn: sqlite3.Connection) -> None:
-    """Populate item_sources_random from items.found_in_random_items JSON."""
-    console.print("  Processing random item containers...")
-    cursor = conn.cursor()
-    cursor.execute(
-        "SELECT id, found_in_random_items FROM items WHERE found_in_random_items IS NOT NULL AND found_in_random_items != '[]'"
-    )
-
-    for item_id, found_in_random_items_json in cursor.fetchall():
-        found_in_random_items = json.loads(found_in_random_items_json)
-        for random_info in found_in_random_items:
-            random_item_id = random_info.get("random_item_id")
-            probability = random_info.get("probability", 0.0)
-            if random_item_id:
-                cursor.execute(
-                    """
-                    INSERT INTO item_sources_random (item_id, random_item_id, probability)
-                    VALUES (?, ?, ?)
-                """,
-                    (item_id, random_item_id, probability),
-                )
-
-
-def _populate_item_sources_merge(conn: sqlite3.Connection) -> None:
-    """Populate item_sources_merge from items.created_from_merge JSON."""
-    console.print("  Processing merge recipes...")
-    cursor = conn.cursor()
-    cursor.execute(
-        "SELECT id, created_from_merge FROM items WHERE created_from_merge IS NOT NULL AND created_from_merge != '[]'"
-    )
-
-    for item_id, created_from_merge_json in cursor.fetchall():
-        created_from_merge = json.loads(created_from_merge_json)
-        for component_info in created_from_merge:
-            component_item_id = component_info.get("item_id")
-            if component_item_id:
-                cursor.execute(
-                    """
-                    INSERT INTO item_sources_merge (item_id, component_item_id)
-                    VALUES (?, ?)
-                """,
-                    (item_id, component_item_id),
-                )
-
-
-def _populate_item_sources_treasure_map(conn: sqlite3.Connection) -> None:
-    """Populate item_sources_treasure_map from items.rewarded_by_treasure_maps JSON."""
-    console.print("  Processing treasure map rewards...")
-    cursor = conn.cursor()
-    cursor.execute(
-        "SELECT id, rewarded_by_treasure_maps FROM items WHERE rewarded_by_treasure_maps IS NOT NULL AND rewarded_by_treasure_maps != '[]'"
-    )
-
-    for item_id, rewarded_by_treasure_maps_json in cursor.fetchall():
-        rewarded_by_treasure_maps = json.loads(rewarded_by_treasure_maps_json)
-        for map_info in rewarded_by_treasure_maps:
-            map_item_id = map_info.get("map_id")
-            treasure_location_id = map_info.get("treasure_location_id")
-            if map_item_id:
-                cursor.execute(
-                    """
-                    INSERT INTO item_sources_treasure_map (item_id, map_item_id, treasure_location_id)
-                    VALUES (?, ?, ?)
-                """,
-                    (item_id, map_item_id, treasure_location_id),
-                )
-
-
 def run(conn: sqlite3.Connection, redactions: RedactionConfig | None = None) -> None:
     """Run all item source denormalizations.
 
@@ -678,7 +446,9 @@ def run(conn: sqlite3.Connection, redactions: RedactionConfig | None = None) -> 
 
     cursor = conn.cursor()
 
-    # Clear all junction tables first
+    # Clear junction tables that will be repopulated by denormalizers
+    # Note: pack/random/merge/treasure_map/gather/chest are populated by loader, so don't clear them
+    # The gather and chest tables have random drops from loader; we only add guaranteed drops here
     console.print("  Clearing junction tables...")
     junction_tables = [
         "item_sources_monster",
@@ -686,17 +456,12 @@ def run(conn: sqlite3.Connection, redactions: RedactionConfig | None = None) -> 
         "item_sources_quest",
         "item_sources_altar",
         "item_sources_recipe",
-        "item_sources_gather",
-        "item_sources_chest",
-        "item_sources_pack",
-        "item_sources_random",
-        "item_sources_merge",
-        "item_sources_treasure_map",
     ]
     for table in junction_tables:
         cursor.execute(f"DELETE FROM {table}")
 
-    # Populate junction tables
+    # Populate junction tables from game data
+    # Note: pack/random/merge/treasure_map are now populated by the loader
     _denormalize_dropped_by(conn)
     _denormalize_gathered_from(conn)
     _denormalize_sold_by(conn)
@@ -704,12 +469,6 @@ def run(conn: sqlite3.Connection, redactions: RedactionConfig | None = None) -> 
     _denormalize_provided_by_quests(conn)
     _denormalize_rewarded_by_altars(conn)
     _denormalize_crafted_from(conn, redactions)
-
-    # New functions for additional sources
-    _populate_item_sources_pack(conn)
-    _populate_item_sources_random(conn)
-    _populate_item_sources_merge(conn)
-    _populate_item_sources_treasure_map(conn)
 
     # Legacy alchemy recipe processing (updates JSON columns on recipe/potion items)
     _denormalize_alchemy_recipes(conn)

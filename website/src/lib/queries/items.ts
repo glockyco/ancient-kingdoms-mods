@@ -23,6 +23,7 @@ export interface Item {
   tradable: boolean;
   destroyable: boolean;
   is_quest_item: boolean;
+  is_bestiary_drop: boolean;
   infinite_charges: boolean;
   cooldown: number;
   cooldown_category: string | null;
@@ -70,11 +71,11 @@ export interface Item {
   backpack_slots: number;
   // Travel
   travel_zone_id: number;
-  travel_destination: string | null; // JSON
+  travel_destination_x: number | null;
+  travel_destination_y: number | null;
+  travel_destination_z: number | null;
   travel_destination_name: string | null;
-  // Pack
-  pack_final_amount: number;
-  // Chest
+  // Chest-type items (random containers like "Random Gem 1")
   chest_rewards: string | null; // JSON
   chest_num_items: number;
   // Relic
@@ -99,22 +100,8 @@ export interface Item {
   luck_token_fragment_id: string | null;
   luck_token_fragment_name: string | null;
   luck_token_fragments_needed: number | null;
-  // Random items
-  random_items: string | null; // JSON
-  random_items_with_names: string | null; // JSON: [{"item_id": "agate", "item_name": "Agate", "probability": 0.25}, ...]
-  // Merge
-  merge_items_needed: string | null; // JSON
-  merge_result_item_id: string | null;
-  merge_result_item_name: string | null;
-  // Treasure map
+  // Treasure map (only image_location remains on item; other data in treasure_locations table)
   treasure_map_image_location: string | null;
-  treasure_map_reward_id: string | null;
-  treasure_map_reward_name: string | null;
-  treasure_map_zone_id: string | null;
-  treasure_map_zone_name: string | null;
-  treasure_map_position_x: number | null;
-  treasure_map_position_y: number | null;
-  treasure_location_id: string | null;
   // Augment
   augment_armor_set_id: string | null;
   augment_armor_set_item_ids: string | null; // JSON
@@ -123,9 +110,6 @@ export interface Item {
   augment_skill_bonuses: string | null; // JSON
   augment_skill_bonuses_with_names: string | null; // JSON
   augment_attribute_bonuses: string | null; // JSON
-  // Pack final
-  pack_final_item_id: string | null;
-  pack_final_item_name: string | null;
   // Alchemy recipe (for recipe items)
   recipe_potion_learned_id: string | null;
   recipe_potion_learned_name: string | null;
@@ -134,28 +118,10 @@ export interface Item {
   // Alchemy recipe (for potion items)
   taught_by_recipe_id: string | null;
   taught_by_recipe_name: string | null;
+  alchemy_exp: number;
   // Relic buff
   relic_buff_id: string | null;
   relic_buff_name: string | null;
-  // Denormalized relationships
-  dropped_by: string | null; // JSON
-  sold_by: string | null; // JSON
-  rewarded_by: string | null; // JSON
-  provided_by_quests: string | null; // JSON
-  rewarded_by_altars: string | null; // JSON
-  required_for_altars: string | null; // JSON
-  required_for_portals: string | null; // JSON
-  crafted_from: string | null; // JSON
-  gathered_from: string | null; // JSON
-  opens_chests: string | null; // JSON
-  created_from_merge: string | null; // JSON
-  found_in_chests: string | null; // JSON
-  found_in_packs: string | null; // JSON
-  found_in_random_items: string | null; // JSON: [{"random_item_id": "random_gem_1", "random_item_name": "Random Gem 1", "probability": 0.2}, ...]
-  used_in_recipes: string | null; // JSON
-  needed_for_quests: string | null; // JSON
-  used_as_currency_for: string | null; // JSON
-  rewarded_by_treasure_maps: string | null; // JSON: [{"map_id": "...", "map_name": "...", "zone_id": "...", "zone_name": "..."}]
 }
 
 /**

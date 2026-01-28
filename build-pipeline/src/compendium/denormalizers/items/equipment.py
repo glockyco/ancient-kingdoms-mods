@@ -319,7 +319,7 @@ def _denormalize_buff_names(conn: sqlite3.Connection) -> dict[str, int]:
 
 
 def _denormalize_result_names(conn: sqlite3.Connection) -> dict[str, int]:
-    """Denormalize fragment and pack result item names.
+    """Denormalize fragment result item names.
 
     Returns:
         Dict mapping result type to count of updated items
@@ -334,13 +334,6 @@ def _denormalize_result_names(conn: sqlite3.Connection) -> dict[str, int]:
         WHERE fragment_result_item_id IS NOT NULL
     """)
     counts["fragment"] = cursor.rowcount
-
-    cursor.execute("""
-        UPDATE items
-        SET pack_final_item_name = (SELECT name FROM items AS i WHERE i.id = items.pack_final_item_id)
-        WHERE pack_final_item_id IS NOT NULL
-    """)
-    counts["pack"] = cursor.rowcount
 
     return counts
 
@@ -410,8 +403,7 @@ def run(conn: sqlite3.Connection) -> None:
         f"{buff_counts['scroll']} scroll skills, {buff_counts['weapon_proc']} weapon procs"
     )
     console.print(
-        f"  [green]OK[/green] Updated {result_counts['fragment']} fragment results, "
-        f"{result_counts['pack']} pack results"
+        f"  [green]OK[/green] Updated {result_counts['fragment']} fragment results"
     )
     console.print(
         f"  [green]OK[/green] Updated {faction_updated} items with faction tier names"

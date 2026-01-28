@@ -237,7 +237,7 @@ export const load: PageServerLoad = ({ params }): ZoneDetailData => {
       c.item_reward_id,
       r.name as item_reward_name,
       c.item_reward_amount,
-      (SELECT COUNT(*) FROM chest_drops cd WHERE cd.chest_id = c.id) as drop_count,
+      (SELECT COUNT(*) FROM item_sources_chest cd WHERE cd.chest_id = c.id) as drop_count,
       c.position_x,
       c.position_y
     FROM chests c

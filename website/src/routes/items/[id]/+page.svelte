@@ -81,7 +81,7 @@
     return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "\u202F");
   }
 
-  // Compute all derived values from item data
+  // Compute all derived values from item data and server-loaded sources/usages
   const computed = $derived.by(() => {
     // Stats include both numeric stats and metadata fields
     const allStats = parseJson<Record<string, number | boolean | string>>(
@@ -120,172 +120,148 @@
       armorSetName,
       stats,
       classRequired: parseJson<string[]>(data.item.class_required) || [],
-      droppedBy: parseJson<
-        Array<{
-          monster_id: string;
-          monster_name: string;
-          monster_level: number;
-          monster_level_min: number;
-          monster_level_max: number;
-          is_boss: boolean;
-          is_elite: boolean;
-          rate: number;
-        }>
-      >(data.item.dropped_by),
-      soldBy: parseJson<
-        Array<{
-          npc_id: string;
-          npc_name: string;
-          npc_faction: string | null;
-          is_faction_vendor: boolean;
-          price: number;
-          currency_item_id: string | null;
-          currency_item_name: string | null;
-        }>
-      >(data.item.sold_by),
-      rewardedBy: parseJson<
-        Array<{
-          quest_id: string;
-          quest_name: string;
-          level_required: number;
-          level_recommended: number;
-          is_repeatable: boolean;
-          class_restrictions: string[] | null;
-        }>
-      >(data.item.rewarded_by),
-      providedByQuests: parseJson<
-        Array<{
-          quest_id: string;
-          quest_name: string;
-          level_required: number;
-          level_recommended: number;
-          is_repeatable: boolean;
-          class_restrictions: string[] | null;
-        }>
-      >(data.item.provided_by_quests),
-      rewardedByAltars: parseJson<
-        Array<{
-          altar_id: string;
-          altar_name: string;
-          reward_tier: string;
-          min_effective_level: number;
-          zone_id: string;
-          zone_name: string;
-          boss_monster_id: string | null;
-          boss_monster_name: string | null;
-          drop_rate: number;
-        }>
-      >(data.item.rewarded_by_altars),
-      requiredForAltars: parseJson<
-        Array<{
-          altar_id: string;
-          altar_name: string;
-          min_level_required: number;
-          zone_id: string;
-          zone_name: string;
-        }>
-      >(data.item.required_for_altars),
-      requiredForPortals: parseJson<
-        Array<{
-          portal_id: string;
-          from_zone_id: string;
-          from_zone_name: string;
-          to_zone_id: string;
-          to_zone_name: string;
-          position_x: number;
-          position_y: number;
-          destination_x: number;
-          destination_y: number;
-        }>
-      >(data.item.required_for_portals),
-      craftedFrom: parseJson<
-        Array<{
-          recipe_id: string;
-          result_amount: number;
-          materials: Array<{
-            item_id: string;
-            item_name: string;
-            amount: number;
-          }>;
-        }>
-      >(data.item.crafted_from),
-      gatheredFrom: parseJson<
-        Array<{
-          gather_item_id: string;
-          gather_item_name: string;
-          rate: number;
-          type: "resource" | "chest";
-          rate_note?: string;
-          zone_id?: string;
-          zone_name?: string;
-          key_required_id?: string;
-          key_name?: string;
-          amount_min?: number;
-          amount_max?: number;
-          position_x?: number;
-          position_y?: number;
-        }>
-      >(data.item.gathered_from),
-      opensChests: parseJson<
-        Array<{
-          chest_id: string;
-          chest_name: string;
-          zone_id?: string;
-          zone_name?: string;
-          position_x: number;
-          position_y: number;
-        }>
-      >(data.item.opens_chests),
-      createdFromMerge: parseJson<
-        Array<{
-          item_id: string;
-          item_name: string;
-        }>
-      >(data.item.created_from_merge),
-      foundInChests: parseJson<
-        Array<{
-          chest_id: string;
-          chest_name: string;
-          rate: number;
-        }>
-      >(data.item.found_in_chests),
-      foundInPacks: parseJson<
-        Array<{
-          pack_id: string;
-          pack_name: string;
-          amount: number;
-        }>
-      >(data.item.found_in_packs),
-      usedInRecipes: parseJson<
-        Array<{
-          recipe_id: string;
-          result_item_id: string;
-          result_item_name: string;
-          amount: number;
-        }>
-      >(data.item.used_in_recipes),
-      neededForQuests: parseJson<
-        Array<{
-          quest_id: string;
-          quest_name: string;
-          level_required: number;
-          level_recommended: number;
-          purpose: string;
-          amount: number;
-          is_repeatable: boolean;
-          class_restrictions: string[] | null;
-        }>
-      >(data.item.needed_for_quests),
-      usedAsCurrencyFor: parseJson<
-        Array<{ item_id: string; item_name: string; price: number }>
-      >(data.item.used_as_currency_for),
+
+      // SOURCES - Transform normalized types to template-expected format
+      droppedBy:
+        data.sources.monsters?.map((m) => ({
+          ...m,
+          rate: m.drop_rate, // Rename for template compatibility
+        })) || [],
+
+      soldBy: data.sources.vendors || [],
+
+      rewardedBy:
+        data.sources.quests
+          ?.filter((q) => q.source_type === "reward")
+          .map((q) => ({
+            ...q,
+            level_recommended: q.quest_level_recommended,
+            level_required: q.quest_level_required,
+            class_restrictions: q.class_restriction
+              ? JSON.parse(q.class_restriction)
+              : null,
+          })) || [],
+
+      providedByQuests:
+        data.sources.quests
+          ?.filter((q) => q.source_type === "provided")
+          .map((q) => ({
+            ...q,
+            level_recommended: q.quest_level_recommended,
+            level_required: q.quest_level_required,
+            class_restrictions: q.class_restriction
+              ? JSON.parse(q.class_restriction)
+              : null,
+          })) || [],
+
+      rewardedByAltars:
+        data.sources.altars?.map((a) => ({
+          ...a,
+          boss_monster_id: a.final_wave_boss_id,
+          boss_monster_name: a.final_wave_boss_name,
+        })) || [],
+
+      craftedFrom:
+        data.sources.recipes?.map((r) => ({
+          ...r,
+          materials: data.recipeMaterials[r.recipe_id] || [],
+        })) || [],
+
+      gatheredFrom:
+        data.sources.gathers?.map((g) => ({
+          gather_item_id: g.resource_id,
+          gather_item_name: g.resource_name,
+          rate: g.actual_drop_chance,
+          amount_min: g.amount_min,
+          amount_max: g.amount_max,
+          // Radiant spark info is in is_radiant_spark flag
+          rate_note: g.is_radiant_spark
+            ? "0-10% based on Radiant Seeker level"
+            : undefined,
+        })) || [],
+
+      foundInChests:
+        data.sources.chests?.map((c) => ({
+          chest_id: c.chest_id,
+          chest_name: c.chest_name,
+          rate: c.actual_drop_chance,
+          zone_id: c.zone_id,
+          zone_name: c.zone_name,
+          key_id: c.key_required_id,
+          key_name: c.key_name,
+        })) || [],
+
+      foundInPacks:
+        data.sources.packs?.map((p) => ({
+          pack_id: p.pack_item_id,
+          pack_name: p.pack_item_name,
+          amount: p.amount,
+        })) || [],
+
+      createdFromMerge:
+        data.sources.merges?.flatMap((merge) =>
+          merge.component_item_ids.map((id, i) => ({
+            item_id: id,
+            item_name: merge.component_item_names[i],
+          })),
+        ) || [],
+
+      foundInRandomLoot: data.sources.randoms || [],
+
+      rewardedByTreasureMaps:
+        data.sources.treasureMaps?.map((t) => ({
+          map_id: t.map_item_id,
+          map_name: t.map_item_name,
+          zone_id: t.zone_id,
+          zone_name: t.zone_name,
+        })) || [],
+
+      // USAGES - Transform normalized types to template-expected format
+      requiredForAltars: data.usages.altars || [],
+
+      requiredForPortals: data.usages.portals || [],
+
+      opensChests: data.usages.chests || [],
+
+      usedInRecipes: data.usages.recipes || [],
+
+      neededForQuests:
+        data.usages.quests?.map((q) => ({
+          ...q,
+          level_recommended: q.quest_level_recommended,
+          level_required: q.quest_level_required,
+          class_restrictions: q.class_restrictions
+            ? JSON.parse(q.class_restrictions)
+            : null,
+        })) || [],
+
+      usedAsCurrencyFor: Object.values(
+        (data.usages.currency || []).reduce(
+          (acc, c) => {
+            // Deduplicate by item_id (same item may be sold by multiple NPCs)
+            if (!acc[c.purchasable_item_id]) {
+              acc[c.purchasable_item_id] = {
+                item_id: c.purchasable_item_id,
+                item_name: c.purchasable_item_name,
+                price: c.price,
+              };
+            }
+            return acc;
+          },
+          {} as Record<
+            string,
+            { item_id: string; item_name: string; price: number }
+          >,
+        ),
+      ),
+
+      // Still parsed from item (not obtainability data)
       armorSetSkillBonuses: parseJson<
         Array<{ skill_id: string; skill_name: string; level_bonus: number }>
       >(data.item.augment_skill_bonuses_with_names),
       armorSetMembers: parseJson<
         Array<{ item_id: string; item_name: string; tooltip_html?: string }>
       >(data.item.augment_armor_set_members),
-      // Armor set attribute bonuses (denormalized from augment item)
       armorSetAttributeBonuses: parseJson<
         Array<{ attribute: string; bonus: number }>
       >(data.item.augment_attribute_bonuses),
@@ -297,24 +273,6 @@
           actual_drop_chance: number;
         }>
       >(data.item.chest_rewards),
-      randomItemsPossible: parseJson<
-        Array<{ item_id: string; item_name: string; probability: number }>
-      >(data.item.random_items_with_names),
-      foundInRandomLoot: parseJson<
-        Array<{
-          random_item_id: string;
-          random_item_name: string;
-          probability: number;
-        }>
-      >(data.item.found_in_random_items),
-      rewardedByTreasureMaps: parseJson<
-        Array<{
-          map_id: string;
-          map_name: string;
-          zone_id: string;
-          zone_name: string;
-        }>
-      >(data.item.rewarded_by_treasure_maps),
     };
   });
 </script>
@@ -498,7 +456,7 @@
   </Card.Root>
 
   <!-- Tooltip and Stats/Merge/Currency side-by-side (hide entire section if all would be empty) -->
-  {#if (data.item.tooltip_html && data.item.item_type !== "augment") || ((data.item.item_type !== "augment" || !data.item.augment_armor_set_name) && ((computed.stats && Object.keys(computed.stats).length > 0) || data.item.weapon_delay > 0)) || data.item.merge_result_item_id || (computed.createdFromMerge && computed.createdFromMerge.length > 0) || (computed.usedAsCurrencyFor && computed.usedAsCurrencyFor.length > 0) || data.item.id === "primal_essence" || data.item.id === "radiant_aether" || data.item.id === "adventurers_essence" || data.item.pack_final_item_id || (data.item.item_type === "augment" && !data.item.augment_armor_set_name && data.augmenters.length > 0)}
+  {#if (data.item.tooltip_html && data.item.item_type !== "augment") || ((data.item.item_type !== "augment" || !data.item.augment_armor_set_name) && ((computed.stats && Object.keys(computed.stats).length > 0) || data.item.weapon_delay > 0)) || (computed.createdFromMerge && computed.createdFromMerge.length > 0) || (computed.usedAsCurrencyFor && computed.usedAsCurrencyFor.length > 0) || data.item.id === "primal_essence" || data.item.id === "radiant_aether" || data.item.id === "adventurers_essence" || (data.item.item_type === "augment" && !data.item.augment_armor_set_name && data.augmenters.length > 0) || data.packContents.length > 0}
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <!-- Tooltip (don't show for augments - they're metadata items never shown to players) -->
       {#if data.item.tooltip_html && data.item.item_type !== "augment"}
@@ -510,6 +468,27 @@
             <div class="text-sm whitespace-pre-wrap tooltip-content">
               <!-- eslint-disable-next-line svelte/no-at-html-tags -->
               {@html data.item.tooltip_html}
+            </div>
+          </Card.Content>
+        </Card.Root>
+      {/if}
+
+      <!-- Pack Contents -->
+      {#if data.packContents.length > 0}
+        <Card.Root class="bg-muted/30">
+          <Card.Header>
+            <Card.Title>Pack Contents</Card.Title>
+          </Card.Header>
+          <Card.Content>
+            <div class="space-y-2">
+              {#each data.packContents as item (item.item_id)}
+                <div class="flex justify-between items-center">
+                  <a href="/items/{item.item_id}" class={styles.link}>
+                    {item.item_name}
+                  </a>
+                  <span class={styles.value}>&times;{item.amount}</span>
+                </div>
+              {/each}
             </div>
           </Card.Content>
         </Card.Root>
@@ -570,9 +549,9 @@
             </div>
           </Card.Content>
         </Card.Root>
-      {:else if data.item.merge_result_item_id && data.item.merge_items_needed}
+      {:else if data.usages.merges && data.usages.merges.length > 0}
         <!-- Combine To Create (shown when no stats) -->
-        {@const mergeItems = JSON.parse(data.item.merge_items_needed)}
+        {@const mergeTarget = data.usages.merges[0]}
         <Card.Root class="bg-muted/30">
           <Card.Header>
             <Card.Title>Combine to Create</Card.Title>
@@ -581,9 +560,9 @@
             <div>
               <div class="{styles.label} mb-2">Components</div>
               <div class="grid grid-cols-1 gap-2">
-                {#each mergeItems as mergeItem (mergeItem.item_id)}
-                  <a href="/items/{mergeItem.item_id}" class={styles.link}>
-                    {mergeItem.item_name}
+                {#each mergeTarget.all_components as component, index (`${component.item_id}_${index}`)}
+                  <a href="/items/{component.item_id}" class={styles.link}>
+                    {component.item_name}
                   </a>
                 {/each}
               </div>
@@ -591,12 +570,8 @@
 
             <div>
               <div class="{styles.label} mb-2">Creates</div>
-              <a
-                href="/items/{data.item.merge_result_item_id}"
-                class={styles.link}
-              >
-                {data.item.merge_result_item_name ||
-                  data.item.merge_result_item_id}
+              <a href="/items/{mergeTarget.result_item_id}" class={styles.link}>
+                {mergeTarget.result_item_name}
               </a>
             </div>
           </Card.Content>
@@ -611,7 +586,7 @@
             <div>
               <div class="{styles.label} mb-2">Components</div>
               <div class="grid grid-cols-1 gap-2">
-                {#each computed.createdFromMerge as mergeItem (mergeItem.item_id)}
+                {#each computed.createdFromMerge as mergeItem, index (`${mergeItem.item_id}_${index}`)}
                   <a href="/items/{mergeItem.item_id}" class={styles.link}>
                     {mergeItem.item_name}
                   </a>
@@ -623,45 +598,41 @@
       {/if}
 
       <!-- Treasure Map Location -->
-      {#if data.item.item_type === "treasure_map" && (data.item.treasure_map_zone_id || data.item.treasure_map_reward_id)}
+      {#if data.item.item_type === "treasure_map" && data.treasureLocation}
         <Card.Root class="bg-muted/30">
           <Card.Header>
             <Card.Title>Treasure Location</Card.Title>
           </Card.Header>
           <Card.Content class="space-y-4">
-            {#if data.item.treasure_map_zone_id}
-              <div>
-                <div class={styles.label}>Dig Location</div>
-                <div class="flex items-center gap-2">
-                  <a
-                    href="/zones/{data.item.treasure_map_zone_id}"
-                    class={styles.link}
-                  >
-                    {data.item.treasure_map_zone_name}
-                  </a>
-                  {#if data.item.treasure_location_id}
-                    <MapLink
-                      entityId={data.item.treasure_location_id}
-                      entityType="treasure"
-                      compact
-                    />
-                  {/if}
-                </div>
+            <div>
+              <div class={styles.label}>Dig Location</div>
+              <div class="flex items-center gap-2">
+                <a
+                  href="/zones/{data.treasureLocation.zone_id}"
+                  class={styles.link}
+                >
+                  {data.treasureLocation.zone_name}
+                </a>
+                <MapLink
+                  entityId={data.treasureLocation.location_id}
+                  entityType="treasure"
+                  compact
+                />
               </div>
-            {/if}
+            </div>
             <div>
               <div class={styles.label}>Required Tool</div>
               <a href="/items/shovel" class={styles.link}>Shovel</a>
             </div>
-            {#if data.item.treasure_map_reward_id}
+            {#if data.treasureLocation.reward_id}
               <div>
                 <div class={styles.label}>Reward</div>
                 <a
-                  href="/items/{data.item.treasure_map_reward_id}"
+                  href="/items/{data.treasureLocation.reward_id}"
                   class={styles.link}
                 >
-                  {data.item.treasure_map_reward_name ||
-                    data.item.treasure_map_reward_id}
+                  {data.treasureLocation.reward_name ||
+                    data.treasureLocation.reward_id}
                 </a>
               </div>
             {/if}
@@ -948,24 +919,6 @@
                   {/each}
                 </div>
               </div>
-            </div>
-          </Card.Content>
-        </Card.Root>
-      {:else if data.item.pack_final_item_id}
-        <!-- Pack Contents -->
-        <Card.Root class="bg-muted/30">
-          <Card.Header>
-            <Card.Title>Pack Contents</Card.Title>
-          </Card.Header>
-          <Card.Content>
-            <div class="flex justify-between items-center">
-              <a
-                href="/items/{data.item.pack_final_item_id}"
-                class={styles.link}
-              >
-                {data.item.pack_final_item_name || data.item.pack_final_item_id}
-              </a>
-              <span class={styles.value}>×{data.item.pack_final_amount}</span>
             </div>
           </Card.Content>
         </Card.Root>
@@ -1778,58 +1731,28 @@
         <Card.Content>
           <div class="space-y-2">
             {#each computed.gatheredFrom as gather, index (`${gather.gather_item_id}_${index}`)}
-              {#if gather.type === "chest"}
-                <div class="space-y-1">
-                  <div class="flex justify-between items-center">
-                    <div class="flex items-center gap-1.5">
-                      <a
-                        href="/chests/{gather.gather_item_id}"
-                        class={styles.link}>Chest</a
-                      >
-                      {#if gather.zone_name}<span class={styles.label}
-                          >({gather.zone_name})</span
-                        >{/if}
-                      <MapLink
-                        entityId={gather.gather_item_id}
-                        entityType="chest"
-                        compact
-                      />
-                    </div>
-                    <span class={styles.label}
-                      >{(gather.rate * 100).toFixed(1)}%</span
-                    >
-                  </div>
-                  {#if gather.key_name && gather.key_required_id}
-                    <div class="{styles.label} pl-2">
-                      Key: <a
-                        href={resolve("/items/[id]", {
-                          id: gather.key_required_id,
-                        })}
-                        class={styles.link}>{gather.key_name}</a
-                      >
-                    </div>
+              <div class="flex justify-between items-center">
+                <a
+                  href="/gather-items/{gather.gather_item_id}"
+                  class={styles.link}
+                >
+                  {gather.gather_item_name}
+                </a>
+                <span class={styles.label}>
+                  {#if gather.rate_note}
+                    {gather.rate_note}
+                  {:else}
+                    {(gather.rate * 100).toFixed(1)}%
                   {/if}
-                </div>
-              {:else}
-                <div class="flex justify-between items-center">
-                  <a
-                    href="/gather-items/{gather.gather_item_id}"
-                    class={styles.link}
-                  >
-                    {gather.gather_item_name}
-                  </a>
-                  <span class={styles.label}>
-                    {#if gather.rate_note}
-                      {gather.rate_note}
+                  {#if gather.amount_min != null && gather.amount_max != null}
+                    {#if gather.amount_min === gather.amount_max}
+                      ({gather.amount_max}×)
                     {:else}
-                      {(gather.rate * 100).toFixed(1)}%
-                    {/if}
-                    {#if gather.amount_min !== undefined && gather.amount_max !== undefined}
                       ({gather.amount_min}-{gather.amount_max}×)
                     {/if}
-                  </span>
-                </div>
-              {/if}
+                  {/if}
+                </span>
+              </div>
             {/each}
           </div>
         </Card.Content>
@@ -1858,48 +1781,42 @@
       </Card.Root>
     {/if}
 
-    <!-- Possible Items (from random items) -->
-    {#if computed.randomItemsPossible && computed.randomItemsPossible.length > 0}
-      <Card.Root class="bg-muted/30">
-        <Card.Header>
-          <Card.Title>Possible Items</Card.Title>
-        </Card.Header>
-        <Card.Content>
-          <div class="space-y-2">
-            {#each computed.randomItemsPossible as item (item.item_id)}
-              <div class="flex justify-between items-center">
-                <a href="/items/{item.item_id}" class={styles.link}>
-                  {item.item_name}
-                </a>
-                <span class={styles.label}>
-                  {(item.probability * 100).toFixed(1)}%
-                </span>
-              </div>
-            {/each}
-          </div>
-        </Card.Content>
-      </Card.Root>
-    {/if}
-
     <!-- Found in Chests -->
     {#if computed.foundInChests && computed.foundInChests.length > 0}
       <Card.Root class="bg-muted/30">
         <Card.Header>
           <Card.Title>Found in Chests</Card.Title>
-          <Card.Description>
-            Drop chances calculated via simulation (100k trials).
-          </Card.Description>
         </Card.Header>
         <Card.Content>
           <div class="space-y-2">
             {#each computed.foundInChests as chest, index (`${chest.chest_id}_${index}`)}
-              <div class="flex justify-between items-center">
-                <a href="/items/{chest.chest_id}" class={styles.link}>
-                  {chest.chest_name}
-                </a>
-                <span class={styles.label}
-                  >{(chest.rate * 100).toFixed(1)}%</span
-                >
+              <div>
+                <div class="flex justify-between items-center">
+                  <div class="flex items-center gap-1.5">
+                    <a href="/chests/{chest.chest_id}" class={styles.link}>
+                      Chest
+                    </a>
+                    {#if chest.zone_name}
+                      <span class={styles.label}>({chest.zone_name})</span>
+                    {/if}
+                    <MapLink
+                      entityId={chest.chest_id}
+                      entityType="chest"
+                      compact
+                    />
+                  </div>
+                  <span class={styles.label}
+                    >{(chest.rate * 100).toFixed(1)}%</span
+                  >
+                </div>
+                {#if chest.key_id}
+                  <div class="ml-2 text-sm">
+                    <span class={styles.label}>Key:</span>
+                    <a href="/items/{chest.key_id}" class={styles.link}>
+                      {chest.key_name}
+                    </a>
+                  </div>
+                {/if}
               </div>
             {/each}
           </div>
@@ -1915,7 +1832,7 @@
         </Card.Header>
         <Card.Content>
           <div class="space-y-2">
-            {#each computed.foundInRandomLoot as randomItem (randomItem.random_item_id)}
+            {#each computed.foundInRandomLoot as randomItem, index (`${randomItem.random_item_id}_${index}`)}
               <div class="flex justify-between items-center">
                 <a
                   href="/items/{randomItem.random_item_id}"
@@ -1925,6 +1842,29 @@
                 </a>
                 <span class={styles.label}>
                   {(randomItem.probability * 100).toFixed(1)}%
+                </span>
+              </div>
+            {/each}
+          </div>
+        </Card.Content>
+      </Card.Root>
+    {/if}
+
+    <!-- Possible Items (for simple random items, not chest-type items with weighted rewards) -->
+    {#if data.randomOutcomes && data.randomOutcomes.length > 0 && (!computed.chestRewards || computed.chestRewards.length === 0)}
+      <Card.Root class="bg-muted/30">
+        <Card.Header>
+          <Card.Title>Possible Items</Card.Title>
+        </Card.Header>
+        <Card.Content>
+          <div class="space-y-2">
+            {#each data.randomOutcomes as item (item.item_id)}
+              <div class="flex justify-between items-center">
+                <a href="/items/{item.item_id}" class={styles.link}>
+                  {item.item_name}
+                </a>
+                <span class={styles.label}>
+                  {(item.probability * 100).toFixed(1)}%
                 </span>
               </div>
             {/each}

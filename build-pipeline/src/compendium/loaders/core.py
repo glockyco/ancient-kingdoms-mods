@@ -202,7 +202,14 @@ def load_skills(conn: sqlite3.Connection, export_dir: Path) -> None:
 
 
 def load_items(conn: sqlite3.Connection, export_dir: Path) -> None:
-    """Load items into database."""
+    """Load items into database.
+
+    Also populates junction tables for item container relationships:
+    - item_sources_pack (pack contents)
+    - item_sources_random (random item pools)
+    - item_sources_merge (merge recipe components)
+    - item_sources_treasure_map (treasure map rewards)
+    """
     console.print("Loading items...")
 
     filepath = export_dir / "items.json"
@@ -215,11 +222,85 @@ def load_items(conn: sqlite3.Connection, export_dir: Path) -> None:
     # Defer FK checks for self-referential item foreign keys
     cursor.execute("PRAGMA defer_foreign_keys = ON")
 
+    # Clear junction tables that will be repopulated
+    cursor.execute("DELETE FROM item_sources_pack")
+    cursor.execute("DELETE FROM item_sources_random")
+    cursor.execute("DELETE FROM item_sources_merge")
+
+    # Track items with treasure map rewards for later processing
+    # (treasure_locations table doesn't exist yet at this point)
+    treasure_map_items: list[tuple[str, str]] = []
+
+    # Track counts for logging
+    pack_count = 0
+    random_count = 0
+    merge_count = 0
+
+    # Track seen merge recipes to avoid duplicates
+    # (multiple component items may reference the same merge result)
+    seen_merge_recipes: set[str] = set()
+
     for item in items:
+        # Insert main item record (insert_model only inserts fields that match schema)
         insert_model(cursor, "items", item)
+
+        # Populate junction tables from forward relationships
+        # These fields exist in ItemData model but not in items table schema
+
+        # 1. Pack contents: item.pack_final_item_id → item_sources_pack
+        if item.pack_final_item_id:
+            cursor.execute(
+                "INSERT INTO item_sources_pack (item_id, pack_item_id, amount) VALUES (?, ?, ?)",
+                (item.pack_final_item_id, item.id, item.pack_final_amount),
+            )
+            pack_count += 1
+
+        # 2. Random item pools: item.random_items[] → item_sources_random
+        if item.random_items:
+            item_count = len(item.random_items)
+            probability = 1.0 / item_count if item_count > 0 else 0.0
+            for random_item_id in item.random_items:
+                cursor.execute(
+                    "INSERT INTO item_sources_random (item_id, random_item_id, probability) VALUES (?, ?, ?)",
+                    (random_item_id, item.id, probability),
+                )
+            random_count += 1
+
+        # 3. Merge recipes: item.merge_items_needed_ids[] → item_sources_merge
+        #    Track merge recipes by their result item ID to avoid duplicates
+        #    (multiple component items may reference the same merge recipe)
+        if item.merge_items_needed_ids and item.merge_result_item_id:
+            # Use result item ID as the unique key for this merge recipe
+            if item.merge_result_item_id not in seen_merge_recipes:
+                seen_merge_recipes.add(item.merge_result_item_id)
+                for component_id in item.merge_items_needed_ids:
+                    cursor.execute(
+                        "INSERT INTO item_sources_merge (item_id, component_item_id) VALUES (?, ?)",
+                        (item.merge_result_item_id, component_id),
+                    )
+                merge_count += 1
+
+        # 4. Treasure maps: defer until treasure_locations table is loaded
+        if item.treasure_map_reward_id:
+            treasure_map_items.append((item.id, item.treasure_map_reward_id))
 
     conn.commit()
     console.print(f"  [green]OK[/green] Loaded {len(items)} items")
+    if pack_count > 0 or random_count > 0 or merge_count > 0:
+        console.print(
+            f"  [green]OK[/green] Populated junction tables: {pack_count} packs, {random_count} random, {merge_count} merge"
+        )
+
+    # Store treasure map data for later processing
+    # Will be populated by load_treasure_locations() after that table exists
+    cursor.execute(
+        "CREATE TEMP TABLE IF NOT EXISTS pending_treasure_maps (map_id TEXT, reward_id TEXT)"
+    )
+    for map_id, reward_id in treasure_map_items:
+        cursor.execute(
+            "INSERT INTO pending_treasure_maps VALUES (?, ?)", (map_id, reward_id)
+        )
+    conn.commit()
 
 
 def load_monsters(conn: sqlite3.Connection, export_dir: Path) -> None:
@@ -351,6 +432,27 @@ def load_treasure_locations(conn: sqlite3.Connection, export_dir: Path) -> None:
     for loc in locations:
         insert_model(cursor, "treasure_locations", loc)
 
+    # Process pending treasure map items now that treasure_locations exists
+    # Build lookup dict: required_map_id -> treasure_location.id
+    treasure_location_lookup: dict[str, str] = {}
+    for loc in locations:
+        if loc.required_map_id:
+            treasure_location_lookup[loc.required_map_id] = loc.id
+
+    # Populate item_sources_treasure_map from pending items
+    pending = cursor.execute(
+        "SELECT map_id, reward_id FROM pending_treasure_maps"
+    ).fetchall()
+    for map_id, reward_id in pending:
+        location_id = treasure_location_lookup.get(map_id)
+        cursor.execute(
+            "INSERT INTO item_sources_treasure_map (item_id, map_item_id, treasure_location_id) VALUES (?, ?, ?)",
+            (reward_id, map_id, location_id),
+        )
+
+    # Clean up temp table
+    cursor.execute("DROP TABLE IF EXISTS pending_treasure_maps")
+
     conn.commit()
     console.print(f"  [green]OK[/green] Loaded {len(locations)} treasure locations")
 
@@ -366,6 +468,11 @@ def load_gather_items(conn: sqlite3.Connection, export_dir: Path) -> None:
     gather_items = [GatherItemData(**item) for item in data]
 
     cursor = conn.cursor()
+
+    # Clear junction tables that will be repopulated
+    # (random drops from this loader + guaranteed drops from denormalizer)
+    cursor.execute("DELETE FROM item_sources_gather")
+    cursor.execute("DELETE FROM item_sources_chest")
 
     # Split into chests vs gathering resources
     chests = []

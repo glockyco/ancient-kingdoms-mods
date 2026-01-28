@@ -3,6 +3,7 @@ import type { PageServerLoad } from "./$types";
 import { DB_STATIC_PATH } from "$lib/constants/constants";
 import type { ObtainabilityNode } from "$lib/types/recipes";
 import { buildObtainabilityTree } from "$lib/server/obtainability";
+import { getMonsterSources, getQuestSources } from "$lib/server/item-sources";
 
 export const prerender = true;
 
@@ -48,24 +49,12 @@ interface RawBook {
   name: string;
   tooltip_html: string | null;
   book_text: string;
-  dropped_by: string | null;
-  rewarded_by: string | null;
   book_strength_gain: number;
   book_dexterity_gain: number;
   book_constitution_gain: number;
   book_intelligence_gain: number;
   book_wisdom_gain: number;
   book_charisma_gain: number;
-}
-
-interface DropInfo {
-  monster_id: string;
-  monster_name: string;
-}
-
-interface QuestInfo {
-  quest_id: string;
-  quest_name: string;
 }
 
 export const load: PageServerLoad = (): LoreKeepingPageData => {
@@ -97,8 +86,6 @@ export const load: PageServerLoad = (): LoreKeepingPageData => {
       name,
       tooltip_html,
       book_text,
-      dropped_by,
-      rewarded_by,
       book_strength_gain,
       book_dexterity_gain,
       book_constitution_gain,
@@ -124,7 +111,7 @@ export const load: PageServerLoad = (): LoreKeepingPageData => {
       true,
     );
 
-    const sourceSummary = getSourceSummary(db, raw, obtainabilityTree);
+    const sourceSummary = getSourceSummary(db, raw.id, obtainabilityTree);
 
     return {
       id: raw.id,
@@ -151,7 +138,7 @@ export const load: PageServerLoad = (): LoreKeepingPageData => {
 
 function getSourceSummary(
   db: Database.Database,
-  raw: RawBook,
+  bookId: string,
   tree: ObtainabilityNode,
 ): SourceSummary {
   // Check for merge first (from obtainability tree)
@@ -166,34 +153,31 @@ function getSourceSummary(
     };
   }
 
-  // Check for monster drops
-  if (raw.dropped_by) {
-    const drops = JSON.parse(raw.dropped_by) as DropInfo[];
-    if (drops.length > 0) {
-      const monster = drops[0];
-      // Get zone name for the monster
-      const zoneName = getMonsterZone(db, monster.monster_id);
-      return {
-        type: "drop",
-        label: zoneName
-          ? `${monster.monster_name} (${zoneName})`
-          : monster.monster_name,
-        linkHref: `/monsters/${monster.monster_id}`,
-      };
-    }
+  // Check for monster drops using junction table
+  const monsterSources = getMonsterSources(db, bookId);
+  if (monsterSources.length > 0) {
+    const monster = monsterSources[0];
+    const zoneName = getMonsterZone(db, monster.monster_id);
+    return {
+      type: "drop",
+      label: zoneName
+        ? `${monster.monster_name} (${zoneName})`
+        : monster.monster_name,
+      linkHref: `/monsters/${monster.monster_id}`,
+    };
   }
 
-  // Check for quest rewards
-  if (raw.rewarded_by) {
-    const quests = JSON.parse(raw.rewarded_by) as QuestInfo[];
-    if (quests.length > 0) {
-      const quest = quests[0];
-      return {
-        type: "quest",
-        label: quest.quest_name,
-        linkHref: `/quests/${quest.quest_id}`,
-      };
-    }
+  // Check for quest rewards using junction table
+  const questSources = getQuestSources(db, bookId);
+  // Filter to just rewards, not provided items
+  const rewardQuests = questSources.filter((q) => q.source_type === "reward");
+  if (rewardQuests.length > 0) {
+    const quest = rewardQuests[0];
+    return {
+      type: "quest",
+      label: quest.quest_name,
+      linkHref: `/quests/${quest.quest_id}`,
+    };
   }
 
   return {

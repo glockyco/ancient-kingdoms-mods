@@ -197,9 +197,8 @@ CREATE TABLE items (
     travel_destination_y REAL,
     travel_destination_z REAL,
     travel_destination_name TEXT,
-    pack_final_amount INTEGER DEFAULT 0,
 
-    -- Chest rewards
+    -- Chest rewards (kept as JSON - complex display data with Monte Carlo calculations)
     chest_rewards TEXT,             -- JSON array
     chest_num_items INTEGER DEFAULT 0,
 
@@ -224,21 +223,7 @@ CREATE TABLE items (
     luck_token_fragment_name TEXT,
     luck_token_fragments_needed INTEGER,
 
-    random_items TEXT,              -- JSON array of item IDs
-    random_items_with_names TEXT,   -- JSON: [{"item_id": "agate", "item_name": "Agate"}, ...]
-    merge_items_needed_ids TEXT,
-    merge_items_needed TEXT,        -- JSON: [{"item_id": "a_cunning_society", "item_name": "A Cunning Society"}, ...]
-    merge_result_item_id TEXT REFERENCES items(id),
-    merge_result_item_name TEXT,
     treasure_map_image_location TEXT,
-    treasure_map_reward_id TEXT REFERENCES items(id),
-    treasure_map_reward_name TEXT,
-    treasure_map_zone_id TEXT REFERENCES zones(id),
-    treasure_map_zone_name TEXT,
-    treasure_map_position_x REAL,
-    treasure_map_position_y REAL,
-    treasure_map_position_z REAL,
-    treasure_location_id TEXT REFERENCES treasure_locations(id),
 
     -- Optional augment/recipe properties
     augment_armor_set_id TEXT,        -- ID of the set bonus item (e.g., "cobalt_armor_bonus_set")
@@ -248,8 +233,6 @@ CREATE TABLE items (
     augment_skill_bonuses TEXT,
     augment_skill_bonuses_with_names TEXT,  -- JSON: [{"skill_id": "combat_training", "skill_name": "Combat Training", "level_bonus": 2}, ...]
     augment_attribute_bonuses TEXT,   -- JSON: [{"attribute": "strength", "bonus": 10}, ...]
-    pack_final_item_id TEXT REFERENCES items(id),
-    pack_final_item_name TEXT,
     recipe_potion_learned_id TEXT REFERENCES items(id),
     recipe_potion_learned_name TEXT,
     alchemy_recipe_level_required INTEGER,
@@ -258,29 +241,7 @@ CREATE TABLE items (
     taught_by_recipe_name TEXT,
     alchemy_exp INTEGER,              -- EXP granted when crafting this potion (from alchemy_recipes)
     relic_buff_id TEXT REFERENCES skills(id),
-    relic_buff_name TEXT,
-
-    -- Denormalized: Where to get this item (as JSON arrays)
-    dropped_by TEXT,                -- JSON: [{"monster_id": "fire_ele", "rate": 0.15, "zone_id": "volcanic"}]
-    sold_by TEXT,                   -- JSON: [{"npc_id": "kara", "price": 500, "zone_id": "stonewatch"}]
-    rewarded_by TEXT,               -- JSON: [{"quest_id": "quest_blacksmith_1"}]
-    provided_by_quests TEXT,        -- JSON: [{"quest_id": "quest_123", "quest_name": "...", "level_recommended": 10, "is_repeatable": false, "class_restrictions": null}]
-    rewarded_by_altars TEXT,        -- JSON: [{"altar_id": "altar_forgotten_kings", "altar_name": "Altar of the Forgotten Kings", "reward_tier": "legendary", "min_effective_level": 55, "zone_id": "twilight_forest", "zone_name": "Twilight Forest"}]
-    required_for_altars TEXT,       -- JSON: [{"altar_id": "altar_forgotten_kings", "altar_name": "Altar of the Forgotten Kings", "min_level_required": 30, "zone_id": "twilight_forest", "zone_name": "Twilight Forest"}]
-    required_for_portals TEXT,      -- JSON: [{"portal_id": "portal_123", "from_zone_id": "krom_razz", "from_zone_name": "Krom Razz", "to_zone_id": "krom_razz", "to_zone_name": "Krom Razz", "position_x": 743.55, "position_y": 350.82, "destination_x": 761.4, "destination_y": 357.42}]
-    crafted_from TEXT,              -- JSON: [{"recipe_id": "recipe_0", "result_amount": 1}]
-    gathered_from TEXT,             -- JSON: [{"gather_item_id": "iron_ore", "rate": 0.1}]
-    opens_chests TEXT,              -- JSON: [{"chest_id": "chest_rf_greendungeon1_reward3", "chest_name": "Chest RF GreenDungeon1", "zone_id": "the_twisted_haunt", "zone_name": "The Twisted Haunt", "position_x": 527.9929, "position_y": 55.8}]
-    created_from_merge TEXT,        -- JSON: [{"item_id": "a_cunning_society", "item_name": "A Cunning Society"}, ...]
-    found_in_chests TEXT,           -- JSON: [{"chest_id": "chest_of_lost_adventurers_dwarves", "chest_name": "Chest of Lost Adventurers (Dwarves)", "rate": 0.02}]
-    found_in_packs TEXT,            -- JSON: [{"pack_id": "pack_10_arrows", "pack_name": "Pack 10 Arrows", "amount": 10}]
-
-    -- Denormalized: Where this item is used (as JSON arrays)
-    used_in_recipes TEXT,           -- JSON: [{"recipe_id": "recipe_5", "amount": 3}]
-    needed_for_quests TEXT,         -- JSON: [{"quest_id": "quest_blacksmith_1", "purpose": "gather", "amount": 5}]
-    used_as_currency_for TEXT,      -- JSON: [{"item_id": "item_123", "item_name": "Cool Sword", "price": 50}]
-    found_in_random_items TEXT,     -- JSON: [{"random_item_id": "random_gem_1", "random_item_name": "Random Gem 1"}]
-    rewarded_by_treasure_maps TEXT  -- JSON: [{"map_id": "red_scabbard_map", "map_name": "Red Scabbard Map", "zone_id": "everfrost", "zone_name": "Everfrost"}]
+    relic_buff_name TEXT
 );
 
 CREATE INDEX idx_items_item_type ON items(item_type);
@@ -295,115 +256,126 @@ CREATE INDEX idx_items_weapon_category ON items(weapon_category);
 
 -- Items dropped by monsters
 CREATE TABLE item_sources_monster (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     item_id TEXT NOT NULL REFERENCES items(id),
     monster_id TEXT NOT NULL REFERENCES monsters(id),
-    drop_rate REAL NOT NULL,
-    PRIMARY KEY (item_id, monster_id)
+    drop_rate REAL NOT NULL
 );
+CREATE INDEX idx_item_sources_monster_item ON item_sources_monster(item_id);
 CREATE INDEX idx_item_sources_monster_monster ON item_sources_monster(monster_id);
 
 -- Items sold by NPC vendors
 CREATE TABLE item_sources_vendor (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     item_id TEXT NOT NULL REFERENCES items(id),
     npc_id TEXT NOT NULL REFERENCES npcs(id),
     price INTEGER NOT NULL DEFAULT 0,
     currency_item_id TEXT REFERENCES items(id),
     required_faction TEXT REFERENCES factions(name),
-    required_reputation_tier INTEGER,
-    PRIMARY KEY (item_id, npc_id)
+    required_reputation_tier INTEGER
 );
+CREATE INDEX idx_item_sources_vendor_item ON item_sources_vendor(item_id);
 CREATE INDEX idx_item_sources_vendor_npc ON item_sources_vendor(npc_id);
 CREATE INDEX idx_item_sources_vendor_currency ON item_sources_vendor(currency_item_id);
 CREATE INDEX idx_item_sources_vendor_faction ON item_sources_vendor(required_faction);
 
 -- Items obtained from quests (as rewards or provided items)
 CREATE TABLE item_sources_quest (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     item_id TEXT NOT NULL REFERENCES items(id),
     quest_id TEXT NOT NULL REFERENCES quests(id),
     source_type TEXT NOT NULL CHECK (source_type IN ('reward', 'provided')),
-    class_restriction TEXT,  -- JSON array of class names, NULL if no restriction
-    PRIMARY KEY (item_id, quest_id, source_type)
+    class_restriction TEXT  -- JSON array of class names, NULL if no restriction
 );
+CREATE INDEX idx_item_sources_quest_item ON item_sources_quest(item_id);
 CREATE INDEX idx_item_sources_quest_quest ON item_sources_quest(quest_id);
 CREATE INDEX idx_item_sources_quest_type ON item_sources_quest(source_type);
 
 -- Items rewarded by altars
 CREATE TABLE item_sources_altar (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     item_id TEXT NOT NULL REFERENCES items(id),
     altar_id TEXT NOT NULL REFERENCES altars(id),
     reward_tier TEXT NOT NULL CHECK (reward_tier IN ('common', 'magic', 'epic', 'legendary')),
     drop_rate REAL NOT NULL,
-    min_effective_level INTEGER NOT NULL,
-    PRIMARY KEY (item_id, altar_id, reward_tier)
+    min_effective_level INTEGER NOT NULL
 );
+CREATE INDEX idx_item_sources_altar_item ON item_sources_altar(item_id);
 CREATE INDEX idx_item_sources_altar_altar ON item_sources_altar(altar_id);
 CREATE INDEX idx_item_sources_altar_tier ON item_sources_altar(reward_tier);
 
 -- Items crafted from recipes
 CREATE TABLE item_sources_recipe (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     item_id TEXT NOT NULL REFERENCES items(id),
     recipe_id TEXT NOT NULL,  -- References crafting_recipes or alchemy_recipes
     recipe_type TEXT NOT NULL CHECK (recipe_type IN ('crafting', 'alchemy')),
-    result_amount INTEGER NOT NULL DEFAULT 1,
-    PRIMARY KEY (item_id, recipe_id)
+    result_amount INTEGER NOT NULL DEFAULT 1
 );
+CREATE INDEX idx_item_sources_recipe_item ON item_sources_recipe(item_id);
 CREATE INDEX idx_item_sources_recipe_recipe ON item_sources_recipe(recipe_id);
 CREATE INDEX idx_item_sources_recipe_type ON item_sources_recipe(recipe_type);
 
 -- Items found in packs
 CREATE TABLE item_sources_pack (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     item_id TEXT NOT NULL REFERENCES items(id),
     pack_item_id TEXT NOT NULL REFERENCES items(id),
-    amount INTEGER NOT NULL DEFAULT 1,
-    PRIMARY KEY (item_id, pack_item_id)
+    amount INTEGER NOT NULL DEFAULT 1
 );
+CREATE INDEX idx_item_sources_pack_item ON item_sources_pack(item_id);
 CREATE INDEX idx_item_sources_pack_pack ON item_sources_pack(pack_item_id);
 
 -- Items found in random item containers
 CREATE TABLE item_sources_random (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     item_id TEXT NOT NULL REFERENCES items(id),
     random_item_id TEXT NOT NULL REFERENCES items(id),
-    probability REAL NOT NULL,
-    PRIMARY KEY (item_id, random_item_id)
+    probability REAL NOT NULL
 );
+CREATE INDEX idx_item_sources_random_item ON item_sources_random(item_id);
 CREATE INDEX idx_item_sources_random_random ON item_sources_random(random_item_id);
 
 -- Items created from merge recipes
 CREATE TABLE item_sources_merge (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     item_id TEXT NOT NULL REFERENCES items(id),
-    component_item_id TEXT NOT NULL REFERENCES items(id),
-    PRIMARY KEY (item_id, component_item_id)
+    component_item_id TEXT NOT NULL REFERENCES items(id)
 );
+CREATE INDEX idx_item_sources_merge_item ON item_sources_merge(item_id);
 CREATE INDEX idx_item_sources_merge_component ON item_sources_merge(component_item_id);
 
 -- Items rewarded by treasure maps
 CREATE TABLE item_sources_treasure_map (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     item_id TEXT NOT NULL REFERENCES items(id),
     map_item_id TEXT NOT NULL REFERENCES items(id),
-    treasure_location_id TEXT REFERENCES treasure_locations(id),
-    PRIMARY KEY (item_id, map_item_id)
+    treasure_location_id TEXT REFERENCES treasure_locations(id)
 );
+CREATE INDEX idx_item_sources_treasure_map_item ON item_sources_treasure_map(item_id);
 CREATE INDEX idx_item_sources_treasure_map_map ON item_sources_treasure_map(map_item_id);
 CREATE INDEX idx_item_sources_treasure_map_location ON item_sources_treasure_map(treasure_location_id);
 
 -- Items gathered from resources (renamed from gathering_resource_drops)
 CREATE TABLE item_sources_gather (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     item_id TEXT NOT NULL REFERENCES items(id),
     resource_id TEXT NOT NULL REFERENCES gathering_resources(id),
     drop_rate REAL NOT NULL,
-    actual_drop_chance REAL,
-    PRIMARY KEY (item_id, resource_id)
+    actual_drop_chance REAL
 );
+CREATE INDEX idx_item_sources_gather_item ON item_sources_gather(item_id);
 CREATE INDEX idx_item_sources_gather_resource ON item_sources_gather(resource_id);
 
 -- Items found in chests (renamed from chest_drops)
 CREATE TABLE item_sources_chest (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     item_id TEXT NOT NULL REFERENCES items(id),
     chest_id TEXT NOT NULL REFERENCES chests(id),
     drop_rate REAL NOT NULL,
-    actual_drop_chance REAL,
-    PRIMARY KEY (item_id, chest_id)
+    actual_drop_chance REAL
 );
+CREATE INDEX idx_item_sources_chest_item ON item_sources_chest(item_id);
 CREATE INDEX idx_item_sources_chest_chest ON item_sources_chest(chest_id);
 
 -- =============================================================================
@@ -517,59 +489,65 @@ CREATE INDEX idx_monsters_elite ON monsters(is_elite) WHERE is_elite = 1;
 
 -- Items used as materials in recipes
 CREATE TABLE item_usages_recipe (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     item_id TEXT NOT NULL REFERENCES items(id),
     recipe_id TEXT NOT NULL,  -- References crafting_recipes or alchemy_recipes
     recipe_type TEXT NOT NULL CHECK (recipe_type IN ('crafting', 'alchemy')),
-    amount INTEGER NOT NULL DEFAULT 1,
-    PRIMARY KEY (item_id, recipe_id)
+    amount INTEGER NOT NULL DEFAULT 1
 );
+CREATE INDEX idx_item_usages_recipe_item ON item_usages_recipe(item_id);
 CREATE INDEX idx_item_usages_recipe_recipe ON item_usages_recipe(recipe_id);
 CREATE INDEX idx_item_usages_recipe_type ON item_usages_recipe(recipe_type);
 
 -- Items required for quests
 CREATE TABLE item_usages_quest (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     item_id TEXT NOT NULL REFERENCES items(id),
     quest_id TEXT NOT NULL REFERENCES quests(id),
     purpose TEXT NOT NULL,  -- 'Collect', 'Deliver', 'Equip', 'Have', etc.
-    amount INTEGER NOT NULL DEFAULT 1,
-    PRIMARY KEY (item_id, quest_id)
+    amount INTEGER NOT NULL DEFAULT 1
 );
+CREATE INDEX idx_item_usages_quest_item ON item_usages_quest(item_id);
 CREATE INDEX idx_item_usages_quest_quest ON item_usages_quest(quest_id);
 CREATE INDEX idx_item_usages_quest_purpose ON item_usages_quest(purpose);
 
 -- Items used as currency for purchases
 CREATE TABLE item_usages_currency (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     currency_item_id TEXT NOT NULL REFERENCES items(id),
     purchasable_item_id TEXT NOT NULL REFERENCES items(id),
     npc_id TEXT NOT NULL REFERENCES npcs(id),
-    price INTEGER NOT NULL DEFAULT 0,
-    PRIMARY KEY (currency_item_id, purchasable_item_id, npc_id)
+    price INTEGER NOT NULL DEFAULT 0
 );
+CREATE INDEX idx_item_usages_currency_currency ON item_usages_currency(currency_item_id);
 CREATE INDEX idx_item_usages_currency_purchasable ON item_usages_currency(purchasable_item_id);
 CREATE INDEX idx_item_usages_currency_npc ON item_usages_currency(npc_id);
 
 -- Items required for altar activation
 CREATE TABLE item_usages_altar (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     item_id TEXT NOT NULL REFERENCES items(id),
-    altar_id TEXT NOT NULL REFERENCES altars(id),
-    PRIMARY KEY (item_id, altar_id)
+    altar_id TEXT NOT NULL REFERENCES altars(id)
 );
+CREATE INDEX idx_item_usages_altar_item ON item_usages_altar(item_id);
 CREATE INDEX idx_item_usages_altar_altar ON item_usages_altar(altar_id);
 
 -- Items required for portal access
 CREATE TABLE item_usages_portal (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     item_id TEXT NOT NULL REFERENCES items(id),
-    portal_id TEXT NOT NULL REFERENCES portals(id),
-    PRIMARY KEY (item_id, portal_id)
+    portal_id TEXT NOT NULL REFERENCES portals(id)
 );
+CREATE INDEX idx_item_usages_portal_item ON item_usages_portal(item_id);
 CREATE INDEX idx_item_usages_portal_portal ON item_usages_portal(portal_id);
 
 -- Items that open chests (keys)
 CREATE TABLE item_usages_chest (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     item_id TEXT NOT NULL REFERENCES items(id),
-    chest_id TEXT NOT NULL REFERENCES chests(id),
-    PRIMARY KEY (item_id, chest_id)
+    chest_id TEXT NOT NULL REFERENCES chests(id)
 );
+CREATE INDEX idx_item_usages_chest_item ON item_usages_chest(item_id);
 CREATE INDEX idx_item_usages_chest_chest ON item_usages_chest(chest_id);
 
 -- =============================================================================
