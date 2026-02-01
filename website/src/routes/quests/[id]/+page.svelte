@@ -413,6 +413,7 @@
                 </span>
                 <MonsterTypeIcon
                   isBoss={target.is_boss}
+                  isFabled={target.is_fabled}
                   isElite={target.is_elite}
                 />
                 <a

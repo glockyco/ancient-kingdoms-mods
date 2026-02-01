@@ -110,6 +110,7 @@ class MonsterData(BaseModel):
     is_boss: bool = False
     is_world_boss: bool = False
     is_elite: bool = False
+    is_fabled: bool = False
     is_hunt: bool = False
     is_dummy: bool = False
     is_summonable: bool = False
@@ -600,6 +601,10 @@ class SkillData(BaseModel):
     can_heal_self: bool = False
     can_heal_others: bool = False
 
+    # TargetBuffSkill-specific
+    can_buff_self: bool = False
+    can_buff_others: bool = False
+
     # Buff/debuff
     duration_base: float = 0.0
     duration_per_level: float = 0.0
@@ -607,6 +612,8 @@ class SkillData(BaseModel):
     buff_category: str = ""
     is_invisibility: bool = False
     is_undead_illusion: bool = False
+    is_mana_shield: bool = False
+    is_stance: bool = False
     is_poison_debuff: bool = False
     is_fire_debuff: bool = False
     is_cold_debuff: bool = False

@@ -124,6 +124,8 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
     base_skill: Boolean(skillRaw.base_skill),
     learn_default: Boolean(skillRaw.learn_default),
     allow_dungeon: Boolean(skillRaw.allow_dungeon ?? true),
+    is_mana_shield: Boolean(skillRaw.is_mana_shield),
+    is_stance: Boolean(skillRaw.is_stance),
 
     // Costs and timing
     mana_cost: parseLinear(skillRaw.mana_cost as string | null),

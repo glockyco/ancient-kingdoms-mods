@@ -1376,6 +1376,7 @@
                 <div class="flex items-center gap-2">
                   <MonsterTypeIcon
                     isBoss={drop.is_boss}
+                    isFabled={drop.is_fabled}
                     isElite={drop.is_elite}
                   />
                   <a

@@ -320,9 +320,17 @@ export const load: PageServerLoad = ({ params }): QuestDetailPageData => {
   const killTargets: QuestMonsterTarget[] = [];
   if (questRaw.kill_target_1_id) {
     const monsterData = db
-      .prepare("SELECT id, name, is_boss, is_elite FROM monsters WHERE id = ?")
+      .prepare(
+        "SELECT id, name, is_boss, is_fabled, is_elite FROM monsters WHERE id = ?",
+      )
       .get(questRaw.kill_target_1_id) as
-      | { id: string; name: string; is_boss: number; is_elite: number }
+      | {
+          id: string;
+          name: string;
+          is_boss: number;
+          is_fabled: number;
+          is_elite: number;
+        }
       | undefined;
 
     if (monsterData) {
@@ -331,15 +339,24 @@ export const load: PageServerLoad = ({ params }): QuestDetailPageData => {
         name: monsterData.name,
         amount: (questRaw.kill_amount_1 as number) || 1,
         is_boss: Boolean(monsterData.is_boss),
+        is_fabled: Boolean(monsterData.is_fabled),
         is_elite: Boolean(monsterData.is_elite),
       });
     }
   }
   if (questRaw.kill_target_2_id) {
     const monsterData = db
-      .prepare("SELECT id, name, is_boss, is_elite FROM monsters WHERE id = ?")
+      .prepare(
+        "SELECT id, name, is_boss, is_fabled, is_elite FROM monsters WHERE id = ?",
+      )
       .get(questRaw.kill_target_2_id) as
-      | { id: string; name: string; is_boss: number; is_elite: number }
+      | {
+          id: string;
+          name: string;
+          is_boss: number;
+          is_fabled: number;
+          is_elite: number;
+        }
       | undefined;
 
     if (monsterData) {
@@ -348,6 +365,7 @@ export const load: PageServerLoad = ({ params }): QuestDetailPageData => {
         name: monsterData.name,
         amount: (questRaw.kill_amount_2 as number) || 1,
         is_boss: Boolean(monsterData.is_boss),
+        is_fabled: Boolean(monsterData.is_fabled),
         is_elite: Boolean(monsterData.is_elite),
       });
     }

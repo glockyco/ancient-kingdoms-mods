@@ -124,6 +124,7 @@
               <div class="flex items-center gap-1 min-w-0">
                 <MonsterTypeIcon
                   isBoss={dropper.isBoss}
+                  isFabled={dropper.isFabled}
                   isElite={dropper.isElite}
                   class="h-3.5 w-3.5 shrink-0"
                 />

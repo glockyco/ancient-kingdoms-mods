@@ -79,14 +79,17 @@ export function createFilteredData(data: MapEntityData): FilteredMapData {
   const renderableNpcs = data.npcs.filter((n) => n.position !== null);
 
   return {
-    // Creatures = regular monsters (not boss, not elite, not hunt)
+    // Creatures = regular monsters (not fabled, not boss, not elite, not hunt)
     creatures: renderableMonsters.filter(
-      (m) => !m.isBoss && !m.isElite && !m.isHunt,
+      (m) => !m.isFabled && !m.isBoss && !m.isElite && !m.isHunt,
     ),
-    elites: renderableMonsters.filter((m) => m.isElite && !m.isBoss),
+    elites: renderableMonsters.filter(
+      (m) => m.isElite && !m.isFabled && !m.isBoss,
+    ),
+    fabled: renderableMonsters.filter((m) => m.isFabled && !m.isBoss),
     bosses: renderableMonsters.filter((m) => m.isBoss),
     hunts: renderableMonsters.filter(
-      (m) => m.isHunt && !m.isBoss && !m.isElite,
+      (m) => m.isHunt && !m.isFabled && !m.isBoss && !m.isElite,
     ),
     plants: renderableGathering.filter((g) => g.type === "gathering_plant"),
     minerals: renderableGathering.filter((g) => g.type === "gathering_mineral"),
@@ -855,6 +858,25 @@ export function createLayers(
     },
   });
 
+  const fabledLayer = createEntityLayer<MonsterMapEntity>({
+    id: "fabled",
+    data: filtered.fabled,
+    visible: visibility.fabled,
+    iconType: "fabled",
+    color: LAYER_COLORS.fabled,
+    radius: LAYER_RADII.fabled,
+    extensions: [levelZoneFilterExt],
+    getFilterValue: (d) => [d.level, isInZone(d.zoneId)],
+    filterRange: [
+      [levelFilter.monsterMin, levelFilter.monsterMax],
+      [1, 1],
+    ],
+    updateTriggers: {
+      getFilterValue: focusedZoneId,
+      filterRange: [levelFilter.monsterMin, levelFilter.monsterMax],
+    },
+  });
+
   const bossesLayer = createEntityLayer<MonsterMapEntity>({
     id: "bosses",
     data: filtered.bosses,
@@ -1210,6 +1232,7 @@ export function createLayers(
     npcsLayer,
     altarsLayer,
     elitesLayer,
+    fabledLayer,
     bossesLayer,
     relatedHighlightOutlineLayer,
     relatedHighlightLayer,

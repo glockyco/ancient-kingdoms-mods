@@ -69,6 +69,7 @@ export function getDefaultLayerVisibility(): LayerVisibility {
   return {
     // Monsters
     bosses: true,
+    fabled: true,
     elites: true,
     creatures: false,
     hunts: false,
@@ -222,6 +223,7 @@ export function urlStateToLayerVisibility(
   return {
     // Monsters
     bosses: urlLayers.includes("bosses"),
+    fabled: urlLayers.includes("fabled"),
     elites: urlLayers.includes("elites"),
     creatures: urlLayers.includes("creatures"),
     hunts: urlLayers.includes("hunts"),

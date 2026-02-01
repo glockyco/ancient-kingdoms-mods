@@ -15,6 +15,7 @@ interface SkillRow {
   player_classes: string | null;
   is_spell: number;
   is_veteran: number;
+  is_stance: number;
   is_pet_skill: number;
   is_mercenary_skill: number;
 }
@@ -39,6 +40,7 @@ export const load: PageServerLoad = (): SkillsPageData => {
         player_classes,
         is_spell,
         is_veteran,
+        is_stance,
         is_pet_skill,
         is_mercenary_skill
       FROM skills
@@ -59,6 +61,7 @@ export const load: PageServerLoad = (): SkillsPageData => {
     player_classes: row.player_classes ? JSON.parse(row.player_classes) : [],
     is_spell: Boolean(row.is_spell),
     is_veteran: Boolean(row.is_veteran),
+    is_stance: Boolean(row.is_stance),
     is_pet_skill: Boolean(row.is_pet_skill),
     is_mercenary_skill: Boolean(row.is_mercenary_skill),
   }));

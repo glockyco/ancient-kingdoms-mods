@@ -89,6 +89,10 @@ public class SkillData
     public bool can_heal_self { get; set; }  // TargetHealSkill only
     public bool can_heal_others { get; set; }  // TargetHealSkill only
 
+    // === TargetBuffSkill fields (when skill_type = target_buff or target_debuff) ===
+    public bool can_buff_self { get; set; }
+    public bool can_buff_others { get; set; }
+
     // === BuffSkill fields (when skill_type = buff or debuff) ===
     public float duration_base { get; set; }
     public float duration_per_level { get; set; }
@@ -98,6 +102,8 @@ public class SkillData
     // Buff behavior flags
     public bool is_invisibility { get; set; }
     public bool is_undead_illusion { get; set; }
+    public bool is_mana_shield { get; set; }
+    public bool is_stance { get; set; }
     public bool is_poison_debuff { get; set; }
     public bool is_fire_debuff { get; set; }
     public bool is_cold_debuff { get; set; }

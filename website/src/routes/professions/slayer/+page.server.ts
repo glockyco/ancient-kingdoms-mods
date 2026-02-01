@@ -12,6 +12,7 @@ interface SlayerMonster extends RespawnInfo {
   level_min: number;
   level_max: number;
   is_boss: boolean;
+  is_fabled: boolean;
   is_elite: boolean;
 }
 

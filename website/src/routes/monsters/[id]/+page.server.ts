@@ -104,6 +104,7 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
     class_name: monsterRaw.class_name as string | null,
     is_boss: Boolean(monsterRaw.is_boss),
     is_world_boss: Boolean(monsterRaw.is_world_boss),
+    is_fabled: Boolean(monsterRaw.is_fabled),
     is_elite: Boolean(monsterRaw.is_elite),
     is_hunt: Boolean(monsterRaw.is_hunt),
     is_summonable: Boolean(monsterRaw.is_summonable),

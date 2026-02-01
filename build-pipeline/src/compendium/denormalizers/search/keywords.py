@@ -40,12 +40,14 @@ NPC_ROLE_KEYWORDS = {
 
 
 def _generate_monster_keywords(
-    is_boss: bool, is_elite: bool, is_hunt: bool
+    is_boss: bool, is_elite: bool, is_fabled: bool, is_hunt: bool
 ) -> str | None:
     """Generate keywords for a monster based on classification flags."""
     keywords = []
     if is_boss:
         keywords.append("boss")
+    if is_fabled:
+        keywords.append("fabled")
     if is_elite:
         keywords.append("elite")
     if is_hunt:
@@ -89,12 +91,12 @@ def run(conn: sqlite3.Connection) -> None:
     console.print("Generating search keywords...")
     cursor = conn.cursor()
 
-    # Monster keywords (boss/elite/hunt/creature)
-    cursor.execute("SELECT id, is_boss, is_elite, is_hunt FROM monsters")
+    # Monster keywords (boss/elite/fabled/hunt)
+    cursor.execute("SELECT id, is_boss, is_elite, is_fabled, is_hunt FROM monsters")
     monsters = cursor.fetchall()
     monster_count = 0
-    for monster_id, is_boss, is_elite, is_hunt in monsters:
-        keywords = _generate_monster_keywords(is_boss, is_elite, is_hunt)
+    for monster_id, is_boss, is_elite, is_fabled, is_hunt in monsters:
+        keywords = _generate_monster_keywords(is_boss, is_elite, is_fabled, is_hunt)
         if keywords:
             cursor.execute(
                 "UPDATE monsters SET keywords = ? WHERE id = ?", (keywords, monster_id)

@@ -71,6 +71,7 @@ export interface MonsterSource {
   monster_level_min: number;
   monster_level_max: number;
   is_boss: boolean;
+  is_fabled: boolean;
   is_elite: boolean;
   drop_rate: number;
 }

@@ -75,6 +75,7 @@ public class MonsterData
     public bool is_boss { get; set; }
     public bool is_world_boss { get; set; }
     public bool is_elite { get; set; }
+    public bool is_fabled { get; set; }
     public bool is_hunt { get; set; }
     public bool is_dummy { get; set; }
     public bool is_summonable { get; set; }

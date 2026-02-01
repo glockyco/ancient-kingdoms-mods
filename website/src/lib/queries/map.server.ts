@@ -185,6 +185,7 @@ interface MonsterSpawnRow {
   level: number;
   is_boss: number;
   is_world_boss: number;
+  is_fabled: number;
   is_elite: number;
   is_hunt: number;
   is_patrolling: number;
@@ -224,6 +225,7 @@ function loadMonsterSpawnsServer(db: Database.Database): MonsterMapEntity[] {
       COALESCE(ms.level, m.level) as level,
       m.is_boss,
       m.is_world_boss,
+      m.is_fabled,
       m.is_elite,
       m.is_hunt,
       ms.is_patrolling,
@@ -283,6 +285,7 @@ function loadMonsterSpawnsServer(db: Database.Database): MonsterMapEntity[] {
       m.level,
       m.is_boss,
       m.is_world_boss,
+      m.is_fabled,
       m.is_elite,
       m.is_hunt,
       0 as is_patrolling,
@@ -338,8 +341,9 @@ function loadMonsterSpawnsServer(db: Database.Database): MonsterMapEntity[] {
       }
     }
 
-    let type: "boss" | "elite" | "hunt" | "monster" = "monster";
-    if (r.is_boss) type = "boss";
+    let type: "boss" | "fabled" | "elite" | "hunt" | "monster" = "monster";
+    if (r.is_fabled) type = "fabled";
+    else if (r.is_boss) type = "boss";
     else if (r.is_elite) type = "elite";
     else if (r.is_hunt) type = "hunt";
 
@@ -359,6 +363,7 @@ function loadMonsterSpawnsServer(db: Database.Database): MonsterMapEntity[] {
       level: r.level,
       isBoss: Boolean(r.is_boss),
       isWorldBoss: Boolean(r.is_world_boss),
+      isFabled: Boolean(r.is_fabled),
       isElite: Boolean(r.is_elite),
       isHunt: Boolean(r.is_hunt),
       isPatrolling: Boolean(r.is_patrolling),

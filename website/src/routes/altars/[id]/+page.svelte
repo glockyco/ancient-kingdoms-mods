@@ -50,6 +50,7 @@
         baseLevel: number;
         count: number;
         isBoss: boolean;
+        isFabled: boolean;
         isElite: boolean;
       }
     > = {};
@@ -64,6 +65,7 @@
           baseLevel: m.base_level,
           count: 1,
           isBoss: m.is_boss,
+          isFabled: m.is_fabled,
           isElite: m.is_elite,
         };
       }
@@ -409,6 +411,7 @@
                       >
                         <MonsterTypeIcon
                           isBoss={monster.isBoss}
+                          isFabled={monster.isFabled}
                           isElite={monster.isElite}
                         />
                         {#if monster.count > 1}

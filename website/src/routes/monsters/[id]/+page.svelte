@@ -22,6 +22,7 @@
   import MapPin from "@lucide/svelte/icons/map-pin";
   import Scroll from "@lucide/svelte/icons/scroll";
   import BookOpen from "@lucide/svelte/icons/book-open";
+  import Star from "@lucide/svelte/icons/star";
 
   let { data } = $props();
 
@@ -507,6 +508,14 @@
     <div class="flex items-center gap-3 flex-wrap">
       <h1 class="text-3xl font-bold">{data.monster.name}</h1>
       <MapLink entityId={data.monster.id} entityType="monster" />
+      {#if data.monster.is_fabled}
+        <span
+          class="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200"
+        >
+          <Star class="mr-1 h-3 w-3" />
+          Fabled
+        </span>
+      {/if}
       {#if data.monster.is_world_boss}
         <span
           class="inline-flex items-center rounded-full bg-cyan-100 px-2.5 py-0.5 text-xs font-medium text-cyan-800 dark:bg-cyan-900 dark:text-cyan-200"

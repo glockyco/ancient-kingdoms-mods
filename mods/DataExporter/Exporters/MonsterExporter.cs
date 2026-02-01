@@ -108,6 +108,7 @@ public class MonsterExporter : BaseExporter
                 is_boss = canonical.isBoss,
                 is_world_boss = Il2Cpp.Utils.worldBosses.Contains(canonical.name),
                 is_elite = canonical.isElite,
+                is_fabled = canonical.isFabled,
                 is_hunt = canonical.isHunt,
                 is_dummy = canonical.isDummy,
                 is_summonable = canonical.isSummonable,

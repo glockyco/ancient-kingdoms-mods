@@ -146,6 +146,7 @@ export interface MonsterInfo {
   is_boss: boolean;
   is_world_boss: boolean;
   is_elite: boolean;
+  is_fabled: boolean;
   is_hunt: boolean;
   is_summonable: boolean;
 
@@ -273,6 +274,7 @@ export interface MonsterListView extends RespawnInfo {
   is_boss: boolean;
   is_world_boss: boolean;
   is_elite: boolean;
+  is_fabled: boolean;
   is_hunt: boolean;
   damage: number;
   magic_damage: number;

@@ -59,6 +59,7 @@ export function getMonsterSources(
 			m.level_min as monster_level_min,
 			m.level_max as monster_level_max,
 			COALESCE(m.is_boss, 0) as is_boss,
+			COALESCE(m.is_fabled, 0) as is_fabled,
 			COALESCE(m.is_elite, 0) as is_elite,
 			ism.drop_rate
 		FROM item_sources_monster ism

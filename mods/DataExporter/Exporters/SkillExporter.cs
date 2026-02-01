@@ -101,6 +101,7 @@ public class SkillExporter : BaseExporter
             // Try to cast to specific skill types and populate type-specific fields
             PopulateDamageSkillFields(skill, skillData);
             PopulateHealSkillFields(skill, skillData);
+            PopulateTargetBuffSkillFields(skill, skillData);  // TargetBuffSkill-specific fields
             PopulateBonusSkillFields(skill, skillData);  // Covers BuffSkill and PassiveSkill
             PopulateSummonSkillFields(skill, skillData);
 
@@ -260,6 +261,17 @@ public class SkillExporter : BaseExporter
             skillData.can_heal_self = targetHealSkill.canHealSelf;
             skillData.can_heal_others = targetHealSkill.canHealOthers;
         }
+    }
+
+    private void PopulateTargetBuffSkillFields(Il2Cpp.ScriptableSkill skill, SkillData skillData)
+    {
+        var targetBuffSkill = skill.TryCast<Il2Cpp.TargetBuffSkill>();
+        if (targetBuffSkill == null) return;
+
+        skillData.is_mana_shield = targetBuffSkill.isManaShield;
+        skillData.is_stance = targetBuffSkill.isStance;
+        skillData.can_buff_self = targetBuffSkill.canBuffSelf;
+        skillData.can_buff_others = targetBuffSkill.canBuffOthers;
     }
 
     private void PopulateBonusSkillFields(Il2Cpp.ScriptableSkill skill, SkillData skillData)

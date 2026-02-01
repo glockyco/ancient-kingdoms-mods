@@ -429,6 +429,7 @@ CREATE TABLE monsters (
     is_boss BOOLEAN DEFAULT 0,
     is_world_boss BOOLEAN DEFAULT 0,
     is_elite BOOLEAN DEFAULT 0,
+    is_fabled BOOLEAN DEFAULT 0,
     is_hunt BOOLEAN DEFAULT 0,
     is_dummy BOOLEAN DEFAULT 0,
     is_summonable BOOLEAN DEFAULT 0,
@@ -482,6 +483,7 @@ CREATE INDEX idx_monsters_level ON monsters(level);
 CREATE INDEX idx_monsters_type_name ON monsters(type_name);
 CREATE INDEX idx_monsters_boss ON monsters(is_boss) WHERE is_boss = 1;
 CREATE INDEX idx_monsters_elite ON monsters(is_elite) WHERE is_elite = 1;
+CREATE INDEX idx_monsters_fabled ON monsters(is_fabled) WHERE is_fabled = 1;
 
 -- =============================================================================
 -- ITEM USAGES (normalized junction tables for item consumption/requirements)
@@ -926,6 +928,8 @@ CREATE TABLE skills (
     is_resurrect_skill BOOLEAN DEFAULT 0,
     can_heal_self BOOLEAN DEFAULT 0,
     can_heal_others BOOLEAN DEFAULT 0,
+    can_buff_self BOOLEAN DEFAULT 0,
+    can_buff_others BOOLEAN DEFAULT 0,
     stun_chance REAL DEFAULT 0.0,
     stun_time REAL DEFAULT 0.0,
     fear_chance REAL DEFAULT 0.0,
@@ -947,6 +951,8 @@ CREATE TABLE skills (
     is_magic_debuff BOOLEAN DEFAULT 0,
     is_cleanse BOOLEAN DEFAULT 0,
     is_dispel BOOLEAN DEFAULT 0,
+    is_mana_shield BOOLEAN DEFAULT 0,
+    is_stance BOOLEAN DEFAULT 0,
     is_ward BOOLEAN DEFAULT 0,
     is_blindness BOOLEAN DEFAULT 0,
     is_avatar_war BOOLEAN DEFAULT 0,

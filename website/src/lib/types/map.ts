@@ -4,6 +4,7 @@
 export type EntityType =
   | "monster"
   | "boss"
+  | "fabled"
   | "elite"
   | "hunt"
   | "npc"
@@ -39,12 +40,13 @@ export type MonsterSpawnType = "regular" | "summon" | "placeholder" | "altar";
  * Monster-specific entity data
  */
 export interface MonsterMapEntity extends MapEntity {
-  type: "monster" | "boss" | "elite" | "hunt";
+  type: "monster" | "boss" | "fabled" | "elite" | "hunt";
   monsterId: string; // Original monster ID (id field is spawn ID for individual tracking)
   level: number;
   isBoss: boolean;
   isWorldBoss: boolean;
   isElite: boolean;
+  isFabled: boolean;
   isHunt: boolean;
   isPatrolling: boolean;
   patrolWaypoints: [number, number][] | null;
@@ -232,6 +234,7 @@ export type AnyMapEntity =
 export interface LayerVisibility {
   // Monsters section
   bosses: boolean;
+  fabled: boolean;
   elites: boolean;
   creatures: boolean; // renamed from "monsters"
   hunts: boolean;
@@ -345,6 +348,7 @@ export interface MapEntityData {
 export interface FilteredMapData {
   creatures: MonsterMapEntity[]; // renamed from regularMonsters
   elites: MonsterMapEntity[];
+  fabled: MonsterMapEntity[];
   bosses: MonsterMapEntity[];
   hunts: MonsterMapEntity[];
   plants: GatheringMapEntity[];

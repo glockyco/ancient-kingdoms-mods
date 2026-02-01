@@ -41,6 +41,7 @@ export const INITIAL_VIEW_STATE: {
 export const LAYER_COLORS = {
   monster: [239, 68, 68] as [number, number, number], // red-500
   boss: [6, 182, 212] as [number, number, number], // cyan-500
+  fabled: [16, 185, 129] as [number, number, number], // emerald-500
   elite: [168, 85, 247] as [number, number, number], // purple-500
   hunt: [234, 179, 8] as [number, number, number], // yellow-500
   npc: [59, 130, 246] as [number, number, number], // blue-500
@@ -61,6 +62,7 @@ export const LAYER_COLORS = {
 export const LAYER_RADII = {
   monster: 4,
   boss: 10,
+  fabled: 7,
   elite: 6,
   npc: 5,
   portal: 6,
@@ -83,6 +85,7 @@ export const LAYER_RADII = {
  */
 export const ICON_SIZES = {
   boss: { base: 32, min: 28, max: 64 },
+  fabled: { base: 28, min: 26, max: 60 },
   elite: { base: 26, min: 24, max: 56 },
   altar: { base: 26, min: 24, max: 56 },
   npc: { base: 18, min: 16, max: 40 },
@@ -219,6 +222,7 @@ export const FLY_TO_CONFIG = {
 export const ENTITY_BORDER_COLORS: Record<string, string> = {
   monster: "border-l-red-500",
   boss: "border-l-cyan-500",
+  fabled: "border-l-emerald-500",
   elite: "border-l-purple-500",
   hunt: "border-l-yellow-500",
   npc: "border-l-blue-500",

@@ -4,6 +4,7 @@ export interface AltarWaveMonster {
   monster_name: string;
   base_level: number;
   is_boss: boolean;
+  is_fabled: boolean;
   is_elite: boolean;
 }
 

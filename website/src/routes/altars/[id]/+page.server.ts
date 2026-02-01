@@ -78,7 +78,7 @@ export const load: PageServerLoad = ({ params }): AltarDetailPageData => {
     const bossIds = [
       ...new Set(
         finalWave.monsters
-          .filter((m) => m.is_boss || m.is_elite)
+          .filter((m) => m.is_boss || m.is_fabled || m.is_elite)
           .map((m) => m.monster_id),
       ),
     ];

@@ -47,6 +47,7 @@
 
   // Determine classification string for faceted filter
   function getClassification(m: (typeof data.monsters)[0]): string {
+    if (m.is_fabled) return "fabled";
     if (m.is_boss) return "boss";
     if (m.is_elite) return "elite";
     return "regular";
@@ -223,6 +224,7 @@
     <div class="flex justify-center">
       <MonsterTypeIcon
         isBoss={row.original.is_boss}
+        isFabled={row.original.is_fabled}
         isElite={row.original.is_elite}
       />
     </div>
@@ -291,6 +293,7 @@
       title="Classification"
       options={[
         { label: "Boss", value: "boss" },
+        { label: "Fabled", value: "fabled" },
         { label: "Elite", value: "elite" },
         { label: "Regular", value: "regular" },
       ]}

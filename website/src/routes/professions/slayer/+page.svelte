@@ -113,6 +113,7 @@
                 <div class="flex justify-center">
                   <MonsterTypeIcon
                     isBoss={monster.is_boss}
+                    isFabled={monster.is_fabled}
                     isElite={monster.is_elite}
                   />
                 </div>

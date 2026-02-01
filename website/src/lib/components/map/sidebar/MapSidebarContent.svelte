@@ -2,6 +2,7 @@
   import Sword from "@lucide/svelte/icons/sword";
   import Shield from "@lucide/svelte/icons/shield";
   import Crown from "@lucide/svelte/icons/crown";
+  import Star from "@lucide/svelte/icons/star";
   import Users from "@lucide/svelte/icons/users";
   import CircleDot from "@lucide/svelte/icons/circle-dot";
   import Box from "@lucide/svelte/icons/box";
@@ -111,6 +112,7 @@
   // Monster layers
   const monsterLayers: LayerOption[] = [
     { key: "bosses", label: "Bosses", color: LAYER_COLORS.boss, icon: Crown },
+    { key: "fabled", label: "Fabled", color: LAYER_COLORS.fabled, icon: Star },
     { key: "elites", label: "Elites", color: LAYER_COLORS.elite, icon: Shield },
     {
       key: "creatures",

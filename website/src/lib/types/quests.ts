@@ -70,6 +70,7 @@ export interface QuestMonsterTarget {
   name: string;
   amount: number;
   is_boss: boolean;
+  is_fabled: boolean;
   is_elite: boolean;
 }
 

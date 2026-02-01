@@ -750,6 +750,7 @@ export interface ItemPopupDropper {
   monsterName: string;
   level: number;
   isBoss: boolean;
+  isFabled: boolean;
   isElite: boolean;
   dropRate: number;
   zoneName: string | null;
@@ -880,6 +881,7 @@ interface ItemDropperRow {
   monster_name: string;
   level: number;
   is_boss: number;
+  is_fabled: number;
   is_elite: number;
   drop_rate: number;
   zone_name: string | null;
@@ -911,6 +913,7 @@ export async function loadItemPopupDetails(
       m.name as monster_name,
       COALESCE(MIN(ms.level), m.level) as level,
       m.is_boss,
+      m.is_fabled,
       m.is_elite,
       json_extract(d.value, '$.rate') as drop_rate,
       z.name as zone_name
@@ -1163,6 +1166,7 @@ export async function loadItemPopupDetails(
       monsterName: d.monster_name,
       level: d.level,
       isBoss: Boolean(d.is_boss),
+      isFabled: Boolean(d.is_fabled),
       isElite: Boolean(d.is_elite),
       dropRate: d.drop_rate,
       zoneName: d.zone_name,
