@@ -140,6 +140,7 @@ export interface ZoneDetailData {
     level_min: number | null;
     level_max: number | null;
     discovery_exp: number;
+    description: string;
   };
   description: string;
   monsters: ZoneMonster[];

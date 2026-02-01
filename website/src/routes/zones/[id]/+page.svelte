@@ -39,6 +39,7 @@
   import Trees from "@lucide/svelte/icons/trees";
   import RefreshCw from "@lucide/svelte/icons/refresh-cw";
   import Box from "@lucide/svelte/icons/box";
+  import BookOpen from "@lucide/svelte/icons/book-open";
   import { formatDuration } from "$lib/utils/format";
 
   let { data } = $props();
@@ -762,6 +763,19 @@
             </ul>
           </div>
         {/if}
+      </div>
+    </section>
+  {/if}
+
+  <!-- Lore Section -->
+  {#if data.zone.description}
+    <section>
+      <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
+        <BookOpen class="h-5 w-5 text-cyan-500" />
+        Lore
+      </h2>
+      <div class="bg-muted/30 rounded-md border p-4">
+        <p class="whitespace-pre-wrap">{data.zone.description}</p>
       </div>
     </section>
   {/if}
