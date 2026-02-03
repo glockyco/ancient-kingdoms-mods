@@ -1,5 +1,5 @@
 ---
-name: 'research'
+name: 'bmad-bmm-research'
 description: 'Conduct comprehensive research across multiple domains using current web data and verified sources - Market, Technical, Domain and other research types.'
 disable-model-invocation: true
 ---

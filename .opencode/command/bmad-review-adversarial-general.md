@@ -1,4 +1,5 @@
 ---
+name: 'bmad-review-adversarial-general'
 description: 'Cynically review content and produce findings'
 disable-model-invocation: true
 ---

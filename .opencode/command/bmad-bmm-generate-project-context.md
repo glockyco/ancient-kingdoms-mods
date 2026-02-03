@@ -1,5 +1,5 @@
 ---
-name: 'generate-project-context'
+name: 'bmad-bmm-generate-project-context'
 description: 'Creates a concise project-context.md file with critical rules and patterns that AI agents must follow when implementing code. Optimized for LLM context efficiency.'
 disable-model-invocation: true
 ---

@@ -1,5 +1,5 @@
 ---
-name: 'create-excalidraw-flowchart'
+name: 'bmad-bmm-create-excalidraw-flowchart'
 description: 'Create a flowchart visualization in Excalidraw format for processes, pipelines, or logic flows'
 disable-model-invocation: true
 ---

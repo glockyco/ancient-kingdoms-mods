@@ -1,5 +1,5 @@
 ---
-name: 'quick-spec'
+name: 'bmad-bmm-quick-spec'
 description: 'Conversational spec engineering - ask questions, investigate code, produce implementation-ready tech-spec.'
 disable-model-invocation: true
 ---

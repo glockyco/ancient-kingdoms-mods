@@ -1,5 +1,5 @@
 ---
-name: 'brainstorming'
+name: 'bmad-brainstorming'
 description: 'Facilitate interactive brainstorming sessions using diverse creative techniques and ideation methods'
 disable-model-invocation: true
 ---

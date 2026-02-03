@@ -1,5 +1,5 @@
 ---
-name: 'sprint-status'
+name: 'bmad-bmm-sprint-status'
 description: 'Summarize sprint-status.yaml, surface risks, and route to the right implementation workflow.'
 disable-model-invocation: true
 ---

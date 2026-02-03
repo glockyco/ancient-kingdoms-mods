@@ -1,5 +1,5 @@
 ---
-name: 'problem-solving'
+name: 'bmad-cis-problem-solving'
 description: 'Apply systematic problem-solving methodologies to crack complex challenges. This workflow guides through problem diagnosis, root cause analysis, creative solution generation, evaluation, and implementation planning using proven frameworks.'
 disable-model-invocation: true
 ---

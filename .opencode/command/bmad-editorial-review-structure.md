@@ -1,4 +1,5 @@
 ---
+name: 'bmad-editorial-review-structure'
 description: 'Structural editor that proposes cuts, reorganization,
     and simplification while preserving comprehension'
 disable-model-invocation: true

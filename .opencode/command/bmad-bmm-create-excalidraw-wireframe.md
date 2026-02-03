@@ -1,5 +1,5 @@
 ---
-name: 'create-excalidraw-wireframe'
+name: 'bmad-bmm-create-excalidraw-wireframe'
 description: 'Create website or app wireframes in Excalidraw format'
 disable-model-invocation: true
 ---

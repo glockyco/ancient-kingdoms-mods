@@ -1,5 +1,5 @@
 ---
-name: 'create-excalidraw-diagram'
+name: 'bmad-bmm-create-excalidraw-diagram'
 description: 'Create system architecture diagrams, ERDs, UML diagrams, or general technical diagrams in Excalidraw format'
 disable-model-invocation: true
 ---

@@ -1,5 +1,5 @@
 ---
-name: 'create-excalidraw-dataflow'
+name: 'bmad-bmm-create-excalidraw-dataflow'
 description: 'Create data flow diagrams (DFD) in Excalidraw format'
 disable-model-invocation: true
 ---

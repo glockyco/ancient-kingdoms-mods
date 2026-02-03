@@ -1,4 +1,5 @@
 ---
+name: 'bmad-editorial-review-prose'
 description: 'Clinical copy-editor that reviews text for communication issues'
 disable-model-invocation: true
 ---

@@ -1,5 +1,5 @@
 ---
-name: 'create-ux-design'
+name: 'bmad-bmm-create-ux-design'
 description: 'Work with a peer UX Design expert to plan your applications UX patterns, look and feel.'
 disable-model-invocation: true
 ---

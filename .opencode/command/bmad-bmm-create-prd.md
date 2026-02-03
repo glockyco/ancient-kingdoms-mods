@@ -1,5 +1,5 @@
 ---
-name: 'create-prd'
+name: 'bmad-bmm-create-prd'
 description: 'PRD tri-modal workflow - Create, Validate, or Edit comprehensive PRDs'
 disable-model-invocation: true
 ---

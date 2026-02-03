@@ -1,5 +1,5 @@
 ---
-name: 'qa-automate'
+name: 'bmad-bmm-qa-automate'
 description: 'Generate tests quickly for existing features using standard test patterns'
 disable-model-invocation: true
 ---

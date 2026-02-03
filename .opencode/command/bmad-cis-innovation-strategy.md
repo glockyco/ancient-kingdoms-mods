@@ -1,5 +1,5 @@
 ---
-name: 'innovation-strategy'
+name: 'bmad-cis-innovation-strategy'
 description: 'Identify disruption opportunities and architect business model innovation. This workflow guides strategic analysis of markets, competitive dynamics, and business model innovation to uncover sustainable competitive advantages and breakthrough opportunities.'
 disable-model-invocation: true
 ---

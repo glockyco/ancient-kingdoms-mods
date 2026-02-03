@@ -1,5 +1,5 @@
 ---
-name: 'party-mode'
+name: 'bmad-party-mode'
 description: 'Orchestrates group discussions between all installed BMAD agents, enabling natural multi-agent conversations'
 disable-model-invocation: true
 ---

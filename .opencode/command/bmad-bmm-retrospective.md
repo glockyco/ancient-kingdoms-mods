@@ -1,5 +1,5 @@
 ---
-name: 'retrospective'
+name: 'bmad-bmm-retrospective'
 description: 'Run after epic completion to review overall success, extract lessons learned, and explore if new information emerged that might impact the next epic'
 disable-model-invocation: true
 ---

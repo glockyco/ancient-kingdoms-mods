@@ -1,5 +1,5 @@
 ---
-name: 'create-story'
+name: 'bmad-bmm-create-story'
 description: 'Create the next user story from epics+stories with enhanced context analysis and direct ready-for-dev marking'
 disable-model-invocation: true
 ---
