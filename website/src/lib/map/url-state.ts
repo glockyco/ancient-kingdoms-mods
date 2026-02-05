@@ -59,6 +59,7 @@ const DEFAULT_LAYERS: (keyof LayerVisibility)[] = [
   "elites",
   "altars",
   "tiles",
+  "npcRenewalSages",
 ];
 
 /**
@@ -87,7 +88,7 @@ export function getDefaultLayerVisibility(): LayerVisibility {
     npcEssenceTraders: false,
     npcAugmenters: false,
     npcPriestesses: false,
-    npcRenewalSages: false,
+    npcRenewalSages: true,
     npcAdventurerTasks: false,
     npcAdventurerVendors: false,
     npcMercenaryRecruiters: false,
