@@ -877,6 +877,7 @@ CREATE TABLE skills (
     prerequisite_skill_id TEXT REFERENCES skills(id),
     prerequisite_level INTEGER DEFAULT 0,
     prerequisite2_level INTEGER DEFAULT 0,
+    prerequisite2_skill_id TEXT REFERENCES skills(id),
     required_weapon_category TEXT,
     required_weapon_category2 TEXT,
 
@@ -903,6 +904,12 @@ CREATE TABLE skills (
     icon_path TEXT,
     skill_aggro_message TEXT,
     pet_prefab_name TEXT,
+    ward_bonus TEXT,
+    fear_resist_chance_bonus TEXT,
+    summoned_monster_id TEXT,
+    summoned_monster_level INTEGER,
+    summon_count_per_cast INTEGER,
+    max_active_summons INTEGER,
 
     -- Combat flags
     is_assassination_skill BOOLEAN DEFAULT 0,
@@ -920,7 +927,7 @@ CREATE TABLE skills (
     damage_type TEXT,
     heals_health TEXT,
     heals_mana TEXT,
-    lifetap_percent REAL DEFAULT 0.0,
+    lifetap_percent TEXT,
     aggro TEXT,
 
     -- Special mechanics
@@ -930,11 +937,11 @@ CREATE TABLE skills (
     can_heal_others BOOLEAN DEFAULT 0,
     can_buff_self BOOLEAN DEFAULT 0,
     can_buff_others BOOLEAN DEFAULT 0,
-    stun_chance REAL DEFAULT 0.0,
-    stun_time REAL DEFAULT 0.0,
-    fear_chance REAL DEFAULT 0.0,
-    fear_time REAL DEFAULT 0.0,
-    knockback_chance REAL DEFAULT 0.0,
+    stun_chance TEXT,
+    stun_time TEXT,
+    fear_chance TEXT,
+    fear_time TEXT,
+    knockback_chance TEXT,
 
     -- Buff/Debuff properties
     duration_base REAL DEFAULT 0.0,
@@ -953,7 +960,7 @@ CREATE TABLE skills (
     is_dispel BOOLEAN DEFAULT 0,
     is_mana_shield BOOLEAN DEFAULT 0,
     is_stance BOOLEAN DEFAULT 0,
-    is_ward BOOLEAN DEFAULT 0,
+
     is_blindness BOOLEAN DEFAULT 0,
     is_avatar_war BOOLEAN DEFAULT 0,
     is_only_for_magic_classes BOOLEAN DEFAULT 0,
@@ -1012,6 +1019,7 @@ CREATE INDEX idx_skills_tier ON skills(tier);
 CREATE INDEX idx_skills_prerequisite ON skills(prerequisite_skill_id);
 CREATE INDEX idx_skills_is_spell ON skills(is_spell) WHERE is_spell = 1;
 CREATE INDEX idx_skills_is_veteran ON skills(is_veteran) WHERE is_veteran = 1;
+CREATE INDEX idx_skills_summoned_monster ON skills(summoned_monster_id);
 
 -- =============================================================================
 -- PORTALS

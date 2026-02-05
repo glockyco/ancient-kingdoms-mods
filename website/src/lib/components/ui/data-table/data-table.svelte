@@ -39,6 +39,7 @@
     pageSize?: number;
     initialSorting?: SortingState;
     initialColumnVisibility?: VisibilityState;
+    initialColumnFilters?: ColumnFiltersState;
     urlKey?: string;
     showPagination?: boolean;
     showSearch?: boolean;
@@ -60,6 +61,7 @@
     pageSize = 10,
     initialSorting = [],
     initialColumnVisibility = {},
+    initialColumnFilters: initialColumnFiltersProp,
     urlKey,
     showPagination = true,
     showSearch = false,
@@ -92,7 +94,9 @@
       pageSize,
     })),
   );
-  let columnFilters = $state<ColumnFiltersState>([]);
+  let columnFilters = $state<ColumnFiltersState>(
+    untrack(() => initialColumnFiltersProp ?? []),
+  );
   let columnVisibility = $state<VisibilityState>(
     untrack(() => initialColumnVisibility),
   );

@@ -2,10 +2,14 @@ import Database from "better-sqlite3";
 import { error } from "@sveltejs/kit";
 import type { PageServerLoad, EntryGenerator } from "./$types";
 import { DB_STATIC_PATH } from "$lib/constants/constants";
+import { getSkillById } from "$lib/queries/skills.server";
+import { queryOne } from "$lib/db.server";
+import { skillDescription } from "$lib/server/meta-description";
 import type {
-  SkillDetailView,
-  SkillItemSource,
   LinearValue,
+  SkillDetailPageData,
+  SkillItemSource,
+  SkillParsedFields,
 } from "$lib/types/skills";
 
 export const prerender = true;
@@ -16,7 +20,6 @@ export const entries: EntryGenerator = () => {
     id: string;
   }>;
   db.close();
-
   return skills.map((skill) => ({ id: skill.id }));
 };
 
@@ -31,56 +34,53 @@ function parseLinear(value: string | null): LinearValue | null {
   }
 }
 
-export interface SkillDetailPageData {
-  skill: SkillDetailView;
-  grantedByItems: SkillItemSource[];
-  description: string;
-}
-
 export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
-  const db = new Database(DB_STATIC_PATH, { readonly: true });
+  const skill = getSkillById(params.id);
 
-  const skillRaw = db
-    .prepare(
-      `
-      SELECT
-        s.*,
-        ps.name as prerequisite_skill_name
-      FROM skills s
-      LEFT JOIN skills ps ON ps.id = s.prerequisite_skill_id
-      WHERE s.id = ?
-    `,
-    )
-    .get(params.id) as
-    | (Record<string, unknown> & { prerequisite_skill_name: string | null })
-    | undefined;
-
-  if (!skillRaw) {
-    db.close();
+  if (!skill) {
     throw error(404, `Skill not found: ${params.id}`);
   }
 
   // Parse player_classes JSON
-  const playerClasses: string[] = skillRaw.player_classes
-    ? JSON.parse(skillRaw.player_classes as string)
+  const playerClasses: string[] = skill.player_classes
+    ? JSON.parse(skill.player_classes)
     : [];
+
+  // Resolve FK names
+  const prerequisiteName = skill.prerequisite_skill_id
+    ? (queryOne<{ name: string }>("SELECT name FROM skills WHERE id = ?", [
+        skill.prerequisite_skill_id,
+      ])?.name ?? null)
+    : null;
+
+  const prerequisite2Name = skill.prerequisite2_skill_id
+    ? (queryOne<{ name: string }>("SELECT name FROM skills WHERE id = ?", [
+        skill.prerequisite2_skill_id,
+      ])?.name ?? null)
+    : null;
+
+  const summonedMonsterName = skill.summoned_monster_id
+    ? (queryOne<{ name: string }>("SELECT name FROM monsters WHERE id = ?", [
+        skill.summoned_monster_id,
+      ])?.name ?? null)
+    : null;
 
   // Parse granted_by_items and fetch item names
   const grantedByItemsRaw: Array<{
     item_id: string;
     type: string;
     probability?: number;
-  }> = skillRaw.granted_by_items
-    ? JSON.parse(skillRaw.granted_by_items as string)
-    : [];
+  }> = skill.granted_by_items ? JSON.parse(skill.granted_by_items) : [];
 
   let grantedByItems: SkillItemSource[] = [];
   if (grantedByItemsRaw.length > 0) {
     const itemIds = grantedByItemsRaw.map((i) => i.item_id);
     const placeholders = itemIds.map(() => "?").join(",");
+    const db = new Database(DB_STATIC_PATH, { readonly: true });
     const itemInfo = db
       .prepare(`SELECT id, name FROM items WHERE id IN (${placeholders})`)
       .all(...itemIds) as Array<{ id: string; name: string }>;
+    db.close();
     const nameMap = new Map(itemInfo.map((i) => [i.id, i.name]));
 
     grantedByItems = grantedByItemsRaw.map((item) => ({
@@ -91,178 +91,87 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
     }));
   }
 
-  const skill: SkillDetailView = {
-    id: skillRaw.id as string,
-    name: skillRaw.name as string,
-    skill_type: skillRaw.skill_type as string,
-    tier: (skillRaw.tier as number) || 0,
-    max_level: (skillRaw.max_level as number) || 1,
-    level_required: (skillRaw.level_required as number) || 0,
-    required_skill_points: (skillRaw.required_skill_points as number) || 1,
-    required_spent_points: (skillRaw.required_spent_points as number) || 0,
-    player_classes: playerClasses,
-    tooltip_template: skillRaw.tooltip_template as string | null,
-
-    // Prerequisite
-    prerequisite_skill_id: skillRaw.prerequisite_skill_id as string | null,
-    prerequisite_skill_name: skillRaw.prerequisite_skill_name,
-    prerequisite_level: (skillRaw.prerequisite_level as number) || 0,
-
-    // Weapon requirements
-    required_weapon_category: skillRaw.required_weapon_category as
-      | string
-      | null,
-    required_weapon_category2: skillRaw.required_weapon_category2 as
-      | string
-      | null,
-
-    // Flags
-    is_spell: Boolean(skillRaw.is_spell),
-    is_veteran: Boolean(skillRaw.is_veteran),
-    is_pet_skill: Boolean(skillRaw.is_pet_skill),
-    is_mercenary_skill: Boolean(skillRaw.is_mercenary_skill),
-    base_skill: Boolean(skillRaw.base_skill),
-    learn_default: Boolean(skillRaw.learn_default),
-    allow_dungeon: Boolean(skillRaw.allow_dungeon ?? true),
-    is_mana_shield: Boolean(skillRaw.is_mana_shield),
-    is_stance: Boolean(skillRaw.is_stance),
-
-    // Costs and timing
-    mana_cost: parseLinear(skillRaw.mana_cost as string | null),
-    energy_cost: parseLinear(skillRaw.energy_cost as string | null),
-    cooldown: parseLinear(skillRaw.cooldown as string | null),
-    cast_time: parseLinear(skillRaw.cast_time as string | null),
-    cast_range: parseLinear(skillRaw.cast_range as string | null),
-
-    // Damage
-    damage: parseLinear(skillRaw.damage as string | null),
-    damage_percent: parseLinear(skillRaw.damage_percent as string | null),
-    damage_type: skillRaw.damage_type as string | null,
-    lifetap_percent: (skillRaw.lifetap_percent as number) || 0,
-    aggro: parseLinear(skillRaw.aggro as string | null),
-
-    // Healing
-    heals_health: parseLinear(skillRaw.heals_health as string | null),
-    heals_mana: parseLinear(skillRaw.heals_mana as string | null),
-    can_heal_self: Boolean(skillRaw.can_heal_self),
-    can_heal_others: Boolean(skillRaw.can_heal_others),
-
-    // Crowd control (simple numbers, not LinearValue)
-    stun_chance: (skillRaw.stun_chance as number) || 0,
-    stun_time: (skillRaw.stun_time as number) || 0,
-    fear_chance: (skillRaw.fear_chance as number) || 0,
-    fear_time: (skillRaw.fear_time as number) || 0,
-    knockback_chance: (skillRaw.knockback_chance as number) || 0,
-
-    // Buff duration
-    duration_base: (skillRaw.duration_base as number) || 0,
-    duration_per_level: (skillRaw.duration_per_level as number) || 0,
-
-    // Buff stat bonuses
-    health_max_bonus: parseLinear(skillRaw.health_max_bonus as string | null),
-    health_max_percent_bonus: parseLinear(
-      skillRaw.health_max_percent_bonus as string | null,
-    ),
-    mana_max_bonus: parseLinear(skillRaw.mana_max_bonus as string | null),
-    mana_max_percent_bonus: parseLinear(
-      skillRaw.mana_max_percent_bonus as string | null,
-    ),
-    energy_max_bonus: parseLinear(skillRaw.energy_max_bonus as string | null),
-    defense_bonus: parseLinear(skillRaw.defense_bonus as string | null),
-    magic_resist_bonus: parseLinear(
-      skillRaw.magic_resist_bonus as string | null,
-    ),
-    damage_bonus: parseLinear(skillRaw.damage_bonus as string | null),
-    damage_percent_bonus: parseLinear(
-      skillRaw.damage_percent_bonus as string | null,
-    ),
-    magic_damage_bonus: parseLinear(
-      skillRaw.magic_damage_bonus as string | null,
-    ),
-    magic_damage_percent_bonus: parseLinear(
-      skillRaw.magic_damage_percent_bonus as string | null,
-    ),
-    haste_bonus: parseLinear(skillRaw.haste_bonus as string | null),
-    spell_haste_bonus: parseLinear(skillRaw.spell_haste_bonus as string | null),
-    speed_bonus: parseLinear(skillRaw.speed_bonus as string | null),
-    critical_chance_bonus: parseLinear(
-      skillRaw.critical_chance_bonus as string | null,
-    ),
-    accuracy_bonus: parseLinear(skillRaw.accuracy_bonus as string | null),
-    block_chance_bonus: parseLinear(
-      skillRaw.block_chance_bonus as string | null,
-    ),
-    damage_shield: parseLinear(skillRaw.damage_shield as string | null),
-    cooldown_reduction_percent: parseLinear(
-      skillRaw.cooldown_reduction_percent as string | null,
-    ),
-    heal_on_hit_percent: parseLinear(
-      skillRaw.heal_on_hit_percent as string | null,
-    ),
-
-    // Regen bonuses
-    healing_per_second_bonus: parseLinear(
-      skillRaw.healing_per_second_bonus as string | null,
-    ),
+  // Parse all LinearValue JSON fields server-side
+  const parsedFields: SkillParsedFields = {
+    mana_cost: parseLinear(skill.mana_cost),
+    energy_cost: parseLinear(skill.energy_cost),
+    cooldown: parseLinear(skill.cooldown),
+    cast_time: parseLinear(skill.cast_time),
+    cast_range: parseLinear(skill.cast_range),
+    damage: parseLinear(skill.damage),
+    damage_percent: parseLinear(skill.damage_percent),
+    lifetap_percent: parseLinear(skill.lifetap_percent),
+    aggro: parseLinear(skill.aggro),
+    heals_health: parseLinear(skill.heals_health),
+    heals_mana: parseLinear(skill.heals_mana),
+    stun_chance: parseLinear(skill.stun_chance),
+    stun_time: parseLinear(skill.stun_time),
+    fear_chance: parseLinear(skill.fear_chance),
+    fear_time: parseLinear(skill.fear_time),
+    knockback_chance: parseLinear(skill.knockback_chance),
+    ward_bonus: parseLinear(skill.ward_bonus),
+    fear_resist_chance_bonus: parseLinear(skill.fear_resist_chance_bonus),
+    health_max_bonus: parseLinear(skill.health_max_bonus),
+    health_max_percent_bonus: parseLinear(skill.health_max_percent_bonus),
+    mana_max_bonus: parseLinear(skill.mana_max_bonus),
+    mana_max_percent_bonus: parseLinear(skill.mana_max_percent_bonus),
+    energy_max_bonus: parseLinear(skill.energy_max_bonus),
+    damage_bonus: parseLinear(skill.damage_bonus),
+    damage_percent_bonus: parseLinear(skill.damage_percent_bonus),
+    magic_damage_bonus: parseLinear(skill.magic_damage_bonus),
+    magic_damage_percent_bonus: parseLinear(skill.magic_damage_percent_bonus),
+    defense_bonus: parseLinear(skill.defense_bonus),
+    magic_resist_bonus: parseLinear(skill.magic_resist_bonus),
+    poison_resist_bonus: parseLinear(skill.poison_resist_bonus),
+    fire_resist_bonus: parseLinear(skill.fire_resist_bonus),
+    cold_resist_bonus: parseLinear(skill.cold_resist_bonus),
+    disease_resist_bonus: parseLinear(skill.disease_resist_bonus),
+    block_chance_bonus: parseLinear(skill.block_chance_bonus),
+    accuracy_bonus: parseLinear(skill.accuracy_bonus),
+    critical_chance_bonus: parseLinear(skill.critical_chance_bonus),
+    haste_bonus: parseLinear(skill.haste_bonus),
+    spell_haste_bonus: parseLinear(skill.spell_haste_bonus),
     health_percent_per_second_bonus: parseLinear(
-      skillRaw.health_percent_per_second_bonus as string | null,
+      skill.health_percent_per_second_bonus,
     ),
-    mana_per_second_bonus: parseLinear(
-      skillRaw.mana_per_second_bonus as string | null,
-    ),
+    healing_per_second_bonus: parseLinear(skill.healing_per_second_bonus),
     mana_percent_per_second_bonus: parseLinear(
-      skillRaw.mana_percent_per_second_bonus as string | null,
+      skill.mana_percent_per_second_bonus,
     ),
-    energy_per_second_bonus: parseLinear(
-      skillRaw.energy_per_second_bonus as string | null,
-    ),
+    mana_per_second_bonus: parseLinear(skill.mana_per_second_bonus),
     energy_percent_per_second_bonus: parseLinear(
-      skillRaw.energy_percent_per_second_bonus as string | null,
+      skill.energy_percent_per_second_bonus,
     ),
-
-    // Resist bonuses
-    poison_resist_bonus: parseLinear(
-      skillRaw.poison_resist_bonus as string | null,
-    ),
-    fire_resist_bonus: parseLinear(skillRaw.fire_resist_bonus as string | null),
-    cold_resist_bonus: parseLinear(skillRaw.cold_resist_bonus as string | null),
-    disease_resist_bonus: parseLinear(
-      skillRaw.disease_resist_bonus as string | null,
-    ),
-
-    // Attribute bonuses
-    strength_bonus: parseLinear(skillRaw.strength_bonus as string | null),
-    intelligence_bonus: parseLinear(
-      skillRaw.intelligence_bonus as string | null,
-    ),
-    dexterity_bonus: parseLinear(skillRaw.dexterity_bonus as string | null),
-    constitution_bonus: parseLinear(
-      skillRaw.constitution_bonus as string | null,
-    ),
-    wisdom_bonus: parseLinear(skillRaw.wisdom_bonus as string | null),
-    charisma_bonus: parseLinear(skillRaw.charisma_bonus as string | null),
-
-    // Special flags
-    is_resurrect_skill: Boolean(skillRaw.is_resurrect_skill),
-    is_balance_health: Boolean(skillRaw.is_balance_health),
-    is_invisibility: Boolean(skillRaw.is_invisibility),
-    is_cleanse: Boolean(skillRaw.is_cleanse),
-    is_dispel: Boolean(skillRaw.is_dispel),
+    energy_per_second_bonus: parseLinear(skill.energy_per_second_bonus),
+    speed_bonus: parseLinear(skill.speed_bonus),
+    damage_shield: parseLinear(skill.damage_shield),
+    cooldown_reduction_percent: parseLinear(skill.cooldown_reduction_percent),
+    heal_on_hit_percent: parseLinear(skill.heal_on_hit_percent),
+    strength_bonus: parseLinear(skill.strength_bonus),
+    intelligence_bonus: parseLinear(skill.intelligence_bonus),
+    dexterity_bonus: parseLinear(skill.dexterity_bonus),
+    charisma_bonus: parseLinear(skill.charisma_bonus),
+    wisdom_bonus: parseLinear(skill.wisdom_bonus),
+    constitution_bonus: parseLinear(skill.constitution_bonus),
   };
 
-  db.close();
-
-  // Generate description
-  const typeLabel = skill.skill_type.replace(/_/g, " ");
-  const classNames =
-    skill.player_classes.length > 0
-      ? skill.player_classes.join(", ")
-      : "all classes";
-  const description = `${skill.name} - ${typeLabel} skill for ${classNames} in Ancient Kingdoms.`;
+  // Generate SEO description
+  const description = skillDescription({
+    name: skill.name,
+    skill_type: skill.skill_type,
+    player_classes: playerClasses,
+    max_level: skill.max_level,
+    is_veteran: Boolean(skill.is_veteran),
+  });
 
   return {
     skill,
-    grantedByItems,
     description,
+    prerequisiteName,
+    prerequisite2Name,
+    summonedMonsterName,
+    grantedByItems,
+    playerClasses,
+    parsedFields,
   };
 };

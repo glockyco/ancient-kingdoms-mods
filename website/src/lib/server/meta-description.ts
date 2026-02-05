@@ -4,6 +4,7 @@
  */
 
 import { toRomanNumeral, formatItemType } from "$lib/utils/format";
+import { SKILL_TYPE_INFO } from "$lib/constants/skills";
 
 const MAX_LENGTH = 160;
 
@@ -32,6 +33,33 @@ export function itemDescription(item: ItemDescriptionInput): string {
   const level = item.level_required > 0 ? ` Level ${item.level_required}.` : "";
   return truncate(
     `${item.name} - ${quality} ${slotOrType} in Ancient Kingdoms.${level}`,
+  );
+}
+
+// =============================================================================
+// Skills
+// =============================================================================
+
+interface SkillDescriptionInput {
+  name: string;
+  skill_type: string;
+  player_classes: string[];
+  max_level: number;
+  is_veteran: boolean;
+}
+
+export function skillDescription(skill: SkillDescriptionInput): string {
+  const typeLabel =
+    SKILL_TYPE_INFO[skill.skill_type]?.label.toLowerCase() ?? skill.skill_type;
+  const veteran = skill.is_veteran ? "veteran " : "";
+  const classes =
+    skill.player_classes.length > 0
+      ? skill.player_classes
+          .map((c) => c.charAt(0).toUpperCase() + c.slice(1))
+          .join(", ")
+      : "all classes";
+  return truncate(
+    `${skill.name} - ${veteran}${typeLabel} skill for ${classes} in Ancient Kingdoms. Max level ${skill.max_level}.`,
   );
 }
 

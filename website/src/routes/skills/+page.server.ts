@@ -1,70 +1,29 @@
-import Database from "better-sqlite3";
+import { getSkills } from "$lib/queries/skills.server";
+import { deriveSkillCategory, deriveSkillTags } from "$lib/constants/skills";
+import type { SkillListViewClient } from "$lib/types/skills";
 import type { PageServerLoad } from "./$types";
-import { DB_STATIC_PATH } from "$lib/constants/constants";
-import type { SkillListView } from "$lib/types/skills";
 
 export const prerender = true;
 
-interface SkillRow {
-  id: string;
-  name: string;
-  skill_type: string;
-  tier: number;
-  max_level: number;
-  level_required: number;
-  player_classes: string | null;
-  is_spell: number;
-  is_veteran: number;
-  is_stance: number;
-  is_pet_skill: number;
-  is_mercenary_skill: number;
-}
+export const load: PageServerLoad = () => {
+  const rawSkills = getSkills();
 
-export interface SkillsPageData {
-  skills: SkillListView[];
-}
+  // Precompute class keys at build time (parallel map, matching items pattern)
+  const classKeys: Record<string, string[]> = {};
+  for (const skill of rawSkills) {
+    classKeys[skill.id] = JSON.parse(skill.player_classes) as string[];
+  }
 
-export const load: PageServerLoad = (): SkillsPageData => {
-  const db = new Database(DB_STATIC_PATH, { readonly: true });
-
-  const rows = db
-    .prepare(
-      `
-      SELECT
-        id,
-        name,
-        skill_type,
-        tier,
-        max_level,
-        level_required,
-        player_classes,
-        is_spell,
-        is_veteran,
-        is_stance,
-        is_pet_skill,
-        is_mercenary_skill
-      FROM skills
-      ORDER BY tier ASC, name ASC
-    `,
-    )
-    .all() as SkillRow[];
-
-  db.close();
-
-  const skills: SkillListView[] = rows.map((row) => ({
-    id: row.id,
-    name: row.name,
-    skill_type: row.skill_type,
-    tier: row.tier,
-    max_level: row.max_level,
-    level_required: row.level_required,
-    player_classes: row.player_classes ? JSON.parse(row.player_classes) : [],
-    is_spell: Boolean(row.is_spell),
-    is_veteran: Boolean(row.is_veteran),
-    is_stance: Boolean(row.is_stance),
-    is_pet_skill: Boolean(row.is_pet_skill),
-    is_mercenary_skill: Boolean(row.is_mercenary_skill),
+  // Build client-ready rows with derived tags and category
+  const skills: SkillListViewClient[] = rawSkills.map((skill) => ({
+    id: skill.id,
+    name: skill.name,
+    skill_type: skill.skill_type,
+    max_level: skill.max_level,
+    level_required: skill.level_required,
+    tags: deriveSkillTags(skill),
+    category: deriveSkillCategory(skill),
   }));
 
-  return { skills };
+  return { skills, classKeys };
 };
