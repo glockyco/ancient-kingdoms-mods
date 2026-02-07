@@ -554,8 +554,8 @@ function loadPortalsServer(db: Database.Database): PortalMapEntity[] {
       p.is_closed,
       p.required_item_id,
       i.name as required_item_name,
-      COALESCE(tz.required_level, 0) as required_level,
-      p.level_required as required_item_level,
+      MAX(COALESCE(p.level_required, 0), COALESCE(tz.required_level, 0)) as required_level,
+      COALESCE(p.item_level_required, 0) as required_item_level,
       p.need_monster_dead_id,
       m.name as need_monster_dead_name,
       (

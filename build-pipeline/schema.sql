@@ -1036,6 +1036,7 @@ CREATE TABLE portals (
     required_item_id TEXT REFERENCES items(id),
     need_monster_dead_id TEXT REFERENCES monsters(id),
     level_required INTEGER DEFAULT 0,
+    item_level_required INTEGER DEFAULT 0,
     is_closed BOOLEAN DEFAULT 0,
 
     -- Search keywords (generated: "portal" + destination zone name)

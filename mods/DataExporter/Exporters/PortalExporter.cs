@@ -75,7 +75,8 @@ public class PortalExporter : BaseExporter
                 ),
                 required_item_id = portal.key != null ? SanitizeId(portal.key.name) : null,
                 requires_everyone_key = portal.requiresEveryoneKey,
-                level_required = portal.itemLevelRequired,
+                level_required = portal.levelRequired,
+                item_level_required = portal.itemLevelRequired,
                 is_closed = portal.isClosed,
                 orientation = new Position(portal.orientation.x, portal.orientation.y, 0),
                 need_monster_dead_id = portal.needMonsterDead != null ? SanitizeId(portal.needMonsterDead.name) : null
@@ -134,7 +135,8 @@ public class PortalExporter : BaseExporter
                     portal.destination.position.z
                 ),
                 required_item_id = portal.key != null ? SanitizeId(portal.key.name) : null,
-                level_required = portal.itemLevelRequired,
+                level_required = portal.levelRequired,
+                item_level_required = portal.itemLevelRequired,
                 is_closed = false,
                 orientation = new Position(portal.orientation.x, portal.orientation.y, 0),
                 need_monster_dead_id = portal.needMonsterDead != null ? SanitizeId(portal.needMonsterDead.name) : null

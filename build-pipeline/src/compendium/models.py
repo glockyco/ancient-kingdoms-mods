@@ -692,6 +692,7 @@ class PortalData(BaseModel):
         None  # Monster that must be dead to activate (e.g., "thalassor")
     )
     level_required: int = 0
+    item_level_required: int = 0
     is_closed: bool = False
 
 
