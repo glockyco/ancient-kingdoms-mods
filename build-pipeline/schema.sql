@@ -896,6 +896,7 @@ CREATE TABLE skills (
     is_veteran BOOLEAN DEFAULT 0,
     is_mercenary_skill BOOLEAN DEFAULT 0,
     is_pet_skill BOOLEAN DEFAULT 0,
+    is_scroll BOOLEAN DEFAULT 0,
     followup_default_attack BOOLEAN DEFAULT 0,
 
     -- UI

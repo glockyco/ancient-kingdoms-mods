@@ -564,6 +564,7 @@ class SkillData(BaseModel):
     is_veteran: bool = False
     is_mercenary_skill: bool = False
     is_pet_skill: bool = False
+    is_scroll: bool = False
     is_assassination_skill: bool = False
     is_manaburn_skill: bool = False
     is_balance_health: bool = False

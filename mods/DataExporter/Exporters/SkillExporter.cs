@@ -92,6 +92,7 @@ public class SkillExporter : BaseExporter
                 is_veteran = skill.isVeteran,
                 is_mercenary_skill = skill.isMercenarySkill,
                 is_pet_skill = skill.isPetSkill,
+                is_scroll = skill.isScroll,
                 followup_default_attack = skill.followupDefaultAttack,
                 skill_aggro_message = skill.skillAggroMessage ?? "",
                 tooltip_template = skill.toolTip ?? "",

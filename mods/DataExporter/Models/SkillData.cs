@@ -54,6 +54,7 @@ public class SkillData
     public bool is_veteran { get; set; }
     public bool is_mercenary_skill { get; set; }
     public bool is_pet_skill { get; set; }
+    public bool is_scroll { get; set; }
     public bool followup_default_attack { get; set; }
 
     // UI
