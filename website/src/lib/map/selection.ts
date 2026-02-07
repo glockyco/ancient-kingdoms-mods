@@ -457,6 +457,7 @@ function getIndexForType(
     case "crafting":
       return index.crafting;
     // Entity types (when clicking directly on map)
+    case "fabled":
     case "boss":
     case "elite":
     case "hunt":

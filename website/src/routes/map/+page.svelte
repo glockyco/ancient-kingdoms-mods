@@ -196,6 +196,7 @@
           newEntityId = getSelectionId(entity);
           // Normalize monster subtypes to "monster" for URL
           newEntityType =
+            entity.type === "fabled" ||
             entity.type === "boss" ||
             entity.type === "elite" ||
             entity.type === "hunt"
@@ -480,6 +481,7 @@
   function getSelectionId(entity: AnyMapEntity): string {
     if (
       entity.type === "monster" ||
+      entity.type === "fabled" ||
       entity.type === "boss" ||
       entity.type === "elite" ||
       entity.type === "hunt"

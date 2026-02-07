@@ -9,6 +9,7 @@
   import Sword from "@lucide/svelte/icons/sword";
   import Shield from "@lucide/svelte/icons/shield";
   import Crown from "@lucide/svelte/icons/crown";
+  import Star from "@lucide/svelte/icons/star";
   import Crosshair from "@lucide/svelte/icons/crosshair";
   import Users from "@lucide/svelte/icons/users";
   import MapIcon from "@lucide/svelte/icons/map";
@@ -59,6 +60,8 @@
   function getIcon(result: MapSearchResult): Component {
     if (result.category === "monster") {
       switch (result.subcategory) {
+        case "fabled":
+          return Star;
         case "boss":
           return Crown;
         case "elite":

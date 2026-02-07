@@ -19,20 +19,20 @@
   }: Props = $props();
 
   const color = $derived(
-    isBoss
-      ? "text-cyan-600 dark:text-cyan-400"
-      : isFabled
-        ? "text-emerald-500 dark:text-emerald-400"
+    isFabled
+      ? "text-emerald-500 dark:text-emerald-400"
+      : isBoss
+        ? "text-cyan-600 dark:text-cyan-400"
         : isElite
           ? "text-purple-600 dark:text-purple-400"
           : "text-red-600 dark:text-red-400",
   );
 </script>
 
-{#if isBoss}
-  <Crown class="{className} {color}" />
-{:else if isFabled}
+{#if isFabled}
   <Star class="{className} {color}" />
+{:else if isBoss}
+  <Crown class="{className} {color}" />
 {:else if isElite}
   <Shield class="{className} {color}" />
 {:else}

@@ -86,8 +86,8 @@ export function createFilteredData(data: MapEntityData): FilteredMapData {
     elites: renderableMonsters.filter(
       (m) => m.isElite && !m.isFabled && !m.isBoss,
     ),
-    fabled: renderableMonsters.filter((m) => m.isFabled && !m.isBoss),
-    bosses: renderableMonsters.filter((m) => m.isBoss),
+    fabled: renderableMonsters.filter((m) => m.isFabled),
+    bosses: renderableMonsters.filter((m) => m.isBoss && !m.isFabled),
     hunts: renderableMonsters.filter(
       (m) => m.isHunt && !m.isFabled && !m.isBoss && !m.isElite,
     ),
@@ -921,6 +921,8 @@ export function createLayers(
   // Get the icon type key for an entity (matches ICON_SIZES keys)
   const getIconTypeKey = (d: AnyMapEntity): keyof typeof ICON_SIZES => {
     switch (d.type) {
+      case "fabled":
+        return "fabled";
       case "boss":
         return "boss";
       case "elite":
@@ -928,6 +930,7 @@ export function createLayers(
       case "hunt":
         return "hunt";
       case "monster":
+        if ("isFabled" in d && d.isFabled) return "fabled";
         if ("isBoss" in d && d.isBoss) return "boss";
         if ("isElite" in d && d.isElite) return "elite";
         if ("isHunt" in d && d.isHunt) return "hunt";

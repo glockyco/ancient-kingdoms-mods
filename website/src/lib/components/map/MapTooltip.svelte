@@ -60,6 +60,8 @@
     switch (entity.type) {
       case "monster":
         return "Creature";
+      case "fabled":
+        return "Fabled";
       case "boss":
         return "Boss";
       case "elite":
@@ -99,11 +101,11 @@
   <div class="font-medium">{getDisplayName(entity)}</div>
 
   <!-- Type + Level line (only for entities that have a type subtitle) -->
-  {#if typeName || entity.type === "monster" || entity.type === "boss" || entity.type === "elite" || entity.type === "hunt" || entity.type === "gathering_plant" || entity.type === "gathering_mineral"}
+  {#if typeName || entity.type === "monster" || entity.type === "fabled" || entity.type === "boss" || entity.type === "elite" || entity.type === "hunt" || entity.type === "gathering_plant" || entity.type === "gathering_mineral"}
     <div class="text-muted-foreground">
       {typeName ??
         ""}<!--
-      -->{#if entity.type === "monster" || entity.type === "boss" || entity.type === "elite" || entity.type === "hunt"}<!--
+      -->{#if entity.type === "monster" || entity.type === "fabled" || entity.type === "boss" || entity.type === "elite" || entity.type === "hunt"}<!--
         -->{@const monster =
           entity as MonsterMapEntity}<!--
         -->{#if typeName}<span
@@ -157,7 +159,7 @@
     {#if altar.minLevel > 0}
       <div class="text-xs text-muted-foreground">Lv. {altar.minLevel}+</div>
     {/if}
-  {:else if entity.type === "monster" || entity.type === "boss" || entity.type === "elite" || entity.type === "hunt"}
+  {:else if entity.type === "monster" || entity.type === "fabled" || entity.type === "boss" || entity.type === "elite" || entity.type === "hunt"}
     {@const monster = entity as MonsterMapEntity}
     {#if monster.spawnType === "placeholder" && monster.sourceMonsterName}
       <div class="text-xs text-cyan-400">

@@ -191,7 +191,7 @@
   });
 
   function isMonster(e: AnyMapEntity): e is MonsterMapEntity {
-    return ["monster", "boss", "elite", "hunt"].includes(e.type);
+    return ["monster", "fabled", "boss", "elite", "hunt"].includes(e.type);
   }
 
   function isGathering(e: AnyMapEntity): e is GatheringMapEntity {
@@ -228,6 +228,8 @@
     switch (entity.type) {
       case "monster":
         return "Creature";
+      case "fabled":
+        return "Fabled";
       case "boss":
         return (entity as MonsterMapEntity).isWorldBoss ? "World Boss" : "Boss";
       case "elite":

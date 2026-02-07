@@ -86,6 +86,7 @@ export function resolvePhysicalSelection(
 ): ResolvedSelection {
   switch (category) {
     case "monster":
+    case "fabled":
     case "boss":
     case "elite":
     case "hunt":

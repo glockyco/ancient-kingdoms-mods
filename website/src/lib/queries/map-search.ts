@@ -144,6 +144,7 @@ interface MonsterSearchRow {
   id: string;
   name: string;
   is_boss: number;
+  is_fabled: number;
   is_elite: number;
   is_hunt: number;
   keywords: string | null;
@@ -173,6 +174,7 @@ async function searchMonsters(
       m.id,
       m.name,
       m.is_boss,
+      m.is_fabled,
       m.is_elite,
       m.is_hunt,
       m.keywords,
@@ -222,13 +224,15 @@ async function searchMonsters(
       id: r.id,
       name: r.name,
       category: "monster" as const,
-      subcategory: r.is_boss
-        ? "boss"
-        : r.is_elite
-          ? "elite"
-          : r.is_hunt
-            ? "hunt"
-            : undefined,
+      subcategory: r.is_fabled
+        ? "fabled"
+        : r.is_boss
+          ? "boss"
+          : r.is_elite
+            ? "elite"
+            : r.is_hunt
+              ? "hunt"
+              : undefined,
       bounds:
         boundsX !== null
           ? {

@@ -25,6 +25,7 @@ export const load: PageServerLoad = (): MonstersPageData => {
       m.health_base,
       m.health_per_level,
       m.is_boss,
+      m.is_fabled,
       m.is_elite,
       m.is_hunt,
       m.damage,
