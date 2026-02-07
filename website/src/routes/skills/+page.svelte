@@ -104,7 +104,6 @@
       flags: [
         s.is_spell ? "spell" : null,
         s.is_veteran ? "veteran" : null,
-        s.is_stance ? "stance" : null,
         s.is_pet_skill ? "pet" : null,
         s.is_mercenary_skill ? "mercenary" : null,
       ].filter(Boolean) as string[],
@@ -218,12 +217,6 @@
         <span
           class="rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-700 dark:bg-amber-900 dark:text-amber-300"
           >Vet</span
-        >
-      {/if}
-      {#if row.original.is_stance}
-        <span
-          class="rounded-full bg-blue-100 px-1.5 py-0.5 text-[10px] font-medium text-blue-700 dark:bg-blue-900 dark:text-blue-300"
-          >Stance</span
         >
       {/if}
       {#if row.original.is_pet_skill}

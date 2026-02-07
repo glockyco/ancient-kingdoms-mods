@@ -613,7 +613,6 @@ class SkillData(BaseModel):
     is_invisibility: bool = False
     is_undead_illusion: bool = False
     is_mana_shield: bool = False
-    is_stance: bool = False
     is_poison_debuff: bool = False
     is_fire_debuff: bool = False
     is_cold_debuff: bool = False

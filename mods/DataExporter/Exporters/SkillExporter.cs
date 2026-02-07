@@ -269,7 +269,6 @@ public class SkillExporter : BaseExporter
         if (targetBuffSkill == null) return;
 
         skillData.is_mana_shield = targetBuffSkill.isManaShield;
-        skillData.is_stance = targetBuffSkill.isStance;
         skillData.can_buff_self = targetBuffSkill.canBuffSelf;
         skillData.can_buff_others = targetBuffSkill.canBuffOthers;
     }

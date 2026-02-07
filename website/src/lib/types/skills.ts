@@ -19,7 +19,6 @@ export interface SkillListView {
   player_classes: string[];
   is_spell: boolean;
   is_veteran: boolean;
-  is_stance: boolean;
   is_pet_skill: boolean;
   is_mercenary_skill: boolean;
 }
@@ -137,7 +136,6 @@ export interface SkillDetailView {
   is_balance_health: boolean;
   is_invisibility: boolean;
   is_mana_shield: boolean;
-  is_stance: boolean;
   is_cleanse: boolean;
   is_dispel: boolean;
 }

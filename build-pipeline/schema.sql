@@ -952,7 +952,6 @@ CREATE TABLE skills (
     is_cleanse BOOLEAN DEFAULT 0,
     is_dispel BOOLEAN DEFAULT 0,
     is_mana_shield BOOLEAN DEFAULT 0,
-    is_stance BOOLEAN DEFAULT 0,
     is_ward BOOLEAN DEFAULT 0,
     is_blindness BOOLEAN DEFAULT 0,
     is_avatar_war BOOLEAN DEFAULT 0,

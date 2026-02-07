@@ -200,14 +200,6 @@
           Veteran
         </span>
       {/if}
-      {#if skill.is_stance}
-        <span
-          class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
-        >
-          <Shield class="mr-1 h-3 w-3" />
-          Stance
-        </span>
-      {/if}
       {#if skill.is_pet_skill}
         <span
           class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-200"

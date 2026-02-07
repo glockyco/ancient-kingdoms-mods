@@ -103,7 +103,6 @@ public class SkillData
     public bool is_invisibility { get; set; }
     public bool is_undead_illusion { get; set; }
     public bool is_mana_shield { get; set; }
-    public bool is_stance { get; set; }
     public bool is_poison_debuff { get; set; }
     public bool is_fire_debuff { get; set; }
     public bool is_cold_debuff { get; set; }
