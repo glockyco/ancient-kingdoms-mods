@@ -112,7 +112,7 @@ public class ProfessionExporter : BaseExporter
                 steam_achievement_description = "Explore 100% of the realm",
                 max_level = 100,
                 tracking_type = "count_based",
-                tracking_denominator = 38
+                tracking_denominator = 45
             },
             new ProfessionData
             {
