@@ -139,7 +139,7 @@ class Program
             var process = Process.Start(new ProcessStartInfo
             {
                 FileName = "dotnet",
-                Arguments = "build -c Release",
+                Arguments = "build -c Release --no-incremental",
                 WorkingDirectory = Path.GetDirectoryName(projectFile),
                 UseShellExecute = false
             });
