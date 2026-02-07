@@ -108,10 +108,8 @@ export const load: PageServerLoad = (): SlayerPageData => {
 
   db.close();
 
-  // Slayer skill formula: maxLevelSlayer = uniqueCount * 50
-  // Each kill = 1 point (up to 50 per monster)
-  // Skill gain per kill = 1 / (count * 50) = 100 / (count * 50) %
-  const skillGainPerKill = (1 / (monsters.length * 50)) * 100;
+  // Each kill gives a fixed 0.02% skill gain (up to 50 kills per monster)
+  const skillGainPerKill = 0.02;
 
   return { profession, monsters, monsterZones, skillGainPerKill };
 };
