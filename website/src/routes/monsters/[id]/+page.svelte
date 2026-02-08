@@ -166,13 +166,6 @@
     data.monster.accuracy_base +
       data.monster.accuracy_per_level * (displayLevel - 1),
   );
-  const displayMana = $derived(
-    calculateStat(
-      data.monster.mana_base,
-      data.monster.mana_per_level,
-      displayLevel,
-    ),
-  );
 
   // Parse a LinearValue JSON string into its base value (for skill summary display)
   function parseLinearBase(json: string | null): number | null {
@@ -1263,30 +1256,6 @@
             <div class="text-sm text-muted-foreground">Accuracy</div>
             <div class="font-medium">
               {formatPercent(displayAccuracy)}
-            </div>
-          </div>
-        {/if}
-        {#if displayMana > 0}
-          <div>
-            <div class="text-sm text-muted-foreground">Mana</div>
-            <div class="font-medium">
-              {displayMana.toLocaleString()}
-            </div>
-          </div>
-        {/if}
-        {#if data.monster.speed > 0}
-          <div>
-            <div class="text-sm text-muted-foreground">Speed</div>
-            <div class="font-medium">
-              {data.monster.speed}
-            </div>
-          </div>
-        {/if}
-        {#if data.monster.aggro_range > 0}
-          <div>
-            <div class="text-sm text-muted-foreground">Aggro Range</div>
-            <div class="font-medium">
-              {data.monster.aggro_range}
             </div>
           </div>
         {/if}
