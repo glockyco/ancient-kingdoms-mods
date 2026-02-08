@@ -279,6 +279,26 @@ export interface MonsterSkill {
   summon_count_per_cast: number | null;
   max_active_summons: number | null;
   is_enrage: boolean;
+  // Buff/debuff fields
+  duration_base: number;
+  is_dispel: boolean;
+  is_blindness: boolean;
+  is_poison_debuff: boolean;
+  is_fire_debuff: boolean;
+  is_cold_debuff: boolean;
+  is_disease_debuff: boolean;
+  is_melee_debuff: boolean;
+  is_magic_debuff: boolean;
+  speed_bonus: string | null;
+  defense_bonus: string | null;
+  damage_bonus: string | null;
+  damage_percent_bonus: string | null;
+  haste_bonus: string | null;
+  critical_chance_bonus: string | null;
+  block_chance_bonus: string | null;
+  healing_per_second_bonus: string | null;
+  health_percent_per_second_bonus: string | null;
+  damage_shield: string | null;
 }
 
 /**

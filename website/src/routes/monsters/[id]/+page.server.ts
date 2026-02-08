@@ -634,7 +634,26 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
         s.summoned_monster_level,
         s.summon_count_per_cast,
         s.max_active_summons,
-        s.is_enrage
+        s.is_enrage,
+        s.duration_base,
+        s.is_dispel,
+        s.is_blindness,
+        s.is_poison_debuff,
+        s.is_fire_debuff,
+        s.is_cold_debuff,
+        s.is_disease_debuff,
+        s.is_melee_debuff,
+        s.is_magic_debuff,
+        s.speed_bonus,
+        s.defense_bonus,
+        s.damage_bonus,
+        s.damage_percent_bonus,
+        s.haste_bonus,
+        s.critical_chance_bonus,
+        s.block_chance_bonus,
+        s.healing_per_second_bonus,
+        s.health_percent_per_second_bonus,
+        s.damage_shield
       FROM monster_skills ms
       JOIN skills s ON s.id = ms.skill_id
       LEFT JOIN monsters sm ON sm.id = s.summoned_monster_id
