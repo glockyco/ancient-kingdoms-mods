@@ -209,7 +209,7 @@
     const damageBonus = parseLinearBase(skill.damage_bonus);
     if (damageBonus !== null && damageBonus !== 0) {
       parts.push(
-        `${damageBonus > 0 ? "+" : ""}${Math.abs(damageBonus).toLocaleString()} dmg`,
+        `${damageBonus > 0 ? "+" : ""}${damageBonus.toLocaleString()} dmg`,
       );
     }
 
@@ -217,7 +217,7 @@
     const defenseBonus = parseLinearBase(skill.defense_bonus);
     if (defenseBonus !== null && defenseBonus !== 0) {
       parts.push(
-        `${defenseBonus > 0 ? "+" : ""}${Math.abs(defenseBonus).toLocaleString()} AC`,
+        `${defenseBonus > 0 ? "+" : ""}${defenseBonus.toLocaleString()} AC`,
       );
     }
 
@@ -251,7 +251,7 @@
     const magicDmgBonus = parseLinearBase(skill.magic_damage_bonus);
     if (magicDmgBonus !== null && magicDmgBonus !== 0) {
       parts.push(
-        `${magicDmgBonus > 0 ? "+" : ""}${Math.abs(magicDmgBonus).toLocaleString()} spell power`,
+        `${magicDmgBonus > 0 ? "+" : ""}${magicDmgBonus.toLocaleString()} spell power`,
       );
     }
 
@@ -266,9 +266,7 @@
     for (const [field, label] of resistFields) {
       const val = parseLinearBase(field);
       if (val !== null && val !== 0) {
-        parts.push(
-          `${val > 0 ? "+" : ""}${Math.abs(val).toLocaleString()} ${label}`,
-        );
+        parts.push(`${val > 0 ? "+" : ""}${val.toLocaleString()} ${label}`);
       }
     }
 
