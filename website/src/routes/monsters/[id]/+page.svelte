@@ -264,6 +264,22 @@
       parts.push(`${formatPercent(hpPct)} HP/s`);
     }
 
+    // Mana drain/regen (flat per second)
+    const mps = parseLinearBase(skill.mana_per_second_bonus);
+    if (mps !== null && mps !== 0) {
+      parts.push(
+        mps > 0
+          ? `${mps.toLocaleString()} mana/s`
+          : `${Math.abs(mps).toLocaleString()} mana drain/s`,
+      );
+    }
+
+    // Mana % per second (drain/regen)
+    const manaPct = parseLinearBase(skill.mana_percent_per_second_bonus);
+    if (manaPct !== null && manaPct !== 0) {
+      parts.push(`${formatPercent(manaPct)} mana/s`);
+    }
+
     // Damage shield
     const dmgShield = parseLinearBase(skill.damage_shield);
     if (dmgShield !== null && dmgShield > 0) {

@@ -653,6 +653,8 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
         s.block_chance_bonus,
         s.healing_per_second_bonus,
         s.health_percent_per_second_bonus,
+        s.mana_per_second_bonus,
+        s.mana_percent_per_second_bonus,
         s.damage_shield
       FROM monster_skills ms
       JOIN skills s ON s.id = ms.skill_id

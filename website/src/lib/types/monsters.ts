@@ -298,6 +298,8 @@ export interface MonsterSkill {
   block_chance_bonus: string | null;
   healing_per_second_bonus: string | null;
   health_percent_per_second_bonus: string | null;
+  mana_per_second_bonus: string | null;
+  mana_percent_per_second_bonus: string | null;
   damage_shield: string | null;
 }
 
