@@ -235,21 +235,30 @@
       parts.push(`Fear ${formatPercent(fear)}`);
     }
 
-    if (skill.summoned_monster_id) {
-      const name = skill.summoned_monster_name || skill.summoned_monster_id;
-      const count =
-        skill.summon_count_per_cast !== null && skill.summon_count_per_cast > 0
-          ? `${skill.summon_count_per_cast}x `
-          : "";
-      const details: string[] = [];
-      if (skill.summoned_monster_level !== null) {
-        details.push(`Lv${skill.summoned_monster_level}`);
+    // Handle summon_monsters skill type (both teleport and actual summoning)
+    if (skill.skill_type === "summon_monsters") {
+      // Teleport mode: summon_count_per_cast == 0 (e.g., "Summon Player")
+      if (skill.summon_count_per_cast === 0) {
+        parts.push("Teleports target to self, 2s stun");
       }
-      if (skill.max_active_summons !== null) {
-        details.push(`max ${skill.max_active_summons}`);
+      // Normal summon mode
+      else if (skill.summoned_monster_id) {
+        const name = skill.summoned_monster_name || skill.summoned_monster_id;
+        const count =
+          skill.summon_count_per_cast !== null &&
+          skill.summon_count_per_cast > 0
+            ? `${skill.summon_count_per_cast}x `
+            : "";
+        const details: string[] = [];
+        if (skill.summoned_monster_level !== null) {
+          details.push(`Lv${skill.summoned_monster_level}`);
+        }
+        if (skill.max_active_summons !== null) {
+          details.push(`max ${skill.max_active_summons}`);
+        }
+        const suffix = details.length > 0 ? ` (${details.join(", ")})` : "";
+        parts.push(`Summons ${count}${name}${suffix}`);
       }
-      const suffix = details.length > 0 ? ` (${details.join(", ")})` : "";
-      parts.push(`Summons ${count}${name}${suffix}`);
     }
 
     return parts.join(", ") || skill.skill_type.replace(/_/g, " ");
