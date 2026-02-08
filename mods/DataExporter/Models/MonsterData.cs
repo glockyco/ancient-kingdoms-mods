@@ -50,10 +50,12 @@ public class MonsterData
     public int disease_resist { get; set; }
     public float block_chance { get; set; }
     public float critical_chance { get; set; }
+    public float accuracy { get; set; }
 
-    // Stat scaling (LinearInt: actual = base + bonus_per_level * (level - 1))
+    // Stat scaling (LinearInt/LinearFloat: actual = base + bonus_per_level * (level - 1))
     public int health_base { get; set; }
     public int health_per_level { get; set; }
+    public float health_multiplier { get; set; }
     public int damage_base { get; set; }
     public int damage_per_level { get; set; }
     public int magic_damage_base { get; set; }
@@ -70,6 +72,21 @@ public class MonsterData
     public int cold_resist_per_level { get; set; }
     public int disease_resist_base { get; set; }
     public int disease_resist_per_level { get; set; }
+    public float block_chance_base { get; set; }
+    public float block_chance_per_level { get; set; }
+    public float critical_chance_base { get; set; }
+    public float critical_chance_per_level { get; set; }
+    public float accuracy_base { get; set; }
+    public float accuracy_per_level { get; set; }
+
+    // Mana scaling
+    public int mana { get; set; }
+    public int mana_base { get; set; }
+    public int mana_per_level { get; set; }
+
+    // Movement and detection
+    public float speed { get; set; }
+    public float aggro_range { get; set; }
 
     // Classification flags
     public bool is_boss { get; set; }

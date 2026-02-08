@@ -83,10 +83,12 @@ public class MonsterExporter : BaseExporter
                 disease_resist = canonical.combat?.diseaseResist ?? 0,
                 block_chance = canonical.combat?.blockChance ?? 0,
                 critical_chance = canonical.combat?.criticalChance ?? 0,
+                accuracy = canonical.combat?.accuracy ?? 0,
 
-                // Stat scaling (LinearInt: actual = base + bonus_per_level * (level - 1))
+                // Stat scaling (LinearInt/LinearFloat: actual = base + bonus_per_level * (level - 1))
                 health_base = canonical.health?.baseHealth.baseValue ?? 0,
                 health_per_level = canonical.health?.baseHealth.bonusPerLevel ?? 0,
+                health_multiplier = canonical.health?.multiplierHealth ?? 1f,
                 damage_base = canonical.combat?.baseDamage.baseValue ?? 0,
                 damage_per_level = canonical.combat?.baseDamage.bonusPerLevel ?? 0,
                 magic_damage_base = canonical.combat?.baseMagicDamage.baseValue ?? 0,
@@ -103,6 +105,20 @@ public class MonsterExporter : BaseExporter
                 cold_resist_per_level = canonical.combat?.baseColdResist.bonusPerLevel ?? 0,
                 disease_resist_base = canonical.combat?.baseDiseaseResist.baseValue ?? 0,
                 disease_resist_per_level = canonical.combat?.baseDiseaseResist.bonusPerLevel ?? 0,
+                block_chance_base = canonical.combat?.baseBlockChance.baseValue ?? 0,
+                block_chance_per_level = canonical.combat?.baseBlockChance.bonusPerLevel ?? 0,
+                critical_chance_base = canonical.combat?.baseCriticalChance.baseValue ?? 0,
+                critical_chance_per_level = canonical.combat?.baseCriticalChance.bonusPerLevel ?? 0,
+                accuracy_base = canonical.combat?.baseAccuracy.baseValue ?? 0,
+                accuracy_per_level = canonical.combat?.baseAccuracy.bonusPerLevel ?? 0,
+
+                // Mana scaling
+                mana = canonical.mana?.max ?? 0,
+                mana_base = canonical.mana?.baseMana.baseValue ?? 0,
+                mana_per_level = canonical.mana?.baseMana.bonusPerLevel ?? 0,
+
+                // Movement and detection
+                speed = canonical._speed,
 
                 // Classification flags
                 is_boss = canonical.isBoss,
@@ -149,6 +165,17 @@ public class MonsterExporter : BaseExporter
                 // Lore and visuals (boss-specific)
                 lore_boss = canonical.loreBoss
             };
+
+            // Export aggro range from AggroArea child component's CircleCollider2D
+            var aggroArea = canonical.GetComponentInChildren<Il2Cpp.AggroArea>();
+            if (aggroArea != null)
+            {
+                var collider = aggroArea.GetComponent<CircleCollider2D>();
+                if (collider != null)
+                {
+                    monsterData.aggro_range = collider.radius;
+                }
+            }
 
             // Export aggro messages
             if (canonical.aggroMessages != null && canonical.aggroMessages.Count > 0)
