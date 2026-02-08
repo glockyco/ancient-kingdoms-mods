@@ -215,13 +215,17 @@
     // Flat damage bonus
     const damageBonus = parseLinearBase(skill.damage_bonus);
     if (damageBonus !== null && damageBonus !== 0) {
-      parts.push(`${damageBonus > 0 ? "+" : ""}${damageBonus} dmg`);
+      parts.push(
+        `${damageBonus > 0 ? "+" : ""}${Math.abs(damageBonus).toLocaleString()} dmg`,
+      );
     }
 
     // Defense
     const defenseBonus = parseLinearBase(skill.defense_bonus);
     if (defenseBonus !== null && defenseBonus !== 0) {
-      parts.push(`${defenseBonus > 0 ? "+" : ""}${defenseBonus} AC`);
+      parts.push(
+        `${defenseBonus > 0 ? "+" : ""}${Math.abs(defenseBonus).toLocaleString()} AC`,
+      );
     }
 
     // Haste
@@ -247,7 +251,11 @@
     // HoT / DoT (healing per second)
     const hps = parseLinearBase(skill.healing_per_second_bonus);
     if (hps !== null && hps !== 0) {
-      parts.push(hps > 0 ? `${hps} HP/s` : `${Math.abs(hps)} dmg/s`);
+      parts.push(
+        hps > 0
+          ? `${hps.toLocaleString()} HP/s`
+          : `${Math.abs(hps).toLocaleString()} dmg/s`,
+      );
     }
 
     // HP % per second (regen)
@@ -321,7 +329,7 @@
 
     const heal = parseLinearBase(skill.heals_health);
     if (heal !== null && heal > 0) {
-      parts.push(`Heals ${heal} HP`);
+      parts.push(`Heals ${heal.toLocaleString()} HP`);
     }
 
     const stun = parseLinearBase(skill.stun_chance);
