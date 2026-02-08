@@ -236,7 +236,7 @@
       );
     }
 
-    // Crit / Block
+    // Crit / Block / Accuracy
     const critBonus = parseLinearBase(skill.critical_chance_bonus);
     if (critBonus !== null && critBonus !== 0) {
       parts.push(`${critBonus > 0 ? "+" : ""}${formatPercent(critBonus)} crit`);
@@ -246,6 +246,37 @@
       parts.push(
         `${blockBonus > 0 ? "+" : ""}${formatPercent(blockBonus)} block`,
       );
+    }
+    const accBonus = parseLinearBase(skill.accuracy_bonus);
+    if (accBonus !== null && accBonus !== 0) {
+      parts.push(
+        `${accBonus > 0 ? "+" : ""}${formatPercent(accBonus)} accuracy`,
+      );
+    }
+
+    // Magic damage bonus
+    const magicDmgBonus = parseLinearBase(skill.magic_damage_bonus);
+    if (magicDmgBonus !== null && magicDmgBonus !== 0) {
+      parts.push(
+        `${magicDmgBonus > 0 ? "+" : ""}${Math.abs(magicDmgBonus).toLocaleString()} spell power`,
+      );
+    }
+
+    // Resistance bonuses (MR/PR/FR/CR/DR)
+    const resistFields: [string | null, string][] = [
+      [skill.magic_resist_bonus, "MR"],
+      [skill.poison_resist_bonus, "PR"],
+      [skill.fire_resist_bonus, "FR"],
+      [skill.cold_resist_bonus, "CR"],
+      [skill.disease_resist_bonus, "DR"],
+    ];
+    for (const [field, label] of resistFields) {
+      const val = parseLinearBase(field);
+      if (val !== null && val !== 0) {
+        parts.push(
+          `${val > 0 ? "+" : ""}${Math.abs(val).toLocaleString()} ${label}`,
+        );
+      }
     }
 
     // HoT / DoT (healing per second)
@@ -296,6 +327,11 @@
       else if (skill.is_magic_debuff) parts.push("Magic debuff");
     }
 
+    // Cleanse resistance (for debuffs)
+    if (skill.prob_ignore_cleanse > 0) {
+      parts.push(`${formatPercent(skill.prob_ignore_cleanse)} cleanse resist`);
+    }
+
     // Add duration if present
     if (skill.duration_base > 0 && parts.length > 0) {
       return `${parts.join(", ")}, ${skill.duration_base}s`;
@@ -343,19 +379,47 @@
       parts.push(`${totalDmg.toLocaleString()}${typeLabel} dmg`);
     }
 
+    // AoE properties (appended after damage)
+    if (skill.affects_random_target) {
+      parts.push("random target");
+    }
+    if (skill.area_objects_to_spawn > 0) {
+      const sizeInfo =
+        skill.area_object_size > 0 ? `, size ${skill.area_object_size}` : "";
+      parts.push(`${skill.area_objects_to_spawn} zones${sizeInfo}`);
+    }
+
     const heal = parseLinearBase(skill.heals_health);
     if (heal !== null && heal > 0) {
       parts.push(`Heals ${heal.toLocaleString()} HP`);
     }
 
+    const lifetap = parseLinearBase(skill.lifetap_percent);
+    if (lifetap !== null && lifetap > 0) {
+      parts.push(`${formatPercent(lifetap)} Lifetap`);
+    }
+
+    if (skill.break_armor_prob > 0) {
+      parts.push(`${formatPercent(skill.break_armor_prob)} Break Armor`);
+    }
+
     const stun = parseLinearBase(skill.stun_chance);
     if (stun !== null && stun > 0) {
-      parts.push(`Stun ${formatPercent(stun)}`);
+      const stunDur = parseLinearBase(skill.stun_time);
+      const durSuffix = stunDur !== null && stunDur > 0 ? ` (${stunDur}s)` : "";
+      parts.push(`${formatPercent(stun)} Stun${durSuffix}`);
     }
 
     const fear = parseLinearBase(skill.fear_chance);
     if (fear !== null && fear > 0) {
-      parts.push(`Fear ${formatPercent(fear)}`);
+      const fearDur = parseLinearBase(skill.fear_time);
+      const durSuffix = fearDur !== null && fearDur > 0 ? ` (${fearDur}s)` : "";
+      parts.push(`${formatPercent(fear)} Fear${durSuffix}`);
+    }
+
+    const knockback = parseLinearBase(skill.knockback_chance);
+    if (knockback !== null && knockback > 0) {
+      parts.push(`${formatPercent(knockback)} Knockback`);
     }
 
     // Handle summon_monsters skill type (both teleport and actual summoning)

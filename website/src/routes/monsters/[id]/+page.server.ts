@@ -655,7 +655,23 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
         s.health_percent_per_second_bonus,
         s.mana_per_second_bonus,
         s.mana_percent_per_second_bonus,
-        s.damage_shield
+        s.damage_shield,
+        s.knockback_chance,
+        s.stun_time,
+        s.fear_time,
+        s.lifetap_percent,
+        s.break_armor_prob,
+        s.affects_random_target,
+        s.area_object_size,
+        s.area_objects_to_spawn,
+        s.accuracy_bonus,
+        s.magic_damage_bonus,
+        s.magic_resist_bonus,
+        s.poison_resist_bonus,
+        s.fire_resist_bonus,
+        s.cold_resist_bonus,
+        s.disease_resist_bonus,
+        s.prob_ignore_cleanse
       FROM monster_skills ms
       JOIN skills s ON s.id = ms.skill_id
       LEFT JOIN monsters sm ON sm.id = s.summoned_monster_id

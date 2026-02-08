@@ -301,6 +301,26 @@ export interface MonsterSkill {
   mana_per_second_bonus: string | null;
   mana_percent_per_second_bonus: string | null;
   damage_shield: string | null;
+  // CC effects (LinearStatBonusFloat JSON)
+  knockback_chance: string | null;
+  stun_time: string | null;
+  fear_time: string | null;
+  // Damage skill extras
+  lifetap_percent: string | null;
+  break_armor_prob: number;
+  // AoE properties
+  affects_random_target: boolean;
+  area_object_size: number;
+  area_objects_to_spawn: number;
+  // Buff/debuff extras
+  accuracy_bonus: string | null;
+  magic_damage_bonus: string | null;
+  magic_resist_bonus: string | null;
+  poison_resist_bonus: string | null;
+  fire_resist_bonus: string | null;
+  cold_resist_bonus: string | null;
+  disease_resist_bonus: string | null;
+  prob_ignore_cleanse: number;
 }
 
 /**
