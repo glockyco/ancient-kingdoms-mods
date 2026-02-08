@@ -73,7 +73,7 @@ def run(config: dict) -> None:
         load_altars(conn, export_dir)  # After zones + items
         load_monsters(conn, export_dir)
         load_monster_spawns(conn, export_dir)  # After monsters
-        load_monster_skills(conn)  # After monsters + skills
+        load_monster_skills(conn, export_dir)  # After monsters + skills
         load_npcs(conn, export_dir)
         load_npc_spawns(conn, export_dir)  # After NPCs
         load_summon_triggers(conn, export_dir)  # After monsters/NPCs

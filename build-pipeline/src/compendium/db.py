@@ -54,21 +54,26 @@ def insert_model(cursor: sqlite3.Cursor, table: str, model: BaseModel) -> None:
         table: Target table name
         model: Pydantic model instance to insert
     """
-    # Fields that exist in ItemData model but not in items table schema
-    # These are used by loader to populate junction tables
-    JUNCTION_ONLY_FIELDS = {
-        "pack_final_item_id",
-        "pack_final_amount",
-        "random_items",
-        "merge_items_needed_ids",
-        "merge_result_item_id",
-        "treasure_map_reward_id",
+    # Fields that exist in Pydantic models but not in their table schema.
+    # These are used by loaders to populate junction tables instead.
+    JUNCTION_ONLY_FIELDS: dict[str, set[str]] = {
+        "items": {
+            "pack_final_item_id",
+            "pack_final_amount",
+            "random_items",
+            "merge_items_needed_ids",
+            "merge_result_item_id",
+            "treasure_map_reward_id",
+        },
+        "monsters": {
+            "skill_ids",
+        },
     }
 
     values = {}
+    skip_fields = JUNCTION_ONLY_FIELDS.get(table, set())
     for field_name in model.model_fields.keys():
-        # Skip junction-only fields when inserting into items table
-        if table == "items" and field_name in JUNCTION_ONLY_FIELDS:
+        if field_name in skip_fields:
             continue
 
         value = getattr(model, field_name)

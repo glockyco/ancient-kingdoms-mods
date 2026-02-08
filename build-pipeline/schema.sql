@@ -1034,6 +1034,12 @@ CREATE TABLE skills (
     is_enrage BOOLEAN DEFAULT 0,
     is_familiar BOOLEAN DEFAULT 0,
 
+    -- SummonSkillMonsters fields (skill_type = "summon_monsters", boss add-summoning)
+    summoned_monster_id TEXT,              -- References monsters(id), no FK due to load order
+    summoned_monster_level INTEGER,
+    summon_count_per_cast INTEGER,        -- -1 = based on aggro count
+    max_active_summons INTEGER,
+
     -- Denormalized: Items that grant/trigger this skill (as JSON array)
     granted_by_items TEXT           -- JSON: [{"item_id": "scroll_fireball", "type": "scroll"}, {"item_id": "staff_of_flames", "type": "weapon_proc", "probability": 0.15}]
 );

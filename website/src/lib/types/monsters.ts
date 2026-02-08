@@ -274,6 +274,9 @@ export interface MonsterSkill {
   heals_health: string | null;
   summoned_monster_id: string | null;
   summoned_monster_name: string | null;
+  summoned_monster_level: number | null;
+  summon_count_per_cast: number | null;
+  max_active_summons: number | null;
 }
 
 /**

@@ -689,6 +689,12 @@ class SkillData(BaseModel):
     skill_aggro_message: str = ""
     pet_prefab_name: str | None = None  # Prefab name for summoned pet (e.g., "Bear")
 
+    # SummonSkillMonsters fields (skill_type = "summon_monsters", boss add-summoning)
+    summoned_monster_id: str | None = None
+    summoned_monster_level: int | None = None
+    summon_count_per_cast: int | None = None  # -1 = based on aggro count
+    max_active_summons: int | None = None
+
 
 # =============================================================================
 # Portal Models

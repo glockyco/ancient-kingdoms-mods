@@ -339,16 +339,17 @@ def load_monster_spawns(conn: sqlite3.Connection, export_dir: Path) -> None:
     console.print(f"  [green]OK[/green] Loaded {len(spawns)} monster spawn points")
 
 
-def load_monster_skills(conn: sqlite3.Connection) -> None:
-    """Populate monster_skills junction table from monsters.skill_ids JSON column."""
+def load_monster_skills(conn: sqlite3.Connection, export_dir: Path) -> None:
+    """Populate monster_skills junction table from monsters.json skill_ids."""
     console.print("Loading monster skills...")
 
-    cursor = conn.cursor()
+    filepath = export_dir / "monsters.json"
+    with open(filepath, "r", encoding="utf-8") as f:
+        data = json.load(f)
 
-    # Read all monsters that have skill_ids populated
-    rows = cursor.execute(
-        "SELECT id, skill_ids FROM monsters WHERE skill_ids IS NOT NULL"
-    ).fetchall()
+    monsters = [MonsterData(**item) for item in data]
+
+    cursor = conn.cursor()
 
     # Build set of valid skill IDs for referential integrity
     valid_skills = {
@@ -357,15 +358,12 @@ def load_monster_skills(conn: sqlite3.Connection) -> None:
 
     count = 0
     skipped = 0
-    for monster_id, skill_ids_json in rows:
-        if not skill_ids_json:
-            continue
-        skill_ids = json.loads(skill_ids_json)
-        for index, skill_id in enumerate(skill_ids):
+    for monster in monsters:
+        for index, skill_id in enumerate(monster.skill_ids):
             if skill_id in valid_skills:
                 cursor.execute(
                     "INSERT INTO monster_skills (monster_id, skill_id, skill_index) VALUES (?, ?, ?)",
-                    (monster_id, skill_id, index),
+                    (monster.id, skill_id, index),
                 )
                 count += 1
             else:

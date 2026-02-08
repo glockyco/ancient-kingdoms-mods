@@ -215,9 +215,20 @@
     }
 
     if (skill.summoned_monster_id) {
-      parts.push(
-        `Summons ${skill.summoned_monster_name || skill.summoned_monster_id}`,
-      );
+      const name = skill.summoned_monster_name || skill.summoned_monster_id;
+      const count =
+        skill.summon_count_per_cast !== null && skill.summon_count_per_cast > 0
+          ? `${skill.summon_count_per_cast}x `
+          : "";
+      const details: string[] = [];
+      if (skill.summoned_monster_level !== null) {
+        details.push(`Lv${skill.summoned_monster_level}`);
+      }
+      if (skill.max_active_summons !== null) {
+        details.push(`max ${skill.max_active_summons}`);
+      }
+      const suffix = details.length > 0 ? ` (${details.join(", ")})` : "";
+      parts.push(`Summons ${count}${name}${suffix}`);
     }
 
     return parts.join(", ") || skill.skill_type.replace(/_/g, " ");

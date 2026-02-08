@@ -629,7 +629,10 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
         s.fear_chance,
         s.heals_health,
         s.summoned_monster_id,
-        sm.name as summoned_monster_name
+        sm.name as summoned_monster_name,
+        s.summoned_monster_level,
+        s.summon_count_per_cast,
+        s.max_active_summons
       FROM monster_skills ms
       JOIN skills s ON s.id = ms.skill_id
       LEFT JOIN monsters sm ON sm.id = s.summoned_monster_id
