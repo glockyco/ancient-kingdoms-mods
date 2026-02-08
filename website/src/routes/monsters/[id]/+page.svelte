@@ -275,25 +275,38 @@
 
   // Skill columns for the abilities table
   const skillColumns: ColumnDef<MonsterSkill>[] = [
-    { accessorKey: "name", header: "Skill", minSize: 200 },
-    { accessorKey: "skill_type", header: "Type", size: 180 },
+    {
+      accessorKey: "name",
+      header: "Skill",
+      minSize: 200,
+      enableSorting: false,
+    },
+    {
+      accessorKey: "skill_type",
+      header: "Type",
+      size: 180,
+      enableSorting: false,
+    },
     {
       id: "effect",
       header: "Effect",
       minSize: 200,
       accessorFn: (row) => formatSkillEffect(row),
+      enableSorting: false,
     },
     {
       id: "cooldown",
       header: "Cooldown",
       size: 120,
       accessorFn: (row) => parseLinearBase(row.cooldown) ?? 0,
+      enableSorting: false,
     },
     {
       id: "cast_time",
       header: "Cast Time",
       size: 120,
       accessorFn: (row) => parseLinearBase(row.cast_time) ?? 0,
+      enableSorting: false,
     },
   ];
 
