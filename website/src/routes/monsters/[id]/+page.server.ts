@@ -9,6 +9,7 @@ import type {
   MonsterDetailData,
   MonsterInfo,
   MonsterDrop,
+  MonsterSkill,
   MonsterSpawnZone,
   MonsterSpawnData,
   SummonSpawnInfo,
@@ -118,9 +119,11 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
     disease_resist: (monsterRaw.disease_resist as number) || 0,
     block_chance: (monsterRaw.block_chance as number) || 0,
     critical_chance: (monsterRaw.critical_chance as number) || 0,
+    accuracy: (monsterRaw.accuracy as number) || 0,
     // Stat scaling fields
     health_base: (monsterRaw.health_base as number) || 0,
     health_per_level: (monsterRaw.health_per_level as number) || 0,
+    health_multiplier: (monsterRaw.health_multiplier as number) || 1,
     damage_base: (monsterRaw.damage_base as number) || 0,
     damage_per_level: (monsterRaw.damage_per_level as number) || 0,
     magic_damage_base: (monsterRaw.magic_damage_base as number) || 0,
@@ -139,6 +142,20 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
     disease_resist_base: (monsterRaw.disease_resist_base as number) || 0,
     disease_resist_per_level:
       (monsterRaw.disease_resist_per_level as number) || 0,
+    block_chance_base: (monsterRaw.block_chance_base as number) || 0,
+    block_chance_per_level: (monsterRaw.block_chance_per_level as number) || 0,
+    critical_chance_base: (monsterRaw.critical_chance_base as number) || 0,
+    critical_chance_per_level:
+      (monsterRaw.critical_chance_per_level as number) || 0,
+    accuracy_base: (monsterRaw.accuracy_base as number) || 0,
+    accuracy_per_level: (monsterRaw.accuracy_per_level as number) || 0,
+    // Mana scaling
+    mana: (monsterRaw.mana as number) || 0,
+    mana_base: (monsterRaw.mana_base as number) || 0,
+    mana_per_level: (monsterRaw.mana_per_level as number) || 0,
+    // Movement and detection
+    speed: (monsterRaw.speed as number) || 0,
+    aggro_range: (monsterRaw.aggro_range as number) || 0,
     gold_min: monsterRaw.gold_min as number | null,
     gold_max: monsterRaw.gold_max as number | null,
     probability_drop_gold: (monsterRaw.probability_drop_gold as number) || 0,
@@ -595,6 +612,33 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
     }));
   }
 
+  // Get monster skills/abilities
+  const skills = db
+    .prepare(
+      `
+      SELECT
+        ms.skill_index,
+        s.id,
+        s.name,
+        s.skill_type,
+        s.damage_type,
+        s.cooldown,
+        s.cast_time,
+        s.damage,
+        s.stun_chance,
+        s.fear_chance,
+        s.heals_health,
+        s.summoned_monster_id,
+        sm.name as summoned_monster_name
+      FROM monster_skills ms
+      JOIN skills s ON s.id = ms.skill_id
+      LEFT JOIN monsters sm ON sm.id = s.summoned_monster_id
+      WHERE ms.monster_id = ?
+      ORDER BY ms.skill_index
+    `,
+    )
+    .all(params.id) as MonsterSkill[];
+
   db.close();
 
   // Generate meta description
@@ -626,6 +670,7 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
     drops,
     spawns,
     quests,
+    skills,
     summons,
     renewalSages,
   };

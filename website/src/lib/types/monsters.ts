@@ -161,10 +161,12 @@ export interface MonsterInfo {
   disease_resist: number;
   block_chance: number;
   critical_chance: number;
+  accuracy: number;
 
-  // Stat scaling (LinearInt: actual = base + per_level * (level - 1))
+  // Stat scaling (LinearInt/LinearFloat: actual = base + per_level * (level - 1))
   health_base: number;
   health_per_level: number;
+  health_multiplier: number;
   damage_base: number;
   damage_per_level: number;
   magic_damage_base: number;
@@ -181,6 +183,21 @@ export interface MonsterInfo {
   cold_resist_per_level: number;
   disease_resist_base: number;
   disease_resist_per_level: number;
+  block_chance_base: number;
+  block_chance_per_level: number;
+  critical_chance_base: number;
+  critical_chance_per_level: number;
+  accuracy_base: number;
+  accuracy_per_level: number;
+
+  // Mana scaling
+  mana: number;
+  mana_base: number;
+  mana_per_level: number;
+
+  // Movement and detection
+  speed: number;
+  aggro_range: number;
 
   // Loot
   gold_min: number | null;
@@ -241,6 +258,25 @@ export interface SummonsInfo {
 }
 
 /**
+ * A skill/ability used by a monster
+ */
+export interface MonsterSkill {
+  skill_index: number;
+  id: string;
+  name: string;
+  skill_type: string;
+  damage_type: string | null;
+  cooldown: string | null;
+  cast_time: string | null;
+  damage: string | null;
+  stun_chance: string | null;
+  fear_chance: string | null;
+  heals_health: string | null;
+  summoned_monster_id: string | null;
+  summoned_monster_name: string | null;
+}
+
+/**
  * Full monster detail page data
  */
 export interface MonsterDetailData {
@@ -249,6 +285,7 @@ export interface MonsterDetailData {
   drops: MonsterDrop[];
   spawns: MonsterSpawnData;
   quests: MonsterQuest[];
+  skills: MonsterSkill[];
   summons: SummonsInfo[];
   renewalSages: Array<{
     id: string;

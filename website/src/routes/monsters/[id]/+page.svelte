@@ -13,9 +13,11 @@
   import QuestFlagBadges from "$lib/components/QuestFlagBadges.svelte";
   import type {
     MonsterDrop,
+    MonsterSkill,
     MonsterSpawnZone,
     MonsterQuest,
   } from "$lib/types/monsters";
+  import type { LinearValue } from "$lib/types/skills";
   import { formatPercent, formatDuration } from "$lib/utils/format";
   import Sword from "@lucide/svelte/icons/sword";
   import Gem from "@lucide/svelte/icons/gem";
@@ -23,6 +25,7 @@
   import Scroll from "@lucide/svelte/icons/scroll";
   import BookOpen from "@lucide/svelte/icons/book-open";
   import Star from "@lucide/svelte/icons/star";
+  import Zap from "@lucide/svelte/icons/zap";
 
   let { data } = $props();
 
@@ -151,6 +154,98 @@
       displayLevel,
     ),
   );
+  const displayBlockChance = $derived(
+    data.monster.block_chance_base +
+      data.monster.block_chance_per_level * (displayLevel - 1),
+  );
+  const displayCriticalChance = $derived(
+    data.monster.critical_chance_base +
+      data.monster.critical_chance_per_level * (displayLevel - 1),
+  );
+  const displayAccuracy = $derived(
+    data.monster.accuracy_base +
+      data.monster.accuracy_per_level * (displayLevel - 1),
+  );
+  const displayMana = $derived(
+    calculateStat(
+      data.monster.mana_base,
+      data.monster.mana_per_level,
+      displayLevel,
+    ),
+  );
+
+  // Parse a LinearValue JSON string into its base value (for skill summary display)
+  function parseLinearBase(json: string | null): number | null {
+    if (!json) return null;
+    try {
+      const parsed = JSON.parse(json) as LinearValue;
+      if (parsed.base_value === 0 && parsed.bonus_per_level === 0) return null;
+      return parsed.base_value;
+    } catch {
+      return null;
+    }
+  }
+
+  // Format a skill's key effect as a concise summary string
+  function formatSkillEffect(skill: MonsterSkill): string {
+    const parts: string[] = [];
+
+    const dmg = parseLinearBase(skill.damage);
+    if (dmg !== null && dmg > 0) {
+      const typeLabel =
+        skill.damage_type && skill.damage_type !== "Normal"
+          ? ` ${skill.damage_type}`
+          : "";
+      parts.push(`${dmg}${typeLabel} dmg`);
+    }
+
+    const heal = parseLinearBase(skill.heals_health);
+    if (heal !== null && heal > 0) {
+      parts.push(`Heals ${heal} HP`);
+    }
+
+    const stun = parseLinearBase(skill.stun_chance);
+    if (stun !== null && stun > 0) {
+      parts.push(`Stun ${formatPercent(stun)}`);
+    }
+
+    const fear = parseLinearBase(skill.fear_chance);
+    if (fear !== null && fear > 0) {
+      parts.push(`Fear ${formatPercent(fear)}`);
+    }
+
+    if (skill.summoned_monster_id) {
+      parts.push(
+        `Summons ${skill.summoned_monster_name || skill.summoned_monster_id}`,
+      );
+    }
+
+    return parts.join(", ") || skill.skill_type.replace(/_/g, " ");
+  }
+
+  // Skill columns for the abilities table
+  const skillColumns: ColumnDef<MonsterSkill>[] = [
+    { accessorKey: "name", header: "Skill", minSize: 200 },
+    { accessorKey: "skill_type", header: "Type", size: 140 },
+    {
+      id: "effect",
+      header: "Effect",
+      minSize: 200,
+      accessorFn: (row) => formatSkillEffect(row),
+    },
+    {
+      id: "cooldown",
+      header: "Cooldown",
+      size: 120,
+      accessorFn: (row) => parseLinearBase(row.cooldown) ?? 0,
+    },
+    {
+      id: "cast_time",
+      header: "Cast Time",
+      size: 120,
+      accessorFn: (row) => parseLinearBase(row.cast_time) ?? 0,
+    },
+  ];
 
   // Special combat abilities
   const abilities = $derived(
@@ -482,6 +577,52 @@
   header: Header<MonsterQuest, unknown>;
 })}
   {#if header.id === "level_recommended"}
+    <span class="ml-auto">{header.column.columnDef.header}</span>
+  {:else}
+    {header.column.columnDef.header}
+  {/if}
+{/snippet}
+
+{#snippet renderSkillCell({
+  cell,
+  row,
+}: {
+  cell: Cell<MonsterSkill, unknown>;
+  row: Row<MonsterSkill>;
+})}
+  {#if cell.column.id === "name"}
+    <a
+      href="/skills/{row.original.id}"
+      class="text-blue-600 dark:text-blue-400 hover:underline"
+    >
+      {row.original.name}
+    </a>
+    {#if row.original.skill_index === 0}
+      <span class="ml-1 text-xs text-muted-foreground">(Default)</span>
+    {/if}
+  {:else if cell.column.id === "skill_type"}
+    <span class="text-muted-foreground capitalize"
+      >{String(cell.getValue()).replace(/_/g, " ")}</span
+    >
+  {:else if cell.column.id === "effect"}
+    <span class="text-sm">{cell.getValue()}</span>
+  {:else if cell.column.id === "cooldown"}
+    {@const val = cell.getValue() as number}
+    <span class="ml-auto">{val > 0 ? `${val}s` : ""}</span>
+  {:else if cell.column.id === "cast_time"}
+    {@const val = cell.getValue() as number}
+    <span class="ml-auto">{val > 0 ? `${val}s` : ""}</span>
+  {:else}
+    {cell.getValue()}
+  {/if}
+{/snippet}
+
+{#snippet renderSkillHeader({
+  header,
+}: {
+  header: Header<MonsterSkill, unknown>;
+})}
+  {#if header.id === "cooldown" || header.id === "cast_time"}
     <span class="ml-auto">{header.column.columnDef.header}</span>
   {:else}
     {header.column.columnDef.header}
@@ -842,19 +983,51 @@
             {displayDefense}
           </div>
         </div>
-        {#if data.monster.block_chance > 0}
+        {#if displayBlockChance > 0}
           <div>
             <div class="text-sm text-muted-foreground">Block Chance</div>
             <div class="font-medium">
-              {formatPercent(data.monster.block_chance)}
+              {formatPercent(displayBlockChance)}
             </div>
           </div>
         {/if}
-        {#if data.monster.critical_chance > 0}
+        {#if displayCriticalChance > 0}
           <div>
             <div class="text-sm text-muted-foreground">Critical Chance</div>
             <div class="font-medium">
-              {formatPercent(data.monster.critical_chance)}
+              {formatPercent(displayCriticalChance)}
+            </div>
+          </div>
+        {/if}
+        {#if displayAccuracy > 0}
+          <div>
+            <div class="text-sm text-muted-foreground">Accuracy</div>
+            <div class="font-medium">
+              {formatPercent(displayAccuracy)}
+            </div>
+          </div>
+        {/if}
+        {#if displayMana > 0}
+          <div>
+            <div class="text-sm text-muted-foreground">Mana</div>
+            <div class="font-medium">
+              {displayMana.toLocaleString()}
+            </div>
+          </div>
+        {/if}
+        {#if data.monster.speed > 0}
+          <div>
+            <div class="text-sm text-muted-foreground">Speed</div>
+            <div class="font-medium">
+              {data.monster.speed}
+            </div>
+          </div>
+        {/if}
+        {#if data.monster.aggro_range > 0}
+          <div>
+            <div class="text-sm text-muted-foreground">Aggro Range</div>
+            <div class="font-medium">
+              {data.monster.aggro_range}
             </div>
           </div>
         {/if}
@@ -897,6 +1070,27 @@
       {/if}
     </div>
   </section>
+
+  <!-- Abilities Section -->
+  {#if data.skills.length > 0}
+    <section>
+      <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
+        <Zap class="h-5 w-5 text-yellow-500" />
+        Abilities ({data.skills.length})
+      </h2>
+      <DataTable
+        data={data.skills}
+        columns={skillColumns}
+        renderCell={renderSkillCell}
+        renderHeader={renderSkillHeader}
+        initialSorting={[{ id: "name", desc: false }]}
+        urlKey="monster-{data.monster.id}-skills"
+        pageSize={10}
+        zebraStripe={true}
+        class="bg-muted/30"
+      />
+    </section>
+  {/if}
 
   <!-- Loot Section -->
   {#if (data.monster.gold_min !== null && data.monster.gold_max !== null && data.monster.gold_max > 0) || data.drops.length > 0}
