@@ -261,6 +261,15 @@
       }
     }
 
+    // Handle passive skills
+    if (skill.skill_type === "passive") {
+      if (skill.is_enrage) {
+        parts.push("+50-100% dmg below 25% HP");
+      } else {
+        parts.push("Passive stat bonuses");
+      }
+    }
+
     return parts.join(", ") || skill.skill_type.replace(/_/g, " ");
   }
 
