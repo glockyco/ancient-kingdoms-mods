@@ -1214,13 +1214,13 @@
         <div>
           <div class="text-sm text-muted-foreground">Damage</div>
           <div class="font-medium">
-            {displayDamage}
+            {displayDamage.toLocaleString()}
           </div>
         </div>
         <div>
           <div class="text-sm text-muted-foreground">Magic Damage</div>
           <div class="font-medium">
-            {displayMagicDamage}
+            {displayMagicDamage.toLocaleString()}
           </div>
         </div>
         {#if displayAccuracy > 0}
@@ -1248,7 +1248,7 @@
         <div>
           <div class="text-sm text-muted-foreground">Defense</div>
           <div class="font-medium">
-            {displayDefense}
+            {displayDefense.toLocaleString()}
           </div>
         </div>
         {#if displayBlockChance > 0}
