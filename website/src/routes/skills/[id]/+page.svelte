@@ -15,6 +15,8 @@
   import ScrollText from "@lucide/svelte/icons/scroll-text";
   import Package from "@lucide/svelte/icons/package";
   import DungeonRestrictionBadge from "$lib/components/DungeonRestrictionBadge.svelte";
+  import MonsterTypeIcon from "$lib/components/MonsterTypeIcon.svelte";
+  import Sword from "@lucide/svelte/icons/sword";
 
   let { data }: { data: PageData } = $props();
 
@@ -889,6 +891,42 @@
                   {formatPercent(item.probability)} chance
                 </span>
               {/if}
+            </div>
+          {/each}
+        </div>
+      </Card.Content>
+    </Card.Root>
+  {/if}
+
+  <!-- Used by Monsters -->
+  {#if data.usedByMonsters.length > 0}
+    <Card.Root class="bg-muted/30">
+      <Card.Header>
+        <Card.Title class="flex items-center gap-2">
+          <Sword class="h-5 w-5 text-muted-foreground" />
+          Used by Monsters ({data.usedByMonsters.length})
+        </Card.Title>
+      </Card.Header>
+      <Card.Content>
+        <div class="space-y-2">
+          {#each data.usedByMonsters as monster (monster.id)}
+            <div class="flex items-center gap-2">
+              <MonsterTypeIcon
+                isBoss={Boolean(monster.is_boss)}
+                isFabled={Boolean(monster.is_fabled)}
+                isElite={Boolean(monster.is_elite)}
+              />
+              <a
+                href="/monsters/{monster.id}"
+                class="text-blue-600 dark:text-blue-400 hover:underline"
+              >
+                {monster.name}
+              </a>
+              <span class="text-muted-foreground text-sm">
+                Lv {monster.level_min === monster.level_max
+                  ? monster.level_min
+                  : `${monster.level_min}-${monster.level_max}`}
+              </span>
             </div>
           {/each}
         </div>

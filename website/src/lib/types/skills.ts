@@ -149,3 +149,16 @@ export interface SkillItemSource {
   type: string;
   probability?: number;
 }
+
+/**
+ * Monster that uses this skill
+ */
+export interface SkillMonster {
+  id: string;
+  name: string;
+  level_min: number;
+  level_max: number;
+  is_boss: boolean;
+  is_elite: boolean;
+  is_fabled: boolean;
+}

@@ -5,6 +5,7 @@ import { DB_STATIC_PATH } from "$lib/constants/constants";
 import type {
   SkillDetailView,
   SkillItemSource,
+  SkillMonster,
   LinearValue,
 } from "$lib/types/skills";
 
@@ -34,6 +35,7 @@ function parseLinear(value: string | null): LinearValue | null {
 export interface SkillDetailPageData {
   skill: SkillDetailView;
   grantedByItems: SkillItemSource[];
+  usedByMonsters: SkillMonster[];
   description: string;
 }
 
@@ -249,6 +251,21 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
     is_dispel: Boolean(skillRaw.is_dispel),
   };
 
+  // Get monsters that use this skill
+  const usedByMonsters = db
+    .prepare(
+      `
+      SELECT
+        m.id, m.name, m.level_min, m.level_max,
+        m.is_boss, m.is_elite, m.is_fabled
+      FROM monster_skills ms
+      JOIN monsters m ON m.id = ms.monster_id
+      WHERE ms.skill_id = ?
+      ORDER BY m.is_boss DESC, m.is_elite DESC, m.level_min DESC, m.name
+    `,
+    )
+    .all(params.id) as SkillMonster[];
+
   db.close();
 
   // Generate description
@@ -262,6 +279,7 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
   return {
     skill,
     grantedByItems,
+    usedByMonsters,
     description,
   };
 };
