@@ -190,13 +190,34 @@
   function formatSkillEffect(skill: MonsterSkill): string {
     const parts: string[] = [];
 
-    const dmg = parseLinearBase(skill.damage);
-    if (dmg !== null && dmg > 0) {
+    const skillDmg = parseLinearBase(skill.damage);
+    if (skillDmg !== null && skillDmg > 0) {
+      // Calculate combined damage: monster combat stat + skill damage
+      let combatStat = 0;
+      if (
+        skill.damage_type === "Magic" ||
+        skill.damage_type === "Fire" ||
+        skill.damage_type === "Cold" ||
+        skill.damage_type === "Disease"
+      ) {
+        combatStat = data.monster.magic_damage;
+      } else {
+        combatStat = data.monster.damage;
+      }
+
+      let totalDmg = combatStat + skillDmg;
+
+      // Apply damage_percent multiplier if present
+      const damagePercent = parseLinearBase(skill.damage_percent);
+      if (damagePercent !== null && damagePercent > 0) {
+        totalDmg = Math.round(totalDmg * damagePercent);
+      }
+
       const typeLabel =
         skill.damage_type && skill.damage_type !== "Normal"
           ? ` ${skill.damage_type}`
           : "";
-      parts.push(`${dmg}${typeLabel} dmg`);
+      parts.push(`${totalDmg.toLocaleString()}${typeLabel} dmg`);
     }
 
     const heal = parseLinearBase(skill.heals_health);

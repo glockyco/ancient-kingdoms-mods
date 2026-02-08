@@ -625,6 +625,7 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
         s.cooldown,
         s.cast_time,
         s.damage,
+        s.damage_percent,
         s.stun_chance,
         s.fear_chance,
         s.heals_health,

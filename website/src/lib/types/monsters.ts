@@ -269,6 +269,7 @@ export interface MonsterSkill {
   cooldown: string | null;
   cast_time: string | null;
   damage: string | null;
+  damage_percent: string | null;
   stun_chance: string | null;
   fear_chance: string | null;
   heals_health: string | null;
