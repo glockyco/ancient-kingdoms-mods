@@ -1086,7 +1086,7 @@
   {#if data.skills.length > 0}
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
-        <Zap class="h-5 w-5 text-yellow-500" />
+        <Zap class="h-5 w-5 text-purple-500" />
         Abilities ({data.skills.length})
       </h2>
       <DataTable
