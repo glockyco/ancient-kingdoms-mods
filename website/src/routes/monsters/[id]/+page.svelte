@@ -1212,12 +1212,6 @@
     <div class="bg-muted/30 rounded-md border p-4">
       <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         <div>
-          <div class="text-sm text-muted-foreground">Health</div>
-          <div class="font-medium">
-            {displayHealth.toLocaleString()}
-          </div>
-        </div>
-        <div>
           <div class="text-sm text-muted-foreground">Damage</div>
           <div class="font-medium">
             {displayDamage}
@@ -1227,6 +1221,28 @@
           <div class="text-sm text-muted-foreground">Magic Damage</div>
           <div class="font-medium">
             {displayMagicDamage}
+          </div>
+        </div>
+        {#if displayAccuracy > 0}
+          <div>
+            <div class="text-sm text-muted-foreground">Accuracy Bonus</div>
+            <div class="font-medium">
+              {formatPercent(displayAccuracy)}
+            </div>
+          </div>
+        {/if}
+        {#if displayCriticalChance > 0}
+          <div>
+            <div class="text-sm text-muted-foreground">Critical Chance</div>
+            <div class="font-medium">
+              {formatPercent(displayCriticalChance)}
+            </div>
+          </div>
+        {/if}
+        <div>
+          <div class="text-sm text-muted-foreground">Health</div>
+          <div class="font-medium">
+            {displayHealth.toLocaleString()}
           </div>
         </div>
         <div>
@@ -1240,22 +1256,6 @@
             <div class="text-sm text-muted-foreground">Block Chance</div>
             <div class="font-medium">
               {formatPercent(displayBlockChance)}
-            </div>
-          </div>
-        {/if}
-        {#if displayCriticalChance > 0}
-          <div>
-            <div class="text-sm text-muted-foreground">Critical Chance</div>
-            <div class="font-medium">
-              {formatPercent(displayCriticalChance)}
-            </div>
-          </div>
-        {/if}
-        {#if displayAccuracy > 0}
-          <div>
-            <div class="text-sm text-muted-foreground">Accuracy</div>
-            <div class="font-medium">
-              {formatPercent(displayAccuracy)}
             </div>
           </div>
         {/if}
