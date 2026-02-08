@@ -85,10 +85,12 @@ class MonsterData(BaseModel):
     disease_resist: int = 0
     block_chance: float = 0.0
     critical_chance: float = 0.0
+    accuracy: float = 0.0
 
-    # Stat scaling (LinearInt: actual = base + per_level * (level - 1))
+    # Stat scaling (LinearInt/LinearFloat: actual = base + per_level * (level - 1))
     health_base: int = 0
     health_per_level: int = 0
+    health_multiplier: float = 1.0
     damage_base: int = 0
     damage_per_level: int = 0
     magic_damage_base: int = 0
@@ -105,6 +107,21 @@ class MonsterData(BaseModel):
     cold_resist_per_level: int = 0
     disease_resist_base: int = 0
     disease_resist_per_level: int = 0
+    block_chance_base: float = 0.0
+    block_chance_per_level: float = 0.0
+    critical_chance_base: float = 0.0
+    critical_chance_per_level: float = 0.0
+    accuracy_base: float = 0.0
+    accuracy_per_level: float = 0.0
+
+    # Mana scaling
+    mana: int = 0
+    mana_base: int = 0
+    mana_per_level: int = 0
+
+    # Movement and detection
+    speed: float = 0.0
+    aggro_range: float = 0.0
 
     # Classification flags
     is_boss: bool = False
@@ -154,6 +171,9 @@ class MonsterData(BaseModel):
 
     # Lore (boss-specific)
     lore_boss: str = ""
+
+    # Skills (skill_ids[0] is default attack, [1+] are special abilities)
+    skill_ids: list[str] = []
 
 
 # =============================================================================

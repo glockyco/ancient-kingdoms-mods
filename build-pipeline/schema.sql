@@ -404,10 +404,12 @@ CREATE TABLE monsters (
     disease_resist INTEGER DEFAULT 0,
     block_chance REAL DEFAULT 0.0,
     critical_chance REAL DEFAULT 0.0,
+    accuracy REAL DEFAULT 0.0,
 
-    -- Stat scaling (LinearInt: actual = base + per_level * (level - 1))
+    -- Stat scaling (LinearInt/LinearFloat: actual = base + per_level * (level - 1))
     health_base INTEGER DEFAULT 0,
     health_per_level INTEGER DEFAULT 0,
+    health_multiplier REAL DEFAULT 1.0,
     damage_base INTEGER DEFAULT 0,
     damage_per_level INTEGER DEFAULT 0,
     magic_damage_base INTEGER DEFAULT 0,
@@ -424,6 +426,21 @@ CREATE TABLE monsters (
     cold_resist_per_level INTEGER DEFAULT 0,
     disease_resist_base INTEGER DEFAULT 0,
     disease_resist_per_level INTEGER DEFAULT 0,
+    block_chance_base REAL DEFAULT 0.0,
+    block_chance_per_level REAL DEFAULT 0.0,
+    critical_chance_base REAL DEFAULT 0.0,
+    critical_chance_per_level REAL DEFAULT 0.0,
+    accuracy_base REAL DEFAULT 0.0,
+    accuracy_per_level REAL DEFAULT 0.0,
+
+    -- Mana scaling
+    mana INTEGER DEFAULT 0,
+    mana_base INTEGER DEFAULT 0,
+    mana_per_level INTEGER DEFAULT 0,
+
+    -- Movement and detection
+    speed REAL DEFAULT 0.0,
+    aggro_range REAL DEFAULT 0.0,
 
     -- Classification flags
     is_boss BOOLEAN DEFAULT 0,
@@ -484,6 +501,20 @@ CREATE INDEX idx_monsters_type_name ON monsters(type_name);
 CREATE INDEX idx_monsters_boss ON monsters(is_boss) WHERE is_boss = 1;
 CREATE INDEX idx_monsters_elite ON monsters(is_elite) WHERE is_elite = 1;
 CREATE INDEX idx_monsters_fabled ON monsters(is_fabled) WHERE is_fabled = 1;
+
+-- =============================================================================
+-- MONSTER SKILLS (junction table linking monsters to their abilities)
+-- =============================================================================
+
+CREATE TABLE monster_skills (
+    monster_id TEXT NOT NULL REFERENCES monsters(id),
+    skill_id TEXT NOT NULL REFERENCES skills(id),
+    skill_index INTEGER NOT NULL,   -- 0 = default attack, 1+ = special abilities
+    PRIMARY KEY (monster_id, skill_id)
+);
+
+CREATE INDEX idx_monster_skills_monster ON monster_skills(monster_id);
+CREATE INDEX idx_monster_skills_skill ON monster_skills(skill_id);
 
 -- =============================================================================
 -- ITEM USAGES (normalized junction tables for item consumption/requirements)

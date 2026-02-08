@@ -339,6 +339,47 @@ def load_monster_spawns(conn: sqlite3.Connection, export_dir: Path) -> None:
     console.print(f"  [green]OK[/green] Loaded {len(spawns)} monster spawn points")
 
 
+def load_monster_skills(conn: sqlite3.Connection) -> None:
+    """Populate monster_skills junction table from monsters.skill_ids JSON column."""
+    console.print("Loading monster skills...")
+
+    cursor = conn.cursor()
+
+    # Read all monsters that have skill_ids populated
+    rows = cursor.execute(
+        "SELECT id, skill_ids FROM monsters WHERE skill_ids IS NOT NULL"
+    ).fetchall()
+
+    # Build set of valid skill IDs for referential integrity
+    valid_skills = {
+        row[0] for row in cursor.execute("SELECT id FROM skills").fetchall()
+    }
+
+    count = 0
+    skipped = 0
+    for monster_id, skill_ids_json in rows:
+        if not skill_ids_json:
+            continue
+        skill_ids = json.loads(skill_ids_json)
+        for index, skill_id in enumerate(skill_ids):
+            if skill_id in valid_skills:
+                cursor.execute(
+                    "INSERT INTO monster_skills (monster_id, skill_id, skill_index) VALUES (?, ?, ?)",
+                    (monster_id, skill_id, index),
+                )
+                count += 1
+            else:
+                skipped += 1
+
+    conn.commit()
+    if skipped > 0:
+        console.print(
+            f"  [green]OK[/green] Loaded {count} monster-skill links (skipped {skipped} unknown skill refs)"
+        )
+    else:
+        console.print(f"  [green]OK[/green] Loaded {count} monster-skill links")
+
+
 def load_npcs(conn: sqlite3.Connection, export_dir: Path) -> None:
     """Load NPCs into database."""
     console.print("Loading NPCs...")
