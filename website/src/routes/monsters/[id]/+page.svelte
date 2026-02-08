@@ -258,7 +258,7 @@
   // Skill columns for the abilities table
   const skillColumns: ColumnDef<MonsterSkill>[] = [
     { accessorKey: "name", header: "Skill", minSize: 200 },
-    { accessorKey: "skill_type", header: "Type", size: 140 },
+    { accessorKey: "skill_type", header: "Type", size: 180 },
     {
       id: "effect",
       header: "Effect",
