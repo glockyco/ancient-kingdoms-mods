@@ -92,8 +92,8 @@ export interface AltarListView {
   totalWaves: number;
   usesVeteranScaling: boolean;
   totalEnemies: number;
-  bossId: string | null;
-  bossName: string | null;
+  bossIds: string[];
+  bossNames: string[];
 }
 
 // Overview page data

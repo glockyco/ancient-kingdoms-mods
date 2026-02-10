@@ -53,16 +53,13 @@ export const load: PageServerLoad = (): AltarsPageData => {
       totalEnemies += wave.monsters.length;
     }
 
-    // Get boss from final wave (first monster in last wave for most altars)
-    let bossId: string | null = null;
-    let bossName: string | null = null;
-    if (waves.length > 0) {
-      const finalWave = waves[waves.length - 1];
-      if (finalWave.monsters.length > 0) {
-        bossId = finalWave.monsters[0].monster_id;
-        bossName = finalWave.monsters[0].monster_name;
-      }
-    }
+    // Get bosses/elites from final wave
+    const bosses =
+      waves.length > 0
+        ? waves[waves.length - 1].monsters.filter(
+            (m) => m.is_boss || m.is_elite,
+          )
+        : [];
 
     return {
       id: raw.id,
@@ -74,8 +71,8 @@ export const load: PageServerLoad = (): AltarsPageData => {
       totalWaves: raw.totalWaves,
       usesVeteranScaling: Boolean(raw.usesVeteranScaling),
       totalEnemies,
-      bossId,
-      bossName,
+      bossIds: bosses.map((b) => b.monster_id),
+      bossNames: bosses.map((b) => b.monster_name),
     };
   });
 

@@ -49,7 +49,7 @@
       id: "boss",
       header: "Boss",
       size: 200,
-      accessorFn: (row) => row.bossName,
+      accessorFn: (row) => row.bossNames.join(", "),
     },
     {
       accessorKey: "totalEnemies",
@@ -127,13 +127,16 @@
       <span class="text-muted-foreground">-</span>
     {/if}
   {:else if cell.column.id === "boss"}
-    {#if row.original.bossId && row.original.bossName}
-      <a
-        href="/monsters/{row.original.bossId}"
-        class="text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap"
-      >
-        {row.original.bossName}
-      </a>
+    {#if row.original.bossIds.length > 0}
+      {#each row.original.bossIds as bossId, i (bossId)}
+        <a
+          href="/monsters/{bossId}"
+          class="text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap"
+        >
+          {row.original.bossNames[i]}
+        </a>{#if i < row.original.bossIds.length - 1},
+        {/if}
+      {/each}
     {:else}
       <span class="text-muted-foreground">-</span>
     {/if}
