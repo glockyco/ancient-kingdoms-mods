@@ -179,6 +179,10 @@ def run_all(conn: sqlite3.Connection) -> None:
     # Monster drops (expand altar variants before item sources read drops)
     monsters.run_drops(conn)
 
+    # Monster spawn inference (before levels and items so altar/placeholder
+    # spawns exist for level range calculation and item zone association)
+    monsters.run_spawns(conn)
+
     # Monster level ranges (from spawns, needed before dropped_by)
     monsters.run_levels(conn)
 
@@ -190,9 +194,6 @@ def run_all(conn: sqlite3.Connection) -> None:
 
     # Skill denormalizations
     skills.run_all(conn)
-
-    # Monster spawn inference
-    monsters.run_spawns(conn)
 
     # Experience calculations (pre-compute EXP values)
     experience.run_all(conn)
