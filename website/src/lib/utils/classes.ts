@@ -71,3 +71,41 @@ export function formatClassName(classId: string): string {
   const config = CLASS_CONFIG[classId.toLowerCase() as ClassName];
   return config?.name ?? classId.charAt(0).toUpperCase() + classId.slice(1);
 }
+
+/**
+ * Resource type mapping (database ID -> display name)
+ */
+const RESOURCE_DISPLAY_NAMES: Record<string, string> = {
+  energy: "Rage",
+  mana: "Mana",
+};
+
+/**
+ * Get display name for a resource type.
+ * Energy is displayed as "Rage" per the game's UI.
+ */
+export function getResourceDisplayName(resourceType: string): string {
+  return RESOURCE_DISPLAY_NAMES[resourceType.toLowerCase()] ?? resourceType;
+}
+
+/**
+ * Race name mapping (database ID -> display name)
+ */
+const RACE_DISPLAY_NAMES: Record<string, string> = {
+  human: "Human",
+  elf: "Elf",
+  dark_alliance: "Dark Elf",
+  dwarf: "Dwarf",
+  fire_goblin: "Fire Goblin",
+  felarii: "Felarii",
+};
+
+/**
+ * Get display name for a race ID.
+ */
+export function getRaceDisplayName(raceId: string): string {
+  return (
+    RACE_DISPLAY_NAMES[raceId.toLowerCase()] ??
+    raceId.charAt(0).toUpperCase() + raceId.slice(1)
+  );
+}
