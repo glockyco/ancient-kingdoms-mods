@@ -15,6 +15,7 @@ from compendium.models import (
     AlchemyRecipeData,
     AlchemyTableData,
     AltarData,
+    ClassData,
     CraftingRecipeData,
     CraftingStationData,
     GatherItemData,
@@ -76,6 +77,39 @@ def load_static_data(conn: sqlite3.Connection, export_dir: Path) -> None:
     console.print(f"  [green]OK[/green] Loaded {len(tiers)} reputation tiers")
 
     conn.commit()
+
+
+def load_classes(conn: sqlite3.Connection, export_dir: Path) -> None:
+    """Load player classes into database."""
+    console.print("Loading classes...")
+
+    filepath = export_dir / "classes.json"
+    if not filepath.exists():
+        console.print("  [yellow]SKIP[/yellow] No classes.json found")
+        return
+
+    with open(filepath, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    classes = [ClassData(**item) for item in data]
+
+    # Validation: assert at least 6 classes exist to catch export errors
+    if len(classes) < 6:
+        msg = f"Expected at least 6 classes, found {len(classes)}"
+        raise ValueError(msg)
+
+    # Warning: unexpected growth if more than 8 classes
+    if len(classes) > 8:
+        console.print(
+            f"  [yellow]Warning:[/yellow] Found {len(classes)} classes (expected 6-8)"
+        )
+
+    cursor = conn.cursor()
+    for cls in classes:
+        insert_model(cursor, "classes", cls)
+
+    conn.commit()
+    console.print(f"  [green]OK[/green] Loaded {len(classes)} classes")
 
 
 def load_zones(conn: sqlite3.Connection, export_dir: Path) -> None:

@@ -15,6 +15,7 @@ from compendium.loaders import (
     load_alchemy_recipes,
     load_alchemy_tables,
     load_altars,
+    load_classes,
     load_crafting_recipes,
     load_crafting_stations,
     load_gather_items,
@@ -64,6 +65,7 @@ def run(config: dict) -> None:
     try:
         # Load data in order (respecting foreign keys)
         load_static_data(conn, export_dir)  # Factions, reputation tiers (before NPCs)
+        load_classes(conn, export_dir)  # Player classes (early, no dependencies)
         load_zones(conn, export_dir)
         load_professions(conn, export_dir)
         load_zone_triggers(conn, export_dir)

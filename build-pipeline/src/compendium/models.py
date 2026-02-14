@@ -699,6 +699,25 @@ class SkillData(BaseModel):
 
 
 # =============================================================================
+# Class Models
+# =============================================================================
+
+
+class ClassData(BaseModel):
+    """Class data from classes.json"""
+
+    id: str
+    name: str
+    description: str
+    primary_role: str
+    secondary_role: str | None = None
+    difficulty: int  # 1-3 (Easy, Medium, Hard)
+    resource_type: str  # "mana" or "energy"
+    compatible_races: list[str]
+    game_version: str
+
+
+# =============================================================================
 # Portal Models
 # =============================================================================
 

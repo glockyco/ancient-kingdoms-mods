@@ -71,6 +71,22 @@ CREATE TABLE professions (
 CREATE INDEX idx_professions_category ON professions(category);
 
 -- =============================================================================
+-- CLASSES (Player Classes)
+-- =============================================================================
+
+CREATE TABLE classes (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    description TEXT NOT NULL,
+    primary_role TEXT NOT NULL,
+    secondary_role TEXT,
+    difficulty INTEGER NOT NULL,
+    resource_type TEXT NOT NULL,
+    compatible_races TEXT NOT NULL,      -- JSON array: ["human", "elf", "dwarf"]
+    game_version TEXT NOT NULL
+);
+
+-- =============================================================================
 -- LUCK TOKENS
 -- =============================================================================
 

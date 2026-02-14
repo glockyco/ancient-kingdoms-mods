@@ -1,0 +1,68 @@
+[
+  {
+    "id": "warrior",
+    "name": "Warrior",
+    "description": "Warriors are melee fighters highly trained in the art of combat and they usually wear high armour. They are very strong and tough on the battlefield and specialize in leading combat and taking the brunt of the damage in groups.",
+    "primary_role": "Tank",
+    "secondary_role": "Melee DPS",
+    "difficulty": 1,
+    "resource_type": "energy",
+    "compatible_races": ["human", "elf", "dark_alliance", "dwarf", "fire_goblin", "felarii"],
+    "game_version": "0.9.7.1"
+  },
+  {
+    "id": "ranger",
+    "name": "Ranger",
+    "description": "Rangers tend to live alone in the deep of the forests, they usually are hardy, cunning, perceptive and skilled archers. This makes them well suited to adventuring, since they are accustomed to life far from the comforts of civilization.",
+    "primary_role": "Ranged Physical DPS",
+    "secondary_role": "Tank",
+    "difficulty": 2,
+    "resource_type": "mana",
+    "compatible_races": ["human", "dark_alliance", "dwarf", "fire_goblin", "felarii"],
+    "game_version": "0.9.7.1"
+  },
+  {
+    "id": "cleric",
+    "name": "Cleric",
+    "description": "Clerics dedicate their lives to the ancestral gods, gaining magical powers in exchange for their faith and service. Clerics are primarily a magic-using class, with the ability to wear plate armor and wield blunt weapons.",
+    "primary_role": "Healer",
+    "secondary_role": "Debuffing",
+    "difficulty": 2,
+    "resource_type": "mana",
+    "compatible_races": ["human", "elf", "dark_alliance", "dwarf", "fire_goblin"],
+    "game_version": "0.9.7.1"
+  },
+  {
+    "id": "rogue",
+    "name": "Rogue",
+    "description": "Rogues are masters of stealth, skulduggery and finding hidden things, they're also very dexterous and agile giving them excellent fighting prowess. Rogues are known to have very high skills in the use of the dagger.",
+    "primary_role": "Melee DPS",
+    "secondary_role": "Scout",
+    "difficulty": 2,
+    "resource_type": "energy",
+    "compatible_races": ["human", "dark_alliance", "dwarf", "fire_goblin", "felarii"],
+    "game_version": "0.9.7.1"
+  },
+  {
+    "id": "wizard",
+    "name": "Wizard",
+    "description": "Wizards dedicate their lives to learning the powers of elements and magic; they can invoke mighty elementals and channeling their knowledge into ever more powerful spells to unleash upon their enemies.",
+    "primary_role": "Ranged Elemental DPS",
+    "secondary_role": "Crowd Control",
+    "difficulty": 3,
+    "resource_type": "mana",
+    "compatible_races": ["human", "elf", "dark_alliance", "fire_goblin", "felarii"],
+    "game_version": "0.9.7.1"
+  },
+  {
+    "id": "druid",
+    "name": "Druid",
+    "description": "Druids are keepers of the world who walk the path of nature, following the wisdom of the ancient gods. To druids, nature is a delicate balance of actions in which even the smallest imbalance can create storming turmoil from peaceful skies.",
+    "primary_role": "Healer",
+    "secondary_role": "Ranged Nature",
+    "difficulty": 3,
+    "resource_type": "mana",
+    "compatible_races": ["human", "elf", "dark_alliance", "fire_goblin", "felarii"],
+    "game_version": "0.9.7.1"
+  }
+]
