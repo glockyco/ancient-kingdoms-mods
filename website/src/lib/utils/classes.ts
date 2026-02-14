@@ -12,10 +12,22 @@ export interface ClassConfig {
 }
 
 /**
- * Configuration for each player class.
- * Keys are lowercase class IDs as stored in the database.
+ * Canonical class name type (lowercase, as stored in database)
  */
-export const CLASS_CONFIG: Record<string, ClassConfig> = {
+export type ClassName =
+  | "warrior"
+  | "cleric"
+  | "ranger"
+  | "rogue"
+  | "wizard"
+  | "druid";
+
+/**
+ * Configuration for each player class.
+ * Uses exhaustive Record type to ensure compile-time type safety.
+ * TypeScript will error if any class is missing from the config.
+ */
+export const CLASS_CONFIG: Record<ClassName, ClassConfig> = {
   warrior: { abbrev: "WAR", color: "#702a21", name: "Warrior" },
   ranger: { abbrev: "RNG", color: "#7a3a16", name: "Ranger" },
   cleric: { abbrev: "CLR", color: "#b8993a", name: "Cleric" },
@@ -35,7 +47,9 @@ export const DEFAULT_CLASS_CONFIG: ClassConfig = {
  * Get class configuration by ID.
  */
 export function getClassConfig(classId: string): ClassConfig {
-  return CLASS_CONFIG[classId.toLowerCase()] ?? DEFAULT_CLASS_CONFIG;
+  return (
+    CLASS_CONFIG[classId.toLowerCase() as ClassName] ?? DEFAULT_CLASS_CONFIG
+  );
 }
 
 /**
@@ -54,6 +68,6 @@ export const ALL_CLASS_IDS = [
  * Format class name for display (capitalizes first letter).
  */
 export function formatClassName(classId: string): string {
-  const config = CLASS_CONFIG[classId.toLowerCase()];
+  const config = CLASS_CONFIG[classId.toLowerCase() as ClassName];
   return config?.name ?? classId.charAt(0).toUpperCase() + classId.slice(1);
 }
