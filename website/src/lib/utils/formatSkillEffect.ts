@@ -14,7 +14,7 @@ export interface MonsterContext {
 export interface Skill {
   skill_type: string;
   damage_type: string | null;
-  max_level: number;
+  max_level?: number;
 
   // Damage fields
   damage: string | LinearValue | null;
@@ -362,7 +362,7 @@ function formatSummons(skill: Skill): string[] {
     skill.skill_type === "summon_monsters" &&
     skill.summon_count_per_cast === 0
   ) {
-    parts.push("teleports target, 2s stun");
+    parts.push("teleports target to self, stun (2s)");
     return parts;
   }
 

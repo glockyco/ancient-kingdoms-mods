@@ -19,6 +19,7 @@
   } from "$lib/types/monsters";
   import type { LinearValue } from "$lib/types/skills";
   import { formatPercent, formatDuration } from "$lib/utils/format";
+  import { formatSkillEffect } from "$lib/utils/formatSkillEffect";
   import Sword from "@lucide/svelte/icons/sword";
   import Gem from "@lucide/svelte/icons/gem";
   import MapPin from "@lucide/svelte/icons/map-pin";
@@ -167,304 +168,6 @@
       data.monster.accuracy_per_level * (displayLevel - 1),
   );
 
-  // Parse a LinearValue JSON string into its base value (for skill summary display)
-  function parseLinearBase(json: string | null): number | null {
-    if (!json) return null;
-    try {
-      const parsed = JSON.parse(json) as LinearValue;
-      if (parsed.base_value === 0 && parsed.bonus_per_level === 0) return null;
-      return parsed.base_value;
-    } catch {
-      return null;
-    }
-  }
-
-  // Format buff/debuff effects (for area_buff, area_debuff, target_buff, target_debuff)
-  function formatBuffDebuffEffect(skill: MonsterSkill): string {
-    const parts: string[] = [];
-
-    // Dispel / Blindness (high priority)
-    if (skill.is_dispel) parts.push("Dispels buffs");
-    if (skill.is_blindness) parts.push("Blinds");
-
-    // Root/slow
-    const speedBonus = parseLinearBase(skill.speed_bonus);
-    if (speedBonus !== null && speedBonus <= -20) {
-      parts.push("Root");
-    } else if (speedBonus !== null && speedBonus < 0) {
-      parts.push(`${speedBonus} speed`);
-    } else if (speedBonus !== null && speedBonus > 0) {
-      parts.push(`+${speedBonus} speed`);
-    }
-
-    // Damage % bonus (frenzy/enrage buffs)
-    const damagePctBonus = parseLinearBase(skill.damage_percent_bonus);
-    if (damagePctBonus !== null && damagePctBonus !== 0) {
-      parts.push(
-        `${damagePctBonus > 0 ? "+" : ""}${formatPercent(damagePctBonus)} dmg`,
-      );
-    }
-
-    // Flat damage bonus
-    const damageBonus = parseLinearBase(skill.damage_bonus);
-    if (damageBonus !== null && damageBonus !== 0) {
-      parts.push(
-        `${damageBonus > 0 ? "+" : ""}${damageBonus.toLocaleString()} dmg`,
-      );
-    }
-
-    // Defense
-    const defenseBonus = parseLinearBase(skill.defense_bonus);
-    if (defenseBonus !== null && defenseBonus !== 0) {
-      parts.push(
-        `${defenseBonus > 0 ? "+" : ""}${defenseBonus.toLocaleString()} AC`,
-      );
-    }
-
-    // Haste
-    const hasteBonus = parseLinearBase(skill.haste_bonus);
-    if (hasteBonus !== null && hasteBonus !== 0) {
-      parts.push(
-        `${hasteBonus > 0 ? "+" : ""}${formatPercent(hasteBonus)} haste`,
-      );
-    }
-
-    // Crit / Block / Accuracy
-    const critBonus = parseLinearBase(skill.critical_chance_bonus);
-    if (critBonus !== null && critBonus !== 0) {
-      parts.push(`${critBonus > 0 ? "+" : ""}${formatPercent(critBonus)} crit`);
-    }
-    const blockBonus = parseLinearBase(skill.block_chance_bonus);
-    if (blockBonus !== null && blockBonus !== 0) {
-      parts.push(
-        `${blockBonus > 0 ? "+" : ""}${formatPercent(blockBonus)} block`,
-      );
-    }
-    const accBonus = parseLinearBase(skill.accuracy_bonus);
-    if (accBonus !== null && accBonus !== 0) {
-      parts.push(
-        `${accBonus > 0 ? "+" : ""}${formatPercent(accBonus)} accuracy`,
-      );
-    }
-
-    // Magic damage bonus
-    const magicDmgBonus = parseLinearBase(skill.magic_damage_bonus);
-    if (magicDmgBonus !== null && magicDmgBonus !== 0) {
-      parts.push(
-        `${magicDmgBonus > 0 ? "+" : ""}${magicDmgBonus.toLocaleString()} spell power`,
-      );
-    }
-
-    // Resistance bonuses (MR/PR/FR/CR/DR)
-    const resistFields: [string | null, string][] = [
-      [skill.magic_resist_bonus, "MR"],
-      [skill.poison_resist_bonus, "PR"],
-      [skill.fire_resist_bonus, "FR"],
-      [skill.cold_resist_bonus, "CR"],
-      [skill.disease_resist_bonus, "DR"],
-    ];
-    for (const [field, label] of resistFields) {
-      const val = parseLinearBase(field);
-      if (val !== null && val !== 0) {
-        parts.push(`${val > 0 ? "+" : ""}${val.toLocaleString()} ${label}`);
-      }
-    }
-
-    // HoT / DoT (healing per second)
-    const hps = parseLinearBase(skill.healing_per_second_bonus);
-    if (hps !== null && hps !== 0) {
-      parts.push(
-        hps > 0
-          ? `${hps.toLocaleString()} HP/s`
-          : `${Math.abs(hps).toLocaleString()} dmg/s`,
-      );
-    }
-
-    // HP % per second (regen)
-    const hpPct = parseLinearBase(skill.health_percent_per_second_bonus);
-    if (hpPct !== null && hpPct !== 0) {
-      parts.push(`${formatPercent(hpPct)} HP/s`);
-    }
-
-    // Mana drain/regen (flat per second)
-    const mps = parseLinearBase(skill.mana_per_second_bonus);
-    if (mps !== null && mps !== 0) {
-      parts.push(
-        mps > 0
-          ? `${mps.toLocaleString()} mana/s`
-          : `${Math.abs(mps).toLocaleString()} mana drain/s`,
-      );
-    }
-
-    // Mana % per second (drain/regen)
-    const manaPct = parseLinearBase(skill.mana_percent_per_second_bonus);
-    if (manaPct !== null && manaPct !== 0) {
-      parts.push(`${formatPercent(manaPct)} mana/s`);
-    }
-
-    // Damage shield
-    const dmgShield = parseLinearBase(skill.damage_shield);
-    if (dmgShield !== null && dmgShield > 0) {
-      parts.push(`${dmgShield.toLocaleString()} dmg shield`);
-    }
-
-    // Debuff type tags (if no specific stat shown)
-    if (parts.length === 0) {
-      if (skill.is_poison_debuff) parts.push("Poison DoT");
-      else if (skill.is_fire_debuff) parts.push("Fire DoT");
-      else if (skill.is_cold_debuff) parts.push("Cold DoT");
-      else if (skill.is_disease_debuff) parts.push("Disease DoT");
-      else if (skill.is_melee_debuff) parts.push("Melee debuff");
-      else if (skill.is_magic_debuff) parts.push("Magic debuff");
-    }
-
-    // Cleanse resistance (for debuffs)
-    if (skill.prob_ignore_cleanse > 0) {
-      parts.push(`${formatPercent(skill.prob_ignore_cleanse)} cleanse resist`);
-    }
-
-    // Add duration if present
-    if (skill.duration_base > 0 && parts.length > 0) {
-      return `${parts.join(", ")}, ${skill.duration_base}s`;
-    }
-
-    return parts.join(", ");
-  }
-
-  // Format a skill's key effect as a concise summary string
-  function formatSkillEffect(skill: MonsterSkill): string {
-    const parts: string[] = [];
-
-    // Handle damage (including edge case: damage_percent without base damage)
-    const skillDmg = parseLinearBase(skill.damage);
-    const damagePercent = parseLinearBase(skill.damage_percent);
-
-    if (
-      (skillDmg !== null && skillDmg > 0) ||
-      (damagePercent !== null && damagePercent > 0)
-    ) {
-      // Calculate combined damage: monster combat stat + skill damage
-      let combatStat = 0;
-      if (
-        skill.damage_type === "Magic" ||
-        skill.damage_type === "Fire" ||
-        skill.damage_type === "Cold" ||
-        skill.damage_type === "Disease"
-      ) {
-        combatStat = data.monster.magic_damage;
-      } else {
-        combatStat = data.monster.damage;
-      }
-
-      let totalDmg = combatStat + (skillDmg ?? 0);
-
-      // Apply damage_percent multiplier if present
-      if (damagePercent !== null && damagePercent > 0) {
-        totalDmg = Math.round(totalDmg * damagePercent);
-      }
-
-      const typeLabel =
-        skill.damage_type && skill.damage_type !== "Normal"
-          ? ` ${skill.damage_type}`
-          : "";
-      parts.push(`${totalDmg.toLocaleString()}${typeLabel} dmg`);
-    }
-
-    // AoE properties (appended after damage)
-    if (skill.affects_random_target) {
-      parts.push("random target");
-    }
-    if (skill.area_objects_to_spawn > 0) {
-      const sizeInfo =
-        skill.area_object_size > 0 ? `, size ${skill.area_object_size}` : "";
-      parts.push(`${skill.area_objects_to_spawn} zones${sizeInfo}`);
-    }
-
-    const heal = parseLinearBase(skill.heals_health);
-    if (heal !== null && heal > 0) {
-      parts.push(`Heals ${heal.toLocaleString()} HP`);
-    }
-
-    const lifetap = parseLinearBase(skill.lifetap_percent);
-    if (lifetap !== null && lifetap > 0) {
-      parts.push(`${formatPercent(lifetap)} Lifetap`);
-    }
-
-    if (skill.break_armor_prob > 0) {
-      parts.push(`${formatPercent(skill.break_armor_prob)} Break Armor`);
-    }
-
-    const stun = parseLinearBase(skill.stun_chance);
-    if (stun !== null && stun > 0) {
-      const stunDur = parseLinearBase(skill.stun_time);
-      const durSuffix = stunDur !== null && stunDur > 0 ? ` (${stunDur}s)` : "";
-      parts.push(`${formatPercent(stun)} Stun${durSuffix}`);
-    }
-
-    const fear = parseLinearBase(skill.fear_chance);
-    if (fear !== null && fear > 0) {
-      const fearDur = parseLinearBase(skill.fear_time);
-      const durSuffix = fearDur !== null && fearDur > 0 ? ` (${fearDur}s)` : "";
-      parts.push(`${formatPercent(fear)} Fear${durSuffix}`);
-    }
-
-    const knockback = parseLinearBase(skill.knockback_chance);
-    if (knockback !== null && knockback > 0) {
-      parts.push(`${formatPercent(knockback)} Knockback`);
-    }
-
-    // Handle summon_monsters skill type (both teleport and actual summoning)
-    if (skill.skill_type === "summon_monsters") {
-      // Teleport mode: summon_count_per_cast == 0 (e.g., "Summon Player")
-      if (skill.summon_count_per_cast === 0) {
-        parts.push("Teleports target to self, 2s stun");
-      }
-      // Normal summon mode
-      else if (skill.summoned_monster_id) {
-        const name = skill.summoned_monster_name || skill.summoned_monster_id;
-        const count =
-          skill.summon_count_per_cast !== null &&
-          skill.summon_count_per_cast > 0
-            ? `${skill.summon_count_per_cast}x `
-            : "";
-        const details: string[] = [];
-        if (skill.summoned_monster_level !== null) {
-          details.push(`Lv${skill.summoned_monster_level}`);
-        }
-        if (skill.max_active_summons !== null) {
-          details.push(`max ${skill.max_active_summons}`);
-        }
-        const suffix = details.length > 0 ? ` (${details.join(", ")})` : "";
-        parts.push(`Summons ${count}${name}${suffix}`);
-      }
-    }
-
-    // Handle passive skills
-    if (skill.skill_type === "passive") {
-      if (skill.is_enrage) {
-        parts.push("+50-100% dmg below 25% HP");
-      } else {
-        parts.push("Passive stat bonuses");
-      }
-    }
-
-    // Handle buff/debuff skills (if no damage/heal/summon already shown)
-    if (
-      parts.length === 0 &&
-      (skill.skill_type === "area_buff" ||
-        skill.skill_type === "area_debuff" ||
-        skill.skill_type === "target_buff" ||
-        skill.skill_type === "target_debuff")
-    ) {
-      const buffEffect = formatBuffDebuffEffect(skill);
-      if (buffEffect) {
-        parts.push(buffEffect);
-      }
-    }
-
-    return parts.join(", ") || skill.skill_type.replace(/_/g, " ");
-  }
-
   // Skill columns for the abilities table
   const skillColumns: ColumnDef<MonsterSkill>[] = [
     {
@@ -480,19 +183,39 @@
     {
       id: "effect",
       header: "Effect",
-      accessorFn: (row) => formatSkillEffect(row),
+      accessorFn: (row) =>
+        formatSkillEffect(row, {
+          damage: displayDamage,
+          magicDamage: displayMagicDamage,
+        }),
       enableSorting: false,
     },
     {
       id: "cooldown",
       header: "Cooldown",
-      accessorFn: (row) => parseLinearBase(row.cooldown) ?? 0,
+      accessorFn: (row) => {
+        if (!row.cooldown) return 0;
+        try {
+          const parsed = JSON.parse(row.cooldown) as LinearValue;
+          return parsed.base_value;
+        } catch {
+          return 0;
+        }
+      },
       enableSorting: false,
     },
     {
       id: "cast_time",
       header: "Cast Time",
-      accessorFn: (row) => parseLinearBase(row.cast_time) ?? 0,
+      accessorFn: (row) => {
+        if (!row.cast_time) return 0;
+        try {
+          const parsed = JSON.parse(row.cast_time) as LinearValue;
+          return parsed.base_value;
+        } catch {
+          return 0;
+        }
+      },
       enableSorting: false,
     },
   ];
