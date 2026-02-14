@@ -907,6 +907,7 @@ CREATE TABLE skills (
     required_spent_points INTEGER DEFAULT 0,
     prerequisite_skill_id TEXT REFERENCES skills(id),
     prerequisite_level INTEGER DEFAULT 0,
+    prerequisite2_skill_id TEXT REFERENCES skills(id),
     prerequisite2_level INTEGER DEFAULT 0,
     required_weapon_category TEXT,
     required_weapon_category2 TEXT,
@@ -952,7 +953,7 @@ CREATE TABLE skills (
     damage_type TEXT,
     heals_health TEXT,
     heals_mana TEXT,
-    lifetap_percent REAL DEFAULT 0.0,
+    lifetap_percent TEXT,
     aggro TEXT,
 
     -- Special mechanics
@@ -962,11 +963,11 @@ CREATE TABLE skills (
     can_heal_others BOOLEAN DEFAULT 0,
     can_buff_self BOOLEAN DEFAULT 0,
     can_buff_others BOOLEAN DEFAULT 0,
-    stun_chance REAL DEFAULT 0.0,
-    stun_time REAL DEFAULT 0.0,
-    fear_chance REAL DEFAULT 0.0,
-    fear_time REAL DEFAULT 0.0,
-    knockback_chance REAL DEFAULT 0.0,
+    stun_chance TEXT,
+    stun_time TEXT,
+    fear_chance TEXT,
+    fear_time TEXT,
+    knockback_chance TEXT,
 
     -- Buff/Debuff properties
     duration_base REAL DEFAULT 0.0,
@@ -984,7 +985,6 @@ CREATE TABLE skills (
     is_cleanse BOOLEAN DEFAULT 0,
     is_dispel BOOLEAN DEFAULT 0,
     is_mana_shield BOOLEAN DEFAULT 0,
-    is_ward BOOLEAN DEFAULT 0,
     is_blindness BOOLEAN DEFAULT 0,
     is_avatar_war BOOLEAN DEFAULT 0,
     is_only_for_magic_classes BOOLEAN DEFAULT 0,
@@ -1029,6 +1029,8 @@ CREATE TABLE skills (
     charisma_bonus TEXT,
     wisdom_bonus TEXT,
     constitution_bonus TEXT,
+    ward_bonus TEXT,
+    fear_resist_chance_bonus TEXT,
 
     -- Special flags
     is_enrage BOOLEAN DEFAULT 0,

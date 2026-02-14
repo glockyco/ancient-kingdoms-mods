@@ -564,6 +564,7 @@ class SkillData(BaseModel):
     required_spent_points: int = 0
     prerequisite_skill_id: str | None = None
     prerequisite_level: int = 0
+    prerequisite2_skill_id: str | None = None
     prerequisite2_level: int = 0
     required_weapon_category: str = ""
     required_weapon_category2: str = ""
@@ -642,7 +643,6 @@ class SkillData(BaseModel):
     is_magic_debuff: bool = False
     is_cleanse: bool = False
     is_dispel: bool = False
-    is_ward: bool = False
     is_blindness: bool = False
     prob_ignore_cleanse: float = 0.0
     is_decrease_resists_skill: bool = False
@@ -684,6 +684,8 @@ class SkillData(BaseModel):
     charisma_bonus: SkillBonus | None = None
     wisdom_bonus: SkillBonus | None = None
     constitution_bonus: SkillBonus | None = None
+    ward_bonus: SkillBonus | None = None
+    fear_resist_chance_bonus: SkillBonus | None = None
 
     # Misc
     skill_aggro_message: str = ""
