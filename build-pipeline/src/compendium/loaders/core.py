@@ -195,6 +195,8 @@ def load_skills(conn: sqlite3.Connection, export_dir: Path) -> None:
     cursor.execute("PRAGMA defer_foreign_keys = ON")
 
     for skill in skills:
+        # Normalize class names to lowercase for consistent querying
+        skill.player_classes = [c.lower() for c in skill.player_classes]
         insert_model(cursor, "skills", skill)
 
     conn.commit()
@@ -241,6 +243,8 @@ def load_items(conn: sqlite3.Connection, export_dir: Path) -> None:
     seen_merge_recipes: set[str] = set()
 
     for item in items:
+        # Normalize class names to lowercase for consistent querying
+        item.class_required = [c.lower() for c in item.class_required]
         # Insert main item record (insert_model only inserts fields that match schema)
         insert_model(cursor, "items", item)
 
@@ -429,6 +433,8 @@ def load_quests(conn: sqlite3.Connection, export_dir: Path) -> None:
     cursor.execute("PRAGMA defer_foreign_keys = ON")
 
     for quest in quests:
+        # Normalize class names to lowercase for consistent querying
+        quest.class_requirements = [c.lower() for c in quest.class_requirements]
         insert_model(cursor, "quests", quest)
 
     conn.commit()
