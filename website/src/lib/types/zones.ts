@@ -140,6 +140,7 @@ export interface ZoneDetailData {
     weather_type: string | null;
     level_min: number | null;
     level_max: number | null;
+    level_median: number | null;
     discovery_exp: number;
     description: string;
   };

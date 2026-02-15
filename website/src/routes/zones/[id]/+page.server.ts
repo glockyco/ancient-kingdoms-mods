@@ -44,6 +44,7 @@ export const load: PageServerLoad = ({ params }): ZoneDetailData => {
       z.discovery_exp,
       z.level_min,
       z.level_max,
+      z.level_median,
       z.description
     FROM zones z
     WHERE z.id = ?

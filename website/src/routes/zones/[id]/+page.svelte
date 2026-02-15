@@ -445,7 +445,10 @@
           Level: {#if data.zone.level_min === data.zone.level_max}
             {data.zone.level_min}
           {:else}
-            {data.zone.level_min ?? "?"} - {data.zone.level_max ?? "?"}
+            {data.zone.level_min ?? "?"} – {data.zone.level_max ?? "?"}
+            {#if data.zone.level_median !== null}
+              (median {data.zone.level_median})
+            {/if}
           {/if}
         </span>
       {/if}
