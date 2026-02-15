@@ -23,12 +23,14 @@
     totalRows,
     filteredRows,
     facetedItemIds,
+    showDeltas = true,
   }: {
     column: Column<TData, TValue>;
     open?: boolean;
     totalRows: number;
     filteredRows: number;
     facetedItemIds: string[];
+    showDeltas?: boolean;
   } = $props();
 
   // Validate filter value structure: stats array (can be empty) and valid mode
@@ -69,9 +71,9 @@
     });
   });
 
-  // Fetch deltas when selection changes
+  // Fetch deltas when selection changes (only when showDeltas is enabled)
   $effect(() => {
-    if (!open) return;
+    if (!showDeltas || !open) return;
     if (selectedStats.size === 0) {
       deltas = new Map();
       currentMatchCount = 0;
@@ -194,8 +196,8 @@
                 >
                   {#if count === undefined}
                     <!-- Not loaded yet -->
-                  {:else if selectedStats.size === 0}
-                    <!-- No selection: show absolute count -->
+                  {:else if !showDeltas || selectedStats.size === 0}
+                    <!-- No deltas or no selection: show absolute count -->
                     {count}
                   {:else if delta !== undefined && delta !== 0}
                     <!-- Has selection: show new total + delta -->
