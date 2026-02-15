@@ -348,12 +348,12 @@ export function getClassItemsWithSources(classId: string): ClassItem[] {
     WHERE isa.item_id IN (${placeholders})
 
     UNION ALL
-    SELECT isr.item_id, 'alchemy', isr.recipe_id, 'Alchemy', NULL
+    SELECT isr.item_id, 'alchemy', isr.recipe_id, 'Alchemy', isr.source_level
     FROM item_sources_recipe isr
     WHERE isr.recipe_type = 'alchemy' AND isr.item_id IN (${placeholders})
 
     UNION ALL
-    SELECT isr.item_id, 'crafting', isr.recipe_id, 'Crafting', NULL
+    SELECT isr.item_id, 'crafting', isr.recipe_id, 'Crafting', isr.source_level
     FROM item_sources_recipe isr
     WHERE isr.recipe_type = 'crafting' AND isr.item_id IN (${placeholders})
 

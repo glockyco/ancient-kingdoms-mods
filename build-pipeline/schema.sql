@@ -327,7 +327,8 @@ CREATE TABLE item_sources_recipe (
     item_id TEXT NOT NULL REFERENCES items(id),
     recipe_id TEXT NOT NULL,  -- References crafting_recipes or alchemy_recipes
     recipe_type TEXT NOT NULL CHECK (recipe_type IN ('crafting', 'alchemy')),
-    result_amount INTEGER NOT NULL DEFAULT 1
+    result_amount INTEGER NOT NULL DEFAULT 1,
+    source_level INTEGER              -- Derived: max of min source levels across materials (denormalized)
 );
 CREATE INDEX idx_item_sources_recipe_item ON item_sources_recipe(item_id);
 CREATE INDEX idx_item_sources_recipe_recipe ON item_sources_recipe(recipe_id);
