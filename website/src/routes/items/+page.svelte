@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { afterNavigate, replaceState } from "$app/navigation";
   import { untrack } from "svelte";
   import { SvelteMap } from "svelte/reactivity";
+  import { createStatPanelState } from "$lib/utils/stat-panel-state.svelte";
   import {
     DataTable,
     DataTableFacetedFilter,
@@ -65,58 +65,7 @@
   }
 
   const PAGE_SIZE = 20;
-  // Use "statsPanel" (no "items." prefix) to avoid collision with DataTable's URL namespace
-  const STATS_PANEL_URL_KEY = "statsPanel";
-  const STATS_PANEL_STORAGE_KEY = "items-stats-panel-open";
-
-  // Panel open state
-  let statPanelOpen = $state(false);
-  let routerReady = $state(false);
-
-  // afterNavigate fires after router is initialized and navigation completes
-  afterNavigate(() => {
-    if (!routerReady) {
-      // First navigation - restore state from URL or localStorage
-      const urlValue = new URL(window.location.href).searchParams.get(
-        STATS_PANEL_URL_KEY,
-      );
-      if (urlValue !== null) {
-        statPanelOpen = urlValue === "1";
-      } else {
-        try {
-          statPanelOpen = localStorage.getItem(STATS_PANEL_STORAGE_KEY) === "1";
-        } catch {
-          // localStorage unavailable
-        }
-      }
-      routerReady = true;
-    }
-  });
-
-  // Sync panel state to URL and localStorage (only after router is ready)
-  $effect(() => {
-    if (!routerReady) return;
-
-    // Sync to localStorage
-    try {
-      if (statPanelOpen) {
-        localStorage.setItem(STATS_PANEL_STORAGE_KEY, "1");
-      } else {
-        localStorage.removeItem(STATS_PANEL_STORAGE_KEY);
-      }
-    } catch {
-      // localStorage unavailable
-    }
-
-    // Sync to URL using SvelteKit's replaceState (safe now that router is ready)
-    const url = new URL(window.location.href);
-    if (statPanelOpen) {
-      url.searchParams.set(STATS_PANEL_URL_KEY, "1");
-    } else {
-      url.searchParams.delete(STATS_PANEL_URL_KEY);
-    }
-    replaceState(url, {});
-  });
+  const statPanel = createStatPanelState("items-stats-panel-open");
 
   // Precomputed at build time - no JSON parsing needed on client
   // Use untrack to capture constants without reactive tracking
@@ -479,17 +428,17 @@
       | { stats: string[]; mode: "any" | "all" }
       | undefined}
     <DataTableStatToggle
-      bind:open={statPanelOpen}
+      bind:open={statPanel.open}
       selectedCount={statsFilterValue?.stats.length ?? 0}
       mode={statsFilterValue?.mode ?? "all"}
     />
   {/if}
   <!-- Stat panel: order-last ensures it appears after Columns button, w-full makes it wrap to new line -->
-  <div class="order-last w-full">
+  <div class="order-last w-full" class:hidden={!statPanel.open}>
     {#if statsCol}
       <DataTableStatPanel
         column={statsCol}
-        bind:open={statPanelOpen}
+        bind:open={statPanel.open}
         totalRows={dataWithVirtual.length}
         filteredRows={table.getFilteredRowModel().rows.length}
         {facetedItemIds}
