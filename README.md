@@ -24,6 +24,14 @@ Allows instant respawning of dead monsters:
 - Left-click marker to instantly respawn the monster
 - Color-coded text (cyan=boss, purple=elite, red=regular)
 
+### ResourceRespawner
+Allows instant respawning of gatherable resources:
+- Hold **Alt** to show respawn markers at resource locations on cooldown
+- Displays resource name, type, and countdown timer
+- Left-click marker to instantly respawn the resource
+- Color-coded by type (lime=plants, gray=minerals, purple=radiant sparks, yellow=chests)
+- Works for all gatherable types: plants, minerals, radiant sparks, chests, and other items
+
 ### MapTeleporter
 Alt+click on the map to teleport to that location.
 
@@ -49,6 +57,7 @@ For detailed installation instructions, see the [MelonLoader documentation](http
    - `MapEnhancer.dll`
    - `MapTeleporter.dll`
    - `MonsterRespawner.dll`
+   - `ResourceRespawner.dll`
 3. Launch Ancient Kingdoms
 
 Mods will load automatically. Check `MelonLoader/Latest.log` if you encounter issues.
@@ -81,6 +90,14 @@ Compatibility with future game updates is not guaranteed. If mods stop working a
 - Hold **Alt** to reveal respawn markers for dead monsters
 - Markers show name, level, and countdown timer
 - Left-click a marker to instantly respawn that monster
+- Works automatically - no configuration needed
+
+### ResourceRespawner
+
+- Hold **Alt** to reveal respawn markers for resources on cooldown
+- Markers show resource name, type, and countdown timer
+- Left-click a marker to instantly respawn that resource
+- Works for plants, minerals, radiant sparks, chests, and other gatherable items
 - Works automatically - no configuration needed
 
 ### MapTeleporter
