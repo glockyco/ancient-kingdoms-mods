@@ -49,14 +49,14 @@
   const sortedClassIds = [...ALL_CLASS_IDS].sort();
 
   function getDifficultyLabel(difficulty: number): string {
-    if (difficulty <= 2) return "Easy";
-    if (difficulty <= 4) return "Medium";
+    if (difficulty === 1) return "Easy";
+    if (difficulty === 2) return "Medium";
     return "Hard";
   }
 
   function getDifficultyColor(difficulty: number): string {
-    if (difficulty <= 2) return "text-green-600 dark:text-green-400";
-    if (difficulty <= 4) return "text-yellow-600 dark:text-yellow-400";
+    if (difficulty === 1) return "text-green-600 dark:text-green-400";
+    if (difficulty === 2) return "text-yellow-600 dark:text-yellow-400";
     return "text-red-600 dark:text-red-400";
   }
 
