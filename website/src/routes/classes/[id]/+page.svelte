@@ -513,7 +513,13 @@
       </div>
     {/if}
   {:else if cell.column.id === "item_level"}
-    <span class="ml-auto">{cell.getValue()}</span>
+    <span class="ml-auto">
+      {#if row.original.item_level}
+        {row.original.item_level}
+      {:else}
+        <span class="text-muted-foreground">—</span>
+      {/if}
+    </span>
   {:else if cell.column.id === "level_required"}
     <span class="ml-auto">
       {#if row.original.level_required}
