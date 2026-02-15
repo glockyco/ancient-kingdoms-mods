@@ -7,6 +7,7 @@
   import { browser } from "$app/environment";
   import { MediaQuery } from "svelte/reactivity";
   import * as HoverCard from "$lib/components/ui/hover-card";
+  import { cn } from "$lib/utils.js";
 
   interface Props {
     itemId: string;
@@ -14,6 +15,7 @@
     tooltipHtml?: string | null;
     class?: string;
     colorClass?: string;
+    maxWidth?: string;
   }
 
   let {
@@ -22,6 +24,7 @@
     tooltipHtml = null,
     class: className,
     colorClass,
+    maxWidth,
   }: Props = $props();
 
   const instanceId = crypto.randomUUID();
@@ -35,6 +38,8 @@
     colorClass ?? "text-blue-600 dark:text-blue-400",
   );
 
+  const displayMode = $derived(maxWidth ? "block" : "inline-block");
+
   const isOpen = $derived(currentOpenId === instanceId);
 
   function handleOpenChange(open: boolean) {
@@ -46,7 +51,13 @@
   }
 </script>
 
-<span class="min-w-0">
+<span
+  class={cn(
+    "min-w-0",
+    maxWidth && "inline-block overflow-hidden whitespace-nowrap",
+  )}
+  style={maxWidth ? `max-width: ${maxWidth}` : undefined}
+>
   {#if showTooltip}
     <HoverCard.Root
       openDelay={200}
@@ -55,12 +66,20 @@
       onOpenChange={handleOpenChange}
     >
       <HoverCard.Trigger>
-        <a
-          href="/items/{itemId}"
-          class="inline-block max-w-full underline decoration-dotted hover:decoration-solid {effectiveColorClass} {className}"
-        >
-          {itemName}
-        </a>
+        {#snippet child({ props })}
+          <a
+            {...props}
+            href="/items/{itemId}"
+            class={cn(
+              displayMode,
+              "max-w-full underline decoration-dotted hover:decoration-solid",
+              effectiveColorClass,
+              className,
+            )}
+          >
+            <span class={cn(maxWidth && "block truncate")}>{itemName}</span>
+          </a>
+        {/snippet}
       </HoverCard.Trigger>
       <HoverCard.Content
         class="w-80 border-0 p-0 overflow-hidden shadow-lg"
@@ -76,9 +95,14 @@
   {:else}
     <a
       href="/items/{itemId}"
-      class="inline-block max-w-full hover:underline {effectiveColorClass} {className}"
+      class={cn(
+        displayMode,
+        "max-w-full hover:underline",
+        effectiveColorClass,
+        className,
+      )}
     >
-      {itemName}
+      <span class={cn(maxWidth && "block truncate")}>{itemName}</span>
     </a>
   {/if}
 </span>

@@ -456,7 +456,7 @@
       itemName={row.original.name}
       tooltipHtml={tooltips.get(row.original.id)}
       colorClass={getQualityTextColorClass(row.original.quality)}
-      class="whitespace-nowrap"
+      maxWidth="185px"
     />
   {:else if cell.column.id === "sources"}
     {@const sources = row.original.sources}
@@ -466,11 +466,11 @@
       {@const source = sources[0]}
       {@const sourceConfig = SOURCE_TYPE_CONFIG[source.type as ItemSourceType]}
       {#if sourceConfig}
-        <div class="flex items-center gap-1.5">
+        <div class="flex items-center gap-1.5 max-w-[185px]">
           <sourceConfig.icon class="h-4 w-4 shrink-0 {sourceConfig.color}" />
           <a
             href="{sourceConfig.linkPrefix}{source.id}"
-            class="text-blue-600 dark:text-blue-400 hover:underline"
+            class="truncate text-blue-600 dark:text-blue-400 hover:underline"
           >
             {source.name}
           </a>
@@ -480,17 +480,17 @@
       {@const source = sources[0]}
       {@const sourceConfig = SOURCE_TYPE_CONFIG[source.type as ItemSourceType]}
       {#if sourceConfig}
-        <div class="flex items-center gap-1.5">
+        <div class="flex items-center gap-1.5 max-w-[185px]">
           <sourceConfig.icon class="h-4 w-4 shrink-0 {sourceConfig.color}" />
           <a
             href="{sourceConfig.linkPrefix}{source.id}"
-            class="text-blue-600 dark:text-blue-400 hover:underline"
+            class="truncate text-blue-600 dark:text-blue-400 hover:underline"
           >
             {source.name}
           </a>
           <a
             href="/items/{row.original.id}"
-            class="text-muted-foreground hover:underline text-xs"
+            class="shrink-0 text-muted-foreground hover:underline text-xs"
           >
             +{sources.length - 1} more
           </a>
@@ -728,7 +728,6 @@
         showSearch={true}
         searchPlaceholder="Search items..."
         paginateStaticHtml={true}
-        persistentScrollbar={true}
         class="bg-muted/30"
         onVisibleRowsChange={handleVisibleRowsChange}
       />
