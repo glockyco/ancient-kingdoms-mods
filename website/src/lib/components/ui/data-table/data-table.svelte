@@ -572,7 +572,20 @@
   );
   const hasActiveFilters = $derived(
     globalFilter !== "" ||
-      columnFilters.length > 0 ||
+      columnFilters.some((f) => {
+        // Stat filters with no selected stats are not active
+        if (
+          typeof f.value === "object" &&
+          f.value !== null &&
+          !Array.isArray(f.value) &&
+          "stats" in f.value &&
+          Array.isArray((f.value as { stats: unknown[] }).stats) &&
+          (f.value as { stats: unknown[] }).stats.length === 0
+        ) {
+          return false;
+        }
+        return true;
+      }) ||
       hasModifiedVisibility ||
       hasModifiedSorting,
   );
