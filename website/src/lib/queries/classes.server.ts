@@ -413,6 +413,16 @@ export function getClassItemsWithSources(classId: string): ClassItem[] {
     });
   }
 
+  // Sort sources within each item by source_level ascending (nulls last)
+  for (const sources of sourcesByItemId.values()) {
+    sources.sort((a, b) => {
+      if (a.source_level === null && b.source_level === null) return 0;
+      if (a.source_level === null) return 1;
+      if (b.source_level === null) return -1;
+      return a.source_level - b.source_level;
+    });
+  }
+
   // Attach sources to items and compute min_source_level
   return items.map((item) => {
     const sources = sourcesByItemId.get(item.id) ?? [];
