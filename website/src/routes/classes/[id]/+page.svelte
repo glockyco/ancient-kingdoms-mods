@@ -1,14 +1,18 @@
 <script lang="ts">
+  import { untrack } from "svelte";
   import {
     DataTable,
     DataTableFacetedFilter,
     DataTableRangeFilter,
+    DataTableStatPanel,
+    DataTableStatToggle,
     type ColumnDef,
     type Cell,
     type Row,
     type Header,
     type TanstackTable,
   } from "$lib/components/ui/data-table";
+  import { createStatPanelState } from "$lib/utils/stat-panel-state.svelte";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import QuestTypeBadge from "$lib/components/QuestTypeBadge.svelte";
@@ -37,6 +41,10 @@
   import Scroll from "@lucide/svelte/icons/scroll";
 
   let { data } = $props();
+
+  // Stat filter state - precomputed at build time
+  const itemStatKeys = untrack(() => data.itemStatKeys);
+  const statPanel = createStatPanelState("class-stats-panel-open");
 
   // Parse compatible races from JSON string (sorted alphabetically)
   const races = $derived(
@@ -273,6 +281,27 @@
       filterFn: (row, _columnId, filterValue: string[]) => {
         if (!filterValue || filterValue.length === 0) return true;
         return filterValue.includes(String(row.original.quality));
+      },
+    },
+    // Hidden — stats filter column
+    {
+      id: "stats",
+      header: "Stats",
+      enableHiding: false,
+      enableSorting: false,
+      filterFn: (
+        row: Row<ClassItem>,
+        _columnId: string,
+        filterValue: { stats: string[]; mode: "any" | "all" },
+      ) => {
+        if (!filterValue || filterValue.stats.length === 0) return true;
+        const rowStatKeys = itemStatKeys[row.original.id] ?? [];
+        const { stats, mode } = filterValue;
+        if (mode === "all") {
+          return stats.every((stat) => rowStatKeys.includes(stat));
+        } else {
+          return stats.some((stat) => rowStatKeys.includes(stat));
+        }
       },
     },
   ];
@@ -536,6 +565,8 @@
         <span class="text-muted-foreground">—</span>
       {/if}
     </span>
+  {:else if cell.column.id === "quality" || cell.column.id === "stats"}
+    <!-- Hidden filter columns -->
   {:else}
     {cell.getValue()}
   {/if}
@@ -553,6 +584,11 @@
   {@const qualityCol = table.getColumn("quality")}
   {@const levelCol = table.getColumn("level_required")}
   {@const slotCol = table.getColumn("slot")}
+  {@const statsCol = table.getColumn("stats")}
+  {@const facetedItemIds = (() => {
+    const facetedRows = statsCol?.getFacetedRowModel()?.rows ?? [];
+    return facetedRows.map((row) => row.original.id);
+  })()}
   {#if qualityCol}
     <DataTableFacetedFilter
       column={qualityCol}
@@ -577,6 +613,28 @@
   {#if srcLevelCol}
     <DataTableRangeFilter column={srcLevelCol} title="Source Level" />
   {/if}
+  {#if statsCol}
+    {@const statsFilterValue = statsCol.getFilterValue() as
+      | { stats: string[]; mode: "any" | "all" }
+      | undefined}
+    <DataTableStatToggle
+      bind:open={statPanel.open}
+      selectedCount={statsFilterValue?.stats.length ?? 0}
+      mode={statsFilterValue?.mode ?? "all"}
+    />
+  {/if}
+  <div class="order-last w-full" class:hidden={!statPanel.open}>
+    {#if statsCol}
+      <DataTableStatPanel
+        column={statsCol}
+        bind:open={statPanel.open}
+        totalRows={data.items.length}
+        filteredRows={table.getFilteredRowModel().rows.length}
+        {facetedItemIds}
+        showDeltas={false}
+      />
+    {/if}
+  </div>
 {/snippet}
 
 {#snippet renderQuestCell({
@@ -721,7 +779,7 @@
           { id: "item_level", desc: false },
           { id: "name", desc: false },
         ]}
-        initialColumnVisibility={{ quality: false }}
+        initialColumnVisibility={{ quality: false, stats: false }}
         urlKey="class-{data.class.id}-items"
         pageSize={10}
         zebraStripe={true}

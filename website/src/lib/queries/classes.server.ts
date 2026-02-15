@@ -294,8 +294,12 @@ interface RawSourceRow {
  *
  * Sources are grouped per item with min_source_level computed for sorting.
  */
-export function getClassItemsWithSources(classId: string): ClassItem[] {
-  const items = query<Omit<ClassItem, "sources" | "min_source_level">>(
+export function getClassItemsWithSources(
+  classId: string,
+): (ClassItem & { stat_keys: string })[] {
+  const items = query<
+    Omit<ClassItem, "sources" | "min_source_level"> & { stat_keys: string }
+  >(
     `SELECT
       id,
       name,
@@ -303,7 +307,15 @@ export function getClassItemsWithSources(classId: string): ClassItem[] {
       item_level,
       level_required,
       quality,
-      item_type
+      item_type,
+      (
+        SELECT json_group_array(json_each.key)
+        FROM json_each(stats)
+        WHERE json_each.key NOT IN ('max_durability', 'has_serenity', 'is_costume', 'augment_bonus_set')
+          AND json_each.value != 0
+          AND json_each.value != 0.0
+          AND json_each.value != 'false'
+      ) as stat_keys
     FROM items
     WHERE item_type IN ('equipment', 'weapon')
       AND (? IN (SELECT value FROM json_each(class_required))
