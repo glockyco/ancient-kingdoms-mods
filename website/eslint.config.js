@@ -38,4 +38,12 @@ export default ts.config(
       "svelte/no-navigation-without-resolve": "off",
     },
   },
+  {
+    files: ["**/*.svelte.ts"],
+    languageOptions: {
+      parserOptions: {
+        parser: ts.parser,
+      },
+    },
+  },
 );
