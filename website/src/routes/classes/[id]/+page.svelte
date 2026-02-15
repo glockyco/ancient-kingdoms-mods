@@ -722,6 +722,7 @@
         showSearch={true}
         searchPlaceholder="Search items..."
         paginateStaticHtml={true}
+        persistentScrollbar={true}
         class="bg-muted/30"
         onVisibleRowsChange={handleVisibleRowsChange}
       />
@@ -753,6 +754,7 @@
         showSearch={true}
         searchPlaceholder="Search skills..."
         paginateStaticHtml={true}
+        persistentScrollbar={true}
         class="bg-muted/30"
       />
     </section>

@@ -47,6 +47,7 @@
     columnLabels?: Record<string, string>;
     zebraStripe?: boolean;
     paginateStaticHtml?: boolean;
+    persistentScrollbar?: boolean;
     class?: string;
     renderCell?: Snippet<[{ cell: Cell<TData, unknown>; row: Row<TData> }]>;
     renderHeader?: Snippet<[{ header: Header<TData, unknown> }]>;
@@ -68,6 +69,7 @@
     columnLabels = {},
     zebraStripe = false,
     paginateStaticHtml = false,
+    persistentScrollbar = false,
     class: className,
     renderCell,
     renderHeader,
@@ -729,7 +731,11 @@
     </div>
   {/if}
 
-  <div class="rounded-md border {className}">
+  <div
+    class="rounded-md border {persistentScrollbar
+      ? 'overflow-x-scroll'
+      : 'overflow-x-auto'} {className}"
+  >
     <Table.Root
       class="min-w-full w-max grid"
       style="grid-template-columns: {gridTemplateColumns}"
