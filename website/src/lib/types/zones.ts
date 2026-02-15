@@ -11,6 +11,7 @@ export interface ZoneListView {
   weather_type: string | null;
   level_min: number | null;
   level_max: number | null;
+  level_median: number | null;
   boss_count: number;
   elite_count: number;
   altar_count: number;

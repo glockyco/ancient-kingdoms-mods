@@ -33,25 +33,19 @@
       minSize: 220,
     },
     {
-      accessorKey: "level_min",
-      header: "Min",
+      id: "level_range",
+      header: "Level Range",
+      accessorFn: (row) => row.level_min,
+      enableSorting: false,
       size: 150,
-      sortingFn: (rowA, rowB) => {
-        const a = rowA.original.level_min;
-        const b = rowB.original.level_min;
-        if (a === null && b === null) return 0;
-        if (a === null) return 1;
-        if (b === null) return -1;
-        return a - b;
-      },
     },
     {
-      accessorKey: "level_max",
-      header: "Max",
+      accessorKey: "level_median",
+      header: "Median",
       size: 150,
       sortingFn: (rowA, rowB) => {
-        const a = rowA.original.level_max;
-        const b = rowB.original.level_max;
+        const a = rowA.original.level_median;
+        const b = rowB.original.level_median;
         if (a === null && b === null) return 0;
         if (a === null) return 1;
         if (b === null) return -1;
@@ -88,8 +82,8 @@
   const columnLabels: Record<string, string> = {
     is_dungeon: "Type",
     name: "Name",
-    level_min: "Min Level",
-    level_max: "Max Level",
+    level_range: "Level Range",
+    level_median: "Median Level",
     boss_count: "Bosses",
     elite_count: "Elites",
     altar_count: "Altars",
@@ -134,7 +128,7 @@
       <Gem class="h-4 w-4" />
       Resources
     </span>
-  {:else if header.id === "level_min" || header.id === "level_max"}
+  {:else if header.id === "level_range" || header.id === "level_median"}
     <span class="ml-auto">{columnLabels[header.id] ?? header.id}</span>
   {:else}
     {columnLabels[header.id] ?? header.id}
@@ -163,20 +157,24 @@
     >
       {row.original.name}
     </a>
-  {:else if cell.column.id === "level_min"}
+  {:else if cell.column.id === "level_range"}
     <span class="ml-auto">
-      {#if row.original.level_min !== null}
-        {row.original.level_min}
+      {#if row.original.level_min !== null && row.original.level_max !== null}
+        {#if row.original.level_min === row.original.level_max}
+          {row.original.level_min}
+        {:else}
+          {row.original.level_min} – {row.original.level_max}
+        {/if}
       {:else}
-        <span class="text-muted-foreground">-</span>
+        <span class="text-muted-foreground">—</span>
       {/if}
     </span>
-  {:else if cell.column.id === "level_max"}
+  {:else if cell.column.id === "level_median"}
     <span class="ml-auto">
-      {#if row.original.level_max !== null}
-        {row.original.level_max}
+      {#if row.original.level_median !== null}
+        {row.original.level_median}
       {:else}
-        <span class="text-muted-foreground">-</span>
+        <span class="text-muted-foreground">—</span>
       {/if}
     </span>
   {:else if cell.column.id === "boss_count" || cell.column.id === "elite_count" || cell.column.id === "altar_count" || cell.column.id === "npc_count" || cell.column.id === "gather_count"}
@@ -214,8 +212,7 @@
     {renderHeader}
     pageSize={50}
     initialSorting={[
-      { id: "level_min", desc: false },
-      { id: "level_max", desc: false },
+      { id: "level_median", desc: false },
       { id: "name", desc: false },
     ]}
     urlKey="zones"

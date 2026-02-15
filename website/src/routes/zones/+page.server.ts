@@ -18,6 +18,7 @@ export const load: PageServerLoad = (): ZonesPageData => {
       z.weather_type,
       z.level_min,
       z.level_max,
+      z.level_median,
       -- Monster counts by type
       (SELECT COUNT(DISTINCT ms.monster_id) FROM monster_spawns ms
        JOIN monsters m ON m.id = ms.monster_id
@@ -32,7 +33,7 @@ export const load: PageServerLoad = (): ZonesPageData => {
       (SELECT COUNT(DISTINCT p.to_zone_id) FROM portals p
        WHERE p.from_zone_id = z.id AND p.to_zone_id IS NOT NULL AND p.to_zone_id != z.id) as connection_count
     FROM zones z
-    ORDER BY level_min, level_max, z.name
+    ORDER BY level_median, level_min, z.name
   `,
     )
     .all() as ZoneListView[];
