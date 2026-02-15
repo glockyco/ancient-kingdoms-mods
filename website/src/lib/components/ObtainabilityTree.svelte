@@ -1,24 +1,11 @@
 <script lang="ts">
-  import type {
-    ObtainabilityNode,
-    ObtainabilitySourceType,
-  } from "$lib/types/recipes";
+  import type { ObtainabilityNode } from "$lib/types/recipes";
+  import { SOURCE_TYPE_CONFIG } from "$lib/constants/source-types";
   import ObtainabilityTree from "./ObtainabilityTree.svelte";
   import ItemLink from "./ItemLink.svelte";
   import ChevronRight from "@lucide/svelte/icons/chevron-right";
   import ChevronDown from "@lucide/svelte/icons/chevron-down";
-  import Skull from "@lucide/svelte/icons/skull";
-  import Store from "@lucide/svelte/icons/store";
-  import ScrollText from "@lucide/svelte/icons/scroll-text";
-  import Pickaxe from "@lucide/svelte/icons/pickaxe";
-  import Box from "@lucide/svelte/icons/box";
-  import Package from "@lucide/svelte/icons/package";
-  import Sparkles from "@lucide/svelte/icons/sparkles";
   import Combine from "@lucide/svelte/icons/combine";
-  import Flame from "@lucide/svelte/icons/flame";
-  import Shovel from "@lucide/svelte/icons/shovel";
-  import Hammer from "@lucide/svelte/icons/hammer";
-  import Dices from "@lucide/svelte/icons/dices";
   import BookOpen from "@lucide/svelte/icons/book-open";
 
   interface Props {
@@ -55,89 +42,11 @@
   const sourcesByType = $derived(
     Map.groupBy(node.sources, (source) => source.type),
   );
-
-  const sourceConfig: Record<
-    ObtainabilitySourceType,
-    { icon: typeof Skull; color: string; label: string; linkPrefix: string }
-  > = {
-    drop: {
-      icon: Skull,
-      color: "text-red-500",
-      label: "Drop",
-      linkPrefix: "/monsters/",
-    },
-    vendor: {
-      icon: Store,
-      color: "text-green-500",
-      label: "Vendor",
-      linkPrefix: "/npcs/",
-    },
-    quest: {
-      icon: ScrollText,
-      color: "text-blue-500",
-      label: "Quest",
-      linkPrefix: "/quests/",
-    },
-    altar: {
-      icon: Flame,
-      color: "text-orange-500",
-      label: "Altar",
-      linkPrefix: "/altars/",
-    },
-    recipe: {
-      icon: Hammer,
-      color: "text-orange-500",
-      label: "Recipe",
-      linkPrefix: "/recipes/",
-    },
-    gather: {
-      icon: Pickaxe,
-      color: "text-amber-500",
-      label: "Gather",
-      linkPrefix: "/gather-items/",
-    },
-    chest: {
-      icon: Box,
-      color: "text-blue-500",
-      label: "Chest",
-      linkPrefix: "/chests/",
-    },
-    pack: {
-      icon: Package,
-      color: "text-cyan-500",
-      label: "Pack",
-      linkPrefix: "/items/",
-    },
-    random: {
-      icon: Dices,
-      color: "text-purple-500",
-      label: "Random",
-      linkPrefix: "/items/",
-    },
-    merge: {
-      icon: Combine,
-      color: "text-indigo-500",
-      label: "Merge",
-      linkPrefix: "/items/",
-    },
-    treasure_map: {
-      icon: Shovel,
-      color: "text-teal-500",
-      label: "Treasure",
-      linkPrefix: "/items/",
-    },
-    special: {
-      icon: Sparkles,
-      color: "text-purple-500",
-      label: "Service",
-      linkPrefix: "/npcs/",
-    },
-  };
 </script>
 
 {#snippet sourceList()}
   {#each sourcesByType as [type, sources] (type)}
-    {@const config = sourceConfig[type]}
+    {@const config = SOURCE_TYPE_CONFIG[type]}
     {@const totalForType = node.sourceCountsByType[type] || sources.length}
     {@const moreCount = totalForType - sources.length}
     <div class="flex items-center gap-1.5 py-1 pl-4 whitespace-nowrap">
@@ -217,7 +126,7 @@
         {/if}
       {:else if hasServiceChildren}
         {#each sourcesByType as [type, sources] (type)}
-          {@const config = sourceConfig[type]}
+          {@const config = SOURCE_TYPE_CONFIG[type]}
           {@const totalForType =
             node.sourceCountsByType[type] || sources.length}
           {@const moreCount = totalForType - sources.length}

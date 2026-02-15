@@ -18,6 +18,7 @@
   import ItemLink from "$lib/components/ItemLink.svelte";
   import ClassPills from "$lib/components/ClassPills.svelte";
   import { formatItemType } from "$lib/utils/format";
+  import { formatClassName } from "$lib/utils/classes";
   import type { ItemListViewClient, ItemZoneInfo } from "$lib/types/items";
   import { getItemTooltips } from "$lib/queries/items";
 
@@ -167,16 +168,16 @@
   );
 
   // Get unique classes for filter (using precomputed data)
-  // Items with no restriction are stored as ["All"] in the database
+  // Items with no restriction are stored as ["all"] in the database
   const allClasses = Array.from(new Set(Object.values(itemClassKeys).flat()))
-    .filter((c) => c !== "All")
+    .filter((c) => c !== "all")
     .sort();
 
   // Expand items with no class restriction to include all classes (for correct filtering/faceting)
   for (const id of Object.keys(itemClassKeys)) {
     if (
       itemClassKeys[id].length === 0 ||
-      (itemClassKeys[id].length === 1 && itemClassKeys[id][0] === "All")
+      (itemClassKeys[id].length === 1 && itemClassKeys[id][0] === "all")
     ) {
       itemClassKeys[id] = allClasses;
     }
@@ -458,7 +459,7 @@
       column={classCol}
       title="Class"
       options={allClasses.map((c) => ({
-        label: c,
+        label: formatClassName(c),
         value: c,
       }))}
     />

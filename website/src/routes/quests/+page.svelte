@@ -11,6 +11,7 @@
   } from "$lib/components/ui/data-table";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ClassPills from "$lib/components/ClassPills.svelte";
+  import { formatClassName } from "$lib/utils/classes";
   import QuestTypeBadge from "$lib/components/QuestTypeBadge.svelte";
   import QuestFlagBadges from "$lib/components/QuestFlagBadges.svelte";
   import { QUEST_FLAG_CONFIG } from "$lib/utils/quests";
@@ -263,7 +264,7 @@
       column={classCol}
       title="Class"
       options={uniqueClasses.map((c) => ({
-        label: c,
+        label: formatClassName(c),
         value: c,
       }))}
     />

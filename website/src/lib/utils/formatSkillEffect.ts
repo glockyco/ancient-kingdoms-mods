@@ -280,7 +280,7 @@ function formatHealing(
   }
 
   if (skill.is_resurrect_skill) {
-    parts.push("res");
+    parts.push("resurrect (60% hp, 20% mana, 75% xp)");
   }
 
   if (skill.is_balance_health) {
@@ -736,7 +736,7 @@ export function formatSkillEffect(
     parts.push("execute <25% hp");
   }
   if (skill.is_manaburn_skill) {
-    parts.push("burns mana for dmg");
+    parts.push("burns mana/rage for dmg");
   }
 
   // Add duration if present and we have stat effects

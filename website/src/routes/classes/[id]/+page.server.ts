@@ -1,4 +1,10 @@
-import { getClassById } from "$lib/queries/classes.server";
+import {
+  getAllClasses,
+  getClassById,
+  getClassSkills,
+  getClassItemsWithSources,
+  getClassQuests,
+} from "$lib/queries/classes.server";
 import { error } from "@sveltejs/kit";
 import { validateClassName } from "$lib/utils/validateClassName";
 import type { PageServerLoad } from "./$types";
@@ -15,5 +21,9 @@ export const load: PageServerLoad = ({ params }) => {
 
   return {
     class: classData,
+    allClasses: getAllClasses(),
+    skills: getClassSkills(classData.id),
+    items: getClassItemsWithSources(classData.id),
+    quests: getClassQuests(classData.id),
   };
 };

@@ -9,6 +9,7 @@
   import ExternalLink from "@lucide/svelte/icons/external-link";
   import { STATS_METADATA_FIELDS } from "$lib/constants/items";
   import { formatItemType } from "$lib/utils/format";
+  import { formatClassName } from "$lib/utils/classes";
   import { formatStatName, formatResourceName } from "$lib/terminology";
   import type { PageData } from "./$types";
 
@@ -333,10 +334,12 @@
         </div>
       {/if}
 
-      {#if computed.classRequired.length > 0 && computed.classRequired.length < 6 && !computed.classRequired.includes("All")}
+      {#if computed.classRequired.length > 0 && computed.classRequired.length < 6 && !computed.classRequired.includes("all")}
         <div>
           <div class={styles.label}>Class Required</div>
-          <div class={styles.value}>{computed.classRequired.join(", ")}</div>
+          <div class={styles.value}>
+            {computed.classRequired.map(formatClassName).join(", ")}
+          </div>
         </div>
       {/if}
 
@@ -1472,7 +1475,9 @@
                       {quest.quest_name}
                       <span class={styles.label}>
                         (Lv {quest.level_recommended}{#if quest.class_restrictions && quest.class_restrictions.length > 0 && quest.class_restrictions.length < 6},
-                          {quest.class_restrictions.join(", ")}{/if})
+                          {quest.class_restrictions
+                            .map(formatClassName)
+                            .join(", ")}{/if})
                       </span>
                     </a>
                   </div>
@@ -1494,7 +1499,9 @@
                       {quest.quest_name}
                       <span class={styles.label}>
                         (Lv {quest.level_recommended}{#if quest.class_restrictions && quest.class_restrictions.length > 0 && quest.class_restrictions.length < 6},
-                          {quest.class_restrictions.join(", ")}{/if})
+                          {quest.class_restrictions
+                            .map(formatClassName)
+                            .join(", ")}{/if})
                       </span>
                     </a>
                   </div>
@@ -1532,7 +1539,9 @@
                       {quest.quest_name}
                       <span class={styles.label}>
                         (Lv {quest.level_recommended}{#if quest.class_restrictions && quest.class_restrictions.length > 0 && quest.class_restrictions.length < 6},
-                          {quest.class_restrictions.join(", ")}{/if})
+                          {quest.class_restrictions
+                            .map(formatClassName)
+                            .join(", ")}{/if})
                       </span>
                     </a>
                   </div>
@@ -1554,7 +1563,9 @@
                       {quest.quest_name}
                       <span class={styles.label}>
                         (Lv {quest.level_recommended}{#if quest.class_restrictions && quest.class_restrictions.length > 0 && quest.class_restrictions.length < 6},
-                          {quest.class_restrictions.join(", ")}{/if})
+                          {quest.class_restrictions
+                            .map(formatClassName)
+                            .join(", ")}{/if})
                       </span>
                     </a>
                   </div>
@@ -1962,7 +1973,9 @@
                       {quest.quest_name}
                       <span class={styles.label}>
                         (Lv {quest.level_recommended}{#if quest.class_restrictions && quest.class_restrictions.length > 0 && quest.class_restrictions.length < 6},
-                          {quest.class_restrictions.join(", ")}{/if})
+                          {quest.class_restrictions
+                            .map(formatClassName)
+                            .join(", ")}{/if})
                       </span>
                     </a>
                     <span class={styles.label}
@@ -1987,7 +2000,9 @@
                       {quest.quest_name}
                       <span class={styles.label}>
                         (Lv {quest.level_recommended}{#if quest.class_restrictions && quest.class_restrictions.length > 0 && quest.class_restrictions.length < 6},
-                          {quest.class_restrictions.join(", ")}{/if})
+                          {quest.class_restrictions
+                            .map(formatClassName)
+                            .join(", ")}{/if})
                       </span>
                     </a>
                     <span class={styles.label}
