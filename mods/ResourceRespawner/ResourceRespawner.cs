@@ -325,7 +325,7 @@ namespace ResourceRespawner
 
             if (targetGatherItem == null) return;
 
-            targetGatherItem.timeToReady = Time.timeAsDouble - 1.0;
+            targetGatherItem.NetworktimeToReady = Time.timeAsDouble - 1.0;
         }
 
         private void DestroyMarker(int instanceId)

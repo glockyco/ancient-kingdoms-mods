@@ -30,7 +30,8 @@ Allows instant respawning of gatherable resources (plants, minerals, radiant spa
 
 **Respawn Mechanism:**
 - Does NOT spawn resources directly
-- Sets `timeToReady` to past time (`Time.timeAsDouble - 1.0`)
+- Sets `NetworktimeToReady` to past time (`Time.timeAsDouble - 1.0`)
+- Uses the SyncVar setter to properly mark the field as dirty for Mirror networking
 - Game's built-in respawn system handles the actual spawn
 
 **Server Time:**
@@ -61,10 +62,11 @@ The mod handles all `GatherItem` types:
 **Respawn requirements:**
 - Server time must be available (`NetworkManagerMMO` found)
 - Resource must be on cooldown (`timeToReady > serverTime`)
-- Direct field assignment to `timeToReady` (SyncVar)
 
 **Server time is required:** Always use `NetworkTime.time + NetworkManagerMMO.offsetNetworkTime`, never local time sources.
 
-**GatherItem.timeToReady vs NetworktimeToReady:**
-- The mod uses direct field assignment (`timeToReady`) like MonsterRespawner does
-- If this doesn't work in multiplayer, may need to use the `NetworktimeToReady` setter instead
+**SyncVar usage:**
+- Unlike `Monster.respawnTimeEnd` (plain field), `GatherItem.timeToReady` is a `[SyncVar]`
+- The mod uses `NetworktimeToReady` (the SyncVar setter) instead of direct field assignment
+- This properly calls `GeneratedSyncVarSetter` and maintains Mirror's dirty-bit tracking
+- Direct field assignment (`timeToReady`) would bypass Mirror's network state and cause inventory updates to fail
