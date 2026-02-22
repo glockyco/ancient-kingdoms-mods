@@ -528,7 +528,7 @@ CREATE TABLE monster_skills (
     monster_id TEXT NOT NULL REFERENCES monsters(id),
     skill_id TEXT NOT NULL REFERENCES skills(id),
     skill_index INTEGER NOT NULL,   -- 0 = default attack, 1+ = special abilities
-    PRIMARY KEY (monster_id, skill_id)
+    PRIMARY KEY (monster_id, skill_id, skill_index)
 );
 
 CREATE INDEX idx_monster_skills_monster ON monster_skills(monster_id);
