@@ -24,17 +24,22 @@ from PIL import Image, ImageDraw
 from rich.console import Console
 from rich.progress import Progress
 
-from compendium.denormalizers.exclusions import EXCLUDED_ZONE_IDS
+from compendium.denormalizers.exclusions import (
+    EXCLUDED_ZONE_IDS,
+    EXCLUDED_ZONE_TRIGGER_IDS,
+)
 
 console = Console()
 
 
 def load_excluded_zones(export_dir: Path) -> list[dict]:
-    """Load combined bounds for excluded zones.
+    """Load bounds for all excluded zones and sub-zones.
 
-    Uses zone_info.json to map zone IDs to numeric IDs, then finds all
-    zone_triggers belonging to those zones and combines their bounds.
-    This handles zones with multiple subzones (e.g., temple + northern halls).
+    Handles two exclusion levels:
+    - EXCLUDED_ZONE_IDS: entire zones — finds all triggers for those zone_ids
+      and combines their bounds into one rectangle per zone.
+    - EXCLUDED_ZONE_TRIGGER_IDS: individual sub-zone triggers — each trigger
+      produces its own rectangle using its own bounds directly.
     """
     zone_info_path = export_dir / "zone_info.json"
     zone_triggers_path = export_dir / "zone_triggers.json"
@@ -48,42 +53,58 @@ def load_excluded_zones(export_dir: Path) -> list[dict]:
     with open(zone_triggers_path) as f:
         zone_triggers = json.load(f)
 
-    # Map excluded zone IDs to their numeric zone_id
-    excluded_zone_ids: set[int] = set()
-    for zone in zone_info:
-        if zone.get("id") in EXCLUDED_ZONE_IDS:
-            excluded_zone_ids.add(zone["zone_id"])
+    results: list[dict] = []
 
-    if not excluded_zone_ids:
-        return []
+    # Zone-level exclusions: map string IDs → numeric zone_ids, combine all trigger bounds
+    if EXCLUDED_ZONE_IDS:
+        excluded_numeric_ids: set[int] = set()
+        for zone in zone_info:
+            if zone.get("id") in EXCLUDED_ZONE_IDS:
+                excluded_numeric_ids.add(zone["zone_id"])
 
-    # Combine bounds from all zone_triggers belonging to excluded zones
-    min_x = float("inf")
-    min_y = float("inf")
-    max_x = float("-inf")
-    max_y = float("-inf")
-    names = []
+        if excluded_numeric_ids:
+            min_x = float("inf")
+            min_y = float("inf")
+            max_x = float("-inf")
+            max_y = float("-inf")
+            names = []
 
-    for trigger in zone_triggers:
-        if trigger.get("zone_id") in excluded_zone_ids:
-            if trigger.get("bounds_min_x") is not None:
-                min_x = min(min_x, trigger["bounds_min_x"])
-                min_y = min(min_y, trigger["bounds_min_y"])
-                max_x = max(max_x, trigger["bounds_max_x"])
-                max_y = max(max_y, trigger["bounds_max_y"])
-                names.append(trigger.get("name", "unknown"))
+            for trigger in zone_triggers:
+                if trigger.get("zone_id") in excluded_numeric_ids:
+                    if trigger.get("bounds_min_x") is not None:
+                        min_x = min(min_x, trigger["bounds_min_x"])
+                        min_y = min(min_y, trigger["bounds_min_y"])
+                        max_x = max(max_x, trigger["bounds_max_x"])
+                        max_y = max(max_y, trigger["bounds_max_y"])
+                        names.append(trigger.get("name", "unknown"))
 
-    if names:
-        return [
-            {
-                "name": " + ".join(names),
-                "bounds_min_x": min_x,
-                "bounds_min_y": min_y,
-                "bounds_max_x": max_x,
-                "bounds_max_y": max_y,
-            }
-        ]
-    return []
+            if names:
+                results.append(
+                    {
+                        "name": " + ".join(names),
+                        "bounds_min_x": min_x,
+                        "bounds_min_y": min_y,
+                        "bounds_max_x": max_x,
+                        "bounds_max_y": max_y,
+                    }
+                )
+
+    # Sub-zone trigger exclusions: each excluded trigger ID gets its own rectangle
+    if EXCLUDED_ZONE_TRIGGER_IDS:
+        for trigger in zone_triggers:
+            if trigger.get("id") in EXCLUDED_ZONE_TRIGGER_IDS:
+                if trigger.get("bounds_min_x") is not None:
+                    results.append(
+                        {
+                            "name": trigger.get("name", trigger["id"]),
+                            "bounds_min_x": trigger["bounds_min_x"],
+                            "bounds_min_y": trigger["bounds_min_y"],
+                            "bounds_max_x": trigger["bounds_max_x"],
+                            "bounds_max_y": trigger["bounds_max_y"],
+                        }
+                    )
+
+    return results
 
 
 def blank_excluded_zones(
