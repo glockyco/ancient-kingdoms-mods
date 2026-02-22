@@ -107,11 +107,12 @@ namespace AutoExporter
             if (_exportStarted) yield break;
             _exportStarted = true;
 
-            RunExportAndQuit();
+            MelonCoroutines.Start(RunExportAndQuit());
         }
 
-        private void RunExportAndQuit()
+        private IEnumerator RunExportAndQuit()
         {
+            // Step 1: Export game data (fast, synchronous)
             var dataExporterMod = MelonMod.RegisteredMelons
                 .OfType<DataExporter.DataExporter>()
                 .FirstOrDefault();
@@ -120,24 +121,46 @@ namespace AutoExporter
             {
                 LoggerInstance.Error("[AutoExporter] DataExporter mod not found — is DataExporter.dll in Mods/?");
                 Application.Quit();
-                return;
+                yield break;
             }
 
             try
             {
-                LoggerInstance.Msg("[AutoExporter] Starting export...");
+                LoggerInstance.Msg("[AutoExporter] Starting data export...");
                 dataExporterMod.ExportAllData();
-                LoggerInstance.Msg("[AutoExporter] Export complete. Quitting.");
+                LoggerInstance.Msg("[AutoExporter] Data export complete.");
             }
             catch (Exception ex)
             {
-                LoggerInstance.Error($"[AutoExporter] Export failed: {ex.Message}");
+                LoggerInstance.Error($"[AutoExporter] Data export failed: {ex.Message}");
                 LoggerInstance.Error(ex.StackTrace);
-            }
-            finally
-            {
                 Application.Quit();
+                yield break;
             }
+
+            // Step 2: Capture map screenshots
+            var mapMod = MelonMod.RegisteredMelons
+                .OfType<MapScreenshotter.MapScreenshotter>()
+                .FirstOrDefault();
+
+            if (mapMod == null)
+            {
+                LoggerInstance.Error("[AutoExporter] MapScreenshotter mod not found — is MapScreenshotter.dll in Mods/?");
+                Application.Quit();
+                yield break;
+            }
+
+            LoggerInstance.Msg("[AutoExporter] Starting map screenshot capture...");
+            mapMod.StartScreenshotCapture();
+
+            // Wait for capture to complete — yield must be outside try/catch (C# restriction)
+            while (mapMod.IsCapturing)
+                yield return null;
+
+            LoggerInstance.Msg("[AutoExporter] Map screenshot capture complete.");
+
+            LoggerInstance.Msg("[AutoExporter] All exports complete. Quitting.");
+            Application.Quit();
         }
     }
 }

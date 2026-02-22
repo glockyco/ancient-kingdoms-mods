@@ -18,6 +18,8 @@ public class MapScreenshotter : MelonMod
     private bool _isCapturing;
     private ScreenshotCoroutineHelper _coroutineHelper;
 
+    public bool IsCapturing => _isCapturing;
+
     public override void OnInitializeMelon()
     {
         LoggerInstance.Msg("MapScreenshotter initialized");
@@ -40,7 +42,7 @@ public class MapScreenshotter : MelonMod
         }
     }
 
-    private void StartScreenshotCapture()
+    public void StartScreenshotCapture()
     {
         if (_isCapturing)
         {

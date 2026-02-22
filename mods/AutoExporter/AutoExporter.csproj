@@ -51,6 +51,11 @@
     <ProjectReference Include="..\DataExporter\DataExporter.csproj">
       <Private>False</Private>
     </ProjectReference>
+
+    <!-- MapScreenshotter project reference for StartScreenshotCapture() -->
+    <ProjectReference Include="..\MapScreenshotter\MapScreenshotter.csproj">
+      <Private>False</Private>
+    </ProjectReference>
   </ItemGroup>
 
 </Project>
