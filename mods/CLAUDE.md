@@ -71,3 +71,26 @@ The build tool auto-discovers all projects in `mods/`.
 **Assembly reference errors**
 - Verify MelonLoader is installed in game directory
 - Check `MelonLoader\Il2CppAssemblies\` folder exists
+
+## Running on macOS via CrossOver
+
+MelonLoader can't auto-download its dependencies under Wine — they must be placed manually. After installing MelonLoader, if the game crashes before loading mods:
+
+**1. Cpp2IL** — must be ≥ `2022.1.0-pre-release.21` (earlier versions don't support IL2CPP metadata v39 used by Unity 6000.3.x). Download the Windows self-contained exe from [SamboyCoding/Cpp2IL releases](https://github.com/SamboyCoding/Cpp2IL/releases) and place at:
+```
+MelonLoader/Dependencies/Il2CppAssemblyGenerator/Cpp2IL/Cpp2IL.exe
+MelonLoader/Dependencies/Il2CppAssemblyGenerator/Cpp2IL/Plugins/Cpp2IL.Plugin.StrippedCodeRegSupport.dll
+```
+Also update `Config.cfg` in the `Il2CppAssemblyGenerator/` folder to reflect the version:
+```
+DumperVersion = "2022.1.0-pre-release.21"
+DumperSCRSVersion = "2022.1.0-pre-release.21"
+```
+
+**2. Unity Dependencies** — download `Managed.zip` from [LavaGang/MelonLoader.UnityDependencies](https://github.com/LavaGang/MelonLoader.UnityDependencies/releases) for the matching Unity version and place at:
+```
+MelonLoader/Dependencies/Il2CppAssemblyGenerator/UnityDependencies_<version>.zip
+```
+e.g. for Unity 6000.3.4: `UnityDependencies_6000.3.4.zip`
+
+Check the MelonLoader log (`MelonLoader/Latest.log`) after each launch — errors are specific and point to exactly what's missing.
