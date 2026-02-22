@@ -47,7 +47,7 @@ namespace DataExporter
             }
         }
 
-        private void ExportAllData()
+        public void ExportAllData()
         {
             LoggerInstance.Msg("========================================");
             LoggerInstance.Msg("Starting data export...");

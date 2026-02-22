@@ -1,0 +1,56 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <AssemblyName>AutoExporter</AssemblyName>
+    <RootNamespace>AutoExporter</RootNamespace>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- MelonLoader -->
+    <Reference Include="MelonLoader">
+      <HintPath>$(MelonLoaderPath)\net6\MelonLoader.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+
+    <!-- Unity Engine -->
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>$(Il2CppAssembliesPath)\UnityEngine.CoreModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+
+    <Reference Include="UnityEngine.UI">
+      <HintPath>$(Il2CppAssembliesPath)\UnityEngine.UI.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+
+    <!-- Game Assembly -->
+    <Reference Include="Assembly-CSharp">
+      <HintPath>$(Il2CppAssembliesPath)\Assembly-CSharp.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+
+    <!-- IL2CPP Dependencies -->
+    <Reference Include="Il2Cppmscorlib">
+      <HintPath>$(Il2CppAssembliesPath)\Il2Cppmscorlib.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+
+    <Reference Include="Il2CppInterop.Runtime">
+      <HintPath>$(MelonLoaderPath)\net6\Il2CppInterop.Runtime.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+
+    <Reference Include="Il2CppMirror">
+      <HintPath>$(Il2CppAssembliesPath)\Il2CppMirror.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+
+    <!-- DataExporter project reference for ExportAllData() -->
+    <ProjectReference Include="..\DataExporter\DataExporter.csproj">
+      <Private>False</Private>
+    </ProjectReference>
+  </ItemGroup>
+
+</Project>
