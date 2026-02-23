@@ -291,6 +291,12 @@
       header: "Max Lvl",
     },
     {
+      id: "effect",
+      header: "Effect",
+      enableSorting: false,
+      accessorFn: (row) => formatSkillEffect(row),
+    },
+    {
       id: "cost",
       header: costColumnHeader,
       enableSorting: false,
@@ -310,12 +316,6 @@
       header: "Cast Time",
       enableSorting: false,
       accessorFn: (row) => formatSkillCooldown(row.cast_time),
-    },
-    {
-      id: "effect",
-      header: "Effect",
-      enableSorting: false,
-      accessorFn: (row) => formatSkillEffect(row),
     },
   ];
 
@@ -966,11 +966,6 @@
           { id: "required_spent_points", desc: false },
           { id: "name", desc: false },
         ]}
-        initialColumnVisibility={{
-          cost: false,
-          cooldown: false,
-          cast_time: false,
-        }}
         columnLabels={{
           category: "Category",
           cost: costColumnHeader,
