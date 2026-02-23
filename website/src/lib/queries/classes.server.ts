@@ -132,6 +132,8 @@ export interface ClassSkill {
   is_melee_debuff: boolean;
   is_magic_debuff: boolean;
   prob_ignore_cleanse: number;
+  mana_cost: string | null;
+  energy_cost: string | null;
   cooldown: string | null;
   cast_time: string | null;
   is_veteran: boolean;
@@ -232,6 +234,8 @@ export function getClassSkills(classId: string): ClassSkill[] {
       s.is_melee_debuff,
       s.is_magic_debuff,
       s.prob_ignore_cleanse,
+      s.mana_cost,
+      s.energy_cost,
       s.cooldown,
       s.cast_time,
       s.is_veteran,
@@ -340,6 +344,8 @@ export function getMercenarySkillsForClass(classId: string): ClassSkill[] {
       s.is_melee_debuff,
       s.is_magic_debuff,
       s.prob_ignore_cleanse,
+      s.mana_cost,
+      s.energy_cost,
       s.cooldown,
       s.cast_time,
       s.is_veteran,
