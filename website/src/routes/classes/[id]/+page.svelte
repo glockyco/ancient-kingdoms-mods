@@ -107,6 +107,41 @@
 
   // --- Skills Table ---
 
+  // Format a LinearValue JSON string as a cost display (e.g. "20 (+20/lvl)", "400", "—")
+  function formatSkillCost(raw: string | null): string {
+    if (!raw) return "—";
+    const lv = JSON.parse(raw) as {
+      base_value: number;
+      bonus_per_level: number;
+    };
+    if (lv.base_value === 0) return "—";
+    if (lv.bonus_per_level === 0) return String(lv.base_value);
+    const sign = lv.bonus_per_level > 0 ? "+" : "";
+    return `${lv.base_value} (${sign}${lv.bonus_per_level}/lvl)`;
+  }
+
+  // Format a LinearValue JSON string as a cooldown display (e.g. "8s", "—")
+  function formatSkillCooldown(raw: string | null): string {
+    if (!raw) return "—";
+    const lv = JSON.parse(raw) as {
+      base_value: number;
+      bonus_per_level: number;
+    };
+    if (lv.base_value === 0) return "—";
+    return `${lv.base_value}s`;
+  }
+
+  // Cost column header: "Mana Cost" for mana classes, "Rage Cost" for energy classes
+  // untrack: resource_type is static (prerendered), never changes at runtime
+  const costColumnHeader = untrack(() =>
+    data.class.resource_type === "energy" ? "Rage Cost" : "Mana Cost",
+  );
+
+  // Which cost field to use for this class
+  const costField = untrack(() =>
+    data.class.resource_type === "energy" ? "energy_cost" : "mana_cost",
+  );
+
   // Tier exclusion limits from game rules (PlayerSkills.cs)
   const TIER_MAX_PICKS: Record<number, number> = { 1: 2, 2: 1, 3: 2, 4: 1 };
 
@@ -155,7 +190,7 @@
   );
 
   const mercenarySkillColumns: ColumnDef<ClassSkill>[] = [
-    { accessorKey: "name", header: "Skill" },
+    { accessorKey: "name", header: "Skill", enableHiding: false },
     {
       accessorKey: "skill_type",
       header: "Type",
@@ -164,6 +199,31 @@
         if (!filterValue || filterValue.length === 0) return true;
         return filterValue.includes(value);
       },
+    },
+    {
+      accessorKey: "max_level",
+      header: "Max Lvl",
+    },
+    {
+      id: "cost",
+      header: costColumnHeader,
+      enableSorting: false,
+      accessorFn: (row) =>
+        formatSkillCost(
+          costField === "energy_cost" ? row.energy_cost : row.mana_cost,
+        ),
+    },
+    {
+      id: "cooldown",
+      header: "Cooldown",
+      enableSorting: false,
+      accessorFn: (row) => formatSkillCooldown(row.cooldown),
+    },
+    {
+      id: "cast_time",
+      header: "Cast Time",
+      enableSorting: false,
+      accessorFn: (row) => formatSkillCooldown(row.cast_time),
     },
     {
       id: "effect",
@@ -191,7 +251,7 @@
   );
 
   const skillColumns: ColumnDef<ClassSkill>[] = [
-    { accessorKey: "name", header: "Skill" },
+    { accessorKey: "name", header: "Skill", enableHiding: false },
     {
       id: "category",
       header: "Category",
@@ -214,10 +274,6 @@
       },
     },
     {
-      accessorKey: "required_spent_points",
-      header: "Req Points",
-    },
-    {
       accessorKey: "skill_type",
       header: "Type",
       filterFn: (row, columnId, filterValue: string[]) => {
@@ -225,6 +281,35 @@
         if (!filterValue || filterValue.length === 0) return true;
         return filterValue.includes(value);
       },
+    },
+    {
+      accessorKey: "required_spent_points",
+      header: "Req Points",
+    },
+    {
+      accessorKey: "max_level",
+      header: "Max Lvl",
+    },
+    {
+      id: "cost",
+      header: costColumnHeader,
+      enableSorting: false,
+      accessorFn: (row) =>
+        formatSkillCost(
+          costField === "energy_cost" ? row.energy_cost : row.mana_cost,
+        ),
+    },
+    {
+      id: "cooldown",
+      header: "Cooldown",
+      enableSorting: false,
+      accessorFn: (row) => formatSkillCooldown(row.cooldown),
+    },
+    {
+      id: "cast_time",
+      header: "Cast Time",
+      enableSorting: false,
+      accessorFn: (row) => formatSkillCooldown(row.cast_time),
     },
     {
       id: "effect",
@@ -455,6 +540,30 @@
     <span class="text-muted-foreground capitalize"
       >{String(cell.getValue()).replace(/_/g, " ")}</span
     >
+  {:else if cell.column.id === "cost"}
+    <span class="ml-auto">
+      {#if cell.getValue() === "—"}
+        <span class="text-muted-foreground">—</span>
+      {:else}
+        {cell.getValue()}
+      {/if}
+    </span>
+  {:else if cell.column.id === "cooldown" || cell.column.id === "cast_time"}
+    <span class="ml-auto">
+      {#if cell.getValue() === "—"}
+        <span class="text-muted-foreground">—</span>
+      {:else}
+        {cell.getValue()}
+      {/if}
+    </span>
+  {:else if cell.column.id === "max_level"}
+    <span class="ml-auto">
+      {#if (cell.getValue() as number) <= 1}
+        <span class="text-muted-foreground">—</span>
+      {:else}
+        {cell.getValue()}
+      {/if}
+    </span>
   {:else if cell.column.id === "effect"}
     <span class="text-sm">{cell.getValue()}</span>
   {:else}
@@ -467,7 +576,7 @@
 }: {
   header: Header<ClassSkill, unknown>;
 })}
-  {#if header.id === "required_spent_points"}
+  {#if ["required_spent_points", "max_level", "cost", "cooldown", "cast_time"].includes(header.id)}
     <span class="ml-auto">{header.column.columnDef.header}</span>
   {:else}
     {header.column.columnDef.header}
@@ -857,10 +966,24 @@
           { id: "required_spent_points", desc: false },
           { id: "name", desc: false },
         ]}
+        initialColumnVisibility={{
+          cost: false,
+          cooldown: false,
+          cast_time: false,
+        }}
+        columnLabels={{
+          category: "Category",
+          cost: costColumnHeader,
+          cooldown: "Cooldown",
+          cast_time: "Cast Time",
+          effect: "Effect",
+          max_level: "Max Lvl",
+        }}
         urlKey="class-{data.class.id}-skills"
         pageSize={10}
         zebraStripe={true}
         showSearch={true}
+        showColumnToggle={true}
         searchPlaceholder="Search skills..."
         paginateStaticHtml={true}
         persistentScrollbar={true}
@@ -883,10 +1006,23 @@
         renderCell={renderSkillCell}
         renderHeader={renderSkillHeader}
         renderToolbar={renderMercenarySkillToolbar}
+        initialColumnVisibility={{
+          cost: false,
+          cooldown: false,
+          cast_time: false,
+        }}
+        columnLabels={{
+          cost: costColumnHeader,
+          cooldown: "Cooldown",
+          cast_time: "Cast Time",
+          effect: "Effect",
+          max_level: "Max Lvl",
+        }}
         urlKey="class-{data.class.id}-mercenary-skills"
         pageSize={10}
         zebraStripe={true}
         showSearch={true}
+        showColumnToggle={true}
         searchPlaceholder="Search mercenary skills..."
         paginateStaticHtml={true}
         class="bg-muted/30"
