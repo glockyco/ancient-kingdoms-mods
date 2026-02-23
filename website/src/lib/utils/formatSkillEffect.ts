@@ -12,6 +12,7 @@ export interface MonsterContext {
  * Base skill interface with all fields that formatSkillEffect needs to handle
  */
 export interface Skill {
+  id?: string;
   skill_type: string;
   damage_type: string | null;
   max_level?: number;
@@ -699,10 +700,42 @@ function formatBuffDebuffStats(
  *
  * Category order: Damage > Healing > CC > Summons > Buffs/Debuffs
  */
+const HARDCODED_EFFECTS: Record<string, string> = {
+  improved_backstab: "+25% combat advantage dmg",
+  bind_affinity: "set custom respawn & portal scroll destination",
+  binding: "set custom respawn & portal scroll destination",
+  elixir_endurance: "+60s potion buff duration/lvl",
+  veteran_awareness: "reveals nearby monsters on minimap",
+  parry: "negate & counter melee attack",
+  symbiosis: "pet inherits +10% of your attributes/lvl (max 50%)",
+  summon_player: "teleport target to caster, stun (2s)",
+  disarm_trap: "detect and disarm traps",
+  alchemy: "craft potions and elixirs",
+  baking: "craft food and consumables",
+  crafting: "craft equipment and items",
+  digging: "dig for buried treasure",
+  gathering: "gather herbs and reagents",
+  mining: "mine ore and minerals",
+  opening: "open locked chests",
+  blushburst: "cosmetic visual effect",
+  emerald_pop: "cosmetic visual effect",
+  golden_whirl: "cosmetic visual effect",
+  skyflare: "cosmetic visual effect",
+  teleport: "",
+  new_skill_placeholder: "",
+};
+
 export function formatSkillEffect(
   skill: Skill,
   monsterContext?: MonsterContext,
 ): string {
+  if (
+    skill.id &&
+    Object.prototype.hasOwnProperty.call(HARDCODED_EFFECTS, skill.id)
+  ) {
+    return HARDCODED_EFFECTS[skill.id];
+  }
+
   const parts: string[] = [];
 
   // 1. Damage
