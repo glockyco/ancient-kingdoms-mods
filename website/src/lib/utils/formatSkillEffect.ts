@@ -431,7 +431,7 @@ function formatBuffDebuffStats(
     } else if (speedBonus.base_value !== 0) {
       const sign = speedBonus.base_value > 0 ? "+" : "";
       parts.push(
-        `${sign}${formatLinearPercent(speedBonus, monsterContext)} speed`,
+        `${sign}${formatLinearValue(speedBonus, monsterContext)} speed`,
       );
     }
   }
