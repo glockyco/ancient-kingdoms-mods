@@ -142,10 +142,36 @@
     return key;
   }
 
-  // Unique skill types for filter
+  // Unique skill types for filter (player skills)
   const uniqueSkillTypes = $derived(
     Array.from(new Set(data.skills.map((s) => s.skill_type))).sort(),
   );
+
+  // Unique skill types for mercenary skills filter
+  const uniqueMercenarySkillTypes = $derived(
+    Array.from(
+      new Set((data.mercenarySkills as ClassSkill[]).map((s) => s.skill_type)),
+    ).sort(),
+  );
+
+  const mercenarySkillColumns: ColumnDef<ClassSkill>[] = [
+    { accessorKey: "name", header: "Skill" },
+    {
+      accessorKey: "skill_type",
+      header: "Type",
+      filterFn: (row, columnId, filterValue: string[]) => {
+        const value = row.getValue(columnId) as string;
+        if (!filterValue || filterValue.length === 0) return true;
+        return filterValue.includes(value);
+      },
+    },
+    {
+      id: "effect",
+      header: "Effect",
+      enableSorting: false,
+      accessorFn: (row) => formatSkillEffect(row),
+    },
+  ];
 
   // Unique categories for filter (in logical order, using keys without annotations)
   const uniqueSkillCategories = $derived(
@@ -463,6 +489,26 @@
       column={typeCol}
       title="Type"
       options={uniqueSkillTypes.map((t) => ({
+        label: t
+          .replace(/_/g, " ")
+          .replace(/\b\w/g, (c: string) => c.toUpperCase()),
+        value: t,
+      }))}
+    />
+  {/if}
+{/snippet}
+
+{#snippet renderMercenarySkillToolbar({
+  table,
+}: {
+  table: TanstackTable<ClassSkill>;
+})}
+  {@const typeCol = table.getColumn("skill_type")}
+  {#if typeCol}
+    <DataTableFacetedFilter
+      column={typeCol}
+      title="Type"
+      options={uniqueMercenarySkillTypes.map((t: string) => ({
         label: t
           .replace(/_/g, " ")
           .replace(/\b\w/g, (c: string) => c.toUpperCase()),
@@ -792,12 +838,12 @@
     </section>
   {/if}
 
-  <!-- Skills Section -->
+  <!-- Player Skills Section -->
   {#if data.skills.length > 0}
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <Zap class="h-5 w-5 text-purple-500" />
-        Skills ({data.skills.length})
+        Player Skills ({data.skills.length})
       </h2>
 
       <DataTable
@@ -818,6 +864,31 @@
         searchPlaceholder="Search skills..."
         paginateStaticHtml={true}
         persistentScrollbar={true}
+        class="bg-muted/30"
+      />
+    </section>
+  {/if}
+
+  <!-- Mercenary Skills Section -->
+  {#if data.mercenarySkills.length > 0}
+    <section>
+      <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
+        <Zap class="h-5 w-5 text-purple-500" />
+        Mercenary Skills ({data.mercenarySkills.length})
+      </h2>
+
+      <DataTable
+        data={data.mercenarySkills}
+        columns={mercenarySkillColumns}
+        renderCell={renderSkillCell}
+        renderHeader={renderSkillHeader}
+        renderToolbar={renderMercenarySkillToolbar}
+        urlKey="class-{data.class.id}-mercenary-skills"
+        pageSize={10}
+        zebraStripe={true}
+        showSearch={true}
+        searchPlaceholder="Search mercenary skills..."
+        paginateStaticHtml={true}
         class="bg-muted/30"
       />
     </section>

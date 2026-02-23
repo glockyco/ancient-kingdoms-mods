@@ -1550,6 +1550,40 @@ CREATE TRIGGER crafting_stations_au AFTER UPDATE ON crafting_stations BEGIN
     INSERT INTO crafting_stations_fts(rowid, name, keywords) VALUES (new.rowid, new.name, new.keywords);
 END;
 
+-- =============================================================================
+-- PETS (familiars, animal pets, and mercenaries from pets.json)
+-- =============================================================================
+
+CREATE TABLE pets (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    is_mercenary BOOLEAN DEFAULT 0,
+    is_familiar BOOLEAN DEFAULT 0,
+    type_monster TEXT NOT NULL,         -- Class archetype (e.g. "Cleric", "Druid")
+    level INTEGER NOT NULL,
+    health INTEGER DEFAULT 0,
+    damage INTEGER DEFAULT 0,
+    magic_damage INTEGER DEFAULT 0,
+    defense INTEGER DEFAULT 0,
+    magic_resist INTEGER DEFAULT 0,
+    poison_resist INTEGER DEFAULT 0,
+    fire_resist INTEGER DEFAULT 0,
+    cold_resist INTEGER DEFAULT 0,
+    disease_resist INTEGER DEFAULT 0,
+    block_chance REAL DEFAULT 0.0,
+    critical_chance REAL DEFAULT 0.0,
+    has_buffs BOOLEAN DEFAULT 0,
+    has_heals BOOLEAN DEFAULT 0,
+    icon_path TEXT NOT NULL
+);
+
+CREATE TABLE pet_skills (
+    pet_id TEXT NOT NULL REFERENCES pets(id),
+    skill_id TEXT NOT NULL REFERENCES skills(id),
+    skill_index INTEGER NOT NULL,
+    PRIMARY KEY (pet_id, skill_id, skill_index)
+);
+
 -- Alchemy Tables FTS5 (for map search)
 CREATE VIRTUAL TABLE alchemy_tables_fts USING fts5(
     name,

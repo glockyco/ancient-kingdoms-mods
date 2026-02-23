@@ -177,6 +177,37 @@ class MonsterData(BaseModel):
 
 
 # =============================================================================
+# Pet Models (familiars, animal pets, mercenaries from pets.json)
+# =============================================================================
+
+
+class PetData(BaseModel):
+    """Pet data from pets.json (familiars, animal pets, and mercenaries)."""
+
+    id: str
+    name: str
+    is_mercenary: bool = False
+    is_familiar: bool = False
+    type_monster: str
+    level: int
+    health: int = 0
+    damage: int = 0
+    magic_damage: int = 0
+    defense: int = 0
+    magic_resist: int = 0
+    poison_resist: int = 0
+    fire_resist: int = 0
+    cold_resist: int = 0
+    disease_resist: int = 0
+    block_chance: float = 0.0
+    critical_chance: float = 0.0
+    has_buffs: bool = False
+    has_heals: bool = False
+    icon_path: str
+    skill_ids: list[str] = []
+
+
+# =============================================================================
 # Item Models
 # =============================================================================
 

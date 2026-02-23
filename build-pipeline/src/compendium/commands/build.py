@@ -26,6 +26,8 @@ from compendium.loaders import (
     load_monsters,
     load_npc_spawns,
     load_npcs,
+    load_pet_skills,
+    load_pets,
     load_portals,
     load_professions,
     load_quests,
@@ -76,6 +78,8 @@ def run(config: dict) -> None:
         load_monsters(conn, export_dir)
         load_monster_spawns(conn, export_dir)  # After monsters
         load_monster_skills(conn, export_dir)  # After monsters + skills
+        load_pets(conn, export_dir)  # After skills
+        load_pet_skills(conn, export_dir)  # After pets + skills
         load_npcs(conn, export_dir)
         load_npc_spawns(conn, export_dir)  # After NPCs
         load_summon_triggers(conn, export_dir)  # After monsters/NPCs

@@ -250,6 +250,116 @@ export function getClassSkills(classId: string): ClassSkill[] {
 }
 
 /**
+ * Get deduplicated skills used by all mercenaries of a given class type.
+ * Matches pets where is_mercenary = 1 and lower(type_monster) = classId.
+ */
+export function getMercenarySkillsForClass(classId: string): ClassSkill[] {
+  return query<ClassSkill>(
+    `SELECT
+      s.id,
+      s.name,
+      s.skill_type,
+      s.level_required,
+      s.damage_type,
+      s.max_level,
+      s.damage,
+      s.damage_percent,
+      s.lifetap_percent,
+      s.knockback_chance,
+      s.stun_chance,
+      s.stun_time,
+      s.fear_chance,
+      s.fear_time,
+      s.aggro,
+      s.is_assassination_skill,
+      s.is_manaburn_skill,
+      s.break_armor_prob,
+      s.heals_health,
+      s.heals_mana,
+      s.is_resurrect_skill,
+      s.is_balance_health,
+      s.health_max_bonus,
+      s.health_max_percent_bonus,
+      s.mana_max_bonus,
+      s.mana_max_percent_bonus,
+      s.energy_max_bonus,
+      s.defense_bonus,
+      s.ward_bonus,
+      s.magic_resist_bonus,
+      s.poison_resist_bonus,
+      s.fire_resist_bonus,
+      s.cold_resist_bonus,
+      s.disease_resist_bonus,
+      s.damage_bonus,
+      s.damage_percent_bonus,
+      s.magic_damage_bonus,
+      s.magic_damage_percent_bonus,
+      s.haste_bonus,
+      s.spell_haste_bonus,
+      s.speed_bonus,
+      s.critical_chance_bonus,
+      s.accuracy_bonus,
+      s.block_chance_bonus,
+      s.fear_resist_chance_bonus,
+      s.damage_shield,
+      s.cooldown_reduction_percent,
+      s.heal_on_hit_percent,
+      s.healing_per_second_bonus,
+      s.health_percent_per_second_bonus,
+      s.mana_per_second_bonus,
+      s.mana_percent_per_second_bonus,
+      s.energy_per_second_bonus,
+      s.energy_percent_per_second_bonus,
+      s.strength_bonus,
+      s.intelligence_bonus,
+      s.dexterity_bonus,
+      s.charisma_bonus,
+      s.wisdom_bonus,
+      s.constitution_bonus,
+      s.duration_base,
+      s.is_invisibility,
+      s.is_mana_shield,
+      s.is_cleanse,
+      s.is_dispel,
+      s.is_blindness,
+      s.is_enrage,
+      s.summoned_monster_id,
+      m.name as summoned_monster_name,
+      s.summoned_monster_level,
+      s.summon_count_per_cast,
+      s.max_active_summons,
+      s.pet_prefab_name as pet_name,
+      s.is_familiar,
+      s.affects_random_target,
+      s.area_object_size,
+      s.area_objects_to_spawn,
+      s.is_poison_debuff,
+      s.is_fire_debuff,
+      s.is_cold_debuff,
+      s.is_disease_debuff,
+      s.is_melee_debuff,
+      s.is_magic_debuff,
+      s.prob_ignore_cleanse,
+      s.cooldown,
+      s.cast_time,
+      s.is_veteran,
+      s.learn_default,
+      s.base_skill,
+      s.tier,
+      s.required_spent_points
+    FROM pets p
+    JOIN pet_skills ps ON ps.pet_id = p.id
+    JOIN skills s ON s.id = ps.skill_id
+    LEFT JOIN monsters m ON s.summoned_monster_id = m.id
+    WHERE p.is_mercenary = 1
+      AND lower(p.type_monster) = ?
+    GROUP BY s.id
+    ORDER BY MIN(ps.skill_index)`,
+    [classId],
+  );
+}
+
+/**
  * A single source for an item (from any of the 11 source tables)
  */
 export interface ClassItemSource {

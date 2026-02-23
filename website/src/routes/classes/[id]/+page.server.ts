@@ -2,6 +2,7 @@ import {
   getAllClasses,
   getClassById,
   getClassSkills,
+  getMercenarySkillsForClass,
   getClassItemsWithSources,
   getClassQuests,
 } from "$lib/queries/classes.server";
@@ -35,6 +36,7 @@ export const load: PageServerLoad = ({ params }) => {
     class: classData,
     allClasses: getAllClasses(),
     skills: getClassSkills(classData.id),
+    mercenarySkills: getMercenarySkillsForClass(classData.id),
     items,
     itemStatKeys,
     quests: getClassQuests(classData.id),

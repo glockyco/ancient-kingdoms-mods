@@ -25,6 +25,7 @@ from compendium.models import (
     MonsterSpawnData,
     NpcData,
     NpcSpawnData,
+    PetData,
     PortalData,
     ProfessionData,
     QuestData,
@@ -414,6 +415,100 @@ def load_monster_skills(conn: sqlite3.Connection, export_dir: Path) -> None:
         )
     else:
         console.print(f"  [green]OK[/green] Loaded {count} monster-skill links")
+
+
+def load_pets(conn: sqlite3.Connection, export_dir: Path) -> None:
+    """Load pets (familiars, animal pets, mercenaries) into database."""
+    console.print("Loading pets...")
+
+    filepath = export_dir / "pets.json"
+    if not filepath.exists():
+        console.print("  [yellow]SKIP[/yellow] No pets.json found")
+        return
+
+    with open(filepath, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    pets = [PetData(**item) for item in data]
+
+    cursor = conn.cursor()
+    for pet in pets:
+        cursor.execute(
+            """INSERT INTO pets (
+                id, name, is_mercenary, is_familiar, type_monster,
+                level, health, damage, magic_damage, defense,
+                magic_resist, poison_resist, fire_resist, cold_resist, disease_resist,
+                block_chance, critical_chance, has_buffs, has_heals, icon_path
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            (
+                pet.id,
+                pet.name,
+                pet.is_mercenary,
+                pet.is_familiar,
+                pet.type_monster,
+                pet.level,
+                pet.health,
+                pet.damage,
+                pet.magic_damage,
+                pet.defense,
+                pet.magic_resist,
+                pet.poison_resist,
+                pet.fire_resist,
+                pet.cold_resist,
+                pet.disease_resist,
+                pet.block_chance,
+                pet.critical_chance,
+                pet.has_buffs,
+                pet.has_heals,
+                pet.icon_path,
+            ),
+        )
+
+    conn.commit()
+    console.print(f"  [green]OK[/green] Loaded {len(pets)} pets")
+
+
+def load_pet_skills(conn: sqlite3.Connection, export_dir: Path) -> None:
+    """Populate pet_skills junction table from pets.json skill_ids."""
+    console.print("Loading pet skills...")
+
+    filepath = export_dir / "pets.json"
+    if not filepath.exists():
+        console.print("  [yellow]SKIP[/yellow] No pets.json found")
+        return
+
+    with open(filepath, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    pets = [PetData(**item) for item in data]
+
+    cursor = conn.cursor()
+
+    # Build set of valid skill IDs for referential integrity
+    valid_skills = {
+        row[0] for row in cursor.execute("SELECT id FROM skills").fetchall()
+    }
+
+    count = 0
+    skipped = 0
+    for pet in pets:
+        for index, skill_id in enumerate(pet.skill_ids):
+            if skill_id in valid_skills:
+                cursor.execute(
+                    "INSERT INTO pet_skills (pet_id, skill_id, skill_index) VALUES (?, ?, ?)",
+                    (pet.id, skill_id, index),
+                )
+                count += 1
+            else:
+                skipped += 1
+
+    conn.commit()
+    if skipped > 0:
+        console.print(
+            f"  [green]OK[/green] Loaded {count} pet-skill links (skipped {skipped} unknown skill refs)"
+        )
+    else:
+        console.print(f"  [green]OK[/green] Loaded {count} pet-skill links")
 
 
 def load_npcs(conn: sqlite3.Connection, export_dir: Path) -> None:
