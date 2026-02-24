@@ -70,6 +70,31 @@ public class PetExporter : BaseExporter
                 disease_resist = pet.combat?.diseaseResist ?? 0,
                 block_chance = pet.combat?.blockChance ?? 0,
                 critical_chance = pet.combat?.criticalChance ?? 0,
+
+                // Stat scaling (LinearInt/LinearFloat: actual = base + per_level * (level - 1))
+                health_base = pet.health?.baseHealth.baseValue ?? 0,
+                health_per_level = pet.health?.baseHealth.bonusPerLevel ?? 0,
+                damage_base = pet.combat?.baseDamage.baseValue ?? 0,
+                damage_per_level = pet.combat?.baseDamage.bonusPerLevel ?? 0,
+                magic_damage_base = pet.combat?.baseMagicDamage.baseValue ?? 0,
+                magic_damage_per_level = pet.combat?.baseMagicDamage.bonusPerLevel ?? 0,
+                defense_base = pet.combat?.baseDefense.baseValue ?? 0,
+                defense_per_level = pet.combat?.baseDefense.bonusPerLevel ?? 0,
+                magic_resist_base = pet.combat?.baseMagicResist.baseValue ?? 0,
+                magic_resist_per_level = pet.combat?.baseMagicResist.bonusPerLevel ?? 0,
+                poison_resist_base = pet.combat?.basePoisonResist.baseValue ?? 0,
+                poison_resist_per_level = pet.combat?.basePoisonResist.bonusPerLevel ?? 0,
+                fire_resist_base = pet.combat?.baseFireResist.baseValue ?? 0,
+                fire_resist_per_level = pet.combat?.baseFireResist.bonusPerLevel ?? 0,
+                cold_resist_base = pet.combat?.baseColdResist.baseValue ?? 0,
+                cold_resist_per_level = pet.combat?.baseColdResist.bonusPerLevel ?? 0,
+                disease_resist_base = pet.combat?.baseDiseaseResist.baseValue ?? 0,
+                disease_resist_per_level = pet.combat?.baseDiseaseResist.bonusPerLevel ?? 0,
+                block_chance_base = pet.combat?.baseBlockChance.baseValue ?? 0,
+                block_chance_per_level = pet.combat?.baseBlockChance.bonusPerLevel ?? 0,
+                critical_chance_base = pet.combat?.baseCriticalChance.baseValue ?? 0,
+                critical_chance_per_level = pet.combat?.baseCriticalChance.bonusPerLevel ?? 0,
+
                 icon_path = pet.portraitIcon != null ? pet.portraitIcon.name : null
             };
 
