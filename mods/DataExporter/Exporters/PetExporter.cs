@@ -22,9 +22,9 @@ public class PetExporter : BaseExporter
 
         Logger.Msg($"Found {pets.Length} pet objects total");
 
-        // Group pets by name to identify unique definitions (prefer templates)
+        // Collect only template pets (prefabs not in a valid scene).
+        // Scene instances are per-character runtime objects and must not be exported.
         var petsByName = new Dictionary<string, Il2Cpp.Pet>();
-        var templateCount = 0;
 
         foreach (var obj in pets)
         {
@@ -33,17 +33,14 @@ public class PetExporter : BaseExporter
                 continue;
 
             var isTemplate = pet.gameObject == null || !pet.gameObject.scene.IsValid();
-            var sanitizedName = SanitizeId(pet.name);
+            if (!isTemplate)
+                continue;
 
-            // Prefer templates over scene instances for base stats
-            if (!petsByName.ContainsKey(sanitizedName) || isTemplate)
-            {
-                petsByName[sanitizedName] = pet;
-                if (isTemplate) templateCount++;
-            }
+            var sanitizedName = SanitizeId(pet.name);
+            petsByName[sanitizedName] = pet;
         }
 
-        Logger.Msg($"Found {petsByName.Count} unique pets ({templateCount} templates)");
+        Logger.Msg($"Found {petsByName.Count} template pets");
 
         var petList = new List<PetData>();
 
