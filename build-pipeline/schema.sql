@@ -428,6 +428,7 @@ CREATE TABLE monsters (
     health_base INTEGER DEFAULT 0,
     health_per_level INTEGER DEFAULT 0,
     health_multiplier REAL DEFAULT 1.0,
+    health_regen_base INTEGER DEFAULT 0,
     damage_base INTEGER DEFAULT 0,
     damage_per_level INTEGER DEFAULT 0,
     magic_damage_base INTEGER DEFAULT 0,
@@ -1574,7 +1575,31 @@ CREATE TABLE pets (
     critical_chance REAL DEFAULT 0.0,
     has_buffs BOOLEAN DEFAULT 0,
     has_heals BOOLEAN DEFAULT 0,
-    icon_path TEXT NOT NULL
+    icon_path TEXT NOT NULL,
+
+    -- Stat scaling (LinearInt/LinearFloat: actual = base + per_level * (level - 1))
+    health_base INTEGER DEFAULT 0,
+    health_per_level INTEGER DEFAULT 0,
+    damage_base INTEGER DEFAULT 0,
+    damage_per_level INTEGER DEFAULT 0,
+    magic_damage_base INTEGER DEFAULT 0,
+    magic_damage_per_level INTEGER DEFAULT 0,
+    defense_base INTEGER DEFAULT 0,
+    defense_per_level INTEGER DEFAULT 0,
+    magic_resist_base INTEGER DEFAULT 0,
+    magic_resist_per_level INTEGER DEFAULT 0,
+    poison_resist_base INTEGER DEFAULT 0,
+    poison_resist_per_level INTEGER DEFAULT 0,
+    fire_resist_base INTEGER DEFAULT 0,
+    fire_resist_per_level INTEGER DEFAULT 0,
+    cold_resist_base INTEGER DEFAULT 0,
+    cold_resist_per_level INTEGER DEFAULT 0,
+    disease_resist_base INTEGER DEFAULT 0,
+    disease_resist_per_level INTEGER DEFAULT 0,
+    block_chance_base REAL DEFAULT 0.0,
+    block_chance_per_level REAL DEFAULT 0.0,
+    critical_chance_base REAL DEFAULT 0.0,
+    critical_chance_per_level REAL DEFAULT 0.0
 );
 
 CREATE TABLE pet_skills (

@@ -56,6 +56,7 @@ public class MonsterData
     public int health_base { get; set; }
     public int health_per_level { get; set; }
     public float health_multiplier { get; set; }
+    public int health_regen_base { get; set; }
     public int damage_base { get; set; }
     public int damage_per_level { get; set; }
     public int magic_damage_base { get; set; }

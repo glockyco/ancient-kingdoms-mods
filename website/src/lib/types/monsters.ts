@@ -167,6 +167,7 @@ export interface MonsterInfo {
   health_base: number;
   health_per_level: number;
   health_multiplier: number;
+  health_regen_base: number;
   damage_base: number;
   damage_per_level: number;
   magic_damage_base: number;

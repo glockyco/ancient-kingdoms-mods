@@ -91,6 +91,7 @@ class MonsterData(BaseModel):
     health_base: int = 0
     health_per_level: int = 0
     health_multiplier: float = 1.0
+    health_regen_base: int = 0
     damage_base: int = 0
     damage_per_level: int = 0
     magic_damage_base: int = 0
@@ -205,6 +206,30 @@ class PetData(BaseModel):
     has_heals: bool = False
     icon_path: str
     skill_ids: list[str] = []
+
+    # Stat scaling (LinearInt/LinearFloat: actual = base + per_level * (level - 1))
+    health_base: int = 0
+    health_per_level: int = 0
+    damage_base: int = 0
+    damage_per_level: int = 0
+    magic_damage_base: int = 0
+    magic_damage_per_level: int = 0
+    defense_base: int = 0
+    defense_per_level: int = 0
+    magic_resist_base: int = 0
+    magic_resist_per_level: int = 0
+    poison_resist_base: int = 0
+    poison_resist_per_level: int = 0
+    fire_resist_base: int = 0
+    fire_resist_per_level: int = 0
+    cold_resist_base: int = 0
+    cold_resist_per_level: int = 0
+    disease_resist_base: int = 0
+    disease_resist_per_level: int = 0
+    block_chance_base: float = 0.0
+    block_chance_per_level: float = 0.0
+    critical_chance_base: float = 0.0
+    critical_chance_per_level: float = 0.0
 
 
 # =============================================================================

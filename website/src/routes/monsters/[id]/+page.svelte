@@ -966,6 +966,14 @@
             {displayHealth.toLocaleString()}
           </div>
         </div>
+        {#if data.monster.health_regen_base > 0}
+          <div>
+            <div class="text-sm text-muted-foreground">HP Regen</div>
+            <div class="font-medium">
+              {data.monster.health_regen_base.toLocaleString()} / sec
+            </div>
+          </div>
+        {/if}
         <div>
           <div class="text-sm text-muted-foreground">Defense</div>
           <div class="font-medium">

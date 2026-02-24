@@ -89,6 +89,7 @@ public class MonsterExporter : BaseExporter
                 health_base = canonical.health?.baseHealth.baseValue ?? 0,
                 health_per_level = canonical.health?.baseHealth.bonusPerLevel ?? 0,
                 health_multiplier = canonical.health?.multiplierHealth ?? 1f,
+                health_regen_base = canonical.health?.baseRecoveryRate ?? 0,
                 damage_base = canonical.combat?.baseDamage.baseValue ?? 0,
                 damage_per_level = canonical.combat?.baseDamage.bonusPerLevel ?? 0,
                 magic_damage_base = canonical.combat?.baseMagicDamage.baseValue ?? 0,

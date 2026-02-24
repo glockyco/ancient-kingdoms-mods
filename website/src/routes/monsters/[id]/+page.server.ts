@@ -124,6 +124,7 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
     health_base: (monsterRaw.health_base as number) || 0,
     health_per_level: (monsterRaw.health_per_level as number) || 0,
     health_multiplier: (monsterRaw.health_multiplier as number) || 1,
+    health_regen_base: (monsterRaw.health_regen_base as number) || 0,
     damage_base: (monsterRaw.damage_base as number) || 0,
     damage_per_level: (monsterRaw.damage_per_level as number) || 0,
     magic_damage_base: (monsterRaw.magic_damage_base as number) || 0,
