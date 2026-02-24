@@ -11,22 +11,28 @@ using UnityEngine;
 
 namespace AutoExporter
 {
-    // Activated by passing --auto-export on the command line (set in Steam launch options).
+    // Activated by passing --export-data and/or --export-screenshots on the command line
+    // (set in Steam launch options).
     // Flow: Start scene → click singleplayer → World scene loads → select first character
-    //       → wait for player spawn → export all data → quit.
+    //       → wait for player spawn → run requested exports → quit.
     public class AutoExporter : MelonMod
     {
+        private bool _runData;
+        private bool _runScreenshots;
         private bool _active;
         private bool _exportStarted;
 
         public override void OnInitializeMelon()
         {
-            _active = Environment.GetCommandLineArgs().Contains("--auto-export");
+            var args = Environment.GetCommandLineArgs();
+            _runData = args.Contains("--export-data");
+            _runScreenshots = args.Contains("--export-screenshots");
+            _active = _runData || _runScreenshots;
 
             if (_active)
-                LoggerInstance.Msg("AutoExporter active — will auto-export and quit on launch.");
+                LoggerInstance.Msg($"AutoExporter active — data={_runData}, screenshots={_runScreenshots}.");
             else
-                LoggerInstance.Msg("AutoExporter standing by (pass --auto-export to activate).");
+                LoggerInstance.Msg("AutoExporter standing by (pass --export-data and/or --export-screenshots to activate).");
         }
 
         public override void OnSceneWasLoaded(int buildIndex, string sceneName)
@@ -113,51 +119,57 @@ namespace AutoExporter
         private IEnumerator RunExportAndQuit()
         {
             // Step 1: Export game data (fast, synchronous)
-            var dataExporterMod = MelonMod.RegisteredMelons
-                .OfType<DataExporter.DataExporter>()
-                .FirstOrDefault();
+            if (_runData)
+            {
+                var dataExporterMod = MelonMod.RegisteredMelons
+                    .OfType<DataExporter.DataExporter>()
+                    .FirstOrDefault();
 
-            if (dataExporterMod == null)
-            {
-                LoggerInstance.Error("[AutoExporter] DataExporter mod not found — is DataExporter.dll in Mods/?");
-                Application.Quit();
-                yield break;
-            }
+                if (dataExporterMod == null)
+                {
+                    LoggerInstance.Error("[AutoExporter] DataExporter mod not found — is DataExporter.dll in Mods/?");
+                    Application.Quit();
+                    yield break;
+                }
 
-            try
-            {
-                LoggerInstance.Msg("[AutoExporter] Starting data export...");
-                dataExporterMod.ExportAllData();
-                LoggerInstance.Msg("[AutoExporter] Data export complete.");
-            }
-            catch (Exception ex)
-            {
-                LoggerInstance.Error($"[AutoExporter] Data export failed: {ex.Message}");
-                LoggerInstance.Error(ex.StackTrace);
-                Application.Quit();
-                yield break;
+                try
+                {
+                    LoggerInstance.Msg("[AutoExporter] Starting data export...");
+                    dataExporterMod.ExportAllData();
+                    LoggerInstance.Msg("[AutoExporter] Data export complete.");
+                }
+                catch (Exception ex)
+                {
+                    LoggerInstance.Error($"[AutoExporter] Data export failed: {ex.Message}");
+                    LoggerInstance.Error(ex.StackTrace);
+                    Application.Quit();
+                    yield break;
+                }
             }
 
             // Step 2: Capture map screenshots
-            var mapMod = MelonMod.RegisteredMelons
-                .OfType<MapScreenshotter.MapScreenshotter>()
-                .FirstOrDefault();
-
-            if (mapMod == null)
+            if (_runScreenshots)
             {
-                LoggerInstance.Error("[AutoExporter] MapScreenshotter mod not found — is MapScreenshotter.dll in Mods/?");
-                Application.Quit();
-                yield break;
+                var mapMod = MelonMod.RegisteredMelons
+                    .OfType<MapScreenshotter.MapScreenshotter>()
+                    .FirstOrDefault();
+
+                if (mapMod == null)
+                {
+                    LoggerInstance.Error("[AutoExporter] MapScreenshotter mod not found — is MapScreenshotter.dll in Mods/?");
+                    Application.Quit();
+                    yield break;
+                }
+
+                LoggerInstance.Msg("[AutoExporter] Starting map screenshot capture...");
+                mapMod.StartScreenshotCapture();
+
+                // Wait for capture to complete — yield must be outside try/catch (C# restriction)
+                while (mapMod.IsCapturing)
+                    yield return null;
+
+                LoggerInstance.Msg("[AutoExporter] Map screenshot capture complete.");
             }
-
-            LoggerInstance.Msg("[AutoExporter] Starting map screenshot capture...");
-            mapMod.StartScreenshotCapture();
-
-            // Wait for capture to complete — yield must be outside try/catch (C# restriction)
-            while (mapMod.IsCapturing)
-                yield return null;
-
-            LoggerInstance.Msg("[AutoExporter] Map screenshot capture complete.");
 
             LoggerInstance.Msg("[AutoExporter] All exports complete. Quitting.");
             Application.Quit();
