@@ -1,6 +1,6 @@
 # Mods Development
 
-Shared patterns for all MelonLoader mods. **Windows only** - requires .NET SDK and game installation.
+Shared patterns for all MelonLoader mods. Requires .NET SDK and game installation. Works on macOS via CrossOver and natively on Windows.
 
 ## Quick Start
 
