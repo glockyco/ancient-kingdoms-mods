@@ -56,7 +56,7 @@ If you notice stale or incorrect information in any documentation, flag it to th
 
 Always test before committing:
 - Website: `pnpm check && pnpm lint && pnpm build`
-- Mods: `dotnet run --project build-tool build` (Windows only)
+- Mods: `dotnet run --project build-tool build`
 
 ### Modern Standards
 
@@ -67,10 +67,15 @@ Always test before committing:
 ## Quick Reference
 
 ```bash
-# Mods (Windows only)
+# Mods — build and deploy to game directory
 dotnet run --project build-tool all
 
-# Build pipeline
+# Export game data (set in Steam launch options, then launch game)
+# --export-data        triggers DataExporter → exported-data/*.json
+# --export-screenshots triggers MapScreenshotter → exported-data/screenshots/
+# Both flags can be combined. Game quits automatically when done.
+
+# Build pipeline — load exported JSON into SQLite
 cd build-pipeline && uv run compendium build
 
 # Website
@@ -82,6 +87,6 @@ cd website && pnpm check && pnpm lint && pnpm build
 
 | Subproject | Purpose | Docs |
 |------------|---------|------|
-| mods/ | MelonLoader mods (Windows) | mods/CLAUDE.md |
+| mods/ | MelonLoader mods (macOS via CrossOver, Windows) | mods/CLAUDE.md |
 | build-pipeline/ | Python CLI (JSON → SQLite) | build-pipeline/CLAUDE.md |
 | website/ | SvelteKit static site | website/CLAUDE.md |

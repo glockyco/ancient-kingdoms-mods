@@ -4,7 +4,11 @@ Exports game data to JSON files for the build pipeline.
 
 ## Usage
 
-Press **Shift+F9** in-game to export all data. Files are written to `exported-data/` (configurable in `Local.props`).
+Normally triggered automatically by the **AutoExporter** mod — launch the game with `--export-data` in Steam launch options. The mod boots, selects the first character, waits for the world to load, runs the export, and quits.
+
+Press **Shift+F9** in-game to trigger a manual export without AutoExporter.
+
+Files are written to `exported-data/` (configurable in `Local.props`).
 
 ## Exported Data (23 exporters)
 
