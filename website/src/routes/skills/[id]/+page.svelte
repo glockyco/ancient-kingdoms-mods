@@ -185,13 +185,25 @@
       skill.is_manaburn_skill,
   );
 
+  // "Weapon" means any melee weapon (StartsWith match) — not a meaningful restriction
+  // Source: server-scripts/ScriptableSkill.cs — CheckWeapon(), line 100
+  const WEAPON_LABELS: Record<string, string> = {
+    WeaponDagger: "Dagger",
+    WeaponSword: "Sword",
+  };
+
+  const meaningfulWeapon = $derived(
+    skill.required_weapon_category &&
+      skill.required_weapon_category !== "Weapon",
+  );
+
   const hasRequirements = $derived(
-    skill.level_required > 0 ||
-      skill.required_skill_points > 0 ||
+    skill.level_required > 1 ||
+      skill.required_skill_points > 1 ||
       skill.required_spent_points > 0 ||
       skill.prerequisite_skill_id ||
       skill.prerequisite2_skill_id ||
-      skill.required_weapon_category,
+      meaningfulWeapon,
   );
 </script>
 
@@ -304,13 +316,13 @@
       </Card.Header>
       <Card.Content>
         <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-4">
-          {#if skill.level_required > 0}
+          {#if skill.level_required > 1}
             <div>
               <dt class="text-muted-foreground">Level Required</dt>
               <dd class="font-medium">{skill.level_required}</dd>
             </div>
           {/if}
-          {#if skill.required_skill_points > 0}
+          {#if skill.required_skill_points > 1}
             <div>
               <dt class="text-muted-foreground">Skill Points</dt>
               <dd class="font-medium">{skill.required_skill_points}</dd>
@@ -359,14 +371,12 @@
               </dd>
             </div>
           {/if}
-          {#if skill.required_weapon_category}
+          {#if meaningfulWeapon && skill.required_weapon_category}
             <div>
               <dt class="text-muted-foreground">Required Weapon</dt>
               <dd class="font-medium">
-                {skill.required_weapon_category}
-                {#if skill.required_weapon_category2}
-                  / {skill.required_weapon_category2}
-                {/if}
+                {WEAPON_LABELS[skill.required_weapon_category] ??
+                  skill.required_weapon_category}
               </dd>
             </div>
           {/if}
