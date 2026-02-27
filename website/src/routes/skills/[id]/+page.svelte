@@ -739,9 +739,116 @@
     </div>
   </div>
 
+  <!-- Page Anchor Navigation -->
+  <nav aria-label="Page sections" class="text-sm text-muted-foreground">
+    <ul class="flex flex-wrap gap-x-4 gap-y-1">
+      {#if data.effectSummary || skill.tooltip_template}
+        <li>
+          <a href="#description" class="hover:text-foreground hover:underline"
+            >Description</a
+          >
+        </li>
+      {/if}
+      {#if hasRequirements}
+        <li>
+          <a href="#requirements" class="hover:text-foreground hover:underline"
+            >Requirements</a
+          >
+        </li>
+      {/if}
+      {#if skill.mana_cost || skill.energy_cost || skill.cooldown || skill.cast_time || skill.cast_range}
+        <li>
+          <a href="#cost-timing" class="hover:text-foreground hover:underline"
+            >Cost & Timing</a
+          >
+        </li>
+      {/if}
+      {#if hasDamage}
+        <li>
+          <a href="#damage" class="hover:text-foreground hover:underline"
+            >Damage</a
+          >
+        </li>
+      {/if}
+      {#if skill.heals_health || skill.heals_mana || skill.is_resurrect_skill || skill.is_balance_health}
+        <li>
+          <a href="#healing" class="hover:text-foreground hover:underline"
+            >Healing</a
+          >
+        </li>
+      {/if}
+      {#if hasCrowdControl}
+        <li>
+          <a href="#crowd-control" class="hover:text-foreground hover:underline"
+            >Crowd Control</a
+          >
+        </li>
+      {/if}
+      {#if skill.skill_type === "summon" || skill.skill_type === "summon_monsters"}
+        <li>
+          <a href="#summon-info" class="hover:text-foreground hover:underline"
+            >Summon Info</a
+          >
+        </li>
+      {/if}
+      {#if hasBuffEffects}
+        <li>
+          <a href="#buff-debuff" class="hover:text-foreground hover:underline"
+            >Buff/Debuff Effects</a
+          >
+        </li>
+      {/if}
+      {#if showLevelScaling}
+        <li>
+          <a href="#level-scaling" class="hover:text-foreground hover:underline"
+            >Level Scaling</a
+          >
+        </li>
+      {/if}
+      {#if showMechanics}
+        <li>
+          <a href="#mechanics" class="hover:text-foreground hover:underline"
+            >Mechanics</a
+          >
+        </li>
+      {/if}
+      {#if data.grantedByItems.length > 0}
+        <li>
+          <a
+            href="#granted-by-items"
+            class="hover:text-foreground hover:underline">Granted by Items</a
+          >
+        </li>
+      {/if}
+      {#if skill.player_classes.length > 0}
+        <li>
+          <a
+            href="#learned-by-classes"
+            class="hover:text-foreground hover:underline">Learned by Classes</a
+          >
+        </li>
+      {/if}
+      {#if data.usedByPets.length > 0}
+        <li>
+          <a href="#used-by-pets" class="hover:text-foreground hover:underline"
+            >Used by Pets</a
+          >
+        </li>
+      {/if}
+      {#if data.usedByMonsters.length > 0}
+        <li>
+          <a
+            href="#used-by-monsters"
+            class="hover:text-foreground hover:underline">Used by Monsters</a
+          >
+        </li>
+      {/if}
+    </ul>
+  </nav>
+
   <!-- Effect / Game Tooltip -->
   {#if data.effectSummary || skill.tooltip_template}
-    <Card.Root class="bg-muted/30">
+    <Card.Root id="description" class="bg-muted/30">
       <Card.Header>
         <Card.Title class="flex items-center gap-2">
           <ScrollText class="h-5 w-5 text-sky-500" />
@@ -803,7 +910,7 @@
 
   <!-- Requirements -->
   {#if hasRequirements}
-    <Card.Root class="bg-muted/30">
+    <Card.Root id="requirements" class="bg-muted/30">
       <Card.Header>
         <Card.Title class="flex items-center gap-2">
           <Target class="h-5 w-5 text-orange-500" />
@@ -883,7 +990,7 @@
 
   <!-- Cost & Timing -->
   {#if skill.mana_cost || skill.energy_cost || skill.cooldown || skill.cast_time || skill.cast_range}
-    <Card.Root class="bg-muted/30">
+    <Card.Root id="cost-timing" class="bg-muted/30">
       <Card.Header>
         <Card.Title class="flex items-center gap-2">
           <Clock class="h-5 w-5 text-blue-500" />
@@ -931,7 +1038,7 @@
 
   <!-- Damage -->
   {#if hasDamage}
-    <Card.Root class="bg-muted/30">
+    <Card.Root id="damage" class="bg-muted/30">
       <Card.Header>
         <Card.Title class="flex items-center gap-2">
           <Swords class="h-5 w-5 text-red-500" />
@@ -1005,7 +1112,7 @@
 
   <!-- Healing -->
   {#if skill.heals_health || skill.heals_mana || skill.is_resurrect_skill || skill.is_balance_health}
-    <Card.Root class="bg-muted/30">
+    <Card.Root id="healing" class="bg-muted/30">
       <Card.Header>
         <Card.Title class="flex items-center gap-2">
           <Heart class="h-5 w-5 text-green-500" />
@@ -1065,7 +1172,7 @@
 
   <!-- Crowd Control -->
   {#if hasCrowdControl}
-    <Card.Root class="bg-muted/30">
+    <Card.Root id="crowd-control" class="bg-muted/30">
       <Card.Header>
         <Card.Title class="flex items-center gap-2">
           <Zap class="h-5 w-5 text-yellow-500" />
@@ -1121,7 +1228,7 @@
 
   <!-- Summon Info -->
   {#if skill.skill_type === "summon" || skill.skill_type === "summon_monsters"}
-    <Card.Root class="bg-muted/30">
+    <Card.Root id="summon-info" class="bg-muted/30">
       <Card.Header>
         <Card.Title class="flex items-center gap-2">
           <Ghost class="h-5 w-5 text-violet-500" />
@@ -1198,7 +1305,7 @@
 
   <!-- Buff/Debuff Effects -->
   {#if hasBuffEffects}
-    <Card.Root class="bg-muted/30">
+    <Card.Root id="buff-debuff" class="bg-muted/30">
       <Card.Header>
         <Card.Title class="flex items-center gap-2">
           <Sparkles class="h-5 w-5 text-purple-500" />
@@ -1567,7 +1674,7 @@
 
   <!-- Level Scaling Table -->
   {#if showLevelScaling}
-    <Card.Root class="bg-muted/30">
+    <Card.Root id="level-scaling" class="bg-muted/30">
       <Card.Header>
         <Card.Title class="flex items-center gap-2">
           <TrendingUp class="h-5 w-5 text-emerald-500" />
@@ -1609,7 +1716,7 @@
 
   <!-- Mechanics (Theorycrafter Reference) -->
   {#if showMechanics}
-    <Card.Root class="bg-muted/30">
+    <Card.Root id="mechanics" class="bg-muted/30">
       <Card.Header>
         <Card.Title class="flex items-center gap-2">
           <FlaskConical class="h-5 w-5 text-cyan-500" />
@@ -2067,7 +2174,7 @@
 
   <!-- Granted By Items -->
   {#if data.grantedByItems.length > 0}
-    <Card.Root class="bg-muted/30">
+    <Card.Root id="granted-by-items" class="bg-muted/30">
       <Card.Header>
         <Card.Title class="flex items-center gap-2">
           <Gem class="h-5 w-5 text-amber-500" />
@@ -2099,7 +2206,7 @@
 
   <!-- Used By Classes -->
   {#if skill.player_classes.length > 0}
-    <Card.Root class="bg-muted/30">
+    <Card.Root id="learned-by-classes" class="bg-muted/30">
       <Card.Header>
         <Card.Title class="flex items-center gap-2">
           <Star class="h-5 w-5 text-indigo-500" />
@@ -2125,7 +2232,7 @@
 
   <!-- Used By Pets -->
   {#if data.usedByPets.length > 0}
-    <Card.Root class="bg-muted/30">
+    <Card.Root id="used-by-pets" class="bg-muted/30">
       <Card.Header>
         <Card.Title class="flex items-center gap-2">
           <Cat class="h-5 w-5 text-teal-500" />
@@ -2151,7 +2258,7 @@
 
   <!-- Used by Monsters -->
   {#if data.usedByMonsters.length > 0}
-    <Card.Root class="bg-muted/30">
+    <Card.Root id="used-by-monsters" class="bg-muted/30">
       <Card.Header>
         <Card.Title class="flex items-center gap-2">
           <Skull class="h-5 w-5 text-red-500" />
