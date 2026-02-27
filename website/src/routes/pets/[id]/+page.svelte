@@ -40,13 +40,20 @@
 
   // Skills table
   function formatCost(row: ClassSkill): string {
-    const raw = row.mana_cost ?? row.energy_cost;
-    if (!raw) return "—";
-    const lv = JSON.parse(raw) as {
-      base_value: number;
-      bonus_per_level: number;
-    };
-    if (lv.base_value === 0) return "—";
+    type LevelValue = { base_value: number; bonus_per_level: number };
+    const mana = row.mana_cost
+      ? (JSON.parse(row.mana_cost) as LevelValue)
+      : null;
+    const energy = row.energy_cost
+      ? (JSON.parse(row.energy_cost) as LevelValue)
+      : null;
+    const lv =
+      (mana?.base_value ?? 0) > 0
+        ? mana
+        : (energy?.base_value ?? 0) > 0
+          ? energy
+          : null;
+    if (!lv) return "—";
     if (lv.bonus_per_level === 0) return String(lv.base_value);
     const sign = lv.bonus_per_level > 0 ? "+" : "";
     return `${lv.base_value} (${sign}${lv.bonus_per_level}/lvl)`;
