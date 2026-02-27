@@ -19,6 +19,12 @@
     Array.from(new Set(data.pets.map((p) => p.kind))).sort(),
   );
 
+  const columnLabels: Record<string, string> = {
+    summoned_by_class: "Summoned By",
+    summoned_by_spell: "Spell",
+    recruited_at: "Recruited At",
+  };
+
   const columns: ColumnDef<PetListView>[] = [
     { accessorKey: "name", header: "Name", enableHiding: false },
     {
@@ -125,6 +131,7 @@
   <DataTable
     data={data.pets}
     {columns}
+    {columnLabels}
     {renderCell}
     {renderToolbar}
     pageSize={20}
