@@ -1,28 +1,26 @@
 <script lang="ts">
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
-  import { Alert } from "$lib/components/ui/alert";
   import * as Card from "$lib/components/ui/card";
   import type { PageData } from "./$types";
   import type { LinearValue } from "$lib/types/skills";
-  import CircleAlert from "@lucide/svelte/icons/circle-alert";
   import Sparkles from "@lucide/svelte/icons/sparkles";
   import Clock from "@lucide/svelte/icons/clock";
   import Zap from "@lucide/svelte/icons/zap";
   import Swords from "@lucide/svelte/icons/swords";
   import Heart from "@lucide/svelte/icons/heart";
-  import Shield from "@lucide/svelte/icons/shield";
   import Target from "@lucide/svelte/icons/target";
   import ScrollText from "@lucide/svelte/icons/scroll-text";
-  import Package from "@lucide/svelte/icons/package";
+  import Gem from "@lucide/svelte/icons/gem";
   import DungeonRestrictionBadge from "$lib/components/DungeonRestrictionBadge.svelte";
   import MonsterTypeIcon from "$lib/components/MonsterTypeIcon.svelte";
-  import Sword from "@lucide/svelte/icons/sword";
+  import Skull from "@lucide/svelte/icons/skull";
+  import Cat from "@lucide/svelte/icons/cat";
+  import Star from "@lucide/svelte/icons/star";
 
   let { data }: { data: PageData } = $props();
 
   const skill = $derived(data.skill);
 
-  // Format LinearValue as "base (+bonus/level)" or just "base"
   function formatLinear(
     value: LinearValue | null,
     suffix: string = "",
@@ -36,25 +34,40 @@
     return `${base} (+${bonus}/lvl)${suffix}`;
   }
 
-  // Format number with locale
+  function formatLinearPercent(value: LinearValue | null): string {
+    if (!value) return "-";
+    const basePct = formatPercent(value.base_value);
+    if (value.bonus_per_level === 0) {
+      return basePct;
+    }
+    const bonusPct = formatPercent(value.bonus_per_level);
+    return `${basePct} (+${bonusPct}/lvl)`;
+  }
+
   function formatNumber(n: number): string {
     if (Number.isInteger(n)) return n.toLocaleString();
     return n.toFixed(1);
   }
 
-  // Format percentage
   function formatPercent(n: number): string {
-    return `${(n * 100).toFixed(0)}%`;
+    const pct = n * 100;
+    if (Math.abs(pct) < 1 && pct !== 0) {
+      return `${parseFloat(pct.toFixed(1))}%`;
+    }
+    return `${Math.round(pct)}%`;
   }
 
-  // Format duration
   function formatDuration(base: number, perLevel: number): string {
     if (base === 0 && perLevel === 0) return "-";
     if (perLevel === 0) return `${formatNumber(base)}s`;
     return `${formatNumber(base)}s (+${formatNumber(perLevel)}s/lvl)`;
   }
 
-  // Convert Unity color tags to HTML spans
+  function hasLinearValue(value: LinearValue | null): boolean {
+    if (!value) return false;
+    return value.base_value !== 0 || value.bonus_per_level !== 0;
+  }
+
   function convertTooltip(text: string | null): string {
     if (!text) return "";
     return text
@@ -63,17 +76,15 @@
       .replace(/\n/g, "<br>");
   }
 
-  // Class display info
-  const CLASS_INFO: Record<string, { label: string; color: string }> = {
-    warrior: { label: "Warrior", color: "text-red-500" },
-    ranger: { label: "Ranger", color: "text-green-500" },
-    cleric: { label: "Cleric", color: "text-yellow-500" },
-    rogue: { label: "Rogue", color: "text-purple-500" },
-    wizard: { label: "Wizard", color: "text-blue-500" },
-    druid: { label: "Druid", color: "text-emerald-500" },
+  const CLASS_LABELS: Record<string, string> = {
+    warrior: "Warrior",
+    ranger: "Ranger",
+    cleric: "Cleric",
+    rogue: "Rogue",
+    wizard: "Wizard",
+    druid: "Druid",
   };
 
-  // Skill type display info
   const SKILL_TYPE_LABELS: Record<string, string> = {
     target_damage: "Target Damage",
     area_damage: "Area Damage",
@@ -92,7 +103,6 @@
     area_object_spawn: "Area Object",
   };
 
-  // Check if we have any stat bonuses
   const hasStatBonuses = $derived(
     skill.health_max_bonus ||
       skill.health_max_percent_bonus ||
@@ -100,6 +110,7 @@
       skill.mana_max_percent_bonus ||
       skill.energy_max_bonus ||
       skill.defense_bonus ||
+      skill.ward_bonus ||
       skill.magic_resist_bonus ||
       skill.damage_bonus ||
       skill.damage_percent_bonus ||
@@ -111,6 +122,7 @@
       skill.critical_chance_bonus ||
       skill.accuracy_bonus ||
       skill.block_chance_bonus ||
+      skill.fear_resist_chance_bonus ||
       skill.damage_shield ||
       skill.cooldown_reduction_percent ||
       skill.heal_on_hit_percent,
@@ -141,10 +153,36 @@
       skill.charisma_bonus,
   );
 
+  const hasBuffEffects = $derived(
+    skill.duration_base > 0 ||
+      skill.duration_per_level > 0 ||
+      hasStatBonuses ||
+      hasRegenBonuses ||
+      hasResistBonuses ||
+      hasAttributeBonuses ||
+      skill.is_invisibility ||
+      skill.is_mana_shield ||
+      skill.is_cleanse ||
+      skill.is_dispel ||
+      skill.is_blindness ||
+      skill.is_permanent ||
+      skill.is_only_for_magic_classes,
+  );
+
   const hasCrowdControl = $derived(
-    skill.stun_chance > 0 ||
-      skill.fear_chance > 0 ||
-      skill.knockback_chance > 0,
+    hasLinearValue(skill.stun_chance) ||
+      hasLinearValue(skill.fear_chance) ||
+      hasLinearValue(skill.knockback_chance),
+  );
+
+  const hasDamage = $derived(
+    skill.damage ||
+      skill.damage_percent ||
+      skill.aggro ||
+      hasLinearValue(skill.lifetap_percent) ||
+      skill.break_armor_prob > 0 ||
+      skill.is_assassination_skill ||
+      skill.is_manaburn_skill,
   );
 
   const hasRequirements = $derived(
@@ -152,6 +190,7 @@
       skill.required_skill_points > 0 ||
       skill.required_spent_points > 0 ||
       skill.prerequisite_skill_id ||
+      skill.prerequisite2_skill_id ||
       skill.required_weapon_category,
   );
 </script>
@@ -162,7 +201,6 @@
 </svelte:head>
 
 <div class="container mx-auto p-8 space-y-6 max-w-5xl">
-  <!-- Breadcrumb -->
   <Breadcrumb
     items={[
       { label: "Home", href: "/" },
@@ -170,14 +208,6 @@
       { label: skill.name },
     ]}
   />
-
-  <Alert variant="info">
-    <CircleAlert />
-    <span
-      >This page is a work in progress. Some information may be incomplete or
-      change.</span
-    >
-  </Alert>
 
   <!-- Header -->
   <div>
@@ -206,14 +236,21 @@
         <span
           class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-200"
         >
-          Pet
+          Pet Skill
         </span>
       {/if}
       {#if skill.is_mercenary_skill}
         <span
           class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200"
         >
-          Mercenary
+          Mercenary Skill
+        </span>
+      {/if}
+      {#if skill.followup_default_attack}
+        <span
+          class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200"
+        >
+          Weapon Strike
         </span>
       {/if}
 
@@ -227,8 +264,10 @@
         <span class="flex items-center gap-1">
           Classes:
           {#each skill.player_classes as cls, i (cls)}
-            {@const info = CLASS_INFO[cls]}
-            <span class={info?.color ?? ""}>{info?.label ?? cls}</span
+            <a
+              href="/classes/{cls}"
+              class="text-blue-600 dark:text-blue-400 hover:underline"
+              >{CLASS_LABELS[cls] ?? cls}</a
             >{#if i < skill.player_classes.length - 1},{/if}
           {/each}
         </span>
@@ -264,7 +303,7 @@
         </Card.Title>
       </Card.Header>
       <Card.Content>
-        <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-3">
+        <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-4">
           {#if skill.level_required > 0}
             <div>
               <dt class="text-muted-foreground">Level Required</dt>
@@ -294,9 +333,28 @@
                   {skill.prerequisite_skill_name ?? skill.prerequisite_skill_id}
                 </a>
                 {#if skill.prerequisite_level > 0}
-                  <span class="text-muted-foreground"
-                    >Lvl {skill.prerequisite_level}</span
-                  >
+                  <span class="text-muted-foreground">
+                    Lvl {skill.prerequisite_level}
+                  </span>
+                {/if}
+              </dd>
+            </div>
+          {/if}
+          {#if skill.prerequisite2_skill_id}
+            <div>
+              <dt class="text-muted-foreground">Prerequisite 2</dt>
+              <dd class="font-medium">
+                <a
+                  href="/skills/{skill.prerequisite2_skill_id}"
+                  class="text-blue-600 dark:text-blue-400 hover:underline"
+                >
+                  {skill.prerequisite2_skill_name ??
+                    skill.prerequisite2_skill_id}
+                </a>
+                {#if skill.prerequisite2_level > 0}
+                  <span class="text-muted-foreground">
+                    Lvl {skill.prerequisite2_level}
+                  </span>
                 {/if}
               </dd>
             </div>
@@ -327,33 +385,29 @@
         </Card.Title>
       </Card.Header>
       <Card.Content>
-        <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-3">
+        <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-4">
           {#if skill.mana_cost}
             <div>
               <dt class="text-muted-foreground">Mana Cost</dt>
-              <dd class="font-medium text-blue-600 dark:text-blue-400">
-                {formatLinear(skill.mana_cost)}
-              </dd>
+              <dd class="font-medium">{formatLinear(skill.mana_cost)}</dd>
             </div>
           {/if}
           {#if skill.energy_cost}
             <div>
               <dt class="text-muted-foreground">Energy Cost</dt>
-              <dd class="font-medium text-yellow-600 dark:text-yellow-400">
-                {formatLinear(skill.energy_cost)}
-              </dd>
-            </div>
-          {/if}
-          {#if skill.cooldown}
-            <div>
-              <dt class="text-muted-foreground">Cooldown</dt>
-              <dd class="font-medium">{formatLinear(skill.cooldown, "s")}</dd>
+              <dd class="font-medium">{formatLinear(skill.energy_cost)}</dd>
             </div>
           {/if}
           {#if skill.cast_time}
             <div>
               <dt class="text-muted-foreground">Cast Time</dt>
               <dd class="font-medium">{formatLinear(skill.cast_time, "s")}</dd>
+            </div>
+          {/if}
+          {#if skill.cooldown}
+            <div>
+              <dt class="text-muted-foreground">Cooldown</dt>
+              <dd class="font-medium">{formatLinear(skill.cooldown, "s")}</dd>
             </div>
           {/if}
           {#if skill.cast_range}
@@ -370,7 +424,7 @@
   {/if}
 
   <!-- Damage -->
-  {#if skill.damage || skill.damage_percent || skill.aggro}
+  {#if hasDamage}
     <Card.Root class="bg-muted/30">
       <Card.Header>
         <Card.Title class="flex items-center gap-2">
@@ -379,11 +433,11 @@
         </Card.Title>
       </Card.Header>
       <Card.Content>
-        <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-3">
+        <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-4">
           {#if skill.damage}
             <div>
               <dt class="text-muted-foreground">Damage</dt>
-              <dd class="font-medium text-red-600 dark:text-red-400">
+              <dd class="font-medium">
                 {formatLinear(skill.damage)}
               </dd>
             </div>
@@ -391,8 +445,8 @@
           {#if skill.damage_percent}
             <div>
               <dt class="text-muted-foreground">Damage %</dt>
-              <dd class="font-medium text-red-600 dark:text-red-400">
-                {formatLinear(skill.damage_percent, "%")}
+              <dd class="font-medium">
+                {formatLinearPercent(skill.damage_percent)}
               </dd>
             </div>
           {/if}
@@ -402,11 +456,11 @@
               <dd class="font-medium">{skill.damage_type}</dd>
             </div>
           {/if}
-          {#if skill.lifetap_percent > 0}
+          {#if hasLinearValue(skill.lifetap_percent)}
             <div>
               <dt class="text-muted-foreground">Lifetap</dt>
-              <dd class="font-medium text-green-600 dark:text-green-400">
-                {formatPercent(skill.lifetap_percent)}
+              <dd class="font-medium">
+                {formatLinearPercent(skill.lifetap_percent)}
               </dd>
             </div>
           {/if}
@@ -416,13 +470,35 @@
               <dd class="font-medium">{formatLinear(skill.aggro)}</dd>
             </div>
           {/if}
+          {#if skill.break_armor_prob > 0}
+            <div>
+              <dt class="text-muted-foreground">Break Armor</dt>
+              <dd class="font-medium">
+                {formatPercent(skill.break_armor_prob)}
+              </dd>
+            </div>
+          {/if}
         </dl>
+        {#if skill.is_assassination_skill || skill.is_manaburn_skill}
+          <div class="mt-3 space-y-1 text-sm">
+            {#if skill.is_assassination_skill}
+              <p class="text-amber-600 dark:text-amber-400">
+                Assassination: requires target below 25% HP
+              </p>
+            {/if}
+            {#if skill.is_manaburn_skill}
+              <p class="text-purple-600 dark:text-purple-400">
+                Manaburn: consumes all resource for damage
+              </p>
+            {/if}
+          </div>
+        {/if}
       </Card.Content>
     </Card.Root>
   {/if}
 
   <!-- Healing -->
-  {#if skill.heals_health || skill.heals_mana}
+  {#if skill.heals_health || skill.heals_mana || skill.is_resurrect_skill || skill.is_balance_health}
     <Card.Root class="bg-muted/30">
       <Card.Header>
         <Card.Title class="flex items-center gap-2">
@@ -431,11 +507,11 @@
         </Card.Title>
       </Card.Header>
       <Card.Content>
-        <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-3">
+        <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-4">
           {#if skill.heals_health}
             <div>
               <dt class="text-muted-foreground">Heals Health</dt>
-              <dd class="font-medium text-green-600 dark:text-green-400">
+              <dd class="font-medium">
                 {formatLinear(skill.heals_health)}
               </dd>
             </div>
@@ -443,7 +519,7 @@
           {#if skill.heals_mana}
             <div>
               <dt class="text-muted-foreground">Heals Mana</dt>
-              <dd class="font-medium text-blue-600 dark:text-blue-400">
+              <dd class="font-medium">
                 {formatLinear(skill.heals_mana)}
               </dd>
             </div>
@@ -463,6 +539,20 @@
             </div>
           {/if}
         </dl>
+        {#if skill.is_resurrect_skill || skill.is_balance_health}
+          <div class="mt-3 space-y-1 text-sm">
+            {#if skill.is_resurrect_skill}
+              <p class="text-green-600 dark:text-green-400">
+                Resurrects target (60% HP, 20% mana, 75% XP)
+              </p>
+            {/if}
+            {#if skill.is_balance_health}
+              <p class="text-green-600 dark:text-green-400">
+                Equalizes group member HP percentages
+              </p>
+            {/if}
+          </div>
+        {/if}
       </Card.Content>
     </Card.Root>
   {/if}
@@ -477,36 +567,44 @@
         </Card.Title>
       </Card.Header>
       <Card.Content>
-        <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-3">
-          {#if skill.stun_chance > 0}
+        <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-4">
+          {#if hasLinearValue(skill.stun_chance)}
             <div>
               <dt class="text-muted-foreground">Stun Chance</dt>
-              <dd class="font-medium">{formatPercent(skill.stun_chance)}</dd>
+              <dd class="font-medium">
+                {formatLinearPercent(skill.stun_chance)}
+              </dd>
             </div>
-            {#if skill.stun_time > 0}
+            {#if hasLinearValue(skill.stun_time)}
               <div>
                 <dt class="text-muted-foreground">Stun Duration</dt>
-                <dd class="font-medium">{formatNumber(skill.stun_time)}s</dd>
+                <dd class="font-medium">
+                  {formatLinear(skill.stun_time, "s")}
+                </dd>
               </div>
             {/if}
           {/if}
-          {#if skill.fear_chance > 0}
+          {#if hasLinearValue(skill.fear_chance)}
             <div>
               <dt class="text-muted-foreground">Fear Chance</dt>
-              <dd class="font-medium">{formatPercent(skill.fear_chance)}</dd>
+              <dd class="font-medium">
+                {formatLinearPercent(skill.fear_chance)}
+              </dd>
             </div>
-            {#if skill.fear_time > 0}
+            {#if hasLinearValue(skill.fear_time)}
               <div>
                 <dt class="text-muted-foreground">Fear Duration</dt>
-                <dd class="font-medium">{formatNumber(skill.fear_time)}s</dd>
+                <dd class="font-medium">
+                  {formatLinear(skill.fear_time, "s")}
+                </dd>
               </div>
             {/if}
           {/if}
-          {#if skill.knockback_chance > 0}
+          {#if hasLinearValue(skill.knockback_chance)}
             <div>
               <dt class="text-muted-foreground">Knockback Chance</dt>
               <dd class="font-medium">
-                {formatPercent(skill.knockback_chance)}
+                {formatLinearPercent(skill.knockback_chance)}
               </dd>
             </div>
           {/if}
@@ -515,353 +613,375 @@
     </Card.Root>
   {/if}
 
-  <!-- Buff Duration -->
-  {#if skill.duration_base > 0 || skill.duration_per_level > 0}
+  <!-- Buff/Debuff Effects -->
+  {#if hasBuffEffects}
     <Card.Root class="bg-muted/30">
       <Card.Header>
         <Card.Title class="flex items-center gap-2">
           <Sparkles class="h-5 w-5 text-purple-500" />
-          Buff Duration
+          Buff/Debuff Effects
         </Card.Title>
       </Card.Header>
-      <Card.Content>
-        <p class="text-sm font-medium">
-          {formatDuration(skill.duration_base, skill.duration_per_level)}
-        </p>
-      </Card.Content>
-    </Card.Root>
-  {/if}
+      <Card.Content class="space-y-4">
+        <!-- Stat Bonuses -->
+        {#if hasStatBonuses || skill.duration_base > 0 || skill.duration_per_level > 0}
+          <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-4">
+            {#if skill.duration_base > 0 || skill.duration_per_level > 0}
+              <div>
+                <dt class="text-muted-foreground">Duration</dt>
+                <dd class="font-medium">
+                  {formatDuration(
+                    skill.duration_base,
+                    skill.duration_per_level,
+                  )}{#if skill.is_permanent}
+                    (permanent){/if}
+                </dd>
+              </div>
+            {/if}
+            {#if skill.health_max_bonus}
+              <div>
+                <dt class="text-muted-foreground">Max Health</dt>
+                <dd class="font-medium">
+                  {formatLinear(skill.health_max_bonus)}
+                </dd>
+              </div>
+            {/if}
+            {#if skill.health_max_percent_bonus}
+              <div>
+                <dt class="text-muted-foreground">Max Health %</dt>
+                <dd class="font-medium">
+                  {formatLinearPercent(skill.health_max_percent_bonus)}
+                </dd>
+              </div>
+            {/if}
+            {#if skill.mana_max_bonus}
+              <div>
+                <dt class="text-muted-foreground">Max Mana</dt>
+                <dd class="font-medium">
+                  {formatLinear(skill.mana_max_bonus)}
+                </dd>
+              </div>
+            {/if}
+            {#if skill.mana_max_percent_bonus}
+              <div>
+                <dt class="text-muted-foreground">Max Mana %</dt>
+                <dd class="font-medium">
+                  {formatLinearPercent(skill.mana_max_percent_bonus)}
+                </dd>
+              </div>
+            {/if}
+            {#if skill.energy_max_bonus}
+              <div>
+                <dt class="text-muted-foreground">Max Energy</dt>
+                <dd class="font-medium">
+                  {formatLinear(skill.energy_max_bonus)}
+                </dd>
+              </div>
+            {/if}
+            {#if skill.defense_bonus}
+              <div>
+                <dt class="text-muted-foreground">Defense</dt>
+                <dd class="font-medium">{formatLinear(skill.defense_bonus)}</dd>
+              </div>
+            {/if}
+            {#if skill.ward_bonus}
+              <div>
+                <dt class="text-muted-foreground">Ward</dt>
+                <dd class="font-medium">{formatLinear(skill.ward_bonus)}</dd>
+              </div>
+            {/if}
+            {#if skill.magic_resist_bonus}
+              <div>
+                <dt class="text-muted-foreground">Magic Resist</dt>
+                <dd class="font-medium">
+                  {formatLinear(skill.magic_resist_bonus)}
+                </dd>
+              </div>
+            {/if}
+            {#if skill.damage_bonus}
+              <div>
+                <dt class="text-muted-foreground">Damage</dt>
+                <dd class="font-medium">{formatLinear(skill.damage_bonus)}</dd>
+              </div>
+            {/if}
+            {#if skill.damage_percent_bonus}
+              <div>
+                <dt class="text-muted-foreground">Damage %</dt>
+                <dd class="font-medium">
+                  {formatLinearPercent(skill.damage_percent_bonus)}
+                </dd>
+              </div>
+            {/if}
+            {#if skill.magic_damage_bonus}
+              <div>
+                <dt class="text-muted-foreground">Magic Damage</dt>
+                <dd class="font-medium">
+                  {formatLinear(skill.magic_damage_bonus)}
+                </dd>
+              </div>
+            {/if}
+            {#if skill.magic_damage_percent_bonus}
+              <div>
+                <dt class="text-muted-foreground">Magic Damage %</dt>
+                <dd class="font-medium">
+                  {formatLinearPercent(skill.magic_damage_percent_bonus)}
+                </dd>
+              </div>
+            {/if}
+            {#if skill.haste_bonus}
+              <div>
+                <dt class="text-muted-foreground">Haste</dt>
+                <dd class="font-medium">
+                  {formatLinearPercent(skill.haste_bonus)}
+                </dd>
+              </div>
+            {/if}
+            {#if skill.spell_haste_bonus}
+              <div>
+                <dt class="text-muted-foreground">Spell Haste</dt>
+                <dd class="font-medium">
+                  {formatLinearPercent(skill.spell_haste_bonus)}
+                </dd>
+              </div>
+            {/if}
+            {#if skill.speed_bonus}
+              <div>
+                <dt class="text-muted-foreground">Movement Speed</dt>
+                <dd class="font-medium">
+                  {formatLinearPercent(skill.speed_bonus)}
+                </dd>
+              </div>
+            {/if}
+            {#if skill.critical_chance_bonus}
+              <div>
+                <dt class="text-muted-foreground">Critical Chance</dt>
+                <dd class="font-medium">
+                  {formatLinearPercent(skill.critical_chance_bonus)}
+                </dd>
+              </div>
+            {/if}
+            {#if skill.accuracy_bonus}
+              <div>
+                <dt class="text-muted-foreground">Accuracy</dt>
+                <dd class="font-medium">
+                  {formatLinearPercent(skill.accuracy_bonus)}
+                </dd>
+              </div>
+            {/if}
+            {#if skill.block_chance_bonus}
+              <div>
+                <dt class="text-muted-foreground">Block Chance</dt>
+                <dd class="font-medium">
+                  {formatLinearPercent(skill.block_chance_bonus)}
+                </dd>
+              </div>
+            {/if}
+            {#if skill.fear_resist_chance_bonus}
+              <div>
+                <dt class="text-muted-foreground">Fear Resist</dt>
+                <dd class="font-medium">
+                  {formatLinearPercent(skill.fear_resist_chance_bonus)}
+                </dd>
+              </div>
+            {/if}
+            {#if skill.damage_shield}
+              <div>
+                <dt class="text-muted-foreground">Damage Shield</dt>
+                <dd class="font-medium">{formatLinear(skill.damage_shield)}</dd>
+              </div>
+            {/if}
+            {#if skill.cooldown_reduction_percent}
+              <div>
+                <dt class="text-muted-foreground">Cooldown Reduction</dt>
+                <dd class="font-medium">
+                  {formatLinearPercent(skill.cooldown_reduction_percent)}
+                </dd>
+              </div>
+            {/if}
+            {#if skill.heal_on_hit_percent}
+              <div>
+                <dt class="text-muted-foreground">Heal on Hit</dt>
+                <dd class="font-medium">
+                  {formatLinearPercent(skill.heal_on_hit_percent)}
+                </dd>
+              </div>
+            {/if}
+          </dl>
+        {/if}
 
-  <!-- Stat Bonuses -->
-  {#if hasStatBonuses}
-    <Card.Root class="bg-muted/30">
-      <Card.Header>
-        <Card.Title class="flex items-center gap-2">
-          <Shield class="h-5 w-5 text-blue-500" />
-          Stat Bonuses
-        </Card.Title>
-      </Card.Header>
-      <Card.Content>
-        <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-3">
-          {#if skill.health_max_bonus}
-            <div>
-              <dt class="text-muted-foreground">Max Health</dt>
-              <dd class="font-medium">
-                {formatLinear(skill.health_max_bonus)}
-              </dd>
-            </div>
-          {/if}
-          {#if skill.health_max_percent_bonus}
-            <div>
-              <dt class="text-muted-foreground">Max Health %</dt>
-              <dd class="font-medium">
-                {formatLinear(skill.health_max_percent_bonus, "%")}
-              </dd>
-            </div>
-          {/if}
-          {#if skill.mana_max_bonus}
-            <div>
-              <dt class="text-muted-foreground">Max Mana</dt>
-              <dd class="font-medium">{formatLinear(skill.mana_max_bonus)}</dd>
-            </div>
-          {/if}
-          {#if skill.mana_max_percent_bonus}
-            <div>
-              <dt class="text-muted-foreground">Max Mana %</dt>
-              <dd class="font-medium">
-                {formatLinear(skill.mana_max_percent_bonus, "%")}
-              </dd>
-            </div>
-          {/if}
-          {#if skill.energy_max_bonus}
-            <div>
-              <dt class="text-muted-foreground">Max Energy</dt>
-              <dd class="font-medium">
-                {formatLinear(skill.energy_max_bonus)}
-              </dd>
-            </div>
-          {/if}
-          {#if skill.defense_bonus}
-            <div>
-              <dt class="text-muted-foreground">Defense</dt>
-              <dd class="font-medium">{formatLinear(skill.defense_bonus)}</dd>
-            </div>
-          {/if}
-          {#if skill.magic_resist_bonus}
-            <div>
-              <dt class="text-muted-foreground">Magic Resist</dt>
-              <dd class="font-medium">
-                {formatLinear(skill.magic_resist_bonus)}
-              </dd>
-            </div>
-          {/if}
-          {#if skill.damage_bonus}
-            <div>
-              <dt class="text-muted-foreground">Damage</dt>
-              <dd class="font-medium">{formatLinear(skill.damage_bonus)}</dd>
-            </div>
-          {/if}
-          {#if skill.damage_percent_bonus}
-            <div>
-              <dt class="text-muted-foreground">Damage %</dt>
-              <dd class="font-medium">
-                {formatLinear(skill.damage_percent_bonus, "%")}
-              </dd>
-            </div>
-          {/if}
-          {#if skill.magic_damage_bonus}
-            <div>
-              <dt class="text-muted-foreground">Magic Damage</dt>
-              <dd class="font-medium">
-                {formatLinear(skill.magic_damage_bonus)}
-              </dd>
-            </div>
-          {/if}
-          {#if skill.magic_damage_percent_bonus}
-            <div>
-              <dt class="text-muted-foreground">Magic Damage %</dt>
-              <dd class="font-medium">
-                {formatLinear(skill.magic_damage_percent_bonus, "%")}
-              </dd>
-            </div>
-          {/if}
-          {#if skill.haste_bonus}
-            <div>
-              <dt class="text-muted-foreground">Haste</dt>
-              <dd class="font-medium">
-                {formatLinear(skill.haste_bonus, "%")}
-              </dd>
-            </div>
-          {/if}
-          {#if skill.spell_haste_bonus}
-            <div>
-              <dt class="text-muted-foreground">Spell Haste</dt>
-              <dd class="font-medium">
-                {formatLinear(skill.spell_haste_bonus, "%")}
-              </dd>
-            </div>
-          {/if}
-          {#if skill.speed_bonus}
-            <div>
-              <dt class="text-muted-foreground">Movement Speed</dt>
-              <dd class="font-medium">
-                {formatLinear(skill.speed_bonus, "%")}
-              </dd>
-            </div>
-          {/if}
-          {#if skill.critical_chance_bonus}
-            <div>
-              <dt class="text-muted-foreground">Critical Chance</dt>
-              <dd class="font-medium">
-                {formatLinear(skill.critical_chance_bonus, "%")}
-              </dd>
-            </div>
-          {/if}
-          {#if skill.accuracy_bonus}
-            <div>
-              <dt class="text-muted-foreground">Accuracy</dt>
-              <dd class="font-medium">{formatLinear(skill.accuracy_bonus)}</dd>
-            </div>
-          {/if}
-          {#if skill.block_chance_bonus}
-            <div>
-              <dt class="text-muted-foreground">Block Chance</dt>
-              <dd class="font-medium">
-                {formatLinear(skill.block_chance_bonus, "%")}
-              </dd>
-            </div>
-          {/if}
-          {#if skill.damage_shield}
-            <div>
-              <dt class="text-muted-foreground">Damage Shield</dt>
-              <dd class="font-medium">{formatLinear(skill.damage_shield)}</dd>
-            </div>
-          {/if}
-          {#if skill.cooldown_reduction_percent}
-            <div>
-              <dt class="text-muted-foreground">Cooldown Reduction</dt>
-              <dd class="font-medium">
-                {formatLinear(skill.cooldown_reduction_percent, "%")}
-              </dd>
-            </div>
-          {/if}
-          {#if skill.heal_on_hit_percent}
-            <div>
-              <dt class="text-muted-foreground">Heal on Hit</dt>
-              <dd class="font-medium">
-                {formatLinear(skill.heal_on_hit_percent, "%")}
-              </dd>
-            </div>
-          {/if}
-        </dl>
-      </Card.Content>
-    </Card.Root>
-  {/if}
+        <!-- Regen Bonuses -->
+        {#if hasRegenBonuses}
+          <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-4">
+            {#if skill.healing_per_second_bonus}
+              <div>
+                <dt class="text-muted-foreground">Health/sec</dt>
+                <dd class="font-medium">
+                  {formatLinear(skill.healing_per_second_bonus)}
+                </dd>
+              </div>
+            {/if}
+            {#if skill.health_percent_per_second_bonus}
+              <div>
+                <dt class="text-muted-foreground">Health %/sec</dt>
+                <dd class="font-medium">
+                  {formatLinearPercent(skill.health_percent_per_second_bonus)}
+                </dd>
+              </div>
+            {/if}
+            {#if skill.mana_per_second_bonus}
+              <div>
+                <dt class="text-muted-foreground">Mana/sec</dt>
+                <dd class="font-medium">
+                  {formatLinear(skill.mana_per_second_bonus)}
+                </dd>
+              </div>
+            {/if}
+            {#if skill.mana_percent_per_second_bonus}
+              <div>
+                <dt class="text-muted-foreground">Mana %/sec</dt>
+                <dd class="font-medium">
+                  {formatLinearPercent(skill.mana_percent_per_second_bonus)}
+                </dd>
+              </div>
+            {/if}
+            {#if skill.energy_per_second_bonus}
+              <div>
+                <dt class="text-muted-foreground">Energy/sec</dt>
+                <dd class="font-medium">
+                  {formatLinear(skill.energy_per_second_bonus)}
+                </dd>
+              </div>
+            {/if}
+            {#if skill.energy_percent_per_second_bonus}
+              <div>
+                <dt class="text-muted-foreground">Energy %/sec</dt>
+                <dd class="font-medium">
+                  {formatLinearPercent(skill.energy_percent_per_second_bonus)}
+                </dd>
+              </div>
+            {/if}
+          </dl>
+        {/if}
 
-  <!-- Regen Bonuses -->
-  {#if hasRegenBonuses}
-    <Card.Root class="bg-muted/30">
-      <Card.Header>
-        <Card.Title class="flex items-center gap-2">
-          <Heart class="h-5 w-5 text-pink-500" />
-          Regeneration Bonuses
-        </Card.Title>
-      </Card.Header>
-      <Card.Content>
-        <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-3">
-          {#if skill.healing_per_second_bonus}
-            <div>
-              <dt class="text-muted-foreground">Health/sec</dt>
-              <dd class="font-medium">
-                {formatLinear(skill.healing_per_second_bonus)}
-              </dd>
-            </div>
-          {/if}
-          {#if skill.health_percent_per_second_bonus}
-            <div>
-              <dt class="text-muted-foreground">Health %/sec</dt>
-              <dd class="font-medium">
-                {formatLinear(skill.health_percent_per_second_bonus, "%")}
-              </dd>
-            </div>
-          {/if}
-          {#if skill.mana_per_second_bonus}
-            <div>
-              <dt class="text-muted-foreground">Mana/sec</dt>
-              <dd class="font-medium">
-                {formatLinear(skill.mana_per_second_bonus)}
-              </dd>
-            </div>
-          {/if}
-          {#if skill.mana_percent_per_second_bonus}
-            <div>
-              <dt class="text-muted-foreground">Mana %/sec</dt>
-              <dd class="font-medium">
-                {formatLinear(skill.mana_percent_per_second_bonus, "%")}
-              </dd>
-            </div>
-          {/if}
-          {#if skill.energy_per_second_bonus}
-            <div>
-              <dt class="text-muted-foreground">Energy/sec</dt>
-              <dd class="font-medium">
-                {formatLinear(skill.energy_per_second_bonus)}
-              </dd>
-            </div>
-          {/if}
-          {#if skill.energy_percent_per_second_bonus}
-            <div>
-              <dt class="text-muted-foreground">Energy %/sec</dt>
-              <dd class="font-medium">
-                {formatLinear(skill.energy_percent_per_second_bonus, "%")}
-              </dd>
-            </div>
-          {/if}
-        </dl>
-      </Card.Content>
-    </Card.Root>
-  {/if}
+        <!-- Resist Bonuses -->
+        {#if hasResistBonuses}
+          <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-4">
+            {#if skill.poison_resist_bonus}
+              <div>
+                <dt class="text-muted-foreground">Poison Resist</dt>
+                <dd class="font-medium">
+                  {formatLinear(skill.poison_resist_bonus)}
+                </dd>
+              </div>
+            {/if}
+            {#if skill.fire_resist_bonus}
+              <div>
+                <dt class="text-muted-foreground">Fire Resist</dt>
+                <dd class="font-medium">
+                  {formatLinear(skill.fire_resist_bonus)}
+                </dd>
+              </div>
+            {/if}
+            {#if skill.cold_resist_bonus}
+              <div>
+                <dt class="text-muted-foreground">Cold Resist</dt>
+                <dd class="font-medium">
+                  {formatLinear(skill.cold_resist_bonus)}
+                </dd>
+              </div>
+            {/if}
+            {#if skill.disease_resist_bonus}
+              <div>
+                <dt class="text-muted-foreground">Disease Resist</dt>
+                <dd class="font-medium">
+                  {formatLinear(skill.disease_resist_bonus)}
+                </dd>
+              </div>
+            {/if}
+          </dl>
+        {/if}
 
-  <!-- Resist Bonuses -->
-  {#if hasResistBonuses}
-    <Card.Root class="bg-muted/30">
-      <Card.Header>
-        <Card.Title class="flex items-center gap-2">
-          <Shield class="h-5 w-5 text-green-500" />
-          Resist Bonuses
-        </Card.Title>
-      </Card.Header>
-      <Card.Content>
-        <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-3">
-          {#if skill.poison_resist_bonus}
-            <div>
-              <dt class="text-muted-foreground">Poison Resist</dt>
-              <dd class="font-medium">
-                {formatLinear(skill.poison_resist_bonus)}
-              </dd>
-            </div>
-          {/if}
-          {#if skill.fire_resist_bonus}
-            <div>
-              <dt class="text-muted-foreground">Fire Resist</dt>
-              <dd class="font-medium">
-                {formatLinear(skill.fire_resist_bonus)}
-              </dd>
-            </div>
-          {/if}
-          {#if skill.cold_resist_bonus}
-            <div>
-              <dt class="text-muted-foreground">Cold Resist</dt>
-              <dd class="font-medium">
-                {formatLinear(skill.cold_resist_bonus)}
-              </dd>
-            </div>
-          {/if}
-          {#if skill.disease_resist_bonus}
-            <div>
-              <dt class="text-muted-foreground">Disease Resist</dt>
-              <dd class="font-medium">
-                {formatLinear(skill.disease_resist_bonus)}
-              </dd>
-            </div>
-          {/if}
-        </dl>
-      </Card.Content>
-    </Card.Root>
-  {/if}
+        <!-- Attribute Bonuses -->
+        {#if hasAttributeBonuses}
+          <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-4">
+            {#if skill.strength_bonus}
+              <div>
+                <dt class="text-muted-foreground">Strength</dt>
+                <dd class="font-medium">
+                  {formatLinear(skill.strength_bonus)}
+                </dd>
+              </div>
+            {/if}
+            {#if skill.intelligence_bonus}
+              <div>
+                <dt class="text-muted-foreground">Intelligence</dt>
+                <dd class="font-medium">
+                  {formatLinear(skill.intelligence_bonus)}
+                </dd>
+              </div>
+            {/if}
+            {#if skill.dexterity_bonus}
+              <div>
+                <dt class="text-muted-foreground">Dexterity</dt>
+                <dd class="font-medium">
+                  {formatLinear(skill.dexterity_bonus)}
+                </dd>
+              </div>
+            {/if}
+            {#if skill.constitution_bonus}
+              <div>
+                <dt class="text-muted-foreground">Constitution</dt>
+                <dd class="font-medium">
+                  {formatLinear(skill.constitution_bonus)}
+                </dd>
+              </div>
+            {/if}
+            {#if skill.wisdom_bonus}
+              <div>
+                <dt class="text-muted-foreground">Wisdom</dt>
+                <dd class="font-medium">{formatLinear(skill.wisdom_bonus)}</dd>
+              </div>
+            {/if}
+            {#if skill.charisma_bonus}
+              <div>
+                <dt class="text-muted-foreground">Charisma</dt>
+                <dd class="font-medium">
+                  {formatLinear(skill.charisma_bonus)}
+                </dd>
+              </div>
+            {/if}
+          </dl>
+        {/if}
 
-  <!-- Attribute Bonuses -->
-  {#if hasAttributeBonuses}
-    <Card.Root class="bg-muted/30">
-      <Card.Header>
-        <Card.Title class="flex items-center gap-2">
-          <Sparkles class="h-5 w-5 text-amber-500" />
-          Attribute Bonuses
-        </Card.Title>
-      </Card.Header>
-      <Card.Content>
-        <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-3">
-          {#if skill.strength_bonus}
-            <div>
-              <dt class="text-muted-foreground">Strength</dt>
-              <dd class="font-medium">{formatLinear(skill.strength_bonus)}</dd>
-            </div>
-          {/if}
-          {#if skill.intelligence_bonus}
-            <div>
-              <dt class="text-muted-foreground">Intelligence</dt>
-              <dd class="font-medium">
-                {formatLinear(skill.intelligence_bonus)}
-              </dd>
-            </div>
-          {/if}
-          {#if skill.dexterity_bonus}
-            <div>
-              <dt class="text-muted-foreground">Dexterity</dt>
-              <dd class="font-medium">{formatLinear(skill.dexterity_bonus)}</dd>
-            </div>
-          {/if}
-          {#if skill.constitution_bonus}
-            <div>
-              <dt class="text-muted-foreground">Constitution</dt>
-              <dd class="font-medium">
-                {formatLinear(skill.constitution_bonus)}
-              </dd>
-            </div>
-          {/if}
-          {#if skill.wisdom_bonus}
-            <div>
-              <dt class="text-muted-foreground">Wisdom</dt>
-              <dd class="font-medium">{formatLinear(skill.wisdom_bonus)}</dd>
-            </div>
-          {/if}
-          {#if skill.charisma_bonus}
-            <div>
-              <dt class="text-muted-foreground">Charisma</dt>
-              <dd class="font-medium">{formatLinear(skill.charisma_bonus)}</dd>
-            </div>
-          {/if}
-        </dl>
+        <!-- Special Flags -->
+        {#if skill.is_invisibility || skill.is_mana_shield || skill.is_cleanse || skill.is_dispel || skill.is_blindness || skill.is_permanent || skill.is_only_for_magic_classes}
+          <div class="space-y-1 text-sm">
+            {#if skill.is_invisibility}
+              <p class="text-purple-600 dark:text-purple-400">
+                Grants Invisibility
+              </p>
+            {/if}
+            {#if skill.is_mana_shield}
+              <p class="text-blue-600 dark:text-blue-400">
+                Mana Shield (damage absorbed by mana)
+              </p>
+            {/if}
+            {#if skill.is_cleanse}
+              <p class="text-green-600 dark:text-green-400">Cleanses debuffs</p>
+            {/if}
+            {#if skill.is_dispel}
+              <p class="text-red-600 dark:text-red-400">Dispels buffs</p>
+            {/if}
+            {#if skill.is_blindness}
+              <p class="text-amber-600 dark:text-amber-400">Blinds target</p>
+            {/if}
+            {#if skill.is_only_for_magic_classes}
+              <p class="text-indigo-600 dark:text-indigo-400">
+                Magic classes only
+              </p>
+            {/if}
+          </div>
+        {/if}
       </Card.Content>
     </Card.Root>
   {/if}
@@ -871,8 +991,8 @@
     <Card.Root class="bg-muted/30">
       <Card.Header>
         <Card.Title class="flex items-center gap-2">
-          <Package class="h-5 w-5 text-muted-foreground" />
-          Granted By Items
+          <Gem class="h-5 w-5 text-amber-500" />
+          Granted by Items
         </Card.Title>
       </Card.Header>
       <Card.Content>
@@ -898,12 +1018,64 @@
     </Card.Root>
   {/if}
 
+  <!-- Used By Classes -->
+  {#if skill.player_classes.length > 0}
+    <Card.Root class="bg-muted/30">
+      <Card.Header>
+        <Card.Title class="flex items-center gap-2">
+          <Star class="h-5 w-5 text-indigo-500" />
+          Learned by Classes
+        </Card.Title>
+      </Card.Header>
+      <Card.Content>
+        <div class="space-y-2">
+          {#each skill.player_classes as cls (cls)}
+            <div class="flex items-center gap-2">
+              <a
+                href="/classes/{cls}"
+                class="text-blue-600 dark:text-blue-400 hover:underline"
+              >
+                {CLASS_LABELS[cls] ?? cls}
+              </a>
+            </div>
+          {/each}
+        </div>
+      </Card.Content>
+    </Card.Root>
+  {/if}
+
+  <!-- Used By Pets -->
+  {#if data.usedByPets.length > 0}
+    <Card.Root class="bg-muted/30">
+      <Card.Header>
+        <Card.Title class="flex items-center gap-2">
+          <Cat class="h-5 w-5 text-teal-500" />
+          Used by Pets
+        </Card.Title>
+      </Card.Header>
+      <Card.Content>
+        <div class="space-y-2">
+          {#each data.usedByPets as pet (pet.id)}
+            <div class="flex items-center gap-2">
+              <a
+                href="/pets/{pet.id}"
+                class="text-blue-600 dark:text-blue-400 hover:underline"
+              >
+                {pet.name}
+              </a>
+            </div>
+          {/each}
+        </div>
+      </Card.Content>
+    </Card.Root>
+  {/if}
+
   <!-- Used by Monsters -->
   {#if data.usedByMonsters.length > 0}
     <Card.Root class="bg-muted/30">
       <Card.Header>
         <Card.Title class="flex items-center gap-2">
-          <Sword class="h-5 w-5 text-muted-foreground" />
+          <Skull class="h-5 w-5 text-red-500" />
           Used by Monsters ({data.usedByMonsters.length})
         </Card.Title>
       </Card.Header>
