@@ -49,8 +49,7 @@
   }
 
   function formatNumber(n: number): string {
-    if (Number.isInteger(n)) return n.toLocaleString();
-    return n.toFixed(1);
+    return n.toLocaleString();
   }
 
   function formatPercent(n: number): string {
