@@ -441,7 +441,22 @@ function formatBuffDebuffStats(
   if (skill.is_invisibility) parts.push("grants invis");
   if (skill.is_mana_shield) parts.push("mana shield");
 
-  // 2. Resource pools
+  // 2. Movement (matches game tooltip order)
+  // Root/slow — server threshold for full root (immobilized) is speed <= -50
+  // Source: server-scripts/Monster.cs, Pet.cs, Npc.cs — speed <= -50f branch
+  const speedBonus = parseLinearValue(skill.speed_bonus);
+  if (speedBonus) {
+    if (speedBonus.base_value <= -50) {
+      parts.push("root");
+    } else if (speedBonus.base_value !== 0) {
+      const sign = speedBonus.base_value > 0 ? "+" : "";
+      parts.push(
+        `${sign}${formatLinearValue(speedBonus, monsterContext)} speed`,
+      );
+    }
+  }
+
+  // 3. Resource pools
   const healthMaxBonus = parseLinearValue(skill.health_max_bonus);
   if (healthMaxBonus) {
     const sign = healthMaxBonus.base_value > 0 ? "+" : "";
@@ -482,7 +497,7 @@ function formatBuffDebuffStats(
     );
   }
 
-  // 3. Offense
+  // 4. Offense
   const damageBonus = parseLinearValue(skill.damage_bonus);
   if (damageBonus && damageBonus.base_value !== 0) {
     const sign = damageBonus.base_value > 0 ? "+" : "";
@@ -557,21 +572,6 @@ function formatBuffDebuffStats(
     parts.push(
       `${sign}${formatLinearPercent(spellHasteBonus, monsterContext)} spell haste`,
     );
-  }
-
-  // 6. Movement
-  // Root/slow — server threshold for full root (immobilized) is speed <= -50
-  // Source: server-scripts/Monster.cs, Pet.cs, Npc.cs — speed <= -50f branch
-  const speedBonus = parseLinearValue(skill.speed_bonus);
-  if (speedBonus) {
-    if (speedBonus.base_value <= -50) {
-      parts.push("root");
-    } else if (speedBonus.base_value !== 0) {
-      const sign = speedBonus.base_value > 0 ? "+" : "";
-      parts.push(
-        `${sign}${formatLinearValue(speedBonus, monsterContext)} speed`,
-      );
-    }
   }
 
   // 7. Hit/chance modifiers

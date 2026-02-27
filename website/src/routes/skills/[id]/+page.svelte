@@ -1389,6 +1389,15 @@
                 </dd>
               </div>
             {/if}
+            <!-- 2. Movement -->
+            {#if skill.speed_bonus}
+              <div>
+                <dt class="text-muted-foreground">Movement Speed</dt>
+                <dd class="font-medium">
+                  {formatLinear(skill.speed_bonus)}
+                </dd>
+              </div>
+            {/if}
             <!-- 3. Offense -->
             {#if skill.damage_bonus}
               <div>
@@ -1490,16 +1499,7 @@
                 </dd>
               </div>
             {/if}
-            <!-- 6. Movement -->
-            {#if skill.speed_bonus}
-              <div>
-                <dt class="text-muted-foreground">Movement Speed</dt>
-                <dd class="font-medium">
-                  {formatLinear(skill.speed_bonus)}
-                </dd>
-              </div>
-            {/if}
-            <!-- 7. Hit/chance modifiers -->
+            <!-- 6. Hit/chance modifiers -->
             {#if skill.critical_chance_bonus}
               <div>
                 <dt class="text-muted-foreground">Critical Chance</dt>
