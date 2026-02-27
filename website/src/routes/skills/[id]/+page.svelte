@@ -1980,10 +1980,9 @@
               WIS 100: +40% | WIS 250: +100% (2&times;) | WIS 1250: +500%
               (6&times;, cap)
             </p>
-            <!-- Source: server-scripts/HealSkill.cs — num2 *= 2, num2 *= 3 -->
+            <!-- Source: server-scripts/TargetHealSkill.cs:271-274, AreaHealSkill.cs:94-96 — Random.value > 0.9 threshold -->
             <p class="text-muted-foreground">
-              Critical Heal (if heal &gt; 3): 95% &rarr; &times;2.0 | 5% &rarr;
-              &times;3.0
+              Critical Heal: on crit &rarr; 90% &times;2.0 | 10% &times;3.0
             </p>
           </div>
         {/if}
