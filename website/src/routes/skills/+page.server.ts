@@ -81,6 +81,11 @@ interface SkillRow {
   is_dispel: number;
   is_blindness: number;
   is_enrage: number;
+  is_poison_debuff: number;
+  is_disease_debuff: number;
+  is_fire_debuff: number;
+  is_cold_debuff: number;
+  is_magic_debuff: number;
   summoned_monster_id: string | null;
   summoned_monster_name: string | null;
   summoned_monster_level: number | null;
@@ -179,6 +184,11 @@ export const load: PageServerLoad = (): SkillsPageData => {
       s.is_dispel,
       s.is_blindness,
       s.is_enrage,
+      s.is_poison_debuff,
+      s.is_disease_debuff,
+      s.is_fire_debuff,
+      s.is_cold_debuff,
+      s.is_magic_debuff,
       s.summoned_monster_id,
       sm.name as summoned_monster_name,
       s.summoned_monster_level,
@@ -286,6 +296,11 @@ export const load: PageServerLoad = (): SkillsPageData => {
       is_dispel: Boolean(row.is_dispel),
       is_blindness: Boolean(row.is_blindness),
       is_enrage: Boolean(row.is_enrage),
+      is_poison_debuff: Boolean(row.is_poison_debuff),
+      is_disease_debuff: Boolean(row.is_disease_debuff),
+      is_fire_debuff: Boolean(row.is_fire_debuff),
+      is_cold_debuff: Boolean(row.is_cold_debuff),
+      is_magic_debuff: Boolean(row.is_magic_debuff),
       summoned_monster_id: row.summoned_monster_id,
       summoned_monster_name: row.summoned_monster_name,
       summoned_monster_level: row.summoned_monster_level,
