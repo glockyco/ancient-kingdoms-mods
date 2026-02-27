@@ -492,7 +492,7 @@ function formatBuffDebuffStats(
   if (energyMaxBonus) {
     const sign = energyMaxBonus.base_value > 0 ? "+" : "";
     parts.push(
-      `${sign}${formatLinearValue(energyMaxBonus, monsterContext)} max energy`,
+      `${sign}${formatLinearValue(energyMaxBonus, monsterContext)} max rage`,
     );
   }
 
@@ -648,14 +648,14 @@ function formatBuffDebuffStats(
   const eps = parseLinearValue(skill.energy_per_second_bonus);
   if (eps && eps.base_value !== 0) {
     const sign = eps.base_value > 0 ? "+" : "";
-    parts.push(`${sign}${formatLinearValue(eps, monsterContext)} energy/s`);
+    parts.push(`${sign}${formatLinearValue(eps, monsterContext)} rage/s`);
   }
 
   const energyPct = parseLinearValue(skill.energy_percent_per_second_bonus);
   if (energyPct && energyPct.base_value !== 0) {
     const sign = energyPct.base_value > 0 ? "+" : "";
     parts.push(
-      `${sign}${formatLinearPercent(energyPct, monsterContext)} energy/s`,
+      `${sign}${formatLinearPercent(energyPct, monsterContext)} rage/s`,
     );
   }
 

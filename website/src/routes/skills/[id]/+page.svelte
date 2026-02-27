@@ -272,7 +272,7 @@
     { key: "mana_cost", label: "Mana Cost", isPercent: false, suffix: "" },
     {
       key: "energy_cost",
-      label: "Energy Cost",
+      label: "Rage Cost",
       isPercent: false,
       suffix: "",
     },
@@ -354,7 +354,7 @@
     },
     {
       key: "energy_max_bonus",
-      label: "Max Energy",
+      label: "Max Rage",
       isPercent: false,
       suffix: "",
     },
@@ -481,13 +481,13 @@
     },
     {
       key: "energy_per_second_bonus",
-      label: "Energy/sec",
+      label: "Rage/sec",
       isPercent: false,
       suffix: "",
     },
     {
       key: "energy_percent_per_second_bonus",
-      label: "Energy %/sec",
+      label: "Rage %/sec",
       isPercent: true,
       suffix: "",
     },
@@ -1034,7 +1034,7 @@
           {/if}
           {#if skill.energy_cost}
             <div>
-              <dt class="text-muted-foreground">Energy Cost</dt>
+              <dt class="text-muted-foreground">Rage Cost</dt>
               <dd class="font-medium">{formatLinear(skill.energy_cost)}</dd>
             </div>
           {/if}
@@ -1383,7 +1383,7 @@
             {/if}
             {#if skill.energy_max_bonus}
               <div>
-                <dt class="text-muted-foreground">Max Energy</dt>
+                <dt class="text-muted-foreground">Max Rage</dt>
                 <dd class="font-medium">
                   {formatLinear(skill.energy_max_bonus)}
                 </dd>
@@ -1554,7 +1554,7 @@
             {/if}
             {#if skill.energy_per_second_bonus}
               <div>
-                <dt class="text-muted-foreground">Energy/sec</dt>
+                <dt class="text-muted-foreground">Rage/sec</dt>
                 <dd class="font-medium">
                   {formatLinear(skill.energy_per_second_bonus)}
                 </dd>
@@ -1562,7 +1562,7 @@
             {/if}
             {#if skill.energy_percent_per_second_bonus}
               <div>
-                <dt class="text-muted-foreground">Energy %/sec</dt>
+                <dt class="text-muted-foreground">Rage %/sec</dt>
                 <dd class="font-medium">
                   {formatLinearPercent(skill.energy_percent_per_second_bonus)}
                 </dd>
@@ -1750,9 +1750,8 @@
               <!-- Source: server-scripts/TargetDamageSkill.cs — energy.current * 2 -->
               <!-- Source: server-scripts/TargetProjectileSkill.cs — mana.current * 3 -->
               <p>
-                Consumes all rage/energy. Damage = Rage &times; 2
-                (Warrior/Rogue) or Mana &times; 3 (Wizard). Bypasses all
-                resistance and mitigation.
+                Consumes all rage. Damage = Rage &times; 2 (Warrior/Rogue) or
+                Mana &times; 3 (Wizard). Bypasses all resistance and mitigation.
               </p>
             {:else if damageFormulaType === "scroll"}
               <!-- Source: server-scripts/TargetDamageSkill.cs — isScroll → player.level.current * 15 -->
@@ -2141,8 +2140,8 @@
           <!-- Source: server-scripts/Player.cs — refractoryPeriodSkillTimeEnd -->
           <p>
             Weapon strike: uses weapon delay for attack speed (affected by
-            haste), can trigger weapon proc, generates rage/energy on hit (25%
-            of damage), allows action queuing during cast
+            haste), can trigger weapon proc, generates rage on hit (25% of
+            damage), allows action queuing during cast
           </p>
         {/if}
         {#if skill.is_mana_shield}

@@ -1172,13 +1172,13 @@
           </tr>
           <tr>
             <td class="py-2 pr-4"><code>energy_per_second_bonus</code></td>
-            <td class="py-2">Flat energy regen per second</td>
+            <td class="py-2">Flat rage regen per second</td>
           </tr>
           <tr>
             <td class="py-2 pr-4"
               ><code>energy_percent_per_second_bonus</code></td
             >
-            <td class="py-2">% of max energy regen per second</td>
+            <td class="py-2">% of max rage regen per second</td>
           </tr>
         </tbody>
       </table>
@@ -1316,7 +1316,7 @@
             <td class="py-2 pr-4">Manaburn</td>
             <td class="py-2 pr-4"><code>is_manaburn_skill</code></td>
             <td class="py-2"
-              >Burns target's mana/energy. Bypasses resist AND mitigation</td
+              >Burns target's mana/rage. Bypasses resist AND mitigation</td
             >
           </tr>
           <tr>
@@ -1367,9 +1367,9 @@
       </table>
     </div>
 
-    <h3 class="text-lg font-semibold mt-4">Energy Generation</h3>
+    <h3 class="text-lg font-semibold mt-4">Rage Generation</h3>
     <p class="text-sm">
-      Warrior and Rogue gain energy from default attacks (<code
+      Warrior and Rogue gain rage from default attacks (<code
         >skill.followupDefaultAttack</code
       >). <code>Combat.cs:961-966</code>:
     </p>
@@ -1761,7 +1761,7 @@
           <tr>
             <td class="py-2 pr-4">20</td>
             <td class="py-2 pr-4"
-              >Energy generation (Warrior/Rogue) / Mana regen (Wizard)</td
+              >Rage generation (Warrior/Rogue) / Mana regen (Wizard)</td
             >
             <td class="py-2 pr-4">842-979</td>
             <td class="py-2">&sect;12</td>
