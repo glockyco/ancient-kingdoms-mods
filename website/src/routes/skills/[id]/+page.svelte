@@ -1969,10 +1969,10 @@
         {/if}
 
         <!-- E. Aggro Formula -->
-        {#if isDamageType && hasLinearValue(skill.aggro)}
+        <!-- Source: server-scripts/TargetDamageSkill.cs:239 — num5 = aggro > 0 ? caster.health.max : 0 -->
+        {#if isDamageType && (skill.aggro?.base_value ?? 0) > 0}
           <div class="space-y-1">
             <h3 class="font-semibold">Aggro</h3>
-            <!-- Source: server-scripts/TargetDamageSkill.cs:239, Combat.cs:430 -->
             <p class="font-mono">min(target.HP,</p>
             <ul class="font-mono list-none ml-4 space-y-0.5">
               <li>skillAggro + caster.maxHP</li>
