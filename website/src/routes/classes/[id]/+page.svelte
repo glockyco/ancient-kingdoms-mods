@@ -182,57 +182,6 @@
     Array.from(new Set(data.skills.map((s) => s.skill_type))).sort(),
   );
 
-  // Unique skill types for mercenary skills filter
-  const uniqueMercenarySkillTypes = $derived(
-    Array.from(
-      new Set((data.mercenarySkills as ClassSkill[]).map((s) => s.skill_type)),
-    ).sort(),
-  );
-
-  const mercenarySkillColumns: ColumnDef<ClassSkill>[] = [
-    { accessorKey: "name", header: "Skill", enableHiding: false },
-    {
-      accessorKey: "skill_type",
-      header: "Type",
-      filterFn: (row, columnId, filterValue: string[]) => {
-        const value = row.getValue(columnId) as string;
-        if (!filterValue || filterValue.length === 0) return true;
-        return filterValue.includes(value);
-      },
-    },
-    {
-      accessorKey: "max_level",
-      header: "Max Lvl",
-    },
-    {
-      id: "cost",
-      header: costColumnHeader,
-      enableSorting: false,
-      accessorFn: (row) =>
-        formatSkillCost(
-          costField === "energy_cost" ? row.energy_cost : row.mana_cost,
-        ),
-    },
-    {
-      id: "cooldown",
-      header: "Cooldown",
-      enableSorting: false,
-      accessorFn: (row) => formatSkillCooldown(row.cooldown),
-    },
-    {
-      id: "cast_time",
-      header: "Cast Time",
-      enableSorting: false,
-      accessorFn: (row) => formatSkillCooldown(row.cast_time),
-    },
-    {
-      id: "effect",
-      header: "Effect",
-      enableSorting: false,
-      accessorFn: (row) => formatSkillEffect(row),
-    },
-  ];
-
   // Unique categories for filter (in logical order, using keys without annotations)
   const uniqueSkillCategories = $derived(
     (() => {
@@ -607,26 +556,6 @@
   {/if}
 {/snippet}
 
-{#snippet renderMercenarySkillToolbar({
-  table,
-}: {
-  table: TanstackTable<ClassSkill>;
-})}
-  {@const typeCol = table.getColumn("skill_type")}
-  {#if typeCol}
-    <DataTableFacetedFilter
-      column={typeCol}
-      title="Type"
-      options={uniqueMercenarySkillTypes.map((t: string) => ({
-        label: t
-          .replace(/_/g, " ")
-          .replace(/\b\w/g, (c: string) => c.toUpperCase()),
-        value: t,
-      }))}
-    />
-  {/if}
-{/snippet}
-
 {#snippet renderItemCell({
   cell,
   row,
@@ -891,6 +820,17 @@
     <p class="mt-4 text-muted-foreground leading-relaxed">
       {data.class.description}
     </p>
+
+    {#if ["warrior", "rogue", "cleric", "druid", "ranger", "wizard"].includes(data.class.id)}
+      <p class="mt-3 text-muted-foreground">
+        For information about the {data.class.name} mercenary, see:
+        <a
+          href="/pets/{data.class.id}_mercenary"
+          class="text-blue-600 dark:text-blue-400 hover:underline"
+          >{data.class.name} Mercenary</a
+        >.
+      </p>
+    {/if}
   </div>
 
   <!-- Sibling Navigation Bar -->
@@ -947,12 +887,12 @@
     </section>
   {/if}
 
-  <!-- Player Skills Section -->
+  <!-- Skills Section -->
   {#if data.skills.length > 0}
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <Zap class="h-5 w-5 text-purple-500" />
-        Player Skills ({data.skills.length})
+        Skills ({data.skills.length})
       </h2>
 
       <DataTable
@@ -982,44 +922,6 @@
         searchPlaceholder="Search skills..."
         paginateStaticHtml={true}
         persistentScrollbar={true}
-        class="bg-muted/30"
-      />
-    </section>
-  {/if}
-
-  <!-- Mercenary Skills Section -->
-  {#if data.mercenarySkills.length > 0}
-    <section>
-      <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
-        <Zap class="h-5 w-5 text-purple-500" />
-        Mercenary Skills ({data.mercenarySkills.length})
-      </h2>
-
-      <DataTable
-        data={data.mercenarySkills}
-        columns={mercenarySkillColumns}
-        renderCell={renderSkillCell}
-        renderHeader={renderSkillHeader}
-        renderToolbar={renderMercenarySkillToolbar}
-        initialColumnVisibility={{
-          cost: false,
-          cooldown: false,
-          cast_time: false,
-        }}
-        columnLabels={{
-          cost: costColumnHeader,
-          cooldown: "Cooldown",
-          cast_time: "Cast Time",
-          effect: "Effect",
-          max_level: "Max Lvl",
-        }}
-        urlKey="class-{data.class.id}-mercenary-skills"
-        pageSize={10}
-        zebraStripe={true}
-        showSearch={true}
-        showColumnToggle={true}
-        searchPlaceholder="Search mercenary skills..."
-        paginateStaticHtml={true}
         class="bg-muted/30"
       />
     </section>
