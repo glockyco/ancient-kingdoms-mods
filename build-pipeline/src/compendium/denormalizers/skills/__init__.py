@@ -2,7 +2,7 @@
 
 import sqlite3
 
-from compendium.denormalizers.skills import sources
+from compendium.denormalizers.skills import fixups, sources
 
 
 def run_all(conn: sqlite3.Connection) -> None:
@@ -12,3 +12,4 @@ def run_all(conn: sqlite3.Connection) -> None:
         conn: Database connection with all base data loaded
     """
     sources.run(conn)
+    fixups.run(conn)

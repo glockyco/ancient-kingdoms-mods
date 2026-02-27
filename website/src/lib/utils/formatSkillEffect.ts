@@ -718,6 +718,11 @@ const HARDCODED_EFFECTS: Record<string, string> = {
   emerald_pop: "cosmetic visual effect",
   golden_whirl: "cosmetic visual effect",
   skyflare: "cosmetic visual effect",
+  // Source: server-scripts/TargetBuffSkill.cs — isCallHeroes teleports all
+  // active mercenaries to player position and clears their fear; returns before
+  // applying any buff. mana_percent_per_second_bonus in game data is unused.
+  call_of_the_heroes:
+    "teleport all active mercenaries to you, remove their fear",
   teleport: "",
   new_skill_placeholder: "",
 };
