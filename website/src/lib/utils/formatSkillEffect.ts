@@ -420,10 +420,11 @@ function formatBuffDebuffStats(
   if (skill.is_invisibility) parts.push("grants invis");
   if (skill.is_mana_shield) parts.push("mana shield");
 
-  // Root/slow (speed_bonus <= -20 is root)
+  // Root/slow — server threshold for full root (immobilized) is speed <= -50
+  // Source: server-scripts/Monster.cs, Pet.cs, Npc.cs — speed <= -50f branch
   const speedBonus = parseLinearValue(skill.speed_bonus);
   if (speedBonus) {
-    if (speedBonus.base_value <= -20) {
+    if (speedBonus.base_value <= -50) {
       parts.push("root");
     } else if (speedBonus.base_value !== 0) {
       const sign = speedBonus.base_value > 0 ? "+" : "";
