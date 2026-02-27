@@ -86,6 +86,8 @@ interface SkillRow {
   is_fire_debuff: number;
   is_cold_debuff: number;
   is_magic_debuff: number;
+  is_melee_debuff: number;
+  prob_ignore_cleanse: number;
   summoned_monster_id: string | null;
   summoned_monster_name: string | null;
   summoned_monster_level: number | null;
@@ -189,6 +191,8 @@ export const load: PageServerLoad = (): SkillsPageData => {
       s.is_fire_debuff,
       s.is_cold_debuff,
       s.is_magic_debuff,
+      s.is_melee_debuff,
+      s.prob_ignore_cleanse,
       s.summoned_monster_id,
       sm.name as summoned_monster_name,
       s.summoned_monster_level,
@@ -301,6 +305,8 @@ export const load: PageServerLoad = (): SkillsPageData => {
       is_fire_debuff: Boolean(row.is_fire_debuff),
       is_cold_debuff: Boolean(row.is_cold_debuff),
       is_magic_debuff: Boolean(row.is_magic_debuff),
+      is_melee_debuff: Boolean(row.is_melee_debuff),
+      prob_ignore_cleanse: row.prob_ignore_cleanse,
       summoned_monster_id: row.summoned_monster_id,
       summoned_monster_name: row.summoned_monster_name,
       summoned_monster_level: row.summoned_monster_level,
