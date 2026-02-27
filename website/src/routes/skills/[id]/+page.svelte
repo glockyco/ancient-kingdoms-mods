@@ -1941,33 +1941,37 @@
                     ? "Block/Miss Chance"
                     : "Resist Chance"}
                 </h4>
-                <!-- Source: server-scripts/Combat.cs — num4 = victim.level - caster.level -->
-                <p class="font-mono text-muted-foreground">
-                  levelDiff = target.level &minus; attacker.level
-                </p>
                 {#if resistType === "melee"}
-                  <!-- Source: server-scripts/Combat.cs — GetProbResistMeleeDamage -->
+                  <!-- Source: server-scripts/Combat.cs — GetProbResistMeleeDamage, blockChance property -->
                   <p class="font-mono">
-                    clamp(target.blockChance + levelDiff &times; 0.005 &minus;
-                    attacker.accuracy, 0, 0.9)
-                  </p>
-                  <!-- Source: server-scripts/Combat.cs — blockChance property -->
-                  <p class="font-mono text-muted-foreground">
-                    target.blockChance = clamp(target.baseBlock + target.defense
-                    &times; 0.0001 + buffs, 0, 0.8)
+                    clamp(<br />
+                    &nbsp;&nbsp;clamp(target.baseBlock + target.defense &times; 0.0001
+                    + buffs, 0, 0.8)<br />
+                    &nbsp;&nbsp;+ (target.level &minus; attacker.level) &times; 0.005<br
+                    />
+                    &nbsp;&nbsp;&minus; attacker.accuracy<br />
+                    , 0, 0.9)
                   </p>
                 {:else}
                   <!-- Source: server-scripts/Combat.cs — GetProbResistMagic/Fire/Cold/Poison/Disease -->
                   <p class="font-mono">
-                    clamp(target.{resistType}Resist &times; 0.0005 + levelDiff
-                    &times; 0.005 &minus; attacker.accuracy, 0, 0.9)
+                    clamp(<br />
+                    &nbsp;&nbsp;target.{resistType}Resist &times; 0.0005<br />
+                    &nbsp;&nbsp;+ (target.level &minus; attacker.level) &times; 0.005<br
+                    />
+                    &nbsp;&nbsp;&minus; attacker.accuracy<br />
+                    , 0, 0.9)
                   </p>
                 {/if}
                 <!-- Source: server-scripts/Combat.cs — num5 - 0.25f, amountDamage * 0.1f, num5 *= 0.8f -->
-                <p class="text-muted-foreground">
-                  Target moving: chance &minus; 0.25, damage +10% | Backstab:
-                  chance &times; 0.8
-                </p>
+                <dl
+                  class="font-mono grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5"
+                >
+                  <dt>Target moving:</dt>
+                  <dd>chance &minus; 0.25, damage +10%</dd>
+                  <dt>Backstab:</dt>
+                  <dd>chance &times; 0.8</dd>
+                </dl>
               </div>
             {/if}
           </div>
@@ -1977,16 +1981,15 @@
         {#if isDamageType && hasLinearValue(skill.aggro)}
           <div class="space-y-1">
             <h3 class="font-semibold">Aggro</h3>
-            <!-- Source: server-scripts/TargetDamageSkill.cs — aggro.Get(skillLevel) > 0 ? caster.health.max : 0 -->
-            <p class="font-mono">
-              Effective Aggro = aggro + caster.maxHP (if aggro &gt; 0)
-            </p>
-            <!-- Source: server-scripts/Combat.cs — Math.Min(victim.health.current, ...) -->
-            <p class="font-mono">
-              Threat = min(target.HP, effectiveAggro + damage + round(stunChance
-              &times; stunTime &times; 10) + round(fearChance &times; fearTime
-              &times; 10))
-            </p>
+            <!-- Source: server-scripts/TargetDamageSkill.cs:239, Combat.cs:430 -->
+            <p class="font-mono">min(target.HP,</p>
+            <ul class="font-mono list-none ml-4 space-y-0.5">
+              <li>skillAggro + caster.maxHP</li>
+              <li>+ damage</li>
+              <li>+ round(stunChance &times; stunTime &times; 10)</li>
+              <li>+ round(fearChance &times; fearTime &times; 10)</li>
+            </ul>
+            <p class="font-mono">)</p>
           </div>
         {/if}
 
