@@ -2020,9 +2020,6 @@
                 Potency scales with WIS (CHA replaces WIS for defense, magic
                 resist, and max HP)
               </p>
-            {:else}
-              <!-- Source: server-scripts/TargetBuffSkill.cs — bonusAttribute = caster.wisdom.value -->
-              <p class="text-muted-foreground">Potency scales with WIS</p>
             {/if}
             <dl class="grid grid-cols-[12rem_1fr] gap-x-4 gap-y-1 font-mono">
               <!-- Source: server-scripts/Wisdom.cs — maxHealthBuffBonusPerPoint = 2 -->
@@ -2083,9 +2080,6 @@
         {#if isDebuffType && hasWisScaledBonuses}
           <div class="space-y-2">
             <h3 class="font-semibold">Debuff Scaling</h3>
-            <p class="text-muted-foreground">
-              Debuff potency scales with caster stats
-            </p>
             <dl class="grid grid-cols-[12rem_1fr] gap-x-4 gap-y-1 font-mono">
               <!-- Source: server-scripts/Intelligence.cs — defenseDebuffBonusPerPoint = 0.4 -->
               <!-- Source: server-scripts/Strength.cs — defenseDebuffBonusPerPoint = 0.5 -->
