@@ -55,10 +55,7 @@
 
   function formatPercent(n: number): string {
     const pct = n * 100;
-    if (Math.abs(pct) < 1 && pct !== 0) {
-      return `${parseFloat(pct.toFixed(1))}%`;
-    }
-    return `${Math.round(pct)}%`;
+    return `${parseFloat(pct.toFixed(1))}%`;
   }
 
   function formatDuration(base: number, perLevel: number): string {
