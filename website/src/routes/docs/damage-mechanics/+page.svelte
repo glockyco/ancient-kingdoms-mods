@@ -734,9 +734,18 @@
             <td class="py-2">5% of crits</td>
           </tr>
           <tr>
-            <td class="py-2 pr-4">Radiant Aether crit</td>
-            <td class="py-2 pr-4"><strong>3.0x</strong></td>
-            <td class="py-2">Overrides both (special activation)</td>
+            <td class="py-2 pr-4">Radiant Aether + normal crit</td>
+            <td class="py-2 pr-4"><strong>4.5x</strong></td>
+            <td class="py-2"
+              >×3 applied on top of ×1.5 crit (special activation)</td
+            >
+          </tr>
+          <tr>
+            <td class="py-2 pr-4">Radiant Aether + super crit</td>
+            <td class="py-2 pr-4"><strong>6.0x</strong></td>
+            <td class="py-2"
+              >×3 applied on top of ×2.0 super crit (special activation)</td
+            >
           </tr>
         </tbody>
       </table>

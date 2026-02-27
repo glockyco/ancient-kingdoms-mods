@@ -1899,10 +1899,11 @@
                       ? "defense"
                       : `${resistType}Resist`} &times; 0.0005, 0, 0.9))
                   </li>
-                  <!-- Source: server-scripts/Combat.cs — 1.5f, 0.95 check, num *= 2, isRadiantAetherActivated → 3f -->
+                  <!-- Source: server-scripts/Combat.cs — 1.5f, 0.95 check, num *= 2, isRadiantAetherActivated → *3 on top of crit -->
                   <li>
-                    Crit (if dmg &gt; 3): 95% &rarr; &times;1.5 | 5% &rarr;
-                    &times;2.0 | Radiant Aether &rarr; &times;3.0
+                    Crit (if dmg &gt; 3): on crit &rarr; 95% &times;1.5 (normal)
+                    | 5% &times;2.0 (super) | Radiant Aether applies &times;3 on
+                    top &rarr; &times;4.5 or &times;6.0
                   </li>
                 </ol>
               </div>

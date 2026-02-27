@@ -752,8 +752,8 @@
                 <div>
                   <div class={styles.label}>On Critical Hit</div>
                   <div class={styles.value}>
-                    <span class={styles.valuePositive}>3× damage</span>
-                    instead of 1.5×
+                    <span class={styles.valuePositive}>×3 on top of crit</span>
+                    → ×4.5 (normal crit) or ×6.0 (super crit)
                   </div>
                   <div class="italic text-muted-foreground text-sm mt-1">
                     "Radiant Aether surges - your strike rends the heavens!"
