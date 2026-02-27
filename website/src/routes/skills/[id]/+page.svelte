@@ -3,6 +3,7 @@
   import * as Card from "$lib/components/ui/card";
   import type { PageData } from "./$types";
   import type { LinearValue } from "$lib/types/skills";
+  import * as Tabs from "$lib/components/ui/tabs";
   import Sparkles from "@lucide/svelte/icons/sparkles";
   import Clock from "@lucide/svelte/icons/clock";
   import Zap from "@lucide/svelte/icons/zap";
@@ -235,11 +236,6 @@
   <div>
     <div class="flex items-center gap-3 flex-wrap">
       <h1 class="text-3xl font-bold">{skill.name}</h1>
-      <span
-        class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
-      >
-        {SKILL_TYPE_LABELS[skill.skill_type] ?? skill.skill_type}
-      </span>
       {#if skill.is_spell}
         <span
           class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200"
@@ -297,20 +293,64 @@
     </div>
   </div>
 
-  <!-- Tooltip -->
-  {#if skill.tooltip_template}
+  <!-- Effect / Game Tooltip -->
+  {#if data.effectSummary || skill.tooltip_template}
     <Card.Root class="bg-muted/30">
       <Card.Header>
         <Card.Title class="flex items-center gap-2">
           <ScrollText class="h-5 w-5 text-muted-foreground" />
-          Tooltip
+          Description
         </Card.Title>
       </Card.Header>
       <Card.Content>
-        <div class="font-mono text-sm whitespace-pre-wrap">
-          <!-- eslint-disable-next-line svelte/no-at-html-tags -- Safe: Unity color tags from controlled data -->
-          {@html convertTooltip(skill.tooltip_template)}
-        </div>
+        {#if data.effectSummary && skill.tooltip_template}
+          <Tabs.Root value="effect">
+            <Tabs.List class="mb-4">
+              <Tabs.Trigger value="effect">Effect</Tabs.Trigger>
+              <Tabs.Trigger value="tooltip">Game Tooltip</Tabs.Trigger>
+            </Tabs.List>
+            <Tabs.Content value="effect">
+              <dl
+                class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-4"
+              >
+                <div>
+                  <dt class="text-muted-foreground">Skill Type</dt>
+                  <dd class="font-medium">
+                    {SKILL_TYPE_LABELS[skill.skill_type] ?? skill.skill_type}
+                  </dd>
+                </div>
+                <div class="col-span-2 sm:col-span-3">
+                  <dt class="text-muted-foreground">Effect</dt>
+                  <dd class="font-medium">{data.effectSummary}</dd>
+                </div>
+              </dl>
+            </Tabs.Content>
+            <Tabs.Content value="tooltip">
+              <div class="font-mono text-sm whitespace-pre-wrap">
+                <!-- eslint-disable-next-line svelte/no-at-html-tags -- Safe: Unity color tags from controlled data -->
+                {@html convertTooltip(skill.tooltip_template)}
+              </div>
+            </Tabs.Content>
+          </Tabs.Root>
+        {:else if data.effectSummary}
+          <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-4">
+            <div>
+              <dt class="text-muted-foreground">Skill Type</dt>
+              <dd class="font-medium">
+                {SKILL_TYPE_LABELS[skill.skill_type] ?? skill.skill_type}
+              </dd>
+            </div>
+            <div class="col-span-2 sm:col-span-3">
+              <dt class="text-muted-foreground">Effect</dt>
+              <dd class="font-medium">{data.effectSummary}</dd>
+            </div>
+          </dl>
+        {:else}
+          <div class="font-mono text-sm whitespace-pre-wrap">
+            <!-- eslint-disable-next-line svelte/no-at-html-tags -- Safe: Unity color tags from controlled data -->
+            {@html convertTooltip(skill.tooltip_template)}
+          </div>
+        {/if}
       </Card.Content>
     </Card.Root>
   {/if}

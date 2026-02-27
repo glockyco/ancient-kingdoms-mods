@@ -8,6 +8,7 @@ import type {
   SkillPet,
   LinearValue,
 } from "$lib/types/skills";
+import { formatSkillEffect } from "$lib/utils/formatSkillEffect";
 
 export const prerender = true;
 
@@ -30,6 +31,7 @@ function parseLinear(value: unknown): LinearValue | null {
 
 export interface SkillDetailPageData {
   skill: SkillDetailView;
+  effectSummary: string;
   grantedByItems: SkillItemSource[];
   usedByMonsters: SkillMonster[];
   usedByPets: SkillPet[];
@@ -285,6 +287,9 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
     [params.id],
   );
 
+  // Compute effect summary using formatSkillEffect
+  const effectSummary = formatSkillEffect(skill);
+
   // Generate description
   const typeLabel = skill.skill_type.replace(/_/g, " ");
   const classNames =
@@ -295,6 +300,7 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
 
   return {
     skill,
+    effectSummary,
     grantedByItems,
     usedByMonsters,
     usedByPets,
