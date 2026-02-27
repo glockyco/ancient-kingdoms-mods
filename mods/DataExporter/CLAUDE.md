@@ -10,7 +10,7 @@ Press **Shift+F9** in-game to trigger a manual export without AutoExporter.
 
 Files are written to `exported-data/` (configurable in `Local.props`).
 
-## Exported Data (23 exporters)
+## Exported Data (24 exporters)
 
 | Category | Files |
 |----------|-------|
@@ -19,6 +19,7 @@ Files are written to `exported-data/` (configurable in `Local.props`).
 | Crafting | crafting_recipes, crafting_stations, alchemy_recipes, alchemy_tables |
 | Special | summon_triggers, luck_tokens, altars, treasure_locations, pets, professions, game_config |
 | Objects | traps, doors, interactive_objects |
+| Classes | classes_combat (base stats from player prefabs) |
 
 ## Architecture
 
@@ -31,6 +32,8 @@ Models/              # JSON-serializable POCOs
 ```
 
 Data flow: `Resources.FindObjectsOfTypeAll<T>()` → Exporter → Model → JSON file
+
+**Special case:** `ClassExporter` reads `NetworkManagerMMO.playerClasses` prefabs (not `FindObjectsOfTypeAll`). Outputs `classes_combat.json` which the build pipeline merges with manually curated `classes.json`.
 
 ## Data Export Principles
 

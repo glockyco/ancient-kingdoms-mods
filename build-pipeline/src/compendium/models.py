@@ -760,7 +760,7 @@ class SkillData(BaseModel):
 
 
 class ClassData(BaseModel):
-    """Class data from classes.json"""
+    """Class data merged from classes.json (manual) + classes_combat.json (exported)."""
 
     id: str
     name: str
@@ -771,6 +771,36 @@ class ClassData(BaseModel):
     resource_type: str  # "mana" or "energy"
     compatible_races: list[str]
     game_version: str
+
+    # Combat stats from classes_combat.json (LinearInt: actual = base + per_level * (level - 1))
+    base_health_value: int = 0
+    base_health_per_level: int = 0
+    base_mana_value: int = 0
+    base_mana_per_level: int = 0
+    base_energy_value: int = 0
+    base_energy_per_level: int = 0
+    base_damage_value: int = 0
+    base_damage_per_level: int = 0
+    base_magic_damage_value: int = 0
+    base_magic_damage_per_level: int = 0
+    base_defense_value: int = 0
+    base_defense_per_level: int = 0
+    base_magic_resist_value: int = 0
+    base_magic_resist_per_level: int = 0
+    base_poison_resist_value: int = 0
+    base_poison_resist_per_level: int = 0
+    base_fire_resist_value: int = 0
+    base_fire_resist_per_level: int = 0
+    base_cold_resist_value: int = 0
+    base_cold_resist_per_level: int = 0
+    base_disease_resist_value: int = 0
+    base_disease_resist_per_level: int = 0
+    base_block_chance_value: float = 0
+    base_block_chance_per_level: float = 0
+    base_accuracy_value: float = 0
+    base_accuracy_per_level: float = 0
+    base_critical_chance_value: float = 0
+    base_critical_chance_per_level: float = 0
 
 
 # =============================================================================

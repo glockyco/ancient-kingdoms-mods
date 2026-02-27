@@ -84,7 +84,38 @@ CREATE TABLE classes (
     difficulty INTEGER NOT NULL,
     resource_type TEXT NOT NULL,
     compatible_races TEXT NOT NULL,      -- JSON array: ["human", "elf", "dwarf"]
-    game_version TEXT NOT NULL
+    game_version TEXT NOT NULL,
+
+    -- Combat stats (LinearInt: actual = base + per_level * (level - 1))
+    -- From classes_combat.json (exported from player prefabs at runtime)
+    base_health_value INTEGER DEFAULT 0,
+    base_health_per_level INTEGER DEFAULT 0,
+    base_mana_value INTEGER DEFAULT 0,
+    base_mana_per_level INTEGER DEFAULT 0,
+    base_energy_value INTEGER DEFAULT 0,
+    base_energy_per_level INTEGER DEFAULT 0,
+    base_damage_value INTEGER DEFAULT 0,
+    base_damage_per_level INTEGER DEFAULT 0,
+    base_magic_damage_value INTEGER DEFAULT 0,
+    base_magic_damage_per_level INTEGER DEFAULT 0,
+    base_defense_value INTEGER DEFAULT 0,
+    base_defense_per_level INTEGER DEFAULT 0,
+    base_magic_resist_value INTEGER DEFAULT 0,
+    base_magic_resist_per_level INTEGER DEFAULT 0,
+    base_poison_resist_value INTEGER DEFAULT 0,
+    base_poison_resist_per_level INTEGER DEFAULT 0,
+    base_fire_resist_value INTEGER DEFAULT 0,
+    base_fire_resist_per_level INTEGER DEFAULT 0,
+    base_cold_resist_value INTEGER DEFAULT 0,
+    base_cold_resist_per_level INTEGER DEFAULT 0,
+    base_disease_resist_value INTEGER DEFAULT 0,
+    base_disease_resist_per_level INTEGER DEFAULT 0,
+    base_block_chance_value REAL DEFAULT 0,
+    base_block_chance_per_level REAL DEFAULT 0,
+    base_accuracy_value REAL DEFAULT 0,
+    base_accuracy_per_level REAL DEFAULT 0,
+    base_critical_chance_value REAL DEFAULT 0,
+    base_critical_chance_per_level REAL DEFAULT 0
 );
 
 -- =============================================================================

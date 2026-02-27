@@ -149,6 +149,10 @@ namespace DataExporter
                 var gameConfigExporter = new GameConfigExporter(LoggerInstance, ExportPath);
                 gameConfigExporter.Export();
 
+                // Export class combat stats (base damage, health, resists from player prefabs)
+                var classExporter = new ClassExporter(LoggerInstance, ExportPath);
+                classExporter.Export();
+
                 var elapsed = DateTime.Now - startTime;
 
                 LoggerInstance.Msg("========================================");

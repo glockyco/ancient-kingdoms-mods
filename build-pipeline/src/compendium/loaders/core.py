@@ -81,7 +81,12 @@ def load_static_data(conn: sqlite3.Connection, export_dir: Path) -> None:
 
 
 def load_classes(conn: sqlite3.Connection, export_dir: Path) -> None:
-    """Load player classes into database."""
+    """Load player classes into database.
+
+    Merges two sources:
+    - classes.json: manually curated metadata (description, roles, difficulty, races)
+    - classes_combat.json: exported combat stats from player prefabs (damage, health, resists)
+    """
     console.print("Loading classes...")
 
     filepath = export_dir / "classes.json"
@@ -91,6 +96,33 @@ def load_classes(conn: sqlite3.Connection, export_dir: Path) -> None:
 
     with open(filepath, "r", encoding="utf-8") as f:
         data = json.load(f)
+
+    # Merge combat stats from classes_combat.json if available
+    combat_filepath = export_dir / "classes_combat.json"
+    combat_by_id: dict[str, dict] = {}
+    if combat_filepath.exists():
+        with open(combat_filepath, "r", encoding="utf-8") as f:
+            combat_data = json.load(f)
+        for entry in combat_data:
+            combat_by_id[entry["id"]] = entry
+        console.print(
+            f"  Merging combat stats from classes_combat.json ({len(combat_by_id)} entries)"
+        )
+    else:
+        console.print(
+            "  [yellow]Note:[/yellow] No classes_combat.json — combat stats will be zero"
+        )
+
+    # Merge combat fields into each class entry
+    for item in data:
+        combat = combat_by_id.get(item["id"], {})
+        for key, value in combat.items():
+            # Only merge combat stat fields, don't overwrite manual metadata
+            if key.startswith("base_"):
+                item[key] = value
+        # resource_type from combat export is authoritative (detected from prefab scaling)
+        if "resource_type" in combat:
+            item["resource_type"] = combat["resource_type"]
 
     classes = [ClassData(**item) for item in data]
 
