@@ -13,6 +13,7 @@
   import ScrollText from "@lucide/svelte/icons/scroll-text";
   import Gem from "@lucide/svelte/icons/gem";
   import DungeonRestrictionBadge from "$lib/components/DungeonRestrictionBadge.svelte";
+  import SkillEffect from "$lib/components/SkillEffect.svelte";
   import MonsterTypeIcon from "$lib/components/MonsterTypeIcon.svelte";
   import Skull from "@lucide/svelte/icons/skull";
   import Cat from "@lucide/svelte/icons/cat";
@@ -895,7 +896,17 @@
                 </div>
                 <div class="col-span-2 sm:col-span-3">
                   <dt class="text-muted-foreground">Effect</dt>
-                  <dd class="font-medium">{data.effectSummary}</dd>
+                  <dd class="font-medium">
+                    <SkillEffect
+                      effect={data.effectSummary}
+                      entityName={skill.summoned_monster_name ?? skill.pet_name}
+                      entityHref={skill.summoned_monster_id
+                        ? `/monsters/${skill.summoned_monster_id}`
+                        : skill.pet_id
+                          ? `/pets/${skill.pet_id}`
+                          : null}
+                    />
+                  </dd>
                 </div>
               </dl>
             </Tabs.Content>
@@ -916,7 +927,17 @@
             </div>
             <div class="col-span-2 sm:col-span-3">
               <dt class="text-muted-foreground">Effect</dt>
-              <dd class="font-medium">{data.effectSummary}</dd>
+              <dd class="font-medium">
+                <SkillEffect
+                  effect={data.effectSummary}
+                  entityName={skill.summoned_monster_name ?? skill.pet_name}
+                  entityHref={skill.summoned_monster_id
+                    ? `/monsters/${skill.summoned_monster_id}`
+                    : skill.pet_id
+                      ? `/pets/${skill.pet_id}`
+                      : null}
+                />
+              </dd>
             </div>
           </dl>
         {:else}

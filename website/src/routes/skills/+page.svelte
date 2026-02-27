@@ -11,6 +11,7 @@
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import Sparkles from "@lucide/svelte/icons/sparkles";
   import { getClassConfig } from "$lib/utils/classes";
+  import SkillEffect from "$lib/components/SkillEffect.svelte";
 
   let { data } = $props();
 
@@ -126,49 +127,16 @@
     >
   {:else if cell.column.id === "effect"}
     {@const s = row.original}
-    {#if s.skill_type === "summon" && s.pet_id}
-      {@const count =
-        s.summon_count_per_cast && s.summon_count_per_cast > 1
-          ? `${s.summon_count_per_cast}x `
-          : ""}
-      {@const details = [
-        s.summoned_monster_level != null
-          ? `lv${s.summoned_monster_level}`
-          : null,
-        s.max_active_summons != null ? `max ${s.max_active_summons}` : null,
-      ]
-        .filter(Boolean)
-        .join(", ")}
-      <span class="text-sm"
-        >summons {count}<a
-          href="/pets/{s.pet_id}"
-          class="text-blue-600 dark:text-blue-400 hover:underline"
-          >{s.pet_name}</a
-        >{details ? ` (${details})` : ""}</span
-      >
-    {:else if s.skill_type === "summon_monsters" && s.summoned_monster_id && s.summon_count_per_cast !== 0}
-      {@const count =
-        s.summon_count_per_cast && s.summon_count_per_cast > 1
-          ? `${s.summon_count_per_cast}x `
-          : ""}
-      {@const details = [
-        s.summoned_monster_level != null
-          ? `lv${s.summoned_monster_level}`
-          : null,
-        s.max_active_summons != null ? `max ${s.max_active_summons}` : null,
-      ]
-        .filter(Boolean)
-        .join(", ")}
-      <span class="text-sm"
-        >summons {count}<a
-          href="/monsters/{s.summoned_monster_id}"
-          class="text-blue-600 dark:text-blue-400 hover:underline"
-          >{s.summoned_monster_name ?? s.summoned_monster_id}</a
-        >{details ? ` (${details})` : ""}</span
-      >
-    {:else}
-      <span class="text-sm">{s.effect}</span>
-    {/if}
+    <SkillEffect
+      class="text-sm"
+      effect={s.effect}
+      entityName={s.summoned_monster_name ?? s.pet_name}
+      entityHref={s.summoned_monster_id
+        ? `/monsters/${s.summoned_monster_id}`
+        : s.pet_id
+          ? `/pets/${s.pet_id}`
+          : null}
+    />
   {:else if cell.column.id === "class_ids" || cell.column.id === "skill_categories"}
     <!-- Hidden filter columns -->
   {:else}

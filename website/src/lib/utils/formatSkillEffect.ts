@@ -397,13 +397,10 @@ function formatSummons(skill: Skill): string[] {
     const suffix = details.length > 0 ? ` (${details.join(", ")})` : "";
 
     if (skill.summon_count_per_cast === -1) {
-      parts.push(`summons 1 ${name} per player/mercenary${suffix}`);
+      parts.push(`summons 1x ${name} per player/mercenary${suffix}`);
     } else {
-      const count =
-        skill.summon_count_per_cast && skill.summon_count_per_cast > 1
-          ? `${skill.summon_count_per_cast}x `
-          : "";
-      parts.push(`summons ${count}${name}${suffix}`);
+      const count = skill.summon_count_per_cast ?? 1;
+      parts.push(`summons ${count}x ${name}${suffix}`);
     }
   }
 
