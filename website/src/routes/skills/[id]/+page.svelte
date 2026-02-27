@@ -18,6 +18,7 @@
   import Cat from "@lucide/svelte/icons/cat";
   import Star from "@lucide/svelte/icons/star";
   import Ghost from "@lucide/svelte/icons/ghost";
+  import TrendingUp from "@lucide/svelte/icons/trending-up";
 
   let { data }: { data: PageData } = $props();
 
@@ -217,6 +218,354 @@
       skill.prerequisite2_skill_id ||
       meaningfulWeapon,
   );
+
+  // Level scaling table: columns for fields with non-zero bonus_per_level
+  interface ScalingColumn {
+    label: string;
+    field: LinearValue;
+    isPercent: boolean;
+    suffix: string;
+  }
+
+  const SCALING_FIELDS: Array<{
+    key: keyof typeof skill;
+    label: string;
+    isPercent: boolean;
+    suffix: string;
+  }> = [
+    { key: "damage", label: "Damage", isPercent: false, suffix: "" },
+    {
+      key: "damage_percent",
+      label: "Damage %",
+      isPercent: true,
+      suffix: "",
+    },
+    { key: "mana_cost", label: "Mana Cost", isPercent: false, suffix: "" },
+    {
+      key: "energy_cost",
+      label: "Energy Cost",
+      isPercent: false,
+      suffix: "",
+    },
+    { key: "cast_time", label: "Cast Time", isPercent: false, suffix: "s" },
+    { key: "cooldown", label: "Cooldown", isPercent: false, suffix: "s" },
+    { key: "cast_range", label: "Range", isPercent: false, suffix: "" },
+    {
+      key: "heals_health",
+      label: "Heals Health",
+      isPercent: false,
+      suffix: "",
+    },
+    {
+      key: "heals_mana",
+      label: "Heals Mana",
+      isPercent: false,
+      suffix: "",
+    },
+    { key: "aggro", label: "Aggro", isPercent: false, suffix: "" },
+    {
+      key: "lifetap_percent",
+      label: "Lifetap",
+      isPercent: true,
+      suffix: "",
+    },
+    {
+      key: "stun_chance",
+      label: "Stun Chance",
+      isPercent: true,
+      suffix: "",
+    },
+    {
+      key: "stun_time",
+      label: "Stun Duration",
+      isPercent: false,
+      suffix: "s",
+    },
+    {
+      key: "fear_chance",
+      label: "Fear Chance",
+      isPercent: true,
+      suffix: "",
+    },
+    {
+      key: "fear_time",
+      label: "Fear Duration",
+      isPercent: false,
+      suffix: "s",
+    },
+    {
+      key: "knockback_chance",
+      label: "Knockback",
+      isPercent: true,
+      suffix: "",
+    },
+    {
+      key: "health_max_bonus",
+      label: "Max Health",
+      isPercent: false,
+      suffix: "",
+    },
+    {
+      key: "health_max_percent_bonus",
+      label: "Max Health %",
+      isPercent: true,
+      suffix: "",
+    },
+    {
+      key: "mana_max_bonus",
+      label: "Max Mana",
+      isPercent: false,
+      suffix: "",
+    },
+    {
+      key: "mana_max_percent_bonus",
+      label: "Max Mana %",
+      isPercent: true,
+      suffix: "",
+    },
+    {
+      key: "energy_max_bonus",
+      label: "Max Energy",
+      isPercent: false,
+      suffix: "",
+    },
+    {
+      key: "defense_bonus",
+      label: "Defense",
+      isPercent: false,
+      suffix: "",
+    },
+    { key: "ward_bonus", label: "Ward", isPercent: false, suffix: "" },
+    {
+      key: "magic_resist_bonus",
+      label: "Magic Resist",
+      isPercent: false,
+      suffix: "",
+    },
+    {
+      key: "damage_bonus",
+      label: "Damage Bonus",
+      isPercent: false,
+      suffix: "",
+    },
+    {
+      key: "damage_percent_bonus",
+      label: "Damage %",
+      isPercent: true,
+      suffix: "",
+    },
+    {
+      key: "magic_damage_bonus",
+      label: "Magic Dmg",
+      isPercent: false,
+      suffix: "",
+    },
+    {
+      key: "magic_damage_percent_bonus",
+      label: "Magic Dmg %",
+      isPercent: true,
+      suffix: "",
+    },
+    {
+      key: "haste_bonus",
+      label: "Haste",
+      isPercent: true,
+      suffix: "",
+    },
+    {
+      key: "spell_haste_bonus",
+      label: "Spell Haste",
+      isPercent: true,
+      suffix: "",
+    },
+    {
+      key: "speed_bonus",
+      label: "Move Speed",
+      isPercent: true,
+      suffix: "",
+    },
+    {
+      key: "critical_chance_bonus",
+      label: "Crit Chance",
+      isPercent: true,
+      suffix: "",
+    },
+    {
+      key: "accuracy_bonus",
+      label: "Accuracy",
+      isPercent: true,
+      suffix: "",
+    },
+    {
+      key: "block_chance_bonus",
+      label: "Block Chance",
+      isPercent: true,
+      suffix: "",
+    },
+    {
+      key: "fear_resist_chance_bonus",
+      label: "Fear Resist",
+      isPercent: true,
+      suffix: "",
+    },
+    {
+      key: "damage_shield",
+      label: "Dmg Shield",
+      isPercent: false,
+      suffix: "",
+    },
+    {
+      key: "cooldown_reduction_percent",
+      label: "CDR",
+      isPercent: true,
+      suffix: "",
+    },
+    {
+      key: "heal_on_hit_percent",
+      label: "Heal on Hit",
+      isPercent: true,
+      suffix: "",
+    },
+    {
+      key: "healing_per_second_bonus",
+      label: "Health/sec",
+      isPercent: false,
+      suffix: "",
+    },
+    {
+      key: "health_percent_per_second_bonus",
+      label: "Health %/sec",
+      isPercent: true,
+      suffix: "",
+    },
+    {
+      key: "mana_per_second_bonus",
+      label: "Mana/sec",
+      isPercent: false,
+      suffix: "",
+    },
+    {
+      key: "mana_percent_per_second_bonus",
+      label: "Mana %/sec",
+      isPercent: true,
+      suffix: "",
+    },
+    {
+      key: "energy_per_second_bonus",
+      label: "Energy/sec",
+      isPercent: false,
+      suffix: "",
+    },
+    {
+      key: "energy_percent_per_second_bonus",
+      label: "Energy %/sec",
+      isPercent: true,
+      suffix: "",
+    },
+    {
+      key: "strength_bonus",
+      label: "STR",
+      isPercent: false,
+      suffix: "",
+    },
+    {
+      key: "intelligence_bonus",
+      label: "INT",
+      isPercent: false,
+      suffix: "",
+    },
+    {
+      key: "dexterity_bonus",
+      label: "DEX",
+      isPercent: false,
+      suffix: "",
+    },
+    {
+      key: "constitution_bonus",
+      label: "CON",
+      isPercent: false,
+      suffix: "",
+    },
+    {
+      key: "wisdom_bonus",
+      label: "WIS",
+      isPercent: false,
+      suffix: "",
+    },
+    {
+      key: "charisma_bonus",
+      label: "CHA",
+      isPercent: false,
+      suffix: "",
+    },
+    {
+      key: "poison_resist_bonus",
+      label: "Poison Resist",
+      isPercent: false,
+      suffix: "",
+    },
+    {
+      key: "fire_resist_bonus",
+      label: "Fire Resist",
+      isPercent: false,
+      suffix: "",
+    },
+    {
+      key: "cold_resist_bonus",
+      label: "Cold Resist",
+      isPercent: false,
+      suffix: "",
+    },
+    {
+      key: "disease_resist_bonus",
+      label: "Disease Resist",
+      isPercent: false,
+      suffix: "",
+    },
+  ];
+
+  const scalingColumns = $derived.by(() => {
+    const cols: ScalingColumn[] = [];
+
+    // Duration has its own format (not a LinearValue)
+    if (skill.duration_per_level > 0) {
+      cols.push({
+        label: "Duration",
+        field: {
+          base_value: skill.duration_base,
+          bonus_per_level: skill.duration_per_level,
+        },
+        isPercent: false,
+        suffix: "s",
+      });
+    }
+
+    for (const def of SCALING_FIELDS) {
+      const val = skill[def.key] as LinearValue | null;
+      if (val && val.bonus_per_level !== 0) {
+        cols.push({
+          label: def.label,
+          field: val,
+          isPercent: def.isPercent,
+          suffix: def.suffix,
+        });
+      }
+    }
+
+    return cols;
+  });
+
+  function computeScalingValue(col: ScalingColumn, level: number): string {
+    const raw = col.field.base_value + col.field.bonus_per_level * (level - 1);
+    if (col.isPercent) {
+      return formatPercent(raw);
+    }
+    return `${formatNumber(raw)}${col.suffix}`;
+  }
+
+  const showLevelScaling = $derived(
+    skill.max_level > 1 && scalingColumns.length > 0,
+  );
 </script>
 
 <svelte:head>
@@ -299,7 +648,7 @@
     <Card.Root class="bg-muted/30">
       <Card.Header>
         <Card.Title class="flex items-center gap-2">
-          <ScrollText class="h-5 w-5 text-muted-foreground" />
+          <ScrollText class="h-5 w-5 text-sky-500" />
           Description
         </Card.Title>
       </Card.Header>
@@ -361,7 +710,7 @@
     <Card.Root class="bg-muted/30">
       <Card.Header>
         <Card.Title class="flex items-center gap-2">
-          <Target class="h-5 w-5 text-muted-foreground" />
+          <Target class="h-5 w-5 text-orange-500" />
           Requirements
         </Card.Title>
       </Card.Header>
@@ -441,7 +790,7 @@
     <Card.Root class="bg-muted/30">
       <Card.Header>
         <Card.Title class="flex items-center gap-2">
-          <Clock class="h-5 w-5 text-muted-foreground" />
+          <Clock class="h-5 w-5 text-blue-500" />
           Cost & Timing
         </Card.Title>
       </Card.Header>
@@ -1116,6 +1465,48 @@
             {/if}
           </div>
         {/if}
+      </Card.Content>
+    </Card.Root>
+  {/if}
+
+  <!-- Level Scaling Table -->
+  {#if showLevelScaling}
+    <Card.Root class="bg-muted/30">
+      <Card.Header>
+        <Card.Title class="flex items-center gap-2">
+          <TrendingUp class="h-5 w-5 text-emerald-500" />
+          Level Scaling
+        </Card.Title>
+      </Card.Header>
+      <Card.Content>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm table-fixed">
+            <thead>
+              <tr class="border-b text-left">
+                <th class="py-2 pr-4 font-medium text-muted-foreground"
+                  >Level</th
+                >
+                {#each scalingColumns as col (col.label)}
+                  <th class="py-2 px-3 font-medium text-muted-foreground"
+                    >{col.label}</th
+                  >
+                {/each}
+              </tr>
+            </thead>
+            <tbody>
+              {#each Array.from({ length: skill.max_level }, (_, i) => i + 1) as level (level)}
+                <tr class="border-b border-border/50">
+                  <td class="py-1.5 pr-4 font-medium">{level}</td>
+                  {#each scalingColumns as col (col.label)}
+                    <td class="py-1.5 px-3"
+                      >{computeScalingValue(col, level)}</td
+                    >
+                  {/each}
+                </tr>
+              {/each}
+            </tbody>
+          </table>
+        </div>
       </Card.Content>
     </Card.Root>
   {/if}
