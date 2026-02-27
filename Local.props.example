@@ -1,8 +1,10 @@
 <Project>
   <!--
-    Local configuration for Ancient Kingdoms mod development
+    Local configuration for Ancient Kingdoms mod development.
 
-    Copy this file to Local.props and set your game installation path.
+    Option 1: Run 'dotnet run - -project build-tool setup' to generate this file interactively.
+    Option 2: Copy this file to Local.props and edit manually.
+
     Local.props is git-ignored and will not be committed.
   -->
 
@@ -11,7 +13,11 @@
     <ANCIENT_KINGDOMS_PATH>E:\SteamLibrary\steamapps\common\Ancient Kingdoms</ANCIENT_KINGDOMS_PATH>
 
     <!-- Required: Path where DataExporter mod should save JSON files -->
-    <DATA_EXPORT_PATH>E:\Projects\ancient-kingdoms-data-mining\exported-data</DATA_EXPORT_PATH>
+    <DATA_EXPORT_PATH>E:\Projects\ancient-kingdoms-mods\exported-data</DATA_EXPORT_PATH>
+
+    <!-- macOS only: Required for 'dotnet run - -project build-tool export' -->
+    <!-- <WINE_PATH>/Applications/CrossOver.app/Contents/SharedSupport/CrossOver/bin/wine</WINE_PATH> -->
+    <!-- <WINE_PREFIX>/Users/you/Library/Application Support/CrossOver/Bottles/Steam</WINE_PREFIX> -->
 
     <!-- Optional: Override derived paths if needed -->
     <!-- <MelonLoaderPath>$(ANCIENT_KINGDOMS_PATH)\MelonLoader</MelonLoaderPath> -->

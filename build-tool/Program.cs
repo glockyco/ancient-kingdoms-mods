@@ -3,28 +3,34 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Text;
+using System.Threading;
 using System.Xml.Linq;
 
 class Program
 {
+    static string? RootDir;
+    static readonly bool IsMacOS = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
+
     static int Main(string[] args)
     {
         try
         {
             // Change to repository root
-            var rootDir = Path.GetDirectoryName(Path.GetDirectoryName(AppContext.BaseDirectory));
-            while (rootDir != null && !File.Exists(Path.Combine(rootDir, "Local.props.example")))
+            RootDir = Path.GetDirectoryName(Path.GetDirectoryName(AppContext.BaseDirectory));
+            while (RootDir != null && !File.Exists(Path.Combine(RootDir, "Local.props.example")))
             {
-                rootDir = Directory.GetParent(rootDir)?.FullName;
+                RootDir = Directory.GetParent(RootDir)?.FullName;
             }
 
-            if (rootDir == null)
+            if (RootDir == null)
             {
                 Console.Error.WriteLine("Error: Could not find repository root (looking for Local.props.example)");
                 return 1;
             }
 
-            Directory.SetCurrentDirectory(rootDir);
+            Directory.SetCurrentDirectory(RootDir);
 
             // Check for dotnet CLI
             if (!IsDotNetInstalled())
@@ -34,24 +40,29 @@ class Program
                 return 1;
             }
 
-            // Load Local.props file
-            var propsFile = Path.Combine(rootDir, "Local.props");
+            var command = args.Length > 0 ? args[0].ToLower() : "build";
+
+            // setup runs without Local.props (it creates it)
+            if (command == "setup")
+                return RunSetup();
+
+            // All other commands require Local.props
+            var propsFile = Path.Combine(RootDir, "Local.props");
             if (!File.Exists(propsFile))
             {
                 Console.Error.WriteLine("Error: Local.props file not found!");
-                Console.Error.WriteLine("Copy Local.props.example to Local.props and configure your paths.");
+                Console.Error.WriteLine("Run: dotnet run --project build-tool setup");
                 return 1;
             }
 
             LoadPropsFile(propsFile);
-
-            var command = args.Length > 0 ? args[0].ToLower() : "build";
 
             return command switch
             {
                 "build" => BuildMods(),
                 "deploy" => DeployMods(),
                 "all" => BuildMods() == 0 ? DeployMods() : 1,
+                "export" => RunExport(),
                 _ => ShowUsage()
             };
         }
@@ -78,15 +89,415 @@ class Program
     {
         Console.WriteLine("Ancient Kingdoms Mod Build Tool");
         Console.WriteLine();
-        Console.WriteLine("Usage: dotnet run [command]");
+        Console.WriteLine("Usage: dotnet run --project build-tool [command]");
         Console.WriteLine();
         Console.WriteLine("Commands:");
         Console.WriteLine("  build   - Build all mods (default)");
         Console.WriteLine("  deploy  - Deploy built mods to game directory");
         Console.WriteLine("  all     - Build and deploy");
+        Console.WriteLine("  setup   - Configure Local.props (interactive, run once)");
+        Console.WriteLine("  export  - Launch game, run data export, stream log");
         Console.WriteLine();
         return 0;
     }
+
+    // =========================================================================
+    // setup
+    // =========================================================================
+
+    static int RunSetup()
+    {
+        Console.WriteLine("Ancient Kingdoms — Setup");
+        Console.WriteLine("========================");
+        Console.WriteLine();
+
+        // Step 1: config.toml
+        var configPath = Path.Combine(RootDir!, "config.toml");
+        var configExamplePath = Path.Combine(RootDir!, "config.toml.example");
+        if (!File.Exists(configPath) && File.Exists(configExamplePath))
+        {
+            File.Copy(configExamplePath, configPath);
+            Console.WriteLine("Created config.toml from example (defaults are fine).");
+            Console.WriteLine();
+        }
+
+        // Load existing Local.props values if present
+        var propsPath = Path.Combine(RootDir!, "Local.props");
+        var existing = new Dictionary<string, string>();
+        if (File.Exists(propsPath))
+        {
+            try
+            {
+                var doc = XDocument.Load(propsPath);
+                foreach (var el in doc.Descendants("PropertyGroup").Elements())
+                    existing[el.Name.LocalName] = el.Value;
+            }
+            catch
+            {
+                Console.WriteLine("Warning: Could not parse existing Local.props, will overwrite.");
+            }
+        }
+
+        // Step 2: ANCIENT_KINGDOMS_PATH
+        var detectedGamePath = DetectGamePath();
+        var currentGamePath = existing.GetValueOrDefault("ANCIENT_KINGDOMS_PATH", "");
+        var defaultGamePath = !string.IsNullOrEmpty(currentGamePath) ? currentGamePath : detectedGamePath;
+
+        var gamePath = Prompt("Game path", defaultGamePath);
+        if (string.IsNullOrWhiteSpace(gamePath))
+        {
+            Console.Error.WriteLine("Error: Game path is required.");
+            return 1;
+        }
+
+        var gameExe = Path.Combine(gamePath, "ancientkingdoms.exe");
+        if (!File.Exists(gameExe))
+        {
+            Console.Error.WriteLine($"Error: ancientkingdoms.exe not found at: {gameExe}");
+            return 1;
+        }
+
+        // Step 3: DATA_EXPORT_PATH (auto-derived)
+        var exportPath = Path.Combine(RootDir!, "exported-data");
+        Directory.CreateDirectory(exportPath);
+        Console.WriteLine($"Data export path: {exportPath}");
+        Console.WriteLine();
+
+        // Step 4: Wine fields (macOS only)
+        var winePath = "";
+        var winePrefix = "";
+        if (IsMacOS)
+        {
+            var detectedWinePath = DetectWinePath();
+            var currentWinePath = existing.GetValueOrDefault("WINE_PATH", "");
+            var defaultWinePath = !string.IsNullOrEmpty(currentWinePath) ? currentWinePath : detectedWinePath;
+
+            winePath = Prompt("Wine binary (macOS)", defaultWinePath);
+            if (!string.IsNullOrEmpty(winePath) && !File.Exists(winePath))
+            {
+                Console.Error.WriteLine($"Error: Wine binary not found at: {winePath}");
+                return 1;
+            }
+
+            var detectedWinePrefix = DeriveWinePrefix(gamePath);
+            var currentWinePrefix = existing.GetValueOrDefault("WINE_PREFIX", "");
+            var defaultWinePrefix = !string.IsNullOrEmpty(currentWinePrefix) ? currentWinePrefix : detectedWinePrefix;
+
+            if (string.IsNullOrEmpty(defaultWinePrefix))
+                Console.WriteLine("  Could not auto-detect wine prefix from game path.");
+
+            winePrefix = Prompt("Wine prefix (macOS)", defaultWinePrefix);
+            if (!string.IsNullOrEmpty(winePrefix) && !Directory.Exists(winePrefix))
+            {
+                Console.Error.WriteLine($"Error: Wine prefix directory not found at: {winePrefix}");
+                return 1;
+            }
+        }
+
+        // Step 5: Write Local.props
+        WriteLocalProps(propsPath, gamePath, exportPath, winePath, winePrefix, existing);
+
+        Console.WriteLine();
+        Console.WriteLine("Saved to Local.props.");
+        Console.WriteLine();
+        Console.WriteLine("Next steps:");
+        Console.WriteLine("  dotnet run --project build-tool all");
+        Console.WriteLine("  dotnet run --project build-tool export");
+
+        return 0;
+    }
+
+    static string Prompt(string label, string? defaultValue)
+    {
+        if (!string.IsNullOrEmpty(defaultValue))
+            Console.Write($"{label} [{defaultValue}]: ");
+        else
+            Console.Write($"{label}: ");
+
+        var input = Console.ReadLine()?.Trim();
+        var result = string.IsNullOrEmpty(input) ? (defaultValue ?? "") : input;
+        Console.WriteLine();
+        return result;
+    }
+
+    static string? DetectGamePath()
+    {
+        var candidates = new List<string>();
+
+        if (IsMacOS)
+        {
+            // CrossOver bottles: ~/Library/Application Support/CrossOver/Bottles/*/drive_c/...
+            var bottlesDir = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                "Library", "Application Support", "CrossOver", "Bottles"
+            );
+            if (Directory.Exists(bottlesDir))
+            {
+                foreach (var bottle in Directory.GetDirectories(bottlesDir))
+                {
+                    var candidate = Path.Combine(bottle, "drive_c", "Program Files (x86)",
+                        "Steam", "steamapps", "common", "Ancient Kingdoms");
+                    candidates.Add(candidate);
+                }
+            }
+        }
+        else
+        {
+            // Windows common Steam locations
+            candidates.Add(@"C:\Program Files (x86)\Steam\steamapps\common\Ancient Kingdoms");
+            candidates.Add(@"C:\Steam\steamapps\common\Ancient Kingdoms");
+            candidates.Add(@"D:\SteamLibrary\steamapps\common\Ancient Kingdoms");
+            candidates.Add(@"E:\SteamLibrary\steamapps\common\Ancient Kingdoms");
+        }
+
+        return candidates.FirstOrDefault(p =>
+            File.Exists(Path.Combine(p, "ancientkingdoms.exe")));
+    }
+
+    static string? DetectWinePath()
+    {
+        var candidate = "/Applications/CrossOver.app/Contents/SharedSupport/CrossOver/bin/wine";
+        return File.Exists(candidate) ? candidate : null;
+    }
+
+    static string? DeriveWinePrefix(string gamePath)
+    {
+        // Game path like .../Bottles/Steam/drive_c/Program Files/... → .../Bottles/Steam
+        var idx = gamePath.IndexOf("drive_c", StringComparison.OrdinalIgnoreCase);
+        if (idx <= 0) return null;
+
+        var prefix = gamePath[..(idx - 1)]; // strip the separator before drive_c
+        return Directory.Exists(prefix) ? prefix : null;
+    }
+
+    static void WriteLocalProps(string path, string gamePath, string exportPath,
+        string winePath, string winePrefix, Dictionary<string, string> existing)
+    {
+        // Show changes for existing values
+        void NoteChange(string key, string newValue)
+        {
+            if (existing.TryGetValue(key, out var old) && old != newValue)
+                Console.WriteLine($"  Updated {key} (was: {old})");
+        }
+
+        NoteChange("ANCIENT_KINGDOMS_PATH", gamePath);
+        NoteChange("DATA_EXPORT_PATH", exportPath);
+        if (IsMacOS)
+        {
+            NoteChange("WINE_PATH", winePath);
+            NoteChange("WINE_PREFIX", winePrefix);
+        }
+
+        var sb = new StringBuilder();
+        sb.AppendLine("<Project>");
+        sb.AppendLine("  <PropertyGroup>");
+        sb.AppendLine($"    <ANCIENT_KINGDOMS_PATH>{gamePath}</ANCIENT_KINGDOMS_PATH>");
+        sb.AppendLine($"    <DATA_EXPORT_PATH>{exportPath}</DATA_EXPORT_PATH>");
+        if (IsMacOS && !string.IsNullOrEmpty(winePath))
+            sb.AppendLine($"    <WINE_PATH>{winePath}</WINE_PATH>");
+        if (IsMacOS && !string.IsNullOrEmpty(winePrefix))
+            sb.AppendLine($"    <WINE_PREFIX>{winePrefix}</WINE_PREFIX>");
+        sb.AppendLine("  </PropertyGroup>");
+        sb.AppendLine("</Project>");
+
+        // Atomic write: temp file then move
+        var tmpPath = path + ".tmp";
+        File.WriteAllText(tmpPath, sb.ToString());
+        File.Move(tmpPath, path, overwrite: true);
+    }
+
+    // =========================================================================
+    // export
+    // =========================================================================
+
+    static int RunExport()
+    {
+        var gamePath = Environment.GetEnvironmentVariable("ANCIENT_KINGDOMS_PATH");
+        if (string.IsNullOrEmpty(gamePath))
+        {
+            Console.Error.WriteLine("Error: ANCIENT_KINGDOMS_PATH not set.");
+            Console.Error.WriteLine("Run: dotnet run --project build-tool setup");
+            return 1;
+        }
+
+        var gameExe = Path.Combine(gamePath, "ancientkingdoms.exe");
+        if (!File.Exists(gameExe))
+        {
+            Console.Error.WriteLine($"Error: Game executable not found at: {gameExe}");
+            return 1;
+        }
+
+        var exportPath = Environment.GetEnvironmentVariable("DATA_EXPORT_PATH") ?? "";
+        var logPath = Path.Combine(gamePath, "MelonLoader", "Latest.log");
+
+        // Truncate the log for a clean start
+        try
+        {
+            var logDir = Path.GetDirectoryName(logPath)!;
+            if (!Directory.Exists(logDir))
+                Directory.CreateDirectory(logDir);
+            File.WriteAllText(logPath, "");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Warning: Could not truncate log: {ex.Message}");
+        }
+
+        // Launch the game
+        Process process;
+        if (IsMacOS)
+        {
+            var winePath = Environment.GetEnvironmentVariable("WINE_PATH");
+            var winePrefix = Environment.GetEnvironmentVariable("WINE_PREFIX");
+
+            if (string.IsNullOrEmpty(winePath) || string.IsNullOrEmpty(winePrefix))
+            {
+                Console.Error.WriteLine("Error: WINE_PATH and WINE_PREFIX not set.");
+                Console.Error.WriteLine("Run: dotnet run --project build-tool setup");
+                return 1;
+            }
+
+            if (!File.Exists(winePath))
+            {
+                Console.Error.WriteLine($"Error: Wine binary not found at: {winePath}");
+                return 1;
+            }
+
+            Console.WriteLine($"Launching game via wine...");
+            Console.WriteLine($"  Wine: {winePath}");
+            Console.WriteLine($"  Prefix: {winePrefix}");
+            Console.WriteLine($"  Game: {gamePath}");
+            Console.WriteLine();
+
+            var psi = new ProcessStartInfo
+            {
+                FileName = winePath,
+                Arguments = "ancientkingdoms.exe --export-data",
+                WorkingDirectory = gamePath,
+                UseShellExecute = false,
+                RedirectStandardOutput = false,
+                RedirectStandardError = false,
+            };
+            psi.Environment["WINEPREFIX"] = winePrefix;
+
+            process = Process.Start(psi)!;
+        }
+        else
+        {
+            Console.WriteLine($"Launching game...");
+            Console.WriteLine($"  Game: {gamePath}");
+            Console.WriteLine();
+
+            var psi = new ProcessStartInfo
+            {
+                FileName = gameExe,
+                Arguments = "--export-data",
+                WorkingDirectory = gamePath,
+                UseShellExecute = false,
+                RedirectStandardOutput = false,
+                RedirectStandardError = false,
+            };
+
+            process = Process.Start(psi)!;
+        }
+
+        // Stream the MelonLoader log
+        Console.WriteLine("Streaming MelonLoader log...");
+        Console.WriteLine("---");
+
+        long offset = 0;
+        var logContent = new StringBuilder();
+        var timeoutMs = 90_000;
+        var stopwatch = Stopwatch.StartNew();
+
+        while (!process.HasExited)
+        {
+            offset = DrainLog(logPath, offset, logContent);
+
+            if (stopwatch.ElapsedMilliseconds > timeoutMs)
+            {
+                Console.WriteLine("---");
+                Console.Error.WriteLine($"Error: Timed out after {timeoutMs / 1000}s — game did not complete export.");
+                try { process.Kill(); } catch { }
+                return 1;
+            }
+
+            Thread.Sleep(100);
+        }
+
+        // Final drain after process exits
+        DrainLog(logPath, offset, logContent);
+        Console.WriteLine("---");
+        Console.WriteLine();
+
+        var fullLog = logContent.ToString();
+
+        // Check for success
+        var exportComplete = fullLog.Contains("All exports complete. Quitting.");
+        var hasRecentJson = false;
+        if (!string.IsNullOrEmpty(exportPath) && Directory.Exists(exportPath))
+        {
+            var cutoff = DateTime.Now.AddMinutes(-2);
+            hasRecentJson = Directory.GetFiles(exportPath, "*.json")
+                .Any(f => File.GetLastWriteTime(f) > cutoff);
+        }
+
+        if (exportComplete && hasRecentJson)
+        {
+            Console.WriteLine("Export complete.");
+            return 0;
+        }
+
+        if (!exportComplete)
+            Console.Error.WriteLine("Error: Export completion signal not found in log.");
+        if (!hasRecentJson)
+            Console.Error.WriteLine("Error: No recently modified .json files found in export directory.");
+
+        Console.Error.WriteLine($"Game exited with code: {process.ExitCode}");
+        return 1;
+    }
+
+    static long DrainLog(string logPath, long offset, StringBuilder logContent)
+    {
+        try
+        {
+            if (!File.Exists(logPath)) return offset;
+
+            using var fs = new FileStream(logPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            if (fs.Length <= offset) return offset;
+
+            fs.Seek(offset, SeekOrigin.Begin);
+            var buffer = new byte[fs.Length - offset];
+            var bytesRead = fs.Read(buffer, 0, buffer.Length);
+            if (bytesRead > 0)
+            {
+                var text = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+                logContent.Append(text);
+
+                // Print line by line with prefix
+                var lines = text.Split('\n');
+                foreach (var line in lines)
+                {
+                    var trimmed = line.TrimEnd('\r');
+                    if (!string.IsNullOrEmpty(trimmed))
+                        Console.WriteLine($"[game] {trimmed}");
+                }
+
+                offset += bytesRead;
+            }
+
+            return offset;
+        }
+        catch
+        {
+            // File may be briefly locked by the game
+            return offset;
+        }
+    }
+
+    // =========================================================================
+    // build / deploy
+    // =========================================================================
 
     static bool IsDotNetInstalled()
     {
@@ -204,7 +615,7 @@ class Program
             try
             {
                 File.Copy(dllFile, targetPath, overwrite: true);
-                Console.WriteLine($"✓ {modName}.dll copied to mods directory");
+                Console.WriteLine($"  {modName}.dll copied to mods directory");
             }
             catch (Exception ex)
             {

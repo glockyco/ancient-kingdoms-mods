@@ -6,6 +6,7 @@
     <RootNamespace>BuildTool</RootNamespace>
     <AssemblyName>build-tool</AssemblyName>
     <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
 </Project>

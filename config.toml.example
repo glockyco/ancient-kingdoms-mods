@@ -1,13 +1,8 @@
 # Ancient Kingdoms Compendium - Central Configuration
 #
-# Copy this file to config.toml and update paths for your system.
+# Copy this file to config.toml (or run 'dotnet run --project build-tool setup').
 # This configuration is used by the Python build-pipeline.
-#
-# For C# build configuration, see Local.props.example
-
-[game]
-# Game installation directory
-install_path = "E:/SteamLibrary/steamapps/common/Ancient Kingdoms"
+# Defaults work out of the box — usually no edits needed.
 
 [paths]
 # Data export directory (where mods write JSON/screenshots)
