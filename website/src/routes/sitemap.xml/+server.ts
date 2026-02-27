@@ -31,6 +31,7 @@ const STATIC_ROUTES = [
   "/recipes",
   "/chests",
   "/gather-items",
+  "/pets",
   "/professions",
   "/professions/adventuring",
   "/professions/alchemy",
@@ -63,6 +64,16 @@ export function GET() {
     for (const row of rows) {
       urls.push(`${SITE_URL}/${route}/${row.id}`);
     }
+  }
+
+  // Add pets (named mercenaries excluded)
+  const petIds = db
+    .prepare(
+      `SELECT id FROM pets WHERE id NOT IN ('rolim', 'nieven', 'bemere', 'ciliren')`,
+    )
+    .all() as { id: string }[];
+  for (const row of petIds) {
+    urls.push(`${SITE_URL}/pets/${row.id}`);
   }
 
   // Add recipes (two tables)
