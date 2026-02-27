@@ -415,7 +415,7 @@ function formatBuffDebuffStats(
 ): string[] {
   const parts: string[] = [];
 
-  // High priority special effects
+  // 1. Special flags (binary game-changers that define the skill's identity)
   if (skill.is_dispel) parts.push("dispels buffs");
   // Source: server-scripts/TargetBuffSkill.cs:284 — cleanse matches on the skill's own debuff type flags
   if (skill.is_cleanse) {
@@ -441,21 +441,7 @@ function formatBuffDebuffStats(
   if (skill.is_invisibility) parts.push("grants invis");
   if (skill.is_mana_shield) parts.push("mana shield");
 
-  // Root/slow — server threshold for full root (immobilized) is speed <= -50
-  // Source: server-scripts/Monster.cs, Pet.cs, Npc.cs — speed <= -50f branch
-  const speedBonus = parseLinearValue(skill.speed_bonus);
-  if (speedBonus) {
-    if (speedBonus.base_value <= -50) {
-      parts.push("root");
-    } else if (speedBonus.base_value !== 0) {
-      const sign = speedBonus.base_value > 0 ? "+" : "";
-      parts.push(
-        `${sign}${formatLinearValue(speedBonus, monsterContext)} speed`,
-      );
-    }
-  }
-
-  // Resource pools
+  // 2. Resource pools
   const healthMaxBonus = parseLinearValue(skill.health_max_bonus);
   if (healthMaxBonus) {
     const sign = healthMaxBonus.base_value > 0 ? "+" : "";
@@ -496,7 +482,7 @@ function formatBuffDebuffStats(
     );
   }
 
-  // Combat stats
+  // 3. Offense
   const damageBonus = parseLinearValue(skill.damage_bonus);
   if (damageBonus && damageBonus.base_value !== 0) {
     const sign = damageBonus.base_value > 0 ? "+" : "";
@@ -527,6 +513,7 @@ function formatBuffDebuffStats(
     );
   }
 
+  // 4. Defense (mitigation stats grouped together)
   const defenseBonus = parseLinearValue(skill.defense_bonus);
   if (defenseBonus && defenseBonus.base_value !== 0) {
     const sign = defenseBonus.base_value > 0 ? "+" : "";
@@ -539,61 +526,6 @@ function formatBuffDebuffStats(
     parts.push(`${sign}${formatLinearValue(wardBonus, monsterContext)} ward`);
   }
 
-  // Attack speed and CDR
-  const hasteBonus = parseLinearValue(skill.haste_bonus);
-  if (hasteBonus && hasteBonus.base_value !== 0) {
-    const sign = hasteBonus.base_value > 0 ? "+" : "";
-    parts.push(
-      `${sign}${formatLinearPercent(hasteBonus, monsterContext)} haste`,
-    );
-  }
-
-  const spellHasteBonus = parseLinearValue(skill.spell_haste_bonus);
-  if (spellHasteBonus && spellHasteBonus.base_value !== 0) {
-    const sign = spellHasteBonus.base_value > 0 ? "+" : "";
-    parts.push(
-      `${sign}${formatLinearPercent(spellHasteBonus, monsterContext)} spell haste`,
-    );
-  }
-
-  const cdrBonus = parseLinearValue(skill.cooldown_reduction_percent);
-  if (cdrBonus && cdrBonus.base_value !== 0) {
-    const sign = cdrBonus.base_value > 0 ? "+" : "";
-    parts.push(`${sign}${formatLinearPercent(cdrBonus, monsterContext)} CDR`);
-  }
-
-  // Crit / Block / Accuracy
-  const critBonus = parseLinearValue(skill.critical_chance_bonus);
-  if (critBonus && critBonus.base_value !== 0) {
-    const sign = critBonus.base_value > 0 ? "+" : "";
-    parts.push(`${sign}${formatLinearPercent(critBonus, monsterContext)} crit`);
-  }
-
-  const blockBonus = parseLinearValue(skill.block_chance_bonus);
-  if (blockBonus && blockBonus.base_value !== 0) {
-    const sign = blockBonus.base_value > 0 ? "+" : "";
-    parts.push(
-      `${sign}${formatLinearPercent(blockBonus, monsterContext)} block`,
-    );
-  }
-
-  const accBonus = parseLinearValue(skill.accuracy_bonus);
-  if (accBonus && accBonus.base_value !== 0) {
-    const sign = accBonus.base_value > 0 ? "+" : "";
-    parts.push(
-      `${sign}${formatLinearPercent(accBonus, monsterContext)} accuracy`,
-    );
-  }
-
-  const fearResistBonus = parseLinearValue(skill.fear_resist_chance_bonus);
-  if (fearResistBonus && fearResistBonus.base_value !== 0) {
-    const sign = fearResistBonus.base_value > 0 ? "+" : "";
-    parts.push(
-      `${sign}${formatLinearPercent(fearResistBonus, monsterContext)} fear resist`,
-    );
-  }
-
-  // Resistances
   const resistFields: [string | LinearValue | null | undefined, string][] = [
     [skill.magic_resist_bonus, "magic res"],
     [skill.poison_resist_bonus, "poison res"],
@@ -610,7 +542,88 @@ function formatBuffDebuffStats(
     }
   }
 
-  // Regen / DoT
+  // 5. Attack speed
+  const hasteBonus = parseLinearValue(skill.haste_bonus);
+  if (hasteBonus && hasteBonus.base_value !== 0) {
+    const sign = hasteBonus.base_value > 0 ? "+" : "";
+    parts.push(
+      `${sign}${formatLinearPercent(hasteBonus, monsterContext)} haste`,
+    );
+  }
+
+  const spellHasteBonus = parseLinearValue(skill.spell_haste_bonus);
+  if (spellHasteBonus && spellHasteBonus.base_value !== 0) {
+    const sign = spellHasteBonus.base_value > 0 ? "+" : "";
+    parts.push(
+      `${sign}${formatLinearPercent(spellHasteBonus, monsterContext)} spell haste`,
+    );
+  }
+
+  // 6. Movement
+  // Root/slow — server threshold for full root (immobilized) is speed <= -50
+  // Source: server-scripts/Monster.cs, Pet.cs, Npc.cs — speed <= -50f branch
+  const speedBonus = parseLinearValue(skill.speed_bonus);
+  if (speedBonus) {
+    if (speedBonus.base_value <= -50) {
+      parts.push("root");
+    } else if (speedBonus.base_value !== 0) {
+      const sign = speedBonus.base_value > 0 ? "+" : "";
+      parts.push(
+        `${sign}${formatLinearValue(speedBonus, monsterContext)} speed`,
+      );
+    }
+  }
+
+  // 7. Hit/chance modifiers
+  const critBonus = parseLinearValue(skill.critical_chance_bonus);
+  if (critBonus && critBonus.base_value !== 0) {
+    const sign = critBonus.base_value > 0 ? "+" : "";
+    parts.push(`${sign}${formatLinearPercent(critBonus, monsterContext)} crit`);
+  }
+
+  const accBonus = parseLinearValue(skill.accuracy_bonus);
+  if (accBonus && accBonus.base_value !== 0) {
+    const sign = accBonus.base_value > 0 ? "+" : "";
+    parts.push(
+      `${sign}${formatLinearPercent(accBonus, monsterContext)} accuracy`,
+    );
+  }
+
+  const blockBonus = parseLinearValue(skill.block_chance_bonus);
+  if (blockBonus && blockBonus.base_value !== 0) {
+    const sign = blockBonus.base_value > 0 ? "+" : "";
+    parts.push(
+      `${sign}${formatLinearPercent(blockBonus, monsterContext)} block`,
+    );
+  }
+
+  const fearResistBonus = parseLinearValue(skill.fear_resist_chance_bonus);
+  if (fearResistBonus && fearResistBonus.base_value !== 0) {
+    const sign = fearResistBonus.base_value > 0 ? "+" : "";
+    parts.push(
+      `${sign}${formatLinearPercent(fearResistBonus, monsterContext)} fear resist`,
+    );
+  }
+
+  // 8. Cooldown reduction
+  const cdrBonus = parseLinearValue(skill.cooldown_reduction_percent);
+  if (cdrBonus && cdrBonus.base_value !== 0) {
+    const sign = cdrBonus.base_value > 0 ? "+" : "";
+    parts.push(`${sign}${formatLinearPercent(cdrBonus, monsterContext)} CDR`);
+  }
+
+  // 9. On-hit proc effects
+  const dmgShield = parseLinearValue(skill.damage_shield);
+  if (dmgShield && dmgShield.base_value > 0) {
+    parts.push(`${formatLinearValue(dmgShield, monsterContext)} dmg shield`);
+  }
+
+  const healOnHit = parseLinearValue(skill.heal_on_hit_percent);
+  if (healOnHit && healOnHit.base_value > 0) {
+    parts.push(`${formatLinearPercent(healOnHit, monsterContext)} heal on hit`);
+  }
+
+  // 10. Regen / DoT
   const hps = parseLinearValue(skill.healing_per_second_bonus);
   if (hps && hps.base_value !== 0) {
     if (hps.base_value > 0) {
@@ -659,18 +672,7 @@ function formatBuffDebuffStats(
     );
   }
 
-  // Damage shield / heal on hit
-  const dmgShield = parseLinearValue(skill.damage_shield);
-  if (dmgShield && dmgShield.base_value > 0) {
-    parts.push(`${formatLinearValue(dmgShield, monsterContext)} dmg shield`);
-  }
-
-  const healOnHit = parseLinearValue(skill.heal_on_hit_percent);
-  if (healOnHit && healOnHit.base_value > 0) {
-    parts.push(`${formatLinearPercent(healOnHit, monsterContext)} heal on hit`);
-  }
-
-  // Primary stats
+  // 11. Primary stats
   const statFields: [string | LinearValue | null | undefined, string][] = [
     [skill.strength_bonus, "str"],
     [skill.intelligence_bonus, "int"],
@@ -701,7 +703,7 @@ function formatBuffDebuffStats(
     else if (skill.is_magic_debuff) parts.push("magic debuff");
   }
 
-  // Cleanse resistance
+  // 12. Cleanse resistance (debuff property, always last)
   if (skill.prob_ignore_cleanse && skill.prob_ignore_cleanse > 0) {
     parts.push(`${formatPercent(skill.prob_ignore_cleanse)} cleanse resist`);
   }

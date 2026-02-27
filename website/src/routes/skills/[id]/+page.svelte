@@ -1335,7 +1335,7 @@
       <Card.Content class="space-y-4">
         {#if hasAnyBonuses}
           <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-4">
-            <!-- Duration -->
+            <!-- 1. Duration -->
             {#if skill.duration_base > 0 || skill.duration_per_level > 0}
               <div>
                 <dt class="text-muted-foreground">Duration</dt>
@@ -1348,7 +1348,7 @@
                 </dd>
               </div>
             {/if}
-            <!-- Resource Pool Bonuses -->
+            <!-- 2. Resource pools -->
             {#if skill.health_max_bonus}
               <div>
                 <dt class="text-muted-foreground">Max Health</dt>
@@ -1389,27 +1389,7 @@
                 </dd>
               </div>
             {/if}
-            <!-- Combat Stat Bonuses -->
-            {#if skill.defense_bonus}
-              <div>
-                <dt class="text-muted-foreground">Defense</dt>
-                <dd class="font-medium">{formatLinear(skill.defense_bonus)}</dd>
-              </div>
-            {/if}
-            {#if skill.ward_bonus}
-              <div>
-                <dt class="text-muted-foreground">Ward</dt>
-                <dd class="font-medium">{formatLinear(skill.ward_bonus)}</dd>
-              </div>
-            {/if}
-            {#if skill.magic_resist_bonus}
-              <div>
-                <dt class="text-muted-foreground">Magic Resist</dt>
-                <dd class="font-medium">
-                  {formatLinear(skill.magic_resist_bonus)}
-                </dd>
-              </div>
-            {/if}
+            <!-- 3. Offense -->
             {#if skill.damage_bonus}
               <div>
                 <dt class="text-muted-foreground">Damage</dt>
@@ -1440,13 +1420,60 @@
                 </dd>
               </div>
             {/if}
-            {#if skill.damage_shield}
+            <!-- 4. Defense (mitigation grouped together) -->
+            {#if skill.defense_bonus}
               <div>
-                <dt class="text-muted-foreground">Damage Shield</dt>
-                <dd class="font-medium">{formatLinear(skill.damage_shield)}</dd>
+                <dt class="text-muted-foreground">Defense</dt>
+                <dd class="font-medium">{formatLinear(skill.defense_bonus)}</dd>
               </div>
             {/if}
-            <!-- Speed/Chance Bonuses -->
+            {#if skill.ward_bonus}
+              <div>
+                <dt class="text-muted-foreground">Ward</dt>
+                <dd class="font-medium">{formatLinear(skill.ward_bonus)}</dd>
+              </div>
+            {/if}
+            {#if skill.magic_resist_bonus}
+              <div>
+                <dt class="text-muted-foreground">Magic Resist</dt>
+                <dd class="font-medium">
+                  {formatLinear(skill.magic_resist_bonus)}
+                </dd>
+              </div>
+            {/if}
+            {#if skill.poison_resist_bonus}
+              <div>
+                <dt class="text-muted-foreground">Poison Resist</dt>
+                <dd class="font-medium">
+                  {formatLinear(skill.poison_resist_bonus)}
+                </dd>
+              </div>
+            {/if}
+            {#if skill.fire_resist_bonus}
+              <div>
+                <dt class="text-muted-foreground">Fire Resist</dt>
+                <dd class="font-medium">
+                  {formatLinear(skill.fire_resist_bonus)}
+                </dd>
+              </div>
+            {/if}
+            {#if skill.cold_resist_bonus}
+              <div>
+                <dt class="text-muted-foreground">Cold Resist</dt>
+                <dd class="font-medium">
+                  {formatLinear(skill.cold_resist_bonus)}
+                </dd>
+              </div>
+            {/if}
+            {#if skill.disease_resist_bonus}
+              <div>
+                <dt class="text-muted-foreground">Disease Resist</dt>
+                <dd class="font-medium">
+                  {formatLinear(skill.disease_resist_bonus)}
+                </dd>
+              </div>
+            {/if}
+            <!-- 5. Attack speed -->
             {#if skill.haste_bonus}
               <div>
                 <dt class="text-muted-foreground">Haste</dt>
@@ -1463,6 +1490,7 @@
                 </dd>
               </div>
             {/if}
+            <!-- 6. Movement -->
             {#if skill.speed_bonus}
               <div>
                 <dt class="text-muted-foreground">Movement Speed</dt>
@@ -1471,6 +1499,7 @@
                 </dd>
               </div>
             {/if}
+            <!-- 7. Hit/chance modifiers -->
             {#if skill.critical_chance_bonus}
               <div>
                 <dt class="text-muted-foreground">Critical Chance</dt>
@@ -1503,12 +1532,20 @@
                 </dd>
               </div>
             {/if}
+            <!-- 8. Cooldown reduction -->
             {#if skill.cooldown_reduction_percent}
               <div>
                 <dt class="text-muted-foreground">Cooldown Reduction</dt>
                 <dd class="font-medium">
                   {formatLinearPercent(skill.cooldown_reduction_percent)}
                 </dd>
+              </div>
+            {/if}
+            <!-- 9. On-hit proc effects -->
+            {#if skill.damage_shield}
+              <div>
+                <dt class="text-muted-foreground">Damage Shield</dt>
+                <dd class="font-medium">{formatLinear(skill.damage_shield)}</dd>
               </div>
             {/if}
             {#if skill.heal_on_hit_percent}
@@ -1519,7 +1556,7 @@
                 </dd>
               </div>
             {/if}
-            <!-- Regen Bonuses -->
+            <!-- 10. Regen / DoT -->
             {#if skill.healing_per_second_bonus}
               <div>
                 <dt class="text-muted-foreground">Health/sec</dt>
@@ -1568,40 +1605,7 @@
                 </dd>
               </div>
             {/if}
-            <!-- Resist Bonuses -->
-            {#if skill.poison_resist_bonus}
-              <div>
-                <dt class="text-muted-foreground">Poison Resist</dt>
-                <dd class="font-medium">
-                  {formatLinear(skill.poison_resist_bonus)}
-                </dd>
-              </div>
-            {/if}
-            {#if skill.fire_resist_bonus}
-              <div>
-                <dt class="text-muted-foreground">Fire Resist</dt>
-                <dd class="font-medium">
-                  {formatLinear(skill.fire_resist_bonus)}
-                </dd>
-              </div>
-            {/if}
-            {#if skill.cold_resist_bonus}
-              <div>
-                <dt class="text-muted-foreground">Cold Resist</dt>
-                <dd class="font-medium">
-                  {formatLinear(skill.cold_resist_bonus)}
-                </dd>
-              </div>
-            {/if}
-            {#if skill.disease_resist_bonus}
-              <div>
-                <dt class="text-muted-foreground">Disease Resist</dt>
-                <dd class="font-medium">
-                  {formatLinear(skill.disease_resist_bonus)}
-                </dd>
-              </div>
-            {/if}
-            <!-- Attribute Bonuses -->
+            <!-- 11. Primary stats -->
             {#if skill.strength_bonus}
               <div>
                 <dt class="text-muted-foreground">Strength</dt>
