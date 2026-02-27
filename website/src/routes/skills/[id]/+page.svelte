@@ -962,7 +962,7 @@
               <dt class="text-muted-foreground">
                 {skill.is_veteran
                   ? "Veteran Points Spent"
-                  : "Skill Points Spent"} Required
+                  : "Skill Points Spent"}
               </dt>
               <dd class="font-medium">{skill.required_spent_points}</dd>
             </div>
