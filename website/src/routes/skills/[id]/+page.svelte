@@ -762,18 +762,6 @@
     <div class="mt-2 flex flex-wrap gap-4 text-sm text-muted-foreground">
       <span>Tier {skill.tier}</span>
       <span>Max Level {skill.max_level}</span>
-      {#if skill.player_classes.length > 0}
-        <span class="flex items-center gap-1">
-          Classes:
-          {#each skill.player_classes as cls, i (cls)}
-            <a
-              href="/classes/{cls}"
-              class="text-blue-600 dark:text-blue-400 hover:underline"
-              >{CLASS_LABELS[cls] ?? cls}</a
-            >{#if i < skill.player_classes.length - 1},{/if}
-          {/each}
-        </span>
-      {/if}
     </div>
   </div>
 
