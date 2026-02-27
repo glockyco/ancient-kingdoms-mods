@@ -17,6 +17,7 @@
   import Map from "@lucide/svelte/icons/map";
   import Image from "@lucide/svelte/icons/image";
   import Star from "@lucide/svelte/icons/star";
+  import Cat from "@lucide/svelte/icons/cat";
   import ArrowRight from "@lucide/svelte/icons/arrow-right";
 
   let { data } = $props();
@@ -163,6 +164,33 @@
         </Card.Root>
       </a>
 
+      <a href="/zones" class="block group">
+        <Card.Root
+          class="h-full transition-colors hover:bg-muted/50 bg-muted/30"
+        >
+          <Card.Header>
+            <div class="flex items-center gap-3">
+              <div class="p-2 rounded-lg bg-emerald-500/10">
+                <MapPin class="h-6 w-6 text-emerald-500" />
+              </div>
+              <div>
+                <Card.Title class="group-hover:underline">Zones</Card.Title>
+                <Card.Description>Overworld areas and dungeons</Card.Description
+                >
+              </div>
+            </div>
+          </Card.Header>
+          <Card.Content>
+            <div
+              class="flex items-center text-sm text-muted-foreground group-hover:text-foreground transition-colors"
+            >
+              Browse all {data.counts.zones.toLocaleString()} zones
+              <ArrowRight class="ml-2 h-4 w-4" />
+            </div>
+          </Card.Content>
+        </Card.Root>
+      </a>
+
       <a href="/classes" class="block group">
         <Card.Root
           class="h-full transition-colors hover:bg-muted/50 bg-muted/30"
@@ -191,18 +219,19 @@
         </Card.Root>
       </a>
 
-      <a href="/zones" class="block group">
+      <a href="/pets" class="block group">
         <Card.Root
           class="h-full transition-colors hover:bg-muted/50 bg-muted/30"
         >
           <Card.Header>
             <div class="flex items-center gap-3">
-              <div class="p-2 rounded-lg bg-emerald-500/10">
-                <MapPin class="h-6 w-6 text-emerald-500" />
+              <div class="p-2 rounded-lg bg-teal-500/10">
+                <Cat class="h-6 w-6 text-teal-500" />
               </div>
               <div>
-                <Card.Title class="group-hover:underline">Zones</Card.Title>
-                <Card.Description>Overworld areas and dungeons</Card.Description
+                <Card.Title class="group-hover:underline">Pets</Card.Title>
+                <Card.Description
+                  >Mercenaries, companions, and familiars</Card.Description
                 >
               </div>
             </div>
@@ -211,7 +240,7 @@
             <div
               class="flex items-center text-sm text-muted-foreground group-hover:text-foreground transition-colors"
             >
-              Browse all {data.counts.zones.toLocaleString()} zones
+              Browse all {data.counts.pets.toLocaleString()} pets
               <ArrowRight class="ml-2 h-4 w-4" />
             </div>
           </Card.Content>
@@ -240,6 +269,62 @@
               class="flex items-center text-sm text-muted-foreground group-hover:text-foreground transition-colors"
             >
               Browse all {data.counts.quests.toLocaleString()} quests
+              <ArrowRight class="ml-2 h-4 w-4" />
+            </div>
+          </Card.Content>
+        </Card.Root>
+      </a>
+
+      <a href="/altars" class="block group">
+        <Card.Root
+          class="h-full transition-colors hover:bg-muted/50 bg-muted/30"
+        >
+          <Card.Header>
+            <div class="flex items-center gap-3">
+              <div class="p-2 rounded-lg bg-orange-500/10">
+                <Flame class="h-6 w-6 text-orange-500" />
+              </div>
+              <div>
+                <Card.Title class="group-hover:underline">Altars</Card.Title>
+                <Card.Description
+                  >Event locations and their rewards</Card.Description
+                >
+              </div>
+            </div>
+          </Card.Header>
+          <Card.Content>
+            <div
+              class="flex items-center text-sm text-muted-foreground group-hover:text-foreground transition-colors"
+            >
+              Browse all {data.counts.altars.toLocaleString()} altars
+              <ArrowRight class="ml-2 h-4 w-4" />
+            </div>
+          </Card.Content>
+        </Card.Root>
+      </a>
+
+      <a href="/chests" class="block group">
+        <Card.Root
+          class="h-full transition-colors hover:bg-muted/50 bg-muted/30"
+        >
+          <Card.Header>
+            <div class="flex items-center gap-3">
+              <div class="p-2 rounded-lg bg-sky-500/10">
+                <Box class="h-6 w-6 text-sky-500" />
+              </div>
+              <div>
+                <Card.Title class="group-hover:underline">Chests</Card.Title>
+                <Card.Description
+                  >Treasure chests, their keys, and contents</Card.Description
+                >
+              </div>
+            </div>
+          </Card.Header>
+          <Card.Content>
+            <div
+              class="flex items-center text-sm text-muted-foreground group-hover:text-foreground transition-colors"
+            >
+              Browse all {data.counts.chests.toLocaleString()} chests
               <ArrowRight class="ml-2 h-4 w-4" />
             </div>
           </Card.Content>
@@ -330,62 +415,6 @@
               class="flex items-center text-sm text-muted-foreground group-hover:text-foreground transition-colors"
             >
               Browse all {data.counts.recipes.toLocaleString()} recipes
-              <ArrowRight class="ml-2 h-4 w-4" />
-            </div>
-          </Card.Content>
-        </Card.Root>
-      </a>
-
-      <a href="/altars" class="block group">
-        <Card.Root
-          class="h-full transition-colors hover:bg-muted/50 bg-muted/30"
-        >
-          <Card.Header>
-            <div class="flex items-center gap-3">
-              <div class="p-2 rounded-lg bg-orange-500/10">
-                <Flame class="h-6 w-6 text-orange-500" />
-              </div>
-              <div>
-                <Card.Title class="group-hover:underline">Altars</Card.Title>
-                <Card.Description
-                  >Event locations and their rewards</Card.Description
-                >
-              </div>
-            </div>
-          </Card.Header>
-          <Card.Content>
-            <div
-              class="flex items-center text-sm text-muted-foreground group-hover:text-foreground transition-colors"
-            >
-              Browse all {data.counts.altars.toLocaleString()} altars
-              <ArrowRight class="ml-2 h-4 w-4" />
-            </div>
-          </Card.Content>
-        </Card.Root>
-      </a>
-
-      <a href="/chests" class="block group">
-        <Card.Root
-          class="h-full transition-colors hover:bg-muted/50 bg-muted/30"
-        >
-          <Card.Header>
-            <div class="flex items-center gap-3">
-              <div class="p-2 rounded-lg bg-sky-500/10">
-                <Box class="h-6 w-6 text-sky-500" />
-              </div>
-              <div>
-                <Card.Title class="group-hover:underline">Chests</Card.Title>
-                <Card.Description
-                  >Treasure chests, their keys, and contents</Card.Description
-                >
-              </div>
-            </div>
-          </Card.Header>
-          <Card.Content>
-            <div
-              class="flex items-center text-sm text-muted-foreground group-hover:text-foreground transition-colors"
-            >
-              Browse all {data.counts.chests.toLocaleString()} chests
               <ArrowRight class="ml-2 h-4 w-4" />
             </div>
           </Card.Content>

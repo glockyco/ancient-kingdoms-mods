@@ -12,6 +12,7 @@ interface HomePageData {
     npcs: number;
     quests: number;
     classes: number;
+    pets: number;
     altars: number;
     recipes: number;
     gatheringResources: number;
@@ -89,6 +90,12 @@ export const load: PageServerLoad = (): HomePageData => {
     }
   ).count;
 
+  const petCount = (
+    db.prepare("SELECT COUNT(*) as count FROM pets").get() as {
+      count: number;
+    }
+  ).count;
+
   db.close();
 
   return {
@@ -99,6 +106,7 @@ export const load: PageServerLoad = (): HomePageData => {
       npcs: npcCount,
       quests: questCount,
       classes: classCount,
+      pets: petCount,
       altars: altarCount,
       recipes: alchemyCount + craftingCount,
       gatheringResources: gatheringResourceCount,
