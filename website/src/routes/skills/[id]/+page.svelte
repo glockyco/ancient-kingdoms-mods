@@ -1899,11 +1899,15 @@
                       ? "defense"
                       : `${resistType}Resist`} &times; 0.0005, 0, 0.9))
                   </li>
-                  <!-- Source: server-scripts/Combat.cs — 1.5f, 0.95 check, num *= 2, isRadiantAetherActivated → *3 on top of crit -->
+                  <!-- Source: server-scripts/Combat.cs — criticalChance roll, 0.95 check, num *= 2 -->
                   <li>
-                    Crit (if dmg &gt; 3): on crit &rarr; 95% &times;1.5 (normal)
-                    | 5% &times;2.0 (super) | Radiant Aether applies &times;3 on
-                    top &rarr; &times;4.5 or &times;6.0
+                    Crit: on crit &rarr; 95% &times;1.5 (normal) | 5% &times;2.0
+                    (super)
+                  </li>
+                  <!-- Source: server-scripts/Combat.cs — isRadiantAetherActivated → 0.15f roll, consumes 1 item, *3 on top of crit -->
+                  <li>
+                    Radiant Aether (15% chance on crit, consumes 1 item):
+                    &times;3 on top &rarr; &times;4.5 or &times;6.0
                   </li>
                 </ol>
               </div>
