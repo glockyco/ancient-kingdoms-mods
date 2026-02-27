@@ -417,7 +417,26 @@ function formatBuffDebuffStats(
 
   // High priority special effects
   if (skill.is_dispel) parts.push("dispels buffs");
-  if (skill.is_cleanse) parts.push("cleanses debuffs");
+  // Source: server-scripts/TargetBuffSkill.cs:284 — cleanse matches on the skill's own debuff type flags
+  if (skill.is_cleanse) {
+    const all =
+      skill.is_poison_debuff &&
+      skill.is_disease_debuff &&
+      skill.is_fire_debuff &&
+      skill.is_cold_debuff &&
+      skill.is_magic_debuff;
+    if (all) {
+      parts.push("cleanses all debuffs");
+    } else {
+      const types: string[] = [];
+      if (skill.is_poison_debuff) types.push("poison");
+      if (skill.is_disease_debuff) types.push("disease");
+      if (skill.is_fire_debuff) types.push("fire");
+      if (skill.is_cold_debuff) types.push("cold");
+      if (skill.is_magic_debuff) types.push("magic");
+      parts.push(`cleanses ${types.join(" & ")} debuffs`);
+    }
+  }
   if (skill.is_blindness) parts.push("blinds");
   if (skill.is_invisibility) parts.push("grants invis");
   if (skill.is_mana_shield) parts.push("mana shield");

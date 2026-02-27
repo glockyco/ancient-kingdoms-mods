@@ -154,6 +154,8 @@
       skill.charisma_bonus,
   );
 
+  // is_cleanse is excluded: cleanse description is in the effect summary,
+  // and the card adds nothing unless the skill also has stat bonuses or other effects.
   const hasBuffEffects = $derived(
     skill.duration_base > 0 ||
       skill.duration_per_level > 0 ||
@@ -163,7 +165,6 @@
       hasAttributeBonuses ||
       skill.is_invisibility ||
       skill.is_mana_shield ||
-      skill.is_cleanse ||
       skill.is_dispel ||
       skill.is_blindness ||
       skill.is_enrage ||
@@ -628,7 +629,6 @@
   const hasSpecialBuffFlags = $derived(
     skill.is_invisibility ||
       skill.is_mana_shield ||
-      skill.is_cleanse ||
       skill.is_dispel ||
       skill.is_enrage,
   );
@@ -1652,7 +1652,7 @@
         {/if}
 
         <!-- Special Flags -->
-        {#if skill.is_invisibility || skill.is_mana_shield || skill.is_cleanse || skill.is_dispel || skill.is_blindness || skill.is_enrage || skill.is_permanent || skill.is_only_for_magic_classes}
+        {#if skill.is_invisibility || skill.is_mana_shield || skill.is_dispel || skill.is_blindness || skill.is_enrage || skill.is_permanent || skill.is_only_for_magic_classes}
           <div class="space-y-1 text-sm">
             {#if skill.is_enrage}
               <p class="text-red-600 dark:text-red-400">
@@ -1668,9 +1668,6 @@
               <p class="text-blue-600 dark:text-blue-400">
                 Mana Shield (damage absorbed by mana)
               </p>
-            {/if}
-            {#if skill.is_cleanse}
-              <p class="text-green-600 dark:text-green-400">Cleanses debuffs</p>
             {/if}
             {#if skill.is_dispel}
               <p class="text-red-600 dark:text-red-400">Dispels buffs</p>
