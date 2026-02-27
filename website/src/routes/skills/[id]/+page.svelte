@@ -165,8 +165,18 @@
       skill.is_cleanse ||
       skill.is_dispel ||
       skill.is_blindness ||
+      skill.is_enrage ||
       skill.is_permanent ||
       skill.is_only_for_magic_classes,
+  );
+
+  const hasAnyBonuses = $derived(
+    skill.duration_base > 0 ||
+      skill.duration_per_level > 0 ||
+      hasStatBonuses ||
+      hasRegenBonuses ||
+      hasResistBonuses ||
+      hasAttributeBonuses,
   );
 
   const hasCrowdControl = $derived(
@@ -633,9 +643,9 @@
         </Card.Title>
       </Card.Header>
       <Card.Content class="space-y-4">
-        <!-- Stat Bonuses -->
-        {#if hasStatBonuses || skill.duration_base > 0 || skill.duration_per_level > 0}
+        {#if hasAnyBonuses}
           <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-4">
+            <!-- Duration -->
             {#if skill.duration_base > 0 || skill.duration_per_level > 0}
               <div>
                 <dt class="text-muted-foreground">Duration</dt>
@@ -648,6 +658,7 @@
                 </dd>
               </div>
             {/if}
+            <!-- Resource Pool Bonuses -->
             {#if skill.health_max_bonus}
               <div>
                 <dt class="text-muted-foreground">Max Health</dt>
@@ -688,6 +699,7 @@
                 </dd>
               </div>
             {/if}
+            <!-- Combat Stat Bonuses -->
             {#if skill.defense_bonus}
               <div>
                 <dt class="text-muted-foreground">Defense</dt>
@@ -738,6 +750,13 @@
                 </dd>
               </div>
             {/if}
+            {#if skill.damage_shield}
+              <div>
+                <dt class="text-muted-foreground">Damage Shield</dt>
+                <dd class="font-medium">{formatLinear(skill.damage_shield)}</dd>
+              </div>
+            {/if}
+            <!-- Speed/Chance Bonuses -->
             {#if skill.haste_bonus}
               <div>
                 <dt class="text-muted-foreground">Haste</dt>
@@ -794,12 +813,6 @@
                 </dd>
               </div>
             {/if}
-            {#if skill.damage_shield}
-              <div>
-                <dt class="text-muted-foreground">Damage Shield</dt>
-                <dd class="font-medium">{formatLinear(skill.damage_shield)}</dd>
-              </div>
-            {/if}
             {#if skill.cooldown_reduction_percent}
               <div>
                 <dt class="text-muted-foreground">Cooldown Reduction</dt>
@@ -816,12 +829,7 @@
                 </dd>
               </div>
             {/if}
-          </dl>
-        {/if}
-
-        <!-- Regen Bonuses -->
-        {#if hasRegenBonuses}
-          <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-4">
+            <!-- Regen Bonuses -->
             {#if skill.healing_per_second_bonus}
               <div>
                 <dt class="text-muted-foreground">Health/sec</dt>
@@ -870,12 +878,7 @@
                 </dd>
               </div>
             {/if}
-          </dl>
-        {/if}
-
-        <!-- Resist Bonuses -->
-        {#if hasResistBonuses}
-          <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-4">
+            <!-- Resist Bonuses -->
             {#if skill.poison_resist_bonus}
               <div>
                 <dt class="text-muted-foreground">Poison Resist</dt>
@@ -908,12 +911,7 @@
                 </dd>
               </div>
             {/if}
-          </dl>
-        {/if}
-
-        <!-- Attribute Bonuses -->
-        {#if hasAttributeBonuses}
-          <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-4">
+            <!-- Attribute Bonuses -->
             {#if skill.strength_bonus}
               <div>
                 <dt class="text-muted-foreground">Strength</dt>
@@ -964,8 +962,13 @@
         {/if}
 
         <!-- Special Flags -->
-        {#if skill.is_invisibility || skill.is_mana_shield || skill.is_cleanse || skill.is_dispel || skill.is_blindness || skill.is_permanent || skill.is_only_for_magic_classes}
+        {#if skill.is_invisibility || skill.is_mana_shield || skill.is_cleanse || skill.is_dispel || skill.is_blindness || skill.is_enrage || skill.is_permanent || skill.is_only_for_magic_classes}
           <div class="space-y-1 text-sm">
+            {#if skill.is_enrage}
+              <p class="text-red-600 dark:text-red-400">
+                Enrage: +33% damage when below 25% HP
+              </p>
+            {/if}
             {#if skill.is_invisibility}
               <p class="text-purple-600 dark:text-purple-400">
                 Grants Invisibility
@@ -984,6 +987,9 @@
             {/if}
             {#if skill.is_blindness}
               <p class="text-amber-600 dark:text-amber-400">Blinds target</p>
+            {/if}
+            {#if skill.is_permanent}
+              <p class="text-muted-foreground">Permanent effect</p>
             {/if}
             {#if skill.is_only_for_magic_classes}
               <p class="text-indigo-600 dark:text-indigo-400">
