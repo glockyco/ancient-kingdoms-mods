@@ -507,7 +507,7 @@ function formatBuffDebuffStats(
   if (damagePctBonus && damagePctBonus.base_value !== 0) {
     const sign = damagePctBonus.base_value > 0 ? "+" : "";
     parts.push(
-      `${sign}${formatLinearPercent(damagePctBonus, monsterContext)} dmg`,
+      `${sign}${formatLinearPercent(damagePctBonus, monsterContext)} phys dmg`,
     );
   }
 
@@ -515,7 +515,7 @@ function formatBuffDebuffStats(
   if (magicDmgBonus && magicDmgBonus.base_value !== 0) {
     const sign = magicDmgBonus.base_value > 0 ? "+" : "";
     parts.push(
-      `${sign}${formatLinearValue(magicDmgBonus, monsterContext)} spell power`,
+      `${sign}${formatLinearValue(magicDmgBonus, monsterContext)} magic dmg`,
     );
   }
 
@@ -523,7 +523,7 @@ function formatBuffDebuffStats(
   if (magicDmgPctBonus && magicDmgPctBonus.base_value !== 0) {
     const sign = magicDmgPctBonus.base_value > 0 ? "+" : "";
     parts.push(
-      `${sign}${formatLinearPercent(magicDmgPctBonus, monsterContext)} spell power`,
+      `${sign}${formatLinearPercent(magicDmgPctBonus, monsterContext)} magic dmg`,
     );
   }
 

@@ -379,19 +379,19 @@
     },
     {
       key: "damage_percent_bonus",
-      label: "Damage %",
+      label: "Physical Damage %",
       isPercent: true,
       suffix: "",
     },
     {
       key: "magic_damage_bonus",
-      label: "Magic Dmg",
+      label: "Magic Damage",
       isPercent: false,
       suffix: "",
     },
     {
       key: "magic_damage_percent_bonus",
-      label: "Magic Dmg %",
+      label: "Magic Damage %",
       isPercent: true,
       suffix: "",
     },
@@ -1418,7 +1418,7 @@
             {/if}
             {#if skill.damage_percent_bonus}
               <div>
-                <dt class="text-muted-foreground">Damage %</dt>
+                <dt class="text-muted-foreground">Physical Damage %</dt>
                 <dd class="font-medium">
                   {formatLinearPercent(skill.damage_percent_bonus)}
                 </dd>
