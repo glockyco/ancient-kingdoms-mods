@@ -756,7 +756,17 @@
     </div>
 
     <div class="mt-2 flex flex-wrap gap-4 text-sm text-muted-foreground">
-      <span>Tier {skill.tier}</span>
+      {#if skill.player_classes.length > 0 && !skill.is_veteran}
+        <span>
+          {#if skill.base_skill}
+            Base
+          {:else if skill.tier === 0}
+            Core
+          {:else}
+            Tier {skill.tier}
+          {/if}
+        </span>
+      {/if}
       <span>Max Level {skill.max_level}</span>
     </div>
   </div>
