@@ -373,7 +373,7 @@
     },
     {
       key: "damage_bonus",
-      label: "Damage Bonus",
+      label: "Damage",
       isPercent: false,
       suffix: "",
     },
@@ -409,13 +409,13 @@
     },
     {
       key: "speed_bonus",
-      label: "Move Speed",
+      label: "Movement Speed",
       isPercent: false,
       suffix: "",
     },
     {
       key: "critical_chance_bonus",
-      label: "Crit Chance",
+      label: "Critical Chance",
       isPercent: true,
       suffix: "",
     },
@@ -439,13 +439,13 @@
     },
     {
       key: "damage_shield",
-      label: "Dmg Shield",
+      label: "Damage Shield",
       isPercent: false,
       suffix: "",
     },
     {
       key: "cooldown_reduction_percent",
-      label: "CDR",
+      label: "Cooldown Reduction",
       isPercent: true,
       suffix: "",
     },
@@ -493,37 +493,37 @@
     },
     {
       key: "strength_bonus",
-      label: "STR",
+      label: "Strength",
       isPercent: false,
       suffix: "",
     },
     {
       key: "intelligence_bonus",
-      label: "INT",
+      label: "Intelligence",
       isPercent: false,
       suffix: "",
     },
     {
       key: "dexterity_bonus",
-      label: "DEX",
+      label: "Dexterity",
       isPercent: false,
       suffix: "",
     },
     {
       key: "constitution_bonus",
-      label: "CON",
+      label: "Constitution",
       isPercent: false,
       suffix: "",
     },
     {
       key: "wisdom_bonus",
-      label: "WIS",
+      label: "Wisdom",
       isPercent: false,
       suffix: "",
     },
     {
       key: "charisma_bonus",
-      label: "CHA",
+      label: "Charisma",
       isPercent: false,
       suffix: "",
     },
@@ -2025,7 +2025,7 @@
               <!-- Source: server-scripts/Wisdom.cs — maxHealthBuffBonusPerPoint = 2 -->
               <!-- Source: server-scripts/uMMORPG.Scripts.PlayerAttributes/Charisma.cs — GetWisdomBonusMaxHealthBuffMerc -->
               {#if skill.health_max_bonus}
-                <dt class="text-muted-foreground">Max HP</dt>
+                <dt class="text-muted-foreground">Max Health</dt>
                 <dd>
                   skillValue(level) + {buffScalingAttr === "wis_cha"
                     ? "CHA"
