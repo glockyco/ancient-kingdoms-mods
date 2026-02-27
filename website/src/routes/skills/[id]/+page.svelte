@@ -181,6 +181,26 @@
       hasAttributeBonuses,
   );
 
+  // Fields that actually scale with WIS at runtime (Buff.cs — bonusAttribute applied)
+  // Excludes: speed_bonus, damage_percent_bonus, magic_damage_percent_bonus, haste_bonus,
+  // spell_haste_bonus, critical_chance_bonus, accuracy_bonus, block_chance_bonus,
+  // mana_max_bonus, energy_max_bonus, *_percent_bonus, cooldown_reduction_percent, heal_on_hit_percent,
+  // positive damage_bonus / magic_damage_bonus (only negative values use bonusAttribute)
+  const hasWisScaledBonuses = $derived(
+    !!(
+      skill.health_max_bonus ||
+      skill.defense_bonus ||
+      skill.magic_resist_bonus ||
+      skill.poison_resist_bonus ||
+      skill.fire_resist_bonus ||
+      skill.cold_resist_bonus ||
+      skill.disease_resist_bonus ||
+      skill.healing_per_second_bonus ||
+      skill.damage_shield ||
+      skill.ward_bonus
+    ),
+  );
+
   const hasCrowdControl = $derived(
     hasLinearValue(skill.stun_chance) ||
       hasLinearValue(skill.fear_chance) ||
@@ -608,8 +628,8 @@
     isPlayerUsable &&
       (isDamageType ||
         isHealType ||
-        (isBuffType && (hasAnyBonuses || hasSpecialBuffFlags)) ||
-        (isDebuffType && hasAnyBonuses)),
+        (isBuffType && (hasWisScaledBonuses || hasSpecialBuffFlags)) ||
+        (isDebuffType && hasWisScaledBonuses)),
   );
 
   // Determine damage formula type
@@ -1992,7 +2012,7 @@
         {/if}
 
         <!-- C. Buff Scaling -->
-        {#if isBuffType && hasAnyBonuses}
+        {#if isBuffType && hasWisScaledBonuses}
           <div class="space-y-2">
             <h3 class="font-semibold">Buff Scaling</h3>
             {#if buffScalingAttr === "level"}
@@ -2081,7 +2101,7 @@
         {/if}
 
         <!-- D. Debuff Scaling -->
-        {#if isDebuffType && hasAnyBonuses}
+        {#if isDebuffType && hasWisScaledBonuses}
           <div class="space-y-2">
             <h3 class="font-semibold">Debuff Scaling</h3>
             <p class="text-muted-foreground">
