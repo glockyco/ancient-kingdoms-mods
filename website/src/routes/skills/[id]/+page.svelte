@@ -104,7 +104,7 @@
     passive: "Passive",
     summon: "Summon",
     summon_monsters: "Summon Monsters",
-    area_object_spawn: "Area Object",
+    area_object_spawn: "Object Spawn",
   };
 
   const hasStatBonuses = $derived(
