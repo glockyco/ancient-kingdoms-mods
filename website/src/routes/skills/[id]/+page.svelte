@@ -793,7 +793,7 @@
           >
         </li>
       {/if}
-      {#if skill.heals_health || skill.heals_mana || skill.is_resurrect_skill || skill.is_balance_health}
+      {#if (hasLinearValue(skill.heals_health) || hasLinearValue(skill.heals_mana) || skill.is_balance_health) && !skill.is_resurrect_skill}
         <li>
           <a href="#healing" class="hover:text-foreground hover:underline"
             >Healing</a
@@ -1138,7 +1138,7 @@
   {/if}
 
   <!-- Healing -->
-  {#if skill.heals_health || skill.heals_mana || skill.is_resurrect_skill || skill.is_balance_health}
+  {#if (hasLinearValue(skill.heals_health) || hasLinearValue(skill.heals_mana) || skill.is_balance_health) && !skill.is_resurrect_skill}
     <Card.Root id="healing" class="bg-muted/30">
       <Card.Header>
         <Card.Title class="flex items-center gap-2">
@@ -1179,18 +1179,11 @@
             </div>
           {/if}
         </dl>
-        {#if skill.is_resurrect_skill || skill.is_balance_health}
+        {#if skill.is_balance_health}
           <div class="mt-3 space-y-1 text-sm">
-            {#if skill.is_resurrect_skill}
-              <p class="text-green-600 dark:text-green-400">
-                Resurrects target (60% HP, 20% mana, 75% XP)
-              </p>
-            {/if}
-            {#if skill.is_balance_health}
-              <p class="text-green-600 dark:text-green-400">
-                Equalizes group member HP percentages
-              </p>
-            {/if}
+            <p class="text-green-600 dark:text-green-400">
+              Equalizes group member HP percentages
+            </p>
           </div>
         {/if}
       </Card.Content>
