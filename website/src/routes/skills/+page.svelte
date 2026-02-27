@@ -8,104 +8,33 @@
     type Header,
     type TanstackTable,
   } from "$lib/components/ui/data-table";
-  import { Alert } from "$lib/components/ui/alert";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import Sparkles from "@lucide/svelte/icons/sparkles";
-  import CircleAlert from "@lucide/svelte/icons/circle-alert";
-  import Zap from "@lucide/svelte/icons/zap";
-  import Shield from "@lucide/svelte/icons/shield";
-  import Swords from "@lucide/svelte/icons/swords";
-  import Heart from "@lucide/svelte/icons/heart";
-  import type { Component } from "svelte";
+  import { getClassConfig } from "$lib/utils/classes";
 
   let { data } = $props();
 
   const PAGE_SIZE = 20;
 
-  // Class display names and colors
-  const CLASS_INFO: Record<string, { label: string; color: string }> = {
-    warrior: { label: "Warrior", color: "text-red-500" },
-    ranger: { label: "Ranger", color: "text-green-500" },
-    cleric: { label: "Cleric", color: "text-yellow-500" },
-    rogue: { label: "Rogue", color: "text-purple-500" },
-    wizard: { label: "Wizard", color: "text-blue-500" },
-    druid: { label: "Druid", color: "text-emerald-500" },
-  };
-
-  // Skill type categories for display
-  const SKILL_TYPE_INFO: Record<
-    string,
-    { label: string; icon: Component; color: string }
-  > = {
-    target_damage: {
-      label: "Target Damage",
-      icon: Swords,
-      color: "text-red-500",
-    },
-    area_damage: { label: "Area Damage", icon: Swords, color: "text-red-500" },
-    frontal_damage: {
-      label: "Frontal Damage",
-      icon: Swords,
-      color: "text-red-500",
-    },
-    target_projectile: {
-      label: "Projectile",
-      icon: Zap,
-      color: "text-orange-500",
-    },
-    frontal_projectiles: {
-      label: "Frontal Projectiles",
-      icon: Zap,
-      color: "text-orange-500",
-    },
-    target_heal: { label: "Target Heal", icon: Heart, color: "text-green-500" },
-    area_heal: { label: "Area Heal", icon: Heart, color: "text-green-500" },
-    target_buff: { label: "Target Buff", icon: Shield, color: "text-blue-500" },
-    area_buff: { label: "Area Buff", icon: Shield, color: "text-blue-500" },
-    target_debuff: {
-      label: "Target Debuff",
-      icon: Shield,
-      color: "text-purple-500",
-    },
-    area_debuff: {
-      label: "Area Debuff",
-      icon: Shield,
-      color: "text-purple-500",
-    },
-    passive: { label: "Passive", icon: Sparkles, color: "text-gray-500" },
-    summon: { label: "Summon", icon: Sparkles, color: "text-cyan-500" },
-    summon_monsters: {
-      label: "Summon Monsters",
-      icon: Sparkles,
-      color: "text-cyan-500",
-    },
-    area_object_spawn: {
-      label: "Area Object",
-      icon: Sparkles,
-      color: "text-cyan-500",
-    },
-  };
-
-  // Get unique skill types for filter
   const uniqueSkillTypes = $derived(
     Array.from(new Set(data.skills.map((s) => s.skill_type))).sort(),
   );
 
-  // Get unique classes for filter
   const uniqueClasses = $derived(
     Array.from(new Set(data.skills.flatMap((s) => s.player_classes))).sort(),
   );
 
-  // Add virtual columns for filtering
   const dataWithVirtual = $derived(
     data.skills.map((s) => ({
       ...s,
       class_ids: s.player_classes,
-      flags: [
+      skill_categories: [
         s.is_spell ? "spell" : null,
         s.is_veteran ? "veteran" : null,
-        s.is_pet_skill ? "pet" : null,
-        s.is_mercenary_skill ? "mercenary" : null,
+        s.is_mercenary_skill ? "targets_mercenaries" : null,
+        s.is_pet_skill ? "targets_pet" : null,
+        s.used_by_mercenaries ? "used_by_mercenaries" : null,
+        s.used_by_pets ? "used_by_pets" : null,
       ].filter(Boolean) as string[],
     })),
   );
@@ -115,14 +44,12 @@
   const columns: ColumnDef<SkillRow>[] = [
     {
       accessorKey: "name",
-      header: "Name",
+      header: "Skill",
       enableHiding: false,
-      minSize: 200,
     },
     {
       accessorKey: "skill_type",
       header: "Type",
-      size: 180,
       filterFn: (row, columnId, filterValue: string[]) => {
         const value = row.getValue(columnId) as string;
         if (!filterValue || filterValue.length === 0) return true;
@@ -130,26 +57,12 @@
       },
     },
     {
-      accessorKey: "tier",
-      header: "Tier",
-      size: 80,
+      id: "effect",
+      accessorKey: "effect",
+      header: "Effect",
+      enableSorting: false,
     },
-    {
-      accessorKey: "max_level",
-      header: "Max Lvl",
-      size: 100,
-    },
-    {
-      accessorKey: "level_required",
-      header: "Req Lvl",
-      size: 100,
-    },
-    {
-      id: "classes",
-      header: "Classes",
-      size: 200,
-      accessorFn: (row) => row.player_classes.join(", "),
-    },
+    // Hidden filter-only columns
     {
       id: "class_ids",
       accessorKey: "class_ids",
@@ -163,36 +76,31 @@
       },
     },
     {
-      id: "flags",
-      accessorKey: "flags",
-      header: "Flags",
+      id: "skill_categories",
+      accessorKey: "skill_categories",
+      header: "Skill Categories",
       enableHiding: false,
-      getUniqueValues: (row) => row.flags,
+      getUniqueValues: (row) => row.skill_categories,
       filterFn: (row, columnId, filterValue: string[]) => {
-        const flags = row.getValue(columnId) as string[];
+        const cats = row.getValue(columnId) as string[];
         if (!filterValue || filterValue.length === 0) return true;
-        return filterValue.some((f) => flags.includes(f));
+        return filterValue.some((f) => cats.includes(f));
       },
     },
   ];
 
   const columnLabels: Record<string, string> = {
-    name: "Name",
+    name: "Skill",
     skill_type: "Type",
-    tier: "Tier",
-    max_level: "Max Level",
-    level_required: "Required Level",
-    classes: "Classes",
+    effect: "Effect",
     class_ids: "Class Filter",
-    flags: "Flags",
+    skill_categories: "Skill Categories",
   };
 </script>
 
 {#snippet renderHeader({ header }: { header: Header<SkillRow, unknown> })}
-  {#if header.id === "class_ids" || header.id === "flags"}
+  {#if header.id === "class_ids" || header.id === "skill_categories"}
     <span></span>
-  {:else if header.id === "tier" || header.id === "max_level" || header.id === "level_required"}
-    <span class="ml-auto">{columnLabels[header.id] ?? header.id}</span>
   {:else}
     {columnLabels[header.id] ?? header.id}
   {/if}
@@ -206,62 +114,62 @@
   row: Row<SkillRow>;
 })}
   {#if cell.column.id === "name"}
-    <div class="flex items-center gap-2">
-      <a
-        href="/skills/{row.original.id}"
-        class="text-blue-600 dark:text-blue-400 hover:underline"
-      >
-        {row.original.name}
-      </a>
-      {#if row.original.is_veteran}
-        <span
-          class="rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-700 dark:bg-amber-900 dark:text-amber-300"
-          >Vet</span
-        >
-      {/if}
-      {#if row.original.is_pet_skill}
-        <span
-          class="rounded-full bg-cyan-100 px-1.5 py-0.5 text-[10px] font-medium text-cyan-700 dark:bg-cyan-900 dark:text-cyan-300"
-          >Pet</span
-        >
-      {/if}
-      {#if row.original.is_mercenary_skill}
-        <span
-          class="rounded-full bg-purple-100 px-1.5 py-0.5 text-[10px] font-medium text-purple-700 dark:bg-purple-900 dark:text-purple-300"
-          >Merc</span
-        >
-      {/if}
-    </div>
+    <a
+      href="/skills/{row.original.id}"
+      class="text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap"
+    >
+      {row.original.name}
+    </a>
   {:else if cell.column.id === "skill_type"}
-    {@const typeInfo = SKILL_TYPE_INFO[row.original.skill_type]}
-    {#if typeInfo}
-      {@const Icon = typeInfo.icon}
-      <div class="flex items-center gap-1.5">
-        <Icon class="h-4 w-4 {typeInfo.color}" />
-        <span>{typeInfo.label}</span>
-      </div>
+    <span class="text-muted-foreground capitalize"
+      >{String(cell.getValue()).replace(/_/g, " ")}</span
+    >
+  {:else if cell.column.id === "effect"}
+    {@const s = row.original}
+    {#if s.skill_type === "summon" && s.pet_id}
+      {@const count =
+        s.summon_count_per_cast && s.summon_count_per_cast > 1
+          ? `${s.summon_count_per_cast}x `
+          : ""}
+      {@const details = [
+        s.summoned_monster_level != null
+          ? `lv${s.summoned_monster_level}`
+          : null,
+        s.max_active_summons != null ? `max ${s.max_active_summons}` : null,
+      ]
+        .filter(Boolean)
+        .join(", ")}
+      <span class="text-sm"
+        >summons {count}<a
+          href="/pets/{s.pet_id}"
+          class="text-blue-600 dark:text-blue-400 hover:underline"
+          >{s.pet_name}</a
+        >{details ? ` (${details})` : ""}</span
+      >
+    {:else if s.skill_type === "summon_monsters" && s.summoned_monster_id && s.summon_count_per_cast !== 0}
+      {@const count =
+        s.summon_count_per_cast && s.summon_count_per_cast > 1
+          ? `${s.summon_count_per_cast}x `
+          : ""}
+      {@const details = [
+        s.summoned_monster_level != null
+          ? `lv${s.summoned_monster_level}`
+          : null,
+        s.max_active_summons != null ? `max ${s.max_active_summons}` : null,
+      ]
+        .filter(Boolean)
+        .join(", ")}
+      <span class="text-sm"
+        >summons {count}<a
+          href="/monsters/{s.summoned_monster_id}"
+          class="text-blue-600 dark:text-blue-400 hover:underline"
+          >{s.summoned_monster_name ?? s.summoned_monster_id}</a
+        >{details ? ` (${details})` : ""}</span
+      >
     {:else}
-      {row.original.skill_type}
+      <span class="text-sm">{s.effect}</span>
     {/if}
-  {:else if cell.column.id === "tier" || cell.column.id === "max_level" || cell.column.id === "level_required"}
-    <span class="ml-auto">{cell.getValue()}</span>
-  {:else if cell.column.id === "classes"}
-    {@const classes = row.original.player_classes}
-    {#if classes.length > 0}
-      <div class="flex flex-wrap gap-1">
-        {#each classes as cls (cls)}
-          {@const classInfo = CLASS_INFO[cls]}
-          {#if classInfo}
-            <span class="text-xs {classInfo.color}">{classInfo.label}</span>
-          {:else}
-            <span class="text-xs">{cls}</span>
-          {/if}
-        {/each}
-      </div>
-    {:else}
-      <span class="text-muted-foreground">-</span>
-    {/if}
-  {:else if cell.column.id === "class_ids" || cell.column.id === "flags"}
+  {:else if cell.column.id === "class_ids" || cell.column.id === "skill_categories"}
     <!-- Hidden filter columns -->
   {:else}
     {cell.getValue()}
@@ -269,15 +177,17 @@
 {/snippet}
 
 {#snippet renderToolbar({ table }: { table: TanstackTable<SkillRow> })}
-  {@const skillTypeCol = table.getColumn("skill_type")}
+  {@const typeCol = table.getColumn("skill_type")}
   {@const classIdsCol = table.getColumn("class_ids")}
-  {@const flagsCol = table.getColumn("flags")}
-  {#if skillTypeCol}
+  {@const skillCategoriesCol = table.getColumn("skill_categories")}
+  {#if typeCol}
     <DataTableFacetedFilter
-      column={skillTypeCol}
+      column={typeCol}
       title="Type"
       options={uniqueSkillTypes.map((t) => ({
-        label: SKILL_TYPE_INFO[t]?.label ?? t,
+        label: t
+          .replace(/_/g, " ")
+          .replace(/\b\w/g, (c: string) => c.toUpperCase()),
         value: t,
       }))}
     />
@@ -287,21 +197,22 @@
       column={classIdsCol}
       title="Class"
       options={uniqueClasses.map((c) => ({
-        label: CLASS_INFO[c]?.label ?? c,
+        label: getClassConfig(c).name,
         value: c,
       }))}
     />
   {/if}
-  {#if flagsCol}
+  {#if skillCategoriesCol}
     <DataTableFacetedFilter
-      column={flagsCol}
+      column={skillCategoriesCol}
       title="Flags"
       options={[
         { label: "Spell", value: "spell" },
         { label: "Veteran", value: "veteran" },
-        { label: "Stance", value: "stance" },
-        { label: "Pet", value: "pet" },
-        { label: "Mercenary", value: "mercenary" },
+        { label: "Targets Mercenaries", value: "targets_mercenaries" },
+        { label: "Targets Pet", value: "targets_pet" },
+        { label: "Used by Mercenaries", value: "used_by_mercenaries" },
+        { label: "Used by Pets", value: "used_by_pets" },
       ]}
     />
   {/if}
@@ -318,14 +229,6 @@
 <div class="container mx-auto p-8 space-y-6">
   <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Skills" }]} />
 
-  <Alert variant="info">
-    <CircleAlert />
-    <span
-      >This page is a work in progress. Some information may be incomplete or
-      change.</span
-    >
-  </Alert>
-
   <h1 class="text-3xl font-bold flex items-center gap-3">
     <Sparkles class="h-8 w-8 text-blue-500" />
     Skills ({data.skills.length})
@@ -339,13 +242,10 @@
     {renderHeader}
     {renderToolbar}
     pageSize={PAGE_SIZE}
-    initialSorting={[
-      { id: "tier", desc: false },
-      { id: "name", desc: false },
-    ]}
+    initialSorting={[{ id: "name", desc: false }]}
     initialColumnVisibility={{
       class_ids: false,
-      flags: false,
+      skill_categories: false,
     }}
     urlKey="skills"
     showPagination={true}

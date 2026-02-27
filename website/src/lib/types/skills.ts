@@ -21,6 +21,16 @@ export interface SkillListView {
   is_veteran: boolean;
   is_pet_skill: boolean;
   is_mercenary_skill: boolean;
+  effect: string;
+  used_by_mercenaries: boolean;
+  used_by_pets: boolean;
+  pet_id: string | null;
+  pet_name: string | null;
+  summoned_monster_id: string | null;
+  summoned_monster_name: string | null;
+  summoned_monster_level: number | null;
+  summon_count_per_cast: number | null;
+  max_active_summons: number | null;
 }
 
 /**
