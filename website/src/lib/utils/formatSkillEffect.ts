@@ -397,10 +397,6 @@ function formatSummons(skill: Skill): string[] {
     ) {
       details.push(`max ${skill.max_active_summons}`);
     }
-    if (skill.is_familiar) {
-      details.push("familiar");
-    }
-
     const suffix = details.length > 0 ? ` (${details.join(", ")})` : "";
     parts.push(`summons ${count}${name}${suffix}`);
   }

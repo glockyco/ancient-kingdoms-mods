@@ -175,9 +175,7 @@
   );
 
   const hasAnyBonuses = $derived(
-    skill.duration_base > 0 ||
-      skill.duration_per_level > 0 ||
-      hasStatBonuses ||
+    hasStatBonuses ||
       hasRegenBonuses ||
       hasResistBonuses ||
       hasAttributeBonuses,
@@ -598,11 +596,19 @@
     skill.skill_type === "target_debuff" || skill.skill_type === "area_debuff",
   );
 
+  const hasSpecialBuffFlags = $derived(
+    skill.is_invisibility ||
+      skill.is_mana_shield ||
+      skill.is_cleanse ||
+      skill.is_dispel ||
+      skill.is_enrage,
+  );
+
   const showMechanics = $derived(
     isPlayerUsable &&
       (isDamageType ||
         isHealType ||
-        (isBuffType && hasAnyBonuses) ||
+        (isBuffType && (hasAnyBonuses || hasSpecialBuffFlags)) ||
         (isDebuffType && hasAnyBonuses)),
   );
 
@@ -1886,10 +1892,12 @@
                     Enrage (&lt;25% HP, non-spell): Player +33% | Monster
                     +50&ndash;100%
                   </li>
-                  <!-- Source: server-scripts/Combat.cs — Clamp(... * 0.0005f, 0f, 0.9f) -->
+                  <!-- Source: server-scripts/Combat.cs — combat.defense/magicResist/etc * 0.0005f -->
                   <li>
-                    Resistance: &minus;ceil(dmg &times; clamp(resist &times;
-                    0.0005, 0, 0.9))
+                    Mitigation: &minus;ceil(dmg &times; clamp(target.{resistType ===
+                    "melee"
+                      ? "defense"
+                      : `${resistType}Resist`} &times; 0.0005, 0, 0.9))
                   </li>
                   <!-- Source: server-scripts/Combat.cs — 1.5f, 0.95 check, num *= 2, isRadiantAetherActivated → 3f -->
                   <li>
@@ -1900,34 +1908,36 @@
               </div>
             {/if}
 
-            <!-- Resist/Miss Chance -->
+            <!-- Block/Resist Chance -->
             {#if resistType && damageFormulaType !== "manaburn"}
               <div class="space-y-1">
                 <h4 class="font-medium text-muted-foreground">
-                  Resist/Miss Chance
+                  {resistType === "melee"
+                    ? "Block/Miss Chance"
+                    : "Resist Chance"}
                 </h4>
                 {#if resistType === "melee"}
                   <!-- Source: server-scripts/Combat.cs — GetProbResistMeleeDamage -->
                   <p class="font-mono">
-                    clamp(blockChance + levelDiff &times; 0.005 &minus;
-                    accuracy, 0, 0.9)
+                    clamp(target.blockChance + levelDiff &times; 0.005 &minus;
+                    caster.accuracy, 0, 0.9)
                   </p>
                   <!-- Source: server-scripts/Combat.cs — blockChance property -->
                   <p class="font-mono text-muted-foreground">
-                    blockChance = clamp(baseBlock + defense &times; 0.0001 +
-                    buffs, 0, 0.8)
+                    target.blockChance = clamp(target.baseBlock + target.defense
+                    &times; 0.0001 + buffs, 0, 0.8)
                   </p>
                 {:else}
                   <!-- Source: server-scripts/Combat.cs — GetProbResistMagic/Fire/Cold/Poison/Disease -->
                   <p class="font-mono">
-                    clamp({resistType}Resist &times; 0.0005 + levelDiff &times;
-                    0.005 &minus; accuracy, 0, 0.9)
+                    clamp(target.{resistType}Resist &times; 0.0005 + levelDiff
+                    &times; 0.005 &minus; caster.accuracy, 0, 0.9)
                   </p>
                 {/if}
                 <!-- Source: server-scripts/Combat.cs — num5 - 0.25f, amountDamage * 0.1f, num5 *= 0.8f -->
                 <p class="text-muted-foreground">
-                  Victim moving: resistChance &minus; 0.25, damage +10% |
-                  Backstab: resistChance &times; 0.8
+                  Target moving: chance &minus; 0.25, damage +10% | Backstab:
+                  chance &times; 0.8
                 </p>
               </div>
             {/if}
