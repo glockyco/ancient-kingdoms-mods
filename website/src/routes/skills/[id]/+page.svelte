@@ -2015,10 +2015,7 @@
               Final Heal = Base Heal + RoundToInt(Base Heal &times; min(WIS
               &times; 0.004, 5.0))
             </p>
-            <p class="text-muted-foreground">
-              WIS 100: +40% | WIS 250: +100% (2&times;) | WIS 1250: +500%
-              (6&times;, cap)
-            </p>
+
             <!-- Source: server-scripts/TargetHealSkill.cs:271-274, AreaHealSkill.cs:94-96 — Random.value > 0.9 threshold -->
             <p class="text-muted-foreground">
               Critical Heal: on crit &rarr; 90% &times;2.0 | 10% &times;3.0
