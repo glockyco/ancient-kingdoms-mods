@@ -174,15 +174,15 @@ function formatLinearValue(
 }
 
 /**
- * Format percentage (0.15 → "15%", 0.002 → "0.2%")
- * Uses one decimal place for sub-1% values to avoid rounding to zero.
+ * Format percentage (0.15 → "15%", 0.025 → "2.5%", 0.002 → "0.2%")
+ * Uses one decimal place whenever the value is not a whole number.
  */
 function formatPercent(value: number): string {
   const pct = value * 100;
-  if (Math.abs(pct) < 1 && pct !== 0) {
-    return `${parseFloat(pct.toFixed(1))}%`;
-  }
-  return `${Math.round(pct)}%`;
+  const rounded = parseFloat(pct.toFixed(1));
+  return rounded === Math.round(rounded)
+    ? `${Math.round(rounded)}%`
+    : `${rounded}%`;
 }
 
 /**
