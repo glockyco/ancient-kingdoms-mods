@@ -380,7 +380,7 @@
     {
       key: "speed_bonus",
       label: "Move Speed",
-      isPercent: true,
+      isPercent: false,
       suffix: "",
     },
     {
@@ -1453,7 +1453,7 @@
               <div>
                 <dt class="text-muted-foreground">Movement Speed</dt>
                 <dd class="font-medium">
-                  {formatLinearPercent(skill.speed_bonus)}
+                  {formatLinear(skill.speed_bonus)}
                 </dd>
               </div>
             {/if}
