@@ -959,7 +959,11 @@
           {/if}
           {#if skill.required_spent_points > 0}
             <div>
-              <dt class="text-muted-foreground">Spent Points Required</dt>
+              <dt class="text-muted-foreground">
+                {skill.is_veteran
+                  ? "Veteran Points Spent"
+                  : "Skill Points Spent"} Required
+              </dt>
               <dd class="font-medium">{skill.required_spent_points}</dd>
             </div>
           {/if}
