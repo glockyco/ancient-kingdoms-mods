@@ -2043,70 +2043,56 @@
               <!-- Source: server-scripts/TargetBuffSkill.cs — bonusAttribute = caster.wisdom.value -->
               <p class="text-muted-foreground">Potency scales with WIS</p>
             {/if}
-            <dl class="grid grid-cols-1 gap-1 font-mono sm:grid-cols-2">
+            <dl class="grid grid-cols-[12rem_1fr] gap-x-4 gap-y-1 font-mono">
               <!-- Source: server-scripts/Wisdom.cs — maxHealthBuffBonusPerPoint = 2 -->
               <!-- Source: server-scripts/uMMORPG.Scripts.PlayerAttributes/Charisma.cs — GetWisdomBonusMaxHealthBuffMerc -->
               {#if skill.health_max_bonus}
-                <div class="flex justify-between gap-2">
-                  <span class="text-muted-foreground">Max HP</span>
-                  <span
-                    >skillValue(level) + {buffScalingAttr === "wis_cha"
-                      ? "CHA"
-                      : "WIS"} &times; 2</span
-                  >
-                </div>
+                <dt class="text-muted-foreground">Max HP</dt>
+                <dd>
+                  skillValue(level) + {buffScalingAttr === "wis_cha"
+                    ? "CHA"
+                    : "WIS"} &times; 2
+                </dd>
               {/if}
               <!-- Source: server-scripts/Wisdom.cs — defenseBuffBonusPerPoint = 0.15 -->
               {#if skill.defense_bonus}
-                <div class="flex justify-between gap-2">
-                  <span class="text-muted-foreground">Defense</span>
-                  <span
-                    >skillValue(level) + {buffScalingAttr === "wis_cha"
-                      ? "CHA"
-                      : "WIS"} &times; 0.15</span
-                  >
-                </div>
+                <dt class="text-muted-foreground">Defense</dt>
+                <dd>
+                  skillValue(level) + {buffScalingAttr === "wis_cha"
+                    ? "CHA"
+                    : "WIS"} &times; 0.15
+                </dd>
               {/if}
               <!-- Source: server-scripts/Wisdom.cs — magicResistBuffBonusPerPoint = 0.15 -->
               {#if skill.magic_resist_bonus}
-                <div class="flex justify-between gap-2">
-                  <span class="text-muted-foreground">Magic Resist</span>
-                  <span
-                    >skillValue(level) + {buffScalingAttr === "wis_cha"
-                      ? "CHA"
-                      : "WIS"} &times; 0.15</span
-                  >
-                </div>
+                <dt class="text-muted-foreground">Magic Resist</dt>
+                <dd>
+                  skillValue(level) + {buffScalingAttr === "wis_cha"
+                    ? "CHA"
+                    : "WIS"} &times; 0.15
+                </dd>
               {/if}
               <!-- Source: server-scripts/Wisdom.cs — wardBuffBonusPerPoint = 5 -->
               {#if skill.ward_bonus}
-                <div class="flex justify-between gap-2">
-                  <span class="text-muted-foreground">Ward</span>
-                  <span>skillValue(level) + WIS &times; 5</span>
-                </div>
+                <dt class="text-muted-foreground">Ward</dt>
+                <dd>skillValue(level) + WIS &times; 5</dd>
               {/if}
               <!-- Source: server-scripts/Wisdom.cs — damageShieldBuffBonusPerPoint = 0.75 -->
               {#if skill.damage_shield}
-                <div class="flex justify-between gap-2">
-                  <span class="text-muted-foreground">Damage Shield</span>
-                  <span>skillValue(level) + WIS &times; 0.75</span>
-                </div>
+                <dt class="text-muted-foreground">Damage Shield</dt>
+                <dd>skillValue(level) + WIS &times; 0.75</dd>
               {/if}
               <!-- Source: server-scripts/Buff.cs — poisonResistBonus/fireResistBonus/etc. -->
               {#if skill.poison_resist_bonus || skill.fire_resist_bonus || skill.cold_resist_bonus || skill.disease_resist_bonus}
-                <div class="flex justify-between gap-2">
-                  <span class="text-muted-foreground">Elemental Resists</span>
-                  <span>skillValue(level) + WIS &times; 0.15</span>
-                </div>
+                <dt class="text-muted-foreground">Elemental Resists</dt>
+                <dd>skillValue(level) + WIS &times; 0.15</dd>
               {/if}
               <!-- Source: server-scripts/Wisdom.cs — capHealPerSecondBonus = 3.0 -->
               {#if skill.healing_per_second_bonus}
-                <div class="flex justify-between gap-2">
-                  <span class="text-muted-foreground">HoT</span>
-                  <span
-                    >skillValue(level) &times; (1 + min(WIS &times; 0.004, 3.0))</span
-                  >
-                </div>
+                <dt class="text-muted-foreground">HoT</dt>
+                <dd>
+                  skillValue(level) &times; (1 + min(WIS &times; 0.004, 3.0))
+                </dd>
               {/if}
             </dl>
           </div>
@@ -2119,68 +2105,52 @@
             <p class="text-muted-foreground">
               Debuff potency scales with caster stats
             </p>
-            <dl class="grid grid-cols-1 gap-1 font-mono sm:grid-cols-2">
+            <dl class="grid grid-cols-[12rem_1fr] gap-x-4 gap-y-1 font-mono">
               <!-- Source: server-scripts/Intelligence.cs — defenseDebuffBonusPerPoint = 0.4 -->
               <!-- Source: server-scripts/Strength.cs — defenseDebuffBonusPerPoint = 0.5 -->
               {#if skill.defense_bonus}
-                <div class="flex justify-between gap-2">
-                  <span class="text-muted-foreground">Defense reduction</span>
-                  {#if skill.is_melee_debuff}
-                    <span>skillValue(level) + STR &times; 0.5</span>
-                  {:else}
-                    <span>skillValue(level) + INT &times; 0.4</span>
-                  {/if}
-                </div>
+                <dt class="text-muted-foreground">Defense reduction</dt>
+                {#if skill.is_melee_debuff}
+                  <dd>skillValue(level) + STR &times; 0.5</dd>
+                {:else}
+                  <dd>skillValue(level) + INT &times; 0.4</dd>
+                {/if}
               {/if}
               <!-- Source: server-scripts/Intelligence.cs — magicResistDebuffBonusPerPoint = 0.4 -->
               {#if skill.magic_resist_bonus}
-                <div class="flex justify-between gap-2">
-                  <span class="text-muted-foreground"
-                    >Magic Resist reduction</span
-                  >
-                  <span>skillValue(level) + INT &times; 0.4</span>
-                </div>
+                <dt class="text-muted-foreground">Magic Resist reduction</dt>
+                <dd>skillValue(level) + INT &times; 0.4</dd>
               {/if}
               <!-- Source: server-scripts/Buff.cs — poisonResistBonus/fireResistBonus/etc. -->
               {#if skill.poison_resist_bonus || skill.fire_resist_bonus || skill.cold_resist_bonus || skill.disease_resist_bonus}
-                <div class="flex justify-between gap-2">
-                  <span class="text-muted-foreground"
-                    >Elemental resist reduction</span
-                  >
-                  <span>skillValue(level) + INT &times; 0.4</span>
-                </div>
+                <dt class="text-muted-foreground">
+                  Elemental resist reduction
+                </dt>
+                <dd>skillValue(level) + INT &times; 0.4</dd>
               {/if}
               <!-- Source: server-scripts/Intelligence.cs — damageDebuffBonusPerPoint = 0.5 -->
               {#if skill.damage_bonus}
-                <div class="flex justify-between gap-2">
-                  <span class="text-muted-foreground">Damage reduction</span>
-                  <span>skillValue(level) + INT &times; 0.5</span>
-                </div>
+                <dt class="text-muted-foreground">Damage reduction</dt>
+                <dd>skillValue(level) + INT &times; 0.5</dd>
               {/if}
               <!-- Source: server-scripts/Intelligence.cs — magicDamageDebuffBonusPerPoint = 0.5 -->
               {#if skill.magic_damage_bonus}
-                <div class="flex justify-between gap-2">
-                  <span class="text-muted-foreground"
-                    >Magic Damage reduction</span
-                  >
-                  <span>skillValue(level) + INT &times; 0.5</span>
-                </div>
+                <dt class="text-muted-foreground">Magic Dmg reduction</dt>
+                <dd>skillValue(level) + INT &times; 0.5</dd>
               {/if}
               <!-- DoT bonuses -->
               {#if skill.healing_per_second_bonus}
-                <div class="flex justify-between gap-2">
-                  <span class="text-muted-foreground">DoT</span>
-                  {#if skill.is_poison_debuff || skill.is_disease_debuff}
-                    <!-- Source: server-scripts/Dexterity.cs — poisonDiseaseDamageDebuffBonusPerPoint = 1.0 -->
-                    <span>skillValue(level) + DEX &times; 1.0</span>
-                  {:else if skill.is_melee_debuff}
-                    <!-- Source: server-scripts/Strength.cs — meleeDebuffBonusPerPoint = 0.5 -->
-                    <span>skillValue(level) + STR &times; 0.5</span>
-                  {:else}
-                    <!-- Source: server-scripts/Intelligence.cs — magicDotBonusPerPoint = 1.25 -->
-                    <span>skillValue(level) + INT &times; 1.25</span>
-                  {/if}
-                </div>
+                <dt class="text-muted-foreground">DoT</dt>
+                {#if skill.is_poison_debuff || skill.is_disease_debuff}
+                  <!-- Source: server-scripts/Dexterity.cs — poisonDiseaseDamageDebuffBonusPerPoint = 1.0 -->
+                  <dd>skillValue(level) + DEX &times; 1.0</dd>
+                {:else if skill.is_melee_debuff}
+                  <!-- Source: server-scripts/Strength.cs — meleeDebuffBonusPerPoint = 0.5 -->
+                  <dd>skillValue(level) + STR &times; 0.5</dd>
+                {:else}
+                  <!-- Source: server-scripts/Intelligence.cs — magicDotBonusPerPoint = 1.25 -->
+                  <dd>skillValue(level) + INT &times; 1.25</dd>
+                {/if}
               {/if}
             </dl>
           </div>
