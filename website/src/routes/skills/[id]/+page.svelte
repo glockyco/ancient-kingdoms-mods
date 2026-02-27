@@ -1860,21 +1860,23 @@
                 </div>
               </dl>
             {:else if damageFormulaType === "bow_ranger"}
-              <!-- Source: server-scripts/TargetProjectileSkill.cs — combat.damage + dexterity.GetRangedAttackBonusPerPoint() - equippedWeapon.damageBonus -->
+              <!-- Source: server-scripts/TargetProjectileSkill.cs:195-200 -->
+              <!-- combat.damage - weapon.damageBonus + dex.GetRangedAttackBonusPerPoint() -->
+              <!-- The weapon's flat damageBonus is subtracted because combat.damage already -->
+              <!-- includes it; only STR scaling and non-weapon equipment contribute here. -->
               <!-- Source: server-scripts/Dexterity.cs — rangedAttackBonusPerPoint = 1.5 -->
               <dl class="space-y-1">
                 <div>
                   <dt class="text-muted-foreground">Pre-Mitigation</dt>
                   <dd class="font-mono">
-                    Skill Damage + Attack Damage + DEX &times; 1.5 &minus;
-                    equipped weapon's damageBonus
+                    Skill Damage + Ranged Attack Damage + DEX &times; 1.5
                   </dd>
                 </div>
                 <div>
-                  <dt class="text-muted-foreground">Attack Damage</dt>
+                  <dt class="text-muted-foreground">Ranged Attack Damage</dt>
                   <dd class="font-mono">
-                    (STR &times; 1.0 + equipment bonuses) &times; (1 + passive%
-                    + buff%)
+                    (STR &times; 1.0 + non-weapon equipment bonuses) &times; (1
+                    + passive% + buff%)
                   </dd>
                 </div>
               </dl>
