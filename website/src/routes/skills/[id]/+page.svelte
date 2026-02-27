@@ -1279,7 +1279,7 @@
               <dt class="text-muted-foreground">Count per Cast</dt>
               <dd class="font-medium">
                 {#if skill.summon_count_per_cast === -1}
-                  Based on aggro count
+                  1 per player/mercenary
                 {:else}
                   {skill.summon_count_per_cast}
                 {/if}

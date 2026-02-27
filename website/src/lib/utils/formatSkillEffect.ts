@@ -381,11 +381,6 @@ function formatSummons(skill: Skill): string[] {
       skill.pet_name ||
       skill.summoned_monster_id ||
       "pet";
-    const count =
-      skill.summon_count_per_cast && skill.summon_count_per_cast > 1
-        ? `${skill.summon_count_per_cast}x `
-        : "";
-
     const details: string[] = [];
     if (
       skill.summoned_monster_level !== null &&
@@ -400,7 +395,16 @@ function formatSummons(skill: Skill): string[] {
       details.push(`max ${skill.max_active_summons}`);
     }
     const suffix = details.length > 0 ? ` (${details.join(", ")})` : "";
-    parts.push(`summons ${count}${name}${suffix}`);
+
+    if (skill.summon_count_per_cast === -1) {
+      parts.push(`summons 1 ${name} per player/mercenary${suffix}`);
+    } else {
+      const count =
+        skill.summon_count_per_cast && skill.summon_count_per_cast > 1
+          ? `${skill.summon_count_per_cast}x `
+          : "";
+      parts.push(`summons ${count}${name}${suffix}`);
+    }
   }
 
   return parts;
