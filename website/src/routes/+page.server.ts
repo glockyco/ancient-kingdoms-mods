@@ -7,17 +7,18 @@ export const prerender = true;
 interface HomePageData {
   counts: {
     items: number;
-    zones: number;
     monsters: number;
     npcs: number;
-    quests: number;
     classes: number;
+    skills: number;
     pets: number;
+    zones: number;
+    quests: number;
     altars: number;
-    recipes: number;
-    gatheringResources: number;
-    chests: number;
     professions: number;
+    gatheringResources: number;
+    recipes: number;
+    chests: number;
   };
 }
 
@@ -90,6 +91,12 @@ export const load: PageServerLoad = (): HomePageData => {
     }
   ).count;
 
+  const skillCount = (
+    db.prepare("SELECT COUNT(*) as count FROM skills").get() as {
+      count: number;
+    }
+  ).count;
+
   const petCount = (
     db.prepare("SELECT COUNT(*) as count FROM pets").get() as {
       count: number;
@@ -101,17 +108,18 @@ export const load: PageServerLoad = (): HomePageData => {
   return {
     counts: {
       items: itemCount,
-      zones: zoneCount,
       monsters: monsterCount,
       npcs: npcCount,
-      quests: questCount,
       classes: classCount,
+      skills: skillCount,
       pets: petCount,
+      zones: zoneCount,
+      quests: questCount,
       altars: altarCount,
-      recipes: alchemyCount + craftingCount,
-      gatheringResources: gatheringResourceCount,
-      chests: chestCount,
       professions: professionCount,
+      gatheringResources: gatheringResourceCount,
+      recipes: alchemyCount + craftingCount,
+      chests: chestCount,
     },
   };
 };
