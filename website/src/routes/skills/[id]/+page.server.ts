@@ -45,6 +45,7 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
       ps.name as prerequisite_skill_name,
       ps2.name as prerequisite2_skill_name,
       sm.name as summoned_monster_name,
+      pet_lookup.id as pet_id,
       pet_lookup.name as pet_name
     FROM skills s
     LEFT JOIN skills ps ON ps.id = s.prerequisite_skill_id
@@ -256,6 +257,7 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
     summon_count_per_cast: skillRaw.summon_count_per_cast as number | null,
     max_active_summons: skillRaw.max_active_summons as number | null,
     pet_prefab_name: skillRaw.pet_prefab_name as string | null,
+    pet_id: skillRaw.pet_id as string | null,
     pet_name: skillRaw.pet_name as string | null,
     is_familiar: Boolean(skillRaw.is_familiar),
 

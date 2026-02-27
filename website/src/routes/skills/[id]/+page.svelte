@@ -17,6 +17,7 @@
   import Skull from "@lucide/svelte/icons/skull";
   import Cat from "@lucide/svelte/icons/cat";
   import Star from "@lucide/svelte/icons/star";
+  import Ghost from "@lucide/svelte/icons/ghost";
 
   let { data }: { data: PageData } = $props();
 
@@ -669,6 +670,83 @@
             </div>
           {/if}
         </dl>
+      </Card.Content>
+    </Card.Root>
+  {/if}
+
+  <!-- Summon Info -->
+  {#if skill.skill_type === "summon" || skill.skill_type === "summon_monsters"}
+    <Card.Root class="bg-muted/30">
+      <Card.Header>
+        <Card.Title class="flex items-center gap-2">
+          <Ghost class="h-5 w-5 text-violet-500" />
+          Summon Info
+        </Card.Title>
+      </Card.Header>
+      <Card.Content>
+        {#if skill.skill_type === "summon_monsters" && skill.summon_count_per_cast === 0}
+          <p class="text-sm font-medium">Teleports target to self, stun (2s)</p>
+        {:else if skill.skill_type === "summon_monsters" && skill.summoned_monster_id}
+          <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-4">
+            <div>
+              <dt class="text-muted-foreground">Summons</dt>
+              <dd class="font-medium">
+                <a
+                  href="/monsters/{skill.summoned_monster_id}"
+                  class="text-blue-600 dark:text-blue-400 hover:underline"
+                >
+                  {skill.summoned_monster_name ?? skill.summoned_monster_id}
+                </a>
+              </dd>
+            </div>
+            {#if skill.summoned_monster_level}
+              <div>
+                <dt class="text-muted-foreground">Level</dt>
+                <dd class="font-medium">{skill.summoned_monster_level}</dd>
+              </div>
+            {/if}
+            <div>
+              <dt class="text-muted-foreground">Count per Cast</dt>
+              <dd class="font-medium">
+                {#if skill.summon_count_per_cast === -1}
+                  Based on aggro count
+                {:else}
+                  {skill.summon_count_per_cast}
+                {/if}
+              </dd>
+            </div>
+            {#if skill.max_active_summons}
+              <div>
+                <dt class="text-muted-foreground">Max Active</dt>
+                <dd class="font-medium">{skill.max_active_summons}</dd>
+              </div>
+            {/if}
+          </dl>
+        {:else if skill.skill_type === "summon"}
+          <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-4">
+            <div>
+              <dt class="text-muted-foreground">Summons</dt>
+              <dd class="font-medium">
+                {#if skill.pet_id}
+                  <a
+                    href="/pets/{skill.pet_id}"
+                    class="text-blue-600 dark:text-blue-400 hover:underline"
+                  >
+                    {skill.pet_name ?? skill.pet_prefab_name}
+                  </a>
+                {:else}
+                  {skill.pet_prefab_name}
+                {/if}
+              </dd>
+            </div>
+            {#if skill.is_familiar}
+              <div>
+                <dt class="text-muted-foreground">Type</dt>
+                <dd class="font-medium">Familiar</dd>
+              </div>
+            {/if}
+          </dl>
+        {/if}
       </Card.Content>
     </Card.Root>
   {/if}
