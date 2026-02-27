@@ -1873,10 +1873,10 @@
                 </h4>
                 <ol class="list-decimal list-inside space-y-0.5 font-mono">
                   <li>Variance: &times;0.9&ndash;1.1</li>
-                  <!-- Source: server-scripts/Combat.cs — 0.25f : 0.1f and + 1 -->
+                  <!-- Source: server-scripts/Combat.cs — 0.25f : 0.1f; skills[13] = Improved Backstab passive -->
                   <li>
-                    Backstab (behind target): +10% (+1) (+25% Rogue w/ Backstab
-                    passive)
+                    Backstab (behind target): +10% | Rogue w/ Improved Backstab:
+                    +25%
                   </li>
                   <!-- Source: server-scripts/Combat.cs — Clamp(... * 0.02f, -0.2f, 0.2f) -->
                   <li>
@@ -1921,11 +1921,15 @@
                     ? "Block/Miss Chance"
                     : "Resist Chance"}
                 </h4>
+                <!-- Source: server-scripts/Combat.cs — num4 = victim.level - caster.level -->
+                <p class="font-mono text-muted-foreground">
+                  levelDiff = target.level &minus; attacker.level
+                </p>
                 {#if resistType === "melee"}
                   <!-- Source: server-scripts/Combat.cs — GetProbResistMeleeDamage -->
                   <p class="font-mono">
                     clamp(target.blockChance + levelDiff &times; 0.005 &minus;
-                    caster.accuracy, 0, 0.9)
+                    attacker.accuracy, 0, 0.9)
                   </p>
                   <!-- Source: server-scripts/Combat.cs — blockChance property -->
                   <p class="font-mono text-muted-foreground">
@@ -1936,7 +1940,7 @@
                   <!-- Source: server-scripts/Combat.cs — GetProbResistMagic/Fire/Cold/Poison/Disease -->
                   <p class="font-mono">
                     clamp(target.{resistType}Resist &times; 0.0005 + levelDiff
-                    &times; 0.005 &minus; caster.accuracy, 0, 0.9)
+                    &times; 0.005 &minus; attacker.accuracy, 0, 0.9)
                   </p>
                 {/if}
                 <!-- Source: server-scripts/Combat.cs — num5 - 0.25f, amountDamage * 0.1f, num5 *= 0.8f -->
