@@ -47,10 +47,12 @@
       accessorKey: "name",
       header: "Skill",
       enableHiding: false,
+      size: 240,
     },
     {
       accessorKey: "skill_type",
       header: "Type",
+      size: 200,
       filterFn: (row, columnId, filterValue: string[]) => {
         const value = row.getValue(columnId) as string;
         if (!filterValue || filterValue.length === 0) return true;
@@ -62,6 +64,7 @@
       accessorKey: "effect",
       header: "Effect",
       enableSorting: false,
+      minSize: 400,
     },
     // Hidden filter-only columns
     {
@@ -117,18 +120,18 @@
   {#if cell.column.id === "name"}
     <a
       href="/skills/{row.original.id}"
-      class="text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap"
+      class="text-blue-600 dark:text-blue-400 hover:underline truncate block"
     >
       {row.original.name}
     </a>
   {:else if cell.column.id === "skill_type"}
-    <span class="text-muted-foreground capitalize"
+    <span class="text-muted-foreground capitalize truncate block"
       >{String(cell.getValue()).replace(/_/g, " ")}</span
     >
   {:else if cell.column.id === "effect"}
     {@const s = row.original}
     <SkillEffect
-      class="text-sm"
+      class="text-sm whitespace-nowrap"
       effect={s.effect}
       entityName={s.summoned_monster_name ?? s.pet_name}
       entityHref={s.summoned_monster_id
@@ -221,6 +224,7 @@
     showColumnToggle={true}
     zebraStripe={true}
     paginateStaticHtml={true}
+    persistentScrollbar={true}
     searchPlaceholder="Search skills..."
     class="bg-muted/30"
   />
