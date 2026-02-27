@@ -106,31 +106,4 @@ def run(conn: sqlite3.Connection) -> None:
     else:
         console.print("  [yellow]WARN[/yellow] No dispel skills found — fixup skipped")
 
-    # Zero-duration buff/debuff skills: Buff.cs:225 sets buffTimeEnd = serverTime + 0,
-    # so BuffTimeRemaining() returns 0 immediately. CleanupBuffs() removes it on the
-    # same tick. Any stat fields are applied and removed before they take effect.
-    # Source: Buff.cs:225, Buff.cs:272-276, Skills.cs:909-966
-    # Exclude passives (no buff system) and dispels (already handled above).
-    # Exclude is_permanent skills (permanent flag overrides duration in game UI,
-    # but those have a separate code path — none currently have duration=0 anyway).
-    cursor.execute(
-        f"""
-        UPDATE skills SET {set_clause}
-        WHERE skill_type IN ('target_buff', 'area_buff', 'target_debuff', 'area_debuff')
-          AND duration_base = 0 AND duration_per_level = 0
-          AND is_dispel = 0
-          AND is_permanent = 0
-        """,
-        [_ZERO_JSON] * len(_STAT_JSON_FIELDS),
-    )
-
-    if cursor.rowcount > 0:
-        console.print(
-            f"  [green]OK[/green] Zeroed spurious stat fields on {cursor.rowcount} zero-duration buff/debuff skill(s)"
-        )
-    else:
-        console.print(
-            "  [yellow]WARN[/yellow] No zero-duration buff/debuff skills found — fixup skipped"
-        )
-
     conn.commit()
