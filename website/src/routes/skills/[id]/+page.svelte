@@ -165,7 +165,6 @@
       hasAttributeBonuses ||
       skill.is_invisibility ||
       skill.is_mana_shield ||
-      skill.is_dispel ||
       skill.is_blindness ||
       skill.is_enrage ||
       skill.is_permanent ||
@@ -1656,7 +1655,7 @@
         {/if}
 
         <!-- Special Flags -->
-        {#if skill.is_invisibility || skill.is_mana_shield || skill.is_dispel || skill.is_blindness || skill.is_enrage || skill.is_permanent || skill.is_only_for_magic_classes}
+        {#if skill.is_invisibility || skill.is_mana_shield || skill.is_blindness || skill.is_enrage || skill.is_permanent || skill.is_only_for_magic_classes}
           <div class="space-y-1 text-sm">
             {#if skill.is_enrage}
               <p class="text-red-600 dark:text-red-400">
@@ -1673,9 +1672,7 @@
                 Mana Shield (damage absorbed by mana)
               </p>
             {/if}
-            {#if skill.is_dispel}
-              <p class="text-red-600 dark:text-red-400">Dispels buffs</p>
-            {/if}
+
             {#if skill.is_blindness}
               <p class="text-amber-600 dark:text-amber-400">Blinds target</p>
             {/if}
