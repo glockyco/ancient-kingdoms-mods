@@ -363,9 +363,12 @@ class Program
                 return 1;
             }
 
+            // Derive CrossOver bottle name from prefix path (e.g. ".../Bottles/Steam" → "Steam")
+            var bottleName = Path.GetFileName(winePrefix);
+
             Console.WriteLine($"Launching game via wine...");
             Console.WriteLine($"  Wine: {winePath}");
-            Console.WriteLine($"  Prefix: {winePrefix}");
+            Console.WriteLine($"  Bottle: {bottleName} ({winePrefix})");
             Console.WriteLine($"  Game: {gamePath}");
             Console.WriteLine();
 
@@ -378,7 +381,11 @@ class Program
                 RedirectStandardOutput = false,
                 RedirectStandardError = false,
             };
+            // CrossOver wine uses CX_BOTTLE (not WINEPREFIX) to select the bottle
+            psi.Environment["CX_BOTTLE"] = bottleName;
             psi.Environment["WINEPREFIX"] = winePrefix;
+            // MelonLoader bootstrap needs DOTNET_ROOT to find the .NET 6 runtime
+            psi.Environment["DOTNET_ROOT"] = @"C:\Program Files\dotnet";
 
             process = Process.Start(psi)!;
         }
@@ -407,12 +414,31 @@ class Program
 
         long offset = 0;
         var logContent = new StringBuilder();
-        var timeoutMs = 90_000;
+        var timeoutMs = 120_000;
         var stopwatch = Stopwatch.StartNew();
+        var exportComplete = false;
 
         while (!process.HasExited)
         {
             offset = DrainLog(logPath, offset, logContent);
+
+            // Check for completion signal during streaming — wine may not exit cleanly
+            if (!exportComplete && logContent.ToString().Contains("All exports complete. Quitting."))
+            {
+                exportComplete = true;
+                Console.WriteLine("---");
+                Console.WriteLine();
+                Console.WriteLine("Export signal detected. Waiting for game to exit...");
+
+                // Give the game a few seconds to quit gracefully
+                if (!process.WaitForExit(10_000))
+                {
+                    Console.WriteLine("Game did not exit cleanly — terminating wine process.");
+                    try { process.Kill(); } catch { }
+                    process.WaitForExit(5_000);
+                }
+                break;
+            }
 
             if (stopwatch.ElapsedMilliseconds > timeoutMs)
             {
@@ -427,13 +453,14 @@ class Program
 
         // Final drain after process exits
         DrainLog(logPath, offset, logContent);
-        Console.WriteLine("---");
-        Console.WriteLine();
-
-        var fullLog = logContent.ToString();
+        if (!exportComplete)
+        {
+            Console.WriteLine("---");
+            Console.WriteLine();
+            exportComplete = logContent.ToString().Contains("All exports complete. Quitting.");
+        }
 
         // Check for success
-        var exportComplete = fullLog.Contains("All exports complete. Quitting.");
         var hasRecentJson = false;
         if (!string.IsNullOrEmpty(exportPath) && Directory.Exists(exportPath))
         {
