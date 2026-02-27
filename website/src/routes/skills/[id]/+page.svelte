@@ -1995,7 +1995,9 @@
         {/if}
 
         <!-- B. Heal Formula -->
-        {#if isHealType}
+        <!-- Source: server-scripts/TargetHealSkill.cs:231 — isResurrectSkill takes a separate path
+             that calls TargetRpcResurrect with no healing or crit involved -->
+        {#if isHealType && !skill.is_resurrect_skill}
           <div class="space-y-1">
             <h3 class="font-semibold">Healing Formula</h3>
             <!-- Source: server-scripts/HealSkill.cs — wisdom.GetHealBonus() -->

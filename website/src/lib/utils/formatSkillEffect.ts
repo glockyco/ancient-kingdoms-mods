@@ -285,8 +285,10 @@ function formatHealing(
     parts.push(`${formatLinearValue(healMana, monsterContext)} mana`);
   }
 
+  // Source: server-scripts/Player.cs:10008-10014 — CmdResurrect
+  // health = health.max * 0.6, mana = health.max * 0.2, xp = +75% of lossExp
   if (skill.is_resurrect_skill) {
-    parts.push("resurrect (60% hp, 20% mana, 75% xp)");
+    parts.push("resurrect (60% max HP, 20% max HP as mana, +75% lost XP)");
   }
 
   if (skill.is_balance_health) {
