@@ -5,18 +5,16 @@ Shared patterns for all MelonLoader mods. Requires .NET SDK and game installatio
 ## Quick Start
 
 ```bash
-dotnet run --project build-tool all  # Build + deploy
+dotnet run --project build-tool setup   # First-time config (interactive)
+dotnet run --project build-tool all     # Build + deploy
+dotnet run --project build-tool export  # Launch game, run data export, stream log
 ```
 
 Close game before deploying (DLLs are locked while running).
 
 ## Configuration
 
-Copy `Local.props.example` to `Local.props` and set:
-
-```xml
-<ANCIENT_KINGDOMS_PATH>C:\Path\To\Ancient Kingdoms</ANCIENT_KINGDOMS_PATH>
-```
+Run `dotnet run --project build-tool setup` to generate `Local.props` interactively, or copy `Local.props.example` to `Local.props` and edit manually.
 
 MSBuild properties (auto-derived):
 - `$(MelonLoaderPath)` - MelonLoader directory
@@ -77,8 +75,7 @@ The build tool auto-discovers all projects in `mods/`.
 ## Common Issues
 
 **Build fails: "ANCIENT_KINGDOMS_PATH not set"**
-- Copy `Local.props.example` to `Local.props`
-- Set path to game installation
+- Run `dotnet run --project build-tool setup`
 
 **Deploy fails: "file in use"**
 - Close Ancient Kingdoms before deploying
@@ -95,10 +92,7 @@ The build tool runs natively on macOS (targets `net10.0`). The mods themselves s
 dotnet run --project build-tool all  # builds + deploys to CrossOver game dir
 ```
 
-`Local.props` must point to the CrossOver game path, e.g.:
-```xml
-<ANCIENT_KINGDOMS_PATH>/Users/you/Library/Application Support/CrossOver/Bottles/Steam/drive_c/Program Files (x86)/Steam/steamapps/common/Ancient Kingdoms</ANCIENT_KINGDOMS_PATH>
-```
+`Local.props` must point to the CrossOver game path — `dotnet run --project build-tool setup` auto-detects this.
 
 MSBuild path separators work cross-platform via `$(MelonLoaderPath)` etc. No Wine required for building — only for running.
 

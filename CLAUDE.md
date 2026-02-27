@@ -17,7 +17,6 @@ Game (IL2CPP Unity) → Mods (JSON export) → Build Pipeline (SQLite) → Websi
 | Creating GitHub issues | docs/github-guide.md |
 | Exporting game data | docs/data-export-guide.md |
 | Updating server scripts | docs/server-scripts-guide.md |
-| Running CLI commands | docs/cli-overview.md |
 | Exploring codebase structure | docs/project-map.md |
 | Working on mods | mods/CLAUDE.md |
 | Working on website | website/CLAUDE.md |
@@ -67,13 +66,14 @@ Always test before committing:
 ## Quick Reference
 
 ```bash
+# First-time setup (interactive, auto-detects paths)
+dotnet run --project build-tool setup
+
 # Mods — build and deploy to game directory
 dotnet run --project build-tool all
 
-# Export game data (set in Steam launch options, then launch game)
-# --export-data        triggers DataExporter → exported-data/*.json
-# --export-screenshots triggers MapScreenshotter → exported-data/screenshots/
-# Both flags can be combined. Game quits automatically when done.
+# Export game data (launches game, runs export, streams log, quits)
+dotnet run --project build-tool export
 
 # Build pipeline — load exported JSON into SQLite
 cd build-pipeline && uv run compendium build
