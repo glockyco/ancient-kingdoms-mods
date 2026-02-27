@@ -217,6 +217,18 @@
       skill.is_manaburn_skill,
   );
 
+  // Source: server-scripts/AreaDamageSkill.cs:93, TargetDamageSkill.cs — num2 only set when damage > 0
+  // Aggro-only skills call DealDamageAt with amountDamage=0, so no damage formula applies
+  const hasActualDamage = $derived(
+    !!(
+      skill.damage ||
+      skill.damage_percent ||
+      skill.is_manaburn_skill ||
+      skill.is_scroll ||
+      skill.is_assassination_skill
+    ),
+  );
+
   // "Weapon" means any melee weapon (StartsWith match) — not a meaningful restriction
   // Source: server-scripts/ScriptableSkill.cs — CheckWeapon(), line 100
   const WEAPON_LABELS: Record<string, string> = {
@@ -1751,7 +1763,7 @@
       </Card.Header>
       <Card.Content class="space-y-6 text-sm">
         <!-- A. Damage Formula -->
-        {#if isDamageType && damageFormulaType}
+        {#if isDamageType && damageFormulaType && hasActualDamage}
           <div class="space-y-3">
             <h3 class="font-semibold">Damage Formula</h3>
 
