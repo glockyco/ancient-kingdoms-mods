@@ -61,7 +61,7 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
   }
 
   const playerClasses: string[] = skillRaw.player_classes
-    ? JSON.parse(skillRaw.player_classes as string)
+    ? (JSON.parse(skillRaw.player_classes as string) as string[]).sort()
     : [];
 
   // Parse granted_by_items and fetch item names
