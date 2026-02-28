@@ -2198,7 +2198,7 @@
           <!-- D2. Resist Chance -->
           <!-- Source: server-scripts/TargetDebuffSkill.cs:104-133, Combat.cs:1222-1256 -->
           <!-- No flag set → num stays 0, debuff always lands -->
-          {#if skill.is_melee_debuff || skill.is_poison_debuff || skill.is_fire_debuff || skill.is_cold_debuff || skill.is_disease_debuff || skill.is_magic_debuff}
+          {#if !skill.is_dispel && (skill.is_melee_debuff || skill.is_poison_debuff || skill.is_fire_debuff || skill.is_cold_debuff || skill.is_disease_debuff || skill.is_magic_debuff)}
             <div class="space-y-1">
               <h4 class="font-medium text-muted-foreground">Resist Chance</h4>
               <!-- Level diff clamped to ±0.1 (±20 levels), unlike damage resist which is unclamped -->
@@ -2228,7 +2228,7 @@
         <!-- E. Cleanse Resistance (debuff page) -->
         <!-- Source: server-scripts/TargetBuffSkill.cs:276-350, Buff.cs:226 -->
         <!-- prob_ignore_cleanse == 1: debuff is skipped entirely (line 284 Mathf.Approximately check) -->
-        {#if isDebuffType && !skill.is_cleanse && skill.prob_ignore_cleanse != null}
+        {#if isDebuffType && !skill.is_cleanse && !skill.is_dispel && skill.prob_ignore_cleanse != null}
           <div class="space-y-1">
             <h3 class="font-semibold">Cleanse Resistance</h3>
             {#if skill.prob_ignore_cleanse >= 1}
@@ -2275,7 +2275,27 @@
           </div>
         {/if}
 
-        <!-- F. Special Mechanic Notes -->
+        <!-- F. Dispel Mechanics -->
+        <!-- Source: server-scripts/TargetDebuffSkill.cs:168-263 -->
+        {#if skill.is_dispel}
+          <div class="space-y-1">
+            <h3 class="font-semibold">Dispel Mechanics</h3>
+            <p class="text-muted-foreground">Removes buffs from the target.</p>
+            <p class="text-muted-foreground">
+              Players: all buffs removed unconditionally, except the Rest buff.
+            </p>
+            <p class="text-muted-foreground">
+              Pets: all buffs removed unconditionally.
+            </p>
+            <p class="text-muted-foreground">
+              Monsters: each buff rolls independently against its cleanse resist
+              chance. If any buff resists, you see "[target] resisted your
+              dispel!"
+            </p>
+          </div>
+        {/if}
+
+        <!-- G. Special Mechanic Notes -->
         {#if skill.is_assassination_skill}
           <p>Requires target below 25% HP to cast</p>
         {/if}
