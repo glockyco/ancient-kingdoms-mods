@@ -2353,11 +2353,29 @@
           <!-- Source: server-scripts/TargetDamageSkill.cs — procEffectProbability > Random.value -->
           <!-- Source: server-scripts/Combat.cs — energy.current += FloorToInt(num22 * 0.25f) -->
           <!-- Source: server-scripts/Player.cs:2783 — refractoryPeriodSkillTimeEnd, Mathf.Clamp((delay - delay * haste) / 25, 0.25, 2) -->
-          <p>
-            Weapon strike: attack speed = clamp((weaponDelay &minus; weaponDelay
-            &times; haste) / 25, 0.25s, 2s). Can trigger weapon proc, generates
-            rage on hit (25% of damage), allows action queuing during cast.
-          </p>
+          <!-- Source: server-scripts/Skills.cs:766-773 — mercenary cooldown haste-reduced; regular pet cooldown fixed -->
+          {#if skill.player_classes.length > 0}
+            <p>
+              Weapon strike: attack interval = cast time + refractory period,
+              where refractory period = clamp((weaponDelay &minus; weaponDelay
+              &times; haste) / 25, 0.25s, 2s). Haste has no further benefit once
+              the 0.25s floor is reached. Can trigger weapon proc, generates
+              rage on hit (25% of damage), allows action queuing during cast.
+            </p>
+          {/if}
+          {#if data.usedByPets.some((p) => p.is_mercenary)}
+            <p>
+              Mercenary weapon strike: attack interval = cast time + cooldown
+              &times; (1 &minus; haste). Weapon delay has no effect. Cooldown
+              scales linearly with haste up to the cap.
+            </p>
+          {/if}
+          {#if data.usedByPets.some((p) => !p.is_mercenary)}
+            <p>
+              Pet weapon strike: attack interval = cast time + cooldown. Haste
+              has no effect on pet cooldowns.
+            </p>
+          {/if}
         {/if}
         {#if skill.is_mana_shield}
           <!-- Source: server-scripts/Combat.cs — DealDamageAt, ward check before mana shield check -->
