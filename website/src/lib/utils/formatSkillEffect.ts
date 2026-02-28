@@ -742,6 +742,20 @@ const HARDCODED_EFFECTS: Record<string, string> = {
   emerald_pop: "cosmetic visual effect",
   golden_whirl: "cosmetic visual effect",
   skyflare: "cosmetic visual effect",
+  // Source: server-scripts/TrapDetection.cs:26,65-69; Trap.cs:146,206,235;
+  // Player.cs:2733 — buff checked by name to allow Rogues to see, hover-highlight,
+  // and disarm traps. Duration stored in duration_base (15s).
+  detect_traps: "reveal and disarm traps (Rogue only), 15s",
+  // Source: server-scripts/TargetBuffSkill.cs:15 (isDoubleExpSpell flag);
+  // Skills.cs:1081; Monster.cs:2412,2464 — hasDoubleExp() doubles XP awarded on kill.
+  // Duration stored in duration_base (1800s = 30 min).
+  elixir_of_enlightened_learning: "2× XP from kills, 30 min",
+  // Source: server-scripts/TargetDamageSkill.cs:162-171, 183-200 — while active,
+  // Rogue followup (Weapon Strike) attacks switch to Poison damage type and gain
+  // +DEX*2.5 bonus on top of normal combat.damage. Resisted by Poison Resist
+  // instead of Defense. Duration stored in duration_base (10s).
+  master_poisoner:
+    "weapon strikes deal poison dmg (Attack Damage + DEX×2.5), resisted by Poison Resist, 10s",
   // Source: server-scripts/TargetBuffSkill.cs — isCallHeroes teleports all
   // active mercenaries to player position and clears their fear; returns before
   // applying any buff. mana_percent_per_second_bonus in game data is unused.
