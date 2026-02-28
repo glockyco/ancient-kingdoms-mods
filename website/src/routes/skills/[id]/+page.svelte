@@ -2065,8 +2065,7 @@
             {#if buffScalingAttr === "level"}
               <!-- Source: server-scripts/TargetBuffSkill.cs — isScroll → player.level.current * 8 -->
               <p class="text-muted-foreground">
-                Scroll buff: potency = Player Level &times; 8 (replaces WIS
-                scaling)
+                Scroll buff: potency = Player Level &times; 8
               </p>
             {/if}
             <dl class="grid grid-cols-[12rem_1fr] gap-x-4 gap-y-1 font-mono">
