@@ -669,6 +669,9 @@
   // Source: server-scripts/Combat.cs — DealDamageAt
   // Source: server-scripts/TargetDamageSkill.cs — Apply
   // Source: server-scripts/TargetProjectileSkill.cs — Apply
+  // Source: server-scripts/FrontalProjectilesSkill.cs — Apply
+  // Source: server-scripts/FrontalDamageSkill.cs — Apply
+  // Source: server-scripts/DamageSkill.cs — GetTooltipDamageBonus (authoritative summary)
   const damageFormulaType = $derived.by((): string | null => {
     if (!isDamageType) return null;
 
@@ -678,6 +681,23 @@
     const dt = skill.damage_type;
     const isSpell = skill.is_spell;
     const classes = skill.player_classes;
+
+    // Ranger frontal projectile skills: ranger class branch fires first regardless of damage type
+    // Source: server-scripts/FrontalProjectilesSkill.cs:97-100 — ranger check precedes damage type checks
+    if (
+      skill.skill_type === "frontal_projectiles" &&
+      classes.includes("ranger")
+    )
+      return "bow_ranger_frontal";
+
+    // Ranger bow projectile skills: combat.damage - melee weapon bonus + DEX×1.5
+    // Source: server-scripts/TargetProjectileSkill.cs:195-200 — subtracts GetEquippedWeaponIndex() (slot 12, melee)
+    if (
+      skill.skill_type === "target_projectile" &&
+      skill.required_weapon_category === "Bow" &&
+      classes.includes("ranger")
+    )
+      return "bow_ranger_projectile";
 
     // Source: server-scripts/Combat.cs — DealDamageAt damage type checks
     if (dt === "Poison" && classes.includes("rogue")) return "poison_rogue";
@@ -690,13 +710,26 @@
     if (dt === "Magic" && !isSpell && skill.required_weapon_category)
       return "magic_weapon";
 
-    // Source: server-scripts/Dexterity.cs — rangedAttackBonusPerPoint
+    // Ranger melee/target-damage skills: combat.damage - bow bonus (slot 13)
+    // Source: server-scripts/TargetDamageSkill.cs:218-221, FrontalDamageSkill.cs:88-92
     if (
-      skill.skill_type === "target_projectile" ||
-      skill.skill_type === "frontal_projectiles"
-    ) {
-      if (classes.includes("ranger")) return "bow_ranger";
-    }
+      (skill.skill_type === "target_damage" ||
+        skill.skill_type === "frontal_damage") &&
+      dt === "Normal" &&
+      classes.includes("ranger")
+    )
+      return "ranger_melee";
+
+    // Rogue normal-damage skills: combat.damage - ceil(off-hand bonus × 0.5)
+    // Source: server-scripts/TargetDamageSkill.cs:223-226
+    if (
+      (skill.skill_type === "target_damage" ||
+        skill.skill_type === "frontal_damage") &&
+      dt === "Normal" &&
+      classes.includes("rogue") &&
+      !classes.includes("warrior")
+    )
+      return "rogue_melee";
 
     return "normal_melee";
   });
@@ -1887,11 +1920,12 @@
                   </dd>
                 </div>
               </dl>
-            {:else if damageFormulaType === "bow_ranger"}
+            {:else if damageFormulaType === "bow_ranger_projectile"}
               <!-- Source: server-scripts/TargetProjectileSkill.cs:195-200 -->
-              <!-- combat.damage - weapon.damageBonus + dex.GetRangedAttackBonusPerPoint() -->
-              <!-- The weapon's flat damageBonus is subtracted because combat.damage already -->
-              <!-- includes it; only STR scaling and non-weapon equipment contribute here. -->
+              <!-- combat.damage - slots[12 melee weapon].damageBonus + dex.GetRangedAttackBonusPerPoint() -->
+              <!-- combat.damage includes all equipment; melee weapon bonus (slot 12) is subtracted -->
+              <!-- so that only bow + armour bonuses remain. Bow bonus (slot 13) is kept. -->
+              <!-- Source: server-scripts/DamageSkill.cs:226-233 — GetTooltipDamageBonus confirms this -->
               <!-- Source: server-scripts/Dexterity.cs — rangedAttackBonusPerPoint = 1.5 -->
               <dl class="space-y-1">
                 <div>
@@ -1903,8 +1937,62 @@
                 <div>
                   <dt class="text-muted-foreground">Ranged Attack Damage</dt>
                   <dd class="font-mono">
-                    (STR &times; 1.0 + non-weapon equipment bonuses) &times; (1
-                    + passive% + buff%)
+                    (STR &times; 1.0 + bow + non-melee equipment bonuses)
+                    &times; (1 + passive% + buff%)
+                  </dd>
+                </div>
+              </dl>
+            {:else if damageFormulaType === "bow_ranger_frontal"}
+              <!-- Source: server-scripts/FrontalProjectilesSkill.cs:97-100 -->
+              <!-- combat.damage + dex.GetRangedAttackBonusPerPoint() — no weapon subtraction -->
+              <!-- Both melee and bow bonuses remain in combat.damage. -->
+              <!-- Source: server-scripts/Dexterity.cs — rangedAttackBonusPerPoint = 1.5 -->
+              <dl class="space-y-1">
+                <div>
+                  <dt class="text-muted-foreground">Pre-Mitigation</dt>
+                  <dd class="font-mono">
+                    Skill Damage + Ranged Attack Damage + DEX &times; 1.5
+                  </dd>
+                </div>
+                <div>
+                  <dt class="text-muted-foreground">Ranged Attack Damage</dt>
+                  <dd class="font-mono">
+                    (STR &times; 1.0 + all equipment bonuses) &times; (1 +
+                    passive% + buff%)
+                  </dd>
+                </div>
+              </dl>
+            {:else if damageFormulaType === "ranger_melee"}
+              <!-- Source: server-scripts/TargetDamageSkill.cs:218-221, FrontalDamageSkill.cs:88-92 -->
+              <!-- combat.damage - slots[13 bow].damageBonus -->
+              <!-- Bow bonus (slot 13) is subtracted; melee weapon (slot 12) is kept. -->
+              <dl class="space-y-1">
+                <div>
+                  <dt class="text-muted-foreground">Pre-Mitigation</dt>
+                  <dd class="font-mono">Skill Damage + Attack Damage</dd>
+                </div>
+                <div>
+                  <dt class="text-muted-foreground">Attack Damage</dt>
+                  <dd class="font-mono">
+                    (STR &times; 1.0 + non-bow equipment bonuses) &times; (1 +
+                    passive% + buff%)
+                  </dd>
+                </div>
+              </dl>
+            {:else if damageFormulaType === "rogue_melee"}
+              <!-- Source: server-scripts/TargetDamageSkill.cs:223-226 -->
+              <!-- combat.damage - ceil(slots[13 off-hand].damageBonus × 0.5) -->
+              <!-- Off-hand dagger (slot 13) counts at 50%; main-hand (slot 12) counts fully. -->
+              <dl class="space-y-1">
+                <div>
+                  <dt class="text-muted-foreground">Pre-Mitigation</dt>
+                  <dd class="font-mono">Skill Damage + Attack Damage</dd>
+                </div>
+                <div>
+                  <dt class="text-muted-foreground">Attack Damage</dt>
+                  <dd class="font-mono">
+                    (STR &times; 1.0 + main-hand + 50% off-hand + other
+                    equipment bonuses) &times; (1 + passive% + buff%)
                   </dd>
                 </div>
               </dl>
