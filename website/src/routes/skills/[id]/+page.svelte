@@ -811,6 +811,13 @@
           Weapon Strike
         </span>
       {/if}
+      {#if skill.is_decrease_resists_skill}
+        <span
+          class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+        >
+          Bypasses Debuff Immunity
+        </span>
+      {/if}
 
       <DungeonRestrictionBadge allowDungeon={skill.allow_dungeon} />
     </div>
@@ -2440,6 +2447,14 @@
         <!-- G. Special Mechanic Notes -->
         {#if skill.is_assassination_skill}
           <p>Requires target below 25% HP to cast</p>
+        {/if}
+        {#if skill.is_decrease_resists_skill}
+          <!-- Source: server-scripts/BuffSkill.cs:99-106 — IgnoreImmuneDebuff returns true for isDecreaseResistsSkill -->
+          <!-- Source: server-scripts/TargetDebuffSkill.cs:134-136 — num = Mathf.Clamp(num - 0.3f, 0f, 1f) -->
+          <p>
+            Bypasses "Immune to Debuffs" on monsters. Reduces the target's
+            resist chance by 30% before the resist roll.
+          </p>
         {/if}
         {#if skill.followup_default_attack}
           <!-- Source: server-scripts/TargetDamageSkill.cs — procEffectProbability > Random.value -->
