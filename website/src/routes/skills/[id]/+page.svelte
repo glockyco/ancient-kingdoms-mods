@@ -90,7 +90,7 @@
     target_damage: "Target Damage",
     area_damage: "Area Damage",
     frontal_damage: "Frontal Damage",
-    target_projectile: "Projectile",
+    target_projectile: "Target Projectile",
     frontal_projectiles: "Frontal Projectiles",
     target_heal: "Target Heal",
     area_heal: "Area Heal",
