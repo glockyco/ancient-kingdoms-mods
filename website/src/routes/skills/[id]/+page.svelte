@@ -1395,8 +1395,7 @@
                   {formatDuration(
                     skill.duration_base,
                     skill.duration_per_level,
-                  )}{#if skill.is_permanent}
-                    (permanent){/if}
+                  )}
                 </dd>
               </div>
             {/if}
@@ -1730,7 +1729,9 @@
               <p class="text-amber-600 dark:text-amber-400">Blinds target</p>
             {/if}
             {#if skill.is_permanent}
-              <p class="text-muted-foreground">Permanent effect</p>
+              <p class="text-muted-foreground">
+                Timer hidden in UI (duration still applies)
+              </p>
             {/if}
             {#if skill.is_only_for_magic_classes}
               <p class="text-indigo-600 dark:text-indigo-400">
