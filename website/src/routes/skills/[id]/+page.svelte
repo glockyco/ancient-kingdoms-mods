@@ -199,6 +199,23 @@
     ),
   );
 
+  // Fields that scale with DEX/INT/STR on debuff skills at runtime (TargetDebuffSkill.cs — bonusAttribute)
+  // DoT (healing_per_second_bonus < 0), resist reductions, damage/magic damage reductions
+  // Source: server-scripts/Skills.cs:1108-1266, TargetDebuffSkill.cs:268-275
+  const hasDebuffAttrScaling = $derived(
+    !!(
+      skill.healing_per_second_bonus ||
+      skill.defense_bonus ||
+      skill.magic_resist_bonus ||
+      skill.poison_resist_bonus ||
+      skill.fire_resist_bonus ||
+      skill.cold_resist_bonus ||
+      skill.disease_resist_bonus ||
+      skill.damage_bonus ||
+      skill.magic_damage_bonus
+    ),
+  );
+
   const hasCrowdControl = $derived(
     hasLinearValue(skill.stun_chance) ||
       hasLinearValue(skill.fear_chance) ||
@@ -634,11 +651,16 @@
   );
 
   const showMechanics = $derived(
-    isPlayerUsable &&
+    (isPlayerUsable &&
       (isDamageType ||
         isHealType ||
-        (isBuffType && (hasWisScaledBonuses || hasSpecialBuffFlags)) ||
-        (isDebuffType && hasWisScaledBonuses)),
+        (isBuffType &&
+          (hasWisScaledBonuses ||
+            hasSpecialBuffFlags ||
+            skill.is_cleanse ||
+            skill.is_dispel)))) ||
+      (isDebuffType &&
+        (hasDebuffAttrScaling || skill.prob_ignore_cleanse != null)),
   );
 
   // Determine damage formula type
@@ -2110,53 +2132,52 @@
         {/if}
 
         <!-- D. Debuff Scaling -->
-        {#if isDebuffType && hasWisScaledBonuses}
+        {#if isDebuffType && hasDebuffAttrScaling}
           <div class="space-y-2">
             <h3 class="font-semibold">Debuff Scaling</h3>
             <dl class="grid grid-cols-[12rem_1fr] gap-x-4 gap-y-1 font-mono">
-              <!-- Source: server-scripts/Intelligence.cs — defenseDebuffBonusPerPoint = 0.4 -->
-              <!-- Source: server-scripts/Strength.cs — defenseDebuffBonusPerPoint = 0.5 -->
+              <!-- Source: server-scripts/Buff.cs:84-98 — defenseBonus getter, negative branch: bonusAttribute * 0.4 (all types) -->
               {#if skill.defense_bonus}
                 <dt class="text-muted-foreground">Defense reduction</dt>
                 {#if skill.is_melee_debuff}
-                  <dd>skillValue(level) + STR &times; 0.5</dd>
+                  <dd>skillValue(level) + STR &times; 0.4</dd>
                 {:else}
                   <dd>skillValue(level) + INT &times; 0.4</dd>
                 {/if}
               {/if}
-              <!-- Source: server-scripts/Intelligence.cs — magicResistDebuffBonusPerPoint = 0.4 -->
+              <!-- Source: server-scripts/Buff.cs:100-114 — magicResistBonus getter, negative branch: bonusAttribute * 0.4 -->
               {#if skill.magic_resist_bonus}
                 <dt class="text-muted-foreground">Magic Resist reduction</dt>
                 <dd>skillValue(level) + INT &times; 0.4</dd>
               {/if}
-              <!-- Source: server-scripts/Buff.cs — poisonResistBonus/fireResistBonus/etc. -->
+              <!-- Source: server-scripts/Buff.cs:116-178 — resist bonus getters, negative branch: bonusAttribute * 0.4 -->
               {#if skill.poison_resist_bonus || skill.fire_resist_bonus || skill.cold_resist_bonus || skill.disease_resist_bonus}
                 <dt class="text-muted-foreground">
                   Elemental resist reduction
                 </dt>
                 <dd>skillValue(level) + INT &times; 0.4</dd>
               {/if}
-              <!-- Source: server-scripts/Intelligence.cs — damageDebuffBonusPerPoint = 0.5 -->
+              <!-- Source: server-scripts/Buff.cs:56-66 — damageBonus getter, negative branch: bonusAttribute * 0.5 -->
               {#if skill.damage_bonus}
                 <dt class="text-muted-foreground">Damage reduction</dt>
                 <dd>skillValue(level) + INT &times; 0.5</dd>
               {/if}
-              <!-- Source: server-scripts/Intelligence.cs — magicDamageDebuffBonusPerPoint = 0.5 -->
+              <!-- Source: server-scripts/Buff.cs:72-82 — magicDamageBonus getter, negative branch: bonusAttribute * 0.5 -->
               {#if skill.magic_damage_bonus}
                 <dt class="text-muted-foreground">Magic Dmg reduction</dt>
                 <dd>skillValue(level) + INT &times; 0.5</dd>
               {/if}
-              <!-- DoT bonuses -->
+              <!-- DoT: bonusAttribute applied in Skills.cs:GetFinalDamageDoT, not in Buff.healingPerSecondBonus -->
               {#if skill.healing_per_second_bonus}
                 <dt class="text-muted-foreground">DoT</dt>
                 {#if skill.is_poison_debuff || skill.is_disease_debuff}
-                  <!-- Source: server-scripts/Dexterity.cs — poisonDiseaseDamageDebuffBonusPerPoint = 1.0 -->
+                  <!-- Source: server-scripts/Skills.cs:1136-1159 — isPoisonDebuff||isDiseaseDebuff: bonusAttribute * 1.0 -->
                   <dd>skillValue(level) + DEX &times; 1.0</dd>
                 {:else if skill.is_melee_debuff}
-                  <!-- Source: server-scripts/Strength.cs — meleeDebuffBonusPerPoint = 0.5 -->
+                  <!-- Source: server-scripts/Skills.cs:1111-1135 — isMeleeDebuff: bonusAttribute * 0.5 -->
                   <dd>skillValue(level) + STR &times; 0.5</dd>
                 {:else}
-                  <!-- Source: server-scripts/Intelligence.cs — magicDotBonusPerPoint = 1.25 -->
+                  <!-- Source: server-scripts/Skills.cs:1236-1260 — else (fire/cold/magic): bonusAttribute * 1.25 -->
                   <dd>skillValue(level) + INT &times; 1.25</dd>
                 {/if}
               {/if}
