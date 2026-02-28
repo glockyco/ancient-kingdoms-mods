@@ -719,6 +719,10 @@
   // Source: server-scripts/TargetBuffSkill.cs — Apply, bonusAttribute = pet3.wisdom.value for all mercenary skills
   // CHA is only referenced in BonusSkill.cs ToolTipUpgrade() (client display only, never applied at runtime)
   const buffScalingAttr = $derived(skill.is_scroll ? "level" : "wis");
+
+  // Debuff bonus attribute label for scaling rows
+  // Source: server-scripts/TargetDebuffSkill.cs:277-279 — isScroll → PlayerLevel * 10
+  const debuffScrollAttr = "PlayerLevel \u00d7 10";
 </script>
 
 <svelte:head>
@@ -2046,12 +2050,18 @@
         {#if isHealType && !skill.is_resurrect_skill}
           <div class="space-y-1">
             <h3 class="font-semibold">Healing Formula</h3>
-            <!-- Source: server-scripts/HealSkill.cs — wisdom.GetHealBonus() -->
+            <!-- Source: server-scripts/TargetHealSkill.cs:266-270 — isScroll → PlayerLevel * 8 replaces WIS bonus -->
             <!-- Source: server-scripts/Wisdom.cs — healBonusPercentPerPoint = 0.004, capDirectHealBonus = 5.0 -->
-            <p class="font-mono">
-              Final Heal = Base Heal + RoundToInt(Base Heal &times; min(WIS
-              &times; 0.004, 5.0))
-            </p>
+            {#if skill.is_scroll}
+              <p class="font-mono">
+                Final Heal = Base Heal + PlayerLevel &times; 8
+              </p>
+            {:else}
+              <p class="font-mono">
+                Final Heal = Base Heal + RoundToInt(Base Heal &times; min(WIS
+                &times; 0.004, 5.0))
+              </p>
+            {/if}
 
             <!-- Source: server-scripts/TargetHealSkill.cs:271-274, AreaHealSkill.cs:94-96 — Random.value > 0.9 threshold -->
             <p class="text-muted-foreground">
@@ -2140,9 +2150,12 @@
             <h3 class="font-semibold">Debuff Scaling</h3>
             <dl class="grid grid-cols-[16rem_1fr] gap-x-4 gap-y-1 font-mono">
               <!-- Source: server-scripts/Buff.cs:84-98 — defenseBonus getter, negative branch: bonusAttribute * 0.4 (all types) -->
+              <!-- Source: server-scripts/TargetDebuffSkill.cs:277-279 — isScroll → bonusAttribute = PlayerLevel * 10 -->
               {#if skill.defense_bonus}
                 <dt class="text-muted-foreground">Defense reduction</dt>
-                {#if skill.is_melee_debuff}
+                {#if skill.is_scroll}
+                  <dd>skillValue(level) + {debuffScrollAttr} &times; 0.4</dd>
+                {:else if skill.is_melee_debuff}
                   <dd>skillValue(level) + STR &times; 0.4</dd>
                 {:else}
                   <dd>skillValue(level) + INT &times; 0.4</dd>
@@ -2151,39 +2164,74 @@
               <!-- Source: server-scripts/Buff.cs:100-114 — magicResistBonus getter, negative branch: bonusAttribute * 0.4 -->
               {#if skill.magic_resist_bonus}
                 <dt class="text-muted-foreground">Magic Resist reduction</dt>
-                <dd>skillValue(level) + INT &times; 0.4</dd>
+                <dd>
+                  skillValue(level) + {skill.is_scroll
+                    ? debuffScrollAttr
+                    : "INT"} &times; 0.4
+                </dd>
               {/if}
               <!-- Source: server-scripts/Buff.cs:116-178 — resist bonus getters, negative branch: bonusAttribute * 0.4 -->
               {#if skill.poison_resist_bonus}
                 <dt class="text-muted-foreground">Poison Resist reduction</dt>
-                <dd>skillValue(level) + INT &times; 0.4</dd>
+                <dd>
+                  skillValue(level) + {skill.is_scroll
+                    ? debuffScrollAttr
+                    : "INT"} &times; 0.4
+                </dd>
               {/if}
               {#if skill.fire_resist_bonus}
                 <dt class="text-muted-foreground">Fire Resist reduction</dt>
-                <dd>skillValue(level) + INT &times; 0.4</dd>
+                <dd>
+                  skillValue(level) + {skill.is_scroll
+                    ? debuffScrollAttr
+                    : "INT"} &times; 0.4
+                </dd>
               {/if}
               {#if skill.cold_resist_bonus}
                 <dt class="text-muted-foreground">Cold Resist reduction</dt>
-                <dd>skillValue(level) + INT &times; 0.4</dd>
+                <dd>
+                  skillValue(level) + {skill.is_scroll
+                    ? debuffScrollAttr
+                    : "INT"} &times; 0.4
+                </dd>
               {/if}
               {#if skill.disease_resist_bonus}
                 <dt class="text-muted-foreground">Disease Resist reduction</dt>
-                <dd>skillValue(level) + INT &times; 0.4</dd>
+                <dd>
+                  skillValue(level) + {skill.is_scroll
+                    ? debuffScrollAttr
+                    : "INT"} &times; 0.4
+                </dd>
               {/if}
               <!-- Source: server-scripts/Buff.cs:56-66 — damageBonus getter, negative branch: bonusAttribute * 0.5 -->
               {#if skill.damage_bonus}
                 <dt class="text-muted-foreground">Damage reduction</dt>
-                <dd>skillValue(level) + INT &times; 0.5</dd>
+                <dd>
+                  skillValue(level) + {skill.is_scroll
+                    ? debuffScrollAttr
+                    : "INT"} &times; 0.5
+                </dd>
               {/if}
               <!-- Source: server-scripts/Buff.cs:72-82 — magicDamageBonus getter, negative branch: bonusAttribute * 0.5 -->
               {#if skill.magic_damage_bonus}
                 <dt class="text-muted-foreground">Magic Dmg reduction</dt>
-                <dd>skillValue(level) + INT &times; 0.5</dd>
+                <dd>
+                  skillValue(level) + {skill.is_scroll
+                    ? debuffScrollAttr
+                    : "INT"} &times; 0.5
+                </dd>
               {/if}
               <!-- DoT: bonusAttribute applied in Skills.cs:GetFinalDamageDoT, not in Buff.healingPerSecondBonus -->
               {#if skill.healing_per_second_bonus}
                 <dt class="text-muted-foreground">DoT</dt>
-                {#if skill.is_poison_debuff || skill.is_disease_debuff}
+                {#if skill.is_scroll && (skill.is_poison_debuff || skill.is_disease_debuff)}
+                  <!-- Source: server-scripts/TargetDebuffSkill.cs:277-279 — isScroll overrides stat source -->
+                  <dd>skillValue(level) + {debuffScrollAttr} &times; 1.0</dd>
+                {:else if skill.is_scroll && skill.is_melee_debuff}
+                  <dd>skillValue(level) + {debuffScrollAttr} &times; 0.5</dd>
+                {:else if skill.is_scroll}
+                  <dd>skillValue(level) + {debuffScrollAttr} &times; 1.25</dd>
+                {:else if skill.is_poison_debuff || skill.is_disease_debuff}
                   <!-- Source: server-scripts/Skills.cs:1136-1159 — isPoisonDebuff||isDiseaseDebuff: bonusAttribute * 1.0 -->
                   <dd>skillValue(level) + DEX &times; 1.0</dd>
                 {:else if skill.is_melee_debuff}
