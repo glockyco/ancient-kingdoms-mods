@@ -714,11 +714,9 @@
   });
 
   // Buff scaling attribute source
-  // Source: server-scripts/TargetBuffSkill.cs — Apply, bonusAttribute = caster.wisdom.value
-  // Source: server-scripts/BonusSkill.cs — isMercenarySkill check
-  const buffScalingAttr = $derived(
-    skill.is_scroll ? "level" : skill.is_mercenary_skill ? "wis_cha" : "wis",
-  );
+  // Source: server-scripts/TargetBuffSkill.cs — Apply, bonusAttribute = pet3.wisdom.value for all mercenary skills
+  // CHA is only referenced in BonusSkill.cs ToolTipUpgrade() (client display only, never applied at runtime)
+  const buffScalingAttr = $derived(skill.is_scroll ? "level" : "wis");
 </script>
 
 <svelte:head>
@@ -1994,8 +1992,8 @@
                     clamp(<br />
                     &nbsp;&nbsp;clamp(target.baseBlock + target.defense &times; 0.0001
                     + buffs, 0, 0.8)<br />
-                    &nbsp;&nbsp;+ (target.level &minus; attacker.level) &times; 0.005<br
-                    />
+                    &nbsp;&nbsp;+ clamp((target.level &minus; attacker.level) &times;
+                    0.005, &minus;0.1, 0.1)<br />
                     &nbsp;&nbsp;&minus; attacker.accuracy<br />
                     , 0, 0.9)
                   </p>
@@ -2067,44 +2065,25 @@
             {#if buffScalingAttr === "level"}
               <!-- Source: server-scripts/TargetBuffSkill.cs — isScroll → player.level.current * 8 -->
               <p class="text-muted-foreground">
-                Scroll buff: potency = Player Level &times; 8 (replaces WIS/CHA
+                Scroll buff: potency = Player Level &times; 8 (replaces WIS
                 scaling)
-              </p>
-            {:else if buffScalingAttr === "wis_cha"}
-              <!-- Source: server-scripts/BonusSkill.cs — isMercenarySkill check -->
-              <p class="text-muted-foreground">
-                Potency scales with WIS (CHA replaces WIS for defense, magic
-                resist, and max HP)
               </p>
             {/if}
             <dl class="grid grid-cols-[12rem_1fr] gap-x-4 gap-y-1 font-mono">
               <!-- Source: server-scripts/Wisdom.cs — maxHealthBuffBonusPerPoint = 2 -->
-              <!-- Source: server-scripts/uMMORPG.Scripts.PlayerAttributes/Charisma.cs — GetWisdomBonusMaxHealthBuffMerc -->
               {#if skill.health_max_bonus}
                 <dt class="text-muted-foreground">Max Health</dt>
-                <dd>
-                  skillValue(level) + {buffScalingAttr === "wis_cha"
-                    ? "CHA"
-                    : "WIS"} &times; 2
-                </dd>
+                <dd>skillValue(level) + WIS &times; 2</dd>
               {/if}
               <!-- Source: server-scripts/Wisdom.cs — defenseBuffBonusPerPoint = 0.15 -->
               {#if skill.defense_bonus}
                 <dt class="text-muted-foreground">Defense</dt>
-                <dd>
-                  skillValue(level) + {buffScalingAttr === "wis_cha"
-                    ? "CHA"
-                    : "WIS"} &times; 0.15
-                </dd>
+                <dd>skillValue(level) + WIS &times; 0.15</dd>
               {/if}
               <!-- Source: server-scripts/Wisdom.cs — magicResistBuffBonusPerPoint = 0.15 -->
               {#if skill.magic_resist_bonus}
                 <dt class="text-muted-foreground">Magic Resist</dt>
-                <dd>
-                  skillValue(level) + {buffScalingAttr === "wis_cha"
-                    ? "CHA"
-                    : "WIS"} &times; 0.15
-                </dd>
+                <dd>skillValue(level) + WIS &times; 0.15</dd>
               {/if}
               <!-- Source: server-scripts/Wisdom.cs — wardBuffBonusPerPoint = 5 -->
               {#if skill.ward_bonus}
@@ -2302,11 +2281,11 @@
         {#if skill.followup_default_attack}
           <!-- Source: server-scripts/TargetDamageSkill.cs — procEffectProbability > Random.value -->
           <!-- Source: server-scripts/Combat.cs — energy.current += FloorToInt(num22 * 0.25f) -->
-          <!-- Source: server-scripts/Player.cs — refractoryPeriodSkillTimeEnd -->
+          <!-- Source: server-scripts/Player.cs:2783 — refractoryPeriodSkillTimeEnd, Mathf.Clamp((delay - delay * haste) / 25, 0.25, 2) -->
           <p>
-            Weapon strike: uses weapon delay for attack speed (affected by
-            haste), can trigger weapon proc, generates rage on hit (25% of
-            damage), allows action queuing during cast
+            Weapon strike: attack speed = clamp((weaponDelay &minus; weaponDelay
+            &times; haste) / 25, 0.25s, 2s). Can trigger weapon proc, generates
+            rage on hit (25% of damage), allows action queuing during cast.
           </p>
         {/if}
         {#if skill.is_mana_shield}
@@ -2316,15 +2295,10 @@
             mana pool
           </p>
         {/if}
-        {#if hasLinearValue(skill.cast_time)}
-          <!-- Source: server-scripts/Skills.cs — castTimeEnd calculation -->
+        {#if hasLinearValue(skill.cast_time) && skill.is_spell}
+          <!-- Source: server-scripts/Skills.cs:673-675 — castTimeEnd reduction only when isSpell -->
           <p class="text-muted-foreground">
-            {#if skill.is_spell}
-              Effective Cast Time = castTime &minus; (castTime &times;
-              spellHaste)
-            {:else}
-              Effective Cast Time = castTime &minus; (castTime &times; haste)
-            {/if}
+            Effective Cast Time = castTime &minus; (castTime &times; spellHaste)
           </p>
         {/if}
       </Card.Content>
