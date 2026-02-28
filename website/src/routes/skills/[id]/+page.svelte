@@ -2237,18 +2237,18 @@
             {:else if skill.prob_ignore_cleanse <= 0}
               <!-- probIgnoreCleanse <= 0: num2 = 3 always, single cast removes all counters -->
               <p class="text-muted-foreground">
-                Can be fully cleansed in a single cast.
+                Always removed in a single cast.
               </p>
             {:else}
               <!-- 1 guaranteed + 2 rolls each blocked with probability prob_ignore_cleanse -->
               <!-- Partial cleansing is possible, so DoT reduction is relevant -->
-              <p class="font-mono">
-                counters removed = 1 + [roll1 &gt; {skill.prob_ignore_cleanse}]
-                + [roll2 &gt; {skill.prob_ignore_cleanse}]
-              </p>
               <p class="text-muted-foreground">
-                Starts with 3 counters. Debuff removed when counters reach 0.{skill.healing_per_second_bonus
-                  ? " DoT damage is also reduced while partially cleansed (2 counters \u2192 \xd70.9, 1 counter \u2192 \xd70.8)."
+                Starts with 3 counters. Cleansing removes 1 counter guaranteed,
+                plus 2 independent {formatPercent(
+                  1 - skill.prob_ignore_cleanse,
+                )} chances to remove 1 more each. Debuff is removed when counters
+                reach 0.{skill.healing_per_second_bonus
+                  ? " DoT damage is reduced while partially cleansed (2 counters \u2192 \xd70.9, 1 counter \u2192 \xd70.8)."
                   : ""}
               </p>
             {/if}
@@ -2261,22 +2261,16 @@
           <div class="space-y-1">
             <h3 class="font-semibold">Cleanse Mechanics</h3>
             <p class="text-muted-foreground">
-              Targets debuffs whose type matches this skill&apos;s type flags.
-              Each debuff starts with 3 cleanse counters. Per cast, this skill
-              removes:
-            </p>
-            <p class="font-mono">
-              counters removed = 1 + [roll1 &gt; probIgnoreCleanse] + [roll2
-              &gt; probIgnoreCleanse]
-            </p>
-            <p class="text-muted-foreground">
-              Some debuffs are immune to cleansing entirely. For cleansable
-              debuffs: 0 resist means always cleansed in one cast. Otherwise at
-              least 1 counter is always removed, with up to 2 more removed by
-              chance. Debuff removed when counters reach 0. While counters
-              remain, caster sees "Some spells resists your purification
-              attempt." Partially cleansed DoTs deal &times;0.9 (2 counters) or
-              &times;0.8 (1 counter) per tick.
+              Only affects debuffs of matching type (e.g. a disease cleanse only
+              removes disease debuffs). Some debuffs cannot be cleansed at all.
+              Cleansable debuffs start with 3 counters and are removed when
+              counters reach 0. Debuffs with no resist are always removed in a
+              single cast. Otherwise cleansing removes 1 counter guaranteed,
+              plus 2 independent chances to remove 1 more each (blocked by the
+              debuff's cleanse resist chance). If counters remain after a cast,
+              you see "Some spells resists your purification attempt." DoT
+              damage is reduced while partially cleansed (2 counters &rarr;
+              &times;0.9, 1 counter &rarr; &times;0.8).
             </p>
           </div>
         {/if}
