@@ -614,11 +614,13 @@
   );
 
   // Mechanics section: only for player-usable skills
+  // Scroll skills have no player_classes but are used by players via items
   const isPlayerUsable = $derived(
     skill.player_classes.length > 0 ||
       skill.is_mercenary_skill ||
       skill.is_pet_skill ||
-      data.usedByPets.length > 0,
+      data.usedByPets.length > 0 ||
+      data.grantedByItems.length > 0,
   );
 
   const isDamageType = $derived(
@@ -2062,48 +2064,70 @@
         {#if isBuffType && hasWisScaledBonuses}
           <div class="space-y-2">
             <h3 class="font-semibold">Buff Scaling</h3>
-            {#if buffScalingAttr === "level"}
-              <!-- Source: server-scripts/TargetBuffSkill.cs — isScroll → player.level.current * 8 -->
-              <p class="text-muted-foreground">
-                Scroll buff: potency = Player Level &times; 8
-              </p>
-            {/if}
             <dl class="grid grid-cols-[12rem_1fr] gap-x-4 gap-y-1 font-mono">
+              <!-- Source: server-scripts/TargetBuffSkill.cs:425-428 — isScroll → PlayerLevel * 8, else caster.wisdom.value -->
               <!-- Source: server-scripts/Wisdom.cs — maxHealthBuffBonusPerPoint = 2 -->
               {#if skill.health_max_bonus}
                 <dt class="text-muted-foreground">Max Health</dt>
-                <dd>skillValue(level) + WIS &times; 2</dd>
+                <dd>
+                  skillValue(level) + {buffScalingAttr === "level"
+                    ? "PlayerLevel \u00d7 8"
+                    : "WIS"} &times; 2
+                </dd>
               {/if}
               <!-- Source: server-scripts/Wisdom.cs — defenseBuffBonusPerPoint = 0.15 -->
               {#if skill.defense_bonus}
                 <dt class="text-muted-foreground">Defense</dt>
-                <dd>skillValue(level) + WIS &times; 0.15</dd>
+                <dd>
+                  skillValue(level) + {buffScalingAttr === "level"
+                    ? "PlayerLevel \u00d7 8"
+                    : "WIS"} &times; 0.15
+                </dd>
               {/if}
               <!-- Source: server-scripts/Wisdom.cs — magicResistBuffBonusPerPoint = 0.15 -->
               {#if skill.magic_resist_bonus}
                 <dt class="text-muted-foreground">Magic Resist</dt>
-                <dd>skillValue(level) + WIS &times; 0.15</dd>
+                <dd>
+                  skillValue(level) + {buffScalingAttr === "level"
+                    ? "PlayerLevel \u00d7 8"
+                    : "WIS"} &times; 0.15
+                </dd>
               {/if}
               <!-- Source: server-scripts/Wisdom.cs — wardBuffBonusPerPoint = 5 -->
               {#if skill.ward_bonus}
                 <dt class="text-muted-foreground">Ward</dt>
-                <dd>skillValue(level) + WIS &times; 5</dd>
+                <dd>
+                  skillValue(level) + {buffScalingAttr === "level"
+                    ? "PlayerLevel \u00d7 8"
+                    : "WIS"} &times; 5
+                </dd>
               {/if}
               <!-- Source: server-scripts/Wisdom.cs — damageShieldBuffBonusPerPoint = 0.75 -->
               {#if skill.damage_shield}
                 <dt class="text-muted-foreground">Damage Shield</dt>
-                <dd>skillValue(level) + WIS &times; 0.75</dd>
+                <dd>
+                  skillValue(level) + {buffScalingAttr === "level"
+                    ? "PlayerLevel \u00d7 8"
+                    : "WIS"} &times; 0.75
+                </dd>
               {/if}
               <!-- Source: server-scripts/Buff.cs — poisonResistBonus/fireResistBonus/etc. -->
               {#if skill.poison_resist_bonus || skill.fire_resist_bonus || skill.cold_resist_bonus || skill.disease_resist_bonus}
                 <dt class="text-muted-foreground">Elemental Resists</dt>
-                <dd>skillValue(level) + WIS &times; 0.15</dd>
+                <dd>
+                  skillValue(level) + {buffScalingAttr === "level"
+                    ? "PlayerLevel \u00d7 8"
+                    : "WIS"} &times; 0.15
+                </dd>
               {/if}
               <!-- Source: server-scripts/Wisdom.cs — capHealPerSecondBonus = 3.0 -->
               {#if skill.healing_per_second_bonus}
                 <dt class="text-muted-foreground">HoT</dt>
                 <dd>
-                  skillValue(level) &times; (1 + min(WIS &times; 0.004, 3.0))
+                  skillValue(level) &times; (1 + min({buffScalingAttr ===
+                  "level"
+                    ? "PlayerLevel \u00d7 8"
+                    : "WIS"} &times; 0.004, 3.0))
                 </dd>
               {/if}
             </dl>
@@ -2294,7 +2318,7 @@
             mana pool
           </p>
         {/if}
-        {#if hasLinearValue(skill.cast_time) && skill.is_spell}
+        {#if hasLinearValue(skill.cast_time) && skill.is_spell && !skill.is_scroll}
           <!-- Source: server-scripts/Skills.cs:673-675 — castTimeEnd reduction only when isSpell -->
           <p class="text-muted-foreground">
             Effective Cast Time = castTime &minus; (castTime &times; spellHaste)
