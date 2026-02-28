@@ -2162,7 +2162,9 @@
         {#if isBuffType && hasWisScaledBonuses}
           <div class="space-y-2">
             <h3 class="font-semibold">Buff Scaling</h3>
-            <dl class="grid grid-cols-[12rem_1fr] gap-x-4 gap-y-1 font-mono">
+            <dl
+              class="grid grid-cols-1 sm:grid-cols-[12rem_1fr] gap-x-4 gap-y-1 font-mono"
+            >
               <!-- Source: server-scripts/TargetBuffSkill.cs:425-428 — isScroll → PlayerLevel * 8, else caster.wisdom.value -->
               <!-- Source: server-scripts/Wisdom.cs — maxHealthBuffBonusPerPoint = 2 -->
               {#if skill.health_max_bonus}
@@ -2236,7 +2238,9 @@
         {#if isDebuffType && hasDebuffAttrScaling}
           <div class="space-y-2">
             <h3 class="font-semibold">Debuff Scaling</h3>
-            <dl class="grid grid-cols-[16rem_1fr] gap-x-4 gap-y-1 font-mono">
+            <dl
+              class="grid grid-cols-1 sm:grid-cols-[16rem_1fr] gap-x-4 gap-y-1 font-mono"
+            >
               <!-- Source: server-scripts/Buff.cs:84-98 — defenseBonus getter, negative branch: bonusAttribute * 0.4 (all types) -->
               <!-- Source: server-scripts/TargetDebuffSkill.cs:277-279 — isScroll → bonusAttribute = PlayerLevel * 10 -->
               {#if skill.defense_bonus}
