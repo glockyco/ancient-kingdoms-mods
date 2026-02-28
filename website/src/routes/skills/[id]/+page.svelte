@@ -2135,7 +2135,7 @@
         {#if isDebuffType && hasDebuffAttrScaling}
           <div class="space-y-2">
             <h3 class="font-semibold">Debuff Scaling</h3>
-            <dl class="grid grid-cols-[12rem_1fr] gap-x-4 gap-y-1 font-mono">
+            <dl class="grid grid-cols-[16rem_1fr] gap-x-4 gap-y-1 font-mono">
               <!-- Source: server-scripts/Buff.cs:84-98 — defenseBonus getter, negative branch: bonusAttribute * 0.4 (all types) -->
               {#if skill.defense_bonus}
                 <dt class="text-muted-foreground">Defense reduction</dt>
@@ -2151,10 +2151,20 @@
                 <dd>skillValue(level) + INT &times; 0.4</dd>
               {/if}
               <!-- Source: server-scripts/Buff.cs:116-178 — resist bonus getters, negative branch: bonusAttribute * 0.4 -->
-              {#if skill.poison_resist_bonus || skill.fire_resist_bonus || skill.cold_resist_bonus || skill.disease_resist_bonus}
-                <dt class="text-muted-foreground">
-                  Elemental resist reduction
-                </dt>
+              {#if skill.poison_resist_bonus}
+                <dt class="text-muted-foreground">Poison Resist reduction</dt>
+                <dd>skillValue(level) + INT &times; 0.4</dd>
+              {/if}
+              {#if skill.fire_resist_bonus}
+                <dt class="text-muted-foreground">Fire Resist reduction</dt>
+                <dd>skillValue(level) + INT &times; 0.4</dd>
+              {/if}
+              {#if skill.cold_resist_bonus}
+                <dt class="text-muted-foreground">Cold Resist reduction</dt>
+                <dd>skillValue(level) + INT &times; 0.4</dd>
+              {/if}
+              {#if skill.disease_resist_bonus}
+                <dt class="text-muted-foreground">Disease Resist reduction</dt>
                 <dd>skillValue(level) + INT &times; 0.4</dd>
               {/if}
               <!-- Source: server-scripts/Buff.cs:56-66 — damageBonus getter, negative branch: bonusAttribute * 0.5 -->
@@ -2212,23 +2222,62 @@
               </p>
             </div>
           {/if}
+        {/if}
 
-          <!-- D3. Cleanse-weakened DoT -->
-          <!-- Source: server-scripts/Skills.cs:1261-1266, Buff.cs:226, TargetBuffSkill.cs:305-308 -->
-          <!-- numberCounters starts at 3; each cleanse cast reduces it by 1-3; debuff removed at 0 -->
-          <!-- Ticks do NOT decrement numberCounters — it is only reduced by cleanse -->
-          {#if skill.healing_per_second_bonus}
-            <div class="space-y-1">
-              <h4 class="font-medium text-muted-foreground">
-                Cleanse-weakened DoT
-              </h4>
-              <p>
-                Each cleanse reduces this debuff&apos;s counters (starts at 3).
-                While partially cleansed, each tick deals reduced damage: 2
-                counters &rarr; &times;0.9 | 1 counter &rarr; &times;0.8
+        <!-- E. Cleanse Resistance (debuff page) -->
+        <!-- Source: server-scripts/TargetBuffSkill.cs:276-350, Buff.cs:226 -->
+        <!-- prob_ignore_cleanse == 1: debuff is skipped entirely (line 284 Mathf.Approximately check) -->
+        {#if isDebuffType && !skill.is_cleanse && skill.prob_ignore_cleanse != null}
+          <div class="space-y-1">
+            <h3 class="font-semibold">Cleanse Resistance</h3>
+            {#if skill.prob_ignore_cleanse >= 1}
+              <!-- Cannot be cleansed at all -->
+              <p class="text-muted-foreground">Cannot be cleansed.</p>
+            {:else if skill.prob_ignore_cleanse <= 0}
+              <!-- probIgnoreCleanse <= 0: num2 = 3 always, single cast removes all counters -->
+              <p class="text-muted-foreground">
+                Can be fully cleansed in a single cast.
               </p>
-            </div>
-          {/if}
+            {:else}
+              <!-- 1 guaranteed + 2 rolls each blocked with probability prob_ignore_cleanse -->
+              <!-- Partial cleansing is possible, so DoT reduction is relevant -->
+              <p class="font-mono">
+                counters removed = 1 + [roll1 &gt; {skill.prob_ignore_cleanse}]
+                + [roll2 &gt; {skill.prob_ignore_cleanse}]
+              </p>
+              <p class="text-muted-foreground">
+                Starts with 3 counters. Debuff removed when counters reach 0.{skill.healing_per_second_bonus
+                  ? " DoT damage is also reduced while partially cleansed (2 counters \u2192 \xd70.9, 1 counter \u2192 \xd70.8)."
+                  : ""}
+              </p>
+            {/if}
+          </div>
+        {/if}
+
+        <!-- E2. Cleanse Mechanics (cleanse skill page) -->
+        <!-- Source: server-scripts/TargetBuffSkill.cs:276-350 -->
+        {#if skill.is_cleanse}
+          <div class="space-y-1">
+            <h3 class="font-semibold">Cleanse Mechanics</h3>
+            <p class="text-muted-foreground">
+              Targets debuffs whose type matches this skill&apos;s type flags.
+              Each debuff starts with 3 cleanse counters. Per cast, this skill
+              removes:
+            </p>
+            <p class="font-mono">
+              counters removed = 1 + [roll1 &gt; probIgnoreCleanse] + [roll2
+              &gt; probIgnoreCleanse]
+            </p>
+            <p class="text-muted-foreground">
+              Some debuffs are immune to cleansing entirely. For cleansable
+              debuffs: 0 resist means always cleansed in one cast. Otherwise at
+              least 1 counter is always removed, with up to 2 more removed by
+              chance. Debuff removed when counters reach 0. While counters
+              remain, caster sees "Some spells resists your purification
+              attempt." Partially cleansed DoTs deal &times;0.9 (2 counters) or
+              &times;0.8 (1 counter) per tick.
+            </p>
+          </div>
         {/if}
 
         <!-- F. Special Mechanic Notes -->
