@@ -794,14 +794,14 @@
         <span
           class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-200"
         >
-          Pet Skill
+          Targets Pets
         </span>
       {/if}
       {#if skill.is_mercenary_skill}
         <span
           class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200"
         >
-          Mercenary Skill
+          Targets Mercenaries
         </span>
       {/if}
       {#if skill.followup_default_attack}
