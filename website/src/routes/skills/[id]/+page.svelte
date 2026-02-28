@@ -2183,6 +2183,52 @@
               {/if}
             </dl>
           </div>
+
+          <!-- D2. Resist Chance -->
+          <!-- Source: server-scripts/TargetDebuffSkill.cs:104-133, Combat.cs:1222-1256 -->
+          <!-- No flag set → num stays 0, debuff always lands -->
+          {#if skill.is_melee_debuff || skill.is_poison_debuff || skill.is_fire_debuff || skill.is_cold_debuff || skill.is_disease_debuff || skill.is_magic_debuff}
+            <div class="space-y-1">
+              <h4 class="font-medium text-muted-foreground">Resist Chance</h4>
+              <!-- Level diff clamped to ±0.1 (±20 levels), unlike damage resist which is unclamped -->
+              <!-- Source: server-scripts/Combat.cs:1224 — Mathf.Clamp(diff_levels * 0.005, -0.1, 0.1) -->
+              <p class="font-mono">
+                clamp(<br />
+                &nbsp;&nbsp;target.{skill.is_melee_debuff
+                  ? "defense"
+                  : skill.is_poison_debuff
+                    ? "poisonResist"
+                    : skill.is_fire_debuff
+                      ? "fireResist"
+                      : skill.is_cold_debuff
+                        ? "coldResist"
+                        : skill.is_disease_debuff
+                          ? "diseaseResist"
+                          : "magicResist"} &times; 0.0005<br />
+                &nbsp;&nbsp;+ clamp((target.level &minus; caster.level) &times; 0.005,
+                &minus;0.1, 0.1)<br />
+                &nbsp;&nbsp;&minus; caster.accuracy<br />
+                , 0, 0.9)
+              </p>
+            </div>
+          {/if}
+
+          <!-- D3. Cleanse-weakened DoT -->
+          <!-- Source: server-scripts/Skills.cs:1261-1266, Buff.cs:226, TargetBuffSkill.cs:305-308 -->
+          <!-- numberCounters starts at 3; each cleanse cast reduces it by 1-3; debuff removed at 0 -->
+          <!-- Ticks do NOT decrement numberCounters — it is only reduced by cleanse -->
+          {#if skill.healing_per_second_bonus}
+            <div class="space-y-1">
+              <h4 class="font-medium text-muted-foreground">
+                Cleanse-weakened DoT
+              </h4>
+              <p>
+                Each cleanse reduces this debuff&apos;s counters (starts at 3).
+                While partially cleansed, each tick deals reduced damage: 2
+                counters &rarr; &times;0.9 | 1 counter &rarr; &times;0.8
+              </p>
+            </div>
+          {/if}
         {/if}
 
         <!-- F. Special Mechanic Notes -->
