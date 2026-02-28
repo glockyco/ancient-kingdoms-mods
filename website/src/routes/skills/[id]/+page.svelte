@@ -156,10 +156,11 @@
 
   // is_cleanse is excluded: cleanse description is in the effect summary,
   // and the card adds nothing unless the skill also has stat bonuses or other effects.
+  // duration_base alone is not sufficient: some skills (e.g. master_poisoner,
+  // detect_traps) have a duration but no displayable stat rows — their effect is
+  // hardcoded by name in server scripts and described in the effect summary instead.
   const hasBuffEffects = $derived(
-    skill.duration_base > 0 ||
-      skill.duration_per_level > 0 ||
-      hasStatBonuses ||
+    hasStatBonuses ||
       hasRegenBonuses ||
       hasResistBonuses ||
       hasAttributeBonuses ||
