@@ -206,6 +206,7 @@ class PetData(BaseModel):
     has_heals: bool = False
     icon_path: str
     skill_ids: list[str] = []
+    innate_skill_ids: list[str] = []
 
     # Stat scaling (LinearInt/LinearFloat: actual = base + per_level * (level - 1))
     health_base: int = 0

@@ -107,6 +107,22 @@ public class PetExporter : BaseExporter
                 }
             }
 
+            // Export innate skills applied programmatically (not in skillTemplates)
+            // Warrior mercenaries have a death prevention skill triggered by Combat logic
+            if (pet.isMercenary && pet.typeMonster == "Warrior")
+            {
+                var invulSkill = Il2Cpp.GameManager.singleton?.invulWarriorSkill;
+                if (invulSkill != null && !string.IsNullOrEmpty(invulSkill.name))
+                {
+                    Logger.Msg($"  invulWarriorSkill: {invulSkill.name}");
+                    petData.innate_skill_ids.Add(SanitizeId(invulSkill.name));
+                }
+                else
+                {
+                    Logger.Warning("  invulWarriorSkill not found on GameManager");
+                }
+            }
+
             petList.Add(petData);
         }
 

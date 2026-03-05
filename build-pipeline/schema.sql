@@ -1639,6 +1639,7 @@ CREATE TABLE pet_skills (
     pet_id TEXT NOT NULL REFERENCES pets(id),
     skill_id TEXT NOT NULL REFERENCES skills(id),
     skill_index INTEGER NOT NULL,
+    is_innate BOOLEAN DEFAULT 0,
     PRIMARY KEY (pet_id, skill_id, skill_index)
 );
 

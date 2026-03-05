@@ -561,11 +561,24 @@ def load_pet_skills(conn: sqlite3.Connection, export_dir: Path) -> None:
         for index, skill_id in enumerate(pet.skill_ids):
             if skill_id in valid_skills:
                 cursor.execute(
-                    "INSERT INTO pet_skills (pet_id, skill_id, skill_index) VALUES (?, ?, ?)",
+                    "INSERT INTO pet_skills (pet_id, skill_id, skill_index, is_innate) VALUES (?, ?, ?, 0)",
                     (pet.id, skill_id, index),
                 )
                 count += 1
             else:
+                skipped += 1
+
+        for index, skill_id in enumerate(pet.innate_skill_ids):
+            if skill_id in valid_skills:
+                cursor.execute(
+                    "INSERT INTO pet_skills (pet_id, skill_id, skill_index, is_innate) VALUES (?, ?, ?, 1)",
+                    (pet.id, skill_id, index),
+                )
+                count += 1
+            else:
+                console.print(
+                    f"  [yellow]SKIP[/yellow] Unknown innate skill ref: {skill_id} for pet {pet.id}"
+                )
                 skipped += 1
 
     conn.commit()

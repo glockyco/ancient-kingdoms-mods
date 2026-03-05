@@ -59,6 +59,7 @@ public class PetData
 
     // Skills
     public List<string> skill_ids { get; set; } = new();
+    public List<string> innate_skill_ids { get; set; } = new();
 
     // Visual
     public string icon_path { get; set; }
