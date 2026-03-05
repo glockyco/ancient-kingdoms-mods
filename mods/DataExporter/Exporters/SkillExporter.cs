@@ -342,6 +342,14 @@ public class SkillExporter : BaseExporter
             skillData.is_permanent = buffSkill.isPermanent;
             skillData.prob_ignore_cleanse = buffSkill.probIgnoreCleanse;
             skillData.is_decrease_resists_skill = buffSkill.isDecreaseResistsSkill;
+
+            var areaBuffSkill = skill.TryCast<Il2Cpp.AreaBuffSkill>();
+            if (areaBuffSkill != null)
+                skillData.is_aura = areaBuffSkill.isAura;
+
+            var areaDebuffSkill = skill.TryCast<Il2Cpp.AreaDebuffSkill>();
+            if (areaDebuffSkill != null)
+                skillData.is_aura = areaDebuffSkill.isAura;
         }
 
         // heal_on_hit_percent is on BonusSkill

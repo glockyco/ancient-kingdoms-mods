@@ -654,6 +654,7 @@ class SkillData(BaseModel):
     followup_default_attack: bool = False
     base_skill: bool = False
     affects_random_target: bool = False
+    is_aura: bool = False
     area_object_size: float = 0.0
     area_object_delay_damage: float = 0.0
     area_objects_to_spawn: int = 0
