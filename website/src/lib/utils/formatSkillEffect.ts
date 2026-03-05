@@ -79,6 +79,7 @@ export interface Skill {
 
   // Buff duration
   duration_base: number;
+  duration_per_level?: number | null;
 
   // Special flags
   is_invisibility?: boolean;
@@ -827,7 +828,11 @@ export function formatSkillEffect(
       skill.skill_type === "target_debuff";
 
     if (hasBuffStats) {
-      return `${parts.join(", ")}, ${skill.duration_base}s`;
+      const dur =
+        skill.duration_per_level && skill.duration_per_level > 0
+          ? `${skill.duration_base}s (+${skill.duration_per_level}s/lvl)`
+          : `${skill.duration_base}s`;
+      return `${parts.join(", ")}, ${dur}`;
     }
   }
 

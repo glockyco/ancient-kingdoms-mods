@@ -225,6 +225,7 @@ function getPetSkills(petId: string): ClassSkill[] {
       s.wisdom_bonus,
       s.constitution_bonus,
       s.duration_base,
+      s.duration_per_level,
       s.is_invisibility,
       s.is_mana_shield,
       s.is_cleanse,
@@ -256,12 +257,13 @@ function getPetSkills(petId: string): ClassSkill[] {
       s.learn_default,
       s.base_skill,
       s.tier,
-      s.required_spent_points
+      s.required_spent_points,
+      ps.is_innate
     FROM pet_skills ps
     JOIN skills s ON s.id = ps.skill_id
     LEFT JOIN monsters m ON s.summoned_monster_id = m.id
     WHERE ps.pet_id = ?
-    ORDER BY ps.skill_index`,
+    ORDER BY ps.is_innate ASC, ps.skill_index`,
     [petId],
   );
 }

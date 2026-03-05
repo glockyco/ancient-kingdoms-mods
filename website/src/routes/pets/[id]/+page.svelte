@@ -386,6 +386,22 @@
                 >, scales with your regular and veteran level
               </dd>
             </div>
+            {#if pet.type_monster === "Warrior"}
+              <div class="flex gap-2">
+                <dt class="text-muted-foreground w-40 shrink-0">
+                  Death Prevention
+                </dt>
+                <dd>
+                  When a lethal hit would kill this mercenary, it automatically
+                  casts
+                  <a
+                    href="/skills/runebound_aegis"
+                    class="text-blue-600 dark:text-blue-400 hover:underline"
+                    >Runebound Aegis</a
+                  > (level 50+).
+                </dd>
+              </div>
+            {/if}
             <div class="flex gap-2">
               <dt class="text-muted-foreground w-40 shrink-0">On Death</dt>
               <dd>Stays dead. Resurrection costs the same as recruiting.</dd>

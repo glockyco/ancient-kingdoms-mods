@@ -50,6 +50,7 @@ export interface ClassSkill {
   name: string;
   skill_type: string;
   level_required: number;
+  is_innate?: boolean;
   // All fields needed by formatSkillEffect
   damage_type: string | null;
   max_level: number;
@@ -108,6 +109,7 @@ export interface ClassSkill {
   wisdom_bonus: string | null;
   constitution_bonus: string | null;
   duration_base: number;
+  duration_per_level: number;
   is_invisibility: boolean;
   is_mana_shield: boolean;
   is_cleanse: boolean;
@@ -211,6 +213,7 @@ export function getClassSkills(classId: string): ClassSkill[] {
       s.wisdom_bonus,
       s.constitution_bonus,
       s.duration_base,
+      s.duration_per_level,
       s.is_invisibility,
       s.is_mana_shield,
       s.is_cleanse,
