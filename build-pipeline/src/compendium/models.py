@@ -888,6 +888,7 @@ class ZoneTriggerData(BaseModel):
     bounds_min_y: float | None = None
     bounds_max_x: float | None = None
     bounds_max_y: float | None = None
+    environment_hazard_skill_id: str | None = None
 
 
 # =============================================================================

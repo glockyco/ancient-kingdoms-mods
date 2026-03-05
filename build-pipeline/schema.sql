@@ -1177,7 +1177,8 @@ CREATE TABLE zone_triggers (
     bloom_color TEXT DEFAULT '#FFFFFFFF',
     light_intensity REAL DEFAULT 0.5,
     audio_zone TEXT,
-    loop_sounds_zone TEXT
+    loop_sounds_zone TEXT,
+    environment_hazard_skill_id TEXT REFERENCES skills(id)
 );
 
 CREATE INDEX idx_zone_triggers_zone ON zone_triggers(zone_id);

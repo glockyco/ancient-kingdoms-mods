@@ -48,7 +48,8 @@ public class ZoneTriggerExporter : BaseExporter
                 bloom_color = ColorToHex(zoneTrigger.bloomColor),
                 light_intensity = zoneTrigger.globalLightIntensity,
                 audio_zone = zoneTrigger.audioZone != null ? zoneTrigger.audioZone.name : null,
-                loop_sounds_zone = zoneTrigger.loopSoundsZone != null ? zoneTrigger.loopSoundsZone.name : null
+                loop_sounds_zone = zoneTrigger.loopSoundsZone != null ? zoneTrigger.loopSoundsZone.name : null,
+                environment_hazard_skill_id = zoneTrigger.enviromentHazard != null ? SanitizeId(zoneTrigger.enviromentHazard.name) : null
             };
 
             // Export collider bounds for position-based zone detection
