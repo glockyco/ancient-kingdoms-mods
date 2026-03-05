@@ -1,6 +1,6 @@
 ---
 name: export-game-data
-description: Core principles for exporting authoritative game data
+description: Core principles for writing DataExporter mod code. Use when developing or modifying data exporters.
 ---
 
 ## Core Principle
