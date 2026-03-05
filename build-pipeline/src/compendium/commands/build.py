@@ -70,8 +70,10 @@ def run(config: dict) -> None:
         load_classes(conn, export_dir)  # Player classes (early, no dependencies)
         load_zones(conn, export_dir)
         load_professions(conn, export_dir)
-        load_zone_triggers(conn, export_dir)
         load_skills(conn, export_dir)
+        load_zone_triggers(
+            conn, export_dir
+        )  # After skills (environment_hazard_skill_id FK)
         load_items(conn, export_dir)
         load_luck_tokens(conn, export_dir)  # After zones + items
         load_altars(conn, export_dir)  # After zones + items
