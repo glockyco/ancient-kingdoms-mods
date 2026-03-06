@@ -96,6 +96,7 @@ export const load: PageServerLoad = ({ params }): ItemDetailPageData => {
   const usages = getItemUsages(db, params.id);
 
   // Load recipe materials for recipes that create this item
+  // Materials JSON is pre-enriched with item_name by the build pipeline
   const recipeMaterials: Record<
     string,
     Array<{ item_id: string; item_name: string; amount: number }>
@@ -117,24 +118,9 @@ export const load: PageServerLoad = ({ params }): ItemDetailPageData => {
       .get(recipe.recipe_id) as { materials: string } | undefined;
 
     if (recipeData?.materials) {
-      const materials = JSON.parse(recipeData.materials) as Array<{
-        item_id: string;
-        amount: number;
-      }>;
-
-      // Enrich with item names
-      const enrichedMaterials = materials.map((m) => {
-        const itemName = db
-          .prepare(`SELECT name FROM items WHERE id = ?`)
-          .get(m.item_id) as { name: string } | undefined;
-        return {
-          item_id: m.item_id,
-          item_name: itemName?.name || m.item_id,
-          amount: m.amount,
-        };
-      });
-
-      recipeMaterials[recipe.recipe_id] = enrichedMaterials;
+      recipeMaterials[recipe.recipe_id] = JSON.parse(
+        recipeData.materials,
+      ) as Array<{ item_id: string; item_name: string; amount: number }>;
     }
   }
 

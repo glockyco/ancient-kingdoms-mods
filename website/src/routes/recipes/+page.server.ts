@@ -20,11 +20,6 @@ interface RawRecipe {
   tier: number;
 }
 
-interface RawMaterial {
-  item_id: string;
-  amount: number;
-}
-
 export const load: PageServerLoad = (): RecipesPageData => {
   const db = new Database(DB_STATIC_PATH, { readonly: true });
 
@@ -72,55 +67,21 @@ export const load: PageServerLoad = (): RecipesPageData => {
     )
     .all() as RawRecipe[];
 
-  // Collect all unique ingredient item_ids
-  const allIngredientIds = new Set<string>();
-  for (const recipe of rawRecipes) {
-    if (recipe.materials) {
-      const materials = JSON.parse(recipe.materials) as RawMaterial[];
-      for (const m of materials) {
-        allIngredientIds.add(m.item_id);
-      }
-    }
-  }
-
-  // Batch query ingredient names
-  const ingredientNames = new Map<string, string>();
-  if (allIngredientIds.size > 0) {
-    const placeholders = Array.from(allIngredientIds)
-      .map(() => "?")
-      .join(",");
-    const ingredientRows = db
-      .prepare(`SELECT id, name FROM items WHERE id IN (${placeholders})`)
-      .all(Array.from(allIngredientIds)) as { id: string; name: string }[];
-    for (const row of ingredientRows) {
-      ingredientNames.set(row.id, row.name);
-    }
-  }
-
   db.close();
 
-  // Transform raw recipes to RecipeListView with resolved ingredient names
-  const recipes: RecipeListView[] = rawRecipes.map((raw) => {
-    const materials = raw.materials
-      ? (JSON.parse(raw.materials) as RawMaterial[])
-      : [];
-    const ingredients: RecipeIngredient[] = materials.map((m) => ({
-      item_id: m.item_id,
-      item_name: ingredientNames.get(m.item_id) ?? m.item_id,
-      amount: m.amount,
-    }));
-
-    return {
-      id: raw.id,
-      result_item_id: raw.result_item_id,
-      result_item_name: raw.result_item_name,
-      result_quality: raw.result_quality,
-      result_amount: raw.result_amount,
-      ingredients,
-      type: raw.type,
-      tier: raw.tier,
-    };
-  });
+  // Materials JSON is pre-enriched with item_name by the build pipeline
+  const recipes: RecipeListView[] = rawRecipes.map((raw) => ({
+    id: raw.id,
+    result_item_id: raw.result_item_id,
+    result_item_name: raw.result_item_name,
+    result_quality: raw.result_quality,
+    result_amount: raw.result_amount,
+    ingredients: raw.materials
+      ? (JSON.parse(raw.materials) as RecipeIngredient[])
+      : [],
+    type: raw.type,
+    tier: raw.tier,
+  }));
 
   return { recipes };
 };

@@ -20,6 +20,7 @@ from compendium.denormalizers import (
     monsters,
     npcs,
     quests,
+    recipes,
     search,
     skills,
     zones,
@@ -189,6 +190,9 @@ def run_all(conn: sqlite3.Connection) -> None:
 
     # Quest display_type (needed before item usages reads it)
     quests.run_display_type(conn)
+
+    # Recipe materials enrichment (add item_name before consumers read materials)
+    recipes.run_materials(conn)
 
     # Item denormalizations (reads monster drops for dropped_by)
     items.run_all(conn, redactions)

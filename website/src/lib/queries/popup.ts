@@ -1068,12 +1068,24 @@ export async function loadItemPopupDetails(
     [itemId],
   );
 
-  // Parse materials JSON for each recipe
+  // Parse materials JSON and map from DB snake_case to camelCase
   const craftingSources: ItemPopupCraftSource[] = craftingSourcesRaw.map(
     (c) => ({
       recipeId: c.recipeId,
       resultAmount: c.resultAmount,
-      materials: c.materials ? JSON.parse(c.materials) : [],
+      materials: c.materials
+        ? (
+            JSON.parse(c.materials) as Array<{
+              item_id: string;
+              item_name: string;
+              amount: number;
+            }>
+          ).map((m) => ({
+            itemId: m.item_id,
+            itemName: m.item_name,
+            amount: m.amount,
+          }))
+        : [],
     }),
   );
 
