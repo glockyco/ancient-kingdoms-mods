@@ -175,7 +175,7 @@
           rate: g.actual_drop_chance,
           amount_min: g.amount_min,
           amount_max: g.amount_max,
-          // Radiant spark info is in is_radiant_spark flag
+          // Source: server-scripts/GatherItem.cs — Radiant Spark drop rate scales 0-10% with Radiant Seeker profession level
           rate_note: g.is_radiant_spark
             ? "0-10% based on Radiant Seeker level"
             : undefined,
@@ -696,6 +696,7 @@
               </div>
               <div>
                 <div class={styles.label}>Amount received</div>
+                <!-- Source: server-scripts/Utils.cs:450 — getPrimalEssenceAmount: ceil(sellPrice * 0.06f) -->
                 <div class={styles.value}>6% of sell price</div>
               </div>
             </div>
@@ -715,6 +716,7 @@
               </div>
               <div>
                 <div class={styles.label}>Cost</div>
+                <!-- Source: server-scripts/Utils.cs:178 (priceResetVeteranSkills = 10000), Npc.cs:1769 -->
                 <div class={styles.value}>
                   {formatGold(10000)}g + Token of Redemption
                 </div>
@@ -734,6 +736,7 @@
         </Card.Root>
       {:else if data.item.id === "radiant_aether"}
         <!-- Radiant Aether Effects -->
+        <!-- Source: server-scripts/GameManager.cs:312 (probActivateRadiantAether = 0.15f), Player.cs:6374, Combat.cs:717-726,813, AreaDamageSkill.cs:38, AreaDebuffSkill.cs:34 -->
         <Card.Root class="bg-muted/30">
           <Card.Header>
             <Card.Title>Passive Effects</Card.Title>
@@ -1089,6 +1092,7 @@
         {/if}
 
         <!-- Attribute Bonuses (3-piece) -->
+        <!-- Source: server-scripts/PlayerEquipment.cs:265,280 — set bonuses apply at 3 pieces (attributes) and 5 pieces (skills) -->
         {#if computed.armorSetAttributeBonuses && computed.armorSetAttributeBonuses.length > 0}
           <div>
             <h4 class="text-sm font-semibold mb-2">Set Bonuses (3 pieces)</h4>
