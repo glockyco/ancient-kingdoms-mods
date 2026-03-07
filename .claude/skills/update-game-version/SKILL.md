@@ -71,15 +71,13 @@ Diff **every** changed file. Do not skip files or cherry-pick "important" ones.
 
 Categorize each change:
 
-| Category | Example | Action |
-|----------|---------|--------|
-| New mechanic | Warrior merc invulnerability | Document on website; may need new exporter |
-| Formula/constant change | Damage scaling, resist thresholds | Update hardcoded values in website |
-| Stat scaling change | New class-conditional multiplier in GetHealBonus | Check key website locations for hardcoded formulas |
-| Removed feature | Manual pet move command removed | Remove from documentation |
-| Skill behavior change | Rogue stealth persistence rules | Update mechanic descriptions |
-| AI/behavioral change | Pet follow distance | Low priority, document if guides exist |
-| Architecture refactor | VFX code moved between files | Ignore |
+| Category | Action |
+|----------|--------|
+| New/changed hardcoded formula or constant | Find via `Source: server-scripts/` comments; update website values |
+| New game mechanic not in DB | Document on website; evaluate if new exporter needed |
+| Removed or renamed mechanic | Remove or update documentation |
+| DB-auto-handled (entity stats, skill data, items) | Re-export + rebuild DB handles it; verify in DB |
+| Decompiler noise or pure refactor | Ignore |
 
 ### UIMap.cs — custom map zones
 
