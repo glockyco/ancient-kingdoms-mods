@@ -75,6 +75,7 @@ Categorize each change:
 |----------|---------|--------|
 | New mechanic | Warrior merc invulnerability | Document on website; may need new exporter |
 | Formula/constant change | Damage scaling, resist thresholds | Update hardcoded values in website |
+| Stat scaling change | New class-conditional multiplier in GetHealBonus | Check key website locations for hardcoded formulas |
 | Removed feature | Manual pet move command removed | Remove from documentation |
 | Skill behavior change | Rogue stealth persistence rules | Update mechanic descriptions |
 | AI/behavioral change | Pet follow distance | Low priority, document if guides exist |
@@ -84,6 +85,10 @@ Categorize each change:
 
 Check `UIMap.cs` for any new zones added to the `idZone ==` branch in `Update()` and `mapButton()`. These zones replace the normal world map with a custom hand-drawn sprite in-game and must be added to `EXCLUDED_ZONE_IDS` in `website/src/lib/constants/constants.ts`. Currently: Temple of Valaark (zone 23).
 
+### Apply() is authoritative for runtime behavior
+
+When investigating scaling changes, `Apply()` is the source of truth for what actually happens at runtime. Tooltip methods (`ToolTip`, `ToolTipUpgrade`) may diverge from actual behavior and should not be trusted as a substitute.
+
 ### Automatic vs. manual
 
 - **Automatic**: Entity stats, skill data, zone data, items — re-export + rebuild DB handles these
@@ -92,4 +97,5 @@ Check `UIMap.cs` for any new zones added to the `idZone ==` branch in `Update()`
 ### Key website locations with hardcoded game logic
 
 - `website/src/lib/utils/formatSkillEffect.ts` — spell scaling formulas
+- `website/src/routes/skills/[id]/+page.svelte` — buff/debuff scaling formulas in the mechanics section
 - `website/src/routes/+page.svelte` — game version display
