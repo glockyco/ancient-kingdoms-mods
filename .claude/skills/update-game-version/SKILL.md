@@ -96,6 +96,11 @@ When investigating scaling changes, `Apply()` is the source of truth for what ac
 
 ### Key website locations with hardcoded game logic
 
-- `website/src/lib/utils/formatSkillEffect.ts` — spell scaling formulas
-- `website/src/routes/skills/[id]/+page.svelte` — buff/debuff scaling formulas in the mechanics section
-- `website/src/routes/+page.svelte` — game version display
+Search for `Source: server-scripts/` comments to find all hardcoded values. Key files:
+
+- `website/src/routes/skills/[id]/+page.svelte` — damage pipeline, stat scaling, buff/debuff/resist/cleanse formulas
+- `website/src/lib/utils/formatSkillEffect.ts` — per-skill hardcoded effect descriptions
+- `website/src/routes/items/[id]/+page.svelte` — item mechanics (Radiant Aether, economy prices, set thresholds)
+- `website/src/lib/utils/format.ts` — altar tier thresholds, gathering respawn rules
+- `website/src/lib/utils/roles.ts` — NPC role descriptions with prices/costs
+- `website/src/routes/+page.svelte` — game version string
