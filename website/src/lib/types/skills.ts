@@ -226,4 +226,5 @@ export interface SkillPet {
   id: string;
   name: string;
   is_mercenary: boolean;
+  is_familiar: boolean;
 }

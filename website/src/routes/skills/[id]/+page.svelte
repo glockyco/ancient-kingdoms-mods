@@ -623,6 +623,13 @@
       data.grantedByItems.length > 0,
   );
 
+  // Pet/mercenary usage flags for mechanics notes
+  const usedByMercenary = $derived(data.usedByPets.some((p) => p.is_mercenary));
+  const usedByCompanion = $derived(
+    data.usedByPets.some((p) => !p.is_mercenary && !p.is_familiar),
+  );
+  const usedByFamiliar = $derived(data.usedByPets.some((p) => p.is_familiar));
+
   const isDamageType = $derived(
     skill.skill_type === "target_damage" ||
       skill.skill_type === "area_damage" ||
@@ -1803,7 +1810,7 @@
             <thead>
               <tr class="border-b text-left">
                 <th class="py-2 pr-4 font-medium text-muted-foreground"
-                  >Level</th
+                  >Skill Level</th
                 >
                 {#each scalingColumns as col (col.label)}
                   <th class="py-2 px-3 font-medium text-muted-foreground"
@@ -1840,6 +1847,26 @@
         </Card.Title>
       </Card.Header>
       <Card.Content class="space-y-6 text-sm">
+        <!-- Pet/Mercenary Skill Level -->
+        {#if usedByMercenary}
+          <p class="text-muted-foreground">
+            When used by a mercenary, skill level = floor(regular level &divide;
+            5) + floor(veteran level &divide; 10), capped at max skill level.
+          </p>
+        {/if}
+        {#if usedByCompanion}
+          <p class="text-muted-foreground">
+            When used by a companion, skill level = floor(veteran level &divide;
+            10), capped at max skill level.
+          </p>
+        {/if}
+        {#if usedByFamiliar}
+          <p class="text-muted-foreground">
+            When used by a familiar, skill level equals the summoning skill
+            rank.
+          </p>
+        {/if}
+
         <!-- A. Damage Formula -->
         {#if isDamageType && damageFormulaType && hasActualDamage}
           <div class="space-y-3">
@@ -2470,14 +2497,14 @@
               rage on hit (25% of damage), allows action queuing during cast.
             </p>
           {/if}
-          {#if data.usedByPets.some((p) => p.is_mercenary)}
+          {#if usedByMercenary}
             <p>
               Mercenary weapon strike: attack interval = cast time + cooldown
               &times; (1 &minus; haste). Weapon delay has no effect. Cooldown
               scales linearly with haste up to the cap.
             </p>
           {/if}
-          {#if data.usedByPets.some((p) => !p.is_mercenary)}
+          {#if usedByCompanion}
             <p>
               Pet weapon strike: attack interval = cast time + cooldown. Haste
               has no effect on pet cooldowns.

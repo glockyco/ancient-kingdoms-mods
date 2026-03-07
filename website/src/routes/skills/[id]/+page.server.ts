@@ -281,7 +281,7 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
 
   // Get pets/mercenaries that use this skill
   const usedByPets = query<SkillPet>(
-    `SELECT DISTINCT p.id, p.name, p.is_mercenary
+    `SELECT DISTINCT p.id, p.name, p.is_mercenary, p.is_familiar
     FROM pet_skills ps
     JOIN pets p ON p.id = ps.pet_id
     WHERE ps.skill_id = ?
