@@ -15,7 +15,9 @@ dotnet run --project build-tool all
 dotnet run --project build-tool export
 
 # 3. Decompile server scripts
-STEAM_USER=username ./scripts/update-server-scripts.sh <version>
+#    Steam username is read from config.toml [steam] username
+#    Prerequisites (one-time): brew install steamcmd && brew install dotnet@8 && dotnet tool install -g ilspycmd
+./scripts/update-server-scripts.sh <version>
 
 # 4. Diff server scripts (see analysis guidance below)
 diff -rq server-scripts-<old-version> server-scripts-<new-version>
@@ -28,7 +30,8 @@ cd build-pipeline && uv run compendium build
 #    website/src/routes/+page.svelte — hardcoded version string
 ```
 
-For decompile details and prerequisites, see `docs/server-scripts-guide.md`.
+Server scripts are **reference only** — for understanding game mechanics, not for data export.
+Versioned backups are stored in `server-scripts-<version>/`; the working copy is `server-scripts/`.
 
 ## Diff Analysis
 
@@ -57,10 +60,9 @@ Categorize each change:
 ### Automatic vs. manual
 
 - **Automatic**: Entity stats, skill data, zone data, items — re-export + rebuild DB handles these
-- **Manual**: Hardcoded logic in the website (spell scaling formulas in `formatSkillEffect.ts`, damage mechanics page, class mechanic descriptions), new game mechanics not captured by exporters
+- **Manual**: Hardcoded logic in the website (spell scaling formulas in `formatSkillEffect.ts`, class mechanic descriptions), new game mechanics not captured by exporters
 
 ### Key website locations with hardcoded game logic
 
 - `website/src/lib/utils/formatSkillEffect.ts` — spell scaling formulas
-- `website/src/routes/docs/damage-mechanics/` — damage formula documentation
 - `website/src/routes/+page.svelte` — game version display
