@@ -210,9 +210,14 @@ export const ROLE_DESCRIPTIONS: Partial<
       'Converts <a href="/items/cursed_rune" class="text-blue-600 dark:text-blue-400 hover:underline">Cursed Runes</a> into <a href="/items/blessed_rune" class="text-blue-600 dark:text-blue-400 hover:underline">Blessed Runes</a>.',
     details: ["Cost: 75 gold per rune", "Requires Cursed Runes in inventory"],
   },
+  // Source: server-scripts/UINpcTrading.cs:118-123,182-186 — quality 2 (magic) = 10,000g, quality 3 (epic) = 15,000g, else 5,000g
   is_augmenter: {
     description: "Removes augments from equipment.",
-    details: ["Requires augmented gear in inventory or equipped"],
+    details: [
+      "Cost: 5,000g (common), 10,000g (magic), or 15,000g (epic) augment",
+      "Augment is returned to your inventory",
+      "Requires augmented gear in inventory or equipped",
+    ],
   },
   is_guard: {
     description: "Protects the area and may attack hostile players.",
