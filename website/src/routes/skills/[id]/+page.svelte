@@ -2190,7 +2190,8 @@
         {/if}
 
         <!-- C. Buff Scaling -->
-        {#if isBuffType && hasWisScaledBonuses}
+        <!-- Source: PassiveSkill.cs:20-22 — Apply() is a no-op; passives grant flat values only, no WIS scaling at runtime -->
+        {#if isBuffType && hasWisScaledBonuses && skill.skill_type !== "passive"}
           <div class="space-y-2">
             <h3 class="font-semibold">Buff Scaling</h3>
             <dl
