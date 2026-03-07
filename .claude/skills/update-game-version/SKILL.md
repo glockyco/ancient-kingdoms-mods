@@ -54,6 +54,8 @@ cd build-pipeline && uv run compendium build
 Server scripts are **reference only** — for understanding game mechanics, not for data export.
 Versioned backups are stored in `server-scripts-<version>/`; the working copy is `server-scripts/`.
 
+**`exported-data/` and `website/static/compendium.db` are gitignored** — they will not appear in `git status` after re-exporting or rebuilding. This is expected; do not attempt to commit them.
+
 **Do not investigate the old server scripts** to understand changes — diff the new scripts first. The diff is the primary source of truth for what changed.
 
 ## Diff Analysis
