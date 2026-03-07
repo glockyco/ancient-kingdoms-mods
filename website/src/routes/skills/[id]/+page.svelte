@@ -2263,6 +2263,13 @@
                 </dd>
               {/if}
             </dl>
+            <!-- Source: TargetBuffSkill.cs:419 — Ranger wisdom.value is tripled before all buff scaling -->
+            {#if skill.skill_type === "target_buff" && skill.player_classes.includes("ranger")}
+              <p class="text-sm text-muted-foreground mt-2">
+                <span class="font-medium text-foreground">Ranger:</span> WIS is tripled
+                before applying all scaling above (effective WIS &times; 3).
+              </p>
+            {/if}
           </div>
         {/if}
 
