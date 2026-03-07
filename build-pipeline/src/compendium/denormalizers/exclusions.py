@@ -19,7 +19,7 @@ console = Console()
 EXCLUDED_ZONE_IDS = ["temple_of_valaark"]
 
 # Individual sub-zones to exclude within otherwise-visible parent zones
-EXCLUDED_ZONE_TRIGGER_IDS = ["zone_trigger_the_ember_citadel"]
+EXCLUDED_ZONE_TRIGGER_IDS: list[str] = []
 
 
 def _null_by_column(
