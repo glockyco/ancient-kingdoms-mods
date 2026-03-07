@@ -82,6 +82,20 @@ Site provides functional experience without JavaScript.
 - `<noscript>` CSS hides `.loading-overlay` and `.js-only` elements
 - DataTable uses `isHydrated` state to show all rows before JS initializes
 
+## Hardcoded Game Values
+
+Some game mechanics cannot be derived from the database and are hardcoded directly in the website. These must be manually verified on each game update by diffing the server scripts.
+
+**Every hardcoded value must have a source comment** in this format:
+
+```ts
+// Source: server-scripts/FileName.cs:lineNumber — brief description
+```
+
+```svelte
+<!-- Source: server-scripts/FileName.cs:lineNumber — brief description -->
+```
+
 ## Gotchas
 
 **Map prerendering:** Map data is prerendered at build time via `+page.server.ts`. deck.gl initializes client-side with `browser` guards.
