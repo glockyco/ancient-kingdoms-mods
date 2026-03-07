@@ -1,6 +1,6 @@
 /**
- * Zone IDs to exclude from map display.
- * These zones contain unreleased or work-in-progress content.
+ * Zones excluded from map display. These use a custom in-game map sprite
+ * instead of the world map (see update-game-version skill for details).
  */
 export const EXCLUDED_ZONE_IDS = new Set(["temple_of_valaark"]);
 
