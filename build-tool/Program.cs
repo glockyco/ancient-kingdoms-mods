@@ -62,7 +62,7 @@ class Program
                 "build" => BuildMods(),
                 "deploy" => DeployMods(),
                 "all" => BuildMods() == 0 ? DeployMods() : 1,
-                "export" => RunExport(),
+                "export" => RunExport(args),
                 _ => ShowUsage()
             };
         }
@@ -97,6 +97,7 @@ class Program
         Console.WriteLine("  all     - Build and deploy");
         Console.WriteLine("  setup   - Configure Local.props (interactive, run once)");
         Console.WriteLine("  export  - Launch game, run data export, stream log");
+        Console.WriteLine("  export --screenshots - Also capture map screenshots (use when map changed)");
         Console.WriteLine();
         return 0;
     }
@@ -310,8 +311,9 @@ class Program
     // export
     // =========================================================================
 
-    static int RunExport()
+    static int RunExport(string[] args)
     {
+        var includeScreenshots = args.Contains("--screenshots");
         var gamePath = Environment.GetEnvironmentVariable("ANCIENT_KINGDOMS_PATH");
         if (string.IsNullOrEmpty(gamePath))
         {
@@ -372,10 +374,11 @@ class Program
             Console.WriteLine($"  Game: {gamePath}");
             Console.WriteLine();
 
+            var gameArgs = "--export-data" + (includeScreenshots ? " --export-screenshots" : "");
             var psi = new ProcessStartInfo
             {
                 FileName = winePath,
-                Arguments = "ancientkingdoms.exe --export-data",
+                Arguments = $"ancientkingdoms.exe {gameArgs}",
                 WorkingDirectory = gamePath,
                 UseShellExecute = false,
                 RedirectStandardOutput = false,
@@ -395,10 +398,11 @@ class Program
             Console.WriteLine($"  Game: {gamePath}");
             Console.WriteLine();
 
+            var gameArgs = "--export-data" + (includeScreenshots ? " --export-screenshots" : "");
             var psi = new ProcessStartInfo
             {
                 FileName = gameExe,
-                Arguments = "--export-data",
+                Arguments = gameArgs,
                 WorkingDirectory = gamePath,
                 UseShellExecute = false,
                 RedirectStandardOutput = false,
@@ -414,7 +418,7 @@ class Program
 
         long offset = 0;
         var logContent = new StringBuilder();
-        var timeoutMs = 120_000;
+        var timeoutMs = 300_000;
         var stopwatch = Stopwatch.StartNew();
         var exportComplete = false;
 
