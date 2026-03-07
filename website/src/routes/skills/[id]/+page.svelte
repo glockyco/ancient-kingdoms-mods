@@ -1874,10 +1874,10 @@
 
             {#if damageFormulaType === "manaburn"}
               <!-- Source: server-scripts/TargetDamageSkill.cs — energy.current * 2 -->
-              <!-- Source: server-scripts/TargetProjectileSkill.cs — mana.current * 3 -->
+              <!-- Source: server-scripts/TargetProjectileSkill.cs — mana.current * 2 -->
               <p>
                 Consumes all rage. Damage = Rage &times; 2 (Warrior/Rogue) or
-                Mana &times; 3 (Wizard). Bypasses all resistance and mitigation.
+                Mana &times; 2 (Wizard). Bypasses all resistance and mitigation.
               </p>
             {:else if damageFormulaType === "scroll"}
               <!-- Source: server-scripts/TargetDamageSkill.cs — isScroll → player.level.current * 15 -->
@@ -2092,15 +2092,12 @@
                       ? "defense"
                       : `${resistType}Resist`} &times; 0.0005, 0, 0.9))
                   </li>
-                  <!-- Source: server-scripts/Combat.cs — criticalChance roll, 0.95 check, num *= 2 -->
-                  <li>
-                    Crit: on crit &rarr; 95% &times;1.5 (normal) | 5% &times;2.0
-                    (super)
-                  </li>
+                  <!-- Source: server-scripts/Combat.cs — criticalChance roll, num * 1.5f -->
+                  <li>Crit: on crit &rarr; &times;1.5</li>
                   <!-- Source: server-scripts/Combat.cs — isRadiantAetherActivated → 0.15f roll, consumes 1 item, *3 on top of crit -->
                   <li>
                     Radiant Aether (15% chance on crit, consumes 1 item):
-                    &times;3 on top &rarr; &times;4.5 or &times;6.0
+                    &times;3 on top &rarr; &times;4.5
                   </li>
                 </ol>
               </div>
