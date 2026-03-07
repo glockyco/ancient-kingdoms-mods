@@ -419,18 +419,11 @@ def run(config: dict) -> None:
         f"Z [{world_bounds['min_z']}, {world_bounds['max_z']}]"
     )
 
-    # Load or create stitched image
-    source: Image.Image
-    if stitched_path.exists():
-        console.print(f"Loading stitched image: {stitched_path}")
-        source = Image.open(stitched_path)
-    else:
-        console.print("Stitched image not found, creating from screenshots...")
-        source = stitch_screenshots(screenshots_dir, metadata)
-        # Save stitched image for future runs
-        stitched_path.parent.mkdir(parents=True, exist_ok=True)
-        source.save(stitched_path, "PNG")
-        console.print(f"Saved stitched image: {stitched_path}")
+    # Stitch screenshots into world image
+    source = stitch_screenshots(screenshots_dir, metadata)
+    stitched_path.parent.mkdir(parents=True, exist_ok=True)
+    source.save(stitched_path, "PNG")
+    console.print(f"Saved stitched image: {stitched_path}")
 
     console.print(f"Source image: {source.size[0]}x{source.size[1]} pixels")
 
