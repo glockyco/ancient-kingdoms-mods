@@ -7,7 +7,9 @@
 #   - ilspycmd installed (dotnet tool install -g ilspycmd)
 #   - dotnet 8 runtime (brew install dotnet@8)
 #
-# Usage: STEAM_USER=username ./scripts/update-server-scripts.sh <version>
+# Usage: ./scripts/update-server-scripts.sh <version>
+#   Steam username is read from config.toml [steam] username.
+#   Override with: STEAM_USER=username ./scripts/update-server-scripts.sh <version>
 #
 # Creates server-scripts/ (working copy) and server-scripts-<version>/ (backup)
 
@@ -25,9 +27,20 @@ VERSION="$1"
 DOTNET8="/opt/homebrew/opt/dotnet@8/libexec/dotnet"
 ILSPYCMD_DLL="$HOME/.dotnet/tools/.store/ilspycmd/9.1.0.7988/ilspycmd/9.1.0.7988/tools/net8.0/any/ilspycmd.dll"
 
+# Fall back to config.toml [steam] username if STEAM_USER not set in environment
 if [ -z "$STEAM_USER" ]; then
-  echo "Error: STEAM_USER environment variable not set"
-  echo "Usage: STEAM_USER=username $0 <version>"
+  CONFIG_FILE="$REPO_DIR/config.toml"
+  if [ -f "$CONFIG_FILE" ]; then
+    STEAM_USER=$(grep -A5 '^\[steam\]' "$CONFIG_FILE" | grep '^username' | sed 's/username *= *"\(.*\)"/\1/')
+  fi
+fi
+
+if [ -z "$STEAM_USER" ]; then
+  echo "Error: Steam username not set. Add it to config.toml:"
+  echo "  [steam]"
+  echo "  username = \"your_steam_username\""
+  echo ""
+  echo "See config.toml.example for reference, or set STEAM_USER environment variable."
   exit 1
 fi
 

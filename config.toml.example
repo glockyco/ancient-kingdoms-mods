@@ -53,3 +53,7 @@ bounds_max_y = 1300.0
 # Screenshot tile settings (from MapScreenshotter)
 tile_world_size = 200.0
 tile_resolution = 1024
+
+[steam]
+# Steam username for downloading game via steamcmd (used by update-server-scripts.sh)
+username = "your_steam_username"
