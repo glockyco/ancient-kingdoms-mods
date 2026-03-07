@@ -2190,7 +2190,7 @@
         {/if}
 
         <!-- C. Buff Scaling -->
-        <!-- Source: PassiveSkill.cs:20-22 — Apply() is a no-op; passives grant flat values only, no WIS scaling at runtime -->
+        <!-- Source: server-scripts/PassiveSkill.cs:20-22 — Apply() is a no-op; passives grant flat values only, no WIS scaling at runtime -->
         {#if isBuffType && hasWisScaledBonuses && skill.skill_type !== "passive"}
           <div class="space-y-2">
             <h3 class="font-semibold">Buff Scaling</h3>
@@ -2252,7 +2252,7 @@
                     : "WIS"} &times; 0.15
                 </dd>
               {/if}
-              <!-- Source: Wisdom.cs:GetHealBonus — cap is 5.0 (capHealPerSecondBonus = 3.0 constant is unused) -->
+              <!-- Source: server-scripts/Wisdom.cs:GetHealBonus — cap is 5.0 (capHealPerSecondBonus = 3.0 constant is unused) -->
               {#if skill.healing_per_second_bonus}
                 <dt class="text-muted-foreground">HoT</dt>
                 <dd>
@@ -2263,7 +2263,7 @@
                 </dd>
               {/if}
             </dl>
-            <!-- Source: TargetBuffSkill.cs:419 — Ranger wisdom.value is tripled before all buff scaling -->
+            <!-- Source: server-scripts/TargetBuffSkill.cs:419 — Ranger wisdom.value is tripled before all buff scaling -->
             {#if skill.skill_type === "target_buff" && skill.player_classes.includes("ranger")}
               <p class="text-sm text-muted-foreground mt-2">
                 <span class="font-medium text-foreground">Ranger:</span> WIS is tripled
