@@ -150,17 +150,17 @@ export function toRomanNumeral(tier: number): string {
 
 /**
  * Format altar reward tier as level + veteran requirement string.
- * Effective level = player level + (veteran points / 20)
- * Thresholds: <35 common, 35-44 magic, 45-54 epic, 55+ legendary
+ * Score = player level + total veteran points. Thresholds: <40 common, 40-49 magic, 50-149 epic, 150+ legendary.
+ * Source: server-scripts/DefaultEvent.cs:231,237 — num4 = level.current + totalVeteranPoints
  */
 export function formatAltarRewardTier(tier: AltarRewardTier): string {
   switch (tier) {
     case "common":
-      return "Lv 30-34";
+      return "Lv < 40";
     case "magic":
-      return "Lv 35-44";
+      return "Lv 40–49";
     case "epic":
-      return "Lv 45-50, Vet 0-99";
+      return "Lv 50, Vet 0–99";
     case "legendary":
       return "Lv 50, Vet 100+";
   }
