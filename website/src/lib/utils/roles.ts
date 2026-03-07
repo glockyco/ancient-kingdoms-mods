@@ -214,7 +214,7 @@ export const ROLE_DESCRIPTIONS: Partial<
   is_augmenter: {
     description: "Removes augments from equipment.",
     details: [
-      "Cost: 5,000g (common), 10,000g (magic), or 15,000g (epic) augment",
+      "Cost per augment: 5,000g (common), 10,000g (magic), or 15,000g (epic)",
       "Augment is returned to your inventory",
       "Requires augmented gear in inventory or equipped",
     ],

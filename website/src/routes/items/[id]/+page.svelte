@@ -908,10 +908,10 @@
                 <div class={styles.label}>Removing</div>
                 <!-- Source: server-scripts/UINpcTrading.cs:118-123,182-186 — quality 2 (magic) = 10,000g, quality 3 (epic) = 15,000g, else 5,000g -->
                 <div class={styles.value}>
-                  Visit an Augmenter NPC to remove a socketed augment. This
-                  costs gold ({formatGold(5000)}g common, {formatGold(10000)}g
-                  magic, {formatGold(15000)}g epic) and returns the augment to
-                  your inventory.
+                  Visit an Augmenter NPC to remove a socketed augment. Cost per
+                  augment: {formatGold(5000)}g (common), {formatGold(10000)}g
+                  (magic), or {formatGold(15000)}g (epic). The augment is
+                  returned to your inventory.
                 </div>
               </div>
               <div>
