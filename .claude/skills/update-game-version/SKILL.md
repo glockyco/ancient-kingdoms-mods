@@ -40,7 +40,9 @@ diff -b server-scripts-<old>/<file>.cs server-scripts-<new>/<file>.cs
 # 5. Rebuild database from new exports
 cd build-pipeline && uv run compendium build
 
-# 6. Update game version on home page
+# 6. Apply all manual website changes (mechanic updates, removed features, etc.)
+
+# 7. Update game version on home page — always last, as a "seal" on the update
 #    website/src/routes/+page.svelte — hardcoded version string
 ```
 
