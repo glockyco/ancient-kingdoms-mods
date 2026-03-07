@@ -2252,14 +2252,14 @@
                     : "WIS"} &times; 0.15
                 </dd>
               {/if}
-              <!-- Source: server-scripts/Wisdom.cs — capHealPerSecondBonus = 3.0 -->
+              <!-- Source: Wisdom.cs:GetHealBonus — cap is 5.0 (capHealPerSecondBonus = 3.0 constant is unused) -->
               {#if skill.healing_per_second_bonus}
                 <dt class="text-muted-foreground">HoT</dt>
                 <dd>
                   skillValue(level) &times; (1 + min({buffScalingAttr ===
                   "level"
                     ? "PlayerLevel \u00d7 8"
-                    : "WIS"} &times; 0.004, 3.0))
+                    : "WIS"} &times; 0.004, 5.0))
                 </dd>
               {/if}
             </dl>
