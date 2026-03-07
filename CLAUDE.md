@@ -74,6 +74,7 @@ dotnet run --project build-tool all
 
 # Export game data (launches game, runs export, streams log, quits)
 dotnet run --project build-tool export
+dotnet run --project build-tool export --screenshots  # also capture map screenshots
 
 # Build pipeline — load exported JSON into SQLite
 cd build-pipeline && uv run compendium build

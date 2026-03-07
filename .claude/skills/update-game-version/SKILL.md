@@ -3,6 +3,15 @@ name: update-game-version
 description: Full workflow for updating to a new game version. Use when a new Ancient Kingdoms patch is released.
 ---
 
+## Before Starting
+
+Ask the user for the following before doing anything:
+
+1. **New version number**
+2. **Full changelog text** — needed to determine what manual website changes are required
+3. **Did the world map change?** (new zones added, or zone boundaries/geometry modified)
+   — determines whether to run screenshot export and regenerate map tiles
+
 ## Steps
 
 Execute in order:
@@ -12,7 +21,12 @@ Execute in order:
 dotnet run --project build-tool all
 
 # 2. Export fresh game data (launches game, exports JSON, quits)
+#    Use --screenshots if the world map changed (user confirmed in Before Starting)
 dotnet run --project build-tool export
+# dotnet run --project build-tool export --screenshots  # if map changed
+
+# 2b. Regenerate map tiles — only if map changed
+# cd build-pipeline && uv run compendium tiles
 
 # 3. Decompile server scripts
 #    Steam username is read from config.toml [steam] username
@@ -56,6 +70,10 @@ Categorize each change:
 | Skill behavior change | Rogue stealth persistence rules | Update mechanic descriptions |
 | AI/behavioral change | Pet follow distance | Low priority, document if guides exist |
 | Architecture refactor | VFX code moved between files | Ignore |
+
+### UIMap.cs — custom map zones
+
+Check `UIMap.cs` for any new zones added to the `idZone ==` branch in `Update()` and `mapButton()`. These zones replace the normal world map with a custom hand-drawn sprite in-game and must be added to `EXCLUDED_ZONE_IDS` in `website/src/lib/constants/constants.ts`. Currently: Temple of Valaark (zone 23).
 
 ### Automatic vs. manual
 
