@@ -5,7 +5,7 @@ description: Full workflow for updating to a new game version. Use when a new An
 
 ## Before Starting
 
-Ask the user for the following before doing anything:
+Ask the user for the following before doing anything (skip any already provided):
 
 1. **New version number**
 2. **Full changelog text** — needed to determine what manual website changes are required
@@ -24,12 +24,17 @@ dotnet run --project build-tool all
 #    Use --screenshots if the world map changed (user confirmed in Before Starting)
 dotnet run --project build-tool export
 # dotnet run --project build-tool export --screenshots  # if map changed
+#
+# IMPORTANT: Verify the MelonLoader log says "Game Version: <new version>"
+# If it still says the old version, Steam hasn't updated the local client yet.
+# In that case: wait for Steam to download the update, then re-run this step.
+# (The server scripts decompile via steamcmd downloads independently and is unaffected.)
 
 # 2b. Regenerate map tiles — only if map changed
 # cd build-pipeline && uv run compendium tiles
 
 # 3. Decompile server scripts
-#    Steam username is read from config.toml [steam] username
+#    Steam username is read from config.toml [steam] username (this file is gitignored — trust it exists)
 #    Prerequisites (one-time): brew install steamcmd && brew install dotnet@8 && dotnet tool install -g ilspycmd
 ./scripts/update-server-scripts.sh <version>
 
@@ -48,6 +53,8 @@ cd build-pipeline && uv run compendium build
 
 Server scripts are **reference only** — for understanding game mechanics, not for data export.
 Versioned backups are stored in `server-scripts-<version>/`; the working copy is `server-scripts/`.
+
+**Do not investigate the old server scripts** to understand changes — diff the new scripts first. The diff is the primary source of truth for what changed.
 
 ## Diff Analysis
 
