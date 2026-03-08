@@ -140,7 +140,7 @@ namespace ResourceRespawner
             foreach (var obj in gatherItems)
             {
                 var gatherItem = obj.Cast<Il2Cpp.GatherItem>();
-                bool onCooldown = hasServerTime && gatherItem.timeToReady > 0.0 && gatherItem.timeToReady > currentTime;
+                bool onCooldown = hasServerTime && !gatherItem.spawnReady && gatherItem.timeToReady > 0.0 && gatherItem.timeToReady > currentTime;
 
                 if (onCooldown)
                 {

@@ -41,8 +41,9 @@ Allows instant respawning of gatherable resources (plants, minerals, radiant spa
 - Auto-removes markers when respawn time is reached
 
 **Cooldown Detection:**
-- Checks `gatherItem.timeToReady > 0.0 && timeToReady > serverTime`
-- Directly based on the game's `GatherItem.Update()` logic
+- Checks `!gatherItem.spawnReady && gatherItem.timeToReady > 0.0 && timeToReady > serverTime`
+- `spawnReady` distinguishes "waiting to respawn" (marker needed) from "spawned with a despawn timer" (gatherable now, no marker)
+- Radiant sparks use `timeToReady` for both their visibility window and their respawn wait — without the `spawnReady` guard, a reset would appear to jump to a new random timer because the server's Update() immediately sets a new visibility-window timer after spawning
 
 ## Compatibility
 
