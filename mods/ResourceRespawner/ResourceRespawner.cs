@@ -21,6 +21,7 @@ namespace ResourceRespawner
 
         private Dictionary<int, RespawnMarker> respawnMarkers = new Dictionary<int, RespawnMarker>();
         private Camera mainCamera;
+        private double lastKnownServerTime = 0;
 
         private class RespawnMarker
         {
@@ -108,6 +109,7 @@ namespace ResourceRespawner
             {
                 currentTime = NetworkTime.time + cachedNetworkManager.offsetNetworkTime;
                 hasServerTime = true;
+                lastKnownServerTime = currentTime;
             }
 
             UpdateRespawnMarkers(currentTime, hasServerTime);
@@ -325,7 +327,7 @@ namespace ResourceRespawner
 
             if (targetGatherItem == null) return;
 
-            targetGatherItem.NetworktimeToReady = Time.timeAsDouble - 1.0;
+            targetGatherItem.NetworktimeToReady = lastKnownServerTime - 1.0;
         }
 
         private void DestroyMarker(int instanceId)
