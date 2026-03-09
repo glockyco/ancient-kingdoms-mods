@@ -22,12 +22,7 @@
     ]}
   />
 
-  <div class="space-y-2">
-    <h1 class="text-4xl font-bold">Experience Mechanics</h1>
-    <p class="text-muted-foreground">
-      How XP is earned and scaled across all activities.
-    </p>
-  </div>
+  <h1 class="text-4xl font-bold">Experience Mechanics</h1>
 
   <!-- Kill XP -->
   <Card.Root>
