@@ -118,6 +118,7 @@ export interface RecipeDetailInfo {
   type: RecipeType;
   tier: number;
   station_type: string | null;
+  xp: number;
   /** For alchemy recipes: the recipe item that teaches this recipe */
   taught_by_recipe_id: string | null;
   taught_by_recipe_name: string | null;

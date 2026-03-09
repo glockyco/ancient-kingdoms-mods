@@ -86,9 +86,14 @@
         {formatTier(data.recipe.tier)}
       </span>
     </div>
-    <p class="text-muted-foreground mt-2">
-      Crafted at: {formatStationType(data.recipe.station_type)}
-    </p>
+    <div class="mt-2 flex flex-wrap gap-4 text-sm text-muted-foreground">
+      <span>Crafted at: {formatStationType(data.recipe.station_type)}</span>
+      {#if data.recipe.xp > 0}
+        <span
+          ><a href="/mechanics/experience" class="hover:underline">XP</a>: {data.recipe.xp.toLocaleString()}</span
+        >
+      {/if}
+    </div>
   </div>
 
   <section class="bg-muted/30 rounded-md border p-4 space-y-4">
