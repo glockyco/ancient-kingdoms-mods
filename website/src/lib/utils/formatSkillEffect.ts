@@ -753,10 +753,9 @@ const HARDCODED_EFFECTS: Record<string, string> = {
   // Player.cs:2733 — buff checked by name to allow Rogues to see, hover-highlight,
   // and disarm traps. Duration stored in duration_base (15s).
   detect_traps: "reveal and disarm traps (Rogue only), 15s",
-  // Source: server-scripts/TargetBuffSkill.cs:15 (isDoubleExpSpell flag);
-  // Skills.cs:1081; Monster.cs:2412,2464 — hasDoubleExp() doubles XP awarded on kill.
-  // Duration stored in duration_base (1800s = 30 min).
-  elixir_of_enlightened_learning: "2× XP from kills, 30 min",
+  // Source: server-scripts/TargetBuffSkill.cs:15 (isDoubleExpSpell flag) — lasts for the event duration
+  halloween_event: "2× XP from kills, event duration",
+  winter_festival: "2× XP from kills, event duration",
   // Source: server-scripts/TargetDamageSkill.cs:162-171, 183-200 — while active,
   // Rogue followup (Weapon Strike) attacks switch to Poison damage type and gain
   // +DEX*2.5 bonus on top of normal combat.damage. Resisted by Poison Resist
