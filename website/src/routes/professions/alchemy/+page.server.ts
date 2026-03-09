@@ -13,6 +13,7 @@ interface AlchemyRecipe {
   result_tooltip_html: string | null;
   result_quality: number;
   level_required: number;
+  alchemy_exp: number;
   obtainabilityTree: ObtainabilityNode;
 }
 
@@ -60,6 +61,11 @@ interface TierCount {
   count: number;
 }
 
+interface TierXp {
+  tier: number;
+  xp: number;
+}
+
 interface AlchemyPageData {
   profession: {
     id: string;
@@ -74,6 +80,7 @@ interface AlchemyPageData {
   locations: StationLocation[];
   quests: AlchemyQuest[];
   recipeCounts: TierCount[];
+  xpByTier: TierXp[];
 }
 
 export const load: PageServerLoad = (): AlchemyPageData => {
@@ -105,7 +112,8 @@ export const load: PageServerLoad = (): AlchemyPageData => {
       i.name as result_item_name,
       i.tooltip_html as result_tooltip_html,
       i.quality as result_quality,
-      ar.level_required
+      ar.level_required,
+      ar.alchemy_exp
     FROM alchemy_recipes ar
     JOIN items i ON i.id = ar.result_item_id
     ORDER BY ar.level_required, i.name
@@ -312,7 +320,19 @@ export const load: PageServerLoad = (): AlchemyPageData => {
     )
     .all() as TierCount[];
 
+  // Get XP per tier (all recipes in a tier share the same alchemy_exp)
+  const xpByTier = db
+    .prepare(
+      `
+    SELECT level_required as tier, MAX(alchemy_exp) as xp
+    FROM alchemy_recipes
+    GROUP BY level_required
+    ORDER BY level_required
+  `,
+    )
+    .all() as TierXp[];
+
   db.close();
 
-  return { profession, recipes, locations, quests, recipeCounts };
+  return { profession, recipes, locations, quests, recipeCounts, xpByTier };
 };
