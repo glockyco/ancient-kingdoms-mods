@@ -315,7 +315,7 @@
           When in a party, the base XP is split evenly among all nearby members
           (within range). The resulting per-member share is then scaled by the
           level difference between the <em>highest-level</em> party member and the
-          monster — the same scaled value is awarded to every member regardless of
+          monster. The same scaled value is awarded to every member regardless of
           their individual levels.
         </p>
         <p class="text-sm text-muted-foreground">
@@ -324,13 +324,13 @@
           larger parties are more XP-efficient per player than soloing.
         </p>
         <p class="text-sm text-muted-foreground">
-          The double XP buff is applied individually — only members who have it
+          The double XP buff is applied individually. Only members who have it
           active receive double their share. The Forgotten Altar event bonus
           applies to all members equally.
         </p>
         <p class="text-sm text-muted-foreground">
-          Mercenaries do not affect XP splitting — they are not counted as party
-          members. A solo player with mercenaries receives the same XP as one
+          Mercenaries do not affect XP splitting. They are not counted as party
+          members, so a solo player with mercenaries receives the same XP as one
           without.
         </p>
       </div>
