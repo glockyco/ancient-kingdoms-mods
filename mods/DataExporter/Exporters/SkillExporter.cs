@@ -272,6 +272,7 @@ public class SkillExporter : BaseExporter
         skillData.is_mana_shield = targetBuffSkill.isManaShield;
         skillData.can_buff_self = targetBuffSkill.canBuffSelf;
         skillData.can_buff_others = targetBuffSkill.canBuffOthers;
+        skillData.is_double_exp_spell = targetBuffSkill.isDoubleExpSpell;
     }
 
     private void PopulateBonusSkillFields(Il2Cpp.ScriptableSkill skill, SkillData skillData)

@@ -93,6 +93,7 @@ public class SkillData
     // === TargetBuffSkill fields (when skill_type = target_buff or target_debuff) ===
     public bool can_buff_self { get; set; }
     public bool can_buff_others { get; set; }
+    public bool is_double_exp_spell { get; set; }
 
     // === BuffSkill fields (when skill_type = buff or debuff) ===
     public float duration_base { get; set; }
