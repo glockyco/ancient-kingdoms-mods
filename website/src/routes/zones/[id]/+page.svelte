@@ -20,6 +20,7 @@
   } from "$lib/components/ui/data-table";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
+  import MechanicsLink from "$lib/components/MechanicsLink.svelte";
   import RoleBadges from "$lib/components/RoleBadges.svelte";
   import { ROLE_CONFIG, getActiveRoles } from "$lib/utils/roles";
   import Crown from "@lucide/svelte/icons/crown";
@@ -453,7 +454,11 @@
         </span>
       {/if}
       {#if data.zone.discovery_exp > 0}
-        <span>Discovery XP: {data.zone.discovery_exp}</span>
+        <span
+          >Discovery XP: <MechanicsLink section="experience"
+            >{data.zone.discovery_exp.toLocaleString()}</MechanicsLink
+          ></span
+        >
       {/if}
       {#if data.zone.weather_type}
         <span>Weather: {data.zone.weather_type}</span>

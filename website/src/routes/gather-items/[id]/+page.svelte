@@ -9,6 +9,7 @@
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
+  import MechanicsLink from "$lib/components/MechanicsLink.svelte";
   import ObtainabilityTree from "$lib/components/ObtainabilityTree.svelte";
   import type {
     GatheringResourceDrop,
@@ -298,7 +299,11 @@
         <span>Respawn: {formatDuration(data.resource.respawn_time)}</span>
       {/if}
       {#if data.resource.gathering_exp && data.resource.gathering_exp > 0}
-        <span>Gathering XP: {data.resource.gathering_exp}</span>
+        <span
+          >Gathering XP: <MechanicsLink section="experience"
+            >{data.resource.gathering_exp}</MechanicsLink
+          ></span
+        >
       {/if}
     </div>
   </div>

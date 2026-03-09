@@ -1,5 +1,6 @@
 <script lang="ts">
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
+  import MechanicsLink from "$lib/components/MechanicsLink.svelte";
   import Compass from "@lucide/svelte/icons/compass";
   import Trophy from "@lucide/svelte/icons/trophy";
   import MapIcon from "@lucide/svelte/icons/map";
@@ -111,7 +112,9 @@
               </td>
               <td class="p-3 text-right">
                 {#if area.discovery_exp}
-                  {area.discovery_exp.toLocaleString()}
+                  <MechanicsLink section="experience"
+                    >{area.discovery_exp.toLocaleString()}</MechanicsLink
+                  >
                 {:else}
                   <span class="text-muted-foreground">—</span>
                 {/if}

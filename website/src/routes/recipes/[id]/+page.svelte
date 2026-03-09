@@ -1,6 +1,7 @@
 <script lang="ts">
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
+  import MechanicsLink from "$lib/components/MechanicsLink.svelte";
   import ObtainabilityTree from "$lib/components/ObtainabilityTree.svelte";
   import Hammer from "@lucide/svelte/icons/hammer";
   import FlaskConical from "@lucide/svelte/icons/flask-conical";
@@ -90,7 +91,9 @@
       <span>Crafted at: {formatStationType(data.recipe.station_type)}</span>
       {#if data.recipe.xp > 0}
         <span
-          ><a href="/mechanics/experience" class="hover:underline">XP</a>: {data.recipe.xp.toLocaleString()}</span
+          >XP: <MechanicsLink section="experience"
+            >{data.recipe.xp.toLocaleString()}</MechanicsLink
+          ></span
         >
       {/if}
     </div>

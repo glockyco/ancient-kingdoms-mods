@@ -2,6 +2,7 @@
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
+  import MechanicsLink from "$lib/components/MechanicsLink.svelte";
   import ClassPills from "$lib/components/ClassPills.svelte";
   import QuestChainGraph from "$lib/components/QuestChainGraph.svelte";
   import MonsterTypeIcon from "$lib/components/MonsterTypeIcon.svelte";
@@ -610,7 +611,9 @@
                     >Experience:
                   </span>
                   <span class="font-medium">
-                    {formatNumber(data.quest.rewards.exp)} XP
+                    <MechanicsLink section="experience"
+                      >{formatNumber(data.quest.rewards.exp)} XP</MechanicsLink
+                    >
                   </span>
                 </div>
               {/if}

@@ -1,5 +1,6 @@
 <script lang="ts">
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
+  import MechanicsLink from "$lib/components/MechanicsLink.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import ObtainabilityTree from "$lib/components/ObtainabilityTree.svelte";
   import ChefHat from "@lucide/svelte/icons/chef-hat";
@@ -251,9 +252,7 @@
         <div class="bg-muted/50 p-3 font-medium">Tier</div>
         <div class="bg-muted/50 p-3 font-medium">Success</div>
         <div class="bg-muted/50 p-3 font-medium">Skill Gain</div>
-        <div class="bg-muted/50 p-3 font-medium text-right">
-          <a href="/mechanics/experience" class="hover:underline">XP</a>
-        </div>
+        <div class="bg-muted/50 p-3 font-medium text-right">XP</div>
         <div class="bg-muted/50 p-3 font-medium text-right">Recipes</div>
         {#each [0, 1, 2, 3, 4] as tier (tier)}
           {@const successChance = getSuccessChance(tier)}
@@ -280,7 +279,9 @@
           </div>
           <div class="p-3 text-right border-t">
             {#if xp}
-              {xp.toLocaleString()}
+              <MechanicsLink section="experience"
+                >{xp.toLocaleString()}</MechanicsLink
+              >
             {:else}
               <span class="text-muted-foreground">—</span>
             {/if}

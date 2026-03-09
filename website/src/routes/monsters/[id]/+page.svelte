@@ -9,6 +9,7 @@
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
+  import MechanicsLink from "$lib/components/MechanicsLink.svelte";
   import QuestTypeBadge from "$lib/components/QuestTypeBadge.svelte";
   import QuestFlagBadges from "$lib/components/QuestFlagBadges.svelte";
   import type {
@@ -676,7 +677,11 @@
         <span>Class: {data.monster.class_name}</span>
       {/if}
       {#if data.monster.base_exp > 0}
-        <span>Base XP: {data.monster.base_exp.toLocaleString()}</span>
+        <span
+          >Base XP: <MechanicsLink section="experience"
+            >{data.monster.base_exp.toLocaleString()}</MechanicsLink
+          ></span
+        >
       {/if}
       {#if data.monster.improve_faction.length > 0 || data.monster.decrease_faction.length > 0}
         <span>
