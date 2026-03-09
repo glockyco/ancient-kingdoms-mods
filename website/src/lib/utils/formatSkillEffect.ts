@@ -81,6 +81,7 @@ export interface Skill {
   // Buff duration
   duration_base: number;
   duration_per_level?: number | null;
+  is_permanent?: boolean;
 
   // Special flags
   is_double_exp_spell?: boolean;
@@ -824,7 +825,7 @@ export function formatSkillEffect(
   }
 
   // Add duration if present and we have stat effects
-  if (skill.duration_base > 0 && parts.length > 0) {
+  if (skill.duration_base > 0 && parts.length > 0 && !skill.is_permanent) {
     // Check if this is a buff/debuff (not damage/heal/summon)
     const hasBuffStats =
       skill.skill_type === "area_buff" ||
