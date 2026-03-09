@@ -1,4 +1,5 @@
 import type { LinearValue } from "$lib/types/skills";
+import { formatDuration } from "./format";
 
 /**
  * Monster context for damage calculation
@@ -835,7 +836,7 @@ export function formatSkillEffect(
       const dur =
         skill.duration_per_level && skill.duration_per_level > 0
           ? `${skill.duration_base}s (+${skill.duration_per_level}s/lvl)`
-          : `${skill.duration_base}s`;
+          : formatDuration(skill.duration_base);
       return `${parts.join(", ")}, ${dur}`;
     }
   }
