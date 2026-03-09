@@ -261,17 +261,16 @@ def run(conn: sqlite3.Connection) -> None:
         f"  [green]OK[/green] Calculated crafting_exp for {crafting_count} crafting recipes"
     )
 
-    # Calculate alchemy_exp for alchemy recipes (based on result item quality)
+    # Calculate alchemy_exp for alchemy recipes (based on recipe level_required)
     cursor.execute("""
-        SELECT ar.id, i.quality
-        FROM alchemy_recipes ar
-        LEFT JOIN items i ON ar.result_item_id = i.id
+        SELECT id, level_required
+        FROM alchemy_recipes
     """)
     alchemy_recipes = cursor.fetchall()
 
     alchemy_count = 0
-    for recipe_id, quality in alchemy_recipes:
-        alchemy_exp = get_alchemy_exp(quality or 0)
+    for recipe_id, level_required in alchemy_recipes:
+        alchemy_exp = get_alchemy_exp(level_required or 0)
         cursor.execute(
             "UPDATE alchemy_recipes SET alchemy_exp = ? WHERE id = ?",
             (alchemy_exp, recipe_id),
