@@ -21,14 +21,13 @@ Execute in order:
 dotnet run --project build-tool all
 
 # 2. Export fresh game data (launches game, exports JSON, quits)
+#    --update runs steamcmd app_update first to ensure the CrossOver game install is current
 #    Use --screenshots if the world map changed (user confirmed in Before Starting)
-dotnet run --project build-tool export
-# dotnet run --project build-tool export --screenshots  # if map changed
+dotnet run --project build-tool export --update
+# dotnet run --project build-tool export --update --screenshots  # if map changed
 #
 # IMPORTANT: Verify the MelonLoader log says "Game Version: <new version>"
-# If it still says the old version, Steam hasn't updated the local client yet.
-# In that case: wait for Steam to download the update, then re-run this step.
-# (The server scripts decompile via steamcmd downloads independently and is unaffected.)
+# If it still says the old version despite --update, check that steamcmd logged in successfully.
 
 # 2b. Regenerate map tiles — only if map changed
 # cd build-pipeline && uv run compendium tiles

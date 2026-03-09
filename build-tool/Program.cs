@@ -97,6 +97,7 @@ class Program
         Console.WriteLine("  all     - Build and deploy");
         Console.WriteLine("  setup   - Configure Local.props (interactive, run once)");
         Console.WriteLine("  export  - Launch game, run data export, stream log");
+        Console.WriteLine("  export --update      - Run steamcmd app_update before exporting");
         Console.WriteLine("  export --screenshots - Also capture map screenshots (use when map changed)");
         Console.WriteLine();
         return 0;
@@ -308,12 +309,137 @@ class Program
     }
 
     // =========================================================================
+    // steam update
+    // =========================================================================
+
+    static int RunSteamUpdate(string gamePath)
+    {
+        // Find steamcmd
+        var steamCmdPath = FindExecutable("steamcmd");
+        if (steamCmdPath == null)
+        {
+            Console.Error.WriteLine("Error: steamcmd not found in PATH.");
+            Console.Error.WriteLine("Install it with: brew install steamcmd");
+            return 1;
+        }
+
+        // Read Steam username from config.toml
+        var configPath = Path.Combine(RootDir!, "config.toml");
+        var steamUser = ReadSteamUsername(configPath);
+        if (string.IsNullOrEmpty(steamUser))
+        {
+            Console.Error.WriteLine("Error: Steam username not found in config.toml.");
+            Console.Error.WriteLine("Add it under [steam] username = \"your_username\"");
+            return 1;
+        }
+
+        // force_install_dir must point at the game directory itself.
+        // steamcmd deposits game files directly into this folder (equivalent to steamapps/common/<Game>).
+        Console.WriteLine("Running steamcmd to update Ancient Kingdoms...");
+        Console.WriteLine($"  steamcmd: {steamCmdPath}");
+        Console.WriteLine($"  Steam user: {steamUser}");
+        Console.WriteLine($"  Install dir: {gamePath}");
+        Console.WriteLine();
+
+        var psi = new ProcessStartInfo
+        {
+            FileName = steamCmdPath,
+            UseShellExecute = false,
+        };
+        psi.ArgumentList.Add("+@sSteamCmdForcePlatformType");
+        psi.ArgumentList.Add("windows");
+        psi.ArgumentList.Add("+force_install_dir");
+        psi.ArgumentList.Add(gamePath);
+        psi.ArgumentList.Add("+login");
+        psi.ArgumentList.Add(steamUser);
+        psi.ArgumentList.Add("+app_update");
+        psi.ArgumentList.Add("2241380");
+        psi.ArgumentList.Add("validate");
+        psi.ArgumentList.Add("+quit");
+
+        var process = Process.Start(psi)!;
+        process.WaitForExit();
+
+        if (process.ExitCode != 0)
+        {
+            Console.Error.WriteLine($"Error: steamcmd exited with code {process.ExitCode}.");
+            return 1;
+        }
+
+        Console.WriteLine();
+        Console.WriteLine("Steam update complete.");
+        Console.WriteLine();
+        return 0;
+    }
+
+    static string? FindExecutable(string name)
+    {
+        // Check common Homebrew paths first, then fall back to PATH search
+        var candidates = new[]
+        {
+            $"/opt/homebrew/bin/{name}",
+            $"/usr/local/bin/{name}",
+            $"/usr/bin/{name}",
+        };
+
+        foreach (var candidate in candidates)
+        {
+            if (File.Exists(candidate))
+                return candidate;
+        }
+
+        // Try PATH via `which`
+        try
+        {
+            var which = Process.Start(new ProcessStartInfo
+            {
+                FileName = "which",
+                Arguments = name,
+                RedirectStandardOutput = true,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+            });
+            var output = which?.StandardOutput.ReadToEnd().Trim();
+            which?.WaitForExit();
+            if (!string.IsNullOrEmpty(output) && File.Exists(output))
+                return output;
+        }
+        catch { }
+
+        return null;
+    }
+
+    static string? ReadSteamUsername(string configPath)
+    {
+        if (!File.Exists(configPath))
+            return null;
+
+        var inSteamSection = false;
+        foreach (var line in File.ReadLines(configPath))
+        {
+            var trimmed = line.Trim();
+            if (trimmed.StartsWith("["))
+                inSteamSection = trimmed == "[steam]";
+
+            if (inSteamSection && trimmed.StartsWith("username"))
+            {
+                var eq = trimmed.IndexOf('=');
+                if (eq < 0) continue;
+                return trimmed[(eq + 1)..].Trim().Trim('"');
+            }
+        }
+
+        return null;
+    }
+
+    // =========================================================================
     // export
     // =========================================================================
 
     static int RunExport(string[] args)
     {
         var includeScreenshots = args.Contains("--screenshots");
+        var runUpdate = args.Contains("--update");
         var gamePath = Environment.GetEnvironmentVariable("ANCIENT_KINGDOMS_PATH");
         if (string.IsNullOrEmpty(gamePath))
         {
@@ -331,6 +457,14 @@ class Program
 
         var exportPath = Environment.GetEnvironmentVariable("DATA_EXPORT_PATH") ?? "";
         var logPath = Path.Combine(gamePath, "MelonLoader", "Latest.log");
+
+        // Run steamcmd update before launching the game
+        if (runUpdate)
+        {
+            var updateResult = RunSteamUpdate(gamePath);
+            if (updateResult != 0)
+                return updateResult;
+        }
 
         // Truncate the log for a clean start
         try
