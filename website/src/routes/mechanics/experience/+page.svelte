@@ -280,24 +280,26 @@
                 <td class="p-2">Dungeon kill</td>
                 <td class="p-2 text-right font-mono">+10% flat</td>
               </tr>
-              <tr class="border-b hover:bg-muted/30">
-                <td class="p-2">
-                  {#if data.doubleExpSkills.length > 0}
-                    {#each data.doubleExpSkills as skill, i (skill.id)}
-                      {#if i > 0},
-                      {/if}<a
+              {#if data.doubleExpSkills.length > 0}
+                {#each data.doubleExpSkills as skill (skill.id)}
+                  <tr class="border-b hover:bg-muted/30">
+                    <td class="p-2">
+                      <a
                         href="/skills/{skill.id}"
                         class="text-blue-600 dark:text-blue-400 hover:underline"
                         >{skill.name}</a
                       >
-                    {/each}
-                    (buff)
-                  {:else}
-                    Double XP buff
-                  {/if}
-                </td>
-                <td class="p-2 text-right font-mono">×2</td>
-              </tr>
+                      <span class="text-muted-foreground text-xs">(buff)</span>
+                    </td>
+                    <td class="p-2 text-right font-mono">×2</td>
+                  </tr>
+                {/each}
+              {:else}
+                <tr class="border-b hover:bg-muted/30">
+                  <td class="p-2">Double XP buff</td>
+                  <td class="p-2 text-right font-mono">×2</td>
+                </tr>
+              {/if}
               <tr class="hover:bg-muted/30">
                 <td class="p-2">Forgotten Altar event</td>
                 <td class="p-2 text-right font-mono">×1.4</td>
