@@ -214,7 +214,7 @@
     <div class="rounded-lg border overflow-x-auto">
       <div
         class="grid whitespace-nowrap"
-        style="grid-template-columns: 1fr 3fr 1fr 2fr;"
+        style="grid-template-columns: repeat(4, 1fr);"
       >
         <div class="bg-muted/50 p-3 font-medium">Tier</div>
         <div class="bg-muted/50 p-3 font-medium">Name</div>
