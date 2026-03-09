@@ -684,6 +684,7 @@ class SkillData(BaseModel):
     # TargetBuffSkill-specific
     can_buff_self: bool = False
     can_buff_others: bool = False
+    is_double_exp_spell: bool = False
 
     # Buff/debuff
     duration_base: float = 0.0

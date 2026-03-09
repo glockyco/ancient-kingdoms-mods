@@ -1013,6 +1013,7 @@ CREATE TABLE skills (
     can_heal_others BOOLEAN DEFAULT 0,
     can_buff_self BOOLEAN DEFAULT 0,
     can_buff_others BOOLEAN DEFAULT 0,
+    is_double_exp_spell BOOLEAN DEFAULT 0,
     stun_chance TEXT,
     stun_time TEXT,
     fear_chance TEXT,
