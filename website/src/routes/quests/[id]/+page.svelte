@@ -609,7 +609,7 @@
                   <span class="text-sm text-muted-foreground"
                     >Experience:
                   </span>
-                  <span class="font-medium text-blue-600 dark:text-blue-400">
+                  <span class="font-medium">
                     {formatNumber(data.quest.rewards.exp)} XP
                   </span>
                 </div>
