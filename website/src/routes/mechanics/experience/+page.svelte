@@ -357,7 +357,7 @@
         <thead>
           <tr class="border-b">
             <th class="text-left p-2 font-medium">Zone type</th>
-            <th class="text-right p-2 font-medium">Discovery XP</th>
+            <th class="text-right p-2 font-medium">XP</th>
           </tr>
         </thead>
         <tbody>
@@ -391,8 +391,8 @@
       <table class="w-full text-sm border-collapse">
         <thead>
           <tr class="border-b">
-            <th class="text-left p-2 font-medium">Resource tier</th>
-            <th class="text-right p-2 font-medium">Gathering XP</th>
+            <th class="text-left p-2 font-medium">Tier</th>
+            <th class="text-right p-2 font-medium">XP</th>
           </tr>
         </thead>
         <tbody>
@@ -434,25 +434,25 @@
       <table class="w-full text-sm border-collapse">
         <thead>
           <tr class="border-b">
-            <th class="text-left p-2 font-medium">Item quality</th>
-            <th class="text-right p-2 font-medium">Crafting XP</th>
+            <th class="text-left p-2 font-medium">Tier</th>
+            <th class="text-right p-2 font-medium">XP</th>
           </tr>
         </thead>
         <tbody>
           <tr class="border-b hover:bg-muted/30">
-            <td class="p-2">Quality I</td>
+            <td class="p-2">Tier I</td>
             <td class="p-2 text-right font-mono">150</td>
           </tr>
           <tr class="border-b hover:bg-muted/30">
-            <td class="p-2">Quality II</td>
+            <td class="p-2">Tier II</td>
             <td class="p-2 text-right font-mono">750</td>
           </tr>
           <tr class="border-b hover:bg-muted/30">
-            <td class="p-2">Quality III</td>
+            <td class="p-2">Tier III</td>
             <td class="p-2 text-right font-mono">3,500</td>
           </tr>
           <tr class="hover:bg-muted/30">
-            <td class="p-2">Quality IV</td>
+            <td class="p-2">Tier IV</td>
             <td class="p-2 text-right font-mono">10,000</td>
           </tr>
         </tbody>
@@ -473,25 +473,25 @@
       <table class="w-full text-sm border-collapse">
         <thead>
           <tr class="border-b">
-            <th class="text-left p-2 font-medium">Potion quality</th>
-            <th class="text-right p-2 font-medium">Alchemy XP</th>
+            <th class="text-left p-2 font-medium">Tier</th>
+            <th class="text-right p-2 font-medium">XP</th>
           </tr>
         </thead>
         <tbody>
           <tr class="border-b hover:bg-muted/30">
-            <td class="p-2">Quality I</td>
+            <td class="p-2">Tier I</td>
             <td class="p-2 text-right font-mono">300</td>
           </tr>
           <tr class="border-b hover:bg-muted/30">
-            <td class="p-2">Quality II</td>
+            <td class="p-2">Tier II</td>
             <td class="p-2 text-right font-mono">2,000</td>
           </tr>
           <tr class="border-b hover:bg-muted/30">
-            <td class="p-2">Quality III</td>
+            <td class="p-2">Tier III</td>
             <td class="p-2 text-right font-mono">5,000</td>
           </tr>
           <tr class="hover:bg-muted/30">
-            <td class="p-2">Quality IV</td>
+            <td class="p-2">Tier IV</td>
             <td class="p-2 text-right font-mono">12,000</td>
           </tr>
         </tbody>
