@@ -24,8 +24,39 @@
 
   <h1 class="text-4xl font-bold">Experience Mechanics</h1>
 
+  <nav aria-label="Page sections" class="text-sm text-muted-foreground">
+    <ul class="flex flex-wrap gap-x-4 gap-y-1">
+      <li>
+        <a href="#kill-xp" class="hover:text-foreground hover:underline"
+          >Kill XP</a
+        >
+      </li>
+      <li>
+        <a
+          href="#zone-discovery-xp"
+          class="hover:text-foreground hover:underline">Zone Discovery XP</a
+        >
+      </li>
+      <li>
+        <a href="#gathering-xp" class="hover:text-foreground hover:underline"
+          >Gathering XP</a
+        >
+      </li>
+      <li>
+        <a href="#crafting-xp" class="hover:text-foreground hover:underline"
+          >Crafting XP</a
+        >
+      </li>
+      <li>
+        <a href="#alchemy-xp" class="hover:text-foreground hover:underline"
+          >Alchemy XP</a
+        >
+      </li>
+    </ul>
+  </nav>
+
   <!-- Kill XP -->
-  <Card.Root>
+  <Card.Root id="kill-xp">
     <Card.Header>
       <Card.Title>Kill XP</Card.Title>
       <Card.Description>
@@ -302,7 +333,7 @@
   </Card.Root>
 
   <!-- Zone Discovery XP -->
-  <Card.Root>
+  <Card.Root id="zone-discovery-xp">
     <Card.Header>
       <Card.Title>Zone Discovery XP</Card.Title>
       <Card.Description>
@@ -337,7 +368,7 @@
   </Card.Root>
 
   <!-- Gathering XP -->
-  <Card.Root>
+  <Card.Root id="gathering-xp">
     <Card.Header>
       <Card.Title>Gathering XP</Card.Title>
       <Card.Description>
@@ -380,7 +411,7 @@
   </Card.Root>
 
   <!-- Crafting XP -->
-  <Card.Root>
+  <Card.Root id="crafting-xp">
     <Card.Header>
       <Card.Title>Crafting XP</Card.Title>
       <Card.Description>
@@ -419,7 +450,7 @@
   </Card.Root>
 
   <!-- Alchemy XP -->
-  <Card.Root>
+  <Card.Root id="alchemy-xp">
     <Card.Header>
       <Card.Title>Alchemy XP</Card.Title>
       <Card.Description>
