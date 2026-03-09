@@ -17,6 +17,11 @@ interface TierCount {
   count: number;
 }
 
+interface TierXp {
+  tier: number;
+  xp: number;
+}
+
 interface HerbalismPageData {
   profession: {
     id: string;
@@ -29,6 +34,7 @@ interface HerbalismPageData {
   };
   resources: HerbalismResource[];
   resourceCounts: TierCount[];
+  xpByTier: TierXp[];
 }
 
 export const load: PageServerLoad = (): HerbalismPageData => {
@@ -81,7 +87,20 @@ export const load: PageServerLoad = (): HerbalismPageData => {
     )
     .all() as TierCount[];
 
+  // Get XP per tier (gathering_exp is the same for all resources at the same level)
+  const xpByTier = db
+    .prepare(
+      `
+    SELECT level as tier, MAX(gathering_exp) as xp
+    FROM gathering_resources
+    WHERE is_plant = 1
+    GROUP BY level
+    ORDER BY level
+  `,
+    )
+    .all() as TierXp[];
+
   db.close();
 
-  return { profession, resources, resourceCounts };
+  return { profession, resources, resourceCounts, xpByTier };
 };
