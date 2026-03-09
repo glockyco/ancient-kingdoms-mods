@@ -4,11 +4,11 @@ Computes pre-computed EXP values for monsters, zones, gathering resources,
 and crafting/alchemy recipes based on game formulas from server-scripts.
 
 Source references:
-- Monster EXP: Monster.cs:2802-2829
-- Zone discovery: ZoneTrigger.cs:148-174
-- Gathering EXP: GatherItem.cs:533-546
-- Crafting EXP: Player.cs:10309-10318
-- Alchemy EXP: Player.cs:10085-10096
+- Source: server-scripts/Monster.cs:2802-2829 — CalculateRewardExp (monster EXP)
+- Source: server-scripts/ZoneTrigger.cs:148-174 — zone discovery EXP
+- Source: server-scripts/GatherItem.cs:548-554 — gathering EXP by tier
+- Source: server-scripts/Player.cs:10476-10480 — crafting EXP by item quality
+- Source: server-scripts/Player.cs:10246-10253 — alchemy EXP by recipe tier
 """
 
 import sqlite3
@@ -131,7 +131,7 @@ def get_discovery_exp(zone_id: str, is_dungeon: bool) -> int:
 def get_gathering_exp(level: int) -> int:
     """Get EXP reward for gathering a resource.
 
-    Formula from GatherItem.cs:533-546.
+    Source: server-scripts/GatherItem.cs:548-554 — gathering EXP by tier.
 
     Args:
         level: Resource level (0-4)
@@ -145,7 +145,7 @@ def get_gathering_exp(level: int) -> int:
 def get_crafting_exp(quality: int) -> int:
     """Get EXP reward for crafting an item.
 
-    Formula from Player.cs:10309-10318.
+    Source: server-scripts/Player.cs:10476-10480 — crafting EXP by item quality.
 
     Args:
         quality: Item quality (1-4)
@@ -156,18 +156,18 @@ def get_crafting_exp(quality: int) -> int:
     return CRAFTING_EXP_BY_QUALITY.get(quality, CRAFTING_EXP_DEFAULT)
 
 
-def get_alchemy_exp(quality: int) -> int:
+def get_alchemy_exp(tier: int) -> int:
     """Get EXP reward for crafting a potion.
 
-    Formula from Player.cs:10085-10096.
+    Source: server-scripts/Player.cs:10246-10253 — alchemy EXP by recipe tier.
 
     Args:
-        quality: Potion quality (1-4)
+        tier: Recipe tier / level_required (0-4)
 
     Returns:
         Alchemy EXP reward
     """
-    return ALCHEMY_EXP_BY_QUALITY.get(quality, ALCHEMY_EXP_DEFAULT)
+    return ALCHEMY_EXP_BY_QUALITY.get(tier, ALCHEMY_EXP_DEFAULT)
 
 
 def run(conn: sqlite3.Connection) -> None:

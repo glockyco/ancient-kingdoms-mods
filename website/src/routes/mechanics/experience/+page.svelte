@@ -220,8 +220,9 @@
         <p class="text-sm text-muted-foreground">
           These are applied on top of the level-scaled value:
         </p>
-        <!-- Source: server-scripts/Experience.cs:446-453 — dungeon bonus -->
-        <!-- Source: server-scripts/Monster.cs:2455-2461 — double XP skill and Forgotten Altar event -->
+        <!-- Source: server-scripts/Experience.cs:446-453 — dungeon +10% bonus -->
+        <!-- Source: server-scripts/Monster.cs:2457 — double XP skill (solo kill) -->
+        <!-- Source: server-scripts/Monster.cs:2458 — Forgotten Altar ×1.4 (solo kill) -->
         <div class="overflow-x-auto">
           <table class="w-full text-sm border-collapse">
             <thead>
@@ -379,7 +380,7 @@
       </Card.Description>
     </Card.Header>
     <Card.Content>
-      <!-- Source: server-scripts/Player.cs:10309-10318 — crafting XP by item quality -->
+      <!-- Source: server-scripts/Player.cs:10476-10480 — crafting XP by item quality -->
       <table class="w-full text-sm border-collapse">
         <thead>
           <tr class="border-b">
@@ -418,7 +419,7 @@
       </Card.Description>
     </Card.Header>
     <Card.Content>
-      <!-- Source: server-scripts/Player.cs:10085-10096 — alchemy XP by potion quality -->
+      <!-- Source: server-scripts/Player.cs:10246-10253 — alchemy XP by recipe tier -->
       <table class="w-full text-sm border-collapse">
         <thead>
           <tr class="border-b">
