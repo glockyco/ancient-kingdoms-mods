@@ -165,6 +165,7 @@ export interface SkillDetailView {
   is_dispel: boolean;
   is_blindness: boolean;
   is_enrage: boolean;
+  is_double_exp_spell: boolean;
   is_permanent: boolean;
   is_only_for_magic_classes: boolean;
   remain_after_death: boolean;

@@ -82,6 +82,7 @@ export interface Skill {
   duration_per_level?: number | null;
 
   // Special flags
+  is_double_exp_spell?: boolean;
   is_invisibility?: boolean;
   is_mana_shield?: boolean;
   is_cleanse?: boolean;
@@ -418,6 +419,9 @@ function formatBuffDebuffStats(
   const parts: string[] = [];
 
   // 1. Special flags (binary game-changers that define the skill's identity)
+  // Source: server-scripts/TargetBuffSkill.cs:15 (isDoubleExpSpell flag);
+  // Skills.cs:1081; Monster.cs:2412,2464 — hasDoubleExp() doubles XP awarded on kill.
+  if (skill.is_double_exp_spell) parts.push("2× XP from kills");
   if (skill.is_dispel) parts.push("dispels buffs");
   // Source: server-scripts/TargetBuffSkill.cs:284 — cleanse matches on the skill's own debuff type flags
   if (skill.is_cleanse) {

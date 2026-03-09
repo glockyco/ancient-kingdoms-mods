@@ -236,6 +236,7 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
     is_dispel: Boolean(skillRaw.is_dispel),
     is_blindness: Boolean(skillRaw.is_blindness),
     is_enrage: Boolean(skillRaw.is_enrage),
+    is_double_exp_spell: Boolean(skillRaw.is_double_exp_spell),
     is_permanent: Boolean(skillRaw.is_permanent),
     is_only_for_magic_classes: Boolean(skillRaw.is_only_for_magic_classes),
     remain_after_death: Boolean(skillRaw.remain_after_death),
