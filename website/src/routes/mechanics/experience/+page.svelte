@@ -80,9 +80,7 @@
               >
             </div>
           </dd>
-          <dt class="text-muted-foreground whitespace-nowrap">
-            Designer multiplier
-          </dt>
+          <dt class="text-muted-foreground whitespace-nowrap">XP multiplier</dt>
           <dd class="font-mono">
             &times;expMultiplier <span class="text-muted-foreground"
               >(usually 1.0)</span
