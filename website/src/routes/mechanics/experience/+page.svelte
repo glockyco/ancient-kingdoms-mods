@@ -56,7 +56,7 @@
   </nav>
 
   <!-- Kill XP -->
-  <Card.Root id="kill-xp">
+  <Card.Root id="kill-xp" class="bg-muted/30">
     <Card.Header>
       <Card.Title>Kill XP</Card.Title>
       <Card.Description>
@@ -338,7 +338,7 @@
   </Card.Root>
 
   <!-- Zone Discovery XP -->
-  <Card.Root id="zone-discovery-xp">
+  <Card.Root id="zone-discovery-xp" class="bg-muted/30">
     <Card.Header>
       <Card.Title>Zone Discovery XP</Card.Title>
       <Card.Description>
@@ -373,7 +373,7 @@
   </Card.Root>
 
   <!-- Gathering XP -->
-  <Card.Root id="gathering-xp">
+  <Card.Root id="gathering-xp" class="bg-muted/30">
     <Card.Header>
       <Card.Title>Gathering XP</Card.Title>
       <Card.Description>
@@ -416,7 +416,7 @@
   </Card.Root>
 
   <!-- Crafting XP -->
-  <Card.Root id="crafting-xp">
+  <Card.Root id="crafting-xp" class="bg-muted/30">
     <Card.Header>
       <Card.Title>Crafting XP</Card.Title>
       <Card.Description>
@@ -455,7 +455,7 @@
   </Card.Root>
 
   <!-- Alchemy XP -->
-  <Card.Root id="alchemy-xp">
+  <Card.Root id="alchemy-xp" class="bg-muted/30">
     <Card.Header>
       <Card.Title>Alchemy XP</Card.Title>
       <Card.Description>
