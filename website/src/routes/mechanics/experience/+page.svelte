@@ -64,73 +64,13 @@
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-6">
-      <div class="space-y-3">
+      <div class="space-y-2">
         <h3 class="font-semibold">Base XP</h3>
         <p class="text-sm text-muted-foreground">
-          The base XP shown in the compendium is what you receive when fighting
-          a monster at the same level as you, solo, outside of a dungeon.
+          Each monster has a base XP value shown on its page. This is the XP you
+          receive when fighting it at the same level as you, solo, outside of a
+          dungeon. The following modifiers are then applied on top.
         </p>
-        <!-- Source: server-scripts/Monster.cs:2802-2829 — CalculateRewardExp -->
-        <dl
-          class="grid grid-cols-1 sm:grid-cols-[max-content_1fr] gap-x-6 gap-y-2 text-sm items-baseline"
-        >
-          <dt class="text-muted-foreground whitespace-nowrap">Level curve</dt>
-          <dd class="space-y-0.5">
-            <div class="font-mono">
-              15 &times; 1.12<sup>(level &minus; 1)</sup>
-              <span class="font-sans text-xs text-muted-foreground"
-                >(level &le; 40)</span
-              >
-            </div>
-            <div class="font-mono">
-              15 &times; 1.12<sup>39</sup> &times; 1.07<sup
-                >(level &minus; 40)</sup
-              >
-              <span class="font-sans text-xs text-muted-foreground"
-                >(level &gt; 40)</span
-              >
-            </div>
-          </dd>
-          <dt class="text-muted-foreground whitespace-nowrap">
-            Type multiplier
-          </dt>
-          <dd class="font-mono">
-            &times;5 <span class="font-sans text-xs text-muted-foreground"
-              >(boss)</span
-            >
-            &nbsp;|&nbsp; &times;3
-            <span class="font-sans text-xs text-muted-foreground">(elite)</span>
-            &nbsp;|&nbsp; &times;0.5
-            <span class="font-sans text-xs text-muted-foreground"
-              >(passive)</span
-            >
-            &nbsp;|&nbsp; &times;1
-            <span class="font-sans text-xs text-muted-foreground">(normal)</span
-            >
-          </dd>
-          <dt class="text-muted-foreground whitespace-nowrap">Health bonus</dt>
-          <dd class="space-y-0.5">
-            <div class="font-mono">
-              &times;(1 + HP / 1,000 &times; 0.1) <span
-                class="font-sans text-xs text-muted-foreground"
-                >(HP &le; 100,000)</span
-              >
-            </div>
-            <div class="font-mono">
-              &times;(11 + (HP &minus; 100,000) / 5,000 &times; 0.01) <span
-                class="font-sans text-xs text-muted-foreground"
-                >(HP &gt; 100,000)</span
-              >
-            </div>
-          </dd>
-          <dt class="text-muted-foreground whitespace-nowrap">XP multiplier</dt>
-          <dd class="font-mono">
-            &times;expMultiplier <span
-              class="font-sans text-xs text-muted-foreground"
-              >(per-monster, varies)</span
-            >
-          </dd>
-        </dl>
       </div>
 
       <div class="space-y-2">
