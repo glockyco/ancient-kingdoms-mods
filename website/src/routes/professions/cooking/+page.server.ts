@@ -29,6 +29,11 @@ interface TierCount {
   count: number;
 }
 
+interface TierXp {
+  tier: number;
+  xp: number;
+}
+
 interface CookingPageData {
   profession: {
     id: string;
@@ -42,6 +47,7 @@ interface CookingPageData {
   recipes: CookingRecipe[];
   locations: StationLocation[];
   recipeCounts: TierCount[];
+  xpByTier: TierXp[];
 }
 
 export const load: PageServerLoad = (): CookingPageData => {
@@ -120,7 +126,21 @@ export const load: PageServerLoad = (): CookingPageData => {
     )
     .all() as TierCount[];
 
+  // Get XP per tier (cooking uses item quality as tier)
+  const xpByTier = db
+    .prepare(
+      `
+    SELECT i.quality as tier, MAX(cr.crafting_exp) as xp
+    FROM crafting_recipes cr
+    JOIN items i ON i.id = cr.result_item_id
+    WHERE cr.station_type = 'cooking'
+    GROUP BY i.quality
+    ORDER BY i.quality
+  `,
+    )
+    .all() as TierXp[];
+
   db.close();
 
-  return { profession, recipes, locations, recipeCounts };
+  return { profession, recipes, locations, recipeCounts, xpByTier };
 };
