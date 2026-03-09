@@ -52,11 +52,17 @@
           <dd class="space-y-0.5">
             <div class="font-mono">
               15 &times; 1.12<sup>(level &minus; 1)</sup>
+              <span class="font-sans text-xs text-muted-foreground"
+                >(level &le; 40)</span
+              >
             </div>
-            <div class="font-mono text-muted-foreground">
+            <div class="font-mono">
               15 &times; 1.12<sup>39</sup> &times; 1.07<sup
                 >(level &minus; 40)</sup
-              > <span class="font-sans text-xs">(level &gt; 40)</span>
+              >
+              <span class="font-sans text-xs text-muted-foreground"
+                >(level &gt; 40)</span
+              >
             </div>
           </dd>
           <dt class="text-muted-foreground whitespace-nowrap">
@@ -73,17 +79,24 @@
           </dd>
           <dt class="text-muted-foreground whitespace-nowrap">Health bonus</dt>
           <dd class="space-y-0.5">
-            <div class="font-mono">&times;(1 + HP / 1,000 &times; 0.1)</div>
-            <div class="font-mono text-muted-foreground">
+            <div class="font-mono">
+              &times;(1 + HP / 1,000 &times; 0.1) <span
+                class="font-sans text-xs text-muted-foreground"
+                >(HP &le; 100,000)</span
+              >
+            </div>
+            <div class="font-mono">
               &times;(11 + (HP &minus; 100,000) / 5,000 &times; 0.01) <span
-                class="font-sans text-xs">(HP &gt; 100,000)</span
+                class="font-sans text-xs text-muted-foreground"
+                >(HP &gt; 100,000)</span
               >
             </div>
           </dd>
           <dt class="text-muted-foreground whitespace-nowrap">XP multiplier</dt>
           <dd class="font-mono">
-            &times;expMultiplier <span class="text-muted-foreground"
-              >(usually 1.0)</span
+            &times;expMultiplier <span
+              class="font-sans text-xs text-muted-foreground"
+              >(per-monster, varies)</span
             >
           </dd>
         </dl>
