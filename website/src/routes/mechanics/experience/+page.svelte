@@ -90,17 +90,73 @@
             </thead>
             <tbody>
               <tr class="border-b hover:bg-muted/30">
-                <td class="p-2">10+ levels below monster</td>
+                <td class="p-2">10+ levels below</td>
                 <td
                   class="p-2 text-right font-mono text-green-600 dark:text-green-400"
-                  >150% (cap)</td
+                  >150%</td
                 >
               </tr>
               <tr class="border-b hover:bg-muted/30">
-                <td class="p-2">Each level below (up to 10)</td>
+                <td class="p-2">9 levels below</td>
                 <td
                   class="p-2 text-right font-mono text-green-600 dark:text-green-400"
-                  >+5% per level</td
+                  >145%</td
+                >
+              </tr>
+              <tr class="border-b hover:bg-muted/30">
+                <td class="p-2">8 levels below</td>
+                <td
+                  class="p-2 text-right font-mono text-green-600 dark:text-green-400"
+                  >140%</td
+                >
+              </tr>
+              <tr class="border-b hover:bg-muted/30">
+                <td class="p-2">7 levels below</td>
+                <td
+                  class="p-2 text-right font-mono text-green-600 dark:text-green-400"
+                  >135%</td
+                >
+              </tr>
+              <tr class="border-b hover:bg-muted/30">
+                <td class="p-2">6 levels below</td>
+                <td
+                  class="p-2 text-right font-mono text-green-600 dark:text-green-400"
+                  >130%</td
+                >
+              </tr>
+              <tr class="border-b hover:bg-muted/30">
+                <td class="p-2">5 levels below</td>
+                <td
+                  class="p-2 text-right font-mono text-green-600 dark:text-green-400"
+                  >125%</td
+                >
+              </tr>
+              <tr class="border-b hover:bg-muted/30">
+                <td class="p-2">4 levels below</td>
+                <td
+                  class="p-2 text-right font-mono text-green-600 dark:text-green-400"
+                  >120%</td
+                >
+              </tr>
+              <tr class="border-b hover:bg-muted/30">
+                <td class="p-2">3 levels below</td>
+                <td
+                  class="p-2 text-right font-mono text-green-600 dark:text-green-400"
+                  >115%</td
+                >
+              </tr>
+              <tr class="border-b hover:bg-muted/30">
+                <td class="p-2">2 levels below</td>
+                <td
+                  class="p-2 text-right font-mono text-green-600 dark:text-green-400"
+                  >110%</td
+                >
+              </tr>
+              <tr class="border-b hover:bg-muted/30">
+                <td class="p-2">1 level below</td>
+                <td
+                  class="p-2 text-right font-mono text-green-600 dark:text-green-400"
+                  >105%</td
                 >
               </tr>
               <tr class="border-b hover:bg-muted/30">
@@ -109,83 +165,143 @@
               </tr>
               <tr class="border-b hover:bg-muted/30">
                 <td class="p-2">1 level above</td>
-                <td class="p-2 text-right font-mono">99%</td>
+                <td
+                  class="p-2 text-right font-mono text-orange-600 dark:text-orange-400"
+                  >99%</td
+                >
               </tr>
               <tr class="border-b hover:bg-muted/30">
                 <td class="p-2">2 levels above</td>
-                <td class="p-2 text-right font-mono">97%</td>
+                <td
+                  class="p-2 text-right font-mono text-orange-600 dark:text-orange-400"
+                  >97%</td
+                >
               </tr>
               <tr class="border-b hover:bg-muted/30">
                 <td class="p-2">3 levels above</td>
-                <td class="p-2 text-right font-mono">95%</td>
+                <td
+                  class="p-2 text-right font-mono text-orange-600 dark:text-orange-400"
+                  >95%</td
+                >
               </tr>
               <tr class="border-b hover:bg-muted/30">
                 <td class="p-2">4 levels above</td>
-                <td class="p-2 text-right font-mono">90%</td>
+                <td
+                  class="p-2 text-right font-mono text-orange-600 dark:text-orange-400"
+                  >90%</td
+                >
               </tr>
               <tr class="border-b hover:bg-muted/30">
                 <td class="p-2">5 levels above</td>
-                <td class="p-2 text-right font-mono">80%</td>
+                <td
+                  class="p-2 text-right font-mono text-orange-600 dark:text-orange-400"
+                  >80%</td
+                >
               </tr>
               <tr class="border-b hover:bg-muted/30">
                 <td class="p-2">6 levels above</td>
-                <td class="p-2 text-right font-mono">70%</td>
+                <td
+                  class="p-2 text-right font-mono text-orange-600 dark:text-orange-400"
+                  >70%</td
+                >
               </tr>
               <tr class="border-b hover:bg-muted/30">
                 <td class="p-2">7 levels above</td>
-                <td class="p-2 text-right font-mono">60%</td>
+                <td
+                  class="p-2 text-right font-mono text-orange-600 dark:text-orange-400"
+                  >60%</td
+                >
               </tr>
               <tr class="border-b hover:bg-muted/30">
                 <td class="p-2">8 levels above</td>
-                <td class="p-2 text-right font-mono">50%</td>
+                <td
+                  class="p-2 text-right font-mono text-orange-600 dark:text-orange-400"
+                  >50%</td
+                >
               </tr>
               <tr class="border-b hover:bg-muted/30">
                 <td class="p-2">9 levels above</td>
-                <td class="p-2 text-right font-mono">40%</td>
+                <td
+                  class="p-2 text-right font-mono text-orange-600 dark:text-orange-400"
+                  >40%</td
+                >
               </tr>
               <tr class="border-b hover:bg-muted/30">
                 <td class="p-2">10 levels above</td>
-                <td class="p-2 text-right font-mono">30%</td>
+                <td
+                  class="p-2 text-right font-mono text-orange-600 dark:text-orange-400"
+                  >30%</td
+                >
               </tr>
               <tr class="border-b hover:bg-muted/30">
                 <td class="p-2">11 levels above</td>
-                <td class="p-2 text-right font-mono">25%</td>
+                <td
+                  class="p-2 text-right font-mono text-orange-600 dark:text-orange-400"
+                  >25%</td
+                >
               </tr>
               <tr class="border-b hover:bg-muted/30">
                 <td class="p-2">12 levels above</td>
-                <td class="p-2 text-right font-mono">20%</td>
+                <td
+                  class="p-2 text-right font-mono text-orange-600 dark:text-orange-400"
+                  >20%</td
+                >
               </tr>
               <tr class="border-b hover:bg-muted/30">
                 <td class="p-2">13 levels above</td>
-                <td class="p-2 text-right font-mono">15%</td>
+                <td
+                  class="p-2 text-right font-mono text-orange-600 dark:text-orange-400"
+                  >15%</td
+                >
               </tr>
               <tr class="border-b hover:bg-muted/30">
                 <td class="p-2">14 levels above</td>
-                <td class="p-2 text-right font-mono">14%</td>
+                <td
+                  class="p-2 text-right font-mono text-orange-600 dark:text-orange-400"
+                  >14%</td
+                >
               </tr>
               <tr class="border-b hover:bg-muted/30">
                 <td class="p-2">15 levels above</td>
-                <td class="p-2 text-right font-mono">13%</td>
+                <td
+                  class="p-2 text-right font-mono text-orange-600 dark:text-orange-400"
+                  >13%</td
+                >
               </tr>
               <tr class="border-b hover:bg-muted/30">
                 <td class="p-2">16 levels above</td>
-                <td class="p-2 text-right font-mono">12%</td>
+                <td
+                  class="p-2 text-right font-mono text-orange-600 dark:text-orange-400"
+                  >12%</td
+                >
               </tr>
               <tr class="border-b hover:bg-muted/30">
                 <td class="p-2">17 levels above</td>
-                <td class="p-2 text-right font-mono">11%</td>
+                <td
+                  class="p-2 text-right font-mono text-orange-600 dark:text-orange-400"
+                  >11%</td
+                >
               </tr>
               <tr class="border-b hover:bg-muted/30">
                 <td class="p-2">18 levels above</td>
-                <td class="p-2 text-right font-mono">10%</td>
+                <td
+                  class="p-2 text-right font-mono text-orange-600 dark:text-orange-400"
+                  >10%</td
+                >
               </tr>
               <tr class="border-b hover:bg-muted/30">
                 <td class="p-2">19 levels above</td>
-                <td class="p-2 text-right font-mono">8%</td>
+                <td
+                  class="p-2 text-right font-mono text-orange-600 dark:text-orange-400"
+                  >8%</td
+                >
               </tr>
               <tr class="border-b hover:bg-muted/30">
                 <td class="p-2">20 levels above</td>
-                <td class="p-2 text-right font-mono">5%</td>
+                <td
+                  class="p-2 text-right font-mono text-orange-600 dark:text-orange-400"
+                  >5%</td
+                >
               </tr>
               <tr class="hover:bg-muted/30">
                 <td class="p-2">21+ levels above</td>
