@@ -72,7 +72,7 @@
         </p>
         <!-- Source: server-scripts/Monster.cs:2802-2829 — CalculateRewardExp -->
         <dl
-          class="grid grid-cols-[max-content_1fr] gap-x-6 gap-y-2 text-sm items-baseline"
+          class="grid grid-cols-1 sm:grid-cols-[max-content_1fr] gap-x-6 gap-y-2 text-sm items-baseline"
         >
           <dt class="text-muted-foreground whitespace-nowrap">Level curve</dt>
           <dd class="space-y-0.5">
