@@ -95,13 +95,18 @@
             Type multiplier
           </dt>
           <dd class="font-mono">
-            &times;5 <span class="text-muted-foreground">(boss)</span>
+            &times;5 <span class="font-sans text-xs text-muted-foreground"
+              >(boss)</span
+            >
             &nbsp;|&nbsp; &times;3
-            <span class="text-muted-foreground">(elite)</span>
+            <span class="font-sans text-xs text-muted-foreground">(elite)</span>
             &nbsp;|&nbsp; &times;0.5
-            <span class="text-muted-foreground">(passive)</span>
+            <span class="font-sans text-xs text-muted-foreground"
+              >(passive)</span
+            >
             &nbsp;|&nbsp; &times;1
-            <span class="text-muted-foreground">(normal)</span>
+            <span class="font-sans text-xs text-muted-foreground">(normal)</span
+            >
           </dd>
           <dt class="text-muted-foreground whitespace-nowrap">Health bonus</dt>
           <dd class="space-y-0.5">
