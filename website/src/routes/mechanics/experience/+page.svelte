@@ -382,6 +382,16 @@
             </tbody>
           </table>
         </div>
+        <!-- Source: server-scripts/Monster.cs:2457 — double XP applies to kills -->
+        <!-- Source: server-scripts/GatherItem.cs:533 — double XP applies to gathering -->
+        <!-- Source: server-scripts/Player.cs:10246 — double XP applies to alchemy -->
+        <!-- Source: server-scripts/Player.cs:10474 — double XP applies to crafting and cooking -->
+        <!-- Source: server-scripts/PlayerQuests.cs:321 — no double XP for quests -->
+        <!-- Source: server-scripts/ZoneTrigger.cs — no double XP for zone discovery -->
+        <p class="text-sm text-muted-foreground">
+          Double XP buffs apply to kills, gathering, alchemy, cooking, and
+          crafting. They do not apply to scrolls, quests, or zone discovery.
+        </p>
       </div>
 
       <div class="space-y-2">
@@ -718,8 +728,9 @@
       <Card.Description>
         Experience earned the first time you discover a zone.
       </Card.Description>
+      <!-- Source: server-scripts/ZoneTrigger.cs — no multipliers apply to zone discovery XP -->
     </Card.Header>
-    <Card.Content>
+    <Card.Content class="space-y-4">
       <!-- Source: server-scripts/ZoneTrigger.cs:148-174 — discovery XP amounts -->
       <table class="w-full text-sm border-collapse">
         <thead>
@@ -743,6 +754,7 @@
           </tr>
         </tbody>
       </table>
+      <p class="text-sm text-muted-foreground">No multipliers apply.</p>
     </Card.Content>
   </Card.Root>
 </div>
