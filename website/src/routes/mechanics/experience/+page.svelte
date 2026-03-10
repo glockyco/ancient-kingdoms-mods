@@ -32,6 +32,11 @@
         >
       </li>
       <li>
+        <a href="#scroll-xp" class="hover:text-foreground hover:underline"
+          >Scroll XP</a
+        >
+      </li>
+      <li>
         <a href="#gathering-xp" class="hover:text-foreground hover:underline"
           >Gathering XP</a
         >
@@ -433,6 +438,89 @@
           </table>
         </div>
       </div>
+    </Card.Content>
+  </Card.Root>
+
+  <!-- Scroll XP -->
+  <Card.Root id="scroll-xp" class="bg-muted/30">
+    <Card.Header>
+      <Card.Title>Scroll XP</Card.Title>
+      <Card.Description>
+        Experience earned by using XP scrolls. No multipliers apply.
+      </Card.Description>
+    </Card.Header>
+    <Card.Content>
+      <!-- Source: server-scripts/PotionItem.cs:102-105 — usageExperience field -->
+      <table class="w-full text-sm border-collapse">
+        <thead>
+          <tr class="border-b">
+            <th class="text-left p-2 font-medium">Scroll</th>
+            <th class="text-right p-2 font-medium">XP</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="border-b hover:bg-muted/30">
+            <td class="p-2"
+              ><a
+                href="/items/scroll_of_knowledge_i"
+                class="text-blue-600 dark:text-blue-400 hover:underline"
+                >Scroll of Knowledge I</a
+              ></td
+            >
+            <td class="p-2 text-right font-mono">250</td>
+          </tr>
+          <tr class="border-b hover:bg-muted/30">
+            <td class="p-2"
+              ><a
+                href="/items/scroll_of_knowledge_ii"
+                class="text-blue-600 dark:text-blue-400 hover:underline"
+                >Scroll of Knowledge II</a
+              ></td
+            >
+            <td class="p-2 text-right font-mono">1,000</td>
+          </tr>
+          <tr class="border-b hover:bg-muted/30">
+            <td class="p-2"
+              ><a
+                href="/items/scroll_of_knowledge_iii"
+                class="text-blue-600 dark:text-blue-400 hover:underline"
+                >Scroll of Knowledge III</a
+              ></td
+            >
+            <td class="p-2 text-right font-mono">5,000</td>
+          </tr>
+          <tr class="border-b hover:bg-muted/30">
+            <td class="p-2"
+              ><a
+                href="/items/scroll_of_knowledge_iv"
+                class="text-blue-600 dark:text-blue-400 hover:underline"
+                >Scroll of Knowledge IV</a
+              ></td
+            >
+            <td class="p-2 text-right font-mono">25,000</td>
+          </tr>
+          <tr class="border-b hover:bg-muted/30">
+            <td class="p-2"
+              ><a
+                href="/items/scroll_of_knowledge_v"
+                class="text-blue-600 dark:text-blue-400 hover:underline"
+                >Scroll of Knowledge V</a
+              ></td
+            >
+            <td class="p-2 text-right font-mono">100,000</td>
+          </tr>
+          <tr class="hover:bg-muted/30">
+            <td class="p-2"
+              ><a
+                href="/items/scroll_of_illumination"
+                class="text-blue-600 dark:text-blue-400 hover:underline"
+                >Scroll of Illumination</a
+              ></td
+            >
+            <td class="p-2 text-right font-mono">1,500,000</td>
+          </tr>
+        </tbody>
+      </table>
     </Card.Content>
   </Card.Root>
 
