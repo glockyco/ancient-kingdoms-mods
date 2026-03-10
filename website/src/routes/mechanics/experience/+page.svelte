@@ -32,12 +32,6 @@
         >
       </li>
       <li>
-        <a
-          href="#zone-discovery-xp"
-          class="hover:text-foreground hover:underline">Zone Discovery XP</a
-        >
-      </li>
-      <li>
         <a href="#gathering-xp" class="hover:text-foreground hover:underline"
           >Gathering XP</a
         >
@@ -55,6 +49,12 @@
       <li>
         <a href="#crafting-xp" class="hover:text-foreground hover:underline"
           >Crafting XP</a
+        >
+      </li>
+      <li>
+        <a
+          href="#zone-discovery-xp"
+          class="hover:text-foreground hover:underline">Zone Discovery XP</a
         >
       </li>
     </ul>
@@ -436,41 +436,6 @@
     </Card.Content>
   </Card.Root>
 
-  <!-- Zone Discovery XP -->
-  <Card.Root id="zone-discovery-xp" class="bg-muted/30">
-    <Card.Header>
-      <Card.Title>Zone Discovery XP</Card.Title>
-      <Card.Description>
-        Experience earned the first time you discover a zone.
-      </Card.Description>
-    </Card.Header>
-    <Card.Content>
-      <!-- Source: server-scripts/ZoneTrigger.cs:148-174 — discovery XP amounts -->
-      <table class="w-full text-sm border-collapse">
-        <thead>
-          <tr class="border-b">
-            <th class="text-left p-2 font-medium">Zone type</th>
-            <th class="text-right p-2 font-medium">XP</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr class="border-b hover:bg-muted/30">
-            <td class="p-2">Dungeon</td>
-            <td class="p-2 text-right font-mono">150</td>
-          </tr>
-          <tr class="border-b hover:bg-muted/30">
-            <td class="p-2">City / Village</td>
-            <td class="p-2 text-right font-mono">10</td>
-          </tr>
-          <tr class="hover:bg-muted/30">
-            <td class="p-2">All other zones</td>
-            <td class="p-2 text-right font-mono">25</td>
-          </tr>
-        </tbody>
-      </table>
-    </Card.Content>
-  </Card.Root>
-
   <!-- Gathering XP -->
   <Card.Root id="gathering-xp" class="bg-muted/30">
     <Card.Header>
@@ -627,6 +592,41 @@
           <tr class="hover:bg-muted/30">
             <td class="p-2">Tier IV</td>
             <td class="p-2 text-right font-mono">10,000</td>
+          </tr>
+        </tbody>
+      </table>
+    </Card.Content>
+  </Card.Root>
+
+  <!-- Zone Discovery XP -->
+  <Card.Root id="zone-discovery-xp" class="bg-muted/30">
+    <Card.Header>
+      <Card.Title>Zone Discovery XP</Card.Title>
+      <Card.Description>
+        Experience earned the first time you discover a zone.
+      </Card.Description>
+    </Card.Header>
+    <Card.Content>
+      <!-- Source: server-scripts/ZoneTrigger.cs:148-174 — discovery XP amounts -->
+      <table class="w-full text-sm border-collapse">
+        <thead>
+          <tr class="border-b">
+            <th class="text-left p-2 font-medium">Zone type</th>
+            <th class="text-right p-2 font-medium">XP</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="border-b hover:bg-muted/30">
+            <td class="p-2">Dungeon</td>
+            <td class="p-2 text-right font-mono">150</td>
+          </tr>
+          <tr class="border-b hover:bg-muted/30">
+            <td class="p-2">City / Village</td>
+            <td class="p-2 text-right font-mono">10</td>
+          </tr>
+          <tr class="hover:bg-muted/30">
+            <td class="p-2">All other zones</td>
+            <td class="p-2 text-right font-mono">25</td>
           </tr>
         </tbody>
       </table>
