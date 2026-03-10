@@ -373,28 +373,60 @@
         <h3 class="font-semibold">Party XP</h3>
         <!-- Source: server-scripts/Experience.cs:468-474 — CalculateExperienceShare -->
         <!-- Source: server-scripts/Monster.cs:2354-2412 — party kill XP award loop -->
+        <!-- Source: server-scripts/Party.cs:9 — Capacity = 5 -->
+        <!-- Source: server-scripts/Party.cs:11 — BonusExperiencePerMember = 1.25f -->
+        <!-- Source: server-scripts/Monster.cs:2402 — 1.25f passed as bonusPercentagePerMember -->
         <p class="text-sm text-muted-foreground">
-          When in a party, the base XP is split evenly among all nearby members
-          (within range). The resulting per-member share is then scaled by the
-          level difference between the <em>highest-level</em> party member and the
-          monster. The same scaled value is awarded to every member regardless of
-          their individual levels.
+          XP is split evenly among nearby party members, but a bonus more than
+          compensates: each member in a larger party earns more than a solo
+          player would. Level scaling uses the highest-level member's level
+          difference to the monster, applied equally to everyone. Mercenaries
+          are not counted as party members.
         </p>
-        <p class="text-sm text-muted-foreground">
-          A party bonus partially offsets the split: each additional member
-          beyond the first adds 1.25× the per-member share as a bonus on top, so
-          larger parties are more XP-efficient per player than soloing.
-        </p>
-        <p class="text-sm text-muted-foreground">
-          The double XP buff is applied individually. Only members who have it
-          active receive double their share. The Forgotten Altar event bonus
-          applies to all members equally.
-        </p>
-        <p class="text-sm text-muted-foreground">
-          Mercenaries do not affect XP splitting. They are not counted as party
-          members, so a solo player with mercenaries receives the same XP as one
-          without.
-        </p>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm border-collapse">
+            <thead>
+              <tr class="border-b">
+                <th class="text-left p-2 font-medium">Party size</th>
+                <th class="text-right p-2 font-medium">XP per member</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="border-b hover:bg-muted/30">
+                <td class="p-2">1 (solo)</td>
+                <td class="p-2 text-right font-mono">100%</td>
+              </tr>
+              <tr class="border-b hover:bg-muted/30">
+                <td class="p-2">2</td>
+                <td
+                  class="p-2 text-right font-mono text-green-600 dark:text-green-400"
+                  >112.5%</td
+                >
+              </tr>
+              <tr class="border-b hover:bg-muted/30">
+                <td class="p-2">3</td>
+                <td
+                  class="p-2 text-right font-mono text-green-600 dark:text-green-400"
+                  >116.7%</td
+                >
+              </tr>
+              <tr class="border-b hover:bg-muted/30">
+                <td class="p-2">4</td>
+                <td
+                  class="p-2 text-right font-mono text-green-600 dark:text-green-400"
+                  >118.75%</td
+                >
+              </tr>
+              <tr class="hover:bg-muted/30">
+                <td class="p-2">5</td>
+                <td
+                  class="p-2 text-right font-mono text-green-600 dark:text-green-400"
+                  >120%</td
+                >
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </Card.Content>
   </Card.Root>
