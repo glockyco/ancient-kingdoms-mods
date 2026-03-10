@@ -515,7 +515,7 @@
     <Card.Header>
       <Card.Title>Crafting XP</Card.Title>
       <Card.Description>
-        Experience earned by crafting items at a crafting station.
+        Experience earned by crafting items at a forge.
       </Card.Description>
     </Card.Header>
     <Card.Content>
