@@ -9,7 +9,7 @@
   <title>Experience Mechanics - Ancient Kingdoms Compendium</title>
   <meta
     name="description"
-    content="How experience (XP) is earned in Ancient Kingdoms — kill XP scaling, gathering, crafting, alchemy, zone discovery, and party mechanics."
+    content="How experience (XP) is earned in Ancient Kingdoms — kill XP scaling, death and recovery, scrolls, gathering, alchemy, cooking, crafting, quests, and zone discovery."
   />
 </svelte:head>
 
@@ -29,6 +29,11 @@
       <li>
         <a href="#kill-xp" class="hover:text-foreground hover:underline"
           >Kill XP</a
+        >
+      </li>
+      <li>
+        <a href="#death-xp" class="hover:text-foreground hover:underline"
+          >Death XP</a
         >
       </li>
       <li>
@@ -452,6 +457,53 @@
             </tbody>
           </table>
         </div>
+      </div>
+    </Card.Content>
+  </Card.Root>
+
+  <!-- Death XP -->
+  <Card.Root id="death-xp" class="bg-muted/30">
+    <Card.Header>
+      <Card.Title>Death XP</Card.Title>
+      <Card.Description>
+        Experience lost on death, and how to recover it.
+      </Card.Description>
+    </Card.Header>
+    <Card.Content class="space-y-4">
+      <!-- Source: server-scripts/Experience.cs:32 — deathLossPercent = 0.1f -->
+      <!-- Source: server-scripts/Experience.cs:477-486 — Death() = max * 0.1f -->
+      <!-- Source: server-scripts/Player.cs:3264-3265 — lossExp capped at experience.current -->
+      <p class="text-sm text-muted-foreground">
+        On death, you lose 10% of the current level's XP cap. The loss cannot
+        drop you below zero XP for your level.
+      </p>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm border-collapse">
+          <thead>
+            <tr class="border-b">
+              <th class="text-left p-2 font-medium">Recovery method</th>
+              <th class="text-right p-2 font-medium">XP recovered</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Source: server-scripts/Player.cs:11087 — CmdGetExpFromRemains: 0.5f * lossExp -->
+            <tr class="border-b hover:bg-muted/30">
+              <td class="p-2">Retrieve from corpse</td>
+              <td class="p-2 text-right font-mono">50%</td>
+            </tr>
+            <!-- Source: server-scripts/Player.cs:10026 — CmdResurrect: 0.75f * lossExp -->
+            <tr class="hover:bg-muted/30">
+              <td class="p-2"
+                ><a
+                  href="/skills/resurrection"
+                  class="text-blue-600 dark:text-blue-400 hover:underline"
+                  >Resurrection</a
+                > (cast by another player)</td
+              >
+              <td class="p-2 text-right font-mono">75%</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </Card.Content>
   </Card.Root>
