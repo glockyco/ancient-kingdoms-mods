@@ -57,6 +57,11 @@
         >
       </li>
       <li>
+        <a href="#quest-xp" class="hover:text-foreground hover:underline"
+          >Quest XP</a
+        >
+      </li>
+      <li>
         <a
           href="#zone-discovery-xp"
           class="hover:text-foreground hover:underline">Zone Discovery XP</a
@@ -683,6 +688,26 @@
           </tr>
         </tbody>
       </table>
+    </Card.Content>
+  </Card.Root>
+
+  <!-- Quest XP -->
+  <Card.Root id="quest-xp" class="bg-muted/30">
+    <Card.Header>
+      <Card.Title>Quest XP</Card.Title>
+      <Card.Description>
+        Experience earned by completing <a
+          href="/quests"
+          class="text-blue-600 dark:text-blue-400 hover:underline">quests</a
+        >.
+      </Card.Description>
+    </Card.Header>
+    <Card.Content>
+      <!-- Source: server-scripts/PlayerQuests.cs:321 — rewardExperience added directly, no multipliers -->
+      <p class="text-sm text-muted-foreground">
+        XP varies per quest and is shown on each quest's page. No multipliers
+        apply.
+      </p>
     </Card.Content>
   </Card.Root>
 
