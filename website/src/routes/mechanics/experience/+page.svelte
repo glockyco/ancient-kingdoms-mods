@@ -471,7 +471,8 @@
     <Card.Header>
       <Card.Title>Gathering XP</Card.Title>
       <Card.Description>
-        Experience earned by gathering resources (herbalism, mining, etc.).
+        Experience earned by gathering herbs, minerals, radiant sparks, and
+        other resources.
       </Card.Description>
     </Card.Header>
     <Card.Content>
