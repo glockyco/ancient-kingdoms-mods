@@ -48,6 +48,11 @@
         >
       </li>
       <li>
+        <a href="#cooking-xp" class="hover:text-foreground hover:underline"
+          >Cooking XP</a
+        >
+      </li>
+      <li>
         <a href="#alchemy-xp" class="hover:text-foreground hover:underline"
           >Alchemy XP</a
         >
@@ -529,6 +534,46 @@
         </thead>
         <tbody>
           <tr class="border-b hover:bg-muted/30">
+            <td class="p-2 text-right font-mono">150</td>
+          </tr>
+          <tr class="border-b hover:bg-muted/30">
+            <td class="p-2">Tier II</td>
+            <td class="p-2 text-right font-mono">750</td>
+          </tr>
+          <tr class="border-b hover:bg-muted/30">
+            <td class="p-2">Tier III</td>
+            <td class="p-2 text-right font-mono">3,500</td>
+          </tr>
+          <tr class="hover:bg-muted/30">
+            <td class="p-2">Tier IV</td>
+            <td class="p-2 text-right font-mono">10,000</td>
+          </tr>
+        </tbody>
+      </table>
+    </Card.Content>
+  </Card.Root>
+
+  <!-- Cooking XP -->
+  <Card.Root id="cooking-xp" class="bg-muted/30">
+    <Card.Header>
+      <Card.Title>Cooking XP</Card.Title>
+      <Card.Description>
+        Experience earned by cooking food at a cooking oven.
+      </Card.Description>
+    </Card.Header>
+    <Card.Content>
+      <!-- Source: server-scripts/Player.cs:10474-10481 — cooking XP by item quality (same table as crafting) -->
+      <!-- Source: server-scripts/Player.cs:10490-10515 — cooking branch awards XP on success only -->
+      <table class="w-full text-sm border-collapse">
+        <thead>
+          <tr class="border-b">
+            <th class="text-left p-2 font-medium">Tier</th>
+            <th class="text-right p-2 font-medium">XP</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="border-b hover:bg-muted/30">
+            <td class="p-2">Tier I</td>
             <td class="p-2">Tier I</td>
             <td class="p-2 text-right font-mono">150</td>
           </tr>
