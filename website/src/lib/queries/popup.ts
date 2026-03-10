@@ -69,6 +69,9 @@ export interface PopupRenewalSage {
 export interface MonsterPopupDetails {
   drops: PopupDropItem[];
   renewalSages: PopupRenewalSage[];
+  health: number;
+  damage: number;
+  magicDamage: number;
 }
 
 /**
@@ -120,6 +123,12 @@ export interface AltarPopupDetails {
   bossDrops: PopupAltarBossDrop[];
 }
 
+interface MonsterStatsRow {
+  health: number;
+  damage: number;
+  magic_damage: number;
+}
+
 interface MonsterDropRow {
   item_id: string;
   item_name: string;
@@ -151,6 +160,11 @@ export async function loadMonsterPopupDetails(
   const orderBy = isBossOrElite
     ? "ORDER BY is_bestiary_drop DESC, rate DESC"
     : "ORDER BY rate DESC";
+
+  const [stats] = await query<MonsterStatsRow>(
+    `SELECT health, damage, magic_damage FROM monsters WHERE id = ?`,
+    [monsterId],
+  );
 
   const drops = await query<MonsterDropRow>(
     `
@@ -197,6 +211,9 @@ export async function loadMonsterPopupDetails(
   }
 
   return {
+    health: stats?.health ?? 0,
+    damage: stats?.damage ?? 0,
+    magicDamage: stats?.magic_damage ?? 0,
     drops: drops.map((d) => ({
       itemId: d.item_id,
       itemName: d.item_name,

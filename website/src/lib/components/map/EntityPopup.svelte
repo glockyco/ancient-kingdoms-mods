@@ -320,10 +320,6 @@
   <!-- Monster Section -->
   {#if isMonster(entity)}
     {@const monster = entity as MonsterMapEntity}
-    <div class="flex justify-between">
-      <span class="text-muted-foreground">Level</span>
-      <span>{monster.level}</span>
-    </div>
 
     {#if monster.spawnType !== "placeholder" && monster.spawnType !== "altar" && !(monster.altarIds && monster.altarIds.length > 0)}
       <div class="flex justify-between">
@@ -349,6 +345,27 @@
     {#if monster.respawnProbability < 1}
       <div class="rounded bg-amber-500/20 px-2 py-1 text-amber-400">
         Rare spawn ({formatPercent(monster.respawnProbability)} chance)
+      </div>
+    {/if}
+
+    <!-- Combat stats section -->
+    <div class="flex justify-between border-t pt-2">
+      <span class="text-muted-foreground">Level</span>
+      <span>{monster.level}</span>
+    </div>
+
+    {#if monsterDetails}
+      <div class="flex justify-between">
+        <span class="text-muted-foreground">Health</span>
+        <span>{monsterDetails.health.toLocaleString()}</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-muted-foreground">Damage</span>
+        <span>{monsterDetails.damage.toLocaleString()}</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-muted-foreground">Magic Damage</span>
+        <span>{monsterDetails.magicDamage.toLocaleString()}</span>
       </div>
     {/if}
 
