@@ -259,16 +259,16 @@
       icon: FlaskConical,
     },
     {
-      key: "forges",
-      label: "Forges",
-      color: LAYER_COLORS.crafting,
-      icon: Hammer,
-    },
-    {
       key: "cookingOvens",
       label: "Cooking Ovens",
       color: LAYER_COLORS.crafting,
       icon: ChefHat,
+    },
+    {
+      key: "forges",
+      label: "Forges",
+      color: LAYER_COLORS.crafting,
+      icon: Hammer,
     },
   ];
 
