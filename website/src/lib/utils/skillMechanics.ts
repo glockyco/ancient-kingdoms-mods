@@ -192,10 +192,9 @@ function mercDamageFormula(
   const skillType = skill.skill_type;
   const reqWeapon = skill.required_weapon_category;
 
-  // Ranger projectile checks before elemental for same reason as playerDamageFormula.
-  // Source: FrontalProjectilesSkill.cs:97 — Ranger check fires first
-  if (skillType === "frontal_projectiles" && typeMonster === "Ranger")
-    return "ranged_player_frontal";
+  // FrontalProjectilesSkill.cs:97 only checks `caster is Player { className: "Ranger" }` —
+  // a merc Pet is not a Player, so merc Ranger frontal falls to the else branch: combat.damage only.
+  // No Ranger merc has frontal_projectiles skills today, but the dispatch must be correct.
   // Source: TargetProjectileSkill.cs — `caster is Pet { isMercenary: not false, typeMonster: "Ranger" }`
   // combat.damage + pet2.dexterity.GetRangedAttackBonusPerPoint() (DEX×1.5)
   if (skillType === "target_projectile" && typeMonster === "Ranger")
