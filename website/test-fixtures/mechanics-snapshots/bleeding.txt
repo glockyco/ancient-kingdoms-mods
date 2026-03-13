@@ -1,0 +1,1 @@
+Mechanics When used by a companion, skill level = floor(veteran level ÷ 10), capped at max skill level. Debuff Scaling DoT skillValue(level) + STR × 0.5 Resist Chance clamp( target.defense × 0.0005 + clamp((target.level − caster.level) × 0.005, −0.1, 0.1) − caster.accuracy , 0, 0.9) Cleanse Resistance Always removed in a single cast.

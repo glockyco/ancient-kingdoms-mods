@@ -1,0 +1,1 @@
+Mechanics When used by a mercenary, skill level = floor(regular level ÷ 5) + floor(veteran level ÷ 10), capped at max skill level. Buff Scaling Max Health skillValue(level) + WIS × 2 Effective Cast Time = castTime − (castTime × spellHaste)

@@ -1,0 +1,1 @@
+Mechanics Buff Scaling Max Health skillValue(level) + WIS × 2 Defense skillValue(level) + WIS × 0.15 Magic Resist skillValue(level) + WIS × 0.15 Elemental Resists skillValue(level) + WIS × 0.15 Ranger: WIS is tripled before applying all scaling above (effective WIS × 3). Effective Cast Time = castTime − (castTime × spellHaste)

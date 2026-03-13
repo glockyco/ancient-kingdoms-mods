@@ -1,0 +1,1 @@
+Mechanics Cleanse Resistance Starts with 3 counters. Cleansing removes 1 counter guaranteed, plus 2 independent 75% chances to remove 1 more each. Debuff is removed when counters reach 0. Effective Cast Time = castTime − (castTime × spellHaste)

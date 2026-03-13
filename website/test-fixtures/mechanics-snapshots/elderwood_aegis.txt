@@ -1,0 +1,1 @@
+Mechanics Buff Scaling Ward skillValue(level) + WIS × 5 Effective Cast Time = castTime − (castTime × spellHaste)

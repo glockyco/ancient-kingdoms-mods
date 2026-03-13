@@ -1,0 +1,1 @@
+Mechanics Debuff Scaling Fire Resist reduction skillValue(level) + INT × 0.4 Resist Chance clamp( target.magicResist × 0.0005 + clamp((target.level − caster.level) × 0.005, −0.1, 0.1) − caster.accuracy , 0, 0.9) Cleanse Resistance Cannot be cleansed.

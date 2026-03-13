@@ -1,0 +1,1 @@
+Mechanics When used by a mercenary, skill level = floor(regular level ÷ 5) + floor(veteran level ÷ 10), capped at max skill level. Aggro min(target.HP, skillAggro + caster.maxHP + damage + round(stunChance × stunTime × 10) + round(fearChance × fearTime × 10) )

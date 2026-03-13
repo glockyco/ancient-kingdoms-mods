@@ -1,0 +1,1 @@
+Mechanics Cleanse Resistance Always removed in a single cast.

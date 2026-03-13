@@ -1,0 +1,1 @@
+Mechanics When used by a mercenary, skill level = floor(regular level ÷ 5) + floor(veteran level ÷ 10), capped at max skill level. Buff Scaling Defense skillValue(level) + WIS × 0.15 Magic Resist skillValue(level) + WIS × 0.15 Effective Cast Time = castTime − (castTime × spellHaste)

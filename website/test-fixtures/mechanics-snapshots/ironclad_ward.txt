@@ -1,0 +1,1 @@
+Mechanics Buff Scaling Defense skillValue(level) + PlayerLevel × 8 × 0.15

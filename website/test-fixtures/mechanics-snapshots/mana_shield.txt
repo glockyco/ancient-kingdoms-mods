@@ -1,0 +1,1 @@
+Mechanics Ward absorbs damage first, then mana shield absorbs remainder from mana pool Effective Cast Time = castTime − (castTime × spellHaste)
