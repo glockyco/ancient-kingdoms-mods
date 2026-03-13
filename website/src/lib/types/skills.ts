@@ -243,7 +243,7 @@ export type DamageFormulaKind =
   // Ranged (physical+DEX)
   | "ranged_player" // STR×1.0 + bow+armour + DEX×1.5 − melee slot bonus — e.g. archer_shot
   | "ranged_player_frontal" // STR×1.0 + all equip + DEX×1.5 (no subtraction) — e.g. forest_guardians_aid
-  | "ranged_merc" // STR×1.0 + all equip + DEX×1.5 (no subtraction, merc path) — e.g. explorer_shot
+  | "ranged_merc" // STR×1.0 + bow + melee weapon + other equip + DEX×1.5 (both weapons count; no subtraction unlike player) — e.g. explorer_shot
   // Poison
   | "poison_rogue" // STR×1.0 + main-hand + 50% off-hand + other equip + DEX×2.5 — e.g. deadly_strike
   // Magic

@@ -1919,14 +1919,16 @@
                     <div>
                       <dt class="text-muted-foreground">Pre-Mitigation</dt>
                       <dd class="font-mono">
-                        Skill Damage + Attack Damage + DEX &times; 1.5
+                        Skill Damage + Ranged Attack Damage + DEX &times; 1.5
                       </dd>
                     </div>
                     <div>
-                      <dt class="text-muted-foreground">Attack Damage</dt>
+                      <dt class="text-muted-foreground">
+                        Ranged Attack Damage
+                      </dt>
                       <dd class="font-mono">
-                        (STR &times; 1.0 + all equipment) &times; (1 + passive%
-                        + buff%)
+                        (STR &times; 1.0 + bow + melee weapon + other equipment)
+                        &times; (1 + passive% + buff%)
                       </dd>
                     </div>
                   </dl>
