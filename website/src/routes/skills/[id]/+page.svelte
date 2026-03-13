@@ -2288,17 +2288,18 @@
                     Weapon delay has no effect. Cooldown scales linearly with
                     haste (cap: &minus;80%).
                   </p>
-                {:else if ctx.model === "monster_nospell"}
-                  <!-- Source: Skills.cs:814-815 — FinishCastMeleeAttackMonster -->
+                {:else if ctx.model === "monster"}
+                  <!-- Source: Monster.cs:1625, Npc.cs:1266 — FinishCastMeleeAttackMonster (haste-reduced for all monster skills) -->
                   <p class="font-mono">
                     interval = cast time + cooldown &times; (1 &minus; haste)
                   </p>
                 {:else}
-                  <!-- player_skill, merc_skill, monster_spell: flat cooldown -->
-                  <!-- Source: Skills.cs:772 — cooldownEnd = now + cooldown -->
+                  <!-- player_skill, merc_skill: flat cooldown -->
+                  <!-- Source: Skills.cs:772 — cooldownEnd = now + cooldown (no haste path for players/mercs unless weapon follow-up) -->
                   <p class="font-mono">interval = cast time + cooldown</p>
                   <p class="text-muted-foreground">
-                    Cooldown is not haste-reduced for this skill type.
+                    Spell and non-weapon-strike ability cooldowns are not
+                    haste-reduced.
                   </p>
                 {/if}
               </div>

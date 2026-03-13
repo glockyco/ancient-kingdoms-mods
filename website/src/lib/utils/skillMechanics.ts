@@ -478,8 +478,10 @@ export function computeMechanicsSpec(
       timingPairs.push({ label, model });
     }
     if (hasMonsters) {
-      // Source: Monster.cs:1625 — isSpell → FinishCast (flat); else → FinishCastMeleeAttackMonster (haste-reduced)
-      const model: TimingModel = isSpell ? "monster_spell" : "monster_nospell";
+      // Source: Monster.cs:1625, Npc.cs:1266 — both call FinishCastMeleeAttackMonster
+      // unconditionally regardless of isSpell, so spells and non-spells have the same
+      // haste-reduced cooldown behaviour. A single model covers both.
+      const model: TimingModel = "monster";
       timingPairs.push({ label: "Monster/NPC", model });
     }
     // Non-merc companion pets and familiars use FinishCast (flat cooldown) — same shape as player_skill

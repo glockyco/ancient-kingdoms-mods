@@ -297,8 +297,10 @@ export type TimingModel =
   | "player_skill" // interval = cast_time + cooldown (cooldown NOT haste-reduced for players)
   | "merc_auto" // interval = cast_time + cooldown×(1−haste)
   | "merc_skill" // interval = cast_time + cooldown (no haste reduction)
-  | "monster_nospell" // interval = cast_time + cooldown×(1−haste) via FinishCastMeleeAttackMonster
-  | "monster_spell"; // interval = cast_time + cooldown (FinishCast, no haste)
+  // Monster.cs and Npc.cs both call FinishCastMeleeAttackMonster which haste-reduces
+  // cooldown unconditionally — no isSpell check. Spell and non-spell monsters behave
+  // identically, so a single model covers both.
+  | "monster"; // interval = cast_time + cooldown×(1−haste) via FinishCastMeleeAttackMonster
 
 export interface TimingContext {
   casterLabels: string[];
