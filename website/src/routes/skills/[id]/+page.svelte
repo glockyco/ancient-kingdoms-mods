@@ -2189,15 +2189,7 @@
                     <p class="font-mono">bonusAttribute = WIS</p>
                   {:else}
                     <!-- player_wis -->
-                    {#if ctx.isAreaBuff}
-                      <!-- Source: AreaBuffSkill.cs:25 — no Ranger×3 for area buff -->
-                      <p class="font-mono">
-                        bonusAttribute = WIS (area buff, Ranger tripling does
-                        not apply)
-                      </p>
-                    {:else}
-                      <p class="font-mono">bonusAttribute = WIS</p>
-                    {/if}
+                    <p class="font-mono">bonusAttribute = WIS</p>
                   {/if}
                   <dl
                     class="grid grid-cols-1 sm:grid-cols-[12rem_1fr] gap-x-4 gap-y-1 font-mono"
