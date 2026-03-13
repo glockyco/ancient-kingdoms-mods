@@ -1,1 +1,1 @@
-Mechanics Buff Scaling Ward skillValue(level) + WIS × 5 Effective Cast Time = castTime − (castTime × spellHaste)
+Mechanics Buff Scaling bonusAttribute = WIS (area buff; Ranger ×3 does not apply) Ward wardBonus(level) + bonusAttribute × 5 Effective Cast Time = castTime − (castTime × spellHaste)

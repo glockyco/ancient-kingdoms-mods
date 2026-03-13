@@ -1,1 +1,1 @@
-Mechanics Buff Scaling Damage Shield skillValue(level) + WIS × 0.75 Effective Cast Time = castTime − (castTime × spellHaste)
+Mechanics Buff Scaling bonusAttribute = WIS Damage Shield skillValue(level) + bonusAttribute × 0.75 Effective Cast Time = castTime − (castTime × spellHaste)

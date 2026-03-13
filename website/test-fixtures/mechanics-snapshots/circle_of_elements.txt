@@ -1,1 +1,1 @@
-Mechanics Buff Scaling Elemental Resists skillValue(level) + WIS × 0.15 Effective Cast Time = castTime − (castTime × spellHaste)
+Mechanics Buff Scaling bonusAttribute = WIS (area buff; Ranger ×3 does not apply) Elemental Resists skillValue(level) + bonusAttribute × 0.15 Effective Cast Time = castTime − (castTime × spellHaste)

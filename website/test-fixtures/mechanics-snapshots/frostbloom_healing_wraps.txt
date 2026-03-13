@@ -1,1 +1,1 @@
-Mechanics Buff Scaling HoT skillValue(level) × (1 + min(WIS × 0.004, 5.0)) Effective Cast Time = castTime − (castTime × spellHaste)
+Mechanics Effective Cast Time = castTime − (castTime × spellHaste)

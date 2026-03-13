@@ -1,1 +1,1 @@
-Mechanics Debuff Scaling DoT skillValue(level) + DEX × 1.0 Resist Chance clamp( target.diseaseResist × 0.0005 + clamp((target.level − caster.level) × 0.005, −0.1, 0.1) − caster.accuracy , 0, 0.9) Cleanse Resistance Always removed in a single cast.
+Mechanics Resist Chance clamp( target.diseaseResist × 0.0005 + clamp((target.level − caster.level) × 0.005, −0.1, 0.1) − caster.accuracy , 0, 0.9) Cleanse Resistance Always removed in a single cast.

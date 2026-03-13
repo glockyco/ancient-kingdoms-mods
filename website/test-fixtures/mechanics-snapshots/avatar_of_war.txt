@@ -1,1 +1,1 @@
-Mechanics Buff Scaling Max Health skillValue(level) + WIS × 2 Defense skillValue(level) + WIS × 0.15
+Mechanics Buff Scaling bonusAttribute = WIS Max Health skillValue(level) + bonusAttribute × 2 Defense skillValue(level) + bonusAttribute × 0.15

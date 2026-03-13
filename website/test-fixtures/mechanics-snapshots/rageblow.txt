@@ -1,1 +1,1 @@
-Mechanics Damage Formula Consumes all rage. Damage = Rage × 2 (Warrior/Rogue) or Mana × 2 (Wizard). Bypasses all resistance and mitigation.
+Mechanics Damage Formula Consumes all rage. Damage = Rage × 2 (Warrior/Rogue) or Mana × 2 (Wizard). Bypasses all resistance and mitigation. Block/Miss Chance clamp( clamp(target.baseBlock + target.defense × 0.0001 + buffs, 0, 0.8) + clamp((target.level − attacker.level) × 0.005, −0.1, 0.1) − attacker.accuracy , 0, 0.9) Target moving: resist −0.25, damage +10% Backstab: resist × 0.8

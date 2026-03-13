@@ -1,1 +1,0 @@
-Mechanics Buff Scaling Magic Resist skillValue(level) + WIS × 0.15 Elemental Resists skillValue(level) + WIS × 0.15

@@ -1,1 +1,1 @@
-Mechanics Buff Scaling HoT skillValue(level) × (1 + min(WIS × 0.004, 5.0)) Ranger: WIS is tripled before applying all scaling above (effective WIS × 3). Effective Cast Time = castTime − (castTime × spellHaste)
+Mechanics Buff Scaling bonusAttribute = WIS × 3 (Ranger wisdom tripled) HoT skillValue(level) × (1 + min(bonusAttribute × 0.004, 5.0)) Effective Cast Time = castTime − (castTime × spellHaste)

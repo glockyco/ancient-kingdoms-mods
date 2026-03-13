@@ -1,1 +1,1 @@
-Mechanics Buff Scaling Defense skillValue(level) + WIS × 0.15 Ranger: WIS is tripled before applying all scaling above (effective WIS × 3). Effective Cast Time = castTime − (castTime × spellHaste)
+Mechanics Buff Scaling bonusAttribute = WIS × 3 (Ranger wisdom tripled) Defense skillValue(level) + bonusAttribute × 0.15 Effective Cast Time = castTime − (castTime × spellHaste)

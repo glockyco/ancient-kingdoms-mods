@@ -1,1 +1,1 @@
-Mechanics Buff Scaling Elemental Resists skillValue(level) + WIS × 0.15
+Mechanics Buff Scaling bonusAttribute = WIS Elemental Resists skillValue(level) + bonusAttribute × 0.15

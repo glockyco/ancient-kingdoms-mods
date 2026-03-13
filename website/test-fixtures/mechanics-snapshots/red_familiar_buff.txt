@@ -1,0 +1,1 @@
+Mechanics When used by a familiar, skill level equals the summoning skill rank. Effective Cast Time = castTime − (castTime × spellHaste)
