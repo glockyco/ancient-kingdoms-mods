@@ -1,22 +1,12 @@
 import Database from "better-sqlite3";
 import type { PageServerLoad } from "./$types";
 import { DB_STATIC_PATH } from "$lib/constants/constants";
+import type { WeaponItem } from "$lib/utils/combat-sim";
+
+// Re-export so +page.svelte can import WeaponItem from "./+page.server" as planned.
+export type { WeaponItem } from "$lib/utils/combat-sim";
 
 export const prerender = true;
-
-export interface WeaponItem {
-  id: string;
-  name: string;
-  weapon_category: string;
-  weapon_delay: number;
-  damage: number;
-  strength: number;
-  dexterity: number;
-  haste: number;
-  class_required: string[];
-  item_level: number;
-  quality: number;
-}
 
 export interface CombatPageData {
   weapons: WeaponItem[];
@@ -36,10 +26,12 @@ export const load: PageServerLoad = (): CombatPageData => {
         item_level,
         quality,
         class_required,
-        CAST(COALESCE(json_extract(stats, '$.damage'), 0) AS INTEGER)    AS damage,
-        CAST(COALESCE(json_extract(stats, '$.strength'), 0) AS INTEGER)  AS strength,
-        CAST(COALESCE(json_extract(stats, '$.dexterity'), 0) AS INTEGER) AS dexterity,
-        CAST(COALESCE(json_extract(stats, '$.haste'), 0) AS REAL)        AS haste
+        tooltip_html,
+        CAST(COALESCE(json_extract(stats, '$.damage'), 0) AS INTEGER)       AS damage,
+        CAST(COALESCE(json_extract(stats, '$.magic_damage'), 0) AS INTEGER) AS magic_damage,
+        CAST(COALESCE(json_extract(stats, '$.strength'), 0) AS INTEGER)     AS strength,
+        CAST(COALESCE(json_extract(stats, '$.dexterity'), 0) AS INTEGER)    AS dexterity,
+        CAST(COALESCE(json_extract(stats, '$.haste'), 0) AS REAL)           AS haste
       FROM items
       WHERE weapon_category IN ('Bow','WeaponDagger','WeaponSword','WeaponSword2H','WeaponWand')
         AND weapon_delay > 0
@@ -54,7 +46,9 @@ export const load: PageServerLoad = (): CombatPageData => {
     item_level: number;
     quality: number;
     class_required: string;
+    tooltip_html: string | null;
     damage: number;
+    magic_damage: number;
     strength: number;
     dexterity: number;
     haste: number;
@@ -68,6 +62,7 @@ export const load: PageServerLoad = (): CombatPageData => {
     weapon_category: r.weapon_category,
     weapon_delay: r.weapon_delay,
     damage: r.damage,
+    magic_damage: r.magic_damage,
     strength: r.strength,
     dexterity: r.dexterity,
     haste: r.haste,
@@ -76,6 +71,7 @@ export const load: PageServerLoad = (): CombatPageData => {
       : [],
     item_level: r.item_level,
     quality: r.quality,
+    tooltip_html: r.tooltip_html ?? "",
   }));
 
   return { weapons };
