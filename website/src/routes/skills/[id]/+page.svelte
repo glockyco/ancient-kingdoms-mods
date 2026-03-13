@@ -2106,7 +2106,7 @@
           <div class="space-y-2">
             <h3 class="font-semibold">Healing Formula</h3>
             {#each data.mechanicsSpec.healContexts as ctx (ctx.bonusKind)}
-              <div>
+              <div class="space-y-1">
                 {#if data.mechanicsSpec.healContexts.length > 1}
                   <p class="text-xs text-muted-foreground mb-1">
                     {ctx.casterLabels.join(", ")}
@@ -2122,7 +2122,7 @@
                     Final Heal = Base Heal + round(Base Heal &times; min(WIS
                     &times; 3 &times; 0.004, 5.0))
                   </p>
-                  <p class="text-muted-foreground text-xs">
+                  <p class="text-muted-foreground">
                     Ranger wisdom triples the heal bonus (effective cap: WIS =
                     417).
                   </p>
@@ -2139,7 +2139,7 @@
                     Final Heal = Base Heal + round(Base Heal &times; min(WIS
                     &times; 0.004, 5.0))
                   </p>
-                  <p class="text-muted-foreground text-xs">
+                  <p class="text-muted-foreground">
                     Merc uses its own WIS. Ranger Merc does not get the ×3
                     bonus.
                   </p>
@@ -2162,7 +2162,7 @@
           <div class="space-y-3">
             <h3 class="font-semibold">Buff Scaling</h3>
             {#each data.mechanicsSpec.buffContexts as ctx (`${ctx.bonusAttrSource}:${ctx.isAreaBuff}`)}
-              <div>
+              <div class="space-y-1">
                 {#if data.mechanicsSpec.buffContexts.length > 1}
                   <p class="text-xs text-muted-foreground mb-1">
                     {ctx.casterLabels.join(", ")}
@@ -2175,22 +2175,22 @@
                 {:else}
                   {#if ctx.bonusAttrSource === "player_ranger_wis"}
                     <!-- Source: TargetBuffSkill.cs:419 — Ranger → wisdom.value * 3 -->
-                    <p class="text-xs text-muted-foreground mb-1">
+                    <p class="font-mono">
                       bonusAttribute = WIS &times; 3 (Ranger wisdom tripled)
                     </p>
                   {:else if ctx.bonusAttrSource === "player_charisma"}
                     <!-- Source: AreaBuffSkill.cs:47 — isMercenarySkill → player4.charisma.value -->
-                    <p class="text-xs text-muted-foreground mb-1">
+                    <p class="font-mono">
                       bonusAttribute = caster CHA (area buff targeting mercs
                       scales with your Charisma)
                     </p>
                   {:else if ctx.bonusAttrSource === "player_level"}
-                    <p class="text-xs text-muted-foreground mb-1">
+                    <p class="font-mono">
                       bonusAttribute = PlayerLevel &times; 8 (scroll)
                     </p>
                   {:else if ctx.bonusAttrSource === "merc_wis"}
                     <!-- Source: TargetBuffSkill.cs:419 / AreaBuffSkill.cs:25 — pet3.wisdom.value -->
-                    <p class="text-xs text-muted-foreground mb-1">
+                    <p class="font-mono">
                       bonusAttribute = merc WIS (merc's own wisdom; no Ranger
                       &times;3)
                     </p>
@@ -2198,14 +2198,12 @@
                     <!-- player_wis -->
                     {#if ctx.isAreaBuff}
                       <!-- Source: AreaBuffSkill.cs:25 — no Ranger×3 for area buff -->
-                      <p class="text-xs text-muted-foreground mb-1">
+                      <p class="font-mono">
                         bonusAttribute = WIS (area buff; Ranger &times;3 does
                         not apply)
                       </p>
                     {:else}
-                      <p class="text-xs text-muted-foreground mb-1">
-                        bonusAttribute = WIS
-                      </p>
+                      <p class="font-mono">bonusAttribute = WIS</p>
                     {/if}
                   {/if}
                   <dl
@@ -2319,7 +2317,7 @@
           <div class="space-y-3">
             <h3 class="font-semibold">Debuff Scaling</h3>
             {#each data.mechanicsSpec.debuffContexts as ctx (ctx.bonusAttrKind)}
-              <div>
+              <div class="space-y-1">
                 {#if data.mechanicsSpec.debuffContexts.length > 1}
                   <p class="text-xs text-muted-foreground mb-1">
                     {ctx.casterLabels.join(", ")}
@@ -2330,7 +2328,7 @@
                     No attribute scaling (bonusAttribute = 0).
                   </p>
                 {:else}
-                  <p class="text-xs text-muted-foreground">
+                  <p class="font-mono">
                     <!-- Source: TargetDebuffSkill.cs:277-279 — isScroll → PlayerLevel * 10 override -->
                     bonusAttribute = {ctx.bonusAttrKind === "str"
                       ? "STR"
