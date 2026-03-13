@@ -2195,7 +2195,7 @@
                     {#if ctx.isAreaBuff}
                       <!-- Source: AreaBuffSkill.cs:25 — no Ranger×3 for area buff -->
                       <p class="font-mono">
-                        bonusAttribute = WIS (area buff; Ranger &times;3 does
+                        bonusAttribute = WIS (area buff, Ranger tripling does
                         not apply)
                       </p>
                     {:else}
