@@ -140,8 +140,9 @@ function playerDamageFormula(
 
   // Source: TargetDamageSkill.cs — Magic + !isSpell + requiredWeaponCategory.StartsWith("Weapon")
   // adds combat.damage on top of combat.magicDamage; must be checked before the broad elemental guard.
+  // Rangers additionally subtract the bow slot bonus (line 218-222), same reduction as ranger_melee.
   if (dt === "Magic" && !isSpell && reqWeapon?.startsWith("Weapon"))
-    return "magic_weapon";
+    return cls === "ranger" ? "magic_weapon_ranger" : "magic_weapon";
 
   // Source: TargetDamageSkill.cs switch(damageType) — Magic/Fire/Cold/Disease always use
   // combat.magicDamage regardless of isSpell. The && isSpell guard was incorrect.

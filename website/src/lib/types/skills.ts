@@ -245,10 +245,11 @@ export type DamageFormulaKind =
   | "ranged_player_frontal" // STR×1.0 + all equip + DEX×1.5 (no subtraction)
   | "ranged_merc" // STR×1.0 + all equip + DEX×1.5 (no subtraction)
   // Poison
-  | "poison_rogue" // STR×1.0 + all equip + DEX×2.5
+  | "poison_rogue" // STR×1.0 + main-hand + 50% off-hand + other equip + DEX×2.5
   // Magic
   | "magic_spell" // INT×1.5 + equipment
-  | "magic_weapon" // INT×1.5 + STR×1.0 + equipment (additive)
+  | "magic_weapon" // INT×1.5 + STR×1.0 + equipment (additive; Cleric holy_wrath)
+  | "magic_weapon_ranger" // INT×1.5 + magic equip + STR×1.0 + non-bow equip (wild_strike)
   // Special
   | "manaburn" // energy/mana × 2, bypasses mitigation
   | "scroll" // level × 15

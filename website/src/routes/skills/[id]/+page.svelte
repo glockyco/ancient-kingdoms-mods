@@ -1831,6 +1831,31 @@
                       </dd>
                     </div>
                   </dl>
+                {:else if ctx.formula === "magic_weapon_ranger"}
+                  <!-- Source: TargetDamageSkill.cs:214-221 — magicDamage + combat.damage - bow slot bonus -->
+                  <!-- Magic Damage uses INT×1.5 + magic equipment; Attack Damage subtracts bow (slot 13) like ranger_melee -->
+                  <dl class="space-y-1">
+                    <div>
+                      <dt class="text-muted-foreground">Pre-Mitigation</dt>
+                      <dd class="font-mono">
+                        Skill Damage + Magic Damage + Attack Damage
+                      </dd>
+                    </div>
+                    <div>
+                      <dt class="text-muted-foreground">Magic Damage</dt>
+                      <dd class="font-mono">
+                        (INT &times; 1.5 + equipment) &times; (1 + passive% +
+                        buff%)
+                      </dd>
+                    </div>
+                    <div>
+                      <dt class="text-muted-foreground">Attack Damage</dt>
+                      <dd class="font-mono">
+                        (STR &times; 1.0 + non-bow equipment) &times; (1 +
+                        passive% + buff%)
+                      </dd>
+                    </div>
+                  </dl>
                 {:else if ctx.formula === "poison_rogue"}
                   <!-- Source: Dexterity.cs — poisonDamageBonusPerPoint = 2.5 -->
                   <dl class="space-y-1">
@@ -1843,8 +1868,8 @@
                     <div>
                       <dt class="text-muted-foreground">Attack Damage</dt>
                       <dd class="font-mono">
-                        (STR &times; 1.0 + equipment) &times; (1 + passive% +
-                        buff%)
+                        (STR &times; 1.0 + main-hand + 50% off-hand + other
+                        equipment) &times; (1 + passive% + buff%)
                       </dd>
                     </div>
                   </dl>
