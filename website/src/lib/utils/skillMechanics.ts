@@ -390,6 +390,12 @@ export function computeMechanicsSpec(
         canCrit: false,
       });
     }
+    // Scroll heal skills (is_scroll=1) often have player_classes=[] since scrolls are
+    // class-agnostic. If no caster context was generated, add a fallback so the template
+    // can render the scroll formula (Final Heal = Base Heal + PlayerLevel x 8).
+    if (skill.is_scroll && healPairs.length === 0) {
+      healPairs.push({ label: "Scroll", bonusKind: "scroll", canCrit: false });
+    }
   }
 
   // ---------- buff ----------
