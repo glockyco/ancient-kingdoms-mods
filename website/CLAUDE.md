@@ -5,7 +5,6 @@ SvelteKit static site for browsing Ancient Kingdoms game data.
 ## Task Triggers
 
 When working on the map component, see src/lib/map/CLAUDE.md.
-When working on skill mechanics (damage formulas, heal scaling, buff attributes, timing models, debuff attributes), see src/lib/utils/MECHANICS.md.
 
 ## Overview
 

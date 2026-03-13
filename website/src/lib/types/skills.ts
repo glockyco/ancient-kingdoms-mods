@@ -237,25 +237,25 @@ export interface SkillPet {
 
 export type DamageFormulaKind =
   // Physical
-  | "normal" // STR×1.0 + all equipment
-  | "ranger_melee" // STR×1.0 + all equip − bow slot bonus (slot 13)
-  | "rogue_melee" // STR×1.0 + main-hand + 50% off-hand + other equip
+  | "normal" // STR×1.0 + all equipment — e.g. parry
+  | "ranger_melee" // STR×1.0 + all equip − bow slot bonus (slot 13) — e.g. provoke
+  | "rogue_melee" // STR×1.0 + main-hand + 50% off-hand + other equip — e.g. ambush
   // Ranged (physical+DEX)
-  | "ranged_player" // STR×1.0 + bow+armour + DEX×1.5 − melee slot bonus
-  | "ranged_player_frontal" // STR×1.0 + all equip + DEX×1.5 (no subtraction)
-  | "ranged_merc" // STR×1.0 + all equip + DEX×1.5 (no subtraction)
+  | "ranged_player" // STR×1.0 + bow+armour + DEX×1.5 − melee slot bonus — e.g. archer_shot
+  | "ranged_player_frontal" // STR×1.0 + all equip + DEX×1.5 (no subtraction) — e.g. forest_guardians_aid
+  | "ranged_merc" // STR×1.0 + all equip + DEX×1.5 (no subtraction, merc path) — e.g. explorer_shot
   // Poison
-  | "poison_rogue" // STR×1.0 + main-hand + 50% off-hand + other equip + DEX×2.5
+  | "poison_rogue" // STR×1.0 + main-hand + 50% off-hand + other equip + DEX×2.5 — e.g. deadly_strike
   // Magic
-  | "magic_spell" // INT×1.5 + equipment
-  | "magic_weapon" // INT×1.5 + STR×1.0 + equipment (additive; Cleric holy_wrath)
-  | "magic_weapon_ranger" // INT×1.5 + magic equip + STR×1.0 + non-bow equip (wild_strike)
+  | "magic_spell" // INT×1.5 + equipment — e.g. mana_burn
+  | "magic_weapon" // INT×1.5 + STR×1.0 + equipment (additive; Cleric) — e.g. holy_wrath
+  | "magic_weapon_ranger" // INT×1.5 + magic equip + STR×1.0 + non-bow equip (Ranger) — e.g. wild_strike
   // Special
-  | "manaburn" // energy/mana × 2, bypasses mitigation
-  | "scroll" // level × 15
+  | "manaburn" // energy/mana ×2, bypasses mitigation — e.g. rageblow
+  | "scroll" // PlayerLevel × 15 — e.g. fire_nova
   // Monster / NPC (level-scaled, no player stats)
-  | "monster_melee" // baseDamage(level) — no STR/equipment
-  | "monster_magic"; // baseMagicDamage(level) — no INT/equipment
+  | "monster_melee" // baseDamage(level) — e.g. ant_attack
+  | "monster_magic"; // baseMagicDamage(level) — e.g. abyssal_orb
 
 export interface DamageContext {
   /** One or more caster descriptions that all share this formula. */
@@ -264,11 +264,11 @@ export interface DamageContext {
 }
 
 export type HealBonusKind =
-  | "player_ranger" // base × min((WIS×3)×0.004, 5.0)
-  | "player_other" // base × min(WIS×0.004, 5.0)
-  | "merc" // base × min(WIS×0.004, 5.0) using merc's own WIS — no ×3 for Ranger merc
-  | "scroll" // base + level × 8
-  | "none"; // no bonus (monster, NPC, non-merc pet)
+  | "player_ranger" // base × min((WIS×3)×0.004, 5.0) — e.g. breeze
+  | "player_other" // base × min(WIS×0.004, 5.0) — e.g. healing
+  | "merc" // base × min(WIS×0.004, 5.0) using merc's own WIS; no ×3 for Ranger merc — e.g. swift_bloom
+  | "scroll" // base + PlayerLevel × 8 — e.g. major_restoration
+  | "none"; // no bonus (monster, NPC, non-merc pet) — e.g. healing_circle
 
 export interface HealContext {
   casterLabels: string[];
@@ -278,12 +278,12 @@ export interface HealContext {
 }
 
 export type BuffBonusAttrSource =
-  | "player_ranger_wis" // WIS × 3 (TargetBuffSkill only)
-  | "player_wis" // WIS (TargetBuffSkill non-Ranger, or any AreaBuffSkill player)
-  | "merc_wis" // merc's own WIS (TargetBuffSkill merc path)
-  | "player_charisma" // player CHA (AreaBuffSkill + is_mercenary_skill override)
-  | "player_level" // scroll: PlayerLevel × 8
-  | "none"; // monster/NPC: 0
+  | "player_ranger_wis" // WIS×3 (TargetBuffSkill only, not AreaBuffSkill) — e.g. ancestral_spirits
+  | "player_wis" // WIS (TargetBuffSkill non-Ranger, or any AreaBuffSkill player) — e.g. inspiration
+  | "merc_wis" // merc's own WIS — e.g. spirit_of_wolf
+  | "player_charisma" // player CHA (AreaBuffSkill + is_mercenary_skill override) — e.g. leadership
+  | "player_level" // scroll: PlayerLevel × 8 — e.g. staff_of_flowers
+  | "none"; // monster/NPC: 0 (only shown when player/merc also casts the skill)
 
 export interface BuffContext {
   casterLabels: string[];
@@ -293,21 +293,27 @@ export interface BuffContext {
 }
 
 export type TimingModel =
-  | "player_auto" // interval = cast_time + clamp(delay×(1−haste)/25, 0.25, 2.0)
-  | "player_skill" // interval = cast_time + cooldown (cooldown NOT haste-reduced for players)
-  | "merc_auto" // interval = cast_time + cooldown×(1−haste)
-  | "merc_skill" // interval = cast_time + cooldown (no haste reduction)
+  // interval = cast_time + clamp(delay×(1−haste)/25, 0.25, 2.0); weapon refractory period.
+  // Warrior and Rogue generate Rage; all other classes use Mana.
+  | "player_auto" // e.g. crush_strike
+  | "player_skill" // interval = cast_time + cooldown; player spell/no-weapon followup — e.g. smite
+  | "merc_auto" // interval = cast_time + cooldown×(1−haste); merc non-spell — e.g. explorer_shot
+  | "merc_skill" // interval = cast_time + cooldown; merc spell, not haste-reduced — e.g. gale_burst
   // Monster.cs and Npc.cs both call FinishCastMeleeAttackMonster which haste-reduces
-  // cooldown unconditionally — no isSpell check. Spell and non-spell monsters behave
-  // identically, so a single model covers both.
-  | "monster"; // interval = cast_time + cooldown×(1−haste) via FinishCastMeleeAttackMonster
+  // cooldown unconditionally regardless of isSpell — one model covers both.
+  | "monster"; // interval = cast_time + cooldown×(1−haste) — e.g. blood_attack
 
 export interface TimingContext {
   casterLabels: string[];
   model: TimingModel;
 }
 
-export type DebuffBonusAttrKind = "str" | "dex" | "int" | "scroll" | "none";
+export type DebuffBonusAttrKind =
+  | "str" // is_melee_debuff=1 — e.g. rangers_mark
+  | "dex" // is_poison_debuff=1 or is_disease_debuff=1 — e.g. cleanse
+  | "int" // default (magic/elemental debuff) — e.g. symbol_of_the_arbiter
+  | "scroll" // PlayerLevel × 8 — e.g. lethargy
+  | "none"; // monster/NPC/companion: 0 — e.g. ancient_curse
 
 export interface DebuffContext {
   /** Caster labels that share this bonus attribute kind (e.g. ["Warrior (player)", "Rogue (player)"]). */
