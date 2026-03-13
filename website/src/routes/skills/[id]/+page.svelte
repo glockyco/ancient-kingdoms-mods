@@ -2269,15 +2269,22 @@
                 {#if ctx.model === "player_auto"}
                   <!-- Source: Player.cs:2783 — refractoryPeriod = clamp(delay*(1-haste)/25, 0.25, 2.0) -->
                   <!-- Source: Skills.cs:772 — player cooldownEnd = now + cooldown (no haste reduction) -->
-                  <p>interval = cast time + refractory period</p>
+                  <p class="font-mono">
+                    interval = cast time + refractory period
+                  </p>
                   <p class="font-mono">
                     refractory = clamp(weaponDelay &times; (1 &minus; haste) /
                     25, 0.25s, 2s)
                   </p>
                   <p class="text-muted-foreground">
-                    Haste reduces the refractory floor but not the cooldown. Can
-                    trigger weapon proc; generates rage on hit (25% of damage).
+                    Haste reduces the refractory period but not the cooldown.
+                    Can trigger weapon procs.
                   </p>
+                  {#if ctx.casterLabels.some((l) => l.startsWith("Warrior") || l.startsWith("Rogue"))}
+                    <p class="text-muted-foreground">
+                      Generates rage on hit (25% of damage).
+                    </p>
+                  {/if}
                 {:else if ctx.model === "merc_auto"}
                   <!-- Source: Skills.cs:766-768 — followupDefaultAttack && !isSpell → cooldown * (1 - haste) -->
                   <p class="font-mono">
