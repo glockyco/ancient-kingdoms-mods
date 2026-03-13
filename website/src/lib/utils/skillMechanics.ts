@@ -342,6 +342,12 @@ export function computeMechanicsSpec(
         damagePairs.push({ label, formula });
       }
     }
+    // Scroll damage skills (is_scroll=1) often have player_classes=[] since scrolls
+    // can be used by anyone. If no caster context was generated, add a fallback so the
+    // template can render the scroll formula (Damage = PlayerLevel × 15).
+    if (skill.is_scroll && damagePairs.length === 0) {
+      damagePairs.push({ label: "Scroll", formula: "scroll" });
+    }
   }
 
   // ---------- heal ----------
