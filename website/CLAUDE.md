@@ -27,6 +27,22 @@ pnpm cf-deploy  # Build + deploy to Cloudflare
 
 Pre-commit hooks auto-run: ESLint --fix, Prettier --write, pnpm check.
 
+## Mechanics Snapshots
+
+Regression tests for the mechanics card rendered on each skill page.
+Snapshots live in `test-fixtures/mechanics-snapshots/<skill_id>.txt` and are committed to the repo.
+
+```bash
+# Check: compare built pages against committed snapshots (exit 1 on any diff)
+pnpm build && node scripts/snapshot-mechanics.mjs
+
+# Update: accept current output as the new baseline
+pnpm build && node scripts/snapshot-mechanics.mjs --update
+```
+
+Run `--update` after any intentional mechanics card change and commit the updated snapshots in the same commit.
+Run without `--update` (check mode) to catch unintended regressions before shipping.
+
 ## Structure
 
 ```
