@@ -7,8 +7,10 @@ import type {
   SkillMonster,
   SkillPet,
   LinearValue,
+  SkillMechanicsSpec,
 } from "$lib/types/skills";
 import { formatSkillEffect } from "$lib/utils/formatSkillEffect";
+import { computeMechanicsSpec } from "$lib/utils/skillMechanics";
 
 export const prerender = true;
 
@@ -36,6 +38,7 @@ export interface SkillDetailPageData {
   usedByMonsters: SkillMonster[];
   usedByPets: SkillPet[];
   description: string;
+  mechanicsSpec: SkillMechanicsSpec;
 }
 
 export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
@@ -282,7 +285,7 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
 
   // Get pets/mercenaries that use this skill
   const usedByPets = query<SkillPet>(
-    `SELECT DISTINCT p.id, p.name, p.is_mercenary, p.is_familiar
+    `SELECT DISTINCT p.id, p.name, p.is_mercenary, p.is_familiar, p.type_monster
     FROM pet_skills ps
     JOIN pets p ON p.id = ps.pet_id
     WHERE ps.skill_id = ?
@@ -308,5 +311,10 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
     usedByMonsters,
     usedByPets,
     description,
+    mechanicsSpec: computeMechanicsSpec(
+      skill,
+      usedByPets,
+      usedByMonsters.length > 0,
+    ),
   };
 };

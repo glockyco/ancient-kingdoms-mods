@@ -228,4 +228,102 @@ export interface SkillPet {
   name: string;
   is_mercenary: boolean;
   is_familiar: boolean;
+  type_monster: string | null;
+}
+
+// ------------------------------------------------------------
+// Mechanics spec — computed server-side, rendered declaratively
+// ------------------------------------------------------------
+
+export type DamageFormulaKind =
+  // Physical
+  | "normal" // STR×1.0 + all equipment
+  | "ranger_melee" // STR×1.0 + all equip − bow slot bonus (slot 13)
+  | "rogue_melee" // STR×1.0 + main-hand + 50% off-hand + other equip
+  // Ranged (physical+DEX)
+  | "ranged_player" // STR×1.0 + bow+armour + DEX×1.5 − melee slot bonus
+  | "ranged_player_frontal" // STR×1.0 + all equip + DEX×1.5 (no subtraction)
+  | "ranged_merc" // STR×1.0 + all equip + DEX×1.5 (no subtraction)
+  // Poison
+  | "poison_rogue" // STR×1.0 + all equip + DEX×2.5
+  // Magic
+  | "magic_spell" // INT×1.5 + equipment
+  | "magic_weapon" // INT×1.5 + STR×1.0 + equipment (additive)
+  // Special
+  | "manaburn" // energy/mana × 2, bypasses mitigation
+  | "scroll"; // level × 15
+
+export interface DamageContext {
+  /** One or more caster descriptions that all share this formula. */
+  casterLabels: string[];
+  formula: DamageFormulaKind;
+}
+
+export type HealBonusKind =
+  | "player_ranger" // base × min((WIS×3)×0.004, 5.0)
+  | "player_other" // base × min(WIS×0.004, 5.0)
+  | "merc" // base × min(WIS×0.004, 5.0) using merc's own WIS — no ×3 for Ranger merc
+  | "scroll" // base + level × 8
+  | "none"; // no bonus (monster, NPC, non-merc pet)
+
+export interface HealContext {
+  casterLabels: string[];
+  bonusKind: HealBonusKind;
+  /** Whether the critical heal path applies (can_heal_others only). */
+  canCrit: boolean;
+}
+
+export type BuffBonusAttrSource =
+  | "player_ranger_wis" // WIS × 3 (TargetBuffSkill only)
+  | "player_wis" // WIS (TargetBuffSkill non-Ranger, or any AreaBuffSkill player)
+  | "merc_wis" // merc's own WIS (TargetBuffSkill merc path)
+  | "player_charisma" // player CHA (AreaBuffSkill + is_mercenary_skill override)
+  | "player_level" // scroll: PlayerLevel × 8
+  | "none"; // monster/NPC: 0
+
+export interface BuffContext {
+  casterLabels: string[];
+  bonusAttrSource: BuffBonusAttrSource;
+  /** True for area_buff (different Ranger/ward behaviour vs target_buff). */
+  isAreaBuff: boolean;
+}
+
+export type TimingModel =
+  | "player_auto" // interval = cast_time + clamp(delay×(1−haste)/25, 0.25, 2.0)
+  | "player_skill" // interval = cast_time + cooldown (cooldown NOT haste-reduced for players)
+  | "merc_auto" // interval = cast_time + cooldown×(1−haste)
+  | "merc_skill" // interval = cast_time + cooldown (no haste reduction)
+  | "monster_nospell" // interval = cast_time + cooldown×(1−haste) via FinishCastMeleeAttackMonster
+  | "monster_spell"; // interval = cast_time + cooldown (FinishCast, no haste)
+
+export interface TimingContext {
+  casterLabels: string[];
+  model: TimingModel;
+}
+
+export type DebuffBonusAttrKind = "str" | "dex" | "int" | "scroll" | "none";
+
+export interface DebuffContext {
+  /** Caster labels that share this bonus attribute kind (e.g. ["Warrior (player)", "Rogue (player)"]). */
+  casterLabels: string[];
+  /** How the bonus attribute is determined for this caster type.
+   * Source: TargetDebuffSkill.cs:265-279 — non-Player (monster/NPC) falls through to default 0.
+   */
+  bonusAttrKind: DebuffBonusAttrKind;
+}
+
+export interface SkillMechanicsSpec {
+  /** One entry per distinct formula; empty array for non-damage skills. */
+  damageContexts: DamageContext[];
+  /** One entry per distinct heal bonus; empty for non-heal skills. */
+  healContexts: HealContext[];
+  /** One entry per distinct buff attr source; empty for non-buff/passive skills. */
+  buffContexts: BuffContext[];
+  /**
+   * Populated when followup_default_attack=true. Shows per-caster timing model.
+   * Empty for skills where timing is simply cast_time + cooldown with no haste interaction.
+   */
+  timingContexts: TimingContext[];
+  /** One entry per distinct debuff bonus attr kind; empty for non-debuff skills. */
+  debuffContexts: DebuffContext[];
 }

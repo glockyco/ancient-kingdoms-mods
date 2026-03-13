@@ -1,6 +1,14 @@
 import type { LinearValue } from "$lib/types/skills";
 import { formatDuration } from "./format";
 
+/** Returns true when a LinearValue field has at least one non-zero component.
+ * The DB stores all LinearValue fields as JSON objects even when both components
+ * are zero, so a raw null-check is insufficient to detect "no value".
+ */
+export function hasNonZeroField(f: LinearValue | null): boolean {
+  return f != null && (f.base_value !== 0 || f.bonus_per_level !== 0);
+}
+
 /**
  * Monster context for damage calculation
  */

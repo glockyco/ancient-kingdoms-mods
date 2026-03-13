@@ -3,6 +3,7 @@
   import * as Card from "$lib/components/ui/card";
   import type { PageData } from "./$types";
   import type { LinearValue } from "$lib/types/skills";
+  import { hasNonZeroField } from "$lib/utils/formatSkillEffect";
   import * as Tabs from "$lib/components/ui/tabs";
   import Sparkles from "@lucide/svelte/icons/sparkles";
   import Clock from "@lucide/svelte/icons/clock";
@@ -185,35 +186,16 @@
   // mana_max_bonus, energy_max_bonus, *_percent_bonus, cooldown_reduction_percent, heal_on_hit_percent,
   // positive damage_bonus / magic_damage_bonus (only negative values use bonusAttribute)
   const hasWisScaledBonuses = $derived(
-    !!(
-      skill.health_max_bonus ||
-      skill.defense_bonus ||
-      skill.magic_resist_bonus ||
-      skill.poison_resist_bonus ||
-      skill.fire_resist_bonus ||
-      skill.cold_resist_bonus ||
-      skill.disease_resist_bonus ||
-      skill.healing_per_second_bonus ||
-      skill.damage_shield ||
-      skill.ward_bonus
-    ),
-  );
-
-  // Fields that scale with DEX/INT/STR on debuff skills at runtime (TargetDebuffSkill.cs — bonusAttribute)
-  // DoT (healing_per_second_bonus < 0), resist reductions, damage/magic damage reductions
-  // Source: server-scripts/Skills.cs:1108-1266, TargetDebuffSkill.cs:268-275
-  const hasDebuffAttrScaling = $derived(
-    !!(
-      skill.healing_per_second_bonus ||
-      skill.defense_bonus ||
-      skill.magic_resist_bonus ||
-      skill.poison_resist_bonus ||
-      skill.fire_resist_bonus ||
-      skill.cold_resist_bonus ||
-      skill.disease_resist_bonus ||
-      skill.damage_bonus ||
-      skill.magic_damage_bonus
-    ),
+    hasNonZeroField(skill.health_max_bonus) ||
+      hasNonZeroField(skill.defense_bonus) ||
+      hasNonZeroField(skill.magic_resist_bonus) ||
+      hasNonZeroField(skill.poison_resist_bonus) ||
+      hasNonZeroField(skill.fire_resist_bonus) ||
+      hasNonZeroField(skill.cold_resist_bonus) ||
+      hasNonZeroField(skill.disease_resist_bonus) ||
+      hasNonZeroField(skill.healing_per_second_bonus) ||
+      hasNonZeroField(skill.damage_shield) ||
+      hasNonZeroField(skill.ward_bonus),
   );
 
   const hasCrowdControl = $derived(
@@ -613,17 +595,7 @@
     skill.max_level > 1 && scalingColumns.length > 0,
   );
 
-  // Mechanics section: only for player-usable skills
-  // Scroll skills have no player_classes but are used by players via items
-  const isPlayerUsable = $derived(
-    skill.player_classes.length > 0 ||
-      skill.is_mercenary_skill ||
-      skill.is_pet_skill ||
-      data.usedByPets.length > 0 ||
-      data.grantedByItems.length > 0,
-  );
-
-  // Pet/mercenary usage flags for mechanics notes
+  // Pet/mercenary usage flags for skill-level notes inside the mechanics card
   const usedByMercenary = $derived(data.usedByPets.some((p) => p.is_mercenary));
   const usedByCompanion = $derived(
     data.usedByPets.some((p) => !p.is_mercenary && !p.is_familiar),
@@ -652,96 +624,42 @@
     skill.skill_type === "target_debuff" || skill.skill_type === "area_debuff",
   );
 
-  const hasSpecialBuffFlags = $derived(
-    skill.is_invisibility ||
+  // showMechanics: true iff at least one inner mechanics section will actually render.
+  // Mirrors the exact conditions of each inner section to avoid empty cards.
+  // No isPlayerUsable dependency — monster-only skills are included when the spec
+  // has computed contexts for them.
+  const showMechanics = $derived(
+    // A. Damage formula + pipeline
+    (isDamageType &&
+      data.mechanicsSpec.damageContexts.length > 0 &&
+      hasActualDamage) ||
+      // B. Heal formula
+      (isHealType &&
+        !skill.is_resurrect_skill &&
+        data.mechanicsSpec.healContexts.length > 0) ||
+      // C. Buff scaling (passives excluded: PassiveSkill.Apply is a no-op)
+      (isBuffType &&
+        skill.skill_type !== "passive" &&
+        hasWisScaledBonuses &&
+        data.mechanicsSpec.buffContexts.length > 0) ||
+      // Mana shield and dispel have dedicated mechanics sections
       skill.is_mana_shield ||
       skill.is_dispel ||
-      skill.is_enrage,
-  );
-
-  const showMechanics = $derived(
-    (isPlayerUsable &&
-      (isDamageType ||
-        isHealType ||
-        (isBuffType &&
-          (hasWisScaledBonuses ||
-            hasSpecialBuffFlags ||
-            skill.is_cleanse ||
-            skill.is_dispel)))) ||
+      // D. Debuff scaling or cleanse resistance
       (isDebuffType &&
-        (hasDebuffAttrScaling || skill.prob_ignore_cleanse != null)),
+        (data.mechanicsSpec.debuffContexts.length > 0 ||
+          skill.prob_ignore_cleanse != null)) ||
+      // C2. Attack timing
+      data.mechanicsSpec.timingContexts.length > 0 ||
+      // E2. Cleanse mechanics
+      skill.is_cleanse ||
+      // G. Special notes
+      skill.is_assassination_skill ||
+      skill.is_decrease_resists_skill ||
+      (hasLinearValue(skill.cast_time) && skill.is_spell && !skill.is_scroll),
   );
 
-  // Determine damage formula type
-  // Source: server-scripts/Combat.cs — DealDamageAt
-  // Source: server-scripts/TargetDamageSkill.cs — Apply
-  // Source: server-scripts/TargetProjectileSkill.cs — Apply
-  // Source: server-scripts/FrontalProjectilesSkill.cs — Apply
-  // Source: server-scripts/FrontalDamageSkill.cs — Apply
-  // Source: server-scripts/DamageSkill.cs — GetTooltipDamageBonus (authoritative summary)
-  const damageFormulaType = $derived.by((): string | null => {
-    if (!isDamageType) return null;
-
-    if (skill.is_manaburn_skill) return "manaburn";
-    if (skill.is_scroll) return "scroll";
-
-    const dt = skill.damage_type;
-    const isSpell = skill.is_spell;
-    const classes = skill.player_classes;
-
-    // Ranger frontal projectile skills: ranger class branch fires first regardless of damage type
-    // Source: server-scripts/FrontalProjectilesSkill.cs:97-100 — ranger check precedes damage type checks
-    if (
-      skill.skill_type === "frontal_projectiles" &&
-      classes.includes("ranger")
-    )
-      return "bow_ranger_frontal";
-
-    // Ranger bow projectile skills: combat.damage - melee weapon bonus + DEX×1.5
-    // Source: server-scripts/TargetProjectileSkill.cs:195-200 — subtracts GetEquippedWeaponIndex() (slot 12, melee)
-    if (
-      skill.skill_type === "target_projectile" &&
-      skill.required_weapon_category === "Bow" &&
-      classes.includes("ranger")
-    )
-      return "bow_ranger_projectile";
-
-    // Source: server-scripts/Combat.cs — DealDamageAt damage type checks
-    if (dt === "Poison" && classes.includes("rogue")) return "poison_rogue";
-    if (dt === "Poison") return "poison_nonrogue";
-    if (
-      (dt === "Fire" || dt === "Magic" || dt === "Cold" || dt === "Disease") &&
-      isSpell
-    )
-      return "magic_spell";
-    if (dt === "Magic" && !isSpell && skill.required_weapon_category)
-      return "magic_weapon";
-
-    // Ranger melee/target-damage skills: combat.damage - bow bonus (slot 13)
-    // Source: server-scripts/TargetDamageSkill.cs:218-221, FrontalDamageSkill.cs:88-92
-    if (
-      (skill.skill_type === "target_damage" ||
-        skill.skill_type === "frontal_damage") &&
-      dt === "Normal" &&
-      classes.includes("ranger")
-    )
-      return "ranger_melee";
-
-    // Rogue normal-damage skills: combat.damage - ceil(off-hand bonus × 0.5)
-    // Source: server-scripts/TargetDamageSkill.cs:223-226
-    if (
-      (skill.skill_type === "target_damage" ||
-        skill.skill_type === "frontal_damage") &&
-      dt === "Normal" &&
-      classes.includes("rogue") &&
-      !classes.includes("warrior")
-    )
-      return "rogue_melee";
-
-    return "normal_melee";
-  });
-
-  // Determine resist type based on damage_type
+  // Damage/resist type helpers — kept for the damage pipeline and resist section
   // Source: server-scripts/Combat.cs — GetProbResist* methods
   const resistType = $derived.by((): string | null => {
     if (!isDamageType) return null;
@@ -754,15 +672,6 @@
     if (dt === "Disease") return "disease";
     return "melee";
   });
-
-  // Buff scaling attribute source
-  // Source: server-scripts/TargetBuffSkill.cs — Apply, bonusAttribute = pet3.wisdom.value for all mercenary skills
-  // CHA is only referenced in BonusSkill.cs ToolTipUpgrade() (client display only, never applied at runtime)
-  const buffScalingAttr = $derived(skill.is_scroll ? "level" : "wis");
-
-  // Debuff bonus attribute label for scaling rows
-  // Source: server-scripts/TargetDebuffSkill.cs:277-279 — isScroll → PlayerLevel * 10
-  const debuffScrollAttr = "PlayerLevel \u00d7 10";
 </script>
 
 <svelte:head>
@@ -1762,7 +1671,8 @@
           <div class="space-y-1 text-sm">
             {#if skill.is_enrage}
               <p class="text-red-600 dark:text-red-400">
-                Enrage: +33% damage when below 25% HP
+                Enrage: non-spell damage Player +33% / Monster +50–100% when
+                below 25% HP
               </p>
             {/if}
             {#if skill.is_invisibility}
@@ -1847,8 +1757,7 @@
         </Card.Title>
       </Card.Header>
       <Card.Content class="space-y-6 text-sm">
-        <!-- Pet/Mercenary Skill Level -->
-        {#if usedByMercenary}
+        <!-- Pet/Merc Skill Level -->{#if usedByMercenary}
           <p class="text-muted-foreground">
             When used by a mercenary, skill level = floor(regular level &divide;
             5) + floor(veteran level &divide; 10), capped at max skill level.
@@ -1867,187 +1776,188 @@
           </p>
         {/if}
 
-        <!-- A. Damage Formula -->
-        {#if isDamageType && damageFormulaType && hasActualDamage}
+        <!-- A. Damage Formula (spec-driven, one block per distinct formula/context) -->
+        {#if isDamageType && data.mechanicsSpec.damageContexts.length > 0 && hasActualDamage}
           <div class="space-y-3">
             <h3 class="font-semibold">Damage Formula</h3>
-
-            {#if damageFormulaType === "manaburn"}
-              <!-- Source: server-scripts/TargetDamageSkill.cs — energy.current * 2 -->
-              <!-- Source: server-scripts/TargetProjectileSkill.cs — mana.current * 2 -->
-              <p>
-                Consumes all rage. Damage = Rage &times; 2 (Warrior/Rogue) or
-                Mana &times; 2 (Wizard). Bypasses all resistance and mitigation.
-              </p>
-            {:else if damageFormulaType === "scroll"}
-              <!-- Source: server-scripts/TargetDamageSkill.cs — isScroll → player.level.current * 15 -->
-              <p>Damage = Player Level &times; 15 (scroll formula)</p>
-            {:else if damageFormulaType === "magic_spell"}
-              <!-- Source: server-scripts/Intelligence.cs — magicDamageBonusPerPoint = 1.5 -->
-              <dl class="space-y-1">
-                <div>
-                  <dt class="text-muted-foreground">Pre-Mitigation</dt>
-                  <dd class="font-mono">Skill Damage + Magic Damage</dd>
-                </div>
-                <div>
-                  <dt class="text-muted-foreground">Magic Damage</dt>
-                  <dd class="font-mono">
-                    (INT &times; 1.5 + equipment bonuses) &times; (1 + passive%
-                    + buff%)
-                  </dd>
-                </div>
-              </dl>
-            {:else if damageFormulaType === "magic_weapon"}
-              <!-- Source: server-scripts/Strength.cs — damageBonusPerPoint = 1.0 -->
-              <!-- Source: server-scripts/Intelligence.cs — magicDamageBonusPerPoint = 1.5 -->
-              <dl class="space-y-1">
-                <div>
-                  <dt class="text-muted-foreground">Pre-Mitigation</dt>
-                  <dd class="font-mono">
-                    Skill Damage + Magic Damage + Attack Damage
-                  </dd>
-                </div>
-                <div>
-                  <dt class="text-muted-foreground">Magic Damage</dt>
-                  <dd class="font-mono">
-                    (INT &times; 1.5 + equipment bonuses) &times; (1 + passive%
-                    + buff%)
-                  </dd>
-                </div>
-                <div>
-                  <dt class="text-muted-foreground">Attack Damage</dt>
-                  <dd class="font-mono">
-                    (STR &times; 1.0 + equipment bonuses) &times; (1 + passive%
-                    + buff%)
-                  </dd>
-                </div>
-              </dl>
-            {:else if damageFormulaType === "poison_rogue"}
-              <!-- Source: server-scripts/Dexterity.cs — poisonDamageBonusPerPoint = 2.5 -->
-              <dl class="space-y-1">
-                <div>
-                  <dt class="text-muted-foreground">Pre-Mitigation</dt>
-                  <dd class="font-mono">
-                    Skill Damage + Attack Damage + DEX &times; 2.5
-                  </dd>
-                </div>
-                <div>
-                  <dt class="text-muted-foreground">Attack Damage</dt>
-                  <dd class="font-mono">
-                    (STR &times; 1.0 + equipment bonuses) &times; (1 + passive%
-                    + buff%)
-                  </dd>
-                </div>
-              </dl>
-            {:else if damageFormulaType === "poison_nonrogue"}
-              <!-- Source: server-scripts/Intelligence.cs — magicDamageBonusPerPoint = 1.5 -->
-              <dl class="space-y-1">
-                <div>
-                  <dt class="text-muted-foreground">Pre-Mitigation</dt>
-                  <dd class="font-mono">Skill Damage + Magic Damage</dd>
-                </div>
-                <div>
-                  <dt class="text-muted-foreground">Magic Damage</dt>
-                  <dd class="font-mono">
-                    (INT &times; 1.5 + equipment bonuses) &times; (1 + passive%
-                    + buff%)
-                  </dd>
-                </div>
-              </dl>
-            {:else if damageFormulaType === "bow_ranger_projectile"}
-              <!-- Source: server-scripts/TargetProjectileSkill.cs:195-200 -->
-              <!-- combat.damage - slots[12 melee weapon].damageBonus + dex.GetRangedAttackBonusPerPoint() -->
-              <!-- combat.damage includes all equipment; melee weapon bonus (slot 12) is subtracted -->
-              <!-- so that only bow + armour bonuses remain. Bow bonus (slot 13) is kept. -->
-              <!-- Source: server-scripts/DamageSkill.cs:226-233 — GetTooltipDamageBonus confirms this -->
-              <!-- Source: server-scripts/Dexterity.cs — rangedAttackBonusPerPoint = 1.5 -->
-              <dl class="space-y-1">
-                <div>
-                  <dt class="text-muted-foreground">Pre-Mitigation</dt>
-                  <dd class="font-mono">
-                    Skill Damage + Ranged Attack Damage + DEX &times; 1.5
-                  </dd>
-                </div>
-                <div>
-                  <dt class="text-muted-foreground">Ranged Attack Damage</dt>
-                  <dd class="font-mono">
-                    (STR &times; 1.0 + bow + non-melee equipment bonuses)
-                    &times; (1 + passive% + buff%)
-                  </dd>
-                </div>
-              </dl>
-            {:else if damageFormulaType === "bow_ranger_frontal"}
-              <!-- Source: server-scripts/FrontalProjectilesSkill.cs:97-100 -->
-              <!-- combat.damage + dex.GetRangedAttackBonusPerPoint() — no weapon subtraction -->
-              <!-- Both melee and bow bonuses remain in combat.damage. -->
-              <!-- Source: server-scripts/Dexterity.cs — rangedAttackBonusPerPoint = 1.5 -->
-              <dl class="space-y-1">
-                <div>
-                  <dt class="text-muted-foreground">Pre-Mitigation</dt>
-                  <dd class="font-mono">
-                    Skill Damage + Ranged Attack Damage + DEX &times; 1.5
-                  </dd>
-                </div>
-                <div>
-                  <dt class="text-muted-foreground">Ranged Attack Damage</dt>
-                  <dd class="font-mono">
-                    (STR &times; 1.0 + all equipment bonuses) &times; (1 +
-                    passive% + buff%)
-                  </dd>
-                </div>
-              </dl>
-            {:else if damageFormulaType === "ranger_melee"}
-              <!-- Source: server-scripts/TargetDamageSkill.cs:218-221, FrontalDamageSkill.cs:88-92 -->
-              <!-- combat.damage - slots[13 bow].damageBonus -->
-              <!-- Bow bonus (slot 13) is subtracted; melee weapon (slot 12) is kept. -->
-              <dl class="space-y-1">
-                <div>
-                  <dt class="text-muted-foreground">Pre-Mitigation</dt>
-                  <dd class="font-mono">Skill Damage + Attack Damage</dd>
-                </div>
-                <div>
-                  <dt class="text-muted-foreground">Attack Damage</dt>
-                  <dd class="font-mono">
-                    (STR &times; 1.0 + non-bow equipment bonuses) &times; (1 +
-                    passive% + buff%)
-                  </dd>
-                </div>
-              </dl>
-            {:else if damageFormulaType === "rogue_melee"}
-              <!-- Source: server-scripts/TargetDamageSkill.cs:223-226 -->
-              <!-- combat.damage - ceil(slots[13 off-hand].damageBonus × 0.5) -->
-              <!-- Off-hand dagger (slot 13) counts at 50%; main-hand (slot 12) counts fully. -->
-              <dl class="space-y-1">
-                <div>
-                  <dt class="text-muted-foreground">Pre-Mitigation</dt>
-                  <dd class="font-mono">Skill Damage + Attack Damage</dd>
-                </div>
-                <div>
-                  <dt class="text-muted-foreground">Attack Damage</dt>
-                  <dd class="font-mono">
-                    (STR &times; 1.0 + main-hand + 50% off-hand + other
-                    equipment bonuses) &times; (1 + passive% + buff%)
-                  </dd>
-                </div>
-              </dl>
-            {:else}
-              <!-- normal_melee -->
-              <!-- Source: server-scripts/Strength.cs — damageBonusPerPoint = 1.0 -->
-              <!-- Source: server-scripts/Combat.cs — damage = (baseDamage + ICombatBonus sum) × (1 + passive% + buff%) -->
-              <dl class="space-y-1">
-                <div>
-                  <dt class="text-muted-foreground">Pre-Mitigation</dt>
-                  <dd class="font-mono">Skill Damage + Attack Damage</dd>
-                </div>
-                <div>
-                  <dt class="text-muted-foreground">Attack Damage</dt>
-                  <dd class="font-mono">
-                    (STR &times; 1.0 + equipment bonuses) &times; (1 + passive%
-                    + buff%)
-                  </dd>
-                </div>
-              </dl>
-            {/if}
+            {#each data.mechanicsSpec.damageContexts as ctx (ctx.formula)}
+              <div>
+                {#if data.mechanicsSpec.damageContexts.length > 1}
+                  <p class="text-xs text-muted-foreground mb-1">
+                    {ctx.casterLabels.join(", ")}
+                  </p>
+                {/if}
+                {#if ctx.formula === "manaburn"}
+                  <!-- Source: TargetDamageSkill.cs — energy.current * 2 / mana.current * 2 -->
+                  <p>
+                    Consumes all rage. Damage = Rage &times; 2 (Warrior/Rogue)
+                    or Mana &times; 2 (Wizard). Bypasses all resistance and
+                    mitigation.
+                  </p>
+                {:else if ctx.formula === "scroll"}
+                  <!-- Source: TargetDamageSkill.cs — isScroll → player.level.current * 15 -->
+                  <p class="font-mono">Damage = PlayerLevel &times; 15</p>
+                {:else if ctx.formula === "magic_spell"}
+                  <!-- Source: Intelligence.cs — magicDamageBonusPerPoint = 1.5 -->
+                  <dl class="space-y-1">
+                    <div>
+                      <dt class="text-muted-foreground">Pre-Mitigation</dt>
+                      <dd class="font-mono">Skill Damage + Magic Damage</dd>
+                    </div>
+                    <div>
+                      <dt class="text-muted-foreground">Magic Damage</dt>
+                      <dd class="font-mono">
+                        (INT &times; 1.5 + equipment) &times; (1 + passive% +
+                        buff%)
+                      </dd>
+                    </div>
+                  </dl>
+                {:else if ctx.formula === "magic_weapon"}
+                  <!-- Source: Strength.cs — damageBonusPerPoint = 1.0; Intelligence.cs — magicDamageBonusPerPoint = 1.5 -->
+                  <dl class="space-y-1">
+                    <div>
+                      <dt class="text-muted-foreground">Pre-Mitigation</dt>
+                      <dd class="font-mono">
+                        Skill Damage + Magic Damage + Attack Damage
+                      </dd>
+                    </div>
+                    <div>
+                      <dt class="text-muted-foreground">Magic Damage</dt>
+                      <dd class="font-mono">
+                        (INT &times; 1.5 + equipment) &times; (1 + passive% +
+                        buff%)
+                      </dd>
+                    </div>
+                    <div>
+                      <dt class="text-muted-foreground">Attack Damage</dt>
+                      <dd class="font-mono">
+                        (STR &times; 1.0 + equipment) &times; (1 + passive% +
+                        buff%)
+                      </dd>
+                    </div>
+                  </dl>
+                {:else if ctx.formula === "poison_rogue"}
+                  <!-- Source: Dexterity.cs — poisonDamageBonusPerPoint = 2.5 -->
+                  <dl class="space-y-1">
+                    <div>
+                      <dt class="text-muted-foreground">Pre-Mitigation</dt>
+                      <dd class="font-mono">
+                        Skill Damage + Attack Damage + DEX &times; 2.5
+                      </dd>
+                    </div>
+                    <div>
+                      <dt class="text-muted-foreground">Attack Damage</dt>
+                      <dd class="font-mono">
+                        (STR &times; 1.0 + equipment) &times; (1 + passive% +
+                        buff%)
+                      </dd>
+                    </div>
+                  </dl>
+                {:else if ctx.formula === "ranged_player"}
+                  <!-- Source: TargetProjectileSkill.cs:195-200 — combat.damage - melee slot bonus + DEX×1.5 -->
+                  <!-- Bow bonus (slot 13) kept; melee weapon bonus (slot 12) subtracted -->
+                  <dl class="space-y-1">
+                    <div>
+                      <dt class="text-muted-foreground">Pre-Mitigation</dt>
+                      <dd class="font-mono">
+                        Skill Damage + Ranged Attack Damage + DEX &times; 1.5
+                      </dd>
+                    </div>
+                    <div>
+                      <dt class="text-muted-foreground">
+                        Ranged Attack Damage
+                      </dt>
+                      <dd class="font-mono">
+                        (STR &times; 1.0 + bow + non-melee equipment) &times; (1
+                        + passive% + buff%)
+                      </dd>
+                    </div>
+                  </dl>
+                {:else if ctx.formula === "ranged_player_frontal"}
+                  <!-- Source: FrontalProjectilesSkill.cs:97-100 — combat.damage + DEX×1.5, no weapon subtraction -->
+                  <dl class="space-y-1">
+                    <div>
+                      <dt class="text-muted-foreground">Pre-Mitigation</dt>
+                      <dd class="font-mono">
+                        Skill Damage + Ranged Attack Damage + DEX &times; 1.5
+                      </dd>
+                    </div>
+                    <div>
+                      <dt class="text-muted-foreground">
+                        Ranged Attack Damage
+                      </dt>
+                      <dd class="font-mono">
+                        (STR &times; 1.0 + all equipment) &times; (1 + passive%
+                        + buff%)
+                      </dd>
+                    </div>
+                  </dl>
+                {:else if ctx.formula === "ranged_merc"}
+                  <!-- Source: TargetProjectileSkill.cs — `caster is Pet { isMercenary: not false, typeMonster: "Ranger" }` -->
+                  <!-- combat.damage + pet2.dexterity.GetRangedAttackBonusPerPoint() — no weapon subtraction -->
+                  <dl class="space-y-1">
+                    <div>
+                      <dt class="text-muted-foreground">Pre-Mitigation</dt>
+                      <dd class="font-mono">
+                        Skill Damage + Attack Damage + DEX &times; 1.5
+                      </dd>
+                    </div>
+                    <div>
+                      <dt class="text-muted-foreground">Attack Damage</dt>
+                      <dd class="font-mono">
+                        (STR &times; 1.0 + all equipment) &times; (1 + passive%
+                        + buff%)
+                      </dd>
+                    </div>
+                  </dl>
+                {:else if ctx.formula === "ranger_melee"}
+                  <!-- Source: TargetDamageSkill.cs:218-221 — combat.damage - slots[13 bow].damageBonus -->
+                  <dl class="space-y-1">
+                    <div>
+                      <dt class="text-muted-foreground">Pre-Mitigation</dt>
+                      <dd class="font-mono">Skill Damage + Attack Damage</dd>
+                    </div>
+                    <div>
+                      <dt class="text-muted-foreground">Attack Damage</dt>
+                      <dd class="font-mono">
+                        (STR &times; 1.0 + non-bow equipment) &times; (1 +
+                        passive% + buff%)
+                      </dd>
+                    </div>
+                  </dl>
+                {:else if ctx.formula === "rogue_melee"}
+                  <!-- Source: TargetDamageSkill.cs:223-226 — combat.damage - ceil(off-hand × 0.5) -->
+                  <dl class="space-y-1">
+                    <div>
+                      <dt class="text-muted-foreground">Pre-Mitigation</dt>
+                      <dd class="font-mono">Skill Damage + Attack Damage</dd>
+                    </div>
+                    <div>
+                      <dt class="text-muted-foreground">Attack Damage</dt>
+                      <dd class="font-mono">
+                        (STR &times; 1.0 + main-hand + 50% off-hand + other
+                        equipment) &times; (1 + passive% + buff%)
+                      </dd>
+                    </div>
+                  </dl>
+                {:else}
+                  <!-- normal: combat.damage, STR×1.0 + all equipment -->
+                  <dl class="space-y-1">
+                    <div>
+                      <dt class="text-muted-foreground">Pre-Mitigation</dt>
+                      <dd class="font-mono">Skill Damage + Attack Damage</dd>
+                    </div>
+                    <div>
+                      <dt class="text-muted-foreground">Attack Damage</dt>
+                      <dd class="font-mono">
+                        (STR &times; 1.0 + equipment) &times; (1 + passive% +
+                        buff%)
+                      </dd>
+                    </div>
+                  </dl>
+                {/if}
+              </div>
+            {/each}
 
             {#if skill.damage_percent}
               <p class="text-muted-foreground">
@@ -2057,54 +1967,47 @@
               </p>
             {/if}
 
-            <!-- Damage Pipeline (universal for all damage skills) -->
-            <!-- Source: server-scripts/Combat.cs — DealDamageAt -->
-            {#if damageFormulaType !== "manaburn"}
+            <!-- Damage Pipeline (universal) -->
+            <!-- Source: Combat.cs — DealDamageAt -->
+            {#if !data.mechanicsSpec.damageContexts.some((c) => c.formula === "manaburn")}
               <div class="space-y-1">
                 <h4 class="font-medium text-muted-foreground">
                   Damage Pipeline
                 </h4>
                 <ol class="list-decimal list-inside space-y-0.5 font-mono">
                   <li>Variance: &times;0.9&ndash;1.1</li>
-                  <!-- Source: server-scripts/Combat.cs — 0.25f : 0.1f; skills[13] = Improved Backstab passive -->
                   <li>
                     Backstab (behind target): +10% | Rogue w/ Improved Backstab:
                     +25%
                   </li>
-                  <!-- Source: server-scripts/Combat.cs — Clamp(... * 0.02f, -0.2f, 0.2f) -->
                   <li>
                     Level difference: &plusmn;2% per level (max &plusmn;20%)
                   </li>
-                  <!-- Source: server-scripts/Combat.cs — num10 * 0.1f -->
                   <li>
                     Slayer reduction (boss/elite &rarr; player):
                     &minus;slayerLevel &times; 10%
                   </li>
-                  <!-- Source: server-scripts/Combat.cs — 0.33f (player), Random.Range(0.5f, 1f) (monster) -->
                   <li>
                     Enrage (&lt;25% HP, non-spell): Player +33% | Monster
                     +50&ndash;100%
                   </li>
-                  <!-- Source: server-scripts/Combat.cs — combat.defense/magicResist/etc * 0.0005f -->
                   <li>
                     Mitigation: &minus;ceil(dmg &times; clamp(target.{resistType ===
                     "melee"
                       ? "defense"
                       : `${resistType}Resist`} &times; 0.0005, 0, 0.9))
                   </li>
-                  <!-- Source: server-scripts/Combat.cs — criticalChance roll, num * 1.5f -->
-                  <li>Crit: on crit &rarr; &times;1.5</li>
-                  <!-- Source: server-scripts/Combat.cs — isRadiantAetherActivated → 0.15f roll, consumes 1 item, *3 on top of crit -->
+                  <li>Crit: &times;1.5</li>
                   <li>
-                    Radiant Aether (15% chance on crit, consumes 1 item):
-                    &times;3 on top &rarr; &times;4.5
+                    Radiant Aether (15% on crit, consumes 1 item): &times;3 on
+                    top &rarr; &times;4.5
                   </li>
                 </ol>
               </div>
             {/if}
 
             <!-- Block/Resist Chance -->
-            {#if resistType && damageFormulaType !== "manaburn"}
+            {#if resistType}
               <div class="space-y-1">
                 <h4 class="font-medium text-muted-foreground">
                   {resistType === "melee"
@@ -2112,35 +2015,31 @@
                     : "Resist Chance"}
                 </h4>
                 {#if resistType === "melee"}
-                  <!-- Source: server-scripts/Combat.cs — GetProbResistMeleeDamage, blockChance property -->
+                  <!-- Source: Combat.cs — GetProbResistMeleeDamage -->
                   <p class="font-mono">
-                    clamp(<br />
-                    &nbsp;&nbsp;clamp(target.baseBlock + target.defense &times; 0.0001
-                    + buffs, 0, 0.8)<br />
-                    &nbsp;&nbsp;+ clamp((target.level &minus; attacker.level) &times;
-                    0.005, &minus;0.1, 0.1)<br />
-                    &nbsp;&nbsp;&minus; attacker.accuracy<br />
-                    , 0, 0.9)
+                    clamp(<br />&nbsp;&nbsp;clamp(target.baseBlock +
+                    target.defense &times; 0.0001 + buffs, 0, 0.8)<br
+                    />&nbsp;&nbsp;+ clamp((target.level &minus; attacker.level)
+                    &times; 0.005, &minus;0.1, 0.1)<br />&nbsp;&nbsp;&minus;
+                    attacker.accuracy<br />, 0, 0.9)
                   </p>
                 {:else}
-                  <!-- Source: server-scripts/Combat.cs — GetProbResistMagic/Fire/Cold/Poison/Disease -->
+                  <!-- Source: Combat.cs — GetProbResistMagic/Fire/Cold/Poison/Disease -->
                   <p class="font-mono">
-                    clamp(<br />
-                    &nbsp;&nbsp;target.{resistType}Resist &times; 0.0005<br />
-                    &nbsp;&nbsp;+ (target.level &minus; attacker.level) &times; 0.005<br
-                    />
-                    &nbsp;&nbsp;&minus; attacker.accuracy<br />
-                    , 0, 0.9)
+                    clamp(<br />&nbsp;&nbsp;target.{resistType}Resist &times;
+                    0.0005<br />&nbsp;&nbsp;+ (target.level &minus;
+                    attacker.level) &times; 0.005<br />&nbsp;&nbsp;&minus;
+                    attacker.accuracy<br />, 0, 0.9)
                   </p>
                 {/if}
-                <!-- Source: server-scripts/Combat.cs — num5 - 0.25f, amountDamage * 0.1f, num5 *= 0.8f -->
+                <!-- Source: Combat.cs — moving player gets -0.25 resist and +10% damage -->
                 <dl
                   class="font-mono grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5"
                 >
                   <dt>Target moving:</dt>
-                  <dd>chance &minus; 0.25, damage +10%</dd>
+                  <dd>resist &minus;0.25, damage +10%</dd>
                   <dt>Backstab:</dt>
-                  <dd>chance &times; 0.8</dd>
+                  <dd>resist &times; 0.8</dd>
                 </dl>
               </div>
             {/if}
@@ -2148,7 +2047,6 @@
         {/if}
 
         <!-- E. Aggro Formula -->
-        <!-- Source: server-scripts/TargetDamageSkill.cs:239 — num5 = aggro > 0 ? caster.health.max : 0 -->
         {#if isDamageType && (skill.aggro?.base_value ?? 0) > 0}
           <div class="space-y-1">
             <h3 class="font-semibold">Aggro</h3>
@@ -2163,301 +2061,369 @@
           </div>
         {/if}
 
-        <!-- B. Heal Formula -->
-        <!-- Source: server-scripts/TargetHealSkill.cs:231 — isResurrectSkill takes a separate path
-             that calls TargetRpcResurrect with no healing or crit involved -->
-        {#if isHealType && !skill.is_resurrect_skill}
-          <div class="space-y-1">
+        <!-- B. Heal Formula (spec-driven, per caster context) -->
+        {#if isHealType && !skill.is_resurrect_skill && data.mechanicsSpec.healContexts.length > 0}
+          <div class="space-y-2">
             <h3 class="font-semibold">Healing Formula</h3>
-            <!-- Source: server-scripts/TargetHealSkill.cs:266-270 — isScroll → PlayerLevel * 8 replaces WIS bonus -->
-            <!-- Source: server-scripts/Wisdom.cs — healBonusPercentPerPoint = 0.004, capDirectHealBonus = 5.0 -->
-            {#if skill.is_scroll}
-              <p class="font-mono">
-                Final Heal = Base Heal + PlayerLevel &times; 8
-              </p>
-            {:else}
-              <p class="font-mono">
-                Final Heal = Base Heal + RoundToInt(Base Heal &times; min(WIS
-                &times; 0.004, 5.0))
-              </p>
-            {/if}
+            {#each data.mechanicsSpec.healContexts as ctx (ctx.bonusKind)}
+              <div>
+                {#if data.mechanicsSpec.healContexts.length > 1}
+                  <p class="text-xs text-muted-foreground mb-1">
+                    {ctx.casterLabels.join(", ")}
+                  </p>
+                {/if}
+                {#if ctx.bonusKind === "scroll"}
+                  <p class="font-mono">
+                    Final Heal = Base Heal + PlayerLevel &times; 8
+                  </p>
+                {:else if ctx.bonusKind === "player_ranger"}
+                  <!-- Source: Wisdom.cs — GetHealBonus(isRanger:true) → WIS×3×0.004, capped at 5.0 (500%) -->
+                  <p class="font-mono">
+                    Final Heal = Base Heal + round(Base Heal &times; min(WIS
+                    &times; 3 &times; 0.004, 5.0))
+                  </p>
+                  <p class="text-muted-foreground text-xs">
+                    Ranger wisdom triples the heal bonus (effective cap: WIS =
+                    417).
+                  </p>
+                {:else if ctx.bonusKind === "player_other"}
+                  <!-- Source: Wisdom.cs — GetHealBonus(isRanger:false) → WIS×0.004, capped at 5.0 -->
+                  <p class="font-mono">
+                    Final Heal = Base Heal + round(Base Heal &times; min(WIS
+                    &times; 0.004, 5.0))
+                  </p>
+                {:else if ctx.bonusKind === "merc"}
+                  <!-- Source: TargetHealSkill.cs — `caster is Pet { isMercenary: not false }` → pet.wisdom.GetHealBonus() -->
+                  <!-- No Ranger×3 multiplier for merc — GetHealBonus() called without isRanger flag -->
+                  <p class="font-mono">
+                    Final Heal = Base Heal + round(Base Heal &times; min(WIS
+                    &times; 0.004, 5.0))
+                  </p>
+                  <p class="text-muted-foreground text-xs">
+                    Merc uses its own WIS. Ranger Merc does not get the ×3
+                    bonus.
+                  </p>
+                {:else}
+                  <p class="font-mono">Final Heal = Base Heal (no bonus)</p>
+                {/if}
+                {#if ctx.canCrit}
+                  <p class="text-muted-foreground">
+                    Critical Heal: 90% chance &times;2.0 | 10% chance &times;3.0
+                  </p>
+                {/if}
+              </div>
+            {/each}
+          </div>
+        {/if}
 
-            <!-- Source: server-scripts/TargetHealSkill.cs:271-274, AreaHealSkill.cs:94-96 — Random.value > 0.9 threshold -->
-            <p class="text-muted-foreground">
-              Critical Heal: on crit &rarr; 90% &times;2.0 | 10% &times;3.0
+        <!-- C. Buff Scaling (spec-driven, per caster context) -->
+        <!-- Source: PassiveSkill.cs:20-22 — Apply() is a no-op; passives grant flat values, no WIS scaling -->
+        {#if isBuffType && hasWisScaledBonuses && skill.skill_type !== "passive" && data.mechanicsSpec.buffContexts.length > 0}
+          <div class="space-y-3">
+            <h3 class="font-semibold">Buff Scaling</h3>
+            {#each data.mechanicsSpec.buffContexts as ctx (`${ctx.bonusAttrSource}:${ctx.isAreaBuff}`)}
+              <div>
+                {#if data.mechanicsSpec.buffContexts.length > 1}
+                  <p class="text-xs text-muted-foreground mb-1">
+                    {ctx.casterLabels.join(", ")}
+                  </p>
+                {/if}
+                {#if ctx.bonusAttrSource === "none"}
+                  <p class="text-muted-foreground">
+                    No attribute scaling (bonus = 0).
+                  </p>
+                {:else}
+                  {#if ctx.bonusAttrSource === "player_ranger_wis"}
+                    <!-- Source: TargetBuffSkill.cs:419 — Ranger → wisdom.value * 3 -->
+                    <p class="text-xs text-muted-foreground">
+                      bonusAttribute = WIS &times; 3 (Ranger wisdom tripled)
+                    </p>
+                  {:else if ctx.bonusAttrSource === "player_charisma"}
+                    <!-- Source: AreaBuffSkill.cs:47 — isMercenarySkill → player4.charisma.value -->
+                    <p class="text-xs text-muted-foreground">
+                      bonusAttribute = caster CHA (area buff targeting mercs
+                      scales with your Charisma)
+                    </p>
+                  {:else if ctx.bonusAttrSource === "player_level"}
+                    <p class="text-xs text-muted-foreground">
+                      bonusAttribute = PlayerLevel &times; 8 (scroll)
+                    </p>
+                  {:else if ctx.bonusAttrSource === "merc_wis"}
+                    <!-- Source: TargetBuffSkill.cs:419 / AreaBuffSkill.cs:25 — pet3.wisdom.value -->
+                    <p class="text-xs text-muted-foreground">
+                      bonusAttribute = merc WIS (merc's own wisdom; no Ranger
+                      &times;3)
+                    </p>
+                  {:else}
+                    <!-- player_wis -->
+                    {#if ctx.isAreaBuff}
+                      <!-- Source: AreaBuffSkill.cs:25 — no Ranger×3 for area buff -->
+                      <p class="text-xs text-muted-foreground">
+                        bonusAttribute = WIS (area buff; Ranger &times;3 does
+                        not apply)
+                      </p>
+                    {:else}
+                      <p class="text-xs text-muted-foreground">
+                        bonusAttribute = WIS
+                      </p>
+                    {/if}
+                  {/if}
+                  <dl
+                    class="grid grid-cols-1 sm:grid-cols-[12rem_1fr] gap-x-4 gap-y-1 font-mono"
+                  >
+                    {#if hasNonZeroField(skill.health_max_bonus)}
+                      <dt class="text-muted-foreground">Max Health</dt>
+                      <dd>skillValue(level) + bonusAttribute &times; 2</dd>
+                    {/if}
+                    {#if hasNonZeroField(skill.defense_bonus)}
+                      <dt class="text-muted-foreground">Defense</dt>
+                      <dd>skillValue(level) + bonusAttribute &times; 0.15</dd>
+                    {/if}
+                    {#if hasNonZeroField(skill.magic_resist_bonus)}
+                      <dt class="text-muted-foreground">Magic Resist</dt>
+                      <dd>skillValue(level) + bonusAttribute &times; 0.15</dd>
+                    {/if}
+                    {#if hasNonZeroField(skill.ward_bonus)}
+                      <dt class="text-muted-foreground">Ward</dt>
+                      {#if ctx.isAreaBuff}
+                        <!-- Source: AreaBuffSkill.cs — scroll runs before wardBonus transform (different order vs TargetBuff) -->
+                        <dd>wardBonus(level) + bonusAttribute &times; 5</dd>
+                      {:else}
+                        <dd>wardBonus(level) + bonusAttribute &times; 5</dd>
+                      {/if}
+                    {/if}
+                    {#if hasNonZeroField(skill.damage_shield)}
+                      <dt class="text-muted-foreground">Damage Shield</dt>
+                      <dd>skillValue(level) + bonusAttribute &times; 0.75</dd>
+                    {/if}
+                    {#if hasNonZeroField(skill.poison_resist_bonus) || hasNonZeroField(skill.fire_resist_bonus) || hasNonZeroField(skill.cold_resist_bonus) || hasNonZeroField(skill.disease_resist_bonus)}
+                      <dt class="text-muted-foreground">Elemental Resists</dt>
+                      <dd>skillValue(level) + bonusAttribute &times; 0.15</dd>
+                    {/if}
+                    {#if hasNonZeroField(skill.healing_per_second_bonus)}
+                      <dt class="text-muted-foreground">HoT</dt>
+                      <dd>
+                        skillValue(level) &times; (1 + min(bonusAttribute
+                        &times; 0.004, 5.0))
+                      </dd>
+                    {/if}
+                  </dl>
+                {/if}
+              </div>
+            {/each}
+          </div>
+        {/if}
+
+        <!-- C2. Attack Timing (spec-driven, per caster context) -->
+        <!-- Source: Skills.cs:762-773, Player.cs:2783, Skills.cs:814-815 -->
+        {#if data.mechanicsSpec.timingContexts.length > 0}
+          <div class="space-y-2">
+            <h3 class="font-semibold">Attack Timing</h3>
+            {#each data.mechanicsSpec.timingContexts as ctx (ctx.model)}
+              <div>
+                {#if data.mechanicsSpec.timingContexts.length > 1}
+                  <p class="text-xs text-muted-foreground mb-1">
+                    {ctx.casterLabels.join(", ")}
+                  </p>
+                {/if}
+                {#if ctx.model === "player_auto"}
+                  <!-- Source: Player.cs:2783 — refractoryPeriod = clamp(delay*(1-haste)/25, 0.25, 2.0) -->
+                  <!-- Source: Skills.cs:772 — player cooldownEnd = now + cooldown (no haste reduction) -->
+                  <p>interval = cast time + refractory period</p>
+                  <p class="font-mono">
+                    refractory = clamp(weaponDelay &times; (1 &minus; haste) /
+                    25, 0.25s, 2s)
+                  </p>
+                  <p class="text-muted-foreground">
+                    Haste reduces the refractory floor but not the cooldown. Can
+                    trigger weapon proc; generates rage on hit (25% of damage).
+                  </p>
+                {:else if ctx.model === "merc_auto"}
+                  <!-- Source: Skills.cs:766-768 — followupDefaultAttack && !isSpell → cooldown * (1 - haste) -->
+                  <p class="font-mono">
+                    interval = cast time + cooldown &times; (1 &minus; haste)
+                  </p>
+                  <p class="text-muted-foreground">
+                    Weapon delay has no effect. Cooldown scales linearly with
+                    haste (cap: &minus;80%).
+                  </p>
+                {:else if ctx.model === "monster_nospell"}
+                  <!-- Source: Skills.cs:814-815 — FinishCastMeleeAttackMonster -->
+                  <p class="font-mono">
+                    interval = cast time + cooldown &times; (1 &minus; haste)
+                  </p>
+                {:else}
+                  <!-- player_skill, merc_skill, monster_spell: flat cooldown -->
+                  <!-- Source: Skills.cs:772 — cooldownEnd = now + cooldown -->
+                  <p class="font-mono">interval = cast time + cooldown</p>
+                  <p class="text-muted-foreground">
+                    Cooldown is not haste-reduced for this skill type.
+                  </p>
+                {/if}
+              </div>
+            {/each}
+          </div>
+        {/if}
+
+        <!-- D. Debuff Scaling (spec-driven, per caster context) -->
+        <!-- Source: TargetDebuffSkill.cs:265-279 — bonusAttribute per caster type and skill flags. -->
+        <!-- Non-Player casters (monsters, NPCs, non-merc pets) fall through to bonusAttribute = 0. -->
+        {#if isDebuffType && data.mechanicsSpec.debuffContexts.length > 0}
+          <div class="space-y-3">
+            <h3 class="font-semibold">Debuff Scaling</h3>
+            {#each data.mechanicsSpec.debuffContexts as ctx (ctx.bonusAttrKind)}
+              <div>
+                {#if data.mechanicsSpec.debuffContexts.length > 1}
+                  <p class="text-xs text-muted-foreground mb-1">
+                    {ctx.casterLabels.join(", ")}
+                  </p>
+                {/if}
+                {#if ctx.bonusAttrKind === "none"}
+                  <p class="text-muted-foreground">
+                    No attribute scaling (bonusAttribute = 0).
+                  </p>
+                {:else}
+                  <p class="text-xs text-muted-foreground">
+                    <!-- Source: TargetDebuffSkill.cs:277-279 — isScroll → PlayerLevel * 10 override -->
+                    bonusAttribute = {ctx.bonusAttrKind === "str"
+                      ? "STR"
+                      : ctx.bonusAttrKind === "dex"
+                        ? "DEX"
+                        : ctx.bonusAttrKind === "int"
+                          ? "INT"
+                          : "PlayerLevel × 10"}
+                  </p>
+                  <!-- Source: Buff.cs:84-98 — defense getter, negative branch: bonusAttribute * 0.4 -->
+                  <dl
+                    class="grid grid-cols-1 sm:grid-cols-[16rem_1fr] gap-x-4 gap-y-1 font-mono"
+                  >
+                    {#if hasNonZeroField(skill.defense_bonus)}
+                      <dt class="text-muted-foreground">Defense reduction</dt>
+                      <dd>skillValue(level) + bonusAttribute &times; 0.4</dd>
+                    {/if}
+                    {#if hasNonZeroField(skill.magic_resist_bonus)}
+                      <dt class="text-muted-foreground">
+                        Magic Resist reduction
+                      </dt>
+                      <dd>skillValue(level) + bonusAttribute &times; 0.4</dd>
+                    {/if}
+                    {#if hasNonZeroField(skill.poison_resist_bonus)}
+                      <dt class="text-muted-foreground">
+                        Poison Resist reduction
+                      </dt>
+                      <dd>skillValue(level) + bonusAttribute &times; 0.4</dd>
+                    {/if}
+                    {#if hasNonZeroField(skill.fire_resist_bonus)}
+                      <dt class="text-muted-foreground">
+                        Fire Resist reduction
+                      </dt>
+                      <dd>skillValue(level) + bonusAttribute &times; 0.4</dd>
+                    {/if}
+                    {#if hasNonZeroField(skill.cold_resist_bonus)}
+                      <dt class="text-muted-foreground">
+                        Cold Resist reduction
+                      </dt>
+                      <dd>skillValue(level) + bonusAttribute &times; 0.4</dd>
+                    {/if}
+                    {#if hasNonZeroField(skill.disease_resist_bonus)}
+                      <dt class="text-muted-foreground">
+                        Disease Resist reduction
+                      </dt>
+                      <dd>skillValue(level) + bonusAttribute &times; 0.4</dd>
+                    {/if}
+                    {#if hasNonZeroField(skill.damage_bonus)}
+                      <dt class="text-muted-foreground">Damage reduction</dt>
+                      <dd>skillValue(level) + bonusAttribute &times; 0.5</dd>
+                    {/if}
+                    {#if hasNonZeroField(skill.magic_damage_bonus)}
+                      <dt class="text-muted-foreground">Magic Dmg reduction</dt>
+                      <dd>skillValue(level) + bonusAttribute &times; 0.5</dd>
+                    {/if}
+                    {#if hasNonZeroField(skill.healing_per_second_bonus)}
+                      <dt class="text-muted-foreground">DoT</dt>
+                      {#if skill.is_poison_debuff || skill.is_disease_debuff}
+                        <!-- poison/disease (dex × 1.0) or scroll of same type -->
+                        <dd>skillValue(level) + bonusAttribute &times; 1.0</dd>
+                      {:else if skill.is_melee_debuff}
+                        <!-- melee (str × 0.5) or scroll of melee type -->
+                        <dd>skillValue(level) + bonusAttribute &times; 0.5</dd>
+                      {:else}
+                        <!-- other (int × 1.25) or scroll of other type -->
+                        <dd>skillValue(level) + bonusAttribute &times; 1.25</dd>
+                      {/if}
+                    {/if}
+                  </dl>
+                {/if}
+              </div>
+            {/each}
+          </div>
+        {/if}
+
+        <!-- D2. Resist Chance — shown for all typed debuffs, independent of attribute scaling -->
+        {#if isDebuffType && !skill.is_dispel && (skill.is_melee_debuff || skill.is_poison_debuff || skill.is_fire_debuff || skill.is_cold_debuff || skill.is_disease_debuff || skill.is_magic_debuff)}
+          <div class="space-y-1">
+            <h4 class="font-medium text-muted-foreground">Resist Chance</h4>
+            <p class="font-mono">
+              clamp(<br />&nbsp;&nbsp;target.{skill.is_melee_debuff
+                ? "defense"
+                : skill.is_poison_debuff
+                  ? "poisonResist"
+                  : skill.is_fire_debuff
+                    ? "fireResist"
+                    : skill.is_cold_debuff
+                      ? "coldResist"
+                      : skill.is_disease_debuff
+                        ? "diseaseResist"
+                        : "magicResist"} &times; 0.0005<br />&nbsp;&nbsp;+
+              clamp((target.level &minus; caster.level) &times; 0.005,
+              &minus;0.1, 0.1)<br />&nbsp;&nbsp;&minus; caster.accuracy<br />,
+              0, 0.9)
             </p>
           </div>
         {/if}
 
-        <!-- C. Buff Scaling -->
-        <!-- Source: server-scripts/PassiveSkill.cs:20-22 — Apply() is a no-op; passives grant flat values only, no WIS scaling at runtime -->
-        {#if isBuffType && hasWisScaledBonuses && skill.skill_type !== "passive"}
-          <div class="space-y-2">
-            <h3 class="font-semibold">Buff Scaling</h3>
-            <dl
-              class="grid grid-cols-1 sm:grid-cols-[12rem_1fr] gap-x-4 gap-y-1 font-mono"
-            >
-              <!-- Source: server-scripts/TargetBuffSkill.cs:425-428 — isScroll → PlayerLevel * 8, else caster.wisdom.value -->
-              <!-- Source: server-scripts/Wisdom.cs — maxHealthBuffBonusPerPoint = 2 -->
-              {#if skill.health_max_bonus}
-                <dt class="text-muted-foreground">Max Health</dt>
-                <dd>
-                  skillValue(level) + {buffScalingAttr === "level"
-                    ? "PlayerLevel \u00d7 8"
-                    : "WIS"} &times; 2
-                </dd>
-              {/if}
-              <!-- Source: server-scripts/Wisdom.cs — defenseBuffBonusPerPoint = 0.15 -->
-              {#if skill.defense_bonus}
-                <dt class="text-muted-foreground">Defense</dt>
-                <dd>
-                  skillValue(level) + {buffScalingAttr === "level"
-                    ? "PlayerLevel \u00d7 8"
-                    : "WIS"} &times; 0.15
-                </dd>
-              {/if}
-              <!-- Source: server-scripts/Wisdom.cs — magicResistBuffBonusPerPoint = 0.15 -->
-              {#if skill.magic_resist_bonus}
-                <dt class="text-muted-foreground">Magic Resist</dt>
-                <dd>
-                  skillValue(level) + {buffScalingAttr === "level"
-                    ? "PlayerLevel \u00d7 8"
-                    : "WIS"} &times; 0.15
-                </dd>
-              {/if}
-              <!-- Source: server-scripts/Wisdom.cs — wardBuffBonusPerPoint = 5 -->
-              {#if skill.ward_bonus}
-                <dt class="text-muted-foreground">Ward</dt>
-                <dd>
-                  skillValue(level) + {buffScalingAttr === "level"
-                    ? "PlayerLevel \u00d7 8"
-                    : "WIS"} &times; 5
-                </dd>
-              {/if}
-              <!-- Source: server-scripts/Wisdom.cs — damageShieldBuffBonusPerPoint = 0.75 -->
-              {#if skill.damage_shield}
-                <dt class="text-muted-foreground">Damage Shield</dt>
-                <dd>
-                  skillValue(level) + {buffScalingAttr === "level"
-                    ? "PlayerLevel \u00d7 8"
-                    : "WIS"} &times; 0.75
-                </dd>
-              {/if}
-              <!-- Source: server-scripts/Buff.cs — poisonResistBonus/fireResistBonus/etc. -->
-              {#if skill.poison_resist_bonus || skill.fire_resist_bonus || skill.cold_resist_bonus || skill.disease_resist_bonus}
-                <dt class="text-muted-foreground">Elemental Resists</dt>
-                <dd>
-                  skillValue(level) + {buffScalingAttr === "level"
-                    ? "PlayerLevel \u00d7 8"
-                    : "WIS"} &times; 0.15
-                </dd>
-              {/if}
-              <!-- Source: server-scripts/Wisdom.cs:GetHealBonus — cap is 5.0 (capHealPerSecondBonus = 3.0 constant is unused) -->
-              {#if skill.healing_per_second_bonus}
-                <dt class="text-muted-foreground">HoT</dt>
-                <dd>
-                  skillValue(level) &times; (1 + min({buffScalingAttr ===
-                  "level"
-                    ? "PlayerLevel \u00d7 8"
-                    : "WIS"} &times; 0.004, 5.0))
-                </dd>
-              {/if}
-            </dl>
-            <!-- Source: server-scripts/TargetBuffSkill.cs:419 — Ranger wisdom.value is tripled before all buff scaling -->
-            {#if skill.skill_type === "target_buff" && skill.player_classes.includes("ranger")}
-              <p class="text-sm text-muted-foreground mt-2">
-                <span class="font-medium text-foreground">Ranger:</span> WIS is tripled
-                before applying all scaling above (effective WIS &times; 3).
-              </p>
-            {/if}
-          </div>
-        {/if}
-
-        <!-- D. Debuff Scaling -->
-        {#if isDebuffType && hasDebuffAttrScaling}
-          <div class="space-y-2">
-            <h3 class="font-semibold">Debuff Scaling</h3>
-            <dl
-              class="grid grid-cols-1 sm:grid-cols-[16rem_1fr] gap-x-4 gap-y-1 font-mono"
-            >
-              <!-- Source: server-scripts/Buff.cs:84-98 — defenseBonus getter, negative branch: bonusAttribute * 0.4 (all types) -->
-              <!-- Source: server-scripts/TargetDebuffSkill.cs:277-279 — isScroll → bonusAttribute = PlayerLevel * 10 -->
-              {#if skill.defense_bonus}
-                <dt class="text-muted-foreground">Defense reduction</dt>
-                {#if skill.is_scroll}
-                  <dd>skillValue(level) + {debuffScrollAttr} &times; 0.4</dd>
-                {:else if skill.is_melee_debuff}
-                  <dd>skillValue(level) + STR &times; 0.4</dd>
-                {:else}
-                  <dd>skillValue(level) + INT &times; 0.4</dd>
-                {/if}
-              {/if}
-              <!-- Source: server-scripts/Buff.cs:100-114 — magicResistBonus getter, negative branch: bonusAttribute * 0.4 -->
-              {#if skill.magic_resist_bonus}
-                <dt class="text-muted-foreground">Magic Resist reduction</dt>
-                <dd>
-                  skillValue(level) + {skill.is_scroll
-                    ? debuffScrollAttr
-                    : "INT"} &times; 0.4
-                </dd>
-              {/if}
-              <!-- Source: server-scripts/Buff.cs:116-178 — resist bonus getters, negative branch: bonusAttribute * 0.4 -->
-              {#if skill.poison_resist_bonus}
-                <dt class="text-muted-foreground">Poison Resist reduction</dt>
-                <dd>
-                  skillValue(level) + {skill.is_scroll
-                    ? debuffScrollAttr
-                    : "INT"} &times; 0.4
-                </dd>
-              {/if}
-              {#if skill.fire_resist_bonus}
-                <dt class="text-muted-foreground">Fire Resist reduction</dt>
-                <dd>
-                  skillValue(level) + {skill.is_scroll
-                    ? debuffScrollAttr
-                    : "INT"} &times; 0.4
-                </dd>
-              {/if}
-              {#if skill.cold_resist_bonus}
-                <dt class="text-muted-foreground">Cold Resist reduction</dt>
-                <dd>
-                  skillValue(level) + {skill.is_scroll
-                    ? debuffScrollAttr
-                    : "INT"} &times; 0.4
-                </dd>
-              {/if}
-              {#if skill.disease_resist_bonus}
-                <dt class="text-muted-foreground">Disease Resist reduction</dt>
-                <dd>
-                  skillValue(level) + {skill.is_scroll
-                    ? debuffScrollAttr
-                    : "INT"} &times; 0.4
-                </dd>
-              {/if}
-              <!-- Source: server-scripts/Buff.cs:56-66 — damageBonus getter, negative branch: bonusAttribute * 0.5 -->
-              {#if skill.damage_bonus}
-                <dt class="text-muted-foreground">Damage reduction</dt>
-                <dd>
-                  skillValue(level) + {skill.is_scroll
-                    ? debuffScrollAttr
-                    : "INT"} &times; 0.5
-                </dd>
-              {/if}
-              <!-- Source: server-scripts/Buff.cs:72-82 — magicDamageBonus getter, negative branch: bonusAttribute * 0.5 -->
-              {#if skill.magic_damage_bonus}
-                <dt class="text-muted-foreground">Magic Dmg reduction</dt>
-                <dd>
-                  skillValue(level) + {skill.is_scroll
-                    ? debuffScrollAttr
-                    : "INT"} &times; 0.5
-                </dd>
-              {/if}
-              <!-- DoT: bonusAttribute applied in Skills.cs:GetFinalDamageDoT, not in Buff.healingPerSecondBonus -->
-              {#if skill.healing_per_second_bonus}
-                <dt class="text-muted-foreground">DoT</dt>
-                {#if skill.is_scroll && (skill.is_poison_debuff || skill.is_disease_debuff)}
-                  <!-- Source: server-scripts/TargetDebuffSkill.cs:277-279 — isScroll overrides stat source -->
-                  <dd>skillValue(level) + {debuffScrollAttr} &times; 1.0</dd>
-                {:else if skill.is_scroll && skill.is_melee_debuff}
-                  <dd>skillValue(level) + {debuffScrollAttr} &times; 0.5</dd>
-                {:else if skill.is_scroll}
-                  <dd>skillValue(level) + {debuffScrollAttr} &times; 1.25</dd>
-                {:else if skill.is_poison_debuff || skill.is_disease_debuff}
-                  <!-- Source: server-scripts/Skills.cs:1136-1159 — isPoisonDebuff||isDiseaseDebuff: bonusAttribute * 1.0 -->
-                  <dd>skillValue(level) + DEX &times; 1.0</dd>
-                {:else if skill.is_melee_debuff}
-                  <!-- Source: server-scripts/Skills.cs:1111-1135 — isMeleeDebuff: bonusAttribute * 0.5 -->
-                  <dd>skillValue(level) + STR &times; 0.5</dd>
-                {:else}
-                  <!-- Source: server-scripts/Skills.cs:1236-1260 — else (fire/cold/magic): bonusAttribute * 1.25 -->
-                  <dd>skillValue(level) + INT &times; 1.25</dd>
-                {/if}
-              {/if}
-            </dl>
-          </div>
-
-          <!-- D2. Resist Chance -->
-          <!-- Source: server-scripts/TargetDebuffSkill.cs:104-133, Combat.cs:1222-1256 -->
-          <!-- No flag set → num stays 0, debuff always lands -->
-          {#if !skill.is_dispel && (skill.is_melee_debuff || skill.is_poison_debuff || skill.is_fire_debuff || skill.is_cold_debuff || skill.is_disease_debuff || skill.is_magic_debuff)}
-            <div class="space-y-1">
-              <h4 class="font-medium text-muted-foreground">Resist Chance</h4>
-              <!-- Level diff clamped to ±0.1 (±20 levels), unlike damage resist which is unclamped -->
-              <!-- Source: server-scripts/Combat.cs:1224 — Mathf.Clamp(diff_levels * 0.005, -0.1, 0.1) -->
-              <p class="font-mono">
-                clamp(<br />
-                &nbsp;&nbsp;target.{skill.is_melee_debuff
-                  ? "defense"
-                  : skill.is_poison_debuff
-                    ? "poisonResist"
-                    : skill.is_fire_debuff
-                      ? "fireResist"
-                      : skill.is_cold_debuff
-                        ? "coldResist"
-                        : skill.is_disease_debuff
-                          ? "diseaseResist"
-                          : "magicResist"} &times; 0.0005<br />
-                &nbsp;&nbsp;+ clamp((target.level &minus; caster.level) &times; 0.005,
-                &minus;0.1, 0.1)<br />
-                &nbsp;&nbsp;&minus; caster.accuracy<br />
-                , 0, 0.9)
-              </p>
-            </div>
-          {/if}
-        {/if}
-
-        <!-- E. Cleanse Resistance (debuff page) -->
-        <!-- Source: server-scripts/TargetBuffSkill.cs:276-350, Buff.cs:226 -->
-        <!-- prob_ignore_cleanse == 1: debuff is skipped entirely (line 284 Mathf.Approximately check) -->
+        <!-- E. Cleanse Resistance (on debuff skill pages) -->
         {#if isDebuffType && !skill.is_cleanse && !skill.is_dispel && skill.prob_ignore_cleanse != null}
           <div class="space-y-1">
             <h3 class="font-semibold">Cleanse Resistance</h3>
             {#if skill.prob_ignore_cleanse >= 1}
-              <!-- Cannot be cleansed at all -->
               <p class="text-muted-foreground">Cannot be cleansed.</p>
             {:else if skill.prob_ignore_cleanse <= 0}
-              <!-- probIgnoreCleanse <= 0: num2 = 3 always, single cast removes all counters -->
               <p class="text-muted-foreground">
                 Always removed in a single cast.
               </p>
             {:else}
-              <!-- 1 guaranteed + 2 rolls each blocked with probability prob_ignore_cleanse -->
-              <!-- Partial cleansing is possible, so DoT reduction is relevant -->
               <p class="text-muted-foreground">
                 Starts with 3 counters. Cleansing removes 1 counter guaranteed,
                 plus 2 independent {formatPercent(
                   1 - skill.prob_ignore_cleanse,
-                )} chances to remove 1 more each. Debuff is removed when counters
-                reach 0.{skill.healing_per_second_bonus
-                  ? " DoT damage is reduced while partially cleansed (2 counters \u2192 \xd70.9, 1 counter \u2192 \xd70.8)."
+                )} chances to remove 1 more each. Debuff removed when counters reach
+                0.{skill.healing_per_second_bonus
+                  ? " DoT damage reduced while partially cleansed (2 counters → ×0.9, 1 counter → ×0.8)."
                   : ""}
               </p>
             {/if}
           </div>
         {/if}
 
-        <!-- E2. Cleanse Mechanics (cleanse skill page) -->
-        <!-- Source: server-scripts/TargetBuffSkill.cs:276-350 -->
+        <!-- E2. Cleanse Mechanics (on cleanse skill pages) -->
         {#if skill.is_cleanse}
           <div class="space-y-1">
             <h3 class="font-semibold">Cleanse Mechanics</h3>
             <p class="text-muted-foreground">
-              Only affects debuffs of matching type (e.g. a disease cleanse only
-              removes disease debuffs). Some debuffs cannot be cleansed at all.
-              Cleansable debuffs start with 3 counters and are removed when
-              counters reach 0. Debuffs with no resist are always removed in a
-              single cast. Otherwise cleansing removes 1 counter guaranteed,
-              plus 2 independent chances to remove 1 more each (blocked by the
-              debuff's cleanse resist chance). If counters remain after a cast,
-              you see "Some spells resists your purification attempt." DoT
-              damage is reduced while partially cleansed (2 counters &rarr;
-              &times;0.9, 1 counter &rarr; &times;0.8).
+              Only affects debuffs of matching type. Some debuffs cannot be
+              cleansed. Cleansable debuffs start with 3 counters and are removed
+              when counters reach 0. Debuffs with no resist are always removed
+              in a single cast. Otherwise cleansing removes 1 counter
+              guaranteed, plus 2 independent chances to remove 1 more each
+              (blocked by the debuff's cleanse resist). DoT damage reduced while
+              partially cleansed (2 counters &rarr; &times;0.9, 1 counter &rarr;
+              &times;0.8).
             </p>
           </div>
         {/if}
 
         <!-- F. Dispel Mechanics -->
-        <!-- Source: server-scripts/TargetDebuffSkill.cs:168-263 -->
         {#if skill.is_dispel}
           <div class="space-y-1">
             <h3 class="font-semibold">Dispel Mechanics</h3>
@@ -2470,8 +2436,7 @@
             </p>
             <p class="text-muted-foreground">
               Monsters: each buff rolls independently against its cleanse resist
-              chance. If any buff resists, you see "[target] resisted your
-              dispel!"
+              chance.
             </p>
           </div>
         {/if}
@@ -2481,50 +2446,21 @@
           <p>Requires target below 25% HP to cast</p>
         {/if}
         {#if skill.is_decrease_resists_skill}
-          <!-- Source: server-scripts/BuffSkill.cs:99-106 — IgnoreImmuneDebuff returns true for isDecreaseResistsSkill -->
-          <!-- Source: server-scripts/TargetDebuffSkill.cs:134-136 — num = Mathf.Clamp(num - 0.3f, 0f, 1f) -->
+          <!-- Source: BuffSkill.cs:99-106, TargetDebuffSkill.cs:134-136 -->
           <p>
             Bypasses "Immune to Debuffs" on monsters. Reduces the target's
             resist chance by 30% before the resist roll.
           </p>
         {/if}
-        {#if skill.followup_default_attack}
-          <!-- Source: server-scripts/TargetDamageSkill.cs — procEffectProbability > Random.value -->
-          <!-- Source: server-scripts/Combat.cs — energy.current += FloorToInt(num22 * 0.25f) -->
-          <!-- Source: server-scripts/Player.cs:2783 — refractoryPeriodSkillTimeEnd, Mathf.Clamp((delay - delay * haste) / 25, 0.25, 2) -->
-          <!-- Source: server-scripts/Skills.cs:766-773 — mercenary cooldown haste-reduced; regular pet cooldown fixed -->
-          {#if skill.player_classes.length > 0}
-            <p>
-              Weapon strike: attack interval = cast time + refractory period,
-              where refractory period = clamp((weaponDelay &minus; weaponDelay
-              &times; haste) / 25, 0.25s, 2s). Haste has no further benefit once
-              the 0.25s floor is reached. Can trigger weapon proc, generates
-              rage on hit (25% of damage), allows action queuing during cast.
-            </p>
-          {/if}
-          {#if usedByMercenary}
-            <p>
-              Mercenary weapon strike: attack interval = cast time + cooldown
-              &times; (1 &minus; haste). Weapon delay has no effect. Cooldown
-              scales linearly with haste up to the cap.
-            </p>
-          {/if}
-          {#if usedByCompanion}
-            <p>
-              Pet weapon strike: attack interval = cast time + cooldown. Haste
-              has no effect on pet cooldowns.
-            </p>
-          {/if}
-        {/if}
         {#if skill.is_mana_shield}
-          <!-- Source: server-scripts/Combat.cs — DealDamageAt, ward check before mana shield check -->
+          <!-- Source: Combat.cs — DealDamageAt, ward check before mana shield check -->
           <p>
             Ward absorbs damage first, then mana shield absorbs remainder from
-            mana pool
+            mana pool.
           </p>
         {/if}
         {#if hasLinearValue(skill.cast_time) && skill.is_spell && !skill.is_scroll}
-          <!-- Source: server-scripts/Skills.cs:673-675 — castTimeEnd reduction only when isSpell -->
+          <!-- Source: Skills.cs:673-675 — castTimeEnd reduction only when isSpell -->
           <p class="text-muted-foreground">
             Effective Cast Time = castTime &minus; (castTime &times; spellHaste)
           </p>
