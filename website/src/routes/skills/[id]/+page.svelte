@@ -2047,7 +2047,7 @@
             {/if}
 
             <!-- Block/Resist Chance -->
-            {#if resistType}
+            {#if resistType && !data.mechanicsSpec.damageContexts.some((c) => c.formula === "manaburn")}
               <div class="space-y-1">
                 <h4 class="font-medium text-muted-foreground">
                   {resistType === "melee"
