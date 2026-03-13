@@ -1667,7 +1667,7 @@
         {/if}
 
         <!-- Special Flags -->
-        {#if skill.is_invisibility || skill.is_mana_shield || skill.is_blindness || skill.is_enrage || skill.is_permanent || skill.is_only_for_magic_classes}
+        {#if skill.is_invisibility || skill.is_mana_shield || skill.is_blindness || skill.is_enrage || skill.is_permanent}
           <div class="space-y-1 text-sm">
             {#if skill.is_enrage}
               <p class="text-red-600 dark:text-red-400">
@@ -1692,11 +1692,6 @@
             {#if skill.is_permanent}
               <p class="text-muted-foreground">
                 Timer hidden in UI (duration still applies)
-              </p>
-            {/if}
-            {#if skill.is_only_for_magic_classes}
-              <p class="text-indigo-600 dark:text-indigo-400">
-                Magic classes only
               </p>
             {/if}
           </div>
@@ -1940,6 +1935,26 @@
                       </dd>
                     </div>
                   </dl>
+                {:else if ctx.formula === "monster_melee"}
+                  <!-- Source: TargetDamageSkill.cs switch(Normal) — combat.damage = baseDamage(level); no STR/equipment -->
+                  <dl class="space-y-1">
+                    <div>
+                      <dt class="text-muted-foreground">Pre-Mitigation</dt>
+                      <dd class="font-mono">
+                        Skill Damage + baseDamage(level)
+                      </dd>
+                    </div>
+                  </dl>
+                {:else if ctx.formula === "monster_magic"}
+                  <!-- Source: TargetDamageSkill.cs switch(Magic/Fire/Cold/Disease) — combat.magicDamage = baseMagicDamage(level); no INT/equipment -->
+                  <dl class="space-y-1">
+                    <div>
+                      <dt class="text-muted-foreground">Pre-Mitigation</dt>
+                      <dd class="font-mono">
+                        Skill Damage + baseMagicDamage(level)
+                      </dd>
+                    </div>
+                  </dl>
                 {:else}
                   <!-- normal: combat.damage, STR×1.0 + all equipment -->
                   <dl class="space-y-1">
@@ -2135,22 +2150,22 @@
                 {:else}
                   {#if ctx.bonusAttrSource === "player_ranger_wis"}
                     <!-- Source: TargetBuffSkill.cs:419 — Ranger → wisdom.value * 3 -->
-                    <p class="text-xs text-muted-foreground">
+                    <p class="text-xs text-muted-foreground mb-1">
                       bonusAttribute = WIS &times; 3 (Ranger wisdom tripled)
                     </p>
                   {:else if ctx.bonusAttrSource === "player_charisma"}
                     <!-- Source: AreaBuffSkill.cs:47 — isMercenarySkill → player4.charisma.value -->
-                    <p class="text-xs text-muted-foreground">
+                    <p class="text-xs text-muted-foreground mb-1">
                       bonusAttribute = caster CHA (area buff targeting mercs
                       scales with your Charisma)
                     </p>
                   {:else if ctx.bonusAttrSource === "player_level"}
-                    <p class="text-xs text-muted-foreground">
+                    <p class="text-xs text-muted-foreground mb-1">
                       bonusAttribute = PlayerLevel &times; 8 (scroll)
                     </p>
                   {:else if ctx.bonusAttrSource === "merc_wis"}
                     <!-- Source: TargetBuffSkill.cs:419 / AreaBuffSkill.cs:25 — pet3.wisdom.value -->
-                    <p class="text-xs text-muted-foreground">
+                    <p class="text-xs text-muted-foreground mb-1">
                       bonusAttribute = merc WIS (merc's own wisdom; no Ranger
                       &times;3)
                     </p>
@@ -2158,12 +2173,12 @@
                     <!-- player_wis -->
                     {#if ctx.isAreaBuff}
                       <!-- Source: AreaBuffSkill.cs:25 — no Ranger×3 for area buff -->
-                      <p class="text-xs text-muted-foreground">
+                      <p class="text-xs text-muted-foreground mb-1">
                         bonusAttribute = WIS (area buff; Ranger &times;3 does
                         not apply)
                       </p>
                     {:else}
-                      <p class="text-xs text-muted-foreground">
+                      <p class="text-xs text-muted-foreground mb-1">
                         bonusAttribute = WIS
                       </p>
                     {/if}

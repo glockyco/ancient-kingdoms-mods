@@ -251,7 +251,10 @@ export type DamageFormulaKind =
   | "magic_weapon" // INT×1.5 + STR×1.0 + equipment (additive)
   // Special
   | "manaburn" // energy/mana × 2, bypasses mitigation
-  | "scroll"; // level × 15
+  | "scroll" // level × 15
+  // Monster / NPC (level-scaled, no player stats)
+  | "monster_melee" // baseDamage(level) — no STR/equipment
+  | "monster_magic"; // baseMagicDamage(level) — no INT/equipment
 
 export interface DamageContext {
   /** One or more caster descriptions that all share this formula. */

@@ -122,21 +122,14 @@ function playerDamageFormula(
   const skillType = skill.skill_type;
   const reqWeapon = skill.required_weapon_category;
 
-  // Source: all damage skill .cs — Magic/Fire/Cold/Disease + isSpell → magicDamage
-  if (
-    (dt === "Magic" || dt === "Fire" || dt === "Cold" || dt === "Disease") &&
-    isSpell
-  )
-    return "magic_spell";
-
-  // Source: TargetDamageSkill.cs:184-199, TargetProjectileSkill.cs, FrontalProjectilesSkill.cs
-  if (dt === "Poison" && cls === "rogue") return "poison_rogue";
-  if (dt === "Poison") return "magic_spell";
-
-  // Source: TargetDamageSkill.cs — Magic + !isSpell + requiredWeaponCategory.StartsWith("Weapon")
-  if (dt === "Magic" && !isSpell && reqWeapon?.startsWith("Weapon"))
-    return "magic_weapon";
-
+  // Ranger projectile checks must precede the elemental check because
+  // FrontalProjectilesSkill.cs:97 and TargetProjectileSkill.cs apply combat.damage+DEX
+  // regardless of damage_type — if we hit the elemental check first for a Magic-type
+  // Ranger frontal (e.g. forest_guardians_aid), we'd return the wrong formula.
+  //
+  // Source: FrontalProjectilesSkill.cs:97-100 — Ranger check precedes damage type switch
+  if (skillType === "frontal_projectiles" && cls === "ranger")
+    return "ranged_player_frontal";
   // Source: TargetProjectileSkill.cs:195-200 — Player Ranger + Bow requirement
   if (
     skillType === "target_projectile" &&
@@ -145,12 +138,22 @@ function playerDamageFormula(
   )
     return "ranged_player";
 
-  // Source: FrontalProjectilesSkill.cs:97-100 — Ranger check precedes damage type
-  if (skillType === "frontal_projectiles" && cls === "ranger")
-    return "ranged_player_frontal";
+  // Source: TargetDamageSkill.cs — Magic + !isSpell + requiredWeaponCategory.StartsWith("Weapon")
+  // adds combat.damage on top of combat.magicDamage; must be checked before the broad elemental guard.
+  if (dt === "Magic" && !isSpell && reqWeapon?.startsWith("Weapon"))
+    return "magic_weapon";
+
+  // Source: TargetDamageSkill.cs switch(damageType) — Magic/Fire/Cold/Disease always use
+  // combat.magicDamage regardless of isSpell. The && isSpell guard was incorrect.
+  if (dt === "Magic" || dt === "Fire" || dt === "Cold" || dt === "Disease")
+    return "magic_spell";
+
+  // Source: TargetDamageSkill.cs:184-199 — Poison dispatch
+  if (dt === "Poison" && cls === "rogue") return "poison_rogue";
+  if (dt === "Poison") return "magic_spell";
 
   // Source: TargetDamageSkill.cs:218-221, FrontalDamageSkill.cs:88-92
-  // Ranger subtracts bow slot bonus from combat.damage
+  // Ranger subtracts bow slot bonus from combat.damage (Normal type only)
   if (
     (skillType === "target_damage" || skillType === "frontal_damage") &&
     dt === "Normal" &&
@@ -173,7 +176,8 @@ function playerDamageFormula(
 /**
  * Resolve the damage formula for a mercenary pet by type_monster.
  * Source: server-scripts/TargetDamageSkill.cs (Rogue merc Poison path),
- *         server-scripts/TargetProjectileSkill.cs (Ranger merc ranged path)
+ *         server-scripts/TargetProjectileSkill.cs (Ranger merc ranged path),
+ *         server-scripts/FrontalProjectilesSkill.cs (Ranger merc frontal path)
  */
 function mercDamageFormula(
   skill: SkillDetailView,
@@ -187,29 +191,27 @@ function mercDamageFormula(
   const skillType = skill.skill_type;
   const reqWeapon = skill.required_weapon_category;
 
-  // Source: all damage skills — Magic/Fire/Cold/Disease + isSpell → magicDamage
-  if (
-    (dt === "Magic" || dt === "Fire" || dt === "Cold" || dt === "Disease") &&
-    isSpell
-  )
-    return "magic_spell";
-
-  // Source: TargetDamageSkill.cs — `caster is Pet { isMercenary: not false, typeMonster: "Rogue" }`
-  if (dt === "Poison" && typeMonster === "Rogue") return "poison_rogue";
-  if (dt === "Poison") return "magic_spell";
-
-  // Source: TargetDamageSkill.cs — Magic + !isSpell + requiredWeaponCategory.StartsWith("Weapon")
-  if (dt === "Magic" && !isSpell && reqWeapon?.startsWith("Weapon"))
-    return "magic_weapon";
-
+  // Ranger projectile checks before elemental for same reason as playerDamageFormula.
+  // Source: FrontalProjectilesSkill.cs:97 — Ranger check fires first
+  if (skillType === "frontal_projectiles" && typeMonster === "Ranger")
+    return "ranged_player_frontal";
   // Source: TargetProjectileSkill.cs — `caster is Pet { isMercenary: not false, typeMonster: "Ranger" }`
   // combat.damage + pet2.dexterity.GetRangedAttackBonusPerPoint() (DEX×1.5)
   if (skillType === "target_projectile" && typeMonster === "Ranger")
     return "ranged_merc";
 
-  // Source: FrontalProjectilesSkill.cs — Ranger check fires first; same DEX×1.5 formula
-  if (skillType === "frontal_projectiles" && typeMonster === "Ranger")
-    return "ranged_player_frontal";
+  // Source: TargetDamageSkill.cs — Magic + !isSpell + requiredWeaponCategory.StartsWith("Weapon")
+  if (dt === "Magic" && !isSpell && reqWeapon?.startsWith("Weapon"))
+    return "magic_weapon";
+
+  // Source: TargetDamageSkill.cs switch(damageType) — all elemental types always use
+  // combat.magicDamage regardless of isSpell.
+  if (dt === "Magic" || dt === "Fire" || dt === "Cold" || dt === "Disease")
+    return "magic_spell";
+
+  // Source: TargetDamageSkill.cs — `caster is Pet { isMercenary: not false, typeMonster: "Rogue" }`
+  if (dt === "Poison" && typeMonster === "Rogue") return "poison_rogue";
+  if (dt === "Poison") return "magic_spell";
 
   // Default: combat.damage (STR×1.0 + all equipment)
   return "normal";
@@ -217,21 +219,19 @@ function mercDamageFormula(
 
 /**
  * Resolve the damage formula for a monster, NPC, or non-merc pet.
- * Source: all damage skill .cs files — no class-specific branches for non-merc entities.
+ * Source: TargetDamageSkill.cs switch(damageType) — no class-specific branches.
+ * Monsters use level-scaled base values; no STR/INT/equipment contributions.
  */
 function otherDamageFormula(skill: SkillDetailView): DamageFormulaKind {
   const dt = skill.damage_type;
   const isSpell = skill.is_spell;
-  const reqWeapon = skill.required_weapon_category;
 
   if (
     (dt === "Magic" || dt === "Fire" || dt === "Cold" || dt === "Disease") &&
     isSpell
   )
-    return "magic_spell";
-  if (dt === "Magic" && !isSpell && reqWeapon?.startsWith("Weapon"))
-    return "magic_weapon";
-  return "normal";
+    return "monster_magic";
+  return "monster_melee";
 }
 
 // ---------------------------------------------------------------------------
@@ -244,14 +244,19 @@ function otherDamageFormula(skill: SkillDetailView): DamageFormulaKind {
  * Pure function — no side effects, no DB calls. All formula dispatch logic is
  * derived from server-scripts/*.cs source research and documented inline.
  *
- * @param skill       - Full skill detail row from the DB
- * @param usedByPets  - All pets/mercs that use this skill (must include type_monster)
- * @param hasMonsters - Whether any monster NPC uses this skill
+ * @param skill        - Full skill detail row from the DB
+ * @param usedByPets   - All pets/mercs that use this skill (must include type_monster)
+ * @param hasMonsters  - Whether any monster NPC uses this skill
+ * @param isWeaponProc - Whether this skill fires as a weapon proc
+ *   Weapon proc damage skills have player_classes=[] but fire through the full player
+ *   pipeline via weaponItem.procEffect.Apply(player, 1). Enumerates all 6 classes to
+ *   capture class-specific formula differences (e.g. Poison + Rogue).
  */
 export function computeMechanicsSpec(
   skill: SkillDetailView,
   usedByPets: SkillPet[],
   hasMonsters: boolean,
+  isWeaponProc: boolean = false,
 ): SkillMechanicsSpec {
   const playerClasses = skill.player_classes; // e.g. ["ranger", "rogue"]
   const mercPets = usedByPets.filter((p) => p.is_mercenary);
@@ -301,6 +306,40 @@ export function computeMechanicsSpec(
         label: parts.join("/"),
         formula: otherDamageFormula(skill),
       });
+    }
+    // Source: TargetDamageSkill.cs — weapon procs fire through the full player damage
+    // pipeline at level 1 via weaponItem.procEffect.Apply(player, 1). Enumerate all 6
+    // player classes so class-specific formulas (e.g. Poison+Rogue) are handled correctly.
+    // Guarded on isWeaponProc only; weapon procs always have player_classes=[] so
+    // damagePairs is always empty at this point when isWeaponProc is true.
+    if (isWeaponProc) {
+      const allClasses = [
+        "warrior",
+        "rogue",
+        "ranger",
+        "wizard",
+        "druid",
+        "cleric",
+      ];
+      const formulaMap = new Map<DamageFormulaKind, string[]>();
+      for (const cls of allClasses) {
+        const f = playerDamageFormula(skill, cls);
+        const group = formulaMap.get(f) ?? [];
+        group.push(cls);
+        formulaMap.set(f, group);
+      }
+      for (const [formula, classes] of formulaMap) {
+        // All 6 classes on the same formula → one clean label.
+        const label =
+          classes.length === allClasses.length
+            ? "Player (weapon proc)"
+            : classes
+                .map(
+                  (c) => `${c.charAt(0).toUpperCase() + c.slice(1)} (player)`,
+                )
+                .join("/");
+        damagePairs.push({ label, formula });
+      }
     }
   }
 
@@ -384,12 +423,14 @@ export function computeMechanicsSpec(
       // Source: AreaBuffSkill.cs:25 — same merc branch, no Ranger×3
       buffPairs.push({ label, bonusAttrSource: "merc_wis", isAreaBuff });
     }
-    if (hasOtherCaster) {
+    if (hasOtherCaster && (playerClasses.length > 0 || mercPets.length > 0)) {
       const parts: string[] = [];
       if (hasMonsters) parts.push("Monster/NPC");
       if (hasNonMercPet) parts.push("Companion");
       if (hasFamiliar) parts.push("Familiar");
       // Source: TargetBuffSkill.cs:419 — final else → 0
+      // Only shown when a player or merc also casts the skill; pure monster-only
+      // buff skills have bonusAttrSource=none which is uninformative to players.
       buffPairs.push({
         label: parts.join("/"),
         bonusAttrSource: "none",

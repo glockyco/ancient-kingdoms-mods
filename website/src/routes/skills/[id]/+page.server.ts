@@ -315,6 +315,7 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
       skill,
       usedByPets,
       usedByMonsters.length > 0,
+      grantedByItems.some((i) => i.type === "weapon_proc"),
     ),
   };
 };
