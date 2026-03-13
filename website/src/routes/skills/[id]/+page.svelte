@@ -2122,10 +2122,6 @@
                     Final Heal = Base Heal + round(Base Heal &times; min(WIS
                     &times; 3 &times; 0.004, 5.0))
                   </p>
-                  <p class="text-muted-foreground">
-                    Ranger wisdom triples the heal bonus (effective cap: WIS =
-                    417).
-                  </p>
                 {:else if ctx.bonusKind === "player_other"}
                   <!-- Source: Wisdom.cs — GetHealBonus(isRanger:false) → WIS×0.004, capped at 5.0 -->
                   <p class="font-mono">
