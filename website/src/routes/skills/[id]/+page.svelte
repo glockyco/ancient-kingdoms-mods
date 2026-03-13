@@ -2186,10 +2186,7 @@
                     </p>
                   {:else if ctx.bonusAttrSource === "merc_wis"}
                     <!-- Source: TargetBuffSkill.cs:419 / AreaBuffSkill.cs:25 — pet3.wisdom.value -->
-                    <p class="font-mono">
-                      bonusAttribute = merc WIS (merc's own wisdom; no Ranger
-                      &times;3)
-                    </p>
+                    <p class="font-mono">bonusAttribute = WIS</p>
                   {:else}
                     <!-- player_wis -->
                     {#if ctx.isAreaBuff}
