@@ -1,1 +1,1 @@
-Mechanics Damage Formula Consumes all rage. Damage = Rage × 2 (Warrior/Rogue) or Mana × 2 (Wizard). Bypasses all resistance and mitigation. Resist Chance clamp( target.magicResist × 0.0005 + (target.level − attacker.level) × 0.005 − attacker.accuracy , 0, 0.9) Target moving: resist −0.25, damage +10% Backstab: resist × 0.8 Effective Cast Time = castTime − (castTime × spellHaste)
+Mechanics Damage Formula Consumes all rage. Damage = Rage × 2 (Warrior/Rogue) or Mana × 2 (Wizard). Bypasses all resistance and mitigation. Effective Cast Time = castTime − (castTime × spellHaste)

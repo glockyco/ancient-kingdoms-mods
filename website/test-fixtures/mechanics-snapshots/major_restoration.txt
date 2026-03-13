@@ -1,0 +1,1 @@
+Mechanics Healing Formula Final Heal = Base Heal + PlayerLevel × 8
