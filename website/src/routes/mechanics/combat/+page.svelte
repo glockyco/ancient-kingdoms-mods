@@ -368,7 +368,6 @@
                   <tr class="border-b border-border">
                     <th class="text-left py-1 pr-4 font-medium">Skill</th>
                     <th class="text-left py-1 pr-4 font-medium">Casters</th>
-                    <th class="text-left py-1 font-medium">Tier</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -383,7 +382,6 @@
                       <td class="py-1 pr-4 text-muted-foreground text-xs"
                         >{s.casterLabels.join(", ")}</td
                       >
-                      <td class="py-1 text-muted-foreground">{s.tier}</td>
                     </tr>
                   {/each}
                 </tbody>
@@ -530,7 +528,6 @@ finalDamage = damage − reduction</pre>
                     <tr class="border-b border-border">
                       <th class="text-left py-1 pr-4 font-medium">Skill</th>
                       <th class="text-left py-1 pr-4 font-medium">Casters</th>
-                      <th class="text-left py-1 pr-4 font-medium">Tier</th>
                       <th class="text-left py-1 font-medium">Can Crit</th>
                     </tr>
                   </thead>
@@ -545,8 +542,6 @@ finalDamage = damage − reduction</pre>
                         >
                         <td class="py-1 pr-4 text-muted-foreground text-xs"
                           >{s.casterLabels.join(", ")}</td
-                        >
-                        <td class="py-1 pr-4 text-muted-foreground">{s.tier}</td
                         >
                         <td class="py-1 text-muted-foreground"
                           >{s.canCrit ? "yes" : "no"}</td
@@ -689,7 +684,6 @@ finalDamage = damage − reduction</pre>
                     <tr class="border-b border-border">
                       <th class="text-left py-1 pr-4 font-medium">Skill</th>
                       <th class="text-left py-1 pr-4 font-medium">Casters</th>
-                      <th class="text-left py-1 pr-4 font-medium">Tier</th>
                       <th class="text-left py-1 font-medium">Area Buff</th>
                     </tr>
                   </thead>
@@ -704,8 +698,6 @@ finalDamage = damage − reduction</pre>
                         >
                         <td class="py-1 pr-4 text-muted-foreground text-xs"
                           >{s.casterLabels.join(", ")}</td
-                        >
-                        <td class="py-1 pr-4 text-muted-foreground">{s.tier}</td
                         >
                         <td class="py-1 text-muted-foreground"
                           >{s.isAreaBuff ? "yes" : "no"}</td
@@ -847,7 +839,6 @@ finalDamage = damage − reduction</pre>
                     <tr class="border-b border-border">
                       <th class="text-left py-1 pr-4 font-medium">Skill</th>
                       <th class="text-left py-1 pr-4 font-medium">Casters</th>
-                      <th class="text-left py-1 font-medium">Tier</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -862,7 +853,6 @@ finalDamage = damage − reduction</pre>
                         <td class="py-1 pr-4 text-muted-foreground text-xs"
                           >{s.casterLabels.join(", ")}</td
                         >
-                        <td class="py-1 text-muted-foreground">{s.tier}</td>
                       </tr>
                     {/each}
                   </tbody>
@@ -951,7 +941,6 @@ finalDamage = damage − reduction</pre>
                     <tr class="border-b border-border">
                       <th class="text-left py-1 pr-4 font-medium">Skill</th>
                       <th class="text-left py-1 pr-4 font-medium">Casters</th>
-                      <th class="text-left py-1 font-medium">Tier</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -966,7 +955,6 @@ finalDamage = damage − reduction</pre>
                         <td class="py-1 pr-4 text-muted-foreground text-xs"
                           >{s.casterLabels.join(", ")}</td
                         >
-                        <td class="py-1 text-muted-foreground">{s.tier}</td>
                       </tr>
                     {/each}
                   </tbody>
