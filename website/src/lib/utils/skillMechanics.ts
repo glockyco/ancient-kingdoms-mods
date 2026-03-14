@@ -449,6 +449,17 @@ export function computeMechanicsSpec(
         isAreaBuff,
       });
     }
+    // Scroll buff skills (is_scroll=1) often have player_classes=[] since scrolls are
+    // class-agnostic. If no caster context was generated, add a fallback so the template
+    // can render the scroll formula (bonusAttribute = PlayerLevel × 8).
+    // Mirrors the same fallback in the damage and heal sections.
+    if (skill.is_scroll && buffPairs.length === 0) {
+      buffPairs.push({
+        label: "Scroll",
+        bonusAttrSource: "player_level",
+        isAreaBuff,
+      });
+    }
   }
 
   // ---------- timing ----------
