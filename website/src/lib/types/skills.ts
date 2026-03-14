@@ -237,8 +237,8 @@ export interface SkillPet {
 
 export type DamageFormulaKind =
   // Physical
-  | "normal" // STR×1.0 + all equipment — e.g. parry
-  | "ranger_melee" // STR×1.0 + all equip − bow slot bonus (slot 13) — e.g. provoke
+  | "normal" // STR×1.0 + all equipment — e.g. slam
+  | "ranger_melee" // STR×1.0 + all equip − bow slot bonus (slot 13) — e.g. swift_slash
   | "rogue_melee" // STR×1.0 + main-hand + 50% off-hand + other equip — e.g. ambush
   // Ranged (physical+DEX)
   | "ranged_player" // STR×1.0 + bow+armour + DEX×1.5 − melee slot bonus — e.g. archer_shot
@@ -281,7 +281,7 @@ export type BuffBonusAttrSource =
   | "player_ranger_wis" // WIS×3 (TargetBuffSkill only, not AreaBuffSkill) — e.g. ancestral_spirits
   | "player_wis" // WIS (TargetBuffSkill non-Ranger, or any AreaBuffSkill player) — e.g. inspiration
   | "merc_wis" // merc's own WIS — e.g. spirit_of_wolf
-  | "player_charisma" // player CHA (AreaBuffSkill + is_mercenary_skill override) — e.g. leadership
+  | "player_charisma" // player CHA (AreaBuffSkill + is_mercenary_skill override) — only skill: leadership (its non-zero fields don't respond to bonusAttribute when positive, so CHA has no practical effect currently)
   | "player_level" // scroll: PlayerLevel × 8 — e.g. staff_of_flowers
   | "none"; // monster/NPC: 0 (only shown when player/merc also casts the skill)
 
