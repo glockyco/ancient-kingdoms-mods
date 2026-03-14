@@ -1752,19 +1752,19 @@
         </Card.Title>
       </Card.Header>
       <Card.Content class="space-y-6 text-sm">
-        <!-- Pet/Merc Skill Level -->{#if usedByMercenary}
+        <!-- Pet/Merc Skill Level -->{#if usedByMercenary && skill.max_level > 1}
           <p class="text-muted-foreground">
             When used by a mercenary, skill level = floor(regular level &divide;
             5) + floor(veteran level &divide; 10), capped at max skill level.
           </p>
         {/if}
-        {#if usedByCompanion}
+        {#if usedByCompanion && skill.max_level > 1}
           <p class="text-muted-foreground">
             When used by a companion, skill level = floor(veteran level &divide;
             10), capped at max skill level.
           </p>
         {/if}
-        {#if usedByFamiliar}
+        {#if usedByFamiliar && skill.max_level > 1}
           <p class="text-muted-foreground">
             When used by a familiar, skill level equals the summoning skill
             rank.
