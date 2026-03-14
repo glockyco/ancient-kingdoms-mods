@@ -21,7 +21,6 @@ export const prerender = true;
 export interface SkillEntry {
   id: string;
   name: string;
-  tier: number;
   player_classes: string[];
   /** Human-readable caster descriptions, e.g. ["Warrior (player)", "Rogue (merc)"] */
   casterLabels: string[];
@@ -251,7 +250,7 @@ function toGroups<K extends string>(
 // ---------------------------------------------------------------------------
 
 export const load: PageServerLoad = (): MechanicsCombatPageData => {
-  // Q1: All skills with joined name columns, ordered so tier/name sort is stable.
+  // Q1: All skills with joined name columns, ordered alphabetically for stable output.
   const skillRows = query<Record<string, unknown>>(
     `SELECT
        s.*,
@@ -327,7 +326,6 @@ export const load: PageServerLoad = (): MechanicsCombatPageData => {
     const base: Omit<SkillEntry, "casterLabels"> = {
       id: skill.id,
       name: skill.name,
-      tier: skill.tier,
       player_classes: skill.player_classes,
     };
 
