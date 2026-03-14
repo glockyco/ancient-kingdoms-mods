@@ -310,9 +310,9 @@ export interface TimingContext {
 
 export type DebuffBonusAttrKind =
   | "str" // is_melee_debuff=1 — e.g. rangers_mark
-  | "dex" // is_poison_debuff=1 or is_disease_debuff=1 — e.g. cleanse
+  | "dex" // is_poison_debuff=1 or is_disease_debuff=1 — e.g. poison_rend
   | "int" // default (magic/elemental debuff) — e.g. symbol_of_the_arbiter
-  | "scroll" // PlayerLevel × 8 — e.g. lethargy
+  | "scroll" // PlayerLevel × 8 — e.g. witherbind (only scroll debuff that reaches the render path; bonus_per_level=0 so multiplier has no observable effect)
   | "none"; // monster/NPC/companion: 0 — e.g. ancient_curse
 
 export interface DebuffContext {
