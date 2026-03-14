@@ -247,7 +247,7 @@ export type DamageFormulaKind =
   // Poison
   | "poison_rogue" // STR×1.0 + main-hand + 50% off-hand + other equip + DEX×2.5 — e.g. deadly_strike
   // Magic
-  | "magic_spell" // INT×1.5 + equipment — e.g. mana_burn
+  | "magic_spell" // INT×1.5 + equipment — e.g. fireball
   | "magic_weapon" // INT×1.5 + STR×1.0 + equipment (additive; Cleric) — e.g. holy_wrath
   | "magic_weapon_ranger" // INT×1.5 + magic equip + STR×1.0 + non-bow equip (Ranger) — e.g. wild_strike
   // Special
