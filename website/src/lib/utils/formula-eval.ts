@@ -323,8 +323,14 @@ export function renderFormula(expr: Expr): string {
     case "const":
       return String(expr.value);
     case "add": {
-      // Filter collapsed (empty) terms so they don't leave trailing " + ".
-      const parts = expr.operands.map(renderFormula).filter(Boolean);
+      // Stat-scaler terms (mul nodes: STR × 1, DEX × 1.5, …) first, then flat
+      // additive terms (weapon damage, equip.dmg, …). Keeps interleaved formulas
+      // like ranged_player readable: STR × 1 + DEX × 1.5 + bow.dmg + equip.dmg.
+      const statTerms = expr.operands.filter((op) => op.type === "mul");
+      const flatTerms = expr.operands.filter((op) => op.type !== "mul");
+      const parts = [...statTerms, ...flatTerms]
+        .map(renderFormula)
+        .filter(Boolean);
       return parts.join(" + ");
     }
     case "mul": {
