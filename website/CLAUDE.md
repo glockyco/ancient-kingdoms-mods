@@ -121,3 +121,20 @@ Some game mechanics cannot be derived from the database and are hardcoded direct
 **Database path:** `static/compendium.db` is gitignored. For direct SQL queries (debugging, data exploration), use the absolute path: `website/static/compendium.db` (relative to repo root).
 
 **Build validation:** Always run `pnpm check && pnpm lint && pnpm build` before committing.
+
+## Game Mechanics — Common Mistakes
+
+**Damage types and resist stats are 1-to-1.** There is no fallback or catch-all. Each damage type has its own dedicated resist stat:
+
+| Damage type             | Resist stat    |
+| ----------------------- | -------------- |
+| Magic                   | Magic Resist   |
+| Fire                    | Fire Resist    |
+| Cold                    | Cold Resist    |
+| Disease                 | Disease Resist |
+| Poison                  | Poison Resist  |
+| Physical (melee debuff) | Defense        |
+
+Never write 'magicResist (magic/fire/cold/disease default)' or anything implying Magic Resist is a fallback for other damage types. Each has its own stat, verified in `server-scripts/Combat.cs:480-487` and `server-scripts/Combat.cs:1245-1274`.
+
+**Source code references must not appear in visible page content.** Internal flag names (`is_melee_debuff`, `prob_ignore_cleanse`, `buff_category`, etc.), file names (`skillMechanics.ts`, `Skills.cs`), and code identifiers belong only in invisible HTML comments (`<!-- Source: ... -->`) or TypeScript source files. Describe behavior in plain English for page visitors.

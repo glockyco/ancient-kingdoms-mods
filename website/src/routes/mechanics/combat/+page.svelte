@@ -9,23 +9,23 @@
 
   const DAMAGE_FORMULA_DESC: Record<DamageFormulaKind, string> = {
     normal: "STR×1.0 + all equipment",
-    ranger_melee: "STR×1.0 + all equip − bow slot bonus",
-    rogue_melee: "STR×1.0 + main-hand + ⌊50% off-hand⌋ + other equip",
-    rogue_melee_merc: "STR×1.0 + main-hand + off-hand (full) + other equip",
-    ranged_player: "STR×1.0 + bow+armour + DEX×1.5 − melee slot bonus",
+    ranger_melee: "STR×1.0 + all equip minus bow slot bonus",
+    rogue_melee: "STR×1.0 + main-hand dmg + ⌊off-hand dmg × 0.5⌋ + other equip",
+    rogue_melee_merc: "STR×1.0 + main-hand dmg + off-hand dmg + other equip",
+    ranged_player: "STR×1.0 + bow + armour + DEX×1.5 minus melee slot bonus",
     ranged_player_frontal:
-      "STR×1.0 + all equip + DEX×1.5 (no melee subtraction)",
+      "STR×1.0 + DEX×1.5 + all equip including melee weapons (unlike ranged_player)",
     ranged_merc: "STR×1.0 + bow + melee weapon + other equip + DEX×1.5",
     poison_rogue: "rogue_melee component + DEX×2.5",
     magic_spell: "INT×1.5 + wand magic stat + other magic equip",
     magic_weapon:
-      "INT×1.5 + STR×1.0 + equipment (two pools, two mitigation rolls)",
+      "INT×1.5 + STR×1.0 + equipment, physical and magic components mitigated separately",
     magic_weapon_ranger:
-      "magic_weapon but bow.dmg excluded from physical component",
-    manaburn: "Current Rage or Mana × 2 — bypasses all mitigation and resist",
+      "Like magic_weapon, but the physical component excludes the bow's flat damage bonus",
+    manaburn: "Current Rage or Mana × 2 (bypasses all mitigation and resist)",
     scroll: "Player Level × 15",
-    monster_melee: "baseDamage(level) — level-scaled, no player stats",
-    monster_magic: "baseMagicDamage(level) — level-scaled, no player stats",
+    monster_melee: "baseDamage(level), scales with monster level",
+    monster_magic: "baseMagicDamage(level), scales with monster level",
   };
 
   const DAMAGE_FORMULA_GROUP_LABEL: Record<DamageFormulaKind, string> = {
@@ -65,11 +65,11 @@
   ];
 
   const HEAL_BONUS_DESC: Record<HealBonusKind, string> = {
-    player_ranger: "base × min(WIS×3 × 0.004, 5.0) — Ranger target-heal bonus",
-    player_other: "base × min(WIS × 0.004, 5.0) — Non-Ranger player",
-    merc: "base × min(WIS × 0.004, 5.0) — Merc's own WIS (no ×3 for Ranger merc)",
-    scroll: "Player Level × 8 — no WIS",
-    none: "No bonus — monster, NPC, non-merc pet",
+    player_ranger: "base × min(WIS×3 × 0.004, 5.0), Ranger bonus",
+    player_other: "base × min(WIS × 0.004, 5.0), non-Ranger",
+    merc: "base × min(WIS × 0.004, 5.0), merc's own WIS (no ×3 for Ranger mercs)",
+    scroll: "Player Level × 8 (no WIS bonus)",
+    none: "No bonus (monster, NPC, non-merc pet)",
   };
 </script>
 
@@ -137,6 +137,13 @@
     </ul>
   </nav>
 
+  <div class="rounded-md border border-border bg-muted/20 px-4 py-3 text-sm">
+    For interactive per-weapon and per-class DPS modelling, see the
+    <a href="/tools/combat-simulator" class="underline hover:text-foreground"
+      >Auto-Attack DPS Simulator</a
+    >.
+  </div>
+
   <!-- ── §1 Damage Pipeline ─────────────────────────────────────────────── -->
   <Card.Root id="damage-pipeline" class="bg-muted/30">
     <Card.Header>
@@ -158,44 +165,45 @@
             <tr class="border-b border-border/50">
               <td class="py-2 pr-4 text-muted-foreground">1</td>
               <td class="py-2"
-                ><strong>Base damage</strong> — formula-specific (see Damage Formulas
-                below)</td
+                ><strong>Base damage</strong>: formula-specific (see Damage
+                Formulas below)</td
               >
             </tr>
             <tr class="border-b border-border/50">
               <td class="py-2 pr-4 text-muted-foreground">2</td>
-              <td class="py-2"><strong>Variance</strong> — ×0.9–1.1 random</td>
+              <td class="py-2"><strong>Variance</strong>: ×0.9–1.1 random</td>
             </tr>
             <tr class="border-b border-border/50">
               <td class="py-2 pr-4 text-muted-foreground">3</td>
               <td class="py-2"
-                ><strong>Backstab</strong> — +10% (+25% with Improved Backstab) +
-                1 flat, if attacker is behind target</td
+                ><strong>Backstab</strong>: +10% (+25% with Improved Backstab)
+                plus 1 flat, when the attacker is behind the target</td
               >
             </tr>
             <tr class="border-b border-border/50">
               <td class="py-2 pr-4 text-muted-foreground">4</td>
               <td class="py-2"
-                ><strong>Level difference</strong> — ±2%/level, max ±20%</td
+                ><strong>Level difference</strong>: ±2% per level, max ±20%</td
               >
             </tr>
             <tr class="border-b border-border/50">
               <td class="py-2 pr-4 text-muted-foreground">5</td>
               <td class="py-2"
-                ><strong>Slayer reduction</strong> — −(Slayer level × 10%)</td
+                ><strong>Slayer reduction</strong>: −(Slayer level × 10%)</td
               >
             </tr>
             <tr class="border-b border-border/50">
               <td class="py-2 pr-4 text-muted-foreground">6</td>
               <td class="py-2"
-                ><strong>Enrage</strong> — +33% player / +50–100% monster, when caster
-                is below 25% HP (non-spell only)</td
+                ><strong>Enrage</strong>: damage increases by 33% (players) or
+                50–100% (monsters, random), when the caster's HP is below 25%
+                (non-spell only)</td
               >
             </tr>
             <tr class="border-b border-border/50">
               <td class="py-2 pr-4 text-muted-foreground">7</td>
               <td class="py-2">
-                <strong>Physical mitigation</strong> —
+                <strong>Physical mitigation</strong>:
                 <code class="font-mono text-xs bg-muted px-1 rounded"
                   >damage − ⌈damage × clamp(defense × 0.0005, 0, 0.9)⌉</code
                 > (max 90%)
@@ -204,7 +212,7 @@
             <tr>
               <td class="py-2 pr-4 text-muted-foreground">8</td>
               <td class="py-2"
-                ><strong>Crit</strong> — 95%→×1.5, 5%→×2.0; Radiant Aether stacks
+                ><strong>Crit</strong>: 95%→×1.5, 5%→×2.0, Radiant Aether stacks
                 ×3 on top</td
               >
             </tr>
@@ -215,98 +223,6 @@
         <strong>Manaburn exception:</strong> bypasses steps 7–8 entirely. Damage =
         current Rage or Mana × 2.
       </p>
-      <div
-        class="rounded-md border border-border bg-muted/20 px-4 py-3 text-sm"
-      >
-        For interactive per-weapon DPS modelling, see the
-        <a
-          href="/tools/combat-simulator"
-          class="underline hover:text-foreground">Auto-Attack DPS Simulator</a
-        >.
-      </div>
-
-      <!-- Worked Example -->
-      <div>
-        <h3 class="font-semibold mb-2">Worked Example</h3>
-        <p class="text-sm text-muted-foreground mb-3">
-          Warrior · Level 50 · STR 700 · haste 50% vs. Skullreaver (delay 25,
-          dmg 500, STR-bonus 50) against a Level 50 enemy (defense 1000),
-          frontal attack, above 25% HP.
-        </p>
-        <div class="overflow-x-auto">
-          <table class="w-full text-sm border-collapse">
-            <thead>
-              <tr class="border-b border-border">
-                <th class="text-left py-1 pr-4 font-medium">Step</th>
-                <th class="text-left py-1 pr-4 font-medium">Operation</th>
-                <th class="text-left py-1 font-medium">Result</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr class="border-b border-border/40">
-                <td class="py-1 pr-4">Base damage</td>
-                <td class="py-1 pr-4 font-mono text-xs">(700+50)×1.0 + 500</td>
-                <td class="py-1 text-muted-foreground">1250</td>
-              </tr>
-              <tr class="border-b border-border/40">
-                <td class="py-1 pr-4">Variance ×0.9–1.1</td>
-                <td class="py-1 pr-4 text-muted-foreground text-xs"
-                  >range: 1125–1375</td
-                >
-                <td class="py-1 text-muted-foreground">1250 (midpoint)</td>
-              </tr>
-              <tr class="border-b border-border/40">
-                <td class="py-1 pr-4">Backstab</td>
-                <td class="py-1 pr-4 text-muted-foreground text-xs"
-                  >frontal attack</td
-                >
-                <td class="py-1 text-muted-foreground">1250</td>
-              </tr>
-              <tr class="border-b border-border/40">
-                <td class="py-1 pr-4">Level difference</td>
-                <td class="py-1 pr-4 text-muted-foreground text-xs"
-                  >same level (±0%)</td
-                >
-                <td class="py-1 text-muted-foreground">1250</td>
-              </tr>
-              <tr class="border-b border-border/40">
-                <td class="py-1 pr-4">Slayer</td>
-                <td class="py-1 pr-4 text-muted-foreground text-xs">none</td>
-                <td class="py-1 text-muted-foreground">1250</td>
-              </tr>
-              <tr class="border-b border-border/40">
-                <td class="py-1 pr-4">Enrage</td>
-                <td class="py-1 pr-4 text-muted-foreground text-xs"
-                  >above 25% HP</td
-                >
-                <td class="py-1 text-muted-foreground">1250</td>
-              </tr>
-              <tr class="border-b border-border/40">
-                <td class="py-1 pr-4">Physical mitigation</td>
-                <td class="py-1 pr-4 font-mono text-xs"
-                  >ratio=clamp(1000×0.0005,0,0.9)=0.50; −⌈1250×0.50⌉=−625</td
-                >
-                <td class="py-1 font-semibold">625</td>
-              </tr>
-              <tr>
-                <td class="py-1 pr-4">Critical hit</td>
-                <td class="py-1 pr-4 text-muted-foreground text-xs"
-                  >no crit → 625; ×1.5 → 937; ×2.0 → 1250</td
-                >
-                <td class="py-1 text-muted-foreground">625</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <!-- Source: server-scripts/Player.cs:2783 -->
-        <p class="text-sm text-muted-foreground mt-2">
-          At 50% haste, interval = 0.5 + clamp(25×0.5/25, 0.25, 2.0) = 1.0 s → <strong
-            >625 DPS</strong
-          >
-          (no crit) / <strong>~953 DPS</strong>
-          (expected with crits).
-        </p>
-      </div>
     </Card.Content>
   </Card.Root>
 
@@ -315,8 +231,9 @@
     <Card.Header>
       <Card.Title>Damage Formulas</Card.Title>
       <Card.Description>
-        Dispatched per-caster from skillMechanics.ts. A skill used by multiple
-        class/mode combinations may appear under more than one formula.
+        Determines the base damage for step 1 of the pipeline. A skill used by
+        multiple class or mode combinations may appear under more than one
+        formula.
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-6">
@@ -352,7 +269,7 @@
     <Card.Header>
       <Card.Title>Resistance &amp; Mitigation</Card.Title>
       <Card.Description
-        >Combat.cs formulas for physical and magical damage reduction.</Card.Description
+        >Formulas for physical and magical damage reduction.</Card.Description
       >
     </Card.Header>
     <Card.Content class="space-y-5">
@@ -385,9 +302,10 @@ finalDamage = damage − reduction</pre>
   − attacker.accuracy
 , 0, 0.9)</pre>
         <p class="text-sm text-muted-foreground mt-1">
-          <code class="font-mono text-xs bg-muted px-1 rounded">resistStat</code
-          > by element: magicResist (magic/fire/cold/disease default), poisonResist,
-          fireResist, coldResist, diseaseResist, defense (melee debuff).
+          Each damage type uses its own dedicated resist stat: Magic Resist for
+          magic damage, Fire Resist for fire, Cold Resist for cold, Disease
+          Resist for disease, Poison Resist for poison, Defense for melee
+          debuffs.
         </p>
       </div>
 
@@ -405,7 +323,7 @@ finalDamage = damage − reduction</pre>
               <tr class="border-b border-border/40">
                 <td class="py-1 pr-4">Moving target</td>
                 <td class="py-1 text-muted-foreground"
-                  >Resist chance −0.25; damage +10%</td
+                  >Resist chance −0.25, damage +10%</td
                 >
               </tr>
               <tr class="border-b border-border/40">
@@ -419,11 +337,7 @@ finalDamage = damage − reduction</pre>
                 >
               </tr>
               <tr class="border-b border-border/40">
-                <td class="py-1 pr-4"
-                  ><code class="font-mono text-xs bg-muted px-1 rounded"
-                    >isDecreaseResistsSkill</code
-                  ></td
-                >
+                <td class="py-1 pr-4">Bypasses Debuff Immunity</td>
                 <td class="py-1 text-muted-foreground">Resist chance −0.30</td>
               </tr>
               <tr>
@@ -446,22 +360,39 @@ finalDamage = damage − reduction</pre>
     </Card.Header>
     <Card.Content class="space-y-5">
       <div>
-        <h3 class="font-semibold mb-1">WIS Heal Bonus</h3>
-        <pre
-          class="text-xs bg-muted px-3 py-2 rounded overflow-x-auto">finalHeal = baseHeal + round(baseHeal × min(WIS × 0.004, 5.0))</pre>
-        <p class="text-sm text-muted-foreground mt-1">
-          Ranger (TargetBuffSkill path): WIS multiplier is ×3. Scroll heals:
-          bonus = Player Level × 8 (replaces WIS calculation).
-        </p>
+        <h3 class="font-semibold mb-2">WIS Heal Bonus</h3>
+        <div class="space-y-3">
+          <div>
+            <p class="text-sm text-muted-foreground mb-1">
+              Default (all classes except Ranger when healing others):
+            </p>
+            <pre
+              class="text-xs bg-muted px-3 py-2 rounded overflow-x-auto">finalHeal = baseHeal + round(baseHeal × min(WIS × 0.004, 5.0))</pre>
+          </div>
+          <div>
+            <p class="text-sm text-muted-foreground mb-1">
+              Ranger healing other targets:
+            </p>
+            <pre
+              class="text-xs bg-muted px-3 py-2 rounded overflow-x-auto">finalHeal = baseHeal + round(baseHeal × min(WIS×3 × 0.004, 5.0))</pre>
+          </div>
+          <div>
+            <p class="text-sm text-muted-foreground mb-1">Scroll heals:</p>
+            <pre
+              class="text-xs bg-muted px-3 py-2 rounded overflow-x-auto">finalHeal = Player Level × 8</pre>
+            <p class="text-xs text-muted-foreground mt-1">
+              No WIS bonus applies to scroll heals.
+            </p>
+          </div>
+        </div>
       </div>
 
       <div>
         <h3 class="font-semibold mb-1">Critical Heal</h3>
         <p class="text-sm text-muted-foreground">
-          Applies only when <code
-            class="font-mono text-xs bg-muted px-1 rounded"
-            >can_heal_others</code
-          > is true. On crit: 90%→×2.0, 10%→×3.0.
+          Applies only to skills that can target other players (shown as "Others
+          Only" or "Self &amp; Others" on the skill page). On crit: 90%→×2.0,
+          10%→×3.0.
         </p>
       </div>
 
@@ -568,7 +499,7 @@ finalDamage = damage − reduction</pre>
               <tr class="border-b border-border/40"
                 ><td class="py-1 pr-4 font-mono text-xs">player_ranger_wis</td
                 ><td class="py-1 text-muted-foreground"
-                  >Player Ranger (target_buff only; area_buff uses player_wis)</td
+                  >Player Ranger (target_buff only, area_buff uses player_wis)</td
                 ></tr
               >
               <tr class="border-b border-border/40"
@@ -613,34 +544,24 @@ finalDamage = damage − reduction</pre>
           <table class="w-full text-sm border-collapse">
             <thead>
               <tr class="border-b border-border">
-                <th class="text-left py-1 pr-4 font-medium">Condition</th>
-                <th class="text-left py-1 font-medium">Attribute</th>
+                <th class="text-left py-1 pr-4 font-medium">Debuff type</th>
+                <th class="text-left py-1 font-medium">Attribute used</th>
               </tr>
             </thead>
             <tbody>
               <tr class="border-b border-border/40">
                 <td class="py-1 pr-4"
-                  ><code class="font-mono text-xs bg-muted px-1 rounded"
-                    >is_melee_debuff</code
-                  ></td
+                  >Melee debuffs (reduce physical defense)</td
                 >
                 <td class="py-1 text-muted-foreground">STR</td>
               </tr>
               <tr class="border-b border-border/40">
-                <td class="py-1 pr-4">
-                  <code class="font-mono text-xs bg-muted px-1 rounded"
-                    >is_poison_debuff</code
-                  >
-                  or
-                  <code class="font-mono text-xs bg-muted px-1 rounded"
-                    >is_disease_debuff</code
-                  >
-                </td>
+                <td class="py-1 pr-4">Poison and disease debuffs</td>
                 <td class="py-1 text-muted-foreground">DEX</td>
               </tr>
               <tr>
                 <td class="py-1 pr-4"
-                  >All others (fire, cold, magic, untagged)</td
+                  >All other debuffs (magic, fire, cold, untagged)</td
                 >
                 <td class="py-1 text-muted-foreground">INT</td>
               </tr>
@@ -672,8 +593,23 @@ finalDamage = damage − reduction</pre>
                 ></tr
               >
               <tr class="border-b border-border/40"
-                ><td class="py-1 pr-4">Elemental Resist reductions</td><td
-                  class="py-1 text-muted-foreground">−INT×0.4 each</td
+                ><td class="py-1 pr-4">Fire Resist reduction</td><td
+                  class="py-1 text-muted-foreground">−INT×0.4</td
+                ></tr
+              >
+              <tr class="border-b border-border/40"
+                ><td class="py-1 pr-4">Cold Resist reduction</td><td
+                  class="py-1 text-muted-foreground">−INT×0.4</td
+                ></tr
+              >
+              <tr class="border-b border-border/40"
+                ><td class="py-1 pr-4">Disease Resist reduction</td><td
+                  class="py-1 text-muted-foreground">−INT×0.4</td
+                ></tr
+              >
+              <tr class="border-b border-border/40"
+                ><td class="py-1 pr-4">Poison Resist reduction</td><td
+                  class="py-1 text-muted-foreground">−INT×0.4</td
                 ></tr
               >
               <tr class="border-b border-border/40"
@@ -689,27 +625,27 @@ finalDamage = damage − reduction</pre>
               <tr class="border-b border-border/40"
                 ><td class="py-1 pr-4">DoT poison/disease</td><td
                   class="py-1 text-muted-foreground"
-                  >+DEX×1.0; reduced by poisonResist</td
+                  >+DEX×1.0, reduced by Poison Resist</td
                 ></tr
               >
               <tr class="border-b border-border/40"
                 ><td class="py-1 pr-4">DoT melee</td><td
                   class="py-1 text-muted-foreground"
-                  >+STR×0.5; reduced by defense mitigation</td
+                  >+STR×0.5, reduced by defense mitigation</td
                 ></tr
               >
               <tr
                 ><td class="py-1 pr-4">DoT fire/cold/magic</td><td
                   class="py-1 text-muted-foreground"
-                  >+INT×1.25; reduced by respective resist</td
+                  >+INT×1.25, reduced by respective resist</td
                 ></tr
               >
             </tbody>
           </table>
         </div>
         <p class="text-sm text-muted-foreground mt-2">
-          <strong>DoT counter decay:</strong> 3 counters → full damage, 2 → ×0.9,
-          1 → ×0.8.
+          <strong>DoT counter decay:</strong> 3 counters full damage, 2 → ×0.9, 1
+          → ×0.8.
         </p>
       </div>
     </Card.Content>
@@ -723,116 +659,136 @@ finalDamage = damage − reduction</pre>
         >How attack interval and haste interact per caster model.</Card.Description
       >
     </Card.Header>
-    <Card.Content class="space-y-5">
-      <!-- Comparison table: all 5 models side-by-side -->
+    <Card.Content class="space-y-6">
+      <!-- Interval formulas -->
       <!-- Sources: Player.cs:2783, Skills.cs:673-675, Skills.cs:765-768, Skills.cs:814-815 -->
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm border-collapse">
-          <thead>
-            <tr class="border-b border-border">
-              <th class="text-left py-1 pr-4 font-medium">Model</th>
-              <th class="text-left py-1 pr-4 font-medium">Who</th>
-              <th class="text-left py-1 pr-4 font-medium">Interval</th>
-              <th class="text-left py-1 pr-4 font-medium">Regular haste</th>
-              <th class="text-left py-1 font-medium">Spell haste</th>
-            </tr>
-          </thead>
-          <tbody>
-            <!-- Source: server-scripts/Player.cs:2783 -->
-            <tr class="border-b border-border/40 align-top">
-              <td class="py-2 pr-4 font-mono text-xs">player_auto</td>
-              <td class="py-2 pr-4 text-muted-foreground text-xs"
-                >Player auto-attacks (non-spell, weapon required). Warrior/Rogue
-                generate Rage (⌊damage×0.25⌋ per hit, capped at target current
-                HP); all other classes use Mana.</td
-              >
-              <td class="py-2 pr-4 font-mono text-xs"
-                >castTime + clamp(delay×(1−h)/25, 0.25, 2.0)</td
-              >
-              <td class="py-2 pr-4 text-muted-foreground text-xs"
-                >Reduces delay term; floor 0.25 s, cap 2.0 s</td
-              >
-              <td class="py-2 text-muted-foreground text-xs">No effect</td>
-            </tr>
-            <!-- Source: server-scripts/Skills.cs:673-675 -->
-            <tr class="border-b border-border/40 align-top">
-              <td class="py-2 pr-4 font-mono text-xs">player_skill</td>
-              <td class="py-2 pr-4 text-muted-foreground text-xs"
-                >Player non-weapon skills; player spells; companions; familiars</td
-              >
-              <td class="py-2 pr-4 font-mono text-xs"
-                >Non-spell: castTime + cooldown<br />Spell: castTime×(1−sh) +
-                cooldown</td
-              >
-              <td class="py-2 pr-4 text-muted-foreground text-xs">No effect</td>
-              <td class="py-2 text-muted-foreground text-xs"
-                >Spells: reduces cast time only. Companions/familiars: no player
-                stats → neither haste applies</td
-              >
-            </tr>
-            <!-- Source: server-scripts/Skills.cs:765-768 -->
-            <tr class="border-b border-border/40 align-top">
-              <td class="py-2 pr-4 font-mono text-xs">merc_auto</td>
-              <td class="py-2 pr-4 text-muted-foreground text-xs"
-                >Merc auto-attacks (non-spell)</td
-              >
-              <td class="py-2 pr-4 font-mono text-xs"
-                >castTime + cooldown×(1−h)</td
-              >
-              <td class="py-2 pr-4 text-muted-foreground text-xs"
-                >Reduces cooldown</td
-              >
-              <td class="py-2 text-muted-foreground text-xs">No effect</td>
-            </tr>
-            <!-- Source: server-scripts/Skills.cs:765-768 -->
-            <tr class="border-b border-border/40 align-top">
-              <td class="py-2 pr-4 font-mono text-xs">merc_skill</td>
-              <td class="py-2 pr-4 text-muted-foreground text-xs"
-                >Merc spells</td
-              >
-              <td class="py-2 pr-4 font-mono text-xs"
-                >castTime×(1−sh) + cooldown</td
-              >
-              <td class="py-2 pr-4 text-muted-foreground text-xs">No effect</td>
-              <td class="py-2 text-muted-foreground text-xs"
-                >Reduces cast time; cooldown is NOT reduced by either haste type
-                (Skills.cs <code class="bg-muted px-0.5 rounded">!isSpell</code>
-                gate)</td
-              >
-            </tr>
-            <!-- Source: server-scripts/Skills.cs:814-815 -->
-            <tr class="align-top">
-              <td class="py-2 pr-4 font-mono text-xs">monster</td>
-              <td class="py-2 pr-4 text-muted-foreground text-xs"
-                >All monster/NPC attacks</td
-              >
-              <td class="py-2 pr-4 font-mono text-xs"
-                >castTime + cooldown×(1−h)</td
-              >
-              <td class="py-2 pr-4 text-muted-foreground text-xs"
-                >Reduces cooldown unconditionally — even when
-                <code class="bg-muted px-0.5 rounded">is_spell=true</code>
-                (Monster.cs/Npc.cs
-                <code class="bg-muted px-0.5 rounded"
-                  >FinishCastMeleeAttackMonster</code
-                >)</td
-              >
-              <td class="py-2 text-muted-foreground text-xs"
-                >No effect — monsters have no spell haste stat</td
-              >
-            </tr>
-          </tbody>
-        </table>
+      <div>
+        <h3 class="font-semibold mb-2">Interval Formulas</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm border-collapse">
+            <thead>
+              <tr class="border-b border-border">
+                <th class="text-left py-1 pr-4 font-medium">Model</th>
+                <th class="text-left py-1 pr-4 font-medium">Caster</th>
+                <th class="text-left py-1 font-medium">Interval</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Source: server-scripts/Player.cs:2783 -->
+              <tr class="border-b border-border/40">
+                <td class="py-2 pr-4 font-mono text-xs">player_auto</td>
+                <td class="py-2 pr-4 text-muted-foreground text-xs"
+                  >Player auto-attacks (weapon required)</td
+                >
+                <td class="py-2 font-mono text-xs"
+                  >castTime + clamp(delay×(1−h)/25, 0.25, 2.0)</td
+                >
+              </tr>
+              <!-- Source: server-scripts/Skills.cs:673-675 -->
+              <tr class="border-b border-border/40">
+                <td class="py-2 pr-4 font-mono text-xs">player_skill</td>
+                <td class="py-2 pr-4 text-muted-foreground text-xs"
+                  >Player skills and spells, companions, and familiars</td
+                >
+                <td class="py-2 font-mono text-xs"
+                  >Non-spell: castTime + cooldown<br />Spell: castTime×(1−sh) +
+                  cooldown</td
+                >
+              </tr>
+              <!-- Source: server-scripts/Skills.cs:765-768 -->
+              <tr class="border-b border-border/40">
+                <td class="py-2 pr-4 font-mono text-xs">merc_auto</td>
+                <td class="py-2 pr-4 text-muted-foreground text-xs"
+                  >Merc auto-attacks</td
+                >
+                <td class="py-2 font-mono text-xs">castTime + cooldown×(1−h)</td
+                >
+              </tr>
+              <!-- Source: server-scripts/Skills.cs:765-768 -->
+              <tr class="border-b border-border/40">
+                <td class="py-2 pr-4 font-mono text-xs">merc_skill</td>
+                <td class="py-2 pr-4 text-muted-foreground text-xs"
+                  >Merc spells</td
+                >
+                <td class="py-2 font-mono text-xs"
+                  >castTime×(1−sh) + cooldown</td
+                >
+              </tr>
+              <!-- Source: server-scripts/Skills.cs:814-815 -->
+              <tr>
+                <td class="py-2 pr-4 font-mono text-xs">monster</td>
+                <td class="py-2 pr-4 text-muted-foreground text-xs"
+                  >All monster and NPC attacks</td
+                >
+                <td class="py-2 font-mono text-xs">castTime + cooldown×(1−h)</td
+                >
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="text-sm text-muted-foreground mt-2">
+          Warrior and Rogue generate Rage from auto-attacks (⌊damage×0.25⌋ per
+          hit, capped at the target's current HP). All other classes use Mana.
+        </p>
       </div>
 
-      <div
-        class="rounded-md border border-border bg-muted/20 px-4 py-3 text-sm"
-      >
-        For interactive per-class interval and DPS modelling, see the
-        <a
-          href="/tools/combat-simulator"
-          class="underline hover:text-foreground">Auto-Attack DPS Simulator</a
-        >.
+      <!-- Haste effects -->
+      <div>
+        <h3 class="font-semibold mb-2">Haste Effects</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm border-collapse">
+            <thead>
+              <tr class="border-b border-border">
+                <th class="text-left py-1 pr-4 font-medium">Model</th>
+                <th class="text-left py-1 pr-4 font-medium">Regular haste</th>
+                <th class="text-left py-1 font-medium">Spell haste</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="border-b border-border/40">
+                <td class="py-2 pr-4 font-mono text-xs">player_auto</td>
+                <td class="py-2 pr-4 text-muted-foreground text-xs"
+                  >Reduces the delay term (floor 0.25 s, cap 2.0 s)</td
+                >
+                <td class="py-2 text-muted-foreground text-xs">No effect</td>
+              </tr>
+              <tr class="border-b border-border/40">
+                <td class="py-2 pr-4 font-mono text-xs">player_skill</td>
+                <td class="py-2 pr-4 text-muted-foreground text-xs"
+                  >No effect</td
+                >
+                <td class="py-2 text-muted-foreground text-xs"
+                  >Reduces cast time of spells only. Companions and familiars
+                  have no access to player stats, so neither haste type applies.</td
+                >
+              </tr>
+              <tr class="border-b border-border/40">
+                <td class="py-2 pr-4 font-mono text-xs">merc_auto</td>
+                <td class="py-2 pr-4 text-muted-foreground text-xs"
+                  >Reduces cooldown</td
+                >
+                <td class="py-2 text-muted-foreground text-xs">No effect</td>
+              </tr>
+              <tr class="border-b border-border/40">
+                <td class="py-2 pr-4 font-mono text-xs">merc_skill</td>
+                <td class="py-2 pr-4 text-muted-foreground text-xs"
+                  >No effect</td
+                >
+                <td class="py-2 text-muted-foreground text-xs"
+                  >Reduces cast time only. Cooldown is not affected by either
+                  haste type.</td
+                >
+              </tr>
+              <tr>
+                <td class="py-2 pr-4 font-mono text-xs">monster</td>
+                <td class="py-2 pr-4 text-muted-foreground text-xs"
+                  >Reduces cooldown, even for spell attacks</td
+                >
+                <td class="py-2 text-muted-foreground text-xs">No effect</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </Card.Content>
   </Card.Root>
@@ -858,59 +814,60 @@ finalDamage = damage − reduction</pre>
       <div>
         <h3 class="font-semibold mb-1">Ward &amp; Mana Shield Priority</h3>
         <p class="text-sm text-muted-foreground">
-          Ward absorbs first; Mana Shield absorbs the remainder. Ward pool =
-          buff's bonusAttribute (WIS×5 from buff scaling).
+          Ward absorbs first. Mana Shield absorbs any remaining damage. Ward
+          pool size comes from the buff's WIS scaling (WIS×5).
         </p>
       </div>
 
       <div>
         <h3 class="font-semibold mb-1">Enrage</h3>
         <p class="text-sm text-muted-foreground">
-          Non-spell skills only. Player: +33%. Monster: +50–100% random.
-          Triggers when caster is below 25% HP.
+          Non-spell skills only. When the caster's HP falls below 25%, their
+          damage output increases by 33% (players) or 50–100% (monsters,
+          random).
         </p>
       </div>
 
       <div>
         <h3 class="font-semibold mb-1">Assassination</h3>
         <p class="text-sm text-muted-foreground">
-          Pre-cast check — skill is only usable when target is below 25% HP.
-          Verified per <code class="font-mono text-xs bg-muted px-1 rounded"
-            >is_assassination_skill</code
-          > flag.
+          Skills with this mechanic can only be used when the target is below
+          25% HP.
         </p>
       </div>
 
       <div>
         <h3 class="font-semibold mb-1">Cleanse</h3>
         <p class="text-sm text-muted-foreground mb-2">
-          Governed by <code class="font-mono text-xs bg-muted px-1 rounded"
-            >prob_ignore_cleanse</code
-          > on each debuff:
+          Cleanse removes debuff stacks from a target. Each debuff has a cleanse
+          resistance level:
         </p>
         <div class="overflow-x-auto">
           <table class="w-full text-sm border-collapse">
             <thead>
               <tr class="border-b border-border">
-                <th class="text-left py-1 pr-4 font-medium">Value</th>
+                <th class="text-left py-1 pr-4 font-medium"
+                  >Cleanse resistance</th
+                >
                 <th class="text-left py-1 font-medium">Behaviour</th>
               </tr>
             </thead>
             <tbody>
               <tr class="border-b border-border/40"
-                ><td class="py-1 pr-4">&lt;= 0</td><td
+                ><td class="py-1 pr-4">None (most debuffs)</td><td
                   class="py-1 text-muted-foreground"
-                  >Always removed (3 counters stripped in one cast)</td
+                  >Fully cleansable: all stacks removed in one cast</td
                 ></tr
               >
               <tr class="border-b border-border/40"
-                ><td class="py-1 pr-4">0 &lt; p &lt; 1</td><td
+                ><td class="py-1 pr-4">Partial</td><td
                   class="py-1 text-muted-foreground"
-                  >1 guaranteed + 2 independent probability rolls</td
+                  >One stack always removed. Each remaining stack has an
+                  independent chance to resist</td
                 ></tr
               >
               <tr
-                ><td class="py-1 pr-4">&gt;= 1</td><td
+                ><td class="py-1 pr-4">Full</td><td
                   class="py-1 text-muted-foreground">Cannot be cleansed</td
                 ></tr
               >
@@ -918,19 +875,18 @@ finalDamage = damage − reduction</pre>
           </table>
         </div>
         <p class="text-sm text-muted-foreground mt-2">
-          Type matching: a cleanse skill only strips debuffs whose type flag
-          matches (poison cleanse only removes poison debuffs, etc.).
+          Type matching: a cleanse skill only removes debuffs whose element
+          matches (a poison cleanse only removes poison debuffs, etc.).
         </p>
       </div>
 
       <div>
         <h3 class="font-semibold mb-1">Dispel</h3>
         <p class="text-sm text-muted-foreground">
-          Players: all buffs removed (except Rest buff). Pets: all buffs
-          removed. Monsters: each buff rolls independently against its
-          <code class="font-mono text-xs bg-muted px-1 rounded"
-            >prob_ignore_cleanse</code
-          >.
+          When a Dispel skill lands on a player, all active buffs are removed
+          (except the Rest buff). When it lands on a pet, all active buffs are
+          removed. When it lands on a monster, each buff has an independent
+          chance to resist removal.
         </p>
       </div>
 
@@ -938,33 +894,35 @@ finalDamage = damage − reduction</pre>
       <div>
         <h3 class="font-semibold mb-1">Buff &amp; Debuff Overwrite</h3>
         <p class="text-sm text-muted-foreground mb-2">
-          Stacking is governed by <code
-            class="font-mono text-xs bg-muted px-1 rounded">buff_category</code
-          >. When a buff with a non-empty
-          <code class="font-mono text-xs bg-muted px-1 rounded"
-            >buff_category</code
+          When a new buff is applied to a target, the game checks whether the
+          skill belongs to an overwrite group. If it does, all existing buffs on
+          that target in the same group expire immediately before the new buff
+          is added. For example, <a
+            href="/skills/divine_shield"
+            class="underline hover:text-foreground">Divine Shield</a
           >
-          is applied, all existing buffs sharing that category have their expiry
-          set to 0 (expire immediately); the new buff is then added. Example:
-          <em>Divine Shield</em>
-          and <em>Shield of Faith</em> share
-          <code class="font-mono text-xs bg-muted px-1 rounded"
-            >"Cleric AC Buff"</code
-          > — applying the higher-tier skill expires the lower.
+          and
+          <a
+            href="/skills/shield_of_faith"
+            class="underline hover:text-foreground">Shield of Faith</a
+          > share the same overwrite group. Applying the higher-tier skill expires
+          the lower one.
         </p>
         <ul
           class="text-sm text-muted-foreground list-disc list-inside space-y-1"
         >
           <li>
-            Skills with a null or empty <code
-              class="font-mono text-xs bg-muted px-1 rounded"
-              >buff_category</code
-            > bypass the overwrite check and stack freely.
+            Skills without an assigned overwrite group bypass this check and can
+            stack freely.
           </li>
-          <li>Multiple debuffs of different categories apply independently.</li>
           <li>
-            DoT effects use the counter-decay model from §6 — they do not stack
-            multiplicatively.
+            Multiple debuffs with different or no overwrite groups apply
+            independently.
+          </li>
+          <li>
+            Each DoT maintains its own stack of up to 3 counters. Multiple DoTs
+            from different skills accumulate independently and do not multiply
+            each other.
           </li>
         </ul>
       </div>
