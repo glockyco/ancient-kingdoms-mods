@@ -4,6 +4,13 @@
 // WeaponItem is defined here (canonical) and re-exported from +page.server.ts so
 // that +page.svelte can still use `import type { WeaponItem } from "./+page.server"`.
 
+import {
+  evaluate,
+  FORMULA_EXPRS,
+  renderFormula,
+} from "$lib/utils/formula-eval";
+import type { DamageFormulaKind } from "$lib/types/skills";
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface WeaponItem {
@@ -149,7 +156,7 @@ export const FORMULA_TABLE: readonly FormulaRow[] = [
     skillName: "Melee Attack",
     cast: "0.5s",
     timing: "cast + clamp(delay×(1−h)/25, 0.25, 2.0s)",
-    damage: "(STR+wSTR)×1.0 + wDmg + other",
+    damage: renderFormula(FORMULA_EXPRS["normal"]),
     softCap: "1 − 6.25/delay",
   },
   {
@@ -159,7 +166,7 @@ export const FORMULA_TABLE: readonly FormulaRow[] = [
     skillName: "Sword Strike",
     cast: "0.5s",
     timing: "cast + 1.0×(1−h)",
-    damage: "(STR+wSTR)×1.0 + wDmg + other",
+    damage: renderFormula(FORMULA_EXPRS["normal"]),
     softCap: "None (linear)",
   },
   {
@@ -169,7 +176,7 @@ export const FORMULA_TABLE: readonly FormulaRow[] = [
     skillName: "Stab",
     cast: "0.4s",
     timing: "cast + clamp(delay×(1−h)/25, 0.25, 2.0s)",
-    damage: "(STR+mSTR+oSTR)×1.0 + mDmg + ⌊oDmg×0.5⌋ + other",
+    damage: renderFormula(FORMULA_EXPRS["rogue_melee"]),
     softCap: "1 − 6.25/delay",
   },
   {
@@ -179,7 +186,7 @@ export const FORMULA_TABLE: readonly FormulaRow[] = [
     skillName: "Pierce",
     cast: "0.4s",
     timing: "cast + 1.0×(1−h)",
-    damage: "(STR+wSTR)×1.0 + wDmg + other",
+    damage: renderFormula(FORMULA_EXPRS["rogue_melee_merc"]),
     softCap: "None (linear)",
   },
   {
@@ -189,7 +196,7 @@ export const FORMULA_TABLE: readonly FormulaRow[] = [
     skillName: "Archer Shot",
     cast: "0.8s",
     timing: "cast + clamp(bow_delay×(1−h)/25, 0.25, 2.0s)",
-    damage: "(STR+bSTR)×1.0 + bDmg + (DEX+bDEX)×1.5 + other",
+    damage: renderFormula(FORMULA_EXPRS["ranged_player"]),
     softCap: "1 − 6.25/delay",
   },
   {
@@ -199,7 +206,7 @@ export const FORMULA_TABLE: readonly FormulaRow[] = [
     skillName: "Swift Slash",
     cast: "0.5s",
     timing: "cast + clamp(melee_delay×(1−h)/25, 0.25, 2.0s)",
-    damage: "(STR+mSTR)×1.0 + mDmg + other",
+    damage: renderFormula(FORMULA_EXPRS["ranger_melee"]),
     softCap: "1 − 6.25/delay",
   },
   {
@@ -209,7 +216,7 @@ export const FORMULA_TABLE: readonly FormulaRow[] = [
     skillName: "Explorer Shot",
     cast: "0.8s",
     timing: "cast + 1.0×(1−h)",
-    damage: "(STR+bSTR+mSTR)×1.0 + bDmg + mDmg + (DEX+bDEX)×1.5 + other",
+    damage: renderFormula(FORMULA_EXPRS["ranged_merc"]),
     softCap: "None (linear)",
   },
   {
@@ -219,7 +226,7 @@ export const FORMULA_TABLE: readonly FormulaRow[] = [
     skillName: "Fire Blast",
     cast: "0.9s",
     timing: "cast × (1 − spell haste)",
-    damage: "INT×1.5 + wand.magic_dmg + other",
+    damage: renderFormula(FORMULA_EXPRS["magic_spell"]),
     softCap: "None (use Spell Haste %)",
   },
   {
@@ -229,7 +236,7 @@ export const FORMULA_TABLE: readonly FormulaRow[] = [
     skillName: "Staff Strike",
     cast: "0.5s",
     timing: "cast + clamp(delay×(1−h)/25, 0.25, 2.0s)",
-    damage: "(STR+wSTR)×1.0 + wDmg + other",
+    damage: renderFormula(FORMULA_EXPRS["normal"]),
     softCap: "1 − 6.25/delay",
   },
   {
@@ -239,7 +246,7 @@ export const FORMULA_TABLE: readonly FormulaRow[] = [
     skillName: "Flame Blast",
     cast: "0.8s",
     timing: "cast × (1 − spell haste) + 1.0s cooldown",
-    damage: "INT×1.5 + wand.magic_dmg + other",
+    damage: renderFormula(FORMULA_EXPRS["magic_spell"]),
     softCap: "None (use Spell Haste %)",
   },
   {
@@ -249,7 +256,7 @@ export const FORMULA_TABLE: readonly FormulaRow[] = [
     skillName: "Wind Shock",
     cast: "1.0s",
     timing: "cast × (1 − spell haste)",
-    damage: "INT×1.5 + wand.magic_dmg + other",
+    damage: renderFormula(FORMULA_EXPRS["magic_spell"]),
     softCap: "None (use Spell Haste %)",
   },
   {
@@ -259,7 +266,7 @@ export const FORMULA_TABLE: readonly FormulaRow[] = [
     skillName: "Staff Strike",
     cast: "0.5s",
     timing: "cast + clamp(delay×(1−h)/25, 0.25, 2.0s)",
-    damage: "(STR+wSTR)×1.0 + wDmg + other",
+    damage: renderFormula(FORMULA_EXPRS["normal"]),
     softCap: "1 − 6.25/delay",
   },
   {
@@ -269,7 +276,7 @@ export const FORMULA_TABLE: readonly FormulaRow[] = [
     skillName: "Gale Burst",
     cast: "1.0s",
     timing: "cast × (1 − spell haste) + 2.0s cooldown",
-    damage: "INT×1.5 + wand.magic_dmg + other",
+    damage: renderFormula(FORMULA_EXPRS["magic_spell"]),
     softCap: "None (use Spell Haste %)",
   },
   {
@@ -279,7 +286,7 @@ export const FORMULA_TABLE: readonly FormulaRow[] = [
     skillName: "Smite",
     cast: "1.2s",
     timing: "cast × (1 − spell haste)",
-    damage: "INT×1.5 + wand.magic_dmg + other",
+    damage: renderFormula(FORMULA_EXPRS["magic_spell"]),
     softCap: "None (use Spell Haste %)",
   },
   {
@@ -289,7 +296,7 @@ export const FORMULA_TABLE: readonly FormulaRow[] = [
     skillName: "Crush Strike",
     cast: "0.5s",
     timing: "cast + clamp(delay×(1−h)/25, 0.25, 2.0s)",
-    damage: "(STR+wSTR)×1.0 + wDmg + other",
+    damage: renderFormula(FORMULA_EXPRS["normal"]),
     softCap: "1 − 6.25/delay",
   },
   {
@@ -299,10 +306,50 @@ export const FORMULA_TABLE: readonly FormulaRow[] = [
     skillName: "Divine Smite",
     cast: "1.2s",
     timing: "cast × (1 − spell haste) + 2.0s cooldown",
-    damage: "INT×1.5 + wand.magic_dmg + other",
+    damage: renderFormula(FORMULA_EXPRS["magic_spell"]),
     softCap: "None (use Spell Haste %)",
   },
 ];
+
+// ─── Auto-attack formula mapping ─────────────────────────────────────────────
+
+/**
+ * Maps each (AttackMode, PlayerClass) pair to the DamageFormulaKind used for
+ * auto-attack damage calculation. Drives both evaluate() and the reference table.
+ *
+ * Slot assignments assumed by calcDamage():
+ *   player/merc + warrior  → main = sword
+ *   player + rogue         → main = dagger, off = off-hand dagger
+ *   merc + rogue           → main = dagger, off = off-hand dagger (full damage, no penalty)
+ *   bow_player/melee_player → bow = bow, main = sword (via melee→main remap)
+ *   bow_merc               → bow = bow, melee = sword
+ *   spell_*                → wand = wand
+ *   staff_player           → main = wand (physical path, via wand→main remap)
+ */
+export const AUTO_ATTACK_FORMULA_KIND: Record<
+  AttackMode,
+  DamageFormulaKind | Partial<Record<PlayerClass, DamageFormulaKind>>
+> = {
+  player: { warrior: "normal", rogue: "rogue_melee" },
+  merc: { warrior: "normal", rogue: "rogue_melee_merc" },
+  bow_player: "ranged_player",
+  melee_player: "ranger_melee",
+  bow_merc: "ranged_merc",
+  spell_player: "magic_spell",
+  staff_player: "normal",
+  spell_merc: "magic_spell",
+};
+
+export function getAutoAttackKind(
+  mode: AttackMode,
+  cls: PlayerClass,
+): DamageFormulaKind {
+  const entry = AUTO_ATTACK_FORMULA_KIND[mode];
+  if (typeof entry === "string") return entry;
+  const kind = (entry as Partial<Record<PlayerClass, DamageFormulaKind>>)[cls];
+  if (!kind) throw new Error(`No auto-attack formula for ${mode}:${cls}`);
+  return kind;
+}
 
 // ─── Mode predicates ──────────────────────────────────────────────────────────
 
@@ -393,15 +440,13 @@ export function calcInterval(
 }
 
 /**
- * Damage per hit for the given mode, stats, and weapons.
- * Returns null when the required weapon for the mode is not provided.
- * Source: TargetDamageSkill.cs, TargetProjectileSkill.cs
+ * Damage per hit for the given mode, class, and weapon loadout.
+ * Returns null when the required primary weapon for the formula is absent.
  *
- * @param main   warrior/rogue main weapon
- * @param off    rogue off-hand dagger (player mode only)
- * @param bow    ranger bow
- * @param melee  ranger melee weapon
- * @param wand   caster wand
+ * Slot semantics:
+ *   melee_player → `melee` is remapped to the formula's "main" slot (sword → "main").
+ *   staff_player  → `wand` is remapped to the formula's "main" slot (phys path).
+ *   merc + rogue  → `off` carries the off-hand dagger (full damage, no penalty).
  */
 export function calcDamage(
   mode: AttackMode,
@@ -417,72 +462,29 @@ export function calcDamage(
   otherPhys: number,
   otherMagic: number,
 ): number | null {
-  switch (mode) {
-    case "player": {
-      if (!main) return null;
-      if (cls === "rogue") {
-        // stab: off-hand contributes floor(dmg×0.5) but full STR into multiplier
-        // Source: TargetDamageSkill.cs:162-227
-        const offStr = off?.strength ?? 0;
-        const offDmg = off ? Math.floor(off.damage * 0.5) : 0;
-        return (
-          (str + main.strength + offStr) * 1.0 +
-          main.damage +
-          offDmg +
-          otherPhys
-        );
-      }
-      // warrior melee_attack: STR×1.0 + weapon.dmg + other
-      return (str + main.strength) * 1.0 + main.damage + otherPhys;
-    }
-    case "merc": {
-      if (!main) return null;
-      // sword_strike / pierce: no off-hand correction
-      return (str + main.strength) * 1.0 + main.damage + otherPhys;
-    }
-    case "bow_player": {
-      if (!bow) return null;
-      // archer_shot: combat.damage + DEX×1.5; melee slot subtracted server-side (not modelled)
-      // Source: TargetProjectileSkill.cs:187-201
-      return (
-        (str + bow.strength) * 1.0 +
-        bow.damage +
-        (dex + bow.dexterity) * 1.5 +
-        otherPhys
-      );
-    }
-    case "melee_player": {
-      if (!melee) return null;
-      // swift_slash: STR×1.0 + melee.dmg + armor; no bow, no DEX
-      return (str + melee.strength) * 1.0 + melee.damage + otherPhys;
-    }
-    case "bow_merc": {
-      if (!bow) return null;
-      // explorer_shot: combat.damage includes both bow + melee slots; no slot subtraction
-      // Source: TargetProjectileSkill.cs:187-201 — merc Ranger: combat.damage + DEX×1.5
-      const meleeStr = melee?.strength ?? 0;
-      const meleeDmg = melee?.damage ?? 0;
-      return (
-        (str + bow.strength + meleeStr) * 1.0 +
-        bow.damage +
-        meleeDmg +
-        (dex + bow.dexterity) * 1.5 +
-        otherPhys
-      );
-    }
-    case "spell_player":
-    case "spell_merc": {
-      if (!wand) return null;
-      // isSpell → combat.magicDamage = INT×1.5 + wand.magic_dmg + other magic equip
-      // Source: TargetProjectileSkill.cs, Skills.cs:675
-      return int_ * 1.5 + wand.magic_damage + otherMagic;
-    }
-    case "staff_player": {
-      if (!wand) return null;
-      // staff_strike / crush_strike: physical weapon formula (STR×1.0 + wand.dmg + other)
-      return (str + wand.strength) * 1.0 + wand.damage + otherPhys;
-    }
-  }
+  const kind = getAutoAttackKind(mode, cls);
+
+  // Mode-specific slot remapping:
+  //   melee_player: ranger carries a sword in the "melee" arg, but the formula
+  //     (ranger_melee) expects it in the "main" slot.
+  //   staff_player: the wand is used as a physical weapon in the "main" slot.
+  const slotMain =
+    mode === "melee_player" ? melee : mode === "staff_player" ? wand : main;
+
+  return evaluate(FORMULA_EXPRS[kind], {
+    weapons: {
+      main: slotMain ?? undefined,
+      off: off ?? undefined,
+      bow: bow ?? undefined,
+      melee: melee ?? undefined,
+      wand: wand ?? undefined,
+    },
+    str,
+    dex,
+    int_,
+    otherPhys,
+    otherMagic,
+  });
 }
 
 // ─── Comparison table builder ─────────────────────────────────────────────────
@@ -555,7 +557,7 @@ export function buildComparisonRows(params: {
           "merc",
           cls,
           w,
-          null,
+          fixedOff,
           null,
           null,
           null,

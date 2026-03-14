@@ -1,1 +1,1 @@
-Mechanics Damage Formula Consumes all rage. Damage = Rage × 2 (Warrior/Rogue) or Mana × 2 (Wizard). Bypasses all resistance and mitigation.
+Mechanics Damage Formula Consumes all Rage (Warrior/Rogue) or all Mana (Wizard) and deals that amount × 2 as damage. Completely bypasses armor, resistance, and all other mitigation.

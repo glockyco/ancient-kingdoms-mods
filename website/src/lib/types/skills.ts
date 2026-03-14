@@ -235,17 +235,20 @@ export interface SkillPet {
 // Mechanics spec — computed server-side, rendered declaratively
 // ------------------------------------------------------------
 
+export type WeaponSlotName = "main" | "off" | "bow" | "melee" | "wand";
+
 export type DamageFormulaKind =
   // Physical
   | "normal" // STR×1.0 + all equipment — e.g. slam
   | "ranger_melee" // STR×1.0 + all equip − bow slot bonus (slot 13) — e.g. swift_slash
-  | "rogue_melee" // STR×1.0 + main-hand + 50% off-hand + other equip — e.g. ambush
+  | "rogue_melee" // STR×1.0 + main-hand + ⌊50% off-hand⌋ + other equip — e.g. ambush
+  | "rogue_melee_merc" // STR×1.0 + main-hand + off-hand (full, no penalty) + other equip — e.g. pierce
   // Ranged (physical+DEX)
   | "ranged_player" // STR×1.0 + bow+armour + DEX×1.5 − melee slot bonus — e.g. archer_shot
   | "ranged_player_frontal" // STR×1.0 + all equip + DEX×1.5 (no subtraction) — e.g. forest_guardians_aid
-  | "ranged_merc" // STR×1.0 + bow + melee weapon + other equip + DEX×1.5 (both weapons count; no subtraction unlike player) — e.g. explorer_shot
+  | "ranged_merc" // STR×1.0 + bow + melee weapon + other equip + DEX×1.5 — e.g. explorer_shot
   // Poison
-  | "poison_rogue" // STR×1.0 + main-hand + 50% off-hand + other equip + DEX×2.5 — e.g. deadly_strike
+  | "poison_rogue" // STR×1.0 + main-hand + ⌊50% off-hand⌋ + other equip + DEX×2.5 — e.g. deadly_strike
   // Magic
   | "magic_spell" // INT×1.5 + equipment — e.g. fireball
   | "magic_weapon" // INT×1.5 + STR×1.0 + equipment (additive; Cleric) — e.g. holy_wrath

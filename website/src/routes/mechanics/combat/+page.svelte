@@ -254,9 +254,9 @@
   });
 
   // Off-hand is fixed for rogue player mode (we iterate main weapons, off is constant).
-  const fixedOff = $derived(
-    attackMode === "player" && selectedClass === "rogue" ? offWeapon : null,
-  );
+  // Off-hand is fixed for rogue modes (we iterate main weapons; off-hand is constant across rows).
+  // Player: ⌊dmg×0.5⌋ penalty applies. Merc: both daggers at full damage (rogue_melee_merc).
+  const fixedOff = $derived(selectedClass === "rogue" ? offWeapon : null);
   // Melee weapon is fixed for bow_merc mode (we iterate bows, melee is constant).
   const fixedMelee = $derived(attackMode === "bow_merc" ? meleeWeapon : null);
 
@@ -413,7 +413,11 @@
         <!-- STR (all physical modes) -->
         {#if !isSpellMode(attackMode)}
           <div class="space-y-1">
-            <label class="text-sm font-medium" for="base-str">Base STR</label>
+            <label class="text-sm font-medium" for="base-str">STR</label>
+            <p class="text-xs text-muted-foreground">
+              Your character's STR attribute. Do not include the selected
+              weapon's own strength bonus — the simulator adds it automatically.
+            </p>
             <input
               id="base-str"
               type="number"
@@ -428,7 +432,11 @@
         <!-- DEX (bow modes only) -->
         {#if attackMode === "bow_player" || attackMode === "bow_merc"}
           <div class="space-y-1">
-            <label class="text-sm font-medium" for="base-dex">Base DEX</label>
+            <label class="text-sm font-medium" for="base-dex">DEX</label>
+            <p class="text-xs text-muted-foreground">
+              Your character's DEX attribute. Do not include the selected bow's
+              own dexterity bonus — the simulator adds it automatically.
+            </p>
             <input
               id="base-dex"
               type="number"
@@ -443,7 +451,7 @@
         <!-- INT (spell modes) -->
         {#if isSpellMode(attackMode)}
           <div class="space-y-1">
-            <label class="text-sm font-medium" for="base-int">Base INT</label>
+            <label class="text-sm font-medium" for="base-int">INT</label>
             <input
               id="base-int"
               type="number"
@@ -513,7 +521,7 @@
         {#if isSpellMode(attackMode)}
           <div class="space-y-1">
             <label class="text-sm font-medium" for="other-magic-equip">
-              Other magic equipment bonus
+              Equipment magic bonus
             </label>
             <p class="text-xs text-muted-foreground">
               Magic damage from armor, rings, etc. (not the wand slot)
@@ -530,7 +538,7 @@
         {:else}
           <div class="space-y-1">
             <label class="text-sm font-medium" for="other-equip">
-              Other equipment damage bonus
+              Equipment damage bonus
             </label>
             <p class="text-xs text-muted-foreground">
               Damage from armor, rings, etc. (not weapon slots)
@@ -651,15 +659,74 @@
               {/each}
             </div>
           </div>
-        {:else if attackMode === "merc"}
-          <!-- Warrior/Rogue merc: main weapon only (no off-hand) -->
+        {:else if attackMode === "merc" && selectedClass === "rogue"}
+          <!-- Rogue merc: main + off-hand (both at full damage — no 0.5× penalty for mercs) -->
           <div class="space-y-1">
-            <p class="text-sm font-medium">
-              {selectedClass === "warrior" ? "Weapon" : "Dagger"}
-            </p>
+            <p class="text-sm font-medium">Main-hand Dagger</p>
+            <div
+              class="max-h-44 overflow-y-auto border border-border rounded-md divide-y divide-border/50"
+            >
+              {#each mainWeapons as w (w.id)}
+                <button
+                  type="button"
+                  onclick={() => {
+                    mainWeaponId = mainWeaponId === w.id ? "" : w.id;
+                  }}
+                  class={[
+                    "w-full px-3 py-2 text-left text-sm flex items-baseline gap-2 transition-colors",
+                    mainWeaponId === w.id
+                      ? "bg-primary/10"
+                      : "hover:bg-muted/50",
+                  ].join(" ")}
+                >
+                  <span class={getQualityTextColorClass(w.quality)}
+                    >{w.name}</span
+                  >
+                  <span class="ml-auto text-xs text-muted-foreground shrink-0"
+                    >{weaponStatLine(w)}</span
+                  >
+                </button>
+              {/each}
+            </div>
+          </div>
+          <div class="space-y-1">
+            <p class="text-sm font-medium">Off-hand Dagger</p>
             <p class="text-xs text-muted-foreground">
-              {selectedClass === "warrior" ? "sword_strike" : "pierce"} — no off-hand
-              correction.
+              Both daggers deal full damage (no off-hand penalty for mercs).
+              Comparison table uses the selected off-hand.
+            </p>
+            <div
+              class="max-h-36 overflow-y-auto border border-border rounded-md divide-y divide-border/50"
+            >
+              {#each offHandWeapons as w (w.id)}
+                <button
+                  type="button"
+                  onclick={() => {
+                    offWeaponId = offWeaponId === w.id ? "" : w.id;
+                  }}
+                  class={[
+                    "w-full px-3 py-2 text-left text-sm flex items-baseline gap-2 transition-colors",
+                    offWeaponId === w.id
+                      ? "bg-primary/10"
+                      : "hover:bg-muted/50",
+                  ].join(" ")}
+                >
+                  <span class={getQualityTextColorClass(w.quality)}
+                    >{w.name}</span
+                  >
+                  <span class="ml-auto text-xs text-muted-foreground shrink-0"
+                    >{weaponStatLine(w)}</span
+                  >
+                </button>
+              {/each}
+            </div>
+          </div>
+        {:else if attackMode === "merc"}
+          <!-- Warrior merc: main weapon only -->
+          <div class="space-y-1">
+            <p class="text-sm font-medium">Weapon</p>
+            <p class="text-xs text-muted-foreground">
+              sword_strike — no off-hand.
             </p>
             <div
               class="max-h-52 overflow-y-auto border border-border rounded-md divide-y divide-border/50"
@@ -876,7 +943,7 @@
               colorClass={getQualityTextColorClass(activeWeapon.quality)}
             />
           {/if}
-          {#if attackMode === "player" && selectedClass === "rogue" && offWeapon}
+          {#if (attackMode === "player" || attackMode === "merc") && selectedClass === "rogue" && offWeapon}
             &nbsp;+&nbsp;<ItemLink
               itemId={offWeapon.id}
               itemName={offWeapon.name}
@@ -942,22 +1009,37 @@
           <p class="font-medium text-foreground">Formula</p>
 
           {#if (attackMode === "player" || attackMode === "merc") && mainWeapon}
-            {#if attackMode === "player" && selectedClass === "rogue"}
-              <p>
-                Damage = (STR {baseSTR} + main STR {mainWeapon.strength}{offWeapon
-                  ? " + off STR " + offWeapon.strength
-                  : ""}) + main dmg {mainWeapon.damage}{offWeapon
-                  ? " + floor(" +
-                    offWeapon.damage +
-                    " × 0.5) = " +
-                    Math.floor(offWeapon.damage * 0.5)
-                  : ""} + other {otherEquipDmg} = {Math.round(damagePerHit)}
-              </p>
+            {#if selectedClass === "rogue"}
+              {#if attackMode === "player"}
+                <p>
+                  Damage = (STR {baseSTR} + main STR {mainWeapon.strength}{offWeapon
+                    ? " + off STR " + offWeapon.strength
+                    : ""}) + main dmg {mainWeapon.damage}{offWeapon
+                    ? " + ⌊" +
+                      offWeapon.damage +
+                      " × 0.5⌋ = " +
+                      Math.floor(offWeapon.damage * 0.5)
+                    : ""} + equip.dmg {otherEquipDmg} = {Math.round(
+                    damagePerHit,
+                  )}
+                </p>
+              {:else}
+                <!-- merc rogue: both daggers at full damage -->
+                <p>
+                  Damage = (STR {baseSTR} + main STR {mainWeapon.strength}{offWeapon
+                    ? " + off STR " + offWeapon.strength
+                    : ""}) + main dmg {mainWeapon.damage}{offWeapon
+                    ? " + off dmg " + offWeapon.damage
+                    : ""} + equip.dmg {otherEquipDmg} = {Math.round(
+                    damagePerHit,
+                  )}
+                </p>
+              {/if}
             {:else}
               <p>
                 Damage = (STR {baseSTR} + weapon STR {mainWeapon.strength}) +
                 weapon dmg
-                {mainWeapon.damage} + other {otherEquipDmg} = {Math.round(
+                {mainWeapon.damage} + equip.dmg {otherEquipDmg} = {Math.round(
                   damagePerHit,
                 )}
               </p>
@@ -971,7 +1053,8 @@
           {:else if attackMode === "bow_player" && bowWeapon}
             <p>
               Damage = (STR {baseSTR} + bow STR {bowWeapon.strength}) + bow dmg {bowWeapon.damage}
-              + (DEX {baseDEX} + bow DEX {bowWeapon.dexterity}) × 1.5 + other {otherEquipDmg}
+              + (DEX {baseDEX} + bow DEX {bowWeapon.dexterity}) × 1.5 +
+              equip.dmg {otherEquipDmg}
               = {Math.round(damagePerHit)}
             </p>
             <p>
@@ -982,7 +1065,7 @@
             <p>
               Damage = (STR {baseSTR} + melee STR {meleeWeapon.strength}) +
               melee dmg
-              {meleeWeapon.damage} + other {otherEquipDmg} = {Math.round(
+              {meleeWeapon.damage} + equip.dmg {otherEquipDmg} = {Math.round(
                 damagePerHit,
               )}
             </p>
@@ -997,7 +1080,7 @@
                 : ""}) + bow dmg {bowWeapon.damage}{meleeWeapon
                 ? " + melee dmg " + meleeWeapon.damage
                 : ""} + (DEX {baseDEX} + bow DEX {bowWeapon.dexterity}) × 1.5 +
-              other
+              equip.dmg
               {otherEquipDmg} = {Math.round(damagePerHit)}
             </p>
             <p>
@@ -1008,7 +1091,7 @@
           {:else if (attackMode === "spell_player" || attackMode === "spell_merc") && wandWeapon}
             <p>
               Damage = INT {baseINT} × 1.5 + wand magic dmg {wandWeapon.magic_damage}
-              + other magic {otherMagicEquipDmg} = {Math.round(damagePerHit)}
+              + equip.magic {otherMagicEquipDmg} = {Math.round(damagePerHit)}
             </p>
             {#if attackMode === "spell_player"}
               <p>
@@ -1028,7 +1111,7 @@
             <p>
               Damage = (STR {baseSTR} + wand STR {wandWeapon.strength}) + wand
               dmg
-              {wandWeapon.damage} + other {otherEquipDmg} = {Math.round(
+              {wandWeapon.damage} + equip.dmg {otherEquipDmg} = {Math.round(
                 damagePerHit,
               )}
             </p>

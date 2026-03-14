@@ -213,6 +213,16 @@ function mercDamageFormula(
   if (dt === "Poison" && typeMonster === "Rogue") return "poison_rogue";
   if (dt === "Poison") return "magic_spell";
 
+  // Source: TargetDamageSkill.cs:223-226 — the `caster is Player { className: "Rogue" }` guard
+  // does NOT apply to Pet/merc casters. Rogue mercs dual-wield daggers; both contribute
+  // at full damage (no 0.5× off-hand penalty).
+  if (
+    (skillType === "target_damage" || skillType === "frontal_damage") &&
+    dt === "Normal" &&
+    typeMonster === "Rogue"
+  )
+    return "rogue_melee_merc";
+
   // Default: combat.damage (STR×1.0 + all equipment)
   return "normal";
 }

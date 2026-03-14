@@ -1,0 +1,1 @@
+Mechanics Buff Scaling bonusAttribute = PlayerLevel × 8 (scroll) HoT skillValue(level) × (1 + min(bonusAttribute × 0.004, 5.0))

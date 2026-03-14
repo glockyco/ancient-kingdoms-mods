@@ -1,1 +1,1 @@
-Mechanics When used by a mercenary, skill level = floor(regular level ÷ 5) + floor(veteran level ÷ 10), capped at max skill level. Effective Cast Time = castTime − (castTime × spellHaste)
+Mechanics Effective Cast Time = castTime − (castTime × spellHaste)
