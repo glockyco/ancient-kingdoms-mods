@@ -58,7 +58,7 @@ src/
 │   ├── db.ts            # SQLite wrapper (sql.js-fts5)
 │   └── config.ts        # Configuration constants
 static/
-├── compendium.db        # SQLite database
+├── compendium.db        # SQLite database — gitignored, populate with build pipeline
 ├── tiles/               # Map tiles
 └── icons/               # Game icons
 ```
@@ -117,5 +117,7 @@ Some game mechanics cannot be derived from the database and are hardcoded direct
 **Map prerendering:** Map data is prerendered at build time via `+page.server.ts`. deck.gl initializes client-side with `browser` guards.
 
 **Database loading:** DB is downloaded fully on first client query (~15MB). Use `preloadDb()` on map page mount.
+
+**Database path:** `static/compendium.db` is gitignored. For direct SQL queries (debugging, data exploration), use the absolute path: `website/static/compendium.db` (relative to repo root).
 
 **Build validation:** Always run `pnpm check && pnpm lint && pnpm build` before committing.
