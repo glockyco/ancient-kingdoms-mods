@@ -1,16 +1,7 @@
 <script lang="ts">
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import * as Card from "$lib/components/ui/card";
-  import type {
-    DamageFormulaKind,
-    HealBonusKind,
-    BuffBonusAttrSource,
-    DebuffBonusAttrKind,
-    TimingModel,
-  } from "$lib/types/skills";
-  import type { SkillEntry } from "./+page.server";
-
-  let { data } = $props();
+  import type { DamageFormulaKind, HealBonusKind } from "$lib/types/skills";
 
   // ---------------------------------------------------------------------------
   // Static formula metadata
@@ -80,111 +71,6 @@
     scroll: "Player Level × 8 — no WIS",
     none: "No bonus — monster, NPC, non-merc pet",
   };
-
-  const BUFF_ATTR_DESC: Record<BuffBonusAttrSource, string> = {
-    player_ranger_wis:
-      "WIS×3 (TargetBuffSkill only — area_buff uses player_wis)",
-    player_wis: "WIS (non-Ranger TargetBuffSkill, or any AreaBuffSkill player)",
-    merc_wis: "Merc's own WIS",
-    player_charisma:
-      "Player CHA (AreaBuffSkill + is_mercenary_skill=true — Leadership only)",
-    player_level: "Scroll: Player Level × 8",
-    none: "Monster/NPC: bonus = 0",
-  };
-
-  const DEBUFF_ATTR_DESC: Record<DebuffBonusAttrKind, string> = {
-    str: "STR (is_melee_debuff=true)",
-    dex: "DEX (is_poison_debuff or is_disease_debuff)",
-    int: "INT (default — magic/elemental debuff)",
-    scroll: "Player Level × 8",
-    none: "Monster/NPC/companion: bonus = 0",
-  };
-
-  const TIMING_MODEL_DESC: Record<TimingModel, string> = {
-    player_auto: "interval = castTime + clamp(delay×(1−haste)/25, 0.25, 2.0)",
-    player_skill:
-      "interval = castTime + cooldown (spell: castTime reduced by spellHaste)",
-    merc_auto: "interval = castTime + cooldown×(1−haste)",
-    merc_skill:
-      "interval = castTime + cooldown (NOT haste-reduced for spell mercs)",
-    monster: "interval = castTime + cooldown×(1−haste)",
-  };
-
-  // ---------------------------------------------------------------------------
-  // Pre-computed display arrays — all lookups happen here, not inside {#each}.
-  // This runs identically during SSR and hydration; data is embedded in HTML.
-  // ---------------------------------------------------------------------------
-
-  interface DamageRow {
-    kind: DamageFormulaKind;
-    groupLabel: string;
-    desc: string;
-    skills: SkillEntry[];
-  }
-
-  interface HealRow {
-    kind: HealBonusKind;
-    desc: string;
-    skills: SkillEntry[];
-  }
-
-  interface BuffRow {
-    kind: BuffBonusAttrSource;
-    desc: string;
-    skills: SkillEntry[];
-  }
-
-  interface DebuffRow {
-    kind: DebuffBonusAttrKind;
-    desc: string;
-    skills: SkillEntry[];
-  }
-
-  interface TimingRow {
-    kind: TimingModel;
-    desc: string;
-    skills: SkillEntry[];
-  }
-
-  const damageRows: DamageRow[] = DAMAGE_FORMULA_ORDER.map((kind) => ({
-    kind,
-    groupLabel: DAMAGE_FORMULA_GROUP_LABEL[kind],
-    desc: DAMAGE_FORMULA_DESC[kind],
-    skills:
-      (data.byDamageFormula ?? []).find((g) => g.kind === kind)?.skills ?? [],
-  }));
-
-  const healRows: HealRow[] = $derived(
-    (data.byHealBonus ?? []).map((g) => ({
-      kind: g.kind,
-      desc: HEAL_BONUS_DESC[g.kind],
-      skills: g.skills,
-    })),
-  );
-
-  const buffRows: BuffRow[] = $derived(
-    (data.byBuffAttr ?? []).map((g) => ({
-      kind: g.kind,
-      desc: BUFF_ATTR_DESC[g.kind],
-      skills: g.skills,
-    })),
-  );
-
-  const debuffRows: DebuffRow[] = $derived(
-    (data.byDebuffAttr ?? []).map((g) => ({
-      kind: g.kind,
-      desc: DEBUFF_ATTR_DESC[g.kind],
-      skills: g.skills,
-    })),
-  );
-
-  const timingRows: TimingRow[] = $derived(
-    (data.byTimingModel ?? []).map((g) => ({
-      kind: g.kind,
-      desc: TIMING_MODEL_DESC[g.kind],
-      skills: g.skills,
-    })),
-  );
 </script>
 
 <svelte:head>
@@ -338,6 +224,89 @@
           class="underline hover:text-foreground">Auto-Attack DPS Simulator</a
         >.
       </div>
+
+      <!-- Worked Example -->
+      <div>
+        <h3 class="font-semibold mb-2">Worked Example</h3>
+        <p class="text-sm text-muted-foreground mb-3">
+          Warrior · Level 50 · STR 700 · haste 50% vs. Skullreaver (delay 25,
+          dmg 500, STR-bonus 50) against a Level 50 enemy (defense 1000),
+          frontal attack, above 25% HP.
+        </p>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm border-collapse">
+            <thead>
+              <tr class="border-b border-border">
+                <th class="text-left py-1 pr-4 font-medium">Step</th>
+                <th class="text-left py-1 pr-4 font-medium">Operation</th>
+                <th class="text-left py-1 font-medium">Result</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="border-b border-border/40">
+                <td class="py-1 pr-4">Base damage</td>
+                <td class="py-1 pr-4 font-mono text-xs">(700+50)×1.0 + 500</td>
+                <td class="py-1 text-muted-foreground">1250</td>
+              </tr>
+              <tr class="border-b border-border/40">
+                <td class="py-1 pr-4">Variance ×0.9–1.1</td>
+                <td class="py-1 pr-4 text-muted-foreground text-xs"
+                  >range: 1125–1375</td
+                >
+                <td class="py-1 text-muted-foreground">1250 (midpoint)</td>
+              </tr>
+              <tr class="border-b border-border/40">
+                <td class="py-1 pr-4">Backstab</td>
+                <td class="py-1 pr-4 text-muted-foreground text-xs"
+                  >frontal attack</td
+                >
+                <td class="py-1 text-muted-foreground">1250</td>
+              </tr>
+              <tr class="border-b border-border/40">
+                <td class="py-1 pr-4">Level difference</td>
+                <td class="py-1 pr-4 text-muted-foreground text-xs"
+                  >same level (±0%)</td
+                >
+                <td class="py-1 text-muted-foreground">1250</td>
+              </tr>
+              <tr class="border-b border-border/40">
+                <td class="py-1 pr-4">Slayer</td>
+                <td class="py-1 pr-4 text-muted-foreground text-xs">none</td>
+                <td class="py-1 text-muted-foreground">1250</td>
+              </tr>
+              <tr class="border-b border-border/40">
+                <td class="py-1 pr-4">Enrage</td>
+                <td class="py-1 pr-4 text-muted-foreground text-xs"
+                  >above 25% HP</td
+                >
+                <td class="py-1 text-muted-foreground">1250</td>
+              </tr>
+              <tr class="border-b border-border/40">
+                <td class="py-1 pr-4">Physical mitigation</td>
+                <td class="py-1 pr-4 font-mono text-xs"
+                  >ratio=clamp(1000×0.0005,0,0.9)=0.50; −⌈1250×0.50⌉=−625</td
+                >
+                <td class="py-1 font-semibold">625</td>
+              </tr>
+              <tr>
+                <td class="py-1 pr-4">Critical hit</td>
+                <td class="py-1 pr-4 text-muted-foreground text-xs"
+                  >no crit → 625; ×1.5 → 937; ×2.0 → 1250</td
+                >
+                <td class="py-1 text-muted-foreground">625</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <!-- Source: server-scripts/Player.cs:2783 -->
+        <p class="text-sm text-muted-foreground mt-2">
+          At 50% haste, interval = 0.5 + clamp(25×0.5/25, 0.25, 2.0) = 1.0 s → <strong
+            >625 DPS</strong
+          >
+          (no crit) / <strong>~953 DPS</strong>
+          (expected with crits).
+        </p>
+      </div>
     </Card.Content>
   </Card.Root>
 
@@ -351,49 +320,30 @@
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-6">
-      {#each damageRows as f (f.kind)}
-        <div>
-          <div class="flex items-baseline gap-3 mb-1">
-            <span
-              class="text-xs font-medium uppercase tracking-wide text-muted-foreground"
-              >{f.groupLabel}</span
-            >
-            <span class="font-semibold font-mono text-sm">{f.kind}</span>
-          </div>
-          <p class="text-sm text-muted-foreground mb-2">{f.desc}</p>
-          {#if f.skills.length > 0}
-            <div class="overflow-x-auto">
-              <table class="w-full text-sm border-collapse">
-                <thead>
-                  <tr class="border-b border-border">
-                    <th class="text-left py-1 pr-4 font-medium">Skill</th>
-                    <th class="text-left py-1 pr-4 font-medium">Casters</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {#each f.skills as s (s.id)}
-                    <tr class="border-b border-border/40 hover:bg-muted/20">
-                      <td class="py-1 pr-4"
-                        ><a
-                          href="/skills/{s.id}"
-                          class="hover:underline text-foreground">{s.name}</a
-                        ></td
-                      >
-                      <td class="py-1 pr-4 text-muted-foreground text-xs"
-                        >{s.casterLabels.join(", ")}</td
-                      >
-                    </tr>
-                  {/each}
-                </tbody>
-              </table>
-            </div>
-          {:else}
-            <p class="text-xs text-muted-foreground italic">
-              No skills use this formula.
-            </p>
-          {/if}
-        </div>
-      {/each}
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm border-collapse">
+          <thead>
+            <tr class="border-b border-border">
+              <th class="text-left py-1 pr-4 font-medium">Category</th>
+              <th class="text-left py-1 pr-4 font-medium">Kind</th>
+              <th class="text-left py-1 font-medium">Formula</th>
+            </tr>
+          </thead>
+          <tbody>
+            {#each DAMAGE_FORMULA_ORDER as kind (kind)}
+              <tr class="border-b border-border/40 hover:bg-muted/20">
+                <td class="py-1 pr-4 text-muted-foreground text-sm"
+                  >{DAMAGE_FORMULA_GROUP_LABEL[kind]}</td
+                >
+                <td class="py-1 pr-4 font-mono text-xs">{kind}</td>
+                <td class="py-1 text-sm text-muted-foreground"
+                  >{DAMAGE_FORMULA_DESC[kind]}</td
+                >
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+      </div>
     </Card.Content>
   </Card.Root>
 
@@ -515,45 +465,23 @@ finalDamage = damage − reduction</pre>
         </p>
       </div>
 
-      <div class="space-y-4">
-        <h3 class="font-semibold">Skills by Heal Bonus Kind</h3>
-        {#each healRows as f (f.kind)}
-          <div>
-            <p class="font-semibold font-mono text-sm mb-1">{f.kind}</p>
-            <p class="text-sm text-muted-foreground mb-2">{f.desc}</p>
-            {#if f.skills.length > 0}
-              <div class="overflow-x-auto">
-                <table class="w-full text-sm border-collapse">
-                  <thead>
-                    <tr class="border-b border-border">
-                      <th class="text-left py-1 pr-4 font-medium">Skill</th>
-                      <th class="text-left py-1 pr-4 font-medium">Casters</th>
-                      <th class="text-left py-1 font-medium">Can Crit</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {#each f.skills as s (s.id)}
-                      <tr class="border-b border-border/40 hover:bg-muted/20">
-                        <td class="py-1 pr-4"
-                          ><a
-                            href="/skills/{s.id}"
-                            class="hover:underline text-foreground">{s.name}</a
-                          ></td
-                        >
-                        <td class="py-1 pr-4 text-muted-foreground text-xs"
-                          >{s.casterLabels.join(", ")}</td
-                        >
-                        <td class="py-1 text-muted-foreground"
-                          >{s.canCrit ? "yes" : "no"}</td
-                        >
-                      </tr>
-                    {/each}
-                  </tbody>
-                </table>
-              </div>
-            {/if}
-          </div>
-        {/each}
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm border-collapse">
+          <thead>
+            <tr class="border-b border-border">
+              <th class="text-left py-1 pr-4 font-medium">Kind</th>
+              <th class="text-left py-1 font-medium">Formula Applied</th>
+            </tr>
+          </thead>
+          <tbody>
+            {#each Object.entries(HEAL_BONUS_DESC) as [kind, desc] (kind)}
+              <tr class="border-b border-border/40 hover:bg-muted/20">
+                <td class="py-1 pr-4 font-mono text-xs">{kind}</td>
+                <td class="py-1 text-muted-foreground">{desc}</td>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
       </div>
     </Card.Content>
   </Card.Root>
@@ -670,47 +598,6 @@ finalDamage = damage − reduction</pre>
           </table>
         </div>
       </div>
-
-      <div class="space-y-4">
-        <h3 class="font-semibold">Skills by Buff Attribute Source</h3>
-        {#each buffRows as f (f.kind)}
-          <div>
-            <p class="font-semibold font-mono text-sm mb-1">{f.kind}</p>
-            <p class="text-sm text-muted-foreground mb-2">{f.desc}</p>
-            {#if f.skills.length > 0}
-              <div class="overflow-x-auto">
-                <table class="w-full text-sm border-collapse">
-                  <thead>
-                    <tr class="border-b border-border">
-                      <th class="text-left py-1 pr-4 font-medium">Skill</th>
-                      <th class="text-left py-1 pr-4 font-medium">Casters</th>
-                      <th class="text-left py-1 font-medium">Area Buff</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {#each f.skills as s (s.id)}
-                      <tr class="border-b border-border/40 hover:bg-muted/20">
-                        <td class="py-1 pr-4"
-                          ><a
-                            href="/skills/{s.id}"
-                            class="hover:underline text-foreground">{s.name}</a
-                          ></td
-                        >
-                        <td class="py-1 pr-4 text-muted-foreground text-xs"
-                          >{s.casterLabels.join(", ")}</td
-                        >
-                        <td class="py-1 text-muted-foreground"
-                          >{s.isAreaBuff ? "yes" : "no"}</td
-                        >
-                      </tr>
-                    {/each}
-                  </tbody>
-                </table>
-              </div>
-            {/if}
-          </div>
-        {/each}
-      </div>
     </Card.Content>
   </Card.Root>
 
@@ -825,43 +712,6 @@ finalDamage = damage − reduction</pre>
           1 → ×0.8.
         </p>
       </div>
-
-      <div class="space-y-4">
-        <h3 class="font-semibold">Skills by Debuff Attribute Kind</h3>
-        {#each debuffRows as f (f.kind)}
-          <div>
-            <p class="font-semibold font-mono text-sm mb-1">{f.kind}</p>
-            <p class="text-sm text-muted-foreground mb-2">{f.desc}</p>
-            {#if f.skills.length > 0}
-              <div class="overflow-x-auto">
-                <table class="w-full text-sm border-collapse">
-                  <thead>
-                    <tr class="border-b border-border">
-                      <th class="text-left py-1 pr-4 font-medium">Skill</th>
-                      <th class="text-left py-1 pr-4 font-medium">Casters</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {#each f.skills as s (s.id)}
-                      <tr class="border-b border-border/40 hover:bg-muted/20">
-                        <td class="py-1 pr-4"
-                          ><a
-                            href="/skills/{s.id}"
-                            class="hover:underline text-foreground">{s.name}</a
-                          ></td
-                        >
-                        <td class="py-1 pr-4 text-muted-foreground text-xs"
-                          >{s.casterLabels.join(", ")}</td
-                        >
-                      </tr>
-                    {/each}
-                  </tbody>
-                </table>
-              </div>
-            {/if}
-          </div>
-        {/each}
-      </div>
     </Card.Content>
   </Card.Root>
 
@@ -874,48 +724,105 @@ finalDamage = damage − reduction</pre>
       >
     </Card.Header>
     <Card.Content class="space-y-5">
-      <div class="space-y-4">
-        <h3 class="font-semibold">Models</h3>
-        <div>
-          <p class="font-mono text-sm font-semibold">player_auto</p>
-          <pre
-            class="text-xs bg-muted px-3 py-2 rounded mt-1 overflow-x-auto">interval = castTime + clamp(weaponDelay × (1 − haste) / 25, 0.25, 2.0)</pre>
-          <p class="text-sm text-muted-foreground mt-1">
-            Warrior/Rogue generate Rage (⌊damage×0.25⌋ per hit, capped at target
-            current HP). All other classes use Mana.
-          </p>
-        </div>
-        <div>
-          <p class="font-mono text-sm font-semibold">player_skill</p>
-          <pre
-            class="text-xs bg-muted px-3 py-2 rounded mt-1 overflow-x-auto">interval = castTime + cooldown
-// isSpell only: castTimeEnd −= spellHaste × castTime</pre>
-        </div>
-        <div>
-          <p class="font-mono text-sm font-semibold">merc_auto</p>
-          <pre
-            class="text-xs bg-muted px-3 py-2 rounded mt-1 overflow-x-auto">interval = castTime + cooldown × (1 − haste)</pre>
-          <p class="text-sm text-muted-foreground mt-1">
-            Haste reduces cooldown, not a weapon delay.
-          </p>
-        </div>
-        <div>
-          <p class="font-mono text-sm font-semibold">merc_skill</p>
-          <pre
-            class="text-xs bg-muted px-3 py-2 rounded mt-1 overflow-x-auto">interval = castTime + cooldown</pre>
-          <p class="text-sm text-muted-foreground mt-1">
-            Cooldown is NOT haste-reduced for spell mercs.
-          </p>
-        </div>
-        <div>
-          <p class="font-mono text-sm font-semibold">monster</p>
-          <pre
-            class="text-xs bg-muted px-3 py-2 rounded mt-1 overflow-x-auto">interval = castTime + cooldown × (1 − haste)</pre>
-          <p class="text-sm text-muted-foreground mt-1">
-            FinishCastMeleeAttackMonster haste-reduces unconditionally
-            regardless of isSpell — same model for Monster.cs and Npc.cs.
-          </p>
-        </div>
+      <!-- Comparison table: all 5 models side-by-side -->
+      <!-- Sources: Player.cs:2783, Skills.cs:673-675, Skills.cs:765-768, Skills.cs:814-815 -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm border-collapse">
+          <thead>
+            <tr class="border-b border-border">
+              <th class="text-left py-1 pr-4 font-medium">Model</th>
+              <th class="text-left py-1 pr-4 font-medium">Who</th>
+              <th class="text-left py-1 pr-4 font-medium">Interval</th>
+              <th class="text-left py-1 pr-4 font-medium">Regular haste</th>
+              <th class="text-left py-1 font-medium">Spell haste</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Source: server-scripts/Player.cs:2783 -->
+            <tr class="border-b border-border/40 align-top">
+              <td class="py-2 pr-4 font-mono text-xs">player_auto</td>
+              <td class="py-2 pr-4 text-muted-foreground text-xs"
+                >Player auto-attacks (non-spell, weapon required). Warrior/Rogue
+                generate Rage (⌊damage×0.25⌋ per hit, capped at target current
+                HP); all other classes use Mana.</td
+              >
+              <td class="py-2 pr-4 font-mono text-xs"
+                >castTime + clamp(delay×(1−h)/25, 0.25, 2.0)</td
+              >
+              <td class="py-2 pr-4 text-muted-foreground text-xs"
+                >Reduces delay term; floor 0.25 s, cap 2.0 s</td
+              >
+              <td class="py-2 text-muted-foreground text-xs">No effect</td>
+            </tr>
+            <!-- Source: server-scripts/Skills.cs:673-675 -->
+            <tr class="border-b border-border/40 align-top">
+              <td class="py-2 pr-4 font-mono text-xs">player_skill</td>
+              <td class="py-2 pr-4 text-muted-foreground text-xs"
+                >Player non-weapon skills; player spells; companions; familiars</td
+              >
+              <td class="py-2 pr-4 font-mono text-xs"
+                >Non-spell: castTime + cooldown<br />Spell: castTime×(1−sh) +
+                cooldown</td
+              >
+              <td class="py-2 pr-4 text-muted-foreground text-xs">No effect</td>
+              <td class="py-2 text-muted-foreground text-xs"
+                >Spells: reduces cast time only. Companions/familiars: no player
+                stats → neither haste applies</td
+              >
+            </tr>
+            <!-- Source: server-scripts/Skills.cs:765-768 -->
+            <tr class="border-b border-border/40 align-top">
+              <td class="py-2 pr-4 font-mono text-xs">merc_auto</td>
+              <td class="py-2 pr-4 text-muted-foreground text-xs"
+                >Merc auto-attacks (non-spell)</td
+              >
+              <td class="py-2 pr-4 font-mono text-xs"
+                >castTime + cooldown×(1−h)</td
+              >
+              <td class="py-2 pr-4 text-muted-foreground text-xs"
+                >Reduces cooldown</td
+              >
+              <td class="py-2 text-muted-foreground text-xs">No effect</td>
+            </tr>
+            <!-- Source: server-scripts/Skills.cs:765-768 -->
+            <tr class="border-b border-border/40 align-top">
+              <td class="py-2 pr-4 font-mono text-xs">merc_skill</td>
+              <td class="py-2 pr-4 text-muted-foreground text-xs"
+                >Merc spells</td
+              >
+              <td class="py-2 pr-4 font-mono text-xs"
+                >castTime×(1−sh) + cooldown</td
+              >
+              <td class="py-2 pr-4 text-muted-foreground text-xs">No effect</td>
+              <td class="py-2 text-muted-foreground text-xs"
+                >Reduces cast time; cooldown is NOT reduced by either haste type
+                (Skills.cs <code class="bg-muted px-0.5 rounded">!isSpell</code>
+                gate)</td
+              >
+            </tr>
+            <!-- Source: server-scripts/Skills.cs:814-815 -->
+            <tr class="align-top">
+              <td class="py-2 pr-4 font-mono text-xs">monster</td>
+              <td class="py-2 pr-4 text-muted-foreground text-xs"
+                >All monster/NPC attacks</td
+              >
+              <td class="py-2 pr-4 font-mono text-xs"
+                >castTime + cooldown×(1−h)</td
+              >
+              <td class="py-2 pr-4 text-muted-foreground text-xs"
+                >Reduces cooldown unconditionally — even when
+                <code class="bg-muted px-0.5 rounded">is_spell=true</code>
+                (Monster.cs/Npc.cs
+                <code class="bg-muted px-0.5 rounded"
+                  >FinishCastMeleeAttackMonster</code
+                >)</td
+              >
+              <td class="py-2 text-muted-foreground text-xs"
+                >No effect — monsters have no spell haste stat</td
+              >
+            </tr>
+          </tbody>
+        </table>
       </div>
 
       <div
@@ -926,43 +833,6 @@ finalDamage = damage − reduction</pre>
           href="/tools/combat-simulator"
           class="underline hover:text-foreground">Auto-Attack DPS Simulator</a
         >.
-      </div>
-
-      <div class="space-y-4">
-        <h3 class="font-semibold">Skills by Timing Model</h3>
-        {#each timingRows as f (f.kind)}
-          <div>
-            <p class="font-semibold font-mono text-sm mb-1">{f.kind}</p>
-            <p class="text-sm text-muted-foreground mb-2">{f.desc}</p>
-            {#if f.skills.length > 0}
-              <div class="overflow-x-auto">
-                <table class="w-full text-sm border-collapse">
-                  <thead>
-                    <tr class="border-b border-border">
-                      <th class="text-left py-1 pr-4 font-medium">Skill</th>
-                      <th class="text-left py-1 pr-4 font-medium">Casters</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {#each f.skills as s (s.id)}
-                      <tr class="border-b border-border/40 hover:bg-muted/20">
-                        <td class="py-1 pr-4"
-                          ><a
-                            href="/skills/{s.id}"
-                            class="hover:underline text-foreground">{s.name}</a
-                          ></td
-                        >
-                        <td class="py-1 pr-4 text-muted-foreground text-xs"
-                          >{s.casterLabels.join(", ")}</td
-                        >
-                      </tr>
-                    {/each}
-                  </tbody>
-                </table>
-              </div>
-            {/if}
-          </div>
-        {/each}
       </div>
     </Card.Content>
   </Card.Root>
@@ -1062,6 +932,41 @@ finalDamage = damage − reduction</pre>
             >prob_ignore_cleanse</code
           >.
         </p>
+      </div>
+
+      <!-- Source: server-scripts/Skills.cs:838-858 AddOrRefreshBuff -->
+      <div>
+        <h3 class="font-semibold mb-1">Buff &amp; Debuff Overwrite</h3>
+        <p class="text-sm text-muted-foreground mb-2">
+          Stacking is governed by <code
+            class="font-mono text-xs bg-muted px-1 rounded">buff_category</code
+          >. When a buff with a non-empty
+          <code class="font-mono text-xs bg-muted px-1 rounded"
+            >buff_category</code
+          >
+          is applied, all existing buffs sharing that category have their expiry
+          set to 0 (expire immediately); the new buff is then added. Example:
+          <em>Divine Shield</em>
+          and <em>Shield of Faith</em> share
+          <code class="font-mono text-xs bg-muted px-1 rounded"
+            >"Cleric AC Buff"</code
+          > — applying the higher-tier skill expires the lower.
+        </p>
+        <ul
+          class="text-sm text-muted-foreground list-disc list-inside space-y-1"
+        >
+          <li>
+            Skills with a null or empty <code
+              class="font-mono text-xs bg-muted px-1 rounded"
+              >buff_category</code
+            > bypass the overwrite check and stack freely.
+          </li>
+          <li>Multiple debuffs of different categories apply independently.</li>
+          <li>
+            DoT effects use the counter-decay model from §6 — they do not stack
+            multiplicatively.
+          </li>
+        </ul>
       </div>
     </Card.Content>
   </Card.Root>
