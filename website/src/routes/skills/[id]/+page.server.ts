@@ -6,10 +6,10 @@ import type {
   SkillItemSource,
   SkillMonster,
   SkillPet,
-  LinearValue,
   SkillMechanicsSpec,
 } from "$lib/types/skills";
 import { formatSkillEffect } from "$lib/utils/formatSkillEffect";
+import { parseLinear } from "$lib/utils/parseLinear";
 import { computeMechanicsSpec } from "$lib/utils/skillMechanics";
 
 export const prerender = true;
@@ -19,17 +19,6 @@ export const entries: EntryGenerator = () => {
     id: skill.id,
   }));
 };
-
-function parseLinear(value: unknown): LinearValue | null {
-  if (!value || typeof value !== "string") return null;
-  try {
-    const parsed = JSON.parse(value) as LinearValue;
-    if (parsed.base_value === 0 && parsed.bonus_per_level === 0) return null;
-    return parsed;
-  } catch {
-    return null;
-  }
-}
 
 export interface SkillDetailPageData {
   skill: SkillDetailView;

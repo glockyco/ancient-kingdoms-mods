@@ -218,9 +218,7 @@ export const FORMULA_EXPRS = {
 
   // ── Special ──────────────────────────────────────────────────────────────────
 
-  manaburn: special(
-    "Rage × 2 (Warrior/Rogue) or Mana × 2 (Wizard) — bypasses mitigation",
-  ),
+  manaburn: special("Current Rage or Mana × 2 — bypasses mitigation"),
   scroll: special("Player Level × 15"),
   monster_melee: special("baseDamage(level)"),
   monster_magic: special("baseMagicDamage(level)"),

@@ -1,1338 +1,1078 @@
 <script lang="ts">
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
-  import ItemLink from "$lib/components/ItemLink.svelte";
   import * as Card from "$lib/components/ui/card";
-  import { getQualityTextColorClass } from "$lib/utils/format";
-  import {
-    CLASSES,
-    CLASS_MODES,
-    CLASS_DEFAULT_MODE,
-    CLASS_LABEL,
-    MODE_LABEL,
-    SPELL_PLAYER_CAST,
-    SPELL_MERC_CAST,
-    SPELL_MERC_CD,
-    FORMULA_TABLE,
-    isDelayBased,
-    isSpellMode,
-    calcInterval,
-    calcDamage,
-    buildComparisonRows,
-    fmtSoftCap,
-    fmtInterval,
-    type PlayerClass,
-    type AttackMode,
-    type SortKey,
-  } from "$lib/utils/combat-sim";
-  import type { WeaponItem } from "./+page.server";
+  import type {
+    DamageFormulaKind,
+    HealBonusKind,
+    BuffBonusAttrSource,
+    DebuffBonusAttrKind,
+    TimingModel,
+  } from "$lib/types/skills";
+  import type { SkillEntry } from "./+page.server";
 
   let { data } = $props();
 
-  // ─── State ───────────────────────────────────────────────────────────────────
+  // ---------------------------------------------------------------------------
+  // Static formula metadata
+  // ---------------------------------------------------------------------------
 
-  let selectedClass = $state<PlayerClass>("warrior");
-  let attackMode = $state<AttackMode>("player");
-  let baseSTR = $state(700);
-  let baseDEX = $state(300);
-  let baseINT = $state(500);
-  let hastePercent = $state(50);
-  let spellHastePercent = $state(0);
-  let otherEquipDmg = $state(0);
-  let otherMagicEquipDmg = $state(0);
-  let mainWeaponId = $state("");
-  let offWeaponId = $state("");
-  let bowId = $state("");
-  let meleeWeaponId = $state("");
-  let wandId = $state("");
-  let sortKey = $state<SortKey>("dps");
-  let levelMin = $state(1);
-  let levelMax = $state(9999);
+  const DAMAGE_FORMULA_DESC: Record<DamageFormulaKind, string> = {
+    normal: "STR×1.0 + all equipment",
+    ranger_melee: "STR×1.0 + all equip − bow slot bonus",
+    rogue_melee: "STR×1.0 + main-hand + ⌊50% off-hand⌋ + other equip",
+    rogue_melee_merc: "STR×1.0 + main-hand + off-hand (full) + other equip",
+    ranged_player: "STR×1.0 + bow+armour + DEX×1.5 − melee slot bonus",
+    ranged_player_frontal:
+      "STR×1.0 + all equip + DEX×1.5 (no melee subtraction)",
+    ranged_merc: "STR×1.0 + bow + melee weapon + other equip + DEX×1.5",
+    poison_rogue: "rogue_melee component + DEX×2.5",
+    magic_spell: "INT×1.5 + wand magic stat + other magic equip",
+    magic_weapon:
+      "INT×1.5 + STR×1.0 + equipment (two pools, two mitigation rolls)",
+    magic_weapon_ranger:
+      "magic_weapon but bow.dmg excluded from physical component",
+    manaburn: "Current Rage or Mana × 2 — bypasses all mitigation and resist",
+    scroll: "Player Level × 15",
+    monster_melee: "baseDamage(level) — level-scaled, no player stats",
+    monster_magic: "baseMagicDamage(level) — level-scaled, no player stats",
+  };
 
-  // Defined here so {#each SORT_KEYS as [key, label]} avoids `as const` in template.
-  const SORT_KEYS: [SortKey, string][] = [
-    ["dps", "DPS"],
-    ["damage", "Damage"],
-    ["interval", "Interval"],
+  const DAMAGE_FORMULA_GROUP_LABEL: Record<DamageFormulaKind, string> = {
+    normal: "Physical",
+    ranger_melee: "Physical",
+    rogue_melee: "Physical",
+    rogue_melee_merc: "Physical",
+    ranged_player: "Ranged",
+    ranged_player_frontal: "Ranged",
+    ranged_merc: "Ranged",
+    poison_rogue: "Poison",
+    magic_spell: "Magic",
+    magic_weapon: "Magic",
+    magic_weapon_ranger: "Magic",
+    manaburn: "Special",
+    scroll: "Special",
+    monster_melee: "Monster",
+    monster_magic: "Monster",
+  };
+
+  const DAMAGE_FORMULA_ORDER: DamageFormulaKind[] = [
+    "normal",
+    "ranger_melee",
+    "rogue_melee",
+    "rogue_melee_merc",
+    "ranged_player",
+    "ranged_player_frontal",
+    "ranged_merc",
+    "poison_rogue",
+    "magic_spell",
+    "magic_weapon",
+    "magic_weapon_ranger",
+    "manaburn",
+    "scroll",
+    "monster_melee",
+    "monster_magic",
   ];
 
-  // ─── Weapon lists ────────────────────────────────────────────────────────────
+  const HEAL_BONUS_DESC: Record<HealBonusKind, string> = {
+    player_ranger: "base × min(WIS×3 × 0.004, 5.0) — Ranger target-heal bonus",
+    player_other: "base × min(WIS × 0.004, 5.0) — Non-Ranger player",
+    merc: "base × min(WIS × 0.004, 5.0) — Merc's own WIS (no ×3 for Ranger merc)",
+    scroll: "Player Level × 8 — no WIS",
+    none: "No bonus — monster, NPC, non-merc pet",
+  };
 
-  function classCanUseWeapon(w: WeaponItem, cls: PlayerClass): boolean {
-    return (
-      w.class_required.length === 0 ||
-      w.class_required.includes("all") ||
-      w.class_required.includes(cls)
-    );
+  const BUFF_ATTR_DESC: Record<BuffBonusAttrSource, string> = {
+    player_ranger_wis:
+      "WIS×3 (TargetBuffSkill only — area_buff uses player_wis)",
+    player_wis: "WIS (non-Ranger TargetBuffSkill, or any AreaBuffSkill player)",
+    merc_wis: "Merc's own WIS",
+    player_charisma:
+      "Player CHA (AreaBuffSkill + is_mercenary_skill=true — Leadership only)",
+    player_level: "Scroll: Player Level × 8",
+    none: "Monster/NPC: bonus = 0",
+  };
+
+  const DEBUFF_ATTR_DESC: Record<DebuffBonusAttrKind, string> = {
+    str: "STR (is_melee_debuff=true)",
+    dex: "DEX (is_poison_debuff or is_disease_debuff)",
+    int: "INT (default — magic/elemental debuff)",
+    scroll: "Player Level × 8",
+    none: "Monster/NPC/companion: bonus = 0",
+  };
+
+  const TIMING_MODEL_DESC: Record<TimingModel, string> = {
+    player_auto: "interval = castTime + clamp(delay×(1−haste)/25, 0.25, 2.0)",
+    player_skill:
+      "interval = castTime + cooldown (spell: castTime reduced by spellHaste)",
+    merc_auto: "interval = castTime + cooldown×(1−haste)",
+    merc_skill:
+      "interval = castTime + cooldown (NOT haste-reduced for spell mercs)",
+    monster: "interval = castTime + cooldown×(1−haste)",
+  };
+
+  // ---------------------------------------------------------------------------
+  // Pre-computed display arrays — all lookups happen here, not inside {#each}.
+  // This runs identically during SSR and hydration; data is embedded in HTML.
+  // ---------------------------------------------------------------------------
+
+  interface DamageRow {
+    kind: DamageFormulaKind;
+    groupLabel: string;
+    desc: string;
+    skills: SkillEntry[];
   }
 
-  // Swords (warrior) or daggers (rogue) — only populated for warrior/rogue.
-  const mainWeapons = $derived(
-    selectedClass === "warrior" || selectedClass === "rogue"
-      ? data.weapons.filter(
-          (w) =>
-            (selectedClass === "warrior"
-              ? ["WeaponSword", "WeaponSword2H"].includes(w.weapon_category)
-              : w.weapon_category === "WeaponDagger") &&
-            classCanUseWeapon(w, selectedClass),
-        )
-      : [],
-  );
-
-  // Rogue off-hand daggers (player mode only).
-  const offHandWeapons = $derived(
-    selectedClass === "rogue"
-      ? data.weapons.filter(
-          (w) =>
-            w.weapon_category === "WeaponDagger" &&
-            classCanUseWeapon(w, "rogue"),
-        )
-      : [],
-  );
-
-  // Ranger bows.
-  const bowWeapons = $derived(
-    selectedClass === "ranger"
-      ? data.weapons.filter(
-          (w) => w.weapon_category === "Bow" && classCanUseWeapon(w, "ranger"),
-        )
-      : [],
-  );
-
-  // Ranger melee weapons (non-bow, non-wand).
-  const meleeWeapons = $derived(
-    selectedClass === "ranger"
-      ? data.weapons.filter(
-          (w) =>
-            w.weapon_category !== "Bow" &&
-            w.weapon_category !== "WeaponWand" &&
-            classCanUseWeapon(w, "ranger"),
-        )
-      : [],
-  );
-
-  // Wands for caster classes.
-  const wandWeapons = $derived(
-    selectedClass === "wizard" ||
-      selectedClass === "druid" ||
-      selectedClass === "cleric"
-      ? data.weapons.filter(
-          (w) =>
-            w.weapon_category === "WeaponWand" &&
-            classCanUseWeapon(w, selectedClass),
-        )
-      : [],
-  );
-
-  // ─── Weapon lookups ──────────────────────────────────────────────────────────
-
-  const mainWeapon = $derived(
-    mainWeapons.find((w) => w.id === mainWeaponId) ?? null,
-  );
-  const offWeapon = $derived(
-    offHandWeapons.find((w) => w.id === offWeaponId) ?? null,
-  );
-  const bowWeapon = $derived(bowWeapons.find((w) => w.id === bowId) ?? null);
-  const meleeWeapon = $derived(
-    meleeWeapons.find((w) => w.id === meleeWeaponId) ?? null,
-  );
-  const wandWeapon = $derived(wandWeapons.find((w) => w.id === wandId) ?? null);
-
-  // The primary weapon for the current mode — drives Results card and interval calc.
-  const activeWeapon = $derived.by((): WeaponItem | null => {
-    switch (attackMode) {
-      case "player":
-      case "merc":
-        return mainWeapon;
-      case "bow_player":
-      case "bow_merc":
-        return bowWeapon;
-      case "melee_player":
-        return meleeWeapon;
-      case "spell_player":
-      case "staff_player":
-      case "spell_merc":
-        return wandWeapon;
-    }
-  });
-
-  // ─── Computed results ────────────────────────────────────────────────────────
-
-  // Clamp haste to the game cap of 80%.
-  const h = $derived(Math.min(hastePercent / 100, 0.8));
-  const sp = $derived(spellHastePercent / 100);
-
-  // Effective haste for the currently-selected weapon: base + weapon's own bonus, capped at 80%.
-  const effectiveHastePercent = $derived(
-    Math.min(hastePercent + (activeWeapon?.haste ?? 0) * 100, 80),
-  );
-  const effectiveSpellHastePercent = $derived(
-    Math.min(spellHastePercent + (activeWeapon?.spell_haste ?? 0) * 100, 80),
-  );
-
-  // null = no weapon selected for this mode yet.
-  const interval = $derived.by((): number | null => {
-    if (!activeWeapon) return null;
-    const eh = Math.min(h + activeWeapon.haste, 0.8);
-    const esp = Math.min(sp + activeWeapon.spell_haste, 0.8);
-    return calcInterval(
-      attackMode,
-      selectedClass,
-      activeWeapon.weapon_delay,
-      eh,
-      esp,
-    );
-  });
-
-  const damagePerHit = $derived(
-    calcDamage(
-      attackMode,
-      selectedClass,
-      mainWeapon,
-      offWeapon,
-      bowWeapon,
-      meleeWeapon,
-      wandWeapon,
-      baseSTR,
-      baseDEX,
-      baseINT,
-      otherEquipDmg,
-      otherMagicEquipDmg,
-    ),
-  );
-
-  const dps = $derived(
-    damagePerHit !== null && interval !== null && interval > 0
-      ? damagePerHit / interval
-      : null,
-  );
-
-  // Delay for the active weapon — null when mode doesn't use weapon delay.
-  const activeDelay = $derived(
-    isDelayBased(attackMode) ? (activeWeapon?.weapon_delay ?? null) : null,
-  );
-
-  // ─── Comparison table ────────────────────────────────────────────────────────
-
-  // Which weapon list to iterate depends on the attack mode.
-  const weaponList = $derived.by((): WeaponItem[] => {
-    switch (attackMode) {
-      case "player":
-      case "merc":
-        return mainWeapons;
-      case "bow_player":
-      case "bow_merc":
-        return bowWeapons;
-      case "melee_player":
-        return meleeWeapons;
-      case "spell_player":
-      case "spell_merc":
-      case "staff_player":
-        return wandWeapons;
-      default:
-        return [];
-    }
-  });
-
-  // The currently-selected weapon ID for this mode (marks the row as selected).
-  const selectedId = $derived.by((): string => {
-    switch (attackMode) {
-      case "player":
-      case "merc":
-        return mainWeaponId;
-      case "bow_player":
-      case "bow_merc":
-        return bowId;
-      case "melee_player":
-        return meleeWeaponId;
-      case "spell_player":
-      case "spell_merc":
-      case "staff_player":
-        return wandId;
-      default:
-        return "";
-    }
-  });
-
-  // Off-hand is fixed for rogue player mode (we iterate main weapons, off is constant).
-  // Off-hand is fixed for rogue modes (we iterate main weapons; off-hand is constant across rows).
-  // Player: ⌊dmg×0.5⌋ penalty applies. Merc: both daggers at full damage (rogue_melee_merc).
-  const fixedOff = $derived(selectedClass === "rogue" ? offWeapon : null);
-  // Melee weapon is fixed for bow_merc mode (we iterate bows, melee is constant).
-  const fixedMelee = $derived(attackMode === "bow_merc" ? meleeWeapon : null);
-
-  const comparisonRows = $derived(
-    buildComparisonRows({
-      mode: attackMode,
-      cls: selectedClass,
-      weaponList,
-      fixedOff,
-      fixedMelee,
-      selectedId,
-      str: baseSTR,
-      dex: baseDEX,
-      int_: baseINT,
-      haste01: h,
-      spellHaste01: sp,
-      otherPhys: otherEquipDmg,
-      otherMagic: otherMagicEquipDmg,
-      sortKey,
-    }),
-  );
-
-  const filteredRows = $derived(
-    comparisonRows.filter(
-      (r) => r.weapon.item_level >= levelMin && r.weapon.item_level <= levelMax,
-    ),
-  );
-
-  const showDelayCol = $derived(isDelayBased(attackMode));
-
-  // ─── Display helpers ─────────────────────────────────────────────────────────
-
-  const softCapText = $derived(fmtSoftCap(attackMode, activeDelay));
-
-  const intervalBreakdown = $derived(
-    fmtInterval(
-      attackMode,
-      selectedClass,
-      interval ?? 0,
-      activeWeapon,
-      effectiveHastePercent,
-      effectiveSpellHastePercent,
-    ),
-  );
-
-  function fmt(n: number, dec = 2): string {
-    return n.toFixed(dec);
+  interface HealRow {
+    kind: HealBonusKind;
+    desc: string;
+    skills: SkillEntry[];
   }
 
-  // Stat summary line for weapon pick-list entries (mode-aware).
-  function weaponStatLine(w: WeaponItem): string {
-    const parts: string[] = [`delay ${w.weapon_delay}`];
-    if (isSpellMode(attackMode)) {
-      parts.push(`magic ${w.magic_damage}`);
-      if (w.spell_haste > 0)
-        parts.push(`+${(w.spell_haste * 100).toFixed(0)}% spell haste`);
-    } else {
-      if (w.damage > 0) parts.push(`dmg ${w.damage}`);
-      if (w.strength > 0) parts.push(`+${w.strength} STR`);
-      if (w.dexterity > 0) parts.push(`+${w.dexterity} DEX`);
-      if (w.haste > 0) parts.push(`+${(w.haste * 100).toFixed(0)}% haste`);
-    }
-    return parts.join(" · ");
+  interface BuffRow {
+    kind: BuffBonusAttrSource;
+    desc: string;
+    skills: SkillEntry[];
   }
 
-  function resetWeapons(): void {
-    mainWeaponId = offWeaponId = bowId = meleeWeaponId = wandId = "";
+  interface DebuffRow {
+    kind: DebuffBonusAttrKind;
+    desc: string;
+    skills: SkillEntry[];
   }
+
+  interface TimingRow {
+    kind: TimingModel;
+    desc: string;
+    skills: SkillEntry[];
+  }
+
+  const damageRows: DamageRow[] = DAMAGE_FORMULA_ORDER.map((kind) => ({
+    kind,
+    groupLabel: DAMAGE_FORMULA_GROUP_LABEL[kind],
+    desc: DAMAGE_FORMULA_DESC[kind],
+    skills:
+      (data.byDamageFormula ?? []).find((g) => g.kind === kind)?.skills ?? [],
+  }));
+
+  const healRows: HealRow[] = $derived(
+    (data.byHealBonus ?? []).map((g) => ({
+      kind: g.kind,
+      desc: HEAL_BONUS_DESC[g.kind],
+      skills: g.skills,
+    })),
+  );
+
+  const buffRows: BuffRow[] = $derived(
+    (data.byBuffAttr ?? []).map((g) => ({
+      kind: g.kind,
+      desc: BUFF_ATTR_DESC[g.kind],
+      skills: g.skills,
+    })),
+  );
+
+  const debuffRows: DebuffRow[] = $derived(
+    (data.byDebuffAttr ?? []).map((g) => ({
+      kind: g.kind,
+      desc: DEBUFF_ATTR_DESC[g.kind],
+      skills: g.skills,
+    })),
+  );
+
+  const timingRows: TimingRow[] = $derived(
+    (data.byTimingModel ?? []).map((g) => ({
+      kind: g.kind,
+      desc: TIMING_MODEL_DESC[g.kind],
+      skills: g.skills,
+    })),
+  );
 </script>
 
 <svelte:head>
-  <title>Auto-Attack DPS Simulator - Ancient Kingdoms Compendium</title>
+  <title>Combat Mechanics - Ancient Kingdoms Compendium</title>
   <meta
     name="description"
-    content="Compare weapon DPS for all six classes at your stats and haste. Weapon haste and spell haste bonuses are included in the ranking. Accounts for Rogue off-hand, Ranger DEX scaling, Ranger melee mode, spell haste for casters, and the player vs merc distinction."
+    content="Complete reference for Ancient Kingdoms combat mechanics — damage pipeline, formula kinds, resistance and mitigation, healing, buff scaling, debuff mechanics, timing and haste, and special mechanics."
   />
 </svelte:head>
 
-<div class="container mx-auto p-8 space-y-8 max-w-5xl">
+<div class="container mx-auto p-8 space-y-8 max-w-4xl">
   <Breadcrumb
     items={[
       { label: "Home", href: "/" },
       { label: "Mechanics" },
-      { label: "Auto-Attack DPS Simulator" },
+      { label: "Combat" },
     ]}
   />
 
-  <div class="space-y-2">
-    <h1 class="text-4xl font-bold">Auto-Attack DPS Simulator</h1>
-    <p class="text-muted-foreground">
-      Models auto-attack DPS only — stab, archer_shot, melee_attack, and the
-      caster equivalents. Does not include ability damage, crits, or weapon
-      procs.
-    </p>
-  </div>
+  <h1 class="text-4xl font-bold">Combat Mechanics</h1>
 
-  <!-- Class + Mode selector -->
-  <Card.Root class="bg-muted/30">
-    <Card.Header class="pb-3">
-      <Card.Title class="text-base">Class &amp; Mode</Card.Title>
-    </Card.Header>
-    <Card.Content class="space-y-3">
-      <!-- Class buttons — CLASSES is readonly PlayerClass[], no `as const` needed -->
-      <div class="flex flex-wrap gap-2">
-        {#each CLASSES as cls (cls)}
-          <button
-            onclick={() => {
-              selectedClass = cls;
-              attackMode = CLASS_DEFAULT_MODE[cls];
-              resetWeapons();
-            }}
-            class={[
-              "px-4 py-2 rounded-md border text-sm font-medium transition-colors",
-              selectedClass === cls
-                ? "bg-primary text-primary-foreground border-primary"
-                : "bg-muted/50 border-border hover:bg-muted",
-            ].join(" ")}
-          >
-            {CLASS_LABEL[cls]}
-          </button>
-        {/each}
-      </div>
-
-      <!-- Mode buttons (vary by class) -->
-      <div class="flex flex-wrap gap-2 items-center">
-        <span class="text-xs text-muted-foreground">Mode:</span>
-        {#each CLASS_MODES[selectedClass] as mode (mode)}
-          <button
-            onclick={() => {
-              attackMode = mode;
-            }}
-            class={[
-              "px-3 py-1 rounded-md border text-sm transition-colors",
-              attackMode === mode
-                ? "bg-primary text-primary-foreground border-primary"
-                : "bg-muted/50 border-border hover:bg-muted",
-            ].join(" ")}
-          >
-            {MODE_LABEL[mode]}
-          </button>
-        {/each}
-      </div>
-    </Card.Content>
-  </Card.Root>
-
-  <!-- Stat inputs + weapon selectors -->
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-    <!-- Stat inputs -->
-    <Card.Root class="bg-muted/30">
-      <Card.Header class="pb-3">
-        <Card.Title class="text-base">Stats</Card.Title>
-      </Card.Header>
-      <Card.Content class="space-y-4">
-        <!-- STR (all physical modes) -->
-        {#if !isSpellMode(attackMode)}
-          <div class="space-y-1">
-            <label class="text-sm font-medium" for="base-str">STR</label>
-            <p class="text-xs text-muted-foreground">
-              Your character's STR attribute. Do not include the selected
-              weapon's own strength bonus — the simulator adds it automatically.
-            </p>
-            <input
-              id="base-str"
-              type="number"
-              min="0"
-              max="9999"
-              bind:value={baseSTR}
-              class="w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm"
-            />
-          </div>
-        {/if}
-
-        <!-- DEX (bow modes only) -->
-        {#if attackMode === "bow_player" || attackMode === "bow_merc"}
-          <div class="space-y-1">
-            <label class="text-sm font-medium" for="base-dex">DEX</label>
-            <p class="text-xs text-muted-foreground">
-              Your character's DEX attribute. Do not include the selected bow's
-              own dexterity bonus — the simulator adds it automatically.
-            </p>
-            <input
-              id="base-dex"
-              type="number"
-              min="0"
-              max="9999"
-              bind:value={baseDEX}
-              class="w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm"
-            />
-          </div>
-        {/if}
-
-        <!-- INT (spell modes) -->
-        {#if isSpellMode(attackMode)}
-          <div class="space-y-1">
-            <label class="text-sm font-medium" for="base-int">INT</label>
-            <input
-              id="base-int"
-              type="number"
-              min="0"
-              max="9999"
-              bind:value={baseINT}
-              class="w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm"
-            />
-          </div>
-        {/if}
-
-        <!-- Haste — spell haste for spell modes, regular haste otherwise -->
-        {#if isSpellMode(attackMode)}
-          <div class="space-y-1">
-            <label class="text-sm font-medium" for="spell-haste-pct">
-              Spell Haste % (reduces cast time)
-            </label>
-            <p class="text-xs text-muted-foreground">
-              Regular haste has zero effect on spell auto-attack intervals.
-            </p>
-            <div class="flex gap-2 items-center">
-              <input
-                id="spell-haste-pct"
-                type="range"
-                min="0"
-                max="80"
-                step="1"
-                bind:value={spellHastePercent}
-                class="flex-1"
-              />
-              <input
-                type="number"
-                min="0"
-                max="80"
-                bind:value={spellHastePercent}
-                class="w-16 rounded-md border border-border bg-background px-2 py-1.5 text-sm text-right"
-              />
-            </div>
-          </div>
-        {:else}
-          <div class="space-y-1">
-            <label class="text-sm font-medium" for="haste-pct">
-              Haste % (0–80)
-            </label>
-            <div class="flex gap-2 items-center">
-              <input
-                id="haste-pct"
-                type="range"
-                min="0"
-                max="80"
-                step="1"
-                bind:value={hastePercent}
-                class="flex-1"
-              />
-              <input
-                type="number"
-                min="0"
-                max="80"
-                bind:value={hastePercent}
-                class="w-16 rounded-md border border-border bg-background px-2 py-1.5 text-sm text-right"
-              />
-            </div>
-          </div>
-        {/if}
-
-        <!-- Other equipment damage bonus -->
-        {#if isSpellMode(attackMode)}
-          <div class="space-y-1">
-            <label class="text-sm font-medium" for="other-magic-equip">
-              Equipment magic bonus
-            </label>
-            <p class="text-xs text-muted-foreground">
-              Magic damage from armor, rings, etc. (not the wand slot)
-            </p>
-            <input
-              id="other-magic-equip"
-              type="number"
-              min="0"
-              max="9999"
-              bind:value={otherMagicEquipDmg}
-              class="w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm"
-            />
-          </div>
-        {:else}
-          <div class="space-y-1">
-            <label class="text-sm font-medium" for="other-equip">
-              Equipment damage bonus
-            </label>
-            <p class="text-xs text-muted-foreground">
-              Damage from armor, rings, etc. (not weapon slots)
-            </p>
-            <input
-              id="other-equip"
-              type="number"
-              min="0"
-              max="9999"
-              bind:value={otherEquipDmg}
-              class="w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm"
-            />
-          </div>
-        {/if}
-      </Card.Content>
-    </Card.Root>
-
-    <!-- Weapon selectors (pick-list) -->
-    <Card.Root class="bg-muted/30">
-      <Card.Header class="pb-3">
-        <Card.Title class="text-base">Weapons</Card.Title>
-      </Card.Header>
-      <Card.Content class="space-y-4">
-        {#if attackMode === "player" && selectedClass === "warrior"}
-          <!-- Warrior: main sword -->
-          <div class="space-y-1">
-            <p class="text-sm font-medium">Weapon</p>
-            <div
-              class="max-h-52 overflow-y-auto border border-border rounded-md divide-y divide-border/50"
-            >
-              {#each mainWeapons as w (w.id)}
-                <button
-                  type="button"
-                  onclick={() => {
-                    mainWeaponId = mainWeaponId === w.id ? "" : w.id;
-                  }}
-                  class={[
-                    "w-full px-3 py-2 text-left text-sm flex items-baseline gap-2 transition-colors",
-                    mainWeaponId === w.id
-                      ? "bg-primary/10"
-                      : "hover:bg-muted/50",
-                  ].join(" ")}
-                >
-                  <span class={getQualityTextColorClass(w.quality)}
-                    >{w.name}</span
-                  >
-                  <span class="ml-auto text-xs text-muted-foreground shrink-0"
-                    >{weaponStatLine(w)}</span
-                  >
-                </button>
-              {/each}
-              {#if mainWeapons.length === 0}
-                <p class="px-3 py-3 text-sm text-muted-foreground">
-                  No weapons found.
-                </p>
-              {/if}
-            </div>
-          </div>
-        {:else if attackMode === "player" && selectedClass === "rogue"}
-          <!-- Rogue player: main + off-hand -->
-          <div class="space-y-1">
-            <p class="text-sm font-medium">Main-hand Dagger</p>
-            <div
-              class="max-h-44 overflow-y-auto border border-border rounded-md divide-y divide-border/50"
-            >
-              {#each mainWeapons as w (w.id)}
-                <button
-                  type="button"
-                  onclick={() => {
-                    mainWeaponId = mainWeaponId === w.id ? "" : w.id;
-                  }}
-                  class={[
-                    "w-full px-3 py-2 text-left text-sm flex items-baseline gap-2 transition-colors",
-                    mainWeaponId === w.id
-                      ? "bg-primary/10"
-                      : "hover:bg-muted/50",
-                  ].join(" ")}
-                >
-                  <span class={getQualityTextColorClass(w.quality)}
-                    >{w.name}</span
-                  >
-                  <span class="ml-auto text-xs text-muted-foreground shrink-0"
-                    >{weaponStatLine(w)}</span
-                  >
-                </button>
-              {/each}
-            </div>
-          </div>
-          <div class="space-y-1">
-            <p class="text-sm font-medium">Off-hand Dagger</p>
-            <p class="text-xs text-muted-foreground">
-              Contributes floor(dmg×0.5) but full STR bonus. Comparison table
-              uses selected off-hand.
-            </p>
-            <div
-              class="max-h-36 overflow-y-auto border border-border rounded-md divide-y divide-border/50"
-            >
-              {#each offHandWeapons as w (w.id)}
-                <button
-                  type="button"
-                  onclick={() => {
-                    offWeaponId = offWeaponId === w.id ? "" : w.id;
-                  }}
-                  class={[
-                    "w-full px-3 py-2 text-left text-sm flex items-baseline gap-2 transition-colors",
-                    offWeaponId === w.id
-                      ? "bg-primary/10"
-                      : "hover:bg-muted/50",
-                  ].join(" ")}
-                >
-                  <span class={getQualityTextColorClass(w.quality)}
-                    >{w.name}</span
-                  >
-                  <span class="ml-auto text-xs text-muted-foreground shrink-0"
-                    >{weaponStatLine(w)}</span
-                  >
-                </button>
-              {/each}
-            </div>
-          </div>
-        {:else if attackMode === "merc" && selectedClass === "rogue"}
-          <!-- Rogue merc: main + off-hand (both at full damage — no 0.5× penalty for mercs) -->
-          <div class="space-y-1">
-            <p class="text-sm font-medium">Main-hand Dagger</p>
-            <div
-              class="max-h-44 overflow-y-auto border border-border rounded-md divide-y divide-border/50"
-            >
-              {#each mainWeapons as w (w.id)}
-                <button
-                  type="button"
-                  onclick={() => {
-                    mainWeaponId = mainWeaponId === w.id ? "" : w.id;
-                  }}
-                  class={[
-                    "w-full px-3 py-2 text-left text-sm flex items-baseline gap-2 transition-colors",
-                    mainWeaponId === w.id
-                      ? "bg-primary/10"
-                      : "hover:bg-muted/50",
-                  ].join(" ")}
-                >
-                  <span class={getQualityTextColorClass(w.quality)}
-                    >{w.name}</span
-                  >
-                  <span class="ml-auto text-xs text-muted-foreground shrink-0"
-                    >{weaponStatLine(w)}</span
-                  >
-                </button>
-              {/each}
-            </div>
-          </div>
-          <div class="space-y-1">
-            <p class="text-sm font-medium">Off-hand Dagger</p>
-            <p class="text-xs text-muted-foreground">
-              Both daggers deal full damage (no off-hand penalty for mercs).
-              Comparison table uses the selected off-hand.
-            </p>
-            <div
-              class="max-h-36 overflow-y-auto border border-border rounded-md divide-y divide-border/50"
-            >
-              {#each offHandWeapons as w (w.id)}
-                <button
-                  type="button"
-                  onclick={() => {
-                    offWeaponId = offWeaponId === w.id ? "" : w.id;
-                  }}
-                  class={[
-                    "w-full px-3 py-2 text-left text-sm flex items-baseline gap-2 transition-colors",
-                    offWeaponId === w.id
-                      ? "bg-primary/10"
-                      : "hover:bg-muted/50",
-                  ].join(" ")}
-                >
-                  <span class={getQualityTextColorClass(w.quality)}
-                    >{w.name}</span
-                  >
-                  <span class="ml-auto text-xs text-muted-foreground shrink-0"
-                    >{weaponStatLine(w)}</span
-                  >
-                </button>
-              {/each}
-            </div>
-          </div>
-        {:else if attackMode === "merc"}
-          <!-- Warrior merc: main weapon only -->
-          <div class="space-y-1">
-            <p class="text-sm font-medium">Weapon</p>
-            <p class="text-xs text-muted-foreground">
-              sword_strike — no off-hand.
-            </p>
-            <div
-              class="max-h-52 overflow-y-auto border border-border rounded-md divide-y divide-border/50"
-            >
-              {#each mainWeapons as w (w.id)}
-                <button
-                  type="button"
-                  onclick={() => {
-                    mainWeaponId = mainWeaponId === w.id ? "" : w.id;
-                  }}
-                  class={[
-                    "w-full px-3 py-2 text-left text-sm flex items-baseline gap-2 transition-colors",
-                    mainWeaponId === w.id
-                      ? "bg-primary/10"
-                      : "hover:bg-muted/50",
-                  ].join(" ")}
-                >
-                  <span class={getQualityTextColorClass(w.quality)}
-                    >{w.name}</span
-                  >
-                  <span class="ml-auto text-xs text-muted-foreground shrink-0"
-                    >{weaponStatLine(w)}</span
-                  >
-                </button>
-              {/each}
-            </div>
-          </div>
-        {:else if attackMode === "bow_player"}
-          <!-- Ranger bow player: bow only -->
-          <div class="space-y-1">
-            <p class="text-sm font-medium">Bow</p>
-            <div
-              class="max-h-52 overflow-y-auto border border-border rounded-md divide-y divide-border/50"
-            >
-              {#each bowWeapons as w (w.id)}
-                <button
-                  type="button"
-                  onclick={() => {
-                    bowId = bowId === w.id ? "" : w.id;
-                  }}
-                  class={[
-                    "w-full px-3 py-2 text-left text-sm flex items-baseline gap-2 transition-colors",
-                    bowId === w.id ? "bg-primary/10" : "hover:bg-muted/50",
-                  ].join(" ")}
-                >
-                  <span class={getQualityTextColorClass(w.quality)}
-                    >{w.name}</span
-                  >
-                  <span class="ml-auto text-xs text-muted-foreground shrink-0"
-                    >{weaponStatLine(w)}</span
-                  >
-                </button>
-              {/each}
-            </div>
-          </div>
-        {:else if attackMode === "melee_player"}
-          <!-- Ranger melee player: melee weapon only -->
-          <div class="space-y-1">
-            <p class="text-sm font-medium">Melee Weapon</p>
-            <p class="text-xs text-muted-foreground">
-              swift_slash — no bow, no DEX scaling.
-            </p>
-            <div
-              class="max-h-52 overflow-y-auto border border-border rounded-md divide-y divide-border/50"
-            >
-              {#each meleeWeapons as w (w.id)}
-                <button
-                  type="button"
-                  onclick={() => {
-                    meleeWeaponId = meleeWeaponId === w.id ? "" : w.id;
-                  }}
-                  class={[
-                    "w-full px-3 py-2 text-left text-sm flex items-baseline gap-2 transition-colors",
-                    meleeWeaponId === w.id
-                      ? "bg-primary/10"
-                      : "hover:bg-muted/50",
-                  ].join(" ")}
-                >
-                  <span class={getQualityTextColorClass(w.quality)}
-                    >{w.name}</span
-                  >
-                  <span class="ml-auto text-xs text-muted-foreground shrink-0"
-                    >{weaponStatLine(w)}</span
-                  >
-                </button>
-              {/each}
-            </div>
-          </div>
-        {:else if attackMode === "bow_merc"}
-          <!-- Ranger bow merc: bow + optional melee -->
-          <div class="space-y-1">
-            <p class="text-sm font-medium">Bow</p>
-            <p class="text-xs text-muted-foreground">
-              explorer_shot — both bow and melee damage count (no slot
-              subtraction).
-            </p>
-            <div
-              class="max-h-44 overflow-y-auto border border-border rounded-md divide-y divide-border/50"
-            >
-              {#each bowWeapons as w (w.id)}
-                <button
-                  type="button"
-                  onclick={() => {
-                    bowId = bowId === w.id ? "" : w.id;
-                  }}
-                  class={[
-                    "w-full px-3 py-2 text-left text-sm flex items-baseline gap-2 transition-colors",
-                    bowId === w.id ? "bg-primary/10" : "hover:bg-muted/50",
-                  ].join(" ")}
-                >
-                  <span class={getQualityTextColorClass(w.quality)}
-                    >{w.name}</span
-                  >
-                  <span class="ml-auto text-xs text-muted-foreground shrink-0"
-                    >{weaponStatLine(w)}</span
-                  >
-                </button>
-              {/each}
-            </div>
-          </div>
-          <div class="space-y-1">
-            <p class="text-sm font-medium">
-              Melee Weapon <span class="text-muted-foreground font-normal"
-                >(optional)</span
-              >
-            </p>
-            <div
-              class="max-h-36 overflow-y-auto border border-border rounded-md divide-y divide-border/50"
-            >
-              {#each meleeWeapons as w (w.id)}
-                <button
-                  type="button"
-                  onclick={() => {
-                    meleeWeaponId = meleeWeaponId === w.id ? "" : w.id;
-                  }}
-                  class={[
-                    "w-full px-3 py-2 text-left text-sm flex items-baseline gap-2 transition-colors",
-                    meleeWeaponId === w.id
-                      ? "bg-primary/10"
-                      : "hover:bg-muted/50",
-                  ].join(" ")}
-                >
-                  <span class={getQualityTextColorClass(w.quality)}
-                    >{w.name}</span
-                  >
-                  <span class="ml-auto text-xs text-muted-foreground shrink-0"
-                    >{weaponStatLine(w)}</span
-                  >
-                </button>
-              {/each}
-            </div>
-          </div>
-        {:else}
-          <!-- Caster modes: wand -->
-          <div class="space-y-1">
-            <p class="text-sm font-medium">Wand</p>
-            {#if attackMode === "spell_player" || attackMode === "spell_merc"}
-              <p class="text-xs text-muted-foreground">
-                Ranked by magic damage. Physical dmg stat is unused in spell
-                mode.
-              </p>
-            {:else}
-              <p class="text-xs text-muted-foreground">
-                Staff mode uses physical damage formula; magic_dmg stat is
-                unused.
-              </p>
-            {/if}
-            <div
-              class="max-h-52 overflow-y-auto border border-border rounded-md divide-y divide-border/50"
-            >
-              {#each wandWeapons as w (w.id)}
-                <button
-                  type="button"
-                  onclick={() => {
-                    wandId = wandId === w.id ? "" : w.id;
-                  }}
-                  class={[
-                    "w-full px-3 py-2 text-left text-sm flex items-baseline gap-2 transition-colors",
-                    wandId === w.id ? "bg-primary/10" : "hover:bg-muted/50",
-                  ].join(" ")}
-                >
-                  <span class={getQualityTextColorClass(w.quality)}
-                    >{w.name}</span
-                  >
-                  <span class="ml-auto text-xs text-muted-foreground shrink-0"
-                    >{weaponStatLine(w)}</span
-                  >
-                </button>
-              {/each}
-              {#if wandWeapons.length === 0}
-                <p class="px-3 py-3 text-sm text-muted-foreground">
-                  No wands found.
-                </p>
-              {/if}
-            </div>
-          </div>
-        {/if}
-      </Card.Content>
-    </Card.Root>
-  </div>
-
-  <!-- Results card (only when a weapon is selected and calc is valid) -->
-  {#if interval !== null && damagePerHit !== null && dps !== null}
-    <Card.Root class="bg-muted/30 border-primary/30">
-      <Card.Header class="pb-3">
-        <Card.Title class="text-base">
-          Results —
-          <!-- ItemLink is safe here: 1–3 instances max, never inside {#each} -->
-          {#if activeWeapon}
-            <ItemLink
-              itemId={activeWeapon.id}
-              itemName={activeWeapon.name}
-              tooltipHtml={activeWeapon.tooltip_html || null}
-              colorClass={getQualityTextColorClass(activeWeapon.quality)}
-            />
-          {/if}
-          {#if (attackMode === "player" || attackMode === "merc") && selectedClass === "rogue" && offWeapon}
-            &nbsp;+&nbsp;<ItemLink
-              itemId={offWeapon.id}
-              itemName={offWeapon.name}
-              tooltipHtml={offWeapon.tooltip_html || null}
-              colorClass={getQualityTextColorClass(offWeapon.quality)}
-            />
-          {:else if attackMode === "bow_merc" && meleeWeapon}
-            &nbsp;+&nbsp;<ItemLink
-              itemId={meleeWeapon.id}
-              itemName={meleeWeapon.name}
-              tooltipHtml={meleeWeapon.tooltip_html || null}
-              colorClass={getQualityTextColorClass(meleeWeapon.quality)}
-            />
-          {/if}
-        </Card.Title>
-      </Card.Header>
-      <Card.Content>
-        <dl class="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div>
-            <dt class="text-xs text-muted-foreground mb-1">Attack Interval</dt>
-            <dd class="text-2xl font-mono font-semibold">{fmt(interval)}s</dd>
-            <dd class="text-xs text-muted-foreground mt-1">
-              {intervalBreakdown}
-            </dd>
-          </div>
-          <div>
-            <dt class="text-xs text-muted-foreground mb-1">Damage / Hit</dt>
-            <dd class="text-2xl font-mono font-semibold">
-              {Math.round(damagePerHit).toLocaleString()}
-            </dd>
-          </div>
-          <div>
-            <dt class="text-xs text-muted-foreground mb-1">DPS</dt>
-            <dd class="text-2xl font-mono font-semibold text-primary">
-              {fmt(dps)}
-            </dd>
-          </div>
-          <div>
-            <dt class="text-xs text-muted-foreground mb-1">
-              {isDelayBased(attackMode)
-                ? `Soft-cap Haste (delay=${activeDelay})`
-                : "Soft-cap"}
-            </dt>
-            <dd class="text-2xl font-mono font-semibold">
-              {#if isDelayBased(attackMode)}
-                {softCapText}
-              {:else}
-                <span class="text-base font-normal">{softCapText}</span>
-              {/if}
-            </dd>
-            {#if isDelayBased(attackMode)}
-              <dd class="text-xs text-muted-foreground mt-1">
-                haste beyond this has no effect
-              </dd>
-            {/if}
-          </div>
-        </dl>
-
-        <!-- Formula breakdown -->
-        <div
-          class="mt-4 pt-4 border-t border-border/50 text-xs text-muted-foreground space-y-1"
+  <nav aria-label="Page sections" class="text-sm text-muted-foreground">
+    <ul class="flex flex-wrap gap-x-4 gap-y-1">
+      <li>
+        <a href="#damage-pipeline" class="hover:text-foreground hover:underline"
+          >Damage Pipeline</a
         >
-          <p class="font-medium text-foreground">Formula</p>
+      </li>
+      <li>
+        <a href="#damage-formulas" class="hover:text-foreground hover:underline"
+          >Damage Formulas</a
+        >
+      </li>
+      <li>
+        <a href="#resistance" class="hover:text-foreground hover:underline"
+          >Resistance &amp; Mitigation</a
+        >
+      </li>
+      <li>
+        <a href="#healing" class="hover:text-foreground hover:underline"
+          >Healing</a
+        >
+      </li>
+      <li>
+        <a href="#buffs" class="hover:text-foreground hover:underline"
+          >Buff Scaling</a
+        >
+      </li>
+      <li>
+        <a href="#debuffs" class="hover:text-foreground hover:underline"
+          >Debuff Mechanics</a
+        >
+      </li>
+      <li>
+        <a href="#timing" class="hover:text-foreground hover:underline"
+          >Timing &amp; Haste</a
+        >
+      </li>
+      <li>
+        <a href="#special" class="hover:text-foreground hover:underline"
+          >Special Mechanics</a
+        >
+      </li>
+    </ul>
+  </nav>
 
-          {#if (attackMode === "player" || attackMode === "merc") && mainWeapon}
-            {#if selectedClass === "rogue"}
-              {#if attackMode === "player"}
-                <p>
-                  Damage = (STR {baseSTR} + main STR {mainWeapon.strength}{offWeapon
-                    ? " + off STR " + offWeapon.strength
-                    : ""}) + main dmg {mainWeapon.damage}{offWeapon
-                    ? " + ⌊" +
-                      offWeapon.damage +
-                      " × 0.5⌋ = " +
-                      Math.floor(offWeapon.damage * 0.5)
-                    : ""} + equip.dmg {otherEquipDmg} = {Math.round(
-                    damagePerHit,
-                  )}
-                </p>
-              {:else}
-                <!-- merc rogue: both daggers at full damage -->
-                <p>
-                  Damage = (STR {baseSTR} + main STR {mainWeapon.strength}{offWeapon
-                    ? " + off STR " + offWeapon.strength
-                    : ""}) + main dmg {mainWeapon.damage}{offWeapon
-                    ? " + off dmg " + offWeapon.damage
-                    : ""} + equip.dmg {otherEquipDmg} = {Math.round(
-                    damagePerHit,
-                  )}
-                </p>
-              {/if}
-            {:else}
-              <p>
-                Damage = (STR {baseSTR} + weapon STR {mainWeapon.strength}) +
-                weapon dmg
-                {mainWeapon.damage} + equip.dmg {otherEquipDmg} = {Math.round(
-                  damagePerHit,
-                )}
-              </p>
-            {/if}
-            <p>
-              Interval = {attackMode === "player"
-                ? `${selectedClass === "warrior" ? "0.5" : "0.4"}s cast + max(${mainWeapon.weapon_delay} × (1−${effectiveHastePercent}%) / 25, 0.25s)`
-                : `${selectedClass === "warrior" ? "0.5" : "0.4"}s cast + 1.0×(1−${effectiveHastePercent}%)`}
-              = {fmt(interval)}s
-            </p>
-          {:else if attackMode === "bow_player" && bowWeapon}
-            <p>
-              Damage = (STR {baseSTR} + bow STR {bowWeapon.strength}) + bow dmg {bowWeapon.damage}
-              + (DEX {baseDEX} + bow DEX {bowWeapon.dexterity}) × 1.5 +
-              equip.dmg {otherEquipDmg}
-              = {Math.round(damagePerHit)}
-            </p>
-            <p>
-              Interval = 0.8s cast + max({bowWeapon.weapon_delay} × (1−{effectiveHastePercent}%)
-              / 25, 0.25s) = {fmt(interval)}s
-            </p>
-          {:else if attackMode === "melee_player" && meleeWeapon}
-            <p>
-              Damage = (STR {baseSTR} + melee STR {meleeWeapon.strength}) +
-              melee dmg
-              {meleeWeapon.damage} + equip.dmg {otherEquipDmg} = {Math.round(
-                damagePerHit,
-              )}
-            </p>
-            <p>
-              Interval = 0.5s cast + max({meleeWeapon.weapon_delay} × (1−{effectiveHastePercent}%)
-              / 25, 0.25s) = {fmt(interval)}s
-            </p>
-          {:else if attackMode === "bow_merc" && bowWeapon}
-            <p>
-              Damage = (STR {baseSTR} + bow STR {bowWeapon.strength}{meleeWeapon
-                ? " + melee STR " + meleeWeapon.strength
-                : ""}) + bow dmg {bowWeapon.damage}{meleeWeapon
-                ? " + melee dmg " + meleeWeapon.damage
-                : ""} + (DEX {baseDEX} + bow DEX {bowWeapon.dexterity}) × 1.5 +
-              equip.dmg
-              {otherEquipDmg} = {Math.round(damagePerHit)}
-            </p>
-            <p>
-              Interval = 0.8s cast + 1.0×(1−{effectiveHastePercent}%) = {fmt(
-                interval,
-              )}s
-            </p>
-          {:else if (attackMode === "spell_player" || attackMode === "spell_merc") && wandWeapon}
-            <p>
-              Damage = INT {baseINT} × 1.5 + wand magic dmg {wandWeapon.magic_damage}
-              + equip.magic {otherMagicEquipDmg} = {Math.round(damagePerHit)}
-            </p>
-            {#if attackMode === "spell_player"}
-              <p>
-                Interval = {SPELL_PLAYER_CAST[selectedClass] ?? 1.0}s × (1−{effectiveSpellHastePercent}%
-                spell haste) = {fmt(interval)}s
-              </p>
-            {:else}
-              <p>
-                Interval = {SPELL_MERC_CAST[selectedClass] ?? 1.0}s × (1−{effectiveSpellHastePercent}%)
-                +
-                {SPELL_MERC_CD[selectedClass] ?? 1.0}s cooldown = {fmt(
-                  interval,
-                )}s
-              </p>
-            {/if}
-          {:else if attackMode === "staff_player" && wandWeapon}
-            <p>
-              Damage = (STR {baseSTR} + wand STR {wandWeapon.strength}) + wand
-              dmg
-              {wandWeapon.damage} + equip.dmg {otherEquipDmg} = {Math.round(
-                damagePerHit,
-              )}
-            </p>
-            <p>
-              Interval = 0.5s cast + max({wandWeapon.weapon_delay} × (1−{effectiveHastePercent}%)
-              / 25, 0.25s) = {fmt(interval)}s
-            </p>
-          {/if}
-        </div>
-      </Card.Content>
-    </Card.Root>
-  {/if}
-
-  <!-- Comparison table -->
-  <Card.Root class="bg-muted/30">
-    <Card.Header class="pb-3">
-      <div class="space-y-3">
-        <div class="flex flex-wrap items-center justify-between gap-2">
-          <Card.Title class="text-base">
-            {CLASS_LABEL[selectedClass]} ({MODE_LABEL[attackMode]}) — DPS at
-            Current Settings
-          </Card.Title>
-          <!-- Sort controls — SORT_KEYS defined in script, no `as const` in template -->
-          <div class="flex gap-1 text-xs">
-            <span class="text-muted-foreground mr-1">Sort by:</span>
-            {#each SORT_KEYS as [key, label] (key)}
-              <button
-                onclick={() => (sortKey = key)}
-                class={[
-                  "px-2 py-1 rounded border text-xs transition-colors",
-                  sortKey === key
-                    ? "bg-primary text-primary-foreground border-primary"
-                    : "border-border hover:bg-muted",
-                ].join(" ")}
-              >
-                {label}
-              </button>
-            {/each}
-          </div>
-        </div>
-
-        <!-- Item level filter -->
-        <div class="flex items-center gap-2 text-xs">
-          <span class="text-muted-foreground">Item level:</span>
-          <input
-            type="number"
-            min="1"
-            max="9999"
-            bind:value={levelMin}
-            class="w-20 rounded border border-border bg-background px-2 py-1 text-sm"
-            placeholder="min"
-          />
-          <span class="text-muted-foreground">–</span>
-          <input
-            type="number"
-            min="1"
-            max="9999"
-            bind:value={levelMax}
-            class="w-20 rounded border border-border bg-background px-2 py-1 text-sm"
-            placeholder="max"
-          />
-          <span class="text-muted-foreground"
-            >({filteredRows.length} weapons)</span
-          >
-        </div>
-      </div>
+  <!-- ── §1 Damage Pipeline ─────────────────────────────────────────────── -->
+  <Card.Root id="damage-pipeline" class="bg-muted/30">
+    <Card.Header>
+      <Card.Title>Damage Pipeline</Card.Title>
+      <Card.Description
+        >Steps applied in order to every damaging hit.</Card.Description
+      >
     </Card.Header>
-    <Card.Content class="p-0">
+    <Card.Content class="space-y-4">
       <div class="overflow-x-auto">
-        <table class="w-full text-sm">
+        <table class="w-full text-sm border-collapse">
           <thead>
-            <tr class="border-b border-border text-muted-foreground text-xs">
-              <th class="text-left px-4 py-2 font-medium">Weapon</th>
-              {#if attackMode === "player" && selectedClass === "rogue"}
-                <th class="text-left px-4 py-2 font-medium">Off-hand</th>
-              {/if}
-              {#if showDelayCol}
-                <th class="text-right px-4 py-2 font-medium">Delay</th>
-                <th class="text-right px-4 py-2 font-medium">Soft-cap %</th>
-              {/if}
-              <th class="text-right px-4 py-2 font-medium">Dmg/Hit</th>
-              <th class="text-right px-4 py-2 font-medium">Interval</th>
-              <th class="text-right px-4 py-2 font-medium font-semibold">DPS</th
-              >
+            <tr class="border-b border-border">
+              <th class="text-left py-2 pr-4 font-medium w-8">Step</th>
+              <th class="text-left py-2 font-medium">Description</th>
             </tr>
           </thead>
           <tbody>
-            {#each filteredRows as row, i (row.weapon.id)}
-              <tr
-                class={[
-                  "border-b border-border/50 hover:bg-muted/30 transition-colors",
-                  row.isSelected ? "bg-primary/5 border-primary/20" : "",
-                ].join(" ")}
+            <tr class="border-b border-border/50">
+              <td class="py-2 pr-4 text-muted-foreground">1</td>
+              <td class="py-2"
+                ><strong>Base damage</strong> — formula-specific (see Damage Formulas
+                below)</td
               >
-                <td class="px-4 py-2">
-                  <!--
-                    Plain <a> here — NOT ItemLink. ItemLink spawns a HoverCard portal per
-                    instance; 100+ simultaneous portals during hydration breaks rendering.
-                    ItemLink is only used in the Results card title (1–3 instances max).
-                  -->
-                  <a
-                    href="/items/{row.weapon.id}"
-                    class={[
-                      "hover:underline",
-                      getQualityTextColorClass(row.weapon.quality),
-                    ].join(" ")}>{row.weapon.name}</a
-                  >
-                  {#if i === 0}
-                    <span class="ml-1 text-xs text-muted-foreground font-normal"
-                      >(best)</span
-                    >
-                  {/if}
-                  {#if row.isSelected}
-                    <span class="ml-1 text-xs text-primary">(selected)</span>
-                  {/if}
-                </td>
-                {#if attackMode === "player" && selectedClass === "rogue"}
-                  <td class="px-4 py-2 text-muted-foreground text-xs">
-                    {row.offWeapon ? row.offWeapon.name : "—"}
-                  </td>
-                {/if}
-                {#if showDelayCol}
-                  <td class="px-4 py-2 text-right font-mono text-xs"
-                    >{row.delay}</td
-                  >
-                  <td class="px-4 py-2 text-right font-mono text-xs">
-                    {row.softCap !== null ? fmt(row.softCap, 1) + "%" : "—"}
-                  </td>
-                {/if}
-                <td class="px-4 py-2 text-right font-mono">
-                  {Math.round(row.damage).toLocaleString()}
-                </td>
-                <td class="px-4 py-2 text-right font-mono"
-                  >{fmt(row.interval)}s</td
-                >
-                <td class="px-4 py-2 text-right font-mono font-semibold"
-                  >{fmt(row.dps)}</td
-                >
-              </tr>
-            {/each}
-            {#if filteredRows.length === 0}
-              <tr>
-                <td
-                  colspan="7"
-                  class="px-4 py-8 text-center text-muted-foreground text-sm"
-                >
-                  {comparisonRows.length === 0
-                    ? "No weapons found for this class and mode."
-                    : "No weapons in this item level range."}
-                </td>
-              </tr>
-            {/if}
+            </tr>
+            <tr class="border-b border-border/50">
+              <td class="py-2 pr-4 text-muted-foreground">2</td>
+              <td class="py-2"><strong>Variance</strong> — ×0.9–1.1 random</td>
+            </tr>
+            <tr class="border-b border-border/50">
+              <td class="py-2 pr-4 text-muted-foreground">3</td>
+              <td class="py-2"
+                ><strong>Backstab</strong> — +10% (+25% with Improved Backstab) +
+                1 flat, if attacker is behind target</td
+              >
+            </tr>
+            <tr class="border-b border-border/50">
+              <td class="py-2 pr-4 text-muted-foreground">4</td>
+              <td class="py-2"
+                ><strong>Level difference</strong> — ±2%/level, max ±20%</td
+              >
+            </tr>
+            <tr class="border-b border-border/50">
+              <td class="py-2 pr-4 text-muted-foreground">5</td>
+              <td class="py-2"
+                ><strong>Slayer reduction</strong> — −(Slayer level × 10%)</td
+              >
+            </tr>
+            <tr class="border-b border-border/50">
+              <td class="py-2 pr-4 text-muted-foreground">6</td>
+              <td class="py-2"
+                ><strong>Enrage</strong> — +33% player / +50–100% monster, when caster
+                is below 25% HP (non-spell only)</td
+              >
+            </tr>
+            <tr class="border-b border-border/50">
+              <td class="py-2 pr-4 text-muted-foreground">7</td>
+              <td class="py-2">
+                <strong>Physical mitigation</strong> —
+                <code class="font-mono text-xs bg-muted px-1 rounded"
+                  >damage − ⌈damage × clamp(defense × 0.0005, 0, 0.9)⌉</code
+                > (max 90%)
+              </td>
+            </tr>
+            <tr>
+              <td class="py-2 pr-4 text-muted-foreground">8</td>
+              <td class="py-2"
+                ><strong>Crit</strong> — 95%→×1.5, 5%→×2.0; Radiant Aether stacks
+                ×3 on top</td
+              >
+            </tr>
           </tbody>
         </table>
+      </div>
+      <p class="text-sm text-muted-foreground">
+        <strong>Manaburn exception:</strong> bypasses steps 7–8 entirely. Damage =
+        current Rage or Mana × 2.
+      </p>
+      <div
+        class="rounded-md border border-border bg-muted/20 px-4 py-3 text-sm"
+      >
+        For interactive per-weapon DPS modelling, see the
+        <a
+          href="/tools/combat-simulator"
+          class="underline hover:text-foreground">Auto-Attack DPS Simulator</a
+        >.
       </div>
     </Card.Content>
   </Card.Root>
 
-  <!-- Formula Reference — static table, no reactive state, no ItemLink -->
-  <Card.Root class="bg-muted/30">
-    <Card.Header class="pb-3">
-      <Card.Title class="text-base">Formula Reference</Card.Title>
+  <!-- ── §2 Damage Formulas ─────────────────────────────────────────────── -->
+  <Card.Root id="damage-formulas" class="bg-muted/30">
+    <Card.Header>
+      <Card.Title>Damage Formulas</Card.Title>
+      <Card.Description>
+        Dispatched per-caster from skillMechanics.ts. A skill used by multiple
+        class/mode combinations may appear under more than one formula.
+      </Card.Description>
     </Card.Header>
-    <Card.Content class="space-y-4 text-sm">
-      <div class="overflow-x-auto">
-        <table class="w-full text-xs">
-          <thead>
-            <tr class="border-b border-border text-muted-foreground">
-              <th class="text-left px-3 py-2 font-medium">Class</th>
-              <th class="text-left px-3 py-2 font-medium">Mode</th>
-              <th class="text-left px-3 py-2 font-medium">Skill</th>
-              <th class="text-right px-3 py-2 font-medium">Cast</th>
-              <th class="text-left px-3 py-2 font-medium">Timing</th>
-              <th class="text-left px-3 py-2 font-medium">Damage</th>
-              <th class="text-left px-3 py-2 font-medium">Soft-cap</th>
-            </tr>
-          </thead>
-          <tbody>
-            {#each FORMULA_TABLE as row (row.cls + row.mode)}
-              <tr class="border-b border-border/50 hover:bg-muted/20">
-                <td class="px-3 py-1.5 font-medium">{row.cls}</td>
-                <td class="px-3 py-1.5 text-muted-foreground">{row.mode}</td>
-                <td class="px-3 py-1.5">
-                  <a
-                    href="/skills/{row.skillId}"
-                    class="text-blue-600 hover:underline dark:text-blue-400"
-                    >{row.skillName}</a
-                  >
-                </td>
-                <td class="px-3 py-1.5 text-right font-mono">{row.cast}</td>
-                <td class="px-3 py-1.5 font-mono">{row.timing}</td>
-                <td class="px-3 py-1.5 font-mono">{row.damage}</td>
-                <td class="px-3 py-1.5 text-muted-foreground">{row.softCap}</td>
-              </tr>
-            {/each}
-          </tbody>
-        </table>
+    <Card.Content class="space-y-6">
+      {#each damageRows as f (f.kind)}
+        <div>
+          <div class="flex items-baseline gap-3 mb-1">
+            <span
+              class="text-xs font-medium uppercase tracking-wide text-muted-foreground"
+              >{f.groupLabel}</span
+            >
+            <span class="font-semibold font-mono text-sm">{f.kind}</span>
+          </div>
+          <p class="text-sm text-muted-foreground mb-2">{f.desc}</p>
+          {#if f.skills.length > 0}
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm border-collapse">
+                <thead>
+                  <tr class="border-b border-border">
+                    <th class="text-left py-1 pr-4 font-medium">Skill</th>
+                    <th class="text-left py-1 pr-4 font-medium">Casters</th>
+                    <th class="text-left py-1 font-medium">Tier</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {#each f.skills as s (s.id)}
+                    <tr class="border-b border-border/40 hover:bg-muted/20">
+                      <td class="py-1 pr-4"
+                        ><a
+                          href="/skills/{s.id}"
+                          class="hover:underline text-foreground">{s.name}</a
+                        ></td
+                      >
+                      <td class="py-1 pr-4 text-muted-foreground text-xs"
+                        >{s.casterLabels.join(", ")}</td
+                      >
+                      <td class="py-1 text-muted-foreground">{s.tier}</td>
+                    </tr>
+                  {/each}
+                </tbody>
+              </table>
+            </div>
+          {:else}
+            <p class="text-xs text-muted-foreground italic">
+              No skills use this formula.
+            </p>
+          {/if}
+        </div>
+      {/each}
+    </Card.Content>
+  </Card.Root>
+
+  <!-- ── §3 Resistance & Mitigation ────────────────────────────────────── -->
+  <Card.Root id="resistance" class="bg-muted/30">
+    <Card.Header>
+      <Card.Title>Resistance &amp; Mitigation</Card.Title>
+      <Card.Description
+        >Combat.cs formulas for physical and magical damage reduction.</Card.Description
+      >
+    </Card.Header>
+    <Card.Content class="space-y-5">
+      <div>
+        <h3 class="font-semibold mb-1">Physical Mitigation</h3>
+        <pre
+          class="text-xs bg-muted px-3 py-2 rounded overflow-x-auto">reduction   = ⌈damage × clamp(defense × 0.0005, 0, 0.9)⌉
+finalDamage = damage − reduction</pre>
+        <p class="text-sm text-muted-foreground mt-1">
+          Max 90% reduction at defense ≥ 1800.
+        </p>
       </div>
 
-      <div class="space-y-2 text-xs text-muted-foreground">
-        <p>
-          <span class="font-medium text-foreground"
-            >Soft-cap (delay modes):</span
-          >
-          h = 1 &minus; 6.25 / delay — haste beyond this hits the 0.25s refractory
-          floor. Hard cap: 80%.
+      <div>
+        <h3 class="font-semibold mb-1">Physical Block / Miss</h3>
+        <pre
+          class="text-xs bg-muted px-3 py-2 rounded overflow-x-auto">P(miss) = clamp(
+  clamp(baseBlock + defense×0.0001 + blockBuffs, 0, 0.8)
+  + clamp((target.level − attacker.level) × 0.005, −0.1, 0.1)
+  − attacker.accuracy
+, 0, 0.9)</pre>
+      </div>
+
+      <div>
+        <h3 class="font-semibold mb-1">Magic / Elemental Resist</h3>
+        <pre
+          class="text-xs bg-muted px-3 py-2 rounded overflow-x-auto">P(resist) = clamp(
+  resistStat × 0.0005
+  + clamp((target.level − attacker.level) × 0.005, −0.1, 0.1)
+  − attacker.accuracy
+, 0, 0.9)</pre>
+        <p class="text-sm text-muted-foreground mt-1">
+          <code class="font-mono text-xs bg-muted px-1 rounded">resistStat</code
+          > by element: magicResist (magic/fire/cold/disease default), poisonResist,
+          fireResist, coldResist, diseaseResist, defense (melee debuff).
         </p>
-        <p>
-          <span class="font-medium text-foreground"
-            >Spell Haste vs Regular Haste:</span
-          >
-          Regular haste has zero effect on spell auto-attack intervals. Spell haste
-          (from armor/augments/passives) reduces cast time per Skills.cs:675:
-          <code class="font-mono"
-            >castTimeEnd -= spellHasteBonus × castTime</code
-          >. Cooldowns on merc spells are NOT reduced by any haste.
+      </div>
+
+      <div>
+        <h3 class="font-semibold mb-2">Situational Modifiers</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm border-collapse">
+            <thead>
+              <tr class="border-b border-border">
+                <th class="text-left py-1 pr-4 font-medium">Modifier</th>
+                <th class="text-left py-1 font-medium">Effect</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="border-b border-border/40">
+                <td class="py-1 pr-4">Moving target</td>
+                <td class="py-1 text-muted-foreground"
+                  >Resist chance −0.25; damage +10%</td
+                >
+              </tr>
+              <tr class="border-b border-border/40">
+                <td class="py-1 pr-4">Backstab</td>
+                <td class="py-1 text-muted-foreground">Resist chance ×0.8</td>
+              </tr>
+              <tr class="border-b border-border/40">
+                <td class="py-1 pr-4">Manaburn</td>
+                <td class="py-1 text-muted-foreground"
+                  >Bypasses all mitigation and resist</td
+                >
+              </tr>
+              <tr class="border-b border-border/40">
+                <td class="py-1 pr-4"
+                  ><code class="font-mono text-xs bg-muted px-1 rounded"
+                    >isDecreaseResistsSkill</code
+                  ></td
+                >
+                <td class="py-1 text-muted-foreground">Resist chance −0.30</td>
+              </tr>
+              <tr>
+                <td class="py-1 pr-4">Boss/elite + large speed debuff</td>
+                <td class="py-1 text-muted-foreground"
+                  >Forced resist regardless of roll</td
+                >
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </Card.Content>
+  </Card.Root>
+
+  <!-- ── §4 Healing ────────────────────────────────────────────────────── -->
+  <Card.Root id="healing" class="bg-muted/30">
+    <Card.Header>
+      <Card.Title>Healing</Card.Title>
+    </Card.Header>
+    <Card.Content class="space-y-5">
+      <div>
+        <h3 class="font-semibold mb-1">WIS Heal Bonus</h3>
+        <pre
+          class="text-xs bg-muted px-3 py-2 rounded overflow-x-auto">finalHeal = baseHeal + round(baseHeal × min(WIS × 0.004, 5.0))</pre>
+        <p class="text-sm text-muted-foreground mt-1">
+          Ranger (TargetBuffSkill path): WIS multiplier is ×3. Scroll heals:
+          bonus = Player Level × 8 (replaces WIS calculation).
         </p>
-        <p>
-          This simulator models base auto-attack DPS before mitigation, variance
-          (&times;0.9&ndash;1.1), crits, and defense. Weapon procs and passive
-          multipliers are not modelled.
+      </div>
+
+      <div>
+        <h3 class="font-semibold mb-1">Critical Heal</h3>
+        <p class="text-sm text-muted-foreground">
+          Applies only when <code
+            class="font-mono text-xs bg-muted px-1 rounded"
+            >can_heal_others</code
+          > is true. On crit: 90%→×2.0, 10%→×3.0.
+        </p>
+      </div>
+
+      <div class="space-y-4">
+        <h3 class="font-semibold">Skills by Heal Bonus Kind</h3>
+        {#each healRows as f (f.kind)}
+          <div>
+            <p class="font-semibold font-mono text-sm mb-1">{f.kind}</p>
+            <p class="text-sm text-muted-foreground mb-2">{f.desc}</p>
+            {#if f.skills.length > 0}
+              <div class="overflow-x-auto">
+                <table class="w-full text-sm border-collapse">
+                  <thead>
+                    <tr class="border-b border-border">
+                      <th class="text-left py-1 pr-4 font-medium">Skill</th>
+                      <th class="text-left py-1 pr-4 font-medium">Casters</th>
+                      <th class="text-left py-1 pr-4 font-medium">Tier</th>
+                      <th class="text-left py-1 font-medium">Can Crit</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {#each f.skills as s (s.id)}
+                      <tr class="border-b border-border/40 hover:bg-muted/20">
+                        <td class="py-1 pr-4"
+                          ><a
+                            href="/skills/{s.id}"
+                            class="hover:underline text-foreground">{s.name}</a
+                          ></td
+                        >
+                        <td class="py-1 pr-4 text-muted-foreground text-xs"
+                          >{s.casterLabels.join(", ")}</td
+                        >
+                        <td class="py-1 pr-4 text-muted-foreground">{s.tier}</td
+                        >
+                        <td class="py-1 text-muted-foreground"
+                          >{s.canCrit ? "yes" : "no"}</td
+                        >
+                      </tr>
+                    {/each}
+                  </tbody>
+                </table>
+              </div>
+            {/if}
+          </div>
+        {/each}
+      </div>
+    </Card.Content>
+  </Card.Root>
+
+  <!-- ── §5 Buff Scaling ───────────────────────────────────────────────── -->
+  <Card.Root id="buffs" class="bg-muted/30">
+    <Card.Header>
+      <Card.Title>Buff Scaling</Card.Title>
+      <Card.Description
+        >How WIS (or Player Level) scales buff field values.</Card.Description
+      >
+    </Card.Header>
+    <Card.Content class="space-y-5">
+      <div>
+        <h3 class="font-semibold mb-2">Per-Field WIS Multipliers</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm border-collapse">
+            <thead>
+              <tr class="border-b border-border">
+                <th class="text-left py-1 pr-4 font-medium">Buff Field</th>
+                <th class="text-left py-1 font-medium">WIS Scaling</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="border-b border-border/40"
+                ><td class="py-1 pr-4">Max Health</td><td
+                  class="py-1 text-muted-foreground">+WIS×2</td
+                ></tr
+              >
+              <tr class="border-b border-border/40"
+                ><td class="py-1 pr-4">Defense</td><td
+                  class="py-1 text-muted-foreground">+WIS×0.15</td
+                ></tr
+              >
+              <tr class="border-b border-border/40"
+                ><td class="py-1 pr-4">Magic Resist</td><td
+                  class="py-1 text-muted-foreground">+WIS×0.15</td
+                ></tr
+              >
+              <tr class="border-b border-border/40"
+                ><td class="py-1 pr-4">Ward</td><td
+                  class="py-1 text-muted-foreground"
+                  >+WIS×5 (bonusAttribute becomes the full ward pool)</td
+                ></tr
+              >
+              <tr class="border-b border-border/40"
+                ><td class="py-1 pr-4">Damage Shield</td><td
+                  class="py-1 text-muted-foreground">+WIS×0.75</td
+                ></tr
+              >
+              <tr class="border-b border-border/40"
+                ><td class="py-1 pr-4">Elemental Resists</td><td
+                  class="py-1 text-muted-foreground">+WIS×0.15 each</td
+                ></tr
+              >
+              <tr
+                ><td class="py-1 pr-4">Heal-over-Time</td><td
+                  class="py-1 text-muted-foreground"
+                  >base × (1 + min(WIS×0.004, 3.0))</td
+                ></tr
+              >
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div>
+        <h3 class="font-semibold mb-2">Attribute Source Dispatch</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm border-collapse">
+            <thead>
+              <tr class="border-b border-border">
+                <th class="text-left py-1 pr-4 font-medium">Source</th>
+                <th class="text-left py-1 font-medium">Condition</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="border-b border-border/40"
+                ><td class="py-1 pr-4 font-mono text-xs">player_wis</td><td
+                  class="py-1 text-muted-foreground"
+                  >Player non-Ranger (target_buff + area_buff)</td
+                ></tr
+              >
+              <tr class="border-b border-border/40"
+                ><td class="py-1 pr-4 font-mono text-xs">player_ranger_wis</td
+                ><td class="py-1 text-muted-foreground"
+                  >Player Ranger (target_buff only; area_buff uses player_wis)</td
+                ></tr
+              >
+              <tr class="border-b border-border/40"
+                ><td class="py-1 pr-4 font-mono text-xs">merc_wis</td><td
+                  class="py-1 text-muted-foreground">Mercenary pets</td
+                ></tr
+              >
+              <tr class="border-b border-border/40"
+                ><td class="py-1 pr-4 font-mono text-xs">player_charisma</td><td
+                  class="py-1 text-muted-foreground"
+                  >Area buff + is_mercenary_skill=true (Leadership only)</td
+                ></tr
+              >
+              <tr class="border-b border-border/40"
+                ><td class="py-1 pr-4 font-mono text-xs">player_level</td><td
+                  class="py-1 text-muted-foreground"
+                  >Scroll: bonusAttribute = Player Level × 8</td
+                ></tr
+              >
+              <tr
+                ><td class="py-1 pr-4 font-mono text-xs">none</td><td
+                  class="py-1 text-muted-foreground"
+                  >Monster/NPC (bonusAttribute = 0)</td
+                ></tr
+              >
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="space-y-4">
+        <h3 class="font-semibold">Skills by Buff Attribute Source</h3>
+        {#each buffRows as f (f.kind)}
+          <div>
+            <p class="font-semibold font-mono text-sm mb-1">{f.kind}</p>
+            <p class="text-sm text-muted-foreground mb-2">{f.desc}</p>
+            {#if f.skills.length > 0}
+              <div class="overflow-x-auto">
+                <table class="w-full text-sm border-collapse">
+                  <thead>
+                    <tr class="border-b border-border">
+                      <th class="text-left py-1 pr-4 font-medium">Skill</th>
+                      <th class="text-left py-1 pr-4 font-medium">Casters</th>
+                      <th class="text-left py-1 pr-4 font-medium">Tier</th>
+                      <th class="text-left py-1 font-medium">Area Buff</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {#each f.skills as s (s.id)}
+                      <tr class="border-b border-border/40 hover:bg-muted/20">
+                        <td class="py-1 pr-4"
+                          ><a
+                            href="/skills/{s.id}"
+                            class="hover:underline text-foreground">{s.name}</a
+                          ></td
+                        >
+                        <td class="py-1 pr-4 text-muted-foreground text-xs"
+                          >{s.casterLabels.join(", ")}</td
+                        >
+                        <td class="py-1 pr-4 text-muted-foreground">{s.tier}</td
+                        >
+                        <td class="py-1 text-muted-foreground"
+                          >{s.isAreaBuff ? "yes" : "no"}</td
+                        >
+                      </tr>
+                    {/each}
+                  </tbody>
+                </table>
+              </div>
+            {/if}
+          </div>
+        {/each}
+      </div>
+    </Card.Content>
+  </Card.Root>
+
+  <!-- ── §6 Debuff Mechanics ────────────────────────────────────────────── -->
+  <Card.Root id="debuffs" class="bg-muted/30">
+    <Card.Header>
+      <Card.Title>Debuff Mechanics</Card.Title>
+    </Card.Header>
+    <Card.Content class="space-y-5">
+      <div>
+        <h3 class="font-semibold mb-2">Attribute Dispatch</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm border-collapse">
+            <thead>
+              <tr class="border-b border-border">
+                <th class="text-left py-1 pr-4 font-medium">Condition</th>
+                <th class="text-left py-1 font-medium">Attribute</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="border-b border-border/40">
+                <td class="py-1 pr-4"
+                  ><code class="font-mono text-xs bg-muted px-1 rounded"
+                    >is_melee_debuff</code
+                  ></td
+                >
+                <td class="py-1 text-muted-foreground">STR</td>
+              </tr>
+              <tr class="border-b border-border/40">
+                <td class="py-1 pr-4">
+                  <code class="font-mono text-xs bg-muted px-1 rounded"
+                    >is_poison_debuff</code
+                  >
+                  or
+                  <code class="font-mono text-xs bg-muted px-1 rounded"
+                    >is_disease_debuff</code
+                  >
+                </td>
+                <td class="py-1 text-muted-foreground">DEX</td>
+              </tr>
+              <tr>
+                <td class="py-1 pr-4"
+                  >All others (fire, cold, magic, untagged)</td
+                >
+                <td class="py-1 text-muted-foreground">INT</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div>
+        <h3 class="font-semibold mb-2">Per-Field Scaling</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm border-collapse">
+            <thead>
+              <tr class="border-b border-border">
+                <th class="text-left py-1 pr-4 font-medium">Field</th>
+                <th class="text-left py-1 font-medium">Scaling</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="border-b border-border/40"
+                ><td class="py-1 pr-4">Defense reduction</td><td
+                  class="py-1 text-muted-foreground"
+                  >−STR×0.4 (melee) or −INT×0.4 (magic)</td
+                ></tr
+              >
+              <tr class="border-b border-border/40"
+                ><td class="py-1 pr-4">Magic Resist reduction</td><td
+                  class="py-1 text-muted-foreground">−INT×0.4</td
+                ></tr
+              >
+              <tr class="border-b border-border/40"
+                ><td class="py-1 pr-4">Elemental Resist reductions</td><td
+                  class="py-1 text-muted-foreground">−INT×0.4 each</td
+                ></tr
+              >
+              <tr class="border-b border-border/40"
+                ><td class="py-1 pr-4">Damage reduction</td><td
+                  class="py-1 text-muted-foreground">−INT×0.5</td
+                ></tr
+              >
+              <tr class="border-b border-border/40"
+                ><td class="py-1 pr-4">Magic Damage reduction</td><td
+                  class="py-1 text-muted-foreground">−INT×0.5</td
+                ></tr
+              >
+              <tr class="border-b border-border/40"
+                ><td class="py-1 pr-4">DoT poison/disease</td><td
+                  class="py-1 text-muted-foreground"
+                  >+DEX×1.0; reduced by poisonResist</td
+                ></tr
+              >
+              <tr class="border-b border-border/40"
+                ><td class="py-1 pr-4">DoT melee</td><td
+                  class="py-1 text-muted-foreground"
+                  >+STR×0.5; reduced by defense mitigation</td
+                ></tr
+              >
+              <tr
+                ><td class="py-1 pr-4">DoT fire/cold/magic</td><td
+                  class="py-1 text-muted-foreground"
+                  >+INT×1.25; reduced by respective resist</td
+                ></tr
+              >
+            </tbody>
+          </table>
+        </div>
+        <p class="text-sm text-muted-foreground mt-2">
+          <strong>DoT counter decay:</strong> 3 counters → full damage, 2 → ×0.9,
+          1 → ×0.8.
+        </p>
+      </div>
+
+      <div class="space-y-4">
+        <h3 class="font-semibold">Skills by Debuff Attribute Kind</h3>
+        {#each debuffRows as f (f.kind)}
+          <div>
+            <p class="font-semibold font-mono text-sm mb-1">{f.kind}</p>
+            <p class="text-sm text-muted-foreground mb-2">{f.desc}</p>
+            {#if f.skills.length > 0}
+              <div class="overflow-x-auto">
+                <table class="w-full text-sm border-collapse">
+                  <thead>
+                    <tr class="border-b border-border">
+                      <th class="text-left py-1 pr-4 font-medium">Skill</th>
+                      <th class="text-left py-1 pr-4 font-medium">Casters</th>
+                      <th class="text-left py-1 font-medium">Tier</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {#each f.skills as s (s.id)}
+                      <tr class="border-b border-border/40 hover:bg-muted/20">
+                        <td class="py-1 pr-4"
+                          ><a
+                            href="/skills/{s.id}"
+                            class="hover:underline text-foreground">{s.name}</a
+                          ></td
+                        >
+                        <td class="py-1 pr-4 text-muted-foreground text-xs"
+                          >{s.casterLabels.join(", ")}</td
+                        >
+                        <td class="py-1 text-muted-foreground">{s.tier}</td>
+                      </tr>
+                    {/each}
+                  </tbody>
+                </table>
+              </div>
+            {/if}
+          </div>
+        {/each}
+      </div>
+    </Card.Content>
+  </Card.Root>
+
+  <!-- ── §7 Timing & Haste ──────────────────────────────────────────────── -->
+  <Card.Root id="timing" class="bg-muted/30">
+    <Card.Header>
+      <Card.Title>Timing &amp; Haste</Card.Title>
+      <Card.Description
+        >How attack interval and haste interact per caster model.</Card.Description
+      >
+    </Card.Header>
+    <Card.Content class="space-y-5">
+      <div class="space-y-4">
+        <h3 class="font-semibold">Models</h3>
+        <div>
+          <p class="font-mono text-sm font-semibold">player_auto</p>
+          <pre
+            class="text-xs bg-muted px-3 py-2 rounded mt-1 overflow-x-auto">interval = castTime + clamp(weaponDelay × (1 − haste) / 25, 0.25, 2.0)</pre>
+          <p class="text-sm text-muted-foreground mt-1">
+            Warrior/Rogue generate Rage (⌊damage×0.25⌋ per hit, capped at target
+            current HP). All other classes use Mana.
+          </p>
+        </div>
+        <div>
+          <p class="font-mono text-sm font-semibold">player_skill</p>
+          <pre
+            class="text-xs bg-muted px-3 py-2 rounded mt-1 overflow-x-auto">interval = castTime + cooldown
+// isSpell only: castTimeEnd −= spellHaste × castTime</pre>
+        </div>
+        <div>
+          <p class="font-mono text-sm font-semibold">merc_auto</p>
+          <pre
+            class="text-xs bg-muted px-3 py-2 rounded mt-1 overflow-x-auto">interval = castTime + cooldown × (1 − haste)</pre>
+          <p class="text-sm text-muted-foreground mt-1">
+            Haste reduces cooldown, not a weapon delay.
+          </p>
+        </div>
+        <div>
+          <p class="font-mono text-sm font-semibold">merc_skill</p>
+          <pre
+            class="text-xs bg-muted px-3 py-2 rounded mt-1 overflow-x-auto">interval = castTime + cooldown</pre>
+          <p class="text-sm text-muted-foreground mt-1">
+            Cooldown is NOT haste-reduced for spell mercs.
+          </p>
+        </div>
+        <div>
+          <p class="font-mono text-sm font-semibold">monster</p>
+          <pre
+            class="text-xs bg-muted px-3 py-2 rounded mt-1 overflow-x-auto">interval = castTime + cooldown × (1 − haste)</pre>
+          <p class="text-sm text-muted-foreground mt-1">
+            FinishCastMeleeAttackMonster haste-reduces unconditionally
+            regardless of isSpell — same model for Monster.cs and Npc.cs.
+          </p>
+        </div>
+      </div>
+
+      <div
+        class="rounded-md border border-border bg-muted/20 px-4 py-3 text-sm"
+      >
+        For interactive per-class interval and DPS modelling, see the
+        <a
+          href="/tools/combat-simulator"
+          class="underline hover:text-foreground">Auto-Attack DPS Simulator</a
+        >.
+      </div>
+
+      <div class="space-y-4">
+        <h3 class="font-semibold">Skills by Timing Model</h3>
+        {#each timingRows as f (f.kind)}
+          <div>
+            <p class="font-semibold font-mono text-sm mb-1">{f.kind}</p>
+            <p class="text-sm text-muted-foreground mb-2">{f.desc}</p>
+            {#if f.skills.length > 0}
+              <div class="overflow-x-auto">
+                <table class="w-full text-sm border-collapse">
+                  <thead>
+                    <tr class="border-b border-border">
+                      <th class="text-left py-1 pr-4 font-medium">Skill</th>
+                      <th class="text-left py-1 pr-4 font-medium">Casters</th>
+                      <th class="text-left py-1 font-medium">Tier</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {#each f.skills as s (s.id)}
+                      <tr class="border-b border-border/40 hover:bg-muted/20">
+                        <td class="py-1 pr-4"
+                          ><a
+                            href="/skills/{s.id}"
+                            class="hover:underline text-foreground">{s.name}</a
+                          ></td
+                        >
+                        <td class="py-1 pr-4 text-muted-foreground text-xs"
+                          >{s.casterLabels.join(", ")}</td
+                        >
+                        <td class="py-1 text-muted-foreground">{s.tier}</td>
+                      </tr>
+                    {/each}
+                  </tbody>
+                </table>
+              </div>
+            {/if}
+          </div>
+        {/each}
+      </div>
+    </Card.Content>
+  </Card.Root>
+
+  <!-- ── §8 Special Mechanics ──────────────────────────────────────────── -->
+  <Card.Root id="special" class="bg-muted/30">
+    <Card.Header>
+      <Card.Title>Special Mechanics</Card.Title>
+    </Card.Header>
+    <Card.Content class="space-y-5">
+      <div>
+        <h3 class="font-semibold mb-1">Aggro</h3>
+        <pre
+          class="text-xs bg-muted px-3 py-2 rounded overflow-x-auto">added = skillAggro + (skillAggro > 0 ? caster.maxHP : 0)
+       + damage
+       + round(stunChance × stunTime × 10)
+       + round(fearChance × fearTime × 10)</pre>
+        <p class="text-sm text-muted-foreground mt-1">
+          Capped at target's current HP.
+        </p>
+      </div>
+
+      <div>
+        <h3 class="font-semibold mb-1">Ward &amp; Mana Shield Priority</h3>
+        <p class="text-sm text-muted-foreground">
+          Ward absorbs first; Mana Shield absorbs the remainder. Ward pool =
+          buff's bonusAttribute (WIS×5 from buff scaling).
+        </p>
+      </div>
+
+      <div>
+        <h3 class="font-semibold mb-1">Enrage</h3>
+        <p class="text-sm text-muted-foreground">
+          Non-spell skills only. Player: +33%. Monster: +50–100% random.
+          Triggers when caster is below 25% HP.
+        </p>
+      </div>
+
+      <div>
+        <h3 class="font-semibold mb-1">Assassination</h3>
+        <p class="text-sm text-muted-foreground">
+          Pre-cast check — skill is only usable when target is below 25% HP.
+          Verified per <code class="font-mono text-xs bg-muted px-1 rounded"
+            >is_assassination_skill</code
+          > flag.
+        </p>
+      </div>
+
+      <div>
+        <h3 class="font-semibold mb-1">Cleanse</h3>
+        <p class="text-sm text-muted-foreground mb-2">
+          Governed by <code class="font-mono text-xs bg-muted px-1 rounded"
+            >prob_ignore_cleanse</code
+          > on each debuff:
+        </p>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm border-collapse">
+            <thead>
+              <tr class="border-b border-border">
+                <th class="text-left py-1 pr-4 font-medium">Value</th>
+                <th class="text-left py-1 font-medium">Behaviour</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="border-b border-border/40"
+                ><td class="py-1 pr-4">&lt;= 0</td><td
+                  class="py-1 text-muted-foreground"
+                  >Always removed (3 counters stripped in one cast)</td
+                ></tr
+              >
+              <tr class="border-b border-border/40"
+                ><td class="py-1 pr-4">0 &lt; p &lt; 1</td><td
+                  class="py-1 text-muted-foreground"
+                  >1 guaranteed + 2 independent probability rolls</td
+                ></tr
+              >
+              <tr
+                ><td class="py-1 pr-4">&gt;= 1</td><td
+                  class="py-1 text-muted-foreground">Cannot be cleansed</td
+                ></tr
+              >
+            </tbody>
+          </table>
+        </div>
+        <p class="text-sm text-muted-foreground mt-2">
+          Type matching: a cleanse skill only strips debuffs whose type flag
+          matches (poison cleanse only removes poison debuffs, etc.).
+        </p>
+      </div>
+
+      <div>
+        <h3 class="font-semibold mb-1">Dispel</h3>
+        <p class="text-sm text-muted-foreground">
+          Players: all buffs removed (except Rest buff). Pets: all buffs
+          removed. Monsters: each buff rolls independently against its
+          <code class="font-mono text-xs bg-muted px-1 rounded"
+            >prob_ignore_cleanse</code
+          >.
         </p>
       </div>
     </Card.Content>
