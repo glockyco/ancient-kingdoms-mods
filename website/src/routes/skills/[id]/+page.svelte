@@ -1361,6 +1361,12 @@
                 </dd>
               </div>
             {/if}
+            {#if skill.buff_category}
+              <div>
+                <dt class="text-muted-foreground">Overwrite Group</dt>
+                <dd class="font-medium">{skill.buff_category}</dd>
+              </div>
+            {/if}
             <!-- 2. Resource pools -->
             {#if skill.health_max_bonus}
               <div>
