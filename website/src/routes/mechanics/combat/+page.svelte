@@ -161,16 +161,25 @@
   const h = $derived(Math.min(hastePercent / 100, 0.8));
   const sp = $derived(spellHastePercent / 100);
 
+  // Effective haste for the currently-selected weapon: base + weapon's own bonus, capped at 80%.
+  const effectiveHastePercent = $derived(
+    Math.min(hastePercent + (activeWeapon?.haste ?? 0) * 100, 80),
+  );
+  const effectiveSpellHastePercent = $derived(
+    Math.min(spellHastePercent + (activeWeapon?.spell_haste ?? 0) * 100, 80),
+  );
+
   // null = no weapon selected for this mode yet.
   const interval = $derived.by((): number | null => {
     if (!activeWeapon) return null;
-    // For cooldown/spell modes the delay arg is ignored inside calcInterval.
+    const eh = Math.min(h + activeWeapon.haste, 0.8);
+    const esp = Math.min(sp + activeWeapon.spell_haste, 0.8);
     return calcInterval(
       attackMode,
       selectedClass,
       activeWeapon.weapon_delay,
-      h,
-      sp,
+      eh,
+      esp,
     );
   });
 
@@ -288,8 +297,8 @@
       selectedClass,
       interval ?? 0,
       activeWeapon,
-      hastePercent,
-      spellHastePercent,
+      effectiveHastePercent,
+      effectiveSpellHastePercent,
     ),
   );
 
@@ -300,12 +309,15 @@
   // Stat summary line for weapon pick-list entries (mode-aware).
   function weaponStatLine(w: WeaponItem): string {
     const parts: string[] = [`delay ${w.weapon_delay}`];
-    if (attackMode === "spell_player" || attackMode === "spell_merc") {
+    if (isSpellMode(attackMode)) {
       parts.push(`magic ${w.magic_damage}`);
+      if (w.spell_haste > 0)
+        parts.push(`+${(w.spell_haste * 100).toFixed(0)}% spell haste`);
     } else {
       if (w.damage > 0) parts.push(`dmg ${w.damage}`);
       if (w.strength > 0) parts.push(`+${w.strength} STR`);
       if (w.dexterity > 0) parts.push(`+${w.dexterity} DEX`);
+      if (w.haste > 0) parts.push(`+${(w.haste * 100).toFixed(0)}% haste`);
     }
     return parts.join(" · ");
   }
@@ -319,7 +331,7 @@
   <title>Auto-Attack DPS Simulator - Ancient Kingdoms Compendium</title>
   <meta
     name="description"
-    content="Compare weapon DPS for all six classes at your stats and haste. Accounts for Rogue off-hand, Ranger DEX scaling, Ranger melee mode, spell haste for casters, and the player vs merc distinction."
+    content="Compare weapon DPS for all six classes at your stats and haste. Weapon haste and spell haste bonuses are included in the ranking. Accounts for Rogue off-hand, Ranger DEX scaling, Ranger melee mode, spell haste for casters, and the player vs merc distinction."
   />
 </svelte:head>
 
@@ -952,8 +964,8 @@
             {/if}
             <p>
               Interval = {attackMode === "player"
-                ? `${selectedClass === "warrior" ? "0.5" : "0.4"}s cast + max(${mainWeapon.weapon_delay} × (1−${hastePercent}%) / 25, 0.25s)`
-                : `${selectedClass === "warrior" ? "0.5" : "0.4"}s cast + 1.0×(1−${hastePercent}%)`}
+                ? `${selectedClass === "warrior" ? "0.5" : "0.4"}s cast + max(${mainWeapon.weapon_delay} × (1−${effectiveHastePercent}%) / 25, 0.25s)`
+                : `${selectedClass === "warrior" ? "0.5" : "0.4"}s cast + 1.0×(1−${effectiveHastePercent}%)`}
               = {fmt(interval)}s
             </p>
           {:else if attackMode === "bow_player" && bowWeapon}
@@ -963,7 +975,7 @@
               = {Math.round(damagePerHit)}
             </p>
             <p>
-              Interval = 0.8s cast + max({bowWeapon.weapon_delay} × (1−{hastePercent}%)
+              Interval = 0.8s cast + max({bowWeapon.weapon_delay} × (1−{effectiveHastePercent}%)
               / 25, 0.25s) = {fmt(interval)}s
             </p>
           {:else if attackMode === "melee_player" && meleeWeapon}
@@ -975,7 +987,7 @@
               )}
             </p>
             <p>
-              Interval = 0.5s cast + max({meleeWeapon.weapon_delay} × (1−{hastePercent}%)
+              Interval = 0.5s cast + max({meleeWeapon.weapon_delay} × (1−{effectiveHastePercent}%)
               / 25, 0.25s) = {fmt(interval)}s
             </p>
           {:else if attackMode === "bow_merc" && bowWeapon}
@@ -989,7 +1001,9 @@
               {otherEquipDmg} = {Math.round(damagePerHit)}
             </p>
             <p>
-              Interval = 0.8s cast + 1.0×(1−{hastePercent}%) = {fmt(interval)}s
+              Interval = 0.8s cast + 1.0×(1−{effectiveHastePercent}%) = {fmt(
+                interval,
+              )}s
             </p>
           {:else if (attackMode === "spell_player" || attackMode === "spell_merc") && wandWeapon}
             <p>
@@ -998,12 +1012,12 @@
             </p>
             {#if attackMode === "spell_player"}
               <p>
-                Interval = {SPELL_PLAYER_CAST[selectedClass] ?? 1.0}s × (1−{spellHastePercent}%
+                Interval = {SPELL_PLAYER_CAST[selectedClass] ?? 1.0}s × (1−{effectiveSpellHastePercent}%
                 spell haste) = {fmt(interval)}s
               </p>
             {:else}
               <p>
-                Interval = {SPELL_MERC_CAST[selectedClass] ?? 1.0}s × (1−{spellHastePercent}%)
+                Interval = {SPELL_MERC_CAST[selectedClass] ?? 1.0}s × (1−{effectiveSpellHastePercent}%)
                 +
                 {SPELL_MERC_CD[selectedClass] ?? 1.0}s cooldown = {fmt(
                   interval,
@@ -1019,7 +1033,7 @@
               )}
             </p>
             <p>
-              Interval = 0.5s cast + max({wandWeapon.weapon_delay} × (1−{hastePercent}%)
+              Interval = 0.5s cast + max({wandWeapon.weapon_delay} × (1−{effectiveHastePercent}%)
               / 25, 0.25s) = {fmt(interval)}s
             </p>
           {/if}

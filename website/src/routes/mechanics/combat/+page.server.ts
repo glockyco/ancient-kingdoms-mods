@@ -31,7 +31,8 @@ export const load: PageServerLoad = (): CombatPageData => {
         CAST(COALESCE(json_extract(stats, '$.magic_damage'), 0) AS INTEGER) AS magic_damage,
         CAST(COALESCE(json_extract(stats, '$.strength'), 0) AS INTEGER)     AS strength,
         CAST(COALESCE(json_extract(stats, '$.dexterity'), 0) AS INTEGER)    AS dexterity,
-        CAST(COALESCE(json_extract(stats, '$.haste'), 0) AS REAL)           AS haste
+        CAST(COALESCE(json_extract(stats, '$.haste'), 0) AS REAL)           AS haste,
+        CAST(COALESCE(json_extract(stats, '$.spell_haste'), 0) AS REAL)     AS spell_haste
       FROM items
       WHERE weapon_category IN ('Bow','WeaponDagger','WeaponSword','WeaponSword2H','WeaponWand')
         AND weapon_delay > 0
@@ -52,6 +53,7 @@ export const load: PageServerLoad = (): CombatPageData => {
     strength: number;
     dexterity: number;
     haste: number;
+    spell_haste: number;
   }>;
 
   db.close();
@@ -66,6 +68,7 @@ export const load: PageServerLoad = (): CombatPageData => {
     strength: r.strength,
     dexterity: r.dexterity,
     haste: r.haste,
+    spell_haste: r.spell_haste,
     class_required: r.class_required
       ? (JSON.parse(r.class_required) as string[])
       : [],

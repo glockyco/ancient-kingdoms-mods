@@ -16,6 +16,7 @@ export interface WeaponItem {
   strength: number;
   dexterity: number;
   haste: number;
+  spell_haste: number;
   class_required: string[];
   item_level: number;
   quality: number;
@@ -527,12 +528,6 @@ export function buildComparisonRows(params: {
     sortKey,
   } = params;
 
-  // Cooldown/spell modes: identical interval for every weapon in the list.
-  // Delay-based modes: null here — computed per-weapon below.
-  const fixedInterval = isDelayBased(mode)
-    ? null
-    : calcInterval(mode, cls, 0, haste01, spellHaste01);
-
   const rows: CompRow[] = [];
 
   for (const w of weaponList) {
@@ -647,16 +642,28 @@ export function buildComparisonRows(params: {
     let rowInterval: number;
     let rowSoftCap: number | null;
 
-    if (fixedInterval !== null) {
-      // Cooldown or spell mode — interval same for all weapons.
-      rowDelay = null;
-      rowInterval = fixedInterval;
-      rowSoftCap = null;
-    } else {
-      // Delay-based — interval varies per weapon.
+    const effectiveHaste = Math.min(haste01 + w.haste, 0.8);
+    const effectiveSpellHaste = Math.min(spellHaste01 + w.spell_haste, 0.8);
+    if (isDelayBased(mode)) {
       rowDelay = w.weapon_delay;
-      rowInterval = calcInterval(mode, cls, rowDelay, haste01, spellHaste01);
+      rowInterval = calcInterval(
+        mode,
+        cls,
+        rowDelay,
+        effectiveHaste,
+        effectiveSpellHaste,
+      );
       rowSoftCap = softCapHaste(rowDelay);
+    } else {
+      rowDelay = null;
+      rowInterval = calcInterval(
+        mode,
+        cls,
+        0,
+        effectiveHaste,
+        effectiveSpellHaste,
+      );
+      rowSoftCap = null;
     }
 
     if (rowInterval <= 0) continue;
