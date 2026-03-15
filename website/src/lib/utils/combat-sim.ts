@@ -373,6 +373,25 @@ export function isSpellMode(m: AttackMode): boolean {
   return m === "spell_player" || m === "spell_merc";
 }
 
+/**
+ * Haste contributed by secondary equipped weapons in modes with two active weapon slots.
+ * Rogue player/merc: off-hand dagger. Ranger bow_merc: melee sword. All others: zero.
+ */
+export function getSecondaryWeaponHaste(
+  mode: AttackMode,
+  cls: PlayerClass,
+  off: WeaponItem | null,
+  melee: WeaponItem | null,
+): { haste: number; spellHaste: number } {
+  if ((mode === "player" || mode === "merc") && cls === "rogue") {
+    return { haste: off?.haste ?? 0, spellHaste: off?.spell_haste ?? 0 };
+  }
+  if (mode === "bow_merc") {
+    return { haste: melee?.haste ?? 0, spellHaste: melee?.spell_haste ?? 0 };
+  }
+  return { haste: 0, spellHaste: 0 };
+}
+
 // ─── Physics ──────────────────────────────────────────────────────────────────
 
 /** Source: Player.cs:2783 — refractoryPeriod = clamp(delay*(1−haste)/25, 0.25, 2.0) */
@@ -451,11 +470,13 @@ export function calcInterval(
 export function calcDamage(
   mode: AttackMode,
   cls: PlayerClass,
-  main: WeaponItem | null,
-  off: WeaponItem | null,
-  bow: WeaponItem | null,
-  melee: WeaponItem | null,
-  wand: WeaponItem | null,
+  slots: {
+    main?: WeaponItem | null;
+    off?: WeaponItem | null;
+    bow?: WeaponItem | null;
+    melee?: WeaponItem | null;
+    wand?: WeaponItem | null;
+  },
   str: number,
   dex: number,
   int_: number,
@@ -465,19 +486,23 @@ export function calcDamage(
   const kind = getAutoAttackKind(mode, cls);
 
   // Mode-specific slot remapping:
-  //   melee_player: ranger carries a sword in the "melee" arg, but the formula
+  //   melee_player: ranger carries a sword in the "melee" slot, but the formula
   //     (ranger_melee) expects it in the "main" slot.
   //   staff_player: the wand is used as a physical weapon in the "main" slot.
   const slotMain =
-    mode === "melee_player" ? melee : mode === "staff_player" ? wand : main;
+    mode === "melee_player"
+      ? slots.melee
+      : mode === "staff_player"
+        ? slots.wand
+        : slots.main;
 
   return evaluate(FORMULA_EXPRS[kind], {
     weapons: {
       main: slotMain ?? undefined,
-      off: off ?? undefined,
-      bow: bow ?? undefined,
-      melee: melee ?? undefined,
-      wand: wand ?? undefined,
+      off: slots.off ?? undefined,
+      bow: slots.bow ?? undefined,
+      melee: slots.melee ?? undefined,
+      wand: slots.wand ?? undefined,
     },
     str,
     dex,
@@ -532,6 +557,10 @@ export function buildComparisonRows(params: {
 
   const rows: CompRow[] = [];
 
+  // Computed once — secondary haste doesn't vary per weapon in the list.
+  const { haste: secondaryHaste, spellHaste: secondarySpellHaste } =
+    getSecondaryWeaponHaste(mode, cls, fixedOff, fixedMelee);
+
   for (const w of weaponList) {
     // Place 'w' in the correct argument position for this mode.
     let dmg: number | null;
@@ -540,11 +569,7 @@ export function buildComparisonRows(params: {
         dmg = calcDamage(
           "player",
           cls,
-          w,
-          fixedOff,
-          null,
-          null,
-          null,
+          { main: w, off: fixedOff },
           str,
           dex,
           int_,
@@ -556,11 +581,7 @@ export function buildComparisonRows(params: {
         dmg = calcDamage(
           "merc",
           cls,
-          w,
-          fixedOff,
-          null,
-          null,
-          null,
+          { main: w, off: fixedOff },
           str,
           dex,
           int_,
@@ -572,11 +593,7 @@ export function buildComparisonRows(params: {
         dmg = calcDamage(
           "bow_player",
           cls,
-          null,
-          null,
-          w,
-          null,
-          null,
+          { bow: w },
           str,
           dex,
           int_,
@@ -588,11 +605,7 @@ export function buildComparisonRows(params: {
         dmg = calcDamage(
           "melee_player",
           cls,
-          null,
-          null,
-          null,
-          w,
-          null,
+          { melee: w },
           str,
           dex,
           int_,
@@ -604,11 +617,7 @@ export function buildComparisonRows(params: {
         dmg = calcDamage(
           "bow_merc",
           cls,
-          null,
-          null,
-          w,
-          fixedMelee,
-          null,
+          { bow: w, melee: fixedMelee },
           str,
           dex,
           int_,
@@ -622,11 +631,7 @@ export function buildComparisonRows(params: {
         dmg = calcDamage(
           mode,
           cls,
-          null,
-          null,
-          null,
-          null,
-          w,
+          { wand: w },
           str,
           dex,
           int_,
@@ -644,21 +649,6 @@ export function buildComparisonRows(params: {
     let rowInterval: number;
     let rowSoftCap: number | null;
 
-    // Haste from secondary weapons actively equipped alongside the primary.
-    // Rogue player/merc: off-hand dagger. Ranger bow_merc: melee sword.
-    // All other modes have no secondary selector, so contribution is zero.
-    const secondaryHaste =
-      (mode === "player" || mode === "merc") && cls === "rogue"
-        ? (fixedOff?.haste ?? 0)
-        : mode === "bow_merc"
-          ? (fixedMelee?.haste ?? 0)
-          : 0;
-    const secondarySpellHaste =
-      (mode === "player" || mode === "merc") && cls === "rogue"
-        ? (fixedOff?.spell_haste ?? 0)
-        : mode === "bow_merc"
-          ? (fixedMelee?.spell_haste ?? 0)
-          : 0;
     const effectiveHaste = Math.min(haste01 + w.haste + secondaryHaste, 0.8);
     const effectiveSpellHaste = Math.min(
       spellHaste01 + w.spell_haste + secondarySpellHaste,

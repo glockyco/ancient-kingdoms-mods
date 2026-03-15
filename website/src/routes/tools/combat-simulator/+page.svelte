@@ -17,6 +17,7 @@
     isSpellMode,
     calcInterval,
     calcDamage,
+    getSecondaryWeaponHaste,
     buildComparisonRows,
     fmtSoftCap,
     fmtInterval,
@@ -162,35 +163,17 @@
   const sp = $derived(spellHastePercent / 100);
 
   // Haste contributed by secondary equipped weapons, mode-aware.
-  // Rogue player/merc: off-hand dagger equipped alongside main.
-  // bow_merc: melee sword equipped alongside bow.
-  const secondaryWeaponHaste01 = $derived.by((): number => {
-    if (
-      (attackMode === "player" || attackMode === "merc") &&
-      selectedClass === "rogue"
-    ) {
-      return offWeapon?.haste ?? 0;
-    }
-    if (attackMode === "bow_merc") return meleeWeapon?.haste ?? 0;
-    return 0;
-  });
-  const secondaryWeaponSpellHaste01 = $derived.by((): number => {
-    if (
-      (attackMode === "player" || attackMode === "merc") &&
-      selectedClass === "rogue"
-    ) {
-      return offWeapon?.spell_haste ?? 0;
-    }
-    if (attackMode === "bow_merc") return meleeWeapon?.spell_haste ?? 0;
-    return 0;
-  });
+  // Rogue player/merc: off-hand dagger. Ranger bow_merc: melee sword. All others: zero.
+  const secondaryWeapon = $derived(
+    getSecondaryWeaponHaste(attackMode, selectedClass, offWeapon, meleeWeapon),
+  );
 
   // Effective haste for the currently-selected weapon: base + weapon bonuses, capped at 80%.
   const effectiveHastePercent = $derived(
     Math.min(
       hastePercent +
         (activeWeapon?.haste ?? 0) * 100 +
-        secondaryWeaponHaste01 * 100,
+        secondaryWeapon.haste * 100,
       80,
     ),
   );
@@ -198,7 +181,7 @@
     Math.min(
       spellHastePercent +
         (activeWeapon?.spell_haste ?? 0) * 100 +
-        secondaryWeaponSpellHaste01 * 100,
+        secondaryWeapon.spellHaste * 100,
       80,
     ),
   );
@@ -206,9 +189,9 @@
   // null = no weapon selected for this mode yet.
   const interval = $derived.by((): number | null => {
     if (!activeWeapon) return null;
-    const eh = Math.min(h + activeWeapon.haste + secondaryWeaponHaste01, 0.8);
+    const eh = Math.min(h + activeWeapon.haste + secondaryWeapon.haste, 0.8);
     const esp = Math.min(
-      sp + activeWeapon.spell_haste + secondaryWeaponSpellHaste01,
+      sp + activeWeapon.spell_haste + secondaryWeapon.spellHaste,
       0.8,
     );
     return calcInterval(
@@ -224,11 +207,13 @@
     calcDamage(
       attackMode,
       selectedClass,
-      mainWeapon,
-      offWeapon,
-      bowWeapon,
-      meleeWeapon,
-      wandWeapon,
+      {
+        main: mainWeapon,
+        off: offWeapon,
+        bow: bowWeapon,
+        melee: meleeWeapon,
+        wand: wandWeapon,
+      },
       baseSTR,
       baseDEX,
       baseINT,
@@ -338,6 +323,52 @@
       effectiveSpellHastePercent,
     ),
   );
+
+  // Haste contribution breakdown for the formula section.
+  // Shows: "{base}% base + {weapon}% {label} [+ {secondary}% {label}] = {effective}%"
+  // Returns empty string when there is nothing informative to show (all zeros).
+  const hasteBreakdownText = $derived.by((): string => {
+    if (!activeWeapon || isSpellMode(attackMode)) return "";
+
+    const wh = Math.round(activeWeapon.haste * 100);
+    const sh = Math.round(secondaryWeapon.haste * 100);
+    if (hastePercent === 0 && wh === 0 && sh === 0) return "";
+
+    // Label for the primary weapon slot, context-aware.
+    const primaryLabel =
+      attackMode === "bow_player" || attackMode === "bow_merc"
+        ? "bow"
+        : attackMode === "melee_player"
+          ? "melee"
+          : selectedClass === "rogue"
+            ? "main"
+            : "weapon";
+    const secondaryLabel = selectedClass === "rogue" ? "off" : "melee";
+
+    const terms: string[] = [`${hastePercent}% base`];
+    if (wh !== 0) terms.push(`${wh}% ${primaryLabel}`);
+    if (sh !== 0) terms.push(`${sh}% ${secondaryLabel}`);
+
+    const sum = hastePercent + wh + sh;
+    return sum > 80
+      ? `${terms.join(" + ")} → capped at ${effectiveHastePercent}%`
+      : `${terms.join(" + ")} = ${effectiveHastePercent}%`;
+  });
+
+  const spellHasteBreakdownText = $derived.by((): string => {
+    if (!activeWeapon || !isSpellMode(attackMode)) return "";
+
+    const wsh = Math.round(activeWeapon.spell_haste * 100);
+    if (spellHastePercent === 0 && wsh === 0) return "";
+
+    const terms: string[] = [`${spellHastePercent}% base`];
+    if (wsh !== 0) terms.push(`${wsh}% wand`);
+
+    const sum = spellHastePercent + wsh;
+    return sum > 80
+      ? `${terms.join(" + ")} → capped at ${effectiveSpellHastePercent}%`
+      : `${terms.join(" + ")} = ${effectiveSpellHastePercent}%`;
+  });
 
   function fmt(n: number, dec = 2): string {
     return n.toFixed(dec);
@@ -1087,6 +1118,9 @@
                 : `${selectedClass === "warrior" ? "0.5" : "0.4"}s cast + 1.0×(1−${effectiveHastePercent}%)`}
               = {fmt(interval)}s
             </p>
+            {#if hasteBreakdownText}
+              <p>Haste = {hasteBreakdownText}</p>
+            {/if}
           {:else if attackMode === "bow_player" && bowWeapon}
             <p>
               Damage = (STR {baseSTR} + bow STR {bowWeapon.strength}) + bow dmg {bowWeapon.damage}
@@ -1098,6 +1132,9 @@
               Interval = 0.8s cast + max({bowWeapon.weapon_delay} × (1−{effectiveHastePercent}%)
               / 25, 0.25s) = {fmt(interval)}s
             </p>
+            {#if hasteBreakdownText}
+              <p>Haste = {hasteBreakdownText}</p>
+            {/if}
           {:else if attackMode === "melee_player" && meleeWeapon}
             <p>
               Damage = (STR {baseSTR} + melee STR {meleeWeapon.strength}) +
@@ -1110,6 +1147,9 @@
               Interval = 0.5s cast + max({meleeWeapon.weapon_delay} × (1−{effectiveHastePercent}%)
               / 25, 0.25s) = {fmt(interval)}s
             </p>
+            {#if hasteBreakdownText}
+              <p>Haste = {hasteBreakdownText}</p>
+            {/if}
           {:else if attackMode === "bow_merc" && bowWeapon}
             <p>
               Damage = (STR {baseSTR} + bow STR {bowWeapon.strength}{meleeWeapon
@@ -1125,6 +1165,9 @@
                 interval,
               )}s
             </p>
+            {#if hasteBreakdownText}
+              <p>Haste = {hasteBreakdownText}</p>
+            {/if}
           {:else if (attackMode === "spell_player" || attackMode === "spell_merc") && wandWeapon}
             <p>
               Damage = INT {baseINT} × 1.5 + wand magic dmg {wandWeapon.magic_damage}
@@ -1135,6 +1178,9 @@
                 Interval = {SPELL_PLAYER_CAST[selectedClass] ?? 1.0}s × (1−{effectiveSpellHastePercent}%
                 spell haste) = {fmt(interval)}s
               </p>
+              {#if spellHasteBreakdownText}
+                <p>Spell haste = {spellHasteBreakdownText}</p>
+              {/if}
             {:else}
               <p>
                 Interval = {SPELL_MERC_CAST[selectedClass] ?? 1.0}s × (1−{effectiveSpellHastePercent}%)
@@ -1143,6 +1189,9 @@
                   interval,
                 )}s
               </p>
+              {#if spellHasteBreakdownText}
+                <p>Spell haste = {spellHasteBreakdownText}</p>
+              {/if}
             {/if}
           {:else if attackMode === "staff_player" && wandWeapon}
             <p>
@@ -1156,6 +1205,9 @@
               Interval = 0.5s cast + max({wandWeapon.weapon_delay} × (1−{effectiveHastePercent}%)
               / 25, 0.25s) = {fmt(interval)}s
             </p>
+            {#if hasteBreakdownText}
+              <p>Haste = {hasteBreakdownText}</p>
+            {/if}
           {/if}
         </div>
       </Card.Content>
