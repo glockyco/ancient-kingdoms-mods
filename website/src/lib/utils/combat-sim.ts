@@ -644,8 +644,26 @@ export function buildComparisonRows(params: {
     let rowInterval: number;
     let rowSoftCap: number | null;
 
-    const effectiveHaste = Math.min(haste01 + w.haste, 0.8);
-    const effectiveSpellHaste = Math.min(spellHaste01 + w.spell_haste, 0.8);
+    // Haste from secondary weapons actively equipped alongside the primary.
+    // Rogue player/merc: off-hand dagger. Ranger bow_merc: melee sword.
+    // All other modes have no secondary selector, so contribution is zero.
+    const secondaryHaste =
+      (mode === "player" || mode === "merc") && cls === "rogue"
+        ? (fixedOff?.haste ?? 0)
+        : mode === "bow_merc"
+          ? (fixedMelee?.haste ?? 0)
+          : 0;
+    const secondarySpellHaste =
+      (mode === "player" || mode === "merc") && cls === "rogue"
+        ? (fixedOff?.spell_haste ?? 0)
+        : mode === "bow_merc"
+          ? (fixedMelee?.spell_haste ?? 0)
+          : 0;
+    const effectiveHaste = Math.min(haste01 + w.haste + secondaryHaste, 0.8);
+    const effectiveSpellHaste = Math.min(
+      spellHaste01 + w.spell_haste + secondarySpellHaste,
+      0.8,
+    );
     if (isDelayBased(mode)) {
       rowDelay = w.weapon_delay;
       rowInterval = calcInterval(

@@ -161,19 +161,56 @@
   const h = $derived(Math.min(hastePercent / 100, 0.8));
   const sp = $derived(spellHastePercent / 100);
 
-  // Effective haste for the currently-selected weapon: base + weapon's own bonus, capped at 80%.
+  // Haste contributed by secondary equipped weapons, mode-aware.
+  // Rogue player/merc: off-hand dagger equipped alongside main.
+  // bow_merc: melee sword equipped alongside bow.
+  const secondaryWeaponHaste01 = $derived.by((): number => {
+    if (
+      (attackMode === "player" || attackMode === "merc") &&
+      selectedClass === "rogue"
+    ) {
+      return offWeapon?.haste ?? 0;
+    }
+    if (attackMode === "bow_merc") return meleeWeapon?.haste ?? 0;
+    return 0;
+  });
+  const secondaryWeaponSpellHaste01 = $derived.by((): number => {
+    if (
+      (attackMode === "player" || attackMode === "merc") &&
+      selectedClass === "rogue"
+    ) {
+      return offWeapon?.spell_haste ?? 0;
+    }
+    if (attackMode === "bow_merc") return meleeWeapon?.spell_haste ?? 0;
+    return 0;
+  });
+
+  // Effective haste for the currently-selected weapon: base + weapon bonuses, capped at 80%.
   const effectiveHastePercent = $derived(
-    Math.min(hastePercent + (activeWeapon?.haste ?? 0) * 100, 80),
+    Math.min(
+      hastePercent +
+        (activeWeapon?.haste ?? 0) * 100 +
+        secondaryWeaponHaste01 * 100,
+      80,
+    ),
   );
   const effectiveSpellHastePercent = $derived(
-    Math.min(spellHastePercent + (activeWeapon?.spell_haste ?? 0) * 100, 80),
+    Math.min(
+      spellHastePercent +
+        (activeWeapon?.spell_haste ?? 0) * 100 +
+        secondaryWeaponSpellHaste01 * 100,
+      80,
+    ),
   );
 
   // null = no weapon selected for this mode yet.
   const interval = $derived.by((): number | null => {
     if (!activeWeapon) return null;
-    const eh = Math.min(h + activeWeapon.haste, 0.8);
-    const esp = Math.min(sp + activeWeapon.spell_haste, 0.8);
+    const eh = Math.min(h + activeWeapon.haste + secondaryWeaponHaste01, 0.8);
+    const esp = Math.min(
+      sp + activeWeapon.spell_haste + secondaryWeaponSpellHaste01,
+      0.8,
+    );
     return calcInterval(
       attackMode,
       selectedClass,
