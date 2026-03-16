@@ -2107,12 +2107,24 @@
                     interval = cast time + cooldown &times; (1 &minus; haste)
                   </p>
                 {:else}
-                  <!-- flat: companions, familiars, non-weapon followup -->
-                  <!-- Source: Skills.cs:772 — cooldownEnd = now + cooldown (no haste path) -->
-                  <p class="font-mono">interval = cast time + cooldown</p>
-                  <p class="text-muted-foreground">
-                    Cooldown is not haste-reduced.
-                  </p>
+                  <!-- companion: companions, familiars -->
+                  <!-- Source: Skills.cs:672-675 — spell haste on cast time (via skills.GetSpellHasteBonus() which includes buffs) -->
+                  <!-- Source: Skills.cs:772 — cooldownEnd = now + cooldown (no haste reduction for non-merc pets) -->
+                  {#if skill.is_spell}
+                    <p class="font-mono">
+                      interval = cast time &times; (1 &minus; spell haste) +
+                      cooldown
+                    </p>
+                    <p class="text-muted-foreground">
+                      Spell haste reduces cast time (cap: 50%). Cooldown
+                      unaffected.
+                    </p>
+                  {:else}
+                    <p class="font-mono">interval = cast time + cooldown</p>
+                    <p class="text-muted-foreground">
+                      Cooldown is not haste-reduced.
+                    </p>
+                  {/if}
                 {/if}
               </div>
             {/each}

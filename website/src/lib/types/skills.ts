@@ -303,7 +303,7 @@ export type TimingModel =
   // interval = cast_time × (1 − spellHaste); no cooldown. Hard cap: 50% (Combat.cs:332).
   // Source: server-scripts/Skills.cs:673-675, server-scripts/Combat.cs:332
   | "player_spell" // e.g. fire_blast, wind_shock, smite
-  | "flat" // interval = cast_time + cooldown; companions, familiars, no-weapon followup
+  | "companion" // interval = cast_time + cooldown; companions, familiars, no-weapon followup
   | "merc_auto" // interval = cast_time + cooldown×(1−haste); merc non-spell — e.g. explorer_shot
   // interval = cast_time × (1 − spellHaste) + cooldown; cast reduced by spell haste (cap 50%), cooldown not.
   // Source: server-scripts/Skills.cs:673-675 (cast reduction), Skills.cs:772 (flat cooldown), Combat.cs:332 (cap)

@@ -711,7 +711,7 @@ finalDamage = damage − reduction</pre>
               <tr class="border-b border-border/40">
                 <td class="py-2 pr-4 font-mono text-xs">player_auto</td>
                 <td class="py-2 pr-4 text-muted-foreground text-xs"
-                  >Player auto-attacks (weapon required)</td
+                  >Player auto-attacks</td
                 >
                 <td class="py-2 font-mono text-xs"
                   >castTime + clamp(delay×(1−haste)/25, 0.25, 2.0)</td
@@ -722,7 +722,7 @@ finalDamage = damage − reduction</pre>
               <tr class="border-b border-border/40">
                 <td class="py-2 pr-4 font-mono text-xs">player_spell</td>
                 <td class="py-2 pr-4 text-muted-foreground text-xs"
-                  >Player spell auto-attacks (fire_blast, wind_shock, smite)</td
+                  >Player spell auto-attacks</td
                 >
                 <td class="py-2 font-mono text-xs"
                   >castTime&times;(1&minus;spellHaste)</td
@@ -730,10 +730,9 @@ finalDamage = damage − reduction</pre>
               </tr>
               <!-- Source: server-scripts/Skills.cs:673-675, server-scripts/Skills.cs:772 -->
               <tr class="border-b border-border/40">
-                <td class="py-2 pr-4 font-mono text-xs">flat</td>
+                <td class="py-2 pr-4 font-mono text-xs">companion</td>
                 <td class="py-2 pr-4 text-muted-foreground text-xs"
-                  >Companions and familiars (spell skills use caster&apos;s own
-                  spell haste)</td
+                  >Companions and familiars</td
                 >
                 <td class="py-2 font-mono text-xs"
                   >Non-spell: castTime + cooldown<br />Spell:
@@ -807,19 +806,17 @@ finalDamage = damage − reduction</pre>
                   >No effect</td
                 >
                 <td class="py-2 text-muted-foreground text-xs"
-                  >Reduces cast time (hard cap: 50%).</td
+                  >Reduces cast time (cap: 50%).</td
                 >
               </tr>
               <!-- Source: server-scripts/Combat.cs:332 — Mathf.Clamp(spellHaste, -0.5f, 0.5f) -->
               <tr class="border-b border-border/40">
-                <td class="py-2 pr-4 font-mono text-xs">flat</td>
+                <td class="py-2 pr-4 font-mono text-xs">companion</td>
                 <td class="py-2 pr-4 text-muted-foreground text-xs"
                   >No effect</td
                 >
                 <td class="py-2 text-muted-foreground text-xs"
-                  >Reduces cast time for spell skills (caster&apos;s own spell
-                  haste, cap 50%). Companions and familiars do not inherit
-                  player spell haste.</td
+                  >Reduces cast time for spell attacks (cap: 50%).</td
                 >
               </tr>
               <tr class="border-b border-border/40">
@@ -836,8 +833,7 @@ finalDamage = damage − reduction</pre>
                   >No effect</td
                 >
                 <td class="py-2 text-muted-foreground text-xs"
-                  >Reduces cast time only (hard cap: 50%). Cooldown is not
-                  affected by either haste type.</td
+                  >Reduces cast time (cap: 50%). Cooldown unaffected.</td
                 >
               </tr>
               <tr>

@@ -493,7 +493,7 @@ export function computeMechanicsSpec(
           ? "player_auto"
           : isSpell
             ? "player_spell"
-            : "flat";
+            : "companion";
       timingPairs.push({ label, model });
     }
     for (const pet of mercPets) {
@@ -515,7 +515,7 @@ export function computeMechanicsSpec(
       const parts: string[] = [];
       if (hasNonMercPet) parts.push("Companion");
       if (hasFamiliar) parts.push("Familiar");
-      timingPairs.push({ label: parts.join("/"), model: "flat" });
+      timingPairs.push({ label: parts.join("/"), model: "companion" });
     }
   }
 
