@@ -346,7 +346,10 @@ public class SkillExporter : BaseExporter
 
             var areaBuffSkill = skill.TryCast<Il2Cpp.AreaBuffSkill>();
             if (areaBuffSkill != null)
+            {
                 skillData.is_aura = areaBuffSkill.isAura;
+                skillData.is_teleport = areaBuffSkill.isTeleport;
+            }
 
             var areaDebuffSkill = skill.TryCast<Il2Cpp.AreaDebuffSkill>();
             if (areaDebuffSkill != null)

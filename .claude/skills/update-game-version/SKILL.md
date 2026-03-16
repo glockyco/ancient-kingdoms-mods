@@ -57,6 +57,8 @@ Versioned backups are stored in `server-scripts-<version>/`; the working copy is
 
 **Do not investigate the old server scripts** to understand changes — diff the new scripts first. The diff is the primary source of truth for what changed.
 
+**Commit atomically** — one logical change per commit.
+
 ## Diff Analysis
 
 Diff **every** changed file. Do not skip files or cherry-pick "important" ones.
@@ -80,9 +82,19 @@ Categorize each change:
 | DB-auto-handled (entity stats, skill data, items) | Re-export + rebuild DB handles it; verify in DB |
 | Decompiler noise or pure refactor | Ignore |
 
+For each changed file, grep to find every affected hardcoded location before investigating manually:
+```bash
+grep -r "Source: server-scripts/<File>.cs" website/src build-pipeline/src
+```
+No matches means nothing to review. Run per changed file, not as one bulk pass.
+
 ### UIMap.cs — custom map zones
 
 Check `UIMap.cs` for any new zones added to the `idZone ==` branch in `Update()` and `mapButton()`. These zones replace the normal world map with a custom hand-drawn sprite in-game and must be added to `EXCLUDED_ZONE_IDS` in `website/src/lib/constants/constants.ts`. Currently: Temple of Valaark (zone 23).
+
+### UICharacterEditor.cs — new races
+
+When a new race is added: add it to `RACE_DISPLAY_NAMES` in `website/src/lib/utils/classes.ts`; manually add to `compatible_races` in `exported-data/classes.json` for each eligible class (check the `Interactable =` guards per class button to identify which classes block it). `classes.json` is manually curated, not a pure export.
 
 ### Apply() is authoritative for runtime behavior
 
@@ -98,8 +110,9 @@ When investigating scaling changes, `Apply()` is the source of truth for what ac
 Search for `Source: server-scripts/` comments to find all hardcoded values. Key files:
 
 - `website/src/routes/skills/[id]/+page.svelte` — damage pipeline, stat scaling, buff/debuff/resist/cleanse formulas
-- `website/src/lib/utils/formatSkillEffect.ts` — per-skill hardcoded effect descriptions
+- `website/src/lib/utils/formatSkillEffect.ts` — per-skill hardcoded effect descriptions; also review `HARDCODED_EFFECTS` entries for any skill whose logic changed to check if the entry should instead be driven by an exported flag
 - `website/src/routes/items/[id]/+page.svelte` — item mechanics (Radiant Aether, economy prices, set thresholds)
 - `website/src/lib/utils/format.ts` — altar tier thresholds, gathering respawn rules
 - `website/src/lib/utils/roles.ts` — NPC role descriptions with prices/costs
 - `website/src/routes/+page.svelte` — game version string
+- `website/src/routes/mechanics/combat/+page.svelte` — combat formula reference and mechanic subsections

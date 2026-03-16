@@ -1043,6 +1043,7 @@ CREATE TABLE skills (
     prob_ignore_cleanse REAL DEFAULT 0.0,
     is_decrease_resists_skill BOOLEAN DEFAULT 0,
     is_aura BOOLEAN DEFAULT 0,
+    is_teleport BOOLEAN DEFAULT 0,
 
     -- Stat bonuses (all stored as JSON for SkillBonusValue)
     health_max_bonus TEXT,

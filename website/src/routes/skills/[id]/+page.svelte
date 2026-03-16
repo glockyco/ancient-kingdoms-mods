@@ -658,7 +658,11 @@
       // G. Special notes
       skill.is_assassination_skill ||
       skill.is_decrease_resists_skill ||
-      (hasLinearValue(skill.cast_time) && skill.is_spell && !skill.is_scroll),
+      (hasLinearValue(skill.cast_time) && skill.is_spell && !skill.is_scroll) ||
+      // H. Fear mechanics + teleport
+      skill.is_teleport ||
+      hasCrowdControl ||
+      !!skill.fear_resist_chance_bonus,
   );
 
   // Damage/resist type helpers — kept for the damage pipeline and resist section
@@ -734,6 +738,13 @@
           class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
         >
           Bypasses Debuff Immunity
+        </span>
+      {/if}
+      {#if skill.is_teleport}
+        <span
+          class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200"
+        >
+          Teleport
         </span>
       {/if}
 
@@ -2290,6 +2301,38 @@
           <p class="text-muted-foreground">
             Effective Cast Time = castTime &minus; (castTime &times; spellHaste)
           </p>
+        {/if}
+        {#if hasLinearValue(skill.fear_chance)}
+          <!-- Source: server-scripts/Combat.cs:885 — DealDamageAt fear branch -->
+          <div class="space-y-1">
+            <h3 class="font-semibold">Fear</h3>
+            <p class="text-muted-foreground">
+              Applies only if two independent rolls succeed: the skill's fear
+              chance, then the target failing their fear resist roll. Duration
+              is random between half and full fearTime.
+            </p>
+          </div>
+        {/if}
+        {#if skill.fear_resist_chance_bonus}
+          <!-- Source: server-scripts/Combat.cs:266-277 — fearResistChance property -->
+          <div class="space-y-1">
+            <h3 class="font-semibold">Fear Resist</h3>
+            <p class="text-muted-foreground">
+              When a fear effect lands, the target rolls their accumulated fear
+              resist chance to block it. Accumulates from skills and equipment,
+              capped at 100%. At 100% the target is completely immune to fear.
+            </p>
+          </div>
+        {/if}
+        {#if skill.is_teleport}
+          <!-- Source: server-scripts/AreaBuffSkill.cs:116-125 — isTeleport branch -->
+          <div class="space-y-1">
+            <h3 class="font-semibold">Teleport</h3>
+            <p class="text-muted-foreground">
+              Teleports each party member in range to the nearest safe city.
+              Each player is stunned for 1 second on arrival.
+            </p>
+          </div>
         {/if}
       </Card.Content>
     </Card.Root>

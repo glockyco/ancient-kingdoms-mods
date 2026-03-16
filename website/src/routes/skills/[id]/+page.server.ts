@@ -226,6 +226,7 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
     is_mana_shield: Boolean(skillRaw.is_mana_shield),
     is_cleanse: Boolean(skillRaw.is_cleanse),
     is_dispel: Boolean(skillRaw.is_dispel),
+    is_teleport: Boolean(skillRaw.is_teleport),
     is_blindness: Boolean(skillRaw.is_blindness),
     is_enrage: Boolean(skillRaw.is_enrage),
     is_double_exp_spell: Boolean(skillRaw.is_double_exp_spell),

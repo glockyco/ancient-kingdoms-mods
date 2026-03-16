@@ -857,6 +857,17 @@ finalDamage = damage − reduction</pre>
       </div>
 
       <div>
+        <!-- Source: server-scripts/Combat.cs:266-277 (fearResistChance), 885-910 (DealDamageAt fear branch) -->
+        <h3 class="font-semibold mb-1">Fear</h3>
+        <p class="text-sm text-muted-foreground">
+          Applies only if two independent rolls succeed: the skill's fear
+          chance, then the target failing their fear resist roll. Duration is
+          random between half and full fearTime. Fear resist accumulates from
+          skills and equipment, capped at 100%. At 100% the target is immune.
+        </p>
+      </div>
+
+      <div>
         <h3 class="font-semibold mb-1">Enrage</h3>
         <p class="text-sm text-muted-foreground">
           Non-spell skills only. When the caster's HP falls below 25%, their

@@ -114,6 +114,7 @@ export interface ClassSkill {
   is_mana_shield: boolean;
   is_cleanse: boolean;
   is_dispel: boolean;
+  is_teleport: boolean;
   is_blindness: boolean;
   is_enrage: boolean;
   summoned_monster_id: string | null;
@@ -218,6 +219,7 @@ export function getClassSkills(classId: string): ClassSkill[] {
       s.is_mana_shield,
       s.is_cleanse,
       s.is_dispel,
+      s.is_teleport,
       s.is_blindness,
       s.is_enrage,
       s.summoned_monster_id,

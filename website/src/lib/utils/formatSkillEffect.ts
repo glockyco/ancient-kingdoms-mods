@@ -97,6 +97,7 @@ export interface Skill {
   is_mana_shield?: boolean;
   is_cleanse?: boolean;
   is_dispel?: boolean;
+  is_teleport?: boolean;
   is_blindness?: boolean;
   is_enrage?: boolean;
 
@@ -789,6 +790,10 @@ export function formatSkillEffect(
   ) {
     return HARDCODED_EFFECTS[skill.id];
   }
+
+  // Source: server-scripts/AreaBuffSkill.cs:116-125 — isTeleport teleports each party
+  // member to safety; no buff applied.
+  if (skill.is_teleport) return "teleport party to safety, stun (1s)";
 
   const parts: string[] = [];
 

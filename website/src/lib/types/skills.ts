@@ -163,6 +163,7 @@ export interface SkillDetailView {
   is_mana_shield: boolean;
   is_cleanse: boolean;
   is_dispel: boolean;
+  is_teleport: boolean;
   is_blindness: boolean;
   is_enrage: boolean;
   is_double_exp_spell: boolean;

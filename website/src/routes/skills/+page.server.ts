@@ -79,6 +79,7 @@ interface SkillRow {
   is_mana_shield: number;
   is_cleanse: number;
   is_dispel: number;
+  is_teleport: number;
   is_blindness: number;
   is_enrage: number;
   is_poison_debuff: number;
@@ -184,6 +185,7 @@ export const load: PageServerLoad = (): SkillsPageData => {
       s.is_mana_shield,
       s.is_cleanse,
       s.is_dispel,
+      s.is_teleport,
       s.is_blindness,
       s.is_enrage,
       s.is_poison_debuff,
@@ -298,6 +300,7 @@ export const load: PageServerLoad = (): SkillsPageData => {
       is_mana_shield: Boolean(row.is_mana_shield),
       is_cleanse: Boolean(row.is_cleanse),
       is_dispel: Boolean(row.is_dispel),
+      is_teleport: Boolean(row.is_teleport),
       is_blindness: Boolean(row.is_blindness),
       is_enrage: Boolean(row.is_enrage),
       is_poison_debuff: Boolean(row.is_poison_debuff),

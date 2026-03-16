@@ -92,7 +92,7 @@ export function getResourceDisplayName(resourceType: string): string {
 /**
  * Race name mapping (database ID -> display name)
  * IDs come from manually curated exported-data/classes.json (e.g. "dark_alliance" for Dark Elf).
- * Canonical race names in the game: server-scripts/Database.cs:1469-1529 — CharacterCreate switch block.
+ * Canonical race names in the game: server-scripts/Database.cs:1469-1544 — CharacterCreate switch block.
  */
 const RACE_DISPLAY_NAMES: Record<string, string> = {
   human: "Human",
@@ -101,6 +101,7 @@ const RACE_DISPLAY_NAMES: Record<string, string> = {
   dwarf: "Dwarf",
   fire_goblin: "Fire Goblin",
   felarii: "Felarii",
+  drassar: "Drassar",
 };
 
 /**

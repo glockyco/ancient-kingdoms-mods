@@ -7,7 +7,7 @@
     "secondary_role": "Melee DPS",
     "difficulty": 1,
     "resource_type": "energy",
-    "compatible_races": ["human", "elf", "dark_alliance", "dwarf", "fire_goblin", "felarii"],
+    "compatible_races": ["human", "elf", "dark_alliance", "dwarf", "fire_goblin", "felarii", "drassar"],
     "game_version": "0.9.7.1"
   },
   {
@@ -18,7 +18,7 @@
     "secondary_role": "Tank",
     "difficulty": 2,
     "resource_type": "mana",
-    "compatible_races": ["human", "dark_alliance", "dwarf", "fire_goblin", "felarii"],
+    "compatible_races": ["human", "dark_alliance", "dwarf", "fire_goblin", "felarii", "drassar"],
     "game_version": "0.9.7.1"
   },
   {
@@ -29,7 +29,7 @@
     "secondary_role": "Debuffing",
     "difficulty": 2,
     "resource_type": "mana",
-    "compatible_races": ["human", "elf", "dark_alliance", "dwarf", "fire_goblin"],
+    "compatible_races": ["human", "elf", "dark_alliance", "dwarf", "fire_goblin", "drassar"],
     "game_version": "0.9.7.1"
   },
   {
@@ -40,7 +40,7 @@
     "secondary_role": "Scout",
     "difficulty": 2,
     "resource_type": "energy",
-    "compatible_races": ["human", "dark_alliance", "dwarf", "fire_goblin", "felarii"],
+    "compatible_races": ["human", "dark_alliance", "dwarf", "fire_goblin", "felarii", "drassar"],
     "game_version": "0.9.7.1"
   },
   {
@@ -51,7 +51,7 @@
     "secondary_role": "Crowd Control",
     "difficulty": 3,
     "resource_type": "mana",
-    "compatible_races": ["human", "elf", "dark_alliance", "fire_goblin", "felarii"],
+    "compatible_races": ["human", "elf", "dark_alliance", "fire_goblin", "felarii", "drassar"],
     "game_version": "0.9.7.1"
   },
   {
