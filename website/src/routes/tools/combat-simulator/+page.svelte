@@ -12,8 +12,7 @@
     SPELL_PLAYER_CAST,
     SPELL_MERC_CAST,
     SPELL_MERC_CD,
-    SPELL_PLAYER_SKILL,
-    SPELL_MERC_SKILL,
+    ATTACK_SKILL,
     isDelayBased,
     isSpellMode,
     calcInterval,
@@ -236,6 +235,7 @@
     isDelayBased(attackMode) ? (activeWeapon?.weapon_delay ?? null) : null,
   );
 
+  const attackSkill = $derived(ATTACK_SKILL[selectedClass][attackMode] ?? null);
   // ─── Comparison table ────────────────────────────────────────────────────────
 
   // Which weapon list to iterate depends on the attack mode.
@@ -1078,6 +1078,15 @@
           class="mt-4 pt-4 border-t border-border/50 text-xs text-muted-foreground space-y-1"
         >
           <p class="font-medium text-foreground">Formula</p>
+          {#if attackSkill}
+            <p>
+              Skill: <a
+                href="/skills/{attackSkill.id}"
+                class="text-blue-600 hover:underline dark:text-blue-400"
+                >{attackSkill.name}</a
+              >
+            </p>
+          {/if}
 
           {#if (attackMode === "player" || attackMode === "merc") && mainWeapon}
             {#if selectedClass === "rogue"}
@@ -1177,15 +1186,6 @@
               + equip.magic {otherMagicEquipDmg} = {Math.round(damagePerHit)}
             </p>
             {#if attackMode === "spell_player"}
-              {#if SPELL_PLAYER_SKILL[selectedClass]}
-                <p>
-                  Skill: <a
-                    href="/skills/{SPELL_PLAYER_SKILL[selectedClass]!.id}"
-                    class="text-blue-600 hover:underline dark:text-blue-400"
-                    >{SPELL_PLAYER_SKILL[selectedClass]!.name}</a
-                  >
-                </p>
-              {/if}
               <p>
                 Interval = {SPELL_PLAYER_CAST[selectedClass] ?? 1.0}s × (1−{effectiveSpellHastePercent}%
                 spell haste) = {fmt(interval)}s
@@ -1194,15 +1194,6 @@
                 <p>Spell haste = {spellHasteBreakdownText}</p>
               {/if}
             {:else}
-              {#if SPELL_MERC_SKILL[selectedClass]}
-                <p>
-                  Skill: <a
-                    href="/skills/{SPELL_MERC_SKILL[selectedClass]!.id}"
-                    class="text-blue-600 hover:underline dark:text-blue-400"
-                    >{SPELL_MERC_SKILL[selectedClass]!.name}</a
-                  >
-                </p>
-              {/if}
               <p>
                 Interval = {SPELL_MERC_CAST[selectedClass] ?? 1.0}s × (1−{effectiveSpellHastePercent}%)
                 +

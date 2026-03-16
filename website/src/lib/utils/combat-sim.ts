@@ -134,20 +134,40 @@ export const SPELL_MERC_CD: Partial<Record<PlayerClass, number>> = {
   cleric: 2.0,
 };
 
-// Spell auto-attack skills per class (player and merc modes)
-export const SPELL_PLAYER_SKILL: Partial<
-  Record<PlayerClass, { id: string; name: string }>
+// Skill backing each auto-attack mode per class — drives skill links in Results card formula.
+// Matches the skill whose cast_time and cooldown define the mode's interval formula.
+export const ATTACK_SKILL: Record<
+  PlayerClass,
+  Partial<Record<AttackMode, { id: string; name: string }>>
 > = {
-  wizard: { id: "fire_blast", name: "Fire Blast" },
-  druid: { id: "wind_shock", name: "Wind Shock" },
-  cleric: { id: "smite", name: "Smite" },
-};
-export const SPELL_MERC_SKILL: Partial<
-  Record<PlayerClass, { id: string; name: string }>
-> = {
-  wizard: { id: "flame_blast", name: "Flame Blast" },
-  druid: { id: "gale_burst", name: "Gale Burst" },
-  cleric: { id: "divine_smite", name: "Divine Smite" },
+  warrior: {
+    player: { id: "melee_attack", name: "Melee Attack" },
+    merc: { id: "sword_strike", name: "Sword Strike" },
+  },
+  rogue: {
+    player: { id: "stab", name: "Stab" },
+    merc: { id: "pierce", name: "Pierce" },
+  },
+  ranger: {
+    bow_player: { id: "archer_shot", name: "Archer Shot" },
+    melee_player: { id: "swift_slash", name: "Swift Slash" },
+    bow_merc: { id: "explorer_shot", name: "Explorer Shot" },
+  },
+  wizard: {
+    spell_player: { id: "fire_blast", name: "Fire Blast" },
+    staff_player: { id: "staff_strike", name: "Staff Strike" },
+    spell_merc: { id: "flame_blast", name: "Flame Blast" },
+  },
+  druid: {
+    spell_player: { id: "wind_shock", name: "Wind Shock" },
+    staff_player: { id: "staff_strike", name: "Staff Strike" },
+    spell_merc: { id: "gale_burst", name: "Gale Burst" },
+  },
+  cleric: {
+    spell_player: { id: "smite", name: "Smite" },
+    staff_player: { id: "crush_strike", name: "Crush Strike" },
+    spell_merc: { id: "divine_smite", name: "Divine Smite" },
+  },
 };
 
 // ─── Auto-attack formula mapping ─────────────────────────────────────────────
