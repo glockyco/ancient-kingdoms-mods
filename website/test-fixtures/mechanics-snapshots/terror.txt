@@ -1,1 +1,1 @@
-Mechanics Aggro min(target.HP, skillAggro + caster.maxHP + damage + round(stunChance × stunTime × 10) + round(fearChance × fearTime × 10) ) Effective Cast Time = castTime − (castTime × spellHaste)
+Mechanics Aggro min(target.HP, skillAggro + caster.maxHP + damage + round(stunChance × stunTime × 10) + round(fearChance × fearTime × 10) ) Effective Cast Time = castTime − (castTime × spellHaste) Fear Applies only if two independent rolls succeed: the skill's fear chance, then the target failing their fear resist roll. Duration is random between half and full fearTime.

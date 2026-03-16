@@ -1,1 +1,1 @@
-Mechanics Effective Cast Time = castTime − (castTime × spellHaste)
+Mechanics Effective Cast Time = castTime − (castTime × spellHaste) Fear Resist When a fear effect lands, the target rolls their accumulated fear resist chance to block it. Accumulates from skills and equipment, capped at 100%. At 100% the target is completely immune to fear.
