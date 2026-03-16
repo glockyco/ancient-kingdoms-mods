@@ -792,10 +792,11 @@ finalDamage = damage − reduction</pre>
               </tr>
             </thead>
             <tbody>
+              <!-- Source: server-scripts/Combat.cs:318 — Mathf.Clamp(num, -0.8f, 0.8f) -->
               <tr class="border-b border-border/40">
                 <td class="py-2 pr-4 font-mono text-xs">player_auto</td>
                 <td class="py-2 pr-4 text-muted-foreground text-xs"
-                  >Reduces the delay term (floor 0.25 s, cap 2.0 s)</td
+                  >Reduces the delay term (min: 0.25 s, max: 2.0 s, cap: 80%).</td
                 >
                 <td class="py-2 text-muted-foreground text-xs">No effect</td>
               </tr>
