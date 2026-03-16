@@ -728,16 +728,13 @@ finalDamage = damage − reduction</pre>
                   >castTime&times;(1&minus;spellHaste)</td
                 >
               </tr>
-              <!-- Source: server-scripts/Skills.cs:673-675, server-scripts/Skills.cs:772 -->
+              <!-- Source: server-scripts/Skills.cs:772 -->
               <tr class="border-b border-border/40">
                 <td class="py-2 pr-4 font-mono text-xs">companion</td>
                 <td class="py-2 pr-4 text-muted-foreground text-xs"
                   >Companions and familiars</td
                 >
-                <td class="py-2 font-mono text-xs"
-                  >Non-spell: castTime + cooldown<br />Spell:
-                  castTime&times;(1&minus;spellHaste) + cooldown</td
-                >
+                <td class="py-2 font-mono text-xs">castTime + cooldown</td>
               </tr>
               <!-- Source: server-scripts/Skills.cs:765-768 -->
               <tr class="border-b border-border/40">
@@ -810,15 +807,13 @@ finalDamage = damage − reduction</pre>
                   >Reduces cast time (cap: 50%).</td
                 >
               </tr>
-              <!-- Source: server-scripts/Combat.cs:332 — Mathf.Clamp(spellHaste, -0.5f, 0.5f) -->
+              <!-- Source: server-scripts/Pet.cs:1135 — non-merc pets always pass 0f spellHasteBonus -->
               <tr class="border-b border-border/40">
                 <td class="py-2 pr-4 font-mono text-xs">companion</td>
                 <td class="py-2 pr-4 text-muted-foreground text-xs"
                   >No effect</td
                 >
-                <td class="py-2 text-muted-foreground text-xs"
-                  >Reduces cast time for spell attacks (cap: 50%).</td
-                >
+                <td class="py-2 text-muted-foreground text-xs">No effect</td>
               </tr>
               <tr class="border-b border-border/40">
                 <td class="py-2 pr-4 font-mono text-xs">merc_auto</td>
