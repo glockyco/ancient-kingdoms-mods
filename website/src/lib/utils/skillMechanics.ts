@@ -474,7 +474,7 @@ export function computeMechanicsSpec(
 
   // ---------- timing ----------
   // Only populated when followup_default_attack=true.
-  // Source: server-scripts/Skills.cs:762-773 — followupDefaultAttack + !isSpell + isMercenary → cooldown×(1-haste)
+  // Source: server-scripts/Skills.cs:762-773 — followupDefaultAttack + !isSpell + isMercenary → cooldown×(1-haste), Combat.cs:332 (spell haste cap)
   // Source: server-scripts/Player.cs:2783 — refractory period for players with a weapon requirement
   // Source: server-scripts/Monster.cs:1625 — FinishCastMeleeAttackMonster vs FinishCast for monsters
   const timingPairs: Array<{ label: string; model: TimingModel }> = [];
@@ -485,16 +485,22 @@ export function computeMechanicsSpec(
 
     for (const cls of playerClasses) {
       const label = `${cls.charAt(0).toUpperCase() + cls.slice(1)} (player)`;
-      // Source: Player.cs:2783 — refractory applies when !isSpell && followupDefaultAttack && requiredWeaponCategory set
+      // Source: Player.cs:2783 — refractory applies when !isSpell && hasReqWeapon
+      // Source: Skills.cs:673-675, Combat.cs:332 — player_spell: spell haste reduces castTimeEnd, cap 50%
+      // Note: spell auto-attacks have no required_weapon_category in the data, so isSpell alone is the discriminant.
       const model: TimingModel =
-        !isSpell && hasReqWeapon ? "player_auto" : "player_skill";
+        !isSpell && hasReqWeapon
+          ? "player_auto"
+          : isSpell
+            ? "player_spell"
+            : "flat";
       timingPairs.push({ label, model });
     }
     for (const pet of mercPets) {
       const tm = pet.type_monster ?? "Unknown";
       const label = `${tm} Merc`;
       // Source: Skills.cs:762-768 — followupDefaultAttack && !isSpell → cooldown * (1 - haste)
-      const model: TimingModel = isSpell ? "merc_skill" : "merc_auto";
+      const model: TimingModel = isSpell ? "merc_spell" : "merc_auto";
       timingPairs.push({ label, model });
     }
     if (hasMonsters) {
@@ -504,12 +510,12 @@ export function computeMechanicsSpec(
       const model: TimingModel = "monster";
       timingPairs.push({ label: "Monster/NPC", model });
     }
-    // Non-merc companion pets and familiars use FinishCast (flat cooldown) — same shape as player_skill
+    // Non-merc companion pets and familiars use FinishCast (flat cooldown) — same shape as flat
     if (hasNonMercPet || hasFamiliar) {
       const parts: string[] = [];
       if (hasNonMercPet) parts.push("Companion");
       if (hasFamiliar) parts.push("Familiar");
-      timingPairs.push({ label: parts.join("/"), model: "player_skill" });
+      timingPairs.push({ label: parts.join("/"), model: "flat" });
     }
   }
 

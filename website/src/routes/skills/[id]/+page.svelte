@@ -2074,6 +2074,14 @@
                       Generates rage on hit (25% of damage).
                     </p>
                   {/if}
+                {:else if ctx.model === "player_spell"}
+                  <!-- Source: server-scripts/Skills.cs:673-675, server-scripts/Combat.cs:332 -->
+                  <p class="font-mono">
+                    interval = cast time &times; (1 &minus; spell haste)
+                  </p>
+                  <p class="text-muted-foreground">
+                    Spell haste reduces cast time. Hard cap: 50%.
+                  </p>
                 {:else if ctx.model === "merc_auto"}
                   <!-- Source: Skills.cs:766-768 — followupDefaultAttack && !isSpell → cooldown * (1 - haste) -->
                   <p class="font-mono">
@@ -2083,18 +2091,27 @@
                     Weapon delay has no effect. Cooldown scales linearly with
                     haste (cap: &minus;80%).
                   </p>
+                {:else if ctx.model === "merc_spell"}
+                  <!-- Source: server-scripts/Skills.cs:673-675, server-scripts/Skills.cs:772, server-scripts/Combat.cs:332 -->
+                  <p class="font-mono">
+                    interval = cast time &times; (1 &minus; spell haste) +
+                    cooldown
+                  </p>
+                  <p class="text-muted-foreground">
+                    Spell haste reduces cast time (cap: 50%). Cooldown is not
+                    haste-reduced.
+                  </p>
                 {:else if ctx.model === "monster"}
                   <!-- Source: Monster.cs:1625, Npc.cs:1266 — FinishCastMeleeAttackMonster (haste-reduced for all monster skills) -->
                   <p class="font-mono">
                     interval = cast time + cooldown &times; (1 &minus; haste)
                   </p>
                 {:else}
-                  <!-- player_skill, merc_skill: flat cooldown -->
-                  <!-- Source: Skills.cs:772 — cooldownEnd = now + cooldown (no haste path for players/mercs unless weapon follow-up) -->
+                  <!-- flat: companions, familiars, non-weapon followup -->
+                  <!-- Source: Skills.cs:772 — cooldownEnd = now + cooldown (no haste path) -->
                   <p class="font-mono">interval = cast time + cooldown</p>
                   <p class="text-muted-foreground">
-                    Spell and non-weapon-strike ability cooldowns are not
-                    haste-reduced.
+                    Cooldown is not haste-reduced.
                   </p>
                 {/if}
               </div>

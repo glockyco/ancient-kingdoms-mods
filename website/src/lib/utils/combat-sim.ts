@@ -132,6 +132,8 @@ export const SPELL_PLAYER_CAST: Partial<Record<PlayerClass, number>> = {
   cleric: 1.2,
 };
 
+// Hard cap on spell haste. Source: server-scripts/Combat.cs:332 — Mathf.Clamp(num, -0.5f, 0.5f)
+export const SPELL_HASTE_CAP = 0.5;
 // Spell merc cast times: flame_blast (wizard 0.8s), gale_burst (druid 1.0s), divine_smite (cleric 1.2s)
 export const SPELL_MERC_CAST: Partial<Record<PlayerClass, number>> = {
   wizard: 0.8,
@@ -227,7 +229,7 @@ export const FORMULA_TABLE: readonly FormulaRow[] = [
     cast: "0.9s",
     timing: "cast × (1 − spell haste)",
     damage: renderFormula(FORMULA_EXPRS["magic_spell"]),
-    softCap: "None (use Spell Haste %)",
+    softCap: "50% spell haste",
   },
   {
     cls: "Wizard",
@@ -247,7 +249,7 @@ export const FORMULA_TABLE: readonly FormulaRow[] = [
     cast: "0.8s",
     timing: "cast × (1 − spell haste) + 1.0s cooldown",
     damage: renderFormula(FORMULA_EXPRS["magic_spell"]),
-    softCap: "None (use Spell Haste %)",
+    softCap: "50% spell haste",
   },
   {
     cls: "Druid",
@@ -257,7 +259,7 @@ export const FORMULA_TABLE: readonly FormulaRow[] = [
     cast: "1.0s",
     timing: "cast × (1 − spell haste)",
     damage: renderFormula(FORMULA_EXPRS["magic_spell"]),
-    softCap: "None (use Spell Haste %)",
+    softCap: "50% spell haste",
   },
   {
     cls: "Druid",
@@ -277,7 +279,7 @@ export const FORMULA_TABLE: readonly FormulaRow[] = [
     cast: "1.0s",
     timing: "cast × (1 − spell haste) + 2.0s cooldown",
     damage: renderFormula(FORMULA_EXPRS["magic_spell"]),
-    softCap: "None (use Spell Haste %)",
+    softCap: "50% spell haste",
   },
   {
     cls: "Cleric",
@@ -287,7 +289,7 @@ export const FORMULA_TABLE: readonly FormulaRow[] = [
     cast: "1.2s",
     timing: "cast × (1 − spell haste)",
     damage: renderFormula(FORMULA_EXPRS["magic_spell"]),
-    softCap: "None (use Spell Haste %)",
+    softCap: "50% spell haste",
   },
   {
     cls: "Cleric",
@@ -307,7 +309,7 @@ export const FORMULA_TABLE: readonly FormulaRow[] = [
     cast: "1.2s",
     timing: "cast × (1 − spell haste) + 2.0s cooldown",
     damage: renderFormula(FORMULA_EXPRS["magic_spell"]),
-    softCap: "None (use Spell Haste %)",
+    softCap: "50% spell haste",
   },
 ];
 
@@ -415,7 +417,7 @@ export function softCapHaste(delay: number): number {
  *
  * @param delay     weapon_delay; ignored for cooldown/spell modes
  * @param haste01   regular haste [0, 0.8] (caller must clamp)
- * @param spellHaste01  spell haste [0, 1]
+ * @param spellHaste01  spell haste [0, SPELL_HASTE_CAP]; caller must pre-clamp
  */
 export function calcInterval(
   mode: AttackMode,
@@ -652,7 +654,7 @@ export function buildComparisonRows(params: {
     const effectiveHaste = Math.min(haste01 + w.haste + secondaryHaste, 0.8);
     const effectiveSpellHaste = Math.min(
       spellHaste01 + w.spell_haste + secondarySpellHaste,
-      0.8,
+      SPELL_HASTE_CAP,
     );
     if (isDelayBased(mode)) {
       rowDelay = w.weapon_delay;
@@ -711,7 +713,7 @@ export function fmtSoftCap(mode: AttackMode, delay: number | null): string {
     return delay !== null ? `${fmt(softCapHaste(delay), 1)}%` : "—";
   }
   if (isCooldownBased(mode)) return "None (linear to 80%)";
-  return "None (use Spell Haste %)";
+  return "50% spell haste";
 }
 
 /**
@@ -719,7 +721,7 @@ export function fmtSoftCap(mode: AttackMode, delay: number | null): string {
  * Returns empty string when activeWeapon is null or interval is 0.
  *
  * @param hastePercent      raw haste percentage (0–80), not clamped to 0..1
- * @param spellHastePercent raw spell haste percentage (0–80)
+ * @param spellHastePercent raw spell haste percentage (0–50)
  */
 export function fmtInterval(
   mode: AttackMode,

@@ -24,6 +24,7 @@
     type PlayerClass,
     type AttackMode,
     type SortKey,
+    SPELL_HASTE_CAP,
   } from "$lib/utils/combat-sim";
   import type { WeaponItem } from "./+page.server";
 
@@ -160,7 +161,8 @@
 
   // Clamp haste to the game cap of 80%.
   const h = $derived(Math.min(hastePercent / 100, 0.8));
-  const sp = $derived(spellHastePercent / 100);
+  // Spell haste is capped at 50%. Source: server-scripts/Combat.cs:332
+  const sp = $derived(Math.min(spellHastePercent / 100, SPELL_HASTE_CAP));
 
   // Haste contributed by secondary equipped weapons, mode-aware.
   // Rogue player/merc: off-hand dagger. Ranger bow_merc: melee sword. All others: zero.
@@ -182,7 +184,7 @@
       spellHastePercent +
         (activeWeapon?.spell_haste ?? 0) * 100 +
         secondaryWeapon.spellHaste * 100,
-      80,
+      SPELL_HASTE_CAP * 100,
     ),
   );
 
@@ -192,7 +194,7 @@
     const eh = Math.min(h + activeWeapon.haste + secondaryWeapon.haste, 0.8);
     const esp = Math.min(
       sp + activeWeapon.spell_haste + secondaryWeapon.spellHaste,
-      0.8,
+      SPELL_HASTE_CAP,
     );
     return calcInterval(
       attackMode,
@@ -365,7 +367,7 @@
     if (wsh !== 0) terms.push(`${wsh}% wand`);
 
     const sum = spellHastePercent + wsh;
-    return sum > 80
+    return sum > 50
       ? `${terms.join(" + ")} → capped at ${effectiveSpellHastePercent}%`
       : `${terms.join(" + ")} = ${effectiveSpellHastePercent}%`;
   });
@@ -545,7 +547,7 @@
                 id="spell-haste-pct"
                 type="range"
                 min="0"
-                max="80"
+                max="50"
                 step="1"
                 bind:value={spellHastePercent}
                 class="flex-1"
@@ -553,7 +555,7 @@
               <input
                 type="number"
                 min="0"
-                max="80"
+                max="50"
                 bind:value={spellHastePercent}
                 class="w-16 rounded-md border border-border bg-background px-2 py-1.5 text-sm text-right"
               />
@@ -1416,7 +1418,8 @@
           (from armor/augments/passives) reduces cast time per Skills.cs:675:
           <code class="font-mono"
             >castTimeEnd -= spellHasteBonus × castTime</code
-          >. Cooldowns on merc spells are NOT reduced by any haste.
+          >. Cooldowns on merc spells are NOT reduced by any haste. Spell haste
+          hard cap: 50% (Combat.cs:332).
         </p>
         <p>
           This simulator models base auto-attack DPS before mitigation, variance
