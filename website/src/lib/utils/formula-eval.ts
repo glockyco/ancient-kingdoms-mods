@@ -2,7 +2,7 @@
 // Single source of truth for every damage formula in the game:
 //   1. FORMULA_EXPRS — the expression tree registry
 //   2. evaluate()   — numeric interpreter (for the DPS simulator)
-//   3. renderFormula()        — compact formula string (for labels, FORMULA_TABLE)
+//   3. renderFormula()        — compact formula string (for labels)
 //   4. renderFormulaDisplay() — structured breakdown (for skill detail pages)
 //
 // Adding a new DamageFormulaKind:

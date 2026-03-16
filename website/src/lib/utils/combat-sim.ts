@@ -4,11 +4,7 @@
 // WeaponItem is defined here (canonical) and re-exported from +page.server.ts so
 // that +page.svelte can still use `import type { WeaponItem } from "./+page.server"`.
 
-import {
-  evaluate,
-  FORMULA_EXPRS,
-  renderFormula,
-} from "$lib/utils/formula-eval";
+import { evaluate, FORMULA_EXPRS } from "$lib/utils/formula-eval";
 import type { DamageFormulaKind } from "$lib/types/skills";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -62,17 +58,6 @@ export interface CompRow {
   interval: number;
   dps: number;
   isSelected: boolean;
-}
-
-export interface FormulaRow {
-  cls: string;
-  mode: string;
-  skillId: string;
-  skillName: string;
-  cast: string;
-  timing: string;
-  damage: string;
-  softCap: string;
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -149,169 +134,21 @@ export const SPELL_MERC_CD: Partial<Record<PlayerClass, number>> = {
   cleric: 2.0,
 };
 
-// Static formula reference table for the reference section. Unique key: cls + mode.
-export const FORMULA_TABLE: readonly FormulaRow[] = [
-  {
-    cls: "Warrior",
-    mode: "Player",
-    skillId: "melee_attack",
-    skillName: "Melee Attack",
-    cast: "0.5s",
-    timing: "cast + clamp(delay×(1−h)/25, 0.25, 2.0s)",
-    damage: renderFormula(FORMULA_EXPRS["normal"]),
-    softCap: "1 − 6.25/delay",
-  },
-  {
-    cls: "Warrior",
-    mode: "Merc",
-    skillId: "sword_strike",
-    skillName: "Sword Strike",
-    cast: "0.5s",
-    timing: "cast + 1.0×(1−h)",
-    damage: renderFormula(FORMULA_EXPRS["normal"]),
-    softCap: "None (linear)",
-  },
-  {
-    cls: "Rogue",
-    mode: "Player",
-    skillId: "stab",
-    skillName: "Stab",
-    cast: "0.4s",
-    timing: "cast + clamp(delay×(1−h)/25, 0.25, 2.0s)",
-    damage: renderFormula(FORMULA_EXPRS["rogue_melee"]),
-    softCap: "1 − 6.25/delay",
-  },
-  {
-    cls: "Rogue",
-    mode: "Merc",
-    skillId: "pierce",
-    skillName: "Pierce",
-    cast: "0.4s",
-    timing: "cast + 1.0×(1−h)",
-    damage: renderFormula(FORMULA_EXPRS["rogue_melee_merc"]),
-    softCap: "None (linear)",
-  },
-  {
-    cls: "Ranger",
-    mode: "Bow (Player)",
-    skillId: "archer_shot",
-    skillName: "Archer Shot",
-    cast: "0.8s",
-    timing: "cast + clamp(bow_delay×(1−h)/25, 0.25, 2.0s)",
-    damage: renderFormula(FORMULA_EXPRS["ranged_player"]),
-    softCap: "1 − 6.25/delay",
-  },
-  {
-    cls: "Ranger",
-    mode: "Melee (Player)",
-    skillId: "swift_slash",
-    skillName: "Swift Slash",
-    cast: "0.5s",
-    timing: "cast + clamp(melee_delay×(1−h)/25, 0.25, 2.0s)",
-    damage: renderFormula(FORMULA_EXPRS["ranger_melee"]),
-    softCap: "1 − 6.25/delay",
-  },
-  {
-    cls: "Ranger",
-    mode: "Bow (Merc)",
-    skillId: "explorer_shot",
-    skillName: "Explorer Shot",
-    cast: "0.8s",
-    timing: "cast + 1.0×(1−h)",
-    damage: renderFormula(FORMULA_EXPRS["ranged_merc"]),
-    softCap: "None (linear)",
-  },
-  {
-    cls: "Wizard",
-    mode: "Spell (Player)",
-    skillId: "fire_blast",
-    skillName: "Fire Blast",
-    cast: "0.9s",
-    timing: "cast × (1 − spell haste)",
-    damage: renderFormula(FORMULA_EXPRS["magic_spell"]),
-    softCap: "50% spell haste",
-  },
-  {
-    cls: "Wizard",
-    mode: "Staff (Player)",
-    skillId: "staff_strike",
-    skillName: "Staff Strike",
-    cast: "0.5s",
-    timing: "cast + clamp(delay×(1−h)/25, 0.25, 2.0s)",
-    damage: renderFormula(FORMULA_EXPRS["normal"]),
-    softCap: "1 − 6.25/delay",
-  },
-  {
-    cls: "Wizard",
-    mode: "Spell (Merc)",
-    skillId: "flame_blast",
-    skillName: "Flame Blast",
-    cast: "0.8s",
-    timing: "cast × (1 − spell haste) + 1.0s cooldown",
-    damage: renderFormula(FORMULA_EXPRS["magic_spell"]),
-    softCap: "50% spell haste",
-  },
-  {
-    cls: "Druid",
-    mode: "Spell (Player)",
-    skillId: "wind_shock",
-    skillName: "Wind Shock",
-    cast: "1.0s",
-    timing: "cast × (1 − spell haste)",
-    damage: renderFormula(FORMULA_EXPRS["magic_spell"]),
-    softCap: "50% spell haste",
-  },
-  {
-    cls: "Druid",
-    mode: "Staff (Player)",
-    skillId: "staff_strike",
-    skillName: "Staff Strike",
-    cast: "0.5s",
-    timing: "cast + clamp(delay×(1−h)/25, 0.25, 2.0s)",
-    damage: renderFormula(FORMULA_EXPRS["normal"]),
-    softCap: "1 − 6.25/delay",
-  },
-  {
-    cls: "Druid",
-    mode: "Spell (Merc)",
-    skillId: "gale_burst",
-    skillName: "Gale Burst",
-    cast: "1.0s",
-    timing: "cast × (1 − spell haste) + 2.0s cooldown",
-    damage: renderFormula(FORMULA_EXPRS["magic_spell"]),
-    softCap: "50% spell haste",
-  },
-  {
-    cls: "Cleric",
-    mode: "Spell (Player)",
-    skillId: "smite",
-    skillName: "Smite",
-    cast: "1.2s",
-    timing: "cast × (1 − spell haste)",
-    damage: renderFormula(FORMULA_EXPRS["magic_spell"]),
-    softCap: "50% spell haste",
-  },
-  {
-    cls: "Cleric",
-    mode: "Staff (Player)",
-    skillId: "crush_strike",
-    skillName: "Crush Strike",
-    cast: "0.5s",
-    timing: "cast + clamp(delay×(1−h)/25, 0.25, 2.0s)",
-    damage: renderFormula(FORMULA_EXPRS["normal"]),
-    softCap: "1 − 6.25/delay",
-  },
-  {
-    cls: "Cleric",
-    mode: "Spell (Merc)",
-    skillId: "divine_smite",
-    skillName: "Divine Smite",
-    cast: "1.2s",
-    timing: "cast × (1 − spell haste) + 2.0s cooldown",
-    damage: renderFormula(FORMULA_EXPRS["magic_spell"]),
-    softCap: "50% spell haste",
-  },
-];
+// Spell auto-attack skills per class (player and merc modes)
+export const SPELL_PLAYER_SKILL: Partial<
+  Record<PlayerClass, { id: string; name: string }>
+> = {
+  wizard: { id: "fire_blast", name: "Fire Blast" },
+  druid: { id: "wind_shock", name: "Wind Shock" },
+  cleric: { id: "smite", name: "Smite" },
+};
+export const SPELL_MERC_SKILL: Partial<
+  Record<PlayerClass, { id: string; name: string }>
+> = {
+  wizard: { id: "flame_blast", name: "Flame Blast" },
+  druid: { id: "gale_burst", name: "Gale Burst" },
+  cleric: { id: "divine_smite", name: "Divine Smite" },
+};
 
 // ─── Auto-attack formula mapping ─────────────────────────────────────────────
 

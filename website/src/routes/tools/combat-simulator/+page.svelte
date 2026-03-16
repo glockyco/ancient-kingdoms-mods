@@ -12,7 +12,8 @@
     SPELL_PLAYER_CAST,
     SPELL_MERC_CAST,
     SPELL_MERC_CD,
-    FORMULA_TABLE,
+    SPELL_PLAYER_SKILL,
+    SPELL_MERC_SKILL,
     isDelayBased,
     isSpellMode,
     calcInterval,
@@ -1176,6 +1177,15 @@
               + equip.magic {otherMagicEquipDmg} = {Math.round(damagePerHit)}
             </p>
             {#if attackMode === "spell_player"}
+              {#if SPELL_PLAYER_SKILL[selectedClass]}
+                <p>
+                  Skill: <a
+                    href="/skills/{SPELL_PLAYER_SKILL[selectedClass]!.id}"
+                    class="text-blue-600 hover:underline dark:text-blue-400"
+                    >{SPELL_PLAYER_SKILL[selectedClass]!.name}</a
+                  >
+                </p>
+              {/if}
               <p>
                 Interval = {SPELL_PLAYER_CAST[selectedClass] ?? 1.0}s × (1−{effectiveSpellHastePercent}%
                 spell haste) = {fmt(interval)}s
@@ -1184,6 +1194,15 @@
                 <p>Spell haste = {spellHasteBreakdownText}</p>
               {/if}
             {:else}
+              {#if SPELL_MERC_SKILL[selectedClass]}
+                <p>
+                  Skill: <a
+                    href="/skills/{SPELL_MERC_SKILL[selectedClass]!.id}"
+                    class="text-blue-600 hover:underline dark:text-blue-400"
+                    >{SPELL_MERC_SKILL[selectedClass]!.name}</a
+                  >
+                </p>
+              {/if}
               <p>
                 Interval = {SPELL_MERC_CAST[selectedClass] ?? 1.0}s × (1−{effectiveSpellHastePercent}%)
                 +
@@ -1357,75 +1376,6 @@
             {/if}
           </tbody>
         </table>
-      </div>
-    </Card.Content>
-  </Card.Root>
-
-  <!-- Formula Reference — static table, no reactive state, no ItemLink -->
-  <Card.Root class="bg-muted/30">
-    <Card.Header class="pb-3">
-      <Card.Title class="text-base">Formula Reference</Card.Title>
-    </Card.Header>
-    <Card.Content class="space-y-4 text-sm">
-      <div class="overflow-x-auto">
-        <table class="w-full text-xs">
-          <thead>
-            <tr class="border-b border-border text-muted-foreground">
-              <th class="text-left px-3 py-2 font-medium">Class</th>
-              <th class="text-left px-3 py-2 font-medium">Mode</th>
-              <th class="text-left px-3 py-2 font-medium">Skill</th>
-              <th class="text-right px-3 py-2 font-medium">Cast</th>
-              <th class="text-left px-3 py-2 font-medium">Timing</th>
-              <th class="text-left px-3 py-2 font-medium">Damage</th>
-              <th class="text-left px-3 py-2 font-medium">Soft-cap</th>
-            </tr>
-          </thead>
-          <tbody>
-            {#each FORMULA_TABLE as row (row.cls + row.mode)}
-              <tr class="border-b border-border/50 hover:bg-muted/20">
-                <td class="px-3 py-1.5 font-medium">{row.cls}</td>
-                <td class="px-3 py-1.5 text-muted-foreground">{row.mode}</td>
-                <td class="px-3 py-1.5">
-                  <a
-                    href="/skills/{row.skillId}"
-                    class="text-blue-600 hover:underline dark:text-blue-400"
-                    >{row.skillName}</a
-                  >
-                </td>
-                <td class="px-3 py-1.5 text-right font-mono">{row.cast}</td>
-                <td class="px-3 py-1.5 font-mono">{row.timing}</td>
-                <td class="px-3 py-1.5 font-mono">{row.damage}</td>
-                <td class="px-3 py-1.5 text-muted-foreground">{row.softCap}</td>
-              </tr>
-            {/each}
-          </tbody>
-        </table>
-      </div>
-
-      <div class="space-y-2 text-xs text-muted-foreground">
-        <p>
-          <span class="font-medium text-foreground"
-            >Soft-cap (delay modes):</span
-          >
-          h = 1 &minus; 6.25 / delay — haste beyond this hits the 0.25s refractory
-          floor. Hard cap: 80%.
-        </p>
-        <p>
-          <span class="font-medium text-foreground"
-            >Spell Haste vs Regular Haste:</span
-          >
-          Regular haste has zero effect on spell auto-attack intervals. Spell haste
-          (from armor/augments/passives) reduces cast time per Skills.cs:675:
-          <code class="font-mono"
-            >castTimeEnd -= spellHasteBonus × castTime</code
-          >. Cooldowns on merc spells are NOT reduced by any haste. Spell haste
-          hard cap: 50% (Combat.cs:332).
-        </p>
-        <p>
-          This simulator models base auto-attack DPS before mitigation, variance
-          (&times;0.9&ndash;1.1), crits, and defense. Weapon procs and passive
-          multipliers are not modelled.
-        </p>
       </div>
     </Card.Content>
   </Card.Root>
