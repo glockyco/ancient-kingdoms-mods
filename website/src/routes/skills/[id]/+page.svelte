@@ -659,9 +659,9 @@
       skill.is_assassination_skill ||
       skill.is_decrease_resists_skill ||
       (hasLinearValue(skill.cast_time) && skill.is_spell && !skill.is_scroll) ||
-      // H. Fear mechanics + teleport
+      // H. Fear mechanics section (stun has no mechanics card section)
       skill.is_teleport ||
-      hasCrowdControl ||
+      hasLinearValue(skill.fear_chance) ||
       !!skill.fear_resist_chance_bonus,
   );
 
