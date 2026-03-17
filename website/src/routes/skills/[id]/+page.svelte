@@ -2076,11 +2076,13 @@
                   {/if}
                 {:else if ctx.model === "player_spell"}
                   <!-- Source: server-scripts/Skills.cs:673-675, server-scripts/Combat.cs:332 -->
+                  <!-- Source: server-scripts/Player.cs:298 — refractoryPeriodSkill = 0.75f; blocks next cast after FinishCast -->
                   <p class="font-mono">
-                    interval = cast time &times; (1 &minus; spell haste)
+                    interval = cast time &times; (1 &minus; spell haste) + 0.75s
                   </p>
                   <p class="text-muted-foreground">
-                    Spell haste reduces cast time. Hard cap: 50%.
+                    Spell haste reduces cast time (cap: 50%). The 0.75s
+                    refractory period is fixed.
                   </p>
                 {:else if ctx.model === "merc_auto"}
                   <!-- Source: Skills.cs:766-768 — followupDefaultAttack && !isSpell → cooldown * (1 - haste) -->

@@ -1187,8 +1187,9 @@
             </p>
             {#if attackMode === "spell_player"}
               <p>
-                Interval = {SPELL_PLAYER_CAST[selectedClass] ?? 1.0}s × (1−{effectiveSpellHastePercent}%
-                spell haste) = {fmt(interval)}s
+                Interval = {SPELL_PLAYER_CAST[selectedClass] ?? 1.0}s &times;
+                (1&minus;{effectiveSpellHastePercent}% spell haste) + 0.75s
+                refractory = {fmt(interval)}s
               </p>
               {#if spellHasteBreakdownText}
                 <p>Spell haste = {spellHasteBreakdownText}</p>

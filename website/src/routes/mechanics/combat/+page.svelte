@@ -719,13 +719,14 @@ finalDamage = damage − reduction</pre>
               </tr>
               <!-- Source: server-scripts/Skills.cs:673-675 — castTimeEnd -= spellHasteBonus × castTime -->
               <!-- Source: server-scripts/Combat.cs:332 — Mathf.Clamp(spellHaste, -0.5f, 0.5f) -->
+              <!-- Source: server-scripts/Player.cs:298 — refractoryPeriodSkill = 0.75f (post-cast refractory, blocks next cast) -->
               <tr class="border-b border-border/40">
                 <td class="py-2 pr-4 font-mono text-xs">player_spell</td>
                 <td class="py-2 pr-4 text-muted-foreground text-xs"
                   >Player spell auto-attacks</td
                 >
                 <td class="py-2 font-mono text-xs"
-                  >castTime&times;(1&minus;spellHaste)</td
+                  >castTime×(1−spellHaste) + 0.75s</td
                 >
               </tr>
               <!-- Source: server-scripts/Skills.cs:772 -->
@@ -804,7 +805,7 @@ finalDamage = damage − reduction</pre>
                   >No effect</td
                 >
                 <td class="py-2 text-muted-foreground text-xs"
-                  >Reduces cast time (cap: 50%).</td
+                  >Reduces cast time (cap: 50%). Refractory (0.75s) unaffected.</td
                 >
               </tr>
               <!-- Source: server-scripts/Pet.cs:1135 — non-merc pets always pass 0f spellHasteBonus -->

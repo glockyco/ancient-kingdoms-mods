@@ -119,6 +119,12 @@ export const SPELL_PLAYER_CAST: Partial<Record<PlayerClass, number>> = {
 
 // Hard cap on spell haste. Source: server-scripts/Combat.cs:332 — Mathf.Clamp(num, -0.5f, 0.5f)
 export const SPELL_HASTE_CAP = 0.5;
+// Post-cast refractory period for player spell auto-attacks (is_spell=true, no required_weapon_category).
+// The server FSM sets this window after FinishCast; the next auto-attack cast is blocked until it expires.
+// Source: server-scripts/Player.cs:298 — private const float refractoryPeriodSkill = 0.75f
+// Source: server-scripts/Player.cs:2202 — EventRefractoryPeriod returns false for followupDefaultAttack skills within the window
+// Source: server-scripts/Player.cs:2803 — NetworkrefractoryPeriodSkillTimeEnd = getServerTimeCorrected() + 0.75
+export const PLAYER_SPELL_REFRACTORY = 0.75;
 // Spell merc cast times: flame_blast (wizard 0.8s), gale_burst (druid 1.0s), divine_smite (cleric 1.2s)
 export const SPELL_MERC_CAST: Partial<Record<PlayerClass, number>> = {
   wizard: 0.8,
@@ -301,9 +307,13 @@ export function calcInterval(
       // explorer_shot (0.8s cast, cd=1.0)
       return 0.8 + 1.0 * (1 - haste01);
     case "spell_player":
-      // fire_blast / wind_shock / smite — no cooldown; spell haste reduces cast time
-      // Source: Skills.cs:675 spellHasteBonus reduces castTime
-      return (SPELL_PLAYER_CAST[cls] ?? 1.0) * (1 - spellHaste01);
+      // fire_blast / wind_shock / smite — spell haste reduces cast time; +0.75s refractory after cast
+      // Source: Skills.cs:675 (spellHasteBonus reduces castTimeEnd)
+      // Source: Player.cs:298,2803 (0.75s refractory; blocks next cast; unaffected by any haste)
+      return (
+        (SPELL_PLAYER_CAST[cls] ?? 1.0) * (1 - spellHaste01) +
+        PLAYER_SPELL_REFRACTORY
+      );
     case "staff_player":
       // staff_strike / crush_strike (0.5s cast, regular haste via weapon delay)
       return 0.5 + clampRefractory(delay, haste01);
@@ -611,7 +621,7 @@ export function fmtInterval(
     }
     case "spell_player": {
       const ct = SPELL_PLAYER_CAST[cls] ?? 1.0;
-      return `${fmt(ct, 1)}s × (1−${spellHastePercent}% spell haste) = ${fmt(interval)}s`;
+      return `${fmt(ct, 1)}s × (1−${spellHastePercent}% spell haste) + 0.75s refractory = ${fmt(interval)}s`;
     }
     case "staff_player":
       return `0.5s cast + ${fmt(interval - 0.5)}s refractory`;
