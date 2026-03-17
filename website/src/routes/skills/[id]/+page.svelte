@@ -2366,13 +2366,16 @@
         {#if skill.speed_bonus && skill.speed_bonus.base_value <= -50}
           <!-- Source: server-scripts/Skills.cs:1088 (BreakMezz — entity.speed <= -50f) -->
           <!-- Source: server-scripts/Combat.cs:567 (any damage > 0 calls BreakMezz) -->
+          <!-- Source: server-scripts/Monster.cs:1137 (monster self-break roll every 6s) -->
           <!-- Source: server-scripts/TargetDebuffSkill.cs:140 (boss/elite auto-resist speedBonus < -10) -->
           <div class="space-y-1">
             <h3 class="font-semibold">Sleep</h3>
             <p class="text-muted-foreground">
               Fully immobilizes the target. Any direct damage hit or DoT tick
               immediately breaks the effect. Bosses and elite monsters
-              automatically resist this debuff.
+              automatically resist this debuff. Every 6 seconds, an affected
+              monster rolls to self-break: chance = magicResist / 1000, clamped
+              between 5% and 95%.
             </p>
           </div>
         {/if}
