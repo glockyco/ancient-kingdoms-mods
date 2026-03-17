@@ -910,6 +910,21 @@ finalDamage = damage − reduction</pre>
       </div>
 
       <div>
+        <!-- Source: server-scripts/Monster.cs:1184-1190 (timerRoot 2s branch, RemoveRoot roll) -->
+        <!-- Source: server-scripts/Monster.cs:2835-2862 (RemoveRoot: removes -50 < speedBonus < 0) -->
+        <!-- Source: server-scripts/Npc.cs:827-833 (timerRoot 1s branch, 10% fixed chance) -->
+        <!-- Source: server-scripts/TargetDebuffSkill.cs:140 (boss/elite auto-resist speedBonus < -10) -->
+        <h3 class="font-semibold mb-1">Root</h3>
+        <p class="text-sm text-muted-foreground">
+          Fully stops movement. Unlike sleep, does not break when the target
+          takes damage. Monsters attempt a self-break every 2 seconds: chance =
+          magicResist / 1000, clamped between 5% and 95%. NPCs attempt a
+          self-break every 1 second with a fixed 10% chance. Bosses and elite
+          monsters automatically resist this debuff.
+        </p>
+      </div>
+
+      <div>
         <!-- Source: server-scripts/Skills.cs:1088 (BreakMezz — entity.speed <= -50f) -->
         <!-- Source: server-scripts/Combat.cs:567 (damage > 0 calls BreakMezz) -->
         <!-- Source: server-scripts/Skills.cs:155 (DoT tick also calls BreakMezz) -->

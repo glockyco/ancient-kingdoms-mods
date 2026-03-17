@@ -2363,6 +2363,21 @@
             </p>
           </div>
         {/if}
+        {#if skill.speed_bonus && skill.speed_bonus.base_value <= -5 && skill.speed_bonus.base_value > -50}
+          <!-- Source: server-scripts/Monster.cs:1184-1190 (timerRoot 2s, RemoveRoot) -->
+          <!-- Source: server-scripts/Npc.cs:827-833 (timerRoot 1s, 10% fixed) -->
+          <!-- Source: server-scripts/TargetDebuffSkill.cs:140 (boss/elite auto-resist speedBonus < -10) -->
+          <div class="space-y-1">
+            <h3 class="font-semibold">Root</h3>
+            <p class="text-muted-foreground">
+              Fully stops movement. Does not break on incoming damage. Monsters
+              attempt a self-break every 2 seconds: chance = magicResist / 1000,
+              clamped between 5% and 95%. NPCs attempt a self-break every 1
+              second with a fixed 10% chance. Bosses and elite monsters
+              automatically resist this debuff.
+            </p>
+          </div>
+        {/if}
         {#if skill.speed_bonus && skill.speed_bonus.base_value <= -50}
           <!-- Source: server-scripts/Skills.cs:1088 (BreakMezz — entity.speed <= -50f) -->
           <!-- Source: server-scripts/Combat.cs:567 (any damage > 0 calls BreakMezz) -->
