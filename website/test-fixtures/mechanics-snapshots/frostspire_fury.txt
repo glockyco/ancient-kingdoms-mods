@@ -1,1 +1,1 @@
-Mechanics Effective Cast Time = castTime − (castTime × spellHaste)
+Mechanics Effective Cast Time = castTime − (castTime × spellHaste) Stun Applies on a single roll. Cannot apply while the target is feared. Duration stacks: extends the existing stun end time rather than replacing it. Bear mounts have a 90% chance to resist any stun.
