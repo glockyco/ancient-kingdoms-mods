@@ -459,12 +459,13 @@ function formatBuffDebuffStats(
   if (skill.is_mana_shield) parts.push("mana shield");
 
   // 2. Movement (matches game tooltip order)
-  // Root/slow — server threshold for full root (immobilized) is speed <= -50
-  // Source: server-scripts/Monster.cs, Pet.cs, Npc.cs — speed <= -50f branch
+  // Sleep/slow — speedBonus <= -50 is the server threshold for the mezz (sleep) state.
+  // BreakMezz() expires all buffs with speedBonus <= -50f on any incoming damage or DoT tick.
+  // Source: server-scripts/Skills.cs:1088 (BreakMezz), server-scripts/Combat.cs:567 (damage breaks mezz)
   const speedBonus = parseLinearValue(skill.speed_bonus);
   if (speedBonus) {
     if (speedBonus.base_value <= -50) {
-      parts.push("root");
+      parts.push("sleep");
     } else if (speedBonus.base_value !== 0) {
       const sign = speedBonus.base_value > 0 ? "+" : "";
       parts.push(

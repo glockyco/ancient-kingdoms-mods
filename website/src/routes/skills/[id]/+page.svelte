@@ -2341,6 +2341,41 @@
             </p>
           </div>
         {/if}
+        {#if hasLinearValue(skill.stun_chance)}
+          <!-- Source: server-scripts/Combat.cs:847-884 — DealDamageAt stun branch -->
+          <div class="space-y-1">
+            <h3 class="font-semibold">Stun</h3>
+            <p class="text-muted-foreground">
+              Applies on a single roll. Cannot apply while the target is feared.
+              Duration stacks: extends the existing stun end time rather than
+              replacing it. Bear mounts have a 90% chance to resist any stun.
+            </p>
+          </div>
+        {/if}
+        {#if hasLinearValue(skill.knockback_chance)}
+          <!-- Source: server-scripts/Combat.cs:67 (knockbackTime = 0.25f), 919-924 -->
+          <div class="space-y-1">
+            <h3 class="font-semibold">Knockback</h3>
+            <p class="text-muted-foreground">
+              Applies only if neither stun nor fear took effect on the same hit.
+              Pushes the target backward with a fixed 0.25-second stun. Only
+              applies within 15 levels (waived for boss casters).
+            </p>
+          </div>
+        {/if}
+        {#if skill.speed_bonus && skill.speed_bonus.base_value <= -50}
+          <!-- Source: server-scripts/Skills.cs:1088 (BreakMezz — entity.speed <= -50f) -->
+          <!-- Source: server-scripts/Combat.cs:567 (any damage > 0 calls BreakMezz) -->
+          <!-- Source: server-scripts/TargetDebuffSkill.cs:140 (boss/elite auto-resist speedBonus < -10) -->
+          <div class="space-y-1">
+            <h3 class="font-semibold">Sleep</h3>
+            <p class="text-muted-foreground">
+              Fully immobilizes the target. Any direct damage hit or DoT tick
+              immediately breaks the effect. Bosses and elite monsters
+              automatically resist this debuff.
+            </p>
+          </div>
+        {/if}
         {#if skill.is_teleport}
           <!-- Source: server-scripts/AreaBuffSkill.cs:116-125 — isTeleport branch -->
           <div class="space-y-1">

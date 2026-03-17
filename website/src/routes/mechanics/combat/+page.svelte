@@ -868,6 +868,29 @@ finalDamage = damage − reduction</pre>
       </div>
 
       <div>
+        <!-- Source: server-scripts/Combat.cs:847-884 — DealDamageAt stun branch -->
+        <h3 class="font-semibold mb-1">Stun</h3>
+        <p class="text-sm text-muted-foreground">
+          Applies on a single roll against the skill's stun chance. Cannot apply
+          while the target is already feared. Duration stacks: a new stun
+          extends the existing stun end time rather than replacing it. Bear
+          mounts have a 90% chance to resist any stun. Stunned players are
+          dismounted.
+        </p>
+      </div>
+
+      <div>
+        <!-- Source: server-scripts/Combat.cs:67 (knockbackTime = 0.25f), 919-924 -->
+        <h3 class="font-semibold mb-1">Knockback</h3>
+        <p class="text-sm text-muted-foreground">
+          Applies only if neither stun nor fear took effect on the same hit.
+          Pushes the target backward and applies a 0.25-second stun. Only
+          applies when the level difference is less than 15. This cap is waived
+          when the caster is a boss monster.
+        </p>
+      </div>
+
+      <div>
         <h3 class="font-semibold mb-1">Ward &amp; Mana Shield Priority</h3>
         <p class="text-sm text-muted-foreground">
           Ward absorbs first. Mana Shield absorbs any remaining damage. Ward
@@ -883,6 +906,22 @@ finalDamage = damage − reduction</pre>
           chance, then the target failing their fear resist roll. Duration is
           random between half and full fearTime. Fear resist accumulates from
           skills and equipment, capped at 100%. At 100% the target is immune.
+        </p>
+      </div>
+
+      <div>
+        <!-- Source: server-scripts/Skills.cs:1088 (BreakMezz — entity.speed <= -50f) -->
+        <!-- Source: server-scripts/Combat.cs:567 (damage > 0 calls BreakMezz) -->
+        <!-- Source: server-scripts/Skills.cs:155 (DoT tick also calls BreakMezz) -->
+        <!-- Source: server-scripts/Monster.cs:1137 (monster self-break: magic resist roll every 6s) -->
+        <!-- Source: server-scripts/TargetDebuffSkill.cs:140 (boss/elite auto-resist speedBonus < -10) -->
+        <h3 class="font-semibold mb-1">Sleep</h3>
+        <p class="text-sm text-muted-foreground">
+          Applied by debuff skills that reduce speed to &minus;50 or below. Any
+          direct damage hit or DoT tick immediately breaks the effect. Bosses
+          and elite monsters automatically resist debuffs that reduce speed
+          below &minus;10. Every 6 seconds, an affected monster rolls to
+          self-break: chance = magicResist / 1000, clamped between 5% and 95%.
         </p>
       </div>
 
