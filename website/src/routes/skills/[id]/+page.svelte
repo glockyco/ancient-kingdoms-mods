@@ -666,7 +666,8 @@
       hasLinearValue(skill.block_chance_bonus) ||
       hasLinearValue(skill.accuracy_bonus) ||
       hasLinearValue(skill.critical_chance_bonus) ||
-      hasLinearValue(skill.lifetap_percent),
+      hasLinearValue(skill.lifetap_percent) ||
+      skill.break_armor_prob > 0,
   );
 
   // Damage/resist type helpers — kept for the damage pipeline and resist section
@@ -2449,6 +2450,17 @@
               Heals the attacker for a percentage of actual damage dealt, after
               all mitigation (resists, crits, etc.). The heal amount is rounded
               down.
+            </p>
+          </div>
+        {/if}
+        {#if skill.break_armor_prob > 0}
+          <!-- Source: server-scripts/Combat.cs:539-567 (break armor roll, DecreaseDurability) -->
+          <div class="space-y-1">
+            <h3 class="font-semibold">Break Armor</h3>
+            <p class="text-muted-foreground">
+              On each hit, rolls against the break armor chance. If successful,
+              a random equipment slot on the target loses 1 to 4 durability.
+              Affects players and mercenaries.
             </p>
           </div>
         {/if}
