@@ -662,7 +662,8 @@
       // H. Fear mechanics section (stun has no mechanics card section)
       skill.is_teleport ||
       hasLinearValue(skill.fear_chance) ||
-      !!skill.fear_resist_chance_bonus,
+      !!skill.fear_resist_chance_bonus ||
+      hasLinearValue(skill.block_chance_bonus),
   );
 
   // Damage/resist type helpers — kept for the damage pipeline and resist section
@@ -2401,6 +2402,18 @@
             <p class="text-muted-foreground">
               Teleports each party member in range to the nearest safe city.
               Each player is stunned for 1 second on arrival.
+            </p>
+          </div>
+        {/if}
+        {#if hasLinearValue(skill.block_chance_bonus)}
+          <!-- Source: server-scripts/Combat.cs:280-290 (blockChance property) -->
+          <!-- Source: server-scripts/Skills.cs:472-487 (GetBlockChanceBonus) -->
+          <div class="space-y-1">
+            <h3 class="font-semibold">Block Chance</h3>
+            <p class="text-muted-foreground">
+              Flat additive modifier to the target's block chance. Block chance
+              is capped at 80% before accuracy and level difference are applied.
+              Final miss probability is capped at 90%.
             </p>
           </div>
         {/if}
