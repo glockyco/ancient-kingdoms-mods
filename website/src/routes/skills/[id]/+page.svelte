@@ -670,7 +670,8 @@
       skill.break_armor_prob > 0 ||
       hasLinearValue(skill.heal_on_hit_percent) ||
       hasLinearValue(skill.cooldown_reduction_percent) ||
-      hasLinearValue(skill.damage_shield),
+      hasLinearValue(skill.damage_shield) ||
+      skill.is_blindness,
   );
 
   // Damage/resist type helpers — kept for the damage pipeline and resist section
@@ -2499,6 +2500,18 @@
               damage scales with the caster's WIS (0.75 per point) and is
               mitigated by the attacker's resist matching the buff's damage
               type. Final value has &plusmn;10% random variance.
+            </p>
+          </div>
+        {/if}
+        {#if skill.is_blindness}
+          <!-- Source: server-scripts/Player.cs:9845-9877 (TargetRpcAddBlind/RemoveBlind) -->
+          <!-- Source: server-scripts/Skills.cs:874 (isBlindness check, Player only) -->
+          <div class="space-y-1">
+            <h3 class="font-semibold">Blindness</h3>
+            <p class="text-muted-foreground">
+              Fills the player's screen with a black overlay for the buff's
+              duration. Purely visual with no effect on combat stats. Only
+              affects players. Fades out over 1 second when the effect ends.
             </p>
           </div>
         {/if}
