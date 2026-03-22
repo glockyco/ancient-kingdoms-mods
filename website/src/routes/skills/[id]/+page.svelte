@@ -667,7 +667,8 @@
       hasLinearValue(skill.accuracy_bonus) ||
       hasLinearValue(skill.critical_chance_bonus) ||
       hasLinearValue(skill.lifetap_percent) ||
-      skill.break_armor_prob > 0,
+      skill.break_armor_prob > 0 ||
+      hasLinearValue(skill.heal_on_hit_percent),
   );
 
   // Damage/resist type helpers — kept for the damage pipeline and resist section
@@ -2461,6 +2462,17 @@
               On each hit, rolls against the break armor chance. If successful,
               a random equipment slot on the target loses 1 to 4 durability.
               Affects players and mercenaries.
+            </p>
+          </div>
+        {/if}
+        {#if hasLinearValue(skill.heal_on_hit_percent)}
+          <!-- Source: server-scripts/Combat.cs:728-742 (heal on hit, melee non-spell only) -->
+          <div class="space-y-1">
+            <h3 class="font-semibold">Heal on Hit</h3>
+            <p class="text-muted-foreground">
+              Heals the attacker for a percentage of melee damage dealt. Only
+              triggers on non-spell attacks with a cast range below 2. Stacks
+              across multiple active buffs.
             </p>
           </div>
         {/if}
