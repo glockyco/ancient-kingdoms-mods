@@ -664,7 +664,8 @@
       hasLinearValue(skill.fear_chance) ||
       !!skill.fear_resist_chance_bonus ||
       hasLinearValue(skill.block_chance_bonus) ||
-      hasLinearValue(skill.accuracy_bonus),
+      hasLinearValue(skill.accuracy_bonus) ||
+      hasLinearValue(skill.critical_chance_bonus),
   );
 
   // Damage/resist type helpers — kept for the damage pipeline and resist section
@@ -2426,6 +2427,16 @@
               Flat modifier subtracted from the target's block and resist
               chance. Higher accuracy makes attacks harder to block or resist.
               Capped between -50% and 100%.
+            </p>
+          </div>
+        {/if}
+        {#if hasLinearValue(skill.critical_chance_bonus)}
+          <!-- Source: server-scripts/Combat.cs:247-262 (criticalChance), crit branch in DealDamageAt -->
+          <div class="space-y-1">
+            <h3 class="font-semibold">Critical Chance</h3>
+            <p class="text-muted-foreground">
+              Flat additive modifier to the caster's critical hit chance.
+              Critical hits deal 1.5x damage. Crit chance is capped at 70%.
             </p>
           </div>
         {/if}
