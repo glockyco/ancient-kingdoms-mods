@@ -665,7 +665,8 @@
       !!skill.fear_resist_chance_bonus ||
       hasLinearValue(skill.block_chance_bonus) ||
       hasLinearValue(skill.accuracy_bonus) ||
-      hasLinearValue(skill.critical_chance_bonus),
+      hasLinearValue(skill.critical_chance_bonus) ||
+      hasLinearValue(skill.lifetap_percent),
   );
 
   // Damage/resist type helpers — kept for the damage pipeline and resist section
@@ -2437,6 +2438,17 @@
             <p class="text-muted-foreground">
               Flat additive modifier to the caster's critical hit chance.
               Critical hits deal 1.5x damage. Crit chance is capped at 70%.
+            </p>
+          </div>
+        {/if}
+        {#if hasLinearValue(skill.lifetap_percent)}
+          <!-- Source: server-scripts/Combat.cs:1056-1060 (lifetap heal after damage) -->
+          <div class="space-y-1">
+            <h3 class="font-semibold">Lifetap</h3>
+            <p class="text-muted-foreground">
+              Heals the attacker for a percentage of actual damage dealt, after
+              all mitigation (resists, crits, etc.). The heal amount is rounded
+              down.
             </p>
           </div>
         {/if}
