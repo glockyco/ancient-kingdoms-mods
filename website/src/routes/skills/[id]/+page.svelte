@@ -663,7 +663,8 @@
       skill.is_teleport ||
       hasLinearValue(skill.fear_chance) ||
       !!skill.fear_resist_chance_bonus ||
-      hasLinearValue(skill.block_chance_bonus),
+      hasLinearValue(skill.block_chance_bonus) ||
+      hasLinearValue(skill.accuracy_bonus),
   );
 
   // Damage/resist type helpers — kept for the damage pipeline and resist section
@@ -2414,6 +2415,17 @@
               Flat additive modifier to the target's block chance. Block chance
               is capped at 80% before accuracy and level difference are applied.
               Final miss probability is capped at 90%.
+            </p>
+          </div>
+        {/if}
+        {#if hasLinearValue(skill.accuracy_bonus)}
+          <!-- Source: server-scripts/Combat.cs:1234-1237 (GetProbResistMeleeDamage, all GetProbResist*) -->
+          <div class="space-y-1">
+            <h3 class="font-semibold">Accuracy</h3>
+            <p class="text-muted-foreground">
+              Flat modifier subtracted from the target's block and resist
+              chance. Higher accuracy makes attacks harder to block or resist.
+              Capped between -50% and 100%.
             </p>
           </div>
         {/if}
