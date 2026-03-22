@@ -669,7 +669,8 @@
       hasLinearValue(skill.lifetap_percent) ||
       skill.break_armor_prob > 0 ||
       hasLinearValue(skill.heal_on_hit_percent) ||
-      hasLinearValue(skill.cooldown_reduction_percent),
+      hasLinearValue(skill.cooldown_reduction_percent) ||
+      hasLinearValue(skill.damage_shield),
   );
 
   // Damage/resist type helpers — kept for the damage pipeline and resist section
@@ -2485,6 +2486,19 @@
               When this buff is applied, all skills currently on cooldown have
               their remaining cooldown reduced by this percentage. This is a
               one-time effect at application, not an ongoing reduction.
+            </p>
+          </div>
+        {/if}
+        {#if hasLinearValue(skill.damage_shield)}
+          <!-- Source: server-scripts/Combat.cs:750-819 (damage_shield reflect block) -->
+          <div class="space-y-1">
+            <h3 class="font-semibold">Damage Shield</h3>
+            <p class="text-muted-foreground">
+              Reflects damage to melee attackers. Only triggers on non-spell
+              single-target attacks with a cast range below 1.5. Reflected
+              damage scales with the caster's WIS (0.75 per point) and is
+              mitigated by the attacker's resist matching the buff's damage
+              type. Final value has &plusmn;10% random variance.
             </p>
           </div>
         {/if}
