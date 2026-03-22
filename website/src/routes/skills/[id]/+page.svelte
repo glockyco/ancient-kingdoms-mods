@@ -668,7 +668,8 @@
       hasLinearValue(skill.critical_chance_bonus) ||
       hasLinearValue(skill.lifetap_percent) ||
       skill.break_armor_prob > 0 ||
-      hasLinearValue(skill.heal_on_hit_percent),
+      hasLinearValue(skill.heal_on_hit_percent) ||
+      hasLinearValue(skill.cooldown_reduction_percent),
   );
 
   // Damage/resist type helpers — kept for the damage pipeline and resist section
@@ -2473,6 +2474,17 @@
               Heals the attacker for a percentage of melee damage dealt. Only
               triggers on non-spell attacks with a cast range below 2. Stacks
               across multiple active buffs.
+            </p>
+          </div>
+        {/if}
+        {#if hasLinearValue(skill.cooldown_reduction_percent)}
+          <!-- Source: server-scripts/TargetBuffSkill.cs:239-254 (instant CD reduction on buff apply) -->
+          <div class="space-y-1">
+            <h3 class="font-semibold">Cooldown Reduction</h3>
+            <p class="text-muted-foreground">
+              When this buff is applied, all skills currently on cooldown have
+              their remaining cooldown reduced by this percentage. This is a
+              one-time effect at application, not an ongoing reduction.
             </p>
           </div>
         {/if}
