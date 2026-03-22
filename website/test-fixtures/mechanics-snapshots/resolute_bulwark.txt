@@ -1,0 +1,1 @@
+Mechanics When used by a mercenary, skill level = floor(regular level ÷ 5) + floor(veteran level ÷ 10), capped at max skill level. Block Chance Flat additive modifier to the target's block chance. Block chance is capped at 80% before accuracy and level difference are applied. Final miss probability is capped at 90%.

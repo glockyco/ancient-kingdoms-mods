@@ -1,1 +1,1 @@
-Mechanics Effective Cast Time = castTime − (castTime × spellHaste)
+Mechanics Effective Cast Time = castTime − (castTime × spellHaste) Damage Shield Reflects damage to melee attackers. Only triggers on non-spell single-target attacks with a cast range below 1.5. Reflected damage scales with the caster's WIS (0.75 per point) and is mitigated by the attacker's resist matching the buff's damage type. Final value has ±10% random variance.

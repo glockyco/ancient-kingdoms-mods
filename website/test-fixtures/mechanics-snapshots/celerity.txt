@@ -1,1 +1,1 @@
-Mechanics Effective Cast Time = castTime − (castTime × spellHaste)
+Mechanics Effective Cast Time = castTime − (castTime × spellHaste) Cooldown Reduction When this buff is applied, all skills currently on cooldown have their remaining cooldown reduced by this percentage. This is a one-time effect at application, not an ongoing reduction.

@@ -1,0 +1,1 @@
+Mechanics Accuracy Flat modifier subtracted from the target's block and resist chance. Higher accuracy makes attacks harder to block or resist. Capped between -50% and 100%.
