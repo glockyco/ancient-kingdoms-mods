@@ -781,6 +781,10 @@ const HARDCODED_EFFECTS: Record<string, string> = {
   // applying any buff. mana_percent_per_second_bonus in game data is unused.
   call_of_the_heroes:
     "teleport all active mercenaries to you, remove their fear",
+  // Source: server-scripts/TargetBuffSkill.cs — Charge navigates caster toward target
+  // monster and queues an automatic follow-up attack (pendingSkill=1). Speed/rage-gen
+  // stats are in the DB but the gap-closer behavior is hardcoded.
+  charge: "charge toward target, +3.5 speed, +5% rage/s, 2s",
   teleport: "",
   new_skill_placeholder: "",
 };

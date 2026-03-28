@@ -356,8 +356,8 @@
                 Per veteran level: +1% HP, +1% {pet.type_monster ===
                   "Warrior" || pet.type_monster === "Rogue"
                   ? "rage"
-                  : "mana"}, +1 damage<br />Every 2nd veteran level: +1 defense
-                and all resistances
+                  : "mana"}, +1 damage<br />Per regular level: +1 all
+                resistances
               </dd>
             </div>
             <div class="flex gap-2">

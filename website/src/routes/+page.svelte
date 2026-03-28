@@ -43,7 +43,7 @@
       Your guide to items, monsters, zones, quests, and more
     </p>
     <p class="text-sm text-muted-foreground">
-      Updated for v0.9.10.0 (2026-03-16)
+      Updated for v0.9.11.2 (2026-03-28)
     </p>
   </div>
 
