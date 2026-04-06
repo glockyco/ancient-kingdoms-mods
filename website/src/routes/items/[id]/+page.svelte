@@ -526,10 +526,6 @@
               </div>
             </div>
             <div>
-              <div class={styles.label}>Amount Needed</div>
-              <div class={styles.value}>{data.item.fragment_amount_needed}</div>
-            </div>
-            <div>
               <div class={styles.label}>Creates</div>
               <a
                 href="/items/{data.item.fragment_result_item_id}"
@@ -537,6 +533,10 @@
               >
                 {data.item.fragment_result_item_name || "Unknown"}
               </a>
+            </div>
+            <div>
+              <div class={styles.label}>Amount Needed</div>
+              <div class={styles.value}>{data.item.fragment_amount_needed}</div>
             </div>
           </Card.Content>
         </Card.Root>
