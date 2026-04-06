@@ -1364,14 +1364,6 @@
           </div>
         </div>
 
-        <!-- Source: server-scripts/Monster.cs — fatecharm consumed → num3=2 (vs 1 without), guaranteeing 2 boss equipment drops -->
-        <div>
-          <div class={styles.label}>Boss Loot</div>
-          <div class={styles.valuePositive}>
-            Guarantees +1 extra equipment drop
-          </div>
-        </div>
-
         {#if data.item.luck_token_fragment_id && data.item.luck_token_fragment_name}
           <div>
             <div class={styles.label}>Created From</div>
