@@ -196,8 +196,8 @@
               <td class="py-2 pr-4 text-muted-foreground">6</td>
               <td class="py-2"
                 ><strong>Enrage</strong>: damage increases by 33% (players) or
-                50–100% (monsters, random per hit), when the caster’s HP is
-                below 25% (non-spell only)</td
+                50–100% (monsters, random per hit), when the caster's HP is
+                below 50% for players / 25% for monsters (non-spell only)</td
               >
             </tr>
             <tr class="border-b border-border/50">
@@ -943,9 +943,10 @@ finalDamage = damage − reduction</pre>
       <div>
         <h3 class="font-semibold mb-1">Enrage</h3>
         <p class="text-sm text-muted-foreground">
-          Non-spell skills only. When the caster's HP falls below 25%, their
-          damage output increases by 33% (players) or 50–100% (monsters, random
-          per hit).
+          Non-spell skills only. When the caster's HP falls below 50% (monsters:
+          25%), their damage output increases by 33% (players) or 50–100%
+          (monsters, random per hit).
+          <!-- Source: server-scripts/Combat.cs — Player threshold: health/max < 0.5f; Monster/NPC threshold: health/max < 0.25f -->
         </p>
       </div>
 
