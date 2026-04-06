@@ -1356,7 +1356,7 @@
       <Card.Header>
         <Card.Title>Fatecharm</Card.Title>
       </Card.Header>
-      <Card.Content class="grid grid-cols-2 md:grid-cols-3 gap-4">
+      <Card.Content class="grid grid-cols-2 gap-4">
         <div>
           <div class={styles.label}>Zone</div>
           <div class={styles.value}>
