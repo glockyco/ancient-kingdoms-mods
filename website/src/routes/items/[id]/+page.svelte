@@ -525,6 +525,11 @@
                     </span>
                   </span>
                 </div>
+                <!-- Source: server-scripts/TargetDamageSkill.cs — Rogue offhand (slot 13) fires proc at procEffectProbability × 0.5f -->
+                <p class="text-xs text-muted-foreground mt-1 col-span-2">
+                  Note: Rogue players’ offhand weapon triggers this effect at
+                  50% of the displayed probability.
+                </p>
               {/if}
               {#if data.item.weapon_delay > 0}
                 <div
@@ -907,6 +912,24 @@
                   the first un-augmented copy will be used.
                 </div>
               </div>
+              <div>
+                <div class={styles.label}>Type</div>
+                <div class={styles.value}>
+                  {#if data.item.augment_is_defensive !== null && data.item.augment_is_defensive !== undefined}
+                    {data.item.augment_is_defensive ? "Defensive" : "Offensive"}
+                  {/if}
+                </div>
+              </div>
+              {#if data.item.augment_is_defensive !== null && data.item.augment_is_defensive !== undefined}
+                <div>
+                  <div class={styles.label}>Compatible Slots</div>
+                  <div class={styles.value}>
+                    {data.item.augment_is_defensive
+                      ? "Armor (Head, Chest, Legs, Feet, Hands, Bracers, Belt, Shield)"
+                      : "Weapons"}
+                  </div>
+                </div>
+              {/if}
               <div>
                 <div class={styles.label}>Removing</div>
                 <!-- Source: server-scripts/UINpcTrading.cs:118-123,182-186 — quality 2 (magic) = 10,000g, quality 3 (epic) = 15,000g, else 5,000g -->
@@ -1341,10 +1364,11 @@
           </div>
         </div>
 
+        <!-- Source: server-scripts/Monster.cs — fatecharm consumed → num3=2 (vs 1 without), guaranteeing 2 boss equipment drops -->
         <div>
-          <div class={styles.label}>Boss Drop Bonus</div>
+          <div class={styles.label}>Boss Loot</div>
           <div class={styles.valuePositive}>
-            +{(data.item.luck_token_bonus * 100).toFixed(0)}%
+            Guarantees +1 extra equipment drop
           </div>
         </div>
 
