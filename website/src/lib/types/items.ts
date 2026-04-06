@@ -19,6 +19,7 @@ export interface ItemListView {
   stat_keys: string;
   alchemy_recipe_level_required: number | null;
   mount_speed: number;
+  augment_is_defensive: boolean | null;
 }
 
 /**

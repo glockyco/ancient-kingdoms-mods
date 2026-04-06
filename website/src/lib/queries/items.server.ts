@@ -20,6 +20,7 @@ export function getItems(): ItemListView[] {
       class_required,
       alchemy_recipe_level_required,
       mount_speed,
+      augment_is_defensive,
       stats,
       (
         SELECT COUNT(*)
