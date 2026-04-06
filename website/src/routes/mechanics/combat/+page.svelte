@@ -963,9 +963,8 @@ finalDamage = damage − reduction</pre>
         <h3 class="font-semibold mb-1">Weapon On-Hit Procs</h3>
         <p class="text-sm text-muted-foreground">
           Weapons with an on-hit effect trigger it at the listed probability on
-          follow-up melee attacks. Requires durability &gt; 0. Rogue players
-          also trigger their offhand weapon's proc at 50% of its listed
-          probability.
+          auto-attacks. Requires durability &gt; 0. Rogue players also trigger
+          their offhand weapon's proc at 50% of its listed probability.
         </p>
       </div>
 
