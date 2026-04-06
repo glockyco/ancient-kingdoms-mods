@@ -591,11 +591,6 @@
                     </span>
                   </span>
                 </div>
-                <!-- Source: server-scripts/TargetDamageSkill.cs — Rogue offhand (slot 13) fires proc at procEffectProbability × 0.5f -->
-                <p class="text-xs text-muted-foreground mt-1 col-span-2">
-                  Note: Rogue players’ offhand weapon triggers this effect at
-                  50% of the displayed probability.
-                </p>
               {/if}
               {#if data.item.weapon_delay > 0}
                 <div

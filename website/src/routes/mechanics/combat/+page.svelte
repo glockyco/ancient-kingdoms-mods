@@ -959,6 +959,17 @@ finalDamage = damage − reduction</pre>
       </div>
 
       <div>
+        <!-- Source: server-scripts/TargetDamageSkill.cs — slot 13 fires at procEffectProbability * 0.5f; durability > 0 guard on both slots -->
+        <h3 class="font-semibold mb-1">Weapon On-Hit Procs</h3>
+        <p class="text-sm text-muted-foreground">
+          Weapons with an on-hit effect trigger it at the listed probability on
+          follow-up melee attacks. Requires durability &gt; 0. Rogue players
+          also trigger their offhand weapon's proc at 50% of its listed
+          probability.
+        </p>
+      </div>
+
+      <div>
         <h3 class="font-semibold mb-1">Cleanse</h3>
         <p class="text-sm text-muted-foreground mb-2">
           Cleanse removes debuff stacks from a target. Each debuff has a cleanse
