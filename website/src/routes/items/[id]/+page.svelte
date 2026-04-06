@@ -512,6 +512,36 @@
         </Card.Root>
       {/if}
 
+      <!-- Fatecharm Fragment -->
+      {#if data.item.luck_token_drop_chance && data.item.fragment_result_item_id}
+        <Card.Root class="bg-muted/30">
+          <Card.Header>
+            <Card.Title>Fatecharm Fragment</Card.Title>
+          </Card.Header>
+          <Card.Content class="flex flex-col gap-4">
+            <div>
+              <div class={styles.label}>Zone</div>
+              <div class={styles.value}>
+                {data.item.luck_token_zone_name || "Unknown"}
+              </div>
+            </div>
+            <div>
+              <div class={styles.label}>Amount Needed</div>
+              <div class={styles.value}>{data.item.fragment_amount_needed}</div>
+            </div>
+            <div>
+              <div class={styles.label}>Creates</div>
+              <a
+                href="/items/{data.item.fragment_result_item_id}"
+                class={styles.link}
+              >
+                {data.item.fragment_result_item_name || "Unknown"}
+              </a>
+            </div>
+          </Card.Content>
+        </Card.Root>
+      {/if}
+
       <!-- Pack Contents -->
       {#if data.packContents.length > 0}
         <Card.Root class="bg-muted/30">
@@ -1350,38 +1380,6 @@
             </div>
           </div>
         {/if}
-      </Card.Content>
-    </Card.Root>
-  {/if}
-
-  <!-- Fatecharm Fragment -->
-  {#if data.item.luck_token_drop_chance && data.item.fragment_result_item_id}
-    <Card.Root class="bg-muted/30">
-      <Card.Header>
-        <Card.Title>Fatecharm Fragment</Card.Title>
-      </Card.Header>
-      <Card.Content class="grid grid-cols-2 md:grid-cols-3 gap-4">
-        <div>
-          <div class={styles.label}>Zone</div>
-          <div class={styles.value}>
-            {data.item.luck_token_zone_name || "Unknown"}
-          </div>
-        </div>
-
-        <div>
-          <div class={styles.label}>Amount Needed</div>
-          <div class={styles.value}>{data.item.fragment_amount_needed}</div>
-        </div>
-
-        <div>
-          <div class={styles.label}>Creates</div>
-          <a
-            href="/items/{data.item.fragment_result_item_id}"
-            class={styles.link}
-          >
-            {data.item.fragment_result_item_name || "Unknown"}
-          </a>
-        </div>
       </Card.Content>
     </Card.Root>
   {/if}
