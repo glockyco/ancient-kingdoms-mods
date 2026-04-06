@@ -749,7 +749,7 @@ const HARDCODED_EFFECTS: Record<string, string> = {
   elixir_endurance: "+60s potion buff duration/lvl",
   veteran_awareness: "reveals nearby monsters on minimap",
   parry: "negate & counter melee attack",
-  symbiosis: "pet inherits +10% of your attributes/lvl (max 50%)",
+  symbiosis: "pet inherits +10%/lvl of your attributes & resistances (max 50%)",
   summon_player: "teleport target to caster, stun (2s)",
   disarm_trap: "detect and disarm traps",
   alchemy: "craft potions and elixirs",
@@ -784,9 +784,18 @@ const HARDCODED_EFFECTS: Record<string, string> = {
   // Source: server-scripts/TargetBuffSkill.cs — Charge navigates caster toward target
   // monster and queues an automatic follow-up attack (pendingSkill=1). Speed/rage-gen
   // stats are in the DB but the gap-closer behavior is hardcoded.
-  charge: "charge toward target, +3.5 speed, +5% rage/s, 2s",
+  charge:
+    "charge toward target, removes roots, +3.5 speed, +100% accuracy, +5% rage/s, 2s",
   teleport: "",
   new_skill_placeholder: "",
+  // Source: server-scripts/Combat.cs — isResourceDepending passive: damage_percent_bonus × (energy.current / energy.max)
+  razor_of_wrath:
+    "+1%/lvl attack power, scales with current rage (full rage = full bonus)",
+  // Source: server-scripts/Combat.cs — isResourceDepending passive: magic_damage_percent_bonus × (mana.current / mana.max)
+  arcane_edge:
+    "+1%/lvl spell power, scales with current mana (full mana = full bonus)",
+  // Divine Intervention: +10000 all resists for 3s in area is effectively invulnerability; generic formatter would show confusing +10000 values
+  divine_intervention: "grants invulnerability to nearby allies, 3s",
 };
 
 export function formatSkillEffect(
