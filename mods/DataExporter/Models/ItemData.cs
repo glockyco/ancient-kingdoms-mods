@@ -110,6 +110,7 @@ public class ItemData
     public string augment_armor_set_name { get; set; }
     public List<string> augment_armor_set_item_ids { get; set; }
     public List<AugmentSkillBonus> augment_skill_bonuses { get; set; }
+    public bool? augment_is_defensive { get; set; }  // true=Defensive (armor slots), false=Offensive (weapon slots), null=non-augment
 
     // === TreasureMapItem fields (when item_type = treasure_map) ===
     public string treasure_map_reward_id { get; set; }

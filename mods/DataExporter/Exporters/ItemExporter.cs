@@ -422,6 +422,8 @@ public class ItemExporter : BaseExporter
                 }
             }
         }
+        // Source: server-scripts/AugmentItem.cs — isDefensiveAugment: true=Defensive (Head/Chest/Legs/Feet/Hands/Bracers/Belt/Shield), false=Offensive (weapon slots)
+        itemData.augment_is_defensive = augmentItem.isDefensiveAugment;
     }
 
     private void PopulateTreasureMapFields(Il2Cpp.ScriptableItem item, ItemData itemData)

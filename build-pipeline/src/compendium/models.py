@@ -338,6 +338,9 @@ class ItemData(BaseModel):
     augment_skill_bonuses: list[
         Any
     ] = []  # Skill bonuses from set (e.g., [{'skill_id': 'tactics_of_war', 'level_bonus': 1}])
+    augment_is_defensive: bool | None = (
+        None  # None for non-augments; True=Defensive (armor slots), False=Offensive (weapon slots)
+    )
     recipe_potion_learned_id: str | None = None  # Potion unlocked by recipe
 
     # Weapon properties

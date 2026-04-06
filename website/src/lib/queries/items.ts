@@ -109,6 +109,7 @@ export interface Item {
   augment_armor_set_name: string | null;
   augment_skill_bonuses: string | null; // JSON
   augment_skill_bonuses_with_names: string | null; // JSON
+  augment_is_defensive: boolean | null;
   augment_attribute_bonuses: string | null; // JSON
   // Alchemy recipe (for recipe items)
   recipe_potion_learned_id: string | null;

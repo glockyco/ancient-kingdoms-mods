@@ -281,6 +281,7 @@ CREATE TABLE items (
     augment_skill_bonuses TEXT,
     augment_skill_bonuses_with_names TEXT,  -- JSON: [{"skill_id": "combat_training", "skill_name": "Combat Training", "level_bonus": 2}, ...]
     augment_attribute_bonuses TEXT,   -- JSON: [{"attribute": "strength", "bonus": 10}, ...]
+    augment_is_defensive INTEGER,  -- NULL for non-augments; 1=Defensive (armor slots: Head/Chest/Legs/Feet/Hands/Bracers/Belt/Shield), 0=Offensive (weapon slots). Source: server-scripts/AugmentItem.cs isDefensiveAugment
     recipe_potion_learned_id TEXT REFERENCES items(id),
     recipe_potion_learned_name TEXT,
     alchemy_recipe_level_required INTEGER,
