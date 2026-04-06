@@ -476,6 +476,42 @@
         </Card.Root>
       {/if}
 
+      <!-- Fatecharm -->
+      {#if data.item.luck_token_bonus}
+        <Card.Root class="bg-muted/30">
+          <Card.Header>
+            <Card.Title>Fatecharm</Card.Title>
+          </Card.Header>
+          <Card.Content class="flex flex-col gap-4">
+            <div>
+              <div class={styles.label}>Zone</div>
+              <div class={styles.value}>
+                {data.item.luck_token_zone_name || "Unknown"}
+              </div>
+            </div>
+
+            {#if data.item.luck_token_fragment_id && data.item.luck_token_fragment_name}
+              <div>
+                <div class={styles.label}>Created From</div>
+                <div>
+                  <a
+                    href="/items/{data.item.luck_token_fragment_id}"
+                    class={styles.link}
+                  >
+                    {data.item.luck_token_fragment_name}
+                  </a>
+                  {#if data.item.luck_token_fragments_needed}
+                    <span class={styles.label}>
+                      (x{data.item.luck_token_fragments_needed})</span
+                    >
+                  {/if}
+                </div>
+              </div>
+            {/if}
+          </Card.Content>
+        </Card.Root>
+      {/if}
+
       <!-- Pack Contents -->
       {#if data.packContents.length > 0}
         <Card.Root class="bg-muted/30">
@@ -1346,42 +1382,6 @@
             {data.item.fragment_result_item_name || "Unknown"}
           </a>
         </div>
-      </Card.Content>
-    </Card.Root>
-  {/if}
-
-  <!-- Fatecharm -->
-  {#if data.item.luck_token_bonus}
-    <Card.Root class="bg-muted/30">
-      <Card.Header>
-        <Card.Title>Fatecharm</Card.Title>
-      </Card.Header>
-      <Card.Content class="grid grid-cols-2 gap-4">
-        <div>
-          <div class={styles.label}>Zone</div>
-          <div class={styles.value}>
-            {data.item.luck_token_zone_name || "Unknown"}
-          </div>
-        </div>
-
-        {#if data.item.luck_token_fragment_id && data.item.luck_token_fragment_name}
-          <div>
-            <div class={styles.label}>Created From</div>
-            <div>
-              <a
-                href="/items/{data.item.luck_token_fragment_id}"
-                class={styles.link}
-              >
-                {data.item.luck_token_fragment_name}
-              </a>
-              {#if data.item.luck_token_fragments_needed}
-                <span class={styles.label}>
-                  (x{data.item.luck_token_fragments_needed})</span
-                >
-              {/if}
-            </div>
-          </div>
-        {/if}
       </Card.Content>
     </Card.Root>
   {/if}
