@@ -759,6 +759,9 @@ const HARDCODED_EFFECTS: Record<string, string> = {
   gathering: "gather herbs and reagents",
   mining: "mine ore and minerals",
   opening: "open locked chests",
+  // Source: server-scripts/GatherItem.cs:304-354 — Lockpicking allows opening locked chests
+  // using lockpicks instead of the specific key. 80% failure chance, consumes one lockpick per attempt.
+  lockpicking: "open locked chests with lockpicks (20% success chance)",
   blushburst: "cosmetic visual effect",
   emerald_pop: "cosmetic visual effect",
   golden_whirl: "cosmetic visual effect",
@@ -770,6 +773,7 @@ const HARDCODED_EFFECTS: Record<string, string> = {
   // Source: server-scripts/TargetBuffSkill.cs:15 (isDoubleExpSpell flag) — lasts for the event duration
   halloween_event: "2× XP from kills, event duration",
   winter_festival: "2× XP from kills, event duration",
+  elixir_of_enlightened_learning: "2× XP from kills, 1800s (+60s/lvl)",
   // Source: server-scripts/TargetDamageSkill.cs:162-171, 183-200 — while active,
   // Rogue followup (Weapon Strike) attacks switch to Poison damage type and gain
   // +DEX*2.5 bonus on top of normal combat.damage. Resisted by Poison Resist
