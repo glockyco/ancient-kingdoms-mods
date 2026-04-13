@@ -131,10 +131,10 @@
     }
   }
 
-  // Radiant Aether drop chance: radiantSeekerLevel * 10% (increased in v0.9.5.4)
+  // Source: server-scripts/GatherItem.cs:381 — 0.05 + radiantSekeerLevel * 0.25
   function getRadiantAetherChance(): number {
     const skill = skillLevel / 100;
-    return skill * 10;
+    return (0.05 + skill * 0.25) * 100;
   }
 
   // Computed success chance based on resource type
