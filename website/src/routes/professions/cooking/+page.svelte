@@ -66,16 +66,16 @@
     new Map(data.xpByTier.map((tx) => [tx.tier, tx.xp])),
   );
 
-  // Cooking success chance formula from game code (same as alchemy)
+  // Source: server-scripts/Utils.cs:503-513 — GetSuccessChanceProbCooking
   function getSuccessChance(recipeLevel: number): number {
     const skill = skillLevel / 100;
     switch (recipeLevel) {
       case 0:
         return 100;
       case 1:
-        return Math.min(100, (0.5 + skill * 5) * 100);
+        return Math.min(100, (0.4 + skill * 2) * 100);
       case 2:
-        return Math.min(100, (0.1 + skill) * 100);
+        return Math.min(100, (0.2 + skill) * 100);
       case 3:
         return Math.min(100, skill * 95);
       default:

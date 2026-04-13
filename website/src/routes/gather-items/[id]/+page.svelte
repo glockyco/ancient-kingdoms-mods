@@ -59,16 +59,16 @@
   let skillLevel = $state(0);
   let pickaxeQuality = $state(0);
 
-  // Herbalism success chance formula from game code (updated v0.9.3.0)
+  // Source: server-scripts/Utils.cs:491-501 — GetSuccessProbHerbalism
   function getHerbalismSuccessChance(resourceLevel: number): number {
     const skill = skillLevel / 100;
     switch (resourceLevel) {
       case 0:
         return 100;
       case 1:
-        return Math.min(100, (0.3 + skill * 2.5) * 100);
+        return Math.min(100, (0.3 + skill * 2) * 100);
       case 2:
-        return Math.min(100, (0.1 + skill) * 100);
+        return Math.min(100, (0.15 + skill) * 100);
       case 3:
         return Math.min(100, skill * 95);
       default:
@@ -76,7 +76,7 @@
     }
   }
 
-  // Mining success chance formula from game code
+  // Source: server-scripts/Utils.cs:515-530 — GetSuccessProbMining
   function getMiningSuccessChance(resourceLevel: number): number {
     const skill = skillLevel / 100;
     switch (resourceLevel) {
