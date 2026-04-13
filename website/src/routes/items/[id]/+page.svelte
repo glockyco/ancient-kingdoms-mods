@@ -175,9 +175,9 @@
           rate: g.actual_drop_chance,
           amount_min: g.amount_min,
           amount_max: g.amount_max,
-          // Source: server-scripts/GatherItem.cs — Radiant Spark drop rate scales 0-10% with Radiant Seeker profession level
+          // Source: server-scripts/GatherItem.cs:381 — Radiant Spark drop rate: 5% base + up to 25% from Radiant Seeker level
           rate_note: g.is_radiant_spark
-            ? "0-10% based on Radiant Seeker level"
+            ? "5-30% based on Radiant Seeker level"
             : undefined,
         })) || [],
 

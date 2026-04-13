@@ -377,7 +377,8 @@ interface GatheringDropRow {
  * Load gathering resource drops for popup.
  * Includes the primary (guaranteed) drop and secondary random drops.
  * For secondary drops, uses actual_drop_chance = (1/N) * drop_rate.
- * For radiant sparks, radiant aether drop is 0-10% based on skill (v0.9.5.4+), not guaranteed.
+ * For radiant sparks, radiant aether drop is 5-30% based on skill (v0.9.13.1+), not guaranteed.
+ * Source: server-scripts/GatherItem.cs:381
  */
 export async function loadGatheringPopupDetails(
   resourceId: string,
@@ -385,14 +386,15 @@ export async function loadGatheringPopupDetails(
   const rows = await query<GatheringDropRow>(
     `
     -- Primary drop from gathering_resources
-    -- For radiant sparks, radiant aether is 0-10% based on skill (v0.9.5.4+)
+    -- Source: server-scripts/GatherItem.cs:381
+    -- For radiant sparks, radiant aether is 5-30% based on skill (v0.9.13.1+)
     -- For plants/minerals, it's guaranteed (100%)
     SELECT
       gr.item_reward_id as item_id,
       i.name as item_name,
       i.quality,
-      CASE WHEN gr.is_radiant_spark = 1 THEN 0.0 ELSE 1.0 END as drop_rate,
-      CASE WHEN gr.is_radiant_spark = 1 THEN 0.10 ELSE NULL END as drop_rate_max,
+      CASE WHEN gr.is_radiant_spark = 1 THEN 0.05 ELSE 1.0 END as drop_rate,
+      CASE WHEN gr.is_radiant_spark = 1 THEN 0.30 ELSE NULL END as drop_rate_max,
       i.tooltip_html
     FROM gathering_resources gr
     JOIN items i ON i.id = gr.item_reward_id
