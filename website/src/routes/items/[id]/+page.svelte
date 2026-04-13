@@ -956,6 +956,22 @@
             </div>
           </Card.Content>
         </Card.Root>
+      {:else if data.item.id === "lockpicks"}
+        <!-- Source: server-scripts/GatherItem.cs:304-354 — Lockpicking skill -->
+        <Card.Root class="bg-muted/30">
+          <Card.Header>
+            <Card.Title>Lockpicking</Card.Title>
+          </Card.Header>
+          <Card.Content>
+            <p class="text-sm text-muted-foreground">
+              Used by Rogues with the <a
+                href="/skills/lockpicking"
+                class={styles.link}>Lockpicking</a
+              > veteran skill to open locked chests without the specific key. One
+              lockpick is consumed per attempt with a 20% success chance.
+            </p>
+          </Card.Content>
+        </Card.Root>
       {:else if data.item.item_type === "augment" && !data.item.augment_armor_set_name && data.augmenters.length > 0}
         <!-- Augment (Non-Set) Usage -->
         <Card.Root class="bg-muted/30">
