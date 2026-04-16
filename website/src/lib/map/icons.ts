@@ -21,6 +21,7 @@ import {
   FlaskConical,
   Hammer,
   ChefHat,
+  Scroll,
   type IconNode,
 } from "lucide";
 import { LAYER_COLORS } from "./config";
@@ -59,6 +60,7 @@ const ENTITY_ICONS: Record<
   crafting_station: { icon: Hammer, colorKey: "crafting" },
   cooking_oven: { icon: ChefHat, colorKey: "crafting" },
   treasure: { icon: Shovel, colorKey: "treasure" },
+  scribing_table: { icon: Scroll, colorKey: "scribing" },
 };
 
 export type EntityIconType = keyof typeof ENTITY_ICONS;

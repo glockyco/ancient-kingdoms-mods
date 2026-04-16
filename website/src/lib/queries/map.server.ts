@@ -917,13 +917,28 @@ function loadCraftingStationsServer(
       cs.is_cooking_oven
     FROM crafting_stations cs
     JOIN zones z ON z.id = cs.zone_id
+    UNION ALL
+    SELECT
+      st.id,
+      st.name,
+      st.position_x,
+      st.position_y,
+      st.zone_id,
+      z.name as zone_name,
+      'scribing_table' as table_type,
+      0 as is_cooking_oven
+    FROM scribing_tables st
+    JOIN zones z ON z.id = st.zone_id
   `,
     )
     .all() as CraftingRow[];
 
   return rows.map((r) => ({
     id: r.id,
-    type: r.table_type as "alchemy_table" | "crafting_station",
+    type: r.table_type as
+      | "alchemy_table"
+      | "crafting_station"
+      | "scribing_table",
     name: r.name,
     position:
       r.position_x !== null && r.position_y !== null

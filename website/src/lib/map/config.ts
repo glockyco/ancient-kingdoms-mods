@@ -54,6 +54,7 @@ export const LAYER_COLORS = {
   gathering_spark: [168, 85, 247] as [number, number, number], // purple-500
   gathering_other: [156, 163, 175] as [number, number, number], // gray-400
   crafting: [139, 92, 246] as [number, number, number], // violet-500
+  scribing: [168, 85, 247] as [number, number, number], // purple-500
 } as const;
 
 /**
@@ -95,6 +96,7 @@ export const ICON_SIZES = {
   crafting_station: { base: 20, min: 18, max: 44 },
   alchemy_table: { base: 20, min: 18, max: 44 },
   cooking_oven: { base: 20, min: 18, max: 44 },
+  scribing_table: { base: 20, min: 18, max: 44 },
   hunt: { base: 18, min: 16, max: 40 },
   monster: { base: 18, min: 16, max: 40 },
   gathering_plant: { base: 16, min: 14, max: 36 },
@@ -236,4 +238,5 @@ export const ENTITY_BORDER_COLORS: Record<string, string> = {
   gathering_other: "border-l-gray-400",
   alchemy_table: "border-l-violet-500",
   crafting_station: "border-l-violet-500",
+  scribing_table: "border-l-purple-500",
 };

@@ -102,6 +102,9 @@ export function createFilteredData(data: MapEntityData): FilteredMapData {
       (c) => c.type === "crafting_station" && !c.isCookingOven,
     ),
     cookingOvens: renderableCrafting.filter((c) => c.isCookingOven),
+    scribingTables: renderableCrafting.filter(
+      (c) => c.type === "scribing_table",
+    ),
     portalsWithDestinations: renderablePortals.filter(
       (p) => p.destination !== null && !p.isClosed,
     ),
@@ -555,6 +558,21 @@ export function createLayers(
     },
   });
 
+  const scribingTablesLayer = createEntityLayer<CraftingMapEntity>({
+    id: "scribing-tables",
+    data: filtered.scribingTables,
+    visible: visibility.scribingTables,
+    iconType: "scribing_table",
+    color: LAYER_COLORS.scribing,
+    radius: LAYER_RADII.crafting,
+    extensions: [zoneFilterExt],
+    getFilterValue: (d) => isInZone(d.zoneId),
+    filterRange: [1, 1],
+    updateTriggers: {
+      getFilterValue: focusedZoneId,
+    },
+  });
+
   const chestsLayer = createEntityLayer<ChestMapEntity>({
     id: "chests",
     data: filtered.chests,
@@ -953,6 +971,8 @@ export function createLayers(
         return "gathering_spark";
       case "alchemy_table":
         return "alchemy_table";
+      case "scribing_table":
+        return "scribing_table";
       case "crafting_station":
         if ("isCookingOven" in d && d.isCookingOven) return "cooking_oven";
         return "crafting_station";
@@ -1226,6 +1246,7 @@ export function createLayers(
     alchemyTablesLayer,
     forgesLayer,
     cookingOvensLayer,
+    scribingTablesLayer,
     huntsLayer,
     chestsLayer,
     treasureLayer,

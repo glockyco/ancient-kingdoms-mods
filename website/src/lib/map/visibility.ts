@@ -55,6 +55,7 @@ export const CRAFTING_TYPE_KEYS: (keyof LayerVisibility)[] = [
   "alchemyTables",
   "forges",
   "cookingOvens",
+  "scribingTables",
 ];
 
 /**

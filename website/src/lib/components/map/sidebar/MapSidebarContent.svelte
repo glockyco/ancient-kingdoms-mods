@@ -20,6 +20,7 @@
   import MousePointerClick from "@lucide/svelte/icons/mouse-pointer-click";
   import Crosshair from "@lucide/svelte/icons/crosshair";
   import FlaskConical from "@lucide/svelte/icons/flask-conical";
+  import Scroll from "@lucide/svelte/icons/scroll";
   import ChefHat from "@lucide/svelte/icons/chef-hat";
   import MapSidebarSection from "./MapSidebarSection.svelte";
   import ZoneFocusSelect from "./ZoneFocusSelect.svelte";
@@ -269,6 +270,12 @@
       label: "Forges",
       color: LAYER_COLORS.crafting,
       icon: Hammer,
+    },
+    {
+      key: "scribingTables",
+      label: "Scribing Tables",
+      color: LAYER_COLORS.scribing,
+      icon: Scroll,
     },
   ];
 

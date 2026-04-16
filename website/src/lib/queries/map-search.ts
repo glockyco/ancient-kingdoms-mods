@@ -622,8 +622,8 @@ async function searchCraftingStations(
   ftsQuery: string,
   limit: number,
 ): Promise<MapSearchResult[]> {
-  // Search both crafting_stations and alchemy_tables
-  const [craftingRows, alchemyRows] = await Promise.all([
+  // Search crafting_stations, alchemy_tables, and scribing_tables
+  const [craftingRows, alchemyRows, scribingRows] = await Promise.all([
     query<CraftingStationSearchRow>(
       `
       SELECT
@@ -662,17 +662,41 @@ async function searchCraftingStations(
     `,
       [ftsQuery, limit],
     ),
+    query<CraftingStationSearchRow>(
+      `
+      SELECT
+        st.id,
+        st.name,
+        st.keywords,
+        0 as is_cooking_oven,
+        st.position_x,
+        st.position_y,
+        st.zone_id,
+        st.zone_name
+      FROM scribing_tables_fts stf
+      JOIN scribing_tables st ON stf.rowid = st.rowid
+      WHERE scribing_tables_fts MATCH ?
+      ORDER BY rank
+      LIMIT ?
+    `,
+      [ftsQuery, limit],
+    ),
   ]);
 
-  const allRows = [...craftingRows, ...alchemyRows].slice(0, limit);
+  const allRows = [...craftingRows, ...alchemyRows, ...scribingRows].slice(
+    0,
+    limit,
+  );
 
   return allRows.map((r) => {
     const y = r.position_y !== null ? -r.position_y : null;
-    const subcategory = r.keywords?.includes("alchemy")
-      ? "alchemy"
-      : r.is_cooking_oven
-        ? "cooking"
-        : "forge";
+    const subcategory = r.keywords?.includes("scribing")
+      ? "scribing"
+      : r.keywords?.includes("alchemy")
+        ? "alchemy"
+        : r.is_cooking_oven
+          ? "cooking"
+          : "forge";
 
     return {
       id: r.id,

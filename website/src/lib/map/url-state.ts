@@ -104,6 +104,7 @@ export function getDefaultLayerVisibility(): LayerVisibility {
     alchemyTables: false,
     forges: false,
     cookingOvens: false,
+    scribingTables: false,
     // Resources
     gatheringPlants: false,
     gatheringMinerals: false,
@@ -258,6 +259,7 @@ export function urlStateToLayerVisibility(
     alchemyTables: urlLayers.includes("alchemyTables"),
     forges: urlLayers.includes("forges"),
     cookingOvens: urlLayers.includes("cookingOvens"),
+    scribingTables: urlLayers.includes("scribingTables"),
     // Resources
     gatheringPlants: urlLayers.includes("gatheringPlants"),
     gatheringMinerals: urlLayers.includes("gatheringMinerals"),

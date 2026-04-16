@@ -49,6 +49,7 @@
 
   function getDisplayName(entity: AnyMapEntity): string {
     if (entity.type === "alchemy_table") return "Alchemy Table";
+    if (entity.type === "scribing_table") return "Scribing Table";
     if (entity.type === "crafting_station") {
       const crafting = entity as CraftingMapEntity;
       return crafting.isCookingOven ? "Cooking Oven" : "Forge";
@@ -80,6 +81,7 @@
         return "Resource";
       case "alchemy_table":
       case "crafting_station":
+      case "scribing_table":
         return "Crafting Station";
       case "chest":
       case "treasure":

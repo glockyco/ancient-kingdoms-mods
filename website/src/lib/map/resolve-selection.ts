@@ -112,6 +112,7 @@ export function resolvePhysicalSelection(
     case "crafting":
     case "alchemy_table":
     case "crafting_station":
+    case "scribing_table":
       return resolveCraftingSelection(id, entityData);
     default:
       return { popup: null, highlight: null };

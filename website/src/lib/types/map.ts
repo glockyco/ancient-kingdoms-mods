@@ -17,7 +17,8 @@ export type EntityType =
   | "gathering_spark"
   | "gathering_other"
   | "alchemy_table"
-  | "crafting_station";
+  | "crafting_station"
+  | "scribing_table";
 
 /**
  * Base interface for all map entities
@@ -211,7 +212,7 @@ export interface GatheringMapEntity extends MapEntity {
  * Crafting station entity data
  */
 export interface CraftingMapEntity extends MapEntity {
-  type: "alchemy_table" | "crafting_station";
+  type: "alchemy_table" | "crafting_station" | "scribing_table";
   isCookingOven: boolean;
 }
 
@@ -270,6 +271,7 @@ export interface LayerVisibility {
   alchemyTables: boolean;
   forges: boolean;
   cookingOvens: boolean;
+  scribingTables: boolean;
 
   // Resources section
   gatheringPlants: boolean;
@@ -358,6 +360,7 @@ export interface FilteredMapData {
   alchemyTables: CraftingMapEntity[];
   forges: CraftingMapEntity[];
   cookingOvens: CraftingMapEntity[];
+  scribingTables: CraftingMapEntity[];
   portalsWithDestinations: PortalMapEntity[];
   teleportersWithDestinations: NpcMapEntity[];
   parentZones: ParentZoneBoundary[];

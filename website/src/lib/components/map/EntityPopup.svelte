@@ -256,6 +256,7 @@
         return "Resource";
       case "alchemy_table":
       case "crafting_station":
+      case "scribing_table":
         return "Crafting Station";
       default:
         return "Unknown";
@@ -265,6 +266,9 @@
   function getDisplayName(entity: AnyMapEntity): string {
     if (entity.type === "alchemy_table") {
       return "Alchemy Table";
+    }
+    if (entity.type === "scribing_table") {
+      return "Scribing Table";
     }
     if (entity.type === "crafting_station") {
       const crafting = entity as CraftingMapEntity;
@@ -1116,7 +1120,7 @@
   {/if}
 
   <!-- Crafting Station Section -->
-  {#if entity.type === "alchemy_table" || entity.type === "crafting_station"}
+  {#if entity.type === "alchemy_table" || entity.type === "crafting_station" || entity.type === "scribing_table"}
     <!-- Nothing extra needed - name and zone shown in header -->
   {/if}
 </PopupCard>

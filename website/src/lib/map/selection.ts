@@ -469,6 +469,7 @@ function getIndexForType(
       return index.gathering;
     case "alchemy_table":
     case "crafting_station":
+    case "scribing_table":
       return index.crafting;
     default:
       return null;
