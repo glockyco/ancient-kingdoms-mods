@@ -169,6 +169,20 @@ public class ProfessionExporter : BaseExporter
                 max_level = 100,
                 tracking_type = "float_level",
                 tracking_denominator = null
+            },
+            new ProfessionData
+            {
+                id = "scroll_mastery",
+                name = "Scroll Mastery",
+                description = "Craft and use scrolls at scribing tables.",
+                category = "crafting",
+                icon_path = GetIconPath("scroll_mastery"),
+                steam_achievement_id = "SCROLL_MASTERY_MASTER",
+                steam_achievement_name = "Master Scribe",
+                steam_achievement_description = "Achieve 100% mastery in Scroll Mastery",
+                max_level = 100,
+                tracking_type = "float_level",
+                tracking_denominator = null
             }
         };
 
@@ -224,6 +238,7 @@ public class ProfessionExporter : BaseExporter
             "treasure_hunter" => ui.slotTreasureHunter,
             "radiant_seeker" => ui.slotRadiantSeeker,
             "hunter" => ui.slotHunter,
+            "scroll_mastery" => ui.slotScrollMastery,
             _ => null
         };
     }
