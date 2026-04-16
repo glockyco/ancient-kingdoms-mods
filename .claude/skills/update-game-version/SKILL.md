@@ -5,6 +5,8 @@ description: Full workflow for updating to a new game version. Use when a new An
 
 ## Before Starting
 
+**Do not speculate about required changes from the changelog text alone.** The changelog is marketing copy — it omits implementation details, conflates multiple changes, and cannot tell you whether a new mechanic needs a new exporter, a schema change, or just a re-export. The server script diff is the only reliable source. Get the scripts first; plan afterward.
+
 Ask the user for the following before doing anything (skip any already provided):
 
 1. **New version number**
