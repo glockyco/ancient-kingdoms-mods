@@ -12,7 +12,7 @@ console = Console()
 
 
 def run_materials(conn: sqlite3.Connection) -> None:
-    """Enrich materials JSON on crafting_recipes and alchemy_recipes with item names.
+    """Enrich materials JSON on crafting_recipes, alchemy_recipes, and scribing_recipes with item names.
 
     The raw materials JSON stores [{"item_id": "...", "amount": N}].
     This adds item_name to each material: [{"item_id": "...", "item_name": "...", "amount": N}].
@@ -26,7 +26,7 @@ def run_materials(conn: sqlite3.Connection) -> None:
     item_names: dict[str, str] = {row[0]: row[1] for row in cursor.fetchall()}
 
     updated = 0
-    for table in ("crafting_recipes", "alchemy_recipes"):
+    for table in ("crafting_recipes", "alchemy_recipes", "scribing_recipes"):
         cursor.execute(f"SELECT id, materials FROM {table} WHERE materials IS NOT NULL")  # noqa: S608
         rows = cursor.fetchall()
 

@@ -1009,6 +1009,37 @@ class AlchemyTableData(BaseModel):
 
 
 # =============================================================================
+# Scribing Models
+# =============================================================================
+
+
+class ScribingMaterial(BaseModel):
+    """Material needed for scribing."""
+
+    item_id: str
+    amount: int = 1
+
+
+class ScribingRecipeData(BaseModel):
+    """Scribing recipe data from scribing_recipes.json"""
+
+    id: str
+    result_item_id: str
+    level_required: int = 0
+    materials: list[ScribingMaterial] = []
+
+
+class ScribingTableData(BaseModel):
+    """Scribing table world location from scribing_tables.json"""
+
+    id: str
+    name: str
+    zone_id: str
+    sub_zone_id: str | None = None
+    position: Position
+
+
+# =============================================================================
 # Crafting Station Models
 # =============================================================================
 

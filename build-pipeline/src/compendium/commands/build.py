@@ -14,6 +14,8 @@ from compendium.denormalizers import run_all as denormalize_all
 from compendium.loaders import (
     load_alchemy_recipes,
     load_alchemy_tables,
+    load_scribing_recipes,
+    load_scribing_tables,
     load_altars,
     load_classes,
     load_crafting_recipes,
@@ -92,6 +94,8 @@ def run(config: dict) -> None:
         load_crafting_recipes(conn, export_dir)
         load_alchemy_recipes(conn, export_dir)
         load_alchemy_tables(conn, export_dir)  # After zones + zone_triggers
+        load_scribing_recipes(conn, export_dir)  # After items
+        load_scribing_tables(conn, export_dir)  # After zones + zone_triggers
         load_crafting_stations(conn, export_dir)  # After zones + zone_triggers
 
         # Denormalize data (must be done after all data is loaded)
@@ -113,6 +117,7 @@ def run(config: dict) -> None:
             "portals_fts",
             "crafting_stations_fts",
             "alchemy_tables_fts",
+            "scribing_tables_fts",
         ]
         for table in fts_tables:
             cursor.execute(f"INSERT INTO {table}({table}) VALUES ('optimize')")

@@ -3,6 +3,8 @@
 from compendium.loaders.core import (
     load_alchemy_recipes,
     load_alchemy_tables,
+    load_scribing_recipes,
+    load_scribing_tables,
     load_altars,
     load_classes,
     load_crafting_recipes,
@@ -31,6 +33,8 @@ from compendium.loaders.core import (
 __all__ = [
     "load_alchemy_recipes",
     "load_alchemy_tables",
+    "load_scribing_recipes",
+    "load_scribing_tables",
     "load_altars",
     "load_classes",
     "load_crafting_recipes",

@@ -14,6 +14,8 @@ from compendium.db import insert_model, serialize_value
 from compendium.models import (
     AlchemyRecipeData,
     AlchemyTableData,
+    ScribingRecipeData,
+    ScribingTableData,
     AltarData,
     ClassData,
     CraftingRecipeData,
@@ -944,6 +946,28 @@ def load_alchemy_recipes(conn: sqlite3.Connection, export_dir: Path) -> None:
     console.print(f"  [green]OK[/green] Loaded {len(recipes)} alchemy recipes")
 
 
+def load_scribing_recipes(conn: sqlite3.Connection, export_dir: Path) -> None:
+    """Load scribing recipes into database."""
+    console.print("Loading scribing recipes...")
+
+    filepath = export_dir / "scribing_recipes.json"
+    if not filepath.exists():
+        console.print("  [yellow]SKIP[/yellow] No scribing_recipes.json found")
+        return
+
+    with open(filepath, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    recipes = [ScribingRecipeData(**item) for item in data]
+
+    cursor = conn.cursor()
+    for recipe in recipes:
+        insert_model(cursor, "scribing_recipes", recipe)
+
+    conn.commit()
+    console.print(f"  [green]OK[/green] Loaded {len(recipes)} scribing recipes")
+
+
 def load_summon_triggers(conn: sqlite3.Connection, export_dir: Path) -> None:
     """Load summon triggers into database."""
     console.print("Loading summon triggers...")
@@ -1040,6 +1064,50 @@ def load_alchemy_tables(conn: sqlite3.Connection, export_dir: Path) -> None:
 
     conn.commit()
     console.print(f"  [green]OK[/green] Loaded {len(tables)} alchemy tables")
+
+
+def load_scribing_tables(conn: sqlite3.Connection, export_dir: Path) -> None:
+    """Load scribing table world locations into database."""
+    console.print("Loading scribing tables...")
+
+    filepath = export_dir / "scribing_tables.json"
+    if not filepath.exists():
+        console.print("  [yellow]SKIP[/yellow] No scribing_tables.json found")
+        return
+
+    with open(filepath, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    tables = [ScribingTableData(**item) for item in data]
+
+    # Build lookup maps for zone/sub-zone names
+    cursor = conn.cursor()
+    zone_names = dict(cursor.execute("SELECT id, name FROM zones").fetchall())
+    sub_zone_names = dict(
+        cursor.execute("SELECT id, name FROM zone_triggers").fetchall()
+    )
+
+    for table in tables:
+        cursor.execute(
+            """INSERT INTO scribing_tables
+               (id, name, zone_id, zone_name, sub_zone_id, sub_zone_name,
+                position_x, position_y, position_z)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            (
+                table.id,
+                table.name,
+                table.zone_id,
+                zone_names.get(table.zone_id),
+                table.sub_zone_id,
+                sub_zone_names.get(table.sub_zone_id) if table.sub_zone_id else None,
+                table.position.x,
+                table.position.y,
+                table.position.z,
+            ),
+        )
+
+    conn.commit()
+    console.print(f"  [green]OK[/green] Loaded {len(tables)} scribing tables")
 
 
 def load_crafting_stations(conn: sqlite3.Connection, export_dir: Path) -> None:

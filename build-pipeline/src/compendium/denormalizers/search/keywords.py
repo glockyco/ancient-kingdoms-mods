@@ -226,6 +226,20 @@ def run(conn: sqlite3.Connection) -> None:
         f"  [green]OK[/green] Generated keywords for {table_count} alchemy tables"
     )
 
+    # Scribing table keywords (with synonyms)
+    cursor.execute("SELECT id FROM scribing_tables")
+    scribing_tables = cursor.fetchall()
+    scribing_count = 0
+    for (table_id,) in scribing_tables:
+        keywords = "scribing scroll scrolls scribe crafting"
+        cursor.execute(
+            "UPDATE scribing_tables SET keywords = ? WHERE id = ?", (keywords, table_id)
+        )
+        scribing_count += 1
+    console.print(
+        f"  [green]OK[/green] Generated keywords for {scribing_count} scribing tables"
+    )
+
     # Chest keywords
     cursor.execute("UPDATE chests SET keywords = 'treasure'")
     chest_count = cursor.rowcount
