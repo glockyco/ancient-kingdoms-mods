@@ -83,7 +83,6 @@ export function getRecipeUsages(
 			ELSE 1
 		END as result_amount,
 		CASE
-		CASE
 			WHEN iur.recipe_type = 'alchemy' THEN (
 				SELECT ar.level_required FROM alchemy_recipes ar WHERE ar.id = iur.recipe_id
 			)

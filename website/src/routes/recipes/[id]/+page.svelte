@@ -48,7 +48,10 @@
     return mapping[station] ?? station;
   }
 
-  function formatTier(tier: number): string {
+  function formatTier(type: string, tier: number): string {
+    if (type === "Scribing") {
+      return tier > 0 ? `Mastery ${tier}%` : "No mastery required";
+    }
     const romanNumerals = ["I", "II", "III", "IV", "V"];
     return `Tier ${romanNumerals[tier] ?? tier}`;
   }
@@ -90,7 +93,7 @@
         {data.recipe.type}
       </span>
       <span class="px-2 py-1 rounded text-sm font-medium bg-muted">
-        {formatTier(data.recipe.tier)}
+        {formatTier(data.recipe.type, data.recipe.tier)}
       </span>
     </div>
     <div class="mt-2 flex flex-wrap gap-4 text-sm text-muted-foreground">

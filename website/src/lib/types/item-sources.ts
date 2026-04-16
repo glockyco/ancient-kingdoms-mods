@@ -124,7 +124,7 @@ export interface AltarSource {
 }
 
 /**
- * Item created from recipe (crafting or alchemy)
+ * Item created from recipe (crafting, alchemy, or scribing)
  */
 export interface RecipeSource {
   item_id: string;
