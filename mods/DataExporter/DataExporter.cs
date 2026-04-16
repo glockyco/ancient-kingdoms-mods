@@ -101,6 +101,10 @@ namespace DataExporter
                 var alchemyRecipeExporter = new AlchemyRecipeExporter(LoggerInstance, ExportPath);
                 alchemyRecipeExporter.Export();
 
+                // Export scribing recipes
+                var scribingRecipeExporter = new ScribingRecipeExporter(LoggerInstance, ExportPath);
+                scribingRecipeExporter.Export();
+
                 // Export summon triggers
                 var summonTriggerExporter = new SummonTriggerExporter(LoggerInstance, ExportPath);
                 summonTriggerExporter.Export();
@@ -132,6 +136,10 @@ namespace DataExporter
                 // Export alchemy tables
                 var alchemyTableExporter = new AlchemyTableExporter(LoggerInstance, ExportPath);
                 alchemyTableExporter.Export();
+
+                // Export scribing tables
+                var scribingTableExporter = new ScribingTableExporter(LoggerInstance, ExportPath);
+                scribingTableExporter.Export();
 
                 // Export traps (disarmable, dangerous ground, wall traps)
                 var trapExporter = new TrapExporter(LoggerInstance, ExportPath);

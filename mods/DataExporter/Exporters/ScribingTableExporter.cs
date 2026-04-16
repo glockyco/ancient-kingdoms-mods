@@ -6,23 +6,23 @@ using UnityEngine;
 
 namespace DataExporter.Exporters;
 
-public class AlchemyTableExporter : BaseExporter
+public class ScribingTableExporter : BaseExporter
 {
-    public AlchemyTableExporter(MelonLogger.Instance logger, string exportPath)
+    public ScribingTableExporter(MelonLogger.Instance logger, string exportPath)
         : base(logger, exportPath)
     {
     }
 
     public override void Export()
     {
-        Logger.Msg("Exporting alchemy tables...");
+        Logger.Msg("Exporting scribing tables...");
 
         var type = Il2CppType.Of<Il2Cpp.Table>();
         var objects = Resources.FindObjectsOfTypeAll(type);
 
-        Logger.Msg($"Found {objects.Length} alchemy table objects total");
+        Logger.Msg($"Found {objects.Length} table objects total");
 
-        var tables = new List<AlchemyTableData>();
+        var tables = new List<ScribingTableData>();
 
         foreach (var obj in objects)
         {
@@ -34,8 +34,7 @@ public class AlchemyTableExporter : BaseExporter
             if (isTemplate)
                 continue;
 
-            // Skip scribing tables — exported separately
-            if (table.isScribingTable)
+            if (!table.isScribingTable)
                 continue;
 
             var zoneInfo = GetZoneInfoFromPosition(table.transform.position);
@@ -44,7 +43,7 @@ public class AlchemyTableExporter : BaseExporter
                 ? table.nameOverlay.text
                 : table.name;
 
-            var data = new AlchemyTableData
+            var data = new ScribingTableData
             {
                 id = $"{SanitizeId(name)}_{zoneInfo.ZoneId}_{table.GetInstanceID()}",
                 name = name,
@@ -60,7 +59,7 @@ public class AlchemyTableExporter : BaseExporter
             tables.Add(data);
         }
 
-        WriteJson(tables, "alchemy_tables.json");
-        Logger.Msg($"✓ Exported {tables.Count} alchemy tables");
+        WriteJson(tables, "scribing_tables.json");
+        Logger.Msg($"✓ Exported {tables.Count} scribing tables");
     }
 }
