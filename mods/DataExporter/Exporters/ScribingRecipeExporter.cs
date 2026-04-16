@@ -7,23 +7,23 @@ using UnityEngine;
 
 namespace DataExporter.Exporters;
 
-public class AlchemyRecipeExporter : BaseExporter
+public class ScribingRecipeExporter : BaseExporter
 {
-    public AlchemyRecipeExporter(MelonLogger.Instance logger, string exportPath)
+    public ScribingRecipeExporter(MelonLogger.Instance logger, string exportPath)
         : base(logger, exportPath)
     {
     }
 
     public override void Export()
     {
-        Logger.Msg("Exporting alchemy recipes...");
+        Logger.Msg("Exporting scribing recipes...");
 
         var type = Il2CppType.Of<Il2Cpp.Table>();
         var objects = Resources.FindObjectsOfTypeAll(type);
 
-        Logger.Msg($"Found {objects.Length} alchemy table objects total");
+        Logger.Msg($"Found {objects.Length} table objects total");
 
-        var recipes = new List<AlchemyRecipeData>();
+        var recipes = new List<ScribingRecipeData>();
         var seenRecipes = new HashSet<string>();
         var totalCount = 0;
 
@@ -33,11 +33,10 @@ public class AlchemyRecipeExporter : BaseExporter
             if (table == null)
                 continue;
 
-            if (table.itemsTable == null || table.itemsTable.Count == 0)
+            if (!table.isScribingTable)
                 continue;
 
-            // Skip scribing tables — recipes exported separately
-            if (table.isScribingTable)
+            if (table.itemsTable == null || table.itemsTable.Count == 0)
                 continue;
 
             foreach (var tableItem in table.itemsTable)
@@ -48,12 +47,12 @@ public class AlchemyRecipeExporter : BaseExporter
                 totalCount++;
                 var resultId = SanitizeId(tableItem.itemResult.name);
 
-                var recipe = new AlchemyRecipeData
+                var recipe = new ScribingRecipeData
                 {
                     id = resultId,
                     result_item_id = resultId,
                     level_required = tableItem.level,
-                    materials = new List<AlchemyMaterial>()
+                    materials = new List<ScribingMaterial>()
                 };
 
                 if (tableItem.ingredients != null && tableItem.ingredients.Length > 0)
@@ -63,7 +62,7 @@ public class AlchemyRecipeExporter : BaseExporter
                         if (ingredient.item == null)
                             continue;
 
-                        recipe.materials.Add(new AlchemyMaterial
+                        recipe.materials.Add(new ScribingMaterial
                         {
                             item_id = SanitizeId(ingredient.item.name),
                             amount = ingredient.amount
@@ -81,7 +80,7 @@ public class AlchemyRecipeExporter : BaseExporter
             }
         }
 
-        WriteJson(recipes, "alchemy_recipes.json");
-        Logger.Msg($"✓ Exported {recipes.Count} unique alchemy recipes (deduplicated from {totalCount} total)");
+        WriteJson(recipes, "scribing_recipes.json");
+        Logger.Msg($"✓ Exported {recipes.Count} unique scribing recipes (deduplicated from {totalCount} total)");
     }
 }
