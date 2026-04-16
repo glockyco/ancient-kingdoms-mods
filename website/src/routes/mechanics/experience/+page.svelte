@@ -52,6 +52,11 @@
         >
       </li>
       <li>
+        <a href="#scribing-xp" class="hover:text-foreground hover:underline"
+          >Scribing XP</a
+        >
+      </li>
+      <li>
         <a href="#cooking-xp" class="hover:text-foreground hover:underline"
           >Cooking XP</a
         >
@@ -390,12 +395,14 @@
         <!-- Source: server-scripts/Monster.cs:2457 — double XP applies to kills -->
         <!-- Source: server-scripts/GatherItem.cs:533 — double XP applies to gathering -->
         <!-- Source: server-scripts/Player.cs:10246 — double XP applies to alchemy -->
+        <!-- Source: server-scripts/Player.cs:10322 — double XP applies to scribing -->
         <!-- Source: server-scripts/Player.cs:10474 — double XP applies to crafting and cooking -->
         <!-- Source: server-scripts/PlayerQuests.cs:321 — no double XP for quests -->
         <!-- Source: server-scripts/ZoneTrigger.cs — no double XP for zone discovery -->
         <p class="text-sm text-muted-foreground">
-          Double XP buffs apply to kills, gathering, alchemy, cooking, and
-          crafting. They do not apply to scrolls, quests, or zone discovery.
+          Double XP buffs apply to kills, gathering, alchemy, scribing, cooking,
+          and crafting. They do not apply to XP scrolls, quests, or zone
+          discovery.
         </p>
       </div>
 
@@ -671,6 +678,24 @@
           </tr>
         </tbody>
       </table>
+    </Card.Content>
+  </Card.Root>
+
+  <!-- Scribing XP -->
+  <Card.Root id="scribing-xp" class="bg-muted/30">
+    <Card.Header>
+      <Card.Title>Scribing XP</Card.Title>
+      <Card.Description>
+        Experience earned by crafting scrolls at a scribing table.
+      </Card.Description>
+    </Card.Header>
+    <Card.Content>
+      <!-- Source: server-scripts/Player.cs:10318-10321 — isScribingTable overrides num5 = level.current * 100 -->
+      <p class="text-sm text-muted-foreground">
+        Each successful craft awards <span class="font-mono font-medium"
+          >Player Level &times; 100</span
+        > XP.
+      </p>
     </Card.Content>
   </Card.Root>
 

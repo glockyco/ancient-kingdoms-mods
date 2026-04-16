@@ -53,7 +53,7 @@
   let skillLevel = $state(0);
 
   // Source: server-scripts/Utils.cs:473-483 — GetSuccessChanceProb
-  // Note: scribing success uses scrollMasteryLevel (same formula as alchemy).
+  // Scribing uses scrollMasteryLevel for success (same formula as alchemy).
   // All current recipes are tier 0, so success is always 100%.
   function getSuccessChance(levelRequired: number): number {
     const skill = skillLevel / 100;
@@ -80,29 +80,25 @@
   }
 
   // Source: server-scripts/Player.cs:10282 — isScribingTable craft path
-  // Gain chance = max(0, 1 - (0.5 + scrollMasteryLevel / 2)) per successful craft
+  // Gain chance = max(0, 1 − (0.5 + scrollMasteryLevel / 2)) per successful craft
   function getMasteryCraftGainChance(): number {
     const skill = skillLevel / 100;
     return Math.max(0, (0.5 - skill / 2) * 100);
   }
 
   // Source: server-scripts/ScrollItem.cs:82 — scroll use path
-  // Gain chance = max(0, 1 - (0.3 + scrollMasteryLevel / 2)) per scroll use
+  // Gain chance = max(0, 1 − (0.3 + scrollMasteryLevel / 2)) per scroll use
   function getMasteryUseGainChance(): number {
     const skill = skillLevel / 100;
     return Math.max(0, (0.7 - skill / 2) * 100);
   }
 
-  // Source: server-scripts/Player.cs:10284 — Random.Range(1, 4) / 10000f (craft)
+  // Source: server-scripts/Player.cs:10284 — Random.Range(1, 4) / 10000f
   const MASTERY_CRAFT_GAIN_MIN = 0.01; // 1/10000 * 100
   const MASTERY_CRAFT_GAIN_MAX = 0.03; // 3/10000 * 100
-  // Source: server-scripts/ScrollItem.cs:84 — Random.Range(1, 3) / 10000f (use)
+  // Source: server-scripts/ScrollItem.cs:84 — Random.Range(1, 3) / 10000f
   const MASTERY_USE_GAIN_MIN = 0.01; // 1/10000 * 100
   const MASTERY_USE_GAIN_MAX = 0.02; // 2/10000 * 100
-
-  function formatMastery(levelRequired: number): string {
-    return levelRequired === 0 ? "None" : `${levelRequired}%`;
-  }
 </script>
 
 <svelte:head>
@@ -236,16 +232,19 @@
     <div class="rounded-lg border overflow-x-auto">
       <div
         class="grid whitespace-nowrap"
-        style="grid-template-columns: repeat(4, 1fr);"
+        style="grid-template-columns: repeat(5, 1fr);"
       >
-        <div class="bg-muted/50 p-3 font-medium">Mastery Required</div>
         <div class="bg-muted/50 p-3 font-medium">Success</div>
-        <div class="bg-muted/50 p-3 font-medium">Mastery Gain</div>
+        <div class="bg-muted/50 p-3 font-medium">Craft Gain</div>
+        <div class="bg-muted/50 p-3 font-medium">Use Gain</div>
+
+        <div class="bg-muted/50 p-3 font-medium">XP</div>
+
         <div class="bg-muted/50 p-3 font-medium text-right">Recipes</div>
         {#each data.recipeCounts as { tier, count } (tier)}
           {@const successChance = getSuccessChance(tier)}
           {@const craftGainChance = getMasteryCraftGainChance()}
-          <div class="p-3 font-medium border-t">{formatMastery(tier)}</div>
+          {@const useGainChance = getMasteryUseGainChance()}
           <div class="p-3 border-t">
             <span class="font-mono {getSuccessChanceColor(successChance)}">
               {successChance.toFixed(0)}%
@@ -262,20 +261,26 @@
               <span class="text-muted-foreground">—</span>
             {/if}
           </div>
+          <div class="p-3 border-t">
+            {#if useGainChance > 0}
+              <span class="font-mono"
+                >{MASTERY_USE_GAIN_MIN.toFixed(2)}% – {MASTERY_USE_GAIN_MAX.toFixed(
+                  2,
+                )}%</span
+              >
+            {:else}
+              <span class="text-muted-foreground">—</span>
+            {/if}
+          </div>
+          <div class="p-3 border-t">
+            <MechanicsLink section="experience#scribing-xp"
+              >PlayerLvl &times; 100</MechanicsLink
+            >
+          </div>
           <div class="p-3 text-right border-t">{count}</div>
         {/each}
       </div>
     </div>
-    <p class="text-xs text-muted-foreground">
-      XP per craft: <MechanicsLink section="experience"
-        >Player Level × 100</MechanicsLink
-      >. Mastery gain amount per event: crafting {MASTERY_CRAFT_GAIN_MIN.toFixed(
-        2,
-      )}%–{MASTERY_CRAFT_GAIN_MAX.toFixed(2)}%, using a scroll {MASTERY_USE_GAIN_MIN.toFixed(
-        2,
-      )}%–{MASTERY_USE_GAIN_MAX.toFixed(2)}% (amounts fixed; gain chance
-      decreases as mastery increases).
-    </p>
   </section>
 
   <!-- Recipes Table -->
@@ -287,13 +292,12 @@
     <div class="rounded-lg border overflow-x-auto">
       <div
         class="grid whitespace-nowrap"
-        style="grid-template-columns: 1fr 2fr 4fr 1fr 2fr;"
+        style="grid-template-columns: 2fr 4fr 1fr 2fr;"
       >
-        <div class="bg-muted/50 p-3 font-medium">Mastery</div>
         <div class="bg-muted/50 p-3 font-medium">Output</div>
         <div class="bg-muted/50 p-3 font-medium">Ingredients</div>
         <div class="bg-muted/50 p-3 font-medium">Success</div>
-        <div class="bg-muted/50 p-3 font-medium">Mastery Gain</div>
+        <div class="bg-muted/50 p-3 font-medium">Craft Gain</div>
         {#each data.recipes as recipe (recipe.id)}
           {@const successChance = getSuccessChance(recipe.level_required)}
           {@const gainChance = getMasteryCraftGainChance()}
@@ -315,15 +319,12 @@
               {:else}
                 <span class="w-5"></span>
               {/if}
-              {formatMastery(recipe.level_required)}
+              <ItemLink
+                itemId={recipe.result_item_id}
+                itemName={recipe.result_item_name}
+                tooltipHtml={recipe.result_tooltip_html}
+              />
             </div>
-          </div>
-          <div {...cellProps(canExpand, recipe.id)}>
-            <ItemLink
-              itemId={recipe.result_item_id}
-              itemName={recipe.result_item_name}
-              tooltipHtml={recipe.result_tooltip_html}
-            />
           </div>
           <div {...cellProps(canExpand, recipe.id)}>
             {#if recipe.obtainabilityTree.recipe?.materials}
@@ -353,7 +354,7 @@
               <span class="font-mono">
                 {MASTERY_CRAFT_GAIN_MIN.toFixed(2)}% – {MASTERY_CRAFT_GAIN_MAX.toFixed(
                   2,
-                )}
+                )}%
               </span>
             {:else}
               <span class="text-muted-foreground">—</span>
