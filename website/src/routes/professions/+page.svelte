@@ -13,6 +13,7 @@
   import Leaf from "@lucide/svelte/icons/leaf";
   import Sparkles from "@lucide/svelte/icons/sparkles";
   import Scroll from "@lucide/svelte/icons/scroll";
+  import Backpack from "@lucide/svelte/icons/backpack";
   import Crosshair from "@lucide/svelte/icons/crosshair";
   import Skull from "@lucide/svelte/icons/skull";
   import BookOpen from "@lucide/svelte/icons/book-open";
@@ -108,9 +109,14 @@
       bgColor: "bg-yellow-500/10",
     },
     adventuring: {
-      icon: Scroll,
+      icon: Backpack,
       color: "text-orange-500 dark:text-orange-400",
       bgColor: "bg-orange-500/10",
+    },
+    scroll_mastery: {
+      icon: Scroll,
+      color: "text-purple-500 dark:text-purple-400",
+      bgColor: "bg-purple-500/10",
     },
     hunter: {
       icon: Crosshair,
