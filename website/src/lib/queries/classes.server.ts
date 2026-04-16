@@ -299,7 +299,7 @@ interface RawSourceRow {
  *
  * Runs two queries:
  * 1. Items matching the class filter
- * 2. Batch UNION ALL across all 11 source tables for those items
+ * 2. Batch UNION ALL across all 13 source tables for those items
  *
  * Sources are grouped per item with min_source_level computed for sorting.
  */
@@ -418,8 +418,8 @@ export function getClassItemsWithSources(
     JOIN items i ON istm.map_item_id = i.id
     WHERE istm.item_id IN (${placeholders})
     `,
-    // 12 sub-queries, each needs the full itemIds array
-    Array(12).fill(itemIds).flat(),
+    // 13 sub-queries, each needs the full itemIds array
+    Array(13).fill(itemIds).flat(),
   );
 
   // Group sources by item_id
