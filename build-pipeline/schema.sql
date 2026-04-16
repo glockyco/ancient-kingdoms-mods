@@ -1324,6 +1324,20 @@ CREATE INDEX idx_alchemy_result ON alchemy_recipes(result_item_id);
 CREATE INDEX idx_alchemy_level ON alchemy_recipes(level_required);
 
 -- =============================================================================
+-- SCRIBING RECIPES
+-- =============================================================================
+
+CREATE TABLE scribing_recipes (
+    id TEXT PRIMARY KEY,
+    result_item_id TEXT REFERENCES items(id),
+    level_required INTEGER NOT NULL DEFAULT 0,
+    materials TEXT  -- JSON: [{"item_id": "...", "item_name": "...", "amount": N}]
+);
+
+CREATE INDEX idx_scribing_result ON scribing_recipes(result_item_id);
+CREATE INDEX idx_scribing_level ON scribing_recipes(level_required);
+
+-- =============================================================================
 -- ALCHEMY TABLES (world locations)
 -- =============================================================================
 
@@ -1343,6 +1357,27 @@ CREATE TABLE alchemy_tables (
 );
 
 CREATE INDEX idx_alchemy_tables_zone ON alchemy_tables(zone_id);
+
+-- =============================================================================
+-- SCRIBING TABLES (world locations)
+-- =============================================================================
+
+CREATE TABLE scribing_tables (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    zone_id TEXT REFERENCES zones(id),
+    zone_name TEXT,
+    sub_zone_id TEXT REFERENCES zone_triggers(id),
+    sub_zone_name TEXT,
+    position_x REAL,
+    position_y REAL,
+    position_z REAL,
+
+    -- Search keywords (generated: "scribing crafting")
+    keywords TEXT
+);
+
+CREATE INDEX idx_scribing_tables_zone ON scribing_tables(zone_id);
 
 -- =============================================================================
 -- CRAFTING STATIONS (world locations)
@@ -1666,4 +1701,26 @@ END;
 CREATE TRIGGER alchemy_tables_au AFTER UPDATE ON alchemy_tables BEGIN
     INSERT INTO alchemy_tables_fts(alchemy_tables_fts, rowid, name, keywords) VALUES ('delete', old.rowid, old.name, old.keywords);
     INSERT INTO alchemy_tables_fts(rowid, name, keywords) VALUES (new.rowid, new.name, new.keywords);
+END;
+
+-- Scribing Tables FTS5 (for map search)
+CREATE VIRTUAL TABLE scribing_tables_fts USING fts5(
+    name,
+    keywords,
+    content=scribing_tables,
+    content_rowid=rowid,
+    prefix='2,3'
+);
+
+CREATE TRIGGER scribing_tables_ai AFTER INSERT ON scribing_tables BEGIN
+    INSERT INTO scribing_tables_fts(rowid, name, keywords) VALUES (new.rowid, new.name, new.keywords);
+END;
+
+CREATE TRIGGER scribing_tables_ad AFTER DELETE ON scribing_tables BEGIN
+    INSERT INTO scribing_tables_fts(scribing_tables_fts, rowid, name, keywords) VALUES ('delete', old.rowid, old.name, old.keywords);
+END;
+
+CREATE TRIGGER scribing_tables_au AFTER UPDATE ON scribing_tables BEGIN
+    INSERT INTO scribing_tables_fts(scribing_tables_fts, rowid, name, keywords) VALUES ('delete', old.rowid, old.name, old.keywords);
+    INSERT INTO scribing_tables_fts(rowid, name, keywords) VALUES (new.rowid, new.name, new.keywords);
 END;
