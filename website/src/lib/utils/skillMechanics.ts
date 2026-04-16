@@ -114,8 +114,6 @@ function playerDamageFormula(
 ): DamageFormulaKind {
   // Source: TargetDamageSkill.cs — is_manaburn check precedes everything
   if (skill.is_manaburn_skill) return "manaburn";
-  // Source: TargetDamageSkill.cs — isScroll → player.level.current * 15
-  if (skill.is_scroll) return "scroll";
 
   const dt = skill.damage_type;
   const isSpell = skill.is_spell;
@@ -351,12 +349,6 @@ export function computeMechanicsSpec(
         damagePairs.push({ label, formula });
       }
     }
-    // Scroll damage skills (is_scroll=1) often have player_classes=[] since scrolls
-    // can be used by anyone. If no caster context was generated, add a fallback so the
-    // template can render the scroll formula (Damage = PlayerLevel × 15).
-    if (skill.is_scroll && damagePairs.length === 0) {
-      damagePairs.push({ label: "Scroll", formula: "scroll" });
-    }
   }
 
   // ---------- heal ----------
@@ -372,10 +364,8 @@ export function computeMechanicsSpec(
 
     for (const cls of playerClasses) {
       const label = `${cls.charAt(0).toUpperCase() + cls.slice(1)} (player)`;
-      // Source: TargetHealSkill.cs — isScroll → player.level.current * 8 replaces WIS bonus
-      const bonusKind: HealBonusKind = skill.is_scroll
-        ? "scroll"
-        : cls === "ranger"
+      const bonusKind: HealBonusKind =
+        cls === "ranger"
           ? "player_ranger" // Source: Wisdom.cs — GetHealBonus(isRanger:true) → WIS×3×0.004
           : "player_other"; // Source: Wisdom.cs — GetHealBonus(isRanger:false) → WIS×0.004
       healPairs.push({ label, bonusKind, canCrit });
@@ -399,12 +389,6 @@ export function computeMechanicsSpec(
         canCrit: false,
       });
     }
-    // Scroll heal skills (is_scroll=1) often have player_classes=[] since scrolls are
-    // class-agnostic. If no caster context was generated, add a fallback so the template
-    // can render the scroll formula (Final Heal = Base Heal + PlayerLevel x 8).
-    if (skill.is_scroll && healPairs.length === 0) {
-      healPairs.push({ label: "Scroll", bonusKind: "scroll", canCrit: false });
-    }
   }
 
   // ---------- buff ----------
@@ -420,10 +404,7 @@ export function computeMechanicsSpec(
     for (const cls of playerClasses) {
       const label = `${cls.charAt(0).toUpperCase() + cls.slice(1)} (player)`;
       let src: BuffBonusAttrSource;
-      if (skill.is_scroll) {
-        // Source: TargetBuffSkill.cs:425-428, AreaBuffSkill.cs:27-29 — isScroll → PlayerLevel * 8
-        src = "player_level";
-      } else if (isAreaBuff && skill.is_mercenary_skill) {
+      if (isAreaBuff && skill.is_mercenary_skill) {
         // Source: AreaBuffSkill.cs:43-47 — isMercenarySkill overrides num2 = player4.charisma.value
         src = "player_charisma";
       } else if (isAreaBuff) {
@@ -456,17 +437,6 @@ export function computeMechanicsSpec(
       buffPairs.push({
         label: parts.join("/"),
         bonusAttrSource: "none",
-        isAreaBuff,
-      });
-    }
-    // Scroll buff skills (is_scroll=1) often have player_classes=[] since scrolls are
-    // class-agnostic. If no caster context was generated, add a fallback so the template
-    // can render the scroll formula (bonusAttribute = PlayerLevel × 8).
-    // Mirrors the same fallback in the damage and heal sections.
-    if (skill.is_scroll && buffPairs.length === 0) {
-      buffPairs.push({
-        label: "Scroll",
-        bonusAttrSource: "player_level",
         isAreaBuff,
       });
     }
@@ -547,13 +517,11 @@ export function computeMechanicsSpec(
 
   if (hasDebuffScaling) {
     // Determine attribute kind for player/merc casters (same formula for both).
-    const playerMercKind: DebuffBonusAttrKind = skill.is_scroll
-      ? "scroll"
-      : skill.is_melee_debuff
-        ? "str"
-        : skill.is_poison_debuff || skill.is_disease_debuff
-          ? "dex"
-          : "int";
+    const playerMercKind: DebuffBonusAttrKind = skill.is_melee_debuff
+      ? "str"
+      : skill.is_poison_debuff || skill.is_disease_debuff
+        ? "dex"
+        : "int";
 
     for (const cls of playerClasses) {
       const label = `${cls.charAt(0).toUpperCase() + cls.slice(1)} (player)`;

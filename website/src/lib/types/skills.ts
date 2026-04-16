@@ -256,7 +256,6 @@ export type DamageFormulaKind =
   | "magic_weapon_ranger" // INT×1.5 + magic equip + STR×1.0 + non-bow equip (Ranger) — e.g. wild_strike
   // Special
   | "manaburn" // energy/mana ×2, bypasses mitigation — e.g. rageblow
-  | "scroll" // PlayerLevel × 15 — e.g. fire_nova
   // Monster / NPC (level-scaled, no player stats)
   | "monster_melee" // baseDamage(level) — e.g. ant_attack
   | "monster_magic"; // baseMagicDamage(level) — e.g. abyssal_orb
@@ -271,7 +270,6 @@ export type HealBonusKind =
   | "player_ranger" // base × min((WIS×3)×0.004, 5.0) — e.g. breeze
   | "player_other" // base × min(WIS×0.004, 5.0) — e.g. healing
   | "merc" // base × min(WIS×0.004, 5.0) using merc's own WIS; no ×3 for Ranger merc — e.g. swift_bloom
-  | "scroll" // base + PlayerLevel × 8 — e.g. major_restoration
   | "none"; // no bonus (monster, NPC, non-merc pet) — e.g. healing_circle
 
 export interface HealContext {
@@ -286,7 +284,6 @@ export type BuffBonusAttrSource =
   | "player_wis" // WIS (TargetBuffSkill non-Ranger, or any AreaBuffSkill player) — e.g. inspiration
   | "merc_wis" // merc's own WIS — e.g. spirit_of_wolf
   | "player_charisma" // player CHA (AreaBuffSkill + is_mercenary_skill override) — only skill: leadership (its non-zero fields don't respond to bonusAttribute when positive, so CHA has no practical effect currently)
-  | "player_level" // scroll: PlayerLevel × 8 — e.g. staff_of_flowers
   | "none"; // monster/NPC: 0 (only shown when player/merc also casts the skill)
 
 export interface BuffContext {
@@ -321,7 +318,6 @@ export type DebuffBonusAttrKind =
   | "str" // is_melee_debuff=1 — e.g. rangers_mark
   | "dex" // is_poison_debuff=1 or is_disease_debuff=1 — e.g. poison_rend
   | "int" // default (magic/elemental debuff) — e.g. symbol_of_the_arbiter
-  | "scroll" // PlayerLevel × 8 — e.g. witherbind (only scroll debuff that reaches the render path; bonus_per_level=0 so multiplier has no observable effect)
   | "none"; // monster/NPC/companion: 0 — e.g. ancient_curse
 
 export interface DebuffContext {

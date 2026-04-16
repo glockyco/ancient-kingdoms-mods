@@ -223,7 +223,6 @@
       skill.damage ||
       skill.damage_percent ||
       skill.is_manaburn_skill ||
-      skill.is_scroll ||
       skill.is_assassination_skill
     ),
   );
@@ -657,6 +656,7 @@
       skill.is_cleanse ||
       // G. Special notes
       skill.is_assassination_skill ||
+      skill.is_scroll ||
       skill.is_decrease_resists_skill ||
       (hasLinearValue(skill.cast_time) && skill.is_spell && !skill.is_scroll) ||
       // H. Fear mechanics section (stun has no mechanics card section)
@@ -1799,6 +1799,20 @@
           </p>
         {/if}
 
+        <!-- Scroll Mastery -->
+        {#if skill.is_scroll}
+          <div class="space-y-1">
+            <h3 class="font-semibold">Scroll Mastery</h3>
+            <p class="font-mono">
+              Skill Level = clamp(Round(Mastery% &divide; 5), 1, {skill.max_level})
+            </p>
+            <p class="text-muted-foreground">
+              Power scales with the Scroll Mastery profession (0&ndash;100%).
+              Each ~5% mastery increases skill level by 1. The level scaling
+              table above shows stats at each skill level.
+            </p>
+          </div>
+        {/if}
         <!-- A. Damage Formula (spec-driven, one block per distinct formula/context) -->
         {#if isDamageType && data.mechanicsSpec.damageContexts.length > 0 && hasActualDamage}
           <div class="space-y-3">
@@ -1927,11 +1941,7 @@
                     {ctx.casterLabels.join(", ")}
                   </p>
                 {/if}
-                {#if ctx.bonusKind === "scroll"}
-                  <p class="font-mono">
-                    Final Heal = Base Heal + PlayerLevel &times; 8
-                  </p>
-                {:else if ctx.bonusKind === "player_ranger"}
+                {#if ctx.bonusKind === "player_ranger"}
                   <!-- Source: Wisdom.cs — GetHealBonus(isRanger:true) → WIS×3×0.004, capped at 5.0 (500%) -->
                   <p class="font-mono">
                     Final Heal = Base Heal + round(Base Heal &times; min(WIS
@@ -1994,10 +2004,6 @@
                     <p class="font-mono">
                       bonusAttribute = caster CHA (area buff targeting mercs
                       scales with your Charisma)
-                    </p>
-                  {:else if ctx.bonusAttrSource === "player_level"}
-                    <p class="font-mono">
-                      bonusAttribute = PlayerLevel &times; 8 (scroll)
                     </p>
                   {:else if ctx.bonusAttrSource === "merc_wis"}
                     <!-- Source: TargetBuffSkill.cs:419 / AreaBuffSkill.cs:25 — pet3.wisdom.value -->
@@ -2147,14 +2153,11 @@
                   </p>
                 {:else}
                   <p class="font-mono">
-                    <!-- Source: TargetDebuffSkill.cs:277-279 — isScroll → PlayerLevel * 10 override -->
                     bonusAttribute = {ctx.bonusAttrKind === "str"
                       ? "STR"
                       : ctx.bonusAttrKind === "dex"
                         ? "DEX"
-                        : ctx.bonusAttrKind === "int"
-                          ? "INT"
-                          : "PlayerLevel × 10"}
+                        : "INT"}
                   </p>
                   <!-- Source: Buff.cs:84-98 — defense getter, negative branch: bonusAttribute * 0.4 -->
                   <dl

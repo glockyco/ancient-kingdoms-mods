@@ -219,7 +219,6 @@ export const FORMULA_EXPRS = {
   // ── Special ──────────────────────────────────────────────────────────────────
 
   manaburn: special("Current Rage or Mana × 2 — bypasses mitigation"),
-  scroll: special("Player Level × 15"),
   monster_melee: special("baseDamage(level)"),
   monster_magic: special("baseMagicDamage(level)"),
 } satisfies Record<DamageFormulaKind, Expr>;
@@ -376,13 +375,6 @@ export function renderFormulaDisplay(kind: DamageFormulaKind): FormulaDisplay {
         specialNote:
           "Consumes all Rage (Warrior/Rogue) or all Mana (Wizard) and deals that amount × 2 as damage. " +
           "Completely bypasses armor, resistance, and all other mitigation.",
-      };
-
-    case "scroll":
-      return {
-        preMitigation: null,
-        terms: [],
-        specialNote: `Damage = ${renderFormula(expr)}. Not affected by equipment, stats, passive bonuses, or mitigation.`,
       };
 
     // ── Monster / NPC (level-scaled) ─────────────────────────────────────────

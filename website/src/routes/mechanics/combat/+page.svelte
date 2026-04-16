@@ -23,7 +23,6 @@
     magic_weapon_ranger:
       "Like magic_weapon, but the physical component excludes the bow's flat damage bonus",
     manaburn: "Current Rage or Mana × 2 (bypasses all mitigation and resist)",
-    scroll: "Player Level × 15",
     monster_melee: "baseDamage(level), scales with monster level",
     monster_magic: "baseMagicDamage(level), scales with monster level",
   };
@@ -41,7 +40,6 @@
     magic_weapon: "Magic",
     magic_weapon_ranger: "Magic",
     manaburn: "Special",
-    scroll: "Special",
     monster_melee: "Monster",
     monster_magic: "Monster",
   };
@@ -59,7 +57,6 @@
     "magic_weapon",
     "magic_weapon_ranger",
     "manaburn",
-    "scroll",
     "monster_melee",
     "monster_magic",
   ];
@@ -68,7 +65,6 @@
     player_ranger: "base × min(WIS×3 × 0.004, 5.0), Ranger bonus",
     player_other: "base × min(WIS × 0.004, 5.0), non-Ranger",
     merc: "base × min(WIS × 0.004, 5.0), Ranger mercs do not receive the 3× multiplier",
-    scroll: "Player Level × 8 (no WIS bonus)",
     none: "No bonus (monster, NPC, non-merc pet)",
   };
 </script>
@@ -410,14 +406,6 @@ finalDamage = damage − reduction</pre>
             <pre
               class="text-xs bg-muted px-3 py-2 rounded overflow-x-auto">finalHeal = baseHeal + round(baseHeal × min(WIS×3 × 0.004, 5.0))</pre>
           </div>
-          <div>
-            <p class="text-sm text-muted-foreground mb-1">Scroll heals:</p>
-            <pre
-              class="text-xs bg-muted px-3 py-2 rounded overflow-x-auto">finalHeal = Player Level × 8</pre>
-            <p class="text-xs text-muted-foreground mt-1">
-              No WIS bonus applies to scroll heals.
-            </p>
-          </div>
         </div>
       </div>
 
@@ -544,12 +532,6 @@ finalDamage = damage − reduction</pre>
                 ><td class="py-1 pr-4 font-mono text-xs">player_charisma</td><td
                   class="py-1 text-muted-foreground"
                   >Area buff + is_mercenary_skill</td
-                ></tr
-              >
-              <tr class="border-b border-border/40"
-                ><td class="py-1 pr-4 font-mono text-xs">player_level</td><td
-                  class="py-1 text-muted-foreground"
-                  >Scroll: bonusAttribute = Player Level × 8</td
                 ></tr
               >
               <tr
