@@ -1,0 +1,1 @@
+Mechanics Buff Scaling bonusAttribute = WIS Defense skillValue(level) + bonusAttribute × 0.15 Magic Resist skillValue(level) + bonusAttribute × 0.15 Elemental Resists skillValue(level) + bonusAttribute × 0.15 Effective Cast Time = castTime − (castTime × spellHaste)

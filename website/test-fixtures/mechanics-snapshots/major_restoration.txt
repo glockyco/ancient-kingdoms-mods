@@ -1,1 +1,1 @@
-Mechanics Healing Formula Final Heal = Base Heal + PlayerLevel × 8
+Mechanics Scroll Mastery Skill Level = clamp(Round(Mastery% ÷ 5), 1, 20) Power scales with the Scroll Mastery profession (0–100%). Each ~5% mastery increases skill level by 1. The level scaling table above shows stats at each skill level.

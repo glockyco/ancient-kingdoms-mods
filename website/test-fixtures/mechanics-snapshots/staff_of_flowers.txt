@@ -1,1 +1,1 @@
-Mechanics Buff Scaling bonusAttribute = PlayerLevel × 8 (scroll) HoT skillValue(level) × (1 + min(bonusAttribute × 0.004, 5.0))
+Mechanics Scroll Mastery Skill Level = clamp(Round(Mastery% ÷ 5), 1, 1) Power scales with the Scroll Mastery profession (0–100%). Each ~5% mastery increases skill level by 1. The level scaling table above shows stats at each skill level.

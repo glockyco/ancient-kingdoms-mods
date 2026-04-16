@@ -1,0 +1,1 @@
+Mechanics Healing Formula Final Heal = Base Heal + round(Base Heal × min(WIS × 0.004, 5.0)) Critical Heal: 90% chance ×2.0 | 10% chance ×3.0 Effective Cast Time = castTime − (castTime × spellHaste)
