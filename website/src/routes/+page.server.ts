@@ -61,6 +61,12 @@ export const load: PageServerLoad = (): HomePageData => {
     }
   ).count;
 
+  const scribingCount = (
+    db.prepare("SELECT COUNT(*) as count FROM scribing_recipes").get() as {
+      count: number;
+    }
+  ).count;
+
   const gatheringResourceCount = (
     db.prepare("SELECT COUNT(*) as count FROM gathering_resources").get() as {
       count: number;
@@ -118,7 +124,7 @@ export const load: PageServerLoad = (): HomePageData => {
       altars: altarCount,
       professions: professionCount,
       gatheringResources: gatheringResourceCount,
-      recipes: alchemyCount + craftingCount,
+      recipes: alchemyCount + craftingCount + scribingCount,
       chests: chestCount,
     },
   };

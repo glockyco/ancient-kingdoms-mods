@@ -319,13 +319,13 @@ def _denormalize_crafted_from(
     conn: sqlite3.Connection,
     redactions: RedactionConfig | None = None,
 ) -> None:
-    """Populate item_sources_recipe from crafting_recipes and alchemy_recipes."""
+    """Populate item_sources_recipe from crafting_recipes, alchemy_recipes, and scribing_recipes."""
     console.print("  Processing crafting recipes...")
     cursor = conn.cursor()
 
     hide_crafting = redactions.hide_crafting_item_ids if redactions else set()
 
-    # Query both crafting and alchemy recipes
+    # Query crafting, alchemy, and scribing recipes
     cursor.execute("""
         SELECT id, result_item_id, result_amount, 'crafting' as recipe_type
         FROM crafting_recipes
@@ -333,6 +333,10 @@ def _denormalize_crafted_from(
         UNION ALL
         SELECT id, result_item_id, 1 as result_amount, 'alchemy' as recipe_type
         FROM alchemy_recipes
+        WHERE result_item_id IS NOT NULL
+        UNION ALL
+        SELECT id, result_item_id, 1 as result_amount, 'scribing' as recipe_type
+        FROM scribing_recipes
         WHERE result_item_id IS NOT NULL
     """)
 

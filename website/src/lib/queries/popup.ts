@@ -1080,6 +1080,9 @@ export async function loadItemPopupDetails(
         WHEN isr.recipe_type = 'alchemy' THEN (
           SELECT ar.materials FROM alchemy_recipes ar WHERE ar.id = isr.recipe_id
         )
+        WHEN isr.recipe_type = 'scribing' THEN (
+          SELECT sr.materials FROM scribing_recipes sr WHERE sr.id = isr.recipe_id
+        )
       END as materials
     FROM item_sources_recipe isr
     WHERE isr.item_id = ?

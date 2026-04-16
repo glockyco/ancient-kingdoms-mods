@@ -357,8 +357,8 @@ CREATE INDEX idx_item_sources_altar_tier ON item_sources_altar(reward_tier);
 CREATE TABLE item_sources_recipe (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     item_id TEXT NOT NULL REFERENCES items(id),
-    recipe_id TEXT NOT NULL,  -- References crafting_recipes or alchemy_recipes
-    recipe_type TEXT NOT NULL CHECK (recipe_type IN ('crafting', 'alchemy')),
+    recipe_id TEXT NOT NULL,  -- References crafting_recipes, alchemy_recipes, or scribing_recipes
+    recipe_type TEXT NOT NULL CHECK (recipe_type IN ('crafting', 'alchemy', 'scribing')),
     result_amount INTEGER NOT NULL DEFAULT 1,
     source_level INTEGER              -- Derived: max of min source levels across materials (denormalized)
 );
@@ -575,8 +575,8 @@ CREATE INDEX idx_monster_skills_skill ON monster_skills(skill_id);
 CREATE TABLE item_usages_recipe (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     item_id TEXT NOT NULL REFERENCES items(id),
-    recipe_id TEXT NOT NULL,  -- References crafting_recipes or alchemy_recipes
-    recipe_type TEXT NOT NULL CHECK (recipe_type IN ('crafting', 'alchemy')),
+    recipe_id TEXT NOT NULL,  -- References crafting_recipes, alchemy_recipes, or scribing_recipes
+    recipe_type TEXT NOT NULL CHECK (recipe_type IN ('crafting', 'alchemy', 'scribing')),
     amount INTEGER NOT NULL DEFAULT 1
 );
 CREATE INDEX idx_item_usages_recipe_item ON item_usages_recipe(item_id);

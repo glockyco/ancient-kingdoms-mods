@@ -24,21 +24,29 @@ export const entries: EntryGenerator = () => {
     .prepare("SELECT id FROM alchemy_recipes")
     .all() as Array<{ id: string }>;
 
+  const scribingRecipes = db
+    .prepare("SELECT id FROM scribing_recipes")
+    .all() as Array<{ id: string }>;
+
   db.close();
 
   return [
     ...craftingRecipes.map((r) => ({ id: r.id })),
     ...alchemyRecipes.map((r) => ({ id: r.id })),
+    ...scribingRecipes.map((r) => ({ id: r.id })),
   ];
 };
 
 export const load: PageServerLoad = ({ params }): RecipeDetailPageData => {
   const db = new Database(DB_STATIC_PATH, { readonly: true });
 
-  // Try crafting_recipes first, then alchemy_recipes
+  // Try crafting_recipes, then alchemy_recipes, then scribing_recipes
   let recipe = loadCraftingRecipe(db, params.id);
   if (!recipe) {
     recipe = loadAlchemyRecipe(db, params.id);
+  }
+  if (!recipe) {
+    recipe = loadScribingRecipe(db, params.id);
   }
 
   if (!recipe) {
@@ -201,5 +209,56 @@ function loadAlchemyRecipe(
     taught_by_recipe_id: raw.taught_by_recipe_id,
     taught_by_recipe_name: raw.taught_by_recipe_name,
     taught_by_recipe_tooltip_html,
+  };
+}
+
+function loadScribingRecipe(
+  db: Database.Database,
+  recipeId: string,
+): RecipeDetailInfo | null {
+  const raw = db
+    .prepare(
+      `
+      SELECT
+        sr.id,
+        sr.result_item_id,
+        i.name as result_item_name,
+        i.tooltip_html as result_tooltip_html,
+        i.quality as result_quality,
+        sr.level_required,
+        sr.materials
+      FROM scribing_recipes sr
+      JOIN items i ON i.id = sr.result_item_id
+      WHERE sr.id = ?
+    `,
+    )
+    .get(recipeId) as
+    | {
+        id: string;
+        result_item_id: string;
+        result_item_name: string;
+        result_tooltip_html: string | null;
+        result_quality: number;
+        level_required: number;
+        materials: string;
+      }
+    | undefined;
+
+  if (!raw) return null;
+
+  return {
+    id: raw.id,
+    result_item_id: raw.result_item_id,
+    result_item_name: raw.result_item_name,
+    result_tooltip_html: raw.result_tooltip_html,
+    result_quality: raw.result_quality,
+    result_amount: 1,
+    type: "Scribing",
+    tier: raw.level_required,
+    station_type: "scribing_table",
+    xp: 0,
+    taught_by_recipe_id: null,
+    taught_by_recipe_name: null,
+    taught_by_recipe_tooltip_html: null,
   };
 }

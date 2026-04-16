@@ -28,7 +28,7 @@ def _denormalize_used_in_recipes(
     conn: sqlite3.Connection,
     redactions: RedactionConfig | None = None,
 ) -> None:
-    """Populate item_usages_recipe from crafting and alchemy recipe materials."""
+    """Populate item_usages_recipe from crafting, alchemy, and scribing recipe materials."""
     console.print("  Processing recipe materials...")
     cursor = conn.cursor()
 
@@ -78,6 +78,29 @@ def _denormalize_used_in_recipes(
                     """
                     INSERT INTO item_usages_recipe (item_id, recipe_id, recipe_type, amount)
                     VALUES (?, ?, 'alchemy', ?)
+                """,
+                    (item_id, recipe_id, material.get("amount", 1)),
+                )
+
+    # Process scribing recipes
+    cursor.execute("""
+        SELECT sr.id, sr.result_item_id, sr.materials
+        FROM scribing_recipes sr
+        WHERE sr.materials IS NOT NULL AND sr.materials != '[]'
+    """)
+
+    for recipe_id, result_item_id, materials_json in cursor.fetchall():
+        if result_item_id in hide_crafting:
+            continue
+
+        materials = json.loads(materials_json)
+        for material in materials:
+            item_id = material.get("item_id")
+            if item_id:
+                cursor.execute(
+                    """
+                    INSERT INTO item_usages_recipe (item_id, recipe_id, recipe_type, amount)
+                    VALUES (?, ?, 'scribing', ?)
                 """,
                     (item_id, recipe_id, material.get("amount", 1)),
                 )

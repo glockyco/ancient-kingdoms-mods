@@ -17,7 +17,7 @@ export interface RecipeListView {
   result_quality: number;
   result_amount: number;
   ingredients: RecipeIngredient[];
-  type: "Alchemy" | "Cooking" | "Crafting";
+  type: "Alchemy" | "Cooking" | "Crafting" | "Scribing";
   tier: number;
 }
 
@@ -32,7 +32,7 @@ export interface RecipesPageData {
 // Recipe Detail Page Types
 // ============================================================================
 
-export type RecipeType = "Alchemy" | "Cooking" | "Crafting";
+export type RecipeType = "Alchemy" | "Cooking" | "Crafting" | "Scribing";
 
 /**
  * Types of sources where items can be obtained

@@ -181,6 +181,9 @@ export function getRecipeSources(
 				WHEN isr.recipe_type = 'alchemy' THEN (
 					SELECT ar.level_required FROM alchemy_recipes ar WHERE ar.id = isr.recipe_id
 				)
+				WHEN isr.recipe_type = 'scribing' THEN (
+					SELECT sr.level_required FROM scribing_recipes sr WHERE sr.id = isr.recipe_id
+				)
 				ELSE NULL
 			END as tier,
 			CASE

@@ -83,7 +83,14 @@ export function GET() {
   const alchemyRecipes = db.prepare("SELECT id FROM alchemy_recipes").all() as {
     id: string;
   }[];
-  for (const row of [...craftingRecipes, ...alchemyRecipes]) {
+  const scribingRecipes = db
+    .prepare("SELECT id FROM scribing_recipes")
+    .all() as { id: string }[];
+  for (const row of [
+    ...craftingRecipes,
+    ...alchemyRecipes,
+    ...scribingRecipes,
+  ]) {
     urls.push(`${SITE_URL}/recipes/${row.id}`);
   }
 

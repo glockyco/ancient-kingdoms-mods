@@ -7,6 +7,7 @@
   import FlaskConical from "@lucide/svelte/icons/flask-conical";
   import ChefHat from "@lucide/svelte/icons/chef-hat";
   import Package from "@lucide/svelte/icons/package";
+  import Scroll from "@lucide/svelte/icons/scroll";
   import ListTree from "@lucide/svelte/icons/list-tree";
   let { data } = $props();
 
@@ -16,6 +17,8 @@
         return FlaskConical;
       case "Cooking":
         return ChefHat;
+      case "Scribing":
+        return Scroll;
       default:
         return Hammer;
     }
@@ -27,8 +30,10 @@
         return "bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-200";
       case "Cooking":
         return "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200";
-      default:
+      case "Scribing":
         return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200";
+      default:
+        return "bg-violet-100 text-violet-800 dark:bg-violet-900 dark:text-violet-200";
     }
   }
 
@@ -37,6 +42,7 @@
     const mapping: Record<string, string> = {
       cooking: "Cooking Station",
       alchemy_table: "Alchemy Table",
+      scribing_table: "Scribing Table",
       unknown: "Crafting Station",
     };
     return mapping[station] ?? station;

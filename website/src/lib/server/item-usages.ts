@@ -55,6 +55,9 @@ export function getRecipeUsages(
 				WHEN iur.recipe_type = 'alchemy' THEN (
 					SELECT ar.result_item_id FROM alchemy_recipes ar WHERE ar.id = iur.recipe_id
 				)
+				WHEN iur.recipe_type = 'scribing' THEN (
+					SELECT sr.result_item_id FROM scribing_recipes sr WHERE sr.id = iur.recipe_id
+				)
 			END as result_item_id,
 			CASE
 				WHEN iur.recipe_type = 'crafting' THEN (
@@ -67,6 +70,11 @@ export function getRecipeUsages(
 						SELECT ar.result_item_id FROM alchemy_recipes ar WHERE ar.id = iur.recipe_id
 					)
 				)
+				WHEN iur.recipe_type = 'scribing' THEN (
+					SELECT i.name FROM items i WHERE i.id = (
+						SELECT sr.result_item_id FROM scribing_recipes sr WHERE sr.id = iur.recipe_id
+					)
+				)
 			END as result_item_name,
 		CASE
 			WHEN iur.recipe_type = 'crafting' THEN (
@@ -75,8 +83,12 @@ export function getRecipeUsages(
 			ELSE 1
 		END as result_amount,
 		CASE
+		CASE
 			WHEN iur.recipe_type = 'alchemy' THEN (
 				SELECT ar.level_required FROM alchemy_recipes ar WHERE ar.id = iur.recipe_id
+			)
+			WHEN iur.recipe_type = 'scribing' THEN (
+				SELECT sr.level_required FROM scribing_recipes sr WHERE sr.id = iur.recipe_id
 			)
 			ELSE NULL
 			END as tier

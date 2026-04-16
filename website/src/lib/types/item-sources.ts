@@ -129,7 +129,7 @@ export interface AltarSource {
 export interface RecipeSource {
   item_id: string;
   recipe_id: string;
-  recipe_type: "crafting" | "alchemy";
+  recipe_type: "crafting" | "alchemy" | "scribing";
   result_amount: number;
   tier: number;
   station_type: string | null;
@@ -222,7 +222,7 @@ export interface TreasureMapSource {
 export interface RecipeUsage {
   item_id: string;
   recipe_id: string;
-  recipe_type: "crafting" | "alchemy";
+  recipe_type: "crafting" | "alchemy" | "scribing";
   amount: number;
   result_item_id: string;
   result_item_name: string;

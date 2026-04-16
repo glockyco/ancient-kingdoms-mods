@@ -182,6 +182,25 @@ def _populate_recipe_source_zones(conn: sqlite3.Connection) -> None:
             (item_id, zone_id),
         )
 
+    # Join with scribing tables
+    cursor.execute("""
+        SELECT isr.item_id, st.zone_id
+        FROM item_sources_recipe isr
+        JOIN scribing_recipes sr ON isr.recipe_id = sr.id
+        JOIN scribing_tables st ON 1=1  -- All scribing tables are valid
+        WHERE isr.recipe_type = 'scribing'
+        GROUP BY isr.item_id, st.zone_id
+    """)
+
+    for item_id, zone_id in cursor.fetchall():
+        cursor.execute(
+            """
+            INSERT INTO item_zones_obtainable (item_id, zone_id, source_type)
+            VALUES (?, ?, 'recipe')
+        """,
+            (item_id, zone_id),
+        )
+
 
 def _populate_altar_usage_zones(conn: sqlite3.Connection) -> None:
     """Populate item_zones_usable for altar activation items."""

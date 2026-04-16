@@ -16,7 +16,7 @@ interface RawRecipe {
   result_quality: number;
   result_amount: number;
   materials: string;
-  type: "Alchemy" | "Cooking" | "Crafting";
+  type: "Alchemy" | "Cooking" | "Crafting" | "Scribing";
   tier: number;
 }
 
@@ -54,6 +54,21 @@ export const load: PageServerLoad = (): RecipesPageData => {
           i.quality as tier
         FROM crafting_recipes cr
         JOIN items i ON i.id = cr.result_item_id
+
+        UNION ALL
+
+        -- Scribing recipes (scrolls)
+        SELECT
+          sr.id,
+          sr.result_item_id,
+          i.name as result_item_name,
+          i.quality as result_quality,
+          1 as result_amount,
+          sr.materials,
+          'Scribing' as type,
+          sr.level_required as tier
+        FROM scribing_recipes sr
+        JOIN items i ON i.id = sr.result_item_id
       )
       SELECT * FROM all_recipes
       ORDER BY
@@ -61,6 +76,7 @@ export const load: PageServerLoad = (): RecipesPageData => {
           WHEN 'Alchemy' THEN 1
           WHEN 'Cooking' THEN 2
           WHEN 'Crafting' THEN 3
+          WHEN 'Scribing' THEN 4
         END,
         result_item_name
     `,

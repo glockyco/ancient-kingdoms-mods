@@ -425,6 +425,11 @@ function determineRecipeType(
     .get(recipeId);
   if (alchemy) return "Alchemy";
 
+  const scribing = db
+    .prepare("SELECT id FROM scribing_recipes WHERE id = ?")
+    .get(recipeId);
+  if (scribing) return "Scribing";
+
   const crafting = db
     .prepare("SELECT station_type FROM crafting_recipes WHERE id = ?")
     .get(recipeId) as { station_type: string | null } | undefined;
@@ -437,10 +442,14 @@ function determineRecipeType(
 function getRecipeMaterials(
   db: Database.Database,
   recipeId: string,
-  recipeType: "crafting" | "alchemy",
+  recipeType: "crafting" | "alchemy" | "scribing",
 ): Array<{ item_id: string; amount: number }> {
   const tableName =
-    recipeType === "crafting" ? "crafting_recipes" : "alchemy_recipes";
+    recipeType === "crafting"
+      ? "crafting_recipes"
+      : recipeType === "alchemy"
+        ? "alchemy_recipes"
+        : "scribing_recipes";
 
   const recipe = db
     .prepare(`SELECT materials FROM ${tableName} WHERE id = ?`)

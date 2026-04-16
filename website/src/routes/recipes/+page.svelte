@@ -66,7 +66,14 @@
   const dataWithVirtual = $derived(
     data.recipes.map((r) => ({
       ...r,
-      type_order: r.type === "Alchemy" ? 1 : r.type === "Cooking" ? 2 : 3,
+      type_order:
+        r.type === "Alchemy"
+          ? 1
+          : r.type === "Cooking"
+            ? 2
+            : r.type === "Scribing"
+              ? 4
+              : 3,
     })),
   );
 
@@ -232,6 +239,7 @@
         { label: "Alchemy", value: "Alchemy" },
         { label: "Cooking", value: "Cooking" },
         { label: "Crafting", value: "Crafting" },
+        { label: "Scribing", value: "Scribing" },
       ]}
     />
   {/if}

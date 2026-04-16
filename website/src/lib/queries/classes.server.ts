@@ -378,6 +378,11 @@ export function getClassItemsWithSources(
     FROM item_sources_recipe isr
     WHERE isr.recipe_type = 'crafting' AND isr.item_id IN (${placeholders})
 
+
+    UNION ALL
+    SELECT isr.item_id, 'scribing', isr.recipe_id, 'Scribing', isr.source_level
+    FROM item_sources_recipe isr
+    WHERE isr.recipe_type = 'scribing' AND isr.item_id IN (${placeholders})
     UNION ALL
     SELECT isg.item_id, 'gather', gr.id, gr.name, NULL
     FROM item_sources_gather isg

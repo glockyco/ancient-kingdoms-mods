@@ -267,7 +267,7 @@ interface RecipeIngredient {
 
 interface RecipeDescriptionInput {
   result_item_name: string;
-  type: "Alchemy" | "Cooking" | "Crafting";
+  type: "Alchemy" | "Cooking" | "Crafting" | "Scribing";
 }
 
 export function recipeDescription(

@@ -63,7 +63,7 @@ def _get_material_min_level_from_gathering(
 def _get_recipe_materials(
     cursor: sqlite3.Cursor,
 ) -> dict[str, list[str]]:
-    """Get material item IDs for each recipe (crafting + alchemy)."""
+    """Get material item IDs for each recipe (crafting + alchemy + scribing)."""
     recipes: dict[str, list[str]] = {}
 
     cursor.execute(
@@ -75,6 +75,13 @@ def _get_recipe_materials(
 
     cursor.execute(
         "SELECT id, materials FROM alchemy_recipes WHERE materials IS NOT NULL"
+    )
+    for recipe_id, materials_json in cursor.fetchall():
+        materials = json.loads(materials_json)
+        recipes[recipe_id] = [m["item_id"] for m in materials]
+
+    cursor.execute(
+        "SELECT id, materials FROM scribing_recipes WHERE materials IS NOT NULL"
     )
     for recipe_id, materials_json in cursor.fetchall():
         materials = json.loads(materials_json)
