@@ -106,7 +106,9 @@ export const load: PageServerLoad = ({ params }): ItemDetailPageData => {
     const recipeTable =
       recipe.recipe_type === "crafting"
         ? "crafting_recipes"
-        : "alchemy_recipes";
+        : recipe.recipe_type === "scribing"
+          ? "scribing_recipes"
+          : "alchemy_recipes";
     const recipeData = db
       .prepare(
         `
