@@ -18,11 +18,10 @@ interface AlchemyRecipe {
 }
 
 interface StationLocation {
+  id: string;
   zone_id: string;
   zone_name: string;
   sub_zone_name: string | null;
-  position_x: number;
-  position_y: number;
 }
 
 interface QuestItem {
@@ -137,7 +136,7 @@ export const load: PageServerLoad = (): AlchemyPageData => {
   const locations = db
     .prepare(
       `
-    SELECT zone_id, zone_name, sub_zone_name, position_x, position_y
+    SELECT id, zone_id, zone_name, sub_zone_name
     FROM alchemy_tables
     ORDER BY zone_name, sub_zone_name
   `,

@@ -3,6 +3,7 @@
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import ObtainabilityTree from "$lib/components/ObtainabilityTree.svelte";
+  import MapLink from "$lib/components/MapLink.svelte";
   import ChefHat from "@lucide/svelte/icons/chef-hat";
   import Trophy from "@lucide/svelte/icons/trophy";
   import ChevronRight from "@lucide/svelte/icons/chevron-right";
@@ -184,11 +185,11 @@
             <tr>
               <th class="text-left p-3 font-medium">Zone</th>
               <th class="text-left p-3 font-medium">Sub-zone</th>
-              <th class="text-left p-3 font-medium">Coordinates</th>
+              <th class="text-left p-3 font-medium">Map</th>
             </tr>
           </thead>
           <tbody>
-            {#each data.locations as location (location.zone_id + location.sub_zone_name)}
+            {#each data.locations as location (location.id)}
               <tr class="border-t hover:bg-muted/30">
                 <td class="p-3">
                   <a
@@ -201,10 +202,12 @@
                 <td class="p-3 text-muted-foreground">
                   {location.sub_zone_name ?? "—"}
                 </td>
-                <td class="p-3 font-mono text-muted-foreground">
-                  ({Math.round(location.position_x)}, {Math.round(
-                    location.position_y,
-                  )})
+                <td class="p-3">
+                  <MapLink
+                    entityId={location.id}
+                    entityType="crafting_station"
+                    compact
+                  />
                 </td>
               </tr>
             {/each}

@@ -12,7 +12,10 @@
     | "altar"
     | "resource"
     | "treasure"
-    | "portal";
+    | "portal"
+    | "alchemy_table"
+    | "crafting_station"
+    | "scribing_table";
 
   interface Props {
     entityId: string;
