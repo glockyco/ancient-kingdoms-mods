@@ -995,12 +995,25 @@ finalDamage = damage − reduction</pre>
       </div>
 
       <div>
+        <!-- Source: server-scripts/TargetDebuffSkill.cs:240-268, AreaDebuffSkill.cs:233-263 -->
         <h3 class="font-semibold mb-1">Dispel</h3>
-        <p class="text-sm text-muted-foreground">
+        <p class="text-sm text-muted-foreground mb-2">
           When a Dispel skill lands on a player, all active buffs are removed
           (except the Rest buff). When it lands on a pet, all active buffs are
-          removed. When it lands on a monster, each buff has an independent
-          chance to resist removal.
+          removed. When it lands on a monster, each buff is tested
+          independently:
+        </p>
+        <pre
+          class="text-xs bg-muted px-3 py-2 rounded overflow-x-auto">removed if Random.value &gt; probIgnoreCleanse − bonus
+
+bonus (single-target spell):   accuracy × 0.5
+bonus (single-target scroll):  scroll skill level × 0.01
+bonus (area dispel):           0</pre>
+        <p class="text-sm text-muted-foreground mt-2">
+          Higher accuracy increases the chance of stripping each individual
+          monster buff on single-target dispels. Scroll-based dispels use the
+          scroll's skill level (set by Scroll Mastery) instead of accuracy. Area
+          dispels do not benefit from accuracy regardless of type.
         </p>
       </div>
 
