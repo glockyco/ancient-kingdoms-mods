@@ -2292,18 +2292,33 @@
         <!-- F. Dispel Mechanics -->
         {#if skill.is_dispel}
           <div class="space-y-1">
+            <!-- Source: TargetDebuffSkill.cs:172-269, AreaDebuffSkill.cs:168-265 -->
             <h3 class="font-semibold">Dispel Mechanics</h3>
-            <p class="text-muted-foreground">Removes buffs from the target.</p>
             <p class="text-muted-foreground">
-              Players: all buffs removed unconditionally, except the Rest buff.
-            </p>
-            <p class="text-muted-foreground">
+              Players: all buffs removed unconditionally (except the Rest buff).<br
+              />
               Pets: all buffs removed unconditionally.
             </p>
-            <p class="text-muted-foreground">
-              Monsters: each buff rolls independently against its cleanse resist
-              chance.
-            </p>
+            <p class="text-muted-foreground">Monsters: each buff removed if</p>
+            {#if skill.skill_type === "target_debuff"}
+              {#if skill.is_scroll}
+                <p class="font-mono">
+                  Random.value &gt; probIgnoreCleanse &minus;
+                  clamp(round(Mastery% &divide; 5), 1, {skill.max_level})
+                  &times; 0.01
+                </p>
+              {:else}
+                <p class="font-mono">
+                  Random.value &gt; probIgnoreCleanse &minus; accuracy &times;
+                  0.5
+                </p>
+              {/if}
+            {:else}
+              <p class="font-mono">Random.value &gt; probIgnoreCleanse</p>
+              <p class="text-muted-foreground">
+                Accuracy has no effect on area dispels.
+              </p>
+            {/if}
           </div>
         {/if}
 

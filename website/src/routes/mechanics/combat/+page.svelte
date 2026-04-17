@@ -1007,13 +1007,14 @@ finalDamage = damage − reduction</pre>
           class="text-xs bg-muted px-3 py-2 rounded overflow-x-auto">removed if Random.value &gt; probIgnoreCleanse − bonus
 
 bonus (single-target spell):   accuracy × 0.5
-bonus (single-target scroll):  scroll skill level × 0.01
+bonus (single-target scroll):  clamp(round(Mastery% ÷ 5), 1, 20) × 0.01
 bonus (area dispel):           0</pre>
         <p class="text-sm text-muted-foreground mt-2">
           Higher accuracy increases the chance of stripping each individual
-          monster buff on single-target dispels. Scroll-based dispels use the
-          scroll's skill level (set by Scroll Mastery) instead of accuracy. Area
-          dispels do not benefit from accuracy regardless of type.
+          monster buff on single-target dispels. For scroll-based dispels the
+          bonus uses clamp(round(Scroll Mastery% ÷ 5), 1, 20) instead of
+          accuracy. Area dispels do not benefit from accuracy regardless of
+          type.
         </p>
       </div>
 
