@@ -178,8 +178,8 @@ public class ProfessionExporter : BaseExporter
                 category = "crafting",
                 icon_path = GetIconPath("scroll_mastery"),
                 steam_achievement_id = "SCROLL_MASTERY_MASTER",
-                steam_achievement_name = "Master Scribe",
-                steam_achievement_description = "Achieve 100% mastery in Scroll Mastery",
+                steam_achievement_name = "Grand Scribe of Eratiath",
+                steam_achievement_description = "Achieve 100% scroll mastery",
                 max_level = 100,
                 tracking_type = "float_level",
                 tracking_denominator = null
