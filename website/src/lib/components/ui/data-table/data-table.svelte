@@ -1,6 +1,6 @@
 <script lang="ts" generics="TData">
   import { onMount, untrack } from "svelte";
-  import { page } from "$app/stores";
+  import { getNormalizedUrlSearch } from "$lib/utils/url";
   import {
     getCoreRowModel,
     getSortedRowModel,
@@ -376,8 +376,8 @@
       let restoredPage: number | null = null;
       let restoredSorting: SortingState | null = null;
 
-      // Find all URL params that match our prefix
-      $page.url.searchParams.forEach((value, key) => {
+      // Find all URL params that match our prefix (normalized to fix &amp; from Steam links)
+      new URLSearchParams(getNormalizedUrlSearch()).forEach((value, key) => {
         if (key.startsWith(prefix)) {
           hasUrlState = true;
           const paramKey = key.slice(prefix.length);

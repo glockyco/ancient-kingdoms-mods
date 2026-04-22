@@ -1,6 +1,7 @@
 /* eslint-disable svelte/prefer-svelte-reactivity */
 /* eslint-disable svelte/no-navigation-without-resolve */
 import { afterNavigate, replaceState } from "$app/navigation";
+import { getNormalizedUrlSearch } from "$lib/utils/url";
 
 const URL_KEY = "statsPanel";
 
@@ -14,7 +15,9 @@ export function createStatPanelState(storageKey: string): { open: boolean } {
 
   afterNavigate(() => {
     if (!routerReady) {
-      const urlValue = new URL(window.location.href).searchParams.get(URL_KEY);
+      const urlValue = new URLSearchParams(getNormalizedUrlSearch()).get(
+        URL_KEY,
+      );
       if (urlValue !== null) {
         open = urlValue === "1";
       } else {

@@ -4,13 +4,15 @@
   import { beforeNavigate } from "$app/navigation";
   import LoadingOverlay from "$lib/components/LoadingOverlay.svelte";
   import { onMount } from "svelte";
-  import { page } from "$app/state";
+  import { getNormalizedUrlSearch } from "$lib/utils/url";
 
   let { children } = $props();
 
   onMount(() => {
     // Allow forcing theme via URL parameter (e.g. ?theme=dark for embeds)
-    const themeParam = new URL(page.url).searchParams.get("theme");
+    const themeParam = new URLSearchParams(getNormalizedUrlSearch()).get(
+      "theme",
+    );
     if (themeParam === "dark" || themeParam === "light") {
       setMode(themeParam);
     }

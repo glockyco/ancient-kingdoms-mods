@@ -3,23 +3,7 @@ import { pushState, replaceState } from "$app/navigation";
 import { base } from "$app/paths";
 import type { LayerVisibility, LevelFilter, LevelRanges } from "$lib/types/map";
 import { INITIAL_VIEW_STATE } from "./config";
-
-/**
- * Get normalized URL search string.
- * Fixes HTML entity encoding from forum posts where & becomes &amp;
- * (e.g., Steam discussion forums HTML-encode URLs, breaking query params).
- * Also cleans up the browser URL bar to prevent propagating the issue when re-sharing.
- */
-export function getNormalizedSearch(): string {
-  let search = window.location.search;
-  if (search.includes("&amp;")) {
-    search = search.replaceAll("&amp;", "&");
-    // Clean up browser URL bar so re-sharing works correctly
-    const cleanUrl = window.location.pathname + search + window.location.hash;
-    window.history.replaceState(null, "", cleanUrl);
-  }
-  return search;
-}
+import { getNormalizedUrlSearch } from "$lib/utils/url";
 
 /**
  * Fallback level filter values (used before data is loaded)
@@ -142,7 +126,7 @@ export function buildEntityUrl(
 export function parseUrlState(): MapUrlState | null {
   if (!browser) return null;
 
-  const params = new URLSearchParams(getNormalizedSearch());
+  const params = new URLSearchParams(getNormalizedUrlSearch());
 
   // Only return state if at least one relevant map param is present
   const hasPositionParams =

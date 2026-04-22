@@ -46,9 +46,9 @@
     urlManager,
     getDefaultLevelFilter,
     getDefaultLayerVisibility,
-    getNormalizedSearch,
     type UrlStateParams,
   } from "$lib/map/url-state";
+  import { getNormalizedUrlSearch } from "$lib/utils/url";
   import type {
     LayerVisibility,
     LevelFilter,
@@ -691,8 +691,7 @@
       const urlState = parseUrlState();
 
       // Check if URL has explicit position params
-      // Use getNormalizedSearch to fix HTML-encoded ampersands from forum posts
-      const urlParams = new URLSearchParams(getNormalizedSearch());
+      const urlParams = new URLSearchParams(getNormalizedUrlSearch());
       const hasPositionParams =
         urlParams.has("x") || urlParams.has("y") || urlParams.has("z");
 
