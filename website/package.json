@@ -14,7 +14,7 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "cf-deploy": "pnpm build && wrangler deploy"
+    "cf-deploy": "wrangler deploy"
   },
   "devDependencies": {
     "@eslint/compat": "^2.0.0",
