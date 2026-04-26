@@ -39,7 +39,9 @@
 <div class="container mx-auto p-8 space-y-12">
   <!-- Hero Section -->
   <div class="text-center py-2 space-y-4 relative">
-    <div class="absolute top-0 right-0 flex items-center gap-1">
+    <div
+      class="flex items-center justify-end gap-1 sm:absolute sm:top-0 sm:right-0"
+    >
       <a
         href={KOFI_URL}
         target="_blank"
