@@ -9,7 +9,7 @@
   variant="ghost"
   size="icon"
   onclick={toggleMode}
-  class="js-only"
+  class="js-only cursor-pointer"
   aria-label="Toggle theme"
 >
   {#if mode.current === "dark"}
