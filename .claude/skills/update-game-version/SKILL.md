@@ -19,29 +19,47 @@ Ask the user for the following before doing anything (skip any already provided)
 Execute in order:
 
 ```bash
-# 1. Build and deploy mods for the new version
+# 1. Decompile server scripts FIRST — before touching mods or running an export.
+#    Steam username is read from config.toml [steam] username (this file is gitignored — trust it exists)
+#    Prerequisites (one-time): brew install steamcmd && brew install dotnet@8 && dotnet tool install -g ilspycmd
+#    Running this first surfaces game-side API changes (renamed/removed fields the DataExporter binds to)
+#    before the long export run. A failing export caused by a renamed Il2Cpp member wastes the whole launch cycle.
+#    Note: this script downloads to .steam-download/ (a separate install) — it does NOT update the
+#    CrossOver bottle that --export uses. Always pass --update on the export to refresh that install.
+./scripts/update-server-scripts.sh <version>
+
+# 2. Diff server scripts and patch mods if needed (see Diff Analysis below)
+diff -rq server-scripts-<old-version> server-scripts-<new-version>
+diff -b server-scripts-<old>/<file>.cs server-scripts-<new>/<file>.cs
+#    Pay particular attention to fields/properties referenced by mods/DataExporter/
+#    (e.g. GameManager.*, ScriptableItem on enums). Update the exporter to match before building.
+
+# 3. Build and deploy mods for the new version
 dotnet run --project build-tool all
 
-# 2. Export fresh game data (launches game, exports JSON, quits)
-#    --update runs steamcmd app_update first to ensure the CrossOver game install is current
-#    Use --screenshots if the world map changed (user confirmed in Before Starting)
+# 4. Export fresh game data (launches game, exports JSON, quits)
+#    --update runs steamcmd app_update against the CrossOver bottle (separate from .steam-download/).
+#    Use --screenshots if the world map changed (user confirmed in Before Starting).
 dotnet run --project build-tool export --update
 # dotnet run --project build-tool export --update --screenshots  # if map changed
 #
-# IMPORTANT: Verify the MelonLoader log says "Game Version: <new version>"
-# If it still says the old version despite --update, check that steamcmd logged in successfully.
+# Note: MelonLoader logs `Game Version: UNKNOWN` for this game — the build does not expose
+# its version string to MelonLoader. Do NOT use that line to verify the install is current.
+# Instead, confirm via steamcmd's `Success! App '2241380' fully installed.` line during --update,
+# or by checking the in-game main menu.
+#
+# If MelonLoader fails with `UnityDependencies_<unity-version>.zip does not Exist!`
+# the game upgraded its Unity engine and MelonLoader's auto-download did not run
+# (recurring upstream bug — see https://github.com/LavaGang/MelonLoader/issues/987).
+# Fix manually:
+#   ML_DEPS="$ANCIENT_KINGDOMS_PATH/MelonLoader/Dependencies/Il2CppAssemblyGenerator"
+#   curl -fL -o "$ML_DEPS/UnityDependencies_<unity-version>.zip" \\
+#     https://github.com/LavaGang/MelonLoader.UnityDependencies/releases/download/<unity-version>/Managed.zip
+# The release asset is named `Managed.zip` upstream but MelonLoader caches it locally
+# as `UnityDependencies_<unity-version>.zip`. Re-run the export after placing the file.
 
-# 2b. Regenerate map tiles — only if map changed
+# 4b. Regenerate map tiles — only if map changed
 # cd build-pipeline && uv run compendium tiles
-
-# 3. Decompile server scripts
-#    Steam username is read from config.toml [steam] username (this file is gitignored — trust it exists)
-#    Prerequisites (one-time): brew install steamcmd && brew install dotnet@8 && dotnet tool install -g ilspycmd
-./scripts/update-server-scripts.sh <version>
-
-# 4. Diff server scripts (see analysis guidance below)
-diff -rq server-scripts-<old-version> server-scripts-<new-version>
-diff -b server-scripts-<old>/<file>.cs server-scripts-<new>/<file>.cs
 
 # 5. Rebuild database from new exports
 cd build-pipeline && uv run compendium build
