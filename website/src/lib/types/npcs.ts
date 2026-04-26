@@ -93,6 +93,10 @@ export interface NpcInfo {
   aggro_messages: string[];
   aggro_message_probability: number;
   summon_message: string;
+
+  // Faction changes (when killed)
+  improve_faction: string[];
+  decrease_faction: string[];
 }
 
 export interface NpcQuestFactionRequirement {

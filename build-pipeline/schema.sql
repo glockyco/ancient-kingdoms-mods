@@ -811,6 +811,10 @@ CREATE TABLE npcs (
     probability_drop_gold REAL DEFAULT 0.25,
     drops TEXT,                     -- JSON array
 
+    -- Faction changes (when killed)
+    improve_faction TEXT,           -- JSON array
+    decrease_faction TEXT,          -- JSON array
+
     -- Messages
     welcome_messages TEXT,          -- JSON array
     shout_messages TEXT,            -- JSON array

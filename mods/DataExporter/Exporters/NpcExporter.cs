@@ -238,6 +238,28 @@ public class NpcExporter : BaseExporter
                 }
             }
 
+            // Export faction changes (when NPC is killed)
+            if (canonical.improveFaction != null)
+            {
+                foreach (var faction in canonical.improveFaction)
+                {
+                    if (!string.IsNullOrEmpty(faction))
+                    {
+                        npcData.improve_faction.Add(faction);
+                    }
+                }
+            }
+            if (canonical.decreaseFaction != null)
+            {
+                foreach (var faction in canonical.decreaseFaction)
+                {
+                    if (!string.IsNullOrEmpty(faction))
+                    {
+                        npcData.decrease_faction.Add(faction);
+                    }
+                }
+            }
+
             // Export skill IDs (for guards and hostile NPCs)
             if (canonical.skills != null && canonical.skills.skillTemplates != null)
             {

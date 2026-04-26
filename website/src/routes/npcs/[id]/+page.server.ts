@@ -104,6 +104,14 @@ export const load: PageServerLoad = ({ params }): NpcDetailPageData => {
     ? JSON.parse(npcRaw.aggro_messages as string)
     : [];
 
+  const improveFaction: string[] = npcRaw.improve_faction
+    ? JSON.parse(npcRaw.improve_faction as string)
+    : [];
+
+  const decreaseFaction: string[] = npcRaw.decrease_faction
+    ? JSON.parse(npcRaw.decrease_faction as string)
+    : [];
+
   // Get spawn locations
   const spawns = db
     .prepare(
@@ -270,6 +278,10 @@ export const load: PageServerLoad = ({ params }): NpcDetailPageData => {
     aggro_message_probability:
       (npcRaw.aggro_message_probability as number) || 0,
     summon_message: (npcRaw.summon_message as string) || "",
+
+    // Faction changes (when killed)
+    improve_faction: improveFaction,
+    decrease_faction: decreaseFaction,
   };
 
   db.close();

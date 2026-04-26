@@ -125,6 +125,10 @@ public class NpcData
     public float probability_drop_gold { get; set; }
     public List<ItemDrop> drops { get; set; } = new();
 
+    // Faction changes (when killed)
+    public List<string> improve_faction { get; set; } = new();
+    public List<string> decrease_faction { get; set; } = new();
+
     // Messages and interactions
     public List<string> welcome_messages { get; set; } = new();
     public List<string> shout_messages { get; set; } = new();

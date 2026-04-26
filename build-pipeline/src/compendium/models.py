@@ -494,6 +494,10 @@ class NpcData(BaseModel):
     probability_drop_gold: float = 0.0
     drops: list[MonsterDrop] = []
 
+    # Faction changes (when killed)
+    improve_faction: list[str] = []
+    decrease_faction: list[str] = []
+
     # Messages
     welcome_messages: list[str] = []
     shout_messages: list[str] = []
