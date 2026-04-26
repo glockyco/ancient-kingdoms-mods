@@ -1,6 +1,11 @@
 <script lang="ts">
   import * as Card from "$lib/components/ui/card";
   import ThemeToggle from "$lib/components/ThemeToggle.svelte";
+  import KofiIcon from "$lib/components/KofiIcon.svelte";
+  import SteamIcon from "$lib/components/SteamIcon.svelte";
+  import { buttonVariants } from "$lib/components/ui/button";
+  import { cn } from "$lib/utils";
+  import { KOFI_URL, STEAM_GUIDE_URL } from "$lib/constants/links";
   import Gem from "@lucide/svelte/icons/gem";
   import MapPin from "@lucide/svelte/icons/map-pin";
   import Skull from "@lucide/svelte/icons/skull";
@@ -34,7 +39,25 @@
 <div class="container mx-auto p-8 space-y-12">
   <!-- Hero Section -->
   <div class="text-center py-2 space-y-4 relative">
-    <div class="absolute top-0 right-0">
+    <div class="absolute top-0 right-0 flex items-center gap-1">
+      <a
+        href={KOFI_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Support on Ko-fi"
+        class={cn(buttonVariants({ variant: "ghost", size: "icon" }), "mr-1")}
+      >
+        <KofiIcon class="size-7" />
+      </a>
+      <a
+        href={STEAM_GUIDE_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Steam Guide"
+        class={buttonVariants({ variant: "ghost", size: "icon" })}
+      >
+        <SteamIcon class="size-5" />
+      </a>
       <ThemeToggle />
     </div>
     <img src="/logo.webp" alt="" class="w-28 h-28 mx-auto" />
