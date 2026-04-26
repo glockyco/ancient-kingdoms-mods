@@ -8,6 +8,7 @@
   } from "$lib/components/ui/data-table";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import RoleBadges from "$lib/components/RoleBadges.svelte";
+  import OnKillFactions from "$lib/components/OnKillFactions.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
   import type {
@@ -525,6 +526,10 @@
       {#if data.npc.race}
         <span>Race: {data.npc.race}</span>
       {/if}
+      <OnKillFactions
+        improve={data.npc.improve_faction}
+        decrease={data.npc.decrease_faction}
+      />
     </div>
   </div>
 
@@ -665,25 +670,6 @@
                   ({formatPercent(data.npc.probability_drop_gold)} chance)
                 </span>
               {/if}
-            </div>
-          </div>
-        {/if}
-        {#if data.npc.improve_faction.length > 0 || data.npc.decrease_faction.length > 0}
-          <div class="mt-4 pt-4 border-t">
-            <div class="text-sm text-muted-foreground mb-1">On Kill</div>
-            <div class="font-medium">
-              {#each data.npc.improve_faction as faction, i (faction)}
-                {#if i > 0},
-                {/if}<span class="text-green-600 dark:text-green-400"
-                  >+{faction}</span
-                >
-              {/each}
-              {#each data.npc.decrease_faction as faction, i (faction)}
-                {#if i > 0 || data.npc.improve_faction.length > 0},
-                {/if}<span class="text-red-600 dark:text-red-400"
-                  >-{faction}</span
-                >
-              {/each}
             </div>
           </div>
         {/if}

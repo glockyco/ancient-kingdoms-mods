@@ -11,6 +11,7 @@
   import MapLink from "$lib/components/MapLink.svelte";
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
   import QuestTypeBadge from "$lib/components/QuestTypeBadge.svelte";
+  import OnKillFactions from "$lib/components/OnKillFactions.svelte";
   import QuestFlagBadges from "$lib/components/QuestFlagBadges.svelte";
   import type {
     MonsterDrop,
@@ -683,21 +684,10 @@
           ></span
         >
       {/if}
-      {#if data.monster.improve_faction.length > 0 || data.monster.decrease_faction.length > 0}
-        <span>
-          On Kill:
-          {#each data.monster.improve_faction as faction, i (faction)}
-            {#if i > 0},
-            {/if}<span class="text-green-600 dark:text-green-400"
-              >+{faction}</span
-            >
-          {/each}
-          {#each data.monster.decrease_faction as faction, i (faction)}
-            {#if i > 0 || data.monster.improve_faction.length > 0},
-            {/if}<span class="text-red-600 dark:text-red-400">-{faction}</span>
-          {/each}
-        </span>
-      {/if}
+      <OnKillFactions
+        improve={data.monster.improve_faction}
+        decrease={data.monster.decrease_faction}
+      />
     </div>
   </div>
 
