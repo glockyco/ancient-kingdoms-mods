@@ -80,26 +80,21 @@
     return "text-red-500";
   }
 
-  // Source: server-scripts/Player.cs:10282 — isScribingTable craft path
-  // Gain chance = max(0, 1 − (0.5 + scrollMasteryLevel / 2)) per successful craft
-  function getMasteryCraftGainChance(): number {
-    const skill = skillLevel / 100;
-    return Math.max(0, (0.5 - skill / 2) * 100);
-  }
-
+  // Source: server-scripts/Player.cs:10307 — isScribingTable craft path
   // Source: server-scripts/ScrollItem.cs:82 — scroll use path
-  // Gain chance = max(0, 1 − (0.3 + scrollMasteryLevel / 2)) per scroll use
-  function getMasteryUseGainChance(): number {
+  // Both paths share the same gain chance:
+  //   Mathf.Lerp(0.9, 0.02, scrollMasteryLevel^2) > Random.value, only while level < 1.
+  function getMasteryGainChance(): number {
     const skill = skillLevel / 100;
-    return Math.max(0, (0.7 - skill / 2) * 100);
+    if (skill >= 1) return 0;
+    const t = skill * skill;
+    return (0.9 + (0.02 - 0.9) * t) * 100;
   }
 
-  // Source: server-scripts/Player.cs:10284 — Random.Range(1, 4) / 10000f
-  const MASTERY_CRAFT_GAIN_MIN = 0.01; // 1/10000 * 100
-  const MASTERY_CRAFT_GAIN_MAX = 0.03; // 3/10000 * 100
-  // Source: server-scripts/ScrollItem.cs:84 — Random.Range(1, 3) / 10000f
-  const MASTERY_USE_GAIN_MIN = 0.01; // 1/10000 * 100
-  const MASTERY_USE_GAIN_MAX = 0.02; // 2/10000 * 100
+  // Source: server-scripts/Player.cs:10309 and ScrollItem.cs:84 — Random.Range(5, 10) / 10000f
+  // Unity int Random.Range upper bound is exclusive: integers 5-9 -> 0.05% to 0.09%.
+  const MASTERY_GAIN_MIN = 0.05;
+  const MASTERY_GAIN_MAX = 0.09;
 </script>
 
 <svelte:head>
@@ -218,56 +213,36 @@
         <span class="font-mono w-12">{skillLevel}%</span>
       </div>
       <div class="flex items-center gap-2 text-muted-foreground">
-        <span>Gain chance (crafting):</span>
+        <span>Mastery gain chance:</span>
         <span class="font-mono text-foreground"
-          >{getMasteryCraftGainChance().toFixed(0)}%</span
+          >{getMasteryGainChance().toFixed(0)}%</span
         >
-        <span class="text-xs">(per craft)</span>
-      </div>
-      <div class="flex items-center gap-2 text-muted-foreground">
-        <span>Gain chance (using):</span>
-        <span class="font-mono text-foreground"
-          >{getMasteryUseGainChance().toFixed(0)}%</span
-        >
-        <span class="text-xs">(per scroll use)</span>
+        <span class="text-xs">(per craft or scroll use)</span>
       </div>
     </div>
     <div class="rounded-lg border overflow-x-auto">
       <div
         class="grid whitespace-nowrap"
-        style="grid-template-columns: repeat(5, 1fr);"
+        style="grid-template-columns: repeat(4, 1fr);"
       >
         <div class="bg-muted/50 p-3 font-medium">Success</div>
-        <div class="bg-muted/50 p-3 font-medium">Craft Gain</div>
-        <div class="bg-muted/50 p-3 font-medium">Use Gain</div>
+        <div class="bg-muted/50 p-3 font-medium">Mastery Gain</div>
 
         <div class="bg-muted/50 p-3 font-medium">XP</div>
 
         <div class="bg-muted/50 p-3 font-medium text-right">Recipes</div>
         {#each data.recipeCounts as { tier, count } (tier)}
           {@const successChance = getSuccessChance(tier)}
-          {@const craftGainChance = getMasteryCraftGainChance()}
-          {@const useGainChance = getMasteryUseGainChance()}
+          {@const gainChance = getMasteryGainChance()}
           <div class="p-3 border-t">
             <span class="font-mono {getSuccessChanceColor(successChance)}">
               {successChance.toFixed(0)}%
             </span>
           </div>
           <div class="p-3 border-t">
-            {#if craftGainChance > 0}
+            {#if gainChance > 0}
               <span class="font-mono"
-                >{MASTERY_CRAFT_GAIN_MIN.toFixed(2)}% – {MASTERY_CRAFT_GAIN_MAX.toFixed(
-                  2,
-                )}%</span
-              >
-            {:else}
-              <span class="text-muted-foreground">—</span>
-            {/if}
-          </div>
-          <div class="p-3 border-t">
-            {#if useGainChance > 0}
-              <span class="font-mono"
-                >{MASTERY_USE_GAIN_MIN.toFixed(2)}% – {MASTERY_USE_GAIN_MAX.toFixed(
+                >{MASTERY_GAIN_MIN.toFixed(2)}% – {MASTERY_GAIN_MAX.toFixed(
                   2,
                 )}%</span
               >
@@ -300,10 +275,10 @@
         <div class="bg-muted/50 p-3 font-medium">Output</div>
         <div class="bg-muted/50 p-3 font-medium">Ingredients</div>
         <div class="bg-muted/50 p-3 font-medium">Success</div>
-        <div class="bg-muted/50 p-3 font-medium">Craft Gain</div>
+        <div class="bg-muted/50 p-3 font-medium">Mastery Gain</div>
         {#each data.recipes as recipe (recipe.id)}
           {@const successChance = getSuccessChance(recipe.level_required)}
-          {@const gainChance = getMasteryCraftGainChance()}
+          {@const gainChance = getMasteryGainChance()}
           {@const isExpanded = expandedRecipes.has(recipe.id)}
           {@const canExpand = hasIngredients(recipe)}
           <div {...cellProps(canExpand, recipe.id, "font-medium")}>
@@ -355,9 +330,7 @@
           <div {...cellProps(canExpand, recipe.id)}>
             {#if gainChance > 0}
               <span class="font-mono">
-                {MASTERY_CRAFT_GAIN_MIN.toFixed(2)}% – {MASTERY_CRAFT_GAIN_MAX.toFixed(
-                  2,
-                )}%
+                {MASTERY_GAIN_MIN.toFixed(2)}% – {MASTERY_GAIN_MAX.toFixed(2)}%
               </span>
             {:else}
               <span class="text-muted-foreground">—</span>
