@@ -78,7 +78,6 @@ public class GameConfigExporter : BaseExporter
         {
             gold_item = GetItemId(gameManager.GoldItem),
             primal_essence = GetItemId(gameManager.PrimalEssenceItem),
-            adventurer_essence = GetItemId(gameManager.AdventurerEssenceItem),
             blessed_rune = GetItemId(gameManager.blessedRune),
             redemption_token = GetItemId(gameManager.redemptionToken),
             max_level_reward = GetItemId(gameManager.RewardMaxLevelItem),

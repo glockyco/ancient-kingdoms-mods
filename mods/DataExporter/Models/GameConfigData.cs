@@ -20,7 +20,6 @@ public class SpecialItemsData
 {
     public string gold_item { get; set; }
     public string primal_essence { get; set; }
-    public string adventurer_essence { get; set; }
     public string blessed_rune { get; set; }
     public string redemption_token { get; set; }
     public string max_level_reward { get; set; }
