@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Xml.Linq;
+using BuildTool.HotRepl;
 
 class Program
 {
@@ -62,6 +63,7 @@ class Program
                 "build" => BuildMods(),
                 "deploy" => DeployMods(),
                 "all" => BuildMods() == 0 ? DeployMods() : 1,
+                "hotrepl-deploy" => RunHotReplDeploy(args),
                 "export" => RunExport(args),
                 _ => ShowUsage()
             };
@@ -99,6 +101,7 @@ class Program
         Console.WriteLine("  export  - Launch game, run data export, stream log");
         Console.WriteLine("  export --update      - Run steamcmd app_update before exporting");
         Console.WriteLine("  export --screenshots - Also capture map screenshots (use when map changed)");
+        Console.WriteLine("  hotrepl-deploy  - Build and deploy HotRepl MelonLoader host to the configured game Mods directory");
         Console.WriteLine();
         return 0;
     }
@@ -431,6 +434,59 @@ class Program
 
         return null;
     }
+
+    // =========================================================================
+    // hotrepl
+    // =========================================================================
+
+    static int RunHotReplDeploy(string[] args)
+    {
+        var gamePath = Environment.GetEnvironmentVariable("ANCIENT_KINGDOMS_PATH") ?? "";
+        var configuration = ReadOption(args, "--configuration") ?? "Debug";
+        var explicitRepo = ReadOption(args, "--hotrepl-repo");
+        var paths = HotReplPaths.Resolve(RootDir!, gamePath, configuration, explicitRepo);
+
+        Console.WriteLine("Building HotRepl MelonLoader host...");
+        Console.WriteLine($"  HotRepl repo: {paths.HotReplRepoPath}");
+        Console.WriteLine($"  Host project: {paths.HostProjectPath}");
+        Console.WriteLine($"  Game: {paths.GamePath}");
+        Console.WriteLine($"  Mods: {paths.ModsPath}");
+        Console.WriteLine();
+
+        var buildExit = HotReplDeployer.Build(paths, configuration);
+        if (buildExit != 0)
+            return buildExit;
+
+        try
+        {
+            var report = HotReplDeployer.Deploy(paths.HostOutputPath, paths.ModsPath);
+            foreach (var copiedFile in report.CopiedFiles)
+                Console.WriteLine($"  copied {Path.GetFileName(copiedFile)}");
+            foreach (var copiedDir in report.CopiedDirectories)
+                Console.WriteLine($"  copied {Path.GetFileName(copiedDir)}/");
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error: HotRepl deploy failed: {ex.Message}");
+            Console.Error.WriteLine("Note: Close the game before deploying to avoid file lock issues.");
+            return 1;
+        }
+
+        Console.WriteLine("HotRepl deploy complete.");
+        return 0;
+    }
+
+    static string? ReadOption(string[] args, string name)
+    {
+        for (var i = 0; i < args.Length - 1; i++)
+        {
+            if (string.Equals(args[i], name, StringComparison.OrdinalIgnoreCase))
+                return args[i + 1];
+        }
+
+        return null;
+    }
+
 
     // =========================================================================
     // export
