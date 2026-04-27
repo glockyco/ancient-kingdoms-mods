@@ -34,6 +34,46 @@ public class HotReplDeployerTests
     }
 
     [Fact]
+    public void Deploy_RemovesStaleHotReplDependencyFilesButLeavesOtherMods()
+    {
+        var root = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+        var output = Path.Combine(root, "hotrepl-output");
+        var mods = Path.Combine(root, "game", "Mods");
+        Directory.CreateDirectory(output);
+        Directory.CreateDirectory(mods);
+
+        File.WriteAllText(Path.Combine(output, "HotRepl.Host.MelonLoader.dll"), "host");
+        File.WriteAllText(Path.Combine(output, "Microsoft.CodeAnalysis.dll"), "roslyn");
+        File.WriteAllText(Path.Combine(mods, "System.Collections.Immutable.dll"), "stale");
+        File.WriteAllText(Path.Combine(mods, "System.Reflection.Metadata.dll"), "stale");
+        File.WriteAllText(Path.Combine(mods, "MapEnhancer.dll"), "unrelated");
+
+        HotReplDeployer.Deploy(output, mods);
+
+        Assert.False(File.Exists(Path.Combine(mods, "System.Collections.Immutable.dll")));
+        Assert.False(File.Exists(Path.Combine(mods, "System.Reflection.Metadata.dll")));
+        Assert.True(File.Exists(Path.Combine(mods, "MapEnhancer.dll")));
+    }
+
+    [Fact]
+    public void Deploy_SkipsSystemFrameworkAssembliesFromHostOutput()
+    {
+        var root = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+        var output = Path.Combine(root, "hotrepl-output");
+        var mods = Path.Combine(root, "game", "Mods");
+        Directory.CreateDirectory(output);
+
+        File.WriteAllText(Path.Combine(output, "HotRepl.Host.MelonLoader.dll"), "host");
+        File.WriteAllText(Path.Combine(output, "System.Memory.dll"), "framework");
+        File.WriteAllText(Path.Combine(output, "System.Runtime.CompilerServices.Unsafe.dll"), "framework");
+
+        HotReplDeployer.Deploy(output, mods);
+
+        Assert.False(File.Exists(Path.Combine(mods, "System.Memory.dll")));
+        Assert.False(File.Exists(Path.Combine(mods, "System.Runtime.CompilerServices.Unsafe.dll")));
+    }
+
+    [Fact]
     public void Deploy_RejectsMissingHostAssembly()
     {
         var root = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));

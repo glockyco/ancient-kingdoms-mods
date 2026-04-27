@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace BuildTool.HotRepl;
 
-internal sealed record HotReplDeploymentReport(IReadOnlyList<string> CopiedFiles, IReadOnlyList<string> CopiedDirectories);
+internal sealed record HotReplDeploymentReport(IReadOnlyList<string> CopiedFiles, IReadOnlyList<string> CopiedDirectories, IReadOnlyList<string> DeletedFiles);
 
 internal static class HotReplDeployer
 {
@@ -15,6 +15,35 @@ internal static class HotReplDeployer
         ".dll",
         ".pdb",
         ".json",
+    };
+
+    private static readonly HashSet<string> ManagedDependencyFiles = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "Fleck.dll",
+        "HotRepl.Core.dll",
+        "HotRepl.Core.pdb",
+        "HotRepl.Evaluator.Roslyn.dll",
+        "HotRepl.Evaluator.Roslyn.pdb",
+        "HotRepl.Helpers.Il2Cpp.dll",
+        "HotRepl.Helpers.Il2Cpp.pdb",
+        "HotRepl.Helpers.Unity.dll",
+        "HotRepl.Helpers.Unity.pdb",
+        "HotRepl.Host.MelonLoader.deps.json",
+        "HotRepl.Host.MelonLoader.dll",
+        "HotRepl.Host.MelonLoader.pdb",
+        "Microsoft.CodeAnalysis.CSharp.dll",
+        "Microsoft.CodeAnalysis.CSharp.Scripting.dll",
+        "Microsoft.CodeAnalysis.dll",
+        "Microsoft.CodeAnalysis.Scripting.dll",
+        "Newtonsoft.Json.dll",
+        "System.Buffers.dll",
+        "System.Collections.Immutable.dll",
+        "System.Memory.dll",
+        "System.Numerics.Vectors.dll",
+        "System.Reflection.Metadata.dll",
+        "System.Runtime.CompilerServices.Unsafe.dll",
+        "System.Text.Encoding.CodePages.dll",
+        "System.Threading.Tasks.Extensions.dll",
     };
 
     public static int Build(HotReplPaths paths, string configuration)
@@ -53,10 +82,17 @@ internal static class HotReplDeployer
 
         Directory.CreateDirectory(modsPath);
 
+        var currentOutputFiles = Directory.GetFiles(hostOutputPath)
+            .Where(IsDeployableTopLevelFile)
+            .Select(Path.GetFileName)
+            .OfType<string>()
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var deletedFiles = DeleteStaleManagedFiles(modsPath, currentOutputFiles);
+
         var copiedFiles = new List<string>();
         foreach (var sourceFile in Directory.GetFiles(hostOutputPath))
         {
-            if (!CopyExtensions.Contains(Path.GetExtension(sourceFile)))
+            if (!IsDeployableTopLevelFile(sourceFile))
                 continue;
 
             var targetFile = Path.Combine(modsPath, Path.GetFileName(sourceFile));
@@ -76,7 +112,36 @@ internal static class HotReplDeployer
             copiedDirectories.Add(targetDir);
         }
 
-        return new HotReplDeploymentReport(copiedFiles, copiedDirectories);
+        return new HotReplDeploymentReport(copiedFiles, copiedDirectories, deletedFiles);
+    }
+
+    private static IReadOnlyList<string> DeleteStaleManagedFiles(string modsPath, HashSet<string> currentOutputFiles)
+    {
+        var deletedFiles = new List<string>();
+        foreach (var fileName in ManagedDependencyFiles)
+        {
+            if (currentOutputFiles.Contains(fileName))
+                continue;
+
+            var targetFile = Path.Combine(modsPath, fileName);
+            if (!File.Exists(targetFile))
+                continue;
+
+            File.Delete(targetFile);
+            deletedFiles.Add(targetFile);
+        }
+
+        return deletedFiles;
+    }
+
+    private static bool IsDeployableTopLevelFile(string path)
+    {
+        var fileName = Path.GetFileName(path);
+        if (!CopyExtensions.Contains(Path.GetExtension(path)))
+            return false;
+        if (fileName.StartsWith("System.", StringComparison.OrdinalIgnoreCase))
+            return false;
+        return true;
     }
 
     private static bool IsSatelliteDirectoryName(string name)
