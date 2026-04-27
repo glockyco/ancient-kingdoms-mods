@@ -21,7 +21,13 @@ cd build-pipeline
 uv run compendium build   # JSON → SQLite (to website/static/)
 uv run compendium tiles   # Screenshots → tile pyramid
 uv run compendium stats   # Database statistics
+uv run compendium visual-audit assets --game-data ../.steam-download/ancientkingdoms_Data
+uv run compendium visual-audit probe --domain monsters --domain items --domain skills --domain pets --domain npcs
+uv run compendium visual-audit reconcile
+uv run compendium visual-audit report
 ```
+
+`visual-audit` is runtime-first: runtime probes through HotRepl establish authoritative entity-to-visual references, UnityPy only inventories/extracts available static assets, and `reconcile` selects assets only when they match runtime-referenced Unity object names. Do not use entity-name-only static matches as compendium visuals.
 
 Global option: `--config FILE` to override config.toml location.
 
