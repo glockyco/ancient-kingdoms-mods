@@ -65,6 +65,8 @@ class Program
                 "all" => BuildMods() == 0 ? DeployMods() : 1,
                 "hotrepl-deploy" => RunHotReplDeploy(args),
                 "hotrepl-launch" => RunHotReplLaunch(args),
+                "hotrepl-smoke" => RunHotReplSmoke(args),
+                "hotrepl" => RunHotRepl(args),
                 "export" => RunExport(args),
                 _ => ShowUsage()
             };
@@ -104,6 +106,8 @@ class Program
         Console.WriteLine("  export --screenshots - Also capture map screenshots (use when map changed)");
         Console.WriteLine("  hotrepl-deploy  - Build and deploy HotRepl MelonLoader host to the configured game Mods directory");
         Console.WriteLine("  hotrepl-launch  - Launch Ancient Kingdoms for an interactive HotRepl session");
+        Console.WriteLine("  hotrepl-smoke   - Run HotRepl smoke checks against a running game");
+        Console.WriteLine("  hotrepl         - Deploy HotRepl, launch game, and run basic smoke checks");
         Console.WriteLine();
         return 0;
     }
@@ -547,6 +551,33 @@ class Program
 
         Console.WriteLine("HotRepl port is reachable.");
         return 0;
+    }
+
+    static int RunHotReplSmoke(string[] args)
+    {
+        var gamePath = Environment.GetEnvironmentVariable("ANCIENT_KINGDOMS_PATH") ?? "";
+        var configuration = ReadOption(args, "--configuration") ?? "Debug";
+        var explicitRepo = ReadOption(args, "--hotrepl-repo");
+        var url = ReadOption(args, "--url") ?? "ws://localhost:18590";
+        var includeWorld = args.Contains("--world");
+        var paths = HotReplPaths.Resolve(RootDir!, gamePath, configuration, explicitRepo);
+        var clientPath = Path.Combine(paths.HotReplRepoPath, "client");
+
+        return HotReplSmokeRunner.Run(clientPath, includeWorld, url);
+    }
+
+    static int RunHotRepl(string[] args)
+    {
+        var deployExit = RunHotReplDeploy(args);
+        if (deployExit != 0)
+            return deployExit;
+
+        var launchArgs = args.Contains("--wait") ? args : args.Concat(new[] { "--wait" }).ToArray();
+        var launchExit = RunHotReplLaunch(launchArgs);
+        if (launchExit != 0)
+            return launchExit;
+
+        return RunHotReplSmoke(args);
     }
 
     static string? ReadOption(string[] args, string name)
