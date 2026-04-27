@@ -775,7 +775,7 @@
 {/snippet}
 
 <Seo
-  title={`${data.class.name} - Ancient Kingdoms Compendium`}
+  title={`${data.class.name} - Ancient Kingdoms`}
   description={data.description}
   path={`/classes/${data.class.id}`}
 />

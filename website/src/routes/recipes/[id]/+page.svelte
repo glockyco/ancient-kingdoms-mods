@@ -66,7 +66,7 @@
 </script>
 
 <Seo
-  title={`${data.recipe.result_item_name} ${data.recipe.type} Recipe - Ancient Kingdoms Compendium`}
+  title={`${data.recipe.result_item_name} ${data.recipe.type} Recipe - Ancient Kingdoms`}
   description={data.description}
   path={`/recipes/${data.recipe.id}`}
 />

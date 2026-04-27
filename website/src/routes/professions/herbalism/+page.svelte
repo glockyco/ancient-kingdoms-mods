@@ -82,7 +82,7 @@
 </script>
 
 <Seo
-  title={`${data.profession.name} - Ancient Kingdoms Compendium`}
+  title={`${data.profession.name} - Ancient Kingdoms`}
   description={`${data.profession.description} View plants and herbs you can gather with the Herbalism skill.`}
   path="/professions/herbalism"
 />

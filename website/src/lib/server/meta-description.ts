@@ -969,7 +969,7 @@ interface RecipeDescriptionInput {
 }
 
 function humanizeStation(station: string | null | undefined): string | null {
-  if (!station) return null;
+  if (!station || station === "unknown") return null;
   switch (station) {
     case "alchemy_table":
       return "alchemy table";
@@ -990,6 +990,10 @@ function humanizeStation(station: string | null | undefined): string | null {
   }
 }
 
+function indefiniteArticle(phrase: string): "a" | "an" {
+  return /^[aeiou]/i.test(phrase) ? "an" : "a";
+}
+
 export function recipeDescription(
   recipe: RecipeDescriptionInput,
   ingredients: RecipeIngredient[],
@@ -1006,7 +1010,9 @@ export function recipeDescription(
       : "";
 
   const station = humanizeStation(recipe.station_type);
-  const stationPhrase = station ? ` Crafted at a ${station}.` : "";
+  const stationPhrase = station
+    ? ` Crafted at ${indefiniteArticle(station)} ${station}.`
+    : "";
 
   // Top 2 materials by amount, then "and N more" if there are more.
   const sorted = [...ingredients].sort((a, b) => b.amount - a.amount);
@@ -1145,6 +1151,7 @@ interface SkillDescriptionInput {
   max_level: number;
   level_required: number;
   player_classes: string[];
+  required_spent_points: number;
   is_veteran: boolean;
   is_pet_skill: boolean;
   is_mercenary_skill: boolean;
@@ -1224,8 +1231,14 @@ export function skillDescription(skill: SkillDescriptionInput): string {
 
   const tierPhrase =
     skill.tier > 0 ? ` Tier ${toRomanNumeral(skill.tier)}.` : "";
-  const levelPhrase =
-    skill.level_required > 0
+  // Source: server-scripts/PlayerSkills.cs:456-458 — veteran skill upgrades check regular character level, available veteran points, and spent veteran points.
+  // Source: server-scripts/PlayerSkills.cs:822-825 — CmdUpgradeVeteran spends available veteran points before increasing the skill level.
+  // Source: server-scripts/Player.cs:5995-6005 and ScriptableSkill.cs:199-201 — requiredSpentPoints means already-spent veteran points, not total veteran level.
+  const levelPhrase = skill.is_veteran
+    ? skill.required_spent_points > 0
+      ? ` Requires ${skill.required_spent_points} spent veteran points.`
+      : ""
+    : skill.level_required > 0
       ? ` Unlocks at level ${skill.level_required}.`
       : "";
 
@@ -1333,8 +1346,11 @@ export function altarDescription(altar: AltarDescriptionInput): string {
 
   let rewardPhrase = "";
   if (altar.reward_common_name && altar.reward_legendary_name) {
+    const legendaryReward = altar.reward_legendary_name.startsWith("Legendary ")
+      ? altar.reward_legendary_name
+      : `Legendary ${altar.reward_legendary_name}`;
     rewardPhrase = altar.uses_veteran_scaling
-      ? ` Drops ${altar.reward_common_name} through Legendary ${altar.reward_legendary_name} based on player level and veteran score.`
+      ? ` Drops ${altar.reward_common_name} through ${legendaryReward} based on player level and veteran level.`
       : ` Drops ${altar.reward_common_name} through ${altar.reward_legendary_name}.`;
   }
 
@@ -1346,9 +1362,9 @@ export function altarDescription(altar: AltarDescriptionInput): string {
 // =============================================================================
 //
 // Source: server-scripts class definitions — each class has a primary role,
-// optional secondary role, energy/mana resource, race compatibility, and a
-// signature skill set. We use formatResourceName so the in-game word "Rage"
-// shows for energy users instead of the schema column name.
+// optional secondary role, and energy/mana resource. We use formatResourceName
+// so the in-game word "Rage" shows for energy users instead of the schema
+// column name.
 
 interface ClassDescriptionInput {
   name: string;
@@ -1356,39 +1372,16 @@ interface ClassDescriptionInput {
   primary_role: string;
   secondary_role: string | null;
   resource_type: string;
-  /** JSON array of race ids. Always 7 races total ("all" = 7). */
-  compatible_races: string;
-  /** Top signature skills (already sorted by importance). */
-  signature_skills: Array<{ name: string }>;
-}
-
-function racesPhrase(compatibleRacesJson: string): string {
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(compatibleRacesJson);
-  } catch {
-    return "";
-  }
-  if (!Array.isArray(parsed)) return "";
-  const races = (parsed as unknown[]).filter(
-    (x): x is string => typeof x === "string",
-  );
-  if (races.length === 7) return "Available to every race";
-  if (races.length >= 5) return "Available to most races";
-  if (races.length === 0) return "";
-  const named = races.map((r) => capitalizeFirst(r.replace(/_/g, " ")));
-  return `Available to ${joinList(named)}`;
 }
 
 function loreSnippet(description: string): string {
   if (!description) return "";
-  // First sentence, capped at ~100 chars
-  const firstSentenceMatch = description.match(/^[^.!?]+[.!?]/);
+  const sanitized = description.trim().replace(/;/g, ".");
+  const firstSentenceMatch = sanitized.match(/^[^.!?]+[.!?]/);
   const sentence = firstSentenceMatch
     ? firstSentenceMatch[0].trim()
-    : description.trim();
-  if (sentence.length <= 100) return sentence;
-  return sentence.slice(0, 97).trimEnd() + "...";
+    : sanitized;
+  return sentence;
 }
 
 export function classDescription(klass: ClassDescriptionInput): string {
@@ -1396,17 +1389,8 @@ export function classDescription(klass: ClassDescriptionInput): string {
   const role = klass.secondary_role
     ? `${klass.primary_role} with ${klass.secondary_role.toLowerCase()}`
     : klass.primary_role;
-  const races = racesPhrase(klass.compatible_races);
-  const racesSentence = races ? ` ${races}.` : "";
-
-  let skillsPhrase = "";
-  const top = klass.signature_skills.slice(0, 3).map((s) => s.name);
-  if (top.length > 0) {
-    skillsPhrase = ` Signature skills include ${joinList(top)}.`;
-  }
-
   const lore = loreSnippet(klass.description);
   const lorePhrase = lore ? ` ${lore}` : "";
 
-  return `${klass.name} — ${role}, uses ${resource}.${racesSentence}${skillsPhrase}${lorePhrase}`;
+  return `${klass.name} — ${role}, uses ${resource}.${lorePhrase}`;
 }

@@ -71,8 +71,8 @@
 </script>
 
 <Seo
-  title="Combat Mechanics - Ancient Kingdoms Compendium"
-  description="Complete reference for Ancient Kingdoms combat mechanics — damage pipeline, formula kinds, resistance and mitigation, healing, buff scaling, debuff mechanics, timing and haste, and special mechanics."
+  title="Combat Mechanics - Ancient Kingdoms"
+  description="Complete reference for combat mechanics — damage pipeline, formula kinds, resistance and mitigation, healing, buff scaling, debuff mechanics, timing and haste, and special mechanics."
   path="/mechanics/combat"
 />
 

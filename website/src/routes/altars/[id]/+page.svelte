@@ -99,7 +99,7 @@
 </script>
 
 <Seo
-  title={`${data.altar.name} - Ancient Kingdoms Compendium`}
+  title={`${data.altar.name} - Ancient Kingdoms`}
   description={data.description}
   path={`/altars/${data.altar.id}`}
 />

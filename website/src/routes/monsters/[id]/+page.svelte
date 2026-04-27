@@ -606,7 +606,7 @@
 {/snippet}
 
 <Seo
-  title={`${data.monster.name} - Ancient Kingdoms Compendium`}
+  title={`${data.monster.name} - Ancient Kingdoms`}
   description={data.description}
   path={`/monsters/${data.monster.id}`}
 />

@@ -24,7 +24,7 @@
 </script>
 
 <Seo
-  title={`${data.profession.name} - Ancient Kingdoms Compendium`}
+  title={`${data.profession.name} - Ancient Kingdoms`}
   description={`${data.profession.description} View all radiant spark locations.`}
   path="/professions/radiant_seeker"
 />

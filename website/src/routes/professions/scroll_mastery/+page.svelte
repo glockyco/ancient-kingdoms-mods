@@ -99,7 +99,7 @@
 </script>
 
 <Seo
-  title={`${data.profession.name} - Ancient Kingdoms Compendium`}
+  title={`${data.profession.name} - Ancient Kingdoms`}
   description={`${data.profession.description} View all scrolls you can craft with the Scroll Mastery skill.`}
   path="/professions/scroll_mastery"
 />

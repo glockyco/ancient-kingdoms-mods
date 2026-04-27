@@ -20,7 +20,7 @@
 </script>
 
 <Seo
-  title={`Chest - ${data.chest.zone_name} - Ancient Kingdoms Compendium`}
+  title={`Chest - ${data.chest.zone_name} - Ancient Kingdoms`}
   description={data.description}
   path={`/chests/${data.chest.id}`}
 />

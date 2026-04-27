@@ -126,7 +126,7 @@
 </script>
 
 <Seo
-  title={`${data.profession.name} - Ancient Kingdoms Compendium`}
+  title={`${data.profession.name} - Ancient Kingdoms`}
   description={`${data.profession.description} View all food recipes you can cook with the Cooking skill.`}
   path="/professions/cooking"
 />

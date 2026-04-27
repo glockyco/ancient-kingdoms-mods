@@ -128,7 +128,7 @@
 </script>
 
 <Seo
-  title={`${data.profession.name} - Ancient Kingdoms Compendium`}
+  title={`${data.profession.name} - Ancient Kingdoms`}
   description={`${data.profession.description} View all potions and elixirs you can craft with the Alchemy skill.`}
   path="/professions/alchemy"
 />

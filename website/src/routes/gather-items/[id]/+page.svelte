@@ -255,7 +255,7 @@
 {/snippet}
 
 <Seo
-  title={`${data.resource.name} - Ancient Kingdoms Compendium`}
+  title={`${data.resource.name} - Ancient Kingdoms`}
   description={data.description}
   path={`/gather-items/${data.resource.id}`}
 />

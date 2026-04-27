@@ -11,7 +11,7 @@
 </script>
 
 <Seo
-  title={`${data.profession.name} - Ancient Kingdoms Compendium`}
+  title={`${data.profession.name} - Ancient Kingdoms`}
   description={`${data.profession.description} View all treasure maps and their destinations.`}
   path="/professions/treasure_hunter"
 />

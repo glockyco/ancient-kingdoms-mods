@@ -17,6 +17,9 @@ const ENTITIES: EntityDef[] = [
   { table: "quests", route: "quests" },
   { table: "chests", route: "chests" },
   { table: "gathering_resources", route: "gather-items" },
+  { table: "skills", route: "skills" },
+  { table: "classes", route: "classes" },
+  { table: "altars", route: "altars" },
 ];
 
 const STATIC_ROUTES = [
@@ -30,6 +33,9 @@ const STATIC_ROUTES = [
   "/recipes",
   "/chests",
   "/gather-items",
+  "/skills",
+  "/classes",
+  "/altars",
   "/pets",
   "/professions",
   "/professions/adventuring",
@@ -41,6 +47,7 @@ const STATIC_ROUTES = [
   "/professions/lore_keeping",
   "/professions/mining",
   "/professions/radiant_seeker",
+  "/professions/scroll_mastery",
   "/professions/slayer",
   "/professions/treasure_hunter",
 ];

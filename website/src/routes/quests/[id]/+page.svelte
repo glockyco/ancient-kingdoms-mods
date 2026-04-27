@@ -101,7 +101,7 @@
 </script>
 
 <Seo
-  title={`${data.quest.name} - Ancient Kingdoms Compendium`}
+  title={`${data.quest.name} - Ancient Kingdoms`}
   description={data.description}
   path={`/quests/${data.quest.id}`}
 />

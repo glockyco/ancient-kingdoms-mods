@@ -492,7 +492,7 @@
 {/snippet}
 
 <Seo
-  title={`${data.npc.name} - Ancient Kingdoms Compendium`}
+  title={`${data.npc.name} - Ancient Kingdoms`}
   description={data.description}
   path={`/npcs/${data.npc.id}`}
 />

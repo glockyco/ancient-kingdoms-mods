@@ -33,12 +33,6 @@ export const load: PageServerLoad = ({ params }) => {
 
   const skills = getClassSkills(classData.id);
 
-  // Build signature skills from the first 3 base skills, or first 3 if no base filter
-  const baseSkills = skills.filter((s) => s.base_skill);
-  const signatureSkills = (baseSkills.length > 0 ? baseSkills : skills)
-    .slice(0, 3)
-    .map((s) => ({ name: s.name }));
-
   // Generate meta description
   const description = classDescription({
     name: classData.name,
@@ -46,8 +40,6 @@ export const load: PageServerLoad = ({ params }) => {
     primary_role: classData.primary_role,
     secondary_role: classData.secondary_role ?? null,
     resource_type: classData.resource_type,
-    compatible_races: classData.compatible_races,
-    signature_skills: signatureSkills,
   });
 
   return {

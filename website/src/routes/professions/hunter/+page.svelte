@@ -40,7 +40,7 @@
 </script>
 
 <Seo
-  title={`${data.profession.name} - Ancient Kingdoms Compendium`}
+  title={`${data.profession.name} - Ancient Kingdoms`}
   description={`${data.profession.description} View all hunt targets for the Hunter profession.`}
   path="/professions/hunter"
 />

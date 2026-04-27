@@ -88,7 +88,7 @@
 </script>
 
 <Seo
-  title={`${data.profession.name} - Ancient Kingdoms Compendium`}
+  title={`${data.profession.name} - Ancient Kingdoms`}
   description={`${data.profession.description} View ores and minerals you can mine with the Mining skill.`}
   path="/professions/mining"
 />

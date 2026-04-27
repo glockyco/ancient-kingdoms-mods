@@ -7,8 +7,8 @@
 </script>
 
 <Seo
-  title="Experience Mechanics - Ancient Kingdoms Compendium"
-  description="How experience (XP) is earned in Ancient Kingdoms — kill XP scaling, death and recovery, scrolls, gathering, alchemy, cooking, crafting, quests, and zone discovery."
+  title="Experience Mechanics - Ancient Kingdoms"
+  description="How experience (XP) is earned — kill XP scaling, death and recovery, scrolls, gathering, alchemy, cooking, crafting, quests, and zone discovery."
   path="/mechanics/experience"
 />
 

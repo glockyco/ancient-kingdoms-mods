@@ -400,7 +400,7 @@
 </script>
 
 <Seo
-  title="Auto-Attack DPS Simulator - Ancient Kingdoms Compendium"
+  title="Auto-Attack DPS Simulator - Ancient Kingdoms"
   description="Compare weapon DPS for all six classes at your stats and haste. Weapon haste and spell haste bonuses are included in the ranking. Accounts for Rogue off-hand, Ranger DEX scaling, Ranger melee mode, spell haste for casters, and the player vs merc distinction."
   path="/tools/combat-simulator"
 />
