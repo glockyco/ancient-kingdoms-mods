@@ -64,6 +64,7 @@ class Program
                 "deploy" => DeployMods(),
                 "all" => BuildMods() == 0 ? DeployMods() : 1,
                 "hotrepl-deploy" => RunHotReplDeploy(args),
+                "hotrepl-launch" => RunHotReplLaunch(args),
                 "export" => RunExport(args),
                 _ => ShowUsage()
             };
@@ -102,6 +103,7 @@ class Program
         Console.WriteLine("  export --update      - Run steamcmd app_update before exporting");
         Console.WriteLine("  export --screenshots - Also capture map screenshots (use when map changed)");
         Console.WriteLine("  hotrepl-deploy  - Build and deploy HotRepl MelonLoader host to the configured game Mods directory");
+        Console.WriteLine("  hotrepl-launch  - Launch Ancient Kingdoms for an interactive HotRepl session");
         Console.WriteLine();
         return 0;
     }
@@ -473,6 +475,77 @@ class Program
         }
 
         Console.WriteLine("HotRepl deploy complete.");
+        return 0;
+    }
+
+    static int RunHotReplLaunch(string[] args)
+    {
+        var gamePath = Environment.GetEnvironmentVariable("ANCIENT_KINGDOMS_PATH") ?? "";
+        if (string.IsNullOrWhiteSpace(gamePath))
+        {
+            Console.Error.WriteLine("Error: ANCIENT_KINGDOMS_PATH not set.");
+            return 1;
+        }
+
+        var gameExe = Path.Combine(gamePath, "ancientkingdoms.exe");
+        if (!File.Exists(gameExe))
+        {
+            Console.Error.WriteLine($"Error: Game executable not found at: {gameExe}");
+            return 1;
+        }
+
+        var logPath = Path.Combine(gamePath, "MelonLoader", "Latest.log");
+        Directory.CreateDirectory(Path.GetDirectoryName(logPath)!);
+        File.WriteAllText(logPath, "");
+
+        ProcessStartInfo psi;
+        if (IsMacOS)
+        {
+            var winePath = Environment.GetEnvironmentVariable("WINE_PATH") ?? "";
+            var winePrefix = Environment.GetEnvironmentVariable("WINE_PREFIX") ?? "";
+            if (string.IsNullOrWhiteSpace(winePath) || string.IsNullOrWhiteSpace(winePrefix))
+            {
+                Console.Error.WriteLine("Error: WINE_PATH and WINE_PREFIX are required on macOS.");
+                return 1;
+            }
+
+            psi = HotReplLauncher.CreateMacLaunchInfo(gamePath, winePath, winePrefix);
+        }
+        else
+        {
+            psi = HotReplLauncher.CreateWindowsLaunchInfo(gamePath);
+        }
+
+        Console.WriteLine("Launching Ancient Kingdoms for HotRepl...");
+        Console.WriteLine($"  Game: {gamePath}");
+        Console.WriteLine($"  Command: {psi.FileName} {psi.Arguments}".TrimEnd());
+        Console.WriteLine();
+
+        var process = Process.Start(psi);
+        if (process == null)
+        {
+            Console.Error.WriteLine("Error: failed to start game process.");
+            return 1;
+        }
+
+        if (!args.Contains("--wait"))
+        {
+            Console.WriteLine($"Game process started with PID {process.Id}.");
+            return 0;
+        }
+
+        var timeoutSeconds = int.TryParse(ReadOption(args, "--timeout-seconds"), out var parsedTimeout)
+            ? parsedTimeout
+            : 120;
+        Console.WriteLine($"Waiting up to {timeoutSeconds}s for HotRepl on ws://localhost:18590...");
+        var reachable = HotReplLauncher.WaitForPort("127.0.0.1", 18590, TimeSpan.FromSeconds(timeoutSeconds));
+        if (!reachable)
+        {
+            Console.Error.WriteLine("Error: HotRepl port did not open before timeout. Check MelonLoader/Latest.log.");
+            return 1;
+        }
+
+        Console.WriteLine("HotRepl port is reachable.");
         return 0;
     }
 
