@@ -113,11 +113,14 @@ def probe(
     runtime_dir.mkdir(parents=True, exist_ok=True)
 
     for domain_name in domains:
-        rows = run_probe(
-            domain_name, hotrepl_client=client_dir, url=url, timeout_ms=timeout_ms
-        )
         output_path = runtime_dir / f"{domain_name}.json"
-        output_path.write_text(json.dumps(rows, indent=2) + "\n")
+        rows = run_probe(
+            domain_name,
+            hotrepl_client=client_dir,
+            url=url,
+            timeout_ms=timeout_ms,
+            output_path=output_path,
+        )
         console.print(
             f"[green]OK[/green] Wrote {len(rows)} runtime references to {output_path}"
         )

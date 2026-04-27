@@ -60,4 +60,9 @@ foreach (var obj in Resources.FindObjectsOfTypeAll(npcType))
     }
 }
 
-return JsonSerializer.Serialize(rows, new JsonSerializerOptions { WriteIndented = true });
+var json = JsonSerializer.Serialize(rows, new JsonSerializerOptions { WriteIndented = true });
+const string OutputPath = "__VISUAL_AUDIT_OUTPUT_PATH__";
+var outputDirectory = System.IO.Path.GetDirectoryName(OutputPath);
+if (!string.IsNullOrEmpty(outputDirectory)) System.IO.Directory.CreateDirectory(outputDirectory);
+System.IO.File.WriteAllText(OutputPath, json);
+return JsonSerializer.Serialize(new Dictionary<string, object?> { ["output_path"] = OutputPath, ["row_count"] = rows.Count });

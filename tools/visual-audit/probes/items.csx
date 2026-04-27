@@ -75,7 +75,7 @@ foreach (var obj in Resources.FindObjectsOfTypeAll(itemType))
     }
 }
 
-foreach (var collectionObj in HotRepl.Helpers.Il2Cpp.Il2CppHelpers.FindObjects("Assets.HeroEditor4D.FantasyInventory.Scripts.ItemCollection"))
+foreach (var collectionObj in HotRepl.Helpers.Il2Cpp.Il2CppHelpers.FindObjects("Il2CppAssets.HeroEditor4D.FantasyInventory.Scripts.ItemCollection"))
 {
     var itemParamsLists = new[] { "UserItems", "GeneratedItems" };
     foreach (var listFieldName in itemParamsLists)
@@ -96,4 +96,9 @@ foreach (var collectionObj in HotRepl.Helpers.Il2Cpp.Il2CppHelpers.FindObjects("
     }
 }
 
-return JsonSerializer.Serialize(rows, new JsonSerializerOptions { WriteIndented = true });
+var json = JsonSerializer.Serialize(rows, new JsonSerializerOptions { WriteIndented = true });
+const string OutputPath = "__VISUAL_AUDIT_OUTPUT_PATH__";
+var outputDirectory = System.IO.Path.GetDirectoryName(OutputPath);
+if (!string.IsNullOrEmpty(outputDirectory)) System.IO.Directory.CreateDirectory(outputDirectory);
+System.IO.File.WriteAllText(OutputPath, json);
+return JsonSerializer.Serialize(new Dictionary<string, object?> { ["output_path"] = OutputPath, ["row_count"] = rows.Count });

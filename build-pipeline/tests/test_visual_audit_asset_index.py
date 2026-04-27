@@ -3,7 +3,11 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from compendium.visual_audit.asset_index import asset_key, write_static_index
+from compendium.visual_audit.asset_index import (
+    asset_key,
+    unity_object_name,
+    write_static_index,
+)
 from compendium.visual_audit.models import StaticAsset
 
 
@@ -12,6 +16,12 @@ class VisualAssetIndexTests(unittest.TestCase):
         self.assertEqual(
             asset_key("sharedassets1.assets", 12345), "sharedassets1.assets:12345"
         )
+
+    def test_unity_object_name_uses_m_name_when_name_property_is_absent(self):
+        class UnityData:
+            m_Name = "image_sabretooth"
+
+        self.assertEqual(unity_object_name(UnityData()), "image_sabretooth")
 
     def test_write_static_index_sorts_assets_and_writes_json(self):
         assets = [

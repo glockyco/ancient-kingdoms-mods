@@ -18,6 +18,16 @@ console = Console()
 ASSET_TYPES = {"Sprite", "Texture2D"}
 
 
+def unity_object_name(data: Any) -> str:
+    """Return a UnityPy object's serialized name across UnityPy object shapes."""
+
+    for attr in ("name", "m_Name"):
+        value = getattr(data, attr, None)
+        if isinstance(value, str) and value:
+            return value
+    return ""
+
+
 def asset_key(container_path: str, path_id: int) -> str:
     """Return the stable static-asset key used in audit manifests."""
 
@@ -90,14 +100,14 @@ def build_static_index(
                 )
                 continue
 
-            name = getattr(data, "name", "") or ""
+            name = unity_object_name(data)
             width = getattr(data, "width", None)
             height = getattr(data, "height", None)
             texture_name = None
             if type_name == "Sprite":
                 texture = getattr(data, "texture", None)
                 if texture is not None:
-                    texture_name = getattr(texture, "name", None)
+                    texture_name = unity_object_name(texture)
 
             extracted_path = None
             if extract_images:
