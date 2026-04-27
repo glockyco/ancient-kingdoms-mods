@@ -1151,6 +1151,7 @@ interface SkillDescriptionInput {
   max_level: number;
   level_required: number;
   player_classes: string[];
+  required_skill_points: number;
   required_spent_points: number;
   is_veteran: boolean;
   is_pet_skill: boolean;
@@ -1234,10 +1235,13 @@ export function skillDescription(skill: SkillDescriptionInput): string {
   // Source: server-scripts/PlayerSkills.cs:456-458 — veteran skill upgrades check regular character level, available veteran points, and spent veteran points.
   // Source: server-scripts/PlayerSkills.cs:822-825 — CmdUpgradeVeteran spends available veteran points before increasing the skill level.
   // Source: server-scripts/Player.cs:5995-6005 and ScriptableSkill.cs:199-201 — requiredSpentPoints means already-spent veteran points, not total veteran level.
+  const veteranPointText = `${skill.required_skill_points} veteran ${
+    skill.required_skill_points === 1 ? "point" : "points"
+  }`;
   const levelPhrase = skill.is_veteran
     ? skill.required_spent_points > 0
-      ? ` Requires ${skill.required_spent_points} spent veteran points.`
-      : ""
+      ? ` Costs ${veteranPointText} after ${skill.required_spent_points} spent veteran points.`
+      : ` Costs ${veteranPointText}.`
     : skill.level_required > 0
       ? ` Unlocks at level ${skill.level_required}.`
       : "";

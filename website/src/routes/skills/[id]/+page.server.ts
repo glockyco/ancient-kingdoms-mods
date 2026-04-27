@@ -294,6 +294,7 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
     tier: skill.tier,
     max_level: skill.max_level,
     level_required: skill.level_required,
+    required_skill_points: skill.required_skill_points,
     required_spent_points: skill.required_spent_points,
     player_classes: skill.player_classes,
     is_veteran: skill.is_veteran,
