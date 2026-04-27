@@ -13,6 +13,10 @@ export const SITE_NAME = "Ancient Kingdoms Compendium";
 
 /** Default Open Graph / Twitter image (1200x630). Generated at build time. */
 export const OG_IMAGE_PATH = "/og-default.png";
+export const OG_IMAGE_WIDTH = 1200;
+export const OG_IMAGE_HEIGHT = 630;
+export const OG_IMAGE_ALT = `${SITE_NAME} logo and title card`;
+export const OG_LOCALE = "en_US";
 
 /**
  * Compute the absolute canonical URL for a page path.

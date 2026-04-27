@@ -1,5 +1,6 @@
 <script lang="ts">
   import Seo from "$lib/components/Seo.svelte";
+  import { SITE_NAME, SITE_URL } from "$lib/seo/site";
   import * as Card from "$lib/components/ui/card";
   import ThemeToggle from "$lib/components/ThemeToggle.svelte";
   import KofiIcon from "$lib/components/KofiIcon.svelte";
@@ -24,13 +25,27 @@
   import ArrowRight from "@lucide/svelte/icons/arrow-right";
 
   let { data } = $props();
+
+  const title = "Ancient Kingdoms Compendium — Wiki, Map & Guides";
+  const description =
+    "Every item, monster, NPC, zone, quest, skill, and recipe, pulled directly from the game files and updated each patch.";
+  const websiteLd = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: SITE_NAME,
+    url: `${SITE_URL}/`,
+    description,
+    inLanguage: "en",
+  };
 </script>
 
-<Seo
-  title="Ancient Kingdoms Compendium — Wiki, Map & Guides"
-  description="Every item, monster, NPC, zone, quest, skill, and recipe, pulled directly from the game files and updated each patch."
-  path="/"
-/>
+<Seo {title} {description} path="/" />
+
+<svelte:head>
+  <!-- eslint-disable-next-line svelte/no-at-html-tags — JSON.stringify output is structured data, not user HTML; the </ + script> split avoids the Svelte parser closing the surrounding script block -->
+  {@html `<script type="application/ld+json">${JSON.stringify(websiteLd)}</` +
+    `script>`}
+</svelte:head>
 
 <div class="container mx-auto p-8 space-y-12">
   <!-- Hero Section -->
