@@ -114,6 +114,20 @@ Compatibility with future game updates is not guaranteed. If mods stop working a
 dotnet run --project build-tool all
 ```
 
+**HotRepl runtime inspection:**
+```bash
+# Deploy HotRepl from a sibling ../HotRepl checkout to the configured game Mods directory
+dotnet run --project build-tool hotrepl-deploy
+
+# Launch Ancient Kingdoms through Local.props/CrossOver and wait for the REPL
+dotnet run --project build-tool hotrepl-launch --wait --timeout-seconds 30
+
+# Run main-menu-safe smoke checks
+dotnet run --project build-tool hotrepl-smoke
+```
+
+Use `dotnet run --project build-tool hotrepl-smoke --world` only after loading a character/world.
+
 **Using Rider/Visual Studio:**
 - Open `AncientKingdomsMods.sln` - everything works out of the box!
 - Build with Ctrl+Shift+B or use the build tool run configurations

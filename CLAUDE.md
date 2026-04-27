@@ -76,6 +76,11 @@ dotnet run --project build-tool all
 dotnet run --project build-tool export
 dotnet run --project build-tool export --screenshots  # also capture map screenshots
 
+# HotRepl runtime inspection (deploys from sibling ../HotRepl checkout)
+dotnet run --project build-tool hotrepl-deploy
+dotnet run --project build-tool hotrepl-launch --wait --timeout-seconds 30
+dotnet run --project build-tool hotrepl-smoke
+
 # Build pipeline — load exported JSON into SQLite
 cd build-pipeline && uv run compendium build
 
