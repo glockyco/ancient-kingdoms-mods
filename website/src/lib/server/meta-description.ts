@@ -179,7 +179,7 @@ export function itemTypeSuffix(item: Item): string {
     case "scroll":
       return item.is_repair_kit ? "Repair Scroll" : "Cast Scroll";
     case "relic":
-      // Source: server-scripts/RelicItem.cs:12,17-20 \u2014 isOrnamentationToken splits the type
+      // Source: server-scripts/RelicItem.cs:12,17-20 — isOrnamentationToken splits the type
       return item.relic_buff_id === null ? "Ornamentation Token" : `${q} Relic`;
     case "book":
       return "Tome";
@@ -218,7 +218,7 @@ export function itemTypeSuffix(item: Item): string {
 }
 
 // ---------------------------------------------------------------------------
-// Description \u2014 21+ branches, one per item_type with sub-branches
+// Description — 21+ branches, one per item_type with sub-branches
 // ---------------------------------------------------------------------------
 
 export function itemDescription(item: Item, ctx: ItemMetaContext = {}): string {
@@ -266,7 +266,7 @@ export function itemDescription(item: Item, ctx: ItemMetaContext = {}): string {
     case "general":
       return generalDescription(item, ctx);
     default:
-      return `${item.name} \u2014 ${quality(item)} ${formatItemType(item.item_type)}.`;
+      return `${item.name} — ${quality(item)} ${formatItemType(item.item_type)}.`;
   }
 }
 
@@ -279,11 +279,11 @@ function weaponDescription(item: Item): string {
     : "weapon";
   const classes = classRestrictionPhrase(item.class_required);
   const level = levelGate(item.level_required);
-  // Source: server-scripts/WeaponItem.cs \u2014 weapon_proc_effect_id triggers on hit
+  // Source: server-scripts/WeaponItem.cs — weapon_proc_effect_id triggers on hit
   const proc = item.weapon_proc_effect_name
     ? ` Procs ${item.weapon_proc_effect_name} on hit.`
     : "";
-  return `${item.name} \u2014 ${q} ${cat}${classes}.${level}${proc}`;
+  return `${item.name} — ${q} ${cat}${classes}.${level}${proc}`;
 }
 
 function equipmentDescription(item: Item): string {
@@ -293,22 +293,22 @@ function equipmentDescription(item: Item): string {
   const level = levelGate(item.level_required);
   if (ARMOR_SLOTS.has(slot)) {
     const noun = slot === "Shield" ? "shield" : `${slotNoun(slot)} armor`;
-    return `${item.name} \u2014 ${q} ${noun}${classes}.${level}`;
+    return `${item.name} — ${q} ${noun}${classes}.${level}`;
   }
   if (JEWELRY_SLOTS.has(slot)) {
-    return `${item.name} \u2014 ${q} ${slotNoun(slot)}${classes}.${level}`;
+    return `${item.name} — ${q} ${slotNoun(slot)}${classes}.${level}`;
   }
-  return `${item.name} \u2014 ${q} ${slot || "equipment"}${classes}.${level}`;
+  return `${item.name} — ${q} ${slot || "equipment"}${classes}.${level}`;
 }
 
 function ammoDescription(item: Item): string {
   const q = quality(item);
   const level = levelGate(item.level_required);
-  return `${item.name} \u2014 ${q} ammunition for ranged weapons.${level}`;
+  return `${item.name} — ${q} ammunition for ranged weapons.${level}`;
 }
 
 function potionDescription(item: Item): string {
-  // Source: server-scripts/PotionItem.cs \u2014 usage_health/mana/energy/pet_health/experience
+  // Source: server-scripts/PotionItem.cs — usage_health/mana/energy/pet_health/experience
   // and an optional buff are applied on use.
   const restored: string[] = [];
   if (item.usage_health > 0) restored.push(`${item.usage_health} Hit Points`);
@@ -325,56 +325,56 @@ function potionDescription(item: Item): string {
   const buff = item.potion_buff_name
     ? ` Applies ${item.potion_buff_name}.`
     : "";
-  // Source: server-scripts/PotionItem.cs \u2014 cooldownCategory "Bandages" marks the bandage subtype
+  // Source: server-scripts/PotionItem.cs — cooldownCategory "Bandages" marks the bandage subtype
   const isBandage = item.cooldown_category === "Bandages";
   const subtype = isBandage ? "Bandage" : "Potion";
-  // Source: server-scripts/PotionItem.cs \u2014 potion_buff_allow_dungeon flags whether buff persists in dungeons
+  // Source: server-scripts/PotionItem.cs — potion_buff_allow_dungeon flags whether buff persists in dungeons
   const dungeon =
     !item.potion_buff_allow_dungeon && item.potion_buff_name
       ? " Dungeon use disabled."
       : "";
-  return `${item.name} \u2014 ${subtype}.${restorePhrase}${buff}${dungeon}`;
+  return `${item.name} — ${subtype}.${restorePhrase}${buff}${dungeon}`;
 }
 
 function foodDescription(item: Item): string {
-  // Source: server-scripts/FoodItem.cs \u2014 applies buffEffect at fixed buffLevel
+  // Source: server-scripts/FoodItem.cs — applies buffEffect at fixed buffLevel
   const kind = item.food_type === "Drink" ? "Drink" : "Food";
   const buff = item.food_buff_name ? ` Grants ${item.food_buff_name}.` : "";
   const dungeon =
     !item.food_buff_allow_dungeon && item.food_buff_name
       ? " Buff disabled inside dungeons."
       : "";
-  return `${item.name} \u2014 ${kind}.${buff}${dungeon}`;
+  return `${item.name} — ${kind}.${buff}${dungeon}`;
 }
 
 function scrollDescription(item: Item): string {
-  // Source: server-scripts/ScrollItem.cs:9,13 \u2014 isRepairKit branches the scroll behaviour
+  // Source: server-scripts/ScrollItem.cs:9,13 — isRepairKit branches the scroll behaviour
   if (item.is_repair_kit) {
     const tier = quality(item);
-    return `${item.name} \u2014 Repairs all equipped ${tier} or lower gear.`;
+    return `${item.name} — Repairs all equipped ${tier} or lower gear.`;
   }
-  // Source: server-scripts/ScrollItem.cs:82,92 \u2014 spell rank scales with player.scrollMasteryLevel
+  // Source: server-scripts/ScrollItem.cs:82,92 — spell rank scales with player.scrollMasteryLevel
   const skill = item.scroll_skill_name ?? "a spell";
-  return `${item.name} \u2014 Casts ${skill}. Spell rank scales with the Scroll Mastery profession.`;
+  return `${item.name} — Casts ${skill}. Spell rank scales with the Scroll Mastery profession.`;
 }
 
 function relicDescription(item: Item): string {
-  // Source: server-scripts/RelicItem.cs:12,17-20 \u2014 isOrnamentationToken saves armor appearance
+  // Source: server-scripts/RelicItem.cs:12,17-20 — isOrnamentationToken saves armor appearance
   const isOrnament = item.relic_buff_id === null;
   if (isOrnament) {
-    return `${item.name} \u2014 Saves an armor piece's appearance to your wardrobe collection.`;
+    return `${item.name} — Saves an armor piece's appearance to your wardrobe collection.`;
   }
-  // Source: server-scripts/RelicItem.cs:31 \u2014 buff applied at buffEffect.maxLevel, not item buff_level
+  // Source: server-scripts/RelicItem.cs:31 — buff applied at buffEffect.maxLevel, not item buff_level
   const q = quality(item);
   const buff = item.relic_buff_name ?? "a buff";
   const dungeon = !item.relic_buff_allow_dungeon
     ? " Cannot be used inside dungeons."
     : "";
-  return `${item.name} \u2014 ${q} relic. Triggers ${buff} at full power.${dungeon}`;
+  return `${item.name} — ${q} relic. Triggers ${buff} at full power.${dungeon}`;
 }
 
 function bookDescription(item: Item): string {
-  // Source: server-scripts/BookItem.cs, server-scripts/Player.cs:9241-9276 \u2014 one-time read,
+  // Source: server-scripts/BookItem.cs, server-scripts/Player.cs:9241-9276 — one-time read,
   // permanent attribute increase, then consumed.
   const gains: string[] = [];
   if (item.book_strength_gain > 0)
@@ -389,123 +389,122 @@ function bookDescription(item: Item): string {
   if (item.book_charisma_gain > 0)
     gains.push(`+${item.book_charisma_gain} Charisma`);
   const phrase = gains.length > 0 ? ` Grants ${joinList(gains)}.` : "";
-  return `${item.name} \u2014 One-time read that permanently increases your attributes.${phrase}`;
+  return `${item.name} — One-time read that permanently increases your attributes.${phrase}`;
 }
 
 function mountDescription(item: Item): string {
-  // Source: server-scripts/MountItem.cs:8, server-scripts/Player.cs:497-501 \u2014 speedMount
+  // Source: server-scripts/MountItem.cs:8, server-scripts/Player.cs:497-501 — speedMount
   // is the absolute movement speed when mounted, replacing equipped speed bonuses.
-  return `${item.name} \u2014 Mountable creature. Replaces your base movement speed while mounted. Cannot mount in dungeons or while in combat.`;
+  return `${item.name} — Mountable creature. Replaces your base movement speed while mounted. Cannot mount in dungeons or while in combat.`;
 }
 
 function backpackDescription(item: Item): string {
   // Source: server-scripts/BackpackItem.cs:7, server-scripts/PlayerInventory.cs:29-31
-  // \u2014 numSlots is added to the inventory while the bag is in the combined-backpack slot.
+  // — numSlots is added to the inventory while the bag is in the combined-backpack slot.
   const slots = item.backpack_slots > 0 ? item.backpack_slots : 0;
   const slotPhrase =
     slots > 0
       ? ` Adds ${slots} extra inventory slots while equipped in your Combined Backpack.`
       : "";
-  return `${item.name} \u2014 Storage bag.${slotPhrase}`;
+  return `${item.name} — Storage bag.${slotPhrase}`;
 }
 
 function packDescription(item: Item, ctx: ItemMetaContext): string {
-  // Source: server-scripts/PackItem.cs:6-8,15 \u2014 redeems for finalAmountReceived \u00d7 finalItemReceived
+  // Source: server-scripts/PackItem.cs:6-8,15 — redeems for finalAmountReceived × finalItemReceived
   const contents = ctx.packContents ?? [];
   if (contents.length > 0) {
     const c = contents[0];
-    const phrase =
-      c.amount > 1 ? `${c.amount} \u00d7 ${c.item_name}` : c.item_name;
-    return `${item.name} \u2014 Redeems for ${phrase}.`;
+    const phrase = c.amount > 1 ? `${c.amount} × ${c.item_name}` : c.item_name;
+    return `${item.name} — Redeems for ${phrase}.`;
   }
-  return `${item.name} \u2014 Container that redeems for a fixed item bundle on use.`;
+  return `${item.name} — Container that redeems for a fixed item bundle on use.`;
 }
 
 function travelDescription(item: Item): string {
-  // Source: server-scripts/TravelItem.cs:25-29 \u2014 nameDestination=="Bind Point" routes to player bind
+  // Source: server-scripts/TravelItem.cs:25-29 — nameDestination=="Bind Point" routes to player bind
   if (item.travel_destination_name === "Bind Point") {
-    return `${item.name} \u2014 Teleports you to your bind point. Cannot be used inside the Temple of Valaark.`;
+    return `${item.name} — Teleports you to your bind point. Cannot be used inside the Temple of Valaark.`;
   }
   const dest = item.travel_destination_name ?? "a fixed location";
-  return `${item.name} \u2014 Teleports you to ${dest}. Cannot be used inside the Temple of Valaark.`;
+  return `${item.name} — Teleports you to ${dest}. Cannot be used inside the Temple of Valaark.`;
 }
 
 function treasureMapDescription(item: Item): string {
   // Source: server-scripts/RelicItem.cs (treasure-map flow), Player.cs (Treasure Hunter)
-  return `${item.name} \u2014 Marks a buried treasure dig site. Brings a Treasure Hunter bonus to the chest it points at.`;
+  return `${item.name} — Marks a buried treasure dig site. Brings a Treasure Hunter bonus to the chest it points at.`;
 }
 
 function chestContainerDescription(item: Item): string {
-  // Source: server-scripts/ChestItem.cs:11,24 \u2014 yields numItemsPerChest from a weighted reward table
+  // Source: server-scripts/ChestItem.cs:11,24 — yields numItemsPerChest from a weighted reward table
   const n = item.chest_num_items > 0 ? item.chest_num_items : 1;
   const itemsWord = n === 1 ? "item" : "items";
-  return `${item.name} \u2014 Loot container. Yields ${n} ${itemsWord} from a weighted reward pool.`;
+  return `${item.name} — Loot container. Yields ${n} ${itemsWord} from a weighted reward pool.`;
 }
 
 function randomDescription(item: Item, ctx: ItemMetaContext): string {
-  // Source: server-scripts/RandomItem.cs:6 \u2014 yields one of items[] at random
+  // Source: server-scripts/RandomItem.cs:6 — yields one of items[] at random
   const n = ctx.randomOutcomes?.length ?? 0;
   if (n > 0) {
-    return `${item.name} \u2014 Mystery container. Yields one of ${n} possible items at random.`;
+    return `${item.name} — Mystery container. Yields one of ${n} possible items at random.`;
   }
-  return `${item.name} \u2014 Mystery container. Yields one item at random from a fixed pool.`;
+  return `${item.name} — Mystery container. Yields one item at random from a fixed pool.`;
 }
 
 function augmentDescription(item: Item): string {
   // Source: server-scripts/AugmentItem.cs, website/src/routes/items/[id]/+page.svelte:975-1031
-  // \u2014 set augments grant set bonuses; socketable augments are consumed at a crafting
+  // — set augments grant set bonuses; socketable augments are consumed at a crafting
   // station and can be removed by Augmenter NPCs (5,000g/10,000g/15,000g per quality).
   const q = quality(item);
   if (item.augment_armor_set_name) {
-    return `${item.name} \u2014 ${q} augment in the ${item.augment_armor_set_name} armor set, contributing to its set bonuses.`;
+    return `${item.name} — ${q} augment in the ${item.augment_armor_set_name} armor set, contributing to its set bonuses.`;
   }
   const target = item.augment_is_defensive ? "armor piece" : "weapon";
-  return `${item.name} \u2014 ${q} augment. Permanently socketed into ${target === "armor piece" ? "an armor piece" : "a weapon"} at a crafting station, removable at an Augmenter NPC.`;
+  return `${item.name} — ${q} augment. Permanently socketed into ${target === "armor piece" ? "an armor piece" : "a weapon"} at a crafting station, removable at an Augmenter NPC.`;
 }
 
 function fragmentDescription(item: Item): string {
-  // Source: build-pipeline schema \u2014 fragment_amount_needed and fragment_result_item_name
+  // Source: build-pipeline schema — fragment_amount_needed and fragment_result_item_name
   // are populated for items that combine into a higher-tier reward.
   const need =
     item.fragment_amount_needed > 0 ? item.fragment_amount_needed : 0;
   const result = item.fragment_result_item_name;
   if (need > 0 && result) {
-    return `${item.name} \u2014 Collect ${need} to combine into ${result}.`;
+    return `${item.name} — Collect ${need} to combine into ${result}.`;
   }
   if (result) {
-    return `${item.name} \u2014 Combines into ${result}.`;
+    return `${item.name} — Combines into ${result}.`;
   }
-  return `${item.name} \u2014 Fragment that combines into a higher-tier reward.`;
+  return `${item.name} — Fragment that combines into a higher-tier reward.`;
 }
 
 function recipeItemDescription(item: Item): string {
-  // Source: server-scripts/RecipeItem.cs:11-22 \u2014 teaches potionLearned (any craftable),
+  // Source: server-scripts/RecipeItem.cs:11-22 — teaches potionLearned (any craftable),
   // refused if already known.
   const taught = item.recipe_potion_learned_name;
   if (taught) {
-    return `${item.name} \u2014 Teaches the recipe for ${taught}. Refused if you already know it.`;
+    return `${item.name} — Teaches the recipe for ${taught}. Refused if you already know it.`;
   }
-  return `${item.name} \u2014 Recipe item. Teaches a craftable on first use.`;
+  return `${item.name} — Recipe item. Teaches a craftable on first use.`;
 }
 
 function mergeDescription(item: Item, ctx: ItemMetaContext): string {
-  // Source: server-scripts/uMMORPG.Scripts.ScriptableItems/MergeItem.cs:15-48 \u2014
+  // Source: server-scripts/uMMORPG.Scripts.ScriptableItems/MergeItem.cs:15-48 —
   // checks inventory for itemsNeeded, consumes them and the merge token, grants resultItem.
   const result = ctx.mergeResultName ?? null;
   if (result) {
-    return `${item.name} \u2014 Combines with required components in your inventory to create ${result}.`;
+    return `${item.name} — Combines with required components in your inventory to create ${result}.`;
   }
-  return `${item.name} \u2014 Combines with required components in your inventory to create a new item.`;
+  return `${item.name} — Combines with required components in your inventory to create a new item.`;
 }
 
 function structureDescription(item: Item): string {
   // Source: server-scripts/HousingManager.cs:21-32, server-scripts/Player.cs:4458,10138-10153
-  // \u2014 players buy a named house, then place CustomStructureItems inside it.
+  // — players buy a named house, then place CustomStructureItems inside it.
   const price =
     item.structure_price > 0
       ? `${item.structure_price.toLocaleString()} gold`
       : "a fixed gold cost";
-  return `${item.name} \u2014 Furniture. Costs ${price} to place inside a house you own.`;
+  return `${item.name} — Furniture. Costs ${price} to place inside a house you own.`;
 }
 
 function generalDescription(item: Item, ctx: ItemMetaContext): string {
@@ -522,13 +521,13 @@ function chestKeyDescription(item: Item, ctx: ItemMetaContext): string {
       opens.chestCount === 1 ? "1 chest" : `${opens.chestCount} chests`;
     const zonePhrase =
       opens.zoneCount === 1 ? "1 zone" : `${opens.zoneCount} zones`;
-    return `${item.name} \u2014 Chest key. Opens ${chestPhrase} across ${zonePhrase}.`;
+    return `${item.name} — Chest key. Opens ${chestPhrase} across ${zonePhrase}.`;
   }
-  return `${item.name} \u2014 Chest key.`;
+  return `${item.name} — Chest key.`;
 }
 
 function keyDescription(item: Item): string {
-  return `${item.name} \u2014 Key. Opens a quest door or container.`;
+  return `${item.name} — Key. Opens a quest door or container.`;
 }
 
 function questItemDescription(item: Item): string {
@@ -538,14 +537,14 @@ function questItemDescription(item: Item): string {
   if (!item.destroyable) flags.push("not destroyable");
   const flagPhrase =
     flags.length > 0 ? ` ${capitalizeFirst(joinList(flags))}.` : "";
-  return `${item.name} \u2014 Quest item.${flagPhrase}`;
+  return `${item.name} — Quest item.${flagPhrase}`;
 }
 
 function generalUsageDescription(item: Item, ctx: ItemMetaContext): string {
   const q = quality(item);
   const usages = ctx.usages;
   if (!usages) {
-    return `${item.name} \u2014 ${q} item.`;
+    return `${item.name} — ${q} item.`;
   }
   const counts: Array<{ category: string; count: number }> = [
     { category: "recipe", count: usages.recipes.length },
@@ -558,11 +557,11 @@ function generalUsageDescription(item: Item, ctx: ItemMetaContext): string {
   ].filter((c) => c.count > 0);
   counts.sort((a, b) => b.count - a.count);
   if (counts.length === 0) {
-    return `${item.name} \u2014 ${q} item.`;
+    return `${item.name} — ${q} item.`;
   }
   const top = counts[0];
   const noun = pluralize(top.category, top.count);
-  return `${item.name} \u2014 ${q} item. Used in ${top.count} ${noun}.`;
+  return `${item.name} — ${q} item. Used in ${top.count} ${noun}.`;
 }
 
 function pluralize(category: string, n: number): string {
@@ -623,7 +622,7 @@ export function monsterDescription(
   zoneNames: string[],
   altarSpawn: AltarSpawnInfo | null,
 ): string {
-  // Source: build-pipeline schema \u2014 classification flags layer fabled > boss > elite > hunt
+  // Source: build-pipeline schema — classification flags layer fabled > boss > elite > hunt
   let classification = "";
   if (monster.is_fabled) classification = " Fabled Boss";
   else if (monster.is_boss) classification = " Boss";
@@ -651,7 +650,7 @@ export function monsterDescription(
     origin = ` Found in ${zoneNames[0]} and ${zoneNames.length - 1} other zones.`;
   }
 
-  return `${monster.name} \u2014 Level ${range} ${species}${classification}.${origin}`;
+  return `${monster.name} — Level ${range} ${species}${classification}.${origin}`;
 }
 
 // =============================================================================
@@ -772,7 +771,7 @@ export function npcDescription(
   }
   const tailPhrase = tail.length > 0 ? ` ${tail.join(" ")}` : "";
 
-  return `${npc.name} \u2014 ${primary}${location}.${factionPhrase}${tailPhrase}`;
+  return `${npc.name} — ${primary}${location}.${factionPhrase}${tailPhrase}`;
 }
 
 // =============================================================================
@@ -801,7 +800,7 @@ export function zoneDescription(
 ): string {
   const typeLabel = zone.is_dungeon ? "Dungeon" : "Overworld zone";
 
-  // Source: schema \u2014 zones expose level_min/level_max derived from monsters.
+  // Source: schema — zones expose level_min/level_max derived from monsters.
   // No row in the current DB sets required_level > 0, so we omit any gating phrase.
   let levelPhrase = "";
   if (zone.level_min && zone.level_max) {
@@ -812,8 +811,8 @@ export function zoneDescription(
   }
 
   const head = levelPhrase
-    ? `${zone.name} \u2014 ${typeLabel}, ${levelPhrase}.`
-    : `${zone.name} \u2014 ${typeLabel}.`;
+    ? `${zone.name} — ${typeLabel}, ${levelPhrase}.`
+    : `${zone.name} — ${typeLabel}.`;
 
   const contentParts: string[] = [];
   if (counts.boss_count > 0)
@@ -869,7 +868,7 @@ interface QuestDescriptionInput {
 }
 
 function questTierLabel(quest: QuestDescriptionInput): string {
-  // Source: build-pipeline schema \u2014 these flags are mutually compatible but
+  // Source: build-pipeline schema — these flags are mutually compatible but
   // we report the most specific one in priority order.
   if (quest.is_main_quest) return "Main story quest";
   if (quest.is_epic_quest) return "Epic quest";
@@ -943,7 +942,7 @@ export function questDescription(
       ? ` ${capitalizeFirst(top.map(objectivePhrase).join(" then "))}.`
       : "";
 
-  return `${quest.name} \u2014 ${tierSentence}${levelPhrase}.${objectivesPhrase}`;
+  return `${quest.name} — ${tierSentence}${levelPhrase}.${objectivesPhrase}`;
 }
 
 // =============================================================================
@@ -997,7 +996,7 @@ export function recipeDescription(
 ): string {
   const yields =
     recipe.result_amount && recipe.result_amount > 1
-      ? `${recipe.result_amount} \u00d7 ${recipe.result_item_name}`
+      ? `${recipe.result_amount} × ${recipe.result_item_name}`
       : recipe.result_item_name;
 
   const family = recipe.type.toLowerCase();
@@ -1026,7 +1025,7 @@ export function recipeDescription(
       ? ` Awards ${recipe.xp.toLocaleString()} XP.`
       : "";
 
-  return `${yields} \u2014 ${capitalizeFirst(family)} recipe${levelPhrase}.${stationPhrase}${materialsPhrase}${xpPhrase}`;
+  return `${yields} — ${capitalizeFirst(family)} recipe${levelPhrase}.${stationPhrase}${materialsPhrase}${xpPhrase}`;
 }
 
 // =============================================================================
@@ -1059,7 +1058,7 @@ export function chestDescription(chest: ChestDescriptionInput): string {
     ? ` and a chance at ${chest.item_reward_name}`
     : "";
 
-  // Source: schema chests.respawn_time \u2014 seconds between server-side resets.
+  // Source: schema chests.respawn_time — seconds between server-side resets.
   const respawnPhrase =
     chest.respawn_time > 0
       ? ` Respawns every ${formatDuration(chest.respawn_time)}.`
@@ -1127,7 +1126,7 @@ export function gatheringResourceDescription(
   else if (zoneNames.length > 3)
     locationPhrase = ` Found in ${zoneNames[0]} and ${zoneNames.length - 1} other zones.`;
 
-  return `${resource.name} \u2014 ${tierPhrase}${typeLabel}.${toolPhrase}${rewardPhrase}${xpPhrase}${locationPhrase}`;
+  return `${resource.name} — ${tierPhrase}${typeLabel}.${toolPhrase}${rewardPhrase}${xpPhrase}${locationPhrase}`;
 }
 
 // =============================================================================
@@ -1230,7 +1229,7 @@ export function skillDescription(skill: SkillDescriptionInput): string {
       ? ` Unlocks at level ${skill.level_required}.`
       : "";
 
-  return `${skill.name} \u2014 ${typeLabel}.${tierPhrase} ${ownership}.${levelPhrase}`
+  return `${skill.name} — ${typeLabel}.${tierPhrase} ${ownership}.${levelPhrase}`
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -1239,7 +1238,7 @@ export function skillDescription(skill: SkillDescriptionInput): string {
 // Pets
 // =============================================================================
 //
-// Source: server-scripts/SummonSkill.cs:55-76 \u2014 familiar level scales with
+// Source: server-scripts/SummonSkill.cs:55-76 — familiar level scales with
 // summoning skill rank, companion level matches summoner, mercenaries hire at
 // player level and gain attributes per level. We deliberately don't print
 // numeric levels or stats: every value in the DB pets row is a build-time
@@ -1271,19 +1270,19 @@ function petOriginPhrase(input: PetDescriptionInput): string {
     : null;
   switch (input.kind) {
     case "Familiar":
-      // Source: server-scripts/SummonSkill.cs:76 \u2014 level = skillLevel
+      // Source: server-scripts/SummonSkill.cs:76 — level = skillLevel
       if (input.summoning_skill_name && className) {
         return ` Summoned by the ${input.summoning_skill_name} skill (${className}). Level scales with the skill rank.`;
       }
       return " Summoned by a class skill. Level scales with the skill rank.";
     case "Companion":
-      // Source: server-scripts/SummonSkill.cs:76 \u2014 level = min(petMaxLevel, playerLevel)
+      // Source: server-scripts/SummonSkill.cs:76 — level = min(petMaxLevel, playerLevel)
       if (input.summoning_skill_name && className) {
         return ` Summoned by the ${input.summoning_skill_name} skill (${className}). Level matches the summoner.`;
       }
       return " Summoned by a class skill. Level matches the summoner.";
     case "Mercenary":
-      // Source: server-scripts/Player.cs:7846 \u2014 hired at player level, gains attributes per level
+      // Source: server-scripts/Player.cs:7846 — hired at player level, gains attributes per level
       return " Recruited from any Mercenary Recruiter NPC. Hired at the player's current level and continues to gain attributes as the player levels.";
   }
 }
@@ -1291,14 +1290,14 @@ function petOriginPhrase(input: PetDescriptionInput): string {
 export function petDescription(input: PetDescriptionInput): string {
   const origin = petOriginPhrase(input);
   const role = petRolePhrase(input);
-  return `${input.name} \u2014 ${input.kind} (${input.type_monster}).${origin} ${role}`;
+  return `${input.name} — ${input.kind} (${input.type_monster}).${origin} ${role}`;
 }
 
 // =============================================================================
 // Altars
 // =============================================================================
 //
-// Source: build-pipeline schema \u2014 altars.type is "forgotten" | "avatar".
+// Source: build-pipeline schema — altars.type is "forgotten" | "avatar".
 // Forgotten altars carry a min_level_required gate; avatar altars do not
 // (their min_level_required is always 0 in the current DB).
 
@@ -1346,7 +1345,7 @@ export function altarDescription(altar: AltarDescriptionInput): string {
 // Classes
 // =============================================================================
 //
-// Source: server-scripts class definitions \u2014 each class has a primary role,
+// Source: server-scripts class definitions — each class has a primary role,
 // optional secondary role, energy/mana resource, race compatibility, and a
 // signature skill set. We use formatResourceName so the in-game word "Rage"
 // shows for energy users instead of the schema column name.
@@ -1409,5 +1408,5 @@ export function classDescription(klass: ClassDescriptionInput): string {
   const lore = loreSnippet(klass.description);
   const lorePhrase = lore ? ` ${lore}` : "";
 
-  return `${klass.name} \u2014 ${role}, uses ${resource}.${racesSentence}${skillsPhrase}${lorePhrase}`;
+  return `${klass.name} — ${role}, uses ${resource}.${racesSentence}${skillsPhrase}${lorePhrase}`;
 }

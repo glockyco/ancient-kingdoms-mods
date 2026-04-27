@@ -13,6 +13,7 @@
 
 <script lang="ts">
   import { resolve } from "$app/paths";
+  import { canonicalUrl } from "$lib/seo/site";
 
   let { items }: BreadcrumbProps = $props();
 
@@ -36,7 +37,32 @@
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return resolve(href as any);
   }
+
+  /**
+   * BreadcrumbList JSON-LD mirroring the visible trail. Google uses this to
+   * render "Home > Items > Foo" in the SERP instead of the workers.dev host.
+   */
+  const breadcrumbLd = $derived.by(() => ({
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: items.map((item, index) => {
+      const path = resolveHref(item.href);
+      const entry: Record<string, unknown> = {
+        "@type": "ListItem",
+        position: index + 1,
+        name: item.label,
+      };
+      if (path) entry.item = canonicalUrl(path);
+      return entry;
+    }),
+  }));
 </script>
+
+<svelte:head>
+  <!-- eslint-disable-next-line svelte/no-at-html-tags — JSON.stringify output is structured data, not user HTML; the </ + script> split avoids the Svelte parser closing the surrounding script block -->
+  {@html `<script type="application/ld+json">${JSON.stringify(breadcrumbLd)}</` +
+    `script>`}
+</svelte:head>
 
 <nav aria-label="Breadcrumb" class="mb-4">
   <ol class="flex items-center gap-2 text-sm text-muted-foreground">
