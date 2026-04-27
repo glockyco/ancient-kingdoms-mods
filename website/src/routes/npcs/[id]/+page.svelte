@@ -8,6 +8,7 @@
   } from "$lib/components/ui/data-table";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import RoleBadges from "$lib/components/RoleBadges.svelte";
+  import Seo from "$lib/components/Seo.svelte";
   import OnKillFactions from "$lib/components/OnKillFactions.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
@@ -490,10 +491,11 @@
   {/if}
 {/snippet}
 
-<svelte:head>
-  <title>{data.npc.name} - Ancient Kingdoms Compendium</title>
-  <meta name="description" content={data.description} />
-</svelte:head>
+<Seo
+  title={`${data.npc.name} - Ancient Kingdoms Compendium`}
+  description={data.description}
+  path={`/npcs/${data.npc.id}`}
+/>
 
 <div class="container mx-auto p-8 space-y-6 max-w-5xl">
   <!-- Breadcrumb -->

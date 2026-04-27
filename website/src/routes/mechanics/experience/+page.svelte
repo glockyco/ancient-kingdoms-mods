@@ -1,17 +1,16 @@
 <script lang="ts">
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import * as Card from "$lib/components/ui/card";
+  import Seo from "$lib/components/Seo.svelte";
 
   let { data } = $props();
 </script>
 
-<svelte:head>
-  <title>Experience Mechanics - Ancient Kingdoms Compendium</title>
-  <meta
-    name="description"
-    content="How experience (XP) is earned in Ancient Kingdoms — kill XP scaling, death and recovery, scrolls, gathering, alchemy, cooking, crafting, quests, and zone discovery."
-  />
-</svelte:head>
+<Seo
+  title="Experience Mechanics - Ancient Kingdoms Compendium"
+  description="How experience (XP) is earned in Ancient Kingdoms — kill XP scaling, death and recovery, scrolls, gathering, alchemy, cooking, crafting, quests, and zone discovery."
+  path="/mechanics/experience"
+/>
 
 <div class="container mx-auto p-8 space-y-8 max-w-4xl">
   <Breadcrumb

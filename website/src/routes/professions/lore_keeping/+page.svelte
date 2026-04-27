@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Seo from "$lib/components/Seo.svelte";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import ObtainabilityTree from "$lib/components/ObtainabilityTree.svelte";
@@ -80,13 +81,11 @@
   }
 </script>
 
-<svelte:head>
-  <title>{data.profession.name} - Ancient Kingdoms Compendium</title>
-  <meta
-    name="description"
-    content="{data.profession.description} View all books to collect."
-  />
-</svelte:head>
+<Seo
+  title={`${data.profession.name} - Ancient Kingdoms Compendium`}
+  description={`${data.profession.description} View all books to collect.`}
+  path="/professions/lore_keeping"
+/>
 
 <div class="container mx-auto p-8 space-y-8">
   <Breadcrumb

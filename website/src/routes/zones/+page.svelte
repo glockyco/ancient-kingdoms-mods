@@ -7,6 +7,7 @@
     type Header,
   } from "$lib/components/ui/data-table";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
+  import Seo from "$lib/components/Seo.svelte";
   import type { ZoneListView } from "$lib/types/zones";
   import { ICON_BADGE } from "$lib/styles/badge";
   import Crown from "@lucide/svelte/icons/crown";
@@ -191,13 +192,11 @@
   {/if}
 {/snippet}
 
-<svelte:head>
-  <title>Zones - Ancient Kingdoms Compendium</title>
-  <meta
-    name="description"
-    content="Explore all zones in Ancient Kingdoms - dungeons, overworld areas, level ranges, and what awaits in each location."
-  />
-</svelte:head>
+<Seo
+  title="Zones - Ancient Kingdoms"
+  description={`${data.zones.length.toLocaleString()} zones across Eratiath — overworld regions and dungeons with level ranges, monster rosters, NPCs, gathering nodes, chests, and altars.`}
+  path="/zones"
+/>
 
 <div class="container mx-auto p-8 space-y-6">
   <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Zones" }]} />

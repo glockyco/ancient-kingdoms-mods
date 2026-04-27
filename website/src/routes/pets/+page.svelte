@@ -9,6 +9,7 @@
   } from "$lib/components/ui/data-table";
   import { IconBadge } from "$lib/components/ui/icon-badge";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
+  import Seo from "$lib/components/Seo.svelte";
   import { getClassConfig } from "$lib/utils/classes";
   import type { PetListView } from "$lib/types/pets";
   import User from "@lucide/svelte/icons/user";
@@ -115,13 +116,11 @@
   {/if}
 {/snippet}
 
-<svelte:head>
-  <title>Pets - Ancient Kingdoms Compendium</title>
-  <meta
-    name="description"
-    content="All mercenaries, companions, and familiars in Ancient Kingdoms."
-  />
-</svelte:head>
+<Seo
+  title="Pets - Ancient Kingdoms"
+  description="Pets, familiars, and mercenaries — summoned companions and recruitable allies, with their skills, stats, and how to unlock each."
+  path="/pets"
+/>
 
 <div class="container mx-auto p-8 space-y-6">
   <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Pets" }]} />

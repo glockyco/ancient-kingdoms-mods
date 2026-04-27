@@ -2,6 +2,7 @@
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
+  import Seo from "$lib/components/Seo.svelte";
   import * as Card from "$lib/components/ui/card";
   import {
     formatDuration,
@@ -97,10 +98,11 @@
   }
 </script>
 
-<svelte:head>
-  <title>{data.altar.name} - Ancient Kingdoms Compendium</title>
-  <meta name="description" content={data.description} />
-</svelte:head>
+<Seo
+  title={`${data.altar.name} - Ancient Kingdoms Compendium`}
+  description={data.description}
+  path={`/altars/${data.altar.id}`}
+/>
 
 <div class="container mx-auto p-8 space-y-6 max-w-5xl">
   <Breadcrumb

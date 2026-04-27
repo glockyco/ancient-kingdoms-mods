@@ -11,6 +11,7 @@
   } from "$lib/components/ui/data-table";
   import { IconBadge } from "$lib/components/ui/icon-badge";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
+  import Seo from "$lib/components/Seo.svelte";
   import RoleBadges from "$lib/components/RoleBadges.svelte";
   import type { NpcZoneInfo } from "$lib/types/npcs";
   import {
@@ -242,13 +243,11 @@
   {/if}
 {/snippet}
 
-<svelte:head>
-  <title>NPCs - Ancient Kingdoms Compendium</title>
-  <meta
-    name="description"
-    content="All NPCs in Ancient Kingdoms - merchants, quest givers, trainers, and services across every zone."
-  />
-</svelte:head>
+<Seo
+  title="NPCs - Ancient Kingdoms"
+  description={`${data.npcs.length.toLocaleString()} NPCs sortable by zone, faction, and role — merchants, quest givers, skill masters, faction vendors, bankers, and innkeepers.`}
+  path="/npcs"
+/>
 
 <div class="container mx-auto p-8 space-y-6">
   <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "NPCs" }]} />

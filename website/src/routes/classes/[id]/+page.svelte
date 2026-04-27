@@ -28,6 +28,7 @@
     ALL_CLASS_IDS,
   } from "$lib/utils/classes";
   import { QUALITY_NAMES } from "$lib/constants/quality";
+  import Seo from "$lib/components/Seo.svelte";
   import { getQualityTextColorClass } from "$lib/utils/format";
   import { formatSkillEffect } from "$lib/utils/formatSkillEffect";
   import { getItemTooltips } from "$lib/queries/items";
@@ -773,10 +774,11 @@
   {/if}
 {/snippet}
 
-<svelte:head>
-  <title>{data.class.name} - Ancient Kingdoms Compendium</title>
-  <meta name="description" content={data.class.description} />
-</svelte:head>
+<Seo
+  title={`${data.class.name} - Ancient Kingdoms Compendium`}
+  description={data.class.description}
+  path={`/classes/${data.class.id}`}
+/>
 
 <div class="container mx-auto p-8 space-y-6 max-w-5xl">
   <!-- Breadcrumb -->

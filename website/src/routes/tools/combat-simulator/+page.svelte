@@ -27,6 +27,7 @@
     SPELL_HASTE_CAP,
   } from "$lib/utils/combat-sim";
   import type { WeaponItem } from "./+page.server";
+  import Seo from "$lib/components/Seo.svelte";
 
   let { data } = $props();
 
@@ -398,13 +399,11 @@
   }
 </script>
 
-<svelte:head>
-  <title>Auto-Attack DPS Simulator - Ancient Kingdoms Compendium</title>
-  <meta
-    name="description"
-    content="Compare weapon DPS for all six classes at your stats and haste. Weapon haste and spell haste bonuses are included in the ranking. Accounts for Rogue off-hand, Ranger DEX scaling, Ranger melee mode, spell haste for casters, and the player vs merc distinction."
-  />
-</svelte:head>
+<Seo
+  title="Auto-Attack DPS Simulator - Ancient Kingdoms Compendium"
+  description="Compare weapon DPS for all six classes at your stats and haste. Weapon haste and spell haste bonuses are included in the ranking. Accounts for Rogue off-hand, Ranger DEX scaling, Ranger melee mode, spell haste for casters, and the player vs merc distinction."
+  path="/tools/combat-simulator"
+/>
 
 <div class="container mx-auto p-8 space-y-8 max-w-5xl">
   <Breadcrumb

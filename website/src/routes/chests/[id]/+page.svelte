@@ -2,6 +2,7 @@
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
   import ObtainabilityTree from "$lib/components/ObtainabilityTree.svelte";
+  import Seo from "$lib/components/Seo.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import { formatDuration, formatPercent } from "$lib/utils/format";
   import Key from "@lucide/svelte/icons/key";
@@ -18,10 +19,11 @@
   }
 </script>
 
-<svelte:head>
-  <title>Chest - {data.chest.zone_name} - Ancient Kingdoms Compendium</title>
-  <meta name="description" content={data.description} />
-</svelte:head>
+<Seo
+  title={`Chest - ${data.chest.zone_name} - Ancient Kingdoms Compendium`}
+  description={data.description}
+  path={`/chests/${data.chest.id}`}
+/>
 
 <div class="container mx-auto p-8 space-y-6 max-w-5xl">
   <!-- Breadcrumb -->

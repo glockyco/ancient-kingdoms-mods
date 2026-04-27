@@ -9,6 +9,7 @@
     type TanstackTable,
   } from "$lib/components/ui/data-table";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
+  import Seo from "$lib/components/Seo.svelte";
   import Sparkles from "@lucide/svelte/icons/sparkles";
   import { getClassConfig } from "$lib/utils/classes";
   import SkillEffect from "$lib/components/SkillEffect.svelte";
@@ -189,13 +190,11 @@
   {/if}
 {/snippet}
 
-<svelte:head>
-  <title>Skills - Ancient Kingdoms Compendium</title>
-  <meta
-    name="description"
-    content="Complete skill database for Ancient Kingdoms - abilities, spells, and passives for all classes."
-  />
-</svelte:head>
+<Seo
+  title="Skills - Ancient Kingdoms"
+  description={`${data.skills.length.toLocaleString()} skills covering every class, plus monster and pet abilities — damage spells, heals, buffs, debuffs, and summons, with mana costs and tiers.`}
+  path="/skills"
+/>
 
 <div class="container mx-auto p-8 space-y-6">
   <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Skills" }]} />

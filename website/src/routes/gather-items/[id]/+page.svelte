@@ -9,6 +9,7 @@
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
+  import Seo from "$lib/components/Seo.svelte";
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
   import ObtainabilityTree from "$lib/components/ObtainabilityTree.svelte";
   import type {
@@ -253,10 +254,11 @@
   {/if}
 {/snippet}
 
-<svelte:head>
-  <title>{data.resource.name} - Ancient Kingdoms Compendium</title>
-  <meta name="description" content={data.description} />
-</svelte:head>
+<Seo
+  title={`${data.resource.name} - Ancient Kingdoms Compendium`}
+  description={data.description}
+  path={`/gather-items/${data.resource.id}`}
+/>
 
 <div class="container mx-auto p-8 space-y-6 max-w-5xl">
   <!-- Breadcrumb -->

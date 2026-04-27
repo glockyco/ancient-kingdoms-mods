@@ -9,6 +9,7 @@
   } from "$lib/components/ui/data-table";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
+  import Seo from "$lib/components/Seo.svelte";
   import { formatSkillEffect } from "$lib/utils/formatSkillEffect";
   import { getClassConfig } from "$lib/utils/classes";
   import type { ClassSkill } from "$lib/queries/classes.server";
@@ -195,13 +196,11 @@
   {/if}
 {/snippet}
 
-<svelte:head>
-  <title>{pet.name} - Ancient Kingdoms Compendium</title>
-  <meta
-    name="description"
-    content="{pet.name} is a {pet.kind.toLowerCase()} in Ancient Kingdoms."
-  />
-</svelte:head>
+<Seo
+  title={`${pet.name} - Ancient Kingdoms Compendium`}
+  description={`${pet.name} is a ${pet.kind.toLowerCase()} in Ancient Kingdoms.`}
+  path={`/pets/${pet.id}`}
+/>
 
 <div class="container mx-auto p-8 space-y-6 max-w-5xl">
   <Breadcrumb

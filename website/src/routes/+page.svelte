@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Seo from "$lib/components/Seo.svelte";
   import * as Card from "$lib/components/ui/card";
   import ThemeToggle from "$lib/components/ThemeToggle.svelte";
   import KofiIcon from "$lib/components/KofiIcon.svelte";
@@ -25,13 +26,11 @@
   let { data } = $props();
 </script>
 
-<svelte:head>
-  <title>Ancient Kingdoms Compendium</title>
-  <meta
-    name="description"
-    content="Interactive map and wiki-like reference for Ancient Kingdoms - items, monsters, zones, quests, and more, directly extracted from the game files."
-  />
-</svelte:head>
+<Seo
+  title="Ancient Kingdoms Compendium — Wiki, Map & Guides"
+  description="Every item, monster, NPC, zone, quest, skill, and recipe, pulled directly from the game files and updated each patch."
+  path="/"
+/>
 
 <div class="container mx-auto p-8 space-y-12">
   <!-- Hero Section -->
@@ -62,7 +61,7 @@
     <img src="/logo.webp" alt="" class="w-28 h-28 mx-auto" />
     <h1 class="text-4xl md:text-5xl font-bold">Ancient Kingdoms Compendium</h1>
     <p class="text-xl text-muted-foreground">
-      Your guide to items, monsters, zones, quests, and more
+      Fan-made wiki, interactive world map, and game database
     </p>
     <p class="text-sm text-muted-foreground">
       Updated for v0.9.14.1 (2026-04-26)

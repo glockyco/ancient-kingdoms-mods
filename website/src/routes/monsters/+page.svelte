@@ -12,6 +12,7 @@
   } from "$lib/components/ui/data-table";
   import { IconBadge } from "$lib/components/ui/icon-badge";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
+  import Seo from "$lib/components/Seo.svelte";
   import MonsterTypeIcon from "$lib/components/MonsterTypeIcon.svelte";
   import type { MonsterZoneInfo } from "$lib/types/monsters";
   import {
@@ -314,13 +315,11 @@
   {/if}
 {/snippet}
 
-<svelte:head>
-  <title>Monsters - Ancient Kingdoms Compendium</title>
-  <meta
-    name="description"
-    content="Complete bestiary for Ancient Kingdoms - stats, drops, and spawn locations for every creature in Eratiath."
-  />
-</svelte:head>
+<Seo
+  title="Monsters - Ancient Kingdoms"
+  description={`${data.monsters.length.toLocaleString()} monsters across Eratiath — bosses, elites, hunts, and regular spawns. Filter by level, type, or zone, then see drops, abilities, and respawn timers.`}
+  path="/monsters"
+/>
 
 <div class="container mx-auto p-8 space-y-6">
   <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Monsters" }]} />

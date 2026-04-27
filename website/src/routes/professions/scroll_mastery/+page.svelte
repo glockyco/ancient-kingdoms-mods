@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Seo from "$lib/components/Seo.svelte";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
@@ -97,14 +98,11 @@
   const MASTERY_GAIN_MAX = 0.09;
 </script>
 
-<svelte:head>
-  <title>{data.profession.name} - Ancient Kingdoms Compendium</title>
-  <meta
-    name="description"
-    content="{data.profession
-      .description} View all scrolls you can craft with the Scroll Mastery skill."
-  />
-</svelte:head>
+<Seo
+  title={`${data.profession.name} - Ancient Kingdoms Compendium`}
+  description={`${data.profession.description} View all scrolls you can craft with the Scroll Mastery skill.`}
+  path="/professions/scroll_mastery"
+/>
 
 <div class="container mx-auto p-8 space-y-8">
   <Breadcrumb

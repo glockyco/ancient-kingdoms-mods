@@ -9,6 +9,7 @@
     type TanstackTable,
   } from "$lib/components/ui/data-table";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
+  import Seo from "$lib/components/Seo.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import ExternalLink from "@lucide/svelte/icons/external-link";
   import { getItemTooltips } from "$lib/queries/items";
@@ -245,13 +246,11 @@
   {/if}
 {/snippet}
 
-<svelte:head>
-  <title>Crafting Recipes - Ancient Kingdoms Compendium</title>
-  <meta
-    name="description"
-    content="Crafting, alchemy, and cooking recipes for Ancient Kingdoms - ingredients and skill requirements."
-  />
-</svelte:head>
+<Seo
+  title="Recipes - Ancient Kingdoms"
+  description={`${data.recipes.length.toLocaleString()} recipes for crafting, alchemy, cooking, and scribing — ingredient lists, station requirements, profession levels, and resulting items.`}
+  path="/recipes"
+/>
 
 <div class="container mx-auto p-8 space-y-6">
   <Breadcrumb

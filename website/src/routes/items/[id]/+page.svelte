@@ -4,6 +4,7 @@
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
+  import Seo from "$lib/components/Seo.svelte";
   import MonsterTypeIcon from "$lib/components/MonsterTypeIcon.svelte";
   import DungeonRestrictionBadge from "$lib/components/DungeonRestrictionBadge.svelte";
   import ExternalLink from "@lucide/svelte/icons/external-link";
@@ -278,10 +279,11 @@
   });
 </script>
 
-<svelte:head>
-  <title>{data.item.name} - Ancient Kingdoms Compendium</title>
-  <meta name="description" content={data.description} />
-</svelte:head>
+<Seo
+  title={`${data.item.name} - Ancient Kingdoms Compendium`}
+  description={data.description}
+  path={`/items/${data.item.id}`}
+/>
 
 <div class="container mx-auto p-8 space-y-4 max-w-5xl">
   <!-- Breadcrumb -->

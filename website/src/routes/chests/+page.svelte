@@ -11,6 +11,7 @@
   } from "$lib/components/ui/data-table";
   import { IconBadge } from "$lib/components/ui/icon-badge";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
+  import Seo from "$lib/components/Seo.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
   import type {
     ChestListView,
@@ -263,13 +264,11 @@
   {/if}
 {/snippet}
 
-<svelte:head>
-  <title>Chests - Ancient Kingdoms Compendium</title>
-  <meta
-    name="description"
-    content="All treasure chests in Ancient Kingdoms - locations, required keys, and loot tables."
-  />
-</svelte:head>
+<Seo
+  title="Chests - Ancient Kingdoms"
+  description={`${data.chests.length.toLocaleString()} treasure chests across every zone — coordinates on the world map, required keys, gold ranges, item rewards, and respawn timers.`}
+  path="/chests"
+/>
 
 <div class="container mx-auto p-8 space-y-8">
   <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Chests" }]} />

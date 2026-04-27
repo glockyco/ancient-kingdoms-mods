@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Seo from "$lib/components/Seo.svelte";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
@@ -126,14 +127,11 @@
   }
 </script>
 
-<svelte:head>
-  <title>{data.profession.name} - Ancient Kingdoms Compendium</title>
-  <meta
-    name="description"
-    content="{data.profession
-      .description} View all potions and elixirs you can craft with the Alchemy skill."
-  />
-</svelte:head>
+<Seo
+  title={`${data.profession.name} - Ancient Kingdoms Compendium`}
+  description={`${data.profession.description} View all potions and elixirs you can craft with the Alchemy skill.`}
+  path="/professions/alchemy"
+/>
 
 <div class="container mx-auto p-8 space-y-8">
   <Breadcrumb

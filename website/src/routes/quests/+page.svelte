@@ -10,6 +10,7 @@
     type TanstackTable,
   } from "$lib/components/ui/data-table";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
+  import Seo from "$lib/components/Seo.svelte";
   import ClassPills from "$lib/components/ClassPills.svelte";
   import { formatClassName } from "$lib/utils/classes";
   import QuestTypeBadge from "$lib/components/QuestTypeBadge.svelte";
@@ -274,13 +275,11 @@
   {/if}
 {/snippet}
 
-<svelte:head>
-  <title>Quests - Ancient Kingdoms Compendium</title>
-  <meta
-    name="description"
-    content="Quest database for Ancient Kingdoms - objectives, rewards, and quest chains."
-  />
-</svelte:head>
+<Seo
+  title="Quests - Ancient Kingdoms"
+  description={`${data.quests.length.toLocaleString()} quests — main story, epic, adventurer, and repeatable. Browse objectives, level gates, rewards, and prerequisite chains.`}
+  path="/quests"
+/>
 
 <div class="container mx-auto p-8 space-y-6">
   <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Quests" }]} />

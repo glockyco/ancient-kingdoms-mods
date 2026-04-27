@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Seo from "$lib/components/Seo.svelte";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import Trophy from "@lucide/svelte/icons/trophy";
   import CalculatorIcon from "@lucide/svelte/icons/calculator";
@@ -38,14 +39,11 @@
   }
 </script>
 
-<svelte:head>
-  <title>{data.profession.name} - Ancient Kingdoms Compendium</title>
-  <meta
-    name="description"
-    content="{data.profession
-      .description} View all hunt targets for the Hunter profession."
-  />
-</svelte:head>
+<Seo
+  title={`${data.profession.name} - Ancient Kingdoms Compendium`}
+  description={`${data.profession.description} View all hunt targets for the Hunter profession.`}
+  path="/professions/hunter"
+/>
 
 <div class="container mx-auto p-8 space-y-8">
   <Breadcrumb

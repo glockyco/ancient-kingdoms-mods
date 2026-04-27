@@ -12,6 +12,7 @@
   } from "$lib/components/ui/data-table";
   import { IconBadge } from "$lib/components/ui/icon-badge";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
+  import Seo from "$lib/components/Seo.svelte";
   import type {
     GatherItemListView,
     ResourceDropListView,
@@ -303,13 +304,11 @@
   {/if}
 {/snippet}
 
-<svelte:head>
-  <title>Gathering Resources - Ancient Kingdoms Compendium</title>
-  <meta
-    name="description"
-    content="Gathering resources in Ancient Kingdoms - plants, minerals, radiant sparks, and spawn locations."
-  />
-</svelte:head>
+<Seo
+  title="Gathering Resources - Ancient Kingdoms"
+  description="Plants, ores, and radiant sparks across Eratiath — tier, gathering XP, required tool, and every spawn zone for each node."
+  path="/gather-items"
+/>
 
 <div class="container mx-auto p-8 space-y-8">
   <Breadcrumb

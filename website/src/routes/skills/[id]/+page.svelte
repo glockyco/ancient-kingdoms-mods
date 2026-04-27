@@ -24,6 +24,7 @@
   import FlaskConical from "@lucide/svelte/icons/flask-conical";
   import FormulaDisplay from "$lib/components/FormulaDisplay.svelte";
   import { renderFormulaDisplay } from "$lib/utils/formula-eval";
+  import Seo from "$lib/components/Seo.svelte";
 
   let { data }: { data: PageData } = $props();
 
@@ -689,10 +690,11 @@
   });
 </script>
 
-<svelte:head>
-  <title>{skill.name} - Skills - Ancient Kingdoms Compendium</title>
-  <meta name="description" content={data.description} />
-</svelte:head>
+<Seo
+  title={`${skill.name} - Skills - Ancient Kingdoms Compendium`}
+  description={data.description}
+  path={`/skills/${skill.id}`}
+/>
 
 <div class="container mx-auto p-8 space-y-6 max-w-5xl">
   <Breadcrumb

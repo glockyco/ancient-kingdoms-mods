@@ -1,5 +1,6 @@
 <script lang="ts">
   import * as Card from "$lib/components/ui/card";
+  import Seo from "$lib/components/Seo.svelte";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import { getClassConfig, getResourceDisplayName } from "$lib/utils/classes";
   import Shield from "@lucide/svelte/icons/shield";
@@ -38,13 +39,11 @@
   }
 </script>
 
-<svelte:head>
-  <title>Classes - Ancient Kingdoms Compendium</title>
-  <meta
-    name="description"
-    content="Browse all playable classes in Ancient Kingdoms."
-  />
-</svelte:head>
+<Seo
+  title="Classes - Ancient Kingdoms"
+  description="The six playable classes — Warrior, Rogue, Ranger, Cleric, Druid, and Wizard. Roles, resources, and full skill trees."
+  path="/classes"
+/>
 
 <div class="container mx-auto px-4 py-6">
   <Breadcrumb

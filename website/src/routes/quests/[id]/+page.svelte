@@ -2,6 +2,7 @@
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
+  import Seo from "$lib/components/Seo.svelte";
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
   import ClassPills from "$lib/components/ClassPills.svelte";
   import QuestChainGraph from "$lib/components/QuestChainGraph.svelte";
@@ -99,10 +100,11 @@
   });
 </script>
 
-<svelte:head>
-  <title>{data.quest.name} - Ancient Kingdoms Compendium</title>
-  <meta name="description" content={data.description} />
-</svelte:head>
+<Seo
+  title={`${data.quest.name} - Ancient Kingdoms Compendium`}
+  description={data.description}
+  path={`/quests/${data.quest.id}`}
+/>
 
 <div class="container mx-auto p-8 space-y-6 max-w-5xl">
   <!-- Breadcrumb -->

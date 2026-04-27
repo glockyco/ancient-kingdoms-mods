@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Seo from "$lib/components/Seo.svelte";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import QuestTypeBadge from "$lib/components/QuestTypeBadge.svelte";
   import { getClassConfig } from "$lib/utils/classes";
@@ -29,13 +30,11 @@
   let selectedClass = $state<PlayerClass>("Warrior");
 </script>
 
-<svelte:head>
-  <title>{data.profession.name} - Ancient Kingdoms Compendium</title>
-  <meta
-    name="description"
-    content="{data.profession.description} View all adventurer quests."
-  />
-</svelte:head>
+<Seo
+  title={`${data.profession.name} - Ancient Kingdoms Compendium`}
+  description={`${data.profession.description} View all adventurer quests.`}
+  path="/professions/adventuring"
+/>
 
 <div class="container mx-auto p-8 space-y-8">
   <Breadcrumb

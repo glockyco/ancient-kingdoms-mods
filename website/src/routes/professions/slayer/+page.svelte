@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Seo from "$lib/components/Seo.svelte";
   import { SvelteMap } from "svelte/reactivity";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import MonsterTypeIcon from "$lib/components/MonsterTypeIcon.svelte";
@@ -31,14 +32,11 @@
   });
 </script>
 
-<svelte:head>
-  <title>{data.profession.name} - Ancient Kingdoms Compendium</title>
-  <meta
-    name="description"
-    content="{data.profession
-      .description} View all bosses and elite monsters for the Slayer profession."
-  />
-</svelte:head>
+<Seo
+  title={`${data.profession.name} - Ancient Kingdoms Compendium`}
+  description={`${data.profession.description} View all bosses and elite monsters for the Slayer profession.`}
+  path="/professions/slayer"
+/>
 
 <div class="container mx-auto p-8 space-y-8">
   <Breadcrumb

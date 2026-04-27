@@ -42,6 +42,7 @@
   import Box from "@lucide/svelte/icons/box";
   import BookOpen from "@lucide/svelte/icons/book-open";
   import { formatDuration } from "$lib/utils/format";
+  import Seo from "$lib/components/Seo.svelte";
 
   let { data } = $props();
 
@@ -405,10 +406,11 @@
   {/if}
 {/snippet}
 
-<svelte:head>
-  <title>{data.zone.name} - Ancient Kingdoms Compendium</title>
-  <meta name="description" content={data.description} />
-</svelte:head>
+<Seo
+  title={`${data.zone.name} - Ancient Kingdoms Compendium`}
+  description={data.description}
+  path={`/zones/${data.zone.id}`}
+/>
 
 <div class="container mx-auto p-8 space-y-6 max-w-5xl">
   <!-- Breadcrumb -->

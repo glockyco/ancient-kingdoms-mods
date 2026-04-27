@@ -1,6 +1,7 @@
 <script lang="ts">
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import * as Card from "$lib/components/ui/card";
+  import Seo from "$lib/components/Seo.svelte";
   import type { DamageFormulaKind, HealBonusKind } from "$lib/types/skills";
 
   // ---------------------------------------------------------------------------
@@ -69,13 +70,11 @@
   };
 </script>
 
-<svelte:head>
-  <title>Combat Mechanics - Ancient Kingdoms Compendium</title>
-  <meta
-    name="description"
-    content="Complete reference for Ancient Kingdoms combat mechanics — damage pipeline, formula kinds, resistance and mitigation, healing, buff scaling, debuff mechanics, timing and haste, and special mechanics."
-  />
-</svelte:head>
+<Seo
+  title="Combat Mechanics - Ancient Kingdoms Compendium"
+  description="Complete reference for Ancient Kingdoms combat mechanics — damage pipeline, formula kinds, resistance and mitigation, healing, buff scaling, debuff mechanics, timing and haste, and special mechanics."
+  path="/mechanics/combat"
+/>
 
 <div class="container mx-auto p-8 space-y-8 max-w-4xl">
   <Breadcrumb

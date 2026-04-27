@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Seo from "$lib/components/Seo.svelte";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import * as Card from "$lib/components/ui/card";
   import ArrowRight from "@lucide/svelte/icons/arrow-right";
@@ -156,13 +157,11 @@
   }
 </script>
 
-<svelte:head>
-  <title>Professions - Ancient Kingdoms Compendium</title>
-  <meta
-    name="description"
-    content="Professions guide for Ancient Kingdoms - crafting, gathering, combat, and exploration professions with related recipes, resources, and content."
-  />
-</svelte:head>
+<Seo
+  title="Professions - Ancient Kingdoms"
+  description="Crafting, gathering, combat, and exploration professions — required tools, leveling sources, and the recipes or content each unlocks."
+  path="/professions"
+/>
 
 <div class="container mx-auto p-8 space-y-8">
   <Breadcrumb

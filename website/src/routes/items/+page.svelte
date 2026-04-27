@@ -16,6 +16,7 @@
   } from "$lib/components/ui/data-table";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
+  import Seo from "$lib/components/Seo.svelte";
   import ClassPills from "$lib/components/ClassPills.svelte";
   import { formatItemType } from "$lib/utils/format";
   import { formatClassName } from "$lib/utils/classes";
@@ -452,13 +453,11 @@
   </div>
 {/snippet}
 
-<svelte:head>
-  <title>Items - Ancient Kingdoms Compendium</title>
-  <meta
-    name="description"
-    content="Browse all items in Ancient Kingdoms - weapons, armor, consumables, and treasures with stats and drop locations."
-  />
-</svelte:head>
+<Seo
+  title="Items - Ancient Kingdoms"
+  description={`Searchable database of ${data.items.length.toLocaleString()} items — weapons, armor, consumables, and quest items, with quality, level requirements, drop sources, vendors, and recipes.`}
+  path="/items"
+/>
 
 <div class="container mx-auto p-8 space-y-6">
   <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Items" }]} />

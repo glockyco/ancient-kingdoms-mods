@@ -63,6 +63,7 @@
     type OverrideGroup,
   } from "$lib/map/resolve-selection";
   import { preloadDb } from "$lib/db";
+  import Seo from "$lib/components/Seo.svelte";
 
   // Prerendered data from server
   let { data }: { data: PageData } = $props();
@@ -1131,15 +1132,14 @@
 
 <svelte:window onkeydown={handleKeydown} />
 
-<svelte:head>
-  <title>World Map - Ancient Kingdoms Compendium</title>
-  <meta
-    name="description"
-    content="Interactive world map for Ancient Kingdoms - monsters, NPCs, resources, and points of interest across Eratiath."
-  />
-</svelte:head>
+<Seo
+  title="Ancient Kingdoms Map — Interactive World Map of Eratiath"
+  description="Click any marker to see monster spawns, NPC services, gathering nodes, treasure chests, and altar locations across Eratiath, with respawn timers and drop tables."
+  path="/map"
+/>
 
 <div class="dark relative h-screen w-full bg-background text-foreground">
+  <h1 class="sr-only">Ancient Kingdoms Interactive Map</h1>
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div
     use:initDeckMap

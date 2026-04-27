@@ -10,6 +10,7 @@
   } from "$lib/components/ui/data-table";
   import { IconBadge } from "$lib/components/ui/icon-badge";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
+  import Seo from "$lib/components/Seo.svelte";
   import Trees from "@lucide/svelte/icons/trees";
   import Check from "@lucide/svelte/icons/check";
   import type { AltarListView } from "$lib/types/altars";
@@ -176,13 +177,11 @@
   {/if}
 {/snippet}
 
-<svelte:head>
-  <title>Altars - Ancient Kingdoms Compendium</title>
-  <meta
-    name="description"
-    content="All Altars in Ancient Kingdoms - Forgotten Altars and Avatar Altars with wave-based events and tiered rewards."
-  />
-</svelte:head>
+<Seo
+  title="Altars - Ancient Kingdoms"
+  description={`${data.altars.length.toLocaleString()} Forgotten and Avatar altars — wave-based encounters, summoned bosses, level requirements, and tiered loot from common to legendary.`}
+  path="/altars"
+/>
 
 <div class="container mx-auto p-8 space-y-6">
   <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Altars" }]} />
