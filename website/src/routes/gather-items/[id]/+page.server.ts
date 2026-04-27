@@ -56,6 +56,10 @@ export const load: PageServerLoad = ({ params }) => {
       is_mineral: resource.is_mineral,
       is_radiant_spark: resource.is_radiant_spark,
       level: resource.level,
+      tool_required_name: resource.tool_required_name,
+      gathering_exp: resource.gathering_exp,
+      item_reward_name: resource.item_reward_name,
+      item_reward_amount: resource.item_reward_amount,
     },
     zoneNames,
   );

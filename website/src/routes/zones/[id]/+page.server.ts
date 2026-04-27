@@ -347,6 +347,8 @@ export const load: PageServerLoad = ({ params }): ZoneDetailData => {
       elite_count: eliteCount,
       altar_count: altars.length,
       npc_count: npcs.length,
+      chest_count: chests.length,
+      gather_count: gatherResources.length,
     },
   );
 

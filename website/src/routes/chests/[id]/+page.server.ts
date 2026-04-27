@@ -45,6 +45,10 @@ export const load: PageServerLoad = ({ params }) => {
   const description = chestDescription({
     zone_name: chest.zone_name,
     key_required_name: chest.key_required_name,
+    gold_min: chest.gold_min,
+    gold_max: chest.gold_max,
+    item_reward_name: chest.item_reward_name,
+    respawn_time: chest.respawn_time,
   });
 
   return { chest, drops, keyObtainabilityTree, description };

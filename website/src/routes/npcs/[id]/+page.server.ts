@@ -287,7 +287,15 @@ export const load: PageServerLoad = ({ params }): NpcDetailPageData => {
   db.close();
 
   const zoneNames = spawns.map((s) => s.zone_name);
-  const description = npcDescription({ name: npc.name, roles }, zoneNames);
+  const description = npcDescription(
+    {
+      name: npc.name,
+      faction: npc.faction,
+      roles,
+      questCount: questsOffered.length,
+    },
+    zoneNames,
+  );
 
   return {
     npc,

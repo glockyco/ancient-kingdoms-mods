@@ -73,7 +73,17 @@ export const load: PageServerLoad = ({ params }): RecipeDetailPageData => {
     })) ?? [];
 
   const description = recipeDescription(
-    { result_item_name: recipe.result_item_name, type: recipe.type },
+    {
+      result_item_name: recipe.result_item_name,
+      type: recipe.type,
+      result_amount: recipe.result_amount,
+      station_type: recipe.station_type,
+      xp: recipe.xp,
+      level_required:
+        recipe.type === "Alchemy" || recipe.type === "Scribing"
+          ? recipe.tier
+          : null,
+    },
     ingredients,
   );
 

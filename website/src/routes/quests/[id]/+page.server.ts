@@ -583,7 +583,15 @@ export const load: PageServerLoad = ({ params }): QuestDetailPageData => {
   }
 
   const description = questDescription(
-    { name: quest.name, level_required: quest.level_required },
+    {
+      name: quest.name,
+      level_required: quest.level_required,
+      quest_type: quest.quest_type,
+      is_main_quest: quest.is_main_quest,
+      is_epic_quest: quest.is_epic_quest,
+      is_adventurer_quest: quest.is_adventurer_quest,
+      is_repeatable: quest.is_repeatable,
+    },
     objectives,
   );
 

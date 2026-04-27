@@ -1,16 +1,17 @@
 /**
- * Meta description generators for SEO.
- * Each function generates a description ≤160 characters for search engines.
+ * Meta description and title generators for SEO.
+ *
+ * Each generator builds a search-engine-friendly description from the same
+ * normalized DB shape that powers the page UI. Strings are full-length: Google
+ * indexes the entire description and only the SERP display is truncated, so
+ * cutting at 160 chars would lose ranking signal for no benefit.
  */
 
-import { toRomanNumeral, formatItemType } from "$lib/utils/format";
-
-const MAX_LENGTH = 160;
-
-function truncate(text: string, max = MAX_LENGTH): string {
-  if (text.length <= max) return text;
-  return text.slice(0, max - 3).trim() + "...";
-}
+import {
+  toRomanNumeral,
+  formatItemType,
+  formatDuration,
+} from "$lib/utils/format";
 
 import { QUALITY_NAMES } from "$lib/constants/quality";
 
@@ -602,11 +603,14 @@ function capitalizeFirst(text: string): string {
 
 interface MonsterDescriptionInput {
   name: string;
-  level_min: number;
-  level_max: number;
+  type_name: string | null;
   is_boss: boolean;
   is_elite: boolean;
-  type_name: string | null;
+  is_fabled: boolean;
+  is_hunt: boolean;
+  is_summonable: boolean;
+  level_min: number;
+  level_max: number;
 }
 
 interface AltarSpawnInfo {
@@ -619,33 +623,35 @@ export function monsterDescription(
   zoneNames: string[],
   altarSpawn: AltarSpawnInfo | null,
 ): string {
-  const levelRange =
+  // Source: build-pipeline schema \u2014 classification flags layer fabled > boss > elite > hunt
+  let classification = "";
+  if (monster.is_fabled) classification = " Fabled Boss";
+  else if (monster.is_boss) classification = " Boss";
+  else if (monster.is_elite) classification = " Elite";
+  else if (monster.is_hunt) classification = " Hunt target";
+
+  const species = monster.type_name ?? "Creature";
+  const range =
     monster.level_min === monster.level_max
       ? `${monster.level_min}`
       : `${monster.level_min}-${monster.level_max}`;
 
-  let type = monster.type_name ?? "Creature";
-  if (monster.is_boss) type = "Boss";
-  else if (monster.is_elite) type = "Elite";
-
-  // Altar boss
+  // Origin precedence: altar > summonable-only > zone list. Bestiary entries
+  // that come from altar waves or scripted encounters never appear on a map.
+  let origin = "";
   if (altarSpawn) {
-    return truncate(
-      `${monster.name} - Level ${levelRange} ${type} in Ancient Kingdoms. Summoned at ${altarSpawn.altar_name} in ${altarSpawn.zone_name}.`,
-    );
+    origin = ` Summoned at ${altarSpawn.altar_name} in ${altarSpawn.zone_name}.`;
+  } else if (monster.is_summonable) {
+    origin = " Spawned by altar waves or scripted encounters only.";
+  } else if (zoneNames.length === 1) {
+    origin = ` Found in ${zoneNames[0]}.`;
+  } else if (zoneNames.length === 2 || zoneNames.length === 3) {
+    origin = ` Found in ${joinList(zoneNames)}.`;
+  } else if (zoneNames.length > 3) {
+    origin = ` Found in ${zoneNames[0]} and ${zoneNames.length - 1} other zones.`;
   }
 
-  // Regular monster
-  const location =
-    zoneNames.length === 0
-      ? ""
-      : zoneNames.length === 1
-        ? ` Found in ${zoneNames[0]}.`
-        : " Found in multiple zones.";
-
-  return truncate(
-    `${monster.name} - Level ${levelRange} ${type} in Ancient Kingdoms.${location}`,
-  );
+  return `${monster.name} \u2014 Level ${range} ${species}${classification}.${origin}`;
 }
 
 // =============================================================================
@@ -677,45 +683,96 @@ interface NpcRoles {
 
 interface NpcDescriptionInput {
   name: string;
+  faction: string | null;
   roles: NpcRoles;
+  /** Number of quests offered by this NPC, used in the description tail. */
+  questCount?: number;
 }
 
-function getNpcRoleNames(roles: NpcRoles): string[] {
-  const roleNames: string[] = [];
-  if (roles.is_merchant) roleNames.push("Merchant");
-  if (roles.is_quest_giver) roleNames.push("Quest Giver");
-  if (roles.can_repair_equipment) roleNames.push("Repair");
-  if (roles.is_bank) roleNames.push("Banker");
-  if (roles.is_skill_master) roleNames.push("Skill Master");
-  if (roles.is_veteran_master) roleNames.push("Veteran Master");
-  if (roles.is_reset_attributes) roleNames.push("Attribute Reset");
-  if (roles.is_soul_binder) roleNames.push("Soul Binder");
-  if (roles.is_inkeeper) roleNames.push("Innkeeper");
-  if (roles.is_taskgiver_adventurer) roleNames.push("Adventurer Tasks");
-  if (roles.is_merchant_adventurer) roleNames.push("Adventurer Merchant");
-  if (roles.is_recruiter_mercenaries) roleNames.push("Mercenary Recruiter");
-  if (roles.is_guard) roleNames.push("Guard");
-  if (roles.is_faction_vendor) roleNames.push("Faction Vendor");
-  if (roles.is_essence_trader) roleNames.push("Essence Trader");
-  if (roles.is_priestess) roleNames.push("Priestess");
-  if (roles.is_augmenter) roleNames.push("Augmenter");
-  if (roles.is_renewal_sage) roleNames.push("Renewal Sage");
-  if (roles.is_teleporter) roleNames.push("Teleporter");
-  if (roles.is_villager) roleNames.push("Villager");
-  return roleNames;
+/**
+ * Role priority order: most player-facing role first. Quest-giver outranks
+ * merchant because that's what users search for; faction vendors outrank plain
+ * merchants because the faction context is more specific.
+ */
+const NPC_ROLE_PRIORITY: Array<{ flag: keyof NpcRoles; label: string }> = [
+  { flag: "is_quest_giver", label: "quest giver" },
+  { flag: "is_skill_master", label: "skill master" },
+  { flag: "is_recruiter_mercenaries", label: "mercenary recruiter" },
+  { flag: "is_faction_vendor", label: "faction vendor" },
+  { flag: "is_merchant", label: "merchant" },
+  { flag: "is_essence_trader", label: "essence trader" },
+  { flag: "is_priestess", label: "priestess" },
+  { flag: "is_augmenter", label: "augmenter" },
+  { flag: "is_renewal_sage", label: "renewal sage" },
+  { flag: "is_teleporter", label: "teleporter" },
+  { flag: "is_bank", label: "banker" },
+  { flag: "is_inkeeper", label: "innkeeper" },
+  { flag: "is_soul_binder", label: "soul binder" },
+  { flag: "is_veteran_master", label: "veteran master" },
+  { flag: "is_reset_attributes", label: "attribute reset trainer" },
+  { flag: "is_taskgiver_adventurer", label: "adventurer task giver" },
+  { flag: "is_merchant_adventurer", label: "adventurer merchant" },
+  { flag: "can_repair_equipment", label: "repair NPC" },
+  { flag: "is_guard", label: "guard" },
+  { flag: "is_villager", label: "villager" },
+];
+
+function pickPrimaryRole(roles: NpcRoles): {
+  label: string;
+  otherCount: number;
+} {
+  let primary: string | null = null;
+  let total = 0;
+  for (const { flag, label } of NPC_ROLE_PRIORITY) {
+    if (roles[flag]) {
+      total += 1;
+      if (!primary) primary = label;
+    }
+  }
+  return {
+    label: primary ?? "NPC",
+    otherCount: total > 0 ? total - 1 : 0,
+  };
 }
 
 export function npcDescription(
   npc: NpcDescriptionInput,
   zoneNames: string[],
 ): string {
-  const roleNames = getNpcRoleNames(npc.roles);
-  const roles = roleNames.length > 0 ? roleNames.join(" & ") : "NPC";
+  const { label: primaryRole, otherCount } = pickPrimaryRole(npc.roles);
+  const primary = capitalizeFirst(primaryRole);
 
-  const location =
-    zoneNames.length === 0 ? "" : ` Located in ${zoneNames.join(", ")}.`;
+  let location = "";
+  if (zoneNames.length === 1) {
+    location = ` in ${zoneNames[0]}`;
+  } else if (zoneNames.length === 2 || zoneNames.length === 3) {
+    location = ` in ${joinList(zoneNames)}`;
+  } else if (zoneNames.length > 3) {
+    location = ` across ${zoneNames.length} zones`;
+  }
 
-  return truncate(`${npc.name} - ${roles} in Ancient Kingdoms.${location}`);
+  const factionPhrase = npc.faction
+    ? ` Allied with the ${npc.faction} faction.`
+    : "";
+
+  const tail: string[] = [];
+  if (npc.questCount && npc.questCount > 0) {
+    tail.push(
+      npc.questCount === 1
+        ? "Offers 1 quest."
+        : `Offers ${npc.questCount} quests.`,
+    );
+  }
+  if (otherCount > 0) {
+    tail.push(
+      otherCount === 1
+        ? "Also fills 1 other role."
+        : `Also fills ${otherCount} other roles.`,
+    );
+  }
+  const tailPhrase = tail.length > 0 ? ` ${tail.join(" ")}` : "";
+
+  return `${npc.name} \u2014 ${primary}${location}.${factionPhrase}${tailPhrase}`;
 }
 
 // =============================================================================
@@ -734,28 +791,52 @@ interface ZoneCounts {
   elite_count: number;
   altar_count: number;
   npc_count: number;
+  chest_count: number;
+  gather_count: number;
 }
 
 export function zoneDescription(
   zone: ZoneDescriptionInput,
   counts: ZoneCounts,
 ): string {
-  const type = zone.is_dungeon ? "Dungeon" : "Overworld";
-  const levelRange =
-    zone.level_min && zone.level_max
-      ? `Level ${zone.level_min}-${zone.level_max} `
-      : "";
+  const typeLabel = zone.is_dungeon ? "Dungeon" : "Overworld zone";
 
-  const stats = [
-    `${counts.boss_count} bosses`,
-    `${counts.elite_count} elites`,
-    `${counts.altar_count} altars`,
-    `${counts.npc_count} NPCs`,
-  ].join(", ");
+  // Source: schema \u2014 zones expose level_min/level_max derived from monsters.
+  // No row in the current DB sets required_level > 0, so we omit any gating phrase.
+  let levelPhrase = "";
+  if (zone.level_min && zone.level_max) {
+    levelPhrase =
+      zone.level_min === zone.level_max
+        ? `level ${zone.level_min}`
+        : `levels ${zone.level_min}-${zone.level_max}`;
+  }
 
-  return truncate(
-    `${zone.name} - ${levelRange}${type} in Ancient Kingdoms. ${stats}.`,
-  );
+  const head = levelPhrase
+    ? `${zone.name} \u2014 ${typeLabel}, ${levelPhrase}.`
+    : `${zone.name} \u2014 ${typeLabel}.`;
+
+  const contentParts: string[] = [];
+  if (counts.boss_count > 0)
+    contentParts.push(plural(counts.boss_count, "boss", "bosses"));
+  if (counts.elite_count > 0)
+    contentParts.push(plural(counts.elite_count, "elite", "elites"));
+  if (counts.npc_count > 0)
+    contentParts.push(plural(counts.npc_count, "NPC", "NPCs"));
+  if (counts.gather_count > 0)
+    contentParts.push(
+      plural(counts.gather_count, "gathering node", "gathering nodes"),
+    );
+  if (counts.chest_count > 0)
+    contentParts.push(plural(counts.chest_count, "chest", "chests"));
+  if (counts.altar_count > 0)
+    contentParts.push(plural(counts.altar_count, "altar", "altars"));
+
+  if (contentParts.length === 0) return head;
+  return `${head} Contains ${joinList(contentParts)}.`;
+}
+
+function plural(n: number, singular: string, pluralForm: string): string {
+  return `${n} ${n === 1 ? singular : pluralForm}`;
 }
 
 // =============================================================================
@@ -779,42 +860,90 @@ interface QuestObjective {
 
 interface QuestDescriptionInput {
   name: string;
+  quest_type: string;
   level_required: number;
+  is_main_quest: boolean;
+  is_epic_quest: boolean;
+  is_adventurer_quest: boolean;
+  is_repeatable: boolean;
+}
+
+function questTierLabel(quest: QuestDescriptionInput): string {
+  // Source: build-pipeline schema \u2014 these flags are mutually compatible but
+  // we report the most specific one in priority order.
+  if (quest.is_main_quest) return "Main story quest";
+  if (quest.is_epic_quest) return "Epic quest";
+  if (quest.is_adventurer_quest) return "Adventurer task";
+  if (quest.is_repeatable) return "Repeatable quest";
+  return "Quest";
+}
+
+function questActionVerb(questType: string): string {
+  switch (questType) {
+    case "kill":
+      return "Combat";
+    case "gather":
+      return "Gathering";
+    case "gather_inventory":
+      return "Collection";
+    case "location":
+      return "Exploration";
+    case "deliver":
+      return "Delivery";
+    case "equip_item":
+      return "Equip";
+    case "alchemy":
+      return "Alchemy";
+    case "find":
+      return "Find";
+    case "brew":
+      return "Brewing";
+    case "discover":
+      return "Discovery";
+    default:
+      return "";
+  }
+}
+
+const QUEST_OBJECTIVE_VERBS: Record<QuestObjective["type"], string> = {
+  kill: "defeat",
+  gather: "gather",
+  have: "hold",
+  equip: "equip",
+  deliver: "deliver",
+  discover: "discover",
+  brew: "brew",
+  find: "find",
+  other: "complete",
+};
+
+function objectivePhrase(obj: QuestObjective): string {
+  const verb = QUEST_OBJECTIVE_VERBS[obj.type];
+  if (obj.amount > 1) return `${verb} ${obj.amount} ${obj.name}`;
+  return `${verb} ${obj.name}`;
 }
 
 export function questDescription(
   quest: QuestDescriptionInput,
   objectives: QuestObjective[],
 ): string {
-  const objectiveStrings = objectives.map((obj) => {
-    const verb =
-      obj.type === "kill"
-        ? "Kill"
-        : obj.type === "gather"
-          ? "Gather"
-          : obj.type === "have"
-            ? "Have"
-            : obj.type === "equip"
-              ? "Equip"
-              : obj.type === "deliver"
-                ? "Deliver"
-                : obj.type === "discover"
-                  ? "Discover"
-                  : obj.type === "brew"
-                    ? "Brew"
-                    : obj.type === "find"
-                      ? "Find"
-                      : "";
-    if (obj.amount > 1) {
-      return `${verb} ${obj.amount} ${obj.name}`;
-    }
-    return `${verb} ${obj.name}`;
-  });
+  const tier = questTierLabel(quest);
+  const action = questActionVerb(quest.quest_type);
+  const tierPhrase = action ? `${action} ${tier.toLowerCase()}` : tier;
+  const tierSentence = capitalizeFirst(tierPhrase);
 
-  const objectivesText = objectiveStrings.join(", ");
-  return truncate(
-    `${quest.name} - Level ${quest.level_required} quest in Ancient Kingdoms. ${objectivesText}.`,
-  );
+  const levelPhrase =
+    quest.level_required > 0 ? ` for level ${quest.level_required}+` : "";
+
+  // Top 2 objectives by amount keeps the description focused; long objective
+  // lists are a frequent SERP-truncation source on quest pages.
+  const top = [...objectives].sort((a, b) => b.amount - a.amount).slice(0, 2);
+  const objectivesPhrase =
+    top.length > 0
+      ? ` ${capitalizeFirst(top.map(objectivePhrase).join(" then "))}.`
+      : "";
+
+  return `${quest.name} \u2014 ${tierSentence}${levelPhrase}.${objectivesPhrase}`;
 }
 
 // =============================================================================
@@ -828,20 +957,76 @@ interface RecipeIngredient {
 
 interface RecipeDescriptionInput {
   result_item_name: string;
+  /** UI label for the recipe family. */
   type: "Alchemy" | "Cooking" | "Crafting" | "Scribing";
+  /** Number of result items produced per craft (crafting only). */
+  result_amount?: number;
+  /** Crafting station required (e.g. "forge"). null for scribing. */
+  station_type?: string | null;
+  /** Profession level required (alchemy/scribing). null for crafting. */
+  level_required?: number | null;
+  /** XP awarded per craft (crafting/alchemy). 0 for scribing. */
+  xp?: number;
+}
+
+function humanizeStation(station: string | null | undefined): string | null {
+  if (!station) return null;
+  switch (station) {
+    case "alchemy_table":
+      return "alchemy table";
+    case "scribing_table":
+      return "scribing table";
+    case "cooking":
+      return "campfire";
+    case "forge":
+      return "forge";
+    case "workbench":
+      return "workbench";
+    case "loom":
+      return "loom";
+    case "sawmill":
+      return "sawmill";
+    default:
+      return station.replace(/_/g, " ");
+  }
 }
 
 export function recipeDescription(
   recipe: RecipeDescriptionInput,
   ingredients: RecipeIngredient[],
 ): string {
-  const ingredientStrings = ingredients.map((ing) =>
-    ing.amount > 1 ? `${ing.amount} ${ing.item_name}` : ing.item_name,
-  );
+  const yields =
+    recipe.result_amount && recipe.result_amount > 1
+      ? `${recipe.result_amount} \u00d7 ${recipe.result_item_name}`
+      : recipe.result_item_name;
 
-  return truncate(
-    `${recipe.result_item_name} - ${recipe.type} recipe in Ancient Kingdoms. Requires ${ingredientStrings.join(", ")}.`,
-  );
+  const family = recipe.type.toLowerCase();
+  const levelPhrase =
+    recipe.level_required && recipe.level_required > 0
+      ? ` requiring profession level ${recipe.level_required}`
+      : "";
+
+  const station = humanizeStation(recipe.station_type);
+  const stationPhrase = station ? ` Crafted at a ${station}.` : "";
+
+  // Top 2 materials by amount, then "and N more" if there are more.
+  const sorted = [...ingredients].sort((a, b) => b.amount - a.amount);
+  const topMaterials = sorted
+    .slice(0, 2)
+    .map((i) => (i.amount > 1 ? `${i.amount} ${i.item_name}` : i.item_name));
+  const remaining = Math.max(0, ingredients.length - 2);
+  let materialsPhrase = "";
+  if (topMaterials.length > 0) {
+    const more = remaining > 0 ? ` and ${remaining} more` : "";
+    materialsPhrase = ` Requires ${joinList(topMaterials)}${more}.`;
+  }
+
+  const xpPhrase =
+    recipe.xp && recipe.xp > 0
+      ? ` Awards ${recipe.xp.toLocaleString()} XP.`
+      : "";
+
+  return `${yields} \u2014 ${capitalizeFirst(family)} recipe${levelPhrase}.${stationPhrase}${materialsPhrase}${xpPhrase}`;
 }
 
 // =============================================================================
@@ -851,16 +1036,41 @@ export function recipeDescription(
 interface ChestDescriptionInput {
   zone_name: string;
   key_required_name: string | null;
+  gold_min: number;
+  gold_max: number;
+  item_reward_name: string | null;
+  respawn_time: number;
 }
 
 export function chestDescription(chest: ChestDescriptionInput): string {
-  const keyInfo = chest.key_required_name
-    ? `Requires ${chest.key_required_name}.`
-    : "No key required.";
+  const keyPhrase = chest.key_required_name
+    ? ` Requires ${chest.key_required_name} to open.`
+    : "";
 
-  return truncate(
-    `Chest - Treasure chest in Ancient Kingdoms. Located in ${chest.zone_name}. ${keyInfo}`,
-  );
+  let goldPhrase = "";
+  if (chest.gold_max > 0) {
+    goldPhrase =
+      chest.gold_min === chest.gold_max
+        ? `${chest.gold_max.toLocaleString()} gold`
+        : `${chest.gold_min.toLocaleString()}-${chest.gold_max.toLocaleString()} gold`;
+  }
+
+  const itemPhrase = chest.item_reward_name
+    ? ` and a chance at ${chest.item_reward_name}`
+    : "";
+
+  // Source: schema chests.respawn_time \u2014 seconds between server-side resets.
+  const respawnPhrase =
+    chest.respawn_time > 0
+      ? ` Respawns every ${formatDuration(chest.respawn_time)}.`
+      : "";
+
+  const yieldsPhrase =
+    goldPhrase || itemPhrase
+      ? ` Yields ${goldPhrase || "random loot"}${itemPhrase}.`
+      : "";
+
+  return `Treasure chest in ${chest.zone_name}.${keyPhrase}${yieldsPhrase}${respawnPhrase}`;
 }
 
 // =============================================================================
@@ -873,31 +1083,49 @@ interface GatheringResourceDescriptionInput {
   is_mineral: boolean;
   is_radiant_spark: boolean;
   level: number | null;
+  tool_required_name?: string | null;
+  gathering_exp?: number | null;
+  item_reward_name?: string | null;
+  item_reward_amount?: number | null;
 }
 
 export function gatheringResourceDescription(
   resource: GatheringResourceDescriptionInput,
   zoneNames: string[],
 ): string {
-  // Determine type
-  let type: string;
-  if (resource.is_plant) type = "Plant";
-  else if (resource.is_mineral) type = "Mineral";
-  else type = "Gatherable"; // Radiant sparks and other
+  let typeLabel: string;
+  if (resource.is_radiant_spark) typeLabel = "radiant spark";
+  else if (resource.is_mineral) typeLabel = "mineral node";
+  else if (resource.is_plant) typeLabel = "plant";
+  else typeLabel = "gathering node";
 
-  // Determine tier (only for plants and minerals)
+  // Tier numbers exist only for plants and minerals; radiant sparks scale
+  // dynamically with the player's Radiant Seeker profession.
   const hasTier =
     (resource.is_plant || resource.is_mineral) && resource.level != null;
-  const tierText = hasTier ? `Tier ${toRomanNumeral(resource.level!)} ` : "";
+  const tierPhrase = hasTier ? `Tier ${toRomanNumeral(resource.level!)} ` : "";
 
-  const location =
-    zoneNames.length === 0
-      ? ""
-      : zoneNames.length === 1
-        ? ` Found in ${zoneNames[0]}.`
-        : " Found in multiple zones.";
+  const toolPhrase = resource.tool_required_name
+    ? ` Requires ${resource.tool_required_name} to gather.`
+    : "";
 
-  return truncate(
-    `${resource.name} - ${tierText}${type} in Ancient Kingdoms.${location}`,
-  );
+  const rewardName = resource.item_reward_name;
+  const rewardAmount = resource.item_reward_amount ?? 1;
+  const rewardPhrase = rewardName
+    ? ` Yields ${rewardAmount > 1 ? `${rewardAmount} ${rewardName}` : rewardName} per harvest.`
+    : "";
+
+  const xpPhrase =
+    resource.gathering_exp && resource.gathering_exp > 0
+      ? ` Awards ${resource.gathering_exp.toLocaleString()} gathering XP.`
+      : "";
+
+  let locationPhrase = "";
+  if (zoneNames.length === 1) locationPhrase = ` Found in ${zoneNames[0]}.`;
+  else if (zoneNames.length === 2 || zoneNames.length === 3)
+    locationPhrase = ` Found in ${joinList(zoneNames)}.`;
+  else if (zoneNames.length > 3)
+    locationPhrase = ` Found in ${zoneNames[0]} and ${zoneNames.length - 1} other zones.`;
+
+  return `${resource.name} \u2014 ${tierPhrase}${typeLabel}.${toolPhrase}${rewardPhrase}${xpPhrase}${locationPhrase}`;
 }
