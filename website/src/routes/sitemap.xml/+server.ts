@@ -1,9 +1,8 @@
 import Database from "better-sqlite3";
 import { DB_STATIC_PATH } from "$lib/constants/constants";
+import { SITE_URL } from "$lib/seo/site";
 
 export const prerender = true;
-
-const SITE_URL = "https://ancient-kingdoms-compendium.wowmuch1.workers.dev";
 
 interface EntityDef {
   table: string;
