@@ -53,6 +53,7 @@ export interface ItemsPageData {
  */
 export interface ItemDetailPageData {
   item: Item;
+  title: string;
   description: string;
   sources: ItemSources;
   usages: ItemUsages;

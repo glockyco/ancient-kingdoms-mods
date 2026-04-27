@@ -4,7 +4,7 @@ import type { PageServerLoad, EntryGenerator } from "./$types";
 import { DB_STATIC_PATH } from "$lib/constants/constants";
 import type { ItemDetailPageData } from "$lib/types/items";
 import type { Item } from "$lib/queries/items";
-import { itemDescription } from "$lib/server/meta-description";
+import { itemDescription, itemTitle } from "$lib/server/meta-description";
 import { getItemSources } from "$lib/server/item-sources";
 import { getItemUsages } from "$lib/server/item-usages";
 
@@ -203,19 +203,51 @@ export const load: PageServerLoad = ({ params }): ItemDetailPageData => {
     amount: number;
   }>;
 
+  // Chest-key open count: how many chests this key opens, across how many zones.
+  let chestKeyOpens: { chestCount: number; zoneCount: number } | undefined;
+  if (item.is_chest_key) {
+    const row = db
+      .prepare(
+        `SELECT COUNT(*) AS chest_count, COUNT(DISTINCT zone_id) AS zone_count
+         FROM chests WHERE key_required_id = ?`,
+      )
+      .get(params.id) as { chest_count: number; zone_count: number };
+    chestKeyOpens = {
+      chestCount: row.chest_count,
+      zoneCount: row.zone_count,
+    };
+  }
+
+  // Merge result: lookup the item this merge token combines INTO.
+  let mergeResultName: string | null = null;
+  if (item.item_type === "merge") {
+    const row = db
+      .prepare(
+        `SELECT i.name AS name
+         FROM item_sources_merge ism
+         JOIN items i ON ism.item_id = i.id
+         WHERE ism.component_item_id = ?
+         LIMIT 1`,
+      )
+      .get(params.id) as { name: string } | undefined;
+    mergeResultName = row?.name ?? null;
+  }
+
   db.close();
 
-  const description = itemDescription({
-    name: item.name,
-    quality: item.quality,
-    slot: item.slot,
-    item_type: item.item_type,
-    level_required: item.level_required,
+  const description = itemDescription(item, {
+    usages,
+    packContents,
+    randomOutcomes,
+    chestKeyOpens,
+    mergeResultName,
   });
+  const title = itemTitle(item);
 
   return {
     item,
     description,
+    title,
     sources,
     usages,
     recipeMaterials,

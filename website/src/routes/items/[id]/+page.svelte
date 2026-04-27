@@ -280,7 +280,7 @@
 </script>
 
 <Seo
-  title={`${data.item.name} - Ancient Kingdoms Compendium`}
+  title={data.title}
   description={data.description}
   path={`/items/${data.item.id}`}
 />
