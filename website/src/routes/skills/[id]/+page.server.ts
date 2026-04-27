@@ -1,5 +1,6 @@
 import { query, queryOne } from "$lib/db.server";
 import { error } from "@sveltejs/kit";
+import { skillDescription } from "$lib/server/meta-description";
 import type { PageServerLoad, EntryGenerator } from "./$types";
 import type {
   SkillDetailView,
@@ -287,12 +288,19 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
   const effectSummary = formatSkillEffect(skill);
 
   // Generate description
-  const typeLabel = skill.skill_type.replace(/_/g, " ");
-  const classNames =
-    skill.player_classes.length > 0
-      ? skill.player_classes.join(", ")
-      : "all classes";
-  const description = `${skill.name} - ${typeLabel} skill for ${classNames} in Ancient Kingdoms.`;
+  const description = skillDescription({
+    name: skill.name,
+    skill_type: skill.skill_type,
+    tier: skill.tier,
+    max_level: skill.max_level,
+    level_required: skill.level_required,
+    player_classes: skill.player_classes,
+    is_veteran: skill.is_veteran,
+    is_pet_skill: skill.is_pet_skill,
+    is_mercenary_skill: skill.is_mercenary_skill,
+    is_scroll: skill.is_scroll,
+    monster_count: usedByMonsters.length,
+  });
 
   return {
     skill,

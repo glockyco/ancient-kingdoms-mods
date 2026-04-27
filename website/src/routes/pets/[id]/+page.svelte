@@ -198,7 +198,7 @@
 
 <Seo
   title={`${pet.name} - Ancient Kingdoms Compendium`}
-  description={`${pet.name} is a ${pet.kind.toLowerCase()} in Ancient Kingdoms.`}
+  description={data.description}
   path={`/pets/${pet.id}`}
 />
 

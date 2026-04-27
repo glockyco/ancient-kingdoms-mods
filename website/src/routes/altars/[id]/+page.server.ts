@@ -1,6 +1,7 @@
 import Database from "better-sqlite3";
 import { error } from "@sveltejs/kit";
 import type { PageServerLoad, EntryGenerator } from "./$types";
+import { altarDescription } from "$lib/server/meta-description";
 import { DB_STATIC_PATH } from "$lib/constants/constants";
 import type {
   AltarDetailPageData,
@@ -213,11 +214,22 @@ export const load: PageServerLoad = ({ params }): AltarDetailPageData => {
   db.close();
 
   // Generate meta description
-  const durationMinutes = Math.round(altar.estimatedDurationSeconds / 60);
-  const description =
-    altar.type === "forgotten"
-      ? `${altar.name} is a Forgotten Altar in ${altar.zoneName} requiring level ${altar.minLevelRequired}+. Features ${altar.totalWaves} waves over ~${durationMinutes} minutes with tiered rewards based on effective level.`
-      : `${altar.name} is an Avatar Altar in ${altar.zoneName}. Features ${altar.totalWaves} waves over ~${durationMinutes} minutes.`;
+  const rewardCommonName =
+    rewards.find((r) => r.tier === "common")?.itemName ?? null;
+  const rewardLegendaryName =
+    rewards.find((r) => r.tier === "legendary")?.itemName ?? null;
+
+  const description = altarDescription({
+    name: altar.name,
+    type: altar.type,
+    zone_name: altar.zoneName,
+    min_level_required: altar.minLevelRequired,
+    total_waves: altar.totalWaves,
+    required_activation_item_name: altar.requiredActivationItemName,
+    uses_veteran_scaling: altar.usesVeteranScaling,
+    reward_common_name: rewardCommonName,
+    reward_legendary_name: rewardLegendaryName,
+  });
 
   return {
     altar,

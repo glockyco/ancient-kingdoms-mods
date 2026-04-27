@@ -6,6 +6,7 @@ import {
 } from "$lib/queries/classes.server";
 import { error } from "@sveltejs/kit";
 import { validateClassName } from "$lib/utils/validateClassName";
+import { classDescription } from "$lib/server/meta-description";
 import type { PageServerLoad } from "./$types";
 
 export const prerender = true;
@@ -30,11 +31,31 @@ export const load: PageServerLoad = ({ params }) => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const items = rawItems.map(({ stat_keys: _, ...item }) => item);
 
+  const skills = getClassSkills(classData.id);
+
+  // Build signature skills from the first 3 base skills, or first 3 if no base filter
+  const baseSkills = skills.filter((s) => s.base_skill);
+  const signatureSkills = (baseSkills.length > 0 ? baseSkills : skills)
+    .slice(0, 3)
+    .map((s) => ({ name: s.name }));
+
+  // Generate meta description
+  const description = classDescription({
+    name: classData.name,
+    description: classData.description,
+    primary_role: classData.primary_role,
+    secondary_role: classData.secondary_role ?? null,
+    resource_type: classData.resource_type,
+    compatible_races: classData.compatible_races,
+    signature_skills: signatureSkills,
+  });
+
   return {
     class: classData,
-    skills: getClassSkills(classData.id),
+    skills,
     items,
     itemStatKeys,
     quests: getClassQuests(classData.id),
+    description,
   };
 };

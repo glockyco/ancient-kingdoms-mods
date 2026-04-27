@@ -776,7 +776,7 @@
 
 <Seo
   title={`${data.class.name} - Ancient Kingdoms Compendium`}
-  description={data.class.description}
+  description={data.description}
   path={`/classes/${data.class.id}`}
 />
 

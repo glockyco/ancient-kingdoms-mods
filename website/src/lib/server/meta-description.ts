@@ -1129,3 +1129,285 @@ export function gatheringResourceDescription(
 
   return `${resource.name} \u2014 ${tierPhrase}${typeLabel}.${toolPhrase}${rewardPhrase}${xpPhrase}${locationPhrase}`;
 }
+
+// =============================================================================
+// Skills
+// =============================================================================
+//
+// Skill ownership is layered: a skill can belong to classes, pets,
+// mercenaries, monsters, scrolls, or any combination. The description routes
+// to the most specific owner first so the player searching for it gets the
+// answer they expect ("who casts this?").
+
+interface SkillDescriptionInput {
+  name: string;
+  skill_type: string;
+  tier: number;
+  max_level: number;
+  level_required: number;
+  player_classes: string[];
+  is_veteran: boolean;
+  is_pet_skill: boolean;
+  is_mercenary_skill: boolean;
+  is_scroll: boolean;
+  /** Number of monsters that have this skill in monster_skills. */
+  monster_count: number;
+}
+
+const SKILL_TYPE_LABELS: Record<string, string> = {
+  target_damage: "Single-target damage spell",
+  area_damage: "Area-of-effect damage spell",
+  target_projectile: "Ranged projectile attack",
+  frontal_damage: "Frontal cone attack",
+  frontal_projectiles: "Frontal projectile barrage",
+  target_buff: "Single-target buff",
+  area_buff: "Party-wide buff",
+  target_debuff: "Single-target debuff",
+  area_debuff: "Area-of-effect debuff",
+  target_heal: "Single-target heal",
+  area_heal: "Party-wide heal",
+  passive: "Passive ability",
+  summon_monsters: "Summon spell",
+  summon: "Summon spell",
+  area_object_spawn: "Placed area effect",
+};
+
+function humanizeSkillType(skillType: string): string {
+  if (skillType in SKILL_TYPE_LABELS) return SKILL_TYPE_LABELS[skillType];
+  return capitalizeFirst(skillType.replace(/_/g, " "));
+}
+
+function classesPhrase(classes: string[]): string {
+  if (classes.length === 0) return "";
+  if (classes.length === 6) return "Universal";
+  const titled = classes.map((c) => capitalizeFirst(c));
+  if (titled.length === 1) return titled[0];
+  return joinList(titled);
+}
+
+/**
+ * Compose the per-skill description.
+ *
+ * Ownership routing priority:
+ * 1. veteran + has classes \u2192 veteran skill
+ * 2. mercenary skill \u2192 mercenary phrase (with classes if present)
+ * 3. pet skill \u2192 pet ability (with classes if present)
+ * 4. scroll-only \u2192 scroll spell
+ * 5. classes + monsters \u2192 class skill also used by monsters
+ * 6. classes only \u2192 class skill
+ * 7. monsters only \u2192 monster ability
+ * 8. fallback \u2192 "Skill"
+ */
+export function skillDescription(skill: SkillDescriptionInput): string {
+  const typeLabel = humanizeSkillType(skill.skill_type);
+  const classes = classesPhrase(skill.player_classes);
+
+  let ownership: string;
+  if (skill.is_veteran && skill.player_classes.length >= 1) {
+    ownership = `Veteran skill for ${classes}`;
+  } else if (skill.is_mercenary_skill) {
+    ownership = classes ? `Mercenary skill (${classes})` : "Mercenary skill";
+  } else if (skill.is_pet_skill) {
+    ownership = classes ? `Pet ability (${classes} pets)` : "Pet ability";
+  } else if (skill.is_scroll && skill.player_classes.length === 0) {
+    ownership = "Scroll-only spell";
+  } else if (skill.player_classes.length >= 1 && skill.monster_count > 0) {
+    const noun = skill.monster_count === 1 ? "monster" : "monsters";
+    ownership = `${classes} skill, also used by ${skill.monster_count} ${noun}`;
+  } else if (skill.player_classes.length >= 1) {
+    ownership = `${classes} skill`;
+  } else if (skill.monster_count > 0) {
+    const noun = skill.monster_count === 1 ? "creature" : "creatures";
+    ownership = `Monster ability used by ${skill.monster_count} ${noun}`;
+  } else {
+    ownership = "Skill";
+  }
+
+  const tierPhrase =
+    skill.tier > 0 ? ` Tier ${toRomanNumeral(skill.tier)}.` : "";
+  const levelPhrase =
+    skill.level_required > 0
+      ? ` Unlocks at level ${skill.level_required}.`
+      : "";
+
+  return `${skill.name} \u2014 ${typeLabel}.${tierPhrase} ${ownership}.${levelPhrase}`
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+// =============================================================================
+// Pets
+// =============================================================================
+//
+// Source: server-scripts/SummonSkill.cs:55-76 \u2014 familiar level scales with
+// summoning skill rank, companion level matches summoner, mercenaries hire at
+// player level and gain attributes per level. We deliberately don't print
+// numeric levels or stats: every value in the DB pets row is a build-time
+// placeholder.
+
+interface PetDescriptionInput {
+  name: string;
+  /** "Mercenary" | "Familiar" | "Companion". Pre-classified by pets.server.ts. */
+  kind: "Mercenary" | "Familiar" | "Companion";
+  type_monster: string;
+  has_buffs: boolean;
+  has_heals: boolean;
+  /** The summon skill that creates this pet (familiars/companions). */
+  summoning_skill_name: string | null;
+  /** Class id of the summoning skill (lowercase, e.g. "druid"). */
+  summoning_class_id: string | null;
+}
+
+function petRolePhrase(input: PetDescriptionInput): string {
+  if (input.has_heals && input.has_buffs) return "Provides heals and buffs.";
+  if (input.has_heals) return "Provides heals.";
+  if (input.has_buffs) return "Provides buffs.";
+  return "Combat-focused.";
+}
+
+function petOriginPhrase(input: PetDescriptionInput): string {
+  const className = input.summoning_class_id
+    ? capitalizeFirst(input.summoning_class_id)
+    : null;
+  switch (input.kind) {
+    case "Familiar":
+      // Source: server-scripts/SummonSkill.cs:76 \u2014 level = skillLevel
+      if (input.summoning_skill_name && className) {
+        return ` Summoned by the ${input.summoning_skill_name} skill (${className}). Level scales with the skill rank.`;
+      }
+      return " Summoned by a class skill. Level scales with the skill rank.";
+    case "Companion":
+      // Source: server-scripts/SummonSkill.cs:76 \u2014 level = min(petMaxLevel, playerLevel)
+      if (input.summoning_skill_name && className) {
+        return ` Summoned by the ${input.summoning_skill_name} skill (${className}). Level matches the summoner.`;
+      }
+      return " Summoned by a class skill. Level matches the summoner.";
+    case "Mercenary":
+      // Source: server-scripts/Player.cs:7846 \u2014 hired at player level, gains attributes per level
+      return " Recruited from any Mercenary Recruiter NPC. Hired at the player's current level and continues to gain attributes as the player levels.";
+  }
+}
+
+export function petDescription(input: PetDescriptionInput): string {
+  const origin = petOriginPhrase(input);
+  const role = petRolePhrase(input);
+  return `${input.name} \u2014 ${input.kind} (${input.type_monster}).${origin} ${role}`;
+}
+
+// =============================================================================
+// Altars
+// =============================================================================
+//
+// Source: build-pipeline schema \u2014 altars.type is "forgotten" | "avatar".
+// Forgotten altars carry a min_level_required gate; avatar altars do not
+// (their min_level_required is always 0 in the current DB).
+
+interface AltarDescriptionInput {
+  name: string;
+  type: "forgotten" | "avatar" | string;
+  zone_name: string;
+  min_level_required: number;
+  total_waves: number;
+  required_activation_item_name: string | null;
+  uses_veteran_scaling: boolean;
+  reward_common_name: string | null;
+  reward_legendary_name: string | null;
+}
+
+export function altarDescription(altar: AltarDescriptionInput): string {
+  const typeLabel =
+    altar.type === "avatar" ? "Avatar Altar" : "Forgotten Altar";
+
+  const activationPhrase = altar.required_activation_item_name
+    ? ` Activated with ${altar.required_activation_item_name}.`
+    : "";
+
+  const wavesPhrase =
+    altar.total_waves > 0 ? ` ${altar.total_waves}-wave encounter.` : "";
+
+  // Avatar altars suppress the level line entirely (their min level is 0 by
+  // design). For forgotten altars only print when there's an actual gate.
+  const levelPhrase =
+    altar.type === "forgotten" && altar.min_level_required > 0
+      ? ` Requires character level ${altar.min_level_required}.`
+      : "";
+
+  let rewardPhrase = "";
+  if (altar.reward_common_name && altar.reward_legendary_name) {
+    rewardPhrase = altar.uses_veteran_scaling
+      ? ` Drops ${altar.reward_common_name} through Legendary ${altar.reward_legendary_name} based on player level and veteran score.`
+      : ` Drops ${altar.reward_common_name} through ${altar.reward_legendary_name}.`;
+  }
+
+  return `${typeLabel} in ${altar.zone_name}.${activationPhrase}${wavesPhrase}${levelPhrase}${rewardPhrase}`;
+}
+
+// =============================================================================
+// Classes
+// =============================================================================
+//
+// Source: server-scripts class definitions \u2014 each class has a primary role,
+// optional secondary role, energy/mana resource, race compatibility, and a
+// signature skill set. We use formatResourceName so the in-game word "Rage"
+// shows for energy users instead of the schema column name.
+
+interface ClassDescriptionInput {
+  name: string;
+  description: string;
+  primary_role: string;
+  secondary_role: string | null;
+  resource_type: string;
+  /** JSON array of race ids. Always 7 races total ("all" = 7). */
+  compatible_races: string;
+  /** Top signature skills (already sorted by importance). */
+  signature_skills: Array<{ name: string }>;
+}
+
+function racesPhrase(compatibleRacesJson: string): string {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(compatibleRacesJson);
+  } catch {
+    return "";
+  }
+  if (!Array.isArray(parsed)) return "";
+  const races = (parsed as unknown[]).filter(
+    (x): x is string => typeof x === "string",
+  );
+  if (races.length === 7) return "Available to every race";
+  if (races.length >= 5) return "Available to most races";
+  if (races.length === 0) return "";
+  const named = races.map((r) => capitalizeFirst(r.replace(/_/g, " ")));
+  return `Available to ${joinList(named)}`;
+}
+
+function loreSnippet(description: string): string {
+  if (!description) return "";
+  // First sentence, capped at ~100 chars
+  const firstSentenceMatch = description.match(/^[^.!?]+[.!?]/);
+  const sentence = firstSentenceMatch
+    ? firstSentenceMatch[0].trim()
+    : description.trim();
+  if (sentence.length <= 100) return sentence;
+  return sentence.slice(0, 97).trimEnd() + "...";
+}
+
+export function classDescription(klass: ClassDescriptionInput): string {
+  const resource = formatResourceName(klass.resource_type);
+  const role = klass.secondary_role
+    ? `${klass.primary_role} with ${klass.secondary_role.toLowerCase()}`
+    : klass.primary_role;
+  const races = racesPhrase(klass.compatible_races);
+  const racesSentence = races ? ` ${races}.` : "";
+
+  let skillsPhrase = "";
+  const top = klass.signature_skills.slice(0, 3).map((s) => s.name);
+  if (top.length > 0) {
+    skillsPhrase = ` Signature skills include ${joinList(top)}.`;
+  }
+
+  const lore = loreSnippet(klass.description);
+  const lorePhrase = lore ? ` ${lore}` : "";
+
+  return `${klass.name} \u2014 ${role}, uses ${resource}.${racesSentence}${skillsPhrase}${lorePhrase}`;
+}
