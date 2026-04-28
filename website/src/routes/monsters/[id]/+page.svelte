@@ -127,6 +127,18 @@
     return value.toLocaleString();
   }
 
+  function resistanceBadgeClass(value: number): string {
+    if (value > 0) {
+      return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
+    }
+
+    if (value < 0) {
+      return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
+    }
+
+    return "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200";
+  }
+
   const displayHealth = $derived(
     calculateStat(
       data.monster.health_base,
@@ -267,16 +279,14 @@
     ].filter((a) => a.flag),
   );
 
-  // Check for any non-zero resistances (always use display values now)
-  const resistances = $derived(
-    [
-      { name: "Magic", value: displayMagicResist },
-      { name: "Poison", value: displayPoisonResist },
-      { name: "Fire", value: displayFireResist },
-      { name: "Cold", value: displayColdResist },
-      { name: "Disease", value: displayDiseaseResist },
-    ].filter((r) => r.value !== 0),
-  );
+  // Combat resistances always render so zero values remain visible.
+  const resistances = $derived([
+    { name: "Magic", value: displayMagicResist },
+    { name: "Poison", value: displayPoisonResist },
+    { name: "Fire", value: displayFireResist },
+    { name: "Cold", value: displayColdResist },
+    { name: "Disease", value: displayDiseaseResist },
+  ]);
 
   // Check if any drop has a note
   const hasDropNotes = $derived(data.drops.some((d) => d.note));
@@ -1137,50 +1147,42 @@
             {displayMagicDamage.toLocaleString()}
           </div>
         </div>
-        {#if displayAccuracy > 0}
-          <div>
-            <div class="text-sm text-muted-foreground">Accuracy Bonus</div>
-            <div class="font-medium">
-              {formatPercent(displayAccuracy)}
-            </div>
+        <div>
+          <div class="text-sm text-muted-foreground">Accuracy Bonus</div>
+          <div class="font-medium">
+            {formatPercent(displayAccuracy)}
           </div>
-        {/if}
-        {#if displayCriticalChance > 0}
-          <div>
-            <div class="text-sm text-muted-foreground">Critical Chance</div>
-            <div class="font-medium">
-              {formatPercent(displayCriticalChance)}
-            </div>
+        </div>
+        <div>
+          <div class="text-sm text-muted-foreground">Critical Chance</div>
+          <div class="font-medium">
+            {formatPercent(displayCriticalChance)}
           </div>
-        {/if}
+        </div>
         <div>
           <div class="text-sm text-muted-foreground">Health</div>
           <div class="font-medium">
             {displayHealth.toLocaleString()}
           </div>
         </div>
-        {#if data.monster.health_regen_base > 0}
-          <div>
-            <div class="text-sm text-muted-foreground">HP Regen</div>
-            <div class="font-medium">
-              {data.monster.health_regen_base.toLocaleString()} / sec
-            </div>
+        <div>
+          <div class="text-sm text-muted-foreground">HP Regen</div>
+          <div class="font-medium">
+            {data.monster.health_regen_base.toLocaleString()} / sec
           </div>
-        {/if}
+        </div>
         <div>
           <div class="text-sm text-muted-foreground">Defense</div>
           <div class="font-medium">
             {displayDefense.toLocaleString()}
           </div>
         </div>
-        {#if displayBlockChance > 0}
-          <div>
-            <div class="text-sm text-muted-foreground">Block Chance</div>
-            <div class="font-medium">
-              {formatPercent(displayBlockChance)}
-            </div>
+        <div>
+          <div class="text-sm text-muted-foreground">Block Chance</div>
+          <div class="font-medium">
+            {formatPercent(displayBlockChance)}
           </div>
-        {/if}
+        </div>
       </div>
 
       {#if resistances.length > 0 || abilities.length > 0}
@@ -1191,10 +1193,9 @@
               <div class="flex flex-wrap gap-2">
                 {#each resistances as resist (resist.name)}
                   <span
-                    class="inline-flex items-center rounded-md px-2 py-1 text-sm
-                      {resist.value > 0
-                      ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                      : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'}"
+                    class="inline-flex items-center rounded-md px-2 py-1 text-sm {resistanceBadgeClass(
+                      resist.value,
+                    )}"
                   >
                     {resist.name}: {resist.value}
                   </span>
