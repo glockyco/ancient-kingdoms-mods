@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { base } from "$app/paths";
   import PopupCard from "$lib/components/map/PopupCard.svelte";
   import MapItemLink from "$lib/components/map/MapItemLink.svelte";
   import MapEntityLink from "$lib/components/map/MapEntityLink.svelte";
@@ -288,6 +289,18 @@
   {onFocusClick}
   {mode}
 >
+  {#if isMonster(entity) && monsterDetails && monsterDetails.visualAsset}
+    <div class="flex justify-center pb-2">
+      <img
+        src={`${base}/${monsterDetails.visualAsset.publicPath}`}
+        alt={`${getDisplayName(entity)} monster sprite`}
+        width={monsterDetails.visualAsset.width}
+        height={monsterDetails.visualAsset.height}
+        class="max-h-28 max-w-full object-contain [image-rendering:pixelated]"
+      />
+    </div>
+  {/if}
+
   <!-- NPC Roles (shown first, before Zone) -->
   {#if entity.type === "npc"}
     {@const npc = entity as NpcMapEntity}

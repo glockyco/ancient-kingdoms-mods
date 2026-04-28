@@ -64,6 +64,15 @@ export interface PopupRenewalSage {
 }
 
 /**
+ * Runtime-exported visual asset for popup display.
+ */
+export interface MonsterPopupVisualAsset {
+  publicPath: string;
+  width: number;
+  height: number;
+}
+
+/**
  * Monster popup details (lazy-loaded)
  */
 export interface MonsterPopupDetails {
@@ -72,6 +81,7 @@ export interface MonsterPopupDetails {
   health: number;
   damage: number;
   magicDamage: number;
+  visualAsset: MonsterPopupVisualAsset | null;
 }
 
 /**
@@ -127,6 +137,9 @@ interface MonsterStatsRow {
   health: number;
   damage: number;
   magic_damage: number;
+  visual_public_path: string | null;
+  visual_width: number | null;
+  visual_height: number | null;
 }
 
 interface MonsterDropRow {
@@ -162,7 +175,21 @@ export async function loadMonsterPopupDetails(
     : "ORDER BY rate DESC";
 
   const [stats] = await query<MonsterStatsRow>(
-    `SELECT health, damage, magic_damage FROM monsters WHERE id = ?`,
+    `
+    SELECT
+      m.health,
+      m.damage,
+      m.magic_damage,
+      va.public_path as visual_public_path,
+      va.width as visual_width,
+      va.height as visual_height
+    FROM monsters m
+    LEFT JOIN visual_assets va
+      ON va.domain = 'monster'
+      AND va.entity_id = m.id
+      AND va.kind = 'primary'
+    WHERE m.id = ?
+    `,
     [monsterId],
   );
 
@@ -214,6 +241,13 @@ export async function loadMonsterPopupDetails(
     health: stats?.health ?? 0,
     damage: stats?.damage ?? 0,
     magicDamage: stats?.magic_damage ?? 0,
+    visualAsset: stats?.visual_public_path
+      ? {
+          publicPath: stats.visual_public_path,
+          width: stats.visual_width ?? 0,
+          height: stats.visual_height ?? 0,
+        }
+      : null,
     drops: drops.map((d) => ({
       itemId: d.item_id,
       itemName: d.item_name,
