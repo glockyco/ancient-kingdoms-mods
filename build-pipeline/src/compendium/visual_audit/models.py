@@ -6,16 +6,13 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-VisualStatus = Literal[
-    "selected", "missing", "ambiguous", "runtime_only", "static_only"
-]
+VisualStatus = Literal["selected", "missing", "ambiguous", "runtime_only"]
 RuntimeConfidence = Literal["authoritative"]
 SelectionConfidence = Literal[
-    "runtime_static_match",
+    "runtime_image",
     "authoritative_runtime_reference",
     "missing",
     "ambiguous",
-    "static_only",
 ]
 
 
@@ -44,6 +41,7 @@ class RuntimeReference(BaseModel):
     unity_object_name: str | None = None
     sprite_name: str | None = None
     texture_name: str | None = None
+    runtime_image_path: str | None = None
     instance_id: int | None = None
     game_object_name: str | None = None
     prefab_name: str | None = None
@@ -79,8 +77,7 @@ class VisualSelection(BaseModel):
     visual_kind: str
     status: VisualStatus
     confidence: SelectionConfidence
-    static_asset_key: str | None = None
-    candidate_asset_keys: list[str] = Field(default_factory=list)
+    runtime_image_path: str | None = None
+    candidate_runtime_image_paths: list[str] = Field(default_factory=list)
     runtime_source_fields: list[str] = Field(default_factory=list)
-    name_match_only: bool = False
     reason: str

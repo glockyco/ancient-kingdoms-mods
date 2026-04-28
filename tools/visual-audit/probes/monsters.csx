@@ -5,14 +5,72 @@ using System.Text.RegularExpressions;
 using Il2CppInterop.Runtime;
 using UnityEngine;
 
+const string OutputPath = "__VISUAL_AUDIT_OUTPUT_PATH__";
+
 static string SanitizeId(string input)
 {
     if (string.IsNullOrEmpty(input)) return input;
     return Regex.Replace(input.ToLowerInvariant().Replace(" ", "_"), @"[^a-z0-9_\-]", "");
 }
 
-static Dictionary<string, object?> SpriteRef(string entityId, string entityName, string visualKind, string sourceField, Sprite sprite)
+static string SafeSegment(string input)
 {
+    if (string.IsNullOrEmpty(input)) return "unknown";
+    return Regex.Replace(input, @"[^A-Za-z0-9_\-.]+", "_");
+}
+
+static string ToPortablePath(string path) => path.Replace("\\", "/");
+static string ToWritablePath(string path)
+{
+    var portable = ToPortablePath(path);
+    return portable.StartsWith("/") ? "Z:" + portable : portable;
+}
+
+static string? WriteSpriteImage(Sprite sprite, string domain, string entityId, string visualKind, string sourceField)
+{
+    if (sprite == null || sprite.texture == null) return null;
+
+    RenderTexture? renderTexture = null;
+    RenderTexture? previous = null;
+    Texture2D? readable = null;
+    try
+    {
+        var rect = sprite.textureRect;
+        var width = Math.Max(1, Mathf.RoundToInt(rect.width));
+        var height = Math.Max(1, Mathf.RoundToInt(rect.height));
+        renderTexture = RenderTexture.GetTemporary(sprite.texture.width, sprite.texture.height, 0, RenderTextureFormat.ARGB32);
+        previous = RenderTexture.active;
+        Graphics.Blit(sprite.texture, renderTexture);
+        RenderTexture.active = renderTexture;
+
+        readable = new Texture2D(width, height, TextureFormat.RGBA32, false);
+        readable.ReadPixels(new Rect(rect.x, rect.y, width, height), 0, 0);
+        readable.Apply();
+
+        var outputDirectory = ToPortablePath(System.IO.Path.GetDirectoryName(OutputPath) ?? ".");
+        var imageDirectory = $"{outputDirectory}/images/{domain}/{SafeSegment(entityId)}/{SafeSegment(visualKind)}";
+        System.IO.Directory.CreateDirectory(ToWritablePath(imageDirectory));
+        var fileName = $"{SafeSegment(sourceField)}_{sprite.GetInstanceID()}_{SafeSegment(sprite.name)}.png";
+        var imagePath = $"{imageDirectory}/{fileName}";
+        System.IO.File.WriteAllBytes(ToWritablePath(imagePath), ImageConversion.EncodeToPNG(readable));
+        return ToPortablePath(imagePath);
+    }
+    catch
+    {
+        return null;
+    }
+    finally
+    {
+        if (readable != null) UnityEngine.Object.Destroy(readable);
+        RenderTexture.active = previous;
+        if (renderTexture != null) RenderTexture.ReleaseTemporary(renderTexture);
+    }
+}
+
+
+static Dictionary<string, object?> SpriteRendererRef(string entityId, string entityName, string visualKind, string sourceField, SpriteRenderer renderer)
+{
+    var sprite = renderer.sprite;
     return new Dictionary<string, object?>
     {
         ["domain"] = "monster",
@@ -20,35 +78,21 @@ static Dictionary<string, object?> SpriteRef(string entityId, string entityName,
         ["entity_name"] = entityName,
         ["visual_kind"] = visualKind,
         ["source_field"] = sourceField,
-        ["unity_object_type"] = sprite.GetType().FullName,
-        ["unity_object_name"] = sprite.name,
-        ["sprite_name"] = sprite.name,
-        ["texture_name"] = sprite.texture != null ? sprite.texture.name : null,
-        ["instance_id"] = sprite.GetInstanceID(),
+        ["unity_object_type"] = renderer.GetType().FullName,
+        ["unity_object_name"] = renderer.name,
+        ["game_object_name"] = renderer.gameObject != null ? renderer.gameObject.name : null,
+        ["sprite_name"] = sprite != null ? sprite.name : null,
+        ["texture_name"] = sprite != null && sprite.texture != null ? sprite.texture.name : null,
+        ["runtime_image_path"] = sprite != null ? WriteSpriteImage(sprite, "monster", entityId, visualKind, sourceField + "." + renderer.name) : null,
+        ["instance_id"] = renderer.GetInstanceID(),
         ["confidence"] = "authoritative",
         ["notes"] = Array.Empty<string>(),
     };
 }
 
-static Dictionary<string, object?> ComponentRef(string entityId, string entityName, string visualKind, string sourceField, Component component)
-{
-    return new Dictionary<string, object?>
-    {
-        ["domain"] = "monster",
-        ["entity_id"] = entityId,
-        ["entity_name"] = entityName,
-        ["visual_kind"] = visualKind,
-        ["source_field"] = sourceField,
-        ["unity_object_type"] = component.GetType().FullName,
-        ["unity_object_name"] = component.name,
-        ["game_object_name"] = component.gameObject != null ? component.gameObject.name : null,
-        ["instance_id"] = component.GetInstanceID(),
-        ["confidence"] = "authoritative",
-        ["notes"] = Array.Empty<string>(),
-    };
-}
 
 var rows = new List<Dictionary<string, object?>>();
+var emittedSprites = new HashSet<string>();
 var monsterType = Il2CppType.Of<Il2Cpp.Monster>();
 foreach (var obj in Resources.FindObjectsOfTypeAll(monsterType))
 {
@@ -58,31 +102,20 @@ foreach (var obj in Resources.FindObjectsOfTypeAll(monsterType))
     var entityName = monster.name;
     var entityId = SanitizeId(entityName);
 
-    if (monster.imageBossBestiary != null)
-    {
-        rows.Add(SpriteRef(entityId, entityName, "bestiary_image", "Monster.imageBossBestiary", monster.imageBossBestiary));
-    }
+    if (monster.gameObject == null) continue;
 
-    if (monster.portraitBoss != null)
-    {
-        rows.Add(SpriteRef(entityId, entityName, "boss_portrait", "Monster.portraitBoss", monster.portraitBoss));
-    }
+    var mainRenderer = monster.gameObject.GetComponent<SpriteRenderer>();
+    if (mainRenderer == null) continue;
+    var sprite = mainRenderer.sprite;
+    if (sprite == null) continue;
 
-    if (monster.gameObject != null)
-    {
-        foreach (var renderer in monster.gameObject.GetComponentsInChildren<SpriteRenderer>(true))
-        {
-            rows.Add(ComponentRef(entityId, entityName, "renderer", "Monster.gameObject.SpriteRenderer", renderer));
-        }
-        foreach (var animator in monster.gameObject.GetComponentsInChildren<Animator>(true))
-        {
-            rows.Add(ComponentRef(entityId, entityName, "animator", "Monster.gameObject.Animator", animator));
-        }
-    }
+    var imageKey = $"{entityId}|{sprite.GetInstanceID()}";
+    if (!emittedSprites.Add(imageKey)) continue;
+
+    rows.Add(SpriteRendererRef(entityId, entityName, "renderer", "Monster.gameObject.SpriteRenderer", mainRenderer));
 }
 
 var json = JsonSerializer.Serialize(rows, new JsonSerializerOptions { WriteIndented = true });
-const string OutputPath = "__VISUAL_AUDIT_OUTPUT_PATH__";
 var outputDirectory = System.IO.Path.GetDirectoryName(OutputPath);
 if (!string.IsNullOrEmpty(outputDirectory)) System.IO.Directory.CreateDirectory(outputDirectory);
 System.IO.File.WriteAllText(OutputPath, json);

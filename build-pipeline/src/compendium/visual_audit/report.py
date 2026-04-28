@@ -17,23 +17,22 @@ def build_coverage_markdown(selections: Iterable[VisualSelection]) -> str:
     lines = [
         "# Visual Asset Audit Coverage",
         "",
-        "This report is generated from runtime-authoritative visual references and the static Unity asset index.",
-        "Entity-name-only static matches are not selected.",
+        "This report is generated from runtime-authoritative visual references.",
+        "A selected visual requires an image extracted from the running game; static Unity assets are not used as mapping fallbacks.",
         "",
-        "| Domain | Selected | Runtime only | Ambiguous | Missing | Static only | Total |",
-        "|---|---:|---:|---:|---:|---:|---:|",
+        "| Domain | Selected | Runtime only | Ambiguous | Missing | Total |",
+        "|---|---:|---:|---:|---:|---:|",
     ]
     for domain in sorted(by_domain):
         counts = by_domain[domain]
         total = sum(counts.values())
         lines.append(
-            "| {domain} | {selected} | {runtime_only} | {ambiguous} | {missing} | {static_only} | {total} |".format(
+            "| {domain} | {selected} | {runtime_only} | {ambiguous} | {missing} | {total} |".format(
                 domain=domain,
                 selected=counts["selected"],
                 runtime_only=counts["runtime_only"],
                 ambiguous=counts["ambiguous"],
                 missing=counts["missing"],
-                static_only=counts["static_only"],
                 total=total,
             )
         )

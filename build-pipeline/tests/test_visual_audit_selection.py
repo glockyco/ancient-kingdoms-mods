@@ -5,13 +5,13 @@ from compendium.visual_audit.selection import select_visuals
 
 
 class VisualSelectionTests(unittest.TestCase):
-    def test_selects_unique_static_asset_from_runtime_sprite_name(self):
+    def test_selects_runtime_image_without_static_assets(self):
         expected = [
             ExpectedVisual(
                 domain="monster",
                 entity_id="sabretooth",
                 entity_name="Sabretooth",
-                visual_kind="bestiary_image",
+                visual_kind="renderer",
             )
         ]
         runtime_refs = [
@@ -19,40 +19,33 @@ class VisualSelectionTests(unittest.TestCase):
                 domain="monster",
                 entity_id="sabretooth",
                 entity_name="Sabretooth",
-                visual_kind="bestiary_image",
-                source_field="Monster.imageBossBestiary",
+                visual_kind="renderer",
+                source_field="Monster.gameObject.SpriteRenderer",
                 unity_object_type="UnityEngine.Sprite",
-                unity_object_name="image_sabretooth",
-                sprite_name="image_sabretooth",
-                texture_name="image_sabretooth",
+                unity_object_name="Sabretooth",
+                sprite_name="sabretooth_1",
+                texture_name="sabretooth",
+                runtime_image_path="exported-data/visual-audit/runtime/images/monster/sabretooth/renderer.png",
                 confidence="authoritative",
             )
         ]
-        static_assets = [
-            StaticAsset(
-                asset_key="sharedassets1.assets:12345",
-                asset_type="Sprite",
-                name="image_sabretooth",
-                container_path="sharedassets1.assets",
-                path_id=12345,
-                texture_name="image_sabretooth",
-                width=128,
-                height=128,
-                extracted_path="exported-data/visual-audit/assets/images/sharedassets1_12345.png",
-            )
-        ]
 
-        selections = select_visuals(expected, runtime_refs, static_assets)
+        selections = select_visuals(expected, runtime_refs, [])
 
         self.assertEqual(len(selections), 1)
         selection = selections[0]
         self.assertEqual(selection.status, "selected")
-        self.assertEqual(selection.confidence, "runtime_static_match")
-        self.assertEqual(selection.static_asset_key, "sharedassets1.assets:12345")
-        self.assertIs(selection.name_match_only, False)
-        self.assertEqual(selection.runtime_source_fields, ["Monster.imageBossBestiary"])
+        self.assertEqual(selection.confidence, "runtime_image")
+        self.assertEqual(
+            selection.runtime_image_path,
+            "exported-data/visual-audit/runtime/images/monster/sabretooth/renderer.png",
+        )
+        self.assertEqual(selection.candidate_runtime_image_paths, [])
+        self.assertEqual(
+            selection.runtime_source_fields, ["Monster.gameObject.SpriteRenderer"]
+        )
 
-    def test_marks_runtime_reference_without_static_asset_as_runtime_only(self):
+    def test_static_matches_do_not_select_when_runtime_image_is_absent(self):
         expected = [
             ExpectedVisual(
                 domain="item",
@@ -75,73 +68,77 @@ class VisualSelectionTests(unittest.TestCase):
                 confidence="authoritative",
             )
         ]
-
-        selections = select_visuals(expected, runtime_refs, [])
-
-        self.assertEqual(selections[0].status, "runtime_only")
-        self.assertIsNone(selections[0].static_asset_key)
-        self.assertEqual(selections[0].confidence, "authoritative_runtime_reference")
-        self.assertIn(
-            "No static asset matched runtime object names", selections[0].reason
-        )
-
-    def test_marks_duplicate_static_matches_as_ambiguous(self):
-        expected = [
-            ExpectedVisual(
-                domain="skill",
-                entity_id="fireball",
-                entity_name="Fireball",
-                visual_kind="icon",
-            )
-        ]
-        runtime_refs = [
-            RuntimeReference(
-                domain="skill",
-                entity_id="fireball",
-                entity_name="Fireball",
-                visual_kind="icon",
-                source_field="ScriptableSkill.image",
-                unity_object_type="UnityEngine.Sprite",
-                unity_object_name="IconFire",
-                sprite_name="IconFire",
-                texture_name="IconFire",
-                confidence="authoritative",
-            )
-        ]
         static_assets = [
             StaticAsset(
-                asset_key="resources.assets:100",
+                asset_key="sharedassets0.assets:14382",
                 asset_type="Sprite",
-                name="IconFire",
-                container_path="resources.assets",
-                path_id=100,
-            ),
-            StaticAsset(
-                asset_key="sharedassets0.assets:200",
-                asset_type="Sprite",
-                name="IconFire",
+                name="TreasureMap1",
                 container_path="sharedassets0.assets",
-                path_id=200,
-            ),
+                path_id=14382,
+            )
         ]
 
         selections = select_visuals(expected, runtime_refs, static_assets)
 
-        self.assertEqual(selections[0].status, "ambiguous")
-        self.assertIsNone(selections[0].static_asset_key)
-        self.assertEqual(
-            selections[0].candidate_asset_keys,
-            ["resources.assets:100", "sharedassets0.assets:200"],
-        )
-        self.assertIs(selections[0].name_match_only, False)
+        self.assertEqual(selections[0].status, "runtime_only")
+        self.assertIsNone(selections[0].runtime_image_path)
+        self.assertEqual(selections[0].candidate_runtime_image_paths, [])
+        self.assertEqual(selections[0].confidence, "authoritative_runtime_reference")
+        self.assertIn("no runtime image was extracted", selections[0].reason)
 
-    def test_does_not_select_static_asset_by_entity_name_only(self):
+    def test_multiple_runtime_images_are_ambiguous_without_static_disambiguation(self):
+        expected = [
+            ExpectedVisual(
+                domain="monster",
+                entity_id="fire_wyvern",
+                entity_name="Fire Wyvern",
+                visual_kind="renderer",
+            )
+        ]
+        runtime_refs = [
+            RuntimeReference(
+                domain="monster",
+                entity_id="fire_wyvern",
+                entity_name="Fire Wyvern",
+                visual_kind="renderer",
+                source_field="Monster.gameObject.SpriteRenderer",
+                unity_object_type="UnityEngine.SpriteRenderer",
+                unity_object_name="Fire Wyvern",
+                runtime_image_path="runtime/images/fire_wyvern/body.png",
+                confidence="authoritative",
+            ),
+            RuntimeReference(
+                domain="monster",
+                entity_id="fire_wyvern",
+                entity_name="Fire Wyvern",
+                visual_kind="renderer",
+                source_field="Monster.gameObject.SpriteRenderer",
+                unity_object_type="UnityEngine.SpriteRenderer",
+                unity_object_name="Fire Wyvern",
+                runtime_image_path="runtime/images/fire_wyvern/alternate_pose.png",
+                confidence="authoritative",
+            ),
+        ]
+
+        selections = select_visuals(expected, runtime_refs, [])
+
+        self.assertEqual(selections[0].status, "ambiguous")
+        self.assertIsNone(selections[0].runtime_image_path)
+        self.assertEqual(
+            selections[0].candidate_runtime_image_paths,
+            [
+                "runtime/images/fire_wyvern/alternate_pose.png",
+                "runtime/images/fire_wyvern/body.png",
+            ],
+        )
+
+    def test_missing_when_no_runtime_reference_exists(self):
         expected = [
             ExpectedVisual(
                 domain="monster",
                 entity_id="sabretooth",
                 entity_name="Sabretooth",
-                visual_kind="bestiary_image",
+                visual_kind="renderer",
             )
         ]
         static_assets = [
@@ -157,8 +154,8 @@ class VisualSelectionTests(unittest.TestCase):
         selections = select_visuals(expected, [], static_assets)
 
         self.assertEqual(selections[0].status, "missing")
-        self.assertIsNone(selections[0].static_asset_key)
-        self.assertIs(selections[0].name_match_only, False)
+        self.assertIsNone(selections[0].runtime_image_path)
+        self.assertEqual(selections[0].candidate_runtime_image_paths, [])
         self.assertEqual(
             selections[0].reason, "No authoritative runtime reference found"
         )

@@ -20,7 +20,6 @@ from compendium.visual_audit.hotrepl import default_hotrepl_client, run_probe
 from compendium.visual_audit.models import (
     ExpectedVisual,
     RuntimeReference,
-    StaticAsset,
     VisualSelection,
 )
 from compendium.visual_audit.report import build_coverage_markdown
@@ -140,8 +139,7 @@ def reconcile(
 
     runtime_refs = _load_runtime_refs(audit_dir / "runtime")
     expected = _load_expected_visuals(export_dir, runtime_refs)
-    static_assets = _load_static_assets(audit_dir / "assets" / "index.json")
-    selections = select_visuals(expected, runtime_refs, static_assets)
+    selections = select_visuals(expected, runtime_refs)
 
     output_path = audit_dir / "selection.json"
     output_path.write_text(
@@ -179,12 +177,10 @@ def report(
 @app.command("all")
 def all_commands(
     ctx: typer.Context,
-    game_data: Annotated[Path | None, typer.Option("--game-data")] = None,
     hotrepl_client: Annotated[Path | None, typer.Option("--hotrepl-client")] = None,
     url: Annotated[str, typer.Option("--url")] = "ws://localhost:18590",
     timeout_ms: Annotated[int, typer.Option("--timeout-ms")] = 10000,
 ) -> None:
-    assets(ctx, game_data=game_data, output_dir=None, extract=True, limit_files=None)
     probe(
         ctx,
         domain=None,
@@ -200,29 +196,17 @@ def all_commands(
 def _load_expected_visuals(
     export_dir: Path, runtime_refs: list[RuntimeReference]
 ) -> list[ExpectedVisual]:
+    del runtime_refs
     expected: list[ExpectedVisual] = []
     expected.extend(
-        _expected_from_json(
-            export_dir / "monsters.json", "monster", ["renderer", "animator"]
-        )
+        _expected_from_json(export_dir / "monsters.json", "monster", ["renderer"])
     )
     expected.extend(_expected_from_items(export_dir / "items.json"))
     expected.extend(_expected_from_json(export_dir / "skills.json", "skill", ["icon"]))
     expected.extend(
         _expected_from_json(export_dir / "pets.json", "pet", ["icon", "renderer"])
     )
-    expected.extend(
-        _expected_from_json(export_dir / "npcs.json", "npc", ["renderer", "animator"])
-    )
-    expected.extend(
-        ExpectedVisual(
-            domain=ref.domain,
-            entity_id=ref.entity_id,
-            entity_name=ref.entity_name,
-            visual_kind=ref.visual_kind,
-        )
-        for ref in runtime_refs
-    )
+    expected.extend(_expected_from_json(export_dir / "npcs.json", "npc", ["renderer"]))
     return _dedupe_expected(expected)
 
 
@@ -309,8 +293,3 @@ def _load_runtime_refs(runtime_dir: Path) -> list[RuntimeReference]:
             RuntimeReference.model_validate(row) for row in json.loads(path.read_text())
         )
     return refs
-
-
-def _load_static_assets(index_path: Path) -> list[StaticAsset]:
-    payload = json.loads(index_path.read_text())
-    return [StaticAsset.model_validate(row) for row in payload["assets"]]

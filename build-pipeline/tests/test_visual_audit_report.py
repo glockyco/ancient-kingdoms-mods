@@ -5,17 +5,17 @@ from compendium.visual_audit.report import build_coverage_markdown
 
 
 class VisualAuditReportTests(unittest.TestCase):
-    def test_build_coverage_markdown_groups_status_counts_by_domain(self):
+    def test_build_coverage_markdown_groups_runtime_status_counts_by_domain(self):
         selections = [
             VisualSelection(
                 domain="monster",
                 entity_id="sabretooth",
                 entity_name="Sabretooth",
-                visual_kind="bestiary_image",
+                visual_kind="renderer",
                 status="selected",
-                confidence="runtime_static_match",
-                static_asset_key="sharedassets1.assets:123",
-                reason="Static asset matched authoritative runtime object names",
+                confidence="runtime_image",
+                runtime_image_path="runtime/images/sabretooth.png",
+                reason="Runtime image extracted from authoritative runtime reference",
             ),
             VisualSelection(
                 domain="monster",
@@ -24,7 +24,7 @@ class VisualAuditReportTests(unittest.TestCase):
                 visual_kind="renderer",
                 status="runtime_only",
                 confidence="authoritative_runtime_reference",
-                reason="No static asset matched runtime object names",
+                reason="Runtime reference found, but no runtime image was extracted",
             ),
             VisualSelection(
                 domain="item",
@@ -39,13 +39,18 @@ class VisualAuditReportTests(unittest.TestCase):
 
         markdown = build_coverage_markdown(selections)
 
-        self.assertIn("| item | 0 | 0 | 0 | 1 | 0 | 1 |", markdown)
-        self.assertIn("| monster | 1 | 1 | 0 | 0 | 0 | 2 |", markdown)
+        self.assertIn(
+            "| Domain | Selected | Runtime only | Ambiguous | Missing | Total |",
+            markdown,
+        )
+        self.assertIn("| item | 0 | 0 | 0 | 1 | 1 |", markdown)
+        self.assertIn("| monster | 1 | 1 | 0 | 0 | 2 |", markdown)
         self.assertIn(
             "`item/treasure_map_1/treasure_map_image`: missing — No authoritative runtime reference found",
             markdown,
         )
-        self.assertNotIn("`monster/sabretooth/bestiary_image`", markdown)
+        self.assertNotIn("Static only", markdown)
+        self.assertNotIn("`monster/sabretooth/renderer`", markdown)
 
 
 if __name__ == "__main__":
