@@ -38,7 +38,7 @@ Data flow: `Resources.FindObjectsOfTypeAll<T>()` → Exporter → Model → JSON
 
 ## Visual Assets
 
-Current selected image exports: `monster/primary` from direct `Monster.gameObject` `SpriteRenderer`, `npc/primary` from a runtime composite of body `SpriteRenderer` children under `Npc.gameObject/Front`, `item/icon` from `ScriptableItem.image`, and `skill/icon` from `ScriptableSkill.image`. Do not export pets, treasure maps, monster portraits/bestiary images, animation frames, NPC UI/auxiliary child renderers, skill effects, or static UnityPy matches in this phase.
+Current selected image exports: `monster/primary` from direct `Monster.gameObject` `SpriteRenderer` when present, otherwise a runtime composite of body `SpriteRenderer` children under `Monster.gameObject/Front`; `npc/primary` from a runtime composite of body `SpriteRenderer` children under `Npc.gameObject/Front`; `item/icon` from `ScriptableItem.image`; and `skill/icon` from `ScriptableSkill.image`. Do not export pets, treasure maps, monster portraits/bestiary images, animation frames, NPC UI/auxiliary child renderers, skill effects, or static UnityPy matches in this phase.
 
 ## Data Export Principles
 

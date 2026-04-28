@@ -11,15 +11,15 @@ Selected compendium visual mappings now come from the normal DataExporter runtim
 
 ### Selected for compendium use
 
-- Use one runtime-extracted image from the primary `SpriteRenderer` attached directly to `Monster.gameObject`.
-- This is the image represented by the Ancient Cyclops sample `current_main_renderer`: `Cyclops_1`. Integrated exports use stable filenames based on source field, sprite name, and sprite rect rather than runtime instance IDs.
+- Use one runtime-extracted `monster/primary` image. Prefer the primary `SpriteRenderer` attached directly to `Monster.gameObject` when present. For modular monster rigs without a root sprite, use a runtime composite of body `SpriteRenderer` children under `Monster.gameObject/Front` with the same UI/auxiliary exclusions used for NPC composites.
+- The direct-renderer case is represented by the Ancient Cyclops sample `current_main_renderer`: `Cyclops_1`. The modular-composite case is represented by humanoid-style monster rigs such as Dracolyte Praetor and Scalebound Hierarch, which have no root `SpriteRenderer` but do have body sprites under `Front`.
 - If future consumption sees multiple rows for the same `(domain, entity_id, kind)`, treat that as ambiguity to review rather than guessing a fallback source.
 
 ### Observed but not selected
 
 - `Monster.imageBossBestiary` exists for some monsters. It appears to be a bestiary/boss image, but it is not selected for the compendium mapping.
 - `Monster.portraitBoss` exists for some monsters and is often a more standardized portrait-style image. It is not selected for the current mapping.
-- Child `SpriteRenderer` objects under the monster GameObject include UI/auxiliary sprites such as health bars, hit bars, background/grid bars, level labels, minimap knobs, speech bubbles, and shadows. These are not useful as monster images and should not be selected.
+- Child `SpriteRenderer` objects under the monster GameObject can include body/gear sprites for modular rigs as well as UI/auxiliary sprites such as health bars, hit bars, background/grid bars, level labels, minimap knobs, speech bubbles, and shadows. Only the selected body/gear composite is useful as `monster/primary`; UI/auxiliary sprites remain excluded.
 - Monsters have `Animator` components and runtime animator controllers. A runtime sample observed `4669` monster objects, `4669` with an `Animator`, `4664` with a controller, and `188` distinct controllers.
 - Monster animation clips are sprite-swap animations. Ancient Cyclops, for example, has `idle_*`, `walk_*`, `attack_*`, `dead_down`, and `special_attack_down` clips at 12 FPS. The current primary renderer image is just one pose/frame from those clips.
 

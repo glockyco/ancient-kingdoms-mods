@@ -191,6 +191,10 @@
     return entity.zoneId;
   });
 
+  const isCompositeMonsterImage = $derived(
+    monsterDetails?.visualAsset?.sourceType === "UnityEngine.SpriteRenderer[]",
+  );
+
   function isMonster(e: AnyMapEntity): e is MonsterMapEntity {
     return ["monster", "fabled", "boss", "elite", "hunt"].includes(e.type);
   }
@@ -296,7 +300,9 @@
         alt={`${getDisplayName(entity)} monster sprite`}
         width={monsterDetails.visualAsset.width}
         height={monsterDetails.visualAsset.height}
-        class="max-h-28 max-w-full object-contain [image-rendering:pixelated]"
+        class="h-auto w-auto max-w-full object-contain [image-rendering:pixelated] {isCompositeMonsterImage
+          ? 'max-h-24'
+          : 'max-h-28'}"
       />
     </div>
   {/if}

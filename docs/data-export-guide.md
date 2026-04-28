@@ -14,14 +14,14 @@ DataExporter output must come from authoritative runtime game data. Prefer direc
 
 Selected compendium images are exported by DataExporter at runtime, not by UnityPy or static asset-name matching. Current selected visual kinds are:
 
-- `monster/primary` from the direct `SpriteRenderer` on `Monster.gameObject`
+- `monster/primary` from the direct `SpriteRenderer` on `Monster.gameObject`, or for modular monster rigs without a root sprite, from a runtime composite of body `SpriteRenderer` children under `Monster.gameObject/Front`; UI/auxiliary child renderers use the same exclusions as NPC composites
 - `npc/primary` from a runtime composite of body `SpriteRenderer` children under `Npc.gameObject/Front`; UI/auxiliary child renderers such as speech bubbles, bars, labels, minimap markers, and shadows are excluded
 - `item/icon` from `ScriptableItem.image`
 - `skill/icon` from `ScriptableSkill.image`
 
 
 `compendium build` consumes `visual_assets.json`, stores the rows in SQLite, and copies files into `website/static/images/` using readable public paths such as `images/monsters/zarothak_the_tormentor/primary.png`. The original DataExporter `export_path` stays in the database for provenance.
-Do not add fallback sources for missing selected sprites. Excluded sources include pets, treasure maps, monster boss/bestiary portraits, animation frames, NPC UI/auxiliary child renderers, skill effects, prefabs, and static Unity assets.
+Do not add static fallback sources for missing selected sprites. Excluded sources include pets, treasure maps, monster boss/bestiary portraits, animation frames, NPC UI/auxiliary child renderers, skill effects, prefabs, and static Unity assets.
 
 ## Runtime Requirements
 

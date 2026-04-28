@@ -244,12 +244,31 @@ public class MonsterExporter : BaseExporter
                 ? canonical.gameObject.GetComponent<SpriteRenderer>()
                 : null;
 
-            VisualAssets?.ExportRendererSprite(
-                "monster",
-                name,
-                "primary",
-                "Monster.gameObject.SpriteRenderer",
-                primaryRenderer);
+            if (primaryRenderer != null && primaryRenderer.sprite != null)
+            {
+                VisualAssets?.ExportRendererSprite(
+                    "monster",
+                    name,
+                    "primary",
+                    "Monster.gameObject.SpriteRenderer",
+                    primaryRenderer);
+            }
+            else
+            {
+                var visualSource = group.FirstOrDefault(m => m.gameObject != null && m.gameObject.scene.IsValid())
+                                ?? canonical;
+                var compositeRenderers = visualSource.gameObject != null
+                    ? VisualAssetRendererSelector.SelectPrimaryCompositeRenderers(visualSource.gameObject)
+                    : new List<SpriteRenderer>();
+
+                VisualAssets?.ExportComposite(
+                    "monster",
+                    name,
+                    "primary",
+                    "Monster.gameObject.Front.SpriteRenderers",
+                    compositeRenderers);
+            }
+
 
             monsterList.Add(monsterData);
 

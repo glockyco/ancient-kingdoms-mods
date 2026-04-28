@@ -70,6 +70,7 @@ export interface MonsterPopupVisualAsset {
   publicPath: string;
   width: number;
   height: number;
+  sourceType: string;
 }
 
 /**
@@ -140,6 +141,7 @@ interface MonsterStatsRow {
   visual_public_path: string | null;
   visual_width: number | null;
   visual_height: number | null;
+  visual_source_type: string | null;
 }
 
 interface MonsterDropRow {
@@ -182,7 +184,8 @@ export async function loadMonsterPopupDetails(
       m.magic_damage,
       va.public_path as visual_public_path,
       va.width as visual_width,
-      va.height as visual_height
+      va.height as visual_height,
+      va.source_type as visual_source_type
     FROM monsters m
     LEFT JOIN visual_assets va
       ON va.domain = 'monster'
@@ -246,6 +249,7 @@ export async function loadMonsterPopupDetails(
           publicPath: stats.visual_public_path,
           width: stats.visual_width ?? 0,
           height: stats.visual_height ?? 0,
+          sourceType: stats.visual_source_type ?? "",
         }
       : null,
     drops: drops.map((d) => ({

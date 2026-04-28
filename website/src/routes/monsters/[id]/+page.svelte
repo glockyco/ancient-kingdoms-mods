@@ -81,6 +81,10 @@
     data.visualAsset ? `${base}/${data.visualAsset.public_path}` : null,
   );
 
+  const isCompositeMonsterImage = $derived(
+    data.visualAsset?.source_type === "UnityEngine.SpriteRenderer[]",
+  );
+
   const bestiaryTypeName = $derived(
     data.monster.type_name && data.monster.type_name !== "Unknown"
       ? data.monster.type_name
@@ -800,7 +804,9 @@
                 alt={`${data.monster.name} monster sprite`}
                 width={data.visualAsset.width}
                 height={data.visualAsset.height}
-                class="max-h-56 max-w-full object-contain [image-rendering:pixelated] md:max-h-64"
+                class="h-auto w-auto max-w-full object-contain [image-rendering:pixelated] {isCompositeMonsterImage
+                  ? 'max-h-28 md:max-h-32'
+                  : 'max-h-56 md:max-h-64'}"
               />
             {:else}
               <div
