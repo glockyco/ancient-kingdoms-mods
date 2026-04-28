@@ -15,11 +15,11 @@ DataExporter output must come from authoritative runtime game data. Prefer direc
 Selected compendium images are exported by DataExporter at runtime, not by UnityPy or static asset-name matching. Current selected visual kinds are:
 
 - `monster/primary` from the direct `SpriteRenderer` on `Monster.gameObject`
-- `npc/primary` from the direct `SpriteRenderer` on `Npc.gameObject`
+- `npc/primary` from a runtime composite of body `SpriteRenderer` children under `Npc.gameObject/Front`; UI/auxiliary child renderers such as speech bubbles, bars, labels, minimap markers, and shadows are excluded
 - `item/icon` from `ScriptableItem.image`
 - `skill/icon` from `ScriptableSkill.image`
 
-Do not add fallback sources for missing selected sprites. Excluded sources include pets, treasure maps, monster boss/bestiary portraits, animation frames, child/UI renderers, skill effects, prefabs, and static Unity assets.
+Do not add fallback sources for missing selected sprites. Excluded sources include pets, treasure maps, monster boss/bestiary portraits, animation frames, NPC UI/auxiliary child renderers, skill effects, prefabs, and static Unity assets.
 
 ## Runtime Requirements
 

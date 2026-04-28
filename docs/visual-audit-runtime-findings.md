@@ -40,11 +40,11 @@ Do not use static spritesheet/name matching as the authoritative animation mappi
 - Items: `ScriptableItem.image` is the runtime icon sprite. `ScriptableItem.image_name` is a string reference. `TreasureMapItem.imageLocation` is a runtime treasure-map image. Equipment paths are string paths from HeroEditor item collections, not extracted images.
 - Skills: `ScriptableSkill.image` is the runtime icon sprite. Skill cast/projectile/target effect objects and prefabs exist, but they are not selected as current compendium images.
 - Pets: `Pet.portraitIcon` is the runtime icon sprite. Pet child renderers can include the body plus equipment, weapons, remains, and auxiliary sprites; renderer output needs the same kind of review/filtering as monsters before being treated as a single canonical pet image.
-- NPCs: NPC renderer sprites and animator components exist. Treat animation metadata as future work unless a compendium use case needs it.
+- NPCs: most NPCs are modular character rigs; the useful primary image is a runtime DataExporter composite of body `SpriteRenderer` children under the `Front` subtree, not the root `Npc.gameObject` renderer. Speech bubbles, bars, labels, minimap markers, shadows, and other UI/auxiliary children are excluded. NPC animation metadata remains future work unless a compendium use case needs it.
 
 ## Current selection contract
 
 - Runtime-extracted DataExporter images are required for selected visuals.
 - Static Unity assets and UnityPy indexes are never used as mapping fallbacks.
 - Current selected kinds are `monster/primary`, `npc/primary`, `item/icon`, and `skill/icon`.
-- Pets, treasure maps, boss/bestiary portraits, monster animation frames, child/UI renderers, and effect/prefab references are documented for future use but excluded from current selection.
+- Pets, treasure maps, boss/bestiary portraits, monster animation frames, NPC UI/auxiliary child renderers, and effect/prefab references are documented for future use but excluded from current selection.
