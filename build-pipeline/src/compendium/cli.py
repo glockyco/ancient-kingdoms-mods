@@ -7,7 +7,6 @@ import typer
 from rich.console import Console
 
 from compendium.config import load_config
-from compendium.commands.visual_audit import app as visual_audit_app
 
 app = typer.Typer(
     name="compendium",
@@ -16,7 +15,6 @@ app = typer.Typer(
 )
 
 console = Console()
-app.add_typer(visual_audit_app, name="visual-audit")
 
 
 @app.callback()
@@ -61,8 +59,8 @@ def tiles(ctx: typer.Context):
 
 @app.command()
 def icons(ctx: typer.Context):
-    """Extract game icons using UnityPy."""
-    console.print("[yellow]icons command not yet implemented[/yellow]")
+    """Visual assets are exported by DataExporter; build-pipeline consumption is not implemented."""
+    console.print("[yellow]visual asset consumption is not yet implemented[/yellow]")
 
 
 @app.command()

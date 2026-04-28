@@ -1,1 +1,0 @@
-"""Visual asset audit helpers."""

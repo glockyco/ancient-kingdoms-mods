@@ -9,7 +9,7 @@ namespace DataExporter.Exporters;
 
 public class ItemExporter : BaseExporter
 {
-    public ItemExporter(MelonLogger.Instance logger, string exportPath) : base(logger, exportPath)
+    public ItemExporter(MelonLogger.Instance logger, string exportPath, VisualAssetRegistry visualAssets) : base(logger, exportPath, visualAssets)
     {
     }
 
@@ -89,6 +89,15 @@ public class ItemExporter : BaseExporter
             PopulateFragmentFields(scriptableItem, itemData);
             PopulateMergeFields(scriptableItem, itemData);
             PopulateRecipeFields(scriptableItem, itemData);
+
+            VisualAssets?.ExportSprite(
+                "item",
+                itemData.id,
+                "icon",
+                "ScriptableItem.image",
+                scriptableItem.image != null ? scriptableItem.image.GetType().FullName : "UnityEngine.Sprite",
+                scriptableItem.image != null ? scriptableItem.image.name : null,
+                scriptableItem.image);
 
             itemList.Add(itemData);
         }

@@ -9,7 +9,7 @@ namespace DataExporter.Exporters;
 
 public class NpcExporter : BaseExporter
 {
-    public NpcExporter(MelonLoader.MelonLogger.Instance logger, string exportPath) : base(logger, exportPath)
+    public NpcExporter(MelonLoader.MelonLogger.Instance logger, string exportPath, VisualAssetRegistry visualAssets) : base(logger, exportPath, visualAssets)
     {
     }
 
@@ -271,6 +271,17 @@ public class NpcExporter : BaseExporter
                     }
                 }
             }
+
+            var primaryRenderer = canonical.gameObject != null
+                ? canonical.gameObject.GetComponent<SpriteRenderer>()
+                : null;
+
+            VisualAssets?.ExportRendererSprite(
+                "npc",
+                name,
+                "primary",
+                "Npc.gameObject.SpriteRenderer",
+                primaryRenderer);
 
             npcList.Add(npcData);
 

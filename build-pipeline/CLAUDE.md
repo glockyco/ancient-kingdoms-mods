@@ -5,7 +5,7 @@ Python CLI for processing game data exports into deployment-ready artifacts.
 ## Overview
 
 ```
-exported-data/ (JSON + Screenshots)
+exported-data/ (JSON + Screenshots + Runtime Images)
     ↓ compendium build
 website/static/compendium.db
     ↓ compendium tiles
@@ -21,13 +21,10 @@ cd build-pipeline
 uv run compendium build   # JSON → SQLite (to website/static/)
 uv run compendium tiles   # Screenshots → tile pyramid
 uv run compendium stats   # Database statistics
-uv run compendium visual-audit assets --game-data ../.steam-download/ancientkingdoms_Data  # optional static corpus inventory
-uv run compendium visual-audit probe --domain monsters --domain items --domain skills --domain pets --domain npcs
-uv run compendium visual-audit reconcile
-uv run compendium visual-audit report
+# DataExporter also writes exported-data/visual_assets.json and exported-data/images/
 ```
 
-`visual-audit` is runtime-first: runtime probes through HotRepl establish authoritative entity-to-visual references and write runtime-extracted images under `exported-data/visual-audit/runtime/images/`. `reconcile` selects only images extracted from the running game. UnityPy asset indexing is optional corpus inventory and must not be used as a mapping fallback. Runtime findings and current exclusions are documented in `docs/visual-audit-runtime-findings.md`.
+Selected visual images are produced by the DataExporter runtime export as `exported-data/visual_assets.json` plus files under `exported-data/images/`. The old standalone `visual-audit` HotRepl/UnityPy mapping pipeline is removed; build-pipeline consumption of the manifest is future work. Runtime findings and current exclusions are documented in `docs/visual-audit-runtime-findings.md`.
 
 Global option: `--config FILE` to override config.toml location.
 

@@ -9,7 +9,7 @@ namespace DataExporter.Exporters;
 
 public class MonsterExporter : BaseExporter
 {
-    public MonsterExporter(MelonLogger.Instance logger, string exportPath) : base(logger, exportPath)
+    public MonsterExporter(MelonLogger.Instance logger, string exportPath, VisualAssetRegistry visualAssets) : base(logger, exportPath, visualAssets)
     {
     }
 
@@ -239,6 +239,17 @@ public class MonsterExporter : BaseExporter
                     }
                 }
             }
+
+            var primaryRenderer = canonical.gameObject != null
+                ? canonical.gameObject.GetComponent<SpriteRenderer>()
+                : null;
+
+            VisualAssets?.ExportRendererSprite(
+                "monster",
+                name,
+                "primary",
+                "Monster.gameObject.SpriteRenderer",
+                primaryRenderer);
 
             monsterList.Add(monsterData);
 

@@ -8,7 +8,7 @@ namespace DataExporter.Exporters;
 
 public class SkillExporter : BaseExporter
 {
-    public SkillExporter(MelonLogger.Instance logger, string exportPath) : base(logger, exportPath)
+    public SkillExporter(MelonLogger.Instance logger, string exportPath, VisualAssetRegistry visualAssets) : base(logger, exportPath, visualAssets)
     {
     }
 
@@ -105,6 +105,15 @@ public class SkillExporter : BaseExporter
             PopulateTargetBuffSkillFields(skill, skillData);  // TargetBuffSkill-specific fields
             PopulateBonusSkillFields(skill, skillData);  // Covers BuffSkill and PassiveSkill
             PopulateSummonSkillFields(skill, skillData);
+
+            VisualAssets?.ExportSprite(
+                "skill",
+                skillData.id,
+                "icon",
+                "ScriptableSkill.image",
+                skill.image != null ? skill.image.GetType().FullName : "UnityEngine.Sprite",
+                skill.image != null ? skill.image.name : null,
+                skill.image);
 
             skillList.Add(skillData);
         }

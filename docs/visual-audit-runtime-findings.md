@@ -1,19 +1,19 @@
 # Visual Audit Runtime Findings
 
-Runtime probes are the authority for compendium visual mappings. UnityPy/static asset indexing is only useful as corpus inventory and must not select or backfill entity images.
+Selected compendium visual mappings now come from the normal DataExporter runtime export. `visual_assets.json` and `images/` supersede the standalone HotRepl probe/reconcile/report pipeline for the selected visuals. UnityPy/static asset indexing is only useful as corpus inventory and must not select or backfill entity images.
 
 ## Runtime prerequisites
 
-- Visual probes must run after the game is in the `World` scene with `Il2CppMirror.NetworkClient.localPlayer != null`; menu/start-scene output is not trustworthy for visual mapping.
-- When the game runs under CrossOver/Wine, C# file writes to macOS paths must use Wine's `Z:` mapping internally. Probe JSON should still return portable macOS-style paths such as `/Users/.../exported-data/...`.
+- Runtime image export must run after the game is in the `World` scene with `Il2CppMirror.NetworkClient.localPlayer != null`; menu/start-scene output is not trustworthy for visual mapping.
+- When the game runs under CrossOver/Wine, C# file writes to macOS paths must use Wine's `Z:` mapping internally. Exported manifest paths should stay portable and relative to `exported-data/`.
 
 ## Monster visuals
 
 ### Selected for compendium use
 
 - Use one runtime-extracted image from the primary `SpriteRenderer` attached directly to `Monster.gameObject`.
-- This is the image represented by the Ancient Cyclops sample `current_main_renderer`: `Cyclops_1`, written as `Monster.gameObject.SpriteRenderer.Ancient_Cyclops_154356_Cyclops_1.png`.
-- The runtime probe deduplicates repeated world instances by `entity_id` plus sprite instance. If the same monster id/name appears with genuinely different primary sprites, reconciliation should mark it ambiguous instead of guessing.
+- This is the image represented by the Ancient Cyclops sample `current_main_renderer`: `Cyclops_1`. Integrated exports use stable filenames based on source field, sprite name, and sprite rect rather than runtime instance IDs.
+- If future consumption sees multiple rows for the same `(domain, entity_id, kind)`, treat that as ambiguity to review rather than guessing a fallback source.
 
 ### Observed but not selected
 
@@ -44,7 +44,7 @@ Do not use static spritesheet/name matching as the authoritative animation mappi
 
 ## Current selection contract
 
-- Runtime-extracted images are required for selected visuals.
-- Static Unity assets are never used as mapping fallbacks.
-- Monster selections use only the primary runtime renderer image.
-- Boss/bestiary portraits, monster animation frames, child UI renderers, and effect/prefab references are documented for future use but excluded from current selection.
+- Runtime-extracted DataExporter images are required for selected visuals.
+- Static Unity assets and UnityPy indexes are never used as mapping fallbacks.
+- Current selected kinds are `monster/primary`, `npc/primary`, `item/icon`, and `skill/icon`.
+- Pets, treasure maps, boss/bestiary portraits, monster animation frames, child/UI renderers, and effect/prefab references are documented for future use but excluded from current selection.

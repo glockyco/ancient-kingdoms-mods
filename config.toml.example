@@ -30,16 +30,6 @@ tile_size = 256
 # Recommended: 85 for good balance between quality and size
 webp_quality = 85
 
-# Icon extraction from Unity assets
-[build_pipeline.icons]
-# Enable icon extraction (requires UnityPy)
-enabled = true
-
-# Icon format: webp (smaller) or png (more compatible)
-format = "webp"
-
-# Icon size in pixels (square)
-size = 64
 
 # Map bounds (from MapScreenshotter)
 # These are hardcoded in MapScreenshotter.cs but documented here for reference

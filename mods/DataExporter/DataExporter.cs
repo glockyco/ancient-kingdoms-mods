@@ -54,19 +54,20 @@ namespace DataExporter
             LoggerInstance.Msg("========================================");
 
             var startTime = DateTime.Now;
+            var visualAssets = new VisualAssetRegistry(LoggerInstance, ExportPath);
 
             try
             {
                 // Export monsters
-                var monsterExporter = new MonsterExporter(LoggerInstance, ExportPath);
+                var monsterExporter = new MonsterExporter(LoggerInstance, ExportPath, visualAssets);
                 monsterExporter.Export();
 
                 // Export NPCs
-                var npcExporter = new NpcExporter(LoggerInstance, ExportPath);
+                var npcExporter = new NpcExporter(LoggerInstance, ExportPath, visualAssets);
                 npcExporter.Export();
 
                 // Export items
-                var itemExporter = new ItemExporter(LoggerInstance, ExportPath);
+                var itemExporter = new ItemExporter(LoggerInstance, ExportPath, visualAssets);
                 itemExporter.Export();
 
                 // Export quests
@@ -74,7 +75,7 @@ namespace DataExporter
                 questExporter.Export();
 
                 // Export skills
-                var skillExporter = new SkillExporter(LoggerInstance, ExportPath);
+                var skillExporter = new SkillExporter(LoggerInstance, ExportPath, visualAssets);
                 skillExporter.Export();
 
                 // Export portals
@@ -160,6 +161,8 @@ namespace DataExporter
                 // Export class combat stats (base damage, health, resists from player prefabs)
                 var classExporter = new ClassExporter(LoggerInstance, ExportPath);
                 classExporter.Export();
+
+                visualAssets.WriteManifest();
 
                 var elapsed = DateTime.Now - startTime;
 

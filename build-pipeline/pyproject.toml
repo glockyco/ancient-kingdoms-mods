@@ -8,7 +8,6 @@ dependencies = [
     "rich>=13.7.0",
     "pydantic>=2.5.0",
     "pillow>=10.0.0",
-    "unitypy>=1.10.0",
 ]
 
 [project.scripts]

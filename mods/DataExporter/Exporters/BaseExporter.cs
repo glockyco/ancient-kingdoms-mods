@@ -12,6 +12,7 @@ public abstract class BaseExporter
 {
     protected readonly MelonLogger.Instance Logger;
     protected readonly string ExportPath;
+    protected readonly VisualAssetRegistry VisualAssets;
 
     private static Il2CppSystem.Object[] _zoneTriggers;
 
@@ -31,10 +32,11 @@ public abstract class BaseExporter
         }
     }
 
-    protected BaseExporter(MelonLogger.Instance logger, string exportPath)
+    protected BaseExporter(MelonLogger.Instance logger, string exportPath, VisualAssetRegistry visualAssets = null)
     {
         Logger = logger;
         ExportPath = exportPath;
+        VisualAssets = visualAssets;
     }
 
     public abstract void Export();

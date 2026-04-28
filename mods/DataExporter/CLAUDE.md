@@ -1,6 +1,6 @@
 # DataExporter
 
-Exports game data to JSON files for the build pipeline.
+Exports authoritative runtime game data and selected visual images for the build pipeline.
 
 ## Usage
 
@@ -8,9 +8,9 @@ Normally triggered automatically by the **AutoExporter** mod — launch the game
 
 Press **Shift+F9** in-game to trigger a manual export without AutoExporter.
 
-Files are written to `exported-data/` (configurable in `Local.props`).
+Files are written to `exported-data/` (configurable in `Local.props`), including JSON data, `visual_assets.json`, and image files under `images/`.
 
-## Exported Data (24 exporters)
+## Exported Data (24 exporters + visual asset manifest)
 
 | Category | Files |
 |----------|-------|
@@ -19,21 +19,26 @@ Files are written to `exported-data/` (configurable in `Local.props`).
 | Crafting | crafting_recipes, crafting_stations, alchemy_recipes, alchemy_tables |
 | Special | summon_triggers, luck_tokens, altars, treasure_locations, pets, professions, game_config |
 | Objects | traps, doors, interactive_objects |
-| Classes | classes_combat (base stats from player prefabs) |
+| Classes/visuals | classes_combat (base stats from player prefabs), visual_assets.json, images/ |
 
 ## Architecture
 
 ```
-Exporters/           # One exporter per data type
+Exporters/                 # One exporter per data type
 ├── BaseExporter.cs  # Shared JSON writing logic
+├── VisualAssetRegistry.cs # Runtime sprite image export + manifest
 ├── MonsterExporter.cs
 └── ...
 Models/              # JSON-serializable POCOs
 ```
 
-Data flow: `Resources.FindObjectsOfTypeAll<T>()` → Exporter → Model → JSON file
+Data flow: `Resources.FindObjectsOfTypeAll<T>()` → Exporter → Model → JSON file. Selected images use runtime `Sprite`/`SpriteRenderer` sources → `VisualAssetRegistry` → PNG files + `visual_assets.json`.
 
 **Special case:** `ClassExporter` reads `NetworkManagerMMO.playerClasses` prefabs (not `FindObjectsOfTypeAll`). Outputs `classes_combat.json` which the build pipeline merges with manually curated `classes.json`.
+
+## Visual Assets
+
+Current selected image exports: `monster/primary` from direct `Monster.gameObject` `SpriteRenderer`, `npc/primary` from direct `Npc.gameObject` `SpriteRenderer`, `item/icon` from `ScriptableItem.image`, and `skill/icon` from `ScriptableSkill.image`. Do not export pets, treasure maps, monster portraits/bestiary images, animation frames, child/UI renderers, skill effects, or static UnityPy matches in this phase.
 
 ## Data Export Principles
 
