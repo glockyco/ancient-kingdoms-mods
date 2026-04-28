@@ -276,12 +276,27 @@ public class NpcExporter : BaseExporter
             var visualSource = group.FirstOrDefault(n => n.gameObject != null && n.gameObject.scene.IsValid())
                             ?? canonical;
 
-            VisualAssets?.ExportComposite(
+            var compositeRenderers = SelectPrimaryNpcRenderers(visualSource);
+            var compositeAsset = VisualAssets?.ExportComposite(
                 "npc",
                 name,
                 "primary",
                 "Npc.gameObject.Front.SpriteRenderers",
-                SelectPrimaryNpcRenderers(visualSource));
+                compositeRenderers);
+
+            if (compositeAsset == null)
+            {
+                var primaryRenderer = canonical.gameObject != null
+                    ? canonical.gameObject.GetComponent<SpriteRenderer>()
+                    : visualSource.gameObject?.GetComponent<SpriteRenderer>();
+
+                VisualAssets?.ExportRendererSprite(
+                    "npc",
+                    name,
+                    "primary",
+                    "Npc.gameObject.SpriteRenderer",
+                    primaryRenderer);
+            }
 
             npcList.Add(npcData);
 
