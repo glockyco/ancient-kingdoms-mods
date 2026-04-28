@@ -159,8 +159,23 @@
   }
 }
 
-/* Quality text color utilities (must be explicit for Tailwind to generate) */
+/* Quality color utilities (must be explicit for dynamic Svelte classes) */
 @layer utilities {
+  .bg-quality-common {
+    background-color: var(--quality-common);
+  }
+  .bg-quality-uncommon {
+    background-color: var(--quality-uncommon);
+  }
+  .bg-quality-magic {
+    background-color: var(--quality-magic);
+  }
+  .bg-quality-epic {
+    background-color: var(--quality-epic);
+  }
+  .bg-quality-legendary {
+    background-color: var(--quality-legendary);
+  }
   .text-quality-text-common {
     color: var(--quality-text-common);
   }

@@ -7,6 +7,7 @@ POPUP_QUERY = REPO_ROOT / "website" / "src" / "lib" / "queries" / "popup.ts"
 ENTITY_POPUP = (
     REPO_ROOT / "website" / "src" / "lib" / "components" / "map" / "EntityPopup.svelte"
 )
+APP_CSS = REPO_ROOT / "website" / "src" / "app.css"
 
 
 class WebsiteMonsterImageContractTests(unittest.TestCase):
@@ -24,6 +25,16 @@ class WebsiteMonsterImageContractTests(unittest.TestCase):
         self.assertIn("h-auto w-auto", entity_popup)
         self.assertIn("? 'max-h-24'", entity_popup)
         self.assertIn(": 'max-h-28'", entity_popup)
+
+    def test_quality_badge_background_utilities_are_explicit(self):
+        app_css = APP_CSS.read_text(encoding="utf-8")
+
+        for quality_id in ["common", "uncommon", "magic", "epic", "legendary"]:
+            with self.subTest(quality_id=quality_id):
+                self.assertIn(f".bg-quality-{quality_id}", app_css)
+                self.assertIn(
+                    f"background-color: var(--quality-{quality_id});", app_css
+                )
 
 
 if __name__ == "__main__":
