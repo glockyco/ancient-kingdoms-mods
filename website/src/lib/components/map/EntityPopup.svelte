@@ -191,9 +191,21 @@
     return entity.zoneId;
   });
 
+  const monsterVisualAsset = $derived(monsterDetails?.visualAsset ?? null);
+  const monsterImageLayout = $derived.by(() => {
+    if (!isMonster(entity)) return null;
+    return entity.visualAssetLayout ?? monsterVisualAsset;
+  });
+
   const isCompositeMonsterImage = $derived(
-    monsterDetails?.visualAsset?.sourceType === "UnityEngine.SpriteRenderer[]",
+    monsterImageLayout?.sourceType === "UnityEngine.SpriteRenderer[]",
   );
+
+  const monsterImageReservedHeight = $derived.by(() => {
+    if (!monsterImageLayout) return null;
+    const maxHeight = isCompositeMonsterImage ? 96 : 112;
+    return Math.min(monsterImageLayout.height, maxHeight);
+  });
 
   function isMonster(e: AnyMapEntity): e is MonsterMapEntity {
     return ["monster", "fabled", "boss", "elite", "hunt"].includes(e.type);
@@ -293,17 +305,24 @@
   {onFocusClick}
   {mode}
 >
-  {#if isMonster(entity) && monsterDetails && monsterDetails.visualAsset}
+  {#if isMonster(entity) && monsterImageLayout && monsterImageReservedHeight}
     <div class="flex justify-center pb-2">
-      <img
-        src={`${base}/${monsterDetails.visualAsset.publicPath}`}
-        alt={`${getDisplayName(entity)} monster sprite`}
-        width={monsterDetails.visualAsset.width}
-        height={monsterDetails.visualAsset.height}
-        class="h-auto w-auto max-w-full object-contain [image-rendering:pixelated] {isCompositeMonsterImage
-          ? 'max-h-24'
-          : 'max-h-28'}"
-      />
+      <div
+        class="flex w-full items-center justify-center"
+        style={`height: ${monsterImageReservedHeight}px`}
+      >
+        {#if monsterVisualAsset}
+          <img
+            src={`${base}/${monsterVisualAsset.publicPath}`}
+            alt={`${getDisplayName(entity)} monster sprite`}
+            width={monsterVisualAsset.width}
+            height={monsterVisualAsset.height}
+            class="h-auto w-auto max-w-full object-contain [image-rendering:pixelated] {isCompositeMonsterImage
+              ? 'max-h-24'
+              : 'max-h-28'}"
+          />
+        {/if}
+      </div>
     </div>
   {/if}
 

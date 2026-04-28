@@ -207,6 +207,9 @@ interface MonsterSpawnRow {
   blocker_spawn_ids: string | null;
   source_spawn_ids: string | null;
   altar_ids: string | null;
+  visual_width: number | null;
+  visual_height: number | null;
+  visual_source_type: string | null;
 }
 
 function loadMonsterSpawnsServer(db: Database.Database): MonsterMapEntity[] {
@@ -265,9 +268,16 @@ function loadMonsterSpawnsServer(db: Database.Database): MonsterMapEntity[] {
           JOIN monsters fm ON fm.id = json_extract(jm.value, '$.monster_id')
           WHERE fm.id = ms.monster_id AND (fm.is_boss = 1 OR fm.is_elite = 1)
         )
-      ) as altar_ids
+      ) as altar_ids,
+      va.width as visual_width,
+      va.height as visual_height,
+      va.source_type as visual_source_type
     FROM monster_spawns ms
     JOIN monsters m ON m.id = ms.monster_id
+    LEFT JOIN visual_assets va
+      ON va.domain = 'monster'
+     AND va.entity_id = m.id
+     AND va.kind = 'primary'
     JOIN zones z ON z.id = ms.zone_id
     WHERE ms.spawn_type IN ('regular', 'summon', 'placeholder')
 
@@ -315,8 +325,15 @@ function loadMonsterSpawnsServer(db: Database.Database): MonsterMapEntity[] {
           JOIN monsters fm ON fm.id = json_extract(jm.value, '$.monster_id')
           WHERE fm.id = m.id AND (fm.is_boss = 1 OR fm.is_elite = 1)
         )
-      ) as altar_ids
+      ) as altar_ids,
+      va.width as visual_width,
+      va.height as visual_height,
+      va.source_type as visual_source_type
     FROM monsters m
+    LEFT JOIN visual_assets va
+      ON va.domain = 'monster'
+     AND va.entity_id = m.id
+     AND va.kind = 'primary'
     WHERE NOT EXISTS (
       SELECT 1 FROM monster_spawns ms
       WHERE ms.monster_id = m.id AND ms.spawn_type IN ('regular', 'summon', 'placeholder')
@@ -386,6 +403,16 @@ function loadMonsterSpawnsServer(db: Database.Database): MonsterMapEntity[] {
       blockerSpawnIds: parseIdArrayJson(r.blocker_spawn_ids),
       sourceSpawnIds: parseIdArrayJson(r.source_spawn_ids),
       altarIds: parseIdArrayJson(r.altar_ids),
+      visualAssetLayout:
+        r.visual_width !== null &&
+        r.visual_height !== null &&
+        r.visual_source_type
+          ? {
+              width: r.visual_width,
+              height: r.visual_height,
+              sourceType: r.visual_source_type,
+            }
+          : null,
     };
   });
 }

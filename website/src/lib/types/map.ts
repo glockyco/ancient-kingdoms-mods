@@ -37,6 +37,12 @@ export interface MapEntity {
  */
 export type MonsterSpawnType = "regular" | "summon" | "placeholder" | "altar";
 
+export interface MonsterMapVisualAssetLayout {
+  width: number;
+  height: number;
+  sourceType: string;
+}
+
 /**
  * Monster-specific entity data
  */
@@ -75,6 +81,8 @@ export interface MonsterMapEntity extends MapEntity {
   sourceSpawnIds: string[] | null;
   // Altars where this monster spawns as a final boss (for altar-only monster highlighting)
   altarIds: string[] | null;
+  // Runtime image dimensions for reserving popup space before lazy details load
+  visualAssetLayout: MonsterMapVisualAssetLayout | null;
 }
 
 /**
