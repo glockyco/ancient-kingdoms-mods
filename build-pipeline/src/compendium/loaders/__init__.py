@@ -26,6 +26,7 @@ from compendium.loaders.core import (
     load_static_data,
     load_summon_triggers,
     load_treasure_locations,
+    load_visual_assets,
     load_zone_triggers,
     load_zones,
 )
@@ -57,5 +58,6 @@ __all__ = [
     "load_summon_triggers",
     "load_treasure_locations",
     "load_zone_triggers",
+    "load_visual_assets",
     "load_zones",
 ]

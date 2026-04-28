@@ -19,6 +19,8 @@ Selected compendium images are exported by DataExporter at runtime, not by Unity
 - `item/icon` from `ScriptableItem.image`
 - `skill/icon` from `ScriptableSkill.image`
 
+
+`compendium build` consumes `visual_assets.json`, stores the rows in SQLite, and copies files into `website/static/images/` using readable public paths such as `images/monsters/zarothak_the_tormentor/primary.png`. The original DataExporter `export_path` stays in the database for provenance.
 Do not add fallback sources for missing selected sprites. Excluded sources include pets, treasure maps, monster boss/bestiary portraits, animation frames, NPC UI/auxiliary child renderers, skill effects, prefabs, and static Unity assets.
 
 ## Runtime Requirements

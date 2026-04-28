@@ -11,6 +11,7 @@ node_modules
 # Generated files (from build-pipeline)
 /static/compendium.db*
 /static/tiles/
+/static/images/
 
 # OS
 .DS_Store

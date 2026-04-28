@@ -6,8 +6,10 @@ and inserts the records into the database.
 
 import json
 import sqlite3
+import shutil
 from pathlib import Path
 
+from PIL import Image, UnidentifiedImageError
 from rich.console import Console
 
 from compendium.db import insert_model, serialize_value
@@ -34,11 +36,137 @@ from compendium.models import (
     SkillData,
     SummonTriggerData,
     TreasureLocationData,
+    VisualAssetData,
     ZoneData,
     ZoneTriggerData,
 )
 
 console = Console()
+
+
+VISUAL_ASSET_DOMAIN_DIRS = {
+    "monster": "monsters",
+    "npc": "npcs",
+    "item": "items",
+    "skill": "skills",
+}
+
+
+def _safe_public_segment(value: str) -> str:
+    """Return a URL/path-safe segment while preserving identifier underscores."""
+    sanitized = "".join(
+        char.lower() if char.isalnum() else "_" for char in value.strip()
+    )
+    if not sanitized:
+        raise ValueError("Visual asset path segment cannot be empty")
+    return sanitized
+
+
+def _resolve_export_asset_path(export_dir: Path, export_path: str) -> Path:
+    """Resolve an exported asset path and reject traversal outside export_dir."""
+    relative_path = Path(export_path)
+    if relative_path.is_absolute() or ".." in relative_path.parts:
+        raise ValueError(f"Unsafe visual asset export path: {export_path}")
+    return export_dir / relative_path
+
+
+def _public_visual_asset_path(asset: VisualAssetData) -> Path:
+    domain_dir = VISUAL_ASSET_DOMAIN_DIRS.get(
+        asset.domain, _safe_public_segment(asset.domain) + "s"
+    )
+    kind = _safe_public_segment(asset.kind)
+    entity_id = _safe_public_segment(asset.entity_id)
+    suffix = Path(asset.export_path).suffix.lower() or ".png"
+    return Path("images") / domain_dir / entity_id / f"{kind}{suffix}"
+
+
+def _copy_public_visual_asset(
+    source_path: Path, destination_path: Path
+) -> tuple[int, int]:
+    """Copy a visual asset, trimming fully transparent padding for PNGs."""
+    try:
+        with Image.open(source_path) as image:
+            if image.mode != "RGBA":
+                image = image.convert("RGBA")
+
+            alpha_bbox = image.getchannel("A").getbbox()
+            if alpha_bbox is None:
+                image.save(destination_path)
+                return image.size
+
+            cropped = image.crop(alpha_bbox)
+            cropped.save(destination_path)
+            return cropped.size
+    except UnidentifiedImageError:
+        shutil.copy2(source_path, destination_path)
+        return (0, 0)
+
+
+def load_visual_assets(
+    conn: sqlite3.Connection, export_dir: Path, static_dir: Path
+) -> None:
+    """Load runtime visual asset manifest rows and copy public images."""
+    console.print("Loading visual assets...")
+
+    images_dir = static_dir / "images"
+    if images_dir.exists():
+        shutil.rmtree(images_dir)
+
+    filepath = export_dir / "visual_assets.json"
+    if not filepath.exists():
+        console.print("  [yellow]SKIP[/yellow] No visual_assets.json found")
+        conn.commit()
+        return
+
+    with open(filepath, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    assets = [VisualAssetData(**item) for item in data]
+    cursor = conn.cursor()
+
+    for asset in assets:
+        source_path = _resolve_export_asset_path(export_dir, asset.export_path)
+        if not source_path.exists():
+            raise FileNotFoundError(
+                f"Visual asset file listed in manifest does not exist: {source_path}"
+            )
+
+        public_path = _public_visual_asset_path(asset)
+        destination_path = static_dir / public_path
+        destination_path.parent.mkdir(parents=True, exist_ok=True)
+        public_width, public_height = _copy_public_visual_asset(
+            source_path, destination_path
+        )
+
+        if public_width == 0 or public_height == 0:
+            public_width = asset.width
+            public_height = asset.height
+        cursor.execute(
+            """
+            INSERT INTO visual_assets (
+                domain, entity_id, kind, export_path, public_path,
+                source_field, source_type, source_name, sprite_name, texture_name,
+                width, height
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                asset.domain,
+                asset.entity_id,
+                asset.kind,
+                asset.export_path,
+                public_path.as_posix(),
+                asset.source_field,
+                asset.source_type,
+                asset.source_name,
+                asset.sprite_name,
+                asset.texture_name,
+                public_width,
+                public_height,
+            ),
+        )
+
+    conn.commit()
+    console.print(f"  [green]OK[/green] Loaded {len(assets)} visual assets")
 
 
 def load_static_data(conn: sqlite3.Connection, export_dir: Path) -> None:

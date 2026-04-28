@@ -59,8 +59,8 @@ def tiles(ctx: typer.Context):
 
 @app.command()
 def icons(ctx: typer.Context):
-    """Visual assets are exported by DataExporter; build-pipeline consumption is not implemented."""
-    console.print("[yellow]visual asset consumption is not yet implemented[/yellow]")
+    """Visual assets are loaded and copied by the build command."""
+    console.print("[yellow]visual assets are handled by `compendium build`[/yellow]")
 
 
 @app.command()

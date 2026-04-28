@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { base } from "$app/paths";
   import {
     DataTable,
     type ColumnDef,
@@ -30,6 +31,13 @@
   import BookOpen from "@lucide/svelte/icons/book-open";
   import Star from "@lucide/svelte/icons/star";
   import Zap from "@lucide/svelte/icons/zap";
+  import Shield from "@lucide/svelte/icons/shield";
+  import Heart from "@lucide/svelte/icons/heart";
+  import Flame from "@lucide/svelte/icons/flame";
+  import Snowflake from "@lucide/svelte/icons/snowflake";
+  import Skull from "@lucide/svelte/icons/skull";
+  import Sparkles from "@lucide/svelte/icons/sparkles";
+  import Dna from "@lucide/svelte/icons/dna";
 
   let { data } = $props();
 
@@ -69,6 +77,22 @@
     })),
   ]);
 
+  const monsterImageSrc = $derived(
+    data.visualAsset ? `${base}/${data.visualAsset.public_path}` : null,
+  );
+
+  const bestiaryTypeName = $derived(
+    data.monster.type_name && data.monster.type_name !== "Unknown"
+      ? data.monster.type_name
+      : null,
+  );
+
+  const bestiaryClassName = $derived(
+    data.monster.class_name && data.monster.class_name !== "Unknown"
+      ? data.monster.class_name
+      : null,
+  );
+
   // Does this monster have level variance from world spawns?
   const hasLevelVariance = $derived(
     data.monster.level_min !== data.monster.level_max,
@@ -93,6 +117,14 @@
     level: number,
   ): number {
     return base + perLevel * (level - 1);
+  }
+
+  function formatCompactNumber(value: number): string {
+    if (value >= 10000) {
+      return `${Math.round(value / 1000).toLocaleString()}K`;
+    }
+
+    return value.toLocaleString();
   }
 
   const displayHealth = $derived(
@@ -661,13 +693,6 @@
           Hunt
         </span>
       {/if}
-      {#if data.monster.type_name}
-        <span
-          class="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800 dark:bg-gray-800 dark:text-gray-200"
-        >
-          {data.monster.type_name}
-        </span>
-      {/if}
     </div>
 
     <div class="mt-2 flex flex-wrap gap-4 text-sm text-muted-foreground">
@@ -676,9 +701,6 @@
           ? data.monster.level_min
           : `${data.monster.level_min}-${data.monster.level_max}`}</span
       >
-      {#if data.monster.class_name && data.monster.class_name !== data.monster.type_name}
-        <span>Class: {data.monster.class_name}</span>
-      {/if}
       {#if data.monster.base_exp > 0}
         <span
           >Base XP: <MechanicsLink section="experience"
@@ -693,6 +715,180 @@
     </div>
   </div>
 
+  <!-- Bestiary Summary Card -->
+  <section aria-labelledby="bestiary-summary-title">
+    <h2 id="bestiary-summary-title" class="sr-only">Bestiary summary</h2>
+    <div class="bg-muted/30 rounded-md border p-4">
+      <div
+        class="grid grid-cols-2 items-center gap-4 md:grid-cols-[minmax(0,1fr)_minmax(20rem,1.5fr)_minmax(0,1fr)] md:gap-6"
+      >
+        <div class="order-2 space-y-2 text-sm md:order-none">
+          <div class="flex items-center gap-3" title="Magic Resist">
+            <span
+              class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-teal-700 text-teal-50 shadow-sm"
+              aria-hidden="true"
+            >
+              <Sparkles class="h-5 w-5" />
+            </span>
+            <span class="text-lg font-semibold"
+              >{displayMagicResist.toLocaleString()}</span
+            >
+          </div>
+          <div class="flex items-center gap-3" title="Poison Resist">
+            <span
+              class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-lime-700 text-lime-50 shadow-sm"
+              aria-hidden="true"
+            >
+              <Skull class="h-5 w-5" />
+            </span>
+            <span class="text-lg font-semibold"
+              >{displayPoisonResist.toLocaleString()}</span
+            >
+          </div>
+          <div class="flex items-center gap-3" title="Fire Resist">
+            <span
+              class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-red-700 text-red-50 shadow-sm"
+              aria-hidden="true"
+            >
+              <Flame class="h-5 w-5" />
+            </span>
+            <span class="text-lg font-semibold"
+              >{displayFireResist.toLocaleString()}</span
+            >
+          </div>
+          <div class="flex items-center gap-3" title="Cold Resist">
+            <span
+              class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-sky-700 text-sky-50 shadow-sm"
+              aria-hidden="true"
+            >
+              <Snowflake class="h-5 w-5" />
+            </span>
+            <span class="text-lg font-semibold"
+              >{displayColdResist.toLocaleString()}</span
+            >
+          </div>
+          <div class="flex items-center gap-3" title="Disease Resist">
+            <span
+              class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-emerald-800 text-emerald-50 shadow-sm"
+              aria-hidden="true"
+            >
+              <Skull class="h-5 w-5" />
+            </span>
+            <span class="text-lg font-semibold"
+              >{displayDiseaseResist.toLocaleString()}</span
+            >
+          </div>
+        </div>
+
+        <div
+          class="order-1 col-span-2 flex flex-col items-center gap-3 md:order-none md:col-span-1"
+        >
+          <div class="flex h-56 w-full items-center justify-center md:h-64">
+            {#if monsterImageSrc && data.visualAsset}
+              <img
+                src={monsterImageSrc}
+                alt={`${data.monster.name} monster sprite`}
+                width={data.visualAsset.width}
+                height={data.visualAsset.height}
+                class="max-h-56 max-w-full object-contain [image-rendering:pixelated] md:max-h-64"
+              />
+            {:else}
+              <div
+                class="flex h-36 w-48 items-center justify-center rounded-md border border-dashed border-border/70 text-center text-sm text-muted-foreground"
+              >
+                No runtime image exported
+              </div>
+            {/if}
+          </div>
+
+          <div
+            class="inline-flex items-center gap-2 text-lg font-semibold text-green-600 dark:text-green-400"
+            title="Health"
+          >
+            <Heart class="h-5 w-5 fill-current" aria-hidden="true" />
+            {formatCompactNumber(displayHealth)}
+          </div>
+        </div>
+
+        <div class="order-3 min-w-0 space-y-2 text-sm md:order-none">
+          <div
+            class="flex min-w-0 flex-row-reverse items-center gap-3 text-right"
+            title="Damage"
+          >
+            <span
+              class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-red-800 text-red-50 shadow-sm"
+              aria-hidden="true"
+            >
+              <Sword class="h-5 w-5" />
+            </span>
+            <span class="text-lg font-semibold"
+              >{displayDamage.toLocaleString()}</span
+            >
+          </div>
+          <div
+            class="flex min-w-0 flex-row-reverse items-center gap-3 text-right"
+            title="Magic Damage"
+          >
+            <span
+              class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-violet-700 text-violet-50 shadow-sm"
+              aria-hidden="true"
+            >
+              <Sparkles class="h-5 w-5" />
+            </span>
+            <span class="min-w-0 text-lg font-semibold break-words"
+              >{displayMagicDamage.toLocaleString()}</span
+            >
+          </div>
+          <div
+            class="flex min-w-0 flex-row-reverse items-center gap-3 text-right"
+            title="Defense"
+          >
+            <span
+              class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-slate-700 text-slate-100 shadow-sm"
+              aria-hidden="true"
+            >
+              <Shield class="h-5 w-5" />
+            </span>
+            <span class="text-lg font-semibold"
+              >{displayDefense.toLocaleString()}</span
+            >
+          </div>
+          {#if bestiaryTypeName}
+            <div
+              class="flex min-w-0 flex-row-reverse items-center gap-3 text-right"
+              title="Monster Type"
+            >
+              <span
+                class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-slate-800 text-slate-100 shadow-sm"
+                aria-hidden="true"
+              >
+                <Dna class="h-5 w-5" />
+              </span>
+              <span class="min-w-0 text-lg font-semibold break-words"
+                >{bestiaryTypeName}</span
+              >
+            </div>
+          {/if}
+          {#if bestiaryClassName}
+            <div
+              class="flex min-w-0 flex-row-reverse items-center gap-3 text-right"
+              title="Class"
+            >
+              <span
+                class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-amber-700 text-amber-50 shadow-sm"
+                aria-hidden="true"
+              >
+                <Star class="h-5 w-5" />
+              </span>
+              <span class="min-w-0 text-lg font-semibold break-words"
+                >{bestiaryClassName}</span
+              >
+            </div>
+          {/if}
+        </div>
+      </div>
+    </div>
+  </section>
   <!-- Spawns Section -->
   {#if hasAnySpawns}
     <section>

@@ -143,6 +143,7 @@ export interface MonsterInfo {
   health: number;
   type_name: string | null;
   class_name: string | null;
+  zone_bestiary: string | null;
   is_boss: boolean;
   is_world_boss: boolean;
   is_elite: boolean;
@@ -324,6 +325,14 @@ export interface MonsterSkill {
   prob_ignore_cleanse: number;
 }
 
+export interface MonsterVisualAsset {
+  public_path: string;
+  width: number;
+  height: number;
+  source_field: string;
+  source_type: string;
+}
+
 /**
  * Full monster detail page data
  */
@@ -335,6 +344,7 @@ export interface MonsterDetailData {
   quests: MonsterQuest[];
   skills: MonsterSkill[];
   summons: SummonsInfo[];
+  visualAsset: MonsterVisualAsset | null;
   renewalSages: Array<{
     id: string;
     name: string;

@@ -22,6 +22,29 @@ CREATE TABLE reputation_tiers (
 );
 
 -- =============================================================================
+-- VISUAL ASSETS (runtime-exported images copied into website/static/images)
+-- =============================================================================
+
+CREATE TABLE visual_assets (
+    domain TEXT NOT NULL,              -- monster, npc, item, skill
+    entity_id TEXT NOT NULL,
+    kind TEXT NOT NULL,                -- primary, icon
+    export_path TEXT NOT NULL,         -- original DataExporter path under exported-data/
+    public_path TEXT NOT NULL,         -- website/static-relative path
+    source_field TEXT NOT NULL,
+    source_type TEXT NOT NULL,
+    source_name TEXT,
+    sprite_name TEXT,
+    texture_name TEXT,
+    width INTEGER NOT NULL,
+    height INTEGER NOT NULL,
+    PRIMARY KEY (domain, entity_id, kind)
+);
+
+CREATE UNIQUE INDEX idx_visual_assets_public_path ON visual_assets(public_path);
+CREATE INDEX idx_visual_assets_entity ON visual_assets(domain, entity_id);
+
+-- =============================================================================
 -- ZONES
 -- =============================================================================
 

@@ -29,6 +29,22 @@ class BoundingBox(BaseModel):
     max_y: float
 
 
+class VisualAssetData(BaseModel):
+    """Runtime-exported visual asset manifest row."""
+
+    domain: str
+    entity_id: str
+    kind: str
+    export_path: str
+    source_field: str
+    source_type: str
+    source_name: str | None = None
+    sprite_name: str | None = None
+    texture_name: str | None = None
+    width: int
+    height: int
+
+
 # =============================================================================
 # Monster Models
 # =============================================================================

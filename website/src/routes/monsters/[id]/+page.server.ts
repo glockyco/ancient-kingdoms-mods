@@ -17,6 +17,7 @@ import type {
   PlaceholderSpawnInfo,
   MonsterQuest,
   SummonsInfo,
+  MonsterVisualAsset,
 } from "$lib/types/monsters";
 import { monsterDescription } from "$lib/server/meta-description";
 
@@ -103,6 +104,7 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
     health: monsterRaw.health as number,
     type_name: monsterRaw.type_name as string | null,
     class_name: monsterRaw.class_name as string | null,
+    zone_bestiary: (monsterRaw.zone_bestiary as string | null) || null,
     is_boss: Boolean(monsterRaw.is_boss),
     is_world_boss: Boolean(monsterRaw.is_world_boss),
     is_fabled: Boolean(monsterRaw.is_fabled),
@@ -682,6 +684,17 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
     )
     .all(params.id) as MonsterSkill[];
 
+  const visualAsset =
+    (db
+      .prepare(
+        `
+      SELECT public_path, width, height, source_field, source_type
+      FROM visual_assets
+      WHERE domain = 'monster' AND entity_id = ? AND kind = 'primary'
+    `,
+      )
+      .get(params.id) as MonsterVisualAsset | undefined) ?? null;
+
   db.close();
 
   // Generate meta description
@@ -718,6 +731,7 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
     quests,
     skills,
     summons,
+    visualAsset,
     renewalSages,
   };
 };

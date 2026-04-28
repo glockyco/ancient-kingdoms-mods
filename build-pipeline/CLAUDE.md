@@ -7,7 +7,7 @@ Python CLI for processing game data exports into deployment-ready artifacts.
 ```
 exported-data/ (JSON + Screenshots + Runtime Images)
     ↓ compendium build
-website/static/compendium.db
+website/static/compendium.db + website/static/images/
     ↓ compendium tiles
 website/static/tiles/
 ```
@@ -21,10 +21,10 @@ cd build-pipeline
 uv run compendium build   # JSON → SQLite (to website/static/)
 uv run compendium tiles   # Screenshots → tile pyramid
 uv run compendium stats   # Database statistics
-# DataExporter also writes exported-data/visual_assets.json and exported-data/images/
+# DataExporter writes exported-data/visual_assets.json and exported-data/images/
 ```
 
-Selected visual images are produced by the DataExporter runtime export as `exported-data/visual_assets.json` plus files under `exported-data/images/`. The old standalone `visual-audit` HotRepl/UnityPy mapping pipeline is removed; build-pipeline consumption of the manifest is future work. Runtime findings and current exclusions are documented in `docs/visual-audit-runtime-findings.md`.
+Selected visual images are produced by the DataExporter runtime export as `exported-data/visual_assets.json` plus files under `exported-data/images/`. `compendium build` loads the manifest into the `visual_assets` table and copies public image files to `website/static/images/` with readable paths such as `images/monsters/zarothak_the_tormentor/primary.png`. The old standalone `visual-audit` HotRepl/UnityPy mapping pipeline is removed. Runtime findings and current exclusions are documented in `docs/visual-audit-runtime-findings.md`.
 
 Global option: `--config FILE` to override config.toml location.
 

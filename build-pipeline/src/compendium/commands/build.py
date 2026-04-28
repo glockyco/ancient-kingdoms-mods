@@ -37,6 +37,7 @@ from compendium.loaders import (
     load_static_data,
     load_summon_triggers,
     load_treasure_locations,
+    load_visual_assets,
     load_zone_triggers,
     load_zones,
 )
@@ -97,6 +98,7 @@ def run(config: dict) -> None:
         load_scribing_recipes(conn, export_dir)  # After items
         load_scribing_tables(conn, export_dir)  # After zones + zone_triggers
         load_crafting_stations(conn, export_dir)  # After zones + zone_triggers
+        load_visual_assets(conn, export_dir, static_dir)  # Runtime images for website
 
         # Denormalize data (must be done after all data is loaded)
         console.print()
