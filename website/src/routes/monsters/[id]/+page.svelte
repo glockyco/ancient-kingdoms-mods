@@ -804,9 +804,13 @@
               />
             {:else}
               <div
-                class="flex h-36 w-48 items-center justify-center rounded-md border border-dashed border-border/70 text-center text-sm text-muted-foreground"
+                class="flex h-44 w-56 flex-col items-center justify-center gap-2 rounded-md border border-dashed border-border/70 bg-muted/20 text-center text-muted-foreground"
               >
-                No runtime image exported
+                <span
+                  class="text-5xl font-semibold leading-none"
+                  aria-hidden="true">?</span
+                >
+                <span class="text-sm font-medium">No image available</span>
               </div>
             {/if}
           </div>
