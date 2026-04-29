@@ -141,13 +141,10 @@ public sealed partial class ImGuiRenderer : IDisposable
     }
 }
 
-/// <summary>Stubs filled in by Tasks 4/5/7. Kept here so the project compiles incrementally.</summary>
+/// <summary>Stubs filled in by Tasks 6/7. Kept here so the project compiles incrementally.</summary>
 public sealed partial class ImGuiRenderer
 {
-    private void CreateMaterial() { /* Task 5 */ }
-    private void DisposeMaterial() { /* Task 5 */ }
-    private void CreateCommandBuffer() { /* Task 5 */ }
-    private void DisposeCommandBuffer() { /* Task 5 */ }
+    private void UpdateInput(ImGuiNET.ImGuiIOPtr io) { /* Task 6 */ }
     private void HookTextInput() { /* Task 7 */ }
     private void UnhookTextInput() { /* Task 7 */ }
 }
