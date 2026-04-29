@@ -13,4 +13,17 @@
       LibraryPath="$(MelonLoaderPath)\net6;$(Il2CppAssembliesPath)" />
     <Delete Files="@(MergeAssemblies)" />
   </Target>
+
+  <!--
+    ImGui.NET ships native binaries under runtimes/{osx,linux-x64,win-x86,win-x64}/native/
+    that the SDK copies into bin/.../net6.0/runtimes/. We embed cimgui.dll
+    directly from the NuGet cache and extract it at runtime, so these stray
+    natives are dead weight. Worse, the build-tool deploy globber finds the
+    win-x64 cimgui.dll, copies it into the game's Mods/ folder, and MelonLoader
+    tries to load it as a managed mod assembly. Drop the directory entirely
+    after the merge has consumed ImGui.NET.dll.
+  -->
+  <Target Name="StripRuntimeAssets" AfterTargets="ILRepacker">
+    <RemoveDir Directories="$(OutputPath)runtimes" />
+  </Target>
 </Project>
