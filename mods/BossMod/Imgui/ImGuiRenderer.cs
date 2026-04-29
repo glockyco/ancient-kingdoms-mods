@@ -144,8 +144,6 @@ public sealed partial class ImGuiRenderer : IDisposable
 /// <summary>Stubs filled in by Tasks 4/5/7. Kept here so the project compiles incrementally.</summary>
 public sealed partial class ImGuiRenderer
 {
-    private void BuildFontAtlas(ImGuiIOPtr io) { /* Task 4 */ }
-    private void DisposeFontAtlas() { /* Task 4 */ }
     private void CreateMaterial() { /* Task 5 */ }
     private void DisposeMaterial() { /* Task 5 */ }
     private void CreateCommandBuffer() { /* Task 5 */ }
