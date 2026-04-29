@@ -3,6 +3,7 @@
     <ItemGroup>
       <InputAssemblies Include="$(OutputPath)$(AssemblyName).dll" />
       <MergeAssemblies Include="$(OutputPath)ImGui.NET.dll" />
+      <MergeAssemblies Include="$(OutputPath)BossMod.Core.dll" />
     </ItemGroup>
     <ILRepack
       Parallel="true"
