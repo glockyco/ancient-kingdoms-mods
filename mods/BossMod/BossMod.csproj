@@ -1,0 +1,84 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <AssemblyName>BossMod</AssemblyName>
+    <RootNamespace>BossMod</RootNamespace>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <ImGuiNetVersion>1.89.1</ImGuiNetVersion>
+  </PropertyGroup>
+
+  <!-- NuGet -->
+  <ItemGroup>
+    <PackageReference Include="ImGui.NET" Version="$(ImGuiNetVersion)" PrivateAssets="all" />
+    <PackageReference Include="ILRepack.Lib.MSBuild.Task" Version="2.0.34.2" PrivateAssets="all" />
+  </ItemGroup>
+
+  <!-- MelonLoader / Unity / IL2CPP -->
+  <ItemGroup>
+    <Reference Include="MelonLoader">
+      <HintPath>$(MelonLoaderPath)\net6\MelonLoader.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Il2CppInterop.Runtime">
+      <HintPath>$(MelonLoaderPath)\net6\Il2CppInterop.Runtime.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>$(Il2CppAssembliesPath)\UnityEngine.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>$(Il2CppAssembliesPath)\UnityEngine.CoreModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.IMGUIModule">
+      <HintPath>$(Il2CppAssembliesPath)\UnityEngine.IMGUIModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.InputSystem">
+      <HintPath>$(Il2CppAssembliesPath)\Unity.InputSystem.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.AudioModule">
+      <HintPath>$(Il2CppAssembliesPath)\UnityEngine.AudioModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Il2CppMirror">
+      <HintPath>$(Il2CppAssembliesPath)\Il2CppMirror.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Il2Cppmscorlib">
+      <HintPath>$(Il2CppAssembliesPath)\Il2Cppmscorlib.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>$(Il2CppAssembliesPath)\Assembly-CSharp.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+
+  <!--
+    Embed cimgui.dll (Win64) directly from the ImGui.NET NuGet package, so we
+    never check the binary into source control and never have to manually drop
+    a file into Imgui/resources/. The package always ships matching natives at
+    runtimes/win-x64/native/cimgui.dll. NuGet restore guarantees this path
+    exists by the time MSBuild collects EmbeddedResource items.
+  -->
+  <ItemGroup>
+    <EmbeddedResource Include="$(NuGetPackageRoot)imgui.net\$(ImGuiNetVersion)\runtimes\win-x64\native\cimgui.dll"
+                      LogicalName="BossMod.cimgui.dll"
+                      Visible="false" />
+  </ItemGroup>
+
+  <!--
+    ILRepack.Lib.MSBuild.Task auto-imports any ILRepack.targets in the project
+    directory. Do NOT <Import Project="ILRepack.targets" /> here — that would
+    cause MSBuild warning MSB4011 (already imported by the package) and the
+    second import is silently ignored anyway.
+  -->
+
+</Project>

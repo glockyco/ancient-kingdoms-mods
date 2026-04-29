@@ -1,0 +1,16 @@
+<Project>
+  <Target Name="ILRepacker" AfterTargets="Build">
+    <ItemGroup>
+      <InputAssemblies Include="$(OutputPath)$(AssemblyName).dll" />
+      <MergeAssemblies Include="$(OutputPath)ImGui.NET.dll" />
+    </ItemGroup>
+    <ILRepack
+      Parallel="true"
+      Internalize="true"
+      DebugInfo="true"
+      InputAssemblies="@(InputAssemblies);@(MergeAssemblies)"
+      OutputFile="$(OutputPath)$(AssemblyName).dll"
+      LibraryPath="$(MelonLoaderPath)\net6;$(Il2CppAssembliesPath)" />
+    <Delete Files="@(MergeAssemblies)" />
+  </Target>
+</Project>
