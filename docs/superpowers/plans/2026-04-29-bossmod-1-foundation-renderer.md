@@ -86,6 +86,14 @@
       <HintPath>$(Il2CppAssembliesPath)\Unity.InputSystem.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="UnityEngine.AudioModule">
+      <HintPath>$(Il2CppAssembliesPath)\UnityEngine.AudioModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Il2CppMirror">
+      <HintPath>$(Il2CppAssembliesPath)\Il2CppMirror.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Il2Cppmscorlib">
       <HintPath>$(Il2CppAssembliesPath)\Il2Cppmscorlib.dll</HintPath>
       <Private>False</Private>
@@ -466,9 +474,9 @@ public sealed partial class ImGuiRenderer
 
         var data = new byte[width * height * 4];
         Marshal.Copy((IntPtr)pixels, data, 0, data.Length);
-        // Il2Cpp byte[] interop: convert managed array via Il2CppInterop.
-        var il2cppData = new Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppStructArray<byte>(data);
-        _fontTexture.LoadRawTextureData(il2cppData);
+        // Il2CppArrayBase<byte> has implicit conversion from byte[] — pass the
+        // managed array directly to the IL2CPP-bridged method.
+        _fontTexture.LoadRawTextureData(data);
         _fontTexture.Apply();
 
         io.Fonts.SetTexID(_fontTexture.GetNativeTexturePtr());
@@ -701,10 +709,14 @@ public sealed partial class ImGuiRenderer
                 (byte)((c >> 24) & 0xff));
         }
 
+        // Mesh property setters (vertices/uv/colors32/triangles) accept
+        // Il2CppArrayBase<T> and managed T[] converts implicitly via op_Implicit.
+        // The setX(List<T>)/SetVertices(NativeArray<T>) overloads do NOT bind
+        // managed arrays in IL2CPP, so we use the property setters explicitly.
         mesh.Clear(true);
-        mesh.SetVertices(new Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppStructArray<Il2CppUnityEngine.Vector3>(verts));
-        mesh.SetUVs(0, new Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppStructArray<Il2CppUnityEngine.Vector2>(uvs));
-        mesh.SetColors(new Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppStructArray<Il2CppUnityEngine.Color32>(colors));
+        mesh.vertices = verts;
+        mesh.uv = uvs;
+        mesh.colors32 = colors;
 
         // One subMesh per ImDrawCmd, indices laid out contiguously
         mesh.subMeshCount = cmdList.CmdBuffer.Size;
@@ -719,9 +731,8 @@ public sealed partial class ImGuiRenderer
             int eltCount = (int)cmd.ElemCount;
             var subIndices = new int[eltCount];
             Array.Copy(allIndices, idxOffset, subIndices, 0, eltCount);
-            mesh.SetTriangles(
-                new Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppStructArray<int>(subIndices),
-                c, calculateBounds: false);
+            // SetTriangles property-bridge: int[] → Il2CppArrayBase<int>
+            mesh.SetTriangles(subIndices, c, calculateBounds: false);
             idxOffset += eltCount;
         }
 
@@ -730,7 +741,7 @@ public sealed partial class ImGuiRenderer
 }
 ```
 
-> Implementation note: index format is `UInt32` to handle large UI updates safely; ImGui itself emits 16-bit indices but we cast/expand on the way in. The IL2CPP-managed array constructions through `Il2CppStructArray` are how MelonLoader bridges managed arrays to Unity's Il2Cpp expectations.
+> Implementation note: index format is `UInt32` to handle large UI updates safely; ImGui itself emits 16-bit indices but we expand on the way in. The IL2CPP wrapper for Mesh's array-based property setters (`vertices`, `uv`, `colors32`) and the `SetTriangles(int[], int, bool)` overload accept `Il2CppArrayBase<T>`, which has an implicit conversion from managed `T[]`. Avoid the `SetVertices(List<T>)` / `SetVertices(NativeArray<T>)` overloads: they're the only ones generated for IL2CPP and don't bind managed arrays.
 
 - [ ] **Step 3: Build**
 
@@ -853,18 +864,22 @@ public sealed partial class ImGuiRenderer
 {
     private readonly System.Collections.Concurrent.ConcurrentQueue<char> _charQueue = new();
     private Il2Cpp.UnityEngine.InputSystem.Keyboard? _hookedKeyboard;
-    private Action<char>? _textHandler;
+    private Il2CppSystem.Action<char>? _textHandler;
 
     private void HookTextInput()
     {
         var keyboard = Il2Cpp.UnityEngine.InputSystem.Keyboard.current;
         if (keyboard == null || keyboard == _hookedKeyboard) return;
 
-        _textHandler = ch =>
+        // Wrap the managed lambda in Il2CppSystem.Action<char> — Keyboard's
+        // onTextInput event is generated as add/remove methods that take an
+        // Il2CppSystem.Action<char>, NOT a managed System.Action<char>.
+        Action<char> handler = ch =>
         {
             // Filter: printable ASCII + extended; strip control codes except tab.
             if (ch >= ' ' && ch != '\u007f') _charQueue.Enqueue(ch);
         };
+        _textHandler = (Il2CppSystem.Action<char>)handler;
         keyboard.onTextInput += _textHandler;
         _hookedKeyboard = keyboard;
     }

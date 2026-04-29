@@ -20,7 +20,7 @@
 |---|---|---|
 | `mods/BossMod/ConfigMode.cs` | Toggles `Locked` on overlays + renders the "CONFIG MODE" banner | Create |
 | `mods/BossMod/HotkeyManager.cs` | Reads `Globals.Hotkeys`, polls InputSystem each frame, fires actions | Create |
-| `mods/BossMod/StateFlusher.cs` | Debounced `state.json` write triggered by `MarkDirty()` | Create |
+| `mods/BossMod.Core/Persistence/StateFlusher.cs` | Debounced `state.json` write triggered by `MarkDirty()` | Create |
 | `mods/BossMod/BossMod.cs` | Replace plan 1 stub with full wire-up | Modify |
 | `mods/BossMod/CLAUDE.md` | Mod-specific docs | Create |
 
@@ -196,50 +196,193 @@ git commit -m "feat(bossmod): add HotkeyManager with F-key resolver"
 
 ---
 
-## Task 3: StateFlusher
+## Task 3: StateFlusher (TDD, lives in BossMod.Core)
 
 **Files:**
-- Create: `mods/BossMod/StateFlusher.cs`
+- Create: `mods/BossMod.Core/Persistence/StateFlusher.cs`
+- Create: `tests/BossMod.Core.Tests/StateFlusherTests.cs`
 
-Debounced state.json writer. `MarkDirty()` updates a "dirty since" timestamp. Each `Tick()` call (driven from `OnUpdate`) checks if `now - dirtyAt > 2s`, and if so, atomically writes via `StateJson.Write`. Hard flush on `Dispose`.
+Debounced `state.json` writer. Pure clock+filesystem logic — testable on the host. Living in `BossMod.Core` lets us inject fake clocks and assert the debounce + flush-on-dispose behavior; a one-line mistake here silently drops user edits.
 
-- [ ] **Step 1: Write file**
+- [ ] **Step 1: Write failing tests**
+
+`tests/BossMod.Core.Tests/StateFlusherTests.cs`:
+
+```csharp
+using System;
+using System.IO;
+using BossMod.Core.Catalog;
+using BossMod.Core.Persistence;
+using Xunit;
+
+namespace BossMod.Core.Tests;
+
+public class StateFlusherTests
+{
+    private sealed class FakeClock
+    {
+        public DateTime Now = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        public DateTime Read() => Now;
+        public void Advance(TimeSpan d) => Now += d;
+    }
+
+    private static (string path, SkillCatalog cat, Globals g, FakeClock clock, StateFlusher flusher)
+        Make(TimeSpan? debounce = null)
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"bossmod-flush-{Guid.NewGuid():N}.json");
+        var cat = new SkillCatalog();
+        var g = new Globals { ProximityRadius = 10f };
+        var clock = new FakeClock();
+        var flusher = new StateFlusher(
+            catalog: cat, globals: g, path: path,
+            debounce: debounce ?? TimeSpan.FromSeconds(2),
+            clock: clock.Read);
+        return (path, cat, g, clock, flusher);
+    }
+
+    [Fact]
+    public void Tick_NoMarkDirty_DoesNothing()
+    {
+        var (path, _, _, clock, flusher) = Make();
+        try
+        {
+            clock.Advance(TimeSpan.FromHours(1));
+            flusher.Tick();
+            Assert.False(File.Exists(path));
+        }
+        finally { if (File.Exists(path)) File.Delete(path); }
+    }
+
+    [Fact]
+    public void Tick_BeforeDebounceExpiry_DoesNotWrite()
+    {
+        var (path, _, _, clock, flusher) = Make();
+        try
+        {
+            flusher.MarkDirty();
+            clock.Advance(TimeSpan.FromSeconds(1));  // < 2s debounce
+            flusher.Tick();
+            Assert.False(File.Exists(path));
+        }
+        finally { if (File.Exists(path)) File.Delete(path); }
+    }
+
+    [Fact]
+    public void Tick_AfterDebounceExpiry_Writes()
+    {
+        var (path, _, g, clock, flusher) = Make();
+        try
+        {
+            g.ProximityRadius = 99f;
+            flusher.MarkDirty();
+            clock.Advance(TimeSpan.FromSeconds(3));
+            flusher.Tick();
+            Assert.True(File.Exists(path));
+
+            var (_, gRead) = StateJson.Read(path);
+            Assert.Equal(99f, gRead.ProximityRadius);
+        }
+        finally { if (File.Exists(path)) File.Delete(path); }
+    }
+
+    [Fact]
+    public void RepeatedMarkDirty_KeepsEarliestDirtyTimestamp_FlushesAfterFirstMark()
+    {
+        var (path, _, _, clock, flusher) = Make();
+        try
+        {
+            flusher.MarkDirty();                       // t=0
+            clock.Advance(TimeSpan.FromSeconds(1));
+            flusher.MarkDirty();                       // t=1, but should NOT reset dirtySince
+            clock.Advance(TimeSpan.FromSeconds(1.1));  // t=2.1 → past debounce since first mark
+            flusher.Tick();
+            Assert.True(File.Exists(path));
+        }
+        finally { if (File.Exists(path)) File.Delete(path); }
+    }
+
+    [Fact]
+    public void Dispose_HardFlushes_PendingDirty()
+    {
+        var (path, _, g, clock, flusher) = Make();
+        try
+        {
+            g.ProximityRadius = 77f;
+            flusher.MarkDirty();
+            // No Tick — only Dispose.
+            flusher.Dispose();
+            Assert.True(File.Exists(path));
+            var (_, gRead) = StateJson.Read(path);
+            Assert.Equal(77f, gRead.ProximityRadius);
+        }
+        finally { if (File.Exists(path)) File.Delete(path); }
+    }
+
+    [Fact]
+    public void Dispose_NotDirty_DoesNotWrite()
+    {
+        var (path, _, _, _, flusher) = Make();
+        try
+        {
+            flusher.Dispose();
+            Assert.False(File.Exists(path));
+        }
+        finally { if (File.Exists(path)) File.Delete(path); }
+    }
+}
+```
+
+- [ ] **Step 2: Run, expect fail**
+
+```bash
+dotnet test tests/BossMod.Core.Tests/BossMod.Core.Tests.csproj --filter "FullyQualifiedName~StateFlusherTests"
+```
+
+- [ ] **Step 3: Implement StateFlusher**
+
+`mods/BossMod.Core/Persistence/StateFlusher.cs`:
 
 ```csharp
 using System;
 using BossMod.Core.Catalog;
-using BossMod.Core.Persistence;
-using MelonLoader;
 
-namespace BossMod;
+namespace BossMod.Core.Persistence;
 
+/// <summary>
+/// Debounced writer for state.json. MarkDirty stamps the first-dirty time;
+/// Tick checks whether the debounce has elapsed and flushes if so. Dispose
+/// hard-flushes any pending dirty state. Pure logic + filesystem — testable
+/// on the host with an injected clock.
+/// </summary>
 public sealed class StateFlusher : IDisposable
 {
-    private readonly MelonLogger.Instance _log;
     private readonly SkillCatalog _catalog;
     private readonly Globals _globals;
     private readonly string _path;
+    private readonly TimeSpan _debounce;
+    private readonly Func<DateTime> _clock;
     private DateTime? _dirtySince;
-    private readonly TimeSpan _debounce = TimeSpan.FromSeconds(2);
+    public Action<Exception>? OnFlushError { get; set; }
 
-    public StateFlusher(MelonLogger.Instance log, SkillCatalog catalog, Globals globals, string path)
+    public StateFlusher(SkillCatalog catalog, Globals globals, string path,
+                        TimeSpan? debounce = null, Func<DateTime>? clock = null)
     {
-        _log = log;
         _catalog = catalog;
         _globals = globals;
         _path = path;
+        _debounce = debounce ?? TimeSpan.FromSeconds(2);
+        _clock = clock ?? (() => DateTime.UtcNow);
     }
 
     public void MarkDirty()
     {
-        _dirtySince ??= DateTime.UtcNow;
+        _dirtySince ??= _clock();   // earliest-dirty wins; subsequent marks no-op
     }
 
-    /// <summary>Call from OnUpdate. Cheap when not dirty.</summary>
     public void Tick()
     {
         if (_dirtySince == null) return;
-        if (DateTime.UtcNow - _dirtySince.Value < _debounce) return;
+        if (_clock() - _dirtySince.Value < _debounce) return;
         Flush();
     }
 
@@ -252,7 +395,7 @@ public sealed class StateFlusher : IDisposable
         }
         catch (Exception ex)
         {
-            _log.Warning($"state.json flush failed: {ex.Message}");
+            OnFlushError?.Invoke(ex);
         }
     }
 
@@ -263,15 +406,20 @@ public sealed class StateFlusher : IDisposable
 }
 ```
 
-> Note: Triggering `MarkDirty()` from every Settings UI edit would require wiring through every checkbox/dropdown; instead we have `BossMod.cs` call `MarkDirty()` on every frame the SettingsWindow is open (cheap; the debounce coalesces it). Alternative: hash the catalog state and compare frame-to-frame. The "open = dirty" approach is simpler and correct enough.
-
-- [ ] **Step 2: Build, commit**
+- [ ] **Step 4: Run tests, expect green**
 
 ```bash
-dotnet run --project build-tool build
-git add mods/BossMod/StateFlusher.cs
-git commit -m "feat(bossmod): add debounced StateFlusher"
+dotnet test tests/BossMod.Core.Tests/BossMod.Core.Tests.csproj --filter "FullyQualifiedName~StateFlusherTests"
 ```
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add mods/BossMod.Core/Persistence/StateFlusher.cs tests/BossMod.Core.Tests/StateFlusherTests.cs
+git commit -m "feat(bossmod): add StateFlusher with TDD-tested debounce + dispose-flush"
+```
+
+> Note in `BossMod.cs` (Task 4): triggering `MarkDirty()` from every Settings UI edit would require wiring through every checkbox/dropdown; instead `BossMod.cs` calls `MarkDirty()` on every frame the SettingsWindow is open (cheap; debounce coalesces it). Wire `OnFlushError = ex => LoggerInstance.Warning(...)` to surface failures.
 
 ---
 
@@ -386,7 +534,10 @@ public class BossMod : MelonMod
         _hotkeys.Register("toggle_settings", () => _settings.Open = !_settings.Open);
 
         // Persistence
-        _flusher = new StateFlusher(LoggerInstance, _catalog, _globals, _statePath);
+        _flusher = new StateFlusher(_catalog, _globals, _statePath)
+        {
+            OnFlushError = ex => LoggerInstance.Warning($"state.json flush failed: {ex.Message}")
+        };
 
         // ImGui layout callback — runs per OnGUI Repaint
         _renderer.OnLayout = OnLayout;

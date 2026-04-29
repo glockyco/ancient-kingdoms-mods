@@ -372,29 +372,12 @@ namespace BossMod.Core.Tests;
 public class EffectiveValuesTests
 {
     [Fact]
-    public void OutgoingDamage_NormalDamage_AddsCasterDamageAndSkillDamage()
+    public void OutgoingDamage_AddsCasterBaseAndSkillAdditive()
     {
-        // Skill: 50 raw damage, no percent multiplier
-        // Caster: 30 damage (combat.damage)
-        // Expected: 30 + 50 = 80
-        var d = EffectiveValues.OutgoingDamage(
-            skillRawDamage: 50, skillRawMagicDamage: 0, damagePercent: 0,
-            damageType: DamageType.Normal,
-            casterDamage: 30, casterMagicDamage: 99 /* should not be used */);
-        Assert.Equal(80, d);
-    }
-
-    [Theory]
-    [InlineData(DamageType.Magic)]
-    [InlineData(DamageType.Fire)]
-    [InlineData(DamageType.Cold)]
-    [InlineData(DamageType.Disease)]
-    public void OutgoingDamage_MagicLikeTypes_UseCasterMagicDamage(DamageType type)
-    {
-        var d = EffectiveValues.OutgoingDamage(
-            skillRawDamage: 99 /* not used */, skillRawMagicDamage: 50, damagePercent: 0,
-            damageType: type,
-            casterDamage: 99 /* not used */, casterMagicDamage: 30);
+        // Single additive (skill.damage.Get(level)) plus caster base; the caller
+        // chooses which caster-base scalar to pass (damage vs magicDamage).
+        // Server reference: AreaDamageSkill.Apply lines 95-114.
+        var d = EffectiveValues.OutgoingDamage(skillAdditive: 50, damagePercent: 0, casterBase: 30);
         Assert.Equal(80, d);
     }
 
@@ -402,22 +385,25 @@ public class EffectiveValuesTests
     public void OutgoingDamage_DamagePercentApplied_MultipliesAfterAddition()
     {
         // (30 + 50) * 1.5 = 120
-        var d = EffectiveValues.OutgoingDamage(
-            skillRawDamage: 50, skillRawMagicDamage: 0, damagePercent: 1.5f,
-            damageType: DamageType.Normal,
-            casterDamage: 30, casterMagicDamage: 0);
+        var d = EffectiveValues.OutgoingDamage(skillAdditive: 50, damagePercent: 1.5f, casterBase: 30);
         Assert.Equal(120, d);
     }
 
     [Fact]
-    public void OutgoingDamage_ZeroDamagePercent_IgnoredAsNotMultiplied()
+    public void OutgoingDamage_ZeroDamagePercent_TreatedAsUnsetMultiplier()
     {
-        // 0 percent means "no multiplier" — server-scripts treat <=0 as unset
-        var d = EffectiveValues.OutgoingDamage(
-            skillRawDamage: 50, skillRawMagicDamage: 0, damagePercent: 0f,
-            damageType: DamageType.Normal,
-            casterDamage: 30, casterMagicDamage: 0);
+        // server-scripts treats damagePercent <= 0 as "no multiplier"
+        var d = EffectiveValues.OutgoingDamage(skillAdditive: 50, damagePercent: 0f, casterBase: 30);
         Assert.Equal(80, d);
+    }
+
+    [Fact]
+    public void OutgoingDamage_RawSkillOnly_NoBaseAdded()
+    {
+        // For skills like AreaObjectSpawnSkill where the server uses just
+        // skill.damage[level] (no caster base added).
+        var d = EffectiveValues.OutgoingDamage(skillAdditive: 50, damagePercent: 0, casterBase: 0);
+        Assert.Equal(50, d);
     }
 
     [Fact]
@@ -444,10 +430,10 @@ public class EffectiveValuesTests
     }
 
     [Fact]
-    public void CooldownEffective_AppliesHasteFraction()
+    public void CooldownEffectiveWithHaste_AppliesHasteFraction()
     {
         // 10 * (1 - 0.2) = 8
-        var c = EffectiveValues.CooldownEffective(rawCooldown: 10f, hasteBonus: 0.2f);
+        var c = EffectiveValues.CooldownEffectiveWithHaste(rawCooldown: 10f, hasteBonus: 0.2f);
         Assert.Equal(8f, c, 4);
     }
 
@@ -486,26 +472,23 @@ namespace BossMod.Core.Effects;
 /// </summary>
 public static class EffectiveValues
 {
-    public static int OutgoingDamage(
-        int skillRawDamage, int skillRawMagicDamage,
-        float damagePercent, DamageType damageType,
-        int casterDamage, int casterMagicDamage)
+    /// <summary>
+    /// Outgoing damage = casterBase + skillAdditive, optionally times damagePercent.
+    /// Caller picks which caster-base scalar to pass (combat.damage vs
+    /// combat.magicDamage), so this function stays type-agnostic. For skills like
+    /// AreaObjectSpawnSkill that don't add caster base, pass casterBase: 0.
+    /// </summary>
+    /// <remarks>
+    /// Reference: server-scripts/AreaDamageSkill.cs lines 95-114
+    ///   int num2 = (damageType is Magic|Fire|Cold|Disease) ? combat.magicDamage : combat.damage;
+    ///   int num3 = num2 + damage.Get(skillLevel);
+    ///   if (damagePercent.Get(skillLevel) > 0f)
+    ///       num3 = Mathf.RoundToInt(num3 * damagePercent.Get(skillLevel));
+    /// </remarks>
+    public static int OutgoingDamage(int skillAdditive, float damagePercent, int casterBase)
     {
-        int casterBase = damageType switch
-        {
-            DamageType.Magic or DamageType.Fire or DamageType.Cold or DamageType.Disease
-                => casterMagicDamage,
-            _ => casterDamage
-        };
-        // The skill's "raw damage" field maps to skillRawDamage for normal-type
-        // skills and skillRawMagicDamage for magic-type — but server-scripts
-        // doesn't distinguish: ScriptableSkill.damage is always the additive.
-        // We pass skillRawDamage as the additive regardless; skillRawMagicDamage
-        // is captured separately for display but not used in this formula.
-        int raw = casterBase + skillRawDamage;
-        return damagePercent > 0f
-            ? (int)Math.Round(raw * damagePercent)
-            : raw;
+        int raw = casterBase + skillAdditive;
+        return damagePercent > 0f ? (int)System.Math.Round(raw * damagePercent) : raw;
     }
 
     public static (int Min, int Max) OutgoingDamageRange(int outgoing) =>
@@ -514,7 +497,14 @@ public static class EffectiveValues
     public static float CastTimeEffective(float rawCastTime, bool isSpell, float spellHasteBonus) =>
         isSpell ? rawCastTime - rawCastTime * spellHasteBonus : rawCastTime;
 
-    public static float CooldownEffective(float rawCooldown, float hasteBonus) =>
+    /// <summary>
+    /// Effective cooldown WITH haste applied. Use only for skills the server runs
+    /// through the haste path: see Skills.FinishCastMeleeAttackMonster line 814.
+    /// Boss special skills (Skills.FinishCast lines 767-772) do NOT apply haste —
+    /// the synced cooldownEnd uses raw cooldown. For special skills, snapshot
+    /// builders should pass the raw value through and skip this helper.
+    /// </summary>
+    public static float CooldownEffectiveWithHaste(float rawCooldown, float hasteBonus) =>
         rawCooldown * (1f - hasteBonus);
 
     /// <summary>
@@ -851,6 +841,56 @@ public class SettingsResolverTests
     public void Muted_BossWinsWhenSet()
     {
         var (s, b) = Pair(skillMuted: false, bossMuted: true);
+        Assert.True(SettingsResolver.ResolveMuted(s, b));
+    }
+
+    [Fact]
+    public void Sound_SkillOverrideUsedWhenBossNull()
+    {
+        var (s, b) = Pair(auto: ThreatTier.Critical, skillSound: "skill_sound");
+        Assert.Equal("skill_sound", SettingsResolver.ResolveSound(s, b, Defaults));
+    }
+
+    [Fact]
+    public void Sound_AllNull_FallsThroughToTierDefaultPerEachTier()
+    {
+        Assert.Equal("low",      SettingsResolver.ResolveSound(Pair(auto: ThreatTier.Low).s, Pair(auto: ThreatTier.Low).b, Defaults));
+        Assert.Equal("medium",   SettingsResolver.ResolveSound(Pair(auto: ThreatTier.Medium).s, Pair(auto: ThreatTier.Medium).b, Defaults));
+        Assert.Equal("high",     SettingsResolver.ResolveSound(Pair(auto: ThreatTier.High).s, Pair(auto: ThreatTier.High).b, Defaults));
+    }
+
+    [Fact]
+    public void AlertText_BossOverrideWins()
+    {
+        var (s, b) = Pair(skillText: "skill text", bossText: "boss text");
+        Assert.Equal("boss text", SettingsResolver.ResolveAlertText(s, b, "TestSkill"));
+    }
+
+    [Fact]
+    public void AlertText_SkillUsedWhenBossNull()
+    {
+        var (s, b) = Pair(skillText: "skill text");
+        Assert.Equal("skill text", SettingsResolver.ResolveAlertText(s, b, "TestSkill"));
+    }
+
+    [Fact]
+    public void FireOn_SkillOverrideUsedWhenBossNull()
+    {
+        var (s, b) = Pair(skillFireOn: AlertTrigger.CooldownReady);
+        Assert.Equal(AlertTrigger.CooldownReady, SettingsResolver.ResolveFireOn(s, b));
+    }
+
+    [Fact]
+    public void FireOn_BossWins()
+    {
+        var (s, b) = Pair(skillFireOn: AlertTrigger.CastStart, bossFireOn: AlertTrigger.CastFinish);
+        Assert.Equal(AlertTrigger.CastFinish, SettingsResolver.ResolveFireOn(s, b));
+    }
+
+    [Fact]
+    public void Muted_SkillUsedWhenBossNull()
+    {
+        var (s, b) = Pair(skillMuted: true);
         Assert.True(SettingsResolver.ResolveMuted(s, b));
     }
 }
@@ -1307,13 +1347,17 @@ public sealed class AlertEngine
             }
         }
 
-        // CastFinish: prev had a cast, curr does not — and the deadline was met
+        // CastFinish vs Cancel:
+        //   StartCast    sets castTimeEnd = serverTime + castTime
+        //   CancelCast   sets castTimeEnd = serverTime - castTime (~castTime in the past)
+        // Natural completion: serverTime - castTimeEnd ≈ 0 at transition
+        // Cancel:            serverTime - castTimeEnd ≈ castTime at transition
+        // Use half the cast duration as the bright-line threshold.
         if (prev.ActiveCast is { } finishing && curr.ActiveCast == null)
         {
-            // Cancel signature: castTimeEnd in the past at the prev frame.
-            // If finishing.CastTimeEnd <= prev.ServerTime → natural completion.
-            // If finishing.CastTimeEnd > prev.ServerTime → canceled (deadline not met).
-            if (finishing.CastTimeEnd <= prev.ServerTime)
+            double gap = prev.ServerTime - finishing.CastTimeEnd;
+            bool natural = gap < finishing.TotalCastTime / 2.0;
+            if (natural)
             {
                 if (TryBuild(curr, finishing.SkillId, finishing.DisplayName, AlertTrigger.CastFinish, out var ev))
                     yield return ev;
@@ -1865,9 +1909,9 @@ public static class Activation
             if (monster.aggroList.ContainsKey(localPlayer.netId)) return true;
 
             // Mercenaries owned by local player
-            foreach (var merc in EnumerateLocalMercenaries(localPlayer))
+            foreach (var ally in EnumerateLocalAllies(localPlayer))
             {
-                if (merc != null && monster.aggroList.ContainsKey(merc.netId)) return true;
+                if (ally != null && monster.aggroList.ContainsKey(ally.netId)) return true;
             }
 
             // Party members and their pets/mercs
@@ -1882,8 +1926,8 @@ public static class Activation
 
                     if (monster.aggroList.ContainsKey(member.netId)) return true;
 
-                    foreach (var merc in EnumerateLocalMercenaries(member))
-                        if (merc != null && monster.aggroList.ContainsKey(merc.netId)) return true;
+                    foreach (var ally in EnumerateLocalAllies(member))
+                        if (ally != null && monster.aggroList.ContainsKey(ally.netId)) return true;
                 }
             }
         }
@@ -1894,10 +1938,12 @@ public static class Activation
         return (dx * dx + dy * dy) <= proximityRadius * proximityRadius;
     }
 
-    private static System.Collections.Generic.IEnumerable<Il2Cpp.Pet> EnumerateLocalMercenaries(Il2Cpp.Player p)
+    private static System.Collections.Generic.IEnumerable<Il2Cpp.Pet> EnumerateLocalAllies(Il2Cpp.Player p)
     {
-        // Mercenary slots are 1..4 on Player; null entries skipped by caller.
-        if (p.NetworkactiveMercenary != null) yield return p.NetworkactiveMercenary;
+        // Active pet/familiar (separate SyncVar from mercenaries — Player.cs).
+        if (p.NetworkactivePet != null) yield return p.NetworkactivePet;
+        // Mercenary slots 1..4 — null entries skipped by caller.
+        if (p.NetworkactiveMercenary  != null) yield return p.NetworkactiveMercenary;
         if (p.NetworkactiveMercenary2 != null) yield return p.NetworkactiveMercenary2;
         if (p.NetworkactiveMercenary3 != null) yield return p.NetworkactiveMercenary3;
         if (p.NetworkactiveMercenary4 != null) yield return p.NetworkactiveMercenary4;
@@ -2027,22 +2073,24 @@ public sealed class MonsterWatcher
             monster.zoneMonster ?? "", kind,
             monster.level?.current ?? 1);
 
-        if (monster.skills?.skillTemplates == null) return;
-        for (int i = 0; i < monster.skills.skillTemplates.Length; i++)
+        // Iterate the live Skill list (carries .level), not skillTemplates which
+        // are bare ScriptableSkill assets and don't tell us the boss's per-instance
+        // skill level.
+        if (monster.skills?.skills == null) return;
+        for (int i = 0; i < monster.skills.skills.Count; i++)
         {
-            var sk = monster.skills.skillTemplates[i];
-            if (sk == null || string.IsNullOrEmpty(sk.name)) continue;
+            var sk = monster.skills.skills[i];
+            var data = sk.data;
+            if (data == null || string.IsNullOrEmpty(data.name)) continue;
 
-            var skillId = sk.name;
-            var skillDisplay = string.IsNullOrEmpty(sk.nameSkill) ? skillId : sk.nameSkill;
+            var skillId = data.name;
+            var skillDisplay = string.IsNullOrEmpty(data.nameSkill) ? skillId : data.nameSkill;
             var skillRec = _catalog.GetOrCreateSkill(skillId, skillDisplay, bossId);
 
-            // Refresh raw snapshot from current ScriptableSkill data.
+            // Refresh raw snapshot from current Skill (data + level).
             skillRec.RawSnapshot = SkillSnapshotBuilder.Build(sk);
 
-            // Per-(boss, skill) effective snapshot — recomputed only when the
-            // boss's combat damage / haste / buffs delta. For now refresh each
-            // catalog harvest (cheap; few bosses per scene).
+            // Per-(boss, skill) effective snapshot.
             var bossSkillRec = _catalog.GetOrCreateBossSkill(bossRec, skillId);
             bossSkillRec.EffectiveSnapshot = EffectiveSnapshotBuilder.Build(sk, monster);
             bossSkillRec.AutoThreat = ThreatClassifier.Classify(
@@ -2096,7 +2144,10 @@ public sealed class MonsterWatcher
                 var sk = monster.skills.skills[i];
                 var d = sk.data;
                 if (d == null) continue;
-                var effectiveCd = EffectiveValues.CooldownEffective(sk.cooldown, monster.skills.GetHasteBonus());
+                // Server uses RAW cooldown for monster special skills (no haste applied
+                // by Skills.FinishCast lines 767-772). Use sk.cooldown directly as the
+                // progress-bar denominator.
+                var effectiveCd = sk.cooldown;
                 s.Cooldowns.Add(new SkillCooldown(
                     SkillIdx: i,
                     SkillId: d.name,
@@ -2116,7 +2167,7 @@ public sealed class MonsterWatcher
                     BuffTimeEnd: b.buffTimeEnd,
                     TotalBuffTime: b.buffTime,
                     IsAura: d.isAura,
-                    IsDebuff: d is Il2Cpp.AreaDebuffSkill or Il2Cpp.TargetDebuffSkill));
+                    IsDebuff: d.TryCast<Il2Cpp.AreaDebuffSkill>() != null || d.TryCast<Il2Cpp.TargetDebuffSkill>() != null));
             }
         }
 
@@ -2136,7 +2187,7 @@ public sealed class MonsterWatcher
 
 - [ ] **Step 2: Add `mods/BossMod/Tracking/SkillSnapshotBuilder.cs`**
 
-IL2CPP adapter that pulls fields out of `Il2Cpp.ScriptableSkill` into the pure `SkillSnapshot`. Stub for now — populated with concrete field reads during plan 4 verification.
+IL2CPP adapter that pulls fields out of the live `Il2Cpp.Skill` value (level + ScriptableSkill data) into the pure `SkillSnapshot`. Uses `TryCast<>()` for subclass detection (C# `is` patterns are unreliable in IL2CPP) and `.Get(level)` for level-aware values.
 
 ```csharp
 using BossMod.Core.Catalog;
@@ -2146,53 +2197,65 @@ namespace BossMod.Tracking;
 
 internal static class SkillSnapshotBuilder
 {
-    public static SkillSnapshot Build(Il2Cpp.ScriptableSkill data)
+    public static SkillSnapshot Build(Il2Cpp.Skill skill)
     {
+        var data = skill.data;
+        int level = skill.level;
+
         var snap = new SkillSnapshot
         {
-            SkillClass = data.GetType().Name,
+            SkillClass = data.GetIl2CppType().Name,  // IL2CPP type name (not the C# proxy)
             IsSpell = data.isSpell,
-            CastTime = data.castTime?.baseValue ?? 0f,
-            Cooldown = data.cooldown?.baseValue ?? 0f,
-            CastRange = data.castRange?.baseValue ?? 0f,
+            CastTime = data.castTime.Get(level),
+            Cooldown = data.cooldown.Get(level),
+            CastRange = data.castRange.Get(level),
         };
 
-        switch (data)
+        // Use TryCast<>() — C# `is`/pattern matching against Il2Cpp types
+        // is unreliable; the wrapper proxy types don't follow .NET inheritance
+        // semantics. Mirror the pattern used by mods/DataExporter.
+
+        if (data.TryCast<Il2Cpp.AreaDamageSkill>() is { } area)
         {
-            case Il2Cpp.AreaDamageSkill area:
-                snap.RawDamage = area.damage?.baseValue ?? 0;
-                snap.DamagePercent = area.damagePercent?.baseValue ?? 0f;
-                snap.DamageType = MapDamageType(area.damageType);
-                snap.AoeRadius = area.castRange?.baseValue ?? 0f;
-                snap.StunChance = area.stunChance?.baseValue ?? 0f;
-                snap.StunTime = area.stunTime?.baseValue ?? 0f;
-                snap.FearChance = area.fearChance?.baseValue ?? 0f;
-                snap.FearTime = area.fearTime?.baseValue ?? 0f;
-                if (snap.StunChance > 0 && snap.StunTime > 0) snap.Debuffs |= DebuffKind.Stun;
-                if (snap.FearChance > 0 && snap.FearTime > 0) snap.Debuffs |= DebuffKind.Fear;
-                break;
-
-            case Il2Cpp.AreaObjectSpawnSkill aos:
-                snap.RawDamage = aos.damage?.baseValue ?? 0;
-                snap.DamageType = MapDamageType(aos.damageType);
-                snap.AoeRadius = aos.sizeObject;
-                snap.AoeDelay = aos.delayDamage;
-                break;
-
-            case Il2Cpp.TargetDamageSkill td:
-                snap.RawDamage = td.damage?.baseValue ?? 0;
-                snap.DamagePercent = td.damagePercent?.baseValue ?? 0f;
-                snap.DamageType = MapDamageType(td.damageType);
-                break;
-
-            case Il2Cpp.BuffSkill bf:
-                snap.IsAura = bf.isAura;
-                if (bf.isPoisonDebuff) snap.Debuffs |= DebuffKind.Poison;
-                if (bf.isDiseaseDebuff) snap.Debuffs |= DebuffKind.Disease;
-                if (bf.isFireDebuff) snap.Debuffs |= DebuffKind.Fire;
-                if (bf.isColdDebuff) snap.Debuffs |= DebuffKind.Cold;
-                if (bf.isBlindness) snap.Debuffs |= DebuffKind.Blindness;
-                break;
+            snap.RawDamage = area.damage.Get(level);
+            snap.DamagePercent = area.damagePercent.Get(level);
+            snap.DamageType = MapDamageType(area.damageType);
+            snap.AoeRadius = area.castRange.Get(level);
+            snap.StunChance = area.stunChance.Get(level);
+            snap.StunTime = area.stunTime.Get(level);
+            snap.FearChance = area.fearChance.Get(level);
+            snap.FearTime = area.fearTime.Get(level);
+            if (snap.StunChance > 0 && snap.StunTime > 0) snap.Debuffs |= DebuffKind.Stun;
+            if (snap.FearChance > 0 && snap.FearTime > 0) snap.Debuffs |= DebuffKind.Fear;
+        }
+        else if (data.TryCast<Il2Cpp.AreaObjectSpawnSkill>() is { } aos)
+        {
+            snap.RawDamage = aos.damage.Get(level);
+            snap.DamagePercent = aos.damagePercent.Get(level);
+            snap.DamageType = MapDamageType(aos.damageType);
+            snap.AoeRadius = aos.sizeObject;
+            snap.AoeDelay = aos.delayDamage;
+        }
+        else if (data.TryCast<Il2Cpp.TargetProjectileSkill>() is { } tp)
+        {
+            snap.RawDamage = tp.damage.Get(level);
+            snap.DamagePercent = tp.damagePercent.Get(level);
+            snap.DamageType = MapDamageType(tp.damageType);
+        }
+        else if (data.TryCast<Il2Cpp.TargetDamageSkill>() is { } td)
+        {
+            snap.RawDamage = td.damage.Get(level);
+            snap.DamagePercent = td.damagePercent.Get(level);
+            snap.DamageType = MapDamageType(td.damageType);
+        }
+        else if (data.TryCast<Il2Cpp.BuffSkill>() is { } bf)
+        {
+            snap.IsAura = bf.isAura;
+            if (bf.isPoisonDebuff)  snap.Debuffs |= DebuffKind.Poison;
+            if (bf.isDiseaseDebuff) snap.Debuffs |= DebuffKind.Disease;
+            if (bf.isFireDebuff)    snap.Debuffs |= DebuffKind.Fire;
+            if (bf.isColdDebuff)    snap.Debuffs |= DebuffKind.Cold;
+            if (bf.isBlindness)     snap.Debuffs |= DebuffKind.Blindness;
         }
 
         return snap;
@@ -2222,50 +2285,76 @@ namespace BossMod.Tracking;
 
 internal static class EffectiveSnapshotBuilder
 {
-    public static BossSkillSnapshot Build(Il2Cpp.ScriptableSkill data, Il2Cpp.Monster monster)
+    public static BossSkillSnapshot Build(Il2Cpp.Skill skill, Il2Cpp.Monster monster)
     {
+        var data = skill.data;
+        int level = skill.level;
         int casterDmg = monster.combat?.damage ?? 0;
         int casterMag = monster.combat?.magicDamage ?? 0;
+        var debugType = DamageType.Normal;
 
         int outgoing = 0;
         int auraDps = 0;
-        var damageType = DamageType.Normal;
 
-        if (data is Il2Cpp.AreaDamageSkill ad)
+        if (data.TryCast<Il2Cpp.AreaDamageSkill>() is { } ad)
         {
-            damageType = MapDamageType(ad.damageType);
+            debugType = MapDamageType(ad.damageType);
+            int casterBase = IsMagicLike(debugType) ? casterMag : casterDmg;
             outgoing = EffectiveValues.OutgoingDamage(
-                ad.damage?.baseValue ?? 0, 0, ad.damagePercent?.baseValue ?? 0f,
-                damageType, casterDmg, casterMag);
+                skillAdditive: ad.damage.Get(level),
+                damagePercent: ad.damagePercent.Get(level),
+                casterBase: casterBase);
         }
-        else if (data is Il2Cpp.TargetDamageSkill td)
+        else if (data.TryCast<Il2Cpp.TargetProjectileSkill>() is { } tp)
         {
-            damageType = MapDamageType(td.damageType);
+            debugType = MapDamageType(tp.damageType);
+            int casterBase = IsMagicLike(debugType) ? casterMag : casterDmg;
             outgoing = EffectiveValues.OutgoingDamage(
-                td.damage?.baseValue ?? 0, 0, td.damagePercent?.baseValue ?? 0f,
-                damageType, casterDmg, casterMag);
+                skillAdditive: tp.damage.Get(level),
+                damagePercent: tp.damagePercent.Get(level),
+                casterBase: casterBase);
         }
-        else if (data is Il2Cpp.AreaObjectSpawnSkill aos)
+        else if (data.TryCast<Il2Cpp.TargetDamageSkill>() is { } td)
         {
-            damageType = MapDamageType(aos.damageType);
+            // server-scripts/TargetDamageSkill.cs lines 176-208: poison routes
+            // through magicDamage unless caster is a Rogue player. Monsters
+            // never are, so treat poison as magic-like here too.
+            debugType = MapDamageType(td.damageType);
+            bool useMag = IsMagicLike(debugType) || debugType == DamageType.Poison;
+            int casterBase = useMag ? casterMag : casterDmg;
             outgoing = EffectiveValues.OutgoingDamage(
-                aos.damage?.baseValue ?? 0, 0, 0, damageType, casterDmg, casterMag);
+                skillAdditive: td.damage.Get(level),
+                damagePercent: td.damagePercent.Get(level),
+                casterBase: casterBase);
         }
-        else if (data is Il2Cpp.BuffSkill bf && bf.isAura)
+        else if (data.TryCast<Il2Cpp.AreaObjectSpawnSkill>() is { } aos)
         {
-            int hps = bf.healingPerSecondBonus?.baseValue ?? 0;
-            int casterAttribute = monster.combat?.magicDamage ?? 0;
-            auraDps = EffectiveValues.AuraDpsApprox(hps, casterAttribute);
+            // server-scripts/AreaObjectSpawnSkill.cs lines 113-126: server uses
+            // skill.damage[level] WITHOUT adding caster base.
+            debugType = MapDamageType(aos.damageType);
+            outgoing = EffectiveValues.OutgoingDamage(
+                skillAdditive: aos.damage.Get(level),
+                damagePercent: aos.damagePercent.Get(level),
+                casterBase: 0);
+        }
+        else if (data.TryCast<Il2Cpp.BuffSkill>() is { } bf && bf.isAura)
+        {
+            // server-scripts/Buff.cs lines 220-225 + AreaBuffSkill.cs lines 28-32:
+            // bonusAttribute is filled from the *caster's* attribute (wisdom/int/...)
+            // when the buff is APPLIED. Monsters never set bonusAttribute, so for
+            // monster-cast auras the bonus contribution is zero — pass 0.
+            int hps = bf.healingPerSecondBonus.Get(level);
+            auraDps = EffectiveValues.AuraDpsApprox(healingPerSecondBonus: hps, casterAttribute: 0);
         }
 
         var (min, max) = EffectiveValues.OutgoingDamageRange(outgoing);
         var castTime = EffectiveValues.CastTimeEffective(
-            data.castTime?.baseValue ?? 0f,
-            data.isSpell,
-            monster.skills?.GetSpellHasteBonus() ?? 0f);
-        var cooldown = EffectiveValues.CooldownEffective(
-            data.cooldown?.baseValue ?? 0f,
-            monster.skills?.GetHasteBonus() ?? 0f);
+            rawCastTime: data.castTime.Get(level),
+            isSpell: data.isSpell,
+            spellHasteBonus: monster.skills?.GetSpellHasteBonus() ?? 0f);
+        // Boss special skills do NOT get haste-applied cooldowns (see Skills.cs
+        // lines 767-772). Use the raw cooldown as the snapshot value.
+        var cooldown = data.cooldown.Get(level);
 
         return new BossSkillSnapshot
         {
@@ -2278,6 +2367,9 @@ internal static class EffectiveSnapshotBuilder
             ComputedAtUtc = DateTime.UtcNow,
         };
     }
+
+    private static bool IsMagicLike(DamageType t) => t is
+        DamageType.Magic or DamageType.Fire or DamageType.Cold or DamageType.Disease;
 
     private static DamageType MapDamageType(Il2Cpp.DamageType dt) => dt switch
     {
@@ -2297,7 +2389,7 @@ internal static class EffectiveSnapshotBuilder
 dotnet run --project build-tool build
 ```
 
-Expected: builds. If `Il2CppMirror.NetworkTime` is unresolved, add a `<Reference>` for `Il2CppMirror.dll` in `BossMod.csproj` (it's already there from plan 1's `BossTracker`-based template).
+Expected: builds. (`Il2CppMirror.dll` and `UnityEngine.AudioModule.dll` were added to `BossMod.csproj` in Plan 1 Task 1.)
 
 - [ ] **Step 5: Commit**
 

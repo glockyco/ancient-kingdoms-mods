@@ -134,6 +134,18 @@ public class WavHeaderTests
     }
 
     [Fact]
+    public void Parse_OversizedDataChunk_Throws()
+    {
+        // Build a valid header but truncate the payload so the declared data
+        // length overshoots the file. Parser must reject before ToFloatSamples
+        // tries to read past the end.
+        var bytes = BuildPcmWav(1, 22050, 16, new byte[200]);
+        // Patch declared data length from 200 to 1000 (last 4 bytes before payload at offset 40)
+        BitConverter.GetBytes(1000).CopyTo(bytes, 40);
+        Assert.Throws<WavFormatException>(() => WavHeader.Parse(bytes));
+    }
+
+    [Fact]
     public void ToFloatSamples_Mono16_ConvertsToMinusOnePlusOneRange()
     {
         // Two samples: short.MinValue, short.MaxValue → -1, +1 (approx)
@@ -234,6 +246,8 @@ public readonly record struct WavHeader(
         if (fmt == null) throw new WavFormatException("missing fmt chunk");
         if (dataOffset < 0 || dataLen < 0) throw new WavFormatException("missing data chunk");
         if (fmt.Value.BitsPerSample != 16) throw new WavFormatException("only 16-bit PCM supported");
+        if ((long)dataOffset + dataLen > bytes.Length)
+            throw new WavFormatException($"declared data length {dataLen} exceeds file bytes available ({bytes.Length - dataOffset})");
 
         return fmt.Value with { DataOffset = dataOffset, DataLength = dataLen };
     }
@@ -290,7 +304,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using BossMod.Core.Audio;
-using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using MelonLoader;
 using Il2CppUnityEngine = Il2Cpp.UnityEngine;
 
@@ -329,7 +342,7 @@ public sealed class SoundBank
     {
         const int sampleRate = 22050;
         var clip = Il2CppUnityEngine.AudioClip.Create(name, samples.Length, 1, sampleRate, false);
-        clip.SetData(new Il2CppStructArray<float>(samples), 0);
+        clip.SetData(samples, 0);  // float[] → Il2CppArrayBase<float> via op_Implicit
         _clips[name] = clip;
     }
 
@@ -347,7 +360,7 @@ public sealed class SoundBank
                 var samples = WavHeader.ToFloatSamples(bytes, header);
 
                 var clip = Il2CppUnityEngine.AudioClip.Create(name, samples.Length, 1, header.SampleRate, false);
-                clip.SetData(new Il2CppStructArray<float>(samples), 0);
+                clip.SetData(samples, 0);  // float[] → Il2CppArrayBase<float> via op_Implicit
                 _clips[name] = clip;
                 _log.Msg($"Loaded user sound '{name}' ({samples.Length} samples @ {header.SampleRate}Hz)");
             }
@@ -1057,7 +1070,9 @@ public sealed class AlertOverlay
         // Don't show alert text if global mute and the cascade flag says so
         if (_globals.Muted && _globals.AlertTextMuteOnMasterMute) return;
 
-        var key = $"{ev.BossId}|{ev.SkillId}";
+        // Cross-boss coalescing per spec: same skill on multiple bosses
+        // simultaneously collapses to one entry like `Inferno Blast (×3)`.
+        var key = ev.SkillId;
         var ttl = ev.EffectiveThreat == ThreatTier.Critical ? 5.0 : 3.0;
         var now = Il2CppUnityEngine.Time.unscaledTimeAsDouble;
 
