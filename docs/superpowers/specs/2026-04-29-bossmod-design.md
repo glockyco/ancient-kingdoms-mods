@@ -1,559 +1,979 @@
 # BossMod Design
 
-**Status:** Approved (brainstorming complete)
+**Status:** Refresh approved for implementation planning
 **Date:** 2026-04-29
 **Owner:** mods/
 
 ## Goal
 
-A DBM-style boss-encounter helper for Ancient Kingdoms, rendered with ImGui.NET. Surfaces boss cast bars, per-ability cooldown timers, buff/debuff trackers, and configurable audio + on-screen alerts. Auto-discovers monsters and skills as the player encounters them — no static data export. All configuration in-UI; no hand-edited TOML.
+BossMod is a DBM-style boss-encounter helper for Ancient Kingdoms, rendered with ImGui.NET. It surfaces boss cast bars, per-ability cooldown timers, buff/debuff trackers, and configurable audio plus on-screen alerts. It auto-discovers monsters and skills from live SyncVars as the player encounters them; it does not depend on a static data export. All configuration is in-game through ImGui Settings windows and persists to one `UserData/BossMod/state.json` file.
 
-## Non-goals (v1)
+## Non-goals for v1
 
-Each can drop into the layered architecture later without churn:
+- Threat/aggro-list HUD.
+- Encounter timeline/pull tracker.
+- Custom replacements for the game's ground warning circles.
+- Multi-boss raid-frame HUD beyond grouped sections in existing windows.
+- Network/party broadcast alerts.
+- Static exported-data dependency for runtime behavior.
 
-- Threat / aggro list HUD (data is in `Monster.aggroList` but not surfaced).
-- Encounter timeline / pull tracker.
-- Custom enhancements to the existing `RpcSpawnWarningCircle` ground markers.
-- Multi-boss "raid frame" style HUD.
-- Network/party-aware alerts (broadcasting to party members).
+## Current implementation facts
 
-## Architecture
+These facts supersede older drafts and must be treated as the canonical implementation baseline.
 
-### Layered, single mod
+- The mod runs under MelonLoader net6 against IL2CPP Unity 6000.3.x via CrossOver.
+- Unity-generated assemblies expose Unity types under bare `UnityEngine.*` and `UnityEngine.InputSystem.*`. Use `Il2Cpp.*` only for Assembly-CSharp game types such as `Player`, `Monster`, `Skill`, `NetworkManagerMMO`, and `DamageType`.
+- User data path is `MelonLoader.Utils.MelonEnvironment.UserDataDirectory`.
+- `cimgui.dll` is embedded from the ImGui.NET 1.89.1 NuGet cache as `BossMod.cimgui.dll`; no native binary is checked into the repo.
+- `mods/BossMod/ILRepack.targets` merges ImGui.NET and BossMod.Core into `BossMod.dll` and strips copied NuGet `runtimes/` assets so MelonLoader does not try to load native cimgui as a managed mod.
+- `mods/BossMod.Core` is pure C# and contains no IL2CPP or Unity references.
+- `mods/BossMod` contains IL2CPP adapters, Unity audio, ImGui UI, renderer, and the MelonMod conductor.
+- Runtime skill discovery reads live `monster.skills.skills` entries, not static templates, because live `Skill` instances carry per-instance level, cooldown index, `castTimeEnd`, and `cooldownEnd`.
+- `Party` is a struct; empty party is represented by `party.members == null`.
+- IL2CPP wrapper reference equality is unreliable across casts; compare game entities by `netId`.
+- `AreaBuffSkill.isAura` exists on `AreaBuffSkill`, not on `BuffSkill`.
+- `ScriptableSkill` subclass detection uses `TryCast<T>()` precedence chains.
+- ImGui.NET 1.89.1 lacks `ImGuiKey.Mod*` aliases; use left/right modifier keys.
+- Keyboard text input events are generated as `keyboard.add_onTextInput(handler)` / `remove_onTextInput(handler)` methods, not C# events.
 
+## Architecture overview
+
+BossMod uses a small vertical architecture: game adapters read live state, Core decides policy and persistence, UI/audio are consumers, and `BossMod.cs` is the only conductor.
+
+```text
+                 +-----------------------------+
+                 |          BossMod.cs          |
+                 | lifecycle / conductor only   |
+                 +--------------+--------------+
+                                |
+        +-----------------------+------------------------+
+        |                        |                        |
+        v                        v                        v
++---------------+        +---------------+        +---------------+
+| Tracking      |        | BossMod.Core  |        | UI / Audio    |
+| IL2CPP reads  |        | pure logic    |        | Unity/ImGui   |
++---------------+        +---------------+        +---------------+
+| MonsterWatcher| -----> | SkillCatalog  | -----> | Settings UI   |
+| PlayerContext |        | AlertEngine   | -----> | AlertOverlay  |
+| UiFrame build |        | StateJson     |        | SoundPlayer   |
++---------------+        | StateFlusher  |        | SoundBank     |
+                         | WAV/rate/tone |        +---------------+
+                         +---------------+
 ```
+
+Data flows one way during normal play:
+
+```text
+Mirror SyncVars / SyncLists
+        |
+        v
+MonsterWatcher / PlayerContextBuilder
+        |                         \
+        | catalogChanged           \ UiFrame
+        v                           v
+SkillCatalog ---------------> UI windows
+        |
+        v
+AlertEngine -- AlertEvent --> AlertSubscriber --> SoundPlayer
+                                      |
+                                      v
+                                AlertOverlay
+```
+
+Design rules:
+
+- UI never probes IL2CPP game singletons directly.
+- Audio and overlay consumers do not re-resolve settings inheritance.
+- Core emits post-policy `AlertEvent`s, not raw transitions.
+- Dirty tracking is truthful: mark dirty only when persisted state actually changed.
+- Every committed implementation slice must build; no intentionally build-broken intermediate commits.
+
+## File structure
+
+```text
 mods/BossMod/
-├── BossMod.cs              # MelonMod entry — lifecycle, OnUpdate, OnGUI hook
-├── Imgui/                  # Renderer + cimgui native loading
-│   ├── ImGuiRenderer.cs    # Ported from Erenshor; CommandBuffer-based, IL2CPP-adapted
-│   ├── CimguiNative.cs     # P/Invoke for ImVec2/ImVec4 entry points
-│   └── resources/cimgui.dll
-├── Tracking/               # Reads SyncVars, builds models. No rendering.
-│   ├── MonsterWatcher.cs   # Per-frame scan of nearby Monsters
-│   ├── BossState.cs        # Per-monster live snapshot
-│   └── Activation.cs       # Engaged ∪ Proximate gate
-├── Catalog/                # Persistent learned-skill catalog
-│   ├── SkillCatalog.cs     # In-memory + state.json round-trip
-│   ├── SkillRecord.cs      # Per-skill record
-│   ├── BossRecord.cs       # Per-boss record (incl. per-skill overrides)
-│   ├── SkillSnapshot.cs    # Raw ScriptableSkill values
-│   ├── BossSkillSnapshot.cs# Effective values for a (boss, skill) pair
-│   ├── EffectiveValues.cs  # Pure damage / cast-time / cooldown formulas
-│   └── ThreatClassifier.cs # AutoThreat = f(BossSkillSnapshot, thresholds)
-├── Alerts/                 # Pure event emitter — observes diffs, fires events
-│   ├── AlertEngine.cs      # Edge detection across consecutive BossState frames
-│   └── AlertEvent.cs       # Resolved (boss-skill → skill → tier-default) payload
-├── Audio/
-│   ├── SoundBank.cs        # Generated tones + UserData/Sounds/*.wav loader
-│   └── SoundPlayer.cs      # Single hidden GameObject + AudioSource
-└── Ui/                     # Pure rendering — reads BossState/Catalog, calls ImGui
-    ├── CastBarWindow.cs
-    ├── CooldownWindow.cs
-    ├── BuffTrackerWindow.cs
-    ├── AlertOverlay.cs
-    ├── SettingsWindow.cs   # Tabs: Skills / Bosses / Sounds / General / Export-Import
-    └── GroupableTable.cs   # Reused widget for Skills/Bosses/Sounds tabs
+├── BossMod.cs                    # MelonMod conductor: init, update, layout, teardown
+├── BossMod.csproj                # ImGui.NET, ILRepack, IL2CPP/Unity refs, cimgui resource
+├── ILRepack.targets              # Merge managed deps, strip native runtime assets
+├── Imgui/                        # ImGui backend only
+│   ├── ImGuiRenderer.cs          # cimgui load, context, ini path, lifecycle
+│   ├── ImGuiRenderer.FontAtlas.cs
+│   ├── ImGuiRenderer.Input.cs
+│   ├── ImGuiRenderer.Render.cs
+│   ├── ImGuiRenderer.TextInput.cs
+│   └── CimguiNative.cs
+├── Tracking/                     # IL2CPP adapters; no rendering
+│   ├── MonsterWatcher.cs         # monster scan, catalog harvest, BossState snapshots
+│   ├── Activation.cs             # engaged union proximate gate
+│   ├── SkillSnapshotBuilder.cs
+│   ├── EffectiveSnapshotBuilder.cs
+│   ├── PlayerContextBuilder.cs   # target boss id, player buffs, player position
+│   └── UiFrameBuilder.cs         # pure frame input assembled from current snapshots
+├── Audio/                        # Unity audio wrappers
+│   ├── SoundBank.cs              # built-ins + user WAV AudioClip creation
+│   ├── SoundPlayer.cs            # hidden GameObject + AudioSource + cleanup
+│   └── AlertSubscriber.cs        # thin dispatcher: AlertEvent -> audio/overlay
+├── Ui/                           # ImGui windows over UiFrame/catalog/globals only
+│   ├── BossModUi.cs              # owns window instances; renders one frame
+│   ├── UiFrame.cs                # view input records used by all windows
+│   ├── Theme.cs
+│   ├── WindowChrome.cs           # centralized normal/config-mode flags
+│   ├── CastBarWindow.cs
+│   ├── CooldownWindow.cs
+│   ├── BuffTrackerWindow.cs
+│   ├── AlertOverlay.cs
+│   ├── SettingsWindow.cs
+│   ├── GroupableTable.cs
+│   └── Tabs/
+│       ├── SkillsTab.cs
+│       ├── BossesTab.cs
+│       ├── SoundsTab.cs
+│       ├── GeneralTab.cs
+│       └── ExportImportTab.cs
+├── ConfigMode.cs                 # scene-gated config-mode policy + banner
+├── HotkeyManager.cs              # InputSystem edge detection
+└── CLAUDE.md                     # mod-specific maintenance guide
+
+mods/BossMod.Core/
+├── Catalog/                      # persistent catalog records and snapshots
+├── Tracking/                     # pure snapshot records consumed by Core/UI
+├── Effects/                      # formulas, threat classifier, settings resolver
+├── Alerts/                       # AlertEngine + AlertEvent
+├── Audio/                        # WAV parser, tone synthesis, sound rate limiter
+└── Persistence/                  # Globals, StateJson, StateFlusher
+
+tests/BossMod.Core.Tests/         # host-side xunit tests for pure logic
 ```
 
-### Data flow
+Files may be introduced incrementally, but their responsibilities should remain as above.
 
-```
-Server (Mirror)
-   │ SyncVars / SyncLists
-   ▼
-MonsterWatcher  ──harvest──►  SkillCatalog (persisted to state.json)
-   │
-   │ BossState[N]
-   ▼
-AlertEngine     ──events──►   SoundPlayer
-   │                           AlertOverlay
-   │ BossState[N]
-   ▼
-Ui windows (CastBar, Cooldown, BuffTracker)
-```
-
-One direction. UI never writes to tracking. Catalog reads from MonsterWatcher; user edits in SettingsWindow write to Catalog only.
-
-### Event source: SyncVar polling, no Harmony
-
-`Skill.castTimeEnd` and `Skill.cooldownEnd` are absolute server timestamps. Sub-frame precision comes from arithmetic at render time (`end - now`), not from poll rate. New-cast / cast-finished / cooldown-ready events emerge from edge detection on consecutive frames; worst-case alert latency is one frame. Harmony adds dependencies and IL2CPP fragility for no win.
-
-## Tracking and catalog
-
-### MonsterWatcher
-
-Active only in `World` scene. Reuses `BossTracker`'s caching pattern: full `FindObjectsOfType<Monster>` only on scene change or local-player teleport (>50m delta), otherwise iterates the cached array. Each frame, for every cached `Monster` with `(isBoss || isElite) && health.current > 0`:
-
-- Build a fresh `BossState` snapshot (cast info, cooldown values, buffs, position, hp).
-- On first sight of a `Monster.name`, `BossRecord` is created in `SkillCatalog`.
-- On first sight of any `ScriptableSkill` in `monster.skills.skillTemplates`, a `SkillRecord` is created.
-- Per-`(boss, skill)` `BossSkillRecord` is created or refreshed: re-derive `EffectiveSnapshot` from current `monster.combat.damage / magicDamage / skills.GetSpellHasteBonus / skills.GetHasteBonus`. Recompute gated on edge changes (combat int delta, buff count delta, buff identity hash delta) — not per-frame.
-- User-owned fields on `SkillRecord` and `BossSkillRecord` (`UserThreat`, `Sound`, `AlertText`, `FireOn`, `Muted`) are **never** overwritten by refresh — only `RawSnapshot` and `EffectiveSnapshot` are.
-
-### Identity
-
-- Skill id = `ScriptableSkill.name` (the Unity-asset name; stable, human-readable, basis of `Skill.hash`).
-- Boss id = `monster.name` with `(Clone)` stripped and trimmed.
+## Core domain model
 
 ### Catalog records
 
 ```csharp
-public sealed class SkillRecord                       // catalog["skills"][skill_id]
+public sealed class SkillRecord
 {
-    public string Id;
-    public string DisplayName;
-    public DateTime FirstSeenUtc;
-    public string LastSeenInBoss;
-    public SkillSnapshot RawSnapshot;
-    public ThreatTier? UserThreat;                    // skill-level override; null → fall through
-    public string? Sound;
-    public string? AlertText;
-    public AlertTrigger? FireOn;
-    public bool? Muted;
+    public string Id { get; set; } = "";
+    public string DisplayName { get; set; } = "";
+    public DateTime FirstSeenUtc { get; set; }
+    public string LastSeenInBoss { get; set; } = "";
+    public SkillSnapshot RawSnapshot { get; set; } = new();
+
+    // Skill-level overrides. null means inherit.
+    public ThreatTier? UserThreat { get; set; }
+    public string? Sound { get; set; }
+    public string? AlertText { get; set; }
+    public AlertTrigger? FireOn { get; set; }
+    public bool? AudioMuted { get; set; }
 }
 
-public sealed class BossRecord                        // catalog["bosses"][boss_id]
+public sealed class BossRecord
 {
-    public string Id;
-    public string DisplayName;
-    public string Type;                               // "Undead" / "Beast" / ... — for grouping
-    public string Class;                              // "Warrior" / "Mage" / ... — for grouping
-    public string ZoneBestiary;                       // primary group key in Bosses tab
-    public BossKind Kind;                             // Boss | Elite | Fabled | WorldBoss
-    public int LastSeenLevel;
-    public DateTime FirstSeenUtc, LastSeenUtc;
-    public Dictionary<string, BossSkillRecord> Skills;
+    public string Id { get; set; } = "";
+    public string DisplayName { get; set; } = "";
+    public string Type { get; set; } = "";
+    public string Class { get; set; } = "";
+    public string ZoneBestiary { get; set; } = "";
+    public BossKind Kind { get; set; } = BossKind.Boss;
+    public int LastSeenLevel { get; set; }
+    public DateTime FirstSeenUtc { get; set; }
+    public DateTime LastSeenUtc { get; set; }
+    public Dictionary<string, BossSkillRecord> Skills { get; set; } = new();
 }
 
-public sealed class BossSkillRecord                   // catalog["bosses"][boss_id]["skills"][skill_id]
+public sealed class BossSkillRecord
 {
-    public BossSkillSnapshot EffectiveSnapshot;
-    public ThreatTier AutoThreat;                     // computed from EffectiveSnapshot + thresholds
-    public ThreatTier? UserThreat;                    // boss-level override; wins over skill-level
-    public string? Sound;
-    public string? AlertText;
-    public AlertTrigger? FireOn;
-    public bool? Muted;
-    public DateTime LastObservedUtc;
-}
+    public BossSkillSnapshot EffectiveSnapshot { get; set; } = new();
+    public ThreatTier AutoThreat { get; set; } = ThreatTier.Low;
 
+    // Boss-level overrides. Wins over SkillRecord. null means inherit.
+    public ThreatTier? UserThreat { get; set; }
+    public string? Sound { get; set; }
+    public string? AlertText { get; set; }
+    public AlertTrigger? FireOn { get; set; }
+    public bool? AudioMuted { get; set; }
+
+    public DateTime LastObservedUtc { get; set; }
+}
+```
+
+`AudioMuted` replaces the ambiguous old `Muted` meaning. It suppresses sound playback only. Visual alert suppression is represented by empty alert text and by the global `AlertTextMuteOnMasterMute` setting.
+
+### Enumerations
+
+```csharp
 public enum ThreatTier { Low, Medium, High, Critical }
 public enum AlertTrigger { CastStart, CastFinish, CooldownReady }
 public enum BossKind { Boss, Elite, Fabled, WorldBoss }
+public enum DamageType { Normal, Magic, Fire, Cold, Poison, Disease }
+public enum ExpansionDefault { ExpandTargetedOnly, ExpandAll, CollapseAll }
 
-[Flags] public enum DebuffKind
+[Flags]
+public enum DebuffKind
 {
     None = 0,
-    Stun = 1, Fear = 2, Blindness = 4, Mezz = 8,
-    Poison = 16, Disease = 32, Fire = 64, Cold = 128
+    Stun = 1,
+    Fear = 2,
+    Blindness = 4,
+    Mezz = 8,
+    Poison = 16,
+    Disease = 32,
+    Fire = 64,
+    Cold = 128,
 }
 ```
 
-`SkillSnapshot` and `BossSkillSnapshot` are declared in **Snapshot model** below.
+`ExpansionDefault` should be an enum, not a free string. It serializes with the existing `JsonStringEnumConverter`.
 
-### Snapshot model
-
-```csharp
-public sealed class SkillSnapshot                      // raw, caster-independent
-{
-    public string SkillClass;                          // "AreaDamageSkill", etc.
-    public bool IsSpell, IsAura;
-    public float CastTime, Cooldown, CastRange;
-    public int RawDamage, RawMagicDamage;              // skill.damage[level], skill.magicDamage[level]
-    public float DamagePercent;                        // skill.damagePercent[level]
-    public DamageType DamageType;
-    public float? AoeRadius;                           // castRange for AreaDamageSkill, sizeObject for AreaObjectSpawnSkill
-    public float? AoeDelay;                            // AreaObjectSpawnSkill.delayDamage
-    public DebuffKind Debuffs;                         // Stun | Fear | Blindness | Mezz | Poison | Disease | Fire | Cold (bitmask)
-    public float StunChance, StunTime, FearChance, FearTime;
-}
-
-public sealed class BossSkillSnapshot                  // effective for a specific boss
-{
-    public int OutgoingDamage;                         // pre-mitigation, includes caster bonuses
-    public int OutgoingDamageMin, OutgoingDamageMax;   // ±10% variance
-    public int AuraDpsApprox;                          // for aura-debuffs; 0 otherwise
-    public float CastTimeEffective;                    // accounts for spell haste
-    public float CooldownEffective;                    // accounts for haste
-    public DateTime ComputedAtUtc;
-}
-```
-
-### Effective-damage formula (locked)
-
-`monster.combat.damage` and `monster.combat.magicDamage` already include all passive + buff bonuses (computed by `Combat.cs`). We read them directly; no manual buff summation.
+### Globals
 
 ```csharp
-public static int OutgoingDamage(DamageSkill skill, int level, Combat casterCombat)
+public sealed class Globals
 {
-    int casterBase = skill.damageType switch
+    public Thresholds Thresholds { get; set; } = new();
+    public float ProximityRadius { get; set; } = 30f;
+    public float UiScale { get; set; } = 1.0f;
+
+    public bool Muted { get; set; }
+    public float MasterVolume { get; set; } = 1.0f;
+    public bool AlertTextMuteOnMasterMute { get; set; } = true;
+
+    public ExpansionDefault ExpansionDefault { get; set; } = ExpansionDefault.ExpandTargetedOnly;
+    public int MaxCastBars { get; set; } = 3;
+
+    public Dictionary<string, string> Hotkeys { get; set; } = new()
     {
-        DamageType.Magic or DamageType.Fire or DamageType.Cold or DamageType.Disease
-            => casterCombat.magicDamage,
-        _ => casterCombat.damage
+        ["toggle_settings"] = "F8",
     };
-    int raw = casterBase + skill.damage.Get(level);
-    float pct = skill.damagePercent.Get(level);
-    return pct > 0f ? Mathf.RoundToInt(raw * pct) : raw;
+
+    public bool ShowCastBarWindow { get; set; } = true;
+    public bool ShowCooldownWindow { get; set; } = true;
+    public bool ShowBuffTrackerWindow { get; set; } = true;
+    public bool ConfigMode { get; set; }
 }
 ```
 
-Variance bounds for display: `(0.9 × outgoing, 1.1 × outgoing)`. Per-victim modifiers (level diff, defense/resist mitigation) are not folded into the threat snapshot — they're victim-specific and irrelevant to "how dangerous is this skill in general".
+Master mute and master volume are persisted in `Globals`. `SoundPlayer` consumes current global settings; it is not an independent settings owner.
 
-For auras / DoT-debuffs (BuffSkill with negative `healingPerSecondBonus`):
+## Tracking and catalog discovery
+
+`MonsterWatcher` runs only in the `World` scene. Outside `World`, it clears current snapshots and reports no current bosses. It uses the existing cached scan pattern: refresh `Object.FindObjectsOfType(Il2CppType.Of<Monster>())` on scene entry or large player teleport, then iterate the cached array each update.
+
+For each cached live boss/elite with health > 0:
+
+1. Harvest/refresh catalog data from live `monster.skills.skills`.
+2. Build a fresh `BossState` snapshot.
+3. Set `BossState.IsActive` using the activation gate.
+4. Return whether persisted catalog state changed.
+
+Discovery is not gated on activation. Active state controls overlays and alert eligibility only.
+
+### Changed tracking for discovery
+
+Catalog harvesting must report meaningful persisted changes so discovery survives even if Settings is never opened.
+
+A change should be reported when:
+
+- A new `SkillRecord`, `BossRecord`, or `BossSkillRecord` is created.
+- Display metadata changes.
+- `RawSnapshot`, `EffectiveSnapshot`, or `AutoThreat` changes.
+- User-owned override fields are modified through Settings/import.
+
+A change should not be reported merely because an internal timestamp is refreshed every frame. If `LastObservedUtc` must persist, update it only on first sight or on a coarse interval, not every tick.
+
+### BossState
+
+`BossState` is a frame snapshot owned by tracking. UI and Core must treat it as read-only.
 
 ```csharp
-public static int AuraDpsApprox(BuffSkill aura, int level, int casterAttribute) =>
-    Math.Abs(aura.healingPerSecondBonus.Get(level))
-    + Mathf.RoundToInt(casterAttribute * 0.004f * Math.Abs(aura.healingPerSecondBonus.Get(level)));
+public sealed class BossState
+{
+    public uint NetId { get; set; }
+    public string BossId { get; set; } = "";
+    public string DisplayName { get; set; } = "";
+    public int Level { get; set; }
+    public BossKind Kind { get; set; }
+
+    public float PositionX { get; set; }
+    public float PositionY { get; set; }
+    public float DistanceToPlayer { get; set; }
+    public bool IsTargeted { get; set; }
+
+    public int HealthCurrent { get; set; }
+    public int HealthMax { get; set; }
+
+    public CastInfo? ActiveCast { get; set; }
+    public List<SkillCooldown> Cooldowns { get; set; } = new();
+    public List<BuffSnapshot> Buffs { get; set; } = new();
+
+    public double ServerTime { get; set; }
+    public bool IsActive { get; set; }
+}
 ```
 
-(Verified against `Skills.GetHealthRecoveryBonus` lines 165–183.)
+If adding `DistanceToPlayer` and `IsTargeted` directly to `BossState` is too invasive, provide them through `UiFrame` view models. The invariant is that UI must not compute them by reading `Il2Cpp.Player.localPlayer`.
 
-### Cast-time / cooldown effective formulas
+## Activation
 
-Mirror what `UICastBarMonster.cs` and `Skills.cs` do:
+A boss/elite is active when:
 
-```csharp
-public static float CastTimeEffective(Skill s, Skills casterSkills) =>
-    s.castTime - s.castTime * (s.data.isSpell ? casterSkills.GetSpellHasteBonus() : 0f);
-
-public static float CooldownEffective(Skill s, Skills casterSkills) =>
-    s.cooldown * (1f - casterSkills.GetHasteBonus());
+```text
+World scene
+AND health.current > 0
+AND (
+  explicitly targeted by local player
+  OR aggroList contains local player netId
+  OR aggroList contains local player's pet/mercenary netId
+  OR aggroList contains party member netId
+  OR aggroList contains party member pet/mercenary netId
+  OR 2D distance to local player <= Globals.ProximityRadius
+)
 ```
 
-These are denominators for progress bars. Numerator is always `end - serverNow`, read directly from the synced struct.
+Use 2D X/Y distance, matching current isometric coordinate assumptions.
 
-## Threat classification
+Activation has two effects:
 
-`AutoThreat: ThreatTier` is computed once per `BossSkillRecord` whenever its `EffectiveSnapshot` is (re)built. Specific rule set is **deferred** — defaults will be tuned during implementation. Architecturally:
+- Active bosses render in CastBar/Cooldown/Buff windows.
+- Active bosses are eligible for alert emission.
 
-- `ThreatClassifier.Classify(BossSkillSnapshot snapshot, Thresholds thresholds) → ThreatTier`
-- Pure function, no I/O, easy to unit-test.
-- `Thresholds` is editable in **Settings → General** (sliders for damage cuts, cast-time cuts, etc.).
-- Tier set: `Low | Medium | High | Critical`.
+Catalog discovery still runs for visible boss/elite instances regardless of activation.
 
-Indicative defaults — to be tuned during the implementation E2E pass, not locked here:
+## Alert semantics
 
-| Tier | Likely triggers (subject to tuning) |
-|---|---|
-| Critical | AOE damage skill with `OutgoingDamage ≥ critical_damage`, OR `CastTimeEffective ≥ 3s`, OR summons (prime interrupt targets) |
-| High | AOE/target debuffs (`Stun`/`Fear`/`Blindness`), OR `OutgoingDamage ≥ high_damage`, OR `AuraDpsApprox ≥ aura_dps_high` |
-| Medium | Other debuffs, single-target damage |
-| Low | Buff-self, passive auras, default attacks |
+`AlertEngine` is pure Core logic and owns alert policy.
 
-Damage thresholds will be **absolute** so the same skill is classified the same on any boss using it; per-boss tuning lives in the override layer below.
-
-## Settings inheritance chain
-
-Three records, three nesting levels:
-
-```
-SkillRecord                bosses-agnostic; carries skill-level overrides
-  └── BossRecord
-        └── BossSkillRecord    boss-specific snapshot + boss-level overrides
+```text
+prev BossState + curr BossState
+    |
+    v
+AlertEngine
+  - if curr.IsActive == false: emit nothing
+  - detect transition
+  - dedupe per (netId, skillIdx, relevant deadline)
+  - resolve threat/sound/text/fireOn/audioMuted
+  - filter by FireOn
+  - emit AlertEvent
 ```
 
-Resolution at `AlertEvent` emission and at UI render time:
-
-```
-threat       = bosses[B].skills[S].UserThreat ?? skills[S].UserThreat ?? bosses[B].skills[S].AutoThreat
-sound        = bosses[B].skills[S].Sound      ?? skills[S].Sound      ?? defaults[threat].Sound
-alert_text   = bosses[B].skills[S].AlertText  ?? skills[S].AlertText  ?? "{DisplayName}!"
-fire_on      = bosses[B].skills[S].FireOn     ?? skills[S].FireOn     ?? CastStart
-muted        = bosses[B].skills[S].Muted      ?? skills[S].Muted      ?? false
-```
-
-The Settings UI shows the resolved value with a small badge ("auto" / "skill default" / "boss override") so users can see where each setting came from.
-
-## Alert engine
-
-Edge detection across consecutive `BossState` frames. Three triggers:
-
-```
-CastStart       prev.ActiveCast == null      AND curr.ActiveCast != null
-CastFinish      prev.ActiveCast != null      AND curr.ActiveCast == null
-                                             AND prev.castTimeEnd <= serverNow at transition
-                (cancel-vs-finish: Skills.CancelCast sets castTimeEnd into the past;
-                 deadline-not-reached → canceled → no event)
-CooldownReady   prev.cooldownEnd > prev.serverNow   AND   curr.cooldownEnd <= curr.serverNow
-```
-
-### Dedup
-
-Per `(netId, skillIdx)` the engine remembers the last `castTimeEnd` and `cooldownEnd` it fired for. New-instance detection requires a different value. Prevents flapping when SyncList values arrive across multiple frames.
-
-### AlertEvent
+`AlertEvent` represents a post-policy, user-actionable alert. It is not a raw transition.
 
 ```csharp
 public readonly record struct AlertEvent(
     AlertTrigger Trigger,
     uint MonsterNetId,
-    string BossId, string BossDisplayName,
-    string SkillId, string SkillDisplayName,
+    string BossId,
+    string BossDisplayName,
+    string SkillId,
+    string SkillDisplayName,
     ThreatTier EffectiveThreat,
-    string EffectiveSound,         // resolved from chain or threat default; never null
-    string EffectiveAlertText,     // resolved or "{DisplayName}!"; may be empty if user blanked it
-    bool Muted,
-    double ServerTimeAtEvent
-);
+    string EffectiveSound,
+    string EffectiveAlertText,
+    bool AudioMuted,
+    double ServerTimeAtEvent);
 ```
 
-The engine resolves the inheritance chain once and stuffs the result into the event. Audio + AlertOverlay are pure consumers — they don't re-resolve.
+Resolution order:
 
-### Coverage
+```text
+threat     = BossSkill.UserThreat   ?? Skill.UserThreat   ?? BossSkill.AutoThreat
+sound      = BossSkill.Sound        ?? Skill.Sound        ?? TierDefaults.SoundFor(threat)
+alertText  = BossSkill.AlertText    ?? Skill.AlertText    ?? "{DisplayName}!"
+fireOn     = BossSkill.FireOn       ?? Skill.FireOn       ?? CastStart
+audioMuted = BossSkill.AudioMuted   ?? Skill.AudioMuted   ?? false
+```
 
-Alerts fire for **all active bosses** (engaged ∪ proximate). Threat tier moderates loudness; per-skill mute is the per-user noise control. No second gate.
+`AlertEngine` emits only when `trigger == fireOn`. Audio and overlay consumers do not re-open the catalog and do not re-resolve inheritance.
 
-## Audio
+### Transition detection
 
-### SoundBank
+```text
+CastStart:
+  prev.ActiveCast == null
+  curr.ActiveCast != null
+  castTimeEnd value has not already fired for (netId, skillIdx)
 
-- **Built-in tones** generated on mod init via `AudioClip.Create(name, lengthSamples, channels, freq, false)` + `clip.SetData(float[], 0)`. No `PCMReaderCallback` — IL2CPP delegate marshaling is fragile.
-  - Sample rate: 22050 Hz. Length: 200–500 ms each.
-  - Defaults: `low` (440 Hz sine), `medium` (660 Hz), `high` (880 Hz), `critical` (1320 Hz triple-pulse), `chime` (sweep), `klaxon` (square wave alternating two pitches).
-- **User WAVs**: scan `UserData/BossMod/Sounds/*.wav` once on startup and on a "Rescan" button in Sounds tab. Hand-parse RIFF/PCM header into a `float[]` sample buffer; `AudioClip.Create` + `SetData`. No `WWW`/`UnityWebRequest`.
-- Tier defaults map: `Critical → critical`, `High → high`, `Medium → medium`, `Low → low`.
+CastFinish:
+  prev.ActiveCast != null
+  curr.ActiveCast == null
+  previous cast appears to have naturally reached deadline
 
-### SoundPlayer
+CooldownReady:
+  prev cooldownEnd > prev.serverTime
+  curr cooldownEnd <= curr.serverTime
+  cooldownEnd value did not change between prev and curr
+  cooldownEnd value has not already fired for (netId, skillIdx)
+```
 
-- Single hidden `GameObject` with `AudioSource`. `Play(string clipName)` → `audioSource.PlayOneShot(clip)`.
-- Master volume slider (Settings → General).
-- Master mute (Settings → General checkbox; not bound to a hotkey by default — bindable).
-- 200 ms anti-spam window per `(clipName)` to prevent stacking when multiple casts collide.
+CastFinish is best-effort because long frame stalls can make a natural finish resemble a cancellation. The conservative rule is: suppress ambiguous CastFinish rather than emit a plausible lie.
+
+### AlertEngine lifecycle
+
+`AlertEngine` stores dedupe dictionaries. It should expose either:
+
+```csharp
+public void Reset();
+```
+
+or:
+
+```csharp
+public void PruneToActiveNetIds(IEnumerable<uint> netIds);
+```
+
+The conductor calls this on scene changes/World exit so stale netIds do not influence future encounters.
+
+## Alert subscribers
+
+`AlertSubscriber` is intentionally thin:
+
+```text
+Handle(AlertEvent ev):
+  if !ev.AudioMuted:
+      SoundPlayer.Play(ev.EffectiveSound)
+  if ev.EffectiveAlertText is not empty:
+      AlertOverlay.Push(ev)
+```
+
+It may also honor global text suppression by checking `Globals.Muted && Globals.AlertTextMuteOnMasterMute`, but it must not resolve per-skill inheritance or decide FireOn eligibility.
+
+For tests, either keep it trivial enough for integration smoke coverage or inject tiny sink interfaces:
+
+```csharp
+public interface IAlertAudioSink { void Play(string soundName); }
+public interface IAlertOverlaySink { void Push(AlertEvent ev); }
+```
+
+## UI frame and rendering boundary
+
+UI windows render over a pure `UiFrame`. They do not access `Il2Cpp.*`, `UnityEngine.Object.FindObjectOfType`, `Player.localPlayer`, `NetworkManagerMMO`, or `NetworkTime`.
+
+```csharp
+public sealed record UiFrame(
+    IReadOnlyList<BossState> Bosses,
+    string? TargetedBossId,
+    double ServerTime,
+    IReadOnlyList<PlayerBuffView> PlayerBuffs,
+    UiMode Mode);
+
+public sealed record PlayerBuffView(
+    string SkillId,
+    string DisplayName,
+    double EndTime,
+    double TotalTime,
+    bool IsDebuff,
+    bool IsAura,
+    bool IsFromActiveBoss);
+
+public readonly record struct UiMode(
+    bool InWorldScene,
+    bool ConfigMode,
+    WindowChrome CastBarChrome,
+    WindowChrome CooldownChrome,
+    WindowChrome BuffTrackerChrome,
+    WindowChrome AlertChrome);
+
+public readonly record struct WindowChrome(
+    bool ClickThrough,
+    bool ShowTitleBar,
+    bool ShowBackground,
+    bool Movable,
+    bool Resizable,
+    bool ShowConfigOutline);
+```
+
+`PlayerContextBuilder` reads IL2CPP local player state and produces target id, player buffs, player position, and server time. `UiFrameBuilder` combines that with `MonsterWatcher.CurrentSnapshots` and `Globals`.
+
+Render signatures:
+
+```csharp
+public void CastBarWindow.Render(UiFrame frame);
+public void CooldownWindow.Render(UiFrame frame);
+public void BuffTrackerWindow.Render(UiFrame frame);
+public void AlertOverlay.Render(double unscaledNow);
+public bool SettingsWindow.Render(); // true when persisted state changed
+```
+
+`BossModUi` owns window instances:
+
+```csharp
+public sealed class BossModUi
+{
+    public bool Render(UiFrame frame)
+    {
+        _castBar.Render(frame);
+        _cooldowns.Render(frame);
+        _buffs.Render(frame);
+        _alertOverlay.Render(frame.UnscaledNow);
+        return _settings.Render();
+    }
+}
+```
+
+The renderer remains backend-only. `ImGuiRenderer.OnLayout` invokes the application UI callback but does not know about catalog, BossState, audio, or persistence.
 
 ## UI windows
 
-Five windows, five files. ImGui's `ini` file (forced to `UserData/BossMod/imgui.ini`) handles geometry persistence.
-
 ### CastBarWindow
 
-- Vertical stack of bars. One bar per actively-casting active boss/elite.
-- Sort: effective threat tier desc → remaining cast time asc.
-- Cap at N bars (default 3, slider in Settings). Overflow → tiny `+N more casting` footer.
-- Each bar: skill icon, skill name, time-remaining text, fill bar colored by effective threat tier.
-- Anchored top-center by default. `NoInputs | NoTitleBar | NoBackground | NoMove | NoResize | NoScrollbar` in Normal Mode.
+- Renders active bosses with `ActiveCast != null`.
+- Sorts by effective threat descending, then remaining cast time ascending.
+- Caps at `Globals.MaxCastBars` (default 3) and shows `+N more casting` overflow.
+- Uses threat-colored progress bars.
+- Normal mode is click-through; Config Mode unlocks movement/resizing through centralized `WindowChrome`.
 
 ### CooldownWindow
 
-- Sectioned list. One `CollapsingHeader` per active boss. Header: `[BossName · Lvl X · HP%]`.
-- Each section: skill rows for special abilities only (idx ≥ 1), sorted by ETA asc. Off-cooldown rows show a green `READY` tag.
-- Default expansion (configurable in Settings):
-  - Targeted boss: expanded.
-  - Other active bosses: collapsed.
-- Section ordering: targeted boss first, then by distance to player.
-- `NoInputs` flags as above in Normal Mode.
+- Renders one collapsible section per active boss.
+- Header: boss display name, level, HP percent.
+- Ordering: targeted boss first, then distance ascending.
+- Skill rows are idx >= 1 special abilities, sorted by ETA ascending.
+- Ready rows show a green `READY` tag.
+- Expansion policy comes from `Globals.ExpansionDefault`.
 
 ### BuffTrackerWindow
 
-- "On You" pseudo-section at the top: debuffs from `Player.localPlayer.skills.buffs` whose source skill exists in `SkillCatalog` AND whose source boss is active. Always-expanded when non-empty. Visible regardless of activation, since health-relevant.
-- Then sectioned list per active boss, same `CollapsingHeader` shape as Cooldown.
-- Each row: buff/debuff/aura name, time-remaining bar, kind (buff blue / debuff red / aura purple).
-- Same expansion defaults and `NoInputs` flags as Cooldown.
+- Top pseudo-section: `On You`, using `UiFrame.PlayerBuffs`.
+- `On You` includes boss-known debuffs/buffs on the local player and must carry enough source/active information to avoid claiming a buff is boss-related when only the skill id matches by coincidence.
+- Then one collapsible section per active boss, rendering boss buffs/debuffs/auras from `BossState.Buffs`.
+- Colors: aura purple, debuff red, buff blue.
 
 ### AlertOverlay
 
-- Stack of up to 4 simultaneous text alerts. Oldest evicted on overflow.
-- Each entry tagged `(BossId, SkillId)`. Same `(BossId, SkillId)` triggered concurrently across multiple bosses → coalesces to one entry: `Inferno Blast (×3)`.
-- TTL: 3 s default, 5 s for `Critical` tier.
-- Render: top-center, large bold, threat-colored.
-- `NoInputs | NoTitleBar | NoBackground | NoMove | NoResize | NoScrollbar` always (even in Config Mode — it's always click-through).
-- Master mute affects audio only; alert text has its own setting (default: also muted by master mute, configurable).
+- Stack of up to 4 ephemeral text alerts.
+- Coalescing key is `SkillId` for the v1 cross-boss behavior: simultaneous same-skill alerts collapse to `Inferno Blast (x3)`.
+- If trigger-specific coalescing becomes necessary, key by `(SkillId, Trigger)`; do not key by `BossId` for cross-boss coalescing.
+- TTL: 3 seconds normally, 5 seconds for Critical.
+- Always click-through, including Config Mode.
 
 ### SettingsWindow
 
-Five tabs:
+Settings edits write through a mutation boundary and return whether persisted state changed.
 
-- **Skills** — `GroupableTable<SkillRecord>`. Default group: effective threat tier. Toggle group: skill class, last-seen boss. Filter: substring match on id / display name. Click a row → side panel with full snapshot + editor (UserThreat dropdown, Sound dropdown, AlertText input, FireOn dropdown, Muted checkbox, Preview Sound button).
-- **Bosses** — `GroupableTable<BossRecord>`. Default group: `ZoneBestiary`. Toggle: `Kind`, `Type`, ungrouped. Filter same. Click a row → editor showing every BossSkillRecord with the same per-row controls; boss-level override wins over skill-level.
-- **Sounds** — list of available sounds (built-in + user WAVs). Each row: name, source, Preview button. Buttons: Rescan, Open Folder.
-- **General** — checkboxes for window enable; thresholds sliders for ThreatClassifier; visibility radius (`proximity_radius`); `expansion_default` for collapsible sections; UI scale; master mute; alert-text-mute-on-master-mute checkbox; hotkey rebind (default: F8 = toggle Settings; nothing else bound).
-- **Export / Import** — write `state.json` to a chosen path; load from one; reset to defaults. Hot-reload state.json button.
+Minimum acceptable implementation:
 
-## Activation
-
-A registered boss/elite is **active** (rendered in CastBar/Cooldown/BuffTracker AND eligible for alert firing) when **either**:
-
-```
-ENGAGED  (any of)
-    monster.aggroList contains Player.localPlayer.netId
-    monster.aggroList contains any party member's netId
-        party member ∈ PlayerParty.party.members (string[]),
-        resolved via Player.onlinePlayers[name] → .netId
-    monster.aggroList contains any active mercenary's netId
-        Player.localPlayer.NetworkactiveMercenary{1..4} → .netId  (skip nulls)
-    monster.aggroList contains any pet/familiar owned by you or a party member
-    Player.localPlayer.target == monster        // explicit targeting / scouting
-OR
-PROXIMATE
-    Vector2.Distance(monster.position, Player.localPlayer.position) <= proximity_radius
-        proximity_radius default 30 m, slider 10–80 step 5 in Settings → General
+```csharp
+public bool SettingsWindow.Render();
+public bool SkillsTab.Render();
+public bool BossesTab.Render();
+public bool SoundsTab.Render();
+public bool GeneralTab.Render();
+public bool ExportImportTab.Render();
 ```
 
-Plus: `monster.health.current > 0` AND scene is `World`.
+Preferred implementation for maintainability:
 
-Catalog discovery is **not** gated on activation. Every visible Monster contributes to the catalog as soon as it's seen; activation only filters rendering and alert firing.
+```csharp
+public interface ISettingsMutator
+{
+    bool SetSkillOverride(string skillId, SkillOverridePatch patch);
+    bool SetBossSkillOverride(string bossId, string skillId, SkillOverridePatch patch);
+    bool SetGlobal(GlobalPatch patch);
+    bool ReplaceState(SkillCatalog catalog, Globals globals);
+}
+```
+
+Tabs:
+
+- **Skills**: group/filter skill records, show raw/effective context where available, edit skill-level `UserThreat`, `Sound`, `AlertText`, `FireOn`, `AudioMuted`, preview sound.
+- **Bosses**: group/filter boss records, show boss skill records, edit the full boss-level override surface: `UserThreat`, `Sound`, `AlertText`, `FireOn`, `AudioMuted`.
+- **Sounds**: list built-ins and user WAVs, show load status/failure reason, preview sounds, rescan folder, open folder.
+- **General**: window toggles, Config Mode toggle, proximity radius, max cast bars, expansion policy, UI scale, thresholds, master mute, master volume, alert-text suppression, F8 hotkey display/rebind surface.
+- **Export/Import**: export to chosen path, import replacing in-memory state, reload active state file, reset defaults. Each successful mutation returns changed and triggers persistence.
+
+Settings UI should display resolved values and source badges where useful:
+
+```text
+Threat: Critical (boss override)
+Sound: high (skill default)
+Fire on: CastStart (auto)
+```
 
 ## Config Mode
 
-A boolean toggle in Settings → General. Available **only in `World` scene** (disabled with hint outside).
+Config Mode is available only in `World`. Outside `World`, the checkbox is disabled with a hint.
 
-### Normal Mode (default)
+Normal mode:
 
-| Window | Flags |
-|---|---|
-| CastBar / Cooldown / BuffTracker / Alert | `NoInputs | NoTitleBar | NoBackground | NoMove | NoResize | NoScrollbar` — fully click-through |
-| Settings | normal flags |
+```text
+CastBar / Cooldown / BuffTracker / Alert:
+  NoInputs | NoTitleBar | NoBackground | NoMove | NoResize | NoScrollbar
+Settings:
+  normal interactive window
+```
 
-### Config Mode
+Config Mode:
 
-| Window | Flags |
-|---|---|
-| CastBar / Cooldown / BuffTracker | accept input; visible title bar + colored outline; movable + resizable |
-| Alert | always click-through |
-| Settings | normal |
+```text
+CastBar / Cooldown / BuffTracker:
+  interactive, title visible, background/outline visible, movable, resizable
+AlertOverlay:
+  always click-through
+Settings:
+  normal interactive window
+```
 
-A persistent banner appears top-center while Config Mode is active: `CONFIG MODE — drag windows to reposition · click here to exit`. Banner click + checkbox + Esc all exit.
+A top-center banner renders while Config Mode is active:
 
-Position/size changes during Config Mode persist via ImGui's ini handling.
+```text
+CONFIG MODE - drag windows to reposition - Exit
+```
+
+Clicking Exit or disabling the checkbox leaves Config Mode. If Escape handling is implemented, it must not conflict with ImGui text input.
 
 ## Hotkeys
 
-| Default | Action |
-|---|---|
-| F8 | Toggle Settings window |
+Default hotkeys:
 
-That's the entire default hotkey surface. All other actions live in Settings as buttons or checkboxes; users can rebind / add their own (master mute, individual window toggles, hot-reload state.json) via Settings → General.
+```text
+F8 -> Toggle Settings
+```
+
+No other action is bound by default. Other actions remain buttons/checkboxes in Settings.
+
+Implementation rules:
+
+- Use `UnityEngine.InputSystem.Keyboard.current`.
+- Use edge detection; fire on key down, not every pressed frame.
+- Do not fire action hotkeys while ImGui wants text input.
+- F8 may work outside `World` so settings can be opened from menu unless a later in-game finding shows that is unsafe.
+- Resolver may support only F1-F12 for v1, but the UI must tell the truth about that limitation if rebind is exposed.
+
+## Audio
+
+### Core audio helpers
+
+Pure, host-tested code lives in `BossMod.Core.Audio`:
+
+- `WavHeader`: validates and parses 16-bit PCM WAV files.
+- `Tone`: generates built-in tone sample arrays.
+- `SoundRateLimiter`: enforces per-sound anti-spam windows.
+
+### WAV support
+
+v1 supports:
+
+- RIFF/WAVE.
+- PCM format code 1.
+- 16-bit samples.
+- Mono or stereo.
+- Any positive sane sample rate.
+- Stereo downmixed to mono by averaging channels.
+
+Parser must reject:
+
+- missing RIFF/WAVE signatures.
+- missing `fmt ` or `data` chunk.
+- negative or oversized chunk sizes.
+- `fmt ` chunk shorter than fields read.
+- channel count other than 1 or 2.
+- sample rate <= 0.
+- invalid `blockAlign` or `byteRate` for PCM16.
+- `dataOffset + dataLength > bytes.Length`.
+- data length not divisible by frame size.
+
+### Built-in tones
+
+Built-ins are generated at startup and converted to Unity `AudioClip`s:
+
+```text
+low      -> low-priority short sine
+medium   -> medium-priority sine
+high     -> higher-pitch sine/pulse
+critical -> triple pulse
+chime    -> sweep
+klaxon   -> alternating square/square-like warning tone
+```
+
+The refreshed plan must choose one exact frequency table and keep spec/tests/code aligned. Tone tests must assert finite samples, amplitude in [-1, +1], expected lengths, and non-clicky attack/decay endpoints.
+
+### SoundBank
+
+`SoundBank` owns the registry of available sound names to Unity `AudioClip`s.
+
+Rules:
+
+- Built-in names are reserved.
+- User WAVs live in `UserData/BossMod/Sounds/*.wav`.
+- Rescan clears previously loaded user clips, preserves built-ins, then reloads valid user WAVs deterministically.
+- Name matching is case-insensitive for collision detection.
+- Invalid/skipped files are recorded with a concise status for the Sounds tab.
+- File size/duration bounds must be documented in the implementation plan to prevent unbounded memory use.
+
+### SoundPlayer
+
+`SoundPlayer` owns one hidden `BossMod_Audio` `GameObject` with one `AudioSource`.
+
+Rules:
+
+- `spatialBlend = 0f` for 2D UI audio.
+- `playOnAwake = false`.
+- `Initialize()` is idempotent or explicitly guarded.
+- `Dispose()` destroys the hidden GameObject and any Unity resources it owns.
+- `Play(name)` checks master mute, source availability, clip existence, then rate limiter, then `PlayOneShot(clip, Globals.MasterVolume)`.
+- Missing clip names log once per name and do not poison the rate limiter.
 
 ## Persistence
 
-Single `UserData/BossMod/state.json`. Schema:
+`UserData/BossMod/state.json` is the single persisted state file. It contains:
 
 ```jsonc
 {
   "version": 1,
-  "global": {
-    "thresholds": { "critical_damage": 200, "high_damage": 80, ... },
-    "proximity_radius": 30,
-    "ui_scale": 1.0,
-    "muted": false,
-    "alert_text_mute_on_master_mute": true,
-    "expansion_default": "expand_targeted_only",
-    "max_cast_bars": 3,
-    "hotkeys": { "toggle_settings": "F8" }
-  },
-  "skills": {
-    "<skill_id>": {
-      "display_name": "...",
-      "first_seen_utc": "...",
-      "last_seen_in_boss": "...",
-      "raw_snapshot": { ... },
-      "user_threat": null | "Critical|High|Medium|Low",
-      "sound": null | "<name>",
-      "alert_text": null | "...",
-      "fire_on": null | "CastStart|CastFinish|CooldownReady",
-      "muted": null | true | false
-    }
-  },
-  "bosses": {
-    "<boss_id>": {
-      "display_name": "...",
-      "type": "Undead|Beast|...",
-      "class": "Warrior|Mage|...",
-      "zone_bestiary": "Crypt of Decay",
-      "kind": "Boss|Elite|Fabled|WorldBoss",
-      "last_seen_level": 10,
-      "first_seen_utc": "...",
-      "last_seen_utc": "...",
-      "skills": {
-        "<skill_id>": {
-          "effective_snapshot": { ... },
-          "auto_threat": "Critical|High|Medium|Low",
-          "user_threat": null | "...",
-          "sound": null | "...",
-          "alert_text": null | "...",
-          "fire_on": null | "...",
-          "muted": null | true | false,
-          "last_observed_utc": "..."
-        }
-      }
-    }
-  }
+  "global": { ... },
+  "skills": { ... },
+  "bosses": { ... }
 }
 ```
 
-- Edits during play debounced flush every ~2 s of no further changes.
-- Hard flush on `OnApplicationQuit` / mod teardown.
-- Loaded once on mod init. No hot-reload from disk except via the explicit Settings → Export/Import button.
-- Schema version field gates future migrations.
-- Export = write to user-chosen path. Import = load from user-chosen path, replacing in-memory state (with confirmation).
+`StateJson.Write` writes atomically enough for v1 by writing a `.tmp`, flushing to disk, then replacing/moving into place in the same directory. If using delete+move, the small no-destination window must be documented; prefer `File.Replace` when available and destination exists, with a safe fallback.
 
-## Performance budget
+`StateJson.Read` should return both data and status, or otherwise let the caller log status:
 
-- MonsterWatcher: O(N_monsters) per frame for state read; O(N_monsters · K_skills) for cooldown reads. ~50 × 5 = 250 SyncList element reads/frame. Negligible.
-- AlertEngine: O(N_monsters · K_skills) value comparisons against last-frame snapshot.
-- BossSkillSnapshot recompute: edge-gated on `combat.damage` int delta, `combat.magicDamage` int delta, `skills.buffs.Count` delta, buffs identity hash delta. Few times per fight, not per-frame.
-- ImGui render: ≤5 windows, ≤200 widgets total, well within frame budget given Erenshor's renderer perf characteristics.
-- Aggro probes: ~50 monsters × (1 + party_size + mercenary_count) ≈ 250 dict lookups per frame. Negligible.
+```csharp
+public enum StateReadStatus
+{
+    Loaded,
+    MissingUsedDefaults,
+    CorruptUsedDefaults,
+    UnsupportedVersionUsedDefaults,
+}
+```
 
-## ImGui rendering
+Silent reset on corrupt state is not acceptable as a user-facing truth: the mod may continue with defaults, but logs/UI should say defaults are active because loading failed.
 
-Implement from scratch against MelonLoader / IL2CPP. Erenshor's `ImGuiRenderer.cs` (`~/Projects/Erenshor/src/mods/AdventureGuide/src/Rendering/ImGuiRenderer.cs`) is **not** a port target — it's a reference for known stumbling blocks and a sanity check on overall shape. We make our own architectural choices, particularly around the IL2CPP-specific concerns Erenshor's Mono environment didn't surface.
+### StateFlusher
 
-### Stumbling blocks to plan around (informed by Erenshor's experience)
+`StateFlusher` is pure Core filesystem/clock logic with tests. It owns debounce and hard flush.
 
-- Native `cimgui.dll` loaded via embedded-resource extraction + `LoadLibrary` works under CrossOver too — it's still kernel32. Skip the rewrite if the file already exists; `LoadLibrary` on an in-use DLL increments refcount cleanly while a rewrite would fail with file-locked.
-- ImGui font-atlas TTF memory must be allocated via `ImGui.MemAlloc`, not `Marshal.AllocHGlobal` — ImGui takes ownership and frees with its own allocator on context destruction.
-- `ImGuiStyle.ScaleAllSizes` is **cumulative**. Keep an unscaled style baseline and re-apply from baseline on every scale change, otherwise sizes drift.
-- Font atlas rebuilds (e.g. on scale change) must run on the render thread inside the OnGUI repaint event, not from arbitrary callers.
-- The renderer needs a separate texture-id table for user-registered textures vs. the font atlas because UV transforms differ between them.
-- ImGui's ini-path string must be pinned (`GCHandle.Alloc(..., GCHandleType.Pinned)`) for the lifetime of the context — ImGui reads the pointer each frame.
-- For audio specifically: avoid `PCMReaderCallback` and other delegate-passing APIs (already locked in the Audio section). Same caution applies to any other Unity API that takes a managed delegate.
+```csharp
+public sealed class StateFlusher : IDisposable
+{
+    public void MarkDirty();
+    public void Tick();
+    public void Flush();
+    public void Dispose();
+    public Action<Exception>? OnFlushError { get; set; }
+}
+```
 
-### IL2CPP / MelonLoader deltas we own
+Rules:
 
-These are the actual differences from Erenshor's Mono environment that drive our implementation choices:
+- `MarkDirty` records the first dirty timestamp; repeated marks do not reset the debounce window.
+- `Tick` writes after debounce elapses.
+- `Dispose` hard-flushes pending dirty state.
+- If flush fails, dirty state remains pending and an error is surfaced.
+- Dirty means persisted state changed; do not use “Settings window is open” as a proxy.
 
-- All Unity types accessed as `Il2Cpp.UnityEngine.*` with explicit casts/wraps where IL2CPP requires them. P/Invoke and native loading are unchanged.
-- `MelonMod.OnGUI()` is the repaint hook — no `MonoBehaviour` attachment needed for the renderer.
-- Logging via `MelonLogger.Instance`.
-- Cache path: `MelonUtils.UserDataDirectory + "/BossMod/cache"`.
-- Input bridge written against the new InputSystem (`Mouse.current`, `Keyboard.current`) per `mods/CLAUDE.md`, not legacy `UnityEngine.Input`.
-- `Assembly.GetManifestResourceStream` works identically — mod assembly is .NET, not IL2CPP.
-- ILRepack merges `ImGui.NET.dll`, `System.Numerics.Vectors`, `System.Runtime.CompilerServices.Unsafe` into the single mod DLL so MelonLoader sees one assembly and avoids resolution surprises.
-- `<AllowUnsafeBlocks>true</AllowUnsafeBlocks>` in the csproj.
+Dirty sources:
 
-### Renderer architectural choices (decided during implementation)
+```text
+settingsChanged = SettingsWindow.Render()
+catalogChanged  = MonsterWatcher.Tick()
+importChanged   = ExportImportTab action
+resetChanged    = reset defaults action
+```
 
-Deferred from this spec because they're implementation details with multiple sane answers:
+## BossMod conductor
 
-- Mesh batching strategy (one Mesh per ImDrawList vs. pooled vs. dynamic vertex buffer).
-- Material setup — `UI/Default` is a reasonable starting shader, final choice during implementation.
-- Texture registration API surface (whether and how user code can register Unity textures as ImGui texture IDs).
-- CommandBuffer lifecycle (per-frame `Clear()` vs. retained).
-- How input capture flags (`WantCaptureMouse`, `WantTextInput`) gate the game's own input handling — if at all needed for a HUD-only mod.
+`BossMod.cs` owns lifecycle and ordering. It should not contain detailed rendering, audio synthesis, WAV parsing, or threat logic.
 
-## Build / packaging
+Initialization order:
 
-- `mods/BossMod/BossMod.csproj` based on `BossTracker.csproj`. Add NuGet refs:
-  - `ImGui.NET 1.89.1`
-  - `System.Numerics.Vectors 4.5.0`
-  - `System.Runtime.CompilerServices.Unsafe 4.5.3`
-  - `ILRepack.Lib.MSBuild.Task 2.0.34.2`
-- Embedded resources: `cimgui.dll` (Windows; runs under CrossOver too).
-- Build via `dotnet run --project build-tool all`. Auto-discovered.
+1. Compute `UserData/BossMod` path using `MelonEnvironment.UserDataDirectory`.
+2. Load `state.json` and log/read-status truthfully.
+3. Initialize renderer.
+4. Initialize audio bank/player.
+5. Initialize Core services: catalog/globals/defaults/alert engine/flusher.
+6. Initialize tracking/context builders.
+7. Initialize UI facade/windows.
+8. Register hotkeys.
+9. Set renderer layout callback.
+
+Per update:
+
+```csharp
+public override void OnUpdate()
+{
+    if (_renderer == null) return;
+
+    _hotkeys.Tick(skipActions: _renderer.WantTextInput);
+
+    var catalogChanged = _watcher.Tick();
+    var frame = _uiFrameBuilder.Build(_watcher.CurrentSnapshots);
+
+    ProcessAlerts(_watcher.CurrentSnapshots);
+
+    if (catalogChanged) _flusher.MarkDirty();
+    _flusher.Tick();
+}
+```
+
+Per layout:
+
+```csharp
+private void OnLayout()
+{
+    var settingsChanged = _ui.Render(_currentFrame);
+    if (settingsChanged) _flusher.MarkDirty();
+}
+```
+
+Alert processing:
+
+- Update previous states for all visible bosses so inactive bosses have continuity if they become active.
+- Emit alerts only through `AlertEngine`, which checks `IsActive`.
+- Clear/prune previous states and reset alert dedupe on World exit/scene generation change.
+
+Teardown:
+
+```csharp
+public override void OnDeinitializeMelon()
+{
+    _flusher?.Dispose();
+    _soundPlayer?.Dispose();
+    _renderer?.Dispose();
+}
+```
+
+## ImGui renderer
+
+The renderer is already implemented as a backend and should stay that way.
+
+Current choices:
+
+- Extract embedded `BossMod.cimgui.dll` to cache and `LoadLibrary` it.
+- Skip rewrite if the DLL already exists to avoid file-lock issues.
+- Pin ImGui ini path for context lifetime.
+- Build default font atlas into Unity `Texture2D`.
+- Use `MelonMod.OnGUI()` and render only on `EventType.Repaint`.
+- One mesh per ImDrawList, one submesh per ImDrawCmd.
+- `CommandBuffer` + `DrawMesh` render path.
+- Unity types are bare `UnityEngine.*`.
+- Input bridge uses new InputSystem and forwards text input through generated `add_onTextInput`/`remove_onTextInput` methods.
+
+Known v1 performance tradeoff:
+
+- Current render path allocates managed arrays and `MaterialPropertyBlock`s per frame/draw command. Accept this for HUD-scale v1 unless E2E profiling shows GC spikes with large Settings tables. If spikes appear, pool material property blocks and grow/reuse vertex/index buffers.
+
+## Settings inheritance and display
+
+Core resolver is the only owner of inheritance semantics. UI may call it to display resolved values; UI must not reimplement it.
+
+Mutation rules:
+
+- `null` means inherit.
+- Empty `AlertText` means intentionally no overlay text, not inherit. If UI needs a way to clear back to inherit, use a separate “inherit” checkbox/button rather than overloading empty string.
+- Boss-level override wins over skill-level override.
+- Skill-level override wins over auto/default.
+
+## Threat classification
+
+Plan 2's thresholds remain placeholders until E2E tuning:
+
+```text
+CriticalDamage = 200
+HighDamage = 80
+AuraDpsHigh = 30
+CriticalCastTime = 3.0
+```
+
+These values must be tuned from observed encounters before v1 completion. ThreatClassifier remains pure and host-tested. Settings exposes threshold sliders, but defaults should be adjusted after live validation.
+
+## Multi-boss behavior
+
+- Cast bars stack across bosses, max `Globals.MaxCastBars`, sorted threat desc then remaining cast time asc.
+- Cooldown and Buff windows group by boss in collapsible sections.
+- Targeted boss sorts first where applicable.
+- AlertOverlay coalesces same `SkillId` cross-boss into one alert count.
+- Cross-boss coalescing text uses ASCII-safe fallback in docs/tests as `Inferno Blast (x3)`; UI may render the multiplication symbol if confirmed fonts handle it.
 
 ## Testing strategy
 
-- Unit-testable layers: `EffectiveValues` (pure), `ThreatClassifier` (pure), `AlertEngine` edge-detection (input: synthetic `BossState[before, after]`, output: `AlertEvent[]`), Settings inheritance resolver (pure).
-- Integration: WAV header parser tested with crafted byte arrays.
-- ImGui rendering: smoke test via HotRepl — load mod, spawn synthetic `BossState` against a stub `Monster`, assert windows draw without exceptions.
-- E2E: launch game, engage a known elite, observe cast bar / cooldown / buff tracker / alerts. Iterate threshold defaults during this pass.
+### Core unit tests
 
-## Open items deferred to implementation
+Required host tests:
 
-- Default values of `Thresholds` (critical_damage, high_damage, aura_dps_high, etc.) — tune during E2E pass.
-- Specific WAV format compatibility scope (16-bit PCM mono is enough; stereo / 24-bit deferred unless trivially free).
-- Whether buff-tracker "On You" filter should also match debuffs from non-active-tracked bosses (currently no — only catalog-known sources).
-- Pet / familiar identification for the "owned by party member" branch of the activation rule — relies on `Pet.Networkowner`; verify the SyncVar is reachable from clients.
+- `EffectiveValues` formulas.
+- `ThreatClassifier` rules.
+- `SettingsResolver` inheritance, including `AudioMuted`, empty alert text, and tier sound defaults.
+- `AlertEngine`:
+  - CastStart default emits.
+  - FireOn suppresses non-matching triggers.
+  - CooldownReady emits when configured.
+  - boss override wins over skill override.
+  - inactive boss emits nothing.
+  - muted emits `AudioMuted = true` but still includes alert text.
+  - CastFinish boundary/cancel ambiguity is conservative.
+  - reset/prune clears dedupe state.
+- `StateJson` read/write, corrupt read status, unsupported version/defaulting, atomic write behavior.
+- `StateFlusher` debounce, repeated dirty marks, flush failure behavior, dispose hard flush.
+- `WavHeader` malformed chunk coverage and sample conversion.
+- `Tone` generated sample shape/range.
+- `SoundRateLimiter` per-name anti-spam behavior.
+
+### Build verification
+
+- Every implementation slice must build.
+- `dotnet test tests/BossMod.Core.Tests/BossMod.Core.Tests.csproj` must pass after Core changes.
+- `dotnet run --project build-tool build` must pass after mod changes.
+
+### In-game verification
+
+Before v1 completion:
+
+- Main menu: renderer initializes; F8 opens Settings; Sounds preview works; no duplicate audio object on reload/deinit.
+- World scene: catalog discovery persists without opening Settings.
+- Activation: proximate bosses show; far inactive bosses do not alert; engaged branch activates outside proximity.
+- Multi-boss: cast bars cap/sort; alert overlay coalesces same skill across bosses.
+- Buff tracker: `On You` section shows only boss-known/source-valid effects.
+- Config Mode: windows unlock in World only and remain click-through otherwise.
+- State: user edits survive restart; corrupt state logs warning and defaults are explicit.
+- Thresholds: defaults tuned from at least several observed elites/bosses.
+
+## Revised implementation plan shape
+
+The old horizontal split “all UI/audio first, conductor later” is replaced by vertical slices.
+
+### New Plan 3 — Core contracts and minimal vertical integration
+
+Goal: make the policy/lifecycle contracts truthful and wire a minimal end-to-end path.
+
+- AlertEngine FireOn/IsActive semantics + tests.
+- Audio Core helpers: WavHeader hardening, Tone tests, SoundRateLimiter tests.
+- Persistence contracts: Globals updates, StateJson read status, StateFlusher tests.
+- UI frame contracts: UiFrame, PlayerBuffView, WindowChrome/UiMode.
+- Minimal SoundBank/SoundPlayer/AlertOverlay.
+- Minimal BossMod conductor replacing demo stub with load -> tick -> alert -> overlay/audio -> flush skeleton.
+- Every task builds.
+
+### New Plan 4 — Complete UI surfaces and settings
+
+Goal: add user-facing windows over the already-wired vertical path.
+
+- CastBarWindow, CooldownWindow, BuffTrackerWindow over UiFrame.
+- SettingsWindow and tabs with changed-return dirty tracking or mutator boundary.
+- Sounds tab with load results and preview.
+- Export/import/reload/reset with explicit dirty/flush behavior.
+- Config Mode centralized chrome provider and banner.
+- Hotkey rebind surface if included in v1.
+
+### New Plan 5 — E2E hardening, tuning, documentation
+
+Goal: validate against the live game and close reliability gaps.
+
+- In-game IL2CPP access verification across multiple elites/bosses.
+- Audio lifecycle/reload verification.
+- Activation and multi-boss verification.
+- Threshold tuning from observed encounters.
+- Renderer allocation/performance observation with populated Settings tables.
+- Update `mods/BossMod/CLAUDE.md`.
+
+## Maintainer rules
+
+- If logic can be pure, put it in `BossMod.Core` and test it.
+- If code touches IL2CPP game objects, put it in `mods/BossMod/Tracking` or conductor-owned adapters, not UI windows.
+- If code touches Unity audio/rendering, keep lifecycle ownership explicit and dispose Unity objects on deinit.
+- If UI edits persisted state, return `changed` or go through a mutator; do not mutate silently.
+- If a design fact changes, update spec, plans, tests, and docs in the same change.
