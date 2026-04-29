@@ -79,7 +79,7 @@
       Fan-made wiki, interactive world map, and game database
     </p>
     <p class="text-sm text-muted-foreground">
-      Updated for v0.9.14.1 (2026-04-26)
+      Updated for v0.9.14.3 (2026-04-29)
     </p>
   </div>
 
