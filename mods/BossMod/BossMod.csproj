@@ -5,7 +5,6 @@
     <AssemblyName>BossMod</AssemblyName>
     <RootNamespace>BossMod</RootNamespace>
     <LangVersion>latest</LangVersion>
-    <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <ImGuiNetVersion>1.89.1</ImGuiNetVersion>
