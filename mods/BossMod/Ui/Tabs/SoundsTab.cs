@@ -52,7 +52,7 @@ public sealed class SoundsTab
         ImGui.TextUnformatted("Load results");
         if (_soundBank.LoadStatuses.Count == 0)
         {
-            ImGui.TextDisabled("No user WAV files scanned.");
+            ImGui.TextDisabled("No sound load results.");
         }
         else
         {
@@ -61,7 +61,7 @@ public sealed class SoundsTab
                 var status = _soundBank.LoadStatuses[i];
                 ImGui.TextUnformatted(status.Name);
                 ImGui.SameLine(220f);
-                ImGui.TextDisabled(status.Loaded ? "loaded" : "skipped");
+                ImGui.TextDisabled(status.State.ToString().ToLowerInvariant());
                 ImGui.SameLine(320f);
                 ImGui.TextWrapped(status.Message);
             }

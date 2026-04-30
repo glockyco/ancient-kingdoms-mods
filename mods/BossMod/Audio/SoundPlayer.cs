@@ -11,6 +11,7 @@ public sealed class SoundPlayer : IDisposable
 {
     private readonly SoundBank _soundBank;
     private readonly MelonLogger.Instance _log;
+    private const string AudioObjectName = "BossMod_Audio";
     private readonly SoundRateLimiter _rateLimiter = new(TimeSpan.FromMilliseconds(500));
     private readonly HashSet<string> _missingLogged = new(StringComparer.OrdinalIgnoreCase);
     private GameObject _gameObject;
@@ -38,7 +39,8 @@ public sealed class SoundPlayer : IDisposable
             return;
         }
 
-        _gameObject = new GameObject("BossMod_Audio");
+        DestroyExistingAudioObject();
+        _gameObject = new GameObject(AudioObjectName);
         _gameObject.hideFlags = HideFlags.HideAndDontSave;
         UnityEngine.Object.DontDestroyOnLoad(_gameObject);
         _source = _gameObject.AddComponent<AudioSource>();
@@ -90,5 +92,13 @@ public sealed class SoundPlayer : IDisposable
         _source = null;
         _initialized = false;
         _disposed = true;
+    }
+
+    private void DestroyExistingAudioObject()
+    {
+        var existing = GameObject.Find(AudioObjectName);
+        if (existing == null) return;
+        _log.Warning("Removing stale BossMod audio object before initialization.");
+        UnityEngine.Object.Destroy(existing);
     }
 }

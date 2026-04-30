@@ -69,11 +69,11 @@ public class BossMod : MelonMod
             return;
         }
 
-        _soundBank = new SoundBank(soundsDir);
+        _soundBank = new SoundBank(soundsDir, Path.Combine(cacheDir, "sounds"));
         _soundBank.RescanUserSounds();
         foreach (var status in _soundBank.LoadStatuses)
         {
-            if (!status.Loaded) LoggerInstance.Warning($"BossMod skipped sound '{status.Name}' ({status.Path}): {status.Message}");
+            if (status.State == SoundLoadState.Skipped) LoggerInstance.Warning($"BossMod skipped sound '{status.Name}' ({status.Path}): {status.Message}");
         }
 
         _soundPlayer = new SoundPlayer(_soundBank, LoggerInstance);
