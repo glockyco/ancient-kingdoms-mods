@@ -30,7 +30,7 @@
 | `mods/BossMod/Tracking/UiFrameBuilder.cs` | Pure frame assembly fixes discovered by E2E | Modify only if verification exposes a defect |
 | `mods/BossMod/Audio/SoundPlayer.cs` | Hidden audio object lifecycle fixes discovered by E2E | Modify only if verification exposes a defect |
 | `mods/BossMod/Ui/AlertOverlay.cs` | Coalescing/rendering fixes discovered by E2E | Modify only if verification exposes a defect |
-| `mods/BossMod/Ui/*.cs`, `mods/BossMod/Ui/Tabs/*.cs` | Settings/UI allocation or changed-return fixes discovered by E2E | Modify only if verification exposes a defect |
+| `mods/BossMod/Ui/*.cs`, `mods/BossMod/Ui/Tabs/*.cs` | Settings/UI allocation or `UiRenderResult` dirty/flush fixes discovered by E2E | Modify only if verification exposes a defect |
 | `mods/BossMod/CLAUDE.md` | Mod-specific maintainer rules and verification notes | Create or update |
 | `docs/superpowers/plans/2026-04-29-bossmod-{3,4,5}-*.md` | Current refreshed implementation plans; verify no obsolete Plan 3/4 files remain | Reference |
 
@@ -126,7 +126,9 @@ Manual checklist in Settings → Sounds:
 - [ ] Previewing each built-in plays one short 2D UI sound at the current master volume.
 - [ ] Master mute suppresses preview audio without disabling visual Settings interactions.
 - [ ] Missing or invalid user WAV entries show a concise load status and do not crash preview.
-- [ ] Re-scanning the Sounds folder is deterministic: built-ins remain present and invalid files remain reported with reasons.
+- [ ] Re-scanning the Sounds folder is deterministic: built-ins remain present, invalid files remain reported with reasons, and whitespace/case collision names such as ` high .wav` or `HIGH.wav` are skipped truthfully.
+- [ ] Previewing a sound does not suppress the next real alert for that same sound name.
+- [ ] Preview volume/mute reflects imported/reloaded/reset globals immediately without reopening Settings.
 
 If this fails:
 
@@ -419,13 +421,13 @@ Expected:
 
 - Reference: `mods/BossMod/Imgui/ImGuiRenderer.Render.cs`
 - Reference: `mods/BossMod/Ui/SettingsWindow.cs`
-- Reference: `mods/BossMod/Ui/GroupableTable.cs`
+
 - Reference: `mods/BossMod/Ui/Tabs/SkillsTab.cs`
 - Reference: `mods/BossMod/Ui/Tabs/BossesTab.cs`
 - Reference: `mods/BossMod/Ui/Tabs/SoundsTab.cs`
 - Reference: `mods/BossMod/Ui/Tabs/GeneralTab.cs`
 - Reference: `mods/BossMod/Ui/Tabs/ExportImportTab.cs`
-- Modify only if live observation shows unacceptable allocation spikes, broken changed-return semantics, or UI unusability.
+- Modify only if live observation shows unacceptable allocation spikes, broken `UiRenderResult` semantics, or UI unusability.
 
 - [ ] **Step 1: Populate Settings tables**
 
@@ -440,7 +442,7 @@ Expected:
 - Tables render without exceptions.
 - Invalid sound files show concise statuses.
 - Filtering/grouping controls remain responsive.
-- Settings edits return `changed` only when persisted state actually changes.
+- Settings edits return `UiRenderResult` dirty/immediate-flush values only when persisted state actually changes.
 
 - [ ] **Step 2: Observe allocations and frame behavior**
 
@@ -463,8 +465,8 @@ Observation methods:
 
 If observation shows v1-breaking spikes or unusable Settings behavior:
 
-- [ ] First fix truthful changed-return/dirty tracking if repeated persistence is the source of the spike.
-- [ ] Then reduce avoidable per-row allocations in Settings tabs or `GroupableTable`.
+- [ ] First fix truthful `UiRenderResult` dirty/flush tracking if repeated persistence is the source of the spike.
+- [ ] Then reduce avoidable per-row allocations in Settings tabs or shared tab helper code.
 - [ ] Only pool renderer `MaterialPropertyBlock`s or grow/reuse vertex/index buffers if UI-side fixes do not address the observed issue.
 - [ ] Keep `ImGuiRenderer` backend-only; do not let it know about catalog, settings, BossState, audio, or persistence.
 
@@ -473,7 +475,20 @@ If no v1-breaking issue is observed:
 - [ ] Do not refactor renderer internals speculatively.
 - [ ] Record the observed acceptable behavior in commit/PR notes.
 
-- [ ] **Step 4: Verify after any fixes**
+- [ ] **Step 4: Verify Export/Import/Reload/Reset semantics**
+
+Manual checklist:
+
+- [ ] Export to a non-active path succeeds without dirtying or rewriting the active state.
+- [ ] Export to the active `state.json` path is rejected with a clear status message.
+- [ ] Importing an unchanged valid state reports unchanged and does not hard-flush.
+- [ ] Importing a changed valid state applies in place, hard-flushes once, and new mute/volume/settings affect live UI/audio without reopening Settings.
+- [ ] Importing or reloading a corrupt, missing, or unsupported state preserves current live state and displays the read status/error.
+- [ ] Reset user settings clears overrides and restores global defaults while preserving discovered bosses, skills, snapshots, and auto-threat data.
+- [ ] If immediate flush fails, the UI states that dirty state remains retryable instead of claiming the action saved.
+
+
+- [ ] **Step 5: Verify after any fixes**
 
 Run:
 
@@ -493,8 +508,9 @@ Manual expected outcomes:
 - Populated Settings tables remain usable.
 - No repeated state flush occurs without real changes.
 - Temporary logs/instrumentation are removed before commit.
+- Export/import/reload/reset status messages reflect the actual result, including failure paths.
 
-**Checkpoint:** Commit earned renderer/UI hardening fixes and performance observations, or record that no code changes were required.
+**Checkpoint:** Commit earned renderer/UI/state-action hardening fixes and performance observations, or record that no code changes were required.
 
 ---
 
@@ -516,7 +532,7 @@ Manual expected outcomes:
 - [ ] UI boundary: UI windows render only over `UiFrame`, `PlayerBuffView`, `UiMode`, `WindowChrome`, catalog/globals, and Settings mutators; UI windows must not probe IL2CPP game state.
 - [ ] Alert boundary: `AlertEngine` owns FireOn filtering, inactive gating, dedupe, settings resolution, and emits post-policy `AlertEvent`s.
 - [ ] Audio semantics: `AudioMuted` suppresses sound only; empty alert text suppresses overlay text; master mute and alert-text suppression are global settings.
-- [ ] Dirty tracking rule: `SettingsWindow.Render()`/tabs/mutators return changed only for persisted changes; `MonsterWatcher.Tick()` reports catalog changes only for persisted discovery changes; conductor marks dirty only for real changed values.
+- [ ] Dirty tracking rule: `SettingsWindow.Render()`/tabs/mutators return `UiRenderResult`/changed values only for persisted changes; `MonsterWatcher.Tick()` reports catalog changes only for persisted discovery changes; conductor marks dirty only for real changed values and hard-flushes only requested immediate actions.
 - [ ] Lifecycle rule: one hidden `BossMod_Audio` object, renderer/audio/flusher disposed during deinit, alert dedupe reset/pruned on World exit.
 - [ ] Verification commands for future maintainers:
 
@@ -610,7 +626,7 @@ Main menu:
 - [ ] Renderer initializes once and Settings renders.
 - [ ] F8 toggles Settings with edge detection.
 - [ ] Sound preview works for built-ins.
-- [ ] Master mute suppresses preview audio.
+- [ ] Master mute suppresses preview audio, preview does not consume alert rate limits, and imported/reloaded/reset volume/mute changes affect preview immediately.
 - [ ] Reload/deinit/restart does not leave duplicate `BossMod_Audio` objects.
 
 World scene:
@@ -624,7 +640,8 @@ World scene:
 - [ ] BuffTracker `On You` shows only source-valid boss-known effects.
 - [ ] Config Mode unlocks CastBar/Cooldown/BuffTracker in `World` only; AlertOverlay remains click-through.
 - [ ] User settings survive restart.
-- [ ] Corrupt state logs a warning/status and uses explicit defaults rather than silently lying.
+- [ ] Corrupt state logs a warning/status and uses explicit defaults rather than silently lying; corrupt/missing/unsupported import/reload preserves the current live state.
+- [ ] Export/import/reload/reset distinguish changed, unchanged, failed, debounced flush, and immediate flush; reset preserves discovered catalog data.
 - [ ] Tuned thresholds produce expected auto-threat tiers for previously observed bosses.
 
 Documentation:
@@ -644,7 +661,7 @@ Plan 5 is complete only when all of the following are true:
 - [ ] Main-menu verification passed: renderer initializes, F8 toggles Settings, sound preview works, and no duplicate audio object survives reload/deinit/restart.
 - [ ] World-scene verification passed: catalog discovery persists without opening Settings; activation branches work; inactive bosses do not alert; FireOn policy is respected; multi-boss windows and overlay coalescing behave correctly; BuffTracker `On You` is source-valid.
 - [ ] Threshold defaults in `mods/BossMod.Core/Catalog/Thresholds.cs` are tuned from observed elites/bosses, and `tests/BossMod.Core.Tests/ThreatClassifierTests.cs` locks the tuned behavior.
-- [ ] Renderer/UI allocation and populated Settings-table behavior were observed; any v1-breaking issues were fixed; speculative renderer rewrites were avoided if not earned by evidence.
+- [ ] Renderer/UI allocation, populated Settings-table behavior, and Export/Import/Reload/Reset semantics were observed; any v1-breaking issues were fixed; speculative renderer rewrites were avoided if not earned by evidence.
 - [ ] `mods/BossMod/CLAUDE.md` exists and accurately documents boundaries, commands, and manual smoke checks.
 - [ ] Stale plan/doc cleanup was performed after review identified obsolete files.
 - [ ] Temporary logs and instrumentation were removed before every commit.

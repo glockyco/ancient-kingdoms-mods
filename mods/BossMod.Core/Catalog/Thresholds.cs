@@ -2,7 +2,7 @@ namespace BossMod.Core.Catalog;
 
 /// <summary>
 /// Tunable thresholds for the ThreatClassifier. Editable in Settings → General.
-/// Defaults are indicative; actual values tuned during plan 4 E2E pass.
+/// Defaults are indicative; actual values tuned during Plan 5 E2E validation.
 /// </summary>
 public sealed class Thresholds
 {

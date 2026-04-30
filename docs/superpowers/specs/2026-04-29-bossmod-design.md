@@ -115,7 +115,7 @@ mods/BossMod/
 │   └── AlertSubscriber.cs        # thin dispatcher: AlertEvent -> audio/overlay
 ├── Ui/                           # ImGui windows over UiFrame/catalog/globals only
 │   ├── BossModUi.cs              # owns window instances; renders one frame
-│   ├── UiFrame.cs                # view input records used by all windows
+│   ├── UiFrame.cs                # view input classes used by all windows
 │   ├── Theme.cs
 │   ├── WindowChrome.cs           # centralized normal/config-mode flags
 │   ├── CastBarWindow.cs
@@ -123,14 +123,12 @@ mods/BossMod/
 │   ├── BuffTrackerWindow.cs
 │   ├── AlertOverlay.cs
 │   ├── SettingsWindow.cs
-│   ├── GroupableTable.cs
 │   └── Tabs/
 │       ├── SkillsTab.cs
 │       ├── BossesTab.cs
 │       ├── SoundsTab.cs
 │       ├── GeneralTab.cs
 │       └── ExportImportTab.cs
-├── ConfigMode.cs                 # scene-gated config-mode policy + banner
 ├── HotkeyManager.cs              # InputSystem edge detection
 └── CLAUDE.md                     # mod-specific maintenance guide
 
@@ -312,7 +310,7 @@ public sealed class BossState
 }
 ```
 
-If adding `DistanceToPlayer` and `IsTargeted` directly to `BossState` is too invasive, provide them through `UiFrame` view models. The invariant is that UI must not compute them by reading `Il2Cpp.Player.localPlayer`.
+`DistanceToPlayer` and `IsTargeted` are pure view data populated by tracking/conductor code. UI must not compute them by reading `Il2Cpp.Player.localPlayer`.
 
 ## Activation
 
@@ -450,21 +448,33 @@ public interface IAlertOverlaySink { void Push(AlertEvent ev); }
 UI windows render over a pure `UiFrame`. They do not access `Il2Cpp.*`, `UnityEngine.Object.FindObjectOfType`, `Player.localPlayer`, `NetworkManagerMMO`, or `NetworkTime`.
 
 ```csharp
-public sealed record UiFrame(
-    IReadOnlyList<BossState> Bosses,
-    string? TargetedBossId,
-    double ServerTime,
-    IReadOnlyList<PlayerBuffView> PlayerBuffs,
-    UiMode Mode);
+public sealed class UiFrame
+{
+    public IReadOnlyList<BossState> Bosses { get; }
+    public string TargetedBossId { get; }
+    public double ServerTime { get; }
+    public double UnscaledNow { get; }
+    public IReadOnlyList<PlayerBuffView> PlayerBuffs { get; }
+    public UiMode Mode { get; }
+}
 
-public sealed record PlayerBuffView(
-    string SkillId,
-    string DisplayName,
-    double EndTime,
-    double TotalTime,
-    bool IsDebuff,
-    bool IsAura,
-    bool IsFromActiveBoss);
+public enum PlayerBuffSourceStatus
+{
+    SourceUnknown,
+    FromActiveBoss,
+    NotFromActiveBoss,
+}
+
+public sealed class PlayerBuffView
+{
+    public string SkillId { get; }
+    public string DisplayName { get; }
+    public double EndTime { get; }
+    public double TotalTime { get; }
+    public bool IsDebuff { get; }
+    public bool IsAura { get; }
+    public PlayerBuffSourceStatus SourceStatus { get; }
+}
 
 public readonly record struct UiMode(
     bool InWorldScene,
@@ -483,7 +493,7 @@ public readonly record struct WindowChrome(
     bool ShowConfigOutline);
 ```
 
-`PlayerContextBuilder` reads IL2CPP local player state and produces target id, player buffs, player position, and server time. `UiFrameBuilder` combines that with `MonsterWatcher.CurrentSnapshots` and `Globals`.
+`PlayerContextBuilder` reads IL2CPP local player state and produces target id, player buffs, and server time. `MonsterWatcher` supplies pure boss distance/target data. `UiFrameBuilder` combines those values with `MonsterWatcher.CurrentSnapshots` and `Globals`. Player-buff source status must be source-valid; it must not claim a boss source from `SkillId` alone.
 
 Render signatures:
 
@@ -492,7 +502,7 @@ public void CastBarWindow.Render(UiFrame frame);
 public void CooldownWindow.Render(UiFrame frame);
 public void BuffTrackerWindow.Render(UiFrame frame);
 public void AlertOverlay.Render(double unscaledNow);
-public bool SettingsWindow.Render(); // true when persisted state changed
+public UiRenderResult SettingsWindow.Render(UiMode mode);
 ```
 
 `BossModUi` owns window instances:
@@ -500,13 +510,16 @@ public bool SettingsWindow.Render(); // true when persisted state changed
 ```csharp
 public sealed class BossModUi
 {
-    public bool Render(UiFrame frame)
+    public UiRenderResult Render(UiFrame frame)
     {
+        Theme.ApplyUiScale(_globals);
+        var result = new UiRenderResult();
         _castBar.Render(frame);
         _cooldowns.Render(frame);
         _buffs.Render(frame);
         _alertOverlay.Render(frame.UnscaledNow);
-        return _settings.Render();
+        if (_settingsVisible) result.Merge(_settings.Render(frame.Mode));
+        return result;
     }
 }
 ```
@@ -549,38 +562,42 @@ The renderer remains backend-only. `ImGuiRenderer.OnLayout` invokes the applicat
 
 ### SettingsWindow
 
-Settings edits write through a mutation boundary and return whether persisted state changed.
+Settings edits write through a mutation boundary and return a structured result so file actions can request immediate flush and surface truthful status.
 
 Minimum acceptable implementation:
 
 ```csharp
-public bool SettingsWindow.Render();
-public bool SkillsTab.Render();
-public bool BossesTab.Render();
-public bool SoundsTab.Render();
-public bool GeneralTab.Render();
-public bool ExportImportTab.Render();
-```
+public sealed class UiRenderResult
+{
+    public bool Dirty { get; set; }
+    public bool FlushImmediately { get; set; }
+    public string StatusMessage { get; set; } = "";
+}
 
-Preferred implementation for maintainability:
+public UiRenderResult SettingsWindow.Render(UiMode mode);
+public UiRenderResult SkillsTab.Render();
+public UiRenderResult BossesTab.Render();
+public UiRenderResult SoundsTab.Render();
+public UiRenderResult GeneralTab.Render(UiMode mode);
+public UiRenderResult ExportImportTab.Render();
 
-```csharp
 public interface ISettingsMutator
 {
     bool SetSkillOverride(string skillId, SkillOverridePatch patch);
     bool SetBossSkillOverride(string bossId, string skillId, SkillOverridePatch patch);
     bool SetGlobal(GlobalPatch patch);
-    bool ReplaceState(SkillCatalog catalog, Globals globals);
+    bool ApplyLoadedStateInPlace(SkillCatalog loadedCatalog, Globals loadedGlobals);
+    bool ResetUserSettingsToDefaults();
 }
 ```
 
 Tabs:
 
-- **Skills**: group/filter skill records, show raw/effective context where available, edit skill-level `UserThreat`, `Sound`, `AlertText`, `FireOn`, `AudioMuted`, preview sound.
-- **Bosses**: group/filter boss records, show boss skill records, edit the full boss-level override surface: `UserThreat`, `Sound`, `AlertText`, `FireOn`, `AudioMuted`.
+- **Skills**: group/filter skill records, show raw/effective context where available, edit skill-level `UserThreat`, `Sound`, `AlertText`, `FireOn`, `AudioMuted`, preview sounds once the sound preview service is wired, and show missing-sound badges from the sound inventory.
+- **Bosses**: group/filter boss records, show boss skill records, edit the full boss-level override surface: `UserThreat`, `Sound`, `AlertText`, `FireOn`, `AudioMuted`, preview sounds once wired, and show boss override -> skill override -> auto/default source badges.
 - **Sounds**: list built-ins and user WAVs, show load status/failure reason, preview sounds, rescan folder, open folder.
-- **General**: window toggles, Config Mode toggle, proximity radius, max cast bars, expansion policy, UI scale, thresholds, master mute, master volume, alert-text suppression, F8 hotkey display/rebind surface.
-- **Export/Import**: export to chosen path, import replacing in-memory state, reload active state file, reset defaults. Each successful mutation returns changed and triggers persistence.
+- **General**: window toggles, Config Mode toggle, proximity radius, max cast bars, expansion policy, UI scale, thresholds, master mute, master volume, alert-text suppression, and read-only F8 hotkey display for v1.
+- **Export/Import**: export to chosen non-active path, import/reload only when `StateJson.Read` returns `Loaded`, apply valid state in place, reset defaults without clearing discovered catalog records, and request immediate flush only when active persisted state changed.
 
 Settings UI should display resolved values and source badges where useful:
 
@@ -592,7 +609,8 @@ Fire on: CastStart (auto)
 
 ## Config Mode
 
-Config Mode is available only in `World`. Outside `World`, the checkbox is disabled with a hint.
+Config Mode is available only in `World`. Outside `World`, the checkbox is disabled with a hint and effective `UiMode.ConfigMode` is false even if `Globals.ConfigMode` is true.
+`WindowChrome.ForMode` is the single owner of effective mode/chrome derivation; do not add a parallel Config Mode policy helper.
 
 Normal mode:
 
@@ -614,7 +632,7 @@ Settings:
   normal interactive window
 ```
 
-A top-center banner renders while Config Mode is active:
+A top-center banner renders while effective Config Mode is active in `World`:
 
 ```text
 CONFIG MODE - drag windows to reposition - Exit
@@ -638,7 +656,7 @@ Implementation rules:
 - Use edge detection; fire on key down, not every pressed frame.
 - Do not fire action hotkeys while ImGui wants text input.
 - F8 may work outside `World` so settings can be opened from menu unless a later in-game finding shows that is unsafe.
-- Resolver may support only F1-F12 for v1, but the UI must tell the truth about that limitation if rebind is exposed.
+- Hotkey rebinding is deferred for v1. The Settings UI displays F8 truthfully but does not expose a writable binding unless a later plan reopens that scope.
 
 ## Audio
 
@@ -697,9 +715,10 @@ Rules:
 - Built-in names are reserved.
 - User WAVs live in `UserData/BossMod/Sounds/*.wav`.
 - Rescan clears previously loaded user clips, preserves built-ins, then reloads valid user WAVs deterministically.
-- Name matching is case-insensitive for collision detection.
+- Name matching is case-insensitive after trimming the file stem for collision detection.
 - Invalid/skipped files are recorded with a concise status for the Sounds tab.
-- File size/duration bounds must be documented in the implementation plan to prevent unbounded memory use.
+- File size/duration bounds are `5 MiB` and `10 seconds` for v1 to prevent unbounded memory use.
+- `Entries` is the sound inventory; scan failures/skips are load statuses. Do not keep parallel `LoadResults`/`LoadStatuses` or `Rescan`/`RescanUserSounds` APIs alive.
 
 ### SoundPlayer
 
@@ -712,6 +731,7 @@ Rules:
 - `Initialize()` is idempotent or explicitly guarded.
 - `Dispose()` destroys the hidden GameObject and any Unity resources it owns.
 - `Play(name)` checks master mute, source availability, clip existence, then rate limiter, then `PlayOneShot(clip, Globals.MasterVolume)`.
+- `PlayPreview(name)` checks current master mute/volume and missing clips but does not consume the live alert rate limiter.
 - Missing clip names log once per name and do not poison the rate limiter.
 
 ## Persistence
@@ -769,11 +789,13 @@ Rules:
 Dirty sources:
 
 ```text
-settingsChanged = SettingsWindow.Render()
+settingsResult  = SettingsWindow.Render() / BossModUi.Render()
 catalogChanged  = MonsterWatcher.Tick()
-importChanged   = ExportImportTab action
-resetChanged    = reset defaults action
+importResult    = ExportImportTab action (`Dirty`, `FlushImmediately`, status)
+resetResult     = reset defaults action (`Dirty`, `FlushImmediately`, status)
 ```
+
+Import/reload applies loaded state only when `StateJson.Read(...).Status == Loaded`; missing/corrupt/unsupported reads preserve the current live object graph and surface a status. Valid import/reset mutates existing `SkillCatalog`/`Globals` instances in place unless `BossMod.cs` rebuilds every dependent service in the same cutover.
 
 ## BossMod conductor
 
@@ -815,8 +837,9 @@ Per layout:
 ```csharp
 private void OnLayout()
 {
-    var settingsChanged = _ui.Render(_currentFrame);
-    if (settingsChanged) _flusher.MarkDirty();
+    var result = _ui.Render(_currentFrame);
+    if (result.Dirty) _flusher.MarkDirty();
+    if (result.FlushImmediately) _flusher.Flush();
 }
 ```
 
@@ -953,11 +976,11 @@ Goal: make the policy/lifecycle contracts truthful and wire a minimal end-to-end
 Goal: add user-facing windows over the already-wired vertical path.
 
 - CastBarWindow, CooldownWindow, BuffTrackerWindow over UiFrame.
-- SettingsWindow and tabs with changed-return dirty tracking or mutator boundary.
-- Sounds tab with load results and preview.
+- SettingsWindow and tabs with `UiRenderResult` dirty/immediate-flush tracking and a mutator boundary.
+- Sounds tab with inventory/load statuses and preview that does not consume alert rate limits.
 - Export/import/reload/reset with explicit dirty/flush behavior.
-- Config Mode centralized chrome provider and banner.
-- Hotkey rebind surface if included in v1.
+- Config Mode through the centralized `WindowChrome.ForMode` provider and a World-only banner.
+- Fixed F8 Settings toggle; rebind UI deferred for v1.
 
 ### New Plan 5 — E2E hardening, tuning, documentation
 
