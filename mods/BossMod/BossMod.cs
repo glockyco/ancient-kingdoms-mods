@@ -40,6 +40,7 @@ public class BossMod : MelonMod
     private BuffTrackerWindow _buffs;
     private ISettingsMutator _settingsMutator;
     private SettingsWindow _settingsWindow;
+    private StateFileActions _stateFileActions;
     private HotkeyManager _hotkeys;
     private SoundBank _soundBank;
     private SoundPlayer _soundPlayer;
@@ -104,8 +105,10 @@ public class BossMod : MelonMod
         var skillsTab = new SkillsTab(_catalog, _settingsMutator, settingsDefaults, _soundBank, soundPreview);
         var bossesTab = new BossesTab(_catalog, _settingsMutator, settingsDefaults, _soundBank, soundPreview);
         var soundsTab = new SoundsTab(_soundBank, soundPreview, soundsDir, openSoundsFolder);
+        _stateFileActions = new StateFileActions(statePath, _catalog, _globals, _settingsMutator);
         var generalTab = new GeneralTab(_globals, _settingsMutator);
-        _settingsWindow = new SettingsWindow(generalTab, skillsTab, bossesTab, soundsTab);
+        var exportImportTab = new ExportImportTab(_stateFileActions);
+        _settingsWindow = new SettingsWindow(generalTab, skillsTab, bossesTab, soundsTab, exportImportTab);
         _ui = new BossModUi(_globals, _castBars, _cooldowns, _buffs, _settingsWindow, _settingsMutator, _alertOverlay);
         _hotkeys = new HotkeyManager();
         _hotkeys.Register("toggle_settings", _ui.ToggleSettings);
@@ -157,6 +160,18 @@ public class BossMod : MelonMod
         {
             _flusher.MarkDirty();
             _flusher.Flush();
+            if (_flusher.IsDirty)
+            {
+                _stateFileActions.SetLastStatus(string.IsNullOrWhiteSpace(result.StatusMessage)
+                    ? "State save failed; dirty state will retry."
+                    : result.StatusMessage + " State save failed; dirty state will retry.");
+            }
+            else
+            {
+                _stateFileActions.SetLastStatus(string.IsNullOrWhiteSpace(result.StatusMessage)
+                    ? "State saved."
+                    : result.StatusMessage + " State saved.");
+            }
         }
     }
 
