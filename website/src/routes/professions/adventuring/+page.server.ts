@@ -34,6 +34,21 @@ interface AdventurerQuest {
   reward_adventuring_skill: number;
 }
 
+interface VendorUnlock {
+  item_id: string;
+  item_name: string;
+  tooltip_html: string | null;
+  adventuring_level_needed: number;
+  sold_by: {
+    npc_id: string;
+    npc_name: string;
+  }[];
+  currencies: {
+    item_id: string | null;
+    item_name: string;
+  }[];
+}
+
 interface AdventurerNpc {
   npc_id: string;
   npc_name: string;
@@ -57,6 +72,8 @@ interface AdventuringPageData {
   questGivers: AdventurerNpc[];
   merchants: AdventurerNpc[];
   quests: AdventurerQuest[];
+  questPoolOrder: string[];
+  vendorUnlocks: VendorUnlock[];
 }
 
 export const load: PageServerLoad = (): AdventuringPageData => {
@@ -166,6 +183,30 @@ export const load: PageServerLoad = (): AdventuringPageData => {
     )
     .all() as RawQuest[];
 
+  // Source: server-scripts/Utils.cs:521-524 — daily Adventurer quest selection reads the shared npcAdventurerReference quest list.
+  const questPoolOrder = (() => {
+    const row = db
+      .prepare(
+        `
+      SELECT quests_offered
+      FROM npcs
+      WHERE json_extract(roles, '$.is_taskgiver_adventurer') = 1
+        AND quests_offered IS NOT NULL
+      ORDER BY id
+      LIMIT 1
+    `,
+      )
+      .get() as { quests_offered: string | null } | undefined;
+
+    if (!row?.quests_offered) {
+      return rawQuests.map((quest) => quest.id);
+    }
+
+    return (JSON.parse(row.quests_offered) as { id: string }[]).map(
+      (quest) => quest.id,
+    );
+  })();
+
   // Lookup helpers
   const getMonster = db.prepare(`SELECT id, name FROM monsters WHERE id = ?`);
   const getItem = db.prepare(
@@ -231,7 +272,7 @@ export const load: PageServerLoad = (): AdventuringPageData => {
           item !== null,
       );
 
-    // Adventuring skill increase is calculated from XP: exp * 0.00000005
+    // Source: server-scripts/PlayerQuests.cs:323-326 — Adventuring skill increase is rewardExperience * 5E-08f.
     const adventuringSkillIncrease = (rewards.exp ?? 0) * 0.00000005;
 
     return {
@@ -250,7 +291,79 @@ export const load: PageServerLoad = (): AdventuringPageData => {
     };
   });
 
+  const vendorUnlockRows = db
+    .prepare(
+      `
+    SELECT
+      i.id as item_id,
+      i.name as item_name,
+      i.tooltip_html,
+      i.adventuring_level_needed,
+      n.id as npc_id,
+      n.name as npc_name,
+      json_extract(sold.value, '$.currency_item_id') as currency_item_id,
+      json_extract(sold.value, '$.currency_item_name') as currency_item_name
+    FROM items i
+    JOIN npcs n
+      ON n.items_sold IS NOT NULL
+    JOIN json_each(n.items_sold) sold
+      ON json_extract(sold.value, '$.item_id') = i.id
+    WHERE i.adventuring_level_needed > 0
+      AND json_extract(n.roles, '$.is_merchant_adventurer') = 1
+    ORDER BY i.adventuring_level_needed, i.name, n.name
+  `,
+    )
+    .all() as {
+    item_id: string;
+    item_name: string;
+    tooltip_html: string | null;
+    adventuring_level_needed: number;
+    npc_id: string;
+    npc_name: string;
+    currency_item_id: string | null;
+    currency_item_name: string | null;
+  }[];
+
+  const vendorUnlockMap = new Map<string, VendorUnlock>();
+  for (const row of vendorUnlockRows) {
+    const unlock = vendorUnlockMap.get(row.item_id) ?? {
+      item_id: row.item_id,
+      item_name: row.item_name,
+      tooltip_html: row.tooltip_html,
+      adventuring_level_needed: row.adventuring_level_needed,
+      sold_by: [],
+      currencies: [],
+    };
+
+    if (!unlock.sold_by.some((seller) => seller.npc_id === row.npc_id)) {
+      unlock.sold_by.push({ npc_id: row.npc_id, npc_name: row.npc_name });
+    }
+
+    const currencyName = row.currency_item_name ?? "Gold";
+    if (
+      !unlock.currencies.some(
+        (currency) => currency.item_id === row.currency_item_id,
+      )
+    ) {
+      unlock.currencies.push({
+        item_id: row.currency_item_id,
+        item_name: currencyName,
+      });
+    }
+
+    vendorUnlockMap.set(row.item_id, unlock);
+  }
+
+  const vendorUnlocks = Array.from(vendorUnlockMap.values());
+
   db.close();
 
-  return { profession, questGivers, merchants, quests };
+  return {
+    profession,
+    questGivers,
+    merchants,
+    quests,
+    questPoolOrder,
+    vendorUnlocks,
+  };
 };
