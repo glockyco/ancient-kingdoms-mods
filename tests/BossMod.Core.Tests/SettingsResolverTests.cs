@@ -19,19 +19,19 @@ public class SettingsResolverTests
         string? skillSound = null, string? bossSound = null,
         string? skillText = null, string? bossText = null,
         AlertTrigger? skillFireOn = null, AlertTrigger? bossFireOn = null,
-        bool? skillMuted = null, bool? bossMuted = null)
+        bool? skillAudioMuted = null, bool? bossAudioMuted = null)
     {
         return (
             new SkillRecord
             {
                 DisplayName = "TestSkill",
                 UserThreat = skillUser, Sound = skillSound,
-                AlertText = skillText, FireOn = skillFireOn, Muted = skillMuted,
+                AlertText = skillText, FireOn = skillFireOn, AudioMuted = skillAudioMuted,
             },
             new BossSkillRecord
             {
                 AutoThreat = auto, UserThreat = bossUser, Sound = bossSound,
-                AlertText = bossText, FireOn = bossFireOn, Muted = bossMuted,
+                AlertText = bossText, FireOn = bossFireOn, AudioMuted = bossAudioMuted,
             });
     }
 
@@ -86,24 +86,31 @@ public class SettingsResolverTests
     }
 
     [Fact]
-    public void FireOn_DefaultsToCastStart()
+    public void ResolveFireOn_DefaultsCastStart()
     {
         var (s, b) = Pair();
         Assert.Equal(AlertTrigger.CastStart, SettingsResolver.ResolveFireOn(s, b));
     }
 
     [Fact]
-    public void Muted_DefaultsToFalse()
+    public void ResolveAudioMuted_DefaultsFalse()
     {
         var (s, b) = Pair();
-        Assert.False(SettingsResolver.ResolveMuted(s, b));
+        Assert.False(SettingsResolver.ResolveAudioMuted(s, b));
     }
 
     [Fact]
-    public void Muted_BossWinsWhenSet()
+    public void ResolveAudioMuted_BossOverrideWinsOverSkillOverride()
     {
-        var (s, b) = Pair(skillMuted: false, bossMuted: true);
-        Assert.True(SettingsResolver.ResolveMuted(s, b));
+        var (s, b) = Pair(skillAudioMuted: false, bossAudioMuted: true);
+        Assert.True(SettingsResolver.ResolveAudioMuted(s, b));
+    }
+
+    [Fact]
+    public void ResolveAudioMuted_SkillOverrideWinsOverDefault()
+    {
+        var (s, b) = Pair(skillAudioMuted: true);
+        Assert.True(SettingsResolver.ResolveAudioMuted(s, b));
     }
 
     [Fact]
@@ -136,23 +143,16 @@ public class SettingsResolverTests
     }
 
     [Fact]
-    public void FireOn_SkillOverrideUsedWhenBossNull()
+    public void ResolveFireOn_SkillOverrideWinsOverDefault()
     {
         var (s, b) = Pair(skillFireOn: AlertTrigger.CooldownReady);
         Assert.Equal(AlertTrigger.CooldownReady, SettingsResolver.ResolveFireOn(s, b));
     }
 
     [Fact]
-    public void FireOn_BossWins()
+    public void ResolveFireOn_BossOverrideWinsOverSkillOverride()
     {
         var (s, b) = Pair(skillFireOn: AlertTrigger.CastStart, bossFireOn: AlertTrigger.CastFinish);
         Assert.Equal(AlertTrigger.CastFinish, SettingsResolver.ResolveFireOn(s, b));
-    }
-
-    [Fact]
-    public void Muted_SkillUsedWhenBossNull()
-    {
-        var (s, b) = Pair(skillMuted: true);
-        Assert.True(SettingsResolver.ResolveMuted(s, b));
     }
 }

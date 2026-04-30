@@ -37,6 +37,6 @@ public static class SettingsResolver
     public static AlertTrigger ResolveFireOn(SkillRecord s, BossSkillRecord b) =>
         b.FireOn ?? s.FireOn ?? AlertTrigger.CastStart;
 
-    public static bool ResolveMuted(SkillRecord s, BossSkillRecord b) =>
-        b.Muted ?? s.Muted ?? false;
+    public static bool ResolveAudioMuted(SkillRecord s, BossSkillRecord b) =>
+        b.AudioMuted ?? s.AudioMuted ?? false;
 }

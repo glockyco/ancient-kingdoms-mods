@@ -26,18 +26,26 @@ public class AlertEngineTests
         return cat;
     }
 
-    private static BossState State(double now, CastInfo? cast = null, List<SkillCooldown>? cooldowns = null)
+    private static BossState State(
+        double now,
+        CastInfo? cast = null,
+        List<SkillCooldown>? cooldowns = null,
+        bool isActive = true)
     {
         return new BossState
         {
-            NetId = NetId, BossId = Boss, DisplayName = "Infernal Skeleton",
-            ServerTime = now, ActiveCast = cast,
+            NetId = NetId,
+            BossId = Boss,
+            DisplayName = "Infernal Skeleton",
+            ServerTime = now,
+            ActiveCast = cast,
             Cooldowns = cooldowns ?? new List<SkillCooldown>(),
+            IsActive = isActive,
         };
     }
 
     [Fact]
-    public void CastStart_FiresOnce_WhenActiveCastTransitionsFromNull()
+    public void DefaultFireOn_EmitsCastStart()
     {
         var engine = new AlertEngine(MakeCatalog(), new TierDefaults());
         var prev = State(now: 100);
@@ -49,6 +57,19 @@ public class AlertEngineTests
         Assert.Equal(AlertTrigger.CastStart, e.Trigger);
         Assert.Equal(Skill, e.SkillId);
         Assert.Equal(ThreatTier.High, e.EffectiveThreat);
+    }
+
+    [Fact]
+    public void Process_DoesNotEmit_WhenCurrentBossInactive()
+    {
+        var engine = new AlertEngine(MakeCatalog(), new TierDefaults());
+        var prev = State(now: 100);
+        var curr = State(
+            now: 100.05,
+            cast: new CastInfo(1, Skill, "Inferno Blast", 103, 3f),
+            isActive: false);
+
+        Assert.Empty(engine.Process(prev, curr).ToList());
     }
 
     [Fact]
@@ -66,47 +87,75 @@ public class AlertEngineTests
     }
 
     [Fact]
-    public void CastFinish_Fires_WhenCastEndsNaturally()
+    public void FireOnCooldownReady_SuppressesCastStart()
     {
-        var engine = new AlertEngine(MakeCatalog(), new TierDefaults());
-        // Cast ends at 103; current frame is at 103.1 (past the deadline).
+        var cat = MakeCatalog();
+        cat.Skills[Skill].FireOn = AlertTrigger.CooldownReady;
+        var engine = new AlertEngine(cat, new TierDefaults());
+        var prev = State(now: 100);
+        var curr = State(now: 100.05, cast: new CastInfo(1, Skill, "Inferno Blast", 103, 3f));
+
+        Assert.Empty(engine.Process(prev, curr).ToList());
+    }
+
+    [Fact]
+    public void FireOnCooldownReady_EmitsOnCooldownReadyTransition()
+    {
+        var cat = MakeCatalog();
+        cat.Skills[Skill].FireOn = AlertTrigger.CooldownReady;
+        var engine = new AlertEngine(cat, new TierDefaults());
+        var prev = State(now: 99.9, cooldowns: new() { new SkillCooldown(1, Skill, "Inferno Blast", 100, 12f) });
+        var curr = State(now: 100.1, cooldowns: new() { new SkillCooldown(1, Skill, "Inferno Blast", 100, 12f) });
+
+        var e = Assert.Single(engine.Process(prev, curr).ToList());
+        Assert.Equal(AlertTrigger.CooldownReady, e.Trigger);
+    }
+
+    [Fact]
+    public void BossSkillFireOn_OverridesSkillFireOn()
+    {
+        var cat = MakeCatalog();
+        cat.Skills[Skill].FireOn = AlertTrigger.CooldownReady;
+        cat.Bosses[Boss].Skills[Skill].FireOn = AlertTrigger.CastStart;
+        var engine = new AlertEngine(cat, new TierDefaults());
+        var prev = State(now: 100);
+        var curr = State(now: 100.05, cast: new CastInfo(1, Skill, "Inferno Blast", 103, 3f));
+
+        var e = Assert.Single(engine.Process(prev, curr).ToList());
+        Assert.Equal(AlertTrigger.CastStart, e.Trigger);
+    }
+
+    [Fact]
+    public void CastFinish_Fires_WhenConfiguredAndCastEndsNaturally()
+    {
+        var cat = MakeCatalog();
+        cat.Bosses[Boss].Skills[Skill].FireOn = AlertTrigger.CastFinish;
+        var engine = new AlertEngine(cat, new TierDefaults());
         var prev = State(now: 102.99, cast: new CastInfo(1, Skill, "Inferno Blast", 103, 3f));
         var curr = State(now: 103.1, cast: null);
 
-        var events = engine.Process(prev, curr).ToList();
-        var e = Assert.Single(events);
+        var e = Assert.Single(engine.Process(prev, curr).ToList());
         Assert.Equal(AlertTrigger.CastFinish, e.Trigger);
     }
 
     [Fact]
     public void CastFinish_DoesNotFire_WhenCastWasCanceled()
     {
-        var engine = new AlertEngine(MakeCatalog(), new TierDefaults());
-        // Skills.CancelCast sets castTimeEnd into the past; previous frame had a cast
-        // with castTimeEnd in the past — that's the cancel signature.
-        var prev = State(now: 102, cast: new CastInfo(1, Skill, "Inferno Blast", 100 /* deadline already past */, 3f));
+        var cat = MakeCatalog();
+        cat.Bosses[Boss].Skills[Skill].FireOn = AlertTrigger.CastFinish;
+        var engine = new AlertEngine(cat, new TierDefaults());
+        var prev = State(now: 102, cast: new CastInfo(1, Skill, "Inferno Blast", 100, 3f));
         var curr = State(now: 102.1, cast: null);
 
-        var events = engine.Process(prev, curr).ToList();
-        Assert.Empty(events);
-    }
-
-    [Fact]
-    public void CooldownReady_Fires_OnFirstFramePastDeadline()
-    {
-        var engine = new AlertEngine(MakeCatalog(), new TierDefaults());
-        var prev = State(now: 99.9,  cooldowns: new() { new SkillCooldown(1, Skill, "Inferno Blast", 100, 12f) });
-        var curr = State(now: 100.1, cooldowns: new() { new SkillCooldown(1, Skill, "Inferno Blast", 100, 12f) });
-
-        var events = engine.Process(prev, curr).ToList();
-        var e = Assert.Single(events);
-        Assert.Equal(AlertTrigger.CooldownReady, e.Trigger);
+        Assert.Empty(engine.Process(prev, curr).ToList());
     }
 
     [Fact]
     public void CooldownReady_FiresOnce_PerCooldownInstance()
     {
-        var engine = new AlertEngine(MakeCatalog(), new TierDefaults());
+        var cat = MakeCatalog();
+        cat.Bosses[Boss].Skills[Skill].FireOn = AlertTrigger.CooldownReady;
+        var engine = new AlertEngine(cat, new TierDefaults());
         var s1 = State(now: 99.9,  cooldowns: new() { new SkillCooldown(1, Skill, "Inferno Blast", 100, 12f) });
         var s2 = State(now: 100.1, cooldowns: new() { new SkillCooldown(1, Skill, "Inferno Blast", 100, 12f) });
         var s3 = State(now: 100.2, cooldowns: new() { new SkillCooldown(1, Skill, "Inferno Blast", 100, 12f) });
@@ -120,10 +169,11 @@ public class AlertEngineTests
     [Fact]
     public void CooldownReady_FiresAgain_AfterNewCooldownCycle()
     {
-        var engine = new AlertEngine(MakeCatalog(), new TierDefaults());
+        var cat = MakeCatalog();
+        cat.Bosses[Boss].Skills[Skill].FireOn = AlertTrigger.CooldownReady;
+        var engine = new AlertEngine(cat, new TierDefaults());
         var s1 = State(now: 99.9,  cooldowns: new() { new SkillCooldown(1, Skill, "Inferno Blast", 100, 12f) });
         var s2 = State(now: 100.1, cooldowns: new() { new SkillCooldown(1, Skill, "Inferno Blast", 100, 12f) });
-        // Boss recasts, cooldown deadline moves forward.
         var s3 = State(now: 110.0, cooldowns: new() { new SkillCooldown(1, Skill, "Inferno Blast", 122, 12f) });
         var s4 = State(now: 122.5, cooldowns: new() { new SkillCooldown(1, Skill, "Inferno Blast", 122, 12f) });
 
@@ -154,7 +204,6 @@ public class AlertEngineTests
     [Fact]
     public void UnknownSkill_DoesNotEmit()
     {
-        // BossState refers to a skill not in the catalog; engine drops it silently.
         var engine = new AlertEngine(new SkillCatalog(), new TierDefaults());
         var prev = State(now: 100);
         var curr = State(now: 100.05, cast: new CastInfo(1, "unknown_skill", "Unknown", 103, 3f));
@@ -163,17 +212,31 @@ public class AlertEngineTests
     }
 
     [Fact]
-    public void MutedSkill_StillEmitsEvent_WithMutedFlagTrue()
+    public void AudioMutedSkill_StillEmitsEventAndAlertText_WithAudioMutedFlagTrue()
     {
-        // Engine emits regardless; consumer (audio) is what mutes.
         var cat = MakeCatalog();
-        cat.Skills[Skill].Muted = true;
+        cat.Skills[Skill].AudioMuted = true;
+        cat.Skills[Skill].AlertText = "RUN";
 
         var engine = new AlertEngine(cat, new TierDefaults());
         var prev = State(now: 100);
         var curr = State(now: 100.05, cast: new CastInfo(1, Skill, "Inferno Blast", 103, 3f));
 
         var e = Assert.Single(engine.Process(prev, curr).ToList());
-        Assert.True(e.Muted);
+        Assert.True(e.AudioMuted);
+        Assert.Equal("RUN", e.EffectiveAlertText);
+    }
+
+    [Fact]
+    public void Reset_ClearsCastDedupe_ForReusedNetIdSkillAndDeadline()
+    {
+        var engine = new AlertEngine(MakeCatalog(), new TierDefaults());
+        var prev = State(now: 100);
+        var curr = State(now: 100.05, cast: new CastInfo(1, Skill, "Inferno Blast", 103, 3f));
+
+        Assert.Single(engine.Process(prev, curr).ToList());
+        engine.Reset();
+
+        Assert.Single(engine.Process(prev, curr).ToList());
     }
 }

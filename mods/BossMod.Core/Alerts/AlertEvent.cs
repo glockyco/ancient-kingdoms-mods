@@ -16,5 +16,5 @@ public readonly record struct AlertEvent(
     ThreatTier EffectiveThreat,
     string EffectiveSound,
     string EffectiveAlertText,
-    bool Muted,
+    bool AudioMuted,
     double ServerTimeAtEvent);

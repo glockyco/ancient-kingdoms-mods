@@ -23,8 +23,16 @@ public sealed class AlertEngine
         _defaults = defaults;
     }
 
+    public void Reset()
+    {
+        _firedCastEnds.Clear();
+        _firedCooldownEnds.Clear();
+    }
+
     public IEnumerable<AlertEvent> Process(BossState prev, BossState curr)
     {
+        if (!curr.IsActive) yield break;
+
         // CastStart: prev has no cast, curr has one.
         if (prev.ActiveCast == null && curr.ActiveCast is { } start)
         {
@@ -90,17 +98,20 @@ public sealed class AlertEngine
         if (!_catalog.Bosses.TryGetValue(curr.BossId, out var bossRec)) return false;
         if (!bossRec.Skills.TryGetValue(skillId, out var bossSkillRec)) return false;
 
+        var fireOn = SettingsResolver.ResolveFireOn(skillRec, bossSkillRec);
+        if (trigger != fireOn) return false;
+
         var threat = SettingsResolver.ResolveThreat(skillRec, bossSkillRec);
         var sound = SettingsResolver.ResolveSound(skillRec, bossSkillRec, _defaults);
         var text = SettingsResolver.ResolveAlertText(skillRec, bossSkillRec, skillDisplay);
-        var muted = SettingsResolver.ResolveMuted(skillRec, bossSkillRec);
+        var audioMuted = SettingsResolver.ResolveAudioMuted(skillRec, bossSkillRec);
 
         ev = new AlertEvent(
             trigger,
             curr.NetId,
             curr.BossId, curr.DisplayName,
             skillId, skillDisplay,
-            threat, sound, text, muted,
+            threat, sound, text, audioMuted,
             curr.ServerTime);
         return true;
     }

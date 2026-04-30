@@ -16,5 +16,5 @@ public sealed class SkillRecord
     public string? Sound { get; set; }
     public string? AlertText { get; set; }
     public AlertTrigger? FireOn { get; set; }
-    public bool? Muted { get; set; }
+    public bool? AudioMuted { get; set; }
 }
