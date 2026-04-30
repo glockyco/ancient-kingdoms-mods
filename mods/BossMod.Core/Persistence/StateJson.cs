@@ -87,8 +87,10 @@ public static class StateJson
 
         try
         {
-            var json = File.ReadAllText(path);
-            var shape = JsonSerializer.Deserialize<FileShape>(NormalizeLegacyJson(json), Options);
+            var json = NormalizeLegacyJson(File.ReadAllText(path));
+            string? shapeValidationError = ValidateJsonShape(json);
+            if (shapeValidationError != null) return Defaults(StateReadStatus.CorruptUsedDefaults, shapeValidationError);
+            var shape = JsonSerializer.Deserialize<FileShape>(json, Options);
             if (shape == null) return Defaults(StateReadStatus.CorruptUsedDefaults, "State file was empty.");
 
             if (shape.Version != CurrentSchemaVersion)
@@ -98,14 +100,14 @@ public static class StateJson
                     $"Unsupported state schema version {shape.Version}.");
             }
 
-            var globals = shape.Global ?? new Globals();
+            var globals = shape.Global;
             string? validationError = Validate(globals);
             if (validationError != null) return Defaults(StateReadStatus.CorruptUsedDefaults, validationError);
 
             var catalog = new SkillCatalog
             {
-                Skills = shape.Skills ?? new(),
-                Bosses = shape.Bosses ?? new(),
+                Skills = shape.Skills,
+                Bosses = shape.Bosses,
             };
             return new StateReadResult(catalog, globals, StateReadStatus.Loaded, ErrorMessage: null);
         }
@@ -117,6 +119,44 @@ public static class StateJson
         {
             return Defaults(StateReadStatus.CorruptUsedDefaults, SafeError(ex.Message));
         }
+    }
+
+    private static string? ValidateJsonShape(string json)
+    {
+        var root = JsonNode.Parse(json) as JsonObject;
+        if (root == null) return "State root object is required.";
+
+        if (!root.TryGetPropertyValue("Global", out var globalNode) || globalNode is not JsonObject)
+            return "Global object is required.";
+        if (!root.TryGetPropertyValue("Skills", out var skillsNode) || skillsNode is not JsonObject skills)
+            return "Skills object is required.";
+        if (!root.TryGetPropertyValue("Bosses", out var bossesNode) || bossesNode is not JsonObject bosses)
+            return "Bosses object is required.";
+
+        foreach (var skill in skills)
+        {
+            if (skill.Value is not JsonObject skillObject) return $"Skill '{skill.Key}' must be an object.";
+            if (skillObject.TryGetPropertyValue("RawSnapshot", out var rawSnapshot) && rawSnapshot is not JsonObject)
+                return $"Skill '{skill.Key}' RawSnapshot object is required.";
+        }
+
+        foreach (var boss in bosses)
+        {
+            if (boss.Value is not JsonObject bossObject) return $"Boss '{boss.Key}' must be an object.";
+            if (bossObject.TryGetPropertyValue("Skills", out var bossSkillsNode) && bossSkillsNode is not JsonObject)
+                return $"Boss '{boss.Key}' Skills object is required.";
+            if (bossObject.TryGetPropertyValue("Skills", out bossSkillsNode) && bossSkillsNode is JsonObject bossSkills)
+            {
+                foreach (var bossSkill in bossSkills)
+                {
+                    if (bossSkill.Value is not JsonObject bossSkillObject) return $"Boss skill '{boss.Key}/{bossSkill.Key}' must be an object.";
+                    if (bossSkillObject.TryGetPropertyValue("EffectiveSnapshot", out var effectiveSnapshot) && effectiveSnapshot is not JsonObject)
+                        return $"Boss skill '{boss.Key}/{bossSkill.Key}' EffectiveSnapshot object is required.";
+                }
+            }
+        }
+
+        return null;
     }
 
     private static string? Validate(Globals globals)

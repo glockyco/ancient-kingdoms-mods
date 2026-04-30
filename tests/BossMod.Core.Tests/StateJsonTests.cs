@@ -294,6 +294,71 @@ public class StateJsonTests
         finally { File.Delete(path); }
     }
 
+    [Theory]
+    [InlineData("""
+    {
+      "Version": 1,
+      "Global": { "ProximityRadius": 45 },
+      "Bosses": {}
+    }
+    """)]
+    [InlineData("""
+    {
+      "Version": 1,
+      "Global": { "ProximityRadius": 45 },
+      "Skills": {}
+    }
+    """)]
+    public void Read_MissingTopLevelCatalogSections_ReturnsCorruptDefaults(string json)
+    {
+        var path = WriteRaw(json);
+        try
+        {
+            var result = StateJson.Read(path);
+
+            Assert.Equal(StateReadStatus.CorruptUsedDefaults, result.Status);
+            Assert.Empty(result.Catalog.Skills);
+            Assert.Empty(result.Catalog.Bosses);
+            Assert.NotNull(result.ErrorMessage);
+        }
+        finally { File.Delete(path); }
+    }
+
+    [Fact]
+    public void Read_NullNestedCatalogObjects_ReturnsCorruptDefaults()
+    {
+        var path = WriteRaw("""
+        {
+          "Version": 1,
+          "Global": { "ProximityRadius": 45 },
+          "Skills": {
+            "inferno": {
+              "Id": "inferno",
+              "DisplayName": "Inferno",
+              "RawSnapshot": null
+            }
+          },
+          "Bosses": {
+            "boss": {
+              "Id": "boss",
+              "DisplayName": "Boss",
+              "Skills": null
+            }
+          }
+        }
+        """);
+        try
+        {
+            var result = StateJson.Read(path);
+
+            Assert.Equal(StateReadStatus.CorruptUsedDefaults, result.Status);
+            Assert.Empty(result.Catalog.Skills);
+            Assert.Empty(result.Catalog.Bosses);
+            Assert.NotNull(result.ErrorMessage);
+        }
+        finally { File.Delete(path); }
+    }
+
     [Fact]
     public void Write_AtomicallyReplaces_DoesNotLeaveTempFile()
     {

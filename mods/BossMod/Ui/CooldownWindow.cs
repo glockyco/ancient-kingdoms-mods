@@ -25,7 +25,7 @@ public sealed class CooldownWindow
 
         var bosses = frame.Bosses
             .Where(boss => boss.IsActive)
-            .OrderByDescending(boss => IsTargeted(boss, frame.TargetedBossId))
+            .OrderByDescending(boss => boss.IsTargeted)
             .ThenBy(boss => boss.DistanceToPlayer)
             .ToList();
 
@@ -64,7 +64,7 @@ public sealed class CooldownWindow
 
         if (rows.Count == 0) return;
 
-        bool targeted = IsTargeted(boss, frame.TargetedBossId);
+        bool targeted = boss.IsTargeted;
         ImGui.SetNextItemOpen(InitialOpen(targeted), ImGuiCond.FirstUseEver);
         string label = $"{boss.DisplayName}  Lv {boss.Level}  HP {HealthPercent(boss):0}%##cooldowns_{boss.NetId}";
         if (!ImGui.CollapsingHeader(label)) return;
@@ -106,8 +106,6 @@ public sealed class CooldownWindow
         if (index >= 0) ImGui.Spacing();
     }
 
-    private static bool IsTargeted(BossState boss, string targetedBossId) =>
-        boss.IsTargeted || (!string.IsNullOrEmpty(targetedBossId) && boss.BossId == targetedBossId);
 
     private static float HealthPercent(BossState boss) =>
         boss.HealthMax <= 0 ? 0f : Math.Clamp((boss.HealthCurrent / (float)boss.HealthMax) * 100f, 0f, 100f);

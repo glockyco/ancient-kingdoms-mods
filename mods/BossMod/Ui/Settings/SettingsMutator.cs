@@ -72,7 +72,7 @@ public sealed class SettingsMutator : ISettingsMutator
             _globals.Muted = patch.Muted.Value;
             changed = true;
         }
-        if (patch.MasterVolume.HasValue)
+        if (patch.MasterVolume.HasValue && float.IsFinite(patch.MasterVolume.Value))
         {
             float value = Math.Clamp(patch.MasterVolume.Value, 0f, 1f);
             if (_globals.MasterVolume != value)
@@ -86,7 +86,7 @@ public sealed class SettingsMutator : ISettingsMutator
             _globals.AlertTextMuteOnMasterMute = patch.AlertTextMuteOnMasterMute.Value;
             changed = true;
         }
-        if (patch.ProximityRadius.HasValue)
+        if (patch.ProximityRadius.HasValue && float.IsFinite(patch.ProximityRadius.Value))
         {
             float value = Math.Max(1f, patch.ProximityRadius.Value);
             if (_globals.ProximityRadius != value)
@@ -95,7 +95,7 @@ public sealed class SettingsMutator : ISettingsMutator
                 changed = true;
             }
         }
-        if (patch.UiScale.HasValue)
+        if (patch.UiScale.HasValue && float.IsFinite(patch.UiScale.Value))
         {
             float value = Math.Clamp(patch.UiScale.Value, Theme.MinUiScale, Theme.MaxUiScale);
             if (_globals.UiScale != value)
@@ -165,7 +165,7 @@ public sealed class SettingsMutator : ISettingsMutator
                 changed = true;
             }
         }
-        if (patch.CriticalCastTime.HasValue)
+        if (patch.CriticalCastTime.HasValue && float.IsFinite(patch.CriticalCastTime.Value))
         {
             float value = Math.Max(0f, patch.CriticalCastTime.Value);
             if (_globals.Thresholds.CriticalCastTime != value)

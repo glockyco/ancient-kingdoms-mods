@@ -53,10 +53,10 @@ public sealed class BossesTab
         ImGui.EndChild();
 
         ImGui.NextColumn();
-        if ((string.IsNullOrEmpty(_selectedBossId) || string.IsNullOrEmpty(_selectedSkillId)) && rows.Count > 0)
+        if (!rows.Any(row => row.Boss.Id == _selectedBossId && row.Skill.Id == _selectedSkillId))
         {
-            _selectedBossId = rows[0].Boss.Id;
-            _selectedSkillId = rows[0].Skill.Id;
+            _selectedBossId = rows.Count > 0 ? rows[0].Boss.Id : "";
+            _selectedSkillId = rows.Count > 0 ? rows[0].Skill.Id : "";
         }
 
         if (TryGetSelected(out var boss, out var skill, out var bossSkill))

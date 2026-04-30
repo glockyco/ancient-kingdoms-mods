@@ -51,14 +51,18 @@ public sealed class SkillsTab
         ImGui.EndChild();
 
         ImGui.NextColumn();
-        if (string.IsNullOrEmpty(_selectedSkillId) && skills.Count > 0) _selectedSkillId = skills[0].Id;
+        if (!skills.Any(skill => skill.Id == _selectedSkillId)) _selectedSkillId = skills.Count > 0 ? skills[0].Id : "";
         if (_catalog.Skills.TryGetValue(_selectedSkillId, out var selected))
         {
             ImGui.TextUnformatted(selected.DisplayName);
             ImGui.TextDisabled(selected.Id);
             ImGui.Separator();
 
-            var bossSkill = RepresentativeBossSkill(selected.Id);
+            var bossSkill = RepresentativeBossSkill(selected.Id, out bool resolutionVaries);
+            if (resolutionVaries)
+            {
+                ImGui.TextColored(new System.Numerics.Vector4(1f, 0.75f, 0.2f, 1f), "Auto/tier defaults vary by boss; showing highest auto threat. Use Bosses for exact per-boss values.");
+            }
             result.Merge(SettingsTabHelpers.RenderOverrides(
                 idPrefix: "skill_" + selected.Id,
                 skill: selected,
@@ -85,21 +89,29 @@ public sealed class SkillsTab
                skill.Id.Contains(_filter, StringComparison.OrdinalIgnoreCase);
     }
 
-    private BossSkillRecord RepresentativeBossSkill(string skillId)
+    private BossSkillRecord RepresentativeBossSkill(string skillId, out bool resolutionVaries)
     {
-        if (_catalog.Skills.TryGetValue(skillId, out var skill) &&
-            !string.IsNullOrEmpty(skill.LastSeenInBoss) &&
-            _catalog.Bosses.TryGetValue(skill.LastSeenInBoss, out var lastBoss) &&
-            lastBoss.Skills.TryGetValue(skillId, out var lastBossSkill))
-        {
-            return new BossSkillRecord { AutoThreat = lastBossSkill.AutoThreat };
-        }
+        resolutionVaries = false;
+        bool found = false;
+        ThreatTier strongest = ThreatTier.Low;
+        ThreatTier first = ThreatTier.Low;
 
         foreach (var boss in _catalog.Bosses.Values)
         {
-            if (boss.Skills.TryGetValue(skillId, out var bossSkill)) return new BossSkillRecord { AutoThreat = bossSkill.AutoThreat };
+            if (!boss.Skills.TryGetValue(skillId, out var bossSkill)) continue;
+            if (!found)
+            {
+                first = bossSkill.AutoThreat;
+                strongest = bossSkill.AutoThreat;
+                found = true;
+            }
+            else
+            {
+                if (bossSkill.AutoThreat != first) resolutionVaries = true;
+                if (bossSkill.AutoThreat > strongest) strongest = bossSkill.AutoThreat;
+            }
         }
 
-        return new BossSkillRecord { AutoThreat = ThreatTier.Low };
+        return new BossSkillRecord { AutoThreat = strongest };
     }
 }
