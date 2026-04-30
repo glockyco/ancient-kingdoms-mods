@@ -40,6 +40,7 @@ public class BossMod : MelonMod
     private BuffTrackerWindow _buffs;
     private ISettingsMutator _settingsMutator;
     private SettingsWindow _settingsWindow;
+    private HotkeyManager _hotkeys;
     private SoundBank _soundBank;
     private SoundPlayer _soundPlayer;
     private AlertSubscriber _alertSubscriber;
@@ -103,8 +104,11 @@ public class BossMod : MelonMod
         var skillsTab = new SkillsTab(_catalog, _settingsMutator, settingsDefaults, _soundBank, soundPreview);
         var bossesTab = new BossesTab(_catalog, _settingsMutator, settingsDefaults, _soundBank, soundPreview);
         var soundsTab = new SoundsTab(_soundBank, soundPreview, soundsDir, openSoundsFolder);
-        _settingsWindow = new SettingsWindow(skillsTab, bossesTab, soundsTab);
-        _ui = new BossModUi(_globals, _castBars, _cooldowns, _buffs, _settingsWindow, _alertOverlay);
+        var generalTab = new GeneralTab(_globals, _settingsMutator);
+        _settingsWindow = new SettingsWindow(generalTab, skillsTab, bossesTab, soundsTab);
+        _ui = new BossModUi(_globals, _castBars, _cooldowns, _buffs, _settingsWindow, _settingsMutator, _alertOverlay);
+        _hotkeys = new HotkeyManager();
+        _hotkeys.Register("toggle_settings", _ui.ToggleSettings);
         _currentFrame = _uiFrameBuilder.Build(_watcher.CurrentSnapshots, _globals);
 
         _renderer.OnLayout = OnLayout;
@@ -115,6 +119,8 @@ public class BossMod : MelonMod
     public override void OnUpdate()
     {
         if (_renderer == null || _watcher == null) return;
+        _hotkeys.Tick(skipActions: _renderer.WantTextInput);
+
 
         bool catalogChanged = _watcher.Tick();
         _currentFrame = _uiFrameBuilder.Build(_watcher.CurrentSnapshots, _globals);

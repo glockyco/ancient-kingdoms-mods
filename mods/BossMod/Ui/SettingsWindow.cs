@@ -7,12 +7,14 @@ namespace BossMod.Ui;
 
 public sealed class SettingsWindow
 {
+    private readonly GeneralTab _general;
     private readonly SkillsTab _skills;
     private readonly BossesTab _bosses;
     private readonly SoundsTab _sounds;
 
-    public SettingsWindow(SkillsTab skills, BossesTab bosses, SoundsTab sounds)
+    public SettingsWindow(GeneralTab general, SkillsTab skills, BossesTab bosses, SoundsTab sounds)
     {
+        _general = general;
         _skills = skills;
         _bosses = bosses;
         _sounds = sounds;
@@ -30,6 +32,12 @@ public sealed class SettingsWindow
 
         if (ImGui.BeginTabBar("BossMod Settings Tabs"))
         {
+            if (ImGui.BeginTabItem("General"))
+            {
+                result.Merge(_general.Render(mode));
+                ImGui.EndTabItem();
+            }
+
             if (ImGui.BeginTabItem("Skills"))
             {
                 result.Merge(_skills.Render());
