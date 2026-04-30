@@ -11,11 +11,8 @@ public sealed class Globals
     public Thresholds Thresholds { get; set; } = new();
     public float ProximityRadius { get; set; } = 30f;
     public float UiScale { get; set; } = 1.0f;
-    public bool Muted { get; set; }
-    public float MasterVolume { get; set; } = 1.0f;
-    public bool AlertTextMuteOnMasterMute { get; set; } = true;
-    public ExpansionDefault ExpansionDefault { get; set; } = ExpansionDefault.ExpandTargetedOnly;
     public int MaxCastBars { get; set; } = 3;
+    public BossAbilityDensity BossAbilitiesDensity { get; set; } = BossAbilityDensity.Compact;
 
     public Dictionary<string, string> Hotkeys { get; set; } = new()
     {
@@ -23,7 +20,6 @@ public sealed class Globals
     };
 
     public bool ShowCastBarWindow { get; set; } = true;
-    public bool ShowCooldownWindow { get; set; } = true;
-    public bool ShowBuffTrackerWindow { get; set; } = true;
+    public bool ShowBossAbilitiesWindow { get; set; } = true;
     public bool ConfigMode { get; set; } = false;
 }

@@ -25,26 +25,6 @@ public sealed class UiFrameBuilder
             targetedBossId: context.TargetedBossId,
             serverTime: context.ServerTime,
             unscaledNow: Time.unscaledTimeAsDouble,
-            playerBuffs: BuildPlayerBuffViews(context.PlayerBuffs),
             mode: WindowChrome.ForMode(context.InWorldScene, globals.ConfigMode));
-    }
-
-    private static IReadOnlyList<PlayerBuffView> BuildPlayerBuffViews(IReadOnlyList<PlayerBuffContext> buffs)
-    {
-        var result = new List<PlayerBuffView>(buffs.Count);
-        for (int i = 0; i < buffs.Count; i++)
-        {
-            var buff = buffs[i];
-            result.Add(new PlayerBuffView(
-                skillId: buff.SkillId,
-                displayName: buff.DisplayName,
-                endTime: buff.EndTime,
-                totalTime: buff.TotalTime,
-                isDebuff: buff.IsDebuff,
-                isAura: buff.IsAura,
-                sourceStatus: buff.SourceStatus));
-        }
-
-        return result;
     }
 }

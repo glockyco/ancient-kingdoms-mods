@@ -25,26 +25,20 @@ public static class StateMutation
 
         foreach (var skill in catalog.Skills.Values)
         {
-            changed |= skill.UserThreat.HasValue || skill.Sound != null || skill.AlertText != null ||
-                       skill.FireOn.HasValue || skill.AudioMuted.HasValue;
+            changed |= skill.UserThreat.HasValue || skill.CastBarVisibility.HasValue || skill.BossAbilityVisibility.HasValue;
             skill.UserThreat = null;
-            skill.Sound = null;
-            skill.AlertText = null;
-            skill.FireOn = null;
-            skill.AudioMuted = null;
+            skill.CastBarVisibility = null;
+            skill.BossAbilityVisibility = null;
         }
 
         foreach (var boss in catalog.Bosses.Values)
         {
             foreach (var bossSkill in boss.Skills.Values)
             {
-                changed |= bossSkill.UserThreat.HasValue || bossSkill.Sound != null || bossSkill.AlertText != null ||
-                           bossSkill.FireOn.HasValue || bossSkill.AudioMuted.HasValue;
+                changed |= bossSkill.UserThreat.HasValue || bossSkill.CastBarVisibility.HasValue || bossSkill.BossAbilityVisibility.HasValue;
                 bossSkill.UserThreat = null;
-                bossSkill.Sound = null;
-                bossSkill.AlertText = null;
-                bossSkill.FireOn = null;
-                bossSkill.AudioMuted = null;
+                bossSkill.CastBarVisibility = null;
+                bossSkill.BossAbilityVisibility = null;
             }
         }
 
@@ -71,14 +65,10 @@ public static class StateMutation
 
         target.ProximityRadius = source.ProximityRadius;
         target.UiScale = source.UiScale;
-        target.Muted = source.Muted;
-        target.MasterVolume = source.MasterVolume;
-        target.AlertTextMuteOnMasterMute = source.AlertTextMuteOnMasterMute;
-        target.ExpansionDefault = source.ExpansionDefault;
         target.MaxCastBars = source.MaxCastBars;
+        target.BossAbilitiesDensity = source.BossAbilitiesDensity;
         target.ShowCastBarWindow = source.ShowCastBarWindow;
-        target.ShowCooldownWindow = source.ShowCooldownWindow;
-        target.ShowBuffTrackerWindow = source.ShowBuffTrackerWindow;
+        target.ShowBossAbilitiesWindow = source.ShowBossAbilitiesWindow;
         target.ConfigMode = source.ConfigMode;
 
         target.Hotkeys ??= new Dictionary<string, string>();
@@ -109,14 +99,10 @@ public static class StateMutation
         ThresholdsEqual(a.Thresholds, b.Thresholds) &&
         a.ProximityRadius == b.ProximityRadius &&
         a.UiScale == b.UiScale &&
-        a.Muted == b.Muted &&
-        a.MasterVolume == b.MasterVolume &&
-        a.AlertTextMuteOnMasterMute == b.AlertTextMuteOnMasterMute &&
-        a.ExpansionDefault == b.ExpansionDefault &&
         a.MaxCastBars == b.MaxCastBars &&
+        a.BossAbilitiesDensity == b.BossAbilitiesDensity &&
         a.ShowCastBarWindow == b.ShowCastBarWindow &&
-        a.ShowCooldownWindow == b.ShowCooldownWindow &&
-        a.ShowBuffTrackerWindow == b.ShowBuffTrackerWindow &&
+        a.ShowBossAbilitiesWindow == b.ShowBossAbilitiesWindow &&
         a.ConfigMode == b.ConfigMode &&
         DictionariesEqual(a.Hotkeys, b.Hotkeys);
 
@@ -127,10 +113,8 @@ public static class StateMutation
         a.LastSeenInBoss == b.LastSeenInBoss &&
         SkillSnapshotsEqual(a.RawSnapshot, b.RawSnapshot) &&
         a.UserThreat == b.UserThreat &&
-        a.Sound == b.Sound &&
-        a.AlertText == b.AlertText &&
-        a.FireOn == b.FireOn &&
-        a.AudioMuted == b.AudioMuted;
+        a.CastBarVisibility == b.CastBarVisibility &&
+        a.BossAbilityVisibility == b.BossAbilityVisibility;
 
     private static bool BossesEqual(BossRecord a, BossRecord b)
     {
@@ -161,10 +145,8 @@ public static class StateMutation
         BossSkillSnapshotsEqual(a.EffectiveSnapshot, b.EffectiveSnapshot) &&
         a.AutoThreat == b.AutoThreat &&
         a.UserThreat == b.UserThreat &&
-        a.Sound == b.Sound &&
-        a.AlertText == b.AlertText &&
-        a.FireOn == b.FireOn &&
-        a.AudioMuted == b.AudioMuted &&
+        a.CastBarVisibility == b.CastBarVisibility &&
+        a.BossAbilityVisibility == b.BossAbilityVisibility &&
         a.LastObservedUtc == b.LastObservedUtc;
 
     private static bool SkillSnapshotsEqual(SkillSnapshot a, SkillSnapshot b) =>

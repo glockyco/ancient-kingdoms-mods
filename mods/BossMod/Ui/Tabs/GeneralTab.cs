@@ -21,16 +21,16 @@ public sealed class GeneralTab
         var result = new UiRenderResult();
 
         Checkbox(result, "Show cast bars", _globals.ShowCastBarWindow, value => new GlobalPatch { ShowCastBarWindow = value });
-        Checkbox(result, "Show cooldowns", _globals.ShowCooldownWindow, value => new GlobalPatch { ShowCooldownWindow = value });
-        Checkbox(result, "Show buff tracker", _globals.ShowBuffTrackerWindow, value => new GlobalPatch { ShowBuffTrackerWindow = value });
+        Checkbox(result, "Show boss abilities", _globals.ShowBossAbilitiesWindow, value => new GlobalPatch { ShowBossAbilitiesWindow = value });
+        RenderBossAbilityDensity(result);
 
-        bool configMode = _globals.ConfigMode;
+        string label = _globals.ConfigMode ? "Done moving windows" : "Move windows";
         if (!mode.InWorldScene) ImGui.BeginDisabled();
-        if (ImGui.Checkbox("Config Mode", ref configMode)) Apply(result, new GlobalPatch { ConfigMode = configMode });
+        if (ImGui.Button(label)) Apply(result, new GlobalPatch { ConfigMode = !_globals.ConfigMode });
         if (!mode.InWorldScene)
         {
             ImGui.EndDisabled();
-            ImGui.TextDisabled("Config Mode is available only in World.");
+            ImGui.TextDisabled("Window movement is available only in World.");
         }
 
         ImGui.Separator();
@@ -39,8 +39,6 @@ public sealed class GeneralTab
 
         int maxCastBars = _globals.MaxCastBars;
         if (ImGui.InputInt("Max cast bars", ref maxCastBars)) Apply(result, new GlobalPatch { MaxCastBars = maxCastBars });
-
-        RenderExpansionDefault(result);
 
         float uiScale = _globals.UiScale;
         if (ImGui.SliderFloat("UI scale", ref uiScale, Theme.MinUiScale, Theme.MaxUiScale)) Apply(result, new GlobalPatch { UiScale = uiScale });
@@ -56,31 +54,23 @@ public sealed class GeneralTab
         if (ImGui.InputFloat("Critical cast time threshold", ref criticalCastTime)) Apply(result, new GlobalPatch { CriticalCastTime = criticalCastTime });
 
         ImGui.Separator();
-        Checkbox(result, "Master mute", _globals.Muted, value => new GlobalPatch { Muted = value });
-        float masterVolume = _globals.MasterVolume;
-        if (ImGui.SliderFloat("Master volume", ref masterVolume, 0f, 1f)) Apply(result, new GlobalPatch { MasterVolume = masterVolume });
-        Checkbox(result, "Mute alert text when master muted", _globals.AlertTextMuteOnMasterMute, value => new GlobalPatch { AlertTextMuteOnMasterMute = value });
-
-        ImGui.Separator();
         ImGui.TextDisabled("F8 toggles Settings");
 
         return result;
     }
 
-    private void RenderExpansionDefault(UiRenderResult result)
+    private void RenderBossAbilityDensity(UiRenderResult result)
     {
-        string current = _globals.ExpansionDefault.ToString();
-        if (!ImGui.BeginCombo("Default boss section expansion", current)) return;
-
-        SelectExpansion(result, ExpansionDefault.ExpandTargetedOnly);
-        SelectExpansion(result, ExpansionDefault.ExpandAll);
-        SelectExpansion(result, ExpansionDefault.CollapseAll);
+        string current = _globals.BossAbilitiesDensity.ToString();
+        if (!ImGui.BeginCombo("Boss abilities density", current)) return;
+        SelectDensity(result, BossAbilityDensity.Compact);
+        SelectDensity(result, BossAbilityDensity.Expanded);
         ImGui.EndCombo();
     }
 
-    private void SelectExpansion(UiRenderResult result, ExpansionDefault value)
+    private void SelectDensity(UiRenderResult result, BossAbilityDensity value)
     {
-        if (ImGui.Selectable(value.ToString(), _globals.ExpansionDefault == value)) Apply(result, new GlobalPatch { ExpansionDefault = value });
+        if (ImGui.Selectable(value.ToString(), _globals.BossAbilitiesDensity == value)) Apply(result, new GlobalPatch { BossAbilitiesDensity = value });
     }
 
     private void Checkbox(UiRenderResult result, string label, bool current, System.Func<bool, GlobalPatch> patch)

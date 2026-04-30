@@ -11,13 +11,23 @@ public class StateMutationTests
     public void ApplyLoadedStateInPlace_ChangedStateMutatesExistingRoots()
     {
         var liveCatalog = CatalogWithSkill("old", ThreatTier.Low, userThreat: ThreatTier.High);
-        var liveGlobals = new Globals { Muted = true, MasterVolume = 0.2f, ProximityRadius = 55f };
+        var liveGlobals = new Globals
+        {
+            BossAbilitiesDensity = BossAbilityDensity.Expanded,
+            ProximityRadius = 55f,
+            ShowBossAbilitiesWindow = false,
+        };
         var skillsReference = liveCatalog.Skills;
         var bossesReference = liveCatalog.Bosses;
         var thresholdsReference = liveGlobals.Thresholds;
 
         var loadedCatalog = CatalogWithSkill("new", ThreatTier.Critical, userThreat: ThreatTier.Medium);
-        var loadedGlobals = new Globals { Muted = false, MasterVolume = 0.8f, ProximityRadius = 25f };
+        var loadedGlobals = new Globals
+        {
+            BossAbilitiesDensity = BossAbilityDensity.Compact,
+            ProximityRadius = 25f,
+            ShowBossAbilitiesWindow = true,
+        };
 
         bool changed = StateMutation.ApplyLoadedStateInPlace(liveCatalog, liveGlobals, loadedCatalog, loadedGlobals);
 
@@ -27,9 +37,9 @@ public class StateMutationTests
         Assert.Same(thresholdsReference, liveGlobals.Thresholds);
         Assert.False(liveCatalog.Skills.ContainsKey("old"));
         Assert.True(liveCatalog.Skills.ContainsKey("new"));
-        Assert.False(liveGlobals.Muted);
-        Assert.Equal(0.8f, liveGlobals.MasterVolume);
+        Assert.Equal(BossAbilityDensity.Compact, liveGlobals.BossAbilitiesDensity);
         Assert.Equal(25f, liveGlobals.ProximityRadius);
+        Assert.True(liveGlobals.ShowBossAbilitiesWindow);
     }
 
     [Fact]
@@ -38,17 +48,17 @@ public class StateMutationTests
         var liveCatalog = CatalogWithSkill("inferno", ThreatTier.High, userThreat: ThreatTier.Critical);
         var liveGlobals = new Globals
         {
-            Muted = true,
-            MasterVolume = 0.4f,
+            BossAbilitiesDensity = BossAbilityDensity.Expanded,
             ProximityRadius = 40f,
+            ShowBossAbilitiesWindow = false,
             Thresholds = new Thresholds { CriticalDamage = 300, HighDamage = 100, AuraDpsHigh = 50, CriticalCastTime = 4.5f },
         };
         var loadedCatalog = CatalogWithSkill("inferno", ThreatTier.High, userThreat: ThreatTier.Critical);
         var loadedGlobals = new Globals
         {
-            Muted = true,
-            MasterVolume = 0.4f,
+            BossAbilitiesDensity = BossAbilityDensity.Expanded,
             ProximityRadius = 40f,
+            ShowBossAbilitiesWindow = false,
             Thresholds = new Thresholds { CriticalDamage = 300, HighDamage = 100, AuraDpsHigh = 50, CriticalCastTime = 4.5f },
         };
 
@@ -58,26 +68,54 @@ public class StateMutationTests
     }
 
     [Fact]
+    public void ApplyLoadedStateInPlace_BossAbilityDensityDifferenceMutatesExistingGlobals()
+    {
+        var liveCatalog = CatalogWithSkill("inferno", ThreatTier.High, userThreat: ThreatTier.Critical);
+        var loadedCatalog = CatalogWithSkill("inferno", ThreatTier.High, userThreat: ThreatTier.Critical);
+        var liveGlobals = new Globals { BossAbilitiesDensity = BossAbilityDensity.Compact };
+        var loadedGlobals = new Globals { BossAbilitiesDensity = BossAbilityDensity.Expanded };
+
+        bool changed = StateMutation.ApplyLoadedStateInPlace(liveCatalog, liveGlobals, loadedCatalog, loadedGlobals);
+
+        Assert.True(changed);
+        Assert.Equal(BossAbilityDensity.Expanded, liveGlobals.BossAbilitiesDensity);
+    }
+
+    [Fact]
+    public void ApplyLoadedStateInPlace_DisplayPolicyDifferenceMutatesExistingRoots()
+    {
+        var liveCatalog = CatalogWithSkill("inferno", ThreatTier.High, userThreat: ThreatTier.Critical);
+        liveCatalog.Skills["inferno"].CastBarVisibility = AbilityDisplayPolicy.Hidden;
+        liveCatalog.Bosses["boss"].Skills["inferno"].BossAbilityVisibility = AbilityDisplayPolicy.Hidden;
+
+        var loadedCatalog = CatalogWithSkill("inferno", ThreatTier.High, userThreat: ThreatTier.Critical);
+        loadedCatalog.Skills["inferno"].CastBarVisibility = AbilityDisplayPolicy.Always;
+        loadedCatalog.Bosses["boss"].Skills["inferno"].BossAbilityVisibility = AbilityDisplayPolicy.Always;
+
+        bool changed = StateMutation.ApplyLoadedStateInPlace(liveCatalog, new Globals(), loadedCatalog, new Globals());
+
+        Assert.True(changed);
+        Assert.Equal(AbilityDisplayPolicy.Always, liveCatalog.Skills["inferno"].CastBarVisibility);
+        Assert.Equal(AbilityDisplayPolicy.Always, liveCatalog.Bosses["boss"].Skills["inferno"].BossAbilityVisibility);
+    }
+
+    [Fact]
     public void ResetUserSettingsToDefaults_PreservesDiscoveryAndClearsUserOverrides()
     {
         var catalog = CatalogWithSkill("inferno", ThreatTier.Critical, userThreat: ThreatTier.High);
         var skill = catalog.Skills["inferno"];
-        skill.Sound = "custom";
-        skill.AlertText = "";
-        skill.FireOn = AlertTrigger.CooldownReady;
-        skill.AudioMuted = true;
+        skill.CastBarVisibility = AbilityDisplayPolicy.Hidden;
+        skill.BossAbilityVisibility = AbilityDisplayPolicy.Always;
         var boss = catalog.Bosses["boss"];
         var bossSkill = boss.Skills["inferno"];
-        bossSkill.Sound = "boss_custom";
-        bossSkill.AlertText = "boss text";
-        bossSkill.FireOn = AlertTrigger.CastFinish;
-        bossSkill.AudioMuted = false;
+        bossSkill.CastBarVisibility = AbilityDisplayPolicy.Always;
+        bossSkill.BossAbilityVisibility = AbilityDisplayPolicy.Hidden;
         bossSkill.LastObservedUtc = new DateTime(2026, 4, 30, 12, 0, 0, DateTimeKind.Utc);
 
         var globals = new Globals
         {
-            Muted = true,
-            MasterVolume = 0.25f,
+            BossAbilitiesDensity = BossAbilityDensity.Expanded,
+            ShowBossAbilitiesWindow = false,
             ProximityRadius = 75f,
             UiScale = 1.5f,
             Thresholds = new Thresholds { CriticalDamage = 500, HighDamage = 150, AuraDpsHigh = 80, CriticalCastTime = 6f },
@@ -91,17 +129,13 @@ public class StateMutationTests
         Assert.Equal(ThreatTier.Critical, bossSkill.AutoThreat);
         Assert.Equal(new DateTime(2026, 4, 30, 12, 0, 0, DateTimeKind.Utc), bossSkill.LastObservedUtc);
         Assert.Null(skill.UserThreat);
-        Assert.Null(skill.Sound);
-        Assert.Null(skill.AlertText);
-        Assert.Null(skill.FireOn);
-        Assert.Null(skill.AudioMuted);
+        Assert.Null(skill.CastBarVisibility);
+        Assert.Null(skill.BossAbilityVisibility);
         Assert.Null(bossSkill.UserThreat);
-        Assert.Null(bossSkill.Sound);
-        Assert.Null(bossSkill.AlertText);
-        Assert.Null(bossSkill.FireOn);
-        Assert.Null(bossSkill.AudioMuted);
-        Assert.False(globals.Muted);
-        Assert.Equal(1.0f, globals.MasterVolume);
+        Assert.Null(bossSkill.CastBarVisibility);
+        Assert.Null(bossSkill.BossAbilityVisibility);
+        Assert.Equal(BossAbilityDensity.Compact, globals.BossAbilitiesDensity);
+        Assert.True(globals.ShowBossAbilitiesWindow);
         Assert.Equal(30f, globals.ProximityRadius);
         Assert.Equal(200, globals.Thresholds.CriticalDamage);
     }

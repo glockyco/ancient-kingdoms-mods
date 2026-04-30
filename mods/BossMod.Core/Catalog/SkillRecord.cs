@@ -13,8 +13,6 @@ public sealed class SkillRecord
 
     // Skill-level overrides — null means "fall through to defaults".
     public ThreatTier? UserThreat { get; set; }
-    public string? Sound { get; set; }
-    public string? AlertText { get; set; }
-    public AlertTrigger? FireOn { get; set; }
-    public bool? AudioMuted { get; set; }
+    public AbilityDisplayPolicy? CastBarVisibility { get; set; }
+    public AbilityDisplayPolicy? BossAbilityVisibility { get; set; }
 }

@@ -19,19 +19,13 @@ public sealed record StateReadResult(SkillCatalog Catalog, Globals Globals, Stat
 
 public static class StateJson
 {
-    public const int CurrentSchemaVersion = 1;
+    public const int CurrentSchemaVersion = 2;
 
     private static readonly JsonSerializerOptions Options = new()
     {
         WriteIndented = true,
         Converters = { new JsonStringEnumConverter(namingPolicy: null, allowIntegerValues: false) },
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-    };
-
-    private static readonly JsonSerializerOptions PreserveNullOptions = new()
-    {
-        WriteIndented = true,
-        Converters = { new JsonStringEnumConverter(namingPolicy: null, allowIntegerValues: false) },
     };
 
     private sealed class FileShape
@@ -87,7 +81,7 @@ public static class StateJson
 
         try
         {
-            var json = NormalizeLegacyJson(File.ReadAllText(path));
+            var json = File.ReadAllText(path);
             string? shapeValidationError = ValidateJsonShape(json);
             if (shapeValidationError != null) return Defaults(StateReadStatus.CorruptUsedDefaults, shapeValidationError);
             var shape = JsonSerializer.Deserialize<FileShape>(json, Options);
@@ -125,6 +119,14 @@ public static class StateJson
     {
         var root = JsonNode.Parse(json) as JsonObject;
         if (root == null) return "State root object is required.";
+
+        if (!root.TryGetPropertyValue("Version", out var versionNode) ||
+            versionNode is not JsonValue versionValue ||
+            !versionValue.TryGetValue<int>(out _))
+        {
+            return "Version number is required.";
+        }
+
 
         if (!root.TryGetPropertyValue("Global", out var globalNode) || globalNode is not JsonObject)
             return "Global object is required.";
@@ -165,66 +167,15 @@ public static class StateJson
             return "Global.Thresholds is required.";
         if (globals.Hotkeys == null)
             return "Global.Hotkeys is required.";
-        if (!float.IsFinite(globals.MasterVolume) || globals.MasterVolume < 0f || globals.MasterVolume > 1f)
-            return "Global.MasterVolume must be finite and between 0 and 1.";
         if (!float.IsFinite(globals.UiScale) || globals.UiScale <= 0f)
             return "Global.UiScale must be finite and positive.";
         if (!float.IsFinite(globals.ProximityRadius) || globals.ProximityRadius <= 0f)
             return "Global.ProximityRadius must be finite and positive.";
         if (globals.MaxCastBars <= 0)
             return "Global.MaxCastBars must be positive.";
-        if (!Enum.IsDefined(typeof(ExpansionDefault), globals.ExpansionDefault))
-            return "Global.ExpansionDefault must be a defined value.";
+        if (!Enum.IsDefined(typeof(BossAbilityDensity), globals.BossAbilitiesDensity))
+            return "Global.BossAbilitiesDensity must be a defined value.";
         return null;
-    }
-
-    private static string NormalizeLegacyJson(string json)
-    {
-        var root = JsonNode.Parse(json) as JsonObject;
-        if (root == null) return json;
-
-        if (root["Global"] is JsonObject global &&
-            global["ExpansionDefault"] is JsonValue expansionValue &&
-            expansionValue.TryGetValue<string>(out var expansion))
-        {
-            string normalized = expansion switch
-            {
-                "expand_targeted_only" => nameof(ExpansionDefault.ExpandTargetedOnly),
-                "expand_all" => nameof(ExpansionDefault.ExpandAll),
-                "collapse_all" => nameof(ExpansionDefault.CollapseAll),
-                _ => expansion,
-            };
-            global["ExpansionDefault"] = normalized;
-        }
-
-        if (root["Skills"] is JsonObject skills)
-        {
-            foreach (var skill in skills)
-            {
-                if (skill.Value is JsonObject skillObject) MigrateAudioMuted(skillObject);
-            }
-        }
-
-        if (root["Bosses"] is JsonObject bosses)
-        {
-            foreach (var boss in bosses)
-            {
-                if (boss.Value?["Skills"] is not JsonObject bossSkills) continue;
-                foreach (var bossSkill in bossSkills)
-                {
-                    if (bossSkill.Value is JsonObject bossSkillObject) MigrateAudioMuted(bossSkillObject);
-                }
-            }
-        }
-
-        return root.ToJsonString(PreserveNullOptions);
-    }
-
-    private static void MigrateAudioMuted(JsonObject obj)
-    {
-        if (obj.ContainsKey("AudioMuted") || !obj.TryGetPropertyValue("Muted", out var muted)) return;
-        if (muted is JsonValue mutedValue && mutedValue.TryGetValue<bool>(out var audioMuted)) obj["AudioMuted"] = audioMuted;
-        obj.Remove("Muted");
     }
 
     private static StateReadResult Defaults(StateReadStatus status, string? errorMessage) =>

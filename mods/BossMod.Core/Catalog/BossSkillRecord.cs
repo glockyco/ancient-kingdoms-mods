@@ -9,10 +9,8 @@ public sealed class BossSkillRecord
 
     // Boss-level overrides — wins over SkillRecord.
     public ThreatTier? UserThreat { get; set; }
-    public string? Sound { get; set; }
-    public string? AlertText { get; set; }
-    public AlertTrigger? FireOn { get; set; }
-    public bool? AudioMuted { get; set; }
+    public AbilityDisplayPolicy? CastBarVisibility { get; set; }
+    public AbilityDisplayPolicy? BossAbilityVisibility { get; set; }
 
     public DateTime LastObservedUtc { get; set; }
 }

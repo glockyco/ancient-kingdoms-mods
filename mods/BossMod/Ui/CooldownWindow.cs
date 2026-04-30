@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using BossMod.Core.Catalog;
+using BossMod.Core.Effects;
 using BossMod.Core.Persistence;
 using BossMod.Core.Tracking;
 using ImGuiNET;
@@ -11,25 +12,27 @@ namespace BossMod.Ui;
 
 public sealed class CooldownWindow
 {
+    private readonly SkillCatalog _catalog;
     private readonly Globals _globals;
 
-    public CooldownWindow(Globals globals)
+    public CooldownWindow(SkillCatalog catalog, Globals globals)
     {
+        _catalog = catalog;
         _globals = globals;
     }
 
     public void Render(UiFrame frame)
     {
         if (!frame.Mode.InWorldScene) return;
-        if (!_globals.ShowCooldownWindow) return;
+        if (!_globals.ShowBossAbilitiesWindow) return;
 
         var bosses = frame.Bosses
-            .Where(boss => boss.IsActive)
+            .Where(boss => boss.IsActive || HasAlwaysBossAbilityRow(boss))
             .OrderByDescending(boss => boss.IsTargeted)
             .ThenBy(boss => boss.DistanceToPlayer)
             .ToList();
 
-        bool hasRows = bosses.Any(boss => boss.Cooldowns.Any(cd => cd.SkillIdx >= 1));
+        bool hasRows = bosses.Any(boss => VisibleCooldowns(boss).Any());
         if (!hasRows && !frame.Mode.ConfigMode) return;
 
         ImGui.SetNextWindowSize(new Vector2(360f, 260f), ImGuiCond.FirstUseEver);
@@ -43,7 +46,7 @@ public sealed class CooldownWindow
 
         if (!hasRows)
         {
-            ImGui.TextDisabled("Cooldowns appear here for active bosses.");
+            ImGui.TextDisabled("Boss abilities appear here for active bosses.");
             ImGui.End();
             return;
         }
@@ -55,8 +58,7 @@ public sealed class CooldownWindow
 
     private void RenderBoss(UiFrame frame, BossState boss)
     {
-        var rows = boss.Cooldowns
-            .Where(cd => cd.SkillIdx >= 1)
+        var rows = VisibleCooldowns(boss)
             .Select(cd => BuildRow(cd, frame.ServerTime))
             .OrderBy(row => row.Remaining)
             .ThenBy(row => row.SkillName, StringComparer.OrdinalIgnoreCase)
@@ -69,7 +71,30 @@ public sealed class CooldownWindow
         string label = $"{boss.DisplayName}  Lv {boss.Level}  HP {HealthPercent(boss):0}%##cooldowns_{boss.NetId}";
         if (!ImGui.CollapsingHeader(label)) return;
 
-        for (int i = 0; i < rows.Count; i++) RenderRow(rows[i], i);
+        for (int i = 0; i < rows.Count; i++) RenderRow(rows[i], i, _globals.BossAbilitiesDensity);
+    }
+
+    private IEnumerable<SkillCooldown> VisibleCooldowns(BossState boss) =>
+        boss.Cooldowns.Where(cd => cd.SkillIdx >= 1 && ShouldShowInBossAbilities(boss.BossId, cd.SkillId, boss.IsActive));
+
+    private bool HasAlwaysBossAbilityRow(BossState boss) =>
+        boss.Cooldowns.Any(cd => cd.SkillIdx >= 1 && ResolveBossAbilityVisibility(boss.BossId, cd.SkillId) == AbilityDisplayPolicy.Always);
+
+    private bool ShouldShowInBossAbilities(string bossId, string skillId, bool bossIsActive) =>
+        ResolveBossAbilityVisibility(bossId, skillId) switch
+        {
+            AbilityDisplayPolicy.Hidden => false,
+            AbilityDisplayPolicy.Always => true,
+            _ => bossIsActive,
+        };
+
+    private AbilityDisplayPolicy ResolveBossAbilityVisibility(string bossId, string skillId)
+    {
+        if (!_catalog.Skills.TryGetValue(skillId, out var skill)) return AbilityDisplayPolicy.Auto;
+        if (!_catalog.Bosses.TryGetValue(bossId, out var boss)) return AbilityDisplayPolicy.Auto;
+        if (!boss.Skills.TryGetValue(skillId, out var bossSkill)) return AbilityDisplayPolicy.Auto;
+
+        return SettingsResolver.ResolveBossAbilityVisibility(skill, bossSkill);
     }
 
     private static CooldownRow BuildRow(SkillCooldown cooldown, double serverTime)
@@ -78,34 +103,32 @@ public sealed class CooldownWindow
         float progress = cooldown.TotalCooldown <= 0
             ? (remaining <= 0 ? 1f : 0f)
             : Math.Clamp(1f - (float)(remaining / cooldown.TotalCooldown), 0f, 1f);
-        return new CooldownRow(cooldown.DisplayName, remaining, progress);
+        return new CooldownRow(cooldown.SkillIdx, cooldown.DisplayName, remaining, progress);
     }
 
-    private bool InitialOpen(bool targeted) => _globals.ExpansionDefault switch
-    {
-        ExpansionDefault.ExpandAll => true,
-        ExpansionDefault.CollapseAll => false,
-        ExpansionDefault.ExpandTargetedOnly => targeted,
-        _ => targeted,
-    };
+    private static bool InitialOpen(bool targeted) => targeted;
 
-    private static void RenderRow(CooldownRow row, int index)
+    private static void RenderRow(CooldownRow row, int index, BossAbilityDensity density)
     {
         if (row.Remaining <= 0)
         {
-            ImGui.TextUnformatted(row.SkillName);
+            ImGui.TextUnformatted(density == BossAbilityDensity.Expanded
+                ? $"#{row.SkillIndex} {row.SkillName}"
+                : row.SkillName);
             ImGui.SameLine();
             ImGui.TextColored(UintToVector4(Theme.Ready), "READY");
         }
         else
         {
-            string overlay = $"{row.SkillName}  {row.Remaining:0.0}s";
-            ImGui.ProgressBar(row.Progress, new Vector2(-1f, 18f), overlay);
+            string overlay = density == BossAbilityDensity.Expanded
+                ? $"#{row.SkillIndex} {row.SkillName}  ready in {row.Remaining:0.0}s"
+                : $"{row.SkillName}  {row.Remaining:0.0}s";
+            float height = density == BossAbilityDensity.Expanded ? 22f : 18f;
+            ImGui.ProgressBar(row.Progress, new Vector2(-1f, height), overlay);
         }
 
         if (index >= 0) ImGui.Spacing();
     }
-
 
     private static float HealthPercent(BossState boss) =>
         boss.HealthMax <= 0 ? 0f : Math.Clamp((boss.HealthCurrent / (float)boss.HealthMax) * 100f, 0f, 100f);
@@ -121,13 +144,15 @@ public sealed class CooldownWindow
 
     private readonly struct CooldownRow
     {
-        public CooldownRow(string skillName, double remaining, float progress)
+        public CooldownRow(int skillIndex, string skillName, double remaining, float progress)
         {
+            SkillIndex = skillIndex;
             SkillName = skillName;
             Remaining = remaining;
             Progress = progress;
         }
 
+        public int SkillIndex { get; }
         public string SkillName { get; }
         public double Remaining { get; }
         public float Progress { get; }

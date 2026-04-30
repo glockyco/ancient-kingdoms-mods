@@ -10,15 +10,13 @@ public sealed class SettingsWindow
     private readonly GeneralTab _general;
     private readonly SkillsTab _skills;
     private readonly BossesTab _bosses;
-    private readonly SoundsTab _sounds;
     private readonly ExportImportTab _exportImport;
 
-    public SettingsWindow(GeneralTab general, SkillsTab skills, BossesTab bosses, SoundsTab sounds, ExportImportTab exportImport)
+    public SettingsWindow(GeneralTab general, SkillsTab skills, BossesTab bosses, ExportImportTab exportImport)
     {
         _general = general;
         _skills = skills;
         _bosses = bosses;
-        _sounds = sounds;
         _exportImport = exportImport;
     }
 
@@ -40,25 +38,19 @@ public sealed class SettingsWindow
                 ImGui.EndTabItem();
             }
 
-            if (ImGui.BeginTabItem("Skills"))
-            {
-                result.Merge(_skills.Render());
-                ImGui.EndTabItem();
-            }
-
             if (ImGui.BeginTabItem("Bosses"))
             {
                 result.Merge(_bosses.Render());
                 ImGui.EndTabItem();
             }
 
-            if (ImGui.BeginTabItem("Sounds"))
+            if (ImGui.BeginTabItem("Skills"))
             {
-                result.Merge(_sounds.Render());
+                result.Merge(_skills.Render());
                 ImGui.EndTabItem();
             }
 
-            if (ImGui.BeginTabItem("Export / Import"))
+            if (ImGui.BeginTabItem("Data"))
             {
                 result.Merge(_exportImport.Render());
                 ImGui.EndTabItem();

@@ -45,18 +45,6 @@
       <HintPath>$(Il2CppAssembliesPath)\Unity.InputSystem.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="UnityEngine.AudioModule">
-      <HintPath>$(Il2CppAssembliesPath)\UnityEngine.AudioModule.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="UnityEngine.UnityWebRequestModule">
-      <HintPath>$(Il2CppAssembliesPath)\UnityEngine.UnityWebRequestModule.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="UnityEngine.UnityWebRequestAudioModule">
-      <HintPath>$(Il2CppAssembliesPath)\UnityEngine.UnityWebRequestAudioModule.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="Il2CppMirror">
       <HintPath>$(Il2CppAssembliesPath)\Il2CppMirror.dll</HintPath>
       <Private>False</Private>

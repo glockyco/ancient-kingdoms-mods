@@ -1,9 +1,7 @@
 using System;
 using System.Linq;
 using System.Numerics;
-using BossMod.Audio;
 using BossMod.Core.Catalog;
-using BossMod.Core.Effects;
 using BossMod.Ui.Settings;
 using ImGuiNET;
 
@@ -13,19 +11,13 @@ public sealed class SkillsTab
 {
     private readonly SkillCatalog _catalog;
     private readonly ISettingsMutator _mutator;
-    private readonly TierDefaults _defaults;
-    private readonly SoundBank _soundBank;
-    private readonly SoundPreview _soundPreview;
     private string _filter = "";
     private string _selectedSkillId = "";
 
-    public SkillsTab(SkillCatalog catalog, ISettingsMutator mutator, TierDefaults defaults, SoundBank soundBank, SoundPreview soundPreview)
+    public SkillsTab(SkillCatalog catalog, ISettingsMutator mutator)
     {
         _catalog = catalog;
         _mutator = mutator;
-        _defaults = defaults;
-        _soundBank = soundBank;
-        _soundPreview = soundPreview;
     }
 
     public UiRenderResult Render()
@@ -58,19 +50,16 @@ public sealed class SkillsTab
             ImGui.TextDisabled(selected.Id);
             ImGui.Separator();
 
-            var bossSkill = RepresentativeBossSkill(selected.Id, out bool resolutionVaries);
-            if (resolutionVaries)
+            var bossSkill = RepresentativeBossSkill(selected.Id, out bool autoThreatVaries, out bool bossSpecificOverridesExist);
+            if (autoThreatVaries || bossSpecificOverridesExist)
             {
-                ImGui.TextColored(new System.Numerics.Vector4(1f, 0.75f, 0.2f, 1f), "Auto/tier defaults vary by boss; showing highest auto threat. Use Bosses for exact per-boss values.");
+                ImGui.TextColored(new Vector4(1f, 0.75f, 0.2f, 1f), "This tab edits global defaults. Bosses tab shows final per-boss values when automatic importance or boss-specific overrides vary.");
             }
             result.Merge(SettingsTabHelpers.RenderOverrides(
                 idPrefix: "skill_" + selected.Id,
                 skill: selected,
                 bossSkill: bossSkill,
-                defaults: _defaults,
                 editingBossOverride: false,
-                soundBank: _soundBank,
-                preview: _soundPreview,
                 apply: patch => _mutator.SetSkillOverride(selected.Id, patch)));
         }
         else
@@ -89,9 +78,10 @@ public sealed class SkillsTab
                skill.Id.Contains(_filter, StringComparison.OrdinalIgnoreCase);
     }
 
-    private BossSkillRecord RepresentativeBossSkill(string skillId, out bool resolutionVaries)
+    private BossSkillRecord RepresentativeBossSkill(string skillId, out bool autoThreatVaries, out bool bossSpecificOverridesExist)
     {
-        resolutionVaries = false;
+        autoThreatVaries = false;
+        bossSpecificOverridesExist = false;
         bool found = false;
         ThreatTier strongest = ThreatTier.Low;
         ThreatTier first = ThreatTier.Low;
@@ -107,9 +97,12 @@ public sealed class SkillsTab
             }
             else
             {
-                if (bossSkill.AutoThreat != first) resolutionVaries = true;
+                if (bossSkill.AutoThreat != first) autoThreatVaries = true;
                 if (bossSkill.AutoThreat > strongest) strongest = bossSkill.AutoThreat;
             }
+
+            if (bossSkill.UserThreat.HasValue || bossSkill.CastBarVisibility.HasValue || bossSkill.BossAbilityVisibility.HasValue)
+                bossSpecificOverridesExist = true;
         }
 
         return new BossSkillRecord { AutoThreat = strongest };

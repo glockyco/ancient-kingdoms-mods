@@ -16,8 +16,8 @@ namespace BossMod.Tracking;
 /// Produces per-monster BossState snapshots and harvests catalog entries
 /// for any unseen ScriptableSkill or Boss.
 ///
-/// The watcher does not itself drive alerts — BossMod.cs (plan 4) wires the
-/// watcher's output into AlertEngine.Process with the previous frame's state.
+/// The watcher only snapshots observable boss state. Runtime UI and core policy
+/// decide how to display those snapshots.
 /// </summary>
 public sealed class MonsterWatcher
 {
@@ -273,27 +273,7 @@ public sealed class MonsterWatcher
                     TotalCooldown: sk.cooldown));
             }
 
-            // Buffs / auras / debuffs on the monster itself.
-            var buffsList = skills.buffs;
-            if (buffsList != null)
-            {
-                for (int i = 0; i < buffsList.Count; i++)
-                {
-                    var b = buffsList[i];
-                    var d = b.data;
-                    if (d == null) continue;
-                    bool isAura = d.TryCast<AreaBuffSkill>() is { } ab && ab.isAura;
-                    bool isDebuff = d.TryCast<AreaDebuffSkill>()   != null
-                                 || d.TryCast<TargetDebuffSkill>() != null;
-                    s.Buffs.Add(new BuffSnapshot(
-                        SkillId: d.name,
-                        DisplayName: string.IsNullOrEmpty(d.nameSkill) ? d.name : d.nameSkill,
-                        BuffTimeEnd: b.buffTimeEnd,
-                        TotalBuffTime: b.buffTime,
-                        IsAura: isAura,
-                        IsDebuff: isDebuff));
-                }
-            }
+
         }
 
         return s;

@@ -23,14 +23,16 @@ public class SkillCatalogTests
         var cat = new SkillCatalog();
         var s = cat.GetOrCreateSkill("a", "A", "boss1");
         s.UserThreat = ThreatTier.Critical;
-        s.Sound = "klaxon";
+        s.CastBarVisibility = AbilityDisplayPolicy.Always;
+        s.BossAbilityVisibility = AbilityDisplayPolicy.Hidden;
 
         var s2 = cat.GetOrCreateSkill("a", "A renamed", "boss2");
 
         Assert.Same(s, s2);
         Assert.Equal("boss2", s2.LastSeenInBoss);
         Assert.Equal(ThreatTier.Critical, s2.UserThreat);
-        Assert.Equal("klaxon", s2.Sound);
+        Assert.Equal(AbilityDisplayPolicy.Always, s2.CastBarVisibility);
+        Assert.Equal(AbilityDisplayPolicy.Hidden, s2.BossAbilityVisibility);
     }
 
     [Fact]
@@ -52,7 +54,8 @@ public class SkillCatalogTests
         var cat = new SkillCatalog();
         var b = cat.GetOrCreateBoss("b", "B", "T", "C", "Z", BossKind.Elite, 5);
         var bs = cat.GetOrCreateBossSkill(b, "skill_a");
-        bs.Sound = "klaxon";
+        bs.CastBarVisibility = AbilityDisplayPolicy.Hidden;
+        bs.BossAbilityVisibility = AbilityDisplayPolicy.Always;
         bs.UserThreat = ThreatTier.High;
 
         var b2 = cat.GetOrCreateBoss("b", "B updated", "T2", "C2", "Z2", BossKind.Boss, 6);
@@ -60,7 +63,8 @@ public class SkillCatalogTests
 
         Assert.Same(b, b2);
         Assert.Same(bs, bs2);
-        Assert.Equal("klaxon", bs2.Sound);
+        Assert.Equal(AbilityDisplayPolicy.Hidden, bs2.CastBarVisibility);
+        Assert.Equal(AbilityDisplayPolicy.Always, bs2.BossAbilityVisibility);
         Assert.Equal(ThreatTier.High, bs2.UserThreat);
         Assert.Equal(BossKind.Boss, b2.Kind);    // metadata refreshed
         Assert.Equal(6, b2.LastSeenLevel);

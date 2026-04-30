@@ -1,11 +1,10 @@
 namespace BossMod.Core.Catalog;
 
 public enum ThreatTier { Low, Medium, High, Critical }
-public enum AlertTrigger { CastStart, CastFinish, CooldownReady }
 public enum BossKind { Boss, Elite, Fabled, WorldBoss }
-public enum ExpansionDefault { ExpandTargetedOnly, ExpandAll, CollapseAll }
-
 public enum DamageType { Normal, Magic, Fire, Cold, Poison, Disease }
+public enum AbilityDisplayPolicy { Auto, Always, Hidden }
+public enum BossAbilityDensity { Compact, Expanded }
 
 [System.Flags]
 public enum DebuffKind

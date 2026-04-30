@@ -1,6 +1,3 @@
-using System.Collections.Generic;
-using BossMod.Core.Catalog;
-using BossMod.Ui;
 using Il2Cpp;
 using Il2CppInterop.Runtime;
 using UnityEngine;
@@ -28,8 +25,7 @@ public sealed class PlayerContextBuilder
                 targetedBossId: "",
                 serverTime: ComputeServerTime(),
                 inWorldScene: inWorldScene,
-                sceneChangedOrLeftWorld: sceneChangedOrLeftWorld,
-                playerBuffs: new List<PlayerBuffContext>());
+                sceneChangedOrLeftWorld: sceneChangedOrLeftWorld);
             return LastContext;
         }
 
@@ -37,8 +33,7 @@ public sealed class PlayerContextBuilder
             targetedBossId: TargetedBossId(localPlayer),
             serverTime: ComputeServerTime(),
             inWorldScene: inWorldScene,
-            sceneChangedOrLeftWorld: sceneChangedOrLeftWorld,
-            playerBuffs: BuildPlayerBuffs(localPlayer));
+            sceneChangedOrLeftWorld: sceneChangedOrLeftWorld);
         return LastContext;
     }
 
@@ -48,36 +43,6 @@ public sealed class PlayerContextBuilder
         var monster = localPlayer.Networktarget.TryCast<Monster>();
         if (monster == null || (!monster.isBoss && !monster.isElite)) return "";
         return SanitizeName(monster.name);
-    }
-
-    private static IReadOnlyList<PlayerBuffContext> BuildPlayerBuffs(Player localPlayer)
-    {
-        var result = new List<PlayerBuffContext>();
-        var skills = localPlayer.skills;
-        var buffsList = skills != null ? skills.buffs : null;
-        if (buffsList == null) return result;
-
-        for (int i = 0; i < buffsList.Count; i++)
-        {
-            var buff = buffsList[i];
-            var data = buff.data;
-            if (data == null || string.IsNullOrEmpty(data.name)) continue;
-
-            bool isAura = data.TryCast<AreaBuffSkill>() is { } areaBuff && areaBuff.isAura;
-            bool isDebuff = data.TryCast<AreaDebuffSkill>() != null
-                         || data.TryCast<TargetDebuffSkill>() != null;
-
-            result.Add(new PlayerBuffContext(
-                skillId: data.name,
-                displayName: string.IsNullOrEmpty(data.nameSkill) ? data.name : data.nameSkill,
-                endTime: buff.buffTimeEnd,
-                totalTime: buff.buffTime,
-                isDebuff: isDebuff,
-                isAura: isAura,
-                sourceStatus: PlayerBuffSourceStatus.SourceUnknown));
-        }
-
-        return result;
     }
 
     private static double ComputeServerTime()
@@ -97,55 +62,22 @@ public sealed class PlayerContext
         targetedBossId: "",
         serverTime: 0,
         inWorldScene: false,
-        sceneChangedOrLeftWorld: false,
-        playerBuffs: new List<PlayerBuffContext>());
+        sceneChangedOrLeftWorld: false);
 
     public PlayerContext(
         string targetedBossId,
         double serverTime,
         bool inWorldScene,
-        bool sceneChangedOrLeftWorld,
-        IReadOnlyList<PlayerBuffContext> playerBuffs)
+        bool sceneChangedOrLeftWorld)
     {
         TargetedBossId = targetedBossId;
         ServerTime = serverTime;
         InWorldScene = inWorldScene;
         SceneChangedOrLeftWorld = sceneChangedOrLeftWorld;
-        PlayerBuffs = playerBuffs;
     }
 
     public string TargetedBossId { get; }
     public double ServerTime { get; }
     public bool InWorldScene { get; }
     public bool SceneChangedOrLeftWorld { get; }
-    public IReadOnlyList<PlayerBuffContext> PlayerBuffs { get; }
-}
-
-public sealed class PlayerBuffContext
-{
-    public PlayerBuffContext(
-        string skillId,
-        string displayName,
-        double endTime,
-        double totalTime,
-        bool isDebuff,
-        bool isAura,
-        PlayerBuffSourceStatus sourceStatus)
-    {
-        SkillId = skillId;
-        DisplayName = displayName;
-        EndTime = endTime;
-        TotalTime = totalTime;
-        IsDebuff = isDebuff;
-        IsAura = isAura;
-        SourceStatus = sourceStatus;
-    }
-
-    public string SkillId { get; }
-    public string DisplayName { get; }
-    public double EndTime { get; }
-    public double TotalTime { get; }
-    public bool IsDebuff { get; }
-    public bool IsAura { get; }
-    public PlayerBuffSourceStatus SourceStatus { get; }
 }

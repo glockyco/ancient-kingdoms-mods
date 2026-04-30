@@ -10,14 +10,12 @@ public sealed class UiFrame
         string targetedBossId,
         double serverTime,
         double unscaledNow,
-        IReadOnlyList<PlayerBuffView> playerBuffs,
         UiMode mode)
     {
         Bosses = bosses;
         TargetedBossId = targetedBossId;
         ServerTime = serverTime;
         UnscaledNow = unscaledNow;
-        PlayerBuffs = playerBuffs;
         Mode = mode;
     }
 
@@ -25,42 +23,5 @@ public sealed class UiFrame
     public string TargetedBossId { get; }
     public double ServerTime { get; }
     public double UnscaledNow { get; }
-    public IReadOnlyList<PlayerBuffView> PlayerBuffs { get; }
     public UiMode Mode { get; }
-}
-
-public enum PlayerBuffSourceStatus
-{
-    SourceUnknown,
-    FromActiveBoss,
-    NotFromActiveBoss,
-}
-
-public sealed class PlayerBuffView
-{
-    public PlayerBuffView(
-        string skillId,
-        string displayName,
-        double endTime,
-        double totalTime,
-        bool isDebuff,
-        bool isAura,
-        PlayerBuffSourceStatus sourceStatus)
-    {
-        SkillId = skillId;
-        DisplayName = displayName;
-        EndTime = endTime;
-        TotalTime = totalTime;
-        IsDebuff = isDebuff;
-        IsAura = isAura;
-        SourceStatus = sourceStatus;
-    }
-
-    public string SkillId { get; }
-    public string DisplayName { get; }
-    public double EndTime { get; }
-    public double TotalTime { get; }
-    public bool IsDebuff { get; }
-    public bool IsAura { get; }
-    public PlayerBuffSourceStatus SourceStatus { get; }
 }

@@ -1,6 +1,4 @@
 using System;
-using System.Numerics;
-using BossMod.Audio;
 using BossMod.Core.Catalog;
 using BossMod.Core.Effects;
 using BossMod.Ui.Settings;
@@ -18,29 +16,40 @@ internal static class SettingsTabHelpers
         ThreatTier.Critical,
     };
 
-    private static readonly AlertTrigger[] TriggerValues =
+    private static readonly AbilityDisplayPolicy[] DisplayPolicyValues =
     {
-        AlertTrigger.CastStart,
-        AlertTrigger.CastFinish,
-        AlertTrigger.CooldownReady,
+        AbilityDisplayPolicy.Auto,
+        AbilityDisplayPolicy.Always,
+        AbilityDisplayPolicy.Hidden,
     };
 
     public static UiRenderResult RenderOverrides(
         string idPrefix,
         SkillRecord skill,
         BossSkillRecord bossSkill,
-        TierDefaults defaults,
         bool editingBossOverride,
-        SoundBank soundBank,
-        SoundPreview preview,
         Func<SkillOverridePatch, bool> apply)
     {
         var result = new UiRenderResult();
         RenderThreat(idPrefix, skill, bossSkill, editingBossOverride, apply, result);
-        RenderSound(idPrefix, skill, bossSkill, defaults, editingBossOverride, soundBank, preview, apply, result);
-        RenderAlertText(idPrefix, skill, bossSkill, editingBossOverride, apply, result);
-        RenderFireOn(idPrefix, skill, bossSkill, editingBossOverride, apply, result);
-        RenderAudioMuted(idPrefix, skill, bossSkill, editingBossOverride, apply, result);
+        RenderDisplayPolicy(
+            idPrefix,
+            "Cast bars",
+            SettingsResolver.ResolveCastBarVisibilityWithSource(skill, bossSkill),
+            editingBossOverride ? bossSkill.CastBarVisibility : skill.CastBarVisibility,
+            policy => new SkillOverridePatch { CastBarVisibility = policy },
+            () => new SkillOverridePatch { ClearCastBarVisibility = true },
+            apply,
+            result);
+        RenderDisplayPolicy(
+            idPrefix,
+            "Boss abilities",
+            SettingsResolver.ResolveBossAbilityVisibilityWithSource(skill, bossSkill),
+            editingBossOverride ? bossSkill.BossAbilityVisibility : skill.BossAbilityVisibility,
+            policy => new SkillOverridePatch { BossAbilityVisibility = policy },
+            () => new SkillOverridePatch { ClearBossAbilityVisibility = true },
+            apply,
+            result);
         return result;
     }
 
@@ -55,7 +64,7 @@ internal static class SettingsTabHelpers
         var resolved = SettingsResolver.ResolveThreatWithSource(skill, bossSkill);
         ThreatTier? current = editingBossOverride ? bossSkill.UserThreat : skill.UserThreat;
         string currentLabel = current.HasValue ? current.Value.ToString() : "Inherit";
-        if (ImGui.BeginCombo($"Threat##{idPrefix}_threat", currentLabel))
+        if (ImGui.BeginCombo($"Importance##{idPrefix}_threat", currentLabel))
         {
             if (ImGui.Selectable("Inherit", !current.HasValue)) Apply(result, apply, new SkillOverridePatch { ClearUserThreat = true });
             for (int i = 0; i < ThreatValues.Length; i++)
@@ -69,75 +78,24 @@ internal static class SettingsTabHelpers
         SourceBadge($"resolved {resolved.Value} from {resolved.Source}");
     }
 
-    private static void RenderSound(
+    private static void RenderDisplayPolicy(
         string idPrefix,
-        SkillRecord skill,
-        BossSkillRecord bossSkill,
-        TierDefaults defaults,
-        bool editingBossOverride,
-        SoundBank soundBank,
-        SoundPreview preview,
+        string label,
+        ResolvedSetting<AbilityDisplayPolicy> resolved,
+        AbilityDisplayPolicy? current,
+        Func<AbilityDisplayPolicy, SkillOverridePatch> setPatch,
+        Func<SkillOverridePatch> clearPatch,
         Func<SkillOverridePatch, bool> apply,
         UiRenderResult result)
     {
-        var resolved = SettingsResolver.ResolveSoundWithSource(skill, bossSkill, defaults);
-        string sound = editingBossOverride ? bossSkill.Sound : skill.Sound;
-        sound ??= "";
-        if (ImGui.InputText($"Sound##{idPrefix}_sound", ref sound, 128)) Apply(result, apply, new SkillOverridePatch { Sound = sound });
-        ImGui.SameLine();
-        if (ImGui.Button($"Inherit##{idPrefix}_sound_inherit")) Apply(result, apply, new SkillOverridePatch { ClearSound = true });
-        ImGui.SameLine();
-        SourceBadge($"resolved {resolved.Value} from {resolved.Source}");
-        if (!string.IsNullOrWhiteSpace(resolved.Value) && HasSound(soundBank, resolved.Value))
-        {
-            ImGui.SameLine();
-            if (ImGui.Button($"Preview##{idPrefix}_sound_preview")) preview.Play(resolved.Value);
-        }
-        else if (!string.IsNullOrWhiteSpace(resolved.Value))
-        {
-            ImGui.SameLine();
-            ImGui.TextColored(new Vector4(1f, 0.4f, 0.2f, 1f), "missing sound");
-        }
-    }
-
-    private static void RenderAlertText(
-        string idPrefix,
-        SkillRecord skill,
-        BossSkillRecord bossSkill,
-        bool editingBossOverride,
-        Func<SkillOverridePatch, bool> apply,
-        UiRenderResult result)
-    {
-        var resolved = SettingsResolver.ResolveAlertTextWithSource(skill, bossSkill, skill.DisplayName);
-        string text = editingBossOverride ? bossSkill.AlertText : skill.AlertText;
-        text ??= "";
-        if (ImGui.InputText($"Alert text##{idPrefix}_alert_text", ref text, 256)) Apply(result, apply, new SkillOverridePatch { AlertText = text });
-        ImGui.SameLine();
-        if (ImGui.Button($"Inherit##{idPrefix}_alert_inherit")) Apply(result, apply, new SkillOverridePatch { ClearAlertText = true });
-        ImGui.SameLine();
-        SourceBadge(resolved.Value.Length == 0
-            ? $"resolved <disabled> from {resolved.Source}"
-            : $"resolved {resolved.Value} from {resolved.Source}");
-    }
-
-    private static void RenderFireOn(
-        string idPrefix,
-        SkillRecord skill,
-        BossSkillRecord bossSkill,
-        bool editingBossOverride,
-        Func<SkillOverridePatch, bool> apply,
-        UiRenderResult result)
-    {
-        var resolved = SettingsResolver.ResolveFireOnWithSource(skill, bossSkill);
-        AlertTrigger? current = editingBossOverride ? bossSkill.FireOn : skill.FireOn;
         string currentLabel = current.HasValue ? current.Value.ToString() : "Inherit";
-        if (ImGui.BeginCombo($"Fire on##{idPrefix}_fire_on", currentLabel))
+        if (ImGui.BeginCombo($"{label}##{idPrefix}_{label}", currentLabel))
         {
-            if (ImGui.Selectable("Inherit", !current.HasValue)) Apply(result, apply, new SkillOverridePatch { ClearFireOn = true });
-            for (int i = 0; i < TriggerValues.Length; i++)
+            if (ImGui.Selectable("Inherit", !current.HasValue)) Apply(result, apply, clearPatch());
+            for (int i = 0; i < DisplayPolicyValues.Length; i++)
             {
-                var value = TriggerValues[i];
-                if (ImGui.Selectable(value.ToString(), current == value)) Apply(result, apply, new SkillOverridePatch { FireOn = value });
+                var value = DisplayPolicyValues[i];
+                if (ImGui.Selectable(value.ToString(), current == value)) Apply(result, apply, setPatch(value));
             }
             ImGui.EndCombo();
         }
@@ -145,40 +103,9 @@ internal static class SettingsTabHelpers
         SourceBadge($"resolved {resolved.Value} from {resolved.Source}");
     }
 
-    private static void RenderAudioMuted(
-        string idPrefix,
-        SkillRecord skill,
-        BossSkillRecord bossSkill,
-        bool editingBossOverride,
-        Func<SkillOverridePatch, bool> apply,
-        UiRenderResult result)
-    {
-        var resolved = SettingsResolver.ResolveAudioMutedWithSource(skill, bossSkill);
-        bool? current = editingBossOverride ? bossSkill.AudioMuted : skill.AudioMuted;
-        string currentLabel = current.HasValue ? (current.Value ? "Muted" : "Not muted") : "Inherit";
-        if (ImGui.BeginCombo($"Audio muted##{idPrefix}_audio_muted", currentLabel))
-        {
-            if (ImGui.Selectable("Inherit", !current.HasValue)) Apply(result, apply, new SkillOverridePatch { ClearAudioMuted = true });
-            if (ImGui.Selectable("Not muted", current == false)) Apply(result, apply, new SkillOverridePatch { AudioMuted = false });
-            if (ImGui.Selectable("Muted", current == true)) Apply(result, apply, new SkillOverridePatch { AudioMuted = true });
-            ImGui.EndCombo();
-        }
-        ImGui.SameLine();
-        SourceBadge($"resolved {(resolved.Value ? "muted" : "not muted")} from {resolved.Source}");
-    }
-
     private static void Apply(UiRenderResult result, Func<SkillOverridePatch, bool> apply, SkillOverridePatch patch)
     {
         if (apply(patch)) result.Dirty = true;
-    }
-
-    private static bool HasSound(SoundBank soundBank, string soundName)
-    {
-        for (int i = 0; i < soundBank.Entries.Count; i++)
-        {
-            if (string.Equals(soundBank.Entries[i].Name, soundName, StringComparison.OrdinalIgnoreCase)) return true;
-        }
-        return false;
     }
 
     private static void SourceBadge(string text)

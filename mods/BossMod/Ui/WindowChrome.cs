@@ -6,9 +6,7 @@ public readonly record struct UiMode(
     bool InWorldScene,
     bool ConfigMode,
     WindowChrome CastBarChrome,
-    WindowChrome CooldownChrome,
-    WindowChrome BuffTrackerChrome,
-    WindowChrome AlertChrome);
+    WindowChrome CooldownChrome);
 
 public readonly record struct WindowChrome(
     bool ClickThrough,
@@ -27,9 +25,7 @@ public readonly record struct WindowChrome(
             InWorldScene: inWorldScene,
             ConfigMode: configUnlocked,
             CastBarChrome: movableHud,
-            CooldownChrome: movableHud,
-            BuffTrackerChrome: movableHud,
-            AlertChrome: AlertOverlay);
+            CooldownChrome: movableHud);
     }
 
     private static WindowChrome LockedHud => new(
@@ -47,14 +43,6 @@ public readonly record struct WindowChrome(
         Movable: true,
         Resizable: true,
         ShowConfigOutline: true);
-
-    private static WindowChrome AlertOverlay => new(
-        ClickThrough: true,
-        ShowTitleBar: false,
-        ShowBackground: false,
-        Movable: false,
-        Resizable: false,
-        ShowConfigOutline: false);
 }
 
 public static class WindowChromeExtensions

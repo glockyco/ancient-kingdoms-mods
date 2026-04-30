@@ -65,9 +65,11 @@ public sealed class CastBarWindow
         for (int i = 0; i < frame.Bosses.Count; i++)
         {
             var boss = frame.Bosses[i];
-            if (!boss.IsActive || !boss.ActiveCast.HasValue) continue;
+            if (!boss.ActiveCast.HasValue) continue;
 
             var cast = boss.ActiveCast.Value;
+            if (!ShouldShowInCastBars(boss.BossId, cast.SkillId, boss.IsActive)) continue;
+
             double remaining = Math.Max(0, cast.CastTimeEnd - frame.ServerTime);
             float progress = cast.TotalCastTime <= 0
                 ? 1f
@@ -92,6 +94,21 @@ public sealed class CastBarWindow
         if (!boss.Skills.TryGetValue(skillId, out var bossSkill)) return ThreatTier.Low;
         return SettingsResolver.ResolveThreat(skill, bossSkill);
     }
+
+    private bool ShouldShowInCastBars(string bossId, string skillId, bool bossIsActive)
+    {
+        if (!_catalog.Skills.TryGetValue(skillId, out var skill)) return bossIsActive;
+        if (!_catalog.Bosses.TryGetValue(bossId, out var boss)) return bossIsActive;
+        if (!boss.Skills.TryGetValue(skillId, out var bossSkill)) return bossIsActive;
+
+        return SettingsResolver.ResolveCastBarVisibility(skill, bossSkill) switch
+        {
+            AbilityDisplayPolicy.Hidden => false,
+            AbilityDisplayPolicy.Always => true,
+            _ => bossIsActive,
+        };
+    }
+
 
     private static void RenderRow(CastRow row, int index)
     {

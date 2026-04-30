@@ -1,3 +1,5 @@
+using System.Linq;
+using System.Text.Json.Nodes;
 using System.IO;
 using BossMod.Core.Catalog;
 using BossMod.Core.Persistence;
@@ -13,20 +15,20 @@ public class StateJsonTests
         var cat = new SkillCatalog();
         var s = cat.GetOrCreateSkill("inferno_blast", "Inferno Blast", "infernal_skeleton");
         s.UserThreat = ThreatTier.Critical;
-        s.Sound = "klaxon";
-
+        s.CastBarVisibility = AbilityDisplayPolicy.Always;
+        s.BossAbilityVisibility = AbilityDisplayPolicy.Hidden;
         var b = cat.GetOrCreateBoss("infernal_skeleton", "Infernal Skeleton",
             "Undead", "Warrior", "Crypt of Decay", BossKind.Boss, 10);
         var bs = cat.GetOrCreateBossSkill(b, "inferno_blast");
         bs.AutoThreat = ThreatTier.High;
-        bs.Sound = "boss_specific";
+        bs.CastBarVisibility = AbilityDisplayPolicy.Always;
+        bs.BossAbilityVisibility = AbilityDisplayPolicy.Hidden;
 
         var globals = new Globals
         {
             ProximityRadius = 45f,
-            Muted = true,
-            MasterVolume = 0.4f,
-            ExpansionDefault = ExpansionDefault.ExpandAll,
+            BossAbilitiesDensity = BossAbilityDensity.Expanded,
+            ShowBossAbilitiesWindow = false,
         };
         globals.Thresholds.CriticalDamage = 999;
 
@@ -41,131 +43,118 @@ public class StateJsonTests
             Assert.Single(result.Catalog.Skills);
             Assert.Equal("Inferno Blast", result.Catalog.Skills["inferno_blast"].DisplayName);
             Assert.Equal(ThreatTier.Critical, result.Catalog.Skills["inferno_blast"].UserThreat);
-            Assert.Equal("klaxon", result.Catalog.Skills["inferno_blast"].Sound);
-
+            Assert.Equal(AbilityDisplayPolicy.Always, result.Catalog.Skills["inferno_blast"].CastBarVisibility);
+            Assert.Equal(AbilityDisplayPolicy.Hidden, result.Catalog.Skills["inferno_blast"].BossAbilityVisibility);
             Assert.Single(result.Catalog.Bosses);
             var b2 = result.Catalog.Bosses["infernal_skeleton"];
             Assert.Equal("Crypt of Decay", b2.ZoneBestiary);
             Assert.Single(b2.Skills);
-            Assert.Equal("boss_specific", b2.Skills["inferno_blast"].Sound);
+            Assert.Equal(AbilityDisplayPolicy.Always, b2.Skills["inferno_blast"].CastBarVisibility);
+            Assert.Equal(AbilityDisplayPolicy.Hidden, b2.Skills["inferno_blast"].BossAbilityVisibility);
 
             Assert.Equal(45f, result.Globals.ProximityRadius);
-            Assert.True(result.Globals.Muted);
-            Assert.Equal(0.4f, result.Globals.MasterVolume);
-            Assert.Equal(ExpansionDefault.ExpandAll, result.Globals.ExpansionDefault);
+            Assert.Equal(BossAbilityDensity.Expanded, result.Globals.BossAbilitiesDensity);
+            Assert.False(result.Globals.ShowBossAbilitiesWindow);
             Assert.Equal(999, result.Globals.Thresholds.CriticalDamage);
         }
         finally { if (File.Exists(path)) File.Delete(path); }
     }
 
     [Fact]
-    public void Globals_DefaultsIncludeMasterVolumeAndEnumExpansionDefault()
+    public void Globals_DefaultsIncludeAbilityFocusedWindowSettings()
     {
         var globals = new Globals();
 
-        Assert.Equal(1.0f, globals.MasterVolume);
-        Assert.Equal(ExpansionDefault.ExpandTargetedOnly, globals.ExpansionDefault);
+        Assert.Equal(BossAbilityDensity.Compact, globals.BossAbilitiesDensity);
         Assert.True(globals.ShowCastBarWindow);
-        Assert.True(globals.ShowCooldownWindow);
-        Assert.True(globals.ShowBuffTrackerWindow);
+        Assert.True(globals.ShowBossAbilitiesWindow);
         Assert.Equal(3, globals.MaxCastBars);
         Assert.Equal("F8", globals.Hotkeys["toggle_settings"]);
     }
 
     [Fact]
-    public void Write_SerializesExpansionDefaultAsString()
+    public void Write_SerializesCurrentCleanShape()
     {
         var path = Path.Combine(Path.GetTempPath(), $"bossmod-enum-{System.Guid.NewGuid():N}.json");
         try
         {
-            StateJson.Write(path, new SkillCatalog(), new Globals { ExpansionDefault = ExpansionDefault.CollapseAll });
+            var catalog = new SkillCatalog();
+            var skill = catalog.GetOrCreateSkill("inferno_blast", "Inferno Blast", "infernal_skeleton");
+            skill.UserThreat = ThreatTier.Critical;
+            skill.CastBarVisibility = AbilityDisplayPolicy.Always;
+            skill.BossAbilityVisibility = AbilityDisplayPolicy.Hidden;
+            var boss = catalog.GetOrCreateBoss("infernal_skeleton", "Infernal Skeleton", "Undead", "Warrior", "Crypt", BossKind.Boss, 10);
+            var bossSkill = catalog.GetOrCreateBossSkill(boss, "inferno_blast");
+            bossSkill.UserThreat = ThreatTier.High;
+            bossSkill.CastBarVisibility = AbilityDisplayPolicy.Hidden;
+            bossSkill.BossAbilityVisibility = AbilityDisplayPolicy.Always;
+
+            StateJson.Write(path, catalog, new Globals { BossAbilitiesDensity = BossAbilityDensity.Expanded });
 
             var json = File.ReadAllText(path);
-            Assert.Contains("\"ExpansionDefault\": \"CollapseAll\"", json);
+            Assert.Contains("\"BossAbilitiesDensity\": \"Expanded\"", json);
+            var root = Assert.IsType<JsonObject>(JsonNode.Parse(json));
+            Assert.Equal(2, root["Version"]!.GetValue<int>());
+            Assert.Empty(root.Select(entry => entry.Key).Except(new[] { "Version", "Global", "Skills", "Bosses" }));
+            var global = Assert.IsType<JsonObject>(root["Global"]);
+            Assert.Empty(global.Select(entry => entry.Key).Except(new[]
+            {
+                "Thresholds",
+                "ProximityRadius",
+                "UiScale",
+                "MaxCastBars",
+                "BossAbilitiesDensity",
+                "Hotkeys",
+                "ShowCastBarWindow",
+                "ShowBossAbilitiesWindow",
+                "ConfigMode",
+            }));
+            var skills = Assert.IsType<JsonObject>(root["Skills"]);
+            var serializedSkill = Assert.IsType<JsonObject>(skills["inferno_blast"]);
+            Assert.Empty(serializedSkill.Select(entry => entry.Key).Except(new[]
+            {
+                "Id",
+                "DisplayName",
+                "FirstSeenUtc",
+                "LastSeenInBoss",
+                "RawSnapshot",
+                "UserThreat",
+                "CastBarVisibility",
+                "BossAbilityVisibility",
+            }));
+
+            var bosses = Assert.IsType<JsonObject>(root["Bosses"]);
+            var serializedBoss = Assert.IsType<JsonObject>(bosses["infernal_skeleton"]);
+            Assert.Empty(serializedBoss.Select(entry => entry.Key).Except(new[]
+            {
+                "Id",
+                "DisplayName",
+                "Type",
+                "Class",
+                "ZoneBestiary",
+                "Kind",
+                "LastSeenLevel",
+                "FirstSeenUtc",
+                "LastSeenUtc",
+                "Skills",
+            }));
+
+            var serializedBossSkills = Assert.IsType<JsonObject>(serializedBoss["Skills"]);
+            var serializedBossSkill = Assert.IsType<JsonObject>(serializedBossSkills["inferno_blast"]);
+            Assert.Empty(serializedBossSkill.Select(entry => entry.Key).Except(new[]
+            {
+                "EffectiveSnapshot",
+                "AutoThreat",
+                "UserThreat",
+                "CastBarVisibility",
+                "BossAbilityVisibility",
+                "LastObservedUtc",
+            }));
         }
         finally { if (File.Exists(path)) File.Delete(path); }
     }
 
-    [Fact]
-    public void Read_LegacyExpansionDefaultString_MigratesToEnum()
-    {
-        var path = WriteRaw("""
-        {
-          "Version": 1,
-          "Global": { "ExpansionDefault": "expand_targeted_only" },
-          "Skills": {},
-          "Bosses": {}
-        }
-        """);
-        try
-        {
-            var result = StateJson.Read(path);
 
-            Assert.Equal(StateReadStatus.Loaded, result.Status);
-            Assert.Equal(ExpansionDefault.ExpandTargetedOnly, result.Globals.ExpansionDefault);
-            Assert.Null(result.ErrorMessage);
-        }
-        finally { File.Delete(path); }
-    }
-
-    [Fact]
-    public void Read_LegacyMutedOverrides_MigratesToAudioMuted()
-    {
-        var path = WriteRaw("""
-        {
-          "Version": 1,
-          "Global": {},
-          "Skills": {
-            "inferno_blast": {
-              "Id": "inferno_blast",
-              "DisplayName": "Inferno Blast",
-              "Muted": true
-            }
-          },
-          "Bosses": {
-            "infernal_skeleton": {
-              "Id": "infernal_skeleton",
-              "DisplayName": "Infernal Skeleton",
-              "Skills": {
-                "inferno_blast": {
-                  "Muted": false
-                }
-              }
-            }
-          }
-        }
-        """);
-        try
-        {
-            var result = StateJson.Read(path);
-
-            Assert.Equal(StateReadStatus.Loaded, result.Status);
-            Assert.True(result.Catalog.Skills["inferno_blast"].AudioMuted);
-            Assert.False(result.Catalog.Bosses["infernal_skeleton"].Skills["inferno_blast"].AudioMuted);
-        }
-        finally { File.Delete(path); }
-    }
-
-    [Fact]
-    public void Read_NumericExpansionDefault_ReturnsCorruptDefaults()
-    {
-        var path = WriteRaw("""
-        {
-          "Version": 1,
-          "Global": { "ExpansionDefault": 999 },
-          "Skills": {},
-          "Bosses": {}
-        }
-        """);
-        try
-        {
-            var result = StateJson.Read(path);
-
-            Assert.Equal(StateReadStatus.CorruptUsedDefaults, result.Status);
-            Assert.NotNull(result.ErrorMessage);
-        }
-        finally { File.Delete(path); }
-    }
     [Theory]
     [InlineData("Thresholds")]
     [InlineData("Hotkeys")]
@@ -173,7 +162,7 @@ public class StateJsonTests
     {
         var path = WriteRaw($$"""
         {
-          "Version": 1,
+          "Version": 2,
           "Global": { "{{property}}": null },
           "Skills": {},
           "Bosses": {}
@@ -189,8 +178,6 @@ public class StateJsonTests
         finally { File.Delete(path); }
     }
 
-
-
     [Fact]
     public void Read_MissingFile_ReturnsDefaultsWithMissingStatus()
     {
@@ -205,12 +192,33 @@ public class StateJsonTests
     }
 
     [Fact]
-    public void Read_ValidVersionOne_ReturnsLoadedStatus()
+    public void Read_MissingVersion_ReturnsCorruptDefaults()
     {
         var path = WriteRaw("""
         {
-          "Version": 1,
-          "Global": { "ProximityRadius": 45, "MasterVolume": 0.75, "MaxCastBars": 4 },
+          "Global": { "ProximityRadius": 45 },
+          "Skills": {},
+          "Bosses": {}
+        }
+        """);
+        try
+        {
+            var result = StateJson.Read(path);
+
+            Assert.Equal(StateReadStatus.CorruptUsedDefaults, result.Status);
+            Assert.Equal(30f, result.Globals.ProximityRadius);
+            Assert.NotNull(result.ErrorMessage);
+        }
+        finally { File.Delete(path); }
+    }
+
+    [Fact]
+    public void Read_ValidVersionTwo_ReturnsLoadedStatus()
+    {
+        var path = WriteRaw("""
+        {
+          "Version": 2,
+          "Global": { "ProximityRadius": 45, "MaxCastBars": 4 },
           "Skills": {},
           "Bosses": {}
         }
@@ -221,7 +229,6 @@ public class StateJsonTests
 
             Assert.Equal(StateReadStatus.Loaded, result.Status);
             Assert.Equal(45f, result.Globals.ProximityRadius);
-            Assert.Equal(0.75f, result.Globals.MasterVolume);
             Assert.Equal(4, result.Globals.MaxCastBars);
             Assert.Null(result.ErrorMessage);
         }
@@ -245,12 +252,34 @@ public class StateJsonTests
     }
 
     [Fact]
+    public void Read_PreCutoverVersionOne_ReturnsUnsupportedDefaults()
+    {
+        var path = WriteRaw("""
+        {
+          "Version": 1,
+          "Global": { "ProximityRadius": 45 },
+          "Skills": {},
+          "Bosses": {}
+        }
+        """);
+        try
+        {
+            var result = StateJson.Read(path);
+
+            Assert.Equal(StateReadStatus.UnsupportedVersionUsedDefaults, result.Status);
+            Assert.Equal(30f, result.Globals.ProximityRadius);
+            Assert.NotNull(result.ErrorMessage);
+        }
+        finally { File.Delete(path); }
+    }
+
+    [Fact]
     public void Read_UnsupportedVersion_ReturnsDefaultsWithUnsupportedStatus()
     {
         var path = WriteRaw("""
         {
           "Version": 999,
-          "Global": { "ProximityRadius": 45, "MasterVolume": 0.75 },
+          "Global": { "ProximityRadius": 45 },
           "Skills": {},
           "Bosses": {}
         }
@@ -267,16 +296,15 @@ public class StateJsonTests
     }
 
     [Theory]
-    [InlineData("MasterVolume", -0.1)]
-    [InlineData("MasterVolume", 1.1)]
     [InlineData("MaxCastBars", 0)]
     [InlineData("ProximityRadius", 0)]
     [InlineData("UiScale", 0)]
+    [InlineData("BossAbilitiesDensity", 999)]
     public void Read_StructurallyInvalidGlobals_ReturnsDefaultsWithCorruptStatus(string property, double value)
     {
         var path = WriteRaw($$"""
         {
-          "Version": 1,
+          "Version": 2,
           "Global": { "{{property}}": {{value.ToString(System.Globalization.CultureInfo.InvariantCulture)}} },
           "Skills": {},
           "Bosses": {}
@@ -287,7 +315,6 @@ public class StateJsonTests
             var result = StateJson.Read(path);
 
             Assert.Equal(StateReadStatus.CorruptUsedDefaults, result.Status);
-            Assert.Equal(1.0f, result.Globals.MasterVolume);
             Assert.Equal(3, result.Globals.MaxCastBars);
             Assert.NotNull(result.ErrorMessage);
         }
@@ -297,14 +324,14 @@ public class StateJsonTests
     [Theory]
     [InlineData("""
     {
-      "Version": 1,
+      "Version": 2,
       "Global": { "ProximityRadius": 45 },
       "Bosses": {}
     }
     """)]
     [InlineData("""
     {
-      "Version": 1,
+      "Version": 2,
       "Global": { "ProximityRadius": 45 },
       "Skills": {}
     }
@@ -329,7 +356,7 @@ public class StateJsonTests
     {
         var path = WriteRaw("""
         {
-          "Version": 1,
+          "Version": 2,
           "Global": { "ProximityRadius": 45 },
           "Skills": {
             "inferno": {

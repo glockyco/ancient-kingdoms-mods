@@ -5,8 +5,7 @@ namespace BossMod.Core.Tracking;
 
 /// <summary>
 /// Snapshot of one tracked Monster at one frame. Plain data; built each frame
-/// by MonsterWatcher from live SyncVars. Equality-by-value not required —
-/// AlertEngine consumes pairs of (prev, curr) and diffs explicitly.
+/// by MonsterWatcher from live SyncVars.
 /// </summary>
 public sealed class BossState
 {
@@ -27,7 +26,6 @@ public sealed class BossState
 
     public CastInfo? ActiveCast { get; set; }
     public List<SkillCooldown> Cooldowns { get; set; } = new();
-    public List<BuffSnapshot> Buffs { get; set; } = new();
 
     public double ServerTime { get; set; }
 
