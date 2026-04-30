@@ -12,8 +12,9 @@ public sealed class Globals
     public float ProximityRadius { get; set; } = 30f;
     public float UiScale { get; set; } = 1.0f;
     public bool Muted { get; set; }
+    public float MasterVolume { get; set; } = 1.0f;
     public bool AlertTextMuteOnMasterMute { get; set; } = true;
-    public string ExpansionDefault { get; set; } = "expand_targeted_only";
+    public ExpansionDefault ExpansionDefault { get; set; } = ExpansionDefault.ExpandTargetedOnly;
     public int MaxCastBars { get; set; } = 3;
 
     public Dictionary<string, string> Hotkeys { get; set; } = new()

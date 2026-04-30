@@ -21,61 +21,199 @@ public class StateJsonTests
         bs.AutoThreat = ThreatTier.High;
         bs.Sound = "boss_specific";
 
-        var globals = new Globals { ProximityRadius = 45f, Muted = true };
+        var globals = new Globals
+        {
+            ProximityRadius = 45f,
+            Muted = true,
+            MasterVolume = 0.4f,
+            ExpansionDefault = ExpansionDefault.ExpandAll,
+        };
         globals.Thresholds.CriticalDamage = 999;
 
         var path = Path.Combine(Path.GetTempPath(), $"bossmod-test-{System.Guid.NewGuid():N}.json");
         try
         {
             StateJson.Write(path, cat, globals);
-            var (cat2, glob2) = StateJson.Read(path);
+            var result = StateJson.Read(path);
 
-            Assert.Single(cat2.Skills);
-            Assert.Equal("Inferno Blast", cat2.Skills["inferno_blast"].DisplayName);
-            Assert.Equal(ThreatTier.Critical, cat2.Skills["inferno_blast"].UserThreat);
-            Assert.Equal("klaxon", cat2.Skills["inferno_blast"].Sound);
+            Assert.Equal(StateReadStatus.Loaded, result.Status);
+            Assert.Null(result.ErrorMessage);
+            Assert.Single(result.Catalog.Skills);
+            Assert.Equal("Inferno Blast", result.Catalog.Skills["inferno_blast"].DisplayName);
+            Assert.Equal(ThreatTier.Critical, result.Catalog.Skills["inferno_blast"].UserThreat);
+            Assert.Equal("klaxon", result.Catalog.Skills["inferno_blast"].Sound);
 
-            Assert.Single(cat2.Bosses);
-            var b2 = cat2.Bosses["infernal_skeleton"];
+            Assert.Single(result.Catalog.Bosses);
+            var b2 = result.Catalog.Bosses["infernal_skeleton"];
             Assert.Equal("Crypt of Decay", b2.ZoneBestiary);
             Assert.Single(b2.Skills);
             Assert.Equal("boss_specific", b2.Skills["inferno_blast"].Sound);
 
-            Assert.Equal(45f, glob2.ProximityRadius);
-            Assert.True(glob2.Muted);
-            Assert.Equal(999, glob2.Thresholds.CriticalDamage);
+            Assert.Equal(45f, result.Globals.ProximityRadius);
+            Assert.True(result.Globals.Muted);
+            Assert.Equal(0.4f, result.Globals.MasterVolume);
+            Assert.Equal(ExpansionDefault.ExpandAll, result.Globals.ExpansionDefault);
+            Assert.Equal(999, result.Globals.Thresholds.CriticalDamage);
         }
         finally { if (File.Exists(path)) File.Delete(path); }
     }
 
     [Fact]
-    public void Read_MissingFile_ReturnsEmptyDefaults()
+    public void Globals_DefaultsIncludeMasterVolumeAndEnumExpansionDefault()
     {
-        var path = Path.Combine(Path.GetTempPath(), $"bossmod-missing-{System.Guid.NewGuid():N}.json");
-        var (cat, glob) = StateJson.Read(path);
-        Assert.Empty(cat.Skills);
-        Assert.Empty(cat.Bosses);
-        Assert.Equal(30f, glob.ProximityRadius);  // default
+        var globals = new Globals();
+
+        Assert.Equal(1.0f, globals.MasterVolume);
+        Assert.Equal(ExpansionDefault.ExpandTargetedOnly, globals.ExpansionDefault);
+        Assert.True(globals.ShowCastBarWindow);
+        Assert.True(globals.ShowCooldownWindow);
+        Assert.True(globals.ShowBuffTrackerWindow);
+        Assert.Equal(3, globals.MaxCastBars);
+        Assert.Equal("F8", globals.Hotkeys["toggle_settings"]);
     }
 
     [Fact]
-    public void Read_CorruptFile_ReturnsEmptyDefaultsAndDoesNotThrow()
+    public void Write_SerializesExpansionDefaultAsString()
     {
-        var path = Path.Combine(Path.GetTempPath(), $"bossmod-corrupt-{System.Guid.NewGuid():N}.json");
-        File.WriteAllText(path, "{ this is not valid json");
+        var path = Path.Combine(Path.GetTempPath(), $"bossmod-enum-{System.Guid.NewGuid():N}.json");
         try
         {
-            var (cat, glob) = StateJson.Read(path);
-            Assert.Empty(cat.Skills);
+            StateJson.Write(path, new SkillCatalog(), new Globals { ExpansionDefault = ExpansionDefault.CollapseAll });
+
+            var json = File.ReadAllText(path);
+            Assert.Contains("\"ExpansionDefault\": \"CollapseAll\"", json);
+        }
+        finally { if (File.Exists(path)) File.Delete(path); }
+    }
+
+    [Fact]
+    public void Read_InvalidExpansionDefaultString_ReturnsCorruptDefaults()
+    {
+        var path = WriteRaw("""
+        {
+          "Version": 1,
+          "Global": { "ExpansionDefault": "expand_targeted_only" },
+          "Skills": {},
+          "Bosses": {}
+        }
+        """);
+        try
+        {
+            var result = StateJson.Read(path);
+
+            Assert.Equal(StateReadStatus.CorruptUsedDefaults, result.Status);
+            Assert.Equal(ExpansionDefault.ExpandTargetedOnly, result.Globals.ExpansionDefault);
+            Assert.NotNull(result.ErrorMessage);
         }
         finally { File.Delete(path); }
     }
 
     [Fact]
-    public void Write_AtomicallyReplaces_DoesNotCorruptOnPartialWrite()
+    public void Read_MissingFile_ReturnsDefaultsWithMissingStatus()
     {
-        // We write to a .tmp first then rename, so even if the process is killed
-        // mid-write the existing file is preserved.
+        var path = Path.Combine(Path.GetTempPath(), $"bossmod-missing-{System.Guid.NewGuid():N}.json");
+        var result = StateJson.Read(path);
+
+        Assert.Equal(StateReadStatus.MissingUsedDefaults, result.Status);
+        Assert.Empty(result.Catalog.Skills);
+        Assert.Empty(result.Catalog.Bosses);
+        Assert.Equal(30f, result.Globals.ProximityRadius);
+        Assert.Null(result.ErrorMessage);
+    }
+
+    [Fact]
+    public void Read_ValidVersionOne_ReturnsLoadedStatus()
+    {
+        var path = WriteRaw("""
+        {
+          "Version": 1,
+          "Global": { "ProximityRadius": 45, "MasterVolume": 0.75, "MaxCastBars": 4 },
+          "Skills": {},
+          "Bosses": {}
+        }
+        """);
+        try
+        {
+            var result = StateJson.Read(path);
+
+            Assert.Equal(StateReadStatus.Loaded, result.Status);
+            Assert.Equal(45f, result.Globals.ProximityRadius);
+            Assert.Equal(0.75f, result.Globals.MasterVolume);
+            Assert.Equal(4, result.Globals.MaxCastBars);
+            Assert.Null(result.ErrorMessage);
+        }
+        finally { File.Delete(path); }
+    }
+
+    [Fact]
+    public void Read_MalformedJson_ReturnsDefaultsWithCorruptStatus()
+    {
+        var path = WriteRaw("{ this is not valid json");
+        try
+        {
+            var result = StateJson.Read(path);
+
+            Assert.Equal(StateReadStatus.CorruptUsedDefaults, result.Status);
+            Assert.Empty(result.Catalog.Skills);
+            Assert.Empty(result.Catalog.Bosses);
+            Assert.NotNull(result.ErrorMessage);
+        }
+        finally { File.Delete(path); }
+    }
+
+    [Fact]
+    public void Read_UnsupportedVersion_ReturnsDefaultsWithUnsupportedStatus()
+    {
+        var path = WriteRaw("""
+        {
+          "Version": 999,
+          "Global": { "ProximityRadius": 45, "MasterVolume": 0.75 },
+          "Skills": {},
+          "Bosses": {}
+        }
+        """);
+        try
+        {
+            var result = StateJson.Read(path);
+
+            Assert.Equal(StateReadStatus.UnsupportedVersionUsedDefaults, result.Status);
+            Assert.Equal(30f, result.Globals.ProximityRadius);
+            Assert.NotNull(result.ErrorMessage);
+        }
+        finally { File.Delete(path); }
+    }
+
+    [Theory]
+    [InlineData("MasterVolume", -0.1)]
+    [InlineData("MasterVolume", 1.1)]
+    [InlineData("MaxCastBars", 0)]
+    [InlineData("ProximityRadius", 0)]
+    [InlineData("UiScale", 0)]
+    public void Read_StructurallyInvalidGlobals_ReturnsDefaultsWithCorruptStatus(string property, double value)
+    {
+        var path = WriteRaw($$"""
+        {
+          "Version": 1,
+          "Global": { "{{property}}": {{value.ToString(System.Globalization.CultureInfo.InvariantCulture)}} },
+          "Skills": {},
+          "Bosses": {}
+        }
+        """);
+        try
+        {
+            var result = StateJson.Read(path);
+
+            Assert.Equal(StateReadStatus.CorruptUsedDefaults, result.Status);
+            Assert.Equal(1.0f, result.Globals.MasterVolume);
+            Assert.Equal(3, result.Globals.MaxCastBars);
+            Assert.NotNull(result.ErrorMessage);
+        }
+        finally { File.Delete(path); }
+    }
+
+    [Fact]
+    public void Write_AtomicallyReplaces_DoesNotLeaveTempFile()
+    {
         var path = Path.Combine(Path.GetTempPath(), $"bossmod-atomic-{System.Guid.NewGuid():N}.json");
         try
         {
@@ -84,9 +222,17 @@ public class StateJsonTests
             Assert.False(File.Exists(path + ".tmp"));
 
             StateJson.Write(path, new SkillCatalog(), new Globals { ProximityRadius = 20 });
-            var (_, glob) = StateJson.Read(path);
-            Assert.Equal(20f, glob.ProximityRadius);
+            var result = StateJson.Read(path);
+            Assert.Equal(StateReadStatus.Loaded, result.Status);
+            Assert.Equal(20f, result.Globals.ProximityRadius);
         }
         finally { if (File.Exists(path)) File.Delete(path); }
+    }
+
+    private static string WriteRaw(string content)
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"bossmod-state-{System.Guid.NewGuid():N}.json");
+        File.WriteAllText(path, content);
+        return path;
     }
 }
