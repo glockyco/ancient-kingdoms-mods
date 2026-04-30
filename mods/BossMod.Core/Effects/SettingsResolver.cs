@@ -19,6 +19,17 @@ public sealed class TierDefaults
     };
 }
 
+public enum SettingSource
+{
+    BossOverride,
+    SkillOverride,
+    AutoThreat,
+    TierDefault,
+    HardDefault,
+}
+
+public readonly record struct ResolvedSetting<T>(T Value, SettingSource Source);
+
 /// <summary>
 /// Pure inheritance-chain resolver for per-skill settings.
 /// Order: BossSkillRecord → SkillRecord → tier defaults / hard defaults.
@@ -26,17 +37,52 @@ public sealed class TierDefaults
 public static class SettingsResolver
 {
     public static ThreatTier ResolveThreat(SkillRecord s, BossSkillRecord b) =>
-        b.UserThreat ?? s.UserThreat ?? b.AutoThreat;
+        ResolveThreatWithSource(s, b).Value;
+
+    public static ResolvedSetting<ThreatTier> ResolveThreatWithSource(SkillRecord s, BossSkillRecord b)
+    {
+        if (b.UserThreat.HasValue) return new ResolvedSetting<ThreatTier>(b.UserThreat.Value, SettingSource.BossOverride);
+        if (s.UserThreat.HasValue) return new ResolvedSetting<ThreatTier>(s.UserThreat.Value, SettingSource.SkillOverride);
+        return new ResolvedSetting<ThreatTier>(b.AutoThreat, SettingSource.AutoThreat);
+    }
 
     public static string ResolveSound(SkillRecord s, BossSkillRecord b, TierDefaults defaults) =>
-        b.Sound ?? s.Sound ?? defaults.SoundFor(ResolveThreat(s, b));
+        ResolveSoundWithSource(s, b, defaults).Value;
+
+    public static ResolvedSetting<string> ResolveSoundWithSource(SkillRecord s, BossSkillRecord b, TierDefaults defaults)
+    {
+        if (b.Sound != null) return new ResolvedSetting<string>(b.Sound, SettingSource.BossOverride);
+        if (s.Sound != null) return new ResolvedSetting<string>(s.Sound, SettingSource.SkillOverride);
+        return new ResolvedSetting<string>(defaults.SoundFor(ResolveThreat(s, b)), SettingSource.TierDefault);
+    }
 
     public static string ResolveAlertText(SkillRecord s, BossSkillRecord b, string displayName) =>
-        b.AlertText ?? s.AlertText ?? $"{displayName}!";
+        ResolveAlertTextWithSource(s, b, displayName).Value;
+
+    public static ResolvedSetting<string> ResolveAlertTextWithSource(SkillRecord s, BossSkillRecord b, string displayName)
+    {
+        if (b.AlertText != null) return new ResolvedSetting<string>(b.AlertText, SettingSource.BossOverride);
+        if (s.AlertText != null) return new ResolvedSetting<string>(s.AlertText, SettingSource.SkillOverride);
+        return new ResolvedSetting<string>($"{displayName}!", SettingSource.HardDefault);
+    }
 
     public static AlertTrigger ResolveFireOn(SkillRecord s, BossSkillRecord b) =>
-        b.FireOn ?? s.FireOn ?? AlertTrigger.CastStart;
+        ResolveFireOnWithSource(s, b).Value;
+
+    public static ResolvedSetting<AlertTrigger> ResolveFireOnWithSource(SkillRecord s, BossSkillRecord b)
+    {
+        if (b.FireOn.HasValue) return new ResolvedSetting<AlertTrigger>(b.FireOn.Value, SettingSource.BossOverride);
+        if (s.FireOn.HasValue) return new ResolvedSetting<AlertTrigger>(s.FireOn.Value, SettingSource.SkillOverride);
+        return new ResolvedSetting<AlertTrigger>(AlertTrigger.CastStart, SettingSource.HardDefault);
+    }
 
     public static bool ResolveAudioMuted(SkillRecord s, BossSkillRecord b) =>
-        b.AudioMuted ?? s.AudioMuted ?? false;
+        ResolveAudioMutedWithSource(s, b).Value;
+
+    public static ResolvedSetting<bool> ResolveAudioMutedWithSource(SkillRecord s, BossSkillRecord b)
+    {
+        if (b.AudioMuted.HasValue) return new ResolvedSetting<bool>(b.AudioMuted.Value, SettingSource.BossOverride);
+        if (s.AudioMuted.HasValue) return new ResolvedSetting<bool>(s.AudioMuted.Value, SettingSource.SkillOverride);
+        return new ResolvedSetting<bool>(false, SettingSource.HardDefault);
+    }
 }

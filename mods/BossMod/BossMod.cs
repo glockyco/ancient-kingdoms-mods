@@ -10,6 +10,7 @@ using BossMod.Core.Tracking;
 using BossMod.Imgui;
 using BossMod.Tracking;
 using BossMod.Ui;
+using BossMod.Ui.Settings;
 using MelonLoader;
 using MelonLoader.Utils;
 
@@ -35,6 +36,8 @@ public class BossMod : MelonMod
     private CastBarWindow _castBars;
     private CooldownWindow _cooldowns;
     private BuffTrackerWindow _buffs;
+    private ISettingsMutator _settingsMutator;
+    private SettingsWindow _settingsWindow;
     private SoundBank _soundBank;
     private SoundPlayer _soundPlayer;
     private AlertSubscriber _alertSubscriber;
@@ -87,7 +90,9 @@ public class BossMod : MelonMod
         _castBars = new CastBarWindow(_catalog, _globals);
         _cooldowns = new CooldownWindow(_globals);
         _buffs = new BuffTrackerWindow(_globals);
-        _ui = new BossModUi(_globals, _castBars, _cooldowns, _buffs, _alertOverlay);
+        _settingsMutator = new SettingsMutator(_catalog, _globals);
+        _settingsWindow = new SettingsWindow();
+        _ui = new BossModUi(_globals, _castBars, _cooldowns, _buffs, _settingsWindow, _alertOverlay);
         _currentFrame = _uiFrameBuilder.Build(_watcher.CurrentSnapshots, _globals);
 
         _renderer.OnLayout = OnLayout;
@@ -128,8 +133,13 @@ public class BossMod : MelonMod
     {
         if (_ui == null || _currentFrame == null) return;
 
-        bool settingsChanged = _ui.Render(_currentFrame);
-        if (settingsChanged) _flusher.MarkDirty();
+        var result = _ui.Render(_currentFrame);
+        if (result.Dirty) _flusher.MarkDirty();
+        if (result.FlushImmediately)
+        {
+            _flusher.MarkDirty();
+            _flusher.Flush();
+        }
     }
 
     private void ProcessAlerts(IReadOnlyList<BossState> current)

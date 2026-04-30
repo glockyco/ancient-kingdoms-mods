@@ -155,4 +155,87 @@ public class SettingsResolverTests
         var (s, b) = Pair(skillFireOn: AlertTrigger.CastStart, bossFireOn: AlertTrigger.CastFinish);
         Assert.Equal(AlertTrigger.CastFinish, SettingsResolver.ResolveFireOn(s, b));
     }
+
+    [Fact]
+    public void ResolveThreatWithSource_ReportsBossSkillAndAutoSources()
+    {
+        var (skillOverride, bossOverride) = Pair(
+            auto: ThreatTier.Low,
+            skillUser: ThreatTier.Medium,
+            bossUser: ThreatTier.Critical);
+        var bossValue = SettingsResolver.ResolveThreatWithSource(skillOverride, bossOverride);
+        Assert.Equal(ThreatTier.Critical, bossValue.Value);
+        Assert.Equal(SettingSource.BossOverride, bossValue.Source);
+
+        var (skillOnly, noBossOverride) = Pair(auto: ThreatTier.Low, skillUser: ThreatTier.High);
+        var skillValue = SettingsResolver.ResolveThreatWithSource(skillOnly, noBossOverride);
+        Assert.Equal(ThreatTier.High, skillValue.Value);
+        Assert.Equal(SettingSource.SkillOverride, skillValue.Source);
+
+        var (autoSkill, autoBoss) = Pair(auto: ThreatTier.Medium);
+        var autoValue = SettingsResolver.ResolveThreatWithSource(autoSkill, autoBoss);
+        Assert.Equal(ThreatTier.Medium, autoValue.Value);
+        Assert.Equal(SettingSource.AutoThreat, autoValue.Source);
+    }
+
+    [Fact]
+    public void ResolveSoundWithSource_ReportsOverrideAndTierDefaultSources()
+    {
+        var (s, b) = Pair(auto: ThreatTier.Critical, skillSound: "skill", bossSound: "boss");
+        var bossValue = SettingsResolver.ResolveSoundWithSource(s, b, Defaults);
+        Assert.Equal("boss", bossValue.Value);
+        Assert.Equal(SettingSource.BossOverride, bossValue.Source);
+
+        b.Sound = null;
+        var skillValue = SettingsResolver.ResolveSoundWithSource(s, b, Defaults);
+        Assert.Equal("skill", skillValue.Value);
+        Assert.Equal(SettingSource.SkillOverride, skillValue.Source);
+
+        s.Sound = null;
+        var tierValue = SettingsResolver.ResolveSoundWithSource(s, b, Defaults);
+        Assert.Equal("critical", tierValue.Value);
+        Assert.Equal(SettingSource.TierDefault, tierValue.Source);
+    }
+
+    [Fact]
+    public void ResolveAlertTextWithSource_EmptyStringIsExplicitOverride()
+    {
+        var (skill, boss) = Pair(skillText: "skill", bossText: "");
+        var bossValue = SettingsResolver.ResolveAlertTextWithSource(skill, boss, "Inferno Blast");
+        Assert.Equal("", bossValue.Value);
+        Assert.Equal(SettingSource.BossOverride, bossValue.Source);
+
+        boss.AlertText = null;
+        skill.AlertText = "";
+        var skillValue = SettingsResolver.ResolveAlertTextWithSource(skill, boss, "Inferno Blast");
+        Assert.Equal("", skillValue.Value);
+        Assert.Equal(SettingSource.SkillOverride, skillValue.Source);
+
+        skill.AlertText = null;
+        var defaultValue = SettingsResolver.ResolveAlertTextWithSource(skill, boss, "Inferno Blast");
+        Assert.Equal("Inferno Blast!", defaultValue.Value);
+        Assert.Equal(SettingSource.HardDefault, defaultValue.Source);
+    }
+
+    [Fact]
+    public void ResolveFireOnAndAudioMutedWithSource_ReportHardDefaults()
+    {
+        var (s, b) = Pair(skillFireOn: AlertTrigger.CastFinish, bossAudioMuted: true);
+        var fire = SettingsResolver.ResolveFireOnWithSource(s, b);
+        Assert.Equal(AlertTrigger.CastFinish, fire.Value);
+        Assert.Equal(SettingSource.SkillOverride, fire.Source);
+
+        var muted = SettingsResolver.ResolveAudioMutedWithSource(s, b);
+        Assert.True(muted.Value);
+        Assert.Equal(SettingSource.BossOverride, muted.Source);
+
+        s.FireOn = null;
+        b.AudioMuted = null;
+        var defaultFire = SettingsResolver.ResolveFireOnWithSource(s, b);
+        var defaultMuted = SettingsResolver.ResolveAudioMutedWithSource(s, b);
+        Assert.Equal(AlertTrigger.CastStart, defaultFire.Value);
+        Assert.Equal(SettingSource.HardDefault, defaultFire.Source);
+        Assert.False(defaultMuted.Value);
+        Assert.Equal(SettingSource.HardDefault, defaultMuted.Source);
+    }
 }
