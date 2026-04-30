@@ -21,6 +21,8 @@ public readonly record struct WavHeader(int Channels, int SampleRate, int BitsPe
         int? bitsPerSample = null;
         int? dataOffset = null;
         int? dataLength = null;
+        bool sawFmt = false;
+        bool sawData = false;
 
         int offset = 12;
         while (offset + 8 <= bytes.Length)
@@ -36,6 +38,8 @@ public readonly record struct WavHeader(int Channels, int SampleRate, int BitsPe
 
             if (FourCcEquals(chunkId, "fmt "))
             {
+                if (sawFmt) throw new WavFormatException("WAV data contains multiple fmt chunks.");
+                sawFmt = true;
                 if (chunkSize < 16) throw new WavFormatException("WAV fmt chunk is shorter than 16 bytes.");
                 var fmt = bytes.Slice((int)chunkDataStart, chunkSize);
                 ushort formatCode = BinaryPrimitives.ReadUInt16LittleEndian(fmt.Slice(0, 2));
@@ -61,6 +65,8 @@ public readonly record struct WavHeader(int Channels, int SampleRate, int BitsPe
             }
             else if (FourCcEquals(chunkId, "data"))
             {
+                if (sawData) throw new WavFormatException("WAV data contains multiple data chunks.");
+                sawData = true;
                 dataOffset = (int)chunkDataStart;
                 dataLength = chunkSize;
             }

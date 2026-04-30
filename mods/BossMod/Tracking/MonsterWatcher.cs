@@ -32,6 +32,7 @@ public sealed class MonsterWatcher
 
     private readonly List<BossState> _currentSnapshots = new();
     public IReadOnlyList<BossState> CurrentSnapshots => _currentSnapshots;
+    public bool SceneGenerationChanged { get; private set; }
 
     public MonsterWatcher(MelonLogger.Instance log, SkillCatalog catalog, Globals globals)
     {
@@ -43,6 +44,7 @@ public sealed class MonsterWatcher
     /// <summary>Call from MelonMod.OnUpdate. No-ops outside the World scene.</summary>
     public bool Tick()
     {
+        SceneGenerationChanged = false;
         var sceneName = SceneManager.GetActiveScene().name;
         if (sceneName != "World")
         {
@@ -56,13 +58,18 @@ public sealed class MonsterWatcher
         }
 
         var localPlayer = Player.localPlayer;
-        if (localPlayer == null) return false;
+        if (localPlayer == null)
+        {
+            _currentSnapshots.Clear();
+            return false;
+        }
 
         // Refresh cache on scene change or teleport (BossTracker pattern).
         var pos = localPlayer.transform.position;
         bool teleported = Vector3.Distance(pos, _lastPlayerPosition) > TeleportThreshold;
         if (_cachedMonsters == null || sceneName != _lastSceneName || teleported)
         {
+            SceneGenerationChanged = _cachedMonsters != null;
             _cachedMonsters = Object.FindObjectsOfType(Il2CppType.Of<Monster>());
             _lastSceneName = sceneName;
             _lastPlayerPosition = pos;
@@ -71,7 +78,6 @@ public sealed class MonsterWatcher
         var serverTime = ComputeServerTime();
         _currentSnapshots.Clear();
         bool catalogChanged = false;
-
 
         foreach (var obj in _cachedMonsters)
         {
@@ -135,8 +141,7 @@ public sealed class MonsterWatcher
             var skillDisplay = string.IsNullOrEmpty(data.nameSkill) ? skillId : data.nameSkill;
             bool skillExists = _catalog.Skills.TryGetValue(skillId, out var existingSkill);
             if (!skillExists ||
-                existingSkill.DisplayName != skillDisplay ||
-                existingSkill.LastSeenInBoss != bossId)
+                existingSkill.DisplayName != skillDisplay)
             {
                 changed = true;
             }

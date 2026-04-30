@@ -55,6 +55,6 @@ public sealed class StateFlusher : IDisposable
     {
         if (_disposed) return;
         Flush();
-        _disposed = true;
+        if (!IsDirty) _disposed = true;
     }
 }

@@ -26,6 +26,12 @@ public sealed class SoundPlayer : IDisposable
 
     public void Initialize()
     {
+        if (_disposed)
+        {
+            _log.Warning("BossMod audio player was already disposed; ignoring initialize.");
+            return;
+        }
+
         if (_initialized)
         {
             _log.Msg("BossMod audio already initialized; ignoring duplicate initialize.");
@@ -46,6 +52,7 @@ public sealed class SoundPlayer : IDisposable
         if (!_initialized || _disposed) return;
         if (globals.Muted) return;
         if (string.IsNullOrWhiteSpace(soundName)) return;
+        soundName = soundName.Trim();
 
         if (!_soundBank.TryGetClip(soundName, out var clip))
         {

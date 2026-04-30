@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using BossMod.Core.Catalog;
 
@@ -23,8 +24,14 @@ public static class StateJson
     private static readonly JsonSerializerOptions Options = new()
     {
         WriteIndented = true,
-        Converters = { new JsonStringEnumConverter() },
+        Converters = { new JsonStringEnumConverter(namingPolicy: null, allowIntegerValues: false) },
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+    };
+
+    private static readonly JsonSerializerOptions PreserveNullOptions = new()
+    {
+        WriteIndented = true,
+        Converters = { new JsonStringEnumConverter(namingPolicy: null, allowIntegerValues: false) },
     };
 
     private sealed class FileShape
@@ -80,8 +87,8 @@ public static class StateJson
 
         try
         {
-            using var fs = File.OpenRead(path);
-            var shape = JsonSerializer.Deserialize<FileShape>(fs, Options);
+            var json = File.ReadAllText(path);
+            var shape = JsonSerializer.Deserialize<FileShape>(NormalizeLegacyJson(json), Options);
             if (shape == null) return Defaults(StateReadStatus.CorruptUsedDefaults, "State file was empty.");
 
             if (shape.Version != CurrentSchemaVersion)
@@ -114,6 +121,10 @@ public static class StateJson
 
     private static string? Validate(Globals globals)
     {
+        if (globals.Thresholds == null)
+            return "Global.Thresholds is required.";
+        if (globals.Hotkeys == null)
+            return "Global.Hotkeys is required.";
         if (!float.IsFinite(globals.MasterVolume) || globals.MasterVolume < 0f || globals.MasterVolume > 1f)
             return "Global.MasterVolume must be finite and between 0 and 1.";
         if (!float.IsFinite(globals.UiScale) || globals.UiScale <= 0f)
@@ -122,7 +133,58 @@ public static class StateJson
             return "Global.ProximityRadius must be finite and positive.";
         if (globals.MaxCastBars <= 0)
             return "Global.MaxCastBars must be positive.";
+        if (!Enum.IsDefined(typeof(ExpansionDefault), globals.ExpansionDefault))
+            return "Global.ExpansionDefault must be a defined value.";
         return null;
+    }
+
+    private static string NormalizeLegacyJson(string json)
+    {
+        var root = JsonNode.Parse(json) as JsonObject;
+        if (root == null) return json;
+
+        if (root["Global"] is JsonObject global &&
+            global["ExpansionDefault"] is JsonValue expansionValue &&
+            expansionValue.TryGetValue<string>(out var expansion))
+        {
+            string normalized = expansion switch
+            {
+                "expand_targeted_only" => nameof(ExpansionDefault.ExpandTargetedOnly),
+                "expand_all" => nameof(ExpansionDefault.ExpandAll),
+                "collapse_all" => nameof(ExpansionDefault.CollapseAll),
+                _ => expansion,
+            };
+            global["ExpansionDefault"] = normalized;
+        }
+
+        if (root["Skills"] is JsonObject skills)
+        {
+            foreach (var skill in skills)
+            {
+                if (skill.Value is JsonObject skillObject) MigrateAudioMuted(skillObject);
+            }
+        }
+
+        if (root["Bosses"] is JsonObject bosses)
+        {
+            foreach (var boss in bosses)
+            {
+                if (boss.Value?["Skills"] is not JsonObject bossSkills) continue;
+                foreach (var bossSkill in bossSkills)
+                {
+                    if (bossSkill.Value is JsonObject bossSkillObject) MigrateAudioMuted(bossSkillObject);
+                }
+            }
+        }
+
+        return root.ToJsonString(PreserveNullOptions);
+    }
+
+    private static void MigrateAudioMuted(JsonObject obj)
+    {
+        if (obj.ContainsKey("AudioMuted") || !obj.TryGetPropertyValue("Muted", out var muted)) return;
+        if (muted is JsonValue mutedValue && mutedValue.TryGetValue<bool>(out var audioMuted)) obj["AudioMuted"] = audioMuted;
+        obj.Remove("Muted");
     }
 
     private static StateReadResult Defaults(StateReadStatus status, string? errorMessage) =>

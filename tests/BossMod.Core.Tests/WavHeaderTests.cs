@@ -104,6 +104,23 @@ public class WavHeaderTests
         Assert.Throws<WavFormatException>(() => WavHeader.Parse(BuildWav(channels: 2, rawData: new byte[] { 1, 2, 3 })));
     }
 
+    [Fact]
+    public void Parse_DuplicateFmtChunk_Throws()
+    {
+        var bytes = AppendChunk(BuildWav(), "fmt ", new byte[16]);
+
+        Assert.Throws<WavFormatException>(() => WavHeader.Parse(bytes));
+    }
+
+    [Fact]
+    public void Parse_DuplicateDataChunk_Throws()
+    {
+        var bytes = AppendChunk(BuildWav(), "data", new byte[] { 0, 0 });
+
+        Assert.Throws<WavFormatException>(() => WavHeader.Parse(bytes));
+    }
+
+
     private static byte[] BuildWav(
         string riff = "RIFF",
         string wave = "WAVE",
@@ -170,6 +187,19 @@ public class WavHeaderTests
         var bytes = new byte[samples.Length * 2];
         Buffer.BlockCopy(samples, 0, bytes, 0, bytes.Length);
         return bytes;
+    }
+
+
+    private static byte[] AppendChunk(byte[] wav, string chunkId, byte[] data)
+    {
+        using var stream = new MemoryStream();
+        stream.Write(wav, 0, wav.Length);
+        using var writer = new BinaryWriter(stream);
+        writer.Write(System.Text.Encoding.ASCII.GetBytes(chunkId));
+        writer.Write(data.Length);
+        writer.Write(data);
+        writer.Flush();
+        return stream.ToArray();
     }
 
     private sealed class FloatComparer : System.Collections.Generic.IEqualityComparer<float>

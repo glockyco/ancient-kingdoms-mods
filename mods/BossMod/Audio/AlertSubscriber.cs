@@ -15,13 +15,13 @@ public sealed class AlertSubscriber
         _alertOverlay = alertOverlay;
     }
 
-    public void Handle(AlertEvent ev, Globals globals)
+    public void Handle(AlertEvent ev, Globals globals, double unscaledNow)
     {
         if (!ev.AudioMuted) _soundPlayer.Play(ev.EffectiveSound, globals);
 
         if (string.IsNullOrEmpty(ev.EffectiveAlertText)) return;
         if (globals.Muted && globals.AlertTextMuteOnMasterMute) return;
 
-        _alertOverlay.Push(ev);
+        _alertOverlay.Push(ev, unscaledNow);
     }
 }

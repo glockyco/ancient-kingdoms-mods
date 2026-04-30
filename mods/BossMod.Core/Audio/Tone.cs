@@ -42,7 +42,9 @@ public static class Tone
         return Generate(durationMs, (i, _) =>
         {
             double ms = i * 1000.0 / SampleRate;
-            double cyclePosition = ms % cycleMs;
+            int pulseIndex = (int)(ms / cycleMs);
+            if (pulseIndex >= 3) return 0.0;
+            double cyclePosition = ms - pulseIndex * cycleMs;
             if (cyclePosition >= onMs) return 0.0;
 
             double pulseEnvelope = EdgeEnvelope(cyclePosition / 1000.0, onMs / 1000.0, attackSeconds: 0.005);

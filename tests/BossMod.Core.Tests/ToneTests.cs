@@ -46,8 +46,43 @@ public class ToneTests
     }
 
     [Fact]
+    public void Generate_CriticalTone_HasExactlyThreePulses()
+    {
+        var samples = Tone.Generate("critical");
+
+        Assert.Equal(3, CountPulses(samples, threshold: 0.05f));
+    }
+
+    [Fact]
     public void Generate_UnknownToneName_ThrowsInsteadOfPretendingSilenceIsSuccess()
     {
         Assert.Throws<ArgumentException>(() => Tone.Generate("missing"));
     }
+
+    private static int CountPulses(float[] samples, float threshold)
+    {
+        const int minSilenceSamples = 44100 * 30 / 1000;
+        int pulses = 0;
+        int silentRun = minSilenceSamples;
+        bool inPulse = false;
+
+        foreach (var sample in samples)
+        {
+            bool audible = Math.Abs(sample) > threshold;
+            if (audible)
+            {
+                if (!inPulse && silentRun >= minSilenceSamples) pulses++;
+                inPulse = true;
+                silentRun = 0;
+            }
+            else
+            {
+                silentRun++;
+                if (silentRun >= minSilenceSamples) inPulse = false;
+            }
+        }
+
+        return pulses;
+    }
+
 }

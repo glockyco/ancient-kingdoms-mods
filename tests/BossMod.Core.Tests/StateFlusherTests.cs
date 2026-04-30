@@ -117,6 +117,32 @@ public class StateFlusherTests
     }
 
     [Fact]
+    public void DisposeFailure_KeepsPendingDirtyRetryable()
+    {
+        var now = DateTimeOffset.UnixEpoch;
+        bool fail = true;
+        int writes = 0;
+        var flusher = new StateFlusher(() =>
+        {
+            writes++;
+            if (fail) throw new InvalidOperationException("disk full");
+        }, () => now, TimeSpan.Zero);
+
+        flusher.MarkDirty();
+        flusher.Dispose();
+
+        Assert.True(flusher.IsDirty);
+        Assert.Equal(1, writes);
+
+        fail = false;
+        flusher.Dispose();
+
+        Assert.False(flusher.IsDirty);
+        Assert.Equal(2, writes);
+    }
+
+
+    [Fact]
     public void Tick_DoesNotWriteAgainAfterSuccessfulFlushUntilNextMarkDirty()
     {
         var now = DateTimeOffset.UnixEpoch;

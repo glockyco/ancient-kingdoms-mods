@@ -70,10 +70,11 @@ public sealed class SoundBank : IDisposable
 
     private void LoadUserWav(string path)
     {
-        string name = Path.GetFileNameWithoutExtension(path);
+        string rawName = Path.GetFileNameWithoutExtension(path);
+        string name = rawName.Trim();
         if (string.IsNullOrWhiteSpace(name))
         {
-            _loadStatuses.Add(SoundLoadStatus.Skipped(path, name, "File name is empty."));
+            _loadStatuses.Add(SoundLoadStatus.Skipped(path, rawName, "File name is empty."));
             return;
         }
 
@@ -101,6 +102,12 @@ public sealed class SoundBank : IDisposable
             var bytes = File.ReadAllBytes(path);
             var header = WavHeader.Parse(bytes);
             var samples = WavHeader.ToMonoFloatSamples(bytes, header);
+            if (samples.Length == 0)
+            {
+                _loadStatuses.Add(SoundLoadStatus.Skipped(path, name, "WAV clip contains no samples."));
+                return;
+            }
+
             double seconds = samples.Length / (double)header.SampleRate;
             if (seconds > MaxClipSeconds)
             {
@@ -112,7 +119,7 @@ public sealed class SoundBank : IDisposable
             _userNames.Add(name);
             _loadStatuses.Add(SoundLoadStatus.Success(path, name));
         }
-        catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException || ex is WavFormatException)
+        catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException || ex is WavFormatException || ex is ArgumentException)
         {
             _loadStatuses.Add(SoundLoadStatus.Skipped(path, name, ex.Message));
         }

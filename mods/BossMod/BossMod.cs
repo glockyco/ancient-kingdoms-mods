@@ -96,7 +96,7 @@ public class BossMod : MelonMod
         bool catalogChanged = _watcher.Tick();
         _currentFrame = _uiFrameBuilder.Build(_watcher.CurrentSnapshots, _globals);
 
-        if (_uiFrameBuilder.LastContext.SceneChangedOrLeftWorld)
+        if (_uiFrameBuilder.LastContext.SceneChangedOrLeftWorld || _watcher.SceneGenerationChanged)
         {
             _previousStates.Clear();
             _alertEngine.Reset();
@@ -138,7 +138,7 @@ public class BossMod : MelonMod
             {
                 foreach (var ev in _alertEngine.Process(prev, curr))
                 {
-                    _alertSubscriber.Handle(ev, _globals);
+                    _alertSubscriber.Handle(ev, _globals, _currentFrame.UnscaledNow);
                 }
             }
 

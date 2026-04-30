@@ -87,7 +87,7 @@ public class StateJsonTests
     }
 
     [Fact]
-    public void Read_InvalidExpansionDefaultString_ReturnsCorruptDefaults()
+    public void Read_LegacyExpansionDefaultString_MigratesToEnum()
     {
         var path = WriteRaw("""
         {
@@ -101,12 +101,95 @@ public class StateJsonTests
         {
             var result = StateJson.Read(path);
 
-            Assert.Equal(StateReadStatus.CorruptUsedDefaults, result.Status);
+            Assert.Equal(StateReadStatus.Loaded, result.Status);
             Assert.Equal(ExpansionDefault.ExpandTargetedOnly, result.Globals.ExpansionDefault);
+            Assert.Null(result.ErrorMessage);
+        }
+        finally { File.Delete(path); }
+    }
+
+    [Fact]
+    public void Read_LegacyMutedOverrides_MigratesToAudioMuted()
+    {
+        var path = WriteRaw("""
+        {
+          "Version": 1,
+          "Global": {},
+          "Skills": {
+            "inferno_blast": {
+              "Id": "inferno_blast",
+              "DisplayName": "Inferno Blast",
+              "Muted": true
+            }
+          },
+          "Bosses": {
+            "infernal_skeleton": {
+              "Id": "infernal_skeleton",
+              "DisplayName": "Infernal Skeleton",
+              "Skills": {
+                "inferno_blast": {
+                  "Muted": false
+                }
+              }
+            }
+          }
+        }
+        """);
+        try
+        {
+            var result = StateJson.Read(path);
+
+            Assert.Equal(StateReadStatus.Loaded, result.Status);
+            Assert.True(result.Catalog.Skills["inferno_blast"].AudioMuted);
+            Assert.False(result.Catalog.Bosses["infernal_skeleton"].Skills["inferno_blast"].AudioMuted);
+        }
+        finally { File.Delete(path); }
+    }
+
+    [Fact]
+    public void Read_NumericExpansionDefault_ReturnsCorruptDefaults()
+    {
+        var path = WriteRaw("""
+        {
+          "Version": 1,
+          "Global": { "ExpansionDefault": 999 },
+          "Skills": {},
+          "Bosses": {}
+        }
+        """);
+        try
+        {
+            var result = StateJson.Read(path);
+
+            Assert.Equal(StateReadStatus.CorruptUsedDefaults, result.Status);
             Assert.NotNull(result.ErrorMessage);
         }
         finally { File.Delete(path); }
     }
+    [Theory]
+    [InlineData("Thresholds")]
+    [InlineData("Hotkeys")]
+    public void Read_ExplicitNullGlobalObjects_ReturnsCorruptDefaults(string property)
+    {
+        var path = WriteRaw($$"""
+        {
+          "Version": 1,
+          "Global": { "{{property}}": null },
+          "Skills": {},
+          "Bosses": {}
+        }
+        """);
+        try
+        {
+            var result = StateJson.Read(path);
+
+            Assert.Equal(StateReadStatus.CorruptUsedDefaults, result.Status);
+            Assert.NotNull(result.ErrorMessage);
+        }
+        finally { File.Delete(path); }
+    }
+
+
 
     [Fact]
     public void Read_MissingFile_ReturnsDefaultsWithMissingStatus()

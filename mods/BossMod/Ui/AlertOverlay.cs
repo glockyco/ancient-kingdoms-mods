@@ -12,7 +12,7 @@ public sealed class AlertOverlay
     private const int MaxEntries = 4;
     private readonly List<Entry> _entries = new();
 
-    public void Push(AlertEvent ev)
+    public void Push(AlertEvent ev, double unscaledNow)
     {
         if (string.IsNullOrEmpty(ev.EffectiveAlertText)) return;
 
@@ -20,15 +20,15 @@ public sealed class AlertOverlay
         if (existingIndex >= 0)
         {
             var existing = _entries[existingIndex];
-            existing.Event = ev;
+            if (IsStronger(ev, existing.Event)) existing.Event = ev;
             existing.Count++;
-            existing.StartedAt = null;
+            existing.StartedAt = unscaledNow;
             _entries.RemoveAt(existingIndex);
             _entries.Insert(0, existing);
         }
         else
         {
-            _entries.Insert(0, new Entry(ev));
+            _entries.Insert(0, new Entry(ev, unscaledNow));
         }
 
         while (_entries.Count > MaxEntries) _entries.RemoveAt(_entries.Count - 1);
@@ -51,7 +51,6 @@ public sealed class AlertOverlay
         {
             foreach (var entry in _entries)
             {
-                entry.StartedAt ??= unscaledNow;
                 string text = entry.Count > 1
                     ? $"{entry.Event.EffectiveAlertText} (x{entry.Count})"
                     : entry.Event.EffectiveAlertText;
@@ -66,12 +65,24 @@ public sealed class AlertOverlay
         for (int i = _entries.Count - 1; i >= 0; i--)
         {
             var entry = _entries[i];
-            if (entry.StartedAt is not { } startedAt) continue;
+            double startedAt = entry.StartedAt;
 
             double ttl = entry.Event.EffectiveThreat == ThreatTier.Critical ? 5.0 : 3.0;
             if (unscaledNow - startedAt >= ttl) _entries.RemoveAt(i);
         }
     }
+
+    private static bool IsStronger(AlertEvent candidate, AlertEvent current) =>
+        Rank(candidate.EffectiveThreat) > Rank(current.EffectiveThreat);
+
+    private static int Rank(ThreatTier tier) => tier switch
+    {
+        ThreatTier.Critical => 4,
+        ThreatTier.High => 3,
+        ThreatTier.Medium => 2,
+        _ => 1,
+    };
+
 
     private static Vector4 ColorFor(ThreatTier tier) => tier switch
     {
@@ -83,15 +94,16 @@ public sealed class AlertOverlay
 
     private sealed class Entry
     {
-        public Entry(AlertEvent ev)
+        public Entry(AlertEvent ev, double startedAt)
         {
             Event = ev;
             SkillId = ev.SkillId;
+            StartedAt = startedAt;
         }
 
         public string SkillId { get; }
         public AlertEvent Event { get; set; }
         public int Count { get; set; } = 1;
-        public double? StartedAt { get; set; }
+        public double StartedAt { get; set; }
     }
 }
