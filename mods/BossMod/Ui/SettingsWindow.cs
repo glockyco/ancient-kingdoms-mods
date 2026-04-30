@@ -1,11 +1,21 @@
 using System.Numerics;
 using BossMod.Ui.Settings;
+using BossMod.Ui.Tabs;
 using ImGuiNET;
 
 namespace BossMod.Ui;
 
 public sealed class SettingsWindow
 {
+    private readonly SkillsTab _skills;
+    private readonly BossesTab _bosses;
+
+    public SettingsWindow(SkillsTab skills, BossesTab bosses)
+    {
+        _skills = skills;
+        _bosses = bosses;
+    }
+
     public UiRenderResult Render(UiMode mode)
     {
         var result = new UiRenderResult();
@@ -18,7 +28,18 @@ public sealed class SettingsWindow
 
         if (ImGui.BeginTabBar("BossMod Settings Tabs"))
         {
-            ImGui.TextDisabled("Settings tabs are added by subsequent Plan 4 tasks.");
+            if (ImGui.BeginTabItem("Skills"))
+            {
+                result.Merge(_skills.Render());
+                ImGui.EndTabItem();
+            }
+
+            if (ImGui.BeginTabItem("Bosses"))
+            {
+                result.Merge(_bosses.Render());
+                ImGui.EndTabItem();
+            }
+
             ImGui.EndTabBar();
         }
 

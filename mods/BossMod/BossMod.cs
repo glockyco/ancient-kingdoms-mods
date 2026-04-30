@@ -11,6 +11,7 @@ using BossMod.Imgui;
 using BossMod.Tracking;
 using BossMod.Ui;
 using BossMod.Ui.Settings;
+using BossMod.Ui.Tabs;
 using MelonLoader;
 using MelonLoader.Utils;
 
@@ -91,7 +92,10 @@ public class BossMod : MelonMod
         _cooldowns = new CooldownWindow(_globals);
         _buffs = new BuffTrackerWindow(_globals);
         _settingsMutator = new SettingsMutator(_catalog, _globals);
-        _settingsWindow = new SettingsWindow();
+        var settingsDefaults = new TierDefaults();
+        var skillsTab = new SkillsTab(_catalog, _settingsMutator, settingsDefaults);
+        var bossesTab = new BossesTab(_catalog, _settingsMutator, settingsDefaults);
+        _settingsWindow = new SettingsWindow(skillsTab, bossesTab);
         _ui = new BossModUi(_globals, _castBars, _cooldowns, _buffs, _settingsWindow, _alertOverlay);
         _currentFrame = _uiFrameBuilder.Build(_watcher.CurrentSnapshots, _globals);
 
