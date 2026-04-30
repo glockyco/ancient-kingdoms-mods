@@ -40,7 +40,7 @@ public sealed class SoundBank : IDisposable
             _entries.RemoveAll(entry => !entry.IsBuiltIn && string.Equals(entry.Name, name, StringComparison.OrdinalIgnoreCase));
         }
         _userNames.Clear();
-        _loadStatuses.Clear();
+        _loadStatuses.RemoveAll(status => !status.IsBuiltIn);
 
         Directory.CreateDirectory(_soundsDirectory);
         foreach (var path in Directory.GetFiles(_soundsDirectory, "*.wav", SearchOption.TopDirectoryOnly)
@@ -65,11 +65,18 @@ public sealed class SoundBank : IDisposable
     {
         foreach (var name in Tone.BuiltInNames)
         {
-            var samples = Tone.Generate(name);
-            var clip = CreateClip("BossMod_builtin_" + name, samples, BuiltInSampleRate);
-            _clips[name] = clip;
             _builtInNames.Add(name);
-            _entries.Add(new SoundEntry(name, isBuiltIn: true));
+            try
+            {
+                var samples = Tone.Generate(name);
+                var clip = CreateClip("BossMod_builtin_" + name, samples, BuiltInSampleRate);
+                _clips[name] = clip;
+                _entries.Add(new SoundEntry(name, isBuiltIn: true));
+            }
+            catch (Exception ex) when (IsClipCreationFailure(ex))
+            {
+                _loadStatuses.Add(SoundLoadStatus.Skipped("", name, $"Built-in sound unavailable: {ex.Message}", isBuiltIn: true));
+            }
         }
     }
 
@@ -125,7 +132,7 @@ public sealed class SoundBank : IDisposable
             _entries.Add(new SoundEntry(name, isBuiltIn: false));
             _loadStatuses.Add(SoundLoadStatus.Success(path, name));
         }
-        catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException || ex is WavFormatException || ex is ArgumentException)
+        catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException || ex is WavFormatException || IsClipCreationFailure(ex))
         {
             _loadStatuses.Add(SoundLoadStatus.Skipped(path, name, ex.Message));
         }
@@ -137,6 +144,9 @@ public sealed class SoundBank : IDisposable
         clip.SetData(samples, offsetSamples: 0);
         return clip;
     }
+
+    private static bool IsClipCreationFailure(Exception ex) =>
+        ex is ArgumentException || ex is MissingMethodException || ex is NotSupportedException;
 }
 
 public sealed class SoundEntry
@@ -153,22 +163,24 @@ public sealed class SoundEntry
 
 public sealed class SoundLoadStatus
 {
-    private SoundLoadStatus(string path, string name, bool loaded, string message)
+    private SoundLoadStatus(string path, string name, bool loaded, string message, bool isBuiltIn)
     {
         Path = path;
         Name = name;
         Loaded = loaded;
         Message = message;
+        IsBuiltIn = isBuiltIn;
     }
 
     public string Path { get; }
     public string Name { get; }
     public bool Loaded { get; }
     public string Message { get; }
+    public bool IsBuiltIn { get; }
 
     public static SoundLoadStatus Success(string path, string name) =>
-        new(path, name, loaded: true, message: "Loaded.");
+        new(path, name, loaded: true, message: "Loaded.", isBuiltIn: false);
 
-    public static SoundLoadStatus Skipped(string path, string name, string message) =>
-        new(path, name, loaded: false, message: message);
+    public static SoundLoadStatus Skipped(string path, string name, string message, bool isBuiltIn = false) =>
+        new(path, name, loaded: false, message: message, isBuiltIn: isBuiltIn);
 }
