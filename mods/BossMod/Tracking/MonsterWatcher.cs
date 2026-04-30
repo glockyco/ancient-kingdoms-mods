@@ -41,7 +41,7 @@ public sealed class MonsterWatcher
     }
 
     /// <summary>Call from MelonMod.OnUpdate. No-ops outside the World scene.</summary>
-    public void Tick()
+    public bool Tick()
     {
         var sceneName = SceneManager.GetActiveScene().name;
         if (sceneName != "World")
@@ -52,11 +52,11 @@ public sealed class MonsterWatcher
                 _currentSnapshots.Clear();
             }
             _lastSceneName = sceneName;
-            return;
+            return false;
         }
 
         var localPlayer = Player.localPlayer;
-        if (localPlayer == null) return;
+        if (localPlayer == null) return false;
 
         // Refresh cache on scene change or teleport (BossTracker pattern).
         var pos = localPlayer.transform.position;
@@ -70,6 +70,8 @@ public sealed class MonsterWatcher
 
         var serverTime = ComputeServerTime();
         _currentSnapshots.Clear();
+        bool catalogChanged = false;
+
 
         foreach (var obj in _cachedMonsters)
         {
@@ -77,34 +79,51 @@ public sealed class MonsterWatcher
             if (monster == null || (!monster.isBoss && !monster.isElite)) continue;
             if (monster.health == null || monster.health.current <= 0) continue;
 
-            HarvestCatalog(monster);
+            catalogChanged |= HarvestCatalog(monster);
 
             var state = BuildState(monster, serverTime);
             state.IsActive = Activation.IsActive(monster, localPlayer, _globals.ProximityRadius);
             _currentSnapshots.Add(state);
         }
+
+        return catalogChanged;
     }
 
-    private void HarvestCatalog(Monster monster)
+    private bool HarvestCatalog(Monster monster)
     {
+        bool changed = false;
         var bossId = SanitizeName(monster.name);
         var displayName = string.IsNullOrEmpty(monster.nameEntity) ? bossId : monster.nameEntity;
+        var type = monster.typeMonster ?? "";
+        var className = monster.classMonster ?? "";
+        var zone = monster.zoneMonster ?? "";
         var kind = monster.isFabled ? BossKind.Fabled
                  : monster.isBoss   ? BossKind.Boss
                                     : BossKind.Elite;
+        var level = monster.level != null ? monster.level.current : 1;
+
+        bool bossExists = _catalog.Bosses.TryGetValue(bossId, out var existingBoss);
+        if (!bossExists ||
+            existingBoss.DisplayName != displayName ||
+            existingBoss.Type != type ||
+            existingBoss.Class != className ||
+            existingBoss.ZoneBestiary != zone ||
+            existingBoss.Kind != kind ||
+            existingBoss.LastSeenLevel != level)
+        {
+            changed = true;
+        }
 
         var bossRec = _catalog.GetOrCreateBoss(
             bossId, displayName,
-            monster.typeMonster ?? "", monster.classMonster ?? "",
-            monster.zoneMonster ?? "", kind,
-            monster.level != null ? monster.level.current : 1);
+            type, className, zone, kind, level);
 
         // Iterate the live Skill list (carries .level), not skillTemplates which
         // are bare ScriptableSkill assets and don't tell us the boss's per-instance
         // skill level.
-        if (monster.skills == null) return;
+        if (monster.skills == null) return changed;
         var skillsList = monster.skills.skills;
-        if (skillsList == null) return;
+        if (skillsList == null) return changed;
 
         for (int i = 0; i < skillsList.Count; i++)
         {
@@ -114,18 +133,72 @@ public sealed class MonsterWatcher
 
             var skillId = data.name;
             var skillDisplay = string.IsNullOrEmpty(data.nameSkill) ? skillId : data.nameSkill;
+            bool skillExists = _catalog.Skills.TryGetValue(skillId, out var existingSkill);
+            if (!skillExists ||
+                existingSkill.DisplayName != skillDisplay ||
+                existingSkill.LastSeenInBoss != bossId)
+            {
+                changed = true;
+            }
+
             var skillRec = _catalog.GetOrCreateSkill(skillId, skillDisplay, bossId);
 
-            // Refresh raw snapshot from current Skill (data + level).
-            skillRec.RawSnapshot = SkillSnapshotBuilder.Build(sk);
+            var rawSnapshot = SkillSnapshotBuilder.Build(sk);
+            if (!SkillSnapshotsEqual(skillRec.RawSnapshot, rawSnapshot))
+            {
+                skillRec.RawSnapshot = rawSnapshot;
+                changed = true;
+            }
 
-            // Per-(boss, skill) effective snapshot.
+            bool bossSkillExists = bossRec.Skills.ContainsKey(skillId);
+            if (!bossSkillExists) changed = true;
+
             var bossSkillRec = _catalog.GetOrCreateBossSkill(bossRec, skillId);
-            bossSkillRec.EffectiveSnapshot = EffectiveSnapshotBuilder.Build(sk, monster);
-            bossSkillRec.AutoThreat = ThreatClassifier.Classify(
-                skillRec.RawSnapshot, bossSkillRec.EffectiveSnapshot, _globals.Thresholds);
+            var effectiveSnapshot = EffectiveSnapshotBuilder.Build(sk, monster);
+            if (!BossSkillSnapshotsEqual(bossSkillRec.EffectiveSnapshot, effectiveSnapshot))
+            {
+                bossSkillRec.EffectiveSnapshot = effectiveSnapshot;
+                changed = true;
+            }
+
+            var autoThreat = ThreatClassifier.Classify(
+                rawSnapshot, effectiveSnapshot, _globals.Thresholds);
+            if (bossSkillRec.AutoThreat != autoThreat)
+            {
+                bossSkillRec.AutoThreat = autoThreat;
+                changed = true;
+            }
         }
+
+        return changed;
     }
+
+    private static bool SkillSnapshotsEqual(SkillSnapshot a, SkillSnapshot b) =>
+        a.SkillClass == b.SkillClass &&
+        a.IsSpell == b.IsSpell &&
+        a.IsAura == b.IsAura &&
+        a.CastTime == b.CastTime &&
+        a.Cooldown == b.Cooldown &&
+        a.CastRange == b.CastRange &&
+        a.RawDamage == b.RawDamage &&
+        a.RawMagicDamage == b.RawMagicDamage &&
+        a.DamagePercent == b.DamagePercent &&
+        a.DamageType == b.DamageType &&
+        a.AoeRadius == b.AoeRadius &&
+        a.AoeDelay == b.AoeDelay &&
+        a.Debuffs == b.Debuffs &&
+        a.StunChance == b.StunChance &&
+        a.StunTime == b.StunTime &&
+        a.FearChance == b.FearChance &&
+        a.FearTime == b.FearTime;
+
+    private static bool BossSkillSnapshotsEqual(BossSkillSnapshot a, BossSkillSnapshot b) =>
+        a.OutgoingDamage == b.OutgoingDamage &&
+        a.OutgoingDamageMin == b.OutgoingDamageMin &&
+        a.OutgoingDamageMax == b.OutgoingDamageMax &&
+        a.AuraDpsApprox == b.AuraDpsApprox &&
+        a.CastTimeEffective == b.CastTimeEffective &&
+        a.CooldownEffective == b.CooldownEffective;
 
     private static BossState BuildState(Monster monster, double serverTime)
     {

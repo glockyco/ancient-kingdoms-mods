@@ -1,3 +1,6 @@
+#nullable disable
+
+// BossMod consumes this public delegate from an IL2CPP-referenced project whose corelib lacks Roslyn nullable metadata attributes.
 using System;
 
 namespace BossMod.Core.Persistence;
@@ -18,7 +21,7 @@ public sealed class StateFlusher : IDisposable
         _debounce = debounce;
     }
 
-    public Action<Exception>? OnFlushError { get; set; }
+    public Action<Exception> OnFlushError { get; set; } = _ => { };
 
     public bool IsDirty => _firstDirtyAt.HasValue;
 
@@ -44,7 +47,7 @@ public sealed class StateFlusher : IDisposable
         }
         catch (Exception ex)
         {
-            OnFlushError?.Invoke(ex);
+            OnFlushError(ex);
         }
     }
 
