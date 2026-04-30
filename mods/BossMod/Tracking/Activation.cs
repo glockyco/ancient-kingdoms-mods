@@ -1,56 +1,65 @@
 using System.Collections.Generic;
 using Il2Cpp;
-using UnityEngine;
 
 namespace BossMod.Tracking;
 
 /// <summary>
-/// Activation gate: a monster surfaces in overlays + receives alerts when
-/// engaged with us / party / pets / mercenaries OR within proximity radius
-/// OR explicitly targeted by the local player.
+/// Activation gate: a monster surfaces in overlays when targeted, engaged with us
+/// or allies, or within proximity radius.
 /// </summary>
 public static class Activation
 {
-    public static bool IsActive(Monster monster, Player localPlayer, float proximityRadius)
+    public readonly record struct ActivationFacts(bool IsTargeted, bool IsEngaged, bool IsProximate)
     {
-        if (monster == null || localPlayer == null) return false;
-        if (monster.health == null || monster.health.current <= 0) return false;
+        public bool IsActive => IsTargeted || IsEngaged || IsProximate;
+    }
 
-        // Explicit targeting
-        if (localPlayer.Networktarget != null && localPlayer.Networktarget.netId == monster.netId) return true;
+    public static ActivationFacts Evaluate(Monster monster, Player localPlayer, float proximityRadius)
+    {
+        if (monster == null || localPlayer == null) return default;
+        if (monster.health == null || monster.health.current <= 0) return default;
 
-        // Aggro list contains us / party / mercs / pets
-        if (monster.aggroList != null)
+        bool isTargeted = localPlayer.Networktarget != null && localPlayer.Networktarget.netId == monster.netId;
+        bool isEngaged = IsEngagedWithLocalGroup(monster, localPlayer);
+        bool isProximate = IsProximate(monster, localPlayer, proximityRadius);
+        return new ActivationFacts(isTargeted, isEngaged, isProximate);
+    }
+
+    public static bool IsActive(Monster monster, Player localPlayer, float proximityRadius) =>
+        Evaluate(monster, localPlayer, proximityRadius).IsActive;
+
+    private static bool IsEngagedWithLocalGroup(Monster monster, Player localPlayer)
+    {
+        if (monster.aggroList == null) return false;
+        if (monster.aggroList.ContainsKey(localPlayer.netId)) return true;
+
+        foreach (var ally in EnumerateLocalAllies(localPlayer))
         {
-            if (monster.aggroList.ContainsKey(localPlayer.netId)) return true;
+            if (ally != null && monster.aggroList.ContainsKey(ally.netId)) return true;
+        }
 
-            // Local player's own pet + mercenaries
-            foreach (var ally in EnumerateLocalAllies(localPlayer))
+        var playerParty = localPlayer.GetComponent<PlayerParty>();
+        if (playerParty == null || playerParty.party.members == null) return false;
+
+        foreach (var memberName in playerParty.party.members)
+        {
+            if (string.IsNullOrEmpty(memberName)) continue;
+            if (memberName == localPlayer.nameEntity) continue;
+            if (!Player.onlinePlayers.TryGetValue(memberName, out var member) || member == null) continue;
+
+            if (monster.aggroList.ContainsKey(member.netId)) return true;
+
+            foreach (var ally in EnumerateLocalAllies(member))
             {
                 if (ally != null && monster.aggroList.ContainsKey(ally.netId)) return true;
             }
-
-            // Party members and their pets/mercs
-            var playerParty = localPlayer.GetComponent<PlayerParty>();
-            if (playerParty != null && playerParty.party.members != null)
-            {
-                foreach (var memberName in playerParty.party.members)
-                {
-                    if (string.IsNullOrEmpty(memberName)) continue;
-                    if (memberName == localPlayer.nameEntity) continue;
-                    if (!Player.onlinePlayers.TryGetValue(memberName, out var member) || member == null) continue;
-
-                    if (monster.aggroList.ContainsKey(member.netId)) return true;
-
-                    foreach (var ally in EnumerateLocalAllies(member))
-                    {
-                        if (ally != null && monster.aggroList.ContainsKey(ally.netId)) return true;
-                    }
-                }
-            }
         }
 
-        // Proximity fallback (2D distance: X/Y of position; Z is depth in this isometric)
+        return false;
+    }
+
+    private static bool IsProximate(Monster monster, Player localPlayer, float proximityRadius)
+    {
         var dx = monster.transform.position.x - localPlayer.transform.position.x;
         var dy = monster.transform.position.y - localPlayer.transform.position.y;
         return (dx * dx + dy * dy) <= proximityRadius * proximityRadius;
@@ -58,9 +67,7 @@ public static class Activation
 
     private static IEnumerable<Pet> EnumerateLocalAllies(Player p)
     {
-        // Active pet/familiar (separate SyncVar from mercenaries — Player.cs:869-879).
         if (p.NetworkactivePet != null) yield return p.NetworkactivePet;
-        // Mercenary slots 1..4. Slot 1 has no number suffix in the SyncVar name.
         if (p.NetworkactiveMercenary  != null) yield return p.NetworkactiveMercenary;
         if (p.NetworkactiveMercenary2 != null) yield return p.NetworkactiveMercenary2;
         if (p.NetworkactiveMercenary3 != null) yield return p.NetworkactiveMercenary3;

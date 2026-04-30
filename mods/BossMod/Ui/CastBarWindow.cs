@@ -65,23 +65,25 @@ public sealed class CastBarWindow
         for (int i = 0; i < frame.Bosses.Count; i++)
         {
             var boss = frame.Bosses[i];
-            if (!boss.ActiveCast.HasValue) continue;
+            for (int j = 0; j < boss.Abilities.Count; j++)
+            {
+                var ability = boss.Abilities[j];
+                if (!ability.IsCurrent) continue;
+                if (!ShouldShowInCastBars(boss.BossId, ability.SkillId, ability.Role, boss.IsActive)) continue;
 
-            var cast = boss.ActiveCast.Value;
-            if (!ShouldShowInCastBars(boss.BossId, cast.SkillId, boss.IsActive)) continue;
+                double remaining = Math.Max(0, ability.CastTimeEnd - frame.ServerTime);
+                float progress = ability.TotalCastTime <= 0
+                    ? 1f
+                    : Math.Clamp(1f - (float)(remaining / ability.TotalCastTime), 0f, 1f);
 
-            double remaining = Math.Max(0, cast.CastTimeEnd - frame.ServerTime);
-            float progress = cast.TotalCastTime <= 0
-                ? 1f
-                : Math.Clamp(1f - (float)(remaining / cast.TotalCastTime), 0f, 1f);
-
-            rows.Add(new CastRow(
-                bossName: boss.DisplayName,
-                skillName: cast.DisplayName,
-                skillId: cast.SkillId,
-                threat: ResolveThreat(boss.BossId, cast.SkillId),
-                remaining: remaining,
-                progress: progress));
+                rows.Add(new CastRow(
+                    bossName: boss.DisplayName,
+                    skillName: ability.DisplayName,
+                    skillId: ability.SkillId,
+                    threat: ResolveThreat(boss.BossId, ability.SkillId),
+                    remaining: remaining,
+                    progress: progress));
+            }
         }
 
         return rows;
@@ -95,17 +97,17 @@ public sealed class CastBarWindow
         return SettingsResolver.ResolveThreat(skill, bossSkill);
     }
 
-    private bool ShouldShowInCastBars(string bossId, string skillId, bool bossIsActive)
+    private bool ShouldShowInCastBars(string bossId, string skillId, BossAbilityRole role, bool bossIsActive)
     {
-        if (!_catalog.Skills.TryGetValue(skillId, out var skill)) return bossIsActive;
-        if (!_catalog.Bosses.TryGetValue(bossId, out var boss)) return bossIsActive;
-        if (!boss.Skills.TryGetValue(skillId, out var bossSkill)) return bossIsActive;
+        if (!_catalog.Skills.TryGetValue(skillId, out var skill)) return bossIsActive && role != BossAbilityRole.Default;
+        if (!_catalog.Bosses.TryGetValue(bossId, out var boss)) return bossIsActive && role != BossAbilityRole.Default;
+        if (!boss.Skills.TryGetValue(skillId, out var bossSkill)) return bossIsActive && role != BossAbilityRole.Default;
 
         return SettingsResolver.ResolveCastBarVisibility(skill, bossSkill) switch
         {
             AbilityDisplayPolicy.Hidden => false,
             AbilityDisplayPolicy.Always => true,
-            _ => bossIsActive,
+            _ => bossIsActive && role != BossAbilityRole.Default,
         };
     }
 

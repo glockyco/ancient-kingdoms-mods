@@ -14,20 +14,17 @@ public sealed class BossState
     public string DisplayName { get; set; } = "";
     public int Level { get; set; }
     public BossKind Kind { get; set; }
-
     public float PositionX { get; set; }
     public float PositionY { get; set; }
     public float DistanceToPlayer { get; set; }
     public bool IsTargeted { get; set; }
-
-
+    public bool IsEngaged { get; set; }
+    public bool IsProximate { get; set; }
+    public bool IsChasingTarget { get; set; }
     public int HealthCurrent { get; set; }
     public int HealthMax { get; set; }
-
-    public CastInfo? ActiveCast { get; set; }
-    public List<SkillCooldown> Cooldowns { get; set; } = new();
-
+    public List<BossAbilityState> Abilities { get; set; } = new();
+    public BossSpecialTimingState SpecialTiming { get; set; } = BossSpecialTimingState.Unknown("Special timing starts on engagement");
     public double ServerTime { get; set; }
-
-    public bool IsActive { get; set; }   // Engaged ∪ Proximate gate result
+    public bool IsActive { get; set; }
 }

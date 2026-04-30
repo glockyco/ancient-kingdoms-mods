@@ -32,7 +32,7 @@ public sealed class CooldownWindow
             .ThenBy(boss => boss.DistanceToPlayer)
             .ToList();
 
-        bool hasRows = bosses.Any(boss => VisibleCooldowns(boss).Any());
+        bool hasRows = bosses.Any(boss => VisibleAbilities(boss).Any());
         if (!hasRows && !frame.Mode.ConfigMode) return;
 
         ImGui.SetNextWindowSize(new Vector2(360f, 260f), ImGuiCond.FirstUseEver);
@@ -58,10 +58,11 @@ public sealed class CooldownWindow
 
     private void RenderBoss(UiFrame frame, BossState boss)
     {
-        var rows = VisibleCooldowns(boss)
-            .Select(cd => BuildRow(cd, frame.ServerTime))
-            .OrderBy(row => row.Remaining)
-            .ThenBy(row => row.SkillName, StringComparer.OrdinalIgnoreCase)
+        var rows = VisibleAbilities(boss)
+            .Select(ability => BuildRow(ability, frame.ServerTime, boss.IsChasingTarget, boss.SpecialTiming))
+            .OrderBy(row => row.SkillIndex == 0 ? 0 : 1)
+            .ThenBy(row => row.Remaining)
+            .ThenBy(row => row.SkillIndex)
             .ToList();
 
         if (rows.Count == 0) return;
@@ -71,14 +72,15 @@ public sealed class CooldownWindow
         string label = $"{boss.DisplayName}  Lv {boss.Level}  HP {HealthPercent(boss):0}%##cooldowns_{boss.NetId}";
         if (!ImGui.CollapsingHeader(label)) return;
 
+        ImGui.TextDisabled(boss.SpecialTiming.DisplayText);
         for (int i = 0; i < rows.Count; i++) RenderRow(rows[i], i, _globals.BossAbilitiesDensity);
     }
 
-    private IEnumerable<SkillCooldown> VisibleCooldowns(BossState boss) =>
-        boss.Cooldowns.Where(cd => cd.SkillIdx >= 1 && ShouldShowInBossAbilities(boss.BossId, cd.SkillId, boss.IsActive));
+    private IEnumerable<BossAbilityState> VisibleAbilities(BossState boss) =>
+        boss.Abilities.Where(ability => ShouldShowInBossAbilities(boss.BossId, ability.SkillId, boss.IsActive));
 
     private bool HasAlwaysBossAbilityRow(BossState boss) =>
-        boss.Cooldowns.Any(cd => cd.SkillIdx >= 1 && ResolveBossAbilityVisibility(boss.BossId, cd.SkillId) == AbilityDisplayPolicy.Always);
+        boss.Abilities.Any(ability => ResolveBossAbilityVisibility(boss.BossId, ability.SkillId) == AbilityDisplayPolicy.Always);
 
     private bool ShouldShowInBossAbilities(string bossId, string skillId, bool bossIsActive) =>
         ResolveBossAbilityVisibility(bossId, skillId) switch
@@ -97,31 +99,96 @@ public sealed class CooldownWindow
         return SettingsResolver.ResolveBossAbilityVisibility(skill, bossSkill);
     }
 
-    private static CooldownRow BuildRow(SkillCooldown cooldown, double serverTime)
+    private static CooldownRow BuildRow(BossAbilityState ability, double serverTime, bool isChasingTarget, BossSpecialTimingState timing)
     {
-        double remaining = Math.Max(0, cooldown.CooldownEnd - serverTime);
-        float progress = cooldown.TotalCooldown <= 0
+        double individualReadyAt = Math.Max(ability.CastTimeEnd, ability.CooldownEnd);
+        double remaining = ability.Eligibility == AbilityEligibilityKind.OnCooldown
+            ? Math.Max(0, individualReadyAt - serverTime)
+            : 0;
+        float totalDuration = Math.Max(ability.TotalCastTime, ability.TotalCooldown);
+        float progress = totalDuration <= 0
             ? (remaining <= 0 ? 1f : 0f)
-            : Math.Clamp(1f - (float)(remaining / cooldown.TotalCooldown), 0f, 1f);
-        return new CooldownRow(cooldown.SkillIdx, cooldown.DisplayName, remaining, progress);
+            : Math.Clamp(1f - (float)(remaining / totalDuration), 0f, 1f);
+        bool timingAllowsRoll = timing.Phase is SpecialTimingPhase.OpeningEstimate or SpecialTimingPhase.OpenEstimate;
+        float? chance = !isChasingTarget &&
+                        ability.Role == BossAbilityRole.Special &&
+                        ability.Eligibility == AbilityEligibilityKind.Eligible &&
+                        timingAllowsRoll
+            ? ability.ConditionalRollChance
+            : null;
+        string status = StatusFor(ability, timing);
+        return new CooldownRow(
+            ability.SkillIndex,
+            ability.DisplayName,
+            remaining,
+            progress,
+            chance,
+            status,
+            IsReadyStatus(status),
+            NoteFor(ability, timing, isChasingTarget));
+    }
+
+    private static string StatusFor(BossAbilityState ability, BossSpecialTimingState timing) =>
+        ability.Eligibility switch
+        {
+            AbilityEligibilityKind.DefaultFallback => "DEFAULT",
+            AbilityEligibilityKind.Casting => "CASTING",
+            AbilityEligibilityKind.OnCooldown => "COOLDOWN",
+            AbilityEligibilityKind.Passive => "PASSIVE",
+            AbilityEligibilityKind.Aura => "AURA",
+            AbilityEligibilityKind.NoTarget => "NO TARGET",
+            AbilityEligibilityKind.TargetOutOfRange => "RANGE",
+            AbilityEligibilityKind.NoAreaTargets => "NO AREA",
+            AbilityEligibilityKind.HealthGate => "HEALTH",
+            AbilityEligibilityKind.SummonGate => "SUMMON",
+            AbilityEligibilityKind.ResourceGate => "RESOURCE",
+            AbilityEligibilityKind.Eligible when ability.Role == BossAbilityRole.Special => timing.Phase switch
+            {
+                SpecialTimingPhase.Locked => "TIMING",
+                SpecialTimingPhase.Unknown => "WAIT",
+                SpecialTimingPhase.OpeningEstimate => "WINDOW",
+                _ => "READY",
+            },
+            AbilityEligibilityKind.Eligible => "READY",
+            _ => "BLOCKED",
+        };
+
+    private static bool IsReadyStatus(string status) =>
+        status is "READY" or "DEFAULT" or "CASTING";
+
+    private static string NoteFor(BossAbilityState ability, BossSpecialTimingState timing, bool isChasingTarget)
+    {
+        if (isChasingTarget && ability.Role == BossAbilityRole.Special) return "Chasing: ranged picks differ";
+        if (ability.Role != BossAbilityRole.Special || ability.Eligibility != AbilityEligibilityKind.Eligible) return "";
+        return timing.Phase switch
+        {
+            SpecialTimingPhase.Locked => "timing locked",
+            SpecialTimingPhase.Unknown => "timing unknown",
+            SpecialTimingPhase.OpeningEstimate => "timing estimate",
+            _ => "",
+        };
     }
 
     private static bool InitialOpen(bool targeted) => targeted;
 
     private static void RenderRow(CooldownRow row, int index, BossAbilityDensity density)
     {
+        string prefix = density == BossAbilityDensity.Expanded ? $"#{row.SkillIndex} " : "";
+        string chance = row.ConditionalRollChance.HasValue ? $"  roll {row.ConditionalRollChance.Value * 100f:0}%" : "";
+        string note = string.IsNullOrEmpty(row.Note) ? "" : $"  {row.Note}";
         if (row.Remaining <= 0)
         {
-            ImGui.TextUnformatted(density == BossAbilityDensity.Expanded
-                ? $"#{row.SkillIndex} {row.SkillName}"
-                : row.SkillName);
+            ImGui.TextUnformatted($"{prefix}{row.SkillName}{chance}{note}");
             ImGui.SameLine();
-            ImGui.TextColored(UintToVector4(Theme.Ready), "READY");
+            if (row.ReadyStatus)
+                ImGui.TextColored(UintToVector4(Theme.Ready), row.Status);
+            else
+                ImGui.TextDisabled(row.Status);
         }
         else
         {
             string overlay = density == BossAbilityDensity.Expanded
-                ? $"#{row.SkillIndex} {row.SkillName}  ready in {row.Remaining:0.0}s"
+                ? $"#{row.SkillIndex} {row.SkillName}  ready in {row.Remaining:0.0}s{chance}{note}"
                 : $"{row.SkillName}  {row.Remaining:0.0}s";
             float height = density == BossAbilityDensity.Expanded ? 22f : 18f;
             ImGui.ProgressBar(row.Progress, new Vector2(-1f, height), overlay);
@@ -144,17 +211,24 @@ public sealed class CooldownWindow
 
     private readonly struct CooldownRow
     {
-        public CooldownRow(int skillIndex, string skillName, double remaining, float progress)
+        public CooldownRow(int skillIndex, string skillName, double remaining, float progress, float? conditionalRollChance, string status, bool readyStatus, string note)
         {
             SkillIndex = skillIndex;
             SkillName = skillName;
             Remaining = remaining;
             Progress = progress;
+            ConditionalRollChance = conditionalRollChance;
+            Status = status;
+            ReadyStatus = readyStatus;
+            Note = note;
         }
-
         public int SkillIndex { get; }
         public string SkillName { get; }
         public double Remaining { get; }
         public float Progress { get; }
+        public float? ConditionalRollChance { get; }
+        public string Status { get; }
+        public bool ReadyStatus { get; }
+        public string Note { get; }
     }
 }

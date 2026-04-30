@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using BossMod.Core.Catalog;
 using BossMod.Core.Effects;
 using BossMod.Core.Persistence;
@@ -30,6 +32,10 @@ public sealed class MonsterWatcher
     private Vector3 _lastPlayerPosition = Vector3.zero;
     private const float TeleportThreshold = 50f;
 
+    private readonly Dictionary<uint, double> _engagementStartByNetId = new();
+    private readonly Dictionary<uint, double> _lastNonDefaultAbilityByNetId = new();
+    private readonly Dictionary<uint, int> _lastCurrentSkillByNetId = new();
+    private readonly Dictionary<uint, double> _lastCurrentSkillCastEndByNetId = new();
     private readonly List<BossState> _currentSnapshots = new();
     public IReadOnlyList<BossState> CurrentSnapshots => _currentSnapshots;
     public bool SceneGenerationChanged { get; private set; }
@@ -52,6 +58,7 @@ public sealed class MonsterWatcher
             {
                 _cachedMonsters = null;
                 _currentSnapshots.Clear();
+                ClearObservationDictionaries();
             }
             _lastSceneName = sceneName;
             return false;
@@ -61,22 +68,23 @@ public sealed class MonsterWatcher
         if (localPlayer == null)
         {
             _currentSnapshots.Clear();
+            ClearObservationDictionaries();
             return false;
         }
 
-        // Refresh cache on scene change or teleport (BossTracker pattern).
         var pos = localPlayer.transform.position;
         bool teleported = Vector3.Distance(pos, _lastPlayerPosition) > TeleportThreshold;
         if (_cachedMonsters == null || sceneName != _lastSceneName || teleported)
         {
             SceneGenerationChanged = _cachedMonsters != null;
-            _cachedMonsters = Object.FindObjectsOfType(Il2CppType.Of<Monster>());
+            _cachedMonsters = UnityEngine.Object.FindObjectsOfType(Il2CppType.Of<Monster>());
             _lastSceneName = sceneName;
             _lastPlayerPosition = pos;
         }
 
         var serverTime = ComputeServerTime();
         _currentSnapshots.Clear();
+        var seenNetIds = new HashSet<uint>();
         bool catalogChanged = false;
 
         foreach (var obj in _cachedMonsters)
@@ -87,11 +95,13 @@ public sealed class MonsterWatcher
 
             catalogChanged |= HarvestCatalog(monster);
 
-            var state = BuildState(monster, localPlayer, serverTime);
-            state.IsActive = Activation.IsActive(monster, localPlayer, _globals.ProximityRadius);
+            var facts = Activation.Evaluate(monster, localPlayer, _globals.ProximityRadius);
+            var state = BuildState(monster, localPlayer, serverTime, facts);
+            seenNetIds.Add(state.NetId);
             _currentSnapshots.Add(state);
         }
 
+        PruneObservationDictionaries(seenNetIds);
         return catalogChanged;
     }
 
@@ -124,9 +134,6 @@ public sealed class MonsterWatcher
             bossId, displayName,
             type, className, zone, kind, level);
 
-        // Iterate the live Skill list (carries .level), not skillTemplates which
-        // are bare ScriptableSkill assets and don't tell us the boss's per-instance
-        // skill level.
         if (monster.skills == null) return changed;
         var skillsList = monster.skills.skills;
         if (skillsList == null) return changed;
@@ -140,8 +147,7 @@ public sealed class MonsterWatcher
             var skillId = data.name;
             var skillDisplay = string.IsNullOrEmpty(data.nameSkill) ? skillId : data.nameSkill;
             bool skillExists = _catalog.Skills.TryGetValue(skillId, out var existingSkill);
-            if (!skillExists ||
-                existingSkill.DisplayName != skillDisplay)
+            if (!skillExists || existingSkill.DisplayName != skillDisplay)
             {
                 changed = true;
             }
@@ -166,8 +172,7 @@ public sealed class MonsterWatcher
                 changed = true;
             }
 
-            var autoThreat = ThreatClassifier.Classify(
-                rawSnapshot, effectiveSnapshot, _globals.Thresholds);
+            var autoThreat = ThreatClassifier.Classify(rawSnapshot, effectiveSnapshot, _globals.Thresholds);
             if (bossSkillRec.AutoThreat != autoThreat)
             {
                 bossSkillRec.AutoThreat = autoThreat;
@@ -205,11 +210,10 @@ public sealed class MonsterWatcher
         a.CastTimeEffective == b.CastTimeEffective &&
         a.CooldownEffective == b.CooldownEffective;
 
-    private static BossState BuildState(Monster monster, Player localPlayer, double serverTime)
+    private BossState BuildState(Monster monster, Player localPlayer, double serverTime, Activation.ActivationFacts facts)
     {
         var monsterPosition = monster.transform.position;
         var playerPosition = localPlayer.transform.position;
-        var targetMonster = localPlayer.Networktarget?.TryCast<Monster>();
         var s = new BossState
         {
             NetId = monster.netId,
@@ -222,66 +226,233 @@ public sealed class MonsterWatcher
             DistanceToPlayer = Vector2.Distance(
                 new Vector2(monsterPosition.x, monsterPosition.y),
                 new Vector2(playerPosition.x, playerPosition.y)),
-            IsTargeted = targetMonster != null && targetMonster.netId == monster.netId,
+            IsTargeted = facts.IsTargeted,
+            IsEngaged = facts.IsEngaged,
+            IsProximate = facts.IsProximate,
+            IsActive = facts.IsActive,
             HealthCurrent = monster.health != null ? monster.health.current : 0,
-            HealthMax     = monster.health != null ? monster.health.max     : 0,
+            HealthMax = monster.health != null ? monster.health.max : 0,
             ServerTime = serverTime,
         };
 
+        if (facts.IsEngaged)
+        {
+            if (!_engagementStartByNetId.ContainsKey(monster.netId))
+                _engagementStartByNetId[monster.netId] = serverTime;
+        }
+        else
+        {
+            ClearObservation(monster.netId);
+        }
+
         var skills = monster.skills;
+        var skillsList = skills?.skills;
+        if (skills == null || skillsList == null) return s;
 
-        // Active cast — only when state == "CASTING" and currentSkill > 0.
-        if (skills != null && monster.state == "CASTING" && skills.currentSkill > 0)
+        if (facts.IsEngaged)
+            TrackCurrentSkill(monster, skills.currentSkill, monster.state == "CASTING", skills.currentSkill > 0 && skills.currentSkill < skillsList.Count ? skillsList[skills.currentSkill].castTimeEnd : 0, skillsList.Count, serverTime);
+
+        var inputs = new List<BossAbilityInput>();
+        for (int i = 0; i < skillsList.Count; i++)
         {
-            int idx = skills.currentSkill;
-            var skillsList = skills.skills;
-            if (skillsList != null && idx < skillsList.Count)
-            {
-                var skill = skillsList[idx];
-                var data = skill.data;
-                if (data != null)
-                {
-                    var effectiveCast = EffectiveValues.CastTimeEffective(
-                        skill.castTime, data.isSpell, skills.GetSpellHasteBonus());
-                    s.ActiveCast = new CastInfo(
-                        SkillIdx: idx,
-                        SkillId: data.name,
-                        DisplayName: string.IsNullOrEmpty(data.nameSkill) ? data.name : data.nameSkill,
-                        CastTimeEnd: skill.castTimeEnd,
-                        TotalCastTime: effectiveCast);
-                }
-            }
+            var sk = skillsList[i];
+            var data = sk.data;
+            if (data == null || string.IsNullOrEmpty(data.name)) continue;
+
+            var snapshot = SkillSnapshotBuilder.Build(sk);
+            bool isCurrent = skills.currentSkill == i && monster.state == "CASTING";
+            bool isReady = sk.castTimeEnd <= serverTime && sk.cooldownEnd <= serverTime;
+            bool combatTargetAvailable = monster.Networktarget != null && monster.Networktarget.health != null && monster.Networktarget.health.current > 0;
+            bool hasTarget = HasRequiredTarget(snapshot.SkillClass, combatTargetAvailable);
+            float targetDistance = TargetDistance(monster);
+            float castRange = CastRange(sk);
+            bool targetInRange = TargetInRange(targetDistance, castRange);
+
+
+            inputs.Add(new BossAbilityInput(
+                SkillIndex: i,
+                SkillId: data.name,
+                DisplayName: string.IsNullOrEmpty(data.nameSkill) ? data.name : data.nameSkill,
+                SkillClass: snapshot.SkillClass,
+                CastTimeEnd: sk.castTimeEnd,
+                TotalCastTime: EffectiveValues.CastTimeEffective(sk.castTime, data.isSpell, skills.GetSpellHasteBonus()),
+                CooldownEnd: sk.cooldownEnd,
+                TotalCooldown: sk.cooldown,
+                IsCurrent: isCurrent,
+                IsReady: isReady,
+                IsAura: IsAura(data),
+                HasTarget: hasTarget,
+                TargetInRange: targetInRange,
+                TargetDistance: targetDistance,
+                CastRange: castRange,
+                AreaTargetCount: EstimateAreaTargetCount(monster, sk),
+                BossHealthPercent: monster.health == null || monster.health.max <= 0 ? 0f : monster.health.current / (float)monster.health.max,
+                ActiveSummonCount: ActiveSummonCount(monster),
+                MaxActiveSummons: MaxActiveSummons(data),
+                InputsComplete: true));
         }
 
-        // Cooldowns — every special skill (idx >= 1).
-        if (skills != null && skills.skills != null)
-        {
-            var skillsList = skills.skills;
-            for (int i = 1; i < skillsList.Count; i++)
-            {
-                var sk = skillsList[i];
-                var d = sk.data;
-                if (d == null) continue;
-                // Server uses RAW cooldown for monster special skills (no haste applied
-                // by Skills.FinishCast lines 767-772). Use sk.cooldown directly as the
-                // progress-bar denominator.
-                s.Cooldowns.Add(new SkillCooldown(
-                    SkillIdx: i,
-                    SkillId: d.name,
-                    DisplayName: string.IsNullOrEmpty(d.nameSkill) ? d.name : d.nameSkill,
-                    CooldownEnd: sk.cooldownEnd,
-                    TotalCooldown: sk.cooldown));
-            }
+        s.IsChasingTarget = IsSelectedSpecialOutOfRange(inputs, skills.currentSkill);
 
+        var preliminary = BossAbilityEstimator.Evaluate(new BossAbilityEvaluationInput(
+            inputs,
+            BossSpecialTimingState.Unknown("Special timing starts on engagement"),
+            s.IsChasingTarget));
+        var timing = BossSpecialTimingEstimator.Estimate(
+            serverTime,
+            _engagementStartByNetId.TryGetValue(monster.netId, out var start) ? start : null,
+            _lastNonDefaultAbilityByNetId.TryGetValue(monster.netId, out var lastSpecial) ? lastSpecial : null,
+            anySpecialIndividuallyReady: preliminary.Abilities.Any(ability => ability.Role == BossAbilityRole.Special && ability.Eligibility == AbilityEligibilityKind.Eligible),
+            nextIndividualReadyInSeconds: NextSpecialCooldown(preliminary.Abilities, serverTime));
 
-        }
-
+        var evaluated = BossAbilityEstimator.Evaluate(new BossAbilityEvaluationInput(inputs, timing, s.IsChasingTarget));
+        s.Abilities.AddRange(evaluated.Abilities);
+        s.SpecialTiming = evaluated.SpecialTiming;
         return s;
+    }
+
+    private void TrackCurrentSkill(Monster monster, int currentSkill, bool isCasting, double castTimeEnd, int skillCount, double serverTime)
+    {
+        if (!isCasting || currentSkill <= 0 || currentSkill >= skillCount)
+        {
+            _lastCurrentSkillByNetId[monster.netId] = -1;
+            _lastCurrentSkillCastEndByNetId[monster.netId] = 0;
+            return;
+        }
+
+        bool sameSkill = _lastCurrentSkillByNetId.TryGetValue(monster.netId, out var lastCurrent) && lastCurrent == currentSkill;
+        bool sameCast = _lastCurrentSkillCastEndByNetId.TryGetValue(monster.netId, out var lastCastTimeEnd) && Math.Abs(lastCastTimeEnd - castTimeEnd) < 0.001;
+        if (sameSkill && sameCast) return;
+
+        _lastCurrentSkillByNetId[monster.netId] = currentSkill;
+        _lastCurrentSkillCastEndByNetId[monster.netId] = castTimeEnd;
+        _lastNonDefaultAbilityByNetId[monster.netId] = serverTime;
+    }
+
+    private static bool IsAura(ScriptableSkill skill) =>
+        skill.TryCast<AreaBuffSkill>() is { } areaBuff && areaBuff.isAura ||
+        skill.TryCast<AreaDebuffSkill>() is { } areaDebuff && areaDebuff.isAura;
+
+    private static bool HasRequiredTarget(string skillClass, bool combatTargetAvailable) =>
+        !RequiresCombatTarget(skillClass) || combatTargetAvailable;
+
+    private static bool RequiresCombatTarget(string skillClass) =>
+        skillClass is "TargetDamageSkill" or "TargetDebuffSkill" or "TargetProjectileSkill" or "FrontalDamageSkill";
+
+    private static float TargetDistance(Monster monster)
+    {
+        if (monster.Networktarget == null) return float.PositiveInfinity;
+        var targetPosition = monster.Networktarget.transform.position;
+        var monsterPosition = monster.transform.position;
+        return Vector2.Distance(
+            new Vector2(targetPosition.x, targetPosition.y),
+            new Vector2(monsterPosition.x, monsterPosition.y));
+    }
+
+    private static float CastRange(Skill skill) =>
+        skill.data != null ? skill.data.castRange.Get(skill.level) : 0f;
+
+    private static bool TargetInRange(float targetDistance, float castRange)
+    {
+        if (float.IsPositiveInfinity(targetDistance)) return false;
+        if (castRange <= 0f) return true;
+        return targetDistance <= castRange + 0.2f;
+    }
+
+    private static int EstimateAreaTargetCount(Monster monster, Skill skill)
+    {
+        if (skill.data == null) return 0;
+        if (skill.data.TryCast<AreaDamageSkill>() == null && skill.data.TryCast<AreaDebuffSkill>() == null) return 0;
+
+        float radius = skill.data.castRange.Get(skill.level);
+        var hits = Physics2D.OverlapCircleAll(monster.transform.position, radius);
+        int count = 0;
+        for (int i = 0; i < hits.Length; i++)
+        {
+            var entity = hits[i].GetComponentInParent<Entity>();
+            if (entity == null || entity.IsHidden() || entity.health == null || entity.health.current <= 0) continue;
+            if (!monster.CanAttack(entity)) continue;
+            count++;
+            if (count >= 10) break;
+        }
+
+        return count;
+    }
+
+    private static int ActiveSummonCount(Monster monster) =>
+        monster.listPets != null ? monster.listPets.Count : 0;
+
+    private static int MaxActiveSummons(ScriptableSkill skill) =>
+        skill.TryCast<SummonSkillMonsters>() is { } summon ? summon.maxActivePets : 0;
+
+    private static bool IsRollableSpecialInput(BossAbilityInput input) =>
+        input.SkillIndex > 0 &&
+        !input.IsAura &&
+        !input.SkillClass.Contains("Passive", StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsSelectedSpecialOutOfRange(IReadOnlyList<BossAbilityInput> inputs, int currentSkill)
+    {
+        if (currentSkill <= 0) return false;
+        return inputs.Any(input =>
+            input.SkillIndex == currentSkill &&
+            IsRollableSpecialInput(input) &&
+            RequiresCombatTarget(input.SkillClass) &&
+            input.HasTarget &&
+            !input.TargetInRange);
+    }
+
+
+    private static double? NextSpecialCooldown(IReadOnlyList<BossAbilityState> abilities, double serverTime)
+    {
+        double? next = null;
+        for (int i = 0; i < abilities.Count; i++)
+        {
+            var ability = abilities[i];
+            if (ability.Role != BossAbilityRole.Special || ability.Eligibility != AbilityEligibilityKind.OnCooldown) continue;
+            double remaining = Math.Max(0, ability.CooldownEnd - serverTime);
+            if (!next.HasValue || remaining < next.Value) next = remaining;
+        }
+        return next;
+    }
+
+    private void ClearObservation(uint netId)
+    {
+        _engagementStartByNetId.Remove(netId);
+        _lastNonDefaultAbilityByNetId.Remove(netId);
+        _lastCurrentSkillByNetId.Remove(netId);
+        _lastCurrentSkillCastEndByNetId.Remove(netId);
+    }
+
+    private void ClearObservationDictionaries()
+    {
+        _engagementStartByNetId.Clear();
+        _lastNonDefaultAbilityByNetId.Clear();
+        _lastCurrentSkillByNetId.Clear();
+        _lastCurrentSkillCastEndByNetId.Clear();
+    }
+
+    private void PruneObservationDictionaries(HashSet<uint> seenNetIds)
+    {
+        Prune(_engagementStartByNetId, seenNetIds);
+        Prune(_lastNonDefaultAbilityByNetId, seenNetIds);
+        Prune(_lastCurrentSkillByNetId, seenNetIds);
+        Prune(_lastCurrentSkillCastEndByNetId, seenNetIds);
+    }
+
+    private static void Prune<T>(Dictionary<uint, T> dictionary, HashSet<uint> seenNetIds)
+    {
+        if (dictionary.Count == seenNetIds.Count) return;
+        var remove = new List<uint>();
+        foreach (var netId in dictionary.Keys)
+        {
+            if (!seenNetIds.Contains(netId)) remove.Add(netId);
+        }
+        for (int i = 0; i < remove.Count; i++) dictionary.Remove(remove[i]);
     }
 
     private static double ComputeServerTime()
     {
-        var nm = Object.FindObjectOfType(Il2CppType.Of<NetworkManagerMMO>());
+        var nm = UnityEngine.Object.FindObjectOfType(Il2CppType.Of<NetworkManagerMMO>());
         if (nm == null) return 0;
         var manager = nm.Cast<NetworkManagerMMO>();
         return Il2CppMirror.NetworkTime.time + manager.offsetNetworkTime;
