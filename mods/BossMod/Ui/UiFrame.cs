@@ -29,6 +29,13 @@ public sealed class UiFrame
     public UiMode Mode { get; }
 }
 
+public enum PlayerBuffSourceStatus
+{
+    SourceUnknown,
+    FromActiveBoss,
+    NotFromActiveBoss,
+}
+
 public sealed class PlayerBuffView
 {
     public PlayerBuffView(
@@ -38,7 +45,7 @@ public sealed class PlayerBuffView
         double totalTime,
         bool isDebuff,
         bool isAura,
-        bool isFromActiveBoss)
+        PlayerBuffSourceStatus sourceStatus)
     {
         SkillId = skillId;
         DisplayName = displayName;
@@ -46,7 +53,7 @@ public sealed class PlayerBuffView
         TotalTime = totalTime;
         IsDebuff = isDebuff;
         IsAura = isAura;
-        IsFromActiveBoss = isFromActiveBoss;
+        SourceStatus = sourceStatus;
     }
 
     public string SkillId { get; }
@@ -55,5 +62,5 @@ public sealed class PlayerBuffView
     public double TotalTime { get; }
     public bool IsDebuff { get; }
     public bool IsAura { get; }
-    public bool IsFromActiveBoss { get; }
+    public PlayerBuffSourceStatus SourceStatus { get; }
 }

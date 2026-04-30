@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using BossMod.Core.Catalog;
+using BossMod.Ui;
 using Il2Cpp;
 using Il2CppInterop.Runtime;
 using UnityEngine;
@@ -73,7 +74,7 @@ public sealed class PlayerContextBuilder
                 totalTime: buff.buffTime,
                 isDebuff: isDebuff,
                 isAura: isAura,
-                isFromActiveBoss: false));
+                sourceStatus: PlayerBuffSourceStatus.SourceUnknown));
         }
 
         return result;
@@ -129,7 +130,7 @@ public sealed class PlayerBuffContext
         double totalTime,
         bool isDebuff,
         bool isAura,
-        bool isFromActiveBoss)
+        PlayerBuffSourceStatus sourceStatus)
     {
         SkillId = skillId;
         DisplayName = displayName;
@@ -137,7 +138,7 @@ public sealed class PlayerBuffContext
         TotalTime = totalTime;
         IsDebuff = isDebuff;
         IsAura = isAura;
-        IsFromActiveBoss = isFromActiveBoss;
+        SourceStatus = sourceStatus;
     }
 
     public string SkillId { get; }
@@ -146,5 +147,5 @@ public sealed class PlayerBuffContext
     public double TotalTime { get; }
     public bool IsDebuff { get; }
     public bool IsAura { get; }
-    public bool IsFromActiveBoss { get; }
+    public PlayerBuffSourceStatus SourceStatus { get; }
 }

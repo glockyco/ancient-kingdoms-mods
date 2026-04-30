@@ -34,6 +34,7 @@ public class BossMod : MelonMod
     private BossModUi _ui;
     private CastBarWindow _castBars;
     private CooldownWindow _cooldowns;
+    private BuffTrackerWindow _buffs;
     private SoundBank _soundBank;
     private SoundPlayer _soundPlayer;
     private AlertSubscriber _alertSubscriber;
@@ -85,7 +86,8 @@ public class BossMod : MelonMod
         _alertSubscriber = new AlertSubscriber(_soundPlayer, _alertOverlay);
         _castBars = new CastBarWindow(_catalog, _globals);
         _cooldowns = new CooldownWindow(_globals);
-        _ui = new BossModUi(_globals, _castBars, _cooldowns, _alertOverlay);
+        _buffs = new BuffTrackerWindow(_globals);
+        _ui = new BossModUi(_globals, _castBars, _cooldowns, _buffs, _alertOverlay);
         _currentFrame = _uiFrameBuilder.Build(_watcher.CurrentSnapshots, _globals);
 
         _renderer.OnLayout = OnLayout;

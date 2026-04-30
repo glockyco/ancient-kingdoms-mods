@@ -42,7 +42,7 @@ public sealed class UiFrameBuilder
                 totalTime: buff.TotalTime,
                 isDebuff: buff.IsDebuff,
                 isAura: buff.IsAura,
-                isFromActiveBoss: buff.IsFromActiveBoss));
+                sourceStatus: buff.SourceStatus));
         }
 
         return result;
