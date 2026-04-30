@@ -1,3 +1,5 @@
+using ImGuiNET;
+
 namespace BossMod.Ui;
 
 public readonly record struct UiMode(
@@ -53,4 +55,27 @@ public readonly record struct WindowChrome(
         Movable: false,
         Resizable: false,
         ShowConfigOutline: false);
+}
+
+public static class WindowChromeExtensions
+{
+    public static ImGuiWindowFlags ToImGuiFlags(this WindowChrome chrome)
+    {
+        var flags = ImGuiWindowFlags.NoScrollbar;
+
+        if (chrome.ClickThrough) flags |= ImGuiWindowFlags.NoInputs;
+        if (!chrome.ShowTitleBar) flags |= ImGuiWindowFlags.NoTitleBar;
+        if (!chrome.ShowBackground) flags |= ImGuiWindowFlags.NoBackground;
+        if (!chrome.Movable) flags |= ImGuiWindowFlags.NoMove;
+        if (!chrome.Resizable) flags |= ImGuiWindowFlags.NoResize;
+
+        return flags;
+    }
+
+    public static void DrawConfigOutline(WindowChrome chrome)
+    {
+        if (!chrome.ShowConfigOutline) return;
+        var drawList = ImGui.GetWindowDrawList();
+        drawList.AddRect(ImGui.GetWindowPos(), ImGui.GetWindowPos() + ImGui.GetWindowSize(), Theme.ConfigOutline, 4f, ImDrawFlags.None, 2f);
+    }
 }
