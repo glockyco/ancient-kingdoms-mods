@@ -289,7 +289,7 @@
 
 <Seo
   title={`${data.profession.name} - Ancient Kingdoms`}
-  description={`${data.profession.description} View Adventurer taskgivers, vendor unlocks, and quest availability rules.`}
+  description={`${data.profession.description} View the daily Adventurer quest queue, taskgivers, class rewards, cooldown rules, and vendor unlocks.`}
   path="/professions/adventuring"
 />
 
