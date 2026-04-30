@@ -87,7 +87,7 @@ public sealed class MonsterWatcher
 
             catalogChanged |= HarvestCatalog(monster);
 
-            var state = BuildState(monster, serverTime);
+            var state = BuildState(monster, localPlayer, serverTime);
             state.IsActive = Activation.IsActive(monster, localPlayer, _globals.ProximityRadius);
             _currentSnapshots.Add(state);
         }
@@ -205,8 +205,11 @@ public sealed class MonsterWatcher
         a.CastTimeEffective == b.CastTimeEffective &&
         a.CooldownEffective == b.CooldownEffective;
 
-    private static BossState BuildState(Monster monster, double serverTime)
+    private static BossState BuildState(Monster monster, Player localPlayer, double serverTime)
     {
+        var monsterPosition = monster.transform.position;
+        var playerPosition = localPlayer.transform.position;
+        var targetMonster = localPlayer.Networktarget?.TryCast<Monster>();
         var s = new BossState
         {
             NetId = monster.netId,
@@ -214,8 +217,12 @@ public sealed class MonsterWatcher
             DisplayName = string.IsNullOrEmpty(monster.nameEntity) ? monster.name : monster.nameEntity,
             Level = monster.level != null ? monster.level.current : 1,
             Kind = monster.isFabled ? BossKind.Fabled : monster.isBoss ? BossKind.Boss : BossKind.Elite,
-            PositionX = monster.transform.position.x,
-            PositionY = monster.transform.position.y,
+            PositionX = monsterPosition.x,
+            PositionY = monsterPosition.y,
+            DistanceToPlayer = Vector2.Distance(
+                new Vector2(monsterPosition.x, monsterPosition.y),
+                new Vector2(playerPosition.x, playerPosition.y)),
+            IsTargeted = targetMonster != null && targetMonster.netId == monster.netId,
             HealthCurrent = monster.health != null ? monster.health.current : 0,
             HealthMax     = monster.health != null ? monster.health.max     : 0,
             ServerTime = serverTime,

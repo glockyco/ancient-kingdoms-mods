@@ -18,6 +18,9 @@ public sealed class BossState
 
     public float PositionX { get; set; }
     public float PositionY { get; set; }
+    public float DistanceToPlayer { get; set; }
+    public bool IsTargeted { get; set; }
+
 
     public int HealthCurrent { get; set; }
     public int HealthMax { get; set; }
