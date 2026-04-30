@@ -66,6 +66,22 @@ public sealed class SoundPlayer : IDisposable
         _source.PlayOneShot(clip, Math.Clamp(globals.MasterVolume, 0f, 1f));
     }
 
+    public void PlayPreview(string soundName, Globals globals)
+    {
+        if (!_initialized || _disposed) return;
+        if (globals.Muted) return;
+        if (string.IsNullOrWhiteSpace(soundName)) return;
+        soundName = soundName.Trim();
+
+        if (!_soundBank.TryGetClip(soundName, out var clip))
+        {
+            if (_missingLogged.Add(soundName)) _log.Warning($"BossMod sound preview '{soundName}' was not found.");
+            return;
+        }
+
+        _source.PlayOneShot(clip, Math.Clamp(globals.MasterVolume, 0f, 1f));
+    }
+
     public void Dispose()
     {
         if (_disposed) return;

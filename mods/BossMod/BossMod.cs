@@ -12,6 +12,7 @@ using BossMod.Tracking;
 using BossMod.Ui;
 using BossMod.Ui.Settings;
 using BossMod.Ui.Tabs;
+using UnityEngine;
 using MelonLoader;
 using MelonLoader.Utils;
 
@@ -93,9 +94,16 @@ public class BossMod : MelonMod
         _buffs = new BuffTrackerWindow(_globals);
         _settingsMutator = new SettingsMutator(_catalog, _globals);
         var settingsDefaults = new TierDefaults();
-        var skillsTab = new SkillsTab(_catalog, _settingsMutator, settingsDefaults);
-        var bossesTab = new BossesTab(_catalog, _settingsMutator, settingsDefaults);
-        _settingsWindow = new SettingsWindow(skillsTab, bossesTab);
+        var soundPreview = new SoundPreview(_soundPlayer, () => _globals);
+        Action openSoundsFolder = () =>
+        {
+            Directory.CreateDirectory(soundsDir);
+            Application.OpenURL(new Uri(soundsDir).AbsoluteUri);
+        };
+        var skillsTab = new SkillsTab(_catalog, _settingsMutator, settingsDefaults, _soundBank, soundPreview);
+        var bossesTab = new BossesTab(_catalog, _settingsMutator, settingsDefaults, _soundBank, soundPreview);
+        var soundsTab = new SoundsTab(_soundBank, soundPreview, soundsDir, openSoundsFolder);
+        _settingsWindow = new SettingsWindow(skillsTab, bossesTab, soundsTab);
         _ui = new BossModUi(_globals, _castBars, _cooldowns, _buffs, _settingsWindow, _alertOverlay);
         _currentFrame = _uiFrameBuilder.Build(_watcher.CurrentSnapshots, _globals);
 

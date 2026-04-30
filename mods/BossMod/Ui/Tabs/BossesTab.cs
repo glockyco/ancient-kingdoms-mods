@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using BossMod.Audio;
 using BossMod.Core.Catalog;
 using BossMod.Core.Effects;
 using BossMod.Ui.Settings;
@@ -14,15 +15,19 @@ public sealed class BossesTab
     private readonly SkillCatalog _catalog;
     private readonly ISettingsMutator _mutator;
     private readonly TierDefaults _defaults;
+    private readonly SoundBank _soundBank;
+    private readonly SoundPreview _soundPreview;
     private string _filter = "";
     private string _selectedBossId = "";
     private string _selectedSkillId = "";
 
-    public BossesTab(SkillCatalog catalog, ISettingsMutator mutator, TierDefaults defaults)
+    public BossesTab(SkillCatalog catalog, ISettingsMutator mutator, TierDefaults defaults, SoundBank soundBank, SoundPreview soundPreview)
     {
         _catalog = catalog;
         _mutator = mutator;
         _defaults = defaults;
+        _soundBank = soundBank;
+        _soundPreview = soundPreview;
     }
 
     public UiRenderResult Render()
@@ -68,6 +73,8 @@ public sealed class BossesTab
                 bossSkill: bossSkill,
                 defaults: _defaults,
                 editingBossOverride: true,
+                soundBank: _soundBank,
+                preview: _soundPreview,
                 apply: patch => _mutator.SetBossSkillOverride(boss.Id, skill.Id, patch)));
         }
         else

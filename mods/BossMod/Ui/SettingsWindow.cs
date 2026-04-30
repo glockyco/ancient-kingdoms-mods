@@ -9,11 +9,13 @@ public sealed class SettingsWindow
 {
     private readonly SkillsTab _skills;
     private readonly BossesTab _bosses;
+    private readonly SoundsTab _sounds;
 
-    public SettingsWindow(SkillsTab skills, BossesTab bosses)
+    public SettingsWindow(SkillsTab skills, BossesTab bosses, SoundsTab sounds)
     {
         _skills = skills;
         _bosses = bosses;
+        _sounds = sounds;
     }
 
     public UiRenderResult Render(UiMode mode)
@@ -37,6 +39,12 @@ public sealed class SettingsWindow
             if (ImGui.BeginTabItem("Bosses"))
             {
                 result.Merge(_bosses.Render());
+                ImGui.EndTabItem();
+            }
+
+            if (ImGui.BeginTabItem("Sounds"))
+            {
+                result.Merge(_sounds.Render());
                 ImGui.EndTabItem();
             }
 

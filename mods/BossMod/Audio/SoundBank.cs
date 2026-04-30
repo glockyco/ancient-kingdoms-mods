@@ -10,14 +10,15 @@ namespace BossMod.Audio;
 public sealed class SoundBank : IDisposable
 {
     private const int BuiltInSampleRate = 44100;
-    private const long MaxWavBytes = 5L * 1024L * 1024L;
-    private const double MaxClipSeconds = 10.0;
+    public const long MaxUserWavBytes = 5L * 1024L * 1024L;
+    public const double MaxUserWavSeconds = 10.0;
 
     private readonly string _soundsDirectory;
     private readonly Dictionary<string, AudioClip> _clips = new(StringComparer.OrdinalIgnoreCase);
     private readonly HashSet<string> _builtInNames = new(StringComparer.OrdinalIgnoreCase);
     private readonly HashSet<string> _userNames = new(StringComparer.OrdinalIgnoreCase);
     private readonly List<SoundLoadStatus> _loadStatuses = new();
+    private readonly List<SoundEntry> _entries = new();
 
     public SoundBank(string soundsDirectory)
     {
@@ -25,6 +26,7 @@ public sealed class SoundBank : IDisposable
         LoadBuiltIns();
     }
 
+    public IReadOnlyList<SoundEntry> Entries => _entries;
     public IReadOnlyList<SoundLoadStatus> LoadStatuses => _loadStatuses;
 
     public bool TryGetClip(string name, out AudioClip clip) => _clips.TryGetValue(name, out clip);
@@ -35,6 +37,7 @@ public sealed class SoundBank : IDisposable
         {
             if (_clips.TryGetValue(name, out var oldClip)) UnityEngine.Object.Destroy(oldClip);
             _clips.Remove(name);
+            _entries.RemoveAll(entry => !entry.IsBuiltIn && string.Equals(entry.Name, name, StringComparison.OrdinalIgnoreCase));
         }
         _userNames.Clear();
         _loadStatuses.Clear();
@@ -55,6 +58,7 @@ public sealed class SoundBank : IDisposable
         _builtInNames.Clear();
         _userNames.Clear();
         _loadStatuses.Clear();
+        _entries.Clear();
     }
 
     private void LoadBuiltIns()
@@ -65,6 +69,7 @@ public sealed class SoundBank : IDisposable
             var clip = CreateClip("BossMod_builtin_" + name, samples, BuiltInSampleRate);
             _clips[name] = clip;
             _builtInNames.Add(name);
+            _entries.Add(new SoundEntry(name, isBuiltIn: true));
         }
     }
 
@@ -91,7 +96,7 @@ public sealed class SoundBank : IDisposable
         }
 
         var info = new FileInfo(path);
-        if (info.Length > MaxWavBytes)
+        if (info.Length > MaxUserWavBytes)
         {
             _loadStatuses.Add(SoundLoadStatus.Skipped(path, name, "WAV file exceeds 5 MiB."));
             return;
@@ -109,7 +114,7 @@ public sealed class SoundBank : IDisposable
             }
 
             double seconds = samples.Length / (double)header.SampleRate;
-            if (seconds > MaxClipSeconds)
+            if (seconds > MaxUserWavSeconds)
             {
                 _loadStatuses.Add(SoundLoadStatus.Skipped(path, name, "WAV clip exceeds 10 seconds."));
                 return;
@@ -117,6 +122,7 @@ public sealed class SoundBank : IDisposable
 
             _clips[name] = CreateClip("BossMod_user_" + name, samples, header.SampleRate);
             _userNames.Add(name);
+            _entries.Add(new SoundEntry(name, isBuiltIn: false));
             _loadStatuses.Add(SoundLoadStatus.Success(path, name));
         }
         catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException || ex is WavFormatException || ex is ArgumentException)
@@ -131,6 +137,18 @@ public sealed class SoundBank : IDisposable
         clip.SetData(samples, offsetSamples: 0);
         return clip;
     }
+}
+
+public sealed class SoundEntry
+{
+    public SoundEntry(string name, bool isBuiltIn)
+    {
+        Name = name;
+        IsBuiltIn = isBuiltIn;
+    }
+
+    public string Name { get; }
+    public bool IsBuiltIn { get; }
 }
 
 public sealed class SoundLoadStatus

@@ -1,4 +1,6 @@
 using System;
+using System.Numerics;
+using BossMod.Audio;
 using BossMod.Core.Catalog;
 using BossMod.Core.Effects;
 using BossMod.Ui.Settings;
@@ -29,11 +31,13 @@ internal static class SettingsTabHelpers
         BossSkillRecord bossSkill,
         TierDefaults defaults,
         bool editingBossOverride,
+        SoundBank soundBank,
+        SoundPreview preview,
         Func<SkillOverridePatch, bool> apply)
     {
         var result = new UiRenderResult();
         RenderThreat(idPrefix, skill, bossSkill, editingBossOverride, apply, result);
-        RenderSound(idPrefix, skill, bossSkill, defaults, editingBossOverride, apply, result);
+        RenderSound(idPrefix, skill, bossSkill, defaults, editingBossOverride, soundBank, preview, apply, result);
         RenderAlertText(idPrefix, skill, bossSkill, editingBossOverride, apply, result);
         RenderFireOn(idPrefix, skill, bossSkill, editingBossOverride, apply, result);
         RenderAudioMuted(idPrefix, skill, bossSkill, editingBossOverride, apply, result);
@@ -71,6 +75,8 @@ internal static class SettingsTabHelpers
         BossSkillRecord bossSkill,
         TierDefaults defaults,
         bool editingBossOverride,
+        SoundBank soundBank,
+        SoundPreview preview,
         Func<SkillOverridePatch, bool> apply,
         UiRenderResult result)
     {
@@ -82,6 +88,16 @@ internal static class SettingsTabHelpers
         if (ImGui.Button($"Inherit##{idPrefix}_sound_inherit")) Apply(result, apply, new SkillOverridePatch { ClearSound = true });
         ImGui.SameLine();
         SourceBadge($"resolved {resolved.Value} from {resolved.Source}");
+        if (!string.IsNullOrWhiteSpace(resolved.Value) && HasSound(soundBank, resolved.Value))
+        {
+            ImGui.SameLine();
+            if (ImGui.Button($"Preview##{idPrefix}_sound_preview")) preview.Play(resolved.Value);
+        }
+        else if (!string.IsNullOrWhiteSpace(resolved.Value))
+        {
+            ImGui.SameLine();
+            ImGui.TextColored(new Vector4(1f, 0.4f, 0.2f, 1f), "missing sound");
+        }
     }
 
     private static void RenderAlertText(
@@ -154,6 +170,15 @@ internal static class SettingsTabHelpers
     private static void Apply(UiRenderResult result, Func<SkillOverridePatch, bool> apply, SkillOverridePatch patch)
     {
         if (apply(patch)) result.Dirty = true;
+    }
+
+    private static bool HasSound(SoundBank soundBank, string soundName)
+    {
+        for (int i = 0; i < soundBank.Entries.Count; i++)
+        {
+            if (string.Equals(soundBank.Entries[i].Name, soundName, StringComparison.OrdinalIgnoreCase)) return true;
+        }
+        return false;
     }
 
     private static void SourceBadge(string text)
