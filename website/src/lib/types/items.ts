@@ -20,6 +20,7 @@ export interface ItemListView {
   alchemy_recipe_level_required: number | null;
   mount_speed: number;
   augment_is_defensive: boolean | null;
+  augment_armor_set_name: string | null;
 }
 
 /**

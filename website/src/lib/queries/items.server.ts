@@ -21,6 +21,7 @@ export function getItems(): ItemListView[] {
       alchemy_recipe_level_required,
       mount_speed,
       augment_is_defensive,
+      augment_armor_set_name,
       stats,
       (
         SELECT COUNT(*)

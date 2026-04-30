@@ -34,6 +34,7 @@ export const load: PageServerLoad = () => {
     alchemy_recipe_level_required: item.alchemy_recipe_level_required,
     mount_speed: item.mount_speed,
     augment_is_defensive: item.augment_is_defensive,
+    augment_armor_set_name: item.augment_armor_set_name,
   }));
 
   return { items, itemStatKeys, itemClassKeys, itemZones };

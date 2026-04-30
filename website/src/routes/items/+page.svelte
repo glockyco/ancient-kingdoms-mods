@@ -102,9 +102,11 @@
       return `${item.backpack_slots} slots`;
     }
 
-    // Augments: show Defensive or Offensive classification
-    if (type === "augment" && item.augment_is_defensive !== null) {
-      return item.augment_is_defensive ? "Defensive" : "Offensive";
+    if (type === "augment") {
+      if (item.augment_armor_set_name) return "Armor Set";
+      if (item.augment_is_defensive !== null) {
+        return item.augment_is_defensive ? "Defensive" : "Offensive";
+      }
     }
 
     return "-";

@@ -83,6 +83,16 @@
     return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "\u202F");
   }
 
+  const isAugment = $derived(data.item.item_type === "augment");
+  const isArmorSetMetadata = $derived(
+    isAugment && Boolean(data.item.augment_armor_set_name),
+  );
+  const itemTypeLabel = $derived(
+    isArmorSetMetadata
+      ? "Armor Set Bonus"
+      : formatItemType(data.item.item_type),
+  );
+
   // Compute all derived values from item data and server-loaded sources/usages
   const computed = $derived.by(() => {
     // Stats include both numeric stats and metadata fields
@@ -277,6 +287,25 @@
       >(data.item.chest_rewards),
     };
   });
+
+  const hasStatsCard = $derived(
+    !isAugment &&
+      ((computed.stats && Object.keys(computed.stats).length > 0) ||
+        data.item.weapon_delay > 0 ||
+        data.item.weapon_proc_effect_id),
+  );
+
+  const hasPrimaryDetailCards = $derived(
+    Boolean(data.item.tooltip_html) ||
+      hasStatsCard ||
+      (computed.createdFromMerge && computed.createdFromMerge.length > 0) ||
+      (computed.usedAsCurrencyFor && computed.usedAsCurrencyFor.length > 0) ||
+      data.item.id === "primal_essence" ||
+      data.item.id === "radiant_aether" ||
+      data.item.id === "adventurers_essence" ||
+      (isAugment && !isArmorSetMetadata && data.augmenters.length > 0) ||
+      data.packContents.length > 0,
+  );
 </script>
 
 <Seo
@@ -326,7 +355,7 @@
     <Card.Content class="grid grid-cols-2 md:grid-cols-3 gap-4">
       <div>
         <div class={styles.label}>Type</div>
-        <div class={styles.value}>{formatItemType(data.item.item_type)}</div>
+        <div class={styles.value}>{itemTypeLabel}</div>
       </div>
 
       {#if data.item.level_required > 1}
@@ -366,7 +395,7 @@
         </div>
       {/if}
 
-      {#if computed.maxDurability}
+      {#if computed.maxDurability && !isAugment}
         <div>
           <div class={styles.label}>Max Durability</div>
           <div class={styles.value}>{computed.maxDurability}</div>
@@ -461,10 +490,10 @@
   </Card.Root>
 
   <!-- Tooltip and Stats/Merge/Currency side-by-side (hide entire section if all would be empty) -->
-  {#if (data.item.tooltip_html && data.item.item_type !== "augment") || ((data.item.item_type !== "augment" || !data.item.augment_armor_set_name) && ((computed.stats && Object.keys(computed.stats).length > 0) || data.item.weapon_delay > 0)) || (computed.createdFromMerge && computed.createdFromMerge.length > 0) || (computed.usedAsCurrencyFor && computed.usedAsCurrencyFor.length > 0) || data.item.id === "primal_essence" || data.item.id === "radiant_aether" || data.item.id === "adventurers_essence" || (data.item.item_type === "augment" && !data.item.augment_armor_set_name && data.augmenters.length > 0) || data.packContents.length > 0}
+  {#if hasPrimaryDetailCards}
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <!-- Tooltip (don't show for augments - they're metadata items never shown to players) -->
-      {#if data.item.tooltip_html && data.item.item_type !== "augment"}
+      <!-- Tooltip -->
+      {#if data.item.tooltip_html}
         <Card.Root class="bg-muted/30">
           <Card.Header>
             <Card.Title>Tooltip</Card.Title>
@@ -565,8 +594,8 @@
         </Card.Root>
       {/if}
 
-      <!-- Stats (hidden for set bonus augments since those stats are shown as set bonuses) -->
-      {#if (data.item.item_type !== "augment" || !data.item.augment_armor_set_name) && ((computed.stats && Object.keys(computed.stats).length > 0) || data.item.weapon_delay > 0 || data.item.weapon_proc_effect_id)}
+      <!-- Stats -->
+      {#if hasStatsCard}
         <Card.Root class="bg-muted/30">
           <Card.Header>
             <Card.Title>Stats</Card.Title>
@@ -974,8 +1003,8 @@
             </p>
           </Card.Content>
         </Card.Root>
-      {:else if data.item.item_type === "augment" && !data.item.augment_armor_set_name && data.augmenters.length > 0}
-        <!-- Augment (Non-Set) Usage -->
+      {:else if isAugment && !isArmorSetMetadata && data.augmenters.length > 0}
+        <!-- Socketable Augment Usage -->
         <Card.Root class="bg-muted/30">
           <Card.Header>
             <Card.Title>How to Use</Card.Title>
@@ -991,24 +1020,6 @@
                   the first un-augmented copy will be used.
                 </div>
               </div>
-              <div>
-                <div class={styles.label}>Type</div>
-                <div class={styles.value}>
-                  {#if data.item.augment_is_defensive !== null && data.item.augment_is_defensive !== undefined}
-                    {data.item.augment_is_defensive ? "Defensive" : "Offensive"}
-                  {/if}
-                </div>
-              </div>
-              {#if data.item.augment_is_defensive !== null && data.item.augment_is_defensive !== undefined}
-                <div>
-                  <div class={styles.label}>Compatible Slots</div>
-                  <div class={styles.value}>
-                    {data.item.augment_is_defensive
-                      ? "Armor (Head, Chest, Legs, Feet, Hands, Bracers, Belt, Shield)"
-                      : "Weapons"}
-                  </div>
-                </div>
-              {/if}
               <div>
                 <div class={styles.label}>Removing</div>
                 <!-- Source: server-scripts/UINpcTrading.cs:118-123,182-186 — quality 2 (magic) = 10,000g, quality 3 (epic) = 15,000g, else 5,000g -->

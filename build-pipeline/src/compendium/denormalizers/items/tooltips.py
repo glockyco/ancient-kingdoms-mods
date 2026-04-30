@@ -141,6 +141,11 @@ def _parse_tooltip(item: dict) -> str:
     # Add item level if it's > 0 (pre-calculated in database)
     item_level = item.get("item_level") or 0
     if item_level > 0:
+        parsed = re.sub(
+            r"(?:\r?\n)*<color=#F1D65A>Item Level: \d+</color>\r?",
+            "",
+            parsed,
+        ).rstrip()
         parsed += f"\n\n<color=#F1D65A>Item Level: {item_level}</color>"
 
     # Add sell price if sellable (format with space separator like in-game)
@@ -285,11 +290,15 @@ def run(conn: sqlite3.Connection) -> None:
     console.print("Generating item tooltips...")
     cursor = conn.cursor()
 
-    # Clear any existing tooltip_html for augmentations (they should never have tooltips)
-    cursor.execute("UPDATE items SET tooltip_html = NULL WHERE item_type = 'augment'")
+    cursor.execute("""
+        UPDATE items
+        SET tooltip_html = NULL
+        WHERE item_type = 'augment'
+          AND augment_armor_set_name IS NOT NULL
+          AND augment_armor_set_name != ''
+    """)
 
     # Fetch all items with fields needed for tooltip generation
-    # Exclude augmentations - they should never have tooltips rendered
     cursor.execute("""
         SELECT
             id,
@@ -306,7 +315,11 @@ def run(conn: sqlite3.Connection) -> None:
             augment_skill_bonuses_with_names
         FROM items
         WHERE tooltip IS NOT NULL AND tooltip != ''
-          AND item_type != 'augment'
+          AND NOT (
+              item_type = 'augment'
+              AND augment_armor_set_name IS NOT NULL
+              AND augment_armor_set_name != ''
+          )
     """)
 
     columns = [desc[0] for desc in cursor.description]
