@@ -69,4 +69,30 @@ public class SkillCatalogTests
         Assert.Equal(BossKind.Boss, b2.Kind);    // metadata refreshed
         Assert.Equal(6, b2.LastSeenLevel);
     }
+
+    [Fact]
+    public void GetOrCreateBossSkill_RefreshesObservedSkillIndex_PreservesOverrides()
+    {
+        var cat = new SkillCatalog();
+        var boss = cat.GetOrCreateBoss("b", "B", "T", "C", "Z", BossKind.Boss, 5);
+        var bossSkill = cat.GetOrCreateBossSkill(boss, "skill_a", skillIndex: 0);
+        bossSkill.BossAbilityVisibility = AbilityDisplayPolicy.Hidden;
+
+        var refreshed = cat.GetOrCreateBossSkill(boss, "skill_a", skillIndex: 2);
+
+        Assert.Same(bossSkill, refreshed);
+        Assert.Equal(2, refreshed.SkillIndex);
+        Assert.Equal(AbilityDisplayPolicy.Hidden, refreshed.BossAbilityVisibility);
+    }
+
+    [Fact]
+    public void GetOrCreateBossSkill_FirstSight_StampsLastObservedUtc()
+    {
+        var cat = new SkillCatalog();
+        var boss = cat.GetOrCreateBoss("b", "B", "T", "C", "Z", BossKind.Boss, 5);
+
+        var bossSkill = cat.GetOrCreateBossSkill(boss, "skill_a", skillIndex: 0);
+
+        Assert.NotEqual(default, bossSkill.LastObservedUtc);
+    }
 }

@@ -84,7 +84,7 @@ public class StateJsonTests
             skill.CastBarVisibility = AbilityDisplayPolicy.Always;
             skill.BossAbilityVisibility = AbilityDisplayPolicy.Hidden;
             var boss = catalog.GetOrCreateBoss("infernal_skeleton", "Infernal Skeleton", "Undead", "Warrior", "Crypt", BossKind.Boss, 10);
-            var bossSkill = catalog.GetOrCreateBossSkill(boss, "inferno_blast");
+            var bossSkill = catalog.GetOrCreateBossSkill(boss, "inferno_blast", skillIndex: 0);
             bossSkill.UserThreat = ThreatTier.High;
             bossSkill.CastBarVisibility = AbilityDisplayPolicy.Hidden;
             bossSkill.BossAbilityVisibility = AbilityDisplayPolicy.Always;
@@ -143,6 +143,7 @@ public class StateJsonTests
             var serializedBossSkill = Assert.IsType<JsonObject>(serializedBossSkills["inferno_blast"]);
             Assert.Empty(serializedBossSkill.Select(entry => entry.Key).Except(new[]
             {
+                "SkillIndex",
                 "EffectiveSnapshot",
                 "AutoThreat",
                 "UserThreat",

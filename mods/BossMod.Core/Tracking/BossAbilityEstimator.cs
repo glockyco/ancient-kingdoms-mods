@@ -101,6 +101,7 @@ public static class BossAbilityEstimator
             SkillClass = input.SkillClass,
             CastTimeEnd = input.CastTimeEnd,
             TotalCastTime = input.TotalCastTime,
+            CastRange = input.CastRange,
             CooldownEnd = input.CooldownEnd,
             TotalCooldown = input.TotalCooldown,
             IsCurrent = input.IsCurrent,

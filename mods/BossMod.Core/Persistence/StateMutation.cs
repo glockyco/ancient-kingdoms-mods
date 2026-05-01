@@ -142,6 +142,7 @@ public static class StateMutation
     }
 
     private static bool BossSkillsEqual(BossSkillRecord a, BossSkillRecord b) =>
+        a.SkillIndex == b.SkillIndex &&
         BossSkillSnapshotsEqual(a.EffectiveSnapshot, b.EffectiveSnapshot) &&
         a.AutoThreat == b.AutoThreat &&
         a.UserThreat == b.UserThreat &&

@@ -134,10 +134,11 @@ public sealed class MonsterWatcher
             bossId, displayName,
             type, className, zone, kind, level);
 
-        if (monster.skills == null) return changed;
+        if (monster.skills == null) return ResetMissingSkillIndices(bossRec, new HashSet<string>()) || changed;
         var skillsList = monster.skills.skills;
-        if (skillsList == null) return changed;
+        if (skillsList == null) return ResetMissingSkillIndices(bossRec, new HashSet<string>()) || changed;
 
+        var seenSkillIds = new HashSet<string>();
         for (int i = 0; i < skillsList.Count; i++)
         {
             var sk = skillsList[i];
@@ -145,6 +146,7 @@ public sealed class MonsterWatcher
             if (data == null || string.IsNullOrEmpty(data.name)) continue;
 
             var skillId = data.name;
+            seenSkillIds.Add(skillId);
             var skillDisplay = string.IsNullOrEmpty(data.nameSkill) ? skillId : data.nameSkill;
             bool skillExists = _catalog.Skills.TryGetValue(skillId, out var existingSkill);
             if (!skillExists || existingSkill.DisplayName != skillDisplay)
@@ -161,10 +163,10 @@ public sealed class MonsterWatcher
                 changed = true;
             }
 
-            bool bossSkillExists = bossRec.Skills.ContainsKey(skillId);
-            if (!bossSkillExists) changed = true;
+            bool bossSkillExists = bossRec.Skills.TryGetValue(skillId, out var existingBossSkill);
+            if (!bossSkillExists || existingBossSkill.SkillIndex != i) changed = true;
 
-            var bossSkillRec = _catalog.GetOrCreateBossSkill(bossRec, skillId);
+            var bossSkillRec = _catalog.GetOrCreateBossSkill(bossRec, skillId, i);
             var effectiveSnapshot = EffectiveSnapshotBuilder.Build(sk, monster);
             if (!BossSkillSnapshotsEqual(bossSkillRec.EffectiveSnapshot, effectiveSnapshot))
             {
@@ -180,6 +182,21 @@ public sealed class MonsterWatcher
             }
         }
 
+        changed |= ResetMissingSkillIndices(bossRec, seenSkillIds);
+
+
+        return changed;
+    }
+
+    private static bool ResetMissingSkillIndices(BossRecord boss, HashSet<string> seenSkillIds)
+    {
+        bool changed = false;
+        foreach (var entry in boss.Skills)
+        {
+            if (seenSkillIds.Contains(entry.Key) || entry.Value.SkillIndex == int.MaxValue) continue;
+            entry.Value.SkillIndex = int.MaxValue;
+            changed = true;
+        }
         return changed;
     }
 

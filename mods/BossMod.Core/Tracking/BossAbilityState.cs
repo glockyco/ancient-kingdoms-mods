@@ -44,6 +44,7 @@ public sealed class BossAbilityState
     public string SkillClass { get; init; } = "";
     public double CastTimeEnd { get; init; }
     public float TotalCastTime { get; init; }
+    public float CastRange { get; init; }
     public double CooldownEnd { get; init; }
     public float TotalCooldown { get; init; }
     public bool IsCurrent { get; init; }

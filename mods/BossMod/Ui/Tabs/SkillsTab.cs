@@ -50,17 +50,13 @@ public sealed class SkillsTab
             ImGui.TextDisabled(selected.Id);
             ImGui.Separator();
 
-            var bossSkill = RepresentativeBossSkill(selected.Id, out bool autoThreatVaries, out bool bossSpecificOverridesExist);
-            if (autoThreatVaries || bossSpecificOverridesExist)
-            {
-                ImGui.TextColored(new Vector4(1f, 0.75f, 0.2f, 1f), "This tab edits global defaults. Bosses tab shows final per-boss values when automatic importance or boss-specific overrides vary.");
-            }
-            result.Merge(SettingsTabHelpers.RenderOverrides(
+            result.Merge(SettingsTabHelpers.RenderSkillDefaults(
                 idPrefix: "skill_" + selected.Id,
                 skill: selected,
-                bossSkill: bossSkill,
-                editingBossOverride: false,
                 apply: patch => _mutator.SetSkillOverride(selected.Id, patch)));
+
+            ImGui.Separator();
+            RenderBossUsage(selected.Id);
         }
         else
         {
@@ -78,33 +74,54 @@ public sealed class SkillsTab
                skill.Id.Contains(_filter, StringComparison.OrdinalIgnoreCase);
     }
 
-    private BossSkillRecord RepresentativeBossSkill(string skillId, out bool autoThreatVaries, out bool bossSpecificOverridesExist)
+    private void RenderBossUsage(string skillId)
     {
-        autoThreatVaries = false;
-        bossSpecificOverridesExist = false;
-        bool found = false;
-        ThreatTier strongest = ThreatTier.Low;
-        ThreatTier first = ThreatTier.Low;
+        var usage = _catalog.Bosses.Values
+            .Where(boss => boss.Skills.ContainsKey(skillId))
+            .OrderBy(boss => boss.DisplayName, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(boss => boss.Id, StringComparer.OrdinalIgnoreCase)
+            .ToList();
 
-        foreach (var boss in _catalog.Bosses.Values)
+        ImGui.TextUnformatted("Boss usage");
+        if (usage.Count == 0)
         {
-            if (!boss.Skills.TryGetValue(skillId, out var bossSkill)) continue;
-            if (!found)
-            {
-                first = bossSkill.AutoThreat;
-                strongest = bossSkill.AutoThreat;
-                found = true;
-            }
-            else
-            {
-                if (bossSkill.AutoThreat != first) autoThreatVaries = true;
-                if (bossSkill.AutoThreat > strongest) strongest = bossSkill.AutoThreat;
-            }
-
-            if (bossSkill.UserThreat.HasValue || bossSkill.CastBarVisibility.HasValue || bossSkill.BossAbilityVisibility.HasValue)
-                bossSpecificOverridesExist = true;
+            ImGui.TextDisabled("No bosses use this skill yet.");
+            return;
         }
 
-        return new BossSkillRecord { AutoThreat = strongest };
+        if (!ImGui.BeginTable("skill_boss_usage", 4, ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg)) return;
+
+        ImGui.TableSetupColumn("Boss");
+        ImGui.TableSetupColumn("#");
+        ImGui.TableSetupColumn("Auto importance");
+        ImGui.TableSetupColumn("Boss overrides");
+        ImGui.TableHeadersRow();
+
+        for (int i = 0; i < usage.Count; i++)
+        {
+            var boss = usage[i];
+            var bossSkill = boss.Skills[skillId];
+            ImGui.TableNextRow();
+            ImGui.TableNextColumn();
+            ImGui.TextUnformatted(boss.DisplayName);
+            ImGui.TextDisabled(boss.Id);
+            ImGui.TableNextColumn();
+            ImGui.TextUnformatted(bossSkill.SkillIndex == int.MaxValue ? "-" : bossSkill.SkillIndex.ToString());
+            ImGui.TableNextColumn();
+            ImGui.TextUnformatted(bossSkill.AutoThreat.ToString());
+            ImGui.TableNextColumn();
+            ImGui.TextDisabled(OverrideSummary(bossSkill));
+        }
+
+        ImGui.EndTable();
+    }
+
+    private static string OverrideSummary(BossSkillRecord bossSkill)
+    {
+        var parts = new System.Collections.Generic.List<string>();
+        if (bossSkill.UserThreat.HasValue) parts.Add("importance");
+        if (bossSkill.CastBarVisibility.HasValue) parts.Add("cast bars");
+        if (bossSkill.BossAbilityVisibility.HasValue) parts.Add("boss abilities");
+        return parts.Count == 0 ? "-" : string.Join(", ", parts);
     }
 }

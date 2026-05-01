@@ -6,7 +6,7 @@ public readonly record struct UiMode(
     bool InWorldScene,
     bool ConfigMode,
     WindowChrome CastBarChrome,
-    WindowChrome CooldownChrome);
+    WindowChrome BossAbilitiesChrome);
 
 public readonly record struct WindowChrome(
     bool ClickThrough,
@@ -25,7 +25,7 @@ public readonly record struct WindowChrome(
             InWorldScene: inWorldScene,
             ConfigMode: configUnlocked,
             CastBarChrome: movableHud,
-            CooldownChrome: movableHud);
+            BossAbilitiesChrome: movableHud);
     }
 
     private static WindowChrome LockedHud => new(

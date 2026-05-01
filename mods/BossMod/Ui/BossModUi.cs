@@ -9,15 +9,15 @@ public sealed class BossModUi
 {
     private readonly Globals _globals;
     private readonly CastBarWindow _castBars;
-    private readonly CooldownWindow _cooldowns;
+    private readonly BossAbilitiesWindow _bossAbilities;
     private readonly SettingsWindow _settings;
     private readonly ISettingsMutator _mutator;
 
-    public BossModUi(Globals globals, CastBarWindow castBars, CooldownWindow cooldowns, SettingsWindow settings, ISettingsMutator mutator)
+    public BossModUi(Globals globals, CastBarWindow castBars, BossAbilitiesWindow bossAbilities, SettingsWindow settings, ISettingsMutator mutator)
     {
         _globals = globals;
         _castBars = castBars;
-        _cooldowns = cooldowns;
+        _bossAbilities = bossAbilities;
         _settings = settings;
         _mutator = mutator;
     }
@@ -33,7 +33,7 @@ public sealed class BossModUi
     {
         Theme.ApplyUiScale(_globals);
         _castBars.Render(frame);
-        _cooldowns.Render(frame);
+        _bossAbilities.Render(frame);
 
         var result = new UiRenderResult();
         if (frame.Mode.ConfigMode) RenderConfigBanner(result);

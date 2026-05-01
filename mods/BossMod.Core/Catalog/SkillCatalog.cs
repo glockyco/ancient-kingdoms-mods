@@ -65,12 +65,13 @@ public sealed class SkillCatalog
         return rec;
     }
 
-    public BossSkillRecord GetOrCreateBossSkill(BossRecord boss, string skillId)
+    public BossSkillRecord GetOrCreateBossSkill(BossRecord boss, string skillId, int skillIndex = int.MaxValue)
     {
         if (!boss.Skills.TryGetValue(skillId, out var rec))
         {
             rec = new BossSkillRecord
             {
+                SkillIndex = skillIndex,
                 LastObservedUtc = DateTime.UtcNow,
             };
             boss.Skills[skillId] = rec;
@@ -78,6 +79,7 @@ public sealed class SkillCatalog
         else
         {
             rec.LastObservedUtc = DateTime.UtcNow;
+            rec.SkillIndex = skillIndex;
         }
         return rec;
     }

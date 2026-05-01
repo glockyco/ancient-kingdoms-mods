@@ -99,6 +99,20 @@ public class StateMutationTests
         Assert.Equal(AbilityDisplayPolicy.Always, liveCatalog.Bosses["boss"].Skills["inferno"].BossAbilityVisibility);
     }
 
+
+    [Fact]
+    public void ApplyLoadedStateInPlace_SkillIndexDifferenceMutatesExistingRoots()
+    {
+        var liveCatalog = CatalogWithSkill("inferno", ThreatTier.High, userThreat: ThreatTier.Critical);
+        liveCatalog.Bosses["boss"].Skills["inferno"].SkillIndex = 2;
+        var loadedCatalog = CatalogWithSkill("inferno", ThreatTier.High, userThreat: ThreatTier.Critical);
+        loadedCatalog.Bosses["boss"].Skills["inferno"].SkillIndex = 0;
+
+        bool changed = StateMutation.ApplyLoadedStateInPlace(liveCatalog, new Globals(), loadedCatalog, new Globals());
+
+        Assert.True(changed);
+        Assert.Equal(0, liveCatalog.Bosses["boss"].Skills["inferno"].SkillIndex);
+    }
     [Fact]
     public void ResetUserSettingsToDefaults_PreservesDiscoveryAndClearsUserOverrides()
     {

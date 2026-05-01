@@ -26,7 +26,7 @@ public class BossMod : MelonMod
     private UiFrameBuilder _uiFrameBuilder;
     private BossModUi _ui;
     private CastBarWindow _castBars;
-    private CooldownWindow _cooldowns;
+    private BossAbilitiesWindow _bossAbilities;
     private ISettingsMutator _settingsMutator;
     private SettingsWindow _settingsWindow;
     private StateFileActions _stateFileActions;
@@ -64,7 +64,7 @@ public class BossMod : MelonMod
         _playerContextBuilder = new PlayerContextBuilder();
         _uiFrameBuilder = new UiFrameBuilder(_playerContextBuilder);
         _castBars = new CastBarWindow(_catalog, _globals);
-        _cooldowns = new CooldownWindow(_catalog, _globals);
+        _bossAbilities = new BossAbilitiesWindow(_catalog, _globals);
         _settingsMutator = new SettingsMutator(_catalog, _globals);
         var skillsTab = new SkillsTab(_catalog, _settingsMutator);
         var bossesTab = new BossesTab(_catalog, _settingsMutator);
@@ -72,7 +72,7 @@ public class BossMod : MelonMod
         var generalTab = new GeneralTab(_globals, _settingsMutator);
         var exportImportTab = new ExportImportTab(_stateFileActions);
         _settingsWindow = new SettingsWindow(generalTab, skillsTab, bossesTab, exportImportTab);
-        _ui = new BossModUi(_globals, _castBars, _cooldowns, _settingsWindow, _settingsMutator);
+        _ui = new BossModUi(_globals, _castBars, _bossAbilities, _settingsWindow, _settingsMutator);
         _hotkeys = new HotkeyManager();
         _hotkeys.Register("toggle_settings", _ui.ToggleSettings);
         _currentFrame = _uiFrameBuilder.Build(_watcher.CurrentSnapshots, _globals);
