@@ -80,8 +80,7 @@
             <span class={cn(maxWidth && "block truncate")}>{itemName}</span>
           </a>
         {/snippet}
-      </HoverCard.Trigger>
-      <HoverCard.Content
+      </HoverCard.Trigger><HoverCard.Content
         class="w-80 border-0 p-0 overflow-hidden shadow-lg"
         side="right"
         collisionPadding={16}
