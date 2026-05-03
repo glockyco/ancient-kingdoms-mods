@@ -712,15 +712,9 @@ Use:
 </div>
 ```
 
-- [ ] **Step 3: Add calculator explanatory copy**
+- [ ] **Step 3: Do not add calculator explainer copy**
 
-Add below summary cards:
-
-```svelte
-<p class="text-sm leading-6 text-muted-foreground">
-  Treasure Hunter adds up to +10 percentage points to each relic's reward chance in a Buried Treasure Chest. The table focuses on relics and estimates each relic's chance per chest at your selected skill.
-</p>
-```
+Earlier iterations included a paragraph below the summary cards explaining "+10 pp" and "the table focuses on relics". The live `Relic chance bonus` tile already shows the bonus value, the `At selected skill` column header already names what the column does, and step 5 of How It Works already states that Treasure Hunter improves relic odds. Skip the paragraph and let the UI speak for itself.
 
 - [ ] **Step 4: Add desktop reward table**
 

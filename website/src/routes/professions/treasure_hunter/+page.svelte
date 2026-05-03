@@ -272,12 +272,6 @@
           <div class="text-xl font-semibold">+0.5% per treasure</div>
         </div>
       </div>
-
-      <p class="mt-4 text-sm leading-6 text-muted-foreground">
-        Treasure Hunter adds up to +10 percentage points to each relic's reward
-        chance in a Buried Treasure Chest. The table focuses on relics and
-        estimates each relic's chance per chest at your selected skill.
-      </p>
     </div>
 
     <div class="overflow-hidden rounded-lg border">
