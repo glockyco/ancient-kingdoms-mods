@@ -287,3 +287,7 @@ If the compendium is useful to you, Ko-fi is the easiest way to show support:
 
 <https://ko-fi.com/wowmuch>
 
+## License
+
+MIT. See [LICENSE](LICENSE).
+
