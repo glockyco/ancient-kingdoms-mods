@@ -210,12 +210,13 @@
           </div>
           <!-- Source: server-scripts/ChestItem.cs:24-31 — Buried Treasure Chest grants unique rewards and applies Treasure Hunter bonus to relic rolls only. -->
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            Each chest gives up to {data.buriedChestRewardLimit} unique rewards.
+            Each chest gives up to {data.buriedChestRewardLimit} unique rewards. Treasure
+            Hunter
             <a
               href="#calculator"
               class="text-blue-600 hover:underline dark:text-blue-400"
-              >Treasure Hunter</a
-            > improves the chance that those rewards include relics.
+              >improves the chance</a
+            > that those rewards include relics.
           </p>
           <p
             class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm leading-6 text-muted-foreground"
