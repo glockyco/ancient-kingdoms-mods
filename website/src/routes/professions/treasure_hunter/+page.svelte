@@ -165,7 +165,14 @@
       <div class="grid gap-3 py-4 md:grid-cols-[2rem_1fr]">
         <div class="text-sm text-muted-foreground">3</div>
         <div>
-          <div>Find the matching dig site.</div>
+          <div class="flex flex-wrap items-center gap-2">
+            <span>Find the matching dig site.</span>
+            <MapLink
+              entityId="buried_treasure_chest"
+              entityType="item"
+              compact
+            />
+          </div>
           <!-- Source: server-scripts/TreasureLocation.cs:15,31-35 — treasure locations require the matching map in inventory. -->
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
             Each treasure map points to one dig site. Use the clue or the map
