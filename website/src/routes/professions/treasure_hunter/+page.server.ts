@@ -60,6 +60,7 @@ interface TreasureHunterPageData {
   stats: TreasureHunterStats;
   treasureMaps: TreasureMapRow[];
   buriedChestRewards: ChestRewardRow[];
+  buriedChestRewardLimit: number;
   keyItems: Record<"random_map" | "buried_treasure_chest" | "shovel", KeyItem>;
 }
 
@@ -157,18 +158,25 @@ export const load: PageServerLoad = (): TreasureHunterPageData => {
     reward_item_tooltip: map.reward_tooltip,
   }));
 
-  const buriedChestRewardJson = db
+  const buriedChestRow = db
     .prepare(
       `
-    SELECT chest_rewards
+    SELECT chest_rewards, chest_num_items
     FROM items
     WHERE id = 'buried_treasure_chest'
   `,
     )
-    .get() as { chest_rewards: string | null } | undefined;
+    .get() as
+    | { chest_rewards: string | null; chest_num_items: number | null }
+    | undefined;
 
-  if (!buriedChestRewardJson?.chest_rewards) {
+  if (!buriedChestRow?.chest_rewards) {
     throw new Error("Buried Treasure Chest reward data is missing");
+  }
+
+  const buriedChestRewardLimit = buriedChestRow.chest_num_items ?? 0;
+  if (buriedChestRewardLimit <= 0) {
+    throw new Error("Buried Treasure Chest is missing chest_num_items");
   }
 
   const rewardItemLookup = db.prepare(
@@ -176,7 +184,7 @@ export const load: PageServerLoad = (): TreasureHunterPageData => {
   );
 
   const buriedChestRewards = (
-    JSON.parse(buriedChestRewardJson.chest_rewards) as ChestRewardJson[]
+    JSON.parse(buriedChestRow.chest_rewards) as ChestRewardJson[]
   )
     .map((reward): ChestRewardRow => {
       if (typeof reward.roll_order !== "number") {
@@ -261,6 +269,7 @@ export const load: PageServerLoad = (): TreasureHunterPageData => {
     stats,
     treasureMaps,
     buriedChestRewards,
+    buriedChestRewardLimit,
     keyItems,
   };
 };

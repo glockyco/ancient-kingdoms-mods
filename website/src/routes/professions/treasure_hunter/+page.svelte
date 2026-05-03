@@ -23,6 +23,7 @@
     const adjusted = calculateAdjustedChestRewards(
       data.buriedChestRewards,
       skillFraction,
+      { targetRewards: data.buriedChestRewardLimit },
     );
 
     if (skillLevel === 0) {
@@ -209,7 +210,7 @@
           </div>
           <!-- Source: server-scripts/ChestItem.cs:24-31 — Buried Treasure Chest grants unique rewards and applies Treasure Hunter bonus to relic rolls only. -->
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            Each chest gives 3 unique rewards.
+            Each chest gives up to {data.buriedChestRewardLimit} unique rewards.
             <a
               href="#calculator"
               class="text-blue-600 hover:underline dark:text-blue-400"
