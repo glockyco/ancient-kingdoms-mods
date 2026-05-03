@@ -559,11 +559,7 @@ function sortChestRewardsForDisplay(
     return a.scales_with_treasure_hunter ? -1 : 1;
   }
 
-  return (
-    b.quality - a.quality ||
-    b.adjusted_open_chance - a.adjusted_open_chance ||
-    a.item_name.localeCompare(b.item_name)
-  );
+  return a.item_name.localeCompare(b.item_name);
 }
 ```
 
