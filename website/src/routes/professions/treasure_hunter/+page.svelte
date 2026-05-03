@@ -334,7 +334,7 @@
         </table>
       </div>
       <p class="border-t bg-muted/20 px-3 py-2 text-sm text-muted-foreground">
-        Each reward rolls up to 10 times per chest, so the +10 pp per-roll bonus
+        Each reward rolls up to 10 times per chest, so the per-roll bonus
         compounds into a larger per-chest gain.
       </p>
     </div>
