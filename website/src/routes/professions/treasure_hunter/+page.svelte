@@ -334,10 +334,8 @@
         </table>
       </div>
       <p class="border-t bg-muted/20 px-3 py-2 text-sm text-muted-foreground">
-        The Relic chance bonus is the +10 pp added to every relic roll. Each
-        chest rolls every reward up to 10 times before three unique rewards fill
-        the slots, so repeated rolls compound that per-roll bonus into a larger
-        per-chest gain.
+        Each reward rolls up to 10 times per chest, so the +10 pp per-roll bonus
+        compounds into a larger per-chest gain.
       </p>
     </div>
   </section>
