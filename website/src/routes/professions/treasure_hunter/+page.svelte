@@ -17,7 +17,9 @@
   let skillLevel = $state(0);
 
   const skillFraction = $derived(skillLevel / 100);
+  // Source: server-scripts/ChestItem.cs:30 — relic per-roll bonus is `treasureHunterLevel * 0.1f`, so a fully capped skill adds +10 pp to every relic roll.
   const relicRollBonus = $derived(skillFraction * 0.1);
+  // Source: server-scripts/TreasureLocation.cs:87-90 — each successful treasure dig grants +0.5% Treasure Hunter, so capping at 100% takes (100 - current) / 0.5 successful digs.
   const successfulDigsToCap = $derived(Math.ceil((100 - skillLevel) / 0.5));
   const adjustedChestRewards = $derived.by(() => {
     const adjusted = calculateAdjustedChestRewards(
@@ -262,6 +264,7 @@
         </div>
         <div class="rounded-lg border bg-background p-3">
           <div class="text-sm text-muted-foreground">Skill gain</div>
+          <!-- Source: server-scripts/TreasureLocation.cs:87-90 — successful dig grants +0.5% Treasure Hunter. -->
           <div class="text-xl font-semibold">+0.5% per treasure</div>
         </div>
       </div>
@@ -332,6 +335,7 @@
           </tbody>
         </table>
       </div>
+      <!-- Source: server-scripts/ChestItem.cs:24-66 — chest reward selection loop runs up to 10 passes until the slot count is filled. -->
       <p class="border-t bg-muted/20 px-3 py-2 text-sm text-muted-foreground">
         <span aria-hidden="true">*</span> Each reward rolls up to 10 times per chest,
         so the per-roll bonus compounds into a larger per-chest gain.

@@ -176,6 +176,7 @@ export const load: PageServerLoad = (): TreasureHunterPageData => {
     throw new Error("Buried Treasure Chest reward data is missing");
   }
 
+  // Source: server-scripts/ChestItem.cs:24,60 — `numItemsPerChest` controls the unique-reward slot count.
   const buriedChestRewardLimit = buriedChestRow.chest_num_items ?? 0;
   if (buriedChestRewardLimit <= 0) {
     throw new Error("Buried Treasure Chest is missing chest_num_items");
@@ -220,6 +221,7 @@ export const load: PageServerLoad = (): TreasureHunterPageData => {
         roll_order: reward.roll_order,
         base_roll_chance: reward.probability,
         baseline_open_chance: reward.actual_drop_chance,
+        // Source: server-scripts/ChestItem.cs:30 — Treasure Hunter scales only relic rolls on Buried Treasure Chest (`item.data is RelicItem`).
         scales_with_treasure_hunter: item.item_type === "relic",
         relic_buff_id: item.relic_buff_id,
         relic_buff_name: item.relic_buff_name,
@@ -234,6 +236,7 @@ export const load: PageServerLoad = (): TreasureHunterPageData => {
     ).length,
     zone_count: new Set(treasureMaps.map((map) => map.destination_zone_id))
       .size,
+    // Source: server-scripts/TreasureLocation.cs:87-90 — successful treasure dig grants +0.5% Treasure Hunter.
     skill_gain_percent: 0.5,
   };
 

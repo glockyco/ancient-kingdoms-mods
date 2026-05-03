@@ -94,7 +94,10 @@ def _denormalize_chest_rewards(
         chest_rewards = json.loads(chest_rewards_json)
         updated_rewards = []
 
-        # First pass: add item names while preserving game roll order
+        # First pass: add item names while preserving game roll order.
+        # The reward index is the rolling order ChestItem.cs iterates in
+        # (server-scripts/ChestItem.cs:27 `foreach (ItemDropChance itemDropChance in array)`),
+        # so the simulator must replay rewards in the same order the game does.
         for roll_order, reward in enumerate(chest_rewards):
             item_id = reward.get("item_id")
             probability = reward.get("probability", 0.0)

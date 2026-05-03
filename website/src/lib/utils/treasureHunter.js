@@ -47,9 +47,14 @@ class SeededRandom {
  * Calculates the estimated chance each reward appears in one opened Buried
  * Treasure Chest at the selected Treasure Hunter skill.
  *
- * The simulation mirrors server-scripts/ChestItem.cs: rewards are rolled in
- * configured order, duplicate item names cannot be awarded, and the chest stops
- * after enough unique rewards or after the maximum pass count.
+ * Mirrors the chest-reward selection loop in
+ * `server-scripts/ChestItem.cs:24-66`: rewards are rolled in configured order,
+ * duplicate item names cannot be awarded (line 31), each pass continues until
+ * `numItemsPerChest` unique rewards are picked, and the outer loop is capped at
+ * 10 passes (line 24). Treasure Hunter only modifies relic rolls on the Buried
+ * Treasure Chest specifically (line 30: `nameItem == "Buried Treasure Chest"
+ * && item.data is RelicItem`), and the bonus is `treasureHunterLevel * 0.1f`
+ * added to the per-roll probability.
  *
  * @param {ChestReward[]} rewards
  * @param {number} skill Treasure Hunter skill as a 0..1 fraction.
@@ -71,10 +76,13 @@ export function calculateAdjustedChestRewards(rewards, skill, options = {}) {
     const selectedItemNames = new Set();
     let passes = 0;
 
+    // Source: server-scripts/ChestItem.cs:24 — `while (num < numItemsPerChest && num2 < 10)`.
     while (selectedItemNames.size < targetRewards && passes < maxPasses) {
       for (const reward of orderedRewards) {
+        // Source: server-scripts/ChestItem.cs:31 — `!list.Contains(item.data.nameItem)` skips duplicates by display name.
         if (selectedItemNames.has(reward.item_name)) continue;
 
+        // Source: server-scripts/ChestItem.cs:30 — relics on Buried Treasure Chest get `treasureHunterLevel * 0.1f` added; the chest-name guard is enforced upstream by the loader scoping to `buried_treasure_chest`.
         const rollChance = reward.scales_with_treasure_hunter
           ? Math.min(1, reward.base_roll_chance + skill * 0.1)
           : reward.base_roll_chance;
@@ -84,6 +92,7 @@ export function calculateAdjustedChestRewards(rewards, skill, options = {}) {
           counts.set(reward.item_id, (counts.get(reward.item_id) ?? 0) + 1);
         }
 
+        // Source: server-scripts/ChestItem.cs:60-62 — break out of the reward loop once the slot count is reached.
         if (selectedItemNames.size >= targetRewards) break;
       }
 
