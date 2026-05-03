@@ -54,15 +54,6 @@
     const sign = value > 0 ? "+" : "";
     return `${sign}${(value * 100).toFixed(digits)} pp`;
   }
-
-  function formatItemType(itemType: string | null): string {
-    if (!itemType) return "Item";
-
-    return itemType
-      .split("_")
-      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-      .join(" ");
-  }
 </script>
 
 <Seo
@@ -238,7 +229,7 @@
   <section id="calculator" class="space-y-4">
     <h2 class="flex items-center gap-2 text-xl font-semibold">
       <CalculatorIcon class="h-5 w-5 text-cyan-500" />
-      Calculator
+      Relic Reward Calculator
     </h2>
 
     <div class="rounded-lg border bg-muted/15 p-4">
@@ -282,7 +273,6 @@
           <thead class="bg-muted/50">
             <tr>
               <th class="p-3 text-left font-medium">Reward</th>
-              <th class="p-3 text-left font-medium">Type</th>
               <th class="p-3 text-left font-medium">Effect</th>
               <th class="p-3 text-right font-medium">Baseline</th>
               <th class="p-3 text-right font-medium">At selected skill</th>
@@ -302,15 +292,6 @@
                     itemName={reward.item_name}
                     tooltipHtml={reward.tooltip_html}
                   />
-                </td>
-                <td class="p-3">
-                  <span
-                    class={reward.scales_with_treasure_hunter
-                      ? "rounded-full bg-amber-500/10 px-2 py-0.5 text-xs text-amber-700 dark:text-amber-300"
-                      : "text-muted-foreground"}
-                  >
-                    {formatItemType(reward.item_type)}
-                  </span>
                 </td>
                 <td class="p-3">
                   {#if reward.relic_buff_id}

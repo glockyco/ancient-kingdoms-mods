@@ -664,7 +664,7 @@ Add:
 <section id="calculator" class="space-y-4">
   <h2 class="flex items-center gap-2 text-xl font-semibold">
     <CalculatorIcon class="h-5 w-5 text-cyan-500" />
-    Calculator
+    Relic Reward Calculator
   </h2>
   <!-- controls and output -->
 </section>
@@ -724,7 +724,6 @@ Use an actual table for desktop/tablet. The table is relic-only; do not render D
       <thead class="bg-muted/50">
         <tr>
           <th class="p-3 text-left font-medium">Reward</th>
-          <th class="p-3 text-left font-medium">Type</th>
           <th class="p-3 text-left font-medium">Effect</th>
           <th class="p-3 text-right font-medium">Baseline</th>
           <th class="p-3 text-right font-medium">At selected skill</th>
@@ -737,7 +736,15 @@ Use an actual table for desktop/tablet. The table is relic-only; do not render D
             <td class="p-3">
               <ItemLink itemId={reward.item_id} itemName={reward.item_name} tooltipHtml={reward.tooltip_html} />
             </td>
-            <td class="p-3 capitalize">{reward.item_type ?? "Item"}</td>
+            <td class="p-3">
+              {#if reward.relic_buff_id}
+                <a href="/skills/{reward.relic_buff_id}" class="text-blue-600 hover:underline dark:text-blue-400">
+                  {reward.relic_buff_name || reward.relic_buff_id.replace(/_/g, " ")}
+                </a>
+              {:else}
+                <span class="text-muted-foreground">—</span>
+              {/if}
+            </td>
             <td class="p-3 text-right font-mono">{formatPercent(reward.baseline_open_chance)}</td>
             <td class="p-3 text-right font-mono">{formatPercent(reward.adjusted_open_chance)}</td>
             <td class="p-3 text-right font-mono">
