@@ -94,8 +94,8 @@ def _denormalize_chest_rewards(
         chest_rewards = json.loads(chest_rewards_json)
         updated_rewards = []
 
-        # First pass: add item names
-        for reward in chest_rewards:
+        # First pass: add item names while preserving game roll order
+        for roll_order, reward in enumerate(chest_rewards):
             item_id = reward.get("item_id")
             probability = reward.get("probability", 0.0)
 
@@ -111,6 +111,7 @@ def _denormalize_chest_rewards(
                         "item_id": item_id,
                         "item_name": item_name,
                         "probability": probability,
+                        "roll_order": roll_order,
                     }
                 )
 
