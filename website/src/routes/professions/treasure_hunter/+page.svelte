@@ -285,7 +285,11 @@
               <th class="p-3 text-left font-medium">Type</th>
               <th class="p-3 text-right font-medium">Baseline</th>
               <th class="p-3 text-right font-medium">At selected skill</th>
-              <th class="p-3 text-right font-medium">Change</th>
+              <th class="p-3 text-right font-medium">
+                Change<sup class="ml-0.5 font-normal text-muted-foreground"
+                  >*</sup
+                >
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -334,8 +338,8 @@
         </table>
       </div>
       <p class="border-t bg-muted/20 px-3 py-2 text-sm text-muted-foreground">
-        Each reward rolls up to 10 times per chest, so the per-roll bonus
-        compounds into a larger per-chest gain.
+        <span aria-hidden="true">*</span> Each reward rolls up to 10 times per chest,
+        so the per-roll bonus compounds into a larger per-chest gain.
       </p>
     </div>
   </section>
