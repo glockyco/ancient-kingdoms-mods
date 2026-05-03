@@ -712,9 +712,9 @@ Use:
 </div>
 ```
 
-- [ ] **Step 3: Do not add calculator explainer copy**
+- [ ] **Step 3: Add a Change-column footnote, no other explainer copy**
 
-Earlier iterations included a paragraph below the summary cards explaining "+10 pp" and "the table focuses on relics". The live `Relic chance bonus` tile already shows the bonus value, the `At selected skill` column header already names what the column does, and step 5 of How It Works already states that Treasure Hunter improves relic odds. Skip the paragraph and let the UI speak for itself.
+Earlier iterations included a paragraph below the summary cards explaining "+10 pp" and "the table focuses on relics". Skip that paragraph — the live `Relic chance bonus` tile already shows the bonus value, the `At selected skill` column header already names what the column does, and step 5 of How It Works already states that Treasure Hunter improves relic odds. The one targeted exception is a short footnote inside the table's bordered container that explains why the `Change` values do not equal the per-roll `+10 pp` bonus tile (per-chest vs per-roll, plus the up-to-3 unique-reward slot competition). Keep the footnote ≤2 sentences with no semicolons.
 
 - [ ] **Step 4: Add desktop reward table**
 
