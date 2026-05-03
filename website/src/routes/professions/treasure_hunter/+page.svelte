@@ -130,12 +130,15 @@
       <div class="grid gap-3 py-4 first:pt-0 md:grid-cols-[2rem_1fr]">
         <div class="text-sm text-muted-foreground">1</div>
         <div>
-          <div>
-            Find <ItemLink
-              itemId={data.keyItems.random_map.id}
-              itemName={data.keyItems.random_map.name}
-              tooltipHtml={data.keyItems.random_map.tooltip_html}
-            /> drops.
+          <div class="flex flex-wrap items-center gap-2">
+            <span>
+              Find <ItemLink
+                itemId={data.keyItems.random_map.id}
+                itemName={data.keyItems.random_map.name}
+                tooltipHtml={data.keyItems.random_map.tooltip_html}
+              /> drops.
+            </span>
+            <MapLink entityId="random_map" entityType="item" compact />
           </div>
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
             Monsters drop Random Map. Each drop gives one of
