@@ -33,14 +33,14 @@ The compendium is a fan-made wiki, interactive world map, and game database. It 
 
 | Path | Purpose |
 | --- | --- |
-| `mods/` | C# MelonLoader mods, including player-facing utilities, export tooling, and `BossMod.Core` shared code. |
+| `mods/` | C# MelonLoader mods for player-facing utilities, data export, map capture, and development inspection. |
 | `build-tool/` | .NET command runner for setup, mod builds, deployment, automated exports, and HotRepl workflows. |
 | `build-pipeline/` | Python CLI that turns exported game data into SQLite, images, and map tiles for the website. |
 | `website/` | SvelteKit static compendium site. |
 | `exported-data/` | Local game export output. Most generated files are gitignored. |
 | `website/static/` | Generated database, image, and tile assets used by the site. Generated compendium assets are gitignored. |
 | `server-scripts*/` | Local decompiled server-script snapshots used to verify hardcoded mechanics. These are gitignored. |
-| `tests/` | C# tests, including `BossMod.Core.Tests`. |
+| `tests/` | C# test projects. |
 | `docs/` | Project notes, task plans, and contributor-oriented guides. |
 
 ## Compendium website
@@ -49,7 +49,7 @@ The website is a static SvelteKit app:
 
 - SvelteKit 2, Svelte 5, TypeScript, and Tailwind 4.
 - Static generation through `@sveltejs/adapter-static`.
-- Client-side SQLite through `sql.js-fts5`, with the full database downloaded on the first client query.
+- SQLite-backed content: `better-sqlite3` during prerendering, plus browser-side `sql.js-fts5` for map lookup/search interactions.
 - Interactive map rendering through deck.gl.
 - UI components built around bits-ui-compatible patterns.
 - Deployment through Wrangler and Cloudflare Static Assets.
