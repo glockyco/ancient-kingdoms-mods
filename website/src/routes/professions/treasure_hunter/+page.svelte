@@ -283,6 +283,7 @@
             <tr>
               <th class="p-3 text-left font-medium">Reward</th>
               <th class="p-3 text-left font-medium">Type</th>
+              <th class="p-3 text-left font-medium">Effect</th>
               <th class="p-3 text-right font-medium">Baseline</th>
               <th class="p-3 text-right font-medium">At selected skill</th>
               <th class="p-3 text-right font-medium">
@@ -310,6 +311,19 @@
                   >
                     {formatItemType(reward.item_type)}
                   </span>
+                </td>
+                <td class="p-3">
+                  {#if reward.relic_buff_id}
+                    <a
+                      href="/skills/{reward.relic_buff_id}"
+                      class="text-blue-600 hover:underline dark:text-blue-400"
+                    >
+                      {reward.relic_buff_name ||
+                        reward.relic_buff_id.replace(/_/g, " ")}
+                    </a>
+                  {:else}
+                    <span class="text-muted-foreground">—</span>
+                  {/if}
                 </td>
                 <td class="p-3 text-right font-mono">
                   {formatPercent(reward.baseline_open_chance)}

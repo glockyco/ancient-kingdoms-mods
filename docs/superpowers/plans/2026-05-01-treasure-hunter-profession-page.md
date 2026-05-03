@@ -194,6 +194,7 @@ Use these labels to avoid ambiguity:
 - `Baseline` = current DB `actual_drop_chance`, based on baseline chest reward simulation.
 - `At selected skill` = calculator result for current slider value.
 - `Change` = selected-skill chance minus baseline chance.
+- `Effect` = `<a href="/skills/{relic_buff_id}">{relic_buff_name}</a>`. Lets users jump straight to the activated skill instead of going through the relic's item page.
 - `Relic chance bonus` = raw per-roll percentage-point bonus before the chest selects its 3 unique rewards.
 
 Visible copy:
@@ -724,6 +725,7 @@ Use an actual table for desktop/tablet. The table is relic-only; do not render D
         <tr>
           <th class="p-3 text-left font-medium">Reward</th>
           <th class="p-3 text-left font-medium">Type</th>
+          <th class="p-3 text-left font-medium">Effect</th>
           <th class="p-3 text-right font-medium">Baseline</th>
           <th class="p-3 text-right font-medium">At selected skill</th>
           <th class="p-3 text-right font-medium">Change</th>

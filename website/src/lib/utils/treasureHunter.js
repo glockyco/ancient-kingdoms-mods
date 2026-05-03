@@ -9,6 +9,8 @@
  * @property {number} base_roll_chance
  * @property {number} baseline_open_chance
  * @property {boolean} scales_with_treasure_hunter
+ * @property {string | null} relic_buff_id
+ * @property {string | null} relic_buff_name
  */
 
 /**

@@ -32,6 +32,8 @@ interface ChestRewardRow {
   base_roll_chance: number;
   baseline_open_chance: number;
   scales_with_treasure_hunter: boolean;
+  relic_buff_id: string | null;
+  relic_buff_name: string | null;
 }
 
 interface TreasureHunterStats {
@@ -180,7 +182,7 @@ export const load: PageServerLoad = (): TreasureHunterPageData => {
   }
 
   const rewardItemLookup = db.prepare(
-    `SELECT id, name, item_type, quality, tooltip_html FROM items WHERE id = ?`,
+    `SELECT id, name, item_type, quality, tooltip_html, relic_buff_id, relic_buff_name FROM items WHERE id = ?`,
   );
 
   const buriedChestRewards = (
@@ -199,6 +201,8 @@ export const load: PageServerLoad = (): TreasureHunterPageData => {
         item_type: string | null;
         quality: number;
         tooltip_html: string | null;
+        relic_buff_id: string | null;
+        relic_buff_name: string | null;
       } | null;
 
       if (!item) {
@@ -217,6 +221,8 @@ export const load: PageServerLoad = (): TreasureHunterPageData => {
         base_roll_chance: reward.probability,
         baseline_open_chance: reward.actual_drop_chance,
         scales_with_treasure_hunter: item.item_type === "relic",
+        relic_buff_id: item.relic_buff_id,
+        relic_buff_name: item.relic_buff_name,
       };
     })
     .sort((a, b) => a.roll_order - b.roll_order);
