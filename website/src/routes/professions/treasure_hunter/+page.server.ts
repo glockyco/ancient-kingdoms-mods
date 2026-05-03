@@ -22,16 +22,6 @@ interface TreasureMapRow {
   reward_item_tooltip: string | null;
 }
 
-interface RandomMapDropSummary {
-  monster_count: number;
-  min_drop_rate: number;
-  max_drop_rate: number;
-  drop_rate_groups: {
-    drop_rate: number;
-    monster_count: number;
-  }[];
-}
-
 interface ChestRewardRow {
   item_id: string;
   item_name: string;
@@ -69,7 +59,6 @@ interface TreasureHunterPageData {
   };
   stats: TreasureHunterStats;
   treasureMaps: TreasureMapRow[];
-  randomMap: RandomMapDropSummary;
   buriedChestRewards: ChestRewardRow[];
   keyItems: Record<"random_map" | "buried_treasure_chest" | "shovel", KeyItem>;
 }
@@ -167,42 +156,6 @@ export const load: PageServerLoad = (): TreasureHunterPageData => {
     reward_item_type: map.reward_item_type,
     reward_item_tooltip: map.reward_tooltip,
   }));
-
-  const randomMapCounts = db
-    .prepare(
-      `
-    SELECT
-      COUNT(DISTINCT monster_id) AS monster_count,
-      MIN(drop_rate) AS min_drop_rate,
-      MAX(drop_rate) AS max_drop_rate
-    FROM item_sources_monster
-    WHERE item_id = 'random_map'
-  `,
-    )
-    .get() as {
-    monster_count: number;
-    min_drop_rate: number | null;
-    max_drop_rate: number | null;
-  };
-
-  const dropRateGroups = db
-    .prepare(
-      `
-    SELECT drop_rate, COUNT(DISTINCT monster_id) AS monster_count
-    FROM item_sources_monster
-    WHERE item_id = 'random_map'
-    GROUP BY drop_rate
-    ORDER BY drop_rate DESC
-  `,
-    )
-    .all() as RandomMapDropSummary["drop_rate_groups"];
-
-  const randomMap: RandomMapDropSummary = {
-    monster_count: randomMapCounts.monster_count,
-    min_drop_rate: randomMapCounts.min_drop_rate ?? 0,
-    max_drop_rate: randomMapCounts.max_drop_rate ?? 0,
-    drop_rate_groups: dropRateGroups,
-  };
 
   const buriedChestRewardJson = db
     .prepare(
@@ -307,7 +260,6 @@ export const load: PageServerLoad = (): TreasureHunterPageData => {
     profession,
     stats,
     treasureMaps,
-    randomMap,
     buriedChestRewards,
     keyItems,
   };

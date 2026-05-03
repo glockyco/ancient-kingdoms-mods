@@ -117,20 +117,6 @@ interface TreasureMapRow {
 }
 ```
 
-### `RandomMapDropSummary`
-
-```ts
-interface RandomMapDropSummary {
-  monster_count: number;
-  min_drop_rate: number;
-  max_drop_rate: number;
-  drop_rate_groups: Array<{
-    drop_rate: number;
-    monster_count: number;
-  }>;
-}
-```
-
 ### `ChestRewardRow`
 
 ```ts
@@ -287,7 +273,7 @@ Expected: each reward object includes `"roll_order"`.
 
 - [ ] **Step 1: Replace narrow page interfaces with section-shaped interfaces**
 
-Add the `TreasureMapRow`, `RandomMapDropSummary`, `ChestRewardRow`, `TreasureHunterStats`, and updated `TreasureHunterPageData` interfaces from the Data Contracts section.
+Add the `TreasureMapRow`, `ChestRewardRow`, `TreasureHunterStats`, `KeyItem`, and updated `TreasureHunterPageData` interfaces from the Data Contracts section.
 
 The resulting `TreasureHunterPageData` shape should be:
 
@@ -310,7 +296,6 @@ interface TreasureHunterPageData {
   };
   stats: TreasureHunterStats;
   treasureMaps: TreasureMapRow[];
-  randomMap: RandomMapDropSummary;
   buriedChestRewards: ChestRewardRow[];
   keyItems: Record<"random_map" | "buried_treasure_chest" | "shovel", KeyItem>;
 }
@@ -370,44 +355,9 @@ return {
 };
 ```
 
-- [ ] **Step 3: Query Random Map summary**
+- [ ] **Step 3: (removed) Random Map summary queries**
 
-Add queries for:
-
-```sql
-SELECT COUNT(DISTINCT monster_id) AS monster_count,
-       MIN(drop_rate) AS min_drop_rate,
-       MAX(drop_rate) AS max_drop_rate
-FROM item_sources_monster
-WHERE item_id = 'random_map'
-```
-
-```sql
-SELECT drop_rate, COUNT(DISTINCT monster_id) AS monster_count
-FROM item_sources_monster
-WHERE item_id = 'random_map'
-GROUP BY drop_rate
-ORDER BY drop_rate DESC
-```
-
-```sql
-SELECT src.monster_id, m.name AS monster_name, m.level AS monster_level, src.drop_rate
-FROM item_sources_monster src
-JOIN monsters m ON m.id = src.monster_id
-WHERE src.item_id = 'random_map'
-  AND src.drop_rate >= 0.04
-ORDER BY src.drop_rate DESC, m.level DESC, m.name ASC
-```
-
-```sql
-SELECT DISTINCT z.name AS zone_name
-FROM item_zones_obtainable izo
-JOIN zones z ON z.id = izo.zone_id
-WHERE izo.item_id = 'random_map'
-ORDER BY z.name
-```
-
-Return these as `RandomMapDropSummary`.
+Earlier iterations queried Random Map source counts and drop rate groups for a Map Acquisition card. The profession page now relies on the Random Map item page for that detail and only needs `data.keyItems.random_map` (loaded in Task 6) plus the `MapLink` shortcut in How It Works. No Random Map source query is needed in this loader.
 
 - [ ] **Step 4: Query Buried Treasure Chest rewards**
 
@@ -499,8 +449,6 @@ Add:
 import ItemLink from "$lib/components/ItemLink.svelte";
 import MapLink from "$lib/components/MapLink.svelte";
 import CalculatorIcon from "@lucide/svelte/icons/calculator";
-import Dices from "@lucide/svelte/icons/dices";
-import Sparkles from "@lucide/svelte/icons/sparkles";
 ```
 
 Keep existing `Seo`, `Breadcrumb`, `Trophy`, `MapIcon`, and `Gem` imports as needed.
@@ -827,69 +775,17 @@ Run the dev server or build preview and check:
 
 ---
 
-## Task 6: Add Acquisition, Random Map Link, Treasure Maps, and Source Sections
+## Task 6: Treasure Maps Table and Scope Boundary
 
 **Files:**
 
 - Modify: `website/src/routes/professions/treasure_hunter/+page.svelte`
 
-- [ ] **Step 1: Add acquisition and bonus cards**
+- [ ] **Step 1: Do not add Map Acquisition / Treasure Hunter Bonus sections**
 
-Add a two-column section after calculator:
+Earlier iterations added separate `Map Acquisition` and `Treasure Hunter Bonus` cards. Review removed them: the How It Works section (with the Random Map ItemLink and `MapLink entityType="item"` shortcut in step 1, and the Treasure Hunter anchor link to `#calculator` in step 5) plus the Calculator card already cover the same content. Drop rate detail belongs on the Random Map item page, not on this profession page.
 
-```svelte
-<section class="grid gap-6 lg:grid-cols-2">
-  <article class="rounded-lg border p-5">
-    <h2 class="flex items-center gap-2 text-xl font-semibold">
-      <Dices class="h-5 w-5 text-purple-500" />
-      Map Acquisition
-    </h2>
-    <!-- Random Map details -->
-  </article>
-
-  <article class="rounded-lg border p-5">
-    <h2 class="flex items-center gap-2 text-xl font-semibold">
-      <Sparkles class="h-5 w-5 text-amber-500" />
-      Treasure Hunter Bonus
-    </h2>
-    <!-- formula and affects/does-not-affect lists -->
-  </article>
-</section>
-```
-
-- [ ] **Step 2: Add Random Map item link and map link**
-
-Inside Map Acquisition, include:
-
-```svelte
-<div class="mt-4 rounded-md border bg-muted/10 p-3">
-  <div class="flex flex-wrap items-center justify-between gap-3">
-    <ItemLink itemId="random_map" itemName="Random Map" />
-    <MapLink entityId="random_map" entityType="item" compact />
-  </div>
-  <p class="mt-2 text-sm text-muted-foreground">
-    Drops from {data.randomMap.monster_count} monster sources at {formatPercent(data.randomMap.min_drop_rate, 0)}–{formatPercent(data.randomMap.max_drop_rate, 0)}. Each drop gives one of {data.treasureMaps.length} treasure maps.
-  </p>
-</div>
-```
-
-This satisfies the user request for a Random Map map link that shows all map-drop locations.
-
-- [ ] **Step 3: Add drop-rate group summary**
-
-Render `data.randomMap.drop_rate_groups`:
-
-```svelte
-<div class="mt-3 flex flex-wrap gap-2">
-  {#each data.randomMap.drop_rate_groups as group (group.drop_rate)}
-    <span class="rounded-full border bg-muted/40 px-2 py-0.5 text-xs">
-      {formatPercent(group.drop_rate, 0)}: {group.monster_count} monsters
-    </span>
-  {/each}
-</div>
-```
-
-- [ ] **Step 4: Add treasure map table**
+- [ ] **Step 2: Add treasure map table**
 
 Add:
 
@@ -912,10 +808,11 @@ Columns:
 
 No filters in the first implementation. There are 8 repeatable rows; scanability is better than extra controls. Revisit filters only if the discussion after first build asks for them.
 
-- [ ] **Step 5: Do not add a Random Map Sources section**
+- [ ] **Step 3: Do not add a Random Map Sources section**
 
-Keep Random Map source detail collapsed into the Map Acquisition card. The dedicated bottom section was removed after review; the Random Map item map link remains the preferred way to inspect all source locations.
-- [ ] **Step 6: Keep one-time treasure artifacts off the page**
+Random Map source detail belongs on the Random Map item page. The Random Map `MapLink` in step 1 of How It Works covers map-only spelunking.
+
+- [ ] **Step 4: Keep one-time treasure artifacts off the page**
 
 Do not render Red Scabbard Map or a `Unique Treasure` section. This page is scoped to repeatable Treasure Hunter mechanics: Random Map outcomes, Buried Treasure Chest rewards, skill gain, and relic odds.
 

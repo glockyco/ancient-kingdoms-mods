@@ -8,9 +8,7 @@
     sortChestRewardsForDisplay,
   } from "$lib/utils/treasureHunter.js";
   import CalculatorIcon from "@lucide/svelte/icons/calculator";
-  import Dices from "@lucide/svelte/icons/dices";
   import MapIcon from "@lucide/svelte/icons/map";
-  import Sparkles from "@lucide/svelte/icons/sparkles";
   import Trophy from "@lucide/svelte/icons/trophy";
   import type { PageData } from "./$types";
 
@@ -141,7 +139,7 @@
             <MapLink entityId="random_map" entityType="item" compact />
           </div>
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            Monsters drop Random Map. Each drop gives one of
+            Each drop gives one of
             <a
               href="#treasure-maps"
               class="text-blue-600 hover:underline dark:text-blue-400"
@@ -341,71 +339,6 @@
       </div>
     </div>
   </section>
-
-  <section id="map-acquisition" class="grid gap-6 lg:grid-cols-2">
-    <article class="rounded-lg border p-5">
-      <h2 class="flex items-center gap-2 text-xl font-semibold">
-        <Dices class="h-5 w-5 text-purple-500" />
-        Map Acquisition
-      </h2>
-
-      <div class="mt-4 rounded-md border bg-muted/10 p-3">
-        <div class="flex flex-wrap items-center justify-between gap-3">
-          <ItemLink itemId="random_map" itemName="Random Map" />
-          <MapLink entityId="random_map" entityType="item" compact />
-        </div>
-        <p class="mt-2 text-sm leading-6 text-muted-foreground">
-          Drops from {data.randomMap.monster_count} monster sources at
-          {formatPercent(data.randomMap.min_drop_rate, 0)}–{formatPercent(
-            data.randomMap.max_drop_rate,
-            0,
-          )}. Each drop gives one of {data.treasureMaps.length} treasure maps.
-        </p>
-        <div class="mt-3 flex flex-wrap gap-2">
-          {#each data.randomMap.drop_rate_groups as group (group.drop_rate)}
-            <span class="rounded-full border bg-muted/40 px-2 py-0.5 text-xs">
-              {formatPercent(group.drop_rate, 0)}: {group.monster_count}
-              monsters
-            </span>
-          {/each}
-        </div>
-      </div>
-    </article>
-
-    <article class="rounded-lg border p-5">
-      <h2 class="flex items-center gap-2 text-xl font-semibold">
-        <Sparkles class="h-5 w-5 text-amber-500" />
-        Treasure Hunter Bonus
-      </h2>
-
-      <div class="mt-4 space-y-4 text-sm leading-6 text-muted-foreground">
-        <p>
-          Treasure Hunter improves relic reward chances in a Buried Treasure
-          Chest. At 100% skill, each relic gains +10 percentage points. The
-          calculator estimates the per-chest result.
-        </p>
-
-        <div class="grid gap-3 sm:grid-cols-2">
-          <div class="rounded-md border bg-muted/10 p-3">
-            <div class="font-medium text-foreground">Improves</div>
-            <ul class="mt-2 list-disc space-y-1 pl-5">
-              <li>Relic rewards in Buried Treasure Chest</li>
-              <li>The relic chances shown in the calculator</li>
-            </ul>
-          </div>
-          <div class="rounded-md border bg-muted/10 p-3">
-            <div class="font-medium text-foreground">Doesn't change</div>
-            <ul class="mt-2 list-disc space-y-1 pl-5">
-              <li>Random Map drop rates</li>
-              <li>Which treasure map a Random Map gives</li>
-              <li>Potions, gems, and scrolls from the chest</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </article>
-  </section>
-
   <section id="treasure-maps" class="space-y-4">
     <h2 class="flex items-center gap-2 text-xl font-semibold">
       <MapIcon class="h-5 w-5 text-amber-500" />
