@@ -174,7 +174,7 @@
           <!-- Source: server-scripts/TreasureLocation.cs:15,31-35 — treasure locations require the matching map in inventory. -->
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
             Each treasure map points to one dig site. Use the clue or the map
-            links below to find it.
+            links on this page to find it.
           </p>
         </div>
       </div>
