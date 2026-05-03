@@ -714,7 +714,7 @@ Use:
 
 - [ ] **Step 3: Add a Change-column footnote, no other explainer copy**
 
-Earlier iterations included a paragraph below the summary cards explaining "+10 pp" and "the table focuses on relics". Skip that paragraph — the live `Relic chance bonus` tile already shows the bonus value, the `At selected skill` column header already names what the column does, and step 5 of How It Works already states that Treasure Hunter improves relic odds. The one targeted exception is a short footnote inside the table's bordered container that explains why the `Change` values do not equal the per-roll `+10 pp` bonus tile (per-chest vs per-roll, plus the up-to-3 unique-reward slot competition). Keep the footnote ≤2 sentences with no semicolons.
+Earlier iterations included a paragraph below the summary cards explaining "+10 pp" and "the table focuses on relics". Skip that paragraph — the live `Relic chance bonus` tile already shows the bonus value, the `At selected skill` column header already names what the column does, and step 5 of How It Works already states that Treasure Hunter improves relic odds. The one targeted exception is a short footnote inside the table's bordered container that explains why `Change` values exceed the `+10 pp` per-roll tile: each chest rolls every reward across up to 10 passes until three unique rewards fill the slots (`server-scripts/ChestItem.cs:24-66`), so the per-roll bonus compounds across passes into a larger per-chest gain. Keep the footnote ≤2 sentences with no semicolons, and use `text-sm` (not `text-xs`) so it stays readable.
 
 - [ ] **Step 4: Add desktop reward table**
 

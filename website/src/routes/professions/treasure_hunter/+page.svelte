@@ -333,11 +333,11 @@
           </tbody>
         </table>
       </div>
-      <p class="border-t bg-muted/20 px-3 py-2 text-xs text-muted-foreground">
-        Change is the simulated per-chest open chance, not the per-roll bonus.
-        Each chest only awards up to {data.buriedChestRewardLimit} unique rewards,
-        so high-baseline relics gain little and rare relics gain the most as Treasure
-        Hunter shifts slot competition toward relics.
+      <p class="border-t bg-muted/20 px-3 py-2 text-sm text-muted-foreground">
+        The Relic chance bonus is the +10 pp added to every relic roll. Each
+        chest rolls every reward up to 10 times before three unique rewards fill
+        the slots, so repeated rolls compound that per-roll bonus into a larger
+        per-chest gain.
       </p>
     </div>
   </section>
