@@ -523,14 +523,14 @@ finalDamage = damage − reduction</pre>
                 ></tr
               >
               <tr class="border-b border-border/40"
-                ><td class="py-1 pr-4 font-mono text-xs">merc_wis</td><td
-                  class="py-1 text-muted-foreground">Mercenary pets</td
+                ><td class="py-1 pr-4 font-mono text-xs">player_wis_con_avg</td
+                ><td class="py-1 text-muted-foreground"
+                  >Area buff + is_mercenary_skill</td
                 ></tr
               >
               <tr class="border-b border-border/40"
-                ><td class="py-1 pr-4 font-mono text-xs">player_charisma</td><td
-                  class="py-1 text-muted-foreground"
-                  >Area buff + is_mercenary_skill</td
+                ><td class="py-1 pr-4 font-mono text-xs">merc_wis</td><td
+                  class="py-1 text-muted-foreground">Mercenary pets</td
                 ></tr
               >
               <tr

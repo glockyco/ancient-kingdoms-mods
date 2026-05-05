@@ -183,11 +183,14 @@
       hasAttributeBonuses,
   );
 
-  // Fields that actually scale with WIS at runtime (Buff.cs — bonusAttribute applied)
-  // Excludes: speed_bonus, damage_percent_bonus, magic_damage_percent_bonus, haste_bonus,
-  // spell_haste_bonus, critical_chance_bonus, accuracy_bonus, block_chance_bonus,
-  // mana_max_bonus, energy_max_bonus, *_percent_bonus, cooldown_reduction_percent, heal_on_hit_percent,
-  // positive damage_bonus / magic_damage_bonus (only negative values use bonusAttribute)
+  // Fields that actually scale with WIS (or, for Leadership, (WIS+CON)/2) at runtime
+  // via Buff.cs bonusAttribute. Excludes: speed_bonus, damage_percent_bonus,
+  // magic_damage_percent_bonus, haste_bonus, spell_haste_bonus, critical_chance_bonus,
+  // accuracy_bonus, block_chance_bonus, mana_max_bonus, energy_max_bonus,
+  // *_percent_bonus, cooldown_reduction_percent, heal_on_hit_percent.
+  // damage_bonus / magic_damage_bonus only use bonusAttribute on the negative branch
+  // (Buff.cs:60-62, 80-82) — except Leadership, where positive values also scale
+  // (Buff.cs:64-67, 84-87 — name-keyed special case).
   const hasWisScaledBonuses = $derived(
     hasNonZeroField(skill.health_max_bonus) ||
       hasNonZeroField(skill.defense_bonus) ||
@@ -198,7 +201,10 @@
       hasNonZeroField(skill.disease_resist_bonus) ||
       hasNonZeroField(skill.healing_per_second_bonus) ||
       hasNonZeroField(skill.damage_shield) ||
-      hasNonZeroField(skill.ward_bonus),
+      hasNonZeroField(skill.ward_bonus) ||
+      (skill.id === "leadership" &&
+        (hasNonZeroField(skill.damage_bonus) ||
+          hasNonZeroField(skill.magic_damage_bonus))),
   );
 
   const hasCrowdControl = $derived(
@@ -2001,11 +2007,10 @@
                     <p class="font-mono">
                       bonusAttribute = WIS &times; 3 (Ranger wisdom tripled)
                     </p>
-                  {:else if ctx.bonusAttrSource === "player_charisma"}
-                    <!-- Source: AreaBuffSkill.cs:47 — isMercenarySkill → player4.charisma.value -->
+                  {:else if ctx.bonusAttrSource === "player_wis_con_avg"}
+                    <!-- Source: AreaBuffSkill.cs:46-50 — isMercenarySkill → num2 = round((WIS+CON)/2) -->
                     <p class="font-mono">
-                      bonusAttribute = caster CHA (area buff targeting mercs
-                      scales with your Charisma)
+                      bonusAttribute = round((WIS + CON) / 2)
                     </p>
                   {:else if ctx.bonusAttrSource === "merc_wis"}
                     <!-- Source: TargetBuffSkill.cs:419 / AreaBuffSkill.cs:25 — pet3.wisdom.value -->
@@ -2052,6 +2057,16 @@
                         skillValue(level) &times; (1 + min(bonusAttribute
                         &times; 0.004, 5.0))
                       </dd>
+                    {/if}
+                    {#if skill.id === "leadership" && hasNonZeroField(skill.damage_bonus)}
+                      <!-- Source: Buff.cs:64-67 — Leadership-only: damageBonus.Get(level) + bonusAttribute on positive branch -->
+                      <dt class="text-muted-foreground">Damage</dt>
+                      <dd>skillValue(level) + bonusAttribute</dd>
+                    {/if}
+                    {#if skill.id === "leadership" && hasNonZeroField(skill.magic_damage_bonus)}
+                      <!-- Source: Buff.cs:84-87 — Leadership-only: magicDamageBonus.Get(level) + bonusAttribute on positive branch -->
+                      <dt class="text-muted-foreground">Magic Damage</dt>
+                      <dd>skillValue(level) + bonusAttribute</dd>
                     {/if}
                   </dl>
                 {/if}

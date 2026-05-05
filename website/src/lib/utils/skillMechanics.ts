@@ -405,8 +405,8 @@ export function computeMechanicsSpec(
       const label = `${cls.charAt(0).toUpperCase() + cls.slice(1)} (player)`;
       let src: BuffBonusAttrSource;
       if (isAreaBuff && skill.is_mercenary_skill) {
-        // Source: AreaBuffSkill.cs:43-47 — isMercenarySkill overrides num2 = player4.charisma.value
-        src = "player_charisma";
+        // Source: AreaBuffSkill.cs:46-50 — isMercenarySkill → num2 = round((WIS+CON)/2)
+        src = "player_wis_con_avg";
       } else if (isAreaBuff) {
         // Source: AreaBuffSkill.cs:25 — plain player.wisdom.value; NO Ranger×3 for area buffs
         src = "player_wis";

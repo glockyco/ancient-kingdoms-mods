@@ -283,7 +283,7 @@ export type BuffBonusAttrSource =
   | "player_ranger_wis" // WIS×3 (TargetBuffSkill only, not AreaBuffSkill) — e.g. ancestral_spirits
   | "player_wis" // WIS (TargetBuffSkill non-Ranger, or any AreaBuffSkill player) — e.g. inspiration
   | "merc_wis" // merc's own WIS — e.g. spirit_of_wolf
-  | "player_charisma" // player CHA (AreaBuffSkill + is_mercenary_skill override) — only skill: leadership (its non-zero fields don't respond to bonusAttribute when positive, so CHA has no practical effect currently)
+  | "player_wis_con_avg" // round((WIS+CON)/2) — only Leadership; also adds bonusAttribute to its positive damage_bonus & magic_damage_bonus (Buff.cs:64-67, 84-87) and to all defensive buff fields. Source: AreaBuffSkill.cs:46-50
   | "none"; // monster/NPC: 0 (only shown when player/merc also casts the skill)
 
 export interface BuffContext {
