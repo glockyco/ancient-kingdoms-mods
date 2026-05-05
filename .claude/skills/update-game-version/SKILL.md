@@ -66,8 +66,29 @@ cd build-pipeline && uv run compendium build
 
 # 6. Apply all manual website changes (mechanic updates, removed features, etc.)
 
-# 7. Update game version on home page — always last, as a "seal" on the update
-#    website/src/routes/+page.svelte — hardcoded version string
+# 7. Refresh mechanics snapshots
+#    Patches that change skill mechanics, scaling, or buff/debuff behavior shift the
+#    rendered mechanics cards on /skills/<id> pages. The committed snapshots in
+#    website/test-fixtures/mechanics-snapshots/ become stale and any subsequent
+#    contributor running snapshot-mechanics.mjs gets a misleading regression signal.
+#    Always refresh as part of the version bump, even when no skill changes are
+#    obvious from the changelog — server-script tweaks often surface here.
+cd website && pnpm build && node scripts/snapshot-mechanics.mjs
+#    Review every reported diff. Each one MUST correspond to either:
+#      - an intended manual website change in step 6, or
+#      - a game mechanics change visible in the server-scripts diff.
+#    Unexplained diffs are a signal to stop and investigate before accepting.
+#    Once every diff is accounted for, accept them as the new baseline:
+node scripts/snapshot-mechanics.mjs --update
+#    Stage `website/test-fixtures/mechanics-snapshots/` alongside the related
+#    code change (the mechanics-card edit, the formatSkillEffect.ts update, etc.)
+#    so each commit's snapshot delta is justified by code in the same commit.
+
+# 8. Update game version on home page — always last, as a "seal" on the update
+#    website/src/lib/constants/version.ts — set COMPENDIUM_VERSION and COMPENDIUM_DATE
+#    The home-page banner reads these and compares against the live Steam version
+#    via /api/game-version, so getting both fields right matters: a stale DATE here
+#    becomes visible to every visitor.
 ```
 
 Server scripts are **reference only** — for understanding game mechanics, not for data export.
@@ -134,5 +155,5 @@ Search for `Source: server-scripts/` comments to find all hardcoded values. Key 
 - `website/src/routes/items/[id]/+page.svelte` — item mechanics (Radiant Aether, economy prices, set thresholds)
 - `website/src/lib/utils/format.ts` — altar tier thresholds, gathering respawn rules
 - `website/src/lib/utils/roles.ts` — NPC role descriptions with prices/costs
-- `website/src/routes/+page.svelte` — game version string
+- `website/src/lib/constants/version.ts` — game version string and patch date used by the home-page banner
 - `website/src/routes/mechanics/combat/+page.svelte` — combat formula reference and mechanic subsections
