@@ -6,6 +6,7 @@
     "dev": "pnpm --filter website dev",
     "build": "pnpm --filter website build",
     "preview": "pnpm --filter website preview",
+    "cf-deploy": "pnpm --filter website cf-deploy",
     "lint": "pnpm lint:ts && pnpm lint:py",
     "lint:ts": "pnpm --filter website lint",
     "lint:py": "cd build-pipeline && uv run ruff check .",
