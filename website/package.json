@@ -20,6 +20,7 @@
     "cf-deploy": "wrangler deploy"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260505.1",
     "@eslint/compat": "^2.0.0",
     "@eslint/js": "^9.39.1",
     "@internationalized/date": "^3.10.0",
