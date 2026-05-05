@@ -16,6 +16,7 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "test": "node --test src/lib/version-compare.test.ts src/lib/steam-news-parser.test.ts",
     "cf-deploy": "wrangler deploy"
   },
   "devDependencies": {
