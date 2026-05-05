@@ -1,131 +1,35 @@
-import Database from "better-sqlite3";
 import type { PageServerLoad } from "./$types";
-import { DB_STATIC_PATH } from "$lib/constants/constants";
+import { HOME_COUNTS, type HomeCounts } from "$lib/generated/home-counts";
+import { fetchGameVersion } from "$lib/server/game-version";
+import type { GameVersionResult } from "$lib/steam-news-parser";
 
-export const prerender = true;
+// Opt out of prerendering so the live game version is fetched fresh on each
+// edge cache miss instead of being baked in at build time. Static counts are
+// snapshotted at prebuild time (see scripts/generate-home-counts.mjs) so this
+// load runs without touching SQLite — required because Workers can't use
+// better-sqlite3.
+export const prerender = false;
 
 interface HomePageData {
-  counts: {
-    items: number;
-    monsters: number;
-    npcs: number;
-    classes: number;
-    skills: number;
-    pets: number;
-    zones: number;
-    quests: number;
-    altars: number;
-    professions: number;
-    gatheringResources: number;
-    recipes: number;
-    chests: number;
-  };
+  counts: HomeCounts;
+  live: GameVersionResult;
 }
 
-export const load: PageServerLoad = (): HomePageData => {
-  const db = new Database(DB_STATIC_PATH, { readonly: true });
+export const load: PageServerLoad = async ({
+  setHeaders,
+}): Promise<HomePageData> => {
+  const live = await fetchGameVersion();
 
-  const itemCount = (
-    db.prepare("SELECT COUNT(*) as count FROM items").get() as { count: number }
-  ).count;
+  // Edge-cache the rendered HTML. s-maxage matches the Steam upstream cache
+  // TTL so we don't render the page more often than the data changes; the
+  // shorter max-age keeps the user-agent's local copy snappy without showing
+  // truly stale data on back-forward navigations. On upstream failure we
+  // shorten both windows so the next visitor recovers quickly.
+  setHeaders({
+    "cache-control": live.ok
+      ? "public, s-maxage=600, max-age=120"
+      : "public, s-maxage=60, max-age=30",
+  });
 
-  const zoneCount = (
-    db.prepare("SELECT COUNT(*) as count FROM zones").get() as { count: number }
-  ).count;
-
-  const monsterCount = (
-    db
-      .prepare("SELECT COUNT(*) as count FROM monsters WHERE is_dummy = 0")
-      .get() as { count: number }
-  ).count;
-
-  const npcCount = (
-    db.prepare("SELECT COUNT(*) as count FROM npcs").get() as { count: number }
-  ).count;
-
-  const questCount = (
-    db.prepare("SELECT COUNT(*) as count FROM quests").get() as {
-      count: number;
-    }
-  ).count;
-
-  const alchemyCount = (
-    db.prepare("SELECT COUNT(*) as count FROM alchemy_recipes").get() as {
-      count: number;
-    }
-  ).count;
-
-  const craftingCount = (
-    db.prepare("SELECT COUNT(*) as count FROM crafting_recipes").get() as {
-      count: number;
-    }
-  ).count;
-
-  const scribingCount = (
-    db.prepare("SELECT COUNT(*) as count FROM scribing_recipes").get() as {
-      count: number;
-    }
-  ).count;
-
-  const gatheringResourceCount = (
-    db.prepare("SELECT COUNT(*) as count FROM gathering_resources").get() as {
-      count: number;
-    }
-  ).count;
-
-  const chestCount = (
-    db.prepare("SELECT COUNT(*) as count FROM chests").get() as {
-      count: number;
-    }
-  ).count;
-
-  const professionCount = (
-    db.prepare("SELECT COUNT(*) as count FROM professions").get() as {
-      count: number;
-    }
-  ).count;
-
-  const altarCount = (
-    db.prepare("SELECT COUNT(*) as count FROM altars").get() as {
-      count: number;
-    }
-  ).count;
-
-  const classCount = (
-    db.prepare("SELECT COUNT(*) as count FROM classes").get() as {
-      count: number;
-    }
-  ).count;
-
-  const skillCount = (
-    db.prepare("SELECT COUNT(*) as count FROM skills").get() as {
-      count: number;
-    }
-  ).count;
-
-  const petCount = (
-    db.prepare("SELECT COUNT(*) as count FROM pets").get() as {
-      count: number;
-    }
-  ).count;
-
-  db.close();
-
-  return {
-    counts: {
-      items: itemCount,
-      monsters: monsterCount,
-      npcs: npcCount,
-      classes: classCount,
-      skills: skillCount,
-      pets: petCount,
-      zones: zoneCount,
-      quests: questCount,
-      altars: altarCount,
-      professions: professionCount,
-      gatheringResources: gatheringResourceCount,
-      recipes: alchemyCount + craftingCount + scribingCount,
-      chests: chestCount,
-    },
-  };
+  return { counts: HOME_COUNTS, live };
 };

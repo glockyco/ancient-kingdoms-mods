@@ -12,6 +12,7 @@ node_modules
 /static/compendium.db*
 /static/tiles/
 /static/images/
+/src/lib/generated/
 
 # OS
 .DS_Store

@@ -1,7 +1,13 @@
 name = "ancient-kingdoms-compendium"
-main = "worker/index.ts"
+main = ".svelte-kit/cloudflare/_worker.js"
 compatibility_date = "2025-11-27"
+compatibility_flags = ["nodejs_compat"]
 
+# adapter-cloudflare emits both the Worker entry and the static asset bundle
+# into .svelte-kit/cloudflare. Files prefixed with `_` (`_worker.js`,
+# `_routes.json`, `_headers`, `_redirects`) are excluded from the asset
+# manifest by Cloudflare automatically; the rest are served as static assets
+# without invoking the Worker.
 [assets]
-directory = "./build"
+directory = ".svelte-kit/cloudflare"
 binding = "ASSETS"
