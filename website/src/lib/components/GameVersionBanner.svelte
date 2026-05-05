@@ -64,7 +64,7 @@
 </script>
 
 <p
-  class="text-sm text-muted-foreground flex flex-col sm:flex-row sm:items-center sm:justify-center sm:gap-2"
+  class="text-sm text-muted-foreground flex flex-col items-center sm:flex-row sm:justify-center sm:gap-2"
 >
   <span>Updated for v{COMPENDIUM_VERSION} ({COMPENDIUM_DATE})</span>
   {#if live?.ok}
