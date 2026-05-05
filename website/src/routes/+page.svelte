@@ -23,6 +23,7 @@
   import Star from "@lucide/svelte/icons/star";
   import Cat from "@lucide/svelte/icons/cat";
   import ArrowRight from "@lucide/svelte/icons/arrow-right";
+  import GameVersionBanner from "$lib/components/GameVersionBanner.svelte";
 
   let { data } = $props();
 
@@ -78,9 +79,7 @@
     <p class="text-xl text-muted-foreground">
       Fan-made wiki, interactive world map, and game database
     </p>
-    <p class="text-sm text-muted-foreground">
-      Updated for v0.9.14.3 (2026-04-29)
-    </p>
+    <GameVersionBanner />
   </div>
 
   <!-- Browse Section -->
