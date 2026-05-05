@@ -79,7 +79,7 @@
     <p class="text-xl text-muted-foreground">
       Fan-made wiki, interactive world map, and game database
     </p>
-    <GameVersionBanner live={data.live} />
+    <GameVersionBanner live={data.live} checkedAt={data.checkedAt} />
   </div>
 
   <!-- Browse Section -->

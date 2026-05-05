@@ -85,10 +85,10 @@ node scripts/snapshot-mechanics.mjs --update
 #    so each commit's snapshot delta is justified by code in the same commit.
 
 # 8. Update game version on home page — always last, as a "seal" on the update
-#    website/src/lib/constants/version.ts — set COMPENDIUM_VERSION and COMPENDIUM_DATE
-#    The home-page banner reads these and compares against the live Steam version
-#    via /api/game-version, so getting both fields right matters: a stale DATE here
-#    becomes visible to every visitor.
+#    website/src/lib/constants/version.ts — set COMPENDIUM_VERSION
+#    The home-page banner reads this and compares against the live Steam version
+#    fetched server-side, so getting it right matters: a stale value here
+#    becomes visible to every visitor as an amber "behind" warning.
 ```
 
 Server scripts are **reference only** — for understanding game mechanics, not for data export.

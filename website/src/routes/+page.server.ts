@@ -13,12 +13,21 @@ export const prerender = false;
 interface HomePageData {
   counts: HomeCounts;
   live: GameVersionResult;
+  checkedAt: string;
 }
 
 export const load: PageServerLoad = async ({
   setHeaders,
 }): Promise<HomePageData> => {
   const live = await fetchGameVersion();
+
+  // ISO date (YYYY-MM-DD) of the render. Surfaced to users as "Checked on
+  // …" so they can see the page is live, and exposed via a `<time datetime>`
+  // element so crawlers latch onto the freshness signal. UTC is correct
+  // here: Cloudflare Workers run in UTC, the value rolls over at most once
+  // per s-maxage window, and YYYY-MM-DD is unambiguous regardless of the
+  // viewer's locale.
+  const checkedAt = new Date().toISOString().slice(0, 10);
 
   // Edge-cache the rendered HTML. s-maxage matches the Steam upstream cache
   // TTL so we don't render the page more often than the data changes; the
@@ -31,5 +40,5 @@ export const load: PageServerLoad = async ({
       : "public, s-maxage=60, max-age=30",
   });
 
-  return { counts: HOME_COUNTS, live };
+  return { counts: HOME_COUNTS, live, checkedAt };
 };
