@@ -1,7 +1,16 @@
-name = "ancient-kingdoms-compendium"
+name = "ancient-kingdoms-compendium-site"
 main = ".svelte-kit/cloudflare/_worker.js"
 compatibility_date = "2025-11-27"
 compatibility_flags = ["nodejs_compat"]
+
+# Production lives on the custom domain. workers.dev preview is disabled so the
+# old `ancient-kingdoms-compendium.wowmuch1.workers.dev` hostname continues to
+# belong to the redirect-only Worker (see wrangler.redirect.toml), not this one.
+workers_dev = false
+
+[[routes]]
+pattern = "ancient-kingdoms.compendiums.org"
+custom_domain = true
 
 # adapter-cloudflare emits both the Worker entry and the static asset bundle
 # into .svelte-kit/cloudflare. Files prefixed with `_` (`_worker.js`,

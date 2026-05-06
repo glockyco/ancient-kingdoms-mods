@@ -4,7 +4,7 @@ Tools and website for maintaining the Ancient Kingdoms Compendium: exporting gam
 
 ## Links
 
-- Compendium: <https://ancient-kingdoms-compendium.wowmuch1.workers.dev>
+- Compendium: <https://ancient-kingdoms.compendiums.org>
 - Steam guide: <https://steamcommunity.com/sharedfiles/filedetails/?id=3616580411>
 - Ko-fi: <https://ko-fi.com/wowmuch>
 

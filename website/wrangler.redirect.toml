@@ -1,0 +1,12 @@
+# Redirect-only Worker that owns the legacy hostname
+# `ancient-kingdoms-compendium.wowmuch1.workers.dev`. The Worker name MUST stay
+# `ancient-kingdoms-compendium` because workers.dev URLs are derived from the
+# Worker name; renaming would orphan inbound links and indexed pages.
+#
+# Deploy with: pnpm -C website cf-deploy:redirect
+# Deploy this ONLY after the new custom domain (see wrangler.toml) is verified.
+name = "ancient-kingdoms-compendium"
+main = "redirect-worker.ts"
+compatibility_date = "2025-11-27"
+
+workers_dev = true

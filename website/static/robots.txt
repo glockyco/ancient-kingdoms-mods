@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://ancient-kingdoms-compendium.wowmuch1.workers.dev/sitemap.xml
+Sitemap: https://ancient-kingdoms.compendiums.org/sitemap.xml

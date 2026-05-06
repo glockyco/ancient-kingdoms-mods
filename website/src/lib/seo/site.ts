@@ -1,13 +1,11 @@
 /**
  * Canonical site identity for SEO.
  *
- * Values are deliberately hardcoded: the deploy target is the Cloudflare
- * Workers preview URL and there is no custom domain. Updating either constant
- * here updates every <Seo> head, the sitemap, and OG/Twitter URLs in lockstep.
+ * Values are deliberately hardcoded so updating either constant here updates
+ * every <Seo> head, the sitemap, and OG/Twitter URLs in lockstep.
  */
 
-export const SITE_URL =
-  "https://ancient-kingdoms-compendium.wowmuch1.workers.dev";
+export const SITE_URL = "https://ancient-kingdoms.compendiums.org";
 
 export const SITE_NAME = "Ancient Kingdoms Compendium";
 
