@@ -24,6 +24,8 @@ uv run compendium stats   # Database statistics
 # DataExporter writes exported-data/visual_assets.json and exported-data/images/
 ```
 
+`uv run compendium tiles` validates the stitched screenshot source at non-excluded boss/world-boss spawn positions before replacing `website/static/tiles`. A validation failure means the screenshot export is bad; re-export screenshots from the game before retrying tile generation.
+
 Selected visual images are produced by the DataExporter runtime export as `exported-data/visual_assets.json` plus files under `exported-data/images/`. `compendium build` loads the manifest into the `visual_assets` table and copies public image files to `website/static/images/` with readable paths such as `images/monsters/zarothak_the_tormentor/primary.png`. The old standalone `visual-audit` HotRepl/UnityPy mapping pipeline is removed. Runtime findings and current exclusions are documented in `docs/visual-audit-runtime-findings.md`.
 
 Global option: `--config FILE` to override config.toml location.

@@ -159,6 +159,7 @@ uv run compendium stats
 ```
 
 Tile generation requires screenshot metadata from `MapScreenshotter` or `build-tool export --screenshots`.
+`uv run compendium tiles` validates boss/world-boss spawn coverage before publishing `website/static/tiles`; if boss positions sample as black/blank, re-run the in-game screenshot export before regenerating tiles.
 
 ### Run the website locally
 
@@ -276,6 +277,8 @@ Then rerun:
 cd build-pipeline
 uv run compendium tiles
 ```
+
+If tile generation fails with boss-position screenshot validation errors, the screenshot set is incomplete or blank around known boss/world-boss terrain. Fix the loaded mod set or game state, rerun `dotnet run --project build-tool export --screenshots`, then rerun `uv run compendium tiles`.
 
 ### Automated export says no characters are available
 

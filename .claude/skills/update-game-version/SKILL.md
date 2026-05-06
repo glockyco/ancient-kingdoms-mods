@@ -35,6 +35,8 @@ diff -b server-scripts-<old>/<file>.cs server-scripts-<new>/<file>.cs
 #    (e.g. GameManager.*, ScriptableItem on enums). Update the exporter to match before building.
 
 # 3. Build and deploy mods for the new version
+#    build-tool intentionally does NOT deploy BossMod/BossMod.Core for export runs;
+#    the deploy step also removes stale copies from the CrossOver Mods directory.
 dotnet run --project build-tool all
 
 # 4. Export fresh game data (launches game, exports JSON, quits)
@@ -59,6 +61,9 @@ dotnet run --project build-tool export --update
 # as `UnityDependencies_<unity-version>.zip`. Re-run the export after placing the file.
 
 # 4b. Regenerate map tiles — only if map changed
+#     compendium tiles validates boss/world-boss spawn coverage before replacing
+#     website/static/tiles. If validation fails, the screenshot export is bad:
+#     fix the in-game export environment and re-run step 4 with --screenshots.
 # cd build-pipeline && uv run compendium tiles
 
 # 5. Rebuild database from new exports

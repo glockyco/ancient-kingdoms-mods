@@ -12,6 +12,12 @@ using BuildTool.HotRepl;
 class Program
 {
     static string? RootDir;
+    internal static readonly ISet<string> DisabledDeploymentDllNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+    {
+        "BossMod.dll",
+        "BossMod.Core.dll",
+    };
+
     static readonly bool IsMacOS = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
 
     static int Main(string[] args)
@@ -895,6 +901,33 @@ class Program
         return failed ? 1 : 0;
     }
 
+    internal static List<string> GetDeployableModDlls(string modsDir)
+    {
+        return Directory.GetFiles(modsDir, "*.dll", SearchOption.AllDirectories)
+            .Where(f => f.Contains(Path.Combine("bin", "Release", "net6.0")))
+            .Where(f => !DisabledDeploymentDllNames.Contains(Path.GetFileName(f)))
+            .OrderBy(f => f, StringComparer.Ordinal)
+            .ToList();
+    }
+
+    internal static IReadOnlyList<string> RemoveDisabledDeploymentArtifacts(string modsPath)
+    {
+        var removed = new List<string>();
+
+        foreach (var dllName in DisabledDeploymentDllNames)
+        {
+            var path = Path.Combine(modsPath, dllName);
+            if (!File.Exists(path))
+                continue;
+
+            File.Delete(path);
+            removed.Add(path);
+        }
+
+        return removed;
+    }
+
+
     static int DeployMods()
     {
         Console.WriteLine("Deploying Ancient Kingdoms mods...");
@@ -917,12 +950,15 @@ class Program
 
         // Create mods directory if it doesn't exist
         Directory.CreateDirectory(modsPath);
+        foreach (var removedPath in RemoveDisabledDeploymentArtifacts(modsPath))
+        {
+            Console.WriteLine($"Removed disabled deployment artifact: {Path.GetFileName(removedPath)}");
+        }
 
-        // Find all built DLLs in mods/*/bin/Release/net6.0/
+
+        // Find all built DLLs in mods/*/bin/Release/net6.0/, excluding disabled mods.
         var modsDir = Path.Combine(Directory.GetCurrentDirectory(), "mods");
-        var dllFiles = Directory.GetFiles(modsDir, "*.dll", SearchOption.AllDirectories)
-            .Where(f => f.Contains(Path.Combine("bin", "Release", "net6.0")))
-            .ToList();
+        var dllFiles = GetDeployableModDlls(modsDir);
 
         if (dllFiles.Count == 0)
         {

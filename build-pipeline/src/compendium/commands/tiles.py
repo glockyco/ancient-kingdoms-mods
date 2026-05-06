@@ -18,6 +18,7 @@ World bounds: Game X [-880, 920], Z [-740, 1460]
 import json
 import math
 import shutil
+import typer
 from pathlib import Path
 
 from PIL import Image, ImageDraw
@@ -153,6 +154,169 @@ def blank_excluded_zones(
         count += 1
 
     return count
+
+
+def load_boss_spawn_validation_points(export_dir: Path) -> list[dict]:
+    """Load boss/world-boss spawn points that should have visible terrain coverage."""
+    monsters_path = export_dir / "monsters.json"
+    spawns_path = export_dir / "monster_spawns.json"
+
+    if not monsters_path.exists():
+        raise FileNotFoundError(f"Boss-position validation requires {monsters_path}")
+    if not spawns_path.exists():
+        raise FileNotFoundError(f"Boss-position validation requires {spawns_path}")
+
+    with open(monsters_path) as f:
+        monsters = {monster["id"]: monster for monster in json.load(f)}
+    with open(spawns_path) as f:
+        spawns = json.load(f)
+
+    points: list[dict] = []
+    for spawn in spawns:
+        monster = monsters.get(spawn.get("monster_id"))
+        if not monster:
+            continue
+        if not (monster.get("is_boss") or monster.get("is_world_boss")):
+            continue
+        if spawn.get("zone_id") in EXCLUDED_ZONE_IDS:
+            continue
+        if spawn.get("sub_zone_id") in EXCLUDED_ZONE_TRIGGER_IDS:
+            continue
+
+        position = spawn.get("position") or {}
+        if position.get("x") is None or position.get("y") is None:
+            continue
+
+        points.append(
+            {
+                "monster_id": monster["id"],
+                "monster_name": monster.get("name", monster["id"]),
+                "zone_id": spawn.get("zone_id", "unknown"),
+                "position_x": float(position["x"]),
+                # Exported Position.y is the game's horizontal Z axis.
+                "position_z": float(position["y"]),
+            }
+        )
+
+    return points
+
+
+def game_position_to_source_pixel(
+    position_x: float,
+    position_z: float,
+    world_bounds: dict,
+    image_size: tuple[int, int],
+) -> tuple[int, int] | None:
+    """Convert game X/Z coordinates to stitched-source pixel coordinates."""
+    world_min_x = world_bounds["min_x"]
+    world_max_x = world_bounds["max_x"]
+    world_min_z = world_bounds["min_z"]
+    world_max_z = world_bounds["max_z"]
+    world_width = world_max_x - world_min_x
+    world_depth = world_max_z - world_min_z
+
+    if world_width <= 0 or world_depth <= 0:
+        raise ValueError("World bounds must have positive width and depth")
+    if not (world_min_x <= position_x <= world_max_x):
+        return None
+    if not (world_min_z <= position_z <= world_max_z):
+        return None
+
+    image_width, image_height = image_size
+    px = int(round((position_x - world_min_x) / world_width * (image_width - 1)))
+    py = int(round((world_max_z - position_z) / world_depth * (image_height - 1)))
+    return px, py
+
+
+def sample_blank_ratio(
+    image: Image.Image,
+    center: tuple[int, int],
+    sample_radius: int,
+    black_threshold: int,
+) -> float:
+    """Return the fraction of pixels in a sample window that are near-black."""
+    center_x, center_y = center
+    left = max(0, center_x - sample_radius)
+    top = max(0, center_y - sample_radius)
+    right = min(image.size[0], center_x + sample_radius + 1)
+    bottom = min(image.size[1], center_y + sample_radius + 1)
+    crop = image.crop((left, top, right, bottom)).convert("RGB")
+    pixels = list(crop.getdata())
+    if not pixels:
+        return 1.0
+
+    blank_count = sum(
+        1
+        for red, green, blue in pixels
+        if red <= black_threshold
+        and green <= black_threshold
+        and blue <= black_threshold
+    )
+    return blank_count / len(pixels)
+
+
+def find_blank_boss_spawn_samples(
+    image: Image.Image,
+    export_dir: Path,
+    world_bounds: dict,
+    sample_radius: int = 12,
+    black_threshold: int = 8,
+    blank_ratio_threshold: float = 0.95,
+) -> list[dict]:
+    """Find boss spawn positions whose stitched screenshot sample is blank/black."""
+    failures: list[dict] = []
+    for point in load_boss_spawn_validation_points(export_dir):
+        pixel = game_position_to_source_pixel(
+            point["position_x"],
+            point["position_z"],
+            world_bounds,
+            image.size,
+        )
+        if pixel is None:
+            continue
+
+        blank_ratio = sample_blank_ratio(image, pixel, sample_radius, black_threshold)
+        if blank_ratio < blank_ratio_threshold:
+            continue
+
+        failures.append(
+            {
+                **point,
+                "pixel_x": pixel[0],
+                "pixel_y": pixel[1],
+                "blank_ratio": round(blank_ratio, 4),
+            }
+        )
+
+    return failures
+
+
+def validate_boss_spawn_coverage(
+    image: Image.Image,
+    export_dir: Path,
+    world_bounds: dict,
+) -> None:
+    """Fail tile generation when boss spawn samples are blank in the stitched source."""
+    failures = find_blank_boss_spawn_samples(image, export_dir, world_bounds)
+    if not failures:
+        console.print("Boss-position screenshot validation passed")
+        return
+
+    console.print("[red]Error:[/red] Boss-position screenshot validation failed")
+    for failure in failures[:10]:
+        console.print(
+            "  "
+            f"{failure['monster_name']} ({failure['monster_id']}) "
+            f"in {failure['zone_id']} at "
+            f"({failure['position_x']:.1f}, {failure['position_z']:.1f}) "
+            f"is {failure['blank_ratio']:.0%} black"
+        )
+    if len(failures) > 10:
+        console.print(f"  ...and {len(failures) - 10} more")
+
+    raise RuntimeError(
+        f"Boss-position screenshot validation failed for {len(failures)} spawn(s)"
+    )
 
 
 # Pillow's default decompression limit is too small for our stitched image
@@ -426,6 +590,11 @@ def run(config: dict) -> None:
     console.print(f"Saved stitched image: {stitched_path}")
 
     console.print(f"Source image: {source.size[0]}x{source.size[1]} pixels")
+    # Validate source coverage before blanking excluded zones or publishing tiles.
+    try:
+        validate_boss_spawn_coverage(source, export_dir, world_bounds)
+    except RuntimeError:
+        raise typer.Exit(1) from None
 
     # Source orientation: high Z (north) at top (from stitching)
     # BitmapLayer with bounds [minX, minY, maxX, maxY] maps:
