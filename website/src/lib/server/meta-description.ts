@@ -170,6 +170,8 @@ export function itemTypeSuffix(item: Item): string {
       const slot = item.slot ?? "Equipment";
       return `${q} ${slot}`;
     }
+    case "costume":
+      return "Costume";
     case "ammo":
       return "Ammunition";
     case "potion":
@@ -180,7 +182,7 @@ export function itemTypeSuffix(item: Item): string {
       return item.is_repair_kit ? "Repair Scroll" : "Cast Scroll";
     case "relic":
       // Source: server-scripts/RelicItem.cs:12,17-20 — isOrnamentationToken splits the type
-      return item.relic_buff_id === null ? "Ornamentation Token" : `${q} Relic`;
+      return item.is_ornamentation_token ? "Ornamentation Token" : `${q} Relic`;
     case "book":
       return "Tome";
     case "mount":
@@ -360,7 +362,7 @@ function scrollDescription(item: Item): string {
 
 function relicDescription(item: Item): string {
   // Source: server-scripts/RelicItem.cs:12,17-20 — isOrnamentationToken saves armor appearance
-  const isOrnament = item.relic_buff_id === null;
+  const isOrnament = item.is_ornamentation_token;
   if (isOrnament) {
     return `${item.name} — Saves an armor piece's appearance to your wardrobe collection.`;
   }

@@ -103,7 +103,6 @@
     // Extract metadata fields
     const maxDurability = allStats?.max_durability as number | undefined;
     const hasSerenity = allStats?.has_serenity as boolean | undefined;
-    const isCostume = allStats?.is_costume as boolean | undefined;
     const augmentBonusSet = allStats?.augment_bonus_set as string | undefined;
 
     // Armor set information (from denormalized fields)
@@ -126,7 +125,6 @@
       allStats,
       maxDurability,
       hasSerenity,
-      isCostume,
       augmentBonusSet,
       armorSetId,
       armorSetName,
@@ -420,13 +418,6 @@
         <div>
           <div class={styles.label}>Special Effect</div>
           <a href="/skills/serenity" class={styles.link}>Serenity</a>
-        </div>
-      {/if}
-
-      {#if computed.isCostume}
-        <div>
-          <div class={styles.label}>Item Type</div>
-          <div class="text-purple-600 dark:text-purple-400">Cosmetic</div>
         </div>
       {/if}
 

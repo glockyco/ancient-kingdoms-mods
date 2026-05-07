@@ -35,6 +35,7 @@ const itemTypeDisplayNames: Record<string, string> = {
   book: "Book",
   chest: "Chest",
   equipment: "Equipment",
+  costume: "Costume",
   food: "Food",
   fragment: "Fragment",
   general: "General",

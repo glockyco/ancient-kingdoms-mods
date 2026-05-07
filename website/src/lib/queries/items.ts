@@ -30,9 +30,11 @@ export interface Item {
   icon_path: string;
   tooltip: string;
   tooltip_html: string;
+  comments: string;
   slot: string | null;
   weapon_category: string | null;
   stats: string | null; // JSON
+  is_costume: boolean;
   item_level: number;
   // Usage effects
   usage_health: number;
@@ -123,6 +125,7 @@ export interface Item {
   // Relic buff
   relic_buff_id: string | null;
   relic_buff_name: string | null;
+  is_ornamentation_token: boolean;
 }
 
 /**

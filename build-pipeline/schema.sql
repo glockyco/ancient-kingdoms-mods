@@ -227,11 +227,13 @@ CREATE TABLE items (
     icon_path TEXT DEFAULT '',
     tooltip TEXT DEFAULT '',
     tooltip_html TEXT DEFAULT '',  -- Pre-rendered HTML tooltip
+    comments TEXT DEFAULT '',
 
     -- Equipment properties
     slot TEXT,
     weapon_category TEXT,
     stats TEXT,                     -- JSON object with equipment stats
+    is_costume BOOLEAN DEFAULT 0,
     item_level INTEGER DEFAULT 0,   -- Calculated from stats using game formula
 
     -- Consumable properties
@@ -313,7 +315,8 @@ CREATE TABLE items (
     taught_by_recipe_name TEXT,
     alchemy_exp INTEGER,              -- EXP granted when crafting this potion (from alchemy_recipes)
     relic_buff_id TEXT REFERENCES skills(id),
-    relic_buff_name TEXT
+    relic_buff_name TEXT,
+    is_ornamentation_token BOOLEAN DEFAULT 0
 );
 
 CREATE INDEX idx_items_item_type ON items(item_type);

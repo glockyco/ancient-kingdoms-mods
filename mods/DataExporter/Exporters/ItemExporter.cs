@@ -55,7 +55,8 @@ public class ItemExporter : BaseExporter
                 is_quest_item = scriptableItem.isOnlyQuestItem,
 
                 icon_path = scriptableItem.image_name ?? "",
-                tooltip = scriptableItem.ToolTip(false, false) ?? ""
+                tooltip = scriptableItem.ToolTip(false, false) ?? "",
+                comments = scriptableItem.comments ?? ""
             };
 
             // Try to cast to UsableItem for level requirement and cooldown fields
@@ -135,7 +136,8 @@ public class ItemExporter : BaseExporter
         if (item.TryCast<Il2Cpp.AmmoItem>() != null) return "ammo";
 
         // Base types
-        if (item.TryCast<Il2Cpp.EquipmentItem>() != null) return "equipment";
+        var equipmentItem = item.TryCast<Il2Cpp.EquipmentItem>();
+        if (equipmentItem != null) return equipmentItem.isCostume ? "costume" : "equipment";
 
         return "general";
     }
@@ -146,6 +148,7 @@ public class ItemExporter : BaseExporter
         if (equipItem == null) return;
 
         itemData.weapon_category = equipItem.category ?? "";
+        itemData.is_costume = equipItem.isCostume;
         itemData.slot = equipItem.category ?? "";
 
         // Parse required class
@@ -343,6 +346,7 @@ public class ItemExporter : BaseExporter
         if (relicItem == null) return;
 
         itemData.relic_buff_level = relicItem.buffLevel;
+        itemData.is_ornamentation_token = relicItem.isOrnamentationToken;
         if (relicItem.buffEffect != null)
         {
             itemData.relic_buff_id = SanitizeId(relicItem.buffEffect.name);

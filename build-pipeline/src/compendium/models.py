@@ -289,6 +289,7 @@ class ItemData(BaseModel):
     cooldown_category: str | None = None
     icon_path: str = ""
     tooltip: str = ""
+    comments: str = ""
 
     # Consumable properties
     usage_health: int = 0
@@ -315,6 +316,7 @@ class ItemData(BaseModel):
     chest_num_items: int = 0
     relic_buff_id: str | None = None
     relic_buff_level: int = 0
+    is_ornamentation_token: bool = False
     structure_price: int = 0
     weapon_delay: int = 0
     weapon_proc_effect_probability: float = 0.0
@@ -326,6 +328,7 @@ class ItemData(BaseModel):
     stats: dict[
         str, Any
     ] = {}  # Equipment stats (strength, constitution, defense, etc.)
+    is_costume: bool = False
 
     # Consumable/special item properties (continued)
     potion_buff_id: str | None = None  # Buff applied by potion (e.g., "bandages")

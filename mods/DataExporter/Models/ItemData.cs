@@ -7,7 +7,7 @@ public class ItemData
     // === Base ScriptableItem fields (always present) ===
     public string id { get; set; }
     public string name { get; set; }
-    public string item_type { get; set; }  // equipment/potion/food/book/scroll/mount/backpack/travel/pack/random/chest/relic/monster_scroll/structure/weapon/augment/treasure_map/fragment/merge/recipe/ammo
+    public string item_type { get; set; }  // equipment/costume/potion/food/book/scroll/mount/backpack/travel/pack/random/chest/relic/monster_scroll/structure/weapon/augment/treasure_map/fragment/merge/recipe/ammo
     public string weapon_category { get; set; }
     public string slot { get; set; }
     public byte quality { get; set; }
@@ -37,9 +37,11 @@ public class ItemData
 
     public string icon_path { get; set; }
     public string tooltip { get; set; }
+    public string comments { get; set; }
 
     // === EquipmentItem fields (when item_type = equipment) ===
     public ItemStats stats { get; set; }
+    public bool is_costume { get; set; }
 
     // === PotionItem fields (when item_type = potion) ===
     public int usage_health { get; set; }
@@ -93,6 +95,7 @@ public class ItemData
     // === RelicItem fields (when item_type = relic) ===
     public string relic_buff_id { get; set; }
     public int relic_buff_level { get; set; }
+    public bool is_ornamentation_token { get; set; }
 
     // === MonsterScrollItem fields (when item_type = monster_scroll) ===
     public List<SpawnedMonster> spawned_monsters { get; set; }
