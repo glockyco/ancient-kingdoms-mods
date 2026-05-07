@@ -99,7 +99,7 @@ node scripts/snapshot-mechanics.mjs --update
 Server scripts are **reference only** — for understanding game mechanics, not for data export.
 Versioned backups are stored in `server-scripts-<version>/`; the working copy is `server-scripts/`.
 
-**`exported-data/` and `website/static/compendium.db` are gitignored** — they will not appear in `git status` after re-exporting or rebuilding. This is expected; do not attempt to commit them.
+**Gitignored, never commit:** `server-scripts/`, `server-scripts-<version>/`, `exported-data/`, and `website/static/compendium.db`. The decompiled scripts are not ours to redistribute, and the export/DB artifacts are reproducible build output. They will not appear in `git status` after re-running the workflow — this is expected. Do not `git add` them, do not `git add -f` them.
 
 **Do not investigate the old server scripts** to understand changes — diff the new scripts first. The diff is the primary source of truth for what changed.
 
