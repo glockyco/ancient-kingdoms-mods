@@ -591,6 +591,14 @@ export const load: PageServerLoad = ({ params }): QuestDetailPageData => {
       is_epic_quest: quest.is_epic_quest,
       is_adventurer_quest: quest.is_adventurer_quest,
       is_repeatable: quest.is_repeatable,
+      is_find_npc_quest: quest.is_find_npc_quest,
+      // Turn-in NPC = end NPC if distinct from start, else fall back to the
+      // start NPC (many quests are turned in to the same NPC who offered them).
+      // Source: server-scripts/ScriptableQuest.cs:21,23 — startQuestNPC and
+      // finishQuestNPC are stored separately even when they reference the
+      // same NPC.
+      turn_in_npc_name: (endNpc ?? startNpc)?.name ?? null,
+      turn_in_npc_zone_name: (endNpc ?? startNpc)?.zone_name ?? null,
     },
     objectives,
   );

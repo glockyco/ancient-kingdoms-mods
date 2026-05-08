@@ -287,7 +287,29 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
   // Compute effect summary using formatSkillEffect
   const effectSummary = formatSkillEffect(skill);
 
-  // Generate description
+  // Mercenaries are pets with is_mercenary=1; familiars/companions are the
+  // rest. We split because mercenary ownership is most actionable for the
+  // player (hire from a Recruiter NPC) and gets routing priority over the
+  // pet-summon path.
+  const mercenaryUserCount = usedByPets.filter((p) => p.is_mercenary).length;
+  const petUserCount = usedByPets.length - mercenaryUserCount;
+
+  // Counts of items that grant or trigger this skill, grouped by source type.
+  // The denormalizer assigns one type per item linkage; we just bucket the
+  // pre-resolved entries.
+  const grantedByCounts = {
+    scroll: 0,
+    potion_buff: 0,
+    food_buff: 0,
+    relic_buff: 0,
+    weapon_proc: 0,
+  };
+  for (const g of grantedByItems) {
+    if (g.type in grantedByCounts) {
+      grantedByCounts[g.type as keyof typeof grantedByCounts] += 1;
+    }
+  }
+
   const description = skillDescription({
     name: skill.name,
     skill_type: skill.skill_type,
@@ -298,10 +320,10 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
     required_spent_points: skill.required_spent_points,
     player_classes: skill.player_classes,
     is_veteran: skill.is_veteran,
-    is_pet_skill: skill.is_pet_skill,
-    is_mercenary_skill: skill.is_mercenary_skill,
-    is_scroll: skill.is_scroll,
     monster_count: usedByMonsters.length,
+    mercenary_user_count: mercenaryUserCount,
+    pet_user_count: petUserCount,
+    granted_by: grantedByCounts,
   });
 
   return {

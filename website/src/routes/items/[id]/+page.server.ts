@@ -232,6 +232,19 @@ export const load: PageServerLoad = ({ params }): ItemDetailPageData => {
       .get(params.id) as { name: string } | undefined;
     mergeResultName = row?.name ?? null;
   }
+  // Source: server-scripts/BuffSkill.cs:8 — buffTime is a LinearFloat with
+  // baseValue = duration_base. We surface only the level-1 base because the
+  // per-level slope depends on Elixir Endurance veteran rank at runtime
+  // (PotionItem.cs:127-138), which we can't predict server-side.
+  const buffId =
+    item.potion_buff_id || item.food_buff_id || item.relic_buff_id || null;
+  let buffDurationSeconds: number | null = null;
+  if (buffId) {
+    const row = db
+      .prepare("SELECT duration_base FROM skills WHERE id = ?")
+      .get(buffId) as { duration_base: number } | undefined;
+    buffDurationSeconds = row?.duration_base ?? null;
+  }
 
   db.close();
 
@@ -241,6 +254,7 @@ export const load: PageServerLoad = ({ params }): ItemDetailPageData => {
     randomOutcomes,
     chestKeyOpens,
     mergeResultName,
+    buffDurationSeconds,
   });
   const title = itemTitle(item);
 

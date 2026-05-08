@@ -697,7 +697,7 @@
 </script>
 
 <Seo
-  title={`${skill.name} - Skills - Ancient Kingdoms`}
+  title={`${skill.name} - Ancient Kingdoms`}
   description={data.description}
   path={`/skills/${skill.id}`}
 />

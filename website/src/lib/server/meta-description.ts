@@ -41,6 +41,15 @@ export interface ItemMetaContext {
   chestKeyOpens?: { chestCount: number; zoneCount: number };
   /** Merge result item name (lookup from item_sources_merge). */
   mergeResultName?: string | null;
+  /**
+   * Base duration of the linked buff in seconds, if the item applies one
+   * (potions/food/relics). Source: skills.duration_base on the row keyed
+   * by potion_buff_id / food_buff_id / relic_buff_id. We only surface the
+   * base value because per-level scaling depends on the player's Elixir
+   * Endurance veteran rank (PotionItem.cs:127-138) and similar runtime
+   * factors that aren't known at SSR time.
+   */
+  buffDurationSeconds?: number | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -232,17 +241,17 @@ export function itemDescription(item: Item, ctx: ItemMetaContext = {}): string {
     case "ammo":
       return ammoDescription(item);
     case "potion":
-      return potionDescription(item);
+      return potionDescription(item, ctx);
     case "food":
-      return foodDescription(item);
+      return foodDescription(item, ctx);
     case "scroll":
       return scrollDescription(item);
     case "relic":
-      return relicDescription(item);
+      return relicDescription(item, ctx);
     case "book":
       return bookDescription(item);
     case "mount":
-      return mountDescription(item);
+      return mountDescription();
     case "backpack":
       return backpackDescription(item);
     case "pack":
@@ -250,7 +259,7 @@ export function itemDescription(item: Item, ctx: ItemMetaContext = {}): string {
     case "travel":
       return travelDescription(item);
     case "treasure_map":
-      return treasureMapDescription(item);
+      return treasureMapDescription();
     case "chest":
       return chestContainerDescription(item);
     case "random":
@@ -268,7 +277,7 @@ export function itemDescription(item: Item, ctx: ItemMetaContext = {}): string {
     case "general":
       return generalDescription(item, ctx);
     default:
-      return `${item.name} — ${quality(item)} ${formatItemType(item.item_type)}.`;
+      return `${quality(item)} ${formatItemType(item.item_type)}.`;
   }
 }
 
@@ -285,7 +294,7 @@ function weaponDescription(item: Item): string {
   const proc = item.weapon_proc_effect_name
     ? ` Procs ${item.weapon_proc_effect_name} on hit.`
     : "";
-  return `${item.name} — ${q} ${cat}${classes}.${level}${proc}`;
+  return `${q} ${cat}${classes}.${level}${proc}`;
 }
 
 function equipmentDescription(item: Item): string {
@@ -295,21 +304,39 @@ function equipmentDescription(item: Item): string {
   const level = levelGate(item.level_required);
   if (ARMOR_SLOTS.has(slot)) {
     const noun = slot === "Shield" ? "shield" : `${slotNoun(slot)} armor`;
-    return `${item.name} — ${q} ${noun}${classes}.${level}`;
+    return `${q} ${noun}${classes}.${level}`;
   }
   if (JEWELRY_SLOTS.has(slot)) {
-    return `${item.name} — ${q} ${slotNoun(slot)}${classes}.${level}`;
+    return `${q} ${slotNoun(slot)}${classes}.${level}`;
   }
-  return `${item.name} — ${q} ${slot || "equipment"}${classes}.${level}`;
+  return `${q} ${slot || "equipment"}${classes}.${level}`;
 }
 
 function ammoDescription(item: Item): string {
   const q = quality(item);
   const level = levelGate(item.level_required);
-  return `${item.name} — ${q} ammunition for ranged weapons.${level}`;
+  return `${q} ammunition for ranged weapons.${level}`;
 }
 
-function potionDescription(item: Item): string {
+/**
+ * Format a buff phrase from a context-supplied base duration.
+ * Falls back to "<verb> <buff>." when no usable duration is known so the
+ * sentence still conveys that an effect persists. The duration we surface
+ * is the buff's `duration_base` (level=1 of LinearFloat); per-level scaling
+ * exists but depends on the player's veteran progression at use time.
+ */
+function buffPhrase(
+  verb: "Applies" | "Grants" | "Triggers",
+  buffName: string,
+  durationSeconds: number | null | undefined,
+): string {
+  if (durationSeconds && durationSeconds > 0) {
+    return `${verb} ${buffName} for ${formatDuration(durationSeconds)}.`;
+  }
+  return `${verb} ${buffName}.`;
+}
+
+function potionDescription(item: Item, ctx: ItemMetaContext): string {
   // Source: server-scripts/PotionItem.cs — usage_health/mana/energy/pet_health/experience
   // and an optional buff are applied on use.
   const restored: string[] = [];
@@ -325,7 +352,7 @@ function potionDescription(item: Item): string {
   const restorePhrase =
     restored.length > 0 ? ` Restores ${joinList(restored)}.` : "";
   const buff = item.potion_buff_name
-    ? ` Applies ${item.potion_buff_name}.`
+    ? ` ${buffPhrase("Applies", item.potion_buff_name, ctx.buffDurationSeconds)}`
     : "";
   // Source: server-scripts/PotionItem.cs — cooldownCategory "Bandages" marks the bandage subtype
   const isBandage = item.cooldown_category === "Bandages";
@@ -335,44 +362,53 @@ function potionDescription(item: Item): string {
     !item.potion_buff_allow_dungeon && item.potion_buff_name
       ? " Dungeon use disabled."
       : "";
-  return `${item.name} — ${subtype}.${restorePhrase}${buff}${dungeon}`;
+  return `${subtype}.${restorePhrase}${buff}${dungeon}`;
 }
 
-function foodDescription(item: Item): string {
+function foodDescription(item: Item, ctx: ItemMetaContext): string {
   // Source: server-scripts/FoodItem.cs — applies buffEffect at fixed buffLevel
   const kind = item.food_type === "Drink" ? "Drink" : "Food";
-  const buff = item.food_buff_name ? ` Grants ${item.food_buff_name}.` : "";
+  const buff = item.food_buff_name
+    ? ` ${buffPhrase("Grants", item.food_buff_name, ctx.buffDurationSeconds)}`
+    : "";
   const dungeon =
     !item.food_buff_allow_dungeon && item.food_buff_name
       ? " Buff disabled inside dungeons."
       : "";
-  return `${item.name} — ${kind}.${buff}${dungeon}`;
+  return `${kind}.${buff}${dungeon}`;
 }
 
 function scrollDescription(item: Item): string {
   // Source: server-scripts/ScrollItem.cs:9,13 — isRepairKit branches the scroll behaviour
   if (item.is_repair_kit) {
     const tier = quality(item);
-    return `${item.name} — Repairs all equipped ${tier} or lower gear.`;
+    return `Repairs all equipped ${tier} or lower gear.`;
   }
   // Source: server-scripts/ScrollItem.cs:82,92 — spell rank scales with player.scrollMasteryLevel
   const skill = item.scroll_skill_name ?? "a spell";
-  return `${item.name} — Casts ${skill}. Spell rank scales with the Scroll Mastery profession.`;
+  return `Casts ${skill}. Spell rank scales with the Scroll Mastery profession.`;
 }
 
-function relicDescription(item: Item): string {
+function relicDescription(item: Item, ctx: ItemMetaContext): string {
   // Source: server-scripts/RelicItem.cs:12,17-20 — isOrnamentationToken saves armor appearance
   const isOrnament = item.is_ornamentation_token;
   if (isOrnament) {
-    return `${item.name} — Saves an armor piece's appearance to your wardrobe collection.`;
+    return `Saves an armor piece's appearance to your wardrobe collection.`;
   }
-  // Source: server-scripts/RelicItem.cs:31 — buff applied at buffEffect.maxLevel, not item buff_level
   const q = quality(item);
-  const buff = item.relic_buff_name ?? "a buff";
+  // Source: server-scripts/RelicItem.cs:31 — buff applied at buffEffect.maxLevel,
+  // not at the relic's own buff_level. We surface base duration only;
+  // ctx.buffDurationSeconds is null when the linked buff has no timer.
+  const buffName = item.relic_buff_name ?? "a buff";
+  const dur =
+    ctx.buffDurationSeconds && ctx.buffDurationSeconds > 0
+      ? ` for ${formatDuration(ctx.buffDurationSeconds)}`
+      : "";
+  const buff = ` Triggers ${buffName}${dur}.`;
   const dungeon = !item.relic_buff_allow_dungeon
     ? " Cannot be used inside dungeons."
     : "";
-  return `${item.name} — ${q} relic. Triggers ${buff} at full power.${dungeon}`;
+  return `${q} relic.${buff}${dungeon}`;
 }
 
 function bookDescription(item: Item): string {
@@ -391,13 +427,13 @@ function bookDescription(item: Item): string {
   if (item.book_charisma_gain > 0)
     gains.push(`+${item.book_charisma_gain} Charisma`);
   const phrase = gains.length > 0 ? ` Grants ${joinList(gains)}.` : "";
-  return `${item.name} — One-time read that permanently increases your attributes.${phrase}`;
+  return `One-time read that permanently increases your attributes.${phrase}`;
 }
 
-function mountDescription(item: Item): string {
+function mountDescription(): string {
   // Source: server-scripts/MountItem.cs:8, server-scripts/Player.cs:497-501 — speedMount
   // is the absolute movement speed when mounted, replacing equipped speed bonuses.
-  return `${item.name} — Mountable creature. Replaces your base movement speed while mounted. Cannot mount in dungeons or while in combat.`;
+  return `Mountable creature. Replaces your base movement speed while mounted. Cannot mount in dungeons or while in combat.`;
 }
 
 function backpackDescription(item: Item): string {
@@ -408,7 +444,7 @@ function backpackDescription(item: Item): string {
     slots > 0
       ? ` Adds ${slots} extra inventory slots while equipped in your Combined Backpack.`
       : "";
-  return `${item.name} — Storage bag.${slotPhrase}`;
+  return `Storage bag.${slotPhrase}`;
 }
 
 function packDescription(item: Item, ctx: ItemMetaContext): string {
@@ -417,39 +453,43 @@ function packDescription(item: Item, ctx: ItemMetaContext): string {
   if (contents.length > 0) {
     const c = contents[0];
     const phrase = c.amount > 1 ? `${c.amount} × ${c.item_name}` : c.item_name;
-    return `${item.name} — Redeems for ${phrase}.`;
+    return `Redeems for ${phrase}.`;
   }
-  return `${item.name} — Container that redeems for a fixed item bundle on use.`;
+  return `Container that redeems for a fixed item bundle on use.`;
 }
 
 function travelDescription(item: Item): string {
   // Source: server-scripts/TravelItem.cs:25-29 — nameDestination=="Bind Point" routes to player bind
   if (item.travel_destination_name === "Bind Point") {
-    return `${item.name} — Teleports you to your bind point. Cannot be used inside the Temple of Valaark.`;
+    return `Teleports you to your bind point. Cannot be used inside the Temple of Valaark.`;
   }
   const dest = item.travel_destination_name ?? "a fixed location";
-  return `${item.name} — Teleports you to ${dest}. Cannot be used inside the Temple of Valaark.`;
+  return `Teleports you to ${dest}. Cannot be used inside the Temple of Valaark.`;
 }
 
-function treasureMapDescription(item: Item): string {
-  // Source: server-scripts/RelicItem.cs (treasure-map flow), Player.cs (Treasure Hunter)
-  return `${item.name} — Marks a buried treasure dig site. Brings a Treasure Hunter bonus to the chest it points at.`;
+function treasureMapDescription(): string {
+  // Source: server-scripts/TreasureMapItem.cs:12-15 — using the map opens
+  // its clue image. server-scripts/TreasureLocation.cs:61-100 — at the
+  // matching dig site, using the map with a Shovel consumes it and grants
+  // a Buried Treasure Chest plus +0.5% Treasure Hunter skill. Each map
+  // points at exactly one dig site.
+  return `Reveals one buried treasure dig site. Dig at the marked spot with a Shovel to claim a Buried Treasure Chest.`;
 }
 
 function chestContainerDescription(item: Item): string {
   // Source: server-scripts/ChestItem.cs:11,24 — yields numItemsPerChest from a weighted reward table
   const n = item.chest_num_items > 0 ? item.chest_num_items : 1;
   const itemsWord = n === 1 ? "item" : "items";
-  return `${item.name} — Loot container. Yields ${n} ${itemsWord} from a weighted reward pool.`;
+  return `Loot container. Yields ${n} ${itemsWord} from a weighted reward pool.`;
 }
 
 function randomDescription(item: Item, ctx: ItemMetaContext): string {
   // Source: server-scripts/RandomItem.cs:6 — yields one of items[] at random
   const n = ctx.randomOutcomes?.length ?? 0;
   if (n > 0) {
-    return `${item.name} — Mystery container. Yields one of ${n} possible items at random.`;
+    return `Mystery container. Yields one of ${n} possible items at random.`;
   }
-  return `${item.name} — Mystery container. Yields one item at random from a fixed pool.`;
+  return `Mystery container. Yields one item at random from a fixed pool.`;
 }
 
 function augmentDescription(item: Item): string {
@@ -458,10 +498,10 @@ function augmentDescription(item: Item): string {
   // station and can be removed by Augmenter NPCs (5,000g/10,000g/15,000g per quality).
   const q = quality(item);
   if (item.augment_armor_set_name) {
-    return `${item.name} — ${q} augment in the ${item.augment_armor_set_name} armor set, contributing to its set bonuses.`;
+    return `${q} augment in the ${item.augment_armor_set_name} armor set, contributing to its set bonuses.`;
   }
   const target = item.augment_is_defensive ? "armor piece" : "weapon";
-  return `${item.name} — ${q} augment. Permanently socketed into ${target === "armor piece" ? "an armor piece" : "a weapon"} at a crafting station, removable at an Augmenter NPC.`;
+  return `${q} augment. Permanently socketed into ${target === "armor piece" ? "an armor piece" : "a weapon"} at a crafting station, removable at an Augmenter NPC.`;
 }
 
 function fragmentDescription(item: Item): string {
@@ -471,12 +511,12 @@ function fragmentDescription(item: Item): string {
     item.fragment_amount_needed > 0 ? item.fragment_amount_needed : 0;
   const result = item.fragment_result_item_name;
   if (need > 0 && result) {
-    return `${item.name} — Collect ${need} to combine into ${result}.`;
+    return `Collect ${need} to combine into ${result}.`;
   }
   if (result) {
-    return `${item.name} — Combines into ${result}.`;
+    return `Combines into ${result}.`;
   }
-  return `${item.name} — Fragment that combines into a higher-tier reward.`;
+  return `Fragment that combines into a higher-tier reward.`;
 }
 
 function recipeItemDescription(item: Item): string {
@@ -484,9 +524,9 @@ function recipeItemDescription(item: Item): string {
   // refused if already known.
   const taught = item.recipe_potion_learned_name;
   if (taught) {
-    return `${item.name} — Teaches the recipe for ${taught}. Refused if you already know it.`;
+    return `Teaches the recipe for ${taught}. Refused if you already know it.`;
   }
-  return `${item.name} — Recipe item. Teaches a craftable on first use.`;
+  return `Recipe item. Teaches a craftable on first use.`;
 }
 
 function mergeDescription(item: Item, ctx: ItemMetaContext): string {
@@ -494,9 +534,9 @@ function mergeDescription(item: Item, ctx: ItemMetaContext): string {
   // checks inventory for itemsNeeded, consumes them and the merge token, grants resultItem.
   const result = ctx.mergeResultName ?? null;
   if (result) {
-    return `${item.name} — Combines with required components in your inventory to create ${result}.`;
+    return `Combines with required components in your inventory to create ${result}.`;
   }
-  return `${item.name} — Combines with required components in your inventory to create a new item.`;
+  return `Combines with required components in your inventory to create a new item.`;
 }
 
 function structureDescription(item: Item): string {
@@ -506,12 +546,12 @@ function structureDescription(item: Item): string {
     item.structure_price > 0
       ? `${item.structure_price.toLocaleString()} gold`
       : "a fixed gold cost";
-  return `${item.name} — Furniture. Costs ${price} to place inside a house you own.`;
+  return `Furniture. Costs ${price} to place inside a house you own.`;
 }
 
 function generalDescription(item: Item, ctx: ItemMetaContext): string {
   if (item.is_chest_key) return chestKeyDescription(item, ctx);
-  if (item.is_key) return keyDescription(item);
+  if (item.is_key) return keyDescription(ctx);
   if (item.is_quest_item) return questItemDescription(item);
   return generalUsageDescription(item, ctx);
 }
@@ -523,13 +563,31 @@ function chestKeyDescription(item: Item, ctx: ItemMetaContext): string {
       opens.chestCount === 1 ? "1 chest" : `${opens.chestCount} chests`;
     const zonePhrase =
       opens.zoneCount === 1 ? "1 zone" : `${opens.zoneCount} zones`;
-    return `${item.name} — Chest key. Opens ${chestPhrase} across ${zonePhrase}.`;
+    return `Chest key. Opens ${chestPhrase} across ${zonePhrase}.`;
   }
-  return `${item.name} — Chest key.`;
+  return `Chest key.`;
 }
 
-function keyDescription(item: Item): string {
-  return `${item.name} — Key. Opens a quest door or container.`;
+function keyDescription(ctx: ItemMetaContext): string {
+  // Source: server-scripts/Portal.cs:49 and InteractablePortal.cs:101 —
+  // portals gated by a key check `player.keys` (or any party member's
+  // keyring) for the matching name. Source: server-scripts/ScriptableItem.cs:39
+  // — items flagged `isKey` are routed to the keyring (`player.AddKey(...)`)
+  // by every loot path (PlayerLooting.cs:146, ChestItem.cs:50,
+  // GatherItem.cs:455, …) instead of taking an inventory slot.
+  // Source: server-scripts/GatherInventoryQuest.cs:21,47 — the keyring also
+  // counts as inventory for gather-inventory quest gates that name a key.
+  const portals = ctx.usages?.portals ?? [];
+  if (portals.length === 0) {
+    return `Keyring item.`;
+  }
+  const portalPhrase =
+    portals.length === 1 ? "1 portal" : `${portals.length} portals`;
+  const destinations = new Set(portals.map((p) => p.to_zone_id));
+  if (destinations.size === 1) {
+    return `Unlocks ${portalPhrase} to ${portals[0].to_zone_name}.`;
+  }
+  return `Unlocks ${portalPhrase} across ${destinations.size} zones.`;
 }
 
 function questItemDescription(item: Item): string {
@@ -539,14 +597,14 @@ function questItemDescription(item: Item): string {
   if (!item.destroyable) flags.push("not destroyable");
   const flagPhrase =
     flags.length > 0 ? ` ${capitalizeFirst(joinList(flags))}.` : "";
-  return `${item.name} — Quest item.${flagPhrase}`;
+  return `Quest item.${flagPhrase}`;
 }
 
 function generalUsageDescription(item: Item, ctx: ItemMetaContext): string {
   const q = quality(item);
   const usages = ctx.usages;
   if (!usages) {
-    return `${item.name} — ${q} item.`;
+    return `${q} item.`;
   }
   const counts: Array<{ category: string; count: number }> = [
     { category: "recipe", count: usages.recipes.length },
@@ -559,11 +617,17 @@ function generalUsageDescription(item: Item, ctx: ItemMetaContext): string {
   ].filter((c) => c.count > 0);
   counts.sort((a, b) => b.count - a.count);
   if (counts.length === 0) {
-    return `${item.name} — ${q} item.`;
+    return `${q} item.`;
   }
-  const top = counts[0];
-  const noun = pluralize(top.category, top.count);
-  return `${item.name} — ${q} item. Used in ${top.count} ${noun}.`;
+  // Surface up to the top 2 usage categories. One category alone reads as
+  // "Used in 5 quests." Two categories share the verb: "Used in 5 quests
+  // and 3 recipes." Lower-ranked categories are dropped to keep the
+  // description short; users land on the detail page for the full breakdown.
+  const top = counts.slice(0, 2);
+  const phrases = top.map(
+    (c) => `${c.count} ${pluralize(c.category, c.count)}`,
+  );
+  return `${q} item. Used in ${joinList(phrases)}.`;
 }
 
 function pluralize(category: string, n: number): string {
@@ -652,7 +716,7 @@ export function monsterDescription(
     origin = ` Found in ${zoneNames[0]} and ${zoneNames.length - 1} other zones.`;
   }
 
-  return `${monster.name} — Level ${range} ${species}${classification}.${origin}`;
+  return `Level ${range} ${species}${classification}.${origin}`;
 }
 
 // =============================================================================
@@ -773,7 +837,7 @@ export function npcDescription(
   }
   const tailPhrase = tail.length > 0 ? ` ${tail.join(" ")}` : "";
 
-  return `${npc.name} — ${primary}${location}.${factionPhrase}${tailPhrase}`;
+  return `${primary}${location}.${factionPhrase}${tailPhrase}`;
 }
 
 // =============================================================================
@@ -812,9 +876,7 @@ export function zoneDescription(
         : `levels ${zone.level_min}-${zone.level_max}`;
   }
 
-  const head = levelPhrase
-    ? `${zone.name} — ${typeLabel}, ${levelPhrase}.`
-    : `${zone.name} — ${typeLabel}.`;
+  const head = levelPhrase ? `${typeLabel}, ${levelPhrase}.` : `${typeLabel}.`;
 
   const contentParts: string[] = [];
   if (counts.boss_count > 0)
@@ -844,6 +906,13 @@ function plural(n: number, singular: string, pluralForm: string): string {
 // Quests
 // =============================================================================
 
+/**
+ * One quest objective row, as built by the loader from the DB. The `type`
+ * mirrors the family of game data the row was sourced from (kill targets,
+ * gather counters, gather-inventory bags, etc.) and is used to dispatch the
+ * description verb. See `+page.server.ts` for how each ScriptableQuest
+ * subclass maps onto these rows.
+ */
 interface QuestObjective {
   type:
     | "kill"
@@ -867,6 +936,16 @@ interface QuestDescriptionInput {
   is_epic_quest: boolean;
   is_adventurer_quest: boolean;
   is_repeatable: boolean;
+  // LocationQuest sub-flavor: completion fires when the player reaches the
+  // end NPC rather than a world location, so the description should say
+  // "Find <NPC>" instead of "Discover <place>".
+  is_find_npc_quest: boolean;
+  // NPC the player turns the quest in to. Often the same as the start NPC.
+  // Used as the destination for kill/gather/gather_inventory/equip/alchemy
+  // sentences ("Bring 6 Bellflower to Master Eliphas in Moontide Hamlet.").
+  // Skipped for location quests because the place/NPC is itself the target.
+  turn_in_npc_name: string | null;
+  turn_in_npc_zone_name: string | null;
 }
 
 function questTierLabel(quest: QuestDescriptionInput): string {
@@ -879,49 +958,145 @@ function questTierLabel(quest: QuestDescriptionInput): string {
   return "Quest";
 }
 
-function questActionVerb(questType: string): string {
-  switch (questType) {
-    case "kill":
-      return "Combat";
-    case "gather":
-      return "Gathering";
-    case "gather_inventory":
-      return "Collection";
-    case "location":
-      return "Exploration";
-    case "deliver":
-      return "Delivery";
-    case "equip_item":
-      return "Equip";
-    case "alchemy":
-      return "Alchemy";
-    case "find":
-      return "Find";
-    case "brew":
-      return "Brewing";
-    case "discover":
-      return "Discovery";
-    default:
-      return "";
-  }
+/**
+ * Render an "amount + name" or just "name" fragment, dropping the count
+ * when amount is 1. Keeps "Defeat 50 Troll and Troll King Grimlok." natural
+ * (boss line drops the "1") while preserving counts for grunt waves.
+ */
+function qtyName(amount: number, name: string): string {
+  return amount > 1 ? `${amount} ${name}` : name;
 }
 
-const QUEST_OBJECTIVE_VERBS: Record<QuestObjective["type"], string> = {
-  kill: "defeat",
-  gather: "gather",
-  have: "hold",
-  equip: "equip",
-  deliver: "deliver",
-  discover: "discover",
-  brew: "brew",
-  find: "find",
-  other: "complete",
-};
+/**
+ * Append the turn-in NPC + zone to a body fragment.
+ *
+ * Mode picks the preposition that reads naturally for the surrounding verb:
+ * - "inline":  "<body> to <NPC> in <Zone>." — used for `gather_inventory`
+ *              ("Bring") where the action IS delivering to the NPC, so "to"
+ *              attaches to the verb without distortion.
+ * - "report":  "<body>. Report to <NPC> in <Zone>." — used for kill, gather,
+ *              equip, alchemy. "Defeat X to NPC" / "Brew X to NPC" reads as
+ *              the wrong preposition; a separate "Report to" sentence keeps
+ *              the grammar clean while still anchoring the player.
+ * - "none":    "<body>." — used for `location` where the destination is
+ *              itself the objective.
+ *
+ * Falls back to "<body>." when no NPC is known so callers can pass the mode
+ * unconditionally.
+ */
+function appendTurnIn(
+  quest: QuestDescriptionInput,
+  body: string,
+  mode: "inline" | "report" | "none",
+): string {
+  if (mode === "none" || !quest.turn_in_npc_name) return `${body}.`;
+  const zone = quest.turn_in_npc_zone_name
+    ? ` in ${quest.turn_in_npc_zone_name}`
+    : "";
+  if (mode === "inline") {
+    return `${body} to ${quest.turn_in_npc_name}${zone}.`;
+  }
+  return `${body}. Report to ${quest.turn_in_npc_name}${zone}.`;
+}
 
-function objectivePhrase(obj: QuestObjective): string {
-  const verb = QUEST_OBJECTIVE_VERBS[obj.type];
-  if (obj.amount > 1) return `${verb} ${obj.amount} ${obj.name}`;
-  return `${verb} ${obj.name}`;
+/**
+ * Render a list of must-do targets with a verb prefix. Quest objectives
+ * within a verb are concurrent (the player must satisfy all), so the
+ * connector is always "and", never "then".
+ * - 1–3 distinct entries: enumerate by name with the Oxford-comma joiner
+ *   ("Bring 3 Fragment of Resilience and 3 Fragment of Serenity").
+ * - 4+ entries: aggregate to "<verb> <total> items". Only realistically
+ *   fires for `gather_inventory` quests with many distinct mats; in-DB
+ *   worst case is 5 distinct items (Path of Scales).
+ * Returns null when the list is empty so the caller can omit the sentence.
+ */
+function renderTargetList(
+  verb: string,
+  list: ReadonlyArray<{ name: string; amount: number }>,
+  collective: string = "items",
+): string | null {
+  if (list.length === 0) return null;
+  if (list.length <= 3) {
+    return `${verb} ${joinList(list.map((o) => qtyName(o.amount, o.name)))}`;
+  }
+  const total = list.reduce((sum, o) => sum + Math.max(o.amount, 1), 0);
+  return `${verb} ${total} ${collective}`;
+}
+
+/**
+ * Pick the single objective sentence that matches the quest's mechanical
+ * type. Each `quest_type` corresponds to one ScriptableQuest subclass with
+ * a fixed gameplay loop, so the description follows that loop precisely
+ * instead of stitching together every objective type the loader happened
+ * to push.
+ *
+ * Sources verified against `server-scripts/`:
+ * - `KillQuest.cs`            → counter-based, ≤2 targets.
+ * - `GatherQuest.cs`          → progress-counter (NOT inventory), ≤3 items.
+ * - `GatherInventoryQuest.cs` → inventory check at turn-in for both
+ *                               `gatherItems[]` and `requiredItems[]`;
+ *                               consumed iff `removeItemsOnComplete`.
+ * - `EquipItemQuest.cs`       → all listed items must be equipped together.
+ * - `LocationQuest.cs`        → single trigger; `isFindNpcQuest` flips it
+ *                               from "discover place" to "find NPC".
+ * - `AlchemyQuest.cs`         → counter on brewed potions, single recipe.
+ */
+function buildObjectiveSentence(
+  quest: QuestDescriptionInput,
+  objectives: QuestObjective[],
+): string {
+  const pickByType = (...types: QuestObjective["type"][]): QuestObjective[] =>
+    objectives.filter((o) => types.includes(o.type));
+
+  let body: string | null = null;
+  // Mode picks the natural preposition for the verb. "to" reads as a
+  // delivery target only after "Bring"; for every other verb a separate
+  // "Report to" sentence keeps the grammar clean. Location quests have no
+  // separate destination — the find/discover target IS the destination.
+  let mode: "inline" | "report" | "none" = "report";
+
+  switch (quest.quest_type) {
+    case "kill":
+      body = renderTargetList("Defeat", pickByType("kill"));
+      break;
+    case "gather":
+      // Progress-counter: items don't have to stay in inventory after the
+      // threshold is hit, but the player still has to pick them up. "Collect"
+      // matches that loop and disambiguates from gather_inventory's "Bring".
+      body = renderTargetList("Collect", pickByType("gather"));
+      break;
+    case "gather_inventory": {
+      // gatherItems and requiredItems both gate fulfillment via inventory
+      // (requiredItems also accepts equipped slots). For description
+      // purposes the player action is identical: get them and walk to NPC.
+      body = renderTargetList("Bring", pickByType("have", "deliver"));
+      mode = "inline";
+      break;
+    }
+    case "equip_item":
+      body = renderTargetList(
+        "Equip",
+        pickByType("equip"),
+        "pieces of equipment",
+      );
+      break;
+    case "alchemy":
+      body = renderTargetList("Brew", pickByType("brew"));
+      break;
+    case "location": {
+      body = quest.is_find_npc_quest
+        ? renderTargetList("Find", pickByType("find"))
+        : renderTargetList("Discover", pickByType("discover"));
+      mode = "none";
+      break;
+    }
+    // "general" or any unrecognized type: the quest has no mechanical
+    // objective the description can summarize honestly. Skip the sentence.
+    default:
+      body = null;
+  }
+
+  return body ? ` ${appendTurnIn(quest, body, mode)}` : "";
 }
 
 export function questDescription(
@@ -929,22 +1104,10 @@ export function questDescription(
   objectives: QuestObjective[],
 ): string {
   const tier = questTierLabel(quest);
-  const action = questActionVerb(quest.quest_type);
-  const tierPhrase = action ? `${action} ${tier.toLowerCase()}` : tier;
-  const tierSentence = capitalizeFirst(tierPhrase);
-
   const levelPhrase =
     quest.level_required > 0 ? ` for level ${quest.level_required}+` : "";
-
-  // Top 2 objectives by amount keeps the description focused; long objective
-  // lists are a frequent SERP-truncation source on quest pages.
-  const top = [...objectives].sort((a, b) => b.amount - a.amount).slice(0, 2);
-  const objectivesPhrase =
-    top.length > 0
-      ? ` ${capitalizeFirst(top.map(objectivePhrase).join(" then "))}.`
-      : "";
-
-  return `${quest.name} — ${tierSentence}${levelPhrase}.${objectivesPhrase}`;
+  const objectiveSentence = buildObjectiveSentence(quest, objectives);
+  return `${tier}${levelPhrase}.${objectiveSentence}`;
 }
 
 // =============================================================================
@@ -1000,11 +1163,6 @@ export function recipeDescription(
   recipe: RecipeDescriptionInput,
   ingredients: RecipeIngredient[],
 ): string {
-  const yields =
-    recipe.result_amount && recipe.result_amount > 1
-      ? `${recipe.result_amount} × ${recipe.result_item_name}`
-      : recipe.result_item_name;
-
   const family = recipe.type.toLowerCase();
   const levelPhrase =
     recipe.level_required && recipe.level_required > 0
@@ -1033,7 +1191,7 @@ export function recipeDescription(
       ? ` Awards ${recipe.xp.toLocaleString()} XP.`
       : "";
 
-  return `${yields} — ${capitalizeFirst(family)} recipe${levelPhrase}.${stationPhrase}${materialsPhrase}${xpPhrase}`;
+  return `${capitalizeFirst(family)} recipe${levelPhrase}.${stationPhrase}${materialsPhrase}${xpPhrase}`;
 }
 
 // =============================================================================
@@ -1134,7 +1292,12 @@ export function gatheringResourceDescription(
   else if (zoneNames.length > 3)
     locationPhrase = ` Found in ${zoneNames[0]} and ${zoneNames.length - 1} other zones.`;
 
-  return `${resource.name} — ${tierPhrase}${typeLabel}.${toolPhrase}${rewardPhrase}${xpPhrase}${locationPhrase}`;
+  // typeLabel is lowercase ("mineral node", "plant"); capitalize when there's
+  // no Tier prefix to lead the sentence.
+  const head = tierPhrase
+    ? `${tierPhrase}${typeLabel}`
+    : capitalizeFirst(typeLabel);
+  return `${head}.${toolPhrase}${rewardPhrase}${xpPhrase}${locationPhrase}`;
 }
 
 // =============================================================================
@@ -1146,6 +1309,24 @@ export function gatheringResourceDescription(
 // to the most specific owner first so the player searching for it gets the
 // answer they expect ("who casts this?").
 
+/**
+ * Counts of items that grant or trigger this skill, grouped by source type.
+ * Source: build-pipeline `denormalizers/skills/sources.py` populates the
+ * `granted_by_items` JSON column from each per-source linkage:
+ *  - scroll       — items.scroll_skill_id
+ *  - potion_buff  — items.potion_buff_id
+ *  - food_buff    — items.food_buff_id
+ *  - relic_buff   — items.relic_buff_id
+ *  - weapon_proc  — items.weapon_proc_effect_id
+ */
+export interface SkillGrantedByCounts {
+  scroll: number;
+  potion_buff: number;
+  food_buff: number;
+  relic_buff: number;
+  weapon_proc: number;
+}
+
 interface SkillDescriptionInput {
   name: string;
   skill_type: string;
@@ -1156,11 +1337,20 @@ interface SkillDescriptionInput {
   required_skill_points: number;
   required_spent_points: number;
   is_veteran: boolean;
-  is_pet_skill: boolean;
-  is_mercenary_skill: boolean;
-  is_scroll: boolean;
   /** Number of monsters that have this skill in monster_skills. */
   monster_count: number;
+  /**
+   * Pets in `pets` with `is_mercenary=1` that have this skill via pet_skills.
+   * Mercenaries are hired by talking to a Mercenary Recruiter NPC.
+   */
+  mercenary_user_count: number;
+  /**
+   * Pets in `pets` with `is_mercenary=0` (familiars + companions) that have
+   * this skill via pet_skills. The pet itself is summoned by a class skill.
+   */
+  pet_user_count: number;
+  /** Item-grant counts grouped by source type. See SkillGrantedByCounts. */
+  granted_by: SkillGrantedByCounts;
 }
 
 const SKILL_TYPE_LABELS: Record<string, string> = {
@@ -1195,60 +1385,136 @@ function classesPhrase(classes: string[]): string {
 }
 
 /**
- * Compose the per-skill description.
+ * Build the ownership phrase (if any). Routing priority puts the most
+ * actionable owner first — what the player needs to look up to obtain or
+ * use this skill.
  *
- * Ownership routing priority:
- * 1. veteran + has classes \u2192 veteran skill
- * 2. mercenary skill \u2192 mercenary phrase (with classes if present)
- * 3. pet skill \u2192 pet ability (with classes if present)
- * 4. scroll-only \u2192 scroll spell
- * 5. classes + monsters \u2192 class skill also used by monsters
- * 6. classes only \u2192 class skill
- * 7. monsters only \u2192 monster ability
- * 8. fallback \u2192 "Skill"
+ * Reliable signals are JOIN-derived: pet_skills (mercenary/pet), monster_skills,
+ * granted_by_items (item linkage). The bare flag columns `is_pet_skill` /
+ * `is_mercenary_skill` / `is_scroll` on the skills row are NOT trusted —
+ * many true mercenary/scroll skills have these flags zeroed in source data.
+ */
+function skillOwnershipPhrase(skill: SkillDescriptionInput): string | null {
+  const classes = classesPhrase(skill.player_classes);
+  const hasClasses = skill.player_classes.length >= 1;
+
+  // Veteran tree — character-level + spent-points gated, owned by classes.
+  if (skill.is_veteran && hasClasses) {
+    return `Veteran skill for ${classes}`;
+  }
+
+  // Class tree — most actionable signal. Note the "also used by N monsters"
+  // augmentation when monsters share a class skill.
+  if (hasClasses && skill.monster_count > 0) {
+    const noun = skill.monster_count === 1 ? "monster" : "monsters";
+    return `${classes} skill, also used by ${skill.monster_count} ${noun}`;
+  }
+  if (hasClasses) {
+    return `${classes} skill`;
+  }
+
+  // Mercenary ability before pet ability: a hireable mercenary is more
+  // actionable than a familiar/companion locked behind a class skill.
+  if (skill.mercenary_user_count > 0) {
+    return "Mercenary ability";
+  }
+  if (skill.pet_user_count > 0) {
+    return "Pet ability";
+  }
+
+  // Item-granted spells/buffs — pick the dominant single source where possible
+  // so the description points the player at the kind of item they need.
+  const g = skill.granted_by;
+  const sourceTotal =
+    g.scroll + g.potion_buff + g.food_buff + g.relic_buff + g.weapon_proc;
+  if (sourceTotal > 0) {
+    if (g.scroll === sourceTotal) {
+      return g.scroll === 1
+        ? "Spell cast from a scroll"
+        : `Spell cast from ${g.scroll} scrolls`;
+    }
+    if (g.potion_buff === sourceTotal) {
+      return g.potion_buff === 1
+        ? "Applied by a potion"
+        : `Applied by ${g.potion_buff} potions`;
+    }
+    if (g.food_buff === sourceTotal) {
+      return g.food_buff === 1
+        ? "Applied by a food item"
+        : `Applied by ${g.food_buff} food items`;
+    }
+    if (g.relic_buff === sourceTotal) {
+      return g.relic_buff === 1
+        ? "Triggered by a relic"
+        : `Triggered by ${g.relic_buff} relics`;
+    }
+    if (g.weapon_proc === sourceTotal) {
+      return g.weapon_proc === 1
+        ? "Procs from a weapon"
+        : `Procs from ${g.weapon_proc} weapons`;
+    }
+    // Mixed sources — collapse to a generic count.
+    return sourceTotal === 1
+      ? "Granted by an item"
+      : `Granted by ${sourceTotal} items`;
+  }
+
+  // Monsters only — last resort signal before "truly orphan".
+  if (skill.monster_count > 0) {
+    const noun = skill.monster_count === 1 ? "creature" : "creatures";
+    return `Monster ability used by ${skill.monster_count} ${noun}`;
+  }
+
+  // Truly orphan: no class, no pet, no item, no monster. The type label
+  // alone is the only honest signal.
+  return null;
+}
+
+/**
+ * Compose the per-skill description.
+ * Format: `{typeLabel}.{tier} {ownership}.{gate}`
+ * Each section is omitted when it has no useful content.
  */
 export function skillDescription(skill: SkillDescriptionInput): string {
   const typeLabel = humanizeSkillType(skill.skill_type);
-  const classes = classesPhrase(skill.player_classes);
-
-  let ownership: string;
-  if (skill.is_veteran && skill.player_classes.length >= 1) {
-    ownership = `Veteran skill for ${classes}`;
-  } else if (skill.is_mercenary_skill) {
-    ownership = classes ? `Mercenary skill (${classes})` : "Mercenary skill";
-  } else if (skill.is_pet_skill) {
-    ownership = classes ? `Pet ability (${classes} pets)` : "Pet ability";
-  } else if (skill.is_scroll && skill.player_classes.length === 0) {
-    ownership = "Scroll-only spell";
-  } else if (skill.player_classes.length >= 1 && skill.monster_count > 0) {
-    const noun = skill.monster_count === 1 ? "monster" : "monsters";
-    ownership = `${classes} skill, also used by ${skill.monster_count} ${noun}`;
-  } else if (skill.player_classes.length >= 1) {
-    ownership = `${classes} skill`;
-  } else if (skill.monster_count > 0) {
-    const noun = skill.monster_count === 1 ? "creature" : "creatures";
-    ownership = `Monster ability used by ${skill.monster_count} ${noun}`;
-  } else {
-    ownership = "Skill";
-  }
+  const ownership = skillOwnershipPhrase(skill);
 
   const tierPhrase =
     skill.tier > 0 ? ` Tier ${toRomanNumeral(skill.tier)}.` : "";
-  // Source: server-scripts/PlayerSkills.cs:456-458 — veteran skill upgrades check regular character level, available veteran points, and spent veteran points.
-  // Source: server-scripts/PlayerSkills.cs:822-825 — CmdUpgradeVeteran spends available veteran points before increasing the skill level.
-  // Source: server-scripts/Player.cs:5995-6005 and ScriptableSkill.cs:199-201 — requiredSpentPoints means already-spent veteran points, not total veteran level.
+
+  // The level/cost gate only applies when the player can actually act on it:
+  //  - Veteran: cost in veteran points (with spent-points threshold).
+  //  - Class skill: minimum character level to learn from a trainer.
+  // Non-class owners (pet/mercenary/item/monster) gate at the *source* (the
+  // pet's summon skill, the item's level requirement, etc.), not on this
+  // skill row, so emitting "Unlocks at level X" there would mislead.
+  // Source: server-scripts/PlayerSkills.cs:456-458 — veteran upgrades check
+  //   regular character level, available veteran points, and spent points.
+  // Source: server-scripts/PlayerSkills.cs:822-825 — CmdUpgradeVeteran spends
+  //   available veteran points before increasing the skill level.
+  // Source: server-scripts/Player.cs:5995-6005 and ScriptableSkill.cs:199-201
+  //   — requiredSpentPoints means already-spent veteran points, not veteran
+  //   level.
   const veteranPointText = `${skill.required_skill_points} veteran ${
     skill.required_skill_points === 1 ? "point" : "points"
   }`;
-  const levelPhrase = skill.is_veteran
+  // Veteran-tree skills with no player classes are mercenary-side veteran
+  // skills the player can't learn, so the cost gate is only meaningful when
+  // classes are set. Falling through to the class-skill branch in that case
+  // would also be wrong — we just skip the gate.
+  const isVeteranOwnedByPlayer =
+    skill.is_veteran && skill.player_classes.length >= 1;
+  const isClassLearned = skill.player_classes.length >= 1 && !skill.is_veteran;
+  const gate = isVeteranOwnedByPlayer
     ? skill.required_spent_points > 0
       ? ` Costs ${veteranPointText} after ${skill.required_spent_points} spent veteran points.`
       : ` Costs ${veteranPointText}.`
-    : skill.level_required > 0
+    : isClassLearned && skill.level_required > 0
       ? ` Unlocks at level ${skill.level_required}.`
       : "";
 
-  return `${skill.name} — ${typeLabel}.${tierPhrase} ${ownership}.${levelPhrase}`
+  const ownershipPhrase = ownership ? ` ${ownership}.` : "";
+  return `${typeLabel}.${tierPhrase}${ownershipPhrase}${gate}`
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -1309,7 +1575,7 @@ function petOriginPhrase(input: PetDescriptionInput): string {
 export function petDescription(input: PetDescriptionInput): string {
   const origin = petOriginPhrase(input);
   const role = petRolePhrase(input);
-  return `${input.name} — ${input.kind} (${input.type_monster}).${origin} ${role}`;
+  return `${input.kind} (${input.type_monster}).${origin} ${role}`;
 }
 
 // =============================================================================
@@ -1398,5 +1664,5 @@ export function classDescription(klass: ClassDescriptionInput): string {
   const lore = loreSnippet(klass.description);
   const lorePhrase = lore ? ` ${lore}` : "";
 
-  return `${klass.name} — ${role}, uses ${resource}.${lorePhrase}`;
+  return `${role}, uses ${resource}.${lorePhrase}`;
 }
