@@ -16,7 +16,7 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test": "node --test src/lib/version-compare.test.ts src/lib/steam-news-parser.test.ts",
+    "test": "vitest run",
     "cf-deploy": "wrangler deploy",
     "cf-deploy:redirect": "wrangler deploy --config wrangler.redirect.toml"
   },
@@ -54,6 +54,7 @@
     "typescript-eslint": "^8.47.0",
     "vaul-svelte": "1.0.0-next.7",
     "vite": "^7.2.2",
+    "vitest": "^4.1.5",
     "wrangler": "^4.85.0"
   },
   "dependencies": {
