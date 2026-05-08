@@ -5,9 +5,10 @@
   import ThemeToggle from "$lib/components/ThemeToggle.svelte";
   import KofiIcon from "$lib/components/KofiIcon.svelte";
   import SteamIcon from "$lib/components/SteamIcon.svelte";
+  import DiscordIcon from "$lib/components/DiscordIcon.svelte";
   import { buttonVariants } from "$lib/components/ui/button";
   import { cn } from "$lib/utils";
-  import { KOFI_URL, STEAM_GUIDE_URL } from "$lib/constants/links";
+  import { DISCORD_URL, KOFI_URL, STEAM_GUIDE_URL } from "$lib/constants/links";
   import Gem from "@lucide/svelte/icons/gem";
   import MapPin from "@lucide/svelte/icons/map-pin";
   import Skull from "@lucide/svelte/icons/skull";
@@ -71,6 +72,15 @@
         class={buttonVariants({ variant: "ghost", size: "icon" })}
       >
         <SteamIcon class="size-5" />
+      </a>
+      <a
+        href={DISCORD_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Join Discord"
+        class={buttonVariants({ variant: "ghost", size: "icon" })}
+      >
+        <DiscordIcon class="size-5" />
       </a>
       <ThemeToggle />
     </div>

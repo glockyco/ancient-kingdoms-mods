@@ -5,3 +5,4 @@
 export const KOFI_URL = "https://ko-fi.com/wowmuch";
 export const STEAM_GUIDE_URL =
   "https://steamcommunity.com/sharedfiles/filedetails/?id=3616580411";
+export const DISCORD_URL = "https://discord.gg/8MkSWjXwab";
