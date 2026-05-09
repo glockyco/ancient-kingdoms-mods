@@ -44,6 +44,7 @@ export type HighlightCategory =
   | "portal"
   | "chest"
   | "treasure"
+  | "house"
   | "resource"
   | "crafting";
 
@@ -103,6 +104,8 @@ export function resolvePhysicalSelection(
       return resolveChestSelection(id, entityData);
     case "treasure":
       return resolveTreasureSelection(id, entityData);
+    case "house":
+      return resolveHouseSelection(id, entityData);
     case "resource":
     case "gathering_plant":
     case "gathering_mineral":
@@ -353,6 +356,32 @@ function resolveChestSelection(
   // Chest has no position (excluded zone) - just show popup, no highlight
   return {
     popup: { type: "entity", entity: chest },
+    highlight: null,
+  };
+}
+
+/**
+ * Resolve house selection.
+ */
+function resolveHouseSelection(
+  houseId: string,
+  entityData: MapEntityData,
+): ResolvedSelection {
+  const house = entityData.houses.find((h) => h.id === houseId);
+
+  if (!house) {
+    return { popup: null, highlight: null };
+  }
+
+  if (house.position !== null) {
+    return {
+      popup: { type: "entity", entity: house },
+      highlight: { entityId: houseId, entityType: "house" },
+    };
+  }
+
+  return {
+    popup: { type: "entity", entity: house },
     highlight: null,
   };
 }

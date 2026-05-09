@@ -15,6 +15,7 @@ import {
   type ChestMapEntity,
   type TreasureMapEntity,
   type AltarMapEntity,
+  type HouseMapEntity,
 } from "$lib/types/map";
 import type { ZoneFocusedData } from "./zone-filter";
 import { isAnyNpcTypeVisible } from "./visibility";
@@ -77,6 +78,7 @@ export function createFilteredData(data: MapEntityData): FilteredMapData {
   const renderableCrafting = data.crafting.filter((c) => c.position !== null);
   const renderablePortals = data.portals.filter((p) => p.position !== null);
   const renderableNpcs = data.npcs.filter((n) => n.position !== null);
+  const renderableHouses = data.houses.filter((h) => h.position !== null);
 
   return {
     // Creatures = regular monsters (not fabled, not boss, not elite, not hunt)
@@ -105,6 +107,7 @@ export function createFilteredData(data: MapEntityData): FilteredMapData {
     scribingTables: renderableCrafting.filter(
       (c) => c.type === "scribing_table",
     ),
+    houses: renderableHouses,
     portalsWithDestinations: renderablePortals.filter(
       (p) => p.destination !== null && !p.isClosed,
     ),
@@ -580,6 +583,21 @@ export function createLayers(
     iconType: "chest",
     color: LAYER_COLORS.chest,
     radius: LAYER_RADII.chest,
+    extensions: [zoneFilterExt],
+    getFilterValue: (d) => isInZone(d.zoneId),
+    filterRange: [1, 1],
+    updateTriggers: {
+      getFilterValue: focusedZoneId,
+    },
+  });
+
+  const housesLayer = createEntityLayer<HouseMapEntity>({
+    id: "houses",
+    data: filtered.houses,
+    visible: visibility.houses,
+    iconType: "house",
+    color: LAYER_COLORS.house,
+    radius: LAYER_RADII.house,
     extensions: [zoneFilterExt],
     getFilterValue: (d) => isInZone(d.zoneId),
     filterRange: [1, 1],
@@ -1249,6 +1267,7 @@ export function createLayers(
     scribingTablesLayer,
     huntsLayer,
     chestsLayer,
+    housesLayer,
     treasureLayer,
     portalsLayer,
     portalDestinationsLayer,

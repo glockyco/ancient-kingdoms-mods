@@ -22,6 +22,7 @@ import {
   Hammer,
   ChefHat,
   Scroll,
+  Home,
   type IconNode,
 } from "lucide";
 import { LAYER_COLORS } from "./config";
@@ -61,6 +62,7 @@ const ENTITY_ICONS: Record<
   cooking_oven: { icon: ChefHat, colorKey: "crafting" },
   treasure: { icon: Shovel, colorKey: "treasure" },
   scribing_table: { icon: Scroll, colorKey: "scribing" },
+  house: { icon: Home, colorKey: "house" },
 };
 
 export type EntityIconType = keyof typeof ENTITY_ICONS;

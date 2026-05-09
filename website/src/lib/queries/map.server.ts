@@ -19,6 +19,7 @@ import type {
   AltarMapEntity,
   GatheringMapEntity,
   CraftingMapEntity,
+  HouseMapEntity,
   ZoneBoundary,
   ParentZoneBoundary,
   LevelRanges,
@@ -58,6 +59,7 @@ export function loadAllMapEntitiesServer(): MapEntityData {
     const altars = loadAltarsServer(db);
     const gathering = loadGatheringSpawnsServer(db);
     const crafting = loadCraftingStationsServer(db);
+    const houses = loadHousesServer(db);
     const subZones = loadZoneTriggersServer(db);
     const parentZones = loadZoneBoundsServer(db);
 
@@ -72,6 +74,7 @@ export function loadAllMapEntitiesServer(): MapEntityData {
       altars,
       gathering,
       crafting,
+      houses,
       subZones,
       parentZones,
       levelRanges,
@@ -974,6 +977,62 @@ function loadCraftingStationsServer(
     zoneId: r.zone_id,
     zoneName: r.zone_name,
     isCookingOven: Boolean(r.is_cooking_oven),
+  }));
+}
+
+interface HouseRow {
+  id: string;
+  name: string;
+  base_price: number;
+  faction_id: string | null;
+  faction_required: number;
+  zone_id: string | null;
+  zone_name: string;
+  sub_zone_id: string | null;
+  sub_zone_name: string | null;
+  position_x: number | null;
+  position_y: number | null;
+}
+
+function loadHousesServer(db: Database.Database): HouseMapEntity[] {
+  const rows = db
+    .prepare(
+      `
+    SELECT
+      h.id,
+      h.name,
+      h.base_price,
+      h.faction_id,
+      h.faction_required,
+      h.zone_id,
+      COALESCE(h.zone_name, z.name, 'Unknown') as zone_name,
+      h.sub_zone_id,
+      h.sub_zone_name,
+      h.position_x,
+      h.position_y
+    FROM houses h
+    LEFT JOIN zones z ON z.id = h.zone_id
+    WHERE h.position_x IS NOT NULL
+      AND h.position_y IS NOT NULL
+  `,
+    )
+    .all() as HouseRow[];
+
+  return rows.map((row) => ({
+    id: row.id,
+    type: "house",
+    name: row.name,
+    position:
+      row.position_x !== null && row.position_y !== null
+        ? [row.position_x, -row.position_y]
+        : null,
+    zoneId: row.zone_id,
+    zoneName: row.zone_name,
+    basePrice: row.base_price,
+    factionId: row.faction_id,
+    factionRequired: row.faction_required,
+    subZoneId: row.sub_zone_id,
+    subZoneName: row.sub_zone_name,
   }));
 }
 

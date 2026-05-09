@@ -55,6 +55,7 @@ export const LAYER_COLORS = {
   gathering_other: [156, 163, 175] as [number, number, number], // gray-400
   crafting: [139, 92, 246] as [number, number, number], // violet-500
   scribing: [168, 85, 247] as [number, number, number], // purple-500
+  house: [245, 158, 11] as [number, number, number], // amber-500
 } as const;
 
 /**
@@ -71,6 +72,7 @@ export const LAYER_RADII = {
   altar: 7,
   gathering: 3,
   crafting: 5,
+  house: 6,
 } as const;
 
 /**
@@ -93,6 +95,7 @@ export const ICON_SIZES = {
   portal: { base: 22, min: 20, max: 48 },
   chest: { base: 20, min: 18, max: 44 },
   treasure: { base: 20, min: 18, max: 44 },
+  house: { base: 22, min: 20, max: 48 },
   crafting_station: { base: 20, min: 18, max: 44 },
   alchemy_table: { base: 20, min: 18, max: 44 },
   cooking_oven: { base: 20, min: 18, max: 44 },
@@ -232,6 +235,7 @@ export const ENTITY_BORDER_COLORS: Record<string, string> = {
   chest: "border-l-sky-500",
   treasure: "border-l-teal-500",
   altar: "border-l-orange-500",
+  house: "border-l-amber-500",
   gathering_plant: "border-l-lime-500",
   gathering_mineral: "border-l-stone-500",
   gathering_spark: "border-l-purple-500",

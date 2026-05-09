@@ -18,7 +18,8 @@ export type EntityType =
   | "gathering_other"
   | "alchemy_table"
   | "crafting_station"
-  | "scribing_table";
+  | "scribing_table"
+  | "house";
 
 /**
  * Base interface for all map entities
@@ -166,6 +167,18 @@ export interface ChestMapEntity extends MapEntity {
 }
 
 /**
+ * House purchase location entity data
+ */
+export interface HouseMapEntity extends MapEntity {
+  type: "house";
+  basePrice: number;
+  factionId: string | null;
+  factionRequired: number;
+  subZoneId: string | null;
+  subZoneName: string | null;
+}
+
+/**
  * Treasure dig location entity data
  */
 export interface TreasureMapEntity extends MapEntity {
@@ -235,7 +248,8 @@ export type AnyMapEntity =
   | TreasureMapEntity
   | AltarMapEntity
   | GatheringMapEntity
-  | CraftingMapEntity;
+  | CraftingMapEntity
+  | HouseMapEntity;
 
 /**
  * Layer visibility toggle state
@@ -276,6 +290,7 @@ export interface LayerVisibility {
   chests: boolean;
   treasure: boolean;
   altars: boolean;
+  houses: boolean;
   alchemyTables: boolean;
   forges: boolean;
   cookingOvens: boolean;
@@ -347,6 +362,7 @@ export interface MapEntityData {
   altars: AltarMapEntity[];
   gathering: GatheringMapEntity[];
   crafting: CraftingMapEntity[];
+  houses: HouseMapEntity[];
   subZones: ZoneBoundary[];
   parentZones: ParentZoneBoundary[];
   levelRanges: LevelRanges;
@@ -369,6 +385,7 @@ export interface FilteredMapData {
   forges: CraftingMapEntity[];
   cookingOvens: CraftingMapEntity[];
   scribingTables: CraftingMapEntity[];
+  houses: HouseMapEntity[];
   portalsWithDestinations: PortalMapEntity[];
   teleportersWithDestinations: NpcMapEntity[];
   parentZones: ParentZoneBoundary[];

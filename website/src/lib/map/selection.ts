@@ -71,6 +71,7 @@ export interface EntityIndex {
   chests: Map<string, AnyMapEntity[]>;
   treasure: Map<string, AnyMapEntity[]>;
   altars: Map<string, AnyMapEntity[]>;
+  houses: Map<string, AnyMapEntity[]>;
   gathering: Map<string, AnyMapEntity[]>;
   crafting: Map<string, AnyMapEntity[]>;
 }
@@ -156,6 +157,7 @@ export function createEntityIndex(data: MapEntityData): EntityIndex {
     altars: indexEntities(data.altars),
     gathering: indexEntities(data.gathering),
     crafting: indexEntities(data.crafting),
+    houses: indexEntities(data.houses),
   };
 }
 
@@ -251,6 +253,8 @@ function getIndexForCategory(
       return index.treasure;
     case "altar":
       return index.altars;
+    case "house":
+      return index.houses;
     case "resource":
       return index.gathering;
     case "crafting":
@@ -456,6 +460,8 @@ function getIndexForType(
       return index.portals;
     case "crafting":
       return index.crafting;
+    case "house":
+      return index.houses;
     // Entity types (when clicking directly on map)
     case "fabled":
     case "boss":
