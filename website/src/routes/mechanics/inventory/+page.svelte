@@ -158,11 +158,21 @@
     <Card.Header>
       <Card.Title>Backpacks</Card.Title>
       <Card.Description>
-        Backpacks equip into dedicated bag slots and unlock carried storage.
+        Backpacks equip into nine dedicated bag slots inside their own panel,
+        separate from the main inventory. Each equipped bag expands the carried
+        storage shown alongside those slots.
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-5">
       <ul class="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
+        <li>
+          <!-- Source: server-scripts/UIBigBackpack.cs + server-scripts/GameManager.cs:391,396,791-803 — UIBigBackpack panel toggled by the "Backpack" input action; default binding <Keyboard>/b. -->Open
+          the equipped-bag panel with the Backpack key (default
+          <kbd
+            class="rounded border border-border bg-muted px-1 py-0.5 font-mono text-xs"
+            >B</kbd
+          >) or the skillbar button.
+        </li>
         <li>
           <!-- Source: server-scripts/PlayerInventory.cs:383-390 — backpack slots reject non-backpack items. -->Backpack
           slots accept backpacks only.
