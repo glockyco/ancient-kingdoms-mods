@@ -80,7 +80,7 @@
   <Breadcrumb
     items={[
       { label: "Home", href: "/" },
-      { label: "Mechanics" },
+      { label: "Mechanics", href: "/mechanics" },
       { label: "Combat" },
     ]}
   />
@@ -944,8 +944,13 @@ finalDamage = damage − reduction</pre>
         <h3 class="font-semibold mb-1">Weapon On-Hit Procs</h3>
         <p class="text-sm text-muted-foreground">
           Weapons with an on-hit effect trigger it at the listed probability on
-          auto-attacks. Requires durability &gt; 0. Rogue players also trigger
-          their offhand weapon's proc at 50% of its listed probability.
+          auto-attacks.
+          <a
+            href="/mechanics/inventory#equipment-and-death"
+            class="text-blue-600 dark:text-blue-400 hover:underline"
+            >Requires durability &gt; 0</a
+          >. Rogue players also trigger their offhand weapon's proc at 50% of
+          its listed probability.
         </p>
       </div>
 

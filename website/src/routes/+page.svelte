@@ -24,6 +24,7 @@
   import Star from "@lucide/svelte/icons/star";
   import Cat from "@lucide/svelte/icons/cat";
   import ArrowRight from "@lucide/svelte/icons/arrow-right";
+  import Cog from "@lucide/svelte/icons/cog";
   import GameVersionBanner from "$lib/components/GameVersionBanner.svelte";
 
   let { data } = $props();
@@ -501,6 +502,35 @@
               class="flex items-center text-sm text-muted-foreground group-hover:text-foreground transition-colors"
             >
               Browse all {data.counts.chests.toLocaleString()} chests
+              <ArrowRight class="ml-2 h-4 w-4" />
+            </div>
+          </Card.Content>
+        </Card.Root>
+      </a>
+
+      <!-- Mechanics -->
+      <a href="/mechanics" class="block group">
+        <Card.Root
+          class="h-full transition-colors hover:bg-muted/50 bg-muted/30"
+        >
+          <Card.Header>
+            <div class="flex items-center gap-3">
+              <div class="p-2 rounded-lg bg-slate-500/10">
+                <Cog class="h-6 w-6 text-slate-500" />
+              </div>
+              <div>
+                <Card.Title class="group-hover:underline">Mechanics</Card.Title>
+                <Card.Description>
+                  Game systems and rule references
+                </Card.Description>
+              </div>
+            </div>
+          </Card.Header>
+          <Card.Content>
+            <div
+              class="flex items-center text-sm text-muted-foreground group-hover:text-foreground transition-colors"
+            >
+              Read mechanics
               <ArrowRight class="ml-2 h-4 w-4" />
             </div>
           </Card.Content>

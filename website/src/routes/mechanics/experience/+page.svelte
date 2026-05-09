@@ -16,7 +16,7 @@
   <Breadcrumb
     items={[
       { label: "Home", href: "/" },
-      { label: "Mechanics" },
+      { label: "Mechanics", href: "/mechanics" },
       { label: "Experience" },
     ]}
   />
@@ -494,7 +494,13 @@
           <tbody>
             <!-- Source: server-scripts/Player.cs:11087 — CmdGetExpFromRemains: 0.5f * lossExp -->
             <tr class="border-b hover:bg-muted/30">
-              <td class="p-2">Retrieve from corpse</td>
+              <td class="p-2">
+                <a
+                  href="/mechanics/inventory#equipment-and-death"
+                  class="text-blue-600 dark:text-blue-400 hover:underline"
+                  >Retrieve from corpse</a
+                >
+              </td>
               <td class="p-2 text-right font-mono">50%</td>
             </tr>
             <!-- Source: server-scripts/Player.cs:10026 — CmdResurrect: 0.75f * lossExp -->

@@ -34,6 +34,17 @@
     valueCurrency: "text-yellow-600 dark:text-yellow-400",
   } as const;
 
+  const HOUSE_CHEST_ITEM_IDS = new Set([
+    "wooden_chest",
+    "red_chest",
+    "blue_chest",
+    "stone_chest",
+    "granite_chest",
+    "sturdy_chest",
+    "rustic_chest",
+    "guardian_box",
+  ]);
+
   function parseJson<T>(json: string | null): T | null {
     if (!json) return null;
     try {
@@ -91,6 +102,11 @@
     isArmorSetMetadata
       ? "Armor Set Bonus"
       : formatItemType(data.item.item_type),
+  );
+  const isBackpack = $derived(data.item.item_type === "backpack");
+  const isHouseChestStructure = $derived(
+    data.item.item_type === "structure" &&
+      HOUSE_CHEST_ITEM_IDS.has(data.item.id),
   );
 
   // Compute all derived values from item data and server-loaded sources/usages
@@ -479,6 +495,32 @@
       {/if}
     </Card.Content>
   </Card.Root>
+
+  {#if isBackpack || isHouseChestStructure}
+    <Card.Root class="bg-muted/30">
+      <Card.Header>
+        <Card.Title>Mechanics</Card.Title>
+      </Card.Header>
+      <Card.Content class="space-y-2 text-sm">
+        {#if isBackpack}
+          <a href="/mechanics/inventory#backpacks" class={styles.link}>
+            Backpack storage rules
+          </a>
+        {/if}
+        {#if isHouseChestStructure}
+          <div class="space-y-2 text-muted-foreground">
+            <p>
+              House chest use requires owning a house. See
+              <a href="/mechanics/inventory#house-chests" class={styles.link}>
+                house chest storage rules
+              </a>
+              for slot ranges, costs, and house locations.
+            </p>
+          </div>
+        {/if}
+      </Card.Content>
+    </Card.Root>
+  {/if}
 
   <!-- Tooltip and Stats/Merge/Currency side-by-side (hide entire section if all would be empty) -->
   {#if hasPrimaryDetailCards}
