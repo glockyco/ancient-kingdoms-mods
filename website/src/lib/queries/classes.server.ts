@@ -1,5 +1,10 @@
-import { query, queryOne } from "$lib/db.server";
+import { getDb, query, queryOne } from "$lib/db.server";
 import type { Class } from "$lib/types/classes";
+import {
+  getItemSourceSummaries,
+  getMinimumSourceLevel,
+  groupItemSourceSummaries,
+} from "$lib/server/item-source-summary";
 
 /**
  * Get all player classes (server-side, for prerendering)
@@ -284,24 +289,7 @@ export interface ClassItem {
 }
 
 /**
- * Raw source row from the batch UNION ALL query
- */
-interface RawSourceRow {
-  item_id: string;
-  source_type: string;
-  source_id: string;
-  source_name: string;
-  source_level: number | null;
-}
-
-/**
  * Get all equipment and weapons for a class with aggregated sources.
- *
- * Runs two queries:
- * 1. Items matching the class filter
- * 2. Batch UNION ALL across all 13 source tables for those items
- *
- * Sources are grouped per item with min_source_level computed for sorting.
  */
 export function getClassItemsWithSources(
   classId: string,
@@ -335,132 +323,18 @@ export function getClassItemsWithSources(
     [classId],
   );
 
-  if (items.length === 0) {
-    return [];
-  }
-
-  const itemIds = items.map((item) => item.id);
-  const placeholders = itemIds.map(() => "?").join(",");
-
-  const sourceRows = query<RawSourceRow>(
-    `
-    SELECT ism.item_id, 'drop' as source_type, m.id as source_id, m.name as source_name,
-      COALESCE((SELECT MIN(ms.level) FROM monster_spawns ms WHERE ms.monster_id = m.id), m.level) as source_level
-    FROM item_sources_monster ism
-    JOIN monsters m ON ism.monster_id = m.id
-    WHERE ism.item_id IN (${placeholders})
-
-    UNION ALL
-    SELECT isq.item_id, 'quest', q.id, q.name, q.level_recommended
-    FROM item_sources_quest isq
-    JOIN quests q ON isq.quest_id = q.id
-    WHERE isq.item_id IN (${placeholders})
-
-    UNION ALL
-    SELECT isv.item_id, 'vendor', n.id, n.name, NULL
-    FROM item_sources_vendor isv
-    JOIN npcs n ON isv.npc_id = n.id
-    WHERE isv.item_id IN (${placeholders})
-
-    UNION ALL
-    SELECT isa.item_id, 'altar', a.id, a.name, MAX(isa.min_effective_level, a.min_level_required)
-    FROM item_sources_altar isa
-    JOIN altars a ON isa.altar_id = a.id
-    WHERE isa.item_id IN (${placeholders})
-
-    UNION ALL
-    SELECT isr.item_id, 'alchemy', isr.recipe_id, 'Alchemy', isr.source_level
-    FROM item_sources_recipe isr
-    WHERE isr.recipe_type = 'alchemy' AND isr.item_id IN (${placeholders})
-
-    UNION ALL
-    SELECT isr.item_id, 'crafting', isr.recipe_id, 'Crafting', isr.source_level
-    FROM item_sources_recipe isr
-    WHERE isr.recipe_type = 'crafting' AND isr.item_id IN (${placeholders})
-
-    UNION ALL
-    SELECT isr.item_id, 'scribing', isr.recipe_id, 'Scribing', isr.source_level
-    FROM item_sources_recipe isr
-    WHERE isr.recipe_type = 'scribing' AND isr.item_id IN (${placeholders})
-    UNION ALL
-    SELECT isg.item_id, 'gather', gr.id, gr.name, NULL
-    FROM item_sources_gather isg
-    JOIN gathering_resources gr ON isg.resource_id = gr.id
-    WHERE isg.item_id IN (${placeholders})
-
-    UNION ALL
-    SELECT isc.item_id, 'chest', c.id, c.name, NULL
-    FROM item_sources_chest isc
-    JOIN chests c ON isc.chest_id = c.id
-    WHERE isc.item_id IN (${placeholders})
-
-    UNION ALL
-    SELECT isp.item_id, 'pack', i.id, i.name, NULL
-    FROM item_sources_pack isp
-    JOIN items i ON isp.pack_item_id = i.id
-    WHERE isp.item_id IN (${placeholders})
-
-    UNION ALL
-    SELECT isr2.item_id, 'random', i.id, i.name, NULL
-    FROM item_sources_random isr2
-    JOIN items i ON isr2.random_item_id = i.id
-    WHERE isr2.item_id IN (${placeholders})
-
-    UNION ALL
-    SELECT ism2.item_id, 'merge', i.id, i.name, NULL
-    FROM item_sources_merge ism2
-    JOIN items i ON ism2.component_item_id = i.id
-    WHERE ism2.item_id IN (${placeholders})
-
-    UNION ALL
-    SELECT istm.item_id, 'treasure_map', i.id, i.name, NULL
-    FROM item_sources_treasure_map istm
-    JOIN items i ON istm.map_item_id = i.id
-    WHERE istm.item_id IN (${placeholders})
-    `,
-    // 13 sub-queries, each needs the full itemIds array
-    Array(13).fill(itemIds).flat(),
+  const sourceRows = getItemSourceSummaries(
+    getDb(),
+    items.map((item) => item.id),
   );
+  const sourcesByItemId = groupItemSourceSummaries(sourceRows);
 
-  // Group sources by item_id
-  const sourcesByItemId = new Map<string, ClassItemSource[]>();
-  for (const row of sourceRows) {
-    let sources = sourcesByItemId.get(row.item_id);
-    if (!sources) {
-      sources = [];
-      sourcesByItemId.set(row.item_id, sources);
-    }
-    sources.push({
-      type: row.source_type,
-      id: row.source_id,
-      name: row.source_name,
-      source_level: row.source_level,
-    });
-  }
-
-  // Sort sources within each item by source_level ascending (nulls last)
-  for (const sources of sourcesByItemId.values()) {
-    sources.sort((a, b) => {
-      if (a.source_level === null && b.source_level === null) return 0;
-      if (a.source_level === null) return 1;
-      if (b.source_level === null) return -1;
-      return a.source_level - b.source_level;
-    });
-  }
-
-  // Attach sources to items and compute min_source_level
   return items.map((item) => {
     const sources = sourcesByItemId.get(item.id) ?? [];
-    const levelsWithValues = sources
-      .map((s) => s.source_level)
-      .filter((l): l is number => l !== null);
-    const min_source_level =
-      levelsWithValues.length > 0 ? Math.min(...levelsWithValues) : null;
-
     return {
       ...item,
       sources,
-      min_source_level,
+      min_source_level: getMinimumSourceLevel(sources),
     };
   });
 }

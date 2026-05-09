@@ -8,7 +8,7 @@ let db: Database.Database | null = null;
  * Get the server-side database connection.
  * Used during build/prerendering.
  */
-function getDb(): Database.Database {
+export function getDb(): Database.Database {
   if (!db) {
     const dbPath = resolve(DB_STATIC_PATH);
     db = new Database(dbPath, { readonly: true });

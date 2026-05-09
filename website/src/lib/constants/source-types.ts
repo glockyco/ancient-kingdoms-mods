@@ -40,6 +40,7 @@ export type ItemSourceType =
   | "recipe"
   | "alchemy"
   | "crafting"
+  | "scribing"
   | "gather"
   | "chest"
   | "pack"
@@ -89,6 +90,12 @@ export const SOURCE_TYPE_CONFIG: Record<ItemSourceType, SourceTypeConfig> = {
     icon: Hammer,
     color: "text-orange-500",
     label: "Crafting",
+    linkPrefix: "/recipes/",
+  },
+  scribing: {
+    icon: ScrollText,
+    color: "text-purple-500",
+    label: "Scribing",
     linkPrefix: "/recipes/",
   },
   gather: {
