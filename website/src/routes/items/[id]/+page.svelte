@@ -12,6 +12,7 @@
   import { formatItemType } from "$lib/utils/format";
   import { formatClassName } from "$lib/utils/classes";
   import { formatStatName, formatResourceName } from "$lib/terminology";
+  import { isHouseChestItemId } from "$lib/inventory/house-chests";
   import type { PageData } from "./$types";
 
   let { data }: { data: PageData } = $props();
@@ -33,18 +34,6 @@
     // Currency/gold values
     valueCurrency: "text-yellow-600 dark:text-yellow-400",
   } as const;
-
-  const HOUSE_CHEST_ITEM_IDS = new Set([
-    "wooden_chest",
-    "red_chest",
-    "blue_chest",
-    "stone_chest",
-    "granite_chest",
-    "sturdy_chest",
-    "rustic_chest",
-    "guardian_box",
-  ]);
-
   function parseJson<T>(json: string | null): T | null {
     if (!json) return null;
     try {
@@ -105,8 +94,7 @@
   );
   const isBackpack = $derived(data.item.item_type === "backpack");
   const isHouseChestStructure = $derived(
-    data.item.item_type === "structure" &&
-      HOUSE_CHEST_ITEM_IDS.has(data.item.id),
+    data.item.item_type === "structure" && isHouseChestItemId(data.item.id),
   );
 
   // Compute all derived values from item data and server-loaded sources/usages
@@ -503,9 +491,15 @@
       </Card.Header>
       <Card.Content class="space-y-2 text-sm">
         {#if isBackpack}
-          <a href="/mechanics/inventory#backpacks" class={styles.link}>
-            Backpack storage rules
-          </a>
+          <div class="space-y-2 text-muted-foreground">
+            <p>
+              Equipping a backpack expands your carry inventory. See
+              <a href="/mechanics/inventory#backpacks" class={styles.link}>
+                backpack storage rules
+              </a>
+              for slot counts and where each bag comes from.
+            </p>
+          </div>
         {/if}
         {#if isHouseChestStructure}
           <div class="space-y-2 text-muted-foreground">

@@ -1,6 +1,7 @@
 import Database from "better-sqlite3";
 import { DB_STATIC_PATH } from "$lib/constants/constants";
 import type { ItemSourceType } from "$lib/constants/source-types";
+import { HOUSE_CHEST_SLOT_RANGES } from "$lib/inventory/house-chests";
 import {
   getItemSourceSummaries,
   getMinimumSourceLevel,
@@ -59,19 +60,6 @@ export interface InventoryMechanicsPageData {
   houses: HouseStorageLocation[];
   houseChests: HouseChestStructure[];
 }
-
-// Source: server-scripts/PlayerChest.cs:28-68 — chest object names map to fixed 30-slot account chest sections.
-// Source: server-scripts/UIChest.cs:44-82 — UI displays the same fixed chest sections.
-const HOUSE_CHEST_SLOT_RANGES = new Map<string, [number, number]>([
-  ["wooden_chest", [0, 29]],
-  ["red_chest", [30, 59]],
-  ["blue_chest", [60, 89]],
-  ["stone_chest", [90, 119]],
-  ["granite_chest", [120, 149]],
-  ["sturdy_chest", [150, 179]],
-  ["rustic_chest", [180, 209]],
-  ["guardian_box", [210, 239]],
-]);
 
 function getBackpackRows(db: Database.Database): BackpackRow[] {
   // Source: mods/DataExporter/Exporters/ItemExporter.cs:120 — BackpackItem assets export as item_type='backpack'

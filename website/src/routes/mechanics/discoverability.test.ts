@@ -25,11 +25,13 @@ test("mechanics index and homepage expose mechanics references", () => {
 
 test("item pages link backpacks and house chests to inventory mechanics", () => {
   const itemPage = source("../items/[id]/+page.svelte");
+  const houseChests = source("../../lib/inventory/house-chests.ts");
 
   assert.match(itemPage, /data\.item\.item_type === "backpack"/);
   assert.match(itemPage, /data\.item\.item_type === "structure"/);
-  assert.match(itemPage, /wooden_chest/);
-  assert.match(itemPage, /guardian_box/);
+  assert.match(itemPage, /isHouseChestItemId\(data\.item\.id\)/);
+  assert.match(houseChests, /wooden_chest/);
+  assert.match(houseChests, /guardian_box/);
   assert.match(itemPage, /href="\/mechanics\/inventory#backpacks"/);
   assert.match(itemPage, /href="\/mechanics\/inventory#house-chests"/);
 });
