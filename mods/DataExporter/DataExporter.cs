@@ -90,6 +90,10 @@ namespace DataExporter
                 var zoneTriggerExporter = new ZoneTriggerExporter(LoggerInstance, ExportPath);
                 zoneTriggerExporter.Export();
 
+                // Export houses (purchase locations)
+                var houseExporter = new HouseExporter(LoggerInstance, ExportPath);
+                houseExporter.Export();
+
                 // Export gather items (herbs, ores, etc.)
                 var gatherItemExporter = new GatherItemExporter(LoggerInstance, ExportPath);
                 gatherItemExporter.Export();
