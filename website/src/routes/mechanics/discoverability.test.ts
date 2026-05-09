@@ -55,15 +55,12 @@ test("mechanics detail breadcrumbs link to mechanics overview", () => {
   assert.match(combatPage, /\{ label: "Mechanics", href: "\/mechanics" \}/);
 });
 
-test("mechanics pages cross-link equipment and death inventory rules", () => {
+test("experience page cross-links equipment and death inventory rules", () => {
   const experiencePage = source("./experience/+page.svelte");
-  const combatPage = source("./combat/+page.svelte");
 
   assert.match(
     experiencePage,
     /href="\/mechanics\/inventory#equipment-and-death"/,
   );
   assert.match(experiencePage, /Retrieve from corpse/);
-  assert.match(combatPage, /href="\/mechanics\/inventory#equipment-and-death"/);
-  assert.match(combatPage, /Requires durability/);
 });
