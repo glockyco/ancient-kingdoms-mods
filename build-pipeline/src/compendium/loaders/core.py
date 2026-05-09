@@ -23,6 +23,7 @@ from compendium.models import (
     CraftingRecipeData,
     CraftingStationData,
     GatherItemData,
+    HouseData,
     ItemData,
     LuckTokenData,
     MonsterData,
@@ -1192,6 +1193,59 @@ def load_alchemy_tables(conn: sqlite3.Connection, export_dir: Path) -> None:
 
     conn.commit()
     console.print(f"  [green]OK[/green] Loaded {len(tables)} alchemy tables")
+
+
+def load_houses(conn: sqlite3.Connection, export_dir: Path) -> None:
+    """Load house purchase world locations into database."""
+    console.print("Loading houses...")
+
+    filepath = export_dir / "houses.json"
+    if not filepath.exists():
+        console.print("  [yellow]SKIP[/yellow] No houses.json found")
+        return
+
+    with open(filepath, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    houses = [HouseData(**item) for item in data]
+
+    cursor = conn.cursor()
+    zone_names = dict(cursor.execute("SELECT id, name FROM zones").fetchall())
+    sub_zone_names = dict(
+        cursor.execute("SELECT id, name FROM zone_triggers").fetchall()
+    )
+
+    for house in houses:
+        keywords = "house housing property storage chest"
+
+        cursor.execute(
+            """
+            INSERT INTO houses (
+                id, name, description, base_price, faction_id, faction_required,
+                zone_id, zone_name, sub_zone_id, sub_zone_name,
+                position_x, position_y, position_z, keywords
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                house.id,
+                house.name,
+                house.description,
+                house.base_price,
+                house.faction_id,
+                house.faction_required,
+                house.zone_id,
+                zone_names.get(house.zone_id),
+                house.sub_zone_id,
+                sub_zone_names.get(house.sub_zone_id) if house.sub_zone_id else None,
+                house.position.x,
+                house.position.y,
+                house.position.z,
+                keywords,
+            ),
+        )
+
+    conn.commit()
+    console.print(f"  [green]OK[/green] Loaded {len(houses)} houses")
 
 
 def load_scribing_tables(conn: sqlite3.Connection, export_dir: Path) -> None:

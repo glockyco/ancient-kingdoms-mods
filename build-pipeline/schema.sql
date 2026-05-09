@@ -194,6 +194,31 @@ CREATE INDEX idx_altars_type ON altars(type);
 CREATE INDEX idx_altars_min_level ON altars(min_level_required);
 
 -- =============================================================================
+-- HOUSES (purchase locations)
+-- =============================================================================
+
+CREATE TABLE houses (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    description TEXT,
+    base_price INTEGER NOT NULL DEFAULT 0,
+    faction_id TEXT,
+    faction_required REAL DEFAULT 0,
+    zone_id TEXT REFERENCES zones(id),
+    zone_name TEXT,
+    sub_zone_id TEXT REFERENCES zone_triggers(id),
+    sub_zone_name TEXT,
+    position_x REAL,
+    position_y REAL,
+    position_z REAL,
+    keywords TEXT
+);
+
+CREATE INDEX idx_houses_zone ON houses(zone_id);
+CREATE INDEX idx_houses_price ON houses(base_price);
+
+
+-- =============================================================================
 -- ITEMS
 -- =============================================================================
 
@@ -1586,6 +1611,29 @@ CREATE TRIGGER chests_au AFTER UPDATE ON chests BEGIN
     INSERT INTO chests_fts(chests_fts, rowid, name, keywords) VALUES ('delete', old.rowid, old.name, old.keywords);
     INSERT INTO chests_fts(rowid, name, keywords) VALUES (new.rowid, new.name, new.keywords);
 END;
+
+-- Houses FTS5 (for map search)
+CREATE VIRTUAL TABLE houses_fts USING fts5(
+    name,
+    keywords,
+    content=houses,
+    content_rowid=rowid,
+    prefix='2,3'
+);
+
+CREATE TRIGGER houses_ai AFTER INSERT ON houses BEGIN
+    INSERT INTO houses_fts(rowid, name, keywords) VALUES (new.rowid, new.name, new.keywords);
+END;
+
+CREATE TRIGGER houses_ad AFTER DELETE ON houses BEGIN
+    INSERT INTO houses_fts(houses_fts, rowid, name, keywords) VALUES ('delete', old.rowid, old.name, old.keywords);
+END;
+
+CREATE TRIGGER houses_au AFTER UPDATE ON houses BEGIN
+    INSERT INTO houses_fts(houses_fts, rowid, name, keywords) VALUES ('delete', old.rowid, old.name, old.keywords);
+    INSERT INTO houses_fts(rowid, name, keywords) VALUES (new.rowid, new.name, new.keywords);
+END;
+
 
 -- Altars FTS5 (for map search)
 CREATE VIRTUAL TABLE altars_fts USING fts5(

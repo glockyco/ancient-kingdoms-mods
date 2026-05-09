@@ -1031,6 +1031,20 @@ class AlchemyTableData(BaseModel):
     position: Position
 
 
+class HouseData(BaseModel):
+    """House purchase location from houses.json"""
+
+    id: str
+    name: str
+    description: str | None = None
+    base_price: int = 0
+    faction_id: str | None = None
+    faction_required: float = 0.0
+    zone_id: str
+    sub_zone_id: str | None = None
+    position: Position
+
+
 # =============================================================================
 # Scribing Models
 # =============================================================================
