@@ -12,8 +12,8 @@ The recipe's source_level = MAX across all materials of each material's
 minimum obtainable level. You need ALL materials, so the bottleneck is
 the hardest-to-get material's easiest source.
 
-Materials with no determinable source level (e.g., Primal Essence from
-salvaging) are ignored — they don't gate the recipe.
+Primal Essence is assigned the lowest source level of any repeatably obtainable
+magic-or-better equipment that can be traded to an essence trader.
 """
 
 import json
@@ -22,6 +22,13 @@ import sqlite3
 from rich.console import Console
 
 console = Console()
+
+
+# Source: server-scripts/UINpcTrading.cs:354-365 — vendor purchases have no player-level gate unless the item adds faction or adventuring requirements.
+# Source: server-scripts/Npc.cs:45-47 — adventurer merchants are a distinct NPC role.
+# Source: server-scripts/Npc.cs:1914-1916 — adventurer NPC interactions treat player level 40 as the low-level cutoff.
+REGULAR_VENDOR_SOURCE_LEVEL = 1
+ADVENTURER_VENDOR_SOURCE_LEVEL = 40
 
 
 def _get_material_min_level_from_monsters(
@@ -97,6 +104,78 @@ def _get_item_recipe_map(cursor: sqlite3.Cursor) -> dict[str, str]:
         FROM item_sources_recipe
     """)
     return {row[0]: row[1] for row in cursor.fetchall()}
+
+
+def _get_primal_essence_min_level(
+    cursor: sqlite3.Cursor,
+    monster_levels: dict[str, int],
+    gather_levels: dict[str, int],
+    item_to_recipe: dict[str, str],
+    recipe_materials: dict[str, list[str]],
+) -> int | None:
+    """Get the lowest source level of repeatably obtainable essence-trade gear."""
+    cursor.execute(
+        """
+        SELECT id
+        FROM items
+        WHERE item_type IN ('equipment', 'weapon')
+          AND quality >= 2
+          AND sellable = 1
+          AND sell_price > 0
+          AND COALESCE(weapon_category, '') != 'Pickaxe'
+        """
+    )
+    eligible_item_ids = [row[0] for row in cursor.fetchall()]
+    if not eligible_item_ids:
+        return None
+
+    candidates: list[int] = []
+    temp_cache: dict[str, int | None] = {}
+
+    # Source: server-scripts/Npc.cs:1886-1894 — essence traders accept eligible gear from player inventory.
+    # Source: server-scripts/UINpcTrading.cs:371-418 — essence trader offers every eligible carried item as a repeatable trade.
+    # Source: server-scripts/Utils.cs:464-470 — eligible primal essence trades require magic-or-better equipment with sell price.
+    for item_id in eligible_item_ids:
+        level = _resolve_material_level(
+            item_id,
+            monster_levels,
+            gather_levels,
+            item_to_recipe,
+            recipe_materials,
+            temp_cache,
+        )
+        if level is not None:
+            candidates.append(level)
+
+    cursor.execute(
+        f"""
+        SELECT isv.item_id,
+          MIN(CASE
+            WHEN json_extract(n.roles, '$.is_merchant_adventurer') = 1 THEN {ADVENTURER_VENDOR_SOURCE_LEVEL}
+            ELSE {REGULAR_VENDOR_SOURCE_LEVEL}
+          END) as source_level
+        FROM item_sources_vendor isv
+        JOIN npcs n ON isv.npc_id = n.id
+        WHERE isv.item_id IN ({",".join("?" for _ in eligible_item_ids)})
+        GROUP BY isv.item_id
+        """,
+        eligible_item_ids,
+    )
+    candidates.extend(row[1] for row in cursor.fetchall() if row[1] is not None)
+
+    cursor.execute(
+        f"""
+        SELECT isa.item_id, MIN(MAX(isa.min_effective_level, a.min_level_required))
+        FROM item_sources_altar isa
+        JOIN altars a ON isa.altar_id = a.id
+        WHERE isa.item_id IN ({",".join("?" for _ in eligible_item_ids)})
+        GROUP BY isa.item_id
+        """,
+        eligible_item_ids,
+    )
+    candidates.extend(row[1] for row in cursor.fetchall() if row[1] is not None)
+
+    return min(candidates) if candidates else None
 
 
 def _resolve_material_level(
@@ -197,7 +276,14 @@ def run(conn: sqlite3.Connection) -> None:
     recipe_materials = _get_recipe_materials(cursor)
     item_to_recipe = _get_item_recipe_map(cursor)
 
-    cache: dict[str, int | None] = {}
+    primal_essence_level = _get_primal_essence_min_level(
+        cursor,
+        monster_levels,
+        gather_levels,
+        item_to_recipe,
+        recipe_materials,
+    )
+    cache: dict[str, int | None] = {"primal_essence": primal_essence_level}
     updated = 0
 
     cursor.execute("SELECT id, recipe_id FROM item_sources_recipe")

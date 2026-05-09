@@ -479,6 +479,21 @@ CREATE TABLE item_sources_chest (
 CREATE INDEX idx_item_sources_chest_item ON item_sources_chest(item_id);
 CREATE INDEX idx_item_sources_chest_chest ON item_sources_chest(chest_id);
 
+CREATE TABLE item_source_entries (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    item_id TEXT NOT NULL REFERENCES items(id),
+    source_type TEXT NOT NULL,
+    source_id TEXT NOT NULL,
+    source_name TEXT NOT NULL,
+    source_level INTEGER,
+    source_sort_name TEXT NOT NULL
+);
+
+CREATE INDEX idx_item_source_entries_item ON item_source_entries(item_id);
+CREATE INDEX idx_item_source_entries_type ON item_source_entries(source_type);
+CREATE INDEX idx_item_source_entries_level ON item_source_entries(source_level);
+
+
 -- =============================================================================
 -- MONSTERS
 -- =============================================================================

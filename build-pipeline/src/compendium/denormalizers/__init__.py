@@ -25,7 +25,7 @@ from compendium.denormalizers import (
     skills,
     zones,
 )
-from compendium.denormalizers.items import crafting_source_level
+from compendium.denormalizers.items import crafting_source_level, source_entries
 from compendium.redaction import RedactionConfig, load_redactions
 
 console = Console()
@@ -211,6 +211,9 @@ def run_all(conn: sqlite3.Connection) -> None:
 
     # Crafting source levels (needs item sources + zone medians)
     crafting_source_level.run(conn)
+
+    # Canonical item source summaries (needs recipe source levels)
+    source_entries.run(conn)
 
     # Quest denormalizations (tooltips)
     quests.run_tooltips(conn)
