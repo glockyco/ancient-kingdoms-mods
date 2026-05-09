@@ -22,6 +22,7 @@
   import FlaskConical from "@lucide/svelte/icons/flask-conical";
   import Scroll from "@lucide/svelte/icons/scroll";
   import ChefHat from "@lucide/svelte/icons/chef-hat";
+  import Home from "@lucide/svelte/icons/home";
   import MapSidebarSection from "./MapSidebarSection.svelte";
   import ZoneFocusSelect from "./ZoneFocusSelect.svelte";
   import LevelFilter from "../LevelFilter.svelte";
@@ -243,6 +244,7 @@
       icon: CircleDot,
     },
     { key: "chests", label: "Chests", color: LAYER_COLORS.chest, icon: Box },
+    { key: "houses", label: "Houses", color: LAYER_COLORS.house, icon: Home },
     {
       key: "treasure",
       label: "Treasure",

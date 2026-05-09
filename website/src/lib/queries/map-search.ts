@@ -16,6 +16,7 @@ export type MapSearchCategory =
   | "chest"
   | "treasure"
   | "altar"
+  | "house"
   | "crafting"
   | "portal"
   | "item"
@@ -36,6 +37,7 @@ export const SEARCH_CATEGORY_ORDER: MapSearchCategory[] = [
   "crafting",
   "chest",
   "treasure",
+  "house",
   "portal",
 ];
 
@@ -85,6 +87,7 @@ export async function searchMapEntities(
     treasure,
     altars,
     crafting,
+    houses,
     portals,
     items,
     quests,
@@ -97,6 +100,7 @@ export async function searchMapEntities(
     searchTreasure(ftsQuery, limit),
     searchAltars(ftsQuery, limit),
     searchCraftingStations(ftsQuery, limit),
+    searchHouses(ftsQuery, limit),
     searchPortals(ftsQuery, limit),
     searchItems(ftsQuery, limit),
     searchQuests(ftsQuery, limit),
@@ -115,6 +119,7 @@ export async function searchMapEntities(
     altar: altars,
     crafting: crafting,
     portal: portals,
+    house: houses,
     item: items,
     quest: quests,
   };
@@ -605,6 +610,63 @@ async function searchAltars(
       level: r.min_level_required,
     };
   });
+}
+
+interface HouseSearchRow {
+  id: string;
+  name: string;
+  base_price: number;
+  min_x: number | null;
+  max_x: number | null;
+  min_y: number | null;
+  max_y: number | null;
+  zone_id: string | null;
+  zone_name: string | null;
+}
+
+async function searchHouses(
+  ftsQuery: string,
+  limit: number,
+): Promise<MapSearchResult[]> {
+  const rows = await query<HouseSearchRow>(
+    `
+    SELECT
+      h.id,
+      h.name,
+      h.base_price,
+      h.position_x as min_x,
+      h.position_x as max_x,
+      h.position_y as min_y,
+      h.position_y as max_y,
+      h.zone_id,
+      COALESCE(h.zone_name, z.name) as zone_name
+    FROM houses_fts hf
+    JOIN houses h ON hf.rowid = h.rowid
+    LEFT JOIN zones z ON z.id = h.zone_id
+    WHERE houses_fts MATCH ?
+    ORDER BY rank
+    LIMIT ?
+    `,
+    [ftsQuery, limit],
+  );
+
+  return rows.map((row) => ({
+    id: row.id,
+    name: row.name,
+    category: "house" as const,
+    subcategory: `${row.base_price.toLocaleString()} gold`,
+    bounds:
+      row.min_x !== null && row.min_y !== null
+        ? {
+            minX: row.min_x,
+            maxX: row.max_x!,
+            minY: -row.max_y!,
+            maxY: -row.min_y,
+          }
+        : null,
+    zoneId: row.zone_id ?? undefined,
+    zoneName: row.zone_name ?? undefined,
+  }));
 }
 
 interface CraftingStationSearchRow {

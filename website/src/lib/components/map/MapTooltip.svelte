@@ -86,6 +86,8 @@
       case "chest":
       case "treasure":
       case "altar":
+      case "house":
+        return "House";
       case "gathering_spark":
         return null;
       default:

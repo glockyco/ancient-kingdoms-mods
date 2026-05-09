@@ -28,6 +28,7 @@
   import Wrench from "@lucide/svelte/icons/wrench";
   import RefreshCw from "@lucide/svelte/icons/refresh-cw";
   import Compass from "@lucide/svelte/icons/compass";
+  import Home from "@lucide/svelte/icons/home";
   import type { Component } from "svelte";
 
   // Role category colors (matching RoleBadges.svelte)
@@ -86,6 +87,7 @@
       chest: Box,
       treasure: Shovel,
       altar: Flame,
+      house: Home,
       crafting: Hammer,
       portal: CircleDot,
       quest: Scroll,

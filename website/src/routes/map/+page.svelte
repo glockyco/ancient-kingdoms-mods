@@ -111,7 +111,7 @@
   // Hover preview state (for popup link highlights - ephemeral, not URL-persisted)
   let hoverEntityId = $state<string | null>(null);
   let hoverEntityCategory = $state<
-    "monster" | "npc" | "altar" | "zone" | "chest" | "resource" | null
+    "monster" | "npc" | "altar" | "zone" | "chest" | "house" | "resource" | null
   >(null);
   // For altar-only monsters: override to highlight altars instead
   let hoverOverrideIds = $state<string[] | null>(null);

@@ -24,6 +24,7 @@
     type AltarMapEntity,
     type GatheringMapEntity,
     type CraftingMapEntity,
+    type HouseMapEntity,
   } from "$lib/types/map";
   import {
     loadMonsterPopupDetails,
@@ -236,6 +237,8 @@
         return `/altars/${entity.id}`;
       case "treasure":
         return `/professions/treasure_hunter`;
+      case "house":
+        return `/mechanics/inventory#house-chests`;
       default:
         return null;
     }
@@ -263,6 +266,8 @@
         return "Treasure";
       case "altar":
         return "Altar";
+      case "house":
+        return "House";
       case "gathering_plant":
         return "Plant";
       case "gathering_mineral":
@@ -358,6 +363,33 @@
       <span>{displayZoneName}</span>
     {/if}
   </div>
+
+  <!-- House Section -->
+  {#if entity.type === "house"}
+    {@const house = entity as HouseMapEntity}
+    <div class="flex justify-between border-t pt-2">
+      <span class="text-muted-foreground">Base price</span>
+      <span>{house.basePrice.toLocaleString()} gold</span>
+    </div>
+    {#if house.subZoneName}
+      <div class="flex justify-between">
+        <span class="text-muted-foreground">Area</span>
+        <span>{house.subZoneName}</span>
+      </div>
+    {/if}
+    {#if house.factionId}
+      <div class="flex justify-between">
+        <span class="text-muted-foreground">Faction</span>
+        <span>{house.factionId}</span>
+      </div>
+    {/if}
+    {#if house.factionRequired > 0}
+      <div class="flex justify-between">
+        <span class="text-muted-foreground">Faction required</span>
+        <span>{house.factionRequired.toLocaleString()}</span>
+      </div>
+    {/if}
+  {/if}
 
   <!-- Monster Section -->
   {#if isMonster(entity)}
