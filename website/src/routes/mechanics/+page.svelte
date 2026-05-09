@@ -37,8 +37,8 @@
 </script>
 
 <Seo
-  title="Mechanics - Ancient Kingdoms"
-  description="Ancient Kingdoms mechanics references for inventory, experience, combat, and related game rules."
+  title="Game Mechanics - Ancient Kingdoms"
+  description="Combat damage formulas, XP gain rates, and inventory and storage rules for Ancient Kingdoms — drawn from the game's actual logic."
   path="/mechanics"
 />
 

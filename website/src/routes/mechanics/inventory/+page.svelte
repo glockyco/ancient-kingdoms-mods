@@ -63,7 +63,7 @@
 
 <Seo
   title="Inventory Mechanics - Ancient Kingdoms"
-  description="Storage reference for Ancient Kingdoms inventory, backpacks, bank tabs, house chests, item movement, loot pickup, equipment durability, and death-related storage rules."
+  description="How storage works in Ancient Kingdoms: backpack slots and bag panel, bank tabs, and house chests for account-shared storage."
   path="/mechanics/inventory"
 />
 
