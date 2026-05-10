@@ -649,7 +649,7 @@
       </label>
     </div>
 
-    <div class="grid gap-4 lg:grid-cols-3">
+    <div class="grid gap-4 lg:grid-cols-2">
       {#each vendorUnlockGroups as group (group.requirement)}
         <div class="rounded-lg border p-4">
           <div class="flex items-center justify-between gap-3">
