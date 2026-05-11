@@ -107,6 +107,7 @@
           const isBossOrElite = currentEntity.isBoss || currentEntity.isElite;
           monsterDetails = await loadMonsterPopupDetails(
             currentEntity.monsterId,
+            currentEntity.level,
             isBossOrElite,
             currentEntity.isWorldBoss,
           );
