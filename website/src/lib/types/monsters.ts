@@ -149,7 +149,6 @@ export interface MonsterInfo {
   is_elite: boolean;
   is_fabled: boolean;
   is_hunt: boolean;
-  is_dummy: boolean;
   is_summonable: boolean;
 
   // Combat stats (calculated at base level)
@@ -372,7 +371,6 @@ export interface MonsterListView extends RespawnInfo {
   is_elite: boolean;
   is_fabled: boolean;
   is_hunt: boolean;
-  is_dummy: boolean;
   damage: number;
   magic_damage: number;
   defense: number;
