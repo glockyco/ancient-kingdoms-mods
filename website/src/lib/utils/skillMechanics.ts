@@ -401,44 +401,56 @@ export function computeMechanicsSpec(
   if (isBuffSkill) {
     const isAreaBuff = skill.skill_type === "area_buff";
 
-    for (const cls of playerClasses) {
-      const label = `${cls.charAt(0).toUpperCase() + cls.slice(1)} (player)`;
-      let src: BuffBonusAttrSource;
-      if (isAreaBuff && skill.is_mercenary_skill) {
-        // Source: AreaBuffSkill.cs:46-50 — isMercenarySkill → num2 = round((WIS+CON)/2)
-        src = "player_wis_con_avg";
-      } else if (isAreaBuff) {
-        // Source: AreaBuffSkill.cs:25 — plain player.wisdom.value; NO Ranger×3 for area buffs
-        src = "player_wis";
-      } else if (cls === "ranger") {
-        // Source: TargetBuffSkill.cs:419 — player8.className=="Ranger" → wisdom.value * 3
-        src = "player_ranger_wis";
-      } else {
-        // Source: TargetBuffSkill.cs:419 — else → wisdom.value
-        src = "player_wis";
-      }
-      buffPairs.push({ label, bonusAttrSource: src, isAreaBuff });
-    }
-    for (const pet of mercPets) {
-      const tm = pet.type_monster ?? "Unknown";
-      const label = `${tm} Merc`;
-      // Source: TargetBuffSkill.cs:419 — `caster is Pet { isMercenary: not false }` → pet3.wisdom.value
-      // Source: AreaBuffSkill.cs:25 — same merc branch, no Ranger×3
-      buffPairs.push({ label, bonusAttrSource: "merc_wis", isAreaBuff });
-    }
-    if (hasOtherCaster && (playerClasses.length > 0 || mercPets.length > 0)) {
-      const parts: string[] = [];
-      if (hasMonsters) parts.push("Monster/NPC");
-      if (hasNonMercPet) parts.push("Companion");
-      if (hasFamiliar) parts.push("Familiar");
-      // Source: TargetBuffSkill.cs:419 — final else → 0
-      // Only shown when a player or merc also casts the skill; pure monster-only
-      // buff skills have bonusAttrSource=none which is uninformative to players.
+    if (skill.is_relic) {
+      // Source: AreaBuffSkill.cs:34-37 — isRelic → num2 = caster.level.current * 10.
+      // Relic items can be used by any player class regardless of skill.player_classes;
+      // a single "Player" context covers all of them. No merc/pet path: relics are
+      // player-only equipment usables.
       buffPairs.push({
-        label: parts.join("/"),
-        bonusAttrSource: "none",
+        label: "Player",
+        bonusAttrSource: "player_level",
         isAreaBuff,
       });
+    } else {
+      for (const cls of playerClasses) {
+        const label = `${cls.charAt(0).toUpperCase() + cls.slice(1)} (player)`;
+        let src: BuffBonusAttrSource;
+        if (isAreaBuff && skill.is_mercenary_skill) {
+          // Source: AreaBuffSkill.cs:46-50 — isMercenarySkill → num2 = round((WIS+CON)/2)
+          src = "player_wis_con_avg";
+        } else if (isAreaBuff) {
+          // Source: AreaBuffSkill.cs:25 — plain player.wisdom.value; NO Ranger×3 for area buffs
+          src = "player_wis";
+        } else if (cls === "ranger") {
+          // Source: TargetBuffSkill.cs:419 — player8.className=="Ranger" → wisdom.value * 3
+          src = "player_ranger_wis";
+        } else {
+          // Source: TargetBuffSkill.cs:419 — else → wisdom.value
+          src = "player_wis";
+        }
+        buffPairs.push({ label, bonusAttrSource: src, isAreaBuff });
+      }
+      for (const pet of mercPets) {
+        const tm = pet.type_monster ?? "Unknown";
+        const label = `${tm} Merc`;
+        // Source: TargetBuffSkill.cs:419 — `caster is Pet { isMercenary: not false }` → pet3.wisdom.value
+        // Source: AreaBuffSkill.cs:25 — same merc branch, no Ranger×3
+        buffPairs.push({ label, bonusAttrSource: "merc_wis", isAreaBuff });
+      }
+      if (hasOtherCaster && (playerClasses.length > 0 || mercPets.length > 0)) {
+        const parts: string[] = [];
+        if (hasMonsters) parts.push("Monster/NPC");
+        if (hasNonMercPet) parts.push("Companion");
+        if (hasFamiliar) parts.push("Familiar");
+        // Source: TargetBuffSkill.cs:419 — final else → 0
+        // Only shown when a player or merc also casts the skill; pure monster-only
+        // buff skills have bonusAttrSource=none which is uninformative to players.
+        buffPairs.push({
+          label: parts.join("/"),
+          bonusAttrSource: "none",
+          isAreaBuff,
+        });
+      }
     }
   }
 

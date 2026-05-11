@@ -2015,6 +2015,11 @@
                   {:else if ctx.bonusAttrSource === "merc_wis"}
                     <!-- Source: TargetBuffSkill.cs:419 / AreaBuffSkill.cs:25 — pet3.wisdom.value -->
                     <p class="font-mono">bonusAttribute = WIS</p>
+                  {:else if ctx.bonusAttrSource === "player_level"}
+                    <!-- Source: AreaBuffSkill.cs:34-37 — isRelic → num2 = caster.level.current * 10 -->
+                    <p class="font-mono">
+                      bonusAttribute = casterLevel &times; 10
+                    </p>
                   {:else}
                     <!-- player_wis -->
                     <p class="font-mono">bonusAttribute = WIS</p>

@@ -120,6 +120,7 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
     is_pet_skill: Boolean(skillRaw.is_pet_skill),
     is_mercenary_skill: Boolean(skillRaw.is_mercenary_skill),
     is_scroll: Boolean(skillRaw.is_scroll),
+    is_relic: Boolean(skillRaw.is_relic),
     base_skill: Boolean(skillRaw.base_skill),
     learn_default: Boolean(skillRaw.learn_default),
     allow_dungeon: Boolean(skillRaw.allow_dungeon ?? true),

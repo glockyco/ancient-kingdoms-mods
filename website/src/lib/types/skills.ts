@@ -66,6 +66,7 @@ export interface SkillDetailView {
   is_pet_skill: boolean;
   is_mercenary_skill: boolean;
   is_scroll: boolean;
+  is_relic: boolean;
   base_skill: boolean;
   learn_default: boolean;
   allow_dungeon: boolean;
@@ -284,6 +285,7 @@ export type BuffBonusAttrSource =
   | "player_wis" // WIS (TargetBuffSkill non-Ranger, or any AreaBuffSkill player) — e.g. inspiration
   | "merc_wis" // merc's own WIS — e.g. spirit_of_wolf
   | "player_wis_con_avg" // round((WIS+CON)/2) — only Leadership; also adds bonusAttribute to its positive damage_bonus & magic_damage_bonus (Buff.cs:64-67, 84-87) and to all defensive buff fields. Source: AreaBuffSkill.cs:46-50
+  | "player_level" // casterLevel × 10 — relic skills (AreaBuffSkill.isRelic). Source: AreaBuffSkill.cs:34-37
   | "none"; // monster/NPC: 0 (only shown when player/merc also casts the skill)
 
 export interface BuffContext {
