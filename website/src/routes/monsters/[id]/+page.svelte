@@ -97,6 +97,13 @@
       : null,
   );
 
+  let selectedSpawnCombatStatIndex = $state(0);
+  const selectedSpawnCombatStats = $derived(
+    data.spawnCombatStats[selectedSpawnCombatStatIndex] ??
+      data.spawnCombatStats[0] ??
+      null,
+  );
+
   // Does this monster have level variance from world spawns?
   const hasLevelVariance = $derived(
     data.monster.level_min !== data.monster.level_max,
@@ -143,80 +150,111 @@
     return "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200";
   }
 
+  function formatZoneList(zoneNames: string[]): string {
+    return zoneNames.join(", ");
+  }
+
+  function selectSpawnCombatStats(index: number): void {
+    selectedSpawnCombatStatIndex = Math.min(
+      data.spawnCombatStats.length - 1,
+      Math.max(0, index),
+    );
+  }
+
+  function selectPreviousSpawnCombatStats(): void {
+    selectSpawnCombatStats(selectedSpawnCombatStatIndex - 1);
+  }
+
+  function selectNextSpawnCombatStats(): void {
+    selectSpawnCombatStats(selectedSpawnCombatStatIndex + 1);
+  }
+
+  const combatDisplayLevel = $derived(
+    selectedSpawnCombatStats?.level ?? displayLevel,
+  );
   const displayHealth = $derived(
-    calculateStat(
-      data.monster.health_base,
-      data.monster.health_per_level,
-      displayLevel,
-    ),
+    selectedSpawnCombatStats?.health ??
+      calculateStat(
+        data.monster.health_base,
+        data.monster.health_per_level,
+        combatDisplayLevel,
+      ),
   );
   const displayDamage = $derived(
-    calculateStat(
-      data.monster.damage_base,
-      data.monster.damage_per_level,
-      displayLevel,
-    ),
+    selectedSpawnCombatStats?.damage ??
+      calculateStat(
+        data.monster.damage_base,
+        data.monster.damage_per_level,
+        combatDisplayLevel,
+      ),
   );
   const displayMagicDamage = $derived(
-    calculateStat(
-      data.monster.magic_damage_base,
-      data.monster.magic_damage_per_level,
-      displayLevel,
-    ),
+    selectedSpawnCombatStats?.magic_damage ??
+      calculateStat(
+        data.monster.magic_damage_base,
+        data.monster.magic_damage_per_level,
+        combatDisplayLevel,
+      ),
   );
   const displayDefense = $derived(
-    calculateStat(
-      data.monster.defense_base,
-      data.monster.defense_per_level,
-      displayLevel,
-    ),
+    selectedSpawnCombatStats?.defense ??
+      calculateStat(
+        data.monster.defense_base,
+        data.monster.defense_per_level,
+        combatDisplayLevel,
+      ),
   );
   const displayMagicResist = $derived(
-    calculateStat(
-      data.monster.magic_resist_base,
-      data.monster.magic_resist_per_level,
-      displayLevel,
-    ),
+    selectedSpawnCombatStats?.magic_resist ??
+      calculateStat(
+        data.monster.magic_resist_base,
+        data.monster.magic_resist_per_level,
+        combatDisplayLevel,
+      ),
   );
   const displayPoisonResist = $derived(
-    calculateStat(
-      data.monster.poison_resist_base,
-      data.monster.poison_resist_per_level,
-      displayLevel,
-    ),
+    selectedSpawnCombatStats?.poison_resist ??
+      calculateStat(
+        data.monster.poison_resist_base,
+        data.monster.poison_resist_per_level,
+        combatDisplayLevel,
+      ),
   );
   const displayFireResist = $derived(
-    calculateStat(
-      data.monster.fire_resist_base,
-      data.monster.fire_resist_per_level,
-      displayLevel,
-    ),
+    selectedSpawnCombatStats?.fire_resist ??
+      calculateStat(
+        data.monster.fire_resist_base,
+        data.monster.fire_resist_per_level,
+        combatDisplayLevel,
+      ),
   );
   const displayColdResist = $derived(
-    calculateStat(
-      data.monster.cold_resist_base,
-      data.monster.cold_resist_per_level,
-      displayLevel,
-    ),
+    selectedSpawnCombatStats?.cold_resist ??
+      calculateStat(
+        data.monster.cold_resist_base,
+        data.monster.cold_resist_per_level,
+        combatDisplayLevel,
+      ),
   );
   const displayDiseaseResist = $derived(
-    calculateStat(
-      data.monster.disease_resist_base,
-      data.monster.disease_resist_per_level,
-      displayLevel,
-    ),
+    selectedSpawnCombatStats?.disease_resist ??
+      calculateStat(
+        data.monster.disease_resist_base,
+        data.monster.disease_resist_per_level,
+        combatDisplayLevel,
+      ),
   );
   const displayBlockChance = $derived(
     data.monster.block_chance_base +
-      data.monster.block_chance_per_level * (displayLevel - 1),
+      data.monster.block_chance_per_level * (combatDisplayLevel - 1),
   );
   const displayCriticalChance = $derived(
     data.monster.critical_chance_base +
-      data.monster.critical_chance_per_level * (displayLevel - 1),
+      data.monster.critical_chance_per_level * (combatDisplayLevel - 1),
   );
   const displayAccuracy = $derived(
     data.monster.accuracy_base +
-      data.monster.accuracy_per_level * (displayLevel - 1),
+      data.monster.accuracy_per_level * (combatDisplayLevel - 1),
   );
 
   // Skill columns for the abilities table
@@ -729,9 +767,9 @@
     </div>
   </div>
 
-  <!-- Bestiary Summary Card -->
-  <section aria-labelledby="bestiary-summary-title">
-    <h2 id="bestiary-summary-title" class="sr-only">Bestiary summary</h2>
+  <!-- Header Summary Card -->
+  <section aria-labelledby="monster-summary-title">
+    <h2 id="monster-summary-title" class="sr-only">Monster summary</h2>
     <div class="bg-muted/30 rounded-md border p-4">
       <div
         class="grid grid-cols-2 items-center gap-4 md:grid-cols-[minmax(0,1fr)_minmax(20rem,1.5fr)_minmax(0,1fr)] md:gap-6"
@@ -1121,29 +1159,97 @@
 
   <!-- Combat Stats Section -->
   <section>
-    <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
+    <h2 class="mb-2 text-xl font-semibold flex items-center gap-2">
       <Sword class="h-5 w-5 text-red-500" />
       Combat Stats
     </h2>
-    {#if hasLevelVariance}
-      <div class="mb-4 bg-muted/30 rounded-md border p-4 js-only">
-        <div class="flex flex-wrap items-center gap-4">
-          <label for="monster-level" class="text-sm text-muted-foreground">
-            Monster Level
-          </label>
-          <input
-            id="monster-level"
-            type="range"
-            min={data.monster.level_min}
-            max={data.monster.level_max}
-            bind:value={monsterLevelInput}
-            class="flex-1 max-w-xs"
-          />
-          <span class="text-sm font-medium w-8">{displayLevel}</span>
-        </div>
-      </div>
-    {/if}
     <div class="bg-muted/30 rounded-md border p-4">
+      {#if selectedSpawnCombatStats && data.spawnCombatStats.length > 1}
+        <div class="mb-4 space-y-3 rounded-md border bg-background/60 p-3">
+          <div class="flex items-center justify-between gap-3">
+            <label for="spawn-combat-stats-variant" class="text-sm font-medium">
+              Spawn variant
+            </label>
+            <div
+              class="shrink-0 rounded-full bg-muted px-2.5 py-1 text-xs text-muted-foreground"
+            >
+              {selectedSpawnCombatStatIndex + 1} of {data.spawnCombatStats
+                .length}
+            </div>
+          </div>
+
+          <div
+            class="grid grid-cols-2 gap-2 sm:grid-cols-[4.5rem_minmax(0,1fr)_4.5rem]"
+          >
+            <div class="relative col-span-2 min-w-0 sm:order-2 sm:col-span-1">
+              <select
+                id="spawn-combat-stats-variant"
+                bind:value={selectedSpawnCombatStatIndex}
+                aria-label="Spawn combat stats variant"
+                class="h-11 w-full appearance-none rounded-md border bg-background px-3 pr-10 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+              >
+                {#each data.spawnCombatStats as stats, index (`variant-${stats.level}-${index}`)}
+                  <option value={index}>
+                    Variant {index + 1}: Level {stats.level}, {stats.spawn_count}
+                    {stats.spawn_count === 1 ? "spawn" : "spawns"} — {formatZoneList(
+                      stats.zone_names,
+                    )}
+                  </option>
+                {/each}
+              </select>
+              <svg
+                class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="m6 9 6 6 6-6" />
+              </svg>
+            </div>
+            <button
+              type="button"
+              class="inline-flex h-11 items-center justify-center rounded-md border bg-background px-3 text-sm font-medium outline-none transition-colors hover:bg-muted focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 sm:order-1"
+              disabled={selectedSpawnCombatStatIndex === 0}
+              onclick={selectPreviousSpawnCombatStats}
+              aria-label="Previous combat stats variant"
+            >
+              Prev
+            </button>
+            <button
+              type="button"
+              class="inline-flex h-11 items-center justify-center rounded-md border bg-background px-3 text-sm font-medium outline-none transition-colors hover:bg-muted focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 sm:order-3"
+              disabled={selectedSpawnCombatStatIndex ===
+                data.spawnCombatStats.length - 1}
+              onclick={selectNextSpawnCombatStats}
+              aria-label="Next combat stats variant"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      {:else if !selectedSpawnCombatStats && hasLevelVariance}
+        <div class="mb-4 space-y-4 js-only">
+          <div class="flex flex-wrap items-center gap-4">
+            <label for="monster-level" class="text-sm text-muted-foreground">
+              Monster Level
+            </label>
+            <input
+              id="monster-level"
+              type="range"
+              min={data.monster.level_min}
+              max={data.monster.level_max}
+              bind:value={monsterLevelInput}
+              class="flex-1 max-w-xs"
+            />
+            <span class="text-sm font-medium w-8">{displayLevel}</span>
+          </div>
+        </div>
+      {/if}
+
       <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         <div>
           <div class="text-sm text-muted-foreground">Damage</div>

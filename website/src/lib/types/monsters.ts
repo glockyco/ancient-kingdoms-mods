@@ -42,6 +42,24 @@ export interface MonsterSpawnZone {
 }
 
 /**
+ * Combat stats for real spawned versions of a monster, grouped by level and stat tuple.
+ */
+export interface MonsterSpawnCombatStats {
+  level: number;
+  zone_names: string[];
+  spawn_count: number;
+  health: number;
+  damage: number;
+  magic_damage: number;
+  defense: number;
+  magic_resist: number;
+  poison_resist: number;
+  fire_resist: number;
+  cold_resist: number;
+  disease_resist: number;
+}
+
+/**
  * Grouped spawn data for monster detail page
  */
 export interface MonsterSpawnData {
@@ -341,6 +359,7 @@ export interface MonsterDetailData {
   description: string;
   drops: MonsterDrop[];
   spawns: MonsterSpawnData;
+  spawnCombatStats: MonsterSpawnCombatStats[];
   quests: MonsterQuest[];
   skills: MonsterSkill[];
   summons: SummonsInfo[];

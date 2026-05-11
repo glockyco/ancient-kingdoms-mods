@@ -18,6 +18,7 @@ import type {
   MonsterQuest,
   SummonsInfo,
   MonsterVisualAsset,
+  MonsterSpawnCombatStats,
 } from "$lib/types/monsters";
 import { monsterDescription } from "$lib/server/meta-description";
 
@@ -32,6 +33,10 @@ export const entries: EntryGenerator = () => {
 
   return monsters.map((monster) => ({ id: monster.id }));
 };
+
+function calculateStat(base: number, perLevel: number, level: number): number {
+  return base + perLevel * (level - 1);
+}
 
 export const load: PageServerLoad = ({ params }): MonsterDetailData => {
   const db = new Database(DB_STATIC_PATH, { readonly: true });
@@ -196,6 +201,15 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
       z.id as zone_id,
       z.name as zone_name,
       ms.level,
+      ms.health,
+      ms.damage,
+      ms.magic_damage,
+      ms.defense,
+      ms.magic_resist,
+      ms.poison_resist,
+      ms.fire_resist,
+      ms.cold_resist,
+      ms.disease_resist,
       ms.sub_zone_id,
       zt.name as sub_zone_name,
       ms.spawn_type,
@@ -220,6 +234,15 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
     zone_id: string;
     zone_name: string;
     level: number | null;
+    health: number;
+    damage: number;
+    magic_damage: number;
+    defense: number;
+    magic_resist: number;
+    poison_resist: number;
+    fire_resist: number;
+    cold_resist: number;
+    disease_resist: number;
     sub_zone_id: string | null;
     sub_zone_name: string | null;
     spawn_type: string;
@@ -256,7 +279,121 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
   // Placeholder spawns - take first one (usually only one)
   let placeholderInfo: PlaceholderSpawnInfo | null = null;
 
+  const spawnCombatStatsByKey = new Map<
+    string,
+    MonsterSpawnCombatStats & { zoneNameSet: Set<string> }
+  >();
+  function addSpawnCombatStats(
+    stats: MonsterSpawnCombatStats,
+    zoneName: string,
+  ): void {
+    const key = `${stats.level}|${stats.health}|${stats.damage}|${stats.magic_damage}|${stats.defense}|${stats.magic_resist}|${stats.poison_resist}|${stats.fire_resist}|${stats.cold_resist}|${stats.disease_resist}`;
+    const existing = spawnCombatStatsByKey.get(key);
+    if (existing) {
+      existing.spawn_count += stats.spawn_count;
+      existing.zoneNameSet.add(zoneName);
+      return;
+    }
+
+    spawnCombatStatsByKey.set(key, {
+      ...stats,
+      zone_names: [zoneName],
+      zoneNameSet: new Set([zoneName]),
+    });
+  }
+
+  function hasExportedSpawnCombatStats(
+    spawn: (typeof spawnsRaw)[number],
+  ): boolean {
+    return (
+      spawn.health > 0 ||
+      spawn.damage !== 0 ||
+      spawn.magic_damage !== 0 ||
+      spawn.defense !== 0 ||
+      spawn.magic_resist !== 0 ||
+      spawn.poison_resist !== 0 ||
+      spawn.fire_resist !== 0 ||
+      spawn.cold_resist !== 0 ||
+      spawn.disease_resist !== 0
+    );
+  }
+
   for (const spawn of spawnsRaw) {
+    const spawnLevel = spawn.level || monster.level;
+    const useExportedSpawnStats = hasExportedSpawnCombatStats(spawn);
+    addSpawnCombatStats(
+      {
+        level: spawnLevel,
+        zone_names: [],
+        spawn_count: 1,
+        health:
+          useExportedSpawnStats && spawn.health > 0
+            ? spawn.health
+            : calculateStat(
+                monster.health_base,
+                monster.health_per_level,
+                spawnLevel,
+              ),
+        damage: useExportedSpawnStats
+          ? spawn.damage
+          : calculateStat(
+              monster.damage_base,
+              monster.damage_per_level,
+              spawnLevel,
+            ),
+        magic_damage: useExportedSpawnStats
+          ? spawn.magic_damage
+          : calculateStat(
+              monster.magic_damage_base,
+              monster.magic_damage_per_level,
+              spawnLevel,
+            ),
+        defense: useExportedSpawnStats
+          ? spawn.defense
+          : calculateStat(
+              monster.defense_base,
+              monster.defense_per_level,
+              spawnLevel,
+            ),
+        magic_resist: useExportedSpawnStats
+          ? spawn.magic_resist
+          : calculateStat(
+              monster.magic_resist_base,
+              monster.magic_resist_per_level,
+              spawnLevel,
+            ),
+        poison_resist: useExportedSpawnStats
+          ? spawn.poison_resist
+          : calculateStat(
+              monster.poison_resist_base,
+              monster.poison_resist_per_level,
+              spawnLevel,
+            ),
+        fire_resist: useExportedSpawnStats
+          ? spawn.fire_resist
+          : calculateStat(
+              monster.fire_resist_base,
+              monster.fire_resist_per_level,
+              spawnLevel,
+            ),
+        cold_resist: useExportedSpawnStats
+          ? spawn.cold_resist
+          : calculateStat(
+              monster.cold_resist_base,
+              monster.cold_resist_per_level,
+              spawnLevel,
+            ),
+        disease_resist: useExportedSpawnStats
+          ? spawn.disease_resist
+          : calculateStat(
+              monster.disease_resist_base,
+              monster.disease_resist_per_level,
+              spawnLevel,
+            ),
+      },
+      spawn.zone_name,
+    );
+
     if (spawn.spawn_type === "regular") {
       // Use level from spawn, fallback to monster's canonical level
       const level = spawn.level || monster.level;
@@ -379,6 +516,16 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
     altar.waves.sort((a, b) => a - b);
   }
   spawns.placeholder = placeholderInfo;
+
+  const spawnCombatStats = Array.from(spawnCombatStatsByKey.values())
+    .map(({ zoneNameSet, ...stats }) => ({
+      ...stats,
+      zone_names: Array.from(zoneNameSet).sort((a, b) => a.localeCompare(b)),
+    }))
+    .sort(
+      (a, b) =>
+        a.level - b.level || a.zone_names[0].localeCompare(b.zone_names[0]),
+    );
 
   // Get quests that require killing this monster
   const killQuestsRaw = db
@@ -728,6 +875,7 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
     description,
     drops,
     spawns,
+    spawnCombatStats,
     quests,
     skills,
     summons,
