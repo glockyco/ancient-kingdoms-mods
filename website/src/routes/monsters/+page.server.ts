@@ -28,6 +28,7 @@ export const load: PageServerLoad = (): MonstersPageData => {
       m.is_fabled,
       m.is_elite,
       m.is_hunt,
+      m.is_dummy,
       m.damage,
       m.magic_damage,
       m.defense,
@@ -51,7 +52,6 @@ export const load: PageServerLoad = (): MonstersPageData => {
         WHERE ms.monster_id = m.id AND ms.spawn_type IN ('regular', 'summon')
       ) THEN 1 ELSE 0 END as no_respawn
     FROM monsters m
-    WHERE m.is_dummy = 0
     ORDER BY m.level DESC, m.name ASC
   `,
     )

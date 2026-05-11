@@ -32,6 +32,7 @@
   import Star from "@lucide/svelte/icons/star";
   import Zap from "@lucide/svelte/icons/zap";
   import Shield from "@lucide/svelte/icons/shield";
+  import Target from "@lucide/svelte/icons/target";
   import Heart from "@lucide/svelte/icons/heart";
   import Flame from "@lucide/svelte/icons/flame";
   import Snowflake from "@lucide/svelte/icons/snowflake";
@@ -705,6 +706,14 @@
           class="inline-flex items-center rounded-full bg-orange-100 px-2.5 py-0.5 text-xs font-medium text-orange-800 dark:bg-orange-900 dark:text-orange-200"
         >
           Hunt
+        </span>
+      {/if}
+      {#if data.monster.is_dummy}
+        <span
+          class="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-900 dark:text-amber-200"
+        >
+          <Target class="mr-1 h-3 w-3" />
+          Training Dummy
         </span>
       {/if}
     </div>

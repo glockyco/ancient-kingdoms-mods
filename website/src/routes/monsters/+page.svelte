@@ -51,6 +51,7 @@
     if (m.is_fabled) return "fabled";
     if (m.is_boss) return "boss";
     if (m.is_elite) return "elite";
+    if (m.is_dummy) return "dummy";
     return "regular";
   }
 
@@ -227,6 +228,7 @@
         isBoss={row.original.is_boss}
         isFabled={row.original.is_fabled}
         isElite={row.original.is_elite}
+        isDummy={row.original.is_dummy}
       />
     </div>
   {:else if cell.column.id === "name"}
@@ -296,6 +298,7 @@
         { label: "Boss", value: "boss" },
         { label: "Fabled", value: "fabled" },
         { label: "Elite", value: "elite" },
+        { label: "Training Dummy", value: "dummy" },
         { label: "Regular", value: "regular" },
       ]}
     />
@@ -317,7 +320,7 @@
 
 <Seo
   title="Monsters - Ancient Kingdoms"
-  description={`${data.monsters.length.toLocaleString()} monsters across Eratiath — bosses, elites, hunts, and regular spawns. Filter by level, type, or zone, then see drops, abilities, and respawn timers.`}
+  description={`${data.monsters.length.toLocaleString()} monsters across Eratiath — bosses, elites, hunts, training dummies, and regular spawns. Filter by level, type, or zone, then see drops, abilities, and respawn timers.`}
   path="/monsters"
 />
 
