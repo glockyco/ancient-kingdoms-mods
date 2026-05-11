@@ -141,6 +141,9 @@ interface MonsterStatsRow {
   damage_per_level: number;
   magic_damage_base: number;
   magic_damage_per_level: number;
+  spawn_health: number | null;
+  spawn_damage: number | null;
+  spawn_magic_damage: number | null;
   visual_public_path: string | null;
   visual_width: number | null;
   visual_height: number | null;
@@ -173,6 +176,7 @@ interface RenewalSageRow {
 export async function loadMonsterPopupDetails(
   monsterId: string,
   level: number,
+  spawnId: string | null = null,
   isBossOrElite: boolean = false,
   isWorldBoss: boolean = false,
 ): Promise<MonsterPopupDetails> {
@@ -189,6 +193,9 @@ export async function loadMonsterPopupDetails(
       m.damage_per_level,
       m.magic_damage_base,
       m.magic_damage_per_level,
+      ms.health as spawn_health,
+      ms.damage as spawn_damage,
+      ms.magic_damage as spawn_magic_damage,
       va.public_path as visual_public_path,
       va.width as visual_width,
       va.height as visual_height,
@@ -198,9 +205,11 @@ export async function loadMonsterPopupDetails(
       ON va.domain = 'monster'
       AND va.entity_id = m.id
       AND va.kind = 'primary'
+    LEFT JOIN monster_spawns ms
+      ON ms.id = ?
     WHERE m.id = ?
     `,
-    [monsterId],
+    [spawnId, monsterId],
   );
 
   const drops = await query<MonsterDropRow>(
@@ -247,20 +256,23 @@ export async function loadMonsterPopupDetails(
     }));
   }
 
-  // Source: server-scripts/Monster.cs — stat = base + per_level × (level - 1).
-  // Each spawn carries its own level, so the popup MUST scale by spawn level
-  // (passed in as `level`); the precomputed m.health/damage on the row is
-  // pinned to the monster's nominal m.level and would mislead for any spawn
-  // at a different level (e.g. the Dummy spawns at 40/45/50/55).
+  // Prefer runtime stats exported from the specific scene spawn. Most spawns
+  // match canonical scaling, but Unity scene instances can override serialized
+  // Attribute/Combat values independently of the prefab/template (the Northern
+  // Wastes training dummy is level 55 with 1,000,000 HP rather than the
+  // formula-derived 370,000 HP).
   const levelOffset = Math.max(0, level - 1);
+  const scaledHealth =
+    (stats?.health_base ?? 0) + (stats?.health_per_level ?? 0) * levelOffset;
+  const scaledDamage =
+    (stats?.damage_base ?? 0) + (stats?.damage_per_level ?? 0) * levelOffset;
+  const scaledMagicDamage =
+    (stats?.magic_damage_base ?? 0) +
+    (stats?.magic_damage_per_level ?? 0) * levelOffset;
   return {
-    health:
-      (stats?.health_base ?? 0) + (stats?.health_per_level ?? 0) * levelOffset,
-    damage:
-      (stats?.damage_base ?? 0) + (stats?.damage_per_level ?? 0) * levelOffset,
-    magicDamage:
-      (stats?.magic_damage_base ?? 0) +
-      (stats?.magic_damage_per_level ?? 0) * levelOffset,
+    health: stats?.spawn_health ?? scaledHealth,
+    damage: stats?.spawn_damage ?? scaledDamage,
+    magicDamage: stats?.spawn_magic_damage ?? scaledMagicDamage,
     visualAsset: stats?.visual_public_path
       ? {
           publicPath: stats.visual_public_path,
@@ -795,7 +807,11 @@ export async function loadVirtualMonsterPopupDetails(
   );
 
   // Get all drops (bestiary items ordered first)
-  const dropsResult = await loadMonsterPopupDetails(monsterId, monster.level);
+  const dropsResult = await loadMonsterPopupDetails(
+    monsterId,
+    monster.level,
+    null,
+  );
 
   return {
     id: monster.id,

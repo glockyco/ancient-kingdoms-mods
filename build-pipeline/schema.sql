@@ -742,6 +742,15 @@ CREATE TABLE monster_spawns (
     position_y REAL,
     position_z REAL,
     level INTEGER,                  -- Level of this specific spawn (may differ from canonical monster)
+    health INTEGER DEFAULT 0,           -- Runtime HP for this specific spawn (scene instances can override canonical template stats)
+    damage INTEGER DEFAULT 0,
+    magic_damage INTEGER DEFAULT 0,
+    defense INTEGER DEFAULT 0,
+    magic_resist INTEGER DEFAULT 0,
+    poison_resist INTEGER DEFAULT 0,
+    fire_resist INTEGER DEFAULT 0,
+    cold_resist INTEGER DEFAULT 0,
+    disease_resist INTEGER DEFAULT 0,
     move_probability REAL DEFAULT 0.0,
     move_distance REAL DEFAULT 0.0,
     is_patrolling BOOLEAN DEFAULT 0,

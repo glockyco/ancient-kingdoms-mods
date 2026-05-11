@@ -108,6 +108,7 @@
           monsterDetails = await loadMonsterPopupDetails(
             currentEntity.monsterId,
             currentEntity.level,
+            currentEntity.id,
             isBossOrElite,
             currentEntity.isWorldBoss,
           );

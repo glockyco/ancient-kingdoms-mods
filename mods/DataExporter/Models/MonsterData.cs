@@ -18,6 +18,19 @@ public class MonsterSpawnData
 
     // Level of this specific spawn (may differ from canonical monster level)
     public int level { get; set; }
+    // Runtime stats for this specific spawn. Most instances match the canonical
+    // monster formula, but scene instances can override serialized Attribute/Combat
+    // values (e.g. the Northern Wastes training dummy).
+    public int health { get; set; }
+    public int damage { get; set; }
+    public int magic_damage { get; set; }
+    public int defense { get; set; }
+    public int magic_resist { get; set; }
+    public int poison_resist { get; set; }
+    public int fire_resist { get; set; }
+    public int cold_resist { get; set; }
+    public int disease_resist { get; set; }
+
 
     // Movement and patrol
     public float move_probability { get; set; }

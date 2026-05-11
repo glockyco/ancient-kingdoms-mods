@@ -68,6 +68,18 @@ class MonsterSpawnData(BaseModel):
 
     # Level of this specific spawn (may differ from canonical monster)
     level: int = 0
+    # Runtime stats for this specific spawn. Most spawns match canonical monster
+    # scaling, but Unity scene instances can override serialized Attribute/Combat
+    # values independently of the prefab/template.
+    health: int = 0
+    damage: int = 0
+    magic_damage: int = 0
+    defense: int = 0
+    magic_resist: int = 0
+    poison_resist: int = 0
+    fire_resist: int = 0
+    cold_resist: int = 0
+    disease_resist: int = 0
 
     # Movement and patrol
     move_probability: float = 0.0

@@ -292,6 +292,15 @@ public class MonsterExporter : BaseExporter
                         monster.transform.position.z
                     ),
                     level = monster.level.current,
+                    health = monster.health?.max ?? 0,
+                    damage = monster.combat?.damage ?? 0,
+                    magic_damage = monster.combat?.magicDamage ?? 0,
+                    defense = monster.combat?.defense ?? 0,
+                    magic_resist = monster.combat?.magicResist ?? 0,
+                    poison_resist = monster.combat?.poisonResist ?? 0,
+                    fire_resist = monster.combat?.fireResist ?? 0,
+                    cold_resist = monster.combat?.coldResist ?? 0,
+                    disease_resist = monster.combat?.diseaseResist ?? 0,
                     move_probability = monster.moveProbability,
                     move_distance = monster.moveDistance,
                     is_patrolling = monster.isPatrolling
