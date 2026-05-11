@@ -683,6 +683,7 @@ class SkillData(BaseModel):
     affects_random_target: bool = False
     is_aura: bool = False
     is_teleport: bool = False
+    is_relic: bool = False
     area_object_size: float = 0.0
     area_object_delay_damage: float = 0.0
     area_objects_to_spawn: int = 0

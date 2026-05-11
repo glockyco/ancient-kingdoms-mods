@@ -123,6 +123,7 @@ public class SkillData
     public bool is_decrease_resists_skill { get; set; }
     public bool is_aura { get; set; }
     public bool is_teleport { get; set; }
+    public bool is_relic { get; set; }
 
     // Buff/Passive stat bonuses (BonusSkill = BuffSkill + PassiveSkill)
     public LinearStatBonus health_max_bonus { get; set; }
