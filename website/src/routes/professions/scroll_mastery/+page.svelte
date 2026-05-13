@@ -12,10 +12,16 @@
   import CalculatorIcon from "@lucide/svelte/icons/calculator";
   import MapPin from "@lucide/svelte/icons/map-pin";
   import { SvelteSet } from "svelte/reactivity";
+  import type { PageData } from "./$types";
 
-  let { data } = $props();
+  let { data }: { data: PageData } = $props();
 
   let expandedRecipes = new SvelteSet<string>();
+
+  // Skill level state (0–100%)
+  let skillLevel = $state(0);
+
+  const selectedScrollRank = $derived(getScrollRank(20));
 
   function toggleRecipe(recipeId: string) {
     if (expandedRecipes.has(recipeId)) {
@@ -25,60 +31,18 @@
     }
   }
 
-  function handleCellKeydown(e: KeyboardEvent, recipeId: string) {
+  function handleRecipeKeydown(e: KeyboardEvent, recipeId: string) {
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
       toggleRecipe(recipeId);
     }
   }
 
-  function cellProps(canExpand: boolean, recipeId: string, extraClass = "") {
-    return {
-      class:
-        `p-3 border-t ${canExpand ? "cursor-pointer" : ""} ${extraClass}`.trim(),
-      role: canExpand ? ("button" as const) : undefined,
-      tabindex: canExpand ? 0 : undefined,
-      onclick: () => canExpand && toggleRecipe(recipeId),
-      onkeydown: (e: KeyboardEvent) =>
-        canExpand && handleCellKeydown(e, recipeId),
-    };
-  }
-
-  function hasIngredients(recipe: (typeof data.recipes)[0]): boolean {
+  function hasIngredients(recipe: (typeof data.recipes)[number]): boolean {
     return (
       !!recipe.obtainabilityTree.recipe &&
       recipe.obtainabilityTree.recipe.materials.length > 0
     );
-  }
-
-  // Skill level state (0–100%)
-  let skillLevel = $state(0);
-
-  // Source: server-scripts/Utils.cs:473-483 — GetSuccessChanceProb
-  // Scribing uses scrollMasteryLevel for success (same formula as alchemy).
-  // All current recipes are tier 0, so success is always 100%.
-  function getSuccessChance(levelRequired: number): number {
-    const skill = skillLevel / 100;
-    switch (levelRequired) {
-      case 0:
-        return 100;
-      case 1:
-        return Math.min(100, (0.4 + skill * 2) * 100);
-      case 2:
-        return Math.min(100, (0.2 + skill) * 100);
-      case 3:
-        return Math.min(100, skill * 95);
-      default:
-        return Math.min(100, skill * 90);
-    }
-  }
-
-  function getSuccessChanceColor(chance: number): string {
-    if (chance >= 100) return "text-green-500";
-    if (chance >= 75) return "text-lime-500";
-    if (chance >= 50) return "text-yellow-500";
-    if (chance >= 25) return "text-orange-500";
-    return "text-red-500";
   }
 
   // Source: server-scripts/Player.cs:10307 — isScribingTable craft path
@@ -96,15 +60,43 @@
   // Unity int Random.Range upper bound is exclusive: integers 5-9 -> 0.05% to 0.09%.
   const MASTERY_GAIN_MIN = 0.05;
   const MASTERY_GAIN_MAX = 0.09;
+
+  function getScrollRank(maxLevel: number): number {
+    if (maxLevel <= 1) return 1;
+    return Math.min(maxLevel, Math.max(1, Math.round(skillLevel / 5)));
+  }
+
+  function formatSkillType(skillType: string): string {
+    const labels: Record<string, string> = {
+      area_damage: "Area Damage",
+      target_projectile: "Target Projectile",
+      target_buff: "Target Buff",
+      target_debuff: "Target Debuff",
+      target_heal: "Target Heal",
+    };
+
+    return labels[skillType] ?? skillType.replace(/_/g, " ");
+  }
+
+  function formatScalingSummary(
+    scroll: Pick<
+      (typeof data.recipes)[number],
+      "scaling_labels" | "skill_max_level"
+    >,
+  ): string {
+    if (scroll.skill_max_level <= 1) return "";
+    if (scroll.scaling_labels.length === 0) return "See skill details";
+    return scroll.scaling_labels.join(", ");
+  }
 </script>
 
 <Seo
   title={`${data.profession.name} - Ancient Kingdoms`}
-  description={`${data.profession.description} View all scrolls you can craft with the Scroll Mastery skill.`}
+  description={`${data.profession.description} View scroll recipes, scribing table locations, Scroll Mastery rank scaling, mastery gain chance, and Dispel Resist rules.`}
   path="/professions/scroll_mastery"
 />
 
-<div class="container mx-auto p-8 space-y-8">
+<div class="container mx-auto space-y-8 p-8">
   <Breadcrumb
     items={[
       { label: "Home", href: "/" },
@@ -113,50 +105,308 @@
     ]}
   />
 
-  <!-- Header -->
-  <div class="flex items-start gap-4">
-    <div
-      class="w-16 h-16 rounded-lg bg-muted flex items-center justify-center shrink-0"
-    >
-      <Scroll class="h-8 w-8 text-purple-500 dark:text-purple-400" />
+  <section class="rounded-lg border p-6 md:p-8">
+    <div class="flex flex-wrap items-start gap-4">
+      <div class="rounded-lg bg-purple-500/10 p-3">
+        <Scroll class="h-7 w-7 text-purple-500 dark:text-purple-400" />
+      </div>
+      <div class="min-w-0 flex-1">
+        <div class="flex flex-wrap items-center gap-2">
+          <h1 class="text-3xl font-bold tracking-tight md:text-4xl">
+            {data.profession.name}
+          </h1>
+        </div>
+        <p class="mt-2 max-w-3xl text-muted-foreground">
+          Craft scrolls and improve scaling scroll effects.
+        </p>
+      </div>
     </div>
+
+    <div class="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div class="rounded-lg border p-4">
+        <div class="text-2xl font-semibold">
+          {data.stats.craftable_scroll_count}
+        </div>
+        <div class="text-sm text-muted-foreground">Craftable scrolls</div>
+      </div>
+      <div class="rounded-lg border p-4">
+        <div class="text-2xl font-semibold">
+          {data.stats.scaling_scroll_count}
+        </div>
+        <div class="text-sm text-muted-foreground">Scaling scrolls</div>
+      </div>
+      <div class="rounded-lg border p-4">
+        <div class="text-2xl font-semibold">
+          {data.stats.fixed_rank_scroll_count}
+        </div>
+        <div class="text-sm text-muted-foreground">Fixed-rank scrolls</div>
+      </div>
+      <div class="rounded-lg border p-4">
+        <div class="text-2xl font-semibold">
+          {data.stats.scribing_table_count}
+        </div>
+        <div class="text-sm text-muted-foreground">Scribing tables</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="rounded-lg border p-5">
+    <h2 class="text-xl font-semibold">How It Works</h2>
+
+    <div class="mt-4 divide-y">
+      <div class="grid gap-3 py-4 first:pt-0 md:grid-cols-[2rem_1fr]">
+        <div class="text-sm text-muted-foreground">1</div>
+        <div>
+          <div>
+            Find a
+            <a
+              href="#scribing-tables"
+              class="text-blue-600 hover:underline dark:text-blue-400"
+              >Scribing Table</a
+            >.
+          </div>
+          <p class="mt-1 text-sm leading-6 text-muted-foreground">
+            Craftable scroll recipes are made at Scribing Tables.
+          </p>
+        </div>
+      </div>
+
+      <div class="grid gap-3 py-4 md:grid-cols-[2rem_1fr]">
+        <div class="text-sm text-muted-foreground">2</div>
+        <div>
+          <div>Craft scrolls.</div>
+          <p class="mt-1 text-sm leading-6 text-muted-foreground">
+            All current scroll recipes have 100% crafting success chance.
+            Crafting grants
+            <MechanicsLink section="experience#scribing-xp"
+              >Player Level × 100 XP</MechanicsLink
+            >.
+          </p>
+        </div>
+      </div>
+
+      <div class="grid gap-3 py-4 md:grid-cols-[2rem_1fr]">
+        <div class="text-sm text-muted-foreground">3</div>
+        <div>
+          <div>Use scrolls.</div>
+          <p class="mt-1 text-sm leading-6 text-muted-foreground">
+            Scaling scrolls use rank = clamp(round(Scroll Mastery% ÷ 5), 1, max
+            rank). Fixed-rank scrolls stay rank 1.
+          </p>
+        </div>
+      </div>
+
+      <div class="grid gap-3 py-4 last:pb-0 md:grid-cols-[2rem_1fr]">
+        <div class="text-sm text-muted-foreground">4</div>
+        <div>
+          <div>Gain Scroll Mastery.</div>
+          <p class="mt-1 text-sm leading-6 text-muted-foreground">
+            Crafting a scroll or using a scroll can raise Scroll Mastery. The
+            chance to gain mastery decreases as mastery approaches 100%.
+          </p>
+          <p
+            class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm leading-6 text-muted-foreground"
+          >
+            <span>Max Level: {data.profession.max_level}%</span>
+            {#if data.profession.steam_achievement_id}
+              <span class="flex items-center gap-1">
+                Achievement:
+                <Trophy class="h-4 w-4" />
+                {data.profession.steam_achievement_name}
+              </span>
+            {/if}
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="calculator" class="space-y-4">
+    <h2 class="flex items-center gap-2 text-xl font-semibold">
+      <CalculatorIcon class="h-5 w-5 text-cyan-500" />
+      Scroll Mastery Calculator
+    </h2>
+
+    <div class="rounded-lg border bg-muted/15 p-4">
+      <div class="flex flex-wrap items-center gap-x-6 gap-y-3">
+        <label for="scroll-mastery-slider" class="shrink-0">
+          Scroll Mastery
+        </label>
+        <input
+          id="scroll-mastery-slider"
+          type="range"
+          min="0"
+          max="100"
+          step="1"
+          bind:value={skillLevel}
+          class="h-2 w-48 cursor-pointer appearance-none rounded-lg bg-muted accent-primary"
+        />
+        <span class="w-14 font-mono">{skillLevel}%</span>
+      </div>
+
+      <div class="mt-4 grid gap-3 sm:grid-cols-3">
+        <div class="rounded-lg border bg-background p-3">
+          <div class="text-sm text-muted-foreground">Scaling scroll rank</div>
+          <div class="text-xl font-semibold">{selectedScrollRank}</div>
+        </div>
+        <div class="rounded-lg border bg-background p-3">
+          <div class="text-sm text-muted-foreground">
+            Gain chance per craft/use
+          </div>
+          <div class="text-xl font-semibold">
+            {getMasteryGainChance().toFixed(0)}%
+          </div>
+        </div>
+        <div class="rounded-lg border bg-background p-3">
+          <div class="text-sm text-muted-foreground">Gain amount per proc</div>
+          <div class="text-xl font-semibold">
+            {MASTERY_GAIN_MIN.toFixed(2)}%–{MASTERY_GAIN_MAX.toFixed(2)}%
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="craftable-scrolls" class="space-y-4">
     <div>
-      <div class="flex items-center gap-2">
-        <h1 class="text-3xl font-bold">{data.profession.name}</h1>
-        <span
-          class="px-2 py-0.5 text-xs rounded-full bg-muted text-purple-500 dark:text-purple-400 font-medium"
-        >
-          Crafting
-        </span>
-      </div>
-      <p class="text-muted-foreground mt-1">{data.profession.description}</p>
-
-      <div class="flex items-center gap-4 mt-3 text-muted-foreground">
-        <span>Max Level: {data.profession.max_level}%</span>
-        {#if data.profession.steam_achievement_id}
-          <span class="flex items-center gap-1">
-            <Trophy class="h-4 w-4" />
-            Achievement: {data.profession.steam_achievement_name}
-          </span>
-        {/if}
-      </div>
-    </div>
-  </div>
-
-  <!-- Station Locations -->
-  {#if data.locations.length > 0}
-    <section class="space-y-4">
-      <h2 class="text-xl font-semibold flex items-center gap-2">
-        <MapPin class="h-5 w-5 text-emerald-500" />
-        Scribing Table Locations ({data.locations.length})
+      <h2 class="flex items-center gap-2 text-xl font-semibold">
+        <Scroll class="h-5 w-5 text-purple-500" />
+        Craftable Scrolls ({data.recipes.length})
       </h2>
-      <div class="rounded-lg border overflow-x-auto">
+    </div>
+
+    <div class="overflow-hidden rounded-lg border">
+      <div class="overflow-x-auto">
         <table class="w-full whitespace-nowrap">
           <thead class="bg-muted/50">
             <tr>
-              <th class="text-left p-3 font-medium">Zone</th>
-              <th class="text-left p-3 font-medium">Sub-zone</th>
-              <th class="text-left p-3 font-medium">Map</th>
+              <th class="p-3 text-left font-medium">Scroll</th>
+              <th class="p-3 text-left font-medium">Ingredients</th>
+              <th class="p-3 text-left font-medium">Casts</th>
+              <th class="p-3 text-left font-medium">Scaling</th>
+            </tr>
+          </thead>
+          <tbody>
+            {#each data.recipes as recipe (recipe.recipe_id)}
+              {@const canExpand = hasIngredients(recipe)}
+              {@const isExpanded = expandedRecipes.has(recipe.recipe_id)}
+              <tr
+                class="border-t hover:bg-muted/25 {canExpand
+                  ? 'cursor-pointer'
+                  : ''}"
+                role={canExpand ? "button" : undefined}
+                tabindex={canExpand ? 0 : undefined}
+                onclick={() => canExpand && toggleRecipe(recipe.recipe_id)}
+                onkeydown={(e) =>
+                  canExpand && handleRecipeKeydown(e, recipe.recipe_id)}
+              >
+                <td class="p-3">
+                  <div class="flex items-center gap-1">
+                    {#if canExpand}
+                      <button
+                        type="button"
+                        class="rounded p-0.5 transition-colors hover:bg-muted"
+                        aria-label={isExpanded
+                          ? "Collapse ingredients"
+                          : "Expand ingredients"}
+                        onclick={(e) => {
+                          e.stopPropagation();
+                          toggleRecipe(recipe.recipe_id);
+                        }}
+                      >
+                        {#if isExpanded}
+                          <ChevronDown class="h-4 w-4 text-muted-foreground" />
+                        {:else}
+                          <ChevronRight class="h-4 w-4 text-muted-foreground" />
+                        {/if}
+                      </button>
+                    {:else}
+                      <span class="w-5"></span>
+                    {/if}
+                    <ItemLink
+                      itemId={recipe.item_id}
+                      itemName={recipe.item_name}
+                      tooltipHtml={recipe.tooltip_html}
+                    />
+                  </div>
+                </td>
+                <td class="p-3">
+                  {#if recipe.obtainabilityTree.recipe?.materials}
+                    <div class="flex flex-wrap gap-x-3 gap-y-1">
+                      {#each recipe.obtainabilityTree.recipe.materials as mat (mat.item_id)}
+                        <span>
+                          <ItemLink
+                            itemId={mat.item_id}
+                            itemName={mat.item_name}
+                            tooltipHtml={mat.tooltip_html}
+                          />
+                          <span class="text-muted-foreground"
+                            >×{mat.amount}</span
+                          >
+                        </span>
+                      {/each}
+                    </div>
+                  {:else}
+                    <span class="text-muted-foreground">—</span>
+                  {/if}
+                </td>
+                <td class="p-3">
+                  <a
+                    href="/skills/{recipe.skill_id}"
+                    class="text-blue-600 hover:underline dark:text-blue-400"
+                  >
+                    {recipe.skill_name}
+                  </a>
+                  <div class="text-sm text-muted-foreground">
+                    {formatSkillType(recipe.skill_type)}
+                  </div>
+                </td>
+                <td class="p-3">
+                  {#if formatScalingSummary(recipe)}
+                    {formatScalingSummary(recipe)}
+                  {:else}
+                    <span class="text-muted-foreground">—</span>
+                  {/if}
+                </td>
+              </tr>
+              {#if isExpanded && canExpand}
+                <tr class="border-t bg-muted/20">
+                  <td class="p-4" colspan="4">
+                    <div class="mb-2 text-muted-foreground">
+                      How to obtain ingredients:
+                    </div>
+                    <div
+                      class="overflow-x-auto rounded-md border bg-background p-3"
+                    >
+                      <ObtainabilityTree
+                        node={recipe.obtainabilityTree}
+                        defaultExpanded={true}
+                        hideRootLink={true}
+                      />
+                    </div>
+                  </td>
+                </tr>
+              {/if}
+            {/each}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  {#if data.locations.length > 0}
+    <section id="scribing-tables" class="space-y-4">
+      <h2 class="flex items-center gap-2 text-xl font-semibold">
+        <MapPin class="h-5 w-5 text-emerald-500" />
+        Scribing Table Locations ({data.locations.length})
+      </h2>
+      <div class="overflow-x-auto rounded-lg border">
+        <table class="w-full whitespace-nowrap">
+          <thead class="bg-muted/50">
+            <tr>
+              <th class="p-3 text-left font-medium">Zone</th>
+              <th class="p-3 text-left font-medium">Sub-zone</th>
+              <th class="p-3 text-left font-medium">Map</th>
             </tr>
           </thead>
           <tbody>
@@ -165,7 +415,7 @@
                 <td class="p-3">
                   <a
                     href="/zones/{location.zone_id}"
-                    class="text-blue-600 dark:text-blue-400 hover:underline"
+                    class="text-blue-600 hover:underline dark:text-blue-400"
                   >
                     {location.zone_name}
                   </a>
@@ -187,169 +437,4 @@
       </div>
     </section>
   {/if}
-
-  <!-- Calculator -->
-  <section class="space-y-4">
-    <h2 class="text-xl font-semibold flex items-center gap-2">
-      <CalculatorIcon class="h-5 w-5 text-cyan-500" />
-      Calculator
-    </h2>
-    <div
-      class="rounded-lg border p-3 flex flex-wrap items-center gap-x-6 gap-y-2"
-    >
-      <div class="flex items-center gap-3">
-        <label for="skill-slider" class="shrink-0">Scroll Mastery:</label>
-        <input
-          id="skill-slider"
-          type="range"
-          min="0"
-          max="100"
-          step="1"
-          bind:value={skillLevel}
-          class="w-32 h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
-        />
-        <span class="font-mono w-12">{skillLevel}%</span>
-      </div>
-      <div class="flex items-center gap-2 text-muted-foreground">
-        <span>Mastery gain chance:</span>
-        <span class="font-mono text-foreground"
-          >{getMasteryGainChance().toFixed(0)}%</span
-        >
-        <span class="text-xs">(per craft or scroll use)</span>
-      </div>
-    </div>
-    <div class="rounded-lg border overflow-x-auto">
-      <div
-        class="grid whitespace-nowrap"
-        style="grid-template-columns: repeat(4, 1fr);"
-      >
-        <div class="bg-muted/50 p-3 font-medium">Success</div>
-        <div class="bg-muted/50 p-3 font-medium">Mastery Gain</div>
-
-        <div class="bg-muted/50 p-3 font-medium">XP</div>
-
-        <div class="bg-muted/50 p-3 font-medium text-right">Recipes</div>
-        {#each data.recipeCounts as { tier, count } (tier)}
-          {@const successChance = getSuccessChance(tier)}
-          {@const gainChance = getMasteryGainChance()}
-          <div class="p-3 border-t">
-            <span class="font-mono {getSuccessChanceColor(successChance)}">
-              {successChance.toFixed(0)}%
-            </span>
-          </div>
-          <div class="p-3 border-t">
-            {#if gainChance > 0}
-              <span class="font-mono"
-                >{MASTERY_GAIN_MIN.toFixed(2)}% – {MASTERY_GAIN_MAX.toFixed(
-                  2,
-                )}%</span
-              >
-            {:else}
-              <span class="text-muted-foreground">—</span>
-            {/if}
-          </div>
-          <div class="p-3 border-t">
-            <MechanicsLink section="experience#scribing-xp"
-              >PlayerLvl &times; 100</MechanicsLink
-            >
-          </div>
-          <div class="p-3 text-right border-t">{count}</div>
-        {/each}
-      </div>
-    </div>
-  </section>
-
-  <!-- Recipes Table -->
-  <section class="space-y-4">
-    <h2 class="text-xl font-semibold flex items-center gap-2">
-      <Scroll class="h-5 w-5 text-purple-500" />
-      Recipes ({data.recipes.length})
-    </h2>
-    <div class="rounded-lg border overflow-x-auto">
-      <div
-        class="grid whitespace-nowrap"
-        style="grid-template-columns: 2fr 4fr 1fr 2fr;"
-      >
-        <div class="bg-muted/50 p-3 font-medium">Output</div>
-        <div class="bg-muted/50 p-3 font-medium">Ingredients</div>
-        <div class="bg-muted/50 p-3 font-medium">Success</div>
-        <div class="bg-muted/50 p-3 font-medium">Mastery Gain</div>
-        {#each data.recipes as recipe (recipe.id)}
-          {@const successChance = getSuccessChance(recipe.level_required)}
-          {@const gainChance = getMasteryGainChance()}
-          {@const isExpanded = expandedRecipes.has(recipe.id)}
-          {@const canExpand = hasIngredients(recipe)}
-          <div {...cellProps(canExpand, recipe.id, "font-medium")}>
-            <div class="flex items-center gap-1">
-              {#if canExpand}
-                <button
-                  class="p-0.5 rounded hover:bg-muted transition-colors"
-                  aria-label={isExpanded ? "Collapse" : "Expand"}
-                >
-                  {#if isExpanded}
-                    <ChevronDown class="h-4 w-4 text-muted-foreground" />
-                  {:else}
-                    <ChevronRight class="h-4 w-4 text-muted-foreground" />
-                  {/if}
-                </button>
-              {:else}
-                <span class="w-5"></span>
-              {/if}
-              <ItemLink
-                itemId={recipe.result_item_id}
-                itemName={recipe.result_item_name}
-                tooltipHtml={recipe.result_tooltip_html}
-              />
-            </div>
-          </div>
-          <div {...cellProps(canExpand, recipe.id)}>
-            {#if recipe.obtainabilityTree.recipe?.materials}
-              <div class="flex gap-3">
-                {#each recipe.obtainabilityTree.recipe.materials as mat (mat.item_id)}
-                  <span>
-                    <ItemLink
-                      itemId={mat.item_id}
-                      itemName={mat.item_name}
-                      tooltipHtml={mat.tooltip_html}
-                    />
-                    <span class="text-muted-foreground">×{mat.amount}</span>
-                  </span>
-                {/each}
-              </div>
-            {:else}
-              <span class="text-muted-foreground">—</span>
-            {/if}
-          </div>
-          <div {...cellProps(canExpand, recipe.id)}>
-            <span class="font-mono {getSuccessChanceColor(successChance)}">
-              {successChance.toFixed(0)}%
-            </span>
-          </div>
-          <div {...cellProps(canExpand, recipe.id)}>
-            {#if gainChance > 0}
-              <span class="font-mono">
-                {MASTERY_GAIN_MIN.toFixed(2)}% – {MASTERY_GAIN_MAX.toFixed(2)}%
-              </span>
-            {:else}
-              <span class="text-muted-foreground">—</span>
-            {/if}
-          </div>
-          {#if isExpanded && canExpand}
-            <div class="bg-muted/20 p-4" style="grid-column: 1 / -1;">
-              <div class="text-muted-foreground mb-2">
-                How to obtain ingredients:
-              </div>
-              <div class="bg-background rounded-md p-3 border overflow-x-auto">
-                <ObtainabilityTree
-                  node={recipe.obtainabilityTree}
-                  defaultExpanded={true}
-                  hideRootLink={true}
-                />
-              </div>
-            </div>
-          {/if}
-        {/each}
-      </div>
-    </div>
-  </section>
 </div>
