@@ -60,8 +60,20 @@
 
   const PAGE_SIZE = 20;
 
-  // Roman numerals for tier display
+  // Tier rendering: Crafting/Cooking/Alchemy use Roman numerals (I-V).
+  // Scribing 'tier' is a Scroll Mastery % threshold, so render it as 'N%'
+  // when set and '-' when the scroll has no mastery requirement.
   const romanNumerals = ["I", "II", "III", "IV", "V"];
+
+  function formatTier(
+    type: "Alchemy" | "Cooking" | "Crafting" | "Scribing",
+    tier: number,
+  ): string {
+    if (type === "Scribing") {
+      return tier > 0 ? `${tier}%` : "-";
+    }
+    return romanNumerals[tier] ?? "-";
+  }
 
   // Add virtual column for type sorting (numeric for stable sort order)
   const dataWithVirtual = $derived(
@@ -168,7 +180,9 @@
   {:else if cell.column.id === "type"}
     {row.original.type}
   {:else if cell.column.id === "tier"}
-    <span class="font-medium">{romanNumerals[row.original.tier] ?? "-"}</span>
+    <span class="font-medium"
+      >{formatTier(row.original.type, row.original.tier)}</span
+    >
   {:else if cell.column.id === "result_item_name"}
     <ItemLink
       itemId={row.original.result_item_id}
