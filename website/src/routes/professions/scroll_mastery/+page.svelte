@@ -344,7 +344,9 @@
                 </td>
                 <td class="p-3">
                   {#if recipe.obtainabilityTree.recipe?.materials}
-                    <div class="flex flex-wrap gap-x-3 gap-y-1">
+                    <div
+                      class="flex flex-col gap-1 2xl:flex-row 2xl:flex-wrap 2xl:gap-x-3 2xl:gap-y-1"
+                    >
                       {#each recipe.obtainabilityTree.recipe.materials as mat (mat.item_id)}
                         <span>
                           <ItemLink
