@@ -31,6 +31,13 @@
     }
   }
 
+  function isInteractiveEvent(e: Event): boolean {
+    const target = e.target as HTMLElement | null;
+    if (!target) return false;
+    const interactive = target.closest("a, button, [role='button']");
+    return !!interactive && interactive !== e.currentTarget;
+  }
+
   function handleRecipeKeydown(e: KeyboardEvent, recipeId: string) {
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
@@ -296,9 +303,14 @@
                   : ''}"
                 role={canExpand ? "button" : undefined}
                 tabindex={canExpand ? 0 : undefined}
-                onclick={() => canExpand && toggleRecipe(recipe.recipe_id)}
-                onkeydown={(e) =>
-                  canExpand && handleRecipeKeydown(e, recipe.recipe_id)}
+                onclick={(e) => {
+                  if (!canExpand || isInteractiveEvent(e)) return;
+                  toggleRecipe(recipe.recipe_id);
+                }}
+                onkeydown={(e) => {
+                  if (!canExpand || isInteractiveEvent(e)) return;
+                  handleRecipeKeydown(e, recipe.recipe_id);
+                }}
               >
                 <td class="p-3">
                   <div class="flex items-center gap-1">
