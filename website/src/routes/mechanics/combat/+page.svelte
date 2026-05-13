@@ -995,10 +995,9 @@ finalDamage = damage − reduction</pre>
         <!-- Source: server-scripts/TargetDebuffSkill.cs:240-268, AreaDebuffSkill.cs:233-263 -->
         <h3 id="dispel" class="font-semibold mb-1 scroll-mt-24">Dispel</h3>
         <p class="text-sm text-muted-foreground mb-2">
-          When a Dispel skill lands on a player, all active buffs are removed
-          (except the Rest buff). When it lands on a pet, all active buffs are
-          removed. When it lands on a monster, each buff is tested
-          independently:
+          When Dispel lands on a player, all active buffs are removed (except
+          the Rest buff). On a pet, all active buffs are removed. On a monster,
+          each buff is tested independently:
         </p>
         <pre
           class="text-xs bg-muted px-3 py-2 rounded overflow-x-auto">removed if Random.value &gt; probIgnoreCleanse − bonus
@@ -1007,11 +1006,14 @@ bonus (single-target spell):   accuracy × 0.5
 bonus (single-target scroll):  clamp(round(Mastery% ÷ 5), 1, 20) × 0.01
 bonus (area dispel):           0</pre>
         <p class="text-sm text-muted-foreground mt-2">
-          Higher accuracy increases the chance of stripping each individual
-          monster buff on single-target dispels. For scroll-based dispels the
-          bonus uses clamp(round(Scroll Mastery% ÷ 5), 1, 20) instead of
-          accuracy. Area dispels do not benefit from accuracy regardless of
-          type.
+          Mastery comes from the
+          <a
+            href="/professions/scroll_mastery"
+            class="text-blue-600 hover:underline dark:text-blue-400"
+            >Scroll Mastery</a
+          >
+          profession. Each Dispel rank lowers a monster's Dispel Resist by 1 percentage
+          point. Area dispels do not get an accuracy or Scroll Mastery bonus.
         </p>
       </div>
 
