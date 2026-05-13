@@ -1058,6 +1058,10 @@ CREATE TABLE skills (
     is_veteran BOOLEAN DEFAULT 0,
     is_mercenary_skill BOOLEAN DEFAULT 0,
     is_pet_skill BOOLEAN DEFAULT 0,
+    -- Engine flag from ScriptableSkill.isScroll, true only when the skill
+    -- is owned by a scroll cast scriptable. NOT a reliable "this skill can
+    -- be cast from a scroll item" signal. Use granted_by_items entries
+    -- with type = 'scroll' for that.
     is_scroll BOOLEAN DEFAULT 0,
     followup_default_attack BOOLEAN DEFAULT 0,
 
