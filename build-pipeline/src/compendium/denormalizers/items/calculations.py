@@ -95,6 +95,7 @@ def _calculate_bestiary_drop(conn: sqlite3.Connection) -> int:
     - NOT potions
     - NOT quest-only items
     - AND (quality > 0 OR is_key OR recipe OR equipment/weapon)
+    - OR scrolls dropped by bosses/elites
 
     Returns:
         Count of updated items
@@ -102,7 +103,7 @@ def _calculate_bestiary_drop(conn: sqlite3.Connection) -> int:
     console.print("  Calculating bestiary drop flags...")
     cursor = conn.cursor()
 
-    # Update items that SHOULD appear in bestiary
+    # Update items that SHOULD appear in bestiary.
     cursor.execute("""
         UPDATE items
         SET is_bestiary_drop = 1
@@ -116,8 +117,24 @@ def _calculate_bestiary_drop(conn: sqlite3.Connection) -> int:
             OR item_type = 'weapon'
           )
     """)
+    updated = cursor.rowcount
 
-    return cursor.rowcount
+    # Source: server-scripts/Monster.cs:3547-3553 — boss/elite scroll drops update bestiary discovery.
+    cursor.execute("""
+        UPDATE items
+        SET is_bestiary_drop = 1
+        WHERE item_type = 'scroll'
+          AND is_quest_item = 0
+          AND EXISTS (
+            SELECT 1
+            FROM monsters m, json_each(m.drops) d
+            WHERE (m.is_boss = 1 OR m.is_elite = 1)
+              AND json_extract(d.value, '$.item_id') = items.id
+          )
+    """)
+    updated += cursor.rowcount
+
+    return updated
 
 
 def _calculate_primal_essence(conn: sqlite3.Connection) -> int:
