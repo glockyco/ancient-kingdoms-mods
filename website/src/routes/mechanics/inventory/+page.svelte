@@ -514,11 +514,13 @@
           is not consumed by that quest update.
         </li>
         <li>
-          <!-- Source: server-scripts/ChestLoot.cs:314-328, Monster.cs:3557-3570, and Npc.cs:2578-2591 — eligible shared drops route through group roll when more than one player can loot. -->When
+          <!-- Source: server-scripts/ChestLoot.cs:314-328 and Npc.cs:2578-2591 — eligible shared chest/NPC drops route through group roll when more than one player can loot. -->
+          <!-- Source: server-scripts/Monster.cs:3557-3570 — monster loot also rolls MergeItem and ScrollItem drops. -->When
           more than one player can loot the same enemy, NPC, or world loot
           chest, uncommon-or-better items, keys, chest keys, items worth more
-          than 200 gold, XP potions, and monster merge drops use group rolls
-          instead of direct pickup. Quest-only items are excluded.
+          than 200 gold, and XP potions use group rolls instead of direct
+          pickup. Enemy loot also rolls monster merge drops and scrolls.
+          Quest-only items are excluded.
         </li>
       </ul>
     </Card.Content>
@@ -548,6 +550,11 @@
         <li>
           Broken equipped gear remains equipped but stops contributing while
           durability is depleted.
+        </li>
+        <li>
+          <!-- Source: server-scripts/GatherItem.cs:289-300 and PlayerInventory.cs:133-151 — mining consumes selected pickaxe durability; 0-durability pickaxes cannot mine until repaired. -->Mining
+          consumes pickaxe durability. A 0-durability pickaxe remains in
+          inventory but cannot be used for mining until repaired.
         </li>
         <li>
           <!-- Source: server-scripts/PlayerDead.cs:8 and 74-84 — player remains lifetime and expiration. -->Player
