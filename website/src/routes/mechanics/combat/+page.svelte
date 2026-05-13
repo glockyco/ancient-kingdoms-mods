@@ -952,16 +952,14 @@ finalDamage = damage − reduction</pre>
       <div>
         <h3 class="font-semibold mb-1">Cleanse</h3>
         <p class="text-sm text-muted-foreground mb-2">
-          Cleanse removes debuff stacks from a target. Each debuff has a cleanse
-          resistance level:
+          Cleanse removes debuff stacks from a target. Each debuff has a Cleanse
+          Resist level:
         </p>
         <div class="overflow-x-auto">
           <table class="w-full text-sm border-collapse">
             <thead>
               <tr class="border-b border-border">
-                <th class="text-left py-1 pr-4 font-medium"
-                  >Cleanse resistance</th
-                >
+                <th class="text-left py-1 pr-4 font-medium">Cleanse Resist</th>
                 <th class="text-left py-1 font-medium">Behaviour</th>
               </tr>
             </thead>

@@ -2402,7 +2402,7 @@
               when counters reach 0. Debuffs with no resist are always removed
               in a single cast. Otherwise cleansing removes 1 counter
               guaranteed, plus 2 independent chances to remove 1 more each
-              (blocked by the debuff's cleanse resist). DoT damage reduced while
+              (blocked by the debuff's Cleanse Resist). DoT damage reduced while
               partially cleansed (2 counters &rarr; &times;0.9, 1 counter &rarr;
               &times;0.8).
             </p>

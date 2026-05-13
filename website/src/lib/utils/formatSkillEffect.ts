@@ -727,7 +727,7 @@ function formatBuffDebuffStats(
 
   // 12. Cleanse resistance (debuff property, always last)
   if (skill.prob_ignore_cleanse && skill.prob_ignore_cleanse > 0) {
-    parts.push(`${formatPercent(skill.prob_ignore_cleanse)} cleanse resist`);
+    parts.push(`${formatPercent(skill.prob_ignore_cleanse)} Cleanse Resist`);
   }
 
   return parts;
