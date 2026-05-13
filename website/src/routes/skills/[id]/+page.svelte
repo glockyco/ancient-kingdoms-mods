@@ -43,6 +43,20 @@
     return `${base} (+${bonus}/lvl)${suffix}`;
   }
 
+  function formatLinearAbs(
+    value: LinearValue | null,
+    suffix: string = "",
+  ): string {
+    if (!value) return "-";
+    return formatLinear(
+      {
+        base_value: Math.abs(value.base_value),
+        bonus_per_level: Math.abs(value.bonus_per_level),
+      },
+      suffix,
+    );
+  }
+
   function formatLinearPercent(value: LinearValue | null): string {
     if (!value) return "-";
     const basePct = formatPercent(value.base_value);
@@ -51,6 +65,14 @@
     }
     const bonusPct = formatPercent(value.bonus_per_level);
     return `${basePct} (+${bonusPct}/lvl)`;
+  }
+
+  function formatLinearPercentAbs(value: LinearValue | null): string {
+    if (!value) return "-";
+    return formatLinearPercent({
+      base_value: Math.abs(value.base_value),
+      bonus_per_level: Math.abs(value.bonus_per_level),
+    });
   }
 
   function formatNumber(n: number): string {
@@ -71,6 +93,10 @@
   function hasLinearValue(value: LinearValue | null): boolean {
     if (!value) return false;
     return value.base_value !== 0 || value.bonus_per_level !== 0;
+  }
+
+  function isNegativeLinear(value: LinearValue | null): boolean {
+    return !!value && value.base_value < 0;
   }
 
   function convertTooltip(text: string | null): string {
@@ -579,9 +605,27 @@
     for (const def of SCALING_FIELDS) {
       const val = skill[def.key] as LinearValue | null;
       if (val && val.bonus_per_level !== 0) {
+        const isNegativeRegen =
+          def.key === "healing_per_second_bonus" ||
+          def.key === "health_percent_per_second_bonus";
+        const field =
+          isNegativeRegen && val.base_value < 0
+            ? {
+                base_value: Math.abs(val.base_value),
+                bonus_per_level: Math.abs(val.bonus_per_level),
+              }
+            : val;
+        const label =
+          def.key === "healing_per_second_bonus" && val.base_value < 0
+            ? "Damage/sec"
+            : def.key === "health_percent_per_second_bonus" &&
+                val.base_value < 0
+              ? "Damage %/sec"
+              : def.label;
+
         cols.push({
-          label: def.label,
-          field: val,
+          label,
+          field,
           isPercent: def.isPercent,
           suffix: def.suffix,
         });
@@ -1606,17 +1650,27 @@
             <!-- 10. Regen / DoT -->
             {#if skill.healing_per_second_bonus}
               <div>
-                <dt class="text-muted-foreground">Health/sec</dt>
+                <dt class="text-muted-foreground">
+                  {isNegativeLinear(skill.healing_per_second_bonus)
+                    ? "Damage/sec"
+                    : "Health/sec"}
+                </dt>
                 <dd class="font-medium">
-                  {formatLinear(skill.healing_per_second_bonus)}
+                  {formatLinearAbs(skill.healing_per_second_bonus)}
                 </dd>
               </div>
             {/if}
             {#if skill.health_percent_per_second_bonus}
               <div>
-                <dt class="text-muted-foreground">Health %/sec</dt>
+                <dt class="text-muted-foreground">
+                  {isNegativeLinear(skill.health_percent_per_second_bonus)
+                    ? "Damage %/sec"
+                    : "Health %/sec"}
+                </dt>
                 <dd class="font-medium">
-                  {formatLinearPercent(skill.health_percent_per_second_bonus)}
+                  {formatLinearPercentAbs(
+                    skill.health_percent_per_second_bonus,
+                  )}
                 </dd>
               </div>
             {/if}
