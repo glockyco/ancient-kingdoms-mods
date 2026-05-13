@@ -29,6 +29,24 @@
   let { data }: { data: PageData } = $props();
 
   const skill = $derived(data.skill);
+  const isScrollTriggered = $derived(
+    data.grantedByItems.some((item) => item.type === "scroll"),
+  );
+  const hasScrollMasteryScaling = $derived(
+    isScrollTriggered && skill.max_level > 1,
+  );
+  const hasScrollDispelScaling = $derived(
+    hasScrollMasteryScaling && skill.is_dispel,
+  );
+
+  function formatMasteryNeeded(level: number): string {
+    const pct = level <= 1 ? 0 : level * 5 - 2.5;
+    return `${pct.toFixed(1)}%`;
+  }
+
+  function formatDispelReduction(level: number): string {
+    return `${level} pp`;
+  }
 
   function formatLinear(
     value: LinearValue | null,
@@ -644,7 +662,8 @@
   }
 
   const showLevelScaling = $derived(
-    skill.max_level > 1 && scalingColumns.length > 0,
+    skill.max_level > 1 &&
+      (scalingColumns.length > 0 || hasScrollMasteryScaling),
   );
 
   // Pet/mercenary usage flags for skill-level notes inside the mechanics card
@@ -707,7 +726,7 @@
       skill.is_cleanse ||
       // G. Special notes
       skill.is_assassination_skill ||
-      skill.is_scroll ||
+      hasScrollMasteryScaling ||
       skill.is_decrease_resists_skill ||
       (hasLinearValue(skill.cast_time) && skill.is_spell && !skill.is_scroll) ||
       // H. Fear mechanics section (stun has no mechanics card section)
@@ -1803,26 +1822,50 @@
         <div class="overflow-x-auto">
           <table class="w-full text-sm table-fixed">
             <thead>
-              <tr class="border-b text-left">
-                <th class="py-2 pr-4 font-medium text-muted-foreground"
+              <tr class="border-b">
+                <th
+                  class="py-2 pr-4 text-left font-medium text-muted-foreground"
                   >Skill Level</th
                 >
+                {#if hasScrollMasteryScaling}
+                  <th
+                    class="py-2 px-3 font-medium text-muted-foreground text-right"
+                    >Scroll Mastery Needed</th
+                  >
+                {/if}
                 {#each scalingColumns as col (col.label)}
-                  <th class="py-2 px-3 font-medium text-muted-foreground"
+                  <th
+                    class="py-2 px-3 font-medium text-muted-foreground text-right"
                     >{col.label}</th
                   >
                 {/each}
+                {#if hasScrollDispelScaling}
+                  <th
+                    class="py-2 px-3 font-medium text-muted-foreground text-right"
+                    >Dispel Resist Reduction</th
+                  >
+                {/if}
               </tr>
             </thead>
             <tbody>
               {#each Array.from({ length: skill.max_level }, (_, i) => i + 1) as level (level)}
                 <tr class="border-b border-border/50">
                   <td class="py-1.5 pr-4 font-medium">{level}</td>
+                  {#if hasScrollMasteryScaling}
+                    <td class="py-1.5 px-3 text-right text-muted-foreground"
+                      >{formatMasteryNeeded(level)}</td
+                    >
+                  {/if}
                   {#each scalingColumns as col (col.label)}
-                    <td class="py-1.5 px-3"
+                    <td class="py-1.5 px-3 text-right"
                       >{computeScalingValue(col, level)}</td
                     >
                   {/each}
+                  {#if hasScrollDispelScaling}
+                    <td class="py-1.5 px-3 text-right"
+                      >{formatDispelReduction(level)}</td
+                    >
+                  {/if}
                 </tr>
               {/each}
             </tbody>
@@ -1862,17 +1905,31 @@
         {/if}
 
         <!-- Scroll Mastery -->
-        {#if skill.is_scroll}
+        {#if hasScrollMasteryScaling}
           <div class="space-y-1">
-            <h3 class="font-semibold">Scroll Mastery</h3>
+            <h3 class="font-semibold">
+              <a
+                href="/professions/scroll_mastery"
+                class="text-blue-600 dark:text-blue-400 hover:underline"
+                >Scroll Mastery</a
+              >
+            </h3>
             <p class="font-mono">
               Skill Level = clamp(Round(Mastery% &divide; 5), 1, {skill.max_level})
             </p>
-            <p class="text-muted-foreground">
-              Power scales with the Scroll Mastery profession (0&ndash;100%).
-              Each ~5% mastery increases skill level by 1. The level scaling
-              table above shows stats at each skill level.
-            </p>
+            {#if hasScrollDispelScaling}
+              <p class="text-muted-foreground">
+                After Dispel lands on a monster, the
+                <span class="font-mono">Dispel Resist Reduction</span>
+                column lowers each buff's Dispel Resist by that many percentage points.
+                See
+                <a
+                  href="/mechanics/combat#dispel"
+                  class="text-blue-600 hover:underline dark:text-blue-400"
+                  >combat Dispel mechanics</a
+                >.
+              </p>
+            {/if}
           </div>
         {/if}
         <!-- A. Damage Formula (spec-driven, one block per distinct formula/context) -->
