@@ -1917,19 +1917,6 @@
             <p class="font-mono">
               Skill Level = clamp(Round(Mastery% &divide; 5), 1, {skill.max_level})
             </p>
-            {#if hasScrollDispelScaling}
-              <p class="text-muted-foreground">
-                After Dispel lands on a monster, the
-                <span class="font-mono">Dispel Resist Reduction</span>
-                column lowers each buff's Dispel Resist by that many percentage points.
-                See
-                <a
-                  href="/mechanics/combat#dispel"
-                  class="text-blue-600 hover:underline dark:text-blue-400"
-                  >combat Dispel mechanics</a
-                >.
-              </p>
-            {/if}
           </div>
         {/if}
         <!-- A. Damage Formula (spec-driven, one block per distinct formula/context) -->
@@ -2426,7 +2413,13 @@
         {#if skill.is_dispel}
           <div class="space-y-1">
             <!-- Source: TargetDebuffSkill.cs:172-269, AreaDebuffSkill.cs:168-265 -->
-            <h3 class="font-semibold">Dispel Mechanics</h3>
+            <h3 class="font-semibold">
+              <a
+                href="/mechanics/combat#dispel"
+                class="text-blue-600 dark:text-blue-400 hover:underline"
+                >Dispel Mechanics</a
+              >
+            </h3>
             <p class="text-muted-foreground">
               Players: all buffs removed unconditionally (except the Rest buff).<br
               />
