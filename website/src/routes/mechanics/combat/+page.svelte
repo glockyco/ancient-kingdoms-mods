@@ -995,7 +995,7 @@ finalDamage = damage − reduction</pre>
 
       <div>
         <!-- Source: server-scripts/TargetDebuffSkill.cs:240-268, AreaDebuffSkill.cs:233-263 -->
-        <h3 class="font-semibold mb-1">Dispel</h3>
+        <h3 id="dispel" class="font-semibold mb-1 scroll-mt-24">Dispel</h3>
         <p class="text-sm text-muted-foreground mb-2">
           When a Dispel skill lands on a player, all active buffs are removed
           (except the Rest buff). When it lands on a pet, all active buffs are
