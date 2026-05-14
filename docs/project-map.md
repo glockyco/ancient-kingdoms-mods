@@ -5,9 +5,11 @@
 ```
 Game (IL2CPP Unity)
   ↓ MelonLoader Mods
-exported-data/*.json + map-screenshots/
+exported-data/*.json + exported-data/images/ + exported-data/screenshots/
   ↓ Python Build Pipeline
-build/compendium.db + build/tiles/
+website/static/compendium.db + website/static/images/ + website/static/tiles/
+  ↓ Website generated support files
+website/src/lib/generated/
   ↓ SvelteKit Static Site
 Cloudflare Static Assets
 ```

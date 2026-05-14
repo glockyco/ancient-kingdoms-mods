@@ -25,6 +25,10 @@ pnpm build      # Production build
 pnpm cf-deploy  # Build + deploy to Cloudflare
 ```
 
+In fresh git worktrees, load the root `bootstrap-worktree` skill before these
+commands. Website validation assumes the bootstrap script has installed
+dependencies and produced generated website artifacts.
+
 Pre-commit hooks auto-run: ESLint --fix, Prettier --write, pnpm check.
 
 ## Mechanics Snapshots

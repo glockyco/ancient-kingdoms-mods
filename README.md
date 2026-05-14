@@ -111,6 +111,21 @@ Setup creates or updates local, gitignored configuration:
 
 All build-tool commands except `setup` require `Local.props`.
 
+### Fresh worktree setup
+
+Git worktrees contain tracked files only. Before running website checks or
+builds in a fresh worktree, bootstrap it from a trusted checkout that already
+has current local export inputs:
+
+```bash
+scripts/bootstrap-worktree.sh <trusted-source-checkout>
+```
+
+The script links missing source-export inputs from the trusted checkout, links
+`Local.props` when present, then regenerates worktree-local website outputs. It
+does not symlink `node_modules` or generated website outputs from another
+worktree.
+
 ## Common workflows
 
 ### Build and deploy mods

@@ -21,6 +21,7 @@ Game (IL2CPP Unity) → Mods (JSON export) → Build Pipeline (SQLite) → Websi
 | Working on mods | mods/CLAUDE.md |
 | Working on website | website/CLAUDE.md |
 | Working on build pipeline | build-pipeline/CLAUDE.md |
+| Starting work in a git worktree or seeing missing generated website artifacts | Load skill: bootstrap-worktree |
 
 If you notice stale or incorrect information in any documentation, flag it to the user.
 
@@ -50,6 +51,14 @@ If you notice stale or incorrect information in any documentation, flag it to th
 - Throw errors immediately when data is missing or invalid
 - Prefer explicit errors over graceful degradation during development
 - If something should exist, assert it exists - don't silently continue
+
+
+### Worktrees
+
+Fresh git worktrees must be bootstrapped before website validation. Use the
+`bootstrap-worktree` skill and run `scripts/bootstrap-worktree.sh <trusted-source-checkout>`.
+Before bootstrap succeeds, missing dependencies or generated website artifacts
+are setup failures, not code failures.
 
 ### Testing
 
