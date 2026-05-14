@@ -18,11 +18,13 @@ export default {
       sourceUrl.pathname + sourceUrl.search,
       TARGET_ORIGIN,
     );
+    const target = targetUrl.toString();
 
     return new Response(null, {
       status: 301,
       headers: {
-        Location: targetUrl.toString(),
+        Location: target,
+        Link: `<${target}>; rel="canonical"`,
         "Cache-Control": "public, max-age=3600",
       },
     });
