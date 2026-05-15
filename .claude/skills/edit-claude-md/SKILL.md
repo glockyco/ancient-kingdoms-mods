@@ -44,7 +44,7 @@ description: Guidelines for writing and editing CLAUDE.md files in this reposito
 
 ## Cross-Linking
 
-- Use plain paths: "see docs/commit-guide.md"
+- Use plain paths for docs, or `skill://<name>` for global skills.
 - NO @ imports (forces eager loading)
 - Task-triggered: "When doing X, see Y"
 
