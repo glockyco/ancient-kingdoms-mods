@@ -32,6 +32,29 @@ export function buildPayload({ host, key, keyLocation, urls }) {
   return { host, key, keyLocation, urlList: urls };
 }
 
+export async function sendIndexNowPing(payload, fetchImpl = fetch) {
+  let res;
+  try {
+    res = await fetchImpl(INDEXNOW_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json; charset=utf-8" },
+      body: JSON.stringify(payload),
+    });
+  } catch (err) {
+    throw new Error(`indexnow: fetch failed (${err?.message ?? err})`, {
+      cause: err,
+    });
+  }
+
+  if (!res.ok) {
+    const body = await res.text();
+    const details = body ? `\nindexnow body: ${body}` : "";
+    throw new Error(`indexnow: ${res.status} ${res.statusText}${details}`);
+  }
+
+  return res;
+}
+
 function loadManifest(path) {
   if (!existsSync(path)) return { entries: {} };
   return JSON.parse(readFileSync(path, "utf8"));
@@ -62,23 +85,8 @@ async function main() {
   });
 
   console.log(`indexnow: pinging ${urls.length} URLs`);
-  let res;
-  try {
-    res = await fetch(INDEXNOW_ENDPOINT, {
-      method: "POST",
-      headers: { "Content-Type": "application/json; charset=utf-8" },
-      body: JSON.stringify(payload),
-    });
-  } catch (err) {
-    console.error(`indexnow: fetch failed (${err?.message ?? err})`);
-    return;
-  }
-
+  const res = await sendIndexNowPing(payload);
   console.log(`indexnow: ${res.status} ${res.statusText}`);
-  if (!res.ok) {
-    const body = await res.text();
-    console.error(`indexnow body: ${body}`);
-  }
 }
 
 if (

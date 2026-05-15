@@ -1,5 +1,9 @@
 import { test, expect } from "vitest";
-import { selectUrlsToPing, buildPayload } from "./indexnow-ping.mjs";
+import {
+  selectUrlsToPing,
+  buildPayload,
+  sendIndexNowPing,
+} from "./indexnow-ping.mjs";
 
 test("selectUrlsToPing flags URLs whose hash changed between prev and current", () => {
   const prev = {
@@ -89,4 +93,32 @@ test("buildPayload obeys IndexNow shape", () => {
   expect(payload.urlList).toEqual([
     "https://ancient-kingdoms.compendiums.org/items/foo",
   ]);
+});
+
+test("sendIndexNowPing throws when IndexNow rejects the payload", async () => {
+  const payload = buildPayload({
+    host: "ancient-kingdoms.compendiums.org",
+    key: "abc123",
+    keyLocation: "https://ancient-kingdoms.compendiums.org/abc123.txt",
+    urls: ["https://ancient-kingdoms.compendiums.org/items/foo"],
+  });
+
+  await expect(
+    sendIndexNowPing(payload, async () => new Response("bad key", { status: 403 })),
+  ).rejects.toThrow("indexnow: 403");
+});
+
+test("sendIndexNowPing throws when the request fails", async () => {
+  const payload = buildPayload({
+    host: "ancient-kingdoms.compendiums.org",
+    key: "abc123",
+    keyLocation: "https://ancient-kingdoms.compendiums.org/abc123.txt",
+    urls: ["https://ancient-kingdoms.compendiums.org/items/foo"],
+  });
+
+  await expect(
+    sendIndexNowPing(payload, async () => {
+      throw new Error("offline");
+    }),
+  ).rejects.toThrow("indexnow: fetch failed (offline)");
 });
