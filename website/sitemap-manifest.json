@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated": "2026-05-15T05:29:51.810Z",
+  "generated": "2026-05-15T06:58:31.218Z",
   "entries": {
     "https://ancient-kingdoms.compendiums.org/items/a_cunning_society": {
       "hash": "8778b82df40b3dce1ac57733b4a2606d585b9da042d3b352720fede70a3ed707",
@@ -13359,11 +13359,11 @@
       "lastmod": "2026-05-15"
     },
     "https://ancient-kingdoms.compendiums.org/mechanics/inventory": {
-      "hash": "a636f1895bf32917dd24dc1074f4a1dbdd741a441a4d948cce7ddcce7dc5cbda",
+      "hash": "955289f26e8293ec448ae5a0eabffe689cb13eb5d7598be17d4b3eec549b404d",
       "lastmod": "2026-05-15"
     },
     "https://ancient-kingdoms.compendiums.org/mechanics/combat": {
-      "hash": "5e8a4668813e8ce1d22f1fe938bf5ab85ebd621383fba7faf73f06c09f2ed6ae",
+      "hash": "101a102d6f2c1fcd03acbeba00ac7f877b660e2db44d37cacde2d70eb845e5bf",
       "lastmod": "2026-05-15"
     },
     "https://ancient-kingdoms.compendiums.org/mechanics/experience": {
@@ -13419,7 +13419,7 @@
       "lastmod": "2026-05-15"
     },
     "https://ancient-kingdoms.compendiums.org/professions/treasure_hunter": {
-      "hash": "f9c6d5796e2734860f1c78e1801417320751e00bc87b488c68b8050bc3832237",
+      "hash": "6b42420cd9ed3a30bd173e8da804fb231281604daad88b2a1c734581060a8ed1",
       "lastmod": "2026-05-15"
     },
     "https://ancient-kingdoms.compendiums.org/": {},
