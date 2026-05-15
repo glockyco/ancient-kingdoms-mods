@@ -17,7 +17,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "vitest run",
-    "cf-deploy": "wrangler deploy",
+    "cf-deploy": "cp sitemap-manifest.json .sitemap-manifest.prev.json && pnpm build && wrangler deploy && node scripts/indexnow-ping.mjs .sitemap-manifest.prev.json sitemap-manifest.json && rm -f .sitemap-manifest.prev.json",
     "cf-deploy:redirect": "wrangler deploy --config wrangler.redirect.toml"
   },
   "devDependencies": {

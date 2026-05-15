@@ -7,6 +7,7 @@ node_modules
 .wrangler
 /.svelte-kit
 /build
+/.sitemap-manifest.prev.json
 
 # Generated files (from build-pipeline)
 /static/compendium.db*
