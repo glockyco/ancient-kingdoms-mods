@@ -1,6 +1,8 @@
 <script lang="ts">
   import Seo from "$lib/components/Seo.svelte";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
+  import JsonLd from "$lib/components/JsonLd.svelte";
+  import { buildCollectionPage } from "$lib/seo/jsonld";
   import * as Card from "$lib/components/ui/card";
   import ArrowRight from "@lucide/svelte/icons/arrow-right";
   // Category icons
@@ -23,6 +25,16 @@
   type ProfessionCategory = "crafting" | "gathering" | "combat" | "exploration";
 
   let { data } = $props();
+
+  const collectionNode = buildCollectionPage({
+    path: "/professions",
+    name: "Professions — Ancient Kingdoms Compendium",
+    description: `Profession guides for ${data.professions.length.toLocaleString()} Ancient Kingdoms professions.`,
+    items: data.professions.map((profession) => ({
+      name: profession.name,
+      path: `/professions/${profession.id}`,
+    })),
+  });
 
   // Group professions by category
   const groupedProfessions = $derived.by(() => {
@@ -162,6 +174,8 @@
   description="Crafting, gathering, combat, and exploration professions — required tools, leveling sources, and the recipes or content each unlocks."
   path="/professions"
 />
+
+<JsonLd node={collectionNode} />
 
 <div class="container mx-auto p-8 space-y-8">
   <Breadcrumb

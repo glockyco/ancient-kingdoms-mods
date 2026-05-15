@@ -13,6 +13,8 @@
   import { IconBadge } from "$lib/components/ui/icon-badge";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import Seo from "$lib/components/Seo.svelte";
+  import JsonLd from "$lib/components/JsonLd.svelte";
+  import { buildCollectionPage } from "$lib/seo/jsonld";
   import MonsterTypeIcon from "$lib/components/MonsterTypeIcon.svelte";
   import type { MonsterZoneInfo } from "$lib/types/monsters";
   import {
@@ -24,6 +26,16 @@
   import Trees from "@lucide/svelte/icons/trees";
 
   let { data } = $props();
+
+  const collectionNode = buildCollectionPage({
+    path: "/monsters",
+    name: "Monsters — Ancient Kingdoms Compendium",
+    description: `Searchable database of ${data.monsters.length.toLocaleString()} monsters in Ancient Kingdoms.`,
+    items: data.monsters.map((monster) => ({
+      name: monster.name,
+      path: `/monsters/${monster.id}`,
+    })),
+  });
 
   const PAGE_SIZE = 20;
 
@@ -320,6 +332,8 @@
   description={`${data.monsters.length.toLocaleString()} monsters across Eratiath — bosses, elites, hunts, and regular spawns. Filter by level, type, or zone, then see drops, abilities, and respawn timers.`}
   path="/monsters"
 />
+
+<JsonLd node={collectionNode} />
 
 <div class="container mx-auto p-8 space-y-6">
   <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Monsters" }]} />

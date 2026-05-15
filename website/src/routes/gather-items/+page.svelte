@@ -13,6 +13,8 @@
   import { IconBadge } from "$lib/components/ui/icon-badge";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import Seo from "$lib/components/Seo.svelte";
+  import JsonLd from "$lib/components/JsonLd.svelte";
+  import { buildCollectionPage } from "$lib/seo/jsonld";
   import type {
     GatherItemListView,
     ResourceDropListView,
@@ -24,6 +26,16 @@
   import Castle from "@lucide/svelte/icons/castle";
 
   let { data } = $props();
+
+  const collectionNode = buildCollectionPage({
+    path: "/gather-items",
+    name: "Gathering Resources — Ancient Kingdoms Compendium",
+    description: `Searchable database of ${data.resources.length.toLocaleString()} gathering resources in Ancient Kingdoms.`,
+    items: data.resources.map((resource) => ({
+      name: resource.name,
+      path: `/gather-items/${resource.id}`,
+    })),
+  });
 
   // Build a map of resource_id -> zones
   const resourceZoneMap = $derived.by(() => {
@@ -309,6 +321,8 @@
   description="Plants, ores, and radiant sparks across Eratiath — tier, gathering XP, required tool, and every spawn zone for each node."
   path="/gather-items"
 />
+
+<JsonLd node={collectionNode} />
 
 <div class="container mx-auto p-8 space-y-8">
   <Breadcrumb

@@ -12,6 +12,8 @@
   import { IconBadge } from "$lib/components/ui/icon-badge";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import Seo from "$lib/components/Seo.svelte";
+  import JsonLd from "$lib/components/JsonLd.svelte";
+  import { buildCollectionPage } from "$lib/seo/jsonld";
   import RoleBadges from "$lib/components/RoleBadges.svelte";
   import type { NpcZoneInfo } from "$lib/types/npcs";
   import {
@@ -23,6 +25,16 @@
   import Trees from "@lucide/svelte/icons/trees";
 
   let { data } = $props();
+
+  const collectionNode = buildCollectionPage({
+    path: "/npcs",
+    name: "NPCs — Ancient Kingdoms Compendium",
+    description: `Searchable database of ${data.npcs.length.toLocaleString()} NPCs in Ancient Kingdoms.`,
+    items: data.npcs.map((npc) => ({
+      name: npc.name,
+      path: `/npcs/${npc.id}`,
+    })),
+  });
 
   const PAGE_SIZE = 20;
 
@@ -248,6 +260,8 @@
   description={`${data.npcs.length.toLocaleString()} NPCs sortable by zone, faction, and role — merchants, quest givers, skill masters, faction vendors, bankers, and innkeepers.`}
   path="/npcs"
 />
+
+<JsonLd node={collectionNode} />
 
 <div class="container mx-auto p-8 space-y-6">
   <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "NPCs" }]} />

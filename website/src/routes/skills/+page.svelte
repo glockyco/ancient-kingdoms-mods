@@ -10,11 +10,23 @@
   } from "$lib/components/ui/data-table";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import Seo from "$lib/components/Seo.svelte";
+  import JsonLd from "$lib/components/JsonLd.svelte";
+  import { buildCollectionPage } from "$lib/seo/jsonld";
   import Sparkles from "@lucide/svelte/icons/sparkles";
   import { getClassConfig } from "$lib/utils/classes";
   import SkillEffect from "$lib/components/SkillEffect.svelte";
 
   let { data } = $props();
+
+  const collectionNode = buildCollectionPage({
+    path: "/skills",
+    name: "Skills — Ancient Kingdoms Compendium",
+    description: `Searchable database of ${data.skills.length.toLocaleString()} skills in Ancient Kingdoms.`,
+    items: data.skills.map((skill) => ({
+      name: skill.name,
+      path: `/skills/${skill.id}`,
+    })),
+  });
 
   const PAGE_SIZE = 20;
 
@@ -195,6 +207,8 @@
   description={`${data.skills.length.toLocaleString()} skills covering every class, plus monster and pet abilities — damage spells, heals, buffs, debuffs, and summons, with mana costs and tiers.`}
   path="/skills"
 />
+
+<JsonLd node={collectionNode} />
 
 <div class="container mx-auto p-8 space-y-6">
   <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Skills" }]} />

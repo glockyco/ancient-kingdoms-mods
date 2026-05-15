@@ -10,11 +10,23 @@
   } from "$lib/components/ui/data-table";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import Seo from "$lib/components/Seo.svelte";
+  import JsonLd from "$lib/components/JsonLd.svelte";
+  import { buildCollectionPage } from "$lib/seo/jsonld";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import ExternalLink from "@lucide/svelte/icons/external-link";
   import { getItemTooltips } from "$lib/queries/items";
 
   let { data } = $props();
+
+  const collectionNode = buildCollectionPage({
+    path: "/recipes",
+    name: "Recipes — Ancient Kingdoms Compendium",
+    description: `Searchable database of ${data.recipes.length.toLocaleString()} recipes in Ancient Kingdoms.`,
+    items: data.recipes.map((recipe) => ({
+      name: recipe.result_item_name,
+      path: `/recipes/${recipe.id}`,
+    })),
+  });
 
   // Tooltip state - loaded lazily from client-side DB
   let tooltips = $state<Map<string, string>>(new Map());
@@ -265,6 +277,8 @@
   description={`${data.recipes.length.toLocaleString()} recipes for crafting, alchemy, cooking, and scribing — ingredient lists, station requirements, profession levels, and resulting items.`}
   path="/recipes"
 />
+
+<JsonLd node={collectionNode} />
 
 <div class="container mx-auto p-8 space-y-6">
   <Breadcrumb

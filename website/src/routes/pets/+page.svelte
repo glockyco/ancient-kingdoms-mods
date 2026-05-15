@@ -10,11 +10,23 @@
   import { IconBadge } from "$lib/components/ui/icon-badge";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import Seo from "$lib/components/Seo.svelte";
+  import JsonLd from "$lib/components/JsonLd.svelte";
+  import { buildCollectionPage } from "$lib/seo/jsonld";
   import { getClassConfig } from "$lib/utils/classes";
   import type { PetListView } from "$lib/types/pets";
   import User from "@lucide/svelte/icons/user";
 
   let { data } = $props();
+
+  const collectionNode = buildCollectionPage({
+    path: "/pets",
+    name: "Pets — Ancient Kingdoms Compendium",
+    description: `Searchable database of ${data.pets.length.toLocaleString()} pets and companions in Ancient Kingdoms.`,
+    items: data.pets.map((pet) => ({
+      name: pet.name,
+      path: `/pets/${pet.id}`,
+    })),
+  });
 
   const uniqueKinds = $derived(
     Array.from(new Set(data.pets.map((p) => p.kind))).sort(),
@@ -121,6 +133,8 @@
   description="Pets, familiars, and mercenaries — summoned companions and recruitable allies, with their skills, stats, and how to unlock each."
   path="/pets"
 />
+
+<JsonLd node={collectionNode} />
 
 <div class="container mx-auto p-8 space-y-6">
   <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Pets" }]} />

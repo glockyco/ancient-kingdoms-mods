@@ -1,6 +1,8 @@
 <script lang="ts">
   import * as Card from "$lib/components/ui/card";
   import Seo from "$lib/components/Seo.svelte";
+  import JsonLd from "$lib/components/JsonLd.svelte";
+  import { buildCollectionPage } from "$lib/seo/jsonld";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import { getClassConfig, getResourceDisplayName } from "$lib/utils/classes";
   import Shield from "@lucide/svelte/icons/shield";
@@ -11,6 +13,16 @@
   import Crosshair from "@lucide/svelte/icons/crosshair";
 
   let { data } = $props();
+
+  const collectionNode = buildCollectionPage({
+    path: "/classes",
+    name: "Classes — Ancient Kingdoms Compendium",
+    description: `Playable classes in Ancient Kingdoms.`,
+    items: data.classes.map((classData) => ({
+      name: classData.name,
+      path: `/classes/${classData.id}`,
+    })),
+  });
 
   // Unique icon per class
   const classIcons: Record<string, typeof Shield> = {
@@ -44,6 +56,8 @@
   description="The six playable classes — Warrior, Rogue, Ranger, Cleric, Druid, and Wizard. Roles, resources, and full skill trees."
   path="/classes"
 />
+
+<JsonLd node={collectionNode} />
 
 <div class="container mx-auto px-4 py-6">
   <Breadcrumb

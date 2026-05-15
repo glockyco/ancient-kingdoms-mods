@@ -8,6 +8,8 @@
   } from "$lib/components/ui/data-table";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import Seo from "$lib/components/Seo.svelte";
+  import JsonLd from "$lib/components/JsonLd.svelte";
+  import { buildCollectionPage } from "$lib/seo/jsonld";
   import type { ZoneListView } from "$lib/types/zones";
   import { ICON_BADGE } from "$lib/styles/badge";
   import Crown from "@lucide/svelte/icons/crown";
@@ -19,6 +21,16 @@
   import Trees from "@lucide/svelte/icons/trees";
 
   let { data } = $props();
+
+  const collectionNode = buildCollectionPage({
+    path: "/zones",
+    name: "Zones — Ancient Kingdoms Compendium",
+    description: `Searchable database of ${data.zones.length.toLocaleString()} zones in Ancient Kingdoms.`,
+    items: data.zones.map((zone) => ({
+      name: zone.name,
+      path: `/zones/${zone.id}`,
+    })),
+  });
 
   const columns: ColumnDef<ZoneListView>[] = [
     {
@@ -197,6 +209,8 @@
   description={`${data.zones.length.toLocaleString()} zones across Eratiath — overworld regions and dungeons with level ranges, monster rosters, NPCs, gathering nodes, chests, and altars.`}
   path="/zones"
 />
+
+<JsonLd node={collectionNode} />
 
 <div class="container mx-auto p-8 space-y-6">
   <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Zones" }]} />

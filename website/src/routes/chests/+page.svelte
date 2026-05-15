@@ -12,6 +12,8 @@
   import { IconBadge } from "$lib/components/ui/icon-badge";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import Seo from "$lib/components/Seo.svelte";
+  import JsonLd from "$lib/components/JsonLd.svelte";
+  import { buildCollectionPage } from "$lib/seo/jsonld";
   import MapLink from "$lib/components/MapLink.svelte";
   import type {
     ChestListView,
@@ -23,6 +25,16 @@
   import { formatDuration } from "$lib/utils/format";
 
   let { data } = $props();
+
+  const collectionNode = buildCollectionPage({
+    path: "/chests",
+    name: "Chests — Ancient Kingdoms Compendium",
+    description: `Searchable database of ${data.chests.length.toLocaleString()} chests in Ancient Kingdoms.`,
+    items: data.chests.map((chest) => ({
+      name: chest.name,
+      path: `/chests/${chest.id}`,
+    })),
+  });
 
   const PAGE_SIZE = 20;
 
@@ -269,6 +281,8 @@
   description={`${data.chests.length.toLocaleString()} treasure chests across every zone — coordinates on the world map, required keys, gold ranges, item rewards, and respawn timers.`}
   path="/chests"
 />
+
+<JsonLd node={collectionNode} />
 
 <div class="container mx-auto p-8 space-y-8">
   <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Chests" }]} />

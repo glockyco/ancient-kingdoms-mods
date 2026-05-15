@@ -11,11 +11,23 @@
   import { IconBadge } from "$lib/components/ui/icon-badge";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import Seo from "$lib/components/Seo.svelte";
+  import JsonLd from "$lib/components/JsonLd.svelte";
+  import { buildCollectionPage } from "$lib/seo/jsonld";
   import Trees from "@lucide/svelte/icons/trees";
   import Check from "@lucide/svelte/icons/check";
   import type { AltarListView } from "$lib/types/altars";
 
   let { data } = $props();
+
+  const collectionNode = buildCollectionPage({
+    path: "/altars",
+    name: "Altars — Ancient Kingdoms Compendium",
+    description: `Searchable database of ${data.altars.length.toLocaleString()} altars in Ancient Kingdoms.`,
+    items: data.altars.map((altar) => ({
+      name: altar.name,
+      path: `/altars/${altar.id}`,
+    })),
+  });
 
   const PAGE_SIZE = 20;
 
@@ -182,6 +194,8 @@
   description={`${data.altars.length.toLocaleString()} Forgotten and Avatar altars — wave-based encounters, summoned bosses, level requirements, and tiered loot from common to legendary.`}
   path="/altars"
 />
+
+<JsonLd node={collectionNode} />
 
 <div class="container mx-auto p-8 space-y-6">
   <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Altars" }]} />

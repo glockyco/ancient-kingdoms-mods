@@ -17,6 +17,8 @@
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import Seo from "$lib/components/Seo.svelte";
+  import JsonLd from "$lib/components/JsonLd.svelte";
+  import { buildCollectionPage } from "$lib/seo/jsonld";
   import ClassPills from "$lib/components/ClassPills.svelte";
   import { formatItemType } from "$lib/utils/format";
   import { formatClassName } from "$lib/utils/classes";
@@ -24,6 +26,16 @@
   import { getItemTooltips } from "$lib/queries/items";
 
   let { data } = $props();
+
+  const collectionNode = buildCollectionPage({
+    path: "/items",
+    name: "Items — Ancient Kingdoms Compendium",
+    description: `Searchable database of ${data.items.length.toLocaleString()} items in Ancient Kingdoms.`,
+    items: data.items.map((item) => ({
+      name: item.name,
+      path: `/items/${item.id}`,
+    })),
+  });
 
   // Tooltip state - loaded lazily from client-side DB
   let tooltips = $state<Map<string, string>>(new Map());
@@ -460,6 +472,8 @@
   description={`Searchable database of ${data.items.length.toLocaleString()} items — weapons, armor, consumables, and quest items, with quality, level requirements, drop sources, vendors, and recipes.`}
   path="/items"
 />
+
+<JsonLd node={collectionNode} />
 
 <div class="container mx-auto p-8 space-y-6">
   <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Items" }]} />

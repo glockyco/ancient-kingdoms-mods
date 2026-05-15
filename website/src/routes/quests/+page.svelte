@@ -11,6 +11,8 @@
   } from "$lib/components/ui/data-table";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import Seo from "$lib/components/Seo.svelte";
+  import JsonLd from "$lib/components/JsonLd.svelte";
+  import { buildCollectionPage } from "$lib/seo/jsonld";
   import ClassPills from "$lib/components/ClassPills.svelte";
   import { formatClassName } from "$lib/utils/classes";
   import QuestTypeBadge from "$lib/components/QuestTypeBadge.svelte";
@@ -18,6 +20,16 @@
   import { QUEST_FLAG_CONFIG } from "$lib/utils/quests";
 
   let { data } = $props();
+
+  const collectionNode = buildCollectionPage({
+    path: "/quests",
+    name: "Quests — Ancient Kingdoms Compendium",
+    description: `Searchable database of ${data.quests.length.toLocaleString()} quests in Ancient Kingdoms.`,
+    items: data.quests.map((quest) => ({
+      name: quest.name,
+      path: `/quests/${quest.id}`,
+    })),
+  });
 
   const PAGE_SIZE = 20;
 
@@ -280,6 +292,8 @@
   description={`${data.quests.length.toLocaleString()} quests — main story, epic, adventurer, and repeatable. Browse objectives, level gates, rewards, and prerequisite chains.`}
   path="/quests"
 />
+
+<JsonLd node={collectionNode} />
 
 <div class="container mx-auto p-8 space-y-6">
   <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Quests" }]} />
