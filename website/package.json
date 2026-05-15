@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
-    "prebuild": "node scripts/generate-og-image.mjs && node scripts/generate-home-counts.mjs",
+    "prebuild": "node scripts/generate-og-image.mjs && node scripts/generate-home-counts.mjs && node scripts/build-sitemap-manifest.mjs",
     "generate-og": "node scripts/generate-og-image.mjs",
     "preview": "vite preview",
     "prepare": "svelte-kit sync || echo ''",
