@@ -12,7 +12,6 @@ const config = {
     // is prerendered at build time and served as a static asset, so it does
     // not consume Worker invocations.
     adapter: adapter({}),
-    inlineStyleThreshold: 100000,
     prerender: {
       handleHttpError: ({ path }) => {
         // During prerendering, ignore 404s for routes that don't exist yet
