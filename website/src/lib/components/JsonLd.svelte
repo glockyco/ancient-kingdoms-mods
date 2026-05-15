@@ -1,5 +1,5 @@
 <script lang="ts" module>
-  import type { JsonLdNode } from "$lib/seo/jsonld";
+  import { serializeJsonLd, type JsonLdNode } from "$lib/seo/jsonld";
 
   export interface JsonLdProps {
     node: JsonLdNode;
@@ -9,7 +9,7 @@
 <script lang="ts">
   let { node }: JsonLdProps = $props();
   const json = $derived(
-    JSON.stringify({ "@context": "https://schema.org", ...node }),
+    serializeJsonLd({ "@context": "https://schema.org", ...node }),
   );
 </script>
 

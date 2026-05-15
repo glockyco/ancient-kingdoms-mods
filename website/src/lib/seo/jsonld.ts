@@ -13,6 +13,14 @@ const AUTHOR_STEAM_URL =
 const ORG_DESCRIPTION =
   "Fan-made wiki, interactive world map, and game database for Ancient Kingdoms";
 
+export function serializeJsonLd(value: unknown): string {
+  const json = JSON.stringify(value);
+  if (json === undefined) {
+    throw new Error("JSON-LD value must be serializable");
+  }
+  return json.replace(/</g, "\\u003c");
+}
+
 interface IdRef {
   "@id": string;
 }

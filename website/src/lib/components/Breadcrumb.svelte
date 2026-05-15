@@ -55,6 +55,7 @@
 
 <script lang="ts">
   import { resolve } from "$app/paths";
+  import { serializeJsonLd } from "$lib/seo/jsonld";
 
   let { items }: BreadcrumbProps = $props();
 
@@ -83,8 +84,8 @@
 </script>
 
 <svelte:head>
-  <!-- eslint-disable-next-line svelte/no-at-html-tags — JSON.stringify output is structured data, not user HTML; the </ + script> split avoids the Svelte parser closing the surrounding script block -->
-  {@html `<script type="application/ld+json">${JSON.stringify(breadcrumbLd)}</` +
+  <!-- eslint-disable-next-line svelte/no-at-html-tags — serializeJsonLd escapes script-tag breakout sequences; the </ + script> split avoids the Svelte parser closing the surrounding script block -->
+  {@html `<script type="application/ld+json">${serializeJsonLd(breadcrumbLd)}</` +
     `script>`}
 </svelte:head>
 

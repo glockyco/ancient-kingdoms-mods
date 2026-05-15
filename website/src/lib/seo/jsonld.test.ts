@@ -4,6 +4,7 @@ import {
   buildOrganization,
   buildPerson,
   buildCollectionPage,
+  serializeJsonLd,
   SITE_ID,
   ORG_ID,
   AUTHOR_ID,
@@ -88,4 +89,17 @@ test("buildCollectionPage omits description cleanly when not provided", () => {
   });
   expect(node.description).toBeUndefined();
   expect(node.mainEntity.numberOfItems).toBe(0);
+});
+
+test("serializeJsonLd escapes script-tag breakout sequences", () => {
+  const json = serializeJsonLd({
+    "@context": "https://schema.org",
+    "@type": "Thing",
+    name: "x</script><script>alert(1)</script><!--",
+  });
+
+  expect(json).not.toContain("</script>");
+  expect(json).not.toContain("<!--");
+  expect(json).toContain("x\\u003c/script>");
+  expect(json).toContain("\\u003cscript>alert(1)\\u003c/script>");
 });
