@@ -1,5 +1,11 @@
 <script lang="ts">
   import "../app.css";
+  import JsonLd from "$lib/components/JsonLd.svelte";
+  import {
+    buildOrganization,
+    buildPerson,
+    buildWebSite,
+  } from "$lib/seo/jsonld";
   import { ModeWatcher, setMode } from "mode-watcher";
   import { beforeNavigate } from "$app/navigation";
   import LoadingOverlay from "$lib/components/LoadingOverlay.svelte";
@@ -7,6 +13,10 @@
   import { getNormalizedUrlSearch } from "$lib/utils/url";
 
   let { children } = $props();
+
+  const websiteNode = buildWebSite();
+  const organizationNode = buildOrganization();
+  const personNode = buildPerson();
 
   onMount(() => {
     // Allow forcing theme via URL parameter (e.g. ?theme=dark for embeds)
@@ -44,6 +54,10 @@
     </style>
   </noscript>
 </svelte:head>
+
+<JsonLd node={websiteNode} />
+<JsonLd node={organizationNode} />
+<JsonLd node={personNode} />
 
 <ModeWatcher />
 <LoadingOverlay />
