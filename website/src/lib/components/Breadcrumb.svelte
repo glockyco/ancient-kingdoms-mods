@@ -1,6 +1,8 @@
 <script lang="ts" module>
   import type { RouteId } from "$app/types";
 
+  import { canonicalUrl } from "$lib/seo/site";
+
   export interface BreadcrumbItem {
     label: string;
     href?: RouteId | { route: RouteId; params: Record<string, string> };
@@ -9,11 +11,50 @@
   export interface BreadcrumbProps {
     items: BreadcrumbItem[];
   }
+
+  function jsonLdPath(
+    href:
+      | RouteId
+      | { route: RouteId; params: Record<string, string> }
+      | undefined,
+  ): string | undefined {
+    if (!href) return undefined;
+
+    if (typeof href === "object" && "route" in href) {
+      let path: string = href.route;
+      for (const [key, value] of Object.entries(href.params)) {
+        path = path.replace(`[${key}]`, value);
+      }
+      return path;
+    }
+
+    return href as string;
+  }
+
+  /**
+   * BreadcrumbList JSON-LD mirroring the visible trail. Google uses this to
+   * render "Home > Items > Foo" in the SERP instead of the workers.dev host.
+   */
+  export function buildBreadcrumbLd(items: BreadcrumbItem[]) {
+    return {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: items.map((item, index) => {
+        const path = jsonLdPath(item.href);
+        const entry: Record<string, unknown> = {
+          "@type": "ListItem",
+          position: index + 1,
+          name: item.label,
+        };
+        if (path) entry.item = canonicalUrl(path);
+        return entry;
+      }),
+    };
+  }
 </script>
 
 <script lang="ts">
   import { resolve } from "$app/paths";
-  import { canonicalUrl } from "$lib/seo/site";
 
   let { items }: BreadcrumbProps = $props();
 
@@ -38,24 +79,7 @@
     return resolve(href as any);
   }
 
-  /**
-   * BreadcrumbList JSON-LD mirroring the visible trail. Google uses this to
-   * render "Home > Items > Foo" in the SERP instead of the workers.dev host.
-   */
-  const breadcrumbLd = $derived.by(() => ({
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: items.map((item, index) => {
-      const path = resolveHref(item.href);
-      const entry: Record<string, unknown> = {
-        "@type": "ListItem",
-        position: index + 1,
-        name: item.label,
-      };
-      if (path) entry.item = canonicalUrl(path);
-      return entry;
-    }),
-  }));
+  const breadcrumbLd = $derived(buildBreadcrumbLd(items));
 </script>
 
 <svelte:head>
