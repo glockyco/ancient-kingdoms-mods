@@ -164,6 +164,8 @@ Recommendation: implement Option B now. Include static calculators and decision 
 
 Modern UX guidance supports showing the most important information first and revealing advanced detail only when users ask for it. NN/g describes progressive disclosure as initially showing only key options and offering specialized options on request, improving learnability, efficiency, and error rate when the split is done well ([NN/g: Progressive Disclosure](https://www.nngroup.com/articles/progressive-disclosure/)). Documentation IA guidance also emphasizes organizing docs around user workflows, clear labels, headings, and cross-references ([GitBook: documentation IA](https://gitbook.com/docs/guides/docs-best-practices/documentation-structure-tips)). Diátaxis is useful framing here: this page is mostly **explanation + reference**, with a small **how-to diagnostic** layer ([Diátaxis](https://diataxis.fr/)).
 
+For DX, the spec and implementation plan should also treat diagrams as maintainable documentation, not decorative assets. Google’s technical writing guidance recommends writing the caption/takeaway first, constraining each illustration to one focused idea, and splitting complex diagrams into smaller subsystem views ([Google Tech Writing: Illustrating](https://developers.google.com/tech-writing/two/illustrations)). C4 guidance supports progressive zoom levels and using only diagrams that add value, rather than forcing every abstraction level ([C4 model diagrams](https://c4model.com/diagrams)). Mermaid is useful precedent for diagrams-as-code because it creates diagrams from text/code and explicitly targets documentation that can keep up with development ([Mermaid intro](https://mermaid.js.org/intro/)). For this repo, ASCII sketches in Markdown are the safest baseline: they are diffable in PRs, readable in terminals, and easy for implementation agents to preserve.
+
 Apply that as follows:
 
 ### Layer 1: first-screen quick answers
@@ -221,6 +223,112 @@ Data tables and evidence that power users can inspect:
 - Source/evidence matrix.
 
 Keep the page to two disclosure levels per section: visible summary plus expandable/details. Avoid nested accordions inside accordions.
+
+## Visual/DX sketch deck
+
+The spec should include visual-ish sketches for two audiences:
+
+- **Players/design reviewers:** understand the page flow and mental model before UI code exists.
+- **Implementers/reviewers:** see data flow, component boundaries, and state logic in a diffable format.
+
+Each sketch needs a short caption stating the takeaway. Do not use large diagrams that require more explanation than the surrounding paragraph. If a diagram grows past one focused idea, split it.
+
+### Sketch 1 — page information architecture
+
+Caption: the page starts with play decisions and progressively reveals mechanics, data, and evidence.
+
+```text
+/mechanics/respawns
+┌─────────────────────────────────────────────────────────────┐
+│ H1 + one-sentence model                                      │
+│ "Respawn time = eligibility; chance mobs roll when gates pass"│
+└───────────────┬─────────────────────────────────────────────┘
+                │
+                v
+┌─────────────────────────────────────────────────────────────┐
+│ Quick answer cards                                           │
+│ Timer │ Chance │ Zone │ Corpse/AOI │ Blocked │ Renewal Sage │
+└───────────────┬─────────────────────────────────────────────┘
+                │
+                v
+┌─────────────────────────────────────────────────────────────┐
+│ "Why isn't it up?" diagnostic                                │
+│ player situation -> likely mechanic -> next checks           │
+└───────────────┬─────────────────────────────────────────────┘
+                │
+                v
+┌─────────────────────────────────────────────────────────────┐
+│ Mechanics detail cards                                       │
+│ core flow -> rare chance -> zones/AOI -> blockers -> sages   │
+└───────────────┬─────────────────────────────────────────────┘
+                │
+                v
+┌─────────────────────────────────────────────────────────────┐
+│ Data tables + FAQ + evidence                                 │
+│ exact rows, common misconceptions, source caveats            │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Sketch 2 — first viewport wireframe
+
+Caption: the first screen should make the safe mental model unavoidable before offering deeper controls.
+
+```text
+┌──────────────────────────────────────────────────────────────┐
+│ Breadcrumb: Home / Mechanics / Monster Respawns              │
+│                                                              │
+│ Monster Respawn Mechanics                                    │
+│ Respawn time is eligibility. Chance mobs roll when gates pass │
+│                                                              │
+│ ⚠ Based on decompiled scripts + exported data; not live state│
+│                                                              │
+│ ┌──────────┐ ┌──────────┐ ┌──────────┐                       │
+│ │ Timer    │ │ Chance   │ │ Zone     │                       │
+│ │ earliest │ │ per roll │ │ must tick│                       │
+│ └──────────┘ └──────────┘ └──────────┘                       │
+│ ┌──────────┐ ┌──────────┐ ┌──────────┐                       │
+│ │ Corpse   │ │ Blocked  │ │ Renewal  │                       │
+│ │ hidden≠  │ │ not kill │ │ no force │                       │
+│ │ visible  │ │ counter  │ │ spawn    │                       │
+│ └──────────┘ └──────────┘ └──────────┘                       │
+│                                                              │
+│ [Why isn't it up?] [Rare chance] [Blocked] [Renewal Sage]     │
+└──────────────────────────────────────────────────────────────┘
+```
+
+### Sketch 3 — developer data flow
+
+Caption: static DB data and pure client helpers should stay separate so the page is testable and does not imply live state.
+
+```text
+website/static/compendium.db
+   │
+   │ read-only SQL at prerender
+   v
++page.server.ts
+   ├─ spawnTypeCounts
+   ├─ probabilityDistribution
+   ├─ probabilityGatedMonsters
+   ├─ summonTriggerSummaries
+   ├─ timeWindowMonsters
+   └─ curatedExamples
+        │
+        v
++page.svelte
+   ├─ QuickAnswerCards      (static copy + links)
+   ├─ Troubleshooter        (pure local state)
+   ├─ EligibleRollCalculator(pure math helper)
+   ├─ GateExplorer          (pure state helper)
+   ├─ BlockedSpawnChecklist (server-loaded relationships)
+   └─ DataTables            (server-loaded rows)
+        │
+        v
+Tests
+   ├─ discoverability links
+   ├─ calculator math
+   └─ gate output labels
+```
+
 
 ## Page structure
 
@@ -338,6 +446,40 @@ Copy rule:
 - Use `eligible to respawn` for guaranteed `probabilityRespawn = 1` monsters.
 - Use `eligible to roll` for `probabilityRespawn < 1` monsters.
 
+ASCII state sketch for the spec and implementation plan:
+
+```text
+Caption: timer elapsed is one gate in the DEAD-state path, not the whole respawn.
+
+        alive monster
+             │
+             │ OnDeath()
+             v
+┌──────────────────────────────┐
+│ visible corpse / loot window │
+│ deathTimeEnd + respawnTimeEnd│
+└──────────────┬───────────────┘
+               │ cleanup/hide can run only if update path runs
+               v
+┌──────────────────────────────┐
+│ hidden DEAD monster          │
+│ timer may already be elapsed │
+└──────────────┬───────────────┘
+               │ server update tick
+               v
+┌──────────────────────────────┐
+│ gates checked                │
+│ timer + blockers + chance +  │
+│ time/event + zone/entity     │
+└───────┬────────────────┬─────┘
+        │ pass           │ fail
+        v                v
+┌──────────────┐   ┌──────────────────────────────┐
+│ Show+Revive  │   │ stay DEAD/hidden             │
+│ -> alive     │   │ chance fail: wait full timer │
+└──────────────┘   └──────────────────────────────┘
+```
+
 ### Section 4: Rare Chance and Low-Pop Zones
 
 Purpose: separate rare-frequency behavior from generic respawn.
@@ -354,6 +496,28 @@ Recommended copy:
 
 ```text
 Low-pop behavior is not a guaranteed reactivation spawn. If the rare was already alive, it can remain alive through quiet periods. If it was dead and hidden, and its timer elapsed while the zone was inactive, it can become eligible to roll when the zone becomes active again. If that roll fails, the next attempt waits another full respawn interval.
+```
+
+ASCII retry timeline:
+
+```text
+Caption: a failed rare roll schedules another full respawn interval.
+
+death/cleanup done
+      │
+      v
+hidden DEAD ── wait respawn_time ──► eligible roll #1
+                                        │
+                         ┌──────────────┴──────────────┐
+                         │ roll passes                  │ roll fails
+                         v                              v
+                    Show + Revive                 Hide; stay DEAD
+                                                       │
+                                                       v
+                                  wait respawn_time again
+                                                       │
+                                                       v
+                                                eligible roll #2
 ```
 
 Chance calculator requirements:
@@ -384,6 +548,34 @@ Player copy:
 
 ```text
 Being away from a zone does not make its monsters keep thinking in the background. If the zone root is inactive, monster update logic does not run. When players return and the zone becomes active, hidden dead monsters whose timers elapsed can be processed then.
+```
+
+ASCII zone/AOI update sketch:
+
+```text
+Caption: zone activation and observer/AOI are separate gates.
+
+                    Is the zone root active?
+                         │
+            ┌────────────┴────────────┐
+            │ no                      │ yes
+            v                         v
+   ┌─────────────────┐        Is entity worth updating?
+   │ no Unity Update │             │
+   │ no respawn roll │   ┌─────────┴─────────┐
+   └─────────────────┘   │ observers > 0     │ hidden
+                         v                   v
+                 ┌──────────────┐    ┌────────────────────┐
+                 │ UpdateServer │    │ UpdateServer       │
+                 │ runs         │    │ runs without AOI   │
+                 └──────┬───────┘    └─────────┬──────────┘
+                        │                      │
+                        v                      v
+               visible corpse can      hidden DEAD can check
+               clean up / wait / roll  elapsed respawn gates
+
+Visible + unobserved + active zone:
+   observers = 0 and hidden = false -> UpdateServer skipped
 ```
 
 #### AOI/observers
@@ -426,6 +618,29 @@ Recommended player copy:
 
 ```text
 "Blocked" means the summoned monster's respawn gate waits for specific placeholder spawn instances to all be DEAD at the same time. Killing the same monster type somewhere else does not count, and kills are not accumulated like quest progress.
+```
+
+ASCII blocker sketch:
+
+```text
+Caption: blocked spawns depend on simultaneous DEAD state of specific instances.
+
+SummonMonster trigger: Angry Librarian
+
+specific placeholder instances in scene:
+   [Ebon Sage spawn A] state DEAD? ─┐
+   [Ebon Sage spawn B] state DEAD? ─┤
+   [Ebon Sage spawn C] state DEAD? ─┤
+   [Ebon Sage spawn D] state DEAD? ─┤── all DEAD at same 1s check?
+   [Ebon Sage spawn E] state DEAD? ─┘
+                                             │
+                              ┌──────────────┴──────────────┐
+                              │ yes                         │ no
+                              v                             v
+                 respawnSummonableReady = true  respawnSummonableReady = false
+                              │
+                              v
+             summoned monster still needs its own timer/chance gates
 ```
 
 Data table columns:
@@ -475,6 +690,31 @@ Recommended copy:
 
 ```text
 After a Renewal Sage reset, a dead respawnable monster may be eligible sooner once its zone/entity update path runs. A chance-gated rare can still fail its roll. A blocked/summonable monster still needs its placeholders dead at the same time. A live monster is not killed and respawned by the reset.
+```
+
+ASCII Renewal Sage effects sketch:
+
+```text
+Caption: Renewal Sage changes timers/state fields, not the whole spawn situation.
+
+Renewal Sage command
+      │
+      ├─ refuses if any online player is inside target dungeon
+      │
+      v
+for each respawning monster in dungeon:
+      │
+      ├─ set respawnTimeEnd = 0
+      └─ if boss/elite: persisted dead-state value = 0
+
+Does NOT change:
+      ├─ live/dead state
+      ├─ health.current
+      ├─ hidden/visible status
+      ├─ probabilityRespawn roll
+      ├─ blocker placeholder states
+      ├─ cached respawnSummonableReady timing
+      └─ time/Halloween/event gates
 ```
 
 Cross-link requirement:
@@ -620,6 +860,48 @@ Columns:
 - Link.
 
 ## Interactive elements
+
+Interactive widgets should be specified with lightweight ASCII wireframes before implementation. The goal is not pixel-perfect UI; it is to make state, labels, and disclaimers reviewable before Svelte code exists.
+
+```text
+Caption: all widgets return guidance, never live state.
+
+┌──────────────────── Why isn't it up? ────────────────────┐
+│ What kind of spawn? [ rare/chance v ]                     │
+│ Timer elapsed?      [ yes / no / unknown ]                │
+│ Zone active?        [ yes / no / unknown ]                │
+│ Blockers clear?     [ n/a / yes / no / unknown ]          │
+│                                                            │
+│ Likely mechanic: eligible roll, not guaranteed spawn       │
+│ Next checks: keep zone active, verify blockers/time window │
+│                                                            │
+│ Note: mechanics guidance, not live server state.           │
+└────────────────────────────────────────────────────────────┘
+
+┌──────────── Eligible roll math ────────────┐
+│ Chance per eligible roll: [ 25% ]           │
+│ Eligible attempts:        [  3  ]           │
+│                                            │
+│ At least one success: 57.8%                │
+│ Expected attempts: ~4.0                    │
+│ Failed roll: wait another respawn interval │
+│                                            │
+│ Not a real-time spawn prediction.          │
+└────────────────────────────────────────────┘
+
+┌──────────── Gate explorer ────────────┐
+│ Zone active?        [yes]             │
+│ Observers           [0]               │
+│ Hidden?             [yes]             │
+│ State               [DEAD]            │
+│ Timer elapsed?      [yes]             │
+│ Chance roll         [fails]           │
+│                                      │
+│ Output: UpdateServer runs; respawn    │
+│ check runs; roll fails; stay hidden   │
+│ DEAD and wait another respawn timer.  │
+└──────────────────────────────────────┘
+```
 
 ### 1. Why Isn't It Up? troubleshooter
 
@@ -880,7 +1162,39 @@ Icons can use lucide equivalents:
 
 ## Data and implementation boundaries
 
-The spec is for a page; implementation planning should decide exact file/component decomposition. Data requirements are clear now:
+The spec is for a page, but it must still give implementers a clear map of data responsibilities, pure helper boundaries, and test seams:
+
+
+```text
+Caption: keep DB reads, deterministic mechanics helpers, and Svelte presentation separable.
+
+routes/mechanics/respawns/
+  +page.server.ts
+    └─ SQL queries only; returns typed static datasets
+
+  +page.svelte
+    ├─ page layout and section composition
+    ├─ quick-answer cards
+    ├─ diagnostic widget shell
+    └─ data table rendering
+
+lib/respawn-mechanics/
+  calculations.ts
+    ├─ cumulativeEligibleRollChance(p, attempts)
+    └─ expectedEligibleAttempts(p)
+
+  gate-explorer.ts
+    ├─ evaluateRespawnGate(input)
+    └─ formatGateOutcome(decision)
+
+  types.ts
+    └─ shared page/widget row types if generated route types get noisy
+
+Tests
+  routes/mechanics/discoverability.test.ts
+  lib/respawn-mechanics/calculations.test.ts
+  lib/respawn-mechanics/gate-explorer.test.ts
+```
 
 ### Server load data
 
@@ -921,7 +1235,8 @@ The implementation is acceptable only if all of these are true:
 11. Monster and zone pages have at least one contextual inbound link to the new mechanics page.
 12. Data tables are generated from the SQLite data rather than stale hand-entered values where practical.
 13. Interactive elements include disclaimers that outputs are mechanics guidance, not live state.
-14. Page passes Svelte type checking and the mechanics discoverability test is updated for the new page.
+14. The spec’s ASCII sketches are either represented directly on the page where helpful or translated into equivalent cards/flows while preserving their captions/takeaways.
+15. Page passes Svelte type checking and the mechanics discoverability test is updated for the new page.
 
 ## Verification plan for implementation
 
@@ -946,6 +1261,7 @@ The implementation is acceptable only if all of these are true:
 | Existing `Chance` column remains ambiguous. | Add contextual links/tooltips and define `Chance` as per eligible roll. |
 | Spawn row counts become stale. | Generate tables from DB at prerender time. |
 | Source-derived edge cases overfit player behavior. | Keep corpse/AOI cleanup in advanced/common-situation sections, not hero. |
+| Visual sketches drift from implementation. | Keep sketches text-based, captioned, and close to the relevant section; implementation review must preserve the takeaway even if the final UI uses cards instead of ASCII. |
 
 ## Implementation planning decisions
 
