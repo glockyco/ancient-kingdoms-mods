@@ -14,11 +14,11 @@ The page should answer a player's immediate question first: **"Why isn't this mo
 
 Recommended one-sentence hero copy:
 
-> A monster's listed respawn time is when it can become eligible to respawn; chance-gated rares only become eligible to roll, and the roll only happens when the zone/entity is actually updating and all gates pass.
+> A monster's listed respawn time is when it can become eligible to respawn; chance-gated rares only become eligible to roll, and the roll only happens when the game is checking that zone/monster and all gates pass.
 
 Core UX decisions:
 
-1. **Use "eligible to roll" consistently** for rares/probability-gated monsters. Do not say they "respawn immediately" unless the sentence also qualifies timer elapsed, zone active, update path running, and gates passing.
+1. **Use "eligible to roll" consistently** for rares/probability-gated monsters. Do not say they "respawn immediately" unless the sentence also qualifies timer elapsed, zone active, the game checking that monster again, and gates passing.
 2. **Show a player decision tree before code details.** Players need to know whether to wait, clear blockers, keep the zone active, use an altar item, or stop expecting Renewal Sage to force a spawn.
 3. **Separate spawn families.** Regular respawn, chance-gated respawn, blocked/summonable respawn, altar/event spawn, and on-death placeholder spawn are different enough that collapsing them into one "special" explanation will create wrong play decisions.
 4. **Make misconceptions visible.** The page should have direct "This does not mean..." callouts for the high-risk errors: timer equals guaranteed spawn, 96 is a respawn radius, blockers are kill counters, Renewal Sage forces a boss to appear, and inactive zones tick normally.
@@ -280,7 +280,7 @@ Caption: the first screen should make the safe mental model unavoidable before o
 │ Monster Respawn Mechanics                                    │
 │ Respawn time is eligibility. Chance mobs roll when gates pass │
 │                                                              │
-│ ⚠ Based on decompiled scripts + exported data; not live state│
+│ Note: decompiled scripts + exported data; not live state     │
 │                                                              │
 │ ┌──────────┐ ┌──────────┐ ┌──────────┐                       │
 │ │ Timer    │ │ Chance   │ │ Zone     │                       │
@@ -288,7 +288,7 @@ Caption: the first screen should make the safe mental model unavoidable before o
 │ └──────────┘ └──────────┘ └──────────┘                       │
 │ ┌──────────┐ ┌──────────┐ ┌──────────┐                       │
 │ │ Corpse   │ │ Blocked  │ │ Renewal  │                       │
-│ │ hidden≠  │ │ not kill │ │ no force │                       │
+│ │ hidden!= │ │ not kill │ │ no force │                       │
 │ │ visible  │ │ counter  │ │ spawn    │                       │
 │ └──────────┘ └──────────┘ └──────────┘                       │
 │                                                              │
@@ -338,14 +338,16 @@ Tests
 - Server data: `website/src/routes/mechanics/respawns/+page.server.ts`
 - Page title: `Monster Respawn Mechanics - Ancient Kingdoms`
 - SEO description: `How monster respawn timers, rare spawn chance, dynamic zones, blocked spawns, altar spawns, on-death placeholders, and Renewal Sages work in Ancient Kingdoms.`
+- FAQ entries must render as real heading+answer HTML with stable IDs for snippets and Discord links. If the site's SEO stack supports structured data, emit `BreadcrumbList` and `FAQPage` JSON-LD from the same visible on-page copy only.
 - Mechanics index card title: `Monster Respawns`
 - Mechanics index card description: `Timers, rare rolls, blockers, zone activity, altar spawns, and Renewal Sages`
 
 ### Top navigation anchors
 
-Use a compact section nav like existing mechanics pages:
+Use a compact section nav like existing mechanics pages, but do not let navigation displace the first-screen mental model. On small screens, render the hero sentence, evidence alert, and quick-answer cards before any jump navigation. If a jump nav appears near the top on mobile, collapse it into a compact `Jump to section` control placed after the quick-answer block.
 
 - `#quick-answer` — Quick Answer
+- `#reading-current-tables` — Reading Current Tables
 - `#why-not-up` — Why Isn't It Up?
 - `#core-flow` — Core Respawn Flow
 - `#rare-chance` — Rare Chance
@@ -366,47 +368,56 @@ Content:
 ```text
 Respawn time is an eligibility timer, not always a spawn timestamp.
 
-For a normal respawning monster, the server can bring it back only after the monster is dead, respawn is enabled, its timer has elapsed, its zone/entity update path is running, and special gates pass. For rares with Chance below 100%, timer elapsed means eligible to roll. If that roll fails, the monster stays hidden and waits another respawn interval before trying again.
+For a normal respawning monster, the server can bring it back only after the monster is dead, respawn is enabled, its timer has elapsed, the game is checking that zone/monster again, and special gates pass. For rares with Chance below 100%, timer elapsed means eligible to roll. If that roll fails, the monster stays hidden and waits another respawn interval before trying again.
 ```
 
 Include six quick cards:
 
 | Card | Player-facing copy |
 | --- | --- |
-| Timer | `Respawn 30m` means the first possible eligibility after death + corpse time + respawn time. It is not a live guarantee. |
+| Timer | `Respawn 30m` means the monster cannot return before its respawn timer has elapsed. Corpse visibility/cleanup can delay when the server gets to check that dead monster, but corpse time is not a second full respawn timer added afterward. |
 | Chance | `Chance 25%` means 25% per eligible respawn attempt. A failed attempt schedules another full respawn interval. |
-| Zone active | Inactive dynamic zones do not tick monster updates. Returning players can cause elapsed timers to be processed once the zone is active again. |
-| Hidden vs corpse | Hidden dead monsters can keep updating without observers while their zone is active. Visible unobserved corpses can stall until observed or hidden. |
+| Zone active | If nobody is in the zone, the game may stop checking dead monsters there. Returning players can cause elapsed timers to be processed once the zone is active again. |
+| Hidden vs corpse | A corpse still visible on someone's screen can behave differently from one that has already disappeared. Hidden dead monsters can keep updating without observers while their zone is active; visible unobserved corpses can stall. |
 | Blocked | Blocked/summonable spawns require configured placeholder instances to be dead at the same time. This is not a cumulative kill counter. |
-| Renewal Sage | Renewal resets respawn timers/state fields for matching dungeon monsters; it does not force a spawn or bypass chance/blockers. |
+| Renewal Sage | Renewal resets `respawnTimeEnd` for matching respawning dungeon monsters and clears persisted elite/boss dead-state entries; it does not force a spawn or bypass chance/blockers. |
+
+
+### Reading Current Tables
+
+Purpose: define the labels players already see before sending them into deeper mechanics. Inbound links from monster and zone pages should target `#reading-current-tables` when the user is trying to understand table columns.
+
+Required definitions:
+
+- `Respawn`: the monster's normal respawn interval. `Respawn -` means no normal respawn path is shown for that row/monster.
+- `Chance`: chance per eligible respawn attempt. `Chance -` usually means no reduced chance is shown, i.e. 100% for a respawning monster; if `Respawn` is also `-`, read it as no normal respawn rather than guaranteed return.
+- `Special`: extra spawn family or gate. `Blocked` means placeholder instances must all be dead simultaneously; `Altar` means event/altar wave; `On Death` means spawned by a source monster death.
+- Time-window text such as `20:00-8:00`: an in-game spawn window. This is not the same thing as an **active zone** in this guide.
+- `Active zone` in this guide: players are present in the dynamic zone so monster update logic can run.
 
 ### Section 2: Why Isn't It Up?
 
 Purpose: primary UX path for casual players, rare hunters, and dungeon leaders.
 
-Design: a diagnostic card group or simple decision tree. It should not require selecting an exact monster for v1, though selecting one can unlock richer data if available.
+Design: a diagnostic card group or simple decision tree. V1 should only ask for observable player facts or static table facts: spawn label (`Blocked`, `Altar`, `On Death`), whether the table shows `Respawn -`, whether `Chance` is below 100%, whether a time-window/event label applies, whether players left the zone empty, and whether Renewal Sage was used. If the UI asks about kill time, dead/alive state, or timer elapsed for a specific monster, it must first require selecting an exact monster and must label the answer as player-entered context, not live state.
 
 Decision flow:
 
-1. **Is this a normal, blocked, altar, or on-death spawn?**
-   - If altar/event: check activation item/event flow, not normal respawn.
-   - If on-death placeholder: check source monster death/probability.
-   - If blocked: check blockers.
-   - If regular/chance: continue.
-2. **Is the monster dead and respawnable?**
-   - No-respawn monsters will not return via normal respawn.
-3. **Has the respawn timer elapsed?**
-   - If not, wait or move on.
-4. **Is the zone active?**
-   - If nobody is in the dynamic zone, monster ticking is frozen.
+1. **What spawn family does the table show?**
+   - If `Altar`: check activation item/event flow, not normal respawn.
+   - If `On Death`: check source monster death/probability.
+   - If `Blocked`: check blockers before chance/time-window rolls; blocked summonables do not roll chance until all required placeholder instances are `DEAD` simultaneously.
+   - If blank/regular/chance: continue.
+2. **Does the table show `Respawn -`?**
+   - No normal respawn path is shown; check special spawn source or event context.
+3. **Was the zone empty or inactive?**
+   - If nobody is in the dynamic zone, monster ticking is frozen. If a dead monster's zone unloads, its corpse is hidden and its death/corpse timer is reset, but its respawn timer is not.
+4. **Does the monster have a time-window or event gate?**
+   - If outside the active window/event, a successful normal respawn check still cannot show it.
 5. **Is it chance-gated?**
-   - If yes, timer elapsed only allows a roll; failed rolls wait another interval.
-6. **Is it time-window/Halloween gated?**
-   - If outside active window/event, it remains dead/hidden.
-7. **Is it blocked/summonable?**
-   - All configured placeholder instances must be dead simultaneously.
-8. **Was Renewal Sage used?**
-   - It may make the monster eligible sooner, but all other gates still apply.
+   - If yes, timer elapsed only allows a roll after earlier gates pass; failed rolls wait another interval.
+6. **Was Renewal Sage used?**
+   - It may make the monster eligible sooner once the zone/monster is checked again, but all other gates still apply.
 
 Recommended output labels:
 
@@ -491,11 +502,12 @@ Must explain:
 - The page must never imply "not up now" means no roll happened; failed rolls are unobservable from static data.
 - Low-pop zones can make rares seem more common because alive rares persist and dead hidden rares can process elapsed timers when the zone is active again.
 - Low-pop zones can also delay attempts because inactive zone roots freeze monster ticking.
+- Zone deactivation has a special dead-monster side effect: if a monster is already `DEAD` when its zone root disables, the server warps it home, hides it, and resets `deathTimeEnd` to current server time. It does **not** reset `respawnTimeEnd`.
 
 Recommended copy:
 
 ```text
-Low-pop behavior is not a guaranteed reactivation spawn. If the rare was already alive, it can remain alive through quiet periods. If it was dead and hidden, and its timer elapsed while the zone was inactive, it can become eligible to roll when the zone becomes active again. If that roll fails, the next attempt waits another full respawn interval.
+Low-pop behavior is not a guaranteed reactivation spawn. If the rare was already alive, it can remain alive through quiet periods. If it was dead and hidden, and its timer elapsed while the zone was inactive, it can become eligible to roll when the zone becomes active again. If that roll fails, the next attempt waits another full respawn interval. If the zone unloaded while the monster was dead, the corpse is hidden/reset, but the respawn timer is not reset.
 ```
 
 ASCII retry timeline:
@@ -525,6 +537,7 @@ Chance calculator requirements:
 - Input: `respawn_probability` and number of eligible attempts.
 - Output: `P(at least one success) = 1 - (1 - p)^attempts`.
 - Label: `Math over eligible rolls only — not a live spawn prediction.`
+- Input/domain rules: attempts must be an integer `>= 0`; probability must be constrained to `0–100%`; `0 attempts` returns `0%`; `100%` returns certainty on the first eligible attempt; `0%` is either disallowed or rendered as `no success possible`.
 - Show examples:
   - 20% chance after 1/3/5 eligible rolls: 20%, 48.8%, 67.2%.
   - 50% chance after 1/2/3 eligible rolls: 50%, 75%, 87.5%.
@@ -543,11 +556,12 @@ Required points:
 - Inactive zone roots stop Unity `Update()` from running for child monsters.
 - Portal/death-respawn/resurrection paths can activate destination zones immediately; periodic cleanup runs around every 30s by default.
 - Inactive zone means monster ticking is frozen; it does not mean timers are reset.
+- If a dead monster's zone unloads, its corpse is hidden and its death/corpse timer is reset to now, but its respawn timer is not reset.
 
 Player copy:
 
 ```text
-Being away from a zone does not make its monsters keep thinking in the background. If the zone root is inactive, monster update logic does not run. When players return and the zone becomes active, hidden dead monsters whose timers elapsed can be processed then.
+Being away from a zone does not make its monsters keep thinking in the background. If the zone root is inactive, monster update logic does not run. When players return and the zone becomes active, hidden dead monsters whose timers elapsed can be processed then. For already-dead monsters, unloading the zone hides the corpse and resets the corpse timer, but does not reset the respawn timer.
 ```
 
 ASCII zone/AOI update sketch:
@@ -689,13 +703,13 @@ Exact behavior to explain:
 Recommended copy:
 
 ```text
-After a Renewal Sage reset, a dead respawnable monster may be eligible sooner once its zone/entity update path runs. A chance-gated rare can still fail its roll. A blocked/summonable monster still needs its placeholders dead at the same time. A live monster is not killed and respawned by the reset.
+After a Renewal Sage reset, a dead respawnable monster may be eligible sooner once the zone/monster is checked again. A chance-gated rare can still fail its roll. A blocked/summonable monster still needs its placeholders dead at the same time. A live monster is not killed and respawned by the reset.
 ```
 
 ASCII Renewal Sage effects sketch:
 
 ```text
-Caption: Renewal Sage changes timers/state fields, not the whole spawn situation.
+Caption: Renewal Sage changes `respawnTimeEnd` and persisted elite/boss dead-state entries, not the whole spawn situation.
 
 Renewal Sage command
       │
@@ -743,13 +757,13 @@ Current examples to use:
 - Blocked/summonable: `/monsters/angry_librarian` in `/zones/vault_of_the_vanished`, `/monsters/hrimthur` in `/zones/everfrost`.
 - On-death placeholder: `/monsters/large_shade_beast` → `/monsters/keeper_remnant`.
 - Renewal Sage example: `/npcs/nivara_embermoon` for `/zones/vault_of_the_vanished`.
-- Time-window examples: Pumpkin Head/Witch, Spirit of the Winter, Urzak the Dark Sorcerer.
+- Time-window examples: Pumpkin Head/Witch, Spirit of the Forest, Urzak the Untamed.
 
 ### Section 9: Data Tables
 
 Purpose: make the page useful as reference and Discord evidence.
 
-Data should be loaded from `website/static/compendium.db` via the page server load, not hardcoded where avoidable.
+Data should be loaded from `website/static/compendium.db` via a dedicated server-side loader and generated at prerender/build time. Snapshot numbers in this spec are review context, not values to hardcode into page copy or tests. The rendered page should show provenance near snapshot tables: generated from `compendium.db` for the current game data build/date; counts may change after patches.
 
 Required tables:
 
@@ -771,6 +785,8 @@ Current snapshot:
 | Altar | 231 | 29 |
 | Summon/blocked | 9 | 9 |
 | Placeholder/on-death | 1 | 1 |
+
+Distinct monster counts are per spawn family and are not additive. One monster can appear in multiple families, such as regular + altar; per-monster UI should allow multiple badges rather than forcing one exclusive category.
 
 #### Respawn probability distribution
 
@@ -815,6 +831,8 @@ Default filter:
 
 Current count: 38.
 
+All displayed counts must be derived from build-time SQL queries; do not hardcode snapshot totals in page copy or tests.
+
 #### Summon trigger/blocker table
 
 Columns:
@@ -829,6 +847,8 @@ Columns:
 - Links.
 
 Include the 1 NPC trigger separately or label entity type; the primary player-facing table can default to monster triggers and expose the NPC trigger in details.
+
+Blocker counts must be derived from `summon_trigger_placeholders` rows joined through `spawn_id -> monster_spawns -> monsters`. Do not derive required blockers from distinct blocker names or denormalized `source_summon_kill_count` fields, because the mechanic is about specific placeholder instances.
 
 #### Time-window monsters
 
@@ -845,12 +865,12 @@ Current list:
 
 - Pumpkin Head — 300s, 100%, 20→8, Halloween.
 - Witch — 300s, 100%, 20→8, Halloween.
-- Spirit of the Winter — boss, 7,200s, 100%, 20→8.
-- Urzak the Dark Sorcerer — boss, 7,200s, 100%, 8→22.
+- Spirit of the Forest — boss, 7,200s, 100%, 20→8.
+- Urzak the Untamed — boss, 7,200s, 100%, 8→22.
 
-#### No-respawn notable monsters
+#### No-respawn special monsters
 
-Show in a collapsed/reference table. Purpose is to explain why some monsters have `Respawn -`.
+Show all bosses/elites/event monsters with `does_respawn = 0`, plus any extra examples from an explicit stable-ID allowlist. Purpose is to explain why some monsters have `Respawn -` without relying on an undefined `notable` category.
 
 Columns:
 
@@ -883,7 +903,6 @@ Caption: all widgets return guidance, never live state.
 │ Eligible attempts:        [  3  ]           │
 │                                            │
 │ At least one success: 57.8%                │
-│ Expected attempts: ~4.0                    │
 │ Failed roll: wait another respawn interval │
 │                                            │
 │ Not a real-time spawn prediction.          │
@@ -896,6 +915,7 @@ Caption: all widgets return guidance, never live state.
 │ State               [DEAD]            │
 │ Timer elapsed?      [yes]             │
 │ Chance roll         [fails]           │
+│ Corpse cleanup due? [n/a]             │
 │                                      │
 │ Output: UpdateServer runs; respawn    │
 │ check runs; roll fails; stay hidden   │
@@ -933,13 +953,14 @@ Inputs:
 Outputs:
 
 - Probability of at least one success across N eligible attempts.
-- Expected number of attempts (`1 / p`) as a rough statistical expectation.
 - Reminder that failed attempts wait another respawn interval.
+- Optional advanced-only detail: expected attempts (`1 / p`) may be shown only behind an `Advanced math` disclosure with the warning `Long-run average only — not a cap, deadline, or guarantee for a single camp.`
 
 Guardrails:
 
 - Never label output as spawn chance by a real clock time unless active/inactive windows are explicitly modeled.
 - Always say `eligible attempts`, not `minutes` or `guaranteed by`.
+- Attempts must be an integer `>= 0`; probability must be constrained to `0–100%`; `0 attempts` returns `0%`; `100%` returns certainty on the first eligible attempt; `0%` is either disallowed or rendered as `no success possible` without an expected-attempt estimate.
 
 ### 3. Respawn gate explorer
 
@@ -950,6 +971,7 @@ Inputs/toggles:
 - Hidden.
 - State: alive/dead.
 - Respawn timer elapsed.
+- Corpse cleanup due / loot window expired.
 - Probability roll passes/fails.
 - Summonable ready.
 - Time/event window allows.
@@ -998,17 +1020,18 @@ Filters:
 
 1. `website/src/routes/mechanics/+page.svelte`
    - Add card for `/mechanics/respawns`.
+   - Update `/mechanics` SEO description and summary copy to mention respawn mechanics so hub snippets and AI retrieval reflect the new page.
 
 2. `website/src/routes/monsters/[id]/+page.svelte`
    - Near `Spawns` heading: link `How respawns work` to `/mechanics/respawns#quick-answer`.
-   - Near `Respawn`/`Chance` labels or table help: link to `/mechanics/respawns#core-flow` and `/mechanics/respawns#rare-chance`.
+   - Near `Respawn`/`Chance`/`Special` labels or table help: link to `/mechanics/respawns#reading-current-tables`, `/mechanics/respawns#core-flow`, and `/mechanics/respawns#rare-chance` as appropriate.
    - In blocked cards: link to `/mechanics/respawns#blocked-summonable`.
    - In altar cards: link to `/mechanics/respawns#special-spawns`.
    - In on-death placeholder cards: link to `/mechanics/respawns#special-spawns`.
    - In Renewal Sage cards: link to `/mechanics/respawns#renewal-sage` with copy like `What reset does and does not do`.
 
 3. `website/src/routes/zones/[id]/+page.svelte`
-   - Add column/help link for respawn columns to `/mechanics/respawns#reading-zone-tables` or `/mechanics/respawns#core-flow`.
+   - Add column/help link for respawn columns to `/mechanics/respawns#reading-current-tables`.
    - Near renewal sage/dungeon reset surfaces, link to `/mechanics/respawns#renewal-sage`.
    - Near altar/event surfaces, link to `/mechanics/respawns#special-spawns`.
 
@@ -1019,8 +1042,8 @@ Filters:
 5. `website/src/lib/components/map/EntityPopup.svelte`
    - Renewal Sage popup reset text should link to `/mechanics/respawns#renewal-sage` if map popups support links in that area.
 
-6. `website/src/lib/components/monster-table/RespawnCells.svelte` or column headers
-   - Add unobtrusive help affordance for `Respawn`, `Chance`, and `Special`, especially on zone and monster overview tables.
+6. Shared respawn table headers
+   - Add an opt-in, touch-friendly help link/button for `Respawn`, `Chance`, and `Special` via a parent-provided help config or header renderer. Keep generic table primitives route-agnostic; do not hardcode `/mechanics/respawns` inside low-level formatting utilities. Prefer header help over per-cell help unless a page explicitly needs both.
 
 ### Outbound links from the respawn page
 
@@ -1052,7 +1075,7 @@ The FAQ should be anchor-linked from the section nav and support direct Discord 
 
 ### Does `Respawn 30m` mean it appears exactly 30 minutes after death?
 
-No. It means the monster can become eligible after the relevant death/corpse/respawn timing, but the zone/entity update path must run and all gates must pass. If `Chance` is below 100%, it only becomes eligible to roll.
+No. It means the monster cannot return before its respawn timer has elapsed. Corpse visibility/cleanup can delay when the server gets to check that dead monster, but corpse time is not a second full respawn timer added afterward. The zone/monster still needs to be checked and all gates must pass. If `Chance` is below 100%, it only becomes eligible to roll.
 
 ### What does `Chance 25%` mean?
 
@@ -1064,7 +1087,7 @@ No. Alive rares can persist through quiet periods. Dead hidden rares can become 
 
 ### Do inactive zones pause timers or reset timers?
 
-Inactive zones freeze monster ticking. They do not reset `respawnTimeEnd`. When the zone becomes active again, hidden dead monsters can process elapsed timers and gates.
+Inactive zones freeze monster ticking. They do not reset `respawnTimeEnd`. If a dead monster's zone unloads, the corpse is hidden and its death/corpse timer is reset to now, but the respawn timer is not reset. When the zone becomes active again, hidden dead monsters can process elapsed timers and gates.
 
 ### Do I need to stand within 96 units for respawn?
 
@@ -1080,11 +1103,11 @@ The summoned monster waits for configured placeholder spawn instances to all be 
 
 ### Why did we kill all blockers and the boss still did not appear?
 
-Possible reasons: not all configured placeholder instances were dead simultaneously, the summoned monster's own timer had not elapsed, its chance roll failed, the zone/entity update path was not running, or another gate such as a time/event gate blocked it.
+Possible reasons: not all configured placeholder instances were dead simultaneously, the summoned monster's own timer had not elapsed, its chance roll failed after blockers were clear, the zone/monster was not being checked, or another gate such as a time/event gate blocked it.
 
 ### Does Renewal Sage force the boss to spawn?
 
-No. Renewal Sage resets respawn timers and persisted elite/boss state for matching respawning monsters in the target dungeon. It does not kill live monsters, revive dead monsters immediately, bypass chance, clear blockers, change hidden/visible state, or force cached summon readiness to update instantly.
+No. Renewal Sage resets `respawnTimeEnd` for matching respawning monsters in the target dungeon and clears persisted elite/boss dead-state entries. It does not kill live monsters, revive dead monsters immediately, bypass chance, clear blockers, change hidden/visible state, or force cached summon readiness to update instantly.
 
 ### Does Renewal Sage work while players are inside the dungeon?
 
@@ -1136,8 +1159,11 @@ Follow current mechanics page conventions:
 - Container max width: match `max-w-4xl` unless the data tables need `max-w-5xl`.
 - Use `Breadcrumb`, `Seo`, `Card`, `Alert`, existing table styles, and existing `DataTable` when sortable/filterable data is needed.
 - Use muted explanatory text and concise card headers like Combat/Experience pages.
-- Keep the first viewport free of large tables.
-- On mobile, prioritize section nav, quick cards, and the diagnostic flow before data tables.
+- Keep the first viewport free of large tables and dense jump-link blocks.
+- On mobile, prioritize the hero sentence, evidence alert, quick cards, and diagnostic flow before data tables; place jump navigation after the quick cards or collapse it behind a `Jump to section` control.
+- Interactive disclosure must be semantic and keyboard accessible. Use native `<details>/<summary>` or a button+region pattern with visible focus and correct `aria-expanded`/`aria-controls`; card-shaped UI remains presentational unless it contains a real link or button.
+- ASCII sketches are planning artifacts. The shipped page should translate them into semantic prose, lists, steps, or cards; if any diagram remains visible, it needs an adjacent plain-language takeaway and must not be required for understanding.
+- Data tables wider than four columns must have a small-screen presentation: stacked record cards, expandable row details, or a compact summary with drill-in. Filters must sit above results and work in both desktop and mobile layouts.
 
 Recommended visual hierarchy:
 
@@ -1160,6 +1186,20 @@ Icons can use lucide equivalents:
 - RefreshCw for Renewal Sage.
 - Flame/Sparkles for event/altar.
 
+## Evidence section
+
+Anchor: `#evidence`.
+
+Purpose: give power users and Discord explainers source confidence without forcing casual readers through code names.
+
+Requirements:
+
+- Include the visible caveat from the top of the page again in shorter form: `Mechanics guidance from decompiled scripts/exported data; not live state.`
+- List the source families: decompiled server scripts, exported SQLite data, serialized Unity server data.
+- Link or name the key source files/methods for each surprising rule: `Entity.IsWorthUpdating`, `Monster.UpdateServer_DEAD`, `Monster.OnDisable`, `SummonMonster.Update`, and `Player.CmdResetDungeon`.
+- Keep code snippets short and expandable; the page should not become a source dump.
+
+
 ## Data and implementation boundaries
 
 The spec is for a page, but it must still give implementers a clear map of data responsibilities, pure helper boundaries, and test seams:
@@ -1170,7 +1210,7 @@ Caption: keep DB reads, deterministic mechanics helpers, and Svelte presentation
 
 routes/mechanics/respawns/
   +page.server.ts
-    └─ SQL queries only; returns typed static datasets
+    └─ open/close DB only; returns loadRespawnMechanicsData(db)
 
   +page.svelte
     ├─ page layout and section composition
@@ -1178,10 +1218,16 @@ routes/mechanics/respawns/
     ├─ diagnostic widget shell
     └─ data table rendering
 
+lib/server/respawn-mechanics.ts
+  ├─ loadRespawnMechanicsData(db): RespawnMechanicsPageData
+  ├─ one named query/mapper per dataset
+  ├─ curated stable-ID example validation
+  └─ explicit row/result types
+
 lib/respawn-mechanics/
   calculations.ts
     ├─ cumulativeEligibleRollChance(p, attempts)
-    └─ expectedEligibleAttempts(p)
+    └─ optional advancedExpectedEligibleAttempts(p)
 
   gate-explorer.ts
     ├─ evaluateRespawnGate(input)
@@ -1192,21 +1238,23 @@ lib/respawn-mechanics/
 
 Tests
   routes/mechanics/discoverability.test.ts
+  lib/server/respawn-mechanics.test.ts
   lib/respawn-mechanics/calculations.test.ts
   lib/respawn-mechanics/gate-explorer.test.ts
 ```
 
 ### Server load data
 
-`+page.server.ts` should provide:
+`lib/server/respawn-mechanics.ts` should provide:
 
 - Spawn type counts from `monster_spawns`.
 - Respawn probability distribution from `monsters`.
 - Probability-gated boss/elite/summonable monsters with zones.
 - Summon trigger/blocker summary from `summon_triggers`, `summon_trigger_placeholders`, `monster_spawns`, `monsters`, and `zones`.
 - Time-window monsters.
-- No-respawn notable monsters.
-- Renewal Sage examples if the page uses them as data rather than hardcoded examples.
+- No-respawn special monsters from deterministic criteria.
+- Curated examples loaded by stable IDs and validated in the server loader; do not hardcode example links in the Svelte component.
+- Renewal Sage examples loaded by stable IDs if used.
 
 ### Static client logic
 
@@ -1232,11 +1280,12 @@ The implementation is acceptable only if all of these are true:
 8. AOI section explicitly says `96` is not a respawn radius.
 9. Altar/event and on-death placeholder spawns are separated from normal respawns.
 10. FAQ covers timer guarantee, chance, inactive zones, AOI/radius, blockers, Renewal Sage, altar/event, on-death placeholders, and live-state limitations.
-11. Monster and zone pages have at least one contextual inbound link to the new mechanics page.
-12. Data tables are generated from the SQLite data rather than stale hand-entered values where practical.
-13. Interactive elements include disclaimers that outputs are mechanics guidance, not live state.
-14. The spec’s ASCII sketches are either represented directly on the page where helpful or translated into equivalent cards/flows while preserving their captions/takeaways.
-15. Page passes Svelte type checking and the mechanics discoverability test is updated for the new page.
+11. Monster and zone pages have at least one contextual inbound link to the new mechanics page, with table-label links targeting `#reading-current-tables`.
+12. Data tables are generated from SQLite data through the dedicated server loader, not stale hand-entered values.
+13. The required v1 troubleshooter includes the `mechanics guidance, not live state` disclaimer. Secondary tools, if shipped, include the same disclaimer and stay below the quick-answer content.
+14. ASCII sketches remain planning artifacts or are translated into semantic cards/flows while preserving their captions/takeaways. Any visible diagram has adjacent plain-language text and is not required for understanding.
+15. Data tables wider than four columns have a mobile-friendly presentation.
+16. Page passes Svelte type checking and the mechanics discoverability test is updated for the new page.
 
 ## Verification plan for implementation
 
@@ -1244,8 +1293,11 @@ The implementation is acceptable only if all of these are true:
   - Mechanics index links to `/mechanics/respawns`.
   - Monster page source links to `/mechanics/respawns` from the Spawns/respawn context.
   - Zone page source links to `/mechanics/respawns` from respawn context.
-  - NPC Renewal Sage page source links to `/mechanics/respawns#renewal-sage`.
-- Add a focused unit test for the eligible-roll probability helper and gate-output helper.
+  - At least one Renewal Sage surface links to `/mechanics/respawns#renewal-sage`.
+- Add render-level tests for visible links/anchors, mandatory disclaimer text, and accessible disclosure controls.
+- Add table-driven helper tests covering zone inactive freeze, visible-unobserved corpse stall, observed corpse cleanup before respawn, hidden-unobserved dead respawn checks, failed probability rolls, blocked summon readiness, and time/event gates.
+- Add a `troubleshooter` test covering unknown answers and the mandatory `mechanics guidance, not live state` disclaimer.
+- Add a server-load/query-contract test that asserts curated example IDs resolve, required datasets expose stable fields/order, blocker counts come from `summon_trigger_placeholders`, the placeholder/on-death row is preserved, and the NPC summon trigger is labeled separately.
 - Run `pnpm --dir website run check` after implementation.
 - If touching build-pipeline analysis, run targeted Python tests for respawn flow analysis.
 
@@ -1267,8 +1319,8 @@ The implementation is acceptable only if all of these are true:
 
 These decisions should be treated as defaults for the implementation plan:
 
-1. **Ship all four interactive surfaces in the first implementation:** the troubleshooter, eligible-roll calculator, gate explorer, and blocked-spawn checklist. They are small, static-data interactions and each addresses a different high-risk misconception.
+1. **Stage interactions deliberately:** v1 must ship the `Why isn't it up?` troubleshooter because it supports the primary player task. The eligible-roll calculator, gate explorer, and blocked-spawn checklist remain specified as secondary tools and should ship lower on the page only if they do not make the first release tool-first or compromise mobile clarity.
 2. **Use normal anchors for cross-links:** prefer `<a href="/mechanics/respawns#...">` for anchored links. `MechanicsLink` can stay unchanged unless implementation finds repeated anchor boilerplate worth centralizing.
-3. **Put respawn column help in shared `monster-table` components:** the ambiguity exists wherever `Respawn`, `Chance`, and `Special` columns render, so the help affordance should be shared instead of page-local.
-4. **Use server-loaded curated examples by stable IDs:** define a short stable-ID list in the respawn page server load and verify each ID exists, so examples stay linkable while still failing loudly if data changes.
-5. **Tighten Renewal Sage copy with the page:** update NPC, monster, zone, and map Renewal Sage wording from broad “resets all spawns” language toward “resets respawn timers” and link to the caveat section. This is part of preventing a known expensive misconception.
+3. **Make respawn column help opt-in and route-agnostic:** parent pages should pass help href/config into a shared header renderer. Low-level table utilities should not hardcode `/mechanics/respawns`.
+4. **Use server-loaded curated examples by stable IDs:** define a short stable-ID list in the respawn page server loader and verify each ID exists, so examples stay linkable while still failing loudly if data changes.
+5. **Split cross-surface copy into a clean v1 boundary:** v1 requires the new page, mechanics index link/metadata, at least one monster-page link, one zone-page link, one Renewal Sage link surface, and opt-in shared table help if it stays route-agnostic. Broader NPC/map copy tightening should be planned as a separate task unless it is trivial in the same implementation pass.
