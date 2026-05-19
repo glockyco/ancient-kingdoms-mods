@@ -215,8 +215,8 @@
         </table>
       </div>
       <p class="text-sm text-muted-foreground">
-        <strong>Manaburn exception:</strong> bypasses steps 7–8 entirely. Damage =
-        current Rage or Mana × 2.
+        <strong>Manaburn exception:</strong> bypasses steps 7–8 entirely. Damage
+        = current Rage or Mana × 2.
       </p>
     </Card.Content>
   </Card.Root>
@@ -946,6 +946,18 @@ finalDamage = damage − reduction</pre>
           Weapons with an on-hit effect trigger it at the listed probability on
           auto-attacks. Rogue players also trigger their offhand weapon's proc
           at 50% of its listed probability.
+        </p>
+      </div>
+
+      <div>
+        <!-- Source: server-scripts/AreaObjectSpawnSkill.cs:119-122 — damage halved when the victim is a Pet (mercenaries and companions both derive from Pet). -->
+        <h3 class="font-semibold mb-1">
+          Ground AoE Damage to Pets &amp; Mercenaries
+        </h3>
+        <p class="text-sm text-muted-foreground">
+          Skills that telegraph a danger zone before detonating deal half of
+          their listed damage to your mercenaries and companions. Damage dealt
+          to players is unaffected.
         </p>
       </div>
 
