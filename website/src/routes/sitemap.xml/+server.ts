@@ -21,7 +21,7 @@ function hasLastmod(entry: Entry): entry is HashedEntry {
 }
 
 export function GET() {
-  const manifestPath = resolvePath("sitemap-manifest.json");
+  const manifestPath = resolvePath("static/sitemap-manifest.json");
   const manifest = JSON.parse(readFileSync(manifestPath, "utf8")) as Manifest;
 
   const urls = Object.entries(manifest.entries)

@@ -17,7 +17,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "vitest run",
-    "cf-deploy": "cp sitemap-manifest.json .sitemap-manifest.prev.json && pnpm build && wrangler deploy && node scripts/indexnow-ping.mjs .sitemap-manifest.prev.json sitemap-manifest.json && rm -f .sitemap-manifest.prev.json",
+    "cf-deploy": "(curl -fsSL --retry 3 --retry-delay 2 https://ancient-kingdoms.compendiums.org/sitemap-manifest.json -o .sitemap-manifest.prev.json || rm -f .sitemap-manifest.prev.json) && pnpm build && wrangler deploy && node scripts/indexnow-ping.mjs .sitemap-manifest.prev.json static/sitemap-manifest.json && rm -f .sitemap-manifest.prev.json",
     "cf-deploy:redirect": "wrangler deploy --config wrangler.redirect.toml"
   },
   "devDependencies": {

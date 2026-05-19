@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
+Disallow: /sitemap-manifest.json
 
 Sitemap: https://ancient-kingdoms.compendiums.org/sitemap.xml

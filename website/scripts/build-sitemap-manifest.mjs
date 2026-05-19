@@ -6,7 +6,7 @@ import Database from "better-sqlite3";
 
 const SITE_URL = "https://ancient-kingdoms.compendiums.org";
 const DB_PATH = resolve("static/compendium.db");
-const MANIFEST_PATH = resolve("sitemap-manifest.json");
+const MANIFEST_PATH = resolve("static/sitemap-manifest.json");
 
 const ENTITIES = [
   { table: "items", route: "items" },

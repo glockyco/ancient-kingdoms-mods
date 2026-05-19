@@ -13,6 +13,7 @@ node_modules
 /static/compendium.db*
 /static/tiles/
 /static/images/
+/static/sitemap-manifest.json
 /src/lib/generated/
 
 # OS

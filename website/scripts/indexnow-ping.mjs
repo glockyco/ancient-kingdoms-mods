@@ -56,7 +56,7 @@ export async function sendIndexNowPing(payload, fetchImpl = fetch) {
 }
 
 function loadManifest(path) {
-  if (!existsSync(path)) return { entries: {} };
+  if (!existsSync(path)) return null;
   return JSON.parse(readFileSync(path, "utf8"));
 }
 
@@ -69,7 +69,14 @@ async function main() {
   }
 
   const previous = loadManifest(resolve(prevPath));
+  if (previous === null) {
+    console.log("indexnow: no live baseline manifest; skipping ping");
+    return;
+  }
   const current = loadManifest(resolve(nextPath));
+  if (current === null) {
+    throw new Error(`indexnow: current manifest not found at ${nextPath}`);
+  }
   const urls = selectUrlsToPing(previous, current);
 
   if (urls.length === 0) {
