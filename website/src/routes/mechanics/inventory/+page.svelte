@@ -174,7 +174,7 @@
           >) or the skillbar button.
         </li>
         <li>
-          <!-- Source: server-scripts/PlayerInventory.cs:383-390 — backpack slots reject non-backpack items. -->Backpack
+          <!-- Source: server-scripts/PlayerInventory.cs:383-389 — backpack slots reject non-backpack items. -->Backpack
           slots accept backpacks only.
         </li>
         <li>
@@ -257,7 +257,8 @@
                                 href="/items/{backpack.id}"
                                 class="text-xs text-muted-foreground hover:underline"
                               >
-                                +{sources.length - MAX_VISIBLE_SOURCES_PER_TYPE} more
+                                +{sources.length - MAX_VISIBLE_SOURCES_PER_TYPE}
+                                more
                               </a>
                             {/if}
                           </div>
@@ -282,15 +283,15 @@
     </Card.Header>
     <Card.Content class="space-y-5">
       <p class="text-sm text-muted-foreground">
-        <!-- Source: server-scripts/Player.cs:390 — characters start with one bank tab unlocked. -->
-        <!-- Source: server-scripts/Player.cs:11775-11800 and 11815-11843 — bank gold withdraw and deposit commands. -->
+        <!-- Source: server-scripts/Player.cs:393 — characters start with one bank tab unlocked. -->
+        <!-- Source: server-scripts/Player.cs:11780-11805 and 11815-11843 — bank gold withdraw and deposit commands. -->
         New characters start with tab 1 unlocked. Additional tabs unlock in order.
         Banked gold is stored separately from carried gold. Depositing moves carried
         gold into the account vault and withdrawing moves it back to the character.
       </p>
       <div class="overflow-x-auto">
         <!-- Source: server-scripts/UIBank.cs:293-308 — bank tab unlock price ladder. -->
-        <!-- Source: server-scripts/Player.cs:11731-11744 — server charges current unlock price before increasing unlocked bank tabs. -->
+        <!-- Source: server-scripts/Player.cs:11736-11749 — server charges current unlock price before increasing unlocked bank tabs. -->
         <table class="w-full border-collapse text-sm">
           <thead>
             <tr class="border-b border-border">
@@ -324,9 +325,9 @@
         <!-- Source: server-scripts/Housing.cs:33-49 — entering an unowned house area opens the house purchase flow. -->
         <!-- Source: server-scripts/ChestHouse.cs:81-84 and 173-176 — only the owning account can open house chest UI. -->
         <!-- Source: server-scripts/StrucItemUi.cs:33-36 — purchase warning says same-color chests share storage. -->
-        You need to own a house before you can use house chests. Each chest type opens
-        one fixed account-wide storage section. A second chest of the same type gives
-        another access point to that section, not another 30 slots.
+        You need to own a house before you can use house chests. Each chest type
+        opens one fixed account-wide storage section. A second chest of the same
+        type gives another access point to that section, not another 30 slots.
       </p>
 
       <div class="space-y-2 text-sm text-muted-foreground">
@@ -358,9 +359,9 @@
         <p>
           <!-- Source: server-scripts/CustomStrucUI.cs:68-73 and 242-260 — remove mode destroys a selected structure. -->
           <!-- Source: server-scripts/CustomStrucUI.cs:91-98 and Player.cs:7622-7641 — selling a house pays house resale value and removes placed structures; warning says chest items can be retrieved after buying another house. -->
-          Individual chests can be destroyed, but there is no chest resale flow. Selling
-          the house removes placed furniture, while the account-wide chest items remain
-          retrievable if you buy another house.
+          Individual chests can be destroyed, but there is no chest resale flow.
+          Selling the house removes placed furniture, while the account-wide chest
+          items remain retrievable if you buy another house.
         </p>
       </div>
 
@@ -514,8 +515,8 @@
           is not consumed by that quest update.
         </li>
         <li>
-          <!-- Source: server-scripts/ChestLoot.cs:314-328 and Npc.cs:2578-2591 — eligible shared chest/NPC drops route through group roll when more than one player can loot. -->
-          <!-- Source: server-scripts/Monster.cs:3557-3570 — monster loot also rolls MergeItem and ScrollItem drops. -->When
+          <!-- Source: server-scripts/ChestLoot.cs:314-331 and Npc.cs:2578-2591 — eligible shared chest/NPC drops route through group roll when more than one player can loot. -->
+          <!-- Source: server-scripts/Monster.cs:3625-3640 — monster loot also rolls MergeItem and ScrollItem drops. -->When
           more than one player can loot the same enemy, NPC, or world loot
           chest, uncommon-or-better items, keys, chest keys, items worth more
           than 200 gold, and XP potions use group rolls instead of direct
@@ -544,7 +545,7 @@
           starts with 10 durability.
         </li>
         <li>
-          <!-- Source: server-scripts/Player.cs:3270-3292 — death reduces each equipped item's durability and warns when broken. -->Death
+          <!-- Source: server-scripts/Player.cs:3272-3294 — death reduces each equipped item's durability and warns when broken. -->Death
           reduces equipped item durability by 1.
         </li>
         <li>

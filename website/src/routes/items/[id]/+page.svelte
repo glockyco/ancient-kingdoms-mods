@@ -860,7 +860,7 @@
         </Card.Root>
       {:else if data.item.id === "radiant_aether"}
         <!-- Radiant Aether Effects -->
-        <!-- Source: server-scripts/GameManager.cs:312 (probActivateRadiantAether = 0.15f), Player.cs:6374, Combat.cs:717-726,813, AreaDamageSkill.cs:38, AreaDebuffSkill.cs:34 -->
+        <!-- Source: server-scripts/GameManager.cs:330 (probActivateRadiantAether = 0.15f), Player.cs:6374, Combat.cs:717-726,813, AreaDamageSkill.cs:38, AreaDebuffSkill.cs:34 -->
         <Card.Root class="bg-muted/30">
           <Card.Header>
             <Card.Title>Passive Effects</Card.Title>

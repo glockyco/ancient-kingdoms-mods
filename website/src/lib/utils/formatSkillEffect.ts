@@ -298,7 +298,7 @@ function formatHealing(
     parts.push(`${formatLinearValue(healMana, monsterContext)} mana`);
   }
 
-  // Source: server-scripts/Player.cs:10008-10014 — CmdResurrect
+  // Source: server-scripts/Player.cs:10012-10018 — CmdResurrect
   // health = health.max * 0.6, mana = health.max * 0.2, xp = +75% of lossExp
   if (skill.is_resurrect_skill) {
     parts.push("resurrect (60% max HP, 20% max HP as mana, +75% lost XP)");
@@ -463,7 +463,7 @@ function formatBuffDebuffStats(
   // Sleep (speedBonus <= -50f): breaks on any damage hit or DoT tick (BreakMezz, Skills.cs:1088).
   // Root (-50f < speedBonus <= -5f): does NOT break on damage; RemoveRoot self-break timer.
   // Slow (speedBonus > -5f and < 0): pure speed reduction, no CC mechanic.
-  // Source: server-scripts/Monster.cs:1137-1190 (FSM branches), server-scripts/Skills.cs:1088 (BreakMezz)
+  // Source: server-scripts/Monster.cs:1139-1192 (FSM branches), server-scripts/Skills.cs:1149 (BreakMezz)
   const speedBonus = parseLinearValue(skill.speed_bonus);
   if (speedBonus) {
     if (speedBonus.base_value <= -50) {

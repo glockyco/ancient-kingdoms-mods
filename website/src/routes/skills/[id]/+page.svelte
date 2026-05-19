@@ -2210,7 +2210,7 @@
                     </p>
                   {/if}
                 {:else if ctx.model === "player_spell"}
-                  <!-- Source: server-scripts/Skills.cs:673-675, server-scripts/Combat.cs:332 -->
+                  <!-- Source: server-scripts/Skills.cs:711-713, server-scripts/Combat.cs:332 -->
                   <!-- Source: server-scripts/Player.cs:298 — refractoryPeriodSkill = 0.75f; blocks next cast after FinishCast -->
                   <p class="font-mono">
                     interval = cast time &times; (1 &minus; spell haste) + 0.75s
@@ -2229,7 +2229,7 @@
                     haste (cap: &minus;80%).
                   </p>
                 {:else if ctx.model === "merc_spell"}
-                  <!-- Source: server-scripts/Skills.cs:673-675, server-scripts/Skills.cs:772, server-scripts/Combat.cs:332 -->
+                  <!-- Source: server-scripts/Skills.cs:711-713, server-scripts/Skills.cs:810, server-scripts/Combat.cs:332 -->
                   <p class="font-mono">
                     interval = cast time &times; (1 &minus; spell haste) +
                     cooldown
@@ -2517,7 +2517,7 @@
           </div>
         {/if}
         {#if skill.speed_bonus && skill.speed_bonus.base_value <= -5 && skill.speed_bonus.base_value > -50}
-          <!-- Source: server-scripts/Monster.cs:1184-1190 (timerRoot 2s, RemoveRoot) -->
+          <!-- Source: server-scripts/Monster.cs:1186-1192 (timerRoot 2s, RemoveRoot) -->
           <!-- Source: server-scripts/Npc.cs:827-833 (timerRoot 1s, 10% fixed) -->
           <!-- Source: server-scripts/TargetDebuffSkill.cs:140 (boss/elite auto-resist speedBonus < -10) -->
           <div class="space-y-1">
@@ -2532,9 +2532,9 @@
           </div>
         {/if}
         {#if skill.speed_bonus && skill.speed_bonus.base_value <= -50}
-          <!-- Source: server-scripts/Skills.cs:1088 (BreakMezz — entity.speed <= -50f) -->
+          <!-- Source: server-scripts/Skills.cs:1149 (BreakMezz — entity.speed <= -50f) -->
           <!-- Source: server-scripts/Combat.cs:567 (any damage > 0 calls BreakMezz) -->
-          <!-- Source: server-scripts/Monster.cs:1137 (monster self-break roll every 6s) -->
+          <!-- Source: server-scripts/Monster.cs:1139 (monster self-break roll every 6s) -->
           <!-- Source: server-scripts/TargetDebuffSkill.cs:140 (boss/elite auto-resist speedBonus < -10) -->
           <div class="space-y-1">
             <h3 class="font-semibold">Sleep</h3>
@@ -2559,7 +2559,7 @@
         {/if}
         {#if hasLinearValue(skill.block_chance_bonus)}
           <!-- Source: server-scripts/Combat.cs:280-290 (blockChance property) -->
-          <!-- Source: server-scripts/Skills.cs:472-487 (GetBlockChanceBonus) -->
+          <!-- Source: server-scripts/Skills.cs:473-488 (GetBlockChanceBonus) -->
           <div class="space-y-1">
             <h3 class="font-semibold">Block Chance</h3>
             <p class="text-muted-foreground">
@@ -2648,8 +2648,8 @@
           </div>
         {/if}
         {#if skill.is_blindness}
-          <!-- Source: server-scripts/Player.cs:9845-9877 (TargetRpcAddBlind/RemoveBlind) -->
-          <!-- Source: server-scripts/Skills.cs:874 (isBlindness check, Player only) -->
+          <!-- Source: server-scripts/Player.cs:9849-9881 (TargetRpcAddBlind/RemoveBlind) -->
+          <!-- Source: server-scripts/Skills.cs:912 (isBlindness check, Player only) -->
           <div class="space-y-1">
             <h3 class="font-semibold">Blindness</h3>
             <p class="text-muted-foreground">

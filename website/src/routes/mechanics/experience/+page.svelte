@@ -345,8 +345,8 @@
           These are applied on top of the level-scaled value:
         </p>
         <!-- Source: server-scripts/Experience.cs:446-453 — dungeon +10% bonus -->
-        <!-- Source: server-scripts/Monster.cs:2457 — double XP skill (solo kill) -->
-        <!-- Source: server-scripts/Monster.cs:2458 — Forgotten Altar ×1.4 (solo kill) -->
+        <!-- Source: server-scripts/Monster.cs:2409 — double XP skill (solo kill) -->
+        <!-- Source: server-scripts/Monster.cs:2410 — Forgotten Altar ×1.4 (solo kill) -->
         <div class="overflow-x-auto">
           <table class="w-full text-sm border-collapse">
             <thead>
@@ -391,11 +391,11 @@
             </tbody>
           </table>
         </div>
-        <!-- Source: server-scripts/Monster.cs:2457 — double XP applies to kills -->
+        <!-- Source: server-scripts/Monster.cs:2409 — double XP applies to kills -->
         <!-- Source: server-scripts/GatherItem.cs:533 — double XP applies to gathering -->
-        <!-- Source: server-scripts/Player.cs:10246 — double XP applies to alchemy -->
-        <!-- Source: server-scripts/Player.cs:10322 — double XP applies to scribing -->
-        <!-- Source: server-scripts/Player.cs:10474 — double XP applies to crafting and cooking -->
+        <!-- Source: server-scripts/Player.cs:10250 — double XP applies to alchemy -->
+        <!-- Source: server-scripts/Player.cs:10326 — double XP applies to scribing -->
+        <!-- Source: server-scripts/Player.cs:10478 — double XP applies to crafting and cooking -->
         <!-- Source: server-scripts/PlayerQuests.cs:321 — no double XP for quests -->
         <!-- Source: server-scripts/ZoneTrigger.cs — no double XP for zone discovery -->
         <p class="text-sm text-muted-foreground">
@@ -408,10 +408,10 @@
       <div class="space-y-2">
         <h3 class="font-semibold">Party XP</h3>
         <!-- Source: server-scripts/Experience.cs:468-474 — CalculateExperienceShare -->
-        <!-- Source: server-scripts/Monster.cs:2354-2412 — party kill XP award loop -->
+        <!-- Source: server-scripts/Monster.cs:2367-2425 — party kill XP award loop -->
         <!-- Source: server-scripts/Party.cs:9 — Capacity = 5 -->
         <!-- Source: server-scripts/Party.cs:11 — BonusExperiencePerMember = 1.25f -->
-        <!-- Source: server-scripts/Monster.cs:2402 — 1.25f passed as bonusPercentagePerMember -->
+        <!-- Source: server-scripts/Monster.cs:2415 — 1.25f passed as bonusPercentagePerMember -->
         <p class="text-sm text-muted-foreground">
           XP is split evenly among nearby party members, but a bonus more than
           compensates: each member in a larger party earns more than a solo
@@ -478,7 +478,7 @@
     <Card.Content class="space-y-4">
       <!-- Source: server-scripts/Experience.cs:32 — deathLossPercent = 0.1f -->
       <!-- Source: server-scripts/Experience.cs:477-486 — Death() = max * 0.1f -->
-      <!-- Source: server-scripts/Player.cs:3264-3265 — lossExp capped at experience.current -->
+      <!-- Source: server-scripts/Player.cs:3266-3267 — lossExp capped at experience.current -->
       <p class="text-sm text-muted-foreground">
         On death, you lose 10% of the current level's XP cap. The loss cannot
         drop you below zero XP for your level.
@@ -492,7 +492,7 @@
             </tr>
           </thead>
           <tbody>
-            <!-- Source: server-scripts/Player.cs:11087 — CmdGetExpFromRemains: 0.5f * lossExp -->
+            <!-- Source: server-scripts/Player.cs:11092 — CmdGetExpFromRemains: 0.5f * lossExp -->
             <tr class="border-b hover:bg-muted/30">
               <td class="p-2">
                 <a
@@ -503,7 +503,7 @@
               </td>
               <td class="p-2 text-right font-mono">50%</td>
             </tr>
-            <!-- Source: server-scripts/Player.cs:10026 — CmdResurrect: 0.75f * lossExp -->
+            <!-- Source: server-scripts/Player.cs:10030 — CmdResurrect: 0.75f * lossExp -->
             <tr class="hover:bg-muted/30">
               <td class="p-2"
                 ><a
@@ -656,7 +656,7 @@
       </Card.Description>
     </Card.Header>
     <Card.Content>
-      <!-- Source: server-scripts/Player.cs:10246-10253 — alchemy XP by recipe tier -->
+      <!-- Source: server-scripts/Player.cs:10250-10257 — alchemy XP by recipe tier -->
       <table class="w-full text-sm border-collapse">
         <thead>
           <tr class="border-b">
@@ -695,7 +695,7 @@
       </Card.Description>
     </Card.Header>
     <Card.Content>
-      <!-- Source: server-scripts/Player.cs:10318-10321 — isScribingTable overrides num5 = level.current * 100 -->
+      <!-- Source: server-scripts/Player.cs:10322-10325 — isScribingTable overrides num5 = level.current * 100 -->
       <p class="text-sm text-muted-foreground">
         Each successful craft awards <span class="font-mono font-medium"
           >Player Level &times; 100</span
@@ -713,8 +713,8 @@
       </Card.Description>
     </Card.Header>
     <Card.Content>
-      <!-- Source: server-scripts/Player.cs:10474-10481 — cooking XP by item quality (same table as crafting) -->
-      <!-- Source: server-scripts/Player.cs:10490-10515 — cooking branch awards XP on success only -->
+      <!-- Source: server-scripts/Player.cs:10478-10485 — cooking XP by item quality (same table as crafting) -->
+      <!-- Source: server-scripts/Player.cs:10494-10519 — cooking branch awards XP on success only -->
       <table class="w-full text-sm border-collapse">
         <thead>
           <tr class="border-b">
@@ -753,7 +753,7 @@
       </Card.Description>
     </Card.Header>
     <Card.Content>
-      <!-- Source: server-scripts/Player.cs:10476-10480 — crafting XP by item quality -->
+      <!-- Source: server-scripts/Player.cs:10480-10484 — crafting XP by item quality -->
       <table class="w-full text-sm border-collapse">
         <thead>
           <tr class="border-b">

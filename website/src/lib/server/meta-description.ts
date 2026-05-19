@@ -1492,7 +1492,7 @@ export function skillDescription(skill: SkillDescriptionInput): string {
   //   regular character level, available veteran points, and spent points.
   // Source: server-scripts/PlayerSkills.cs:822-825 — CmdUpgradeVeteran spends
   //   available veteran points before increasing the skill level.
-  // Source: server-scripts/Player.cs:5995-6005 and ScriptableSkill.cs:199-201
+  // Source: server-scripts/Player.cs:5999-6009 and ScriptableSkill.cs:199-201
   //   — requiredSpentPoints means already-spent veteran points, not veteran
   //   level.
   const veteranPointText = `${skill.required_skill_points} veteran ${
@@ -1567,7 +1567,7 @@ function petOriginPhrase(input: PetDescriptionInput): string {
       }
       return " Summoned by a class skill. Level matches the summoner.";
     case "Mercenary":
-      // Source: server-scripts/Player.cs:7846 — hired at player level, gains attributes per level
+      // Source: server-scripts/Player.cs:7850 — hired at player level, gains attributes per level
       return " Recruited from any Mercenary Recruiter NPC. Hired at the player's current level and continues to gain attributes as the player levels.";
   }
 }

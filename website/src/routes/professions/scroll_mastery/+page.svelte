@@ -52,7 +52,7 @@
     );
   }
 
-  // Source: server-scripts/Player.cs:10307 — isScribingTable craft path
+  // Source: server-scripts/Player.cs:10311 — isScribingTable craft path
   // Source: server-scripts/ScrollItem.cs:82 — scroll use path
   // Both paths share the same gain chance:
   //   Mathf.Lerp(0.9, 0.02, scrollMasteryLevel^2) > Random.value, only while level < 1.
@@ -63,7 +63,7 @@
     return (0.9 + (0.02 - 0.9) * t) * 100;
   }
 
-  // Source: server-scripts/Player.cs:10309 and ScrollItem.cs:84 — Random.Range(5, 10) / 10000f
+  // Source: server-scripts/Player.cs:10313 and ScrollItem.cs:84 — Random.Range(5, 10) / 10000f
   // Unity int Random.Range upper bound is exclusive: integers 5-9 -> 0.05% to 0.09%.
   const MASTERY_GAIN_MIN = 0.05;
   const MASTERY_GAIN_MAX = 0.09;
