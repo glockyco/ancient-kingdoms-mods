@@ -8,15 +8,12 @@ Shared patterns for all MelonLoader mods. Requires .NET SDK and game installatio
 dotnet run --project build-tool setup   # First-time config (interactive)
 dotnet run --project build-tool all     # Build + deploy
 dotnet run --project build-tool export  # Launch game, run data export, stream log
-dotnet run --project build-tool hotrepl  # Deploy HotRepl, launch game, smoke test
-dotnet run --project build-tool hotrepl-smoke --world  # Only after world load
+dotnet run --project build-tool deploy-host    # build & deploy HotRepl host into Mods/
+dotnet run --project build-tool launch --wait  # launch game; wait for MelonLoader bootstrap
 ```
 
-
-Close game before deploying (DLLs are locked while running). `hotrepl-deploy`
-removes stale HotRepl framework sidecars from `Mods/`; do not manually copy
-`System.*.dll` files for HotRepl unless a runtime-specific resolver issue is being
-investigated.
+For live game state inspection via HotRepl, load the `hotrepl-runtime-inspection` skill.
+Close the game before deploying; DLLs are locked while running.
 
 ## Configuration
 
