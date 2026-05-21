@@ -1,11 +1,11 @@
 ---
 name: create-new-mod
-description: Create a new MelonLoader mod for Ancient Kingdoms
+description: Use when creating a new MelonLoader mod for Ancient Kingdoms
 ---
 
 ## Overview
 
-MelonLoader mods for Ancient Kingdoms (IL2CPP Unity game). Code can be written on any platform, but building requires Windows with .NET SDK and game installation.
+MelonLoader mods for Ancient Kingdoms (IL2CPP Unity game). Build runs natively on macOS via the .NET 10 build-tool; runtime execution uses Windows or CrossOver/WINE on macOS.
 
 ## Steps
 
@@ -13,7 +13,7 @@ MelonLoader mods for Ancient Kingdoms (IL2CPP Unity game). Code can be written o
 2. **Create `ModName.csproj`** (copy from existing mod like `BossTracker`)
 3. **Create `ModName.cs`** with mod entry point
 4. **Optionally create `CLAUDE.md`** for mod-specific documentation
-5. **Build** (Windows only): `dotnet run --project build-tool all`
+5. **Build**: `dotnet run --project build-tool all` (native .NET build; deploy/run uses Windows or CrossOver/WINE on macOS)
 
 ## Project File Template
 
