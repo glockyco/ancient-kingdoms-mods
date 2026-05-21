@@ -52,4 +52,25 @@ public class PlatformEnvironmentTests
         Assert.Empty(request.Arguments);
         Assert.Equal(WindowsConfig().GamePath, request.WorkingDirectory);
     }
+
+    [Fact]
+    public void GameLauncher_DispatchesToWineWhenWineConfigured()
+    {
+        var config = MacConfig();
+
+        var request = GameLauncher.BuildLaunchRequest(config, gameArgs: new[] { "--export-data" }, isMacOs: true);
+
+        Assert.Equal(config.WinePath, request.Program);
+        Assert.Contains("--export-data", request.Arguments);
+    }
+
+    [Fact]
+    public void GameLauncher_DispatchesToWindowsWhenNotMacOs()
+    {
+        var config = WindowsConfig();
+
+        var request = GameLauncher.BuildLaunchRequest(config, gameArgs: new string[0], isMacOs: false);
+
+        Assert.EndsWith("ancientkingdoms.exe", request.Program);
+    }
 }
