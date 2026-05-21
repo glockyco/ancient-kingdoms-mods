@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.ComponentModel;
 using System.IO;
 using System.Threading;
@@ -7,6 +8,7 @@ using System.Threading.Tasks;
 using BuildTool.Abstractions;
 using BuildTool.Configuration;
 using BuildTool.Game;
+using BuildTool.Output;
 using Spectre.Console.Cli;
 
 namespace BuildTool.Commands;
@@ -17,22 +19,30 @@ public sealed class ExportCommand : AsyncCommand<ExportCommand.Settings>
     private readonly LocalConfig _config;
     private readonly IProcessRunner _runner;
     private readonly bool _isMacOs;
+    private readonly CommandResultStore _resultStore;
 
     public ExportCommand()
         : this(
             Directory.GetCurrentDirectory(),
             LocalConfigLoader.Load(Path.Combine(Directory.GetCurrentDirectory(), "Local.props")),
             new CliWrapProcessRunner(),
-            OperatingSystem.IsMacOS())
+            OperatingSystem.IsMacOS(),
+            new CommandResultStore())
     {
     }
 
-    public ExportCommand(string repoRoot, LocalConfig config, IProcessRunner runner, bool isMacOs)
+    public ExportCommand(
+        string repoRoot,
+        LocalConfig config,
+        IProcessRunner runner,
+        bool isMacOs,
+        CommandResultStore? resultStore = null)
     {
         _repoRoot = repoRoot;
         _config = config;
         _runner = runner;
         _isMacOs = isMacOs;
+        _resultStore = resultStore ?? new CommandResultStore();
     }
 
     public sealed class Settings : BaseSettings
@@ -62,7 +72,7 @@ public sealed class ExportCommand : AsyncCommand<ExportCommand.Settings>
         if (!File.Exists(gameExe))
         {
             Console.Error.WriteLine($"Error: Game executable not found at: {gameExe}");
-            return 1;
+            return ExitCodes.Unreachable;
         }
 
         if (settings.Update)
@@ -88,7 +98,7 @@ public sealed class ExportCommand : AsyncCommand<ExportCommand.Settings>
 
 
         if (!DeleteStaleResultFile())
-            return 1;
+            return ExitCodes.LeaseConflict;
         var gameArgs = new List<string> { "--export-data" };
         if (settings.Screenshots)
             gameArgs.Add("--export-screenshots");
@@ -100,7 +110,18 @@ public sealed class ExportCommand : AsyncCommand<ExportCommand.Settings>
         Console.WriteLine("Streaming MelonLoader log...");
         Console.WriteLine("---");
 
-        var runTask = _runner.RunAsync(request, CancellationToken.None);
+        Task<ProcessResult> runTask;
+        try
+        {
+            runTask = _runner.RunAsync(request, CancellationToken.None);
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error: failed to launch game: {ex.Message}");
+            _resultStore.SetErrorDetails(new { resultFile = ResultFilePath(), message = ex.Message });
+            return ExitCodes.CommandFailed;
+        }
+
         return await WaitForExportResultAsync(logPath, runTask);
     }
 
@@ -138,7 +159,17 @@ public sealed class ExportCommand : AsyncCommand<ExportCommand.Settings>
             if (completed == outcomeTask)
                 return ReportOutcome(await outcomeTask);
 
-            var result = await runTask;
+            ProcessResult result;
+            try
+            {
+                result = await runTask;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error: export process failed: {ex.Message}");
+                _resultStore.SetErrorDetails(new { resultFile = ResultFilePath(), message = ex.Message });
+                return ExitCodes.CommandFailed;
+            }
             var outcome = await ExportResultReader.WaitForResultAsync(
                 _config.DataExportPath,
                 TimeSpan.Zero,
@@ -150,7 +181,12 @@ public sealed class ExportCommand : AsyncCommand<ExportCommand.Settings>
             Console.WriteLine();
             Console.Error.WriteLine("Error: Export result file not found before the game exited.");
             Console.Error.WriteLine($"Game exited with code: {result.ExitCode}");
-            return 7;
+            _resultStore.SetErrorDetails(new
+            {
+                resultFile = ResultFilePath(),
+                gameExitCode = result.ExitCode,
+            });
+            return ExitCodes.CommandFailed;
         }
         finally
         {
@@ -160,22 +196,25 @@ public sealed class ExportCommand : AsyncCommand<ExportCommand.Settings>
         }
     }
 
-    private static int ReportOutcome(ExportOutcome outcome)
+    private int ReportOutcome(ExportOutcome outcome)
     {
+        var details = ExportDetails(outcome);
         if (outcome.Ok)
         {
+            _resultStore.SetData(details);
             Console.WriteLine("---");
             Console.WriteLine();
             Console.WriteLine("Export complete.");
-            return 0;
+            return ExitCodes.Success;
         }
 
+        _resultStore.SetErrorDetails(details);
         Console.WriteLine("---");
         Console.WriteLine();
         if (outcome.TimedOut)
         {
             Console.Error.WriteLine("Error: Timed out waiting for export result file.");
-            return 6;
+            return ExitCodes.Timeout;
         }
 
         if (outcome.UnknownSchema)
@@ -189,8 +228,28 @@ public sealed class ExportCommand : AsyncCommand<ExportCommand.Settings>
                 Console.Error.WriteLine($"  {exporter.Name}: {exporter.ErrorMessage}");
         }
 
-        return 7;
+        return ExitCodes.CommandFailed;
     }
+
+    private object ExportDetails(ExportOutcome outcome) => new
+    {
+        resultFile = ResultFilePath(),
+        ok = outcome.Ok,
+        timedOut = outcome.TimedOut,
+        unknownSchema = outcome.UnknownSchema,
+        errorMessage = outcome.ErrorMessage,
+        exporters = outcome.Exporters.Select(exporter => new
+        {
+            name = exporter.Name,
+            ok = exporter.Ok,
+            count = exporter.Count,
+            outputPath = exporter.OutputPath,
+            errorMessage = exporter.ErrorMessage,
+        }).ToArray(),
+    };
+
+    private string ResultFilePath() =>
+        Path.Combine(_config.DataExportPath, ExportResultReader.FileName);
 
     private static async Task StreamLogAsync(string logPath, CancellationToken cancellationToken)
     {

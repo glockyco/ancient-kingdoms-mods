@@ -1,5 +1,7 @@
 using System;
 using System.Diagnostics;
+using System.IO;
+using BuildTool.Output;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Xunit;
@@ -13,13 +15,14 @@ public class ProgramJsonTests
     {
         var result = await RunBuildToolAsync("missing-command", "--json");
 
-        Assert.NotEqual(0, result.ExitCode);
+        Assert.Equal(ExitCodes.InvalidUsage, result.ExitCode);
         Assert.Equal(string.Empty, result.StandardOutput);
         using var doc = JsonDocument.Parse(result.StandardError);
         var root = doc.RootElement;
         Assert.Equal(1, root.GetProperty("schemaVersion").GetInt32());
         Assert.False(root.GetProperty("ok").GetBoolean());
         Assert.Equal("missing-command", root.GetProperty("command").GetString());
+        Assert.Equal("invalid_request", root.GetProperty("error").GetProperty("kind").GetString());
     }
 
     [Fact]
@@ -42,6 +45,58 @@ public class ProgramJsonTests
         var args = Program.ArgumentsForSpectre(new[] { "launch", "--wait", "--json", "--export" });
 
         Assert.Equal(new[] { "launch", "--wait", "--export" }, args);
+    }
+
+    [Fact]
+    public void Run_WithJson_PreservesCommandSpecificSuccessData()
+    {
+        var store = new CommandResultStore();
+
+        using var stdout = new StringWriter();
+        using var stderr = new StringWriter();
+        var exitCode = Program.RunJson(
+            _ =>
+            {
+                store.SetData(new { value = 42 });
+                return 0;
+            },
+            new[] { "stores-data", "--json" },
+            store,
+            stdout,
+            stderr);
+
+        Assert.Equal(0, exitCode);
+        Assert.Equal(string.Empty, stderr.ToString());
+        using var doc = JsonDocument.Parse(stdout.ToString());
+        var root = doc.RootElement;
+        Assert.True(root.GetProperty("ok").GetBoolean());
+        Assert.Equal(42, root.GetProperty("data").GetProperty("value").GetInt32());
+    }
+
+    [Fact]
+    public void Run_WithJson_MapsUnreachableExitCodeToStableFailureKind()
+    {
+        var store = new CommandResultStore();
+
+        using var stdout = new StringWriter();
+        using var stderr = new StringWriter();
+        var exitCode = Program.RunJson(
+            _ =>
+            {
+                Console.Error.WriteLine("missing tool");
+                return ExitCodes.Unreachable;
+            },
+            new[] { "unreachable", "--json" },
+            store,
+            stdout,
+            stderr);
+
+        Assert.Equal(ExitCodes.Unreachable, exitCode);
+        Assert.Equal(string.Empty, stdout.ToString());
+        using var doc = JsonDocument.Parse(stderr.ToString());
+        var error = doc.RootElement.GetProperty("error");
+        Assert.Equal("tool_unreachable", error.GetProperty("kind").GetString());
+        Assert.Equal("tool_unreachable", error.GetProperty("code").GetString());
     }
 
     private static async Task<ProcessRun> RunBuildToolAsync(params string[] args)
@@ -76,4 +131,5 @@ public class ProgramJsonTests
         int ExitCode,
         string StandardOutput,
         string StandardError);
+
 }

@@ -7,8 +7,10 @@ public class ExitCodesTests
 {
     [Theory]
     [InlineData("server_unreachable", 3)]
+    [InlineData("tool_unreachable", 3)]
     [InlineData("auth_failed", 4)]
     [InlineData("lease_conflict", 5)]
+    [InlineData("resource_conflict", 5)]
     [InlineData("timeout", 6)]
     [InlineData("command_failed", 7)]
     [InlineData("cancelled", 8)]

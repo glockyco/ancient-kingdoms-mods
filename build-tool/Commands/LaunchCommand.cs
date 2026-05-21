@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using BuildTool.Abstractions;
 using BuildTool.Configuration;
 using BuildTool.Game;
+using BuildTool.Output;
 using Spectre.Console.Cli;
 
 namespace BuildTool.Commands;
@@ -17,20 +18,27 @@ public sealed class LaunchCommand : AsyncCommand<LaunchCommand.Settings>
     private readonly LocalConfig _config;
     private readonly IProcessRunner _runner;
     private readonly bool _isMacOs;
+    private readonly CommandResultStore _resultStore;
 
     public LaunchCommand()
         : this(
             LocalConfigLoader.Load(Path.Combine(Directory.GetCurrentDirectory(), "Local.props")),
             new CliWrapProcessRunner(),
-            OperatingSystem.IsMacOS())
+            OperatingSystem.IsMacOS(),
+            new CommandResultStore())
     {
     }
 
-    public LaunchCommand(LocalConfig config, IProcessRunner runner, bool isMacOs)
+    public LaunchCommand(
+        LocalConfig config,
+        IProcessRunner runner,
+        bool isMacOs,
+        CommandResultStore? resultStore = null)
     {
         _config = config;
         _runner = runner;
         _isMacOs = isMacOs;
+        _resultStore = resultStore ?? new CommandResultStore();
     }
 
     public sealed class Settings : BaseSettings
@@ -60,7 +68,7 @@ public sealed class LaunchCommand : AsyncCommand<LaunchCommand.Settings>
         if (!File.Exists(gameExe))
         {
             Console.Error.WriteLine($"Error: Game executable not found at: {gameExe}");
-            return 1;
+            return ExitCodes.Unreachable;
         }
 
         var gameArgs = settings.Export ? new[] { "--export-data" } : Array.Empty<string>();
@@ -73,39 +81,133 @@ public sealed class LaunchCommand : AsyncCommand<LaunchCommand.Settings>
         Console.WriteLine($"  Command: {request.Program} {string.Join(' ', request.Arguments)}".TrimEnd());
         Console.WriteLine();
 
+        var logPath = Path.Combine(_config.MelonLoaderPath, "Latest.log");
         if (!settings.Wait)
         {
-            var launchTask = _runner.RunAsync(request, CancellationToken.None);
+            Task<ProcessResult> launchTask;
+            try
+            {
+                launchTask = _runner.RunAsync(request, CancellationToken.None);
+            }
+            catch (Exception ex)
+            {
+                ReportLaunchFailure(request, logPath, settings, ex.Message);
+                return ExitCodes.CommandFailed;
+            }
+
             var startupCompleted = await Task.WhenAny(launchTask, Task.Delay(TimeSpan.FromSeconds(1)));
             if (startupCompleted != launchTask)
-                return 0;
+            {
+                ReportLaunchSuccess(request, logPath, settings, status: "started");
+                return ExitCodes.Success;
+            }
 
             try
             {
                 var result = await launchTask;
-                return result.ExitCode == 0 ? 0 : 7;
+                if (result.ExitCode == 0)
+                {
+                    ReportLaunchSuccess(request, logPath, settings, status: "exited", result.ExitCode);
+                    return ExitCodes.Success;
+                }
+
+                ReportLaunchFailure(request, logPath, settings, $"Game exited with code {result.ExitCode}.", result.ExitCode);
+                return ExitCodes.CommandFailed;
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error: failed to launch game: {ex.Message}");
-                return 7;
+                ReportLaunchFailure(request, logPath, settings, ex.Message);
+                return ExitCodes.CommandFailed;
             }
         }
 
-        var logPath = Path.Combine(_config.MelonLoaderPath, "Latest.log");
         Directory.CreateDirectory(Path.GetDirectoryName(logPath)!);
         File.WriteAllText(logPath, string.Empty);
 
         using var bannerCts = new CancellationTokenSource(TimeSpan.FromSeconds(120));
         var bannerTask = WaitForBannerAsync(logPath, bannerCts.Token);
-        var runTask = _runner.RunAsync(request, CancellationToken.None);
+        Task<ProcessResult> runTask;
+        try
+        {
+            runTask = _runner.RunAsync(request, CancellationToken.None);
+        }
+        catch (Exception ex)
+        {
+            ReportLaunchFailure(request, logPath, settings, ex.Message);
+            return ExitCodes.CommandFailed;
+        }
 
         var completed = await Task.WhenAny(bannerTask, runTask);
         if (completed == bannerTask && await bannerTask)
-            return 0;
+        {
+            ReportLaunchSuccess(request, logPath, settings, status: "ready");
+            return ExitCodes.Success;
+        }
+
         if (completed == runTask)
-            return runTask.Result.ExitCode == 0 ? 0 : 7;
-        return 6;
+        {
+            try
+            {
+                var result = await runTask;
+                if (result.ExitCode == 0)
+                {
+                    ReportLaunchSuccess(request, logPath, settings, status: "exited", result.ExitCode);
+                    return ExitCodes.Success;
+                }
+
+                ReportLaunchFailure(request, logPath, settings, $"Game exited with code {result.ExitCode}.", result.ExitCode);
+                return ExitCodes.CommandFailed;
+            }
+            catch (Exception ex)
+            {
+                ReportLaunchFailure(request, logPath, settings, ex.Message);
+                return ExitCodes.CommandFailed;
+            }
+        }
+
+        ReportLaunchFailure(request, logPath, settings, "Timed out waiting for MelonLoader bootstrap.");
+        return ExitCodes.Timeout;
+    }
+
+    private void ReportLaunchSuccess(
+        ProcessRequest request,
+        string logPath,
+        Settings settings,
+        string status,
+        int? exitCode = null)
+    {
+        _resultStore.SetData(new
+        {
+            gamePath = _config.GamePath,
+            logPath,
+            wait = settings.Wait,
+            export = settings.Export,
+            program = request.Program,
+            arguments = request.Arguments,
+            status,
+            exitCode,
+        });
+    }
+
+    private void ReportLaunchFailure(
+        ProcessRequest request,
+        string logPath,
+        Settings settings,
+        string message,
+        int? exitCode = null)
+    {
+        Console.Error.WriteLine($"Error: failed to launch game: {message}");
+        _resultStore.SetErrorDetails(new
+        {
+            gamePath = _config.GamePath,
+            logPath,
+            wait = settings.Wait,
+            export = settings.Export,
+            program = request.Program,
+            arguments = request.Arguments,
+            message,
+            exitCode,
+        });
     }
 
     private static async Task<bool> WaitForBannerAsync(string logPath, CancellationToken cancellationToken)

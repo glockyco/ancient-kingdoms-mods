@@ -1,10 +1,12 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using System.Text.Json;
 using System.Threading.Tasks;
 using BuildTool.Abstractions;
 using BuildTool.Commands;
 using BuildTool.Configuration;
+using BuildTool.Output;
 using Xunit;
 
 namespace BuildTool.Tests;
@@ -88,7 +90,36 @@ public class ExportCommandTests
         Directory.Delete(tempRoot, recursive: true);
     }
 
-    private static ExportCommand CreateCommand(string tempRoot, string exportDir, IProcessRunner runner)
+    [Fact]
+    public async Task ReturnsSuccess_StoresExporterOutcomeForJsonEnvelope()
+    {
+        var tempRoot = Directory.CreateTempSubdirectory().FullName;
+        var exportDir = Path.Combine(tempRoot, "exported-data");
+        var runner = new ResultWritingProcessRunner(exportDir, """
+            { "schemaVersion": 1, "ok": true, "exporters": [
+                { "name": "items", "ok": true, "count": 12, "outputPath": "items.json" }
+            ], "errors": [] }
+            """);
+        var store = new CommandResultStore();
+        var command = CreateCommand(tempRoot, exportDir, runner, store);
+
+        var result = await command.ExecuteAsync(null!, new ExportCommand.Settings());
+
+        Assert.Equal(0, result);
+        using var doc = JsonDocument.Parse(JsonSerializer.Serialize(store.Data));
+        var root = doc.RootElement;
+        Assert.EndsWith(".exporter-result.json", root.GetProperty("resultFile").GetString());
+        var exporter = root.GetProperty("exporters")[0];
+        Assert.Equal("items", exporter.GetProperty("name").GetString());
+        Assert.Equal(12, exporter.GetProperty("count").GetInt32());
+        Directory.Delete(tempRoot, recursive: true);
+    }
+
+    private static ExportCommand CreateCommand(
+        string tempRoot,
+        string exportDir,
+        IProcessRunner runner,
+        CommandResultStore? store = null)
     {
         var gamePath = Path.Combine(tempRoot, "game");
         Directory.CreateDirectory(gamePath);
@@ -98,7 +129,7 @@ public class ExportCommandTests
             DataExportPath: exportDir,
             WinePath: null,
             WinePrefix: null);
-        return new ExportCommand(tempRoot, config, runner, isMacOs: false);
+        return new ExportCommand(tempRoot, config, runner, isMacOs: false, store);
     }
 
     private sealed class ResultWritingProcessRunner : IProcessRunner

@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using BuildTool.Abstractions;
 using BuildTool.Configuration;
+using BuildTool.Output;
 using Spectre.Console.Cli;
 
 namespace BuildTool.Commands;
@@ -13,20 +14,27 @@ public sealed class UpdateCommand : AsyncCommand<UpdateCommand.Settings>
     private readonly string _repoRoot;
     private readonly LocalConfig _config;
     private readonly IProcessRunner _runner;
+    private readonly CommandResultStore _resultStore;
 
     public UpdateCommand()
         : this(
             Directory.GetCurrentDirectory(),
             LocalConfigLoader.Load(Path.Combine(Directory.GetCurrentDirectory(), "Local.props")),
-            new CliWrapProcessRunner())
+            new CliWrapProcessRunner(),
+            new CommandResultStore())
     {
     }
 
-    public UpdateCommand(string repoRoot, LocalConfig config, IProcessRunner runner)
+    public UpdateCommand(
+        string repoRoot,
+        LocalConfig config,
+        IProcessRunner runner,
+        CommandResultStore? resultStore = null)
     {
         _repoRoot = repoRoot;
         _config = config;
         _runner = runner;
+        _resultStore = resultStore ?? new CommandResultStore();
     }
 
     public sealed class Settings : BaseSettings { }
@@ -35,16 +43,23 @@ public sealed class UpdateCommand : AsyncCommand<UpdateCommand.Settings>
         new UpdateCommand(repoRoot, config, runner).ExecuteAsync(null!, new Settings());
 
     public override Task<int> ExecuteAsync(CommandContext context, Settings settings) =>
-        RunSteamUpdateAsync(_repoRoot, _config, _runner);
+        RunSteamUpdateAsync(_repoRoot, _config, _runner, _resultStore);
 
-    internal static async Task<int> RunSteamUpdateAsync(string repoRoot, LocalConfig config, IProcessRunner runner)
+    internal static Task<int> RunSteamUpdateAsync(string repoRoot, LocalConfig config, IProcessRunner runner) =>
+        RunSteamUpdateAsync(repoRoot, config, runner, resultStore: null);
+
+    private static async Task<int> RunSteamUpdateAsync(
+        string repoRoot,
+        LocalConfig config,
+        IProcessRunner runner,
+        CommandResultStore? resultStore)
     {
         var steamUser = ReadSteamUsername(Path.Combine(repoRoot, "config.toml"));
         if (string.IsNullOrEmpty(steamUser))
         {
             Console.Error.WriteLine("Error: Steam username not found in config.toml.");
             Console.Error.WriteLine("Add it under [steam] username = \"your_username\"");
-            return 1;
+            return ExitCodes.InvalidUsage;
         }
 
         Console.WriteLine("Running steamcmd to update Ancient Kingdoms...");
@@ -71,13 +86,14 @@ public sealed class UpdateCommand : AsyncCommand<UpdateCommand.Settings>
         if (result.ExitCode != 0)
         {
             Console.Error.WriteLine($"Error: steamcmd exited with code {result.ExitCode}.");
-            return 1;
+            return ExitCodes.CommandFailed;
         }
 
         Console.WriteLine();
+        resultStore?.SetData(new { installDir = config.GamePath });
         Console.WriteLine("Steam update complete.");
         Console.WriteLine();
-        return 0;
+        return ExitCodes.Success;
     }
 
     private static string? ReadSteamUsername(string configPath)

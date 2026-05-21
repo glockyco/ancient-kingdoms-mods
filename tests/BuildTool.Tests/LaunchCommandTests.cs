@@ -40,6 +40,19 @@ public class LaunchCommandTests
         Directory.Delete(tempRoot, recursive: true);
     }
 
+    [Fact]
+    public async Task Wait_ReturnsCommandFailed_WhenRunnerThrowsBeforeStart()
+    {
+        var tempRoot = Directory.CreateTempSubdirectory().FullName;
+        var runner = new FakeProcessRunner();
+        var command = CreateCommand(tempRoot, runner, isMacOs: false);
+
+        var result = await command.ExecuteAsync(null!, new LaunchCommand.Settings { Wait = true });
+
+        Assert.Equal(7, result);
+        Directory.Delete(tempRoot, recursive: true);
+    }
+
     private static LaunchCommand CreateCommand(string tempRoot, FakeProcessRunner runner, bool isMacOs)
     {
         var gamePath = Path.Combine(tempRoot, "game");

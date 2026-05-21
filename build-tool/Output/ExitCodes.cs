@@ -14,9 +14,9 @@ public static class ExitCodes
 
     public static int For(string kind) => kind switch
     {
-        "server_unreachable" => Unreachable,
+        "server_unreachable" or "tool_unreachable" => Unreachable,
         "auth_failed" => AuthFailed,
-        "lease_conflict" or "lease_required" => LeaseConflict,
+        "lease_conflict" or "lease_required" or "resource_conflict" => LeaseConflict,
         "timeout" => Timeout,
         "command_failed" => CommandFailed,
         "cancelled" => Cancelled,

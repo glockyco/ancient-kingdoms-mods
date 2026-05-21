@@ -18,9 +18,11 @@ public static class Program
         var propsPath = Path.Combine(rootDir, "Local.props");
 
         var services = new ServiceCollection();
+        var resultStore = new CommandResultStore();
         services.AddSingleton<IProcessRunner, CliWrapProcessRunner>();
         services.AddSingleton<string>(_ => rootDir);
         services.AddSingleton(_ => File.Exists(propsPath) ? LocalConfigLoader.Load(propsPath) : LocalConfig.Empty);
+        services.AddSingleton(resultStore);
         services.AddSingleton(typeof(bool), OperatingSystem.IsMacOS());
 
         var registrar = new TypeRegistrar(services);
@@ -36,13 +38,31 @@ public static class Program
             config.AddCommand<ExportCommand>("export").WithDescription("Launch with --export-data and capture results.");
             config.AddCommand<UpdateCommand>("update").WithDescription("Run steamcmd app_update.");
         });
-        return Run(app, args);
+        return Run(app, args, resultStore);
     }
 
-    private static int Run(CommandApp app, string[] args)
+    internal static int Run(CommandApp app, string[] args, CommandResultStore resultStore) =>
+        Run(app, args, resultStore, Console.Out, Console.Error);
+
+    internal static int Run(
+        CommandApp app,
+        string[] args,
+        CommandResultStore resultStore,
+        TextWriter output,
+        TextWriter error)
+    {
+        return RunJson(app.Run, args, resultStore, output, error);
+    }
+
+    internal static int RunJson(
+        Func<string[], int> run,
+        string[] args,
+        CommandResultStore resultStore,
+        TextWriter output,
+        TextWriter error)
     {
         if (!HasFlag(args, "--json"))
-            return app.Run(args);
+            return run(args);
 
         var command = CommandName(args);
         var originalOut = Console.Out;
@@ -55,28 +75,29 @@ public static class Program
         Console.SetError(capturedError);
         try
         {
-            var exitCode = app.Run(ArgumentsForSpectre(args));
+            var rawExitCode = run(ArgumentsForSpectre(args));
+            var exitCode = NormalizeExitCode(rawExitCode);
             stopwatch.Stop();
             Console.SetOut(originalOut);
             Console.SetError(originalError);
 
             if (exitCode == ExitCodes.Success)
             {
-                Console.Out.WriteLine(OutputEnvelope.Success(
+                output.WriteLine(OutputEnvelope.Success(
                     command,
-                    new { exitCode },
+                    resultStore.Data ?? new { exitCode },
                     DurationMs(stopwatch)));
             }
             else
             {
                 var kind = FailureKind(exitCode);
-                Console.Error.WriteLine(OutputEnvelope.Failure(
+                error.WriteLine(OutputEnvelope.Failure(
                     command,
                     kind,
                     code: kind,
                     message: FailureMessage(capturedError, capturedOut),
                     retryable: false,
-                    details: new { exitCode }));
+                    details: FailureDetails(exitCode, resultStore)));
             }
 
             return exitCode;
@@ -86,7 +107,7 @@ public static class Program
             stopwatch.Stop();
             Console.SetOut(originalOut);
             Console.SetError(originalError);
-            Console.Error.WriteLine(OutputEnvelope.Failure(
+            error.WriteLine(OutputEnvelope.Failure(
                 command,
                 kind: "internal",
                 code: "internal",
@@ -143,14 +164,25 @@ public static class Program
     private static int DurationMs(Stopwatch stopwatch) =>
         stopwatch.ElapsedMilliseconds > int.MaxValue ? int.MaxValue : (int)stopwatch.ElapsedMilliseconds;
 
+    private static int NormalizeExitCode(int exitCode) =>
+        exitCode < 0 ? ExitCodes.InvalidUsage : exitCode;
+
     private static string FailureKind(int exitCode) => exitCode switch
     {
         ExitCodes.InvalidUsage => "invalid_request",
+        ExitCodes.Unreachable => "tool_unreachable",
+        ExitCodes.AuthFailed => "auth_failed",
+        ExitCodes.LeaseConflict => "resource_conflict",
         ExitCodes.Timeout => "timeout",
         ExitCodes.CommandFailed => "command_failed",
         ExitCodes.Cancelled => "cancelled",
         _ => "internal",
     };
+
+    private static object FailureDetails(int exitCode, CommandResultStore resultStore) =>
+        resultStore.ErrorDetails is null
+            ? new { exitCode }
+            : new { exitCode, data = resultStore.ErrorDetails };
 
     private static string FailureMessage(StringWriter capturedError, StringWriter capturedOut)
     {

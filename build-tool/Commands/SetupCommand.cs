@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using BuildTool.Configuration;
 using BuildTool.HotRepl;
+using BuildTool.Output;
 using Spectre.Console.Cli;
 
 namespace BuildTool.Commands;
@@ -17,15 +18,17 @@ public sealed class SetupCommand : AsyncCommand<SetupCommand.Settings>
     private const string DefaultProfileName = "ancient-kingdoms";
     private const string DefaultProfileUrl = "ws://127.0.0.1:18590";
     private readonly string _rootDir;
+    private readonly CommandResultStore _resultStore;
 
     public SetupCommand()
-        : this(Directory.GetCurrentDirectory())
+        : this(Directory.GetCurrentDirectory(), new CommandResultStore())
     {
     }
 
-    public SetupCommand(string rootDir)
+    public SetupCommand(string rootDir, CommandResultStore? resultStore = null)
     {
         _rootDir = rootDir;
+        _resultStore = resultStore ?? new CommandResultStore();
     }
 
     public sealed class Settings : BaseSettings
@@ -75,14 +78,14 @@ public sealed class SetupCommand : AsyncCommand<SetupCommand.Settings>
         if (string.IsNullOrWhiteSpace(gamePath))
         {
             Console.Error.WriteLine("Error: Game path is required.");
-            return 1;
+            return ExitCodes.InvalidUsage;
         }
 
         var gameExe = Path.Combine(gamePath, "ancientkingdoms.exe");
         if (!File.Exists(gameExe))
         {
             Console.Error.WriteLine($"Error: ancientkingdoms.exe not found at: {gameExe}");
-            return 1;
+            return ExitCodes.Unreachable;
         }
 
         var exportPath = Path.Combine(_rootDir, "exported-data");
@@ -102,7 +105,7 @@ public sealed class SetupCommand : AsyncCommand<SetupCommand.Settings>
             if (!string.IsNullOrEmpty(winePath) && !File.Exists(winePath))
             {
                 Console.Error.WriteLine($"Error: Wine binary not found at: {winePath}");
-                return 1;
+                return ExitCodes.Unreachable;
             }
 
             var detectedWinePrefix = DeriveWinePrefix(gamePath);
@@ -116,7 +119,7 @@ public sealed class SetupCommand : AsyncCommand<SetupCommand.Settings>
             if (!string.IsNullOrEmpty(winePrefix) && !Directory.Exists(winePrefix))
             {
                 Console.Error.WriteLine($"Error: Wine prefix directory not found at: {winePrefix}");
-                return 1;
+                return ExitCodes.InvalidUsage;
             }
         }
 
@@ -128,36 +131,44 @@ public sealed class SetupCommand : AsyncCommand<SetupCommand.Settings>
         Console.WriteLine();
 
         OfferProfileUpsert();
+        _resultStore.SetData(new
+        {
+            propsPath,
+            gamePath,
+            exportPath,
+            profileName = DefaultProfileName,
+        });
 
         Console.WriteLine("Next steps:");
         Console.WriteLine("  dotnet run --project build-tool build");
         Console.WriteLine("  dotnet run --project build-tool deploy");
         Console.WriteLine("  dotnet run --project build-tool export");
 
-        return 0;
+        return ExitCodes.Success;
     }
 
-    private static int RunNonInteractive(string propsPath, IReadOnlyDictionary<string, string> existing)
+    private int RunNonInteractive(string propsPath, IReadOnlyDictionary<string, string> existing)
     {
         if (!existing.TryGetValue("ANCIENT_KINGDOMS_PATH", out var gamePath) || string.IsNullOrWhiteSpace(gamePath))
         {
             Console.Error.WriteLine("Error: ANCIENT_KINGDOMS_PATH missing from Local.props.");
-            return 1;
+            return ExitCodes.InvalidUsage;
         }
 
         if (!existing.TryGetValue("DATA_EXPORT_PATH", out var exportPath) || string.IsNullOrWhiteSpace(exportPath))
         {
             Console.Error.WriteLine("Error: DATA_EXPORT_PATH missing from Local.props.");
-            return 1;
+            return ExitCodes.InvalidUsage;
         }
 
         existing.TryGetValue("WINE_PATH", out var winePath);
         existing.TryGetValue("WINE_PREFIX", out var winePrefix);
         var includeWine = !string.IsNullOrEmpty(winePath) || !string.IsNullOrEmpty(winePrefix);
         LocalConfigWriter.Write(propsPath, gamePath, exportPath, winePath, winePrefix, includeWine);
+        _resultStore.SetData(new { propsPath, gamePath, exportPath });
 
         Console.WriteLine("Saved to Local.props.");
-        return 0;
+        return ExitCodes.Success;
     }
 
     private static Dictionary<string, string> LoadExistingProps(string propsPath)

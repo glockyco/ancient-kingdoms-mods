@@ -1,11 +1,13 @@
 using System;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using BuildTool.Abstractions;
 using BuildTool.Configuration;
 using BuildTool.HotRepl;
+using BuildTool.Output;
 using Spectre.Console.Cli;
 
 namespace BuildTool.Commands;
@@ -15,20 +17,27 @@ public sealed class DeployHostCommand : AsyncCommand<DeployHostCommand.Settings>
     private readonly string _repoRoot;
     private readonly LocalConfig _config;
     private readonly IProcessRunner _runner;
+    private readonly CommandResultStore _resultStore;
 
     public DeployHostCommand()
         : this(
             Directory.GetCurrentDirectory(),
             LocalConfigLoader.Load(Path.Combine(Directory.GetCurrentDirectory(), "Local.props")),
-            new CliWrapProcessRunner())
+            new CliWrapProcessRunner(),
+            new CommandResultStore())
     {
     }
 
-    public DeployHostCommand(string repoRoot, LocalConfig config, IProcessRunner runner)
+    public DeployHostCommand(
+        string repoRoot,
+        LocalConfig config,
+        IProcessRunner runner,
+        CommandResultStore? resultStore = null)
     {
         _repoRoot = repoRoot;
         _config = config;
         _runner = runner;
+        _resultStore = resultStore ?? new CommandResultStore();
     }
 
     public sealed class Settings : BaseSettings
@@ -66,11 +75,20 @@ public sealed class DeployHostCommand : AsyncCommand<DeployHostCommand.Settings>
 
         var buildExit = await HotReplDeployer.BuildAsync(paths, configuration, _runner, CancellationToken.None);
         if (buildExit != 0)
-            return buildExit;
+        {
+            _resultStore.SetErrorDetails(new { paths.HostProjectPath, buildExit });
+            return ExitCodes.CommandFailed;
+        }
 
         try
         {
             var report = HotReplDeployer.Deploy(paths.HostOutputPath, paths.ModsPath);
+            _resultStore.SetData(new
+            {
+                copiedFiles = report.CopiedFiles.Select(Path.GetFileName).ToArray(),
+                copiedDirectories = report.CopiedDirectories.Select(Path.GetFileName).ToArray(),
+                paths.ModsPath,
+            });
             foreach (var copiedFile in report.CopiedFiles)
                 Console.WriteLine($"  copied {Path.GetFileName(copiedFile)}");
             foreach (var copiedDir in report.CopiedDirectories)
@@ -80,11 +98,12 @@ public sealed class DeployHostCommand : AsyncCommand<DeployHostCommand.Settings>
         {
             Console.Error.WriteLine($"Error: HotRepl deploy failed: {ex.Message}");
             Console.Error.WriteLine("Note: Close the game before deploying to avoid file lock issues.");
-            return 1;
+            _resultStore.SetErrorDetails(new { paths.ModsPath, message = ex.Message });
+            return ExitCodes.LeaseConflict;
         }
 
         Console.WriteLine("HotRepl deploy complete.");
-        return 0;
+        return ExitCodes.Success;
     }
 
     private static string? ReadOption(string[] args, string name)

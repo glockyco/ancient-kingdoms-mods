@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using BuildTool.Configuration;
+using BuildTool.Output;
 using Spectre.Console.Cli;
 
 namespace BuildTool.Commands;
@@ -18,16 +19,18 @@ public sealed class DeployCommand : AsyncCommand<DeployCommand.Settings>
 
     private readonly string _repoRoot;
     private readonly LocalConfig _config;
+    private readonly CommandResultStore _resultStore;
 
     public DeployCommand()
-        : this(Directory.GetCurrentDirectory(), LocalConfigLoader.Load(Path.Combine(Directory.GetCurrentDirectory(), "Local.props")))
+        : this(Directory.GetCurrentDirectory(), LocalConfigLoader.Load(Path.Combine(Directory.GetCurrentDirectory(), "Local.props")), new CommandResultStore())
     {
     }
 
-    public DeployCommand(string repoRoot, LocalConfig config)
+    public DeployCommand(string repoRoot, LocalConfig config, CommandResultStore? resultStore = null)
     {
         _repoRoot = repoRoot;
         _config = config;
+        _resultStore = resultStore ?? new CommandResultStore();
     }
 
     public sealed class Settings : BaseSettings { }
@@ -49,7 +52,8 @@ public sealed class DeployCommand : AsyncCommand<DeployCommand.Settings>
         if (dllFiles.Count == 0)
         {
             Console.WriteLine("Warning: No built mods found in mods/ directory. Did you run build first?");
-            return Task.FromResult(1);
+            _resultStore.SetErrorDetails(new { modsDir, deployedCount = 0 });
+            return Task.FromResult(ExitCodes.InvalidUsage);
         }
 
         foreach (var dllFile in dllFiles)
@@ -67,14 +71,21 @@ public sealed class DeployCommand : AsyncCommand<DeployCommand.Settings>
             {
                 Console.Error.WriteLine($"Failed to copy {modName}.dll: {ex.Message}");
                 Console.Error.WriteLine("Note: Close the game before deploying to avoid file lock issues.");
-                return Task.FromResult(1);
+                _resultStore.SetErrorDetails(new { modName, targetPath, message = ex.Message });
+                return Task.FromResult(ExitCodes.LeaseConflict);
             }
         }
 
         Console.WriteLine();
+        _resultStore.SetData(new
+        {
+            modsPath,
+            deployedCount = dllFiles.Count,
+            deployed = dllFiles.Select(Path.GetFileName).ToArray(),
+        });
         Console.WriteLine("Deploy complete!");
         Console.WriteLine("Note: Close the game before deploying to avoid file lock issues.");
-        return Task.FromResult(0);
+        return Task.FromResult(ExitCodes.Success);
     }
 
     internal static List<string> GetDeployableModDlls(string modsDir)

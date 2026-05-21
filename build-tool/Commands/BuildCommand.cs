@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using BuildTool.Abstractions;
+using BuildTool.Output;
 using Spectre.Console.Cli;
 
 namespace BuildTool.Commands;
@@ -12,16 +13,18 @@ public sealed class BuildCommand : AsyncCommand<BuildCommand.Settings>
 {
     private readonly string _repoRoot;
     private readonly IProcessRunner _runner;
+    private readonly CommandResultStore _resultStore;
 
     public BuildCommand()
-        : this(Directory.GetCurrentDirectory(), new CliWrapProcessRunner())
+        : this(Directory.GetCurrentDirectory(), new CliWrapProcessRunner(), new CommandResultStore())
     {
     }
 
-    public BuildCommand(string repoRoot, IProcessRunner runner)
+    public BuildCommand(string repoRoot, IProcessRunner runner, CommandResultStore? resultStore = null)
     {
         _repoRoot = repoRoot;
         _runner = runner;
+        _resultStore = resultStore ?? new CommandResultStore();
     }
 
     public sealed class Settings : BaseSettings { }
@@ -37,7 +40,7 @@ public sealed class BuildCommand : AsyncCommand<BuildCommand.Settings>
         if (!Directory.Exists(modsRoot))
         {
             Console.WriteLine("Warning: mods/ directory not found");
-            return 1;
+            return ExitCodes.InvalidUsage;
         }
 
         var projectFiles = Directory.EnumerateFiles(modsRoot, "*.csproj", SearchOption.AllDirectories)
@@ -46,7 +49,8 @@ public sealed class BuildCommand : AsyncCommand<BuildCommand.Settings>
         if (projectFiles.Length == 0)
         {
             Console.WriteLine("No mod projects found in mods/");
-            return 0;
+            _resultStore.SetData(new { projectCount = 0, failed = false });
+            return ExitCodes.Success;
         }
 
         var failed = false;
@@ -73,7 +77,12 @@ public sealed class BuildCommand : AsyncCommand<BuildCommand.Settings>
             Console.WriteLine();
         }
 
+        var data = new { projectCount = projectFiles.Length, failed };
+        if (failed)
+            _resultStore.SetErrorDetails(data);
+        else
+            _resultStore.SetData(data);
         Console.WriteLine(failed ? "Build completed with errors!" : "Build complete!");
-        return failed ? 1 : 0;
+        return failed ? ExitCodes.CommandFailed : ExitCodes.Success;
     }
 }
