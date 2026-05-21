@@ -167,7 +167,7 @@ public sealed class LaunchCommand : AsyncCommand<LaunchCommand.Settings>
                         settings,
                         "Game exited before the MelonLoader bootstrap banner appeared.",
                         result.ExitCode);
-                    return ExitCodes.Timeout;
+                    return ExitCodes.CommandFailed;
                 }
 
                 ReportLaunchFailure(request, logPath, settings, $"Game exited with code {result.ExitCode}.", result.ExitCode);

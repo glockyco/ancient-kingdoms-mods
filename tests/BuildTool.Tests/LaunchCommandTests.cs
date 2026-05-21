@@ -54,7 +54,7 @@ public class LaunchCommandTests
     }
 
     [Fact]
-    public async Task Wait_ReturnsTimeout_WhenProcessExitsBeforeBanner()
+    public async Task Wait_ReturnsCommandFailed_WhenProcessExitsBeforeBanner()
     {
         var tempRoot = Directory.CreateTempSubdirectory().FullName;
         var runner = new FakeProcessRunner();
@@ -63,7 +63,7 @@ public class LaunchCommandTests
 
         var result = await command.ExecuteAsync(null!, new LaunchCommand.Settings { Wait = true });
 
-        Assert.Equal(6, result);
+        Assert.Equal(7, result);
         Directory.Delete(tempRoot, recursive: true);
     }
 
