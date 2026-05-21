@@ -7,14 +7,12 @@ using System.Threading.Tasks;
 using BuildTool.Abstractions;
 using BuildTool.Configuration;
 using BuildTool.Game;
-using System.Text;
 using Spectre.Console.Cli;
 
 namespace BuildTool.Commands;
 
 public sealed class ExportCommand : AsyncCommand<ExportCommand.Settings>
 {
-    private const string ExportCompleteMarker = "All exports complete. Quitting.";
     private readonly string _repoRoot;
     private readonly LocalConfig _config;
     private readonly IProcessRunner _runner;
@@ -100,50 +98,84 @@ public sealed class ExportCommand : AsyncCommand<ExportCommand.Settings>
         Console.WriteLine("---");
 
         var runTask = _runner.RunAsync(request, CancellationToken.None);
-        return await WaitForExportCompletionAsync(logPath, runTask);
+        return await WaitForExportResultAsync(logPath, runTask);
     }
 
 
-    private static async Task<int> WaitForExportCompletionAsync(string logPath, Task<ProcessResult> runTask)
+    private async Task<int> WaitForExportResultAsync(string logPath, Task<ProcessResult> runTask)
     {
-        using var timeoutCts = new CancellationTokenSource(TimeSpan.FromMinutes(5));
-        var markerTask = WatchForMarkerAsync(logPath, timeoutCts.Token);
-        var completed = await Task.WhenAny(markerTask, runTask);
+        using var logCts = new CancellationTokenSource();
+        var logTask = StreamLogAsync(logPath, logCts.Token);
+        var outcomeTask = ExportResultReader.WaitForResultAsync(
+            _config.DataExportPath,
+            TimeSpan.FromMinutes(5),
+            CancellationToken.None);
 
-        if (completed == markerTask)
-            return await markerTask ? 0 : 6;
+        try
+        {
+            var completed = await Task.WhenAny(outcomeTask, runTask);
+            if (completed == outcomeTask)
+                return ReportOutcome(await outcomeTask);
 
-        var result = await runTask;
-        timeoutCts.Cancel();
-        if (File.Exists(logPath) && File.ReadAllText(logPath).Contains(ExportCompleteMarker, StringComparison.Ordinal))
+            var result = await runTask;
+            var outcome = await ExportResultReader.WaitForResultAsync(
+                _config.DataExportPath,
+                TimeSpan.Zero,
+                CancellationToken.None);
+            if (!outcome.TimedOut)
+                return ReportOutcome(outcome);
+
+            Console.WriteLine("---");
+            Console.WriteLine();
+            Console.Error.WriteLine("Error: Export result file not found before the game exited.");
+            Console.Error.WriteLine($"Game exited with code: {result.ExitCode}");
+            return 7;
+        }
+        finally
+        {
+            logCts.Cancel();
+            try { await logTask; }
+            catch (OperationCanceledException) { }
+        }
+    }
+
+    private static int ReportOutcome(ExportOutcome outcome)
+    {
+        if (outcome.Ok)
+        {
+            Console.WriteLine("---");
+            Console.WriteLine();
+            Console.WriteLine("Export complete.");
             return 0;
+        }
 
         Console.WriteLine("---");
         Console.WriteLine();
-        Console.Error.WriteLine("Error: Export completion signal not found in log.");
-        Console.Error.WriteLine($"Game exited with code: {result.ExitCode}");
+        if (outcome.TimedOut)
+        {
+            Console.Error.WriteLine("Error: Timed out waiting for export result file.");
+            return 6;
+        }
+
+        if (outcome.UnknownSchema)
+            Console.Error.WriteLine($"Error: {outcome.ErrorMessage}");
+        else
+            Console.Error.WriteLine("Error: Export result file reported failure.");
+
+        foreach (var exporter in outcome.Exporters)
+        {
+            if (!exporter.Ok)
+                Console.Error.WriteLine($"  {exporter.Name}: {exporter.ErrorMessage}");
+        }
+
         return 7;
     }
 
-    private static async Task<bool> WatchForMarkerAsync(string logPath, CancellationToken cancellationToken)
+    private static async Task StreamLogAsync(string logPath, CancellationToken cancellationToken)
     {
         var stream = new LogStream(logPath, TimeSpan.FromMilliseconds(100));
-        var buffer = new StringBuilder();
-        try
-        {
-            await foreach (var chunk in stream.ReadAsync(cancellationToken))
-            {
-                buffer.Append(chunk);
-                Console.Write(chunk);
-                if (buffer.ToString().Contains(ExportCompleteMarker, StringComparison.Ordinal))
-                    return true;
-            }
-        }
-        catch (OperationCanceledException)
-        {
-        }
-
-        return false;
+        await foreach (var chunk in stream.ReadAsync(cancellationToken))
+            Console.Write(chunk);
     }
 
 
