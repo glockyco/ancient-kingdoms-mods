@@ -84,7 +84,8 @@ build-tool/
     GameLauncher.cs                # platform-neutral launch entrypoint
     WineEnvironment.cs             # macOS / CrossOver detail
     WindowsEnvironment.cs          # Windows native detail
-    LogStream.cs                   # MelonLoader log follow
+    LogStream.cs                   # MelonLoader log follow (human visibility)
+    ExportResultReader.cs          # parse DataExporter result file
   HotRepl/
     HotReplPaths.cs                # repo + host project + host output paths
     HotReplDeployer.cs             # build host, copy file set, prune stale
@@ -171,7 +172,7 @@ No aliases or compatibility shims. The cutover is in one commit so the codebase 
 - `build` — build all mods. Spectre command wrapping `dotnet build` per `mods/*.csproj`. CliWrap-based.
 - `deploy` — copy built mods to `Mods/`. Pure file operation; no game interaction.
 - `update` — `steamcmd app_update` wrapper. Game-owned.
-- `export` — launch game with `--export-data`, stream MelonLoader log, detect the "All exports complete. Quitting." marker, capture exported JSON paths, exit. Streaming uses CliWrap `ListenAsync` rather than the current poll-and-tail loop.
+- `export` — launch game with `--export-data`, stream MelonLoader log for human visibility, watch for DataExporter's structured result file as the canonical completion signal. Behaviour, exit semantics, and the result-file shape are specified in **Export completion signal** below.
 
 ### Final command surface
 
@@ -219,6 +220,52 @@ Auth handling stays in HotRepl, where it belongs. The user-level profile file (`
 
 Declining the offer leaves the user free to author or skip the profile manually; nothing else in `build-tool` requires the profile to function.
 
+## Export completion signal
+
+`build-tool export` currently watches MelonLoader's log file for the literal string `All exports complete. Quitting.`. That signal is fragile: a crash before the marker forces a five-minute timeout, an exporter failure that still reaches end-of-run yields a false success, and any wording change in DataExporter silently breaks build-tool. We replace it with a structured result file. The MelonLoader log keeps streaming to the human watching the terminal but is no longer load-bearing for success detection.
+
+### Producer: DataExporter mod
+
+DataExporter writes a single JSON file to `$(DATA_EXPORT_PATH)/.exporter-result.json` immediately before the game shuts down, regardless of whether the run succeeded. The file is written atomically (temp file plus `File.Move(overwrite: true)`) so `build-tool` never reads a half-written document. On a crash before the writer runs, the file is absent and `build-tool`'s timeout path covers the case.
+
+Shape:
+
+```json
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "startedAt": "2026-05-20T18:00:00Z",
+  "completedAt": "2026-05-20T18:01:42Z",
+  "durationMs": 102341,
+  "exporters": [
+    { "name": "items",    "ok": true,  "count": 4702, "outputPath": "exported-data/items.json" },
+    { "name": "monsters", "ok": true,  "count": 359,  "outputPath": "exported-data/monsters.json" },
+    { "name": "houses",   "ok": false, "error": { "kind": "exporter_failed", "message": "...", "details": {} } }
+  ],
+  "errors": []
+}
+```
+
+Top-level `ok` is `true` only when every required exporter ran successfully. Optional exporters can fail without zeroing the overall `ok`; the failure is still present in `exporters[]`. The classification of each exporter as required versus optional lives in DataExporter; `build-tool` reads `ok` and reports detail without re-deciding policy.
+
+### Consumer: build-tool
+
+`Game/ExportResultReader.cs` watches `$(DATA_EXPORT_PATH)/.exporter-result.json` via `FileSystemWatcher` with a polling fallback. On detection it reads, validates the schema version, parses the payload, and returns a typed `ExportOutcome` to `ExportCommand`.
+
+`build-tool export` exit semantics:
+
+| Outcome | Exit | Envelope |
+|---|---|---|
+| Result file found, `ok: true` | 0 | success envelope with exporter counts and output paths |
+| Result file found, `ok: false` | 7 | error envelope listing failing exporters and their structured errors |
+| Result file never appears before timeout | 6 | error envelope pointing at `MelonLoader/Latest.log` |
+| Game process exits before the result file appears | 7 | error envelope: "exporter did not write result file" |
+| Schema version unknown | 7 | error envelope naming the version mismatch |
+
+### Schema versioning
+
+`schemaVersion: 1` is the contract. Additive changes (new exporter, new optional field) do not bump the version. Breaking changes (renaming `ok`, restructuring `exporters[]`) bump the version, and `ExportResultReader` rejects unknown versions with an explicit error rather than guessing. Version bumps are a deliberate, two-side change tracked in this spec or a follow-up; they are never silent.
+
 ## Documentation and skill updates
 
 This work is incomplete without the doc surface update. The same change-set updates:
@@ -260,7 +307,7 @@ This work is incomplete without the doc surface update. The same change-set upda
 
 ## Testing strategy
 
-`tests/BuildTool.Tests/` is the test home. Test design follows the repo's existing xUnit conventions and the seam-not-interface principle.
+`tests/BuildTool.Tests/` is the home for `build-tool` tests. A new `tests/DataExporter.Tests/` xUnit project is added for DataExporter's result-file writer. Test design follows the repo's existing xUnit conventions and the seam-not-interface principle.
 
 ### What gets tested
 
@@ -269,7 +316,8 @@ This work is incomplete without the doc surface update. The same change-set upda
 - **Game launch arguments** — `WineEnvironment` and `WindowsEnvironment` produce the correct argument list and environment dictionary for launch and for export. Equivalent to today's `HotReplLauncherTests`, but asserts on `ArgumentList` rather than concatenated strings.
 - **HotRepl deploy** — `HotReplDeployer` selects the right file set, copies into a temp `Mods/` directory, and prunes the documented stale-file list. The current `HotReplDeployerTests` shape stays valid; assertions update to the new namespace.
 - **Output envelopes** — `OutputEnvelope` round-trips success/failure shapes and matches the documented schema.
-- **Exit-code mapping** — `ExitCodes.For(error)` covers each documented category.
+- **Export result reader** — `ExportResultReader` accepts a well-formed `schemaVersion: 1` document, rejects unknown schema versions with an explicit error, surfaces top-level `ok: false` correctly, and times out cleanly when the file never appears. Tests use temp directories; no real game involved.
+- **Export result writer** — DataExporter's writer produces a well-formed JSON document, uses atomic temp-file plus move, and sets top-level `ok` only when every required exporter succeeded. Lives in the new `tests/DataExporter.Tests/` project.
 
 ### What gets deleted
 
@@ -286,7 +334,7 @@ We do not start the game in tests. We do not start `hotrepl` in tests. Integrati
 
 ## Migration plan
 
-Clean cutover in three commits on a single branch.
+Clean cutover in four commits on a single branch.
 
 ### Commit 1 — internal architecture rebuild (no surface change yet)
 
@@ -303,7 +351,15 @@ Clean cutover in three commits on a single branch.
 - Rename `hotrepl-deploy` → `deploy-host`, `hotrepl-launch` → `launch`.
 - Update or delete tests that referenced the removed shapes.
 
-### Commit 3 — documentation and skill update
+### Commit 3 — export completion signal
+
+- Add the result-file writer to `mods/DataExporter` (atomic write, schema-versioned shape, `ok`/`exporters[]`/`errors[]`).
+- Scaffold `tests/DataExporter.Tests/` with writer coverage.
+- Add `Game/ExportResultReader.cs` in `build-tool` and wire it into `ExportCommand`.
+- Add reader coverage in `tests/BuildTool.Tests/`.
+- Stop treating the MelonLoader log marker as the success signal; the log continues to stream for the human.
+
+### Commit 4 — documentation and skill update
 
 - Edit `CLAUDE.md`, `mods/CLAUDE.md`, `docs/project-map.md`, `Local.props.example`, `.claude/skills/create-new-mod/SKILL.md`.
 - Add `.claude/skills/hotrepl-runtime-inspection/SKILL.md`.
@@ -312,12 +368,26 @@ Each commit must build, format, lint, and test cleanly on its own. The branch is
 
 ## Out of scope
 
-- Refactoring `build-tool`'s `export` log streaming beyond the CliWrap migration (no behaviour change to export's marker detection).
-- Changing the `steamcmd app_update` integration (it stays as it is; only the subprocess invocation moves to CliWrap).
-- Touching the Python build pipeline (`build-pipeline/`), the SvelteKit website (`website/`), or the Boss/Mod/DataExporter mod sources beyond the doc updates listed above.
-- Adding game-specific HotRepl control commands. `mods/DataExporter` may grow these later; that is a separate spec.
-- Replacing `Local.props` as MSBuild's configuration mechanism. MSBuild keeps consuming the XML; `build-tool` additionally parses it into a typed POCO.
-- Migrating to NUKE or another build-automation framework. `build-tool` remains a project task-runner CLI; that is the right shape for the responsibilities it owns.
+These items are not improvements for this work and are not deferred — they are decisions to leave the current shape alone.
+
+- **`steamcmd app_update` beyond the CliWrap migration.** `steamcmd` has no structured interface we can use; richer error parsing is polish without an architectural lever.
+- **Replacing `Local.props` as MSBuild's configuration mechanism.** MSBuild reads `.props` natively. Polyglot repos using each ecosystem's native config (TOML for Python, JSON for JS, `.props` for MSBuild) is the right shape, not legacy.
+- **Migrating to NUKE, Cake, or another build-automation framework.** `build-tool` is a project task runner, not a build-pipeline DAG. Spectre.Console.Cli plus CliWrap is the correct baseline for the responsibilities it owns.
+- **Refactoring DataExporter beyond the result-file writer.** DataExporter's own design (export catalogue, artifact references, schema evolution) is a separate concern; the result file is a thin orchestration contract, not a redesign trigger.
+- **The Python build pipeline (`build-pipeline/`), the SvelteKit website (`website/`), or other mods (`mods/BossMod*`, etc.).** Unrelated subsystems.
+
+## Future direction
+
+These items are real future work, named with concrete next steps rather than left vague. Each merits its own spec at the appropriate time; none of them block this cutover.
+
+- **Game-specific HotRepl control commands registered by `mods/DataExporter`.** Concrete candidates:
+  - `compendium.preflight` — verify the game is in an exportable state (world loaded, no blocking UI, expected scene).
+  - `compendium.export` — run one or more exporter types by name, return artifact references for the resulting files.
+  - `world.summary` — return loaded scene, monster counts, current player state for diagnostics.
+  Each control command merits its own design; implementing the first is a separate spec following the HotRepl control-command authoring conventions.
+- **Migrating `build-tool export` to call `hotrepl control run compendium.export`.** Once `compendium.export` ships as a control command, the result-file watcher introduced by this spec becomes redundant. The migration eliminates the dual-surface (result file plus HotRepl envelope) by consolidating on the HotRepl envelope and JSONL job events. Sequence: ship the control command first, then migrate the consumer in a follow-up spec.
+- **DataExporter producing artifact references in HotRepl's shape (`uri`, `path`, `sha256`, `byteSize`, `finalized`) instead of bare `outputPath` strings.** Useful once any consumer wants verified export integrity. Additive to the current result-file shape; gated behind `schemaVersion` bump when it lands.
+- **Other mods (e.g. `mods/BossMod`) registering HotRepl control commands for boss-fight introspection.** Same authoring pattern as DataExporter; entirely additive.
 
 ## Risks and mitigations
 
@@ -328,6 +398,7 @@ Each commit must build, format, lint, and test cleanly on its own. The branch is
 | Agents trying to use the old composite `hotrepl` command after the change | The new skill explicitly documents the composition. Old behaviour is removed from `CLAUDE.md` and `mods/CLAUDE.md` in the same commit-set. |
 | MelonLoader log banner detection in `launch --wait` is fragile if MelonLoader output changes | Banner detection is bounded by a timeout; on timeout we return exit code 6 (readiness) with a structured error pointing the user at `MelonLoader/Latest.log`. The user can still proceed manually. |
 | Profile upsert in `setup` writing to the user's HotRepl profile file is surprising | The step is opt-in, default-no, and idempotent. The setup output explicitly names the file path before writing. |
+| Result file becomes a parallel API surface to maintain alongside HotRepl envelopes | The result file's `schemaVersion` is explicit and breaking changes are deliberate two-side updates. The Future Direction migration to `hotrepl control run compendium.export` eliminates the dual surface; until then, both consumers see the same `ok`/`exporters[]` shape delivered through different channels. |
 
 ## Verification
 
@@ -337,5 +408,6 @@ A reviewer or follow-up implementer can confirm this spec is internally consiste
 - Every interface introduced in **Architecture → Build-tool internal architecture** maps to a real test seam in **Testing strategy**.
 - Every doc file listed in **Documentation and skill updates → Existing files** is referenced in `git ls-files` at the listed path.
 - The boundary table in **Architecture → Boundary** is the source of truth for any "who owns this" disagreement during implementation.
+- Every field in the **Export completion signal → Producer** JSON example is read by `ExportResultReader` per the **Consumer** section, and every reader-exit-code row in the **Consumer** table maps to a real producer state.
 
 If implementation diverges from the spec, the spec is updated in the same commit-set, not silently desynchronised.
