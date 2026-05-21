@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using BuildTool.Abstractions;
 using BuildTool.Commands;
@@ -17,19 +19,11 @@ public class ExportCommandTests
             [steam]
             username = "steam-user"
             """);
-        var gamePath = Path.Combine(tempRoot, "game");
-        Directory.CreateDirectory(gamePath);
-        File.WriteAllText(Path.Combine(gamePath, "ancientkingdoms.exe"), "exe");
-
-        var config = new LocalConfig(
-            GamePath: gamePath,
-            DataExportPath: Path.Combine(tempRoot, "exported-data"),
-            WinePath: null,
-            WinePrefix: null);
+        var exportDir = Path.Combine(tempRoot, "exported-data");
         var runner = new FakeProcessRunner();
         runner.Enqueue(new ProcessResult(0, "", "", default));
         runner.Enqueue(new ProcessResult(0, "", "", default));
-        var command = new ExportCommand(tempRoot, config, runner, isMacOs: false);
+        var command = CreateCommand(tempRoot, exportDir, runner);
 
         var result = await command.ExecuteAsync(null!, new ExportCommand.Settings { Update = true, Screenshots = true });
 
@@ -46,12 +40,10 @@ public class ExportCommandTests
     {
         var tempRoot = Directory.CreateTempSubdirectory().FullName;
         var exportDir = Path.Combine(tempRoot, "exported-data");
-        Directory.CreateDirectory(exportDir);
-        File.WriteAllText(Path.Combine(exportDir, ".exporter-result.json"), """
+        var runner = new ResultWritingProcessRunner(exportDir, """
             { "schemaVersion": 1, "ok": true, "exporters": [], "errors": [] }
             """);
-        var command = CreateCommand(tempRoot, exportDir, out var runner);
-        runner.Enqueue(new ProcessResult(0, "", "", default));
+        var command = CreateCommand(tempRoot, exportDir, runner);
 
         var result = await command.ExecuteAsync(null!, new ExportCommand.Settings());
 
@@ -64,14 +56,12 @@ public class ExportCommandTests
     {
         var tempRoot = Directory.CreateTempSubdirectory().FullName;
         var exportDir = Path.Combine(tempRoot, "exported-data");
-        Directory.CreateDirectory(exportDir);
-        File.WriteAllText(Path.Combine(exportDir, ".exporter-result.json"), """
+        var runner = new ResultWritingProcessRunner(exportDir, """
             { "schemaVersion": 1, "ok": false, "exporters": [
                 { "name": "items", "ok": false, "error": { "kind": "exporter_failed", "message": "boom" } }
             ], "errors": [] }
             """);
-        var command = CreateCommand(tempRoot, exportDir, out var runner);
-        runner.Enqueue(new ProcessResult(0, "", "", default));
+        var command = CreateCommand(tempRoot, exportDir, runner);
 
         var result = await command.ExecuteAsync(null!, new ExportCommand.Settings());
 
@@ -79,7 +69,26 @@ public class ExportCommandTests
         Directory.Delete(tempRoot, recursive: true);
     }
 
-    private static ExportCommand CreateCommand(string tempRoot, string exportDir, out FakeProcessRunner runner)
+    [Fact]
+    public async Task IgnoresStaleResultFileFromPreviousRun()
+    {
+        var tempRoot = Directory.CreateTempSubdirectory().FullName;
+        var exportDir = Path.Combine(tempRoot, "exported-data");
+        Directory.CreateDirectory(exportDir);
+        File.WriteAllText(Path.Combine(exportDir, ".exporter-result.json"), """
+            { "schemaVersion": 1, "ok": true, "exporters": [], "errors": [] }
+            """);
+        var runner = new FakeProcessRunner();
+        runner.Enqueue(new ProcessResult(0, "", "", default));
+        var command = CreateCommand(tempRoot, exportDir, runner);
+
+        var result = await command.ExecuteAsync(null!, new ExportCommand.Settings());
+
+        Assert.Equal(7, result);
+        Directory.Delete(tempRoot, recursive: true);
+    }
+
+    private static ExportCommand CreateCommand(string tempRoot, string exportDir, IProcessRunner runner)
     {
         var gamePath = Path.Combine(tempRoot, "game");
         Directory.CreateDirectory(gamePath);
@@ -89,7 +98,28 @@ public class ExportCommandTests
             DataExportPath: exportDir,
             WinePath: null,
             WinePrefix: null);
-        runner = new FakeProcessRunner();
         return new ExportCommand(tempRoot, config, runner, isMacOs: false);
+    }
+
+    private sealed class ResultWritingProcessRunner : IProcessRunner
+    {
+        private readonly string _exportDir;
+        private readonly string _json;
+
+        public ResultWritingProcessRunner(string exportDir, string json)
+        {
+            _exportDir = exportDir;
+            _json = json;
+        }
+
+        public List<ProcessRequest> Calls { get; } = new();
+
+        public Task<ProcessResult> RunAsync(ProcessRequest request, CancellationToken cancellationToken)
+        {
+            Calls.Add(request);
+            Directory.CreateDirectory(_exportDir);
+            File.WriteAllText(Path.Combine(_exportDir, ".exporter-result.json"), _json);
+            return Task.FromResult(new ProcessResult(0, string.Empty, string.Empty, default));
+        }
     }
 }

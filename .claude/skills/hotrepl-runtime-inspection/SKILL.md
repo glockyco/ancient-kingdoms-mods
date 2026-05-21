@@ -30,10 +30,10 @@ dotnet run --project build-tool launch --wait
 
 # 3. From another terminal, query HotRepl using the profile written by setup.
 hotrepl --profile ancient-kingdoms doctor --json
-hotrepl --profile ancient-kingdoms wait --commands compendium.preflight
+hotrepl --profile ancient-kingdoms wait --json
 
 # 4. For leased mutating commands, when registered:
-hotrepl --profile ancient-kingdoms control run compendium.preflight '{}' \
+hotrepl --profile ancient-kingdoms control run <registered-command> '{}' \
   --lease --wait --jsonl
 ```
 
@@ -47,7 +47,7 @@ Tokens never enter this repository. The profile references a token source (env v
 
 ## Available game-specific control commands
 
-As of this skill's writing, none. The DataExporter mod may register commands such as `compendium.preflight` and `compendium.export` in follow-up specs. Run `hotrepl doctor` against a live game to see what is actually registered.
+As of this skill's writing, none. Run `hotrepl doctor` against a live game to see what is actually registered. Future follow-ups may add commands such as `compendium.export`.
 
 ## Boundary
 

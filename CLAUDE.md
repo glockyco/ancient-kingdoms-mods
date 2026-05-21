@@ -80,7 +80,8 @@ Always test before committing:
 dotnet run --project build-tool setup
 
 # Mods — build and deploy to game directory
-dotnet run --project build-tool all
+dotnet run --project build-tool build
+dotnet run --project build-tool deploy
 
 # Export game data (launches game, runs export, streams log, quits)
 dotnet run --project build-tool export
@@ -91,7 +92,7 @@ dotnet run --project build-tool deploy-host
 dotnet run --project build-tool launch --wait
 
 # REPL readiness, diagnostics, and control execution (hotrepl CLI owns these)
-hotrepl --profile ancient-kingdoms wait --commands compendium.preflight
+hotrepl --profile ancient-kingdoms wait --json
 hotrepl --profile ancient-kingdoms doctor --json
 
 # Build pipeline — load exported JSON into SQLite

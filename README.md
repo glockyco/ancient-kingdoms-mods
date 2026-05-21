@@ -137,8 +137,6 @@ dotnet run --project build-tool build
 # Copy built DLLs to the configured game Mods directory
 dotnet run --project build-tool deploy
 
-# Build, then deploy
-dotnet run --project build-tool all
 ```
 
 Close Ancient Kingdoms before deploying. DLLs can be locked while the game is running.
@@ -207,7 +205,7 @@ The website expects generated assets in `website/static/`. In particular, `websi
 dotnet run --project build-tool deploy-host
 dotnet run --project build-tool launch --wait
 hotrepl --profile ancient-kingdoms doctor --json
-hotrepl --profile ancient-kingdoms wait --commands compendium.preflight
+hotrepl --profile ancient-kingdoms wait --json
 ```
 
 `build-tool` owns host deployment and game launch. The `hotrepl` CLI owns readiness,

@@ -37,7 +37,8 @@ diff -b server-scripts-<old>/<file>.cs server-scripts-<new>/<file>.cs
 # 3. Build and deploy mods for the new version
 #    build-tool intentionally does NOT deploy BossMod/BossMod.Core for export runs;
 #    the deploy step also removes stale copies from the CrossOver Mods directory.
-dotnet run --project build-tool all
+dotnet run --project build-tool build
+dotnet run --project build-tool deploy
 
 # 4. Export fresh game data (launches game, exports JSON, quits)
 #    --update runs steamcmd app_update against the CrossOver bottle (separate from .steam-download/).

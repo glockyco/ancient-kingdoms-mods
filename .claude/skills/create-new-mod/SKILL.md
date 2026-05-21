@@ -13,7 +13,7 @@ MelonLoader mods for Ancient Kingdoms (IL2CPP Unity game). Build runs natively o
 2. **Create `ModName.csproj`** (copy from existing mod like `BossTracker`)
 3. **Create `ModName.cs`** with mod entry point
 4. **Optionally create `CLAUDE.md`** for mod-specific documentation
-5. **Build**: `dotnet run --project build-tool all` (native .NET build; deploy/run uses Windows or CrossOver/WINE on macOS)
+5. **Build and deploy**: `dotnet run --project build-tool build && dotnet run --project build-tool deploy` (native .NET build; deploy/run uses Windows or CrossOver/WINE on macOS)
 
 ## Project File Template
 

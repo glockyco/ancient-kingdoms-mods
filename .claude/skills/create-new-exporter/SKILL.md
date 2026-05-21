@@ -1,6 +1,6 @@
 ---
 name: create-new-exporter
-description: Create a DataExporter for exporting game data to JSON
+description: Use when creating a DataExporter for exporting game data to JSON
 ---
 
 ## Overview
@@ -12,7 +12,11 @@ DataExporter mods extract data from the game's IL2CPP runtime and write JSON fil
 1. **Create model** in `mods/DataExporter/Models/MyData.cs`
 2. **Create exporter** in `mods/DataExporter/Exporters/MyExporter.cs`
 3. **Register** in `mods/DataExporter/DataExporter.cs` within `ExportAllData()`
-4. **Build** (Windows): `dotnet run --project build-tool all`
+4. **Build and deploy**:
+   ```sh
+   dotnet run --project build-tool build
+   dotnet run --project build-tool deploy
+   ```
 
 ## Model Template
 

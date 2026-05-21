@@ -86,6 +86,9 @@ public sealed class ExportCommand : AsyncCommand<ExportCommand.Settings>
             Console.WriteLine($"Warning: Could not truncate log: {ex.Message}");
         }
 
+
+        if (!DeleteStaleResultFile())
+            return 1;
         var gameArgs = new List<string> { "--export-data" };
         if (settings.Screenshots)
             gameArgs.Add("--export-screenshots");
@@ -101,6 +104,24 @@ public sealed class ExportCommand : AsyncCommand<ExportCommand.Settings>
         return await WaitForExportResultAsync(logPath, runTask);
     }
 
+
+    private bool DeleteStaleResultFile()
+    {
+        var path = Path.Combine(_config.DataExportPath, ExportResultReader.FileName);
+        if (!File.Exists(path))
+            return true;
+
+        try
+        {
+            File.Delete(path);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error: Could not delete stale export result file: {ex.Message}");
+            return false;
+        }
+    }
 
     private async Task<int> WaitForExportResultAsync(string logPath, Task<ProcessResult> runTask)
     {

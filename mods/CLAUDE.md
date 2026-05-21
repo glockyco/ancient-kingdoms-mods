@@ -6,7 +6,8 @@ Shared patterns for all MelonLoader mods. Requires .NET SDK and game installatio
 
 ```bash
 dotnet run --project build-tool setup   # First-time config (interactive)
-dotnet run --project build-tool all     # Build + deploy
+dotnet run --project build-tool build   # Build mod projects
+dotnet run --project build-tool deploy  # Deploy built DLLs
 dotnet run --project build-tool export  # Launch game, run data export, stream log
 dotnet run --project build-tool deploy-host    # build & deploy HotRepl host into Mods/
 dotnet run --project build-tool launch --wait  # launch game; wait for MelonLoader bootstrap
@@ -71,7 +72,7 @@ public class MyMod : MelonMod
 1. Create directory in `mods/`
 2. Create `ModName.csproj` (copy from existing mod)
 3. Create `ModName.cs` with mod code
-4. Build: `dotnet run --project build-tool all`
+4. Build and deploy: `dotnet run --project build-tool build && dotnet run --project build-tool deploy`
 
 The build tool auto-discovers all projects in `mods/`.
 
@@ -92,7 +93,7 @@ The build tool auto-discovers all projects in `mods/`.
 The build tool runs natively on macOS (targets `net10.0`). The mods themselves still target `net6.0`, which is fine — they run inside CrossOver.
 
 ```bash
-dotnet run --project build-tool all  # builds + deploys to CrossOver game dir
+dotnet run --project build-tool build && dotnet run --project build-tool deploy
 ```
 
 `Local.props` must point to the CrossOver game path — `dotnet run --project build-tool setup` auto-detects this.

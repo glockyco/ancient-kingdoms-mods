@@ -13,6 +13,35 @@ public class LaunchCommandTests
     public async Task BuildsLaunchRequest_AppendsExportArgWhenSet()
     {
         var tempRoot = Directory.CreateTempSubdirectory().FullName;
+        var runner = new FakeProcessRunner();
+        runner.Enqueue(new ProcessResult(0, "", "", default));
+        var command = CreateCommand(tempRoot, runner, isMacOs: true);
+
+        var settings = new LaunchCommand.Settings { Export = true };
+        var result = await command.ExecuteAsync(null!, settings);
+
+        Assert.Equal(0, result);
+        Assert.Single(runner.Calls);
+        Assert.Contains("--export-data", runner.Calls[0].Arguments);
+        Directory.Delete(tempRoot, recursive: true);
+    }
+
+    [Fact]
+    public async Task NonWait_ReturnsCommandFailed_WhenLaunchExitsImmediatelyNonZero()
+    {
+        var tempRoot = Directory.CreateTempSubdirectory().FullName;
+        var runner = new FakeProcessRunner();
+        runner.Enqueue(new ProcessResult(42, "", "failed", default));
+        var command = CreateCommand(tempRoot, runner, isMacOs: false);
+
+        var result = await command.ExecuteAsync(null!, new LaunchCommand.Settings());
+
+        Assert.Equal(7, result);
+        Directory.Delete(tempRoot, recursive: true);
+    }
+
+    private static LaunchCommand CreateCommand(string tempRoot, FakeProcessRunner runner, bool isMacOs)
+    {
         var gamePath = Path.Combine(tempRoot, "game");
         Directory.CreateDirectory(gamePath);
         File.WriteAllText(Path.Combine(gamePath, "ancientkingdoms.exe"), "exe");
@@ -21,16 +50,6 @@ public class LaunchCommandTests
             DataExportPath: Path.Combine(tempRoot, "exported-data"),
             WinePath: "/wine",
             WinePrefix: "/prefix");
-        var runner = new FakeProcessRunner();
-        runner.Enqueue(new ProcessResult(0, "", "", default));
-
-        var settings = new LaunchCommand.Settings { Export = true };
-        var command = new LaunchCommand(config, runner, isMacOs: true);
-        var result = await command.ExecuteAsync(null!, settings);
-
-        Assert.Equal(0, result);
-        Assert.Single(runner.Calls);
-        Assert.Contains("--export-data", runner.Calls[0].Arguments);
-        Directory.Delete(tempRoot, recursive: true);
+        return new LaunchCommand(config, runner, isMacOs);
     }
 }

@@ -75,8 +75,21 @@ public sealed class LaunchCommand : AsyncCommand<LaunchCommand.Settings>
 
         if (!settings.Wait)
         {
-            _ = _runner.RunAsync(request, CancellationToken.None);
-            return 0;
+            var launchTask = _runner.RunAsync(request, CancellationToken.None);
+            var startupCompleted = await Task.WhenAny(launchTask, Task.Delay(TimeSpan.FromSeconds(1)));
+            if (startupCompleted != launchTask)
+                return 0;
+
+            try
+            {
+                var result = await launchTask;
+                return result.ExitCode == 0 ? 0 : 7;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error: failed to launch game: {ex.Message}");
+                return 7;
+            }
         }
 
         var logPath = Path.Combine(_config.MelonLoaderPath, "Latest.log");
