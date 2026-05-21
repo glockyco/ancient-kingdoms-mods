@@ -34,7 +34,7 @@ Templates: `Local.props.example`, `config.toml.example`
 ## Key Directories
 
 ```
-mods/              # C# MelonLoader mods (Windows only)
+mods/              # C# MelonLoader mods (build cross-platform; run via Windows/CrossOver)
 build-pipeline/    # Python CLI (Typer + SQLite)
 website/           # SvelteKit static site
 exported-data/     # JSON exports from game

@@ -17,6 +17,7 @@ Game (IL2CPP Unity) → Mods (JSON export) → Build Pipeline (SQLite) → Websi
 | Creating GitHub issues | docs/github-guide.md |
 | Writing data exporters | Load skill: export-game-data |
 | Updating to new game version | Load skill: update-game-version |
+| Inspecting live game state via HotRepl | Load skill: hotrepl-runtime-inspection |
 | Exploring codebase structure | docs/project-map.md |
 | Working on mods | mods/CLAUDE.md |
 | Working on website | website/CLAUDE.md |
@@ -85,10 +86,13 @@ dotnet run --project build-tool all
 dotnet run --project build-tool export
 dotnet run --project build-tool export --screenshots  # also capture map screenshots
 
-# HotRepl runtime inspection (deploys from sibling ../HotRepl checkout)
-dotnet run --project build-tool hotrepl-deploy
-dotnet run --project build-tool hotrepl-launch --wait --timeout-seconds 30
-dotnet run --project build-tool hotrepl-smoke
+# HotRepl host deploy + game launch (build-tool owns these)
+dotnet run --project build-tool deploy-host
+dotnet run --project build-tool launch --wait
+
+# REPL readiness, diagnostics, and control execution (hotrepl CLI owns these)
+hotrepl --profile ancient-kingdoms wait --commands compendium.preflight
+hotrepl --profile ancient-kingdoms doctor --json
 
 # Build pipeline — load exported JSON into SQLite
 cd build-pipeline && uv run compendium build
