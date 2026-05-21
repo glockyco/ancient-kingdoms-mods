@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Xml.Linq;
+using BuildTool.Abstractions;
 using BuildTool.HotRepl;
 
 class Program
@@ -465,7 +466,10 @@ class Program
         Console.WriteLine($"  Mods: {paths.ModsPath}");
         Console.WriteLine();
 
-        var buildExit = HotReplDeployer.Build(paths, configuration);
+        var runner = new CliWrapProcessRunner();
+        var buildExit = HotReplDeployer.BuildAsync(paths, configuration, runner, CancellationToken.None)
+            .GetAwaiter()
+            .GetResult();
         if (buildExit != 0)
             return buildExit;
 

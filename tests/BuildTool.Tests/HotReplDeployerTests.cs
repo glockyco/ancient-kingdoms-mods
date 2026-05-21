@@ -1,5 +1,8 @@
 using System;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
+using BuildTool.Abstractions;
 using BuildTool.HotRepl;
 using Xunit;
 
@@ -84,5 +87,36 @@ public class HotReplDeployerTests
         var ex = Assert.Throws<FileNotFoundException>(() => HotReplDeployer.Deploy(output, mods));
 
         Assert.Contains("HotRepl.Host.MelonLoader.dll", ex.Message);
+    }
+
+    [Fact]
+    public async Task Build_InvokesDotnetBuildWithHostProject()
+    {
+        var runner = new FakeProcessRunner();
+        runner.Enqueue(new ProcessResult(0, "Build succeeded", "", TimeSpan.FromSeconds(1)));
+
+        var root = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+        var hostProjectPath = Path.Combine(root, "HotRepl.Host.MelonLoader.csproj");
+        Directory.CreateDirectory(root);
+        File.WriteAllText(hostProjectPath, "<Project />");
+
+        var paths = new HotReplPaths(
+            RepoRoot: root,
+            GamePath: Path.Combine(root, "game"),
+            ModsPath: Path.Combine(root, "game", "Mods"),
+            MelonLoaderPath: Path.Combine(root, "game", "MelonLoader"),
+            Il2CppAssembliesPath: Path.Combine(root, "game", "MelonLoader", "Il2CppAssemblies"),
+            HotReplRepoPath: Path.Combine(root, "HotRepl"),
+            HostProjectPath: hostProjectPath,
+            HostOutputPath: Path.Combine(root, "HotRepl", "bin", "Debug", "net6.0"));
+
+        var exit = await HotReplDeployer.BuildAsync(paths, "Debug", runner, CancellationToken.None);
+
+        Assert.Equal(0, exit);
+        Assert.Single(runner.Calls);
+        var call = runner.Calls[0];
+        Assert.Equal("dotnet", call.Program);
+        Assert.Contains("build", call.Arguments);
+        Assert.Contains(paths.HostProjectPath, call.Arguments);
     }
 }

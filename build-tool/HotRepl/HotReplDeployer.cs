@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using BuildTool.Abstractions;
 
 namespace BuildTool.HotRepl;
 
@@ -46,7 +48,11 @@ internal static class HotReplDeployer
         "System.Threading.Tasks.Extensions.dll",
     };
 
-    public static int Build(HotReplPaths paths, string configuration)
+    public static async Task<int> BuildAsync(
+        HotReplPaths paths,
+        string configuration,
+        IProcessRunner runner,
+        CancellationToken cancellationToken)
     {
         if (!File.Exists(paths.HostProjectPath))
         {
@@ -54,24 +60,25 @@ internal static class HotReplDeployer
             return 1;
         }
 
-        var psi = new ProcessStartInfo
-        {
-            FileName = "dotnet",
-            UseShellExecute = false,
-        };
-        psi.ArgumentList.Add("build");
-        psi.ArgumentList.Add(paths.HostProjectPath);
-        psi.ArgumentList.Add("--nologo");
-        psi.ArgumentList.Add("-v");
-        psi.ArgumentList.Add("q");
-        psi.ArgumentList.Add("-c");
-        psi.ArgumentList.Add(configuration);
-        psi.ArgumentList.Add($"-p:MelonLoaderPath={paths.MelonLoaderPath}");
-        psi.ArgumentList.Add($"-p:Il2CppAssembliesPath={paths.Il2CppAssembliesPath}");
+        var request = new ProcessRequest(
+            Program: "dotnet",
+            Arguments: new[]
+            {
+                "build",
+                paths.HostProjectPath,
+                "-c", configuration,
+                "--nologo",
+                "-v", "q",
+                $"-p:MelonLoaderPath={paths.MelonLoaderPath}",
+                $"-p:Il2CppAssembliesPath={paths.Il2CppAssembliesPath}",
+            });
 
-        var process = Process.Start(psi)!;
-        process.WaitForExit();
-        return process.ExitCode;
+        var result = await runner.RunAsync(request, cancellationToken);
+        if (!string.IsNullOrWhiteSpace(result.StandardOutput))
+            Console.WriteLine(result.StandardOutput);
+        if (!string.IsNullOrWhiteSpace(result.StandardError))
+            Console.Error.WriteLine(result.StandardError);
+        return result.ExitCode;
     }
 
     public static HotReplDeploymentReport Deploy(string hostOutputPath, string modsPath)
