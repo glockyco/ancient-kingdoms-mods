@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using BuildTool.Commands;
 using Xunit;
 
 namespace BuildTool.Tests;
@@ -29,7 +30,7 @@ public class ProgramDeploymentTests
         File.WriteAllText(bossModCore, "core");
         File.WriteAllText(debugOnly, "debug");
 
-        var deployable = global::Program.GetDeployableModDlls(Path.Combine(root, "mods"));
+        var deployable = DeployCommand.GetDeployableModDlls(Path.Combine(root, "mods"));
 
         Assert.Equal(new[] { dataExporter }, deployable);
     }
@@ -46,7 +47,7 @@ public class ProgramDeploymentTests
         File.WriteAllText(bossModCore, "core");
         File.WriteAllText(dataExporter, "data");
 
-        var removed = global::Program.RemoveDisabledDeploymentArtifacts(modsPath).OrderBy(Path.GetFileName).ToArray();
+        var removed = DeployCommand.RemoveDisabledDeploymentArtifacts(modsPath).OrderBy(Path.GetFileName).ToArray();
 
         Assert.Equal(new[] { bossMod, bossModCore }.OrderBy(Path.GetFileName).ToArray(), removed);
         Assert.False(File.Exists(bossMod));
