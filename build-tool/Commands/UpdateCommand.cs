@@ -82,7 +82,17 @@ public sealed class UpdateCommand : AsyncCommand<UpdateCommand.Settings>
                 "validate",
                 "+quit",
             });
-        var result = await runner.RunAsync(request, CancellationToken.None);
+        ProcessResult result;
+        try
+        {
+            result = await runner.RunAsync(request, CancellationToken.None);
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error: failed to start steamcmd: {ex.Message}");
+            resultStore?.SetErrorDetails(new { program = "steamcmd", message = ex.Message });
+            return ExitCodes.Unreachable;
+        }
         if (result.ExitCode != 0)
         {
             Console.Error.WriteLine($"Error: steamcmd exited with code {result.ExitCode}.");

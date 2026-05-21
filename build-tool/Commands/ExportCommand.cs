@@ -103,7 +103,17 @@ public sealed class ExportCommand : AsyncCommand<ExportCommand.Settings>
         if (settings.Screenshots)
             gameArgs.Add("--export-screenshots");
 
-        var request = GameLauncher.BuildLaunchRequest(_config, gameArgs, _isMacOs);
+        ProcessRequest request;
+        try
+        {
+            request = GameLauncher.BuildLaunchRequest(_config, gameArgs, _isMacOs);
+        }
+        catch (InvalidOperationException ex)
+        {
+            Console.Error.WriteLine($"Error: {ex.Message}");
+            _resultStore.SetErrorDetails(new { resultFile = ResultFilePath(), message = ex.Message });
+            return ExitCodes.InvalidUsage;
+        }
         Console.WriteLine("Launching game for export...");
         Console.WriteLine($"  Game: {_config.GamePath}");
         Console.WriteLine();

@@ -16,12 +16,15 @@ public static class Program
     {
         var rootDir = FindRepoRoot();
         var propsPath = Path.Combine(rootDir, "Local.props");
+        var propsExists = File.Exists(propsPath);
+        if (!propsExists && RequiresLocalProps(args))
+            return MissingLocalProps(args, propsPath);
 
         var services = new ServiceCollection();
         var resultStore = new CommandResultStore();
         services.AddSingleton<IProcessRunner, CliWrapProcessRunner>();
         services.AddSingleton<string>(_ => rootDir);
-        services.AddSingleton(_ => File.Exists(propsPath) ? LocalConfigLoader.Load(propsPath) : LocalConfig.Empty);
+        services.AddSingleton(_ => propsExists ? LocalConfigLoader.Load(propsPath) : LocalConfig.Empty);
         services.AddSingleton(resultStore);
         services.AddSingleton(typeof(bool), OperatingSystem.IsMacOS());
 
@@ -102,6 +105,20 @@ public static class Program
 
             return exitCode;
         }
+        catch (Exception ex) when (IsExpectedInvalidRequest(ex))
+        {
+            stopwatch.Stop();
+            Console.SetOut(originalOut);
+            Console.SetError(originalError);
+            error.WriteLine(OutputEnvelope.Failure(
+                command,
+                kind: "invalid_request",
+                code: "invalid_request",
+                message: ex.Message,
+                retryable: false,
+                details: new { exceptionType = ex.GetType().FullName }));
+            return ExitCodes.InvalidUsage;
+        }
         catch (Exception ex)
         {
             stopwatch.Stop();
@@ -125,6 +142,45 @@ public static class Program
 
     private static bool HasFlag(string[] args, string name) =>
         Array.Exists(args, arg => string.Equals(arg, name, StringComparison.OrdinalIgnoreCase));
+
+    internal static bool RequiresLocalProps(string[] args)
+    {
+        if (IsHelpRequest(args))
+            return false;
+
+        return CommandName(args) switch
+        {
+            "deploy" or "deploy-host" or "launch" or "export" or "update" => true,
+            _ => false,
+        };
+    }
+
+    private static int MissingLocalProps(string[] args, string propsPath)
+    {
+        const string message = "Local.props not found. Run `dotnet run --project build-tool setup` first.";
+        if (HasFlag(args, "--json"))
+        {
+            Console.Error.WriteLine(OutputEnvelope.Failure(
+                CommandName(args),
+                kind: "invalid_request",
+                code: "invalid_request",
+                message: message,
+                retryable: false,
+                details: new { propsPath }));
+        }
+        else
+        {
+            Console.Error.WriteLine($"Error: {message}");
+        }
+
+        return ExitCodes.InvalidUsage;
+    }
+
+    private static bool IsHelpRequest(string[] args) =>
+        HasFlag(args, "--help") || HasFlag(args, "-h");
+
+    private static bool IsExpectedInvalidRequest(Exception ex) =>
+        ex is ArgumentException or InvalidOperationException;
 
     internal static string[] ArgumentsForSpectre(string[] args)
     {

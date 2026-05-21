@@ -53,6 +53,20 @@ public class LaunchCommandTests
         Directory.Delete(tempRoot, recursive: true);
     }
 
+    [Fact]
+    public async Task Wait_ReturnsTimeout_WhenProcessExitsBeforeBanner()
+    {
+        var tempRoot = Directory.CreateTempSubdirectory().FullName;
+        var runner = new FakeProcessRunner();
+        runner.Enqueue(new ProcessResult(0, "", "", default));
+        var command = CreateCommand(tempRoot, runner, isMacOs: false);
+
+        var result = await command.ExecuteAsync(null!, new LaunchCommand.Settings { Wait = true });
+
+        Assert.Equal(6, result);
+        Directory.Delete(tempRoot, recursive: true);
+    }
+
     private static LaunchCommand CreateCommand(string tempRoot, FakeProcessRunner runner, bool isMacOs)
     {
         var gamePath = Path.Combine(tempRoot, "game");

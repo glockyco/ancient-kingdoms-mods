@@ -64,7 +64,17 @@ public sealed class DeployHostCommand : AsyncCommand<DeployHostCommand.Settings>
     public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
     {
         var configuration = string.IsNullOrWhiteSpace(settings.Configuration) ? "Debug" : settings.Configuration;
-        var paths = HotReplPaths.Resolve(_repoRoot, _config.GamePath, configuration, settings.HotReplRepo);
+        HotReplPaths paths;
+        try
+        {
+            paths = HotReplPaths.Resolve(_repoRoot, _config.GamePath, configuration, settings.HotReplRepo);
+        }
+        catch (ArgumentException ex)
+        {
+            Console.Error.WriteLine($"Error: {ex.Message}");
+            _resultStore.SetErrorDetails(new { message = ex.Message });
+            return ExitCodes.InvalidUsage;
+        }
 
         Console.WriteLine("Building HotRepl MelonLoader host...");
         Console.WriteLine($"  HotRepl repo: {paths.HotReplRepoPath}");
@@ -73,7 +83,17 @@ public sealed class DeployHostCommand : AsyncCommand<DeployHostCommand.Settings>
         Console.WriteLine($"  Mods: {paths.ModsPath}");
         Console.WriteLine();
 
-        var buildExit = await HotReplDeployer.BuildAsync(paths, configuration, _runner, CancellationToken.None);
+        int buildExit;
+        try
+        {
+            buildExit = await HotReplDeployer.BuildAsync(paths, configuration, _runner, CancellationToken.None);
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error: failed to start HotRepl host build: {ex.Message}");
+            _resultStore.SetErrorDetails(new { paths.HostProjectPath, message = ex.Message });
+            return ExitCodes.Unreachable;
+        }
         if (buildExit != 0)
         {
             _resultStore.SetErrorDetails(new { paths.HostProjectPath, buildExit });

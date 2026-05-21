@@ -72,7 +72,17 @@ public sealed class LaunchCommand : AsyncCommand<LaunchCommand.Settings>
         }
 
         var gameArgs = settings.Export ? new[] { "--export-data" } : Array.Empty<string>();
-        var request = GameLauncher.BuildLaunchRequest(_config, gameArgs, _isMacOs);
+        ProcessRequest request;
+        try
+        {
+            request = GameLauncher.BuildLaunchRequest(_config, gameArgs, _isMacOs);
+        }
+        catch (InvalidOperationException ex)
+        {
+            Console.Error.WriteLine($"Error: {ex.Message}");
+            _resultStore.SetErrorDetails(new { gamePath = _config.GamePath, message = ex.Message });
+            return ExitCodes.InvalidUsage;
+        }
 
         Console.WriteLine(settings.Export
             ? "Launching Ancient Kingdoms for export..."
@@ -151,8 +161,13 @@ public sealed class LaunchCommand : AsyncCommand<LaunchCommand.Settings>
                 var result = await runTask;
                 if (result.ExitCode == 0)
                 {
-                    ReportLaunchSuccess(request, logPath, settings, status: "exited", result.ExitCode);
-                    return ExitCodes.Success;
+                    ReportLaunchFailure(
+                        request,
+                        logPath,
+                        settings,
+                        "Game exited before the MelonLoader bootstrap banner appeared.",
+                        result.ExitCode);
+                    return ExitCodes.Timeout;
                 }
 
                 ReportLaunchFailure(request, logPath, settings, $"Game exited with code {result.ExitCode}.", result.ExitCode);

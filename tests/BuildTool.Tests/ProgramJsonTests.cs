@@ -99,6 +99,50 @@ public class ProgramJsonTests
         Assert.Equal("tool_unreachable", error.GetProperty("code").GetString());
     }
 
+    [Fact]
+    public void Run_WithJson_MapsExpectedExceptionsToInvalidRequest()
+    {
+        var store = new CommandResultStore();
+        using var stdout = new StringWriter();
+        using var stderr = new StringWriter();
+
+        var exitCode = Program.RunJson(
+            _ => throw new ArgumentException("bad config"),
+            new[] { "launch", "--json" },
+            store,
+            stdout,
+            stderr);
+
+        Assert.Equal(ExitCodes.InvalidUsage, exitCode);
+        Assert.Equal(string.Empty, stdout.ToString());
+        using var doc = JsonDocument.Parse(stderr.ToString());
+        var error = doc.RootElement.GetProperty("error");
+        Assert.Equal("invalid_request", error.GetProperty("kind").GetString());
+        Assert.Equal("bad config", error.GetProperty("message").GetString());
+    }
+
+    [Theory]
+    [InlineData("deploy", true)]
+    [InlineData("deploy-host", true)]
+    [InlineData("launch", true)]
+    [InlineData("export", true)]
+    [InlineData("update", true)]
+    [InlineData("build", false)]
+    [InlineData("setup", false)]
+    [InlineData("missing-command", false)]
+    public void RequiresLocalProps_MatchesCommandsThatUseConfiguredGame(
+        string command,
+        bool expected)
+    {
+        Assert.Equal(expected, Program.RequiresLocalProps(new[] { command }));
+    }
+
+    [Fact]
+    public void RequiresLocalProps_AllowsHelpWithoutConfig()
+    {
+        Assert.False(Program.RequiresLocalProps(new[] { "deploy", "--help" }));
+    }
+
     private static async Task<ProcessRun> RunBuildToolAsync(params string[] args)
     {
         var dotnet = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH");

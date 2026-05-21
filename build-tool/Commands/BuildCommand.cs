@@ -62,7 +62,17 @@ public sealed class BuildCommand : AsyncCommand<BuildCommand.Settings>
             var request = new ProcessRequest(
                 Program: "dotnet",
                 Arguments: new[] { "build", projectFile, "-c", "Release", "--no-incremental" });
-            var result = await _runner.RunAsync(request, CancellationToken.None);
+            ProcessResult result;
+            try
+            {
+                result = await _runner.RunAsync(request, CancellationToken.None);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to start dotnet build for {modName}: {ex.Message}");
+                _resultStore.SetErrorDetails(new { modName, projectFile, message = ex.Message });
+                return ExitCodes.Unreachable;
+            }
             if (!string.IsNullOrWhiteSpace(result.StandardOutput))
                 Console.WriteLine(result.StandardOutput);
             if (!string.IsNullOrWhiteSpace(result.StandardError))
