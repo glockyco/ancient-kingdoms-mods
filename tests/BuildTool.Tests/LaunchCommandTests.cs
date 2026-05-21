@@ -67,6 +67,15 @@ public class LaunchCommandTests
         Directory.Delete(tempRoot, recursive: true);
     }
 
+    [Fact]
+    public void IsMelonLoaderReadyLog_AcceptsSupportModuleMarkerFromCurrentRuntime()
+    {
+        const string line =
+            "[19:33:13.550] Support Module Loaded: C:\\Program Files (x86)\\Steam\\steamapps\\common\\Ancient Kingdoms\\MelonLoader\\Dependencies\\SupportModules\\Il2Cpp.dll";
+
+        Assert.True(LaunchCommand.IsMelonLoaderReadyLog(line));
+    }
+
     private static LaunchCommand CreateCommand(string tempRoot, FakeProcessRunner runner, bool isMacOs)
     {
         var gamePath = Path.Combine(tempRoot, "game");

@@ -14,7 +14,8 @@ namespace BuildTool.Commands;
 
 public sealed class LaunchCommand : AsyncCommand<LaunchCommand.Settings>
 {
-    private const string MelonLoaderLoadedBanner = "MelonLoader Loaded.";
+    private const string LegacyMelonLoaderLoadedBanner = "MelonLoader Loaded.";
+    private const string SupportModuleLoadedBanner = "Support Module Loaded:";
     private readonly LocalConfig _config;
     private readonly IProcessRunner _runner;
     private readonly bool _isMacOs;
@@ -225,6 +226,9 @@ public sealed class LaunchCommand : AsyncCommand<LaunchCommand.Settings>
         });
     }
 
+    internal static bool IsMelonLoaderReadyLog(string text) =>
+        text.Contains(LegacyMelonLoaderLoadedBanner, StringComparison.Ordinal)
+        || text.Contains(SupportModuleLoadedBanner, StringComparison.Ordinal);
     private static async Task<bool> WaitForBannerAsync(string logPath, CancellationToken cancellationToken)
     {
         var stream = new LogStream(logPath, TimeSpan.FromMilliseconds(200));
@@ -235,7 +239,7 @@ public sealed class LaunchCommand : AsyncCommand<LaunchCommand.Settings>
             {
                 buffer.Append(chunk);
                 Console.Write(chunk);
-                if (buffer.ToString().Contains(MelonLoaderLoadedBanner, StringComparison.Ordinal))
+                if (IsMelonLoaderReadyLog(buffer.ToString()))
                     return true;
             }
         }

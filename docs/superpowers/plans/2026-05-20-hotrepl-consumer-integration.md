@@ -1806,7 +1806,7 @@ public sealed class LaunchCommand : AsyncCommand<LaunchCommand.Settings>
             {
                 buffer.Append(chunk);
                 Console.Write(chunk);
-                if (buffer.ToString().Contains("MelonLoader Loaded.", StringComparison.Ordinal))
+                if (buffer.ToString().Contains("Support Module Loaded:", StringComparison.Ordinal))
                     return true;
             }
         }
@@ -1816,7 +1816,7 @@ public sealed class LaunchCommand : AsyncCommand<LaunchCommand.Settings>
 }
 ```
 
-Banner string: `MelonLoader Loaded.` (confirm against `MelonLoader/Latest.log` from a recent run). On timeout (120s default) we return exit code 6. On game exit before banner we return exit code 7. The 120-second default may be tuned via a `--timeout` option in a follow-up; not in v1.
+Banner string: `Support Module Loaded:` from the current `MelonLoader/Latest.log`; older MelonLoader output may use `MelonLoader Loaded.`. On timeout (120s default) we return exit code 6. On game exit before banner we return exit code 7. The 120-second default may be tuned via a `--timeout` option in a follow-up; not in v1.
 
 - [ ] **Step 4: Update Program.cs**
 
