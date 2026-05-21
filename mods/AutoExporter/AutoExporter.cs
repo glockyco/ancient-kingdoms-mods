@@ -135,8 +135,9 @@ namespace AutoExporter
                 try
                 {
                     LoggerInstance.Msg("[AutoExporter] Starting data export...");
-                    dataExporterMod.ExportAllData();
-                    LoggerInstance.Msg("[AutoExporter] Data export complete.");
+                    var result = dataExporterMod.ExportAllData();
+                    LoggerInstance.Msg(
+                        $"[AutoExporter] Data export complete. ok={result.Ok}, exporters={result.Exporters.Count}.");
                 }
                 catch (Exception ex)
                 {

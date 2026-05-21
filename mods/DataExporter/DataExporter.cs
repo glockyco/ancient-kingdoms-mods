@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using DataExporter.Exporters;
+using DataExporter.Models;
 using MelonLoader;
 using UnityEngine.InputSystem;
 
@@ -47,140 +48,196 @@ namespace DataExporter
             }
         }
 
-        public void ExportAllData()
+        public ExportRunResult ExportAllData()
         {
             LoggerInstance.Msg("========================================");
             LoggerInstance.Msg("Starting data export...");
             LoggerInstance.Msg("========================================");
 
-            var startTime = DateTime.Now;
+            var startedAt = DateTime.UtcNow;
             var visualAssets = new VisualAssetRegistry(LoggerInstance, ExportPath);
+            var result = new ExportRunResult
+            {
+                StartedAt = startedAt,
+            };
 
+            result.Exporters.Add(RunExporter("monsters", required: true, () =>
+            {
+                var exporter = new MonsterExporter(LoggerInstance, ExportPath, visualAssets);
+                exporter.Export();
+            }));
+            result.Exporters.Add(RunExporter("npcs", required: true, () =>
+            {
+                var exporter = new NpcExporter(LoggerInstance, ExportPath, visualAssets);
+                exporter.Export();
+            }));
+            result.Exporters.Add(RunExporter("items", required: true, () =>
+            {
+                var exporter = new ItemExporter(LoggerInstance, ExportPath, visualAssets);
+                exporter.Export();
+            }));
+            result.Exporters.Add(RunExporter("quests", required: true, () =>
+            {
+                var exporter = new QuestExporter(LoggerInstance, ExportPath);
+                exporter.Export();
+            }));
+            result.Exporters.Add(RunExporter("skills", required: true, () =>
+            {
+                var exporter = new SkillExporter(LoggerInstance, ExportPath, visualAssets);
+                exporter.Export();
+            }));
+            result.Exporters.Add(RunExporter("portals", required: true, () =>
+            {
+                var exporter = new PortalExporter(LoggerInstance, ExportPath);
+                exporter.Export();
+            }));
+            result.Exporters.Add(RunExporter("zoneInfo", required: true, () =>
+            {
+                var exporter = new ZoneInfoExporter(LoggerInstance, ExportPath);
+                exporter.Export();
+            }));
+            result.Exporters.Add(RunExporter("zoneTriggers", required: true, () =>
+            {
+                var exporter = new ZoneTriggerExporter(LoggerInstance, ExportPath);
+                exporter.Export();
+            }));
+            result.Exporters.Add(RunExporter("houses", required: true, () =>
+            {
+                var exporter = new HouseExporter(LoggerInstance, ExportPath);
+                exporter.Export();
+            }));
+            result.Exporters.Add(RunExporter("gatherItems", required: true, () =>
+            {
+                var exporter = new GatherItemExporter(LoggerInstance, ExportPath);
+                exporter.Export();
+            }));
+            result.Exporters.Add(RunExporter("craftingRecipes", required: true, () =>
+            {
+                var exporter = new CraftingRecipeExporter(LoggerInstance, ExportPath);
+                exporter.Export();
+            }));
+            result.Exporters.Add(RunExporter("alchemyRecipes", required: true, () =>
+            {
+                var exporter = new AlchemyRecipeExporter(LoggerInstance, ExportPath);
+                exporter.Export();
+            }));
+            result.Exporters.Add(RunExporter("scribingRecipes", required: true, () =>
+            {
+                var exporter = new ScribingRecipeExporter(LoggerInstance, ExportPath);
+                exporter.Export();
+            }));
+            result.Exporters.Add(RunExporter("summonTriggers", required: true, () =>
+            {
+                var exporter = new SummonTriggerExporter(LoggerInstance, ExportPath);
+                exporter.Export();
+            }));
+            result.Exporters.Add(RunExporter("luckTokens", required: true, () =>
+            {
+                var exporter = new LuckTokenExporter(LoggerInstance, ExportPath);
+                exporter.Export();
+            }));
+            result.Exporters.Add(RunExporter("altars", required: true, () =>
+            {
+                var exporter = new AltarExporter(LoggerInstance, ExportPath);
+                exporter.Export();
+            }));
+            result.Exporters.Add(RunExporter("treasureLocations", required: true, () =>
+            {
+                var exporter = new TreasureLocationExporter(LoggerInstance, ExportPath);
+                exporter.Export();
+            }));
+            result.Exporters.Add(RunExporter("pets", required: true, () =>
+            {
+                var exporter = new PetExporter(LoggerInstance, ExportPath);
+                exporter.Export();
+            }));
+            result.Exporters.Add(RunExporter("professions", required: true, () =>
+            {
+                var exporter = new ProfessionExporter(LoggerInstance, ExportPath);
+                exporter.Export();
+            }));
+            result.Exporters.Add(RunExporter("craftingStations", required: true, () =>
+            {
+                var exporter = new CraftingStationExporter(LoggerInstance, ExportPath);
+                exporter.Export();
+            }));
+            result.Exporters.Add(RunExporter("alchemyTables", required: true, () =>
+            {
+                var exporter = new AlchemyTableExporter(LoggerInstance, ExportPath);
+                exporter.Export();
+            }));
+            result.Exporters.Add(RunExporter("scribingTables", required: true, () =>
+            {
+                var exporter = new ScribingTableExporter(LoggerInstance, ExportPath);
+                exporter.Export();
+            }));
+            result.Exporters.Add(RunExporter("traps", required: true, () =>
+            {
+                var exporter = new TrapExporter(LoggerInstance, ExportPath);
+                exporter.Export();
+            }));
+            result.Exporters.Add(RunExporter("doors", required: true, () =>
+            {
+                var exporter = new DoorExporter(LoggerInstance, ExportPath);
+                exporter.Export();
+            }));
+            result.Exporters.Add(RunExporter("interactiveObjects", required: true, () =>
+            {
+                var exporter = new InteractiveObjectExporter(LoggerInstance, ExportPath);
+                exporter.Export();
+            }));
+            result.Exporters.Add(RunExporter("gameConfig", required: true, () =>
+            {
+                var exporter = new GameConfigExporter(LoggerInstance, ExportPath);
+                exporter.Export();
+            }));
+            result.Exporters.Add(RunExporter("classes", required: true, () =>
+            {
+                var exporter = new ClassExporter(LoggerInstance, ExportPath);
+                exporter.Export();
+            }));
+            result.Exporters.Add(RunExporter("visualAssets.manifest", required: true, visualAssets.WriteManifest));
+
+            result.Ok = result.Exporters.TrueForAll(exporter => !exporter.Required || exporter.Ok);
+            foreach (var exporter in result.Exporters)
+            {
+                if (exporter.Required && !exporter.Ok && exporter.Error != null)
+                    result.Errors.Add($"{exporter.Name}: {exporter.Error.Message}");
+            }
+
+            var completedAt = DateTime.UtcNow;
+            result.CompletedAt = completedAt;
+            result.DurationMs = (long)(completedAt - startedAt).TotalMilliseconds;
+            ExportResultFile.Write(ExportPath, result);
+
+            LoggerInstance.Msg("========================================");
+            LoggerInstance.Msg(result.Ok
+                ? $"✓ Export completed in {result.DurationMs / 1000.0:F2} seconds"
+                : $"✗ Export completed with failures in {result.DurationMs / 1000.0:F2} seconds");
+            LoggerInstance.Msg($"✓ Output saved to: {ExportPath}");
+            LoggerInstance.Msg("========================================");
+
+            return result;
+        }
+
+        private ExporterRunResult RunExporter(string name, bool required, Action body)
+        {
             try
             {
-                // Export monsters
-                var monsterExporter = new MonsterExporter(LoggerInstance, ExportPath, visualAssets);
-                monsterExporter.Export();
-
-                // Export NPCs
-                var npcExporter = new NpcExporter(LoggerInstance, ExportPath, visualAssets);
-                npcExporter.Export();
-
-                // Export items
-                var itemExporter = new ItemExporter(LoggerInstance, ExportPath, visualAssets);
-                itemExporter.Export();
-
-                // Export quests
-                var questExporter = new QuestExporter(LoggerInstance, ExportPath);
-                questExporter.Export();
-
-                // Export skills
-                var skillExporter = new SkillExporter(LoggerInstance, ExportPath, visualAssets);
-                skillExporter.Export();
-
-                // Export portals
-                var portalExporter = new PortalExporter(LoggerInstance, ExportPath);
-                portalExporter.Export();
-
-                // Export zone info (official zone data)
-                var zoneInfoExporter = new ZoneInfoExporter(LoggerInstance, ExportPath);
-                zoneInfoExporter.Export();
-
-                // Export zone triggers (zone boundaries)
-                var zoneTriggerExporter = new ZoneTriggerExporter(LoggerInstance, ExportPath);
-                zoneTriggerExporter.Export();
-
-                // Export houses (purchase locations)
-                var houseExporter = new HouseExporter(LoggerInstance, ExportPath);
-                houseExporter.Export();
-
-                // Export gather items (herbs, ores, etc.)
-                var gatherItemExporter = new GatherItemExporter(LoggerInstance, ExportPath);
-                gatherItemExporter.Export();
-
-                // Export crafting recipes
-                var craftingRecipeExporter = new CraftingRecipeExporter(LoggerInstance, ExportPath);
-                craftingRecipeExporter.Export();
-
-                // Export alchemy recipes
-                var alchemyRecipeExporter = new AlchemyRecipeExporter(LoggerInstance, ExportPath);
-                alchemyRecipeExporter.Export();
-
-                // Export scribing recipes
-                var scribingRecipeExporter = new ScribingRecipeExporter(LoggerInstance, ExportPath);
-                scribingRecipeExporter.Export();
-
-                // Export summon triggers
-                var summonTriggerExporter = new SummonTriggerExporter(LoggerInstance, ExportPath);
-                summonTriggerExporter.Export();
-
-                // Export luck tokens (boss and fragment tokens)
-                var luckTokenExporter = new LuckTokenExporter(LoggerInstance, ExportPath);
-                luckTokenExporter.Export();
-
-                // Export altars (forgotten altar events)
-                var altarExporter = new AltarExporter(LoggerInstance, ExportPath);
-                altarExporter.Export();
-
-                // Export treasure locations (dig spots for treasure maps)
-                var treasureLocationExporter = new TreasureLocationExporter(LoggerInstance, ExportPath);
-                treasureLocationExporter.Export();
-
-                // Export pets (mercenaries and familiars)
-                var petExporter = new PetExporter(LoggerInstance, ExportPath);
-                petExporter.Export();
-
-                // Export professions
-                var professionExporter = new ProfessionExporter(LoggerInstance, ExportPath);
-                professionExporter.Export();
-
-                // Export crafting stations
-                var craftingStationExporter = new CraftingStationExporter(LoggerInstance, ExportPath);
-                craftingStationExporter.Export();
-
-                // Export alchemy tables
-                var alchemyTableExporter = new AlchemyTableExporter(LoggerInstance, ExportPath);
-                alchemyTableExporter.Export();
-
-                // Export scribing tables
-                var scribingTableExporter = new ScribingTableExporter(LoggerInstance, ExportPath);
-                scribingTableExporter.Export();
-
-                // Export traps (disarmable, dangerous ground, wall traps)
-                var trapExporter = new TrapExporter(LoggerInstance, ExportPath);
-                trapExporter.Export();
-
-                // Export doors
-                var doorExporter = new DoorExporter(LoggerInstance, ExportPath);
-                doorExporter.Export();
-
-                // Export interactive objects
-                var interactiveObjectExporter = new InteractiveObjectExporter(LoggerInstance, ExportPath);
-                interactiveObjectExporter.Export();
-
-                // Export game config (bestiary monsters, mounts, seasonal items, special items)
-                var gameConfigExporter = new GameConfigExporter(LoggerInstance, ExportPath);
-                gameConfigExporter.Export();
-
-                // Export class combat stats (base damage, health, resists from player prefabs)
-                var classExporter = new ClassExporter(LoggerInstance, ExportPath);
-                classExporter.Export();
-
-                visualAssets.WriteManifest();
-
-                var elapsed = DateTime.Now - startTime;
-
-                LoggerInstance.Msg("========================================");
-                LoggerInstance.Msg($"✓ Export completed in {elapsed.TotalSeconds:F2} seconds");
-                LoggerInstance.Msg($"✓ Output saved to: {ExportPath}");
-                LoggerInstance.Msg("========================================");
+                body();
+                return new ExporterRunResult { Name = name, Ok = true, Required = required };
             }
             catch (Exception ex)
             {
-                LoggerInstance.Error("========================================");
-                LoggerInstance.Error($"Export failed: {ex.Message}");
-                LoggerInstance.Error($"Stack trace: {ex.StackTrace}");
-                LoggerInstance.Error("========================================");
+                LoggerInstance.Error($"[{name}] export failed: {ex.Message}");
+                LoggerInstance.Error(ex.StackTrace);
+                return new ExporterRunResult
+                {
+                    Name = name,
+                    Ok = false,
+                    Required = required,
+                    Error = new ExporterRunError { Kind = "exporter_failed", Message = ex.Message },
+                };
             }
         }
     }
