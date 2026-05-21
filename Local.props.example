@@ -2,7 +2,7 @@
   <!--
     Local configuration for Ancient Kingdoms mod development.
 
-    Option 1: Run 'dotnet run - -project build-tool setup' to generate this file interactively.
+    Option 1: Run 'dotnet run --project build-tool setup' to generate this file interactively.
     Option 2: Copy this file to Local.props and edit manually.
 
     Local.props is git-ignored and will not be committed.
@@ -15,7 +15,7 @@
     <!-- Required: Path where DataExporter mod should save JSON files -->
     <DATA_EXPORT_PATH>E:\Projects\ancient-kingdoms-mods\exported-data</DATA_EXPORT_PATH>
 
-    <!-- macOS only: Required for 'dotnet run - -project build-tool export' -->
+    <!-- macOS only: Required for launch, export, and any game-running command on macOS -->
     <!-- <WINE_PATH>/Applications/CrossOver.app/Contents/SharedSupport/CrossOver/bin/wine</WINE_PATH> -->
     <!-- <WINE_PREFIX>/Users/you/Library/Application Support/CrossOver/Bottles/Steam</WINE_PREFIX> -->
 
