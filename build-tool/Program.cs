@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Xml.Linq;
 using BuildTool.Abstractions;
+using BuildTool.Commands;
 using BuildTool.HotRepl;
 
 class Program
@@ -52,7 +53,7 @@ class Program
 
             // setup runs without Local.props (it creates it)
             if (command == "setup")
-                return RunSetup();
+                return SetupCommand.Invoke(RootDir!, args).GetAwaiter().GetResult();
 
             // All other commands require Local.props
             var propsFile = Path.Combine(RootDir, "Local.props");
