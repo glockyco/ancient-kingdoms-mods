@@ -93,6 +93,10 @@ class Program
                     .GetResult(),
                 "hotrepl-smoke" => RunHotReplSmoke(args),
                 "hotrepl" => RunHotRepl(args),
+                "update" => UpdateCommand
+                    .Invoke(RootDir!, localConfig, new CliWrapProcessRunner())
+                    .GetAwaiter()
+                    .GetResult(),
                 "export" => ExportCommand
                     .Invoke(RootDir!, localConfig, new CliWrapProcessRunner(), IsMacOS, args)
                     .GetAwaiter()

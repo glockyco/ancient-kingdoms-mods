@@ -69,7 +69,10 @@ public sealed class ExportCommand : AsyncCommand<ExportCommand.Settings>
 
         if (settings.Update)
         {
-            var updateResult = await RunSteamUpdateAsync();
+            var updateResult = await UpdateCommand.RunSteamUpdateAsync(
+                _repoRoot,
+                _config,
+                _runner);
             if (updateResult != 0)
                 return updateResult;
         }
@@ -100,48 +103,6 @@ public sealed class ExportCommand : AsyncCommand<ExportCommand.Settings>
         return await WaitForExportCompletionAsync(logPath, runTask);
     }
 
-    private async Task<int> RunSteamUpdateAsync()
-    {
-        var steamUser = ReadSteamUsername(Path.Combine(_repoRoot, "config.toml"));
-        if (string.IsNullOrEmpty(steamUser))
-        {
-            Console.Error.WriteLine("Error: Steam username not found in config.toml.");
-            Console.Error.WriteLine("Add it under [steam] username = \"your_username\"");
-            return 1;
-        }
-
-        Console.WriteLine("Running steamcmd to update Ancient Kingdoms...");
-        Console.WriteLine($"  Steam user: {steamUser}");
-        Console.WriteLine($"  Install dir: {_config.GamePath}");
-        Console.WriteLine();
-
-        var request = new ProcessRequest(
-            Program: "steamcmd",
-            Arguments: new[]
-            {
-                "+@sSteamCmdForcePlatformType",
-                "windows",
-                "+force_install_dir",
-                _config.GamePath,
-                "+login",
-                steamUser,
-                "+app_update",
-                "2241380",
-                "validate",
-                "+quit",
-            });
-        var result = await _runner.RunAsync(request, CancellationToken.None);
-        if (result.ExitCode != 0)
-        {
-            Console.Error.WriteLine($"Error: steamcmd exited with code {result.ExitCode}.");
-            return 1;
-        }
-
-        Console.WriteLine();
-        Console.WriteLine("Steam update complete.");
-        Console.WriteLine();
-        return 0;
-    }
 
     private static async Task<int> WaitForExportCompletionAsync(string logPath, Task<ProcessResult> runTask)
     {
@@ -185,28 +146,6 @@ public sealed class ExportCommand : AsyncCommand<ExportCommand.Settings>
         return false;
     }
 
-    private static string? ReadSteamUsername(string configPath)
-    {
-        if (!File.Exists(configPath))
-            return null;
-
-        var inSteamSection = false;
-        foreach (var line in File.ReadLines(configPath))
-        {
-            var trimmed = line.Trim();
-            if (trimmed.StartsWith("[", StringComparison.Ordinal))
-                inSteamSection = trimmed == "[steam]";
-
-            if (inSteamSection && trimmed.StartsWith("username", StringComparison.Ordinal))
-            {
-                var eq = trimmed.IndexOf('=');
-                if (eq < 0) continue;
-                return trimmed[(eq + 1)..].Trim().Trim('"');
-            }
-        }
-
-        return null;
-    }
 
     private static bool HasFlag(string[] args, string name) =>
         Array.Exists(args, arg => string.Equals(arg, name, StringComparison.OrdinalIgnoreCase));
