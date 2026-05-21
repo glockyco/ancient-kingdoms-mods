@@ -9,16 +9,12 @@ using System.Threading;
 using System.Xml.Linq;
 using BuildTool.Abstractions;
 using BuildTool.Commands;
+using BuildTool.Configuration;
 using BuildTool.HotRepl;
 
 class Program
 {
     static string? RootDir;
-    internal static readonly ISet<string> DisabledDeploymentDllNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-    {
-        "BossMod.dll",
-        "BossMod.Core.dll",
-    };
 
     static readonly bool IsMacOS = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
 
@@ -66,17 +62,27 @@ class Program
 
             LoadPropsFile(propsFile);
 
+            var localConfig = LocalConfigLoader.Load(propsFile);
+
             return command switch
             {
                 "build" => new BuildCommand(RootDir!, new CliWrapProcessRunner())
                     .ExecuteAsync(null!, new BuildCommand.Settings())
                     .GetAwaiter()
                     .GetResult(),
-                "deploy" => DeployMods(),
+                "deploy" => new DeployCommand(RootDir!, localConfig)
+                    .ExecuteAsync(null!, new DeployCommand.Settings())
+                    .GetAwaiter()
+                    .GetResult(),
                 "all" => new BuildCommand(RootDir!, new CliWrapProcessRunner())
                     .ExecuteAsync(null!, new BuildCommand.Settings())
                     .GetAwaiter()
-                    .GetResult() == 0 ? DeployMods() : 1,
+                    .GetResult() == 0
+                        ? new DeployCommand(RootDir!, localConfig)
+                            .ExecuteAsync(null!, new DeployCommand.Settings())
+                            .GetAwaiter()
+                            .GetResult()
+                        : 1,
                 "hotrepl-deploy" => RunHotReplDeploy(args),
                 "hotrepl-launch" => RunHotReplLaunch(args),
                 "hotrepl-smoke" => RunHotReplSmoke(args),
@@ -912,94 +918,10 @@ class Program
         return failed ? 1 : 0;
     }
 
-    internal static List<string> GetDeployableModDlls(string modsDir)
-    {
-        return Directory.GetFiles(modsDir, "*.dll", SearchOption.AllDirectories)
-            .Where(f => f.Contains(Path.Combine("bin", "Release", "net6.0")))
-            .Where(f => !DisabledDeploymentDllNames.Contains(Path.GetFileName(f)))
-            .OrderBy(f => f, StringComparer.Ordinal)
-            .ToList();
-    }
+    internal static List<string> GetDeployableModDlls(string modsDir) =>
+        DeployCommand.GetDeployableModDlls(modsDir);
 
-    internal static IReadOnlyList<string> RemoveDisabledDeploymentArtifacts(string modsPath)
-    {
-        var removed = new List<string>();
+    internal static IReadOnlyList<string> RemoveDisabledDeploymentArtifacts(string modsPath) =>
+        DeployCommand.RemoveDisabledDeploymentArtifacts(modsPath);
 
-        foreach (var dllName in DisabledDeploymentDllNames)
-        {
-            var path = Path.Combine(modsPath, dllName);
-            if (!File.Exists(path))
-                continue;
-
-            File.Delete(path);
-            removed.Add(path);
-        }
-
-        return removed;
-    }
-
-
-    static int DeployMods()
-    {
-        Console.WriteLine("Deploying Ancient Kingdoms mods...");
-
-        var modsPath = Environment.GetEnvironmentVariable("ModsPath");
-        if (string.IsNullOrEmpty(modsPath))
-        {
-            // Derive from ANCIENT_KINGDOMS_PATH
-            var gamePath = Environment.GetEnvironmentVariable("ANCIENT_KINGDOMS_PATH");
-            if (string.IsNullOrEmpty(gamePath))
-            {
-                Console.Error.WriteLine("Error: ANCIENT_KINGDOMS_PATH not set in Local.props");
-                return 1;
-            }
-            modsPath = Path.Combine(gamePath, "Mods");
-        }
-
-        Console.WriteLine($"Mods path: {modsPath}");
-        Console.WriteLine();
-
-        // Create mods directory if it doesn't exist
-        Directory.CreateDirectory(modsPath);
-        foreach (var removedPath in RemoveDisabledDeploymentArtifacts(modsPath))
-        {
-            Console.WriteLine($"Removed disabled deployment artifact: {Path.GetFileName(removedPath)}");
-        }
-
-
-        // Find all built DLLs in mods/*/bin/Release/net6.0/, excluding disabled mods.
-        var modsDir = Path.Combine(Directory.GetCurrentDirectory(), "mods");
-        var dllFiles = GetDeployableModDlls(modsDir);
-
-        if (dllFiles.Count == 0)
-        {
-            Console.WriteLine("Warning: No built mods found in mods/ directory. Did you run build first?");
-            return 1;
-        }
-
-        foreach (var dllFile in dllFiles)
-        {
-            var modName = Path.GetFileNameWithoutExtension(dllFile);
-            var targetPath = Path.Combine(modsPath, $"{modName}.dll");
-
-            Console.WriteLine($"Deploying {modName}...");
-
-            try
-            {
-                File.Copy(dllFile, targetPath, overwrite: true);
-                Console.WriteLine($"  {modName}.dll copied to mods directory");
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Failed to copy {modName}.dll: {ex.Message}");
-                Console.Error.WriteLine("Note: Close the game before deploying to avoid file lock issues.");
-                return 1;
-            }
-        }
-
-        Console.WriteLine();
-        Console.WriteLine("Deploy complete!");
-        Console.WriteLine("Note: Close the game before deploying to avoid file lock issues.");
-        return 0;
-    }
 }
