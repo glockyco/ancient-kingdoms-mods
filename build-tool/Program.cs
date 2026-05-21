@@ -68,9 +68,15 @@ class Program
 
             return command switch
             {
-                "build" => BuildMods(),
+                "build" => new BuildCommand(RootDir!, new CliWrapProcessRunner())
+                    .ExecuteAsync(null!, new BuildCommand.Settings())
+                    .GetAwaiter()
+                    .GetResult(),
                 "deploy" => DeployMods(),
-                "all" => BuildMods() == 0 ? DeployMods() : 1,
+                "all" => new BuildCommand(RootDir!, new CliWrapProcessRunner())
+                    .ExecuteAsync(null!, new BuildCommand.Settings())
+                    .GetAwaiter()
+                    .GetResult() == 0 ? DeployMods() : 1,
                 "hotrepl-deploy" => RunHotReplDeploy(args),
                 "hotrepl-launch" => RunHotReplLaunch(args),
                 "hotrepl-smoke" => RunHotReplSmoke(args),
