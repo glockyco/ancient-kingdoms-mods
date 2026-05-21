@@ -204,16 +204,14 @@ The website expects generated assets in `website/static/`. In particular, `websi
 ### HotRepl runtime inspection
 
 ```bash
-dotnet run --project build-tool hotrepl-deploy
-dotnet run --project build-tool hotrepl-launch --wait --timeout-seconds 30
-dotnet run --project build-tool hotrepl-smoke
+dotnet run --project build-tool deploy-host
+dotnet run --project build-tool launch --wait
+hotrepl --profile ancient-kingdoms doctor --json
+hotrepl --profile ancient-kingdoms wait --commands compendium.preflight
 ```
 
-Use world-only smoke checks only after loading a character into the world:
-
-```bash
-dotnet run --project build-tool hotrepl-smoke --world
-```
+`build-tool` owns host deployment and game launch. The `hotrepl` CLI owns readiness,
+diagnostics, profiles, authentication, and control execution.
 
 ## Development checks
 
