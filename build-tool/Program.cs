@@ -83,7 +83,10 @@ class Program
                             .GetAwaiter()
                             .GetResult()
                         : 1,
-                "hotrepl-deploy" => RunHotReplDeploy(args),
+                "hotrepl-deploy" => DeployHostCommand
+                    .Invoke(RootDir!, localConfig, new CliWrapProcessRunner(), args)
+                    .GetAwaiter()
+                    .GetResult(),
                 "hotrepl-launch" => RunHotReplLaunch(args),
                 "hotrepl-smoke" => RunHotReplSmoke(args),
                 "hotrepl" => RunHotRepl(args),
