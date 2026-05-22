@@ -15,7 +15,7 @@
 - Implement from `/Users/joaichberger/.config/superpowers/worktrees/ancient-kingdoms-mods/hotrepl-v2-migration-plan` or a fresh successor worktree, not from `main`.
 - Run `git status --short --branch` before editing. The source checkout had unrelated untracked user files when this plan was written.
 - Bootstrap the worktree before website validation: `scripts/bootstrap-worktree.sh <trusted-source-checkout>`.
-- HotRepl v2 must expose a stable C# reference for command handlers. If the package path or NuGet/package name is not available yet, stop before Task 1 implementation and make the HotRepl packaging decision in the HotRepl repo.
+- HotRepl v2 package source is repo-local until registry publishing exists. Use `HotRepl.Core` and `HotRepl.Protocol` version `2.0.0-alpha.0` NuGet packages generated from the HotRepl clean-architecture branch, checked into `vendor/hotrepl/nuget/`, and referenced through a repo-local package source. Do not use hardcoded `/Users/...` paths.
 - HotRepl v2 has no profile/auth/lease/ping compatibility. Do not preserve `profiles.json`, `HOTREPL_TOKEN`, `control run --lease`, `LeaseConflict` vocabulary, or Python HotRepl client commands.
 
 ---
@@ -108,7 +108,10 @@ Expected: FAIL because `mods/CompendiumHotRepl` does not exist.
 
 - [ ] **Step 3: Create the mod project**
 
-`mods/CompendiumHotRepl/CompendiumHotRepl.csproj` references HotRepl v2 Core/Host APIs through the repo-approved package path, not a hardcoded `/Users/...` path. The mod class registers exactly three commands:
+`mods/CompendiumHotRepl/CompendiumHotRepl.csproj` references `HotRepl.Core` and
+`HotRepl.Protocol` version `2.0.0-alpha.0` through the repo-local `vendor/hotrepl/nuget/` package
+source, not a hardcoded `/Users/...` source checkout path. The mod class registers exactly three
+commands:
 
 ```text
 compendium.preflight v1 sync
