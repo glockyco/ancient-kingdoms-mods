@@ -7,6 +7,7 @@ Tools and website for maintaining the Ancient Kingdoms Compendium: exporting gam
 - Compendium: <https://ancient-kingdoms.compendiums.org>
 - Steam guide: <https://steamcommunity.com/sharedfiles/filedetails/?id=3616580411>
 - Ko-fi: <https://ko-fi.com/wowmuch>
+- HotRepl: <https://github.com/glockyco/HotRepl>
 
 ## What this repository does
 
@@ -31,17 +32,17 @@ The compendium is a fan-made wiki, interactive world map, and game database. It 
 
 ## Repository layout
 
-| Path | Purpose |
-| --- | --- |
-| `mods/` | C# MelonLoader mods for player-facing utilities, data export, map capture, and development inspection. |
-| `build-tool/` | .NET command runner for setup, mod builds, deployment, automated exports, and HotRepl workflows. |
-| `build-pipeline/` | Python CLI that turns exported game data into SQLite, images, and map tiles for the website. |
-| `website/` | SvelteKit static compendium site. |
-| `exported-data/` | Local game export output. Most generated files are gitignored. |
-| `website/static/` | Generated database, image, and tile assets used by the site. Generated compendium assets are gitignored. |
-| `server-scripts*/` | Local decompiled server-script snapshots used to verify hardcoded mechanics. These are gitignored. |
-| `tests/` | C# test projects. |
-| `docs/` | Project notes, task plans, and contributor-oriented guides. |
+| Path               | Purpose                                                                                                  |
+| ------------------ | -------------------------------------------------------------------------------------------------------- |
+| `mods/`            | C# MelonLoader mods for player-facing utilities, data export, map capture, and development inspection.   |
+| `build-tool/`      | .NET command runner for setup, mod builds, deployment, automated exports, and HotRepl workflows.         |
+| `build-pipeline/`  | Python CLI that turns exported game data into SQLite, images, and map tiles for the website.             |
+| `website/`         | SvelteKit static compendium site.                                                                        |
+| `exported-data/`   | Local game export output. Most generated files are gitignored.                                           |
+| `website/static/`  | Generated database, image, and tile assets used by the site. Generated compendium assets are gitignored. |
+| `server-scripts*/` | Local decompiled server-script snapshots used to verify hardcoded mechanics. These are gitignored.       |
+| `tests/`           | C# test projects.                                                                                        |
+| `docs/`            | Project notes, task plans, and contributor-oriented guides.                                              |
 
 ## Compendium website
 
@@ -54,30 +55,29 @@ The website is a static SvelteKit app:
 - UI components built around bits-ui-compatible patterns.
 - Deployment through Wrangler and Cloudflare Static Assets.
 
-
 ## Mods
 
 The mod catalog includes player-facing utilities, data exporters, and development inspection tools. Several mods change local game state, such as teleporting or forcing respawns, so use them only in environments where that is appropriate.
 
 ### Player-facing and interactive mods
 
-| Mod | Summary |
-| --- | --- |
-| `BossMod` | ImGui-based boss assistant. Tracks monster snapshots, renders cast bars and boss ability windows, provides settings tabs, and persists state under MelonLoader user data. |
-| `BossTracker` | Overlay panel for nearby bosses and elites, including alive/dead status, distance, direction, and respawn timers. Hold Right Shift and drag with left click to move the panel. |
-| `MapEnhancer` | Automatically clears fog of war, enables Veteran Awareness, and improves minimap monster visibility. Living bosses are highlighted and dead bosses/elites remain visible as grey markers. |
-| `MapTeleporter` | Alt-left-click on the open in-game map to teleport to that location. |
-| `MonsterRespawner` | Hold Alt to show world-space markers for dead monsters on respawn timers. Left-click a marker while Alt is held to make the monster ready to respawn. |
+| Mod                 | Summary                                                                                                                                                                                                            |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `BossMod`           | ImGui-based boss assistant. Tracks monster snapshots, renders cast bars and boss ability windows, provides settings tabs, and persists state under MelonLoader user data.                                          |
+| `BossTracker`       | Overlay panel for nearby bosses and elites, including alive/dead status, distance, direction, and respawn timers. Hold Right Shift and drag with left click to move the panel.                                     |
+| `MapEnhancer`       | Automatically clears fog of war, enables Veteran Awareness, and improves minimap monster visibility. Living bosses are highlighted and dead bosses/elites remain visible as grey markers.                          |
+| `MapTeleporter`     | Alt-left-click on the open in-game map to teleport to that location.                                                                                                                                               |
+| `MonsterRespawner`  | Hold Alt to show world-space markers for dead monsters on respawn timers. Left-click a marker while Alt is held to make the monster ready to respawn.                                                              |
 | `ResourceRespawner` | Hold Alt to show world-space markers for gathered resources on cooldown, including plants, minerals, radiant sparks, chests, and other gatherables. Left-click while Alt is held to make the resource harvestable. |
 
 ### Data and development mods
 
-| Mod | Summary |
-| --- | --- |
-| `DataExporter` | Shift-F9 exports game data to JSON and writes the visual asset manifest used by the build pipeline. |
-| `AutoExporter` | Command-line driven automation for exports. `--export-data` runs `DataExporter`; `--export-screenshots` runs `MapScreenshotter`; the mod selects the first existing character and quits after export completion. |
-| `MapScreenshotter` | Shift-F10 captures map screenshots for tile generation. The automated export path can also invoke it with `--export-screenshots`. |
-| `HierarchyLogger` | F9 in the World scene dumps the Unity scene hierarchy and fog-related components to `hierarchy_dump.txt`. |
+| Mod                | Summary                                                                                                                                                                                                          |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DataExporter`     | Shift-F9 exports game data to JSON and writes the visual asset manifest used by the build pipeline.                                                                                                              |
+| `AutoExporter`     | Command-line driven automation for exports. `--export-data` runs `DataExporter`; `--export-screenshots` runs `MapScreenshotter`; the mod selects the first existing character and quits after export completion. |
+| `MapScreenshotter` | Shift-F10 captures map screenshots for tile generation. The automated export path can also invoke it with `--export-screenshots`.                                                                                |
+| `HierarchyLogger`  | F9 in the World scene dumps the Unity scene hierarchy and fog-related components to `hierarchy_dump.txt`.                                                                                                        |
 
 `build-tool` discovers mod projects under `mods/` recursively, so a mod can be built even if it is not listed in `AncientKingdomsMods.sln`.
 
@@ -202,14 +202,19 @@ The website expects generated assets in `website/static/`. In particular, `websi
 ### HotRepl runtime inspection
 
 ```bash
-dotnet run --project build-tool deploy-host
+# Deploy the local HotRepl MelonLoader host into the configured game Mods directory.
+dotnet run --project build-tool deploy-host --hotrepl-repo /path/to/HotRepl
+
+# Launch the game and wait for MelonLoader bootstrap.
 dotnet run --project build-tool launch --wait
-hotrepl --profile ancient-kingdoms doctor --json
-hotrepl --profile ancient-kingdoms wait --json
+
+# Inspect the runtime from the HotRepl checkout.
+bun /path/to/HotRepl/packages/cli/src/index.ts --url ws://127.0.0.1:18590 info --json
+bun /path/to/HotRepl/packages/cli/src/index.ts --url ws://127.0.0.1:18590 eval 'UnityEngine.Application.productName'
 ```
 
-`build-tool` owns host deployment and game launch. The `hotrepl` CLI owns readiness,
-diagnostics, profiles, authentication, and control execution.
+`build-tool` owns host deployment and game launch. HotRepl clients connect directly to
+`ws://127.0.0.1:18590` for inspection and automation.
 
 ## Development checks
 
@@ -304,4 +309,3 @@ If the compendium is useful to you, Ko-fi is the easiest way to show support:
 ## License
 
 MIT. See [LICENSE](LICENSE).
-
