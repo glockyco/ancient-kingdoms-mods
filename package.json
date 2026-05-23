@@ -18,7 +18,7 @@
     "format:py": "cd build-pipeline && uv run ruff format .",
     "check": "pnpm check:ts && pnpm check:py",
     "check:ts": "pnpm --filter website check",
-    "check:py": "cd build-pipeline && uv run mypy ."
+    "check:py": "cd build-pipeline && uv run mypy . && uv run vulture src/ --min-confidence 80"
   },
   "packageManager": "pnpm@10.22.0",
   "devDependencies": {

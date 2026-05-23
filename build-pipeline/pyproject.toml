@@ -30,3 +30,9 @@ target-version = "py312"
 [tool.mypy]
 python_version = "3.12"
 plugins = ["pydantic.mypy"]
+
+[tool.vulture]
+min_confidence = 80
+paths = ["src/"]
+# Pydantic model field annotations are accessed dynamically; exclude them.
+ignore_decorators = ["validator", "field_validator", "model_validator"]
