@@ -58,42 +58,11 @@ def tiles(ctx: typer.Context):
 
 
 @app.command()
-def icons(ctx: typer.Context):
-    """Visual assets are loaded and copied by the build command."""
-    console.print("[yellow]visual assets are handled by `compendium build`[/yellow]")
-
-
-@app.command()
-def types(ctx: typer.Context):
-    """Generate TypeScript types from SQLite schema."""
-    console.print("[yellow]types command not yet implemented[/yellow]")
-
-
-@app.command()
-def deploy(ctx: typer.Context):
-    """Deploy artifacts to website."""
-    console.print("[yellow]deploy command not yet implemented[/yellow]")
-
-
-@app.command()
-def validate(ctx: typer.Context):
-    """Validate JSON exports."""
-    console.print("[yellow]validate command not yet implemented[/yellow]")
-
-
-@app.command()
 def stats(ctx: typer.Context):
     """Show database statistics."""
     from compendium.commands import stats as stats_cmd
 
     stats_cmd.run(ctx.obj)
-
-
-@app.command()
-def all(ctx: typer.Context):
-    """Run complete pipeline (validate → build → tiles → icons → types → deploy → stats)."""
-    console.print("[bold]Running complete build pipeline...[/bold]")
-    console.print("[yellow]all command not yet implemented[/yellow]")
 
 
 if __name__ == "__main__":

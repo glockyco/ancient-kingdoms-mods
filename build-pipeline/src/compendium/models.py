@@ -888,15 +888,6 @@ class TreasureLocationData(BaseModel):
 # =============================================================================
 
 
-class ZoneBounds(BaseModel):
-    """Zone boundary box."""
-
-    min_x: float
-    max_x: float
-    min_z: float
-    max_z: float
-
-
 class ZoneData(BaseModel):
     """Zone data from zone_info.json"""
 

@@ -76,6 +76,7 @@ def _populate_altar_source_zones(conn: sqlite3.Connection) -> None:
         )
 
 
+# TODO: not wired into run() — enable when item-zone filtering is needed
 def _populate_treasure_map_zones(conn: sqlite3.Connection) -> None:
     """Populate item_zones_obtainable for treasure map rewards."""
     console.print("  Processing treasure map zones...")
@@ -139,6 +140,7 @@ def _populate_chest_source_zones(conn: sqlite3.Connection) -> None:
         )
 
 
+# TODO: not wired into run() — enable when item-zone filtering is needed
 def _populate_recipe_source_zones(conn: sqlite3.Connection) -> None:
     """Populate item_zones_obtainable for crafted items (by station location)."""
     console.print("  Processing recipe source zones...")
@@ -265,6 +267,7 @@ def _populate_chest_usage_zones(conn: sqlite3.Connection) -> None:
         )
 
 
+# TODO: not wired into run() — enable when item-zone filtering is needed
 def _populate_recipe_usage_zones(conn: sqlite3.Connection) -> None:
     """Populate item_zones_usable for recipe materials (by station location)."""
     console.print("  Processing recipe usage zones...")
@@ -309,6 +312,7 @@ def _populate_recipe_usage_zones(conn: sqlite3.Connection) -> None:
         )
 
 
+# TODO: not wired into run() — enable when item-zone filtering is needed
 def _populate_quest_usage_zones(conn: sqlite3.Connection) -> None:
     """Populate item_zones_usable for quest requirements (by quest NPC locations)."""
     console.print("  Processing quest usage zones...")
@@ -331,6 +335,7 @@ def _populate_quest_usage_zones(conn: sqlite3.Connection) -> None:
         )
 
 
+# TODO: not wired into run() — enable when item-zone filtering is needed
 def _populate_currency_zones(conn: sqlite3.Connection) -> None:
     """Populate item_zones_usable for currency items (by vendor locations)."""
     console.print("  Processing currency usage zones...")

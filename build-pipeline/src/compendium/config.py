@@ -31,22 +31,3 @@ def load_config(config_path: Path | None = None) -> dict[str, Any]:
 
     with open(config_path, "rb") as f:
         return tomllib.load(f)
-
-
-def resolve_path(config: dict[str, Any], path_str: str) -> Path:
-    """Resolve a path from config, making it absolute relative to repo root.
-
-    Args:
-        config: Configuration dictionary
-        path_str: Path string (may be relative)
-
-    Returns:
-        Absolute path
-    """
-    path = Path(path_str)
-
-    if path.is_absolute():
-        return path
-
-    # Resolve relative to repository root
-    return (get_repo_root() / path).resolve()
