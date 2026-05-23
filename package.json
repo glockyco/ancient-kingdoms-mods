@@ -16,13 +16,15 @@
     "format": "pnpm format:ts && pnpm format:py",
     "format:ts": "pnpm --filter website format",
     "format:py": "cd build-pipeline && uv run ruff format .",
-    "check": "pnpm check:ts && pnpm check:py",
+    "check": "pnpm check:ts && pnpm check:py && pnpm check:knip",
     "check:ts": "pnpm --filter website check",
-    "check:py": "cd build-pipeline && uv run mypy . && uv run vulture src/ --min-confidence 80"
+    "check:py": "cd build-pipeline && uv run mypy . && uv run vulture src/ --min-confidence 80",
+    "check:knip": "knip"
   },
   "packageManager": "pnpm@10.22.0",
   "devDependencies": {
     "husky": "^9.1.7",
+    "knip": "^6.14.2",
     "lint-staged": "^16.2.6"
   }
 }
