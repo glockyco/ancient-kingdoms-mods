@@ -26,4 +26,12 @@ public class ExitCodesTests
     {
         Assert.Equal(1, ExitCodes.For("something_unexpected"));
     }
+
+    [Fact]
+    public void Constants_HaveRenamedValues()
+    {
+        Assert.Equal(4, ExitCodes.PermissionFailed);  // was AuthFailed
+        Assert.Equal(5, ExitCodes.ResourceConflict);  // was LeaseConflict
+        Assert.Equal(6, ExitCodes.ReadinessFailed);   // was Timeout
+    }
 }

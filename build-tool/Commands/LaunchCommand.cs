@@ -182,7 +182,7 @@ public sealed class LaunchCommand : AsyncCommand<LaunchCommand.Settings>
         }
 
         ReportLaunchFailure(request, logPath, settings, "Timed out waiting for MelonLoader bootstrap.");
-        return ExitCodes.Timeout;
+        return ExitCodes.ReadinessFailed;
     }
 
     private void ReportLaunchSuccess(

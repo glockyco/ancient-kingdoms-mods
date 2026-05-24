@@ -98,7 +98,7 @@ public sealed class ExportCommand : AsyncCommand<ExportCommand.Settings>
 
 
         if (!DeleteStaleResultFile())
-            return ExitCodes.LeaseConflict;
+            return ExitCodes.ResourceConflict;
         var gameArgs = new List<string> { "--export-data" };
         if (settings.Screenshots)
             gameArgs.Add("--export-screenshots");
@@ -224,7 +224,7 @@ public sealed class ExportCommand : AsyncCommand<ExportCommand.Settings>
         if (outcome.TimedOut)
         {
             Console.Error.WriteLine("Error: Timed out waiting for export result file.");
-            return ExitCodes.Timeout;
+            return ExitCodes.ReadinessFailed;
         }
 
         if (outcome.UnknownSchema)

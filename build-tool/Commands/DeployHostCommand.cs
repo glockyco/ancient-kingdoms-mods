@@ -119,7 +119,7 @@ public sealed class DeployHostCommand : AsyncCommand<DeployHostCommand.Settings>
             Console.Error.WriteLine($"Error: HotRepl deploy failed: {ex.Message}");
             Console.Error.WriteLine("Note: Close the game before deploying to avoid file lock issues.");
             _resultStore.SetErrorDetails(new { paths.ModsPath, message = ex.Message });
-            return ExitCodes.LeaseConflict;
+            return ExitCodes.ResourceConflict;
         }
 
         Console.WriteLine("HotRepl deploy complete.");

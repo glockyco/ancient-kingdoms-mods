@@ -227,9 +227,9 @@ public static class Program
     {
         ExitCodes.InvalidUsage => "invalid_request",
         ExitCodes.Unreachable => "tool_unreachable",
-        ExitCodes.AuthFailed => "auth_failed",
-        ExitCodes.LeaseConflict => "resource_conflict",
-        ExitCodes.Timeout => "timeout",
+        ExitCodes.PermissionFailed => "auth_failed",
+        ExitCodes.ResourceConflict => "resource_conflict",
+        ExitCodes.ReadinessFailed => "timeout",
         ExitCodes.CommandFailed => "command_failed",
         ExitCodes.Cancelled => "cancelled",
         _ => "internal",

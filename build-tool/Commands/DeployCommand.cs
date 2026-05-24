@@ -72,7 +72,7 @@ public sealed class DeployCommand : AsyncCommand<DeployCommand.Settings>
                 Console.Error.WriteLine($"Failed to copy {modName}.dll: {ex.Message}");
                 Console.Error.WriteLine("Note: Close the game before deploying to avoid file lock issues.");
                 _resultStore.SetErrorDetails(new { modName, targetPath, message = ex.Message });
-                return Task.FromResult(ExitCodes.LeaseConflict);
+                return Task.FromResult(ExitCodes.ResourceConflict);
             }
         }
 
