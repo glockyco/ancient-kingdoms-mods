@@ -119,4 +119,28 @@ public class HotReplDeployerTests
         Assert.Contains("build", call.Arguments);
         Assert.Contains(paths.HostProjectPath, call.Arguments);
     }
+
+    [Fact]
+    public void Deploy_DoesNotCopyNamotionReflectionDll()
+    {
+        // Regression guard: HotRepl.Core 3.0.0 internalizes Namotion.Reflection via
+        // ILRepack, so it must never appear in the deployed Mods/ folder.
+        // Any future ILRepack regression that re-introduces the sidecar will fail here.
+        var root   = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+        var output = Path.Combine(root, "hotrepl-output");
+        var mods   = Path.Combine(root, "game", "Mods");
+        Directory.CreateDirectory(output);
+
+        File.WriteAllText(Path.Combine(output, "HotRepl.Host.MelonLoader.dll"), "host");
+        File.WriteAllText(Path.Combine(output, "HotRepl.Core.dll"),             "core");
+        File.WriteAllText(Path.Combine(output, "Newtonsoft.Json.dll"),           "json");
+        File.WriteAllText(Path.Combine(output, "Fleck.dll"),                     "fleck");
+        // Namotion.Reflection.dll is intentionally absent — internalized into Core
+
+        HotReplDeployer.Deploy(output, mods);
+
+        Assert.False(
+            File.Exists(Path.Combine(mods, "Namotion.Reflection.dll")),
+            "Namotion.Reflection.dll must not land in Mods/; Core 3.0.0 internalizes it.");
+    }
 }
