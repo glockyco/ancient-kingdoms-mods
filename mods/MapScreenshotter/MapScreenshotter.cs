@@ -13,12 +13,22 @@ using UnityEngine.InputSystem;
 
 namespace MapScreenshotter;
 
+public class ScreenshotResult
+{
+    public bool Ok { get; set; }
+    public string MetadataPath { get; set; }
+    public int TileCount { get; set; }
+    public string ErrorMessage { get; set; }
+}
+
 public class MapScreenshotter : MelonMod
 {
     private bool _isCapturing;
+    private ScreenshotResult _lastResult;
     private ScreenshotCoroutineHelper _coroutineHelper;
 
     public bool IsCapturing => _isCapturing;
+    public ScreenshotResult LastResult => _lastResult;
 
     public override void OnInitializeMelon()
     {
@@ -42,19 +52,19 @@ public class MapScreenshotter : MelonMod
         }
     }
 
-    public void StartScreenshotCapture()
+    public bool StartScreenshotCapture()
     {
         if (_isCapturing)
         {
-            LoggerInstance.Warning("Screenshot capture already in progress!");
-            return;
+            LoggerInstance.Warning("Screenshot capture already in progress — concurrent start rejected.");
+            return false;
         }
 
         var player = Il2Cpp.Player.localPlayer;
         if (player == null)
         {
             LoggerInstance.Error("No local player found - cannot capture screenshots");
-            return;
+            return false;
         }
 
         LoggerInstance.Msg("Starting screenshot capture of entire world map...");
@@ -70,17 +80,20 @@ public class MapScreenshotter : MelonMod
 
         // Start the capture coroutine (wrap in IL2CPP action)
         MelonCoroutines.Start(_coroutineHelper.CaptureScreenshotsCoroutine(this, player));
+        return true;
     }
 
-    private void OnCaptureComplete()
+    internal void OnCaptureComplete(string metadataPath, int tileCount)
     {
         _isCapturing = false;
-        LoggerInstance.Msg("Screenshot capture complete!");
+        _lastResult = new ScreenshotResult { Ok = true, MetadataPath = metadataPath, TileCount = tileCount };
+        LoggerInstance.Msg($"Screenshot capture complete! {tileCount} tiles -> {metadataPath}");
     }
 
-    private void OnCaptureError(string error)
+    internal void OnCaptureError(string error)
     {
         _isCapturing = false;
+        _lastResult = new ScreenshotResult { Ok = false, ErrorMessage = error };
         LoggerInstance.Error($"Screenshot capture failed: {error}");
     }
 
@@ -407,7 +420,7 @@ public class MapScreenshotter : MelonMod
             mod.LoggerInstance.Msg($"=== Complete! ===");
             mod.LoggerInstance.Msg($"Captured {totalScreenshots} screenshots");
             mod.LoggerInstance.Msg($"Metadata saved to: {metadataPath}");
-            mod.OnCaptureComplete();
+            mod.OnCaptureComplete(metadataPath, totalScreenshots);
         }
 
         private static string CapitalizeFirst(string str)
