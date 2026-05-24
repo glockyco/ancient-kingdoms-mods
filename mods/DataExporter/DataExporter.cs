@@ -208,8 +208,6 @@ namespace DataExporter
             var completedAt = DateTime.UtcNow;
             result.CompletedAt = completedAt;
             result.DurationMs = (long)(completedAt - startedAt).TotalMilliseconds;
-            ExportResultFile.Write(ExportPath, result);
-
             LoggerInstance.Msg("========================================");
             LoggerInstance.Msg(result.Ok
                 ? $"✓ Export completed in {result.DurationMs / 1000.0:F2} seconds"

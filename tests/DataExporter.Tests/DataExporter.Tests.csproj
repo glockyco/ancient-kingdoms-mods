@@ -18,6 +18,5 @@
     <Compile Include="..\..\mods\DataExporter\Models\ExporterRunError.cs" Link="Models\ExporterRunError.cs" />
     <Compile Include="..\..\mods\DataExporter\Models\ExporterRunResult.cs" Link="Models\ExporterRunResult.cs" />
     <Compile Include="..\..\mods\DataExporter\Models\ExportRunResult.cs" Link="Models\ExportRunResult.cs" />
-    <Compile Include="..\..\mods\DataExporter\ExportResultFile.cs" Link="ExportResultFile.cs" />
   </ItemGroup>
 </Project>
