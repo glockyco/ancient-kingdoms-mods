@@ -75,8 +75,8 @@ The mod catalog includes player-facing utilities, data exporters, and developmen
 | Mod                | Summary                                                                                                                                                                                                          |
 | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `DataExporter`     | Shift-F9 exports game data to JSON and writes the visual asset manifest used by the build pipeline.                                                                                                              |
-| `AutoExporter`     | Command-line driven automation for exports. `--export-data` runs `DataExporter`; `--export-screenshots` runs `MapScreenshotter`; the mod selects the first existing character and quits after export completion. |
-| `MapScreenshotter` | Shift-F10 captures map screenshots for tile generation. The automated export path can also invoke it with `--export-screenshots`.                                                                                |
+| `HotReplCommands`  | Registers typed HotRepl commands: `compendium.preflight`, `world.summary`, `compendium.export` (job — handles world entry, data export, optional screenshots, artifact collection), and `game.quit`. Invoked by `build-tool export` over WebSocket. |
+| `MapScreenshotter` | Shift-F10 captures map screenshots for tile generation. `build-tool export --screenshots` triggers it via the `compendium.export` HotRepl job. |
 | `HierarchyLogger`  | F9 in the World scene dumps the Unity scene hierarchy and fog-related components to `hierarchy_dump.txt`.                                                                                                        |
 
 `build-tool` discovers mod projects under `mods/` recursively, so a mod can be built even if it is not listed in `AncientKingdomsMods.sln`.

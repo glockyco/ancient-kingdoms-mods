@@ -4,9 +4,10 @@ Automated world map screenshot capture.
 
 ## Usage
 
-Normally triggered automatically by the **AutoExporter** mod — launch the game with `--export-screenshots` in Steam launch options. The mod boots, selects the first character, waits for the world to load, captures all screenshots, and quits.
+`build-tool export --screenshots` orchestrates automated screenshot capture: `compendium.export`
+calls `StartScreenshotCapture()` via HotRepl after data export completes.
 
-Press **Shift+F10** in-game to trigger a manual capture without AutoExporter.
+Press **Shift+F10** in-game for a manual capture without `build-tool`.
 
 Screenshots are saved to `exported-data/screenshots/`.
 

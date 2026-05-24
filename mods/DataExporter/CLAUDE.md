@@ -4,9 +4,10 @@ Exports authoritative runtime game data and selected visual images for the build
 
 ## Usage
 
-Normally triggered automatically by the **AutoExporter** mod — launch the game with `--export-data` in Steam launch options. The mod boots, selects the first character, waits for the world to load, runs the export, and quits.
+`build-tool export` orchestrates automated export: the game is launched, `compendium.export` runs
+world entry and calls `ExportAllData()` via HotRepl, and artifacts are collected.
 
-Press **Shift+F9** in-game to trigger a manual export without AutoExporter.
+Press **Shift+F9** in-game for a manual export without `build-tool`.
 
 Files are written to `exported-data/` (configurable in `Local.props`), including JSON data, `visual_assets.json`, and image files under `images/`.
 

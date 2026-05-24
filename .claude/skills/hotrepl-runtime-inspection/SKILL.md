@@ -47,7 +47,16 @@ Tokens never enter this repository. The profile references a token source (env v
 
 ## Available game-specific control commands
 
-As of this skill's writing, none. Run `hotrepl doctor` against a live game to see what is actually registered. Future follow-ups may add commands such as `compendium.export`.
+The `HotReplCommands` mod registers four typed commands (MelonLoader mod in `mods/HotReplCommands/`):
+
+| Command | Kind | Description |
+|---------|------|-------------|
+| `compendium.preflight` | sync | Checks mod visibility, directory existence, scene, and player readiness. |
+| `world.summary` | sync | Returns active scene, network state, character count, and local-player status. |
+| `compendium.export` | job | Runs world entry if needed, calls DataExporter and optionally MapScreenshotter, returns artifact refs. Args: `{"screenshots": bool}`. |
+| `game.quit` | sync | Calls `Application.Quit()` and returns `{"quitting": true}`. |
+
+Run `hotrepl doctor` or `hotrepl --profile ancient-kingdoms control list` against a live game to confirm registration.
 
 ## Boundary
 

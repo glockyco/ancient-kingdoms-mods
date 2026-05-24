@@ -23,5 +23,11 @@
     <!-- <MelonLoaderPath>$(ANCIENT_KINGDOMS_PATH)\MelonLoader</MelonLoaderPath> -->
     <!-- <Il2CppAssembliesPath>$(MelonLoaderPath)\Il2CppAssemblies</Il2CppAssembliesPath> -->
     <!-- <ModsPath>$(ANCIENT_KINGDOMS_PATH)\Mods</ModsPath> -->
+    <!-- Optional: Path to HotRepl repository (default: sibling ../HotRepl checkout). -->
+    <!-- Override if your HotRepl repo is not at the default path.                     -->
+    <!-- <HOTREPL_REPO_PATH>/path/to/HotRepl</HOTREPL_REPO_PATH>                        -->
+
+    <!-- Optional: HotRepl WebSocket endpoint (default: loopback). -->
+    <!-- <HOTREPL_ENDPOINT>ws://127.0.0.1:18590</HOTREPL_ENDPOINT>  -->
   </PropertyGroup>
 </Project>

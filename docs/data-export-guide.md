@@ -25,4 +25,4 @@ Do not add static fallback sources for missing selected sprites. Excluded source
 
 ## Runtime Requirements
 
-Runtime visual exports are meaningful only after the game is in the `World` scene and `Il2CppMirror.NetworkClient.localPlayer != null`. AutoExporter is responsible for reaching that state before calling `DataExporter.ExportAllData()`.
+Runtime visual exports are meaningful only after the game is in the `World` scene and `Il2CppMirror.NetworkClient.localPlayer != null`. The `compendium.export` HotRepl command in `HotReplCommands` is responsible for reaching that state before calling `DataExporter.ExportAllData()`.
