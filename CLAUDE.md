@@ -10,19 +10,19 @@ Game (IL2CPP Unity) → Mods (JSON export) → Build Pipeline (SQLite) → Websi
 
 **IMPORTANT: You MUST read the linked file BEFORE performing these tasks.**
 
-| Task | Required Reading |
-|------|------------------|
-| Editing any CLAUDE.md | docs/claude-md-guide.md |
-| Committing code | Load skill: commit |
-| Creating GitHub issues | docs/github-guide.md |
-| Writing data exporters | Load skill: export-game-data |
-| Updating to new game version | Load skill: update-game-version |
-| Inspecting live game state via HotRepl | Load skill: hotrepl-runtime-inspection |
-| Exploring codebase structure | docs/project-map.md |
-| Working on mods | mods/CLAUDE.md |
-| Working on website | website/CLAUDE.md |
-| Working on build pipeline | build-pipeline/CLAUDE.md |
-| Starting work in a git worktree or seeing missing generated website artifacts | Load skill: bootstrap-worktree |
+| Task                                                                          | Required Reading                       |
+| ----------------------------------------------------------------------------- | -------------------------------------- |
+| Editing any CLAUDE.md                                                         | docs/claude-md-guide.md                |
+| Committing code                                                               | Load skill: commit                     |
+| Creating GitHub issues                                                        | docs/github-guide.md                   |
+| Writing data exporters                                                        | Load skill: export-game-data           |
+| Updating to new game version                                                  | Load skill: update-game-version        |
+| Inspecting live game state via HotRepl                                        | Load skill: hotrepl-runtime-inspection |
+| Exploring codebase structure                                                  | docs/project-map.md                    |
+| Working on mods                                                               | mods/CLAUDE.md                         |
+| Working on website                                                            | website/CLAUDE.md                      |
+| Working on build pipeline                                                     | build-pipeline/CLAUDE.md               |
+| Starting work in a git worktree or seeing missing generated website artifacts | Load skill: bootstrap-worktree         |
 
 If you notice stale or incorrect information in any documentation, flag it to the user.
 
@@ -53,7 +53,6 @@ If you notice stale or incorrect information in any documentation, flag it to th
 - Prefer explicit errors over graceful degradation during development
 - If something should exist, assert it exists - don't silently continue
 
-
 ### Worktrees
 
 Fresh git worktrees must be bootstrapped before website validation. Use the
@@ -64,6 +63,7 @@ are setup failures, not code failures.
 ### Testing
 
 Always test before committing:
+
 - Website: `pnpm check && pnpm lint && pnpm build`
 - Mods: `dotnet run --project build-tool build`
 
@@ -91,9 +91,9 @@ dotnet run --project build-tool export --screenshots  # also capture map screens
 dotnet run --project build-tool deploy-host
 dotnet run --project build-tool launch --wait
 
-# REPL readiness, diagnostics, and control execution (hotrepl CLI owns these)
-hotrepl --profile ancient-kingdoms wait --json
-hotrepl --profile ancient-kingdoms doctor --json
+# REPL readiness and inspection (hotrepl CLI owns these; connect by URL)
+hotrepl --url ws://127.0.0.1:18590 info --json
+hotrepl --url ws://127.0.0.1:18590 run world.summary '{}' --json
 
 # Build pipeline — load exported JSON into SQLite
 cd build-pipeline && uv run compendium build
@@ -105,8 +105,8 @@ cd website && pnpm check && pnpm lint && pnpm build
 
 ## Subprojects
 
-| Subproject | Purpose | Docs |
-|------------|---------|------|
-| mods/ | MelonLoader mods (macOS via CrossOver, Windows) | mods/CLAUDE.md |
-| build-pipeline/ | Python CLI (JSON → SQLite) | build-pipeline/CLAUDE.md |
-| website/ | SvelteKit static site | website/CLAUDE.md |
+| Subproject      | Purpose                                         | Docs                     |
+| --------------- | ----------------------------------------------- | ------------------------ |
+| mods/           | MelonLoader mods (macOS via CrossOver, Windows) | mods/CLAUDE.md           |
+| build-pipeline/ | Python CLI (JSON → SQLite)                      | build-pipeline/CLAUDE.md |
+| website/        | SvelteKit static site                           | website/CLAUDE.md        |

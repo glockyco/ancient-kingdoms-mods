@@ -1,6 +1,6 @@
 # HotRepl Phase 4a Consumer Migration Specification
 
-**Status:** Approved for implementation
+**Status:** Implemented and live-checked on 2026-05-23 (commits `43aa852`, `54a220d`).
 **Date:** 2026-05-23
 **Scope:** Migrate Ancient Kingdoms' `HotReplCommands` MelonLoader consumer to the Phase 4a HotRepl authoring API and verify it against the current local HotRepl core.
 

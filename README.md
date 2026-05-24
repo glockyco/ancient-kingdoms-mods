@@ -72,12 +72,12 @@ The mod catalog includes player-facing utilities, data exporters, and developmen
 
 ### Data and development mods
 
-| Mod                | Summary                                                                                                                                                                                                          |
-| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `DataExporter`     | Shift-F9 exports game data to JSON and writes the visual asset manifest used by the build pipeline.                                                                                                              |
+| Mod                | Summary                                                                                                                                                                                                                                             |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DataExporter`     | Shift-F9 exports game data to JSON and writes the visual asset manifest used by the build pipeline.                                                                                                                                                 |
 | `HotReplCommands`  | Registers typed HotRepl commands: `compendium.preflight`, `world.summary`, `compendium.export` (job — handles world entry, data export, optional screenshots, artifact collection), and `game.quit`. Invoked by `build-tool export` over WebSocket. |
-| `MapScreenshotter` | Shift-F10 captures map screenshots for tile generation. `build-tool export --screenshots` triggers it via the `compendium.export` HotRepl job. |
-| `HierarchyLogger`  | F9 in the World scene dumps the Unity scene hierarchy and fog-related components to `hierarchy_dump.txt`.                                                                                                        |
+| `MapScreenshotter` | Shift-F10 captures map screenshots for tile generation. `build-tool export --screenshots` triggers it via the `compendium.export` HotRepl job.                                                                                                      |
+| `HierarchyLogger`  | F9 in the World scene dumps the Unity scene hierarchy and fog-related components to `hierarchy_dump.txt`.                                                                                                                                           |
 
 `build-tool` discovers mod projects under `mods/` recursively, so a mod can be built even if it is not listed in `AncientKingdomsMods.sln`.
 
@@ -208,9 +208,12 @@ dotnet run --project build-tool deploy-host --hotrepl-repo /path/to/HotRepl
 # Launch the game and wait for MelonLoader bootstrap.
 dotnet run --project build-tool launch --wait
 
-# Inspect the runtime from the HotRepl checkout.
-bun /path/to/HotRepl/packages/cli/src/index.ts --url ws://127.0.0.1:18590 info --json
-bun /path/to/HotRepl/packages/cli/src/index.ts --url ws://127.0.0.1:18590 eval 'UnityEngine.Application.productName'
+# Inspect the runtime (either the published CLI or the local HotRepl checkout).
+hotrepl --url ws://127.0.0.1:18590 info --json
+hotrepl --url ws://127.0.0.1:18590 run world.summary '{}' --json
+hotrepl --url ws://127.0.0.1:18590 run compendium.preflight '{}' --json
+hotrepl --url ws://127.0.0.1:18590 describe compendium.export --json
+hotrepl --url ws://127.0.0.1:18590 eval 'UnityEngine.Application.productName'
 ```
 
 `build-tool` owns host deployment and game launch. HotRepl clients connect directly to

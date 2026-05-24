@@ -10,7 +10,7 @@ Use HotRepl to inspect or control Ancient Kingdoms while it is running. This is 
 ## When to use
 
 - Verifying live IL2CPP/Unity state (monster counts, scene graph, player position).
-- Running a leased mutating control command against the game when one exists.
+- Running a registered control command against the game when one exists.
 - Diagnosing why the game's exporter is not producing expected data.
 
 ## When NOT to use
@@ -23,41 +23,45 @@ Use HotRepl to inspect or control Ancient Kingdoms while it is running. This is 
 
 ```sh
 # 1. Make sure the HotRepl host is deployed into the game's Mods/.
-dotnet run --project build-tool deploy-host
+dotnet run --project build-tool deploy-host --hotrepl-repo /path/to/HotRepl
 
 # 2. Launch the game and wait for MelonLoader bootstrap.
 dotnet run --project build-tool launch --wait
 
-# 3. From another terminal, query HotRepl using the profile written by setup.
-hotrepl --profile ancient-kingdoms doctor --json
-hotrepl --profile ancient-kingdoms wait --json
-
-# 4. For leased mutating commands, when registered:
-hotrepl --profile ancient-kingdoms control run <registered-command> '{}' \
-  --lease --wait --jsonl
+# 3. From another terminal, query HotRepl. Connect by URL; the current
+#    HotRepl CLI has no profile/auth/lease/control-list surface.
+hotrepl --url ws://127.0.0.1:18590 info --json
+hotrepl --url ws://127.0.0.1:18590 run world.summary '{}' --json
+hotrepl --url ws://127.0.0.1:18590 run compendium.preflight '{}' --json
+hotrepl --url ws://127.0.0.1:18590 describe compendium.export --json
 ```
 
-`hotrepl` has its own `--help` for each subcommand; this skill does not restate it.
+`hotrepl` has its own `--help` for each subcommand; this skill does not restate it. Mutating
+commands run directly: HotRepl v2 has no auth/lease handshake, loopback plus single-client
+replacement is the trust boundary. Use `build-tool export` for the orchestrated `compendium.export`
+job when the goal is producing exports, not poking the live runtime.
 
-## Profile setup
+## Endpoint configuration
 
-`dotnet run --project build-tool setup` offers to upsert an `ancient-kingdoms` profile into your HotRepl profile file. Decline if you prefer to author it manually; the rest of `build-tool` does not require the profile.
-
-Tokens never enter this repository. The profile references a token source (env var, token file, BepInEx config) under your control.
+Use `--url` or set `HOTREPL_URL`. The current HotRepl CLI does not read profile files. Profile and
+token concepts in older notes are stale.
 
 ## Available game-specific control commands
 
 The `HotReplCommands` mod registers four typed commands (MelonLoader mod in `mods/HotReplCommands/`):
 
-| Command | Kind | Description |
-|---------|------|-------------|
-| `compendium.preflight` | sync | Checks mod visibility, directory existence, scene, and player readiness. |
-| `world.summary` | sync | Returns active scene, network state, character count, and local-player status. |
-| `compendium.export` | job | Runs world entry if needed, calls DataExporter and optionally MapScreenshotter, returns artifact refs. Args: `{"screenshots": bool}`. |
-| `game.quit` | sync | Calls `Application.Quit()` and returns `{"quitting": true}`. |
+| Command                | Kind | Description                                                                                                                           |
+| ---------------------- | ---- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `compendium.preflight` | sync | Checks mod visibility, directory existence, scene, and player readiness.                                                              |
+| `world.summary`        | sync | Returns active scene, network state, character count, and local-player status.                                                        |
+| `compendium.export`    | job  | Runs world entry if needed, calls DataExporter and optionally MapScreenshotter, returns artifact refs. Args: `{"screenshots": bool}`. |
+| `game.quit`            | sync | Calls `Application.Quit()` and returns `{"quitting": true}`.                                                                          |
 
-Run `hotrepl doctor` or `hotrepl --profile ancient-kingdoms control list` against a live game to confirm registration.
+Run `hotrepl --url ws://127.0.0.1:18590 info --json` and inspect handshake metadata, or call
+`hotrepl --url ws://127.0.0.1:18590 describe <name> --json` for individual command descriptors.
 
 ## Boundary
 
-`build-tool` owns deploy, launch, export orchestration, and Steam updates. `hotrepl` owns discovery, profiles, auth, readiness, and control execution. Compose them; do not wrap one with the other.
+`build-tool` owns deploy, launch, export orchestration, and Steam updates. `hotrepl` owns
+connection, handshake metadata, eval, typed-command `run` and `describe`, artifact access, and
+journal queries. Compose them; do not wrap one with the other.

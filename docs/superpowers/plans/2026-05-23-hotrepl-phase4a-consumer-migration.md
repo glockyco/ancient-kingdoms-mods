@@ -1,5 +1,7 @@
 # HotRepl Phase 4a Consumer Migration Implementation Plan
 
+> **Status:** Completed on 2026-05-23. Spec, mechanical API migration, HotReplCommands build, test suite, and live HotRepl smoke (`info`, `world.summary`, `compendium.preflight`, `game.quit`) against the running game are all green (commits `43aa852`, `54a220d`). Treat the task boxes below as historical execution notes, not pending work.
+>
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Compile and live-check Ancient Kingdoms `HotReplCommands` against the Phase 4a HotRepl authoring API.
