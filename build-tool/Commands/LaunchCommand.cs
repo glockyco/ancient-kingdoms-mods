@@ -48,18 +48,13 @@ public sealed class LaunchCommand : AsyncCommand<LaunchCommand.Settings>
         [Description("Block until the MelonLoader bootstrap banner appears.")]
         public bool Wait { get; set; }
 
-        [CommandOption("--export")]
-        [Description("Pass --export-data to the game on launch.")]
-        public bool Export { get; set; }
     }
+
 
     public static Task<int> Invoke(LocalConfig config, IProcessRunner runner, bool isMacOs, string[] args)
     {
-        var settings = new Settings
-        {
-            Wait = HasFlag(args, "--wait"),
-            Export = HasFlag(args, "--export"),
-        };
+        var settings = new Settings { Wait = HasFlag(args, "--wait") };
+
         return new LaunchCommand(config, runner, isMacOs).ExecuteAsync(null!, settings);
     }
 
@@ -72,7 +67,7 @@ public sealed class LaunchCommand : AsyncCommand<LaunchCommand.Settings>
             return ExitCodes.Unreachable;
         }
 
-        var gameArgs = settings.Export ? new[] { "--export-data" } : Array.Empty<string>();
+        var gameArgs = Array.Empty<string>();
         ProcessRequest request;
         try
         {
@@ -85,9 +80,7 @@ public sealed class LaunchCommand : AsyncCommand<LaunchCommand.Settings>
             return ExitCodes.InvalidUsage;
         }
 
-        Console.WriteLine(settings.Export
-            ? "Launching Ancient Kingdoms for export..."
-            : "Launching Ancient Kingdoms for HotRepl...");
+        Console.WriteLine("Launching Ancient Kingdoms for HotRepl...");
         Console.WriteLine($"  Game: {_config.GamePath}");
         Console.WriteLine($"  Command: {request.Program} {string.Join(' ', request.Arguments)}".TrimEnd());
         Console.WriteLine();
@@ -197,7 +190,6 @@ public sealed class LaunchCommand : AsyncCommand<LaunchCommand.Settings>
             gamePath = _config.GamePath,
             logPath,
             wait = settings.Wait,
-            export = settings.Export,
             program = request.Program,
             arguments = request.Arguments,
             status,
@@ -218,7 +210,6 @@ public sealed class LaunchCommand : AsyncCommand<LaunchCommand.Settings>
             gamePath = _config.GamePath,
             logPath,
             wait = settings.Wait,
-            export = settings.Export,
             program = request.Program,
             arguments = request.Arguments,
             message,

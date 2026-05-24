@@ -10,23 +10,6 @@ namespace BuildTool.Tests;
 public class LaunchCommandTests
 {
     [Fact]
-    public async Task BuildsLaunchRequest_AppendsExportArgWhenSet()
-    {
-        var tempRoot = Directory.CreateTempSubdirectory().FullName;
-        var runner = new FakeProcessRunner();
-        runner.Enqueue(new ProcessResult(0, "", "", default));
-        var command = CreateCommand(tempRoot, runner, isMacOs: true);
-
-        var settings = new LaunchCommand.Settings { Export = true };
-        var result = await command.ExecuteAsync(null!, settings);
-
-        Assert.Equal(0, result);
-        Assert.Single(runner.Calls);
-        Assert.Contains("--export-data", runner.Calls[0].Arguments);
-        Directory.Delete(tempRoot, recursive: true);
-    }
-
-    [Fact]
     public async Task NonWait_ReturnsCommandFailed_WhenLaunchExitsImmediatelyNonZero()
     {
         var tempRoot = Directory.CreateTempSubdirectory().FullName;
