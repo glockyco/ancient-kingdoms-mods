@@ -1,0 +1,47 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <RollForward>Major</RollForward>
+    <!-- HotReplCoreOutput is defined in Directory.Build.props, overridable via Local.props HOTREPL_REPO_PATH -->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="xunit"                  Version="2.*" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.*" />
+    <PackageReference Include="Newtonsoft.Json"        Version="13.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- HotRepl.Core for typed command APIs; Newtonsoft.Json for JObject schema assertions -->
+    <Reference Include="HotRepl.Core">
+      <HintPath>$(HotReplCoreOutput)\HotRepl.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>$(HotReplCoreOutput)\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <!-- Production source files with no game-assembly dependencies, compiled directly -->
+  <ItemGroup>
+    <Compile Include="..\..\mods\HotReplCommands\HotReplCommandCatalog.cs"
+             Link="HotReplCommandCatalog.cs" />
+    <Compile Include="..\..\mods\HotReplCommands\Dtos\CompendiumExportArgs.cs"
+             Link="Dtos\CompendiumExportArgs.cs" />
+    <Compile Include="..\..\mods\HotReplCommands\Dtos\PreflightResult.cs"
+             Link="Dtos\PreflightResult.cs" />
+    <Compile Include="..\..\mods\HotReplCommands\Dtos\WorldSummaryResult.cs"
+             Link="Dtos\WorldSummaryResult.cs" />
+    <Compile Include="..\..\mods\HotReplCommands\Dtos\CompendiumExportResult.cs"
+             Link="Dtos\CompendiumExportResult.cs" />
+    <Compile Include="..\..\mods\HotReplCommands\Dtos\ExportProgressPayload.cs"
+             Link="Dtos\ExportProgressPayload.cs" />
+    <Compile Include="..\..\mods\HotReplCommands\Dtos\GameQuitResult.cs"
+             Link="Dtos\GameQuitResult.cs" />
+    <Compile Include="..\..\mods\HotReplCommands\Artifacts\ArtifactCollector.cs"
+             Link="Artifacts\ArtifactCollector.cs" />
+  </ItemGroup>
+</Project>

@@ -8,6 +8,16 @@
     <MelonLoaderPath Condition="'$(MelonLoaderPath)' == ''">$(ANCIENT_KINGDOMS_PATH)\MelonLoader</MelonLoaderPath>
     <Il2CppAssembliesPath Condition="'$(Il2CppAssembliesPath)' == ''">$(MelonLoaderPath)\Il2CppAssemblies</Il2CppAssembliesPath>
     <ModsPath Condition="'$(ModsPath)' == ''">$(ANCIENT_KINGDOMS_PATH)\Mods</ModsPath>
+
+    <!--
+      HotRepl cross-repo reference.
+      Default: sibling checkout ../HotRepl. Override with HOTREPL_REPO_PATH in Local.props
+      if your checkout lives elsewhere — same pattern as MelonLoaderPath above.
+      Source: devblogs.microsoft.com/ise/dotnet-multi-repo
+    -->
+    <HotReplRepoPath Condition="'$(HOTREPL_REPO_PATH)' != ''">$(HOTREPL_REPO_PATH)</HotReplRepoPath>
+    <HotReplRepoPath Condition="'$(HotReplRepoPath)' == ''">$(MSBuildThisFileDirectory)..\HotRepl</HotReplRepoPath>
+    <HotReplCoreOutput>$(HotReplRepoPath)\src\HotRepl.Core\bin\Debug\netstandard2.1</HotReplCoreOutput>
   </PropertyGroup>
 
   <!-- Validate required paths are set -->

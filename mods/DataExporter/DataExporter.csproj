@@ -16,7 +16,7 @@
 
 namespace DataExporter%3B
 
-internal static class ExportConfig
+public static class ExportConfig
 {
     public const string ExportPath = @"$(DATA_EXPORT_PATH)"%3B
 }</ExportConfigContent>

@@ -16,7 +16,7 @@
 
 namespace MapScreenshotter%3B
 
-internal static class ScreenshotConfig
+public static class ScreenshotConfig
 {
     public const string ScreenshotPath = @"$(DATA_EXPORT_PATH)\screenshots"%3B
 }</ScreenshotConfigContent>

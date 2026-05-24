@@ -1,0 +1,67 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <AssemblyName>HotReplCommands</AssemblyName>
+    <RootNamespace>HotReplCommands</RootNamespace>
+    <LangVersion>latest</LangVersion>
+    <!-- HotReplCoreOutput is defined in Directory.Build.props, overridable via Local.props HOTREPL_REPO_PATH -->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- MelonLoader -->
+    <Reference Include="MelonLoader">
+      <HintPath>$(MelonLoaderPath)\net6\MelonLoader.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+
+    <!-- Unity Engine -->
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>$(Il2CppAssembliesPath)\UnityEngine.CoreModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+
+    <!-- Game Assembly -->
+    <Reference Include="Assembly-CSharp">
+      <HintPath>$(Il2CppAssembliesPath)\Assembly-CSharp.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+
+    <!-- IL2CPP -->
+    <Reference Include="Il2Cppmscorlib">
+      <HintPath>$(Il2CppAssembliesPath)\Il2Cppmscorlib.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Il2CppInterop.Runtime">
+      <HintPath>$(MelonLoaderPath)\net6\Il2CppInterop.Runtime.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Il2CppMirror">
+      <HintPath>$(Il2CppAssembliesPath)\Il2CppMirror.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+
+    <!-- HotRepl typed command API (NJsonSchema + Namotion internalized into HotRepl.Core.dll) -->
+    <Reference Include="HotRepl.Core">
+      <HintPath>$(HotReplCoreOutput)\HotRepl.Core.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="HotRepl.Protocol">
+      <HintPath>$(HotReplCoreOutput)\HotRepl.Protocol.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>$(HotReplCoreOutput)\Newtonsoft.Json.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+
+    <!-- Sibling mods -->
+    <ProjectReference Include="..\DataExporter\DataExporter.csproj">
+      <Private>False</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\MapScreenshotter\MapScreenshotter.csproj">
+      <Private>False</Private>
+    </ProjectReference>
+  </ItemGroup>
+
+</Project>
