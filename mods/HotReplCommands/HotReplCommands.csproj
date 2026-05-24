@@ -20,6 +20,10 @@
       <HintPath>$(Il2CppAssembliesPath)\UnityEngine.CoreModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>$(Il2CppAssembliesPath)\UnityEngine.UI.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
 
     <!-- Game Assembly -->
     <Reference Include="Assembly-CSharp">
