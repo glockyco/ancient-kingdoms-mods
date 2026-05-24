@@ -22,11 +22,11 @@ namespace HotReplCommands.Commands
 
         public string Name => "compendium.preflight";
         public int Version => 1;
-        public ControlCommandKind Kind => ControlCommandKind.Synchronous;
+        public ControlCommandKind Kind => ControlCommandKind.Sync;
         public bool MutatesState => false;
 
         public ValueTask<ControlCommandResult<PreflightResult>> ExecuteAsync(
-            ControlCommandContext context, EmptyArgs args, CancellationToken cancellationToken)
+            ControlCommandContext<PreflightResult> context, EmptyArgs args, CancellationToken cancellationToken)
         {
             var dataExporter = MelonMod.RegisteredMelons
                 .OfType<DataExporter.DataExporter>()

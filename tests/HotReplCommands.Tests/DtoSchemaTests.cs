@@ -17,10 +17,10 @@ namespace HotReplCommands.Tests
             public SyncStub(string name) { Name = name; }
             public string Name { get; }
             public int Version => 1;
-            public ControlCommandKind Kind => ControlCommandKind.Synchronous;
+            public ControlCommandKind Kind => ControlCommandKind.Sync;
             public bool MutatesState => false;
             public ValueTask<ControlCommandResult<TOut>> ExecuteAsync(
-                ControlCommandContext ctx, TArgs args, CancellationToken ct)
+                ControlCommandContext<TOut> ctx, TArgs args, CancellationToken ct)
                 => throw new System.NotImplementedException();
         }
 
@@ -32,7 +32,7 @@ namespace HotReplCommands.Tests
             public ControlCommandKind Kind => ControlCommandKind.Job;
             public bool MutatesState => true;
             public ValueTask<ControlCommandResult<TOut>> ExecuteAsync(
-                ControlCommandContext ctx, TArgs args, CancellationToken ct)
+                ControlCommandContext<TOut> ctx, TArgs args, CancellationToken ct)
                 => throw new System.NotImplementedException();
         }
 

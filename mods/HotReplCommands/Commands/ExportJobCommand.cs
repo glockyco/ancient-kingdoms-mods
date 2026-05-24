@@ -35,7 +35,7 @@ namespace HotReplCommands.Commands
         public bool MutatesState => true;
 
         public async ValueTask<ControlCommandResult<CompendiumExportResult>> ExecuteAsync(
-            ControlCommandContext context,
+            ControlCommandContext<CompendiumExportResult> context,
             CompendiumExportArgs args,
             CancellationToken cancellationToken)
         {
@@ -46,7 +46,7 @@ namespace HotReplCommands.Commands
                 .OfType<DataExporter.DataExporter>()
                 .FirstOrDefault();
             if (dataExporter == null)
-                return ControlCommandResult.PreconditionFailed<CompendiumExportResult>(
+                return context.PreconditionFailed(
                     "dataExporterMissing", "DataExporter mod not found in registered melons.");
 
             MapScreenshotter.MapScreenshotter screenshotter = null;
@@ -56,7 +56,7 @@ namespace HotReplCommands.Commands
                     .OfType<MapScreenshotter.MapScreenshotter>()
                     .FirstOrDefault();
                 if (screenshotter == null)
-                    return ControlCommandResult.PreconditionFailed<CompendiumExportResult>(
+                    return context.PreconditionFailed(
                         "mapScreenshotterMissing",
                         "MapScreenshotter mod not found in registered melons.");
             }
@@ -67,7 +67,7 @@ namespace HotReplCommands.Commands
             {
                 var worldResult = await EnterWorldAsync(cancellationToken);
                 if (!worldResult.Ok)
-                    return ControlCommandResult.PreconditionFailed<CompendiumExportResult>(
+                    return context.PreconditionFailed(
                         worldResult.Code, worldResult.Message);
             }
 
@@ -75,7 +75,7 @@ namespace HotReplCommands.Commands
             context.Progress.Report(Progress("exportingData", "Running DataExporter.ExportAllData()."));
             var exportResult = dataExporter.ExportAllData();
             if (!exportResult.Ok)
-                return ControlCommandResult.PreconditionFailed<CompendiumExportResult>(
+                return context.PreconditionFailed(
                     "dataExportFailed",
                     $"DataExporter reported {exportResult.Errors.Count} error(s): " +
                     string.Join("; ", exportResult.Errors));
@@ -86,7 +86,7 @@ namespace HotReplCommands.Commands
             {
                 context.Progress.Report(Progress("capturingScreenshots", "Starting MapScreenshotter."));
                 if (!screenshotter.StartScreenshotCapture())
-                    return ControlCommandResult.PreconditionFailed<CompendiumExportResult>(
+                    return context.PreconditionFailed(
                         "screenshotCaptureFailed",
                         "MapScreenshotter rejected start — capture already in progress.");
 
@@ -95,7 +95,7 @@ namespace HotReplCommands.Commands
                 {
                     cancellationToken.ThrowIfCancellationRequested();
                     if (DateTime.UtcNow >= deadline)
-                        return ControlCommandResult.PreconditionFailed<CompendiumExportResult>(
+                        return context.PreconditionFailed(
                             "screenshotCaptureFailed",
                             "Timed out waiting for screenshot capture to complete.");
                     await Task.Yield();
@@ -103,7 +103,7 @@ namespace HotReplCommands.Commands
 
                 var shotResult = screenshotter.LastResult;
                 if (shotResult == null || !shotResult.Ok)
-                    return ControlCommandResult.PreconditionFailed<CompendiumExportResult>(
+                    return context.PreconditionFailed(
                         "screenshotCaptureFailed",
                         shotResult?.ErrorMessage ?? "Screenshot capture failed with no error detail.");
 

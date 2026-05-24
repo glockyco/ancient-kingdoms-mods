@@ -11,11 +11,11 @@ namespace HotReplCommands.Commands
     {
         public string Name => "world.summary";
         public int Version => 1;
-        public ControlCommandKind Kind => ControlCommandKind.Synchronous;
+        public ControlCommandKind Kind => ControlCommandKind.Sync;
         public bool MutatesState => false;
 
         public ValueTask<ControlCommandResult<WorldSummaryResult>> ExecuteAsync(
-            ControlCommandContext context, EmptyArgs args, CancellationToken cancellationToken)
+            ControlCommandContext<WorldSummaryResult> context, EmptyArgs args, CancellationToken cancellationToken)
         {
             var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
             var localPlayer = NetworkClient.localPlayer;

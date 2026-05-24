@@ -25,10 +25,10 @@ namespace HotReplCommands
 
         public static readonly Entry[] All = new[]
         {
-            new Entry("compendium.preflight", 1, ControlCommandKind.Synchronous, false),
-            new Entry("world.summary",        1, ControlCommandKind.Synchronous, false),
+            new Entry("compendium.preflight", 1, ControlCommandKind.Sync, false),
+            new Entry("world.summary",        1, ControlCommandKind.Sync, false),
             new Entry("compendium.export",    1, ControlCommandKind.Job,         true),
-            new Entry("game.quit",            1, ControlCommandKind.Synchronous, true),
+            new Entry("game.quit",            1, ControlCommandKind.Sync, true),
         };
     }
 }

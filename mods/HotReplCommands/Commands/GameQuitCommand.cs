@@ -10,11 +10,11 @@ namespace HotReplCommands.Commands
     {
         public string Name => "game.quit";
         public int Version => 1;
-        public ControlCommandKind Kind => ControlCommandKind.Synchronous;
+        public ControlCommandKind Kind => ControlCommandKind.Sync;
         public bool MutatesState => true;
 
         public ValueTask<ControlCommandResult<GameQuitResult>> ExecuteAsync(
-            ControlCommandContext context, EmptyArgs args, CancellationToken cancellationToken)
+            ControlCommandContext<GameQuitResult> context, EmptyArgs args, CancellationToken cancellationToken)
         {
             Application.Quit();
             return new ValueTask<ControlCommandResult<GameQuitResult>>(

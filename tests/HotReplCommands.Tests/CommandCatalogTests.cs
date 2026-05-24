@@ -12,10 +12,10 @@ namespace HotReplCommands.Tests
             => Assert.Equal(4, HotReplCommandCatalog.All.Length);
 
         [Theory]
-        [InlineData("compendium.preflight", 1, ControlCommandKind.Synchronous, false)]
-        [InlineData("world.summary",        1, ControlCommandKind.Synchronous, false)]
+        [InlineData("compendium.preflight", 1, ControlCommandKind.Sync, false)]
+        [InlineData("world.summary",        1, ControlCommandKind.Sync, false)]
         [InlineData("compendium.export",    1, ControlCommandKind.Job,         true)]
-        [InlineData("game.quit",            1, ControlCommandKind.Synchronous, true)]
+        [InlineData("game.quit",            1, ControlCommandKind.Sync, true)]
         public void Catalog_EntryHasExpectedMetadata(
             string name, int version, ControlCommandKind kind, bool mutates)
         {
