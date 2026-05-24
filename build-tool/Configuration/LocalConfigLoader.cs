@@ -27,6 +27,7 @@ public static class LocalConfigLoader
             GamePath: Require("ANCIENT_KINGDOMS_PATH"),
             DataExportPath: Require("DATA_EXPORT_PATH"),
             WinePath: Optional("WINE_PATH"),
-            WinePrefix: Optional("WINE_PREFIX"));
+            WinePrefix: Optional("WINE_PREFIX"),
+            HotReplEndpoint: Optional("HOTREPL_ENDPOINT") ?? "ws://127.0.0.1:18590");
     }
 }

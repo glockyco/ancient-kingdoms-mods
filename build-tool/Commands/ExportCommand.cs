@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.ComponentModel;
 using System.IO;
 using System.Threading;
@@ -8,6 +6,7 @@ using System.Threading.Tasks;
 using BuildTool.Abstractions;
 using BuildTool.Configuration;
 using BuildTool.Game;
+using BuildTool.HotRepl;
 using BuildTool.Output;
 using Spectre.Console.Cli;
 
@@ -24,7 +23,8 @@ public sealed class ExportCommand : AsyncCommand<ExportCommand.Settings>
     public ExportCommand()
         : this(
             Directory.GetCurrentDirectory(),
-            LocalConfigLoader.Load(Path.Combine(Directory.GetCurrentDirectory(), "Local.props")),
+            LocalConfigLoader.Load(
+                Path.Combine(Directory.GetCurrentDirectory(), "Local.props")),
             new CliWrapProcessRunner(),
             OperatingSystem.IsMacOS(),
             new CommandResultStore())
@@ -38,10 +38,10 @@ public sealed class ExportCommand : AsyncCommand<ExportCommand.Settings>
         bool isMacOs,
         CommandResultStore? resultStore = null)
     {
-        _repoRoot = repoRoot;
-        _config = config;
-        _runner = runner;
-        _isMacOs = isMacOs;
+        _repoRoot    = repoRoot;
+        _config      = config;
+        _runner      = runner;
+        _isMacOs     = isMacOs;
         _resultStore = resultStore ?? new CommandResultStore();
     }
 
@@ -56,16 +56,6 @@ public sealed class ExportCommand : AsyncCommand<ExportCommand.Settings>
         public bool Update { get; set; }
     }
 
-    public static Task<int> Invoke(string repoRoot, LocalConfig config, IProcessRunner runner, bool isMacOs, string[] args)
-    {
-        var settings = new Settings
-        {
-            Screenshots = HasFlag(args, "--screenshots"),
-            Update = HasFlag(args, "--update"),
-        };
-        return new ExportCommand(repoRoot, config, runner, isMacOs).ExecuteAsync(null!, settings);
-    }
-
     public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
     {
         var gameExe = Path.Combine(_config.GamePath, "ancientkingdoms.exe");
@@ -78,13 +68,11 @@ public sealed class ExportCommand : AsyncCommand<ExportCommand.Settings>
         if (settings.Update)
         {
             var updateResult = await UpdateCommand.RunSteamUpdateAsync(
-                _repoRoot,
-                _config,
-                _runner);
-            if (updateResult != 0)
-                return updateResult;
+                _repoRoot, _config, _runner);
+            if (updateResult != 0) return updateResult;
         }
 
+        // Truncate MelonLoader log for clean streaming
         var logPath = Path.Combine(_config.MelonLoaderPath, "Latest.log");
         try
         {
@@ -96,29 +84,23 @@ public sealed class ExportCommand : AsyncCommand<ExportCommand.Settings>
             Console.WriteLine($"Warning: Could not truncate log: {ex.Message}");
         }
 
-
-        if (!DeleteStaleResultFile())
-            return ExitCodes.ResourceConflict;
-        var gameArgs = new List<string> { "--export-data" };
-        if (settings.Screenshots)
-            gameArgs.Add("--export-screenshots");
-
+        // Launch WITHOUT --export-data or --export-screenshots
         ProcessRequest request;
         try
         {
-            request = GameLauncher.BuildLaunchRequest(_config, gameArgs, _isMacOs);
+            request = GameLauncher.BuildLaunchRequest(
+                _config, Array.Empty<string>(), _isMacOs);
         }
         catch (InvalidOperationException ex)
         {
             Console.Error.WriteLine($"Error: {ex.Message}");
-            _resultStore.SetErrorDetails(new { resultFile = ResultFilePath(), message = ex.Message });
             return ExitCodes.InvalidUsage;
         }
-        Console.WriteLine("Launching game for export...");
-        Console.WriteLine($"  Game: {_config.GamePath}");
+
+        Console.WriteLine("Launching game for HotRepl export...");
+        Console.WriteLine($"  Game:   {_config.GamePath}");
+        Console.WriteLine($"  HotRepl: {_config.HotReplEndpoint}");
         Console.WriteLine();
-        Console.WriteLine("Streaming MelonLoader log...");
-        Console.WriteLine("---");
 
         Task<ProcessResult> runTask;
         try
@@ -128,147 +110,57 @@ public sealed class ExportCommand : AsyncCommand<ExportCommand.Settings>
         catch (Exception ex)
         {
             Console.Error.WriteLine($"Error: failed to launch game: {ex.Message}");
-            _resultStore.SetErrorDetails(new { resultFile = ResultFilePath(), message = ex.Message });
             return ExitCodes.CommandFailed;
         }
 
-        return await WaitForExportResultAsync(logPath, runTask);
-    }
+        // Stream log concurrently while runner orchestrates the export
+        using var logCts = new CancellationTokenSource();
+        var logTask = StreamLogAsync(logPath, logCts.Token);
 
+        var runnerOptions = new HotReplRunnerOptions
+        {
+            Endpoint         = new Uri(_config.HotReplEndpoint),
+            Screenshots      = settings.Screenshots,
+            ReadinessTimeout = TimeSpan.FromMinutes(5),
+            JobTimeout       = TimeSpan.FromMinutes(60),
+            PollInterval     = TimeSpan.FromSeconds(3),
+        };
 
-    private bool DeleteStaleResultFile()
-    {
-        var path = Path.Combine(_config.DataExportPath, ExportResultReader.FileName);
-        if (!File.Exists(path))
-            return true;
-
+        ExportRunnerResult runnerResult;
         try
         {
-            File.Delete(path);
-            return true;
+            runnerResult = await HotReplExportRunner.Create(runnerOptions)
+                .RunAsync(CancellationToken.None);
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error: Could not delete stale export result file: {ex.Message}");
-            return false;
+            runnerResult = new ExportRunnerResult(false, ExitCodes.Internal,
+                $"Runner threw: {ex.Message}");
         }
-    }
 
-    private async Task<int> WaitForExportResultAsync(string logPath, Task<ProcessResult> runTask)
-    {
-        using var logCts = new CancellationTokenSource();
-        var logTask = StreamLogAsync(logPath, logCts.Token);
-        var outcomeTask = ExportResultReader.WaitForResultAsync(
-            _config.DataExportPath,
-            TimeSpan.FromMinutes(5),
-            CancellationToken.None);
+        logCts.Cancel();
+        try { await logTask; } catch (OperationCanceledException) { }
 
-        try
+        Console.WriteLine("---");
+        Console.WriteLine();
+
+        if (runnerResult.Ok)
         {
-            var completed = await Task.WhenAny(outcomeTask, runTask);
-            if (completed == outcomeTask)
-                return ReportOutcome(await outcomeTask);
-
-            ProcessResult result;
-            try
-            {
-                result = await runTask;
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error: export process failed: {ex.Message}");
-                _resultStore.SetErrorDetails(new { resultFile = ResultFilePath(), message = ex.Message });
-                return ExitCodes.CommandFailed;
-            }
-            var outcome = await ExportResultReader.WaitForResultAsync(
-                _config.DataExportPath,
-                TimeSpan.Zero,
-                CancellationToken.None);
-            if (!outcome.TimedOut)
-                return ReportOutcome(outcome);
-
-            Console.WriteLine("---");
-            Console.WriteLine();
-            Console.Error.WriteLine("Error: Export result file not found before the game exited.");
-            Console.Error.WriteLine($"Game exited with code: {result.ExitCode}");
-            _resultStore.SetErrorDetails(new
-            {
-                resultFile = ResultFilePath(),
-                gameExitCode = result.ExitCode,
-            });
-            return ExitCodes.CommandFailed;
-        }
-        finally
-        {
-            logCts.Cancel();
-            try { await logTask; }
-            catch (OperationCanceledException) { }
-        }
-    }
-
-    private int ReportOutcome(ExportOutcome outcome)
-    {
-        var details = ExportDetails(outcome);
-        if (outcome.Ok)
-        {
-            _resultStore.SetData(details);
-            Console.WriteLine("---");
-            Console.WriteLine();
+            _resultStore.SetData(new { ok = true, message = runnerResult.Message });
             Console.WriteLine("Export complete.");
             return ExitCodes.Success;
         }
 
-        _resultStore.SetErrorDetails(details);
-        Console.WriteLine("---");
-        Console.WriteLine();
-        if (outcome.TimedOut)
-        {
-            Console.Error.WriteLine("Error: Timed out waiting for export result file.");
-            return ExitCodes.ReadinessFailed;
-        }
-
-        if (outcome.UnknownSchema)
-            Console.Error.WriteLine($"Error: {outcome.ErrorMessage}");
-        else
-            Console.Error.WriteLine("Error: Export result file reported failure.");
-
-        foreach (var exporter in outcome.Exporters)
-        {
-            if (!exporter.Ok)
-                Console.Error.WriteLine($"  {exporter.Name}: {exporter.ErrorMessage}");
-        }
-
-        return ExitCodes.CommandFailed;
+        Console.Error.WriteLine($"Error: {runnerResult.Message}");
+        _resultStore.SetErrorDetails(new { ok = false, message = runnerResult.Message });
+        return runnerResult.ExitCode;
     }
 
-    private object ExportDetails(ExportOutcome outcome) => new
-    {
-        resultFile = ResultFilePath(),
-        ok = outcome.Ok,
-        timedOut = outcome.TimedOut,
-        unknownSchema = outcome.UnknownSchema,
-        errorMessage = outcome.ErrorMessage,
-        exporters = outcome.Exporters.Select(exporter => new
-        {
-            name = exporter.Name,
-            ok = exporter.Ok,
-            count = exporter.Count,
-            outputPath = exporter.OutputPath,
-            errorMessage = exporter.ErrorMessage,
-        }).ToArray(),
-    };
-
-    private string ResultFilePath() =>
-        Path.Combine(_config.DataExportPath, ExportResultReader.FileName);
-
-    private static async Task StreamLogAsync(string logPath, CancellationToken cancellationToken)
+    private static async Task StreamLogAsync(
+        string logPath, CancellationToken cancellationToken)
     {
         var stream = new LogStream(logPath, TimeSpan.FromMilliseconds(100));
         await foreach (var chunk in stream.ReadAsync(cancellationToken))
             Console.Write(chunk);
     }
-
-
-    private static bool HasFlag(string[] args, string name) =>
-        Array.Exists(args, arg => string.Equals(arg, name, StringComparison.OrdinalIgnoreCase));
 }

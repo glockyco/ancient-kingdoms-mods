@@ -6,7 +6,8 @@ public sealed record LocalConfig(
     string GamePath,
     string DataExportPath,
     string? WinePath,
-    string? WinePrefix)
+    string? WinePrefix,
+    string HotReplEndpoint = "ws://127.0.0.1:18590")
 {
     public static LocalConfig Empty { get; } = new(
         GamePath: string.Empty,
