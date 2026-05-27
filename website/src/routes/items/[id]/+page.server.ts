@@ -8,6 +8,13 @@ import { itemDescription, itemTitle } from "$lib/server/meta-description";
 import { getItemSources } from "$lib/server/item-sources";
 import { getItemUsages } from "$lib/server/item-usages";
 
+const FISHERMAN_COSTUME_IDS = new Set([
+  "fisherman_s_hat",
+  "fisherman_s_garb",
+  "fisherman_s_trousers",
+]);
+
+type FishingRole = "fish" | "trash_fish" | "rod" | "costume" | null;
 export const prerender = true;
 
 // Generate entries for all items at build time
@@ -90,6 +97,16 @@ export const load: PageServerLoad = ({ params }): ItemDetailPageData => {
       )
       .all() as Array<{ id: string; name: string; gold_required: number }>;
   }
+
+  const fishingRole: FishingRole = (() => {
+    if (FISHERMAN_COSTUME_IDS.has(item.id)) return "costume";
+    if (item.weapon_category === "Fishing Rod") return "rod";
+    const fishRow = db
+      .prepare("SELECT is_trash FROM fish WHERE item_id = ?")
+      .get(item.id) as { is_trash: number } | undefined;
+    if (fishRow) return fishRow.is_trash ? "trash_fish" : "fish";
+    return null;
+  })();
 
   // Load item sources and usages from normalized junction tables
   const sources = getItemSources(db, params.id);
@@ -264,6 +281,7 @@ export const load: PageServerLoad = ({ params }): ItemDetailPageData => {
     title,
     sources,
     usages,
+    fishing_role: fishingRole,
     recipeMaterials,
     randomOutcomes,
     packContents,

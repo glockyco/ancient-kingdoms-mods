@@ -333,6 +333,22 @@
         <div class="flex flex-wrap items-center gap-3">
           <h1 class="text-4xl font-bold">{data.item.name}</h1>
           <MapLink entityId={data.item.id} entityType="item" />
+          {#if data.fishing_role !== null}
+            {@const label =
+              data.fishing_role === "rod"
+                ? "Fishing Rod"
+                : data.fishing_role === "costume"
+                  ? "Fisherman set (+2 pp fish drop chance per piece worn)"
+                  : data.fishing_role === "trash_fish"
+                    ? "Trash fish (random fishing fallback)"
+                    : "Fish"}
+            <a
+              href="/professions/fishing"
+              class="inline-flex items-center gap-1 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-2.5 py-0.5 text-xs text-cyan-700 transition-colors hover:bg-cyan-500/20 dark:text-cyan-300"
+            >
+              🐟 {label}
+            </a>
+          {/if}
           <span
             class="px-3 py-1 rounded text-sm font-medium text-white {qualityColors[
               data.item.quality

@@ -58,6 +58,7 @@ export interface ItemDetailPageData {
   description: string;
   sources: ItemSources;
   usages: ItemUsages;
+  fishing_role: "fish" | "trash_fish" | "rod" | "costume" | null;
   recipeMaterials: Record<
     string,
     Array<{ item_id: string; item_name: string; amount: number }>
