@@ -29,6 +29,7 @@
   import MapPin from "@lucide/svelte/icons/map-pin";
   import Calculator from "@lucide/svelte/icons/calculator";
   import BookOpen from "@lucide/svelte/icons/book-open";
+  import { SvelteSet } from "svelte/reactivity";
   import type { PageData } from "./$types";
 
   let { data }: { data: PageData } = $props();
@@ -66,11 +67,16 @@
   // Derive display values
   const resourceType = $derived(getResourceType(data.resource));
 
-  // Skill level state (0-100%)
   let skillLevel = $state(0);
   let pickaxeQuality = $state(0);
-  let rodQuality = $state(0);
-  let fishermanCostumePieces = $state(0);
+  let selectedCostumeIds = new SvelteSet<string>();
+
+  const fishermanCostumePieces = $derived(selectedCostumeIds.size);
+  const fishermanSetPieces = [
+    { itemId: "fishermans_hat", itemName: "Fisherman's Hat" },
+    { itemId: "fishermans_garb", itemName: "Fisherman's Garb" },
+    { itemId: "fishermans_trousers", itemName: "Fisherman's Trousers" },
+  ];
 
   // Source: server-scripts/Utils.cs:491-501 — GetSuccessProbHerbalism
   function getHerbalismSuccessChance(resourceLevel: number): number {
@@ -159,7 +165,7 @@
     } else if (resource.is_fishing_spot) {
       return (
         fishingSpotSuccessChance({
-          rodQuality,
+          rodQuality: 0,
           fishingPercent: skillLevel,
           spotTier: resource.level,
         }) * 100
@@ -177,7 +183,7 @@
   const fishingMasteryProcChance = $derived(
     data.resource.is_fishing_spot
       ? fishingSpotSuccessChance({
-          rodQuality,
+          rodQuality: 0,
           fishingPercent: skillLevel,
           spotTier: data.resource.level,
         }) *
@@ -209,7 +215,7 @@
       fishCountAtSpot: data.drops.length,
       fishingPercent: skillLevel,
       fishermanCostumePieces,
-      rodQuality,
+      rodQuality: 0,
       spotTier: data.resource.level,
     });
   }
@@ -241,6 +247,11 @@
       size: 120,
     },
   ];
+
+  function toggleCostume(itemId: string, checked: boolean) {
+    if (checked) selectedCostumeIds.add(itemId);
+    else selectedCostumeIds.delete(itemId);
+  }
 </script>
 
 {#snippet renderDropCell({
@@ -434,39 +445,36 @@
               </span>
             </div>
           {:else if data.resource.is_fishing_spot}
-            <div class="flex items-center gap-4">
-              <label for="rod-slider" class="w-40 shrink-0">
-                Rod Quality:
-              </label>
-              <input
-                id="rod-slider"
-                type="range"
-                min="0"
-                max="4"
-                step="1"
-                bind:value={rodQuality}
-                class="flex-1 h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
-              />
-              <span class="font-mono w-24 text-right">
-                {QUALITY_NAMES[rodQuality]}
-              </span>
-            </div>
-            <div class="flex items-center gap-4">
-              <label for="costume-slider" class="w-40 shrink-0">
-                Fisherman Pieces:
-              </label>
-              <input
-                id="costume-slider"
-                type="range"
-                min="0"
-                max="3"
-                step="1"
-                bind:value={fishermanCostumePieces}
-                class="flex-1 h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
-              />
-              <span class="font-mono w-24 text-right">
-                {fishermanCostumePieces} / 3
-              </span>
+            <div class="space-y-2">
+              <div class="text-sm font-medium">Fisherman set pieces</div>
+              <div class="grid gap-2 sm:grid-cols-3">
+                {#each fishermanSetPieces as piece (piece.itemId)}
+                  <label
+                    class="flex items-center gap-2 rounded-md border bg-background p-2"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedCostumeIds.has(piece.itemId)}
+                      onchange={(event) =>
+                        toggleCostume(
+                          piece.itemId,
+                          (event.currentTarget as HTMLInputElement).checked,
+                        )}
+                      class="h-4 w-4 rounded border-border accent-primary"
+                    />
+                    <a
+                      href="/items/{piece.itemId}"
+                      class="text-blue-600 hover:underline dark:text-blue-400"
+                    >
+                      {piece.itemName}
+                    </a>
+                  </label>
+                {/each}
+              </div>
+              <p class="text-sm text-muted-foreground">
+                +2 pp per selected fish roll for each equipped Fisherman set
+                piece.
+              </p>
             </div>
           {/if}
         </div>
@@ -541,19 +549,19 @@
         {data.resource.is_fishing_spot ? "Fishing Rod" : "Key"}
       </h2>
       <div class="bg-muted/30 rounded-md border p-4">
-        {#if data.resource.tool_required_id}
+        {#if data.resource.is_fishing_spot}
+          <a
+            href="/items/rusty_fishing_rod"
+            class="text-blue-600 dark:text-blue-400 hover:underline font-medium"
+          >
+            Rusty Fishing Rod
+          </a>
+        {:else if data.resource.tool_required_id}
           <a
             href="/items/{data.resource.tool_required_id}"
             class="text-blue-600 dark:text-blue-400 hover:underline font-medium"
           >
             {data.resource.tool_required_name}
-          </a>
-        {:else}
-          <a
-            href="/professions/fishing#fishing-rods"
-            class="text-blue-600 dark:text-blue-400 hover:underline font-medium"
-          >
-            Any Fishing Rod
           </a>
         {/if}
       </div>
