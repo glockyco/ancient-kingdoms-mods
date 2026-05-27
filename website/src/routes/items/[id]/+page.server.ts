@@ -108,6 +108,15 @@ export const load: PageServerLoad = ({ params }): ItemDetailPageData => {
     return null;
   })();
 
+  const fishingEffect = FISHERMAN_COSTUME_IDS.has(item.id)
+    ? {
+        title: "Fishing Bonus",
+        description:
+          "Equipping this Fisherman set piece adds +2 percentage points to each selected-fish roll.",
+        fishing_page_href: "/professions/fishing#calculator",
+      }
+    : null;
+
   // Load item sources and usages from normalized junction tables
   const sources = getItemSources(db, params.id);
   const usages = getItemUsages(db, params.id);
@@ -282,6 +291,7 @@ export const load: PageServerLoad = ({ params }): ItemDetailPageData => {
     sources,
     usages,
     fishing_role: fishingRole,
+    fishing_effect: fishingEffect,
     recipeMaterials,
     randomOutcomes,
     packContents,

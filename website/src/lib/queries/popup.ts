@@ -887,6 +887,8 @@ export interface ItemPopupGatherSource {
   resourceType: "resource" | "chest";
   rate: number;
   rateNote?: string;
+  isFishingSpot: boolean;
+  virtualLocationCount: number;
 }
 
 /**
@@ -1109,7 +1111,14 @@ export async function loadItemPopupDetails(
       isg.resource_id as resourceId,
       gr.name as resourceName,
       'resource' as resourceType,
-      isg.drop_rate as rate
+      isg.drop_rate as rate,
+      COALESCE(gr.is_fishing_spot, 0) as isFishingSpot,
+      (
+        SELECT COUNT(*)
+        FROM gathering_resource_spawns grs
+        WHERE grs.resource_id = gr.id
+          AND grs.position_x IS NOT NULL
+      ) as virtualLocationCount
     FROM item_sources_gather isg
     JOIN gathering_resources gr ON isg.resource_id = gr.id
     WHERE isg.item_id = ?

@@ -222,7 +222,9 @@
                 </span>
               </MapEntityLink>
               <span class="shrink-0 text-xs text-muted-foreground">
-                {#if source.rateNote}
+                {#if source.isFishingSpot && source.virtualLocationCount > 0}
+                  {source.virtualLocationCount} spots
+                {:else if source.rateNote}
                   {source.rateNote}
                 {:else}
                   {formatPercent(source.rate)}

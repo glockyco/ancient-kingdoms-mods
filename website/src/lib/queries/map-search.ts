@@ -853,6 +853,7 @@ interface ItemBoundsRow {
   max_x: number;
   min_y: number;
   max_y: number;
+  spawn_count: number;
 }
 
 async function searchItems(
@@ -884,7 +885,8 @@ async function searchItems(
       MIN(x) as min_x,
       MAX(x) as max_x,
       MIN(y) as min_y,
-      MAX(y) as max_y
+      MAX(y) as max_y,
+      COUNT(*) as spawn_count
     FROM (
       -- Monster dropper positions
       SELECT json_extract(d.value, '$.item_id') as item_id, ms.position_x as x, ms.position_y as y
@@ -984,6 +986,10 @@ async function searchItems(
           }
         : null,
       level: item.level_required > 0 ? item.level_required : undefined,
+      spawnCount:
+        bounds?.spawn_count && bounds.spawn_count > 1
+          ? bounds.spawn_count
+          : undefined,
     };
   });
 }

@@ -8,6 +8,7 @@
   import MonsterTypeIcon from "$lib/components/MonsterTypeIcon.svelte";
   import DungeonRestrictionBadge from "$lib/components/DungeonRestrictionBadge.svelte";
   import ExternalLink from "@lucide/svelte/icons/external-link";
+  import FishIcon from "@lucide/svelte/icons/fish";
   import { STATS_METADATA_FIELDS } from "$lib/constants/items";
   import { formatItemType } from "$lib/utils/format";
   import { formatClassName } from "$lib/utils/classes";
@@ -188,6 +189,8 @@
           rate: g.actual_drop_chance,
           amount_min: g.amount_min,
           amount_max: g.amount_max,
+          is_fishing_spot: g.is_fishing_spot,
+          virtual_location_count: g.virtual_location_count,
           // Source: server-scripts/GatherItem.cs:381 — Radiant Spark drop rate: 5% base + up to 25% from Radiant Seeker level
           rate_note: g.is_radiant_spark
             ? "5-30% based on Radiant Seeker level"
@@ -338,15 +341,16 @@
               data.fishing_role === "rod"
                 ? "Fishing Rod"
                 : data.fishing_role === "costume"
-                  ? "Fisherman set (+2 pp fish drop chance per piece worn)"
+                  ? "Fisherman set"
                   : data.fishing_role === "trash_fish"
-                    ? "Trash fish (random fishing fallback)"
+                    ? "Trash fish"
                     : "Fish"}
             <a
               href="/professions/fishing"
-              class="inline-flex items-center gap-1 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-2.5 py-0.5 text-xs text-cyan-700 transition-colors hover:bg-cyan-500/20 dark:text-cyan-300"
+              class="inline-flex items-center gap-1.5 rounded-md border border-cyan-500/30 bg-cyan-500/10 px-2.5 py-1 text-sm font-medium text-cyan-700 transition-colors hover:bg-cyan-500/20 dark:text-cyan-300"
             >
-              🐟 {label}
+              <FishIcon class="h-4 w-4" />
+              {label}
             </a>
           {/if}
           <span
@@ -499,6 +503,22 @@
       {/if}
     </Card.Content>
   </Card.Root>
+
+  {#if data.fishing_effect}
+    <Card.Root class="bg-muted/30">
+      <Card.Header>
+        <Card.Title>{data.fishing_effect.title}</Card.Title>
+      </Card.Header>
+      <Card.Content class="space-y-2 text-sm">
+        <p class="text-muted-foreground">
+          {data.fishing_effect.description}
+        </p>
+        <a href={data.fishing_effect.fishing_page_href} class={styles.link}>
+          Open Fishing calculator
+        </a>
+      </Card.Content>
+    </Card.Root>
+  {/if}
 
   {#if isBackpack || isHouseChestStructure}
     <Card.Root class="bg-muted/30">
@@ -1830,20 +1850,30 @@
         <Card.Content>
           <div class="space-y-2">
             {#each computed.gatheredFrom as gather, index (`${gather.gather_item_id}_${index}`)}
-              <div class="flex justify-between items-center">
-                <a
-                  href="/gather-items/{gather.gather_item_id}"
-                  class={styles.link}
-                >
-                  {gather.gather_item_name}
-                </a>
-                <span class={styles.label}>
+              <div class="flex justify-between items-start gap-3">
+                <div class="flex items-center gap-1.5">
+                  <a
+                    href="/gather-items/{gather.gather_item_id}"
+                    class={styles.link}
+                  >
+                    {gather.gather_item_name}
+                  </a>
+                  <MapLink
+                    entityId={gather.gather_item_id}
+                    entityType="resource"
+                    compact
+                  />
+                </div>
+                <span class="{styles.label} text-right">
                   {#if gather.rate_note}
                     {gather.rate_note}
                   {:else}
                     {(gather.rate * 100).toFixed(1)}%
                   {/if}
-                  {#if gather.amount_min != null && gather.amount_max != null}
+                  {#if gather.is_fishing_spot && gather.virtual_location_count > 1}
+                    · {gather.virtual_location_count} fishing spots
+                  {/if}
+                  {#if gather.amount_min != null && gather.amount_max != null && gather.amount_max > 0}
                     {#if gather.amount_min === gather.amount_max}
                       ({gather.amount_max}×)
                     {:else}
