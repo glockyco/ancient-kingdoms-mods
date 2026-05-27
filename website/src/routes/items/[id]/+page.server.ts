@@ -9,9 +9,9 @@ import { getItemSources } from "$lib/server/item-sources";
 import { getItemUsages } from "$lib/server/item-usages";
 
 const FISHERMAN_COSTUME_IDS = new Set([
-  "fisherman_s_hat",
-  "fisherman_s_garb",
-  "fisherman_s_trousers",
+  "fishermans_hat",
+  "fishermans_garb",
+  "fishermans_trousers",
 ]);
 
 type FishingRole = "fish" | "trash_fish" | "rod" | "costume" | null;

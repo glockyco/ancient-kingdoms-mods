@@ -232,7 +232,7 @@ export const load: PageServerLoad = (): FishingPageData => {
     rods,
     recipes,
     stats: {
-      spot_count: spots.reduce((count, spot) => count + spot.spawn_count, 0),
+      spot_count: spots.length,
       fish_count: fish.filter((item) => !item.is_trash).length,
       trash_fish_count: fish.filter((item) => item.is_trash).length,
       rod_count: rods.length,

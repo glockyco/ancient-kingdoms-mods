@@ -18,6 +18,7 @@
   } from "$lib/types/gather-items";
   import { formatPercent, formatDuration } from "$lib/utils/format";
   import {
+    fishDropChancePerCast,
     fishingMasteryGainChance,
     fishingMasteryGainRange,
     fishingSpotSuccessChance,
@@ -69,6 +70,7 @@
   let skillLevel = $state(0);
   let pickaxeQuality = $state(0);
   let rodQuality = $state(0);
+  let fishermanCostumePieces = $state(0);
 
   // Source: server-scripts/Utils.cs:491-501 — GetSuccessProbHerbalism
   function getHerbalismSuccessChance(resourceLevel: number): number {
@@ -197,6 +199,21 @@
       : getSkillGainAmount(successChance),
   );
 
+  function getDisplayedDropChance(drop: GatheringResourceDrop): number {
+    if (!data.resource.is_fishing_spot) {
+      return drop.actual_drop_chance ?? drop.drop_rate;
+    }
+
+    return fishDropChancePerCast({
+      configuredDropRate: drop.drop_rate,
+      fishCountAtSpot: data.drops.length,
+      fishingPercent: skillLevel,
+      fishermanCostumePieces,
+      rodQuality,
+      spotTier: data.resource.level,
+    });
+  }
+
   // Drop table columns
   const dropColumns: ColumnDef<GatheringResourceDrop>[] = [
     {
@@ -206,7 +223,7 @@
     },
     {
       accessorKey: "drop_rate",
-      header: "Drop Rate",
+      header: data.resource.is_fishing_spot ? "Chance / Cast" : "Drop Rate",
       size: 140,
     },
   ];
@@ -237,11 +254,7 @@
     <ItemLink itemId={row.original.item_id} itemName={row.original.item_name} />
   {:else if cell.column.id === "drop_rate"}
     <span class="ml-auto">
-      {#if row.original.actual_drop_chance != null}
-        {formatPercent(row.original.actual_drop_chance)}
-      {:else}
-        {formatPercent(row.original.drop_rate)}
-      {/if}
+      {formatPercent(getDisplayedDropChance(row.original))}
     </span>
   {:else}
     {cell.getValue()}
@@ -438,6 +451,23 @@
                 {QUALITY_NAMES[rodQuality]}
               </span>
             </div>
+            <div class="flex items-center gap-4">
+              <label for="costume-slider" class="w-40 shrink-0">
+                Fisherman Pieces:
+              </label>
+              <input
+                id="costume-slider"
+                type="range"
+                min="0"
+                max="3"
+                step="1"
+                bind:value={fishermanCostumePieces}
+                class="flex-1 h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+              />
+              <span class="font-mono w-24 text-right">
+                {fishermanCostumePieces} / 3
+              </span>
+            </div>
           {/if}
         </div>
 
@@ -504,24 +534,33 @@
   {/if}
 
   <!-- Requirements -->
-  {#if data.resource.tool_required_id}
+  {#if data.resource.tool_required_id || data.resource.is_fishing_spot}
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <Key class="h-5 w-5 text-yellow-500" />
         {data.resource.is_fishing_spot ? "Fishing Rod" : "Key"}
       </h2>
       <div class="bg-muted/30 rounded-md border p-4">
-        <a
-          href="/items/{data.resource.tool_required_id}"
-          class="text-blue-600 dark:text-blue-400 hover:underline font-medium"
-        >
-          {data.resource.tool_required_name}
-        </a>
+        {#if data.resource.tool_required_id}
+          <a
+            href="/items/{data.resource.tool_required_id}"
+            class="text-blue-600 dark:text-blue-400 hover:underline font-medium"
+          >
+            {data.resource.tool_required_name}
+          </a>
+        {:else}
+          <a
+            href="/professions/fishing#fishing-rods"
+            class="text-blue-600 dark:text-blue-400 hover:underline font-medium"
+          >
+            Any Fishing Rod
+          </a>
+        {/if}
       </div>
     </section>
 
     <!-- How to Obtain Requirement -->
-    {#if data.toolObtainabilityTree}
+    {#if data.resource.tool_required_id && data.toolObtainabilityTree}
       <section>
         <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
           <ListTree class="h-5 w-5 text-muted-foreground" />
