@@ -14,6 +14,7 @@ public class GatherItemData
 
     // Type flags
     public bool is_plant { get; set; }
+    public bool is_fishing_spot { get; set; }
     public bool is_mineral { get; set; }
     public bool is_chest { get; set; }
     public bool is_radiant_spark { get; set; }

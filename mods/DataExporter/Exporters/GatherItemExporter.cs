@@ -63,6 +63,7 @@ public class GatherItemExporter : BaseExporter
 
                 // Type flags
                 is_plant = gatherItem.isPlant,
+                is_fishing_spot = gatherItem.isFish,
                 is_mineral = gatherItem.isMineral,
                 is_chest = gatherItem.isChest,
                 is_radiant_spark = gatherItem.isRadiantSpark,

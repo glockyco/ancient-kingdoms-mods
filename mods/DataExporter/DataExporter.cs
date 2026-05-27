@@ -76,6 +76,11 @@ namespace DataExporter
                 var exporter = new ItemExporter(LoggerInstance, ExportPath, visualAssets);
                 exporter.Export();
             }));
+            result.Exporters.Add(RunExporter("fish", required: true, () =>
+            {
+                var exporter = new FishExporter(LoggerInstance, ExportPath);
+                exporter.Export();
+            }));
             result.Exporters.Add(RunExporter("quests", required: true, () =>
             {
                 var exporter = new QuestExporter(LoggerInstance, ExportPath);

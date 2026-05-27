@@ -74,6 +74,20 @@ public class ProfessionExporter : BaseExporter
             },
             new ProfessionData
             {
+                id = "fishing",
+                name = "Fishing",
+                description = "Catch fish at fishing spots.",
+                category = "gathering",
+                icon_path = GetIconPath("fishing"),
+                steam_achievement_id = "FISHER_MASTER",
+                steam_achievement_name = "Master Angler",
+                steam_achievement_description = "Achieve 100% Fishing",
+                max_level = 100,
+                tracking_type = "float_level",
+                tracking_denominator = null
+            },
+            new ProfessionData
+            {
                 id = "adventuring",
                 name = "Adventuring",
                 description = "Complete Adventurer's Guild quests.",
@@ -231,6 +245,7 @@ public class ProfessionExporter : BaseExporter
             "cooking" => ui.slotCooking,
             "herbalism" => ui.slotHerbalism,
             "mining" => ui.slotMining,
+            "fishing" => ui.slotFishing,
             "adventuring" => ui.slotAdventuring,
             "lore_keeping" => ui.slotLoreKeeping,
             "exploring" => ui.slotExploring,
