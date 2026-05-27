@@ -15,6 +15,7 @@
   import ChefHat from "@lucide/svelte/icons/chef-hat";
   import Leaf from "@lucide/svelte/icons/leaf";
   import Sparkles from "@lucide/svelte/icons/sparkles";
+  import Fish from "@lucide/svelte/icons/fish";
   import Scroll from "@lucide/svelte/icons/scroll";
   import Backpack from "@lucide/svelte/icons/backpack";
   import Crosshair from "@lucide/svelte/icons/crosshair";
@@ -115,6 +116,11 @@
       icon: Leaf,
       color: "text-green-500 dark:text-green-400",
       bgColor: "bg-green-500/10",
+    },
+    fishing: {
+      icon: Fish,
+      color: "text-cyan-500 dark:text-cyan-400",
+      bgColor: "bg-cyan-500/10",
     },
     radiant_seeker: {
       icon: Sparkles,
