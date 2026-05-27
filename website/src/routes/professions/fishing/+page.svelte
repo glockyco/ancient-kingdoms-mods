@@ -30,6 +30,11 @@
   let selectedSpotId = $state(data.spots[0]?.id ?? "");
 
   const castDelay = fishingCastDelaySecondsRange();
+  const spotTiers = Array.from(
+    new Set(data.spots.map((spot) => spot.level)),
+  ).sort((a, b) => a - b);
+  const lowestSpotTier = spotTiers[0] ?? 0;
+  const highestSpotTier = spotTiers.at(-1) ?? lowestSpotTier;
   const fishermanCostumePieces = $derived(selectedCostumeIds.size);
 
   const selectedSpot = $derived(
@@ -196,20 +201,16 @@
       <div class="grid gap-3 py-4 first:pt-0 md:grid-cols-[2rem_1fr]">
         <div class="text-sm text-muted-foreground">1</div>
         <div>
-          <div>Carry a Fishing Rod.</div>
+          <div>
+            Carry a <ItemLink
+              itemId={data.rod?.item_id ?? "rusty_fishing_rod"}
+              itemName={data.rod?.item_name ?? "Rusty Fishing Rod"}
+              tooltipHtml={data.rod?.tooltip_html}
+              colorClass={getQualityTextColorClass(data.rod?.quality ?? 0)}
+            />.
+          </div>
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            The cast uses your available Fishing Rod. Current exported data has
-            {#if data.rod}
-              <ItemLink
-                itemId={data.rod.item_id}
-                itemName={data.rod.item_name}
-                tooltipHtml={data.rod.tooltip_html}
-                colorClass={getQualityTextColorClass(data.rod.quality)}
-              />
-              as the only Fishing Rod.
-            {:else}
-              Rusty Fishing Rod as the only Fishing Rod.
-            {/if}
+            A rod is required before a Fishing Spot will start a cast.
           </p>
         </div>
       </div>
@@ -219,7 +220,10 @@
         <div>
           <div>Click a Fishing Spot.</div>
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            Fishing spots are map resources and have tiered difficulty.
+            The map currently has {data.stats.spot_count} Fishing Spot locations
+            across {spotTiers.length} tiers, from Tier {toRomanNumeral(
+              lowestSpotTier,
+            )} to Tier {toRomanNumeral(highestSpotTier)}.
           </p>
         </div>
       </div>
@@ -240,8 +244,7 @@
         <div>
           <div>Roll for a bite.</div>
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            Bite chance is based on Fishing skill, spot tier, and the current
-            Common rod.
+            Bite chance is based on Fishing skill and spot tier.
           </p>
         </div>
       </div>
@@ -249,10 +252,11 @@
       <div class="grid gap-3 py-4 md:grid-cols-[2rem_1fr]">
         <div class="text-sm text-muted-foreground">5</div>
         <div>
-          <div>Gain XP and possibly mastery.</div>
+          <div>Roll the selected fish.</div>
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            Successful bites grant XP by tier and can raise Fishing mastery up
-            to the tier cap.
+            The selected fish roll is drop rate + Fishing/2 + 2 pp per equipped
+            Fisherman set piece. Failed fish rolls can become trash fish or
+            escaped fish.
           </p>
         </div>
       </div>
@@ -260,11 +264,10 @@
       <div class="grid gap-3 py-4 last:pb-0 md:grid-cols-[2rem_1fr]">
         <div class="text-sm text-muted-foreground">6</div>
         <div>
-          <div>Roll the selected fish.</div>
+          <div>Gain XP and possibly mastery.</div>
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            The selected fish roll is drop rate + Fishing/2 + 2 pp per equipped
-            Fisherman set piece. Failed fish rolls can become trash fish or
-            escaped fish.
+            Successful bites grant XP by tier and can raise Fishing mastery up
+            to the tier cap.
           </p>
           <p
             class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm leading-6 text-muted-foreground"
@@ -290,7 +293,7 @@
     </div>
 
     {#if selectedSpot}
-      <div class="mt-4 grid gap-4 lg:grid-cols-3">
+      <div class="mt-4 grid gap-4 lg:grid-cols-2">
         <label class="space-y-2">
           <span class="text-sm font-medium">Skill</span>
           <input
@@ -316,11 +319,20 @@
             {/each}
           </select>
         </label>
-        <div class="space-y-2">
-          <div class="text-sm font-medium">Fisherman set pieces</div>
-          <div class="space-y-2 rounded-md border bg-background p-3">
+        <div class="space-y-2 lg:col-span-2">
+          <div class="flex flex-wrap items-baseline justify-between gap-2">
+            <div class="text-sm font-medium">Fisherman set pieces</div>
+            <div class="text-sm text-muted-foreground">
+              +2 pp per selected fish roll per piece
+            </div>
+          </div>
+          <div
+            class="grid gap-2 rounded-md border bg-background p-2 sm:grid-cols-3"
+          >
             {#each data.costumePieces as piece (piece.item_id)}
-              <label class="flex items-center gap-2">
+              <label
+                class="flex min-h-10 items-center gap-2 rounded-md border border-transparent px-2 py-1.5 transition-colors hover:border-cyan-500/30 hover:bg-cyan-500/10"
+              >
                 <input
                   type="checkbox"
                   checked={selectedCostumeIds.has(piece.item_id)}
@@ -340,9 +352,6 @@
               </label>
             {/each}
           </div>
-          <span class="text-sm text-muted-foreground">
-            +2 pp per selected fish roll for each equipped Fisherman set piece.
-          </span>
         </div>
       </div>
 
@@ -545,7 +554,6 @@
               <th class="p-3 text-left font-medium">Food</th>
               <th class="p-3 text-left font-medium">Effect</th>
               <th class="p-3 text-left font-medium">Fish Ingredient</th>
-              <th class="p-3 text-right font-medium">Amount</th>
             </tr>
           </thead>
           <tbody>
@@ -578,9 +586,6 @@
                     tooltipHtml={recipe.ingredient_tooltip_html}
                   />
                 </td>
-                <td class="p-3 text-right font-mono">
-                  {recipe.ingredient_amount}
-                </td>
               </tr>
             {/each}
           </tbody>
@@ -605,7 +610,6 @@
                 <th class="p-3 text-left font-medium">Potion</th>
                 <th class="p-3 text-left font-medium">Effect</th>
                 <th class="p-3 text-left font-medium">Fish Ingredient</th>
-                <th class="p-3 text-right font-medium">Amount</th>
               </tr>
             </thead>
             <tbody>
@@ -639,9 +643,6 @@
                       itemName={recipe.ingredient_item_name}
                       tooltipHtml={recipe.ingredient_tooltip_html}
                     />
-                  </td>
-                  <td class="p-3 text-right font-mono">
-                    {recipe.ingredient_amount}
                   </td>
                 </tr>
               {/each}

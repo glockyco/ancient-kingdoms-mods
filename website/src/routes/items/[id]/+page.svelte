@@ -302,6 +302,7 @@
 
   const hasPrimaryDetailCards = $derived(
     Boolean(data.item.tooltip_html) ||
+      data.fishing_effect ||
       hasStatsCard ||
       (computed.createdFromMerge && computed.createdFromMerge.length > 0) ||
       (computed.usedAsCurrencyFor && computed.usedAsCurrencyFor.length > 0) ||
@@ -336,23 +337,6 @@
         <div class="flex flex-wrap items-center gap-3">
           <h1 class="text-4xl font-bold">{data.item.name}</h1>
           <MapLink entityId={data.item.id} entityType="item" />
-          {#if data.fishing_role !== null}
-            {@const label =
-              data.fishing_role === "rod"
-                ? "Fishing Rod"
-                : data.fishing_role === "costume"
-                  ? "Fisherman set"
-                  : data.fishing_role === "trash_fish"
-                    ? "Trash fish"
-                    : "Fishing"}
-            <a
-              href="/professions/fishing"
-              class="inline-flex items-center gap-1.5 rounded-md border border-cyan-500/30 bg-cyan-500/10 px-2.5 py-1 text-sm font-medium text-cyan-700 transition-colors hover:bg-cyan-500/20 dark:text-cyan-300"
-            >
-              <FishIcon class="h-4 w-4" />
-              {label}
-            </a>
-          {/if}
           <span
             class="px-3 py-1 rounded text-sm font-medium text-white {qualityColors[
               data.item.quality
@@ -360,6 +344,15 @@
           >
             {QUALITY_NAMES[data.item.quality]}
           </span>
+          {#if data.fishing_role !== null}
+            <a
+              href="/professions/fishing"
+              class="inline-flex items-center gap-1.5 rounded-md border border-cyan-500/30 bg-cyan-500/10 px-2.5 py-1 text-sm font-medium text-cyan-700 transition-colors hover:bg-cyan-500/20 dark:text-cyan-300"
+            >
+              <FishIcon class="h-4 w-4" />
+              Fishing
+            </a>
+          {/if}
 
           {#if (data.item.item_type === "potion" && !data.item.potion_buff_allow_dungeon) || (data.item.item_type === "food" && !data.item.food_buff_allow_dungeon) || (data.item.item_type === "scroll" && !data.item.scroll_skill_allow_dungeon) || (data.item.item_type === "relic" && !data.item.relic_buff_allow_dungeon) || data.item.mount_speed > 0}
             <DungeonRestrictionBadge allowDungeon={false} />
@@ -504,22 +497,6 @@
     </Card.Content>
   </Card.Root>
 
-  {#if data.fishing_effect}
-    <Card.Root class="bg-muted/30">
-      <Card.Header>
-        <Card.Title>{data.fishing_effect.title}</Card.Title>
-      </Card.Header>
-      <Card.Content class="space-y-2 text-sm">
-        <p class="text-muted-foreground">
-          {data.fishing_effect.description}
-        </p>
-        <a href={data.fishing_effect.fishing_page_href} class={styles.link}>
-          Open Fishing calculator
-        </a>
-      </Card.Content>
-    </Card.Root>
-  {/if}
-
   {#if isBackpack || isHouseChestStructure}
     <Card.Root class="bg-muted/30">
       <Card.Header>
@@ -566,6 +543,22 @@
               <!-- eslint-disable-next-line svelte/no-at-html-tags -->
               {@html data.item.tooltip_html}
             </div>
+          </Card.Content>
+        </Card.Root>
+      {/if}
+
+      {#if data.fishing_effect}
+        <Card.Root class="bg-muted/30">
+          <Card.Header>
+            <Card.Title>{data.fishing_effect.title}</Card.Title>
+          </Card.Header>
+          <Card.Content class="space-y-2 text-sm">
+            <p class="text-muted-foreground">
+              {data.fishing_effect.description}
+            </p>
+            <a href={data.fishing_effect.fishing_page_href} class={styles.link}>
+              Open Fishing calculator
+            </a>
           </Card.Content>
         </Card.Root>
       {/if}

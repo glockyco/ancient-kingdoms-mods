@@ -93,7 +93,8 @@ function createDb() {
     INSERT INTO gathering_resources VALUES
       ('rough_fishing_spot', 'Rough Fishing Spot', 1, 'rusty_fishing_rod', 1);
     INSERT INTO gathering_resource_spawns VALUES
-      ('spawn_1', 'rough_fishing_spot', 'zone_a');
+      ('spawn_1', 'rough_fishing_spot', 'zone_a'),
+      ('spawn_2', 'rough_fishing_spot', 'zone_a');
     INSERT INTO item_sources_gather VALUES
       ('cooking_fish', 'rough_fishing_spot', 0.2, 0.0666666667),
       ('alchemy_fish', 'rough_fishing_spot', 0.2, 0.0666666667),
@@ -117,6 +118,7 @@ describe("loadFishingPageData", () => {
 
     expect(data.rod?.item_id).toBe("rusty_fishing_rod");
     expect(data.stats).not.toHaveProperty("rod_count");
+    expect(data.stats.spot_count).toBe(2);
     expect(data.costumePieces.map((item) => item.item_id)).toEqual([
       "fishermans_garb",
       "fishermans_hat",

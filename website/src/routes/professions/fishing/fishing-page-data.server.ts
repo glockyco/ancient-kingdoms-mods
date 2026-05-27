@@ -289,7 +289,7 @@ export function loadFishingPageData(db: Database.Database): FishingPageData {
     recipes: foods,
     potions,
     stats: {
-      spot_count: spots.length,
+      spot_count: spots.reduce((total, spot) => total + spot.spawn_count, 0),
       fish_count: fish.filter((item) => !item.is_trash).length,
       trash_fish_count: fish.filter((item) => item.is_trash).length,
       food_count: foods.length,
