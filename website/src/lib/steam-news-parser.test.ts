@@ -1,81 +1,80 @@
 import { test } from "vitest";
 import assert from "node:assert/strict";
-import { parseGameVersion } from "./steam-news-parser.ts";
+import { parseGameVersionRss } from "./steam-news-parser.ts";
 
-const baseItem = { date: 1777381614, url: "https://example.com/post" };
+const latestRss = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <item>
+      <title>Ancient Kingdoms v0.9.18.0 - Fishing</title>
+      <link><![CDATA[https://store.steampowered.com/news/app/2241380/view/690884077303104797]]></link>
+      <pubDate>Tue, 26 May 2026 14:42:50 +0000</pubDate>
+    </item>
+    <item>
+      <title>Ancient Kingdoms v0.9.17.2 Hotfix 🛠️</title>
+      <link><![CDATA[https://store.steampowered.com/news/app/2241380/view/666113645632029718]]></link>
+      <pubDate>Mon, 18 May 2026 03:40:45 +0000</pubDate>
+    </item>
+  </channel>
+</rss>`;
 
-test("parseGameVersion: hotfix-style title", () => {
-  const r = parseGameVersion([
-    { ...baseItem, title: "Ancient Kingdoms v0.9.14.3 Hotfix 🛠️" },
-  ]);
-  assert.deepEqual(r, {
+test("parseGameVersionRss: returns newest version and store news link", () => {
+  assert.deepEqual(parseGameVersionRss(latestRss), {
     ok: true,
-    version: "0.9.14.3",
-    date: 1777381614,
-    url: "https://example.com/post",
+    version: "0.9.18.0",
+    date: 1779806570,
+    url: "https://store.steampowered.com/news/app/2241380/view/690884077303104797",
   });
 });
 
-test("parseGameVersion: dash subtitle", () => {
-  const r = parseGameVersion([
-    { ...baseItem, title: "Ancient Kingdoms v0.9.14.0 - Ornamentations" },
-  ]);
-  assert.equal(r.ok && r.version, "0.9.14.0");
+test("parseGameVersionRss: skips non-version entries, picks next match", () => {
+  const rss = `<?xml version="1.0" encoding="UTF-8"?>
+<rss><channel>
+  <item>
+    <title>Devblog: a year of Ancient Kingdoms</title>
+    <link>https://example.com/devblog</link>
+    <pubDate>Tue, 26 May 2026 14:42:50 +0000</pubDate>
+  </item>
+  <item>
+    <title><![CDATA[Ancient Kingdoms v0.9.17.2 Hotfix 🛠️]]></title>
+    <link><![CDATA[https://example.com/patch]]></link>
+    <pubDate>Mon, 18 May 2026 03:40:45 +0000</pubDate>
+  </item>
+</channel></rss>`;
+
+  const r = parseGameVersionRss(rss);
+
+  assert.equal(r.ok && r.version, "0.9.17.2");
+  assert.equal(r.ok && r.url, "https://example.com/patch");
 });
 
-test("parseGameVersion: 3-segment version", () => {
-  const r = parseGameVersion([
-    { ...baseItem, title: "Ancient Kingdoms v0.10.0 - Big Update" },
-  ]);
-  assert.equal(r.ok && r.version, "0.10.0");
+test("parseGameVersionRss: supports 3-segment and 4-segment versions", () => {
+  const threeSegment = `<rss><channel><item><title>Ancient Kingdoms v0.10.0 - Big Update</title><link>https://example.com/three</link></item></channel></rss>`;
+  const fourSegment = `<rss><channel><item><title>Ancient Kingdoms v1.0.0.1 Hotfix</title><link>https://example.com/four</link></item></channel></rss>`;
+
+  const threeSegmentResult = parseGameVersionRss(threeSegment);
+  const fourSegmentResult = parseGameVersionRss(fourSegment);
+
+  assert.equal(threeSegmentResult.ok && threeSegmentResult.version, "0.10.0");
+  assert.equal(fourSegmentResult.ok && fourSegmentResult.version, "1.0.0.1");
 });
 
-test("parseGameVersion: 4-segment version", () => {
-  const r = parseGameVersion([
-    { ...baseItem, title: "Ancient Kingdoms v1.0.0.1 Hotfix" },
-  ]);
-  assert.equal(r.ok && r.version, "1.0.0.1");
+test("parseGameVersionRss: rejects two-segment versions", () => {
+  const rss = `<rss><channel><item><title>Ancient Kingdoms v1.0 Demo Release</title><link>https://example.com/demo</link></item></channel></rss>`;
+
+  assert.deepEqual(parseGameVersionRss(rss), { ok: false });
 });
 
-test("parseGameVersion: skips non-version titles, picks next match", () => {
-  const r = parseGameVersion([
-    { ...baseItem, title: "Devblog: a year of Ancient Kingdoms" },
-    { ...baseItem, title: "Ancient Kingdoms v0.9.14.0" },
-  ]);
-  assert.equal(r.ok && r.version, "0.9.14.0");
+test("parseGameVersionRss: malformed entity in title does not throw", () => {
+  const rss = `<rss><channel><item><title>Ancient Kingdoms v0.9.18.0 &#9999999999;</title><link>https://example.com/patch</link></item></channel></rss>`;
+
+  const r = parseGameVersionRss(rss);
+
+  assert.equal(r.ok && r.version, "0.9.18.0");
 });
 
-test("parseGameVersion: all unparseable returns ok:false", () => {
-  const r = parseGameVersion([
-    { ...baseItem, title: "Marketing post one" },
-    { ...baseItem, title: "Marketing post two" },
-  ]);
-  assert.deepEqual(r, { ok: false });
-});
-
-test("parseGameVersion: empty array returns ok:false", () => {
-  assert.deepEqual(parseGameVersion([]), { ok: false });
-});
-
-test("parseGameVersion: null returns ok:false", () => {
-  assert.deepEqual(parseGameVersion(null), { ok: false });
-});
-
-test("parseGameVersion: undefined returns ok:false", () => {
-  assert.deepEqual(parseGameVersion(undefined), { ok: false });
-});
-
-test("parseGameVersion: ignores items missing title field", () => {
-  const r = parseGameVersion([
-    { ...baseItem, title: undefined as unknown as string },
-    { ...baseItem, title: "Ancient Kingdoms v0.9.14.3" },
-  ]);
-  assert.equal(r.ok && r.version, "0.9.14.3");
-});
-
-test("parseGameVersion: rejects two-segment versions (e.g. 'v1.0')", () => {
-  const r = parseGameVersion([
-    { ...baseItem, title: "Ancient Kingdoms v1.0 Demo Release" },
-  ]);
-  assert.deepEqual(r, { ok: false });
+test("parseGameVersionRss: invalid or empty input returns ok:false", () => {
+  assert.deepEqual(parseGameVersionRss(""), { ok: false });
+  assert.deepEqual(parseGameVersionRss(null), { ok: false });
+  assert.deepEqual(parseGameVersionRss(undefined), { ok: false });
 });
