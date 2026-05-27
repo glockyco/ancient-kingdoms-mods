@@ -29,6 +29,7 @@ export interface GatheringResource {
   id: string;
   name: string;
   is_plant: boolean;
+  is_fishing_spot: boolean;
   is_mineral: boolean;
   is_radiant_spark: boolean;
   level: number;

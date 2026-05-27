@@ -32,6 +32,7 @@ export function getGatherItems(): GatherItemListView[] {
         gr.id,
         gr.name,
         CASE
+          WHEN gr.is_fishing_spot = 1 THEN 'Fishing Spot'
           WHEN gr.is_plant = 1 THEN 'Plant'
           WHEN gr.is_mineral = 1 THEN 'Mineral'
           WHEN gr.is_radiant_spark = 1 THEN 'Radiant Spark'
@@ -131,6 +132,7 @@ export function getGatheringResourceById(id: string): GatheringResource | null {
       gr.id,
       gr.name,
       gr.is_plant,
+      gr.is_fishing_spot,
       gr.is_mineral,
       gr.is_radiant_spark,
       gr.level,

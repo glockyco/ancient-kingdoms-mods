@@ -54,6 +54,7 @@ export const load: PageServerLoad = ({ params }) => {
       name: resource.name,
       is_plant: resource.is_plant,
       is_mineral: resource.is_mineral,
+      is_fishing_spot: resource.is_fishing_spot,
       is_radiant_spark: resource.is_radiant_spark,
       level: resource.level,
       tool_required_name: resource.tool_required_name,

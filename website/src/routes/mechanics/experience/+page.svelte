@@ -608,12 +608,13 @@
     <Card.Header>
       <Card.Title>Gathering XP</Card.Title>
       <Card.Description>
-        Experience earned by gathering herbs, minerals, radiant sparks, and
-        other resources.
+        Experience earned by gathering herbs, minerals, radiant sparks, other
+        resources, and fish at fishing spots.
       </Card.Description>
     </Card.Header>
     <Card.Content>
-      <!-- Source: server-scripts/GatherItem.cs:533-546 — gathering XP by tier -->
+      <!-- Source: server-scripts/GatherItem.cs:533-546 — gathering XP by tier (plants/minerals/sparks/other). -->
+      <!-- Source: server-scripts/GatherItem.cs:811-821 — fishing XP by spot tier; same 15 / 150 / 750 / 4000 / 10000 table. -->
       <table class="w-full text-sm border-collapse">
         <thead>
           <tr class="border-b">

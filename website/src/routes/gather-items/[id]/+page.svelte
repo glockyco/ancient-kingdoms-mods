@@ -17,6 +17,11 @@
     GatheringResourceSpawn,
   } from "$lib/types/gather-items";
   import { formatPercent, formatDuration } from "$lib/utils/format";
+  import {
+    fishingMasteryGainChance,
+    fishingMasteryGainRange,
+    fishingSpotSuccessChance,
+  } from "$lib/utils/fishing";
   import Key from "@lucide/svelte/icons/key";
   import ListTree from "@lucide/svelte/icons/list-tree";
   import Gem from "@lucide/svelte/icons/gem";
@@ -32,6 +37,8 @@
 
   // Type colors for badges
   const typeColors: Record<string, string> = {
+    "Fishing Spot":
+      "bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-200",
     Plant: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
     Mineral: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200",
     "Radiant Spark":
@@ -44,9 +51,11 @@
   // Get type string from resource flags
   function getResourceType(resource: {
     is_plant: boolean;
+    is_fishing_spot: boolean;
     is_mineral: boolean;
     is_radiant_spark: boolean;
   }): string {
+    if (resource.is_fishing_spot) return "Fishing Spot";
     if (resource.is_plant) return "Plant";
     if (resource.is_mineral) return "Mineral";
     if (resource.is_radiant_spark) return "Radiant Spark";
@@ -59,6 +68,7 @@
   // Skill level state (0-100%)
   let skillLevel = $state(0);
   let pickaxeQuality = $state(0);
+  let rodQuality = $state(0);
 
   // Source: server-scripts/Utils.cs:491-501 — GetSuccessProbHerbalism
   function getHerbalismSuccessChance(resourceLevel: number): number {
@@ -138,13 +148,20 @@
     return (0.05 + skill * 0.25) * 100;
   }
 
-  // Computed success chance based on resource type
   const successChance = $derived.by(() => {
     const resource = data.resource;
     if (resource.is_plant) {
       return getHerbalismSuccessChance(resource.level);
     } else if (resource.is_mineral) {
       return getMiningSuccessChance(resource.level);
+    } else if (resource.is_fishing_spot) {
+      return (
+        fishingSpotSuccessChance({
+          rodQuality,
+          fishingPercent: skillLevel,
+          spotTier: resource.level,
+        }) * 100
+      );
     }
     return 0;
   });
@@ -155,8 +172,30 @@
     return isEffortless(data.resource.level);
   });
 
-  // Skill gain amount for plants and minerals (radiant sparks have fixed 0.10%-0.30%)
-  const skillGain = $derived(getSkillGainAmount(successChance));
+  const fishingMasteryProcChance = $derived(
+    data.resource.is_fishing_spot
+      ? fishingSpotSuccessChance({
+          rodQuality,
+          fishingPercent: skillLevel,
+          spotTier: data.resource.level,
+        }) *
+          fishingMasteryGainChance({
+            fishingPercent: skillLevel,
+            spotTier: data.resource.level,
+          }) *
+          100
+      : 0,
+  );
+
+  const fishingMasteryGain = $derived(
+    fishingMasteryGainRange(successChance / 100),
+  );
+
+  const skillGain = $derived(
+    data.resource.is_fishing_spot
+      ? [fishingMasteryGain.min, fishingMasteryGain.max]
+      : getSkillGainAmount(successChance),
+  );
 
   // Drop table columns
   const dropColumns: ColumnDef<GatheringResourceDrop>[] = [
@@ -331,13 +370,15 @@
     </section>
   {/if}
 
-  <!-- Gather Chance Calculator (for plants, minerals, and radiant sparks) -->
-  {#if data.resource.is_plant || data.resource.is_mineral || data.resource.is_radiant_spark}
+  <!-- Gather Chance Calculator (for plants, minerals, fishing spots, and radiant sparks) -->
+  {#if data.resource.is_plant || data.resource.is_mineral || data.resource.is_fishing_spot || data.resource.is_radiant_spark}
     {@const skillName = data.resource.is_plant
       ? "Herbalism"
       : data.resource.is_mineral
         ? "Mining"
-        : "Radiant Seeker"}
+        : data.resource.is_fishing_spot
+          ? "Fishing"
+          : "Radiant Seeker"}
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <Calculator class="h-5 w-5 text-cyan-500" />
@@ -379,6 +420,24 @@
                 {QUALITY_NAMES[pickaxeQuality]}
               </span>
             </div>
+          {:else if data.resource.is_fishing_spot}
+            <div class="flex items-center gap-4">
+              <label for="rod-slider" class="w-40 shrink-0">
+                Rod Quality:
+              </label>
+              <input
+                id="rod-slider"
+                type="range"
+                min="0"
+                max="4"
+                step="1"
+                bind:value={rodQuality}
+                class="flex-1 h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+              />
+              <span class="font-mono w-24 text-right">
+                {QUALITY_NAMES[rodQuality]}
+              </span>
+            </div>
           {/if}
         </div>
 
@@ -409,13 +468,23 @@
             </div>
           {/if}
           <div>
-            <div class="text-sm text-muted-foreground">Skill Gain Chance</div>
+            <div class="text-sm text-muted-foreground">
+              {data.resource.is_fishing_spot
+                ? "Mastery Proc / Cast"
+                : "Skill Gain Chance"}
+            </div>
             <div class="font-mono font-medium">
-              {getSkillGainChance().toFixed(0)}%
+              {data.resource.is_fishing_spot
+                ? fishingMasteryProcChance.toFixed(0)
+                : getSkillGainChance().toFixed(0)}%
             </div>
           </div>
           <div>
-            <div class="text-sm text-muted-foreground">Skill Gain Amount</div>
+            <div class="text-sm text-muted-foreground">
+              {data.resource.is_fishing_spot
+                ? "Mastery Gain / Proc"
+                : "Skill Gain Amount"}
+            </div>
             <div class="font-mono">
               {#if effortless}
                 <span class="text-muted-foreground">—</span>
@@ -439,7 +508,7 @@
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <Key class="h-5 w-5 text-yellow-500" />
-        Key
+        {data.resource.is_fishing_spot ? "Fishing Rod" : "Key"}
       </h2>
       <div class="bg-muted/30 rounded-md border p-4">
         <a
@@ -451,12 +520,12 @@
       </div>
     </section>
 
-    <!-- How to Obtain Key -->
+    <!-- How to Obtain Requirement -->
     {#if data.toolObtainabilityTree}
       <section>
         <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
           <ListTree class="h-5 w-5 text-muted-foreground" />
-          How to Obtain Key
+          How to Obtain {data.resource.is_fishing_spot ? "Fishing Rod" : "Key"}
         </h2>
         <div class="bg-muted/30 rounded-md border p-4">
           <div class="bg-background rounded-md p-4 border overflow-x-auto">

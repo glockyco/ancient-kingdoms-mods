@@ -1245,6 +1245,7 @@ export function chestDescription(chest: ChestDescriptionInput): string {
 interface GatheringResourceDescriptionInput {
   name: string;
   is_plant: boolean;
+  is_fishing_spot: boolean;
   is_mineral: boolean;
   is_radiant_spark: boolean;
   level: number | null;
@@ -1259,15 +1260,17 @@ export function gatheringResourceDescription(
   zoneNames: string[],
 ): string {
   let typeLabel: string;
-  if (resource.is_radiant_spark) typeLabel = "radiant spark";
+  if (resource.is_fishing_spot) typeLabel = "fishing spot";
+  else if (resource.is_radiant_spark) typeLabel = "radiant spark";
   else if (resource.is_mineral) typeLabel = "mineral node";
   else if (resource.is_plant) typeLabel = "plant";
   else typeLabel = "gathering node";
 
-  // Tier numbers exist only for plants and minerals; radiant sparks scale
-  // dynamically with the player's Radiant Seeker profession.
+  // Tier numbers exist for plants, minerals, and fishing spots. Radiant sparks
+  // scale dynamically with the player's Radiant Seeker profession.
   const hasTier =
-    (resource.is_plant || resource.is_mineral) && resource.level != null;
+    (resource.is_fishing_spot || resource.is_plant || resource.is_mineral) &&
+    resource.level != null;
   const tierPhrase = hasTier ? `Tier ${toRomanNumeral(resource.level!)} ` : "";
 
   const toolPhrase = resource.tool_required_name
