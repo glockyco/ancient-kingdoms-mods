@@ -82,15 +82,9 @@
     variant: FishingSpotVariant,
     index: number,
   ): string {
-    const spawnCount = variant.spawns.reduce(
-      (total, spawn) => total + spawn.spawn_count,
-      0,
-    );
     return `Spot ${index + 1}: ${variant.resource.name} (Tier ${
       romanNumerals[variant.resource.level] ?? variant.resource.level
-    }), ${spawnCount} ${spawnCount === 1 ? "spot" : "spots"} — ${formatZoneList(
-      variant.spawns,
-    )}`;
+    }) — ${formatZoneList(variant.spawns)}`;
   }
   // Type colors for badges
 

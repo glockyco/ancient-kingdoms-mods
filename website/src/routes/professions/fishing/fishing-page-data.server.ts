@@ -2,6 +2,7 @@ import type Database from "better-sqlite3";
 
 interface FishingSpot {
   id: string;
+  resource_id: string;
   name: string;
   level: number;
   tool_required_id: string | null;
@@ -90,34 +91,29 @@ export function loadFishingPageData(db: Database.Database): FishingPageData {
     .prepare(
       `
       SELECT
-        gr.id,
+        grs.id,
+        gr.id AS resource_id,
         gr.name,
         gr.level,
         gr.tool_required_id,
         tool.name AS tool_required_name,
-        COUNT(DISTINCT grs.id) AS spawn_count
-      FROM gathering_resources gr
-      LEFT JOIN gathering_resource_spawns grs ON grs.resource_id = gr.id
-      LEFT JOIN items tool ON tool.id = gr.tool_required_id
-      WHERE gr.is_fishing_spot = 1
-      GROUP BY gr.id
-      ORDER BY gr.level, gr.name
-    `,
-    )
-    .all() as Omit<FishingSpot, "zones" | "drops">[];
-
-  const zoneRows = db
-    .prepare(
-      `
-      SELECT DISTINCT gr.id AS spot_id, z.id AS zone_id, z.name AS zone_name
+        1 AS spawn_count,
+        z.id AS zone_id,
+        z.name AS zone_name
       FROM gathering_resources gr
       JOIN gathering_resource_spawns grs ON grs.resource_id = gr.id
       JOIN zones z ON z.id = grs.zone_id
+      LEFT JOIN items tool ON tool.id = gr.tool_required_id
       WHERE gr.is_fishing_spot = 1
-      ORDER BY z.name
+      ORDER BY gr.level, gr.name, z.name, gr.id, grs.id
     `,
     )
-    .all() as Array<{ spot_id: string; zone_id: string; zone_name: string }>;
+    .all() as Array<
+    Omit<FishingSpot, "zones" | "drops"> & {
+      zone_id: string;
+      zone_name: string;
+    }
+  >;
 
   const dropRows = db
     .prepare(
@@ -247,13 +243,6 @@ export function loadFishingPageData(db: Database.Database): FishingPageData {
     )
     .all() as FishRecipe[];
 
-  const zonesBySpot = new Map<string, FishingSpot["zones"]>();
-  for (const row of zoneRows) {
-    const zones = zonesBySpot.get(row.spot_id) ?? [];
-    zones.push({ id: row.zone_id, name: row.zone_name });
-    zonesBySpot.set(row.spot_id, zones);
-  }
-
   const dropsBySpot = new Map<string, FishDrop[]>();
   for (const row of dropRows) {
     const drops = dropsBySpot.get(row.resource_id) ?? [];
@@ -268,10 +257,10 @@ export function loadFishingPageData(db: Database.Database): FishingPageData {
     dropsBySpot.set(row.resource_id, drops);
   }
 
-  const spots = spotRows.map((spot) => ({
+  const spots = spotRows.map(({ zone_id, zone_name, ...spot }) => ({
     ...spot,
-    zones: zonesBySpot.get(spot.id) ?? [],
-    drops: dropsBySpot.get(spot.id) ?? [],
+    zones: [{ id: zone_id, name: zone_name }],
+    drops: dropsBySpot.get(spot.resource_id) ?? [],
   }));
 
   return {

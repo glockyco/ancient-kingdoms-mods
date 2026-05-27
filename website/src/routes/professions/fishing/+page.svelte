@@ -372,11 +372,8 @@
                 >
                   {#each data.spots as spot, index (spot.id)}
                     <option value={spot.id}>
-                      Spot {index + 1}: {spot.name} ({formatTier(spot.level)}),
-                      {spot.spawn_count}
-                      {spot.spawn_count === 1 ? "spot" : "spots"} — {formatZoneList(
-                        spot.zones,
-                      )}
+                      Spot {index + 1}: {spot.name} ({formatTier(spot.level)}) —
+                      {formatZoneList(spot.zones)}
                     </option>
                   {/each}
                 </select>
@@ -554,7 +551,7 @@
                 </td>
                 <td class="p-3">
                   <a
-                    href="/gather-items/{spot.id}"
+                    href="/gather-items/{spot.resource_id}"
                     class="text-blue-600 hover:underline dark:text-blue-400"
                   >
                     {spot.name}
@@ -586,7 +583,11 @@
                   </div>
                 </td>
                 <td class="p-3 text-right">
-                  <MapLink entityId={spot.id} entityType="resource" compact />
+                  <MapLink
+                    entityId={spot.resource_id}
+                    entityType="resource"
+                    compact
+                  />
                 </td>
               </tr>
             {/each}
