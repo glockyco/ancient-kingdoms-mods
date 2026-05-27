@@ -380,9 +380,10 @@
             <div class="flex gap-2">
               <dt class="text-muted-foreground w-40 shrink-0">Recruit Cost</dt>
               <dd>
-                50–2,500 <span class="text-yellow-600 dark:text-yellow-400"
-                  >gold</span
-                >, scales with your regular and veteran level
+                <!-- Source: server-scripts/UIMercenaries.cs:212-218 — cost = round(20 + 400 × ((clamp(level, 10, 50) − 10) / 40)² + veteranLevel × 10) (0.9.18.0+). -->
+                20–2,420
+                <span class="text-yellow-600 dark:text-yellow-400">gold</span>,
+                scales with your regular and veteran level
               </dd>
             </div>
             {#if pet.type_monster === "Warrior"}
