@@ -843,6 +843,7 @@ interface GatheringRow {
   zone_name: string;
   level: number;
   is_plant: number;
+  is_fishing_spot: number;
   is_mineral: number;
   is_radiant_spark: number;
   respawn_time: number;
@@ -866,6 +867,7 @@ function loadGatheringSpawnsServer(
       COALESCE(z.name, 'Unknown') as zone_name,
       gr.level,
       gr.is_plant,
+      gr.is_fishing_spot,
       gr.is_mineral,
       gr.is_radiant_spark,
       gr.respawn_time,
@@ -882,7 +884,8 @@ function loadGatheringSpawnsServer(
 
   return rows.map((r) => {
     let type: GatheringMapEntity["type"];
-    if (r.is_plant) type = "gathering_plant";
+    if (r.is_fishing_spot) type = "gathering_fish";
+    else if (r.is_plant) type = "gathering_plant";
     else if (r.is_mineral) type = "gathering_mineral";
     else if (r.is_radiant_spark) type = "gathering_spark";
     else type = "gathering_other";

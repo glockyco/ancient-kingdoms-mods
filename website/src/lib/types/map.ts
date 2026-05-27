@@ -15,6 +15,7 @@ export type EntityType =
   | "gathering_plant"
   | "gathering_mineral"
   | "gathering_spark"
+  | "gathering_fish"
   | "gathering_other"
   | "alchemy_table"
   | "crafting_station"
@@ -219,6 +220,7 @@ export interface GatheringMapEntity extends MapEntity {
     | "gathering_plant"
     | "gathering_mineral"
     | "gathering_spark"
+    | "gathering_fish"
     | "gathering_other";
   resourceName: string;
   level: number;
@@ -300,6 +302,7 @@ export interface LayerVisibility {
   gatheringPlants: boolean;
   gatheringMinerals: boolean;
   gatheringSparks: boolean;
+  gatheringFishing: boolean;
   gatheringOther: boolean;
 
   // Zones section
@@ -380,6 +383,7 @@ export interface FilteredMapData {
   plants: GatheringMapEntity[];
   minerals: GatheringMapEntity[];
   sparks: GatheringMapEntity[];
+  fishingSpots: GatheringMapEntity[];
   otherGathering: GatheringMapEntity[];
   alchemyTables: CraftingMapEntity[];
   forges: CraftingMapEntity[];

@@ -96,6 +96,9 @@ export function createFilteredData(data: MapEntityData): FilteredMapData {
     plants: renderableGathering.filter((g) => g.type === "gathering_plant"),
     minerals: renderableGathering.filter((g) => g.type === "gathering_mineral"),
     sparks: renderableGathering.filter((g) => g.type === "gathering_spark"),
+    fishingSpots: renderableGathering.filter(
+      (g) => g.type === "gathering_fish",
+    ),
     otherGathering: renderableGathering.filter(
       (g) => g.type === "gathering_other",
     ),
@@ -484,6 +487,24 @@ export function createLayers(
     },
   });
 
+  const gatheringFishingLayer = createEntityLayer<GatheringMapEntity>({
+    id: "gathering-fishing",
+    data: filtered.fishingSpots,
+    visible: visibility.gatheringFishing,
+    iconType: "gathering_fish",
+    color: LAYER_COLORS.gathering_fish,
+    radius: LAYER_RADII.gathering,
+    extensions: [levelZoneFilterExt],
+    getFilterValue: (d) => [d.level, isInZone(d.zoneId)],
+    filterRange: [
+      [levelFilter.gatheringMin, levelFilter.gatheringMax],
+      [1, 1],
+    ],
+    updateTriggers: {
+      getFilterValue: focusedZoneId,
+      filterRange: [levelFilter.gatheringMin, levelFilter.gatheringMax],
+    },
+  });
   // Radiant sparks use zone-only filtering (excluded from tier filter)
   const gatheringSparksLayer = createEntityLayer<GatheringMapEntity>({
     id: "gathering-sparks",
@@ -1259,6 +1280,7 @@ export function createLayers(
     creaturesLayer,
     gatheringPlantsLayer,
     gatheringMineralsLayer,
+    gatheringFishingLayer,
     gatheringSparksLayer,
     gatheringOtherLayer,
     alchemyTablesLayer,

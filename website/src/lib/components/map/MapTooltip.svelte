@@ -77,6 +77,8 @@
         return "Plant";
       case "gathering_mineral":
         return "Mineral";
+      case "gathering_fish":
+        return "Fishing Spot";
       case "gathering_other":
         return "Resource";
       case "alchemy_table":
@@ -105,7 +107,7 @@
   <div class="font-medium">{getDisplayName(entity)}</div>
 
   <!-- Type + Level line (only for entities that have a type subtitle) -->
-  {#if typeName || entity.type === "monster" || entity.type === "fabled" || entity.type === "boss" || entity.type === "elite" || entity.type === "hunt" || entity.type === "gathering_plant" || entity.type === "gathering_mineral"}
+  {#if typeName || entity.type === "monster" || entity.type === "fabled" || entity.type === "boss" || entity.type === "elite" || entity.type === "hunt" || entity.type === "gathering_plant" || entity.type === "gathering_mineral" || entity.type === "gathering_fish"}
     <div class="text-muted-foreground">
       {typeName ??
         ""}<!--
@@ -115,7 +117,7 @@
         -->{#if typeName}<span
             class="ml-1">Lv. {monster.level}</span
           >{:else}Lv. {monster.level}{/if}<!--
-      -->{:else if entity.type === "gathering_plant" || entity.type === "gathering_mineral"}<!--
+      -->{:else if entity.type === "gathering_plant" || entity.type === "gathering_mineral" || entity.type === "gathering_fish"}<!--
         -->{@const gathering =
           entity as GatheringMapEntity}<!--
         -->, Tier {toRomanNumeral(

@@ -23,6 +23,7 @@ import {
   ChefHat,
   Scroll,
   Home,
+  Fish,
   type IconNode,
 } from "lucide";
 import { LAYER_COLORS } from "./config";
@@ -56,6 +57,7 @@ const ENTITY_ICONS: Record<
   gathering_plant: { icon: Leaf, colorKey: "gathering_plant" },
   gathering_mineral: { icon: Pickaxe, colorKey: "gathering_mineral" },
   gathering_spark: { icon: Sparkles, colorKey: "gathering_spark" },
+  gathering_fish: { icon: Fish, colorKey: "gathering_fish" },
   gathering_other: { icon: Package, colorKey: "gathering_other" },
   alchemy_table: { icon: FlaskConical, colorKey: "crafting" },
   crafting_station: { icon: Hammer, colorKey: "crafting" },

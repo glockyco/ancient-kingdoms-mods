@@ -219,6 +219,7 @@
       "gathering_plant",
       "gathering_mineral",
       "gathering_spark",
+      "gathering_fish",
       "gathering_other",
     ].includes(e.type);
   }
@@ -276,6 +277,8 @@
         return "Mineral";
       case "gathering_spark":
         return "Spark";
+      case "gathering_fish":
+        return "Fishing Spot";
       case "gathering_other":
         return "Resource";
       case "alchemy_table":
@@ -1129,32 +1132,40 @@
   <!-- Gathering Section -->
   {#if isGathering(entity)}
     {@const gathering = entity as GatheringMapEntity}
-    {#if entity.type === "gathering_plant" || entity.type === "gathering_mineral"}
+    {#if entity.type === "gathering_plant" || entity.type === "gathering_mineral" || entity.type === "gathering_fish"}
       <div class="flex justify-between">
         <span class="text-muted-foreground">Tier</span>
         <span>{toRomanNumeral(gathering.level)}</span>
       </div>
     {/if}
-    {#if gathering.toolRequiredName && gathering.toolRequiredId}
+    {#if entity.type === "gathering_fish"}
       <div class="flex justify-between">
         <span class="text-muted-foreground">Tool</span>
-        <MapItemLink
-          itemId={gathering.toolRequiredId}
-          itemName={gathering.toolRequiredName}
-          tooltipHtml={null}
-          onSelect={onSelectItem}
-        />
+        <span>Any Fishing Rod</span>
       </div>
-    {:else if gathering.toolRequiredName}
+    {:else}
+      {#if gathering.toolRequiredName && gathering.toolRequiredId}
+        <div class="flex justify-between">
+          <span class="text-muted-foreground">Tool</span>
+          <MapItemLink
+            itemId={gathering.toolRequiredId}
+            itemName={gathering.toolRequiredName}
+            tooltipHtml={null}
+            onSelect={onSelectItem}
+          />
+        </div>
+      {:else if gathering.toolRequiredName}
+        <div class="flex justify-between">
+          <span class="text-muted-foreground">Tool</span>
+          <span>{gathering.toolRequiredName}</span>
+        </div>
+      {/if}
       <div class="flex justify-between">
-        <span class="text-muted-foreground">Tool</span>
-        <span>{gathering.toolRequiredName}</span>
+        <span class="text-muted-foreground">Respawn</span>
+        <span>{formatGatheringRespawn(entity.type, gathering.respawnTime)}</span
+        >
       </div>
     {/if}
-    <div class="flex justify-between">
-      <span class="text-muted-foreground">Respawn</span>
-      <span>{formatGatheringRespawn(entity.type, gathering.respawnTime)}</span>
-    </div>
 
     <!-- Drops (lazy-loaded) -->
     {#if isLoading}
@@ -1187,6 +1198,12 @@
             </div>
           {/each}
         </div>
+        {#if entity.type === "gathering_fish"}
+          <p class="mt-1 text-xs text-muted-foreground">
+            Chance per bite. Your Fishing skill and Fisherman costume pieces
+            raise the chance to land the selected fish.
+          </p>
+        {/if}
       </div>
     {/if}
   {/if}

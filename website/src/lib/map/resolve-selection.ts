@@ -110,6 +110,7 @@ export function resolvePhysicalSelection(
     case "gathering_plant":
     case "gathering_mineral":
     case "gathering_spark":
+    case "gathering_fish":
     case "gathering_other":
       return resolveGatheringSelection(id, entityData);
     case "crafting":

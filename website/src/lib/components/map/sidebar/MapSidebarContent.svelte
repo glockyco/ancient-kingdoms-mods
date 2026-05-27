@@ -23,6 +23,7 @@
   import Scroll from "@lucide/svelte/icons/scroll";
   import ChefHat from "@lucide/svelte/icons/chef-hat";
   import Home from "@lucide/svelte/icons/home";
+  import Fish from "@lucide/svelte/icons/fish";
   import MapSidebarSection from "./MapSidebarSection.svelte";
   import ZoneFocusSelect from "./ZoneFocusSelect.svelte";
   import LevelFilter from "../LevelFilter.svelte";
@@ -293,6 +294,12 @@
       label: "Minerals",
       color: LAYER_COLORS.gathering_mineral,
       icon: Pickaxe,
+    },
+    {
+      key: "gatheringFishing",
+      label: "Fishing Spots",
+      color: LAYER_COLORS.gathering_fish,
+      icon: Fish,
     },
     {
       key: "gatheringSparks",

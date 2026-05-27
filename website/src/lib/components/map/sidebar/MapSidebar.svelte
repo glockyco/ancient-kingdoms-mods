@@ -19,6 +19,7 @@
   import Pickaxe from "@lucide/svelte/icons/pickaxe";
   import Sparkles from "@lucide/svelte/icons/sparkles";
   import Package from "@lucide/svelte/icons/package";
+  import Fish from "@lucide/svelte/icons/fish";
   import Hammer from "@lucide/svelte/icons/hammer";
   import Menu from "@lucide/svelte/icons/menu";
   import Search from "@lucide/svelte/icons/search";
@@ -180,6 +181,12 @@
       icon: Pickaxe,
       color: LAYER_COLORS.gathering_mineral,
       label: "Minerals",
+    },
+    {
+      key: "gatheringFishing",
+      icon: Fish,
+      color: LAYER_COLORS.gathering_fish,
+      label: "Fishing Spots",
     },
     {
       key: "gatheringSparks",

@@ -471,6 +471,7 @@ function getIndexForType(
     case "gathering_plant":
     case "gathering_mineral":
     case "gathering_spark":
+    case "gathering_fish":
     case "gathering_other":
       return index.gathering;
     case "alchemy_table":

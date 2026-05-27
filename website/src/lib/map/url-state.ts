@@ -94,6 +94,7 @@ export function getDefaultLayerVisibility(): LayerVisibility {
     gatheringPlants: false,
     gatheringMinerals: false,
     gatheringSparks: false,
+    gatheringFishing: false,
     gatheringOther: false,
     // Zones
     subZones: false,
@@ -250,6 +251,7 @@ export function urlStateToLayerVisibility(
     gatheringPlants: urlLayers.includes("gatheringPlants"),
     gatheringMinerals: urlLayers.includes("gatheringMinerals"),
     gatheringSparks: urlLayers.includes("gatheringSparks"),
+    gatheringFishing: urlLayers.includes("gatheringFishing"),
     gatheringOther: urlLayers.includes("gatheringOther"),
     // Zones
     subZones: urlLayers.includes("subZones"),
