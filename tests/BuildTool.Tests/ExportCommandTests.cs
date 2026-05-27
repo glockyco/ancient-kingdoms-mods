@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Threading.Tasks;
 using BuildTool.Abstractions;
@@ -84,6 +85,8 @@ public class ExportCommandTests
             config,
             runner ?? new FakeProcessRunner(),
             isMacOs: false,
-            new CommandResultStore());
+            new CommandResultStore(),
+            hotReplReadinessTimeout: TimeSpan.Zero,
+            hotReplPollInterval: TimeSpan.Zero);
     }
 }

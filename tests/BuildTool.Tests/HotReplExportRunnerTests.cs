@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using BuildTool.HotRepl;
@@ -56,6 +57,7 @@ public class HotReplExportRunnerTests
         var t = new FakeHotReplTransport();
         t.EnqueueServerMessage(Handshake);
         t.EnqueueServerMessage(CommandsListResult);
+        t.EnqueueServerMessage(Handshake);
         t.EnqueueServerMessage(PreflightOk);
         t.EnqueueServerMessage(JobAccepted);
         t.EnqueueServerMessage(JobRunning);
@@ -78,6 +80,71 @@ public class HotReplExportRunnerTests
         });
 
     // ---------- tests ----------
+
+    [Fact]
+    public async Task Runner_RetriesInitialConnectionUntilServerIsReady()
+    {
+        var t = BuildTransport();
+        t.FailNextConnects(2);
+
+        var result = await BuildRunner(t).RunAsync(CancellationToken.None);
+
+        Assert.True(result.Ok);
+        Assert.True(t.Connected);
+    }
+
+    [Fact]
+    public async Task Runner_ReconnectsAfterCatalogIsReady()
+    {
+        var t = new FakeHotReplTransport();
+        t.EnqueueServerMessage(Handshake);
+        t.EnqueueServerMessage(CommandsListResult);
+        t.EnqueueServerMessage(Handshake);
+        t.EnqueueServerMessage(PreflightOk);
+        t.EnqueueServerMessage(JobAccepted);
+        t.EnqueueServerMessage(JobRunning);
+        t.EnqueueServerMessage(JobResultMsg("done", "ok", ArtifactsBase));
+        t.EnqueueServerMessage(Handshake);
+        t.EnqueueServerMessage(QuitOk);
+
+        var result = await BuildRunner(t).RunAsync(CancellationToken.None);
+
+        Assert.True(result.Ok);
+        Assert.True(t.ConnectCount >= 2);
+    }
+
+    [Fact]
+    public async Task Runner_ReconnectsWhenCatalogPollingConnectionCloses()
+    {
+        var t = new FakeHotReplTransport();
+        t.EnqueueServerMessage(Handshake);
+        t.EnqueueServerMessage("not json");
+        t.EnqueueServerMessage(Handshake);
+        t.EnqueueServerMessage(CommandsListResult);
+        t.EnqueueServerMessage(Handshake);
+        t.EnqueueServerMessage(PreflightOk);
+        t.EnqueueServerMessage(JobAccepted);
+        t.EnqueueServerMessage(JobRunning);
+        t.EnqueueServerMessage(JobResultMsg("done", "ok", ArtifactsBase));
+        t.EnqueueServerMessage(QuitOk);
+
+        var result = await BuildRunner(t).RunAsync(CancellationToken.None);
+
+        Assert.True(result.Ok);
+        Assert.True(t.SentMessages.Count(m => m.Contains("commands_list")) >= 2);
+    }
+
+    [Fact]
+    public async Task Runner_RetriesWhenHandshakeIsNotReady()
+    {
+        var t = BuildTransport();
+        t.FailNextReceives(2);
+
+        var result = await BuildRunner(t).RunAsync(CancellationToken.None);
+
+        Assert.True(result.Ok);
+        Assert.True(t.Connected);
+    }
 
     [Fact]
     public async Task Runner_SendsCommandsList()

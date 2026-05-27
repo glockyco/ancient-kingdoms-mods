@@ -14,10 +14,13 @@ namespace BuildTool.HotRepl;
 /// </summary>
 internal sealed class ClientWebSocketTransport : IHotReplTransport
 {
-    private readonly ClientWebSocket _ws = new();
+    private ClientWebSocket _ws = new();
 
     public async Task ConnectAsync(Uri uri, CancellationToken ct)
-        => await _ws.ConnectAsync(uri, ct);
+    {
+        ResetSocket();
+        await _ws.ConnectAsync(uri, ct);
+    }
 
     public async Task SendAsync(string json, CancellationToken ct)
     {
@@ -53,15 +56,33 @@ internal sealed class ClientWebSocketTransport : IHotReplTransport
 
     public async ValueTask DisposeAsync()
     {
-        if (_ws.State == WebSocketState.Open)
+        try
         {
-            try
+            if (_ws.State == WebSocketState.Open)
             {
                 using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(3));
-                await _ws.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, cts.Token);
+                await _ws.CloseAsync(
+                    WebSocketCloseStatus.NormalClosure,
+                    string.Empty,
+                    cts.Token);
             }
-            catch { /* best-effort close */ }
         }
+        catch
+        {
+            // best-effort close
+        }
+        finally
+        {
+            _ws.Dispose();
+        }
+    }
+
+    private void ResetSocket()
+    {
+        if (_ws.State == WebSocketState.None)
+            return;
+
         _ws.Dispose();
+        _ws = new ClientWebSocket();
     }
 }

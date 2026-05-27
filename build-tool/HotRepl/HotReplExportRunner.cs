@@ -68,46 +68,61 @@ internal sealed class HotReplExportRunner
 
     private async Task<ExportRunnerResult> RunCoreAsync(CancellationToken ct)
     {
-        await _transport.ConnectAsync(_options.Endpoint, ct);
-
-        // 1. Handshake — verify protocol version 2
-        using var hsDoc = JsonDocument.Parse(
-            await _transport.ReceiveMessageAsync(ct));
-        if (!hsDoc.RootElement.TryGetProperty("protocolVersion", out var pvEl)
-            || pvEl.GetInt32() != 2)
-        {
-            var pv = hsDoc.RootElement.TryGetProperty("protocolVersion", out var x)
-                ? x.ToString() : "?";
-            return new(false, ExitCodes.Internal,
-                $"Unsupported HotRepl protocol version {pv}; expected 2.");
-        }
+        var handshakeError = await ConnectAndValidateHandshakeAsync(ct);
+        if (handshakeError != null)
+            return handshakeError;
 
         // 2. commands_list — retry until catalog contains required commands or timeout
         var readinessDeadline = DateTime.UtcNow + _options.ReadinessTimeout;
         while (true)
         {
-            using var listDoc = await SendReceiveAsync(
-                $"{{\"type\":\"commands_list\",\"id\":\"{Id()}\"}}", ct);
-
-            if (listDoc.RootElement.TryGetProperty("type", out var lt)
-                && lt.GetString() == "commands_list_result"
-                && listDoc.RootElement.TryGetProperty("commands", out var cmds))
+            try
             {
-                var missing = FindMissingCommands(cmds);
-                if (missing == null) break;   // catalog ready
+                using var listDoc = await SendReceiveAsync(
+                    $"{{\"type\":\"commands_list\",\"id\":\"{Id()}\"}}", ct);
 
+                if (listDoc.RootElement.TryGetProperty("type", out var lt)
+                    && lt.GetString() == "commands_list_result"
+                    && listDoc.RootElement.TryGetProperty("commands", out var cmds))
+                {
+                    var missing = FindMissingCommands(cmds);
+                    if (missing == null) break;   // catalog ready
+
+                    if (DateTime.UtcNow >= readinessDeadline)
+                        return new(false, ExitCodes.ReadinessFailed,
+                            $"HotRepl command catalog not ready: {missing}");
+                }
+                else if (DateTime.UtcNow >= readinessDeadline)
+                {
+                    return new(false, ExitCodes.ReadinessFailed,
+                        "Timed out waiting for commands_list_result.");
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
                 if (DateTime.UtcNow >= readinessDeadline)
                     return new(false, ExitCodes.ReadinessFailed,
-                        $"HotRepl command catalog not ready: {missing}");
-            }
-            else if (DateTime.UtcNow >= readinessDeadline)
-            {
-                return new(false, ExitCodes.ReadinessFailed,
-                    "Timed out waiting for commands_list_result.");
+                        $"HotRepl command catalog connection failed: {ex.Message}");
+
+                handshakeError = await ConnectAndValidateHandshakeAsync(ct);
+                if (handshakeError != null)
+                    return handshakeError;
             }
 
             await Task.Delay(_options.PollInterval, ct);
         }
+
+        // Use a fresh connection for the export after startup/catalog readiness.
+        // HotRepl can accept an early socket before Unity finishes registering
+        // game commands; that startup connection may be closed by the host before
+        // the long-running export job begins.
+        handshakeError = await ConnectAndValidateHandshakeAsync(ct);
+        if (handshakeError != null)
+            return handshakeError;
 
         // 3. compendium.preflight
         using var preflightDoc = await SendReceiveAsync(
@@ -164,7 +179,7 @@ internal sealed class HotReplExportRunner
                     ? s.GetString() : null;
                 jobOk = status == "ok" && state == "done";
                 jobMessage = jobOk ? "Export completed." :
-                    $"Export job terminal: state={state} status={status}.";
+                    DescribeJobFailure(state, status, pollDoc.RootElement);
 
                 if (pollDoc.RootElement.TryGetProperty("artifacts", out var artsEl))
                     artifacts = ParseArtifacts(artsEl);
@@ -196,6 +211,46 @@ internal sealed class HotReplExportRunner
 
     // ---- helpers ----
 
+    private async Task<ExportRunnerResult?> ConnectAndValidateHandshakeAsync(CancellationToken ct)
+    {
+        using var hsDoc = await ConnectAndReadHandshakeWhenReadyAsync(ct);
+        if (hsDoc.RootElement.TryGetProperty("protocolVersion", out var pvEl)
+            && pvEl.GetInt32() == 2)
+            return null;
+
+        var pv = hsDoc.RootElement.TryGetProperty("protocolVersion", out var x)
+            ? x.ToString() : "?";
+        return new(false, ExitCodes.Internal,
+            $"Unsupported HotRepl protocol version {pv}; expected 2.");
+    }
+
+    private async Task<JsonDocument> ConnectAndReadHandshakeWhenReadyAsync(CancellationToken ct)
+    {
+        var deadline = DateTime.UtcNow + _options.ReadinessTimeout;
+        Exception? lastError = null;
+
+        while (DateTime.UtcNow < deadline)
+        {
+            try
+            {
+                await _transport.ConnectAsync(_options.Endpoint, ct);
+                return JsonDocument.Parse(await _transport.ReceiveMessageAsync(ct));
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                lastError = ex;
+                await Task.Delay(_options.PollInterval, ct);
+            }
+        }
+
+        throw new TimeoutException(
+            $"Timed out connecting to HotRepl at {_options.Endpoint}: {lastError?.Message}");
+    }
+
     private string Id() => (_nextId++).ToString();
 
     private async Task<JsonDocument> SendReceiveAsync(string json, CancellationToken ct)
@@ -213,6 +268,27 @@ internal sealed class HotReplExportRunner
                 ct);
         }
         catch { /* game may have already exited */ }
+    }
+
+    private static string DescribeJobFailure(
+        string? state,
+        string? status,
+        JsonElement root)
+    {
+        var message = $"Export job terminal: state={state} status={status}.";
+        if (!root.TryGetProperty("error", out var error))
+            return message;
+
+        var code = error.TryGetProperty("code", out var codeEl)
+            ? codeEl.GetString()
+            : null;
+        var detail = error.TryGetProperty("message", out var messageEl)
+            ? messageEl.GetString()
+            : null;
+        if (string.IsNullOrWhiteSpace(code) && string.IsNullOrWhiteSpace(detail))
+            return message;
+
+        return $"{message} {code}: {detail}";
     }
 
     private static string? FindMissingCommands(JsonElement commands)

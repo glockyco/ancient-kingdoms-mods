@@ -20,6 +20,8 @@ public sealed class ExportCommand : AsyncCommand<ExportCommand.Settings>
     private readonly bool _isMacOs;
     private readonly CommandResultStore _resultStore;
 
+    private readonly TimeSpan? _hotReplReadinessTimeout;
+    private readonly TimeSpan? _hotReplPollInterval;
     public ExportCommand()
         : this(
             Directory.GetCurrentDirectory(),
@@ -36,13 +38,17 @@ public sealed class ExportCommand : AsyncCommand<ExportCommand.Settings>
         LocalConfig config,
         IProcessRunner runner,
         bool isMacOs,
-        CommandResultStore? resultStore = null)
+        CommandResultStore? resultStore = null,
+        TimeSpan? hotReplReadinessTimeout = null,
+        TimeSpan? hotReplPollInterval = null)
     {
-        _repoRoot    = repoRoot;
-        _config      = config;
-        _runner      = runner;
-        _isMacOs     = isMacOs;
-        _resultStore = resultStore ?? new CommandResultStore();
+        _repoRoot                   = repoRoot;
+        _config                     = config;
+        _runner                     = runner;
+        _isMacOs                    = isMacOs;
+        _resultStore                = resultStore ?? new CommandResultStore();
+        _hotReplReadinessTimeout    = hotReplReadinessTimeout;
+        _hotReplPollInterval        = hotReplPollInterval;
     }
 
     public sealed class Settings : BaseSettings
@@ -119,11 +125,11 @@ public sealed class ExportCommand : AsyncCommand<ExportCommand.Settings>
 
         var runnerOptions = new HotReplRunnerOptions
         {
-            Endpoint         = new Uri(_config.HotReplEndpoint),
-            Screenshots      = settings.Screenshots,
-            ReadinessTimeout = TimeSpan.FromMinutes(5),
-            JobTimeout       = TimeSpan.FromMinutes(60),
-            PollInterval     = TimeSpan.FromSeconds(3),
+            Endpoint = new Uri(_config.HotReplEndpoint),
+            Screenshots = settings.Screenshots,
+            ReadinessTimeout = _hotReplReadinessTimeout ?? TimeSpan.FromMinutes(5),
+            JobTimeout = TimeSpan.FromMinutes(60),
+            PollInterval = _hotReplPollInterval ?? TimeSpan.FromSeconds(3),
         };
 
         ExportRunnerResult runnerResult;
