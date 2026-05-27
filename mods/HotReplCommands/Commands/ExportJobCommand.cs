@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Collections;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -34,20 +35,65 @@ namespace HotReplCommands.Commands
         public ControlCommandKind Kind => ControlCommandKind.Job;
         public bool MutatesState => true;
 
-        public async ValueTask<ControlCommandResult<CompendiumExportResult>> ExecuteAsync(
+        public ValueTask<ControlCommandResult<CompendiumExportResult>> ExecuteAsync(
             ControlCommandContext<CompendiumExportResult> context,
             CompendiumExportArgs args,
             CancellationToken cancellationToken)
         {
+            var completion = new TaskCompletionSource<ControlCommandResult<CompendiumExportResult>>(
+                TaskCreationOptions.RunContinuationsAsynchronously);
+            MelonCoroutines.Start(RunExportCoroutine(context, args, cancellationToken, completion));
+            return new ValueTask<ControlCommandResult<CompendiumExportResult>>(completion.Task);
+        }
+
+        private IEnumerator RunExportCoroutine(
+            ControlCommandContext<CompendiumExportResult> context,
+            CompendiumExportArgs args,
+            CancellationToken cancellationToken,
+            TaskCompletionSource<ControlCommandResult<CompendiumExportResult>> completion)
+        {
+            var core = RunExportCore(context, args, cancellationToken, completion);
+            while (true)
+            {
+                object current;
+                try
+                {
+                    if (!core.MoveNext())
+                        yield break;
+                    current = core.Current;
+                }
+                catch (OperationCanceledException)
+                {
+                    completion.TrySetCanceled(cancellationToken);
+                    yield break;
+                }
+                catch (Exception ex)
+                {
+                    completion.TrySetException(ex);
+                    yield break;
+                }
+
+                yield return current;
+            }
+        }
+
+        private IEnumerator RunExportCore(
+            ControlCommandContext<CompendiumExportResult> context,
+            CompendiumExportArgs args,
+            CancellationToken cancellationToken,
+            TaskCompletionSource<ControlCommandResult<CompendiumExportResult>> completion)
+        {
             var started = DateTime.UtcNow;
 
-            // --- resolve collaborators ---
             var dataExporter = MelonMod.RegisteredMelons
                 .OfType<DataExporter.DataExporter>()
                 .FirstOrDefault();
             if (dataExporter == null)
-                return context.PreconditionFailed(
-                    "dataExporterMissing", "DataExporter mod not found in registered melons.");
+            {
+                completion.TrySetResult(context.PreconditionFailed(
+                    "dataExporterMissing", "DataExporter mod not found in registered melons."));
+                yield break;
+            }
 
             MapScreenshotter.MapScreenshotter screenshotter = null;
             if (args.Screenshots)
@@ -56,61 +102,80 @@ namespace HotReplCommands.Commands
                     .OfType<MapScreenshotter.MapScreenshotter>()
                     .FirstOrDefault();
                 if (screenshotter == null)
-                    return context.PreconditionFailed(
+                {
+                    completion.TrySetResult(context.PreconditionFailed(
                         "mapScreenshotterMissing",
-                        "MapScreenshotter mod not found in registered melons.");
+                        "MapScreenshotter mod not found in registered melons."));
+                    yield break;
+                }
             }
 
-            // --- world entry (if not already in world) ---
             context.Progress.Report(Progress("enteringWorld", "Checking world readiness."));
             if (NetworkClient.localPlayer == null)
             {
-                var worldResult = await EnterWorldAsync(cancellationToken);
-                if (!worldResult.Ok)
-                    return context.PreconditionFailed(
-                        worldResult.Code, worldResult.Message);
+                WorldEntryOutcome worldResult = null;
+                yield return EnterWorldCoroutine(
+                    cancellationToken,
+                    outcome => worldResult = outcome);
+                if (worldResult == null || !worldResult.Ok)
+                {
+                    completion.TrySetResult(context.PreconditionFailed(
+                        worldResult?.Code ?? "worldEntryUnavailable",
+                        worldResult?.Message ?? "World entry failed with no error detail."));
+                    yield break;
+                }
             }
 
-            // --- export data ---
             context.Progress.Report(Progress("exportingData", "Running DataExporter.ExportAllData()."));
+            cancellationToken.ThrowIfCancellationRequested();
             var exportResult = dataExporter.ExportAllData();
             if (!exportResult.Ok)
-                return context.PreconditionFailed(
+            {
+                completion.TrySetResult(context.PreconditionFailed(
                     "dataExportFailed",
                     $"DataExporter reported {exportResult.Errors.Count} error(s): " +
-                    string.Join("; ", exportResult.Errors));
+                    string.Join("; ", exportResult.Errors)));
+                yield break;
+            }
 
-            // --- screenshots ---
             int? screenshotCount = null;
             if (args.Screenshots && screenshotter != null)
             {
                 context.Progress.Report(Progress("capturingScreenshots", "Starting MapScreenshotter."));
                 if (!screenshotter.StartScreenshotCapture())
-                    return context.PreconditionFailed(
+                {
+                    completion.TrySetResult(context.PreconditionFailed(
                         "screenshotCaptureFailed",
-                        "MapScreenshotter rejected start — capture already in progress.");
+                        "MapScreenshotter rejected start — capture already in progress."));
+                    yield break;
+                }
 
                 var deadline = DateTime.UtcNow + MaxWait;
                 while (screenshotter.IsCapturing)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
                     if (DateTime.UtcNow >= deadline)
-                        return context.PreconditionFailed(
+                    {
+                        completion.TrySetResult(context.PreconditionFailed(
                             "screenshotCaptureFailed",
-                            "Timed out waiting for screenshot capture to complete.");
-                    await Task.Yield();
+                            "Timed out waiting for screenshot capture to complete."));
+                        yield break;
+                    }
+                    yield return null;
                 }
 
                 var shotResult = screenshotter.LastResult;
                 if (shotResult == null || !shotResult.Ok)
-                    return context.PreconditionFailed(
+                {
+                    completion.TrySetResult(context.PreconditionFailed(
                         "screenshotCaptureFailed",
-                        shotResult?.ErrorMessage ?? "Screenshot capture failed with no error detail.");
+                        shotResult?.ErrorMessage ?? "Screenshot capture failed with no error detail."));
+                    yield break;
+                }
 
                 screenshotCount = shotResult.TileCount;
             }
 
-            // --- collect artifacts ---
             context.Progress.Report(Progress("collectingArtifacts", "Building artifact map."));
             var artifacts = ArtifactCollector.Collect(_exportDir, _screenshotDir, args.Screenshots);
 
@@ -123,10 +188,8 @@ namespace HotReplCommands.Commands
                 Errors = Array.Empty<string>(),
             };
 
-            return ControlCommandResult.Ok(output, artifacts);
+            completion.TrySetResult(ControlCommandResult.Ok(output, artifacts));
         }
-
-        // ---
 
         private static ControlCommandProgress Progress(string phase, string message)
             => new ControlCommandProgress(
@@ -144,50 +207,66 @@ namespace HotReplCommands.Commands
                 => new WorldEntryOutcome { Ok = false, Code = code, Message = msg };
         }
 
-        private async Task<WorldEntryOutcome> EnterWorldAsync(CancellationToken ct)
+        private static IEnumerator EnterWorldCoroutine(
+            CancellationToken ct,
+            Action<WorldEntryOutcome> complete)
         {
-            var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+            var scene = SceneManager.GetActiveScene().name;
 
-            // Phase 1: Start scene -> click singleplayer
             if (scene == "Start")
             {
-                await Task.Yield(); ct.ThrowIfCancellationRequested();
+                yield return null;
+                ct.ThrowIfCancellationRequested();
                 var login = UnityEngine.Object.FindObjectOfType<UILogin>();
                 if (login == null)
-                    return WorldEntryOutcome.Failed("worldEntryUnavailable",
-                        "UILogin not found in Start scene.");
+                {
+                    complete(WorldEntryOutcome.Failed(
+                        "worldEntryUnavailable",
+                        "UILogin not found in Start scene."));
+                    yield break;
+                }
                 login.singlePlayerButton.onClick.Invoke();
             }
 
-            // Phase 2: Wait for UICharacterSelection
             var deadline = DateTime.UtcNow + MaxWait;
             while (UICharacterSelection.singleton == null)
             {
                 ct.ThrowIfCancellationRequested();
                 if (DateTime.UtcNow >= deadline)
-                    return WorldEntryOutcome.Failed("worldEntryUnavailable",
-                        "Timed out waiting for UICharacterSelection.");
-                await Task.Yield();
+                {
+                    complete(WorldEntryOutcome.Failed(
+                        "worldEntryUnavailable",
+                        "Timed out waiting for UICharacterSelection."));
+                    yield break;
+                }
+                yield return null;
             }
 
             var charSelect = UICharacterSelection.singleton;
             var manager = charSelect.manager;
 
-            // Phase 3: Wait for lobby state + characters
             while (manager.state != NetworkState.Lobby ||
                    manager.charactersAvailableMsg.characters == null)
             {
                 ct.ThrowIfCancellationRequested();
                 if (DateTime.UtcNow >= deadline)
-                    return WorldEntryOutcome.Failed("worldEntryUnavailable",
-                        "Timed out waiting for lobby/character data.");
-                await Task.Yield();
+                {
+                    complete(WorldEntryOutcome.Failed(
+                        "worldEntryUnavailable",
+                        "Timed out waiting for lobby/character data."));
+                    yield break;
+                }
+                yield return null;
             }
 
             var characters = manager.charactersAvailableMsg.characters;
             if (characters.Length == 0)
-                return WorldEntryOutcome.Failed("characterMissing",
-                    "No characters found. Create a character first.");
+            {
+                complete(WorldEntryOutcome.Failed(
+                    "characterMissing",
+                    "No characters found. Create a character first."));
+                yield break;
+            }
 
             var firstName = characters[0].name;
             manager.selection = 0;
@@ -198,25 +277,27 @@ namespace HotReplCommands.Commands
             ((NetworkManagerMMO)NetworkManager.singleton).ClearPreviews();
             UIServerList.singleton.StartConnect(null);
 
-            // Phase 4: Wait for local player
             while (NetworkClient.localPlayer == null)
             {
                 ct.ThrowIfCancellationRequested();
                 if (DateTime.UtcNow >= deadline)
-                    return WorldEntryOutcome.Failed("worldEntryUnavailable",
-                        "Timed out waiting for local player to spawn.");
-                await Task.Yield();
+                {
+                    complete(WorldEntryOutcome.Failed(
+                        "worldEntryUnavailable",
+                        "Timed out waiting for local player to spawn."));
+                    yield break;
+                }
+                yield return null;
             }
 
-            // Phase 5: Settle
             var settleEnd = DateTime.UtcNow + SettleTime;
             while (DateTime.UtcNow < settleEnd)
             {
                 ct.ThrowIfCancellationRequested();
-                await Task.Yield();
+                yield return null;
             }
 
-            return WorldEntryOutcome.Success();
+            complete(WorldEntryOutcome.Success());
         }
     }
 }

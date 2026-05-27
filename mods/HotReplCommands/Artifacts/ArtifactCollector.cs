@@ -62,7 +62,7 @@ namespace HotReplCommands.Artifacts
         {
             var info = new FileInfo(path);
             var sha = ComputeSha256(path);
-            var uri = new Uri(path).AbsoluteUri;
+            var uri = new Uri(Path.GetFullPath(path)).AbsoluteUri;
             return new ArtifactRef(
                 LogicalName: logicalName,
                 Uri: uri,
