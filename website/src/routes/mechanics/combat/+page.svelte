@@ -752,10 +752,22 @@ finalDamage = damage − reduction</pre>
             </tbody>
           </table>
         </div>
+        <!-- Source: server-scripts/Combat.cs:1115-1129 — auto-attack rage gain on dealing damage. -->
+        <!-- Source: server-scripts/Combat.cs:1143-1185 — rage gain on taking Normal damage (added 0.9.18.0). -->
         <p class="text-sm text-muted-foreground mt-2">
-          Warrior and Rogue generate Rage from auto-attacks (⌊damage×0.25⌋ per
-          hit, capped at the target's current HP).
+          Warrior and Rogue generate Rage from two sources:
         </p>
+        <ul class="ml-4 list-disc text-sm text-muted-foreground">
+          <li>
+            Dealing auto-attack damage: ⌊damage × 0.25⌋ per hit, capped at the
+            target's current HP.
+          </li>
+          <li>
+            Taking Normal-type damage: ⌊clamp(damage × 0.03, 0, 100)⌋ per hit
+            (added 0.9.18.0). Same formula applies to Warrior/Rogue mercenary
+            pets when they receive Normal damage.
+          </li>
+        </ul>
       </div>
 
       <!-- Haste effects -->
