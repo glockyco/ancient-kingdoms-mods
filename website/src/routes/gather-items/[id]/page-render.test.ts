@@ -43,6 +43,19 @@ test("fishing spot detail pages link to the Fishing profession", () => {
   );
 });
 
+test("resource type badges use rectangular pill styling", () => {
+  const { body } = render(Page, {
+    props: { data: createPageData(true) },
+  });
+
+  expect(body).toMatch(
+    /<span[^>]+rounded-md[^>]+border[^>]*>\s*Fishing Spot\s*<\/span>/s,
+  );
+  expect(body).not.toMatch(
+    /<span[^>]+rounded-full[^>]*>\s*Fishing Spot\s*<\/span>/s,
+  );
+});
+
 test("non-fishing gather detail pages do not link to the Fishing profession", () => {
   const { body } = render(Page, {
     props: { data: createPageData(false) },

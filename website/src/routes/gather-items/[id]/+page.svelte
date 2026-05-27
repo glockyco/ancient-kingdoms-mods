@@ -108,14 +108,19 @@
   function selectNextFishingSpotVariant(): void {
     selectFishingSpotVariant(selectedFishingSpotVariantIndex + 1);
   }
+  const typeBadgeBase =
+    "inline-flex items-center rounded-md border px-2.5 py-1 text-sm font-medium";
   const typeColors: Record<string, string> = {
     "Fishing Spot":
-      "bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-200",
-    Plant: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-    Mineral: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200",
+      "border-cyan-500/30 bg-cyan-500/10 text-cyan-700 dark:text-cyan-300",
+    Plant:
+      "border-green-500/30 bg-green-500/10 text-green-700 dark:text-green-300",
+    Mineral:
+      "border-gray-500/30 bg-gray-500/10 text-gray-700 dark:text-gray-300",
     "Radiant Spark":
-      "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
-    Resource: "bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200",
+      "border-purple-500/30 bg-purple-500/10 text-purple-700 dark:text-purple-300",
+    Resource:
+      "border-gray-500/30 bg-gray-500/10 text-gray-700 dark:text-gray-300",
   };
 
   import { QUALITY_NAMES } from "$lib/constants/quality";
@@ -433,9 +438,8 @@
       <h1 class="text-3xl font-bold">{resource.name}</h1>
       <MapLink entityId={resource.id} entityType="resource" />
       <span
-        class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium {typeColors[
-          resourceType
-        ] ?? 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'}"
+        class="{typeBadgeBase} {typeColors[resourceType] ??
+          'border-gray-500/30 bg-gray-500/10 text-gray-700 dark:text-gray-300'}"
       >
         {resourceType}
       </span>
