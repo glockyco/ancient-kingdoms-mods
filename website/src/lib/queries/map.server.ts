@@ -852,6 +852,13 @@ interface GatheringRow {
   drop_count: number;
 }
 
+function getGatheringSelectionGroupId(
+  id: string,
+  isFishingSpot: number,
+): string {
+  return isFishingSpot ? id.replace(/_[0-9a-f]{8}$/u, "") : id;
+}
+
 function loadGatheringSpawnsServer(
   db: Database.Database,
 ): GatheringMapEntity[] {
@@ -901,6 +908,7 @@ function loadGatheringSpawnsServer(
       zoneId: r.zone_id,
       zoneName: r.zone_name,
       resourceName: r.name,
+      selectionGroupId: getGatheringSelectionGroupId(r.id, r.is_fishing_spot),
       level: r.level,
       respawnTime: r.respawn_time,
       toolRequiredId: r.tool_required_id,

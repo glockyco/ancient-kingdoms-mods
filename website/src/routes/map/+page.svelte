@@ -54,6 +54,8 @@
     LevelFilter,
     AnyMapEntity,
     ParentZoneBoundary,
+    GatheringMapEntity,
+    MonsterMapEntity,
   } from "$lib/types/map";
   import type { MapSearchResult } from "$lib/queries/map-search";
   import {
@@ -477,6 +479,7 @@
   /**
    * Get the ID to use for selection highlighting.
    * For monsters: use monsterId (groups all spawns)
+   * For fishing spots: use selectionGroupId (groups variants of the same type)
    * For others: use entity id
    */
   function getSelectionId(entity: AnyMapEntity): string {
@@ -487,7 +490,10 @@
       entity.type === "elite" ||
       entity.type === "hunt"
     ) {
-      return (entity as import("$lib/types/map").MonsterMapEntity).monsterId;
+      return (entity as MonsterMapEntity).monsterId;
+    }
+    if (entity.type === "gathering_fish") {
+      return (entity as GatheringMapEntity).selectionGroupId;
     }
     return entity.id;
   }

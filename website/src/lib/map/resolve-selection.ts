@@ -11,6 +11,7 @@ import type {
   MapEntityData,
   AnyMapEntity,
   ParentZoneBoundary,
+  GatheringMapEntity,
 } from "$lib/types/map";
 import { query } from "$lib/db";
 
@@ -415,18 +416,23 @@ function resolveGatheringSelection(
   resourceId: string,
   entityData: MapEntityData,
 ): ResolvedSelection {
-  const resource = entityData.gathering.find(
+  const exactResource = entityData.gathering.find(
     (g) => g.id === resourceId && g.position !== null,
-  );
+  ) as GatheringMapEntity | undefined;
+  const resource =
+    exactResource ??
+    (entityData.gathering.find(
+      (g) => g.selectionGroupId === resourceId && g.position !== null,
+    ) as GatheringMapEntity | undefined);
 
-  if (resource) {
-    return {
-      popup: { type: "entity", entity: resource },
-      highlight: { entityId: resourceId, entityType: "resource" },
-    };
+  if (!resource) {
+    return { popup: null, highlight: null };
   }
 
-  return { popup: null, highlight: null };
+  return {
+    popup: { type: "entity", entity: resource },
+    highlight: { entityId: resource.selectionGroupId, entityType: "resource" },
+  };
 }
 
 /**

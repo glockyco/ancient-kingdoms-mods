@@ -3,6 +3,7 @@ import type {
   AnyMapEntity,
   MonsterMapEntity,
   NpcMapEntity,
+  GatheringMapEntity,
   PortalMapEntity,
 } from "$lib/types/map";
 import type { OverrideGroup, HighlightCategory } from "./resolve-selection";
@@ -96,6 +97,23 @@ export function createEntityIndex(data: MapEntityData): EntityIndex {
     return index;
   }
 
+  // Index gathering resources by selection group id. Fishing spot variants share
+  // a group id so selecting one spot type highlights every same-type spawn.
+  function indexGatheringBySelectionGroup(
+    gathering: GatheringMapEntity[],
+  ): Map<string, AnyMapEntity[]> {
+    const index = new Map<string, AnyMapEntity[]>();
+    for (const entity of gathering) {
+      const existing = index.get(entity.selectionGroupId);
+      if (existing) {
+        existing.push(entity);
+      } else {
+        index.set(entity.selectionGroupId, [entity]);
+      }
+    }
+    return index;
+  }
+
   // Index monsters by monsterId (groups all spawns of same monster)
   function indexMonstersByMonsterId(
     monsters: MonsterMapEntity[],
@@ -155,7 +173,7 @@ export function createEntityIndex(data: MapEntityData): EntityIndex {
     chests: indexEntities(data.chests),
     treasure: indexEntities(data.treasure),
     altars: indexEntities(data.altars),
-    gathering: indexEntities(data.gathering),
+    gathering: indexGatheringBySelectionGroup(data.gathering),
     crafting: indexEntities(data.crafting),
     houses: indexEntities(data.houses),
   };

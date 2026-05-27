@@ -223,6 +223,12 @@ export interface GatheringMapEntity extends MapEntity {
     | "gathering_fish"
     | "gathering_other";
   resourceName: string;
+  /**
+   * Stable key used for map selection highlighting.
+   * Fishing spot variants share their base resource id so selecting one
+   * highlights every same-type spot. Other resources use their concrete id.
+   */
+  selectionGroupId: string;
   level: number;
   // Popup fields
   respawnTime: number;
