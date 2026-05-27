@@ -766,10 +766,10 @@ const HARDCODED_EFFECTS: Record<string, string> = {
   emerald_pop: "cosmetic visual effect",
   golden_whirl: "cosmetic visual effect",
   skyflare: "cosmetic visual effect",
-  // Source: server-scripts/TrapDetection.cs:26,65-69; Trap.cs:146,206,235;
-  // Player.cs:2733 — buff checked by name to allow Rogues to see, hover-highlight,
-  // and disarm traps. Duration stored in duration_base (15s).
-  detect_traps: "reveal and disarm traps (Rogue only), 15s",
+  // Source: server-scripts/PassiveSkill.cs (0.9.18.0+) — Detect Traps is now a passive skill.
+  // Source: server-scripts/Player.cs:HasDetectTraps and Trap.cs:143-209,
+  // TrapDetection.cs:25-31 — passive grants trap visibility/disarm to Rogues at any rank.
+  detect_traps: "passive — reveal and disarm traps (Rogue only)",
   // Source: server-scripts/TargetBuffSkill.cs:15 (isDoubleExpSpell flag) — lasts for the event duration
   halloween_event: "2× XP from kills, event duration",
   winter_festival: "2× XP from kills, event duration",
