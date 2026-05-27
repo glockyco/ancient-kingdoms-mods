@@ -96,11 +96,6 @@
         >
       </li>
       <li>
-        <a href="#vendor-buyback" class="hover:text-foreground hover:underline"
-          >Vendor Buyback</a
-        >
-      </li>
-      <li>
         <a href="#house-chests" class="hover:text-foreground hover:underline"
           >House Chests</a
         >
@@ -108,6 +103,11 @@
       <li>
         <a href="#item-movement" class="hover:text-foreground hover:underline"
           >Item Movement and Stacks</a
+        >
+      </li>
+      <li>
+        <a href="#vendor-buyback" class="hover:text-foreground hover:underline"
+          >Vendor Buyback</a
         >
       </li>
       <li>
@@ -321,36 +321,6 @@
     </Card.Content>
   </Card.Root>
 
-  <Card.Root id="vendor-buyback" class="bg-muted/30">
-    <Card.Header>
-      <Card.Title>Vendor Buyback</Card.Title>
-      <Card.Description
-        >Every vendor keeps a temporary buyback queue.</Card.Description
-      >
-    </Card.Header>
-    <Card.Content class="space-y-3 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/PlayerNpcTrading.cs:17 — buybackDuration = 600.0 (10 minutes). -->
-      <!-- Source: server-scripts/PlayerNpcTrading.cs:219-239 — expired entries are removed on every sell; queue capped at 20. -->
-      <!-- Source: server-scripts/PlayerNpcTrading.cs:369-394 — buyback purchase requires being at the same vendor and pays the original sell price. -->
-      <p>
-        Selling an item to any vendor keeps a copy of that stack in the vendor's
-        buyback list for 10 minutes. Returning to the same vendor lets you
-        re-buy the stack for the same gold the vendor paid you (no markup).
-      </p>
-      <ul class="ml-4 list-disc">
-        <li>
-          Each vendor stores at most 20 stacks. Oldest stacks fall off when the
-          queue is full.
-        </li>
-        <li>Buyback entries expire 10 minutes after the sale.</li>
-        <li>
-          Buyback works at every NPC that buys items, including faction vendors
-          and adventurer merchants.
-        </li>
-      </ul>
-    </Card.Content>
-  </Card.Root>
-
   <Card.Root id="house-chests" class="bg-muted/30">
     <Card.Header>
       <Card.Title>House Chests and Shared Storage</Card.Title>
@@ -512,6 +482,35 @@
         <li>
           <!-- Source: server-scripts/PlayerInventory.cs:543-549 — non-destroyable carried items cannot be destroyed. -->Non-destroyable
           items cannot be deleted.
+        </li>
+      </ul>
+    </Card.Content>
+  </Card.Root>
+  <Card.Root id="vendor-buyback" class="bg-muted/30">
+    <Card.Header>
+      <Card.Title>Vendor Buyback</Card.Title>
+      <Card.Description
+        >Every vendor keeps a temporary buyback queue.</Card.Description
+      >
+    </Card.Header>
+    <Card.Content class="space-y-3 text-sm text-muted-foreground">
+      <!-- Source: server-scripts/PlayerNpcTrading.cs:17 — buybackDuration = 600.0 (10 minutes). -->
+      <!-- Source: server-scripts/PlayerNpcTrading.cs:219-239 — expired entries are removed on every sell; queue capped at 20. -->
+      <!-- Source: server-scripts/PlayerNpcTrading.cs:369-394 — buyback purchase requires being at the same vendor and pays the original sell price. -->
+      <p>
+        Selling an item to any vendor keeps a copy of that stack in the vendor's
+        buyback list for 10 minutes. Returning to the same vendor lets you
+        re-buy the stack for the same gold the vendor paid you (no markup).
+      </p>
+      <ul class="ml-4 list-disc">
+        <li>
+          Each vendor stores at most 20 stacks. Oldest stacks fall off when the
+          queue is full.
+        </li>
+        <li>Buyback entries expire 10 minutes after the sale.</li>
+        <li>
+          Buyback works at every NPC that buys items, including faction vendors
+          and adventurer merchants.
         </li>
       </ul>
     </Card.Content>
