@@ -146,6 +146,8 @@ export interface GatherSource {
   actual_drop_chance: number;
   is_guaranteed: boolean;
   is_radiant_spark: boolean;
+  is_fishing_spot: boolean;
+  virtual_location_count: number;
   amount_min: number | null;
   amount_max: number | null;
 }

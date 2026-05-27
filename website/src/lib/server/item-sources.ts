@@ -219,11 +219,19 @@ export function getGatherSources(
 			COALESCE(isg.actual_drop_chance, isg.drop_rate) as actual_drop_chance,
 			0 as is_guaranteed,
 			COALESCE(gr.is_radiant_spark, 0) as is_radiant_spark,
+			COALESCE(gr.is_fishing_spot, 0) as is_fishing_spot,
+			(
+				SELECT COUNT(*)
+				FROM gathering_resource_spawns grs
+				WHERE grs.resource_id = gr.id
+			) as virtual_location_count,
 			CASE
+				WHEN gr.is_fishing_spot = 1 THEN NULL
 				WHEN gr.is_radiant_spark = 1 THEN 0
 				ELSE 1
 			END as amount_min,
 			CASE
+				WHEN gr.is_fishing_spot = 1 THEN NULL
 				WHEN gr.is_radiant_spark = 1 THEN 1
 				ELSE gr.item_reward_amount
 			END as amount_max
