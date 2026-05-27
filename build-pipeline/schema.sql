@@ -468,6 +468,12 @@ CREATE TABLE item_sources_gather (
 CREATE INDEX idx_item_sources_gather_item ON item_sources_gather(item_id);
 CREATE INDEX idx_item_sources_gather_resource ON item_sources_gather(resource_id);
 
+CREATE TABLE fish (
+    item_id TEXT PRIMARY KEY REFERENCES items(id),
+    is_trash BOOLEAN NOT NULL DEFAULT 0
+);
+CREATE INDEX idx_fish_trash ON fish(is_trash);
+
 -- Items found in chests (renamed from chest_drops)
 CREATE TABLE item_sources_chest (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -1281,6 +1287,7 @@ CREATE TABLE gathering_resources (
 
     -- Type flags
     is_plant BOOLEAN DEFAULT 0,
+    is_fishing_spot BOOLEAN DEFAULT 0,
     is_mineral BOOLEAN DEFAULT 0,
     is_radiant_spark BOOLEAN DEFAULT 0,
 
@@ -1306,7 +1313,7 @@ CREATE TABLE gathering_resources (
     keywords TEXT
 );
 
-CREATE INDEX idx_gathering_resources_type ON gathering_resources(is_plant, is_mineral, is_radiant_spark);
+CREATE INDEX idx_gathering_resources_type ON gathering_resources(is_plant, is_fishing_spot, is_mineral, is_radiant_spark);
 CREATE INDEX idx_gathering_resources_tool ON gathering_resources(tool_required_id);
 
 -- =============================================================================

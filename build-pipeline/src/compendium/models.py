@@ -946,6 +946,7 @@ class GatherItemData(BaseModel):
     position: Position | None = None
     is_template: bool = False
     is_plant: bool = False
+    is_fishing_spot: bool = False
     is_mineral: bool = False
     is_chest: bool = False
     is_radiant_spark: bool = False
@@ -1199,3 +1200,10 @@ class ProfessionData(BaseModel):
     max_level: int = 100
     tracking_type: str  # float_level, count_based
     tracking_denominator: int | None = None
+
+
+class FishData(BaseModel):
+    """Fish journal/trash fish data from fish.json"""
+
+    item_id: str
+    is_trash: bool = False

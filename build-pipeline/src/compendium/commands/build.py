@@ -20,6 +20,7 @@ from compendium.loaders import (
     load_classes,
     load_crafting_recipes,
     load_crafting_stations,
+    load_fish,
     load_gather_items,
     load_houses,
     load_items,
@@ -80,6 +81,7 @@ def run(config: dict) -> None:
         )  # After skills (environment_hazard_skill_id FK)
         load_houses(conn, export_dir)  # After zones + zone_triggers
         load_items(conn, export_dir)
+        load_fish(conn, export_dir)
         load_luck_tokens(conn, export_dir)  # After zones + items
         load_altars(conn, export_dir)  # After zones + items
         load_monsters(conn, export_dir)

@@ -22,6 +22,7 @@ from compendium.models import (
     ClassData,
     CraftingRecipeData,
     CraftingStationData,
+    FishData,
     GatherItemData,
     HouseData,
     ItemData,
@@ -900,6 +901,7 @@ def load_gather_items(conn: sqlite3.Connection, export_dir: Path) -> None:
             "id": resource_id,
             "name": resource.name,
             "is_plant": resource.is_plant,
+            "is_fishing_spot": resource.is_fishing_spot,
             "is_mineral": resource.is_mineral,
             "is_radiant_spark": resource.is_radiant_spark,
             "level": resource.level,
@@ -1037,6 +1039,28 @@ def load_gather_items(conn: sqlite3.Connection, export_dir: Path) -> None:
         f"  [green]OK[/green] Loaded {len(resource_spawns)} gathering resource spawns"
     )
     console.print(f"  [green]OK[/green] Loaded {len(chests)} chests")
+
+
+def load_fish(conn: sqlite3.Connection, export_dir: Path) -> None:
+    """Load fish journal and trash fish metadata."""
+    console.print("Loading fish...")
+
+    filepath = export_dir / "fish.json"
+    with open(filepath, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    fish_rows = [FishData(**item) for item in data]
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM fish")
+
+    for fish in fish_rows:
+        cursor.execute(
+            "INSERT INTO fish (item_id, is_trash) VALUES (?, ?)",
+            (fish.item_id, fish.is_trash),
+        )
+
+    conn.commit()
+    console.print(f"  [green]OK[/green] Loaded {len(fish_rows)} fish")
 
 
 def load_crafting_recipes(conn: sqlite3.Connection, export_dir: Path) -> None:

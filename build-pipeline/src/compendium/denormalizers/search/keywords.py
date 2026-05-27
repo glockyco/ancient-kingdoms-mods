@@ -71,11 +71,13 @@ def _generate_npc_keywords(roles_json: str | None) -> str | None:
 
 
 def _generate_resource_keywords(
-    is_plant: bool, is_mineral: bool, is_radiant_spark: bool
+    is_plant: bool, is_fishing_spot: bool, is_mineral: bool, is_radiant_spark: bool
 ) -> str:
     """Generate keywords for a gathering resource based on type (including synonyms)."""
     keywords = []
-    if is_plant:
+    if is_fishing_spot:
+        keywords.extend(["fish", "fishing", "fishing spot", "angler"])
+    elif is_plant:
         keywords.extend(["plant", "herb", "herbs", "herbalism", "forage"])
     elif is_mineral:
         keywords.extend(["mineral", "ore", "mining", "vein", "node"])
@@ -158,12 +160,14 @@ def run(conn: sqlite3.Connection) -> None:
 
     # Gathering resource keywords (plant/mineral/spark)
     cursor.execute(
-        "SELECT id, is_plant, is_mineral, is_radiant_spark FROM gathering_resources"
+        "SELECT id, is_plant, is_fishing_spot, is_mineral, is_radiant_spark FROM gathering_resources"
     )
     resources = cursor.fetchall()
     resource_count = 0
-    for resource_id, is_plant, is_mineral, is_spark in resources:
-        keywords = _generate_resource_keywords(is_plant, is_mineral, is_spark)
+    for resource_id, is_plant, is_fishing_spot, is_mineral, is_spark in resources:
+        keywords = _generate_resource_keywords(
+            is_plant, is_fishing_spot, is_mineral, is_spark
+        )
         if keywords:
             cursor.execute(
                 "UPDATE gathering_resources SET keywords = ? WHERE id = ?",
