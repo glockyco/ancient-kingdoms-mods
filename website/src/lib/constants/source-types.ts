@@ -18,6 +18,8 @@ import Dices from "@lucide/svelte/icons/dices";
 import Combine from "@lucide/svelte/icons/combine";
 import Shovel from "@lucide/svelte/icons/shovel";
 import Sparkles from "@lucide/svelte/icons/sparkles";
+import Fish from "@lucide/svelte/icons/fish";
+import Backpack from "@lucide/svelte/icons/backpack";
 
 export interface SourceTypeConfig {
   icon: Component;
@@ -47,6 +49,8 @@ export type ItemSourceType =
   | "random"
   | "merge"
   | "treasure_map"
+  | "fishing"
+  | "starter"
   | "special";
 
 export const SOURCE_TYPE_CONFIG: Record<ItemSourceType, SourceTypeConfig> = {
@@ -132,6 +136,18 @@ export const SOURCE_TYPE_CONFIG: Record<ItemSourceType, SourceTypeConfig> = {
     icon: Shovel,
     color: "text-teal-500",
     label: "Treasure",
+    linkPrefix: "/items/",
+  },
+  fishing: {
+    icon: Fish,
+    color: "text-cyan-500",
+    label: "Fishing",
+    linkPrefix: "/professions/",
+  },
+  starter: {
+    icon: Backpack,
+    color: "text-slate-500",
+    label: "Starter",
     linkPrefix: "/items/",
   },
   special: {

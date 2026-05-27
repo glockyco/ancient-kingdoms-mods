@@ -916,6 +916,21 @@ async function searchItems(
 
       UNION ALL
 
+      -- Fishing fallback positions for fish without explicit fishing spot rows
+      SELECT f.item_id, gs.position_x as x, gs.position_y as y
+      FROM fish f
+      JOIN gathering_resources gr ON gr.is_fishing_spot = 1
+      JOIN gathering_resource_spawns gs ON gs.resource_id = gr.id
+        AND gs.position_x IS NOT NULL
+      WHERE f.item_id IN (SELECT value FROM json_each(?))
+        AND NOT EXISTS (
+          SELECT 1
+          FROM item_sources_gather existing
+          WHERE existing.item_id = f.item_id
+        )
+
+      UNION ALL
+
       -- Physical chest positions
       SELECT isc.item_id, c.position_x as x, c.position_y as y
       FROM item_sources_chest isc
@@ -957,6 +972,7 @@ async function searchItems(
     GROUP BY item_id
   `,
     [
+      itemIdsJson,
       itemIdsJson,
       itemIdsJson,
       itemIdsJson,

@@ -241,7 +241,37 @@ export function getGatherSources(
 		ORDER BY isg.actual_drop_chance DESC, gr.name ASC
 	`);
 
-  return stmt.all(itemId) as GatherSource[];
+  const sources = stmt.all(itemId) as GatherSource[];
+  if (sources.length > 0) return sources;
+
+  const fishRow = db
+    .prepare("SELECT 1 FROM fish WHERE item_id = ? LIMIT 1")
+    .get(itemId);
+  if (!fishRow) return [];
+
+  const fishingStmt = db.prepare(`
+		SELECT
+			? as item_id,
+			gr.id as resource_id,
+			gr.name as resource_name,
+			0 as drop_rate,
+			0 as actual_drop_chance,
+			0 as is_guaranteed,
+			0 as is_radiant_spark,
+			1 as is_fishing_spot,
+			(
+				SELECT COUNT(*)
+				FROM gathering_resource_spawns grs
+				WHERE grs.resource_id = gr.id
+			) as virtual_location_count,
+			NULL as amount_min,
+			NULL as amount_max
+		FROM gathering_resources gr
+		WHERE gr.is_fishing_spot = 1
+		ORDER BY gr.level ASC, gr.name ASC
+	`);
+
+  return fishingStmt.all(itemId) as GatherSource[];
 }
 
 /**

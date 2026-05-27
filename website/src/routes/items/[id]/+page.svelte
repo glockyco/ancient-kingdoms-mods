@@ -191,10 +191,11 @@
           amount_max: g.amount_max,
           is_fishing_spot: g.is_fishing_spot,
           virtual_location_count: g.virtual_location_count,
-          // Source: server-scripts/GatherItem.cs:381 — Radiant Spark drop rate: 5% base + up to 25% from Radiant Seeker level
           rate_note: g.is_radiant_spark
             ? "5-30% based on Radiant Seeker level"
-            : undefined,
+            : g.is_fishing_spot && g.actual_drop_chance === 0
+              ? "Fishing"
+              : undefined,
         })) || [],
 
       foundInChests:

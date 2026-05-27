@@ -16,7 +16,7 @@ export function getItemSourceSummaries(
   if (itemIds.length === 0) return [];
 
   const placeholders = itemIds.map(() => "?").join(",");
-  return db
+  const rows = db
     .prepare(
       `
       SELECT
@@ -35,6 +35,47 @@ export function getItemSourceSummaries(
       `,
     )
     .all(...itemIds) as ItemSourceSummary[];
+
+  const virtualRows = db
+    .prepare(
+      `
+      SELECT
+        f.item_id,
+        'fishing' as type,
+        'fishing' as id,
+        'Fishing' as name,
+        NULL as source_level
+      FROM fish f
+      WHERE f.item_id IN (${placeholders})
+        AND NOT EXISTS (
+          SELECT 1
+          FROM item_source_entries ise
+          WHERE ise.item_id = f.item_id
+            AND ise.source_type = 'gather'
+        )
+
+      UNION ALL
+
+      SELECT
+        i.id as item_id,
+        'starter' as type,
+        i.id as id,
+        'New character' as name,
+        NULL as source_level
+      FROM items i
+      WHERE i.id IN (${placeholders})
+        AND i.comments LIKE 'Starter backpack%'
+        AND NOT EXISTS (
+          SELECT 1
+          FROM item_source_entries ise
+          WHERE ise.item_id = i.id
+        )
+      ORDER BY item_id ASC, name ASC
+      `,
+    )
+    .all(...itemIds, ...itemIds) as ItemSourceSummary[];
+
+  return [...rows, ...virtualRows];
 }
 
 export function groupItemSourceSummaries(

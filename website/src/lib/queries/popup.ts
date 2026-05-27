@@ -1122,9 +1122,32 @@ export async function loadItemPopupDetails(
     FROM item_sources_gather isg
     JOIN gathering_resources gr ON isg.resource_id = gr.id
     WHERE isg.item_id = ?
+
+    UNION ALL
+
+    SELECT
+      gr.id as resourceId,
+      gr.name as resourceName,
+      'resource' as resourceType,
+      0 as rate,
+      1 as isFishingSpot,
+      (
+        SELECT COUNT(*)
+        FROM gathering_resource_spawns grs
+        WHERE grs.resource_id = gr.id
+          AND grs.position_x IS NOT NULL
+      ) as virtualLocationCount
+    FROM gathering_resources gr
+    WHERE gr.is_fishing_spot = 1
+      AND EXISTS (SELECT 1 FROM fish f WHERE f.item_id = ?)
+      AND NOT EXISTS (
+        SELECT 1
+        FROM item_sources_gather existing
+        WHERE existing.item_id = ?
+      )
     ORDER BY gr.name ASC
   `,
-    [itemId],
+    [itemId, itemId, itemId],
   );
 
   // Query chest sources from junction table
