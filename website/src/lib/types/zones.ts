@@ -64,6 +64,7 @@ export interface ZoneGatherResource {
   is_plant: boolean;
   is_mineral: boolean;
   is_radiant_spark: boolean;
+  is_fishing_spot: boolean;
 }
 
 /**

@@ -1,4 +1,5 @@
-import { query, queryOne } from "$lib/db.server";
+import type Database from "better-sqlite3";
+import { getDb, query, queryOne } from "$lib/db.server";
 import type {
   GatherItemListView,
   GatheringResource,
@@ -12,9 +13,12 @@ import type {
 /**
  * Get all gather items (resources + chests) for list view.
  */
-export function getGatherItems(): GatherItemListView[] {
-  return query<GatherItemListView>(
-    `SELECT
+export function getGatherItemsFromDb(
+  db: Database.Database,
+): GatherItemListView[] {
+  return db
+    .prepare(
+      `SELECT
       id,
       name,
       type,
@@ -27,12 +31,11 @@ export function getGatherItems(): GatherItemListView[] {
       item_reward_name,
       item_reward_amount
     FROM (
-      -- Gathering resources
+      -- Non-fishing gathering resources
       SELECT
         gr.id,
         gr.name,
         CASE
-          WHEN gr.is_fishing_spot = 1 THEN 'Fishing Spot'
           WHEN gr.is_plant = 1 THEN 'Plant'
           WHEN gr.is_mineral = 1 THEN 'Mineral'
           WHEN gr.is_radiant_spark = 1 THEN 'Radiant Spark'
@@ -49,6 +52,28 @@ export function getGatherItems(): GatherItemListView[] {
       FROM gathering_resources gr
       LEFT JOIN items t ON gr.tool_required_id = t.id
       LEFT JOIN items r ON gr.item_reward_id = r.id
+      WHERE gr.is_fishing_spot = 0
+
+      UNION ALL
+
+      -- Fishing spots, collapsed by stable base id.
+      SELECT
+        replace(substr(gr.id, 1, length(gr.id) - 9), '__never__', '') as id,
+        gr.name,
+        'Fishing Spot' as type,
+        gr.level,
+        MIN(gr.respawn_time) as respawn_time,
+        gr.tool_required_id as tool_or_key_id,
+        t.name as tool_or_key_name,
+        COUNT(DISTINCT grs.zone_id) as zone_count,
+        NULL as item_reward_id,
+        NULL as item_reward_name,
+        0 as item_reward_amount
+      FROM gathering_resources gr
+      LEFT JOIN gathering_resource_spawns grs ON grs.resource_id = gr.id
+      LEFT JOIN items t ON gr.tool_required_id = t.id
+      WHERE gr.is_fishing_spot = 1
+      GROUP BY replace(substr(gr.id, 1, length(gr.id) - 9), '__never__', ''), gr.name, gr.level, gr.tool_required_id, t.name
 
       UNION ALL
 
@@ -70,7 +95,12 @@ export function getGatherItems(): GatherItemListView[] {
       LEFT JOIN items r ON c.item_reward_id = r.id
     )
     ORDER BY type, name`,
-  );
+    )
+    .all() as GatherItemListView[];
+}
+
+export function getGatherItems(): GatherItemListView[] {
+  return getGatherItemsFromDb(getDb());
 }
 
 /**
@@ -126,9 +156,15 @@ export function getChestsList(): ChestListView[] {
 /**
  * Get a gathering resource by ID.
  */
-export function getGatheringResourceById(id: string): GatheringResource | null {
-  return queryOne<GatheringResource>(
-    `SELECT
+function fishingSpotBaseId(id: string): string {
+  return id.replace(/_[0-9a-f]{8}$/u, "");
+}
+
+function fishingSpotVariantGlob(baseId: string): string {
+  return `${baseId}_[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]`;
+}
+
+const gatheringResourceSelect = `SELECT
       gr.id,
       gr.name,
       gr.is_plant,
@@ -146,70 +182,177 @@ export function getGatheringResourceById(id: string): GatheringResource | null {
       gr.description
     FROM gathering_resources gr
     LEFT JOIN items t ON gr.tool_required_id = t.id
-    LEFT JOIN items r ON gr.item_reward_id = r.id
-    WHERE gr.id = ?`,
-    [id],
+    LEFT JOIN items r ON gr.item_reward_id = r.id`;
+
+export function getGatheringResourceByIdFromDb(
+  db: Database.Database,
+  id: string,
+): GatheringResource | null {
+  const exact = db
+    .prepare(`${gatheringResourceSelect} WHERE gr.id = ?`)
+    .get(id) as GatheringResource | undefined;
+  if (exact) return exact;
+
+  return (
+    (db
+      .prepare(
+        `${gatheringResourceSelect}
+        WHERE gr.is_fishing_spot = 1
+          AND gr.id GLOB ?
+        ORDER BY gr.level, gr.name, gr.id
+        LIMIT 1`,
+      )
+      .get(fishingSpotVariantGlob(id)) as GatheringResource | undefined) ?? null
   );
+}
+
+export function getGatheringResourceById(id: string): GatheringResource | null {
+  return getGatheringResourceByIdFromDb(getDb(), id);
 }
 
 /**
  * Get drops for a gathering resource.
  * Excludes the guaranteed reward item (item_reward_id) since that's shown separately.
  */
+export function getGatheringResourceDropsFromDb(
+  db: Database.Database,
+  resourceId: string,
+  includeFishingTrash = false,
+): GatheringResourceDrop[] {
+  const drops = db
+    .prepare(
+      `SELECT
+        isg.item_id,
+        i.name as item_name,
+        isg.drop_rate,
+        isg.actual_drop_chance,
+        0 as is_fishing_trash
+      FROM item_sources_gather isg
+      JOIN items i ON isg.item_id = i.id
+      JOIN gathering_resources gr ON gr.id = isg.resource_id
+      WHERE isg.resource_id = ?
+        AND (gr.item_reward_id IS NULL OR isg.item_id != gr.item_reward_id)
+      ORDER BY isg.drop_rate DESC`,
+    )
+    .all(resourceId) as GatheringResourceDrop[];
+
+  if (!includeFishingTrash) return drops;
+
+  const trashDrops = db
+    .prepare(
+      `SELECT
+        f.item_id,
+        i.name as item_name,
+        0 as drop_rate,
+        NULL as actual_drop_chance,
+        1 as is_fishing_trash
+      FROM fish f
+      JOIN items i ON i.id = f.item_id
+      WHERE f.is_trash = 1
+      ORDER BY i.name`,
+    )
+    .all() as GatheringResourceDrop[];
+
+  return [...drops, ...trashDrops];
+}
+
 export function getGatheringResourceDrops(
   resourceId: string,
 ): GatheringResourceDrop[] {
-  return query<GatheringResourceDrop>(
-    `SELECT
-      isg.item_id,
-      i.name as item_name,
-      isg.drop_rate,
-      isg.actual_drop_chance
-    FROM item_sources_gather isg
-    JOIN items i ON isg.item_id = i.id
-    JOIN gathering_resources gr ON gr.id = isg.resource_id
-    WHERE isg.resource_id = ?
-      AND (gr.item_reward_id IS NULL OR isg.item_id != gr.item_reward_id)
-    ORDER BY isg.drop_rate DESC`,
-    [resourceId],
-  );
+  return getGatheringResourceDropsFromDb(getDb(), resourceId);
 }
 
 /**
  * Get all resource drops for list view.
  */
-export function getAllResourceDrops(): ResourceDropListView[] {
-  return query<ResourceDropListView>(
-    `SELECT
-      grd.resource_id,
+export function getAllResourceDropsFromDb(
+  db: Database.Database,
+): ResourceDropListView[] {
+  return db
+    .prepare(
+      `SELECT DISTINCT
+      CASE
+        WHEN gr.is_fishing_spot = 1 THEN replace(substr(gr.id, 1, length(gr.id) - 9), '__never__', '')
+        ELSE grd.resource_id
+      END as resource_id,
       grd.item_id,
       i.name as item_name
     FROM item_sources_gather grd
+    JOIN gathering_resources gr ON gr.id = grd.resource_id
     JOIN items i ON grd.item_id = i.id
-    ORDER BY grd.resource_id, i.name`,
-  );
+    ORDER BY resource_id, i.name`,
+    )
+    .all() as ResourceDropListView[];
+}
+
+export function getAllResourceDrops(): ResourceDropListView[] {
+  return getAllResourceDropsFromDb(getDb());
 }
 
 /**
  * Get spawn locations for a gathering resource (grouped by zone).
  */
+export function getGatheringResourceSpawnsFromDb(
+  db: Database.Database,
+  resourceId: string,
+): GatheringResourceSpawn[] {
+  return db
+    .prepare(
+      `SELECT
+        grs.zone_id,
+        z.name as zone_name,
+        COUNT(*) as spawn_count
+      FROM gathering_resource_spawns grs
+      JOIN zones z ON grs.zone_id = z.id
+      WHERE grs.resource_id = ?
+      GROUP BY grs.zone_id, z.name
+      ORDER BY spawn_count DESC`,
+    )
+    .all(resourceId) as GatheringResourceSpawn[];
+}
+
 export function getGatheringResourceSpawns(
   resourceId: string,
 ): GatheringResourceSpawn[] {
-  return query<GatheringResourceSpawn>(
-    `SELECT
-      grs.zone_id,
-      z.name as zone_name,
-      COUNT(*) as spawn_count
-    FROM gathering_resource_spawns grs
-    JOIN zones z ON grs.zone_id = z.id
-    WHERE grs.resource_id = ?
-    GROUP BY grs.zone_id, z.name
-    ORDER BY spawn_count DESC`,
-    [resourceId],
-  );
+  return getGatheringResourceSpawnsFromDb(getDb(), resourceId);
 }
 
+export interface FishingSpotVariantDetail {
+  resource: GatheringResource;
+  drops: GatheringResourceDrop[];
+  spawns: GatheringResourceSpawn[];
+}
+
+export function getFishingSpotVariantDetails(
+  db: Database.Database,
+  resource: GatheringResource,
+): FishingSpotVariantDetail[] {
+  if (!resource.is_fishing_spot) {
+    return [
+      {
+        resource,
+        drops: getGatheringResourceDropsFromDb(db, resource.id),
+        spawns: getGatheringResourceSpawnsFromDb(db, resource.id),
+      },
+    ];
+  }
+
+  const baseId = fishingSpotBaseId(resource.id);
+  const resources = db
+    .prepare(
+      `${gatheringResourceSelect}
+      WHERE gr.id = ?
+        OR gr.id GLOB ?
+      ORDER BY gr.level, gr.name, gr.id`,
+    )
+    .all(baseId, fishingSpotVariantGlob(baseId)) as GatheringResource[];
+
+  return resources.map((variant) => ({
+    resource: variant,
+    drops: getGatheringResourceDropsFromDb(db, variant.id, true),
+    spawns: getGatheringResourceSpawnsFromDb(db, variant.id),
+  }));
+}
 /**
  * Zone info for list view
  */
@@ -223,17 +366,29 @@ export interface ResourceZoneInfo {
 /**
  * Get all resource-zone relationships for list view.
  */
-export function getResourceZones(): ResourceZoneInfo[] {
-  return query<ResourceZoneInfo>(
-    `SELECT DISTINCT
-      grs.resource_id,
+export function getResourceZonesFromDb(
+  db: Database.Database,
+): ResourceZoneInfo[] {
+  return db
+    .prepare(
+      `SELECT DISTINCT
+      CASE
+        WHEN gr.is_fishing_spot = 1 THEN replace(substr(gr.id, 1, length(gr.id) - 9), '__never__', '')
+        ELSE grs.resource_id
+      END as resource_id,
       grs.zone_id,
       z.name as zone_name,
       z.is_dungeon
     FROM gathering_resource_spawns grs
+    JOIN gathering_resources gr ON gr.id = grs.resource_id
     JOIN zones z ON grs.zone_id = z.id
     ORDER BY z.name`,
-  );
+    )
+    .all() as ResourceZoneInfo[];
+}
+
+export function getResourceZones(): ResourceZoneInfo[] {
+  return getResourceZonesFromDb(getDb());
 }
 
 /**

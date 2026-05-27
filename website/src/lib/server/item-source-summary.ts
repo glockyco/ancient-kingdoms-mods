@@ -47,6 +47,7 @@ export function getItemSourceSummaries(
         NULL as source_level
       FROM fish f
       WHERE f.item_id IN (${placeholders})
+        AND f.is_trash = 1
         AND NOT EXISTS (
           SELECT 1
           FROM item_source_entries ise

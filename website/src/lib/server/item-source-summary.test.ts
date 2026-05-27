@@ -26,9 +26,12 @@ function createDb() {
   db.exec(`
     INSERT INTO items VALUES
       ('worn_rucksack', 'Worn Rucksack', ''),
+      ('ironjaw_catfish', 'Ironjaw Catfish', ''),
       ('worn_backpack', 'Worn Backpack', 'Starter backpack.'),
       ('hand_made_backpack', 'Hand Made Backpack', '');
-    INSERT INTO fish VALUES ('worn_rucksack', 1);
+    INSERT INTO fish VALUES
+      ('worn_rucksack', 1),
+      ('ironjaw_catfish', 0);
     INSERT INTO item_source_entries VALUES
       ('worn_rucksack', 'drop', 'infernal_skeleton', 'Infernal Skeleton', 10, 'Infernal Skeleton'),
       ('hand_made_backpack', 'vendor', 'alias_daehorn', 'Alais Daehorn', 1, 'Alais Daehorn');
@@ -41,6 +44,7 @@ describe("getItemSourceSummaries", () => {
     const db = createDb();
     const summaries = getItemSourceSummaries(db, [
       "worn_rucksack",
+      "ironjaw_catfish",
       "worn_backpack",
       "hand_made_backpack",
     ]);
@@ -63,6 +67,15 @@ describe("getItemSourceSummaries", () => {
           item_id: "hand_made_backpack",
           type: "vendor",
           id: "alias_daehorn",
+        }),
+      ]),
+    );
+
+    expect(summaries).not.toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          item_id: "ironjaw_catfish",
+          type: "fishing",
         }),
       ]),
     );

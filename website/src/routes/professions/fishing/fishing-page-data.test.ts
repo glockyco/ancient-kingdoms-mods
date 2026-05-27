@@ -112,24 +112,32 @@ function createDb() {
 }
 
 describe("loadFishingPageData", () => {
-  test("loads fishing equipment and fish recipe metadata", () => {
+  test("loads fishing equipment and trash fish metadata", () => {
     const db = createDb();
     const data = loadFishingPageData(db);
 
     expect(data.rod?.item_id).toBe("rusty_fishing_rod");
     expect(data.stats).not.toHaveProperty("rod_count");
+    expect(data).not.toHaveProperty("rods");
+    expect(data).not.toHaveProperty("recipes");
+    expect(data.stats).not.toHaveProperty("trash_fish_count");
+    expect(data.stats).not.toHaveProperty("recipe_count");
+    expect(data.stats).not.toHaveProperty("zone_count");
+    expect(data.spots[0]).not.toHaveProperty("zone_count");
     expect(data.stats.spot_count).toBe(2);
     expect(data.costumePieces.map((item) => item.item_id)).toEqual([
       "fishermans_garb",
       "fishermans_hat",
       "fishermans_trousers",
     ]);
-    expect(
-      data.fish.find((fish) => fish.item_id === "alchemy_fish"),
-    ).toMatchObject({
-      cooking_recipe_count: 0,
-      alchemy_recipe_count: 1,
+    expect(data.trashFish.map((fish) => fish.item_id)).toEqual(["trash_fish"]);
+    expect(data.trashFish[0]).toMatchObject({
+      item_id: "trash_fish",
+      item_name: "Trash Fish",
+      tooltip_html: expect.any(String),
     });
+    expect(data.trashFish[0]).not.toHaveProperty("cooking_recipe_count");
+    expect(data.trashFish[0]).not.toHaveProperty("alchemy_recipe_count");
     expect(data.foods[0]).toMatchObject({
       result_item_id: "fish_chowder",
       effect_skill_id: "fish_chowder_buff",
@@ -144,7 +152,7 @@ describe("loadFishingPageData", () => {
     });
     expect(data.rod).toMatchObject({ item_id: "rusty_fishing_rod" });
     expect(data.costumePieces).toHaveLength(3);
-    expect(data.fish[0]).not.toHaveProperty("qualityLabel");
+    expect(data.trashFish[0]).not.toHaveProperty("qualityLabel");
 
     db.close();
   });

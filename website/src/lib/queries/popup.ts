@@ -1123,6 +1123,7 @@ export async function loadItemPopupDetails(
     JOIN gathering_resources gr ON isg.resource_id = gr.id
     WHERE isg.item_id = ?
 
+
     UNION ALL
 
     SELECT
@@ -1139,7 +1140,12 @@ export async function loadItemPopupDetails(
       ) as virtualLocationCount
     FROM gathering_resources gr
     WHERE gr.is_fishing_spot = 1
-      AND EXISTS (SELECT 1 FROM fish f WHERE f.item_id = ?)
+      AND EXISTS (
+        SELECT 1
+        FROM fish f
+        WHERE f.item_id = ?
+          AND f.is_trash = 1
+      )
       AND NOT EXISTS (
         SELECT 1
         FROM item_sources_gather existing

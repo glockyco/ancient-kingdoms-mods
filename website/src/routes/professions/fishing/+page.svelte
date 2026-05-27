@@ -7,7 +7,8 @@
   import Trophy from "@lucide/svelte/icons/trophy";
   import CalculatorIcon from "@lucide/svelte/icons/calculator";
   import MapPin from "@lucide/svelte/icons/map-pin";
-  import Utensils from "@lucide/svelte/icons/utensils";
+  import ChefHat from "@lucide/svelte/icons/chef-hat";
+  import FlaskConical from "@lucide/svelte/icons/flask-conical";
   import { SvelteSet } from "svelte/reactivity";
   import {
     fishDropChancePerCast,
@@ -36,10 +37,13 @@
   const lowestSpotTier = spotTiers[0] ?? 0;
   const highestSpotTier = spotTiers.at(-1) ?? lowestSpotTier;
   const fishermanCostumePieces = $derived(selectedCostumeIds.size);
+  const trashFish = $derived(data.trashFish);
 
-  const selectedSpot = $derived(
-    data.spots.find((spot) => spot.id === selectedSpotId) ?? data.spots[0],
-  );
+  const selectedSpotIndex = $derived.by(() => {
+    const index = data.spots.findIndex((spot) => spot.id === selectedSpotId);
+    return index === -1 ? 0 : index;
+  });
+  const selectedSpot = $derived(data.spots[selectedSpotIndex]);
 
   const selectedSpotSuccessChance = $derived(
     selectedSpot
@@ -88,7 +92,7 @@
     return [
       ...fishRows,
       {
-        label: "Any trash fish",
+        label: "Trash catch",
         itemId: null,
         tooltipHtml: null,
         quality: null,
@@ -114,7 +118,7 @@
           }),
       },
       {
-        label: "Spot ignores bait",
+        label: "No bite",
         itemId: null,
         tooltipHtml: null,
         quality: null,
@@ -122,6 +126,19 @@
       },
     ];
   });
+
+  function selectSpot(index: number): void {
+    const clampedIndex = Math.min(data.spots.length - 1, Math.max(0, index));
+    selectedSpotId = data.spots[clampedIndex]?.id ?? "";
+  }
+
+  function selectPreviousSpot(): void {
+    selectSpot(selectedSpotIndex - 1);
+  }
+
+  function selectNextSpot(): void {
+    selectSpot(selectedSpotIndex + 1);
+  }
 
   function toggleCostume(itemId: string, checked: boolean) {
     if (checked) selectedCostumeIds.add(itemId);
@@ -135,11 +152,15 @@
   function formatTier(tier: number): string {
     return `Tier ${toRomanNumeral(tier)}`;
   }
+
+  function formatZoneList(zones: Array<{ id: string; name: string }>): string {
+    return zones.map((zone) => zone.name).join(", ");
+  }
 </script>
 
 <Seo
   title={`${data.profession.name} - Ancient Kingdoms`}
-  description={`${data.profession.description} Fishing spot tiers, bite timing, selected fish odds, Fisherman set bonuses, foods, and potions.`}
+  description={`${data.profession.description} Fishing spot tiers, bite timing, fish catch odds, Fisherman set bonuses, foods, and potions.`}
   path="/professions/fishing"
 />
 
@@ -218,7 +239,13 @@
       <div class="grid gap-3 py-4 md:grid-cols-[2rem_1fr]">
         <div class="text-sm text-muted-foreground">2</div>
         <div>
-          <div>Click a Fishing Spot.</div>
+          <div>
+            Click a <a
+              href="#fishing-spots"
+              class="text-blue-600 hover:underline dark:text-blue-400"
+              >Fishing Spot</a
+            >.
+          </div>
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
             The map currently has {data.stats.spot_count} Fishing Spot locations
             across {spotTiers.length} tiers, from Tier {toRomanNumeral(
@@ -252,11 +279,23 @@
       <div class="grid gap-3 py-4 md:grid-cols-[2rem_1fr]">
         <div class="text-sm text-muted-foreground">5</div>
         <div>
-          <div>Roll the selected fish.</div>
+          <div>Roll for one fish from the spot.</div>
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            The selected fish roll is drop rate + Fishing/2 + 2 pp per equipped
-            Fisherman set piece. Failed fish rolls can become trash fish or
-            escaped fish.
+            <span class="block">
+              After a bite, the game picks one fish from the Fishing Spot's fish
+              list.
+            </span>
+            <span class="block">
+              That fish's catch chance is its base drop rate + Fishing/2 + 2 pp
+              per equipped Fisherman set piece.
+            </span>
+            <span class="block">
+              If the catch fails, you may get a <a
+                href="#fishing-trash"
+                class="text-blue-600 hover:underline dark:text-blue-400"
+                >trash catch</a
+              > or the fish may escape.
+            </span>
           </p>
         </div>
       </div>
@@ -293,39 +332,90 @@
     </div>
 
     {#if selectedSpot}
-      <div class="mt-4 grid gap-4 lg:grid-cols-2">
-        <label class="space-y-2">
-          <span class="text-sm font-medium">Skill</span>
+      <div class="mt-4 grid gap-4">
+        <label class="flex items-center gap-3">
+          <span class="shrink-0 text-sm font-medium">Fishing Skill</span>
           <input
             type="range"
             min="0"
             max="100"
             step="1"
             bind:value={skillLevel}
-            class="w-full"
+            class="min-w-0 flex-1"
           />
-          <span class="text-sm text-muted-foreground">{skillLevel}%</span>
+          <span class="w-12 shrink-0 text-right text-sm text-muted-foreground">
+            {skillLevel}%
+          </span>
         </label>
-        <label class="space-y-2">
-          <span class="text-sm font-medium">Spot</span>
-          <select
-            bind:value={selectedSpotId}
-            class="w-full rounded-md border bg-background p-2"
-          >
-            {#each data.spots as spot (spot.id)}
-              <option value={spot.id}
-                >{spot.name} ({formatTier(spot.level)})</option
+        <div>
+          <div class="space-y-3 rounded-md border bg-background/60 p-3">
+            <div class="flex items-center justify-between gap-3">
+              <label for="fishing-spot-selection" class="text-sm font-medium">
+                Spot
+              </label>
+              <div
+                class="shrink-0 rounded-full bg-muted px-2.5 py-1 text-xs text-muted-foreground"
               >
-            {/each}
-          </select>
-        </label>
-        <div class="space-y-2 lg:col-span-2">
-          <div class="flex flex-wrap items-baseline justify-between gap-2">
-            <div class="text-sm font-medium">Fisherman set pieces</div>
-            <div class="text-sm text-muted-foreground">
-              +2 pp per selected fish roll per piece
+                {selectedSpotIndex + 1} of {data.spots.length}
+              </div>
+            </div>
+
+            <div
+              class="grid grid-cols-2 gap-2 sm:grid-cols-[4.5rem_minmax(0,1fr)_4.5rem]"
+            >
+              <div class="relative col-span-2 min-w-0 sm:order-2 sm:col-span-1">
+                <select
+                  id="fishing-spot-selection"
+                  bind:value={selectedSpotId}
+                  aria-label="Fishing spot"
+                  class="h-11 w-full appearance-none rounded-md border bg-background px-3 pr-10 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                >
+                  {#each data.spots as spot, index (spot.id)}
+                    <option value={spot.id}>
+                      Spot {index + 1}: {spot.name} ({formatTier(spot.level)}),
+                      {spot.spawn_count}
+                      {spot.spawn_count === 1 ? "spot" : "spots"} — {formatZoneList(
+                        spot.zones,
+                      )}
+                    </option>
+                  {/each}
+                </select>
+                <svg
+                  class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="m6 9 6 6 6-6" />
+                </svg>
+              </div>
+              <button
+                type="button"
+                class="inline-flex h-11 items-center justify-center rounded-md border bg-background px-3 text-sm font-medium outline-none transition-colors hover:bg-muted focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 sm:order-1"
+                disabled={selectedSpotIndex === 0}
+                onclick={selectPreviousSpot}
+                aria-label="Previous fishing spot"
+              >
+                Prev
+              </button>
+              <button
+                type="button"
+                class="inline-flex h-11 items-center justify-center rounded-md border bg-background px-3 text-sm font-medium outline-none transition-colors hover:bg-muted focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 sm:order-3"
+                disabled={selectedSpotIndex === data.spots.length - 1}
+                onclick={selectNextSpot}
+                aria-label="Next fishing spot"
+              >
+                Next
+              </button>
             </div>
           </div>
+        </div>
+        <div class="space-y-2">
+          <div class="text-sm font-medium">Fisherman set</div>
           <div
             class="grid gap-2 rounded-md border bg-background p-2 sm:grid-cols-3"
           >
@@ -431,12 +521,6 @@
           </table>
         </div>
       </div>
-      <p class="mt-3 text-sm text-muted-foreground">
-        Casts where you miss the click window are not shown. They always yield
-        nothing. Rows sum to 100%. If the bite chance is too low, the spot
-        displays "Your Fishing skill is too low to fish here" and casting is
-        blocked entirely.
-      </p>
     {:else}
       <p class="mt-4 text-sm text-muted-foreground">
         No fishing spots are loaded yet.
@@ -454,6 +538,7 @@
         <table class="w-full whitespace-nowrap">
           <thead class="bg-muted/50">
             <tr>
+              <th class="p-3 text-left font-medium">#</th>
               <th class="p-3 text-left font-medium">Spot</th>
               <th class="p-3 text-left font-medium">Tier</th>
               <th class="p-3 text-left font-medium">Fish</th>
@@ -462,8 +547,11 @@
             </tr>
           </thead>
           <tbody>
-            {#each data.spots as spot (spot.id)}
+            {#each data.spots as spot, index (spot.id)}
               <tr class="border-t align-top hover:bg-muted/25">
+                <td class="p-3 font-mono text-muted-foreground">
+                  {index + 1}
+                </td>
                 <td class="p-3">
                   <a
                     href="/gather-items/{spot.id}"
@@ -485,7 +573,18 @@
                     {/each}
                   </div>
                 </td>
-                <td class="p-3">{spot.zone_count}</td>
+                <td class="p-3">
+                  <div class="flex flex-wrap gap-x-3 gap-y-1">
+                    {#each spot.zones as zone (zone.id)}
+                      <a
+                        href="/zones/{zone.id}"
+                        class="text-blue-600 hover:underline dark:text-blue-400"
+                      >
+                        {zone.name}
+                      </a>
+                    {/each}
+                  </div>
+                </td>
                 <td class="p-3 text-right">
                   <MapLink entityId={spot.id} entityType="resource" compact />
                 </td>
@@ -497,11 +596,11 @@
     </div>
   </section>
 
-  <section id="fish-journal" class="rounded-lg border p-5">
+  <section id="fishing-trash" class="rounded-lg border p-5">
     <div class="flex items-center gap-2">
       <Fish class="h-5 w-5 text-cyan-500" />
       <h2 class="text-xl font-semibold">
-        Fish Journal ({data.stats.fish_count} + {data.stats.trash_fish_count} trash)
+        Fishing Trash ({trashFish.length})
       </h2>
     </div>
     <div class="mt-4 overflow-hidden rounded-lg border">
@@ -509,14 +608,11 @@
         <table class="w-full whitespace-nowrap">
           <thead class="bg-muted/50">
             <tr>
-              <th class="p-3 text-left font-medium">Fish</th>
-              <th class="p-3 text-left font-medium">Source</th>
-              <th class="p-3 text-right font-medium">Cooking</th>
-              <th class="p-3 text-right font-medium">Alchemy</th>
+              <th class="p-3 text-left font-medium">Item</th>
             </tr>
           </thead>
           <tbody>
-            {#each data.fish as item (item.item_id)}
+            {#each trashFish as item (item.item_id)}
               <tr class="border-t hover:bg-muted/25">
                 <td class="p-3">
                   <ItemLink
@@ -525,13 +621,6 @@
                     tooltipHtml={item.tooltip_html}
                     colorClass={getQualityTextColorClass(item.quality)}
                   />
-                </td>
-                <td class="p-3">{item.is_trash ? "Trash" : "Fish"}</td>
-                <td class="p-3 text-right font-mono">
-                  {item.cooking_recipe_count || "—"}
-                </td>
-                <td class="p-3 text-right font-mono">
-                  {item.alchemy_recipe_count || "—"}
                 </td>
               </tr>
             {/each}
@@ -543,7 +632,7 @@
 
   <section id="fish-foods" class="rounded-lg border p-5">
     <div class="flex items-center gap-2">
-      <Utensils class="h-5 w-5 text-orange-500" />
+      <ChefHat class="h-5 w-5 text-orange-500" />
       <h2 class="text-xl font-semibold">Fish Foods ({data.foods.length})</h2>
     </div>
     <div class="mt-4 overflow-hidden rounded-lg border">
@@ -584,6 +673,9 @@
                     itemId={recipe.ingredient_item_id}
                     itemName={recipe.ingredient_item_name}
                     tooltipHtml={recipe.ingredient_tooltip_html}
+                    colorClass={getQualityTextColorClass(
+                      recipe.ingredient_quality,
+                    )}
                   />
                 </td>
               </tr>
@@ -597,7 +689,7 @@
   {#if data.potions.length > 0}
     <section id="fish-potions" class="rounded-lg border p-5">
       <div class="flex items-center gap-2">
-        <Utensils class="h-5 w-5 text-purple-500" />
+        <FlaskConical class="h-5 w-5 text-purple-500" />
         <h2 class="text-xl font-semibold">
           Fish Potions ({data.potions.length})
         </h2>
@@ -642,6 +734,9 @@
                       itemId={recipe.ingredient_item_id}
                       itemName={recipe.ingredient_item_name}
                       tooltipHtml={recipe.ingredient_tooltip_html}
+                      colorClass={getQualityTextColorClass(
+                        recipe.ingredient_quality,
+                      )}
                     />
                   </td>
                 </tr>

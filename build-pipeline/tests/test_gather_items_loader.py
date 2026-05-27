@@ -94,6 +94,92 @@ class GatherItemsLoaderTests(unittest.TestCase):
             [("golden_stripe_eel", 0.25, 0.125), ("river_carp", 0.75, 0.375)],
         )
 
+    def test_load_gather_items_keeps_fishing_spots_with_different_drop_pools_separate(
+        self,
+    ):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            export_dir = root / "exported-data"
+            export_dir.mkdir(parents=True)
+            (export_dir / "gather_items.json").write_text(
+                json.dumps(
+                    [
+                        {
+                            "id": "calm_fishing_spot_lone_lands_1",
+                            "name": "Calm Fishing Spot",
+                            "zone_id": "the_lone-lands",
+                            "position": {"x": 10, "y": 20, "z": 0},
+                            "is_fishing_spot": True,
+                            "level": 0,
+                            "random_drops": [
+                                {"item_id": "ironjaw_catfish", "rate": 0.5},
+                                {"item_id": "driftscale_catfish", "rate": 0.25},
+                                {"item_id": "silverplate_stingray", "rate": 0.1},
+                            ],
+                        },
+                        {
+                            "id": "calm_fishing_spot_crescent_coast_1",
+                            "name": "Calm Fishing Spot",
+                            "zone_id": "crescent_coast",
+                            "position": {"x": 30, "y": 40, "z": 0},
+                            "is_fishing_spot": True,
+                            "level": 0,
+                            "random_drops": [
+                                {"item_id": "blue_dartfish", "rate": 0.5},
+                                {"item_id": "rosefin_guppy", "rate": 0.25},
+                                {"item_id": "sandstripe_loach", "rate": 0.1},
+                            ],
+                        },
+                    ]
+                ),
+                encoding="utf-8",
+            )
+
+            conn = create_database(root / "test.db", SCHEMA_PATH)
+            for zone_index, zone_id in enumerate(
+                ("the_lone-lands", "crescent_coast"), start=1
+            ):
+                conn.execute(
+                    "INSERT INTO zones (id, zone_id, name) VALUES (?, ?, ?)",
+                    (zone_id, zone_index, zone_id),
+                )
+            for item_id in (
+                "ironjaw_catfish",
+                "driftscale_catfish",
+                "silverplate_stingray",
+                "blue_dartfish",
+                "rosefin_guppy",
+                "sandstripe_loach",
+            ):
+                conn.execute(
+                    "INSERT INTO items (id, name, travel_zone_id) VALUES (?, ?, NULL)",
+                    (item_id, item_id),
+                )
+            try:
+                load_gather_items(conn, export_dir)
+                resources = conn.execute(
+                    """
+                    SELECT id, name
+                    FROM gathering_resources
+                    WHERE name = 'Calm Fishing Spot'
+                    ORDER BY id
+                    """
+                ).fetchall()
+                ironjaw_sources = conn.execute(
+                    """
+                    SELECT gr.name, grs.zone_id
+                    FROM item_sources_gather isg
+                    JOIN gathering_resources gr ON gr.id = isg.resource_id
+                    JOIN gathering_resource_spawns grs ON grs.resource_id = gr.id
+                    WHERE isg.item_id = 'ironjaw_catfish'
+                    """
+                ).fetchall()
+            finally:
+                conn.close()
+
+        self.assertEqual(len(resources), 2)
+        self.assertEqual(ironjaw_sources, [("Calm Fishing Spot", "the_lone-lands")])
+
 
 if __name__ == "__main__":
     unittest.main()

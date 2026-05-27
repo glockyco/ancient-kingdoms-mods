@@ -7,7 +7,6 @@ interface FishingSpot {
   tool_required_id: string | null;
   tool_required_name: string | null;
   spawn_count: number;
-  zone_count: number;
   zones: Array<{ id: string; name: string }>;
   drops: FishDrop[];
 }
@@ -21,15 +20,11 @@ interface FishDrop {
   actual_drop_chance: number | null;
 }
 
-interface FishItem {
+interface TrashFishItem {
   item_id: string;
   item_name: string;
   quality: number;
   tooltip_html: string | null;
-  is_trash: boolean;
-  cooking_recipe_count: number;
-  alchemy_recipe_count: number;
-  cooked_recipe_count: number;
 }
 
 interface FishingEquipmentItem {
@@ -50,6 +45,7 @@ interface FishRecipe {
   ingredient_item_id: string;
   ingredient_item_name: string;
   ingredient_tooltip_html: string | null;
+  ingredient_quality: number;
   ingredient_amount: number;
   effect_skill_id: string | null;
   effect_skill_name: string | null;
@@ -66,22 +62,16 @@ export interface FishingPageData {
     steam_achievement_name: string | null;
   };
   spots: FishingSpot[];
-  fish: FishItem[];
+  trashFish: TrashFishItem[];
   rod: FishingEquipmentItem | null;
-  rods: FishingEquipmentItem[];
   costumePieces: FishingEquipmentItem[];
   foods: FishRecipe[];
-  recipes: FishRecipe[];
   potions: FishRecipe[];
   stats: {
     spot_count: number;
     fish_count: number;
-    trash_fish_count: number;
     food_count: number;
     potion_count: number;
-    recipe_count: number;
-    rod_count?: number;
-    zone_count: number;
   };
 }
 
@@ -105,8 +95,7 @@ export function loadFishingPageData(db: Database.Database): FishingPageData {
         gr.level,
         gr.tool_required_id,
         tool.name AS tool_required_name,
-        COUNT(DISTINCT grs.id) AS spawn_count,
-        COUNT(DISTINCT grs.zone_id) AS zone_count
+        COUNT(DISTINCT grs.id) AS spawn_count
       FROM gathering_resources gr
       LEFT JOIN gathering_resource_spawns grs ON grs.resource_id = gr.id
       LEFT JOIN items tool ON tool.id = gr.tool_required_id
@@ -150,28 +139,33 @@ export function loadFishingPageData(db: Database.Database): FishingPageData {
     )
     .all() as Array<FishDrop & { resource_id: string }>;
 
-  const fish = db
+  const trashFish = db
     .prepare(
       `
       SELECT
         f.item_id,
         i.name AS item_name,
         i.quality,
-        i.tooltip_html,
-        f.is_trash,
-        COUNT(DISTINCT CASE WHEN iur.recipe_type = 'crafting' THEN iur.recipe_id END) AS cooking_recipe_count,
-        COUNT(DISTINCT CASE WHEN iur.recipe_type = 'alchemy' THEN iur.recipe_id END) AS alchemy_recipe_count,
-        COUNT(DISTINCT CASE WHEN iur.recipe_type = 'crafting' THEN iur.recipe_id END) AS cooked_recipe_count
+        i.tooltip_html
       FROM fish f
       JOIN items i ON i.id = f.item_id
-      LEFT JOIN item_usages_recipe iur ON iur.item_id = f.item_id
-      GROUP BY f.item_id
-      ORDER BY f.is_trash, i.quality, i.name
+      WHERE f.is_trash = 1
+      ORDER BY i.quality, i.name
     `,
     )
-    .all() as FishItem[];
+    .all() as TrashFishItem[];
 
-  const rods = db
+  const fishStats = db
+    .prepare(
+      `
+      SELECT COUNT(*) AS fish_count
+      FROM fish
+      WHERE is_trash = 0
+    `,
+    )
+    .get() as { fish_count: number };
+
+  const rod = db
     .prepare(
       `
       SELECT id AS item_id, name AS item_name, quality, level_required, tooltip_html, slot
@@ -180,7 +174,7 @@ export function loadFishingPageData(db: Database.Database): FishingPageData {
       ORDER BY quality, level_required, name
     `,
     )
-    .all() as FishingEquipmentItem[];
+    .get() as FishingEquipmentItem | undefined;
 
   const costumePieces = db
     .prepare(
@@ -210,6 +204,7 @@ export function loadFishingPageData(db: Database.Database): FishingPageData {
         ingredient.id AS ingredient_item_id,
         ingredient.name AS ingredient_item_name,
         ingredient.tooltip_html AS ingredient_tooltip_html,
+        ingredient.quality AS ingredient_quality,
         iur.amount AS ingredient_amount,
         result.food_buff_id AS effect_skill_id,
         result.food_buff_name AS effect_skill_name
@@ -237,6 +232,7 @@ export function loadFishingPageData(db: Database.Database): FishingPageData {
         ingredient.id AS ingredient_item_id,
         ingredient.name AS ingredient_item_name,
         ingredient.tooltip_html AS ingredient_tooltip_html,
+        ingredient.quality AS ingredient_quality,
         iur.amount AS ingredient_amount,
         result.potion_buff_id AS effect_skill_id,
         result.potion_buff_name AS effect_skill_name
@@ -281,21 +277,16 @@ export function loadFishingPageData(db: Database.Database): FishingPageData {
   return {
     profession,
     spots,
-    fish,
-    rod: rods[0] ?? null,
-    rods,
+    trashFish,
+    rod: rod ?? null,
     costumePieces,
     foods,
-    recipes: foods,
     potions,
     stats: {
       spot_count: spots.reduce((total, spot) => total + spot.spawn_count, 0),
-      fish_count: fish.filter((item) => !item.is_trash).length,
-      trash_fish_count: fish.filter((item) => item.is_trash).length,
+      fish_count: fishStats.fish_count,
       food_count: foods.length,
       potion_count: potions.length,
-      recipe_count: foods.length,
-      zone_count: new Set(zoneRows.map((row) => row.zone_id)).size,
     },
   };
 }

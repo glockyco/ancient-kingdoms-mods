@@ -61,7 +61,7 @@ export interface ItemDetailPageData {
   fishing_role: "fish" | "trash_fish" | "rod" | "costume" | null;
   fishing_effect: {
     title: string;
-    description: string;
+    description_paragraphs: string[];
     fishing_page_href: string;
   } | null;
   recipeMaterials: Record<

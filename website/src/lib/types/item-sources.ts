@@ -148,6 +148,9 @@ export interface GatherSource {
   is_radiant_spark: boolean;
   is_fishing_spot: boolean;
   virtual_location_count: number;
+  spawn_id: string | null;
+  zone_id: string | null;
+  zone_name: string | null;
   amount_min: number | null;
   amount_max: number | null;
 }

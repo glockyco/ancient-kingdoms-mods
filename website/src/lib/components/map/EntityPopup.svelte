@@ -224,12 +224,20 @@
     ].includes(e.type);
   }
 
+  function getFishingSpotDetailId(id: string): string {
+    return id.replace(/_[0-9a-f]{8}$/u, "");
+  }
+
   function getEntityUrl(entity: AnyMapEntity): string | null {
     if (isMonster(entity)) {
       return `/monsters/${entity.monsterId}`;
     }
     if (isGathering(entity)) {
-      return `/gather-items/${entity.id}`;
+      return `/gather-items/${
+        entity.type === "gathering_fish"
+          ? getFishingSpotDetailId(entity.id)
+          : entity.id
+      }`;
     }
     switch (entity.type) {
       case "npc":
@@ -1200,8 +1208,9 @@
         </div>
         {#if entity.type === "gathering_fish"}
           <p class="mt-1 text-xs text-muted-foreground">
-            Chance per bite. Your Fishing skill and Fisherman costume pieces
-            raise the chance to land the selected fish.
+            Chance per bite. After a bite, the game picks one fish from this
+            list. Your Fishing skill and Fisherman set pieces raise that fish's
+            catch chance.
           </p>
         {/if}
       </div>

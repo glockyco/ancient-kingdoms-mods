@@ -82,6 +82,7 @@
     Plant: "bg-green-600",
     Mineral: "bg-gray-500",
     "Radiant Spark": "bg-purple-600",
+    "Fishing Spot": "bg-sky-600",
     Resource: "bg-gray-400",
   };
 

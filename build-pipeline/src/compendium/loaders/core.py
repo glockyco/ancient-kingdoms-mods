@@ -4,6 +4,7 @@ Each loader reads a JSON export file, validates it with Pydantic models,
 and inserts the records into the database.
 """
 
+import hashlib
 import json
 import sqlite3
 import shutil
@@ -842,6 +843,26 @@ def load_treasure_locations(conn: sqlite3.Connection, export_dir: Path) -> None:
     console.print(f"  [green]OK[/green] Loaded {len(locations)} treasure locations")
 
 
+def _gather_resource_base_id(resource: GatherItemData) -> str:
+    if resource.is_template:
+        return resource.id
+    return resource.name.lower().replace(" ", "_")
+
+
+def _gather_resource_group_key(resource: GatherItemData) -> tuple[object, ...]:
+    if not resource.is_fishing_spot:
+        return (resource.name,)
+
+    drops = tuple(sorted((drop.item_id, drop.rate) for drop in resource.random_drops))
+    return (resource.name, resource.level, drops)
+
+
+def _fishing_variant_id(resource: GatherItemData) -> str:
+    signature = json.dumps(_gather_resource_group_key(resource), separators=(",", ":"))
+    suffix = hashlib.sha1(signature.encode("utf-8")).hexdigest()[:8]
+    return f"{_gather_resource_base_id(resource)}_{suffix}"
+
+
 def load_gather_items(conn: sqlite3.Connection, export_dir: Path) -> None:
     """Load gather items, splitting into gathering_resources and chests."""
     console.print("Loading gather items...")
@@ -863,7 +884,7 @@ def load_gather_items(conn: sqlite3.Connection, export_dir: Path) -> None:
     chests = []
     resources = []
     resource_spawns = []  # All non-chest spawns with zone/position
-    resources_seen: dict[str, GatherItemData] = {}
+    resources_seen: dict[tuple[object, ...], GatherItemData] = {}
 
     for gather_item in gather_items:
         if gather_item.is_chest:
@@ -874,27 +895,37 @@ def load_gather_items(conn: sqlite3.Connection, export_dir: Path) -> None:
                 resource_spawns.append(gather_item)
 
             # Deduplicate resources by name (prefer templates)
-            if gather_item.name not in resources_seen:
-                resources_seen[gather_item.name] = gather_item
+            resource_key = _gather_resource_group_key(gather_item)
+            # Deduplicate resources by name for normal resources and by drop pool for fishing spots.
+            if resource_key not in resources_seen:
+                resources_seen[resource_key] = gather_item
                 resources.append(gather_item)
             elif (
-                gather_item.is_template
-                and not resources_seen[gather_item.name].is_template
+                gather_item.is_template and not resources_seen[resource_key].is_template
             ):
                 # Replace spawn with template if we find one later
-                old_idx = resources.index(resources_seen[gather_item.name])
+                old_idx = resources.index(resources_seen[resource_key])
                 resources[old_idx] = gather_item
-                resources_seen[gather_item.name] = gather_item
+                resources_seen[resource_key] = gather_item
+
+    fishing_variant_counts: dict[str, int] = {}
+    for resource in resources:
+        if resource.is_fishing_spot:
+            fishing_variant_counts[resource.name] = (
+                fishing_variant_counts.get(resource.name, 0) + 1
+            )
 
     # Insert gathering resources
     for resource in resources:
         # For non-template resources, derive a clean ID from the name
         # This handles cases like radiant sparks which only exist as scene instances
-        resource_id = (
-            resource.id
-            if resource.is_template
-            else resource.name.lower().replace(" ", "_")
-        )
+        if (
+            resource.is_fishing_spot
+            and fishing_variant_counts.get(resource.name, 0) > 1
+        ):
+            resource_id = _fishing_variant_id(resource)
+        else:
+            resource_id = _gather_resource_base_id(resource)
 
         # Insert main resource record
         values = {
@@ -930,12 +961,14 @@ def load_gather_items(conn: sqlite3.Connection, export_dir: Path) -> None:
     # Insert gathering resource spawns (links to deduplicated resources)
     for spawn in resource_spawns:
         # Map spawn to its deduplicated resource - derive normalized ID from name
-        deduplicated_resource = resources_seen[spawn.name]
-        normalized_resource_id = (
-            deduplicated_resource.id
-            if deduplicated_resource.is_template
-            else deduplicated_resource.name.lower().replace(" ", "_")
-        )
+        deduplicated_resource = resources_seen[_gather_resource_group_key(spawn)]
+        if (
+            deduplicated_resource.is_fishing_spot
+            and fishing_variant_counts.get(deduplicated_resource.name, 0) > 1
+        ):
+            normalized_resource_id = _fishing_variant_id(deduplicated_resource)
+        else:
+            normalized_resource_id = _gather_resource_base_id(deduplicated_resource)
         cursor.execute(
             """INSERT INTO gathering_resource_spawns
                (id, resource_id, zone_id, sub_zone_id, position_x, position_y, position_z)

@@ -191,6 +191,9 @@
           amount_max: g.amount_max,
           is_fishing_spot: g.is_fishing_spot,
           virtual_location_count: g.virtual_location_count,
+          spawn_id: g.spawn_id,
+          zone_id: g.zone_id,
+          zone_name: g.zone_name,
           rate_note: g.is_radiant_spark
             ? "5-30% based on Radiant Seeker level"
             : g.is_fishing_spot && g.actual_drop_chance === 0
@@ -553,12 +556,14 @@
           <Card.Header>
             <Card.Title>{data.fishing_effect.title}</Card.Title>
           </Card.Header>
-          <Card.Content class="space-y-2 text-sm">
-            <p class="text-muted-foreground">
-              {data.fishing_effect.description}
-            </p>
+          <Card.Content class="space-y-3 text-sm">
+            {#each data.fishing_effect.description_paragraphs as paragraph (paragraph)}
+              <p class="text-muted-foreground">
+                {paragraph}
+              </p>
+            {/each}
             <a href={data.fishing_effect.fishing_page_href} class={styles.link}>
-              Open Fishing calculator
+              Open Fishing Calculator
             </a>
           </Card.Content>
         </Card.Root>
@@ -1843,7 +1848,7 @@
         </Card.Header>
         <Card.Content>
           <div class="space-y-2">
-            {#each computed.gatheredFrom as gather, index (`${gather.gather_item_id}_${index}`)}
+            {#each computed.gatheredFrom as gather, index (`${gather.gather_item_id}_${gather.spawn_id ?? index}`)}
               <div class="flex justify-between items-start gap-3">
                 <div class="flex items-center gap-1.5">
                   <a
@@ -1852,6 +1857,9 @@
                   >
                     {gather.gather_item_name}
                   </a>
+                  {#if gather.zone_name}
+                    <span class={styles.label}>({gather.zone_name})</span>
+                  {/if}
                   <MapLink
                     entityId={gather.gather_item_id}
                     entityType="resource"
@@ -1863,9 +1871,6 @@
                     {gather.rate_note}
                   {:else}
                     {(gather.rate * 100).toFixed(1)}%
-                  {/if}
-                  {#if gather.is_fishing_spot && gather.virtual_location_count > 1}
-                    · {gather.virtual_location_count} fishing spots
                   {/if}
                   {#if gather.amount_min != null && gather.amount_max != null && gather.amount_max > 0}
                     {#if gather.amount_min === gather.amount_max}

@@ -33,6 +33,7 @@
   import Pickaxe from "@lucide/svelte/icons/pickaxe";
   import Sparkles from "@lucide/svelte/icons/sparkles";
   import MapPin from "@lucide/svelte/icons/map-pin";
+  import Fish from "@lucide/svelte/icons/fish";
   import Scroll from "@lucide/svelte/icons/scroll";
   import Flame from "@lucide/svelte/icons/flame";
   import Layers from "@lucide/svelte/icons/layers";
@@ -200,9 +201,16 @@
   const radiantSparks = $derived(
     data.gatherResources.filter((r) => r.is_radiant_spark),
   );
+  const fishingSpots = $derived(
+    data.gatherResources.filter((r) => r.is_fishing_spot),
+  );
   const otherResources = $derived(
     data.gatherResources.filter(
-      (r) => !r.is_plant && !r.is_mineral && !r.is_radiant_spark,
+      (r) =>
+        !r.is_plant &&
+        !r.is_mineral &&
+        !r.is_radiant_spark &&
+        !r.is_fishing_spot,
     ),
   );
 </script>
@@ -748,6 +756,34 @@
           </div>
         {/if}
 
+        {#if fishingSpots.length > 0}
+          <div class="rounded-md border bg-muted/30 p-4">
+            <h3
+              class="mb-3 font-medium text-cyan-600 dark:text-cyan-400 flex items-center gap-2"
+            >
+              <Fish class="h-4 w-4" />
+              Fishing Spots ({fishingSpots.length})
+            </h3>
+            <ul class="space-y-1">
+              {#each fishingSpots as resource (resource.id)}
+                <li class="flex justify-between">
+                  <a
+                    href="/gather-items/{resource.id.replace(
+                      /_[0-9a-f]{8}$/u,
+                      '',
+                    )}"
+                    class="text-blue-600 dark:text-blue-400 hover:underline"
+                  >
+                    {resource.name}
+                  </a>
+                  <span class="text-muted-foreground">
+                    x{resource.spawn_count}
+                  </span>
+                </li>
+              {/each}
+            </ul>
+          </div>
+        {/if}
         {#if otherResources.length > 0}
           <div class="rounded-md border bg-muted/30 p-4">
             <h3

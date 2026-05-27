@@ -51,6 +51,7 @@ export interface GatheringResourceDrop {
   item_name: string;
   drop_rate: number;
   actual_drop_chance: number | null;
+  is_fishing_trash?: boolean;
 }
 
 /**

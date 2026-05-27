@@ -217,7 +217,8 @@ export const load: PageServerLoad = ({ params }): ZoneDetailData => {
       COUNT(grs.id) as spawn_count,
       gr.is_plant,
       gr.is_mineral,
-      gr.is_radiant_spark
+      gr.is_radiant_spark,
+      gr.is_fishing_spot
     FROM gathering_resources gr
     JOIN gathering_resource_spawns grs ON grs.resource_id = gr.id
     WHERE grs.zone_id = ?

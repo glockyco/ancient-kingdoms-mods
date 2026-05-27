@@ -914,21 +914,22 @@ async function searchItems(
         AND gs.position_x IS NOT NULL
       WHERE isg.item_id IN (SELECT value FROM json_each(?))
 
+
       UNION ALL
 
-      -- Fishing fallback positions for fish without explicit fishing spot rows
+      -- Fishing trash can come from the global trash pool after a failed selected-fish roll.
       SELECT f.item_id, gs.position_x as x, gs.position_y as y
       FROM fish f
       JOIN gathering_resources gr ON gr.is_fishing_spot = 1
       JOIN gathering_resource_spawns gs ON gs.resource_id = gr.id
         AND gs.position_x IS NOT NULL
       WHERE f.item_id IN (SELECT value FROM json_each(?))
+        AND f.is_trash = 1
         AND NOT EXISTS (
           SELECT 1
           FROM item_sources_gather existing
           WHERE existing.item_id = f.item_id
         )
-
       UNION ALL
 
       -- Physical chest positions
@@ -976,6 +977,7 @@ async function searchItems(
       itemIdsJson,
       itemIdsJson,
       itemIdsJson,
+
       itemIdsJson,
       itemIdsJson,
       itemIdsJson,

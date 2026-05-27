@@ -111,8 +111,10 @@ export const load: PageServerLoad = ({ params }): ItemDetailPageData => {
   const fishingEffect = FISHERMAN_COSTUME_IDS.has(item.id)
     ? {
         title: "Fishing Bonus",
-        description:
-          "Equipping this Fisherman set piece adds +2 percentage points to each selected-fish roll.",
+        description_paragraphs: [
+          "Each Fisherman set piece adds +2 percentage points to the catch chance of every fish available at the Fishing Spot.",
+          "This bonus applies only after you get a bite. Bite chance is determined by your Fishing skill, the Fishing Spot tier, and your rod.",
+        ],
         fishing_page_href: "/professions/fishing#calculator",
       }
     : null;

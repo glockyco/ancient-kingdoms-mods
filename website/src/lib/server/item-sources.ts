@@ -212,42 +212,86 @@ export function getGatherSources(
 ): GatherSource[] {
   const stmt = db.prepare(`
 		SELECT
-			isg.item_id,
-			isg.resource_id,
-			gr.name as resource_name,
-			isg.drop_rate,
-			COALESCE(isg.actual_drop_chance, isg.drop_rate) as actual_drop_chance,
-			0 as is_guaranteed,
-			COALESCE(gr.is_radiant_spark, 0) as is_radiant_spark,
-			COALESCE(gr.is_fishing_spot, 0) as is_fishing_spot,
-			(
-				SELECT COUNT(*)
-				FROM gathering_resource_spawns grs
-				WHERE grs.resource_id = gr.id
-			) as virtual_location_count,
-			CASE
-				WHEN gr.is_fishing_spot = 1 THEN NULL
-				WHEN gr.is_radiant_spark = 1 THEN 0
-				ELSE 1
-			END as amount_min,
-			CASE
-				WHEN gr.is_fishing_spot = 1 THEN NULL
-				WHEN gr.is_radiant_spark = 1 THEN 1
-				ELSE gr.item_reward_amount
-			END as amount_max
-		FROM item_sources_gather isg
-		JOIN gathering_resources gr ON isg.resource_id = gr.id
-		WHERE isg.item_id = ?
-		ORDER BY isg.actual_drop_chance DESC, gr.name ASC
+			item_id,
+			resource_id,
+			resource_name,
+			drop_rate,
+			actual_drop_chance,
+			is_guaranteed,
+			is_radiant_spark,
+			is_fishing_spot,
+			virtual_location_count,
+			amount_min,
+			amount_max,
+			spawn_id,
+			zone_id,
+			zone_name
+		FROM (
+			SELECT
+				isg.item_id,
+				isg.resource_id,
+				gr.name as resource_name,
+				isg.drop_rate,
+				COALESCE(isg.actual_drop_chance, isg.drop_rate) as actual_drop_chance,
+				0 as is_guaranteed,
+				COALESCE(gr.is_radiant_spark, 0) as is_radiant_spark,
+				0 as is_fishing_spot,
+				0 as virtual_location_count,
+				CASE
+					WHEN gr.is_radiant_spark = 1 THEN 0
+					ELSE 1
+				END as amount_min,
+				CASE
+					WHEN gr.is_radiant_spark = 1 THEN 1
+					ELSE gr.item_reward_amount
+				END as amount_max,
+				NULL as spawn_id,
+				NULL as zone_id,
+				NULL as zone_name,
+				gr.name as sort_name,
+				0 as sort_level
+			FROM item_sources_gather isg
+			JOIN gathering_resources gr ON isg.resource_id = gr.id
+			WHERE isg.item_id = ?
+				AND COALESCE(gr.is_fishing_spot, 0) = 0
+
+			UNION ALL
+
+			SELECT
+				isg.item_id,
+				isg.resource_id,
+				gr.name as resource_name,
+				isg.drop_rate,
+				COALESCE(isg.actual_drop_chance, isg.drop_rate) as actual_drop_chance,
+				0 as is_guaranteed,
+				0 as is_radiant_spark,
+				1 as is_fishing_spot,
+				1 as virtual_location_count,
+				NULL as amount_min,
+				NULL as amount_max,
+				grs.id as spawn_id,
+				grs.zone_id,
+				z.name as zone_name,
+				gr.name as sort_name,
+				gr.level as sort_level
+			FROM item_sources_gather isg
+			JOIN gathering_resources gr ON isg.resource_id = gr.id
+			JOIN gathering_resource_spawns grs ON grs.resource_id = gr.id
+			JOIN zones z ON z.id = grs.zone_id
+			WHERE isg.item_id = ?
+				AND COALESCE(gr.is_fishing_spot, 0) = 1
+		)
+		ORDER BY actual_drop_chance DESC, sort_level ASC, sort_name ASC, zone_name ASC, spawn_id ASC
 	`);
 
-  const sources = stmt.all(itemId) as GatherSource[];
+  const sources = stmt.all(itemId, itemId) as GatherSource[];
+
   if (sources.length > 0) return sources;
 
-  const fishRow = db
-    .prepare("SELECT 1 FROM fish WHERE item_id = ? LIMIT 1")
+  const trashFishRow = db
+    .prepare("SELECT 1 FROM fish WHERE item_id = ? AND is_trash = 1 LIMIT 1")
     .get(itemId);
-  if (!fishRow) return [];
+  if (!trashFishRow) return [];
 
   const fishingStmt = db.prepare(`
 		SELECT
@@ -259,16 +303,17 @@ export function getGatherSources(
 			0 as is_guaranteed,
 			0 as is_radiant_spark,
 			1 as is_fishing_spot,
-			(
-				SELECT COUNT(*)
-				FROM gathering_resource_spawns grs
-				WHERE grs.resource_id = gr.id
-			) as virtual_location_count,
+			1 as virtual_location_count,
 			NULL as amount_min,
-			NULL as amount_max
+			NULL as amount_max,
+			grs.id as spawn_id,
+			grs.zone_id,
+			z.name as zone_name
 		FROM gathering_resources gr
+		JOIN gathering_resource_spawns grs ON grs.resource_id = gr.id
+		JOIN zones z ON z.id = grs.zone_id
 		WHERE gr.is_fishing_spot = 1
-		ORDER BY gr.level ASC, gr.name ASC
+		ORDER BY gr.level ASC, gr.name ASC, z.name ASC, grs.id ASC
 	`);
 
   return fishingStmt.all(itemId) as GatherSource[];
