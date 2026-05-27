@@ -344,7 +344,7 @@
                   ? "Fisherman set"
                   : data.fishing_role === "trash_fish"
                     ? "Trash fish"
-                    : "Fish"}
+                    : "Fishing"}
             <a
               href="/professions/fishing"
               class="inline-flex items-center gap-1.5 rounded-md border border-cyan-500/30 bg-cyan-500/10 px-2.5 py-1 text-sm font-medium text-cyan-700 transition-colors hover:bg-cyan-500/20 dark:text-cyan-300"

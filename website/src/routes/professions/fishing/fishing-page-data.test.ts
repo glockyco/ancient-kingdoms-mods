@@ -131,11 +131,18 @@ describe("loadFishingPageData", () => {
     expect(data.foods[0]).toMatchObject({
       result_item_id: "fish_chowder",
       effect_skill_id: "fish_chowder_buff",
+      result_tooltip_html: expect.any(String),
+      ingredient_tooltip_html: expect.any(String),
     });
     expect(data.potions[0]).toMatchObject({
       result_item_id: "fish_potion",
       effect_skill_id: "fish_potion_buff",
+      result_tooltip_html: expect.any(String),
+      ingredient_tooltip_html: expect.any(String),
     });
+    expect(data.rod).toMatchObject({ item_id: "rusty_fishing_rod" });
+    expect(data.costumePieces).toHaveLength(3);
+    expect(data.fish[0]).not.toHaveProperty("qualityLabel");
 
     db.close();
   });
