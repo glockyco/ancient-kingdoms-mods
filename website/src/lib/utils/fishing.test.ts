@@ -1,0 +1,147 @@
+import { describe, expect, it } from "vitest";
+import {
+  fishDropChancePerCast,
+  fishDropChancePerSuccessfulHook,
+  fishingClickWindowSeconds,
+  fishingCastDelaySecondsRange,
+  fishingExperienceForTier,
+  fishingMasteryGainChance,
+  fishingMasteryGainRange,
+  fishingSpotSuccessChance,
+  fishTrashChancePerHook,
+  fishEscapeChancePerHook,
+} from "./fishing";
+
+describe("fishing utilities", () => {
+  it("matches server fishing spot success formulas", () => {
+    expect(
+      fishingSpotSuccessChance({
+        rodQuality: 0,
+        fishingPercent: 0,
+        spotTier: 0,
+      }),
+    ).toBe(0.8);
+    expect(
+      fishingSpotSuccessChance({
+        rodQuality: 1,
+        fishingPercent: 0,
+        spotTier: 1,
+      }),
+    ).toBe(0.5);
+    expect(
+      fishingSpotSuccessChance({
+        rodQuality: 2,
+        fishingPercent: 50,
+        spotTier: 2,
+      }),
+    ).toBe(0.6);
+    expect(
+      fishingSpotSuccessChance({
+        rodQuality: 4,
+        fishingPercent: 100,
+        spotTier: 4,
+      }),
+    ).toBe(0.6);
+    expect(
+      fishingSpotSuccessChance({
+        rodQuality: 4,
+        fishingPercent: 100,
+        spotTier: 0,
+      }),
+    ).toBe(1);
+  });
+
+  it("treats below-threshold fishing spots as unavailable", () => {
+    expect(
+      fishingSpotSuccessChance({
+        rodQuality: 0,
+        fishingPercent: 0,
+        spotTier: 2,
+      }),
+    ).toBe(0);
+  });
+
+  it("applies fisherman costume bonus per equipped costume piece", () => {
+    expect(
+      fishDropChancePerSuccessfulHook({
+        configuredDropRate: 0.2,
+        fishCountAtSpot: 4,
+        fishingPercent: 40,
+        fishermanCostumePieces: 3,
+      }),
+    ).toBeCloseTo(0.115);
+  });
+
+  it("combines spot success and selected fish roll for per-cast chance", () => {
+    expect(
+      fishDropChancePerCast({
+        configuredDropRate: 0.2,
+        fishCountAtSpot: 4,
+        fishingPercent: 40,
+        fishermanCostumePieces: 3,
+        rodQuality: 2,
+        spotTier: 2,
+      }),
+    ).toBeCloseTo(0.0621);
+  });
+
+  it("matches mastery chance and tier caps", () => {
+    expect(
+      fishingMasteryGainChance({ fishingPercent: 0, spotTier: 0 }),
+    ).toBeCloseTo(0.6);
+    expect(fishingMasteryGainChance({ fishingPercent: 26, spotTier: 0 })).toBe(
+      0,
+    );
+    expect(
+      fishingMasteryGainChance({ fishingPercent: 49, spotTier: 1 }),
+    ).toBeCloseTo(0.355);
+    expect(fishingMasteryGainChance({ fishingPercent: 51, spotTier: 1 })).toBe(
+      0,
+    );
+    expect(
+      fishingMasteryGainChance({ fishingPercent: 74, spotTier: 2 }),
+    ).toBeCloseTo(0.23);
+    expect(fishingMasteryGainChance({ fishingPercent: 76, spotTier: 2 })).toBe(
+      0,
+    );
+  });
+
+  it("scales mastery gain amount inversely with spot success", () => {
+    expect(fishingMasteryGainRange(1)).toEqual({ min: 0.02, max: 0.06 });
+    expect(fishingMasteryGainRange(0.5)).toEqual({ min: 0.04, max: 0.12 });
+  });
+
+  it("matches fishing XP by spot tier", () => {
+    expect(fishingExperienceForTier(0)).toBe(15);
+    expect(fishingExperienceForTier(1)).toBe(150);
+    expect(fishingExperienceForTier(2)).toBe(750);
+    expect(fishingExperienceForTier(3)).toBe(4000);
+    expect(fishingExperienceForTier(4)).toBe(10000);
+  });
+
+  it("matches click-window length and cast delay range by tier", () => {
+    expect(fishingClickWindowSeconds(0)).toBe(2.0);
+    expect(fishingClickWindowSeconds(1)).toBe(1.5);
+    expect(fishingClickWindowSeconds(2)).toBe(1.0);
+    expect(fishingClickWindowSeconds(3)).toBe(0.75);
+    expect(fishingClickWindowSeconds(4)).toBe(0.75);
+    expect(fishingCastDelaySecondsRange()).toEqual({ min: 3, max: 7 });
+  });
+
+  it("splits non-fish outcomes into trash and escape", () => {
+    expect(
+      fishTrashChancePerHook({
+        spotDrops: [{ probability: 0.5 }, { probability: 0.5 }],
+        fishingPercent: 0,
+        fishermanCostumePieces: 0,
+      }),
+    ).toBeCloseTo(0.1);
+    expect(
+      fishEscapeChancePerHook({
+        spotDrops: [{ probability: 0.5 }, { probability: 0.5 }],
+        fishingPercent: 0,
+        fishermanCostumePieces: 0,
+      }),
+    ).toBeCloseTo(0.4);
+  });
+});
