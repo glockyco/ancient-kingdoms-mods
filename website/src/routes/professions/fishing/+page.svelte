@@ -10,6 +10,7 @@
   import ChefHat from "@lucide/svelte/icons/chef-hat";
   import FlaskConical from "@lucide/svelte/icons/flask-conical";
   import { SvelteSet } from "svelte/reactivity";
+  import { SOURCE_TYPE_CONFIG } from "$lib/constants/source-types";
   import {
     fishDropChancePerCast,
     fishEscapeChancePerHook,
@@ -25,10 +26,12 @@
   import type { PageData } from "./$types";
 
   let { data }: { data: PageData } = $props();
+  const MAX_VISIBLE_SOURCES_PER_TYPE = 3;
 
   let skillLevel = $state(0);
   let selectedCostumeIds = new SvelteSet<string>();
   let selectedSpotId = $state(data.spots[0]?.id ?? "");
+  let selectedRodId = $state(data.rods[0]?.item_id ?? "");
 
   const castDelay = fishingCastDelaySecondsRange();
   const spotTiers = Array.from(
@@ -45,10 +48,16 @@
   });
   const selectedSpot = $derived(data.spots[selectedSpotIndex]);
 
+  const selectedRodIndex = $derived.by(() => {
+    const index = data.rods.findIndex((rod) => rod.item_id === selectedRodId);
+    return index === -1 ? 0 : index;
+  });
+  const selectedRod = $derived(data.rods[selectedRodIndex]);
+  const selectedRodQuality = $derived(selectedRod?.quality ?? 0);
   const selectedSpotSuccessChance = $derived(
     selectedSpot
       ? fishingSpotSuccessChance({
-          rodQuality: 0,
+          rodQuality: selectedRodQuality,
           fishingPercent: skillLevel,
           spotTier: selectedSpot.level,
         })
@@ -84,7 +93,7 @@
         fishCountAtSpot: selectedSpot.drops.length,
         fishingPercent: skillLevel,
         fishermanCostumePieces,
-        rodQuality: 0,
+        rodQuality: selectedRodQuality,
         spotTier: selectedSpot.level,
       }),
     }));
@@ -126,6 +135,33 @@
       },
     ];
   });
+
+  function getSourcesByType(
+    sources: PageData["rods"][number]["sources"],
+  ): [
+    PageData["rods"][number]["sources"][number]["type"],
+    PageData["rods"][number]["sources"],
+  ][] {
+    const grouped: [
+      PageData["rods"][number]["sources"][number]["type"],
+      PageData["rods"][number]["sources"],
+    ][] = [];
+
+    for (const source of sources) {
+      const group = grouped.find(([type]) => type === source.type);
+      if (group) {
+        group[1].push(source);
+      } else {
+        grouped.push([source.type, [source]]);
+      }
+    }
+
+    return grouped;
+  }
+
+  function visibleSources<T>(sources: T[]): T[] {
+    return sources.slice(0, MAX_VISIBLE_SOURCES_PER_TYPE);
+  }
 
   function selectSpot(index: number): void {
     const clampedIndex = Math.min(data.spots.length - 1, Math.max(0, index));
@@ -188,7 +224,11 @@
       </div>
     </div>
 
-    <div class="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+    <div class="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+      <div class="rounded-lg border p-4">
+        <div class="text-2xl font-semibold">{data.stats.rod_count}</div>
+        <div class="text-sm text-muted-foreground">Fishing rods</div>
+      </div>
       <div class="rounded-lg border p-4">
         <div class="text-2xl font-semibold">{data.stats.spot_count}</div>
         <div class="text-sm text-muted-foreground">Fishing spots</div>
@@ -223,15 +263,15 @@
         <div class="text-sm text-muted-foreground">1</div>
         <div>
           <div>
-            Carry a <ItemLink
-              itemId={data.rod?.item_id ?? "rusty_fishing_rod"}
-              itemName={data.rod?.item_name ?? "Rusty Fishing Rod"}
-              tooltipHtml={data.rod?.tooltip_html}
-              colorClass={getQualityTextColorClass(data.rod?.quality ?? 0)}
-            />.
+            Carry a <a
+              href="#fishing-rods"
+              class="text-blue-600 hover:underline dark:text-blue-400"
+              >Fishing Rod</a
+            >.
           </div>
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            A rod is required before a Fishing Spot will start a cast.
+            If you carry multiple rods, the game uses the highest-quality
+            Fishing Rod in your inventory.
           </p>
         </div>
       </div>
@@ -347,72 +387,76 @@
             {skillLevel}%
           </span>
         </label>
-        <div>
-          <div class="space-y-3 rounded-md border bg-background/60 p-3">
-            <div class="flex items-center justify-between gap-3">
-              <label for="fishing-spot-selection" class="text-sm font-medium">
-                Spot
-              </label>
-              <div
-                class="shrink-0 rounded-full bg-muted px-2.5 py-1 text-xs text-muted-foreground"
-              >
-                {selectedSpotIndex + 1} of {data.spots.length}
-              </div>
-            </div>
 
-            <div
-              class="grid grid-cols-2 gap-2 sm:grid-cols-[4.5rem_minmax(0,1fr)_4.5rem]"
+        <div
+          class="grid grid-cols-2 gap-2 sm:grid-cols-[4.5rem_minmax(0,1fr)_4.5rem]"
+        >
+          <div class="relative col-span-2 min-w-0 sm:order-2 sm:col-span-1">
+            <select
+              id="fishing-spot-selection"
+              bind:value={selectedSpotId}
+              aria-label="Fishing spot"
+              class="h-11 w-full appearance-none rounded-md border bg-background px-3 pr-10 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
             >
-              <div class="relative col-span-2 min-w-0 sm:order-2 sm:col-span-1">
-                <select
-                  id="fishing-spot-selection"
-                  bind:value={selectedSpotId}
-                  aria-label="Fishing spot"
-                  class="h-11 w-full appearance-none rounded-md border bg-background px-3 pr-10 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
-                >
-                  {#each data.spots as spot, index (spot.id)}
-                    <option value={spot.id}>
-                      Spot {index + 1}: {spot.name} ({formatTier(spot.level)}) —
-                      {formatZoneList(spot.zones)}
-                    </option>
-                  {/each}
-                </select>
-                <svg
-                  class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  aria-hidden="true"
-                >
-                  <path d="m6 9 6 6 6-6" />
-                </svg>
-              </div>
-              <button
-                type="button"
-                class="inline-flex h-11 items-center justify-center rounded-md border bg-background px-3 text-sm font-medium outline-none transition-colors hover:bg-muted focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 sm:order-1"
-                disabled={selectedSpotIndex === 0}
-                onclick={selectPreviousSpot}
-                aria-label="Previous fishing spot"
-              >
-                Prev
-              </button>
-              <button
-                type="button"
-                class="inline-flex h-11 items-center justify-center rounded-md border bg-background px-3 text-sm font-medium outline-none transition-colors hover:bg-muted focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 sm:order-3"
-                disabled={selectedSpotIndex === data.spots.length - 1}
-                onclick={selectNextSpot}
-                aria-label="Next fishing spot"
-              >
-                Next
-              </button>
-            </div>
+              {#each data.spots as spot, index (spot.id)}
+                <option value={spot.id}>
+                  Spot {index + 1}: {spot.name} ({formatTier(spot.level)}) —
+                  {formatZoneList(spot.zones)}
+                </option>
+              {/each}
+            </select>
+            <svg
+              class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="m6 9 6 6 6-6" />
+            </svg>
           </div>
+          <button
+            type="button"
+            class="inline-flex h-11 items-center justify-center rounded-md border bg-background px-3 text-sm font-medium outline-none transition-colors hover:bg-muted focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 sm:order-1"
+            disabled={selectedSpotIndex === 0}
+            onclick={selectPreviousSpot}
+            aria-label="Previous fishing spot"
+          >
+            Prev
+          </button>
+          <button
+            type="button"
+            class="inline-flex h-11 items-center justify-center rounded-md border bg-background px-3 text-sm font-medium outline-none transition-colors hover:bg-muted focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 sm:order-3"
+            disabled={selectedSpotIndex === data.spots.length - 1}
+            onclick={selectNextSpot}
+            aria-label="Next fishing spot"
+          >
+            Next
+          </button>
         </div>
-        <div class="space-y-2">
-          <div class="text-sm font-medium">Fisherman set</div>
+        <div>
+          {#if data.rods.length > 0}
+            <select
+              bind:value={selectedRodId}
+              aria-label="Fishing rod"
+              class="h-11 w-full rounded-md border bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+            >
+              {#each data.rods as rod (rod.item_id)}
+                <option value={rod.item_id}>
+                  {rod.item_name}
+                </option>
+              {/each}
+            </select>
+          {:else}
+            <p class="text-sm text-muted-foreground">
+              No fishing rods are loaded yet.
+            </p>
+          {/if}
+        </div>
+        <div>
           <div
             class="grid gap-2 rounded-md border bg-background p-2 sm:grid-cols-3"
           >
@@ -525,6 +569,86 @@
     {/if}
   </section>
 
+  <section id="fishing-rods" class="rounded-lg border p-5">
+    <div class="flex items-center gap-2">
+      <Fish class="h-5 w-5 text-cyan-500" />
+      <h2 class="text-xl font-semibold">Fishing Rods ({data.rods.length})</h2>
+    </div>
+    <div class="mt-4 overflow-hidden rounded-lg border">
+      <div class="overflow-x-auto">
+        <table class="w-full whitespace-nowrap">
+          <thead class="bg-muted/50">
+            <tr>
+              <th class="p-3 text-left font-medium">Rod</th>
+              <th class="p-3 text-right font-medium">Source Level</th>
+              <th class="p-3 text-left font-medium">Known sources</th>
+            </tr>
+          </thead>
+          <tbody>
+            {#each data.rods as rod (rod.item_id)}
+              <tr class="border-t align-top hover:bg-muted/25">
+                <td class="p-3">
+                  <ItemLink
+                    itemId={rod.item_id}
+                    itemName={rod.item_name}
+                    tooltipHtml={rod.tooltip_html}
+                    colorClass={getQualityTextColorClass(rod.quality)}
+                  />
+                </td>
+                <td class="p-3 text-right font-mono">
+                  {#if rod.min_source_level !== null}
+                    {rod.min_source_level}
+                  {:else}
+                    <span class="text-muted-foreground">—</span>
+                  {/if}
+                </td>
+                <td class="p-3">
+                  {#if rod.sources.length > 0}
+                    <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+                      {#each getSourcesByType(rod.sources) as [type, sources] (type)}
+                        {@const sourceConfig = SOURCE_TYPE_CONFIG[type]}
+                        <div class="flex flex-wrap items-center gap-1.5">
+                          <sourceConfig.icon
+                            class="h-4 w-4 shrink-0 {sourceConfig.color}"
+                            aria-hidden="true"
+                          />
+                          <span class="text-xs text-muted-foreground">
+                            {sourceConfig.label}:
+                          </span>
+                          {#each visibleSources(sources) as source, i (source.id)}
+                            <a
+                              href="{sourceConfig.linkPrefix}{source.id}"
+                              class="text-blue-600 hover:underline dark:text-blue-400"
+                            >
+                              {source.name}
+                            </a>
+                            {#if i < visibleSources(sources).length - 1}<span
+                                class="text-muted-foreground">,</span
+                              >{/if}
+                          {/each}
+                          {#if sources.length > MAX_VISIBLE_SOURCES_PER_TYPE}
+                            <a
+                              href="/items/{rod.item_id}"
+                              class="text-xs text-muted-foreground hover:underline"
+                            >
+                              +{sources.length - MAX_VISIBLE_SOURCES_PER_TYPE}
+                              more
+                            </a>
+                          {/if}
+                        </div>
+                      {/each}
+                    </div>
+                  {:else}
+                    <span class="text-muted-foreground">—</span>
+                  {/if}
+                </td>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
   <section id="fishing-spots" class="rounded-lg border p-5">
     <div class="flex items-center gap-2">
       <MapPin class="h-5 w-5 text-cyan-500" />

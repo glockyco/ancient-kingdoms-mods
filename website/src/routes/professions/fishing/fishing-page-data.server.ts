@@ -1,4 +1,10 @@
 import type Database from "better-sqlite3";
+import {
+  getItemSourceSummaries,
+  getMinimumSourceLevel,
+  groupItemSourceSummaries,
+  type ItemSourceSummary,
+} from "$lib/server/item-source-summary";
 
 interface FishingSpot {
   id: string;
@@ -37,6 +43,11 @@ interface FishingEquipmentItem {
   slot: string | null;
 }
 
+interface FishingRodItem extends FishingEquipmentItem {
+  sources: ItemSourceSummary[];
+  min_source_level: number | null;
+}
+
 interface FishRecipe {
   recipe_id: string;
   result_item_id: string;
@@ -64,7 +75,7 @@ export interface FishingPageData {
   };
   spots: FishingSpot[];
   trashFish: TrashFishItem[];
-  rod: FishingEquipmentItem | null;
+  rods: FishingRodItem[];
   costumePieces: FishingEquipmentItem[];
   foods: FishRecipe[];
   potions: FishRecipe[];
@@ -72,6 +83,7 @@ export interface FishingPageData {
     spot_count: number;
     fish_count: number;
     food_count: number;
+    rod_count: number;
     potion_count: number;
   };
 }
@@ -161,7 +173,7 @@ export function loadFishingPageData(db: Database.Database): FishingPageData {
     )
     .get() as { fish_count: number };
 
-  const rod = db
+  const rodRows = db
     .prepare(
       `
       SELECT id AS item_id, name AS item_name, quality, level_required, tooltip_html, slot
@@ -170,7 +182,22 @@ export function loadFishingPageData(db: Database.Database): FishingPageData {
       ORDER BY quality, level_required, name
     `,
     )
-    .get() as FishingEquipmentItem | undefined;
+    .all() as FishingEquipmentItem[];
+
+  const sourcesByRodId = groupItemSourceSummaries(
+    getItemSourceSummaries(
+      db,
+      rodRows.map((rod) => rod.item_id),
+    ),
+  );
+  const rods = rodRows.map((rod) => {
+    const sources = sourcesByRodId.get(rod.item_id) ?? [];
+    return {
+      ...rod,
+      min_source_level: getMinimumSourceLevel(sources),
+      sources,
+    };
+  });
 
   const costumePieces = db
     .prepare(
@@ -267,7 +294,7 @@ export function loadFishingPageData(db: Database.Database): FishingPageData {
     profession,
     spots,
     trashFish,
-    rod: rod ?? null,
+    rods,
     costumePieces,
     foods,
     potions,
@@ -275,6 +302,7 @@ export function loadFishingPageData(db: Database.Database): FishingPageData {
       spot_count: spots.reduce((total, spot) => total + spot.spawn_count, 0),
       fish_count: fishStats.fish_count,
       food_count: foods.length,
+      rod_count: rods.length,
       potion_count: potions.length,
     },
   };
