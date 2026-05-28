@@ -176,6 +176,19 @@
     selectSpot(selectedSpotIndex + 1);
   }
 
+  function selectRod(index: number): void {
+    const clampedIndex = Math.min(data.rods.length - 1, Math.max(0, index));
+    selectedRodId = data.rods[clampedIndex]?.item_id ?? "";
+  }
+
+  function selectPreviousRod(): void {
+    selectRod(selectedRodIndex - 1);
+  }
+
+  function selectNextRod(): void {
+    selectRod(selectedRodIndex + 1);
+  }
+
   function toggleCostume(itemId: string, checked: boolean) {
     if (checked) selectedCostumeIds.add(itemId);
     else selectedCostumeIds.delete(itemId);
@@ -437,25 +450,59 @@
             Next
           </button>
         </div>
-        <div>
-          {#if data.rods.length > 0}
-            <select
-              bind:value={selectedRodId}
-              aria-label="Fishing rod"
-              class="h-11 w-full rounded-md border bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+        {#if data.rods.length > 0}
+          <div
+            class="grid grid-cols-2 gap-2 sm:grid-cols-[4.5rem_minmax(0,1fr)_4.5rem]"
+          >
+            <div class="relative col-span-2 min-w-0 sm:order-2 sm:col-span-1">
+              <select
+                bind:value={selectedRodId}
+                aria-label="Fishing rod"
+                class="h-11 w-full appearance-none rounded-md border bg-background px-3 pr-10 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+              >
+                {#each data.rods as rod (rod.item_id)}
+                  <option value={rod.item_id}>
+                    {rod.item_name}
+                  </option>
+                {/each}
+              </select>
+              <svg
+                class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="m6 9 6 6 6-6" />
+              </svg>
+            </div>
+            <button
+              type="button"
+              class="inline-flex h-11 items-center justify-center rounded-md border bg-background px-3 text-sm font-medium outline-none transition-colors hover:bg-muted focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 sm:order-1"
+              disabled={selectedRodIndex === 0}
+              onclick={selectPreviousRod}
+              aria-label="Previous fishing rod"
             >
-              {#each data.rods as rod (rod.item_id)}
-                <option value={rod.item_id}>
-                  {rod.item_name}
-                </option>
-              {/each}
-            </select>
-          {:else}
-            <p class="text-sm text-muted-foreground">
-              No fishing rods are loaded yet.
-            </p>
-          {/if}
-        </div>
+              Prev
+            </button>
+            <button
+              type="button"
+              class="inline-flex h-11 items-center justify-center rounded-md border bg-background px-3 text-sm font-medium outline-none transition-colors hover:bg-muted focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 sm:order-3"
+              disabled={selectedRodIndex === data.rods.length - 1}
+              onclick={selectNextRod}
+              aria-label="Next fishing rod"
+            >
+              Next
+            </button>
+          </div>
+        {:else}
+          <p class="text-sm text-muted-foreground">
+            No fishing rods are loaded yet.
+          </p>
+        {/if}
         <div>
           <div
             class="grid gap-2 rounded-md border bg-background p-2 sm:grid-cols-3"
