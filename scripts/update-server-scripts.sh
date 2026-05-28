@@ -23,9 +23,12 @@ STEAM_DIR="$REPO_DIR/.steam-download"
 OUTPUT_DIR="$REPO_DIR/server-scripts"
 VERSION="$1"
 
-# ilspycmd requires dotnet 8 (not compatible with dotnet 10+)
-DOTNET8="/opt/homebrew/opt/dotnet@8/libexec/dotnet"
-ILSPYCMD_DLL="$HOME/.dotnet/tools/.store/ilspycmd/9.1.0.7988/ilspycmd/9.1.0.7988/tools/net8.0/any/ilspycmd.dll"
+# ilspycmd may be installed as an older net8 DLL or as the current dotnet tool
+# shim. Prefer an explicit ILSPYCMD path when provided, then the shim, then the
+# legacy pinned DLL used by older worktrees.
+DOTNET8="${DOTNET8:-/opt/homebrew/opt/dotnet@8/libexec/dotnet}"
+ILSPYCMD="${ILSPYCMD:-$HOME/.dotnet/tools/ilspycmd}"
+ILSPYCMD_DLL="${ILSPYCMD_DLL:-$HOME/.dotnet/tools/.store/ilspycmd/9.1.0.7988/ilspycmd/9.1.0.7988/tools/net8.0/any/ilspycmd.dll}"
 
 # Fall back to config.toml [steam] username if STEAM_USER not set in environment
 if [ -z "$STEAM_USER" ]; then
@@ -70,7 +73,14 @@ fi
 
 echo "Decompiling: $DLL"
 rm -rf "$OUTPUT_DIR"
-"$DOTNET8" "$ILSPYCMD_DLL" -p -o "$OUTPUT_DIR" "$DLL"
+if [ -x "$ILSPYCMD" ]; then
+  "$ILSPYCMD" -p -o "$OUTPUT_DIR" "$DLL"
+elif [ -f "$ILSPYCMD_DLL" ]; then
+  "$DOTNET8" "$ILSPYCMD_DLL" -p -o "$OUTPUT_DIR" "$DLL"
+else
+  echo "Error: ilspycmd not found. Install with: dotnet tool install -g ilspycmd"
+  exit 1
+fi
 
 # Create versioned backup
 BACKUP_DIR="$REPO_DIR/server-scripts-$VERSION"
