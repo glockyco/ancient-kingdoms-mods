@@ -63,6 +63,7 @@
     resolveVirtualSelection,
     type ResolvedSelection,
     type OverrideGroup,
+    type HighlightCategory,
   } from "$lib/map/resolve-selection";
   import { preloadDb } from "$lib/db";
   import Seo from "$lib/components/Seo.svelte";
@@ -115,9 +116,10 @@
   let hoverEntityCategory = $state<
     "monster" | "npc" | "altar" | "zone" | "chest" | "house" | "resource" | null
   >(null);
-  // For altar-only monsters: override to highlight altars instead
+  // Overrides use physical source ids instead of normal selection ids
+  // (altar-only monsters, exact fishing spot variants, etc.).
   let hoverOverrideIds = $state<string[] | null>(null);
-  let hoverOverrideCategory = $state<"monster" | "npc" | "altar" | null>(null);
+  let hoverOverrideCategory = $state<HighlightCategory | null>(null);
 
   // Selected entity (for popup display)
   let selectedEntity = $state<AnyMapEntity | null>(null);
@@ -331,11 +333,10 @@
 
   // Derived: hover preview data for popup link highlights
   let hoverSelectionData = $derived.by(() => {
-    // Use override for altar-only monsters
     if (hoverOverrideIds && hoverOverrideCategory && entityIndex) {
-      return hoverOverrideIds.flatMap((id) =>
-        computeSelectionData(entityIndex, hoverOverrideCategory!, id),
-      );
+      return computeSelectionFromGroups(entityIndex, [
+        { ids: hoverOverrideIds, category: hoverOverrideCategory },
+      ]);
     }
     // Normal case
     if (
@@ -629,10 +630,10 @@
   }
 
   function handleHoverGathering(resourceId: string | null) {
-    hoverOverrideIds = null;
-    hoverOverrideCategory = null;
     hoverEntityId = resourceId;
-    hoverEntityCategory = resourceId ? "resource" : null;
+    hoverEntityCategory = null;
+    hoverOverrideIds = resourceId ? [resourceId] : null;
+    hoverOverrideCategory = resourceId ? "resource" : null;
   }
 
   // Keyboard handlers

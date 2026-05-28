@@ -75,6 +75,8 @@ export interface EntityIndex {
   houses: Map<string, AnyMapEntity[]>;
   gathering: Map<string, AnyMapEntity[]>;
   crafting: Map<string, AnyMapEntity[]>;
+  /** Gathering resources indexed by concrete resource/spawn id for item-source highlights */
+  gatheringById: Map<string, AnyMapEntity[]>;
 }
 
 /**
@@ -174,6 +176,7 @@ export function createEntityIndex(data: MapEntityData): EntityIndex {
     treasure: indexEntities(data.treasure),
     altars: indexEntities(data.altars),
     gathering: indexGatheringBySelectionGroup(data.gathering),
+    gatheringById: indexEntities(data.gathering),
     crafting: indexEntities(data.crafting),
     houses: indexEntities(data.houses),
   };
@@ -274,7 +277,7 @@ function getIndexForCategory(
     case "house":
       return index.houses;
     case "resource":
-      return index.gathering;
+      return index.gatheringById;
     case "crafting":
       return index.crafting;
     default:

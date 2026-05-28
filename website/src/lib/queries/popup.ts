@@ -1111,7 +1111,7 @@ export async function loadItemPopupDetails(
       isg.resource_id as resourceId,
       gr.name as resourceName,
       'resource' as resourceType,
-      isg.drop_rate as rate,
+      COALESCE(isg.actual_drop_chance, isg.drop_rate) as rate,
       COALESCE(gr.is_fishing_spot, 0) as isFishingSpot,
       (
         SELECT COUNT(*)
