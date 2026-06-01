@@ -380,8 +380,8 @@
             <div class="flex gap-2">
               <dt class="text-muted-foreground w-40 shrink-0">Recruit Cost</dt>
               <dd>
-                <!-- Source: server-scripts/UIMercenaries.cs:212-218 — cost = round(20 + 400 × ((clamp(level, 10, 50) − 10) / 40)² + veteranLevel × 10) (0.9.18.0+). -->
-                20–2,420
+                <!-- Source: server-scripts/UIMercenaries.cs:212-218 — cost = round(20 + 400 × ((clamp(level, 10, 50) − 10) / 40)² + veteranLevel × 15) (0.9.19.1+). -->
+                20–3,420
                 <span class="text-yellow-600 dark:text-yellow-400">gold</span>,
                 scales with your regular and veteran level
               </dd>
@@ -404,7 +404,11 @@
             {/if}
             <div class="flex gap-2">
               <dt class="text-muted-foreground w-40 shrink-0">On Death</dt>
-              <dd>Stays dead. Resurrection costs the same as recruiting.</dd>
+              <dd>
+                <!-- Source: server-scripts/UIMercenaries.cs:221-227 — resurrect = round(5 + 295 × ((clamp(level, 1, 50) − 1) / 49)^2.8 + veteranLevel × 10) (0.9.19.1+). -->
+                Stays dead until resurrected for 5–2,300
+                <span class="text-yellow-600 dark:text-yellow-400">gold</span>.
+              </dd>
             </div>
           </dl>
         {:else if pet.kind === "Companion"}

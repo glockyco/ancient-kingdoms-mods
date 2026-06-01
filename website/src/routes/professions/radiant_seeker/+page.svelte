@@ -16,10 +16,10 @@
     return Math.max(0, (0.9 - skill / 2) * 100);
   }
 
-  // Source: server-scripts/GatherItem.cs:381 — 0.05 + radiantSekeerLevel * 0.25
+  // Source: server-scripts/GatherItem.cs:398 — 0.05 + radiantSekeerLevel * 0.2
   function getRadiantAetherChance(): number {
     const skill = skillLevel / 100;
-    return (0.05 + skill * 0.25) * 100;
+    return (0.05 + skill * 0.2) * 100;
   }
 </script>
 

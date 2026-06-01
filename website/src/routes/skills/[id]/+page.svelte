@@ -2635,15 +2635,16 @@
           </div>
         {/if}
         {#if hasLinearValue(skill.damage_shield)}
-          <!-- Source: server-scripts/Combat.cs:750-819 (damage_shield reflect block) -->
+          <!-- Source: server-scripts/Combat.cs:1043-1141 (damage_shield reflect block; gated by !isProcWeapon && !isScroll) -->
           <div class="space-y-1">
             <h3 class="font-semibold">Damage Shield</h3>
             <p class="text-muted-foreground">
               Reflects damage to melee attackers. Only triggers on non-spell
-              single-target attacks with a cast range below 1.5. Reflected
-              damage scales with the caster's WIS (0.75 per point) and is
-              mitigated by the attacker's resist matching the buff's damage
-              type. Final value has &plusmn;10% random variance.
+              single-target attacks with a cast range below 1.5. Scroll skills
+              and weapon on-hit proc skills do not trigger it. Reflected damage
+              scales with the caster's WIS (0.75 per point) and is mitigated by
+              the attacker's resist matching the buff's damage type. Final value
+              has &plusmn;10% random variance.
             </p>
           </div>
         {/if}

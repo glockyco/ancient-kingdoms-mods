@@ -195,7 +195,7 @@
           zone_id: g.zone_id,
           zone_name: g.zone_name,
           rate_note: g.is_radiant_spark
-            ? "5-30% based on Radiant Seeker level"
+            ? "5-25% based on Radiant Seeker level"
             : g.is_fishing_spot && g.actual_drop_chance === 0
               ? "Fishing"
               : undefined,
@@ -895,7 +895,7 @@
         </Card.Root>
       {:else if data.item.id === "radiant_aether"}
         <!-- Radiant Aether Effects -->
-        <!-- Source: server-scripts/GameManager.cs:330 (probActivateRadiantAether = 0.15f), Player.cs:6374, Combat.cs:717-726,813, AreaDamageSkill.cs:38, AreaDebuffSkill.cs:34 -->
+        <!-- Source: server-scripts/GameManager.cs (probActivateRadiantAether = 0.15f), Player.cs, Combat.cs:1009 (crit surge, gated by !followupDefaultAttack), Combat.cs:1043-1141 (AoE/damage-shield), AreaDamageSkill.cs, AreaDebuffSkill.cs -->
         <Card.Root class="bg-muted/30">
           <Card.Header>
             <Card.Title>Passive Effects</Card.Title>
@@ -905,14 +905,14 @@
               <div>
                 <div class={styles.label}>How it works</div>
                 <div class={styles.value}>
-                  Keep in inventory. Has a 15% chance to activate when you deal
-                  a critical hit, take lethal damage, or are hit by an AoE
-                  attack. Consumes 1 when triggered.
+                  Keep in inventory. Has a 15% chance to activate when you land
+                  a critical hit with an ability, take lethal damage, or are hit
+                  by an AoE attack. Consumes 1 when triggered.
                 </div>
               </div>
               <div class="space-y-2">
                 <div>
-                  <div class={styles.label}>On Critical Hit</div>
+                  <div class={styles.label}>On Ability Critical Hit</div>
                   <div class={styles.value}>
                     <span class={styles.valuePositive}>×3 on top of crit</span>
                     → ×4.5

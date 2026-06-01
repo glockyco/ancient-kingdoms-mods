@@ -844,8 +844,8 @@ finalDamage = damage − reduction</pre>
         </p>
       </div>
       <div>
-        <!-- Source: server-scripts/Combat.cs:1115-1129 — auto-attack rage gain on dealing damage. -->
-        <!-- Source: server-scripts/Combat.cs:1143-1185 — rage gain on taking Normal damage (added 0.9.18.0). -->
+        <!-- Source: server-scripts/Combat.cs:1142-1143 — auto-attack rage gain on dealing damage. -->
+        <!-- Source: server-scripts/Combat.cs:1150,1175,1344-1350 — GenerateRageOnHit: rage gain on taking Normal damage. -->
         <h3 class="font-semibold mb-1">Rage Generation</h3>
         <p class="text-sm text-muted-foreground mb-2">
           Warrior and Rogue generate Rage from two sources:
@@ -856,9 +856,9 @@ finalDamage = damage − reduction</pre>
             target's current HP.
           </li>
           <li>
-            Taking Normal-type damage: ⌊clamp(damage × 0.03, 0, 100)⌋ per hit
-            (added 0.9.18.0). Same formula applies to Warrior/Rogue mercenary
-            pets when they receive Normal damage.
+            Taking Normal-type damage: ⌊clamp(sqrt(damage) × 0.35, 1, 25)⌋ per
+            hit. Same formula applies to Warrior/Rogue mercenary pets when they
+            receive Normal damage.
           </li>
         </ul>
       </div>
@@ -956,11 +956,13 @@ finalDamage = damage − reduction</pre>
 
       <div>
         <!-- Source: server-scripts/TargetDamageSkill.cs — slot 13 fires at procEffectProbability * 0.5f; durability > 0 guard on both slots -->
+        <!-- Source: server-scripts/Combat.cs:1043 — proc weapons and scrolls are excluded from the damage-shield trigger. -->
         <h3 class="font-semibold mb-1">Weapon On-Hit Procs</h3>
         <p class="text-sm text-muted-foreground">
           Weapons with an on-hit effect trigger it at the listed probability on
           auto-attacks. Rogue players also trigger their offhand weapon's proc
-          at 50% of its listed probability.
+          at 50% of its listed probability. Weapon proc effects do not trigger
+          damage shields.
         </p>
       </div>
 
