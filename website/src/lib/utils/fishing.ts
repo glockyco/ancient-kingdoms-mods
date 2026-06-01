@@ -23,7 +23,7 @@ function fishingLevelFraction(fishingPercent: number): number {
 }
 
 // Source: server-scripts/Utils.cs:511-520 — GetSuccessProbFishing.
-// Source: server-scripts/GatherItem.cs:653-655 — values below 0.2 show "skill too low" and do not fish.
+// Source: server-scripts/GatherItem.cs:652-655 — values below 0.2 show "skill too low" and do not fish.
 export function fishingSpotSuccessChance({
   rodQuality,
   fishingPercent,
@@ -54,7 +54,7 @@ export function fishingSpotSuccessChance({
   return clamped < 0.2 ? 0 : normalizeChance(clamped);
 }
 
-// Source: server-scripts/GatherItem.cs:661-677 — one random fish drop is selected, then probability is drop probability + Fishing/2 + 2 pp per Fisherman costume piece.
+// Source: server-scripts/GatherItem.cs:661-679 — one random fish drop is selected, then probability is drop probability + Fishing/2 + 2 pp per Fisherman costume piece.
 export function fishDropChancePerSuccessfulHook({
   configuredDropRate,
   fishCountAtSpot,
@@ -77,7 +77,7 @@ export function fishDropChancePerCast(params: FishDropParams): number {
   );
 }
 
-// Source: server-scripts/GatherItem.cs:790-809 — mastery gain chance is Random.value > 0.4 + Fishing/2, with low-tier caps.
+// Source: server-scripts/GatherItem.cs:750-756 — mastery gain chance is Random.value > 0.4 + Fishing/2, with low-tier caps.
 export function fishingMasteryGainChance({
   fishingPercent,
   spotTier,
@@ -92,7 +92,7 @@ export function fishingMasteryGainChance({
   return clamp01(0.6 - skill / 2);
 }
 
-// Source: server-scripts/GatherItem.cs:798 — Random.Range(1, 4) / (successChance * 5000f). Unity int upper bound is exclusive, so 1-3.
+// Source: server-scripts/GatherItem.cs:758 — Random.Range(1, 4) / (successChance * 5000f). Unity int upper bound is exclusive, so 1-3.
 export function fishingMasteryGainRange(successChance: number): {
   min: number;
   max: number;
@@ -105,7 +105,7 @@ export function fishingMasteryGainRange(successChance: number): {
   };
 }
 
-// Source: server-scripts/GatherItem.cs:811-821 — fishing XP by levelItem.
+// Source: server-scripts/GatherItem.cs:771-778 — fishing XP by levelItem.
 export function fishingExperienceForTier(spotTier: number): number {
   switch (spotTier) {
     case 1:
@@ -121,7 +121,7 @@ export function fishingExperienceForTier(spotTier: number): number {
   }
 }
 
-// Source: server-scripts/GatherItem.cs:971-977 — click window length per tier (seconds).
+// Source: server-scripts/GatherItem.cs:931-937 — click window length per tier (seconds).
 export function fishingClickWindowSeconds(spotTier: number): number {
   switch (spotTier) {
     case 0:
@@ -144,6 +144,7 @@ export interface FishOutcomeParams {
   spotDrops: Array<{ probability: number }>;
   fishingPercent: number;
   fishermanCostumePieces: number;
+  spotTier: number;
 }
 
 function averageSelectedFishChance({
@@ -161,14 +162,47 @@ function averageSelectedFishChance({
   return totalCappedP / spotDrops.length;
 }
 
-// Source: server-scripts/GatherItem.cs:762-783 — when the selected fish roll fails, Random.value > 0.8 gives a trash fish.
-export function fishTrashChancePerHook(params: FishOutcomeParams): number {
-  if (params.spotDrops.length === 0) return 0;
-  return 0.2 * (1 - averageSelectedFishChance(params));
+// Source: server-scripts/GatherItem.cs:681-748 — fallback split after a failed primary
+// configured-fish roll, by spot level (levelItem). Of the (1 − A) failed mass, each tier
+// awards trash / a random lower-quality fish / nothing (escape). Rates per tier sum to 1;
+// tiers beyond 3 have no in-game fallback.
+function failedPrimaryFallbackRates(spotTier: number): {
+  trash: number;
+  lowerTierFish: number;
+  escape: number;
+} {
+  switch (spotTier) {
+    case 0:
+      return { trash: 0.3, lowerTierFish: 0, escape: 0.7 };
+    case 1:
+      return { trash: 0.1, lowerTierFish: 0.45, escape: 0.45 };
+    case 2:
+      return { trash: 0, lowerTierFish: 0.75, escape: 0.25 };
+    case 3:
+      return { trash: 0, lowerTierFish: 0.9, escape: 0.1 };
+    default:
+      return { trash: 0, lowerTierFish: 0, escape: 0 };
+  }
 }
 
-// Source: server-scripts/GatherItem.cs:784-788 — the remaining 80% on a failed fish roll shows the "fish escaped" message.
+export function fishTrashChancePerHook(params: FishOutcomeParams): number {
+  if (params.spotDrops.length === 0) return 0;
+  const failedMass = 1 - averageSelectedFishChance(params);
+  return failedPrimaryFallbackRates(params.spotTier).trash * failedMass;
+}
+
+// Source: server-scripts/GatherItem.cs:701-741 — higher-tier spots also award a random
+// lower-quality fish (uniform from the tier's quality pool) when the primary roll fails.
+export function fishLowerTierFishChancePerHook(
+  params: FishOutcomeParams,
+): number {
+  if (params.spotDrops.length === 0) return 0;
+  const failedMass = 1 - averageSelectedFishChance(params);
+  return failedPrimaryFallbackRates(params.spotTier).lowerTierFish * failedMass;
+}
+
 export function fishEscapeChancePerHook(params: FishOutcomeParams): number {
   if (params.spotDrops.length === 0) return 0;
-  return 0.8 * (1 - averageSelectedFishChance(params));
+  const failedMass = 1 - averageSelectedFishChance(params);
+  return failedPrimaryFallbackRates(params.spotTier).escape * failedMass;
 }

@@ -15,6 +15,7 @@
     fishDropChancePerCast,
     fishEscapeChancePerHook,
     fishTrashChancePerHook,
+    fishLowerTierFishChancePerHook,
     fishingCastDelaySecondsRange,
     fishingClickWindowSeconds,
     fishingExperienceForTier,
@@ -98,8 +99,28 @@
       }),
     }));
 
+    const lowerTierFishChance =
+      selectedSpotSuccessChance *
+      fishLowerTierFishChancePerHook({
+        spotDrops,
+        fishingPercent: skillLevel,
+        fishermanCostumePieces,
+        spotTier: selectedSpot.level,
+      });
+
     return [
       ...fishRows,
+      ...(lowerTierFishChance > 0
+        ? [
+            {
+              label: "Lower-tier fish (random)",
+              itemId: null,
+              tooltipHtml: null,
+              quality: null,
+              chance: lowerTierFishChance,
+            },
+          ]
+        : []),
       {
         label: "Trash catch",
         itemId: null,
@@ -111,6 +132,7 @@
             spotDrops,
             fishingPercent: skillLevel,
             fishermanCostumePieces,
+            spotTier: selectedSpot.level,
           }),
       },
       {
@@ -124,6 +146,7 @@
             spotDrops,
             fishingPercent: skillLevel,
             fishermanCostumePieces,
+            spotTier: selectedSpot.level,
           }),
       },
       {
@@ -264,11 +287,11 @@
   <section class="rounded-lg border p-5">
     <h2 class="text-xl font-semibold">How It Works</h2>
     <!-- Source: server-scripts/Utils.cs:511-520 — Fishing spot success chance per tier. -->
-    <!-- Source: server-scripts/GatherItem.cs:649-655 — < 0.2 spot success hard-blocks fishing. -->
-    <!-- Source: server-scripts/GatherItem.cs:657-788 — successful spot rolls pick one fish, failed rolls give 20% trash / 80% escape. -->
-    <!-- Source: server-scripts/GatherItem.cs:660-676 — selected fish chance = drop rate + Fishing/2 + 2pp per Fisherman costume piece. -->
-    <!-- Source: server-scripts/GatherItem.cs:790-822 — Fishing mastery gain and XP table. -->
-    <!-- Source: server-scripts/GatherItem.cs:967-996 — click-window length per tier. -->
+    <!-- Source: server-scripts/GatherItem.cs:652-655 — < 0.2 spot success hard-blocks fishing. -->
+    <!-- Source: server-scripts/GatherItem.cs:657-748 — successful spot rolls pick one configured fish; a failed primary roll gives tier-specific trash / lower-tier fish / escape. -->
+    <!-- Source: server-scripts/GatherItem.cs:661-679 — selected fish chance = drop rate + Fishing/2 + 2pp per Fisherman costume piece. -->
+    <!-- Source: server-scripts/GatherItem.cs:750-781 — Fishing mastery gain and XP table. -->
+    <!-- Source: server-scripts/GatherItem.cs:931-937 — click-window length per tier. -->
     <!-- Source: server-scripts/Player.cs:7546-7565 — auto-equips best rod and starts the cast with Random.Range(3, 8) second window delay. -->
 
     <div class="mt-4 divide-y">
@@ -332,22 +355,19 @@
       <div class="grid gap-3 py-4 md:grid-cols-[2rem_1fr]">
         <div class="text-sm text-muted-foreground">5</div>
         <div>
-          <div>Roll for one fish from the spot.</div>
+          <div>Roll for your catch.</div>
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
             <span class="block">
-              After a bite, the game picks one fish from the Fishing Spot's fish
-              list.
+              After a bite, you reel in a fish from this spot — or, at
+              higher-tier spots, sometimes a random lower-tier fish.
             </span>
             <span class="block">
-              That fish's catch chance is its base drop rate + Fishing/2 + 2 pp
-              per equipped Fisherman set piece.
-            </span>
-            <span class="block">
-              If the catch fails, you may get a <a
+              A failed catch gives either a <a
                 href="#fishing-trash"
                 class="text-blue-600 hover:underline dark:text-blue-400"
                 >trash catch</a
-              > or the fish may escape.
+              > or an escaped fish. The exact odds scale with the spot tier and your
+              Fishing skill.
             </span>
           </p>
         </div>
@@ -701,6 +721,9 @@
       <MapPin class="h-5 w-5 text-cyan-500" />
       <h2 class="text-xl font-semibold">Fishing Spots ({data.spots.length})</h2>
     </div>
+    <p class="mt-1 text-sm text-muted-foreground">
+      Higher-tier spots can also yield random lower-tier fish not listed here.
+    </p>
     <div class="mt-4 overflow-hidden rounded-lg border">
       <div class="overflow-x-auto">
         <table class="w-full whitespace-nowrap">
@@ -709,7 +732,7 @@
               <th class="p-3 text-left font-medium">#</th>
               <th class="p-3 text-left font-medium">Spot</th>
               <th class="p-3 text-left font-medium">Tier</th>
-              <th class="p-3 text-left font-medium">Fish</th>
+              <th class="p-3 text-left font-medium">Primary fish</th>
               <th class="p-3 text-left font-medium">Zones</th>
               <th class="p-3 text-right font-medium">Map</th>
             </tr>

@@ -10,6 +10,7 @@ import {
   fishingSpotSuccessChance,
   fishTrashChancePerHook,
   fishEscapeChancePerHook,
+  fishLowerTierFishChancePerHook,
 } from "./fishing";
 
 describe("fishing utilities", () => {
@@ -128,20 +129,44 @@ describe("fishing utilities", () => {
     expect(fishingCastDelaySecondsRange()).toEqual({ min: 3, max: 7 });
   });
 
-  it("splits non-fish outcomes into trash and escape", () => {
+  it("splits failed-primary outcomes by spot tier", () => {
+    const drops = {
+      spotDrops: [{ probability: 0.5 }, { probability: 0.5 }],
+      fishingPercent: 0,
+      fishermanCostumePieces: 0,
+    };
+    // A = 0.5, so the failed-primary mass is (1 − A) = 0.5.
+    // Tier I (level 0): 30% trash, 0% lower-tier fish, 70% escape.
+    expect(fishTrashChancePerHook({ ...drops, spotTier: 0 })).toBeCloseTo(0.15);
     expect(
-      fishTrashChancePerHook({
-        spotDrops: [{ probability: 0.5 }, { probability: 0.5 }],
-        fishingPercent: 0,
-        fishermanCostumePieces: 0,
-      }),
-    ).toBeCloseTo(0.1);
+      fishLowerTierFishChancePerHook({ ...drops, spotTier: 0 }),
+    ).toBeCloseTo(0);
+    expect(fishEscapeChancePerHook({ ...drops, spotTier: 0 })).toBeCloseTo(
+      0.35,
+    );
+    // Tier II (level 1): 10% trash, 45% lower-tier fish, 45% escape.
+    expect(fishTrashChancePerHook({ ...drops, spotTier: 1 })).toBeCloseTo(0.05);
     expect(
-      fishEscapeChancePerHook({
-        spotDrops: [{ probability: 0.5 }, { probability: 0.5 }],
-        fishingPercent: 0,
-        fishermanCostumePieces: 0,
-      }),
-    ).toBeCloseTo(0.4);
+      fishLowerTierFishChancePerHook({ ...drops, spotTier: 1 }),
+    ).toBeCloseTo(0.225);
+    expect(fishEscapeChancePerHook({ ...drops, spotTier: 1 })).toBeCloseTo(
+      0.225,
+    );
+    // Tier III (level 2): 0% trash, 75% lower-tier fish, 25% escape.
+    expect(fishTrashChancePerHook({ ...drops, spotTier: 2 })).toBeCloseTo(0);
+    expect(
+      fishLowerTierFishChancePerHook({ ...drops, spotTier: 2 }),
+    ).toBeCloseTo(0.375);
+    expect(fishEscapeChancePerHook({ ...drops, spotTier: 2 })).toBeCloseTo(
+      0.125,
+    );
+    // Tier IV (level 3): 0% trash, 90% lower-tier fish, 10% escape.
+    expect(fishTrashChancePerHook({ ...drops, spotTier: 3 })).toBeCloseTo(0);
+    expect(
+      fishLowerTierFishChancePerHook({ ...drops, spotTier: 3 }),
+    ).toBeCloseTo(0.45);
+    expect(fishEscapeChancePerHook({ ...drops, spotTier: 3 })).toBeCloseTo(
+      0.05,
+    );
   });
 });
