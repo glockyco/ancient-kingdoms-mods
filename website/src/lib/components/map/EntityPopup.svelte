@@ -228,6 +228,30 @@
     return id.replace(/_[0-9a-f]{8}$/u, "");
   }
 
+  function getFishingOutcomeTotal(kind: "fallback_fish" | "trash" | "escape"): {
+    min: number;
+    max: number;
+  } {
+    const outcomes =
+      gatheringDetails?.fishingOutcomes?.filter(
+        (outcome) => outcome.kind === kind,
+      ) ?? [];
+    return {
+      min: outcomes.reduce((sum, outcome) => sum + outcome.dropRateMin, 0),
+      max: outcomes.reduce((sum, outcome) => sum + outcome.dropRateMax, 0),
+    };
+  }
+
+  function formatChanceRange(min: number, max: number): string {
+    if (Math.abs(min - max) < 0.000001) return formatPercent(min);
+    return `${formatPercent(min)}–${formatPercent(max)}`;
+  }
+
+  function getFallbackFishLabel(level: number): string {
+    if (level <= 1) return "Tier I fallback fish";
+    return `Tier I–${toRomanNumeral(level - 1)} fallback fish`;
+  }
+
   function getEntityUrl(entity: AnyMapEntity): string | null {
     if (isMonster(entity)) {
       return `/monsters/${entity.monsterId}`;
@@ -1180,6 +1204,50 @@
       <div class="py-2 text-center text-xs text-muted-foreground">
         Loading...
       </div>
+    {:else if entity.type === "gathering_fish" && gatheringDetails?.fishingOutcomes?.length}
+      <div class="border-t pt-2">
+        <div class="mb-1 text-xs font-medium text-muted-foreground">
+          Per Bite
+        </div>
+        <div class="space-y-1 text-sm">
+          {#each gatheringDetails.fishingOutcomes.filter((outcome) => outcome.kind === "primary_fish") as outcome (outcome.itemId)}
+            <div class="flex items-center justify-between gap-3">
+              {#if outcome.itemId && outcome.itemName}
+                <MapItemLink
+                  itemId={outcome.itemId}
+                  itemName={outcome.itemName}
+                  tooltipHtml={outcome.tooltipHtml}
+                  colorClass={getQualityTextColorClass(outcome.quality ?? 0)}
+                  class="min-w-0 truncate"
+                  onSelect={onSelectItem}
+                />
+              {/if}
+              <span class="shrink-0 whitespace-nowrap text-muted-foreground">
+                {formatChanceRange(outcome.dropRateMin, outcome.dropRateMax)}
+              </span>
+            </div>
+          {/each}
+          {#if getFishingOutcomeTotal("fallback_fish").max > 0}
+            {@const fallback = getFishingOutcomeTotal("fallback_fish")}
+            <div class="flex justify-between gap-3">
+              <span class="text-muted-foreground">
+                {getFallbackFishLabel(gathering.level)}
+              </span>
+              <span class="shrink-0 whitespace-nowrap text-muted-foreground">
+                {formatChanceRange(fallback.min, fallback.max)}
+              </span>
+            </div>
+          {/if}
+          {#each gatheringDetails.fishingOutcomes.filter((outcome) => outcome.kind === "trash" || outcome.kind === "escape") as outcome (outcome.kind)}
+            <div class="flex justify-between gap-3">
+              <span class="text-muted-foreground">{outcome.label}</span>
+              <span class="shrink-0 whitespace-nowrap text-muted-foreground">
+                {formatChanceRange(outcome.dropRateMin, outcome.dropRateMax)}
+              </span>
+            </div>
+          {/each}
+        </div>
+      </div>
     {:else if gatheringDetails && gatheringDetails.drops.length > 0}
       <div class="border-t pt-2">
         <div class="mb-1 text-xs font-medium text-muted-foreground">Drops</div>
@@ -1206,13 +1274,6 @@
             </div>
           {/each}
         </div>
-        {#if entity.type === "gathering_fish"}
-          <p class="mt-1 text-xs text-muted-foreground">
-            Chance per bite. After a bite, the game picks one fish from this
-            list. Your Fishing skill and Fisherman set pieces raise that fish's
-            catch chance.
-          </p>
-        {/if}
       </div>
     {/if}
   {/if}

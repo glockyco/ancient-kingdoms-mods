@@ -5,10 +5,11 @@ import {
   computeSelectionFromGroups,
   createEntityIndex,
 } from "./selection";
+import { resolvePhysicalSelection } from "./resolve-selection";
 
 function fishingSpot(
   id: string,
-  position: [number, number],
+  position: [number, number] | null,
 ): GatheringMapEntity {
   return {
     id,
@@ -78,5 +79,17 @@ describe("map selection", () => {
         { category: "resource", ids: ["rough_fishing_spot_b"] },
       ]).map((entity) => entity.id),
     ).toEqual(["rough_fishing_spot_b"]);
+  });
+
+  test("excluded-zone fishing spots show a popup without a highlight", () => {
+    const entity = fishingSpot("ancient_fishing_spot_temple", null);
+    const resolved = resolvePhysicalSelection(
+      "resource",
+      entity.id,
+      mapData([entity]),
+    );
+
+    expect(resolved.popup).toEqual({ type: "entity", entity });
+    expect(resolved.highlight).toBeNull();
   });
 });

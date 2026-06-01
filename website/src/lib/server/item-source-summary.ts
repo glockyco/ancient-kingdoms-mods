@@ -46,8 +46,17 @@ export function getItemSourceSummaries(
         'Fishing' as name,
         NULL as source_level
       FROM fish f
+      LEFT JOIN items i ON i.id = f.item_id
       WHERE f.item_id IN (${placeholders})
-        AND f.is_trash = 1
+        AND (
+          f.is_trash = 1
+          OR EXISTS (
+            SELECT 1
+            FROM gathering_resources gr
+            WHERE gr.is_fishing_spot = 1
+              AND gr.level > COALESCE(i.quality, -1)
+          )
+        )
         AND NOT EXISTS (
           SELECT 1
           FROM item_source_entries ise

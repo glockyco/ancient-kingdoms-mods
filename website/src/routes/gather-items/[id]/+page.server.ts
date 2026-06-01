@@ -44,6 +44,53 @@ export const load: PageServerLoad = ({ params }) => {
   const fishingSpotVariants = resource.is_fishing_spot
     ? getFishingSpotVariantDetails(db, resource)
     : [];
+  const rods = resource.is_fishing_spot
+    ? (db
+        .prepare(
+          `
+          SELECT id AS item_id, name AS item_name, quality, tooltip_html
+          FROM items
+          WHERE weapon_category = 'Fishing Rod'
+          ORDER BY quality, name
+        `,
+        )
+        .all() as {
+        item_id: string;
+        item_name: string;
+        quality: number;
+        tooltip_html: string | null;
+      }[])
+    : [];
+  const fishPoolRows = resource.is_fishing_spot
+    ? (db
+        .prepare(
+          `
+          SELECT f.item_id, i.name AS item_name, i.quality, i.tooltip_html
+          FROM fish f
+          JOIN items i ON i.id = f.item_id
+          WHERE f.is_trash = 0
+          ORDER BY i.quality, i.name
+        `,
+        )
+        .all() as {
+        item_id: string;
+        item_name: string;
+        quality: number;
+        tooltip_html: string | null;
+      }[])
+    : [];
+  const fishPoolsByQuality: Record<
+    number,
+    {
+      item_id: string;
+      item_name: string;
+      quality: number;
+      tooltip_html: string | null;
+    }[]
+  > = {};
+  for (const fish of fishPoolRows) {
+    (fishPoolsByQuality[fish.quality] ??= []).push(fish);
+  }
   const selectedFishingSpotVariantIndex = Math.max(
     0,
     fishingSpotVariants.findIndex(
@@ -94,6 +141,8 @@ export const load: PageServerLoad = ({ params }) => {
     resource: selectedResource,
     drops,
     spawns,
+    rods,
+    fishPoolsByQuality,
     toolObtainabilityTree,
     description,
     fishingSpotVariants,

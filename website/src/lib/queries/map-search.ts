@@ -917,18 +917,24 @@ async function searchItems(
 
       UNION ALL
 
-      -- Fishing trash can come from the global trash pool after a failed selected-fish roll.
+      -- Fishing fallback positions. Trash fish can come from any fishing spot.
+      -- Non-trash fish can come from any higher-tier spot's lower-tier fallback pool.
       SELECT f.item_id, gs.position_x as x, gs.position_y as y
       FROM fish f
+      JOIN items i ON i.id = f.item_id
       JOIN gathering_resources gr ON gr.is_fishing_spot = 1
       JOIN gathering_resource_spawns gs ON gs.resource_id = gr.id
         AND gs.position_x IS NOT NULL
       WHERE f.item_id IN (SELECT value FROM json_each(?))
-        AND f.is_trash = 1
+        AND (
+          f.is_trash = 1
+          OR gr.level > COALESCE(i.quality, -1)
+        )
         AND NOT EXISTS (
           SELECT 1
           FROM item_sources_gather existing
           WHERE existing.item_id = f.item_id
+            AND existing.resource_id = gr.id
         )
       UNION ALL
 

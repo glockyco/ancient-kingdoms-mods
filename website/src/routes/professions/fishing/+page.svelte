@@ -12,16 +12,16 @@
   import { SvelteSet } from "svelte/reactivity";
   import { SOURCE_TYPE_CONFIG } from "$lib/constants/source-types";
   import {
-    fishDropChancePerCast,
-    fishEscapeChancePerHook,
-    fishTrashChancePerHook,
-    fishLowerTierFishChancePerHook,
+    fishFallbackPoolForSpotTier,
+    fishOutcomeRowsForSpot,
     fishingCastDelaySecondsRange,
     fishingClickWindowSeconds,
     fishingExperienceForTier,
     fishingMasteryGainChance,
     fishingMasteryGainRange,
     fishingSpotSuccessChance,
+    type FishingOutcomeRow,
+    type FishPoolItem,
   } from "$lib/utils/fishing";
   import { getQualityTextColorClass, toRomanNumeral } from "$lib/utils/format";
   import type { PageData } from "./$types";
@@ -31,6 +31,7 @@
 
   let skillLevel = $state(0);
   let selectedCostumeIds = new SvelteSet<string>();
+  let showCalculatorDetails = $state(false);
   let selectedSpotId = $state(data.spots[0]?.id ?? "");
   let selectedRodId = $state(data.rods[0]?.item_id ?? "");
 
@@ -42,6 +43,18 @@
   const highestSpotTier = spotTiers.at(-1) ?? lowestSpotTier;
   const fishermanCostumePieces = $derived(selectedCostumeIds.size);
   const trashFish = $derived(data.trashFish);
+  const fishPoolsByQuality = $derived.by(() => {
+    const pools: Record<number, FishPoolItem[]> = {};
+    for (const [quality, fish] of Object.entries(data.fishPoolsByQuality)) {
+      pools[Number(quality)] = fish.map((entry) => ({
+        itemId: entry.item_id,
+        itemName: entry.item_name,
+        quality: entry.quality,
+        tooltipHtml: entry.tooltip_html,
+      }));
+    }
+    return pools;
+  });
 
   const selectedSpotIndex = $derived.by(() => {
     const index = data.spots.findIndex((spot) => spot.id === selectedSpotId);
@@ -74,6 +87,15 @@
       : 0,
   );
 
+  function isFishOutcome(
+    row: FishingOutcomeRow,
+  ): row is Extract<
+    FishingOutcomeRow,
+    { kind: "primary_fish" | "fallback_fish" }
+  > {
+    return row.kind === "primary_fish" || row.kind === "fallback_fish";
+  }
+
   const masteryGainRange = $derived(
     fishingMasteryGainRange(selectedSpotSuccessChance),
   );
@@ -82,82 +104,104 @@
     if (!selectedSpot) return [];
 
     const spotDrops = selectedSpot.drops.map((drop) => ({
+      itemId: drop.item_id,
+      itemName: drop.item_name,
+      quality: drop.quality,
+      tooltipHtml: drop.tooltip_html,
       probability: drop.configured_drop_rate,
     }));
-    const fishRows = selectedSpot.drops.map((drop) => ({
-      label: drop.item_name,
-      itemId: drop.item_id,
-      tooltipHtml: drop.tooltip_html,
-      quality: drop.quality,
-      chance: fishDropChancePerCast({
-        configuredDropRate: drop.configured_drop_rate,
-        fishCountAtSpot: selectedSpot.drops.length,
-        fishingPercent: skillLevel,
-        fishermanCostumePieces,
-        rodQuality: selectedRodQuality,
-        spotTier: selectedSpot.level,
-      }),
-    }));
-
-    const lowerTierFishChance =
-      selectedSpotSuccessChance *
-      fishLowerTierFishChancePerHook({
-        spotDrops,
-        fishingPercent: skillLevel,
-        fishermanCostumePieces,
-        spotTier: selectedSpot.level,
-      });
 
     return [
-      ...fishRows,
-      ...(lowerTierFishChance > 0
-        ? [
-            {
-              label: "Lower-tier fish (random)",
-              itemId: null,
-              tooltipHtml: null,
-              quality: null,
-              chance: lowerTierFishChance,
-            },
-          ]
-        : []),
-      {
-        label: "Trash catch",
-        itemId: null,
-        tooltipHtml: null,
-        quality: null,
-        chance:
-          selectedSpotSuccessChance *
-          fishTrashChancePerHook({
-            spotDrops,
-            fishingPercent: skillLevel,
-            fishermanCostumePieces,
-            spotTier: selectedSpot.level,
-          }),
-      },
-      {
-        label: "Fish escapes",
-        itemId: null,
-        tooltipHtml: null,
-        quality: null,
-        chance:
-          selectedSpotSuccessChance *
-          fishEscapeChancePerHook({
-            spotDrops,
-            fishingPercent: skillLevel,
-            fishermanCostumePieces,
-            spotTier: selectedSpot.level,
-          }),
-      },
+      ...fishOutcomeRowsForSpot({
+        spotDrops,
+        fishPoolsByQuality,
+        fishingPercent: skillLevel,
+        fishermanCostumePieces,
+        spotTier: selectedSpot.level,
+      }).map((row) => {
+        if (!isFishOutcome(row)) {
+          return {
+            label: row.label,
+            itemId: null,
+            tooltipHtml: null,
+            quality: null,
+            note: null,
+            chance: selectedSpotSuccessChance * row.chancePerBite,
+          };
+        }
+        return {
+          label: row.itemName,
+          itemId: row.itemId,
+          tooltipHtml: row.tooltipHtml,
+          quality: row.quality,
+          note:
+            row.kind === "primary_fish" ? "Primary fish" : "Lower-tier fish",
+          chance: selectedSpotSuccessChance * row.chancePerBite,
+        };
+      }),
       {
         label: "No bite",
         itemId: null,
         tooltipHtml: null,
         quality: null,
+        note: null,
         chance: 1 - selectedSpotSuccessChance,
       },
     ];
   });
+
+  const detailFishRows = $derived(
+    outcomeRows
+      .filter((row) => row.itemId)
+      .sort((a, b) => {
+        const aPrimary = a.note === "Primary fish" ? 0 : 1;
+        const bPrimary = b.note === "Primary fish" ? 0 : 1;
+        if (aPrimary !== bPrimary) return aPrimary - bPrimary;
+        return (b.quality ?? 0) - (a.quality ?? 0);
+      }),
+  );
+
+  const outcomeSummaryRows = $derived.by(() => {
+    let primaryFish = 0;
+    let fallbackFish = 0;
+    let trash = 0;
+    let escape = 0;
+
+    for (const row of outcomeRows) {
+      if (row.note === "Primary fish") primaryFish += row.chance;
+      else if (row.note === "Lower-tier fish") fallbackFish += row.chance;
+      else if (row.label === "Trash catch") trash += row.chance;
+      else if (row.label === "Fish escapes") escape += row.chance;
+    }
+
+    return [
+      { label: "No bite", chance: 1 - selectedSpotSuccessChance },
+      { label: "Primary fish", chance: primaryFish },
+      { label: "Lower-tier fallback fish", chance: fallbackFish },
+      { label: "Trash catch", chance: trash },
+      { label: "Fish escapes", chance: escape },
+    ];
+  });
+
+  function getFallbackFishForSpot(level: number): FishPoolItem[] {
+    return fishFallbackPoolForSpotTier(level, fishPoolsByQuality);
+  }
+
+  function getFallbackTierLabelsForSpot(level: number): string {
+    if (level <= 0) return "—";
+    if (level === 1) return "Tier I fish";
+    return `Tier I–${toRomanNumeral(level - 1)} fish`;
+  }
+
+  function getFallbackSummaryForSpot(level: number): string {
+    const fishCount = getFallbackFishForSpot(level).length;
+    if (fishCount === 0) return "—";
+    return `${getFallbackTierLabelsForSpot(level)} (${fishCount})`;
+  }
+
+  function getFishPoolByTier(tier: number): FishPoolItem[] {
+    return fishPoolsByQuality[tier - 1] ?? [];
+  }
 
   function getSourcesByType(
     sources: PageData["rods"][number]["sources"],
@@ -358,17 +402,27 @@
           <div>Roll for your catch.</div>
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
             <span class="block">
-              After a bite, you reel in a fish from this spot — or, at
-              higher-tier spots, sometimes a random lower-tier fish.
+              The game first rolls one primary fish from the spot.
             </span>
             <span class="block">
-              A failed catch gives either a <a
-                href="#fishing-trash"
+              If that roll fails, higher-tier spots can instead catch a random
+              fish from the <a
+                href="#fishing-fallback-pools"
                 class="text-blue-600 hover:underline dark:text-blue-400"
-                >trash catch</a
-              > or an escaped fish. The exact odds scale with the spot tier and your
-              Fishing skill.
+                >fallback fish pools</a
+              >.
             </span>
+            <span class="block">
+              Tier II spots can catch Tier I fish, Tier III spots can catch Tier
+              I–II fish, and Tier IV spots can catch Tier I–III fish.
+            </span>
+          </p>
+          <p class="mt-1 text-sm leading-6 text-muted-foreground">
+            Failed catch rolls that do not become fish are either a <a
+              href="#fishing-trash"
+              class="text-blue-600 hover:underline dark:text-blue-400"
+              >trash catch</a
+            > or an escaped fish.
           </p>
         </div>
       </div>
@@ -606,20 +660,9 @@
               </tr>
             </thead>
             <tbody>
-              {#each outcomeRows as row (row.label)}
+              {#each outcomeSummaryRows as row (row.label)}
                 <tr class="border-t hover:bg-muted/25">
-                  <td class="p-3">
-                    {#if row.itemId}
-                      <ItemLink
-                        itemId={row.itemId}
-                        itemName={row.label}
-                        tooltipHtml={row.tooltipHtml}
-                        colorClass={getQualityTextColorClass(row.quality ?? 0)}
-                      />
-                    {:else}
-                      {row.label}
-                    {/if}
-                  </td>
+                  <td class="p-3">{row.label}</td>
                   <td class="p-3 text-right font-mono">
                     {formatPercent(row.chance)}
                   </td>
@@ -629,16 +672,60 @@
           </table>
         </div>
       </div>
+
+      <button
+        type="button"
+        class="mt-3 text-sm text-blue-600 hover:underline dark:text-blue-400"
+        onclick={() => (showCalculatorDetails = !showCalculatorDetails)}
+      >
+        {showCalculatorDetails
+          ? "Hide detailed fish chances"
+          : "Show detailed fish chances"}
+      </button>
+
+      {#if showCalculatorDetails}
+        <div class="mt-3 overflow-hidden rounded-lg border">
+          <div class="overflow-x-auto">
+            <table class="w-full whitespace-nowrap">
+              <thead class="bg-muted/50">
+                <tr>
+                  <th class="p-3 text-left font-medium">Fish</th>
+                  <th class="p-3 text-left font-medium">Source</th>
+                  <th class="p-3 text-right font-medium">Chance per cast</th>
+                </tr>
+              </thead>
+              <tbody>
+                {#each detailFishRows as row (row.itemId)}
+                  <tr class="border-t hover:bg-muted/25">
+                    <td class="p-3">
+                      <ItemLink
+                        itemId={row.itemId ?? ""}
+                        itemName={row.label}
+                        tooltipHtml={row.tooltipHtml}
+                        colorClass={getQualityTextColorClass(row.quality ?? 0)}
+                      />
+                    </td>
+                    <td class="p-3 text-sm text-muted-foreground">
+                      {row.note}
+                    </td>
+                    <td class="p-3 text-right font-mono">
+                      {formatPercent(row.chance)}
+                    </td>
+                  </tr>
+                {/each}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      {/if}
     {:else}
       <p class="mt-4 text-sm text-muted-foreground">
         No fishing spots are loaded yet.
       </p>
     {/if}
   </section>
-
   <section id="fishing-rods" class="rounded-lg border p-5">
     <div class="flex items-center gap-2">
-      <Fish class="h-5 w-5 text-cyan-500" />
       <h2 class="text-xl font-semibold">Fishing Rods ({data.rods.length})</h2>
     </div>
     <div class="mt-4 overflow-hidden rounded-lg border">
@@ -721,9 +808,6 @@
       <MapPin class="h-5 w-5 text-cyan-500" />
       <h2 class="text-xl font-semibold">Fishing Spots ({data.spots.length})</h2>
     </div>
-    <p class="mt-1 text-sm text-muted-foreground">
-      Higher-tier spots can also yield random lower-tier fish not listed here.
-    </p>
     <div class="mt-4 overflow-hidden rounded-lg border">
       <div class="overflow-x-auto">
         <table class="w-full whitespace-nowrap">
@@ -732,7 +816,7 @@
               <th class="p-3 text-left font-medium">#</th>
               <th class="p-3 text-left font-medium">Spot</th>
               <th class="p-3 text-left font-medium">Tier</th>
-              <th class="p-3 text-left font-medium">Primary fish</th>
+              <th class="p-3 text-left font-medium">Fish</th>
               <th class="p-3 text-left font-medium">Zones</th>
               <th class="p-3 text-right font-medium">Map</th>
             </tr>
@@ -763,6 +847,9 @@
                       />
                     {/each}
                   </div>
+                  <div class="mt-1 text-xs text-muted-foreground">
+                    Fallback: {getFallbackSummaryForSpot(spot.level)}
+                  </div>
                 </td>
                 <td class="p-3">
                   <div class="flex flex-wrap gap-x-3 gap-y-1">
@@ -788,6 +875,33 @@
           </tbody>
         </table>
       </div>
+    </div>
+  </section>
+
+  <section id="fishing-fallback-pools" class="rounded-lg border p-5">
+    <div class="flex items-center gap-2">
+      <Fish class="h-5 w-5 text-cyan-500" />
+      <h2 class="text-xl font-semibold">Fallback Fish Pools</h2>
+    </div>
+    <div class="mt-4 grid gap-4 md:grid-cols-3">
+      {#each Array.from({ length: Math.max(0, highestSpotTier) }, (_, index) => index + 1) as tier (tier)}
+        {@const pool = getFishPoolByTier(tier)}
+        <div class="rounded-lg border p-4">
+          <div class="mb-2 font-medium">
+            Tier {toRomanNumeral(tier - 1)} fish ({pool.length})
+          </div>
+          <div class="flex flex-wrap gap-x-3 gap-y-1">
+            {#each pool as fish (fish.itemId)}
+              <ItemLink
+                itemId={fish.itemId}
+                itemName={fish.itemName}
+                tooltipHtml={fish.tooltipHtml}
+                colorClass={getQualityTextColorClass(fish.quality)}
+              />
+            {/each}
+          </div>
+        </div>
+      {/each}
     </div>
   </section>
 

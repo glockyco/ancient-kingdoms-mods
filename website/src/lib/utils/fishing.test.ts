@@ -11,6 +11,7 @@ import {
   fishTrashChancePerHook,
   fishEscapeChancePerHook,
   fishLowerTierFishChancePerHook,
+  fishOutcomeRowsForSpot,
 } from "./fishing";
 
 describe("fishing utilities", () => {
@@ -168,5 +169,57 @@ describe("fishing utilities", () => {
     expect(fishEscapeChancePerHook({ ...drops, spotTier: 3 })).toBeCloseTo(
       0.05,
     );
+  });
+
+  it("distributes lower-tier fallback chance across exact fish", () => {
+    const rows = fishOutcomeRowsForSpot({
+      spotTier: 1,
+      fishingPercent: 0,
+      fishermanCostumePieces: 0,
+      spotDrops: [
+        {
+          itemId: "rough_primary",
+          itemName: "Rough Primary",
+          quality: 1,
+          tooltipHtml: "<p>rough</p>",
+          probability: 0.5,
+        },
+        {
+          itemId: "rough_secondary",
+          itemName: "Rough Secondary",
+          quality: 1,
+          tooltipHtml: "<p>secondary</p>",
+          probability: 0.5,
+        },
+      ],
+      fishPoolsByQuality: {
+        0: [
+          {
+            itemId: "calm_one",
+            itemName: "Calm One",
+            quality: 0,
+            tooltipHtml: "<p>calm one</p>",
+          },
+          {
+            itemId: "calm_two",
+            itemName: "Calm Two",
+            quality: 0,
+            tooltipHtml: "<p>calm two</p>",
+          },
+        ],
+      },
+    });
+
+    const fallbackRows = rows.flatMap((row) =>
+      row.kind === "fallback_fish" ? [row] : [],
+    );
+    expect(fallbackRows).toHaveLength(2);
+    expect(fallbackRows.map((row) => row.itemId)).toEqual([
+      "calm_one",
+      "calm_two",
+    ]);
+    expect(fallbackRows.map((row) => row.chancePerBite)).toEqual([
+      0.1125, 0.1125,
+    ]);
   });
 });

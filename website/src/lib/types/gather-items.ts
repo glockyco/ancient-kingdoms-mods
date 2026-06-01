@@ -49,9 +49,11 @@ export interface GatheringResource {
 export interface GatheringResourceDrop {
   item_id: string;
   item_name: string;
+  quality?: number;
   drop_rate: number;
   actual_drop_chance: number | null;
   is_fishing_trash?: boolean;
+  is_fallback_fish?: boolean;
 }
 
 /**

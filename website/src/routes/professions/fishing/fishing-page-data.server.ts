@@ -34,6 +34,13 @@ interface TrashFishItem {
   tooltip_html: string | null;
 }
 
+interface FishPoolItem {
+  item_id: string;
+  item_name: string;
+  quality: number;
+  tooltip_html: string | null;
+}
+
 interface FishingEquipmentItem {
   item_id: string;
   item_name: string;
@@ -75,6 +82,7 @@ export interface FishingPageData {
   };
   spots: FishingSpot[];
   trashFish: TrashFishItem[];
+  fishPoolsByQuality: Record<number, FishPoolItem[]>;
   rods: FishingRodItem[];
   costumePieces: FishingEquipmentItem[];
   foods: FishRecipe[];
@@ -162,6 +170,22 @@ export function loadFishingPageData(db: Database.Database): FishingPageData {
     `,
     )
     .all() as TrashFishItem[];
+
+  const fishPoolRows = db
+    .prepare(
+      `
+      SELECT
+        f.item_id,
+        i.name AS item_name,
+        i.quality,
+        i.tooltip_html
+      FROM fish f
+      JOIN items i ON i.id = f.item_id
+      WHERE f.is_trash = 0
+      ORDER BY i.quality, i.name
+    `,
+    )
+    .all() as FishPoolItem[];
 
   const fishStats = db
     .prepare(
@@ -284,6 +308,13 @@ export function loadFishingPageData(db: Database.Database): FishingPageData {
     dropsBySpot.set(row.resource_id, drops);
   }
 
+  const fishPoolsByQuality: Record<number, FishPoolItem[]> = {};
+  for (const fish of fishPoolRows) {
+    const pool = fishPoolsByQuality[fish.quality] ?? [];
+    pool.push(fish);
+    fishPoolsByQuality[fish.quality] = pool;
+  }
+
   const spots = spotRows.map(({ zone_id, zone_name, ...spot }) => ({
     ...spot,
     zones: [{ id: zone_id, name: zone_name }],
@@ -294,6 +325,7 @@ export function loadFishingPageData(db: Database.Database): FishingPageData {
     profession,
     spots,
     trashFish,
+    fishPoolsByQuality,
     rods,
     costumePieces,
     foods,

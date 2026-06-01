@@ -224,6 +224,7 @@ export function getGatheringResourceDropsFromDb(
       `SELECT
         isg.item_id,
         i.name as item_name,
+        i.quality,
         isg.drop_rate,
         isg.actual_drop_chance,
         0 as is_fishing_trash
@@ -243,6 +244,7 @@ export function getGatheringResourceDropsFromDb(
       `SELECT
         f.item_id,
         i.name as item_name,
+        i.quality,
         0 as drop_rate,
         NULL as actual_drop_chance,
         1 as is_fishing_trash

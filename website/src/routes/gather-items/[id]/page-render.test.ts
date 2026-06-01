@@ -24,6 +24,8 @@ function createPageData(isFishingSpot: boolean): PageData {
     },
     drops: [],
     spawns: [],
+    rods: [],
+    fishPoolsByQuality: {},
     toolObtainabilityTree: null,
     description: isFishingSpot
       ? "Calm Fishing Spot fishing resource."

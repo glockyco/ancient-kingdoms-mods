@@ -10,6 +10,36 @@ export interface FishDropParams extends FishingSuccessParams {
   fishermanCostumePieces: number;
 }
 
+export interface FishPoolItem {
+  itemId: string;
+  itemName: string;
+  quality: number;
+  tooltipHtml: string | null;
+}
+
+export interface FishOutcomeSpotDrop extends FishPoolItem {
+  probability: number;
+}
+
+export type FishingOutcomeRow =
+  | (FishPoolItem & {
+      kind: "primary_fish" | "fallback_fish";
+      chancePerBite: number;
+    })
+  | {
+      kind: "trash" | "escape";
+      label: string;
+      chancePerBite: number;
+    };
+
+export interface FishingOutcomeRowsParams {
+  spotDrops: FishOutcomeSpotDrop[];
+  fishPoolsByQuality: Record<number, FishPoolItem[] | undefined>;
+  fishingPercent: number;
+  fishermanCostumePieces: number;
+  spotTier: number;
+}
+
 function clamp01(value: number): number {
   return Math.min(1, Math.max(0, value));
 }
@@ -205,4 +235,70 @@ export function fishEscapeChancePerHook(params: FishOutcomeParams): number {
   if (params.spotDrops.length === 0) return 0;
   const failedMass = 1 - averageSelectedFishChance(params);
   return failedPrimaryFallbackRates(params.spotTier).escape * failedMass;
+}
+
+export function fishFallbackPoolForSpotTier(
+  spotTier: number,
+  fishPoolsByQuality: Record<number, FishPoolItem[] | undefined>,
+): FishPoolItem[] {
+  const result: FishPoolItem[] = [];
+  for (let quality = 0; quality < spotTier; quality += 1) {
+    result.push(...(fishPoolsByQuality[quality] ?? []));
+  }
+  return result;
+}
+
+export function fishOutcomeRowsForSpot({
+  spotDrops,
+  fishPoolsByQuality,
+  fishingPercent,
+  fishermanCostumePieces,
+  spotTier,
+}: FishingOutcomeRowsParams): FishingOutcomeRow[] {
+  const shared = {
+    spotDrops,
+    fishingPercent,
+    fishermanCostumePieces,
+    spotTier,
+  };
+  const primaryRows: FishingOutcomeRow[] = spotDrops.map((drop) => ({
+    kind: "primary_fish",
+    itemId: drop.itemId,
+    itemName: drop.itemName,
+    quality: drop.quality,
+    tooltipHtml: drop.tooltipHtml,
+    chancePerBite: fishDropChancePerSuccessfulHook({
+      configuredDropRate: drop.probability,
+      fishCountAtSpot: spotDrops.length,
+      fishingPercent,
+      fishermanCostumePieces,
+    }),
+  }));
+
+  const lowerTierPool = fishFallbackPoolForSpotTier(
+    spotTier,
+    fishPoolsByQuality,
+  );
+  const lowerTierTotal = fishLowerTierFishChancePerHook(shared);
+  const fallbackRows: FishingOutcomeRow[] = lowerTierPool.map((fish) => ({
+    kind: "fallback_fish",
+    ...fish,
+    chancePerBite:
+      lowerTierPool.length > 0 ? lowerTierTotal / lowerTierPool.length : 0,
+  }));
+
+  return [
+    ...primaryRows,
+    ...fallbackRows,
+    {
+      kind: "trash",
+      label: "Trash catch",
+      chancePerBite: fishTrashChancePerHook(shared),
+    },
+    {
+      kind: "escape",
+      label: "Fish escapes",
+      chancePerBite: fishEscapeChancePerHook(shared),
+    },
+  ];
 }

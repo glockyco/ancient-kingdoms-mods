@@ -65,6 +65,24 @@
     );
   }
 
+  function formatFishingChanceRange(
+    minChance: number | null,
+    maxChance: number | null,
+  ): string | null {
+    if (minChance == null || maxChance == null) return null;
+    if (Math.abs(minChance - maxChance) < 0.000001) {
+      return `${formatPercent(minChance)} per bite`;
+    }
+    return `${formatPercent(minChance)}–${formatPercent(maxChance)} per bite`;
+  }
+
+  function formatFishingSourceLabel(
+    minChance: number | null,
+    maxChance: number | null,
+  ): string | null {
+    return formatFishingChanceRange(minChance, maxChance);
+  }
+
   let details = $state<ItemPopupDetails | null>(null);
   let isLoading = $state(true);
   let error = $state<string | null>(null);
@@ -221,11 +239,16 @@
                     : source.resourceName}
                 </span>
               </MapEntityLink>
-              <span class="shrink-0 text-xs text-muted-foreground">
+              <span
+                class="shrink-0 whitespace-nowrap text-xs text-muted-foreground"
+              >
                 {#if source.rateNote}
                   {source.rateNote}
-                {:else if source.isFishingSpot && source.rate === 0}
-                  Fishing spots
+                {:else if formatFishingSourceLabel(source.fishingChanceMin, source.fishingChanceMax)}
+                  {formatFishingSourceLabel(
+                    source.fishingChanceMin,
+                    source.fishingChanceMax,
+                  )}
                 {:else}
                   {formatPercent(source.rate)}
                 {/if}

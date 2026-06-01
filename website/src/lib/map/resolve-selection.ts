@@ -417,13 +417,13 @@ function resolveGatheringSelection(
   entityData: MapEntityData,
 ): ResolvedSelection {
   const exactResource = entityData.gathering.find(
-    (g) => g.id === resourceId && g.position !== null,
+    (g) => g.id === resourceId,
   ) as GatheringMapEntity | undefined;
   const resource =
     exactResource ??
-    (entityData.gathering.find(
-      (g) => g.selectionGroupId === resourceId && g.position !== null,
-    ) as GatheringMapEntity | undefined);
+    (entityData.gathering.find((g) => g.selectionGroupId === resourceId) as
+      | GatheringMapEntity
+      | undefined);
 
   if (!resource) {
     return { popup: null, highlight: null };
@@ -431,7 +431,10 @@ function resolveGatheringSelection(
 
   return {
     popup: { type: "entity", entity: resource },
-    highlight: { entityId: resource.selectionGroupId, entityType: "resource" },
+    highlight:
+      resource.position !== null
+        ? { entityId: resource.selectionGroupId, entityType: "resource" }
+        : null,
   };
 }
 

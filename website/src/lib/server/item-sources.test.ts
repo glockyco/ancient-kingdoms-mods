@@ -22,6 +22,10 @@ function createDb() {
       resource_id TEXT NOT NULL,
       zone_id TEXT NOT NULL
     );
+    CREATE TABLE items (
+      id TEXT PRIMARY KEY,
+      quality INTEGER NOT NULL DEFAULT 0
+    );
     CREATE TABLE fish (
       item_id TEXT PRIMARY KEY,
       is_trash INTEGER NOT NULL DEFAULT 0
@@ -37,6 +41,13 @@ function createDb() {
     INSERT INTO zones VALUES
       ('lone_lands', 'The Lone-lands'),
       ('crescent_coast', 'Crescent Coast');
+    INSERT INTO items VALUES
+      ('iron_ore', 0),
+      ('golden_stripe_eel', 1),
+      ('rough_dummy_one', 1),
+      ('rough_dummy_two', 1),
+      ('driftscale_catfish', 0),
+      ('worn_rucksack', 0);
     INSERT INTO gathering_resources VALUES
       ('iron_node', 'Iron Node', 3, 0, 0, 0),
       ('rough_fishing_spot', 'Rough Fishing Spot', 0, 0, 1, 1);
@@ -46,10 +57,14 @@ function createDb() {
       ('fish_spawn_3', 'rough_fishing_spot', 'crescent_coast');
     INSERT INTO fish VALUES
       ('driftscale_catfish', 0),
+      ('rough_dummy_one', 0),
+      ('rough_dummy_two', 0),
       ('worn_rucksack', 1);
     INSERT INTO item_sources_gather VALUES
       ('iron_ore', 'iron_node', 1.0, 1.0),
-      ('golden_stripe_eel', 'rough_fishing_spot', 0.2, 0.0666666667);
+      ('golden_stripe_eel', 'rough_fishing_spot', 0.2, 0.0666666667),
+      ('rough_dummy_one', 'rough_fishing_spot', 0.2, 0.0666666667),
+      ('rough_dummy_two', 'rough_fishing_spot', 0.2, 0.0666666667);
   `);
   return db;
 }
@@ -84,8 +99,11 @@ describe("getGatherSources", () => {
           zone_name: "The Lone-lands",
           is_fishing_spot: 1,
           virtual_location_count: 1,
+          fishing_source_role: "primary",
           amount_min: null,
           amount_max: null,
+          fishing_chance_min: 0.0666666667,
+          fishing_chance_max: 0.25333333333333335,
         }),
         expect.objectContaining({
           resource_id: "rough_fishing_spot",
@@ -113,11 +131,21 @@ describe("getGatherSources", () => {
     db.close();
   });
 
-  test("does not invent fishing spot rows for fish without explicit source data", () => {
+  test("adds virtual higher-tier fishing sources for lower-tier fallback fish", () => {
     const db = createDb();
     const sources = getGatherSources(db, "driftscale_catfish");
 
-    expect(sources).toEqual([]);
+    expect(sources).toHaveLength(3);
+    expect(sources[0]).toMatchObject({
+      resource_id: "rough_fishing_spot",
+      is_fishing_spot: 1,
+      fishing_source_role: "fallback",
+      virtual_location_count: 1,
+      amount_min: null,
+      amount_max: null,
+    });
+    expect(sources[0].fishing_chance_min).toBeCloseTo(0.108);
+    expect(sources[0].fishing_chance_max).toBeCloseTo(0.36);
 
     db.close();
   });
@@ -130,10 +158,13 @@ describe("getGatherSources", () => {
     expect(sources[0]).toMatchObject({
       resource_id: "rough_fishing_spot",
       is_fishing_spot: 1,
+      fishing_source_role: "trash",
       virtual_location_count: 1,
       amount_min: null,
       amount_max: null,
     });
+    expect(sources[0].fishing_chance_min).toBeCloseTo(0.024);
+    expect(sources[0].fishing_chance_max).toBeCloseTo(0.08);
 
     db.close();
   });

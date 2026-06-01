@@ -221,6 +221,9 @@ export function getGatherSources(
 			is_radiant_spark,
 			is_fishing_spot,
 			virtual_location_count,
+			fishing_source_role,
+			fishing_chance_min,
+			fishing_chance_max,
 			amount_min,
 			amount_max,
 			spawn_id,
@@ -237,6 +240,9 @@ export function getGatherSources(
 				COALESCE(gr.is_radiant_spark, 0) as is_radiant_spark,
 				0 as is_fishing_spot,
 				0 as virtual_location_count,
+				NULL as fishing_source_role,
+				NULL as fishing_chance_min,
+				NULL as fishing_chance_max,
 				CASE
 					WHEN gr.is_radiant_spark = 1 THEN 0
 					ELSE 1
@@ -267,6 +273,19 @@ export function getGatherSources(
 				0 as is_radiant_spark,
 				1 as is_fishing_spot,
 				1 as virtual_location_count,
+				'primary' as fishing_source_role,
+				COALESCE(isg.actual_drop_chance, isg.drop_rate) as fishing_chance_min,
+				(
+					CASE
+						WHEN isg.drop_rate + 0.56 > 1 THEN 1.0
+						ELSE isg.drop_rate + 0.56
+					END
+					/ NULLIF((
+						SELECT COUNT(*)
+						FROM item_sources_gather fish_count
+						WHERE fish_count.resource_id = gr.id
+					), 0)
+				) as fishing_chance_max,
 				NULL as amount_min,
 				NULL as amount_max,
 				grs.id as spawn_id,
@@ -286,14 +305,21 @@ export function getGatherSources(
 
   const sources = stmt.all(itemId, itemId) as GatherSource[];
 
-  if (sources.length > 0) return sources;
+  const fishRow = db
+    .prepare(
+      `
+      SELECT f.is_trash, i.quality
+      FROM fish f
+      LEFT JOIN items i ON i.id = f.item_id
+      WHERE f.item_id = ?
+      LIMIT 1
+    `,
+    )
+    .get(itemId) as { is_trash: number; quality: number | null } | undefined;
+  if (!fishRow) return sources;
 
-  const trashFishRow = db
-    .prepare("SELECT 1 FROM fish WHERE item_id = ? AND is_trash = 1 LIMIT 1")
-    .get(itemId);
-  if (!trashFishRow) return [];
-
-  const fishingStmt = db.prepare(`
+  if (fishRow.is_trash) {
+    const fishingStmt = db.prepare(`
 		SELECT
 			? as item_id,
 			gr.id as resource_id,
@@ -304,6 +330,36 @@ export function getGatherSources(
 			0 as is_radiant_spark,
 			1 as is_fishing_spot,
 			1 as virtual_location_count,
+			'trash' as fishing_source_role,
+			(
+				CASE gr.level
+					WHEN 0 THEN 0.3
+					WHEN 1 THEN 0.1
+					ELSE 0
+				END
+				* (1 - (
+					SELECT AVG(
+						CASE
+							WHEN rates.drop_rate + 0.56 > 1 THEN 1.0
+							ELSE rates.drop_rate + 0.56
+						END
+					)
+					FROM item_sources_gather rates
+					WHERE rates.resource_id = gr.id
+				))
+			) as fishing_chance_min,
+			(
+				CASE gr.level
+					WHEN 0 THEN 0.3
+					WHEN 1 THEN 0.1
+					ELSE 0
+				END
+				* (1 - (
+					SELECT AVG(rates.drop_rate)
+					FROM item_sources_gather rates
+					WHERE rates.resource_id = gr.id
+				))
+			) as fishing_chance_max,
 			NULL as amount_min,
 			NULL as amount_max,
 			grs.id as spawn_id,
@@ -316,7 +372,91 @@ export function getGatherSources(
 		ORDER BY gr.level ASC, gr.name ASC, z.name ASC, grs.id ASC
 	`);
 
-  return fishingStmt.all(itemId) as GatherSource[];
+    return fishingStmt.all(itemId) as GatherSource[];
+  }
+
+  const fallbackStmt = db.prepare(`
+		SELECT
+			? as item_id,
+			gr.id as resource_id,
+			gr.name as resource_name,
+			0 as drop_rate,
+			0 as actual_drop_chance,
+			0 as is_guaranteed,
+			0 as is_radiant_spark,
+			1 as is_fishing_spot,
+			1 as virtual_location_count,
+			'fallback' as fishing_source_role,
+			(
+				CASE gr.level
+					WHEN 1 THEN 0.45
+					WHEN 2 THEN 0.75
+					WHEN 3 THEN 0.9
+					ELSE 0
+				END
+				* (1 - (
+					SELECT AVG(
+						CASE
+							WHEN rates.drop_rate + 0.56 > 1 THEN 1.0
+							ELSE rates.drop_rate + 0.56
+						END
+					)
+					FROM item_sources_gather rates
+					WHERE rates.resource_id = gr.id
+				))
+				/ NULLIF((
+					SELECT COUNT(*)
+					FROM fish fallback_fish
+					JOIN items fallback_item ON fallback_item.id = fallback_fish.item_id
+					WHERE fallback_fish.is_trash = 0
+						AND fallback_item.quality < gr.level
+				), 0)
+			) as fishing_chance_min,
+			(
+				CASE gr.level
+					WHEN 1 THEN 0.45
+					WHEN 2 THEN 0.75
+					WHEN 3 THEN 0.9
+					ELSE 0
+				END
+				* (1 - (
+					SELECT AVG(rates.drop_rate)
+					FROM item_sources_gather rates
+					WHERE rates.resource_id = gr.id
+				))
+				/ NULLIF((
+					SELECT COUNT(*)
+					FROM fish fallback_fish
+					JOIN items fallback_item ON fallback_item.id = fallback_fish.item_id
+					WHERE fallback_fish.is_trash = 0
+						AND fallback_item.quality < gr.level
+				), 0)
+			) as fishing_chance_max,
+			NULL as amount_min,
+			NULL as amount_max,
+			grs.id as spawn_id,
+			grs.zone_id,
+			z.name as zone_name
+		FROM gathering_resources gr
+		JOIN gathering_resource_spawns grs ON grs.resource_id = gr.id
+		JOIN zones z ON z.id = grs.zone_id
+		WHERE gr.is_fishing_spot = 1
+			AND gr.level > COALESCE(?, -1)
+			AND NOT EXISTS (
+				SELECT 1
+				FROM item_sources_gather isg
+				WHERE isg.item_id = ?
+					AND isg.resource_id = gr.id
+			)
+		ORDER BY gr.level ASC, gr.name ASC, z.name ASC, grs.id ASC
+	`);
+  const fallbackSources = fallbackStmt.all(
+    itemId,
+    fishRow.quality,
+    itemId,
+  ) as GatherSource[];
+
+  return [...sources, ...fallbackSources];
 }
 
 /**

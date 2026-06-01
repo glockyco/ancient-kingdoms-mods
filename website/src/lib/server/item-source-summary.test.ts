@@ -8,11 +8,18 @@ function createDb() {
     CREATE TABLE items (
       id TEXT PRIMARY KEY,
       name TEXT NOT NULL,
+      quality INTEGER NOT NULL DEFAULT 0,
       comments TEXT DEFAULT ''
     );
     CREATE TABLE fish (
       item_id TEXT PRIMARY KEY,
       is_trash INTEGER NOT NULL DEFAULT 0
+    );
+    CREATE TABLE gathering_resources (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      is_fishing_spot INTEGER NOT NULL DEFAULT 0,
+      level INTEGER NOT NULL DEFAULT 0
     );
     CREATE TABLE item_source_entries (
       item_id TEXT NOT NULL,
@@ -25,13 +32,15 @@ function createDb() {
   `);
   db.exec(`
     INSERT INTO items VALUES
-      ('worn_rucksack', 'Worn Rucksack', ''),
-      ('ironjaw_catfish', 'Ironjaw Catfish', ''),
-      ('worn_backpack', 'Worn Backpack', 'Starter backpack.'),
-      ('hand_made_backpack', 'Hand Made Backpack', '');
+      ('worn_rucksack', 'Worn Rucksack', 0, ''),
+      ('ironjaw_catfish', 'Ironjaw Catfish', 0, ''),
+      ('worn_backpack', 'Worn Backpack', 0, 'Starter backpack.'),
+      ('hand_made_backpack', 'Hand Made Backpack', 0, '');
     INSERT INTO fish VALUES
       ('worn_rucksack', 1),
       ('ironjaw_catfish', 0);
+    INSERT INTO gathering_resources VALUES
+      ('rough_fishing_spot', 'Rough Fishing Spot', 1, 1);
     INSERT INTO item_source_entries VALUES
       ('worn_rucksack', 'drop', 'infernal_skeleton', 'Infernal Skeleton', 10, 'Infernal Skeleton'),
       ('hand_made_backpack', 'vendor', 'alias_daehorn', 'Alais Daehorn', 1, 'Alais Daehorn');
@@ -58,6 +67,12 @@ describe("getItemSourceSummaries", () => {
           name: "Fishing",
         }),
         expect.objectContaining({
+          item_id: "ironjaw_catfish",
+          type: "fishing",
+          id: "fishing",
+          name: "Fishing",
+        }),
+        expect.objectContaining({
           item_id: "worn_backpack",
           type: "starter",
           id: "worn_backpack",
@@ -67,15 +82,6 @@ describe("getItemSourceSummaries", () => {
           item_id: "hand_made_backpack",
           type: "vendor",
           id: "alias_daehorn",
-        }),
-      ]),
-    );
-
-    expect(summaries).not.toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          item_id: "ironjaw_catfish",
-          type: "fishing",
         }),
       ]),
     );

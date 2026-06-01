@@ -90,7 +90,7 @@ function createDb() {
       ('fishermans_hat', 'Fisherman''s Hat', 0, 1, '<p>hat</p>', NULL, 'Head', NULL, NULL, NULL, NULL),
       ('fishermans_trousers', 'Fisherman''s Trousers', 0, 1, '<p>trousers</p>', NULL, 'Legs', NULL, NULL, NULL, NULL),
       ('cooking_fish', 'Cooking Fish', 0, 1, '<p>cook fish</p>', NULL, NULL, NULL, NULL, NULL, NULL),
-      ('alchemy_fish', 'Alchemy Fish', 0, 1, '<p>alchemy fish</p>', NULL, NULL, NULL, NULL, NULL, NULL),
+      ('alchemy_fish', 'Alchemy Fish', 1, 1, '<p>alchemy fish</p>', NULL, NULL, NULL, NULL, NULL, NULL),
       ('trash_fish', 'Trash Fish', 0, 1, '<p>trash</p>', NULL, NULL, NULL, NULL, NULL, NULL),
       ('fish_chowder', 'Fish Chowder', 0, 1, '<p>food</p>', NULL, NULL, 'fish_chowder_buff', 'Fish Chowder Buff', NULL, NULL),
       ('fish_potion', 'Fish Potion', 0, 1, '<p>potion</p>', NULL, NULL, NULL, NULL, 'fish_potion_buff', 'Fish Potion Buff');
@@ -177,6 +177,12 @@ describe("loadFishingPageData", () => {
     });
     expect(data.trashFish[0]).not.toHaveProperty("cooking_recipe_count");
     expect(data.trashFish[0]).not.toHaveProperty("alchemy_recipe_count");
+    expect(data.fishPoolsByQuality[0].map((fish) => fish.item_id)).toEqual([
+      "cooking_fish",
+    ]);
+    expect(data.fishPoolsByQuality[1].map((fish) => fish.item_id)).toEqual([
+      "alchemy_fish",
+    ]);
     expect(data.foods[0]).toMatchObject({
       result_item_id: "fish_chowder",
       effect_skill_id: "fish_chowder_buff",

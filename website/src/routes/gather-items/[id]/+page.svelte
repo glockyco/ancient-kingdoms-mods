@@ -16,13 +16,20 @@
     GatheringResourceDrop,
     GatheringResourceSpawn,
   } from "$lib/types/gather-items";
-  import { formatPercent, formatDuration } from "$lib/utils/format";
+  import {
+    formatPercent,
+    formatDuration,
+    getQualityTextColorClass,
+  } from "$lib/utils/format";
   import {
     fishDropChancePerCast,
+    fishFallbackPoolForSpotTier,
+    fishLowerTierFishChancePerHook,
     fishTrashChancePerHook,
     fishingMasteryGainChance,
     fishingMasteryGainRange,
     fishingSpotSuccessChance,
+    type FishPoolItem,
   } from "$lib/utils/fishing";
   import Key from "@lucide/svelte/icons/key";
   import ListTree from "@lucide/svelte/icons/list-tree";
@@ -31,6 +38,7 @@
   import Calculator from "@lucide/svelte/icons/calculator";
   import FishIcon from "@lucide/svelte/icons/fish";
   import BookOpen from "@lucide/svelte/icons/book-open";
+  import ChevronDown from "@lucide/svelte/icons/chevron-down";
   import { SvelteMap, SvelteSet } from "svelte/reactivity";
   import type { PageData } from "./$types";
 
@@ -139,6 +147,30 @@
   let skillLevel = $state(0);
   let pickaxeQuality = $state(0);
   let selectedCostumeIds = new SvelteSet<string>();
+  let selectedRodId = $state(data.rods[0]?.item_id ?? "");
+  const selectedRod = $derived(
+    data.rods.find((rod) => rod.item_id === selectedRodId) ?? data.rods[0],
+  );
+  const selectedRodQuality = $derived(selectedRod?.quality ?? 0);
+  const selectedRodIndex = $derived(
+    Math.max(
+      0,
+      data.rods.findIndex((rod) => rod.item_id === selectedRodId),
+    ),
+  );
+
+  function selectRod(index: number): void {
+    const clamped = Math.min(data.rods.length - 1, Math.max(0, index));
+    selectedRodId = data.rods[clamped]?.item_id ?? selectedRodId;
+  }
+
+  function selectPreviousRod(): void {
+    selectRod(selectedRodIndex - 1);
+  }
+
+  function selectNextRod(): void {
+    selectRod(selectedRodIndex + 1);
+  }
 
   const fishermanCostumePieces = $derived(selectedCostumeIds.size);
   const fishermanSetPieces = [
@@ -233,7 +265,7 @@
     } else if (resource.is_fishing_spot) {
       return (
         fishingSpotSuccessChance({
-          rodQuality: 0,
+          rodQuality: selectedRodQuality,
           fishingPercent: skillLevel,
           spotTier: resource.level,
         }) * 100
@@ -251,7 +283,7 @@
   const fishingMasteryProcChance = $derived(
     resource.is_fishing_spot
       ? fishingSpotSuccessChance({
-          rodQuality: 0,
+          rodQuality: selectedRodQuality,
           fishingPercent: skillLevel,
           spotTier: resource.level,
         }) *
@@ -280,16 +312,82 @@
     drops.filter((item: GatheringResourceDrop) => item.is_fishing_trash).length,
   );
 
+  const fishPoolsByQuality = $derived.by(() => {
+    const pools: Record<number, FishPoolItem[]> = {};
+    for (const [quality, fish] of Object.entries(data.fishPoolsByQuality)) {
+      pools[Number(quality)] = fish.map((entry) => ({
+        itemId: entry.item_id,
+        itemName: entry.item_name,
+        quality: entry.quality,
+        tooltipHtml: entry.tooltip_html,
+      }));
+    }
+    return pools;
+  });
+
+  const fallbackFish = $derived(
+    resource.is_fishing_spot
+      ? fishFallbackPoolForSpotTier(resource.level, fishPoolsByQuality)
+      : [],
+  );
+
+  // Per-cast chance for any single fallback fish (uniform across the pool).
+  const fallbackFishChancePerCast = $derived.by(() => {
+    if (fallbackFish.length === 0) return 0;
+    const perHook = fishLowerTierFishChancePerHook({
+      spotDrops: nonTrashDrops.map((item: GatheringResourceDrop) => ({
+        probability: item.drop_rate,
+      })),
+      fishingPercent: skillLevel,
+      fishermanCostumePieces,
+      spotTier: resource.level,
+    });
+    const spotSuccess = fishingSpotSuccessChance({
+      rodQuality: selectedRodQuality,
+      fishingPercent: skillLevel,
+      spotTier: resource.level,
+    });
+    return (spotSuccess * perHook) / fallbackFish.length;
+  });
+
+  // Fallback fish folded into the same rewards table as synthetic rows.
+  // drop_rate carries the per-cast chance so the table sorts them below the
+  // configured primary fish but above zero-chance trash.
+  const rewardDrops = $derived.by(() => {
+    if (!resource.is_fishing_spot || fallbackFish.length === 0) return drops;
+    const fallbackRows: GatheringResourceDrop[] = fallbackFish
+      .slice()
+      .sort((a, b) => b.quality - a.quality)
+      .map((fish) => ({
+        item_id: fish.itemId,
+        item_name: fish.itemName,
+        quality: fish.quality,
+        drop_rate: fallbackFishChancePerCast,
+        actual_drop_chance: null,
+        is_fishing_trash: false,
+        is_fallback_fish: true,
+      }));
+    return [
+      ...nonTrashDrops,
+      ...fallbackRows,
+      ...drops.filter((item: GatheringResourceDrop) => item.is_fishing_trash),
+    ];
+  });
+
   function getDisplayedDropChance(drop: GatheringResourceDrop): number {
     if (!resource.is_fishing_spot) {
       return drop.actual_drop_chance ?? drop.drop_rate;
+    }
+
+    if (drop.is_fallback_fish) {
+      return fallbackFishChancePerCast;
     }
 
     if (drop.is_fishing_trash) {
       if (trashDropCount === 0) return 0;
       return (
         (fishingSpotSuccessChance({
-          rodQuality: 0,
+          rodQuality: selectedRodQuality,
           fishingPercent: skillLevel,
           spotTier: resource.level,
         }) *
@@ -310,7 +408,7 @@
       fishCountAtSpot: nonTrashDrops.length,
       fishingPercent: skillLevel,
       fishermanCostumePieces,
-      rodQuality: 0,
+      rodQuality: selectedRodQuality,
       spotTier: resource.level,
     });
   }
@@ -356,7 +454,11 @@
   row: Row<GatheringResourceDrop>;
 })}
   {#if cell.column.id === "item_name"}
-    <ItemLink itemId={row.original.item_id} itemName={row.original.item_name} />
+    <ItemLink
+      itemId={row.original.item_id}
+      itemName={row.original.item_name}
+      colorClass={getQualityTextColorClass(row.original.quality ?? 0)}
+    />
   {:else if cell.column.id === "drop_rate"}
     <span class="ml-auto">
       {formatPercent(getDisplayedDropChance(row.original))}
@@ -612,37 +714,28 @@
   {/if}
 
   <!-- Requirements -->
-  {#if resource.tool_required_id || resource.is_fishing_spot}
+  {#if resource.tool_required_id}
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
         <Key class="h-5 w-5 text-yellow-500" />
-        {resource.is_fishing_spot ? "Fishing Rod" : "Key"}
+        Key
       </h2>
       <div class="bg-muted/30 rounded-md border p-4">
-        {#if resource.is_fishing_spot}
-          <a
-            href="/items/rusty_fishing_rod"
-            class="text-blue-600 dark:text-blue-400 hover:underline font-medium"
-          >
-            Rusty Fishing Rod
-          </a>
-        {:else if resource.tool_required_id}
-          <a
-            href="/items/{resource.tool_required_id}"
-            class="text-blue-600 dark:text-blue-400 hover:underline font-medium"
-          >
-            {resource.tool_required_name}
-          </a>
-        {/if}
+        <a
+          href="/items/{resource.tool_required_id}"
+          class="text-blue-600 dark:text-blue-400 hover:underline font-medium"
+        >
+          {resource.tool_required_name}
+        </a>
       </div>
     </section>
 
     <!-- How to Obtain Requirement -->
-    {#if resource.tool_required_id && data.toolObtainabilityTree}
+    {#if data.toolObtainabilityTree}
       <section>
         <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
           <ListTree class="h-5 w-5 text-muted-foreground" />
-          How to Obtain {resource.is_fishing_spot ? "Fishing Rod" : "Key"}
+          How to Obtain Key
         </h2>
         <div class="bg-muted/30 rounded-md border p-4">
           <div class="bg-background rounded-md p-4 border overflow-x-auto">
@@ -666,81 +759,115 @@
         Rewards
       </h2>
 
-      {#if data.fishingSpotVariants.length > 1}
-        <div class="mb-4 rounded-md border bg-muted/30 p-4">
-          <div class="mb-3 flex items-center justify-between gap-3">
-            <label for="fishing-spot-variant" class="text-sm font-medium">
-              Fishing Spot
-            </label>
+      {#if resource.is_fishing_spot}
+        <div class="mb-4 space-y-3 rounded-md border bg-muted/30 p-4">
+          {#if data.fishingSpotVariants.length > 1}
             <div
-              class="shrink-0 rounded-full bg-muted px-2.5 py-1 text-xs text-muted-foreground"
+              class="grid grid-cols-2 gap-2 sm:grid-cols-[4.5rem_minmax(0,1fr)_4.5rem]"
             >
-              {selectedFishingSpotVariantIndex + 1} of {data.fishingSpotVariants
-                .length}
-            </div>
-          </div>
-          <div
-            class="grid grid-cols-2 gap-2 sm:grid-cols-[4.5rem_minmax(0,1fr)_4.5rem]"
-          >
-            <div class="relative col-span-2 min-w-0 sm:order-2 sm:col-span-1">
-              <select
-                id="fishing-spot-variant"
-                bind:value={selectedFishingSpotVariantIndex}
-                class="h-11 w-full rounded-md border bg-background px-3 text-sm"
-              >
-                {#each data.fishingSpotVariants as variant, index (variant.resource.id)}
-                  <option value={index}>
-                    {formatFishingSpotVariant(variant, index)}
-                  </option>
-                {/each}
-              </select>
-            </div>
-            <button
-              type="button"
-              class="inline-flex h-11 items-center justify-center rounded-md border bg-background px-3 text-sm font-medium outline-none transition-colors hover:bg-muted focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 sm:order-1"
-              disabled={selectedFishingSpotVariantIndex === 0}
-              onclick={selectPreviousFishingSpotVariant}
-              aria-label="Previous fishing spot"
-            >
-              Prev
-            </button>
-            <button
-              type="button"
-              class="inline-flex h-11 items-center justify-center rounded-md border bg-background px-3 text-sm font-medium outline-none transition-colors hover:bg-muted focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 sm:order-3"
-              disabled={selectedFishingSpotVariantIndex ===
-                data.fishingSpotVariants.length - 1}
-              onclick={selectNextFishingSpotVariant}
-              aria-label="Next fishing spot"
-            >
-              Next
-            </button>
-          </div>
-          <div class="mt-4 space-y-2">
-            <div class="text-sm font-medium">Fisherman set</div>
-            <div class="grid gap-2 sm:grid-cols-3">
-              {#each fishermanSetPieces as piece (piece.itemId)}
-                <label
-                  class="flex items-center gap-2 rounded-md border bg-background p-2"
+              <div class="relative col-span-2 min-w-0 sm:order-2 sm:col-span-1">
+                <select
+                  id="fishing-spot-variant"
+                  bind:value={selectedFishingSpotVariantIndex}
+                  aria-label="Fishing spot"
+                  class="h-11 w-full appearance-none rounded-md border bg-background px-3 pr-10 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
                 >
-                  <input
-                    type="checkbox"
-                    checked={selectedCostumeIds.has(piece.itemId)}
-                    onchange={(event) =>
-                      toggleCostume(
-                        piece.itemId,
-                        (event.currentTarget as HTMLInputElement).checked,
-                      )}
-                    class="h-4 w-4 rounded border-border accent-primary"
-                  />
-                  <a
-                    href="/items/{piece.itemId}"
-                    class="text-blue-600 hover:underline dark:text-blue-400"
-                  >
-                    {piece.itemName}
-                  </a>
-                </label>
-              {/each}
+                  {#each data.fishingSpotVariants as variant, index (variant.resource.id)}
+                    <option value={index}>
+                      {formatFishingSpotVariant(variant, index)}
+                    </option>
+                  {/each}
+                </select>
+                <ChevronDown
+                  class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+                  aria-hidden="true"
+                />
+              </div>
+              <button
+                type="button"
+                class="inline-flex h-11 items-center justify-center rounded-md border bg-background px-3 text-sm font-medium outline-none transition-colors hover:bg-muted focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 sm:order-1"
+                disabled={selectedFishingSpotVariantIndex === 0}
+                onclick={selectPreviousFishingSpotVariant}
+                aria-label="Previous fishing spot"
+              >
+                Prev
+              </button>
+              <button
+                type="button"
+                class="inline-flex h-11 items-center justify-center rounded-md border bg-background px-3 text-sm font-medium outline-none transition-colors hover:bg-muted focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 sm:order-3"
+                disabled={selectedFishingSpotVariantIndex ===
+                  data.fishingSpotVariants.length - 1}
+                onclick={selectNextFishingSpotVariant}
+                aria-label="Next fishing spot"
+              >
+                Next
+              </button>
             </div>
+          {/if}
+
+          {#if data.rods.length > 0}
+            <div
+              class="grid grid-cols-2 gap-2 sm:grid-cols-[4.5rem_minmax(0,1fr)_4.5rem]"
+            >
+              <div class="relative col-span-2 min-w-0 sm:order-2 sm:col-span-1">
+                <select
+                  bind:value={selectedRodId}
+                  aria-label="Fishing rod"
+                  class="h-11 w-full appearance-none rounded-md border bg-background px-3 pr-10 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                >
+                  {#each data.rods as rod (rod.item_id)}
+                    <option value={rod.item_id}>{rod.item_name}</option>
+                  {/each}
+                </select>
+                <ChevronDown
+                  class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+                  aria-hidden="true"
+                />
+              </div>
+              <button
+                type="button"
+                class="inline-flex h-11 items-center justify-center rounded-md border bg-background px-3 text-sm font-medium outline-none transition-colors hover:bg-muted focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 sm:order-1"
+                disabled={selectedRodIndex === 0}
+                onclick={selectPreviousRod}
+                aria-label="Previous fishing rod"
+              >
+                Prev
+              </button>
+              <button
+                type="button"
+                class="inline-flex h-11 items-center justify-center rounded-md border bg-background px-3 text-sm font-medium outline-none transition-colors hover:bg-muted focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 sm:order-3"
+                disabled={selectedRodIndex === data.rods.length - 1}
+                onclick={selectNextRod}
+                aria-label="Next fishing rod"
+              >
+                Next
+              </button>
+            </div>
+          {/if}
+
+          <div class="grid gap-2 sm:grid-cols-3">
+            {#each fishermanSetPieces as piece (piece.itemId)}
+              <label
+                class="flex items-center gap-2 rounded-md border bg-background p-2"
+              >
+                <input
+                  type="checkbox"
+                  checked={selectedCostumeIds.has(piece.itemId)}
+                  onchange={(event) =>
+                    toggleCostume(
+                      piece.itemId,
+                      (event.currentTarget as HTMLInputElement).checked,
+                    )}
+                  class="h-4 w-4 rounded border-border accent-primary"
+                />
+                <a
+                  href="/items/{piece.itemId}"
+                  class="text-blue-600 hover:underline dark:text-blue-400"
+                >
+                  {piece.itemName}
+                </a>
+              </label>
+            {/each}
           </div>
         </div>
       {/if}
@@ -762,13 +889,15 @@
         </div>
       {/if}
 
-      {#if drops.length > 0}
+      {#if rewardDrops.length > 0}
         <DataTable
-          data={drops}
+          data={rewardDrops}
           columns={dropColumns}
           renderCell={renderDropCell}
           renderHeader={renderDropHeader}
-          initialSorting={[{ id: "drop_rate", desc: true }]}
+          initialSorting={resource.is_fishing_spot
+            ? []
+            : [{ id: "drop_rate", desc: true }]}
           urlKey="gather-{resource.id}-drops"
           pageSize={10}
           zebraStripe={true}
