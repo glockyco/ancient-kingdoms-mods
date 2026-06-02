@@ -1207,7 +1207,7 @@
     {:else if entity.type === "gathering_fish" && gatheringDetails?.fishingOutcomes?.length}
       <div class="border-t pt-2">
         <div class="mb-1 text-xs font-medium text-muted-foreground">
-          Per Bite
+          Per Cast
         </div>
         <div class="space-y-1 text-sm">
           {#each gatheringDetails.fishingOutcomes.filter((outcome) => outcome.kind === "primary_fish") as outcome (outcome.itemId)}
@@ -1238,7 +1238,7 @@
               </span>
             </div>
           {/if}
-          {#each gatheringDetails.fishingOutcomes.filter((outcome) => outcome.kind === "trash" || outcome.kind === "escape") as outcome (outcome.kind)}
+          {#each gatheringDetails.fishingOutcomes.filter((outcome) => outcome.kind === "trash" || outcome.kind === "escape" || outcome.kind === "no_catch") as outcome (outcome.kind)}
             <div class="flex justify-between gap-3">
               <span class="text-muted-foreground">{outcome.label}</span>
               <span class="shrink-0 whitespace-nowrap text-muted-foreground">

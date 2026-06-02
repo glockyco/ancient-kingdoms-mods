@@ -12,6 +12,13 @@ import {
   fishEscapeChancePerHook,
   fishLowerTierFishChancePerHook,
   fishOutcomeRowsForSpot,
+  fishOutcomeRangesForSpot,
+  fishDropChanceRange,
+  fishTrashChanceRange,
+  fishFallbackChanceRange,
+  lowestCatchableSkillPercent,
+  fishingRangeForRole,
+  fishingFallbackPoolSize,
 } from "./fishing";
 
 describe("fishing utilities", () => {
@@ -221,5 +228,153 @@ describe("fishing utilities", () => {
     expect(fallbackRows.map((row) => row.chancePerBite)).toEqual([
       0.1125, 0.1125,
     ]);
+  });
+});
+
+describe("fishing chance ranges", () => {
+  it("returns the lowest skill where a rod can hook a fish", () => {
+    expect(lowestCatchableSkillPercent(0, 3)).toBeCloseTo(40);
+    expect(lowestCatchableSkillPercent(4, 3)).toBe(0);
+    expect(lowestCatchableSkillPercent(0, 0)).toBe(0);
+    expect(lowestCatchableSkillPercent(0, 2)).toBeCloseTo(100 / 3);
+  });
+
+  it("spans the per-cast drop chance from worst to best loadout", () => {
+    // Crimson Octopus: 10% configured rate, 5 fish, Tier IV (level 3),
+    // Rusty rod required (q0), Gilded Wyrmhook best (q4).
+    // floor: success(q0,40%)=0.2 x (0.10+0.20)/5 = 0.012
+    // ceiling: success(q4,100%)=0.9 x (0.10+0.56)/5 = 0.1188
+    expect(
+      fishDropChanceRange({
+        configuredDropRate: 0.1,
+        fishCountAtSpot: 5,
+        spotTier: 3,
+        requiredRodQuality: 0,
+        bestRodQuality: 4,
+      }),
+    ).toEqual({ min: 0.012, max: 0.1188 });
+  });
+
+  it("spans the per-cast trash chance and divides by the trash pool", () => {
+    // Tier I (level 0): trash rate 0.3, 2 trash items.
+    // floor: success(q0,0%)=0.8 x 0.3x(1-0.20) / 2 = 0.096
+    // ceiling: success(q4,100%)=1 x 0.3x(1-0.76) / 2 = 0.036
+    expect(
+      fishTrashChanceRange({
+        spotDrops: [{ probability: 0.2 }, { probability: 0.2 }],
+        spotTier: 0,
+        trashCount: 2,
+        requiredRodQuality: 0,
+        bestRodQuality: 4,
+      }),
+    ).toEqual({ min: 0.036, max: 0.096 });
+  });
+
+  it("spans the per-cast fallback chance and divides by the fallback pool", () => {
+    // Tier IV (level 3): lower-tier fish rate 0.9, fallback pool of 3.
+    // floor: success(q0,40%)=0.2 x 0.9x(1-0.40) / 3 = 0.036
+    // ceiling: success(q4,100%)=0.9 x 0.9x(1-0.76) / 3 = 0.0648
+    expect(
+      fishFallbackChanceRange({
+        spotDrops: [{ probability: 0.2 }, { probability: 0.2 }],
+        spotTier: 3,
+        fallbackPoolSize: 3,
+        requiredRodQuality: 0,
+        bestRodQuality: 4,
+      }),
+    ).toEqual({ min: 0.036, max: 0.0648 });
+  });
+
+  it("builds per-cast spot outcome ranges with a no-catch remainder", () => {
+    const rows = fishOutcomeRangesForSpot({
+      spotTier: 3,
+      requiredRodQuality: 0,
+      bestRodQuality: 4,
+      spotDrops: [
+        {
+          itemId: "octo",
+          itemName: "Octo",
+          quality: 3,
+          tooltipHtml: null,
+          probability: 0.2,
+        },
+      ],
+      fishPoolsByQuality: {
+        0: [
+          {
+            itemId: "minnow",
+            itemName: "Minnow",
+            quality: 0,
+            tooltipHtml: null,
+          },
+        ],
+      },
+    });
+
+    const kinds = rows.map((row) => row.kind);
+    expect(kinds).toContain("primary_fish");
+    expect(kinds).toContain("fallback_fish");
+    expect(kinds).toContain("trash");
+    expect(kinds).toContain("escape");
+    expect(kinds[kinds.length - 1]).toBe("no_catch");
+
+    const noCatch = rows.find((row) => row.kind === "no_catch")!;
+    // success ranges 0.2 (floor) .. 0.9 (ceiling) -> no-catch 0.1 .. 0.8
+    expect(noCatch.chancePerCastMin).toBeCloseTo(0.1);
+    expect(noCatch.chancePerCastMax).toBeCloseTo(0.8);
+
+    const primary = rows.find((row) => row.kind === "primary_fish")!;
+    // single configured fish: floor 0.2x0.40=0.08 ; ceiling 0.9x0.76=0.684
+    expect(primary.chancePerCastMin).toBeCloseTo(0.08);
+    expect(primary.chancePerCastMax).toBeCloseTo(0.684);
+  });
+
+  it("counts fallback fish strictly below the spot tier", () => {
+    expect(fishingFallbackPoolSize([0, 1, 1, 2], 1)).toBe(1);
+    expect(fishingFallbackPoolSize([0, 1, 1, 2], 3)).toBe(4);
+    expect(fishingFallbackPoolSize([0, 1, 1, 2], 0)).toBe(0);
+  });
+
+  it("routes each fishing role to the matching range helper", () => {
+    const shared = { spotTier: 3, requiredRodQuality: 0, bestRodQuality: 4 };
+    const spotDrops = [{ probability: 0.2 }, { probability: 0.2 }];
+    expect(
+      fishingRangeForRole({
+        role: "primary",
+        configuredDropRate: 0.1,
+        spotDrops,
+        trashCount: 2,
+        fallbackPoolSize: 3,
+        ...shared,
+      }),
+    ).toEqual(
+      fishDropChanceRange({
+        configuredDropRate: 0.1,
+        fishCountAtSpot: 2,
+        ...shared,
+      }),
+    );
+    expect(
+      fishingRangeForRole({
+        role: "trash",
+        configuredDropRate: 0,
+        spotDrops,
+        trashCount: 2,
+        fallbackPoolSize: 3,
+        ...shared,
+      }),
+    ).toEqual(fishTrashChanceRange({ spotDrops, trashCount: 2, ...shared }));
+    expect(
+      fishingRangeForRole({
+        role: "fallback",
+        configuredDropRate: 0,
+        spotDrops,
+        trashCount: 2,
+        fallbackPoolSize: 3,
+        ...shared,
+      }),
+    ).toEqual(
+      fishFallbackChanceRange({ spotDrops, fallbackPoolSize: 3, ...shared }),
+    );
   });
 });

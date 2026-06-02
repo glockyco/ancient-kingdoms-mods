@@ -71,9 +71,9 @@
   ): string | null {
     if (minChance == null || maxChance == null) return null;
     if (Math.abs(minChance - maxChance) < 0.000001) {
-      return `${formatPercent(minChance)} per bite`;
+      return `${formatPercent(minChance)} per cast`;
     }
-    return `${formatPercent(minChance)}–${formatPercent(maxChance)} per bite`;
+    return `${formatPercent(minChance)}–${formatPercent(maxChance)} per cast`;
   }
 
   function formatFishingSourceLabel(

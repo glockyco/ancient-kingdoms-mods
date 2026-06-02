@@ -15,7 +15,8 @@ function createDb() {
       item_reward_amount INTEGER NOT NULL,
       is_radiant_spark INTEGER NOT NULL DEFAULT 0,
       is_fishing_spot INTEGER NOT NULL DEFAULT 0,
-      level INTEGER NOT NULL DEFAULT 0
+      level INTEGER NOT NULL DEFAULT 0,
+      tool_required_id TEXT
     );
     CREATE TABLE gathering_resource_spawns (
       id TEXT PRIMARY KEY,
@@ -24,7 +25,8 @@ function createDb() {
     );
     CREATE TABLE items (
       id TEXT PRIMARY KEY,
-      quality INTEGER NOT NULL DEFAULT 0
+      quality INTEGER NOT NULL DEFAULT 0,
+      weapon_category TEXT
     );
     CREATE TABLE fish (
       item_id TEXT PRIMARY KEY,
@@ -42,15 +44,17 @@ function createDb() {
       ('lone_lands', 'The Lone-lands'),
       ('crescent_coast', 'Crescent Coast');
     INSERT INTO items VALUES
-      ('iron_ore', 0),
-      ('golden_stripe_eel', 1),
-      ('rough_dummy_one', 1),
-      ('rough_dummy_two', 1),
-      ('driftscale_catfish', 0),
-      ('worn_rucksack', 0);
+      ('iron_ore', 0, NULL),
+      ('golden_stripe_eel', 1, NULL),
+      ('rough_dummy_one', 1, NULL),
+      ('rough_dummy_two', 1, NULL),
+      ('driftscale_catfish', 0, NULL),
+      ('worn_rucksack', 0, NULL),
+      ('rusty_rod', 0, 'Fishing Rod'),
+      ('gilded_rod', 4, 'Fishing Rod');
     INSERT INTO gathering_resources VALUES
-      ('iron_node', 'Iron Node', 3, 0, 0, 0),
-      ('rough_fishing_spot', 'Rough Fishing Spot', 0, 0, 1, 1);
+      ('iron_node', 'Iron Node', 3, 0, 0, 0, NULL),
+      ('rough_fishing_spot', 'Rough Fishing Spot', 0, 0, 1, 1, 'rusty_rod');
     INSERT INTO gathering_resource_spawns VALUES
       ('fish_spawn_1', 'rough_fishing_spot', 'lone_lands'),
       ('fish_spawn_2', 'rough_fishing_spot', 'lone_lands'),
@@ -102,8 +106,6 @@ describe("getGatherSources", () => {
           fishing_source_role: "primary",
           amount_min: null,
           amount_max: null,
-          fishing_chance_min: 0.0666666667,
-          fishing_chance_max: 0.25333333333333335,
         }),
         expect.objectContaining({
           resource_id: "rough_fishing_spot",
@@ -128,6 +130,12 @@ describe("getGatherSources", () => {
       ]),
     );
 
+    // per cast: floor success(rusty q0, 0%)=0.3 x 0.20/3 = 0.02 ;
+    //           ceiling success(gilded q4, 100%)=1 x 0.76/3 = 0.2533
+    const primary = sources.find((s) => s.spawn_id === "fish_spawn_1")!;
+    expect(primary.fishing_chance_min).toBeCloseTo(0.02, 5);
+    expect(primary.fishing_chance_max).toBeCloseTo(0.25333, 4);
+
     db.close();
   });
 
@@ -145,7 +153,7 @@ describe("getGatherSources", () => {
       amount_max: null,
     });
     expect(sources[0].fishing_chance_min).toBeCloseTo(0.108);
-    expect(sources[0].fishing_chance_max).toBeCloseTo(0.36);
+    expect(sources[0].fishing_chance_max).toBeCloseTo(0.108);
 
     db.close();
   });
@@ -164,7 +172,7 @@ describe("getGatherSources", () => {
       amount_max: null,
     });
     expect(sources[0].fishing_chance_min).toBeCloseTo(0.024);
-    expect(sources[0].fishing_chance_max).toBeCloseTo(0.08);
+    expect(sources[0].fishing_chance_max).toBeCloseTo(0.024);
 
     db.close();
   });

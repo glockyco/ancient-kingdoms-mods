@@ -52,6 +52,34 @@ function fishingLevelFraction(fishingPercent: number): number {
   return clamp01(fishingPercent / 100);
 }
 
+const FISHING_SUCCESS_FLOOR = 0.2;
+const CEILING_FISHERMAN_PIECES = 3;
+
+interface FishingSuccessCoefficients {
+  constant: number;
+  rodFactor: number;
+  skillFactor: number;
+}
+
+// Source: server-scripts/Utils.cs:511-520 — GetSuccessProbFishing, per spot level
+// (levelItem). chance = constant + rodFactor * rodQuality + skillFactor * skill.
+function fishingSuccessCoefficients(
+  spotTier: number,
+): FishingSuccessCoefficients {
+  switch (spotTier) {
+    case 0:
+      return { constant: 0.8, rodFactor: 1, skillFactor: 1 };
+    case 1:
+      return { constant: 0.3, rodFactor: 0.2, skillFactor: 1 };
+    case 2:
+      return { constant: 0, rodFactor: 0.15, skillFactor: 0.6 };
+    case 3:
+      return { constant: 0, rodFactor: 0.1, skillFactor: 0.5 };
+    default:
+      return { constant: 0, rodFactor: 0.05, skillFactor: 0.4 };
+  }
+}
+
 // Source: server-scripts/Utils.cs:511-520 — GetSuccessProbFishing.
 // Source: server-scripts/GatherItem.cs:652-655 — values below 0.2 show "skill too low" and do not fish.
 export function fishingSpotSuccessChance({
@@ -60,28 +88,12 @@ export function fishingSpotSuccessChance({
   spotTier,
 }: FishingSuccessParams): number {
   const skill = fishingLevelFraction(fishingPercent);
-  let chance: number;
-
-  switch (spotTier) {
-    case 0:
-      chance = 0.8 + rodQuality + skill;
-      break;
-    case 1:
-      chance = 0.3 + rodQuality * 0.2 + skill;
-      break;
-    case 2:
-      chance = rodQuality * 0.15 + skill * 0.6;
-      break;
-    case 3:
-      chance = rodQuality * 0.1 + skill * 0.5;
-      break;
-    default:
-      chance = rodQuality * 0.05 + skill * 0.4;
-      break;
-  }
+  const { constant, rodFactor, skillFactor } =
+    fishingSuccessCoefficients(spotTier);
+  const chance = constant + rodFactor * rodQuality + skillFactor * skill;
 
   const clamped = clamp01(chance);
-  return clamped < 0.2 ? 0 : normalizeChance(clamped);
+  return clamped < FISHING_SUCCESS_FLOOR ? 0 : normalizeChance(clamped);
 }
 
 // Source: server-scripts/GatherItem.cs:661-679 — one random fish drop is selected, then probability is drop probability + Fishing/2 + 2 pp per Fisherman costume piece.
@@ -301,4 +313,340 @@ export function fishOutcomeRowsForSpot({
       chancePerBite: fishEscapeChancePerHook(shared),
     },
   ];
+}
+
+export interface FishChanceRangeBounds {
+  min: number;
+  max: number;
+}
+
+interface FishingLoadout {
+  rodQuality: number;
+  fishingPercent: number;
+}
+
+function chanceBounds(a: number, b: number): FishChanceRangeBounds {
+  return {
+    min: normalizeChance(Math.min(a, b)),
+    max: normalizeChance(Math.max(a, b)),
+  };
+}
+
+// Source: server-scripts/GatherItem.cs:652-655 — fishing needs success >= 0.2.
+// Smallest Fishing skill (percent) at which the given rod clears that floor.
+export function lowestCatchableSkillPercent(
+  rodQuality: number,
+  spotTier: number,
+): number {
+  const { constant, rodFactor, skillFactor } =
+    fishingSuccessCoefficients(spotTier);
+  const base = constant + rodFactor * rodQuality;
+  if (base >= FISHING_SUCCESS_FLOOR) return 0;
+  if (skillFactor <= 0) return 100;
+  return clamp01((FISHING_SUCCESS_FLOOR - base) / skillFactor) * 100;
+}
+
+// Worst realistic loadout that can still hook a fish: the spot's required rod at
+// the lowest skill clearing the success floor, no costume bonus. Falls back to
+// the best rod only if the required rod can never hook (not possible with the
+// shipped tiers, but kept correct under data changes).
+function fishingFloorLoadout(
+  spotTier: number,
+  requiredRodQuality: number,
+  bestRodQuality: number,
+): FishingLoadout {
+  const requiredFloor = lowestCatchableSkillPercent(
+    requiredRodQuality,
+    spotTier,
+  );
+  const catchable =
+    fishingSpotSuccessChance({
+      rodQuality: requiredRodQuality,
+      fishingPercent: requiredFloor,
+      spotTier,
+    }) > 0;
+  if (catchable) {
+    return { rodQuality: requiredRodQuality, fishingPercent: requiredFloor };
+  }
+  return {
+    rodQuality: bestRodQuality,
+    fishingPercent: lowestCatchableSkillPercent(bestRodQuality, spotTier),
+  };
+}
+
+const fishingCeilingLoadout = (bestRodQuality: number): FishingLoadout => ({
+  rodQuality: bestRodQuality,
+  fishingPercent: 100,
+});
+
+export interface FishDropChanceRangeParams {
+  configuredDropRate: number;
+  fishCountAtSpot: number;
+  spotTier: number;
+  requiredRodQuality: number;
+  bestRodQuality: number;
+}
+
+// Per-cast chance for one configured fish, spanning the worst-to-best loadout.
+export function fishDropChanceRange({
+  configuredDropRate,
+  fishCountAtSpot,
+  spotTier,
+  requiredRodQuality,
+  bestRodQuality,
+}: FishDropChanceRangeParams): FishChanceRangeBounds {
+  if (fishCountAtSpot <= 0) return { min: 0, max: 0 };
+  const floor = fishingFloorLoadout(
+    spotTier,
+    requiredRodQuality,
+    bestRodQuality,
+  );
+  const ceiling = fishingCeilingLoadout(bestRodQuality);
+  return chanceBounds(
+    fishDropChancePerCast({
+      configuredDropRate,
+      fishCountAtSpot,
+      spotTier,
+      rodQuality: floor.rodQuality,
+      fishingPercent: floor.fishingPercent,
+      fishermanCostumePieces: 0,
+    }),
+    fishDropChancePerCast({
+      configuredDropRate,
+      fishCountAtSpot,
+      spotTier,
+      rodQuality: ceiling.rodQuality,
+      fishingPercent: ceiling.fishingPercent,
+      fishermanCostumePieces: CEILING_FISHERMAN_PIECES,
+    }),
+  );
+}
+
+export interface FishTrashChanceRangeParams {
+  spotDrops: Array<{ probability: number }>;
+  spotTier: number;
+  trashCount: number;
+  requiredRodQuality: number;
+  bestRodQuality: number;
+}
+
+// Per-cast chance of one specific trash item: total trash mass split across the
+// global trash pool, spanning the worst-to-best loadout.
+export function fishTrashChanceRange({
+  spotDrops,
+  spotTier,
+  trashCount,
+  requiredRodQuality,
+  bestRodQuality,
+}: FishTrashChanceRangeParams): FishChanceRangeBounds {
+  if (trashCount <= 0 || spotDrops.length === 0) return { min: 0, max: 0 };
+  const perCast = (loadout: FishingLoadout, pieces: number): number =>
+    (fishingSpotSuccessChance({
+      rodQuality: loadout.rodQuality,
+      fishingPercent: loadout.fishingPercent,
+      spotTier,
+    }) *
+      fishTrashChancePerHook({
+        spotDrops,
+        fishingPercent: loadout.fishingPercent,
+        fishermanCostumePieces: pieces,
+        spotTier,
+      })) /
+    trashCount;
+  return chanceBounds(
+    perCast(
+      fishingFloorLoadout(spotTier, requiredRodQuality, bestRodQuality),
+      0,
+    ),
+    perCast(fishingCeilingLoadout(bestRodQuality), CEILING_FISHERMAN_PIECES),
+  );
+}
+
+export interface FishFallbackChanceRangeParams {
+  spotDrops: Array<{ probability: number }>;
+  spotTier: number;
+  fallbackPoolSize: number;
+  requiredRodQuality: number;
+  bestRodQuality: number;
+}
+
+// Per-cast chance of one specific lower-tier fallback fish: lower-tier mass split
+// across the fallback pool, spanning the worst-to-best loadout.
+export function fishFallbackChanceRange({
+  spotDrops,
+  spotTier,
+  fallbackPoolSize,
+  requiredRodQuality,
+  bestRodQuality,
+}: FishFallbackChanceRangeParams): FishChanceRangeBounds {
+  if (fallbackPoolSize <= 0 || spotDrops.length === 0)
+    return { min: 0, max: 0 };
+  const perCast = (loadout: FishingLoadout, pieces: number): number =>
+    (fishingSpotSuccessChance({
+      rodQuality: loadout.rodQuality,
+      fishingPercent: loadout.fishingPercent,
+      spotTier,
+    }) *
+      fishLowerTierFishChancePerHook({
+        spotDrops,
+        fishingPercent: loadout.fishingPercent,
+        fishermanCostumePieces: pieces,
+        spotTier,
+      })) /
+    fallbackPoolSize;
+  return chanceBounds(
+    perCast(
+      fishingFloorLoadout(spotTier, requiredRodQuality, bestRodQuality),
+      0,
+    ),
+    perCast(fishingCeilingLoadout(bestRodQuality), CEILING_FISHERMAN_PIECES),
+  );
+}
+
+// Number of lower-tier fish a spot can award as fallback: non-trash fish whose
+// quality is strictly below the spot tier.
+export function fishingFallbackPoolSize(
+  fishQualities: number[],
+  spotTier: number,
+): number {
+  let count = 0;
+  for (const quality of fishQualities) {
+    if (quality < spotTier) count += 1;
+  }
+  return count;
+}
+
+export interface FishingRoleRangeParams {
+  role: "primary" | "fallback" | "trash" | null;
+  configuredDropRate: number;
+  spotDrops: Array<{ probability: number }>;
+  spotTier: number;
+  requiredRodQuality: number;
+  bestRodQuality: number;
+  trashCount: number;
+  fallbackPoolSize: number;
+}
+
+// Single entry point that picks the right per-cast range helper for a fishing
+// source role, so consumers never re-decide the formula.
+export function fishingRangeForRole({
+  role,
+  configuredDropRate,
+  spotDrops,
+  spotTier,
+  requiredRodQuality,
+  bestRodQuality,
+  trashCount,
+  fallbackPoolSize,
+}: FishingRoleRangeParams): FishChanceRangeBounds {
+  const shared = { spotTier, requiredRodQuality, bestRodQuality };
+  if (role === "trash") {
+    return fishTrashChanceRange({ spotDrops, trashCount, ...shared });
+  }
+  if (role === "fallback") {
+    return fishFallbackChanceRange({ spotDrops, fallbackPoolSize, ...shared });
+  }
+  return fishDropChanceRange({
+    configuredDropRate,
+    fishCountAtSpot: spotDrops.length,
+    ...shared,
+  });
+}
+
+export type FishingOutcomeRangeRow =
+  | (FishPoolItem & {
+      kind: "primary_fish" | "fallback_fish";
+      chancePerCastMin: number;
+      chancePerCastMax: number;
+    })
+  | {
+      kind: "trash" | "escape" | "no_catch";
+      label: string;
+      chancePerCastMin: number;
+      chancePerCastMax: number;
+    };
+
+export interface FishingOutcomeRangesParams {
+  spotDrops: FishOutcomeSpotDrop[];
+  fishPoolsByQuality: Record<number, FishPoolItem[] | undefined>;
+  spotTier: number;
+  requiredRodQuality: number;
+  bestRodQuality: number;
+}
+
+// Per-cast outcome distribution for a fishing spot across the worst-to-best
+// loadout, including a "No catch" remainder (1 − success) so the rows sum to
+// 100% per cast.
+export function fishOutcomeRangesForSpot({
+  spotDrops,
+  fishPoolsByQuality,
+  spotTier,
+  requiredRodQuality,
+  bestRodQuality,
+}: FishingOutcomeRangesParams): FishingOutcomeRangeRow[] {
+  const floor = fishingFloorLoadout(
+    spotTier,
+    requiredRodQuality,
+    bestRodQuality,
+  );
+  const ceiling = fishingCeilingLoadout(bestRodQuality);
+  const lowRows = fishOutcomeRowsForSpot({
+    spotDrops,
+    fishPoolsByQuality,
+    fishingPercent: floor.fishingPercent,
+    fishermanCostumePieces: 0,
+    spotTier,
+  });
+  const highRows = fishOutcomeRowsForSpot({
+    spotDrops,
+    fishPoolsByQuality,
+    fishingPercent: ceiling.fishingPercent,
+    fishermanCostumePieces: CEILING_FISHERMAN_PIECES,
+    spotTier,
+  });
+  const successLow = fishingSpotSuccessChance({
+    rodQuality: floor.rodQuality,
+    fishingPercent: floor.fishingPercent,
+    spotTier,
+  });
+  const successHigh = fishingSpotSuccessChance({
+    rodQuality: ceiling.rodQuality,
+    fishingPercent: ceiling.fishingPercent,
+    spotTier,
+  });
+
+  const rows: FishingOutcomeRangeRow[] = lowRows.map((low, index) => {
+    const high = highRows[index] ?? low;
+    const bounds = chanceBounds(
+      low.chancePerBite * successLow,
+      high.chancePerBite * successHigh,
+    );
+    if ("itemId" in low) {
+      return {
+        kind: low.kind,
+        itemId: low.itemId,
+        itemName: low.itemName,
+        quality: low.quality,
+        tooltipHtml: low.tooltipHtml,
+        chancePerCastMin: bounds.min,
+        chancePerCastMax: bounds.max,
+      };
+    }
+    return {
+      kind: low.kind,
+      label: low.label,
+      chancePerCastMin: bounds.min,
+      chancePerCastMax: bounds.max,
+    };
+  });
+
+  const noCatch = chanceBounds(1 - successLow, 1 - successHigh);
+  rows.push({
+    kind: "no_catch",
+    label: "No catch",
+    chancePerCastMin: noCatch.min,
+    chancePerCastMax: noCatch.max,
+  });
+
+  return rows;
 }

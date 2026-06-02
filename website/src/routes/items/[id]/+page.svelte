@@ -51,8 +51,8 @@
     if (minChance == null || maxChance == null) return null;
     const minPercent = (minChance * 100).toFixed(1);
     const maxPercent = (maxChance * 100).toFixed(1);
-    if (minPercent === maxPercent) return `${minPercent}% per bite`;
-    return `${minPercent}–${maxPercent}% per bite`;
+    if (minPercent === maxPercent) return `${minPercent}% per cast`;
+    return `${minPercent}–${maxPercent}% per cast`;
   }
 
   function formatFishingSourceNote(

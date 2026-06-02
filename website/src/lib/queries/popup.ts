@@ -1,6 +1,14 @@
-import { query } from "$lib/db";
+import { query, queryScalar } from "$lib/db";
 import { WORLD_BOSS_DUNGEON_ID } from "$lib/constants/constants";
-import { fishOutcomeRowsForSpot } from "$lib/utils/fishing";
+import { fishOutcomeRangesForSpot } from "$lib/utils/fishing";
+import {
+  FISHING_RANGE_QUERIES,
+  assembleFishingRangeData,
+  resolveFishingSourceRange,
+  type FishingRangeData,
+  type FishingSpotRow,
+  type FishingDropRateRow,
+} from "$lib/utils/fishing-source-ranges";
 
 /**
  * Drop item for popup display
@@ -112,7 +120,7 @@ export interface ChestPopupDetails {
 }
 
 export interface FishingPopupOutcome {
-  kind: "primary_fish" | "fallback_fish" | "trash" | "escape";
+  kind: "primary_fish" | "fallback_fish" | "trash" | "escape" | "no_catch";
   label: string;
   itemId: string | null;
   itemName: string | null;
@@ -504,11 +512,14 @@ export async function loadGatheringPopupDetails(
   const [resourceInfo] = await query<{
     is_fishing_spot: number;
     level: number;
+    required_rod_quality: number;
   }>(
     `
-    SELECT is_fishing_spot, level
-    FROM gathering_resources
-    WHERE id = ?
+    SELECT gr.is_fishing_spot AS is_fishing_spot, gr.level AS level,
+           COALESCE(rod.quality, 0) AS required_rod_quality
+    FROM gathering_resources gr
+    LEFT JOIN items rod ON rod.id = gr.tool_required_id
+    WHERE gr.id = ?
   `,
     [resourceId],
   );
@@ -559,47 +570,40 @@ export async function loadGatheringPopupDetails(
       tooltipHtml: r.tooltip_html,
       probability: r.drop_rate,
     }));
-    const lowRows = fishOutcomeRowsForSpot({
+    const bestRodQuality = await queryScalar<number>(
+      FISHING_RANGE_QUERIES.bestRodQuality,
+    );
+    const outcomeRows = fishOutcomeRangesForSpot({
       spotDrops,
       fishPoolsByQuality,
-      fishingPercent: 0,
-      fishermanCostumePieces: 0,
       spotTier: resourceInfo.level,
-    });
-    const highRows = fishOutcomeRowsForSpot({
-      spotDrops,
-      fishPoolsByQuality,
-      fishingPercent: 100,
-      fishermanCostumePieces: 3,
-      spotTier: resourceInfo.level,
+      requiredRodQuality: resourceInfo.required_rod_quality,
+      bestRodQuality: bestRodQuality ?? 0,
     });
     return {
       drops: [],
-      fishingOutcomes: lowRows.map((row, index) => {
-        const high = highRows[index] ?? row;
-        const dropRateMin = Math.min(row.chancePerBite, high.chancePerBite);
-        const dropRateMax = Math.max(row.chancePerBite, high.chancePerBite);
-        if (!("itemId" in row)) {
+      fishingOutcomes: outcomeRows.map((row) => {
+        if ("itemId" in row) {
           return {
             kind: row.kind,
-            label: row.label,
-            itemId: null,
-            itemName: null,
-            quality: null,
-            dropRateMin,
-            dropRateMax,
-            tooltipHtml: null,
+            label: row.itemName,
+            itemId: row.itemId,
+            itemName: row.itemName,
+            quality: row.quality,
+            dropRateMin: row.chancePerCastMin,
+            dropRateMax: row.chancePerCastMax,
+            tooltipHtml: row.tooltipHtml,
           };
         }
         return {
           kind: row.kind,
-          label: row.itemName,
-          itemId: row.itemId,
-          itemName: row.itemName,
-          quality: row.quality,
-          dropRateMin,
-          dropRateMax,
-          tooltipHtml: row.tooltipHtml,
+          label: row.label,
+          itemId: null,
+          itemName: null,
+          quality: null,
+          dropRateMin: row.chancePerCastMin,
+          dropRateMax: row.chancePerCastMax,
+          tooltipHtml: null,
         };
       }),
     };
@@ -1098,6 +1102,36 @@ interface ItemDropperRow {
   zone_name: string | null;
 }
 
+interface ItemPopupGatherRow {
+  resourceId: string;
+  resourceName: string;
+  resourceType: "resource" | "chest";
+  rate: number;
+  isFishingSpot: number;
+  fishingSourceRole: "primary" | "fallback" | "trash" | null;
+  configuredDropRate: number;
+  virtualLocationCount: number;
+}
+
+// Browser-side (sql.js) loader for the shared fishing range inputs.
+async function loadFishingRangeData(): Promise<FishingRangeData> {
+  const [spots, dropRates, bestRodQuality, trashCount, fishQualities] =
+    await Promise.all([
+      query<FishingSpotRow>(FISHING_RANGE_QUERIES.spots),
+      query<FishingDropRateRow>(FISHING_RANGE_QUERIES.dropRates),
+      queryScalar<number>(FISHING_RANGE_QUERIES.bestRodQuality),
+      queryScalar<number>(FISHING_RANGE_QUERIES.trashCount),
+      query<{ quality: number }>(FISHING_RANGE_QUERIES.fishQualities),
+    ]);
+  return assembleFishingRangeData({
+    spots,
+    dropRates,
+    bestRodQuality: bestRodQuality ?? 0,
+    trashCount: trashCount ?? 0,
+    fishQualities: fishQualities.map((row) => row.quality),
+  });
+}
+
 /**
  * Load item details for popup (virtual entity).
  * Shows item info and all obtainability sources.
@@ -1223,8 +1257,9 @@ export async function loadItemPopupDetails(
     [itemId],
   );
 
-  // Query gathering sources from junction table
-  const gatheringSources = await query<ItemPopupGatherSource>(
+  // Query gathering sources from junction table, then resolve per-cast fishing
+  // ranges through the shared helper.
+  const gatheringRows = await query<ItemPopupGatherRow>(
     `
     SELECT
       isg.resource_id as resourceId,
@@ -1233,24 +1268,7 @@ export async function loadItemPopupDetails(
       COALESCE(isg.actual_drop_chance, isg.drop_rate) as rate,
       COALESCE(gr.is_fishing_spot, 0) as isFishingSpot,
       CASE WHEN COALESCE(gr.is_fishing_spot, 0) = 1 THEN 'primary' ELSE NULL END as fishingSourceRole,
-      CASE
-        WHEN COALESCE(gr.is_fishing_spot, 0) = 1 THEN COALESCE(isg.actual_drop_chance, isg.drop_rate)
-        ELSE NULL
-      END as fishingChanceMin,
-      CASE
-        WHEN COALESCE(gr.is_fishing_spot, 0) = 1 THEN (
-          CASE
-            WHEN isg.drop_rate + 0.56 > 1 THEN 1.0
-            ELSE isg.drop_rate + 0.56
-          END
-          / NULLIF((
-            SELECT COUNT(*)
-            FROM item_sources_gather fish_count
-            WHERE fish_count.resource_id = gr.id
-          ), 0)
-        )
-        ELSE NULL
-      END as fishingChanceMax,
+      isg.drop_rate as configuredDropRate,
       (
         SELECT COUNT(*)
         FROM gathering_resource_spawns grs
@@ -1261,7 +1279,6 @@ export async function loadItemPopupDetails(
     JOIN gathering_resources gr ON isg.resource_id = gr.id
     WHERE isg.item_id = ?
 
-
     UNION ALL
 
     SELECT
@@ -1271,84 +1288,7 @@ export async function loadItemPopupDetails(
       0 as rate,
       1 as isFishingSpot,
       CASE WHEN f.is_trash = 1 THEN 'trash' ELSE 'fallback' END as fishingSourceRole,
-      CASE
-        WHEN f.is_trash = 1 THEN (
-          CASE gr.level
-            WHEN 0 THEN 0.3
-            WHEN 1 THEN 0.1
-            ELSE 0
-          END
-          * (1 - (
-            SELECT AVG(
-              CASE
-                WHEN rates.drop_rate + 0.56 > 1 THEN 1.0
-                ELSE rates.drop_rate + 0.56
-              END
-            )
-            FROM item_sources_gather rates
-            WHERE rates.resource_id = gr.id
-          ))
-        )
-        ELSE (
-          CASE gr.level
-            WHEN 1 THEN 0.45
-            WHEN 2 THEN 0.75
-            WHEN 3 THEN 0.9
-            ELSE 0
-          END
-          * (1 - (
-            SELECT AVG(
-              CASE
-                WHEN rates.drop_rate + 0.56 > 1 THEN 1.0
-                ELSE rates.drop_rate + 0.56
-              END
-            )
-            FROM item_sources_gather rates
-            WHERE rates.resource_id = gr.id
-          ))
-          / NULLIF((
-            SELECT COUNT(*)
-            FROM fish fallback_fish
-            JOIN items fallback_item ON fallback_item.id = fallback_fish.item_id
-            WHERE fallback_fish.is_trash = 0
-              AND fallback_item.quality < gr.level
-          ), 0)
-        )
-      END as fishingChanceMin,
-      CASE
-        WHEN f.is_trash = 1 THEN (
-          CASE gr.level
-            WHEN 0 THEN 0.3
-            WHEN 1 THEN 0.1
-            ELSE 0
-          END
-          * (1 - (
-            SELECT AVG(rates.drop_rate)
-            FROM item_sources_gather rates
-            WHERE rates.resource_id = gr.id
-          ))
-        )
-        ELSE (
-          CASE gr.level
-            WHEN 1 THEN 0.45
-            WHEN 2 THEN 0.75
-            WHEN 3 THEN 0.9
-            ELSE 0
-          END
-          * (1 - (
-            SELECT AVG(rates.drop_rate)
-            FROM item_sources_gather rates
-            WHERE rates.resource_id = gr.id
-          ))
-          / NULLIF((
-            SELECT COUNT(*)
-            FROM fish fallback_fish
-            JOIN items fallback_item ON fallback_item.id = fallback_fish.item_id
-            WHERE fallback_fish.is_trash = 0
-              AND fallback_item.quality < gr.level
-          ), 0)
-        )
-      END as fishingChanceMax,
+      0 as configuredDropRate,
       (
         SELECT COUNT(*)
         FROM gathering_resource_spawns grs
@@ -1373,6 +1313,31 @@ export async function loadItemPopupDetails(
   `,
     [itemId, itemId],
   );
+
+  const gatheringRangeData = gatheringRows.some((row) => row.isFishingSpot)
+    ? await loadFishingRangeData()
+    : null;
+  const gatheringSources: ItemPopupGatherSource[] = gatheringRows.map((row) => {
+    const bounds =
+      gatheringRangeData && row.isFishingSpot
+        ? resolveFishingSourceRange(gatheringRangeData, {
+            resourceId: row.resourceId,
+            role: row.fishingSourceRole,
+            configuredDropRate: row.configuredDropRate,
+          })
+        : null;
+    return {
+      resourceId: row.resourceId,
+      resourceName: row.resourceName,
+      resourceType: row.resourceType,
+      rate: row.rate,
+      isFishingSpot: Boolean(row.isFishingSpot),
+      fishingSourceRole: row.fishingSourceRole,
+      fishingChanceMin: bounds?.min ?? null,
+      fishingChanceMax: bounds?.max ?? null,
+      virtualLocationCount: row.virtualLocationCount,
+    };
+  });
 
   // Query chest sources from junction table
   // Always display as "Chest" regardless of actual chest name
