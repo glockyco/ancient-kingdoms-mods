@@ -267,6 +267,7 @@
     </Card.Header>
     <Card.Content class="space-y-5">
       <div>
+        <!-- Source: server-scripts/Combat.cs:1289-1328 GetProbResist* (formula), Combat.cs:479-486 (damage); TargetDebuffSkill.cs:104-142 / AreaDebuffSkill.cs:103-138 (debuff & dispel landing) -->
         <h3 class="font-semibold mb-1">Resist Roll</h3>
         <pre
           class="text-xs bg-muted px-3 py-2 rounded overflow-x-auto">P(resist) = clamp(
@@ -277,7 +278,11 @@
         <p class="text-sm text-muted-foreground mt-1">
           Non-physical damage types only. A successful resist fully negates the
           hit, with no mitigation applied. Physical attacks have no resist roll,
-          only a miss/block roll.
+          only a miss/block roll. Beyond damage, the same kind of roll also
+          decides whether a debuff or dispel lands on its target, using the
+          resist stat that matches the effect (for example Defense for a
+          physical debuff). This is why Accuracy helps land debuffs and dispels,
+          not only damage.
         </p>
       </div>
 
@@ -979,35 +984,46 @@ finalDamage = damage − reduction</pre>
       </div>
 
       <div>
-        <h3 class="font-semibold mb-1">Cleanse</h3>
+        <!-- Source: server-scripts/Buff.cs:18 (3 counters); TargetBuffSkill.cs:288-362 / AreaBuffSkill.cs:140-358 (cleanse counter rolls); Skills.cs:1326-1331 (DoT per-counter scaling) -->
+        <h3 id="cleanse" class="font-semibold mb-1 scroll-mt-24">Cleanse</h3>
         <p class="text-sm text-muted-foreground mb-2">
-          Cleanse removes debuff stacks from a target. Each debuff has a Cleanse
-          Resist level:
+          Cleanse is cast on yourself or an ally and removes harmful debuffs. It
+          cannot be resisted and is not affected by Accuracy. A cleanse only
+          acts on debuffs whose element matches it. For example, a fire-and-cold
+          cleanse removes fire and cold debuffs but not poison, disease, or
+          magic ones.
+        </p>
+        <p class="text-sm text-muted-foreground mb-2">
+          Every debuff carries 3 counters and is fully removed only when its
+          counters reach 0. How many counters one cast removes depends on that
+          debuff's Cleanse Resist:
         </p>
         <div class="overflow-x-auto">
           <table class="w-full text-sm border-collapse">
             <thead>
               <tr class="border-b border-border">
                 <th class="text-left py-1 pr-4 font-medium">Cleanse Resist</th>
-                <th class="text-left py-1 font-medium">Behaviour</th>
+                <th class="text-left py-1 font-medium">Result of one cast</th>
               </tr>
             </thead>
             <tbody>
               <tr class="border-b border-border/40"
-                ><td class="py-1 pr-4">None</td><td
+                ><td class="py-1 pr-4">0</td><td
                   class="py-1 text-muted-foreground"
-                  >Fully cleansable: all stacks removed in one cast</td
+                  >All 3 counters removed at once, so the debuff is gone in a
+                  single cast</td
                 ></tr
               >
               <tr class="border-b border-border/40"
-                ><td class="py-1 pr-4">Partial</td><td
+                ><td class="py-1 pr-4">Between 0 and 100%</td><td
                   class="py-1 text-muted-foreground"
-                  >One stack always removed. Each remaining stack has an
-                  independent chance to resist</td
+                  >1 counter removed for certain, then 2 more attempts that each
+                  remove another counter with a chance of (100% &minus; Cleanse
+                  Resist)</td
                 ></tr
               >
               <tr
-                ><td class="py-1 pr-4">Full</td><td
+                ><td class="py-1 pr-4">100%</td><td
                   class="py-1 text-muted-foreground">Cannot be cleansed</td
                 ></tr
               >
@@ -1015,34 +1031,54 @@ finalDamage = damage − reduction</pre>
           </table>
         </div>
         <p class="text-sm text-muted-foreground mt-2">
-          Type matching: a cleanse skill only removes debuffs whose element
-          matches (a poison cleanse only removes poison debuffs, etc.).
+          A debuff with counters left stays on the target and can be reduced
+          further by cleansing again. For damage-over-time debuffs, losing
+          counters also lowers each tick of damage, to 90% of full at 2 counters
+          and 80% at 1 counter. Nothing the caster does, Accuracy included,
+          changes how many counters a cleanse removes.
         </p>
       </div>
 
       <div>
-        <!-- Source: server-scripts/TargetDebuffSkill.cs:240-268, AreaDebuffSkill.cs:233-263 -->
+        <!-- Source: server-scripts/TargetDebuffSkill.cs:104-142 (resist gate), 172-269 (removal); AreaDebuffSkill.cs:103-138 (resist gate), 168-265 (removal); Combat.cs:1301-1328 GetProbResistMagic/Disease -->
         <h3 id="dispel" class="font-semibold mb-1 scroll-mt-24">Dispel</h3>
         <p class="text-sm text-muted-foreground mb-2">
-          When Dispel lands on a player, all active buffs are removed (except
-          the Rest buff). On a pet, all active buffs are removed. On a monster,
-          each buff is tested independently:
+          Dispel removes beneficial buffs from its target. Players cast it on
+          monsters to strip their buffs, and some monsters cast it on players
+          and their pets. Whether it removes anything, and how much, is decided
+          in two steps.
+        </p>
+        <p class="text-sm text-muted-foreground mb-2">
+          <span class="font-medium">1. Landing.</span> The target rolls to resist
+          the dispel using the resistance stat for the dispel's element, adjusted
+          by the level difference between caster and target and reduced by the caster's
+          Accuracy. Higher caster Accuracy means the target resists less often. If
+          the target resists, nothing is removed.
+        </p>
+        <p class="text-sm text-muted-foreground mb-2">
+          <span class="font-medium"
+            >2. Removal, only when the dispel lands.</span
+          >
+          On a player, all buffs are removed except the Rest buff. On a pet, all
+          buffs are removed. On a monster, each buff is tested on its own and is
+          removed only when a random value from 0 to 1 is greater than that buff's
+          Dispel Resist after subtracting the caster's Dispel Resist reduction:
         </p>
         <pre
-          class="text-xs bg-muted px-3 py-2 rounded overflow-x-auto">removed if Random.value &gt; probIgnoreCleanse − bonus
-
-bonus (single-target spell):   accuracy × 0.5
-bonus (single-target scroll):  clamp(round(Mastery% ÷ 5), 1, 20) × 0.01
-bonus (area dispel):           0</pre>
+          class="text-xs bg-muted px-3 py-2 rounded overflow-x-auto">Dispel Resist reduction
+  single-target spell:   Accuracy × 0.5
+  single-target scroll:  clamp(round(Mastery% ÷ 5), 1, 20) × 0.01
+  area dispel:           0</pre>
         <p class="text-sm text-muted-foreground mt-2">
-          Mastery comes from the
+          The reduction is the caster's lever for stripping a monster's
+          resistant buffs. A spell uses Accuracy, while a scroll uses the
+          caster's
           <a
             href="/professions/scroll_mastery"
             class="text-blue-600 hover:underline dark:text-blue-400"
             >Scroll Mastery</a
           >
-          profession. Each Dispel rank lowers a monster's Dispel Resist by 1 percentage
-          point. Area dispels do not get an accuracy or Scroll Mastery bonus.
+          rank, where each rank lowers a buff's Dispel Resist by 1 percentage point.
         </p>
       </div>
 
