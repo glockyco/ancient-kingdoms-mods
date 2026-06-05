@@ -2345,8 +2345,9 @@
           </div>
         {/if}
 
-        <!-- D2. Resist Chance — shown for all typed debuffs, independent of attribute scaling -->
-        {#if isDebuffType && !skill.is_dispel && (skill.is_melee_debuff || skill.is_poison_debuff || skill.is_fire_debuff || skill.is_cold_debuff || skill.is_disease_debuff || skill.is_magic_debuff)}
+        <!-- D2. Resist Chance — shown for debuffs and dispels (both roll to resist); hidden for cleanse (no resist roll) -->
+        <!-- Source: server-scripts/Combat.cs:1295-1328 GetProbResistMeleeDebuff/Magic/Poison/Fire/Cold/Disease; resist gate TargetDebuffSkill.cs:104-142 / AreaDebuffSkill.cs:103-138 -->
+        {#if isDebuffType && !skill.is_cleanse && (skill.is_melee_debuff || skill.is_poison_debuff || skill.is_fire_debuff || skill.is_cold_debuff || skill.is_disease_debuff || skill.is_magic_debuff)}
           <div class="space-y-1">
             <h4 class="font-medium text-muted-foreground">Resist Chance</h4>
             <p class="font-mono">
@@ -2369,23 +2370,26 @@
         {/if}
 
         <!-- E. Cleanse Resistance (on debuff skill pages) -->
+        <!-- Source: server-scripts/Buff.cs:18 (3 counters); TargetBuffSkill.cs:300-347 (counter rolls); Skills.cs:1326-1331 (DoT per-counter scaling) -->
         {#if isDebuffType && !skill.is_cleanse && !skill.is_dispel && skill.prob_ignore_cleanse != null}
           <div class="space-y-1">
             <h3 class="font-semibold">Cleanse Resistance</h3>
             {#if skill.prob_ignore_cleanse >= 1}
-              <p class="text-muted-foreground">Cannot be cleansed.</p>
+              <p class="text-muted-foreground">
+                This debuff cannot be cleansed.
+              </p>
             {:else if skill.prob_ignore_cleanse <= 0}
               <p class="text-muted-foreground">
-                Always removed in a single cast.
+                A matching cleanse removes this debuff completely in a single
+                cast.
               </p>
             {:else}
               <p class="text-muted-foreground">
-                Starts with 3 counters. Cleansing removes 1 counter guaranteed,
-                plus 2 independent {formatPercent(
-                  1 - skill.prob_ignore_cleanse,
-                )} chances to remove 1 more each. Debuff removed when counters reach
-                0.{skill.healing_per_second_bonus
-                  ? " DoT damage reduced while partially cleansed (2 counters → ×0.9, 1 counter → ×0.8)."
+                This debuff carries 3 counters and is gone only when its
+                counters reach 0. A matching cleanse removes 1 counter for
+                certain, then makes 2 more attempts that each remove another
+                counter with a {formatPercent(1 - skill.prob_ignore_cleanse)} chance.{skill.healing_per_second_bonus
+                  ? " While counters remain, each tick of its damage is reduced, to 90% of full at 2 counters and 80% at 1 counter."
                   : ""}
               </p>
             {/if}
@@ -2393,26 +2397,38 @@
         {/if}
 
         <!-- E2. Cleanse Mechanics (on cleanse skill pages) -->
+        <!-- Source: server-scripts/TargetBuffSkill.cs:288-362 / AreaBuffSkill.cs:140-358 (cleanse); Buff.cs:18 (3 counters); Skills.cs:1326-1331 (DoT per-counter scaling) -->
         {#if skill.is_cleanse}
           <div class="space-y-1">
-            <h3 class="font-semibold">Cleanse Mechanics</h3>
+            <h3 class="font-semibold">
+              <a
+                href="/mechanics/combat#cleanse"
+                class="text-blue-600 dark:text-blue-400 hover:underline"
+                >Cleanse Mechanics</a
+              >
+            </h3>
             <p class="text-muted-foreground">
-              Only affects debuffs of matching type. Some debuffs cannot be
-              cleansed. Cleansable debuffs start with 3 counters and are removed
-              when counters reach 0. Debuffs with no resist are always removed
-              in a single cast. Otherwise cleansing removes 1 counter
-              guaranteed, plus 2 independent chances to remove 1 more each
-              (blocked by the debuff's Cleanse Resist). DoT damage reduced while
-              partially cleansed (2 counters &rarr; &times;0.9, 1 counter &rarr;
-              &times;0.8).
+              Cast on yourself or an ally, this skill removes harmful debuffs of
+              the elements it cleanses. It cannot be resisted and is not
+              affected by Accuracy. Every debuff carries 3 counters and is fully
+              removed only when its counters reach 0. If a matching debuff has a
+              Cleanse Resist of 0, all 3 counters are removed in a single cast.
+              Otherwise the cast removes 1 counter for certain, then makes 2
+              more attempts that each remove another counter with a chance of
+              (100% &minus; Cleanse Resist), and a debuff with a Cleanse Resist
+              of 100% cannot be cleansed. For damage-over-time debuffs, losing
+              counters also lowers each tick of damage, to 90% of full at 2
+              counters and 80% at 1 counter.
             </p>
           </div>
         {/if}
 
         <!-- F. Dispel Mechanics -->
         {#if skill.is_dispel}
+          {@const playerCast =
+            skill.is_scroll || skill.player_classes.length > 0}
           <div class="space-y-1">
-            <!-- Source: TargetDebuffSkill.cs:172-269, AreaDebuffSkill.cs:168-265 -->
+            <!-- Source: server-scripts/TargetDebuffSkill.cs:104-142 (resist gate), 172-269 (removal); AreaDebuffSkill.cs:103-138 (resist gate), 168-265 (removal); Combat.cs:1301-1328 GetProbResistMagic/Disease -->
             <h3 class="font-semibold">
               <a
                 href="/mechanics/combat#dispel"
@@ -2420,29 +2436,75 @@
                 >Dispel Mechanics</a
               >
             </h3>
-            <p class="text-muted-foreground">
-              Players: all buffs removed unconditionally (except the Rest buff).<br
-              />
-              Pets: all buffs removed unconditionally.
-            </p>
-            <p class="text-muted-foreground">Monsters: each buff removed if</p>
-            {#if skill.skill_type === "target_debuff"}
-              {#if skill.is_scroll}
-                <p class="font-mono">
-                  Random.value &gt; probIgnoreCleanse &minus;
-                  clamp(round(Mastery% &divide; 5), 1, {skill.max_level})
-                  &times; 0.01
-                </p>
+            {#if playerCast}
+              <p class="text-muted-foreground">
+                You cast this on a monster to remove its beneficial buffs.
+                Whether it removes anything, and how much, is decided in two
+                steps.
+              </p>
+              <p class="text-muted-foreground">
+                <span class="font-medium">1. Landing.</span> The monster first rolls
+                to resist (the Resist Chance above), which your Accuracy lowers.
+                If the monster resists, nothing is removed.
+              </p>
+              <p class="text-muted-foreground">
+                <span class="font-medium">2. Removal, only when it lands.</span>
+                Each of the monster's buffs is removed only when a random value from
+                0 to 1 is greater than that buff's Dispel Resist after subtracting
+                your Dispel Resist reduction. A buff with 0 Dispel Resist is always
+                removed.
+              </p>
+              {#if skill.skill_type === "target_debuff"}
+                {#if skill.is_scroll}
+                  <p class="font-mono">
+                    Dispel Resist reduction = clamp(round(Mastery% &divide; 5),
+                    1, {skill.max_level}) &times; 0.01
+                  </p>
+                  <p class="text-muted-foreground">
+                    Your reduction grows with your
+                    <a
+                      href="/professions/scroll_mastery"
+                      class="text-blue-600 dark:text-blue-400 hover:underline"
+                      >Scroll Mastery</a
+                    >
+                    rank, lowering a monster's Dispel Resist by 1 percentage point
+                    per effective rank (up to {skill.max_level}). So a scroll
+                    dispel uses two of your stats: Accuracy to land it in step
+                    1, and Scroll Mastery to strip more buffs in step 2.
+                  </p>
+                {:else}
+                  <p class="font-mono">
+                    Dispel Resist reduction = Accuracy &times; 0.5
+                  </p>
+                  <p class="text-muted-foreground">
+                    Here your Accuracy is the only stat involved. It both lands
+                    the dispel in step 1 and sets this reduction in step 2, so
+                    20% Accuracy lowers a monster's Dispel Resist by 10
+                    percentage points.
+                  </p>
+                {/if}
               {:else}
-                <p class="font-mono">
-                  Random.value &gt; probIgnoreCleanse &minus; accuracy &times;
-                  0.5
+                <p class="text-muted-foreground">
+                  This area dispel applies no Dispel Resist reduction in step 2,
+                  so each buff must beat its full Dispel Resist. Only the
+                  landing roll in step 1 depends on your Accuracy.
                 </p>
               {/if}
             {:else}
-              <p class="font-mono">Random.value &gt; probIgnoreCleanse</p>
               <p class="text-muted-foreground">
-                Accuracy has no effect on area dispels.
+                Monsters use this to remove beneficial buffs from you and your
+                pets. Whether it removes anything is decided in two steps.
+              </p>
+              <p class="text-muted-foreground">
+                <span class="font-medium">1. Landing.</span> You first roll to resist
+                it (the Resist Chance above). The monster's Accuracy lowers your
+                resist chance, while a higher matching resistance raises it. If you
+                resist, nothing is removed.
+              </p>
+              <p class="text-muted-foreground">
+                <span class="font-medium">2. Removal, only when it lands.</span>
+                All of your buffs are removed except the Rest buff. On a pet, all
+                of its buffs are removed.
               </p>
             {/if}
           </div>

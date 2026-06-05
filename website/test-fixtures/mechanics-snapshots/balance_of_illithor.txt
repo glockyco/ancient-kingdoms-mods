@@ -1,1 +1,1 @@
-Mechanics Cleanse Resistance Always removed in a single cast. Effective Cast Time = castTime − (castTime × spellHaste)
+Mechanics Cleanse Resistance A matching cleanse removes this debuff completely in a single cast. Effective Cast Time = castTime − (castTime × spellHaste)
