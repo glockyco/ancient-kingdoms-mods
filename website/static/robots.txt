@@ -1,5 +1,9 @@
 User-agent: *
 Allow: /
 Disallow: /sitemap-manifest.json
+# A /map?entity=… link exists for every game entity, all canonicalizing to
+# /map. Blocking the query variants stops crawlers from re-fetching the heavy
+# map page once per entity. Bare /map stays crawlable and indexed.
+Disallow: /map?
 
 Sitemap: https://ancient-kingdoms.compendiums.org/sitemap.xml
