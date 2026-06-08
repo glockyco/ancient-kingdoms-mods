@@ -279,7 +279,7 @@ class ItemData(BaseModel):
     id: str
     name: str
     item_type: str
-    quality: int  # 0-4 (Common, Uncommon, Magic, Epic, Legendary)
+    quality: int  # 0-5 (Common, Uncommon, Magic, Epic, Legendary, Mythic)
     level_required: int = 0
     class_required: list[str] = []
     faction_required_to_buy: int = 0

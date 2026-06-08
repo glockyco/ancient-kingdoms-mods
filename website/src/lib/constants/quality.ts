@@ -1,6 +1,6 @@
 /**
  * Canonical item quality names.
- * Index corresponds to the numeric quality value (0-4).
+ * Index corresponds to the numeric quality value (0-5).
  *
  * These names are derived from:
  * - Internal game code variable names (colorUncommonItem, colorMagicItem, etc.)
@@ -13,10 +13,11 @@ export const QUALITY_NAMES = [
   "Magic",
   "Epic",
   "Legendary",
+  "Mythic",
 ] as const;
 
 export type QualityName = (typeof QUALITY_NAMES)[number];
-export type QualityIndex = 0 | 1 | 2 | 3 | 4;
+export type QualityIndex = 0 | 1 | 2 | 3 | 4 | 5;
 
 /**
  * Lowercase quality identifiers for CSS classes.
@@ -27,6 +28,7 @@ export const QUALITY_IDS = [
   "magic",
   "epic",
   "legendary",
+  "mythic",
 ] as const;
 
 export type QualityId = (typeof QUALITY_IDS)[number];

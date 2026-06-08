@@ -38,12 +38,13 @@
   --sidebar-border: oklch(0.929 0.013 255.508);
   --sidebar-ring: oklch(0.704 0.04 256.788);
 
-  /* Item quality colors: Common, Uncommon, Magic, Epic, Legendary */
+  /* Item quality colors: Common, Uncommon, Magic, Epic, Legendary, Mythic */
   --quality-common: oklch(0.55 0.02 264);
   --quality-uncommon: oklch(0.56 0.12 145);
   --quality-magic: oklch(0.52 0.16 240);
   --quality-epic: oklch(0.55 0.18 310);
   --quality-legendary: oklch(0.58 0.15 55);
+  --quality-mythic: oklch(0.847 0.101 225);
 
   /* Item quality text colors - darker for light mode backgrounds */
   --quality-text-common: oklch(0.45 0 0);
@@ -51,6 +52,7 @@
   --quality-text-magic: oklch(0.45 0.18 240);
   --quality-text-epic: oklch(0.5 0.2 310);
   --quality-text-legendary: oklch(0.55 0.18 55);
+  --quality-text-mythic: oklch(0.58 0.12 225);
 
   /* Monster type colors */
   --monster-regular: oklch(0.6 0.22 25);
@@ -97,6 +99,7 @@
   --quality-text-magic: oklch(0.7 0.18 240);
   --quality-text-epic: oklch(0.72 0.2 310);
   --quality-text-legendary: oklch(0.75 0.18 55);
+  --quality-text-mythic: oklch(0.86 0.11 225);
 }
 
 @theme inline {
@@ -140,11 +143,13 @@
   --color-quality-magic: var(--quality-magic);
   --color-quality-epic: var(--quality-epic);
   --color-quality-legendary: var(--quality-legendary);
+  --color-quality-mythic: var(--quality-mythic);
   --color-quality-text-common: var(--quality-text-common);
   --color-quality-text-uncommon: var(--quality-text-uncommon);
   --color-quality-text-magic: var(--quality-text-magic);
   --color-quality-text-epic: var(--quality-text-epic);
   --color-quality-text-legendary: var(--quality-text-legendary);
+  --color-quality-text-mythic: var(--quality-text-mythic);
   --color-monster-regular: var(--monster-regular);
   --color-monster-elite: var(--monster-elite);
   --color-monster-boss: var(--monster-boss);
@@ -176,6 +181,9 @@
   .bg-quality-legendary {
     background-color: var(--quality-legendary);
   }
+  .bg-quality-mythic {
+    background-color: var(--quality-mythic);
+  }
   .text-quality-text-common {
     color: var(--quality-text-common);
   }
@@ -190,6 +198,9 @@
   }
   .text-quality-text-legendary {
     color: var(--quality-text-legendary);
+  }
+  .text-quality-text-mythic {
+    color: var(--quality-text-mythic);
   }
 }
 
