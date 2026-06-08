@@ -55,7 +55,26 @@ interface FishingRodItem extends FishingEquipmentItem {
   min_source_level: number | null;
 }
 
+interface FishRecipeIngredient {
+  item_id: string;
+  item_name: string;
+  tooltip_html: string | null;
+  quality: number;
+  amount: number;
+}
+
 interface FishRecipe {
+  recipe_id: string;
+  result_item_id: string;
+  result_item_name: string;
+  result_quality: number;
+  result_tooltip_html: string | null;
+  effect_skill_id: string | null;
+  effect_skill_name: string | null;
+  ingredients: FishRecipeIngredient[];
+}
+
+interface FishRecipeRow {
   recipe_id: string;
   result_item_id: string;
   result_item_name: string;
@@ -239,7 +258,7 @@ export function loadFishingPageData(db: Database.Database): FishingPageData {
     )
     .all() as FishingEquipmentItem[];
 
-  const foods = db
+  const foodRows = db
     .prepare(
       `
       SELECT
@@ -265,9 +284,9 @@ export function loadFishingPageData(db: Database.Database): FishingPageData {
       ORDER BY result.quality, result.name, ingredient.name
     `,
     )
-    .all() as FishRecipe[];
+    .all() as FishRecipeRow[];
 
-  const potions = db
+  const potionRows = db
     .prepare(
       `
       SELECT
@@ -292,7 +311,10 @@ export function loadFishingPageData(db: Database.Database): FishingPageData {
       ORDER BY result.quality, result.name, ingredient.name
     `,
     )
-    .all() as FishRecipe[];
+    .all() as FishRecipeRow[];
+
+  const foods = groupFishRecipes(foodRows);
+  const potions = groupFishRecipes(potionRows);
 
   const dropsBySpot = new Map<string, FishDrop[]>();
   for (const row of dropRows) {
@@ -338,4 +360,35 @@ export function loadFishingPageData(db: Database.Database): FishingPageData {
       potion_count: potions.length,
     },
   };
+}
+
+function groupFishRecipes(rows: FishRecipeRow[]): FishRecipe[] {
+  const recipes = new Map<string, FishRecipe>();
+
+  for (const row of rows) {
+    let recipe = recipes.get(row.recipe_id);
+    if (!recipe) {
+      recipe = {
+        recipe_id: row.recipe_id,
+        result_item_id: row.result_item_id,
+        result_item_name: row.result_item_name,
+        result_quality: row.result_quality,
+        result_tooltip_html: row.result_tooltip_html,
+        effect_skill_id: row.effect_skill_id,
+        effect_skill_name: row.effect_skill_name,
+        ingredients: [],
+      };
+      recipes.set(row.recipe_id, recipe);
+    }
+
+    recipe.ingredients.push({
+      item_id: row.ingredient_item_id,
+      item_name: row.ingredient_item_name,
+      tooltip_html: row.ingredient_tooltip_html,
+      quality: row.ingredient_quality,
+      amount: row.ingredient_amount,
+    });
+  }
+
+  return Array.from(recipes.values());
 }

@@ -94,12 +94,17 @@ function createDb() {
       ('alchemy_fish', 'Alchemy Fish', 1, 1, '<p>alchemy fish</p>', NULL, NULL, NULL, NULL, NULL, NULL),
       ('trash_fish', 'Trash Fish', 0, 1, '<p>trash</p>', NULL, NULL, NULL, NULL, NULL, NULL),
       ('fish_chowder', 'Fish Chowder', 0, 1, '<p>food</p>', NULL, NULL, 'fish_chowder_buff', 'Fish Chowder Buff', NULL, NULL),
-      ('fish_potion', 'Fish Potion', 0, 1, '<p>potion</p>', NULL, NULL, NULL, NULL, 'fish_potion_buff', 'Fish Potion Buff');
+      ('fish_potion', 'Fish Potion', 0, 1, '<p>potion</p>', NULL, NULL, NULL, NULL, 'fish_potion_buff', 'Fish Potion Buff'),
+      ('ember_prawn', 'Ember Prawn', 3, 1, '<p>ember prawn</p>', NULL, NULL, NULL, NULL, NULL, NULL),
+      ('firecoil_worm', 'Firecoil Worm', 3, 1, '<p>firecoil worm</p>', NULL, NULL, NULL, NULL, NULL, NULL),
+      ('dragonbait_stew', 'Dragonbait Stew', 3, 54, '<p>dragonbait stew</p>', NULL, NULL, NULL, NULL, NULL, NULL);
 
     INSERT INTO fish VALUES
       ('cooking_fish', 0),
       ('alchemy_fish', 0),
-      ('trash_fish', 1);
+      ('trash_fish', 1),
+      ('ember_prawn', 0),
+      ('firecoil_worm', 0);
 
     ALTER TABLE items ADD COLUMN comments TEXT DEFAULT '';
     INSERT INTO zones VALUES ('zone_a', 'Zone A');
@@ -121,9 +126,12 @@ function createDb() {
 
     INSERT INTO item_usages_recipe VALUES
       ('cooking_fish', 'fish_chowder_recipe', 'crafting', 2),
+      ('ember_prawn', 'dragonbait_stew_recipe', 'crafting', 1),
+      ('firecoil_worm', 'dragonbait_stew_recipe', 'crafting', 1),
       ('alchemy_fish', 'fish_potion_recipe', 'alchemy', 1);
     INSERT INTO crafting_recipes VALUES
-      ('fish_chowder_recipe', 'fish_chowder', 'cooking');
+      ('fish_chowder_recipe', 'fish_chowder', 'cooking'),
+      ('dragonbait_stew_recipe', 'dragonbait_stew', 'cooking');
     INSERT INTO alchemy_recipes VALUES
       ('fish_potion_recipe', 'fish_potion');
   `);
@@ -204,13 +212,47 @@ describe("loadFishingPageData", () => {
       result_item_id: "fish_chowder",
       effect_skill_id: "fish_chowder_buff",
       result_tooltip_html: expect.any(String),
-      ingredient_tooltip_html: expect.any(String),
+      ingredients: [
+        {
+          item_id: "cooking_fish",
+          amount: 2,
+          tooltip_html: expect.any(String),
+        },
+      ],
+    });
+    expect(data.foods).toHaveLength(2);
+    expect(data.foods[1]).toMatchObject({
+      recipe_id: "dragonbait_stew_recipe",
+      result_item_id: "dragonbait_stew",
+      effect_skill_id: null,
+      ingredients: [
+        {
+          item_id: "ember_prawn",
+          item_name: "Ember Prawn",
+          amount: 1,
+          quality: 3,
+          tooltip_html: expect.any(String),
+        },
+        {
+          item_id: "firecoil_worm",
+          item_name: "Firecoil Worm",
+          amount: 1,
+          quality: 3,
+          tooltip_html: expect.any(String),
+        },
+      ],
     });
     expect(data.potions[0]).toMatchObject({
       result_item_id: "fish_potion",
       effect_skill_id: "fish_potion_buff",
       result_tooltip_html: expect.any(String),
-      ingredient_tooltip_html: expect.any(String),
+      ingredients: [
+        {
+          item_id: "alchemy_fish",
+          amount: 1,
+          tooltip_html: expect.any(String),
+        },
+      ],
     });
     expect(data.costumePieces).toHaveLength(3);
     expect(data.trashFish[0]).not.toHaveProperty("qualityLabel");

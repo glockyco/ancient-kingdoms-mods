@@ -951,11 +951,11 @@
             <tr>
               <th class="p-3 text-left font-medium">Food</th>
               <th class="p-3 text-left font-medium">Effect</th>
-              <th class="p-3 text-left font-medium">Fish Ingredient</th>
+              <th class="p-3 text-left font-medium">Fish Ingredients</th>
             </tr>
           </thead>
           <tbody>
-            {#each data.foods as recipe (recipe.recipe_id + recipe.ingredient_item_id)}
+            {#each data.foods as recipe (recipe.recipe_id)}
               <tr class="border-t hover:bg-muted/25">
                 <td class="p-3">
                   <ItemLink
@@ -978,14 +978,25 @@
                   {/if}
                 </td>
                 <td class="p-3">
-                  <ItemLink
-                    itemId={recipe.ingredient_item_id}
-                    itemName={recipe.ingredient_item_name}
-                    tooltipHtml={recipe.ingredient_tooltip_html}
-                    colorClass={getQualityTextColorClass(
-                      recipe.ingredient_quality,
-                    )}
-                  />
+                  <div class="flex flex-wrap gap-x-3 gap-y-1">
+                    {#each recipe.ingredients as ingredient (ingredient.item_id)}
+                      <span class="inline-flex items-center gap-1">
+                        <ItemLink
+                          itemId={ingredient.item_id}
+                          itemName={ingredient.item_name}
+                          tooltipHtml={ingredient.tooltip_html}
+                          colorClass={getQualityTextColorClass(
+                            ingredient.quality,
+                          )}
+                        />
+                        {#if ingredient.amount > 1}
+                          <span class="text-xs text-muted-foreground">
+                            ×{ingredient.amount}
+                          </span>
+                        {/if}
+                      </span>
+                    {/each}
+                  </div>
                 </td>
               </tr>
             {/each}
@@ -1010,11 +1021,11 @@
               <tr>
                 <th class="p-3 text-left font-medium">Potion</th>
                 <th class="p-3 text-left font-medium">Effect</th>
-                <th class="p-3 text-left font-medium">Fish Ingredient</th>
+                <th class="p-3 text-left font-medium">Fish Ingredients</th>
               </tr>
             </thead>
             <tbody>
-              {#each data.potions as recipe (recipe.recipe_id + recipe.ingredient_item_id)}
+              {#each data.potions as recipe (recipe.recipe_id)}
                 <tr class="border-t hover:bg-muted/25">
                   <td class="p-3">
                     <ItemLink
@@ -1039,14 +1050,25 @@
                     {/if}
                   </td>
                   <td class="p-3">
-                    <ItemLink
-                      itemId={recipe.ingredient_item_id}
-                      itemName={recipe.ingredient_item_name}
-                      tooltipHtml={recipe.ingredient_tooltip_html}
-                      colorClass={getQualityTextColorClass(
-                        recipe.ingredient_quality,
-                      )}
-                    />
+                    <div class="flex flex-wrap gap-x-3 gap-y-1">
+                      {#each recipe.ingredients as ingredient (ingredient.item_id)}
+                        <span class="inline-flex items-center gap-1">
+                          <ItemLink
+                            itemId={ingredient.item_id}
+                            itemName={ingredient.item_name}
+                            tooltipHtml={ingredient.tooltip_html}
+                            colorClass={getQualityTextColorClass(
+                              ingredient.quality,
+                            )}
+                          />
+                          {#if ingredient.amount > 1}
+                            <span class="text-xs text-muted-foreground">
+                              ×{ingredient.amount}
+                            </span>
+                          {/if}
+                        </span>
+                      {/each}
+                    </div>
                   </td>
                 </tr>
               {/each}
