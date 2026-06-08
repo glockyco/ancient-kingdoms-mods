@@ -44,7 +44,7 @@
   --quality-magic: oklch(0.52 0.16 240);
   --quality-epic: oklch(0.55 0.18 310);
   --quality-legendary: oklch(0.58 0.15 55);
-  --quality-mythic: oklch(0.847 0.101 225);
+  --quality-mythic: oklch(0.52 0.13 225);
 
   /* Item quality text colors - darker for light mode backgrounds */
   --quality-text-common: oklch(0.45 0 0);
