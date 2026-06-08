@@ -15,6 +15,7 @@
   import QuestTypeBadge from "$lib/components/QuestTypeBadge.svelte";
   import OnKillFactions from "$lib/components/OnKillFactions.svelte";
   import QuestFlagBadges from "$lib/components/QuestFlagBadges.svelte";
+  import SpecialMechanicText from "$lib/components/SpecialMechanicText.svelte";
   import type {
     MonsterDrop,
     MonsterSkill,
@@ -24,6 +25,7 @@
   import type { LinearValue } from "$lib/types/skills";
   import { formatPercent, formatDuration } from "$lib/utils/format";
   import { formatSkillEffect } from "$lib/utils/formatSkillEffect";
+  import { getMonsterSpecialMechanics } from "$lib/special-mechanics";
   import Sword from "@lucide/svelte/icons/sword";
   import Gem from "@lucide/svelte/icons/gem";
   import MapPin from "@lucide/svelte/icons/map-pin";
@@ -37,11 +39,15 @@
   import Snowflake from "@lucide/svelte/icons/snowflake";
   import Skull from "@lucide/svelte/icons/skull";
   import Sparkles from "@lucide/svelte/icons/sparkles";
+  import Cog from "@lucide/svelte/icons/cog";
   import Dna from "@lucide/svelte/icons/dna";
 
   let { data } = $props();
 
   const respawnTime = $derived(data.monster.respawn_time);
+  const specialMechanics = $derived(
+    getMonsterSpecialMechanics(data.monster.id),
+  );
 
   // Check which spawn columns to show
   const showRespawnColumn = $derived(respawnTime > 0);
@@ -1430,6 +1436,30 @@
         zebraStripe={true}
         class="bg-muted/30"
       />
+    </section>
+  {/if}
+
+  {#if specialMechanics.length > 0}
+    <section>
+      <h2 class="mb-4 flex items-center gap-2 text-xl font-semibold">
+        <Cog class="h-5 w-5 text-slate-500" />
+        Mechanics
+      </h2>
+      <div class="space-y-4 rounded-md border bg-muted/30 p-4">
+        {#each specialMechanics as mechanic (mechanic.title)}
+          <div class="space-y-2">
+            <p>
+              <span class="font-medium">{mechanic.title}: </span>
+              <SpecialMechanicText parts={mechanic.summary} />
+            </p>
+            <ul class="ml-4 list-disc space-y-1">
+              {#each mechanic.details as detail, index (index)}
+                <li><SpecialMechanicText parts={detail} /></li>
+              {/each}
+            </ul>
+          </div>
+        {/each}
+      </div>
     </section>
   {/if}
 

@@ -7,6 +7,7 @@
   import Seo from "$lib/components/Seo.svelte";
   import MonsterTypeIcon from "$lib/components/MonsterTypeIcon.svelte";
   import DungeonRestrictionBadge from "$lib/components/DungeonRestrictionBadge.svelte";
+  import SpecialMechanicText from "$lib/components/SpecialMechanicText.svelte";
   import ExternalLink from "@lucide/svelte/icons/external-link";
   import FishIcon from "@lucide/svelte/icons/fish";
   import { STATS_METADATA_FIELDS } from "$lib/constants/items";
@@ -14,6 +15,7 @@
   import { formatClassName } from "$lib/utils/classes";
   import { formatStatName, formatResourceName } from "$lib/terminology";
   import { isHouseChestItemId } from "$lib/inventory/house-chests";
+  import { getItemSpecialMechanics } from "$lib/special-mechanics";
   import type { PageData } from "./$types";
 
   let { data }: { data: PageData } = $props();
@@ -21,6 +23,7 @@
   import { QUALITY_NAMES, QUALITY_IDS } from "$lib/constants/quality";
 
   const qualityColors = QUALITY_IDS.map((id) => `bg-quality-${id}`);
+  const specialMechanics = $derived(getItemSpecialMechanics(data.item.id));
 
   // Consistent styling patterns - use these throughout the page
   const styles = {
@@ -325,8 +328,8 @@
   );
 
   const hasPrimaryDetailCards = $derived(
-    Boolean(data.item.tooltip_html) ||
-      data.fishing_effect ||
+    specialMechanics.length > 0 ||
+      Boolean(data.item.tooltip_html) ||
       hasStatsCard ||
       (computed.createdFromMerge && computed.createdFromMerge.length > 0) ||
       (computed.usedAsCurrencyFor && computed.usedAsCurrencyFor.length > 0) ||
@@ -566,6 +569,22 @@
             <div class="text-sm whitespace-pre-wrap tooltip-content">
               <!-- eslint-disable-next-line svelte/no-at-html-tags -->
               {@html data.item.tooltip_html}
+            </div>
+          </Card.Content>
+        </Card.Root>
+      {/if}
+
+      {#if specialMechanics[0]}
+        <Card.Root class="bg-muted/30">
+          <Card.Header>
+            <Card.Title>Special Use</Card.Title>
+          </Card.Header>
+          <Card.Content>
+            <div>
+              <div class={styles.label}>How it works</div>
+              <div class={styles.value}>
+                <SpecialMechanicText parts={specialMechanics[0].summary} />
+              </div>
             </div>
           </Card.Content>
         </Card.Root>
