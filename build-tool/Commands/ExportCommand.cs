@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel;
 using System.IO;
 using System.Threading;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using BuildTool.Abstractions;
 using BuildTool.Configuration;
@@ -19,6 +20,7 @@ public sealed class ExportCommand : AsyncCommand<ExportCommand.Settings>
     private readonly IProcessRunner _runner;
     private readonly bool _isMacOs;
     private readonly CommandResultStore _resultStore;
+    private readonly Func<HotReplRunnerOptions, CancellationToken, Task<ExportRunnerResult>> _exportRunner;
 
     private readonly TimeSpan? _hotReplReadinessTimeout;
     private readonly TimeSpan? _hotReplPollInterval;
@@ -40,7 +42,8 @@ public sealed class ExportCommand : AsyncCommand<ExportCommand.Settings>
         bool isMacOs,
         CommandResultStore? resultStore = null,
         TimeSpan? hotReplReadinessTimeout = null,
-        TimeSpan? hotReplPollInterval = null)
+        TimeSpan? hotReplPollInterval = null,
+        Func<HotReplRunnerOptions, CancellationToken, Task<ExportRunnerResult>>? exportRunner = null)
     {
         _repoRoot                   = repoRoot;
         _config                     = config;
@@ -49,6 +52,7 @@ public sealed class ExportCommand : AsyncCommand<ExportCommand.Settings>
         _resultStore                = resultStore ?? new CommandResultStore();
         _hotReplReadinessTimeout    = hotReplReadinessTimeout;
         _hotReplPollInterval        = hotReplPollInterval;
+        _exportRunner               = exportRunner ?? RunHotReplExportAsync;
     }
 
     public sealed class Settings : BaseSettings
@@ -108,10 +112,11 @@ public sealed class ExportCommand : AsyncCommand<ExportCommand.Settings>
         Console.WriteLine($"  HotRepl: {_config.HotReplEndpoint}");
         Console.WriteLine();
 
+        using var gameCts = new CancellationTokenSource();
         Task<ProcessResult> runTask;
         try
         {
-            runTask = _runner.RunAsync(request, CancellationToken.None);
+            runTask = _runner.RunAsync(request, gameCts.Token);
         }
         catch (Exception ex)
         {
@@ -119,9 +124,11 @@ public sealed class ExportCommand : AsyncCommand<ExportCommand.Settings>
             return ExitCodes.CommandFailed;
         }
 
-        // Stream log concurrently while runner orchestrates the export
+        // Stream log concurrently while runner orchestrates the export. Some
+        // MelonLoader startup failures never make it to HotRepl, so the log
+        // monitor must also surface known fatal startup errors.
         using var logCts = new CancellationTokenSource();
-        var logTask = StreamLogAsync(logPath, logCts.Token);
+        var logTask = StreamLogAndDetectFatalAsync(logPath, logCts.Token);
 
         var runnerOptions = new HotReplRunnerOptions
         {
@@ -133,15 +140,28 @@ public sealed class ExportCommand : AsyncCommand<ExportCommand.Settings>
         };
 
         ExportRunnerResult runnerResult;
-        try
+        using var runnerCts = new CancellationTokenSource();
+        var runnerTask = _exportRunner(runnerOptions, runnerCts.Token);
+        var completedTask = await Task.WhenAny((Task)runnerTask, logTask);
+
+        if (completedTask == logTask)
         {
-            runnerResult = await HotReplExportRunner.Create(runnerOptions)
-                .RunAsync(CancellationToken.None);
+            var logResult = await logTask;
+            if (logResult is not null)
+            {
+                runnerCts.Cancel();
+                gameCts.Cancel();
+                await ObserveGameExitAsync(runTask);
+                runnerResult = logResult;
+            }
+            else
+            {
+                runnerResult = await runnerTask;
+            }
         }
-        catch (Exception ex)
+        else
         {
-            runnerResult = new ExportRunnerResult(false, ExitCodes.Internal,
-                $"Runner threw: {ex.Message}");
+            runnerResult = await runnerTask;
         }
 
         logCts.Cancel();
@@ -162,11 +182,74 @@ public sealed class ExportCommand : AsyncCommand<ExportCommand.Settings>
         return runnerResult.ExitCode;
     }
 
-    private static async Task StreamLogAsync(
+    private static async Task<ExportRunnerResult> RunHotReplExportAsync(
+        HotReplRunnerOptions runnerOptions,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await HotReplExportRunner.Create(runnerOptions)
+                .RunAsync(cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            return new ExportRunnerResult(false, ExitCodes.Internal,
+                $"Runner threw: {ex.Message}");
+        }
+    }
+
+    private static async Task<ExportRunnerResult?> StreamLogAndDetectFatalAsync(
         string logPath, CancellationToken cancellationToken)
     {
         var stream = new LogStream(logPath, TimeSpan.FromMilliseconds(100));
+        var recentLog = string.Empty;
         await foreach (var chunk in stream.ReadAsync(cancellationToken))
+        {
             Console.Write(chunk);
+            recentLog = recentLog.Length + chunk.Length > 8192
+                ? string.Concat(recentLog, chunk)[^8192..]
+                : string.Concat(recentLog, chunk);
+
+            var fatalMessage = TryDetectFatalMelonLoaderError(recentLog);
+            if (fatalMessage is not null)
+                return new ExportRunnerResult(false, ExitCodes.ReadinessFailed, fatalMessage);
+        }
+
+        return null;
+    }
+
+    private static string? TryDetectFatalMelonLoaderError(string logText)
+    {
+        if (logText.Contains("UnityDependencies_", StringComparison.OrdinalIgnoreCase)
+            && logText.Contains("does not Exist!", StringComparison.OrdinalIgnoreCase))
+        {
+            var match = Regex.Match(logText, @"UnityDependencies_[^\\/\s]+\.zip",
+                RegexOptions.IgnoreCase);
+            var dependency = match.Success ? match.Value : "UnityDependencies_<unity-version>.zip";
+            return "MelonLoader failed before HotRepl startup: missing Unity dependency "
+                + $"{dependency}. Download Managed.zip from the matching "
+                + "LavaGang/MelonLoader.UnityDependencies release and save it with that filename "
+                + "under MelonLoader/Dependencies/Il2CppAssemblyGenerator, then rerun export.";
+        }
+
+        if (logText.Contains("Failed to Process UnityDependencies", StringComparison.OrdinalIgnoreCase))
+        {
+            return "MelonLoader failed before HotRepl startup while processing Unity dependencies. "
+                + "Refresh the matching UnityDependencies_<unity-version>.zip from "
+                + "LavaGang/MelonLoader.UnityDependencies, then rerun export.";
+        }
+
+        return null;
+    }
+
+    private static async Task ObserveGameExitAsync(Task<ProcessResult> runTask)
+    {
+        try
+        {
+            await runTask;
+        }
+        catch (OperationCanceledException)
+        {
+        }
     }
 }

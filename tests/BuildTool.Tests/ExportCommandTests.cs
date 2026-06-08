@@ -1,9 +1,11 @@
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using BuildTool.Abstractions;
 using BuildTool.Commands;
 using BuildTool.Configuration;
+using BuildTool.HotRepl;
 using BuildTool.Output;
 using Xunit;
 
@@ -61,12 +63,53 @@ public class ExportCommandTests
         Assert.DoesNotContain("--export-screenshots", launchArgs);
     }
 
+    [Fact]
+    public async Task Export_ReturnsUnityDependencyFailure_WhenMelonLoaderReportsMissingUnityDependencies()
+    {
+        var tempRoot = Directory.CreateTempSubdirectory().FullName;
+        var runner = new FakeProcessRunner();
+        runner.Enqueue(async (_, cancellationToken) =>
+        {
+            var logPath = Path.Combine(tempRoot, "game", "MelonLoader", "Latest.log");
+            await File.AppendAllTextAsync(logPath, """
+                [Il2CppAssemblyGenerator] C:\Game\MelonLoader\Dependencies\Il2CppAssemblyGenerator\UnityDependencies_6000.3.17.zip does not Exist!
+                [INTERNAL FAILURE] Failed to Process UnityDependencies!
+
+                """, cancellationToken);
+            await Task.Delay(TimeSpan.FromMinutes(10), cancellationToken);
+            return new ProcessResult(1, "", "", default);
+        });
+        var resultStore = new CommandResultStore();
+        var command = CreateCommand(
+            tempRoot,
+            runner: runner,
+            resultStore: resultStore,
+            hotReplEndpoint: "ws://127.0.0.1:9",
+            exportRunner: async (_, cancellationToken) =>
+            {
+                await Task.Delay(TimeSpan.FromMinutes(10), cancellationToken);
+                return new ExportRunnerResult(false, ExitCodes.Cancelled, "cancelled");
+            },
+            hotReplReadinessTimeout: TimeSpan.FromMilliseconds(100));
+
+        var result = await command.ExecuteAsync(null!, new ExportCommand.Settings());
+
+        Assert.Equal(ExitCodes.ReadinessFailed, result);
+        Assert.Contains("UnityDependencies_6000.3.17.zip", resultStore.ErrorDetails?.ToString());
+        Directory.Delete(tempRoot, recursive: true);
+    }
+
+
     // ----
 
     private static ExportCommand CreateCommand(
         string tempRoot,
         FakeProcessRunner? runner = null,
-        bool createExe = true)
+        bool createExe = true,
+        CommandResultStore? resultStore = null,
+        TimeSpan? hotReplReadinessTimeout = null,
+        string hotReplEndpoint = "ws://127.0.0.1:18590",
+        Func<HotReplRunnerOptions, CancellationToken, Task<ExportRunnerResult>>? exportRunner = null)
     {
         var gamePath = Path.Combine(tempRoot, "game");
         Directory.CreateDirectory(gamePath);
@@ -78,15 +121,16 @@ public class ExportCommandTests
             DataExportPath: Path.Combine(tempRoot, "exported-data"),
             WinePath: null,
             WinePrefix: null,
-            HotReplEndpoint: "ws://127.0.0.1:18590");
+            HotReplEndpoint: hotReplEndpoint);
 
         return new ExportCommand(
             tempRoot,
             config,
             runner ?? new FakeProcessRunner(),
             isMacOs: false,
-            new CommandResultStore(),
-            hotReplReadinessTimeout: TimeSpan.Zero,
-            hotReplPollInterval: TimeSpan.Zero);
+            resultStore ?? new CommandResultStore(),
+            hotReplReadinessTimeout: hotReplReadinessTimeout ?? TimeSpan.Zero,
+            hotReplPollInterval: TimeSpan.Zero,
+            exportRunner: exportRunner);
     }
 }
