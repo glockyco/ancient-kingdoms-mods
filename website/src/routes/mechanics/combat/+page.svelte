@@ -911,9 +911,9 @@ finalDamage = damage − reduction</pre>
       </div>
 
       <div>
-        <!-- Source: server-scripts/Monster.cs:1186-1192 (timerRoot 2s branch, RemoveRoot roll) -->
-        <!-- Source: server-scripts/Monster.cs:2869-2896 (RemoveRoot: removes -50 < speedBonus < 0) -->
-        <!-- Source: server-scripts/Npc.cs:827-833 (timerRoot 1s branch, 10% fixed chance) -->
+        <!-- Source: server-scripts/Monster.cs/Pet.cs (root/full-stop threshold speed <= -10f, timerRoot 2s branch, RemoveRoot roll) -->
+        <!-- Source: server-scripts/Monster.cs (RemoveRoot: removes -50 < speedBonus < 0) -->
+        <!-- Source: server-scripts/Npc.cs (root/full-stop threshold speed <= -10f, timerRoot 1s branch, 10% fixed chance) -->
         <!-- Source: server-scripts/TargetDebuffSkill.cs:140 (boss/elite auto-resist speedBonus < -10) -->
         <h3 class="font-semibold mb-1">Root</h3>
         <p class="text-sm text-muted-foreground">

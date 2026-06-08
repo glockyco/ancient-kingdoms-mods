@@ -2578,9 +2578,9 @@
             </p>
           </div>
         {/if}
-        {#if skill.speed_bonus && skill.speed_bonus.base_value <= -5 && skill.speed_bonus.base_value > -50}
-          <!-- Source: server-scripts/Monster.cs:1186-1192 (timerRoot 2s, RemoveRoot) -->
-          <!-- Source: server-scripts/Npc.cs:827-833 (timerRoot 1s, 10% fixed) -->
+        {#if skill.speed_bonus && skill.speed_bonus.base_value <= -10 && skill.speed_bonus.base_value > -50}
+          <!-- Source: server-scripts/Monster.cs/Pet.cs (root/full-stop threshold speed <= -10f, timerRoot 2s, RemoveRoot) -->
+          <!-- Source: server-scripts/Npc.cs (root/full-stop threshold speed <= -10f, timerRoot 1s, 10% fixed) -->
           <!-- Source: server-scripts/TargetDebuffSkill.cs:140 (boss/elite auto-resist speedBonus < -10) -->
           <div class="space-y-1">
             <h3 class="font-semibold">Root</h3>

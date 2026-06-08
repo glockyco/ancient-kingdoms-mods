@@ -459,16 +459,16 @@ function formatBuffDebuffStats(
   if (skill.is_mana_shield) parts.push("mana shield");
 
   // 2. Movement (matches game tooltip order)
-  // Speed-based CC tiers mirror the server FSM thresholds in Monster.cs:1137-1190.
-  // Sleep (speedBonus <= -50f): breaks on any damage hit or DoT tick (BreakMezz, Skills.cs:1088).
-  // Root (-50f < speedBonus <= -5f): does NOT break on damage; RemoveRoot self-break timer.
-  // Slow (speedBonus > -5f and < 0): pure speed reduction, no CC mechanic.
-  // Source: server-scripts/Monster.cs:1139-1192 (FSM branches), server-scripts/Skills.cs:1149 (BreakMezz)
+  // Speed-based CC tiers mirror the server FSM thresholds in Monster.cs/Npc.cs/Pet.cs.
+  // Sleep (speedBonus <= -50f): breaks on any damage hit or DoT tick (BreakMezz, Skills.cs).
+  // Root (-50f < speedBonus <= -10f): does NOT break on damage; RemoveRoot self-break timer.
+  // Slow (speedBonus > -10f and < 0): pure speed reduction, no CC mechanic.
+  // Source: server-scripts/Monster.cs, Npc.cs, Pet.cs (FSM branches), server-scripts/Skills.cs (BreakMezz)
   const speedBonus = parseLinearValue(skill.speed_bonus);
   if (speedBonus) {
     if (speedBonus.base_value <= -50) {
       parts.push("sleep");
-    } else if (speedBonus.base_value <= -5) {
+    } else if (speedBonus.base_value <= -10) {
       parts.push("root");
     } else if (speedBonus.base_value !== 0) {
       const sign = speedBonus.base_value > 0 ? "+" : "";
