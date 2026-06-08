@@ -85,6 +85,7 @@ function createDb() {
     INSERT INTO items VALUES
       ('rusty_fishing_rod', 'Rusty Fishing Rod', 0, 1, '<p>rod</p>', 'Fishing Rod', 'Fishing Rod', NULL, NULL, NULL, NULL),
       ('bamboo_fishing_rod', 'Bamboo Fishing Rod', 1, 1, '<p>bamboo rod</p>', 'Fishing Rod', 'Fishing Rod', NULL, NULL, NULL, NULL),
+      ('crafted_fishing_rod', 'Crafted Fishing Rod', 2, 35, '<p>crafted rod</p>', 'Fishing Rod', 'Fishing Rod', NULL, NULL, NULL, NULL),
       ('gilded_wyrmhook', 'Gilded Wyrmhook', 4, 1, '<p>wyrmhook</p>', 'Fishing Rod', 'Fishing Rod', NULL, NULL, NULL, NULL),
       ('fishermans_garb', 'Fisherman''s Garb', 0, 1, '<p>garb</p>', NULL, 'Chest', NULL, NULL, NULL, NULL),
       ('fishermans_hat', 'Fisherman''s Hat', 0, 1, '<p>hat</p>', NULL, 'Head', NULL, NULL, NULL, NULL),
@@ -114,6 +115,7 @@ function createDb() {
     INSERT INTO item_source_entries VALUES
       ('rusty_fishing_rod', 'vendor', 'rod_vendor', 'Rod Vendor', 1, 'Rod Vendor'),
       ('bamboo_fishing_rod', 'drop', 'rod_monster', 'Rod Monster', 40, 'Rod Monster'),
+      ('crafted_fishing_rod', 'crafting', 'crafted_fishing_rod_recipe', 'Crafting', 35, 'Crafting'),
       ('gilded_wyrmhook', 'drop', 'lesser_wyrm', 'Lesser Wyrm', 55, 'Lesser Wyrm'),
       ('gilded_wyrmhook', 'drop', 'wyrm_boss', 'Wyrm Boss', 60, 'Wyrm Boss');
 
@@ -136,9 +138,10 @@ describe("loadFishingPageData", () => {
     expect(data.rods.map((rod) => rod.item_id)).toEqual([
       "rusty_fishing_rod",
       "bamboo_fishing_rod",
+      "crafted_fishing_rod",
       "gilded_wyrmhook",
     ]);
-    expect(data.rods[2]).toMatchObject({
+    expect(data.rods[3]).toMatchObject({
       item_id: "gilded_wyrmhook",
       quality: 4,
       min_source_level: 55,
@@ -158,7 +161,21 @@ describe("loadFishingPageData", () => {
         },
       ],
     });
-    expect(data.stats.rod_count).toBe(3);
+    const craftedRod = data.rods.find(
+      (rod) => rod.item_id === "crafted_fishing_rod",
+    );
+    expect(craftedRod).toMatchObject({
+      min_source_level: 35,
+      sources: [
+        {
+          type: "crafting" satisfies ItemSourceType,
+          id: "crafted_fishing_rod_recipe",
+          name: "Crafting",
+          source_level: 35,
+        },
+      ],
+    });
+    expect(data.stats.rod_count).toBe(4);
     expect(data).not.toHaveProperty("rod");
     expect(data).not.toHaveProperty("recipes");
     expect(data.stats).not.toHaveProperty("zone_count");
