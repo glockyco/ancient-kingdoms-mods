@@ -741,6 +741,7 @@ interface NpcRoles {
   is_essence_trader: boolean;
   is_priestess: boolean;
   is_augmenter: boolean;
+  is_guild_management: boolean;
   is_renewal_sage: boolean;
   is_teleporter: boolean;
   is_villager: boolean;
@@ -768,6 +769,7 @@ const NPC_ROLE_PRIORITY: Array<{ flag: keyof NpcRoles; label: string }> = [
   { flag: "is_essence_trader", label: "essence trader" },
   { flag: "is_priestess", label: "priestess" },
   { flag: "is_augmenter", label: "augmenter" },
+  { flag: "is_guild_management", label: "guild manager" },
   { flag: "is_renewal_sage", label: "renewal sage" },
   { flag: "is_teleporter", label: "teleporter" },
   { flag: "is_bank", label: "banker" },

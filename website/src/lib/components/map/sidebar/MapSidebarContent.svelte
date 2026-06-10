@@ -126,7 +126,7 @@
     { key: "hunts", label: "Hunts", color: LAYER_COLORS.hunt, icon: Crosshair },
   ];
 
-  // NPC layers - all 18 types as separate toggles
+  // NPC role layers as separate toggles
   const npcLayers: LayerOption[] = [
     {
       key: "npcVendors",
@@ -230,6 +230,12 @@
     {
       key: "npcVillagers",
       label: "Villagers",
+      color: LAYER_COLORS.npc,
+      icon: Users,
+    },
+    {
+      key: "npcGuildManagers",
+      label: "Guild Managers",
       color: LAYER_COLORS.npc,
       icon: Users,
     },
@@ -421,7 +427,7 @@
     </div>
   </MapSidebarSection>
 
-  <!-- NPCs section (all 18 types as top-level toggles) -->
+  <!-- NPC role toggles -->
   <MapSidebarSection
     title="NPCs"
     icon={Users}

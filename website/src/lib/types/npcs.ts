@@ -16,6 +16,7 @@ export interface NpcRoles {
   is_essence_trader: boolean;
   is_priestess: boolean;
   is_augmenter: boolean;
+  is_guild_management: boolean;
   is_renewal_sage: boolean;
   is_teleporter: boolean;
   is_villager: boolean;

@@ -458,6 +458,7 @@ def _add_villager_role(conn: sqlite3.Connection) -> int:
         "is_essence_trader",
         "is_priestess",
         "is_augmenter",
+        "is_guild_management",
         "is_renewal_sage",
         "is_teleporter",
     ]

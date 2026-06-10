@@ -111,6 +111,7 @@ export const NPC_ROLE_BITS = {
   isGuard: 17,
   isTeleporter: 18,
   isVillager: 19,
+  isGuildManagement: 20,
 } as const;
 
 /**
@@ -270,7 +271,7 @@ export interface LayerVisibility {
   creatures: boolean; // renamed from "monsters"
   hunts: boolean;
 
-  // NPCs section (all 18 types as separate toggles)
+  // NPC role toggles
   npcVendors: boolean;
   npcQuestGivers: boolean;
   npcRepair: boolean;
@@ -291,6 +292,7 @@ export interface LayerVisibility {
   npcGuards: boolean;
   npcTeleporters: boolean;
   npcVillagers: boolean;
+  npcGuildManagers: boolean;
 
   // Interactables section
   portals: boolean;

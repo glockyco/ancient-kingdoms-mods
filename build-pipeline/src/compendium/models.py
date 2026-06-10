@@ -427,6 +427,7 @@ class NpcRoles(BaseModel):
     is_essence_trader: bool = False
     is_priestess: bool = False
     is_augmenter: bool = False
+    is_guild_management: bool = False
 
 
 class NpcSpawnData(BaseModel):

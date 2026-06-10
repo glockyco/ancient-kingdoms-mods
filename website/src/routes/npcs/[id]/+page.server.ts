@@ -45,6 +45,7 @@ const defaultRoles: NpcRoles = {
   is_essence_trader: false,
   is_priestess: false,
   is_augmenter: false,
+  is_guild_management: false,
   is_renewal_sage: false,
   is_teleporter: false,
   is_villager: false,

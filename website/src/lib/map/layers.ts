@@ -151,6 +151,7 @@ function createNpcVisibilityBitmask(visibility: LayerVisibility): number {
   if (visibility.npcGuards) mask |= 1 << NPC_ROLE_BITS.isGuard;
   if (visibility.npcTeleporters) mask |= 1 << NPC_ROLE_BITS.isTeleporter;
   if (visibility.npcVillagers) mask |= 1 << NPC_ROLE_BITS.isVillager;
+  if (visibility.npcGuildManagers) mask |= 1 << NPC_ROLE_BITS.isGuildManagement;
   return mask;
 }
 

@@ -79,6 +79,7 @@ export function getDefaultLayerVisibility(): LayerVisibility {
     npcGuards: false,
     npcTeleporters: false,
     npcVillagers: false,
+    npcGuildManagers: false,
     // Interactables
     portals: false,
     portalArcs: false,
@@ -236,6 +237,7 @@ export function urlStateToLayerVisibility(
     npcGuards: urlLayers.includes("npcGuards"),
     npcTeleporters: urlLayers.includes("npcTeleporters"),
     npcVillagers: urlLayers.includes("npcVillagers"),
+    npcGuildManagers: urlLayers.includes("npcGuildManagers"),
     // Interactables
     portals: urlLayers.includes("portals"),
     portalArcs: urlLayers.includes("portalArcs"),

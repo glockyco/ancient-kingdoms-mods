@@ -33,6 +33,7 @@ ROLE_BITS = {
     "is_guard": 17,
     "is_teleporter": 18,
     "is_villager": 19,
+    "is_guild_management": 20,
 }
 
 

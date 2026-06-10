@@ -87,7 +87,8 @@ public class NpcExporter : BaseExporter
                     is_faction_vendor = canonical.isFactionVendor,
                     is_essence_trader = canonical.isEssenceTrader,
                     is_priestess = canonical.isPriestess,
-                    is_augmenter = canonical.isAugmenter
+                    is_augmenter = canonical.isAugmenter,
+                    is_guild_management = canonical.isGuildManagement,
                 },
 
                 // Base stats

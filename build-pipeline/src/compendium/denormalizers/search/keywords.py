@@ -33,6 +33,7 @@ NPC_ROLE_KEYWORDS = {
     "is_essence_trader": "essence trader primal salvage",
     "is_priestess": "priestess rune runes cursed blessed bless",
     "is_augmenter": "augmenter socket remove",
+    "is_guild_management": "guild manager registrar management create invite",
     "is_renewal_sage": "renewal sage reset respawn",
     "is_teleporter": "teleporter teleport travel transport",
     "is_villager": "villager citizen townsfolk",

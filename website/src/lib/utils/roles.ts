@@ -65,6 +65,7 @@ export const ROLE_CONFIG: RoleConfig[] = [
     label: "Mercenary Recruiter",
     category: "service",
   },
+  { key: "is_guild_management", label: "Guild Manager", category: "service" },
   { key: "is_priestess", label: "Priestess", category: "special" },
   { key: "is_augmenter", label: "Augmenter", category: "special" },
   { key: "is_guard", label: "Guard", category: "combat" },
@@ -127,6 +128,7 @@ export function normalizeRoles(partial: Partial<NpcRoles>): NpcRoles {
     is_essence_trader: partial.is_essence_trader ?? false,
     is_priestess: partial.is_priestess ?? false,
     is_augmenter: partial.is_augmenter ?? false,
+    is_guild_management: partial.is_guild_management ?? false,
     is_renewal_sage: partial.is_renewal_sage ?? false,
     is_teleporter: partial.is_teleporter ?? false,
     is_villager: partial.is_villager ?? false,
@@ -219,6 +221,10 @@ export const ROLE_DESCRIPTIONS: Partial<
       "Augment is returned to your inventory",
       "Requires augmented gear in inventory or equipped",
     ],
+  },
+  is_guild_management: {
+    description: "Creates and manages guild memberships.",
+    details: ["Create guild cost: 10,000 gold", "Guild member cap: 10"],
   },
   is_guard: {
     description: "Protects the area and may attack hostile players.",

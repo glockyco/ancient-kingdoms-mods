@@ -43,6 +43,7 @@ public class NpcRoles
     public bool is_essence_trader { get; set; }
     public bool is_priestess { get; set; }
     public bool is_augmenter { get; set; }
+    public bool is_guild_management { get; set; }
 }
 
 public class ItemSold
