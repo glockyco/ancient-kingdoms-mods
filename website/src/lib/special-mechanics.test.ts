@@ -24,13 +24,13 @@ describe("curated special mechanics", () => {
       href: "/items/dragonbait_stew",
       label: "Dragonbait Stew",
     });
-    expect(monsterMechanics[0].details).toHaveLength(5);
-    expect(monsterMechanics[0].details.map(textContent).join(" ")).toContain(
-      "60-299 seconds",
+    expect(monsterMechanics[0].details).toHaveLength(6);
+    const detailText = monsterMechanics[0].details.map(textContent).join(" ");
+    expect(detailText).toContain("60-299 seconds");
+    expect(detailText).toContain(
+      "one random damage resistance drops to 500 while the others stay at 2000",
     );
-    expect(monsterMechanics[0].details.map(textContent).join(" ")).toContain(
-      "area damage is halved",
-    );
+    expect(detailText).toContain("area damage is halved");
 
     expect(itemMechanics).toHaveLength(1);
     expect(itemMechanics[0].title).toBe("Valaark Vulnerability");
