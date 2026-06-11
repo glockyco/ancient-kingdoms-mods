@@ -13,6 +13,7 @@ test("mechanics index and homepage expose mechanics references", () => {
   assert.match(mechanicsIndex, /href: "\/mechanics\/inventory"/);
   assert.match(mechanicsIndex, /href: "\/mechanics\/experience"/);
   assert.match(mechanicsIndex, /href: "\/mechanics\/combat"/);
+  assert.match(mechanicsIndex, /href: "\/mechanics\/respawning"/);
   assert.match(homepage, /href="\/mechanics"/);
   assert.match(homepage, /Game systems and rule references/);
 
@@ -36,6 +37,12 @@ test("item pages link backpacks and house chests to inventory mechanics", () => 
   assert.match(itemPage, /href="\/mechanics\/inventory#house-chests"/);
 });
 
+test("monster pages link spawns to spawn mechanics", () => {
+  const monsterPage = source("../monsters/[id]/+page.svelte");
+
+  assert.match(monsterPage, /href="\/mechanics\/respawning"/);
+});
+
 test("inventory backpack links include tooltip data", () => {
   const inventoryServer = source("./inventory/+page.server.ts");
   const inventoryPage = source("./inventory/+page.svelte");
@@ -50,9 +57,11 @@ test("inventory backpack links include tooltip data", () => {
 test("mechanics detail breadcrumbs link to mechanics overview", () => {
   const experiencePage = source("./experience/+page.svelte");
   const combatPage = source("./combat/+page.svelte");
+  const respawningPage = source("./respawning/+page.svelte");
 
   assert.match(experiencePage, /\{ label: "Mechanics", href: "\/mechanics" \}/);
   assert.match(combatPage, /\{ label: "Mechanics", href: "\/mechanics" \}/);
+  assert.match(respawningPage, /\{ label: "Mechanics", href: "\/mechanics" \}/);
 });
 
 test("experience page cross-links equipment and death inventory rules", () => {

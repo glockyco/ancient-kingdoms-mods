@@ -4,6 +4,7 @@
   import * as Card from "$lib/components/ui/card";
   import { Alert } from "$lib/components/ui/alert";
   import Backpack from "@lucide/svelte/icons/backpack";
+  import Skull from "@lucide/svelte/icons/skull";
   import Swords from "@lucide/svelte/icons/swords";
   import TrendingUp from "@lucide/svelte/icons/trending-up";
   import TriangleAlert from "@lucide/svelte/icons/triangle-alert";
@@ -33,12 +34,20 @@
       color: "text-red-500",
       bg: "bg-red-500/10",
     },
+    {
+      href: "/mechanics/respawning",
+      title: "Monster Spawns",
+      description: "Respawn timers, rare spawns, boss timers, and zone resets",
+      icon: Skull,
+      color: "text-purple-500",
+      bg: "bg-purple-500/10",
+    },
   ];
 </script>
 
 <Seo
   title="Game Mechanics - Ancient Kingdoms"
-  description="Combat damage formulas, XP gain rates, and inventory and storage rules for Ancient Kingdoms — drawn from the game's actual logic."
+  description="Combat damage formulas, XP gain rates, inventory and storage rules, and monster respawn timers for Ancient Kingdoms — drawn from the game's actual logic."
   path="/mechanics"
 />
 

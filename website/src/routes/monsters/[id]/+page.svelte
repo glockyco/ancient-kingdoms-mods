@@ -28,6 +28,7 @@
   import { getMonsterSpecialMechanics } from "$lib/special-mechanics";
   import Sword from "@lucide/svelte/icons/sword";
   import Gem from "@lucide/svelte/icons/gem";
+  import CircleHelp from "@lucide/svelte/icons/circle-help";
   import MapPin from "@lucide/svelte/icons/map-pin";
   import Scroll from "@lucide/svelte/icons/scroll";
   import BookOpen from "@lucide/svelte/icons/book-open";
@@ -956,10 +957,19 @@
   <!-- Spawns Section -->
   {#if hasAnySpawns}
     <section>
-      <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
-        <MapPin class="h-5 w-5 text-emerald-500" />
-        Spawns
-      </h2>
+      <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
+        <h2 class="flex items-center gap-2 text-xl font-semibold">
+          <MapPin class="h-5 w-5 text-emerald-500" />
+          Spawns
+        </h2>
+        <a
+          href="/mechanics/respawning"
+          class="ml-auto inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground hover:underline"
+        >
+          <CircleHelp class="h-4 w-4" />
+          How spawning works
+        </a>
+      </div>
 
       <div class="space-y-4">
         <!-- World Spawns (regular + summon zones combined) -->
