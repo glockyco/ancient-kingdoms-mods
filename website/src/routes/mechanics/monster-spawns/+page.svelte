@@ -83,7 +83,7 @@
 <Seo
   title="Monster Spawn Mechanics - Ancient Kingdoms"
   description="How monster spawning works in Ancient Kingdoms: respawn timers, boss respawn times, rare spawn chances, dungeon renewals, night-only monsters, kill-triggered summons, and zone resets."
-  path="/mechanics/respawning"
+  path="/mechanics/monster-spawns"
 />
 
 <div class="container mx-auto max-w-5xl space-y-8 p-8">

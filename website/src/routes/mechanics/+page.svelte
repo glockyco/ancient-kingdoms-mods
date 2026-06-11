@@ -35,7 +35,7 @@
       bg: "bg-red-500/10",
     },
     {
-      href: "/mechanics/respawning",
+      href: "/mechanics/monster-spawns",
       title: "Monster Spawns",
       description: "Respawn timers, rare spawns, boss timers, and zone resets",
       icon: Skull,

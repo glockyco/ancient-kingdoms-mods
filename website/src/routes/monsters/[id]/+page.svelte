@@ -963,7 +963,7 @@
           Spawns
         </h2>
         <a
-          href="/mechanics/respawning"
+          href="/mechanics/monster-spawns"
           class="ml-auto inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground hover:underline"
         >
           <CircleHelp class="h-4 w-4" />
