@@ -21,7 +21,7 @@
     "cf-deploy:redirect": "wrangler deploy --config wrangler.redirect.toml"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20260505.1",
+    "@cloudflare/workers-types": "^4.20260612.1",
     "@eslint/compat": "^2.0.0",
     "@eslint/js": "^9.39.1",
     "@internationalized/date": "^3.10.0",
@@ -55,7 +55,7 @@
     "vaul-svelte": "1.0.0-next.7",
     "vite": "^7.2.2",
     "vitest": "^4.1.5",
-    "wrangler": "^4.85.0"
+    "wrangler": "^4.100.0"
   },
   "dependencies": {
     "@deck.gl/core": "^9.2.5",
