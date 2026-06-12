@@ -2,12 +2,11 @@
   import Seo from "$lib/components/Seo.svelte";
   import * as Card from "$lib/components/ui/card";
   import ThemeToggle from "$lib/components/ThemeToggle.svelte";
-  import KofiIcon from "$lib/components/KofiIcon.svelte";
+  import SupportButton from "$lib/components/SupportButton.svelte";
   import SteamIcon from "$lib/components/SteamIcon.svelte";
   import DiscordIcon from "$lib/components/DiscordIcon.svelte";
   import { buttonVariants } from "$lib/components/ui/button";
-  import { cn } from "$lib/utils";
-  import { DISCORD_URL, KOFI_URL, STEAM_GUIDE_URL } from "$lib/constants/links";
+  import { DISCORD_URL, STEAM_GUIDE_URL } from "$lib/constants/links";
   import Gem from "@lucide/svelte/icons/gem";
   import MapPin from "@lucide/svelte/icons/map-pin";
   import Skull from "@lucide/svelte/icons/skull";
@@ -39,17 +38,14 @@
   <!-- Hero Section -->
   <div class="text-center py-2 space-y-4 relative">
     <div
-      class="flex items-center justify-end gap-1 sm:absolute sm:top-0 sm:right-0"
+      aria-label="Support actions"
+      class="flex items-center justify-start sm:absolute sm:top-0 sm:left-0"
     >
-      <a
-        href={KOFI_URL}
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label="Support on Ko-fi"
-        class={cn(buttonVariants({ variant: "ghost", size: "icon" }), "mr-1")}
-      >
-        <KofiIcon class="size-7" />
-      </a>
+      <SupportButton compact />
+    </div>
+    <div
+      class="mt-2 flex items-center justify-end gap-1 sm:absolute sm:top-0 sm:right-0 sm:mt-0"
+    >
       <a
         href={STEAM_GUIDE_URL}
         target="_blank"
