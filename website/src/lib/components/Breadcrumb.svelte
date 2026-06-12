@@ -56,6 +56,7 @@
 <script lang="ts">
   import { resolve } from "$app/paths";
   import { serializeJsonLd } from "$lib/seo/jsonld";
+  import SupportButton from "$lib/components/SupportButton.svelte";
 
   let { items }: BreadcrumbProps = $props();
 
@@ -89,27 +90,38 @@
     `script>`}
 </svelte:head>
 
-<nav aria-label="Breadcrumb" class="mb-4">
-  <ol class="flex items-center gap-2 text-sm text-muted-foreground">
-    {#each items as item, index (index)}
-      <li class="flex items-center gap-2">
-        {#if index > 0}
-          <span class="text-muted-foreground/50">/</span>
-        {/if}
+<div class="mb-4 flex items-center justify-between gap-3">
+  <nav aria-label="Breadcrumb" class="min-w-0">
+    <ol
+      class="flex min-w-0 items-center gap-2 overflow-hidden text-sm text-muted-foreground"
+    >
+      {#each items as item, index (index)}
+        {@const isLast = index === items.length - 1}
+        <li
+          class={isLast
+            ? "flex min-w-0 items-center gap-2"
+            : "flex shrink-0 items-center gap-2"}
+        >
+          {#if index > 0}
+            <span class="shrink-0 text-muted-foreground/50">/</span>
+          {/if}
 
-        {#if item.href && index < items.length - 1}
-          <a
-            href={resolveHref(item.href)}
-            class="hover:text-foreground transition-colors"
-          >
-            {item.label}
-          </a>
-        {:else}
-          <span class="text-foreground font-medium">
-            {item.label}
-          </span>
-        {/if}
-      </li>
-    {/each}
-  </ol>
-</nav>
+          {#if item.href && !isLast}
+            <a
+              href={resolveHref(item.href)}
+              class="whitespace-nowrap transition-colors hover:text-foreground"
+            >
+              {item.label}
+            </a>
+          {:else}
+            <span class="min-w-0 truncate font-medium text-foreground">
+              {item.label}
+            </span>
+          {/if}
+        </li>
+      {/each}
+    </ol>
+  </nav>
+
+  <SupportButton compact iconRight class="shrink-0" />
+</div>

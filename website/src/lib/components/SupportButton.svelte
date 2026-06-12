@@ -6,9 +6,14 @@
   interface Props {
     class?: string;
     compact?: boolean;
+    iconRight?: boolean;
   }
 
-  let { class: className = "", compact = false }: Props = $props();
+  let {
+    class: className = "",
+    compact = false,
+    iconRight = false,
+  }: Props = $props();
 
   const label = "Support the Compendium";
 </script>
@@ -23,11 +28,19 @@
     className,
   )}
 >
-  <KofiIcon class="size-7 text-foreground" />
-  {#if compact}
-    <span class="sm:hidden">Support</span>
-    <span class="hidden sm:inline">{label}</span>
+  {#snippet text()}
+    {#if compact}
+      <span class="md:hidden">Support</span>
+      <span class="hidden md:inline">{label}</span>
+    {:else}
+      <span>{label}</span>
+    {/if}
+  {/snippet}
+  {#if iconRight}
+    {@render text()}
+    <KofiIcon class="size-7 text-foreground" />
   {:else}
-    <span>{label}</span>
+    <KofiIcon class="size-7 text-foreground" />
+    {@render text()}
   {/if}
 </a>

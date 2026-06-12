@@ -37,34 +37,34 @@
 <div class="container mx-auto p-8 space-y-12">
   <!-- Hero Section -->
   <div class="text-center py-2 space-y-4 relative">
-    <div
-      aria-label="Support actions"
-      class="flex items-center justify-start sm:absolute sm:top-0 sm:left-0"
-    >
-      <SupportButton compact />
-    </div>
-    <div
-      class="mt-2 flex items-center justify-end gap-1 sm:absolute sm:top-0 sm:right-0 sm:mt-0"
-    >
-      <a
-        href={STEAM_GUIDE_URL}
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label="Steam Guide"
-        class={buttonVariants({ variant: "ghost", size: "icon" })}
+    <div class="flex items-center justify-between gap-2 sm:block">
+      <div
+        aria-label="Support actions"
+        class="flex items-center sm:absolute sm:top-0 sm:left-0"
       >
-        <SteamIcon class="size-5" />
-      </a>
-      <a
-        href={DISCORD_URL}
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label="Join Discord"
-        class={buttonVariants({ variant: "ghost", size: "icon" })}
-      >
-        <DiscordIcon class="size-5" />
-      </a>
-      <ThemeToggle />
+        <SupportButton compact />
+      </div>
+      <div class="flex items-center gap-1 sm:absolute sm:top-0 sm:right-0">
+        <a
+          href={STEAM_GUIDE_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Steam Guide"
+          class={buttonVariants({ variant: "ghost", size: "icon" })}
+        >
+          <SteamIcon class="size-5" />
+        </a>
+        <a
+          href={DISCORD_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Join Discord"
+          class={buttonVariants({ variant: "ghost", size: "icon" })}
+        >
+          <DiscordIcon class="size-5" />
+        </a>
+        <ThemeToggle />
+      </div>
     </div>
     <img src="/logo.webp" alt="" class="w-28 h-28 mx-auto" />
     <h1 class="text-4xl md:text-5xl font-bold">Ancient Kingdoms Compendium</h1>
