@@ -38,13 +38,8 @@
   <!-- Hero Section -->
   <div class="text-center py-2 space-y-4 relative">
     <div class="flex items-center justify-between gap-2 sm:block">
-      <div
-        aria-label="Support actions"
-        class="flex items-center sm:absolute sm:top-0 sm:left-0"
-      >
-        <SupportButton compact />
-      </div>
-      <div class="flex items-center gap-1 sm:absolute sm:top-0 sm:right-0">
+      <div class="flex items-center gap-1 sm:absolute sm:top-0 sm:left-0">
+        <ThemeToggle />
         <a
           href={STEAM_GUIDE_URL}
           target="_blank"
@@ -63,7 +58,12 @@
         >
           <DiscordIcon class="size-5" />
         </a>
-        <ThemeToggle />
+      </div>
+      <div
+        aria-label="Support actions"
+        class="flex items-center sm:absolute sm:top-0 sm:right-0"
+      >
+        <SupportButton compact iconRight />
       </div>
     </div>
     <img src="/logo.webp" alt="" class="w-28 h-28 mx-auto" />
