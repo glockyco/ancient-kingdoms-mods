@@ -10,6 +10,7 @@
   import RoleBadges from "$lib/components/RoleBadges.svelte";
   import Seo from "$lib/components/Seo.svelte";
   import OnKillFactions from "$lib/components/OnKillFactions.svelte";
+  import { npcKillReputation } from "$lib/utils/killReputation";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
   import type {
@@ -528,10 +529,7 @@
       {#if data.npc.race}
         <span>Race: {data.npc.race}</span>
       {/if}
-      <OnKillFactions
-        improve={data.npc.improve_faction}
-        decrease={data.npc.decrease_faction}
-      />
+      <OnKillFactions effects={npcKillReputation(data.npc)} />
     </div>
   </div>
 

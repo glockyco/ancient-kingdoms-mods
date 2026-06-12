@@ -26,6 +26,7 @@
   import { formatPercent, formatDuration } from "$lib/utils/format";
   import { formatSkillEffect } from "$lib/utils/formatSkillEffect";
   import { getMonsterSpecialMechanics } from "$lib/special-mechanics";
+  import { monsterKillReputation } from "$lib/utils/killReputation";
   import Sword from "@lucide/svelte/icons/sword";
   import Gem from "@lucide/svelte/icons/gem";
   import CircleHelp from "@lucide/svelte/icons/circle-help";
@@ -767,10 +768,7 @@
           ></span
         >
       {/if}
-      <OnKillFactions
-        improve={data.monster.improve_faction}
-        decrease={data.monster.decrease_faction}
-      />
+      <OnKillFactions effects={monsterKillReputation(data.monster)} />
     </div>
   </div>
 
