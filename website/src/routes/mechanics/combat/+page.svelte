@@ -215,8 +215,8 @@
         </table>
       </div>
       <p class="text-sm text-muted-foreground">
-        <strong>Manaburn exception:</strong> bypasses steps 7–8 entirely. Damage
-        = current Rage or Mana × 2.
+        <strong>Manaburn exception:</strong> bypasses steps 7–8 entirely. Damage =
+        current Rage or Mana × 2.
       </p>
     </Card.Content>
   </Card.Root>
@@ -1059,10 +1059,10 @@ finalDamage = damage − reduction</pre>
           <span class="font-medium"
             >2. Removal, only when the dispel lands.</span
           >
-          On a player, all buffs are removed except the Rest buff. On a pet, all
-          buffs are removed. On a monster, each buff is tested on its own and is
-          removed only when a random value from 0 to 1 is greater than that buff's
-          Dispel Resist after subtracting the caster's Dispel Resist reduction:
+          On a player, all buffs are removed except the Rest buff. On a pet, all buffs
+          are removed. On a monster, each buff is tested on its own and is removed
+          only when a random value from 0 to 1 is greater than that buff's Dispel
+          Resist after subtracting the caster's Dispel Resist reduction:
         </p>
         <pre
           class="text-xs bg-muted px-3 py-2 rounded overflow-x-auto">Dispel Resist reduction

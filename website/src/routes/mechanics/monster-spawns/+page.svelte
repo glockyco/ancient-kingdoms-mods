@@ -197,14 +197,14 @@
         </li>
         <li>
           <!-- Source: server-scripts/Monster.cs:1851-1859 and 2481-2485 — hidden corpse is warped back to its start position. -->
-          When the corpse disappears, the monster is invisibly moved back to its
-          original spawn point.
+          When the corpse disappears, the monster is invisibly moved back to its original
+          spawn point.
         </li>
         <li>
           <!-- Source: server-scripts/Monster.cs:2078-2079 — both deadlines are fixed at the moment of death; respawnTimeEnd = deathTimeEnd + respawnTime. Early corpse removal (looting) never touches respawnTimeEnd. -->
-          Both timers are locked in at the moment of death: the monster respawns
-          corpse time plus respawn timer after the kill. Looting the corpse makes
-          it disappear sooner, but never speeds up the respawn.
+          Both timers are locked in at the moment of death: the monster respawns corpse
+          time plus respawn timer after the kill. Looting the corpse makes it disappear
+          sooner, but never speeds up the respawn.
         </li>
         <li>
           <!-- Source: server-scripts/Monster.cs:1836-1848 — on respawn aggro, debuffs, gold, and loot state are cleared, then the monster is shown and revived. -->
@@ -246,8 +246,8 @@
       <ul class="list-disc space-y-1 pl-5">
         <li>
           <!-- Source: server-scripts/Monster.cs:2684-2705 — on zone deactivation dead monsters are hidden, warped home, and their corpse deadline is set to now. -->
-          Corpses are removed the moment the zone shuts down. Loot you left on a
-          corpse is gone when you come back.
+          Corpses are removed the moment the zone shuts down. Loot you left on a corpse
+          is gone when you come back.
         </li>
         <li>
           <!-- Source: server-scripts/Monster.cs:2663-2682 — on zone reactivation living monsters warp to start position, heal to full, and clear target, aggro, pets, and debuffs. -->
@@ -257,11 +257,11 @@
         </li>
         <li>
           <!-- Source: server-scripts/Monster.cs:886-893 and Entity.cs:207-215 — respawn deadlines are absolute server timestamps, but the state machine that acts on them only runs while the zone object is active. -->
-          Respawn timers are deadlines on the clock, so time spent with the zone
-          empty still counts toward them — but the respawn itself only executes while
-          the zone is active. A monster whose deadline passed while the zone was
-          empty appears the instant a player walks in. One whose deadline has not
-          passed yet simply waits out the rest.
+          Respawn timers are deadlines on the clock, so time spent with the zone empty
+          still counts toward them — but the respawn itself only executes while the
+          zone is active. A monster whose deadline passed while the zone was empty
+          appears the instant a player walks in. One whose deadline has not passed
+          yet simply waits out the rest.
         </li>
       </ul>
     </Card.Content>
@@ -284,9 +284,9 @@
         <li>
           <!-- Source: server-scripts/NetworkManagerMMO.cs:97 and Monster.cs:562-583 — saved deadlines are loaded at server start; bosses whose deadline has not passed start hidden. -->
           <!-- Source: server-scripts/Monster.cs:500-518 — at server start only summonable, seasonal, and failed-roll rare monsters start hidden; everything else starts alive. -->
-          Saved deadlines are reloaded when the server starts, so a restart does
-          not bring a dead boss back early. Regular monsters have no such memory
-          — after a restart they all start alive.
+          Saved deadlines are reloaded when the server starts, so a restart does not
+          bring a dead boss back early. Regular monsters have no such memory — after
+          a restart they all start alive.
         </li>
         <li>
           <!-- Source: website/static/compendium.db monsters table — bosses use death_time 300; respawnTimeEnd = deathTimeEnd + respawnTime, fixed at death (Monster.cs:2078-2079). -->
@@ -347,9 +347,9 @@
         On a failure it stays hidden and the timer re-arms for another full interval.
         A roll can only fire while a player keeps the zone active. As long as anyone
         is inside when the timer runs out, the roll happens right on schedule — even
-        if the zone sat empty in between. Only a timer that runs out in an empty
-        zone is held back. The overdue roll then fires the moment the next player
-        walks in — a single roll, no matter how long the zone was empty.
+        if the zone sat empty in between. Only a timer that runs out in an empty zone
+        is held back. The overdue roll then fires the moment the next player walks
+        in — a single roll, no matter how long the zone was empty.
       </p>
 
       <div class="space-y-4 text-sm">
@@ -572,21 +572,21 @@
         </li>
         <li>
           <!-- Source: server-scripts/Npc.cs:1689-1695 and UINpcTrading.cs:762-770 — the fee runs through the vendor purchase formula, discounted by Charisma up to 25%. -->
-          Fees below are base prices — Charisma discounts the actual price by up
-          to 25%, the same as vendor purchases.
+          Fees below are base prices — Charisma discounts the actual price by up to
+          25%, the same as vendor purchases.
         </li>
       </ul>
 
       <p class="text-sm text-muted-foreground">
         <!-- Source: server-scripts/Player.cs:12404 and Monster.cs:1805-1810 — a zeroed deadline triggers the spawn roll on the next zone activation; a failed roll re-arms the full interval until the next renewal zeroes it again. -->
         Renewals interact with rare spawns in a useful way. Buying several renewals
-        back-to-back is wasted gold: the roll only fires when someone enters, so
-        you get one roll on the next entry no matter how many renewals you stacked.
-        But you can cycle — renew, step inside (the roll fires immediately, wherever
-        the rare lives), step out, renew again. Each cycle buys one roll without
-        running to a spawn spot deep in the dungeon. Side effect: a renewal revives
-        all the regular monsters too, so the dungeon is fully repopulated every time
-        you step in.
+        back-to-back is wasted gold: the roll only fires when someone enters, so you
+        get one roll on the next entry no matter how many renewals you stacked. But
+        you can cycle — renew, step inside (the roll fires immediately, wherever the
+        rare lives), step out, renew again. Each cycle buys one roll without running
+        to a spawn spot deep in the dungeon. Side effect: a renewal revives all the
+        regular monsters too, so the dungeon is fully repopulated every time you step
+        in.
       </p>
 
       <div class="space-y-4 text-sm">
@@ -824,17 +824,16 @@
         Each summon watches a fixed set of nearby spawns. There is no kill counter
         — kills do not add up. What matters is that every watched monster is dead
         at the same time. The moment that happens (and the summon's own respawn timer
-        has run out), the spawn check fires. Most summons then appear instantly,
-        and many announce themselves to everyone in the zone.
+        has run out), the spawn check fires. Most summons then appear instantly, and
+        many announce themselves to everyone in the zone.
       </p>
       <p class="text-sm text-muted-foreground">
         <!-- Source: server-scripts/Monster.cs:1805-1810 — summons with a spawn chance below 100% roll on the check; a failed roll re-arms the timer for a full interval. -->
         Watch the chance column: some summons are rare spawns on top. For those the
-        check is only a roll, and a failed roll re-arms the summon's timer for a
-        full interval. The chance is not lost if the watched monsters revive in the
-        meantime — once the timer is past, the next roll simply waits and fires the
-        moment all of them are dead at the same time again. The intervals are listed
-        in the
+        check is only a roll, and a failed roll re-arms the summon's timer for a full
+        interval. The chance is not lost if the watched monsters revive in the meantime
+        — once the timer is past, the next roll simply waits and fires the moment
+        all of them are dead at the same time again. The intervals are listed in the
         <a
           href="#rare-spawns"
           class="text-blue-600 hover:underline dark:text-blue-400"
@@ -1091,8 +1090,8 @@
         <li>
           <!-- Source: server-scripts/Monster.cs:49 and 939-954 — chase limit is the per-monster follow distance, default 20 units, measured from the spawn point. -->
           <!-- Source: server-scripts/Monster.cs:1220-1235 — beyond the follow distance the monster drops its target, clears debuffs, and returns home with bonus sprint speed. -->
-          Each monster has a chase limit measured from its spawn point (20 units
-          for most monsters). Past that limit it drops its target, sheds all debuffs,
+          Each monster has a chase limit measured from its spawn point (20 units for
+          most monsters). Past that limit it drops its target, sheds all debuffs,
           and returns home with extra move speed.
         </li>
         <li>
@@ -1104,14 +1103,14 @@
         </li>
         <li>
           <!-- Source: server-scripts/Monster.cs:1905 — while returning, a monster only re-engages targets within 80% of its follow distance; normal dungeon monsters always re-engage (flag set at Monster.cs:519). -->
-          While heading home it only re-engages if you stay close (within 80% of
-          its chase range). Regular dungeon monsters are the exception — they always
-          turn around and re-engage.
+          While heading home it only re-engages if you stay close (within 80% of its
+          chase range). Regular dungeon monsters are the exception — they always turn
+          around and re-engage.
         </li>
         <li>
           <!-- Source: server-scripts/Monster.cs:1369-1392 — on arriving home the monster heals to full, restores mana, clears aggro and debuffs, and destroys its summoned pets. -->
-          On reaching home it resets fully: full health and mana, aggro cleared,
-          summoned minions removed. Damage dealt before a reset is wasted.
+          On reaching home it resets fully: full health and mana, aggro cleared, summoned
+          minions removed. Damage dealt before a reset is wasted.
         </li>
       </ul>
     </Card.Content>
@@ -1140,9 +1139,9 @@
             href="/altars"
             class="text-blue-600 hover:underline dark:text-blue-400"
             >forgotten altars</a
-          > spawn their monsters in waves when a player activates the event with
-          the required item. These monsters belong to the event and do not respawn
-          on their own.
+          > spawn their monsters in waves when a player activates the event with the
+          required item. These monsters belong to the event and do not respawn on
+          their own.
         </li>
         <li>
           <!-- Source: server-scripts/Monster.cs:500-508 and 1811-1814 — Halloween monsters start hidden and only respawn while the seasonal event is active. -->

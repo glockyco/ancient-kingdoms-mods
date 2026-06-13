@@ -27,15 +27,17 @@
 
   let { data } = $props();
 
-  const collectionNode = $derived(buildCollectionPage({
-    path: "/professions",
-    name: "Professions — Ancient Kingdoms Compendium",
-    description: `Profession guides for ${data.professions.length.toLocaleString()} Ancient Kingdoms professions.`,
-    items: data.professions.map((profession) => ({
-      name: profession.name,
-      path: `/professions/${profession.id}`,
-    })),
-  }));
+  const collectionNode = $derived(
+    buildCollectionPage({
+      path: "/professions",
+      name: "Professions — Ancient Kingdoms Compendium",
+      description: `Profession guides for ${data.professions.length.toLocaleString()} Ancient Kingdoms professions.`,
+      items: data.professions.map((profession) => ({
+        name: profession.name,
+        path: `/professions/${profession.id}`,
+      })),
+    }),
+  );
 
   // Group professions by category
   const groupedProfessions = $derived.by(() => {

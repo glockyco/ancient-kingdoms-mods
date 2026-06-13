@@ -26,15 +26,17 @@
 
   let { data } = $props();
 
-  const collectionNode = $derived(buildCollectionPage({
-    path: "/npcs",
-    name: "NPCs — Ancient Kingdoms Compendium",
-    description: `Searchable database of ${data.npcs.length.toLocaleString()} NPCs in Ancient Kingdoms.`,
-    items: data.npcs.map((npc) => ({
-      name: npc.name,
-      path: `/npcs/${npc.id}`,
-    })),
-  }));
+  const collectionNode = $derived(
+    buildCollectionPage({
+      path: "/npcs",
+      name: "NPCs — Ancient Kingdoms Compendium",
+      description: `Searchable database of ${data.npcs.length.toLocaleString()} NPCs in Ancient Kingdoms.`,
+      items: data.npcs.map((npc) => ({
+        name: npc.name,
+        path: `/npcs/${npc.id}`,
+      })),
+    }),
+  );
 
   const PAGE_SIZE = 20;
 

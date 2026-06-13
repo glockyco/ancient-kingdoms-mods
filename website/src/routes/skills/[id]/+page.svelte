@@ -2444,8 +2444,8 @@
               </p>
               <p class="text-muted-foreground">
                 <span class="font-medium">1. Landing.</span> The monster first rolls
-                to resist (the Resist Chance above), which your Accuracy lowers.
-                If the monster resists, nothing is removed.
+                to resist (the Resist Chance above), which your Accuracy lowers. If
+                the monster resists, nothing is removed.
               </p>
               <p class="text-muted-foreground">
                 <span class="font-medium">2. Removal, only when it lands.</span>
@@ -2497,9 +2497,9 @@
               </p>
               <p class="text-muted-foreground">
                 <span class="font-medium">1. Landing.</span> You first roll to resist
-                it (the Resist Chance above). The monster's Accuracy lowers your
-                resist chance, while a higher matching resistance raises it. If you
-                resist, nothing is removed.
+                it (the Resist Chance above). The monster's Accuracy lowers your resist
+                chance, while a higher matching resistance raises it. If you resist,
+                nothing is removed.
               </p>
               <p class="text-muted-foreground">
                 <span class="font-medium">2. Removal, only when it lands.</span>

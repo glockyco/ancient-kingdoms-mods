@@ -26,15 +26,17 @@
 
   let { data } = $props();
 
-  const collectionNode = $derived(buildCollectionPage({
-    path: "/chests",
-    name: "Chests — Ancient Kingdoms Compendium",
-    description: `Searchable database of ${data.chests.length.toLocaleString()} chests in Ancient Kingdoms.`,
-    items: data.chests.map((chest) => ({
-      name: chest.name,
-      path: `/chests/${chest.id}`,
-    })),
-  }));
+  const collectionNode = $derived(
+    buildCollectionPage({
+      path: "/chests",
+      name: "Chests — Ancient Kingdoms Compendium",
+      description: `Searchable database of ${data.chests.length.toLocaleString()} chests in Ancient Kingdoms.`,
+      items: data.chests.map((chest) => ({
+        name: chest.name,
+        path: `/chests/${chest.id}`,
+      })),
+    }),
+  );
 
   const PAGE_SIZE = 20;
 

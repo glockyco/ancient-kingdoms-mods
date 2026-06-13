@@ -18,15 +18,17 @@
 
   let { data } = $props();
 
-  const collectionNode = $derived(buildCollectionPage({
-    path: "/pets",
-    name: "Pets — Ancient Kingdoms Compendium",
-    description: `Searchable database of ${data.pets.length.toLocaleString()} pets and companions in Ancient Kingdoms.`,
-    items: data.pets.map((pet) => ({
-      name: pet.name,
-      path: `/pets/${pet.id}`,
-    })),
-  }));
+  const collectionNode = $derived(
+    buildCollectionPage({
+      path: "/pets",
+      name: "Pets — Ancient Kingdoms Compendium",
+      description: `Searchable database of ${data.pets.length.toLocaleString()} pets and companions in Ancient Kingdoms.`,
+      items: data.pets.map((pet) => ({
+        name: pet.name,
+        path: `/pets/${pet.id}`,
+      })),
+    }),
+  );
 
   const uniqueKinds = $derived(
     Array.from(new Set(data.pets.map((p) => p.kind))).sort(),

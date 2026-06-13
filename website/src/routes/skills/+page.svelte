@@ -18,15 +18,17 @@
 
   let { data } = $props();
 
-  const collectionNode = $derived(buildCollectionPage({
-    path: "/skills",
-    name: "Skills — Ancient Kingdoms Compendium",
-    description: `Searchable database of ${data.skills.length.toLocaleString()} skills in Ancient Kingdoms.`,
-    items: data.skills.map((skill) => ({
-      name: skill.name,
-      path: `/skills/${skill.id}`,
-    })),
-  }));
+  const collectionNode = $derived(
+    buildCollectionPage({
+      path: "/skills",
+      name: "Skills — Ancient Kingdoms Compendium",
+      description: `Searchable database of ${data.skills.length.toLocaleString()} skills in Ancient Kingdoms.`,
+      items: data.skills.map((skill) => ({
+        name: skill.name,
+        path: `/skills/${skill.id}`,
+      })),
+    }),
+  );
 
   const PAGE_SIZE = 20;
 

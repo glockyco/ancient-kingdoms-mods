@@ -28,10 +28,13 @@ const outDir = resolve(projectRoot, "src/lib/generated");
 const outPath = resolve(outDir, "home-counts.ts");
 
 const db = new Database(dbPath, { readonly: true });
-const count = (sql) => /** @type {{ count: number }} */ (db.prepare(sql).get()).count;
+const count = (sql) =>
+  /** @type {{ count: number }} */ (db.prepare(sql).get()).count;
 
 const items = count("SELECT COUNT(*) as count FROM items");
-const monsters = count("SELECT COUNT(*) as count FROM monsters WHERE is_dummy = 0");
+const monsters = count(
+  "SELECT COUNT(*) as count FROM monsters WHERE is_dummy = 0",
+);
 const npcs = count("SELECT COUNT(*) as count FROM npcs");
 const classes = count("SELECT COUNT(*) as count FROM classes");
 const skills = count("SELECT COUNT(*) as count FROM skills");
@@ -40,7 +43,9 @@ const zones = count("SELECT COUNT(*) as count FROM zones");
 const quests = count("SELECT COUNT(*) as count FROM quests");
 const altars = count("SELECT COUNT(*) as count FROM altars");
 const professions = count("SELECT COUNT(*) as count FROM professions");
-const gatheringResources = count("SELECT COUNT(*) as count FROM gathering_resources");
+const gatheringResources = count(
+  "SELECT COUNT(*) as count FROM gathering_resources",
+);
 const chests = count("SELECT COUNT(*) as count FROM chests");
 const alchemyRecipes = count("SELECT COUNT(*) as count FROM alchemy_recipes");
 const craftingRecipes = count("SELECT COUNT(*) as count FROM crafting_recipes");

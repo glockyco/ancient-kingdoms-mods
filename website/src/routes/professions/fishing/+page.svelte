@@ -370,10 +370,9 @@
             >.
           </div>
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            The map currently has {data.stats.spot_count} Fishing Spot locations
-            across {spotTiers.length} tiers, from Tier {toRomanNumeral(
-              lowestSpotTier,
-            )} to Tier {toRomanNumeral(highestSpotTier)}.
+            The map currently has {data.stats.spot_count} Fishing Spot locations across
+            {spotTiers.length} tiers, from Tier {toRomanNumeral(lowestSpotTier)} to
+            Tier {toRomanNumeral(highestSpotTier)}.
           </p>
         </div>
       </div>

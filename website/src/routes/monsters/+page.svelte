@@ -27,15 +27,17 @@
 
   let { data } = $props();
 
-  const collectionNode = $derived(buildCollectionPage({
-    path: "/monsters",
-    name: "Monsters — Ancient Kingdoms Compendium",
-    description: `Searchable database of ${data.monsters.length.toLocaleString()} monsters in Ancient Kingdoms.`,
-    items: data.monsters.map((monster) => ({
-      name: monster.name,
-      path: `/monsters/${monster.id}`,
-    })),
-  }));
+  const collectionNode = $derived(
+    buildCollectionPage({
+      path: "/monsters",
+      name: "Monsters — Ancient Kingdoms Compendium",
+      description: `Searchable database of ${data.monsters.length.toLocaleString()} monsters in Ancient Kingdoms.`,
+      items: data.monsters.map((monster) => ({
+        name: monster.name,
+        path: `/monsters/${monster.id}`,
+      })),
+    }),
+  );
 
   const PAGE_SIZE = 20;
 

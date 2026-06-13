@@ -27,15 +27,17 @@
 
   let { data } = $props();
 
-  const collectionNode = $derived(buildCollectionPage({
-    path: "/gather-items",
-    name: "Gathering Resources — Ancient Kingdoms Compendium",
-    description: `Searchable database of ${data.resources.length.toLocaleString()} gathering resources in Ancient Kingdoms.`,
-    items: data.resources.map((resource) => ({
-      name: resource.name,
-      path: `/gather-items/${resource.id}`,
-    })),
-  }));
+  const collectionNode = $derived(
+    buildCollectionPage({
+      path: "/gather-items",
+      name: "Gathering Resources — Ancient Kingdoms Compendium",
+      description: `Searchable database of ${data.resources.length.toLocaleString()} gathering resources in Ancient Kingdoms.`,
+      items: data.resources.map((resource) => ({
+        name: resource.name,
+        path: `/gather-items/${resource.id}`,
+      })),
+    }),
+  );
 
   // Build a map of resource_id -> zones
   const resourceZoneMap = $derived.by(() => {

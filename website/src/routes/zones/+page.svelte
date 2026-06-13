@@ -22,15 +22,17 @@
 
   let { data } = $props();
 
-  const collectionNode = $derived(buildCollectionPage({
-    path: "/zones",
-    name: "Zones — Ancient Kingdoms Compendium",
-    description: `Searchable database of ${data.zones.length.toLocaleString()} zones in Ancient Kingdoms.`,
-    items: data.zones.map((zone) => ({
-      name: zone.name,
-      path: `/zones/${zone.id}`,
-    })),
-  }));
+  const collectionNode = $derived(
+    buildCollectionPage({
+      path: "/zones",
+      name: "Zones — Ancient Kingdoms Compendium",
+      description: `Searchable database of ${data.zones.length.toLocaleString()} zones in Ancient Kingdoms.`,
+      items: data.zones.map((zone) => ({
+        name: zone.name,
+        path: `/zones/${zone.id}`,
+      })),
+    }),
+  );
 
   const columns: ColumnDef<ZoneListView>[] = [
     {

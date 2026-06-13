@@ -104,7 +104,10 @@ test("sendIndexNowPing throws when IndexNow rejects the payload", async () => {
   });
 
   await expect(
-    sendIndexNowPing(payload, async () => new Response("bad key", { status: 403 })),
+    sendIndexNowPing(
+      payload,
+      async () => new Response("bad key", { status: 403 }),
+    ),
   ).rejects.toThrow("indexnow: 403");
 });
 

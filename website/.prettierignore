@@ -1,0 +1,7 @@
+# Build output (regenerated; never hand-formatted)
+.svelte-kit/
+build/
+.wrangler/
+
+# Search-engine / site verification files must stay byte-exact
+static/google*.html

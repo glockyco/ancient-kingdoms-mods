@@ -330,9 +330,9 @@
         <!-- Source: server-scripts/Housing.cs:33-49 — entering an unowned house area opens the house purchase flow. -->
         <!-- Source: server-scripts/ChestHouse.cs:81-84 and 173-176 — only the owning account can open house chest UI. -->
         <!-- Source: server-scripts/StrucItemUi.cs:33-36 — purchase warning says same-color chests share storage. -->
-        You need to own a house before you can use house chests. Each chest type
-        opens one fixed account-wide storage section. A second chest of the same
-        type gives another access point to that section, not another 30 slots.
+        You need to own a house before you can use house chests. Each chest type opens
+        one fixed account-wide storage section. A second chest of the same type gives
+        another access point to that section, not another 30 slots.
       </p>
 
       <div class="space-y-2 text-sm text-muted-foreground">
@@ -364,9 +364,9 @@
         <p>
           <!-- Source: server-scripts/CustomStrucUI.cs:68-73 and 242-260 — remove mode destroys a selected structure. -->
           <!-- Source: server-scripts/CustomStrucUI.cs:91-98 and Player.cs:7622-7641 — selling a house pays house resale value and removes placed structures; warning says chest items can be retrieved after buying another house. -->
-          Individual chests can be destroyed, but there is no chest resale flow.
-          Selling the house removes placed furniture, while the account-wide chest
-          items remain retrievable if you buy another house.
+          Individual chests can be destroyed, but there is no chest resale flow. Selling
+          the house removes placed furniture, while the account-wide chest items remain
+          retrievable if you buy another house.
         </p>
       </div>
 

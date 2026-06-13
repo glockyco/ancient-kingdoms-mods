@@ -148,7 +148,9 @@ async function main() {
     if (changed === 0 && missing === 0) {
       console.log("✓ All snapshots match.");
     } else {
-      console.log(`✗ ${changed} changed, ${missing} new: ${changedSkills.join(", ")}`);
+      console.log(
+        `✗ ${changed} changed, ${missing} new: ${changedSkills.join(", ")}`,
+      );
       process.exit(1);
     }
   }

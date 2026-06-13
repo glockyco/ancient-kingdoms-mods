@@ -19,15 +19,17 @@
 
   let { data } = $props();
 
-  const collectionNode = $derived(buildCollectionPage({
-    path: "/altars",
-    name: "Altars — Ancient Kingdoms Compendium",
-    description: `Searchable database of ${data.altars.length.toLocaleString()} altars in Ancient Kingdoms.`,
-    items: data.altars.map((altar) => ({
-      name: altar.name,
-      path: `/altars/${altar.id}`,
-    })),
-  }));
+  const collectionNode = $derived(
+    buildCollectionPage({
+      path: "/altars",
+      name: "Altars — Ancient Kingdoms Compendium",
+      description: `Searchable database of ${data.altars.length.toLocaleString()} altars in Ancient Kingdoms.`,
+      items: data.altars.map((altar) => ({
+        name: altar.name,
+        path: `/altars/${altar.id}`,
+      })),
+    }),
+  );
 
   const PAGE_SIZE = 20;
 
