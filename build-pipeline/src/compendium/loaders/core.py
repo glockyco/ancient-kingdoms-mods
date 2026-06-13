@@ -89,15 +89,14 @@ def _copy_public_visual_asset(
     """Copy a visual asset, trimming fully transparent padding for PNGs."""
     try:
         with Image.open(source_path) as image:
-            if image.mode != "RGBA":
-                image = image.convert("RGBA")
+            rgba: Image.Image = image if image.mode == "RGBA" else image.convert("RGBA")
 
-            alpha_bbox = image.getchannel("A").getbbox()
+            alpha_bbox = rgba.getchannel("A").getbbox()
             if alpha_bbox is None:
-                image.save(destination_path)
-                return image.size
+                rgba.save(destination_path)
+                return rgba.size
 
-            cropped = image.crop(alpha_bbox)
+            cropped = rgba.crop(alpha_bbox)
             cropped.save(destination_path)
             return cropped.size
     except UnidentifiedImageError:
