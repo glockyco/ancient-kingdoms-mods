@@ -2,7 +2,7 @@
   "name": "ancient-kingdoms-mods",
   "private": true,
   "scripts": {
-    "prepare": "husky",
+    "prepare": "lefthook install",
     "dev": "pnpm --filter website dev",
     "build": "pnpm --filter website build",
     "preview": "pnpm --filter website preview",
@@ -25,8 +25,7 @@
   "devDependencies": {
     "@commitlint/cli": "^21.0.2",
     "@commitlint/config-conventional": "^21.0.2",
-    "husky": "^9.1.7",
     "knip": "^6.16.1",
-    "lint-staged": "^16.2.6"
+    "lefthook": "^2.1.9"
   }
 }

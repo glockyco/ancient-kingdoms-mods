@@ -1,0 +1,56 @@
+# Git hooks managed by lefthook (replaces husky + lint-staged).
+# Refreshed automatically by `pnpm install` (root `prepare` script) or manually
+# via `pnpm exec lefthook install`.
+#
+# Everything runs on pre-commit, scoped per package by glob: a website-only
+# commit runs the website jobs and skips the Python ones, and vice versa. Within
+# a package, jobs run top-to-bottom: format -> lint -> type-check -> test. Unlike
+# lint-staged, lefthook runs against the real working tree, so SvelteKit's
+# generated `.svelte-kit/types` are present and `svelte-check` reports accurately.
+
+assert_lefthook_installed: true
+
+pre-commit:
+  skip:
+    - merge
+    - rebase
+  jobs:
+    - name: website-prettier
+      root: website/
+      glob: "**/*.{js,ts,svelte,css,json,md,html}"
+      run: pnpm exec prettier --write {staged_files}
+      stage_fixed: true
+    - name: website-eslint
+      root: website/
+      glob: "**/*.{js,ts,svelte}"
+      run: pnpm exec eslint --fix --max-warnings 0 {staged_files}
+      stage_fixed: true
+    - name: website-check
+      glob: "website/**/*.{ts,svelte}"
+      run: pnpm --filter website check
+    - name: website-test
+      glob: "website/**/*.{ts,svelte}"
+      run: pnpm --filter website test
+    - name: build-pipeline-ruff-format
+      root: build-pipeline/
+      glob: "**/*.py"
+      run: uv run ruff format {staged_files}
+      stage_fixed: true
+    - name: build-pipeline-ruff-lint
+      root: build-pipeline/
+      glob: "**/*.py"
+      run: uv run ruff check --fix {staged_files}
+      stage_fixed: true
+    - name: build-pipeline-mypy
+      root: build-pipeline/
+      glob: "**/*.py"
+      run: uv run mypy .
+    - name: build-pipeline-test
+      root: build-pipeline/
+      glob: "**/*.py"
+      run: uv run pytest
+
+commit-msg:
+  jobs:
+    - name: commitlint
+      run: pnpm exec commitlint --edit {1}
