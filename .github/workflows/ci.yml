@@ -34,11 +34,14 @@ jobs:
           echo "OK: root pnpm-lock.yaml is the only lockfile."
 
   # `pnpm install --frozen-lockfile` doubles as the drift gate: it fails if the
-  # lockfile is out of sync with any package.json. Build and the DB-dependent
-  # vitest suites need website/static/compendium.db (an untracked build-pipeline
-  # artifact) and stay enforced locally via the lefthook pre-commit hook.
+  # lockfile is out of sync with any package.json. `check`, build, and test are
+  # omitted here: svelte-check, the build, and five vitest suites all need
+  # DB-derived artifacts absent from a clean checkout — the untracked
+  # website/static/compendium.db and src/lib/generated/home-counts.ts (generated
+  # from it). They stay enforced locally via the lefthook pre-commit hook. ESLint
+  # is not type-aware and ignores the generated dir, so lint runs without them.
   website:
-    name: Website (check + lint)
+    name: Website (lint)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -49,8 +52,6 @@ jobs:
           cache: pnpm
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      - name: Type-check
-        run: pnpm --filter website check
       - name: Lint
         run: pnpm --filter website lint
 
@@ -62,7 +63,7 @@ jobs:
         working-directory: build-pipeline
     steps:
       - uses: actions/checkout@v6
-      - uses: astral-sh/setup-uv@v8
+      - uses: astral-sh/setup-uv@v8.2.0
         with:
           enable-cache: true
           cache-dependency-glob: build-pipeline/uv.lock
