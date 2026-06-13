@@ -233,9 +233,6 @@ function formatDamage(
 
   if (!skillDmg && !damagePercent) return parts;
 
-  // Calculate total damage
-  let totalDmg = 0;
-
   // Monster context: add combat stat to skill damage
   if (monsterContext) {
     const combatStat =
@@ -246,7 +243,7 @@ function formatDamage(
         ? monsterContext.magicDamage
         : monsterContext.damage;
 
-    totalDmg = combatStat + (skillDmg?.base_value ?? 0);
+    let totalDmg = combatStat + (skillDmg?.base_value ?? 0);
 
     // Apply damage_percent multiplier
     if (damagePercent) {

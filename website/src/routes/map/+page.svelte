@@ -4,6 +4,7 @@
   import {
     MapSidebar,
     SIDEBAR_WIDTH_EXPANDED,
+    SIDEBAR_WIDTH_COLLAPSED,
   } from "$lib/components/map/sidebar";
 
   // Popup width (w-80 = 320px) + right margin (right-4 = 16px)
@@ -91,8 +92,12 @@
   let zoneList = $derived(data.zoneList);
   let focusedZoneId = $state<string | null>(null);
 
-  // Sidebar width (for map container offset on desktop)
-  let sidebarWidth = $state(SIDEBAR_WIDTH_EXPANDED);
+  // Sidebar collapse state is owned by MapSidebar (persisted to localStorage)
+  // and bound here so the map container offset can derive from it.
+  let sidebarCollapsed = $state(false);
+  const sidebarWidth = $derived(
+    sidebarCollapsed ? SIDEBAR_WIDTH_COLLAPSED : SIDEBAR_WIDTH_EXPANDED,
+  );
 
   // Track if we're on desktop (md breakpoint) for tooltip offset
   let isDesktop = $state(false);
@@ -1192,7 +1197,7 @@
       zones={zoneList}
       {focusedZoneId}
       onZoneFocusChange={handleZoneFocusChange}
-      bind:sidebarWidth
+      bind:isCollapsed={sidebarCollapsed}
     />
 
     {#if hoveredEntity && isDesktop}

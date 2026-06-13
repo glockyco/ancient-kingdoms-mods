@@ -55,8 +55,8 @@
     focusedZoneId?: string | null;
     /** Callback when zone focus changes */
     onZoneFocusChange?: (zoneId: string | null) => void;
-    /** Bindable: current sidebar width in pixels (0 on mobile) */
-    sidebarWidth?: number;
+    /** Bindable: whether the sidebar is collapsed */
+    isCollapsed?: boolean;
   }
 
   let {
@@ -69,11 +69,10 @@
     zones = [],
     focusedZoneId = null,
     onZoneFocusChange,
-    sidebarWidth = $bindable(SIDEBAR_WIDTH_EXPANDED),
+    isCollapsed = $bindable(false),
   }: Props = $props();
 
   // State initialized once on mount
-  let isCollapsed = $state(false);
   let expandedSections = $state<string[]>([
     "monsters",
     "npcs",
@@ -101,20 +100,12 @@
       }
     }
 
-    updateSidebarWidth();
     initialized = true;
   });
-
-  function updateSidebarWidth() {
-    sidebarWidth = isCollapsed
-      ? SIDEBAR_WIDTH_COLLAPSED
-      : SIDEBAR_WIDTH_EXPANDED;
-  }
 
   function toggleCollapsed() {
     isCollapsed = !isCollapsed;
     localStorage.setItem("map-sidebar-collapsed", String(isCollapsed));
-    updateSidebarWidth();
   }
 
   function handleExpandedSectionsChange(sections: string[]) {

@@ -1050,7 +1050,7 @@ function buildObjectiveSentence(
   const pickByType = (...types: QuestObjective["type"][]): QuestObjective[] =>
     objectives.filter((o) => types.includes(o.type));
 
-  let body: string | null = null;
+  let body: string | null;
   // Mode picks the natural preposition for the verb. "to" reads as a
   // delivery target only after "Bring"; for every other verb a separate
   // "Report to" sentence keeps the grammar clean. Location quests have no
