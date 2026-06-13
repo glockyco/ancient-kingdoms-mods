@@ -1,0 +1,80 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Least-privilege: jobs only read the checkout.
+permissions:
+  contents: read
+
+# Supersede in-flight runs for the same ref (e.g. force-pushes to a PR).
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # The repo uses a single root pnpm-lock.yaml for the whole workspace. A nested
+  # lockfile (e.g. website/pnpm-lock.yaml) silently shadows it and drifts, so
+  # fail fast if one reappears.
+  lockfile-guard:
+    name: Lockfile guard
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Ensure only the root pnpm-lock.yaml exists
+        run: |
+          nested=$(find . -name pnpm-lock.yaml -not -path './pnpm-lock.yaml' -not -path '*/node_modules/*')
+          if [ -n "$nested" ]; then
+            echo "::error::Nested pnpm-lock.yaml found; only the root lockfile is allowed:"
+            echo "$nested"
+            exit 1
+          fi
+          echo "OK: root pnpm-lock.yaml is the only lockfile."
+
+  # `pnpm install --frozen-lockfile` doubles as the drift gate: it fails if the
+  # lockfile is out of sync with any package.json. Build and the DB-dependent
+  # vitest suites need website/static/compendium.db (an untracked build-pipeline
+  # artifact) and stay enforced locally via the lefthook pre-commit hook.
+  website:
+    name: Website (check + lint)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Type-check
+        run: pnpm --filter website check
+      - name: Lint
+        run: pnpm --filter website lint
+
+  build-pipeline:
+    name: Build pipeline (ruff + mypy + vulture + pytest)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: build-pipeline
+    steps:
+      - uses: actions/checkout@v6
+      - uses: astral-sh/setup-uv@v8
+        with:
+          enable-cache: true
+          cache-dependency-glob: build-pipeline/uv.lock
+      - name: Install dependencies
+        run: uv sync --frozen
+      - name: Format check
+        run: uv run ruff format --check .
+      - name: Lint
+        run: uv run ruff check .
+      - name: Type-check
+        run: uv run mypy .
+      - name: Dead-code scan
+        run: uv run vulture src/ --min-confidence 80
+      - name: Tests
+        run: uv run pytest
