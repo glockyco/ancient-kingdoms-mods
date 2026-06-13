@@ -19,7 +19,7 @@ class WebsiteMonsterImageContractTests(unittest.TestCase):
         self.assertIn("va.source_type as visual_source_type", popup_query)
         self.assertIn("sourceType: stats.visual_source_type", popup_query)
         self.assertIn(
-            'monsterDetails?.visualAsset?.sourceType === "UnityEngine.SpriteRenderer[]"',
+            'monsterImageLayout?.sourceType === "UnityEngine.SpriteRenderer[]"',
             entity_popup,
         )
         self.assertIn("h-auto w-auto", entity_popup)
