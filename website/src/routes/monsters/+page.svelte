@@ -27,7 +27,7 @@
 
   let { data } = $props();
 
-  const collectionNode = buildCollectionPage({
+  const collectionNode = $derived(buildCollectionPage({
     path: "/monsters",
     name: "Monsters — Ancient Kingdoms Compendium",
     description: `Searchable database of ${data.monsters.length.toLocaleString()} monsters in Ancient Kingdoms.`,
@@ -35,7 +35,7 @@
       name: monster.name,
       path: `/monsters/${monster.id}`,
     })),
-  });
+  }));
 
   const PAGE_SIZE = 20;
 

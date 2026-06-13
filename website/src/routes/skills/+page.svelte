@@ -18,7 +18,7 @@
 
   let { data } = $props();
 
-  const collectionNode = buildCollectionPage({
+  const collectionNode = $derived(buildCollectionPage({
     path: "/skills",
     name: "Skills — Ancient Kingdoms Compendium",
     description: `Searchable database of ${data.skills.length.toLocaleString()} skills in Ancient Kingdoms.`,
@@ -26,7 +26,7 @@
       name: skill.name,
       path: `/skills/${skill.id}`,
     })),
-  });
+  }));
 
   const PAGE_SIZE = 20;
 

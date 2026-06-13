@@ -39,12 +39,13 @@
   import FishIcon from "@lucide/svelte/icons/fish";
   import BookOpen from "@lucide/svelte/icons/book-open";
   import ChevronDown from "@lucide/svelte/icons/chevron-down";
+  import { untrack } from "svelte";
   import { SvelteMap, SvelteSet } from "svelte/reactivity";
   import type { PageData } from "./$types";
 
   let { data }: { data: PageData } = $props();
   let selectedFishingSpotVariantIndex = $state(
-    data.selectedFishingSpotVariantIndex ?? 0,
+    untrack(() => data.selectedFishingSpotVariantIndex ?? 0),
   );
   const selectedFishingSpotVariant = $derived(
     data.fishingSpotVariants[selectedFishingSpotVariantIndex],
@@ -147,7 +148,7 @@
   let skillLevel = $state(0);
   let pickaxeQuality = $state(0);
   let selectedCostumeIds = new SvelteSet<string>();
-  let selectedRodId = $state(data.rods[0]?.item_id ?? "");
+  let selectedRodId = $state(untrack(() => data.rods[0]?.item_id ?? ""));
   const selectedRod = $derived(
     data.rods.find((rod) => rod.item_id === selectedRodId) ?? data.rods[0],
   );

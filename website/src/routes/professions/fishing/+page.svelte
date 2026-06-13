@@ -9,6 +9,7 @@
   import MapPin from "@lucide/svelte/icons/map-pin";
   import ChefHat from "@lucide/svelte/icons/chef-hat";
   import FlaskConical from "@lucide/svelte/icons/flask-conical";
+  import { untrack } from "svelte";
   import { SvelteSet } from "svelte/reactivity";
   import { SOURCE_TYPE_CONFIG } from "$lib/constants/source-types";
   import {
@@ -32,15 +33,17 @@
   let skillLevel = $state(0);
   let selectedCostumeIds = new SvelteSet<string>();
   let showCalculatorDetails = $state(false);
-  let selectedSpotId = $state(data.spots[0]?.id ?? "");
-  let selectedRodId = $state(data.rods[0]?.item_id ?? "");
+  let selectedSpotId = $state(untrack(() => data.spots[0]?.id ?? ""));
+  let selectedRodId = $state(untrack(() => data.rods[0]?.item_id ?? ""));
 
   const castDelay = fishingCastDelaySecondsRange();
-  const spotTiers = Array.from(
-    new Set(data.spots.map((spot) => spot.level)),
-  ).sort((a, b) => a - b);
-  const lowestSpotTier = spotTiers[0] ?? 0;
-  const highestSpotTier = spotTiers.at(-1) ?? lowestSpotTier;
+  const spotTiers = $derived(
+    Array.from(new Set(data.spots.map((spot) => spot.level))).sort(
+      (a, b) => a - b,
+    ),
+  );
+  const lowestSpotTier = $derived(spotTiers[0] ?? 0);
+  const highestSpotTier = $derived(spotTiers.at(-1) ?? lowestSpotTier);
   const fishermanCostumePieces = $derived(selectedCostumeIds.size);
   const trashFish = $derived(data.trashFish);
   const fishPoolsByQuality = $derived.by(() => {

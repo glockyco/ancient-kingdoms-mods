@@ -27,7 +27,7 @@
 
   let { data } = $props();
 
-  const collectionNode = buildCollectionPage({
+  const collectionNode = $derived(buildCollectionPage({
     path: "/items",
     name: "Items — Ancient Kingdoms Compendium",
     description: `Searchable database of ${data.items.length.toLocaleString()} items in Ancient Kingdoms.`,
@@ -35,7 +35,7 @@
       name: item.name,
       path: `/items/${item.id}`,
     })),
-  });
+  }));
 
   // Tooltip state - loaded lazily from client-side DB
   let tooltips = $state<Map<string, string>>(new Map());

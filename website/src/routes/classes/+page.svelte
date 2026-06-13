@@ -14,7 +14,7 @@
 
   let { data } = $props();
 
-  const collectionNode = buildCollectionPage({
+  const collectionNode = $derived(buildCollectionPage({
     path: "/classes",
     name: "Classes — Ancient Kingdoms Compendium",
     description: `Playable classes in Ancient Kingdoms.`,
@@ -22,7 +22,7 @@
       name: classData.name,
       path: `/classes/${classData.id}`,
     })),
-  });
+  }));
 
   // Unique icon per class
   const classIcons: Record<string, typeof Shield> = {
