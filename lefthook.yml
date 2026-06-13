@@ -17,12 +17,12 @@ pre-commit:
   jobs:
     - name: website-prettier
       root: website/
-      glob: "**/*.{js,ts,svelte,css,json,md,html}"
+      glob: "**/*.{js,mjs,cjs,ts,svelte,css,json,md,html}"
       run: pnpm exec prettier --write {staged_files}
       stage_fixed: true
     - name: website-eslint
       root: website/
-      glob: "**/*.{js,ts,svelte}"
+      glob: "**/*.{js,mjs,cjs,ts,svelte}"
       run: pnpm exec eslint --fix --max-warnings 0 {staged_files}
       stage_fixed: true
     - name: website-check

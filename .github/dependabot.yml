@@ -1,0 +1,32 @@
+version: 2
+updates:
+  # JS/TS workspace (root manifest + website member, single root pnpm-lock.yaml).
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    groups:
+      # Batch the low-risk churn; majors still open as individual PRs for review.
+      npm-minor-patch:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      github-actions:
+        patterns: ["*"]
+
+  # Python build pipeline (uv-managed; updates pyproject.toml + uv.lock).
+  - package-ecosystem: "uv"
+    directory: "/build-pipeline"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    groups:
+      uv-minor-patch:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
