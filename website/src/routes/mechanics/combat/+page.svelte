@@ -207,8 +207,8 @@
             <tr>
               <td class="py-2 pr-4 text-muted-foreground">8</td>
               <td class="py-2"
-                ><strong>Crit</strong>: ×1.5. Radiant Aether crits deal ×3 on
-                top (×4.5 total)</td
+                ><strong>Crit</strong>: ×1.5. Radiant Aether crits deal ×2 on
+                top (×3 total)</td
               >
             </tr>
           </tbody>

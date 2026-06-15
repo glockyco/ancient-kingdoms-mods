@@ -953,8 +953,8 @@
                 <div>
                   <div class={styles.label}>On Ability Critical Hit</div>
                   <div class={styles.value}>
-                    <span class={styles.valuePositive}>×3 on top of crit</span>
-                    → ×4.5
+                    <span class={styles.valuePositive}>×2 on top of crit</span>
+                    → ×3 total
                   </div>
                   <div class="italic text-muted-foreground text-sm mt-1">
                     "Radiant Aether surges - your strike rends the heavens!"

@@ -1974,8 +1974,8 @@
                   </li>
                   <li>Crit: &times;1.5</li>
                   <li>
-                    Radiant Aether (15% on crit, consumes 1 item): &times;3 on
-                    top &rarr; &times;4.5
+                    Radiant Aether (15% on crit, consumes 1 item): &times;2 on
+                    top &rarr; &times;3 total
                   </li>
                 </ol>
               </div>

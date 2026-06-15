@@ -495,12 +495,14 @@
     </Card.Header>
     <Card.Content class="space-y-3 text-sm text-muted-foreground">
       <!-- Source: server-scripts/PlayerNpcTrading.cs:17 — buybackDuration = 600.0 (10 minutes). -->
-      <!-- Source: server-scripts/PlayerNpcTrading.cs:219-239 — expired entries are removed on every sell; queue capped at 20. -->
-      <!-- Source: server-scripts/PlayerNpcTrading.cs:369-394 — buyback purchase requires being at the same vendor and pays the original sell price. -->
+      <!-- Source: server-scripts/PlayerNpcTrading.cs:295-317 — sell payout uses durability-adjusted sell price plus capped Charisma sell bonus; expired entries are removed on every sell; queue capped at 20. -->
+      <!-- Source: server-scripts/PlayerNpcTrading.cs:500-527 — buyback purchase requires being at the same vendor and pays the exact sale payout. -->
       <p>
         Selling an item to any vendor keeps a copy of that stack in the vendor's
-        buyback list for 10 minutes. Returning to the same vendor lets you
-        re-buy the stack for the same gold the vendor paid you (no markup).
+        buyback list for 10 minutes. Equipment uses a durability-adjusted sell
+        price, then applies your Charisma sell bonus up to a 25% cap. Returning
+        to the same vendor lets you re-buy the stack for the same gold the
+        vendor paid you (no markup).
       </p>
       <ul class="ml-4 list-disc">
         <li>
@@ -590,6 +592,17 @@
           <!-- Source: server-scripts/GatherItem.cs:289-300 and PlayerInventory.cs:133-151 — mining consumes selected pickaxe durability; 0-durability pickaxes cannot mine until repaired. -->Mining
           consumes pickaxe durability. A 0-durability pickaxe remains in
           inventory but cannot be used for mining until repaired.
+        </li>
+        <li>
+          <!-- Source: server-scripts/PlayerNpcTrading.cs:419-445 — repair cost recalculated server-side from missing durability and capped Charisma discount. -->
+          NPC repairs use: repair cost = round(sell price × missing durability% ×
+          50%), minus your Charisma purchase discount capped at 50%, with a minimum
+          cost of 1 gold.
+        </li>
+        <li>
+          <!-- Source: server-scripts/PlayerNpcTrading.cs:460-498 and UINpcTrading.cs — repair NPCs can repair active mercenary equipment as well as player equipment. -->
+          Repair NPCs can repair active mercenary equipment as well as your own equipped
+          and carried gear.
         </li>
         <li>
           <!-- Source: server-scripts/PlayerDead.cs:8 and 74-84 — player remains lifetime and expiration. -->Player

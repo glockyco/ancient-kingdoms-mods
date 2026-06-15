@@ -11,25 +11,25 @@ const baseMonster = {
 };
 
 describe("monsterKillReputation", () => {
-  it("uses normal multipliers (improve 1.5, decrease 0.5)", () => {
+  it("uses normal multipliers (improve 1, decrease 0.5)", () => {
     expect(monsterKillReputation(baseMonster)).toEqual([
-      { direction: "improve", amount: "15", factions: ["Army of Order"] },
+      { direction: "improve", amount: "10", factions: ["Army of Order"] },
       { direction: "decrease", amount: "5", factions: ["Dark Alliance"] },
     ]);
   });
 
-  it("uses elite multipliers (improve 2, decrease 1)", () => {
+  it("uses elite multipliers (improve 5, decrease 1)", () => {
     const elite = { ...baseMonster, is_elite: true };
     expect(monsterKillReputation(elite).map((e) => e.amount)).toEqual([
-      "20",
+      "50",
       "10",
     ]);
   });
 
-  it("uses boss multipliers (improve 3, decrease 2) and prefers boss over elite", () => {
+  it("uses boss multipliers (improve 10, decrease 2) and prefers boss over elite", () => {
     const boss = { ...baseMonster, is_boss: true, is_elite: true };
     expect(monsterKillReputation(boss).map((e) => e.amount)).toEqual([
-      "30",
+      "100",
       "20",
     ]);
   });
@@ -37,7 +37,7 @@ describe("monsterKillReputation", () => {
   it("preserves the half-point produced by fractional multipliers", () => {
     const oddLevel = { ...baseMonster, level_min: 7, level_max: 7 };
     expect(monsterKillReputation(oddLevel).map((e) => e.amount)).toEqual([
-      "10.5",
+      "7",
       "3.5",
     ]);
   });
@@ -45,7 +45,7 @@ describe("monsterKillReputation", () => {
   it("renders a range across the spawn levels", () => {
     const ranged = { ...baseMonster, level_min: 10, level_max: 14 };
     expect(monsterKillReputation(ranged).map((e) => e.amount)).toEqual([
-      "15-21",
+      "10-14",
       "5-7",
     ]);
   });
@@ -67,7 +67,7 @@ describe("monsterKillReputation", () => {
     expect(monsterKillReputation(worldBoss)).toEqual([
       {
         direction: "improve",
-        amount: "174",
+        amount: "580",
         factions: [
           "Army of Order",
           "Elven Kingdom",
