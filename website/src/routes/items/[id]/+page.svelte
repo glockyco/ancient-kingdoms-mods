@@ -8,6 +8,7 @@
   import MonsterTypeIcon from "$lib/components/MonsterTypeIcon.svelte";
   import DungeonRestrictionBadge from "$lib/components/DungeonRestrictionBadge.svelte";
   import SpecialMechanicText from "$lib/components/SpecialMechanicText.svelte";
+  import ItemTooltip from "$lib/components/ItemTooltip.svelte";
   import ExternalLink from "@lucide/svelte/icons/external-link";
   import FishIcon from "@lucide/svelte/icons/fish";
   import { STATS_METADATA_FIELDS } from "$lib/constants/items";
@@ -566,10 +567,10 @@
             <Card.Title>Tooltip</Card.Title>
           </Card.Header>
           <Card.Content>
-            <div class="text-sm whitespace-pre-wrap tooltip-content">
-              <!-- eslint-disable-next-line svelte/no-at-html-tags -->
-              {@html data.item.tooltip_html}
-            </div>
+            <ItemTooltip
+              itemId={data.item.id}
+              tooltipHtml={data.item.tooltip_html}
+            />
           </Card.Content>
         </Card.Root>
       {/if}

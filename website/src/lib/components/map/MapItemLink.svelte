@@ -8,6 +8,7 @@
   import { MediaQuery } from "svelte/reactivity";
   import * as HoverCard from "$lib/components/ui/hover-card";
   import { buildEntityUrl } from "$lib/map/url-state";
+  import ItemTooltip from "$lib/components/ItemTooltip.svelte";
 
   interface Props {
     itemId: string;
@@ -83,10 +84,7 @@
         side="right"
         collisionPadding={16}
       >
-        <div class="text-sm whitespace-pre-wrap tooltip-content">
-          <!-- eslint-disable-next-line svelte/no-at-html-tags -->
-          {@html tooltipHtml}
-        </div>
+        <ItemTooltip {itemId} {tooltipHtml} />
       </HoverCard.Content>
     </HoverCard.Root>
   {:else}

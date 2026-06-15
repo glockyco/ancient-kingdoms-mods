@@ -1,5 +1,6 @@
 <script lang="ts">
   import PopupCard from "./PopupCard.svelte";
+  import ItemTooltip from "$lib/components/ItemTooltip.svelte";
   import MapEntityLink from "./MapEntityLink.svelte";
   import MapItemLink from "./MapItemLink.svelte";
   import { buildEntityUrl } from "$lib/map/url-state";
@@ -509,10 +510,7 @@
           ? "border-t pt-2"
           : ""}
       >
-        <div class="text-sm whitespace-pre-wrap tooltip-content">
-          <!-- eslint-disable-next-line svelte/no-at-html-tags -->
-          {@html details.tooltipHtml}
-        </div>
+        <ItemTooltip itemId={details.id} tooltipHtml={details.tooltipHtml} />
       </div>
     {/if}
   </PopupCard>
