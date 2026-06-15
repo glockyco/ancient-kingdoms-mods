@@ -13,6 +13,13 @@ public class ItemExporter : BaseExporter
     {
     }
 
+    private static long CalculateSellPriceInGold(Il2Cpp.ScriptableItem scriptableItem)
+    {
+        return scriptableItem.buyToken != null
+            ? scriptableItem.buyToken.sellPrice * scriptableItem.sellPrice
+            : scriptableItem.sellPrice;
+    }
+
     public override void Export()
     {
         Logger.Msg("Exporting items...");
@@ -47,7 +54,7 @@ public class ItemExporter : BaseExporter
                 // Economy
                 max_stack = scriptableItem.maxStack,
                 buy_price = scriptableItem.buyPrice,
-                sell_price = scriptableItem.sellPrice,
+                sell_price = CalculateSellPriceInGold(scriptableItem),
                 buy_token_id = scriptableItem.buyToken != null ? SanitizeId(scriptableItem.buyToken.name) : null,
                 sellable = scriptableItem.sellable,
                 tradable = scriptableItem.tradable,
