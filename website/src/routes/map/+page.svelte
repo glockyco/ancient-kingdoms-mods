@@ -939,6 +939,29 @@
           zoom: initialViewState.zoom,
         };
 
+        let deckLoaded = false;
+        let loadingFinished = false;
+        function finishLoadingWhenCanvasSized() {
+          if (!deckLoaded || loadingFinished) return;
+
+          const canvas = container.querySelector("canvas");
+          if (!canvas) return;
+
+          const rect = canvas.getBoundingClientRect();
+          if (
+            rect.width <= 0 ||
+            rect.height <= 0 ||
+            canvas.width < Math.floor(rect.width) ||
+            canvas.height < Math.floor(rect.height)
+          ) {
+            return;
+          }
+
+          loadingFinished = true;
+          isLoading = false;
+          urlManager.exitPassiveMode();
+        }
+
         // Initialize deck.gl
         deckInstance = new deckModules.Deck({
           parent: container,
@@ -948,6 +971,13 @@
           layers,
           getCursor: ({ isHovering }: { isHovering: boolean }) =>
             isHovering ? "pointer" : "grab",
+          onLoad: () => {
+            deckLoaded = true;
+            finishLoadingWhenCanvasSized();
+          },
+          onAfterRender: () => {
+            finishLoadingWhenCanvasSized();
+          },
           onViewStateChange: ({
             viewState,
           }: {
@@ -963,10 +993,6 @@
             }
           },
         });
-
-        isLoading = false;
-        // Exit passive mode now that initialization is complete
-        urlManager.exitPassiveMode();
       } catch (err) {
         console.error("Failed to initialize map:", err);
         loadError = err instanceof Error ? err.message : "Failed to load map";
@@ -1126,6 +1152,7 @@
   <div
     use:initDeckMap
     class="absolute inset-0 map-container"
+    class:invisible={isLoading}
     style="--sidebar-width: {sidebarWidth}px"
     onmouseleave={() => (hoveredEntity = null)}
   ></div>
