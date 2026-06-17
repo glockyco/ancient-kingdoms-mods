@@ -41,7 +41,10 @@
     boundsFromPolygon,
     type Bounds,
   } from "$lib/map/flyto";
-  import { createInitialViewState } from "$lib/map/initial-view";
+  import {
+    boundsFromOverrideGroups,
+    createInitialViewState,
+  } from "$lib/map/initial-view";
   import {
     parseUrlState,
     urlStateToLayerVisibility,
@@ -780,45 +783,24 @@
         // Restore selection from URL state (after entity data is loaded)
         // Use passive mode to prevent URL updates during initialization
         urlManager.enterPassiveMode();
+        let initialSelectionBounds: Bounds | null = null;
         if (urlState?.entity && urlState?.etype) {
           if (urlState.etype === "item" || urlState.etype === "quest") {
-            // Virtual entities need async resolution
-            resolveVirtualSelection(urlState.etype, urlState.entity).then(
-              (resolved) => {
-                applySelection(resolved, true); // skipUrlUpdate during init
-                // Fly to bounds after async resolution if deck exists and no explicit position
-                if (
-                  !hasPositionParams &&
-                  deckInstance &&
-                  resolved.highlight?.overrideGroups &&
-                  resolved.highlight.overrideGroups.length > 0
-                ) {
-                  const selection = computeSelectionFromGroups(
-                    entityIndex,
-                    resolved.highlight.overrideGroups,
-                  );
-                  const positions = selection
-                    .filter((e) => e.position !== null)
-                    .map((e) => e.position!);
-                  const bounds = boundsFromPositions(positions);
-                  if (bounds) {
-                    // Use POPUP_WIDTH directly since flyToRightPadding derived value
-                    // may not have updated yet after applySelection
-                    const result = flyToBounds(deckInstance, bounds, {
-                      duration: 0,
-                      rightPadding: isDesktop ? POPUP_WIDTH : 0,
-                    });
-                    if (result) {
-                      currentViewState = {
-                        x: result.x,
-                        y: result.y,
-                        zoom: result.zoom,
-                      };
-                    }
-                  }
-                }
-              },
+            const resolved = await resolveVirtualSelection(
+              urlState.etype,
+              urlState.entity,
             );
+            applySelection(resolved, true); // skipUrlUpdate during init
+            if (
+              !hasPositionParams &&
+              resolved.highlight?.overrideGroups &&
+              resolved.highlight.overrideGroups.length > 0
+            ) {
+              initialSelectionBounds = boundsFromOverrideGroups(
+                entityIndex,
+                resolved.highlight.overrideGroups,
+              );
+            }
           } else {
             // Physical entities (including altar-only monsters) use sync resolution
             const resolved = resolvePhysicalSelection(
@@ -881,9 +863,9 @@
         // Determine initial view bounds based on URL state before creating Deck.
         // The constructor receives the fitted view so the first render starts
         // from measured container dimensions instead of a post-construction fly.
-        let initialBounds: Bounds | null = null;
+        let initialBounds: Bounds | null = initialSelectionBounds;
 
-        if (!hasPositionParams) {
+        if (!initialBounds && !hasPositionParams) {
           if (
             urlState?.entity &&
             urlState?.etype &&

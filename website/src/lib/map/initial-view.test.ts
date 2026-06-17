@@ -1,9 +1,14 @@
 import { describe, expect, test } from "vitest";
 
 import { INITIAL_VIEW_STATE } from "./config";
-import { createInitialViewState } from "./initial-view";
+import {
+  boundsFromOverrideGroups,
+  createInitialViewState,
+} from "./initial-view";
 import type { Bounds } from "./flyto";
 import type { MapUrlState } from "./url-state";
+import type { GatheringMapEntity, MapEntityData } from "$lib/types/map";
+import { createEntityIndex } from "./selection";
 
 const bounds: Bounds = {
   minX: 0,
@@ -17,6 +22,49 @@ const urlState: MapUrlState = {
   y: -34,
   zoom: 1.5,
 };
+
+function gatheringSpot(
+  id: string,
+  position: [number, number] | null,
+): GatheringMapEntity {
+  return {
+    id,
+    type: "gathering_fish",
+    name: "Fishing Spot",
+    resourceName: "Fishing Spot",
+    selectionGroupId: "fishing_spot",
+    position,
+    zoneId: "zone",
+    zoneName: "Zone",
+    level: 1,
+    respawnTime: 0,
+    toolRequiredId: "rod",
+    toolRequiredName: "Rod",
+    dropCount: 1,
+  };
+}
+
+function mapData(gathering: GatheringMapEntity[]): MapEntityData {
+  return {
+    monsters: [],
+    npcs: [],
+    portals: [],
+    chests: [],
+    treasure: [],
+    altars: [],
+    gathering,
+    crafting: [],
+    houses: [],
+    subZones: [],
+    parentZones: [],
+    levelRanges: {
+      monsterMin: 0,
+      monsterMax: 0,
+      gatheringMin: 0,
+      gatheringMax: 0,
+    },
+  };
+}
 
 describe("createInitialViewState", () => {
   test("uses explicit URL coordinates when present", () => {
@@ -66,5 +114,28 @@ describe("createInitialViewState", () => {
         height: 200,
       }),
     ).toBe(INITIAL_VIEW_STATE);
+  });
+});
+
+describe("boundsFromOverrideGroups", () => {
+  test("computes bounds from resolved virtual selection override groups", () => {
+    const entityIndex = createEntityIndex(
+      mapData([
+        gatheringSpot("spot-a", [10, -20]),
+        gatheringSpot("spot-b", [30, -40]),
+        gatheringSpot("spot-c", null),
+      ]),
+    );
+
+    expect(
+      boundsFromOverrideGroups(entityIndex, [
+        { category: "resource", ids: ["spot-a", "spot-b", "spot-c"] },
+      ]),
+    ).toEqual({
+      minX: 10,
+      maxX: 30,
+      minY: -40,
+      maxY: -20,
+    });
   });
 });

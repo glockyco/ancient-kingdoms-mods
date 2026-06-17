@@ -1,9 +1,12 @@
 import { INITIAL_VIEW_STATE } from "./config";
 import {
+  boundsFromPositions,
   fitBoundsToViewState,
   type Bounds,
   type FitBoundsToViewStateOptions,
 } from "./flyto";
+import { computeSelectionFromGroups, type EntityIndex } from "./selection";
+import type { OverrideGroup } from "./resolve-selection";
 import type { MapUrlState } from "./url-state";
 
 export interface CreateInitialViewStateOptions extends Omit<
@@ -51,4 +54,15 @@ export function createInitialViewState({
   }
 
   return INITIAL_VIEW_STATE;
+}
+
+export function boundsFromOverrideGroups(
+  entityIndex: EntityIndex,
+  overrideGroups: OverrideGroup[],
+): Bounds | null {
+  const positions = computeSelectionFromGroups(entityIndex, overrideGroups)
+    .filter((entity) => entity.position !== null)
+    .map((entity) => entity.position!);
+
+  return boundsFromPositions(positions);
 }
