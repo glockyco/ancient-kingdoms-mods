@@ -41,6 +41,7 @@
     boundsFromPolygon,
     type Bounds,
   } from "$lib/map/flyto";
+  import { createInitialViewState } from "$lib/map/initial-view";
   import {
     parseUrlState,
     urlStateToLayerVisibility,
@@ -874,51 +875,12 @@
           iconAtlas ?? undefined,
         );
 
-        // Determine initial view state
-        // Only use URL position if explicitly provided (x/y/z params present)
-        // Otherwise use defaults - flyToBounds will position the view after creation
-        // Check media query directly since isDesktop state may not be set yet
-        const isDesktopNow = window.matchMedia("(min-width: 768px)").matches;
-        const initialViewState =
-          urlState && hasPositionParams
-            ? {
-                target: [urlState.x, urlState.y, 0] as [number, number, number],
-                zoom: urlState.zoom,
-                minZoom: INITIAL_VIEW_STATE.minZoom,
-                maxZoom: INITIAL_VIEW_STATE.maxZoom,
-              }
-            : INITIAL_VIEW_STATE;
-
-        // Initialize deck.gl
-        deckInstance = new deckModules.Deck({
-          parent: container,
-          views: new deckModules.OrthographicView({}),
-          initialViewState,
-          controller: { inertia: 500 },
-          layers,
-          getCursor: ({ isHovering }: { isHovering: boolean }) =>
-            isHovering ? "pointer" : "grab",
-          onViewStateChange: ({
-            viewState,
-          }: {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            viewState: any;
-          }) => {
-            if (viewState.target) {
-              batchedUpdateViewState(
-                viewState.target[0],
-                viewState.target[1],
-                viewState.zoom,
-              );
-            }
-          },
-        });
-
-        // Determine initial view bounds based on URL state
+        // Determine initial view bounds based on URL state before creating Deck.
+        // The constructor receives the fitted view so the first render starts
+        // from measured container dimensions instead of a post-construction fly.
         let initialBounds: Bounds | null = null;
 
         if (!hasPositionParams) {
-          // Try to compute bounds from URL selection
           if (
             urlState?.entity &&
             urlState?.etype &&
@@ -926,7 +888,6 @@
             urlState.etype !== "quest" &&
             entityIndex
           ) {
-            // Physical entity - compute bounds from selection
             const selection = computeSelectionData(
               entityIndex,
               urlState.etype,
@@ -937,7 +898,6 @@
               .map((e) => e.position!);
             initialBounds = boundsFromPositions(positions);
           } else if (urlState?.selectedZone) {
-            // Zone - compute bounds from polygon (if zone has one)
             const zone = entityData.parentZones.find(
               (z) => z.zoneId === urlState.selectedZone,
             );
@@ -947,8 +907,6 @@
           }
         }
 
-        // If no bounds computed (no positions or excluded zone), use full map
-        // But skip if URL has explicit position params (respect those instead)
         const zonesWithPolygons = entityData.parentZones.filter(
           (z) => z.polygon !== null,
         );
@@ -976,23 +934,50 @@
           );
         }
 
-        // Fly to computed bounds (selection, zone, or full map)
-        // Update currentViewState synchronously so URL sync uses correct coords
-        // Use POPUP_WIDTH directly with media query check since isDesktop/flyToRightPadding
-        // may not be set yet during initialization
+        // Check media query directly since isDesktop state may not be set yet.
+        const isDesktopNow = window.matchMedia("(min-width: 768px)").matches;
         const hasSelectionForPadding = !!(
           urlState?.entity || urlState?.selectedZone
         );
-        if (initialBounds) {
-          const result = flyToBounds(deckInstance, initialBounds, {
-            duration: 0,
-            rightPadding:
-              hasSelectionForPadding && isDesktopNow ? POPUP_WIDTH : 0,
-          });
-          if (result) {
-            currentViewState = { x: result.x, y: result.y, zoom: result.zoom };
-          }
-        }
+        const initialViewState = createInitialViewState({
+          urlState,
+          hasPositionParams,
+          bounds: initialBounds,
+          width: container.clientWidth,
+          height: container.clientHeight,
+          rightPadding:
+            hasSelectionForPadding && isDesktopNow ? POPUP_WIDTH : 0,
+        });
+        currentViewState = {
+          x: initialViewState.target[0],
+          y: initialViewState.target[1],
+          zoom: initialViewState.zoom,
+        };
+
+        // Initialize deck.gl
+        deckInstance = new deckModules.Deck({
+          parent: container,
+          views: new deckModules.OrthographicView({}),
+          initialViewState,
+          controller: { inertia: 500 },
+          layers,
+          getCursor: ({ isHovering }: { isHovering: boolean }) =>
+            isHovering ? "pointer" : "grab",
+          onViewStateChange: ({
+            viewState,
+          }: {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            viewState: any;
+          }) => {
+            if (viewState.target) {
+              batchedUpdateViewState(
+                viewState.target[0],
+                viewState.target[1],
+                viewState.zoom,
+              );
+            }
+          },
+        });
 
         isLoading = false;
         // Exit passive mode now that initialization is complete
