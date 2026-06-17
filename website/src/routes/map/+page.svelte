@@ -50,6 +50,7 @@
     getDefaultLayerVisibility,
     type UrlStateParams,
   } from "$lib/map/url-state";
+  import { readStoredSidebarCollapsed } from "$lib/map/sidebar-state";
   import { getNormalizedUrlSearch } from "$lib/utils/url";
   import type {
     LayerVisibility,
@@ -93,9 +94,11 @@
   let zoneList = $derived(data.zoneList);
   let focusedZoneId = $state<string | null>(null);
 
-  // Sidebar collapse state is owned by MapSidebar (persisted to localStorage)
-  // and bound here so the map container offset can derive from it.
-  let sidebarCollapsed = $state(false);
+  // Sidebar collapse affects the map container width, so read persisted state
+  // before Deck measures the container.
+  let sidebarCollapsed = $state(
+    browser ? readStoredSidebarCollapsed(localStorage) : false,
+  );
   const sidebarWidth = $derived(
     sidebarCollapsed ? SIDEBAR_WIDTH_COLLAPSED : SIDEBAR_WIDTH_EXPANDED,
   );

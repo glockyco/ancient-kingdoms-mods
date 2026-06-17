@@ -41,6 +41,7 @@
     toggleAllNpcTypes,
     toggleAllCraftingTypes,
   } from "$lib/map/visibility";
+  import { writeStoredSidebarCollapsed } from "$lib/map/sidebar-state";
 
   interface Props {
     visibility: LayerVisibility;
@@ -85,12 +86,6 @@
   let initialized = $state(false);
 
   onMount(() => {
-    // Load persisted state
-    const savedCollapsed = localStorage.getItem("map-sidebar-collapsed");
-    if (savedCollapsed !== null) {
-      isCollapsed = savedCollapsed === "true";
-    }
-
     const savedSections = localStorage.getItem("map-sidebar-sections");
     if (savedSections) {
       try {
@@ -105,7 +100,7 @@
 
   function toggleCollapsed() {
     isCollapsed = !isCollapsed;
-    localStorage.setItem("map-sidebar-collapsed", String(isCollapsed));
+    writeStoredSidebarCollapsed(localStorage, isCollapsed);
   }
 
   function handleExpandedSectionsChange(sections: string[]) {
