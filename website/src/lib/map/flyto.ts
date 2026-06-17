@@ -124,12 +124,27 @@ export function boundsFromPolygon(polygon: Array<[number, number]>): Bounds {
 }
 
 /**
- * Computed view state from flyToBounds
+ * Computed view state from fitted bounds.
  */
 export interface FlyToBoundsResult {
   x: number;
   y: number;
   zoom: number;
+}
+
+export interface FittedBoundsViewState extends FlyToBoundsResult {
+  target: [number, number, number];
+  minZoom: number;
+  maxZoom: number;
+}
+
+export interface FitBoundsToViewStateOptions {
+  width: number;
+  height: number;
+  padding?: number;
+  maxZoom?: number;
+  /** Pixels reserved on right side (e.g., popup width). Shifts center left. */
+  rightPadding?: number;
 }
 
 export interface FlyToBoundsOptions {
@@ -138,6 +153,60 @@ export interface FlyToBoundsOptions {
   maxZoom?: number;
   /** Pixels reserved on right side (e.g., popup width). Shifts center left. */
   rightPadding?: number;
+}
+
+/**
+ * Calculate the view state needed to fit bounds in explicit viewport dimensions.
+ */
+export function fitBoundsToViewState(
+  bounds: Bounds,
+  options: FitBoundsToViewStateOptions,
+): FittedBoundsViewState | null {
+  const {
+    width,
+    height,
+    padding = FLY_TO_CONFIG.padding,
+    maxZoom = FLY_TO_CONFIG.maxZoom,
+    rightPadding = 0,
+  } = options;
+
+  const effectiveWidth = width - rightPadding;
+  if (
+    !Number.isFinite(width) ||
+    !Number.isFinite(height) ||
+    !Number.isFinite(effectiveWidth) ||
+    width <= 0 ||
+    height <= 0 ||
+    effectiveWidth <= 0
+  ) {
+    return null;
+  }
+
+  let centerX = (bounds.minX + bounds.maxX) / 2;
+  const centerY = (bounds.minY + bounds.maxY) / 2;
+
+  const boundsWidth = (bounds.maxX - bounds.minX) * padding;
+  const boundsHeight = (bounds.maxY - bounds.minY) * padding;
+
+  const zoomX =
+    boundsWidth > 0 ? Math.log2(effectiveWidth / boundsWidth) : maxZoom;
+  const zoomY = boundsHeight > 0 ? Math.log2(height / boundsHeight) : maxZoom;
+  let zoom = Math.min(zoomX, zoomY);
+
+  zoom = Math.max(INITIAL_VIEW_STATE.minZoom, Math.min(zoom, maxZoom));
+
+  if (rightPadding > 0) {
+    centerX += rightPadding / 2 / Math.pow(2, zoom);
+  }
+
+  return {
+    x: centerX,
+    y: centerY,
+    zoom,
+    target: [centerX, centerY, 0],
+    minZoom: INITIAL_VIEW_STATE.minZoom,
+    maxZoom,
+  };
 }
 
 /**
@@ -153,59 +222,25 @@ export function flyToBounds(
 ): FlyToBoundsResult | null {
   if (!deckInstance) return null;
 
-  const {
-    duration = FLY_TO_CONFIG.duration,
-    padding = FLY_TO_CONFIG.padding,
-    maxZoom = FLY_TO_CONFIG.maxZoom,
-    rightPadding = 0,
-  } = options;
+  const { duration = FLY_TO_CONFIG.duration, ...fitOptions } = options;
 
-  // Get actual viewport dimensions from deck instance
-  const viewportWidth = deckInstance.width || 1000;
-  const viewportHeight = deckInstance.height || 800;
-
-  // Effective viewport width accounting for right padding (popup)
-  const effectiveWidth = viewportWidth - rightPadding;
-
-  // Calculate center
-  let centerX = (bounds.minX + bounds.maxX) / 2;
-  const centerY = (bounds.minY + bounds.maxY) / 2;
-
-  // Calculate bounds size with 10% padding
-  const boundsWidth = (bounds.maxX - bounds.minX) * padding;
-  const boundsHeight = (bounds.maxY - bounds.minY) * padding;
-
-  // Calculate zoom to fit bounds in viewport
-  // In OrthographicView at zoom=0, 1 world unit = 1 pixel
-  // At zoom=n, 1 world unit = 2^n pixels
-  // So: zoom = log2(viewportPx / worldUnits)
-  const zoomX =
-    boundsWidth > 0 ? Math.log2(effectiveWidth / boundsWidth) : maxZoom;
-  const zoomY =
-    boundsHeight > 0 ? Math.log2(viewportHeight / boundsHeight) : maxZoom;
-
-  // Use the smaller zoom to ensure both dimensions fit
-  let zoom = Math.min(zoomX, zoomY);
-
-  // Clamp to valid zoom range
-  zoom = Math.max(INITIAL_VIEW_STATE.minZoom, Math.min(zoom, maxZoom));
-
-  // Offset center to account for right padding (shift view right so entity appears left)
-  // At zoom level Z, 1 pixel = 1/2^Z world units
-  if (rightPadding > 0) {
-    centerX += rightPadding / 2 / Math.pow(2, zoom);
-  }
+  const viewState = fitBoundsToViewState(bounds, {
+    ...fitOptions,
+    width: deckInstance.width,
+    height: deckInstance.height,
+  });
+  if (!viewState) return null;
 
   deckInstance.setProps({
     initialViewState: {
-      target: [centerX, centerY, 0],
-      zoom,
-      minZoom: INITIAL_VIEW_STATE.minZoom,
-      maxZoom: INITIAL_VIEW_STATE.maxZoom,
+      target: viewState.target,
+      zoom: viewState.zoom,
+      minZoom: viewState.minZoom,
+      maxZoom: viewState.maxZoom,
       transitionDuration: duration,
       transitionEasing: (t: number) => t * (2 - t),
     },
   });
 
-  return { x: centerX, y: centerY, zoom };
+  return viewState;
 }
