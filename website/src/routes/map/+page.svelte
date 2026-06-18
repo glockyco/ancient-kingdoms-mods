@@ -45,6 +45,7 @@
     boundsFromOverrideGroups,
     createInitialViewState,
   } from "$lib/map/initial-view";
+  import { MAP_EVENT_RECOGNIZER_OPTIONS } from "$lib/map/interaction";
   import {
     parseUrlState,
     urlStateToLayerVisibility,
@@ -968,6 +969,7 @@
           views: new deckModules.OrthographicView({}),
           initialViewState,
           controller: { inertia: 500 },
+          eventRecognizerOptions: MAP_EVENT_RECOGNIZER_OPTIONS,
           layers,
           getCursor: ({ isHovering }: { isHovering: boolean }) =>
             isHovering ? "pointer" : "grab",
