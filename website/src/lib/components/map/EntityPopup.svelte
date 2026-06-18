@@ -14,6 +14,7 @@
     formatAltarRewardTier,
   } from "$lib/utils/format";
   import { hasNpcRole, getNpcRoles } from "$lib/utils/tooltip";
+  import { scheduleDeferredTask } from "$lib/utils/defer";
   import {
     type AnyMapEntity,
     type MonsterMapEntity,
@@ -90,28 +91,32 @@
   let altarDetails = $state<AltarPopupDetails | null>(null);
   let isLoading = $state(false);
 
-  // Load details when entity changes
+  // Load details after the selection shell has had a chance to paint.
   $effect(() => {
     const currentEntity = entity;
+    let cancelled = false;
+
     monsterDetails = null;
     monsterAltarDetails = [];
     npcDetails = null;
     chestDetails = null;
     gatheringDetails = null;
     altarDetails = null;
+    isLoading = true;
 
     async function loadDetails() {
-      isLoading = true;
       try {
         if (isMonster(currentEntity)) {
           const isBossOrElite = currentEntity.isBoss || currentEntity.isElite;
-          monsterDetails = await loadMonsterPopupDetails(
+          const details = await loadMonsterPopupDetails(
             currentEntity.monsterId,
             currentEntity.level,
             currentEntity.id,
             isBossOrElite,
             currentEntity.isWorldBoss,
           );
+          if (cancelled) return;
+          monsterDetails = details;
 
           // Load altar info if monster spawns in altars
           if (currentEntity.altarIds && currentEntity.altarIds.length > 0) {
@@ -134,6 +139,7 @@
               },
             );
             const results = await Promise.all(altarPromises);
+            if (cancelled) return;
             monsterAltarDetails = results.filter(
               (
                 r,
@@ -148,20 +154,40 @@
           }
         } else if (currentEntity.type === "npc") {
           const npc = currentEntity as NpcMapEntity;
-          npcDetails = await loadNpcPopupDetails(npc.id, npc.isWorldBossReset);
+          const details = await loadNpcPopupDetails(
+            npc.id,
+            npc.isWorldBossReset,
+          );
+          if (cancelled) return;
+          npcDetails = details;
         } else if (currentEntity.type === "chest") {
-          chestDetails = await loadChestPopupDetails(currentEntity.id);
+          const details = await loadChestPopupDetails(currentEntity.id);
+          if (cancelled) return;
+          chestDetails = details;
         } else if (isGathering(currentEntity)) {
-          gatheringDetails = await loadGatheringPopupDetails(currentEntity.id);
+          const details = await loadGatheringPopupDetails(currentEntity.id);
+          if (cancelled) return;
+          gatheringDetails = details;
         } else if (currentEntity.type === "altar") {
-          altarDetails = await loadAltarPopupDetails(currentEntity.id);
+          const details = await loadAltarPopupDetails(currentEntity.id);
+          if (cancelled) return;
+          altarDetails = details;
         }
       } finally {
-        isLoading = false;
+        if (!cancelled) {
+          isLoading = false;
+        }
       }
     }
 
-    loadDetails();
+    const cancelDeferredLoad = scheduleDeferredTask(() => {
+      void loadDetails();
+    });
+
+    return () => {
+      cancelled = true;
+      cancelDeferredLoad();
+    };
   });
 
   // Filter monster drops to exclude items already shown as altar rewards
