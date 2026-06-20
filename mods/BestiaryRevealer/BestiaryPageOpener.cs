@@ -31,14 +31,12 @@ internal static class BestiaryPageOpener
         if (IsUniqueBestiaryMonster(monster))
             EnsureBestiaryEntry(monster);
 
-        journal.currentTab = "Bestiary";
-        journal.panel.SetActive(true);
-
-        var skillbar = UISkillbar.singleton;
-        if (skillbar != null && skillbar.outlineJournalButton != null)
-            skillbar.outlineJournalButton.SetActive(false);
-
         detail.monster = monster;
+        journal.OpenBestiary();
+        detail.monster = monster;
+        if (journal.rectTransformJournal != null)
+            journal.rectTransformJournal.SetAsLastSibling();
+
         RefreshGridSelection(journal, monster);
         Ui.BestiaryDetailRenderer.Reveal(detail);
         return true;

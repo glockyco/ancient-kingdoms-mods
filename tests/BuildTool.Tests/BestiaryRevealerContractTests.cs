@@ -98,17 +98,22 @@ public class BestiaryRevealerContractTests
         var source = string.Join("\n", sourceFiles.Select(File.ReadAllText));
 
         Assert.Contains("Unity.InputSystem", projectText);
-        Assert.Contains("HarmonyPatch(typeof(PointerInput2DManager), \"TryClickOnPress\")", source);
-        Assert.Contains("Keyboard.current", source);
-        Assert.Contains("leftAltKey.isPressed || keyboard.rightAltKey.isPressed", source);
-        Assert.Contains("_pressedComponent", source);
+        Assert.Contains("override void OnUpdate()", source);
+        Assert.Contains("Mouse.current", source);
+        Assert.Contains("mouse.leftButton.wasPressedThisFrame", source);
+        Assert.Contains("Physics2D.OverlapPoint", source);
+        Assert.Contains("GameManager.clickableFilter", source);
+        Assert.Contains("GameManager.noFilter", source);
+        Assert.Contains("GameManager.monsterFilter", source);
         Assert.Contains("GetComponentInParent<Monster>()", source);
         Assert.Contains("BestiaryPageOpener.Open", source);
         Assert.Contains("EnsureBestiaryEntry", source);
-        Assert.Contains("journal.currentTab = \"Bestiary\"", source);
+        Assert.Contains("journal.OpenBestiary()", source);
+        Assert.Contains("journal.rectTransformJournal.SetAsLastSibling()", source);
         Assert.Contains("detail.monster = monster", source);
         Assert.Contains("BestiaryDetailRenderer.Reveal(detail)", source);
         Assert.Contains("Utils.normalMonsterColor", source);
+        Assert.DoesNotContain("HarmonyPatch(typeof(PointerInput2DManager), \"TryClickOnPress\")", source, StringComparison.Ordinal);
         Assert.DoesNotContain("[HarmonyPatch(typeof(Entity), \"OnClick\")]", source, StringComparison.Ordinal);
     }
 

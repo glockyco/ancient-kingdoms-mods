@@ -21,6 +21,11 @@ public sealed class BestiaryRevealer : MelonMod
         LoggerInstance.Msg("Bestiary Revealer Harmony patches registered");
     }
 
+    public override void OnUpdate()
+    {
+        BestiaryAltClickHandler.Update();
+    }
+
     internal static void LogMessage(string message)
     {
         if (Logger != null)
