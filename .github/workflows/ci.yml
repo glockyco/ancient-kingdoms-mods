@@ -22,7 +22,7 @@ jobs:
     name: Lockfile guard
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Ensure only the root pnpm-lock.yaml exists
         run: |
           nested=$(find . -name pnpm-lock.yaml -not -path './pnpm-lock.yaml' -not -path '*/node_modules/*')
@@ -44,7 +44,7 @@ jobs:
     name: Website (lint)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v6
         with:
@@ -62,7 +62,7 @@ jobs:
       run:
         working-directory: build-pipeline
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: astral-sh/setup-uv@v8.2.0
         with:
           enable-cache: true
