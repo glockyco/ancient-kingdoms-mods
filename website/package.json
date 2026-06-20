@@ -21,20 +21,20 @@
     "cf-deploy:redirect": "wrangler deploy --config wrangler.redirect.toml"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20260613.1",
+    "@cloudflare/workers-types": "^4.20260620.1",
     "@eslint/compat": "^2.1.0",
     "@eslint/js": "^10.0.1",
     "@internationalized/date": "^3.12.2",
-    "@lucide/svelte": "^1.18.0",
+    "@lucide/svelte": "^1.21.0",
     "@resvg/resvg-js": "^2.6.2",
-    "@sveltejs/adapter-cloudflare": "^7.2.8",
-    "@sveltejs/kit": "^2.65.0",
+    "@sveltejs/adapter-cloudflare": "^7.2.9",
+    "@sveltejs/kit": "^2.66.0",
     "@sveltejs/vite-plugin-svelte": "^7.1.2",
     "@tailwindcss/vite": "^4.3.1",
     "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^25.9.3",
     "@types/sql.js": "^1.4.9",
-    "better-sqlite3": "^12.4.1",
+    "better-sqlite3": "^12.11.1",
     "clsx": "^2.1.1",
     "eslint": "^10.5.0",
     "eslint-config-prettier": "^10.1.8",
@@ -44,7 +44,7 @@
     "node-html-parser": "^7.1.0",
     "postcss": "^8.5.15",
     "prettier": "^3.8.4",
-    "prettier-plugin-svelte": "^4.1.0",
+    "prettier-plugin-svelte": "^4.1.1",
     "svelte": "^5.56.3",
     "svelte-check": "^4.6.0",
     "tailwind-merge": "^3.6.0",
@@ -52,11 +52,11 @@
     "tailwindcss": "^4.3.1",
     "tw-animate-css": "^1.4.0",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.61.0",
+    "typescript-eslint": "^8.61.1",
     "vaul-svelte": "1.0.0-next.7",
     "vite": "^8.0.16",
-    "vitest": "^4.1.8",
-    "wrangler": "^4.100.0"
+    "vitest": "^4.1.9",
+    "wrangler": "^4.103.0"
   },
   "dependencies": {
     "@deck.gl/core": "^9.3.4",
@@ -65,7 +65,7 @@
     "@deck.gl/layers": "^9.3.4",
     "@tanstack/table-core": "^8.21.3",
     "bits-ui": "^2.14.4",
-    "lucide": "^1.18.0",
+    "lucide": "^1.21.0",
     "sql.js-fts5": "^1.4.0"
   }
 }
