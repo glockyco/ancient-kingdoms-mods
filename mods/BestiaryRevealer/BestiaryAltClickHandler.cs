@@ -7,7 +7,6 @@ namespace BestiaryRevealer;
 
 internal static class BestiaryAltClickHandler
 {
-
     internal static void Update()
     {
         var mouse = Mouse.current;
@@ -64,7 +63,6 @@ internal static class BestiaryAltClickHandler
             monster = candidate;
             bestSortingOrder = sortingOrder;
         }
-
 
         return monster != null;
     }

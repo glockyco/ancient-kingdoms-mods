@@ -93,10 +93,8 @@ internal static class BestiaryLootRenderer
         itemData = item.data;
         if (itemData == null)
             return false;
-
         if (itemData.TryCast<PotionItem>() != null || itemData.isOnlyQuestItem)
             return false;
-
         if (itemData.quality <= 0 && !itemData.isKey && itemData.TryCast<EquipmentItem>() == null && itemData.TryCast<ScrollItem>() == null)
             return false;
 

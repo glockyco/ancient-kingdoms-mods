@@ -54,7 +54,6 @@ internal static class BestiaryDetailRenderer
     {
         if (monster.isFabled)
             return Utils.fabledMonsterColor;
-
         if (monster.isBoss)
             return Utils.bossMonsterColor;
         if (monster.isElite)

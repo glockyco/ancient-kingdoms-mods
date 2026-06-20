@@ -6,7 +6,6 @@ namespace BestiaryRevealer.Ui;
 
 internal static class BestiaryGridRenderer
 {
-
     internal static void ApplyFallbackIcons(UIJournal journal)
     {
         if (journal == null || journal.currentTab != "Bestiary" || journal.content == null)
@@ -31,5 +30,4 @@ internal static class BestiaryGridRenderer
             slot.image.color = imageColor;
         }
     }
-
 }

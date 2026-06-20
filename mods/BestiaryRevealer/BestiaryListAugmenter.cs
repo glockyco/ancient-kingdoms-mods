@@ -15,12 +15,15 @@ internal static class BestiaryListAugmenter
     private static bool _loggedAllPresent;
     private static bool _loggedNoLoadedMonsters;
     private static bool _hasScannedWorldScene;
+
     internal static void AddLoadedMissingEntries()
     {
         if (!BestiaryRevealerSettings.AutoAddMissingBestiaryEntries)
             return;
+
         if (_hasScannedWorldScene)
             return;
+
         var activeScene = SceneManager.GetActiveScene().name;
         if (activeScene != WorldSceneName)
         {
@@ -31,7 +34,6 @@ internal static class BestiaryListAugmenter
             }
             return;
         }
-
 
         var gameManager = GameManager.singleton;
         if (gameManager == null || gameManager.elitesBosses == null)
@@ -59,6 +61,7 @@ internal static class BestiaryListAugmenter
 
         _hasScannedWorldScene = true;
         _loggedNoLoadedMonsters = false;
+
         foreach (var obj in objects)
         {
             var monster = obj.TryCast<Monster>();
