@@ -55,7 +55,11 @@ internal static class BestiaryDetailRenderer
         if (monster.isFabled)
             return Utils.fabledMonsterColor;
 
-        return monster.isBoss ? Utils.bossMonsterColor : Utils.eliteMonsterColor;
+        if (monster.isBoss)
+            return Utils.bossMonsterColor;
+        if (monster.isElite)
+            return Utils.eliteMonsterColor;
+        return monster.noAggroMonster ? Utils.noAggroMonsterColor : Utils.normalMonsterColor;
     }
 
     private static string FormatHealth(long health)

@@ -48,6 +48,11 @@
       <Private>False</Private>
     </Reference>
 
+    <Reference Include="Unity.InputSystem">
+      <HintPath>$(Il2CppAssembliesPath)\Unity.InputSystem.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+
     <Reference Include="Il2CppMirror">
       <HintPath>$(Il2CppAssembliesPath)\Il2CppMirror.dll</HintPath>
       <Private>False</Private>

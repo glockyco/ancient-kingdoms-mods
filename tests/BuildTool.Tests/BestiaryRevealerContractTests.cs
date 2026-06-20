@@ -87,6 +87,31 @@ public class BestiaryRevealerContractTests
         Assert.Contains("All loaded boss, elite, and fabled monsters are already in the Bestiary list", source);
     }
 
+    [Fact]
+    public void BestiaryRevealerOpensBestiaryFromMonsterAltClick()
+    {
+        var repoRoot = FindRepoRoot();
+        var modRoot = Path.Combine(repoRoot, "mods", "BestiaryRevealer");
+        var projectFile = Path.Combine(modRoot, "BestiaryRevealer.csproj");
+        var projectText = File.ReadAllText(projectFile);
+        var sourceFiles = Directory.GetFiles(modRoot, "*.cs", SearchOption.AllDirectories);
+        var source = string.Join("\n", sourceFiles.Select(File.ReadAllText));
+
+        Assert.Contains("Unity.InputSystem", projectText);
+        Assert.Contains("HarmonyPatch(typeof(PointerInput2DManager), \"TryClickOnPress\")", source);
+        Assert.Contains("Keyboard.current", source);
+        Assert.Contains("leftAltKey.isPressed || keyboard.rightAltKey.isPressed", source);
+        Assert.Contains("_pressedComponent", source);
+        Assert.Contains("GetComponentInParent<Monster>()", source);
+        Assert.Contains("BestiaryPageOpener.Open", source);
+        Assert.Contains("EnsureBestiaryEntry", source);
+        Assert.Contains("journal.currentTab = \"Bestiary\"", source);
+        Assert.Contains("detail.monster = monster", source);
+        Assert.Contains("BestiaryDetailRenderer.Reveal(detail)", source);
+        Assert.Contains("Utils.normalMonsterColor", source);
+        Assert.DoesNotContain("[HarmonyPatch(typeof(Entity), \"OnClick\")]", source, StringComparison.Ordinal);
+    }
+
     private static string FindRepoRoot()
     {
         var dir = AppContext.BaseDirectory;
