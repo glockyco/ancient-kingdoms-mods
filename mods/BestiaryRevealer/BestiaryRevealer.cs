@@ -15,9 +15,16 @@ public sealed class BestiaryRevealer : MelonMod
     public override void OnInitializeMelon()
     {
         Logger = LoggerInstance;
+        BestiaryRevealerSettings.Initialize();
         LoggerInstance.Msg("Bestiary Revealer initialized");
         HarmonyInstance.PatchAll();
         LoggerInstance.Msg("Bestiary Revealer Harmony patches registered");
+    }
+
+    internal static void LogMessage(string message)
+    {
+        if (Logger != null)
+            Logger.Msg(message);
     }
 
     internal static bool IsPatchDisabled => _reportedPatchException;

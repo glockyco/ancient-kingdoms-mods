@@ -33,7 +33,7 @@ public class BestiaryRevealerContractTests
         Assert.Contains("HarmonyPostfix", source);
         Assert.Contains("UIShowToolTip", source);
         Assert.Contains("Color.white", source);
-        Assert.DoesNotContain("HarmonyPatch(typeof(UIJournal", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("[HarmonyPatch(typeof(UIJournal), \"Update\")]", source, StringComparison.Ordinal);
 
         string[] forbiddenPersistenceOrDiscoveryCalls =
         [
@@ -51,6 +51,32 @@ public class BestiaryRevealerContractTests
         {
             Assert.DoesNotContain(forbidden, source, StringComparison.Ordinal);
         }
+    }
+
+    [Fact]
+    public void BestiaryRevealerCanAutoAddLoadedMissingBossesWhenEnabled()
+    {
+        var repoRoot = FindRepoRoot();
+        var modRoot = Path.Combine(repoRoot, "mods", "BestiaryRevealer");
+        var sourceFiles = Directory.GetFiles(modRoot, "*.cs", SearchOption.AllDirectories);
+        var source = string.Join("\n", sourceFiles.Select(File.ReadAllText));
+
+        Assert.Contains("AutoAddMissingBestiaryEntries", source);
+        Assert.Contains("false,", source);
+        Assert.Contains("HarmonyPatch(typeof(UIJournal), \"OpenBestiary\")", source);
+        Assert.Contains("HarmonyPrefix", source);
+        Assert.Contains("Resources.FindObjectsOfTypeAll", source);
+        Assert.Contains("Il2CppType.Of<Monster>()", source);
+        Assert.Contains("monster.isBoss || monster.isElite || monster.isFabled", source);
+        Assert.Contains("!monster.isForgotttenAltarEvent", source);
+        Assert.Contains("monster.portraitBoss != null", source);
+        Assert.Contains("monster.imageBossBestiary != null", source);
+        Assert.Contains("elitesBosses.Add", source);
+        Assert.Contains("string.Join(\", \", addedNames)", source);
+        Assert.Contains("SceneManager.GetActiveScene().name", source);
+        Assert.Contains("\"World\"", source);
+        Assert.Contains("Auto-add scan skipped", source);
+        Assert.Contains("All loaded boss, elite, and fabled monsters are already in the Bestiary list", source);
     }
 
     private static string FindRepoRoot()
