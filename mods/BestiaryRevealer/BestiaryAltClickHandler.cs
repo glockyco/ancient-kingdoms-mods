@@ -1,4 +1,3 @@
-using System;
 using Il2Cpp;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -8,7 +7,6 @@ namespace BestiaryRevealer;
 
 internal static class BestiaryAltClickHandler
 {
-    private static readonly Collider2D[] Hits = new Collider2D[32];
 
     internal static void Update()
     {
@@ -47,12 +45,11 @@ internal static class BestiaryAltClickHandler
     private static bool TryPickMonster(Vector2 world, ContactFilter2D filter, out Monster monster)
     {
         monster = null;
-        var count = Physics2D.OverlapPoint(world, filter, Hits);
+        var hits = Physics2D.OverlapPointAll(world, filter.layerMask.value);
         var bestSortingOrder = int.MinValue;
 
-        for (var i = 0; i < count; i++)
+        foreach (var hit in hits)
         {
-            var hit = Hits[i];
             if (hit == null)
                 continue;
 
@@ -68,7 +65,7 @@ internal static class BestiaryAltClickHandler
             bestSortingOrder = sortingOrder;
         }
 
-        Array.Clear(Hits, 0, Math.Min(count, Hits.Length));
+
         return monster != null;
     }
 

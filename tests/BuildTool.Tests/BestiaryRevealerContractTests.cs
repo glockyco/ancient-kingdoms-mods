@@ -101,11 +101,12 @@ public class BestiaryRevealerContractTests
         Assert.Contains("override void OnUpdate()", source);
         Assert.Contains("Mouse.current", source);
         Assert.Contains("mouse.leftButton.wasPressedThisFrame", source);
-        Assert.Contains("Physics2D.OverlapPoint", source);
+        Assert.Contains("Physics2D.OverlapPointAll", source);
         Assert.Contains("GameManager.clickableFilter", source);
         Assert.Contains("GameManager.noFilter", source);
         Assert.Contains("GameManager.monsterFilter", source);
         Assert.Contains("GetComponentInParent<Monster>()", source);
+        Assert.DoesNotContain("new Collider2D[32]", source, StringComparison.Ordinal);
         Assert.Contains("BestiaryPageOpener.Open", source);
         Assert.Contains("EnsureBestiaryEntry", source);
         Assert.Contains("journal.OpenBestiary()", source);
