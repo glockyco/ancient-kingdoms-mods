@@ -13,9 +13,12 @@ internal static class BestiaryListAugmenter
     private const string WorldSceneName = "World";
     private static bool _loggedSkippedScene;
     private static bool _loggedAllPresent;
+    private static bool _hasScannedWorldScene;
     internal static void AddLoadedMissingEntries()
     {
         if (!BestiaryRevealerSettings.AutoAddMissingBestiaryEntries)
+            return;
+        if (_hasScannedWorldScene)
             return;
         var activeScene = SceneManager.GetActiveScene().name;
         if (activeScene != WorldSceneName)
@@ -43,6 +46,7 @@ internal static class BestiaryListAugmenter
         var candidatesByName = new Dictionary<string, Monster>(StringComparer.Ordinal);
         var type = Il2CppType.Of<Monster>();
         var objects = Resources.FindObjectsOfTypeAll(type);
+        _hasScannedWorldScene = true;
         foreach (var obj in objects)
         {
             var monster = obj.TryCast<Monster>();
@@ -79,8 +83,6 @@ internal static class BestiaryListAugmenter
         return monster != null &&
                !string.IsNullOrEmpty(monster.nameEntity) &&
                (monster.isBoss || monster.isElite || monster.isFabled) &&
-               !monster.isForgotttenAltarEvent &&
-               monster.portraitBoss != null &&
-               monster.imageBossBestiary != null;
+               !monster.isForgotttenAltarEvent;
     }
 }

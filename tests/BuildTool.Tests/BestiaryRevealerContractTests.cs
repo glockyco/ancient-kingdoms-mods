@@ -69,8 +69,11 @@ public class BestiaryRevealerContractTests
         Assert.Contains("Il2CppType.Of<Monster>()", source);
         Assert.Contains("monster.isBoss || monster.isElite || monster.isFabled", source);
         Assert.Contains("!monster.isForgotttenAltarEvent", source);
-        Assert.Contains("monster.portraitBoss != null", source);
-        Assert.Contains("monster.imageBossBestiary != null", source);
+        Assert.DoesNotContain("monster.portraitBoss != null", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("monster.imageBossBestiary != null", source, StringComparison.Ordinal);
+        Assert.Contains("_hasScannedWorldScene", source);
+        Assert.Contains("if (_hasScannedWorldScene)", source);
+        Assert.Contains("monster.imageBossBestiary ?? monster.portraitBoss", source);
         Assert.Contains("elitesBosses.Add", source);
         Assert.Contains("string.Join(\", \", addedNames)", source);
         Assert.Contains("SceneManager.GetActiveScene().name", source);
