@@ -63,6 +63,7 @@ The mod catalog includes player-facing utilities, data exporters, and developmen
 
 | Mod                 | Summary                                                                                                                                                                                                            |
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `BestiaryRevealer`  | Reveals selected Bestiary monster details, lore, stats, and loot tooltips without changing actual discovery or kill progress.                                                                                    |
 | `BossMod`           | ImGui-based boss assistant. Tracks monster snapshots, renders cast bars and boss ability windows, provides settings tabs, and persists state under MelonLoader user data.                                          |
 | `BossTracker`       | Overlay panel for nearby bosses and elites, including alive/dead status, distance, direction, and respawn timers. Hold Right Shift and drag with left click to move the panel.                                     |
 | `MapEnhancer`       | Automatically clears fog of war, enables Veteran Awareness, and improves minimap monster visibility. Living bosses are highlighted and dead bosses/elites remain visible as grey markers.                          |

@@ -72,9 +72,12 @@ public class MyMod : MelonMod
 1. Create directory in `mods/`
 2. Create `ModName.csproj` (copy from existing mod)
 3. Create `ModName.cs` with mod code
-4. Build and deploy: `dotnet run --project build-tool build && dotnet run --project build-tool deploy`
+4. For mods with `[HarmonyPatch]` classes, add `[assembly: HarmonyDontPatchAll]` and call `HarmonyInstance.PatchAll()` once from `OnInitializeMelon()`.
+5. Build and deploy: `dotnet run --project build-tool build && dotnet run --project build-tool deploy`
 
 The build tool auto-discovers all projects in `mods/`.
+
+When patching stock game UI or hardcoded mechanics, verify behavior against `server-scripts/`. It is gitignored, so use file tools with ignored files enabled.
 
 ## Common Issues
 
