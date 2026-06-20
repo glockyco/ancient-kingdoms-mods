@@ -108,6 +108,20 @@ public class BestiaryRevealerContractTests
     }
 
     [Fact]
+    public void BestiaryRevealerFallsBackToMonsterZoneName()
+    {
+        var repoRoot = FindRepoRoot();
+        var renderer = File.ReadAllText(Path.Combine(repoRoot, "mods", "BestiaryRevealer", "Ui", "BestiaryDetailRenderer.cs"));
+
+        Assert.Contains("SetText(detail.zoneBoss, ZoneText(monster))", renderer);
+        Assert.Contains("private static string ZoneText(Monster monster)", renderer);
+        Assert.Contains("!string.IsNullOrWhiteSpace(monster.zoneMonster)", renderer);
+        Assert.Contains("ZoneInfo.zones.ContainsKey(monster.idZone)", renderer);
+        Assert.Contains("ZoneInfo.zones[monster.idZone].name", renderer);
+        Assert.DoesNotContain("monster.zoneMonster =", renderer, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void BestiaryRevealerOpensBestiaryFromMonsterAltClick()
     {
         var repoRoot = FindRepoRoot();

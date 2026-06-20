@@ -45,7 +45,7 @@ internal static class BestiaryDetailRenderer
         SetText(detail.diseaseResistanceBoss, monster.combat.diseaseResist.ToString());
         SetText(detail.typeBoss, monster.typeMonster);
         SetText(detail.classBoss, monster.classMonster);
-        SetText(detail.zoneBoss, monster.zoneMonster);
+        SetText(detail.zoneBoss, ZoneText(monster));
 
         BestiaryLootRenderer.Reveal(detail, monster);
     }
@@ -67,6 +67,22 @@ internal static class BestiaryDetailRenderer
         return health > 10000
             ? (health / 1000).ToString("N0", CultureInfo.InvariantCulture) + "K"
             : health.ToString("N0", CultureInfo.InvariantCulture);
+    }
+
+    private static string ZoneText(Monster monster)
+    {
+        if (!string.IsNullOrWhiteSpace(monster.zoneMonster))
+            return monster.zoneMonster;
+
+        if (ZoneInfo.zones != null &&
+            ZoneInfo.zones.ContainsKey(monster.idZone) &&
+            ZoneInfo.zones[monster.idZone] != null &&
+            !string.IsNullOrWhiteSpace(ZoneInfo.zones[monster.idZone].name))
+        {
+            return ZoneInfo.zones[monster.idZone].name;
+        }
+
+        return string.Empty;
     }
 
     private static void SetText(TextMeshProUGUI text, string value)
