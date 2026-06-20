@@ -24,8 +24,8 @@ internal static class BestiaryDetailRenderer
 
         if (detail.imageBoss != null)
         {
-            detail.imageBoss.sprite = monster.imageBossBestiary ?? monster.portraitBoss;
-            detail.imageBoss.color = Color.white;
+            detail.imageBoss.sprite = BestiaryMonsterSprites.DetailSpriteFor(monster, out var imageColor);
+            detail.imageBoss.color = imageColor;
         }
 
         if (detail.nameBoss != null)

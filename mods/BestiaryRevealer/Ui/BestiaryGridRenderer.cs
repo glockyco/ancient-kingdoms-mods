@@ -6,8 +6,6 @@ namespace BestiaryRevealer.Ui;
 
 internal static class BestiaryGridRenderer
 {
-    private static readonly Color BlankIconColor = new(0.45f, 0.45f, 0.45f, 0.85f);
-    private static Sprite _blankMonsterSprite;
 
     internal static void ApplyFallbackIcons(UIJournal journal)
     {
@@ -29,21 +27,9 @@ internal static class BestiaryGridRenderer
             if (slot == null || slot.image == null)
                 continue;
 
-            slot.image.sprite = monster.imageBossBestiary ?? BlankMonsterSprite();
-            if (monster.imageBossBestiary == null)
-                slot.image.color = BlankIconColor;
+            slot.image.sprite = BestiaryMonsterSprites.GridSpriteFor(monster, out var imageColor);
+            slot.image.color = imageColor;
         }
     }
 
-    private static Sprite BlankMonsterSprite()
-    {
-        if (_blankMonsterSprite != null)
-            return _blankMonsterSprite;
-
-        var texture = new Texture2D(1, 1);
-        texture.SetPixel(0, 0, Color.white);
-        texture.Apply();
-        _blankMonsterSprite = Sprite.Create(texture, new Rect(0f, 0f, 1f, 1f), new Vector2(0.5f, 0.5f));
-        return _blankMonsterSprite;
-    }
 }

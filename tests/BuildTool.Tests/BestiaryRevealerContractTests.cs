@@ -77,7 +77,7 @@ public class BestiaryRevealerContractTests
         Assert.Contains("if (_hasScannedWorldScene)", source);
         Assert.Contains("if (objects.Length == 0)", source);
         Assert.Contains("_loggedNoLoadedMonsters", source);
-        Assert.Contains("monster.imageBossBestiary ?? BlankMonsterSprite()", source);
+        Assert.Contains("BestiaryMonsterSprites.GridSpriteFor(monster, out var imageColor)", source);
         Assert.Contains("BlankIconColor", source);
         Assert.Contains("elitesBosses.Add", source);
         Assert.Contains("string.Join(\", \", addedNames)", source);
@@ -85,6 +85,26 @@ public class BestiaryRevealerContractTests
         Assert.Contains("\"World\"", source);
         Assert.Contains("Auto-add scan skipped", source);
         Assert.Contains("All loaded boss, elite, and fabled monsters are already in the Bestiary list", source);
+    }
+
+    [Fact]
+    public void BestiaryRevealerUsesLiveSpriteFallbackForMissingDetailImages()
+    {
+        var repoRoot = FindRepoRoot();
+        var modRoot = Path.Combine(repoRoot, "mods", "BestiaryRevealer");
+        var detailRenderer = File.ReadAllText(Path.Combine(modRoot, "Ui", "BestiaryDetailRenderer.cs"));
+        var gridRenderer = File.ReadAllText(Path.Combine(modRoot, "Ui", "BestiaryGridRenderer.cs"));
+        var spriteFallback = File.ReadAllText(Path.Combine(modRoot, "Ui", "BestiaryMonsterSprites.cs"));
+
+        Assert.Contains("BestiaryMonsterSprites.DetailSpriteFor(monster, out var imageColor)", detailRenderer);
+        Assert.Contains("detail.imageBoss.color = imageColor", detailRenderer);
+        Assert.DoesNotContain("portraitBoss", detailRenderer, StringComparison.Ordinal);
+        Assert.Contains("monster.imageBossBestiary", spriteFallback);
+        Assert.Contains("GetComponent<SpriteRenderer>()", spriteFallback);
+        Assert.Contains("BlankMonsterSprite()", spriteFallback);
+        Assert.Contains("BestiaryMonsterSprites.GridSpriteFor(monster, out var imageColor)", gridRenderer);
+        Assert.DoesNotContain("GetComponentsInChildren<SpriteRenderer>", spriteFallback, StringComparison.Ordinal);
+        Assert.DoesNotContain("\"Front\"", spriteFallback, StringComparison.Ordinal);
     }
 
     [Fact]
