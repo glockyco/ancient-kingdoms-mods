@@ -27,6 +27,12 @@ public sealed class BestiaryRevealer : MelonMod
             Logger.Msg(message);
     }
 
+    internal static void LogWarning(string message)
+    {
+        if (Logger != null)
+            Logger.Warning(message);
+    }
+
     internal static bool IsPatchDisabled => _reportedPatchException;
 
     internal static void ReportPatchException(Exception ex)

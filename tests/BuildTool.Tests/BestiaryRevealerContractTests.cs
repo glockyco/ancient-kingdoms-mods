@@ -33,7 +33,8 @@ public class BestiaryRevealerContractTests
         Assert.Contains("HarmonyPostfix", source);
         Assert.Contains("UIShowToolTip", source);
         Assert.Contains("Color.white", source);
-        Assert.DoesNotContain("[HarmonyPatch(typeof(UIJournal), \"Update\")]", source, StringComparison.Ordinal);
+        Assert.Contains("BestiaryGridRenderer.ApplyFallbackIcons", source);
+        Assert.Contains("HarmonyPatch(typeof(UIJournal), \"Update\")", source);
 
         string[] forbiddenPersistenceOrDiscoveryCalls =
         [
@@ -60,6 +61,7 @@ public class BestiaryRevealerContractTests
         var modRoot = Path.Combine(repoRoot, "mods", "BestiaryRevealer");
         var sourceFiles = Directory.GetFiles(modRoot, "*.cs", SearchOption.AllDirectories);
         var source = string.Join("\n", sourceFiles.Select(File.ReadAllText));
+        var augmenterSource = File.ReadAllText(Path.Combine(modRoot, "BestiaryListAugmenter.cs"));
 
         Assert.Contains("AutoAddMissingBestiaryEntries", source);
         Assert.Contains("false,", source);
@@ -69,11 +71,14 @@ public class BestiaryRevealerContractTests
         Assert.Contains("Il2CppType.Of<Monster>()", source);
         Assert.Contains("monster.isBoss || monster.isElite || monster.isFabled", source);
         Assert.Contains("!monster.isForgotttenAltarEvent", source);
-        Assert.DoesNotContain("monster.portraitBoss != null", source, StringComparison.Ordinal);
-        Assert.DoesNotContain("monster.imageBossBestiary != null", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("monster.portraitBoss != null", augmenterSource, StringComparison.Ordinal);
+        Assert.DoesNotContain("monster.imageBossBestiary != null", augmenterSource, StringComparison.Ordinal);
         Assert.Contains("_hasScannedWorldScene", source);
         Assert.Contains("if (_hasScannedWorldScene)", source);
-        Assert.Contains("monster.imageBossBestiary ?? monster.portraitBoss", source);
+        Assert.Contains("if (objects.Length == 0)", source);
+        Assert.Contains("_loggedNoLoadedMonsters", source);
+        Assert.Contains("monster.imageBossBestiary ?? BlankMonsterSprite()", source);
+        Assert.Contains("BlankIconColor", source);
         Assert.Contains("elitesBosses.Add", source);
         Assert.Contains("string.Join(\", \", addedNames)", source);
         Assert.Contains("SceneManager.GetActiveScene().name", source);

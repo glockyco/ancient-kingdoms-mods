@@ -13,6 +13,7 @@ internal static class BestiaryListAugmenter
     private const string WorldSceneName = "World";
     private static bool _loggedSkippedScene;
     private static bool _loggedAllPresent;
+    private static bool _loggedNoLoadedMonsters;
     private static bool _hasScannedWorldScene;
     internal static void AddLoadedMissingEntries()
     {
@@ -46,7 +47,18 @@ internal static class BestiaryListAugmenter
         var candidatesByName = new Dictionary<string, Monster>(StringComparer.Ordinal);
         var type = Il2CppType.Of<Monster>();
         var objects = Resources.FindObjectsOfTypeAll(type);
+        if (objects.Length == 0)
+        {
+            if (!_loggedNoLoadedMonsters)
+            {
+                _loggedNoLoadedMonsters = true;
+                BestiaryRevealer.LogMessage("Auto-add scan found no loaded Monster objects; will retry the next time the Bestiary is opened.");
+            }
+            return;
+        }
+
         _hasScannedWorldScene = true;
+        _loggedNoLoadedMonsters = false;
         foreach (var obj in objects)
         {
             var monster = obj.TryCast<Monster>();
