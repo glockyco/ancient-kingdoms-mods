@@ -31,6 +31,9 @@ pre-commit:
     - name: website-test
       glob: "website/**/*.{ts,svelte}"
       run: pnpm --filter website test
+    - name: website-skill-summaries-drift
+      glob: "{website/src/lib/utils/formatSkillEffect.ts,website/src/lib/skills/*.ts,website/scripts/gen-skill-summaries.ts,mods/BetterBestiary/Resources/skill-summaries.json}"
+      run: pnpm --filter website gen:skill-summaries && git diff --exit-code -- mods/BetterBestiary/Resources/skill-summaries.json
     - name: build-pipeline-ruff-format
       root: build-pipeline/
       glob: "**/*.py"
