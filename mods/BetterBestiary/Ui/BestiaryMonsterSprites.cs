@@ -1,7 +1,7 @@
 using Il2Cpp;
 using UnityEngine;
 
-namespace BestiaryRevealer.Ui;
+namespace BetterBestiary.Ui;
 
 internal static class BestiaryMonsterSprites
 {

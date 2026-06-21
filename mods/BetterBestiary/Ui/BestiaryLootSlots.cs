@@ -1,6 +1,6 @@
 using Il2Cpp;
 
-namespace BestiaryRevealer.Ui;
+namespace BetterBestiary.Ui;
 
 internal static class BestiaryLootSlots
 {

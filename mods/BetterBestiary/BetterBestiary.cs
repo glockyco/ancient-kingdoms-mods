@@ -1,13 +1,13 @@
 using System;
 using MelonLoader;
 
-[assembly: MelonInfo(typeof(BestiaryRevealer.BestiaryRevealer), "Bestiary Revealer", "0.1.0", "ancient-kingdoms-mods")]
+[assembly: MelonInfo(typeof(BetterBestiary.BetterBestiary), "Better Bestiary", "0.2.0", "ancient-kingdoms-mods")]
 [assembly: MelonGame("ancientpixels", "ancientkingdoms")]
 [assembly: HarmonyDontPatchAll]
 
-namespace BestiaryRevealer;
+namespace BetterBestiary;
 
-public sealed class BestiaryRevealer : MelonMod
+public sealed class BetterBestiary : MelonMod
 {
     private static MelonLogger.Instance Logger;
     private static bool _reportedPatchException;
@@ -15,10 +15,10 @@ public sealed class BestiaryRevealer : MelonMod
     public override void OnInitializeMelon()
     {
         Logger = LoggerInstance;
-        BestiaryRevealerSettings.Initialize();
-        LoggerInstance.Msg("Bestiary Revealer initialized");
+        BetterBestiarySettings.Initialize();
+        LoggerInstance.Msg("Better Bestiary initialized");
         HarmonyInstance.PatchAll();
-        LoggerInstance.Msg("Bestiary Revealer Harmony patches registered");
+        LoggerInstance.Msg("Better Bestiary Harmony patches registered");
     }
 
     public override void OnUpdate()

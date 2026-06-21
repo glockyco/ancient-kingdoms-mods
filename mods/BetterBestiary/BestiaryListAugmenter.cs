@@ -6,7 +6,7 @@ using Il2CppInterop.Runtime;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace BestiaryRevealer;
+namespace BetterBestiary;
 
 internal static class BestiaryListAugmenter
 {
@@ -18,7 +18,7 @@ internal static class BestiaryListAugmenter
 
     internal static void AddLoadedMissingEntries()
     {
-        if (!BestiaryRevealerSettings.AutoAddMissingBestiaryEntries)
+        if (!BetterBestiarySettings.AutoAddMissingBestiaryEntries)
             return;
 
         if (_hasScannedWorldScene)
@@ -30,7 +30,7 @@ internal static class BestiaryListAugmenter
             if (!_loggedSkippedScene)
             {
                 _loggedSkippedScene = true;
-                BestiaryRevealer.LogMessage($"Auto-add scan skipped: active scene is '{activeScene}', not '{WorldSceneName}'. Open the Bestiary in the main game scene after monsters are loaded.");
+                BetterBestiary.LogMessage($"Auto-add scan skipped: active scene is '{activeScene}', not '{WorldSceneName}'. Open the Bestiary in the main game scene after monsters are loaded.");
             }
             return;
         }
@@ -54,7 +54,7 @@ internal static class BestiaryListAugmenter
             if (!_loggedNoLoadedMonsters)
             {
                 _loggedNoLoadedMonsters = true;
-                BestiaryRevealer.LogMessage("Auto-add scan found no loaded Monster objects; will retry the next time the Bestiary is opened.");
+                BetterBestiary.LogMessage("Auto-add scan found no loaded Monster objects; will retry the next time the Bestiary is opened.");
             }
             return;
         }
@@ -76,7 +76,7 @@ internal static class BestiaryListAugmenter
             if (!_loggedAllPresent)
             {
                 _loggedAllPresent = true;
-                BestiaryRevealer.LogMessage($"All loaded boss, elite, and fabled monsters are already in the Bestiary list. Scanned {objects.Length} loaded Monster objects.");
+                BetterBestiary.LogMessage($"All loaded boss, elite, and fabled monsters are already in the Bestiary list. Scanned {objects.Length} loaded Monster objects.");
             }
             return;
         }
@@ -89,7 +89,7 @@ internal static class BestiaryListAugmenter
             addedNames.Add(monster.nameEntity);
         }
 
-        BestiaryRevealer.LogMessage($"Auto-added {addedNames.Count} missing Bestiary entries: {string.Join(", ", addedNames)}");
+        BetterBestiary.LogMessage($"Auto-added {addedNames.Count} missing Bestiary entries: {string.Join(", ", addedNames)}");
         _loggedAllPresent = false;
     }
 

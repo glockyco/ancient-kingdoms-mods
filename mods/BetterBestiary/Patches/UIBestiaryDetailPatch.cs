@@ -2,7 +2,7 @@ using System;
 using HarmonyLib;
 using Il2Cpp;
 
-namespace BestiaryRevealer.Patches;
+namespace BetterBestiary.Patches;
 
 [HarmonyPatch(typeof(UIBestiaryDetail), "Update")]
 internal static class UIBestiaryDetailPatch
@@ -10,7 +10,7 @@ internal static class UIBestiaryDetailPatch
     [HarmonyPostfix]
     private static void RevealAfterVanillaUpdate(UIBestiaryDetail __instance)
     {
-        if (BestiaryRevealer.IsPatchDisabled)
+        if (BetterBestiary.IsPatchDisabled)
             return;
 
         try
@@ -19,7 +19,7 @@ internal static class UIBestiaryDetailPatch
         }
         catch (Exception ex)
         {
-            BestiaryRevealer.ReportPatchException(ex);
+            BetterBestiary.ReportPatchException(ex);
         }
     }
 }

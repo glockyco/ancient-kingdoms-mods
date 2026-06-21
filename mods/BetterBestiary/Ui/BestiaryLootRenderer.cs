@@ -4,7 +4,7 @@ using Il2CppInterop.Runtime;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace BestiaryRevealer.Ui;
+namespace BetterBestiary.Ui;
 
 internal static class BestiaryLootRenderer
 {

@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
-    <AssemblyName>BestiaryRevealer</AssemblyName>
-    <RootNamespace>BestiaryRevealer</RootNamespace>
+    <AssemblyName>BetterBestiary</AssemblyName>
+    <RootNamespace>BetterBestiary</RootNamespace>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
 

@@ -1,7 +1,7 @@
 using System;
 using Il2Cpp;
 
-namespace BestiaryRevealer;
+namespace BetterBestiary;
 
 internal static class BestiaryPageOpener
 {
@@ -16,7 +16,7 @@ internal static class BestiaryPageOpener
         }
         catch (Exception ex)
         {
-            BestiaryRevealer.LogWarning($"Could not open Bestiary details for '{monster.nameEntity}': {ex.Message}");
+            BetterBestiary.LogWarning($"Could not open Bestiary details for '{monster.nameEntity}': {ex.Message}");
             return false;
         }
     }
@@ -60,7 +60,7 @@ internal static class BestiaryPageOpener
         }
 
         gameManager.elitesBosses.Add(monster);
-        BestiaryRevealer.LogMessage($"Added '{monster.nameEntity}' to the Bestiary list for Alt+Click selection.");
+        BetterBestiary.LogMessage($"Added '{monster.nameEntity}' to the Bestiary list for Alt+Click selection.");
     }
 
     private static void RefreshGridSelection(UIJournal journal, Monster selectedMonster)

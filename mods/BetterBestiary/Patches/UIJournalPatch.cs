@@ -1,7 +1,7 @@
 using HarmonyLib;
 using Il2Cpp;
 
-namespace BestiaryRevealer.Patches;
+namespace BetterBestiary.Patches;
 
 [HarmonyPatch(typeof(UIJournal), "OpenBestiary")]
 internal static class UIJournalPatch

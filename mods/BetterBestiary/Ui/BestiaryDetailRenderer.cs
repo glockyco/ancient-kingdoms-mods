@@ -3,7 +3,7 @@ using Il2Cpp;
 using Il2CppTMPro;
 using UnityEngine;
 
-namespace BestiaryRevealer.Ui;
+namespace BetterBestiary.Ui;
 
 internal static class BestiaryDetailRenderer
 {

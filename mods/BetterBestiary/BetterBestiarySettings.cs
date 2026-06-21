@@ -1,8 +1,8 @@
 using MelonLoader;
 
-namespace BestiaryRevealer;
+namespace BetterBestiary;
 
-internal static class BestiaryRevealerSettings
+internal static class BetterBestiarySettings
 {
     private static MelonPreferences_Entry<bool> _autoAddMissingBestiaryEntries;
 
@@ -10,7 +10,7 @@ internal static class BestiaryRevealerSettings
 
     internal static void Initialize()
     {
-        var category = MelonPreferences.CreateCategory("BestiaryRevealer");
+        var category = MelonPreferences.CreateCategory("BetterBestiary");
         _autoAddMissingBestiaryEntries = category.CreateEntry(
             "AutoAddMissingBestiaryEntries",
             false,

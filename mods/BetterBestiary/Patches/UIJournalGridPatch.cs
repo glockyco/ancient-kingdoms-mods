@@ -2,7 +2,7 @@ using System;
 using HarmonyLib;
 using Il2Cpp;
 
-namespace BestiaryRevealer.Patches;
+namespace BetterBestiary.Patches;
 
 [HarmonyPatch(typeof(UIJournal), "Update")]
 internal static class UIJournalGridPatch
@@ -16,7 +16,7 @@ internal static class UIJournalGridPatch
         }
         catch (Exception ex)
         {
-            BestiaryRevealer.LogWarning($"Could not apply Bestiary grid icon fallbacks: {ex.Message}");
+            BetterBestiary.LogWarning($"Could not apply Bestiary grid icon fallbacks: {ex.Message}");
         }
     }
 }

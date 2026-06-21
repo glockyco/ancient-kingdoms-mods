@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
 
-namespace BestiaryRevealer;
+namespace BetterBestiary;
 
 internal static class BestiaryAltClickHandler
 {
