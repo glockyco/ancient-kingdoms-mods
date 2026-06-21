@@ -15,9 +15,10 @@ namespace BetterBestiary.Ui;
 internal static class SkillsPanelRenderer
 {
     private const float IconSize = 36f;
-    private const float NameWidth = 150f;
-    private const float CdWidth = 64f;
-    private const float CastWidth = 64f;
+    private const float NameWidth = 190f;
+    private const float SummaryWidth = 250f;
+    private const float CdWidth = 52f;
+    private const float CastWidth = 52f;
 
     public static GameObject BuildRowTemplate(Transform parent)
     {
@@ -30,12 +31,13 @@ internal static class SkillsPanelRenderer
         hl.childForceExpandWidth = false;
         hl.childForceExpandHeight = false;
         hl.spacing = 8f;
+        hl.childAlignment = TextAnchor.MiddleLeft;
 
         AddIcon(row.transform);
-        AddCell(row.transform, "Name", NameWidth, TextAlignmentOptions.Left, false);
-        AddCell(row.transform, "Summary", 0f, TextAlignmentOptions.Left, true);
-        AddCell(row.transform, "Cd", CdWidth, TextAlignmentOptions.Right, false);
-        AddCell(row.transform, "Cast", CastWidth, TextAlignmentOptions.Right, false);
+        AddCell(row.transform, "Name", NameWidth, TextAlignmentOptions.Left);
+        AddCell(row.transform, "Summary", SummaryWidth, TextAlignmentOptions.Left);
+        AddCell(row.transform, "Cd", CdWidth, TextAlignmentOptions.Right);
+        AddCell(row.transform, "Cast", CastWidth, TextAlignmentOptions.Right);
         return row;
     }
 
@@ -63,9 +65,7 @@ internal static class SkillsPanelRenderer
 
             icon.sprite = skill.image;
             icon.enabled = skill.image != null;
-            name.text = i == 0
-                ? skill.nameSkill + " <size=70%>(basic attack)</size>"
-                : skill.nameSkill;
+            name.text = skill.nameSkill;
 
             string summaryText;
             try
@@ -100,15 +100,14 @@ internal static class SkillsPanelRenderer
         le.minWidth = IconSize;
     }
 
-    private static void AddCell(Transform parent, string name, float width, TextAlignmentOptions align, bool flexible)
+    private static void AddCell(Transform parent, string name, float width, TextAlignmentOptions align)
     {
         var tmp = SkillsPanel.MakeText(parent, "", 16f, FontStyles.Normal);
         tmp.gameObject.name = name;
         tmp.alignment = align;
         var le = tmp.gameObject.AddComponent<LayoutElement>();
-        if (flexible)
-            le.flexibleWidth = 1f;
-        else
-            le.preferredWidth = width;
+        le.minWidth = width;
+        le.preferredWidth = width;
+        le.flexibleWidth = 0f;
     }
 }

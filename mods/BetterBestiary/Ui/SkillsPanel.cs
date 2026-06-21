@@ -1,5 +1,4 @@
 using Il2Cpp;
-using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using Il2CppTMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -15,7 +14,7 @@ namespace BetterBestiary.Ui;
 internal sealed class SkillsPanel
 {
     private const float Gap = 12f;
-    private const float Width = 460f;
+    private const float Width = 640f;
 
     private GameObject _root;
     private RectTransform _rect;
@@ -31,8 +30,8 @@ internal sealed class SkillsPanel
     public static TMP_FontAsset GameFont()
     {
         var detail = UIBestiaryDetail.singleton;
-        if (detail != null && detail.nameBoss != null)
-            return detail.nameBoss.font;
+        if (detail != null && detail.loreBoss != null)
+            return detail.loreBoss.font;
         return null;
     }
 
@@ -55,10 +54,10 @@ internal sealed class SkillsPanel
     public void EnsureCreated()
     {
         var journal = UIJournal.singleton;
-        if (_root != null || journal == null || journal.rectTransformJournal == null)
+        if (_root != null || journal == null || journal.panel == null)
             return;
 
-        var parent = journal.rectTransformJournal.parent;
+        var parent = journal.panel.transform;
 
         _root = new GameObject("BetterBestiary_SkillsPanel");
         _rect = _root.AddComponent<RectTransform>();
@@ -82,7 +81,7 @@ internal sealed class SkillsPanel
         contentGo.AddComponent<RectTransform>();
         var contentLayout = contentGo.AddComponent<VerticalLayoutGroup>();
         contentLayout.childControlWidth = true;
-        contentLayout.childControlHeight = false;
+        contentLayout.childControlHeight = true;
         contentLayout.childForceExpandWidth = true;
         contentLayout.childForceExpandHeight = false;
         contentLayout.spacing = 4f;
@@ -112,39 +111,21 @@ internal sealed class SkillsPanel
             Reposition();
     }
 
-    /// <summary>Dock to the side of the Bestiary window with more room; clamp on-screen.</summary>
+    /// <summary>Dock to the right of the Journal window; auto-tracks as a child.</summary>
     public void Reposition()
     {
         var journal = UIJournal.singleton;
-        if (_rect == null || journal == null || journal.rectTransformJournal == null)
+        if (_rect == null || journal == null || journal.panel == null)
             return;
-        var win = journal.rectTransformJournal;
+        var win = journal.panel.GetComponent<RectTransform>();
+        if (win == null)
+            return;
 
-        _rect.anchorMin = win.anchorMin;
-        _rect.anchorMax = win.anchorMax;
-        _rect.pivot = win.pivot;
+        _rect.anchorMin = new Vector2(1f, 0.5f);
+        _rect.anchorMax = new Vector2(1f, 0.5f);
+        _rect.pivot = new Vector2(0f, 0.5f);
         _rect.sizeDelta = new Vector2(Width, win.rect.height);
-
-        var corners = new Il2CppStructArray<Vector3>(4);
-        win.GetWorldCorners(corners);
-        var leftPx = corners[0].x;
-        var rightPx = corners[2].x;
-        var placeRight = (Screen.width - rightPx) >= leftPx;
-
-        var dir = placeRight ? 1f : -1f;
-        var pos = win.anchoredPosition;
-        pos.x += dir * (win.rect.width + Gap);
-        _rect.anchoredPosition = pos;
-
-        // Clamp fully on-screen using world corners after placement.
-        var self = new Il2CppStructArray<Vector3>(4);
-        _rect.GetWorldCorners(self);
-        var scale = _rect.lossyScale.x <= 0f ? 1f : _rect.lossyScale.x;
-        if (self[2].x > Screen.width)
-            _rect.anchoredPosition += new Vector2(-(self[2].x - Screen.width) / scale, 0f);
-        else if (self[0].x < 0f)
-            _rect.anchoredPosition += new Vector2(-self[0].x / scale, 0f);
-
+        _rect.anchoredPosition = new Vector2(Gap, 0f);
         _rect.SetAsLastSibling();
     }
 }

@@ -19,18 +19,18 @@ internal sealed class SkillsToggleButton
 
     public void EnsureCreated(UIJournal journal)
     {
-        if (_go != null || journal == null || journal.monsterDetail == null)
+        if (_go != null || journal == null || journal.panel == null)
             return;
 
         _go = new GameObject("BetterBestiary_SkillsButton");
-        _go.transform.SetParent(journal.monsterDetail.transform, false);
+        _go.transform.SetParent(journal.panel.transform, false);
 
         var rect = _go.AddComponent<RectTransform>();
         rect.anchorMin = new Vector2(1f, 0f);
         rect.anchorMax = new Vector2(1f, 0f);
-        rect.pivot = new Vector2(1f, 0f);
-        rect.anchoredPosition = new Vector2(-16f, 16f);
-        rect.sizeDelta = new Vector2(120f, 36f);
+        rect.pivot = new Vector2(1f, 1f);
+        rect.anchoredPosition = new Vector2(-16f, -8f);
+        rect.sizeDelta = new Vector2(110f, 40f);
 
         var image = _go.AddComponent<Image>();
         image.color = new Color(0.15f, 0.15f, 0.18f, 0.95f);

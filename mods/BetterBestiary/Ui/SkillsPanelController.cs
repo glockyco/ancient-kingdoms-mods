@@ -23,13 +23,17 @@ internal static class SkillsPanelController
         if (detail == null || detail.monster == null || journal == null ||
             journal.panel == null || !journal.panel.activeSelf ||
             journal.currentTab != "Bestiary")
+        {
+            Hide();
             return;
+        }
 
         _panel ??= new SkillsPanel();
         _button ??= new SkillsToggleButton(TogglePanel);
 
         _current = detail.monster;
         _button.EnsureCreated(journal);
+        _button.SetVisible(true);
 
         // While open, keep the panel in sync with the selected monster.
         if (_panel.IsOpen && _current != _rendered)
@@ -50,5 +54,13 @@ internal static class SkillsPanelController
         _panel.SetTitle(_current.nameEntity);
         SkillsPanelRenderer.Populate(_panel, _current);
         _rendered = _current;
+    }
+
+    private static void Hide()
+    {
+        if (_button != null)
+            _button.SetVisible(false);
+        if (_panel != null && _panel.IsOpen)
+            _panel.SetOpen(false);
     }
 }

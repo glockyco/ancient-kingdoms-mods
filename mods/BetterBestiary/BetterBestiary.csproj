@@ -48,6 +48,11 @@
       <Private>False</Private>
     </Reference>
 
+    <Reference Include="UnityEngine.TextRenderingModule">
+      <HintPath>$(Il2CppAssembliesPath)\UnityEngine.TextRenderingModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+
     <Reference Include="UnityEngine.Physics2DModule">
       <HintPath>$(Il2CppAssembliesPath)\UnityEngine.Physics2DModule.dll</HintPath>
       <Private>False</Private>
