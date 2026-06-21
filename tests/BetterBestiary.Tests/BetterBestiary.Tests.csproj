@@ -16,5 +16,6 @@
 
   <ItemGroup>
     <Compile Include="..\..\mods\BetterBestiary\Data\SkillId.cs" Link="Data\SkillId.cs" />
+    <Compile Include="..\..\mods\BetterBestiary\Data\SkillSummaryStore.cs" Link="Data\SkillSummaryStore.cs" />
   </ItemGroup>
 </Project>
