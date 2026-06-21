@@ -29,10 +29,18 @@ Runtime visual exports are meaningful only after the game is in the `World` scen
 
 ## BetterBestiary Skill Summaries
 
-The BetterBestiary mod bundles `mods/BetterBestiary/Resources/skill-summaries.json`, baked from the website's `formatSkillEffect` against `compendium.db` (skill-intrinsic effect strings keyed by skill id). After a game-data refresh (re-export + `compendium build`), regenerate it so the mod matches the website `/skills` overview:
+The BetterBestiary mod computes each skill's effect summary **at runtime**, in C#, via `SkillEffectFormatter` — a port of the website's `formatSkillEffect`. This lets the in-game panel summarize skills from **unreleased/dev game versions** that appear in no data export. The TypeScript `formatSkillEffect` stays the single source of truth; the port is held string-identical by a golden parity test over every exported skill.
+
+That test runs against `tests/BetterBestiary.Tests/Fixtures/skill-effect-parity.json` — a corpus of `{ skill_id, input, expected }` baked from `compendium.db` (skill-intrinsic). After a game-data refresh (re-export + `compendium build`) or any change to `formatSkillEffect`, regenerate it:
 
 ```bash
-pnpm --filter website gen:skill-summaries
+pnpm --filter website gen:skill-effect-parity
 ```
 
-A lefthook pre-commit guard re-runs the bake and fails the commit if this asset is stale relative to the formatter, the shared skills helpers, or the bake script.
+Then run the C# parity test; if it fails, port the formatter change to `mods/BetterBestiary/Skills/SkillEffectFormatter.cs` until it is green:
+
+```bash
+dotnet test tests/BetterBestiary.Tests/BetterBestiary.Tests.csproj
+```
+
+A lefthook pre-commit guard re-runs the bake and fails the commit if the corpus is stale relative to the formatter, the shared skills helpers, or the bake script.

@@ -3,10 +3,10 @@ import type { Skill } from "$lib/utils/formatSkillEffect";
 /**
  * Build the `formatSkillEffect` input from a raw `skills` DB row.
  *
- * Single source for BOTH the `/skills` loader and the mod's bake script
- * (`website/scripts/gen-skill-summaries.ts`), so the mod's precomputed
- * summaries can never diverge from the website overview. Mirrors the object
- * previously inlined in `website/src/routes/skills/+page.server.ts` — the
+ * Single source for BOTH the `/skills` loader and the parity-corpus bake
+ * (`website/scripts/gen-skill-effect-parity.ts`), so the mod's runtime C# port
+ * is validated against the same formatter input the website renders. Mirrors the
+ * object previously inlined in `website/src/routes/skills/+page.server.ts` — the
  * boolean coercions and the `pet_prefab_name` -> `pet_name` rename.
  */
 export function skillRowToEffectInput(row: unknown): Skill {

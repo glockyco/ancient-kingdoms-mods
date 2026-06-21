@@ -4,7 +4,8 @@ namespace BetterBestiary.Data;
 
 /// <summary>
 /// Mirrors DataExporter's <c>BaseExporter.SanitizeId</c> (mods/DataExporter/Exporters/BaseExporter.cs)
-/// so the mod derives the SAME skill id the exporter wrote into skill-summaries.json.
+/// so the mod derives the SAME skill id the exporter uses — the lookup key for
+/// <c>SkillEffectFormatter</c>'s hardcoded effects and the parity-corpus key.
 /// Keep in sync; the parity test in tests/BetterBestiary.Tests/SkillIdTests.cs enforces it.
 /// </summary>
 internal static class SkillId

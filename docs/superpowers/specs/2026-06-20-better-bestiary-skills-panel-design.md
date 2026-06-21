@@ -1,21 +1,21 @@
 # BetterBestiary — Monster Skills Side Panel (Design)
 
 - **Date:** 2026-06-20
-- **Status:** Approved for planning
+- **Status:** Approved; **amended 2026-06-20** — effect summaries are computed at runtime (C# port of `formatSkillEffect`) so monsters from unreleased/dev game versions (absent from every export) are covered; the precompute-to-asset bridge is dropped.
 - **Mod:** `BestiaryRevealer` → renamed `BetterBestiary`
 
 ## Summary
 
 Add a toggleable **Skills side panel** to the in-game Bestiary. When a monster's Bestiary detail page is open, a new **"Skills"** button in the detail panel's bottom-right toggles a separate window docked beside the Bestiary window. The window shows a table of the monster's skills: **icon + name**, an **effect summary**, **cooldown**, and **cast time**.
 
-The effect summaries are **precomputed** from the website's existing `formatSkillEffect` TypeScript function and bundled with the mod. They show **skill-intrinsic values** — the skill's own numbers, with **no monster/caster scaling applied** (first-draft scope). `formatSkillEffect` stays the **single source of truth** and is not reimplemented in C# — see [Alternatives considered](#alternatives-considered). Icons, cooldown, and cast time are read live from the game. **No hover tooltips** — the game has no monster-safe skill tooltip (its damage/heal tooltips inject the *local player's* stats), so a tooltip would show misleading numbers; the skill's own values are already in the Summary column.
+The effect summaries are computed **at runtime** by a C# port of the website's `formatSkillEffect`, fed from each skill's **live `ScriptableSkill` fields**. This is required: the mod must work on **unreleased/dev game versions** whose monsters and skills appear in **no data export**, and a precomputed asset can only ever contain skills that existed at bake time. Summaries show **skill-intrinsic values** — the skill's own numbers, with **no monster/caster scaling** (first-draft scope). The TypeScript `formatSkillEffect` stays the **single source of truth for the website**; the C# port is held string-identical to it by a **golden parity test** over every exported skill (see [Alternatives considered](#alternatives-considered)). Icons, cooldown, and cast time are read live from the game. **No hover tooltips** — the game's native `ScriptableSkill.ToolTip` injects the *local player's* stats (`DamageSkill` adds `GetWeaponDamage()` + `health.max/3`; `HealSkill` adds a `wisdom` bonus), so it is neither monster-correct nor skill-intrinsic; the skill's own values are already in the Summary column.
 
 The work is folded into the existing `BestiaryRevealer` mod, which is renamed to `BetterBestiary`.
 
 ## Goals
 
 - Show, per Bestiary monster, a native-looking side panel listing its skills with: icon + name, effect summary, cooldown, cast time.
-- Reuse the website's `formatSkillEffect` as the only source of effect-summary logic (no duplicated formatter in C#).
+- Keep the website's `formatSkillEffect` as the single **source of truth**; the mod runs a C# port held string-identical to it by a **golden parity test** over every exported skill (no silent divergence).
 - Match the look and patching style of the existing mod (native Unity uGUI, Harmony postfix on `UIBestiaryDetail.Update`).
 - Include the monster's basic (auto) attack as the first row, clearly labeled.
 - Rename the mod to `BetterBestiary`. A one-time reset of the mod's MelonPreferences on upgrade is acceptable (no migration required).
@@ -59,60 +59,64 @@ The work is folded into the existing `BestiaryRevealer` mod, which is renamed to
 ## Architecture
 
 ```
-Build-time (TypeScript = single source of truth)
-  compendium.db ──> website/scripts/gen-skill-summaries.ts
+Build-time (TypeScript = website source of truth + parity oracle)
+  compendium.db ──> website/scripts/gen-skill-effect-parity.ts
                       for each skill row:
-                        formatSkillEffect(rowToSkill(row))   // shared mapper; no monsterContext
-                    ──> mods/BetterBestiary/Resources/skill-summaries.json
-                        { skill_id: summary }
+                        input   = skillRowToEffectInput(row)   // shared mapper
+                        summary = formatSkillEffect(input)      // no monsterContext
+                    ──> tests/BetterBestiary.Tests/Fixtures/skill-effect-parity.json
+                        [ { skill_id, input, expected } ]       // golden corpus (test-only)
 
-Build ─> csproj embeds skill-summaries.json as an EmbeddedResource in the DLL
-
-Runtime (C# mod)
+Runtime (C# mod — works for ANY skill, incl. unexported dev-only)
   postfix UIBestiaryDetail.Update
     ├─ ensure "Skills" toggle button exists (bottom-right of detail panel)
     └─ if panel open: populate rows for UIBestiaryDetail.monster
          per skillTemplates[i]:
-           skillId = SkillId.Sanitize(skillTemplates[i].name)
-           icon    = ScriptableSkill.image          (fallback sprite if null)
+           input   = SkillEffectExtractor.From(skillTemplates[i])  // live ScriptableSkill -> DTO
+           summary = SkillEffectFormatter.Format(input)            // C# port (intrinsic)
+           icon    = ScriptableSkill.image            (fallback sprite if null)
            name    = ScriptableSkill.nameSkill
-           summary = SkillSummaryStore[ skillId ]   (fallback "—")
-           cooldown= ScriptableSkill.cooldown.Get(1) → PrettySeconds  ("Passive" for passives)
-           cast    = ScriptableSkill.castTime.Get(1)  → PrettySeconds
+           cooldown= ScriptableSkill.cooldown.Get(1)  -> PrettySeconds ("Passive" for passives)
+           cast    = ScriptableSkill.castTime.Get(1)  -> PrettySeconds
+
+Parity test (C#, headless)
+  for each { input, expected } in skill-effect-parity.json:
+    assert SkillEffectFormatter.Format(input) == expected         // fails loud on drift
 ```
 
 ### Alternatives considered
 
-The effect-summary logic lives in exactly one place — `formatSkillEffect` (TypeScript). The mod consumes the **skill-intrinsic** variant (no `monsterContext`); the website additionally uses the monster-context variant on its monster page. Two alternatives for relocating the formatter were rejected:
+The original design **precomputed** summaries into an embedded JSON asset, on the assumption that the mod only needs skills present in a data export. That assumption is now void: the mod must serve **unreleased/dev game versions** whose monsters/skills are in **no export**, so summaries must be computed **at runtime** from the live skill object. Given that, the formatter must exist in the mod's process. Options:
 
-- **Generate summaries in the DataExporter (C#); website + mod consume them.** Appealing in principle: derived data computed at the source, the exporter already holds typed skill fields, and mod + exporter are both C#. Rejected because (1) it requires porting ~880 lines of mature, **tested** TS (`formatSkillEffect` + `HARDCODED_EFFECTS` + `formatSkillEffect.test.ts`) to C#, with real regression risk; (2) the website's monster page still computes summaries **interactively at runtime** (`displayDamage`/`displayMagicDamage` are `$derived` from a spawn-variant `<select>`, `monsters/[id]/+page.svelte` lines 108–113, 191–205, 284–286), so the TS formatter must stay regardless — adding a C# copy is the double-maintenance we explicitly reject.
-- **Port the formatter to the build-pipeline (Python) denormalizer.** Same single-source appeal, but a *third*-language port that still cannot serve the website's runtime interactivity. Strictly worse than keeping TS.
+- **C# port of `formatSkillEffect` (chosen).** ~450 lines of pure, mechanical branching (seven `format*` helpers + a ~60-entry `HARDCODED_EFFECTS` map + orchestrator). The risky half — reading the skill's fields off the live IL2CPP object — already exists in `DataExporter/SkillExporter.cs` and is reused. Drift from the TS source is contained by a **golden parity test** over every exported skill: the bake emits `{ input, expected }` pairs and the C# test asserts identical output, so a TS change that isn't ported fails the build loud. No new runtime dependencies; fails like normal code.
+- **Embed a JS engine (e.g. Jint) and run the bundled `formatSkillEffect.ts`.** Zero formatter drift, but adds a JS interpreter running under MelonLoader/IL2CPP/Wine — an extra runtime moving part with opaque failure modes (a quirk yields a subtly-wrong string, not a loud failure). Rejected for that reason.
+- **Native `ScriptableSkill.ToolTip`.** Rejected: player-scaled, not skill-intrinsic, and absent on some skills (see Summary).
+- **Precompute-to-asset (the prior design).** Rejected: structurally cannot cover unexported dev-only skills — the exact case this feature exists for.
 
-**Chosen:** keep `formatSkillEffect` in TS as the sole implementation; a small build-time bake script invokes its no-context variant to emit `{ skill_id: summary }` for the mod, while the website keeps calling it at runtime (skill-global on `/skills`, monster-context on the monster page). A **lefthook pre-commit drift check** re-runs the bake and fails on drift, so the mod artifact cannot silently diverge from the formatter. (It runs locally — CI has no `compendium.db`, mirroring how the repo already gates website check/test via lefthook rather than CI.)
+The website still calls `formatSkillEffect` at runtime (skill-global on `/skills`, monster-context on the monster page), so it remains the source of truth; the C# port is a faithful, parity-tested mirror, not a second source.
 
-### Build-time: summary generator
-- New script `website/scripts/gen-skill-summaries.ts`, run via a `package.json` script (e.g. `gen:skill-summaries`).
-- Opens `website/static/compendium.db` (better-sqlite3, already a dependency).
-- For each row in the `skills` table, build the `formatSkillEffect` input via the **same `row → Skill` mapping the website uses** — `skills/+page.server.ts:239–323` coerces ~20 booleans (`Boolean(row.is_*)`), renames `pet_prefab_name`→`pet_name`, and maps summon/duration fields; passing a raw DB row would drift. Then call `formatSkillEffect(input)` with **no** `monsterContext`. Output matches the website's `/skills` overview (`skills/+page.server.ts:337`).
-- **Extract that `row → Skill` mapping into a shared helper** (e.g. `website/src/lib/skills/skillRowToEffectInput.ts`) imported by both the `/skills` loader and this bake script, so the two cannot diverge (the drift check then enforces it).
-- Emits `mods/BetterBestiary/Resources/skill-summaries.json`:
+### Build-time: golden parity corpus (TypeScript = source of truth + oracle)
+- `website/scripts/gen-skill-effect-parity.ts` opens `website/static/compendium.db` (better-sqlite3) and, for each `skills` row, builds the formatter input via the shared `skillRowToEffectInput` mapper (the same mapping the `/skills` loader uses), calls `formatSkillEffect(input)` with **no** `monsterContext`, and emits a parity corpus:
   ```json
-  {
-    "golem_strike": "",
-    "seismic_slam": "300 dmg, stun 2s",
-    "frost_nova": "180 cold dmg, -50 speed, 6s"
-  }
+  [
+    {
+      "skill_id": "seismic_slam",
+      "input": { "skill_type": "target_damage", "damage": { "base_value": 300, "bonus_per_level": 0 }, "stun_chance": { "base_value": 1, "bonus_per_level": 0 }, "stun_time": { "base_value": 2, "bonus_per_level": 0 } },
+      "expected": "300 dmg, 100% stun (2s)"
+    }
+  ]
   ```
-- The committed JSON is the build artifact bridging the TS formatter and the mod. Regenerated whenever game data or `formatSkillEffect` changes (wired into the `update-game-version` workflow). A **lefthook pre-commit drift check** re-runs the bake and fails if the committed JSON differs — guaranteeing the mod can never silently drift from the website formatter. (Local, not GitHub CI: a clean CI checkout has no `compendium.db`.)
+- Written to `tests/BetterBestiary.Tests/Fixtures/skill-effect-parity.json` — a **test fixture**, not a shipped asset (the DLL embeds nothing). Regenerated whenever game data or `formatSkillEffect` changes (wired into `update-game-version`). A **lefthook pre-commit drift check** re-runs the bake and fails on any diff. (Local, not CI: a clean CI checkout has no `compendium.db`.)
+- `input` is exactly the post-mapper `Skill` object serialized, so the C# DTO deserializes it directly and the parity test compares like-for-like.
 
 ### Runtime: mod components
-- `SkillSummaryStore` — loads the embedded `skill-summaries.json` once; lookup by `skillId` → summary string. Missing entries return `null`.
-- `SkillId` — verbatim copy of `SanitizeId` with a parity unit test asserting it matches known exporter ids. (Skill templates are ScriptableObject assets, so no `(Clone)` handling is needed.)
-- `SkillsPanelController` — owns the panel GameObject: creates it lazily, positions it beside `UIJournal.rectTransformJournal`, shows/hides on toggle, `SetAsLastSibling()` for z-order.
-- `SkillsPanelRenderer` — populates rows via `UIUtils.BalancePrefabs(rowPrefab, count, container)`; fills icon/name/summary/cooldown/cast per row.
-- `SkillsToggleButton` — creates the bottom-right button (cloned from `UIJournalSlot.button` visual) parented to the detail panel; `onClick` flips the controller's open state.
-- `BetterBestiarySettings` — `MelonPreferences` category `"BetterBestiary"` (a fresh category; the old `"BestiaryRevealer"` prefs are not migrated — a one-time reset is acceptable), keeping `AutoAddMissingBestiaryEntries` and adding `ShowSkillsPanelButton` (default `true`) to allow disabling the feature.
-- Wiring: extend the existing `UIBestiaryDetail.Update` postfix to (a) ensure the button exists and (b) refresh the panel when open. Reuse `ReportPatchException` for safety.
+- `SkillEffectInput` — a plain C# DTO mirroring the `formatSkillEffect` `Skill` fields used by the no-context path (LinearValue as `{ base_value, bonus_per_level }`; the booleans/strings/numbers). Same field set as `skillRowToEffectInput`, matching its omissions (e.g. `is_double_exp_spell`) so output matches the website.
+- `SkillEffectFormatter` — the **C# port** of `formatSkillEffect` (intrinsic/no-context branch only): the seven `format*` helpers, the `HARDCODED_EFFECTS` map, and the orchestrator. Pure and headless-testable; held identical to TS by the parity test. JS number semantics are matched (`toLocaleString` grouping, `formatPercent` rounding) — any mismatch fails parity.
+- `SkillEffectExtractor` — builds a `SkillEffectInput` from a live `ScriptableSkill`, mirroring `DataExporter/SkillExporter` (`DetermineSkillType` + the `Populate*` reads) plus the loader's post-transforms (`summoned_monster_name` from the live summoned monster, `pet_name` from prefab, `id = SkillId.Sanitize(name)`, `damage_type` string). This is what makes **unexported dev-only skills** work. Per-skill extraction failures are caught, logged, and degrade that row to `"—"`.
+- `SkillId` — verbatim copy of `SanitizeId` (parity unit test); used for the `HARDCODED_EFFECTS` lookup key and the corpus key.
+- `SkillsPanelController` / `SkillsPanelRenderer` / `SkillsToggleButton` — own/position the panel, populate rows via `UIUtils.BalancePrefabs`, and create the toggle button (unchanged from the original design). The renderer now calls `SkillEffectFormatter.Format(SkillEffectExtractor.From(skillTemplate))` instead of an asset lookup.
+- `BetterBestiarySettings` — `MelonPreferences` category `"BetterBestiary"`; `AutoAddMissingBestiaryEntries` + `ShowSkillsPanelButton` (default `true`).
+- Wiring: extend the existing `UIBestiaryDetail.Update` postfix; reuse `ReportPatchException` for safety.
 
 ### Panel placement
 - Read `rectTransformJournal` via `GetWorldCorners` → screen rect.
@@ -161,13 +165,13 @@ The effect-summary logic lives in exactly one place — `formatSkillEffect` (Typ
 
 ## Identity & joining (robustness)
 
-- Skill id = `SkillId.Sanitize(skillTemplate.name)`, matching the exporter's `skill_id` (`SkillExporter.cs:44`). The asset is keyed solely by this id.
+- Skill id = `SkillId.Sanitize(skillTemplate.name)`, matching the exporter's `skill_id` (`SkillExporter.cs:44`); it is the `HARDCODED_EFFECTS` lookup key and the parity-corpus key.
 - No monster identity is needed (summaries are skill-global); the panel title uses the live `monster.nameEntity`.
 - `SanitizeId` is copied verbatim into `SkillId`, with a parity unit test for known names (e.g. `"Seismic Slam"` → `seismic_slam`).
 
 ## Edge cases
 
-- **Skill not in asset** (data drift / new game version before regen): show icon/name/CD/cast from runtime, summary = `"—"`. Never crash.
+- **Effect not modeled / empty summary:** if the formatter returns an empty string, render `"—"`. Extraction or formatter exceptions are caught per-skill, logged, and degrade that row to `"—"` — never crash the panel. There is no "missing asset" case: summaries are computed live, so new/dev-only skills are covered.
 - **`ScriptableSkill.image` null:** fallback sprite.
 - **Passive skills:** no meaningful cooldown/cast → render `Passive` (or `—`).
 - **Long skill lists:** the panel list is scrollable.
@@ -177,10 +181,11 @@ The effect-summary logic lives in exactly one place — `formatSkillEffect` (Typ
 
 ## Testing / verification
 
-- **Unit:** `SkillId` parity test asserting it matches known exporter ids (e.g. `Seismic Slam` → `seismic_slam`).
-- **Generator:** assert every `skills` row yields a summary string and the JSON parses; spot-check a known skill's output equals the website's `/skills` overview row.
-- **Runtime smoke (build-tool):** build + deploy + launch; open the Bestiary, toggle Skills for a known boss; verify each row (icon/name/summary/CD/cast), that summaries match that skill's row on the website `/skills` page, placement on a wide and a narrow resolution, correct basic-attack and passive rendering, and that a skill missing from the asset degrades to `"—"`.
-- **Artifact regen:** running the bake script yields no diff against the committed `skill-summaries.json` (the lefthook drift guard).
+- **Unit:** `SkillId` parity test (`Seismic Slam` -> `seismic_slam`).
+- **Formatter parity (primary):** for every `{ input, expected }` in `skill-effect-parity.json`, assert `SkillEffectFormatter.Format(input) == expected`. The cross-language source-of-truth guard — covers all exported skills headlessly; any drift from the TS formatter fails loud.
+- **Generator:** the bake emits one corpus entry per `skills` row and the JSON parses.
+- **Runtime smoke (build-tool):** build + deploy + launch; open the Bestiary, toggle Skills for a known boss; verify each row (icon/name/summary/CD/cast), summaries match that skill's `/skills` row, placement at wide and narrow resolution, basic-attack and passive rendering. Dev-version coverage is verified by the tester on a dev build.
+- **Artifact regen:** running the bake yields no diff against the committed `skill-effect-parity.json` (lefthook drift guard).
 
 ## Future work
 
@@ -190,4 +195,4 @@ The effect-summary logic lives in exactly one place — `formatSkillEffect` (Typ
 
 ## Open questions
 
-- None blocking. Asset delivery is **embedded resource** (versioned with the DLL); a loose file under `Mods/` is a documented fallback if regen-without-recompile becomes desirable.
+- None blocking. Summaries are computed at runtime in the mod; the parity corpus is a committed **test fixture**, not a shipped asset.

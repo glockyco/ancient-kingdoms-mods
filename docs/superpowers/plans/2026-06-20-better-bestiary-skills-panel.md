@@ -4,11 +4,13 @@
 
 **Goal:** Add a toggleable, native-looking "Skills" side panel to the in-game Bestiary that lists a monster's skills (icon + name, effect summary, cooldown, cast time), and rename the `BestiaryRevealer` mod to `BetterBestiary`.
 
-**Architecture:** The effect summaries are **skill-intrinsic** (no monster scaling) and precomputed once from the website's `formatSkillEffect` TypeScript function into an embedded JSON asset the mod reads at runtime (keyed by `skill_id`). The mod is pure Unity uGUI, hooking the existing `UIBestiaryDetail.Update` Harmony postfix; icons/cooldown/cast come live from `ScriptableSkill`. A lefthook pre-commit drift guard keeps the asset in sync with the formatter.
+**Architecture (amended 2026-06-20):** Effect summaries are **skill-intrinsic** (no monster scaling) and computed **at runtime** by a C# port of the website's `formatSkillEffect` (`mods/BetterBestiary/Skills/SkillEffectFormatter.cs`), fed from each live `ScriptableSkill` by `SkillEffectExtractor`. This covers monsters from unreleased/dev game versions that are in no data export — the original precompute-to-asset approach could not. The TypeScript `formatSkillEffect` stays the source of truth; a **golden parity test** over every exported skill holds the port string-identical. The mod is pure Unity uGUI, hooking the existing `UIBestiaryDetail.Update` Harmony postfix; icons/cooldown/cast come live from `ScriptableSkill`.
 
-**Tech Stack:** C# (net6, MelonLoader, IL2CPP via Il2CppInterop, Harmony), TypeScript (SvelteKit, better-sqlite3, vite-node, vitest), xUnit, lefthook.
+**Tech Stack:** C# (net6, MelonLoader, IL2CPP via Il2CppInterop, Harmony), TypeScript (SvelteKit, better-sqlite3, tsx, vitest), xUnit, lefthook.
 
 **Spec:** `docs/superpowers/specs/2026-06-20-better-bestiary-skills-panel-design.md`
+
+**Amendment (2026-06-20):** The original precompute pipeline (an embedded `skill-summaries.json` baked from the website) was replaced by a runtime C# port of `formatSkillEffect` validated by a golden parity corpus, so the panel also covers monsters absent from any data export. Tasks 3–7 below are recorded **as built**; Tasks 1–2 and 8–14 were unaffected. See the spec's amended *Alternatives considered* for the rationale.
 
 **Source-grounding (verified):**
 - Mod entry/MelonInfo: `mods/BestiaryRevealer/BestiaryRevealer.cs:4`. Settings: `mods/BestiaryRevealer/BestiaryRevealerSettings.cs`. Patch hook: `mods/BestiaryRevealer/Patches/UIBestiaryDetailPatch.cs`. uGUI prefab cloning: `mods/BestiaryRevealer/Ui/BestiaryLootRenderer.cs` via `UIUtils.BalancePrefabs`.
@@ -22,25 +24,29 @@
 ## File Structure
 
 **Create:**
-- `website/src/lib/skills/skillRowToEffectInput.ts` — shared `row → Skill` mapper (single source for both loader and bake).
+- `website/src/lib/skills/skillRowToEffectInput.ts` — shared `row → Skill` mapper (single source for the loader and the bake).
 - `website/src/lib/skills/skillRowToEffectInput.test.ts` — mapper unit tests.
-- `website/scripts/gen-skill-summaries.ts` — bake script: DB → `{ skill_id: summary }` JSON.
-- `mods/BetterBestiary/Resources/skill-summaries.json` — generated, committed asset (embedded in DLL).
+- `website/src/lib/skills/skillEffectParity.ts` — `SkillEffectParityCase` type (the corpus contract).
+- `website/scripts/gen-skill-effect-parity.ts` — bake script: DB → `{ skill_id, input, expected }` parity corpus.
+- `mods/BetterBestiary/Skills/LinearValue.cs`, `SkillEffectInput.cs` — the formatter DTO.
+- `mods/BetterBestiary/Skills/SkillEffectFormatter.cs` — C# port of `formatSkillEffect` (runtime summaries).
+- `mods/BetterBestiary/Skills/SkillEffectExtractor.cs` — live `ScriptableSkill` → `SkillEffectInput`.
 - `mods/BetterBestiary/Data/SkillId.cs` — IL2CPP-free copy of `SanitizeId`.
-- `mods/BetterBestiary/Data/SkillSummaryStore.cs` — loads/parses the embedded asset.
 - `mods/BetterBestiary/Ui/SkillsToggleButton.cs` — the bottom-right "Skills" button.
 - `mods/BetterBestiary/Ui/SkillsPanel.cs` — panel GameObject: build/position/show/hide.
 - `mods/BetterBestiary/Ui/SkillsPanelRenderer.cs` — populate rows for a monster.
-- `tests/BetterBestiary.Tests/BetterBestiary.Tests.csproj` — xUnit project (links IL2CPP-free mod sources).
-- `tests/BetterBestiary.Tests/SkillIdTests.cs`, `tests/BetterBestiary.Tests/SkillSummaryStoreTests.cs`.
+- `mods/BetterBestiary/Ui/SkillsPanelController.cs` — own button + panel, drive from the detail update.
+- `tests/BetterBestiary.Tests/BetterBestiary.Tests.csproj` — xUnit project (links the IL2CPP-free mod sources).
+- `tests/BetterBestiary.Tests/SkillIdTests.cs` — exporter id parity.
+- `tests/BetterBestiary.Tests/SkillEffectFormatterTests.cs` + `LinearValueConverter.cs` — golden parity test over the corpus.
+- `tests/BetterBestiary.Tests/Fixtures/skill-effect-parity.json` — generated, committed parity corpus (one compact line per skill).
 
 **Modify:**
 - Rename `mods/BestiaryRevealer/` → `mods/BetterBestiary/` (+ csproj, namespace, MelonInfo, settings category).
 - `website/src/routes/skills/+page.server.ts` — use the shared mapper.
-- `website/package.json` — add `gen:skill-summaries` script + `vite-node` devDep.
-- `mods/BetterBestiary/BetterBestiary.csproj` — Newtonsoft ref + EmbeddedResource.
+- `website/package.json` — add `gen:skill-effect-parity` script + `tsx` devDep.
 - `mods/BetterBestiary/Patches/UIBestiaryDetailPatch.cs` — drive button + panel.
-- `lefthook.yml` — drift-guard job.
+- `lefthook.yml` — drift-guard job for the parity corpus.
 - `AncientKingdomsMods.sln`, `README.md`.
 
 ---
@@ -202,9 +208,9 @@ export type SkillEffectRow = Record<string, unknown>;
 
 /**
  * Build the `formatSkillEffect` input from a raw `skills` DB row.
- * Single source for BOTH the /skills loader and the mod's bake script, so the
- * mod's precomputed summaries can never diverge from the website overview.
- * Mirrors website/src/routes/skills/+page.server.ts (boolean coercions + the
+ * Single source for BOTH the /skills loader and the parity-corpus bake, so the
+ * mod's runtime C# port stays matched to the website overview. Mirrors
+ * website/src/routes/skills/+page.server.ts (boolean coercions + the
  * pet_prefab_name -> pet_name rename).
  */
 export function skillRowToEffectInput(row: SkillEffectRow): Skill {
@@ -334,163 +340,21 @@ git commit -m "refactor(site): extract shared skill row-to-effect mapper"
 
 ---
 
-### Task 3: Bake script — `gen-skill-summaries.ts`
+### Task 3: Bake script — `gen-skill-effect-parity.ts`
 
-**Files:**
-- Create: `website/scripts/gen-skill-summaries.ts`
-- Modify: `website/package.json` (add `vite-node` devDep + `gen:skill-summaries` script)
-
-- [ ] **Step 1: Add the runner dependency and script**
-
-In `website/package.json` add to `devDependencies`: `"vite-node": "^4.1.9"` (match the vitest major), and to `scripts`:
-
-```json
-    "gen:skill-summaries": "vite-node scripts/gen-skill-summaries.ts"
-```
-
-Run: `pnpm install`
-Expected: lockfile updates; `vite-node` installed.
-
-- [ ] **Step 2: Write the bake script**
-
-`website/scripts/gen-skill-summaries.ts`. It uses `$lib` imports (resolved by vite-node via the project's vite config), reads the prebuilt DB, and writes a **stable** (sorted-key, trailing-newline) JSON so the drift guard diffs cleanly:
-
-```ts
-import Database from "better-sqlite3";
-import { writeFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
-import { dirname, resolve } from "node:path";
-import { formatSkillEffect } from "$lib/utils/formatSkillEffect";
-import { skillRowToEffectInput } from "$lib/skills/skillRowToEffectInput";
-
-const here = dirname(fileURLToPath(import.meta.url));
-const DB_PATH = resolve(here, "../static/compendium.db");
-const OUT_PATH = resolve(here, "../../mods/BetterBestiary/Resources/skill-summaries.json");
-
-const LINEAR_COLUMNS = new Set([
-  "damage", "damage_percent", "lifetap_percent", "knockback_chance", "stun_chance",
-  "stun_time", "fear_chance", "fear_time", "aggro", "break_armor_prob", "heals_health",
-  "heals_mana", "health_max_bonus", "health_max_percent_bonus", "mana_max_bonus",
-  "mana_max_percent_bonus", "energy_max_bonus", "defense_bonus", "ward_bonus",
-  "magic_resist_bonus", "poison_resist_bonus", "fire_resist_bonus", "cold_resist_bonus",
-  "disease_resist_bonus", "damage_bonus", "damage_percent_bonus", "magic_damage_bonus",
-  "magic_damage_percent_bonus", "haste_bonus", "spell_haste_bonus", "speed_bonus",
-  "critical_chance_bonus", "accuracy_bonus", "block_chance_bonus", "fear_resist_chance_bonus",
-  "damage_shield", "cooldown_reduction_percent", "heal_on_hit_percent", "healing_per_second_bonus",
-  "health_percent_per_second_bonus", "mana_per_second_bonus", "mana_percent_per_second_bonus",
-  "energy_per_second_bonus", "energy_percent_per_second_bonus", "strength_bonus",
-  "intelligence_bonus", "dexterity_bonus", "constitution_bonus", "wisdom_bonus", "charisma_bonus",
-  "prob_ignore_cleanse",
-]);
-
-// The /skills loader parses LinearValue columns from JSON TEXT into objects before
-// formatSkillEffect sees them; do the same here so output matches the website exactly.
-function parseLinearColumns(row: Record<string, unknown>): Record<string, unknown> {
-  const out: Record<string, unknown> = { ...row };
-  for (const col of LINEAR_COLUMNS) {
-    const v = out[col];
-    if (typeof v === "string") {
-      try {
-        out[col] = JSON.parse(v);
-      } catch {
-        // leave as-is; formatSkillEffect tolerates string | LinearValue | null
-      }
-    }
-  }
-  return out;
-}
-
-const db = new Database(DB_PATH, { readonly: true });
-const rows = db.prepare("SELECT * FROM skills").all() as Record<string, unknown>[];
-
-const summaries: Record<string, string> = {};
-for (const row of rows) {
-  const id = String(row.id);
-  const input = skillRowToEffectInput(parseLinearColumns(row));
-  summaries[id] = formatSkillEffect(input); // no monsterContext -> skill-intrinsic
-}
-db.close();
-
-// Stable, sorted output for clean drift diffs.
-const sorted: Record<string, string> = {};
-for (const key of Object.keys(summaries).sort()) sorted[key] = summaries[key];
-writeFileSync(OUT_PATH, JSON.stringify(sorted, null, 2) + "\n", "utf8");
-console.log(`Wrote ${Object.keys(sorted).length} skill summaries to ${OUT_PATH}`);
-```
-
-> The loader reads LinearValue columns parsed from the DB; confirm how `skills/+page.server.ts` obtains `row` (the SELECT and any JSON parsing). If it relies on a DB view or parses differently, mirror that here. The `parseLinearColumns` set above covers the LinearValue columns referenced by the mapper.
-
-- [ ] **Step 3: Verify the DB exists, then run the bake**
-
-The script needs the built DB. If `website/static/compendium.db` is absent, build it first:
-
-Run: `cd build-pipeline && uv run compendium build && cd ..`
-Then: `pnpm --filter website gen:skill-summaries`
-Expected: `Wrote N skill summaries to .../mods/BetterBestiary/Resources/skill-summaries.json` (N ≈ the number of `skills` rows).
-
-- [ ] **Step 4: Sanity-check output against the website**
-
-Open `mods/BetterBestiary/Resources/skill-summaries.json` and pick a known damage skill id; compare its summary string to that skill's row on the website `/skills` page (run `pnpm --filter website dev` if needed). They must match character-for-character.
-
-- [ ] **Step 5: Commit the script (asset committed in Task 4)**
-
-```bash
-git add website/package.json website/scripts/gen-skill-summaries.ts pnpm-lock.yaml
-git commit -m "feat(site): add skill-summaries bake script"
-```
+**As built.** `website/scripts/gen-skill-effect-parity.ts` (run via `pnpm --filter website gen:skill-effect-parity`, using `tsx`) opens `website/static/compendium.db` and, for each `skills` row, builds the formatter input with the shared `skillRowToEffectInput` mapper, computes `formatSkillEffect(input)` (no `monsterContext`), and writes a stable, sorted, one-line-per-skill parity corpus of `{ skill_id, input, expected }` to `tests/BetterBestiary.Tests/Fixtures/skill-effect-parity.json`. `input` is compacted to only the fields that affect the output (null / `false` / zero-LinearValue dropped), keeping the corpus small and diff-auditable.
 
 ---
 
-### Task 4: Commit the generated asset
+### Task 4: Parity corpus artifact
 
-**Files:**
-- Create: `mods/BetterBestiary/Resources/skill-summaries.json` (generated in Task 3)
-
-- [ ] **Step 1: Confirm the asset is well-formed**
-
-Verify the file parses and is non-empty (e.g. open it; it is a flat `{ "<skill_id>": "<summary>" }` object, keys sorted).
-
-- [ ] **Step 2: Commit the asset**
-
-```bash
-git add mods/BetterBestiary/Resources/skill-summaries.json
-git commit -m "chore(mods): add generated skill summaries asset"
-```
+**As built.** `tests/BetterBestiary.Tests/Fixtures/skill-effect-parity.json` is generated by Task 3, committed, and embedded into the test assembly. (This replaces the original plan's embedded `skill-summaries.json` mod asset, which could never describe skills missing from a data export.)
 
 ---
 
 ### Task 5: lefthook drift guard
 
-**Files:**
-- Modify: `lefthook.yml`
-
-- [ ] **Step 1: Add the drift-guard job**
-
-In `lefthook.yml`, under `pre-commit.jobs`, add (after `website-test`):
-
-```yaml
-    - name: website-skill-summaries-drift
-      glob:
-        - "website/src/lib/utils/formatSkillEffect.ts"
-        - "website/src/lib/skills/*.ts"
-        - "website/scripts/gen-skill-summaries.ts"
-        - "mods/BetterBestiary/Resources/skill-summaries.json"
-      run: pnpm --filter website gen:skill-summaries && git diff --exit-code -- mods/BetterBestiary/Resources/skill-summaries.json
-```
-
-This re-bakes when the formatter, mapper, bake script, or asset change, and fails if the committed asset is stale (the dev then re-runs the bake and stages it). It runs locally because a clean CI checkout has no `compendium.db` (same reason website check/test are lefthook-only).
-
-- [ ] **Step 2: Verify the guard passes on a clean asset**
-
-Run: `pnpm exec lefthook run pre-commit` (or stage `formatSkillEffect.ts` and attempt a no-op commit).
-Expected: `website-skill-summaries-drift` runs and passes (no diff) when the asset is current.
-
-- [ ] **Step 3: Commit**
-
-```bash
-git add lefthook.yml
-git commit -m "ci(hooks): guard skill-summaries asset against formatter drift"
-```
+**As built.** `lefthook.yml` job `website-skill-effect-parity-drift` re-runs the bake and fails the commit if the committed corpus differs. It globs `formatSkillEffect.ts`, `format.ts`, the shared `lib/skills/*.ts` helpers, the bake script, and the corpus. Local-only — a clean CI checkout has no `compendium.db`, mirroring how website check/test are gated by lefthook rather than CI.
 
 ---
 
@@ -498,224 +362,19 @@ git commit -m "ci(hooks): guard skill-summaries asset against formatter drift"
 
 ### Task 6: `SkillId` helper + test project
 
-**Files:**
-- Create: `mods/BetterBestiary/Data/SkillId.cs`
-- Create: `tests/BetterBestiary.Tests/BetterBestiary.Tests.csproj`
-- Create: `tests/BetterBestiary.Tests/SkillIdTests.cs`
-- Modify: `AncientKingdomsMods.sln` (add test project)
-
-- [ ] **Step 1: Create the IL2CPP-free id helper**
-
-`mods/BetterBestiary/Data/SkillId.cs` — a verbatim copy of `BaseExporter.SanitizeId` (`mods/DataExporter/Exporters/BaseExporter.cs:48`) so runtime ids match exported ids. No IL2CPP/Unity dependency (unit-testable):
-
-```csharp
-using System.Text.RegularExpressions;
-
-namespace BetterBestiary.Data;
-
-/// <summary>
-/// Mirrors DataExporter BaseExporter.SanitizeId so the mod derives the SAME
-/// skill id the exporter wrote into skill-summaries.json. Keep in sync; the
-/// parity test in tests/BetterBestiary.Tests/SkillIdTests.cs enforces this.
-/// </summary>
-internal static class SkillId
-{
-    public static string Sanitize(string input)
-    {
-        if (string.IsNullOrEmpty(input))
-            return input;
-
-        var sanitized = input.ToLowerInvariant().Replace(" ", "_");
-        sanitized = Regex.Replace(sanitized, @"[^a-z0-9_\-]", "");
-        return sanitized;
-    }
-}
-```
-
-- [ ] **Step 2: Create the test project**
-
-`tests/BetterBestiary.Tests/BetterBestiary.Tests.csproj` (mirrors `tests/DataExporter.Tests/DataExporter.Tests.csproj`, linking the IL2CPP-free sources):
-
-```xml
-<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <LangVersion>latest</LangVersion>
-    <Nullable>enable</Nullable>
-    <IsPackable>false</IsPackable>
-    <RollForward>Major</RollForward>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
-    <PackageReference Include="xunit" Version="2.*" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.*" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="..\..\mods\BetterBestiary\Data\SkillId.cs" Link="Data\SkillId.cs" />
-    <Compile Include="..\..\mods\BetterBestiary\Data\SkillSummaryStore.cs" Link="Data\SkillSummaryStore.cs" />
-  </ItemGroup>
-</Project>
-```
-
-> `SkillSummaryStore.cs` is created in Task 7; if running tests before then, comment out that `<Compile>` line until it exists.
-
-- [ ] **Step 3: Write the parity test**
-
-`tests/BetterBestiary.Tests/SkillIdTests.cs`:
-
-```csharp
-using BetterBestiary.Data;
-using Xunit;
-
-namespace BetterBestiary.Tests;
-
-public class SkillIdTests
-{
-    [Theory]
-    [InlineData("Seismic Slam", "seismic_slam")]
-    [InlineData("Frost Nova", "frost_nova")]
-    [InlineData("Fire-Ball!", "fire-ball")]
-    [InlineData("A B  C", "a_b__c")]
-    public void Sanitize_MatchesExporterScheme(string input, string expected)
-        => Assert.Equal(expected, SkillId.Sanitize(input));
-
-    [Fact]
-    public void Sanitize_PassesThroughNullOrEmpty()
-    {
-        Assert.Equal("", SkillId.Sanitize(""));
-        Assert.Null(SkillId.Sanitize(null!));
-    }
-}
-```
-
-- [ ] **Step 4: Run the test**
-
-Run: `dotnet test tests/BetterBestiary.Tests`
-Expected: PASS (parity cases). If `SkillSummaryStore.cs` is not yet present, keep its `<Compile>` line commented (Step 2 note).
-
-- [ ] **Step 5: Add test project to the solution and commit**
-
-```bash
-dotnet sln AncientKingdomsMods.sln add tests/BetterBestiary.Tests/BetterBestiary.Tests.csproj
-git add mods/BetterBestiary/Data/SkillId.cs tests/BetterBestiary.Tests AncientKingdomsMods.sln
-git commit -m "feat(mods): add SkillId helper with exporter-parity test"
-```
+**As built.** `mods/BetterBestiary/Data/SkillId.cs` is a verbatim, IL2CPP-free copy of `BaseExporter.SanitizeId`, used to derive the skill id (the `HARDCODED_EFFECTS` lookup key and the corpus key). `tests/BetterBestiary.Tests/` is an xUnit project that links the IL2CPP-free mod sources (`SkillId`, `LinearValue`, `SkillEffectInput`, `SkillEffectFormatter`); `SkillIdTests` asserts id parity against known exporter ids (e.g. `Seismic Slam` → `seismic_slam`).
 
 ---
 
-### Task 7: Embed the asset + `SkillSummaryStore`
+### Task 7: Runtime formatter port + extractor + parity test
 
-**Files:**
-- Modify: `mods/BetterBestiary/BetterBestiary.csproj`
-- Create: `mods/BetterBestiary/Data/SkillSummaryStore.cs`
-- Create: `tests/BetterBestiary.Tests/SkillSummaryStoreTests.cs`
+**As built.** Summaries are computed at runtime, not precomputed:
+- `mods/BetterBestiary/Skills/SkillEffectFormatter.cs` — C# port of `formatSkillEffect` (intrinsic / no-context branch): the seven `format*` helpers, the `HARDCODED_EFFECTS` map, and the orchestrator. Pure and headless-testable.
+- `mods/BetterBestiary/Skills/{LinearValue,SkillEffectInput}.cs` — the plain DTO the formatter consumes.
+- `mods/BetterBestiary/Skills/SkillEffectExtractor.cs` — builds a `SkillEffectInput` from a live `ScriptableSkill`, mirroring `DataExporter/SkillExporter`'s field reads, so unexported dev-only skills are covered.
+- `tests/BetterBestiary.Tests/SkillEffectFormatterTests.cs` (+ `LinearValueConverter.cs`) — runs the port over the parity corpus and asserts string-identical output for every exported skill.
 
-- [ ] **Step 1: Embed the asset + add Newtonsoft**
-
-In `mods/BetterBestiary/BetterBestiary.csproj`, inside the `<ItemGroup>`, add:
-
-```xml
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <EmbeddedResource Include="Resources\skill-summaries.json">
-      <LogicalName>skill-summaries.json</LogicalName>
-    </EmbeddedResource>
-```
-
-- [ ] **Step 2: Write the store with a testable `Parse`**
-
-`mods/BetterBestiary/Data/SkillSummaryStore.cs` — IL2CPP-free (uses Newtonsoft only), so it is unit-testable:
-
-```csharp
-using System.Collections.Generic;
-using System.IO;
-using System.Reflection;
-using Newtonsoft.Json;
-
-namespace BetterBestiary.Data;
-
-/// <summary>
-/// Loads the embedded skill-summaries.json (skill_id -> skill-intrinsic effect
-/// string, baked from the website's formatSkillEffect). Lookup is by SkillId.
-/// </summary>
-internal sealed class SkillSummaryStore
-{
-    private readonly Dictionary<string, string> _byId;
-
-    private SkillSummaryStore(Dictionary<string, string> byId) => _byId = byId;
-
-    /// <summary>Returns the summary for a skill id, or null if absent.</summary>
-    public string? Get(string skillId)
-        => skillId != null && _byId.TryGetValue(skillId, out var s) ? s : null;
-
-    public int Count => _byId.Count;
-
-    public static SkillSummaryStore Parse(string json)
-    {
-        var map = JsonConvert.DeserializeObject<Dictionary<string, string>>(json)
-                  ?? new Dictionary<string, string>();
-        return new SkillSummaryStore(map);
-    }
-
-    public static SkillSummaryStore LoadEmbedded()
-    {
-        var asm = Assembly.GetExecutingAssembly();
-        using var stream = asm.GetManifestResourceStream("skill-summaries.json");
-        if (stream == null)
-            return new SkillSummaryStore(new Dictionary<string, string>());
-        using var reader = new StreamReader(stream);
-        return Parse(reader.ReadToEnd());
-    }
-}
-```
-
-- [ ] **Step 3: Write the store test**
-
-`tests/BetterBestiary.Tests/SkillSummaryStoreTests.cs`:
-
-```csharp
-using BetterBestiary.Data;
-using Xunit;
-
-namespace BetterBestiary.Tests;
-
-public class SkillSummaryStoreTests
-{
-    [Fact]
-    public void Get_ReturnsSummaryForKnownId()
-    {
-        var store = SkillSummaryStore.Parse("{\"seismic_slam\":\"300 dmg, stun 2s\"}");
-        Assert.Equal("300 dmg, stun 2s", store.Get("seismic_slam"));
-        Assert.Equal(1, store.Count);
-    }
-
-    [Fact]
-    public void Get_ReturnsNullForMissingId()
-    {
-        var store = SkillSummaryStore.Parse("{}");
-        Assert.Null(store.Get("nope"));
-    }
-}
-```
-
-- [ ] **Step 4: Run tests (uncomment the store `<Compile>` line from Task 6 Step 2)**
-
-Run: `dotnet test tests/BetterBestiary.Tests`
-Expected: PASS (SkillId + SkillSummaryStore).
-
-- [ ] **Step 5: Build the mod to confirm the resource embeds**
-
-Run: `dotnet run --project build-tool build`
-Expected: build succeeds.
-
-- [ ] **Step 6: Commit**
-
-```bash
-git add mods/BetterBestiary/BetterBestiary.csproj mods/BetterBestiary/Data/SkillSummaryStore.cs tests/BetterBestiary.Tests/SkillSummaryStoreTests.cs
-git commit -m "feat(mods): embed + load skill summaries asset"
-```
+The mod embeds no asset and needs no Newtonsoft; there is no `SkillSummaryStore`.
 
 ---
 
@@ -1024,212 +683,13 @@ git commit -m "feat(mods): add Skills panel container with placement"
 
 ### Task 11: `SkillsPanelRenderer` (rows)
 
-**Files:**
-- Create: `mods/BetterBestiary/Ui/SkillsPanelRenderer.cs`
-
-- [ ] **Step 1: Implement the row template + per-monster population**
-
-Reads `monster.skills.skillTemplates`, derives `skill_id` via `SkillId.Sanitize`, looks up the summary, and fills icon/name/summary/cooldown/cast. Index 0 is labeled `(basic attack)`; passives show `Passive`.
-
-```csharp
-using System.Globalization;
-using BetterBestiary.Data;
-using Il2Cpp;
-using Il2CppTMPro;
-using UnityEngine;
-using UnityEngine.UI;
-
-namespace BetterBestiary.Ui;
-
-internal static class SkillsPanelRenderer
-{
-    // Column widths (px) — tuned in Task 13.
-    private const float IconW = 40f, NameW = 150f, CdW = 64f, CastW = 64f;
-
-    public static GameObject BuildRowTemplate(Transform parent)
-    {
-        var row = new GameObject("SkillRowTemplate", new[]
-        {
-            Il2CppInterop.Runtime.Il2CppType.Of<RectTransform>(),
-            Il2CppInterop.Runtime.Il2CppType.Of<HorizontalLayoutGroup>(),
-        });
-        row.transform.SetParent(parent, false);
-        var hl = row.GetComponent<HorizontalLayoutGroup>();
-        hl.childControlWidth = true;
-        hl.childControlHeight = true;
-        hl.childForceExpandHeight = false;
-        hl.spacing = 8f;
-
-        AddIcon(row.transform, IconW);
-        AddCell(row.transform, "Name", NameW, TextAlignmentOptions.Left);
-        AddCell(row.transform, "Summary", 0f, TextAlignmentOptions.Left, flexible: true);
-        AddCell(row.transform, "Cd", CdW, TextAlignmentOptions.Right);
-        AddCell(row.transform, "Cast", CastW, TextAlignmentOptions.Right);
-        return row;
-    }
-
-    public static void Populate(SkillsPanel panel, Monster monster, SkillSummaryStore store)
-    {
-        var skills = monster?.skills;
-        var templates = skills != null ? skills.skillTemplates : null;
-        int count = templates != null ? templates.Length : 0;
-
-        UIUtils.BalancePrefabs(panel.RowTemplate, count, panel.Content);
-
-        for (int i = 0; i < count; i++)
-        {
-            var skill = templates[i];
-            var rowTf = panel.Content.GetChild(i);
-            rowTf.gameObject.SetActive(skill != null);
-            if (skill == null) continue;
-
-            var icon = rowTf.GetChild(0).GetComponent<Image>();
-            var name = rowTf.GetChild(1).GetComponent<TextMeshProUGUI>();
-            var summary = rowTf.GetChild(2).GetComponent<TextMeshProUGUI>();
-            var cd = rowTf.GetChild(3).GetComponent<TextMeshProUGUI>();
-            var cast = rowTf.GetChild(4).GetComponent<TextMeshProUGUI>();
-
-            icon.sprite = skill.image;             // fallback handled by Task 13 if null
-            icon.enabled = skill.image != null;
-            name.text = i == 0 ? skill.nameSkill + "\n<size=70%>(basic attack)</size>" : skill.nameSkill;
-
-            var id = SkillId.Sanitize(skill.name);
-            summary.text = store.Get(id) ?? "—";
-
-            bool passive = IsPassive(skill);
-            cd.text = passive ? "Passive" : Pretty(skill.cooldown.Get(1));
-            cast.text = passive ? "" : Pretty(skill.castTime.Get(1));
-        }
-    }
-
-    private static bool IsPassive(ScriptableSkill skill)
-        => skill.castTime.Get(1) <= 0f && skill.cooldown.Get(1) <= 0f;
-
-    private static string Pretty(float seconds)
-        => seconds <= 0f ? "—" : Utils.PrettySeconds(seconds);
-
-    private static void AddIcon(Transform parent, float width)
-    {
-        var go = new GameObject("Icon", new[]
-        {
-            Il2CppInterop.Runtime.Il2CppType.Of<RectTransform>(),
-            Il2CppInterop.Runtime.Il2CppType.Of<Image>(),
-        });
-        go.transform.SetParent(parent, false);
-        var le = go.AddComponent<LayoutElement>();
-        le.preferredWidth = width; le.preferredHeight = width;
-    }
-
-    private static void AddCell(Transform parent, string name, float width, TextAlignmentOptions align, bool flexible = false)
-    {
-        var tmp = SkillsPanel.MakeText(parent, "", 16, FontStyles.Normal);
-        tmp.gameObject.name = name;
-        tmp.alignment = align;
-        tmp.textWrappingMode = TextWrappingModes.Normal;
-        var le = tmp.gameObject.AddComponent<LayoutElement>();
-        if (flexible) le.flexibleWidth = 1f; else le.preferredWidth = width;
-    }
-}
-```
-
-> `Utils.PrettySeconds` is the game's formatter (used by `ScriptableSkill.ToolTip`). `IsPassive` keys off zero cd+cast; refine in Task 13 if a non-passive skill has both zero. Fallback icon sprite (when `skill.image == null`) is wired in Task 13 (mirror `BestiaryMonsterSprites`).
-
-- [ ] **Step 2: Build + commit**
-
-Run: `dotnet run --project build-tool build` (expect success; remove any temporary `BuildRowTemplate` stub from Task 10)
-
-```bash
-git add mods/BetterBestiary/Ui/SkillsPanelRenderer.cs mods/BetterBestiary/Ui/SkillsPanel.cs
-git commit -m "feat(mods): render monster skill rows"
-```
+**As built.** `mods/BetterBestiary/Ui/SkillsPanelRenderer.cs` builds the row template (a `HorizontalLayoutGroup` with icon + name + summary + cd + cast cells) and, per `monster.skills.skillTemplates[i]`, fills icon/name/cooldown/cast live from the `ScriptableSkill` and the summary from `SkillEffectFormatter.Format(SkillEffectExtractor.From(skill))` — wrapped per-skill in try/catch so a failure degrades that row to `"—"` with a logged warning. Index 0 is labelled `(basic attack)`; a skill with zero cooldown and cast renders `Passive`. `Utils.PrettySeconds` formats the times and `UIUtils.BalancePrefabs` balances the rows.
 
 ---
 
 ### Task 12: Wire the panel into the bestiary update
 
-**Files:**
-- Modify: `mods/BetterBestiary/Patches/UIBestiaryDetailPatch.cs`
-- Create: `mods/BetterBestiary/Ui/SkillsPanelController.cs`
-
-- [ ] **Step 1: Add a controller that owns the button + panel + store**
-
-`mods/BetterBestiary/Ui/SkillsPanelController.cs`:
-
-```csharp
-using BetterBestiary.Data;
-using Il2Cpp;
-
-namespace BetterBestiary.Ui;
-
-internal static class SkillsPanelController
-{
-    private static SkillSummaryStore _store;
-    private static SkillsPanel _panel;
-    private static SkillsToggleButton _button;
-    private static Monster _current;
-    private static Monster _rendered;
-
-    public static void OnBestiaryUpdate(UIBestiaryDetail detail)
-    {
-        if (!BetterBestiarySettings.ShowSkillsPanelButton) return;
-        var journal = UIJournal.singleton;
-        if (detail == null || detail.monster == null || journal == null ||
-            journal.panel == null || !journal.panel.activeSelf || journal.currentTab != "Bestiary")
-            return;
-
-        _store ??= SkillSummaryStore.LoadEmbedded();
-        _panel ??= new SkillsPanel();
-        _button ??= new SkillsToggleButton(TogglePanel);
-
-        _current = detail.monster;
-        _button.EnsureCreated(journal);
-
-        // While open, keep the panel in sync with the selected monster.
-        if (_panel.IsOpen && _current != _rendered)
-            RenderCurrent();
-    }
-
-    private static void TogglePanel()
-    {
-        _panel.SetOpen(!_panel.IsOpen);
-        if (_panel.IsOpen)
-            RenderCurrent();
-    }
-
-    private static void RenderCurrent()
-    {
-        if (_current == null) return;
-        _panel.SetTitle(_current.nameEntity);
-        SkillsPanelRenderer.Populate(_panel, _current, _store);
-        _rendered = _current;
-    }
-}
-```
-
-- [ ] **Step 2: Drive it from the existing postfix**
-
-In `mods/BetterBestiary/Patches/UIBestiaryDetailPatch.cs`, add the controller call after the existing reveal (keep the try/catch + `ReportPatchException`):
-
-```csharp
-        try
-        {
-            Ui.BestiaryDetailRenderer.Reveal(__instance);
-            Ui.SkillsPanelController.OnBestiaryUpdate(__instance);
-        }
-        catch (System.Exception ex)
-        {
-            BetterBestiary.ReportPatchException(ex);
-        }
-```
-
-- [ ] **Step 3: Build + commit**
-
-Run: `dotnet run --project build-tool build` (expect success)
-
-```bash
-git add mods/BetterBestiary/Ui/SkillsPanelController.cs mods/BetterBestiary/Patches/UIBestiaryDetailPatch.cs
-git commit -m "feat(mods): wire skills panel into bestiary update"
-```
+**As built.** `mods/BetterBestiary/Ui/SkillsPanelController.cs` owns the toggle button and panel (no store) and is driven from the existing `UIBestiaryDetail.Update` postfix in `mods/BetterBestiary/Patches/UIBestiaryDetailPatch.cs`: after `BestiaryDetailRenderer.Reveal`, it calls `SkillsPanelController.OnBestiaryUpdate(__instance)` inside the existing try/catch (`ReportPatchException`). The controller only acts on the Bestiary tab, respects `ShowSkillsPanelButton`, lazily creates the button/panel, toggles open/closed, and re-renders when the selected monster changes via `SkillsPanelRenderer.Populate(panel, monster)`.
 
 ---
 
@@ -1251,7 +711,7 @@ dotnet run --project build-tool build && dotnet run --project build-tool deploy 
 - Rows show icon, name, summary, cooldown, cast for a known boss; cross-check 2–3 summaries against that monster's skills on the website `/skills` page (must match — skill-intrinsic).
 - Row 0 is labeled `(basic attack)`; a passive shows `Passive` and no cast.
 - Switch monsters (click another in the list): the panel re-populates and the title updates.
-- Pick a monster/skill **absent** from the asset (or temporarily remove one key): that row shows `—` for summary, never crashes.
+- Pick a monster whose skills are **not in any data export** (the dev-build case): the panel still shows real effect summaries, never `—` or a crash.
 
 - [ ] **Step 3: Tune + add the fallback icon**
 
@@ -1268,13 +728,13 @@ git commit -m "fix(mods): tune skills panel layout and icon fallback"
 
 - [ ] **Step 1: Verify README + spec reflect shipped behavior**
 
-Confirm `README.md` mod table (Task 1 Step 7) is accurate. Add a one-line note to `docs/data-export-guide.md` or the `update-game-version` workflow that `pnpm --filter website gen:skill-summaries` must be re-run after a game data refresh (the lefthook guard enforces it on commit).
+Confirm `README.md` mod table (Task 1 Step 7) is accurate. Add a one-line note to `docs/data-export-guide.md` or the `update-game-version` workflow that `pnpm --filter website gen:skill-effect-parity` must be re-run after a game data refresh (the lefthook guard enforces it on commit).
 
 - [ ] **Step 2: Commit**
 
 ```bash
 git add README.md docs/
-git commit -m "docs: note skill-summaries regeneration in update workflow"
+git commit -m "docs: note skill-effect-parity regeneration in update workflow"
 ```
 
 ---
@@ -1282,7 +742,7 @@ git commit -m "docs: note skill-summaries regeneration in update workflow"
 ## Self-Review
 
 **Spec coverage:**
-- Skill-intrinsic summaries, skill-global asset, joined by `skill_id` → Tasks 2–4, 6, 11. ✓
+- Skill-intrinsic summaries computed at runtime from live `ScriptableSkill` → Tasks 3, 7, 11. ✓
 - `formatSkillEffect` single source + shared mapper → Task 2. ✓
 - Lefthook drift guard (not CI) → Task 5. ✓
 - No tooltips → renderer shows no hover tooltip (Task 11). ✓
@@ -1292,10 +752,10 @@ git commit -m "docs: note skill-summaries regeneration in update workflow"
 - Bestiary tab only → controller guards `currentTab == "Bestiary"` (Task 12). ✓
 - Rename + no prefs migration → Task 1. ✓
 - `SanitizeId` copied + parity test → Task 6. ✓
-- Embedded asset → Task 7. ✓
+- Runtime formatter port + parity corpus → Tasks 3, 7. ✓
 - `ShowSkillsPanelButton` setting → Task 8. ✓
 - Patch-exception safety → Task 12 reuses `ReportPatchException`. ✓
 
-**Type/name consistency:** `SkillsPanel` (`EnsureCreated`/`SetOpen`/`Toggle`/`Reposition`/`Content`/`RowTemplate`/`MakeText`), `SkillsPanelRenderer` (`BuildRowTemplate`/`Populate`), `SkillsToggleButton` (`EnsureCreated`/`SetVisible`), `SkillSummaryStore` (`Parse`/`LoadEmbedded`/`Get`/`Count`), `SkillId.Sanitize` — referenced consistently across Tasks 6–13.
+**Type/name consistency:** `SkillsPanel` (`EnsureCreated`/`SetOpen`/`Reposition`/`SetTitle`/`Content`/`RowTemplate`/`MakeText`), `SkillsPanelRenderer` (`BuildRowTemplate`/`Populate`), `SkillsToggleButton` (`EnsureCreated`), `SkillsPanelController` (`OnBestiaryUpdate`), `SkillEffectFormatter.Format` / `SkillEffectExtractor.From`, `SkillId.Sanitize` — referenced consistently across Tasks 6–13.
 
 **Known runtime-tuning points (not placeholders):** only the uGUI layout constants (sizes, spacing, colors, column widths) and the fallback icon sprite are deferred to Task 13's runtime pass. All logic, data, and controller-wiring code is complete and concrete.

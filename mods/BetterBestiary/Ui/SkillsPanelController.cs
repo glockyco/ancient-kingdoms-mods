@@ -1,4 +1,3 @@
-using BetterBestiary.Data;
 using Il2Cpp;
 
 namespace BetterBestiary.Ui;
@@ -10,7 +9,6 @@ namespace BetterBestiary.Ui;
 /// </summary>
 internal static class SkillsPanelController
 {
-    private static SkillSummaryStore _store;
     private static SkillsPanel _panel;
     private static SkillsToggleButton _button;
     private static Monster _current;
@@ -27,7 +25,6 @@ internal static class SkillsPanelController
             journal.currentTab != "Bestiary")
             return;
 
-        _store ??= SkillSummaryStore.LoadEmbedded();
         _panel ??= new SkillsPanel();
         _button ??= new SkillsToggleButton(TogglePanel);
 
@@ -51,7 +48,7 @@ internal static class SkillsPanelController
         if (_current == null)
             return;
         _panel.SetTitle(_current.nameEntity);
-        SkillsPanelRenderer.Populate(_panel, _current, _store);
+        SkillsPanelRenderer.Populate(_panel, _current);
         _rendered = _current;
     }
 }

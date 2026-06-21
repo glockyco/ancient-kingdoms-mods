@@ -16,6 +16,12 @@
 
   <ItemGroup>
     <Compile Include="..\..\mods\BetterBestiary\Data\SkillId.cs" Link="Data\SkillId.cs" />
-    <Compile Include="..\..\mods\BetterBestiary\Data\SkillSummaryStore.cs" Link="Data\SkillSummaryStore.cs" />
+    <Compile Include="..\..\mods\BetterBestiary\Skills\LinearValue.cs" Link="Skills\LinearValue.cs" />
+    <Compile Include="..\..\mods\BetterBestiary\Skills\SkillEffectInput.cs" Link="Skills\SkillEffectInput.cs" />
+    <Compile Include="..\..\mods\BetterBestiary\Skills\SkillEffectFormatter.cs" Link="Skills\SkillEffectFormatter.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Fixtures\skill-effect-parity.json" LogicalName="skill-effect-parity.json" />
   </ItemGroup>
 </Project>

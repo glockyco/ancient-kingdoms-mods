@@ -69,11 +69,5 @@
     </Reference>
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <EmbeddedResource Include="Resources/skill-summaries.json">
-      <LogicalName>skill-summaries.json</LogicalName>
-    </EmbeddedResource>
-  </ItemGroup>
 
 </Project>

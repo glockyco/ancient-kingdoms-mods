@@ -2,11 +2,11 @@
  * Shared SELECT for the skills list.
  *
  * Used by the `/skills` page loader (`routes/skills/+page.server.ts`) and the
- * BetterBestiary summary bake script (`scripts/gen-skill-summaries.ts`) so both
+ * BetterBestiary parity-corpus bake (`scripts/gen-skill-effect-parity.ts`) so both
  * read identical rows — notably `summoned_monster_name`, which comes from a JOIN
  * on `monsters` and is used by `formatSkillEffect` for summon summaries. Keeping
- * one query string is what lets the baked mod asset match the website overview;
- * the lefthook drift guard then enforces it.
+ * one query string is what lets the mod's runtime port stay matched to the
+ * website overview; the lefthook drift guard then enforces it.
  */
 export const SKILLS_LIST_QUERY = `SELECT
       s.id,

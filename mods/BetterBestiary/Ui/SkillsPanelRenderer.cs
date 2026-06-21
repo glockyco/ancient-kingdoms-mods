@@ -1,4 +1,5 @@
-using BetterBestiary.Data;
+using System;
+using BetterBestiary.Skills;
 using Il2Cpp;
 using Il2CppTMPro;
 using UnityEngine;
@@ -38,7 +39,7 @@ internal static class SkillsPanelRenderer
         return row;
     }
 
-    public static void Populate(SkillsPanel panel, Monster monster, SkillSummaryStore store)
+    public static void Populate(SkillsPanel panel, Monster monster)
     {
         var skills = monster != null ? monster.skills : null;
         var templates = skills != null ? skills.skillTemplates : null;
@@ -66,9 +67,17 @@ internal static class SkillsPanelRenderer
                 ? skill.nameSkill + " <size=70%>(basic attack)</size>"
                 : skill.nameSkill;
 
-            var id = SkillId.Sanitize(skill.name);
-            var text = store.Get(id);
-            summary.text = string.IsNullOrEmpty(text) ? "\u2014" : text;
+            string summaryText;
+            try
+            {
+                summaryText = SkillEffectFormatter.Format(SkillEffectExtractor.From(skill));
+            }
+            catch (Exception ex)
+            {
+                BetterBestiary.LogWarning($"Skills panel: failed to summarize '{skill.name}': {ex.Message}");
+                summaryText = null;
+            }
+            summary.text = string.IsNullOrEmpty(summaryText) ? "\u2014" : summaryText;
 
             var passive = skill.castTime.Get(1) <= 0f && skill.cooldown.Get(1) <= 0f;
             cd.text = passive ? "Passive" : Pretty(skill.cooldown.Get(1));
