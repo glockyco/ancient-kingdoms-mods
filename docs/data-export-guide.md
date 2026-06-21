@@ -26,3 +26,13 @@ Do not add static fallback sources for missing selected sprites. Excluded source
 ## Runtime Requirements
 
 Runtime visual exports are meaningful only after the game is in the `World` scene and `Il2CppMirror.NetworkClient.localPlayer != null`. The `compendium.export` HotRepl command in `HotReplCommands` is responsible for reaching that state before calling `DataExporter.ExportAllData()`.
+
+## BetterBestiary Skill Summaries
+
+The BetterBestiary mod bundles `mods/BetterBestiary/Resources/skill-summaries.json`, baked from the website's `formatSkillEffect` against `compendium.db` (skill-intrinsic effect strings keyed by skill id). After a game-data refresh (re-export + `compendium build`), regenerate it so the mod matches the website `/skills` overview:
+
+```bash
+pnpm --filter website gen:skill-summaries
+```
+
+A lefthook pre-commit guard re-runs the bake and fails the commit if this asset is stale relative to the formatter, the shared skills helpers, or the bake script.
