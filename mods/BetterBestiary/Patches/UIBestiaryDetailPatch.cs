@@ -16,6 +16,7 @@ internal static class UIBestiaryDetailPatch
         try
         {
             Ui.BestiaryDetailRenderer.Reveal(__instance);
+            Ui.SkillsPanelController.OnBestiaryUpdate(__instance);
         }
         catch (Exception ex)
         {
