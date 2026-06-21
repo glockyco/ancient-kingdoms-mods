@@ -3,6 +3,7 @@ import type { PageServerLoad } from "./$types";
 import type { SkillListView } from "$lib/types/skills";
 import { formatSkillEffect } from "$lib/utils/formatSkillEffect";
 import { skillRowToEffectInput } from "$lib/skills/skillRowToEffectInput";
+import { SKILLS_LIST_QUERY } from "$lib/skills/skillsListQuery";
 
 export const prerender = true;
 
@@ -112,105 +113,7 @@ export interface SkillsPageData {
 }
 
 export const load: PageServerLoad = (): SkillsPageData => {
-  const rows = query<SkillRow>(
-    `SELECT
-      s.id,
-      s.name,
-      s.skill_type,
-      s.tier,
-      s.max_level,
-      s.level_required,
-      s.player_classes,
-      s.is_spell,
-      s.is_veteran,
-      s.is_pet_skill,
-      s.is_mercenary_skill,
-      s.damage_type,
-      s.damage,
-      s.damage_percent,
-      s.lifetap_percent,
-      s.knockback_chance,
-      s.stun_chance,
-      s.stun_time,
-      s.fear_chance,
-      s.fear_time,
-      s.aggro,
-      s.is_assassination_skill,
-      s.is_manaburn_skill,
-      s.break_armor_prob,
-      s.heals_health,
-      s.heals_mana,
-      s.is_resurrect_skill,
-      s.is_balance_health,
-      s.health_max_bonus,
-      s.health_max_percent_bonus,
-      s.mana_max_bonus,
-      s.mana_max_percent_bonus,
-      s.energy_max_bonus,
-      s.defense_bonus,
-      s.ward_bonus,
-      s.magic_resist_bonus,
-      s.poison_resist_bonus,
-      s.fire_resist_bonus,
-      s.cold_resist_bonus,
-      s.disease_resist_bonus,
-      s.damage_bonus,
-      s.damage_percent_bonus,
-      s.magic_damage_bonus,
-      s.magic_damage_percent_bonus,
-      s.haste_bonus,
-      s.spell_haste_bonus,
-      s.speed_bonus,
-      s.critical_chance_bonus,
-      s.accuracy_bonus,
-      s.block_chance_bonus,
-      s.fear_resist_chance_bonus,
-      s.damage_shield,
-      s.cooldown_reduction_percent,
-      s.heal_on_hit_percent,
-      s.healing_per_second_bonus,
-      s.health_percent_per_second_bonus,
-      s.mana_per_second_bonus,
-      s.mana_percent_per_second_bonus,
-      s.energy_per_second_bonus,
-      s.energy_percent_per_second_bonus,
-      s.strength_bonus,
-      s.intelligence_bonus,
-      s.dexterity_bonus,
-      s.constitution_bonus,
-      s.wisdom_bonus,
-      s.charisma_bonus,
-      s.duration_base,
-      s.is_invisibility,
-      s.is_mana_shield,
-      s.is_cleanse,
-      s.is_dispel,
-      s.is_teleport,
-      s.is_blindness,
-      s.is_enrage,
-      s.is_poison_debuff,
-      s.is_disease_debuff,
-      s.is_fire_debuff,
-      s.is_cold_debuff,
-      s.is_magic_debuff,
-      s.is_melee_debuff,
-      s.prob_ignore_cleanse,
-      s.summoned_monster_id,
-      sm.name as summoned_monster_name,
-      s.summoned_monster_level,
-      s.summon_count_per_cast,
-      s.max_active_summons,
-      s.pet_prefab_name,
-      pet_lookup.id as pet_id,
-      s.is_familiar,
-      s.affects_random_target,
-      s.area_object_size,
-      s.area_objects_to_spawn
-    FROM skills s
-    LEFT JOIN monsters sm ON sm.id = s.summoned_monster_id
-    LEFT JOIN pets pet_lookup ON lower(pet_lookup.name) = lower(s.pet_prefab_name)
-    ORDER BY s.tier ASC, s.name ASC`,
-  );
+  const rows = query<SkillRow>(SKILLS_LIST_QUERY);
 
   // Separate query for pet/mercenary relationships — plain object lookup, not Map
   // (Map is not serializable through SvelteKit's data passing)

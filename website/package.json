@@ -17,6 +17,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "vitest run",
+    "gen:skill-summaries": "tsx scripts/gen-skill-summaries.ts",
     "cf-deploy": "(curl -fsSL --retry 3 --retry-delay 2 https://ancient-kingdoms.compendiums.org/sitemap-manifest.json -o .sitemap-manifest.prev.json || rm -f .sitemap-manifest.prev.json) && wrangler deploy && node scripts/indexnow-ping.mjs .sitemap-manifest.prev.json static/sitemap-manifest.json && rm -f .sitemap-manifest.prev.json",
     "cf-deploy:redirect": "wrangler deploy --config wrangler.redirect.toml"
   },
@@ -55,6 +56,7 @@
     "typescript-eslint": "^8.61.1",
     "vaul-svelte": "1.0.0-next.7",
     "vite": "^8.0.16",
+    "tsx": "^4.19.0",
     "vitest": "^4.1.9",
     "wrangler": "^4.103.0"
   },
