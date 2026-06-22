@@ -15,7 +15,7 @@ Close the game before deploy when DLLs are locked. A deployed DLL does not affec
 
 ## Boundaries
 
-- Do not inspect or use `mods/BossMod/` for this mod. `mods/BossTracker/` and `mods/BetterBestiary/` are acceptable references.
+- Use `mods/BossTracker/` and `mods/BetterBestiary/` as references when needed.
 - No Harmony combat detection. Combat state is read from synced game fields.
 - No production global object enumeration for discovery. Use combat-gated `Physics2D.OverlapCircle` with `GameManager.monsterFilter` and a reused `Il2CppReferenceArray<Collider2D>` buffer.
 - No custom shaders, AssetBundles, `BaseMeshEffect`, injected MonoBehaviours, or hidden keyboard-only controls.

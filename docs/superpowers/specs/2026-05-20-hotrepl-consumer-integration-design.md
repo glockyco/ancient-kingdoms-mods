@@ -374,7 +374,7 @@ These items are not improvements for this work and are not deferred — they are
 - **Replacing `Local.props` as MSBuild's configuration mechanism.** MSBuild reads `.props` natively. Polyglot repos using each ecosystem's native config (TOML for Python, JSON for JS, `.props` for MSBuild) is the right shape, not legacy.
 - **Migrating to NUKE, Cake, or another build-automation framework.** `build-tool` is a project task runner, not a build-pipeline DAG. Spectre.Console.Cli plus CliWrap is the correct baseline for the responsibilities it owns.
 - **Refactoring DataExporter beyond the result-file writer.** DataExporter's own design (export catalogue, artifact references, schema evolution) is a separate concern; the result file is a thin orchestration contract, not a redesign trigger.
-- **The Python build pipeline (`build-pipeline/`), the SvelteKit website (`website/`), or other mods (`mods/BossMod*`, etc.).** Unrelated subsystems.
+- **The Python build pipeline (`build-pipeline/`), the SvelteKit website (`website/`), or unrelated mods.** Unrelated subsystems.
 
 ## Future direction
 
@@ -387,7 +387,7 @@ These items are real future work, named with concrete next steps rather than lef
   Each control command merits its own design; implementing the first is a separate spec following the HotRepl control-command authoring conventions.
 - **Migrating `build-tool export` to call `hotrepl control run compendium.export`.** Once `compendium.export` ships as a control command, the result-file watcher introduced by this spec becomes redundant. The migration eliminates the dual-surface (result file plus HotRepl envelope) by consolidating on the HotRepl envelope and JSONL job events. Sequence: ship the control command first, then migrate the consumer in a follow-up spec.
 - **DataExporter producing artifact references in HotRepl's shape (`uri`, `path`, `sha256`, `byteSize`, `finalized`) instead of bare `outputPath` strings.** Useful once any consumer wants verified export integrity. Additive to the current result-file shape; gated behind `schemaVersion` bump when it lands.
-- **Other mods (e.g. `mods/BossMod`) registering HotRepl control commands for boss-fight introspection.** Same authoring pattern as DataExporter; entirely additive.
+- **Other mods registering HotRepl control commands for live-game introspection.** Same authoring pattern as DataExporter; entirely additive.
 
 ## Risks and mitigations
 

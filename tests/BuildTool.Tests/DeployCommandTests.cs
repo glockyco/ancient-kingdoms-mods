@@ -19,7 +19,6 @@ public class DeployCommandTests
         Directory.CreateDirectory(modsPath);
         var sourceDll = Path.Combine(sourceDir, "DataExporter.dll");
         File.WriteAllText(sourceDll, "data");
-        File.WriteAllText(Path.Combine(modsPath, "BossMod.dll"), "stale");
 
         var config = new LocalConfig(
             GamePath: gamePath,
@@ -32,7 +31,6 @@ public class DeployCommandTests
 
         Assert.Equal(0, result);
         Assert.Equal("data", File.ReadAllText(Path.Combine(modsPath, "DataExporter.dll")));
-        Assert.False(File.Exists(Path.Combine(modsPath, "BossMod.dll")));
         Directory.Delete(tempRoot, recursive: true);
     }
 }

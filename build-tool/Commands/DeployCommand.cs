@@ -11,11 +11,6 @@ namespace BuildTool.Commands;
 
 public sealed class DeployCommand : AsyncCommand<DeployCommand.Settings>
 {
-    internal static readonly ISet<string> DisabledDeploymentDllNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-    {
-        "BossMod.dll",
-        "BossMod.Core.dll",
-    };
 
     private readonly string _repoRoot;
     private readonly LocalConfig _config;
@@ -44,8 +39,6 @@ public sealed class DeployCommand : AsyncCommand<DeployCommand.Settings>
         Console.WriteLine();
 
         Directory.CreateDirectory(modsPath);
-        foreach (var removedPath in RemoveDisabledDeploymentArtifacts(modsPath))
-            Console.WriteLine($"Removed disabled deployment artifact: {Path.GetFileName(removedPath)}");
 
         var modsDir = Path.Combine(_repoRoot, "mods");
         var dllFiles = GetDeployableModDlls(modsDir);
@@ -92,24 +85,7 @@ public sealed class DeployCommand : AsyncCommand<DeployCommand.Settings>
     {
         return Directory.GetFiles(modsDir, "*.dll", SearchOption.AllDirectories)
             .Where(f => f.Contains(Path.Combine("bin", "Release", "net6.0"), StringComparison.Ordinal))
-            .Where(f => !DisabledDeploymentDllNames.Contains(Path.GetFileName(f)))
             .OrderBy(f => f, StringComparer.Ordinal)
             .ToList();
-    }
-
-    internal static IReadOnlyList<string> RemoveDisabledDeploymentArtifacts(string modsPath)
-    {
-        var removed = new List<string>();
-        foreach (var dllName in DisabledDeploymentDllNames)
-        {
-            var path = Path.Combine(modsPath, dllName);
-            if (!File.Exists(path))
-                continue;
-
-            File.Delete(path);
-            removed.Add(path);
-        }
-
-        return removed;
     }
 }
