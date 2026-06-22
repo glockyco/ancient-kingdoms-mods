@@ -220,6 +220,7 @@ class PetData(BaseModel):
     type_monster: str
     level: int
     health: int = 0
+    mana: int = 0
     damage: int = 0
     magic_damage: int = 0
     defense: int = 0
@@ -239,6 +240,8 @@ class PetData(BaseModel):
     # Stat scaling (LinearInt/LinearFloat: actual = base + per_level * (level - 1))
     health_base: int = 0
     health_per_level: int = 0
+    mana_base: int = 0
+    mana_per_level: int = 0
     damage_base: int = 0
     damage_per_level: int = 0
     magic_damage_base: int = 0

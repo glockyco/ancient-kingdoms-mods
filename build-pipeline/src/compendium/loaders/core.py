@@ -600,10 +600,11 @@ def load_pets(conn: sqlite3.Connection, export_dir: Path) -> None:
         cursor.execute(
             """INSERT INTO pets (
                 id, name, is_mercenary, is_familiar, type_monster,
-                level, health, damage, magic_damage, defense,
+                level, health, mana, damage, magic_damage, defense,
                 magic_resist, poison_resist, fire_resist, cold_resist, disease_resist,
                 block_chance, critical_chance, has_buffs, has_heals, icon_path,
                 health_base, health_per_level,
+                mana_base, mana_per_level,
                 damage_base, damage_per_level,
                 magic_damage_base, magic_damage_per_level,
                 defense_base, defense_per_level,
@@ -615,7 +616,7 @@ def load_pets(conn: sqlite3.Connection, export_dir: Path) -> None:
                 block_chance_base, block_chance_per_level,
                 critical_chance_base, critical_chance_per_level
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-                      ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                      ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
             (
                 pet.id,
                 pet.name,
@@ -624,6 +625,7 @@ def load_pets(conn: sqlite3.Connection, export_dir: Path) -> None:
                 pet.type_monster,
                 pet.level,
                 pet.health,
+                pet.mana,
                 pet.damage,
                 pet.magic_damage,
                 pet.defense,
@@ -639,6 +641,8 @@ def load_pets(conn: sqlite3.Connection, export_dir: Path) -> None:
                 pet.icon_path,
                 pet.health_base,
                 pet.health_per_level,
+                pet.mana_base,
+                pet.mana_per_level,
                 pet.damage_base,
                 pet.damage_per_level,
                 pet.magic_damage_base,

@@ -1748,6 +1748,7 @@ CREATE TABLE pets (
     type_monster TEXT NOT NULL,         -- Class archetype (e.g. "Cleric", "Druid")
     level INTEGER NOT NULL,
     health INTEGER DEFAULT 0,
+    mana INTEGER DEFAULT 0,
     damage INTEGER DEFAULT 0,
     magic_damage INTEGER DEFAULT 0,
     defense INTEGER DEFAULT 0,
@@ -1765,6 +1766,8 @@ CREATE TABLE pets (
     -- Stat scaling (LinearInt/LinearFloat: actual = base + per_level * (level - 1))
     health_base INTEGER DEFAULT 0,
     health_per_level INTEGER DEFAULT 0,
+    mana_base INTEGER DEFAULT 0,
+    mana_per_level INTEGER DEFAULT 0,
     damage_base INTEGER DEFAULT 0,
     damage_per_level INTEGER DEFAULT 0,
     magic_damage_base INTEGER DEFAULT 0,
