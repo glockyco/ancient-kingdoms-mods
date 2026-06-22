@@ -57,6 +57,7 @@ public class PetExporter : BaseExporter
                 has_heals = pet.hasHeals,
                 level = pet.level?.current ?? 0,
                 health = pet.health?.max ?? 0,
+                mana = pet.mana?.max ?? 0,
                 damage = pet.combat?.damage ?? 0,
                 magic_damage = pet.combat?.magicDamage ?? 0,
                 defense = pet.combat?.defense ?? 0,
@@ -71,6 +72,8 @@ public class PetExporter : BaseExporter
                 // Stat scaling (LinearInt/LinearFloat: actual = base + per_level * (level - 1))
                 health_base = pet.health?.baseHealth.baseValue ?? 0,
                 health_per_level = pet.health?.baseHealth.bonusPerLevel ?? 0,
+                mana_base = pet.mana?.baseMana.baseValue ?? 0,
+                mana_per_level = pet.mana?.baseMana.bonusPerLevel ?? 0,
                 damage_base = pet.combat?.baseDamage.baseValue ?? 0,
                 damage_per_level = pet.combat?.baseDamage.bonusPerLevel ?? 0,
                 magic_damage_base = pet.combat?.baseMagicDamage.baseValue ?? 0,

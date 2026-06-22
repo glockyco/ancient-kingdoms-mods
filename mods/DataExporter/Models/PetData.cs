@@ -20,6 +20,7 @@ public class PetData
     // Base stats (for mercenaries - familiars scale with owner)
     public int level { get; set; }
     public int health { get; set; }
+    public int mana { get; set; }
 
     // Combat stats (calculated at current level)
     public int damage { get; set; }
@@ -36,6 +37,8 @@ public class PetData
     // Stat scaling (LinearInt/LinearFloat: actual = base + per_level * (level - 1))
     public int health_base { get; set; }
     public int health_per_level { get; set; }
+    public int mana_base { get; set; }
+    public int mana_per_level { get; set; }
     public int damage_base { get; set; }
     public int damage_per_level { get; set; }
     public int magic_damage_base { get; set; }
