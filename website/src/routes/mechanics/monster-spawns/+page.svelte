@@ -278,7 +278,7 @@
     <Card.Content class="space-y-4">
       <ul class="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
         <li>
-          <!-- Source: server-scripts/Monster.cs:2087-2105 — boss and elite deaths write the respawn deadline to the server database; the deadline is also synced to online clients. -->
+          <!-- Source: server-scripts/Monster.cs:2087-2105 — boss and elite deaths write the respawn deadline to the server database; the respawn duration is sent to currently-online clients via TargetRpcUpdateBossState (applied locally as now+duration, early by the death/corpse window), not a synced deadline, and offline clients are not notified. -->
           When a boss dies, its respawn deadline is saved server-side.
         </li>
         <li>
