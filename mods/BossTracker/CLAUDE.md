@@ -1,17 +1,18 @@
 # BossTracker
 
-Tracks boss/elite monsters and displays respawn timers in a draggable UI panel.
+Tracks boss, elite, and fabled monsters and displays respawn timers in a draggable UI panel.
 
 ## Features
 
-- Tracks alive bosses/elites with distance and direction
-- Tracks dead bosses/elites with respawn countdown timers
+- Tracks alive boss/elite/fabled monsters with distance and direction
+- Tracks dead boss/elite/fabled monsters with respawn countdown timers
 - Draggable panel (Right Shift + Left Click + Drag)
 - Position persists across sessions
 
 ## How It Works
 
 **Monster Tracking:**
+- Tracks any monster flagged `isBoss`, `isElite`, or `isFabled`
 - Only active in "World" scene
 - Caches monster list (refreshes every 5 seconds to catch new spawns)
 - Maintains `Dictionary<uint, BossInfo>` keyed by monster netId
