@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <RollForward>Major</RollForward>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="xunit" Version="2.*" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.*" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\..\mods\BossSkillTracker\Model\Tier.cs" Link="Model\Tier.cs" />
+    <Compile Include="..\..\mods\BossSkillTracker\Model\GateStatus.cs" Link="Model\GateStatus.cs" />
+    <Compile Include="..\..\mods\BossSkillTracker\Model\Tuning.cs" Link="Model\Tuning.cs" />
+    <Compile Include="..\..\mods\BossSkillTracker\Model\CooldownMath.cs" Link="Model\CooldownMath.cs" />
+    <Compile Include="..\..\mods\BossSkillTracker\Model\SkillOrdering.cs" Link="Model\SkillOrdering.cs" />
+    <Compile Include="..\..\mods\BossSkillTracker\Model\RelevanceFilter.cs" Link="Model\RelevanceFilter.cs" />
+    <Compile Include="..\..\mods\BossSkillTracker\Model\GateVm.cs" Link="Model\GateVm.cs" />
+    <Compile Include="..\..\mods\BossSkillTracker\Model\SpecialGateEstimator.cs" Link="Model\SpecialGateEstimator.cs" />
+    <Compile Include="..\..\mods\BossSkillTracker\Model\PanelPlacement.cs" Link="Model\PanelPlacement.cs" />
+    <Compile Include="..\..\mods\BossSkillTracker\Model\RowLayout.cs" Link="Model\RowLayout.cs" />
+    <Compile Include="..\..\mods\BossSkillTracker\Model\RawImageRows.cs" Link="Model\RawImageRows.cs" />
+  </ItemGroup>
+</Project>

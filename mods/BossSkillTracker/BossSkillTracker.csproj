@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <AssemblyName>BossSkillTracker</AssemblyName>
+    <RootNamespace>BossSkillTracker</RootNamespace>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="MelonLoader"><HintPath>$(MelonLoaderPath)\net6\MelonLoader.dll</HintPath><Private>False</Private></Reference>
+    <Reference Include="Il2CppInterop.Runtime"><HintPath>$(MelonLoaderPath)\net6\Il2CppInterop.Runtime.dll</HintPath><Private>False</Private></Reference>
+    <Reference Include="UnityEngine.CoreModule"><HintPath>$(Il2CppAssembliesPath)\UnityEngine.CoreModule.dll</HintPath><Private>False</Private></Reference>
+    <Reference Include="UnityEngine.UI"><HintPath>$(Il2CppAssembliesPath)\UnityEngine.UI.dll</HintPath><Private>False</Private></Reference>
+    <Reference Include="UnityEngine.UIModule"><HintPath>$(Il2CppAssembliesPath)\UnityEngine.UIModule.dll</HintPath><Private>False</Private></Reference>
+    <Reference Include="UnityEngine.TextRenderingModule"><HintPath>$(Il2CppAssembliesPath)\UnityEngine.TextRenderingModule.dll</HintPath><Private>False</Private></Reference>
+    <Reference Include="UnityEngine.Physics2DModule"><HintPath>$(Il2CppAssembliesPath)\UnityEngine.Physics2DModule.dll</HintPath><Private>False</Private></Reference>
+    <Reference Include="Unity.TextMeshPro"><HintPath>$(Il2CppAssembliesPath)\Unity.TextMeshPro.dll</HintPath><Private>False</Private></Reference>
+    <Reference Include="Unity.InputSystem"><HintPath>$(Il2CppAssembliesPath)\Unity.InputSystem.dll</HintPath><Private>False</Private></Reference>
+    <Reference Include="Assembly-CSharp"><HintPath>$(Il2CppAssembliesPath)\Assembly-CSharp.dll</HintPath><Private>False</Private></Reference>
+    <Reference Include="Il2Cppmscorlib"><HintPath>$(Il2CppAssembliesPath)\Il2Cppmscorlib.dll</HintPath><Private>False</Private></Reference>
+    <Reference Include="Il2CppMirror"><HintPath>$(Il2CppAssembliesPath)\Il2CppMirror.dll</HintPath><Private>False</Private></Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\Controls\*.rgba" />
+  </ItemGroup>
+</Project>
