@@ -206,10 +206,10 @@ namespace BossTracker
                 var monster = obj.Cast<Il2Cpp.Monster>();
 
                 bool isDead = monster.health != null && monster.health.current <= 0;
-                bool isBossOrElite = monster.isBoss || monster.isElite;
+                bool isTrackable = monster.isBoss || monster.isElite || monster.isFabled;
 
                 // Track bosses and elites (both alive and dead)
-                if (isBossOrElite)
+                if (isTrackable)
                 {
                     if (isDead)
                     {
