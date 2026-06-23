@@ -58,6 +58,12 @@
   --monster-regular: oklch(0.6 0.22 25);
   --monster-elite: oklch(0.65 0.2 295);
   --monster-boss: oklch(0.7 0.18 195);
+
+  /* Mercenary stat-range hues */
+  --stat-hp: oklch(0.58 0.12 155);
+  --stat-mana: oklch(0.57 0.13 255);
+  --stat-atk: oklch(0.62 0.16 36);
+  --stat-spell: oklch(0.55 0.15 305);
 }
 
 .dark {
@@ -100,6 +106,11 @@
   --quality-text-epic: oklch(0.72 0.2 310);
   --quality-text-legendary: oklch(0.75 0.18 55);
   --quality-text-mythic: oklch(0.86 0.11 225);
+
+  --stat-hp: oklch(0.72 0.15 155);
+  --stat-mana: oklch(0.72 0.14 255);
+  --stat-atk: oklch(0.74 0.16 40);
+  --stat-spell: oklch(0.72 0.15 305);
 }
 
 @theme inline {
@@ -153,6 +164,10 @@
   --color-monster-regular: var(--monster-regular);
   --color-monster-elite: var(--monster-elite);
   --color-monster-boss: var(--monster-boss);
+  --color-stat-hp: var(--stat-hp);
+  --color-stat-mana: var(--stat-mana);
+  --color-stat-atk: var(--stat-atk);
+  --color-stat-spell: var(--stat-spell);
 }
 
 @layer base {

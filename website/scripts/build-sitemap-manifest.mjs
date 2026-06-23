@@ -427,6 +427,7 @@ function computeHashes() {
     `${SITE_URL}/`,
     `${SITE_URL}/map`,
     `${SITE_URL}/tools/combat-simulator`,
+    `${SITE_URL}/tools/mercenary-stats`,
   ];
 
   db.close();
