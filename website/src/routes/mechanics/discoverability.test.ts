@@ -14,14 +14,14 @@ test("mechanics index and homepage expose mechanics references", () => {
   assert.match(mechanicsIndex, /href: "\/mechanics\/experience"/);
   assert.match(mechanicsIndex, /href: "\/mechanics\/combat"/);
   assert.match(mechanicsIndex, /href: "\/mechanics\/monster-spawns"/);
-  assert.match(homepage, /href="\/mechanics"/);
-  assert.match(homepage, /Game systems and rule references/);
 
-  assert.ok(
-    homepage.indexOf("<!-- Chests -->") <
-      homepage.indexOf("<!-- Mechanics -->"),
-  );
-  assert.match(homepage, /import Cog from "@lucide\/svelte\/icons\/cog"/);
+  // The homepage's "Game mechanics" section links directly to every mechanics
+  // page, which supersedes the old single /mechanics card.
+  assert.match(homepage, /Game mechanics/);
+  assert.match(homepage, /href: "\/mechanics\/inventory"/);
+  assert.match(homepage, /href: "\/mechanics\/experience"/);
+  assert.match(homepage, /href: "\/mechanics\/combat"/);
+  assert.match(homepage, /href: "\/mechanics\/monster-spawns"/);
 });
 
 test("item pages link backpacks and house chests to inventory mechanics", () => {
