@@ -1,3 +1,13 @@
+---
+title: "Treasure Hunter Profession Page Implementation Plan"
+type: plan
+status: implemented
+created: 2026-05-01
+parent:
+superseded_by:
+archived: 2026-06-25
+---
+
 # Treasure Hunter Profession Page Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use skill://superpowers:subagent-driven-development (recommended) or skill://superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

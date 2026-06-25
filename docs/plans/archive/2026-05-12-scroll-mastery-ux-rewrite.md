@@ -1,3 +1,13 @@
+---
+title: "Scroll Mastery UX Rewrite Plan"
+type: plan
+status: implemented
+created: 2026-05-12
+parent:
+superseded_by:
+archived: 2026-06-25
+---
+
 # Scroll Mastery UX Rewrite Plan
 
 **Goal:** Make scroll crafting and scroll-use scaling understandable from a player perspective, with special attention to Scroll of Dispel Magic / Dispel confusion.

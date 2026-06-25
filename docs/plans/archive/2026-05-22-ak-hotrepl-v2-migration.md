@@ -1,3 +1,13 @@
+---
+title: "Ancient Kingdoms HotRepl v2 Migration Implementation Plan"
+type: plan
+status: implemented
+created: 2026-05-22
+parent:
+superseded_by:
+archived: 2026-06-25
+---
+
 # Ancient Kingdoms HotRepl v2 Migration Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

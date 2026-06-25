@@ -52,6 +52,12 @@ pre-commit:
       root: build-pipeline/
       glob: "**/*.py"
       run: uv run pytest
+    - name: plans docs
+      glob: "docs/plans/**/*.md"
+      run: omp-plans index && omp-plans check
+      stage_fixed: true
+      skip:
+        - run: "! command -v omp-plans"
 
 commit-msg:
   jobs:

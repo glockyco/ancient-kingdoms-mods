@@ -1,3 +1,13 @@
+---
+title: "Monster Respawn Mechanics Page Specification"
+type: spec
+status: implemented
+created: 2026-05-18
+parent:
+superseded_by:
+archived: 2026-06-25
+---
+
 # Monster Respawn Mechanics Page Specification
 
 **Status:** Draft for review  

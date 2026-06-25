@@ -1,3 +1,13 @@
+---
+title: "HotRepl Consumer Integration Specification"
+type: spec
+status: implemented
+created: 2026-05-20
+parent:
+superseded_by:
+archived: 2026-06-25
+---
+
 # HotRepl Consumer Integration Specification
 
 **Status:** Draft for review

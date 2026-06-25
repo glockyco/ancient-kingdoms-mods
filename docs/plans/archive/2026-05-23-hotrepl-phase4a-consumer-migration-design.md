@@ -1,3 +1,13 @@
+---
+title: "HotRepl Phase 4a Consumer Migration Specification"
+type: spec
+status: implemented
+created: 2026-05-23
+parent:
+superseded_by:
+archived: 2026-06-25
+---
+
 # HotRepl Phase 4a Consumer Migration Specification
 
 **Status:** Implemented and live-checked on 2026-05-23 (commits `43aa852`, `54a220d`).

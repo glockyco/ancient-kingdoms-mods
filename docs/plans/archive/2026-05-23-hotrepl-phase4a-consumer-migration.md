@@ -1,3 +1,13 @@
+---
+title: "HotRepl Phase 4a Consumer Migration Implementation Plan"
+type: plan
+status: implemented
+created: 2026-05-23
+parent: 2026-05-23-hotrepl-phase4a-consumer-migration-design
+superseded_by:
+archived: 2026-06-25
+---
+
 # HotRepl Phase 4a Consumer Migration Implementation Plan
 
 > **Status:** Completed on 2026-05-23. Spec, mechanical API migration, HotReplCommands build, test suite, and live HotRepl smoke (`info`, `world.summary`, `compendium.preflight`, `game.quit`) against the running game are all green (commits `43aa852`, `54a220d`). Treat the task boxes below as historical execution notes, not pending work.

@@ -1,3 +1,13 @@
+---
+title: "Entity Addition Architecture Design"
+type: spec
+status: active
+created: 2026-05-28
+parent:
+superseded_by:
+archived:
+---
+
 # Entity Addition Architecture Design
 
 **Status:** Requires review.
