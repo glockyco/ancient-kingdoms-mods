@@ -9,4 +9,4 @@
 - **Agent Modding Toolbox — Research Findings** [note] `2026-06-20-agent-modding-toolbox-findings`
 - **BossSkillTracker Implementation Plan** [plan] `2026-06-22-boss-skill-tracker` (0/81)
 
-_21 archived — see `docs/plans/archive/`._
+_23 archived — see `docs/plans/archive/`._
