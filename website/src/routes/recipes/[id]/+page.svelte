@@ -41,7 +41,7 @@
   function formatStationType(station: string | null): string {
     if (!station) return "Unknown";
     const mapping: Record<string, string> = {
-      cooking: "Cooking Station",
+      cooking: "Cooking Oven",
       alchemy_table: "Alchemy Table",
       scribing_table: "Scribing Table",
       unknown: "Crafting Station",

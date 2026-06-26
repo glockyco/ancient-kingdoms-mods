@@ -1143,7 +1143,7 @@ function humanizeStation(station: string | null | undefined): string | null {
     case "scribing_table":
       return "scribing table";
     case "cooking":
-      return "campfire";
+      return "cooking oven";
     case "forge":
       return "forge";
     case "workbench":
