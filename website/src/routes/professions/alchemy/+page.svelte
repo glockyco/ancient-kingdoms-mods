@@ -15,6 +15,12 @@
   import MapPin from "@lucide/svelte/icons/map-pin";
   import ScrollIcon from "@lucide/svelte/icons/scroll";
   import { SvelteSet } from "svelte/reactivity";
+  import {
+    alchemySkillGainChancePercent,
+    alchemySkillGainRange,
+    alchemySuccessPercent,
+  } from "$lib/utils/alchemy";
+  import { Input } from "$lib/components/ui/input";
 
   let { data } = $props();
 
@@ -57,6 +63,41 @@
   // Skill level state (0-100%)
   let skillLevel = $state(0);
 
+  // Recipe list filters
+  let nameFilter = $state("");
+  let tierFilter = new SvelteSet<number>();
+
+  function toggleTier(tier: number) {
+    if (tierFilter.has(tier)) {
+      tierFilter.delete(tier);
+    } else {
+      tierFilter.add(tier);
+    }
+  }
+
+  const tiersPresent = $derived(
+    [...new Set(data.recipes.map((r) => r.level_required))].sort(
+      (a, b) => a - b,
+    ),
+  );
+
+  const filteredRecipes = $derived(
+    data.recipes.filter((recipe) => {
+      const matchesName = recipe.result_item_name
+        .toLowerCase()
+        .includes(nameFilter.trim().toLowerCase());
+      const matchesTier =
+        tierFilter.size === 0 || tierFilter.has(recipe.level_required);
+      return matchesName && matchesTier;
+    }),
+  );
+
+  const recipeCountLabel = $derived(
+    filteredRecipes.length === data.recipes.length
+      ? `${data.recipes.length}`
+      : `${filteredRecipes.length} of ${data.recipes.length}`,
+  );
+
   // Roman numerals for tier display
   const romanNumerals = ["I", "II", "III", "IV", "V"];
 
@@ -70,60 +111,12 @@
     new Map(data.xpByTier.map((tx) => [tx.tier, tx.xp])),
   );
 
-  // Source: server-scripts/Utils.cs:479-489 — GetSuccessChanceProb
-  function getSuccessChance(recipeLevel: number): number {
-    const skill = skillLevel / 100;
-    switch (recipeLevel) {
-      case 0:
-        return 100;
-      case 1:
-        return Math.min(100, (0.4 + skill * 2) * 100);
-      case 2:
-        return Math.min(100, (0.2 + skill) * 100);
-      case 3:
-        return Math.min(100, skill * 95);
-      default:
-        return Math.min(100, skill * 90);
-    }
-  }
-
   function getSuccessChanceColor(chance: number): string {
     if (chance >= 100) return "text-green-500";
     if (chance >= 75) return "text-lime-500";
     if (chance >= 50) return "text-yellow-500";
     if (chance >= 25) return "text-orange-500";
     return "text-red-500";
-  }
-
-  // Skill gain chance: 90% at 0 skill, down to 40% at 100% skill (updated v0.9.3.6)
-  function getSkillGainChance(): number {
-    const skill = skillLevel / 100;
-    return Math.max(0, (0.9 - skill / 2) * 100);
-  }
-
-  // Skill gain amount: Random(1-3) / (successChance * 1000)
-  // Returns [min, max] as percentages
-  function getSkillGainAmount(successChance: number): [number, number] {
-    if (successChance <= 0) return [0, 0];
-    const successFraction = successChance / 100;
-    const min = (1 / (successFraction * 1000)) * 100;
-    const max = (3 / (successFraction * 1000)) * 100;
-    return [min, max];
-  }
-
-  // Effortless thresholds: Tier I at 25%, Tier II at 50%, Tier III at 75%
-  function isEffortless(recipeLevel: number): boolean {
-    const skill = skillLevel / 100;
-    switch (recipeLevel) {
-      case 0:
-        return skill >= 0.25;
-      case 1:
-        return skill >= 0.5;
-      case 2:
-        return skill >= 0.75;
-      default:
-        return false;
-    }
   }
 </script>
 
@@ -351,7 +344,7 @@
       <div class="flex items-center gap-2 text-muted-foreground">
         <span>Skill gain chance:</span>
         <span class="font-mono text-foreground"
-          >{getSkillGainChance().toFixed(0)}%</span
+          >{alchemySkillGainChancePercent(skillLevel).toFixed(0)}%</span
         >
         <span class="text-xs">(per success)</span>
       </div>
@@ -367,23 +360,24 @@
         <div class="bg-muted/50 p-3 font-medium text-right">XP</div>
         <div class="bg-muted/50 p-3 font-medium text-right">Recipes</div>
         {#each [0, 1, 2, 3, 4] as tier (tier)}
-          {@const successChance = getSuccessChance(tier)}
-          {@const effortless = isEffortless(tier)}
-          {@const [minGain, maxGain] = getSkillGainAmount(successChance)}
+          {@const successChance = alchemySuccessPercent(tier, skillLevel)}
+          {@const skillGain = alchemySkillGainRange(tier, skillLevel)}
           {@const recipeCount = recipeCountMap.get(tier) ?? 0}
           {@const xp = xpByTierMap.get(tier)}
           <div class="p-3 font-medium border-t">{romanNumerals[tier]}</div>
           <div class="p-3 border-t">
-            <span class="font-mono {getSuccessChanceColor(successChance)}">
-              {successChance.toFixed(0)}%
-            </span>
+            {#if successChance === 0}
+              <span class="text-muted-foreground">—</span>
+            {:else}
+              <span class="font-mono {getSuccessChanceColor(successChance)}">
+                {successChance.toFixed(0)}%
+              </span>
+            {/if}
           </div>
           <div class="p-3 border-t">
-            {#if effortless}
-              <span class="text-muted-foreground">—</span>
-            {:else if successChance > 0}
+            {#if skillGain}
               <span class="font-mono"
-                >{minGain.toFixed(2)}% – {maxGain.toFixed(2)}%</span
+                >{skillGain.min.toFixed(2)}% – {skillGain.max.toFixed(2)}%</span
               >
             {:else}
               <span class="text-muted-foreground">—</span>
@@ -408,8 +402,34 @@
   <section class="space-y-4">
     <h2 class="text-xl font-semibold flex items-center gap-2">
       <ScrollIcon class="h-5 w-5 text-orange-500" />
-      Recipes ({data.recipes.length})
+      Recipes ({recipeCountLabel})
     </h2>
+    <div class="flex flex-wrap items-center gap-3">
+      <Input
+        type="search"
+        placeholder="Filter by name…"
+        bind:value={nameFilter}
+        class="max-w-xs"
+      />
+      {#if tiersPresent.length > 1}
+        <div class="flex flex-wrap items-center gap-1">
+          {#each tiersPresent as tier (tier)}
+            <button
+              type="button"
+              onclick={() => toggleTier(tier)}
+              aria-pressed={tierFilter.has(tier)}
+              class="rounded px-2 py-1 text-xs font-medium transition-colors {tierFilter.has(
+                tier,
+              )
+                ? 'bg-primary text-primary-foreground'
+                : 'bg-muted/50 hover:bg-muted'}"
+            >
+              Tier {romanNumerals[tier] ?? tier}
+            </button>
+          {/each}
+        </div>
+      {/if}
+    </div>
     <div class="rounded-lg border overflow-x-auto">
       <div
         class="grid whitespace-nowrap"
@@ -420,10 +440,15 @@
         <div class="bg-muted/50 p-3 font-medium">Ingredients</div>
         <div class="bg-muted/50 p-3 font-medium">Success</div>
         <div class="bg-muted/50 p-3 font-medium">Skill Gain</div>
-        {#each data.recipes as recipe (recipe.id)}
-          {@const successChance = getSuccessChance(recipe.level_required)}
-          {@const effortless = isEffortless(recipe.level_required)}
-          {@const [minGain, maxGain] = getSkillGainAmount(successChance)}
+        {#each filteredRecipes as recipe (recipe.id)}
+          {@const successChance = alchemySuccessPercent(
+            recipe.level_required,
+            skillLevel,
+          )}
+          {@const skillGain = alchemySkillGainRange(
+            recipe.level_required,
+            skillLevel,
+          )}
           {@const isExpanded = expandedRecipes.has(recipe.id)}
           {@const canExpand = hasIngredients(recipe)}
           <div {...cellProps(canExpand, recipe.id, "font-medium")}>
@@ -471,16 +496,18 @@
             {/if}
           </div>
           <div {...cellProps(canExpand, recipe.id)}>
-            <span class="font-mono {getSuccessChanceColor(successChance)}">
-              {successChance.toFixed(0)}%
-            </span>
+            {#if successChance === 0}
+              <span class="text-muted-foreground">—</span>
+            {:else}
+              <span class="font-mono {getSuccessChanceColor(successChance)}">
+                {successChance.toFixed(0)}%
+              </span>
+            {/if}
           </div>
           <div {...cellProps(canExpand, recipe.id)}>
-            {#if effortless}
-              <span class="text-muted-foreground">—</span>
-            {:else if successChance > 0}
+            {#if skillGain}
               <span class="font-mono">
-                {minGain.toFixed(2)}% – {maxGain.toFixed(2)}%
+                {skillGain.min.toFixed(2)}% – {skillGain.max.toFixed(2)}%
               </span>
             {:else}
               <span class="text-muted-foreground">—</span>
@@ -501,6 +528,11 @@
             </div>
           {/if}
         {/each}
+        {#if filteredRecipes.length === 0}
+          <div class="text-muted-foreground p-3" style="grid-column: 1 / -1;">
+            No recipes match your filters.
+          </div>
+        {/if}
       </div>
     </div>
   </section>
