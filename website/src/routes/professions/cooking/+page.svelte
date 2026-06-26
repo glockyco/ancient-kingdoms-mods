@@ -219,9 +219,13 @@
           {@const xp = xpByTierMap.get(tier)}
           <div class="p-3 font-medium border-t">{romanNumerals[tier]}</div>
           <div class="p-3 border-t">
-            <span class="font-mono {getSuccessChanceColor(successChance)}">
-              {successChance.toFixed(0)}%
-            </span>
+            {#if successChance === 0}
+              <span class="text-muted-foreground">—</span>
+            {:else}
+              <span class="font-mono {getSuccessChanceColor(successChance)}">
+                {successChance.toFixed(0)}%
+              </span>
+            {/if}
           </div>
           <div class="p-3 border-t">
             {#if skillGain}
@@ -322,9 +326,13 @@
             {/if}
           </div>
           <div {...cellProps(canExpand, recipe.id)}>
-            <span class="font-mono {getSuccessChanceColor(successChance)}">
-              {successChance.toFixed(0)}%
-            </span>
+            {#if successChance === 0}
+              <span class="text-muted-foreground">—</span>
+            {:else}
+              <span class="font-mono {getSuccessChanceColor(successChance)}">
+                {successChance.toFixed(0)}%
+              </span>
+            {/if}
           </div>
           <div {...cellProps(canExpand, recipe.id)}>
             {#if skillGain}
