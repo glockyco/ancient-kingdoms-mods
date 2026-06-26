@@ -18,6 +18,7 @@
     cookingSkillGainRange,
     cookingSuccessPercent,
   } from "$lib/utils/cooking";
+  import { Input } from "$lib/components/ui/input";
 
   let { data } = $props();
 
@@ -59,6 +60,41 @@
 
   // Skill level state (0-100%)
   let skillLevel = $state(0);
+
+  // Recipe list filters
+  let nameFilter = $state("");
+  let tierFilter = new SvelteSet<number>();
+
+  function toggleTier(tier: number) {
+    if (tierFilter.has(tier)) {
+      tierFilter.delete(tier);
+    } else {
+      tierFilter.add(tier);
+    }
+  }
+
+  const tiersPresent = $derived(
+    [...new Set(data.recipes.map((r) => r.result_quality))].sort(
+      (a, b) => a - b,
+    ),
+  );
+
+  const filteredRecipes = $derived(
+    data.recipes.filter((recipe) => {
+      const matchesName = recipe.result_item_name
+        .toLowerCase()
+        .includes(nameFilter.trim().toLowerCase());
+      const matchesTier =
+        tierFilter.size === 0 || tierFilter.has(recipe.result_quality);
+      return matchesName && matchesTier;
+    }),
+  );
+
+  const recipeCountLabel = $derived(
+    filteredRecipes.length === data.recipes.length
+      ? `${data.recipes.length}`
+      : `${filteredRecipes.length} of ${data.recipes.length}`,
+  );
 
   // Roman numerals for tier display
   const romanNumerals = ["I", "II", "III", "IV", "V"];
@@ -255,8 +291,34 @@
   <section class="space-y-4">
     <h2 class="text-xl font-semibold flex items-center gap-2">
       <ScrollIcon class="h-5 w-5 text-orange-500" />
-      Recipes ({data.recipes.length})
+      Recipes ({recipeCountLabel})
     </h2>
+    <div class="flex flex-wrap items-center gap-3">
+      <Input
+        type="search"
+        placeholder="Filter by name…"
+        bind:value={nameFilter}
+        class="max-w-xs"
+      />
+      {#if tiersPresent.length > 1}
+        <div class="flex flex-wrap items-center gap-1">
+          {#each tiersPresent as tier (tier)}
+            <button
+              type="button"
+              onclick={() => toggleTier(tier)}
+              aria-pressed={tierFilter.has(tier)}
+              class="rounded px-2 py-1 text-xs font-medium transition-colors {tierFilter.has(
+                tier,
+              )
+                ? 'bg-primary text-primary-foreground'
+                : 'bg-muted/50 hover:bg-muted'}"
+            >
+              Tier {romanNumerals[tier] ?? tier}
+            </button>
+          {/each}
+        </div>
+      {/if}
+    </div>
     <div class="rounded-lg border overflow-x-auto">
       <div
         class="grid whitespace-nowrap"
@@ -267,7 +329,7 @@
         <div class="bg-muted/50 p-3 font-medium">Ingredients</div>
         <div class="bg-muted/50 p-3 font-medium">Success</div>
         <div class="bg-muted/50 p-3 font-medium">Skill Gain</div>
-        {#each data.recipes as recipe (recipe.id)}
+        {#each filteredRecipes as recipe (recipe.id)}
           {@const isFood = recipe.result_item_type === "food"}
           {@const successChance = cookingSuccessPercent(
             recipe.result_quality,
@@ -358,6 +420,11 @@
             </div>
           {/if}
         {/each}
+        {#if filteredRecipes.length === 0}
+          <div class="text-muted-foreground p-3" style="grid-column: 1 / -1;">
+            No recipes match your filters.
+          </div>
+        {/if}
       </div>
     </div>
   </section>
