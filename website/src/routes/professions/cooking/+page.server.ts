@@ -13,6 +13,7 @@ interface CookingRecipe {
   result_item_name: string;
   result_tooltip_html: string | null;
   result_quality: number;
+  result_item_type: string | null;
   obtainabilityTree: ObtainabilityNode;
 }
 
@@ -78,7 +79,8 @@ export const load: PageServerLoad = (): CookingPageData => {
       cr.result_item_id,
       i.name as result_item_name,
       i.tooltip_html as result_tooltip_html,
-      i.quality as result_quality
+      i.quality as result_quality,
+      i.item_type as result_item_type
     FROM crafting_recipes cr
     JOIN items i ON i.id = cr.result_item_id
     WHERE cr.station_type = 'cooking'

@@ -13,6 +13,11 @@
   import MapPin from "@lucide/svelte/icons/map-pin";
   import ScrollIcon from "@lucide/svelte/icons/scroll";
   import { SvelteSet } from "svelte/reactivity";
+  import {
+    cookingSkillGainChancePercent,
+    cookingSkillGainRange,
+    cookingSuccessPercent,
+  } from "$lib/utils/cooking";
 
   let { data } = $props();
 
@@ -68,60 +73,12 @@
     new Map(data.xpByTier.map((tx) => [tx.tier, tx.xp])),
   );
 
-  // Source: server-scripts/Utils.cs:503-513 — GetSuccessChanceProbCooking
-  function getSuccessChance(recipeLevel: number): number {
-    const skill = skillLevel / 100;
-    switch (recipeLevel) {
-      case 0:
-        return 100;
-      case 1:
-        return Math.min(100, (0.4 + skill * 2) * 100);
-      case 2:
-        return Math.min(100, (0.2 + skill) * 100);
-      case 3:
-        return Math.min(100, skill * 95);
-      default:
-        return Math.min(100, skill * 90);
-    }
-  }
-
   function getSuccessChanceColor(chance: number): string {
     if (chance >= 100) return "text-green-500";
     if (chance >= 75) return "text-lime-500";
     if (chance >= 50) return "text-yellow-500";
     if (chance >= 25) return "text-orange-500";
     return "text-red-500";
-  }
-
-  // Skill gain chance: 90% at 0 skill, down to 40% at 100% skill (updated v0.9.3.6)
-  function getSkillGainChance(): number {
-    const skill = skillLevel / 100;
-    return Math.max(0, (0.9 - skill / 2) * 100);
-  }
-
-  // Skill gain amount: Random(1-3) / (successChance * 3000)
-  // Returns [min, max] as percentages
-  function getSkillGainAmount(successChance: number): [number, number] {
-    if (successChance <= 0) return [0, 0];
-    const successFraction = successChance / 100;
-    const min = (1 / (successFraction * 3000)) * 100;
-    const max = (3 / (successFraction * 3000)) * 100;
-    return [min, max];
-  }
-
-  // Effortless thresholds: Tier I at 25%, Tier II at 50%, Tier III at 75%
-  function isEffortless(recipeLevel: number): boolean {
-    const skill = skillLevel / 100;
-    switch (recipeLevel) {
-      case 0:
-        return skill >= 0.25;
-      case 1:
-        return skill >= 0.5;
-      case 2:
-        return skill >= 0.75;
-      default:
-        return false;
-    }
   }
 </script>
 
@@ -240,7 +197,7 @@
       <div class="flex items-center gap-2 text-muted-foreground">
         <span>Skill gain chance:</span>
         <span class="font-mono text-foreground"
-          >{getSkillGainChance().toFixed(0)}%</span
+          >{cookingSkillGainChancePercent(skillLevel).toFixed(0)}%</span
         >
         <span class="text-xs">(per success)</span>
       </div>
@@ -256,9 +213,8 @@
         <div class="bg-muted/50 p-3 font-medium text-right">XP</div>
         <div class="bg-muted/50 p-3 font-medium text-right">Recipes</div>
         {#each [0, 1, 2, 3, 4] as tier (tier)}
-          {@const successChance = getSuccessChance(tier)}
-          {@const effortless = isEffortless(tier)}
-          {@const [minGain, maxGain] = getSkillGainAmount(successChance)}
+          {@const successChance = cookingSuccessPercent(tier, skillLevel, true)}
+          {@const skillGain = cookingSkillGainRange(tier, skillLevel, true)}
           {@const recipeCount = recipeCountMap.get(tier) ?? 0}
           {@const xp = xpByTierMap.get(tier)}
           <div class="p-3 font-medium border-t">{romanNumerals[tier]}</div>
@@ -268,11 +224,9 @@
             </span>
           </div>
           <div class="p-3 border-t">
-            {#if effortless}
-              <span class="text-muted-foreground">—</span>
-            {:else if successChance > 0}
+            {#if skillGain}
               <span class="font-mono"
-                >{minGain.toFixed(2)}% – {maxGain.toFixed(2)}%</span
+                >{skillGain.min.toFixed(2)}% – {skillGain.max.toFixed(2)}%</span
               >
             {:else}
               <span class="text-muted-foreground">—</span>
@@ -310,9 +264,17 @@
         <div class="bg-muted/50 p-3 font-medium">Success</div>
         <div class="bg-muted/50 p-3 font-medium">Skill Gain</div>
         {#each data.recipes as recipe (recipe.id)}
-          {@const successChance = getSuccessChance(recipe.result_quality)}
-          {@const effortless = isEffortless(recipe.result_quality)}
-          {@const [minGain, maxGain] = getSkillGainAmount(successChance)}
+          {@const isFood = recipe.result_item_type === "food"}
+          {@const successChance = cookingSuccessPercent(
+            recipe.result_quality,
+            skillLevel,
+            isFood,
+          )}
+          {@const skillGain = cookingSkillGainRange(
+            recipe.result_quality,
+            skillLevel,
+            isFood,
+          )}
           {@const isExpanded = expandedRecipes.has(recipe.id)}
           {@const canExpand = hasIngredients(recipe)}
           <div {...cellProps(canExpand, recipe.id, "font-medium")}>
@@ -365,11 +327,9 @@
             </span>
           </div>
           <div {...cellProps(canExpand, recipe.id)}>
-            {#if effortless}
-              <span class="text-muted-foreground">—</span>
-            {:else if successChance > 0}
+            {#if skillGain}
               <span class="font-mono">
-                {minGain.toFixed(2)}% – {maxGain.toFixed(2)}%
+                {skillGain.min.toFixed(2)}% – {skillGain.max.toFixed(2)}%
               </span>
             {:else}
               <span class="text-muted-foreground">—</span>
