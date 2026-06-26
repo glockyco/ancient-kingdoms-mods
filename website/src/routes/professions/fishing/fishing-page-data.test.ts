@@ -97,7 +97,7 @@ function createDb() {
       ('fish_potion', 'Fish Potion', 0, 1, '<p>potion</p>', NULL, NULL, NULL, NULL, 'fish_potion_buff', 'Fish Potion Buff'),
       ('ember_prawn', 'Ember Prawn', 3, 1, '<p>ember prawn</p>', NULL, NULL, NULL, NULL, NULL, NULL),
       ('firecoil_worm', 'Firecoil Worm', 3, 1, '<p>firecoil worm</p>', NULL, NULL, NULL, NULL, NULL, NULL),
-      ('dragonbait_stew', 'Dragonbait Stew', 3, 54, '<p>dragonbait stew</p>', NULL, NULL, NULL, NULL, NULL, NULL);
+      ('dragonbait_stew', 'Dragonbait Stew', 4, 54, '<p>dragonbait stew</p>', NULL, NULL, NULL, NULL, NULL, NULL);
 
     INSERT INTO fish VALUES
       ('cooking_fish', 0),
