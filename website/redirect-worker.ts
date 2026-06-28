@@ -20,8 +20,16 @@ const GOOGLE_VERIFICATION_PATH = "/google279cf61d0b725839.html";
 const GOOGLE_VERIFICATION_BODY =
   "google-site-verification: google279cf61d0b725839.html";
 
+// Paths that must be proxied (not redirected) because Google resolves favicons
+// per hostname; while workers.dev is still in the index, it needs to serve a
+// valid favicon directly rather than redirecting across domains.
+const PROXIED_PATHS: Record<string, true> = {
+  "/favicon.ico": true,
+  "/favicon-32x32.png": true,
+};
+
 export default {
-  fetch(request: Request): Response {
+  async fetch(request: Request): Promise<Response> {
     const sourceUrl = new URL(request.url);
 
     if (sourceUrl.pathname === GOOGLE_VERIFICATION_PATH) {
@@ -32,6 +40,11 @@ export default {
           "Cache-Control": "public, max-age=3600",
         },
       });
+    }
+
+    if (PROXIED_PATHS[sourceUrl.pathname]) {
+      const proxyUrl = new URL(sourceUrl.pathname, TARGET_ORIGIN).toString();
+      return fetch(proxyUrl);
     }
 
     const targetUrl = new URL(
