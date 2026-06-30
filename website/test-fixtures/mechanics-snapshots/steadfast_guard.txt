@@ -1,0 +1,1 @@
+Mechanics Critical Resist Defensive critical-hit reduction. Effective crit chance = (attacker crit chance + skill crit bonus) × (1 − target Critical Resist). Dexterity adds 0.05 percentage points per positive point. Gear and buffs can add more. Total Critical Resist is capped at 100%.
