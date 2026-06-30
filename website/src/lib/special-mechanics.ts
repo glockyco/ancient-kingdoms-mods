@@ -32,7 +32,7 @@ const VALAARK_INVULNERABILITY: SpecialMechanic = {
     [
       "Use ",
       DRAGONBAIT_STEW_LINK,
-      " from inventory while targeting Valaark within melee range.",
+      " while targeting Valaark within melee range.",
     ],
     ["One stew makes Valaark vulnerable for 60-299 seconds."],
     [
