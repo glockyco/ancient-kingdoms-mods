@@ -1,11 +1,11 @@
 ---
 title: "Ancient Kingdoms 0.9.22.2 Update Plan"
 type: plan
-status: active
+status: implemented
 created: 2026-06-29
 parent:
 superseded_by:
-archived:
+archived: 2026-06-30
 ---
 
 # Ancient Kingdoms 0.9.22.2 Update Implementation Plan
