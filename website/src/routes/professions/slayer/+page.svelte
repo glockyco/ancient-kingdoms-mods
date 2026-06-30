@@ -72,7 +72,8 @@
         <span class="whitespace-nowrap"
           >Skill per kill: +{data.skillGainPerKill.toFixed(4)}%</span
         >
-        <span class="whitespace-nowrap">Max kills per monster: 50</span>
+        <span class="whitespace-nowrap">Shared across account</span>
+        <span class="whitespace-nowrap">Max account kills per monster: 50</span>
         {#if data.profession.steam_achievement_id}
           <span class="flex items-center gap-1 whitespace-nowrap">
             <Trophy class="h-4 w-4" />

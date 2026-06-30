@@ -63,10 +63,12 @@
     return (0.9 + (0.02 - 0.9) * t) * 100;
   }
 
-  // Source: server-scripts/Player.cs:10313 and ScrollItem.cs:84 — Random.Range(5, 10) / 10000f
-  // Unity int Random.Range upper bound is exclusive: integers 5-9 -> 0.05% to 0.09%.
-  const MASTERY_GAIN_MIN = 0.05;
-  const MASTERY_GAIN_MAX = 0.09;
+  // Source: server-scripts/Player.cs:10313 — crafting: Random.Range(5, 10) / 10000f
+  // Source: server-scripts/ScrollItem.cs:84 — use: Random.Range(10, 20) / 10000f
+  const CRAFT_MASTERY_GAIN_MIN = 0.05;
+  const CRAFT_MASTERY_GAIN_MAX = 0.09;
+  const USE_MASTERY_GAIN_MIN = 0.1;
+  const USE_MASTERY_GAIN_MAX = 0.19;
 
   function getScrollRank(maxLevel: number): number {
     if (maxLevel <= 1) return 1;
@@ -208,8 +210,8 @@
         <div>
           <div>Gain Scroll Mastery.</div>
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            Crafting a scroll or using a scroll can raise Scroll Mastery. The
-            chance to gain mastery decreases as mastery approaches 100%.
+            Crafting a scroll or using a scroll can raise Scroll Mastery. Both
+            use the same gain chance, but using a scroll grants more mastery.
           </p>
           <p
             class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm leading-6 text-muted-foreground"
@@ -266,8 +268,17 @@
         </div>
         <div class="rounded-lg border bg-background p-3">
           <div class="text-sm text-muted-foreground">Gain amount per proc</div>
-          <div class="text-xl font-semibold">
-            {MASTERY_GAIN_MIN.toFixed(2)}%–{MASTERY_GAIN_MAX.toFixed(2)}%
+          <div class="text-sm leading-6">
+            <div>
+              Craft: {CRAFT_MASTERY_GAIN_MIN.toFixed(
+                2,
+              )}%–{CRAFT_MASTERY_GAIN_MAX.toFixed(2)}%
+            </div>
+            <div>
+              Use: {USE_MASTERY_GAIN_MIN.toFixed(
+                2,
+              )}%–{USE_MASTERY_GAIN_MAX.toFixed(2)}%
+            </div>
           </div>
         </div>
       </div>

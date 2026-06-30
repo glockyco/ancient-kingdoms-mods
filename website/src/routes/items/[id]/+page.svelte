@@ -948,7 +948,10 @@
                 <div class={styles.value}>
                   Keep in inventory. Has a 15% chance to activate when you land
                   a critical hit with an ability, take lethal damage, or are hit
-                  by an AoE attack. Consumes 1 when triggered.
+                  by an AoE attack. Consumes 1 when triggered. In a group, an
+                  AoE shares a 25% chance across party members carrying it (at
+                  most 10% each), and the first trigger blocks the attack for
+                  the whole party.
                 </div>
               </div>
               <div class="space-y-2">

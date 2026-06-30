@@ -28,7 +28,7 @@ describe("curated special mechanics", () => {
     const detailText = monsterMechanics[0].details.map(textContent).join(" ");
     expect(detailText).toContain("60-299 seconds");
     expect(detailText).toContain(
-      "one random damage resistance drops to 500 while the others stay at 2000",
+      "one random damage resistance drops to 100 while the others stay at 2000",
     );
     expect(detailText).toContain("area damage is halved");
 

@@ -9,11 +9,11 @@ function cookingFraction(cookingPercent: number): number {
 }
 
 // Source: server-scripts/UICraftingStation.cs:438 — a cooking oven refuses to
-// craft when GetSuccessChanceProbCooking(...) < 0.1, so a recipe only becomes
+// craft when GetSuccessProbCooking(...) < 0.1, so a recipe only becomes
 // craftable once its raw success chance reaches 10%.
 export const COOKING_SUCCESS_FLOOR = 0.1;
 
-// Source: server-scripts/Utils.cs:507-516 — GetSuccessChanceProbCooking(levelFood,
+// Source: server-scripts/Utils.cs:507-516 — GetSuccessProbCooking(levelFood,
 // cookingLevel). `levelFood` is the result item's quality. Returns the raw
 // success probability (0..1), ignoring the crafting-UI gate.
 export function rawCookingSuccessChance(
@@ -47,7 +47,7 @@ export function isCookable(quality: number, cookingPercent: number): boolean {
 // Below the craftable threshold it is 0% — you cannot make it yet. Once
 // craftable, FoodItem results roll the chance, but non-food results (e.g.
 // Dragonbait Stew, item_type "general") always succeed: Player.cs:11727 only
-// rolls GetSuccessChanceProbCooking for `item.data is FoodItem`; everything else
+// rolls GetSuccessProbCooking for `item.data is FoodItem`; everything else
 // goes through the guaranteed-craft branch (Player.cs:11761-11774).
 export function cookingSuccessPercent(
   quality: number,

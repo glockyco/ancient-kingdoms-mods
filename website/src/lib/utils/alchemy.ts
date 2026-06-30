@@ -6,7 +6,7 @@
 // the result item's quality.
 //
 // The success formula is the same switch the game uses for cooking
-// (GetSuccessChanceProb == GetSuccessChanceProbCooking), but it is kept separate
+// (GetSuccessProbAlchemy == GetSuccessProbCooking), but it is kept separate
 // here to mirror the two distinct game methods and to isolate alchemy-only
 // differences: the skill-gain divisor is 1000 (cooking uses 3000) and the
 // success roll applies to every output (cooking exempts non-FoodItem results).
@@ -16,11 +16,11 @@ function alchemyFraction(skillPercent: number): number {
 }
 
 // Source: server-scripts/Player.cs:11432 and TableUI.cs:92 — an alchemy/scribing
-// table refuses to craft when GetSuccessChanceProb(...) < 0.1, so a recipe only
+// table refuses to craft when GetSuccessProbAlchemy(...) < 0.1, so a recipe only
 // becomes craftable once its raw success chance reaches 10%.
 export const ALCHEMY_SUCCESS_FLOOR = 0.1;
 
-// Source: server-scripts/Utils.cs:483-493 — GetSuccessChanceProb(levelPotion,
+// Source: server-scripts/Utils.cs:483-493 — GetSuccessProbAlchemy(levelPotion,
 // alchemyLevel). Returns the raw success probability (0..1), ignoring the gate.
 export function rawAlchemySuccessChance(
   level: number,
