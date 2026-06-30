@@ -47,6 +47,7 @@ export const STAT_CATEGORIES = {
       "disease_resist",
       "magic_resist",
       "resist_fear_chance",
+      "critical_resist",
     ],
   },
 } as const;

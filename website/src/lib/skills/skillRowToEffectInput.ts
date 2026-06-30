@@ -52,6 +52,7 @@ export function skillRowToEffectInput(row: unknown): Skill {
     spell_haste_bonus: r.spell_haste_bonus,
     speed_bonus: r.speed_bonus,
     critical_chance_bonus: r.critical_chance_bonus,
+    critical_resist_bonus: r.critical_resist_bonus,
     accuracy_bonus: r.accuracy_bonus,
     block_chance_bonus: r.block_chance_bonus,
     fear_resist_chance_bonus: r.fear_resist_chance_bonus,

@@ -20,3 +20,15 @@ describe("formatSkillEffect movement debuffs", () => {
     expect(formatSkillEffect(movementDebuff(-50))).toBe("sleep, 10s");
   });
 });
+
+describe("formatSkillEffect stat bonuses", () => {
+  it("formats critical resist bonuses", () => {
+    expect(
+      formatSkillEffect({
+        skill_type: "target_buff",
+        critical_resist_bonus: { base_value: 0.05, bonus_per_level: 0.01 },
+        duration_base: 60,
+      } as Skill),
+    ).toBe("+5% (+1%/lvl) critical resist, 1m");
+  });
+});

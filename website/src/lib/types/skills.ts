@@ -128,6 +128,7 @@ export interface SkillDetailView {
   spell_haste_bonus: LinearValue | null;
   speed_bonus: LinearValue | null;
   critical_chance_bonus: LinearValue | null;
+  critical_resist_bonus: LinearValue | null;
   accuracy_bonus: LinearValue | null;
   block_chance_bonus: LinearValue | null;
   fear_resist_chance_bonus: LinearValue | null;

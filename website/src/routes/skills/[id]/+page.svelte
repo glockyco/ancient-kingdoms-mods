@@ -169,6 +169,7 @@
       skill.spell_haste_bonus ||
       skill.speed_bonus ||
       skill.critical_chance_bonus ||
+      skill.critical_resist_bonus ||
       skill.accuracy_bonus ||
       skill.block_chance_bonus ||
       skill.fear_resist_chance_bonus ||
@@ -471,6 +472,12 @@
       suffix: "",
     },
     {
+      key: "critical_resist_bonus",
+      label: "Critical Resist",
+      isPercent: true,
+      suffix: "",
+    },
+    {
       key: "accuracy_bonus",
       label: "Accuracy",
       isPercent: true,
@@ -736,6 +743,7 @@
       hasLinearValue(skill.block_chance_bonus) ||
       hasLinearValue(skill.accuracy_bonus) ||
       hasLinearValue(skill.critical_chance_bonus) ||
+      hasLinearValue(skill.critical_resist_bonus) ||
       hasLinearValue(skill.lifetap_percent) ||
       skill.break_armor_prob > 0 ||
       hasLinearValue(skill.heal_on_hit_percent) ||
@@ -1615,6 +1623,14 @@
                 <dt class="text-muted-foreground">Critical Chance</dt>
                 <dd class="font-medium">
                   {formatLinearPercent(skill.critical_chance_bonus)}
+                </dd>
+              </div>
+            {/if}
+            {#if skill.critical_resist_bonus}
+              <div>
+                <dt class="text-muted-foreground">Critical Resist</dt>
+                <dd class="font-medium">
+                  {formatLinearPercent(skill.critical_resist_bonus)}
                 </dd>
               </div>
             {/if}
@@ -2649,6 +2665,19 @@
             <p class="text-muted-foreground">
               Flat additive modifier to the caster's critical hit chance.
               Critical hits deal 1.5x damage. Crit chance is capped at 70%.
+            </p>
+          </div>
+        {/if}
+        {#if hasLinearValue(skill.critical_resist_bonus)}
+          <!-- Source: server-scripts/Combat.cs:251-255, Dexterity.cs:34-37 -->
+          <div class="space-y-1">
+            <h3 class="font-semibold">Critical Resist</h3>
+            <p class="text-muted-foreground">
+              Defensive critical-hit reduction. Effective crit chance =
+              (attacker crit chance + skill crit bonus) × (1 − target Critical
+              Resist). Dexterity adds 0.05 percentage points per positive point.
+              Gear and buffs can add more. Total Critical Resist is capped at
+              100%.
             </p>
           </div>
         {/if}

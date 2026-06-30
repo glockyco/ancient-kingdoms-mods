@@ -76,6 +76,7 @@
     "block_chance",
     "accuracy",
     "critical_chance",
+    "critical_resist",
     "haste",
     "spell_haste",
     "resist_fear_chance",

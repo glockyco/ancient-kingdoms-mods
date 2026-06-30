@@ -158,6 +158,7 @@ internal static class SkillEffectExtractor
         input.block_chance_bonus = new LinearValue(bonusSkill.blockChanceBonus.baseValue, bonusSkill.blockChanceBonus.bonusPerLevel);
         input.accuracy_bonus = new LinearValue(bonusSkill.accuracyBonus.baseValue, bonusSkill.accuracyBonus.bonusPerLevel);
         input.critical_chance_bonus = new LinearValue(bonusSkill.criticalChanceBonus.baseValue, bonusSkill.criticalChanceBonus.bonusPerLevel);
+        input.critical_resist_bonus = new LinearValue(bonusSkill.criticalResistBonus.baseValue, bonusSkill.criticalResistBonus.bonusPerLevel);
         input.haste_bonus = new LinearValue(bonusSkill.hasteBonus.baseValue, bonusSkill.hasteBonus.bonusPerLevel);
         input.spell_haste_bonus = new LinearValue(bonusSkill.spellHasteBonus.baseValue, bonusSkill.spellHasteBonus.bonusPerLevel);
         input.health_percent_per_second_bonus = new LinearValue(bonusSkill.healthPercentPerSecondBonus.baseValue, bonusSkill.healthPercentPerSecondBonus.bonusPerLevel);

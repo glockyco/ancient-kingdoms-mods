@@ -260,6 +260,7 @@ internal static class SkillEffectFormatter
 
         // 7. Hit/chance modifiers
         AddSignedPercent(parts, ParseLinearValue(skill.critical_chance_bonus), "crit", true);
+        AddSignedPercent(parts, ParseLinearValue(skill.critical_resist_bonus), "critical resist", true);
         AddSignedPercent(parts, ParseLinearValue(skill.accuracy_bonus), "accuracy", true);
         AddSignedPercent(parts, ParseLinearValue(skill.block_chance_bonus), "block", true);
         AddSignedPercent(parts, ParseLinearValue(skill.fear_resist_chance_bonus), "fear resist", true);

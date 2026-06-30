@@ -61,6 +61,7 @@ internal sealed class SkillEffectInput
     public LinearValue spell_haste_bonus { get; set; }
     public LinearValue speed_bonus { get; set; }
     public LinearValue critical_chance_bonus { get; set; }
+    public LinearValue critical_resist_bonus { get; set; }
     public LinearValue accuracy_bonus { get; set; }
     public LinearValue block_chance_bonus { get; set; }
     public LinearValue fear_resist_chance_bonus { get; set; }

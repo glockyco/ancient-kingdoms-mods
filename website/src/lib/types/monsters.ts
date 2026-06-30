@@ -315,6 +315,7 @@ export interface MonsterSkill {
   damage_percent_bonus: string | null;
   haste_bonus: string | null;
   critical_chance_bonus: string | null;
+  critical_resist_bonus: string | null;
   block_chance_bonus: string | null;
   healing_per_second_bonus: string | null;
   health_percent_per_second_bonus: string | null;

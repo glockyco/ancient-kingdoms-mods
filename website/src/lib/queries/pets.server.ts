@@ -206,6 +206,7 @@ function getPetSkills(petId: string): ClassSkill[] {
       s.spell_haste_bonus,
       s.speed_bonus,
       s.critical_chance_bonus,
+      s.critical_resist_bonus,
       s.accuracy_bonus,
       s.block_chance_bonus,
       s.fear_resist_chance_bonus,

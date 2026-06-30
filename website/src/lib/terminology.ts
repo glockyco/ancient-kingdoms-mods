@@ -28,6 +28,7 @@ export const STAT_DISPLAY_NAMES: Record<string, string> = {
   spell_haste: "Spell Haste",
   speed_bonus: "Movement Speed",
   critical_chance: "Critical Chance",
+  critical_resist: "Critical Resist",
   block_chance: "Block Chance",
 
   // Resistances

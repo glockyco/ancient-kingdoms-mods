@@ -184,6 +184,7 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
     spell_haste_bonus: parseLinear(skillRaw.spell_haste_bonus),
     speed_bonus: parseLinear(skillRaw.speed_bonus),
     critical_chance_bonus: parseLinear(skillRaw.critical_chance_bonus),
+    critical_resist_bonus: parseLinear(skillRaw.critical_resist_bonus),
     accuracy_bonus: parseLinear(skillRaw.accuracy_bonus),
     block_chance_bonus: parseLinear(skillRaw.block_chance_bonus),
     fear_resist_chance_bonus: parseLinear(skillRaw.fear_resist_chance_bonus),

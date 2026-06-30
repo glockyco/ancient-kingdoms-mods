@@ -800,6 +800,7 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
         s.damage_percent_bonus,
         s.haste_bonus,
         s.critical_chance_bonus,
+        s.critical_resist_bonus,
         s.block_chance_bonus,
         s.healing_per_second_bonus,
         s.health_percent_per_second_bonus,

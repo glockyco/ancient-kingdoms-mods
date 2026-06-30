@@ -67,6 +67,7 @@ export interface Skill {
   spell_haste_bonus?: string | LinearValue | null;
   speed_bonus: string | LinearValue | null;
   critical_chance_bonus: string | LinearValue | null;
+  critical_resist_bonus?: string | LinearValue | null;
   accuracy_bonus: string | LinearValue | null;
   block_chance_bonus: string | LinearValue | null;
   fear_resist_chance_bonus?: string | LinearValue | null;
@@ -598,6 +599,14 @@ function formatBuffDebuffStats(
   if (critBonus && critBonus.base_value !== 0) {
     const sign = critBonus.base_value > 0 ? "+" : "";
     parts.push(`${sign}${formatLinearPercent(critBonus, monsterContext)} crit`);
+  }
+
+  const criticalResistBonus = parseLinearValue(skill.critical_resist_bonus);
+  if (criticalResistBonus && criticalResistBonus.base_value !== 0) {
+    const sign = criticalResistBonus.base_value > 0 ? "+" : "";
+    parts.push(
+      `${sign}${formatLinearPercent(criticalResistBonus, monsterContext)} critical resist`,
+    );
   }
 
   const accBonus = parseLinearValue(skill.accuracy_bonus);

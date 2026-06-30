@@ -57,6 +57,7 @@ interface SkillRow {
   spell_haste_bonus: string | null;
   speed_bonus: string | null;
   critical_chance_bonus: string | null;
+  critical_resist_bonus: string | null;
   accuracy_bonus: string | null;
   block_chance_bonus: string | null;
   fear_resist_chance_bonus: string | null;
