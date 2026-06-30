@@ -71,7 +71,7 @@ public class NpcExporter : BaseExporter
                 // Roles and services
                 roles = new NpcRoles
                 {
-                    is_merchant = canonical.trading != null && canonical.trading.saleItems != null && canonical.trading.saleItems.Length > 0,
+                    is_merchant = canonical.trading != null && canonical.trading.saleItems != null && canonical.trading.saleItems.Any(item => item != null),
                     is_quest_giver = canonical.quests != null && canonical.quests.quests != null && canonical.quests.quests.Length > 0,
                     can_repair_equipment = canonical.canRepairEquipment,
                     is_bank = canonical.isBank,

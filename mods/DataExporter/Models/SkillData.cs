@@ -144,6 +144,7 @@ public class SkillData
     public LinearStatBonusFloat block_chance_bonus { get; set; }
     public LinearStatBonusFloat accuracy_bonus { get; set; }
     public LinearStatBonusFloat critical_chance_bonus { get; set; }
+    public LinearStatBonusFloat critical_resist_bonus { get; set; }
     public LinearStatBonusFloat haste_bonus { get; set; }
     public LinearStatBonusFloat spell_haste_bonus { get; set; }
     public LinearStatBonusFloat health_percent_per_second_bonus { get; set; }

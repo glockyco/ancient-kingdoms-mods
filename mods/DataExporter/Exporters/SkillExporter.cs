@@ -309,6 +309,7 @@ public class SkillExporter : BaseExporter
         skillData.block_chance_bonus = new LinearStatBonusFloat { base_value = bonusSkill.blockChanceBonus.baseValue, bonus_per_level = bonusSkill.blockChanceBonus.bonusPerLevel };
         skillData.accuracy_bonus = new LinearStatBonusFloat { base_value = bonusSkill.accuracyBonus.baseValue, bonus_per_level = bonusSkill.accuracyBonus.bonusPerLevel };
         skillData.critical_chance_bonus = new LinearStatBonusFloat { base_value = bonusSkill.criticalChanceBonus.baseValue, bonus_per_level = bonusSkill.criticalChanceBonus.bonusPerLevel };
+        skillData.critical_resist_bonus = new LinearStatBonusFloat { base_value = bonusSkill.criticalResistBonus.baseValue, bonus_per_level = bonusSkill.criticalResistBonus.bonusPerLevel };
         skillData.haste_bonus = new LinearStatBonusFloat { base_value = bonusSkill.hasteBonus.baseValue, bonus_per_level = bonusSkill.hasteBonus.bonusPerLevel };
         skillData.spell_haste_bonus = new LinearStatBonusFloat { base_value = bonusSkill.spellHasteBonus.baseValue, bonus_per_level = bonusSkill.spellHasteBonus.bonusPerLevel };
         skillData.health_percent_per_second_bonus = new LinearStatBonusFloat { base_value = bonusSkill.healthPercentPerSecondBonus.baseValue, bonus_per_level = bonusSkill.healthPercentPerSecondBonus.bonusPerLevel };

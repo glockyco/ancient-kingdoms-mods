@@ -197,6 +197,7 @@ public class ItemExporter : BaseExporter
             block_chance = equipItem.blockChanceBonus,
             accuracy = equipItem.accuracyBonus,
             critical_chance = equipItem.criticalChanceBonus,
+            critical_resist = equipItem.criticalResistBonus,
             haste = equipItem.hasteBonus,
             spell_haste = equipItem.spellHasteBonus,
             speed_bonus = equipItem.speedBonus,
@@ -412,6 +413,36 @@ public class ItemExporter : BaseExporter
     {
         var augmentItem = item.TryCast<Il2Cpp.AugmentItem>();
         if (augmentItem == null) return;
+
+        itemData.stats = new ItemStats
+        {
+            strength = augmentItem.strengthBonus,
+            constitution = augmentItem.constitutionBonus,
+            dexterity = augmentItem.dexterityBonus,
+            charisma = augmentItem.charismaBonus,
+            intelligence = augmentItem.intelligenceBonus,
+            wisdom = augmentItem.wisdomBonus,
+            health_bonus = augmentItem.healthBonus,
+            hp_regen_bonus = augmentItem.hpRegenBonus,
+            mana_bonus = augmentItem.manaBonus,
+            mana_regen_bonus = augmentItem.manaRegenBonus,
+            energy_bonus = augmentItem.energyBonus,
+            damage = augmentItem.damageBonus,
+            magic_damage = augmentItem.magicDamageBonus,
+            defense = augmentItem.defenseBonus,
+            magic_resist = augmentItem.magicResistBonus,
+            poison_resist = augmentItem.poisonResistBonus,
+            fire_resist = augmentItem.fireResistBonus,
+            cold_resist = augmentItem.coldResistBonus,
+            disease_resist = augmentItem.diseaseResistBonus,
+            block_chance = augmentItem.blockChanceBonus,
+            accuracy = augmentItem.accuracyBonus,
+            critical_chance = augmentItem.criticalChanceBonus,
+            critical_resist = augmentItem.criticalResistBonus,
+            haste = augmentItem.hasteBonus,
+            spell_haste = augmentItem.spellHasteBonus,
+            resist_fear_chance = augmentItem.resistFearChanceBonus
+        };
 
         itemData.augment_armor_set_name = augmentItem.nameArmorSet ?? "";
 

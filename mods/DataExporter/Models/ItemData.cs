@@ -186,6 +186,7 @@ public class ItemStats
     public float block_chance { get; set; }
     public float accuracy { get; set; }
     public float critical_chance { get; set; }
+    public float critical_resist { get; set; }
     public float haste { get; set; }
     public float spell_haste { get; set; }
     public float speed_bonus { get; set; }
