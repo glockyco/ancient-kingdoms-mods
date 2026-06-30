@@ -769,6 +769,7 @@ class SkillData(BaseModel):
     block_chance_bonus: SkillBonus | None = None
     accuracy_bonus: SkillBonus | None = None
     critical_chance_bonus: SkillBonus | None = None
+    critical_resist_bonus: SkillBonus | None = None
     haste_bonus: SkillBonus | None = None
     spell_haste_bonus: SkillBonus | None = None
     health_percent_per_second_bonus: SkillBonus | None = None
@@ -1128,7 +1129,7 @@ class LuckTokenData(BaseModel):
     fragment_token_id: str | None = None
     fragment_amount_needed: int = 0
     boss_luck_bonus: float = 0.05
-    fragment_drop_chance: float = 0.02
+    fragment_drop_chance: float = 0.05
 
 
 # =============================================================================

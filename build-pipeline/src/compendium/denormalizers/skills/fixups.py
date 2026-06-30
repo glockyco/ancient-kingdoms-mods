@@ -35,6 +35,7 @@ _STAT_JSON_FIELDS = [
     "spell_haste_bonus",
     "speed_bonus",
     "critical_chance_bonus",
+    "critical_resist_bonus",
     "accuracy_bonus",
     "block_chance_bonus",
     "fear_resist_chance_bonus",

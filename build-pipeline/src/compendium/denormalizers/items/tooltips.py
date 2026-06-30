@@ -27,12 +27,14 @@ STAT_DISPLAY_NAMES: dict[str, str] = {
     "spell_haste": "Spell Haste",
     "speed_bonus": "Movement Speed",
     "critical_chance": "Critical Chance",
+    "critical_resist": "Critical Resist",
     "block_chance": "Block Chance",
     "fire_resist": "Fire Resist",
     "cold_resist": "Cold Resist",
     "poison_resist": "Poison Resist",
     "disease_resist": "Disease Resist",
     "magic_resist": "Magic Resist",
+    "resist_fear_chance": "Fear Resist",
     "strength": "Strength",
     "dexterity": "Dexterity",
     "constitution": "Constitution",
@@ -213,6 +215,16 @@ def _parse_tooltip(item: dict) -> str:
         "CRITICALCHANCEBONUS": (
             f"{abs(stats['critical_chance'] * 100):.2f}".rstrip("0").rstrip(".")
             if stats.get("critical_chance")
+            else "0"
+        ),
+        "FEARRESISTBONUS": (
+            f"{abs(stats['resist_fear_chance'] * 100):.2f}".rstrip("0").rstrip(".")
+            if stats.get("resist_fear_chance")
+            else "0"
+        ),
+        "CRITICALRESISTBONUS": (
+            f"{abs(stats['critical_resist'] * 100):.2f}".rstrip("0").rstrip(".")
+            if stats.get("critical_resist")
             else "0"
         ),
         "HPREGENBONUS": str(stats.get("hp_regen_bonus", 0)),

@@ -152,7 +152,7 @@ CREATE TABLE luck_tokens (
     fragment_token_id TEXT REFERENCES items(id),
     fragment_amount_needed INTEGER DEFAULT 0,
     boss_luck_bonus REAL DEFAULT 0.05,
-    fragment_drop_chance REAL DEFAULT 0.02
+    fragment_drop_chance REAL DEFAULT 0.05
 );
 
 -- =============================================================================
@@ -1155,6 +1155,7 @@ CREATE TABLE skills (
     block_chance_bonus TEXT,
     accuracy_bonus TEXT,
     critical_chance_bonus TEXT,
+    critical_resist_bonus TEXT,
     haste_bonus TEXT,
     spell_haste_bonus TEXT,
     health_percent_per_second_bonus TEXT,
