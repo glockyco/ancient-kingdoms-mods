@@ -2171,11 +2171,24 @@
                       <dd>skillValue(level) + bonusAttribute &times; 0.15</dd>
                     {/if}
                     {#if hasNonZeroField(skill.healing_per_second_bonus)}
-                      <dt class="text-muted-foreground">HoT</dt>
-                      <dd>
-                        skillValue(level) &times; (1 + min(bonusAttribute
-                        &times; 0.004, 5.0))
-                      </dd>
+                      <dt class="text-muted-foreground">
+                        {isNegativeLinear(skill.healing_per_second_bonus)
+                          ? "DoT"
+                          : "HoT"}
+                      </dt>
+                      {#if isNegativeLinear(skill.healing_per_second_bonus)}
+                        <!-- Source: Wisdom.cs:118-121 — GetHealingPerSecondBuffBonus returns 0 for healingPerSecondBonus <= 0; a DoT tick gets no attribute scaling -->
+                        <dd>skillValue(level)</dd>
+                      {:else if skill.duration_base >= 60}
+                        <!-- Source: Wisdom.cs:116-128 — buffs 60s or longer add flat bonusAttribute × 0.2 -->
+                        <dd>skillValue(level) + bonusAttribute &times; 0.2</dd>
+                      {:else}
+                        <!-- Source: Wisdom.cs:116-128 — buffs under 60s scale base by min(bonusAttribute × 0.004, 3.0) -->
+                        <dd>
+                          skillValue(level) &times; (1 + min(bonusAttribute
+                          &times; 0.004, 3.0))
+                        </dd>
+                      {/if}
                     {/if}
                     {#if skill.id === "leadership" && hasNonZeroField(skill.damage_bonus)}
                       <!-- Source: Buff.cs:64-67 — Leadership-only: damageBonus.Get(level) + bonusAttribute on positive branch -->
