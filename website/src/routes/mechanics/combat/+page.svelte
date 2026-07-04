@@ -987,7 +987,7 @@ finalDamage = damage − reduction</pre>
       </div>
 
       <div>
-        <!-- Source: server-scripts/Buff.cs:18 (3 counters); TargetBuffSkill.cs:288-362 / AreaBuffSkill.cs:140-358 (cleanse counter rolls); Skills.cs:1326-1331 (DoT per-counter scaling) -->
+        <!-- Source: server-scripts/Buff.cs:18 (3 counters); TargetBuffSkill.cs:288-362 / AreaBuffSkill.cs:140-358 (cleanse counter rolls); Skills.cs:1409-1414 (DoT per-counter scaling) -->
         <h3 id="cleanse" class="font-semibold mb-1 scroll-mt-24">Cleanse</h3>
         <p class="text-sm text-muted-foreground mb-2">
           Cleanse is cast on yourself or an ally and removes harmful debuffs. It
@@ -1036,8 +1036,8 @@ finalDamage = damage − reduction</pre>
         <p class="text-sm text-muted-foreground mt-2">
           A debuff with counters left stays on the target and can be reduced
           further by cleansing again. For damage-over-time debuffs, losing
-          counters also lowers each tick of damage, to 90% of full at 2 counters
-          and 80% at 1 counter. Nothing the caster does, Accuracy included,
+          counters also lowers each tick of damage, to 80% of full at 2 counters
+          and 60% at 1 counter. Nothing the caster does, Accuracy included,
           changes how many counters a cleanse removes.
         </p>
       </div>
