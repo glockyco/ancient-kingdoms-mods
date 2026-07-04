@@ -71,6 +71,9 @@ dotnet run --project build-tool export --update
 cd build-pipeline && uv run compendium build
 
 # 6. Apply all manual website changes (mechanic updates, removed features, etc.)
+#    Write docs describing how the game works NOW — present tense, current behavior only.
+#    No historical framing ("now", "previously", "no longer", "changed from X to Y"): the
+#    site documents the current patch, not a changelog. State the new rule as the only rule.
 
 # 7. Refresh mechanics snapshots
 #    Patches that change skill mechanics, scaling, or buff/debuff behavior shift the
@@ -104,7 +107,7 @@ Versioned backups are stored in `server-scripts-<version>/`; the working copy is
 
 **Do not investigate the old server scripts** to understand changes — diff the new scripts first. The diff is the primary source of truth for what changed.
 
-**Commit atomically** — one logical change per commit.
+**Commit atomically** — one logical change per commit; never a single big-bang commit for the whole update. Split the work: each game-mechanic doc change (one combat formula, one cleanse rule, one scaling change) is its own commit, data-only snapshot deltas are their own commit, and the version bump (step 8) is always the final commit. Stage per-skill snapshot files individually (`git add …/mechanics-snapshots/<skill>.txt`) so each commit carries only the snapshot deltas its own code or data change caused (see step 7).
 
 ## Diff Analysis
 
