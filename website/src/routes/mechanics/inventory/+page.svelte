@@ -145,7 +145,7 @@
             </tr>
           </thead>
           <tbody>
-            {#each [["Carry inventory", "Character", "24 base plus backpack storage", "Equip backpacks"], ["Backpack slots", "Character", "9 dedicated bag slots", "Fixed"], ["Bank item storage", "Character", "300 slots, 30 per tab", "Unlock bank tabs with gold"], ["House chests", "Account", "240 slots, 8 chest sections", "Buy a house, then buy chests"], ["Banked gold", "Account", "Separate gold vault", "Fixed"], ["Equipment", "Character", "16 equipped slots", "Fixed"], ["Keys", "Character", "Separate key storage", "Fixed"]] as row (row[0])}
+            {#each [["Carry inventory", "Character", "24 base plus backpack storage", "Equip backpacks"], ["Backpack slots", "Character", "9 dedicated bag slots", "Fixed"], ["Bank item storage", "Character", "300 slots, 30 per tab", "Unlock bank tabs with gold"], ["House chests", "Account", "560 slots, 8 chest sections", "Buy a house, then buy chests"], ["Banked gold", "Account", "Separate gold vault", "Fixed"], ["Equipment", "Character", "16 equipped slots", "Fixed"], ["Keys", "Character", "Separate key storage", "Fixed"]] as row (row[0])}
               <tr class="border-b border-border/50 hover:bg-muted/30">
                 <td class="py-2 pr-4 font-medium">{row[0]}</td>
                 <td class="py-2 pr-4">{row[1]}</td>
@@ -332,7 +332,7 @@
         <!-- Source: server-scripts/StrucItemUi.cs:33-36 — purchase warning says same-color chests share storage. -->
         You need to own a house before you can use house chests. Each chest type opens
         one fixed account-wide storage section. A second chest of the same type gives
-        another access point to that section, not another 30 slots.
+        another access point to that section, not another 70 slots.
       </p>
 
       <div class="space-y-2 text-sm text-muted-foreground">
