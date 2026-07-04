@@ -2669,13 +2669,15 @@
           </div>
         {/if}
         {#if hasLinearValue(skill.critical_resist_bonus)}
-          <!-- Source: server-scripts/Combat.cs:251-255, Dexterity.cs:34-37 -->
+          <!-- Source: server-scripts/Combat.cs:258-270 (criticalResist, clamped 0-1), 361-366 (ApplyCriticalResistToMultiplier), 699-714 (crit damage), Dexterity.cs:34-37 -->
           <div class="space-y-1">
             <h3 class="font-semibold">Critical Resist</h3>
             <p class="text-muted-foreground">
-              Defensive critical-hit reduction. Effective crit chance =
-              (attacker crit chance + skill crit bonus) × (1 − target Critical
-              Resist). Dexterity adds 0.05 percentage points per positive point.
+              Defensive critical-hit reduction. Critical Resist reduces the
+              bonus damage from critical hits: a crit's multiplier is 1 + (base
+              − 1) × (1 − Critical Resist), where base is ×1.5 (or ×3 under
+              Radiant Aether), so full resist makes a crit deal normal-hit
+              damage. Dexterity adds 0.05 percentage points per positive point.
               Gear and buffs can add more. Total Critical Resist is capped at
               100%.
             </p>

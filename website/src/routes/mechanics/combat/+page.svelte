@@ -207,9 +207,11 @@
             <tr>
               <td class="py-2 pr-4 text-muted-foreground">8</td>
               <td class="py-2"
-                ><strong>Crit</strong>: chance = (attacker Critical Chance +
-                skill crit bonus) × (1 − target Critical Resist). Critical hits
-                deal ×1.5. Radiant Aether crits deal ×2 on top (×3 total)</td
+                ><strong>Crit</strong>: chance = attacker Critical Chance +
+                skill crit bonus. Critical hits deal ×1.5 (Radiant Aether: ×3).
+                Target Critical Resist reduces the crit bonus damage: multiplier
+                = 1 + (mult − 1) × (1 − Critical Resist), so full resist makes a
+                crit deal normal-hit damage</td
               >
             </tr>
           </tbody>
