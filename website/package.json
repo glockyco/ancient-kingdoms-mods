@@ -22,7 +22,7 @@
     "cf-deploy:redirect": "wrangler deploy --config wrangler.redirect.toml"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20260620.1",
+    "@cloudflare/workers-types": "^5.20260707.1",
     "@eslint/compat": "^2.1.0",
     "@eslint/js": "^10.0.1",
     "@internationalized/date": "^3.12.2",
