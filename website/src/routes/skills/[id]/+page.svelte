@@ -733,6 +733,7 @@
       skill.is_cleanse ||
       // G. Special notes
       skill.is_assassination_skill ||
+      skill.id === "parry" ||
       hasScrollMasteryScaling ||
       skill.is_decrease_resists_skill ||
       (hasLinearValue(skill.cast_time) && skill.is_spell && !skill.is_scroll) ||
@@ -2540,6 +2541,26 @@
         {/if}
 
         <!-- G. Special Mechanic Notes -->
+        {#if skill.id === "parry"}
+          <!-- Source: server-scripts/Combat.cs:1106-1119, 1328-1338; Player.cs:10564-10568 -->
+          <div class="space-y-1">
+            <h3 class="font-semibold">
+              <a
+                href="/mechanics/combat#parry"
+                class="text-blue-600 dark:text-blue-400 hover:underline"
+                >Parry</a
+              >
+            </h3>
+            <p class="text-muted-foreground">
+              During Parry's cast window, if your selected target hits you with
+              a single-target Normal melee attack, Parry blocks that attack's
+              health damage and counters. Counterdamage is half the health
+              damage the attack would have dealt after mitigation, ward, and
+              mana shield, rounded and capped from 1 to 5,000. Fully absorbed
+              hits do not trigger Parry.
+            </p>
+          </div>
+        {/if}
         {#if skill.is_assassination_skill}
           <p>Requires target below 25% HP to cast</p>
         {/if}

@@ -54,17 +54,30 @@ test("inventory backpack links include tooltip data", () => {
   assert.match(inventoryPage, /tooltipHtml=\{backpack\.tooltip_html\}/);
 });
 
-test("mechanics detail breadcrumbs link to mechanics overview", () => {
-  const experiencePage = source("./experience/+page.svelte");
-  const combatPage = source("./combat/+page.svelte");
-  const monsterSpawnsPage = source("./monster-spawns/+page.svelte");
+test("skill page keeps Parry mechanics visible without normal damage", () => {
+  const skillPage = source("../skills/[id]/+page.svelte");
+  const showMechanicsGate =
+    skillPage.match(
+      /const showMechanics = \$derived\([\s\S]*?\n {2}\);/,
+    )?.[0] ?? "";
 
-  assert.match(experiencePage, /\{ label: "Mechanics", href: "\/mechanics" \}/);
-  assert.match(combatPage, /\{ label: "Mechanics", href: "\/mechanics" \}/);
-  assert.match(
-    monsterSpawnsPage,
-    /\{ label: "Mechanics", href: "\/mechanics" \}/,
-  );
+  assert.match(showMechanicsGate, /skill\.id === "parry"/);
+});
+
+test("skill page links Parry to combat mechanics", () => {
+  const skillPage = source("../skills/[id]/+page.svelte");
+
+  assert.match(skillPage, /href="\/mechanics\/combat#parry"/);
+});
+
+test("combat mechanics page documents Parry special rules", () => {
+  const combatPage = source("./combat/+page.svelte");
+  const parrySection =
+    combatPage.match(
+      /<h3 id="parry"[\s\S]*?(?=\n\s*<h3|\n\s*<\/Card\.Content>)/,
+    )?.[0] ?? "";
+
+  assert.match(parrySection, /<h3 id="parry"[^>]*>Parry<\/h3>/);
 });
 
 test("experience page cross-links equipment and death inventory rules", () => {

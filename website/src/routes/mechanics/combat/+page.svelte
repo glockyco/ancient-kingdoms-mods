@@ -955,6 +955,18 @@ finalDamage = damage − reduction</pre>
       </div>
 
       <div>
+        <!-- Source: server-scripts/Combat.cs:1106-1119, 1328-1338; Player.cs:10564-10568 -->
+        <h3 id="parry" class="font-semibold mb-1 scroll-mt-24">Parry</h3>
+        <p class="text-sm text-muted-foreground">
+          Parry is a timed counter. If an eligible player is casting Parry and
+          has the attacker selected, a single-target Normal melee hit is blocked
+          and countered. Counterdamage is half the health damage the hit would
+          have dealt after mitigation, ward, and mana shield, rounded and capped
+          from 1 to 5,000. Fully absorbed hits do not trigger Parry.
+        </p>
+      </div>
+
+      <div>
         <h3 class="font-semibold mb-1">Assassination</h3>
         <p class="text-sm text-muted-foreground">
           Skills with this mechanic can only be used when the target is below

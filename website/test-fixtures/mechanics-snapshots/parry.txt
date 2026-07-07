@@ -1,0 +1,1 @@
+Mechanics Parry During Parry's cast window, if your selected target hits you with a single-target Normal melee attack, Parry blocks that attack's health damage and counters. Counterdamage is half the health damage the attack would have dealt after mitigation, ward, and mana shield, rounded and capped from 1 to 5,000. Fully absorbed hits do not trigger Parry.
