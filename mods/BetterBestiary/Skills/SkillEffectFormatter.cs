@@ -5,9 +5,9 @@ using System.Globalization;
 namespace BetterBestiary.Skills;
 
 /// <summary>
-/// C# port of the website's <c>formatSkillEffect</c> (skill-intrinsic / no
-/// monsterContext branch). Builds the concise effect summary shown in the
-/// BetterBestiary skills panel from a <see cref="SkillEffectInput"/>.
+/// C# port of the website's <c>formatSkillEffect</c>. The default call keeps
+/// website parity with the skill-intrinsic no-monsterContext branch, while the
+/// BetterBestiary skills panel opts into monster context for monster-owned skills.
 ///
 /// This is the SECOND home of formatter logic — the TypeScript
 /// <c>website/src/lib/utils/formatSkillEffect.ts</c> stays the source of truth.
@@ -27,7 +27,7 @@ internal static class SkillEffectFormatter
 {
     private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
 
-    public static string Format(SkillEffectInput skill)
+    public static string Format(SkillEffectInput skill, bool monsterContext = false)
     {
         if (skill.id != null && HardcodedEffects.TryGetValue(skill.id, out var hardcoded))
             return hardcoded;
@@ -45,7 +45,7 @@ internal static class SkillEffectFormatter
         FormatSummons(skill, parts);
 
         if (skill.skill_type == "passive" && skill.is_enrage)
-            parts.Add("+33% dmg below 25% hp");
+            parts.Add(monsterContext ? "+50-75% damage below 10% HP" : "+33% damage below 50% HP");
 
         if (skill.skill_type is "area_buff" or "area_debuff" or "target_buff" or "target_debuff" or "passive")
             FormatBuffDebuffStats(skill, parts);

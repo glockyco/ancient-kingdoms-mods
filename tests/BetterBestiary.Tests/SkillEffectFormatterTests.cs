@@ -56,4 +56,18 @@ public class SkillEffectFormatterTests
             $"{mismatches.Count}/{cases.Count} skills diverged from the website formatter:\n"
                 + string.Join("\n", mismatches.Take(40)));
     }
+
+    [Fact]
+    public void MonsterContextFormatsEnrageWithMonsterThreshold()
+    {
+        var skill = new SkillEffectInput
+        {
+            skill_type = "passive",
+            is_enrage = true,
+        };
+
+        Assert.Equal(
+            "+50-75% damage below 10% HP",
+            SkillEffectFormatter.Format(skill, monsterContext: true));
+    }
 }

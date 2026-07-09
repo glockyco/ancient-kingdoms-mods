@@ -70,7 +70,7 @@ internal static class SkillsPanelRenderer
             string summaryText;
             try
             {
-                summaryText = SkillEffectFormatter.Format(SkillEffectExtractor.From(skill));
+                summaryText = SkillEffectFormatter.Format(SkillEffectExtractor.From(skill), monsterContext: true);
             }
             catch (Exception ex)
             {
