@@ -1,0 +1,1 @@
+Mechanics When used by a mercenary, skill level = floor(regular level ÷ 5) + floor(veteran level ÷ 10), capped at max skill level. Healing Formula Final Heal = Base Heal + round(Base Heal × min(WIS × 0.004, 5.0)) Merc uses its own WIS. Ranger Merc does not get the ×3 bonus. Effective Cast Time = castTime − (castTime × spellHaste)

@@ -32,3 +32,21 @@ describe("formatSkillEffect stat bonuses", () => {
     ).toBe("+5% (+1%/lvl) critical resist, 1m");
   });
 });
+
+describe("formatSkillEffect enrage passives", () => {
+  const enrageSkill = {
+    skill_type: "passive",
+    damage_type: null,
+    is_enrage: true,
+  } as Skill;
+
+  it("formats player enrage with the runtime player threshold", () => {
+    expect(formatSkillEffect(enrageSkill)).toBe("+33% damage below 50% HP");
+  });
+
+  it("formats monster enrage with the runtime monster threshold and bonus range", () => {
+    expect(formatSkillEffect(enrageSkill, { damage: 0, magicDamage: 0 })).toBe(
+      "+50-75% damage below 10% HP",
+    );
+  });
+});

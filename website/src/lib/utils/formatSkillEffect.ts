@@ -839,8 +839,9 @@ export function formatSkillEffect(
 
   // 5. Passives (special case: enrage)
   if (skill.skill_type === "passive" && skill.is_enrage) {
-    const enrageValue = monsterContext ? "+50-100%" : "+33%";
-    parts.push(`${enrageValue} dmg below 25% hp`);
+    const enrageValue = monsterContext ? "+50-75%" : "+33%";
+    const enrageThreshold = monsterContext ? "10%" : "50%";
+    parts.push(`${enrageValue} damage below ${enrageThreshold} HP`);
   }
 
   // 6. Buffs/debuffs

@@ -1797,8 +1797,8 @@
           <div class="space-y-1 text-sm">
             {#if skill.is_enrage}
               <p class="text-red-600 dark:text-red-400">
-                Enrage: non-spell damage Player +33% / Monster +50–100% when
-                below 25% HP
+                Enrage: players deal +33% damage below 50% HP. Monsters deal
+                +50–75% damage below 10% HP. Non-spell skills only.
               </p>
             {/if}
             {#if skill.is_invisibility}
@@ -1980,8 +1980,8 @@
                     &minus;slayerLevel &times; 10%
                   </li>
                   <li>
-                    Enrage (&lt;25% HP, non-spell): Player +33% | Monster
-                    +50&ndash;100%
+                    Enrage (non-spell): players +33% below 50% HP. Monsters
+                    +50&ndash;75% below 10% HP.
                   </li>
                   <li>
                     Mitigation: &minus;ceil(dmg &times; clamp(target.{resistType ===
@@ -2158,9 +2158,9 @@
                       <dt class="text-muted-foreground">Ward</dt>
                       {#if ctx.isAreaBuff}
                         <!-- Source: AreaBuffSkill.cs — scroll runs before wardBonus transform (different order vs TargetBuff) -->
-                        <dd>wardBonus(level) + bonusAttribute &times; 5</dd>
+                        <dd>wardBonus(level) + bonusAttribute &times; 2</dd>
                       {:else}
-                        <dd>wardBonus(level) + bonusAttribute &times; 5</dd>
+                        <dd>wardBonus(level) + bonusAttribute &times; 2</dd>
                       {/if}
                     {/if}
                     {#if hasNonZeroField(skill.damage_shield)}
@@ -2181,13 +2181,13 @@
                         <!-- Source: Wisdom.cs:118-121 — GetHealingPerSecondBuffBonus returns 0 for healingPerSecondBonus <= 0; a DoT tick gets no attribute scaling -->
                         <dd>skillValue(level)</dd>
                       {:else if skill.duration_base >= 60}
-                        <!-- Source: Wisdom.cs:116-128 — buffs 60s or longer add flat bonusAttribute × 0.2 -->
-                        <dd>skillValue(level) + bonusAttribute &times; 0.2</dd>
+                        <!-- Source: Wisdom.cs:116-128 — buffs 60s or longer add flat bonusAttribute × 0.3 -->
+                        <dd>skillValue(level) + bonusAttribute &times; 0.3</dd>
                       {:else}
-                        <!-- Source: Wisdom.cs:116-128 — buffs under 60s scale base by min(bonusAttribute × 0.004, 3.0) -->
+                        <!-- Source: Wisdom.cs:116-128 — buffs under 60s scale base by min(bonusAttribute × 0.004, 5.0) -->
                         <dd>
                           skillValue(level) &times; (1 + min(bonusAttribute
-                          &times; 0.004, 3.0))
+                          &times; 0.004, 5.0))
                         </dd>
                       {/if}
                     {/if}
@@ -2419,7 +2419,7 @@
                 counters reach 0. A matching cleanse removes 1 counter for
                 certain, then makes 2 more attempts that each remove another
                 counter with a {formatPercent(1 - skill.prob_ignore_cleanse)} chance.{skill.healing_per_second_bonus
-                  ? " While counters remain, each tick of its damage is reduced, to 90% of full at 2 counters and 80% at 1 counter."
+                  ? " While counters remain, each tick of its damage is reduced, to 80% of full at 2 counters and 60% at 1 counter."
                   : ""}
               </p>
             {/if}
@@ -2447,8 +2447,8 @@
               more attempts that each remove another counter with a chance of
               (100% &minus; Cleanse Resist), and a debuff with a Cleanse Resist
               of 100% cannot be cleansed. For damage-over-time debuffs, losing
-              counters also lowers each tick of damage, to 90% of full at 2
-              counters and 80% at 1 counter.
+              counters also lowers each tick of damage, to 80% of full at 2
+              counters and 60% at 1 counter.
             </p>
           </div>
         {/if}
@@ -2756,8 +2756,9 @@
             <h3 class="font-semibold">Cooldown Reduction</h3>
             <p class="text-muted-foreground">
               When this buff is applied, all skills currently on cooldown have
-              their remaining cooldown reduced by this percentage. This is a
-              one-time effect at application, not an ongoing reduction.
+              their remaining cooldown reduced by this percentage, up to 30
+              seconds per skill. This is a one-time effect at application, not
+              an ongoing reduction.
             </p>
           </div>
         {/if}

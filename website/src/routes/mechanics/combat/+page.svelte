@@ -190,9 +190,9 @@
             <tr class="border-b border-border/50">
               <td class="py-2 pr-4 text-muted-foreground">6</td>
               <td class="py-2"
-                ><strong>Enrage</strong>: damage increases by 33% (players) or
-                50–100% (monsters, random per hit), when the caster's HP is
-                below 50% for players / 25% for monsters (non-spell only)</td
+                ><strong>Enrage</strong>: players deal 33% more damage below 50%
+                HP. Monsters deal 50–75% more damage below 10% HP. Non-spell
+                skills only</td
               >
             </tr>
             <tr class="border-b border-border/50">
@@ -419,9 +419,11 @@ finalDamage = damage − reduction</pre>
       <div>
         <h3 class="font-semibold mb-1">Critical Heal</h3>
         <p class="text-sm text-muted-foreground">
-          Applies only to skills that can target other players (shown as "Others
-          Only" or "Self &amp; Others" on the skill page). On crit: 90%→×2.0,
-          10%→×3.0.
+          Direct critical heals apply only to skills that can target other
+          players (shown as "Others Only" or "Self &amp; Others" on the skill
+          page). When they crit: 90%→×2.0, 10%→×3.0. Heal-over-time ticks can
+          also crit for ×1.5. The chance is based on the caster's Critical
+          Chance when the buff was applied.
         </p>
       </div>
 
@@ -468,38 +470,43 @@ finalDamage = damage − reduction</pre>
             <tbody>
               <tr class="border-b border-border/40"
                 ><td class="py-1 pr-4">Max Health</td><td
-                  class="py-1 text-muted-foreground">+WIS×2</td
+                  class="py-1 text-muted-foreground">base + WIS×2</td
                 ></tr
               >
               <tr class="border-b border-border/40"
                 ><td class="py-1 pr-4">Defense</td><td
-                  class="py-1 text-muted-foreground">+WIS×0.15</td
+                  class="py-1 text-muted-foreground">base + WIS×0.15</td
                 ></tr
               >
               <tr class="border-b border-border/40"
                 ><td class="py-1 pr-4">Magic Resist</td><td
-                  class="py-1 text-muted-foreground">+WIS×0.15</td
+                  class="py-1 text-muted-foreground">base + WIS×0.15</td
                 ></tr
               >
               <tr class="border-b border-border/40"
                 ><td class="py-1 pr-4">Ward</td><td
-                  class="py-1 text-muted-foreground">+WIS×5</td
+                  class="py-1 text-muted-foreground">base + WIS×2</td
                 ></tr
               >
               <tr class="border-b border-border/40"
                 ><td class="py-1 pr-4">Damage Shield</td><td
-                  class="py-1 text-muted-foreground">+WIS×0.75</td
+                  class="py-1 text-muted-foreground">base + WIS×0.75</td
                 ></tr
               >
               <tr class="border-b border-border/40"
                 ><td class="py-1 pr-4">Elemental Resists</td><td
-                  class="py-1 text-muted-foreground">+WIS×0.15 each</td
+                  class="py-1 text-muted-foreground">base + WIS×0.15 each</td
+                ></tr
+              >
+              <tr class="border-b border-border/40"
+                ><td class="py-1 pr-4">Heal-over-Time (&lt;60s)</td><td
+                  class="py-1 text-muted-foreground"
+                  >base × (1 + min(WIS×0.004, 5.0))</td
                 ></tr
               >
               <tr
-                ><td class="py-1 pr-4">Heal-over-Time</td><td
-                  class="py-1 text-muted-foreground"
-                  >base × (1 + min(WIS×0.004, 3.0))</td
+                ><td class="py-1 pr-4">Heal-over-Time (60s+)</td><td
+                  class="py-1 text-muted-foreground">base + WIS×0.3</td
                 ></tr
               >
             </tbody>
@@ -659,15 +666,20 @@ finalDamage = damage − reduction</pre>
               <tr
                 ><td class="py-1 pr-4">DoT fire/cold/magic</td><td
                   class="py-1 text-muted-foreground"
-                  >+INT×1.25, reduced by respective resist</td
+                  >+INT×1.25, reduced by the matching resist</td
                 ></tr
               >
             </tbody>
           </table>
         </div>
         <p class="text-sm text-muted-foreground mt-2">
-          <strong>DoT counter decay:</strong> 3 counters full damage, 2 → ×0.9, 1
-          → ×0.8.
+          <strong>DoT counter decay:</strong> 3 counters full damage, 2 → ×0.8, 1
+          → ×0.6.
+        </p>
+        <p class="text-sm text-muted-foreground mt-2">
+          <strong>DoT critical ticks:</strong> damage-over-time ticks can crit for
+          ×1.5. The chance is based on the caster's Critical Chance when the debuff
+          was applied. Critical Resist reduces the bonus damage.
         </p>
       </div>
     </Card.Content>
@@ -897,8 +909,9 @@ finalDamage = damage − reduction</pre>
       <div>
         <h3 class="font-semibold mb-1">Ward &amp; Mana Shield Priority</h3>
         <p class="text-sm text-muted-foreground">
-          Ward absorbs first. Mana Shield absorbs any remaining damage. Ward
-          pool size comes from the buff's WIS scaling (WIS×5).
+          Ward absorbs direct damage first. Mana Shield absorbs any remaining
+          direct damage. Ward also absorbs DoT ticks before HP loss. Ward pool
+          size comes from the buff's WIS scaling (WIS×2).
         </p>
       </div>
 
@@ -947,10 +960,10 @@ finalDamage = damage − reduction</pre>
       <div>
         <h3 class="font-semibold mb-1">Enrage</h3>
         <p class="text-sm text-muted-foreground">
-          Non-spell skills only. When the caster's HP falls below 50% (monsters:
-          25%), their damage output increases by 33% (players) or 50–100%
-          (monsters, random per hit).
-          <!-- Source: server-scripts/Combat.cs — Player threshold: health/max < 0.5f; Monster/NPC threshold: health/max < 0.25f -->
+          Non-spell skills only. Players deal 33% more damage below 50% HP.
+          Monsters deal 50–75% more damage below 10% HP, rolled separately for
+          each hit.
+          <!-- Source: server-scripts/Combat.cs — Player threshold: health/max < 0.5f; Monster/NPC threshold: health/max < 0.1f -->
         </p>
       </div>
 
