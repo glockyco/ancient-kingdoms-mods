@@ -40,7 +40,7 @@ const reputationAmountFormat = new Intl.NumberFormat("en-US", {
  * spawn levels (level_min..level_max).
  *
  * Source: server-scripts/Monster.cs:2392-2420 (solo) / 2340-2368 (party share).
- * Improve adds level.current * (boss 10 / elite 5 / normal 1); decrease
+ * Improve adds level.current * (boss 20 / elite 10 / normal 1); decrease
  * subtracts level.current * (boss 2 / elite 1 / normal 0.5).
  */
 function monsterReputationAmount(
@@ -49,8 +49,8 @@ function monsterReputationAmount(
 ): string {
   let multiplier: number;
   if (direction === "improve") {
-    if (monster.is_boss) multiplier = 10;
-    else if (monster.is_elite) multiplier = 5;
+    if (monster.is_boss) multiplier = 20;
+    else if (monster.is_elite) multiplier = 10;
     else multiplier = 1;
   } else {
     if (monster.is_boss) multiplier = 2;

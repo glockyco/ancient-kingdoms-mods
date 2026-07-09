@@ -18,18 +18,18 @@ describe("monsterKillReputation", () => {
     ]);
   });
 
-  it("uses elite multipliers (improve 5, decrease 1)", () => {
+  it("uses elite multipliers (improve 10, decrease 1)", () => {
     const elite = { ...baseMonster, is_elite: true };
     expect(monsterKillReputation(elite).map((e) => e.amount)).toEqual([
-      "50",
+      "100",
       "10",
     ]);
   });
 
-  it("uses boss multipliers (improve 10, decrease 2) and prefers boss over elite", () => {
+  it("uses boss multipliers (improve 20, decrease 2) and prefers boss over elite", () => {
     const boss = { ...baseMonster, is_boss: true, is_elite: true };
     expect(monsterKillReputation(boss).map((e) => e.amount)).toEqual([
-      "100",
+      "200",
       "20",
     ]);
   });
@@ -67,7 +67,7 @@ describe("monsterKillReputation", () => {
     expect(monsterKillReputation(worldBoss)).toEqual([
       {
         direction: "improve",
-        amount: "580",
+        amount: "1,160",
         factions: [
           "Army of Order",
           "Elven Kingdom",
