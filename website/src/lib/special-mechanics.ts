@@ -36,7 +36,7 @@ const VALAARK_INVULNERABILITY: SpecialMechanic = {
     ],
     ["One stew makes Valaark vulnerable for 60-299 seconds."],
     [
-      "During that window, one random damage resistance drops to 100 while the others stay at 2000.",
+      "During that window, two different random damage resistances drop to 200 while the other three stay at 2000.",
     ],
     [
       "Using another stew while Valaark is already vulnerable only shows a warning and does not consume it.",
