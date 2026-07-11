@@ -472,8 +472,9 @@
           stacks merge up to the target stack limit.
         </li>
         <li>
-          <!-- Source: server-scripts/PlayerInventory.cs:426-428 and 1387-1400 — shift-drag requests and performs an inventory split. -->Shift-drag
-          splits half a stack into an empty target slot.
+          <!-- Source: server-scripts/PlayerInventory.cs:478-489 and 1695-1710 — Shift-click opens an amount picker, then the server validates and splits the requested amount. -->Shift-click
+          opens an amount picker and moves the chosen amount into an empty
+          target slot.
         </li>
         <li>
           <!-- Source: server-scripts/PlayerInventory.cs:430-433 — non-split, non-merge inventory drag swaps slots. -->Other
