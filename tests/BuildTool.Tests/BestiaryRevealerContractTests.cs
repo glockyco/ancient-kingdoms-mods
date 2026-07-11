@@ -11,15 +11,15 @@ public class BestiaryRevealerContractTests
     public void BestiaryRevealerUsesRenderOnlyDetailPatch()
     {
         var repoRoot = FindRepoRoot();
-        var modRoot = Path.Combine(repoRoot, "mods", "BestiaryRevealer");
-        Assert.True(Directory.Exists(modRoot), "mods/BestiaryRevealer must exist.");
+        var modRoot = Path.Combine(repoRoot, "mods", "BetterBestiary");
+        Assert.True(Directory.Exists(modRoot), "mods/BetterBestiary must exist.");
 
-        var projectFile = Path.Combine(modRoot, "BestiaryRevealer.csproj");
+        var projectFile = Path.Combine(modRoot, "BetterBestiary.csproj");
         Assert.True(File.Exists(projectFile), "BestiaryRevealer.csproj must exist.");
 
         var projectText = File.ReadAllText(projectFile);
-        Assert.Contains("<AssemblyName>BestiaryRevealer</AssemblyName>", projectText);
-        Assert.Contains("<RootNamespace>BestiaryRevealer</RootNamespace>", projectText);
+        Assert.Contains("<AssemblyName>BetterBestiary</AssemblyName>", projectText);
+        Assert.Contains("<RootNamespace>BetterBestiary</RootNamespace>", projectText);
         Assert.Contains("0Harmony", projectText);
         Assert.Contains("UnityEngine.UI", projectText);
 
@@ -27,7 +27,7 @@ public class BestiaryRevealerContractTests
         Assert.NotEmpty(sourceFiles);
         var source = string.Join("\n", sourceFiles.Select(File.ReadAllText));
 
-        Assert.Contains("Bestiary Revealer", source);
+        Assert.Contains("Better Bestiary", source);
         Assert.Contains("UIBestiaryDetail", source);
         Assert.Contains("\"Update\"", source);
         Assert.Contains("HarmonyPostfix", source);
@@ -58,7 +58,7 @@ public class BestiaryRevealerContractTests
     public void BestiaryRevealerCanAutoAddLoadedMissingBossesWhenEnabled()
     {
         var repoRoot = FindRepoRoot();
-        var modRoot = Path.Combine(repoRoot, "mods", "BestiaryRevealer");
+        var modRoot = Path.Combine(repoRoot, "mods", "BetterBestiary");
         var sourceFiles = Directory.GetFiles(modRoot, "*.cs", SearchOption.AllDirectories);
         var source = string.Join("\n", sourceFiles.Select(File.ReadAllText));
         var augmenterSource = File.ReadAllText(Path.Combine(modRoot, "BestiaryListAugmenter.cs"));
@@ -91,7 +91,7 @@ public class BestiaryRevealerContractTests
     public void BestiaryRevealerUsesLiveSpriteFallbackForMissingDetailImages()
     {
         var repoRoot = FindRepoRoot();
-        var modRoot = Path.Combine(repoRoot, "mods", "BestiaryRevealer");
+        var modRoot = Path.Combine(repoRoot, "mods", "BetterBestiary");
         var detailRenderer = File.ReadAllText(Path.Combine(modRoot, "Ui", "BestiaryDetailRenderer.cs"));
         var gridRenderer = File.ReadAllText(Path.Combine(modRoot, "Ui", "BestiaryGridRenderer.cs"));
         var spriteFallback = File.ReadAllText(Path.Combine(modRoot, "Ui", "BestiaryMonsterSprites.cs"));
@@ -111,7 +111,7 @@ public class BestiaryRevealerContractTests
     public void BestiaryRevealerFallsBackToMonsterZoneName()
     {
         var repoRoot = FindRepoRoot();
-        var renderer = File.ReadAllText(Path.Combine(repoRoot, "mods", "BestiaryRevealer", "Ui", "BestiaryDetailRenderer.cs"));
+        var renderer = File.ReadAllText(Path.Combine(repoRoot, "mods", "BetterBestiary", "Ui", "BestiaryDetailRenderer.cs"));
 
         Assert.Contains("SetText(detail.zoneBoss, ZoneText(monster))", renderer);
         Assert.Contains("private static string ZoneText(Monster monster)", renderer);
@@ -125,8 +125,8 @@ public class BestiaryRevealerContractTests
     public void BestiaryRevealerOpensBestiaryFromMonsterAltClick()
     {
         var repoRoot = FindRepoRoot();
-        var modRoot = Path.Combine(repoRoot, "mods", "BestiaryRevealer");
-        var projectFile = Path.Combine(modRoot, "BestiaryRevealer.csproj");
+        var modRoot = Path.Combine(repoRoot, "mods", "BetterBestiary");
+        var projectFile = Path.Combine(modRoot, "BetterBestiary.csproj");
         var projectText = File.ReadAllText(projectFile);
         var sourceFiles = Directory.GetFiles(modRoot, "*.cs", SearchOption.AllDirectories);
         var source = string.Join("\n", sourceFiles.Select(File.ReadAllText));
