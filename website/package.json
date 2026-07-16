@@ -4,6 +4,8 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
+    "clean:workerd": "pkill -f 'workerd serve --binary --experimental' || true",
+    "predev": "pnpm clean:workerd",
     "dev": "vite dev",
     "build": "vite build",
     "prebuild": "node scripts/generate-og-image.mjs && node scripts/generate-home-counts.mjs && node scripts/build-sitemap-manifest.mjs",
