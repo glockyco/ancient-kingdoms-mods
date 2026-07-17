@@ -256,9 +256,10 @@ function otherDamageFormula(skill: SkillDetailView): DamageFormulaKind {
  * @param usedByPets   - All pets/mercs that use this skill (must include type_monster)
  * @param hasMonsters  - Whether any monster NPC uses this skill
  * @param isWeaponProc - Whether this skill fires as a weapon proc
- *   Weapon proc damage skills have player_classes=[] but fire through the full player
- *   pipeline via weaponItem.procEffect.Apply(player, 1). Enumerates all 6 classes to
- *   capture class-specific formula differences (e.g. Poison + Rogue).
+ *   Weapon proc skills have player_classes=[] but fire through the caster pipeline via
+ *   weaponItem.procEffect.Apply(caster, 1). Damage procs enumerate player classes to
+ *   capture class-specific formulas. Debuff procs use the player or mercenary's
+ *   relevant attribute.
  */
 export function computeMechanicsSpec(
   skill: SkillDetailView,
@@ -538,6 +539,16 @@ export function computeMechanicsSpec(
     for (const cls of playerClasses) {
       const label = `${cls.charAt(0).toUpperCase() + cls.slice(1)} (player)`;
       debuffPairs.push({ label, bonusAttrKind: playerMercKind });
+    }
+    // Source: TargetDamageSkill.cs:246-276 and ProjectileSkillEffect.cs:143-155 —
+    // weapon proc effects call Apply(player/pet, 1). TargetDebuffSkill.cs:273-280
+    // then reads the player or mercenary attribute even though proc skills have no
+    // player_classes entries of their own.
+    if (isWeaponProc) {
+      debuffPairs.push({
+        label: "Player/Mercenary (weapon proc)",
+        bonusAttrKind: playerMercKind,
+      });
     }
     for (const pet of mercPets) {
       const tm = pet.type_monster ?? "Unknown";

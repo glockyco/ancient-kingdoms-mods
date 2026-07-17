@@ -4,6 +4,7 @@ import { monsterKillReputation, npcKillReputation } from "./killReputation";
 const baseMonster = {
   level_min: 10,
   level_max: 10,
+  health: 4500,
   is_boss: false,
   is_elite: false,
   improve_faction: ["Army of Order"],
@@ -11,9 +12,9 @@ const baseMonster = {
 };
 
 describe("monsterKillReputation", () => {
-  it("uses normal multipliers (improve 1, decrease 0.5)", () => {
+  it("uses max health and normal-rank multipliers for improvements", () => {
     expect(monsterKillReputation(baseMonster)).toEqual([
-      { direction: "improve", amount: "10", factions: ["Army of Order"] },
+      { direction: "improve", amount: "24", factions: ["Army of Order"] },
       { direction: "decrease", amount: "5", factions: ["Dark Alliance"] },
     ]);
   });
@@ -21,7 +22,7 @@ describe("monsterKillReputation", () => {
   it("uses elite multipliers (improve 10, decrease 1)", () => {
     const elite = { ...baseMonster, is_elite: true };
     expect(monsterKillReputation(elite).map((e) => e.amount)).toEqual([
-      "100",
+      "120",
       "10",
     ]);
   });
@@ -29,7 +30,7 @@ describe("monsterKillReputation", () => {
   it("uses boss multipliers (improve 20, decrease 2) and prefers boss over elite", () => {
     const boss = { ...baseMonster, is_boss: true, is_elite: true };
     expect(monsterKillReputation(boss).map((e) => e.amount)).toEqual([
-      "200",
+      "240",
       "20",
     ]);
   });
@@ -37,7 +38,7 @@ describe("monsterKillReputation", () => {
   it("preserves the half-point produced by fractional multipliers", () => {
     const oddLevel = { ...baseMonster, level_min: 7, level_max: 7 };
     expect(monsterKillReputation(oddLevel).map((e) => e.amount)).toEqual([
-      "7",
+      "18",
       "3.5",
     ]);
   });
@@ -45,15 +46,23 @@ describe("monsterKillReputation", () => {
   it("renders a range across the spawn levels", () => {
     const ranged = { ...baseMonster, level_min: 10, level_max: 14 };
     expect(monsterKillReputation(ranged).map((e) => e.amount)).toEqual([
-      "10-14",
+      "24-32",
       "5-7",
     ]);
+  });
+
+  it("matches Mathf.RoundToInt midpoint-to-even health rounding", () => {
+    const roundDown = { ...baseMonster, health: 1000 };
+    const roundUp = { ...baseMonster, health: 3000 };
+    expect(monsterKillReputation(roundDown)[0]?.amount).toBe("20");
+    expect(monsterKillReputation(roundUp)[0]?.amount).toBe("24");
   });
 
   it("groups every faction of a direction under one shared amount", () => {
     const worldBoss = {
       level_min: 58,
       level_max: 58,
+      health: 0,
       is_boss: true,
       is_elite: false,
       improve_faction: [
