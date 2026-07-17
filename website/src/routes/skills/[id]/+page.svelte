@@ -2309,7 +2309,7 @@
                         ? "DEX"
                         : "INT"}
                   </p>
-                  <!-- Source: Buff.cs:84-98 — defense getter, negative branch: bonusAttribute * 0.4 -->
+                  <!-- Source: server-scripts-0.9.25.1/Buff.cs:93-107 — defense getter, negative branch: bonusAttribute × 0.4 -->
                   <dl
                     class="grid grid-cols-1 sm:grid-cols-[16rem_1fr] gap-x-4 gap-y-1 font-mono"
                   >
@@ -2358,8 +2358,11 @@
                     {#if hasNonZeroField(skill.healing_per_second_bonus)}
                       <dt class="text-muted-foreground">DoT</dt>
                       {#if skill.is_poison_debuff || skill.is_disease_debuff}
-                        <!-- poison/disease (dex × 1.0) or scroll of same type -->
-                        <dd>skillValue(level) + bonusAttribute &times; 1.0</dd>
+                        <!-- Source: server-scripts-0.9.25.1/Skills.cs:1406-1410 — the shared poison/disease branch adds round(bonusAttribute × 1.5) before Poison Resist mitigation. Its ordering takes precedence over the later disease-specific branch. -->
+                        <dd>
+                          skillValue(level) + round(bonusAttribute &times; 1.5),
+                          then Poison Resist mitigation
+                        </dd>
                       {:else if skill.is_melee_debuff}
                         <!-- melee (str × 0.5) or scroll of melee type -->
                         <dd>skillValue(level) + bonusAttribute &times; 0.5</dd>

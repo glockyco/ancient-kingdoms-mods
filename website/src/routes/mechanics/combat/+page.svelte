@@ -651,10 +651,11 @@ finalDamage = damage − reduction</pre>
                   class="py-1 text-muted-foreground">−INT×0.5</td
                 ></tr
               >
+              <!-- Source: server-scripts-0.9.25.1/Skills.cs:1365-1543 — poison/disease DoT adds round(DEX × 1.5), then applies Poison Resist mitigation before counter decay, critical ticks, and ward processing. -->
               <tr class="border-b border-border/40"
                 ><td class="py-1 pr-4">DoT poison/disease</td><td
                   class="py-1 text-muted-foreground"
-                  >+DEX×1.0, reduced by Poison Resist</td
+                  >+DEX×1.5, then reduced by Poison Resist</td
                 ></tr
               >
               <tr class="border-b border-border/40"
@@ -672,6 +673,12 @@ finalDamage = damage − reduction</pre>
             </tbody>
           </table>
         </div>
+        <p class="text-sm text-muted-foreground mt-2">
+          Poison and disease damage-over-time effects add round(DEX×1.5) to the
+          base tick. Poison Resist reduces both types. Disease Resist does not
+          affect these damage ticks. Counter effects, critical ticks, and ward
+          absorption apply afterward.
+        </p>
         <p class="text-sm text-muted-foreground mt-2">
           <strong>DoT counter decay:</strong> 3 counters full damage, 2 → ×0.8, 1
           → ×0.6.
