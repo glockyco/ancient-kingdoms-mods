@@ -818,14 +818,15 @@
     </Card.Header>
     <Card.Content class="space-y-4">
       <p class="text-sm text-muted-foreground">
-        <!-- Source: server-scripts/Monster.cs:500-508 — summonable monsters start hidden with their respawn timer armed. -->
-        <!-- Source: server-scripts/SummonMonster.cs:21-52 — once per second the trigger checks whether every linked monster is currently dead; kills are not counted. -->
+        <!-- Source: server-scripts/Monster.cs:617-625 — summonable monsters start hidden; only chance-based non-elite summons start with their respawn timer armed. -->
+        <!-- Source: server-scripts/SummonMonster.cs:23-69 — once per second the trigger checks for a fresh alive-to-all-dead placeholder cycle; kills are not counted. -->
         <!-- Source: server-scripts/Monster.cs:1803 and 1819-1834 — the spawn check requires the summon's own respawn timer elapsed plus all trigger monsters dead at the same time; a zone-wide message is broadcast on success. -->
         Each summon watches a fixed set of nearby spawns. There is no kill counter
-        — kills do not add up. What matters is that every watched monster is dead
-        at the same time. The moment that happens (and the summon's own respawn timer
-        has run out), the spawn check fires. Most summons then appear instantly, and
-        many announce themselves to everyone in the zone.
+        — kills do not add up. The watched group must be alive before a fresh clear
+        can qualify. What matters is that every watched monster is then dead at the
+        same time. The moment that happens (and the summon's own respawn timer has
+        run out), the spawn check fires. Most summons then appear instantly, and many
+        announce themselves to everyone in the zone.
       </p>
       <p class="text-sm text-muted-foreground">
         <!-- Source: server-scripts/Monster.cs:1805-1810 — summons with a spawn chance below 100% roll on the check; a failed roll re-arms the timer for a full interval. -->
