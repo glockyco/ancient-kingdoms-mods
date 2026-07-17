@@ -6,4 +6,4 @@
  * compares it against the live game version fetched from Steam to flag the
  * compendium when it is behind.
  */
-export const COMPENDIUM_VERSION = "0.9.24.5";
+export const COMPENDIUM_VERSION = "0.9.25.1";
