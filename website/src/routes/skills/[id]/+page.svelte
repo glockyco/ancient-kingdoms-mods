@@ -2360,8 +2360,7 @@
                       {#if skill.is_poison_debuff || skill.is_disease_debuff}
                         <!-- Source: server-scripts-0.9.25.1/Skills.cs:1406-1410 — the shared poison/disease branch adds round(bonusAttribute × 1.5) before Poison Resist mitigation. Its ordering takes precedence over the later disease-specific branch. -->
                         <dd>
-                          skillValue(level) + round(bonusAttribute &times; 1.5),
-                          then Poison Resist mitigation
+                          skillValue(level) + round(bonusAttribute &times; 1.5)
                         </dd>
                       {:else if skill.is_melee_debuff}
                         <!-- melee (str × 0.5) or scroll of melee type -->
