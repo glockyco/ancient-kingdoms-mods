@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Build pipeline for Ancient Kingdoms Compendium"
 requires-python = ">=3.12"
 dependencies = [
-    "typer>=0.26.8",
+    "typer>=0.27.0",
     "rich>=13.7.0",
     "pydantic>=2.5.0",
     "pillow>=12.3.0",
@@ -15,9 +15,9 @@ compendium = "compendium.cli:app"
 
 [dependency-groups]
 dev = [
-    "mypy>=2.2.0",
+    "mypy>=2.3.0",
     "pytest>=9.1.1",
-    "ruff>=0.15.21",
+    "ruff>=0.15.22",
     "vulture>=2.16",
 ]
 
