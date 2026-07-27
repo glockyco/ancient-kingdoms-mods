@@ -25,22 +25,50 @@ Execute in order:
 #    Running this first surfaces game-side API changes (renamed/removed fields the DataExporter binds to)
 #    before the long export run. A failing export caused by a renamed Il2Cpp member wastes the whole launch cycle.
 #    Note: this script downloads to .steam-download/ (a separate install) — it does NOT update the
-#    CrossOver bottle that --export uses. Always pass --update on the export to refresh that install.
+#    CrossOver bottle that --export uses. For an unchanged exporter, use --update
+#    on the single-shot export below. For a changed exporter, use build-tool update
+#    in step 3 before regenerating interop assemblies.
 ./scripts/update-server-scripts.sh <version>
 
 # 2. Diff server scripts and patch mods if needed (see Diff Analysis below)
-diff -rq server-scripts-<old-version> server-scripts-<new-version>
-diff -b server-scripts-<old>/<file>.cs server-scripts-<new>/<file>.cs
+/usr/bin/diff -b -rq server-scripts-<old-version> server-scripts-<new-version>
+/usr/bin/diff -b server-scripts-<old-version>/<file>.cs server-scripts-<new-version>/<file>.cs
 #    Pay particular attention to fields/properties referenced by mods/DataExporter/
 #    (e.g. GameManager.*, ScriptableItem on enums). Update the exporter to match before building.
 
-# 3. Build and deploy mods for the new version
-#    build-tool intentionally does NOT deploy BossMod/BossMod.Core for export runs;
-#    the deploy step also removes stale copies from the CrossOver Mods directory.
+# 3. Refresh Il2Cpp interop before building a changed exporter
+#    When exporter code reads a field introduced by the patch, run this complete
+#    sequence. Mods compile against `$(Il2CppAssembliesPath)`, and MelonLoader
+#    regenerates those interop assemblies when the updated game runs after a Steam
+#    update. Building first can fail with
+#    `CS1061: 'X' does not contain a definition for 'y'`.
+#    1. Update the CrossOver bottle with steamcmd:
+dotnet run --project build-tool update
+#    2. Launch the updated game. This returns once MelonLoader is up, after
+#       Il2Cpp interop regeneration. Stop the game before continuing:
+dotnet run --project build-tool launch
+#    3. Build the mods:
+dotnet run --project build-tool build
+#    4. Deploy every built Release DLL:
+dotnet run --project build-tool deploy
+#    5. Export without --update because the bottle is already current:
+dotnet run --project build-tool export
+#    Use `dotnet run --project build-tool export --screenshots` instead if the
+#    world map changed.
+#
+#    `build` enumerates `*.csproj`, so it skips `mods/AutoExporter/`, which has no
+#    `.csproj`. `deploy` still copies its existing
+#    `mods/AutoExporter/bin/Release/net6.0/AutoExporter.dll`, which may be months
+#    old and stale. Check this DLL before exporting.
+#
+#    `deploy` copies every Release DLL it finds under
+#    `mods/**/bin/Release/net6.0/` into the CrossOver Mods directory. It does not
+#    special-case BossMod and it does not delete stale copies.
+
+# 4. For an unchanged exporter, build and deploy, then use the single-shot export path:
 dotnet run --project build-tool build
 dotnet run --project build-tool deploy
-
-# 4. Export fresh game data (launches game, exports JSON, quits)
+# 5. Export fresh game data (launches game, exports JSON, quits)
 #    --update runs steamcmd app_update against the CrossOver bottle (separate from .steam-download/).
 #    Use --screenshots if the world map changed (user confirmed in Before Starting).
 dotnet run --project build-tool export --update
@@ -54,28 +82,41 @@ dotnet run --project build-tool export --update
 # If MelonLoader fails with `UnityDependencies_<unity-version>.zip does not Exist!`
 # the game upgraded its Unity engine and MelonLoader's auto-download did not run
 # (recurring upstream bug — see https://github.com/LavaGang/MelonLoader/issues/987).
-# Fix manually:
-#   ML_DEPS="$ANCIENT_KINGDOMS_PATH/MelonLoader/Dependencies/Il2CppAssemblyGenerator"
-#   curl -fL -o "$ML_DEPS/UnityDependencies_<unity-version>.zip" \\
-#     https://github.com/LavaGang/MelonLoader.UnityDependencies/releases/download/<unity-version>/Managed.zip
+# Fix manually by reading `ANCIENT_KINGDOMS_PATH` from the MSBuild XML in `Local.props`:
+#   GAME_PATH="$(sed -n 's:.*<ANCIENT_KINGDOMS_PATH>\(.*\)</ANCIENT_KINGDOMS_PATH>.*:\1:p' Local.props)"
+#   ML_DEPS="$GAME_PATH/MelonLoader/Dependencies/Il2CppAssemblyGenerator"
+#   curl -fL -o "$ML_DEPS/UnityDependencies_<unity-version>.zip" "https://github.com/LavaGang/MelonLoader.UnityDependencies/releases/download/<unity-version>/Managed.zip"
 # The release asset is named `Managed.zip` upstream but MelonLoader caches it locally
 # as `UnityDependencies_<unity-version>.zip`. Re-run the export after placing the file.
+#
+# If the game dies with no MelonLoader log line as soon as a character enters the
+# world, `build-tool export` fails with:
+# `Runner error: WebSocketException: The remote party closed the WebSocket connection without completing the close handshake.`
+# Run the game directly under Wine and capture stderr. It reveals
+# `Fatal error. System.AccessViolationException` at
+# `Il2CppInterop.Runtime.Injection.Hooks.Class_GetFieldDefaultValue_Hook.Hook`.
+# Il2CppInterop locates `Class::GetDefaultFieldValue` by scanning GameAssembly.dll
+# for hardcoded byte signatures. On some builds the scan matches an unrelated
+# function. The `mods/FieldDefaultValueHookFix` mod forces Il2CppInterop's
+# signature-free xref traversal instead. Build and deploy it like any other mod.
+# No action is needed unless the fix stops working. MelonLoader 0.7.3 alone does
+# not fix this.
 
-# 4b. Regenerate map tiles — only if map changed
+# 5b. Regenerate map tiles — only if map changed
 #     compendium tiles validates boss/world-boss spawn coverage before replacing
 #     website/static/tiles. If validation fails, the screenshot export is bad:
-#     fix the in-game export environment and re-run step 4 with --screenshots.
+#     fix the in-game export environment and re-run the applicable export command with --screenshots.
 # cd build-pipeline && uv run compendium tiles
 
-# 5. Rebuild database from new exports
+# 6. Rebuild database from new exports
 cd build-pipeline && uv run compendium build
 
-# 6. Apply all manual website changes (mechanic updates, removed features, etc.)
+# 7. Apply all manual website changes (mechanic updates, removed features, etc.)
 #    Write docs describing how the game works NOW — present tense, current behavior only.
 #    No historical framing ("now", "previously", "no longer", "changed from X to Y"): the
 #    site documents the current patch, not a changelog. State the new rule as the only rule.
 
-# 7. Refresh mechanics snapshots
+# 8. Refresh mechanics snapshots
 #    Patches that change skill mechanics, scaling, or buff/debuff behavior shift the
 #    rendered mechanics cards on /skills/<id> pages. The committed snapshots in
 #    website/test-fixtures/mechanics-snapshots/ become stale and any subsequent
@@ -84,7 +125,7 @@ cd build-pipeline && uv run compendium build
 #    obvious from the changelog — server-script tweaks often surface here.
 cd website && pnpm build && node scripts/snapshot-mechanics.mjs
 #    Review every reported diff. Each one MUST correspond to either:
-#      - an intended manual website change in step 6, or
+#      - an intended manual website change in step 7, or
 #      - a game mechanics change visible in the server-scripts diff.
 #    Unexplained diffs are a signal to stop and investigate before accepting.
 #    Once every diff is accounted for, accept them as the new baseline:
@@ -93,7 +134,7 @@ node scripts/snapshot-mechanics.mjs --update
 #    code change (the mechanics-card edit, the formatSkillEffect.ts update, etc.)
 #    so each commit's snapshot delta is justified by code in the same commit.
 
-# 8. Update game version on home page — always last, as a "seal" on the update
+# 9. Update game version on home page — always last, as a "seal" on the update
 #    website/src/lib/constants/version.ts — set COMPENDIUM_VERSION
 #    The home-page banner reads this and compares against the live Steam version
 #    fetched server-side, so getting it right matters: a stale value here
@@ -107,7 +148,7 @@ Versioned backups are stored in `server-scripts-<version>/`; the working copy is
 
 **Do not investigate the old server scripts** to understand changes — diff the new scripts first. The diff is the primary source of truth for what changed.
 
-**Commit atomically** — one logical change per commit; never a single big-bang commit for the whole update. Split the work: each game-mechanic doc change (one combat formula, one cleanse rule, one scaling change) is its own commit, data-only snapshot deltas are their own commit, and the version bump (step 8) is always the final commit. Stage per-skill snapshot files individually (`git add …/mechanics-snapshots/<skill>.txt`) so each commit carries only the snapshot deltas its own code or data change caused (see step 7).
+**Commit atomically** — one logical change per commit. Never a single big-bang commit for the whole update. Split the work: each game-mechanic doc change (one combat formula, one cleanse rule, one scaling change) is its own commit, data-only snapshot deltas are their own commit, and the version bump (step 9) is always the final commit. Stage per-skill snapshot files individually (`git add …/mechanics-snapshots/<skill>.txt`) so each commit carries only the snapshot deltas its own code or data change caused (see step 8).
 
 ## Diff Analysis
 
@@ -118,7 +159,7 @@ Diff **every** changed file. Do not skip files or cherry-pick "important" ones.
 - IL label renames (`IL_2186` → `IL_232a`)
 - Variable renumbering (`pet13` → `pet14`, `player29` → `player30`)
 - `goto` target changes with no surrounding logic change
-- Use `diff -b` to ignore whitespace differences
+- Use `/usr/bin/diff -b` to ignore whitespace differences
 
 ### What to look for
 
