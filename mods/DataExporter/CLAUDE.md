@@ -11,13 +11,13 @@ Press **Shift+F9** in-game for a manual export without `build-tool`.
 
 Files are written to `exported-data/` (configurable in `Local.props`), including JSON data, `visual_assets.json`, and image files under `images/`.
 
-## Exported Data (24 exporters + visual asset manifest)
+## Exported Data (28 exporter registrations + visual asset manifest)
 
 | Category | Files |
 |----------|-------|
-| Core | monsters, npcs, items, quests, skills |
-| World | portals, zone_info, zone_triggers, gather_items |
-| Crafting | crafting_recipes, crafting_stations, alchemy_recipes, alchemy_tables |
+| Core | monsters, monster_spawns, npcs, npc_spawns, items, fish, quests, skills |
+| World | portals, zone_info, zone_triggers, houses, gather_items |
+| Crafting | crafting_recipes, crafting_stations, alchemy_recipes, alchemy_tables, scribing_recipes, scribing_tables |
 | Special | summon_triggers, luck_tokens, altars, treasure_locations, pets, professions, game_config |
 | Objects | traps, doors, interactive_objects |
 | Classes/visuals | classes_combat (base stats from player prefabs), visual_assets.json, images/ |
@@ -48,7 +48,7 @@ When exporting game data, follow docs/data-export-guide.md.
 Key rules:
 - **ONLY** export authoritative data from game object fields
 - NO guesses, heuristics, or name-based inferences
-- Use `"unknown"` for missing/unavailable data
+- Follow each exporter and model's field-specific defaults for missing data. Missing references are often `null`, missing text is often `""`, and value types retain their defaults. Use `"unknown"` only where an exporter explicitly defines it as a domain fallback, such as an unresolved zone.
 
 ## Gotchas
 

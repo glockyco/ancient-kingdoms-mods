@@ -75,7 +75,7 @@ public class MyMod : MelonMod
 4. For mods with `[HarmonyPatch]` classes, add `[assembly: HarmonyDontPatchAll]` and call `HarmonyInstance.PatchAll()` once from `OnInitializeMelon()`.
 5. Build and deploy: `dotnet run --project build-tool build && dotnet run --project build-tool deploy`
 
-The build tool auto-discovers all projects in `mods/`.
+The build tool recursively discovers and builds `*.csproj` files under `mods/`. `mods/AutoExporter/` has no project file, so `build` does not build it. `deploy` still copies its stale prebuilt `bin/Release/net6.0/AutoExporter.dll`.
 
 When patching stock game UI or hardcoded mechanics, verify behavior against `server-scripts/`. It is gitignored, so use file tools with ignored files enabled.
 
@@ -104,6 +104,8 @@ dotnet run --project build-tool build && dotnet run --project build-tool deploy
 MSBuild path separators work cross-platform via `$(MelonLoaderPath)` etc. No Wine required for building — only for running.
 
 ## Running on macOS via CrossOver
+
+The current CrossOver bottle runs MelonLoader 0.7.3.
 
 MelonLoader can't auto-download its dependencies under Wine — they must be placed manually. After installing MelonLoader, if the game crashes before loading mods:
 

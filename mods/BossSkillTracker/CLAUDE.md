@@ -31,8 +31,8 @@ Close the game before deploy when DLLs are locked. A deployed DLL does not affec
 
 ## Runtime invariants
 
-- Out of combat: no discovery work.
+- Out of combat: discovery previews the explicitly selected target only. No spatial discovery work.
 - In combat: discovery runs at `Tuning.ScanIntervalSeconds`; per-frame rendering reads live state only from held `Monster` refs.
-- Relevance requires tracked tier, alive, aggro by local player or active pet, and at least one trackable skill.
+- In combat, relevance requires tracked tier, alive, aggro by local player or active pet, and at least one trackable skill. Out-of-combat previews require tracked tier, alive, and at least one trackable skill without an aggro check.
 - Trackable skills are index `>= 1`, excluding passives and aura buff/debuff skills.
 - Group order is stable first sighting order; rows are stable cooldown-descending order.

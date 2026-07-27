@@ -14,7 +14,7 @@ Tracks boss, elite, and fabled monsters and displays respawn timers in a draggab
 **Monster Tracking:**
 - Tracks any monster flagged `isBoss`, `isElite`, or `isFabled`
 - Only active in "World" scene
-- Caches monster list (refreshes every 5 seconds to catch new spawns)
+- Caches monster list and refreshes it only on first use, a scene change, or a player move beyond the 50-unit teleport threshold
 - Maintains `Dictionary<uint, BossInfo>` keyed by monster netId
 - Separate alive/dead tracking with different sort orders
 
@@ -32,9 +32,9 @@ Tracks boss, elite, and fabled monsters and displays respawn timers in a draggab
 
 ```ini
 [BossTracker]
-PanelX = 1700
-PanelY = 200
-PanelWidth = 200
+PanelX = -10
+PanelY = 30
+PanelWidth = 420
 PanelHeight = 300
 FontSize = 12
 ```

@@ -25,12 +25,12 @@ Allows instant respawning of dead monsters via clickable world-space markers.
 
 **Respawn Mechanism:**
 - Does NOT spawn monsters directly
-- Sets `respawnTimeEnd` to past time (`currentTime - 1.0`)
+- Sets `respawnTimeEnd` to `Time.timeAsDouble - 1.0`, a local elapsed-time value in the past
 - Game's built-in respawn system handles the actual spawn
 
 **Server Time:**
-- Uses `NetworkManagerMMO.offsetNetworkTime + NetworkTime.time`
-- Auto-removes markers when respawn time is reached
+- Uses `NetworkManagerMMO.offsetNetworkTime + NetworkTime.time` for marker eligibility, countdowns, and removing ready markers
+- The respawn action sets `respawnTimeEnd` to `Time.timeAsDouble - 1.0`, using Unity's local elapsed time rather than synchronized server time
 
 ## Gotchas
 
@@ -39,4 +39,4 @@ Allows instant respawning of dead monsters via clickable world-space markers.
 - Server time must be available (`NetworkManagerMMO` found)
 - `respawnTimeEnd > currentTime`
 
-**Server time is required:** Always use `NetworkTime.time + NetworkManagerMMO.offsetNetworkTime`, never local time sources.
+**Timing:** Marker eligibility and countdowns require synchronized server time. The respawn write uses `Time.timeAsDouble - 1.0`.

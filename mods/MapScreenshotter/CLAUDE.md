@@ -15,19 +15,19 @@ Screenshots are saved to `exported-data/screenshots/`.
 
 Captures the entire world as a grid of orthographic screenshots:
 
-- **Tile size:** 100 world units per screenshot
-- **Grid:** ~17x20 tiles = ~340 screenshots
+- **Tile size:** 200 world units per screenshot
+- **Grid:** 9x11 tiles = 99 screenshots
 - **Camera:** Orthographic, looking straight down
 
-For clean terrain, the mod temporarily hides monsters, NPCs, and gather items. Player is teleported away during capture.
+For clean terrain, the mod hides monsters, NPCs, and gather items and does not restore them because `ShowEntities()` is never called. The player is deactivated during capture rather than teleported.
 
 ## Output
 
 ```
 exported-data/screenshots/
 ├── metadata.json              # World bounds + screenshot metadata
-├── screenshot_x000_z000.png   # Top-left tile
-├── screenshot_x001_z000.png
+├── world_x000_y000.png   # Top-left tile
+├── world_x001_y000.png
 └── ...
 ```
 
@@ -47,4 +47,4 @@ The build pipeline uses `metadata.json` to stitch screenshots and generate map t
 
 **Camera settings:**
 - Must be orthographic (no perspective distortion)
-- `orthographicSize = tileSize / 2` (50 for 100-unit tiles)
+- `orthographicSize = tileSize / 2` (100 for 200-unit tiles)
