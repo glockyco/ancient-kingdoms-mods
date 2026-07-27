@@ -30,6 +30,7 @@
   import Map from "@lucide/svelte/icons/map";
   import Star from "@lucide/svelte/icons/star";
   import Cat from "@lucide/svelte/icons/cat";
+  import Swords from "@lucide/svelte/icons/swords";
   import ArrowRight from "@lucide/svelte/icons/arrow-right";
 
   let { data } = $props();
@@ -102,6 +103,20 @@
   // Secondary sections, shown as compact tiles.
   const more = $derived([
     {
+      title: "Mercenaries",
+      href: "/mercenaries",
+      icon: Swords,
+      badge: "bg-teal-500/10 text-teal-500",
+      count: data.counts.mercenaries,
+    },
+    {
+      title: "Summons",
+      href: "/summons",
+      icon: Cat,
+      badge: "bg-cyan-500/10 text-cyan-500",
+      count: data.counts.summons,
+    },
+    {
       title: "Skills",
       href: "/skills",
       icon: Zap,
@@ -128,13 +143,6 @@
       icon: Leaf,
       badge: "bg-lime-500/10 text-lime-500",
       count: data.counts.gatheringResources,
-    },
-    {
-      title: "Pets",
-      href: "/pets",
-      icon: Cat,
-      badge: "bg-teal-500/10 text-teal-500",
-      count: data.counts.pets,
     },
     {
       title: "Chests",

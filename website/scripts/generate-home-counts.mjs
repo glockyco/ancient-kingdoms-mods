@@ -38,7 +38,12 @@ const monsters = count(
 const npcs = count("SELECT COUNT(*) as count FROM npcs");
 const classes = count("SELECT COUNT(*) as count FROM classes");
 const skills = count("SELECT COUNT(*) as count FROM skills");
-const pets = count("SELECT COUNT(*) as count FROM pets");
+const mercenaries = count(
+  "SELECT COUNT(*) as count FROM pets WHERE is_mercenary = 1",
+);
+const summons = count(
+  "SELECT COUNT(*) as count FROM pets WHERE is_mercenary = 0",
+);
 const zones = count("SELECT COUNT(*) as count FROM zones");
 const quests = count("SELECT COUNT(*) as count FROM quests");
 const altars = count("SELECT COUNT(*) as count FROM altars");
@@ -59,7 +64,8 @@ const counts = {
   npcs,
   classes,
   skills,
-  pets,
+  mercenaries,
+  summons,
   zones,
   quests,
   altars,
@@ -80,7 +86,8 @@ export interface HomeCounts {
   readonly npcs: number;
   readonly classes: number;
   readonly skills: number;
-  readonly pets: number;
+  readonly mercenaries: number;
+  readonly summons: number;
   readonly zones: number;
   readonly quests: number;
   readonly altars: number;
