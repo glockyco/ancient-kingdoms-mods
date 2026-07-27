@@ -165,11 +165,12 @@ export const ROLE_DESCRIPTIONS: Partial<
       'Trades magic+ equipment for <a href="/items/primal_essence" class="text-blue-600 dark:text-blue-400 hover:underline">Primal Essence</a>.',
     details: ["Requires magic or better gear in inventory"],
   },
+  // Source: server-scripts/UIBank.cs:294-307 — tab costs use the number of tabs already unlocked.
   is_bank: {
     description: "Provides access to your bank storage.",
     details: [
       "30 slots per tab, up to 10 tabs",
-      "Tab costs: 1k → 5k → 10k → 25k → 50k → 75k → 100k → 250k → 500k gold",
+      "Tab costs: 200 → 1k → 2k → 5k → 10k → 15k → 20k → 50k → 100k gold",
     ],
   },
   can_repair_equipment: {

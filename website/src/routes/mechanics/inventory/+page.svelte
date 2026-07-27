@@ -17,7 +17,7 @@
 
   const MAX_VISIBLE_SOURCES_PER_TYPE = 3;
   const BANK_TAB_COSTS = [
-    0, 1000, 5000, 10000, 25000, 50000, 75000, 100000, 250000, 500000,
+    0, 200, 1000, 2000, 5000, 10000, 15000, 20000, 50000, 100000,
   ];
   const BANK_TAB_ROWS = BANK_TAB_COSTS.map((cost, index) => ({
     tab: index + 1,
@@ -295,7 +295,7 @@
         gold into the account vault and withdrawing moves it back to the character.
       </p>
       <div class="overflow-x-auto">
-        <!-- Source: server-scripts/UIBank.cs:293-308 — bank tab unlock price ladder. -->
+        <!-- Source: server-scripts/UIBank.cs:294-307 — bank tab unlock price ladder. -->
         <!-- Source: server-scripts/Player.cs:11736-11749 — server charges current unlock price before increasing unlocked bank tabs. -->
         <table class="w-full border-collapse text-sm">
           <thead>
