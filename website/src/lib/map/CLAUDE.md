@@ -4,12 +4,12 @@ WebGL-powered interactive world map using deck.gl.
 
 ## Overview
 
-The map displays all game entities (monsters, NPCs, portals, chests, altars, gathering nodes, crafting stations) on a full world map with layer toggles and entity popups.
+The map displays all game entities (monsters, hunts, NPCs, portals, chests, treasure, altars, gathering nodes, crafting stations, houses) on a full world map with layer toggles and entity popups.
 
 **Architecture:**
 
 - **Rendering**: deck.gl with OrthographicView for WebGL performance
-- **Data**: Client-side SQLite queries (~16k entities)
+- **Data**: Server-side SQLite queries load ~16k entities during prerender. The page passes prerendered props to client-side deck.gl
 - **SSR**: Map data prerendered at build time; deck.gl initializes client-side
 
 ## Key Files
@@ -26,14 +26,17 @@ src/
 │   │   └── CLAUDE.md     # This file
 │   ├── queries/
 │   │   ├── map.server.ts # Server-side queries for prerendering
-│   │   └── popup.ts      # Client-side popup queries
+│   │   └── map-search.ts # Client-side map search queries
 │   ├── types/
 │   │   └── map.ts        # Map entity type definitions
 │   └── components/map/
-│       ├── MapControls.svelte   # Layer toggles panel
-│       ├── MapLegend.svelte     # Color legend bar
-│       ├── MapTooltip.svelte    # Hover tooltip
-│       └── EntityPopup.svelte   # Click detail panel
+│       ├── sidebar/           # MapSidebar and sidebar controls
+│       ├── MapTooltip.svelte  # Hover tooltip
+│       ├── EntityPopup.svelte # Click detail panel
+│       ├── ZonePopup.svelte   # Zone detail panel
+│       ├── ItemPopup.svelte   # Item detail panel
+│       ├── QuestPopup.svelte  # Quest detail panel
+│       └── MapSearch.svelte   # Entity search
 ```
 
 ## Coordinate System
@@ -66,14 +69,47 @@ The `id` field in `MapEntity` should contain the entity ID (for URL generation),
 
 ## Layer Stack (bottom to top)
 
-1. **Background** - Solid color (zinc-900) or TileLayer when tiles available
-2. **Gathering** - Plants (lime), Minerals (gray), Sparks (pink)
-3. **Crafting** - Alchemy tables and crafting stations (violet)
-4. **Chests** - Treasure chests (yellow)
-5. **Altars** - Forgotten/Avatar altars (orange)
-6. **Portals** - Zone portals (green)
-7. **Monsters** - Regular (red), Elites (purple), Bosses (cyan)
-8. **NPCs** - All NPCs (blue)
+The array returned by `createLayers()` renders these layers in order:
+
+1. **Background**
+2. **Tiles**
+3. **Parent zones**
+4. **Sub-zones**
+5. **Zone highlight**
+6. **Patrol paths**
+7. **Wander ranges**
+8. **Altar event radius**
+9. **Relation arcs**
+10. **Relation arc endpoints**
+11. **Portal arcs**
+12. **Teleporter arcs**
+13. **Creatures**
+14. **Gathering plants**
+15. **Gathering minerals**
+16. **Fishing gathering**
+17. **Gathering sparks**
+18. **Other gathering**
+19. **Alchemy tables**
+20. **Forges**
+21. **Cooking ovens**
+22. **Scribing tables**
+23. **Hunts**
+24. **Chests**
+25. **Houses**
+26. **Treasure**
+27. **Portals**
+28. **Portal destinations**
+29. **Teleporter destinations**
+30. **NPCs**
+31. **Altars**
+32. **Elites**
+33. **Fabled**
+34. **Bosses**
+35. **Related highlight outline and fill**
+36. **Selection highlight outline and fill**
+37. **Primary selection highlight outline and fill**
+38. **Hover highlight outline and fill**
+39. **Zone hover highlight**
 
 ## Adding a New Entity Layer
 
@@ -83,9 +119,9 @@ The `id` field in `MapEntity` should contain the entity ID (for URL generation),
    - Add to `AnyMapEntity` union
    - Add toggle to `LayerVisibility`
 
-2. **Add query** in `src/lib/queries/map.ts`:
-   - Create query function returning typed array
-   - Add to `loadAllMapEntities()` parallel queries
+2. **Add query** in `src/lib/queries/map.server.ts`:
+   - Create a server query function returning typed array
+   - Add to `loadAllMapEntitiesServer()`
    - Add to `MapEntityData` interface
 
 3. **Add layer** in `src/lib/map/layers.ts`:
@@ -93,24 +129,31 @@ The `id` field in `MapEntity` should contain the entity ID (for URL generation),
    - Add radius to `LAYER_RADII` in config.ts
    - Create ScatterplotLayer in `createLayers()`
 
-4. **Add toggle** in `MapControls.svelte`:
-   - Add to `layers` array with key, label, color
+4. **Add toggle** in `MapSidebarContent.svelte`:
+   - Add to the layer controls with key, label, and color
 
 ## Layer Colors (Tailwind)
 
-| Entity   | Color                | Tailwind   |
-| -------- | -------------------- | ---------- |
-| Monster  | `rgb(239, 68, 68)`   | red-500    |
-| Elite    | `rgb(168, 85, 247)`  | purple-500 |
-| Boss     | `rgb(6, 182, 212)`   | cyan-500   |
-| NPC      | `rgb(59, 130, 246)`  | blue-500   |
-| Portal   | `rgb(34, 197, 94)`   | green-500  |
-| Chest    | `rgb(234, 179, 8)`   | yellow-500 |
-| Altar    | `rgb(249, 115, 22)`  | orange-500 |
-| Plant    | `rgb(132, 204, 22)`  | lime-500   |
-| Mineral  | `rgb(156, 163, 175)` | gray-400   |
-| Spark    | `rgb(236, 72, 153)`  | pink-500   |
-| Crafting | `rgb(139, 92, 246)`  | violet-500 |
+| Entity / layer    | Color                | Tailwind    |
+| ----------------- | -------------------- | ----------- |
+| Monster           | `rgb(239, 68, 68)`   | red-500     |
+| Boss              | `rgb(6, 182, 212)`   | cyan-500    |
+| Fabled            | `rgb(16, 185, 129)`  | emerald-500 |
+| Elite             | `rgb(168, 85, 247)`  | purple-500  |
+| Hunt              | `rgb(234, 179, 8)`   | yellow-500  |
+| NPC               | `rgb(59, 130, 246)`  | blue-500    |
+| Portal            | `rgb(34, 197, 94)`   | green-500   |
+| Chest             | `rgb(14, 165, 233)`  | sky-500     |
+| Treasure          | `rgb(20, 184, 166)`  | teal-500    |
+| Altar             | `rgb(249, 115, 22)`  | orange-500  |
+| Gathering plant   | `rgb(132, 204, 22)`  | lime-500    |
+| Gathering mineral | `rgb(23, 37, 84)`    | blue-950    |
+| Gathering spark   | `rgb(168, 85, 247)`  | purple-500  |
+| Gathering fish    | `rgb(6, 182, 212)`   | cyan-500    |
+| Gathering other   | `rgb(156, 163, 175)` | gray-400    |
+| Crafting          | `rgb(139, 92, 246)`  | violet-500  |
+| Scribing          | `rgb(168, 85, 247)`  | purple-500  |
+| House             | `rgb(245, 158, 11)`  | amber-500   |
 
 ## deck.gl Integration
 
@@ -163,14 +206,14 @@ deck.gl handles millions of points efficiently, but **layer recreation is expens
 **Solution**: Pre-filter once, create all layers always, use deck.gl's optimization features.
 
 1. **Pre-filter data on load** (`FilteredMapData` type):
-   - Split monsters into regular/elite/boss arrays once
-   - Split gathering into plant/mineral/spark arrays once
+   - Split monsters into creatures, hunts, elites, fabled, and bosses once
+   - Split gathering into plant, mineral, fish, spark, and other arrays once
    - Filter portals with destinations once
    - Calculate parent zone bounds once
 
 2. **Create all layers always** with `visible` prop:
    - Don't conditionally create layers based on visibility
-   - Set `visible: visibility.monsters` on each layer
+   - Set `visible: visibility.creatures` on each layer
    - deck.gl skips rendering invisible layers efficiently
 
 3. **Use `updateTriggers`** for dynamic properties:

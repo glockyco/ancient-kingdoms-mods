@@ -51,7 +51,7 @@ Run without `--update` (check mode) to catch unintended regressions before shipp
 
 ```
 src/
-├── routes/               # Pages (items, monsters, npcs, quests, skills, zones, map, etc.)
+├── routes/               # Pages (/, /items, /recipes, /altars, /quests, /skills, /mercenaries, /classes, /summons, /monsters, /map, /zones, /npcs, /gather-items, /chests, /mechanics, /mechanics/inventory, /mechanics/experience, /mechanics/mercenary-stats, /mechanics/monster-spawns, /mechanics/combat, /professions, /tools/combat-simulator, /sitemap.xml, and nested detail routes)
 ├── lib/
 │   ├── components/       # Svelte components
 │   │   ├── ui/          # bits-ui base components
@@ -60,7 +60,8 @@ src/
 │   ├── queries/         # SQL query functions
 │   ├── types/           # TypeScript types
 │   ├── db.ts            # SQLite wrapper (sql.js-fts5)
-│   └── config.ts        # Configuration constants
+│   ├── map/config.ts     # Map configuration constants
+│   ├── constants/constants.ts # Shared constants
 static/
 ├── compendium.db        # SQLite database — gitignored, populate with build pipeline
 ├── tiles/               # Map tiles
@@ -71,9 +72,9 @@ static/
 
 **Static Site Generation:**
 
-- Uses `@sveltejs/adapter-static`
+- Uses `@sveltejs/adapter-cloudflare`
 - `export const prerender = true` in `+layout.ts`
-- All routes must be prerenderable (no dynamic SSR)
+- All routes except the home page are prerendered. `src/routes/+page.server.ts` sets `prerender = false` so the home page uses dynamic SSR for the live game version.
 
 **Client-Side SQLite:**
 

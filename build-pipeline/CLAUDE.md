@@ -44,12 +44,12 @@ src/compendium/
 │   ├── build.py        # JSON → SQLite
 │   ├── tiles.py        # Screenshot → tiles
 │   └── stats.py        # Database statistics
-├── loaders/            # JSON loading (21 loaders)
+├── loaders/            # JSON loading (30 loaders)
 │   └── core.py         # All load_* functions
 ├── denormalizers/      # Post-load denormalization
 │   ├── exclusions.py   # Zone coordinate exclusions
 │   ├── experience/     # EXP calculations
-│   ├── items/          # sources, usages, equipment, tooltips, special_types, calculations
+│   ├── items/          # sources, usages, equipment, tooltips, special_types, calculations, zones, source_entries, crafting_source_level
 │   ├── monsters/       # spawns, drops, levels
 │   ├── npcs/           # relations, bitmask
 │   ├── quests/         # tooltips, display_type
@@ -62,10 +62,10 @@ src/compendium/
 ## Build Process
 
 1. Create database from `schema.sql`
-2. Load data in foreign key order (21 loaders)
+2. Load data in foreign key order (30 loaders)
 3. Apply redactions from `redactions.toml`
 4. Run denormalizers in dependency order
-5. Optimize 11 FTS5 indexes
+5. Optimize 13 FTS5 indexes
 6. VACUUM and ANALYZE
 
 ## Denormalizer System
