@@ -279,6 +279,7 @@ public class ItemExporter : BaseExporter
         if (backpackItem == null) return;
 
         itemData.backpack_slots = backpackItem.numSlots;
+        itemData.backpack_is_unique = backpackItem.isUnique;
     }
 
     private void PopulateTravelFields(Il2Cpp.ScriptableItem item, ItemData itemData)

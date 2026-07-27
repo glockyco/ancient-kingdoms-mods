@@ -323,6 +323,7 @@ class ItemData(BaseModel):
     is_repair_kit: bool = False
     mount_speed: float = 0.0
     backpack_slots: int = 0
+    backpack_is_unique: bool = False
     travel_zone_id: int = 0
     pack_final_amount: int = 0
 

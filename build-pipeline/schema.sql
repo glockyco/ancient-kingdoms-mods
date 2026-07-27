@@ -290,6 +290,7 @@ CREATE TABLE items (
     is_repair_kit BOOLEAN DEFAULT 0,
     mount_speed REAL DEFAULT 0.0,
     backpack_slots INTEGER DEFAULT 0,
+    backpack_is_unique BOOLEAN DEFAULT 0,
     travel_zone_id INTEGER DEFAULT 0 REFERENCES zones(zone_id),
     travel_destination_x REAL,
     travel_destination_y REAL,

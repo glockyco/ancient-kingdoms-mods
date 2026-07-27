@@ -75,6 +75,7 @@ public class ItemData
 
     // === BackpackItem fields (when item_type = backpack) ===
     public int backpack_slots { get; set; }
+    public bool backpack_is_unique { get; set; }
 
     // === TravelItem fields (when item_type = travel) ===
     public int travel_zone_id { get; set; }
