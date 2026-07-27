@@ -1,21 +1,21 @@
 """Database statistics command."""
 
 import sqlite3
-from pathlib import Path
 
 from rich.console import Console
 from rich.table import Table
+
+from compendium.config import get_repo_root
 
 console = Console()
 
 
 def run(config: dict) -> None:
     """Show database statistics."""
-    # Resolve paths
-    repo_root = Path(__file__).parent.parent.parent.parent.parent
-    build_dir = repo_root / config["paths"]["build_dir"]
+    repo_root = get_repo_root()
+    website_dir = repo_root / config["paths"]["website_dir"]
     db_name = config["build_pipeline"]["db_name"]
-    db_path = build_dir / db_name
+    db_path = website_dir / "static" / db_name
 
     if not db_path.exists():
         console.print(f"[red]Error:[/red] Database not found: {db_path}")
@@ -26,24 +26,24 @@ def run(config: dict) -> None:
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
-    # Get table counts
-    tables = [
-        "monsters",
-        "items",
-        "npcs",
-        "quests",
-        "skills",
-        "zones",
-        "portals",
-        "gather_items",
-        "crafting_recipes",
-        "summon_triggers",
-        "zone_triggers",
-    ]
+    # Count every content table. Enumerating from the schema keeps this in step
+    # with the loaders, which a hardcoded list does not.
+    cursor.execute(
+        """
+        SELECT name FROM sqlite_master
+        WHERE type = 'table'
+          AND name NOT LIKE 'sqlite_%'
+          AND name NOT LIKE 'sqlean_%'
+          AND name NOT LIKE '%_fts'
+          AND name NOT LIKE '%_fts_%'
+        ORDER BY name
+        """
+    )
+    tables = [row[0] for row in cursor.fetchall()]
 
     table_data = []
     for table_name in tables:
-        cursor.execute(f"SELECT COUNT(*) FROM {table_name}")
+        cursor.execute(f'SELECT COUNT(*) FROM "{table_name}"')
         count = cursor.fetchone()[0]
         table_data.append((table_name, count))
 
