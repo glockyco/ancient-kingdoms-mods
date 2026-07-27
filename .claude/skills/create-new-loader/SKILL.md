@@ -57,7 +57,6 @@ from compendium.db import insert_model
 def load_my_entities(
     conn: sqlite3.Connection,
     export_dir: Path,
-    console: Console,
 ) -> None:
     """Load my_entities from JSON export."""
     console.print("Loading my_entities...")
@@ -103,9 +102,9 @@ In `commands/build.py` (order matters!):
 
 ```python
 # Load in foreign key order
-load_zones(conn, export_dir, console)
+load_zones(conn, export_dir)
 # ...zones must be loaded before entities that reference them
-load_my_entities(conn, export_dir, console)
+load_my_entities(conn, export_dir)
 ```
 
 ## Key Files

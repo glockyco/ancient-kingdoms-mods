@@ -87,7 +87,13 @@ const dataWithVirtual = $derived(
 ## Snippets for Custom Cell Rendering
 
 ```svelte
-{#snippet renderCell(cell: Cell<EntityRow, unknown>)}
+{#snippet renderCell({
+  cell,
+  row,
+}: {
+  cell: Cell<EntityRow, unknown>;
+  row: Row<EntityRow>;
+})}
   {#if cell.column.id === "name"}
     <a href="/entities/{cell.row.original.id}" class="hover:underline">
       {cell.row.original.name}

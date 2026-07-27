@@ -73,9 +73,10 @@ public class MyExporter : BaseExporter
             var typed = obj.TryCast<Il2Cpp.MyGameType>();
             if (typed == null) continue;
             
-            // Skip prefabs/templates - only export scene instances
-            if (typed.gameObject == null || !typed.gameObject.scene.IsValid())
-                continue;
+            // Asset exporters process all matching assets. Scene-object exporters
+            // should skip prefabs/templates and retain only scene instances:
+            // if (typed.gameObject == null || !typed.gameObject.scene.IsValid())
+            //     continue;
             
             var data = new MyData
             {
@@ -95,13 +96,18 @@ public class MyExporter : BaseExporter
 
 ## Registration
 
-In `DataExporter.cs`:
+In `DataExporter.cs` within the public export entry point:
 
 ```csharp
-private void ExportAllData()
+public ExportRunResult ExportAllData()
 {
     // ... existing exporters
-    new MyExporter(LoggerInstance, _exportPath).Export();
+    result.Exporters.Add(RunExporter("myData", required: true, () =>
+    {
+        var exporter = new MyExporter(LoggerInstance, ExportPath);
+        exporter.Export();
+    }));
+    // ... return result
 }
 ```
 
@@ -141,8 +147,10 @@ protected static string GetZoneIdFromByte(byte zoneId)
 
 ## Gotchas
 
-- `Resources.FindObjectsOfTypeAll()` returns prefabs AND scene instances
-- Always filter with `gameObject.scene.IsValid()` for scene instances
+- `Resources.FindObjectsOfTypeAll()` returns prefabs, scene instances, and assets
+- Asset exporters process assets without a scene filter, as in `ItemExporter.cs`
+- Scene-object exporters filter out prefabs and templates with `gameObject.scene.IsValid()`, as in `MonsterExporter.cs`
+- Scene-only fields such as `transform.position` belong only in scene-object exporters
 - Use `TryCast<>()` for safe IL2CPP type conversions
 - Zone detection uses spatial algorithms - document if using non-authoritative data
 - Snake_case for JSON field names (C# properties)
