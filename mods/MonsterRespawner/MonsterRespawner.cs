@@ -339,7 +339,13 @@ namespace MonsterRespawner
 
             if (targetMonster.respawn)
             {
-                targetMonster.respawnTimeEnd = Time.timeAsDouble - 1.0;
+                if (cachedNetworkManager == null) return;
+
+                // respawnTimeEnd is a server-clock deadline, the same clock the marker
+                // countdowns read. Backdating it by a second makes the monster eligible
+                // on the next respawn check.
+                targetMonster.respawnTimeEnd =
+                    NetworkTime.time + cachedNetworkManager.offsetNetworkTime - 1.0;
             }
         }
     }

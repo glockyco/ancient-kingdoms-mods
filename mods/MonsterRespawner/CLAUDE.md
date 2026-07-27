@@ -39,4 +39,4 @@ Allows instant respawning of dead monsters via clickable world-space markers.
 - Server time must be available (`NetworkManagerMMO` found)
 - `respawnTimeEnd > currentTime`
 
-**Timing:** Marker eligibility and countdowns require synchronized server time. The respawn write uses `Time.timeAsDouble - 1.0`.
+**Timing:** Marker eligibility and countdowns require synchronized server time. The respawn write backdates `respawnTimeEnd` one second on the same server clock.
