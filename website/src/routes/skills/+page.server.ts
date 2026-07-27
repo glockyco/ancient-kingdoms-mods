@@ -134,6 +134,14 @@ export const load: PageServerLoad = (): SkillsPageData => {
     }
   }
 
+  // Detail pages for mercenaries and summons live under different sections,
+  // so the summoned pet's link needs its mercenary flag.
+  const mercenaryIds = new Set(
+    query<{ id: string }>(`SELECT id FROM pets WHERE is_mercenary = 1`).map(
+      (r) => r.id,
+    ),
+  );
+
   const skills: SkillListView[] = rows.map((row) => {
     const playerClasses: string[] = row.player_classes
       ? JSON.parse(row.player_classes)
@@ -157,6 +165,7 @@ export const load: PageServerLoad = (): SkillsPageData => {
       used_by_mercenaries: usedByMercenaries.has(row.id),
       used_by_pets: usedByPets.has(row.id),
       pet_id: row.pet_id,
+      pet_is_mercenary: row.pet_id !== null && mercenaryIds.has(row.pet_id),
       pet_name: row.pet_prefab_name,
       summoned_monster_id: row.summoned_monster_id,
       summoned_monster_name: row.summoned_monster_name,

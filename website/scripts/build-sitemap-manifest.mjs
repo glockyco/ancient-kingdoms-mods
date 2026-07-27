@@ -402,11 +402,12 @@ function computeHashes() {
       addHash(hashes, `/${route}/${id}`, payloadFor(db, id));
   }
 
-  for (const { id } of all(
+  for (const { id, is_mercenary } of all(
     db,
-    "SELECT id FROM pets WHERE id NOT IN ('rolim','nieven','bemere','ciliren') ORDER BY id",
+    "SELECT id, is_mercenary FROM pets ORDER BY id",
   )) {
-    addHash(hashes, `/pets/${id}`, petPayload(db, id));
+    const route = is_mercenary ? "mercenaries" : "summons";
+    addHash(hashes, `/${route}/${id}`, petPayload(db, id));
   }
 
   for (const table of [

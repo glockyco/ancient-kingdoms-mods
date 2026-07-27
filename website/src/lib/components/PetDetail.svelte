@@ -13,14 +13,20 @@
   import { formatSkillEffect } from "$lib/utils/formatSkillEffect";
   import { getClassConfig } from "$lib/utils/classes";
   import type { ClassSkill } from "$lib/queries/classes.server";
-  import type { PetClassLink, PetRecruiter } from "$lib/types/pets";
+  import type {
+    PetClassLink,
+    PetDetailView,
+    PetRecruiter,
+  } from "$lib/types/pets";
+  import { petHref } from "$lib/utils/pets";
   import MapPin from "@lucide/svelte/icons/map-pin";
   import Zap from "@lucide/svelte/icons/zap";
   import Info from "@lucide/svelte/icons/info";
 
-  let { data } = $props();
-
-  const pet = $derived(data.pet);
+  // Mercenaries and summons render the same detail layout; only the section
+  // they hang off differs, and that follows from the pet's own kind.
+  let { pet, description }: { pet: PetDetailView; description: string } =
+    $props();
 
   // "Summoned By" table — one row containing the class link
   const summonedByRows = $derived(
@@ -198,8 +204,8 @@
 
 <Seo
   title={`${pet.name} - Ancient Kingdoms`}
-  description={data.description}
-  path={`/pets/${pet.id}`}
+  {description}
+  path={petHref(pet.id, pet.kind === "Mercenary")}
 />
 
 <div class="container mx-auto p-8 space-y-6 max-w-5xl">

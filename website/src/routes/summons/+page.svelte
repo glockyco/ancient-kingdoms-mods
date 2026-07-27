@@ -23,7 +23,7 @@
       description: `Searchable database of ${data.summons.length.toLocaleString()} summonable companions and familiars in Ancient Kingdoms.`,
       items: data.summons.map((summon) => ({
         name: summon.name,
-        path: `/pets/${summon.id}`,
+        path: `/summons/${summon.id}`,
       })),
     }),
   );
@@ -63,7 +63,7 @@
 })}
   {#if cell.column.id === "name"}
     <a
-      href="/pets/{row.original.id}"
+      href="/summons/{row.original.id}"
       class="text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap"
     >
       {row.original.name}

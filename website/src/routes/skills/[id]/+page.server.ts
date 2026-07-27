@@ -39,7 +39,8 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
       ps2.name as prerequisite2_skill_name,
       sm.name as summoned_monster_name,
       pet_lookup.id as pet_id,
-      pet_lookup.name as pet_name
+      pet_lookup.name as pet_name,
+      pet_lookup.is_mercenary as pet_is_mercenary
     FROM skills s
     LEFT JOIN skills ps ON ps.id = s.prerequisite_skill_id
     LEFT JOIN skills ps2 ON ps2.id = s.prerequisite2_skill_id
@@ -102,17 +103,14 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
     prerequisite_level: (skillRaw.prerequisite_level as number) || 0,
     prerequisite2_skill_id: skillRaw.prerequisite2_skill_id as string | null,
     prerequisite2_skill_name: skillRaw.prerequisite2_skill_name as
-      | string
-      | null,
+      string | null,
     prerequisite2_level: (skillRaw.prerequisite2_level as number) || 0,
 
     // Weapon requirements
     required_weapon_category: skillRaw.required_weapon_category as
-      | string
-      | null,
+      string | null,
     required_weapon_category2: skillRaw.required_weapon_category2 as
-      | string
-      | null,
+      string | null,
 
     // Flags
     is_spell: Boolean(skillRaw.is_spell),
@@ -255,6 +253,7 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
     max_active_summons: skillRaw.max_active_summons as number | null,
     pet_prefab_name: skillRaw.pet_prefab_name as string | null,
     pet_id: skillRaw.pet_id as string | null,
+    pet_is_mercenary: Boolean(skillRaw.pet_is_mercenary),
     pet_name: skillRaw.pet_name as string | null,
     is_familiar: Boolean(skillRaw.is_familiar),
 

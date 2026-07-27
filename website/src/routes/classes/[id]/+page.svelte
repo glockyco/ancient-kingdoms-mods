@@ -700,8 +700,7 @@
   {/if}
   {#if statsCol}
     {@const statsFilterValue = statsCol.getFilterValue() as
-      | { stats: string[]; mode: "any" | "all" }
-      | undefined}
+      { stats: string[]; mode: "any" | "all" } | undefined}
     <DataTableStatToggle
       bind:open={statPanel.open}
       selectedCount={statsFilterValue?.stats.length ?? 0}
@@ -827,7 +826,7 @@
       <p class="mt-3 text-muted-foreground">
         For information about the {data.class.name} mercenary, see:
         <a
-          href="/pets/{data.class.id}_mercenary"
+          href="/mercenaries/{data.class.id}_mercenary"
           class="text-blue-600 dark:text-blue-400 hover:underline"
           >{data.class.name} Mercenary</a
         >.

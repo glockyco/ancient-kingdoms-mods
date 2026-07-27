@@ -4,7 +4,7 @@
     effect: string;
     // Linked entity for summon skills — name as it appears in the effect string
     entityName?: string | null;
-    // href for the entity link (/monsters/<id> or /pets/<id>)
+    // href for the entity link (/monsters/<id>, /mercenaries/<id>, or /summons/<id>)
     entityHref?: string | null;
     class?: string;
   }

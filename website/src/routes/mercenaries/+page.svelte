@@ -22,7 +22,7 @@
       description: `Searchable database of ${data.mercenaries.length.toLocaleString()} hireable mercenaries in Ancient Kingdoms.`,
       items: data.mercenaries.map((mercenary) => ({
         name: mercenary.name,
-        path: `/pets/${mercenary.id}`,
+        path: `/mercenaries/${mercenary.id}`,
       })),
     }),
   );
@@ -47,7 +47,7 @@
 })}
   {#if cell.column.id === "name"}
     <a
-      href="/pets/{row.original.id}"
+      href="/mercenaries/{row.original.id}"
       class="text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap"
     >
       {row.original.name}

@@ -25,6 +25,8 @@ export interface SkillListView {
   used_by_mercenaries: boolean;
   used_by_pets: boolean;
   pet_id: string | null;
+  /** Whether `pet_id` is a mercenary, which decides its detail-page section. */
+  pet_is_mercenary: boolean;
   pet_name: string | null;
   summoned_monster_id: string | null;
   summoned_monster_name: string | null;
@@ -191,6 +193,8 @@ export interface SkillDetailView {
   max_active_summons: number | null;
   pet_prefab_name: string | null;
   pet_id: string | null;
+  /** Whether `pet_id` is a mercenary, which decides its detail-page section. */
+  pet_is_mercenary: boolean;
   pet_name: string | null;
   is_familiar: boolean;
 

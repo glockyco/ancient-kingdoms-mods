@@ -14,6 +14,7 @@
   import { buildCollectionPage } from "$lib/seo/jsonld";
   import Sparkles from "@lucide/svelte/icons/sparkles";
   import { getClassConfig } from "$lib/utils/classes";
+  import { petHref } from "$lib/utils/pets";
   import SkillEffect from "$lib/components/SkillEffect.svelte";
 
   let { data } = $props();
@@ -152,7 +153,7 @@
       entityHref={s.summoned_monster_id
         ? `/monsters/${s.summoned_monster_id}`
         : s.pet_id
-          ? `/pets/${s.pet_id}`
+          ? petHref(s.pet_id, s.pet_is_mercenary)
           : null}
     />
   {:else if cell.column.id === "class_ids" || cell.column.id === "skill_categories"}

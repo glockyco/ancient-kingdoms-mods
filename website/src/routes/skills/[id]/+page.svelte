@@ -24,6 +24,7 @@
   import FlaskConical from "@lucide/svelte/icons/flask-conical";
   import FormulaDisplay from "$lib/components/FormulaDisplay.svelte";
   import { renderFormulaDisplay } from "$lib/utils/formula-eval";
+  import { petHref } from "$lib/utils/pets";
   import Seo from "$lib/components/Seo.svelte";
 
   let { data }: { data: PageData } = $props();
@@ -998,7 +999,7 @@
                       entityHref={skill.summoned_monster_id
                         ? `/monsters/${skill.summoned_monster_id}`
                         : skill.pet_id
-                          ? `/pets/${skill.pet_id}`
+                          ? petHref(skill.pet_id, skill.pet_is_mercenary)
                           : null}
                     />
                   </dd>
@@ -1029,7 +1030,7 @@
                   entityHref={skill.summoned_monster_id
                     ? `/monsters/${skill.summoned_monster_id}`
                     : skill.pet_id
-                      ? `/pets/${skill.pet_id}`
+                      ? petHref(skill.pet_id, skill.pet_is_mercenary)
                       : null}
                 />
               </dd>
@@ -1415,7 +1416,7 @@
               <dd class="font-medium">
                 {#if skill.pet_id}
                   <a
-                    href="/pets/{skill.pet_id}"
+                    href={petHref(skill.pet_id, skill.pet_is_mercenary)}
                     class="text-blue-600 dark:text-blue-400 hover:underline"
                   >
                     {skill.pet_name ?? skill.pet_prefab_name}
@@ -2866,7 +2867,7 @@
           {#each data.usedByPets as pet (pet.id)}
             <div class="flex items-center gap-2">
               <a
-                href="/pets/{pet.id}"
+                href={petHref(pet.id, pet.is_mercenary)}
                 class="text-blue-600 dark:text-blue-400 hover:underline"
               >
                 {pet.name}

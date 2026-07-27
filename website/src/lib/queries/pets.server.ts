@@ -174,10 +174,21 @@ function getMercenaryRecruiters(): PetRecruiter[] {
 }
 
 /**
- * Get all pet IDs for use in the entries generator.
+ * Get mercenary IDs for the /mercenaries/[id] entries generator.
  */
-export function getAllPetIds(): string[] {
-  return query<{ id: string }>(`SELECT id FROM pets`).map((r) => r.id);
+export function getMercenaryIds(): string[] {
+  return query<{ id: string }>(
+    `SELECT id FROM pets WHERE is_mercenary = 1`,
+  ).map((r) => r.id);
+}
+
+/**
+ * Get summon IDs for the /summons/[id] entries generator.
+ */
+export function getSummonIds(): string[] {
+  return query<{ id: string }>(
+    `SELECT id FROM pets WHERE is_mercenary = 0`,
+  ).map((r) => r.id);
 }
 
 /**
