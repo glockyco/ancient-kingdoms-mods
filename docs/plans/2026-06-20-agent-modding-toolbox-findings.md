@@ -1,7 +1,7 @@
 ---
 title: "Agent Modding Toolbox — Research Findings"
 type: note
-status: active
+status: draft
 created: 2026-06-20
 parent:
 superseded_by:

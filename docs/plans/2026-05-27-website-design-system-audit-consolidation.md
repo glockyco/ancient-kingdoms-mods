@@ -1,7 +1,7 @@
 ---
 title: "Website Design System Audit & Consolidation Plan"
 type: plan
-status: active
+status: draft
 created: 2026-05-27
 parent:
 superseded_by:

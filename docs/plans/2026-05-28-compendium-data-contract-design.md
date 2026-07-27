@@ -1,7 +1,7 @@
 ---
 title: "Entity Addition Architecture Design"
 type: spec
-status: active
+status: draft
 created: 2026-05-28
 parent:
 superseded_by:

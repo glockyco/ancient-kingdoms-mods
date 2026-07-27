@@ -1,7 +1,7 @@
 ---
 title: "Ancient Kingdoms Server Auto-Update Design Research"
 type: spec
-status: active
+status: draft
 created: 2026-05-27
 parent:
 superseded_by:

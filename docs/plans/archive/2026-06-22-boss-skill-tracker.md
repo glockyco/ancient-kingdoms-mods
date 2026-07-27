@@ -1,11 +1,11 @@
 ---
 title: "BossSkillTracker Implementation Plan"
 type: plan
-status: active
+status: implemented
 created: 2026-06-22
 parent:
 superseded_by:
-archived:
+archived: 2026-07-27
 ---
 
 # BossSkillTracker Implementation Plan
