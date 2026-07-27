@@ -3,7 +3,7 @@
 MelonLoader mods + Python build pipeline + SvelteKit website for Ancient Kingdoms game data.
 
 ```
-Game (IL2CPP Unity) → Mods (JSON export) → Build Pipeline (SQLite) → Website (static)
+Game (IL2CPP Unity) → Mods (JSON export) → Build Pipeline (SQLite) → Website (mostly prerendered by @sveltejs/adapter-cloudflare, dynamic home page)
 ```
 
 ## Task Triggers
@@ -109,4 +109,4 @@ cd website && pnpm check && pnpm lint && pnpm build
 | --------------- | ----------------------------------------------- | ------------------------ |
 | mods/           | MelonLoader mods (macOS via CrossOver, Windows) | mods/CLAUDE.md           |
 | build-pipeline/ | Python CLI (JSON → SQLite)                      | build-pipeline/CLAUDE.md |
-| website/        | SvelteKit static site                           | website/CLAUDE.md        |
+| website/        | SvelteKit site, mostly prerendered by the Cloudflare adapter with a dynamic home page | website/CLAUDE.md        |

@@ -12,8 +12,8 @@ export_dir = "./exported-data"
 # Website source directory (relative to repository root)
 website_dir = "./website"
 
-# Build output directory (relative to repository root)
-# Intermediate artifacts are stored here before deployment
+# Stats database lookup directory (relative to repository root)
+# Currently consumed only by the stats command. Build and tiles write directly to website/static.
 build_dir = "./build"
 
 [build_pipeline]
@@ -31,16 +31,16 @@ tile_size = 256
 webp_quality = 85
 
 
-# Map bounds (from MapScreenshotter)
-# These are hardcoded in MapScreenshotter.cs but documented here for reference
-# Update these if you change the bounds in the C# mod
+# Informational reference only. Nothing in the current pipeline consumes this block.
+# The tiles command reads world bounds and tile resolution from screenshot metadata instead.
 [map]
+# Reference values from MapScreenshotter. Changes here do not affect tile generation.
 bounds_min_x = -880.0
 bounds_max_x = 900.0
 bounds_min_y = -740.0
 bounds_max_y = 1300.0
 
-# Screenshot tile settings (from MapScreenshotter)
+# Reference values from MapScreenshotter. Changes here do not affect tile generation.
 tile_world_size = 200.0
 tile_resolution = 1024
 

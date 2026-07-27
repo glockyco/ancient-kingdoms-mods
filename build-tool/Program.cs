@@ -38,7 +38,7 @@ public static class Program
             config.AddCommand<DeployCommand>("deploy").WithDescription("Copy built mods to the game Mods directory.");
             config.AddCommand<DeployHostCommand>("deploy-host").WithDescription("Build and deploy HotRepl host.");
             config.AddCommand<LaunchCommand>("launch").WithDescription("Launch Ancient Kingdoms.");
-            config.AddCommand<ExportCommand>("export").WithDescription("Launch with --export-data and capture results.");
+            config.AddCommand<ExportCommand>("export").WithDescription("Launch the game and drive compendium.export over HotRepl.");
             config.AddCommand<UpdateCommand>("update").WithDescription("Run steamcmd app_update.");
         });
         return Run(app, args, resultStore);

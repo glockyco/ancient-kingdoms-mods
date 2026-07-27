@@ -13,7 +13,7 @@ https://github.com/users/glockyco/projects/7
 ## Creating Issues
 
 ```bash
-# Create issue with label
+# Create issue
 gh issue create --title "Title" --body "Description"
 
 # Add issue to project (requires project scope)

@@ -8,10 +8,10 @@ Game (IL2CPP Unity)
 exported-data/*.json + exported-data/images/ + exported-data/screenshots/
   ↓ Python Build Pipeline
 website/static/compendium.db + website/static/images/ + website/static/tiles/
-  ↓ Website generated support files
+  ↓ Website prebuild (`generate-home-counts.mjs`)
 website/src/lib/generated/
-  ↓ SvelteKit Static Site
-Cloudflare Static Assets
+  ↓ SvelteKit mostly prerendered site
+Cloudflare Worker + Static Assets
 ```
 
 ## Entry Points
@@ -36,9 +36,10 @@ Templates: `Local.props.example`, `config.toml.example`
 ```
 mods/              # C# MelonLoader mods (build cross-platform; run via Windows/CrossOver)
 build-pipeline/    # Python CLI (Typer + SQLite)
-website/           # SvelteKit static site
+website/           # SvelteKit site, mostly prerendered on Cloudflare with a dynamic home page
 exported-data/     # JSON exports from game
-build/             # Pipeline outputs (db, tiles)
+website/static/    # Pipeline outputs (database, images, tiles)
+build/             # Not written by build or tiles. Used only as stats database lookup directory
 docs/              # Task-specific guides
 ```
 
