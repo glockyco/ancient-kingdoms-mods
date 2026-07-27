@@ -201,11 +201,13 @@ export const ROLE_DESCRIPTIONS: Partial<
     description: "Sells food and drinks.",
     details: ["Cost: 25 gold"],
   },
+  // Source: server-scripts/Npc.cs:1850-1860 — the mercenary recruiter opens at level 10.
+  // Source: server-scripts/UIMercenaries.cs:81,137-150,519 — active mercenary limits follow level thresholds 20, 30, and 40.
   is_recruiter_mercenaries: {
     description: "Hire and manage mercenaries (up to 6 stored).",
     details: [
       "Requires level 10",
-      "Active limit: 1 (lvl 10-19), 2 (20-29), 3 (30-49), 4 (50)",
+      "Active limit: 1 (lvl 10-19), 2 (20-29), 3 (30-39), 4 (40+)",
     ],
   },
   // Source: server-scripts/Npc.cs:1824 — finalPrice = num (count of Cursed Runes) * 75

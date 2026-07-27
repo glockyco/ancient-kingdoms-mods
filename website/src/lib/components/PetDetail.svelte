@@ -369,7 +369,10 @@
             </div>
             <div class="flex gap-2">
               <dt class="text-muted-foreground w-40 shrink-0">Active Limit</dt>
-              <dd>1 at levels 10–19 · 2 at 20–29 · 3 at 30–49 · 4 at 50+</dd>
+              <dd>
+                <!-- Source: server-scripts/UIMercenaries.cs:81 — active mercenary limit is 1 at levels 10–19, 2 at 20–29, 3 at 30–39, and 4 at 40+. -->
+                1 at levels 10–19 · 2 at 20–29 · 3 at 30–39 · 4 at 40+
+              </dd>
             </div>
             <div class="flex gap-2">
               <dt class="text-muted-foreground w-40 shrink-0">Max Stored</dt>
