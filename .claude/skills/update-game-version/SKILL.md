@@ -56,11 +56,6 @@ dotnet run --project build-tool export
 #    Use `dotnet run --project build-tool export --screenshots` instead if the
 #    world map changed.
 #
-#    `build` enumerates `*.csproj`, so it skips `mods/AutoExporter/`, which has no
-#    `.csproj`. `deploy` still copies its existing
-#    `mods/AutoExporter/bin/Release/net6.0/AutoExporter.dll`, which may be months
-#    old and stale. Check this DLL before exporting.
-#
 #    `deploy` copies every Release DLL it finds under
 #    `mods/**/bin/Release/net6.0/` into the CrossOver Mods directory. It does not
 #    special-case BossMod and it does not delete stale copies.

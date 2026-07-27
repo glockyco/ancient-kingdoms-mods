@@ -75,7 +75,7 @@ public class MyMod : MelonMod
 4. For mods with `[HarmonyPatch]` classes, add `[assembly: HarmonyDontPatchAll]` and call `HarmonyInstance.PatchAll()` once from `OnInitializeMelon()`.
 5. Build and deploy: `dotnet run --project build-tool build && dotnet run --project build-tool deploy`
 
-The build tool recursively discovers and builds `*.csproj` files under `mods/`. `mods/AutoExporter/` has no project file, so `build` does not build it. `deploy` still copies its stale prebuilt `bin/Release/net6.0/AutoExporter.dll`.
+The build tool recursively discovers and builds `*.csproj` files under `mods/` (see `build-tool/Commands/BuildCommand.cs:46-64`). `deploy` copies every Release DLL it finds without pruning (see `build-tool/Commands/DeployCommand.cs`).
 
 When patching stock game UI or hardcoded mechanics, verify behavior against `server-scripts/`. It is gitignored, so use file tools with ignored files enabled.
 
