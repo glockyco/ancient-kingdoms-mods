@@ -1,6 +1,5 @@
 packages:
   - "website"
-  - "build-pipeline"
 
 onlyBuiltDependencies:
   - better-sqlite3
