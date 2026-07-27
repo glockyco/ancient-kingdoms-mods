@@ -1,14 +1,126 @@
 <script lang="ts">
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import * as Card from "$lib/components/ui/card";
+  import ItemLink from "$lib/components/ItemLink.svelte";
   import Seo from "$lib/components/Seo.svelte";
+  import { getQualityTextColorClass } from "$lib/utils/format";
 
   let { data } = $props();
+
+  const fmt = (value: number) => value.toLocaleString("en-US");
+
+  const LEVEL_CAP = 50;
+
+  // Source: server-scripts/Experience.cs:26-36,375-383 and server-scripts/ExponentialLong.cs:11-14
+  // — required XP is Convert.ToInt64(78 * 1.258^(level-1)) up to level 40, then the
+  // level-40 value grown by 1.18 per level. The game evaluates both in 32-bit floats,
+  // so the values are listed rather than recomputed in double precision.
+  const XP_TO_NEXT_LEVEL = [
+    78, 98, 123, 155, 195, 246, 309, 389, 489, 615, 774, 974, 1225, 1541, 1939,
+    2440, 3069, 3861, 4857, 6110, 7686, 9669, 12164, 15302, 19250, 24216, 30464,
+    38324, 48212, 60650, 76298, 95983, 120747, 151899, 191089, 240390, 302411,
+    380433, 478585, 602060, 710431, 838308, 989204, 1167260, 1377367, 1625293,
+    1917846, 2263058, 2670408,
+  ];
+
+  let running = 0;
+  const LEVEL_ROWS = XP_TO_NEXT_LEVEL.map((cost, index) => {
+    running += cost;
+    return { level: index + 1, cost, total: running };
+  });
+  const TOTAL_TO_CAP = running;
+
+  // Source: server-scripts/Experience.cs:110-280 — every class raises one attribute on
+  // each of the level multiples below, and two on every sixth level.
+  const ATTRIBUTE_GAINS = [
+    {
+      className: "Warrior",
+      gains: [
+        "Constitution",
+        "Strength",
+        "Dexterity",
+        "Intelligence",
+        "Wisdom, Charisma",
+      ],
+    },
+    {
+      className: "Ranger",
+      gains: [
+        "Dexterity",
+        "Constitution",
+        "Strength",
+        "Wisdom",
+        "Intelligence, Charisma",
+      ],
+    },
+    {
+      className: "Cleric",
+      gains: [
+        "Wisdom",
+        "Intelligence",
+        "Constitution",
+        "Strength",
+        "Dexterity, Charisma",
+      ],
+    },
+    {
+      className: "Rogue",
+      gains: [
+        "Dexterity",
+        "Strength",
+        "Constitution",
+        "Intelligence",
+        "Wisdom, Charisma",
+      ],
+    },
+    {
+      className: "Wizard",
+      gains: [
+        "Intelligence",
+        "Dexterity",
+        "Wisdom",
+        "Constitution",
+        "Strength, Charisma",
+      ],
+    },
+    {
+      className: "Druid",
+      gains: [
+        "Wisdom",
+        "Intelligence",
+        "Dexterity",
+        "Constitution",
+        "Strength, Charisma",
+      ],
+    },
+  ];
+
+  // Source: server-scripts/Experience.cs:88-108 — tutorial messages fired on these levels.
+  const MILESTONES = [
+    { level: 10, unlock: "Hire your first mercenary at any tavern." },
+    { level: 20, unlock: "A second mercenary can be active." },
+    { level: 30, unlock: "A third mercenary can be active." },
+    {
+      level: 40,
+      unlock:
+        "A fourth mercenary can be active, and the Adventurer's Guild opens its quests and augment merchant.",
+    },
+    {
+      level: LEVEL_CAP,
+      unlock: "Maximum level. Further experience earns Veteran Points.",
+    },
+  ];
+
+  // Source: server-scripts/Experience.cs:38,51-52,306-334 — the veteran cap and the
+  // experience each Veteran Point costs.
+  const MAX_VETERAN_POINTS = 200;
+  const VETERAN_BASE_COST = 1_000_000;
+  const VETERAN_COST_PER_POINT = 20_000;
 </script>
 
 <Seo
   title="Experience Mechanics - Ancient Kingdoms"
-  description="How experience (XP) is earned — kill XP scaling, death and recovery, scrolls, gathering, alchemy, cooking, crafting, quests, and zone discovery."
+  description="Level requirements to 50, what each level grants, veteran points past the cap, and every experience source — kills, death, scrolls, professions, quests, and zone discovery."
   path="/mechanics/experience"
 />
 
@@ -25,6 +137,21 @@
 
   <nav aria-label="Page sections" class="text-sm text-muted-foreground">
     <ul class="flex flex-wrap gap-x-4 gap-y-1">
+      <li>
+        <a href="#levels" class="hover:text-foreground hover:underline"
+          >Levels</a
+        >
+      </li>
+      <li>
+        <a href="#level-rewards" class="hover:text-foreground hover:underline"
+          >Level Rewards</a
+        >
+      </li>
+      <li>
+        <a href="#veteran-points" class="hover:text-foreground hover:underline"
+          >Veteran Points</a
+        >
+      </li>
       <li>
         <a href="#kill-xp" class="hover:text-foreground hover:underline"
           >Kill XP</a
@@ -78,6 +205,197 @@
       </li>
     </ul>
   </nav>
+
+  <!-- Levels -->
+  <Card.Root id="levels" class="bg-muted/30">
+    <Card.Header>
+      <Card.Title>Levels</Card.Title>
+      <Card.Description>
+        What experience buys, and how much each level costs.
+      </Card.Description>
+    </Card.Header>
+    <Card.Content class="space-y-6">
+      <div class="space-y-2">
+        <p class="text-sm text-muted-foreground">
+          <!-- Source: server-scripts/Experience.cs:60-100 — experience fills the bar, and each full bar consumes its own cost and advances the level. -->
+          Experience fills a bar. Each time the bar fills, its cost is deducted and
+          your character gains a level, up to the cap of {LEVEL_CAP}. Overflow
+          experience carries into the next level.
+        </p>
+        <p class="text-sm text-muted-foreground">
+          <!-- Source: server-scripts/Experience.cs:26-36,375-383 — two-phase requirement curve. -->
+          Up to level 40 the cost of the next level is
+          <span class="font-mono font-medium"
+            >78 &times; 1.258^(level &minus; 1)</span
+          >. From level 40 onward the level-40 cost grows by
+          <span class="font-mono font-medium">1.18</span> per level instead, a
+          gentler curve for the last stretch. Reaching level {LEVEL_CAP} takes
+          <span class="font-mono font-medium">{fmt(TOTAL_TO_CAP)}</span> experience
+          in total.
+        </p>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm border-collapse">
+          <thead>
+            <tr class="border-b">
+              <th class="text-left p-2 font-medium">Level</th>
+              <th class="text-right p-2 font-medium">XP to next level</th>
+              <th class="text-right p-2 font-medium">Total XP earned</th>
+            </tr>
+          </thead>
+          <tbody>
+            {#each LEVEL_ROWS as row (row.level)}
+              <tr class="border-b hover:bg-muted/30">
+                <td class="p-2">{row.level} &rarr; {row.level + 1}</td>
+                <td class="p-2 text-right font-mono">{fmt(row.cost)}</td>
+                <td class="p-2 text-right font-mono">{fmt(row.total)}</td>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+      </div>
+    </Card.Content>
+  </Card.Root>
+
+  <!-- Level Rewards -->
+  <Card.Root id="level-rewards" class="bg-muted/30">
+    <Card.Header>
+      <Card.Title>Level Rewards</Card.Title>
+      <Card.Description>What every level gives your character.</Card.Description
+      >
+    </Card.Header>
+    <Card.Content class="space-y-6">
+      <div class="space-y-2">
+        <p class="text-sm text-muted-foreground">
+          <!-- Source: server-scripts/Experience.cs:281-291 — every level grants one attribute point, one skill point, and a full heal while alive. -->
+          Every level grants one attribute point and one skill point, and refills
+          health and mana as long as your character is alive.
+        </p>
+        <p class="text-sm text-muted-foreground">
+          Your class also raises attributes on its own schedule. Every sixth
+          level raises two attributes at once.
+        </p>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm border-collapse">
+          <thead>
+            <tr class="border-b">
+              <th class="text-left p-2 font-medium">Class</th>
+              <th class="text-left p-2 font-medium">Every 2nd</th>
+              <th class="text-left p-2 font-medium">Every 3rd</th>
+              <th class="text-left p-2 font-medium">Every 4th</th>
+              <th class="text-left p-2 font-medium">Every 5th</th>
+              <th class="text-left p-2 font-medium">Every 6th</th>
+            </tr>
+          </thead>
+          <tbody>
+            {#each ATTRIBUTE_GAINS as row (row.className)}
+              <tr class="border-b hover:bg-muted/30">
+                <td class="p-2 font-medium">{row.className}</td>
+                {#each row.gains as gain (gain)}
+                  <td class="p-2">{gain}</td>
+                {/each}
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="space-y-2">
+        <h3 class="font-semibold">Milestones</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm border-collapse">
+            <thead>
+              <tr class="border-b">
+                <th class="text-left p-2 font-medium">Level</th>
+                <th class="text-left p-2 font-medium">Unlocks</th>
+              </tr>
+            </thead>
+            <tbody>
+              {#each MILESTONES as row (row.level)}
+                <tr class="border-b hover:bg-muted/30">
+                  <td class="p-2 font-mono">{row.level}</td>
+                  <td class="p-2">{row.unlock}</td>
+                </tr>
+              {/each}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </Card.Content>
+  </Card.Root>
+
+  <!-- Veteran Points -->
+  <Card.Root id="veteran-points" class="bg-muted/30">
+    <Card.Header>
+      <Card.Title>Veteran Points</Card.Title>
+      <Card.Description
+        >Where experience goes after the level cap.</Card.Description
+      >
+    </Card.Header>
+    <Card.Content class="space-y-6">
+      <div class="space-y-2">
+        <p class="text-sm text-muted-foreground">
+          <!-- Source: server-scripts/Experience.cs:300-330 — at the cap a filled bar grants a Veteran Point, an attribute point, a full heal, and a veteran level-up for your mercenaries. -->
+          At level {LEVEL_CAP} a filled bar grants one Veteran Point and one attribute
+          point instead of a level, refills health and mana, and levels up your mercenaries
+          as veterans.
+        </p>
+        <p class="text-sm text-muted-foreground">
+          <!-- Source: server-scripts/Experience.cs:44-53 — the max-level bar costs 1,000,000 plus 20,000 per total Veteran Point. -->
+          Each Veteran Point costs
+          <span class="font-mono font-medium"
+            >{fmt(VETERAN_BASE_COST)} + {fmt(VETERAN_COST_PER_POINT)} &times; points</span
+          >, so the first costs {fmt(VETERAN_BASE_COST)} and every further point costs
+          {fmt(VETERAN_COST_PER_POINT)} more than the last.
+        </p>
+      </div>
+
+      <div class="space-y-2">
+        <h3 class="font-semibold">Spending and Counting</h3>
+        <p class="text-sm text-muted-foreground">
+          <!-- Source: server-scripts/PlayerSkills.cs:333-343 — the total counts unspent points plus the base levels of learned veteran skills. -->
+          Veteran Points buy levels in veteran skills. Your veteran total counts unspent
+          points plus the levels you already put into veteran skills, so spending
+          them never lowers it.
+        </p>
+        <p class="text-sm text-muted-foreground">
+          <!-- Source: server-scripts/Player.cs:9088-9123 and server-scripts/Npc.cs:1774-1792 — a veteran master refunds spent veteran skill points for gold and a token. -->
+          A veteran master refunds every spent Veteran Point for 10,000 gold and a
+          {#if data.redemptionToken}
+            <ItemLink
+              itemId={data.redemptionToken.id}
+              itemName={data.redemptionToken.name}
+              colorClass={getQualityTextColorClass(
+                data.redemptionToken.quality,
+              )}
+              tooltipHtml={data.redemptionToken.tooltip_html}
+            />
+          {:else}
+            Token of Redemption
+          {/if}.
+        </p>
+        <p class="text-sm text-muted-foreground">
+          <!-- Source: server-scripts/Experience.cs:306-334 — earning stops at 200 total points and pays out the max-level reward item instead. -->
+          The total caps at {MAX_VETERAN_POINTS}. After that, every filled bar
+          pays out a
+          {#if data.maxLevelReward}
+            <ItemLink
+              itemId={data.maxLevelReward.id}
+              itemName={data.maxLevelReward.name}
+              colorClass={getQualityTextColorClass(data.maxLevelReward.quality)}
+              tooltipHtml={data.maxLevelReward.tooltip_html}
+            />
+          {:else}
+            reward item
+          {/if}
+          instead, as long as your inventory has room.
+        </p>
+      </div>
+    </Card.Content>
+  </Card.Root>
 
   <!-- Kill XP -->
   <Card.Root id="kill-xp" class="bg-muted/30">

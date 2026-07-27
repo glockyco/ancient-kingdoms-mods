@@ -22,7 +22,7 @@
     {
       href: "/mechanics/experience",
       title: "Experience",
-      description: "Kill, death, profession, quest, and discovery XP",
+      description: "Level costs, veteran points, and every XP source",
       icon: TrendingUp,
       color: "text-emerald-500",
       bg: "bg-emerald-500/10",
