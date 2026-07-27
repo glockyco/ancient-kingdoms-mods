@@ -10,6 +10,7 @@
   import HomeSearch from "$lib/components/HomeSearch.svelte";
   import { buttonVariants } from "$lib/components/ui/button";
   import { COMPENDIUM_VERSION } from "$lib/constants/version";
+  import { HOME_COUNTS } from "$lib/generated/home-counts";
   import {
     DISCORD_URL,
     KOFI_URL,
@@ -41,16 +42,17 @@
 
   // Primary database sections, ranked by usage. Each carries its own literal
   // badge classes (Tailwind needs static strings) so the icon tint stays
-  // consistent with the per-page pattern used across the site. Derived because
-  // the counts come from reactive `data`.
-  const browse = $derived([
+  // consistent with the per-page pattern used across the site. Counts come
+  // from a build-time snapshot compiled into this bundle, so these lists are
+  // plain constants rather than `$derived` over `data`.
+  const browse = [
     {
       title: "Items",
       description: "Equipment, consumables, and treasures",
       href: "/items",
       icon: Gem,
       badge: "bg-amber-500/10 text-amber-500",
-      count: data.counts.items,
+      count: HOME_COUNTS.items,
       unit: "items",
     },
     {
@@ -59,7 +61,7 @@
       href: "/monsters",
       icon: Skull,
       badge: "bg-red-500/10 text-red-500",
-      count: data.counts.monsters,
+      count: HOME_COUNTS.monsters,
       unit: "monsters",
     },
     {
@@ -68,7 +70,7 @@
       href: "/zones",
       icon: MapPin,
       badge: "bg-emerald-500/10 text-emerald-500",
-      count: data.counts.zones,
+      count: HOME_COUNTS.zones,
       unit: "zones",
     },
     {
@@ -77,7 +79,7 @@
       href: "/classes",
       icon: Star,
       badge: "bg-indigo-500/10 text-indigo-500",
-      count: data.counts.classes,
+      count: HOME_COUNTS.classes,
       unit: "classes",
     },
     {
@@ -86,7 +88,7 @@
       href: "/professions",
       icon: Hammer,
       badge: "bg-yellow-500/10 text-yellow-500",
-      count: data.counts.professions,
+      count: HOME_COUNTS.professions,
       unit: "professions",
     },
     {
@@ -95,70 +97,70 @@
       href: "/recipes",
       icon: FlaskConical,
       badge: "bg-purple-500/10 text-purple-500",
-      count: data.counts.recipes,
+      count: HOME_COUNTS.recipes,
       unit: "recipes",
     },
-  ]);
+  ];
 
   // Secondary sections, shown as compact tiles.
-  const more = $derived([
+  const more = [
     {
       title: "Mercenaries",
       href: "/mercenaries",
       icon: Swords,
       badge: "bg-teal-500/10 text-teal-500",
-      count: data.counts.mercenaries,
+      count: HOME_COUNTS.mercenaries,
     },
     {
       title: "Summons",
       href: "/summons",
       icon: Cat,
       badge: "bg-cyan-500/10 text-cyan-500",
-      count: data.counts.summons,
+      count: HOME_COUNTS.summons,
     },
     {
       title: "Skills",
       href: "/skills",
       icon: Zap,
       badge: "bg-purple-500/10 text-purple-500",
-      count: data.counts.skills,
+      count: HOME_COUNTS.skills,
     },
     {
       title: "NPCs",
       href: "/npcs",
       icon: Users,
       badge: "bg-blue-500/10 text-blue-500",
-      count: data.counts.npcs,
+      count: HOME_COUNTS.npcs,
     },
     {
       title: "Quests",
       href: "/quests",
       icon: Scroll,
       badge: "bg-orange-500/10 text-orange-500",
-      count: data.counts.quests,
+      count: HOME_COUNTS.quests,
     },
     {
       title: "Gathering Resources",
       href: "/gather-items",
       icon: Leaf,
       badge: "bg-lime-500/10 text-lime-500",
-      count: data.counts.gatheringResources,
+      count: HOME_COUNTS.gatheringResources,
     },
     {
       title: "Chests",
       href: "/chests",
       icon: Box,
       badge: "bg-sky-500/10 text-sky-500",
-      count: data.counts.chests,
+      count: HOME_COUNTS.chests,
     },
     {
       title: "Altars",
       href: "/altars",
       icon: Flame,
       badge: "bg-orange-500/10 text-orange-500",
-      count: data.counts.altars,
+      count: HOME_COUNTS.altars,
     },
-  ]);
+  ];
 
   // Game-mechanics reference pages. Titles and routes mirror /mechanics.
   const mechanics = [
@@ -245,7 +247,7 @@
         </h2>
         <p class="mt-1 text-muted-foreground">
           Explore the world of Eratiath — every monster, NPC, and resource
-          across {data.counts.zones} zones
+          across {HOME_COUNTS.zones} zones
         </p>
       </div>
       <span

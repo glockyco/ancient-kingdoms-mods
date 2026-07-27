@@ -1,17 +1,22 @@
 import type { PageServerLoad } from "./$types";
-import { HOME_COUNTS, type HomeCounts } from "$lib/generated/home-counts";
 import { fetchGameVersion } from "$lib/server/game-version";
 import type { GameVersionResult } from "$lib/steam-news-parser";
 
 // Opt out of prerendering so the live game version is fetched fresh on each
-// edge cache miss instead of being baked in at build time. Static counts are
-// snapshotted at prebuild time (see scripts/generate-home-counts.mjs) so this
-// load runs without touching SQLite — required because Workers can't use
-// better-sqlite3.
+// edge cache miss instead of being baked in at build time.
+//
+// Entity counts are deliberately NOT returned here. They are a build-time
+// snapshot (see scripts/generate-home-counts.mjs) that the page component
+// imports directly, so they ship inside the same immutable bundle as the code
+// reading them. Putting them in this payload instead would version them
+// separately from that code: the response below is edge-cached for s-maxage,
+// so for one cache window after a deploy a fresh bundle would be paired with
+// the previous deploy's counts object and crash on any key added or renamed in
+// between. This load returns only runtime data whose shape is stable across
+// deploys.
 export const prerender = false;
 
 interface HomePageData {
-  counts: HomeCounts;
   live: GameVersionResult;
   checkedAt: string;
 }
@@ -40,5 +45,5 @@ export const load: PageServerLoad = async ({
       : "public, s-maxage=60, max-age=30",
   });
 
-  return { counts: HOME_COUNTS, live, checkedAt };
+  return { live, checkedAt };
 };
