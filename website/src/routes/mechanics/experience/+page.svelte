@@ -197,6 +197,67 @@
   const VET_Y_TICKS = [0, 150_000_000, 300_000_000, 450_000_000, 600_000_000];
   const VET_X_TICKS = [0, 50, 100, 150, 200];
   const millions = (value: number) => `${Math.round(value / 1_000_000)}M`;
+
+  // Source: server-scripts/Experience.cs:453-489 — BalanceExperienceReward.
+  // The switch is keyed on your level minus the monster's level.
+  const ABOVE_MULTIPLIERS: Record<number, number> = {
+    1: 0.99,
+    2: 0.97,
+    3: 0.95,
+    4: 0.9,
+    5: 0.8,
+    6: 0.7,
+    7: 0.6,
+    8: 0.5,
+    9: 0.4,
+    10: 0.3,
+    11: 0.25,
+    12: 0.2,
+    13: 0.15,
+    14: 0.14,
+    15: 0.13,
+    16: 0.12,
+    17: 0.11,
+    18: 0.1,
+    19: 0.08,
+    20: 0.05,
+  };
+  const levelDiffMultiplier = (diff: number) => {
+    if (diff > 20) return 0;
+    if (diff < 0) return 1 + Math.min(-diff, 10) * 0.05;
+    if (diff === 0) return 1;
+    return ABOVE_MULTIPLIERS[diff];
+  };
+  const DIFF_ROWS = Array.from({ length: 32 }, (_, index) => {
+    const diff = index - 10;
+    const label =
+      diff === -10
+        ? "10+ below"
+        : diff === 21
+          ? "21+ above"
+          : diff === 0
+            ? "same"
+            : `${Math.abs(diff)} ${diff < 0 ? "below" : "above"}`;
+    return { diff, label, multiplier: levelDiffMultiplier(diff) };
+  });
+
+  const DIFF_CHART = {
+    w: 720,
+    h: 220,
+    left: 44,
+    right: 712,
+    top: 14,
+    bottom: 176,
+  };
+  const DIFF_MAX = 1.5;
+  const diffBandWidth = (DIFF_CHART.right - DIFF_CHART.left) / DIFF_ROWS.length;
+  const diffX = (index: number) =>
+    DIFF_CHART.left + index * diffBandWidth + diffBandWidth * 0.15;
+  const diffBarWidth = diffBandWidth * 0.7;
+  const diffY = (multiplier: number) =>
+    DIFF_CHART.bottom -
+    (multiplier / DIFF_MAX) * (DIFF_CHART.bottom - DIFF_CHART.top);
+  const DIFF_Y_TICKS = [0, 0.5, 1, 1.5];
 </script>
 
 <Seo
@@ -741,243 +802,110 @@
       <div class="space-y-2">
         <h3 class="font-semibold">Level Difference Scaling</h3>
         <p class="text-sm text-muted-foreground">
-          Your actual XP is multiplied based on the difference between your
-          level and the monster's level.
+          Your XP is multiplied by how your level compares to the monster's.
+          Monsters above your level give up to 150% XP, and a monster 21 or more
+          levels below you gives none.
         </p>
-        <!-- Source: server-scripts/Experience.cs:430-466 — BalanceExperienceReward -->
-        <div class="overflow-x-auto">
-          <table class="w-full text-sm border-collapse">
-            <thead>
-              <tr class="border-b">
-                <th class="text-left p-2 font-medium">Level difference</th>
-                <th class="text-right p-2 font-medium">XP multiplier</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr class="border-b hover:bg-muted/30">
-                <td class="p-2">10+ levels below</td>
-                <td
-                  class="p-2 text-right font-mono text-green-600 dark:text-green-400"
-                  >150%</td
-                >
-              </tr>
-              <tr class="border-b hover:bg-muted/30">
-                <td class="p-2">9 levels below</td>
-                <td
-                  class="p-2 text-right font-mono text-green-600 dark:text-green-400"
-                  >145%</td
-                >
-              </tr>
-              <tr class="border-b hover:bg-muted/30">
-                <td class="p-2">8 levels below</td>
-                <td
-                  class="p-2 text-right font-mono text-green-600 dark:text-green-400"
-                  >140%</td
-                >
-              </tr>
-              <tr class="border-b hover:bg-muted/30">
-                <td class="p-2">7 levels below</td>
-                <td
-                  class="p-2 text-right font-mono text-green-600 dark:text-green-400"
-                  >135%</td
-                >
-              </tr>
-              <tr class="border-b hover:bg-muted/30">
-                <td class="p-2">6 levels below</td>
-                <td
-                  class="p-2 text-right font-mono text-green-600 dark:text-green-400"
-                  >130%</td
-                >
-              </tr>
-              <tr class="border-b hover:bg-muted/30">
-                <td class="p-2">5 levels below</td>
-                <td
-                  class="p-2 text-right font-mono text-green-600 dark:text-green-400"
-                  >125%</td
-                >
-              </tr>
-              <tr class="border-b hover:bg-muted/30">
-                <td class="p-2">4 levels below</td>
-                <td
-                  class="p-2 text-right font-mono text-green-600 dark:text-green-400"
-                  >120%</td
-                >
-              </tr>
-              <tr class="border-b hover:bg-muted/30">
-                <td class="p-2">3 levels below</td>
-                <td
-                  class="p-2 text-right font-mono text-green-600 dark:text-green-400"
-                  >115%</td
-                >
-              </tr>
-              <tr class="border-b hover:bg-muted/30">
-                <td class="p-2">2 levels below</td>
-                <td
-                  class="p-2 text-right font-mono text-green-600 dark:text-green-400"
-                  >110%</td
-                >
-              </tr>
-              <tr class="border-b hover:bg-muted/30">
-                <td class="p-2">1 level below</td>
-                <td
-                  class="p-2 text-right font-mono text-green-600 dark:text-green-400"
-                  >105%</td
-                >
-              </tr>
-              <tr class="border-b hover:bg-muted/30">
-                <td class="p-2">Same level</td>
-                <td class="p-2 text-right font-mono">100%</td>
-              </tr>
-              <tr class="border-b hover:bg-muted/30">
-                <td class="p-2">1 level above</td>
-                <td
-                  class="p-2 text-right font-mono text-orange-600 dark:text-orange-400"
-                  >99%</td
-                >
-              </tr>
-              <tr class="border-b hover:bg-muted/30">
-                <td class="p-2">2 levels above</td>
-                <td
-                  class="p-2 text-right font-mono text-orange-600 dark:text-orange-400"
-                  >97%</td
-                >
-              </tr>
-              <tr class="border-b hover:bg-muted/30">
-                <td class="p-2">3 levels above</td>
-                <td
-                  class="p-2 text-right font-mono text-orange-600 dark:text-orange-400"
-                  >95%</td
-                >
-              </tr>
-              <tr class="border-b hover:bg-muted/30">
-                <td class="p-2">4 levels above</td>
-                <td
-                  class="p-2 text-right font-mono text-orange-600 dark:text-orange-400"
-                  >90%</td
-                >
-              </tr>
-              <tr class="border-b hover:bg-muted/30">
-                <td class="p-2">5 levels above</td>
-                <td
-                  class="p-2 text-right font-mono text-orange-600 dark:text-orange-400"
-                  >80%</td
-                >
-              </tr>
-              <tr class="border-b hover:bg-muted/30">
-                <td class="p-2">6 levels above</td>
-                <td
-                  class="p-2 text-right font-mono text-orange-600 dark:text-orange-400"
-                  >70%</td
-                >
-              </tr>
-              <tr class="border-b hover:bg-muted/30">
-                <td class="p-2">7 levels above</td>
-                <td
-                  class="p-2 text-right font-mono text-orange-600 dark:text-orange-400"
-                  >60%</td
-                >
-              </tr>
-              <tr class="border-b hover:bg-muted/30">
-                <td class="p-2">8 levels above</td>
-                <td
-                  class="p-2 text-right font-mono text-orange-600 dark:text-orange-400"
-                  >50%</td
-                >
-              </tr>
-              <tr class="border-b hover:bg-muted/30">
-                <td class="p-2">9 levels above</td>
-                <td
-                  class="p-2 text-right font-mono text-orange-600 dark:text-orange-400"
-                  >40%</td
-                >
-              </tr>
-              <tr class="border-b hover:bg-muted/30">
-                <td class="p-2">10 levels above</td>
-                <td
-                  class="p-2 text-right font-mono text-orange-600 dark:text-orange-400"
-                  >30%</td
-                >
-              </tr>
-              <tr class="border-b hover:bg-muted/30">
-                <td class="p-2">11 levels above</td>
-                <td
-                  class="p-2 text-right font-mono text-orange-600 dark:text-orange-400"
-                  >25%</td
-                >
-              </tr>
-              <tr class="border-b hover:bg-muted/30">
-                <td class="p-2">12 levels above</td>
-                <td
-                  class="p-2 text-right font-mono text-orange-600 dark:text-orange-400"
-                  >20%</td
-                >
-              </tr>
-              <tr class="border-b hover:bg-muted/30">
-                <td class="p-2">13 levels above</td>
-                <td
-                  class="p-2 text-right font-mono text-orange-600 dark:text-orange-400"
-                  >15%</td
-                >
-              </tr>
-              <tr class="border-b hover:bg-muted/30">
-                <td class="p-2">14 levels above</td>
-                <td
-                  class="p-2 text-right font-mono text-orange-600 dark:text-orange-400"
-                  >14%</td
-                >
-              </tr>
-              <tr class="border-b hover:bg-muted/30">
-                <td class="p-2">15 levels above</td>
-                <td
-                  class="p-2 text-right font-mono text-orange-600 dark:text-orange-400"
-                  >13%</td
-                >
-              </tr>
-              <tr class="border-b hover:bg-muted/30">
-                <td class="p-2">16 levels above</td>
-                <td
-                  class="p-2 text-right font-mono text-orange-600 dark:text-orange-400"
-                  >12%</td
-                >
-              </tr>
-              <tr class="border-b hover:bg-muted/30">
-                <td class="p-2">17 levels above</td>
-                <td
-                  class="p-2 text-right font-mono text-orange-600 dark:text-orange-400"
-                  >11%</td
-                >
-              </tr>
-              <tr class="border-b hover:bg-muted/30">
-                <td class="p-2">18 levels above</td>
-                <td
-                  class="p-2 text-right font-mono text-orange-600 dark:text-orange-400"
-                  >10%</td
-                >
-              </tr>
-              <tr class="border-b hover:bg-muted/30">
-                <td class="p-2">19 levels above</td>
-                <td
-                  class="p-2 text-right font-mono text-orange-600 dark:text-orange-400"
-                  >8%</td
-                >
-              </tr>
-              <tr class="border-b hover:bg-muted/30">
-                <td class="p-2">20 levels above</td>
-                <td
-                  class="p-2 text-right font-mono text-orange-600 dark:text-orange-400"
-                  >5%</td
-                >
-              </tr>
-              <tr class="hover:bg-muted/30">
-                <td class="p-2">21+ levels above</td>
-                <td
-                  class="p-2 text-right font-mono text-red-600 dark:text-red-400"
-                  >0%</td
-                >
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <!-- Source: server-scripts/Experience.cs:453-489 — BalanceExperienceReward -->
+        <svg
+          class="level-chart"
+          viewBox="0 0 {DIFF_CHART.w} {DIFF_CHART.h}"
+          role="img"
+          aria-label="Experience multiplier by the difference between your level and the monster's level"
+        >
+          {#each DIFF_Y_TICKS as tick (tick)}
+            <line
+              class="grid"
+              x1={DIFF_CHART.left}
+              y1={diffY(tick)}
+              x2={DIFF_CHART.right}
+              y2={diffY(tick)}
+            />
+            <text
+              class="tick"
+              x={DIFF_CHART.left - 8}
+              y={diffY(tick) + 3}
+              text-anchor="end">{Math.round(tick * 100)}%</text
+            >
+          {/each}
+          {#each DIFF_ROWS as row, index (row.diff)}
+            <rect
+              class={row.multiplier > 1
+                ? "bar-bonus"
+                : row.multiplier < 1
+                  ? "bar-penalty"
+                  : "bar-even"}
+              x={diffX(index)}
+              y={diffY(row.multiplier)}
+              width={diffBarWidth}
+              height={DIFF_CHART.bottom - diffY(row.multiplier)}
+            >
+              <title>{row.label}: {Math.round(row.multiplier * 100)}%</title>
+            </rect>
+            {#if row.diff % 5 === 0}
+              <text
+                class="tick"
+                x={diffX(index) + diffBarWidth / 2}
+                y={DIFF_CHART.bottom + 15}
+                text-anchor="middle"
+                >{row.diff > 0 ? `+${row.diff}` : row.diff}</text
+              >
+            {/if}
+          {/each}
+          <line
+            class="curve-uneased"
+            x1={DIFF_CHART.left}
+            y1={diffY(1)}
+            x2={DIFF_CHART.right}
+            y2={diffY(1)}
+          />
+          <line
+            class="axis"
+            x1={DIFF_CHART.left}
+            y1={DIFF_CHART.bottom}
+            x2={DIFF_CHART.right}
+            y2={DIFF_CHART.bottom}
+          />
+          <text
+            class="tick"
+            x={(DIFF_CHART.left + DIFF_CHART.right) / 2}
+            y={DIFF_CHART.h - 3}
+            text-anchor="middle">your level − monster level</text
+          >
+        </svg>
+
+        <details class="group">
+          <summary
+            class="cursor-pointer text-sm font-medium text-muted-foreground hover:text-foreground"
+            >Every step, in full</summary
+          >
+          <div class="mt-3 overflow-x-auto">
+            <table class="w-full text-sm border-collapse">
+              <thead>
+                <tr class="border-b">
+                  <th class="text-left p-2 font-medium"
+                    >Your level vs monster</th
+                  >
+                  <th class="text-right p-2 font-medium">XP multiplier</th>
+                </tr>
+              </thead>
+              <tbody>
+                {#each DIFF_ROWS as row (row.diff)}
+                  <tr class="border-b hover:bg-muted/30">
+                    <td class="p-2">{row.label}</td>
+                    <td
+                      class="p-2 text-right font-mono {row.multiplier > 1
+                        ? 'text-green-600 dark:text-green-400'
+                        : row.multiplier < 1
+                          ? 'text-red-600 dark:text-red-400'
+                          : ''}">{Math.round(row.multiplier * 100)}%</td
+                    >
+                  </tr>
+                {/each}
+              </tbody>
+            </table>
+          </div>
+        </details>
       </div>
 
       <div class="space-y-2">
@@ -1518,6 +1446,18 @@
     fill: none;
     stroke: var(--color-emerald-500, #10b981);
     stroke-width: 2.5;
+  }
+  .level-chart .bar-bonus {
+    fill: var(--color-emerald-500, #10b981);
+    opacity: 0.85;
+  }
+  .level-chart .bar-even {
+    fill: var(--muted-foreground);
+    opacity: 0.7;
+  }
+  .level-chart .bar-penalty {
+    fill: var(--color-red-500, #ef4444);
+    opacity: 0.7;
   }
   .level-chart .marker-line {
     stroke: var(--color-emerald-500, #10b981);
