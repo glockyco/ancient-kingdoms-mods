@@ -28,7 +28,7 @@ website/static/compendium.db + website/static/images/ + website/static/tiles/
 Cloudflare Static Assets
 ```
 
-The compendium is a fan-made wiki, interactive world map, and game database. It covers items, monsters, NPCs, zones, quests, altars, classes, skills, pets, professions, gathering resources, crafting recipes, chests, and the interactive world map.
+The compendium is a fan-made wiki, interactive world map, and game database. It covers items, monsters, NPCs, zones, quests, altars, classes, skills, mercenaries, summons, professions, gathering resources, crafting recipes, chests, and the interactive world map.
 
 ## Repository layout
 
