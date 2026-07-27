@@ -16,12 +16,7 @@
   let { data } = $props();
 
   type PlayerClass =
-    | "Warrior"
-    | "Cleric"
-    | "Ranger"
-    | "Rogue"
-    | "Wizard"
-    | "Druid";
+    "Warrior" | "Cleric" | "Ranger" | "Rogue" | "Wizard" | "Druid";
 
   type SortMode = "queue" | "level" | "name" | "adventuring";
 
@@ -44,7 +39,7 @@
   let currentTime = $state(new Date());
   let mounted = $state(false);
 
-  // Source: server-scripts/Utils.cs:521-524 — adventurer quest selection is seeded by DateTime.UtcNow.DayOfYear, so UTC midnight starts a new queue day.
+  // Source: server-scripts/Utils.cs:545-547 — adventurer quest selection is seeded by DateTime.UtcNow.DayOfYear, so UTC midnight starts a new queue day.
   const queueResetTime = "00:00 UTC";
 
   onMount(() => {
@@ -271,7 +266,7 @@
       : null;
   }
 
-  // Source: server-scripts/Utils.cs:534-550 — adventurer quest order uses Unity/Mono's seeded System.Random with a Fisher-Yates shuffle.
+  // Source: server-scripts/Utils.cs:558-574 — adventurer quest order uses Unity/Mono's seeded System.Random with a Fisher-Yates shuffle.
   function shuffleWithDotNetRandom<T>(items: T[], seed: number): T[] {
     const shuffled = [...items];
     const random = new DotNetRandom(seed);
@@ -355,10 +350,10 @@
               >Adventurer Taskgiver</a
             > to accept an Adventurer quest.
           </div>
-          <!-- Source: server-scripts/Utils.cs:521-524 — adventurer quest selection reads the shared npcAdventurerReference quest list. -->
+          <!-- Source: server-scripts/Utils.cs:545-547 — daily Adventurer quest selection reads the shared npcAdventurerReference quest list. -->
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
             All taskgivers use the same shared quest pool, so NPC choice does
-            not affect the available quest list.
+            not affect which quests are available at your character's level.
           </p>
         </div>
       </div>
@@ -392,8 +387,10 @@
             Each Adventurer quest has its own per-character 24-hour cooldown.
           </div>
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            The taskgiver offers the first quest in today's queue that your
-            character has not completed in the last 24 hours.<br
+            <!-- Source: server-scripts/Utils.cs:545-550 — the daily offer requires a recommended level at or below the character level and no completion in the last 24 hours. -->
+            The taskgiver offers the first quest in today's queue that meets both
+            requirements: its recommended level is at or below your character's level,
+            and your character has not completed it in the last 24 hours.<br
               class="hidden xl:block"
             /><span class="xl:hidden">&nbsp;</span>Completing one quest puts
             only that quest on cooldown, then reveals the next eligible quest in
@@ -536,7 +533,7 @@
               <th class="p-3 text-left font-medium">Rewards</th>
               <th class="p-3 text-left font-medium">Class Reward</th>
               <th class="p-3 text-right font-medium">Adventuring</th>
-              <th class="p-3 text-right font-medium">Level</th>
+              <th class="p-3 text-right font-medium">Recommended Level</th>
             </tr>
           </thead>
           <tbody>
