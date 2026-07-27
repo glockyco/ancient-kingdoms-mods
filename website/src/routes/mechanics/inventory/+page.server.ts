@@ -23,6 +23,7 @@ export interface BackpackListItem {
   name: string;
   quality: number;
   backpack_slots: number;
+  backpack_is_unique: boolean;
   tooltip_html: string | null;
   min_source_level: number | null;
   sources: BackpackSource[];
@@ -52,6 +53,7 @@ interface BackpackRow {
   name: string;
   quality: number;
   backpack_slots: number;
+  backpack_is_unique: boolean;
   tooltip_html: string | null;
 }
 
@@ -63,12 +65,12 @@ export interface InventoryMechanicsPageData {
 
 function getBackpackRows(db: Database.Database): BackpackRow[] {
   // Source: mods/DataExporter/Exporters/ItemExporter.cs:120 — BackpackItem assets export as item_type='backpack'
-  // Source: mods/DataExporter/Exporters/ItemExporter.cs:268-274 — backpack_slots exports from BackpackItem.numSlots
-  // Source: server-scripts/BackpackItem.cs:7 — BackpackItem.numSlots is the in-game storage grant
+  // Source: mods/DataExporter/Exporters/ItemExporter.cs:280-283 — backpack_slots and backpack_is_unique export from BackpackItem fields
+  // Source: server-scripts/BackpackItem.cs:7-9 — BackpackItem.isUnique and numSlots define backpack uniqueness and storage grant
   return db
     .prepare(
       `
-      SELECT id, name, quality, backpack_slots, tooltip_html
+      SELECT id, name, quality, backpack_slots, backpack_is_unique, tooltip_html
       FROM items
       WHERE item_type = 'backpack'
         AND backpack_slots > 0

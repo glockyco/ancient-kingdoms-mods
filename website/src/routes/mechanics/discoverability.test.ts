@@ -51,7 +51,7 @@ test("inventory backpack links include tooltip data", () => {
 
   assert.match(
     inventoryServer,
-    /SELECT id, name, quality, backpack_slots, tooltip_html/,
+    /SELECT id, name, quality, backpack_slots, backpack_is_unique, tooltip_html/,
   );
   assert.match(inventoryPage, /tooltipHtml=\{backpack\.tooltip_html\}/);
 });

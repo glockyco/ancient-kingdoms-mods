@@ -437,14 +437,17 @@ function mountDescription(): string {
 }
 
 function backpackDescription(item: Item): string {
-  // Source: server-scripts/BackpackItem.cs:7, server-scripts/PlayerInventory.cs:29-31
-  // — numSlots is added to the inventory while the bag is in the combined-backpack slot.
+  // Source: server-scripts/BackpackItem.cs:7,9, server-scripts/PlayerInventory.cs:31-42,417-431 (IsUniqueBackpackAlreadyEquipped)
+  // — numSlots adds inventory capacity, and isUnique restricts duplicate equipped backpacks by nameItem.
   const slots = item.backpack_slots > 0 ? item.backpack_slots : 0;
   const slotPhrase =
     slots > 0
       ? ` Adds ${slots} extra inventory slots while equipped in your Combined Backpack.`
       : "";
-  return `Storage bag.${slotPhrase}`;
+  const equipPhrase = item.backpack_is_unique
+    ? " You can equip only one copy of it."
+    : " You can equip several copies at once.";
+  return `Storage bag.${equipPhrase}${slotPhrase}`;
 }
 
 function packDescription(item: Item, ctx: ItemMetaContext): string {

@@ -17,6 +17,7 @@ export function getItems(): ItemListView[] {
       item_level,
       slot,
       backpack_slots,
+      backpack_is_unique,
       class_required,
       alchemy_recipe_level_required,
       mount_speed,

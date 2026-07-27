@@ -13,6 +13,7 @@ export interface ItemListView {
   item_level: number;
   slot: string | null;
   backpack_slots: number;
+  backpack_is_unique: boolean;
   class_required: string;
   stats: string | null;
   stat_count: number;

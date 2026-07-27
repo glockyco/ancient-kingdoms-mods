@@ -183,8 +183,9 @@
           slots accept backpacks only.
         </li>
         <li>
-          <!-- Source: server-scripts/PlayerInventory.cs:397-400 — duplicate equipped backpack names are blocked. -->Duplicate
-          backpack names cannot be equipped.
+          <!-- Source: server-scripts/PlayerInventory.cs:417-431 and server-scripts/BackpackItem.cs:7,11-18 — only backpacks marked Unique are blocked when the same name is already equipped. -->Only
+          Unique backpacks are limited to one equipped copy. A non-Unique
+          backpack can fill several bag slots at once.
         </li>
         <li>
           <!-- Source: server-scripts/PlayerInventory.cs:402-418 — removal or downgrade is blocked if items would be locked away. -->Removing
@@ -204,6 +205,7 @@
               <tr class="border-b border-border">
                 <th class="py-2 pr-4 text-left font-medium">Bag</th>
                 <th class="py-2 pr-4 text-right font-medium">Slots</th>
+                <th class="py-2 pr-4 text-right font-medium">Unique</th>
                 <th class="py-2 pr-4 text-right font-medium">Source Level</th>
                 <th class="py-2 text-left font-medium">Known sources</th>
               </tr>
@@ -225,6 +227,9 @@
                   <td class="py-2 pr-4 text-right font-mono"
                     >{backpack.backpack_slots}</td
                   >
+                  <td class="py-2 pr-4 text-right font-mono">
+                    {backpack.backpack_is_unique ? "Yes" : "No"}
+                  </td>
                   <td class="py-2 pr-4 text-right font-mono">
                     {#if backpack.min_source_level !== null}
                       {backpack.min_source_level}

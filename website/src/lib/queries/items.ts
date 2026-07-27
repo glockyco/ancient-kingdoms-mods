@@ -71,6 +71,7 @@ export interface Item {
   mount_speed: number;
   // Backpack
   backpack_slots: number;
+  backpack_is_unique: boolean;
   // Travel
   travel_zone_id: number;
   travel_destination_x: number | null;

@@ -439,6 +439,14 @@
         </div>
       {/if}
 
+      {#if isBackpack && data.item.backpack_is_unique}
+        <div>
+          <!-- Source: server-scripts/BackpackItem.cs:7, server-scripts/PlayerInventory.cs:417-431 (IsUniqueBackpackAlreadyEquipped) — only one copy of a Unique backpack can be equipped -->
+          <div class={styles.label}>Unique</div>
+          <div class={styles.value}>Yes</div>
+        </div>
+      {/if}
+
       {#if computed.maxDurability && !isAugment}
         <div>
           <div class={styles.label}>Max Durability</div>
