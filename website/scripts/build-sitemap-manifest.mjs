@@ -516,6 +516,10 @@ function addMechanicsHashes(db, hashes) {
       url: "/mechanics/experience",
       file: "src/routes/mechanics/experience/+page.svelte",
     },
+    {
+      url: "/mechanics/monster-spawns",
+      file: "src/routes/mechanics/monster-spawns/+page.svelte",
+    },
   ]) {
     hashes[`${SITE_URL}${url}`] = fileHash(file);
   }
