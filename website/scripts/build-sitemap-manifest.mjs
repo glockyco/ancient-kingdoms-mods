@@ -486,11 +486,13 @@ function addOverviewHashes(db, hashes) {
   addHash(hashes, "/altars", all(db, "SELECT * FROM altars ORDER BY id"));
   addHash(
     hashes,
-    "/pets",
-    all(
-      db,
-      "SELECT * FROM pets WHERE id NOT IN ('rolim','nieven','bemere','ciliren') ORDER BY id",
-    ),
+    "/mercenaries",
+    all(db, "SELECT * FROM pets WHERE is_mercenary = 1 ORDER BY id"),
+  );
+  addHash(
+    hashes,
+    "/summons",
+    all(db, "SELECT * FROM pets WHERE is_mercenary = 0 ORDER BY id"),
   );
   addHash(hashes, "/recipes", {
     crafting: all(db, "SELECT * FROM crafting_recipes ORDER BY id"),
