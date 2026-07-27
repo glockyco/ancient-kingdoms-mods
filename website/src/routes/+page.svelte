@@ -166,6 +166,7 @@
     { title: "Experience", href: "/mechanics/experience" },
     { title: "Combat", href: "/mechanics/combat" },
     { title: "Monster Spawns", href: "/mechanics/monster-spawns" },
+    { title: "Mercenary Stats", href: "/mechanics/mercenary-stats" },
   ];
 
   // Curated footer nav: the highest-traffic sections only (no Mechanics — it

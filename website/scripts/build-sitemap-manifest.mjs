@@ -420,14 +420,13 @@ function computeHashes() {
   }
 
   addOverviewHashes(db, hashes);
-  addMechanicsHashes(hashes);
+  addMechanicsHashes(db, hashes);
   addProfessionHashes(db, hashes);
 
   const bareUrls = [
     `${SITE_URL}/`,
     `${SITE_URL}/map`,
     `${SITE_URL}/tools/combat-simulator`,
-    `${SITE_URL}/tools/mercenary-stats`,
   ];
 
   db.close();
@@ -501,7 +500,7 @@ function addOverviewHashes(db, hashes) {
   });
 }
 
-function addMechanicsHashes(hashes) {
+function addMechanicsHashes(db, hashes) {
   for (const { url, file } of [
     { url: "/mechanics", file: "src/routes/mechanics/+page.svelte" },
     {
@@ -519,6 +518,27 @@ function addMechanicsHashes(hashes) {
   ]) {
     hashes[`${SITE_URL}${url}`] = fileHash(file);
   }
+
+  // Unlike the prose pages, the mercenary stat tables are computed from DB
+  // rows, so a curve retune or a new tavern must bump lastmod on its own.
+  addHash(hashes, "/mechanics/mercenary-stats", {
+    curves: all(
+      db,
+      `SELECT type_monster, health_base, health_per_level, mana_base, mana_per_level
+       FROM pets WHERE is_mercenary = 1 ORDER BY type_monster`,
+    ),
+    taverns: all(
+      db,
+      `SELECT DISTINCT n.name AS npc_name, z.name AS zone_name, z.zone_id AS zone_num
+       FROM npcs n
+       JOIN npc_spawns s ON s.npc_id = n.id
+       JOIN zones z ON z.id = s.zone_id
+       WHERE json_extract(n.roles, '$.is_recruiter_mercenaries') = 1
+       ORDER BY z.zone_id`,
+    ),
+    source: fileHash("src/routes/mechanics/mercenary-stats/+page.svelte"),
+    server: fileHash("src/routes/mechanics/mercenary-stats/+page.server.ts"),
+  });
 }
 
 function addProfessionHashes(db, hashes) {

@@ -315,7 +315,7 @@
 <Seo
   title="Mercenary Stat Ranges - Ancient Kingdoms"
   description="Possible Health, Mana, Attack Power, and Spell Power rolls for every mercenary race and class, at any level and veteran rank, plus the gold and hires needed to roll a great one."
-  path="/tools/mercenary-stats"
+  path="/mechanics/mercenary-stats"
 />
 
 <div class="wrap">
@@ -323,7 +323,7 @@
     <Breadcrumb
       items={[
         { label: "Home", href: "/" },
-        { label: "Tools" },
+        { label: "Mechanics", href: "/mechanics" },
         { label: "Mercenary Stats" },
       ]}
     />

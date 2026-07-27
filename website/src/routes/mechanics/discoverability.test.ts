@@ -14,6 +14,7 @@ test("mechanics index and homepage expose mechanics references", () => {
   assert.match(mechanicsIndex, /href: "\/mechanics\/experience"/);
   assert.match(mechanicsIndex, /href: "\/mechanics\/combat"/);
   assert.match(mechanicsIndex, /href: "\/mechanics\/monster-spawns"/);
+  assert.match(mechanicsIndex, /href: "\/mechanics\/mercenary-stats"/);
 
   // The homepage's "Game mechanics" section links directly to every mechanics
   // page, which supersedes the old single /mechanics card.
@@ -22,6 +23,7 @@ test("mechanics index and homepage expose mechanics references", () => {
   assert.match(homepage, /href: "\/mechanics\/experience"/);
   assert.match(homepage, /href: "\/mechanics\/combat"/);
   assert.match(homepage, /href: "\/mechanics\/monster-spawns"/);
+  assert.match(homepage, /href: "\/mechanics\/mercenary-stats"/);
 });
 
 test("item pages link backpacks and house chests to inventory mechanics", () => {
