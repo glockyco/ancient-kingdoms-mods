@@ -389,12 +389,19 @@
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
             <!-- Source: server-scripts/Utils.cs:545-550 — the daily offer requires a recommended level at or below the character level and no completion in the last 24 hours. -->
             The taskgiver offers the first quest in today's queue that meets both
-            requirements: its recommended level is at or below your character's level,
-            and your character has not completed it in the last 24 hours.<br
-              class="hidden xl:block"
-            /><span class="xl:hidden">&nbsp;</span>Completing one quest puts
-            only that quest on cooldown, then reveals the next eligible quest in
-            the daily queue.
+            requirements:
+          </p>
+          <ul
+            class="mt-1 list-disc space-y-1 pl-5 text-sm leading-6 text-muted-foreground"
+          >
+            <li>
+              Its recommended level is at or below your character's level.
+            </li>
+            <li>Your character has not completed it in the last 24 hours.</li>
+          </ul>
+          <p class="mt-1 text-sm leading-6 text-muted-foreground">
+            Completing one quest puts only that quest on cooldown, then reveals
+            the next eligible quest in the daily queue.
           </p>
         </div>
       </div>
