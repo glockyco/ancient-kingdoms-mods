@@ -61,3 +61,6 @@ server-scripts-*/
 
 # Steam download cache
 .steam-download/
+
+# OMP agent session state (local only)
+.omp/

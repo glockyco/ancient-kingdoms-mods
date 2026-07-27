@@ -9,9 +9,9 @@ const config: KnipConfig = {
   exclude: ["exports", "types", "nsTypes", "enumMembers"],
 
   workspaces: {
-    // Root workspace: shell/Python scripts only
+    // Root workspace: shell scripts only
     ".": {
-      entry: ["scripts/*.sh", "scripts/*.py"],
+      entry: ["scripts/*.sh"],
       project: ["scripts/**"],
       // uv is a Python package manager invoked from package.json scripts; not a Node binary
       ignoreBinaries: ["uv"],
