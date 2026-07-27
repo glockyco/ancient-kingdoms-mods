@@ -196,9 +196,9 @@
           slots accept backpacks only.
         </li>
         <li>
-          <!-- Source: server-scripts/PlayerInventory.cs:417-431 and server-scripts/BackpackItem.cs:7,11-18 — only backpacks marked Unique are blocked when the same name is already equipped. -->Only
-          Unique backpacks are limited to one equipped copy. A non-Unique
-          backpack can fill several bag slots at once.
+          <!-- Source: server-scripts/PlayerInventory.cs:417-431 and server-scripts/BackpackItem.cs:7,11-18 — only backpacks marked Unique are blocked when the same name is already equipped. -->Unique
+          backpacks can only be equipped once. Any other backpack can fill
+          several bag slots at once.
         </li>
         <li>
           <!-- Source: server-scripts/PlayerInventory.cs:402-418 — removal or downgrade is blocked if items would be locked away. -->Removing
@@ -587,57 +587,40 @@
       <Card.Title>Equipment Templates</Card.Title>
       <Card.Description>
         <!-- Source: server-scripts/PlayerEquipment.cs:32,42-47,393-395,1658-1680 — each character can use up to five equipment templates and switch between stored loadouts. -->
-        Save up to five equipment templates per character and switch between stored
-        loadouts.
+        Store up to five gear loadouts per character and swap between them.
       </Card.Description>
     </Card.Header>
-    <Card.Content class="space-y-5">
-      <div class="overflow-x-auto">
-        <!-- Source: server-scripts/PlayerEquipment.cs:482-491 — template 2 through 5 unlock prices. -->
-        <table class="w-full border-collapse text-sm">
-          <thead>
-            <tr class="border-b border-border">
-              <th class="py-2 pr-4 text-left font-medium">Template</th>
-              <th class="py-2 text-right font-medium">Gold cost</th>
-            </tr>
-          </thead>
-          <tbody>
-            {#each EQUIPMENT_TEMPLATE_ROWS as row (row.template)}
-              <tr class="border-b border-border/50 hover:bg-muted/30">
-                <td class="py-2 pr-4">{row.template}</td>
-                <td class="py-2 text-right font-mono">{formatGold(row.cost)}</td
-                >
-              </tr>
-            {/each}
-          </tbody>
-        </table>
+    <Card.Content class="space-y-4 text-sm text-muted-foreground">
+      <!-- Source: server-scripts/PlayerEquipment.cs:482-491 — template 2 through 5 unlock prices. -->
+      <div class="grid grid-cols-3 gap-2 sm:grid-cols-5">
+        {#each EQUIPMENT_TEMPLATE_ROWS as row (row.template)}
+          <div
+            class="min-w-0 rounded border border-border bg-muted/50 px-2 py-2 text-center"
+          >
+            <span class="block truncate text-xs">Template {row.template}</span>
+            <span class="block truncate font-mono text-foreground"
+              >{formatGold(row.cost)}</span
+            >
+          </div>
+        {/each}
       </div>
 
-      <ul class="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
+      <ul class="list-disc space-y-1 pl-5">
+        <li>
+          <!-- Source: server-scripts/PlayerEquipment.cs:57-123,473-479,1658-1680 — template entries store an item hash and augment name, and switching applies all sixteen stored equipment slots. -->
+          Swapping a template re-equips all 16 equipment slots at once, augments included.
+        </li>
         <li>
           <!-- Source: server-scripts/PlayerEquipment.cs:42-45,406-433 and server-scripts/Database.cs:3118-3120 — characters start with template 1 unlocked, and character creation captures starting equipment into template 1. -->
-          Template 1 is unlocked at the start. Character creation copies the starting
-          equipment into template 1.
-        </li>
-        <li>
-          <!-- Source: server-scripts/PlayerEquipment.cs:57-123,393-413 — the fixed equipment slot list has 16 entries, and five templates contain 80 stored entries. -->
-          Each template stores one entry for each of the 16 equipment slots. Five
-          templates contain 80 stored entries.
-        </li>
-        <li>
-          <!-- Source: server-scripts/PlayerEquipment.cs:473-479,1658-1680 — template entries store an item hash and augment name, and switching applies the stored equipment slots. -->
-          Each entry records the equipped item and its augment, so switching templates
-          restores augmented gear exactly.
+          Template 1 starts out holding the gear your character was created with.
         </li>
         <li>
           <!-- Source: server-scripts/Database.cs:2305-2315 and server-scripts/PlayerEquipment.cs:415-425 — load accepts only existing equipment items in valid template and slot ranges. -->
-          Entries referencing a missing item or an item that is not equipment are
-          dropped on load.
+          A slot whose saved item you no longer own is left empty.
         </li>
         <li>
           <!-- Source: server-scripts/Database.cs:425-435,782-783,2665-2689 — character_equipment_templates stores per-character template slots with a unique character, template, and slot index. -->
-          Templates are stored per character, so they do not carry across your other
-          characters.
+          Templates belong to one character and do not carry across your other characters.
         </li>
       </ul>
     </Card.Content>
