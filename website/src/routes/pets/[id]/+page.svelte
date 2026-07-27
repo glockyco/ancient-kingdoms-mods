@@ -206,7 +206,9 @@
   <Breadcrumb
     items={[
       { label: "Home", href: "/" },
-      { label: "Pets", href: "/pets" },
+      pet.kind === "Mercenary"
+        ? { label: "Mercenaries", href: "/mercenaries" }
+        : { label: "Summons", href: "/summons" },
       { label: pet.name },
     ]}
   />

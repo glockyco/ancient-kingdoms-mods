@@ -2,19 +2,35 @@ import type { ClassSkill } from "$lib/queries/classes.server";
 
 export type PetKind = "Mercenary" | "Companion" | "Familiar";
 
+/** The two non-mercenary kinds, both listed on the /summons overview. */
+export type SummonKind = Exclude<PetKind, "Mercenary">;
+
 /**
- * Pet list view for the overview page.
+ * Mercenary list view for the /mercenaries overview. Mercenaries are hired
+ * from recruiter NPCs rather than summoned, so they carry recruiters and no
+ * summoning skill.
  */
-export interface PetListView {
+export interface MercenaryListView {
   id: string;
   name: string;
-  kind: PetKind;
+  type_monster: string;
+  level: number;
+  recruiters: PetRecruiter[];
+}
+
+/**
+ * Summon list view for the /summons overview. Companions and familiars are
+ * summoned by a class skill and cannot be recruited.
+ */
+export interface SummonListView {
+  id: string;
+  name: string;
+  kind: SummonKind;
   type_monster: string;
   level: number;
   summoning_class_id: string | null;
   summoning_skill_id: string | null;
   summoning_skill_name: string | null;
-  recruiters: PetRecruiter[];
 }
 
 /**

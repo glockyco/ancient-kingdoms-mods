@@ -7,40 +7,37 @@
     type Row,
     type TanstackTable,
   } from "$lib/components/ui/data-table";
-  import { IconBadge } from "$lib/components/ui/icon-badge";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import Seo from "$lib/components/Seo.svelte";
   import JsonLd from "$lib/components/JsonLd.svelte";
   import { buildCollectionPage } from "$lib/seo/jsonld";
   import { getClassConfig } from "$lib/utils/classes";
-  import type { PetListView } from "$lib/types/pets";
-  import User from "@lucide/svelte/icons/user";
+  import type { SummonListView } from "$lib/types/pets";
 
   let { data } = $props();
 
   const collectionNode = $derived(
     buildCollectionPage({
-      path: "/pets",
-      name: "Pets — Ancient Kingdoms Compendium",
-      description: `Searchable database of ${data.pets.length.toLocaleString()} pets and companions in Ancient Kingdoms.`,
-      items: data.pets.map((pet) => ({
-        name: pet.name,
-        path: `/pets/${pet.id}`,
+      path: "/summons",
+      name: "Summons — Ancient Kingdoms Compendium",
+      description: `Searchable database of ${data.summons.length.toLocaleString()} summonable companions and familiars in Ancient Kingdoms.`,
+      items: data.summons.map((summon) => ({
+        name: summon.name,
+        path: `/pets/${summon.id}`,
       })),
     }),
   );
 
   const uniqueKinds = $derived(
-    Array.from(new Set(data.pets.map((p) => p.kind))).sort(),
+    Array.from(new Set(data.summons.map((s) => s.kind))).sort(),
   );
 
   const columnLabels: Record<string, string> = {
     summoned_by_class: "Summoned By",
     summoned_by_spell: "Spell",
-    recruited_at: "Recruited At",
   };
 
-  const columns: ColumnDef<PetListView>[] = [
+  const columns: ColumnDef<SummonListView>[] = [
     { accessorKey: "name", header: "Name", enableHiding: false },
     {
       accessorKey: "kind",
@@ -54,7 +51,6 @@
     { accessorKey: "type_monster", header: "Class" },
     { id: "summoned_by_class", header: "Summoned By", enableSorting: false },
     { id: "summoned_by_spell", header: "Spell", enableSorting: false },
-    { id: "recruited_at", header: "Recruited At", enableSorting: false },
   ];
 </script>
 
@@ -62,8 +58,8 @@
   cell,
   row,
 }: {
-  cell: Cell<PetListView, unknown>;
-  row: Row<PetListView>;
+  cell: Cell<SummonListView, unknown>;
+  row: Row<SummonListView>;
 })}
   {#if cell.column.id === "name"}
     <a
@@ -95,31 +91,12 @@
     {:else}
       <span class="text-muted-foreground">—</span>
     {/if}
-  {:else if cell.column.id === "recruited_at"}
-    {#if row.original.recruiters.length > 0}
-      {@const first = row.original.recruiters[0]}
-      {@const rest = row.original.recruiters.length - 1}
-      <div class="flex items-center gap-1 whitespace-nowrap">
-        <IconBadge
-          href="/npcs/{first.npc_id}"
-          icon={User}
-          iconClass="text-blue-500"
-        >
-          {first.npc_name}
-        </IconBadge>
-        {#if rest > 0}
-          <span class="text-muted-foreground text-xs self-center">+{rest}</span>
-        {/if}
-      </div>
-    {:else}
-      <span class="text-muted-foreground">—</span>
-    {/if}
   {:else}
     {cell.getValue()}
   {/if}
 {/snippet}
 
-{#snippet renderToolbar({ table }: { table: TanstackTable<PetListView> })}
+{#snippet renderToolbar({ table }: { table: TanstackTable<SummonListView> })}
   {@const kindCol = table.getColumn("kind")}
   {#if kindCol}
     <DataTableFacetedFilter
@@ -131,20 +108,20 @@
 {/snippet}
 
 <Seo
-  title="Pets - Ancient Kingdoms"
-  description="Pets, familiars, and mercenaries — summoned companions and recruitable allies, with their skills, stats, and how to unlock each."
-  path="/pets"
+  title="Summons - Ancient Kingdoms"
+  description="Companions and familiars in Ancient Kingdoms — which class summons each one, the spell that calls it, and its skills and stats."
+  path="/summons"
 />
 
 <JsonLd node={collectionNode} />
 
 <div class="container mx-auto p-8 space-y-6">
-  <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Pets" }]} />
+  <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Summons" }]} />
 
-  <h1 class="text-3xl font-bold">Pets</h1>
+  <h1 class="text-3xl font-bold">Summons</h1>
 
   <DataTable
-    data={data.pets}
+    data={data.summons}
     {columns}
     {columnLabels}
     {renderCell}
@@ -154,13 +131,13 @@
       { id: "kind", desc: false },
       { id: "name", desc: false },
     ]}
-    urlKey="pets"
+    urlKey="summons"
     showPagination={true}
     showSearch={true}
     showColumnToggle={true}
     zebraStripe={true}
     paginateStaticHtml={true}
-    searchPlaceholder="Search pets..."
+    searchPlaceholder="Search summons..."
     class="bg-muted/30"
   />
 </div>

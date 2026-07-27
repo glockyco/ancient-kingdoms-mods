@@ -1,0 +1,4 @@
+# Cloudflare Workers static-asset redirects. Parsed by Workers, never served.
+# The /pets overview was split into /mercenaries and /summons; pet detail
+# pages still live under /pets/<id> and must not be redirected.
+/pets /mercenaries 301

@@ -1,7 +1,8 @@
 import { query, queryOne } from "$lib/db.server";
 import type { ClassSkill } from "./classes.server";
 import type {
-  PetListView,
+  MercenaryListView,
+  SummonListView,
   PetDetailView,
   PetKind,
   PetClassLink,
@@ -15,15 +16,36 @@ function getPetKind(is_mercenary: boolean, is_familiar: boolean): PetKind {
 }
 
 /**
- * Get all pets for the overview page.
+ * Get all mercenaries for the /mercenaries overview.
+ *
+ * Every recruiter sells every mercenary, so the recruiter list is fetched once
+ * and shared across rows.
  */
-export function getAllPets(): PetListView[] {
+export function getAllMercenaries(): MercenaryListView[] {
   const recruiters = getMercenaryRecruiters();
 
   const rows = query<{
     id: string;
     name: string;
-    is_mercenary: boolean;
+    type_monster: string;
+    level: number;
+  }>(
+    `SELECT id, name, type_monster, level
+     FROM pets
+     WHERE is_mercenary = 1
+     ORDER BY name ASC`,
+  );
+
+  return rows.map((r) => ({ ...r, recruiters }));
+}
+
+/**
+ * Get all summons (companions and familiars) for the /summons overview.
+ */
+export function getAllSummons(): SummonListView[] {
+  const rows = query<{
+    id: string;
+    name: string;
     is_familiar: boolean;
     type_monster: string;
     level: number;
@@ -31,25 +53,25 @@ export function getAllPets(): PetListView[] {
     summoning_skill_id: string | null;
     summoning_skill_name: string | null;
   }>(
-    `SELECT p.id, p.name, p.is_mercenary, p.is_familiar, p.type_monster, p.level,
+    `SELECT p.id, p.name, p.is_familiar, p.type_monster, p.level,
             json_extract(s.player_classes, '$[0]') as summoning_class_id,
             s.id as summoning_skill_id,
             s.name as summoning_skill_name
      FROM pets p
      LEFT JOIN skills s ON lower(s.pet_prefab_name) = lower(p.name)
-     ORDER BY p.is_mercenary DESC, p.is_familiar ASC, p.name ASC`,
+     WHERE p.is_mercenary = 0
+     ORDER BY p.is_familiar ASC, p.name ASC`,
   );
 
   return rows.map((r) => ({
     id: r.id,
     name: r.name,
-    kind: getPetKind(r.is_mercenary, r.is_familiar),
+    kind: r.is_familiar ? "Familiar" : "Companion",
     type_monster: r.type_monster,
     level: r.level,
     summoning_class_id: r.summoning_class_id,
     summoning_skill_id: r.summoning_skill_id,
     summoning_skill_name: r.summoning_skill_name,
-    recruiters: r.is_mercenary ? recruiters : [],
   }));
 }
 
