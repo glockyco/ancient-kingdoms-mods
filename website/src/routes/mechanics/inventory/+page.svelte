@@ -24,6 +24,13 @@
     cost,
     totalSlots: (index + 1) * 30,
   }));
+  const EQUIPMENT_TEMPLATE_COSTS = [0, 1000, 3000, 5000, 10000];
+  const EQUIPMENT_TEMPLATE_ROWS = EQUIPMENT_TEMPLATE_COSTS.map(
+    (cost, index) => ({
+      template: index + 1,
+      cost,
+    }),
+  );
 
   let { data }: { data: InventoryMechanicsPageData } = $props();
 
@@ -113,6 +120,12 @@
       <li>
         <a href="#loot" class="hover:text-foreground hover:underline"
           >Loot Pickup</a
+        >
+      </li>
+      <li>
+        <a
+          href="#equipment-templates"
+          class="hover:text-foreground hover:underline">Equipment Templates</a
         >
       </li>
       <li>
@@ -569,6 +582,67 @@
     </Card.Content>
   </Card.Root>
 
+  <Card.Root id="equipment-templates" class="bg-muted/30">
+    <Card.Header>
+      <Card.Title>Equipment Templates</Card.Title>
+      <Card.Description>
+        <!-- Source: server-scripts/PlayerEquipment.cs:32,42-47,393-395,1658-1680 — each character can use up to five equipment templates and switch between stored loadouts. -->
+        Save up to five equipment templates per character and switch between stored
+        loadouts.
+      </Card.Description>
+    </Card.Header>
+    <Card.Content class="space-y-5">
+      <div class="overflow-x-auto">
+        <!-- Source: server-scripts/PlayerEquipment.cs:482-491 — template 2 through 5 unlock prices. -->
+        <table class="w-full border-collapse text-sm">
+          <thead>
+            <tr class="border-b border-border">
+              <th class="py-2 pr-4 text-left font-medium">Template</th>
+              <th class="py-2 text-right font-medium">Gold cost</th>
+            </tr>
+          </thead>
+          <tbody>
+            {#each EQUIPMENT_TEMPLATE_ROWS as row (row.template)}
+              <tr class="border-b border-border/50 hover:bg-muted/30">
+                <td class="py-2 pr-4">{row.template}</td>
+                <td class="py-2 text-right font-mono">{formatGold(row.cost)}</td
+                >
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+      </div>
+
+      <ul class="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
+        <li>
+          <!-- Source: server-scripts/PlayerEquipment.cs:42-45,406-433 and server-scripts/Database.cs:3118-3120 — characters start with template 1 unlocked, and character creation captures starting equipment into template 1. -->
+          Template 1 is unlocked at the start. Character creation copies the starting
+          equipment into template 1.
+        </li>
+        <li>
+          <!-- Source: server-scripts/PlayerEquipment.cs:57-123,393-413 — the fixed equipment slot list has 16 entries, and five templates contain 80 stored entries. -->
+          Each template stores one entry for each of the 16 equipment slots. Five
+          templates contain 80 stored entries.
+        </li>
+        <li>
+          <!-- Source: server-scripts/PlayerEquipment.cs:473-479,1658-1680 — template entries store an item hash and augment name, and switching applies the stored equipment slots. -->
+          Each entry records the equipped item and its augment, so switching templates
+          restores augmented gear exactly.
+        </li>
+        <li>
+          <!-- Source: server-scripts/Database.cs:2305-2315 and server-scripts/PlayerEquipment.cs:415-425 — load accepts only existing equipment items in valid template and slot ranges. -->
+          Entries referencing a missing item or an item that is not equipment are
+          dropped on load.
+        </li>
+        <li>
+          <!-- Source: server-scripts/Database.cs:425-435,782-783,2665-2689 — character_equipment_templates stores per-character template slots with a unique character, template, and slot index. -->
+          Templates are stored per character, so they do not carry across your other
+          characters.
+        </li>
+      </ul>
+    </Card.Content>
+  </Card.Root>
+
   <Card.Root id="equipment-and-death" class="bg-muted/30">
     <Card.Header>
       <Card.Title>Equipment, Death, and Remains</Card.Title>
@@ -579,7 +653,7 @@
     <Card.Content>
       <ul class="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
         <li>
-          <!-- Source: server-scripts/PlayerEquipment.cs:36-102 — player equipment has sixteen fixed slots. -->Equipped
+          <!-- Source: server-scripts/PlayerEquipment.cs:57-123 — player equipment has sixteen fixed slots. -->Equipped
           gear uses 16 slots.
         </li>
         <li>
