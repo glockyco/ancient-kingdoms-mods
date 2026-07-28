@@ -486,7 +486,7 @@
           items try base carried slots first, then unlocked backpack slots.
         </li>
         <li>
-          <!-- Source: server-scripts/ItemSlot.cs:31-35 and PlayerInventory.cs:1474-1486 — stack increases are clamped by target max stack. -->Matching
+          <!-- Source: server-scripts/ItemSlot.cs:23-27 and PlayerInventory.cs:1780-1794 — stack increases are clamped by target max stack. -->Matching
           stacks merge up to the target stack limit.
         </li>
         <li>

@@ -2310,7 +2310,7 @@
                         ? "DEX"
                         : "INT"}
                   </p>
-                  <!-- Source: server-scripts-0.9.25.1/Buff.cs:93-107 — defense getter, negative branch: bonusAttribute × 0.4 -->
+                  <!-- Source: server-scripts/Buff.cs:93-107 — defense getter, negative branch: bonusAttribute × 0.4 -->
                   <dl
                     class="grid grid-cols-1 sm:grid-cols-[16rem_1fr] gap-x-4 gap-y-1 font-mono"
                   >
@@ -2359,7 +2359,7 @@
                     {#if hasNonZeroField(skill.healing_per_second_bonus)}
                       <dt class="text-muted-foreground">DoT</dt>
                       {#if skill.is_poison_debuff || skill.is_disease_debuff}
-                        <!-- Source: server-scripts-0.9.25.1/Skills.cs:1406-1410 — the shared poison/disease branch adds round(bonusAttribute × 1.5) before Poison Resist mitigation. Its ordering takes precedence over the later disease-specific branch. -->
+                        <!-- Source: server-scripts/Skills.cs:1406-1410 — the shared poison/disease branch adds round(bonusAttribute × 1.5) before Poison Resist mitigation. Its ordering takes precedence over the later disease-specific branch. -->
                         <dd>
                           skillValue(level) + round(bonusAttribute &times; 1.5)
                         </dd>
@@ -2632,7 +2632,7 @@
           </div>
         {/if}
         {#if skill.speed_bonus && skill.speed_bonus.base_value <= -10 && skill.speed_bonus.base_value > -50}
-          <!-- Source: server-scripts/Monster.cs/Pet.cs (root/full-stop threshold speed <= -10f, timerRoot 2s, RemoveRoot) -->
+          <!-- Source: server-scripts/Monster.cs and Pet.cs (root/full-stop threshold speed <= -10f, timerRoot 2s, RemoveRoot) -->
           <!-- Source: server-scripts/Npc.cs (root/full-stop threshold speed <= -10f, timerRoot 1s, 10% fixed) -->
           <!-- Source: server-scripts/TargetDebuffSkill.cs:140 (boss/elite auto-resist speedBonus < -10) -->
           <div class="space-y-1">

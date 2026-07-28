@@ -651,7 +651,7 @@ finalDamage = damage − reduction</pre>
                   class="py-1 text-muted-foreground">−INT×0.5</td
                 ></tr
               >
-              <!-- Source: server-scripts-0.9.25.1/Skills.cs:1365-1543 — poison/disease DoT adds round(DEX × 1.5), then applies Poison Resist mitigation before counter decay, critical ticks, and ward processing. -->
+              <!-- Source: server-scripts/Skills.cs:1365-1543 — poison/disease DoT adds round(DEX × 1.5), then applies Poison Resist mitigation before counter decay, critical ticks, and ward processing. -->
               <tr class="border-b border-border/40"
                 ><td class="py-1 pr-4">DoT poison/disease</td><td
                   class="py-1 text-muted-foreground"
@@ -934,7 +934,7 @@ finalDamage = damage − reduction</pre>
       </div>
 
       <div>
-        <!-- Source: server-scripts/Monster.cs/Pet.cs (root/full-stop threshold speed <= -10f, timerRoot 2s branch, RemoveRoot roll) -->
+        <!-- Source: server-scripts/Monster.cs and Pet.cs (root/full-stop threshold speed <= -10f, timerRoot 2s branch, RemoveRoot roll) -->
         <!-- Source: server-scripts/Monster.cs (RemoveRoot: removes -50 < speedBonus < 0) -->
         <!-- Source: server-scripts/Npc.cs (root/full-stop threshold speed <= -10f, timerRoot 1s branch, 10% fixed chance) -->
         <!-- Source: server-scripts/TargetDebuffSkill.cs:140 (boss/elite auto-resist speedBonus < -10) -->
