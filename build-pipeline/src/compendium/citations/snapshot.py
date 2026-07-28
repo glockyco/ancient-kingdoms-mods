@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import re
 import tomllib
 from dataclasses import dataclass
 from pathlib import Path
@@ -109,6 +110,11 @@ class Snapshot:
     def digest(self, lines: Sequence[str]) -> str:
         """Hash a region using the snapshot's normalization rule."""
         return digest(lines)
+
+    def contains_symbol(self, rel: str, symbol: str) -> bool:
+        """Whether an identifier appears as a whole word in a script."""
+        text = (self.root / rel).read_text(encoding="utf-8")
+        return re.search(rf"\b{re.escape(symbol)}\b", text) is not None
 
     def locate(self, rel: str, sha: str, span: int) -> list[int]:
         """Find all 1-based window starts matching a region digest."""

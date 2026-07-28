@@ -71,6 +71,13 @@ class SnapshotTests(unittest.TestCase):
             self.assertIsNone(snapshot.identity.game_version)
             self.assertEqual(snapshot.region("Player.cs", "100-110"), [])
 
+    def test_symbol_presence_is_checked_as_a_whole_word(self):
+        with tempfile.TemporaryDirectory() as directory:
+            snapshot = Snapshot(self.make_snapshot(directory))
+            self.assertTrue(snapshot.contains_symbol("Player.cs", "Method"))
+            self.assertFalse(snapshot.contains_symbol("Player.cs", "Metho"))
+            self.assertFalse(snapshot.contains_symbol("Player.cs", "NoSuchMember"))
+
     def test_substantive_detection(self):
         self.assertFalse(is_substantive(["", "  }", "{"]))
         self.assertTrue(is_substantive(["  // comment"]))

@@ -123,6 +123,12 @@ def _classify(snapshot: Snapshot, target: Target) -> None:
         target.status = "file-only"
         return
     if not target.locator[0].isdigit():
+        # A symbol reference cannot be content-hashed, but it must at least name
+        # something that exists, or a typo would pass silently forever.
+        if not snapshot.contains_symbol(target.rel, target.locator):
+            target.status = "unresolved"
+            target.detail = f"no symbol named {target.locator!r} in {target.rel}"
+            return
         target.status = "symbol"
         return
 
