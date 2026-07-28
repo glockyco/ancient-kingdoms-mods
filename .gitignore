@@ -58,6 +58,7 @@ node_modules/
 # Server scripts (decompiled, for reference only)
 server-scripts/
 server-scripts-*/
+.ilspycmd/
 
 # Steam download cache
 .steam-download/

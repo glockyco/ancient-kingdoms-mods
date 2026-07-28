@@ -4,14 +4,30 @@
 #
 # Prerequisites:
 #   - steamcmd installed (brew install steamcmd)
-#   - ilspycmd installed (dotnet tool install -g ilspycmd)
-#   - dotnet 8 runtime (brew install dotnet@8)
+#   - dotnet SDK on PATH (the pinned ilspycmd is installed into .ilspycmd/ on demand)
 #
 # Usage: ./scripts/update-server-scripts.sh <version>
 #   Steam username is read from config.toml [steam] username.
 #   Override with: STEAM_USER=username ./scripts/update-server-scripts.sh <version>
 #
-# Creates server-scripts/ (working copy) and server-scripts-<version>/ (backup)
+# Creates server-scripts/ (working copy) and server-scripts-<version>/ (backup),
+# each carrying a SNAPSHOT.toml that records what produced it.
+#
+# ## Updating ILSpy
+#
+# 1. Bump ILSPYCMD_VERSION to a *stable* release only - never a -preview.
+# 2. Never bump the tool and the game version in the same change. Both shift
+#    line numbers identically, and `compendium citations check` cannot
+#    attribute the drift if they move together.
+# 3. Before committing a bump, decompile the *same* DLL with the old and the new
+#    version into two temp directories and `diff -rq` them, ignoring
+#    Assembly-CSharp.csproj (its HintPath values always differ by output
+#    location). An empty diff means the bump is free; a non-empty diff is a
+#    review item and requires `citations check` -> `citations fix` ->
+#    `citations sync` afterwards.
+# 4. Bump when a new game build fails to decompile, when ILSpy fixes a construct
+#    that appears in this assembly, or opportunistically when no mechanics work
+#    is in flight - not on a schedule.
 
 set -e
 
@@ -23,12 +39,10 @@ STEAM_DIR="$REPO_DIR/.steam-download"
 OUTPUT_DIR="$REPO_DIR/server-scripts"
 VERSION="$1"
 
-# ilspycmd may be installed as an older net8 DLL or as the current dotnet tool
-# shim. Prefer an explicit ILSPYCMD path when provided, then the shim, then the
-# legacy pinned DLL used by older worktrees.
-DOTNET8="${DOTNET8:-/opt/homebrew/opt/dotnet@8/libexec/dotnet}"
-ILSPYCMD="${ILSPYCMD:-$HOME/.dotnet/tools/ilspycmd}"
-ILSPYCMD_DLL="${ILSPYCMD_DLL:-$HOME/.dotnet/tools/.store/ilspycmd/9.1.0.7988/ilspycmd/9.1.0.7988/tools/net8.0/any/ilspycmd.dll}"
+# Pinned so that line numbers in `Source:` citations stay attributable to game
+# patches rather than to decompiler changes. See "Updating ILSpy" above.
+ILSPYCMD_VERSION="10.1.1.8388"
+TOOL_DIR="$REPO_DIR/.ilspycmd/$ILSPYCMD_VERSION"
 
 # Fall back to config.toml [steam] username if STEAM_USER not set in environment
 if [ -z "$STEAM_USER" ]; then
@@ -72,15 +86,25 @@ if [ -z "$DLL" ]; then
 fi
 
 echo "Decompiling: $DLL"
-rm -rf "$OUTPUT_DIR"
-if [ -x "$ILSPYCMD" ]; then
-  "$ILSPYCMD" -p -o "$OUTPUT_DIR" "$DLL"
-elif [ -f "$ILSPYCMD_DLL" ]; then
-  "$DOTNET8" "$ILSPYCMD_DLL" -p -o "$OUTPUT_DIR" "$DLL"
-else
-  echo "Error: ilspycmd not found. Install with: dotnet tool install -g ilspycmd"
-  exit 1
+
+# Install the pinned tool before destroying the working copy: `set -e` then
+# aborts on a network failure with server-scripts/ still intact.
+if [ ! -x "$TOOL_DIR/ilspycmd" ]; then
+  echo "Installing ilspycmd $ILSPYCMD_VERSION into $TOOL_DIR"
+  dotnet tool install ilspycmd --version "$ILSPYCMD_VERSION" --tool-path "$TOOL_DIR"
 fi
+
+rm -rf "$OUTPUT_DIR"
+"$TOOL_DIR/ilspycmd" -p -o "$OUTPUT_DIR" "$DLL"
+
+# Record what produced this snapshot so `compendium citations check` can tell a
+# game patch apart from a decompiler change.
+cat > "$OUTPUT_DIR/SNAPSHOT.toml" <<EOF
+game_version = "$VERSION"
+ilspycmd_version = "$ILSPYCMD_VERSION"
+assembly_sha256 = "$(shasum -a 256 "$DLL" | cut -d' ' -f1)"
+generated_at = "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+EOF
 
 # Create versioned backup
 BACKUP_DIR="$REPO_DIR/server-scripts-$VERSION"
