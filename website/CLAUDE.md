@@ -117,6 +117,31 @@ Some game mechanics cannot be derived from the database and are hardcoded direct
 <!-- Source: server-scripts/FileName.cs:lineNumber — brief description -->
 ```
 
+These citations are machine-checked. `pnpm check:citations` (also a pre-commit
+job, skipped when `server-scripts/` is absent) hashes every cited region and
+compares it to `citations.lock.json`. After a game update, run:
+
+```bash
+cd build-pipeline
+uv run compendium citations check                      # what drifted
+uv run compendium citations fix                        # relocate code that only moved
+uv run compendium citations suggest                    # propose fixes for the rest
+uv run compendium citations sync --game-version <ver>  # re-anchor
+```
+
+A `changed` citation means the cited code was rewritten, so verify the claim
+itself is still true before re-anchoring. Grammar rules worth knowing:
+
+- Everything after a spaced em dash is prose and is not parsed for references,
+  so put every file and line number before the dash.
+- Cite several files as `Foo.cs:10-20, Bar.cs:30`. Never write `Foo.cs/Bar.cs`;
+  that parses as one nested path.
+- A bare range attaches to the nearest preceding filename: `Foo.cs:10-20, 40-50`.
+- Prefer `File.cs:symbolName` over a line number when the claim is about a single
+  named member. A symbol reference never rots.
+- Do not pin an archived snapshot directory (`server-scripts-0.9.25.1/...`); the
+  lockfile records the game version centrally.
+
 ## Gotchas
 
 **Map prerendering:** Map data is prerendered at build time via `+page.server.ts`. deck.gl initializes client-side with `browser` guards.
