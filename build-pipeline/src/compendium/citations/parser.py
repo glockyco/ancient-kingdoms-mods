@@ -167,7 +167,12 @@ def parse_file(path: Path, text: str) -> list[Reference]:
 
 
 def iter_citation_files(repo_root: Path) -> list[Path]:
-    """Return tracked files whose extensions can contain citations."""
+    """Return tracked files whose extensions can contain citations.
+
+    Test files are excluded. A citation inside a test is a fixture exercising
+    this parser, not a claim about game mechanics, so gating commits on it would
+    make the checker's own test data drift-sensitive.
+    """
     result = subprocess.run(
         ["git", "ls-files", "-z"],
         cwd=repo_root,
@@ -175,4 +180,8 @@ def iter_citation_files(repo_root: Path) -> list[Path]:
         capture_output=True,
     )
     paths = [Path(raw) for raw in result.stdout.decode().split("\0") if raw]
-    return [path for path in paths if path.suffix in CITATION_EXTENSIONS]
+    return [
+        path
+        for path in paths
+        if path.suffix in CITATION_EXTENSIONS and "tests" not in path.parts
+    ]

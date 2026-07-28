@@ -65,5 +65,50 @@ def stats(ctx: typer.Context):
     stats_cmd.run(ctx.obj)
 
 
+citations_app = typer.Typer(
+    help="Verify Source: citations against the local decompiled snapshot."
+)
+app.add_typer(citations_app, name="citations")
+
+
+@citations_app.command("check")
+def citations_check(ctx: typer.Context):
+    """Verify every citation against server-scripts/ and the lockfile."""
+    from compendium.commands import citations as citations_cmd
+
+    raise typer.Exit(citations_cmd.run(ctx.obj, "check"))
+
+
+@citations_app.command("sync")
+def citations_sync(
+    ctx: typer.Context,
+    game_version: str = typer.Option(
+        ...,
+        "--game-version",
+        help="Game version the current server-scripts/ snapshot came from",
+    ),
+):
+    """Re-anchor citations.lock.json from the current snapshot."""
+    from compendium.commands import citations as citations_cmd
+
+    raise typer.Exit(citations_cmd.run(ctx.obj, "sync", game_version=game_version))
+
+
+@citations_app.command("fix")
+def citations_fix(ctx: typer.Context):
+    """Rewrite locators for citations whose code merely moved."""
+    from compendium.commands import citations as citations_cmd
+
+    raise typer.Exit(citations_cmd.run(ctx.obj, "fix"))
+
+
+@citations_app.command("suggest")
+def citations_suggest(ctx: typer.Context):
+    """Propose fixes for suspect citations using archived snapshots."""
+    from compendium.commands import citations as citations_cmd
+
+    raise typer.Exit(citations_cmd.run(ctx.obj, "suggest"))
+
+
 if __name__ == "__main__":
     app()
