@@ -334,9 +334,11 @@ def _fix(repo_root: Path) -> int:
         _compare(snapshot, target, lock.targets.get(target.key))
 
     edits: dict[str, list[tuple[int, int, str, str]]] = {}
+    rekeys: dict[str, str] = {}
     for target in targets:
         if target.status != "moved" or target.moved_to is None:
             continue
+        rekeys[target.key] = f"{target.rel}:{target.moved_to}"
         for reference in target.references:
             if reference.col < 0 or reference.locator is None:
                 continue
@@ -366,8 +368,17 @@ def _fix(repo_root: Path) -> int:
         path.write_text("".join(lines), encoding="utf-8")
 
     console.print(f"[green]Relocated {rewritten} reference(s).[/green]")
+
+    # Re-key the lockfile in place. The content is byte-identical - only its
+    # position moved - so the recorded hash and span carry over unchanged and no
+    # game version is needed to re-anchor.
+    for old_key, new_key in rekeys.items():
+        entry = lock.targets.pop(old_key, None)
+        if entry is not None:
+            lock.targets[new_key] = entry
+    lock.save(lock_path)
     console.print(
-        "Re-anchor with [cyan]compendium citations sync --game-version <v>[/cyan]"
+        f"Re-anchored {len(rekeys)} target(s) in [cyan]{LOCKFILE_NAME}[/cyan]."
     )
     return 0
 
