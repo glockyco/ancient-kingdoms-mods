@@ -55,6 +55,11 @@ pre-commit:
     - name: mods-build
       glob: "{mods/*/*.cs,mods/**/*.cs,mods/*/*.csproj,build-tool/*.cs,build-tool/**/*.cs,build-tool/*.csproj,Directory.Build.props}"
       run: dotnet run --project build-tool build
+    - name: citations-check
+      glob: "{website/src/**/*.{ts,js,svelte},build-pipeline/src/**/*.py,build-pipeline/schema.sql,mods/**/*.cs,citations.lock.json}"
+      run: cd build-pipeline && uv run compendium citations check
+      skip:
+        - run: "! test -d server-scripts"
     - name: plans docs
       glob: "docs/plans/**/*.md"
       run: omp-plans index && omp-plans check
