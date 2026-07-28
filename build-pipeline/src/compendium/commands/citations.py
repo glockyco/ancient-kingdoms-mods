@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from rich.console import Console
+from rich.markup import escape
 from rich.table import Table
 
 from compendium.citations import (
@@ -211,9 +212,9 @@ def _print_problems(targets: list[Target]) -> None:
         detail = target.detail or target.suspect or ""
         origin = target.references[0]
         console.print(
-            f"  [{style}]{target.status:<10}[/] {target.key}"
-            + (f"  [dim]{detail}[/dim]" if detail else "")
-            + f"  [dim]({origin.source_path}:{origin.line})[/dim]"
+            f"  [{style}]{target.status:<10}[/] {escape(target.key)}"
+            + (f"  [dim]{escape(detail)}[/dim]" if detail else "")
+            + f"  [dim]({escape(origin.source_path)}:{origin.line})[/dim]"
         )
 
 
@@ -356,8 +357,8 @@ def _fix(repo_root: Path) -> int:
             line = lines[line_no - 1]
             if line[col : col + len(old)] != old:
                 console.print(
-                    f"[yellow]skip[/yellow] {source_path}:{line_no} "
-                    f"expected {old!r} at column {col}"
+                    f"[yellow]skip[/yellow] {escape(source_path)}:{line_no} "
+                    f"expected {escape(repr(old))} at column {col}"
                 )
                 continue
             lines[line_no - 1] = line[:col] + new + line[col + len(old) :]
@@ -437,18 +438,19 @@ def _suggest(repo_root: Path) -> int:
         origin = target.references[0]
         if proposal is None:
             console.print(
-                f"  [red]none[/red]      {target.key}"
-                f"  [dim]({origin.source_path}:{origin.line})[/dim]"
+                f"  [red]none[/red]      {escape(target.key)}"
+                f"  [dim]({escape(origin.source_path)}:{origin.line})[/dim]"
             )
             continue
         version, start, first = proposal
         found += 1
         console.print(
             f"  [green]{target.locator} -> {_shift(target.locator, start)}[/green]"
-            f"  {target.rel}  [dim](via {version})[/dim]"
+            f"  {escape(target.rel)}  [dim](via {version})[/dim]"
         )
         console.print(
-            f"      [dim]{first}[/dim]  [dim]({origin.source_path}:{origin.line})[/dim]"
+            f"      [dim]{escape(first)}[/dim]  "
+            f"[dim]({escape(origin.source_path)}:{origin.line})[/dim]"
         )
 
     console.print()
