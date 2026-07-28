@@ -727,7 +727,7 @@ finalDamage = damage − reduction</pre>
               </tr>
               <!-- Source: server-scripts/Skills.cs:711-713 — castTimeEnd -= spellHasteBonus × castTime -->
               <!-- Source: server-scripts/Combat.cs:332 — Mathf.Clamp(spellHaste, -0.5f, 0.5f) -->
-              <!-- Source: server-scripts/Player.cs:298 — refractoryPeriodSkill = 0.75f (post-cast refractory, blocks next cast) -->
+              <!-- Source: server-scripts/Player.cs:refractoryPeriodSkill — refractoryPeriodSkill = 0.75f (post-cast refractory, blocks next cast) -->
               <tr class="border-b border-border/40">
                 <td class="py-2 pr-4 font-mono text-xs">player_spell</td>
                 <td class="py-2 pr-4 text-muted-foreground text-xs"
@@ -812,7 +812,7 @@ finalDamage = damage − reduction</pre>
                   >Reduces cast time (cap: 50%). Refractory (0.75s) unaffected.</td
                 >
               </tr>
-              <!-- Source: server-scripts/Pet.cs:1135 — non-merc pets always pass 0f spellHasteBonus -->
+              <!-- Source: server-scripts/Pet.cs:2017-2022, server-scripts/Pet.cs:4353-4358, server-scripts/Pet.cs:4437-4442 — non-merc pets always pass 0f spellHasteBonus -->
               <tr class="border-b border-border/40">
                 <td class="py-2 pr-4 font-mono text-xs">companion</td>
                 <td class="py-2 pr-4 text-muted-foreground text-xs"
@@ -843,7 +843,7 @@ finalDamage = damage − reduction</pre>
                   >Reduces cooldown for non-spell attacks. Spell attack
                   cooldowns are unaffected by haste</td
                 >
-                <!-- Source: server-scripts/Monster.cs:2587, server-scripts/Npc.cs:625 — hardcoded StartCast(skill, 0f) bypasses spell haste entirely -->
+                <!-- Source: server-scripts/Monster.cs:2898-2900, server-scripts/Npc.cs:624-627 — hardcoded StartCast(skill, 0f) bypasses spell haste entirely -->
                 <td class="py-2 text-muted-foreground text-xs">No effect</td>
               </tr>
             </tbody>
@@ -952,7 +952,7 @@ finalDamage = damage − reduction</pre>
         <!-- Source: server-scripts/Skills.cs:1149 (BreakMezz — entity.speed <= -50f) -->
         <!-- Source: server-scripts/Combat.cs:567 (damage > 0 calls BreakMezz) -->
         <!-- Source: server-scripts/Skills.cs:156 (DoT tick also calls BreakMezz) -->
-        <!-- Source: server-scripts/Monster.cs:1139 (monster self-break: magic resist roll every 6s) -->
+        <!-- Source: server-scripts/Monster.cs:1483-1497 (monster self-break: magic resist roll every 6s) -->
         <!-- Source: server-scripts/TargetDebuffSkill.cs:140 (boss/elite auto-resist speedBonus < -10) -->
         <h3 class="font-semibold mb-1">Sleep</h3>
         <p class="text-sm text-muted-foreground">

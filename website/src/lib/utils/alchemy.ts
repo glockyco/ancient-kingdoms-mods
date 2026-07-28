@@ -80,14 +80,14 @@ export function isAlchemyEffortless(
   }
 }
 
-// Source: server-scripts/Player.cs:11461 — skill gain fires when
+// Source: server-scripts/Player.cs:11722 — skill gain fires when
 // Random.value > 0.1 + alchemyLevel/2, i.e. with probability 0.9 - alchemyLevel/2.
 export function alchemySkillGainChancePercent(skillPercent: number): number {
   const skill = alchemyFraction(skillPercent);
   return Math.max(0, (0.9 - skill / 2) * 100);
 }
 
-// Source: server-scripts/Player.cs:11463 — num4 = Random.Range(1, 4) /
+// Source: server-scripts/Player.cs:11724 — num4 = Random.Range(1, 4) /
 // (successChanceProb * 1000). Note the 1000 divisor (cooking uses 3000). Skill
 // gain only happens when the recipe is craftable and still grants skill (not
 // "effortless"). Returns percentage-point bounds, or null when none applies.

@@ -341,8 +341,8 @@
     </Card.Header>
     <Card.Content class="space-y-4">
       <p class="text-sm text-muted-foreground">
-        <!-- Source: server-scripts/Monster.cs:1805-1810 — a failed spawn roll keeps the monster hidden and re-arms the timer for another full interval. -->
-        <!-- Source: server-scripts/Monster.cs:513-518 — the same roll happens once at server start. -->
+        <!-- Source: server-scripts/Monster.cs:2156-2161 — a failed spawn roll keeps the monster hidden and re-arms the timer for another full interval. -->
+        <!-- Source: server-scripts/Monster.cs:657-662 — the same roll happens once at server start. -->
         When a rare monster's respawn timer ends, the game rolls its spawn chance.
         On a failure it stays hidden and the timer re-arms for another full interval.
         A roll can only fire while a player keeps the zone active. As long as anyone
@@ -578,7 +578,7 @@
       </ul>
 
       <p class="text-sm text-muted-foreground">
-        <!-- Source: server-scripts/Player.cs:12404 and Monster.cs:1805-1810 — a zeroed deadline triggers the spawn roll on the next zone activation; a failed roll re-arms the full interval until the next renewal zeroes it again. -->
+        <!-- Source: server-scripts/Player.cs:12660-12672 and Monster.cs:2156-2161 — a zeroed deadline triggers the spawn roll on the next zone activation; a failed roll re-arms the full interval until the next renewal zeroes it again. -->
         Renewals interact with rare spawns in a useful way. Buying several renewals
         back-to-back is wasted gold: the roll only fires when someone enters, so you
         get one roll on the next entry no matter how many renewals you stacked. But
@@ -829,7 +829,7 @@
         announce themselves to everyone in the zone.
       </p>
       <p class="text-sm text-muted-foreground">
-        <!-- Source: server-scripts/Monster.cs:1805-1810 — summons with a spawn chance below 100% roll on the check; a failed roll re-arms the timer for a full interval. -->
+        <!-- Source: server-scripts/Monster.cs:2156-2161 — summons with a spawn chance below 100% roll on the check; a failed roll re-arms the timer for a full interval. -->
         Watch the chance column: some summons are rare spawns on top. For those the
         check is only a roll, and a failed roll re-arms the summon's timer for a full
         interval. The chance is not lost if the watched monsters revive in the meantime
@@ -1096,14 +1096,14 @@
           and returns home with extra move speed.
         </li>
         <li>
-          <!-- Source: server-scripts/Monster.cs:519 and 941-943 — the distance check is skipped entirely for non-boss, non-elite monsters in dungeon zones. -->
-          <!-- Source: server-scripts/Monster.cs:904-911 — chasing ends when the target is no longer reachable by pathfinding. -->
+          <!-- Source: server-scripts/Monster.cs:663-664 and 1235-1240 — the distance check is skipped entirely for non-boss, non-elite monsters in dungeon zones. -->
+          <!-- Source: server-scripts/Monster.cs:1548-1556 — chasing ends when the target is no longer reachable by pathfinding. -->
           Regular monsters inside dungeons have no distance limit. They chase you
           for as long as they can reach you, and only give up when no path to you
           exists. Bosses and elites leash normally even in dungeons.
         </li>
         <li>
-          <!-- Source: server-scripts/Monster.cs:1905 — while returning, a monster only re-engages targets within 80% of its follow distance; normal dungeon monsters always re-engage (flag set at Monster.cs:519). -->
+          <!-- Source: server-scripts/Monster.cs:2254-2259 and Monster.cs:663-664 — while returning, a monster only re-engages targets within 80% of its follow distance; normal dungeon monsters always re-engage (flag set at Monster.cs:663-664). -->
           While heading home it only re-engages if you stay close (within 80% of its
           chase range). Regular dungeon monsters are the exception — they always turn
           around and re-engage.

@@ -184,7 +184,7 @@
     <Card.Content class="space-y-5">
       <ul class="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
         <li>
-          <!-- Source: server-scripts/UIBigBackpack.cs + server-scripts/GameManager.cs:391,396,791-803 — UIBigBackpack panel toggled by the "Backpack" input action; default binding <Keyboard>/b. -->Open
+          <!-- Source: server-scripts/UIBigBackpack.cs + server-scripts/GameManager.cs:457-458,1340-1355 + server-scripts/UIInventory.cs:120-121 — UIBigBackpack panel toggled by the "Backpack" input action; default binding <Keyboard>/b. -->Open
           the equipped-bag panel with the Backpack key (default
           <kbd
             class="rounded border border-border bg-muted px-1 py-0.5 font-mono text-xs"

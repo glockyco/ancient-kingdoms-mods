@@ -459,7 +459,7 @@ export function computeMechanicsSpec(
   // Only populated when followup_default_attack=true.
   // Source: server-scripts/Skills.cs:800-811 — followupDefaultAttack + !isSpell + isMercenary → cooldown×(1-haste), Combat.cs:332 (spell haste cap)
   // Source: server-scripts/Player.cs:2752 — weapon-delay refractory for all non-spell weapon skills (!isSpell && hasReqWeapon)
-  // Source: server-scripts/Player.cs:298,2803 — player_spell gets flat 0.75s refractory (isSpell=true, no required_weapon_category)
+  // Source: server-scripts/Player.cs:refractoryPeriodSkill,3084-3087 — player_spell gets flat 0.75s refractory (isSpell=true, no required_weapon_category)
   // Source: server-scripts/Monster.cs:1627 — FinishCastMeleeAttackMonster vs FinishCast for monsters
   const timingPairs: Array<{ label: string; model: TimingModel }> = [];
 
@@ -470,7 +470,7 @@ export function computeMechanicsSpec(
     for (const cls of playerClasses) {
       const label = `${cls.charAt(0).toUpperCase() + cls.slice(1)} (player)`;
       // Source: Player.cs:2783 — delay-based refractory applies when !isSpell && hasReqWeapon
-      // Source: Player.cs:298,2803 — isSpell && !hasReqWeapon → flat 0.75s refractory (player_spell)
+      // Source: Player.cs:refractoryPeriodSkill,3084-3087 — isSpell && !hasReqWeapon → flat 0.75s refractory (player_spell)
       // Note: spell auto-attacks have no required_weapon_category in the data, so isSpell alone is the discriminant.
       const model: TimingModel =
         !isSpell && hasReqWeapon

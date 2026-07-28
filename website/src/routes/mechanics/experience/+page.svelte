@@ -915,7 +915,7 @@
         </p>
         <!-- Source: server-scripts/Experience.cs:446-453 — dungeon +10% bonus -->
         <!-- Source: server-scripts/Monster.cs:2409 — double XP skill (solo kill) -->
-        <!-- Source: server-scripts/Monster.cs:2410 — Forgotten Altar ×1.4 (solo kill) -->
+        <!-- Source: server-scripts/Monster.cs:2739 — Forgotten Altar ×1.4 (solo kill) -->
         <div class="overflow-x-auto">
           <table class="w-full text-sm border-collapse">
             <thead>
@@ -961,11 +961,11 @@
           </table>
         </div>
         <!-- Source: server-scripts/Monster.cs:2409 — double XP applies to kills -->
-        <!-- Source: server-scripts/GatherItem.cs:533 — double XP applies to gathering -->
-        <!-- Source: server-scripts/Player.cs:10250 — double XP applies to alchemy -->
-        <!-- Source: server-scripts/Player.cs:10326 — double XP applies to scribing -->
-        <!-- Source: server-scripts/Player.cs:10478 — double XP applies to crafting and cooking -->
-        <!-- Source: server-scripts/PlayerQuests.cs:321 — no double XP for quests -->
+        <!-- Source: server-scripts/GatherItem.cs:584 — double XP applies to gathering -->
+        <!-- Source: server-scripts/Player.cs:11745 — double XP applies to alchemy -->
+        <!-- Source: server-scripts/Player.cs:11745 — double XP applies to scribing -->
+        <!-- Source: server-scripts/Player.cs:11980 — double XP applies to crafting and cooking -->
+        <!-- Source: server-scripts/PlayerQuests.cs:390-391 — no double XP for quests -->
         <!-- Source: server-scripts/ZoneTrigger.cs — no double XP for zone discovery -->
         <p class="text-sm text-muted-foreground">
           Double XP buffs apply to kills, gathering, alchemy, scribing, cooking,
@@ -1061,7 +1061,7 @@
             </tr>
           </thead>
           <tbody>
-            <!-- Source: server-scripts/Player.cs:11092 — CmdGetExpFromRemains: 0.5f * lossExp -->
+            <!-- Source: server-scripts/Player.cs:12586 — CmdGetExpFromRemains: 0.5f * lossExp -->
             <tr class="border-b hover:bg-muted/30">
               <td class="p-2">
                 <a
@@ -1365,7 +1365,7 @@
       </Card.Description>
     </Card.Header>
     <Card.Content>
-      <!-- Source: server-scripts/PlayerQuests.cs:321 — rewardExperience added directly, no multipliers -->
+      <!-- Source: server-scripts/PlayerQuests.cs:390-391 — rewardExperience added directly, no multipliers -->
       <p class="text-sm text-muted-foreground">
         XP varies per quest and is shown on each quest's page. No multipliers
         apply.

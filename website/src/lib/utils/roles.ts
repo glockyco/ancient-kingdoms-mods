@@ -210,7 +210,7 @@ export const ROLE_DESCRIPTIONS: Partial<
       "Active limit: 1 (lvl 10-19), 2 (20-29), 3 (30-39), 4 (40+)",
     ],
   },
-  // Source: server-scripts/Npc.cs:1824 — finalPrice = num (count of Cursed Runes) * 75
+  // Source: server-scripts/Npc.cs:1832 — finalPrice = num (count of Cursed Runes) * 75
   is_priestess: {
     description:
       'Converts <a href="/items/cursed_rune" class="text-blue-600 dark:text-blue-400 hover:underline">Cursed Runes</a> into <a href="/items/blessed_rune" class="text-blue-600 dark:text-blue-400 hover:underline">Blessed Runes</a>.',

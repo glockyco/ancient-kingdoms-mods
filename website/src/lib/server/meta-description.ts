@@ -384,7 +384,7 @@ function scrollDescription(item: Item): string {
     const tier = quality(item);
     return `Repairs all equipped ${tier} or lower gear.`;
   }
-  // Source: server-scripts/ScrollItem.cs:82,92 — spell rank scales with player.scrollMasteryLevel
+  // Source: server-scripts/ScrollItem.cs:100,92 — spell rank scales with player.scrollMasteryLevel
   const skill = item.scroll_skill_name ?? "a spell";
   return `Casts ${skill}. Spell rank scales with the Scroll Mastery profession.`;
 }
@@ -543,7 +543,7 @@ function mergeDescription(item: Item, ctx: ItemMetaContext): string {
 }
 
 function structureDescription(item: Item): string {
-  // Source: server-scripts/HousingManager.cs:21-32, server-scripts/Player.cs:4458,10138-10153
+  // Source: server-scripts/HousingManager.cs:21-32, server-scripts/Player.cs:11162-11166,10138-10153
   // — players buy a named house, then place CustomStructureItems inside it.
   const price =
     item.structure_price > 0

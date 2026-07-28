@@ -7,9 +7,9 @@ export const EXCLUDED_ZONE_IDS = new Set(["temple_of_valaark"]);
 /**
  * Special respawn_dungeon_id value used for World Boss NPCs.
  * This is not a real zone — it identifies NPCs/monsters associated with world bosses.
- * Source: server-scripts/Npc.cs:1690, Player.cs:11188
+ * Source: server-scripts/Npc.cs:1691, Utils.cs:worldBosses
  * Note: Sage Renewal for World Bosses was removed in v0.9.13.0;
- * this constant is still used for identifying world boss entities in the DB.
+ * the Player-side renewal branch is gone; this constant still identifies world boss entities in the DB.
  */
 export const WORLD_BOSS_DUNGEON_ID = 100;
 

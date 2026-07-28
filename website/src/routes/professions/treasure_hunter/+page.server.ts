@@ -176,7 +176,7 @@ export const load: PageServerLoad = (): TreasureHunterPageData => {
     throw new Error("Buried Treasure Chest reward data is missing");
   }
 
-  // Source: server-scripts/ChestItem.cs:24,60 — `numItemsPerChest` controls the unique-reward slot count.
+  // Source: server-scripts/ChestItem.cs:24,61 — `numItemsPerChest` controls the unique-reward slot count.
   const buriedChestRewardLimit = buriedChestRow.chest_num_items ?? 0;
   if (buriedChestRewardLimit <= 0) {
     throw new Error("Buried Treasure Chest is missing chest_num_items");

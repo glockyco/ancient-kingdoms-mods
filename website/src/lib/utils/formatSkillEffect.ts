@@ -429,7 +429,7 @@ function formatBuffDebuffStats(
 
   // 1. Special flags (binary game-changers that define the skill's identity)
   // Source: server-scripts/TargetBuffSkill.cs:15 (isDoubleExpSpell flag);
-  // Skills.cs:1081; Monster.cs:2412,2464 — hasDoubleExp() doubles XP awarded on kill.
+  // Skills.cs:1334-1344; Monster.cs:2699-2709,2735-2745 — hasDoubleExp() doubles XP awarded on kill.
   if (skill.is_double_exp_spell) parts.push("2× XP from kills");
   if (skill.is_dispel) parts.push("dispels buffs");
   // Source: server-scripts/TargetBuffSkill.cs:284 — cleanse matches on the skill's own debuff type flags

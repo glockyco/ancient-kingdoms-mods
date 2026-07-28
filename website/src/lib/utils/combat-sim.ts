@@ -27,12 +27,7 @@ export interface WeaponItem {
 }
 
 export type PlayerClass =
-  | "warrior"
-  | "rogue"
-  | "ranger"
-  | "wizard"
-  | "druid"
-  | "cleric";
+  "warrior" | "rogue" | "ranger" | "wizard" | "druid" | "cleric";
 
 export type AttackMode =
   | "player" // warrior/rogue — melee_attack / stab
@@ -121,7 +116,7 @@ export const SPELL_PLAYER_CAST: Partial<Record<PlayerClass, number>> = {
 export const SPELL_HASTE_CAP = 0.5;
 // Post-cast refractory period for player spell auto-attacks (is_spell=true, no required_weapon_category).
 // The server FSM sets this window after FinishCast; the next auto-attack cast is blocked until it expires.
-// Source: server-scripts/Player.cs:298 — private const float refractoryPeriodSkill = 0.75f
+// Source: server-scripts/Player.cs:refractoryPeriodSkill — private const float refractoryPeriodSkill = 0.75f
 // Source: server-scripts/Player.cs:2200 — EventRefractoryPeriod only gates followupDefaultAttack skills during the window
 // Source: server-scripts/Player.cs:2789 — NetworkrefractoryPeriodSkillTimeEnd = getServerTimeCorrected() + 0.75
 export const PLAYER_SPELL_REFRACTORY = 0.75;
@@ -309,7 +304,7 @@ export function calcInterval(
     case "spell_player":
       // fire_blast / wind_shock / smite — spell haste reduces cast time; +0.75s refractory after cast
       // Source: Skills.cs:675 (spellHasteBonus reduces castTimeEnd)
-      // Source: Player.cs:298,2803 (0.75s refractory; blocks next cast; unaffected by any haste)
+      // Source: Player.cs:refractoryPeriodSkill,3084-3087 (0.75s refractory; blocks next cast; unaffected by any haste)
       return (
         (SPELL_PLAYER_CAST[cls] ?? 1.0) * (1 - spellHaste01) +
         PLAYER_SPELL_REFRACTORY

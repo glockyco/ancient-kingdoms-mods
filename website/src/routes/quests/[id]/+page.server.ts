@@ -78,8 +78,7 @@ export const load: PageServerLoad = ({ params }): QuestDetailPageData => {
          LIMIT 1`,
         )
         .get(fr.faction_value, fr.faction_value) as
-        | { name: string }
-        | undefined;
+        { name: string } | undefined;
 
       return {
         faction: fr.faction,
@@ -99,8 +98,7 @@ export const load: PageServerLoad = ({ params }): QuestDetailPageData => {
       const itemData = db
         .prepare("SELECT name, tooltip_html FROM items WHERE id = ?")
         .get(ri.item_id) as
-        | { name: string; tooltip_html: string | null }
-        | undefined;
+        { name: string; tooltip_html: string | null } | undefined;
       rewardItems.push({
         item_id: ri.item_id,
         item_name: itemData?.name ?? ri.item_id,
@@ -154,8 +152,7 @@ export const load: PageServerLoad = ({ params }): QuestDetailPageData => {
         const zone = db
           .prepare("SELECT id, name FROM zones WHERE id = ?")
           .get(questRaw.discovered_location_zone_id) as
-          | { id: string; name: string }
-          | undefined;
+          { id: string; name: string } | undefined;
         return zone ? { id: zone.id, name: zone.name } : null;
       }
       return null;
@@ -166,8 +163,7 @@ export const load: PageServerLoad = ({ params }): QuestDetailPageData => {
         const subZone = db
           .prepare("SELECT id, name FROM zone_triggers WHERE id = ?")
           .get(questRaw.discovered_location_sub_zone_id) as
-          | { id: string; name: string }
-          | undefined;
+          { id: string; name: string } | undefined;
         return subZone ? { id: subZone.id, name: subZone.name } : null;
       }
       return null;
@@ -300,8 +296,7 @@ export const load: PageServerLoad = ({ params }): QuestDetailPageData => {
     const predData = db
       .prepare("SELECT id, name, quest_type FROM quests WHERE id = ?")
       .get(predId) as
-      | { id: string; name: string; quest_type: string }
-      | undefined;
+      { id: string; name: string; quest_type: string } | undefined;
     if (predData) {
       predecessors.push(predData);
     }
@@ -385,8 +380,7 @@ export const load: PageServerLoad = ({ params }): QuestDetailPageData => {
       const itemData = db
         .prepare("SELECT id, name, tooltip_html FROM items WHERE id = ?")
         .get(itemId) as
-        | { id: string; name: string; tooltip_html: string | null }
-        | undefined;
+        { id: string; name: string; tooltip_html: string | null } | undefined;
 
       if (itemData) {
         gatherItems.push({
@@ -405,8 +399,7 @@ export const load: PageServerLoad = ({ params }): QuestDetailPageData => {
     const itemData = db
       .prepare("SELECT id, name, tooltip_html FROM items WHERE id = ?")
       .get(questRaw.given_item_on_start_id) as
-      | { id: string; name: string; tooltip_html: string | null }
-      | undefined;
+      { id: string; name: string; tooltip_html: string | null } | undefined;
 
     if (itemData) {
       givenItemOnStart = {
@@ -428,8 +421,7 @@ export const load: PageServerLoad = ({ params }): QuestDetailPageData => {
       const itemData = db
         .prepare("SELECT id, name, tooltip_html FROM items WHERE id = ?")
         .get(gi.item_id) as
-        | { id: string; name: string; tooltip_html: string | null }
-        | undefined;
+        { id: string; name: string; tooltip_html: string | null } | undefined;
       if (itemData) {
         gatherInventoryItems.push({
           id: itemData.id,
@@ -451,8 +443,7 @@ export const load: PageServerLoad = ({ params }): QuestDetailPageData => {
       const itemData = db
         .prepare("SELECT id, name, tooltip_html FROM items WHERE id = ?")
         .get(ri.item_id) as
-        | { id: string; name: string; tooltip_html: string | null }
-        | undefined;
+        { id: string; name: string; tooltip_html: string | null } | undefined;
       if (itemData) {
         requiredItems.push({
           id: itemData.id,
@@ -474,8 +465,7 @@ export const load: PageServerLoad = ({ params }): QuestDetailPageData => {
       const itemData = db
         .prepare("SELECT id, name, tooltip_html FROM items WHERE id = ?")
         .get(itemId) as
-        | { id: string; name: string; tooltip_html: string | null }
-        | undefined;
+        { id: string; name: string; tooltip_html: string | null } | undefined;
       if (itemData) {
         equipItems.push({
           id: itemData.id,
@@ -493,8 +483,7 @@ export const load: PageServerLoad = ({ params }): QuestDetailPageData => {
     const itemData = db
       .prepare("SELECT id, name, tooltip_html FROM items WHERE id = ?")
       .get(questRaw.potion_item_id) as
-      | { id: string; name: string; tooltip_html: string | null }
-      | undefined;
+      { id: string; name: string; tooltip_html: string | null } | undefined;
 
     if (itemData) {
       potionItem = {
@@ -594,7 +583,7 @@ export const load: PageServerLoad = ({ params }): QuestDetailPageData => {
       is_find_npc_quest: quest.is_find_npc_quest,
       // Turn-in NPC = end NPC if distinct from start, else fall back to the
       // start NPC (many quests are turned in to the same NPC who offered them).
-      // Source: server-scripts/ScriptableQuest.cs:21,23 — startQuestNPC and
+      // Source: server-scripts/ScriptableQuest.cs:startQuestNPC, server-scripts/ScriptableQuest.cs:finishQuestNPC — startQuestNPC and
       // finishQuestNPC are stored separately even when they reference the
       // same NPC.
       turn_in_npc_name: (endNpc ?? startNpc)?.name ?? null,
