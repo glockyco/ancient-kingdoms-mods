@@ -61,7 +61,7 @@
                   {selectedValues.size} selected
                 </Badge>
               {:else}
-                {#each options.filter( (opt) => selectedValues.has(opt.value), ) as option (option.value)}
+                {#each options.filter( (opt) => selectedValues.has(opt.value) ) as option (option.value)}
                   <Badge
                     variant="secondary"
                     class="rounded-sm px-1 font-normal"

@@ -33,8 +33,7 @@ export const load: PageServerLoad = ({ params }): ItemDetailPageData => {
   const db = new Database(DB_STATIC_PATH, { readonly: true });
 
   const item = db.prepare("SELECT * FROM items WHERE id = ?").get(params.id) as
-    | Item
-    | undefined;
+    Item | undefined;
 
   if (!item) {
     db.close();

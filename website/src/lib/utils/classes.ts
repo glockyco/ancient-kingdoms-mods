@@ -15,12 +15,7 @@ export interface ClassConfig {
  * Canonical class name type (lowercase, as stored in database)
  */
 export type ClassName =
-  | "warrior"
-  | "cleric"
-  | "ranger"
-  | "rogue"
-  | "wizard"
-  | "druid";
+  "warrior" | "cleric" | "ranger" | "rogue" | "wizard" | "druid";
 
 /**
  * Configuration for each player class.

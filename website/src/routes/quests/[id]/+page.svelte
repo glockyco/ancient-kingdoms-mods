@@ -59,12 +59,7 @@
 
   // Game tooltip helpers
   type PlayerClass =
-    | "Warrior"
-    | "Cleric"
-    | "Ranger"
-    | "Rogue"
-    | "Wizard"
-    | "Druid";
+    "Warrior" | "Cleric" | "Ranger" | "Rogue" | "Wizard" | "Druid";
 
   // Check if tooltips have class-specific variants (vs just "_default")
   const hasClassSpecificTooltips = $derived(

@@ -169,8 +169,7 @@ export const load: PageServerLoad = ({ params }): AltarDetailPageData => {
       const itemInfo = db
         .prepare("SELECT quality, tooltip_html FROM items WHERE id = ?")
         .get(itemId) as
-        | { quality: number; tooltip_html: string | null }
-        | undefined;
+        { quality: number; tooltip_html: string | null } | undefined;
 
       const dropRate = bossMonsterDrops.get(itemId) ?? null;
 
@@ -198,11 +197,9 @@ export const load: PageServerLoad = ({ params }): AltarDetailPageData => {
     positionZ: altarRaw.position_z as number,
     minLevelRequired: altarRaw.min_level_required as number,
     requiredActivationItemId: altarRaw.required_activation_item_id as
-      | string
-      | null,
+      string | null,
     requiredActivationItemName: altarRaw.required_activation_item_name as
-      | string
-      | null,
+      string | null,
     activationItemTooltipHtml,
     initEventMessage: altarRaw.init_event_message as string | null,
     radiusEvent: altarRaw.radius_event as number,

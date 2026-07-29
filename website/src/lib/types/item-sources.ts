@@ -44,12 +44,7 @@ export type ZoneSourceType = Extract<
  * All possible item usage types (matches schema CHECK constraint)
  */
 export type ItemUsageType =
-  | "recipe"
-  | "quest"
-  | "currency"
-  | "altar"
-  | "portal"
-  | "chest";
+  "recipe" | "quest" | "currency" | "altar" | "portal" | "chest";
 
 /**
  * Usage types that have zone associations

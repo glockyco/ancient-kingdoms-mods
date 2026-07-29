@@ -157,7 +157,4 @@ export function buildCollectionPage(
 }
 
 export type JsonLdNode =
-  | WebSiteNode
-  | OrganizationNode
-  | PersonNode
-  | CollectionPageNode;
+  WebSiteNode | OrganizationNode | PersonNode | CollectionPageNode;

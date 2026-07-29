@@ -422,8 +422,7 @@ function resolveGatheringSelection(
   const resource =
     exactResource ??
     (entityData.gathering.find((g) => g.selectionGroupId === resourceId) as
-      | GatheringMapEntity
-      | undefined);
+      GatheringMapEntity | undefined);
 
   if (!resource) {
     return { popup: null, highlight: null };

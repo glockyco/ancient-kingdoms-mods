@@ -200,8 +200,7 @@ function loadAlchemyRecipe(
     const recipeItem = db
       .prepare(`SELECT tooltip_html FROM items WHERE id = ?`)
       .get(raw.taught_by_recipe_id) as
-      | { tooltip_html: string | null }
-      | undefined;
+      { tooltip_html: string | null } | undefined;
     taught_by_recipe_tooltip_html = recipeItem?.tooltip_html ?? null;
   }
 

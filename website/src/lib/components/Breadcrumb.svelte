@@ -14,9 +14,7 @@
 
   function jsonLdPath(
     href:
-      | RouteId
-      | { route: RouteId; params: Record<string, string> }
-      | undefined,
+      RouteId | { route: RouteId; params: Record<string, string> } | undefined,
   ): string | undefined {
     if (!href) return undefined;
 
@@ -62,9 +60,7 @@
 
   function resolveHref(
     href:
-      | RouteId
-      | { route: RouteId; params: Record<string, string> }
-      | undefined,
+      RouteId | { route: RouteId; params: Record<string, string> } | undefined,
   ): string | undefined {
     if (!href) return undefined;
 

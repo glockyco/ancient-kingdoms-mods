@@ -447,8 +447,7 @@
   {/if}
   {#if statsCol}
     {@const statsFilterValue = statsCol.getFilterValue() as
-      | { stats: string[]; mode: "any" | "all" }
-      | undefined}
+      { stats: string[]; mode: "any" | "all" } | undefined}
     <DataTableStatToggle
       bind:open={statPanel.open}
       selectedCount={statsFilterValue?.stats.length ?? 0}

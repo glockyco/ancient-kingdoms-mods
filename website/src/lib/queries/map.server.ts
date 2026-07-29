@@ -977,9 +977,7 @@ function loadCraftingStationsServer(
   return rows.map((r) => ({
     id: r.id,
     type: r.table_type as
-      | "alchemy_table"
-      | "crafting_station"
-      | "scribing_table",
+      "alchemy_table" | "crafting_station" | "scribing_table",
     name: r.name,
     position:
       r.position_x !== null && r.position_y !== null
