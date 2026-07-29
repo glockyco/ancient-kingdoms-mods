@@ -1,17 +1,26 @@
 #!/bin/bash
 # Runs the CI build-pipeline gates against a pristine checkout of HEAD.
 #
-# CI checks out only tracked files. Locally the repository also holds gitignored
-# inputs - config.toml, server-scripts/, website/static/compendium.db - so a test
-# that accidentally depends on one passes locally and fails in CI. This script
-# reproduces CI's view by running the gates inside a temporary git worktree,
-# which by construction contains tracked files only.
+# CI differs from a local run in two ways, and both have caused green-locally,
+# red-in-CI failures:
+#
+#   1. File state. CI checks out tracked files only, while the working tree also
+#      holds gitignored inputs - config.toml, server-scripts/,
+#      website/static/compendium.db - so a test can accidentally depend on one.
+#      Reproduced here with a temporary git worktree, which contains tracked
+#      files only by construction.
+#
+#   2. Environment. GitHub Actions sets GITHUB_ACTIONS, which makes Typer force
+#      Rich into terminal mode and emit ANSI colour. Interactive shells often
+#      set NO_COLOR or TERM=dumb, which suppresses it again, hiding the
+#      difference. Reproduced here by clearing the local colour overrides and
+#      exporting the CI markers.
 #
 # Usage: ./scripts/check-clean-checkout.sh
 #
-# Run it after touching anything that reads repository state at test time. It is
-# deliberately not a pre-commit hook: it re-resolves the virtualenv each run,
-# which is too slow to pay on every commit.
+# Run it after touching anything that reads repository state or renders CLI
+# output at test time. It is deliberately not a pre-commit hook: it re-resolves
+# the virtualenv each run, which is too slow to pay on every commit.
 
 set -e
 
@@ -38,6 +47,14 @@ for leaked in config.toml server-scripts website/static/compendium.db; do
 done
 
 cd "$WORKTREE/build-pipeline"
+
+# Match CI's environment, not the invoking shell's. Local colour overrides are
+# cleared and the CI markers exported so Rich-rendered output looks the way it
+# does on a runner.
+unset NO_COLOR FORCE_COLOR PY_COLORS CLICOLOR CLICOLOR_FORCE
+unset TERMINAL_WIDTH _TYPER_FORCE_DISABLE_TERMINAL
+export CI=true GITHUB_ACTIONS=true
+export TERM=xterm-256color
 
 echo "Installing dependencies..."
 uv sync --frozen --quiet
