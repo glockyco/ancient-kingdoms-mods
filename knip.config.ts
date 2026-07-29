@@ -13,8 +13,11 @@ const config: KnipConfig = {
     ".": {
       entry: ["scripts/*.sh"],
       project: ["scripts/**"],
-      // uv is a Python package manager invoked from package.json scripts; not a Node binary
-      ignoreBinaries: ["uv"],
+      // uv is a Python package manager invoked from package.json scripts; not a Node binary.
+      // prettier/eslint are referenced by lefthook.yml, which knip attributes to the root
+      // workspace; those jobs declare `root: website/` and resolve the binaries from the
+      // website workspace, which knip's lefthook handling does not follow.
+      ignoreBinaries: ["uv", "prettier", "eslint"],
     },
     // Website workspace: SvelteKit + Vite project
     website: {
@@ -34,7 +37,7 @@ const config: KnipConfig = {
         // Note: vite.config.ts, svelte.config.js, src/service-worker.ts are handled
         // automatically by knip's SvelteKit plugin; listing them here is redundant.
       ],
-      project: ["src/**/*.{ts,svelte}", "scripts/**/*.{mjs,ts}"],
+      project: ["src/**/*.{ts,svelte,css}", "scripts/**/*.{mjs,ts}"],
       // Component library barrel re-exports (bits-ui/shadcn-style index.ts files):
       // Knip can't trace Svelte component imports through them, producing false positives.
       // Actual unused components still surface as unused files.
@@ -46,6 +49,8 @@ const config: KnipConfig = {
       // @types/sql.js: required by src/sql.js-fts5.d.ts type bridge (import from "sql.js")
       // postcss: optional peer dep for eslint-plugin-svelte via postcss-load-config
       ignoreDependencies: ["@types/sql.js", "postcss"],
+      // pkill is a system binary used by the clean:workerd script
+      ignoreBinaries: ["pkill"],
     },
   },
 };
