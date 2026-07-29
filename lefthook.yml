@@ -31,6 +31,11 @@ pre-commit:
     - name: website-test
       glob: "website/**/*.{ts,svelte}"
       run: pnpm --filter website test
+    # Knip resolves imports, so it needs the generated src/lib/generated/home-counts.ts
+    # that a clean CI checkout lacks. It runs here instead, where that file exists.
+    - name: knip
+      glob: "{website/**/*.{ts,svelte,mjs,css},scripts/**,knip.config.ts,package.json,website/package.json}"
+      run: pnpm check:knip
     - name: website-skill-effect-parity-drift
       glob: "{website/src/lib/utils/formatSkillEffect.ts,website/src/lib/utils/format.ts,website/src/lib/skills/*.ts,website/scripts/gen-skill-effect-parity.ts,tests/BetterBestiary.Tests/Fixtures/skill-effect-parity.json}"
       run: pnpm --filter website gen:skill-effect-parity && git diff --exit-code -- tests/BetterBestiary.Tests/Fixtures/skill-effect-parity.json
