@@ -1313,10 +1313,11 @@ CREATE TABLE traps (
     teleport_orientation_y REAL,
     teleport_orientation_z REAL,
 
-    -- Wall traps only: seconds between shots and overlap-box dimensions
+    -- Wall traps only: seconds between shots
     fire_interval REAL,
-    trap_width REAL,
-    trap_height REAL,
+
+    -- Area the trap covers, one closed ring per collider path in world coordinates
+    area_paths TEXT,                        -- JSON: [[[x, y], ...], ...]
 
     keywords TEXT                           -- FTS5 search keywords
 );

@@ -20,6 +20,13 @@ class Position(BaseModel):
     z: float
 
 
+class Point2(BaseModel):
+    """2D point in world space."""
+
+    x: float
+    y: float
+
+
 class BoundingBox(BaseModel):
     """2D bounding box for collider bounds."""
 
@@ -905,8 +912,8 @@ class TrapData(BaseModel):
     teleport_position: Position | None = None
     teleport_orientation: Position | None = None
     fire_interval: float | None = None
-    trap_width: float | None = None
-    trap_height: float | None = None
+    # One closed ring per collider path; wall traps carry the box they sweep on fire
+    area_paths: list[list[Point2]] | None = None
 
 
 # =============================================================================

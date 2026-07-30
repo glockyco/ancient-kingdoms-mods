@@ -124,6 +124,13 @@ def insert_model(cursor: sqlite3.Cursor, table: str, model: BaseModel) -> None:
                 values["travel_destination_x"] = value.x
                 values["travel_destination_y"] = value.y
                 values["travel_destination_z"] = value.z
+        # Handle polygon rings - store as compact [[x, y], ...] arrays for the map
+        elif field_name == "area_paths":
+            values[field_name] = (
+                json.dumps([[[point.x, point.y] for point in ring] for ring in value])
+                if value is not None
+                else None
+            )
         # Handle NpcRoles object
         elif field_name == "roles" and value is not None:
             values["roles"] = json.dumps(value.model_dump())

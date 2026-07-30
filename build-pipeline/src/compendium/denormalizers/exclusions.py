@@ -75,6 +75,7 @@ SPAWN_TABLES: list[tuple[str, list[str]]] = [
             "teleport_orientation_x",
             "teleport_orientation_y",
             "teleport_orientation_z",
+            "area_paths",
         ],
     ),
     (
