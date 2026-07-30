@@ -667,21 +667,21 @@
     </section>
   {/if}
 
-  {#if data.faction.monstersDecrease.length > 0}
+  {#if data.faction.questGrants.length > 0}
     <section>
       <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
-        <TrendingDown class="h-5 w-5 text-red-500" />
-        Reputation lost to monsters ({data.faction.monstersDecrease.length})
+        <Scroll class="h-5 w-5 text-orange-500" />
+        Reputation gained from quests ({data.faction.questGrants.length})
       </h2>
       <DataTable
-        data={data.faction.monstersDecrease}
-        columns={monsterDecreaseColumns}
-        renderCell={renderMonsterDecreaseCell}
+        data={data.faction.questGrants}
+        columns={questGrantColumns}
+        renderCell={renderQuestGrantCell}
         initialSorting={[
-          { id: "amount", desc: true },
+          { id: "level_recommended", desc: false },
           { id: "name", desc: false },
         ]}
-        urlKey="faction-{data.faction.id}-monsters-decrease"
+        urlKey="faction-{data.faction.id}-quest-grants"
         pageSize={10}
         zebraStripe={true}
         class="bg-muted/30"
@@ -704,6 +704,28 @@
           { id: "name", desc: false },
         ]}
         urlKey="faction-{data.faction.id}-npc-kills-improve"
+        pageSize={10}
+        zebraStripe={true}
+        class="bg-muted/30"
+      />
+    </section>
+  {/if}
+
+  {#if data.faction.monstersDecrease.length > 0}
+    <section>
+      <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
+        <TrendingDown class="h-5 w-5 text-red-500" />
+        Reputation lost to monsters ({data.faction.monstersDecrease.length})
+      </h2>
+      <DataTable
+        data={data.faction.monstersDecrease}
+        columns={monsterDecreaseColumns}
+        renderCell={renderMonsterDecreaseCell}
+        initialSorting={[
+          { id: "amount", desc: true },
+          { id: "name", desc: false },
+        ]}
+        urlKey="faction-{data.faction.id}-monsters-decrease"
         pageSize={10}
         zebraStripe={true}
         class="bg-muted/30"
@@ -745,28 +767,6 @@
         renderCell={renderChestCell}
         initialSorting={[{ id: "zone", desc: false }]}
         urlKey="faction-{data.faction.id}-chests"
-        pageSize={10}
-        zebraStripe={true}
-        class="bg-muted/30"
-      />
-    </section>
-  {/if}
-
-  {#if data.faction.questGrants.length > 0}
-    <section>
-      <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
-        <Scroll class="h-5 w-5 text-orange-500" />
-        Reputation gained from quests ({data.faction.questGrants.length})
-      </h2>
-      <DataTable
-        data={data.faction.questGrants}
-        columns={questGrantColumns}
-        renderCell={renderQuestGrantCell}
-        initialSorting={[
-          { id: "level_recommended", desc: false },
-          { id: "name", desc: false },
-        ]}
-        urlKey="faction-{data.faction.id}-quest-grants"
         pageSize={10}
         zebraStripe={true}
         class="bg-muted/30"
