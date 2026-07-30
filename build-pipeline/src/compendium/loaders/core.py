@@ -38,6 +38,7 @@ from compendium.models import (
     QuestData,
     SkillData,
     SummonTriggerData,
+    TrapData,
     TreasureLocationData,
     VisualAssetData,
     ZoneData,
@@ -844,6 +845,28 @@ def load_treasure_locations(conn: sqlite3.Connection, export_dir: Path) -> None:
 
     conn.commit()
     console.print(f"  [green]OK[/green] Loaded {len(locations)} treasure locations")
+
+
+def load_traps(conn: sqlite3.Connection, export_dir: Path) -> None:
+    """Load traps into database."""
+    console.print("Loading traps...")
+
+    filepath = export_dir / "traps.json"
+    if not filepath.exists():
+        console.print("  [yellow]SKIP[/yellow] No traps.json found")
+        return
+
+    with open(filepath, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    traps = [TrapData(**item) for item in data]
+
+    cursor = conn.cursor()
+    for trap in traps:
+        insert_model(cursor, "traps", trap)
+
+    conn.commit()
+    console.print(f"  [green]OK[/green] Loaded {len(traps)} traps")
 
 
 def _gather_resource_base_id(resource: GatherItemData) -> str:

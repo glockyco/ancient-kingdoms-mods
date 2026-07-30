@@ -38,6 +38,7 @@ from compendium.loaders import (
     load_skills,
     load_static_data,
     load_summon_triggers,
+    load_traps,
     load_treasure_locations,
     load_visual_assets,
     load_zone_triggers,
@@ -95,6 +96,7 @@ def run(config: dict) -> None:
         load_quests(conn, export_dir)
         load_portals(conn, export_dir)
         load_treasure_locations(conn, export_dir)  # After items
+        load_traps(conn, export_dir)  # After zones + zone_triggers + skills
         load_gather_items(conn, export_dir)
         load_crafting_recipes(conn, export_dir)
         load_alchemy_recipes(conn, export_dir)
@@ -119,6 +121,7 @@ def run(config: dict) -> None:
             "zones_fts",
             "gathering_resources_fts",
             "chests_fts",
+            "traps_fts",
             "houses_fts",
             "altars_fts",
             "portals_fts",
