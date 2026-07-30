@@ -7,6 +7,7 @@ import type {
   SkillItemSource,
   SkillMonster,
   SkillPet,
+  SkillTrapUsage,
   SkillMechanicsSpec,
 } from "$lib/types/skills";
 import { formatSkillEffect } from "$lib/utils/formatSkillEffect";
@@ -27,6 +28,7 @@ export interface SkillDetailPageData {
   grantedByItems: SkillItemSource[];
   usedByMonsters: SkillMonster[];
   usedByPets: SkillPet[];
+  appliedByTraps: SkillTrapUsage[];
   description: string;
   mechanicsSpec: SkillMechanicsSpec;
 }
@@ -285,6 +287,20 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
     [params.id],
   );
 
+  const appliedByTraps = query<SkillTrapUsage>(
+    `SELECT
+      t.type,
+      z.id as zone_id,
+      z.name as zone_name,
+      COUNT(*) as trap_count
+    FROM traps t
+    JOIN zones z ON z.id = t.zone_id
+    WHERE t.effect_skill_id = ?
+    GROUP BY t.type, z.id, z.name
+    ORDER BY z.name, t.type`,
+    [params.id],
+  );
+
   // Compute effect summary using formatSkillEffect
   const effectSummary = formatSkillEffect(skill);
 
@@ -333,6 +349,7 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
     grantedByItems,
     usedByMonsters,
     usedByPets,
+    appliedByTraps,
     description,
     mechanicsSpec: computeMechanicsSpec(
       skill,

@@ -13,6 +13,7 @@
   import Target from "@lucide/svelte/icons/target";
   import ScrollText from "@lucide/svelte/icons/scroll-text";
   import Gem from "@lucide/svelte/icons/gem";
+  import TriangleAlert from "@lucide/svelte/icons/triangle-alert";
   import DungeonRestrictionBadge from "$lib/components/DungeonRestrictionBadge.svelte";
   import SkillEffect from "$lib/components/SkillEffect.svelte";
   import MonsterTypeIcon from "$lib/components/MonsterTypeIcon.svelte";
@@ -26,6 +27,7 @@
   import { renderFormulaDisplay } from "$lib/utils/formula-eval";
   import { petHref } from "$lib/utils/pets";
   import Seo from "$lib/components/Seo.svelte";
+  import { TRAP_TYPE_LABELS } from "$lib/constants/traps";
 
   let { data }: { data: PageData } = $props();
 
@@ -943,6 +945,14 @@
           <a
             href="#learned-by-classes"
             class="hover:text-foreground hover:underline">Learned by Classes</a
+          >
+        </li>
+      {/if}
+      {#if data.appliedByTraps.length > 0}
+        <li>
+          <a
+            href="#applied-by-traps"
+            class="hover:text-foreground hover:underline">Applied by Traps</a
           >
         </li>
       {/if}
@@ -2849,6 +2859,43 @@
             </div>
           {/each}
         </div>
+      </Card.Content>
+    </Card.Root>
+  {/if}
+
+  <!-- Applied by Traps -->
+  {#if data.appliedByTraps.length > 0}
+    <Card.Root id="applied-by-traps" class="bg-muted/30">
+      <Card.Header>
+        <Card.Title class="flex items-center gap-2">
+          <TriangleAlert class="h-5 w-5 text-rose-600" />
+          Applied by Traps ({data.appliedByTraps.reduce(
+            (total, usage) => total + usage.trap_count,
+            0,
+          )})
+        </Card.Title>
+      </Card.Header>
+      <Card.Content>
+        <div class="space-y-2">
+          {#each data.appliedByTraps as usage (`${usage.zone_id}-${usage.type}`)}
+            <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+              <span>{TRAP_TYPE_LABELS[usage.type]}</span>
+              <span class="text-muted-foreground">×{usage.trap_count} in</span>
+              <a
+                href="/zones/{usage.zone_id}"
+                class="text-blue-600 dark:text-blue-400 hover:underline"
+              >
+                {usage.zone_name}
+              </a>
+            </div>
+          {/each}
+        </div>
+        <a
+          href="/traps?traps.effect={skill.id}"
+          class="mt-4 inline-block text-sm text-blue-600 dark:text-blue-400 hover:underline"
+        >
+          View matching traps
+        </a>
       </Card.Content>
     </Card.Root>
   {/if}

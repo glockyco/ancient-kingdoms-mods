@@ -1,3 +1,5 @@
+import type { TrapType } from "$lib/constants/traps";
+
 /**
  * Linear scaling value (base + bonus_per_level * (level - 1))
  */
@@ -225,6 +227,13 @@ export interface SkillMonster {
   is_boss: boolean;
   is_elite: boolean;
   is_fabled: boolean;
+}
+
+export interface SkillTrapUsage {
+  type: TrapType;
+  zone_id: string;
+  zone_name: string;
+  trap_count: number;
 }
 
 /**
