@@ -298,6 +298,10 @@
       "sha256": "23734c664b5a574cd9d409f800c556456df6ef660a79f41055ea390d89fe33ec",
       "span": 3
     },
+    "Database.cs:3677-3685": {
+      "sha256": "936930b2d3a19daa54ac425a326d93b58441790815ed845e0dfa4a2b32ae55d6",
+      "span": 9
+    },
     "Database.cs:425-435": {
       "sha256": "2d70b7ae188d1b620a1b9dff437ede00223ffdf9162fcf934e8119c89bfd4eb9",
       "span": 11
@@ -842,9 +846,9 @@
       "sha256": "43b07c9fa71f77b9146cb1671adb06ea573f2662de3588a4aa0124540e36a919",
       "span": 6
     },
-    "PetFriendly.cs:294-297": {
-      "sha256": "81ea19fb9c05a8671f818749ebabf291777e8b89991c122db3c429c4b5595520",
-      "span": 4
+    "PetFriendly.cs:284-298": {
+      "sha256": "fd1a7fc798c9537be81e025464d317e8dc3d43be65d243be53c0e7a04dadd40a",
+      "span": 15
     },
     "Player.cs": {
       "span": 0
@@ -1540,6 +1544,10 @@
     "UICraftingStation.cs:438": {
       "sha256": "b4a90c87fa45c82fe8bb2660d2d710a53e90c300d7c0fe15aa1bde104aeac35c",
       "span": 1
+    },
+    "UIFactions.cs:138-144": {
+      "sha256": "b88e91afad76e2d5b3c7e1eb071b13c7257927a68a85c123b70ea048621e0277",
+      "span": 7
     },
     "UIFactions.cs:78-146": {
       "sha256": "143fdb36db454f89287edbbb9b5c5d9c6b197b19abd66b98715a741b09276e75",

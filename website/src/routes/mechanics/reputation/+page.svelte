@@ -83,7 +83,7 @@
       </li>
       <li>
         <a href="#pets" class="hover:text-foreground hover:underline"
-          >Friendly Pets</a
+          >Petting Animals</a
         >
       </li>
       <li>
@@ -93,7 +93,7 @@
       </li>
       <li>
         <a href="#decay" class="hover:text-foreground hover:underline"
-          >Decay and Caps</a
+          >Decay and Limits</a
         >
       </li>
     </ul>
@@ -331,18 +331,19 @@
 
   <Card.Root id="pets" class="bg-muted/30">
     <Card.Header>
-      <Card.Title>Friendly Pets</Card.Title>
+      <Card.Title>Petting Animals</Card.Title>
       <Card.Description>
-        A tamed friendly NPC slowly raises reputation while it follows you.
+        Friendly animals stand around in towns and can be petted for a small
+        amount of reputation.
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-3 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/PetFriendly.cs:294-297 — the 30 second faction tick. -->
+      <!-- Source: server-scripts/PetFriendly.cs:284-298 — clicking within 3 units pets the animal and grants faction at most every 30 seconds. -->
       <!-- Source: server-scripts/Player.cs:11619-11623 — CmdIncreaseFaction adds the value unchanged. -->
       <p>
-        A friendly pet gives 1 to 4 reputation with its faction every 30
-        seconds, so around 5 per minute. This is the only source that does not
-        involve killing something.
+        Clicking one from up close pets it and gives 1 to 4 reputation with the
+        animal's faction. Each animal only pays out once every 30 seconds, so
+        petting the same one repeatedly does nothing extra.
       </p>
     </Card.Content>
   </Card.Root>
@@ -359,8 +360,7 @@
         <li>
           <!-- Source: server-scripts/Npc.cs:1895-1904 — faction vendors require 15,000 standing. -->
           <strong class="text-foreground">Faction vendors</strong> will not open their
-          shop below 15,000 reputation. This is a plain number and not a tier boundary,
-          since Friendly already starts at 1,000.
+          shop below 15,000 reputation.
         </li>
         <li>
           <!-- Source: server-scripts/UINpcTrading.cs:381-385 — per-item faction requirement against the vendor's faction. -->
@@ -394,21 +394,32 @@
 
   <Card.Root id="decay" class="bg-muted/30">
     <Card.Header>
-      <Card.Title>Decay and Caps</Card.Title>
+      <Card.Title>Decay and Limits</Card.Title>
       <Card.Description>
-        Reputation does not drop on its own, and there is no upper limit.
+        Reputation does not move on its own, and there is no limit in either
+        direction.
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-3 text-sm text-muted-foreground">
       <p>
-        Nothing in the game lowers reputation over time. It only changes when
-        one of the sources above applies, so a faction you ignore keeps whatever
+        Nothing in the game changes reputation over time. It only moves when one
+        of the sources above applies, so a faction you ignore keeps whatever
         value it had.
       </p>
-      <!-- Source: server-scripts/UIFactions.cs:84-89 — the Revered readout clamps only the slider. -->
+      <!-- Source: server-scripts/Player.cs:11619-11623, Monster.cs:2746-2758, Npc.cs:1600-1610, PlayerQuests.cs:440-443, GatherItem.cs:338-346 — every write adds or subtracts without clamping. -->
+      <!-- Source: server-scripts/Database.cs:3677-3685 — setFactionValue stores the raw value. -->
       <p>
-        There is also no cap. The "/ Max" text the faction panel shows at
-        Revered only limits how far the slider fills, not the value itself.
+        There is no cap and no floor. Every source adds to or subtracts from the
+        stored value without clamping it, and the value is saved as-is, so a
+        faction can climb past Revered or fall well below Hated.
+      </p>
+      <!-- Source: server-scripts/UIFactions.cs:84-89 — the Revered readout clamps only the slider. -->
+      <!-- Source: server-scripts/UIFactions.cs:138-144 — the Hated readout floors the displayed number at 0. -->
+      <p>
+        The faction panel hides this at both ends. At Revered it shows "/ Max"
+        and stops filling the slider, and at Hated it shows 0 out of 10,000 once
+        you drop below −13,000. Both are display limits on a value that keeps
+        moving.
       </p>
     </Card.Content>
   </Card.Root>
