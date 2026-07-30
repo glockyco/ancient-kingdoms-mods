@@ -217,7 +217,13 @@
   ];
 
   const questRequirementColumns: ColumnDef<FactionQuestRequirementRow>[] = [
-    { accessorKey: "name", header: "Quest", minSize: 260 },
+    { accessorKey: "name", header: "Quest", minSize: 240 },
+    {
+      id: "giver",
+      header: "Quest giver",
+      minSize: 180,
+      accessorFn: (row) => row.giver_name ?? "",
+    },
     { accessorKey: "required_value", header: "Requires", size: 200 },
   ];
 </script>
@@ -492,6 +498,16 @@
       class="text-blue-600 dark:text-blue-400 hover:underline"
       >{row.original.name}</a
     >
+  {:else if cell.column.id === "giver"}
+    {#if row.original.giver_id && row.original.giver_name}
+      <a
+        href="/npcs/{row.original.giver_id}"
+        class="text-blue-600 dark:text-blue-400 hover:underline"
+        >{row.original.giver_name}</a
+      >
+    {:else}
+      <span class="text-muted-foreground">-</span>
+    {/if}
   {:else if cell.column.id === "required_value"}
     {@render requirementValue(row.original.required_value)}
   {:else}

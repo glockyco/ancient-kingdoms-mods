@@ -82,6 +82,8 @@ export interface FactionQuestRequirementRow {
   id: string;
   name: string;
   required_value: number;
+  giver_id: string | null;
+  giver_name: string | null;
 }
 
 export interface FactionDetail {
@@ -264,9 +266,12 @@ export function getFactionDetail(id: string): FactionDetail | null {
   );
 
   const questRequirements = query<FactionQuestRequirementRow>(
-    `SELECT q.id, q.name, json_extract(je.value, '$.faction_value') AS required_value
+    `SELECT q.id, q.name,
+            json_extract(je.value, '$.faction_value') AS required_value,
+            n.id AS giver_id, n.name AS giver_name
      FROM quests q
      JOIN json_each(q.faction_requirements) je
+     LEFT JOIN npcs n ON n.id = q.start_npc_id
      WHERE json_extract(je.value, '$.faction') = ?
      ORDER BY required_value DESC, q.name`,
     [name],
