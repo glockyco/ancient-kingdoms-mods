@@ -178,11 +178,6 @@
     {#if altar.minLevel > 0}
       <div class="text-xs text-muted-foreground">Lv. {altar.minLevel}+</div>
     {/if}
-  {:else if entity.type === "trap"}
-    {@const trap = entity as TrapMapEntity}
-    {#if trap.effectSkillName}
-      <div class="text-xs text-rose-400">{trap.effectSkillName}</div>
-    {/if}
   {:else if entity.type === "monster" || entity.type === "fabled" || entity.type === "boss" || entity.type === "elite" || entity.type === "hunt"}
     {@const monster = entity as MonsterMapEntity}
     {#if monster.spawnType === "placeholder" && monster.sourceMonsterName}

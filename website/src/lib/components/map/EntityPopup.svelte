@@ -1100,10 +1100,13 @@
         <span>{trap.fireInterval}s</span>
       </div>
     {/if}
+    <!-- Area info, matching the outline drawn for the selected trap -->
     {#if trap.areaPaths}
-      <div class="flex justify-between">
-        <span class="text-muted-foreground">Area</span>
-        <span>{formatTrapArea(trap.areaPaths)}</span>
+      <div class="flex items-center gap-2 border-t pt-2">
+        <span class="inline-block h-2 w-2 rounded-full bg-rose-500"></span>
+        <span class="text-muted-foreground"
+          >Area {formatTrapArea(trap.areaPaths)}</span
+        >
       </div>
     {/if}
   {/if}

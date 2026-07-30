@@ -1,9 +1,5 @@
 import { describe, expect, test } from "vitest";
-import {
-  formatTrapArea,
-  getTrapAreaTiles,
-  parseTrapAreaRings,
-} from "./trapArea";
+import { formatTrapArea, parseTrapAreaRings } from "./trapArea";
 
 describe("trap areas", () => {
   test("parses exported rings", () => {
@@ -22,35 +18,7 @@ describe("trap areas", () => {
     expect(parseTrapAreaRings("[]")).toBeNull();
   });
 
-  test("counts tiles regardless of winding order", () => {
-    const clockwise = [
-      [
-        [0, 0],
-        [0, 8],
-        [2, 8],
-        [2, 0],
-      ],
-    ] as [number, number][][];
-    expect(getTrapAreaTiles(clockwise)).toBe(16);
-  });
-
-  test("counts tiles of a concave patch", () => {
-    // 4 x 4 square with a 2 x 2 bite taken out of one corner
-    expect(
-      getTrapAreaTiles([
-        [
-          [0, 0],
-          [4, 0],
-          [4, 2],
-          [2, 2],
-          [2, 4],
-          [0, 4],
-        ],
-      ]),
-    ).toBe(12);
-  });
-
-  test("describes a rectangle by its sides", () => {
+  test("states a rectangle as its side lengths", () => {
     expect(
       formatTrapArea([
         [
@@ -60,7 +28,7 @@ describe("trap areas", () => {
           [-730, 803],
         ],
       ]),
-    ).toBe("2 × 8 tiles");
+    ).toBe("2 × 8 units");
   });
 
   test("reads a barely rotated collider as the box it is", () => {
@@ -73,31 +41,11 @@ describe("trap areas", () => {
           [860.524, 278.519],
         ],
       ]),
-    ).toBe("2.1 × 1.9 tiles");
+    ).toBe("2.1 × 1.9 units");
   });
 
-  test("keeps a fraction of a tile visible and singular", () => {
-    expect(
-      formatTrapArea([
-        [
-          [0, 0],
-          [3, 0],
-          [0, 1],
-        ],
-      ]),
-    ).toBe("~1.5 tiles");
-    expect(
-      formatTrapArea([
-        [
-          [0, 0],
-          [2, 0],
-          [0, 1],
-        ],
-      ]),
-    ).toBe("~1 tile");
-  });
-
-  test("describes an irregular patch by its tiles", () => {
+  test("states an irregular patch as its reach, not its shape", () => {
+    // 4 x 4 square with a 2 x 2 bite taken out of one corner
     expect(
       formatTrapArea([
         [
@@ -109,6 +57,6 @@ describe("trap areas", () => {
           [0, 4],
         ],
       ]),
-    ).toBe("~12 tiles");
+    ).toBe("reaches 4 × 4 units");
   });
 });

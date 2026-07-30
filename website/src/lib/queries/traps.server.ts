@@ -16,7 +16,6 @@ export interface TrapListView {
   position_x: number | null;
   position_y: number | null;
   fire_interval: number | null;
-  area_paths: string | null;
 }
 
 export function getTrapsList(): TrapListView[] {
@@ -35,8 +34,7 @@ export function getTrapsList(): TrapListView[] {
       tz.name as teleport_zone_name,
       t.position_x,
       t.position_y,
-      t.fire_interval,
-      t.area_paths
+      t.fire_interval
     FROM traps t
     JOIN zones z ON z.id = t.zone_id
     LEFT JOIN skills s ON s.id = t.effect_skill_id

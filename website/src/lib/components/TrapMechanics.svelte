@@ -1,22 +1,16 @@
 <script lang="ts">
   import { TRAP_TYPE_DESCRIPTIONS, type TrapType } from "$lib/constants/traps";
-  import { formatTrapArea, parseTrapAreaRings } from "$lib/utils/trapArea";
 
   interface Props {
     type: TrapType;
     fireInterval: number | null;
-    areaPaths: string | null;
   }
 
-  let { type, fireInterval, areaPaths }: Props = $props();
+  let { type, fireInterval }: Props = $props();
 
-  const details = $derived.by(() => {
-    const parts: string[] = [];
-    if (fireInterval != null) parts.push(`Fires every ${fireInterval}s.`);
-    const rings = parseTrapAreaRings(areaPaths);
-    if (rings) parts.push(`Covers ${formatTrapArea(rings)}.`);
-    return parts.join(" ");
-  });
+  const details = $derived(
+    fireInterval != null ? `Fires every ${fireInterval}s.` : "",
+  );
 </script>
 
 <!-- Source: server-scripts/Trap.cs:67-104,181-197 — contact effects, teleporting, and Rogue disarming.
