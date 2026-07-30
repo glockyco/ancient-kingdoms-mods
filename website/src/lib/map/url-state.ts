@@ -42,6 +42,7 @@ const DEFAULT_LAYERS: (keyof LayerVisibility)[] = [
   "bosses",
   "elites",
   "altars",
+  "traps",
   "tiles",
   "npcRenewalSages",
 ];
@@ -86,7 +87,7 @@ export function getDefaultLayerVisibility(): LayerVisibility {
     chests: false,
     treasure: false,
     altars: true,
-    traps: false,
+    traps: true,
     houses: false,
     alchemyTables: false,
     forges: false,
