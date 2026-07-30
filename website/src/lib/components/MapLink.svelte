@@ -10,6 +10,7 @@
     | "quest"
     | "chest"
     | "altar"
+    | "trap"
     | "house"
     | "resource"
     | "treasure"
