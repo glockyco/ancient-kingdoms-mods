@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace DataExporter.Models;
 
 public class TrapData
@@ -25,6 +27,9 @@ public class TrapData
 
     // Wall trap specific
     public float? fire_interval { get; set; }
-    public float? trap_width { get; set; }
-    public float? trap_height { get; set; }
+
+    // Area the trap covers, in world coordinates: one closed ring per collider path.
+    // Disarmable traps and dangerous ground use their trigger collider, wall traps the
+    // box they sweep on fire. Null for traps without an area component.
+    public List<List<Point2>> area_paths { get; set; }
 }

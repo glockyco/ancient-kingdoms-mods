@@ -14,6 +14,18 @@ public class Position
     }
 }
 
+public class Point2
+{
+    public float x { get; set; }
+    public float y { get; set; }
+
+    public Point2(float x, float y)
+    {
+        this.x = x;
+        this.y = y;
+    }
+}
+
 public class BoundingBox
 {
     public float min_x { get; set; }
