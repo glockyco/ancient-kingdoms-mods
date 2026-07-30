@@ -4,6 +4,7 @@
     ZoneMonster,
     ZoneAltar,
     ZoneChest,
+    ZoneTrap,
   } from "$lib/types/zones";
   import {
     createRespawnColumns,
@@ -41,9 +42,11 @@
   import Trees from "@lucide/svelte/icons/trees";
   import RefreshCw from "@lucide/svelte/icons/refresh-cw";
   import Box from "@lucide/svelte/icons/box";
+  import TriangleAlert from "@lucide/svelte/icons/triangle-alert";
   import BookOpen from "@lucide/svelte/icons/book-open";
   import { formatDuration } from "$lib/utils/format";
   import Seo from "$lib/components/Seo.svelte";
+  import { TRAP_TYPE_LABELS } from "$lib/constants/traps";
 
   let { data } = $props();
 
@@ -177,6 +180,38 @@
       accessorKey: "respawn_time",
       header: "Respawn",
       size: 100,
+    },
+  ];
+
+  const trapColumns: ColumnDef<ZoneTrap>[] = [
+    {
+      id: "name",
+      header: "Trap",
+      minSize: 160,
+    },
+    {
+      id: "type",
+      header: "Type",
+      size: 170,
+      accessorFn: (row) => TRAP_TYPE_LABELS[row.type],
+    },
+    {
+      id: "area",
+      header: "Area",
+      minSize: 200,
+      accessorFn: (row) => row.sub_zone_name ?? "",
+    },
+    {
+      id: "effect",
+      header: "Effect",
+      minSize: 170,
+      accessorFn: (row) => row.effect_skill_name ?? "",
+    },
+    {
+      id: "interval",
+      header: "Interval",
+      size: 100,
+      accessorFn: (row) => row.fire_interval ?? 0,
     },
   ];
 
@@ -412,6 +447,57 @@
   {:else}
     {header.column.columnDef.header}
   {/if}
+{/snippet}
+
+{#snippet renderTrapCell({
+  cell,
+  row,
+}: {
+  cell: Cell<ZoneTrap, unknown>;
+  row: Row<ZoneTrap>;
+})}
+  {#if cell.column.id === "name"}
+    {row.original.name}
+  {:else if cell.column.id === "type"}
+    {TRAP_TYPE_LABELS[row.original.type]}
+  {:else if cell.column.id === "area"}
+    {#if row.original.sub_zone_name}
+      {row.original.sub_zone_name}
+    {:else}
+      <span class="text-muted-foreground">-</span>
+    {/if}
+  {:else if cell.column.id === "effect"}
+    {#if row.original.effect_skill_id && row.original.effect_skill_name}
+      <a
+        href="/skills/{row.original.effect_skill_id}"
+        class="text-blue-600 dark:text-blue-400 hover:underline"
+      >
+        {row.original.effect_skill_name}
+      </a>
+    {:else if row.original.teleport_zone_id && row.original.teleport_zone_name}
+      Teleport →
+      <a
+        href="/zones/{row.original.teleport_zone_id}"
+        class="text-blue-600 dark:text-blue-400 hover:underline"
+      >
+        {row.original.teleport_zone_name}
+      </a>
+    {:else}
+      <span class="text-muted-foreground">-</span>
+    {/if}
+  {:else if cell.column.id === "interval"}
+    {#if row.original.fire_interval != null}
+      {row.original.fire_interval}s
+    {:else}
+      <span class="text-muted-foreground">-</span>
+    {/if}
+  {:else}
+    {cell.getValue()}
+  {/if}
+{/snippet}
+
+{#snippet renderTrapHeader({ header }: { header: Header<ZoneTrap, unknown> })}
+  {header.column.columnDef.header}
 {/snippet}
 
 <Seo
@@ -662,6 +748,27 @@
         renderHeader={renderChestHeader}
         initialSorting={[{ id: "key", desc: false }]}
         urlKey="zone-{data.zone.id}-chests"
+        pageSize={10}
+        zebraStripe={true}
+        class="bg-muted/30"
+      />
+    </section>
+  {/if}
+
+  <!-- Traps Section -->
+  {#if data.traps.length > 0}
+    <section>
+      <h2 class="mb-4 text-xl font-semibold flex items-center gap-2">
+        <TriangleAlert class="h-5 w-5 text-rose-600" />
+        Traps ({data.traps.length})
+      </h2>
+      <DataTable
+        data={data.traps}
+        columns={trapColumns}
+        renderCell={renderTrapCell}
+        renderHeader={renderTrapHeader}
+        initialSorting={[{ id: "type", desc: false }]}
+        urlKey="zone-{data.zone.id}-traps"
         pageSize={10}
         zebraStripe={true}
         class="bg-muted/30"

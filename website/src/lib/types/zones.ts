@@ -1,5 +1,6 @@
 import type { RespawnInfo } from "./respawn";
 import type { NpcRoles } from "./npcs";
+import type { TrapType } from "$lib/constants/traps";
 
 /**
  * Zone data as displayed in the zones overview table
@@ -131,6 +132,23 @@ export interface ZoneChest {
 }
 
 /**
+ * Trap info for zone detail page
+ */
+export interface ZoneTrap {
+  id: string;
+  name: string;
+  type: TrapType;
+  sub_zone_name: string | null;
+  effect_skill_id: string | null;
+  effect_skill_name: string | null;
+  teleport_zone_id: string | null;
+  teleport_zone_name: string | null;
+  fire_interval: number | null;
+  position_x: number | null;
+  position_y: number | null;
+}
+
+/**
  * Full zone detail data
  */
 export interface ZoneDetailData {
@@ -150,6 +168,7 @@ export interface ZoneDetailData {
   npcs: ZoneNpc[];
   gatherResources: ZoneGatherResource[];
   chests: ZoneChest[];
+  traps: ZoneTrap[];
   altars: ZoneAltar[];
   connectedZones: ZoneConnection[];
   subZones: ZoneSubZone[];
