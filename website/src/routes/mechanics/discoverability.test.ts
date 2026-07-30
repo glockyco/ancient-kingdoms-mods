@@ -15,6 +15,7 @@ test("mechanics index and homepage expose mechanics references", () => {
   assert.match(mechanicsIndex, /href: "\/mechanics\/combat"/);
   assert.match(mechanicsIndex, /href: "\/mechanics\/monster-spawns"/);
   assert.match(mechanicsIndex, /href: "\/mechanics\/mercenary-stats"/);
+  assert.match(mechanicsIndex, /href: "\/mechanics\/reputation"/);
 
   // The homepage's "Game mechanics" section links directly to every mechanics
   // page, which supersedes the old single /mechanics card.
@@ -24,6 +25,15 @@ test("mechanics index and homepage expose mechanics references", () => {
   assert.match(homepage, /href: "\/mechanics\/combat"/);
   assert.match(homepage, /href: "\/mechanics\/monster-spawns"/);
   assert.match(homepage, /href: "\/mechanics\/mercenary-stats"/);
+  assert.match(homepage, /href: "\/mechanics\/reputation"/);
+});
+
+test("faction pages link standing to reputation mechanics", () => {
+  const factionPage = source("../factions/[id]/+page.svelte");
+  const factionsIndex = source("../factions/+page.svelte");
+
+  assert.match(factionPage, /href="\/mechanics\/reputation"/);
+  assert.match(factionsIndex, /href="\/mechanics\/reputation"/);
 });
 
 test("item pages link backpacks and house chests to inventory mechanics", () => {

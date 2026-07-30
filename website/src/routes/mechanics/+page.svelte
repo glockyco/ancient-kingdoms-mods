@@ -9,6 +9,7 @@
   import Swords from "@lucide/svelte/icons/swords";
   import TrendingUp from "@lucide/svelte/icons/trending-up";
   import TriangleAlert from "@lucide/svelte/icons/triangle-alert";
+  import Shield from "@lucide/svelte/icons/shield";
 
   const mechanics = [
     {
@@ -50,6 +51,14 @@
       icon: Calculator,
       color: "text-teal-500",
       bg: "bg-teal-500/10",
+    },
+    {
+      href: "/mechanics/reputation",
+      title: "Reputation",
+      description: "Faction standing, the tier ladder, and every way it moves",
+      icon: Shield,
+      color: "text-indigo-500",
+      bg: "bg-indigo-500/10",
     },
   ];
 </script>

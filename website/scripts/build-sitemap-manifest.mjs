@@ -19,6 +19,7 @@ const ENTITIES = [
   { table: "skills", route: "skills" },
   { table: "classes", route: "classes" },
   { table: "altars", route: "altars" },
+  { table: "factions", route: "factions" },
 ];
 
 const ITEM_SOURCE_TABLES = [
@@ -344,6 +345,46 @@ function altarPayload(db, id) {
   };
 }
 
+// Mirrors src/lib/queries/factions.server.ts: every cross-table faction column
+// stores the faction's display name, so each section is looked up by name.
+function factionPayload(db, id) {
+  const faction = rowById(db, "factions", id);
+  const name = faction?.name;
+  return {
+    row: faction,
+    tiers: all(db, "SELECT * FROM reputation_tiers ORDER BY id"),
+    monsters: all(
+      db,
+      "SELECT m.* FROM monsters m JOIN json_each(m.improve_faction) je ON je.value = ? WHERE m.is_dummy = 0 ORDER BY m.id",
+      name,
+    ),
+    monstersDecrease: all(
+      db,
+      "SELECT m.* FROM monsters m JOIN json_each(m.decrease_faction) je ON je.value = ? WHERE m.is_dummy = 0 ORDER BY m.id",
+      name,
+    ),
+    npcs: all(db, "SELECT * FROM npcs WHERE faction = ? ORDER BY id", name),
+    npcKills: all(
+      db,
+      "SELECT n.* FROM npcs n JOIN json_each(n.improve_faction) je ON je.value = ? UNION SELECT n.* FROM npcs n JOIN json_each(n.decrease_faction) je ON je.value = ? ORDER BY id",
+      name,
+      name,
+    ),
+    chests: rowsByColumn(db, "chests", "decrease_faction", name),
+    houses: rowsByColumn(db, "houses", "faction_id", name),
+    quests: all(
+      db,
+      "SELECT q.* FROM quests q JOIN npcs n ON n.id = q.start_npc_id WHERE n.faction = ? AND q.is_adventurer_quest = 0 ORDER BY q.id",
+      name,
+    ),
+    items: all(
+      db,
+      "SELECT DISTINCT i.* FROM items i JOIN item_sources_vendor v ON v.item_id = i.id JOIN npcs n ON n.id = v.npc_id WHERE n.faction = ? AND i.faction_required_to_buy > 0 ORDER BY i.id",
+      name,
+    ),
+  };
+}
+
 function petPayload(db, id) {
   return {
     row: rowById(db, "pets", id),
@@ -371,6 +412,7 @@ const DETAIL_PAYLOADS = {
   skills: skillPayload,
   classes: classPayload,
   altars: altarPayload,
+  factions: factionPayload,
 };
 
 function rowsByIds(db, table, ids) {
@@ -477,6 +519,10 @@ function addOverviewHashes(db, hashes) {
   addHash(hashes, "/quests", all(db, "SELECT * FROM quests ORDER BY id"));
   addHash(hashes, "/chests", all(db, "SELECT * FROM chests ORDER BY id"));
   addHash(hashes, "/traps", all(db, "SELECT * FROM traps ORDER BY id"));
+  addHash(hashes, "/factions", {
+    factions: all(db, "SELECT * FROM factions ORDER BY id"),
+    tiers: all(db, "SELECT * FROM reputation_tiers ORDER BY id"),
+  });
   addHash(
     hashes,
     "/gather-items",
@@ -520,6 +566,10 @@ function addMechanicsHashes(db, hashes) {
     {
       url: "/mechanics/monster-spawns",
       file: "src/routes/mechanics/monster-spawns/+page.svelte",
+    },
+    {
+      url: "/mechanics/reputation",
+      file: "src/routes/mechanics/reputation/+page.svelte",
     },
   ]) {
     hashes[`${SITE_URL}${url}`] = fileHash(file);

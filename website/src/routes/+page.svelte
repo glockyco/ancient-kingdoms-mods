@@ -34,6 +34,7 @@
   import Swords from "@lucide/svelte/icons/swords";
   import ArrowRight from "@lucide/svelte/icons/arrow-right";
   import TriangleAlert from "@lucide/svelte/icons/triangle-alert";
+  import Shield from "@lucide/svelte/icons/shield";
 
   let { data } = $props();
 
@@ -106,6 +107,13 @@
   // Secondary sections, shown as compact tiles.
   const more = [
     {
+      title: "Factions",
+      href: "/factions",
+      icon: Shield,
+      badge: "bg-indigo-500/10 text-indigo-500",
+      count: HOME_COUNTS.factions,
+    },
+    {
       title: "Mercenaries",
       href: "/mercenaries",
       icon: Swords,
@@ -177,6 +185,7 @@
     { title: "Combat", href: "/mechanics/combat" },
     { title: "Monster Spawns", href: "/mechanics/monster-spawns" },
     { title: "Mercenary Stats", href: "/mechanics/mercenary-stats" },
+    { title: "Reputation", href: "/mechanics/reputation" },
   ];
 
   // Curated footer nav: the highest-traffic sections only (no Mechanics — it
