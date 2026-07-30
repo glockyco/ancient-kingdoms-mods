@@ -135,6 +135,13 @@
       count: HOME_COUNTS.skills,
     },
     {
+      title: "Altars",
+      href: "/altars",
+      icon: Flame,
+      badge: "bg-orange-500/10 text-orange-500",
+      count: HOME_COUNTS.altars,
+    },
+    {
       title: "NPCs",
       href: "/npcs",
       icon: Users,
@@ -161,13 +168,6 @@
       icon: Box,
       badge: "bg-sky-500/10 text-sky-500",
       count: HOME_COUNTS.chests,
-    },
-    {
-      title: "Altars",
-      href: "/altars",
-      icon: Flame,
-      badge: "bg-orange-500/10 text-orange-500",
-      count: HOME_COUNTS.altars,
     },
     {
       title: "Traps",
