@@ -15,6 +15,7 @@
   import TrapMechanics from "$lib/components/TrapMechanics.svelte";
   import TrapEffect from "$lib/components/TrapEffect.svelte";
   import { TRAP_TYPE_LABELS, type TrapType } from "$lib/constants/traps";
+  import { formatTrapArea, parseTrapAreaRings } from "$lib/utils/trapArea";
   import type { TrapListView } from "$lib/queries/traps.server";
   import Castle from "@lucide/svelte/icons/castle";
   import Trees from "@lucide/svelte/icons/trees";
@@ -64,10 +65,17 @@
       id: "mechanics",
       header: "Mechanics",
       minSize: 280,
-      accessorFn: (row) =>
-        [TRAP_TYPE_LABELS[row.type], row.fire_interval, row.name]
+      accessorFn: (row) => {
+        const rings = parseTrapAreaRings(row.area_paths);
+        return [
+          TRAP_TYPE_LABELS[row.type],
+          row.fire_interval,
+          rings && formatTrapArea(rings),
+          row.name,
+        ]
           .filter((value) => value != null)
-          .join(" "),
+          .join(" ");
+      },
     },
     {
       id: "type",
@@ -162,8 +170,7 @@
     <TrapMechanics
       type={row.original.type}
       fireInterval={row.original.fire_interval}
-      trapWidth={row.original.trap_width}
-      trapHeight={row.original.trap_height}
+      areaPaths={row.original.area_paths}
     />
   {:else if cell.column.id === "zone"}
     <IconBadge

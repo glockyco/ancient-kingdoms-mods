@@ -14,6 +14,7 @@
     formatAltarRewardTier,
   } from "$lib/utils/format";
   import { hasNpcRole, getNpcRoles } from "$lib/utils/tooltip";
+  import { formatTrapArea } from "$lib/utils/trapArea";
   import { scheduleDeferredTask } from "$lib/utils/defer";
   import {
     type AnyMapEntity,
@@ -1099,10 +1100,10 @@
         <span>{trap.fireInterval}s</span>
       </div>
     {/if}
-    {#if trap.trapWidth != null && trap.trapHeight != null}
+    {#if trap.areaPaths}
       <div class="flex justify-between">
         <span class="text-muted-foreground">Area</span>
-        <span>{trap.trapWidth} × {trap.trapHeight}</span>
+        <span>{formatTrapArea(trap.areaPaths)}</span>
       </div>
     {/if}
   {/if}

@@ -266,8 +266,7 @@ export const load: PageServerLoad = ({ params }): ZoneDetailData => {
       t.teleport_zone_id,
       tz.name as teleport_zone_name,
       t.fire_interval,
-      t.trap_width,
-      t.trap_height,
+      t.area_paths,
       t.position_x,
       t.position_y
     FROM traps t

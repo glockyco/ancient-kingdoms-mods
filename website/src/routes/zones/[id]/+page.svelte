@@ -452,8 +452,7 @@
     <TrapMechanics
       type={row.original.type}
       fireInterval={row.original.fire_interval}
-      trapWidth={row.original.trap_width}
-      trapHeight={row.original.trap_height}
+      areaPaths={row.original.area_paths}
     />
   {:else}
     {cell.getValue()}

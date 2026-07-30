@@ -1,21 +1,20 @@
 <script lang="ts">
   import { TRAP_TYPE_DESCRIPTIONS, type TrapType } from "$lib/constants/traps";
+  import { formatTrapArea, parseTrapAreaRings } from "$lib/utils/trapArea";
 
   interface Props {
     type: TrapType;
     fireInterval: number | null;
-    trapWidth: number | null;
-    trapHeight: number | null;
+    areaPaths: string | null;
   }
 
-  let { type, fireInterval, trapWidth, trapHeight }: Props = $props();
+  let { type, fireInterval, areaPaths }: Props = $props();
 
   const details = $derived.by(() => {
     const parts: string[] = [];
     if (fireInterval != null) parts.push(`Fires every ${fireInterval}s.`);
-    if (trapWidth != null && trapHeight != null) {
-      parts.push(`${trapWidth} × ${trapHeight} area.`);
-    }
+    const rings = parseTrapAreaRings(areaPaths);
+    if (rings) parts.push(`Covers ${formatTrapArea(rings)}.`);
     return parts.join(" ");
   });
 </script>

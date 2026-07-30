@@ -26,6 +26,7 @@ import type {
   LevelRanges,
   ZoneListItem,
 } from "$lib/types/map";
+import { parseTrapAreaRings } from "$lib/utils/trapArea";
 
 /**
  * Compute level ranges from loaded entity data
@@ -852,8 +853,7 @@ interface TrapRow {
   teleport_position_x: number | null;
   teleport_position_y: number | null;
   fire_interval: number | null;
-  trap_width: number | null;
-  trap_height: number | null;
+  area_paths: string | null;
 }
 
 function loadTrapsServer(db: Database.Database): TrapMapEntity[] {
@@ -875,8 +875,7 @@ function loadTrapsServer(db: Database.Database): TrapMapEntity[] {
       t.teleport_position_x,
       t.teleport_position_y,
       t.fire_interval,
-      t.trap_width,
-      t.trap_height
+      t.area_paths
     FROM traps t
     JOIN zones z ON z.id = t.zone_id
     LEFT JOIN skills s ON s.id = t.effect_skill_id
@@ -905,8 +904,10 @@ function loadTrapsServer(db: Database.Database): TrapMapEntity[] {
         ? [r.teleport_position_x, -r.teleport_position_y]
         : null,
     fireInterval: r.fire_interval,
-    trapWidth: r.trap_width,
-    trapHeight: r.trap_height,
+    areaPaths:
+      parseTrapAreaRings(r.area_paths)?.map((ring) =>
+        ring.map(([x, y]) => [x, -y] as [number, number]),
+      ) ?? null,
   }));
 }
 

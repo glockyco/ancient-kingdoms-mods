@@ -18,7 +18,6 @@ import {
   type TrapMapEntity,
   type HouseMapEntity,
 } from "$lib/types/map";
-import { getWallTrapAreaPolygon } from "./trap-geometry";
 import type { ZoneFocusedData } from "./zone-filter";
 import { isAnyNpcTypeVisible } from "./visibility";
 import {
@@ -934,14 +933,12 @@ export function createLayers(
     pickable: false,
   });
 
-  const selectedTrap =
-    selectedEntity?.type === "trap" ? (selectedEntity as TrapMapEntity) : null;
-  const selectedTrapPolygon = selectedTrap
-    ? getWallTrapAreaPolygon(selectedTrap)
-    : null;
-  const trapAreaData = selectedTrapPolygon
-    ? [{ polygon: selectedTrapPolygon }]
-    : [];
+  const trapAreaData =
+    selectedEntity?.type === "trap"
+      ? ((selectedEntity as TrapMapEntity).areaPaths ?? []).map((ring) => ({
+          polygon: ring,
+        }))
+      : [];
   const trapAreaLayer = new PolygonLayer({
     id: "trap-area",
     data: trapAreaData,
@@ -952,8 +949,9 @@ export function createLayers(
     filled: true,
     stroked: true,
     lineWidthUnits: "pixels",
-    lineWidthMinPixels: 1,
-    lineWidthMaxPixels: 2,
+    // Heavier than the altar radius: hazard outlines have to read over bright terrain
+    lineWidthMinPixels: 2,
+    lineWidthMaxPixels: 3,
     pickable: false,
   });
 

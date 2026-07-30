@@ -143,8 +143,7 @@ export interface ZoneTrap {
   teleport_zone_id: string | null;
   teleport_zone_name: string | null;
   fire_interval: number | null;
-  trap_width: number | null;
-  trap_height: number | null;
+  area_paths: string | null;
   position_x: number | null;
   position_y: number | null;
 }

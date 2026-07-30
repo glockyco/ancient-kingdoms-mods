@@ -225,8 +225,8 @@ export interface TrapMapEntity extends MapEntity {
   teleportZoneName: string | null;
   teleportPosition: [number, number] | null;
   fireInterval: number | null;
-  trapWidth: number | null;
-  trapHeight: number | null;
+  /** Area rings in map coordinates, null for traps with no exported area */
+  areaPaths: [number, number][][] | null;
 }
 
 /**
