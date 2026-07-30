@@ -8,8 +8,6 @@ export interface TrapListView {
   zone_id: string;
   zone_name: string;
   is_dungeon: boolean;
-  sub_zone_id: string | null;
-  sub_zone_name: string | null;
   effect_skill_id: string | null;
   effect_skill_name: string | null;
   has_teleport: boolean;
@@ -31,8 +29,6 @@ export function getTrapsList(): TrapListView[] {
       t.zone_id,
       z.name as zone_name,
       z.is_dungeon,
-      t.sub_zone_id,
-      sz.name as sub_zone_name,
       t.effect_skill_id,
       s.name as effect_skill_name,
       t.has_teleport,
@@ -45,7 +41,6 @@ export function getTrapsList(): TrapListView[] {
       t.trap_height
     FROM traps t
     JOIN zones z ON z.id = t.zone_id
-    LEFT JOIN zone_triggers sz ON sz.id = t.sub_zone_id
     LEFT JOIN skills s ON s.id = t.effect_skill_id
     LEFT JOIN zones tz ON tz.id = t.teleport_zone_id
     ORDER BY z.name, t.type, t.name`,

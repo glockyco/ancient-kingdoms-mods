@@ -138,12 +138,13 @@ export interface ZoneTrap {
   id: string;
   name: string;
   type: TrapType;
-  sub_zone_name: string | null;
   effect_skill_id: string | null;
   effect_skill_name: string | null;
   teleport_zone_id: string | null;
   teleport_zone_name: string | null;
   fire_interval: number | null;
+  trap_width: number | null;
+  trap_height: number | null;
   position_x: number | null;
   position_y: number | null;
 }

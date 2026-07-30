@@ -261,16 +261,16 @@ export const load: PageServerLoad = ({ params }): ZoneDetailData => {
       t.id,
       t.name,
       t.type,
-      sz.name as sub_zone_name,
       t.effect_skill_id,
       s.name as effect_skill_name,
       t.teleport_zone_id,
       tz.name as teleport_zone_name,
       t.fire_interval,
+      t.trap_width,
+      t.trap_height,
       t.position_x,
       t.position_y
     FROM traps t
-    LEFT JOIN zone_triggers sz ON sz.id = t.sub_zone_id
     LEFT JOIN skills s ON s.id = t.effect_skill_id
     LEFT JOIN zones tz ON tz.id = t.teleport_zone_id
     WHERE t.zone_id = ?

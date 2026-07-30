@@ -12,6 +12,8 @@
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import Seo from "$lib/components/Seo.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
+  import TrapMechanics from "$lib/components/TrapMechanics.svelte";
+  import TrapEffect from "$lib/components/TrapEffect.svelte";
   import { TRAP_TYPE_LABELS, type TrapType } from "$lib/constants/traps";
   import type { TrapListView } from "$lib/queries/traps.server";
   import Castle from "@lucide/svelte/icons/castle";
@@ -44,15 +46,32 @@
 
   const columns: ColumnDef<TrapListView>[] = [
     {
-      id: "name",
-      header: "Name",
-      minSize: 180,
+      id: "effect",
+      header: "Effect",
+      size: 360,
       enableHiding: false,
+      accessorFn: (row) =>
+        row.effect_skill_name ?? row.teleport_zone_name ?? "Unknown effect",
+      getUniqueValues: (row) =>
+        row.effect_skill_id ? [row.effect_skill_id] : [],
+      filterFn: (row, _columnId, filterValue: string[]) => {
+        if (!filterValue || filterValue.length === 0) return true;
+        const effectId = row.original.effect_skill_id;
+        return effectId != null && filterValue.includes(effectId);
+      },
+    },
+    {
+      id: "mechanics",
+      header: "Mechanics",
+      minSize: 280,
+      accessorFn: (row) =>
+        [TRAP_TYPE_LABELS[row.type], row.fire_interval, row.name]
+          .filter((value) => value != null)
+          .join(" "),
     },
     {
       id: "type",
       header: "Type",
-      size: 170,
       accessorFn: (row) => TRAP_TYPE_LABELS[row.type],
       getUniqueValues: (row) => [row.type],
       filterFn: (row, _columnId, filterValue: string[]) => {
@@ -63,50 +82,13 @@
     {
       id: "zone",
       header: "Zone",
-      minSize: 180,
+      size: 210,
       accessorFn: (row) => row.zone_name,
       getUniqueValues: (row) => [row.zone_id],
       filterFn: (row, _columnId, filterValue: string[]) => {
         if (!filterValue || filterValue.length === 0) return true;
         return filterValue.includes(row.original.zone_id);
       },
-    },
-    {
-      id: "sub_zone",
-      header: "Area",
-      minSize: 200,
-      accessorFn: (row) => row.sub_zone_name ?? "",
-    },
-    {
-      id: "effect",
-      header: "Effect",
-      minSize: 180,
-      accessorFn: (row) => row.effect_skill_name ?? "",
-      getUniqueValues: (row) =>
-        row.effect_skill_id ? [row.effect_skill_id] : [],
-      filterFn: (row, _columnId, filterValue: string[]) => {
-        if (!filterValue || filterValue.length === 0) return true;
-        const effectId = row.original.effect_skill_id;
-        return effectId != null && filterValue.includes(effectId);
-      },
-    },
-    {
-      id: "teleport",
-      header: "Teleports To",
-      minSize: 150,
-      accessorFn: (row) => row.teleport_zone_name ?? "",
-    },
-    {
-      id: "fire_interval",
-      header: "Interval",
-      size: 110,
-      accessorFn: (row) => row.fire_interval ?? 0,
-    },
-    {
-      id: "size",
-      header: "Area Size",
-      size: 110,
-      enableSorting: false,
     },
     {
       id: "location",
@@ -117,14 +99,10 @@
   ];
 
   const columnLabels: Record<string, string> = {
-    name: "Name",
+    effect: "Effect",
+    mechanics: "Mechanics",
     type: "Type",
     zone: "Zone",
-    sub_zone: "Area",
-    effect: "Effect",
-    teleport: "Teleports To",
-    fire_interval: "Interval",
-    size: "Area Size",
     location: "Location",
   };
 </script>
@@ -173,8 +151,20 @@
   cell: Cell<TrapListView, unknown>;
   row: Row<TrapListView>;
 })}
-  {#if cell.column.id === "name"}
-    {row.original.name}
+  {#if cell.column.id === "effect"}
+    <TrapEffect
+      effectSkillId={row.original.effect_skill_id}
+      effectSkillName={row.original.effect_skill_name}
+      teleportZoneId={row.original.teleport_zone_id}
+      teleportZoneName={row.original.teleport_zone_name}
+    />
+  {:else if cell.column.id === "mechanics"}
+    <TrapMechanics
+      type={row.original.type}
+      fireInterval={row.original.fire_interval}
+      trapWidth={row.original.trap_width}
+      trapHeight={row.original.trap_height}
+    />
   {:else if cell.column.id === "zone"}
     <IconBadge
       href="/zones/{row.original.zone_id}"
@@ -183,46 +173,6 @@
     >
       {row.original.zone_name}
     </IconBadge>
-  {:else if cell.column.id === "sub_zone"}
-    {#if row.original.sub_zone_name}
-      {row.original.sub_zone_name}
-    {:else}
-      <span class="text-muted-foreground">-</span>
-    {/if}
-  {:else if cell.column.id === "effect"}
-    {#if row.original.effect_skill_id && row.original.effect_skill_name}
-      <a
-        href="/skills/{row.original.effect_skill_id}"
-        class="text-blue-600 dark:text-blue-400 hover:underline"
-      >
-        {row.original.effect_skill_name}
-      </a>
-    {:else}
-      <span class="text-muted-foreground">-</span>
-    {/if}
-  {:else if cell.column.id === "teleport"}
-    {#if row.original.teleport_zone_id && row.original.teleport_zone_name}
-      <a
-        href="/zones/{row.original.teleport_zone_id}"
-        class="text-blue-600 dark:text-blue-400 hover:underline"
-      >
-        {row.original.teleport_zone_name}
-      </a>
-    {:else}
-      <span class="text-muted-foreground">-</span>
-    {/if}
-  {:else if cell.column.id === "fire_interval"}
-    {#if row.original.fire_interval != null}
-      {row.original.fire_interval}s
-    {:else}
-      <span class="text-muted-foreground">-</span>
-    {/if}
-  {:else if cell.column.id === "size"}
-    {#if row.original.trap_width != null && row.original.trap_height != null}
-      {row.original.trap_width} × {row.original.trap_height}
-    {:else}
-      <span class="text-muted-foreground">-</span>
-    {/if}
   {:else if cell.column.id === "location"}
     {#if row.original.position_x != null && row.original.position_y != null}
       <MapLink entityId={row.original.id} entityType="trap" compact />
@@ -245,7 +195,7 @@
 
   <h1 class="text-3xl font-bold flex items-center gap-3">
     <TriangleAlert class="h-8 w-8 text-rose-600" />
-    Traps ({data.traps.length})
+    Traps
   </h1>
 
   <DataTable
@@ -257,11 +207,7 @@
     {renderToolbar}
     pageSize={PAGE_SIZE}
     initialSorting={[{ id: "zone", desc: false }]}
-    initialColumnVisibility={{
-      size: false,
-      fire_interval: false,
-      teleport: false,
-    }}
+    initialColumnVisibility={{ type: false }}
     urlKey="traps"
     showPagination={true}
     showSearch={true}

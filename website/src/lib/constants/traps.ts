@@ -6,3 +6,10 @@ export const TRAP_TYPE_LABELS: Record<TrapType, string> = {
   dangerous_ground: "Dangerous Ground",
   wall_trap: "Wall Trap",
 };
+
+/** Visitor-facing mechanics summary for each exported trap kind. */
+export const TRAP_TYPE_DESCRIPTIONS: Record<TrapType, string> = {
+  disarmable: "Contact trap.",
+  dangerous_ground: "Area hazard. Reapplies once per second while occupied.",
+  wall_trap: "Direct-damage wall trap.",
+};
