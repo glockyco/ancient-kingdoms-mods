@@ -476,6 +476,7 @@ function addOverviewHashes(db, hashes) {
   addHash(hashes, "/zones", all(db, "SELECT * FROM zones ORDER BY id"));
   addHash(hashes, "/quests", all(db, "SELECT * FROM quests ORDER BY id"));
   addHash(hashes, "/chests", all(db, "SELECT * FROM chests ORDER BY id"));
+  addHash(hashes, "/traps", all(db, "SELECT * FROM traps ORDER BY id"));
   addHash(
     hashes,
     "/gather-items",

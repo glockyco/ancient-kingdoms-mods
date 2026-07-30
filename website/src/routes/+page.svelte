@@ -33,6 +33,7 @@
   import Cat from "@lucide/svelte/icons/cat";
   import Swords from "@lucide/svelte/icons/swords";
   import ArrowRight from "@lucide/svelte/icons/arrow-right";
+  import TriangleAlert from "@lucide/svelte/icons/triangle-alert";
 
   let { data } = $props();
 
@@ -159,6 +160,13 @@
       icon: Flame,
       badge: "bg-orange-500/10 text-orange-500",
       count: HOME_COUNTS.altars,
+    },
+    {
+      title: "Traps",
+      href: "/traps",
+      icon: TriangleAlert,
+      badge: "bg-rose-500/10 text-rose-500",
+      count: HOME_COUNTS.traps,
     },
   ];
 
