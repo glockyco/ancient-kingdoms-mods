@@ -278,10 +278,6 @@
       "sha256": "15ac3765c756058072883bba5976bd4f82f54eb3a33feaa7c652af0da15a2d80",
       "span": 8
     },
-    "DangerousGround.cs:24-31": {
-      "sha256": "bef83485d18ff4a3730647e405ed8cb0dc99587524c98afa11bee824fc776e06",
-      "span": 8
-    },
     "Database.cs:2305-2315": {
       "sha256": "84f0aa2bd0875f51b9674b18d54abca239d8061f676634be9cfe4cfc304e8939",
       "span": 11
@@ -1001,10 +997,6 @@
       "sha256": "b90196d65c14ccabbc904b00c5801d404475dcc806c72310452e8a5bdcf93d35",
       "span": 18
     },
-    "Player.cs:7480-7488": {
-      "sha256": "09d4b3e3367f3ad6591c39467c1b006b5fad5ad72054c2605ac177dc38b52945",
-      "span": 9
-    },
     "Player.cs:7546-7565": {
       "sha256": "a6c1d6d3291bbc0db018fe74dcb97e6f0b692ba8d3d3547329bb8933ad41ba22",
       "span": 20
@@ -1455,14 +1447,6 @@
       "sha256": "8e08c23b0649ac093fc5a6649c317a8d6252fb422ee50cde4556176a42cbc74c",
       "span": 67
     },
-    "Trap.cs:181-197": {
-      "sha256": "31d725a5e0f229c25cd880a58a840b8e4ed426a8f8c028fdc5c7a5829003905a",
-      "span": 17
-    },
-    "Trap.cs:233-242": {
-      "sha256": "202967722fc4d847e28d75ea75216fa70ba70e4d3cac9e9d2f02a891ca780188",
-      "span": 10
-    },
     "TrapDetection.cs:25-31": {
       "sha256": "bacfe92912fc15dd99d4d19ce2860e01ba0e8fa757862456ee79dcf8f111c0b5",
       "span": 7
@@ -1617,14 +1601,6 @@
     },
     "Utils.cs:worldBosses": {
       "span": 0
-    },
-    "WallTrap.cs:24-31": {
-      "sha256": "33efcb89833e7eee3fccaad700040272f16dcbd5f700eff9909993ff7d4639cb",
-      "span": 8
-    },
-    "WallTrap.cs:57-66": {
-      "sha256": "ba9f5d14c82c2bb758006af13a4187713949da4ecfc3ad6f90ba381de1fc63e0",
-      "span": 10
     },
     "WeaponItem.cs": {
       "span": 0

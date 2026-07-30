@@ -173,7 +173,9 @@
   cell: Cell<TrapListView, unknown>;
   row: Row<TrapListView>;
 })}
-  {#if cell.column.id === "zone"}
+  {#if cell.column.id === "name"}
+    {row.original.name}
+  {:else if cell.column.id === "zone"}
     <IconBadge
       href="/zones/{row.original.zone_id}"
       icon={row.original.is_dungeon ? Castle : Trees}
@@ -246,16 +248,6 @@
     Traps ({data.traps.length})
   </h1>
 
-  <!-- Source: server-scripts/Trap.cs:181-197 and Player.cs:7480-7488 — Rogue + Detect Traps gate.
-       Source: server-scripts/Trap.cs:233-242 — disarmed traps re-arm after 3600s.
-       Source: server-scripts/DangerousGround.cs:24-31 — retriggers once per second per entity.
-       Source: server-scripts/WallTrap.cs:24-31,57-66 — periodic damage skill, not a debuff. -->
-  <p class="text-sm text-muted-foreground max-w-prose">
-    Disarmable traps can be handled by Rogues with Detect Traps and re-arm after
-    one hour. Dangerous ground repeatedly applies a debuff, while wall traps
-    periodically deal direct damage.
-  </p>
-
   <DataTable
     data={data.traps}
     {columns}
@@ -265,7 +257,11 @@
     {renderToolbar}
     pageSize={PAGE_SIZE}
     initialSorting={[{ id: "zone", desc: false }]}
-    initialColumnVisibility={{ size: false }}
+    initialColumnVisibility={{
+      size: false,
+      fire_interval: false,
+      teleport: false,
+    }}
     urlKey="traps"
     showPagination={true}
     showSearch={true}
