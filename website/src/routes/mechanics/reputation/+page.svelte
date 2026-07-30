@@ -2,33 +2,72 @@
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import Seo from "$lib/components/Seo.svelte";
   import * as Card from "$lib/components/ui/card";
+  import {
+    FACTION_ACCENTS,
+    FACTION_ACCENT_FALLBACK,
+  } from "$lib/constants/factions";
   import type { ReputationMechanicsPageData } from "./+page.server";
 
   let { data }: { data: ReputationMechanicsPageData } = $props();
 
-  const RACE_STARTS = [
-    { race: "Human", faction: "Army of Order" },
-    { race: "Elf", faction: "Elven Kingdom" },
-    { race: "Fire Goblin", faction: "Dark Alliance" },
-    { race: "Dark Elf", faction: "Dark Alliance" },
-    { race: "Dwarf", faction: "Children of Illithor" },
-    { race: "Felarii", faction: "Ancient Gods" },
-    { race: "Drassar", faction: "Ancient Gods" },
+  // Which races begin at 500 with each faction, grouped by faction so the two
+  // shared ones read once and The Forsaken's absence is visible.
+  const FACTIONS = [
+    { id: "army_of_order", name: "Army of Order", races: ["Human"] },
+    { id: "elven_kingdom", name: "Elven Kingdom", races: ["Elf"] },
+    {
+      id: "children_of_illithor",
+      name: "Children of Illithor",
+      races: ["Dwarf"],
+    },
+    {
+      id: "dark_alliance",
+      name: "Dark Alliance",
+      races: ["Fire Goblin", "Dark Elf"],
+    },
+    {
+      id: "ancient_gods",
+      name: "Ancient Gods",
+      races: ["Felarii", "Drassar"],
+    },
+    { id: "the_forsaken", name: "The Forsaken", races: [] },
   ];
 
-  const FACTIONS = [
-    { id: "army_of_order", name: "Army of Order" },
-    { id: "elven_kingdom", name: "Elven Kingdom" },
-    { id: "children_of_illithor", name: "Children of Illithor" },
-    { id: "dark_alliance", name: "Dark Alliance" },
-    { id: "ancient_gods", name: "Ancient Gods" },
-    { id: "the_forsaken", name: "The Forsaken" },
+  // Tint deepens toward each end of the ladder. The eight segments are equal
+  // width because the ranges span three orders of magnitude, so the strip
+  // shows order and the hostile split, and the table carries the numbers.
+  const TIER_BANDS = [
+    "bg-red-500/40",
+    "bg-red-500/28",
+    "bg-red-500/16",
+    "bg-emerald-500/10",
+    "bg-emerald-500/18",
+    "bg-emerald-500/26",
+    "bg-emerald-500/34",
+    "bg-emerald-500/42",
   ];
+
+  // What actually changes inside each tier. The thresholds are raw numbers, so
+  // most of these sit inside a tier rather than on its boundary.
+  const TIER_UNLOCKS: Record<number, string> = {
+    0: "NPCs refuse to talk",
+    1: "NPCs refuse to talk",
+    4: "Faction vendors, at 15,000",
+    5: "Houses and gated quests, at 21,000",
+    6: "Recipes and costumes, at 221,000",
+    7: "Mounts, at 721,000",
+  };
 
   function tierRange(min: number | null, max: number | null): string {
     if (min === null) return `below ${(max ?? 0).toLocaleString()}`;
     if (max === null) return `${min.toLocaleString()}+`;
     return `${min.toLocaleString()} – ${max.toLocaleString()}`;
+  }
+
+  /** How much reputation a tier covers, which is what it costs to cross it. */
+  function tierSpan(min: number | null, max: number | null): string {
+    if (min === null || max === null) return "no limit";
+    return (max - min).toLocaleString();
   }
 </script>
 
@@ -107,43 +146,40 @@
         factions.
       </Card.Description>
     </Card.Header>
-    <Card.Content class="space-y-3 text-sm text-muted-foreground">
-      <ul class="list-disc space-y-1 pl-5">
-        {#each FACTIONS as faction (faction.id)}
-          <li>
-            <a
-              href="/factions/{faction.id}"
-              class="text-blue-600 hover:underline dark:text-blue-400"
-              >{faction.name}</a
-            >
-          </li>
-        {/each}
-      </ul>
+    <Card.Content class="space-y-4 text-sm text-muted-foreground">
       <!-- Source: server-scripts/Database.cs:3001-3075 — per-race starting faction values. -->
       <p>
         A new character starts at 0 with every faction except the one that
         matches its race, which starts at 500. That is still inside Neutral.
       </p>
-      <div class="overflow-x-auto">
-        <table class="w-full border-collapse text-sm">
-          <thead>
-            <tr class="border-b border-border">
-              <th class="py-2 pr-4 text-left font-medium">Race</th>
-              <th class="py-2 text-left font-medium">Starts at 500 with</th>
-            </tr>
-          </thead>
-          <tbody>
-            {#each RACE_STARTS as start (start.race)}
-              <tr class="border-b border-border/50 hover:bg-muted/30">
-                <td class="py-2 pr-4">{start.race}</td>
-                <td class="py-2">{start.faction}</td>
-              </tr>
-            {/each}
-          </tbody>
-        </table>
+      <div class="grid gap-x-8 gap-y-4 sm:grid-cols-2 lg:grid-cols-3">
+        {#each FACTIONS as faction (faction.id)}
+          {@const accent =
+            FACTION_ACCENTS[faction.id] ?? FACTION_ACCENT_FALLBACK}
+          {@const FactionIcon = accent.icon}
+          <div class="flex items-center gap-3">
+            <div class="shrink-0 rounded-lg p-2 {accent.bg}">
+              <FactionIcon class="h-5 w-5 {accent.color}" />
+            </div>
+            <div class="min-w-0">
+              <a
+                href="/factions/{faction.id}"
+                class="font-medium text-blue-600 hover:underline dark:text-blue-400"
+                >{faction.name}</a
+              >
+              <p class="truncate">
+                {#if faction.races.length > 0}
+                  {faction.races.join(", ")}
+                {:else}
+                  No race starts here
+                {/if}
+              </p>
+            </div>
+          </div>
+        {/each}
       </div>
       <p>
-        No race starts with any reputation in The Forsaken. It is also the only
+        The Forsaken is the one faction nobody is born into. It is also the only
         faction that goes up when you kill NPCs.
       </p>
     </Card.Content>
@@ -157,29 +193,67 @@
         game check the raw number, so the tier is only a label.
       </Card.Description>
     </Card.Header>
-    <Card.Content class="space-y-3 text-sm text-muted-foreground">
+    <Card.Content class="space-y-4 text-sm text-muted-foreground">
       <!-- Source: server-scripts/UIFactions.cs:78-146 — adaptTextFaction maps standing to a tier label. -->
       <div class="overflow-x-auto">
-        <table class="w-full border-collapse text-sm">
+        <div class="min-w-[640px]">
+          <div
+            class="flex h-9 overflow-hidden rounded border border-border text-center text-xs"
+          >
+            {#each data.tiers as tier, i (tier.id)}
+              <div
+                class="flex flex-1 items-center justify-center {TIER_BANDS[
+                  i
+                ]} {i === 3 ? 'border-l-2 border-border' : ''}"
+              >
+                <span class="truncate px-1 font-medium text-foreground"
+                  >{tier.name}</span
+                >
+              </div>
+            {/each}
+          </div>
+          <div class="relative mt-1 h-5 font-mono text-xs whitespace-nowrap">
+            <span class="absolute left-[25%] -translate-x-1/2">−500</span>
+            <span class="absolute left-[37.5%] -translate-x-1/2">0</span>
+          </div>
+        </div>
+      </div>
+      <p>
+        The three red tiers are hostile. A new character starts at 0, right
+        where Neutral begins, so almost the whole ladder is above the starting
+        point.
+      </p>
+      <div class="overflow-x-auto">
+        <table class="w-full min-w-[640px] border-collapse text-sm">
           <thead>
             <tr class="border-b border-border">
-              <th class="py-2 pr-4 text-left font-medium">Tier</th>
-              <th class="py-2 pr-4 text-right font-medium">Reputation</th>
-              <th class="py-2 text-left font-medium">Hostile</th>
+              <th class="py-2 pr-6 text-left font-medium">Tier</th>
+              <th class="py-2 pr-6 text-right font-medium">Reputation</th>
+              <th class="py-2 pr-8 text-right font-medium">Points to cross</th>
+              <th class="py-2 text-left font-medium">What changes here</th>
             </tr>
           </thead>
           <tbody>
             {#each data.tiers as tier (tier.id)}
               <tr class="border-b border-border/50 hover:bg-muted/30">
                 <td
-                  class="py-2 pr-4 font-medium {tier.is_hostile
+                  class="py-2 pr-6 font-medium {tier.is_hostile
                     ? 'text-red-600 dark:text-red-400'
                     : 'text-green-600 dark:text-green-400'}">{tier.name}</td
                 >
-                <td class="py-2 pr-4 text-right font-mono"
+                <td class="py-2 pr-6 text-right font-mono"
                   >{tierRange(tier.min_value, tier.max_value)}</td
                 >
-                <td class="py-2">{tier.is_hostile ? "Yes" : "—"}</td>
+                <td class="py-2 pr-8 text-right font-mono"
+                  >{tierSpan(tier.min_value, tier.max_value)}</td
+                >
+                <td class="py-2">
+                  {#if TIER_UNLOCKS[tier.id]}
+                    {TIER_UNLOCKS[tier.id]}
+                  {:else}
+                    <span class="text-muted-foreground/50">—</span>
+                  {/if}
+                </td>
               </tr>
             {/each}
           </tbody>
@@ -200,14 +274,14 @@
         raises and a list it lowers, and both apply when it dies.
       </Card.Description>
     </Card.Header>
-    <Card.Content class="space-y-3 text-sm text-muted-foreground">
+    <Card.Content class="space-y-4 text-sm text-muted-foreground">
       <!-- Source: server-scripts/Monster.cs:515-540 — GetFactionGain and GetFactionLoss. -->
       <p>
         What you gain depends on the monster's level and its maximum health,
         multiplied by its rank. What you lose depends only on level.
       </p>
       <div class="overflow-x-auto">
-        <table class="w-full border-collapse text-sm">
+        <table class="w-full min-w-[640px] border-collapse text-sm">
           <thead>
             <tr class="border-b border-border">
               <th class="py-2 pr-4 text-left font-medium">Rank</th>
@@ -266,7 +340,7 @@
         simpler formula.
       </Card.Description>
     </Card.Header>
-    <Card.Content class="space-y-3 text-sm text-muted-foreground">
+    <Card.Content class="space-y-4 text-sm text-muted-foreground">
       <!-- Source: server-scripts/Npc.cs:1600-1610 — the aggro player's faction changes on an NPC death. -->
       <p>
         Every faction on the NPC's improve list goes up by
@@ -295,7 +369,7 @@
         Quest reputation goes to the faction of the NPC who gave you the quest.
       </Card.Description>
     </Card.Header>
-    <Card.Content class="space-y-3 text-sm text-muted-foreground">
+    <Card.Content class="space-y-4 text-sm text-muted-foreground">
       <!-- Source: server-scripts/PlayerQuests.cs:440-443 — quest completion raises the start NPC's faction. -->
       <p>
         Handing in a quest gives
@@ -314,7 +388,7 @@
         with it.
       </Card.Description>
     </Card.Header>
-    <Card.Content class="space-y-3 text-sm text-muted-foreground">
+    <Card.Content class="space-y-4 text-sm text-muted-foreground">
       <!-- Source: server-scripts/GatherItem.cs:338-346 — opening a rewarding chest lowers its faction. -->
       <p>
         Opening a faction chest costs
@@ -337,7 +411,7 @@
         amount of reputation.
       </Card.Description>
     </Card.Header>
-    <Card.Content class="space-y-3 text-sm text-muted-foreground">
+    <Card.Content class="space-y-4 text-sm text-muted-foreground">
       <!-- Source: server-scripts/PetFriendly.cs:284-298 — clicking within 3 units pets the animal and grants faction at most every 30 seconds. -->
       <!-- Source: server-scripts/Player.cs:11619-11623 — CmdIncreaseFaction adds the value unchanged. -->
       <p>
@@ -355,7 +429,7 @@
         Every requirement compares your raw reputation value against a number.
       </Card.Description>
     </Card.Header>
-    <Card.Content class="space-y-3 text-sm text-muted-foreground">
+    <Card.Content class="space-y-4 text-sm text-muted-foreground">
       <ul class="list-disc space-y-2 pl-5">
         <li>
           <!-- Source: server-scripts/Npc.cs:1895-1904 — faction vendors require 15,000 standing. -->
@@ -400,7 +474,7 @@
         direction.
       </Card.Description>
     </Card.Header>
-    <Card.Content class="space-y-3 text-sm text-muted-foreground">
+    <Card.Content class="space-y-4 text-sm text-muted-foreground">
       <p>
         Nothing in the game changes reputation over time. It only moves when one
         of the sources above applies, so a faction you ignore keeps whatever
