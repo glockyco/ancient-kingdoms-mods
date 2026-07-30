@@ -24,6 +24,7 @@ import {
   Scroll,
   Home,
   Fish,
+  TriangleAlert,
   type IconNode,
 } from "lucide";
 import { LAYER_COLORS } from "./config";
@@ -54,6 +55,7 @@ const ENTITY_ICONS: Record<
   portal: { icon: CircleDot, colorKey: "portal" },
   chest: { icon: Box, colorKey: "chest" },
   altar: { icon: Flame, colorKey: "altar" },
+  trap: { icon: TriangleAlert, colorKey: "trap" },
   gathering_plant: { icon: Leaf, colorKey: "gathering_plant" },
   gathering_mineral: { icon: Pickaxe, colorKey: "gathering_mineral" },
   gathering_spark: { icon: Sparkles, colorKey: "gathering_spark" },

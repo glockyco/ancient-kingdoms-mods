@@ -52,6 +52,7 @@ function mapData(gathering: GatheringMapEntity[]): MapEntityData {
     chests: [],
     treasure: [],
     altars: [],
+    traps: [],
     gathering,
     crafting: [],
     houses: [],

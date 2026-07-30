@@ -6,6 +6,7 @@
     PortalMapEntity,
     ChestMapEntity,
     AltarMapEntity,
+    TrapMapEntity,
     GatheringMapEntity,
     CraftingMapEntity,
   } from "$lib/types/map";
@@ -16,6 +17,7 @@
     hasNpcRole,
   } from "$lib/utils/tooltip";
   import { ENTITY_BORDER_COLORS } from "$lib/map/config";
+  import { TRAP_TYPE_LABELS } from "$lib/constants/traps";
 
   interface Props {
     entity: AnyMapEntity;
@@ -54,6 +56,15 @@
       const crafting = entity as CraftingMapEntity;
       return crafting.isCookingOven ? "Cooking Oven" : "Forge";
     }
+    if (entity.type === "trap") {
+      const trap = entity as TrapMapEntity;
+      return (
+        trap.effectSkillName ??
+        (trap.teleportZoneName
+          ? `Teleport to ${trap.teleportZoneName}`
+          : "Trap")
+      );
+    }
     return entity.name;
   }
 
@@ -73,6 +84,8 @@
         return "NPC";
       case "portal":
         return isHoveringDestination ? "Portal Destination" : null;
+      case "trap":
+        return TRAP_TYPE_LABELS[(entity as TrapMapEntity).trapType];
       case "gathering_plant":
         return "Plant";
       case "gathering_mineral":
@@ -164,6 +177,11 @@
     {/if}
     {#if altar.minLevel > 0}
       <div class="text-xs text-muted-foreground">Lv. {altar.minLevel}+</div>
+    {/if}
+  {:else if entity.type === "trap"}
+    {@const trap = entity as TrapMapEntity}
+    {#if trap.effectSkillName}
+      <div class="text-xs text-rose-400">{trap.effectSkillName}</div>
     {/if}
   {:else if entity.type === "monster" || entity.type === "fabled" || entity.type === "boss" || entity.type === "elite" || entity.type === "hunt"}
     {@const monster = entity as MonsterMapEntity}

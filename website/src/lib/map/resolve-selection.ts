@@ -99,6 +99,8 @@ export function resolvePhysicalSelection(
       return resolveZoneSelection(id, entityData);
     case "altar":
       return resolveAltarSelection(id, entityData);
+    case "trap":
+      return resolveTrapSelection(id, entityData);
     case "portal":
       return resolvePortalSelection(id, entityData);
     case "chest":
@@ -303,6 +305,24 @@ function resolveAltarSelection(
     return {
       popup: { type: "entity", entity: altar },
       highlight: { entityId: altarId, entityType: "altar" },
+    };
+  }
+
+  return { popup: null, highlight: null };
+}
+
+function resolveTrapSelection(
+  trapId: string,
+  entityData: MapEntityData,
+): ResolvedSelection {
+  const trap = entityData.traps.find(
+    (t) => t.id === trapId && t.position !== null,
+  );
+
+  if (trap) {
+    return {
+      popup: { type: "entity", entity: trap },
+      highlight: { entityId: trapId, entityType: "trap" },
     };
   }
 

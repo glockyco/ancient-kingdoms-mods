@@ -29,6 +29,7 @@
   import RefreshCw from "@lucide/svelte/icons/refresh-cw";
   import Compass from "@lucide/svelte/icons/compass";
   import Home from "@lucide/svelte/icons/home";
+  import TriangleAlert from "@lucide/svelte/icons/triangle-alert";
   import type { Component } from "svelte";
 
   // Role category colors (matching RoleBadges.svelte)
@@ -88,6 +89,7 @@
       treasure: Shovel,
       altar: Flame,
       house: Home,
+      trap: TriangleAlert,
       crafting: Hammer,
       portal: CircleDot,
       quest: Scroll,

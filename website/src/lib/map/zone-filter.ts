@@ -6,6 +6,7 @@ import type {
   ChestMapEntity,
   TreasureMapEntity,
   AltarMapEntity,
+  TrapMapEntity,
   HouseMapEntity,
   ZoneBoundary,
 } from "$lib/types/map";
@@ -36,6 +37,7 @@ export interface ZoneFocusedData extends FilteredMapData {
   chests: ChestMapEntity[];
   treasure: TreasureMapEntity[];
   altars: AltarMapEntity[];
+  traps: TrapMapEntity[];
   houses: HouseMapEntity[];
   subZones: ZoneBoundary[];
 }
@@ -57,6 +59,7 @@ export function createZoneFocusedData(
     chests: rawData.chests.filter((c) => c.position !== null),
     treasure: rawData.treasure.filter((t) => t.position !== null),
     altars: rawData.altars.filter((a) => a.position !== null),
+    traps: rawData.traps.filter((t) => t.position !== null),
     houses: rawData.houses.filter((h) => h.position !== null),
     // Sort by area descending so smaller/enclosed zones render on top and remain hoverable
     subZones: rawData.subZones

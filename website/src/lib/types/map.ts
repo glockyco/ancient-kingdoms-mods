@@ -1,6 +1,8 @@
 /**
  * Entity types that can appear on the map
  */
+import type { TrapType } from "$lib/constants/traps";
+
 export type EntityType =
   | "monster"
   | "boss"
@@ -12,6 +14,7 @@ export type EntityType =
   | "chest"
   | "treasure"
   | "altar"
+  | "trap"
   | "gathering_plant"
   | "gathering_mineral"
   | "gathering_spark"
@@ -213,6 +216,18 @@ export interface AltarMapEntity extends MapEntity {
   finalBossIds: string[];
 }
 
+export interface TrapMapEntity extends MapEntity {
+  type: "trap";
+  trapType: TrapType;
+  effectSkillId: string | null;
+  effectSkillName: string | null;
+  teleportZoneId: string | null;
+  teleportZoneName: string | null;
+  fireInterval: number | null;
+  trapWidth: number | null;
+  trapHeight: number | null;
+}
+
 /**
  * Gathering resource entity data
  */
@@ -256,6 +271,7 @@ export type AnyMapEntity =
   | ChestMapEntity
   | TreasureMapEntity
   | AltarMapEntity
+  | TrapMapEntity
   | GatheringMapEntity
   | CraftingMapEntity
   | HouseMapEntity;
@@ -300,6 +316,7 @@ export interface LayerVisibility {
   chests: boolean;
   treasure: boolean;
   altars: boolean;
+  traps: boolean;
   houses: boolean;
   alchemyTables: boolean;
   forges: boolean;
@@ -371,6 +388,7 @@ export interface MapEntityData {
   chests: ChestMapEntity[];
   treasure: TreasureMapEntity[];
   altars: AltarMapEntity[];
+  traps: TrapMapEntity[];
   gathering: GatheringMapEntity[];
   crafting: CraftingMapEntity[];
   houses: HouseMapEntity[];

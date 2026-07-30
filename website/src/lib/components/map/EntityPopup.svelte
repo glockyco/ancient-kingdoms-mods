@@ -23,6 +23,7 @@
     type ChestMapEntity,
     type TreasureMapEntity,
     type AltarMapEntity,
+    type TrapMapEntity,
     type GatheringMapEntity,
     type CraftingMapEntity,
     type HouseMapEntity,
@@ -40,6 +41,7 @@
     type GatheringPopupDetails,
     type AltarPopupDetails,
   } from "$lib/queries/popup";
+  import { TRAP_TYPE_LABELS } from "$lib/constants/traps";
   interface Props {
     entity: AnyMapEntity;
     onClose: () => void;
@@ -296,6 +298,8 @@
         return `/chests/${entity.id}`;
       case "altar":
         return `/altars/${entity.id}`;
+      case "trap":
+        return "/traps";
       case "treasure":
         return `/professions/treasure_hunter`;
       case "house":
@@ -327,6 +331,8 @@
         return "Treasure";
       case "altar":
         return "Altar";
+      case "trap":
+        return TRAP_TYPE_LABELS[(entity as TrapMapEntity).trapType];
       case "house":
         return "House";
       case "gathering_plant":
@@ -358,6 +364,15 @@
     if (entity.type === "crafting_station") {
       const crafting = entity as CraftingMapEntity;
       return crafting.isCookingOven ? "Cooking Oven" : "Forge";
+    }
+    if (entity.type === "trap") {
+      const trap = entity as TrapMapEntity;
+      return (
+        trap.effectSkillName ??
+        (trap.teleportZoneName
+          ? `Teleport to ${trap.teleportZoneName}`
+          : "Trap")
+      );
     }
     return entity.name;
   }
@@ -1049,6 +1064,45 @@
           tooltipHtml={treasure.rewardTooltipHtml}
           onSelect={onSelectItem}
         />
+      </div>
+    {/if}
+  {/if}
+
+  <!-- Trap Section -->
+  {#if entity.type === "trap"}
+    {@const trap = entity as TrapMapEntity}
+    {#if trap.effectSkillId && trap.effectSkillName}
+      <div class="flex justify-between gap-4">
+        <span class="text-muted-foreground">Effect</span>
+        <a
+          href="/skills/{trap.effectSkillId}"
+          class="text-blue-600 dark:text-blue-400 hover:underline text-right"
+        >
+          {trap.effectSkillName}
+        </a>
+      </div>
+    {/if}
+    {#if trap.teleportZoneId && trap.teleportZoneName}
+      <div class="flex justify-between gap-4">
+        <span class="text-muted-foreground">Teleports To</span>
+        <a
+          href="/zones/{trap.teleportZoneId}"
+          class="text-blue-600 dark:text-blue-400 hover:underline text-right"
+        >
+          {trap.teleportZoneName}
+        </a>
+      </div>
+    {/if}
+    {#if trap.fireInterval != null}
+      <div class="flex justify-between">
+        <span class="text-muted-foreground">Fires Every</span>
+        <span>{trap.fireInterval}s</span>
+      </div>
+    {/if}
+    {#if trap.trapWidth != null && trap.trapHeight != null}
+      <div class="flex justify-between">
+        <span class="text-muted-foreground">Area</span>
+        <span>{trap.trapWidth} × {trap.trapHeight}</span>
       </div>
     {/if}
   {/if}

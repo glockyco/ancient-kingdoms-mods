@@ -24,6 +24,7 @@
   import ChefHat from "@lucide/svelte/icons/chef-hat";
   import Home from "@lucide/svelte/icons/home";
   import Fish from "@lucide/svelte/icons/fish";
+  import TriangleAlert from "@lucide/svelte/icons/triangle-alert";
   import MapSidebarSection from "./MapSidebarSection.svelte";
   import ZoneFocusSelect from "./ZoneFocusSelect.svelte";
   import LevelFilter from "../LevelFilter.svelte";
@@ -244,6 +245,12 @@
   // Interactable layers
   const interactableLayers: LayerOption[] = [
     { key: "altars", label: "Altars", color: LAYER_COLORS.altar, icon: Flame },
+    {
+      key: "traps",
+      label: "Traps",
+      color: LAYER_COLORS.trap,
+      icon: TriangleAlert,
+    },
     {
       key: "portals",
       label: "Portals",

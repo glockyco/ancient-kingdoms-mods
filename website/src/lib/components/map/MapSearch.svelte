@@ -68,6 +68,7 @@
     treasure: "Treasure",
     altar: "Altars",
     house: "Houses",
+    trap: "Traps",
     crafting: "Crafting Stations",
     portal: "Portals",
     item: "Items",

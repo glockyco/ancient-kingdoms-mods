@@ -17,6 +17,7 @@ import type {
   ChestMapEntity,
   TreasureMapEntity,
   AltarMapEntity,
+  TrapMapEntity,
   GatheringMapEntity,
   CraftingMapEntity,
   HouseMapEntity,
@@ -57,6 +58,7 @@ export function loadAllMapEntitiesServer(): MapEntityData {
     const chests = loadChestsServer(db);
     const treasure = loadTreasureServer(db);
     const altars = loadAltarsServer(db);
+    const traps = loadTrapsServer(db);
     const gathering = loadGatheringSpawnsServer(db);
     const crafting = loadCraftingStationsServer(db);
     const houses = loadHousesServer(db);
@@ -72,6 +74,7 @@ export function loadAllMapEntitiesServer(): MapEntityData {
       chests,
       treasure,
       altars,
+      traps,
       gathering,
       crafting,
       houses,
@@ -832,6 +835,71 @@ function loadAltarsServer(db: Database.Database): AltarMapEntity[] {
       finalBossIds: bossInfo.ids,
     };
   });
+}
+
+interface TrapRow {
+  id: string;
+  name: string;
+  type: TrapMapEntity["trapType"];
+  position_x: number | null;
+  position_y: number | null;
+  zone_id: string;
+  zone_name: string;
+  effect_skill_id: string | null;
+  effect_skill_name: string | null;
+  teleport_zone_id: string | null;
+  teleport_zone_name: string | null;
+  fire_interval: number | null;
+  trap_width: number | null;
+  trap_height: number | null;
+}
+
+function loadTrapsServer(db: Database.Database): TrapMapEntity[] {
+  const rows = db
+    .prepare(
+      `
+    SELECT
+      t.id,
+      t.name,
+      t.type,
+      t.position_x,
+      t.position_y,
+      t.zone_id,
+      z.name as zone_name,
+      t.effect_skill_id,
+      s.name as effect_skill_name,
+      t.teleport_zone_id,
+      tz.name as teleport_zone_name,
+      t.fire_interval,
+      t.trap_width,
+      t.trap_height
+    FROM traps t
+    JOIN zones z ON z.id = t.zone_id
+    LEFT JOIN skills s ON s.id = t.effect_skill_id
+    LEFT JOIN zones tz ON tz.id = t.teleport_zone_id
+  `,
+    )
+    .all() as TrapRow[];
+
+  return rows.map((r) => ({
+    id: r.id,
+    type: "trap" as const,
+    name: r.name,
+    position:
+      r.position_x !== null && r.position_y !== null
+        ? [r.position_x, -r.position_y]
+        : null,
+    zoneId: r.zone_id,
+    zoneName: r.zone_name,
+    trapType: r.type,
+    effectSkillId: r.effect_skill_id,
+    effectSkillName: r.effect_skill_name,
+    teleportZoneId: r.teleport_zone_id,
+    teleportZoneName: r.teleport_zone_name,
+    fireInterval: r.fire_interval,
+    trapWidth: r.trap_width,
+    trapHeight: r.trap_height,
+  }));
 }
 
 interface GatheringRow {

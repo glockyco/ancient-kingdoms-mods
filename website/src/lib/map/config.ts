@@ -49,6 +49,7 @@ export const LAYER_COLORS = {
   chest: [14, 165, 233] as [number, number, number], // sky-500
   treasure: [20, 184, 166] as [number, number, number], // teal-500
   altar: [249, 115, 22] as [number, number, number], // orange-500
+  trap: [225, 29, 72] as [number, number, number], // rose-600
   gathering_plant: [132, 204, 22] as [number, number, number], // lime-500
   gathering_mineral: [23, 37, 84] as [number, number, number], // blue-950
   gathering_spark: [168, 85, 247] as [number, number, number], // purple-500
@@ -71,6 +72,7 @@ export const LAYER_RADII = {
   portal: 6,
   chest: 5,
   altar: 7,
+  trap: 5,
   gathering: 3,
   crafting: 5,
   house: 6,
@@ -92,6 +94,7 @@ export const ICON_SIZES = {
   fabled: { base: 28, min: 26, max: 60 },
   elite: { base: 26, min: 24, max: 56 },
   altar: { base: 26, min: 24, max: 56 },
+  trap: { base: 20, min: 18, max: 44 },
   npc: { base: 18, min: 16, max: 40 },
   portal: { base: 22, min: 20, max: 48 },
   chest: { base: 20, min: 18, max: 44 },
@@ -237,6 +240,7 @@ export const ENTITY_BORDER_COLORS: Record<string, string> = {
   chest: "border-l-sky-500",
   treasure: "border-l-teal-500",
   altar: "border-l-orange-500",
+  trap: "border-l-rose-600",
   house: "border-l-amber-500",
   gathering_plant: "border-l-lime-500",
   gathering_mineral: "border-l-blue-950",

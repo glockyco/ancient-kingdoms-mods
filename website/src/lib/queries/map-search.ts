@@ -17,6 +17,7 @@ export type MapSearchCategory =
   | "treasure"
   | "altar"
   | "house"
+  | "trap"
   | "crafting"
   | "portal"
   | "item"
@@ -38,6 +39,7 @@ export const SEARCH_CATEGORY_ORDER: MapSearchCategory[] = [
   "chest",
   "treasure",
   "house",
+  "trap",
   "portal",
 ];
 
@@ -88,6 +90,7 @@ export async function searchMapEntities(
     altars,
     crafting,
     houses,
+    traps,
     portals,
     items,
     quests,
@@ -101,6 +104,7 @@ export async function searchMapEntities(
     searchAltars(ftsQuery, limit),
     searchCraftingStations(ftsQuery, limit),
     searchHouses(ftsQuery, limit),
+    searchTraps(ftsQuery, limit),
     searchPortals(ftsQuery, limit),
     searchItems(ftsQuery, limit),
     searchQuests(ftsQuery, limit),
@@ -120,6 +124,7 @@ export async function searchMapEntities(
     crafting: crafting,
     portal: portals,
     house: houses,
+    trap: traps,
     item: items,
     quest: quests,
   };
@@ -490,6 +495,54 @@ async function searchChests(
       id: r.id,
       name: "Chest",
       category: "chest" as const,
+      bounds:
+        r.position_x !== null && y !== null
+          ? { minX: r.position_x, maxX: r.position_x, minY: y, maxY: y }
+          : null,
+      zoneId: r.zone_id ?? undefined,
+      zoneName: r.zone_name ?? undefined,
+    };
+  });
+}
+
+interface TrapSearchRow {
+  id: string;
+  name: string;
+  position_x: number | null;
+  position_y: number | null;
+  zone_id: string | null;
+  zone_name: string | null;
+}
+
+async function searchTraps(
+  ftsQuery: string,
+  limit: number,
+): Promise<MapSearchResult[]> {
+  const rows = await query<TrapSearchRow>(
+    `
+    SELECT
+      t.id,
+      t.name,
+      t.position_x,
+      t.position_y,
+      t.zone_id,
+      z.name as zone_name
+    FROM traps_fts tf
+    JOIN traps t ON tf.rowid = t.rowid
+    LEFT JOIN zones z ON z.id = t.zone_id
+    WHERE traps_fts MATCH ?
+    ORDER BY rank
+    LIMIT ?
+  `,
+    [ftsQuery, limit],
+  );
+
+  return rows.map((r) => {
+    const y = r.position_y !== null ? -r.position_y : null;
+    return {
+      id: r.id,
+      name: r.name,
+      category: "trap" as const,
       bounds:
         r.position_x !== null && y !== null
           ? { minX: r.position_x, maxX: r.position_x, minY: y, maxY: y }

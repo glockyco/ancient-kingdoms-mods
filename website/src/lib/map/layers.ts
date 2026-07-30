@@ -15,6 +15,7 @@ import {
   type ChestMapEntity,
   type TreasureMapEntity,
   type AltarMapEntity,
+  type TrapMapEntity,
   type HouseMapEntity,
 } from "$lib/types/map";
 import type { ZoneFocusedData } from "./zone-filter";
@@ -658,6 +659,21 @@ export function createLayers(
     },
   });
 
+  const trapsLayer = createEntityLayer<TrapMapEntity>({
+    id: "traps",
+    data: filtered.traps,
+    visible: visibility.traps,
+    iconType: "trap",
+    color: LAYER_COLORS.trap,
+    radius: LAYER_RADII.trap,
+    extensions: [zoneFilterExt],
+    getFilterValue: (d) => isInZone(d.zoneId),
+    filterRange: [1, 1],
+    updateTriggers: {
+      getFilterValue: focusedZoneId,
+    },
+  });
+
   const portalArcsLayer = new LineLayer({
     id: "portal-arcs",
     data: filtered.portalsWithDestinations,
@@ -1003,6 +1019,8 @@ export function createLayers(
         return "treasure";
       case "altar":
         return "altar";
+      case "trap":
+        return "trap";
       case "gathering_plant":
         return "gathering_plant";
       case "gathering_mineral":
@@ -1297,6 +1315,7 @@ export function createLayers(
     teleporterDestinationsLayer,
     npcsLayer,
     altarsLayer,
+    trapsLayer,
     elitesLayer,
     fabledLayer,
     bossesLayer,
