@@ -939,17 +939,32 @@ export function createLayers(
           polygon: ring,
         }))
       : [];
+  // Two passes: a dark halo carries the shape over bright terrain, the light
+  // stroke on top carries it over dark terrain.
+  const trapAreaHaloLayer = new PolygonLayer({
+    id: "trap-area-halo",
+    data: trapAreaData,
+    visible: trapAreaData.length > 0,
+    getPolygon: (d: { polygon: [number, number][] }) => d.polygon,
+    getFillColor: TRAP_AREA_COLORS.fill,
+    getLineColor: TRAP_AREA_COLORS.halo,
+    filled: true,
+    stroked: true,
+    lineWidthUnits: "pixels",
+    lineWidthMinPixels: 6,
+    lineWidthMaxPixels: 8,
+    pickable: false,
+  });
+
   const trapAreaLayer = new PolygonLayer({
     id: "trap-area",
     data: trapAreaData,
     visible: trapAreaData.length > 0,
     getPolygon: (d: { polygon: [number, number][] }) => d.polygon,
-    getFillColor: TRAP_AREA_COLORS.fill,
     getLineColor: TRAP_AREA_COLORS.stroke,
-    filled: true,
+    filled: false,
     stroked: true,
     lineWidthUnits: "pixels",
-    // Heavier than the altar radius: hazard outlines have to read over bright terrain
     lineWidthMinPixels: 2,
     lineWidthMaxPixels: 3,
     pickable: false,
@@ -1372,6 +1387,7 @@ export function createLayers(
     ...patrolPathLayers,
     wanderRangeLayer,
     altarEventRadiusLayer,
+    trapAreaHaloLayer,
     trapAreaLayer,
     relationArcsLayer,
     relationArcEndpointsLayer,

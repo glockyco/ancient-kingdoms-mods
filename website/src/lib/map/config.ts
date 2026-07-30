@@ -213,11 +213,13 @@ export const ALTAR_RADIUS_COLORS = {
 } as const;
 
 /**
- * Wall-trap hitbox colors for the selected trap.
+ * Trap area colors for the selected trap. The dark halo keeps the outline
+ * readable on bright terrain such as the Winterforge ice.
  */
 export const TRAP_AREA_COLORS = {
-  fill: [251, 113, 133, 25] as [number, number, number, number], // rose-400, 10% fill
-  stroke: [251, 113, 133, 220] as [number, number, number, number], // rose-400
+  fill: [244, 63, 94, 70] as [number, number, number, number], // rose-500, 27% fill
+  stroke: [255, 228, 230, 255] as [number, number, number, number], // rose-100
+  halo: [136, 19, 55, 255] as [number, number, number, number], // rose-900
 } as const;
 
 /**
