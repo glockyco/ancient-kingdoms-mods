@@ -109,6 +109,16 @@ def insert_model(cursor: sqlite3.Cursor, table: str, model: BaseModel) -> None:
                 values["teleport_destination_x"] = value.x
                 values["teleport_destination_y"] = value.y
                 values["teleport_destination_z"] = value.z
+        elif field_name == "teleport_position":
+            if value is not None:
+                values["teleport_position_x"] = value.x
+                values["teleport_position_y"] = value.y
+                values["teleport_position_z"] = value.z
+        elif field_name == "teleport_orientation":
+            if value is not None:
+                values["teleport_orientation_x"] = value.x
+                values["teleport_orientation_y"] = value.y
+                values["teleport_orientation_z"] = value.z
         elif field_name == "travel_destination":
             if value is not None:
                 values["travel_destination_x"] = value.x

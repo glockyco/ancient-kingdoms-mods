@@ -1280,6 +1280,53 @@ CREATE INDEX idx_zone_triggers_zone ON zone_triggers(zone_id);
 CREATE INDEX idx_zone_triggers_is_outdoor ON zone_triggers(is_outdoor);
 
 -- =============================================================================
+-- TRAPS
+-- =============================================================================
+
+CREATE TABLE traps (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+
+    -- Type discriminator: 'disarmable', 'dangerous_ground', 'wall_trap'
+    type TEXT NOT NULL,
+
+    -- Location
+    zone_id TEXT NOT NULL REFERENCES zones(id),
+    sub_zone_id TEXT REFERENCES zone_triggers(id),
+    position_x REAL,
+    position_y REAL,
+    position_z REAL,
+
+    -- Debuff (disarmable, dangerous_ground) or damage (wall_trap) skill applied
+    effect_skill_id TEXT REFERENCES skills(id),
+
+    -- Local activation message shown by disarmable traps
+    message TEXT,
+
+    -- Teleport traps (disarmable, dangerous_ground) portal the player instead
+    has_teleport BOOLEAN NOT NULL DEFAULT 0,
+    teleport_zone_id TEXT REFERENCES zones(id),
+    teleport_position_x REAL,
+    teleport_position_y REAL,
+    teleport_position_z REAL,
+    teleport_orientation_x REAL,
+    teleport_orientation_y REAL,
+    teleport_orientation_z REAL,
+
+    -- Wall traps only: seconds between shots and overlap-box dimensions
+    fire_interval REAL,
+    trap_width REAL,
+    trap_height REAL,
+
+    keywords TEXT                           -- FTS5 search keywords
+);
+
+CREATE INDEX idx_traps_zone ON traps(zone_id);
+CREATE INDEX idx_traps_sub_zone ON traps(sub_zone_id);
+CREATE INDEX idx_traps_type ON traps(type);
+CREATE INDEX idx_traps_effect_skill ON traps(effect_skill_id);
+
+-- =============================================================================
 -- GATHERING RESOURCES
 -- =============================================================================
 
@@ -1648,6 +1695,28 @@ END;
 CREATE TRIGGER chests_au AFTER UPDATE ON chests BEGIN
     INSERT INTO chests_fts(chests_fts, rowid, name, keywords) VALUES ('delete', old.rowid, old.name, old.keywords);
     INSERT INTO chests_fts(rowid, name, keywords) VALUES (new.rowid, new.name, new.keywords);
+END;
+
+-- Traps FTS5 (for map search)
+CREATE VIRTUAL TABLE traps_fts USING fts5(
+    name,
+    keywords,
+    content=traps,
+    content_rowid=rowid,
+    prefix='2,3'
+);
+
+CREATE TRIGGER traps_ai AFTER INSERT ON traps BEGIN
+    INSERT INTO traps_fts(rowid, name, keywords) VALUES (new.rowid, new.name, new.keywords);
+END;
+
+CREATE TRIGGER traps_ad AFTER DELETE ON traps BEGIN
+    INSERT INTO traps_fts(traps_fts, rowid, name, keywords) VALUES ('delete', old.rowid, old.name, old.keywords);
+END;
+
+CREATE TRIGGER traps_au AFTER UPDATE ON traps BEGIN
+    INSERT INTO traps_fts(traps_fts, rowid, name, keywords) VALUES ('delete', old.rowid, old.name, old.keywords);
+    INSERT INTO traps_fts(rowid, name, keywords) VALUES (new.rowid, new.name, new.keywords);
 END;
 
 -- Houses FTS5 (for map search)

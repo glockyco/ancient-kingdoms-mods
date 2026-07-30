@@ -889,6 +889,26 @@ class TreasureLocationData(BaseModel):
     reward_id: str | None = None
 
 
+class TrapData(BaseModel):
+    """Trap data from traps.json"""
+
+    id: str
+    name: str
+    type: str  # "disarmable", "dangerous_ground", "wall_trap"
+    zone_id: str
+    sub_zone_id: str | None = None
+    position: Position
+    effect_skill_id: str | None = None
+    message: str | None = None
+    has_teleport: bool = False
+    teleport_zone_id: str | None = None
+    teleport_position: Position | None = None
+    teleport_orientation: Position | None = None
+    fire_interval: float | None = None
+    trap_width: float | None = None
+    trap_height: float | None = None
+
+
 # =============================================================================
 # Zone Models
 # =============================================================================
