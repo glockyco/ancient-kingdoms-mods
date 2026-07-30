@@ -1,5 +1,6 @@
 import { query } from "$lib/db";
 import { WORLD_BOSS_DUNGEON_ID } from "$lib/constants/constants";
+import { TRAP_TYPE_LABELS, type TrapType } from "$lib/constants/traps";
 
 export interface MapSearchBounds {
   minX: number;
@@ -507,7 +508,9 @@ async function searchChests(
 
 interface TrapSearchRow {
   id: string;
-  name: string;
+  type: TrapType;
+  effect_skill_name: string | null;
+  teleport_zone_name: string | null;
   position_x: number | null;
   position_y: number | null;
   zone_id: string | null;
@@ -522,7 +525,9 @@ async function searchTraps(
     `
     SELECT
       t.id,
-      t.name,
+      t.type,
+      s.name as effect_skill_name,
+      tz.name as teleport_zone_name,
       t.position_x,
       t.position_y,
       t.zone_id,
@@ -530,6 +535,8 @@ async function searchTraps(
     FROM traps_fts tf
     JOIN traps t ON tf.rowid = t.rowid
     LEFT JOIN zones z ON z.id = t.zone_id
+    LEFT JOIN skills s ON s.id = t.effect_skill_id
+    LEFT JOIN zones tz ON tz.id = t.teleport_zone_id
     WHERE traps_fts MATCH ?
     ORDER BY rank
     LIMIT ?
@@ -541,7 +548,11 @@ async function searchTraps(
     const y = r.position_y !== null ? -r.position_y : null;
     return {
       id: r.id,
-      name: r.name,
+      name:
+        r.effect_skill_name ??
+        (r.teleport_zone_name
+          ? `Teleport to ${r.teleport_zone_name}`
+          : TRAP_TYPE_LABELS[r.type]),
       category: "trap" as const,
       bounds:
         r.position_x !== null && y !== null
