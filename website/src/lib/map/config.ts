@@ -149,6 +149,14 @@ export const ARC_COLORS = {
     source: [34, 250, 94, 255] as [number, number, number, number], // brighter green
     target: [34, 250, 94, 200] as [number, number, number, number],
   },
+  trap: {
+    source: [225, 29, 72, 200] as [number, number, number, number], // rose-600
+    target: [225, 29, 72, 100] as [number, number, number, number],
+  },
+  trapHighlight: {
+    source: [251, 113, 133, 255] as [number, number, number, number], // rose-400
+    target: [251, 113, 133, 200] as [number, number, number, number],
+  },
   teleporter: {
     source: [6, 182, 212, 200] as [number, number, number, number], // cyan-500
     target: [6, 182, 212, 100] as [number, number, number, number],
@@ -202,6 +210,14 @@ export const MOVEMENT_COLORS = {
 export const ALTAR_RADIUS_COLORS = {
   fill: [251, 146, 60, 25] as [number, number, number, number], // orange-400, 10% fill
   stroke: [251, 146, 60, 200] as [number, number, number, number], // orange-400, 80% stroke
+} as const;
+
+/**
+ * Wall-trap hitbox colors for the selected trap.
+ */
+export const TRAP_AREA_COLORS = {
+  fill: [251, 113, 133, 25] as [number, number, number, number], // rose-400, 10% fill
+  stroke: [251, 113, 133, 220] as [number, number, number, number], // rose-400
 } as const;
 
 /**

@@ -18,6 +18,7 @@ import {
   type TrapMapEntity,
   type HouseMapEntity,
 } from "$lib/types/map";
+import { getWallTrapAreaPolygon } from "./trap-geometry";
 import type { ZoneFocusedData } from "./zone-filter";
 import { isAnyNpcTypeVisible } from "./visibility";
 import {
@@ -33,6 +34,7 @@ import {
   RELATION_ARC_COLORS,
   MOVEMENT_COLORS,
   ALTAR_RADIUS_COLORS,
+  TRAP_AREA_COLORS,
   TILE_CONFIG,
 } from "./config";
 import {
@@ -674,6 +676,63 @@ export function createLayers(
     },
   });
 
+  const selectedTrapId =
+    selectedEntity?.type === "trap" ? selectedEntity.id : null;
+
+  const trapTeleportArcsLayer = new LineLayer({
+    id: "trap-teleport-arcs",
+    data: filtered.trapsWithDestinations,
+    visible: visibility.traps,
+    getSourcePosition: (d: TrapMapEntity) => d.position,
+    getTargetPosition: (d: TrapMapEntity) => d.teleportPosition,
+    getColor: (d: TrapMapEntity) =>
+      d.id === selectedTrapId
+        ? ARC_COLORS.trapHighlight.source
+        : ARC_COLORS.trap.source,
+    getWidth: (d: TrapMapEntity) => (d.id === selectedTrapId ? 4 : 2),
+    widthUnits: "pixels",
+    pickable: true,
+    onHover: callbacks.onHover,
+    onClick: callbacks.onClick,
+    extensions: [zoneFilterExt],
+    getFilterValue: (d: TrapMapEntity) =>
+      !focusedZoneId ||
+      d.zoneId === focusedZoneId ||
+      d.teleportZoneId === focusedZoneId
+        ? 1
+        : 0,
+    filterRange: [1, 1],
+    updateTriggers: {
+      getColor: selectedTrapId,
+      getWidth: selectedTrapId,
+      getFilterValue: focusedZoneId,
+    },
+  });
+
+  const trapTeleportDestinationsLayer = new ScatterplotLayer({
+    id: "trap-teleport-destinations",
+    data: filtered.trapsWithDestinations,
+    visible: visibility.traps,
+    getPosition: (d: TrapMapEntity) => d.teleportPosition,
+    getFillColor: LAYER_COLORS.trap,
+    getRadius: 3,
+    radiusUnits: "pixels",
+    radiusMinPixels: 2,
+    radiusMaxPixels: 6,
+    pickable: false,
+    extensions: [zoneFilterExt],
+    getFilterValue: (d: TrapMapEntity) =>
+      !focusedZoneId ||
+      d.zoneId === focusedZoneId ||
+      d.teleportZoneId === focusedZoneId
+        ? 1
+        : 0,
+    filterRange: [1, 1],
+    updateTriggers: {
+      getFilterValue: focusedZoneId,
+    },
+  });
+
   const portalArcsLayer = new LineLayer({
     id: "portal-arcs",
     data: filtered.portalsWithDestinations,
@@ -868,6 +927,29 @@ export function createLayers(
     radiusUnits: "common",
     getFillColor: ALTAR_RADIUS_COLORS.fill,
     getLineColor: ALTAR_RADIUS_COLORS.stroke,
+    stroked: true,
+    lineWidthUnits: "pixels",
+    lineWidthMinPixels: 1,
+    lineWidthMaxPixels: 2,
+    pickable: false,
+  });
+
+  const selectedTrap =
+    selectedEntity?.type === "trap" ? (selectedEntity as TrapMapEntity) : null;
+  const selectedTrapPolygon = selectedTrap
+    ? getWallTrapAreaPolygon(selectedTrap)
+    : null;
+  const trapAreaData = selectedTrapPolygon
+    ? [{ polygon: selectedTrapPolygon }]
+    : [];
+  const trapAreaLayer = new PolygonLayer({
+    id: "trap-area",
+    data: trapAreaData,
+    visible: trapAreaData.length > 0,
+    getPolygon: (d: { polygon: [number, number][] }) => d.polygon,
+    getFillColor: TRAP_AREA_COLORS.fill,
+    getLineColor: TRAP_AREA_COLORS.stroke,
+    filled: true,
     stroked: true,
     lineWidthUnits: "pixels",
     lineWidthMinPixels: 1,
@@ -1292,9 +1374,11 @@ export function createLayers(
     ...patrolPathLayers,
     wanderRangeLayer,
     altarEventRadiusLayer,
+    trapAreaLayer,
     relationArcsLayer,
     relationArcEndpointsLayer,
     portalArcsLayer,
+    trapTeleportArcsLayer,
     teleporterArcsLayer,
     creaturesLayer,
     gatheringPlantsLayer,
@@ -1312,6 +1396,7 @@ export function createLayers(
     treasureLayer,
     portalsLayer,
     portalDestinationsLayer,
+    trapTeleportDestinationsLayer,
     teleporterDestinationsLayer,
     npcsLayer,
     altarsLayer,

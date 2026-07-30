@@ -1622,6 +1622,10 @@
       "sha256": "2105a75cc0c907436a70512172f810bfafda74041d8839306cc51fd4fee1b688",
       "span": 33
     },
+    "WallTrap.cs:37": {
+      "sha256": "b4a7445beb9e3fe6521be6bd170aa00fa690cb1052098c9191709ef500291573",
+      "span": 1
+    },
     "WeaponItem.cs": {
       "span": 0
     },

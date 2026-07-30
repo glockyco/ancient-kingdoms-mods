@@ -849,6 +849,8 @@ interface TrapRow {
   effect_skill_name: string | null;
   teleport_zone_id: string | null;
   teleport_zone_name: string | null;
+  teleport_position_x: number | null;
+  teleport_position_y: number | null;
   fire_interval: number | null;
   trap_width: number | null;
   trap_height: number | null;
@@ -870,6 +872,8 @@ function loadTrapsServer(db: Database.Database): TrapMapEntity[] {
       s.name as effect_skill_name,
       t.teleport_zone_id,
       tz.name as teleport_zone_name,
+      t.teleport_position_x,
+      t.teleport_position_y,
       t.fire_interval,
       t.trap_width,
       t.trap_height
@@ -896,6 +900,10 @@ function loadTrapsServer(db: Database.Database): TrapMapEntity[] {
     effectSkillName: r.effect_skill_name,
     teleportZoneId: r.teleport_zone_id,
     teleportZoneName: r.teleport_zone_name,
+    teleportPosition:
+      r.teleport_position_x !== null && r.teleport_position_y !== null
+        ? [r.teleport_position_x, -r.teleport_position_y]
+        : null,
     fireInterval: r.fire_interval,
     trapWidth: r.trap_width,
     trapHeight: r.trap_height,

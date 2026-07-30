@@ -223,6 +223,7 @@ export interface TrapMapEntity extends MapEntity {
   effectSkillName: string | null;
   teleportZoneId: string | null;
   teleportZoneName: string | null;
+  teleportPosition: [number, number] | null;
   fireInterval: number | null;
   trapWidth: number | null;
   trapHeight: number | null;

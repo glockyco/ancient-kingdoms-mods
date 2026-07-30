@@ -38,6 +38,7 @@ export interface ZoneFocusedData extends FilteredMapData {
   treasure: TreasureMapEntity[];
   altars: AltarMapEntity[];
   traps: TrapMapEntity[];
+  trapsWithDestinations: TrapMapEntity[];
   houses: HouseMapEntity[];
   subZones: ZoneBoundary[];
 }
@@ -60,6 +61,9 @@ export function createZoneFocusedData(
     treasure: rawData.treasure.filter((t) => t.position !== null),
     altars: rawData.altars.filter((a) => a.position !== null),
     traps: rawData.traps.filter((t) => t.position !== null),
+    trapsWithDestinations: rawData.traps.filter(
+      (t) => t.position !== null && t.teleportPosition !== null,
+    ),
     houses: rawData.houses.filter((h) => h.position !== null),
     // Sort by area descending so smaller/enclosed zones render on top and remain hoverable
     subZones: rawData.subZones
