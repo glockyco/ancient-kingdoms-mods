@@ -64,6 +64,20 @@ SPAWN_TABLES: list[tuple[str, list[str]]] = [
     ("alchemy_tables", ["position_x", "position_y", "position_z"]),
     ("treasure_locations", ["position_x", "position_y", "position_z"]),
     (
+        "traps",
+        [
+            "position_x",
+            "position_y",
+            "position_z",
+            "teleport_position_x",
+            "teleport_position_y",
+            "teleport_position_z",
+            "teleport_orientation_x",
+            "teleport_orientation_y",
+            "teleport_orientation_z",
+        ],
+    ),
+    (
         "zone_triggers",
         [
             "position_x",
@@ -118,6 +132,22 @@ def run(conn: sqlite3.Connection) -> None:
         )
         if cursor.rowcount > 0:
             console.print(f"  [green]OK[/green] portals (to): {cursor.rowcount} rows")
+            total_rows += cursor.rowcount
+
+        # Traps teleporting INTO excluded zones - null only teleport coordinates
+        cursor.execute(
+            f"""
+            UPDATE traps
+            SET teleport_position_x = NULL, teleport_position_y = NULL, teleport_position_z = NULL,
+                teleport_orientation_x = NULL, teleport_orientation_y = NULL, teleport_orientation_z = NULL
+            WHERE teleport_zone_id IN ({placeholders})
+            """,
+            EXCLUDED_ZONE_IDS,
+        )
+        if cursor.rowcount > 0:
+            console.print(
+                f"  [green]OK[/green] traps (teleport to): {cursor.rowcount} rows"
+            )
             total_rows += cursor.rowcount
 
     # --- Sub-zone-level exclusions (by sub_zone_id / from_sub_zone_id / to_sub_zone_id) ---

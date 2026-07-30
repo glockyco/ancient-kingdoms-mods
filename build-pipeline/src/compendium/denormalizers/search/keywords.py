@@ -255,4 +255,29 @@ def run(conn: sqlite3.Connection) -> None:
     altar_count = cursor.rowcount
     console.print(f"  [green]OK[/green] Generated keywords for {altar_count} altars")
 
+    # Trap keywords (type synonyms + effect skill name)
+    cursor.execute("""
+        SELECT t.id, t.type, s.name
+        FROM traps t
+        LEFT JOIN skills s ON s.id = t.effect_skill_id
+    """)
+    traps = cursor.fetchall()
+    trap_type_words = {
+        "disarmable": ["disarmable", "disarm", "rogue"],
+        "dangerous_ground": ["dangerous", "ground"],
+        "wall_trap": ["wall"],
+    }
+    trap_count = 0
+    for trap_id, trap_type, effect_name in traps:
+        keywords_parts = ["trap", "hazard"]
+        keywords_parts.extend(trap_type_words.get(trap_type, []))
+        if effect_name:
+            keywords_parts.append(effect_name)
+        keywords = " ".join(keywords_parts)
+        cursor.execute(
+            "UPDATE traps SET keywords = ? WHERE id = ?", (keywords, trap_id)
+        )
+        trap_count += 1
+    console.print(f"  [green]OK[/green] Generated keywords for {trap_count} traps")
+
     conn.commit()
