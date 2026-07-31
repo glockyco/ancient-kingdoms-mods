@@ -1,5 +1,6 @@
 <script lang="ts">
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
+  import PageSections from "$lib/components/PageSections.svelte";
   import * as Card from "$lib/components/ui/card";
   import type { PageData } from "./$types";
   import type { LinearValue } from "$lib/types/skills";
@@ -756,6 +757,81 @@
       skill.is_blindness,
   );
 
+  // Jump list entries, in document order. Each predicate mirrors the {#if}
+  // guarding the matching Card.Root, so the list never points at a section
+  // this skill does not render.
+  const sections = $derived(
+    [
+      {
+        id: "description",
+        label: "Description",
+        show: Boolean(data.effectSummary || skill.tooltip_template),
+      },
+      { id: "requirements", label: "Requirements", show: hasRequirements },
+      {
+        id: "cost-timing",
+        label: "Cost & Timing",
+        show: Boolean(
+          skill.mana_cost ||
+          skill.energy_cost ||
+          skill.cooldown ||
+          skill.cast_time ||
+          skill.cast_range,
+        ),
+      },
+      { id: "damage", label: "Damage", show: hasDamage },
+      {
+        id: "healing",
+        label: "Healing",
+        show:
+          (hasLinearValue(skill.heals_health) ||
+            hasLinearValue(skill.heals_mana) ||
+            skill.is_balance_health) &&
+          !skill.is_resurrect_skill,
+      },
+      { id: "crowd-control", label: "Crowd Control", show: hasCrowdControl },
+      {
+        id: "summon-info",
+        label: "Summon Info",
+        show:
+          skill.skill_type === "summon" ||
+          skill.skill_type === "summon_monsters",
+      },
+      {
+        id: "buff-debuff",
+        label: "Buff/Debuff Effects",
+        show: hasBuffEffects,
+      },
+      { id: "level-scaling", label: "Level Scaling", show: showLevelScaling },
+      { id: "mechanics", label: "Mechanics", show: showMechanics },
+      {
+        id: "granted-by-items",
+        label: "Granted by Items",
+        show: data.grantedByItems.length > 0,
+      },
+      {
+        id: "learned-by-classes",
+        label: "Learned by Classes",
+        show: skill.player_classes.length > 0,
+      },
+      {
+        id: "applied-by-traps",
+        label: "Applied by Traps",
+        show: data.appliedByTraps.length > 0,
+      },
+      {
+        id: "used-by-pets",
+        label: "Used by Pets",
+        show: data.usedByPets.length > 0,
+      },
+      {
+        id: "used-by-monsters",
+        label: "Used by Monsters",
+        show: data.usedByMonsters.length > 0,
+      },
+    ].filter((section) => section.show),
+  );
+
   // Damage/resist type helpers — kept for the damage pipeline and resist section
   // Source: server-scripts/Combat.cs — GetProbResist* methods
   const resistType = $derived.by((): string | null => {
@@ -860,119 +936,7 @@
   </div>
 
   <!-- Page Anchor Navigation -->
-  <nav aria-label="Page sections" class="text-sm text-muted-foreground">
-    <ul class="flex flex-wrap gap-x-4 gap-y-1">
-      {#if data.effectSummary || skill.tooltip_template}
-        <li>
-          <a href="#description" class="hover:text-foreground hover:underline"
-            >Description</a
-          >
-        </li>
-      {/if}
-      {#if hasRequirements}
-        <li>
-          <a href="#requirements" class="hover:text-foreground hover:underline"
-            >Requirements</a
-          >
-        </li>
-      {/if}
-      {#if skill.mana_cost || skill.energy_cost || skill.cooldown || skill.cast_time || skill.cast_range}
-        <li>
-          <a href="#cost-timing" class="hover:text-foreground hover:underline"
-            >Cost & Timing</a
-          >
-        </li>
-      {/if}
-      {#if hasDamage}
-        <li>
-          <a href="#damage" class="hover:text-foreground hover:underline"
-            >Damage</a
-          >
-        </li>
-      {/if}
-      {#if (hasLinearValue(skill.heals_health) || hasLinearValue(skill.heals_mana) || skill.is_balance_health) && !skill.is_resurrect_skill}
-        <li>
-          <a href="#healing" class="hover:text-foreground hover:underline"
-            >Healing</a
-          >
-        </li>
-      {/if}
-      {#if hasCrowdControl}
-        <li>
-          <a href="#crowd-control" class="hover:text-foreground hover:underline"
-            >Crowd Control</a
-          >
-        </li>
-      {/if}
-      {#if skill.skill_type === "summon" || skill.skill_type === "summon_monsters"}
-        <li>
-          <a href="#summon-info" class="hover:text-foreground hover:underline"
-            >Summon Info</a
-          >
-        </li>
-      {/if}
-      {#if hasBuffEffects}
-        <li>
-          <a href="#buff-debuff" class="hover:text-foreground hover:underline"
-            >Buff/Debuff Effects</a
-          >
-        </li>
-      {/if}
-      {#if showLevelScaling}
-        <li>
-          <a href="#level-scaling" class="hover:text-foreground hover:underline"
-            >Level Scaling</a
-          >
-        </li>
-      {/if}
-      {#if showMechanics}
-        <li>
-          <a href="#mechanics" class="hover:text-foreground hover:underline"
-            >Mechanics</a
-          >
-        </li>
-      {/if}
-      {#if data.grantedByItems.length > 0}
-        <li>
-          <a
-            href="#granted-by-items"
-            class="hover:text-foreground hover:underline">Granted by Items</a
-          >
-        </li>
-      {/if}
-      {#if skill.player_classes.length > 0}
-        <li>
-          <a
-            href="#learned-by-classes"
-            class="hover:text-foreground hover:underline">Learned by Classes</a
-          >
-        </li>
-      {/if}
-      {#if data.appliedByTraps.length > 0}
-        <li>
-          <a
-            href="#applied-by-traps"
-            class="hover:text-foreground hover:underline">Applied by Traps</a
-          >
-        </li>
-      {/if}
-      {#if data.usedByPets.length > 0}
-        <li>
-          <a href="#used-by-pets" class="hover:text-foreground hover:underline"
-            >Used by Pets</a
-          >
-        </li>
-      {/if}
-      {#if data.usedByMonsters.length > 0}
-        <li>
-          <a
-            href="#used-by-monsters"
-            class="hover:text-foreground hover:underline">Used by Monsters</a
-          >
-        </li>
-      {/if}
-    </ul>
-  </nav>
+  <PageSections {sections} />
 
   <!-- Effect / Game Tooltip -->
   {#if data.effectSummary || skill.tooltip_template}

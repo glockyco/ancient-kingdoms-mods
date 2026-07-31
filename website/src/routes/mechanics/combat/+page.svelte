@@ -1,5 +1,6 @@
 <script lang="ts">
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
+  import PageSections from "$lib/components/PageSections.svelte";
   import * as Card from "$lib/components/ui/card";
   import Seo from "$lib/components/Seo.svelte";
   import type { DamageFormulaKind, HealBonusKind } from "$lib/types/skills";
@@ -7,6 +8,19 @@
   // ---------------------------------------------------------------------------
   // Static formula metadata
   // ---------------------------------------------------------------------------
+
+  // Every section on the page, in document order. Drives the jump list. The
+  // ids match each Card.Root below.
+  const SECTIONS = [
+    { id: "damage-pipeline", label: "Damage Pipeline" },
+    { id: "damage-formulas", label: "Damage Formulas" },
+    { id: "resistance", label: "Resistance & Mitigation" },
+    { id: "healing", label: "Healing" },
+    { id: "buffs", label: "Buff Scaling" },
+    { id: "debuffs", label: "Debuff Mechanics" },
+    { id: "timing", label: "Timing & Haste" },
+    { id: "special", label: "Special Mechanics" },
+  ];
 
   const DAMAGE_FORMULA_DESC: Record<DamageFormulaKind, string> = {
     normal: "STR×1.0 + all equipment",
@@ -87,50 +101,7 @@
 
   <h1 class="text-4xl font-bold">Combat Mechanics</h1>
 
-  <nav aria-label="Page sections" class="text-sm text-muted-foreground">
-    <ul class="flex flex-wrap gap-x-4 gap-y-1">
-      <li>
-        <a href="#damage-pipeline" class="hover:text-foreground hover:underline"
-          >Damage Pipeline</a
-        >
-      </li>
-      <li>
-        <a href="#damage-formulas" class="hover:text-foreground hover:underline"
-          >Damage Formulas</a
-        >
-      </li>
-      <li>
-        <a href="#resistance" class="hover:text-foreground hover:underline"
-          >Resistance &amp; Mitigation</a
-        >
-      </li>
-      <li>
-        <a href="#healing" class="hover:text-foreground hover:underline"
-          >Healing</a
-        >
-      </li>
-      <li>
-        <a href="#buffs" class="hover:text-foreground hover:underline"
-          >Buff Scaling</a
-        >
-      </li>
-      <li>
-        <a href="#debuffs" class="hover:text-foreground hover:underline"
-          >Debuff Mechanics</a
-        >
-      </li>
-      <li>
-        <a href="#timing" class="hover:text-foreground hover:underline"
-          >Timing &amp; Haste</a
-        >
-      </li>
-      <li>
-        <a href="#special" class="hover:text-foreground hover:underline"
-          >Special Mechanics</a
-        >
-      </li>
-    </ul>
-  </nav>
+  <PageSections sections={SECTIONS} />
 
   <div class="rounded-md border border-border bg-muted/20 px-4 py-3 text-sm">
     For interactive per-weapon and per-class DPS modelling, see the

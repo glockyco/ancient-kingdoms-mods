@@ -1,5 +1,6 @@
 <script lang="ts">
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
+  import PageSections from "$lib/components/PageSections.svelte";
   import Seo from "$lib/components/Seo.svelte";
   import * as Card from "$lib/components/ui/card";
   import {
@@ -105,19 +106,7 @@
 
   <h1 class="text-4xl font-bold">Reputation Mechanics</h1>
 
-  <nav aria-label="Page sections">
-    <ul
-      class="grid gap-x-6 gap-y-2 text-sm text-muted-foreground sm:grid-cols-2 lg:grid-cols-3"
-    >
-      {#each SECTIONS as section (section.id)}
-        <li>
-          <a href="#{section.id}" class="hover:text-foreground hover:underline"
-            >{section.label}</a
-          >
-        </li>
-      {/each}
-    </ul>
-  </nav>
+  <PageSections sections={SECTIONS} />
 
   <Card.Root id="factions" class="bg-muted/30">
     <Card.Header>

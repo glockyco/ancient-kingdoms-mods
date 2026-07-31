@@ -1,5 +1,6 @@
 <script lang="ts">
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
+  import PageSections from "$lib/components/PageSections.svelte";
   import Seo from "$lib/components/Seo.svelte";
   import * as Card from "$lib/components/ui/card";
   import type {
@@ -10,6 +11,20 @@
   } from "./+page.server";
 
   let { data }: { data: RespawnMechanicsPageData } = $props();
+
+  // Every section on the page, in document order. Drives the jump list.
+  // The ids match each Card.Root below.
+  const SECTIONS = [
+    { id: "cycle", label: "The Respawn Cycle" },
+    { id: "empty-zones", label: "Empty Zones" },
+    { id: "bosses", label: "Boss Respawn Timers" },
+    { id: "rare-spawns", label: "Rare Spawns" },
+    { id: "renewal-sages", label: "Renewal Sages" },
+    { id: "spawn-windows", label: "Day and Night Spawns" },
+    { id: "summons", label: "Kill-Triggered Summons" },
+    { id: "leashing", label: "Leashing and Resets" },
+    { id: "other-spawns", label: "Other Spawn Types" },
+  ];
 
   const bossTiers = $derived.by(() => {
     const tiers: [number, BossRespawn[]][] = [];
@@ -97,55 +112,7 @@
 
   <h1 class="text-4xl font-bold">Monster Spawn Mechanics</h1>
 
-  <nav aria-label="Page sections" class="text-sm text-muted-foreground">
-    <ul class="flex flex-wrap gap-x-4 gap-y-1">
-      <li>
-        <a href="#cycle" class="hover:text-foreground hover:underline"
-          >The Respawn Cycle</a
-        >
-      </li>
-      <li>
-        <a href="#empty-zones" class="hover:text-foreground hover:underline"
-          >Empty Zones</a
-        >
-      </li>
-      <li>
-        <a href="#bosses" class="hover:text-foreground hover:underline"
-          >Boss Respawn Timers</a
-        >
-      </li>
-      <li>
-        <a href="#rare-spawns" class="hover:text-foreground hover:underline"
-          >Rare Spawns</a
-        >
-      </li>
-      <li>
-        <a href="#renewal-sages" class="hover:text-foreground hover:underline"
-          >Renewal Sages</a
-        >
-      </li>
-      <li>
-        <a href="#spawn-windows" class="hover:text-foreground hover:underline"
-          >Day and Night Spawns</a
-        >
-      </li>
-      <li>
-        <a href="#summons" class="hover:text-foreground hover:underline"
-          >Kill-Triggered Summons</a
-        >
-      </li>
-      <li>
-        <a href="#leashing" class="hover:text-foreground hover:underline"
-          >Leashing and Resets</a
-        >
-      </li>
-      <li>
-        <a href="#other-spawns" class="hover:text-foreground hover:underline"
-          >Other Spawn Types</a
-        >
-      </li>
-    </ul>
-  </nav>
+  <PageSections sections={SECTIONS} />
 
   <Card.Root id="cycle" class="bg-muted/30">
     <Card.Header>

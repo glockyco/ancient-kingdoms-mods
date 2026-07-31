@@ -1,5 +1,6 @@
 <script lang="ts">
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
+  import PageSections from "$lib/components/PageSections.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
   import Seo from "$lib/components/Seo.svelte";
@@ -16,6 +17,19 @@
   } from "./+page.server";
 
   const MAX_VISIBLE_SOURCES_PER_TYPE = 3;
+  // Every section on the page, in document order. Drives the jump list. The
+  // ids match each Card.Root below.
+  const SECTIONS = [
+    { id: "overview", label: "Storage Overview" },
+    { id: "backpacks", label: "Backpacks" },
+    { id: "bank", label: "Bank Tabs and Gold" },
+    { id: "house-chests", label: "House Chests" },
+    { id: "item-movement", label: "Item Movement and Stacks" },
+    { id: "vendor-buyback", label: "Vendor Buyback" },
+    { id: "loot", label: "Loot Pickup" },
+    { id: "equipment-templates", label: "Equipment Templates" },
+    { id: "equipment-and-death", label: "Equipment, Death, and Remains" },
+  ];
   const BANK_TAB_COSTS = [
     0, 200, 1000, 2000, 5000, 10000, 15000, 20000, 50000, 100000,
   ];
@@ -85,58 +99,7 @@
 
   <h1 class="text-4xl font-bold">Inventory Mechanics</h1>
 
-  <nav aria-label="Page sections" class="text-sm text-muted-foreground">
-    <ul class="flex flex-wrap gap-x-4 gap-y-1">
-      <li>
-        <a href="#overview" class="hover:text-foreground hover:underline"
-          >Storage Overview</a
-        >
-      </li>
-      <li>
-        <a href="#backpacks" class="hover:text-foreground hover:underline"
-          >Backpacks</a
-        >
-      </li>
-      <li>
-        <a href="#bank" class="hover:text-foreground hover:underline"
-          >Bank Tabs and Gold</a
-        >
-      </li>
-      <li>
-        <a href="#house-chests" class="hover:text-foreground hover:underline"
-          >House Chests</a
-        >
-      </li>
-      <li>
-        <a href="#item-movement" class="hover:text-foreground hover:underline"
-          >Item Movement and Stacks</a
-        >
-      </li>
-      <li>
-        <a href="#vendor-buyback" class="hover:text-foreground hover:underline"
-          >Vendor Buyback</a
-        >
-      </li>
-      <li>
-        <a href="#loot" class="hover:text-foreground hover:underline"
-          >Loot Pickup</a
-        >
-      </li>
-      <li>
-        <a
-          href="#equipment-templates"
-          class="hover:text-foreground hover:underline">Equipment Templates</a
-        >
-      </li>
-      <li>
-        <a
-          href="#equipment-and-death"
-          class="hover:text-foreground hover:underline"
-          >Equipment, Death, and Remains</a
-        >
-      </li>
-    </ul>
-  </nav>
+  <PageSections sections={SECTIONS} />
 
   <Card.Root id="overview" class="bg-muted/30">
     <Card.Header>

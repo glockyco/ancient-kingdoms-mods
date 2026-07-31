@@ -1,5 +1,6 @@
 <script lang="ts">
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
+  import PageSections from "$lib/components/PageSections.svelte";
   import * as Card from "$lib/components/ui/card";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import Seo from "$lib/components/Seo.svelte";
@@ -8,6 +9,24 @@
   let { data } = $props();
 
   const fmt = (value: number) => value.toLocaleString("en-US");
+
+  // Every section on the page, in document order. Drives the jump list.
+  // The ids match each Card.Root below.
+  const SECTIONS = [
+    { id: "levels", label: "Levels" },
+    { id: "level-rewards", label: "Level Rewards" },
+    { id: "veteran-points", label: "Veteran Points" },
+    { id: "kill-xp", label: "Kill XP" },
+    { id: "death-xp", label: "Death XP" },
+    { id: "scroll-xp", label: "Scroll XP" },
+    { id: "gathering-xp", label: "Gathering XP" },
+    { id: "alchemy-xp", label: "Alchemy XP" },
+    { id: "scribing-xp", label: "Scribing XP" },
+    { id: "cooking-xp", label: "Cooking XP" },
+    { id: "crafting-xp", label: "Crafting XP" },
+    { id: "quest-xp", label: "Quest XP" },
+    { id: "zone-discovery-xp", label: "Zone Discovery XP" },
+  ];
 
   const LEVEL_CAP = 50;
   const LATE_GAME_START = 40;
@@ -277,76 +296,7 @@
 
   <h1 class="text-4xl font-bold">Experience Mechanics</h1>
 
-  <nav aria-label="Page sections" class="text-sm text-muted-foreground">
-    <ul class="flex flex-wrap gap-x-4 gap-y-1">
-      <li>
-        <a href="#levels" class="hover:text-foreground hover:underline"
-          >Levels</a
-        >
-      </li>
-      <li>
-        <a href="#level-rewards" class="hover:text-foreground hover:underline"
-          >Level Rewards</a
-        >
-      </li>
-      <li>
-        <a href="#veteran-points" class="hover:text-foreground hover:underline"
-          >Veteran Points</a
-        >
-      </li>
-      <li>
-        <a href="#kill-xp" class="hover:text-foreground hover:underline"
-          >Kill XP</a
-        >
-      </li>
-      <li>
-        <a href="#death-xp" class="hover:text-foreground hover:underline"
-          >Death XP</a
-        >
-      </li>
-      <li>
-        <a href="#scroll-xp" class="hover:text-foreground hover:underline"
-          >Scroll XP</a
-        >
-      </li>
-      <li>
-        <a href="#gathering-xp" class="hover:text-foreground hover:underline"
-          >Gathering XP</a
-        >
-      </li>
-      <li>
-        <a href="#alchemy-xp" class="hover:text-foreground hover:underline"
-          >Alchemy XP</a
-        >
-      </li>
-      <li>
-        <a href="#scribing-xp" class="hover:text-foreground hover:underline"
-          >Scribing XP</a
-        >
-      </li>
-      <li>
-        <a href="#cooking-xp" class="hover:text-foreground hover:underline"
-          >Cooking XP</a
-        >
-      </li>
-      <li>
-        <a href="#crafting-xp" class="hover:text-foreground hover:underline"
-          >Crafting XP</a
-        >
-      </li>
-      <li>
-        <a href="#quest-xp" class="hover:text-foreground hover:underline"
-          >Quest XP</a
-        >
-      </li>
-      <li>
-        <a
-          href="#zone-discovery-xp"
-          class="hover:text-foreground hover:underline">Zone Discovery XP</a
-        >
-      </li>
-    </ul>
-  </nav>
+  <PageSections sections={SECTIONS} />
 
   <!-- Levels -->
   <Card.Root id="levels" class="bg-muted/30">
