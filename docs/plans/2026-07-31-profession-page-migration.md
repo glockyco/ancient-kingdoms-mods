@@ -25,12 +25,12 @@ database table. Within Stage 3 the four validation professions gate the remainin
 Independent of the redesign. Ship first; each is a factual error on a live page. Exact
 sites, all under `website/src/routes/`.
 
-- [ ] Fix herbalism tiers 3 and 4 to `skill` and `skill × 0.95` in `professions/herbalism/+page.svelte:36-40` and the duplicate `getHerbalismSuccessChance` in `gather-items/[id]/+page.svelte:192-196`
-- [ ] Fix the mining calculator in `gather-items/[id]/+page.svelte:203-211` — tier 1 `0.1`→`0.3`, tier 3 `skill × 0.4`→`× 0.5`, tier 4 `skill × 0.2`→`× 0.4`; `professions/mining/+page.svelte:33-48` is already correct and is the reference
-- [ ] Re-anchor the stale herbalism citation `Utils.cs:491-501` to `Utils.cs:GetSuccessProbHerbalism` in both files; prefer the symbol form, which cannot drift
-- [ ] Add `m.is_fabled` to the monster projection in `professions/slayer/+page.server.ts:64-86`, which already declares it at line 15 and consumes it at `+page.svelte:115`
-- [ ] Change the effortless boundary from `>=` to `>` in `professions/herbalism/+page.svelte:71-77` and `professions/mining/+page.svelte:76-84`
-- [ ] Run `pnpm check:citations` from the repo root, then `pnpm check && pnpm lint && pnpm build`
+- [x] Fix herbalism tiers 3 and 4 to `skill` and `skill × 0.95` in `professions/herbalism/+page.svelte:36-40` and the duplicate `getHerbalismSuccessChance` in `gather-items/[id]/+page.svelte:192-196`
+- [x] Fix the mining calculator in `gather-items/[id]/+page.svelte:203-211` — tier 1 `0.1`→`0.3`, tier 3 `skill × 0.4`→`× 0.5`, tier 4 `skill × 0.2`→`× 0.4`; `professions/mining/+page.svelte:33-48` is already correct and is the reference
+- [x] Re-anchor every drifted profession success citation to symbol form: `Utils.cs:491-501` and `Utils.cs:515-530` had both slid onto neighbouring functions, and the effortless-tier rule carried no citation at all
+- [x] Add `m.is_fabled` to the monster projection in `professions/slayer/+page.server.ts:64-86`, which already declares it at line 15 and consumes it at `+page.svelte:115`
+- [x] Change the effortless boundary from `>=` to `>` in `professions/herbalism/+page.svelte:71-77` and `professions/mining/+page.svelte:76-84`
+- [x] Run `pnpm check:citations` from the repo root, then `pnpm check && pnpm lint && pnpm build`
 
 Risk is low and contained: no profession page has a test, and the 691 committed mechanics
 snapshots cover skill pages only, so none of these edits can move a snapshot.
