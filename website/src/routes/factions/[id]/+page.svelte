@@ -555,6 +555,26 @@
     </p>
   </div>
 
+  <nav class="flex flex-wrap gap-2" aria-label="Faction navigation">
+    {#each data.factions as faction (faction.id)}
+      {#if faction.id === data.faction.id}
+        <span
+          class="rounded-md bg-accent px-3 py-1.5 text-sm font-medium text-accent-foreground"
+          aria-current="page"
+        >
+          {faction.name}
+        </span>
+      {:else}
+        <a
+          href="/factions/{faction.id}"
+          class="rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        >
+          {faction.name}
+        </a>
+      {/if}
+    {/each}
+  </nav>
+
   {#if hasUnlocks}
     <section class="space-y-6">
       <h2 class="text-xl font-semibold flex items-center gap-2">

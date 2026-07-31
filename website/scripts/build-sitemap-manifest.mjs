@@ -353,6 +353,8 @@ function factionPayload(db, id) {
   return {
     row: faction,
     tiers: all(db, "SELECT * FROM reputation_tiers ORDER BY id"),
+    // The sibling nav names every faction, so a rename elsewhere changes this page.
+    nav: all(db, "SELECT id, name FROM factions ORDER BY id"),
     monsters: all(
       db,
       "SELECT m.* FROM monsters m JOIN json_each(m.improve_faction) je ON je.value = ? WHERE m.is_dummy = 0 ORDER BY m.id",

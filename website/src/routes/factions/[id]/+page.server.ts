@@ -2,6 +2,7 @@ import { error } from "@sveltejs/kit";
 import { query } from "$lib/db.server";
 import {
   getFactionDetail,
+  getFactionNav,
   getReputationTiers,
 } from "$lib/queries/factions.server";
 import type { EntryGenerator, PageServerLoad } from "./$types";
@@ -16,5 +17,5 @@ export const entries: EntryGenerator = () =>
 export const load: PageServerLoad = ({ params }) => {
   const faction = getFactionDetail(params.id);
   if (!faction) throw error(404, `Faction not found: ${params.id}`);
-  return { faction, tiers: getReputationTiers() };
+  return { faction, tiers: getReputationTiers(), factions: getFactionNav() };
 };

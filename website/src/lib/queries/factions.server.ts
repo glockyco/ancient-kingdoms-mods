@@ -127,6 +127,16 @@ export function getFactionsList(): FactionListView[] {
   );
 }
 
+export interface FactionNavItem {
+  id: string;
+  name: string;
+}
+
+/** Every faction, for the sibling navigation on a detail page. */
+export function getFactionNav(): FactionNavItem[] {
+  return query<FactionNavItem>("SELECT id, name FROM factions ORDER BY name");
+}
+
 interface ReputationTierRow extends Omit<ReputationTier, "is_hostile"> {
   is_hostile: number;
 }
