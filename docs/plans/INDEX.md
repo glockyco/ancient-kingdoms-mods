@@ -3,6 +3,7 @@
 ## active
 
 - **Compendiums.org Site Design** [spec] `2026-06-13-compendiums-site-design`
+- **Ancient Kingdoms Mods — Project Overview** [overview] `2026-07-31-ancient-kingdoms-overview`
 
 ## draft
 
