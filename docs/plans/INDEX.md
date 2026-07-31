@@ -2,15 +2,15 @@
 
 ## active
 
-- **Compendiums.org Site Design** [spec] `2026-06-13-compendiums-site-design`
+- **Compendiums.org Site Design** [spec] `2026-06-13-compendiums-site-design` ← 2026-07-31-ancient-kingdoms-overview
 - **Ancient Kingdoms Mods — Project Overview** [overview] `2026-07-31-ancient-kingdoms-overview`
 
 ## draft
 
-- **Ancient Kingdoms Server Auto-Update Design Research** [spec] `2026-05-27-server-auto-update-design`
-- **Website Design System Audit & Consolidation Plan** [plan] `2026-05-27-website-design-system-audit-consolidation` (—)
-- **Entity Addition Architecture Design** [spec] `2026-05-28-compendium-data-contract-design`
-- **Agent Modding Toolbox — Research Findings** [note] `2026-06-20-agent-modding-toolbox-findings`
+- **Ancient Kingdoms Server Auto-Update Design Research** [spec] `2026-05-27-server-auto-update-design` ← 2026-07-31-ancient-kingdoms-overview
+- **Website Design System Audit & Consolidation Plan** [plan] `2026-05-27-website-design-system-audit-consolidation` (—) ← 2026-07-31-ancient-kingdoms-overview
+- **Entity Addition Architecture Design** [spec] `2026-05-28-compendium-data-contract-design` ← 2026-07-31-ancient-kingdoms-overview
+- **Agent Modding Toolbox — Research Findings** [note] `2026-06-20-agent-modding-toolbox-findings` ← 2026-07-31-ancient-kingdoms-overview
 - **Detail-Page Title Suffixes** [spec] `2026-07-31-detail-page-title-suffixes` ← 2026-07-31-ancient-kingdoms-overview
 - **Entity Image Surfacing** [spec] `2026-07-31-entity-image-surfacing` ← 2026-07-31-ancient-kingdoms-overview
 - **Entity Structured Data** [spec] `2026-07-31-entity-structured-data` ← 2026-07-31-ancient-kingdoms-overview

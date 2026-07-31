@@ -3,7 +3,7 @@ title: "Ancient Kingdoms Server Auto-Update Design Research"
 type: spec
 status: draft
 created: 2026-05-27
-parent:
+parent: 2026-07-31-ancient-kingdoms-overview
 superseded_by:
 archived:
 ---

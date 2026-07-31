@@ -3,7 +3,7 @@ title: "Agent Modding Toolbox — Research Findings"
 type: note
 status: draft
 created: 2026-06-20
-parent:
+parent: 2026-07-31-ancient-kingdoms-overview
 superseded_by:
 archived:
 ---

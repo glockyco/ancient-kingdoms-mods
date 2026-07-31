@@ -3,7 +3,7 @@ title: "Website Design System Audit & Consolidation Plan"
 type: plan
 status: draft
 created: 2026-05-27
-parent:
+parent: 2026-07-31-ancient-kingdoms-overview
 superseded_by:
 archived:
 ---
