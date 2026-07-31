@@ -197,20 +197,20 @@
     }
   }
 
-  // Source: server-scripts/Utils.cs:515-530 — GetSuccessProbMining
+  // Source: server-scripts/Utils.cs:GetSuccessProbMining — tiered mineral gather success
   function getMiningSuccessChance(resourceLevel: number): number {
     const skill = skillLevel / 100;
     switch (resourceLevel) {
       case 0:
         return Math.min(100, (0.8 + pickaxeQuality + skill) * 100);
       case 1:
-        return Math.min(100, (0.1 + pickaxeQuality * 0.2 + skill) * 100);
+        return Math.min(100, (0.3 + pickaxeQuality * 0.2 + skill) * 100);
       case 2:
         return Math.min(100, (pickaxeQuality * 0.15 + skill * 0.6) * 100);
       case 3:
-        return Math.min(100, (pickaxeQuality * 0.1 + skill * 0.4) * 100);
+        return Math.min(100, (pickaxeQuality * 0.1 + skill * 0.5) * 100);
       default:
-        return Math.min(100, (pickaxeQuality * 0.05 + skill * 0.2) * 100);
+        return Math.min(100, (pickaxeQuality * 0.05 + skill * 0.4) * 100);
     }
   }
 

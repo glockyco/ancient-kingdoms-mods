@@ -28,8 +28,7 @@
     new Map(data.xpByTier.map((tx) => [tx.tier, tx.xp])),
   );
 
-  // Source: server-scripts/Utils.cs:515-530 — GetSuccessProbMining
-  // Mining success chance formula from game code
+  // Source: server-scripts/Utils.cs:GetSuccessProbMining — tiered mineral gather success
   // Takes pickaxe quality (0-4) and skill level (0-100%)
   function getSuccessChance(resourceLevel: number): number {
     const skill = skillLevel / 100;

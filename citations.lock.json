@@ -1636,10 +1636,6 @@
       "sha256": "b38456b33fd50dfdf1ced43314c130d0d71739c7ee40b08a85f08a5e7939c5f3",
       "span": 10
     },
-    "Utils.cs:515-530": {
-      "sha256": "e070e9c78c96e0bb1e537333606dbc6a683749edda6112d7620fa9fdd5e250b6",
-      "span": 16
-    },
     "Utils.cs:521-524": {
       "sha256": "b41c5675d79391d3388ffcf66a14b5389bd840157bad3599a0e5d5e94e0f1d1d",
       "span": 4
@@ -1665,6 +1661,9 @@
       "span": 22
     },
     "Utils.cs:GetSuccessProbHerbalism": {
+      "span": 0
+    },
+    "Utils.cs:GetSuccessProbMining": {
       "span": 0
     },
     "Utils.cs:priceResetVeteranSkills": {
