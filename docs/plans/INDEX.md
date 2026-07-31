@@ -11,5 +11,10 @@
 - **Website Design System Audit & Consolidation Plan** [plan] `2026-05-27-website-design-system-audit-consolidation` (—)
 - **Entity Addition Architecture Design** [spec] `2026-05-28-compendium-data-contract-design`
 - **Agent Modding Toolbox — Research Findings** [note] `2026-06-20-agent-modding-toolbox-findings`
+- **Detail-Page Title Suffixes** [spec] `2026-07-31-detail-page-title-suffixes` ← 2026-07-31-ancient-kingdoms-overview
+- **Entity Image Surfacing** [spec] `2026-07-31-entity-image-surfacing` ← 2026-07-31-ancient-kingdoms-overview
+- **Entity Structured Data** [spec] `2026-07-31-entity-structured-data` ← 2026-07-31-ancient-kingdoms-overview
+- **Global Entity Search** [spec] `2026-07-31-global-entity-search` ← 2026-07-31-ancient-kingdoms-overview
+- **Per-Entity Open Graph Images** [spec] `2026-07-31-per-entity-og-images` ← 2026-07-31-ancient-kingdoms-overview
 
 _25 archived — see `docs/plans/archive/`._
