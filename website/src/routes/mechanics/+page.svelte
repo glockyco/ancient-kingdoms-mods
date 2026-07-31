@@ -65,7 +65,7 @@
 
 <Seo
   title="Game Mechanics - Ancient Kingdoms"
-  description="Combat damage formulas, XP gain rates, inventory and storage rules, and monster respawn timers for Ancient Kingdoms — drawn from the game's actual logic."
+  description="Combat damage formulas, XP gain rates, inventory and storage rules, monster respawn timers, mercenary stats, and faction reputation for Ancient Kingdoms."
   path="/mechanics"
 />
 

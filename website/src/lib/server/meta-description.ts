@@ -1674,3 +1674,61 @@ export function classDescription(klass: ClassDescriptionInput): string {
 
   return `${role}, uses ${resource}.${lorePhrase}`;
 }
+
+// =============================================================================
+// Factions
+// =============================================================================
+
+export interface FactionDescriptionInput {
+  name: string;
+  member_count: number;
+  monster_source_count: number;
+  quest_source_count: number;
+  unlock_count: number;
+  /** Highest reputation any of this faction's unlocks asks for, 0 when none. */
+  top_requirement: number;
+  top_requirement_tier: string | null;
+}
+
+/**
+ * Per-faction meta description. The six factions differ mainly in how much
+ * content hangs off them, so the counts are what makes each page distinct.
+ * The Forsaken has no members, quests, or unlocks at all, and falls back to
+ * naming the one thing it does have.
+ */
+export function factionDescription(faction: FactionDescriptionInput): string {
+  const clauses: string[] = [];
+
+  const sources: string[] = [];
+  if (faction.monster_source_count > 0)
+    sources.push(plural(faction.monster_source_count, "monster", "monsters"));
+  if (faction.quest_source_count > 0)
+    sources.push(plural(faction.quest_source_count, "quest", "quests"));
+  if (sources.length > 0) {
+    const total = faction.monster_source_count + faction.quest_source_count;
+    clauses.push(`${joinList(sources)} ${total === 1 ? "raises" : "raise"} it`);
+  }
+
+  if (faction.member_count > 0)
+    clauses.push(
+      `${plural(faction.member_count, "NPC", "NPCs")} ${
+        faction.member_count === 1 ? "belongs" : "belong"
+      } to it`,
+    );
+
+  if (faction.unlock_count > 0) {
+    const gate =
+      faction.top_requirement_tier && faction.top_requirement > 0
+        ? ` up to ${faction.top_requirement_tier} at ${faction.top_requirement.toLocaleString()}`
+        : "";
+    clauses.push(
+      `${plural(faction.unlock_count, "reward", "rewards")} ${
+        faction.unlock_count === 1 ? "unlocks" : "unlock"
+      }${gate}`,
+    );
+  } else {
+    clauses.push("nothing unlocks from it yet");
+  }
+
+  return `${faction.name} reputation in Ancient Kingdoms: ${joinList(clauses)}.`;
+}

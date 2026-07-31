@@ -91,7 +91,7 @@
 
 <Seo
   title="Reputation Mechanics - Ancient Kingdoms"
-  description="How faction reputation works in Ancient Kingdoms: the eight tiers from Hated to Revered, and every kill, quest, chest, and pet that changes your reputation."
+  description="How faction reputation works in Ancient Kingdoms: the eight tiers from Hated to Revered, every formula that moves it, and what each tier unlocks."
   path="/mechanics/reputation"
 />
 

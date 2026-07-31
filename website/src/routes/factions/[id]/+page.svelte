@@ -517,8 +517,7 @@
 
 <Seo
   title="{data.faction.name} - Factions - Ancient Kingdoms"
-  description="{data.faction
-    .name} reputation in Ancient Kingdoms: its members, every kill, quest and chest that changes it, and what the faction unlocks."
+  description={data.description}
   path="/factions/{data.faction.id}"
 />
 

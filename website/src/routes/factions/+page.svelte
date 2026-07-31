@@ -15,7 +15,8 @@
     buildCollectionPage({
       path: "/factions",
       name: "Factions — Ancient Kingdoms Compendium",
-      description: "The six factions of Ancient Kingdoms.",
+      description:
+        "The six factions of Ancient Kingdoms: who belongs to each, which kills and quests raise reputation, and what Honored, Ally, and Revered unlock.",
       items: data.factions.map((faction) => ({
         name: faction.name,
         path: `/factions/${faction.id}`,
