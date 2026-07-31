@@ -36,6 +36,16 @@ test("faction pages link standing to reputation mechanics", () => {
   assert.match(factionsIndex, /href="\/mechanics\/reputation"/);
 });
 
+test("quest pages link the reputation reward to reputation mechanics", () => {
+  const questPage = source("../quests/[id]/+page.svelte");
+  const reputationPage = source("./reputation/+page.svelte");
+
+  // Adventurer quests credit no faction, so the reward has to be gated on it.
+  assert.match(questPage, /data\.quest\.is_adventurer_quest/);
+  assert.match(questPage, /section="reputation#quests"/);
+  assert.match(reputationPage, /id="quests"/);
+});
+
 test("item pages link backpacks and house chests to inventory mechanics", () => {
   const itemPage = source("../items/[id]/+page.svelte");
   const houseChests = source("../../lib/inventory/house-chests.ts");

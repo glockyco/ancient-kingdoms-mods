@@ -194,7 +194,7 @@ export const load: PageServerLoad = ({ params }): QuestDetailPageData => {
     const npcData = db
       .prepare(
         `
-      SELECT n.id, n.name, ns.zone_id, z.name as zone_name
+      SELECT n.id, n.name, n.faction, ns.zone_id, z.name as zone_name
       FROM npcs n
       LEFT JOIN npc_spawns ns ON ns.npc_id = n.id
       LEFT JOIN zones z ON z.id = ns.zone_id
@@ -206,6 +206,7 @@ export const load: PageServerLoad = ({ params }): QuestDetailPageData => {
       | {
           id: string;
           name: string;
+          faction: string | null;
           zone_id: string | null;
           zone_name: string | null;
         }
@@ -215,6 +216,7 @@ export const load: PageServerLoad = ({ params }): QuestDetailPageData => {
       startNpc = {
         id: npcData.id,
         name: npcData.name,
+        faction: npcData.faction,
         zone_id: npcData.zone_id,
         zone_name: npcData.zone_name,
       };
@@ -224,7 +226,7 @@ export const load: PageServerLoad = ({ params }): QuestDetailPageData => {
     const npcsOffering = db
       .prepare(
         `
-      SELECT n.id, n.name, ns.zone_id, z.name as zone_name
+      SELECT n.id, n.name, n.faction, ns.zone_id, z.name as zone_name
       FROM npcs n
       LEFT JOIN npc_spawns ns ON ns.npc_id = n.id
       LEFT JOIN zones z ON z.id = ns.zone_id
@@ -239,6 +241,7 @@ export const load: PageServerLoad = ({ params }): QuestDetailPageData => {
       .all(params.id) as Array<{
       id: string;
       name: string;
+      faction: string | null;
       zone_id: string | null;
       zone_name: string | null;
     }>;
@@ -246,6 +249,7 @@ export const load: PageServerLoad = ({ params }): QuestDetailPageData => {
     adventurerNpcs = npcsOffering.map((npc) => ({
       id: npc.id,
       name: npc.name,
+      faction: npc.faction,
       zone_id: npc.zone_id,
       zone_name: npc.zone_name,
     }));
@@ -257,7 +261,7 @@ export const load: PageServerLoad = ({ params }): QuestDetailPageData => {
     const npcData = db
       .prepare(
         `
-      SELECT n.id, n.name, ns.zone_id, z.name as zone_name
+      SELECT n.id, n.name, n.faction, ns.zone_id, z.name as zone_name
       FROM npcs n
       LEFT JOIN npc_spawns ns ON ns.npc_id = n.id
       LEFT JOIN zones z ON z.id = ns.zone_id
@@ -269,6 +273,7 @@ export const load: PageServerLoad = ({ params }): QuestDetailPageData => {
       | {
           id: string;
           name: string;
+          faction: string | null;
           zone_id: string | null;
           zone_name: string | null;
         }
@@ -278,6 +283,7 @@ export const load: PageServerLoad = ({ params }): QuestDetailPageData => {
       endNpc = {
         id: npcData.id,
         name: npcData.name,
+        faction: npcData.faction,
         zone_id: npcData.zone_id,
         zone_name: npcData.zone_name,
       };

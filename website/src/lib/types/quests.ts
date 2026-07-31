@@ -60,6 +60,8 @@ export interface QuestChainGraph {
 export interface QuestNpc {
   id: string;
   name: string;
+  /** The NPC's faction, which a hand-in credits with reputation. */
+  faction: string | null;
   zone_id: string | null;
   zone_name: string | null;
 }

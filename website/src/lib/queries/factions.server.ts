@@ -1,6 +1,9 @@
 import { query, queryOne } from "$lib/db.server";
 import type { NpcRoles } from "$lib/types/npcs";
-import type { ReputationTier } from "$lib/utils/reputation";
+import {
+  questReputationGain,
+  type ReputationTier,
+} from "$lib/utils/reputation";
 
 export interface FactionListView {
   id: string;
@@ -253,14 +256,17 @@ export function getFactionDetail(id: string): FactionDetail | null {
     [name],
   );
 
-  const questGrants = query<FactionQuestGrantRow>(
-    `SELECT q.id, q.name, q.level_recommended, q.level_recommended * 20 AS gain
+  const questGrants = query<Omit<FactionQuestGrantRow, "gain">>(
+    `SELECT q.id, q.name, q.level_recommended
      FROM quests q
      JOIN npcs n ON n.id = q.start_npc_id
      WHERE n.faction = ? AND q.is_adventurer_quest = 0
      ORDER BY q.level_recommended, q.name`,
     [name],
-  );
+  ).map((quest) => ({
+    ...quest,
+    gain: questReputationGain(quest.level_recommended),
+  }));
 
   const gatedItems = query<FactionGatedItemRow>(
     `SELECT DISTINCT i.id, i.name, i.tooltip_html,

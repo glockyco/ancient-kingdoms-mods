@@ -6,6 +6,7 @@
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
   import ClassPills from "$lib/components/ClassPills.svelte";
   import FactionLink from "$lib/components/FactionLink.svelte";
+  import { questReputationGain } from "$lib/utils/reputation";
   import QuestChainGraph from "$lib/components/QuestChainGraph.svelte";
   import MonsterTypeIcon from "$lib/components/MonsterTypeIcon.svelte";
   import QuestTypeBadge from "$lib/components/QuestTypeBadge.svelte";
@@ -42,12 +43,26 @@
       (data.quest.is_find_npc_quest && data.endNpc !== null),
   );
 
+  // Handing a quest in credits the giver's faction. Adventurer quests grant
+  // nothing, and they have no single giver to credit.
+  const reputationReward = $derived.by(() => {
+    const faction = data.quest.is_adventurer_quest
+      ? null
+      : data.startNpc?.faction;
+    if (!faction) return null;
+    return {
+      faction,
+      amount: questReputationGain(data.quest.level_recommended),
+    };
+  });
+
   // Check if quest has any rewards
   const hasRewards = $derived(
     data.quest.rewards.gold > 0 ||
       data.quest.rewards.exp > 0 ||
       data.quest.rewards.items.length > 0 ||
-      data.quest.increase_alchemy_skill > 0,
+      data.quest.increase_alchemy_skill > 0 ||
+      reputationReward !== null,
   );
 
   // Check if quest is part of a chain
@@ -617,6 +632,22 @@
                     <MechanicsLink section="experience"
                       >{formatNumber(data.quest.rewards.exp)} XP</MechanicsLink
                     >
+                  </span>
+                </div>
+              {/if}
+              {#if reputationReward}
+                <div>
+                  <span class="text-sm text-muted-foreground"
+                    >Reputation:
+                  </span>
+                  <span class="font-medium">
+                    <MechanicsLink section="reputation#quests"
+                      >+{formatNumber(reputationReward.amount)}</MechanicsLink
+                    >
+                    <FactionLink
+                      name={reputationReward.faction}
+                      id={data.factionIds[reputationReward.faction]}
+                    />
                   </span>
                 </div>
               {/if}
