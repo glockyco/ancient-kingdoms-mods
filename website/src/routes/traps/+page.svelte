@@ -183,7 +183,7 @@
 {/snippet}
 
 <Seo
-  title="Traps — Ancient Kingdoms"
+  title="Traps - Ancient Kingdoms"
   description={`${data.traps.length.toLocaleString()} traps across Ancient Kingdoms, with trap kinds, effects, teleport destinations, and mapped locations.`}
   path="/traps"
 />
