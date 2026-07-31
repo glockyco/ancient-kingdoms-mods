@@ -117,9 +117,10 @@ Some game mechanics cannot be derived from the database and are hardcoded direct
 <!-- Source: server-scripts/FileName.cs:lineNumber — brief description -->
 ```
 
-These citations are machine-checked. `pnpm check:citations` (also a pre-commit
-job, skipped when `server-scripts/` is absent) hashes every cited region and
-compares it to `citations.lock.json`. After a game update, run:
+These citations are machine-checked. `pnpm check:citations` from the repository
+root (also a pre-commit job, skipped when `server-scripts/` is absent) hashes
+every cited region and compares it to `citations.lock.json`. After a game update,
+run:
 
 ```bash
 cd build-pipeline
@@ -130,7 +131,16 @@ uv run compendium citations sync --game-version <ver>  # re-anchor
 ```
 
 A `changed` citation means the cited code was rewritten, so verify the claim
-itself is still true before re-anchoring. Grammar rules worth knowing:
+itself is still true before re-anchoring.
+
+**A green check is not proof the claim is correct.** The checker hashes the bytes
+in the cited region; it cannot tell that a line range has slid onto a different
+member as the file grew, nor that the value was transcribed wrong to begin with.
+Every profession success formula once cited a range that had drifted onto a
+neighbouring function, and all of them verified green while two were wrong. Use
+symbol form for anything that pins a single member.
+
+Grammar rules worth knowing:
 
 - Everything after a spaced em dash is prose and is not parsed for references,
   so put every file and line number before the dash.
