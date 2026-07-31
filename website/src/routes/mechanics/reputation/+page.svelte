@@ -58,10 +58,13 @@
     7: "Mounts, at 721,000",
   };
 
-  function tierRange(min: number | null, max: number | null): string {
-    if (min === null) return `below ${(max ?? 0).toLocaleString()}`;
-    if (max === null) return `${min.toLocaleString()}+`;
-    return `${min.toLocaleString()} – ${max.toLocaleString()}`;
+  /**
+   * The tiers are contiguous, so each one is defined by the single number it
+   * starts at and runs until the next tier's. Printing both ends would repeat
+   * every boundary and leave the column nothing to align on.
+   */
+  function tierStart(min: number | null): string {
+    return min === null ? "—" : min.toLocaleString();
   }
 
   /** How much reputation a tier covers, which is what it costs to cross it. */
@@ -228,7 +231,7 @@
           <thead>
             <tr class="border-b border-border">
               <th class="py-2 pr-6 text-left font-medium">Tier</th>
-              <th class="py-2 pr-6 text-right font-medium">Reputation</th>
+              <th class="py-2 pr-6 text-right font-medium">Starts at</th>
               <th class="py-2 pr-8 text-right font-medium">Points to cross</th>
               <th class="py-2 text-left font-medium">What changes here</th>
             </tr>
@@ -242,7 +245,7 @@
                     : 'text-green-600 dark:text-green-400'}">{tier.name}</td
                 >
                 <td class="py-2 pr-6 text-right font-mono"
-                  >{tierRange(tier.min_value, tier.max_value)}</td
+                  >{tierStart(tier.min_value)}</td
                 >
                 <td class="py-2 pr-8 text-right font-mono"
                   >{tierSpan(tier.min_value, tier.max_value)}</td
@@ -260,8 +263,8 @@
         </table>
       </div>
       <p>
-        The lower bound of a tier is included and the upper bound is not. 1,000
-        is Friendly, 999 is Neutral, and 21,000 is Honored.
+        Each tier runs from its own number up to the next one's. The lower bound
+        counts and the upper does not, so 999 is Neutral and 1,000 is Friendly.
       </p>
     </Card.Content>
   </Card.Root>
