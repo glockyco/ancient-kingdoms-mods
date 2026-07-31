@@ -10,19 +10,20 @@ Game (IL2CPP Unity) → Mods (JSON export) → Build Pipeline (SQLite) → Websi
 
 **IMPORTANT: You MUST read the linked file BEFORE performing these tasks.**
 
-| Task                                                                          | Required Reading                       |
-| ----------------------------------------------------------------------------- | -------------------------------------- |
-| Editing any CLAUDE.md                                                         | docs/claude-md-guide.md                |
-| Committing code                                                               | Load skill: commit                     |
-| Creating GitHub issues                                                        | docs/github-guide.md                   |
-| Writing data exporters                                                        | Load skill: export-game-data           |
-| Updating to new game version                                                  | Load skill: update-game-version        |
-| Inspecting live game state via HotRepl                                        | Load skill: hotrepl-runtime-inspection |
-| Exploring codebase structure                                                  | docs/project-map.md                    |
-| Working on mods                                                               | mods/CLAUDE.md                         |
-| Working on website                                                            | website/CLAUDE.md                      |
-| Working on build pipeline                                                     | build-pipeline/CLAUDE.md               |
-| Starting work in a git worktree or seeing missing generated website artifacts | Load skill: bootstrap-worktree         |
+| Task                                                                          | Required Reading                                   |
+| ----------------------------------------------------------------------------- | -------------------------------------------------- |
+| Editing any CLAUDE.md                                                         | docs/claude-md-guide.md                            |
+| Committing code                                                               | Load skill: commit                                 |
+| Planning work, resuming a plan, or checking what is active                    | docs/plans/INDEX.md                                |
+| Understanding project priorities                                              | docs/plans/2026-07-31-ancient-kingdoms-overview.md |
+| Writing data exporters                                                        | Load skill: export-game-data                       |
+| Updating to new game version                                                  | Load skill: update-game-version                    |
+| Inspecting live game state via HotRepl                                        | Load skill: hotrepl-runtime-inspection             |
+| Exploring codebase structure                                                  | docs/project-map.md                                |
+| Working on mods                                                               | mods/CLAUDE.md                                     |
+| Working on website                                                            | website/CLAUDE.md                                  |
+| Working on build pipeline                                                     | build-pipeline/CLAUDE.md                           |
+| Starting work in a git worktree or seeing missing generated website artifacts | Load skill: bootstrap-worktree                     |
 
 If you notice stale or incorrect information in any documentation, flag it to the user.
 

@@ -10,12 +10,6 @@ https://github.com/glockyco/ancient-kingdoms-mods
 **Ancient Kingdoms Mods**
 https://github.com/users/glockyco/projects/7
 
-## Creating Issues
+## Issues
 
-```bash
-# Create issue
-gh issue create --title "Title" --body "Description"
-
-# Add issue to project (requires project scope)
-gh project item-add 7 --owner glockyco --url <issue-url>
-```
+The tracker is for external bug reports. Internal work is planned in `docs/plans/` (see `docs/plans/INDEX.md`).
