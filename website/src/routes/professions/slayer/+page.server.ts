@@ -67,6 +67,7 @@ export const load: PageServerLoad = (): SlayerPageData => {
       m.level_min,
       m.level_max,
       m.is_boss,
+      m.is_fabled,
       m.is_elite,
       m.death_time,
       m.respawn_time,
