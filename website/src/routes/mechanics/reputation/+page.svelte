@@ -33,6 +33,20 @@
     { id: "the_forsaken", name: "The Forsaken", races: [] },
   ];
 
+  // Every section on the page, in document order. Drives the jump list; the
+  // ids match each Card.Root below.
+  const SECTIONS = [
+    { id: "factions", label: "The Six Factions" },
+    { id: "ladder", label: "The Eight Tiers" },
+    { id: "monsters", label: "Killing Monsters" },
+    { id: "npcs", label: "Killing NPCs" },
+    { id: "quests", label: "Completing Quests" },
+    { id: "chests", label: "Looting Faction Chests" },
+    { id: "pets", label: "Petting Animals" },
+    { id: "unlocks", label: "What Reputation Unlocks" },
+    { id: "decay", label: "Decay and Limits" },
+  ];
+
   // Tint deepens toward each end of the ladder. The eight segments are equal
   // width because the ranges span three orders of magnitude, so the strip
   // shows order and the sign change at zero; the table carries the numbers.
@@ -91,53 +105,17 @@
 
   <h1 class="text-4xl font-bold">Reputation Mechanics</h1>
 
-  <nav aria-label="Page sections" class="text-sm text-muted-foreground">
-    <ul class="flex flex-wrap gap-x-4 gap-y-1">
-      <li>
-        <a href="#factions" class="hover:text-foreground hover:underline"
-          >The Six Factions</a
-        >
-      </li>
-      <li>
-        <a href="#ladder" class="hover:text-foreground hover:underline"
-          >The Eight Tiers</a
-        >
-      </li>
-      <li>
-        <a href="#monsters" class="hover:text-foreground hover:underline"
-          >Killing Monsters</a
-        >
-      </li>
-      <li>
-        <a href="#npcs" class="hover:text-foreground hover:underline"
-          >Killing NPCs</a
-        >
-      </li>
-      <li>
-        <a href="#quests" class="hover:text-foreground hover:underline"
-          >Completing Quests</a
-        >
-      </li>
-      <li>
-        <a href="#chests" class="hover:text-foreground hover:underline"
-          >Looting Faction Chests</a
-        >
-      </li>
-      <li>
-        <a href="#pets" class="hover:text-foreground hover:underline"
-          >Petting Animals</a
-        >
-      </li>
-      <li>
-        <a href="#unlocks" class="hover:text-foreground hover:underline"
-          >What Reputation Unlocks</a
-        >
-      </li>
-      <li>
-        <a href="#decay" class="hover:text-foreground hover:underline"
-          >Decay and Limits</a
-        >
-      </li>
+  <nav aria-label="Page sections">
+    <ul
+      class="grid gap-x-6 gap-y-2 text-sm text-muted-foreground sm:grid-cols-2 lg:grid-cols-3"
+    >
+      {#each SECTIONS as section (section.id)}
+        <li>
+          <a href="#{section.id}" class="hover:text-foreground hover:underline"
+            >{section.label}</a
+          >
+        </li>
+      {/each}
     </ul>
   </nav>
 
