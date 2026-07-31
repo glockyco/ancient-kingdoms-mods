@@ -1628,10 +1628,6 @@
       "sha256": "7acd81eb193ca7f5bf623de5f5f7d4826d196d0b12c4035d3d18b74ba96cecfd",
       "span": 11
     },
-    "Utils.cs:491-501": {
-      "sha256": "af389a57ecd98a939d344703e03eceade0dbc2df62bab1fd7376d3b309b3d06e",
-      "span": 11
-    },
     "Utils.cs:507-516": {
       "sha256": "c0a977050a6409e0797c5c3be0d24ca087d35da0e1034b2587d235c5645f9a44",
       "span": 10
@@ -1667,6 +1663,9 @@
     "Utils.cs:588-609": {
       "sha256": "588db767714850ffeace0a66c616720a15fd01a6c601774be4097487d5e520b0",
       "span": 22
+    },
+    "Utils.cs:GetSuccessProbHerbalism": {
+      "span": 0
     },
     "Utils.cs:priceResetVeteranSkills": {
       "span": 0

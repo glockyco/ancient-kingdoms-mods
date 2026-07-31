@@ -180,7 +180,7 @@
     { itemId: "fishermans_trousers", itemName: "Fisherman's Trousers" },
   ];
 
-  // Source: server-scripts/Utils.cs:491-501 — GetSuccessProbHerbalism
+  // Source: server-scripts/Utils.cs:GetSuccessProbHerbalism — tiered plant gather success
   function getHerbalismSuccessChance(resourceLevel: number): number {
     const skill = skillLevel / 100;
     switch (resourceLevel) {
@@ -191,9 +191,9 @@
       case 2:
         return Math.min(100, (0.15 + skill) * 100);
       case 3:
-        return Math.min(100, skill * 95);
+        return Math.min(100, skill * 100);
       default:
-        return Math.min(100, skill * 85);
+        return Math.min(100, skill * 0.95 * 100);
     }
   }
 
