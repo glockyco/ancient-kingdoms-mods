@@ -344,14 +344,24 @@
         matter.
       </p>
       <p>
-        In the current data the only faction that ever goes up is
+        In the current data the only faction an NPC death <em>improves</em> is
         <a
           href="/factions/the_forsaken"
           class="text-blue-600 hover:underline dark:text-blue-400"
           >The Forsaken</a
-        >, and the faction that goes down is the NPC's own. Killing townspeople
-        is the main way to raise The Forsaken, but you lose more with the town's
-        faction than you gain.
+        >, and the one it lowers is the NPC's own. Both amounts are small. The
+        highest-level NPCs are level 50, so they give +75 to The Forsaken and
+        cost −250 with their own faction.
+      </p>
+      <!-- Source: website/static/compendium.db monsters table — spirit_of_the_forest is a level 55 boss with 500,000 health and improves The Forsaken. -->
+      <p>
+        Killing NPCs is not the quickest way to raise The Forsaken either. The
+        <a
+          href="/monsters/spirit_of_the_forest"
+          class="text-blue-600 hover:underline dark:text-blue-400"
+          >Spirit of the Forest</a
+        >
+        is worth +6,100 a kill.
       </p>
     </Card.Content>
   </Card.Root>
