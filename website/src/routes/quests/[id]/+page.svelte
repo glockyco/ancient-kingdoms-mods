@@ -5,6 +5,7 @@
   import Seo from "$lib/components/Seo.svelte";
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
   import ClassPills from "$lib/components/ClassPills.svelte";
+  import FactionLink from "$lib/components/FactionLink.svelte";
   import QuestChainGraph from "$lib/components/QuestChainGraph.svelte";
   import MonsterTypeIcon from "$lib/components/MonsterTypeIcon.svelte";
   import QuestTypeBadge from "$lib/components/QuestTypeBadge.svelte";
@@ -249,7 +250,12 @@
                   <span class="text-sm text-muted-foreground w-16"
                     >Faction:</span
                   >
-                  <span>{faction.faction}</span>
+                  <span
+                    ><FactionLink
+                      name={faction.faction}
+                      id={data.factionIds[faction.faction]}
+                    /></span
+                  >
                   {#if faction.tier_name}
                     <span class="text-purple-600 dark:text-purple-400">
                       {faction.tier_name}

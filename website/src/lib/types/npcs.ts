@@ -163,6 +163,8 @@ export interface TeleportRoute {
 
 export interface NpcDetailPageData {
   npc: NpcInfo;
+  /** Faction display name to route id, for linking out to `/factions/[id]`. */
+  factionIds: Record<string, string>;
   description: string;
   questsOffered: NpcQuestOffered[];
   questsCompletedHere: NpcQuestOffered[];

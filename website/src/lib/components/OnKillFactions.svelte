@@ -3,13 +3,16 @@
     KillReputationDirection,
     KillReputationEffect,
   } from "$lib/utils/killReputation";
+  import FactionLink from "$lib/components/FactionLink.svelte";
 
   interface Props {
     /** Reputation changes applied when the entity is killed */
     effects: KillReputationEffect[];
+    /** Faction display name to route id, from `getFactionIdsByName()`. */
+    factionIds: Record<string, string>;
   }
 
-  let { effects }: Props = $props();
+  let { effects, factionIds }: Props = $props();
 
   const sign: Record<KillReputationDirection, string> = {
     improve: "+",
@@ -26,8 +29,13 @@
     On Kill: {#each effects as effect, i (effect.direction)}{i > 0
         ? ", "
         : ""}<span class={cls[effect.direction]}
-        >{sign[effect.direction]}{effect.amount}
-        {effect.factions.join(" / ")}</span
-      >{/each}
+        >{sign[effect.direction]}{effect.amount}</span
+      >
+      {#each effect.factions as faction, j (faction)}{j > 0
+          ? " / "
+          : ""}<FactionLink
+          name={faction}
+          id={factionIds[faction]}
+        />{/each}{/each}
   </span>
 {/if}

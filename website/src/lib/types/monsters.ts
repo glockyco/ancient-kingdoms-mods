@@ -357,6 +357,8 @@ export interface MonsterVisualAsset {
  */
 export interface MonsterDetailData {
   monster: MonsterInfo;
+  /** Faction display name to route id, for linking out to `/factions/[id]`. */
+  factionIds: Record<string, string>;
   description: string;
   drops: MonsterDrop[];
   spawns: MonsterSpawnData;

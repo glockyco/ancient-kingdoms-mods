@@ -19,6 +19,7 @@ import type {
 import type { ObtainabilityNode } from "$lib/types/recipes";
 import { buildObtainabilityTree } from "$lib/server/obtainability";
 import { questDescription } from "$lib/server/meta-description";
+import { getFactionIdsByName } from "$lib/queries/factions.server";
 
 export const prerender = true;
 
@@ -596,6 +597,7 @@ export const load: PageServerLoad = ({ params }): QuestDetailPageData => {
 
   return {
     quest,
+    factionIds: getFactionIdsByName(),
     description,
     startNpc,
     endNpc,

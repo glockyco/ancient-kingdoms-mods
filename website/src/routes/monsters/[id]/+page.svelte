@@ -768,7 +768,10 @@
           ></span
         >
       {/if}
-      <OnKillFactions effects={monsterKillReputation(data.monster)} />
+      <OnKillFactions
+        effects={monsterKillReputation(data.monster)}
+        factionIds={data.factionIds}
+      />
     </div>
   </div>
 

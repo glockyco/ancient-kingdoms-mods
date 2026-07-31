@@ -137,6 +137,15 @@ export function getFactionNav(): FactionNavItem[] {
   return query<FactionNavItem>("SELECT id, name FROM factions ORDER BY name");
 }
 
+/**
+ * Display name to route id, for pages that only hold a faction's name and want
+ * to link to `/factions/[id]`. Names not in the table are simply absent.
+ */
+export function getFactionIdsByName(): Record<string, string> {
+  const rows = query<FactionNavItem>("SELECT id, name FROM factions");
+  return Object.fromEntries(rows.map((row) => [row.name, row.id]));
+}
+
 interface ReputationTierRow extends Omit<ReputationTier, "is_hostile"> {
   is_hostile: number;
 }

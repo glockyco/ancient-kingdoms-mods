@@ -16,6 +16,7 @@ import {
   DB_STATIC_PATH,
 } from "$lib/constants/constants";
 import { npcDescription } from "$lib/server/meta-description";
+import { getFactionIdsByName } from "$lib/queries/factions.server";
 
 export const prerender = true;
 
@@ -300,6 +301,7 @@ export const load: PageServerLoad = ({ params }): NpcDetailPageData => {
 
   return {
     npc,
+    factionIds: getFactionIdsByName(),
     description,
     questsOffered,
     questsCompletedHere,

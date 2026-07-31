@@ -21,6 +21,7 @@ import type {
   MonsterSpawnCombatStats,
 } from "$lib/types/monsters";
 import { monsterDescription } from "$lib/server/meta-description";
+import { getFactionIdsByName } from "$lib/queries/factions.server";
 
 export const prerender = true;
 
@@ -873,6 +874,7 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
 
   return {
     monster,
+    factionIds: getFactionIdsByName(),
     description,
     drops,
     spawns,

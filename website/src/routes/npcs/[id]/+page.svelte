@@ -10,6 +10,7 @@
   import RoleBadges from "$lib/components/RoleBadges.svelte";
   import Seo from "$lib/components/Seo.svelte";
   import OnKillFactions from "$lib/components/OnKillFactions.svelte";
+  import FactionLink from "$lib/components/FactionLink.svelte";
   import { npcKillReputation } from "$lib/utils/killReputation";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
@@ -524,12 +525,20 @@
 
     <div class="mt-2 flex flex-wrap gap-4 text-sm text-muted-foreground">
       {#if data.npc.faction}
-        <span>Faction: {data.npc.faction}</span>
+        <span
+          >Faction: <FactionLink
+            name={data.npc.faction}
+            id={data.factionIds[data.npc.faction]}
+          /></span
+        >
       {/if}
       {#if data.npc.race}
         <span>Race: {data.npc.race}</span>
       {/if}
-      <OnKillFactions effects={npcKillReputation(data.npc)} />
+      <OnKillFactions
+        effects={npcKillReputation(data.npc)}
+        factionIds={data.factionIds}
+      />
     </div>
   </div>
 

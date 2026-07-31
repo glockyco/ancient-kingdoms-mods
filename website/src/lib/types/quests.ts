@@ -133,6 +133,8 @@ export interface QuestInfo {
 // Detail page data
 export interface QuestDetailPageData {
   quest: QuestInfo;
+  /** Faction display name to route id, for linking out to `/factions/[id]`. */
+  factionIds: Record<string, string>;
   description: string;
   startNpc: QuestNpc | null;
   endNpc: QuestNpc | null;
