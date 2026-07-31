@@ -65,16 +65,18 @@
     return [min, max];
   }
 
-  // Effortless thresholds: Tier I at 25%, Tier II at 50%, Tier III at 75%
+  // Source: server-scripts/GatherItem.cs:OnInteractServer
+  // A successful gather grants no mastery once skill is strictly above 25% for tier I,
+  // 50% for tier II, or 75% for tier III.
   function isEffortless(resourceLevel: number): boolean {
     const skill = skillLevel / 100;
     switch (resourceLevel) {
       case 0:
-        return skill >= 0.25;
+        return skill > 0.25;
       case 1:
-        return skill >= 0.5;
+        return skill > 0.5;
       case 2:
-        return skill >= 0.75;
+        return skill > 0.75;
       default:
         return false;
     }

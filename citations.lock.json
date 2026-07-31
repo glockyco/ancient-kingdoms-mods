@@ -522,6 +522,9 @@
       "sha256": "da53eab81ac1dad3deb8fa364dfd2af3303b99fbf28bb9aed3a548762d277040",
       "span": 7
     },
+    "GatherItem.cs:OnInteractServer": {
+      "span": 0
+    },
     "Housing.cs:33-38": {
       "sha256": "1abd246c6643d86377d6cf23df143c0a85277da364b1b69fbb4ffea5662b09f0",
       "span": 6
