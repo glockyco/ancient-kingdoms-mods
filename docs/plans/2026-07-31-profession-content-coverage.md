@@ -325,8 +325,6 @@ is not coverage. 1083 lines, 12.5 mobile screens.
 - **D** — none.
 - **E** — map quality does not affect reward quality. Luck tokens are a boss-loot
   mechanic with no treasure interaction; do not connect them.
-- **Defect** — step 1 says a Random Map drop yields one of 9 maps; there are 8 random
-  outcomes, the 9th being quest-only.
 
 ## Cross-cutting data findings
 

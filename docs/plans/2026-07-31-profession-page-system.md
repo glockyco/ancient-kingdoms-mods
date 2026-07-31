@@ -247,14 +247,13 @@ than the record it replaces.
 
 ## Correctness fixes folded into this work
 
-These are defects, not enhancements, and ship regardless of the redesign:
+These are defects, not enhancements, and ship regardless of the redesign. Four in total:
 
 - Herbalism tier 3 and 4 success formulas understate the game (`skill × 95` and
   `skill × 85` where the server gives `skill` and `skill × 0.95`).
 - The `/gather-items/[id]` calculator disagrees with `/professions/mining` on tiers 1, 3
   and 4. One of them is wrong; the server is authoritative.
 - Slayer never selects `is_fabled`, so 9 fabled bosses render as ordinary bosses.
-- Treasure hunter claims 9 random map outcomes; there are 8 plus one quest-only map.
 - The "too simple" boundary renders as `>=` on gathering pages; the server uses `>`.
 
 ## Scope and boundaries

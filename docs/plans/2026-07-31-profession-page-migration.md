@@ -29,7 +29,6 @@ sites, all under `website/src/routes/`.
 - [ ] Fix the mining calculator in `gather-items/[id]/+page.svelte:203-211` — tier 1 `0.1`→`0.3`, tier 3 `skill × 0.4`→`× 0.5`, tier 4 `skill × 0.2`→`× 0.4`; `professions/mining/+page.svelte:33-48` is already correct and is the reference
 - [ ] Re-anchor the stale herbalism citation `Utils.cs:491-501` to `Utils.cs:GetSuccessProbHerbalism` in both files; prefer the symbol form, which cannot drift
 - [ ] Add `m.is_fabled` to the monster projection in `professions/slayer/+page.server.ts:64-86`, which already declares it at line 15 and consumes it at `+page.svelte:115`
-- [ ] Correct the treasure hunter step-1 claim in `professions/treasure_hunter/+page.svelte:135-146` to 8 random map outcomes plus the quest-only Red Scabbard Map
 - [ ] Change the effortless boundary from `>=` to `>` in `professions/herbalism/+page.svelte:71-77` and `professions/mining/+page.svelte:76-84`
 - [ ] Run `pnpm check:citations` from the repo root, then `pnpm check && pnpm lint && pnpm build`
 
