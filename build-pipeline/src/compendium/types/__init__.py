@@ -2,28 +2,12 @@
 
 from compendium.types.denormalized import (
     ChestSourceInfo,
-    CraftedFromInfo,
-    DropInfo,
-    GatherDropInfo,
     GrantedByItemInfo,
     MaterialInfo,
-    NeededForQuestInfo,
-    ProvidedByQuestInfo,
-    RewardedByInfo,
-    SoldByInfo,
-    UsedInRecipeInfo,
 )
 
 __all__ = [
     "ChestSourceInfo",
-    "CraftedFromInfo",
-    "DropInfo",
-    "GatherDropInfo",
     "GrantedByItemInfo",
     "MaterialInfo",
-    "NeededForQuestInfo",
-    "ProvidedByQuestInfo",
-    "RewardedByInfo",
-    "SoldByInfo",
-    "UsedInRecipeInfo",
 ]

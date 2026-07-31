@@ -2,8 +2,8 @@
 
 This module handles denormalizations for special item types:
 - Chest-type items (with Monte Carlo probability calculation)
-- Pack items (found_in_packs)
-- Random items (found_in_random_items, random_items_with_names)
+- Pack items
+- Random items (including random_items_with_names)
 - Merge items
 - Treasure maps
 - Luck tokens
@@ -195,9 +195,9 @@ def _denormalize_luck_tokens(conn: sqlite3.Connection) -> tuple[int, int]:
         boss_bonus,
     ) in cursor.fetchall():
         if fragment_token_id:
-            # Update luck token metadata only - dropped_by is handled by
-            # monsters/drops.py adding fragments to monster drops, then
-            # items/sources.py building dropped_by from all monster drops
+            # Update luck token metadata only - the drop relationship is handled
+            # by monsters/drops.py adding fragments to monster drops, then
+            # items/sources.py building item_sources_monster from those drops
             update_fragment_cursor = conn.cursor()
             update_fragment_cursor.execute(
                 """

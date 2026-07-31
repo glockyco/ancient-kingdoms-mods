@@ -185,7 +185,7 @@ def run_all(conn: sqlite3.Connection) -> None:
     # spawns exist for level range calculation and item zone association)
     monsters.run_spawns(conn)
 
-    # Monster level ranges (from spawns, needed before dropped_by)
+    # Monster level ranges (from spawns, needed before item sources)
     monsters.run_levels(conn)
 
     # Quest display_type (needed before item usages reads it)
@@ -194,7 +194,7 @@ def run_all(conn: sqlite3.Connection) -> None:
     # Recipe materials enrichment (add item_name before consumers read materials)
     recipes.run_materials(conn)
 
-    # Item denormalizations (reads monster drops for dropped_by)
+    # Item denormalizations (reads monster drops for item_sources_monster)
     items.run_all(conn, redactions)
 
     # Skill denormalizations

@@ -580,7 +580,7 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
   }));
 
   // Get quests that require items dropped by this monster
-  // Use the denormalized items.needed_for_quests field which already tracks all quest-item relationships
+  // item_usages_quest already tracks every quest-item relationship
   const dropItemIds = drops.map((d) => d.item_id);
   const questIdsSeen = new Set(quests.map((q) => q.id));
 

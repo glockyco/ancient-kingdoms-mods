@@ -1,13 +1,14 @@
 """Item source denormalizations - where items come from.
 
-This module handles all denormalizations that populate "source" fields on items:
-- dropped_by: Which monsters drop this item
-- gathered_from: Which gathering resources/chests yield this item
-- sold_by: Which NPCs sell this item
-- rewarded_by: Which quests reward this item
-- provided_by_quests: Which quests give this item on start
-- rewarded_by_altars: Which altars reward this item
-- crafted_from: Which recipes create this item
+This module populates the item_sources_* junction tables:
+- item_sources_monster: Which monsters drop this item
+- item_sources_gather, item_sources_chest: Which resources/chests yield it
+- item_sources_vendor: Which NPCs sell it
+- item_sources_quest: Which quests reward it or give it on start
+- item_sources_altar: Which altars reward it
+- item_sources_recipe: Which recipes create it
+- item_sources_pack, item_sources_random: Which containers can roll it
+- item_sources_merge, item_sources_treasure_map: Merge and treasure sources
 """
 
 from __future__ import annotations
@@ -28,11 +29,11 @@ if TYPE_CHECKING:
 console = Console()
 
 
-def _denormalize_dropped_by(conn: sqlite3.Connection) -> None:
+def _denormalize_monster_sources(conn: sqlite3.Connection) -> None:
     """Populate item_sources_monster from monsters.drops.
 
-    Skips drops with is_altar_reward=True since those are shown in
-    rewarded_by_altars instead.
+    Skips drops with is_altar_reward=True since those go to item_sources_altar
+    instead.
     """
     console.print("  Processing monster drops...")
     cursor = conn.cursor()
@@ -46,7 +47,7 @@ def _denormalize_dropped_by(conn: sqlite3.Connection) -> None:
         drops = json.loads(drops_json)
         for drop in drops:
             item_id = drop.get("item_id")
-            # Skip altar reward variants (shown in rewarded_by_altars)
+            # Skip altar reward variants (they go to item_sources_altar)
             if item_id and not drop.get("is_altar_reward"):
                 cursor.execute(
                     """
@@ -57,7 +58,7 @@ def _denormalize_dropped_by(conn: sqlite3.Connection) -> None:
                 )
 
 
-def _denormalize_gathered_from(conn: sqlite3.Connection) -> None:
+def _denormalize_gather_sources(conn: sqlite3.Connection) -> None:
     """Populate item_sources_gather and item_sources_chest from guaranteed drops.
 
     This handles guaranteed drops from gathering_resources.item_reward_id and
@@ -101,7 +102,7 @@ def _denormalize_gathered_from(conn: sqlite3.Connection) -> None:
         )
 
 
-def _denormalize_sold_by(conn: sqlite3.Connection) -> None:
+def _denormalize_vendor_sources(conn: sqlite3.Connection) -> None:
     """Populate item_sources_vendor from npcs.items_sold."""
     console.print("  Processing NPC vendors...")
     cursor = conn.cursor()
@@ -140,7 +141,7 @@ def _denormalize_sold_by(conn: sqlite3.Connection) -> None:
                 )
 
 
-def _denormalize_rewarded_by(conn: sqlite3.Connection) -> None:
+def _denormalize_quest_reward_sources(conn: sqlite3.Connection) -> None:
     """Populate item_sources_quest (reward) from quests.rewards."""
     console.print("  Processing quest rewards...")
     cursor = conn.cursor()
@@ -198,7 +199,7 @@ def _denormalize_rewarded_by(conn: sqlite3.Connection) -> None:
             )
 
 
-def _denormalize_provided_by_quests(conn: sqlite3.Connection) -> None:
+def _denormalize_quest_provided_sources(conn: sqlite3.Connection) -> None:
     """Populate item_sources_quest (provided) from quests.given_item_on_start_id."""
     console.print("  Processing quest provided items...")
     cursor = conn.cursor()
@@ -229,7 +230,7 @@ def _denormalize_provided_by_quests(conn: sqlite3.Connection) -> None:
         )
 
 
-def _denormalize_rewarded_by_altars(conn: sqlite3.Connection) -> None:
+def _denormalize_altar_sources(conn: sqlite3.Connection) -> None:
     """Populate item_sources_altar from altars reward tiers."""
     console.print("  Processing altar rewards...")
     cursor = conn.cursor()
@@ -315,7 +316,7 @@ def _denormalize_rewarded_by_altars(conn: sqlite3.Connection) -> None:
             )
 
 
-def _denormalize_crafted_from(
+def _denormalize_recipe_sources(
     conn: sqlite3.Connection,
     redactions: RedactionConfig | None = None,
 ) -> None:
@@ -466,13 +467,13 @@ def run(conn: sqlite3.Connection, redactions: RedactionConfig | None = None) -> 
 
     # Populate junction tables from game data
     # Note: pack/random/merge/treasure_map are now populated by the loader
-    _denormalize_dropped_by(conn)
-    _denormalize_gathered_from(conn)
-    _denormalize_sold_by(conn)
-    _denormalize_rewarded_by(conn)
-    _denormalize_provided_by_quests(conn)
-    _denormalize_rewarded_by_altars(conn)
-    _denormalize_crafted_from(conn, redactions)
+    _denormalize_monster_sources(conn)
+    _denormalize_gather_sources(conn)
+    _denormalize_vendor_sources(conn)
+    _denormalize_quest_reward_sources(conn)
+    _denormalize_quest_provided_sources(conn)
+    _denormalize_altar_sources(conn)
+    _denormalize_recipe_sources(conn, redactions)
 
     # Legacy alchemy recipe processing (updates JSON columns on recipe/potion items)
     _denormalize_alchemy_recipes(conn)

@@ -1,12 +1,12 @@
 """Item usage denormalizations - what items are used for.
 
-This module handles all denormalizations that populate "usage" fields on items:
-- used_in_recipes: Which recipes use this item as a material
-- needed_for_quests: Which quests require this item
-- used_as_currency_for: Which items can be purchased with this currency
-- required_for_altars: Which altars require this item for activation
-- required_for_portals: Which portals require this item
-- opens_chests: Which chests this key opens
+This module populates the item_usages_* junction tables:
+- item_usages_recipe: Which recipes use this item as a material
+- item_usages_quest: Which quests require this item
+- item_usages_currency: Which items can be purchased with this currency
+- item_usages_altar: Which altars require this item for activation
+- item_usages_portal: Which portals require this item
+- item_usages_chest: Which chests this key opens
 """
 
 from __future__ import annotations
@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 console = Console()
 
 
-def _denormalize_used_in_recipes(
+def _denormalize_recipe_usages(
     conn: sqlite3.Connection,
     redactions: RedactionConfig | None = None,
 ) -> None:
@@ -106,7 +106,7 @@ def _denormalize_used_in_recipes(
                 )
 
 
-def _denormalize_needed_for_quests(conn: sqlite3.Connection) -> None:
+def _denormalize_quest_usages(conn: sqlite3.Connection) -> None:
     """Populate item_usages_quest from quest objectives."""
     console.print("  Processing quest item requirements...")
     cursor = conn.cursor()
@@ -179,7 +179,7 @@ def _denormalize_needed_for_quests(conn: sqlite3.Connection) -> None:
                     )
 
 
-def _denormalize_used_as_currency_for(conn: sqlite3.Connection) -> None:
+def _denormalize_currency_usages(conn: sqlite3.Connection) -> None:
     """Populate item_usages_currency from items with buy_token_id."""
     console.print("  Processing currency usage...")
     cursor = conn.cursor()
@@ -202,7 +202,7 @@ def _denormalize_used_as_currency_for(conn: sqlite3.Connection) -> None:
         )
 
 
-def _denormalize_required_for_altars(conn: sqlite3.Connection) -> None:
+def _denormalize_altar_usages(conn: sqlite3.Connection) -> None:
     """Populate item_usages_altar from altars.required_activation_item_id."""
     console.print("  Processing altar activation items...")
     cursor = conn.cursor()
@@ -222,7 +222,7 @@ def _denormalize_required_for_altars(conn: sqlite3.Connection) -> None:
         )
 
 
-def _denormalize_required_for_portals(conn: sqlite3.Connection) -> None:
+def _denormalize_portal_usages(conn: sqlite3.Connection) -> None:
     """Populate item_usages_portal from portals.required_item_id."""
     console.print("  Processing portal requirements...")
     cursor = conn.cursor()
@@ -242,7 +242,7 @@ def _denormalize_required_for_portals(conn: sqlite3.Connection) -> None:
         )
 
 
-def _denormalize_opens_chests(conn: sqlite3.Connection) -> None:
+def _denormalize_chest_usages(conn: sqlite3.Connection) -> None:
     """Populate item_usages_chest from chests.key_required_id."""
     console.print("  Processing key-chest relationships...")
     cursor = conn.cursor()
@@ -295,12 +295,12 @@ def run(conn: sqlite3.Connection, redactions: RedactionConfig | None = None) -> 
         cursor.execute(f"DELETE FROM {table}")
 
     # Populate junction tables
-    _denormalize_used_in_recipes(conn, redactions)
-    _denormalize_needed_for_quests(conn)
-    _denormalize_used_as_currency_for(conn)
-    _denormalize_required_for_altars(conn)
-    _denormalize_required_for_portals(conn)
-    _denormalize_opens_chests(conn)
+    _denormalize_recipe_usages(conn, redactions)
+    _denormalize_quest_usages(conn)
+    _denormalize_currency_usages(conn)
+    _denormalize_altar_usages(conn)
+    _denormalize_portal_usages(conn)
+    _denormalize_chest_usages(conn)
 
     conn.commit()
 
