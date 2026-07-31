@@ -66,7 +66,9 @@ pre-commit:
       skip:
         - run: "! test -d server-scripts"
     - name: plans docs
-      glob: "docs/plans/**/*.md"
+      glob:
+        - "docs/plans/*.md"
+        - "docs/plans/**/*.md"
       run: omp-plans index && omp-plans check
       stage_fixed: true
       skip:
