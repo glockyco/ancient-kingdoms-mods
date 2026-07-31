@@ -35,7 +35,7 @@
 
   // Tint deepens toward each end of the ladder. The eight segments are equal
   // width because the ranges span three orders of magnitude, so the strip
-  // shows order and the hostile split, and the table carries the numbers.
+  // shows order and the sign change at zero; the table carries the numbers.
   const TIER_BANDS = [
     "bg-red-500/40",
     "bg-red-500/28",
@@ -153,7 +153,7 @@
       <!-- Source: server-scripts/Database.cs:3001-3075 — per-race starting faction values. -->
       <p>
         A new character starts at 0 with every faction except the one that
-        matches its race, which starts at 500. That is still inside Neutral.
+        matches its race, which starts at 500.
       </p>
       <div class="grid gap-x-8 gap-y-4 sm:grid-cols-2 lg:grid-cols-3">
         {#each FACTIONS as faction (faction.id)}
@@ -215,17 +215,8 @@
               </div>
             {/each}
           </div>
-          <div class="relative mt-1 h-5 font-mono text-xs whitespace-nowrap">
-            <span class="absolute left-[25%] -translate-x-1/2">−500</span>
-            <span class="absolute left-[37.5%] -translate-x-1/2">0</span>
-          </div>
         </div>
       </div>
-      <p>
-        The three red tiers are hostile. A new character starts at 0, right
-        where Neutral begins, so almost the whole ladder is above the starting
-        point.
-      </p>
       <div class="overflow-x-auto">
         <table class="w-full min-w-[640px] border-collapse text-sm">
           <thead>
@@ -263,8 +254,8 @@
         </table>
       </div>
       <p>
-        Each tier runs from its own number up to the next one's. The lower bound
-        counts and the upper does not, so 999 is Neutral and 1,000 is Friendly.
+        Each number is the lowest reputation that counts as that tier. Friendly
+        starts at exactly 1,000, so 999 is still Neutral.
       </p>
     </Card.Content>
   </Card.Root>
