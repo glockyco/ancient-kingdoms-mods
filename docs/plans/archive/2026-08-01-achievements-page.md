@@ -1,14 +1,14 @@
 ---
-title: Achievements Page and Steam Guide
+title: Achievements Page
 type: plan
-status: active
+status: implemented
 created: 2026-08-01
 parent: 2026-07-31-ancient-kingdoms-overview
 superseded_by:
-archived:
+archived: 2026-08-01
 ---
 
-Build a complete `/achievements` reference from Steam achievement metadata, then generate a dedicated Steam guide from the same normalized data. The compendium remains the canonical source. Global completion percentages are not part of this deliverable because they change independently of game data.
+Build a complete `/achievements` reference from Steam achievement metadata. The page groups related milestones, follows game progression where the order is known, and links each unambiguous target to its compendium page. Global completion percentages are not part of the page because they change independently of game data.
 
 ## File map
 
@@ -27,14 +27,9 @@ Build a complete `/achievements` reference from Steam achievement metadata, then
 - Create `website/src/routes/achievements/achievements-page-data.server.ts`: joins achievement metadata with compendium relationships.
 - Create `website/src/routes/achievements/achievements-page-data.test.ts`: covers the page data contract.
 - Create `website/src/routes/achievements/+page.server.ts`: prerendered route loader.
-- Create `website/src/routes/achievements/+page.svelte`: achievement index and guide.
+- Create `website/src/routes/achievements/+page.svelte`: achievement index and reference page.
 - Modify `website/src/routes/+page.svelte`: adds Achievements to the discoverable compendium families.
 - Modify `website/src/routes/professions/**/+page.svelte`: replaces plain achievement names with `AchievementLink` while profession migration is incomplete.
-- Create `website/scripts/generate-achievements-steam-guide.mjs`: renders Steam BBCode from the built database.
-- Create `website/scripts/generate-achievements-steam-guide.test.mjs`: checks guide completeness and canonical links.
-- Modify `website/package.json`: adds the guide generation command.
-- Modify `website/.gitignore`: ignores `generated/steam-achievements-guide.bbcode`.
-- Modify `website/src/lib/constants/links.ts`: stores the dedicated guide URL after Steam creates it.
 
 ## Tasks
 
@@ -87,15 +82,16 @@ Build a complete `/achievements` reference from Steam achievement metadata, then
 - Modify: `website/src/routes/+page.svelte`
 
 - [x] Add source-cited relationships only where the unlock target is unambiguous in current server scripts. Supported targets are profession, quest, monster, item, altar, and mechanics pages. Omit a link when the source does not identify one target.
-- [x] Build a prerendered page-data module that groups all achievements by progression, quests, combat, professions, exploration, and items. Preserve Steam display order inside each group.
+- [x] Build a prerendered page-data module that groups all achievements by progression, quests, combat, professions, exploration, and items. Keep linked quest milestones together, follow the named quest chain, use current Steam completion rates as progression evidence for bosses, and order professions by the compendium taxonomy.
 - [x] Render every achievement with its unlocked icon, Steam name, Steam description, stable `id` anchor, and related compendium links. Mark hidden achievements without revealing metadata that Steam does not expose.
+- [x] Constrain every achievement icon frame to the square Steam artwork. Do not let the frame stretch to the height of adjacent copy.
 - [x] Add compact category navigation and text filtering as progressive enhancement. All 38 records and links must remain present without JavaScript.
 - [x] Add SEO metadata and `CollectionPage` structured data. Add the page to the home-page compendium families.
 - [x] Add data tests that assert 38 records, six groups, stable IDs, profession links, representative boss and quest links, and no relationship for an unresolved target.
 - [x] Run `pnpm vitest run src/routes/achievements/achievements-page-data.test.ts`.
   Expected: the route contract passes and includes all 38 achievements.
 - [x] Commit.
-  Message: `feat(website): add achievements guide`
+  Message: `feat(website): add achievements page`
 
 ### Task 4: Link achievements from existing compendium pages
 
@@ -111,29 +107,7 @@ Build a complete `/achievements` reference from Steam achievement metadata, then
 - [x] Commit.
   Message: `refactor(website): link profession achievements`
 
-### Task 5: Generate and publish the Steam guide mirror
-
-**Files:**
-- Create: `website/scripts/generate-achievements-steam-guide.mjs`
-- Create: `website/scripts/generate-achievements-steam-guide.test.mjs`
-- Modify: `website/package.json`
-- Modify: `website/.gitignore`
-- Modify: `website/src/lib/constants/links.ts`
-
-- [x] Add `pnpm generate:steam-achievements` to render `website/generated/steam-achievements-guide.bbcode` from `compendium.db`.
-- [x] Generate a dedicated guide titled `Ancient Kingdoms Achievement Guide`. Use the same groups, names, descriptions, ordering, and related compendium URLs as `/achievements`.
-- [x] Start the guide with the canonical `/achievements` URL and state that the website updates with game data. Do not copy global completion percentages into the guide.
-- [x] Add generator tests that assert 38 achievement headings, one occurrence of each ID, canonical HTTPS links, Steam-safe BBCode, and deterministic output.
-- [x] Run the generator tests and `pnpm generate:steam-achievements` twice.
-  Expected: tests pass and the second output is byte-identical to the first.
-- [ ] After the website is deployed, create the Steam guide, paste the generated BBCode, and add the assigned guide URL to `STEAM_ACHIEVEMENTS_GUIDE_URL`.
-- [ ] Add reciprocal links between the dedicated guide and the existing `Ancient Kingdoms Compendium` Steam guide.
-- [ ] Open the published guide while logged out.
-  Expected: every section is visible and a representative profession, boss, and quest link opens the canonical compendium page.
-- [x] Commit.
-  Message: `feat(website): generate achievements Steam guide`
-
-### Task 6: Verify the complete feature
+### Task 5: Verify the complete feature
 
 **Files:**
 - Modify generated indexes or manifests produced by existing build commands only
@@ -146,6 +120,6 @@ Build a complete `/achievements` reference from Steam achievement metadata, then
   Expected: 38 achievements remain readable, category navigation works, and no horizontal overflow occurs.
 - [x] Check every `/achievements#<achievement-id>` link from profession pages.
   Expected: each link reaches the matching achievement.
-- [ ] Run `omp-plans complete 2026-08-01-achievements-page-and-steam-guide` after the website and Steam guide are both published.
-- [ ] Commit.
-  Message: `chore(website): finish achievements guide`
+- [x] Run `omp-plans complete 2026-08-01-achievements-page` after all checks pass.
+- [x] Commit.
+  Message: `chore(website): finish achievements page`

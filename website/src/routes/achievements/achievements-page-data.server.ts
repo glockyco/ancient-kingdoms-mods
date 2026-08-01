@@ -4,6 +4,7 @@ import {
   achievementGroupDetails,
   achievementGroupOrder,
   achievementGroups,
+  achievementOrderIndex,
   type AchievementGroupId,
 } from "$lib/data/achievements/catalog";
 import {
@@ -86,6 +87,20 @@ export function getAchievementsPageData(
     throw new Error(`Achievements have no group: ${unknownIds.join(", ")}`);
   }
 
+  const unorderedIds = rows
+    .filter((row) => achievementOrderIndex[row.id] === undefined)
+    .map((row) => row.id);
+  if (unorderedIds.length > 0) {
+    throw new Error(
+      `Achievements have no display order: ${unorderedIds.join(", ")}`,
+    );
+  }
+
+  rows.sort(
+    (left, right) =>
+      achievementOrderIndex[left.id] - achievementOrderIndex[right.id],
+  );
+
   const grouped = new Map<AchievementGroupId, AchievementPageRecord[]>();
   for (const groupId of achievementGroupOrder) {
     grouped.set(groupId, []);
@@ -104,7 +119,7 @@ export function getAchievementsPageData(
       name,
       description,
       hidden,
-      displayOrder: row.display_order,
+      displayOrder: achievementOrderIndex[row.id],
       unlockedIconPath: row.unlocked_icon_path,
       lockedIconPath: row.locked_icon_path,
       relationships,

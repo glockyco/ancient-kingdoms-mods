@@ -27,7 +27,8 @@ export const achievementGroupDetails: Record<
   },
   professions: {
     name: "Professions",
-    description: "Full mastery in each profession.",
+    description:
+      "Profession mastery, ordered by gathering, crafting, combat, and exploration.",
   },
   exploration: {
     name: "Exploration",
@@ -38,6 +39,59 @@ export const achievementGroupDetails: Record<
     description: "The first magic, epic, and legendary item.",
   },
 };
+
+export const achievementOrder = [
+  // Character progression
+  "FIRST_STEPS",
+  "CHAMPION_RISE",
+  "TRUE_HERO",
+  "VETERAN_EDGE",
+
+  // Quest-count milestones, then the named quest chain
+  "COMPLETE_10_QUESTS",
+  "COMPLETE_20_QUESTS",
+  "COMPLETE_30_QUESTS",
+  "COMPLETE_50_QUESTS",
+  "ACCESS_TEMPLE_VALAARK",
+  "PLANESWALKER",
+
+  // Boss completion rates provide a progression proxy. Rates are not displayed.
+  "KILL_ZAROTHAK",
+  "KILL_ANCIENT_CYCLOPS",
+  "KILL_PYROTH",
+  "KILL_BLACK_DRAGON",
+  "KILL_SPIRIT_FOREST",
+  "KILL_ORC_UNTAMED",
+  "KILL_WORLD_BOSSES",
+  "KILL_AVATAR_WATER",
+  "KILL_KING_GIANTS",
+  "KILL_BLOOD_DRAGON",
+
+  // Profession taxonomy: gathering, crafting, combat, then exploration
+  "FISHER_MASTER",
+  "FORAGING_MASTER",
+  "MINING_MASTER",
+  "RADIANT_SEEKER_MASTER",
+  "ALCHEMY_MASTER",
+  "COOKING_MASTER",
+  "SCROLL_MASTERY_MASTER",
+  "ADVENTURING_MASTER",
+  "HUNTER_MASTER",
+  "SLAYER_MASTER",
+  "EXPLORING_MASTER",
+  "LOREKEEPING_MASTER",
+  "TREASURE_HUNTER_MASTER",
+
+  // Exploration events, then item-quality progression
+  "RESTORED_ALTAR",
+  "TREASURE_HUNTER",
+  "MAGIC_ITEM",
+  "EPIC_ITEM",
+  "LEGENDARY_ITEM",
+] as const;
+
+export const achievementOrderIndex: Readonly<Record<string, number>> =
+  Object.fromEntries(achievementOrder.map((id, index) => [id, index]));
 
 export const achievementGroups: Record<string, AchievementGroupId> = {
   FIRST_STEPS: "progression",

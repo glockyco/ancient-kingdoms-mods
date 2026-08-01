@@ -50,7 +50,7 @@
       path: "/achievements",
       name: "Ancient Kingdoms achievements",
       description:
-        "All Ancient Kingdoms Steam achievements, with unlock conditions and related compendium guides.",
+        "All Ancient Kingdoms Steam achievements, with unlock conditions and related compendium pages.",
       items: allAchievements.map((achievement) => ({
         name: achievement.name,
         path: `/achievements#${achievement.anchor}`,
@@ -70,7 +70,7 @@
 <!--
 THESIS: A compact achievement atlas makes all 38 unlock conditions easy to scan. It refuses a generic card wall.
 OWN-WORLD: The site’s neutral canvas, fine rules, square Steam art, restrained amber markers, and dense reference typography.
-STORY: Readers see the complete catalog, move by category, search exact terms, and open the related compendium guide.
+STORY: Readers see the complete catalog, move by category, search exact terms, and open the related compendium page.
 FIRST VIEWPORT: The title and purpose occupy the left side. A twelve-icon trophy field forms the visual index on the right.
 FORM: The third grounded structure is a category atlas with a compact index. Seed key 6e8ae28a.
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md
@@ -100,7 +100,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
       >
         Find all {data.total} Steam achievements for Ancient Kingdoms. Each entry
         gives the Steam unlock condition. If an achievement has one specific target,
-        the entry also links to the related compendium guide.
+        the entry also links to the related compendium page.
       </p>
     </div>
 
@@ -233,7 +233,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
                   hidden={!matches(achievement.searchText)}
                 >
                   <article class="grid grid-cols-[4rem_minmax(0,1fr)] gap-4">
-                    <div class="achievement-icon-frame">
+                    <div class="achievement-icon-frame h-16 w-16 self-start">
                       <img
                         src={achievement.unlockedIconPath}
                         alt=""

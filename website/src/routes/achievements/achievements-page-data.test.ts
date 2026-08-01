@@ -1,3 +1,4 @@
+import { achievementOrder } from "$lib/data/achievements/catalog";
 import { describe, expect, it } from "vitest";
 import {
   achievementGroupOrder,
@@ -29,16 +30,15 @@ describe("achievements page data", () => {
     ).toBe(38);
   });
 
-  it("keeps Steam display order and stable anchors", () => {
+  it("uses the curated order and stable anchors", () => {
     const achievements = getAchievementsPageData().groups.flatMap(
       (group) => group.achievements,
     );
-    const byDisplayOrder = [...achievements].sort(
-      (left, right) => left.displayOrder - right.displayOrder,
-    );
 
-    expect(byDisplayOrder[0].id).toBe("TREASURE_HUNTER");
-    expect(byDisplayOrder[0].anchor).toBe("treasure-hunter");
+    expect(achievements.map((achievement) => achievement.id)).toEqual(
+      achievementOrder,
+    );
+    expect(achievements[0].anchor).toBe("first-steps");
     expect(new Set(achievements.map((item) => item.anchor)).size).toBe(38);
   });
 

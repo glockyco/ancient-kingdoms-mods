@@ -14,7 +14,6 @@ node_modules
 /static/tiles/
 /static/images/
 /static/sitemap-manifest.json
-/generated/steam-achievements-guide.bbcode
 /src/lib/generated/
 
 # OS

@@ -9,7 +9,6 @@
     "dev": "vite dev",
     "build": "vite build",
     "prebuild": "node scripts/generate-og-image.mjs && node scripts/generate-home-counts.mjs && node scripts/build-sitemap-manifest.mjs",
-    "generate:steam-achievements": "tsx scripts/generate-achievements-steam-guide.ts",
     "generate-og": "node scripts/generate-og-image.mjs",
     "preview": "vite preview",
     "prepare": "svelte-kit sync || echo ''",
