@@ -1,5 +1,5 @@
 export type AchievementRelationshipKind =
-  "profession" | "quest" | "monster" | "altar" | "mechanic";
+  "profession" | "quest" | "monster" | "item" | "altar" | "mechanic";
 
 export interface AchievementRelationship {
   kind: AchievementRelationshipKind;
@@ -193,7 +193,31 @@ export const achievementRelationships: Record<
     {
       kind: "mechanic",
       label: "Veteran experience",
-      href: "/mechanics/experience#veteran-experience",
+      href: "/mechanics/experience#veteran-points",
+    },
+  ],
+  COMPLETE_10_QUESTS: [{ kind: "quest", label: "Quests", href: "/quests" }],
+  COMPLETE_20_QUESTS: [{ kind: "quest", label: "Quests", href: "/quests" }],
+  COMPLETE_30_QUESTS: [{ kind: "quest", label: "Quests", href: "/quests" }],
+  COMPLETE_50_QUESTS: [{ kind: "quest", label: "Quests", href: "/quests" }],
+  TREASURE_HUNTER: [
+    {
+      kind: "profession",
+      label: "Treasure Hunter",
+      href: "/professions/treasure_hunter",
+    },
+  ],
+  MAGIC_ITEM: [
+    { kind: "item", label: "Magic items", href: "/items?items.quality=2" },
+  ],
+  EPIC_ITEM: [
+    { kind: "item", label: "Epic items", href: "/items?items.quality=3" },
+  ],
+  LEGENDARY_ITEM: [
+    {
+      kind: "item",
+      label: "Legendary items",
+      href: "/items?items.quality=4",
     },
   ],
 };
