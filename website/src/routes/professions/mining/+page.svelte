@@ -1,7 +1,8 @@
 <script lang="ts">
   import Seo from "$lib/components/Seo.svelte";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
-  import PageSections from "$lib/components/PageSections.svelte";
+  import ProfessionHeader from "$lib/components/professions/ProfessionHeader.svelte";
+  import MasteryCurve from "$lib/components/professions/MasteryCurve.svelte";
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import ItemSourceLinks from "$lib/components/ItemSourceLinks.svelte";
@@ -52,22 +53,6 @@
     data.ores.filter((ore) => isMineable(ore.tier, pickaxeQuality, skillLevel)),
   );
 
-  // The curve plot is drawn once per skill/pickaxe change rather than per tier so
-  // the five paths share one coordinate space.
-  const PLOT = { w: 720, h: 260, left: 46, right: 14, top: 16, bottom: 34 };
-  const plotW = PLOT.w - PLOT.left - PLOT.right;
-  const plotH = PLOT.h - PLOT.top - PLOT.bottom;
-  const px = (fraction: number) => PLOT.left + fraction * plotW;
-  const py = (fraction: number) => PLOT.top + (1 - fraction) * plotH;
-
-  const TIER_STROKE = [
-    "var(--stat-hp)",
-    "var(--stat-mana)",
-    "var(--chart-3)",
-    "var(--stat-spell)",
-    "var(--chart-5)",
-  ];
-
   // Source: server-scripts/GatherItem.cs:OnInteractServer — the skill above which
   // each tier stops granting mastery, paired with the tiers it silences.
   const NO_GAIN_BANDS = [
@@ -76,32 +61,15 @@
     { from: 0.75, label: "I–III" },
   ];
 
-  const curves = $derived(
-    data.ores.map((ore, index) => {
-      // The node refuses the attempt below the floor, so the curve is drawn in two
-      // segments: a dashed run the game will not let you attempt, and a solid run
-      // it will. The success function rises monotonically with skill, so there is
-      // at most one crossing.
-      const refused: string[] = [];
-      const allowed: string[] = [];
-      for (let step = 0; step <= 100; step++) {
-        const value = rawMiningSuccessChance(ore.tier, pickaxeQuality, step);
-        const point = `${px(step / 100)},${py(value)}`;
-        if (value < MINING_SUCCESS_FLOOR) refused.push(point);
-        else allowed.push(point);
-      }
-      // Join the segments so the dashed run meets the solid one without a gap.
-      if (refused.length > 0 && allowed.length > 0) refused.push(allowed[0]);
-      return {
-        ore,
-        stroke: TIER_STROKE[index % TIER_STROKE.length],
-        refusedD: refused.length > 1 ? `M${refused.join("L")}` : null,
-        allowedD: allowed.length > 1 ? `M${allowed.join("L")}` : null,
-        atSkill: rawMiningSuccessChance(ore.tier, pickaxeQuality, skillLevel),
-        effortless: isMiningEffortless(ore.tier, skillLevel),
-        mineable: isMineable(ore.tier, pickaxeQuality, skillLevel),
-      };
-    }),
+  const curveSeries = $derived(
+    data.ores.map((ore) => ({
+      id: ore.id,
+      label: `${ROMAN[ore.tier]} ${ore.name}`,
+      chanceAt: (skillPercent: number) =>
+        rawMiningSuccessChance(ore.tier, pickaxeQuality, skillPercent),
+      isEffortlessAt: (skillPercent: number) =>
+        isMiningEffortless(ore.tier, skillPercent),
+    })),
   );
 
   const maxZoneNodes = $derived(
@@ -124,28 +92,17 @@
     ]}
   />
 
-  <header class="space-y-4">
-    <div class="flex items-center gap-3">
-      <div class="rounded-lg bg-amber-500/10 p-2.5">
-        <Pickaxe class="h-6 w-6 text-amber-500" />
-      </div>
-      <div>
-        <h1 class="text-3xl font-bold tracking-tight">
-          {data.profession.name}
-        </h1>
-        <p
-          class="text-xs uppercase tracking-wider text-muted-foreground"
-          aria-label="Category"
-        >
-          {data.profession.category}
-        </p>
-      </div>
-    </div>
-
+  <ProfessionHeader
+    profession={data.profession}
+    icon={Pickaxe}
+    iconClass="text-amber-500"
+    iconBackgroundClass="bg-amber-500/10"
+    {sections}
+  >
     <!-- Source: server-scripts/Utils.cs:GetSuccessProbMining — tier IV is 0.05 per
          pickaxe quality plus 0.4 per skill, so a Draconium pickaxe alone gives 20%
          and full Mining adds the other 40 points. -->
-    <p class="max-w-2xl text-balance leading-relaxed">
+    <p>
       Mine ore from nodes across the world. Your skill and your pickaxe together
       control your chance to get ore from a node.
       <strong class="font-semibold text-foreground"
@@ -153,9 +110,7 @@
         at 100.</strong
       >
     </p>
-
-    <PageSections {sections} />
-  </header>
+  </ProfessionHeader>
 
   <section id="how-it-works" class="space-y-4">
     <h2 class="text-xl font-semibold">How mining works</h2>
@@ -308,160 +263,16 @@
         </div>
       </div>
 
-      <svg
-        viewBox="0 0 {PLOT.w} {PLOT.h}"
-        class="w-full"
-        role="img"
-        aria-label="Mining success chance against skill, one line per ore tier"
-      >
-        {#each NO_GAIN_BANDS as band, index (band.from)}
-          <rect
-            x={px(band.from)}
-            y={PLOT.top}
-            width={plotW * (1 - band.from)}
-            height={plotH}
-            fill="var(--destructive)"
-            opacity={0.05 + index * 0.02}
-          />
-          <line
-            x1={px(band.from)}
-            y1={PLOT.top}
-            x2={px(band.from)}
-            y2={PLOT.top + plotH}
-            stroke="var(--destructive)"
-            stroke-opacity="0.45"
-            stroke-dasharray="3 3"
-          />
-          <text
-            x={px(band.from) + 6}
-            y={PLOT.top + plotH - 7}
-            class="fill-muted-foreground text-[9.5px]"
-            >no skill from {band.label}</text
-          >
-        {/each}
-
-        {#each [0, 0.25, 0.5, 0.75, 1] as gridline (gridline)}
-          <line
-            x1={PLOT.left}
-            y1={py(gridline)}
-            x2={PLOT.w - PLOT.right}
-            y2={py(gridline)}
-            stroke="currentColor"
-            stroke-opacity="0.08"
-          />
-          <text
-            x={PLOT.left - 7}
-            y={py(gridline) + 3.5}
-            text-anchor="end"
-            class="fill-muted-foreground text-[10px]">{gridline * 100}%</text
-          >
-        {/each}
-        {#each [0, 25, 50, 75, 100] as tick (tick)}
-          <text
-            x={px(tick / 100)}
-            y={PLOT.h - 12}
-            text-anchor="middle"
-            class="fill-muted-foreground text-[10px]">{tick}</text
-          >
-        {/each}
-        <text
-          x={PLOT.left + plotW / 2}
-          y={PLOT.h - 1}
-          text-anchor="middle"
-          class="fill-muted-foreground text-[9.5px]">mining skill</text
-        >
-
-        <!-- Source: server-scripts/GatherItem.cs:OnInteractServer — the node refuses
-             the attempt below 0.2, so anything under this line is unreachable. -->
-        <rect
-          x={PLOT.left}
-          y={py(MINING_SUCCESS_FLOOR)}
-          width={plotW}
-          height={plotH * MINING_SUCCESS_FLOOR}
-          fill="currentColor"
-          opacity="0.05"
-        />
-        <line
-          x1={PLOT.left}
-          y1={py(MINING_SUCCESS_FLOOR)}
-          x2={PLOT.w - PLOT.right}
-          y2={py(MINING_SUCCESS_FLOOR)}
-          stroke="currentColor"
-          stroke-opacity="0.35"
-          stroke-dasharray="4 3"
-        />
-        <text
-          x={PLOT.w - PLOT.right - 4}
-          y={py(MINING_SUCCESS_FLOOR) - 5}
-          text-anchor="end"
-          class="fill-muted-foreground text-[9.5px]"
-          >you cannot mine below here</text
-        >
-
-        {#each curves as curve (curve.ore.id)}
-          {#if curve.refusedD}
-            <path
-              d={curve.refusedD}
-              fill="none"
-              stroke={curve.stroke}
-              stroke-width="2"
-              stroke-dasharray="3 4"
-              stroke-opacity="0.4"
-            />
-          {/if}
-          {#if curve.allowedD}
-            <path
-              d={curve.allowedD}
-              fill="none"
-              stroke={curve.stroke}
-              stroke-width="2"
-              stroke-linecap="round"
-            />
-          {/if}
-        {/each}
-
-        <line
-          x1={px(skillLevel / 100)}
-          y1={PLOT.top}
-          x2={px(skillLevel / 100)}
-          y2={PLOT.top + plotH}
-          stroke="currentColor"
-          stroke-opacity="0.5"
-        />
-        {#each curves as curve (curve.ore.id)}
-          <circle
-            cx={px(skillLevel / 100)}
-            cy={py(curve.atSkill)}
-            r={curve.effortless || !curve.mineable ? 2.5 : 4}
-            fill={curve.effortless || !curve.mineable
-              ? "var(--background)"
-              : curve.stroke}
-            stroke={curve.stroke}
-            stroke-width="1.6"
-            stroke-opacity={curve.mineable ? 1 : 0.45}
-          />
-        {/each}
-      </svg>
-
-      <div class="flex flex-wrap gap-x-5 gap-y-1.5 text-xs">
-        {#each curves as curve (curve.ore.id)}
-          <span
-            class="flex items-center gap-1.5"
-            class:opacity-50={curve.effortless || !curve.mineable}
-          >
-            <span
-              class="inline-block h-2 w-2 rounded-[2px]"
-              style="background:{curve.stroke}"
-            ></span>
-            {ROMAN[curve.ore.tier]}
-            {curve.ore.name}{!curve.mineable
-              ? " \u00b7 cannot mine"
-              : curve.effortless
-                ? " \u00b7 no skill gain"
-                : ""}
-          </span>
-        {/each}
-      </div>
+      <MasteryCurve
+        series={curveSeries}
+        {skillLevel}
+        ariaLabel="Mining success chance against skill, one line per ore tier"
+        skillLabel="mining skill"
+        floor={MINING_SUCCESS_FLOOR}
+        floorLabel="you cannot mine below here"
+        unavailableLabel="cannot mine"
+        noGainBands={NO_GAIN_BANDS}
+      />
 
       <p class="text-pretty text-sm text-muted-foreground">
         With {bestPickaxe?.name ?? `a quality-${pickaxeQuality} pickaxe`} at {skillLevel}%,
@@ -712,14 +523,21 @@
       and {miningSkillGainChancePercent(100).toFixed(0)}% at 100%. A node with a
       low success chance gives more skill for each success. Dwarves start at {DWARF_STARTING_MINING_PERCENT}%.
       Every other race starts at 0%.
-      {#if data.profession.steam_achievement_name}
-        At 100% you get
-        <span class="inline-flex items-baseline gap-1 text-foreground">
-          <Trophy class="h-3.5 w-3.5 translate-y-0.5 text-amber-500" />
-          {data.profession.steam_achievement_name}</span
-        >.
-      {/if}
     </p>
+    {#if data.profession.steam_achievement_name}
+      <p
+        class="flex max-w-2xl items-start gap-1.5 text-sm leading-relaxed text-muted-foreground"
+      >
+        <Trophy class="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
+        <span>
+          At 100%, you unlock the
+          <span class="font-medium text-foreground"
+            >{data.profession.steam_achievement_name}</span
+          >
+          achievement.
+        </span>
+      </p>
+    {/if}
     <p class="text-pretty text-sm text-muted-foreground">
       Ore is also a material for <a
         href="/professions/alchemy"
