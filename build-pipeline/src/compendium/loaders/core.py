@@ -15,6 +15,7 @@ from rich.console import Console
 
 from compendium.db import insert_model, serialize_value
 from compendium.models import (
+    AchievementData,
     AlchemyRecipeData,
     AlchemyTableData,
     ScribingRecipeData,
@@ -296,6 +297,84 @@ def load_zones(conn: sqlite3.Connection, export_dir: Path) -> None:
     console.print(f"  [green]OK[/green] Loaded {len(zones)} zones")
 
 
+def load_achievements(
+    conn: sqlite3.Connection, export_dir: Path, static_dir: Path
+) -> None:
+    """Load Steam achievements and copy their icon files."""
+    console.print("Loading achievements...")
+
+    filepath = export_dir / "achievements.json"
+    if not filepath.exists():
+        raise FileNotFoundError("Required achievements.json export is unavailable")
+
+    with open(filepath, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    achievements = [AchievementData(**item) for item in data]
+    if len(achievements) != 38:
+        raise ValueError(f"Expected 38 achievements, found {len(achievements)}")
+
+    ids = [achievement.id for achievement in achievements]
+    if len(set(ids)) != len(ids):
+        raise ValueError("Achievement IDs must be unique")
+
+    display_orders = [achievement.display_order for achievement in achievements]
+    if sorted(display_orders) != list(range(len(achievements))):
+        raise ValueError(
+            "Achievement display order must contain each value from 0 to 37"
+        )
+
+    public_root = static_dir / "images" / "achievements"
+    if public_root.exists():
+        shutil.rmtree(public_root)
+
+    cursor = conn.cursor()
+    for achievement in achievements:
+        if not achievement.hidden and (
+            not achievement.name.strip() or not achievement.description.strip()
+        ):
+            raise ValueError(
+                f"Visible achievement '{achievement.id}' requires a name and description"
+            )
+
+        public_paths: dict[str, str] = {}
+        for variant, export_path in (
+            ("unlocked", achievement.unlocked_icon_path),
+            ("locked", achievement.locked_icon_path),
+        ):
+            source = _resolve_export_asset_path(export_dir, export_path)
+            if not source.is_file():
+                raise FileNotFoundError(
+                    f"Achievement '{achievement.id}' {variant} icon is unavailable: {source}"
+                )
+            suffix = source.suffix.lower()
+            if suffix not in {".jpg", ".jpeg", ".png", ".webp"}:
+                raise ValueError(
+                    f"Achievement '{achievement.id}' has unsupported icon type '{suffix}'"
+                )
+
+            destination = public_root / achievement.id.lower() / f"{variant}{suffix}"
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(source, destination)
+            public_paths[variant] = (
+                f"/images/achievements/{achievement.id.lower()}/{variant}{suffix}"
+            )
+
+        insert_model(
+            cursor,
+            "achievements",
+            achievement.model_copy(
+                update={
+                    "unlocked_icon_path": public_paths["unlocked"],
+                    "locked_icon_path": public_paths["locked"],
+                }
+            ),
+        )
+
+    conn.commit()
+    console.print(f"  [green]OK[/green] Loaded {len(achievements)} achievements")
+
+
 def load_professions(conn: sqlite3.Connection, export_dir: Path) -> None:
     """Load professions into database."""
     console.print("Loading professions...")
@@ -310,7 +389,23 @@ def load_professions(conn: sqlite3.Connection, export_dir: Path) -> None:
 
     professions = [ProfessionData(**item) for item in data]
 
+    achievement_ids = {
+        row[0] for row in conn.execute("SELECT id FROM achievements").fetchall()
+    }
+    unknown_ids = sorted(
+        {
+            profession.achievement_id
+            for profession in professions
+            if profession.achievement_id not in achievement_ids
+        }
+    )
+    if unknown_ids:
+        raise ValueError(
+            f"Professions reference unknown achievement IDs: {', '.join(unknown_ids)}"
+        )
+
     cursor = conn.cursor()
+
     for profession in professions:
         insert_model(cursor, "professions", profession)
 

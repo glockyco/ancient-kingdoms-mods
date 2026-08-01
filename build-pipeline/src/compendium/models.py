@@ -1215,6 +1215,23 @@ class AltarData(BaseModel):
 
 
 # =============================================================================
+# Achievement Models
+# =============================================================================
+
+
+class AchievementData(BaseModel):
+    """Steam achievement data from achievements.json."""
+
+    id: str
+    name: str
+    description: str
+    hidden: bool = False
+    display_order: int
+    unlocked_icon_path: str
+    locked_icon_path: str
+
+
+# =============================================================================
 # Profession Models
 # =============================================================================
 
@@ -1227,9 +1244,7 @@ class ProfessionData(BaseModel):
     description: str = ""
     category: str  # crafting, gathering, exploration, combat
     icon_path: str | None = None
-    steam_achievement_id: str | None = None
-    steam_achievement_name: str | None = None
-    steam_achievement_description: str | None = None
+    achievement_id: str
     max_level: int = 100
     tracking_type: str  # float_level, count_based
     tracking_denominator: int | None = None

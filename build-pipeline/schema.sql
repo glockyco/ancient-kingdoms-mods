@@ -75,6 +75,22 @@ CREATE INDEX idx_zones_is_dungeon ON zones(is_dungeon);
 CREATE INDEX idx_zones_required_level ON zones(required_level);
 
 -- =============================================================================
+-- ACHIEVEMENTS
+-- =============================================================================
+
+CREATE TABLE achievements (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    description TEXT NOT NULL,
+    hidden INTEGER NOT NULL DEFAULT 0,
+    display_order INTEGER NOT NULL UNIQUE,
+    unlocked_icon_path TEXT NOT NULL,
+    locked_icon_path TEXT NOT NULL
+);
+
+CREATE INDEX idx_achievements_display_order ON achievements(display_order);
+
+-- =============================================================================
 -- PROFESSIONS
 -- =============================================================================
 
@@ -84,9 +100,7 @@ CREATE TABLE professions (
     description TEXT DEFAULT '',
     category TEXT NOT NULL,             -- 'crafting', 'gathering', 'exploration', 'combat'
     icon_path TEXT,
-    steam_achievement_id TEXT,
-    steam_achievement_name TEXT,
-    steam_achievement_description TEXT,
+    achievement_id TEXT NOT NULL REFERENCES achievements(id),
     max_level INTEGER DEFAULT 100,
     tracking_type TEXT NOT NULL,        -- 'float_level', 'count_based'
     tracking_denominator INTEGER        -- For count_based professions (e.g., 13 books, 38 zones)

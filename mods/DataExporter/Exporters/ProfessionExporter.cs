@@ -23,7 +23,7 @@ public class ProfessionExporter : BaseExporter
                 description = "Brew potions and elixirs.",
                 category = "crafting",
                 icon_path = GetIconPath("alchemy"),
-                steam_achievement_id = "ALCHEMY_MASTER",
+                achievement_id = "ALCHEMY_MASTER",
                 max_level = 100,
                 tracking_type = "float_level",
                 tracking_denominator = null
@@ -35,7 +35,7 @@ public class ProfessionExporter : BaseExporter
                 description = "Prepare food at cooking stations.",
                 category = "crafting",
                 icon_path = GetIconPath("cooking"),
-                steam_achievement_id = "COOKING_MASTER",
+                achievement_id = "COOKING_MASTER",
                 max_level = 100,
                 tracking_type = "float_level",
                 tracking_denominator = null
@@ -47,7 +47,7 @@ public class ProfessionExporter : BaseExporter
                 description = "Gather plants and herbs.",
                 category = "gathering",
                 icon_path = GetIconPath("herbalism"),
-                steam_achievement_id = "FORAGING_MASTER",
+                achievement_id = "FORAGING_MASTER",
                 max_level = 100,
                 tracking_type = "float_level",
                 tracking_denominator = null
@@ -59,7 +59,7 @@ public class ProfessionExporter : BaseExporter
                 description = "Mine ore and minerals.",
                 category = "gathering",
                 icon_path = GetIconPath("mining"),
-                steam_achievement_id = "MINING_MASTER",
+                achievement_id = "MINING_MASTER",
                 max_level = 100,
                 tracking_type = "float_level",
                 tracking_denominator = null
@@ -71,7 +71,7 @@ public class ProfessionExporter : BaseExporter
                 description = "Catch fish at fishing spots.",
                 category = "gathering",
                 icon_path = GetIconPath("fishing"),
-                steam_achievement_id = "FISHER_MASTER",
+                achievement_id = "FISHER_MASTER",
                 max_level = 100,
                 tracking_type = "float_level",
                 tracking_denominator = null
@@ -83,7 +83,7 @@ public class ProfessionExporter : BaseExporter
                 description = "Complete Adventurer's Guild quests.",
                 category = "combat",
                 icon_path = GetIconPath("adventuring"),
-                steam_achievement_id = "ADVENTURING_MASTER",
+                achievement_id = "ADVENTURING_MASTER",
                 max_level = 100,
                 tracking_type = "float_level",
                 tracking_denominator = null
@@ -95,7 +95,7 @@ public class ProfessionExporter : BaseExporter
                 description = "Collect books and uncover lore.",
                 category = "exploration",
                 icon_path = GetIconPath("lore_keeping"),
-                steam_achievement_id = "LOREKEEPING_MASTER",
+                achievement_id = "LOREKEEPING_MASTER",
                 max_level = 100,
                 tracking_type = "count_based",
                 tracking_denominator = 13
@@ -107,7 +107,7 @@ public class ProfessionExporter : BaseExporter
                 description = "Discover areas of the world.",
                 category = "exploration",
                 icon_path = GetIconPath("exploring"),
-                steam_achievement_id = "EXPLORING_MASTER",
+                achievement_id = "EXPLORING_MASTER",
                 max_level = 100,
                 tracking_type = "count_based",
                 tracking_denominator = 45
@@ -119,7 +119,7 @@ public class ProfessionExporter : BaseExporter
                 description = "Defeat bosses and elites.",
                 category = "combat",
                 icon_path = GetIconPath("slayer"),
-                steam_achievement_id = "SLAYER_MASTER",
+                achievement_id = "SLAYER_MASTER",
                 max_level = 100,
                 tracking_type = "float_level",
                 tracking_denominator = null
@@ -131,7 +131,7 @@ public class ProfessionExporter : BaseExporter
                 description = "Find treasure chests.",
                 category = "exploration",
                 icon_path = GetIconPath("treasure_hunter"),
-                steam_achievement_id = "TREASURE_HUNTER_MASTER",
+                achievement_id = "TREASURE_HUNTER_MASTER",
                 max_level = 100,
                 tracking_type = "float_level",
                 tracking_denominator = null
@@ -143,7 +143,7 @@ public class ProfessionExporter : BaseExporter
                 description = "Collect scattered radiant sparks.",
                 category = "gathering",
                 icon_path = GetIconPath("radiant_seeker"),
-                steam_achievement_id = "RADIANT_SEEKER_MASTER",
+                achievement_id = "RADIANT_SEEKER_MASTER",
                 max_level = 100,
                 tracking_type = "float_level",
                 tracking_denominator = null
@@ -155,7 +155,7 @@ public class ProfessionExporter : BaseExporter
                 description = "Track and hunt creatures.",
                 category = "combat",
                 icon_path = GetIconPath("hunter"),
-                steam_achievement_id = "HUNTER_MASTER",
+                achievement_id = "HUNTER_MASTER",
                 max_level = 100,
                 tracking_type = "float_level",
                 tracking_denominator = null
@@ -167,7 +167,7 @@ public class ProfessionExporter : BaseExporter
                 description = "Craft and use scrolls at scribing tables.",
                 category = "crafting",
                 icon_path = GetIconPath("scroll_mastery"),
-                steam_achievement_id = "SCROLL_MASTERY_MASTER",
+                achievement_id = "SCROLL_MASTERY_MASTER",
                 max_level = 100,
                 tracking_type = "float_level",
                 tracking_denominator = null

@@ -47,13 +47,13 @@ Build a complete `/achievements` reference from Steam achievement metadata, then
 - Modify: `mods/DataExporter/Exporters/ProfessionExporter.cs`
 - Create: `exported-data/achievements.json`
 
-- [ ] Add an `AchievementData` record with achievement ID, display name, description, hidden status, display order, and icon paths for locked and unlocked states.
-- [ ] Read every achievement through Steamworks. Read both icon hashes from Steam's local schema cache, then download the authoritative Steam CDN images.
-- [ ] Fail the export when Steam is unavailable, an achievement ID is duplicated, visible metadata is empty, or the catalog does not contain the 38 achievements exposed for app `2241380`.
-- [ ] Replace the profession exporter display-name and description literals with achievement IDs only. The achievement export becomes the single source for Steam metadata.
-- [ ] Run `dotnet test tests/DataExporter.Tests/DataExporter.Tests.csproj` and `dotnet build mods/DataExporter/DataExporter.csproj`.
+- [x] Add an `AchievementData` record with achievement ID, display name, description, hidden status, display order, and icon paths for locked and unlocked states.
+- [x] Read every achievement through Steamworks. Read both icon hashes from Steam's local schema cache, then download the authoritative Steam CDN images.
+- [x] Fail the export when Steam is unavailable, an achievement ID is duplicated, visible metadata is empty, or the catalog does not contain the 38 achievements exposed for app `2241380`.
+- [x] Replace the profession exporter display-name and description literals with achievement IDs only. The achievement export becomes the single source for Steam metadata.
+- [x] Run `dotnet test tests/DataExporter.Tests/DataExporter.Tests.csproj` and `dotnet build mods/DataExporter/DataExporter.csproj`.
   Expected: the mod compiles and `achievements.json` contains 38 unique records with both icon variants.
-- [ ] Commit.
+- [x] Commit.
   Message: `feat(exporter): export Steam achievements`
 
 ### Task 2: Normalize achievements in the build pipeline
@@ -65,14 +65,14 @@ Build a complete `/achievements` reference from Steam achievement metadata, then
 - Modify: `build-pipeline/src/compendium/commands/build.py`
 - Create: `build-pipeline/tests/test_achievements_loader.py`
 
-- [ ] Add an `achievements` table keyed by the Steam achievement ID. Store names, descriptions, hidden status, display order, and local icon paths.
-- [ ] Replace the three profession achievement columns with `achievement_id`. Load achievements before professions and reject an unknown profession achievement ID.
-- [ ] Add loader tests for 38 unique achievements, required visible metadata, stable display order, icon paths, and all 13 profession references.
-- [ ] Run `uv run pytest tests/test_achievements_loader.py`.
+- [x] Add an `achievements` table keyed by the Steam achievement ID. Store names, descriptions, hidden status, display order, and local icon paths.
+- [x] Replace the three profession achievement columns with `achievement_id`. Load achievements before professions and reject an unknown profession achievement ID.
+- [x] Add loader tests for 38 unique achievements, required visible metadata, stable display order, icon paths, and all 13 profession references.
+- [x] Run `uv run pytest tests/test_achievements_loader.py`.
   Expected: the focused loader contract passes.
-- [ ] Run `uv run compendium build`.
+- [x] Run `uv run compendium build`.
   Expected: the database contains 38 achievements and every profession joins to one achievement.
-- [ ] Commit.
+- [x] Commit.
   Message: `feat(pipeline): load normalized achievements`
 
 ### Task 3: Build the compendium achievements page

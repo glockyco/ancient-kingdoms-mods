@@ -7,7 +7,7 @@ public class ProfessionData
     public string description { get; set; }
     public string category { get; set; }
     public string icon_path { get; set; }
-    public string steam_achievement_id { get; set; }
+    public string achievement_id { get; set; }
     public int max_level { get; set; }
     public string tracking_type { get; set; }
     public int? tracking_denominator { get; set; }

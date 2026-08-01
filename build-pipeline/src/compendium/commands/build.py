@@ -12,6 +12,7 @@ from compendium.config import get_repo_root
 from compendium.db import create_database
 from compendium.denormalizers import run_all as denormalize_all
 from compendium.loaders import (
+    load_achievements,
     load_alchemy_recipes,
     load_alchemy_tables,
     load_scribing_recipes,
@@ -75,6 +76,7 @@ def run(config: dict) -> None:
         load_static_data(conn, export_dir)  # Factions, reputation tiers (before NPCs)
         load_classes(conn, export_dir)  # Player classes (early, no dependencies)
         load_zones(conn, export_dir)
+        load_achievements(conn, export_dir, static_dir)
         load_professions(conn, export_dir)
         load_skills(conn, export_dir)
         load_zone_triggers(

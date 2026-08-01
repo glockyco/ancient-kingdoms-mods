@@ -1,6 +1,7 @@
 """Data loaders for the compendium build pipeline."""
 
 from compendium.loaders.core import (
+    load_achievements,
     load_alchemy_recipes,
     load_alchemy_tables,
     load_scribing_recipes,
@@ -35,6 +36,7 @@ from compendium.loaders.core import (
 )
 
 __all__ = [
+    "load_achievements",
     "load_alchemy_recipes",
     "load_alchemy_tables",
     "load_scribing_recipes",
