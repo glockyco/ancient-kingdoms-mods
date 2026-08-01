@@ -138,13 +138,13 @@ Build a complete `/achievements` reference from Steam achievement metadata, then
 **Files:**
 - Modify generated indexes or manifests produced by existing build commands only
 
-- [ ] Run `pnpm check && pnpm lint && pnpm test && pnpm build` in `website/`.
+- [x] Run `pnpm check && pnpm lint && pnpm test && pnpm build` in `website/`.
   Expected: all checks pass and `/achievements` prerenders.
-- [ ] Run `pnpm check:citations` from the repository root.
+- [x] Run `pnpm check:citations` from the repository root.
   Expected: all source-cited achievement relationships pass.
-- [ ] Inspect `/achievements` at 1440×900 and 390×844 with JavaScript enabled and disabled.
+- [x] Inspect `/achievements` at 1440×900 and 390×844 with JavaScript enabled and disabled.
   Expected: 38 achievements remain readable, category navigation works, and no horizontal overflow occurs.
-- [ ] Check every `/achievements#<achievement-id>` link from profession pages.
+- [x] Check every `/achievements#<achievement-id>` link from profession pages.
   Expected: each link reaches the matching achievement.
 - [ ] Run `omp-plans complete 2026-08-01-achievements-page-and-steam-guide` after the website and Steam guide are both published.
 - [ ] Commit.

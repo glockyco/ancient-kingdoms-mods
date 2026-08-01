@@ -1,0 +1,363 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-01T15:27:32Z",
+  "title": "Design System: Ancient Kingdoms Compendium",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "Deep Slate",
+        "canonical": "oklch(0.208 0.042 265.755)",
+        "tonalRamp": [
+          "oklch(0.15 0.042 265.755)",
+          "oklch(0.25 0.042 265.755)",
+          "oklch(0.36 0.042 265.755)",
+          "oklch(0.48 0.042 265.755)",
+          "oklch(0.61 0.042 265.755)",
+          "oklch(0.73 0.035 265.755)",
+          "oklch(0.85 0.022 265.755)",
+          "oklch(0.95 0.008 265.755)"
+        ]
+      },
+      "primary-foreground": {
+        "role": "neutral",
+        "displayName": "Pale Inverse",
+        "canonical": "oklch(0.984 0.003 247.858)",
+        "tonalRamp": [
+          "oklch(0.15 0.003 247.858)",
+          "oklch(0.27 0.003 247.858)",
+          "oklch(0.39 0.003 247.858)",
+          "oklch(0.51 0.003 247.858)",
+          "oklch(0.63 0.003 247.858)",
+          "oklch(0.75 0.003 247.858)",
+          "oklch(0.87 0.003 247.858)",
+          "oklch(0.95 0.003 247.858)"
+        ]
+      },
+      "canvas": {
+        "role": "neutral",
+        "displayName": "Paper Canvas",
+        "canonical": "oklch(1 0 0)",
+        "tonalRamp": [
+          "oklch(0.15 0 0)",
+          "oklch(0.27 0 0)",
+          "oklch(0.39 0 0)",
+          "oklch(0.51 0 0)",
+          "oklch(0.63 0 0)",
+          "oklch(0.75 0 0)",
+          "oklch(0.87 0 0)",
+          "oklch(0.95 0 0)"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Blue-Black Ink",
+        "canonical": "oklch(0.129 0.042 264.695)",
+        "tonalRamp": [
+          "oklch(0.15 0.042 264.695)",
+          "oklch(0.26 0.042 264.695)",
+          "oklch(0.37 0.042 264.695)",
+          "oklch(0.49 0.042 264.695)",
+          "oklch(0.61 0.038 264.695)",
+          "oklch(0.73 0.03 264.695)",
+          "oklch(0.85 0.018 264.695)",
+          "oklch(0.95 0.007 264.695)"
+        ]
+      },
+      "muted-surface": {
+        "role": "neutral",
+        "displayName": "Cool Muted Surface",
+        "canonical": "oklch(0.968 0.007 247.896)",
+        "tonalRamp": [
+          "oklch(0.15 0.007 247.896)",
+          "oklch(0.27 0.007 247.896)",
+          "oklch(0.39 0.007 247.896)",
+          "oklch(0.51 0.007 247.896)",
+          "oklch(0.63 0.007 247.896)",
+          "oklch(0.75 0.007 247.896)",
+          "oklch(0.87 0.007 247.896)",
+          "oklch(0.95 0.007 247.896)"
+        ]
+      },
+      "muted-ink": {
+        "role": "neutral",
+        "displayName": "Muted Ink",
+        "canonical": "oklch(0.46 0.046 257.417)",
+        "tonalRamp": [
+          "oklch(0.15 0.046 257.417)",
+          "oklch(0.26 0.046 257.417)",
+          "oklch(0.37 0.046 257.417)",
+          "oklch(0.49 0.046 257.417)",
+          "oklch(0.61 0.04 257.417)",
+          "oklch(0.73 0.032 257.417)",
+          "oklch(0.85 0.02 257.417)",
+          "oklch(0.95 0.008 257.417)"
+        ]
+      },
+      "rule": {
+        "role": "neutral",
+        "displayName": "Fine Rule",
+        "canonical": "oklch(0.929 0.013 255.508)",
+        "tonalRamp": [
+          "oklch(0.15 0.013 255.508)",
+          "oklch(0.27 0.013 255.508)",
+          "oklch(0.39 0.013 255.508)",
+          "oklch(0.51 0.013 255.508)",
+          "oklch(0.63 0.013 255.508)",
+          "oklch(0.75 0.013 255.508)",
+          "oklch(0.87 0.013 255.508)",
+          "oklch(0.95 0.009 255.508)"
+        ]
+      },
+      "focus": {
+        "role": "neutral",
+        "displayName": "Focus Gray",
+        "canonical": "oklch(0.704 0.04 256.788)",
+        "tonalRamp": [
+          "oklch(0.15 0.04 256.788)",
+          "oklch(0.26 0.04 256.788)",
+          "oklch(0.37 0.04 256.788)",
+          "oklch(0.49 0.04 256.788)",
+          "oklch(0.61 0.04 256.788)",
+          "oklch(0.73 0.036 256.788)",
+          "oklch(0.85 0.023 256.788)",
+          "oklch(0.95 0.009 256.788)"
+        ]
+      },
+      "destructive": {
+        "role": "tertiary",
+        "displayName": "Destructive Red",
+        "canonical": "oklch(0.577 0.245 27.325)",
+        "tonalRamp": [
+          "oklch(0.15 0.08 27.325)",
+          "oklch(0.26 0.14 27.325)",
+          "oklch(0.37 0.2 27.325)",
+          "oklch(0.49 0.245 27.325)",
+          "oklch(0.61 0.22 27.325)",
+          "oklch(0.73 0.16 27.325)",
+          "oklch(0.85 0.09 27.325)",
+          "oklch(0.95 0.035 27.325)"
+        ]
+      },
+      "achievement-amber": {
+        "role": "secondary",
+        "displayName": "Achievement Amber",
+        "canonical": "#f59e0b",
+        "tonalRamp": [
+          "oklch(0.15 0.07 75)",
+          "oklch(0.26 0.12 75)",
+          "oklch(0.38 0.16 75)",
+          "oklch(0.5 0.18 75)",
+          "oklch(0.63 0.18 75)",
+          "oklch(0.74 0.15 75)",
+          "oklch(0.86 0.09 75)",
+          "oklch(0.95 0.035 75)"
+        ]
+      },
+      "reference-link": {
+        "role": "primary",
+        "displayName": "Reference Blue",
+        "canonical": "#2563eb",
+        "tonalRamp": [
+          "oklch(0.15 0.08 260)",
+          "oklch(0.26 0.13 260)",
+          "oklch(0.38 0.18 260)",
+          "oklch(0.5 0.21 260)",
+          "oklch(0.62 0.19 260)",
+          "oklch(0.74 0.14 260)",
+          "oklch(0.86 0.08 260)",
+          "oklch(0.95 0.03 260)"
+        ]
+      },
+      "legendary": {
+        "role": "tertiary",
+        "displayName": "Legendary Ochre",
+        "canonical": "oklch(0.58 0.15 55)",
+        "tonalRamp": [
+          "oklch(0.15 0.06 55)",
+          "oklch(0.26 0.1 55)",
+          "oklch(0.38 0.14 55)",
+          "oklch(0.5 0.15 55)",
+          "oklch(0.62 0.14 55)",
+          "oklch(0.74 0.11 55)",
+          "oklch(0.86 0.07 55)",
+          "oklch(0.95 0.025 55)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Section titles and major content divisions."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Entry names, compact card titles, and local headings."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Dense descriptions, navigation, controls, and table content."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Counts, statuses, metadata, and compact numeric readouts."
+      }
+    },
+    "shadows": [
+      {
+        "name": "control-hairline",
+        "value": "0 1px 2px 0 rgb(0 0 0 / 0.05)",
+        "purpose": "Low-contrast depth on buttons and fields."
+      },
+      {
+        "name": "card-ambient",
+        "value": "0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)",
+        "purpose": "Shared cards only."
+      },
+      {
+        "name": "artwork-lift",
+        "value": "0 0.35rem 1rem color-mix(in oklab, var(--foreground) 10%, transparent)",
+        "purpose": "Small square game-art frames."
+      }
+    ],
+    "motion": [
+      {
+        "name": "state-standard",
+        "value": "150ms ease",
+        "purpose": "Default control color and shadow transitions."
+      },
+      {
+        "name": "artwork-settle",
+        "value": "220ms ease-out",
+        "purpose": "Achievement-art opacity, filter, and transform transitions; remove under reduced motion."
+      }
+    ],
+    "breakpoints": [
+      { "name": "md", "value": "48rem" },
+      { "name": "lg", "value": "64rem" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Compact, high-emphasis action using the semantic primary roles.",
+      "html": "<button class=\"ds-btn-primary\">Open guide</button>",
+      "css": ".ds-btn-primary { height: 36px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 0; border-radius: 8px; padding: 8px 16px; background: var(--primary); color: var(--primary-foreground); box-shadow: 0 1px 2px rgb(0 0 0 / .05); font: 500 14px/20px ui-sans-serif, system-ui, sans-serif; transition: background-color 150ms ease, box-shadow 150ms ease; } .ds-btn-primary:hover { background: color-mix(in oklab, var(--primary) 90%, transparent); } .ds-btn-primary:focus-visible { outline: 0; box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 50%, transparent); } .ds-btn-primary:active { transform: translateY(1px); }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Quiet secondary action with a fine semantic border.",
+      "html": "<button class=\"ds-btn-outline\">View details</button>",
+      "css": ".ds-btn-outline { height: 36px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--border); border-radius: 8px; padding: 8px 16px; background: var(--background); color: var(--foreground); box-shadow: 0 1px 2px rgb(0 0 0 / .05); font: 500 14px/20px ui-sans-serif, system-ui, sans-serif; transition: background-color 150ms ease, color 150ms ease, box-shadow 150ms ease; } .ds-btn-outline:hover { background: var(--accent); color: var(--accent-foreground); } .ds-btn-outline:focus-visible { outline: 0; border-color: var(--ring); box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 50%, transparent); } .ds-btn-outline:active { transform: translateY(1px); }"
+    },
+    {
+      "name": "Search Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Compact reference search with a visible semantic focus state.",
+      "html": "<label class=\"ds-search\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><circle cx=\"11\" cy=\"11\" r=\"8\"></circle><path d=\"m21 21-4.3-4.3\"></path></svg><span class=\"ds-sr\">Search</span><input type=\"search\" placeholder=\"Search the compendium\"></label>",
+      "css": ".ds-search { position: relative; display: block; width: 320px; max-width: 100%; font-family: ui-sans-serif, system-ui, sans-serif; } .ds-search svg { position: absolute; left: 12px; top: 50%; width: 16px; height: 16px; transform: translateY(-50%); fill: none; stroke: var(--muted-foreground); stroke-width: 2; } .ds-search input { box-sizing: border-box; width: 100%; height: 40px; border: 1px solid var(--input); border-radius: 8px; padding: 4px 12px 4px 36px; background: var(--background); color: var(--foreground); font: 400 14px/20px ui-sans-serif, system-ui, sans-serif; outline: 0; } .ds-search input::placeholder { color: var(--muted-foreground); } .ds-search input:focus-visible { border-color: var(--ring); box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 50%, transparent); } .ds-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }"
+    },
+    {
+      "name": "Reference Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Shared bordered card for grouped facts; dense indexes may use rule-separated rows instead.",
+      "html": "<article class=\"ds-card\"><h3>Mechanics</h3><p>Exact game facts stay close to their label and source context.</p></article>",
+      "css": ".ds-card { display: flex; flex-direction: column; gap: 16px; border: 1px solid var(--border); border-radius: 14px; padding: 16px; background: var(--card); color: var(--card-foreground); box-shadow: 0 1px 3px rgb(0 0 0 / .1), 0 1px 2px -1px rgb(0 0 0 / .1); font-family: ui-sans-serif, system-ui, sans-serif; } .ds-card h3 { margin: 0; font-size: 16px; line-height: 24px; font-weight: 600; } .ds-card p { margin: 0; color: var(--muted-foreground); font-size: 14px; line-height: 21px; } .ds-card:focus-within { border-color: var(--ring); }"
+    },
+    {
+      "name": "Semantic Badge",
+      "kind": "chip",
+      "refersTo": "badge",
+      "description": "Small pill for a real state or category, not free decoration.",
+      "html": "<span class=\"ds-badge\">Hidden</span>",
+      "css": ".ds-badge { display: inline-flex; align-items: center; justify-content: center; gap: 4px; width: fit-content; border: 1px solid transparent; border-radius: 9999px; padding: 2px 8px; background: var(--primary); color: var(--primary-foreground); font: 500 12px/16px ui-sans-serif, system-ui, sans-serif; white-space: nowrap; transition: background-color 150ms ease, box-shadow 150ms ease; } .ds-badge:hover { background: color-mix(in oklab, var(--primary) 90%, transparent); } .ds-badge:focus-visible { outline: 0; box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 50%, transparent); }"
+    },
+    {
+      "name": "Compact Tabs",
+      "kind": "nav",
+      "description": "Muted segmented navigation with one canvas-colored active tab.",
+      "html": "<div class=\"ds-tabs\" role=\"tablist\"><button class=\"ds-tab is-active\" role=\"tab\" aria-selected=\"true\">Overview</button><button class=\"ds-tab\" role=\"tab\">Data</button></div>",
+      "css": ".ds-tabs { display: inline-flex; align-items: center; height: 36px; border-radius: 10px; padding: 3px; background: var(--muted); color: var(--muted-foreground); } .ds-tab { height: calc(100% - 1px); border: 1px solid transparent; border-radius: 8px; padding: 4px 8px; background: transparent; color: var(--foreground); font: 500 14px/20px ui-sans-serif, system-ui, sans-serif; transition: color 150ms ease, box-shadow 150ms ease; } .ds-tab.is-active { background: var(--background); box-shadow: 0 1px 3px rgb(0 0 0 / .1); } .ds-tab:hover { color: var(--foreground); } .ds-tab:focus-visible { outline: 1px solid var(--ring); box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 50%, transparent); }"
+    },
+    {
+      "name": "Breadcrumb",
+      "kind": "nav",
+      "description": "Muted route trail with a medium-weight current location.",
+      "html": "<nav class=\"ds-breadcrumb\" aria-label=\"Breadcrumb\"><a href=\"#\">Home</a><span>/</span><strong>Achievements</strong></nav>",
+      "css": ".ds-breadcrumb { display: flex; align-items: center; gap: 8px; overflow: hidden; color: var(--muted-foreground); font: 400 14px/20px ui-sans-serif, system-ui, sans-serif; } .ds-breadcrumb a { color: var(--muted-foreground); text-decoration: none; transition: color 150ms ease; white-space: nowrap; } .ds-breadcrumb a:hover { color: var(--foreground); } .ds-breadcrumb a:focus-visible { border-radius: 6px; outline: 2px solid var(--ring); outline-offset: 2px; } .ds-breadcrumb span { opacity: .5; } .ds-breadcrumb strong { min-width: 0; overflow: hidden; color: var(--foreground); font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Field Guide Index",
+    "overview": "The compendium is a neutral, compact reference surface. It keeps the interface quiet so exact game facts, relationships, and exported art remain easy to scan. Dense typography, fine rules, restrained color, and small controls make the site feel like a maintained field guide rather than a promotional game site.\n\nThe achievements atlas is one expression of this system: a plain canvas, square Steam art, category rules, a narrow index, and sparse amber markers organize 38 unlock conditions without turning them into a generic card wall. Its split hero and category composition are page-specific evidence, not templates for every route.",
+    "keyCharacteristics": [
+      "Neutral light and dark canvases with semantic foreground, surface, rule, and focus roles.",
+      "Dense system-sans reference typography with clear weight and size changes.",
+      "Fine borders and tonal surfaces provide most structure.",
+      "Exported game art stays square, legible, and subordinate to factual text.",
+      "Accent color is sparse and functional; links remain conventionally blue."
+    ],
+    "rules": [
+      {
+        "name": "The Semantic Color Rule",
+        "body": "Use saturated color only when it communicates a link, state, category, item quality, or interaction.",
+        "section": "colors"
+      },
+      {
+        "name": "The Theme Role Rule",
+        "body": "Components refer to semantic roles, never to a light-mode literal that would fail on the dark canvas.",
+        "section": "colors"
+      },
+      {
+        "name": "The Scan Before Flourish Rule",
+        "body": "Use weight and spacing to expose the information hierarchy. Do not introduce decorative typography that slows lookup.",
+        "section": "typography"
+      },
+      {
+        "name": "The Numeric Alignment Rule",
+        "body": "Counts and comparable values use tabular figures.",
+        "section": "typography"
+      },
+      {
+        "name": "The Fact Density Rule",
+        "body": "Keep related labels, values, and actions close; use larger gaps only between semantic groups.",
+        "section": "layout"
+      },
+      {
+        "name": "The Static-First Rule",
+        "body": "Responsive and content layouts remain complete in static HTML. JavaScript-only search and loading affordances are additive.",
+        "section": "layout"
+      },
+      {
+        "name": "The Flat Reference Rule",
+        "body": "Use rules and tonal contrast first. Add a shadow only when a control, card, or image needs separation from its immediate ground.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Square Artifact Rule",
+        "body": "Preserve exported game and Steam art at a square aspect ratio without stretching or ornamental masks.",
+        "section": "shapes"
+      }
+    ],
+    "dos": [
+      "Do use semantic colors so light and dark themes preserve the same hierarchy.",
+      "Do keep exported artwork square, uncropped beyond `object-fit: cover`, and paired with factual text.",
+      "Do use fine rules, muted text, tabular counts, and compact gaps to make long reference lists scannable.",
+      "Do preserve conventional blue links for related compendium destinations.",
+      "Do let dense indexes use rows and dividers instead of forcing every entity into a card."
+    ],
+    "donts": [
+      "Don't use amber, quality colors, or chart colors as general decoration outside their evidenced meanings.",
+      "Don't add heavy shadows, glass panels, gradients, or ornamental frames to ordinary reference content.",
+      "Don't stretch square game art or use it as low-contrast background decoration.",
+      "Don't promote the achievements split hero, trophy field, or oversized system-sans heading into a mandatory site-wide template.",
+      "Don't hide core facts behind JavaScript-only controls or interactions."
+    ]
+  }
+}
