@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="en" class="dark">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Profession pages — design spikes</title>
+<style>
+  :root{
+    --background: oklch(0.129 0.042 264.695);
+    --foreground: oklch(0.984 0.003 247.858);
+    --card: oklch(0.208 0.042 265.755);
+    --muted: oklch(0.279 0.041 260.031);
+    --muted-foreground: oklch(0.704 0.04 256.788);
+    --border: oklch(1 0 0 / 10%);
+    --chart-2: oklch(0.696 0.17 162.48);
+    --chart-3: oklch(0.769 0.188 70.08);
+    --chart-5: oklch(0.645 0.246 16.439);
+    --stat-hp: oklch(0.72 0.15 155);
+    --stat-atk: oklch(0.74 0.16 40);
+    --stat-spell: oklch(0.72 0.15 305);
+    --destructive: oklch(0.704 0.191 22.216);
+    --radius: 0.625rem;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--background); color:var(--foreground);
+    font:15px/1.55 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:40px 32px 80px}
+  h1{font-size:34px;font-weight:700;letter-spacing:-.02em;margin:0 0 8px}
+  h2.spike{font-size:13px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--muted-foreground);margin:0 0 6px}
+  h3{font-size:21px;font-weight:600;letter-spacing:-.01em;margin:0 0 4px}
+  p.lede{color:var(--muted-foreground);margin:0 0 28px;max-width:74ch}
+  .sub{color:var(--muted-foreground);font-size:14px;margin:0 0 18px;max-width:74ch}
+  section.spike{border-top:1px solid var(--border);padding-top:34px;margin-top:52px}
+  .ab{display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start}
+  @media(max-width:900px){.ab{grid-template-columns:1fr}}
+  .pane{border:1px solid var(--border);border-radius:var(--radius);padding:18px;background:oklch(0.208 0.042 265.755 / .3)}
+  .pane.now{background:transparent}
+  .tag{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;
+    padding:3px 9px;border-radius:999px;margin-bottom:14px}
+  .tag.now{background:oklch(0.704 0.191 22.216 / .13);color:var(--destructive)}
+  .tag.new{background:oklch(0.696 0.17 162.48 / .13);color:var(--chart-2)}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th{text-align:left;font-weight:500;color:var(--muted-foreground);font-size:12px;
+    padding:0 10px 8px 0;border-bottom:1px solid var(--border)}
+  td{padding:9px 10px 9px 0;border-bottom:1px solid oklch(1 0 0 / 5%)}
+  .num{font-variant-numeric:tabular-nums}
+  .ctl{display:flex;gap:26px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+  .ctl>div{display:flex;align-items:baseline;gap:12px}
+  .ctl label{font-size:12px;color:var(--muted-foreground);letter-spacing:.05em;text-transform:uppercase;min-width:112px}
+  .ctl output{font-size:19px;font-weight:600;font-variant-numeric:tabular-nums}
+  input[type=range]{width:170px;accent-color:var(--chart-2)}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--muted-foreground);margin-top:10px}
+  .sw{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:baseline}
+  .grid5{display:grid;grid-template-columns:repeat(5,1fr);font-size:12.5px;
+    border:1px solid var(--border);border-radius:8px;overflow:hidden;white-space:nowrap}
+  .grid5>div{padding:9px 8px;border-top:1px solid var(--border)}
+  .grid5>div:nth-child(-n+5){border-top:0;background:oklch(0.279 0.041 260.031 / .5);
+    color:var(--muted-foreground);font-size:11px;letter-spacing:.04em}
+  .bar{height:6px;border-radius:3px;background:oklch(1 0 0 / 8%);position:relative;overflow:hidden}
+  .bar>i{position:absolute;inset:0 auto 0 0;border-radius:3px;display:block}
+  .note{font-size:12.5px;color:var(--muted-foreground);margin-top:12px;line-height:1.6}
+  .phone{width:330px;border:1px solid var(--border);border-radius:16px;overflow:hidden;
+    background:var(--background);position:relative}
+  .phone .inner{height:460px;overflow:hidden;padding:14px}
+  .fold{position:absolute;left:0;right:0;height:2px;background:var(--chart-5);opacity:.85}
+  .foldlbl{position:absolute;right:6px;font-size:9.5px;color:var(--chart-5);letter-spacing:.06em;
+    text-transform:uppercase;transform:translateY(-13px);font-weight:600}
+  .heroX{border:1px solid var(--border);border-radius:9px;padding:14px}
+  .mcard{border:1px solid var(--border);border-radius:9px;padding:11px;margin-top:7px}
+  .mcard b{font-size:19px;font-weight:600;display:block}
+  .mcard span{font-size:11.5px;color:var(--muted-foreground)}
+  .jump{display:grid;grid-template-columns:1fr 1fr;gap:2px 14px;font-size:12.5px;margin-top:10px}
+  .jump a{color:oklch(0.72 0.14 250);text-decoration:none}
+  .payoff{font-size:14px;line-height:1.5;margin:8px 0 0}
+  .payoff b{color:var(--chart-2);font-weight:600}
+  .seq{counter-reset:s;margin:0;padding:0;list-style:none}
+  .seq li{counter-increment:s;display:grid;grid-template-columns:26px 1fr;gap:11px;
+    padding:11px 0;border-top:1px solid oklch(1 0 0 / 6%)}
+  .seq li:first-child{border-top:0;padding-top:0}
+  .seq li::before{content:counter(s);color:var(--muted-foreground);font-size:12px;
+    font-variant-numeric:tabular-nums;padding-top:2px}
+  .seq li>b,.seq li>p{grid-column:2}
+  .seq b{font-weight:600}
+  .seq p{margin:2px 0 0;font-size:13px;color:var(--muted-foreground)}
+  .tl{display:flex;height:30px;border-radius:7px;overflow:hidden;border:1px solid var(--border);font-size:11px}
+  .tl>div{display:flex;align-items:center;justify-content:center;color:var(--foreground)}
+  .tlx{display:flex;justify-content:space-between;font-size:11px;color:var(--muted-foreground);
+    margin-top:5px;font-variant-numeric:tabular-nums}
+  .zones div{display:grid;grid-template-columns:130px 1fr 40px;gap:11px;align-items:center;
+    padding:5px 0;font-size:13px}
+  .kpi{font-size:12.5px;color:var(--muted-foreground)}
+  .kpi b{color:var(--foreground);font-variant-numeric:tabular-nums}
+  code{font:12.5px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;
+    background:oklch(1 0 0 / 6%);padding:1px 5px;border-radius:4px}
+  .verdict{border-left:2px solid var(--chart-2);padding:2px 0 2px 14px;margin-top:18px;
+    font-size:13.5px;color:var(--muted-foreground);max-width:78ch}
+  .verdict b{color:var(--foreground)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>Profession pages — design spikes</h1>
+  <p class="lede">Three prototypes against the thesis <b>form follows the shape of the fact</b>.
+  Every number is real, queried from <code>compendium.db</code> or derived from the cited
+  server script. Left is what ships today; right is the proposal.</p>
+
+  <!-- ═══════════ SPIKE A ═══════════ -->
+  <section class="spike">
+    <h2 class="spike">Spike A</h2>
+    <h3>The tier grid becomes a curve</h3>
+    <p class="sub">Mining success against skill, for all five ore tiers. The grid states five numbers
+    for one slider position. The curve states the whole function, marks where you are, and shades
+    the regions where a tier stops paying skill — a rule no page currently states at all.
+    Formulas: <code>Utils.cs:GetSuccessProbMining</code>, <code>GatherItem.cs:OnInteractServer</code>.</p>
+
+    <div class="ctl">
+      <div><label for="sk">Mining skill</label><input id="sk" type="range" min="0" max="100" value="42" /><output id="sko">42%</output></div>
+      <div><label for="pk">Pickaxe quality</label><input id="pk" type="range" min="0" max="4" value="2" /><output id="pko">2</output></div>
+    </div>
+
+    <div class="ab">
+      <div class="pane now">
+        <span class="tag now">Ships today</span>
+        <div class="grid5" id="gridNow"></div>
+        <p class="note">Five percentages for one slider position. Nothing shows the shape of the
+        curve, where a tier becomes reliable, or where it stops granting skill. To learn any of
+        that you drag the slider and watch numbers change.</p>
+      </div>
+      <div class="pane">
+        <span class="tag new">Proposed</span>
+        <svg id="curve" viewBox="0 0 520 250" style="width:100%;height:auto"></svg>
+        <div class="legend" id="curveLegend"></div>
+        <p class="note" id="curveNote"></p>
+      </div>
+    </div>
+
+    <div class="verdict"><b>What it buys.</b> The shaded band is the "too simple" rule:
+    above 25% skill tier I stops granting mastery, above 50% tiers I–II stop, above 75% tiers I–III
+    stop. That is the single most useful progression fact in the game and it is currently
+    unstated on every one of the eight calculator pages. As an encoding it costs less vertical
+    space than the grid it replaces.</div>
+  </section>
+
+  <!-- ═══════════ SPIKE B ═══════════ -->
+  <section class="spike">
+    <h2 class="spike">Spike B</h2>
+    <h3>The header reclaims the first viewport</h3>
+    <p class="sub">Fishing at 390&times;844. Measured on the live page: the bordered hero plus the
+    five metric cards push the first real fact to <b>3095px</b>, about 3.7 mobile screens.
+    The orange line is the fold.</p>
+
+    <div class="ab" style="grid-template-columns:auto auto;justify-content:start;gap:34px">
+      <div>
+        <span class="tag now">Ships today</span>
+        <div class="phone"><div class="inner">
+          <div style="font-size:11px;color:var(--muted-foreground);margin-bottom:10px">Home / Professions / Fishing</div>
+          <div class="heroX">
+            <div style="display:flex;gap:11px;align-items:center">
+              <div style="width:38px;height:38px;border-radius:8px;background:oklch(0.72 0.14 250 / .13)"></div>
+              <div style="font-size:25px;font-weight:700">Fishing</div>
+            </div>
+            <div style="font-size:13px;color:var(--muted-foreground);margin-top:7px">Catch fish at fishing spots.</div>
+            <div class="mcard"><b>9</b><span>Fishing rods</span></div>
+            <div class="mcard"><b>23</b><span>Fishing spots</span></div>
+            <div class="mcard"><b>31</b><span>Fish</span></div>
+          </div>
+          <div class="fold" style="top:446px"></div>
+        </div></div>
+        <p class="kpi" style="margin-top:9px">First fact at <b>3095px</b> · hero alone <b>712px</b> of 844<br>
+        Metric strip continues past the fold: 2 more cards, then “How It Works”.</p>
+      </div>
+
+      <div>
+        <span class="tag new">Proposed</span>
+        <div class="phone"><div class="inner">
+          <div style="font-size:11px;color:var(--muted-foreground);margin-bottom:10px">Home / Professions / Fishing</div>
+          <div style="display:flex;gap:11px;align-items:center">
+            <div style="width:34px;height:34px;border-radius:8px;background:oklch(0.72 0.14 250 / .13)"></div>
+            <div><div style="font-size:25px;font-weight:700;line-height:1.1">Fishing</div>
+            <div style="font-size:11px;color:var(--muted-foreground);letter-spacing:.06em;text-transform:uppercase">Gathering</div></div>
+          </div>
+          <p class="payoff">Catch fish at spots across the world. Skill raises your
+          bite chance and your odds on the fish you actually want — <b>at 100% Fishing a
+          Tier&nbsp;IV spot goes from 0% to 40% before your rod</b>.</p>
+          <div class="jump">
+            <a href="#">How fishing works</a><a href="#">Fishing spots · 23</a>
+            <a href="#">Odds calculator</a><a href="#">Fallback pools</a>
+            <a href="#">Rods · 9</a><a href="#">Fish uses · 26</a>
+          </div>
+          <div style="border-top:1px solid var(--border);margin:15px 0 13px"></div>
+          <div style="font-size:15px;font-weight:600;margin-bottom:9px">How fishing works</div>
+          <ol class="seq" style="font-size:13px">
+            <li><b>Carry a rod.</b><p>The game picks your highest-quality rod automatically.</p></li>
+            <li><b>Click a spot, then click again inside the window.</b><p>2.0s at Tier I down to 0.75s at Tier IV.</p></li>
+          </ol>
+          <div class="fold" style="top:446px"></div>
+        </div></div>
+        <p class="kpi" style="margin-top:9px">First fact at <b>~150px</b> · header <b>~300px</b><br>
+        The jump list replaces the metric strip: same counts, but they navigate.</p>
+      </div>
+    </div>
+
+    <div class="verdict"><b>What it buys.</b> The metric strip was a table of contents that
+    forgot to be clickable. Turning it into one keeps every count, adds wayfinding to a page
+    that is 12.5 mobile screens with eight sections and no navigation, and reclaims roughly
+    2.5 screens. The payoff sentence is the fact a reader actually arrived for, and no
+    profession page states it today.</div>
+  </section>
+
+  <!-- ═══════════ SPIKE C ═══════════ -->
+  <section class="spike">
+    <h2 class="spike">Spike C</h2>
+    <h3>A bare page is not a bare profession</h3>
+    <p class="sub">Radiant Seeker ships 148 lines rendering one table row. Every fact below is
+    already in the database or provable from a cited server script. Nothing here is invented.</p>
+
+    <div class="ab">
+      <div class="pane now">
+        <span class="tag now">Ships today</span>
+        <div style="font-size:21px;font-weight:700;margin-bottom:3px">Radiant Seeker</div>
+        <div style="font-size:13px;color:var(--muted-foreground);margin-bottom:14px">Collect scattered radiant sparks.</div>
+        <div style="font-size:13px;color:var(--muted-foreground);margin-bottom:5px">Max level 100% · Beacon of Radiance</div>
+        <table style="margin-top:14px">
+          <tr><th>Resource</th><th style="text-align:right">Skill gain</th></tr>
+          <tr><td>Radiant Spark</td><td class="num" style="text-align:right">0.10% – 0.30%</td></tr>
+        </table>
+        <p class="note">One row. A reader learns the profession exists and that it grants a
+        small amount of skill. Nothing about why anyone would do it.</p>
+      </div>
+
+      <div class="pane">
+        <span class="tag new">Proposed</span>
+        <div style="font-size:21px;font-weight:700;margin-bottom:3px">Radiant Seeker</div>
+        <p class="payoff" style="margin-bottom:16px">Gather Radiant Sparks for Radiant Aether, a
+        combat consumable. <b>Aether turns a critical hit from ×1.5 into ×3, saves you from a killing
+        blow, and can cancel an area attack outright.</b> Skill raises how often a spark yields one,
+        from 5% to 25%.</p>
+
+        <div style="font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted-foreground);margin-bottom:8px">What Aether does</div>
+        <table>
+          <tr><th>Trigger</th><th>Chance</th><th style="text-align:right">Effect</th></tr>
+          <tr><td>Critical hit</td><td class="num">15%</td><td style="text-align:right">Multiplier ×1.5 → <b>×3</b></td></tr>
+          <tr><td>Lethal damage</td><td class="num">15%</td><td style="text-align:right">Restore full health</td></tr>
+          <tr><td>Area attack nearby</td><td class="num">15% solo</td><td style="text-align:right">Negate the effect</td></tr>
+        </table>
+
+        <div style="font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted-foreground);margin:20px 0 8px">Respawn window</div>
+        <div style="position:relative;height:30px;border:1px solid var(--border);border-radius:7px;overflow:hidden;background:oklch(1 0 0 / 4%)">
+          <div style="position:absolute;top:0;bottom:0;left:2.8%;right:0;background:oklch(0.72 0.15 305 / .3);display:flex;align-items:center;justify-content:center;font-size:11px">any moment in this window, uniformly</div>
+        </div>
+        <div class="tlx"><span>gathered &middot; 0s</span><span>1m40s</span><span>1h</span></div>
+        <p class="note" style="margin-top:8px">A node is never ready before 1m40s and always ready by 1h. The database stores a flat
+        60s, wrong at both ends — publish the server rule, not the column.</p>
+
+        <div style="font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted-foreground);margin:20px 0 8px">Where to farm · 227 nodes</div>
+        <div class="zones" id="zones"></div>
+      </div>
+    </div>
+
+    <div class="verdict"><b>What it buys.</b> Same route, same data pipeline, no new extraction.
+    The page goes from one number to a reason, a mechanic, a timing, and a route — because the
+    facts were always in <code>compendium.db</code> and <code>GatherItem.cs</code>, just never
+    asked for. This is the case that makes the content model worth having.</div>
+  </section>
+</div>
+
+<script>
+const TIERS = [
+  {n:'I',   id:'Iron Ore',       c:'oklch(0.72 0.15 155)'},
+  {n:'II',  id:'Icevril Ore',    c:'oklch(0.72 0.14 255)'},
+  {n:'III', id:'Gold Ore',       c:'oklch(0.769 0.188 70.08)'},
+  {n:'IV',  id:'Beryllium Ore',  c:'oklch(0.72 0.15 305)'},
+  {n:'V',   id:'Draconium Ore',  c:'oklch(0.645 0.246 16.439)'}
+];
+// Source: server-scripts/Utils.cs:GetSuccessProbMining
+function succ(t, q, m){
+  const v = [0.8+q+m, 0.3+q*0.2+m, q*0.15+m*0.6, q*0.1+m*0.5, q*0.05+m*0.4][Math.min(t,4)];
+  return Math.min(1, Math.max(0, v));
+}
+// Source: server-scripts/GatherItem.cs:OnInteractServer — strictly above the threshold, no gain
+function effortless(t, m){ return (m>0.25&&t===0)||(m>0.5&&t<=1)||(m>0.75&&t<=2); }
+
+const sk=document.getElementById('sk'), pk=document.getElementById('pk');
+const sko=document.getElementById('sko'), pko=document.getElementById('pko');
+
+function renderGrid(m,q){
+  const g=document.getElementById('gridNow');
+  let h='<div>Tier</div><div>Ore</div><div>Success</div><div>Skill gain</div><div>XP</div>';
+  const xp=[15,150,750,4000,10000];
+  TIERS.forEach((t,i)=>{
+    const s=succ(i,q,m), e=effortless(i,m);
+    const gain=e?'—':(1/(s*1000)*100).toFixed(2)+'–'+(3/(s*1000)*100).toFixed(2)+'%';
+    h+=`<div>${t.n}</div><div>${t.id}</div><div class="num">${(s*100).toFixed(0)}%</div>`
+      +`<div class="num">${gain}</div><div class="num">${xp[i].toLocaleString()}</div>`;
+  });
+  g.innerHTML=h;
+}
+
+function renderCurve(m,q){
+  const W=520,H=250,L=42,R=12,T=14,B=30, pw=W-L-R, ph=H-T-B;
+  const x=v=>L+v*pw, y=v=>T+(1-v)*ph;
+  let s=`<defs><clipPath id="cp"><rect x="${L}" y="${T}" width="${pw}" height="${ph}"/></clipPath></defs>`;
+  // no-gain regions
+  const bands=[[0.25,0.5,'I'],[0.5,0.75,'I–II'],[0.75,1,'I–III']];
+  bands.forEach(([a,b,lbl],i)=>{
+    s+=`<rect x="${x(a)}" y="${T}" width="${x(b)-x(a)}" height="${ph}" fill="oklch(0.704 0.191 22.216 / ${0.05+i*0.035})"/>`;
+    s+=`<line x1="${x(a)}" y1="${T}" x2="${x(a)}" y2="${T+ph}" stroke="oklch(0.704 0.191 22.216 / 45%)" stroke-dasharray="3 3"/>`;
+    s+=`<text x="${x(a)+6}" y="${T+ph-7}" font-size="9.5" fill="oklch(0.704 0.191 22.216 / 85%)">${lbl} no longer pays</text>`;
+  });
+  // axes
+  [0,.25,.5,.75,1].forEach(v=>{
+    s+=`<line x1="${L}" y1="${y(v)}" x2="${W-R}" y2="${y(v)}" stroke="oklch(1 0 0 / 7%)"/>`;
+    s+=`<text x="${L-7}" y="${y(v)+3.5}" text-anchor="end" font-size="10" fill="oklch(0.704 0.04 256.788)">${v*100}%</text>`;
+  });
+  [0,25,50,75,100].forEach(v=>{
+    s+=`<text x="${x(v/100)}" y="${H-9}" text-anchor="middle" font-size="10" fill="oklch(0.704 0.04 256.788)">${v}</text>`;
+  });
+  s+=`<text x="${L+pw/2}" y="${H-9}" text-anchor="middle" font-size="9.5" fill="oklch(0.704 0.04 256.788)" opacity="0"></text>`;
+  // curves
+  TIERS.forEach((t,i)=>{
+    let d='';
+    for(let p=0;p<=100;p++){ const mm=p/100; const v=succ(i,q,mm); d+=(p?'L':'M')+x(mm)+','+(y(v)+(v>=1?1.5:0)); }
+    s+=`<path d="${d}" fill="none" stroke="${t.c}" stroke-width="2" clip-path="url(#cp)" opacity=".95"/>`;
+  });
+  // reader position
+  s+=`<line x1="${x(m)}" y1="${T}" x2="${x(m)}" y2="${T+ph}" stroke="oklch(0.984 0.003 247.858)" stroke-width="1" opacity=".55"/>`;
+  TIERS.forEach((t,i)=>{
+    const v=succ(i,q,m), e=effortless(i,m);
+    s+=`<circle cx="${x(m)}" cy="${y(v)}" r="${e?2.5:4}" fill="${e?'var(--background)':t.c}" stroke="${t.c}" stroke-width="1.6"/>`;
+  });
+  s+=`<text x="${L+pw/2}" y="${H-1}" text-anchor="middle" font-size="9.5" fill="oklch(0.704 0.04 256.788)">mining skill</text>`;
+  document.getElementById('curve').innerHTML=s;
+
+  document.getElementById('curveLegend').innerHTML = TIERS.map((t,i)=>{
+    const e=effortless(i,m);
+    return `<span style="opacity:${e?.45:1}"><i class="sw" style="background:${t.c}"></i>${t.n} ${t.id}`
+      + (e?' · no gain':'') + `</span>`;
+  }).join('');
+
+  const live=TIERS.map((t,i)=>!effortless(i,m)?t.n:null).filter(Boolean);
+  document.getElementById('curveNote').textContent =
+    `At ${(m*100).toFixed(0)}% skill with a quality-${q} pickaxe, `
+    + (live.length ? `tier${live.length>1?'s':''} ${live.join(', ')} still grant${live.length>1?'':'s'} mastery. `
+                   : 'no tier still grants mastery. ')
+    + `Hollow dots mark tiers that have stopped paying.`;
+}
+
+function sync(){
+  const m=+sk.value/100, q=+pk.value;
+  sko.textContent=sk.value+'%'; pko.textContent=pk.value;
+  renderGrid(m,q); renderCurve(m,q);
+}
+sk.oninput=pk.oninput=sync; sync();
+
+// real spawn distribution, queried from compendium.db
+const Z=[['The Molten Summit',48],['The Lone-lands',43],['Twilight Forest',42],
+         ['Crescent Coast',36],['Northern Wastes',33],['Everfrost',25]];
+document.getElementById('zones').innerHTML = Z.map(([n,c])=>
+  `<div><span>${n}</span><span class="bar"><i style="width:${c/48*100}%;background:oklch(0.72 0.15 305)"></i></span>`
+  +`<span class="num" style="text-align:right;color:var(--muted-foreground)">${c}</span></div>`).join('');
+</script>
+</body>
+</html>

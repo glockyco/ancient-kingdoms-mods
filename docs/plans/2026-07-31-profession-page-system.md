@@ -1,7 +1,7 @@
 ---
 title: Profession Page System
 type: spec
-status: draft
+status: active
 created: 2026-07-31
 parent: 2026-07-31-ancient-kingdoms-overview
 superseded_by:

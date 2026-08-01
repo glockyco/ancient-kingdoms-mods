@@ -1,7 +1,7 @@
 ---
 title: Profession Page Migration
 type: plan
-status: draft
+status: active
 created: 2026-07-31
 parent: 2026-07-31-ancient-kingdoms-overview
 superseded_by:
@@ -53,15 +53,15 @@ Pipeline work only. Does not gate Stage 2.
 
 ### Stage 2 — Shared layer
 
-- [ ] Build `lib/data/professions/mechanics.ts`, re-verifying every formula against current `server-scripts/` and citing each in symbol form
-- [ ] Fold the existing `lib/utils/{alchemy,cooking,fishing,treasureHunter}` formulas into that record, keeping their public helper signatures
-- [ ] Add a unit test asserting the record's tier tables against the payoff list in the spec
+- [x] Build `lib/data/professions/mechanics.ts`, re-verifying every formula against current `server-scripts/` and citing each in symbol form
+- [x] Fold the existing `lib/utils/{alchemy,cooking,fishing,treasureHunter}` formulas into that record, keeping their public helper signatures
+- [x] Add a unit test asserting the record's tier tables against the payoff list in the spec
 - [ ] Create `lib/queries/professions.ts` owning the profession row, replacing the 13 local interfaces
-- [ ] Build `ProfessionHeader` — icon, title, category, purpose, payoff line, optional jump list
-- [ ] Wire `PageSections` into the profession header for pages with 4+ sections
+- [x] Build `ProfessionHeader` — icon, title, category, purpose, payoff line, optional jump list
+- [x] Wire `PageSections` into the profession header for pages with 4+ sections
 - [ ] Build `ProfessionProgression`, generated from the mechanics record
 - [ ] Extract `RangeBar` from `mechanics/mercenary-stats`, which is currently its only user
-- [ ] Extract the curve renderer from `mechanics/experience` into `MasteryCurve`: tier success functions, the reader's slider position, and shaded no-gain regions, rendered as inline SVG so it survives without JS
+- [x] Extract the validated Mining curve renderer into `MasteryCurve`: tier success functions, the reader's slider position, and shaded no-gain regions, rendered as inline SVG so it survives without JS
 - [ ] Extract `Timeline` from `mechanics/monster-spawns` for respawn and cooldown ranges
 - [ ] Build `LocationTable`, `ResourceTable`, `RecipeTable`
 - [ ] Build `RelatedProfessions` with typed, reasoned links
@@ -73,8 +73,8 @@ Pipeline work only. Does not gate Stage 2.
 
 Each is complete when it satisfies every acceptance criterion in the spec.
 
-- [ ] **radiant_seeker** — add the Aether combat payoff, 227 spawns with map links, the real 100–3600s respawn, the 5–25% yield rule, the Fire Goblin start, and the explicit "no crafting use" finding
-- [ ] **mining** — add 102 spawns with map links, node rewards and random gem pools, the 60 recipe consumers, the 9 gather quests, the vendor alternative, the pickaxe durability rule, and the Dwarf start
+- [x] **radiant_seeker** — add the Aether combat payoff, 227 spawns with map links, the real 100–3600s respawn, the 5–25% yield rule, the Fire Goblin start, and the explicit "no crafting use" finding
+- [x] **mining** — add 102 spawns with map links, node rewards and random gem pools, the 60 recipe consumers, the 9 gather quests, the vendor alternative, the pickaxe durability rule, and the Dwarf start
 - [ ] **slayer** — add the damage-reduction payoff, the account-wide formula, loot from `item_sources_monster`, spawn map links, and migrate 143 rows to `DataTable`
 - [ ] **fishing** — reduce to the new model: strip hero and metric strip, promote the loop content, surface required tool and drop chances, merge fallback and trash into disclosures, unify foods and potions as fish uses, and link to cooking
 - [ ] Review all four at 1440×900 and 390×844 against the density and overflow criteria
