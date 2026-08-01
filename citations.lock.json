@@ -315,6 +315,9 @@
       "sha256": "621304c24569d3678ba79f40807bac3a5703ff6326713e1b5513c6f7d0d62444",
       "span": 2
     },
+    "Database.cs:CalculateSlayerLevelForAccount": {
+      "span": 0
+    },
     "Database.cs:CharacterCreate": {
       "span": 0
     },
@@ -756,6 +759,12 @@
       "sha256": "7fdbfa5f1cc72d1568cd89650d10621c978e7eca8c25adaa255832aeb4b9ba45",
       "span": 16
     },
+    "Monster.cs:Awake": {
+      "span": 0
+    },
+    "Monster.cs:OnDeath": {
+      "span": 0
+    },
     "MountItem.cs:8": {
       "sha256": "6946d0bf5750987acb3124a4f4d8a2855bc6d50d329223ee58100949141c6b8c",
       "span": 1
@@ -1121,6 +1130,12 @@
       "span": 0
     },
     "Player.cs:UserCode_CmdMakePotion__Int32": {
+      "span": 0
+    },
+    "Player.cs:UserCode_TargetRpcBossEliteApproach__NetworkIdentity": {
+      "span": 0
+    },
+    "Player.cs:UserCode_TargetRpcUpdateKillsBestiary__String": {
       "span": 0
     },
     "Player.cs:isRadiantAetherActivated": {
