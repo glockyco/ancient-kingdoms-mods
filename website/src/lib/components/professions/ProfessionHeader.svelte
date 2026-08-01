@@ -5,6 +5,8 @@
   export interface ProfessionHeaderData {
     name: string;
     category: string;
+    achievement_id?: string | null;
+    achievement_name?: string | null;
   }
 
   interface Props {
@@ -12,6 +14,8 @@
     icon: Component<{ class?: string }>;
     iconClass: string;
     iconBackgroundClass: string;
+    /** Mastery value that unlocks the achievement. */
+    capPercent?: number;
     sections?: PageSection[];
     children: Snippet;
   }
@@ -19,12 +23,14 @@
 
 <script lang="ts">
   import PageSections from "$lib/components/PageSections.svelte";
+  import AchievementLink from "$lib/components/AchievementLink.svelte";
 
   let {
     profession,
     icon: Icon,
     iconClass,
     iconBackgroundClass,
+    capPercent = 100,
     sections = [],
     children,
   }: Props = $props();
@@ -49,6 +55,16 @@
   <div class="max-w-2xl text-balance leading-relaxed">
     {@render children()}
   </div>
+
+  {#if profession.achievement_id && profession.achievement_name}
+    <p class="text-sm">
+      <AchievementLink
+        achievementId={profession.achievement_id}
+        achievementName={profession.achievement_name}
+        text={`At ${capPercent}%, you unlock the ${profession.achievement_name} achievement.`}
+      />
+    </p>
+  {/if}
 
   {#if sections.length >= 4}
     <PageSections {sections} />

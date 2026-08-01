@@ -14,17 +14,15 @@
   import Shield from "@lucide/svelte/icons/shield";
   import Sparkles from "@lucide/svelte/icons/sparkles";
   import Swords from "@lucide/svelte/icons/swords";
-  import AchievementLink from "$lib/components/AchievementLink.svelte";
 
   let { data } = $props();
 
   const mechanics = PROFESSION_MECHANICS.radiant_seeker;
   const sections = [
-    { id: "gathering", label: "Gathering Aether" },
+    { id: "how-it-works", label: "How Radiant Seeker works" },
     { id: "chance", label: "Aether chance" },
     { id: "locations", label: "Spark locations" },
     { id: "combat", label: "Aether in combat" },
-    { id: "progression", label: "Progression" },
   ];
 
   let skillLevel = $state(mechanics.startingBonus.percent);
@@ -86,8 +84,8 @@
     </p>
   </ProfessionHeader>
 
-  <section id="gathering" class="space-y-4">
-    <h2 class="text-xl font-semibold">Gathering Radiant Aether</h2>
+  <section id="how-it-works" class="space-y-4">
+    <h2 class="text-xl font-semibold">How Radiant Seeker works</h2>
     <ol class="divide-y divide-border">
       <li class="grid grid-cols-[1.5rem_1fr] gap-3 py-3 first:pt-0">
         <span class="text-sm tabular-nums text-muted-foreground">1</span>
@@ -177,6 +175,12 @@
         {:else}
           Your Radiant Seeker skill is at the cap.
         {/if}
+      </p>
+
+      <!-- Source: server-scripts/Database.cs:CharacterCreate -->
+      <p class="text-pretty text-sm text-muted-foreground">
+        Fire Goblins start with {mechanics.startingBonus.percent}% Radiant
+        Seeker. Every other race starts at 0%.
       </p>
     </div>
   </section>
@@ -322,23 +326,5 @@
         </details>
       </div>
     </div>
-  </section>
-
-  <section id="progression" class="space-y-3">
-    <h2 class="text-xl font-semibold">Progression</h2>
-    <p class="max-w-2xl text-pretty text-sm text-muted-foreground">
-      <!-- Source: server-scripts/Database.cs:CharacterCreate -->
-      Fire Goblins start with {mechanics.startingBonus.percent}% Radiant Seeker.
-      Every other race starts at 0%.
-    </p>
-    {#if data.profession.achievement_name}
-      <p class="max-w-2xl text-sm leading-relaxed text-muted-foreground">
-        <AchievementLink
-          achievementId={data.profession.achievement_id}
-          achievementName={data.profession.achievement_name}
-          text={`At ${mechanics.capPercent}%, you unlock the ${data.profession.achievement_name} achievement.`}
-        />
-      </p>
-    {/if}
   </section>
 </div>

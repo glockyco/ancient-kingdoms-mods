@@ -8,7 +8,6 @@
   import ItemSourceLinks from "$lib/components/ItemSourceLinks.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
   import Pickaxe from "@lucide/svelte/icons/pickaxe";
-  import AchievementLink from "$lib/components/AchievementLink.svelte";
   import { formatDuration } from "$lib/utils/format";
   import {
     DWARF_STARTING_MINING_PERCENT,
@@ -29,7 +28,7 @@
   const ROMAN = ["I", "II", "III", "IV", "V"];
 
   const sections = [
-    { id: "how-it-works", label: "How mining works" },
+    { id: "how-it-works", label: "How Mining works" },
     { id: "pickaxes", label: "Pickaxes" },
     { id: "calculator", label: "Success by skill" },
     { id: "ores", label: "Ores" },
@@ -113,7 +112,7 @@
   </ProfessionHeader>
 
   <section id="how-it-works" class="space-y-4">
-    <h2 class="text-xl font-semibold">How mining works</h2>
+    <h2 class="text-xl font-semibold">How Mining works</h2>
     <ol class="divide-y divide-border">
       <!-- Source: server-scripts/Player.cs:TryGetSelectedPickaxe — the gather needs a
            Pickaxe-category weapon that is not broken. -->
@@ -286,6 +285,17 @@
         {/if}
         The dashed lines show what you cannot mine.
       </p>
+
+      <!-- Source: server-scripts/GatherItem.cs:OnInteractServer — gain fires when
+           Random.value > 0.1 + miningLevel/2, and the amount is Random.Range(1, 4)
+           divided by the success chance, so unreliable nodes pay more per success. -->
+      <p class="text-pretty text-sm text-muted-foreground">
+        Mining is a value from 0% to 100% and has no experience bar. Each
+        success has a {miningSkillGainChancePercent(0).toFixed(0)}% chance to
+        give skill at 0%, and {miningSkillGainChancePercent(100).toFixed(0)}% at
+        100%. Dwarves start at {DWARF_STARTING_MINING_PERCENT}%. Every other
+        race starts at 0%.
+      </p>
     </div>
   </section>
 
@@ -435,7 +445,7 @@
 
   <section id="uses" class="space-y-4">
     <h2 class="text-xl font-semibold">What ore is for</h2>
-    <p class="max-w-2xl text-balance leading-relaxed">
+    <p class="max-w-2xl text-balance text-sm text-muted-foreground">
       Ore is a material for crafting.
     </p>
     <ul class="flex flex-wrap gap-x-6 gap-y-1.5 text-sm">
@@ -507,32 +517,7 @@
         {/each}
       </p>
     {/if}
-  </section>
 
-  <section class="space-y-3 border-t pt-6">
-    <h2 class="text-sm font-medium">Progression</h2>
-    <!-- Source: server-scripts/GatherItem.cs:OnInteractServer — gain fires when
-         Random.value > 0.1 + miningLevel/2, and the amount is Random.Range(1, 4)
-         divided by the success chance, so unreliable nodes pay more per success. -->
-    <p
-      class="max-w-2xl text-pretty text-sm leading-relaxed text-muted-foreground"
-    >
-      Mining is a value from 0% to 100%. There is no experience bar. Each
-      success has a
-      {miningSkillGainChancePercent(0).toFixed(0)}% chance to give skill at 0%,
-      and {miningSkillGainChancePercent(100).toFixed(0)}% at 100%. A node with a
-      low success chance gives more skill for each success. Dwarves start at {DWARF_STARTING_MINING_PERCENT}%.
-      Every other race starts at 0%.
-    </p>
-    {#if data.profession.achievement_name}
-      <p class="max-w-2xl text-sm leading-relaxed text-muted-foreground">
-        <AchievementLink
-          achievementId={data.profession.achievement_id}
-          achievementName={data.profession.achievement_name}
-          text={`At 100%, you unlock the ${data.profession.achievement_name} achievement.`}
-        />
-      </p>
-    {/if}
     <p class="text-pretty text-sm text-muted-foreground">
       Ore is also a material for <a
         href="/professions/alchemy"
