@@ -86,15 +86,15 @@ Build a complete `/achievements` reference from Steam achievement metadata, then
 - Create: `website/src/routes/achievements/+page.svelte`
 - Modify: `website/src/routes/+page.svelte`
 
-- [ ] Add source-cited relationships only where the unlock target is unambiguous in current server scripts. Supported targets are profession, quest, monster, item, altar, and mechanics pages. Omit a link when the source does not identify one target.
-- [ ] Build a prerendered page-data module that groups all achievements by progression, quests, combat, professions, exploration, and items. Preserve Steam display order inside each group.
-- [ ] Render every achievement with its unlocked icon, Steam name, Steam description, stable `id` anchor, and related compendium links. Mark hidden achievements without revealing metadata that Steam does not expose.
-- [ ] Add compact category navigation and text filtering as progressive enhancement. All 38 records and links must remain present without JavaScript.
-- [ ] Add SEO metadata and `CollectionPage` structured data. Add the page to the home-page compendium families.
-- [ ] Add data tests that assert 38 records, six groups, stable IDs, profession links, representative boss and quest links, and no relationship for an unresolved target.
-- [ ] Run `pnpm vitest run src/routes/achievements/achievements-page-data.test.ts`.
+- [x] Add source-cited relationships only where the unlock target is unambiguous in current server scripts. Supported targets are profession, quest, monster, item, altar, and mechanics pages. Omit a link when the source does not identify one target.
+- [x] Build a prerendered page-data module that groups all achievements by progression, quests, combat, professions, exploration, and items. Preserve Steam display order inside each group.
+- [x] Render every achievement with its unlocked icon, Steam name, Steam description, stable `id` anchor, and related compendium links. Mark hidden achievements without revealing metadata that Steam does not expose.
+- [x] Add compact category navigation and text filtering as progressive enhancement. All 38 records and links must remain present without JavaScript.
+- [x] Add SEO metadata and `CollectionPage` structured data. Add the page to the home-page compendium families.
+- [x] Add data tests that assert 38 records, six groups, stable IDs, profession links, representative boss and quest links, and no relationship for an unresolved target.
+- [x] Run `pnpm vitest run src/routes/achievements/achievements-page-data.test.ts`.
   Expected: the route contract passes and includes all 38 achievements.
-- [ ] Commit.
+- [x] Commit.
   Message: `feat(website): add achievements guide`
 
 ### Task 4: Link achievements from existing compendium pages

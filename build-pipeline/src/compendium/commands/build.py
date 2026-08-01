@@ -76,6 +76,7 @@ def run(config: dict) -> None:
         load_static_data(conn, export_dir)  # Factions, reputation tiers (before NPCs)
         load_classes(conn, export_dir)  # Player classes (early, no dependencies)
         load_zones(conn, export_dir)
+        load_visual_assets(conn, export_dir, static_dir)  # Runtime images for website
         load_achievements(conn, export_dir, static_dir)
         load_professions(conn, export_dir)
         load_skills(conn, export_dir)
@@ -106,7 +107,6 @@ def run(config: dict) -> None:
         load_scribing_recipes(conn, export_dir)  # After items
         load_scribing_tables(conn, export_dir)  # After zones + zone_triggers
         load_crafting_stations(conn, export_dir)  # After zones + zone_triggers
-        load_visual_assets(conn, export_dir, static_dir)  # Runtime images for website
 
         # Denormalize data (must be done after all data is loaded)
         console.print()

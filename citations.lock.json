@@ -318,6 +318,10 @@
     "Database.cs:CharacterCreate": {
       "span": 0
     },
+    "DefaultEvent.cs:137-143": {
+      "sha256": "93c445b327dda059e248fbefe034b1e302f5e567ee6d2203c1c590fd248e5e69",
+      "span": 7
+    },
     "DefaultEvent.cs:231": {
       "sha256": "0f48ba1d378ee94c1a97ea6c06dc241e959351ec47fa12bb1aa16df969af4d02",
       "span": 1
@@ -864,6 +868,10 @@
     "Player.cs": {
       "span": 0
     },
+    "Player.cs:10003-10032": {
+      "sha256": "8aacce02ea28ab54a904eb7c276793c8d05f5978fe5f597ae838ab20bf8b33ca",
+      "span": 30
+    },
     "Player.cs:10012-10018": {
       "sha256": "dd3172c34d65ad7661a1387271dc7018a2d33d6511f1043b84a2f956f0c9476f",
       "span": 7
@@ -1091,6 +1099,10 @@
     "Player.cs:9253": {
       "sha256": "481af84e629f9f653f9d34a285c432bfb2b1a4f74a6deca6ed4b340bae69a077",
       "span": 1
+    },
+    "Player.cs:9765-9777": {
+      "sha256": "488f8059086224105c9350a8717f697438176977b3c3edff141b474f83b9ae91",
+      "span": 13
     },
     "Player.cs:9849-9881": {
       "sha256": "a2c824871efdddcd1ba876d3265c226c615f168c630237b43d38b1414ebf18f8",

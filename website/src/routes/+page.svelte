@@ -33,6 +33,7 @@
   import Cat from "@lucide/svelte/icons/cat";
   import Swords from "@lucide/svelte/icons/swords";
   import ArrowRight from "@lucide/svelte/icons/arrow-right";
+  import Trophy from "@lucide/svelte/icons/trophy";
   import TriangleAlert from "@lucide/svelte/icons/triangle-alert";
   import Shield from "@lucide/svelte/icons/shield";
 
@@ -106,6 +107,13 @@
 
   // Secondary sections, shown as compact tiles.
   const more = [
+    {
+      title: "Achievements",
+      href: "/achievements",
+      icon: Trophy,
+      badge: "bg-amber-500/10 text-amber-500",
+      count: HOME_COUNTS.achievements,
+    },
     {
       title: "Factions",
       href: "/factions",

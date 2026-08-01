@@ -47,6 +47,7 @@ const summons = count(
 const zones = count("SELECT COUNT(*) as count FROM zones");
 const quests = count("SELECT COUNT(*) as count FROM quests");
 const altars = count("SELECT COUNT(*) as count FROM altars");
+const achievements = count("SELECT COUNT(*) as count FROM achievements");
 const professions = count("SELECT COUNT(*) as count FROM professions");
 const gatheringResources = count(
   "SELECT COUNT(*) as count FROM gathering_resources",
@@ -71,6 +72,7 @@ const counts = {
   zones,
   quests,
   altars,
+  achievements,
   professions,
   gatheringResources,
   recipes: alchemyRecipes + craftingRecipes + scribingRecipes,
@@ -95,6 +97,7 @@ export interface HomeCounts {
   readonly zones: number;
   readonly quests: number;
   readonly altars: number;
+  readonly achievements: number;
   readonly professions: number;
   readonly gatheringResources: number;
   readonly recipes: number;
