@@ -6,8 +6,8 @@ and inserts the records into the database.
 
 import hashlib
 import json
-import sqlite3
 import shutil
+import sqlite3
 from pathlib import Path
 
 from PIL import Image, UnidentifiedImageError
@@ -18,8 +18,6 @@ from compendium.models import (
     AchievementData,
     AlchemyRecipeData,
     AlchemyTableData,
-    ScribingRecipeData,
-    ScribingTableData,
     AltarData,
     ClassData,
     CraftingRecipeData,
@@ -37,6 +35,8 @@ from compendium.models import (
     PortalData,
     ProfessionData,
     QuestData,
+    ScribingRecipeData,
+    ScribingTableData,
     SkillData,
     SummonTriggerData,
     TrapData,
@@ -568,16 +568,18 @@ def load_items(conn: sqlite3.Connection, export_dir: Path) -> None:
         # 3. Merge recipes: item.merge_items_needed_ids[] → item_sources_merge
         #    Track merge recipes by their result item ID to avoid duplicates
         #    (multiple component items may reference the same merge recipe)
-        if item.merge_items_needed_ids and item.merge_result_item_id:
-            # Use result item ID as the unique key for this merge recipe
-            if item.merge_result_item_id not in seen_merge_recipes:
-                seen_merge_recipes.add(item.merge_result_item_id)
-                for component_id in item.merge_items_needed_ids:
-                    cursor.execute(
-                        "INSERT INTO item_sources_merge (item_id, component_item_id) VALUES (?, ?)",
-                        (item.merge_result_item_id, component_id),
-                    )
-                merge_count += 1
+        if (
+            item.merge_items_needed_ids
+            and item.merge_result_item_id
+            and item.merge_result_item_id not in seen_merge_recipes
+        ):
+            seen_merge_recipes.add(item.merge_result_item_id)
+            for component_id in item.merge_items_needed_ids:
+                cursor.execute(
+                    "INSERT INTO item_sources_merge (item_id, component_item_id) VALUES (?, ?)",
+                    (item.merge_result_item_id, component_id),
+                )
+            merge_count += 1
 
         # 4. Treasure maps: defer until treasure_locations table is loaded
         if item.treasure_map_reward_id:
@@ -1294,7 +1296,7 @@ def load_summon_triggers(conn: sqlite3.Connection, export_dir: Path) -> None:
 
         # Insert main summon_triggers record (excluding placeholder_monster_ids)
         values = {}
-        for field_name in trigger.model_fields.keys():
+        for field_name in trigger.model_fields:
             if field_name == "placeholder_monster_ids":
                 continue  # Skip - handled by junction table
 

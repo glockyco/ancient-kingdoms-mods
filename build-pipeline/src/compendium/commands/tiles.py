@@ -18,9 +18,9 @@ World bounds: Game X [-880, 920], Z [-740, 1460]
 import json
 import math
 import shutil
-import typer
 from pathlib import Path
 
+import typer
 from PIL import Image, ImageDraw
 from rich.console import Console
 from rich.progress import Progress
@@ -71,13 +71,15 @@ def load_excluded_zones(export_dir: Path) -> list[dict]:
             names = []
 
             for trigger in zone_triggers:
-                if trigger.get("zone_id") in excluded_numeric_ids:
-                    if trigger.get("bounds_min_x") is not None:
-                        min_x = min(min_x, trigger["bounds_min_x"])
-                        min_y = min(min_y, trigger["bounds_min_y"])
-                        max_x = max(max_x, trigger["bounds_max_x"])
-                        max_y = max(max_y, trigger["bounds_max_y"])
-                        names.append(trigger.get("name", "unknown"))
+                if (
+                    trigger.get("zone_id") in excluded_numeric_ids
+                    and trigger.get("bounds_min_x") is not None
+                ):
+                    min_x = min(min_x, trigger["bounds_min_x"])
+                    min_y = min(min_y, trigger["bounds_min_y"])
+                    max_x = max(max_x, trigger["bounds_max_x"])
+                    max_y = max(max_y, trigger["bounds_max_y"])
+                    names.append(trigger.get("name", "unknown"))
 
             if names:
                 results.append(
@@ -93,17 +95,19 @@ def load_excluded_zones(export_dir: Path) -> list[dict]:
     # Sub-zone trigger exclusions: each excluded trigger ID gets its own rectangle
     if EXCLUDED_ZONE_TRIGGER_IDS:
         for trigger in zone_triggers:
-            if trigger.get("id") in EXCLUDED_ZONE_TRIGGER_IDS:
-                if trigger.get("bounds_min_x") is not None:
-                    results.append(
-                        {
-                            "name": trigger.get("name", trigger["id"]),
-                            "bounds_min_x": trigger["bounds_min_x"],
-                            "bounds_min_y": trigger["bounds_min_y"],
-                            "bounds_max_x": trigger["bounds_max_x"],
-                            "bounds_max_y": trigger["bounds_max_y"],
-                        }
-                    )
+            if (
+                trigger.get("id") in EXCLUDED_ZONE_TRIGGER_IDS
+                and trigger.get("bounds_min_x") is not None
+            ):
+                results.append(
+                    {
+                        "name": trigger.get("name", trigger["id"]),
+                        "bounds_min_x": trigger["bounds_min_x"],
+                        "bounds_min_y": trigger["bounds_min_y"],
+                        "bounds_max_x": trigger["bounds_max_x"],
+                        "bounds_max_y": trigger["bounds_max_y"],
+                    }
+                )
 
     return results
 
@@ -223,8 +227,8 @@ def game_position_to_source_pixel(
         return None
 
     image_width, image_height = image_size
-    px = int(round((position_x - world_min_x) / world_width * (image_width - 1)))
-    py = int(round((world_max_z - position_z) / world_depth * (image_height - 1)))
+    px = round((position_x - world_min_x) / world_width * (image_width - 1))
+    py = round((world_max_z - position_z) / world_depth * (image_height - 1))
     return px, py
 
 
@@ -420,10 +424,10 @@ def generate_tiles(
             tile_world_size = tile_size / (2**z)
 
             # Calculate tile index range needed to cover our world
-            tx_min = int(math.floor(extent_min_x / tile_world_size))
-            tx_max = int(math.floor(extent_max_x / tile_world_size))
-            ty_min = int(math.floor(extent_min_y / tile_world_size))
-            ty_max = int(math.floor(extent_max_y / tile_world_size))
+            tx_min = math.floor(extent_min_x / tile_world_size)
+            tx_max = math.floor(extent_max_x / tile_world_size)
+            ty_min = math.floor(extent_min_y / tile_world_size)
+            ty_max = math.floor(extent_max_y / tile_world_size)
 
             num_x = tx_max - tx_min + 1
             num_y = ty_max - ty_min + 1
@@ -480,33 +484,17 @@ def generate_tiles(
 
                     # Calculate output rectangle bounds directly from world coords
                     # This ensures offset + size exactly matches the intended region
-                    out_left = int(
-                        round(
-                            (clamped_min_x - full_tile_min_x)
-                            / tile_world_size
-                            * tile_size
-                        )
+                    out_left = round(
+                        (clamped_min_x - full_tile_min_x) / tile_world_size * tile_size
                     )
-                    out_right = int(
-                        round(
-                            (clamped_max_x - full_tile_min_x)
-                            / tile_world_size
-                            * tile_size
-                        )
+                    out_right = round(
+                        (clamped_max_x - full_tile_min_x) / tile_world_size * tile_size
                     )
-                    out_top = int(
-                        round(
-                            (full_tile_max_y - clamped_max_y)
-                            / tile_world_size
-                            * tile_size
-                        )
+                    out_top = round(
+                        (full_tile_max_y - clamped_max_y) / tile_world_size * tile_size
                     )
-                    out_bottom = int(
-                        round(
-                            (full_tile_max_y - clamped_min_y)
-                            / tile_world_size
-                            * tile_size
-                        )
+                    out_bottom = round(
+                        (full_tile_max_y - clamped_min_y) / tile_world_size * tile_size
                     )
 
                     # Derive size from bounds (guarantees no gaps)

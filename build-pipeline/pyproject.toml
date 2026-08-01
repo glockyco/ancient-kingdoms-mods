@@ -27,6 +27,12 @@ package = true
 [tool.ruff]
 target-version = "py312"
 
+# Typer's whole API is `param: T = typer.Option(...)`, which B008 flags as a
+# function call in a default argument. Treating those constructors as immutable
+# is the documented escape hatch; rewriting them would break the CLI.
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = ["typer.Argument", "typer.Option"]
+
 [tool.mypy]
 python_version = "3.12"
 plugins = ["pydantic.mypy"]

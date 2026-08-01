@@ -17,7 +17,6 @@ from typing import TYPE_CHECKING
 
 from rich.console import Console
 
-
 if TYPE_CHECKING:
     from compendium.redaction import RedactionConfig
 

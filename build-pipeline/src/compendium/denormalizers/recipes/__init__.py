@@ -27,7 +27,7 @@ def run_materials(conn: sqlite3.Connection) -> None:
 
     updated = 0
     for table in ("crafting_recipes", "alchemy_recipes", "scribing_recipes"):
-        cursor.execute(f"SELECT id, materials FROM {table} WHERE materials IS NOT NULL")  # noqa: S608
+        cursor.execute(f"SELECT id, materials FROM {table} WHERE materials IS NOT NULL")
         rows = cursor.fetchall()
 
         for recipe_id, materials_json in rows:
@@ -51,7 +51,7 @@ def run_materials(conn: sqlite3.Connection) -> None:
 
             if enriched:
                 cursor.execute(
-                    f"UPDATE {table} SET materials = ? WHERE id = ?",  # noqa: S608
+                    f"UPDATE {table} SET materials = ? WHERE id = ?",
                     (json.dumps(materials), recipe_id),
                 )
                 updated += 1

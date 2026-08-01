@@ -5,9 +5,9 @@ from __future__ import annotations
 import hashlib
 import re
 import tomllib
+from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Sequence
 
 
 @dataclass(frozen=True)
@@ -123,6 +123,6 @@ class Snapshot:
         lines = (self.root / rel).read_text(encoding="utf-8").splitlines()
         return [
             start + 1
-            for start in range(0, len(lines) - span + 1)
+            for start in range(len(lines) - span + 1)
             if digest(lines[start : start + span]) == sha
         ]

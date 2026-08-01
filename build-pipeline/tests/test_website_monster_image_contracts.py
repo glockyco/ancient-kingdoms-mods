@@ -1,7 +1,6 @@
 import unittest
 from pathlib import Path
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 POPUP_QUERY = REPO_ROOT / "website" / "src" / "lib" / "queries" / "popup.ts"
 ENTITY_POPUP = (

@@ -3,8 +3,8 @@ import unittest
 from pathlib import Path
 
 from compendium.citations import LockEntry, Reference, Snapshot, digest
-from compendium.commands.citations import Target, _compare, _shift, _tool_mismatch
 from compendium.citations.lockfile import Lockfile
+from compendium.commands.citations import Target, _compare, _shift, _tool_mismatch
 
 
 def make_target(rel: str, locator: str) -> Target:
