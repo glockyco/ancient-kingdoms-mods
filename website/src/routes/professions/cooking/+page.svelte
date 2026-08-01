@@ -6,7 +6,7 @@
   import ObtainabilityTree from "$lib/components/ObtainabilityTree.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
   import ChefHat from "@lucide/svelte/icons/chef-hat";
-  import Trophy from "@lucide/svelte/icons/trophy";
+  import AchievementLink from "$lib/components/AchievementLink.svelte";
   import ChevronRight from "@lucide/svelte/icons/chevron-right";
   import ChevronDown from "@lucide/svelte/icons/chevron-down";
   import CalculatorIcon from "@lucide/svelte/icons/calculator";
@@ -153,11 +153,11 @@
 
       <div class="flex items-center gap-4 mt-3 text-muted-foreground">
         <span>Max Level: {data.profession.max_level}%</span>
-        {#if data.profession.steam_achievement_id}
-          <span class="flex items-center gap-1">
-            <Trophy class="h-4 w-4" />
-            Achievement: {data.profession.steam_achievement_name}
-          </span>
+        {#if data.profession.achievement_id}
+          <AchievementLink
+            achievementId={data.profession.achievement_id}
+            achievementName={data.profession.achievement_name}
+          />
         {/if}
       </div>
     </div>

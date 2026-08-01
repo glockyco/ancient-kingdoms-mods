@@ -3,7 +3,7 @@
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
   import Compass from "@lucide/svelte/icons/compass";
-  import Trophy from "@lucide/svelte/icons/trophy";
+  import AchievementLink from "$lib/components/AchievementLink.svelte";
   import MapIcon from "@lucide/svelte/icons/map";
   import Castle from "@lucide/svelte/icons/castle";
   import Trees from "@lucide/svelte/icons/trees";
@@ -46,11 +46,11 @@
 
       <div class="flex flex-wrap items-center gap-4 mt-3 text-muted-foreground">
         <span class="whitespace-nowrap">Areas: {data.areas.length}</span>
-        {#if data.profession.steam_achievement_id}
-          <span class="flex items-center gap-1 whitespace-nowrap">
-            <Trophy class="h-4 w-4" />
-            Achievement: {data.profession.steam_achievement_name}
-          </span>
+        {#if data.profession.achievement_id}
+          <AchievementLink
+            achievementId={data.profession.achievement_id}
+            achievementName={data.profession.achievement_name}
+          />
         {/if}
       </div>
     </div>

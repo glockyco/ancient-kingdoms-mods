@@ -38,8 +38,8 @@ interface LoreKeepingPageData {
     category: string;
     tracking_type: string;
     tracking_denominator: number | null;
-    steam_achievement_id: string | null;
-    steam_achievement_name: string | null;
+    achievement_id: string;
+    achievement_name: string;
   };
   books: LoreBook[];
 }
@@ -70,8 +70,8 @@ export const load: PageServerLoad = (): LoreKeepingPageData => {
       category,
       tracking_type,
       tracking_denominator,
-      steam_achievement_id,
-      steam_achievement_name
+      achievement_id,
+      (SELECT name FROM achievements WHERE id = achievement_id) AS achievement_name
     FROM professions
     WHERE id = 'lore_keeping'
   `,

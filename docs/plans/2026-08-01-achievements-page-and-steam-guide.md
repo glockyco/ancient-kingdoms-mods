@@ -103,12 +103,12 @@ Build a complete `/achievements` reference from Steam achievement metadata, then
 - Modify: `website/src/routes/professions/**/+page.svelte`
 - Modify: profession page loaders affected by the normalized `achievement_id` join
 
-- [ ] Replace each plain profession achievement label with `AchievementLink`, linked to `/achievements#<achievement-id>`.
-- [ ] Use explicit copy such as `Achievement: Beacon of Radiance` or `At 100%, you unlock the Beacon of Radiance achievement.` The trophy icon cannot carry the meaning alone.
-- [ ] Update every profession loader to join `achievements` by `achievement_id`. Remove all references to the deleted profession display-name and description columns.
-- [ ] Run `pnpm check` and `pnpm check:citations`.
+- [x] Replace each plain profession achievement label with `AchievementLink`, linked to `/achievements#<achievement-id>`.
+- [x] Use explicit copy such as `Achievement: Beacon of Radiance` or `At 100%, you unlock the Beacon of Radiance achievement.` The trophy icon cannot carry the meaning alone.
+- [x] Update every profession loader to join `achievements` by `achievement_id`. Remove all references to the deleted profession display-name and description columns.
+- [x] Run `pnpm check` and `pnpm check:citations`.
   Expected: all profession routes compile, every achievement link resolves, and every mechanics citation is current.
-- [ ] Commit.
+- [x] Commit.
   Message: `refactor(website): link profession achievements`
 
 ### Task 5: Generate and publish the Steam guide mirror

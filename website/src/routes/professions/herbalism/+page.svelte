@@ -2,7 +2,7 @@
   import Seo from "$lib/components/Seo.svelte";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
-  import Trophy from "@lucide/svelte/icons/trophy";
+  import AchievementLink from "$lib/components/AchievementLink.svelte";
   import CalculatorIcon from "@lucide/svelte/icons/calculator";
   import Leaf from "@lucide/svelte/icons/leaf";
 
@@ -118,11 +118,11 @@
 
       <div class="flex items-center gap-4 mt-3 text-muted-foreground">
         <span>Max Level: {data.profession.max_level}%</span>
-        {#if data.profession.steam_achievement_id}
-          <span class="flex items-center gap-1">
-            <Trophy class="h-4 w-4" />
-            Achievement: {data.profession.steam_achievement_name}
-          </span>
+        {#if data.profession.achievement_id}
+          <AchievementLink
+            achievementId={data.profession.achievement_id}
+            achievementName={data.profession.achievement_name}
+          />
         {/if}
       </div>
     </div>

@@ -4,7 +4,7 @@
   import ItemLink from "$lib/components/ItemLink.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
   import Fish from "@lucide/svelte/icons/fish";
-  import Trophy from "@lucide/svelte/icons/trophy";
+  import AchievementLink from "$lib/components/AchievementLink.svelte";
   import CalculatorIcon from "@lucide/svelte/icons/calculator";
   import MapPin from "@lucide/svelte/icons/map-pin";
   import ChefHat from "@lucide/svelte/icons/chef-hat";
@@ -441,12 +441,11 @@
             class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm leading-6 text-muted-foreground"
           >
             <span>Max Level: {data.profession.max_level}%</span>
-            {#if data.profession.steam_achievement_id}
-              <span class="flex items-center gap-1">
-                Achievement:
-                <Trophy class="h-4 w-4" />
-                {data.profession.steam_achievement_name}
-              </span>
+            {#if data.profession.achievement_id}
+              <AchievementLink
+                achievementId={data.profession.achievement_id}
+                achievementName={data.profession.achievement_name}
+              />
             {/if}
           </p>
         </div>

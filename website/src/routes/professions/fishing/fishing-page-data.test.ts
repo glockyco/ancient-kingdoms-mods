@@ -12,8 +12,11 @@ function createDb() {
       description TEXT DEFAULT '',
       category TEXT NOT NULL,
       max_level INTEGER DEFAULT 100,
-      steam_achievement_id TEXT,
-      steam_achievement_name TEXT
+      achievement_id TEXT NOT NULL
+    );
+    CREATE TABLE achievements (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL
     );
     CREATE TABLE items (
       id TEXT PRIMARY KEY,
@@ -79,8 +82,10 @@ function createDb() {
     );
   `);
   db.exec(`
+    INSERT INTO achievements VALUES
+      ('FISHER_MASTER', 'Master Angler');
     INSERT INTO professions VALUES
-      ('fishing', 'Fishing', 'Catch fish.', 'gathering', 100, NULL, NULL);
+      ('fishing', 'Fishing', 'Catch fish.', 'gathering', 100, 'FISHER_MASTER');
 
     INSERT INTO items VALUES
       ('rusty_fishing_rod', 'Rusty Fishing Rod', 0, 1, '<p>rod</p>', 'Fishing Rod', 'Fishing Rod', NULL, NULL, NULL, NULL),

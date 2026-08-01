@@ -9,7 +9,7 @@
     formatRespawnChance,
     formatSpecialSpawn,
   } from "$lib/utils/respawn";
-  import Trophy from "@lucide/svelte/icons/trophy";
+  import AchievementLink from "$lib/components/AchievementLink.svelte";
   import Skull from "@lucide/svelte/icons/skull";
   import Castle from "@lucide/svelte/icons/castle";
   import Trees from "@lucide/svelte/icons/trees";
@@ -74,11 +74,11 @@
         >
         <span class="whitespace-nowrap">Shared across account</span>
         <span class="whitespace-nowrap">Max account kills per monster: 50</span>
-        {#if data.profession.steam_achievement_id}
-          <span class="flex items-center gap-1 whitespace-nowrap">
-            <Trophy class="h-4 w-4" />
-            Achievement: {data.profession.steam_achievement_name}
-          </span>
+        {#if data.profession.achievement_id}
+          <AchievementLink
+            achievementId={data.profession.achievement_id}
+            achievementName={data.profession.achievement_name}
+          />
         {/if}
       </div>
     </div>

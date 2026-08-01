@@ -8,7 +8,7 @@
   import ItemSourceLinks from "$lib/components/ItemSourceLinks.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
   import Pickaxe from "@lucide/svelte/icons/pickaxe";
-  import Trophy from "@lucide/svelte/icons/trophy";
+  import AchievementLink from "$lib/components/AchievementLink.svelte";
   import { formatDuration } from "$lib/utils/format";
   import {
     DWARF_STARTING_MINING_PERCENT,
@@ -524,18 +524,13 @@
       low success chance gives more skill for each success. Dwarves start at {DWARF_STARTING_MINING_PERCENT}%.
       Every other race starts at 0%.
     </p>
-    {#if data.profession.steam_achievement_name}
-      <p
-        class="flex max-w-2xl items-start gap-1.5 text-sm leading-relaxed text-muted-foreground"
-      >
-        <Trophy class="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
-        <span>
-          At 100%, you unlock the
-          <span class="font-medium text-foreground"
-            >{data.profession.steam_achievement_name}</span
-          >
-          achievement.
-        </span>
+    {#if data.profession.achievement_name}
+      <p class="max-w-2xl text-sm leading-relaxed text-muted-foreground">
+        <AchievementLink
+          achievementId={data.profession.achievement_id}
+          achievementName={data.profession.achievement_name}
+          text={`At 100%, you unlock the ${data.profession.achievement_name} achievement.`}
+        />
       </p>
     {/if}
     <p class="text-pretty text-sm text-muted-foreground">

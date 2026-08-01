@@ -14,7 +14,7 @@
   import Shield from "@lucide/svelte/icons/shield";
   import Sparkles from "@lucide/svelte/icons/sparkles";
   import Swords from "@lucide/svelte/icons/swords";
-  import Trophy from "@lucide/svelte/icons/trophy";
+  import AchievementLink from "$lib/components/AchievementLink.svelte";
 
   let { data } = $props();
 
@@ -331,18 +331,13 @@
       Fire Goblins start with {mechanics.startingBonus.percent}% Radiant Seeker.
       Every other race starts at 0%.
     </p>
-    {#if data.profession.steam_achievement_name}
-      <p
-        class="flex max-w-2xl items-start gap-1.5 text-sm leading-relaxed text-muted-foreground"
-      >
-        <Trophy class="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
-        <span>
-          At {mechanics.capPercent}%, you unlock the
-          <span class="font-medium text-foreground"
-            >{data.profession.steam_achievement_name}</span
-          >
-          achievement.
-        </span>
+    {#if data.profession.achievement_name}
+      <p class="max-w-2xl text-sm leading-relaxed text-muted-foreground">
+        <AchievementLink
+          achievementId={data.profession.achievement_id}
+          achievementName={data.profession.achievement_name}
+          text={`At ${mechanics.capPercent}%, you unlock the ${data.profession.achievement_name} achievement.`}
+        />
       </p>
     {/if}
   </section>

@@ -3,7 +3,7 @@
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import ObtainabilityTree from "$lib/components/ObtainabilityTree.svelte";
-  import Trophy from "@lucide/svelte/icons/trophy";
+  import AchievementLink from "$lib/components/AchievementLink.svelte";
   import BookOpen from "@lucide/svelte/icons/book-open";
   import ChevronRight from "@lucide/svelte/icons/chevron-right";
   import ChevronDown from "@lucide/svelte/icons/chevron-down";
@@ -116,11 +116,11 @@
 
       <div class="flex items-center gap-4 mt-3 text-muted-foreground">
         <span class="whitespace-nowrap">Books: {data.books.length}</span>
-        {#if data.profession.steam_achievement_id}
-          <span class="flex items-center gap-1">
-            <Trophy class="h-4 w-4" />
-            Achievement: {data.profession.steam_achievement_name}
-          </span>
+        {#if data.profession.achievement_id}
+          <AchievementLink
+            achievementId={data.profession.achievement_id}
+            achievementName={data.profession.achievement_name}
+          />
         {/if}
       </div>
     </div>
