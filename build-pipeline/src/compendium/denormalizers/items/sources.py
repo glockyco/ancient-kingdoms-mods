@@ -184,7 +184,7 @@ def _denormalize_quest_reward_sources(conn: sqlite3.Connection) -> None:
                 class_restrictions = sorted(quest_class_requirements)
             elif None not in class_list:
                 # No quest-level restrictions, but reward has class-specific variants
-                class_restrictions = sorted(set(c for c in class_list if c is not None))
+                class_restrictions = sorted({c for c in class_list if c is not None})
 
             cursor.execute(
                 """

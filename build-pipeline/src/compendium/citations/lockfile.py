@@ -17,7 +17,7 @@ class LockEntry:
     suspect: str | None = None
 
     @classmethod
-    def from_dict(cls, value: dict[str, Any]) -> "LockEntry":
+    def from_dict(cls, value: dict[str, Any]) -> LockEntry:
         return cls(value.get("sha256"), int(value.get("span", 0)), value.get("suspect"))
 
     def to_dict(self) -> dict[str, Any]:
@@ -45,7 +45,7 @@ class Lockfile:
         self.targets = targets or {}
 
     @classmethod
-    def load(cls, path: Path) -> "Lockfile":
+    def load(cls, path: Path) -> Lockfile:
         with path.open(encoding="utf-8") as handle:
             value = json.load(handle)
         snapshot = value.get("snapshot", {})

@@ -19,7 +19,7 @@ def _num(stats: dict[str, object], key: str) -> float:
     return float(value) if isinstance(value, int | float) else 0.0
 
 
-def _weapon_delay_bonus(weapon_delay: int | float | None) -> int:
+def _weapon_delay_bonus(weapon_delay: float | None) -> int:
     if not weapon_delay or weapon_delay <= 0:
         return 0
     d = -0.0365 * math.pow(float(weapon_delay) - 15, 2)
@@ -28,7 +28,7 @@ def _weapon_delay_bonus(weapon_delay: int | float | None) -> int:
 
 
 def equipment_item_level(
-    stats: dict[str, object], weapon_delay: int | float | None = None
+    stats: dict[str, object], weapon_delay: float | None = None
 ) -> int:
     return round(
         _num(stats, "defense")

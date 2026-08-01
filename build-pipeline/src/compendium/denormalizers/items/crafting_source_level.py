@@ -254,9 +254,10 @@ def _compute_recipe_source_level(
             cache,
             depth,
         )
-        if level is not None:
-            if max_material_level is None or level > max_material_level:
-                max_material_level = level
+        if level is not None and (
+            max_material_level is None or level > max_material_level
+        ):
+            max_material_level = level
 
     return max_material_level
 

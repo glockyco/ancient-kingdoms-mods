@@ -6,7 +6,6 @@ from pathlib import Path
 from compendium.db import create_database
 from compendium.loaders.core import load_items
 
-
 SCHEMA_PATH = Path(__file__).resolve().parents[1] / "schema.sql"
 
 

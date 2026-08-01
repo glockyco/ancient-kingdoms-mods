@@ -4,8 +4,8 @@ These models match the JSON structure exported by the C# DataExporter mod.
 """
 
 from typing import Any
-from pydantic import BaseModel, Field
 
+from pydantic import BaseModel, Field
 
 # =============================================================================
 # Common Models

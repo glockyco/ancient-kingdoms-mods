@@ -1,7 +1,6 @@
 """Main CLI entry point for the Ancient Kingdoms Compendium build pipeline."""
 
 from pathlib import Path
-from typing import Optional
 
 import typer
 from rich.console import Console
@@ -20,7 +19,7 @@ console = Console()
 @app.callback()
 def main(
     ctx: typer.Context,
-    config: Optional[Path] = typer.Option(
+    config: Path | None = typer.Option(
         None,
         "--config",
         help="Path to config file (default: config.toml in repository root)",
@@ -36,7 +35,7 @@ def main(
     except FileNotFoundError as e:
         console.print(f"[red]Error:[/red] {e}")
         raise typer.Exit(1)
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001 - CLI boundary: any config error becomes a clean exit
         console.print(f"[red]Error loading config:[/red] {e}")
         raise typer.Exit(1)
 

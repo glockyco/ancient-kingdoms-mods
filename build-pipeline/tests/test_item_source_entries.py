@@ -6,7 +6,6 @@ from pathlib import Path
 from compendium.db import create_database
 from compendium.denormalizers.items import source_entries
 
-
 SCHEMA_PATH = Path(__file__).resolve().parents[1] / "schema.sql"
 
 
