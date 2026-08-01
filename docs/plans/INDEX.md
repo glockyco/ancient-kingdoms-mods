@@ -7,7 +7,7 @@
 - **Profession Page Content Coverage** [audit] `2026-07-31-profession-content-coverage` ← 2026-07-31-ancient-kingdoms-overview
 - **Profession Page Migration** [plan] `2026-07-31-profession-page-migration` (—) ← 2026-07-31-ancient-kingdoms-overview
 - **Profession Page System** [spec] `2026-07-31-profession-page-system` ← 2026-07-31-ancient-kingdoms-overview
-- **Achievements Page and Steam Guide** [plan] `2026-08-01-achievements-page-and-steam-guide` (25/40) ← 2026-07-31-ancient-kingdoms-overview
+- **Achievements Page and Steam Guide** [plan] `2026-08-01-achievements-page-and-steam-guide` (31/40) ← 2026-07-31-ancient-kingdoms-overview
 
 ## draft
 

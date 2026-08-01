@@ -120,17 +120,17 @@ Build a complete `/achievements` reference from Steam achievement metadata, then
 - Modify: `website/.gitignore`
 - Modify: `website/src/lib/constants/links.ts`
 
-- [ ] Add `pnpm generate:steam-achievements` to render `website/generated/steam-achievements-guide.bbcode` from `compendium.db`.
-- [ ] Generate a dedicated guide titled `Ancient Kingdoms Achievement Guide`. Use the same groups, names, descriptions, ordering, and related compendium URLs as `/achievements`.
-- [ ] Start the guide with the canonical `/achievements` URL and state that the website updates with game data. Do not copy global completion percentages into the guide.
-- [ ] Add generator tests that assert 38 achievement headings, one occurrence of each ID, canonical HTTPS links, Steam-safe BBCode, and deterministic output.
-- [ ] Run `pnpm test:scripts` and `pnpm generate:steam-achievements` twice.
+- [x] Add `pnpm generate:steam-achievements` to render `website/generated/steam-achievements-guide.bbcode` from `compendium.db`.
+- [x] Generate a dedicated guide titled `Ancient Kingdoms Achievement Guide`. Use the same groups, names, descriptions, ordering, and related compendium URLs as `/achievements`.
+- [x] Start the guide with the canonical `/achievements` URL and state that the website updates with game data. Do not copy global completion percentages into the guide.
+- [x] Add generator tests that assert 38 achievement headings, one occurrence of each ID, canonical HTTPS links, Steam-safe BBCode, and deterministic output.
+- [x] Run the generator tests and `pnpm generate:steam-achievements` twice.
   Expected: tests pass and the second output is byte-identical to the first.
 - [ ] After the website is deployed, create the Steam guide, paste the generated BBCode, and add the assigned guide URL to `STEAM_ACHIEVEMENTS_GUIDE_URL`.
 - [ ] Add reciprocal links between the dedicated guide and the existing `Ancient Kingdoms Compendium` Steam guide.
 - [ ] Open the published guide while logged out.
   Expected: every section is visible and a representative profession, boss, and quest link opens the canonical compendium page.
-- [ ] Commit.
+- [x] Commit.
   Message: `feat(website): generate achievements Steam guide`
 
 ### Task 6: Verify the complete feature
