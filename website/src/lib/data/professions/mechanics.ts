@@ -34,6 +34,10 @@ export interface ProfessionMechanics {
     readonly base: number;
     readonly skillFactor: number;
   };
+  readonly damageReduction?: {
+    readonly thresholdPercent: number;
+    readonly skillFactor: number;
+  };
   readonly startingBonus?: {
     readonly race: string;
     readonly percent: number;
@@ -114,6 +118,12 @@ export const PROFESSION_MECHANICS = {
     // Source: server-scripts/GatherItem.cs:Update
     respawnSeconds: [100, 3600],
   },
+  slayer: {
+    capPercent: 100,
+    payoff: { effect: "damage reduction", source: "boss and elite attacks" },
+    // Source: server-scripts/Combat.cs:DealDamageAt
+    damageReduction: { thresholdPercent: 10, skillFactor: 0.1 },
+  },
   treasure_hunter: {
     capPercent: 100,
     payoff: { effect: "relic reward chance", source: "buried treasure chests" },
@@ -166,6 +176,14 @@ export function skillGainChance(
     0,
     Math.min(1, rule.base + skillFraction(skillPercent) * rule.skillFactor),
   );
+}
+
+export function thresholdedDamageReduction(
+  rule: NonNullable<ProfessionMechanics["damageReduction"]>,
+  skillPercent: number,
+): number {
+  if (skillPercent < rule.thresholdPercent) return 0;
+  return skillFraction(skillPercent) * rule.skillFactor;
 }
 
 export function linearProcChance(

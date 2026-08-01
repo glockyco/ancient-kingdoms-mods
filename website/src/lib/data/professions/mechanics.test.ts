@@ -5,6 +5,7 @@ import {
   linearProcChance,
   rawTierSuccessChance,
   skillGainChance,
+  thresholdedDamageReduction,
 } from "./mechanics";
 
 const EXPECTED_CRAFTING_TIERS = [
@@ -64,6 +65,13 @@ describe("profession mechanics record", () => {
     expect(isEffortlessAtTier(thresholds, 1, 50.01)).toBe(true);
     expect(isEffortlessAtTier(thresholds, 2, 75)).toBe(false);
     expect(isEffortlessAtTier(thresholds, 2, 75.01)).toBe(true);
+  });
+
+  test("applies the Slayer threshold and damage reduction", () => {
+    const rule = PROFESSION_MECHANICS.slayer.damageReduction;
+    expect(thresholdedDamageReduction(rule, 9.99)).toBe(0);
+    expect(thresholdedDamageReduction(rule, 10)).toBeCloseTo(0.01);
+    expect(thresholdedDamageReduction(rule, 100)).toBeCloseTo(0.1);
   });
 
   test("computes record-driven success, skill gain, and proc chances", () => {
