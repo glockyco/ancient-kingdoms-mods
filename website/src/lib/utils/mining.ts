@@ -1,3 +1,12 @@
+import {
+  PROFESSION_MECHANICS,
+  isEffortlessAtTier,
+  rawTierSuccessChance,
+  skillGainChance,
+} from "$lib/data/professions/mechanics";
+
+const mechanics = PROFESSION_MECHANICS.mining;
+
 // Mining profession mechanics, derived from the game's gathering code.
 //
 // The Mining skill ("miningLevel") is stored 0..1 in-game and shown 0..100 in
@@ -9,23 +18,9 @@
 // separate game methods and separate modules here because their floors, their
 // gain divisors and their tool categories differ.
 
-function miningFraction(skillPercent: number): number {
-  return Math.min(1, Math.max(0, skillPercent / 100));
-}
-
 // Source: server-scripts/GatherItem.cs:OnInteractServer — a mineral node refuses
 // the attempt when the success probability is below 0.2.
-export const MINING_SUCCESS_FLOOR = 0.2;
-
-// Source: server-scripts/Utils.cs:GetSuccessProbMining — per-tier coefficients as
-// [constant, pickaxeFactor, skillFactor]. Tier is the node's level, 0..4.
-const MINING_COEFFICIENTS: readonly (readonly [number, number, number])[] = [
-  [0.8, 1, 1],
-  [0.3, 0.2, 1],
-  [0, 0.15, 0.6],
-  [0, 0.1, 0.5],
-  [0, 0.05, 0.4],
-];
+export const MINING_SUCCESS_FLOOR = mechanics.success.floor;
 
 // Raw success probability (0..1), ignoring the attempt floor.
 export function rawMiningSuccessChance(
@@ -33,13 +28,12 @@ export function rawMiningSuccessChance(
   pickaxeQuality: number,
   skillPercent: number,
 ): number {
-  const index = Math.min(Math.max(tier, 0), MINING_COEFFICIENTS.length - 1);
-  const [constant, pickaxeFactor, skillFactor] = MINING_COEFFICIENTS[index];
-  const raw =
-    constant +
-    pickaxeFactor * pickaxeQuality +
-    skillFactor * miningFraction(skillPercent);
-  return Math.min(1, Math.max(0, raw));
+  return rawTierSuccessChance(
+    mechanics.success,
+    tier,
+    skillPercent,
+    pickaxeQuality,
+  );
 }
 
 // Whether the node will let you attempt it at all.
@@ -72,18 +66,13 @@ export function isMiningEffortless(
   tier: number,
   skillPercent: number,
 ): boolean {
-  const skill = miningFraction(skillPercent);
-  return (
-    (skill > 0.25 && tier === 0) ||
-    (skill > 0.5 && tier <= 1) ||
-    (skill > 0.75 && tier <= 2)
-  );
+  return isEffortlessAtTier(mechanics.effortless, tier, skillPercent);
 }
 
 // Source: server-scripts/GatherItem.cs:OnInteractServer — skill gain fires when
 // Random.value > 0.1 + miningLevel/2, i.e. with probability 0.9 - miningLevel/2.
 export function miningSkillGainChancePercent(skillPercent: number): number {
-  return (0.9 - miningFraction(skillPercent) / 2) * 100;
+  return skillGainChance(mechanics.skillGain, skillPercent) * 100;
 }
 
 // Source: server-scripts/GatherItem.cs:OnInteractServer — the gain is
@@ -99,12 +88,16 @@ export function miningSkillGainRange(
   if (isMiningEffortless(tier, skillPercent)) return null;
   const success = rawMiningSuccessChance(tier, pickaxeQuality, skillPercent);
   return {
-    min: (1 / (success * 1000)) * 100,
-    max: (3 / (success * 1000)) * 100,
+    min:
+      (mechanics.skillGain.range[0] / (success * mechanics.skillGain.divisor)) *
+      100,
+    max:
+      (mechanics.skillGain.range[1] / (success * mechanics.skillGain.divisor)) *
+      100,
   };
 }
 
 // Source: server-scripts/Database.cs:CharacterCreate — the character-creation branch that
 // grants Children of Illithor standing, the Dwarf faction, also sets miningLevel
 // to 0.05. Every other race starts at 0.
-export const DWARF_STARTING_MINING_PERCENT = 5;
+export const DWARF_STARTING_MINING_PERCENT = mechanics.startingBonus.percent;

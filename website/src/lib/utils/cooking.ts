@@ -1,17 +1,22 @@
+import {
+  PROFESSION_MECHANICS,
+  isEffortlessAtTier,
+  rawTierSuccessChance,
+  skillGainChance,
+} from "$lib/data/professions/mechanics";
+
+const mechanics = PROFESSION_MECHANICS.cooking;
+
 // Cooking profession mechanics, derived from the game's crafting code.
 //
 // The Cooking skill ("cookingLevel") is stored 0..1 in-game and shown 0..100 in
 // the UI. Every helper here takes the skill as a 0..100 percentage to match the
 // website's slider and the fishing utilities.
 
-function cookingFraction(cookingPercent: number): number {
-  return Math.min(1, Math.max(0, cookingPercent / 100));
-}
-
 // Source: server-scripts/UICraftingStation.cs:438 — a cooking oven refuses to
 // craft when GetSuccessProbCooking(...) < 0.1, so a recipe only becomes
 // craftable once its raw success chance reaches 10%.
-export const COOKING_SUCCESS_FLOOR = 0.1;
+export const COOKING_SUCCESS_FLOOR = mechanics.success.floor;
 
 // Source: server-scripts/Utils.cs:507-516 — GetSuccessProbCooking(levelFood,
 // cookingLevel). `levelFood` is the result item's quality. Returns the raw
@@ -20,19 +25,7 @@ export function rawCookingSuccessChance(
   quality: number,
   cookingPercent: number,
 ): number {
-  const skill = cookingFraction(cookingPercent);
-  switch (quality) {
-    case 0:
-      return 1;
-    case 1:
-      return Math.min(1, 0.4 + skill * 2);
-    case 2:
-      return Math.min(1, 0.2 + skill);
-    case 3:
-      return Math.min(1, skill * 0.95);
-    default:
-      return Math.min(1, skill * 0.9);
-  }
+  return rawTierSuccessChance(mechanics.success, quality, cookingPercent);
 }
 
 // Whether the cooking oven will let you attempt this recipe at all.
@@ -66,24 +59,13 @@ export function isCookingEffortless(
   quality: number,
   cookingPercent: number,
 ): boolean {
-  const skill = cookingFraction(cookingPercent);
-  switch (quality) {
-    case 0:
-      return skill > 0.25;
-    case 1:
-      return skill > 0.5;
-    case 2:
-      return skill > 0.75;
-    default:
-      return false;
-  }
+  return isEffortlessAtTier(mechanics.effortless, quality, cookingPercent);
 }
 
 // Source: server-scripts/Player.cs:11741 — skill gain fires when
 // Random.value > 0.1 + cookingLevel/2, i.e. with probability 0.9 - cookingLevel/2.
 export function cookingSkillGainChancePercent(cookingPercent: number): number {
-  const skill = cookingFraction(cookingPercent);
-  return Math.max(0, (0.9 - skill / 2) * 100);
+  return skillGainChance(mechanics.skillGain, cookingPercent) * 100;
 }
 
 // Source: server-scripts/Player.cs:11743 — num3 = Random.Range(1, 4) /
@@ -102,7 +84,11 @@ export function cookingSkillGainRange(
   const raw = rawCookingSuccessChance(quality, cookingPercent);
   if (raw <= 0) return null;
   return {
-    min: (1 / (raw * 3000)) * 100,
-    max: (3 / (raw * 3000)) * 100,
+    min:
+      (mechanics.skillGain.range[0] / (raw * mechanics.skillGain.divisor)) *
+      100,
+    max:
+      (mechanics.skillGain.range[1] / (raw * mechanics.skillGain.divisor)) *
+      100,
   };
 }

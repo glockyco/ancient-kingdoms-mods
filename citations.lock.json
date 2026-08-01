@@ -22,7 +22,7 @@
       "sha256": "f0925da5245ec088dd10df82506f3ff556f0271284b787e853a8f8cd76f726b1",
       "span": 1
     },
-    "AreaDebuffSkill.cs": {
+    "AreaDamageSkill.cs:Apply": {
       "span": 0
     },
     "AreaDebuffSkill.cs:103-138": {
@@ -32,6 +32,9 @@
     "AreaDebuffSkill.cs:168-265": {
       "sha256": "2c6bb093c05080180a9eabb1cd1e965da8af498c6638d9c7b83e0471954fb614",
       "span": 98
+    },
+    "AreaDebuffSkill.cs:Apply": {
+      "span": 0
     },
     "AreaObjectSpawnSkill.cs:119-122": {
       "sha256": "d04926e7051ed25130c743bc3221becdc677698333c1269e0b838b4992fa94e4",
@@ -111,16 +114,15 @@
       "sha256": "a67003eaff157b5f061ebd170f476eae4e1b753b9100ff6eebdeade5ee91da0c",
       "span": 1
     },
+    "ChestItem.cs:Use": {
+      "span": 0
+    },
     "ChestLoot.cs:314-331": {
       "sha256": "b450020d973a263232ceb9e0884c962a4786653a341c0d4d21be3e4beab12705",
       "span": 18
     },
     "Combat.cs": {
       "span": 0
-    },
-    "Combat.cs:1009": {
-      "sha256": "dfa1ab25f2616fb091826bc279912a4f8945644c46623596e744b519b045cdcc",
-      "span": 1
     },
     "Combat.cs:1043": {
       "sha256": "feae588cd7010377ff87f53db7cd3170cce1a1e9c4a25ae8e55f94ef0b535ac8",
@@ -241,6 +243,9 @@
     "Combat.cs:978-1011": {
       "sha256": "ebfa9032cb7ba4b056203a46556203d27b4aded2bba01c96994a9c015c477028",
       "span": 34
+    },
+    "Combat.cs:DealDamageAt": {
+      "span": 0
     },
     "Constitution.cs:13-15": {
       "sha256": "496a1e56c2558dafba0139d95f092282bfbd375bf06aa645450900b62e911e7f",
@@ -414,9 +419,6 @@
     "FrontalProjectilesSkill.cs": {
       "span": 0
     },
-    "GameManager.cs": {
-      "span": 0
-    },
     "GameManager.cs:1340-1355": {
       "sha256": "098a110a5b220bec26438192c1c1504fdd4cf599bdcbf50850429eff20705825",
       "span": 16
@@ -526,6 +528,9 @@
       "span": 7
     },
     "GatherItem.cs:OnInteractServer": {
+      "span": 0
+    },
+    "GatherItem.cs:Update": {
       "span": 0
     },
     "Housing.cs:33-38": {
@@ -1094,7 +1099,19 @@
     "Player.cs:HasDetectTraps": {
       "span": 0
     },
+    "Player.cs:HasRadiantAether": {
+      "span": 0
+    },
     "Player.cs:TryGetSelectedPickaxe": {
+      "span": 0
+    },
+    "Player.cs:UserCode_CmdCraftItem__NetworkIdentity__Int32": {
+      "span": 0
+    },
+    "Player.cs:UserCode_CmdMakePotion__Int32": {
+      "span": 0
+    },
+    "Player.cs:isRadiantAetherActivated": {
       "span": 0
     },
     "Player.cs:refractoryPeriodSkill": {
@@ -1331,6 +1348,9 @@
       "sha256": "3efdd0f0d0a984c2b4b89b670428354938f4182ec30b63d405e35308945d035d",
       "span": 3
     },
+    "ScriptableSkill.cs:TryActivateRadiantAetherForArea": {
+      "span": 0
+    },
     "ScrollItem.cs:100": {
       "sha256": "ac1f39a1d4d189dcd25d5cfd0f6072d4d7b85d338b46c8c5cde42aecd731f728",
       "span": 1
@@ -1450,6 +1470,9 @@
       "sha256": "ac6dad5acd6a507de3a53c258bd0d220dd91cd2a3729f2226ed7ada942e734cc",
       "span": 1
     },
+    "TableUI.cs:MakePotion": {
+      "span": 0
+    },
     "TargetBuffSkill.cs": {
       "span": 0
     },
@@ -1556,6 +1579,9 @@
     "UICraftingStation.cs:438": {
       "sha256": "b4a90c87fa45c82fe8bb2660d2d710a53e90c300d7c0fe15aa1bde104aeac35c",
       "span": 1
+    },
+    "UICraftingStation.cs:Craft": {
+      "span": 0
     },
     "UIFactions.cs:138-144": {
       "sha256": "b88e91afad76e2d5b3c7e1eb071b13c7257927a68a85c123b70ea048621e0277",
@@ -1671,6 +1697,12 @@
     "Utils.cs:588-609": {
       "sha256": "588db767714850ffeace0a66c616720a15fd01a6c601774be4097487d5e520b0",
       "span": 22
+    },
+    "Utils.cs:GetSuccessProbAlchemy": {
+      "span": 0
+    },
+    "Utils.cs:GetSuccessProbFishing": {
+      "span": 0
     },
     "Utils.cs:GetSuccessProbHerbalism": {
       "span": 0

@@ -1,3 +1,13 @@
+import {
+  PROFESSION_MECHANICS,
+  isEffortlessAtTier,
+  rawTierSuccessChance,
+  skillFraction,
+  skillGainChance,
+} from "$lib/data/professions/mechanics";
+
+const mechanics = PROFESSION_MECHANICS.fishing;
+
 export interface FishingSuccessParams {
   rodQuality: number;
   fishingPercent: number;
@@ -49,36 +59,11 @@ function normalizeChance(value: number): number {
 }
 
 function fishingLevelFraction(fishingPercent: number): number {
-  return clamp01(fishingPercent / 100);
+  return skillFraction(fishingPercent);
 }
 
-const FISHING_SUCCESS_FLOOR = 0.2;
+const FISHING_SUCCESS_FLOOR = mechanics.success.floor;
 const CEILING_FISHERMAN_PIECES = 3;
-
-interface FishingSuccessCoefficients {
-  constant: number;
-  rodFactor: number;
-  skillFactor: number;
-}
-
-// Source: server-scripts/Utils.cs:511-520 — GetSuccessProbFishing, per spot level
-// (levelItem). chance = constant + rodFactor * rodQuality + skillFactor * skill.
-function fishingSuccessCoefficients(
-  spotTier: number,
-): FishingSuccessCoefficients {
-  switch (spotTier) {
-    case 0:
-      return { constant: 0.8, rodFactor: 1, skillFactor: 1 };
-    case 1:
-      return { constant: 0.3, rodFactor: 0.2, skillFactor: 1 };
-    case 2:
-      return { constant: 0, rodFactor: 0.15, skillFactor: 0.6 };
-    case 3:
-      return { constant: 0, rodFactor: 0.1, skillFactor: 0.5 };
-    default:
-      return { constant: 0, rodFactor: 0.05, skillFactor: 0.4 };
-  }
-}
 
 // Source: server-scripts/Utils.cs:511-520 — GetSuccessProbFishing.
 // Source: server-scripts/GatherItem.cs:652-655 — values below 0.2 show "skill too low" and do not fish.
@@ -87,10 +72,12 @@ export function fishingSpotSuccessChance({
   fishingPercent,
   spotTier,
 }: FishingSuccessParams): number {
-  const skill = fishingLevelFraction(fishingPercent);
-  const { constant, rodFactor, skillFactor } =
-    fishingSuccessCoefficients(spotTier);
-  const chance = constant + rodFactor * rodQuality + skillFactor * skill;
+  const chance = rawTierSuccessChance(
+    mechanics.success,
+    spotTier,
+    fishingPercent,
+    rodQuality,
+  );
 
   const clamped = clamp01(chance);
   return clamped < FISHING_SUCCESS_FLOOR ? 0 : normalizeChance(clamped);
@@ -127,11 +114,11 @@ export function fishingMasteryGainChance({
   const skill = fishingLevelFraction(fishingPercent);
 
   if (skill >= 1) return 0;
-  if (skill > 0.25 && spotTier === 0) return 0;
-  if (skill > 0.5 && spotTier <= 1) return 0;
-  if (skill > 0.75 && spotTier <= 2) return 0;
+  if (isEffortlessAtTier(mechanics.effortless, spotTier, fishingPercent)) {
+    return 0;
+  }
 
-  return clamp01(0.6 - skill / 2);
+  return skillGainChance(mechanics.skillGain, fishingPercent);
 }
 
 // Source: server-scripts/GatherItem.cs:758 — Random.Range(1, 4) / (successChance * 5000f). Unity int upper bound is exclusive, so 1-3.
@@ -142,8 +129,14 @@ export function fishingMasteryGainRange(successChance: number): {
   if (successChance <= 0) return { min: 0, max: 0 };
 
   return {
-    min: (1 / (successChance * 5000)) * 100,
-    max: (3 / (successChance * 5000)) * 100,
+    min:
+      (mechanics.skillGain.range[0] /
+        (successChance * mechanics.skillGain.divisor)) *
+      100,
+    max:
+      (mechanics.skillGain.range[1] /
+        (successChance * mechanics.skillGain.divisor)) *
+      100,
   };
 }
 
@@ -338,9 +331,12 @@ export function lowestCatchableSkillPercent(
   rodQuality: number,
   spotTier: number,
 ): number {
-  const { constant, rodFactor, skillFactor } =
-    fishingSuccessCoefficients(spotTier);
-  const base = constant + rodFactor * rodQuality;
+  const index = Math.min(
+    Math.max(spotTier, 0),
+    mechanics.success.tiers.length - 1,
+  );
+  const { constant, toolFactor, skillFactor } = mechanics.success.tiers[index];
+  const base = constant + toolFactor * rodQuality;
   if (base >= FISHING_SUCCESS_FLOOR) return 0;
   if (skillFactor <= 0) return 100;
   return clamp01((FISHING_SUCCESS_FLOOR - base) / skillFactor) * 100;

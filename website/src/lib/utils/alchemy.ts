@@ -1,3 +1,12 @@
+import {
+  PROFESSION_MECHANICS,
+  isEffortlessAtTier,
+  rawTierSuccessChance,
+  skillGainChance,
+} from "$lib/data/professions/mechanics";
+
+const mechanics = PROFESSION_MECHANICS.alchemy;
+
 // Alchemy profession mechanics, derived from the game's crafting code.
 //
 // The Alchemy skill ("alchemyLevel") is stored 0..1 in-game and shown 0..100 in
@@ -11,14 +20,10 @@
 // differences: the skill-gain divisor is 1000 (cooking uses 3000) and the
 // success roll applies to every output (cooking exempts non-FoodItem results).
 
-function alchemyFraction(skillPercent: number): number {
-  return Math.min(1, Math.max(0, skillPercent / 100));
-}
-
 // Source: server-scripts/Player.cs:11432 and TableUI.cs:92 — an alchemy/scribing
 // table refuses to craft when GetSuccessProbAlchemy(...) < 0.1, so a recipe only
 // becomes craftable once its raw success chance reaches 10%.
-export const ALCHEMY_SUCCESS_FLOOR = 0.1;
+export const ALCHEMY_SUCCESS_FLOOR = mechanics.success.floor;
 
 // Source: server-scripts/Utils.cs:483-493 — GetSuccessProbAlchemy(levelPotion,
 // alchemyLevel). Returns the raw success probability (0..1), ignoring the gate.
@@ -26,19 +31,7 @@ export function rawAlchemySuccessChance(
   level: number,
   skillPercent: number,
 ): number {
-  const skill = alchemyFraction(skillPercent);
-  switch (level) {
-    case 0:
-      return 1;
-    case 1:
-      return Math.min(1, 0.4 + skill * 2);
-    case 2:
-      return Math.min(1, 0.2 + skill);
-    case 3:
-      return Math.min(1, skill * 0.95);
-    default:
-      return Math.min(1, skill * 0.9);
-  }
+  return rawTierSuccessChance(mechanics.success, level, skillPercent);
 }
 
 // Whether the table will let you attempt this recipe at all.
@@ -67,24 +60,13 @@ export function isAlchemyEffortless(
   level: number,
   skillPercent: number,
 ): boolean {
-  const skill = alchemyFraction(skillPercent);
-  switch (level) {
-    case 0:
-      return skill > 0.25;
-    case 1:
-      return skill > 0.5;
-    case 2:
-      return skill > 0.75;
-    default:
-      return false;
-  }
+  return isEffortlessAtTier(mechanics.effortless, level, skillPercent);
 }
 
 // Source: server-scripts/Player.cs:11722 — skill gain fires when
 // Random.value > 0.1 + alchemyLevel/2, i.e. with probability 0.9 - alchemyLevel/2.
 export function alchemySkillGainChancePercent(skillPercent: number): number {
-  const skill = alchemyFraction(skillPercent);
-  return Math.max(0, (0.9 - skill / 2) * 100);
+  return skillGainChance(mechanics.skillGain, skillPercent) * 100;
 }
 
 // Source: server-scripts/Player.cs:11724 — num4 = Random.Range(1, 4) /
@@ -100,7 +82,11 @@ export function alchemySkillGainRange(
   const raw = rawAlchemySuccessChance(level, skillPercent);
   if (raw <= 0) return null;
   return {
-    min: (1 / (raw * 1000)) * 100,
-    max: (3 / (raw * 1000)) * 100,
+    min:
+      (mechanics.skillGain.range[0] / (raw * mechanics.skillGain.divisor)) *
+      100,
+    max:
+      (mechanics.skillGain.range[1] / (raw * mechanics.skillGain.divisor)) *
+      100,
   };
 }

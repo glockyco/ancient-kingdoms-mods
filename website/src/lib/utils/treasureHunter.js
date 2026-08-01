@@ -1,3 +1,7 @@
+import { PROFESSION_MECHANICS } from "$lib/data/professions/mechanics";
+
+const mechanics = PROFESSION_MECHANICS.treasure_hunter;
+
 /**
  * @typedef {object} ChestReward
  * @property {string} item_id
@@ -84,7 +88,11 @@ export function calculateAdjustedChestRewards(rewards, skill, options = {}) {
 
         // Source: server-scripts/ChestItem.cs:30 — relics on Buried Treasure Chest get `treasureHunterLevel * 0.1f` added; the chest-name guard is enforced upstream by the loader scoping to `buried_treasure_chest`.
         const rollChance = reward.scales_with_treasure_hunter
-          ? Math.min(1, reward.base_roll_chance + skill * 0.1)
+          ? Math.min(
+              1,
+              reward.base_roll_chance +
+                skill * mechanics.procChance.skillFactor,
+            )
           : reward.base_roll_chance;
 
         if (random.next() < rollChance) {
