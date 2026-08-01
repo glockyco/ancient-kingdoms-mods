@@ -75,7 +75,7 @@ Each is complete when it satisfies every acceptance criterion in the spec.
 
 - [x] **radiant_seeker** — add the Aether combat payoff, 227 spawns with map links, the real 100–3600s respawn, the 5–25% yield rule, the Fire Goblin start, and the explicit "no crafting use" finding
 - [x] **mining** — add 102 spawns with map links, node rewards and random gem pools, the 60 recipe consumers, the 9 gather quests, the vendor alternative, the pickaxe durability rule, and the Dwarf start
-- [ ] **slayer** — add the damage-reduction payoff, the account-wide formula, loot from `item_sources_monster`, spawn map links, and migrate 143 rows to `DataTable`
+- [ ] **slayer** — add the 10%-threshold damage-reduction payoff, the account-wide capped formula and nearby-party credit; correct the first respawn check to `death_time + respawn_time`; surface configured loot, 34 related quests and special-spawn provenance with 130 map links plus 13 zone fallbacks; migrate all 143 targets to `DataTable`
 - [ ] **fishing** — reduce to the new model: strip hero and metric strip, promote the loop content, surface required tool and drop chances, merge fallback and trash into disclosures, unify foods and potions as fish uses, and link to cooking
 - [ ] Review all four at 1440×900 and 390×844 against the density and overflow criteria
 - [ ] Confirm no-JS rendering for all four

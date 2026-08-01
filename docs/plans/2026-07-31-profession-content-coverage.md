@@ -237,21 +237,33 @@ is not coverage. 1083 lines, 12.5 mobile screens.
 
 ### slayer
 
-- **A** — 143 boss/elite rows with level, respawn, special spawn type and first zone.
-- **B** — 2,555 `item_sources_monster` rows. Spawn coordinates for all 143. Monster
-  skills. The bestiary discovery model.
+- **A** — 143 boss/elite rows with level, respawn fields, special-spawn provenance and
+  one zone each. The database has map coordinates for 130 targets; 13 Temple of Valaark
+  targets have only a zone.
+- **B** — 2,555 `item_sources_monster` rows across 142 targets, 143 structured spawn
+  rows, monster skills and 34 quests targeting 35 Slayer monsters. The item-source rates
+  are configured rolls, not final boss-loot probabilities: bosses guarantee equipment and
+  a dungeon luck token can raise that guarantee from one item to two
+  (`Monster.cs:OnDeath`).
 - **C** — **the discriminator**: only `isBoss || isElite` advances Slayer, with zero
   overlap against the 6 hunt targets. Mastery is **account-wide**, recomputed as
   `Σ 0.0002 × min(50, kills)` per distinct target
-  (`Database.cs:CalculateSlayerLevelForAccount`). Its payoff — up to 10% damage reduction
-  from bosses and elites above 10% mastery — is the profession's entire point and does
-  not appear on the page.
-- **D** — per-player kill state is runtime.
-- **E** — no trainer or unlock.
-- **Defect** — `is_fabled` is declared in the loader interface
-  (`+page.server.ts:15`) and consumed by the component (`+page.svelte:115`) but never
-  selected by the SQL. All 9 fabled bosses silently render as ordinary bosses. This is
-  exactly the silent fallback `CLAUDE.md` forbids.
+  (`Database.cs:CalculateSlayerLevelForAccount`). Its payoff is no reduction below 10%
+  mastery, then `ceil(incoming damage × mastery × 0.1)` damage removed at 10% mastery or
+  higher, up to a nominal 10% reduction at full mastery (`Combat.cs:DealDamageAt`). It
+  applies to the player and their pet when a boss or elite deals the damage.
+- **D** — current-character Bestiary kills and account-wide progress are runtime save
+  data. Encountering a target discovers it with zero kills. A kill credits every nearby
+  party member, but only the first 50 account kills per distinct target increase Slayer
+  (`Player.cs:UserCode_TargetRpcUpdateKillsBestiary__String`, `Monster.cs:OnDeath`).
+- **E** — no trainer, unlock, tool, station, race or class exception. At 100%, Slayer
+  unlocks `SLAYER_MASTER`. Nine named targets and one five-world-boss set unlock further
+  achievements, but those target relationships are not structured in the current schema.
+- **Resolved defect** — the loader now selects `is_fabled`; all 9 fabled bosses retain
+  their distinct presentation.
+- **Respawn caveat** — the first post-kill spawn check occurs after `death_time +
+  respawn_time`. A failed probabilistic check retries after another `respawn_time`, and
+  time-window targets can wait longer. The existing page displays only `respawn_time`.
 - **Version sensitivity** — Slayer changed from a per-character `+0.0002` per kill in
   0.9.21 to the current account-wide capped formula.
 
