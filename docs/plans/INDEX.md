@@ -7,6 +7,7 @@
 - **Profession Page Content Coverage** [audit] `2026-07-31-profession-content-coverage` ← 2026-07-31-ancient-kingdoms-overview
 - **Profession Page Migration** [plan] `2026-07-31-profession-page-migration` (—) ← 2026-07-31-ancient-kingdoms-overview
 - **Profession Page System** [spec] `2026-07-31-profession-page-system` ← 2026-07-31-ancient-kingdoms-overview
+- **Achievements Page and Steam Guide** [plan] `2026-08-01-achievements-page-and-steam-guide` (0/40) ← 2026-07-31-ancient-kingdoms-overview
 
 ## draft
 
@@ -19,6 +20,5 @@
 - **Entity Structured Data** [spec] `2026-07-31-entity-structured-data` ← 2026-07-31-ancient-kingdoms-overview
 - **Global Entity Search** [spec] `2026-07-31-global-entity-search` ← 2026-07-31-ancient-kingdoms-overview
 - **Per-Entity Open Graph Images** [spec] `2026-07-31-per-entity-og-images` ← 2026-07-31-ancient-kingdoms-overview
-- **Achievements Page and Steam Guide** [plan] `2026-08-01-achievements-page-and-steam-guide` (0/40) ← 2026-07-31-ancient-kingdoms-overview
 
 _25 archived — see `docs/plans/archive/`._

@@ -1,7 +1,7 @@
 ---
 title: Achievements Page and Steam Guide
 type: plan
-status: draft
+status: active
 created: 2026-08-01
 parent: 2026-07-31-ancient-kingdoms-overview
 superseded_by:
@@ -13,7 +13,7 @@ Build a complete `/achievements` reference from Steam achievement metadata, then
 ## File map
 
 - Create `mods/DataExporter/Models/AchievementData.cs`: exported Steam achievement contract.
-- Create `mods/DataExporter/Exporters/AchievementExporter.cs`: reads the achievement catalog and icon images through Steamworks.
+- Create `mods/DataExporter/Exporters/AchievementExporter.cs`: reads the achievement catalog through Steamworks and both icon hashes from Steam's local schema cache.
 - Modify `mods/DataExporter/DataExporter.cs`: registers the achievement export after Steam initialization.
 - Modify `mods/DataExporter/Exporters/ProfessionExporter.cs`: retains only the profession-to-achievement ID relationship and removes duplicated display metadata.
 - Create `exported-data/achievements.json`: generated catalog for the current game version.
@@ -48,10 +48,10 @@ Build a complete `/achievements` reference from Steam achievement metadata, then
 - Create: `exported-data/achievements.json`
 
 - [ ] Add an `AchievementData` record with achievement ID, display name, description, hidden status, display order, and icon paths for locked and unlocked states.
-- [ ] Read every achievement through `SteamUserStats.GetNumAchievements`, `GetAchievementName`, and `GetAchievementDisplayAttribute`. Export icon bytes through `SteamUserStats.GetAchievementIcon` and `SteamUtils.GetImageRGBA`.
+- [ ] Read every achievement through Steamworks. Read both icon hashes from Steam's local schema cache, then download the authoritative Steam CDN images.
 - [ ] Fail the export when Steam is unavailable, an achievement ID is duplicated, visible metadata is empty, or the catalog does not contain the 38 achievements exposed for app `2241380`.
 - [ ] Replace the profession exporter display-name and description literals with achievement IDs only. The achievement export becomes the single source for Steam metadata.
-- [ ] Run `dotnet test tests/BuildTool.Tests/BuildTool.Tests.csproj` and the DataExporter build command documented in `mods/DataExporter/README.md`.
+- [ ] Run `dotnet test tests/DataExporter.Tests/DataExporter.Tests.csproj` and `dotnet build mods/DataExporter/DataExporter.csproj`.
   Expected: the mod compiles and `achievements.json` contains 38 unique records with both icon variants.
 - [ ] Commit.
   Message: `feat(exporter): export Steam achievements`

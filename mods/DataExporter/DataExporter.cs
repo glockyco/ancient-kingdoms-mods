@@ -156,6 +156,11 @@ namespace DataExporter
                 var exporter = new PetExporter(LoggerInstance, ExportPath);
                 exporter.Export();
             }));
+            result.Exporters.Add(RunExporter("achievements", required: true, () =>
+            {
+                var exporter = new AchievementExporter(LoggerInstance, ExportPath);
+                exporter.Export();
+            }));
             result.Exporters.Add(RunExporter("professions", required: true, () =>
             {
                 var exporter = new ProfessionExporter(LoggerInstance, ExportPath);
