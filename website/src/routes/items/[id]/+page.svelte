@@ -944,7 +944,9 @@
         </Card.Root>
       {:else if data.item.id === "radiant_aether"}
         <!-- Radiant Aether Effects -->
-        <!-- Source: server-scripts/GameManager.cs (probActivateRadiantAether = 0.15f), Player.cs, Combat.cs:1009 (crit surge, gated by !followupDefaultAttack), Combat.cs:1043-1141 (AoE/damage-shield), AreaDamageSkill.cs, AreaDebuffSkill.cs -->
+        <!-- Source: server-scripts/Player.cs:HasRadiantAether -->
+        <!-- Source: server-scripts/Combat.cs:DealDamageAt -->
+        <!-- Source: server-scripts/ScriptableSkill.cs:TryActivateRadiantAetherForArea -->
         <Card.Root class="bg-muted/30">
           <Card.Header>
             <Card.Title>Passive Effects</Card.Title>
@@ -954,20 +956,24 @@
               <div>
                 <div class={styles.label}>How it works</div>
                 <div class={styles.value}>
-                  Keep in inventory. Has a 15% chance to activate when you land
-                  a critical hit with an ability, take lethal damage, or are hit
-                  by an AoE attack. Consumes 1 when triggered. In a group, an
-                  AoE shares a 25% chance across party members carrying it (at
-                  most 10% each), and the first trigger blocks the attack for
-                  the whole party.
+                  Keep it in one of the 24 base carry slots. It can activate
+                  automatically on an ability critical hit, lethal damage, or a
+                  hostile area damage or debuff skill. Each activation consumes
+                  1. Critical and lethal checks use a 15% chance. For a hostile
+                  area skill, one eligible player gets a 15% chance. With two or
+                  more, each gets the lower of 10% or 25% divided by the
+                  eligible player count. The first activation cancels the skill
+                  for all targets.
                 </div>
               </div>
               <div class="space-y-2">
                 <div>
                   <div class={styles.label}>On Ability Critical Hit</div>
                   <div class={styles.value}>
-                    <span class={styles.valuePositive}>×2 on top of crit</span>
-                    → ×3 total
+                    <span class={styles.valuePositive}
+                      >Doubles the normal critical multiplier</span
+                    >
+                    → ×1.5 to ×3, before Critical Resist
                   </div>
                   <div class="italic text-muted-foreground text-sm mt-1">
                     "Radiant Aether surges - your strike rends the heavens!"
@@ -991,8 +997,9 @@
                 <div>
                   <div class={styles.label}>On AoE Attack</div>
                   <div class={styles.value}>
-                    <span class={styles.valuePositive}>Blocks the AoE</span>,
-                    protecting your party from damage
+                    <span class={styles.valuePositive}
+                      >Cancels the area skill for all targets</span
+                    >, preventing its damage or debuff
                   </div>
                   <div class="italic text-muted-foreground text-sm mt-1">
                     "Radiant Aether flares brightly - your party withstand
