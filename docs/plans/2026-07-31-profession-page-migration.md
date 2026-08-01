@@ -60,11 +60,13 @@ Pipeline work only. Does not gate Stage 2.
 - [ ] Build `ProfessionHeader` — icon, title, category, purpose, payoff line, optional jump list
 - [ ] Wire `PageSections` into the profession header for pages with 4+ sections
 - [ ] Build `ProfessionProgression`, generated from the mechanics record
-- [ ] Build `ProfessionCalculator` as a formula-agnostic input and result shell
+- [ ] Extract `RangeBar` from `mechanics/mercenary-stats`, which is currently its only user
+- [ ] Extract the curve renderer from `mechanics/experience` into `MasteryCurve`: tier success functions, the reader's slider position, and shaded no-gain regions, rendered as inline SVG so it survives without JS
+- [ ] Extract `Timeline` from `mechanics/monster-spawns` for respawn and cooldown ranges
 - [ ] Build `LocationTable`, `ResourceTable`, `RecipeTable`
 - [ ] Build `RelatedProfessions` with typed, reasoned links
 - [ ] Delete the bordered hero, metric strip and generic "How It Works" wrappers from the four newest pages, preserving their step content
-- [ ] Replace inline `grid-template-columns` tier matrices with a responsive equivalent
+- [ ] Replace the inline `grid-template-columns` tier matrices on the four middle-generation pages with `MasteryCurve`
 - [ ] Add a loader test for the shared query module, following `fishing-page-data.test.ts`
 
 ### Stage 3 — Validation professions
@@ -90,6 +92,14 @@ Each is complete when it satisfies every acceptance criterion in the spec.
 - [ ] **exploring** — per-trigger map actions, trigger coordinates and bounds, the city/regular/dungeon XP split, completion filters
 - [ ] **lore_keeping** — full source lists with drop rates, map actions per book and component, the 17-book completion model
 - [ ] Add a `zone_trigger` entity type to `MapLink` for exploring
+
+### Stage 4b — Mechanics pages
+
+Same card-stack failure, same components. Runs after Stage 3 proves them.
+
+- [ ] **mechanics/combat** — render the damage pipeline as a sequence rather than a numbered table, and group the formula catalogue by category instead of listing fourteen rows at one weight
+- [ ] **mechanics/inventory** — encode the storage model as capacities rather than a capacity column, and vary the rhythm across its nine sections
+- [ ] Remove the `/mechanics` index banner apologising for page density once both pages are readable
 
 ### Stage 5 — Cross-page polish
 

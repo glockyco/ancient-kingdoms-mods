@@ -29,21 +29,65 @@ polarity backwards.
 
 ## Selected direction
 
-**Visual authority is the existing `/mechanics/*` family, not the newest profession
-pages.** `mechanics/experience` and `mechanics/combat` already solve this exact problem —
-prose plus formulas plus tables, anchored and navigable — using `PageSections` and
-`Card.Root … bg-muted/30` inside a `container mx-auto p-8 space-y-8 max-w-4xl` shell.
-Profession pages are mechanics pages with an inventory attached. They should join that
-family rather than maintain a parallel idiom.
+**Form follows the shape of the fact.** Every mechanic is rendered in the visual form its
+data actually has. Variety is earned by encoding, never by decoration.
 
-The structural thesis: **a profession page answers four questions in a fixed order, then
-lists things.** What is it and why do I care; how do I do it; how does it progress; what
-are all the things. Everything else is optional and attaches to one of those four.
+The authority is not `/mechanics/*` as a family. It is the two pages in that family that
+already work this way, and they are the best pages on the site:
 
-The focal moment is the payoff sentence — the one line that says what mastery buys you.
-It is the first thing under the title and it is different for every profession. On
-Slayer it is 10% less damage from bosses. On Radiant Seeker it is a chance to triple a
-critical hit. Today neither page says it at all.
+- `mechanics/mercenary-stats` renders each stat as an inline range bar, colour-coded by
+  stat type, positioned within the range it could occupy, driven by live level and
+  veteran-point controls, with impossible race and class combinations greyed to an em
+  dash. It is a comparison instrument, not a table.
+- `mechanics/experience` draws the level curve on a log scale with the post-40 easing
+  picked out in green against a dashed counterfactual, plus a scrubber reporting what any
+  level costs. It is a function drawn as a function.
+
+`mechanics/reputation` (the eight-tier colour spectrum) and `mechanics/monster-spawns`
+(the kill, corpse, respawn timeline) are the same instinct at smaller scale.
+
+`mechanics/combat` and `mechanics/inventory` are the failure mode: excellent content, a
+damage pipeline and a formula catalogue and a storage model, poured into nine identical
+card-and-table blocks. Nothing in the rendering conveys that step 7 follows step 6, or
+that one formula is a variant of another. The `/mechanics` index carries a banner warning
+that these pages "favor precise game rules over quick-start guidance, so some sections
+are dense". That banner is the site apologising for a layout problem.
+
+The newest profession pages have the right instinct and the wrong execution. They varied
+the chrome, a bordered hero and a metric strip and a numbered panel, rather than the
+encoding. That is why they read as dashboard furniture: the variety sits on top of the
+content instead of deriving from it, and it costs between 2.3 and 3.7 mobile screens
+before the first fact.
+
+### Choosing the form
+
+| When the fact is a | Render it as | Not as |
+| --- | --- | --- |
+| Function of one variable | A curve carrying the reader's position | A five-column grid of percentages |
+| Threshold or region | Shaded bands on that curve | A sentence, or nothing |
+| Ordered procedure | A numbered sequence | A prose paragraph |
+| Elapsed time | A timeline | Two numbers in a table |
+| Value within a possible range | An inline bar | `16 to 60` |
+| Distribution or drop table | Proportional bars | A percentage column |
+| Geography | A map link or tile crop | A zone name in text |
+| Ladder or progression | A graded spectrum | A tier column |
+| Genuine comparison across items | A table | anything cleverer |
+
+A table is the right answer surprisingly often. The rule is not "avoid tables", it is
+"derive the form from the data, then commit to it".
+
+The focal moment is the payoff line: the single sentence saying what mastery buys. On
+Slayer that is ten percent less damage from bosses and elites; on Radiant Seeker it is a
+chance to triple a critical hit. Neither page says it today.
+
+The first viewport is the payoff and the mechanic, never a card wrapping the page title.
+
+## What this is not
+
+This is not a rebrand. The tokens in `app.css`, the dark ground, the type scale, `Card`,
+`DataTable`, `PageSections` and the existing chart idiom all stay. The visual world
+already exists and is good in four places. The work is to apply it consistently and to
+retire the two idioms that fight it: the uniform card stack and the decorative hero.
 
 ## Verdicts on the incumbent generations
 
@@ -55,7 +99,12 @@ critical hit. Today neither page says it at all.
 | Numbered step rows | 4 newest | **Keep** | Ordered procedure genuinely helps for multi-step loops (cast, dig, queue). Restrict to professions with a real sequence. |
 | Split loader + test | fishing | **Keep, extend** | `fishing-page-data.server.ts` plus its test is the right architecture for data-heavy pages. Adopt wherever a loader exceeds ~150 lines. |
 | Anchored sections | scroll_mastery, fishing | **Keep** | Stable anchors are a prerequisite for the jump list. |
-| Interactive calculators | 8 pages | **Keep, standardise** | The most valuable thing these pages do. Formulas are correct except herbalism. |
+| Interactive calculators | 8 pages | **Keep, re-encode** | The most valuable thing these pages do, and the closest existing relative of the two exemplar mechanics pages. The inputs stay; the five-column percentage grid becomes a curve. |
+| Uniform card stack | `mechanics/combat`, `mechanics/inventory` | **Discard** | Nine identical card-and-table blocks in a row. The container carries no information, so the reader gets no signal about which section matters or how one relates to the next. |
+| Range bars | `mechanics/mercenary-stats` | **Adopt** | The best encoding on the site and currently used by exactly one page. Generalise as `RangeBar`. |
+| Curve with reader position | `mechanics/experience` | **Adopt** | Proves the pattern works in this codebase and this palette. Becomes `MasteryCurve`. |
+| Timeline bar | `mechanics/monster-spawns` | **Adopt** | Correct encoding for every respawn and cooldown claim across the gathering professions. |
+| Graded spectrum | `mechanics/reputation` | **Adopt where a ladder exists** | Fits count-based completion and tier progression. |
 | Un-carded plain header | 9 older | **Keep as the base** | Cheapest correct header. Extend rather than replace. |
 | Obtainability trees | alchemy, cooking, lore, scroll | **Keep** | Real recursive provenance, already shared. |
 | Tier matrix via inline `grid-template-columns` | 4 middle | **Discard** | Fixed `repeat(5, 1fr)` cannot collapse; a primary cause of mobile overflow. |
@@ -65,7 +114,9 @@ critical hit. Today neither page says it at all.
 
 The through-line: the newest generation's *content* work was right and its *framing* work
 was wrong. It added explanation the older pages lacked, then buried it in dashboard
-furniture that cost 4–7× the time-to-first-fact on mobile.
+furniture that cost four to seven times the time-to-first-fact on mobile. The four
+adoptions above are the corrective: they are already built, already in this palette, and
+each is currently used by exactly one page.
 
 ## Content model
 
@@ -147,22 +198,35 @@ files.
 
 ## Section patterns
 
-- **Mechanics explanation** — `Card.Root` with `bg-muted/30`, matching `/mechanics/*`.
-  Prose first, formula second. Formulas render as readable expressions with named terms,
-  never as code identifiers. Source citations stay in HTML comments.
-- **Progression** — generated from the shared profession-mechanics data. States the proc
-  chance, the increment, the "too simple" thresholds as concrete mastery percentages, and
-  the cap.
-- **Calculator** — the one place a border is justified, because it is an interactive
-  surface distinct from the reading flow. Inputs left or above, results below. Must render
-  a static default state without JS. Standardise on one control set and one result layout.
-- **Locations** — compact table: zone, sub-zone, map link. Never a card grid.
-- **Quests** — the alchemy chain table, generalised: step, quest link, objective, level,
-  rewards.
-- **Resources and recipes** — one row per thing, expandable for obtainability. Tier as a
-  leading column, sortable and filterable above ~20 rows.
+Each pattern names the encoding first and the container second. A `Card.Root` with
+`bg-muted/30` is the default container, but a section that has an encoding uses it
+instead of leaning on the card to do the visual work.
+
+- **Mechanics explanation** — prose first, then the encoding, then the exact formula.
+  Formulas render as readable expressions with named terms, never code identifiers.
+  Source citations stay in HTML comments.
+- **Progression** — generated from the shared mechanics record. The two-stage roll, the
+  cap, and the achievement condition. The "too simple" thresholds render as shaded
+  regions on the success curve rather than as a sentence, so a reader sees at a glance
+  where a tier stops paying.
+- **Calculator** — the signature moment of a profession page, following
+  `mechanics/experience`. A curve of success against mastery for each tier, the reader's
+  slider position marked on it, and the no-gain regions shaded. Derived numbers sit
+  beside the curve, not instead of it. This replaces the five-column percentage grid on
+  every gathering and crafting page. It is the one place a border is justified, being an
+  interactive surface distinct from the reading flow, and it must render a static default
+  state without JS.
+- **Locations** — compact table of zone, sub-zone, map link. Never a card grid.
+- **Quests** — the alchemy chain generalised, rendered as a sequence: step, quest link,
+  objective, level, rewards.
+- **Resources and recipes** — one row per thing, expandable for obtainability, tier as a
+  leading column, sortable and filterable above roughly 20 rows. Yield and drop rates
+  render as proportional bars in the mercenary-stats idiom, not as bare percentages.
 - **Long tables (100+ rows)** — the house `DataTable`. Slayer's 143 rows and exploring's
-  46 need filtering, not scrolling. Prerender all rows for no-JS; enhance on hydration.
+  46 need filtering, not scrolling. Prerender all rows for no-JS, enhance on hydration.
+- **Timings and cooldowns** — a timeline in the `monster-spawns` idiom. Radiant Seeker's
+  100 to 3600 second window and every gathering respawn are ranges on a scale, not two
+  numbers in a cell.
 - **Rewards and outcomes** — probability tables state whether a number is a configured
   rate or a simulated per-open estimate. Never present the two as one quantity.
 
@@ -170,15 +234,23 @@ files.
 
 - **Desktop** — target under 4 screens for the densest page. Fishing's 7.6 is failure.
 - **Mobile** — target under 6 screens. Fishing's 12.5 and slayer's 8.9 are failures.
-- **First fact within one mobile viewport.** Currently 2.3–3.7 screens on the newest
+- **First fact within one mobile viewport.** Currently 2.3 to 3.7 screens on the newest
   pages.
-- **Progressive disclosure**: exhaustive lists collapse past a threshold; secondary
-  outcomes (fishing trash, non-relic chest rewards) live behind a disclosure; per-row
-  detail expands rather than adding columns.
+- **Vary the rhythm.** No page runs more than three consecutive sections in the same
+  container treatment at the same density. A dense table earns a quiet explanatory
+  passage after it. This is the rule `mechanics/combat` breaks nine times in a row, and
+  it is what makes an information page tiring rather than merely long.
+- **An encoding is not decoration and does not count against the budget.** A curve that
+  replaces a five-column grid usually costs less vertical space than the grid did, and
+  the shortest page is not the goal: the goal is that every screen earns its scroll.
+- **Progressive disclosure** — exhaustive lists collapse past a threshold, secondary
+  outcomes such as fishing trash and non-relic chest rewards live behind a disclosure,
+  and per-row detail expands rather than adding columns.
 - **Zero horizontal overflow at 390px.** Tables reflow, stack, or scroll inside a single
-  bounded container — not 54 independent scrollers as lore keeping produces today.
-- **No-JS**: every fact renders in static HTML. Filters, sorts, calculators and
-  disclosures are enhancements. Disclosed content is present and open without JS.
+  bounded container, not the 54 independent scrollers lore keeping produces today.
+- **No-JS** — every fact renders in static HTML. Filters, sorts, calculators and
+  disclosures are enhancements. Charts render server-side as inline SVG so the encoding
+  survives without JavaScript; interactivity layers on top.
 
 ## Component boundaries
 
@@ -188,11 +260,13 @@ Extract only where 3+ pages share a real contract.
 | --- | --- | --- |
 | `ProfessionHeader` | profession row + payoff line + optional jump list | 13 |
 | `ProfessionProgression` | shared mechanics record → progression card | 11 float |
-| `ProfessionCalculator` | labelled inputs + derived results, formula-agnostic | 10 |
+| `MasteryCurve` | tier success functions + reader position + shaded no-gain regions | 10 |
 | `LocationTable` | rows of zone / sub-zone / coordinates | 5 |
-| `ResourceTable` | tier, entity link, per-tier derived values, map link | 5 |
+| `ResourceTable` | tier, entity link, per-tier derived values as bars, map link | 5 |
 | `RecipeTable` | tier, output, materials, success, obtainability | 4 |
 | `RelatedProfessions` | typed links with the reason for the link | 13 |
+| `RangeBar` | value or range within its possible range, colour by role | 6 |
+| `Timeline` | ordered durations on one scale | 4 |
 
 Reuse unchanged: `Seo`, `Breadcrumb`, `PageSections`, `ItemLink`, `MapLink`,
 `MechanicsLink`, `ObtainabilityTree`, `QuestTypeBadge`, `QuestFlagBadges`, `DataTable`,
@@ -259,10 +333,13 @@ These are defects, not enhancements, and ship regardless of the redesign. Four i
 ## Scope and boundaries
 
 **In scope**: all 13 profession routes and `/professions`; the shared component and query
-layer; the profession-mechanics data record; the defects above.
+layer; the profession-mechanics data record; the defects above. Also `mechanics/combat`
+and `mechanics/inventory`, which are the same card-stack failure and share the components
+built here, and the `/mechanics` index banner apologising for their density.
 
 **Untouched**: route paths, the map, `/gather-items`, `/recipes`, `/items`, `/skills`,
-`/mechanics`, and every existing factual value that is already correct. Existing
+the four mechanics pages that already encode well, and every existing factual value that
+is already correct. Existing
 calculators keep their formulas except where listed as defects. Existing links,
 obtainability trees and map deep links are preserved.
 
