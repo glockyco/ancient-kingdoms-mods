@@ -310,6 +310,9 @@
       "sha256": "621304c24569d3678ba79f40807bac3a5703ff6326713e1b5513c6f7d0d62444",
       "span": 2
     },
+    "Database.cs:CharacterCreate": {
+      "span": 0
+    },
     "DefaultEvent.cs:231": {
       "sha256": "0f48ba1d378ee94c1a97ea6c06dc241e959351ec47fa12bb1aa16df969af4d02",
       "span": 1
@@ -1091,6 +1094,9 @@
     "Player.cs:HasDetectTraps": {
       "span": 0
     },
+    "Player.cs:TryGetSelectedPickaxe": {
+      "span": 0
+    },
     "Player.cs:refractoryPeriodSkill": {
       "span": 0
     },
@@ -1197,6 +1203,9 @@
     "PlayerInventory.cs:56-81": {
       "sha256": "cc521609c348a61736786659f3d7fc28013f5e2b58fa51fa7d8a054b64993e97",
       "span": 26
+    },
+    "PlayerInventory.cs:DecreaseDurabilityPickaxe": {
+      "span": 0
     },
     "PlayerLooting.cs:125-144": {
       "sha256": "fd819f601d26cf795446ac394fc4f7cceabc12f9e2d91588f6a7c7b38c7affa4",
