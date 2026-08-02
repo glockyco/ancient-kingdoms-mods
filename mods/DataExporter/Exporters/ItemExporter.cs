@@ -129,6 +129,7 @@ public class ItemExporter : BaseExporter
         if (item.TryCast<Il2Cpp.ScrollItem>() != null) return "scroll";
         if (item.TryCast<Il2Cpp.BookItem>() != null) return "book";
         if (item.TryCast<Il2Cpp.FoodItem>() != null) return "food";
+        if (item.TryCast<Il2Cpp.FriendlyPetFollowerItem>() != null) return "pet";
         if (item.TryCast<Il2Cpp.PotionItem>() != null) return "potion";
 
         // UsableItem subtypes (check before base EquipmentItem)

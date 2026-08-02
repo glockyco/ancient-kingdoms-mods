@@ -42,6 +42,7 @@ const itemTypeDisplayNames: Record<string, string> = {
   merge: "Merge",
   mount: "Mount",
   pack: "Pack",
+  pet: "Pet",
   potion: "Potion",
   random: "Random",
   recipe: "Recipe",
