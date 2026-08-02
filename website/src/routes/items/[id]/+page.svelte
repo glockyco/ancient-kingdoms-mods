@@ -332,6 +332,7 @@
 
   const hasPrimaryDetailCards = $derived(
     specialMechanics.length > 0 ||
+      isPet ||
       Boolean(data.item.tooltip_html) ||
       hasStatsCard ||
       (computed.createdFromMerge && computed.createdFromMerge.length > 0) ||
@@ -535,7 +536,7 @@
     </Card.Content>
   </Card.Root>
 
-  {#if isBackpack || isHouseChestStructure || isPet}
+  {#if isBackpack || isHouseChestStructure}
     <Card.Root class="bg-muted/30">
       <Card.Header>
         <Card.Title>Mechanics</Card.Title>
@@ -563,8 +564,34 @@
             </p>
           </div>
         {/if}
-        {#if isPet}
-          <div class="space-y-2 text-muted-foreground">
+      </Card.Content>
+    </Card.Root>
+  {/if}
+
+  <!-- Tooltip and Stats/Merge/Currency side-by-side (hide entire section if all would be empty) -->
+  {#if hasPrimaryDetailCards}
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <!-- Tooltip -->
+      {#if data.item.tooltip_html}
+        <Card.Root class="bg-muted/30">
+          <Card.Header>
+            <Card.Title>Tooltip</Card.Title>
+          </Card.Header>
+          <Card.Content>
+            <ItemTooltip
+              itemId={data.item.id}
+              tooltipHtml={data.item.tooltip_html}
+            />
+          </Card.Content>
+        </Card.Root>
+      {/if}
+
+      {#if isPet}
+        <Card.Root class="bg-muted/30">
+          <Card.Header>
+            <Card.Title>Mechanics</Card.Title>
+          </Card.Header>
+          <Card.Content class="space-y-2 text-sm text-muted-foreground">
             <!-- Source: server-scripts/Player.cs:3762-3792 — using the item summons the pet, or dismisses the one it already summoned. -->
             <p>
               Use the whistle to summon the pet. Using it again dismisses that
@@ -584,26 +611,6 @@
               reappears beside you after you take a portal. It is cosmetic and
               takes no part in combat.
             </p>
-          </div>
-        {/if}
-      </Card.Content>
-    </Card.Root>
-  {/if}
-
-  <!-- Tooltip and Stats/Merge/Currency side-by-side (hide entire section if all would be empty) -->
-  {#if hasPrimaryDetailCards}
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <!-- Tooltip -->
-      {#if data.item.tooltip_html}
-        <Card.Root class="bg-muted/30">
-          <Card.Header>
-            <Card.Title>Tooltip</Card.Title>
-          </Card.Header>
-          <Card.Content>
-            <ItemTooltip
-              itemId={data.item.id}
-              tooltipHtml={data.item.tooltip_html}
-            />
           </Card.Content>
         </Card.Root>
       {/if}
