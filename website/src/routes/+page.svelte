@@ -12,6 +12,7 @@
   import { COMPENDIUM_VERSION } from "$lib/constants/version";
   import { HOME_COUNTS } from "$lib/generated/home-counts";
   import {
+    AK_MONITOR_DISCORD_URL,
     DISCORD_URL,
     KOFI_URL,
     STEAM_GUIDE_URL,
@@ -384,6 +385,18 @@
         world map, and searchable game database. Its listings are generated directly
         from the game files and refreshed after each patch, covering items, monsters,
         NPCs, zones, quests, skills, classes, professions, crafting recipes, and more.
+      </p>
+      <p>
+        Running your own server? <a
+          href={AK_MONITOR_DISCORD_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="text-foreground underline underline-offset-2"
+        >
+          Ancient Kingdoms Monitor</a
+        > by Thero manages a dedicated server from a desktop app: restarts, crash
+        recovery, SteamCMD updates, backups, and RCON. It is a separate community
+        project, not part of the compendium.
       </p>
     </div>
 
