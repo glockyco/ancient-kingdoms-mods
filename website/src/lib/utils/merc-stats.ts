@@ -2,7 +2,7 @@
 // Source citations refer to Ancient Kingdoms server-scripts/*.cs.
 // Engine-faithful: float32 (Math.fround) plus banker's rounding to match Unity/C#.
 
-// Source: server-scripts/Player.cs:8472-8484 — each veteran point adds +0.25% to Health and Mana multipliers.
+// Source: server-scripts/Player.cs:8729-8741 — each veteran point adds +0.25% to Health and Mana multipliers.
 export const VET_MULT_PER_POINT = 0.0025;
 // Source: server-scripts/Constitution.cs:13-15 — Constitution adds 25 Health per point.
 const CON_HEALTH = 25;
@@ -32,7 +32,7 @@ export interface RaceBands {
   bc: number;
 }
 
-// Source: server-scripts/Player.cs:8401-8430 — per-race roll bands and base-combat factors.
+// Source: server-scripts/Player.cs:8658-8687 — per-race roll bands and base-combat factors.
 export const RACES: Record<string, RaceBands> = {
   Human: { hp: [0.95, 1.0], mana: [0.95, 1.0], energy: [0.95, 1.0], bc: 0.9 },
   Elf: { hp: [0.9, 0.95], mana: [1.0, 1.05], energy: [0.9, 0.95], bc: 0.7 },
@@ -75,8 +75,8 @@ export interface ClassDef {
   div: Record<string, number>;
 }
 
-// Source: server-scripts/Utils.cs:577-585 — class race pools.
-// Source: server-scripts/Player.cs:6975-7150 — per-class attribute divisors.
+// Source: server-scripts/Utils.cs:626-634 — class race pools.
+// Source: server-scripts/Player.cs:7209-7384 — per-class attribute divisors.
 export const CLASSES: Record<string, ClassDef> = {
   Warrior: {
     type: "Warrior",
@@ -127,7 +127,7 @@ export type Curves = Record<string, Curve>;
 const linear = (base: number, per: number, level: number): number =>
   base + per * (level - 1);
 
-// Source: server-scripts/Player.cs:6969-7152 — mercenary attributes are floor(level / class divisor).
+// Source: server-scripts/Player.cs:7203-7386 — mercenary attributes are floor(level / class divisor).
 export function attrs(cls: string, level: number): Record<string, number> {
   const out: Record<string, number> = {};
   for (const [a, n] of Object.entries(CLASSES[cls].div))
@@ -135,13 +135,13 @@ export function attrs(cls: string, level: number): Record<string, number> {
   return out;
 }
 
-// Source: server-scripts/Constitution.cs:13-15, server-scripts/Player.cs:8457-8474 — Health curve times multiplier plus Constitution.
+// Source: server-scripts/Constitution.cs:13-15, server-scripts/Player.cs:8714-8731 — Health curve times multiplier plus Constitution.
 const hpAt = (hpCurve: number, mult: number, con: number): number =>
   iround(f32(f32(hpCurve) * f32(mult))) + con * CON_HEALTH;
-// Source: server-scripts/Intelligence.cs:21-23, server-scripts/Player.cs:8457-8484 — Mana curve times multiplier plus Intelligence.
+// Source: server-scripts/Intelligence.cs:21-23, server-scripts/Player.cs:8714-8741 — Mana curve times multiplier plus Intelligence.
 const manaAt = (manaCurve: number, mult: number, intl: number): number =>
   iround(f32(f32(manaCurve) * f32(mult))) + intl * INT_MANA;
-// Source: server-scripts/Player.cs:8401-8430 — base-combat max is round(level × race factor) − 1.
+// Source: server-scripts/Player.cs:8658-8687 — base-combat max is round(level × race factor) − 1.
 const baseCombatMax = (level: number, factor: number): number =>
   iround(f32(f32(level) * f32(factor))) - 1;
 
@@ -165,9 +165,9 @@ export interface ClassResult {
   rows: MercRow[];
 }
 
-/** Source: server-scripts/Player.cs:8395-8439 — hire rolls race, multipliers, and shared base-combat value. */
-/** Source: server-scripts/Player.cs:8457-8484 — summoned mercenaries apply level, veteran points, Health, Mana, Attack Power, and Spell Power. */
-/** Source: server-scripts/Player.cs:6969-7152 — class attributes are rebuilt from level. */
+/** Source: server-scripts/Player.cs:8652-8696 — hire rolls race, multipliers, and shared base-combat value. */
+/** Source: server-scripts/Player.cs:8714-8741 — summoned mercenaries apply level, veteran points, Health, Mana, Attack Power, and Spell Power. */
+/** Source: server-scripts/Player.cs:7203-7386 — class attributes are rebuilt from level. */
 export function computeAll(
   level: number,
   veteran: number,
@@ -218,7 +218,7 @@ export function computeAll(
   });
 }
 
-// Source: server-scripts/Utils.cs:588-609 — tavern zone race bias used by GetRandomChar.
+// Source: server-scripts/Utils.cs:637-658 — tavern zone race bias used by GetRandomChar.
 export const ZONE_RACES: Record<number, string[]> = {
   1: ["Elf"],
   3: ["Dwarf"],
@@ -235,7 +235,7 @@ export function raceHomeZone(race: string): number | null {
 
 /**
  * P(roll this race) when hiring a class in a zone.
- * Source: server-scripts/Utils.cs:588-609 — zone-pinned in-pool races are forced, otherwise the roll is uniform over the pool.
+ * Source: server-scripts/Utils.cs:637-658 — zone-pinned in-pool races are forced, otherwise the roll is uniform over the pool.
  */
 export function pRaceInZone(
   cls: string,
@@ -256,7 +256,7 @@ export function charismaDiscount(charisma: number): number {
   return Math.min(0.25, Math.max(0, charisma) * 0.002);
 }
 
-/** Source: server-scripts/UIMercenaries.cs:212-218, server-scripts/UINpcTrading.cs:810-817 — mercenary hire price plus Charisma discount. */
+/** Source: server-scripts/UIMercenaries.cs:427-433, server-scripts/UINpcTrading.cs:808-815 — mercenary hire price plus Charisma discount. */
 export function hirePrice(
   level: number,
   veteran: number,

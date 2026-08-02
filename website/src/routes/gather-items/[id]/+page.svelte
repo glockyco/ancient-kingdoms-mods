@@ -252,7 +252,7 @@
     }
   }
 
-  // Source: server-scripts/GatherItem.cs:398 — 0.05 + radiantSekeerLevel * 0.2
+  // Source: server-scripts/GatherItem.cs:396 — 0.05 + radiantSekeerLevel * 0.2
   function getRadiantAetherChance(): number {
     const skill = skillLevel / 100;
     return (0.05 + skill * 0.2) * 100;

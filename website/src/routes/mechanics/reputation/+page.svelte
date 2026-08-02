@@ -360,7 +360,7 @@
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/GatherItem.cs:338-346 — opening a rewarding chest lowers its faction. -->
+      <!-- Source: server-scripts/GatherItem.cs:336-344 — opening a rewarding chest lowers its faction. -->
       <p>
         Opening a faction chest costs
         <span class="font-mono text-red-600 dark:text-red-400">200</span>
@@ -383,8 +383,8 @@
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/PetFriendly.cs:284-298 — clicking within 3 units pets the animal and grants faction at most every 30 seconds. -->
-      <!-- Source: server-scripts/Player.cs:11619-11623 — CmdIncreaseFaction adds the value unchanged. -->
+      <!-- Source: server-scripts/PetFriendly.cs:688-702 — clicking within 3 units pets the animal and grants faction at most every 30 seconds. -->
+      <!-- Source: server-scripts/Player.cs:11931-11935 — CmdIncreaseFaction adds the value unchanged. -->
       <p>
         Clicking one from up close pets it and gives 1 to 4 reputation with the
         animal's faction. Each animal only pays out once every 30 seconds, so
@@ -451,7 +451,7 @@
         of the sources above applies, so a faction you ignore keeps whatever
         value it had.
       </p>
-      <!-- Source: server-scripts/Player.cs:11619-11623, Monster.cs:2746-2758, Npc.cs:1600-1610, PlayerQuests.cs:440-443, GatherItem.cs:338-346 — every write adds or subtracts without clamping. -->
+      <!-- Source: server-scripts/Player.cs:11931-11935, Monster.cs:2746-2758, Npc.cs:1600-1610, PlayerQuests.cs:440-443, GatherItem.cs:336-344 — every write adds or subtracts without clamping. -->
       <!-- Source: server-scripts/Database.cs:3677-3685 — setFactionValue stores the raw value. -->
       <p>
         There is no cap and no floor. Every source adds to or subtracts from the
@@ -459,7 +459,7 @@
         faction can climb past Revered or fall well below Hated.
       </p>
       <!-- Source: server-scripts/UIFactions.cs:84-89 — the Revered readout clamps only the slider. -->
-      <!-- Source: server-scripts/UIFactions.cs:138-144 — the Hated readout floors the displayed number at 0. -->
+      <!-- Source: server-scripts/UIFactions.cs:148-154 — the Hated readout floors the displayed number at 0. -->
       <p>
         The faction panel hides this at both ends. At Revered it shows "/ Max"
         and stops filling the slider, and at Hated it shows 0 out of 10,000 once

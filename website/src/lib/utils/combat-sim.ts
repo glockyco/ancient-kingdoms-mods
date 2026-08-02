@@ -117,8 +117,8 @@ export const SPELL_HASTE_CAP = 0.5;
 // Post-cast refractory period for player spell auto-attacks (is_spell=true, no required_weapon_category).
 // The server FSM sets this window after FinishCast; the next auto-attack cast is blocked until it expires.
 // Source: server-scripts/Player.cs:refractoryPeriodSkill — private const float refractoryPeriodSkill = 0.75f
-// Source: server-scripts/Player.cs:2200 — EventRefractoryPeriod only gates followupDefaultAttack skills during the window
-// Source: server-scripts/Player.cs:2789 — NetworkrefractoryPeriodSkillTimeEnd = getServerTimeCorrected() + 0.75
+// Source: server-scripts/Player.cs:2204 — EventRefractoryPeriod only gates followupDefaultAttack skills during the window
+// Source: server-scripts/Player.cs:2793 — NetworkrefractoryPeriodSkillTimeEnd = getServerTimeCorrected() + 0.75
 export const PLAYER_SPELL_REFRACTORY = 0.75;
 // Spell merc cast times: flame_blast (wizard 0.8s), gale_burst (druid 1.0s), divine_smite (cleric 1.2s)
 export const SPELL_MERC_CAST: Partial<Record<PlayerClass, number>> = {

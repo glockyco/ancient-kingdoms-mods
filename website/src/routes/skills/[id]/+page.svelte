@@ -2250,7 +2250,7 @@
                   </p>
                 {:else}
                   <!-- companion: companions, familiars -->
-                  <!-- Source: server-scripts/Pet.cs:2017-2022, server-scripts/Pet.cs:4353-4358, server-scripts/Pet.cs:4437-4442, server-scripts/Skills.cs:943-950 — non-merc pets always pass 0f spellHasteBonus; flat cooldown -->
+                  <!-- Source: server-scripts/Pet.cs:2024-2029, server-scripts/Pet.cs:4390-4395, server-scripts/Pet.cs:4474-4479, server-scripts/Skills.cs:943-950 — non-merc pets always pass 0f spellHasteBonus; flat cooldown -->
                   <p class="font-mono">interval = cast time + cooldown</p>
                   <p class="text-muted-foreground">No haste reduction.</p>
                 {/if}
@@ -2284,7 +2284,7 @@
                         ? "DEX"
                         : "INT"}
                   </p>
-                  <!-- Source: server-scripts/Buff.cs:93-107 — defense getter, negative branch: bonusAttribute × 0.4 -->
+                  <!-- Source: server-scripts/Buff.cs:95-109 — defense getter, negative branch: bonusAttribute × 0.4 -->
                   <dl
                     class="grid grid-cols-1 sm:grid-cols-[16rem_1fr] gap-x-4 gap-y-1 font-mono"
                   >
@@ -2353,7 +2353,7 @@
         {/if}
 
         <!-- D2. Resist Chance — shown for debuffs and dispels (both roll to resist); hidden for cleanse (no resist roll) -->
-        <!-- Source: server-scripts/Combat.cs:1295-1328 GetProbResistMeleeDebuff/Magic/Poison/Fire/Cold/Disease; resist gate TargetDebuffSkill.cs:104-142 / AreaDebuffSkill.cs:103-138 -->
+        <!-- Source: server-scripts/Combat.cs:1296-1329 GetProbResistMeleeDebuff/Magic/Poison/Fire/Cold/Disease; resist gate TargetDebuffSkill.cs:104-142 / AreaDebuffSkill.cs:103-138 -->
         {#if isDebuffType && !skill.is_cleanse && (skill.is_melee_debuff || skill.is_poison_debuff || skill.is_fire_debuff || skill.is_cold_debuff || skill.is_disease_debuff || skill.is_magic_debuff)}
           <div class="space-y-1">
             <h4 class="font-medium text-muted-foreground">Resist Chance</h4>
@@ -2435,7 +2435,7 @@
           {@const playerCast =
             skill.is_scroll || skill.player_classes.length > 0}
           <div class="space-y-1">
-            <!-- Source: server-scripts/TargetDebuffSkill.cs:104-142 (resist gate), 172-269 (removal); AreaDebuffSkill.cs:103-138 (resist gate), 168-265 (removal); Combat.cs:1301-1328 GetProbResistMagic/Disease -->
+            <!-- Source: server-scripts/TargetDebuffSkill.cs:104-142 (resist gate), 172-269 (removal); AreaDebuffSkill.cs:103-138 (resist gate), 168-265 (removal); Combat.cs:1302-1329 GetProbResistMagic/Disease -->
             <h3 class="font-semibold">
               <a
                 href="/mechanics/combat#dispel"
@@ -2519,7 +2519,7 @@
 
         <!-- G. Special Mechanic Notes -->
         {#if skill.id === "parry"}
-          <!-- Source: server-scripts/Combat.cs:1106-1119, 1328-1338; Player.cs:10564-10568 -->
+          <!-- Source: server-scripts/Combat.cs:1106-1119, 1329-1339; Player.cs:10842-10846 -->
           <div class="space-y-1">
             <h3 class="font-semibold">
               <a
@@ -2659,7 +2659,7 @@
           </div>
         {/if}
         {#if hasLinearValue(skill.accuracy_bonus)}
-          <!-- Source: server-scripts/Combat.cs:1234-1237 (GetProbResistMeleeDamage, all GetProbResist*) -->
+          <!-- Source: server-scripts/Combat.cs:1235-1238 (GetProbResistMeleeDamage, all GetProbResist*) -->
           <div class="space-y-1">
             <h3 class="font-semibold">Accuracy</h3>
             <p class="text-muted-foreground">
@@ -2754,7 +2754,7 @@
           </div>
         {/if}
         {#if skill.is_blindness}
-          <!-- Source: server-scripts/Player.cs:9849-9881 (TargetRpcAddBlind/RemoveBlind) -->
+          <!-- Source: server-scripts/Player.cs:10127-10159 (TargetRpcAddBlind/RemoveBlind) -->
           <!-- Source: server-scripts/Skills.cs:912 (isBlindness check, Player only) -->
           <div class="space-y-1">
             <h3 class="font-semibold">Blindness</h3>

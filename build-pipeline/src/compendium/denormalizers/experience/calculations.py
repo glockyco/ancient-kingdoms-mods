@@ -6,9 +6,9 @@ and crafting/alchemy recipes based on game formulas from server-scripts.
 Source references:
 - Source: server-scripts/Monster.cs:2836-2863 — CalculateRewardExp (monster EXP)
 - Source: server-scripts/ZoneTrigger.cs:148-174 — zone discovery EXP
-- Source: server-scripts/GatherItem.cs:548-554 — gathering EXP by tier
-- Source: server-scripts/Player.cs:10480-10484 — crafting EXP by item quality
-- Source: server-scripts/Player.cs:10250-10257 — alchemy EXP by recipe tier
+- Source: server-scripts/GatherItem.cs:546-552 — gathering EXP by tier
+- Source: server-scripts/Player.cs:12284-12290 — crafting EXP by item quality
+- Source: server-scripts/Player.cs:10528-10535 — alchemy EXP by recipe tier
 """
 
 import sqlite3
@@ -131,7 +131,7 @@ def get_discovery_exp(zone_id: str, is_dungeon: bool) -> int:
 def get_gathering_exp(level: int) -> int:
     """Get EXP reward for gathering a resource.
 
-    Source: server-scripts/GatherItem.cs:548-554 — gathering EXP by tier.
+    Source: server-scripts/GatherItem.cs:546-552 — gathering EXP by tier.
 
     Args:
         level: Resource level (0-4)
@@ -145,7 +145,7 @@ def get_gathering_exp(level: int) -> int:
 def get_crafting_exp(quality: int) -> int:
     """Get EXP reward for crafting an item.
 
-    Source: server-scripts/Player.cs:10480-10484 — crafting EXP by item quality.
+    Source: server-scripts/Player.cs:12284-12290 — crafting EXP by item quality.
 
     Args:
         quality: Item quality (1-4)
@@ -159,7 +159,7 @@ def get_crafting_exp(quality: int) -> int:
 def get_alchemy_exp(tier: int) -> int:
     """Get EXP reward for crafting a potion.
 
-    Source: server-scripts/Player.cs:10250-10257 — alchemy EXP by recipe tier.
+    Source: server-scripts/Player.cs:10528-10535 — alchemy EXP by recipe tier.
 
     Args:
         tier: Recipe tier / level_required (0-4)

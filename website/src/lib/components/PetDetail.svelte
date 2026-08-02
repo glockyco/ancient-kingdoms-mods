@@ -370,7 +370,7 @@
             <div class="flex gap-2">
               <dt class="text-muted-foreground w-40 shrink-0">Active Limit</dt>
               <dd>
-                <!-- Source: server-scripts/UIMercenaries.cs:81 — active mercenary limit is 1 at levels 10–19, 2 at 20–29, 3 at 30–39, and 4 at 40+. -->
+                <!-- Source: server-scripts/UIMercenaries.cs:296 — active mercenary limit is 1 at levels 10–19, 2 at 20–29, 3 at 30–39, and 4 at 40+. -->
                 1 at levels 10–19 · 2 at 20–29 · 3 at 30–39 · 4 at 40+
               </dd>
             </div>
@@ -391,7 +391,7 @@
             <div class="flex gap-2">
               <dt class="text-muted-foreground w-40 shrink-0">Recruit Cost</dt>
               <dd>
-                <!-- Source: server-scripts/UIMercenaries.cs:212-218 — cost = round(20 + 400 × ((clamp(level, 10, 50) − 10) / 40)² + veteranLevel × 15) (0.9.19.1+). -->
+                <!-- Source: server-scripts/UIMercenaries.cs:427-433 — cost = round(20 + 400 × ((clamp(level, 10, 50) − 10) / 40)² + veteranLevel × 15) (0.9.19.1+). -->
                 20–3,420
                 <span class="text-yellow-600 dark:text-yellow-400">gold</span>,
                 scales with your regular and veteran level
@@ -416,7 +416,7 @@
             <div class="flex gap-2">
               <dt class="text-muted-foreground w-40 shrink-0">On Death</dt>
               <dd>
-                <!-- Source: server-scripts/UIMercenaries.cs:221-227 — resurrect = round(5 + 295 × ((clamp(level, 1, 50) − 1) / 49)^2.8 + veteranLevel × 10) (0.9.19.1+). -->
+                <!-- Source: server-scripts/UIMercenaries.cs:436-442 — resurrect = round(5 + 295 × ((clamp(level, 1, 50) − 1) / 49)^2.8 + veteranLevel × 10) (0.9.19.1+). -->
                 Stays dead until resurrected for 5–2,300
                 <span class="text-yellow-600 dark:text-yellow-400">gold</span>.
               </dd>

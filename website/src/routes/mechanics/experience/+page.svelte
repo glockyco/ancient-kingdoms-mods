@@ -696,7 +696,7 @@
           them never lowers it.
         </p>
         <p class="text-sm text-muted-foreground">
-          <!-- Source: server-scripts/Player.cs:9088-9123 and server-scripts/Npc.cs:1774-1792 — a veteran master refunds spent veteran skill points for gold and a token. -->
+          <!-- Source: server-scripts/Player.cs:9365-9400 and server-scripts/Npc.cs:1774-1792 — a veteran master refunds spent veteran skill points for gold and a token. -->
           A veteran master refunds every spent Veteran Point for 10,000 gold and a
           {#if data.redemptionToken}
             <ItemLink
@@ -911,10 +911,10 @@
           </table>
         </div>
         <!-- Source: server-scripts/Monster.cs:2409 — double XP applies to kills -->
-        <!-- Source: server-scripts/GatherItem.cs:584 — double XP applies to gathering -->
-        <!-- Source: server-scripts/Player.cs:11745 — double XP applies to alchemy -->
-        <!-- Source: server-scripts/Player.cs:11745 — double XP applies to scribing -->
-        <!-- Source: server-scripts/Player.cs:11980 — double XP applies to crafting and cooking -->
+        <!-- Source: server-scripts/GatherItem.cs:582 — double XP applies to gathering -->
+        <!-- Source: server-scripts/Player.cs:12057 — double XP applies to alchemy -->
+        <!-- Source: server-scripts/Player.cs:12057 — double XP applies to scribing -->
+        <!-- Source: server-scripts/Player.cs:12292 — double XP applies to crafting and cooking -->
         <!-- Source: server-scripts/PlayerQuests.cs:390-391 — no double XP for quests -->
         <!-- Source: server-scripts/ZoneTrigger.cs — no double XP for zone discovery -->
         <p class="text-sm text-muted-foreground">
@@ -997,7 +997,7 @@
     <Card.Content class="space-y-4">
       <!-- Source: server-scripts/Experience.cs:32 — deathLossPercent = 0.1f -->
       <!-- Source: server-scripts/Experience.cs:477-486 — Death() = max * 0.1f -->
-      <!-- Source: server-scripts/Player.cs:3266-3267 — lossExp capped at experience.current -->
+      <!-- Source: server-scripts/Player.cs:3289-3290 — lossExp capped at experience.current -->
       <p class="text-sm text-muted-foreground">
         On death, you lose 10% of the current level's XP cap. The loss cannot
         drop you below zero XP for your level.
@@ -1011,7 +1011,7 @@
             </tr>
           </thead>
           <tbody>
-            <!-- Source: server-scripts/Player.cs:12586 — CmdGetExpFromRemains: 0.5f * lossExp -->
+            <!-- Source: server-scripts/Player.cs:12898 — CmdGetExpFromRemains: 0.5f * lossExp -->
             <tr class="border-b hover:bg-muted/30">
               <td class="p-2">
                 <a
@@ -1022,7 +1022,7 @@
               </td>
               <td class="p-2 text-right font-mono">50%</td>
             </tr>
-            <!-- Source: server-scripts/Player.cs:10030 — CmdResurrect: 0.75f * lossExp -->
+            <!-- Source: server-scripts/Player.cs:10308 — CmdResurrect: 0.75f * lossExp -->
             <tr class="hover:bg-muted/30">
               <td class="p-2"
                 ><a
@@ -1132,8 +1132,8 @@
       </Card.Description>
     </Card.Header>
     <Card.Content>
-      <!-- Source: server-scripts/GatherItem.cs:533-546 — gathering XP by tier (plants/minerals/sparks/other). -->
-      <!-- Source: server-scripts/GatherItem.cs:811-821 — fishing XP by spot tier; same 15 / 150 / 750 / 4000 / 10000 table. -->
+      <!-- Source: server-scripts/GatherItem.cs:531-544 — gathering XP by tier (plants/minerals/sparks/other). -->
+      <!-- Source: server-scripts/GatherItem.cs:809-819 — fishing XP by spot tier; same 15 / 150 / 750 / 4000 / 10000 table. -->
       <table class="w-full text-sm border-collapse">
         <thead>
           <tr class="border-b">
@@ -1176,7 +1176,7 @@
       </Card.Description>
     </Card.Header>
     <Card.Content>
-      <!-- Source: server-scripts/Player.cs:10250-10257 — alchemy XP by recipe tier -->
+      <!-- Source: server-scripts/Player.cs:10528-10535 — alchemy XP by recipe tier -->
       <table class="w-full text-sm border-collapse">
         <thead>
           <tr class="border-b">
@@ -1215,7 +1215,7 @@
       </Card.Description>
     </Card.Header>
     <Card.Content>
-      <!-- Source: server-scripts/Player.cs:10322-10325 — isScribingTable overrides num5 = level.current * 100 -->
+      <!-- Source: server-scripts/Player.cs:10600-10603 — isScribingTable overrides num5 = level.current * 100 -->
       <p class="text-sm text-muted-foreground">
         Each successful craft awards <span class="font-mono font-medium"
           >Player Level &times; 100</span
@@ -1233,8 +1233,8 @@
       </Card.Description>
     </Card.Header>
     <Card.Content>
-      <!-- Source: server-scripts/Player.cs:10478-10485 — cooking XP by item quality (same table as crafting) -->
-      <!-- Source: server-scripts/Player.cs:10494-10519 — cooking branch awards XP on success only -->
+      <!-- Source: server-scripts/Player.cs:12284-12290 — cooking XP by item quality (same table as crafting) -->
+      <!-- Source: server-scripts/Player.cs:10772-10797 — cooking branch awards XP on success only -->
       <table class="w-full text-sm border-collapse">
         <thead>
           <tr class="border-b">
@@ -1273,7 +1273,7 @@
       </Card.Description>
     </Card.Header>
     <Card.Content>
-      <!-- Source: server-scripts/Player.cs:10480-10484 — crafting XP by item quality -->
+      <!-- Source: server-scripts/Player.cs:12284-12290 — crafting XP by item quality -->
       <table class="w-full text-sm border-collapse">
         <thead>
           <tr class="border-b">

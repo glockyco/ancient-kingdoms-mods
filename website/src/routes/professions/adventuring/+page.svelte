@@ -39,7 +39,7 @@
   let currentTime = $state(new Date());
   let mounted = $state(false);
 
-  // Source: server-scripts/Utils.cs:545-547 — adventurer quest selection is seeded by DateTime.UtcNow.DayOfYear, so UTC midnight starts a new queue day.
+  // Source: server-scripts/Utils.cs:594-596 — adventurer quest selection is seeded by DateTime.UtcNow.DayOfYear, so UTC midnight starts a new queue day.
   const queueResetTime = "00:00 UTC";
 
   onMount(() => {
@@ -266,7 +266,7 @@
       : null;
   }
 
-  // Source: server-scripts/Utils.cs:558-574 — adventurer quest order uses Unity/Mono's seeded System.Random with a Fisher-Yates shuffle.
+  // Source: server-scripts/Utils.cs:607-623 — adventurer quest order uses Unity/Mono's seeded System.Random with a Fisher-Yates shuffle.
   function shuffleWithDotNetRandom<T>(items: T[], seed: number): T[] {
     const shuffled = [...items];
     const random = new DotNetRandom(seed);
@@ -350,7 +350,7 @@
               >Adventurer Taskgiver</a
             > to accept an Adventurer quest.
           </div>
-          <!-- Source: server-scripts/Utils.cs:545-547 — daily Adventurer quest selection reads the shared npcAdventurerReference quest list. -->
+          <!-- Source: server-scripts/Utils.cs:594-596 — daily Adventurer quest selection reads the shared npcAdventurerReference quest list. -->
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
             All taskgivers use the same shared quest pool, so NPC choice does
             not affect which quests are available at your character's level.
@@ -387,7 +387,7 @@
             Each Adventurer quest has its own per-character 24-hour cooldown.
           </div>
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            <!-- Source: server-scripts/Utils.cs:545-550 — the daily offer requires a recommended level at or below the character level and no completion in the last 24 hours. -->
+            <!-- Source: server-scripts/Utils.cs:594-599 — the daily offer requires a recommended level at or below the character level and no completion in the last 24 hours. -->
             The taskgiver offers the first quest in today's queue that meets both
             requirements:
           </p>

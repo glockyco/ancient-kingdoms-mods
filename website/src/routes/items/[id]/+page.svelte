@@ -441,7 +441,7 @@
 
       {#if isBackpack && data.item.backpack_is_unique}
         <div>
-          <!-- Source: server-scripts/BackpackItem.cs:7, server-scripts/PlayerInventory.cs:417-431 (IsUniqueBackpackAlreadyEquipped) — only one copy of a Unique backpack can be equipped -->
+          <!-- Source: server-scripts/BackpackItem.cs:7, server-scripts/PlayerInventory.cs:428-442 (IsUniqueBackpackAlreadyEquipped) — only one copy of a Unique backpack can be equipped -->
           <div class={styles.label}>Unique</div>
           <div class={styles.value}>Yes</div>
         </div>
@@ -904,7 +904,7 @@
               </div>
               <div>
                 <div class={styles.label}>Amount received</div>
-                <!-- Source: server-scripts/Utils.cs:450 — getPrimalEssenceAmount: ceil(sellPrice * 0.06f) -->
+                <!-- Source: server-scripts/Utils.cs:499 — getPrimalEssenceAmount: ceil(sellPrice * 0.06f) -->
                 <div class={styles.value}>6% of sell price</div>
               </div>
             </div>
@@ -1109,7 +1109,7 @@
           </Card.Content>
         </Card.Root>
       {:else if data.item.id === "lockpicks"}
-        <!-- Source: server-scripts/GatherItem.cs:304-354 — Lockpicking skill -->
+        <!-- Source: server-scripts/GatherItem.cs:302-352 — Lockpicking skill -->
         <Card.Root class="bg-muted/30">
           <Card.Header>
             <Card.Title>Lockpicking</Card.Title>

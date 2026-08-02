@@ -412,7 +412,7 @@ function relicDescription(item: Item, ctx: ItemMetaContext): string {
 }
 
 function bookDescription(item: Item): string {
-  // Source: server-scripts/BookItem.cs, server-scripts/Player.cs:9241-9276 — one-time read,
+  // Source: server-scripts/BookItem.cs, server-scripts/Player.cs:9518-9553 — one-time read,
   // permanent attribute increase, then consumed.
   const gains: string[] = [];
   if (item.book_strength_gain > 0)
@@ -431,13 +431,13 @@ function bookDescription(item: Item): string {
 }
 
 function mountDescription(): string {
-  // Source: server-scripts/MountItem.cs:8, server-scripts/Player.cs:497-501 — speedMount
+  // Source: server-scripts/MountItem.cs:8, server-scripts/Player.cs:501-505 — speedMount
   // is the absolute movement speed when mounted, replacing equipped speed bonuses.
   return `Mountable creature. Replaces your base movement speed while mounted. Cannot mount in dungeons or while in combat.`;
 }
 
 function backpackDescription(item: Item): string {
-  // Source: server-scripts/BackpackItem.cs:7,9, server-scripts/PlayerInventory.cs:31-42,417-431 (IsUniqueBackpackAlreadyEquipped)
+  // Source: server-scripts/BackpackItem.cs:7,9, server-scripts/PlayerInventory.cs:31-42,428-442 (IsUniqueBackpackAlreadyEquipped)
   // — numSlots adds inventory capacity, and isUnique restricts duplicate equipped backpacks by nameItem.
   const slots = item.backpack_slots > 0 ? item.backpack_slots : 0;
   const slotPhrase =
@@ -543,7 +543,7 @@ function mergeDescription(item: Item, ctx: ItemMetaContext): string {
 }
 
 function structureDescription(item: Item): string {
-  // Source: server-scripts/HousingManager.cs:21-32, server-scripts/Player.cs:11162-11166,10138-10153
+  // Source: server-scripts/HousingManager.cs:21-32, server-scripts/Player.cs:11447-11451,10416-10431
   // — players buy a named house, then place CustomStructureItems inside it.
   const price =
     item.structure_price > 0
@@ -1500,7 +1500,7 @@ export function skillDescription(skill: SkillDescriptionInput): string {
   //   regular character level, available veteran points, and spent points.
   // Source: server-scripts/PlayerSkills.cs:822-825 — CmdUpgradeVeteran spends
   //   available veteran points before increasing the skill level.
-  // Source: server-scripts/Player.cs:5999-6009 and ScriptableSkill.cs:199-201
+  // Source: server-scripts/Player.cs:6233-6243 and ScriptableSkill.cs:199-201
   //   — requiredSpentPoints means already-spent veteran points, not veteran
   //   level.
   const veteranPointText = `${skill.required_skill_points} veteran ${
@@ -1575,7 +1575,7 @@ function petOriginPhrase(input: PetDescriptionInput): string {
       }
       return " Summoned by a class skill. Level matches the summoner.";
     case "Mercenary":
-      // Source: server-scripts/Player.cs:7850 — hired at player level, gains attributes per level
+      // Source: server-scripts/Player.cs:8087 — hired at player level, gains attributes per level
       return " Recruited from any Mercenary Recruiter NPC. Hired at the player's current level and continues to gain attributes as the player levels.";
   }
 }

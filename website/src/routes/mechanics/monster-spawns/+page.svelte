@@ -205,7 +205,7 @@
     <Card.Content class="space-y-3 text-sm text-muted-foreground">
       <p>
         <!-- Source: server-scripts/ZoneInfo.cs:185-201 — zones with no online player inside are deactivated. -->
-        <!-- Source: server-scripts/Player.cs:3197, 9253, 11243 — zone cleanup runs 5 seconds after a player changes zone; NetworkManagerMMO.cs:704 and 806 — and on disconnect. -->
+        <!-- Source: server-scripts/Player.cs:3454, 9667, 11527 — zone cleanup runs 5 seconds after a player changes zone; NetworkManagerMMO.cs:704 and 806 — and on disconnect. -->
         About 5 seconds after the last player leaves a zone (immediately, on a logout),
         the entire zone is switched off. Monsters in it stop acting entirely — they
         do not move, fight, or respawn until a player enters again.
@@ -249,7 +249,7 @@
           When a boss dies, its respawn deadline is saved server-side.
         </li>
         <li>
-          <!-- Source: server-scripts/NetworkManagerMMO.cs:97 and Monster.cs:562-583 — saved deadlines are loaded at server start; bosses whose deadline has not passed start hidden. -->
+          <!-- Source: server-scripts/NetworkManagerMMO.cs:111 and Monster.cs:562-583 — saved deadlines are loaded at server start; bosses whose deadline has not passed start hidden. -->
           <!-- Source: server-scripts/Monster.cs:500-518 — at server start only summonable, seasonal, and failed-roll rare monsters start hidden; everything else starts alive. -->
           Saved deadlines are reloaded when the server starts, so a restart does not
           bring a dead boss back early. Regular monsters have no such memory — after
@@ -261,7 +261,7 @@
           time (about 5 minutes).
         </li>
         <li>
-          <!-- Source: server-scripts/Player.cs:12405-12409 — a dungeon renewal zeroes boss and elite deadlines, including the saved ones. -->
+          <!-- Source: server-scripts/Player.cs:12717-12721 — a dungeon renewal zeroes boss and elite deadlines, including the saved ones. -->
           For dungeon bosses these timers can be wiped for gold — see
           <a
             href="#renewal-sages"
@@ -522,30 +522,30 @@
     <Card.Content class="space-y-4">
       <ul class="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
         <li>
-          <!-- Source: server-scripts/Player.cs:12399-12410 — the renewal sets respawnTimeEnd to 0 for every respawn-enabled monster in the dungeon; boss and elite saved deadlines are zeroed too. -->
+          <!-- Source: server-scripts/Player.cs:12711-12722 — the renewal sets respawnTimeEnd to 0 for every respawn-enabled monster in the dungeon; boss and elite saved deadlines are zeroed too. -->
           A renewal marks every respawn timer in the dungeon as due — regular monsters,
           elites, and bosses alike, including saved boss deadlines.
         </li>
         <li>
-          <!-- Source: server-scripts/Player.cs:12399-12410 — the renewal only writes timers; health and state of living monsters are untouched. -->
+          <!-- Source: server-scripts/Player.cs:12711-12722 — the renewal only writes timers; health and state of living monsters are untouched. -->
           Nothing despawns. Monsters that are alive — including a rare or boss that
           is already up — are not touched. A renewal only affects the dead.
         </li>
         <li>
-          <!-- Source: server-scripts/Player.cs:12385-12391 — the renewal is refused while any player is inside the dungeon. -->
+          <!-- Source: server-scripts/Player.cs:12697-12703 — the renewal is refused while any player is inside the dungeon. -->
           A renewal is refused while anyone is inside the dungeon. The respawns therefore
           happen the moment the next player walks in, since the empty zone is switched
           off at the time of purchase.
         </li>
         <li>
-          <!-- Source: server-scripts/Npc.cs:1689-1695 and UINpcTrading.cs:762-770 — the fee runs through the vendor purchase formula, discounted by Charisma up to 25%. -->
+          <!-- Source: server-scripts/Npc.cs:1689-1695 and UINpcTrading.cs:760-768 — the fee runs through the vendor purchase formula, discounted by Charisma up to 25%. -->
           Fees below are base prices — Charisma discounts the actual price by up to
           25%, the same as vendor purchases.
         </li>
       </ul>
 
       <p class="text-sm text-muted-foreground">
-        <!-- Source: server-scripts/Player.cs:12660-12672 and Monster.cs:2156-2161 — a zeroed deadline triggers the spawn roll on the next zone activation; a failed roll re-arms the full interval until the next renewal zeroes it again. -->
+        <!-- Source: server-scripts/Player.cs:12972-12984 and Monster.cs:2156-2161 — a zeroed deadline triggers the spawn roll on the next zone activation; a failed roll re-arms the full interval until the next renewal zeroes it again. -->
         Renewals interact with rare spawns in a useful way. Buying several renewals
         back-to-back is wasted gold: the roll only fires when someone enters, so you
         get one roll on the next entry no matter how many renewals you stacked. But

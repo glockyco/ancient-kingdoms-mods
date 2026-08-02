@@ -241,7 +241,7 @@
     </Card.Header>
     <Card.Content class="space-y-5">
       <div>
-        <!-- Source: server-scripts/Combat.cs:1289-1328 GetProbResist* (formula), Combat.cs:479-486 (damage); TargetDebuffSkill.cs:104-142 / AreaDebuffSkill.cs:103-138 (debuff & dispel landing) -->
+        <!-- Source: server-scripts/Combat.cs:1290-1329 GetProbResist* (formula), Combat.cs:479-486 (damage); TargetDebuffSkill.cs:104-142 / AreaDebuffSkill.cs:103-138 (debuff & dispel landing) -->
         <h3 class="font-semibold mb-1">Resist Roll</h3>
         <pre
           class="text-xs bg-muted px-3 py-2 rounded overflow-x-auto">P(resist) = clamp(
@@ -686,7 +686,7 @@ finalDamage = damage − reduction</pre>
               </tr>
             </thead>
             <tbody>
-              <!-- Source: server-scripts/Player.cs:2785 -->
+              <!-- Source: server-scripts/Player.cs:2807 -->
               <tr class="border-b border-border/40">
                 <td class="py-2 pr-4 font-mono text-xs">player_auto</td>
                 <td class="py-2 pr-4 text-muted-foreground text-xs"
@@ -783,7 +783,7 @@ finalDamage = damage − reduction</pre>
                   >Reduces cast time (cap: 50%). Refractory (0.75s) unaffected.</td
                 >
               </tr>
-              <!-- Source: server-scripts/Pet.cs:2017-2022, server-scripts/Pet.cs:4353-4358, server-scripts/Pet.cs:4437-4442 — non-merc pets always pass 0f spellHasteBonus -->
+              <!-- Source: server-scripts/Pet.cs:2024-2029, server-scripts/Pet.cs:4390-4395, server-scripts/Pet.cs:4474-4479 — non-merc pets always pass 0f spellHasteBonus -->
               <tr class="border-b border-border/40">
                 <td class="py-2 pr-4 font-mono text-xs">companion</td>
                 <td class="py-2 pr-4 text-muted-foreground text-xs"
@@ -843,7 +843,7 @@ finalDamage = damage − reduction</pre>
       </div>
       <div>
         <!-- Source: server-scripts/Combat.cs:1142-1143 — auto-attack rage gain on dealing damage. -->
-        <!-- Source: server-scripts/Combat.cs:1150,1175,1344-1350 — GenerateRageOnHit: rage gain on taking Normal damage. -->
+        <!-- Source: server-scripts/Combat.cs:1150,1175,1345-1351 — GenerateRageOnHit: rage gain on taking Normal damage. -->
         <h3 class="font-semibold mb-1">Rage Generation</h3>
         <p class="text-sm text-muted-foreground mb-2">
           Warrior and Rogue generate Rage from two sources:
@@ -946,7 +946,7 @@ finalDamage = damage − reduction</pre>
       </div>
 
       <div>
-        <!-- Source: server-scripts/Combat.cs:1106-1119, 1328-1338; Player.cs:10564-10568 -->
+        <!-- Source: server-scripts/Combat.cs:1106-1119, 1329-1339; Player.cs:10842-10846 -->
         <h3 id="parry" class="font-semibold mb-1 scroll-mt-24">Parry</h3>
         <p class="text-sm text-muted-foreground">
           Parry is a timed counter. If an eligible player is casting Parry and
@@ -1046,7 +1046,7 @@ finalDamage = damage − reduction</pre>
       </div>
 
       <div>
-        <!-- Source: server-scripts/TargetDebuffSkill.cs:104-142 (resist gate), 172-269 (removal); AreaDebuffSkill.cs:103-138 (resist gate), 168-265 (removal); Combat.cs:1301-1328 GetProbResistMagic/Disease -->
+        <!-- Source: server-scripts/TargetDebuffSkill.cs:104-142 (resist gate), 172-269 (removal); AreaDebuffSkill.cs:103-138 (resist gate), 168-265 (removal); Combat.cs:1302-1329 GetProbResistMagic/Disease -->
         <h3 id="dispel" class="font-semibold mb-1 scroll-mt-24">Dispel</h3>
         <p class="text-sm text-muted-foreground mb-2">
           Dispel removes beneficial buffs from its target. Players cast it on

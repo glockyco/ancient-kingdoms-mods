@@ -296,7 +296,7 @@ function formatHealing(
     parts.push(`${formatLinearValue(healMana, monsterContext)} mana`);
   }
 
-  // Source: server-scripts/Player.cs:10012-10018 — CmdResurrect
+  // Source: server-scripts/Player.cs:10290-10296 — CmdResurrect
   // health = health.max * 0.6, mana = health.max * 0.2, xp = +75% of lossExp
   if (skill.is_resurrect_skill) {
     parts.push("resurrect (60% max HP, 20% max HP as mana, +75% lost XP)");
@@ -765,7 +765,7 @@ const HARDCODED_EFFECTS: Record<string, string> = {
   gathering: "gather herbs and reagents",
   mining: "mine ore and minerals",
   opening: "open locked chests",
-  // Source: server-scripts/GatherItem.cs:304-354 — Lockpicking allows opening locked chests
+  // Source: server-scripts/GatherItem.cs:302-352 — Lockpicking allows opening locked chests
   // using lockpicks instead of the specific key. 80% failure chance, consumes one lockpick per attempt.
   lockpicking: "open locked chests with lockpicks (20% success chance)",
   blushburst: "cosmetic visual effect",
