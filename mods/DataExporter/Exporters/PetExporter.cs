@@ -9,7 +9,7 @@ namespace DataExporter.Exporters;
 
 public class PetExporter : BaseExporter
 {
-    public PetExporter(MelonLogger.Instance logger, string exportPath) : base(logger, exportPath)
+    public PetExporter(MelonLogger.Instance logger, string exportPath, VisualAssetRegistry visualAssets) : base(logger, exportPath, visualAssets)
     {
     }
 
@@ -127,6 +127,15 @@ public class PetExporter : BaseExporter
             }
 
             petList.Add(petData);
+
+            // Mercenary appearance is built per character from race, gender, hair,
+            // and worn equipment, so the prefab rig is one arbitrary hire rather
+            // than what any given player sees. Only fixed-appearance pets have a
+            // portrait worth publishing.
+            if (!pet.isMercenary)
+            {
+                ExportEntitySprite("pet", name, "Pet.gameObject", pet.gameObject);
+            }
         }
 
         WriteJson(petList, "pets.json");

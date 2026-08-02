@@ -1,11 +1,13 @@
-import { getPetById } from "$lib/queries/pets.server";
+import { getPetById, getPetVisualAsset } from "$lib/queries/pets.server";
 import { error } from "@sveltejs/kit";
 import { petDescription } from "$lib/server/meta-description";
 import type { PetDetailView } from "$lib/types/pets";
+import type { EntityVisualAsset } from "$lib/types/visual-assets";
 
 export interface PetPageData {
   pet: PetDetailView;
   description: string;
+  visualAsset: EntityVisualAsset | null;
 }
 
 /**
@@ -47,5 +49,11 @@ export function loadPetPage(id: string, isMercenary: boolean): PetPageData {
     summoning_class_id,
   });
 
-  return { pet, description };
+  return {
+    pet,
+    description,
+    // A mercenary's look is assembled per character from race, gender, hair, and
+    // gear, so there is no single portrait that is true for the reader.
+    visualAsset: isMercenary ? null : getPetVisualAsset(id),
+  };
 }

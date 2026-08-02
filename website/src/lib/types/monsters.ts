@@ -1,3 +1,5 @@
+import type { EntityVisualAsset } from "$lib/types/visual-assets";
+
 import type { RespawnInfo } from "./respawn";
 
 /**
@@ -344,14 +346,6 @@ export interface MonsterSkill {
   prob_ignore_cleanse: number;
 }
 
-export interface MonsterVisualAsset {
-  public_path: string;
-  width: number;
-  height: number;
-  source_field: string;
-  source_type: string;
-}
-
 /**
  * Full monster detail page data
  */
@@ -366,7 +360,7 @@ export interface MonsterDetailData {
   quests: MonsterQuest[];
   skills: MonsterSkill[];
   summons: SummonsInfo[];
-  visualAsset: MonsterVisualAsset | null;
+  visualAsset: EntityVisualAsset | null;
   renewalSages: Array<{
     id: string;
     name: string;

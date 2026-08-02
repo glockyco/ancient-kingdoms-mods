@@ -107,6 +107,19 @@ public class ItemExporter : BaseExporter
                 scriptableItem.image != null ? scriptableItem.image.name : null,
                 scriptableItem.image);
 
+            // Friendly pet whistles carry the creature they summon. Export it so the
+            // item page can show what the pet looks like, not just its icon.
+            var petFollowerItem = scriptableItem.TryCast<Il2Cpp.FriendlyPetFollowerItem>();
+            if (petFollowerItem != null && petFollowerItem.petPrefab != null)
+            {
+                ExportEntitySprite(
+                    "item",
+                    itemData.id,
+                    "FriendlyPetFollowerItem.petPrefab",
+                    petFollowerItem.petPrefab.gameObject,
+                    "pet");
+            }
+
             itemList.Add(itemData);
         }
 

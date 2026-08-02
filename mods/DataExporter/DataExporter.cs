@@ -153,7 +153,7 @@ namespace DataExporter
             }));
             result.Exporters.Add(RunExporter("pets", required: true, () =>
             {
-                var exporter = new PetExporter(LoggerInstance, ExportPath);
+                var exporter = new PetExporter(LoggerInstance, ExportPath, visualAssets);
                 exporter.Export();
             }));
             result.Exporters.Add(RunExporter("achievements", required: true, () =>

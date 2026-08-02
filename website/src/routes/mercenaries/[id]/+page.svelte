@@ -4,4 +4,8 @@
   let { data } = $props();
 </script>
 
-<PetDetail pet={data.pet} description={data.description} />
+<PetDetail
+  pet={data.pet}
+  description={data.description}
+  visualAsset={data.visualAsset}
+/>

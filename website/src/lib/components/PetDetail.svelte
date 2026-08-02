@@ -19,14 +19,27 @@
     PetRecruiter,
   } from "$lib/types/pets";
   import { petHref } from "$lib/utils/pets";
+  import { base } from "$app/paths";
+  import type { EntityVisualAsset } from "$lib/types/visual-assets";
   import MapPin from "@lucide/svelte/icons/map-pin";
   import Zap from "@lucide/svelte/icons/zap";
   import Info from "@lucide/svelte/icons/info";
 
   // Mercenaries and summons render the same detail layout; only the section
   // they hang off differs, and that follows from the pet's own kind.
-  let { pet, description }: { pet: PetDetailView; description: string } =
-    $props();
+  let {
+    pet,
+    description,
+    visualAsset,
+  }: {
+    pet: PetDetailView;
+    description: string;
+    visualAsset: EntityVisualAsset | null;
+  } = $props();
+
+  const spriteSrc = $derived(
+    visualAsset ? `${base}/${visualAsset.public_path}` : null,
+  );
 
   // "Summoned By" table — one row containing the class link
   const summonedByRows = $derived(
@@ -244,6 +257,24 @@
       </span>
     </div>
   </div>
+  <!-- Header Summary Card -->
+  {#if spriteSrc && visualAsset}
+    <section aria-labelledby="pet-summary-title">
+      <h2 id="pet-summary-title" class="sr-only">Appearance</h2>
+      <div class="bg-muted/30 rounded-md border p-4">
+        <div class="flex h-32 w-full items-center justify-center">
+          <img
+            src={spriteSrc}
+            alt={`${pet.name} sprite`}
+            width={visualAsset.width}
+            height={visualAsset.height}
+            class="h-28 w-auto max-w-full object-contain [image-rendering:pixelated]"
+          />
+        </div>
+      </div>
+    </section>
+  {/if}
+
   <!-- Summoned By (companions and familiars) -->
   {#if pet.kind !== "Mercenary"}
     <section>

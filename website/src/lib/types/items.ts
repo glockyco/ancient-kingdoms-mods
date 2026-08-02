@@ -1,3 +1,4 @@
+import type { EntityVisualAsset } from "$lib/types/visual-assets";
 import type { Item } from "$lib/queries/items";
 import type { ItemSources, ItemUsages } from "$lib/types/item-sources";
 
@@ -99,4 +100,6 @@ export interface ItemDetailPageData {
     name: string;
     gold_required: number;
   }>;
+  /** Sprite of the creature a pet whistle summons. */
+  petVisualAsset: EntityVisualAsset | null;
 }

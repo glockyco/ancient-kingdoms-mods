@@ -3,6 +3,7 @@ import { error } from "@sveltejs/kit";
 import type { PageServerLoad, EntryGenerator } from "./$types";
 import { DB_STATIC_PATH } from "$lib/constants/constants";
 import type { ItemDetailPageData } from "$lib/types/items";
+import type { EntityVisualAsset } from "$lib/types/visual-assets";
 import type { Item } from "$lib/queries/items";
 import { itemDescription, itemTitle } from "$lib/server/meta-description";
 import { getItemSources } from "$lib/server/item-sources";
@@ -273,6 +274,17 @@ export const load: PageServerLoad = ({ params }): ItemDetailPageData => {
     buffDurationSeconds = row?.duration_base ?? null;
   }
 
+  // Pet whistles carry the creature they summon; the icon alone does not show
+  // what the pet looks like, which is the first thing anyone wants to see.
+  const petVisualAsset =
+    (db
+      .prepare(
+        `SELECT public_path, width, height, source_field, source_type
+         FROM visual_assets
+         WHERE domain = 'item' AND entity_id = ? AND kind = 'pet'`,
+      )
+      .get(params.id) as EntityVisualAsset | undefined) ?? null;
+
   db.close();
 
   const description = itemDescription(item, {
@@ -302,5 +314,6 @@ export const load: PageServerLoad = ({ params }): ItemDetailPageData => {
     augmenters,
     priestesses,
     worldBossRenewalSages,
+    petVisualAsset,
   };
 };

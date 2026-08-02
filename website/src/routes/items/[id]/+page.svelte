@@ -1,6 +1,6 @@
 <script lang="ts">
   import * as Card from "$lib/components/ui/card";
-  import { resolve } from "$app/paths";
+  import { base, resolve } from "$app/paths";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
@@ -118,6 +118,10 @@
   );
   const isBackpack = $derived(data.item.item_type === "backpack");
   const isPet = $derived(data.item.item_type === "pet");
+
+  const petSpriteSrc = $derived(
+    data.petVisualAsset ? `${base}/${data.petVisualAsset.public_path}` : null,
+  );
   const isHouseChestStructure = $derived(
     data.item.item_type === "structure" && isHouseChestItemId(data.item.id),
   );
@@ -586,31 +590,22 @@
         </Card.Root>
       {/if}
 
-      {#if isPet}
+      <!-- Summoned pet -->
+      {#if petSpriteSrc && data.petVisualAsset}
         <Card.Root class="bg-muted/30">
           <Card.Header>
-            <Card.Title>Mechanics</Card.Title>
+            <Card.Title>Pet</Card.Title>
           </Card.Header>
-          <Card.Content class="space-y-2 text-sm text-muted-foreground">
-            <!-- Source: server-scripts/Player.cs:3762-3792 — using the item summons the pet, or dismisses the one it already summoned. -->
-            <p>
-              Use the whistle to summon the pet. Using it again dismisses that
-              pet. Three pets can follow you at once.
-            </p>
-            <!-- Source: server-scripts/FriendlyPetFollowerItem.cs:16-23,58-80 — name rules and the default name. -->
-            <p>
-              Right-click the whistle in your inventory to name the pet. A name
-              holds up to 20 characters and accepts letters, spaces,
-              apostrophes, and hyphens. Without a name the pet is called
-              "&lt;your character&gt;'s pet".
-            </p>
-            <!-- Source: server-scripts/PetFriendly.cs:389-396 — the follower teleports to its owner past 24 units. -->
-            <!-- Source: server-scripts/Player.cs:9761 — portals respawn the followers at the destination. -->
-            <p>
-              The pet follows you, catches up when it falls far behind, and
-              reappears beside you after you take a portal. It is cosmetic and
-              takes no part in combat.
-            </p>
+          <Card.Content>
+            <div class="flex h-32 w-full items-center justify-center">
+              <img
+                src={petSpriteSrc}
+                alt={`Pet summoned by ${data.item.name}`}
+                width={data.petVisualAsset.width}
+                height={data.petVisualAsset.height}
+                class="h-28 w-auto max-w-full object-contain [image-rendering:pixelated]"
+              />
+            </div>
           </Card.Content>
         </Card.Root>
       {/if}
@@ -1641,6 +1636,36 @@
               </div>
             {/each}
           </div>
+        </Card.Content>
+      </Card.Root>
+    {/if}
+
+    <!-- Pet mechanics -->
+    {#if isPet}
+      <Card.Root class="bg-muted/30">
+        <Card.Header>
+          <Card.Title>Mechanics</Card.Title>
+        </Card.Header>
+        <Card.Content class="space-y-3 text-sm text-muted-foreground">
+          <!-- Source: server-scripts/Player.cs:3762-3792 — using the item summons the pet, or dismisses the one it already summoned. -->
+          <p>
+            Use the whistle to summon the pet. Using it again dismisses that
+            pet. Three pets can follow you at once.
+          </p>
+          <!-- Source: server-scripts/FriendlyPetFollowerItem.cs:16-23,58-80 — name rules and the default name. -->
+          <p>
+            Right-click the whistle in your inventory to name the pet. A name
+            holds up to 20 characters and accepts letters, spaces, apostrophes,
+            and hyphens. Without a name the pet is called "&lt;your
+            character&gt;'s pet".
+          </p>
+          <!-- Source: server-scripts/PetFriendly.cs:389-396 — the follower teleports to its owner past 24 units. -->
+          <!-- Source: server-scripts/Player.cs:9761 — portals respawn the followers at the destination. -->
+          <p>
+            The pet follows you, catches up when it falls far behind, and
+            reappears beside you after you take a portal. It is cosmetic and
+            takes no part in combat.
+          </p>
         </Card.Content>
       </Card.Root>
     {/if}

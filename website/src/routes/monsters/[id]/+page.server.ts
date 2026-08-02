@@ -1,5 +1,6 @@
 import Database from "better-sqlite3";
 import { error } from "@sveltejs/kit";
+import type { EntityVisualAsset } from "$lib/types/visual-assets";
 import type { PageServerLoad, EntryGenerator } from "./$types";
 import {
   DB_STATIC_PATH,
@@ -17,7 +18,6 @@ import type {
   PlaceholderSpawnInfo,
   MonsterQuest,
   SummonsInfo,
-  MonsterVisualAsset,
   MonsterSpawnCombatStats,
 } from "$lib/types/monsters";
 import { monsterDescription } from "$lib/server/meta-description";
@@ -842,7 +842,7 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
       WHERE domain = 'monster' AND entity_id = ? AND kind = 'primary'
     `,
       )
-      .get(params.id) as MonsterVisualAsset | undefined) ?? null;
+      .get(params.id) as EntityVisualAsset | undefined) ?? null;
 
   db.close();
 

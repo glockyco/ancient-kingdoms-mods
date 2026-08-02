@@ -42,6 +42,45 @@ public abstract class BaseExporter
     public abstract void Export();
 
     /// <summary>
+    /// Exports the primary sprite of an entity prefab or scene object.
+    /// Prefers a SpriteRenderer on the root; falls back to compositing the
+    /// front-facing child renderers, which is how layered creatures are built.
+    /// </summary>
+    protected void ExportEntitySprite(
+        string domain,
+        string entityId,
+        string sourceField,
+        GameObject gameObject,
+        string kind = "primary")
+    {
+        if (VisualAssets == null || gameObject == null)
+            return;
+
+        var primaryRenderer = gameObject.GetComponent<SpriteRenderer>();
+        if (primaryRenderer != null && primaryRenderer.sprite != null)
+        {
+            VisualAssets.ExportRendererSprite(
+                domain,
+                entityId,
+                kind,
+                $"{sourceField}.SpriteRenderer",
+                primaryRenderer);
+            return;
+        }
+
+        var compositeRenderers = VisualAssetRendererSelector.SelectPrimaryCompositeRenderers(gameObject);
+        if (compositeRenderers.Count == 0)
+            return;
+
+        VisualAssets.ExportComposite(
+            domain,
+            entityId,
+            kind,
+            $"{sourceField}.Front.SpriteRenderers",
+            compositeRenderers);
+    }
+
+    /// <summary>
     /// Sanitizes a Unity object name to create a URL-safe ID.
     /// Converts to lowercase, replaces spaces with underscores, and removes special characters.
     /// </summary>

@@ -1,5 +1,6 @@
 import { query, queryOne } from "$lib/db.server";
 import type { ClassSkill } from "./classes.server";
+import type { EntityVisualAsset } from "$lib/types/visual-assets";
 import type {
   MercenaryListView,
   SummonListView,
@@ -78,6 +79,20 @@ export function getAllSummons(): SummonListView[] {
 /**
  * Get a single pet's full detail data.
  */
+/**
+ * Sprite for a pet, exported from its prefab at runtime.
+ */
+export function getPetVisualAsset(petId: string): EntityVisualAsset | null {
+  return (
+    queryOne<EntityVisualAsset>(
+      `SELECT public_path, width, height, source_field, source_type
+       FROM visual_assets
+       WHERE domain = 'pet' AND entity_id = ? AND kind = 'primary'`,
+      [petId],
+    ) ?? null
+  );
+}
+
 export function getPetById(petId: string): PetDetailView | null {
   const row = queryOne<{
     id: string;
