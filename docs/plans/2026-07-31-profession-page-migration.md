@@ -57,13 +57,14 @@ Pipeline work only. Does not gate Stage 2.
 - [x] Fold the existing `lib/utils/{alchemy,cooking,fishing,treasureHunter}` formulas into that record, keeping their public helper signatures
 - [x] Add a unit test asserting the record's tier tables against the payoff list in the spec
 - [ ] Create `lib/queries/professions.ts` owning the profession row, replacing the 13 local interfaces
-- [x] Build `ProfessionHeader` — icon, title, category, purpose, payoff line, optional jump list
+- [x] Build `ProfessionHeader` — icon, title, category, purpose, payoff line, achievement line, optional jump list
 - [x] Wire `PageSections` into the profession header for pages with 4+ sections
-- [ ] Build `ProfessionProgression`, generated from the mechanics record
+- [x] Drop the standalone progression sections: the achievement moved into `ProfessionHeader`, and the remaining progression facts sit with the mechanic they describe
 - [ ] Extract `RangeBar` from `mechanics/mercenary-stats`, which is currently its only user
 - [x] Extract the validated Mining curve renderer into `MasteryCurve`: tier success functions, the reader's slider position, and shaded no-gain regions, rendered as inline SVG so it survives without JS
 - [ ] Extract `Timeline` from `mechanics/monster-spawns` for respawn and cooldown ranges
 - [ ] Build `LocationTable`, `ResourceTable`, `RecipeTable`
+- [x] Settle the long-table convention on the monster overview: fixed widths, truncation with `title`, shared `monster-table` respawn columns, equal row heights
 - [ ] Build `RelatedProfessions` with typed, reasoned links
 - [ ] Delete the bordered hero, metric strip and generic "How It Works" wrappers from the four newest pages, preserving their step content
 - [ ] Replace the inline `grid-template-columns` tier matrices on the four middle-generation pages with `MasteryCurve`
@@ -77,8 +78,8 @@ Each is complete when it satisfies every acceptance criterion in the spec.
 - [x] **mining** — add 102 spawns with map links, node rewards and random gem pools, the 60 recipe consumers, the 9 gather quests, the vendor alternative, the pickaxe durability rule, and the Dwarf start
 - [x] **slayer** — add the 10%-threshold damage-reduction chart, the account-wide capped formula and nearby-party credit; surface special-spawn requirements and exact target map links; migrate all 143 targets to a compact `DataTable` with stable row heights
 - [ ] **fishing** — reduce to the new model: strip hero and metric strip, promote the loop content, surface required tool and drop chances, merge fallback and trash into disclosures, unify foods and potions as fish uses, and link to cooking
-- [ ] Review all four at 1440×900 and 390×844 against the density and overflow criteria
-- [ ] Confirm no-JS rendering for all four
+- [ ] Review all four at 1440×900 and 390×844 against the density and overflow criteria — mining, radiant_seeker and slayer pass; fishing outstanding
+- [ ] Confirm no-JS rendering for all four — mining, radiant_seeker and slayer confirmed; fishing outstanding
 
 ### Stage 4 — Remaining professions
 
@@ -123,3 +124,12 @@ after it.
 The four Stage 3 professions were chosen to span sparse and dense, gathering and combat,
 calculator and none, and both directions of change. A flaw in the model surfaces there or
 not at all.
+
+The Slayer wave changed two spec decisions, both recorded in
+`2026-07-31-profession-page-system`. The achievement is a header element, because a
+trailing progression section restated the loop and the calculator on every page it
+touched. Long tables follow the monster overview instead of a bespoke layout, because
+variable row heights moved the pagination controls between pages.
+
+Next session starts with **fishing**, the last Stage 3 profession. Reduce it to the new
+model, then review all four together before Stage 4 migrates the remaining nine.

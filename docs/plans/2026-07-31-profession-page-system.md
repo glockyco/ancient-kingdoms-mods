@@ -126,16 +126,20 @@ profession genuinely lacks it — never stubbed, never padded.
 ### Required
 
 1. **Identity** — name, category, one-sentence purpose from `professions.description`,
-   and the **payoff line**: what mastery buys, in plain language, or an explicit "tracks
-   completion only; no gameplay bonus" for lore keeping and exploring.
+   the **payoff line**: what mastery buys, in plain language, or an explicit "tracks
+   completion only; no gameplay bonus" for lore keeping and exploring — and the
+   achievement that the mastery cap unlocks. `ProfessionHeader` renders that achievement
+   line for every profession, so its place and wording cannot drift page by page.
 2. **The loop** — how you actually do this, in prose or numbered steps. Required tool or
    station, where you start, what a single action looks like, what can go wrong.
    Absence is stated: "No tool required" is a fact worth printing when the neighbouring
    profession needs a pickaxe.
-3. **Progression** — how mastery advances, the two-stage roll in plain terms, the
-   "too simple" thresholds, the cap, and the achievement condition. This module is
-   near-identical across the 11 float professions and must be generated from shared
-   data, not written 11 times.
+3. **Progression** — how mastery advances: the two-stage roll in plain terms, the
+   "too simple" thresholds, the cap, and the race starting bonus. These facts attach to
+   the mechanic they describe — the roll beside the calculator, the cap beside the
+   formula — and never form a trailing section of their own. A standalone progression
+   section restates the loop and the calculator, which is how the first migration wave
+   grew duplicate content on every page.
 4. **The inventory** — the exhaustive list of whatever this profession acts on: nodes,
    recipes, targets, triggers, books, dig sites. One canonical row per thing, with a map
    action wherever coordinates exist.
@@ -205,10 +209,10 @@ instead of leaning on the card to do the visual work.
 - **Mechanics explanation** — prose first, then the encoding, then the exact formula.
   Formulas render as readable expressions with named terms, never code identifiers.
   Source citations stay in HTML comments.
-- **Progression** — generated from the shared mechanics record. The two-stage roll, the
-  cap, and the achievement condition. The "too simple" thresholds render as shaded
-  regions on the success curve rather than as a sentence, so a reader sees at a glance
-  where a tier stops paying.
+- **Progression** — no section of its own. The two-stage roll and the starting bonus sit
+  under the calculator that shows them, and the cap sits with the formula that applies
+  it. The "too simple" thresholds render as shaded regions on the success curve rather
+  than as a sentence, so a reader sees at a glance where a tier stops paying.
 - **Calculator** — the signature moment of a profession page, following
   `mechanics/experience`. A curve of success against mastery for each tier, the reader's
   slider position marked on it, and the no-gain regions shaded. Derived numbers sit
@@ -222,8 +226,11 @@ instead of leaning on the card to do the visual work.
 - **Resources and recipes** — one row per thing, expandable for obtainability, tier as a
   leading column, sortable and filterable above roughly 20 rows. Yield and drop rates
   render as proportional bars in the mercenary-stats idiom, not as bare percentages.
-- **Long tables (100+ rows)** — the house `DataTable`. Slayer's 143 rows and exploring's
-  46 need filtering, not scrolling. Prerender all rows for no-JS, enhance on hydration.
+- **Long tables (100+ rows)** — the house `DataTable`, following the monster overview:
+  fixed column widths, one line per cell with truncation and a `title`, and the shared
+  `monster-table` respawn columns where the rows are monsters. Equal row heights keep the
+  pagination controls still between pages. Slayer's 143 rows and exploring's 46 need
+  filtering, not scrolling. Prerender all rows for no-JS, enhance on hydration.
 - **Timings and cooldowns** — a timeline in the `monster-spawns` idiom. Radiant Seeker's
   100 to 3600 second window and every gathering respawn are ranges on a scale, not two
   numbers in a cell.
@@ -258,8 +265,7 @@ Extract only where 3+ pages share a real contract.
 
 | Component | Contract | Call sites |
 | --- | --- | --- |
-| `ProfessionHeader` | profession row + payoff line + optional jump list | 13 |
-| `ProfessionProgression` | shared mechanics record → progression card | 11 float |
+| `ProfessionHeader` | profession row + payoff line + achievement + optional jump list | 13 |
 | `MasteryCurve` | tier success functions + reader position + shaded no-gain regions | 10 |
 | `LocationTable` | rows of zone / sub-zone / coordinates | 5 |
 | `ResourceTable` | tier, entity link, per-tier derived values as bars, map link | 5 |
