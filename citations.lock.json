@@ -420,6 +420,14 @@
     "FoodItem.cs": {
       "span": 0
     },
+    "FriendlyPetFollowerItem.cs:16-23": {
+      "sha256": "3eb0b8ef4f745e2188a793dbd6861de6ec32cd4480649c5bb95f2308af222dfe",
+      "span": 8
+    },
+    "FriendlyPetFollowerItem.cs:58-80": {
+      "sha256": "15c4982775b7da473eef653c0a2088d0f8bac54d1ba5b73d0a89c227f4661f61",
+      "span": 23
+    },
     "FrontalDamageSkill.cs": {
       "span": 0
     },
@@ -874,6 +882,10 @@
       "sha256": "43b07c9fa71f77b9146cb1671adb06ea573f2662de3588a4aa0124540e36a919",
       "span": 6
     },
+    "PetFriendly.cs:389-396": {
+      "sha256": "8ee242d5337d502c1fe3167b4b7bd23619c4d086bc0ba3a30d6796c756b6b5cb",
+      "span": 8
+    },
     "PetFriendly.cs:688-702": {
       "sha256": "fd1a7fc798c9537be81e025464d317e8dc3d43be65d243be53c0e7a04dadd40a",
       "span": 15
@@ -1053,6 +1065,10 @@
       "sha256": "2a65d38cbbf1fee8919bfdbeb5b9bc9d469bb2124a0929a2870678ac98379417",
       "span": 46
     },
+    "Player.cs:3762-3792": {
+      "sha256": "9465f7d5eae3e3a7ffa4841cb8f89d8c0e1cd6c10b75597eb61fb5113a837ca9",
+      "span": 31
+    },
     "Player.cs:397": {
       "sha256": "ced6a03b15098def37cffab704445943de90c50732476be5bb55cc77d90db4c4",
       "span": 1
@@ -1123,6 +1139,10 @@
     },
     "Player.cs:9667": {
       "sha256": "b2601f9861cf847a49777e4170d924a1c47b09845d70f2a9f3eb768c2509bd08",
+      "span": 1
+    },
+    "Player.cs:9761": {
+      "sha256": "1738b8f708551f90e736a5dbaca8fa9477dc923407f6fe9c2c0cde534fb88a22",
       "span": 1
     },
     "Player.cs:HasDetectTraps": {
