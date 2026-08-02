@@ -259,17 +259,17 @@
       "sha256": "4ed726c7169d445f0d842d77e8b003e8556e4dfdf79b8c775bb873ceb253298a",
       "span": 13
     },
-    "CustomStrucUI.cs:203-210": {
-      "sha256": "19fb2d965c9225a4d86ca9640345f3aad7cd6568600f1194ce0e1f1b6bdb0cbf",
-      "span": 8
+    "CustomStrucUI.cs:203-226": {
+      "sha256": "06ef7d25d10a27ca3b2c2e85b4f41a9b2f09576922077f656cd3f031b23a8420",
+      "span": 24
     },
     "CustomStrucUI.cs:259-277": {
       "sha256": "4cc6d9faec74bbf3859e4c9c7c2111d55320735bb67e5c0d682296bd07bc3b8b",
       "span": 19
     },
-    "CustomStrucUI.cs:274-309": {
-      "sha256": "67ca933cafcc7b5c89792655c602ef7ee2ba0c6f4fcea6252b7b812ae1989d6b",
-      "span": 36
+    "CustomStrucUI.cs:328-347": {
+      "sha256": "3353c3c60e86500add8e4f2eca87d8a5d907c59272cc1a6230ccdca16834e19a",
+      "span": 20
     },
     "CustomStrucUI.cs:58-69": {
       "sha256": "c21d7a07d1768cea9a91d8238d389ef4d1c5c2774a0a859ca993a7d6e2dfc258",
@@ -953,6 +953,10 @@
       "sha256": "9c52042d8f43d203b57660cdf58ed0c5cfdde2979d7bd3db43d88f309e6696ff",
       "span": 1
     },
+    "Player.cs:11854-11866": {
+      "sha256": "ac8a8aa1c73bc093f762ebc009351584efdb584d6781581cdd22aa905c26e46b",
+      "span": 13
+    },
     "Player.cs:11931-11935": {
       "sha256": "f50f03b7611dc8b1f526f04014f5396a525ca7902f87b3a22557c671919ec543",
       "span": 5
@@ -1093,10 +1097,6 @@
       "sha256": "b90196d65c14ccabbc904b00c5801d404475dcc806c72310452e8a5bdcf93d35",
       "span": 18
     },
-    "Player.cs:7622-7641": {
-      "sha256": "cb618e95b22f659a01d9073bd5ef14e96441a1e5bfe65503598a67f19ae67018",
-      "span": 20
-    },
     "Player.cs:7780-7799": {
       "sha256": "a6c1d6d3291bbc0db018fe74dcb97e6f0b692ba8d3d3547329bb8933ad41ba22",
       "span": 20
@@ -1128,6 +1128,10 @@
     "Player.cs:8729-8741": {
       "sha256": "2fccaeb8325dbcdf6474981407ce837d9005ca328c62b9b43b629adb967a94c2",
       "span": 13
+    },
+    "Player.cs:8846-8879": {
+      "sha256": "9ad9dba9506188716e3e663a7d0208afd60ee567114d6ba3e6f72bac75838c9a",
+      "span": 34
     },
     "Player.cs:9365-9400": {
       "sha256": "ca1d2469230762267161b1d3d4c2870af0d198961c89612bfd31bb2a7e2b0919",

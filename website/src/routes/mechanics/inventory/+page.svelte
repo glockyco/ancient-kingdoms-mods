@@ -334,17 +334,18 @@
           it inside the buildable house area.
         </p>
         <p>
-          <!-- Source: server-scripts/CustomStrucUI.cs:203-210 — left click or F places the selected structure. -->
-          <!-- Source: server-scripts/CustomStrucUI.cs:80-86 and 274-309 — move mode removes the structure, then respawns it without charging gold. -->
+          <!-- Source: server-scripts/CustomStrucUI.cs:203-226 — left click or F places the selected structure, or drops a moved one at the new spot. -->
+          <!-- Source: server-scripts/CustomStrucUI.cs:80-86, 328-347 and Player.cs:11854-11866 — move mode hides the structure, then repositions the same one without charging gold. -->
           Place the selected chest with left click or
           <kbd
             class="rounded border border-border bg-muted px-1.5 py-0.5 text-xs text-foreground"
             >F</kbd
-          >. Chests can be moved after placement without paying again.
+          >. Chests can be moved after placement without paying again. A moved
+          chest keeps its contents: it is repositioned, not rebuilt.
         </p>
         <p>
           <!-- Source: server-scripts/CustomStrucUI.cs:72-77 and 259-277 — remove mode destroys a selected structure. -->
-          <!-- Source: server-scripts/CustomStrucUI.cs:102-109 and Player.cs:7622-7641 — selling a house pays house resale value and removes placed structures; warning says chest items can be retrieved after buying another house. -->
+          <!-- Source: server-scripts/CustomStrucUI.cs:102-109 and Player.cs:8846-8879 — selling a house pays its resale value and destroys the placed structures; warning says chest items can be retrieved after buying another house. -->
           Individual chests can be destroyed, but there is no chest resale flow. Selling
           the house removes placed furniture, while the account-wide chest items remain
           retrievable if you buy another house.
