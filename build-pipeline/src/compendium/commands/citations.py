@@ -17,6 +17,7 @@ from compendium.citations import (
     Reference,
     Snapshot,
     UnresolvedCitationError,
+    claim_supported,
     is_substantive,
     iter_citation_files,
     parse_file,
@@ -28,7 +29,7 @@ console = Console()
 LOCKFILE_NAME = "citations.lock.json"
 SNAPSHOT_DIR = "server-scripts"
 
-FAILING_STATUSES = frozenset({"changed", "unresolved", "ambiguous"})
+FAILING_STATUSES = frozenset({"changed", "unresolved", "ambiguous", "unsupported"})
 _STATUS_STYLE = {
     "ok": "green",
     "moved": "yellow",
@@ -36,6 +37,7 @@ _STATUS_STYLE = {
     "suspect": "magenta",
     "unresolved": "red",
     "ambiguous": "red",
+    "unsupported": "red",
     "file-only": "cyan",
     "symbol": "cyan",
 }
@@ -146,6 +148,62 @@ def _classify(snapshot: Snapshot, target: Target) -> None:
     target.span = len(region)
 
 
+def _check_claims(snapshot: Snapshot, targets: list[Target]) -> None:
+    """Flag citations whose prose names code none of their regions contain.
+
+    A claim belongs to the comment, not to each locator inside it: one comment
+    routinely cites a call site and the method it calls, and only one of those
+    holds the identifier. So the regions of a comment are pooled before the
+    claim is tested, and a target is only flagged when every comment pointing at
+    it fails. That keeps the rule aimed at genuine drift rather than at the
+    normal habit of citing several places at once.
+    """
+    by_target = {target.key: target for target in targets}
+    comments: dict[tuple[str, int], dict[str, object]] = {}
+    for target in targets:
+        if target.status in FAILING_STATUSES or target.locator is None:
+            continue
+        if not target.locator[0].isdigit():
+            continue
+        for reference in target.references:
+            if not reference.claim:
+                continue
+            group = comments.setdefault(
+                (reference.source_path, reference.line),
+                {"claim": reference.claim, "keys": set(), "context": []},
+            )
+            keys = group["keys"]
+            assert isinstance(keys, set)
+            if target.key in keys:
+                continue
+            keys.add(target.key)
+            context = group["context"]
+            assert isinstance(context, list)
+            context.extend(snapshot.region(target.rel, target.locator))
+            context.extend(snapshot.enclosing_declaration(target.rel, target.locator))
+
+    failed: dict[str, str] = {}
+    satisfied: set[str] = set()
+    for group in comments.values():
+        claim = group["claim"]
+        context = group["context"]
+        keys = group["keys"]
+        assert isinstance(claim, str) and isinstance(context, list)
+        assert isinstance(keys, set)
+        if claim_supported(claim, context):
+            satisfied |= keys
+        else:
+            for key in keys:
+                failed.setdefault(key, claim)
+
+    for key, claim in failed.items():
+        if key in satisfied:
+            continue
+        target = by_target[key]
+        target.status = "unsupported"
+        target.detail = f"claim names code absent from the cited region: {claim[:80]!r}"
+
+
 def _shift(locator: str, start: int) -> str:
     """Rewrite a locator so it begins at a new start line, keeping its length."""
     if "-" not in locator:
@@ -166,7 +224,7 @@ def _compare(snapshot: Snapshot, target: Target, entry: LockEntry | None) -> Non
         return
     if target.status in {"file-only", "symbol"}:
         return
-    if target.status == "suspect":
+    if target.status in {"suspect", "unsupported"}:
         return
     if entry.sha256 is None:
         target.status = "changed"
@@ -249,6 +307,7 @@ def _load(repo_root: Path) -> tuple[Snapshot, list[Target]] | None:
     targets = _build_targets(snapshot, _collect_references(repo_root))
     for target in targets:
         _classify(snapshot, target)
+    _check_claims(snapshot, targets)
     return snapshot, targets
 
 

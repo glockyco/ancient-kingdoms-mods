@@ -11,6 +11,7 @@ compares the cited regions against content hashes recorded in the tracked
 `citations.lock.json`. Only hashes are stored, never decompiled text.
 """
 
+from compendium.citations.claims import claim_supported, claim_tokens
 from compendium.citations.lockfile import LockEntry, Lockfile
 from compendium.citations.parser import (
     CITATION_EXTENSIONS,
@@ -37,6 +38,8 @@ __all__ = [
     "Snapshot",
     "SnapshotIdentity",
     "UnresolvedCitationError",
+    "claim_supported",
+    "claim_tokens",
     "digest",
     "is_substantive",
     "iter_citation_files",

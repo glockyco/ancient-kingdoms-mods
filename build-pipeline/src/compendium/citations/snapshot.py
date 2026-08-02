@@ -9,6 +9,15 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
+_DECLARATION_RE = re.compile(
+    r"\b(?:class|struct|interface|enum|get|set)\b|\w+\s*\([^;]*\)\s*$|=>"
+)
+
+
+def _indent_width(line: str) -> int:
+    """Indentation depth of a line, counting a tab as one level."""
+    return len(line) - len(line.lstrip("\t "))
+
 
 @dataclass(frozen=True)
 class SnapshotIdentity:
@@ -106,6 +115,47 @@ class Snapshot:
         if first < 1 or last < first or first > len(lines):
             return []
         return lines[first - 1 : min(last, len(lines))]
+
+    def enclosing_declaration(self, rel: str, locator: str) -> list[str]:
+        """Return the declaration headers a cited region sits inside.
+
+        A citation often names the method it points into rather than a token on
+        the cited lines themselves, so the signature above the region is part of
+        what the prose is talking about. Scanning upward for lines that declare
+        something and sit at shallower indentation gives that context without
+        pulling in sibling statements.
+        """
+        path = self.root / rel
+        lines = path.read_text(encoding="utf-8").splitlines()
+        if not locator or not locator[0].isdigit():
+            return []
+        first = int(locator.split("-", 1)[0])
+        if first < 1 or first > len(lines):
+            return []
+
+        indent = _indent_width(lines[first - 1])
+        headers: list[str] = []
+        for index in range(first - 2, -1, -1):
+            line = lines[index]
+            if not line.strip():
+                continue
+            width = _indent_width(line)
+            if width >= indent:
+                continue
+            indent = width
+            header = line
+            if header.strip() == "{":
+                # ILSpy opens every block on its own line, so the declaration a
+                # region belongs to sits immediately above that brace.
+                for above in range(index - 1, -1, -1):
+                    if lines[above].strip():
+                        header = lines[above]
+                        break
+            if _DECLARATION_RE.search(header):
+                headers.append(header)
+            if width == 0:
+                break
+        return headers
 
     def digest(self, lines: Sequence[str]) -> str:
         """Hash a region using the snapshot's normalization rule."""

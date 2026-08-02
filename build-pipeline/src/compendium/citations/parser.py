@@ -35,6 +35,7 @@ class Reference:
     source_path: str
     line: int
     col: int
+    claim: str = ""
 
     @property
     def is_symbol(self) -> bool:
@@ -55,6 +56,22 @@ def _before_prose(text: str) -> str:
     """Return only the citation side of a prose dash."""
     match = _DASH_RE.search(text)
     return text[: match.start()] if match else text
+
+
+def _claim_prose(blob: str) -> str:
+    """Return the human-readable claim a citation block makes, if it states one.
+
+    Everything after the first prose dash is the author describing what the
+    cited code does. Comment markers and trailing HTML comment terminators are
+    stripped so the text reads the same whichever language hosts the citation.
+    """
+    match = _DASH_RE.search(blob)
+    if match is None:
+        return ""
+    tail = blob[match.end() :].split("-->", 1)[0]
+    lines = [_COMMENT_RE.sub("", line).strip() for line in tail.splitlines()]
+    prose = " ".join(line for line in lines if line)
+    return prose.removesuffix("-->").strip()
 
 
 def _parse_blob(blob: str) -> list[tuple[str, str | None, int]]:
@@ -138,6 +155,7 @@ def parse_file(path: Path, text: str) -> list[Reference]:
             end += 1
 
         block = "\n".join(block_lines)
+        claim = _claim_prose(block)
         for file_name, locator, offset in _parse_blob(block):
             physical_line = index + 1
             if offset >= 0:
@@ -160,6 +178,7 @@ def parse_file(path: Path, text: str) -> list[Reference]:
                     source_path=path.as_posix(),
                     line=physical_line,
                     col=col,
+                    claim=claim,
                 )
             )
         index = max(end, index + 1)
