@@ -605,7 +605,7 @@
                 alt={`Pet summoned by ${data.item.name}`}
                 width={data.petVisualAsset.width}
                 height={data.petVisualAsset.height}
-                class="h-28 w-auto max-w-full object-contain [image-rendering:pixelated]"
+                class="h-auto w-auto max-w-full object-contain [image-rendering:pixelated] max-h-40"
               />
             </div>
           </Card.Content>

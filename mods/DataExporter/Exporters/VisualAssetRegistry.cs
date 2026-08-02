@@ -137,7 +137,12 @@ public class VisualAssetRegistry
             return null;
 
         const int compositeLayer = 31;
-        const int pixelsPerUnit = 128;
+        // The game authors every world sprite at 48 pixels per unit, so rendering
+        // composites at that density makes their PNG pixels mean the same thing
+        // as a single sprite's: world size x 48. Anything higher upsamples art
+        // that has no more detail to give and leaves consumers guessing at a
+        // correction factor.
+        const int pixelsPerUnit = 48;
         const int maxDimension = 512;
 
         GameObject root = null;

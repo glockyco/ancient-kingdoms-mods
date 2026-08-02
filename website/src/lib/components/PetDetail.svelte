@@ -262,13 +262,13 @@
     <section aria-labelledby="pet-summary-title">
       <h2 id="pet-summary-title" class="sr-only">Appearance</h2>
       <div class="bg-muted/30 rounded-md border p-4">
-        <div class="flex h-32 w-full items-center justify-center">
+        <div class="flex min-h-32 w-full items-center justify-center">
           <img
             src={spriteSrc}
             alt={`${pet.name} sprite`}
             width={visualAsset.width}
             height={visualAsset.height}
-            class="h-28 w-auto max-w-full object-contain [image-rendering:pixelated]"
+            class="h-auto w-auto max-w-full object-contain [image-rendering:pixelated] max-h-56 md:max-h-64"
           />
         </div>
       </div>

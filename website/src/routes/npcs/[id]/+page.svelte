@@ -548,13 +548,13 @@
     <section aria-labelledby="npc-summary-title">
       <h2 id="npc-summary-title" class="sr-only">Appearance</h2>
       <div class="bg-muted/30 rounded-md border p-4">
-        <div class="flex h-32 w-full items-center justify-center md:h-36">
+        <div class="flex min-h-32 w-full items-center justify-center">
           <img
             src="{base}/{data.visualAsset.public_path}"
             alt={`${data.npc.name} sprite`}
             width={data.visualAsset.width}
             height={data.visualAsset.height}
-            class="h-auto max-h-28 w-auto max-w-full object-contain [image-rendering:pixelated] md:max-h-32"
+            class="h-auto w-auto max-w-full object-contain [image-rendering:pixelated] max-h-56 md:max-h-64"
           />
         </div>
       </div>
