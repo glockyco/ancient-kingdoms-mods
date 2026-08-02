@@ -596,8 +596,10 @@
           <Card.Header>
             <Card.Title>Pet</Card.Title>
           </Card.Header>
-          <Card.Content>
-            <div class="flex h-32 w-full items-center justify-center">
+          <Card.Content class="flex-1">
+            <div
+              class="flex h-full min-h-32 w-full items-center justify-center"
+            >
               <img
                 src={petSpriteSrc}
                 alt={`Pet summoned by ${data.item.name}`}

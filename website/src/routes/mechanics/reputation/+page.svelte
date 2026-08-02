@@ -70,7 +70,7 @@
     1: "NPCs refuse to talk",
     4: "Faction vendors, at 15,000",
     5: "Houses and gated quests, at 21,000",
-    6: "Recipes and costumes, at 221,000",
+    6: "Recipes, costumes, and pets, at 221,000",
     7: "Mounts, at 721,000",
   };
 
