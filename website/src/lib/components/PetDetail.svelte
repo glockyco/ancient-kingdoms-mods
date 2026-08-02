@@ -376,7 +376,10 @@
             </div>
             <div class="flex gap-2">
               <dt class="text-muted-foreground w-40 shrink-0">Max Stored</dt>
-              <dd>6</dd>
+              <dd>
+                <!-- Source: server-scripts/UIMercenaries.cs:41,373 — the recruiter roster holds ten mercenaries. -->
+                10
+              </dd>
             </div>
             <div class="flex gap-2">
               <dt class="text-muted-foreground w-40 shrink-0">Stance</dt>
@@ -417,8 +420,20 @@
               <dt class="text-muted-foreground w-40 shrink-0">On Death</dt>
               <dd>
                 <!-- Source: server-scripts/UIMercenaries.cs:436-442 — resurrect = round(5 + 295 × ((clamp(level, 1, 50) − 1) / 49)^2.8 + veteranLevel × 10) (0.9.19.1+). -->
+                <!-- Source: server-scripts/Pet.cs:3530-3563 — every equipped item loses 1 durability on death. -->
                 Stays dead until resurrected for 5–2,300
                 <span class="text-yellow-600 dark:text-yellow-400">gold</span>.
+                Each equipped item loses 1 durability, but the gear itself stays
+                on the mercenary.
+              </dd>
+            </div>
+            <div class="flex gap-2">
+              <dt class="text-muted-foreground w-40 shrink-0">If You Die</dt>
+              <dd>
+                <!-- Source: server-scripts/Player.cs:3699-3744 — living mercenaries are removed on owner death; dead ones keep their corpse. -->
+                <!-- Source: server-scripts/Player.cs:3259,11781 — respawning and porting re-summon the stored mercenaries. -->
+                Living mercenaries are dismissed and re-summoned once you respawn.
+                A mercenary that already died keeps its corpse and still needs a resurrection.
               </dd>
             </div>
           </dl>

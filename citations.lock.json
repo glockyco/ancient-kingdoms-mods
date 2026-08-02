@@ -862,6 +862,10 @@
       "sha256": "fda0dd95375aac848684d4c95efb16a047d8ae3b4ad4d1267b35e800b84f71d1",
       "span": 6
     },
+    "Pet.cs:3530-3563": {
+      "sha256": "7b45d70edd8f7f06cfc337e7c728505b70c4fdef0d0604f4b78873e84a3f3eb9",
+      "span": 34
+    },
     "Pet.cs:4390-4395": {
       "sha256": "a50f32b8c56681dff6c96af96bbb3798648168761e63e943bcf364e4ee4e35ef",
       "span": 6
@@ -931,6 +935,10 @@
     },
     "Player.cs:11741": {
       "sha256": "ea609abf8b3e1acf557c5a0161b29692e6cb8fe4478279a6dd9cc1e24d2e3bf6",
+      "span": 1
+    },
+    "Player.cs:11781": {
+      "sha256": "9c52042d8f43d203b57660cdf58ed0c5cfdde2979d7bd3db43d88f309e6696ff",
       "span": 1
     },
     "Player.cs:11931-11935": {
@@ -1025,6 +1033,10 @@
       "sha256": "1a698c3dedf1bc131620fd58dfe6d195c0dff6b67c36013821fb90369a95a907",
       "span": 4
     },
+    "Player.cs:3259": {
+      "sha256": "1bc52b085b188ba6ae130eefea41d607b0e3528974b44836733310d4a1f07431",
+      "span": 1
+    },
     "Player.cs:3277-3299": {
       "sha256": "faaac647460af1041e793e4b2ffc1c703900d07f45dd0147de070c6ab54aeff5",
       "span": 23
@@ -1036,6 +1048,10 @@
     "Player.cs:3454": {
       "sha256": "d64474feac508a1c3ac15cf5e00dcbcec6be84326e58cf37c0d5fa3e9146f44d",
       "span": 1
+    },
+    "Player.cs:3699-3744": {
+      "sha256": "2a65d38cbbf1fee8919bfdbeb5b9bc9d469bb2124a0929a2870678ac98379417",
+      "span": 46
     },
     "Player.cs:397": {
       "sha256": "ced6a03b15098def37cffab704445943de90c50732476be5bb55cc77d90db4c4",
@@ -1629,6 +1645,14 @@
     "UIMercenaries.cs:352-365": {
       "sha256": "3647f4009013fa23bd6e1ba105c3647528f47824c6afa6352b36821a9c2e341d",
       "span": 14
+    },
+    "UIMercenaries.cs:373": {
+      "sha256": "923ab2549ccb21b352d42c240a166751e8b6a285fb9538b760a9639851116c72",
+      "span": 1
+    },
+    "UIMercenaries.cs:41": {
+      "sha256": "c93a43c5068f14768f938aeb9e6952d19515e0d62be4c7c84062d6f01d3e196a",
+      "span": 1
     },
     "UIMercenaries.cs:427-433": {
       "sha256": "992d7d7cd03dd129a06d2e335f6c309c0274d7cc6e8c553316cfd91da0cb708e",
