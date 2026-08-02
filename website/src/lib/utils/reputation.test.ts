@@ -44,6 +44,13 @@ const tiers: ReputationTier[] = [
     id: 7,
     name: "Revered",
     min_value: 721000,
+    max_value: 2000000,
+    is_hostile: false,
+  },
+  {
+    id: 8,
+    name: "Exalted",
+    min_value: 2000000,
     max_value: null,
     is_hostile: false,
   },
@@ -55,7 +62,7 @@ describe("reputationTierName", () => {
   });
 
   it("treats a NULL maximum as unbounded above", () => {
-    expect(reputationTierName(tiers, 721000)).toBe("Revered");
+    expect(reputationTierName(tiers, 2000000)).toBe("Exalted");
   });
 
   it.each([

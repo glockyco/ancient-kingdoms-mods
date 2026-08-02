@@ -20,7 +20,8 @@
       { "name": "Friendly", "min_value": 1000, "max_value": 21000, "is_hostile": false },
       { "name": "Honored", "min_value": 21000, "max_value": 221000, "is_hostile": false },
       { "name": "Ally", "min_value": 221000, "max_value": 721000, "is_hostile": false },
-      { "name": "Revered", "min_value": 721000, "max_value": null, "is_hostile": false }
+      { "name": "Revered", "min_value": 721000, "max_value": 2000000, "is_hostile": false },
+      { "name": "Exalted", "min_value": 2000000, "max_value": null, "is_hostile": false }
     ]
   },
 

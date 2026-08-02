@@ -38,7 +38,7 @@
   // ids match each Card.Root below.
   const SECTIONS = [
     { id: "factions", label: "The Six Factions" },
-    { id: "ladder", label: "The Eight Tiers" },
+    { id: "ladder", label: "The Nine Tiers" },
     { id: "monsters", label: "Killing Monsters" },
     { id: "npcs", label: "Killing NPCs" },
     { id: "quests", label: "Completing Quests" },
@@ -48,7 +48,7 @@
     { id: "decay", label: "Decay and Limits" },
   ];
 
-  // Tint deepens toward each end of the ladder. The eight segments are equal
+  // Tint deepens toward each end of the ladder. The nine segments are equal
   // width because the ranges span three orders of magnitude, so the strip
   // shows order and the sign change at zero; the table carries the numbers.
   const TIER_BANDS = [
@@ -60,6 +60,7 @@
     "bg-emerald-500/26",
     "bg-emerald-500/34",
     "bg-emerald-500/42",
+    "bg-emerald-500/50",
   ];
 
   // What actually changes inside each tier. The thresholds are raw numbers, so
@@ -91,7 +92,7 @@
 
 <Seo
   title="Reputation Mechanics - Ancient Kingdoms"
-  description="How faction reputation works in Ancient Kingdoms: the eight tiers from Hated to Revered, every formula that moves it, and what each tier unlocks."
+  description="How faction reputation works in Ancient Kingdoms: the nine tiers from Hated to Exalted, every formula that moves it, and what each tier unlocks."
   path="/mechanics/reputation"
 />
 
@@ -157,14 +158,14 @@
 
   <Card.Root id="ladder" class="bg-muted/30">
     <Card.Header>
-      <Card.Title>The Eight Tiers</Card.Title>
+      <Card.Title>The Nine Tiers</Card.Title>
       <Card.Description>
-        Each reputation value falls into one of eight tiers. Requirements in the
+        Each reputation value falls into one of nine tiers. Requirements in the
         game check the raw number, so the tier is only a label.
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/UIFactions.cs:78-146 — adaptTextFaction maps standing to a tier label. -->
+      <!-- Source: server-scripts/UIFactions.cs:78-156 — adaptTextFaction maps standing to a tier label. -->
       <div class="overflow-x-auto">
         <div class="min-w-[640px]">
           <div
@@ -456,13 +457,13 @@
       <p>
         There is no cap and no floor. Every source adds to or subtracts from the
         stored value without clamping it, and the value is saved as-is, so a
-        faction can climb past Revered or fall well below Hated.
+        faction can climb past Exalted or fall well below Hated.
       </p>
-      <!-- Source: server-scripts/UIFactions.cs:84-89 — the Revered readout clamps only the slider. -->
+      <!-- Source: server-scripts/UIFactions.cs:84-105 — the Exalted readout clamps only the slider. -->
       <!-- Source: server-scripts/UIFactions.cs:148-154 — the Hated readout floors the displayed number at 0. -->
       <p>
-        The faction panel hides this at both ends. At Revered it shows "/ Max"
-        and stops filling the slider, and at Hated it shows 0 out of 10,000 once
+        The faction panel hides this at both ends. At Exalted it shows "Max" and
+        fills the slider completely, and at Hated it shows 0 out of 10,000 once
         you drop below −13,000. Both are display limits on a value that keeps
         moving.
       </p>

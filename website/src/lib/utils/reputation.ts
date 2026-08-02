@@ -21,7 +21,7 @@ export interface ReputationTier {
  * Tier a reputation value falls in. Bounds are inclusive-low, exclusive-high,
  * matching the game's cascading comparisons; NULL is unbounded.
  *
- * Source: server-scripts/UIFactions.cs:78-146 — adaptTextFaction's thresholds.
+ * Source: server-scripts/UIFactions.cs:78-156 — adaptTextFaction's thresholds.
  */
 export function reputationTierName(
   tiers: ReputationTier[],
