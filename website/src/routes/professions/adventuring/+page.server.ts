@@ -183,7 +183,7 @@ export const load: PageServerLoad = (): AdventuringPageData => {
     )
     .all() as RawQuest[];
 
-  // Source: server-scripts/Utils.cs:570-573 — daily Adventurer quest selection reads the shared npcAdventurerReference quest list.
+  // Source: server-scripts/Utils.cs:594-601 — daily Adventurer quest selection reads the shared npcAdventurerReference quest list.
   const questPoolOrder = (() => {
     const row = db
       .prepare(
@@ -272,7 +272,7 @@ export const load: PageServerLoad = (): AdventuringPageData => {
           item !== null,
       );
 
-    // Source: server-scripts/PlayerQuests.cs:323-326 — Adventuring skill increase is rewardExperience * 5E-08f.
+    // Source: server-scripts/PlayerQuests.cs:394-396 — Adventuring skill increase is rewardExperience * 5E-08f.
     const adventuringSkillIncrease = (rewards.exp ?? 0) * 0.00000005;
 
     return {

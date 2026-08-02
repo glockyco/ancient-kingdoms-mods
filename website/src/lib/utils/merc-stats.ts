@@ -10,7 +10,7 @@ const CON_HEALTH = 25;
 const INT_MANA = 20;
 // Source: server-scripts/Strength.cs:15-17 — Strength contributes 1 Attack Power per point.
 const STR_PHYS = 1.0;
-// Source: server-scripts/Intelligence.cs:36-38 — Intelligence contributes round(INT×1.5) Spell Power.
+// Source: server-scripts/Intelligence.cs:7,36-38 — Intelligence contributes round(INT×1.5) Spell Power.
 const INT_MAGIC = 1.5;
 
 /** Round to float32 precision, as Unity stores/computes. */
@@ -76,7 +76,7 @@ export interface ClassDef {
 }
 
 // Source: server-scripts/Utils.cs:626-634 — class race pools.
-// Source: server-scripts/Player.cs:7209-7384 — per-class attribute divisors.
+// Source: server-scripts/Player.cs:7458-7494,7495-7523,7524-7552,7553-7581,7582-7610,7611-7642 — per-class attribute divisors.
 export const CLASSES: Record<string, ClassDef> = {
   Warrior: {
     type: "Warrior",
@@ -127,7 +127,7 @@ export type Curves = Record<string, Curve>;
 const linear = (base: number, per: number, level: number): number =>
   base + per * (level - 1);
 
-// Source: server-scripts/Player.cs:7203-7386 — mercenary attributes are floor(level / class divisor).
+// Source: server-scripts/Player.cs:7458-7494,7495-7523,7524-7552,7553-7581,7582-7610,7611-7642 — mercenary attributes are floor(level / class divisor).
 export function attrs(cls: string, level: number): Record<string, number> {
   const out: Record<string, number> = {};
   for (const [a, n] of Object.entries(CLASSES[cls].div))
@@ -165,9 +165,9 @@ export interface ClassResult {
   rows: MercRow[];
 }
 
-/** Source: server-scripts/Player.cs:8652-8696 — hire rolls race, multipliers, and shared base-combat value. */
+/** Source: server-scripts/Player.cs:8928-8932,8934-8964,8972,8990-9002 — hire rolls race, multipliers, and shared base-combat value. */
 /** Source: server-scripts/Player.cs:8714-8741 — summoned mercenaries apply level, veteran points, Health, Mana, Attack Power, and Spell Power. */
-/** Source: server-scripts/Player.cs:7203-7386 — class attributes are rebuilt from level. */
+/** Source: server-scripts/Player.cs:7458-7494,7495-7523,7524-7552,7553-7581,7582-7610,7611-7642 — class attributes are rebuilt from level. */
 export function computeAll(
   level: number,
   veteran: number,
@@ -251,7 +251,7 @@ export function pRaceInZone(
   return list.includes(race) ? 1 / list.length : 0;
 }
 
-/** Source: server-scripts/uMMORPG.Scripts.PlayerAttributes/Charisma.cs:13-15 — purchase discount is Charisma×0.002, capped by the shop. */
+/** Source: server-scripts/uMMORPG.Scripts.PlayerAttributes/Charisma.cs:13-15, server-scripts/UINpcTrading.cs:822-829 — purchase discount is Charisma×0.002, capped by the shop. */
 export function charismaDiscount(charisma: number): number {
   return Math.min(0.25, Math.max(0, charisma) * 0.002);
 }

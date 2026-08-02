@@ -296,8 +296,7 @@ function formatHealing(
     parts.push(`${formatLinearValue(healMana, monsterContext)} mana`);
   }
 
-  // Source: server-scripts/Player.cs:10290-10296 — CmdResurrect
-  // health = health.max * 0.6, mana = health.max * 0.2, xp = +75% of lossExp
+  // Source: server-scripts/Player.cs:11779-11786 — resurrection restores 60% max HP, 20% max HP as mana, and +75% of lossExp.
   if (skill.is_resurrect_skill) {
     parts.push("resurrect (60% max HP, 20% max HP as mana, +75% lost XP)");
   }
@@ -765,7 +764,7 @@ const HARDCODED_EFFECTS: Record<string, string> = {
   gathering: "gather herbs and reagents",
   mining: "mine ore and minerals",
   opening: "open locked chests",
-  // Source: server-scripts/GatherItem.cs:302-352 — Lockpicking allows opening locked chests
+  // Source: server-scripts/GatherItem.cs:317-325,353-374 — Lockpicking allows opening locked chests
   // using lockpicks instead of the specific key. 80% failure chance, consumes one lockpick per attempt.
   lockpicking: "open locked chests with lockpicks (20% success chance)",
   blushburst: "cosmetic visual effect",
@@ -773,7 +772,7 @@ const HARDCODED_EFFECTS: Record<string, string> = {
   golden_whirl: "cosmetic visual effect",
   skyflare: "cosmetic visual effect",
   // Source: server-scripts/PassiveSkill.cs (0.9.18.0+) — Detect Traps is now a passive skill.
-  // Source: server-scripts/Player.cs:HasDetectTraps and Trap.cs:143-209,
+  // Source: server-scripts/Player.cs:HasDetectTraps and Trap.cs:142-146,182-194,199-209,
   // TrapDetection.cs:25-31 — passive grants trap visibility/disarm to Rogues at any rank.
   detect_traps: "passive — reveal and disarm traps (Rogue only)",
   // Source: server-scripts/TargetBuffSkill.cs:15 (isDoubleExpSpell flag) — lasts for the event duration

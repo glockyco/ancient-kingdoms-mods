@@ -121,7 +121,8 @@ export function fishingMasteryGainChance({
   return skillGainChance(mechanics.skillGain, fishingPercent);
 }
 
-// Source: server-scripts/GatherItem.cs:756 — Random.Range(1, 4) / (successChance * 5000f). Unity int upper bound is exclusive, so 1-3.
+// Source: server-scripts/GatherItem.cs:747-749 — Random.Range(1, 4) divided by the
+// catch chance times 5000. Unity's int upper bound is exclusive, so 1-3.
 export function fishingMasteryGainRange(successChance: number): {
   min: number;
   max: number;
@@ -140,7 +141,7 @@ export function fishingMasteryGainRange(successChance: number): {
   };
 }
 
-// Source: server-scripts/GatherItem.cs:769-776 — fishing XP by levelItem.
+// Source: server-scripts/GatherItem.cs:759-766 — fishing XP by levelItem.
 export function fishingExperienceForTier(spotTier: number): number {
   switch (spotTier) {
     case 1:
@@ -170,7 +171,7 @@ export function fishingClickWindowSeconds(spotTier: number): number {
   }
 }
 
-// Source: server-scripts/Player.cs:7793 — TargetRpcSetFishWindow(Random.Range(3, 8)) (int upper bound exclusive).
+// Source: server-scripts/Player.cs:8483-8484 — TargetRpcSetFishWindow(Random.Range(3, 8)) (int upper bound exclusive).
 export function fishingCastDelaySecondsRange(): { min: number; max: number } {
   return { min: 3, max: 7 };
 }
@@ -197,7 +198,7 @@ function averageSelectedFishChance({
   return totalCappedP / spotDrops.length;
 }
 
-// Source: server-scripts/GatherItem.cs:679-746 — fallback split after a failed primary
+// Source: server-scripts/GatherItem.cs:672-683,685-702,704-720,722-739 — fallback split after a failed primary
 // configured-fish roll, by spot level (levelItem). Of the (1 − A) failed mass, each tier
 // awards trash / a random lower-quality fish / nothing (escape). Rates per tier sum to 1;
 // tiers beyond 3 have no in-game fallback.
@@ -226,7 +227,7 @@ export function fishTrashChancePerHook(params: FishOutcomeParams): number {
   return failedPrimaryFallbackRates(params.spotTier).trash * failedMass;
 }
 
-// Source: server-scripts/GatherItem.cs:699-739 — higher-tier spots also award a random
+// Source: server-scripts/GatherItem.cs:685-702,704-720,722-739 — higher-tier spots also award a random
 // lower-quality fish (uniform from the tier's quality pool) when the primary roll fails.
 export function fishLowerTierFishChancePerHook(
   params: FishOutcomeParams,

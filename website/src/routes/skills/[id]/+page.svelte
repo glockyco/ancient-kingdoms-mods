@@ -2215,7 +2215,7 @@
                     </p>
                   {/if}
                 {:else if ctx.model === "player_spell"}
-                  <!-- Source: server-scripts/Skills.cs:711-713, server-scripts/Combat.cs:332 -->
+                  <!-- Source: server-scripts/Skills.cs:820-824, server-scripts/Combat.cs:314-324 -->
                   <!-- Source: server-scripts/Player.cs:refractoryPeriodSkill — refractoryPeriodSkill = 0.75f; blocks next cast after FinishCast -->
                   <p class="font-mono">
                     interval = cast time &times; (1 &minus; spell haste) + 0.75s
@@ -2234,7 +2234,7 @@
                     haste (cap: &minus;80%).
                   </p>
                 {:else if ctx.model === "merc_spell"}
-                  <!-- Source: server-scripts/Skills.cs:711-713, server-scripts/Skills.cs:810, server-scripts/Combat.cs:332 -->
+                  <!-- Source: server-scripts/Skills.cs:820-824, server-scripts/Skills.cs:947-950, server-scripts/Combat.cs:314-324 -->
                   <p class="font-mono">
                     interval = cast time &times; (1 &minus; spell haste) +
                     cooldown
@@ -2250,7 +2250,7 @@
                   </p>
                 {:else}
                   <!-- companion: companions, familiars -->
-                  <!-- Source: server-scripts/Pet.cs:2024-2029, server-scripts/Pet.cs:4390-4395, server-scripts/Pet.cs:4474-4479, server-scripts/Skills.cs:943-950 — non-merc pets always pass 0f spellHasteBonus; flat cooldown -->
+                  <!-- Source: server-scripts/Pet.cs:2024-2029, server-scripts/Pet.cs:4390-4395, server-scripts/Pet.cs:4474-4479 — non-merc pets always pass 0f spellHasteBonus; server-scripts/Skills.cs:947-950 — flat cooldown -->
                   <p class="font-mono">interval = cast time + cooldown</p>
                   <p class="text-muted-foreground">No haste reduction.</p>
                 {/if}
@@ -2333,7 +2333,7 @@
                     {#if hasNonZeroField(skill.healing_per_second_bonus)}
                       <dt class="text-muted-foreground">DoT</dt>
                       {#if skill.is_poison_debuff || skill.is_disease_debuff}
-                        <!-- Source: server-scripts/Skills.cs:1406-1410 — the shared poison/disease branch adds round(bonusAttribute × 1.5) before Poison Resist mitigation. Its ordering takes precedence over the later disease-specific branch. -->
+                        <!-- Source: server-scripts/Skills.cs:1406-1429 — the shared poison/disease branch adds round(bonusAttribute × 1.5) before Poison Resist mitigation. Its ordering takes precedence over the later disease-specific branch. -->
                         <dd>
                           skillValue(level) + round(bonusAttribute &times; 1.5)
                         </dd>
@@ -2377,7 +2377,7 @@
         {/if}
 
         <!-- E. Cleanse Resistance (on debuff skill pages) -->
-        <!-- Source: server-scripts/Buff.cs:18 (3 counters); TargetBuffSkill.cs:300-347 (counter rolls); Skills.cs:1326-1331 (DoT per-counter scaling) -->
+        <!-- Source: server-scripts/Buff.cs:18 (3 counters); TargetBuffSkill.cs:299-320 (counter rolls); Skills.cs:1531-1536 (DoT per-counter scaling) -->
         {#if isDebuffType && !skill.is_cleanse && !skill.is_dispel && skill.prob_ignore_cleanse != null}
           <div class="space-y-1">
             <h3 class="font-semibold">Cleanse Resistance</h3>
@@ -2404,7 +2404,7 @@
         {/if}
 
         <!-- E2. Cleanse Mechanics (on cleanse skill pages) -->
-        <!-- Source: server-scripts/TargetBuffSkill.cs:288-362 / AreaBuffSkill.cs:140-358 (cleanse); Buff.cs:18 (3 counters); Skills.cs:1326-1331 (DoT per-counter scaling) -->
+        <!-- Source: server-scripts/TargetBuffSkill.cs:299-325 / AreaBuffSkill.cs:179-195,271-288 (cleanse); Buff.cs:18 (3 counters); Skills.cs:1531-1536 (DoT per-counter scaling) -->
         {#if skill.is_cleanse}
           <div class="space-y-1">
             <h3 class="font-semibold">
@@ -2435,7 +2435,7 @@
           {@const playerCast =
             skill.is_scroll || skill.player_classes.length > 0}
           <div class="space-y-1">
-            <!-- Source: server-scripts/TargetDebuffSkill.cs:104-142 (resist gate), 172-269 (removal); AreaDebuffSkill.cs:103-138 (resist gate), 168-265 (removal); Combat.cs:1302-1329 GetProbResistMagic/Disease -->
+            <!-- Source: server-scripts/TargetDebuffSkill.cs:104-142 (resist gate), 172-204,208-233,237-249 (removal); AreaDebuffSkill.cs:103-138 (resist gate), 163-204,208-232,237-257 (removal); Combat.cs:1302-1329 GetProbResistMagic/Disease -->
             <h3 class="font-semibold">
               <a
                 href="/mechanics/combat#dispel"
@@ -2573,7 +2573,7 @@
           </div>
         {/if}
         {#if skill.fear_resist_chance_bonus}
-          <!-- Source: server-scripts/Combat.cs:266-277 — fearResistChance property -->
+          <!-- Source: server-scripts/Combat.cs:244-256 — fearResistChance property -->
           <div class="space-y-1">
             <h3 class="font-semibold">Fear Resist</h3>
             <p class="text-muted-foreground">
@@ -2621,7 +2621,7 @@
           </div>
         {/if}
         {#if skill.speed_bonus && skill.speed_bonus.base_value <= -50}
-          <!-- Source: server-scripts/Skills.cs:1149 (BreakMezz — entity.speed <= -50f) -->
+          <!-- Source: server-scripts/Skills.cs:1346-1351 (BreakMezz — entity.speed <= -50f) -->
           <!-- Source: server-scripts/Combat.cs:567 (any damage > 0 calls BreakMezz) -->
           <!-- Source: server-scripts/Monster.cs:1483-1497 (monster self-break roll every 6s) -->
           <!-- Source: server-scripts/TargetDebuffSkill.cs:140 (boss/elite auto-resist speedBonus < -10) -->
@@ -2740,7 +2740,7 @@
           </div>
         {/if}
         {#if hasLinearValue(skill.damage_shield)}
-          <!-- Source: server-scripts/Combat.cs:1043-1141 (damage_shield reflect block; gated by !isProcWeapon && !isScroll) -->
+          <!-- Source: server-scripts/Combat.cs:742-752,754-775,779-789,794-818 (damage_shield reflect block; gated by !isProcWeapon && !isScroll) -->
           <div class="space-y-1">
             <h3 class="font-semibold">Damage Shield</h3>
             <p class="text-muted-foreground">

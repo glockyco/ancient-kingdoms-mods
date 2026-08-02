@@ -153,7 +153,7 @@
 
       <ol class="list-decimal space-y-1 pl-5">
         <li>
-          <!-- Source: server-scripts/Monster.cs:2078-2079 — corpse deadline = death + deathTime; respawn deadline = corpse deadline + respawnTime. -->
+          <!-- Source: server-scripts/Monster.cs:2428-2429 — corpse deadline = death + deathTime; respawn deadline = corpse deadline + respawnTime. -->
           On death the monster becomes a lootable corpse. The corpse stays for its
           corpse time (2 minutes for most monsters), then disappears.
         </li>
@@ -168,7 +168,7 @@
           spawn point.
         </li>
         <li>
-          <!-- Source: server-scripts/Monster.cs:2078-2079 — both deadlines are fixed at the moment of death; respawnTimeEnd = deathTimeEnd + respawnTime. Early corpse removal (looting) never touches respawnTimeEnd. -->
+          <!-- Source: server-scripts/Monster.cs:2428-2429 — both deadlines are fixed at the moment of death; respawnTimeEnd = deathTimeEnd + respawnTime. Early corpse removal (looting) never touches respawnTimeEnd. -->
           Both timers are locked in at the moment of death: the monster respawns corpse
           time plus respawn timer after the kill. Looting the corpse makes it disappear
           sooner, but never speeds up the respawn.
@@ -205,7 +205,7 @@
     <Card.Content class="space-y-3 text-sm text-muted-foreground">
       <p>
         <!-- Source: server-scripts/ZoneInfo.cs:185-201 — zones with no online player inside are deactivated. -->
-        <!-- Source: server-scripts/Player.cs:3454, 9667, 11527 — zone cleanup runs 5 seconds after a player changes zone; NetworkManagerMMO.cs:704 and 806 — and on disconnect. -->
+        <!-- Source: server-scripts/Player.cs:3261, 9782, 11790 — zone cleanup runs 5 seconds after respawn, portal travel, or resurrection; NetworkManagerMMO.cs:718 and 820 — and on disconnect. -->
         About 5 seconds after the last player leaves a zone (immediately, on a logout),
         the entire zone is switched off. Monsters in it stop acting entirely — they
         do not move, fight, or respawn until a player enters again.
@@ -245,7 +245,7 @@
     <Card.Content class="space-y-4">
       <ul class="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
         <li>
-          <!-- Source: server-scripts/Monster.cs:2087-2105 — boss and elite deaths write the respawn deadline to the server database; the respawn duration is sent to currently-online clients via TargetRpcUpdateBossState (applied locally as now+duration, early by the death/corpse window), not a synced deadline, and offline clients are not notified. -->
+          <!-- Source: server-scripts/Monster.cs:OnDeath — boss and elite deaths write the respawn deadline to the server database; the respawn duration is sent to currently-online clients via TargetRpcUpdateBossState (applied locally as now+duration, early by the death/corpse window), not a synced deadline, and offline clients are not notified. -->
           When a boss dies, its respawn deadline is saved server-side.
         </li>
         <li>
@@ -718,7 +718,7 @@
     </Card.Header>
     <Card.Content class="space-y-4">
       <p class="text-sm text-muted-foreground">
-        <!-- Source: server-scripts/Monster.cs:837 — game hour = ((server time % 3600) / 2.5) / 60, so one in-game day lasts exactly one real hour and one game hour lasts 2.5 real minutes. -->
+        <!-- Source: server-scripts/Monster.cs:1133 — game hour = ((server time % 3600) / 2.5) / 60, so one in-game day lasts exactly one real hour and one game hour lasts 2.5 real minutes. -->
         One in-game day lasts exactly one real hour, so each game hour is 2.5 real
         minutes.
         <!-- Source: server-scripts/Monster.cs:1815-1818 — respawn is held while outside the spawn window. -->
@@ -786,7 +786,7 @@
     <Card.Content class="space-y-4">
       <p class="text-sm text-muted-foreground">
         <!-- Source: server-scripts/Monster.cs:617-625 — summonable monsters start hidden; only chance-based non-elite summons start with their respawn timer armed. -->
-        <!-- Source: server-scripts/SummonMonster.cs:23-69 — once per second the trigger checks for a fresh alive-to-all-dead placeholder cycle; kills are not counted. -->
+        <!-- Source: server-scripts/SummonMonster.cs:26,36-46,52-69 — once per second the trigger checks for a fresh alive-to-all-dead placeholder cycle; kills are not counted. -->
         <!-- Source: server-scripts/Monster.cs:1803 and 1819-1834 — the spawn check requires the summon's own respawn timer elapsed plus all trigger monsters dead at the same time; a zone-wide message is broadcast on success. -->
         Each summon watches a fixed set of nearby spawns. There is no kill counter
         — kills do not add up. The watched group must be alive before a fresh clear
@@ -1070,7 +1070,7 @@
           exists. Bosses and elites leash normally even in dungeons.
         </li>
         <li>
-          <!-- Source: server-scripts/Monster.cs:2254-2259 and Monster.cs:663-664 — while returning, a monster only re-engages targets within 80% of its follow distance; normal dungeon monsters always re-engage (flag set at Monster.cs:663-664). -->
+          <!-- Source: server-scripts/Monster.cs:2256 and Monster.cs:663-664 — while returning, a monster only re-engages targets within 80% of its follow distance; normal dungeon monsters always re-engage (flag set at Monster.cs:663-664). -->
           While heading home it only re-engages if you stay close (within 80% of its
           chase range). Regular dungeon monsters are the exception — they always turn
           around and re-engage.

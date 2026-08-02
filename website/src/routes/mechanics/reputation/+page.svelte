@@ -118,7 +118,7 @@
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/Database.cs:3001-3075 — per-race starting faction values. -->
+      <!-- Source: server-scripts/Database.cs:3001-3009,3012-3020,3023-3031,3034-3041,3044-3052,3055-3062,3065-3072 — per-race starting faction values. -->
       <p>
         A new character starts at 0 with every faction except the one that
         matches its race, which starts at 500.
@@ -165,7 +165,7 @@
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/UIFactions.cs:78-156 — adaptTextFaction maps standing to a tier label. -->
+      <!-- Source: server-scripts/UIFactions.cs:78,80,82,84,86-90,93-97,102-105,109-113,116-120,124-130,133-137,141-145,148-153 — adaptTextFaction maps standing to a tier label. -->
       <div class="overflow-x-auto">
         <div class="min-w-[640px]">
           <div

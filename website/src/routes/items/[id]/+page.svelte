@@ -932,7 +932,7 @@
               </div>
               <div>
                 <div class={styles.label}>Amount received</div>
-                <!-- Source: server-scripts/Utils.cs:499 — getPrimalEssenceAmount: ceil(sellPrice * 0.06f) -->
+                <!-- Source: server-scripts/Utils.cs:520-523 — getPrimalEssenceAmount: ceil(sellPrice * 0.06f) -->
                 <div class={styles.value}>6% of sell price</div>
               </div>
             </div>
@@ -952,7 +952,7 @@
               </div>
               <div>
                 <div class={styles.label}>Cost</div>
-                <!-- Source: server-scripts/Utils.cs:priceResetVeteranSkills (priceResetVeteranSkills = 10000), Npc.cs:1769 -->
+                <!-- Source: server-scripts/Utils.cs:priceResetVeteranSkills (priceResetVeteranSkills = 10000), Npc.cs:1772-1779 -->
                 <div class={styles.value}>
                   {formatGold(10000)}g + Token of Redemption
                 </div>
@@ -1137,7 +1137,7 @@
           </Card.Content>
         </Card.Root>
       {:else if data.item.id === "lockpicks"}
-        <!-- Source: server-scripts/GatherItem.cs:302-352 — Lockpicking skill -->
+        <!-- Source: server-scripts/GatherItem.cs:317-325,353-374 — Lockpicking skill -->
         <Card.Root class="bg-muted/30">
           <Card.Header>
             <Card.Title>Lockpicking</Card.Title>

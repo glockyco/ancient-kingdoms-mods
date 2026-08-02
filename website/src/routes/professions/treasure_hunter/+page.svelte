@@ -165,7 +165,7 @@
               compact
             />
           </div>
-          <!-- Source: server-scripts/TreasureLocation.cs:15,31-35 — treasure locations require the matching map in inventory. -->
+          <!-- Source: server-scripts/TreasureLocation.cs:13-18,31-37 — treasure locations require the matching map in inventory. -->
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
             Each treasure map points to one dig site. Use the clue or the map
             links on this page to find it.
@@ -183,7 +183,7 @@
               tooltipHtml={data.keyItems.shovel.tooltip_html}
             />.
           </div>
-          <!-- Source: server-scripts/TreasureLocation.cs:61-100,105-160 — digging requires the matching map and shovel, consumes one map on success, and grants the configured reward. -->
+          <!-- Source: server-scripts/TreasureLocation.cs:61-63,78-90,117-129,158-161 — digging requires the matching map and shovel, consumes one map on success, and grants the configured reward. -->
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
             Bring a Shovel and at least one free inventory slot. A successful
             dig awards the treasure and gives +0.5% Treasure Hunter.
@@ -334,7 +334,7 @@
           </tbody>
         </table>
       </div>
-      <!-- Source: server-scripts/ChestItem.cs:24-66 — chest reward selection loop runs up to 10 passes until the slot count is filled. -->
+      <!-- Source: server-scripts/ChestItem.cs:24,61 — chest reward selection loop runs up to 10 passes until the slot count is filled. -->
       <p class="border-t bg-muted/20 px-3 py-2 text-sm text-muted-foreground">
         <span aria-hidden="true">*</span> Each reward rolls up to 10 times per chest,
         so the per-roll bonus compounds into a larger per-chest gain.

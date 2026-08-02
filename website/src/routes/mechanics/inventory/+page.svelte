@@ -147,7 +147,7 @@
     <Card.Content class="space-y-5">
       <ul class="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
         <li>
-          <!-- Source: server-scripts/UIBigBackpack.cs + server-scripts/GameManager.cs:457-458,1340-1355 + server-scripts/UIInventory.cs:124-125 — UIBigBackpack panel toggled by the "Backpack" input action; default binding <Keyboard>/b. -->Open
+          <!-- Source: server-scripts/UIBigBackpack.cs + server-scripts/GameManager.cs:457-458,1340-1355 + server-scripts/UIInventory.cs:124-125 — OnBackpackKeyPressed is subscribed to the "Backpack" input action and shows or hides the UIBigBackpack panel. -->Open
           the equipped-bag panel with the Backpack key (default
           <kbd
             class="rounded border border-border bg-muted px-1 py-0.5 font-mono text-xs"
@@ -535,7 +535,7 @@
         </li>
         <li>
           <!-- Source: server-scripts/ChestLoot.cs:314-331 and Npc.cs:2586-2599 — eligible shared chest/NPC drops route through group roll when more than one player can loot. -->
-          <!-- Source: server-scripts/Monster.cs:3625-3640 — monster loot also rolls MergeItem and ScrollItem drops. -->When
+          <!-- Source: server-scripts/Monster.cs:4082 — monster loot also rolls MergeItem and ScrollItem drops. -->When
           more than one player can loot the same enemy, NPC, or world loot
           chest, uncommon-or-better items, keys, chest keys, items worth more
           than 200 gold, and XP potions use group rolls instead of direct
@@ -571,7 +571,7 @@
 
       <ul class="list-disc space-y-1 pl-5">
         <li>
-          <!-- Source: server-scripts/PlayerEquipment.cs:57-123,473-479,1658-1680 — template entries store an item hash and augment name, and switching applies all sixteen stored equipment slots. -->
+          <!-- Source: server-scripts/PlayerEquipment.cs:57-58,473-479,1658-1680 — template entries store an item hash and augment name, and switching applies all sixteen stored equipment slots. -->
           Swapping a template re-equips all 16 equipment slots at once, augments included.
         </li>
         <li>
@@ -600,7 +600,7 @@
     <Card.Content>
       <ul class="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
         <li>
-          <!-- Source: server-scripts/PlayerEquipment.cs:57-123 — player equipment has sixteen fixed slots. -->Equipped
+          <!-- Source: server-scripts/PlayerEquipment.cs:57-58 — player equipment has sixteen fixed slots. -->Equipped
           gear uses 16 slots.
         </li>
         <li>

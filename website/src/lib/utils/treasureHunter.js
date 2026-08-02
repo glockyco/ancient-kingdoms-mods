@@ -52,7 +52,7 @@ class SeededRandom {
  * Treasure Chest at the selected Treasure Hunter skill.
  *
  * Mirrors the chest-reward selection loop in
- * `server-scripts/ChestItem.cs:24-66`: rewards are rolled in configured order,
+ * `server-scripts/ChestItem.cs:24,26-27,30-31,61`: rewards are rolled in configured order,
  * duplicate item names cannot be awarded (line 31), each pass continues until
  * `numItemsPerChest` unique rewards are picked, and the outer loop is capped at
  * 10 passes (line 24). Treasure Hunter only modifies relic rolls on the Buried

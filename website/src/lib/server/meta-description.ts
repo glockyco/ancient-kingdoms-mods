@@ -431,8 +431,7 @@ function bookDescription(item: Item): string {
 }
 
 function mountDescription(): string {
-  // Source: server-scripts/MountItem.cs:8, server-scripts/Player.cs:501-505 — speedMount
-  // is the absolute movement speed when mounted, replacing equipped speed bonuses.
+  // Source: server-scripts/MountItem.cs:8, server-scripts/Player.cs:113-121,571-575 — speedMount is the mounted base movement speed, replacing equipped speed bonuses.
   return `Mountable creature. Replaces your base movement speed while mounted. Cannot mount in dungeons or while in combat.`;
 }
 
@@ -472,7 +471,7 @@ function travelDescription(item: Item): string {
 
 function treasureMapDescription(): string {
   // Source: server-scripts/TreasureMapItem.cs:12-15 — using the map opens
-  // its clue image. server-scripts/TreasureLocation.cs:61-100 — at the
+  // its clue image. server-scripts/TreasureLocation.cs:61-63,78-90,117-129,158-161 — at the
   // matching dig site, using the map with a Shovel consumes it and grants
   // a Buried Treasure Chest plus +0.5% Treasure Hunter skill. Each map
   // points at exactly one dig site.
@@ -1498,7 +1497,7 @@ export function skillDescription(skill: SkillDescriptionInput): string {
   // skill row, so emitting "Unlocks at level X" there would mislead.
   // Source: server-scripts/PlayerSkills.cs:456-458 — veteran upgrades check
   //   regular character level, available veteran points, and spent points.
-  // Source: server-scripts/PlayerSkills.cs:822-825 — CmdUpgradeVeteran spends
+  // Source: server-scripts/PlayerSkills.cs:879-896 — CmdUpgradeVeteran spends
   //   available veteran points before increasing the skill level.
   // Source: server-scripts/Player.cs:6233-6243 and ScriptableSkill.cs:199-201
   //   — requiredSpentPoints means already-spent veteran points, not veteran

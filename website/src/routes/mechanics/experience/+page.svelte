@@ -94,7 +94,7 @@
   const Y_TICKS = [100, 1_000, 10_000, 100_000, 1_000_000];
   const X_TICKS = [1, 10, 20, 30, 40, 49];
 
-  // Source: server-scripts/Experience.cs:110-280 — every class raises one attribute on
+  // Source: server-scripts/Experience.cs:112-140,141-169,170-198,199-227,228-256,257-285 — every class raises one attribute on
   // each of the level multiples below, and two on every sixth level.
   const ATTRIBUTE_GAINS = [
     {
@@ -159,7 +159,7 @@
     },
   ];
 
-  // Source: server-scripts/Experience.cs:88-108 — tutorial messages fired on these levels.
+  // Source: server-scripts/Experience.cs:90-108 — tutorial messages fired on these levels.
   const MILESTONES = [
     { level: 10, unlock: "Hire your first mercenary at any tavern." },
     { level: 20, unlock: "A second mercenary can be active." },
@@ -864,7 +864,7 @@
           These are applied on top of the level-scaled value:
         </p>
         <!-- Source: server-scripts/Experience.cs:446-453 — dungeon +10% bonus -->
-        <!-- Source: server-scripts/Monster.cs:2409 — double XP skill (solo kill) -->
+        <!-- Source: server-scripts/Monster.cs:2737-2738 — double XP skill (solo kill) -->
         <!-- Source: server-scripts/Monster.cs:2739 — Forgotten Altar ×1.4 (solo kill) -->
         <div class="overflow-x-auto">
           <table class="w-full text-sm border-collapse">
@@ -910,7 +910,7 @@
             </tbody>
           </table>
         </div>
-        <!-- Source: server-scripts/Monster.cs:2409 — double XP applies to kills -->
+        <!-- Source: server-scripts/Monster.cs:2737-2738 — double XP applies to kills -->
         <!-- Source: server-scripts/GatherItem.cs:582 — double XP applies to gathering -->
         <!-- Source: server-scripts/Player.cs:12057 — double XP applies to alchemy -->
         <!-- Source: server-scripts/Player.cs:12057 — double XP applies to scribing -->
@@ -926,11 +926,11 @@
 
       <div class="space-y-2">
         <h3 class="font-semibold">Party XP</h3>
-        <!-- Source: server-scripts/Experience.cs:468-474 — CalculateExperienceShare -->
-        <!-- Source: server-scripts/Monster.cs:2367-2425 — party kill XP award loop -->
+        <!-- Source: server-scripts/Experience.cs:CalculateExperienceShare -->
+        <!-- Source: server-scripts/Monster.cs:2677-2705 — party kill XP award loop -->
         <!-- Source: server-scripts/Party.cs:9 — Capacity = 5 -->
         <!-- Source: server-scripts/Party.cs:11 — BonusExperiencePerMember = 1.25f -->
-        <!-- Source: server-scripts/Monster.cs:2415 — 1.25f passed as bonusPercentagePerMember -->
+        <!-- Source: server-scripts/Monster.cs:2699, Experience.cs:491 — the kill passes 1.25f as bonusPercentagePerMember. -->
         <p class="text-sm text-muted-foreground">
           XP is split evenly among nearby party members, but a bonus more than
           compensates: each member in a larger party earns more than a solo
@@ -997,7 +997,7 @@
     <Card.Content class="space-y-4">
       <!-- Source: server-scripts/Experience.cs:32 — deathLossPercent = 0.1f -->
       <!-- Source: server-scripts/Experience.cs:477-486 — Death() = max * 0.1f -->
-      <!-- Source: server-scripts/Player.cs:3289-3290 — lossExp capped at experience.current -->
+      <!-- Source: server-scripts/Player.cs:3686-3687 — lossExp capped at experience.current -->
       <p class="text-sm text-muted-foreground">
         On death, you lose 10% of the current level's XP cap. The loss cannot
         drop you below zero XP for your level.
@@ -1022,7 +1022,7 @@
               </td>
               <td class="p-2 text-right font-mono">50%</td>
             </tr>
-            <!-- Source: server-scripts/Player.cs:10308 — CmdResurrect: 0.75f * lossExp -->
+            <!-- Source: server-scripts/Player.cs:11784-11786 — resurrection adds 0.75f * lossExp. -->
             <tr class="hover:bg-muted/30">
               <td class="p-2"
                 ><a
@@ -1132,8 +1132,8 @@
       </Card.Description>
     </Card.Header>
     <Card.Content>
-      <!-- Source: server-scripts/GatherItem.cs:531-544 — gathering XP by tier (plants/minerals/sparks/other). -->
-      <!-- Source: server-scripts/GatherItem.cs:809-819 — fishing XP by spot tier; same 15 / 150 / 750 / 4000 / 10000 table. -->
+      <!-- Source: server-scripts/GatherItem.cs:574-581 — gathering XP by tier (plants/minerals/sparks/other). -->
+      <!-- Source: server-scripts/GatherItem.cs:759-767 — fishing XP by spot tier; same 15 / 150 / 750 / 4000 / 10000 table. -->
       <table class="w-full text-sm border-collapse">
         <thead>
           <tr class="border-b">
@@ -1215,7 +1215,7 @@
       </Card.Description>
     </Card.Header>
     <Card.Content>
-      <!-- Source: server-scripts/Player.cs:10600-10603 — isScribingTable overrides num5 = level.current * 100 -->
+      <!-- Source: server-scripts/Player.cs:12053-12055 — isScribingTable overrides num5 = level.current * 100 -->
       <p class="text-sm text-muted-foreground">
         Each successful craft awards <span class="font-mono font-medium"
           >Player Level &times; 100</span

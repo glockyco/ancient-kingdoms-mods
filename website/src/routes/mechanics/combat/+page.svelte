@@ -241,7 +241,7 @@
     </Card.Header>
     <Card.Content class="space-y-5">
       <div>
-        <!-- Source: server-scripts/Combat.cs:1290-1329 GetProbResist* (formula), Combat.cs:479-486 (damage); TargetDebuffSkill.cs:104-142 / AreaDebuffSkill.cs:103-138 (debuff & dispel landing) -->
+        <!-- Source: server-scripts/Combat.cs:1301-1304,1307-1310,1313-1316,1319-1322,1325-1328 GetProbResist* (formula), Combat.cs:479-486 (damage); TargetDebuffSkill.cs:104-142 / AreaDebuffSkill.cs:103-138 (debuff & dispel landing) -->
         <h3 class="font-semibold mb-1">Resist Roll</h3>
         <pre
           class="text-xs bg-muted px-3 py-2 rounded overflow-x-auto">P(resist) = clamp(
@@ -622,7 +622,7 @@ finalDamage = damage − reduction</pre>
                   class="py-1 text-muted-foreground">−INT×0.5</td
                 ></tr
               >
-              <!-- Source: server-scripts/Skills.cs:1365-1543 — poison/disease DoT adds round(DEX × 1.5), then applies Poison Resist mitigation before counter decay, critical ticks, and ward processing. -->
+              <!-- Source: server-scripts/Skills.cs:1406-1429 — poison/disease DoT adds round(bonusAttribute × 1.5), then applies Poison Resist mitigation. -->
               <tr class="border-b border-border/40"
                 ><td class="py-1 pr-4">DoT poison/disease</td><td
                   class="py-1 text-muted-foreground"
@@ -673,7 +673,7 @@ finalDamage = damage − reduction</pre>
     </Card.Header>
     <Card.Content class="space-y-6">
       <!-- Interval formulas -->
-      <!-- Sources: Player.cs:2783, Skills.cs:673-675, Skills.cs:765-768, Skills.cs:814-815, Combat.cs:332, Monster.cs:2553, Npc.cs:625 -->
+      <!-- Sources: Player.cs:2783, Skills.cs:673-675, Skills.cs:765-768, Skills.cs:814-815, Combat.cs:314-324, Monster.cs:2553, Npc.cs:625 -->
       <div>
         <h3 class="font-semibold mb-2">Interval Formulas</h3>
         <div class="overflow-x-auto">
@@ -686,7 +686,7 @@ finalDamage = damage − reduction</pre>
               </tr>
             </thead>
             <tbody>
-              <!-- Source: server-scripts/Player.cs:2807 -->
+              <!-- Source: server-scripts/Player.cs:3051-3054,3084-3086 -->
               <tr class="border-b border-border/40">
                 <td class="py-2 pr-4 font-mono text-xs">player_auto</td>
                 <td class="py-2 pr-4 text-muted-foreground text-xs"
@@ -696,8 +696,8 @@ finalDamage = damage − reduction</pre>
                   >castTime + clamp(delay×(1−haste)/25, 0.25, 2.0)</td
                 >
               </tr>
-              <!-- Source: server-scripts/Skills.cs:711-713 — castTimeEnd -= spellHasteBonus × castTime -->
-              <!-- Source: server-scripts/Combat.cs:332 — Mathf.Clamp(spellHaste, -0.5f, 0.5f) -->
+              <!-- Source: server-scripts/Skills.cs:820-824 — castTimeEnd -= spellHasteBonus × castTime -->
+              <!-- Source: server-scripts/Combat.cs:314-324 — Mathf.Clamp(spellHaste, -0.5f, 0.5f) -->
               <!-- Source: server-scripts/Player.cs:refractoryPeriodSkill — refractoryPeriodSkill = 0.75f (post-cast refractory, blocks next cast) -->
               <tr class="border-b border-border/40">
                 <td class="py-2 pr-4 font-mono text-xs">player_spell</td>
@@ -708,7 +708,7 @@ finalDamage = damage − reduction</pre>
                   >castTime×(1−spellHaste) + 0.75s</td
                 >
               </tr>
-              <!-- Source: server-scripts/Skills.cs:810 -->
+              <!-- Source: server-scripts/Skills.cs:947-950 -->
               <tr class="border-b border-border/40">
                 <td class="py-2 pr-4 font-mono text-xs">companion</td>
                 <td class="py-2 pr-4 text-muted-foreground text-xs"
@@ -765,7 +765,7 @@ finalDamage = damage − reduction</pre>
               </tr>
             </thead>
             <tbody>
-              <!-- Source: server-scripts/Combat.cs:318 — Mathf.Clamp(num, -0.8f, 0.8f) -->
+              <!-- Source: server-scripts/Combat.cs:304-310 — Mathf.Clamp(num, -0.8f, 0.8f) -->
               <tr class="border-b border-border/40">
                 <td class="py-2 pr-4 font-mono text-xs">player_auto</td>
                 <td class="py-2 pr-4 text-muted-foreground text-xs"
@@ -773,7 +773,7 @@ finalDamage = damage − reduction</pre>
                 >
                 <td class="py-2 text-muted-foreground text-xs">No effect</td>
               </tr>
-              <!-- Source: server-scripts/Skills.cs:711-713, server-scripts/Combat.cs:332 -->
+              <!-- Source: server-scripts/Skills.cs:820-824, server-scripts/Combat.cs:314-324 -->
               <tr class="border-b border-border/40">
                 <td class="py-2 pr-4 font-mono text-xs">player_spell</td>
                 <td class="py-2 pr-4 text-muted-foreground text-xs"
@@ -798,7 +798,7 @@ finalDamage = damage − reduction</pre>
                 >
                 <td class="py-2 text-muted-foreground text-xs">No effect</td>
               </tr>
-              <!-- Source: server-scripts/Combat.cs:332 -->
+              <!-- Source: server-scripts/Combat.cs:314-324 -->
               <tr class="border-b border-border/40">
                 <td class="py-2 pr-4 font-mono text-xs">merc_spell</td>
                 <td class="py-2 pr-4 text-muted-foreground text-xs"
@@ -842,8 +842,8 @@ finalDamage = damage − reduction</pre>
         </p>
       </div>
       <div>
-        <!-- Source: server-scripts/Combat.cs:1142-1143 — auto-attack rage gain on dealing damage. -->
-        <!-- Source: server-scripts/Combat.cs:1150,1175,1345-1351 — GenerateRageOnHit: rage gain on taking Normal damage. -->
+        <!-- Source: server-scripts/Combat.cs:841-845,1195-1199 — auto-attack rage gain on dealing damage. -->
+        <!-- Source: server-scripts/Combat.cs:875-895,898-905,1167-1171,1356-1363 — GenerateRageOnHit: rage gain on taking Normal damage. -->
         <h3 class="font-semibold mb-1">Rage Generation</h3>
         <p class="text-sm text-muted-foreground mb-2">
           Warrior and Rogue generate Rage from two sources:
@@ -894,7 +894,7 @@ finalDamage = damage − reduction</pre>
       </div>
 
       <div>
-        <!-- Source: server-scripts/Combat.cs:266-277 (fearResistChance), 885-910 (DealDamageAt fear branch) -->
+        <!-- Source: server-scripts/Combat.cs:244-256 (fearResistChance), 885-910 (DealDamageAt fear branch) -->
         <h3 class="font-semibold mb-1">Fear</h3>
         <p class="text-sm text-muted-foreground">
           Applies only if two independent rolls succeed: the skill's fear
@@ -920,7 +920,7 @@ finalDamage = damage − reduction</pre>
       </div>
 
       <div>
-        <!-- Source: server-scripts/Skills.cs:1149 (BreakMezz — entity.speed <= -50f) -->
+        <!-- Source: server-scripts/Skills.cs:1346-1351 (BreakMezz — entity.speed <= -50f) -->
         <!-- Source: server-scripts/Combat.cs:567 (damage > 0 calls BreakMezz) -->
         <!-- Source: server-scripts/Skills.cs:156 (DoT tick also calls BreakMezz) -->
         <!-- Source: server-scripts/Monster.cs:1483-1497 (monster self-break: magic resist roll every 6s) -->
@@ -990,7 +990,7 @@ finalDamage = damage − reduction</pre>
       </div>
 
       <div>
-        <!-- Source: server-scripts/Buff.cs:18 (3 counters); TargetBuffSkill.cs:288-362 / AreaBuffSkill.cs:140-358 (cleanse counter rolls); Skills.cs:1409-1414 (DoT per-counter scaling) -->
+        <!-- Source: server-scripts/Buff.cs:18 (3 counters); TargetBuffSkill.cs:299-325 / AreaBuffSkill.cs:179-195,271-288 (cleanse counter rolls); Skills.cs:1531-1536 (DoT per-counter scaling) -->
         <h3 id="cleanse" class="font-semibold mb-1 scroll-mt-24">Cleanse</h3>
         <p class="text-sm text-muted-foreground mb-2">
           Cleanse is cast on yourself or an ally and removes harmful debuffs. It
@@ -1046,7 +1046,7 @@ finalDamage = damage − reduction</pre>
       </div>
 
       <div>
-        <!-- Source: server-scripts/TargetDebuffSkill.cs:104-142 (resist gate), 172-269 (removal); AreaDebuffSkill.cs:103-138 (resist gate), 168-265 (removal); Combat.cs:1302-1329 GetProbResistMagic/Disease -->
+        <!-- Source: server-scripts/TargetDebuffSkill.cs:104-142 (resist gate), 172-204,208-233,237-249 (removal); AreaDebuffSkill.cs:103-138 (resist gate), 163-204,208-232,237-257 (removal); Combat.cs:1302-1329 GetProbResistMagic/Disease -->
         <h3 id="dispel" class="font-semibold mb-1 scroll-mt-24">Dispel</h3>
         <p class="text-sm text-muted-foreground mb-2">
           Dispel removes beneficial buffs from its target. Players cast it on

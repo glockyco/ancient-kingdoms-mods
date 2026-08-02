@@ -133,7 +133,7 @@ def _get_primal_essence_min_level(
     temp_cache: dict[str, int | None] = {}
 
     # Source: server-scripts/Npc.cs:1886-1894 — essence traders accept eligible gear from player inventory.
-    # Source: server-scripts/UINpcTrading.cs:371-418 — essence trader offers every eligible carried item as a repeatable trade.
+    # Source: server-scripts/UINpcTrading.cs:508-516,519-526,543-556 — essence trader offers every eligible carried item as a repeatable trade.
     # Source: server-scripts/Utils.cs:513-519 — eligible primal essence trades require magic-or-better equipment with sell price.
     for item_id in eligible_item_ids:
         level = _resolve_material_level(

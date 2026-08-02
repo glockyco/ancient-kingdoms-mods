@@ -313,13 +313,13 @@ export type TimingModel =
   // interval = cast_time + clamp(delay×(1−haste)/25, 0.25, 2.0); weapon refractory period.
   // Warrior and Rogue generate Rage; all other classes use Mana.
   | "player_auto" // e.g. crush_strike
-  // interval = cast_time × (1 − spellHaste) + 0.75s refractory; hard cap: 50% (Combat.cs:332).
-  // Source: server-scripts/Skills.cs:711-713, server-scripts/Combat.cs:332, server-scripts/Player.cs:refractoryPeriodSkill
+  // interval = cast_time × (1 − spellHaste) + 0.75s refractory; hard cap: 50% (Combat.cs:314-324).
+  // Source: server-scripts/Skills.cs:820-824, server-scripts/Combat.cs:314-324, server-scripts/Player.cs:refractoryPeriodSkill
   | "player_spell" // e.g. fire_blast, wind_shock, smite, mystic_spark
   | "companion" // interval = cast_time + cooldown; companions, familiars, no-weapon followup
   | "merc_auto" // interval = cast_time + cooldown×(1−haste); merc non-spell — e.g. explorer_shot
   // interval = cast_time × (1 − spellHaste) + cooldown; cast reduced by spell haste (cap 50%), cooldown not.
-  // Source: server-scripts/Skills.cs:711-713 (cast reduction), Skills.cs:943-950 (flat cooldown), Combat.cs:332 (cap)
+  // Source: server-scripts/Skills.cs:820-824 (cast reduction), server-scripts/Skills.cs:947-950 (flat cooldown), server-scripts/Combat.cs:314-324 (cap)
   | "merc_spell" // e.g. flame_blast, gale_burst, divine_smite
   // Monster.cs and Npc.cs both call FinishCastMeleeAttackMonster which haste-reduces
   // cooldown unconditionally regardless of isSpell — one model covers both.

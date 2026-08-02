@@ -401,7 +401,7 @@
             <div class="flex gap-2">
               <dt class="text-muted-foreground w-40 shrink-0">Active Limit</dt>
               <dd>
-                <!-- Source: server-scripts/UIMercenaries.cs:296 — active mercenary limit is 1 at levels 10–19, 2 at 20–29, 3 at 30–39, and 4 at 40+. -->
+                <!-- Source: server-scripts/UIMercenaries.cs:295-297 — active mercenary limit is 1 at levels 10–19, 2 at 20–29, 3 at 30–39, and 4 at 40+. -->
                 1 at levels 10–19 · 2 at 20–29 · 3 at 30–39 · 4 at 40+
               </dd>
             </div>
@@ -461,8 +461,8 @@
             <div class="flex gap-2">
               <dt class="text-muted-foreground w-40 shrink-0">If You Die</dt>
               <dd>
-                <!-- Source: server-scripts/Player.cs:3699-3744 — living mercenaries are removed on owner death; dead ones keep their corpse. -->
-                <!-- Source: server-scripts/Player.cs:3259,11781 — respawning and porting re-summon the stored mercenaries. -->
+                <!-- Source: server-scripts/Player.cs:DestroyLivingMercenariesOnOwnerDeath — living mercenaries are removed on owner death; dead ones keep their corpse. -->
+                <!-- Source: server-scripts/Player.cs:3258-3260,11779-11783 — respawning and resurrection re-summon the stored mercenaries. -->
                 Living mercenaries are dismissed and re-summoned once you respawn.
                 A mercenary that already died keeps its corpse and still needs a resurrection.
               </dd>
