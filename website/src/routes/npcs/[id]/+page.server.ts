@@ -17,6 +17,7 @@ import {
 } from "$lib/constants/constants";
 import { npcDescription } from "$lib/server/meta-description";
 import { getFactionIdsByName } from "$lib/queries/factions.server";
+import type { EntityVisualAsset } from "$lib/types/visual-assets";
 
 export const prerender = true;
 
@@ -286,6 +287,15 @@ export const load: PageServerLoad = ({ params }): NpcDetailPageData => {
     decrease_faction: decreaseFaction,
   };
 
+  const visualAsset =
+    (db
+      .prepare(
+        `SELECT public_path, width, height, source_field, source_type
+         FROM visual_assets
+         WHERE domain = 'npc' AND entity_id = ? AND kind = 'primary'`,
+      )
+      .get(params.id) as EntityVisualAsset | undefined) ?? null;
+
   db.close();
 
   const zoneNames = spawns.map((s) => s.zone_name);
@@ -313,5 +323,6 @@ export const load: PageServerLoad = ({ params }): NpcDetailPageData => {
     respawnDungeonZoneId,
     worldBosses,
     teleportRoutes,
+    visualAsset,
   };
 };

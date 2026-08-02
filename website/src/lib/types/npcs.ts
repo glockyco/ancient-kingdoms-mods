@@ -1,3 +1,4 @@
+import type { EntityVisualAsset } from "$lib/types/visual-assets";
 export interface NpcRoles {
   is_merchant: boolean;
   is_quest_giver: boolean;
@@ -182,6 +183,7 @@ export interface NpcDetailPageData {
     zone_name: string | null;
   }>;
   teleportRoutes: TeleportRoute[];
+  visualAsset: EntityVisualAsset | null;
 }
 
 // List page types
