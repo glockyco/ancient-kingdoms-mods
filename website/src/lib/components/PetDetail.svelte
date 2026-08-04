@@ -451,11 +451,10 @@
               <dt class="text-muted-foreground w-40 shrink-0">On Death</dt>
               <dd>
                 <!-- Source: server-scripts/UIMercenaries.cs:436-442 — resurrect = round(5 + 295 × ((clamp(level, 1, 50) − 1) / 49)^2.8 + veteranLevel × 10) (0.9.19.1+). -->
-                <!-- Source: server-scripts/Pet.cs:3530-3563 — every equipped item loses 1 durability on death. -->
+                <!-- Source: server-scripts/Pet.cs:3529-3541 — OnDeath only sets the death timer; equipment durability is untouched. -->
                 Stays dead until resurrected for 5–2,300
                 <span class="text-yellow-600 dark:text-yellow-400">gold</span>.
-                Each equipped item loses 1 durability, but the gear itself stays
-                on the mercenary.
+                Equipped gear stays on the mercenary and keeps its durability.
               </dd>
             </div>
             <div class="flex gap-2">

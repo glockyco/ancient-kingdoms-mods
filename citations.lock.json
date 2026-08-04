@@ -1,6 +1,6 @@
 {
   "snapshot": {
-    "game_version": "0.9.27.0",
+    "game_version": "0.9.27.2",
     "ilspycmd_version": "10.1.1.8388"
   },
   "targets": {
@@ -963,16 +963,16 @@
       "sha256": "fda0dd95375aac848684d4c95efb16a047d8ae3b4ad4d1267b35e800b84f71d1",
       "span": 6
     },
-    "Pet.cs:3530-3563": {
-      "sha256": "7b45d70edd8f7f06cfc337e7c728505b70c4fdef0d0604f4b78873e84a3f3eb9",
-      "span": 34
+    "Pet.cs:3529-3541": {
+      "sha256": "43ad4cacc9da902474e3c3f13c992ffea7e74a38f903df6c2d8b34830b5a4ed3",
+      "span": 13
     },
     "Pet.cs:4390-4395": {
-      "sha256": "a50f32b8c56681dff6c96af96bbb3798648168761e63e943bcf364e4ee4e35ef",
+      "sha256": "80a01c5850401c91ecd830fac758521ff6d4ab5db788a2c80ee765c32a2d5ee6",
       "span": 6
     },
     "Pet.cs:4474-4479": {
-      "sha256": "43b07c9fa71f77b9146cb1671adb06ea573f2662de3588a4aa0124540e36a919",
+      "sha256": "872ba20a987acd6b7cc824a5bc8bd5b03d81c7e86439c7b7e292484b299c6042",
       "span": 6
     },
     "PetFriendly.cs:389-396": {
