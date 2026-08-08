@@ -9,9 +9,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Spectre.Console.Cli" Version="0.50.0" />
-    <PackageReference Include="CliWrap" Version="3.7.1" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0" />
+    <PackageReference Include="Spectre.Console.Cli" Version="0.55.0" />
+    <PackageReference Include="CliWrap" Version="3.10.4" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.18" />
   </ItemGroup>
 
   <ItemGroup>
