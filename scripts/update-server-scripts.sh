@@ -4,7 +4,7 @@
 #
 # Prerequisites:
 #   - steamcmd installed (brew install steamcmd)
-#   - dotnet SDK on PATH (the pinned ilspycmd is installed into .ilspycmd/ on demand)
+#   - .NET 10 SDK on PATH (the pinned ilspycmd is installed into .ilspycmd/ on demand)
 #
 # Usage: ./scripts/update-server-scripts.sh <version>
 #   Steam username is read from config.toml [steam] username.
@@ -43,6 +43,8 @@ VERSION="$1"
 # patches rather than to decompiler changes. See "Updating ILSpy" above.
 ILSPYCMD_VERSION="10.1.1.8388"
 TOOL_DIR="$REPO_DIR/.ilspycmd/$ILSPYCMD_VERSION"
+# `dotnet tool install --tool-path` stores the managed entrypoint under `.store`.
+ILSPYCMD_DLL="$TOOL_DIR/.store/ilspycmd/$ILSPYCMD_VERSION/ilspycmd/$ILSPYCMD_VERSION/tools/net10.0/any/ilspycmd.dll"
 
 # Fall back to config.toml [steam] username if STEAM_USER not set in environment
 if [ -z "$STEAM_USER" ]; then
@@ -89,13 +91,17 @@ echo "Decompiling: $DLL"
 
 # Install the pinned tool before destroying the working copy: `set -e` then
 # aborts on a network failure with server-scripts/ still intact.
-if [ ! -x "$TOOL_DIR/ilspycmd" ]; then
+if [ ! -f "$ILSPYCMD_DLL" ]; then
   echo "Installing ilspycmd $ILSPYCMD_VERSION into $TOOL_DIR"
   dotnet tool install ilspycmd --version "$ILSPYCMD_VERSION" --tool-path "$TOOL_DIR"
 fi
+if [ ! -f "$ILSPYCMD_DLL" ]; then
+  echo "Error: ilspycmd.dll not found at $ILSPYCMD_DLL"
+  exit 1
+fi
 
 rm -rf "$OUTPUT_DIR"
-"$TOOL_DIR/ilspycmd" -p -o "$OUTPUT_DIR" "$DLL"
+dotnet "$ILSPYCMD_DLL" -p -o "$OUTPUT_DIR" "$DLL"
 
 # Record what produced this snapshot so `compendium citations check` can tell a
 # game patch apart from a decompiler change.
