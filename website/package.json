@@ -67,7 +67,7 @@
     "@deck.gl/extensions": "^9.3.7",
     "@deck.gl/geo-layers": "^9.3.7",
     "@deck.gl/layers": "^9.3.7",
-    "@tanstack/table-core": "^8.21.3",
+    "@tanstack/table-core": "^9.0.0",
     "bits-ui": "^2.14.4",
     "lucide": "^1.27.0",
     "sql.js-fts5": "^1.4.0"
