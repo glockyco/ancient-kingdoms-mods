@@ -17,6 +17,7 @@ console = Console()
 # NPC role flags mapped to searchable keywords (including synonyms)
 NPC_ROLE_KEYWORDS = {
     "is_merchant": "vendor shop merchant buy sell store",
+    "is_barber": "barber haircut hair appearance customization",
     "is_quest_giver": "quest giver quests",
     "can_repair_equipment": "repair",
     "is_bank": "bank storage vault deposit",
