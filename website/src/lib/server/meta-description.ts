@@ -365,7 +365,7 @@ function potionDescription(item: Item, ctx: ItemMetaContext): string {
     ? ` ${buffPhrase("Applies", item.potion_buff_name, ctx.buffDurationSeconds)}${
         isBandage
           ? " Uses its base buff level."
-          : " Non-bandage buff levels can use Elixir Endurance; mercenary utility potions use their owner's veteran rank."
+          : " Non-bandage buff levels can use Elixir Endurance. Mercenary utility potions use their owner's veteran rank."
       }`
     : "";
   const subtype = isBandage ? "Bandage" : "Potion";
@@ -425,7 +425,7 @@ function relicDescription(item: Item, ctx: ItemMetaContext): string {
   const cleanseGate = ctx.relicIsCleanse
     ? item.infinite_charges
       ? " Infinite-charge cleanse relics can be used without a matching debuff."
-      : " Requires an active matching cleanseable debuff; no charge is consumed when none exists."
+      : " Requires an active matching cleanseable debuff. No charge is consumed when none exists."
     : "";
   const dungeon = !item.relic_buff_allow_dungeon
     ? " Cannot be used inside dungeons."

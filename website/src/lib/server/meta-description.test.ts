@@ -498,7 +498,7 @@ test("potionDescription: buff phrase includes base duration and current level ru
   );
   assert.equal(
     out,
-    "Potion. Applies Cold Resistance Potion for 10m. Non-bandage buff levels can use Elixir Endurance; mercenary utility potions use their owner's veteran rank.",
+    "Potion. Applies Cold Resistance Potion for 10m. Non-bandage buff levels can use Elixir Endurance. Mercenary utility potions use their owner's veteran rank.",
   );
 });
 
@@ -536,7 +536,7 @@ test("potionDescription: omits duration when buff has no timer", () => {
   );
   assert.equal(
     out,
-    "Potion. Applies Mystery Effect. Non-bandage buff levels can use Elixir Endurance; mercenary utility potions use their owner's veteran rank.",
+    "Potion. Applies Mystery Effect. Non-bandage buff levels can use Elixir Endurance. Mercenary utility potions use their owner's veteran rank.",
   );
 });
 
@@ -586,7 +586,7 @@ test("relicDescription: finite-charge cleanse requires a matching debuff", () =>
   );
   assert.equal(
     out,
-    "Magic relic. Triggers Cleanse. Requires an active matching cleanseable debuff; no charge is consumed when none exists.",
+    "Magic relic. Triggers Cleanse. Requires an active matching cleanseable debuff. No charge is consumed when none exists.",
   );
 });
 
