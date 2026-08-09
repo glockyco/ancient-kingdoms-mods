@@ -23,7 +23,7 @@ public class SetupCommandTests
 
         var settings = new SetupCommand.Settings { NonInteractive = true };
         var command = new SetupCommand(tempRoot);
-        var result = await command.ExecuteAsync(null!, settings);
+        var result = await command.RunAsync(settings);
 
         Assert.Equal(0, result);
         var contents = File.ReadAllText(propsPath);

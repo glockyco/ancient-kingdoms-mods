@@ -29,7 +29,10 @@ public sealed class BuildCommand : AsyncCommand<BuildCommand.Settings>
 
     public sealed class Settings : BaseSettings { }
 
-    public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
+    internal Task<int> RunAsync(Settings settings, CancellationToken cancellationToken = default) =>
+        ExecuteAsync(null!, settings, cancellationToken);
+
+    protected override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
         Console.WriteLine("Building Ancient Kingdoms mods...");
         var gamePath = Environment.GetEnvironmentVariable("ANCIENT_KINGDOMS_PATH");
@@ -65,7 +68,7 @@ public sealed class BuildCommand : AsyncCommand<BuildCommand.Settings>
             ProcessResult result;
             try
             {
-                result = await _runner.RunAsync(request, CancellationToken.None);
+                result = await _runner.RunAsync(request, cancellationToken);
             }
             catch (Exception ex)
             {

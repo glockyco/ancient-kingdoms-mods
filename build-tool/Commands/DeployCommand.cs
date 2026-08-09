@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using BuildTool.Configuration;
 using BuildTool.Output;
@@ -30,7 +31,10 @@ public sealed class DeployCommand : AsyncCommand<DeployCommand.Settings>
 
     public sealed class Settings : BaseSettings { }
 
-    public override Task<int> ExecuteAsync(CommandContext context, Settings settings)
+    internal Task<int> RunAsync(Settings settings, CancellationToken cancellationToken = default) =>
+        ExecuteAsync(null!, settings, cancellationToken);
+
+    protected override Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
         Console.WriteLine("Deploying Ancient Kingdoms mods...");
 

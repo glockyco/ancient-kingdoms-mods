@@ -29,6 +29,7 @@ public class PlatformEnvironmentTests
         Assert.Equal("Steam", request.Environment!["CX_BOTTLE"]);
         Assert.Equal(MacConfig().WinePrefix, request.Environment!["WINEPREFIX"]);
         Assert.Equal(@"C:\Program Files\dotnet", request.Environment!["DOTNET_ROOT"]);
+        Assert.Equal("version=n,b", request.Environment!["WINEDLLOVERRIDES"]);
     }
 
     [Fact]

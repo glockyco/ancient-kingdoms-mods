@@ -99,6 +99,16 @@ public class HotReplDeployerTests
         var hostProjectPath = Path.Combine(root, "HotRepl.Host.MelonLoader.csproj");
         Directory.CreateDirectory(root);
         File.WriteAllText(hostProjectPath, "<Project />");
+        var unityDependenciesPath = Path.Combine(
+            root,
+            "game",
+            "MelonLoader",
+            "Dependencies",
+            "Il2CppAssemblyGenerator",
+            "UnityDependencies");
+        Directory.CreateDirectory(unityDependenciesPath);
+        File.WriteAllText(Path.Combine(unityDependenciesPath, "UnityEngine.dll"), "unity");
+        File.WriteAllText(Path.Combine(unityDependenciesPath, "UnityEngine.CoreModule.dll"), "core");
 
         var paths = new HotReplPaths(
             RepoRoot: root,
@@ -118,6 +128,9 @@ public class HotReplDeployerTests
         Assert.Equal("dotnet", call.Program);
         Assert.Contains("build", call.Arguments);
         Assert.Contains(paths.HostProjectPath, call.Arguments);
+        var hotReplUnityLib = Path.Combine(paths.HotReplRepoPath, "src", "HotRepl.BepInEx", "lib");
+        Assert.Equal("unity", File.ReadAllText(Path.Combine(hotReplUnityLib, "UnityEngine.dll")));
+        Assert.Equal("core", File.ReadAllText(Path.Combine(hotReplUnityLib, "UnityEngine.CoreModule.dll")));
     }
 
     [Fact]

@@ -23,7 +23,7 @@ public class BuildCommandTests
         runner.Enqueue(new ProcessResult(0, "", "", default));
 
         var command = new BuildCommand(tempRoot, runner);
-        var result = await command.ExecuteAsync(null!, new BuildCommand.Settings());
+        var result = await command.RunAsync(new BuildCommand.Settings());
 
         Assert.Equal(0, result);
         Assert.Equal(2, runner.Calls.Count);

@@ -14,7 +14,13 @@ dotnet run --project build-tool launch --wait  # launch game; wait for MelonLoad
 ```
 
 For live game state inspection via HotRepl, load the `hotrepl-runtime-inspection` skill.
-Close the game before deploying; DLLs are locked while running.
+Close the game before deploying because DLLs are locked while running.
+
+### First-time runtime bootstrap
+
+Install the MelonLoader **x64** release into the game directory even on Apple Silicon. CrossOver runs the Windows game as x86-64. The build tool sets the Wine `version.dll` override required by MelonLoader.
+
+Run `dotnet run --project build-tool launch --wait` once before building mods. A successful first launch creates `MelonLoader/Il2CppAssemblies/Assembly-CSharp.dll`. `deploy-host` then copies the generated managed Unity reference assemblies into the gitignored HotRepl dependency directory before building the host.
 
 ## Configuration
 

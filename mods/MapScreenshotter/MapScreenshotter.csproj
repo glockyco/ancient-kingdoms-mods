@@ -8,9 +8,9 @@
   </PropertyGroup>
 
   <!-- Generate constants file with screenshot output path from Local.props -->
-  <Target Name="GenerateScreenshotConfig" BeforeTargets="BeforeBuild">
+  <Target Name="GenerateScreenshotConfig" BeforeTargets="CoreCompile">
     <PropertyGroup>
-      <ScreenshotConfigFile>$(MSBuildProjectDirectory)\ScreenshotConfig.g.cs</ScreenshotConfigFile>
+      <ScreenshotConfigFile>$(IntermediateOutputPath)ScreenshotConfig.g.cs</ScreenshotConfigFile>
       <ScreenshotConfigContent>// This file is auto-generated during build from Local.props
 // Do not edit manually - changes will be overwritten
 
@@ -26,6 +26,9 @@ public static class ScreenshotConfig
       Lines="$(ScreenshotConfigContent)"
       Overwrite="true"
       WriteOnlyWhenDifferent="true" />
+    <ItemGroup>
+      <Compile Include="$(ScreenshotConfigFile)" />
+    </ItemGroup>
   </Target>
 
   <ItemGroup>

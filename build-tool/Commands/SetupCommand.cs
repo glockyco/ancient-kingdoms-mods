@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using BuildTool.Configuration;
@@ -44,10 +45,13 @@ public sealed class SetupCommand : AsyncCommand<SetupCommand.Settings>
         {
             NonInteractive = args.Any(arg => string.Equals(arg, "--non-interactive", StringComparison.Ordinal)),
         };
-        return new SetupCommand(rootDir).ExecuteAsync(null!, settings);
+        return new SetupCommand(rootDir).ExecuteAsync(null!, settings, CancellationToken.None);
     }
 
-    public override Task<int> ExecuteAsync(CommandContext context, Settings settings) =>
+    internal Task<int> RunAsync(Settings settings, CancellationToken cancellationToken = default) =>
+        ExecuteAsync(null!, settings, cancellationToken);
+
+    protected override Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken) =>
         Task.FromResult(Run(settings));
 
     private int Run(Settings settings)

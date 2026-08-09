@@ -66,7 +66,13 @@ public sealed class ExportCommand : AsyncCommand<ExportCommand.Settings>
         public bool Update { get; set; }
     }
 
-    public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
+    internal Task<int> RunAsync(Settings settings, CancellationToken cancellationToken = default) =>
+        ExecuteAsync(null!, settings, cancellationToken);
+
+    protected override async Task<int> ExecuteAsync(
+        CommandContext context,
+        Settings settings,
+        CancellationToken cancellationToken)
     {
         var gameExe = Path.Combine(_config.GamePath, "ancientkingdoms.exe");
         if (!File.Exists(gameExe))
@@ -78,7 +84,7 @@ public sealed class ExportCommand : AsyncCommand<ExportCommand.Settings>
         if (settings.Update)
         {
             var updateResult = await UpdateCommand.RunSteamUpdateAsync(
-                _repoRoot, _config, _runner);
+                _repoRoot, _config, _runner, cancellationToken);
             if (updateResult != 0) return updateResult;
         }
 
@@ -112,7 +118,7 @@ public sealed class ExportCommand : AsyncCommand<ExportCommand.Settings>
         Console.WriteLine($"  HotRepl: {_config.HotReplEndpoint}");
         Console.WriteLine();
 
-        using var gameCts = new CancellationTokenSource();
+        using var gameCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         Task<ProcessResult> runTask;
         try
         {
@@ -127,7 +133,7 @@ public sealed class ExportCommand : AsyncCommand<ExportCommand.Settings>
         // Stream log concurrently while runner orchestrates the export. Some
         // MelonLoader startup failures never make it to HotRepl, so the log
         // monitor must also surface known fatal startup errors.
-        using var logCts = new CancellationTokenSource();
+        using var logCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         var logTask = StreamLogAndDetectFatalAsync(logPath, logCts.Token);
 
         var runnerOptions = new HotReplRunnerOptions
@@ -140,7 +146,7 @@ public sealed class ExportCommand : AsyncCommand<ExportCommand.Settings>
         };
 
         ExportRunnerResult runnerResult;
-        using var runnerCts = new CancellationTokenSource();
+        using var runnerCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         var runnerTask = _exportRunner(runnerOptions, runnerCts.Token);
         var completedTask = await Task.WhenAny((Task)runnerTask, logTask);
 

@@ -58,10 +58,13 @@ public sealed class DeployHostCommand : AsyncCommand<DeployHostCommand.Settings>
             Configuration = ReadOption(args, "--configuration") ?? "Debug",
             HotReplRepo = ReadOption(args, "--hotrepl-repo"),
         };
-        return new DeployHostCommand(repoRoot, config, runner).ExecuteAsync(null!, settings);
+        return new DeployHostCommand(repoRoot, config, runner).ExecuteAsync(null!, settings, CancellationToken.None);
     }
 
-    public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
+    internal Task<int> RunAsync(Settings settings, CancellationToken cancellationToken = default) =>
+        ExecuteAsync(null!, settings, cancellationToken);
+
+    protected override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
         var configuration = string.IsNullOrWhiteSpace(settings.Configuration) ? "Debug" : settings.Configuration;
         HotReplPaths paths;
@@ -86,7 +89,7 @@ public sealed class DeployHostCommand : AsyncCommand<DeployHostCommand.Settings>
         int buildExit;
         try
         {
-            buildExit = await HotReplDeployer.BuildAsync(paths, configuration, _runner, CancellationToken.None);
+            buildExit = await HotReplDeployer.BuildAsync(paths, configuration, _runner, cancellationToken);
         }
         catch (Exception ex)
         {

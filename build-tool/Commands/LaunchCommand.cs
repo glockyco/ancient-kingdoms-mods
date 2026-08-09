@@ -55,10 +55,17 @@ public sealed class LaunchCommand : AsyncCommand<LaunchCommand.Settings>
     {
         var settings = new Settings { Wait = HasFlag(args, "--wait") };
 
-        return new LaunchCommand(config, runner, isMacOs).ExecuteAsync(null!, settings);
+        return new LaunchCommand(config, runner, isMacOs).ExecuteAsync(
+            null!, settings, CancellationToken.None);
     }
 
-    public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
+    internal Task<int> RunAsync(Settings settings, CancellationToken cancellationToken = default) =>
+        ExecuteAsync(null!, settings, cancellationToken);
+
+    protected override async Task<int> ExecuteAsync(
+        CommandContext context,
+        Settings settings,
+        CancellationToken cancellationToken)
     {
         var gameExe = Path.Combine(_config.GamePath, "ancientkingdoms.exe");
         if (!File.Exists(gameExe))
@@ -91,7 +98,7 @@ public sealed class LaunchCommand : AsyncCommand<LaunchCommand.Settings>
             Task<ProcessResult> launchTask;
             try
             {
-                launchTask = _runner.RunAsync(request, CancellationToken.None);
+                launchTask = _runner.RunAsync(request, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -133,7 +140,7 @@ public sealed class LaunchCommand : AsyncCommand<LaunchCommand.Settings>
         Task<ProcessResult> runTask;
         try
         {
-            runTask = _runner.RunAsync(request, CancellationToken.None);
+            runTask = _runner.RunAsync(request, cancellationToken);
         }
         catch (Exception ex)
         {

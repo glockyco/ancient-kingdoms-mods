@@ -22,6 +22,15 @@ public class DeployHostCommandTests
         Directory.CreateDirectory(gamePath);
         File.WriteAllText(Path.Combine(hostProjectDir, "HotRepl.Host.MelonLoader.csproj"), "<Project />");
         File.WriteAllText(Path.Combine(hostOutput, "HotRepl.Host.MelonLoader.dll"), "host");
+        var unityDependenciesPath = Path.Combine(
+            gamePath,
+            "MelonLoader",
+            "Dependencies",
+            "Il2CppAssemblyGenerator",
+            "UnityDependencies");
+        Directory.CreateDirectory(unityDependenciesPath);
+        File.WriteAllText(Path.Combine(unityDependenciesPath, "UnityEngine.dll"), "unity");
+        File.WriteAllText(Path.Combine(unityDependenciesPath, "UnityEngine.CoreModule.dll"), "core");
 
         var runner = new FakeProcessRunner();
         runner.Enqueue(new ProcessResult(0, "", "", default));
@@ -32,7 +41,7 @@ public class DeployHostCommandTests
             WinePrefix: null);
         var command = new DeployHostCommand(tempRoot, config, runner);
 
-        var result = await command.ExecuteAsync(null!, new DeployHostCommand.Settings { HotReplRepo = hotReplRepo });
+        var result = await command.RunAsync(new DeployHostCommand.Settings { HotReplRepo = hotReplRepo });
 
         Assert.Equal(0, result);
         Assert.Single(runner.Calls);

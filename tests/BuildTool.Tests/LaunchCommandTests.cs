@@ -17,7 +17,7 @@ public class LaunchCommandTests
         runner.Enqueue(new ProcessResult(42, "", "failed", default));
         var command = CreateCommand(tempRoot, runner, isMacOs: false);
 
-        var result = await command.ExecuteAsync(null!, new LaunchCommand.Settings());
+        var result = await command.RunAsync(new LaunchCommand.Settings());
 
         Assert.Equal(7, result);
         Directory.Delete(tempRoot, recursive: true);
@@ -30,7 +30,7 @@ public class LaunchCommandTests
         var runner = new FakeProcessRunner();
         var command = CreateCommand(tempRoot, runner, isMacOs: false);
 
-        var result = await command.ExecuteAsync(null!, new LaunchCommand.Settings { Wait = true });
+        var result = await command.RunAsync(new LaunchCommand.Settings { Wait = true });
 
         Assert.Equal(7, result);
         Directory.Delete(tempRoot, recursive: true);
@@ -44,7 +44,7 @@ public class LaunchCommandTests
         runner.Enqueue(new ProcessResult(0, "", "", default));
         var command = CreateCommand(tempRoot, runner, isMacOs: false);
 
-        var result = await command.ExecuteAsync(null!, new LaunchCommand.Settings { Wait = true });
+        var result = await command.RunAsync(new LaunchCommand.Settings { Wait = true });
 
         Assert.Equal(7, result);
         Directory.Delete(tempRoot, recursive: true);

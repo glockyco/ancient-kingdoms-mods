@@ -19,7 +19,7 @@ public class ExportCommandTests
         var tempRoot = Directory.CreateTempSubdirectory().FullName;
         var command = CreateCommand(tempRoot, createExe: false);
 
-        var result = await command.ExecuteAsync(null!, new ExportCommand.Settings());
+        var result = await command.RunAsync(new ExportCommand.Settings());
 
         Assert.Equal(ExitCodes.Unreachable, result);
         Directory.Delete(tempRoot, recursive: true);
@@ -38,7 +38,7 @@ public class ExportCommandTests
         var command = CreateCommand(tempRoot, runner: runner);
 
         // Export fails after launch (no real HotRepl) — we only verify order
-        await command.ExecuteAsync(null!, new ExportCommand.Settings { Update = true });
+        await command.RunAsync(new ExportCommand.Settings { Update = true });
 
         Assert.True(runner.Calls.Count >= 1);
         Assert.Equal("steamcmd", runner.Calls[0].Program);
@@ -52,8 +52,7 @@ public class ExportCommandTests
         runner.Enqueue(new ProcessResult(0, "", "", default));
         var command = CreateCommand(tempRoot, runner: runner);
 
-        await command.ExecuteAsync(null!,
-            new ExportCommand.Settings { Screenshots = true });
+        await command.RunAsync(new ExportCommand.Settings { Screenshots = true });
 
         // Game launch args must not include --export-data or --export-screenshots
         var launchArgs = runner.Calls.Count > 0
@@ -92,7 +91,7 @@ public class ExportCommandTests
             },
             hotReplReadinessTimeout: TimeSpan.FromMilliseconds(100));
 
-        var result = await command.ExecuteAsync(null!, new ExportCommand.Settings());
+        var result = await command.RunAsync(new ExportCommand.Settings());
 
         Assert.Equal(ExitCodes.ReadinessFailed, result);
         Assert.Contains("UnityDependencies_6000.3.17.zip", resultStore.ErrorDetails?.ToString());

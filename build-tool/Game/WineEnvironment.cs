@@ -22,6 +22,7 @@ public static class WineEnvironment
             ["CX_BOTTLE"] = bottleName,
             ["WINEPREFIX"] = config.WinePrefix,
             ["DOTNET_ROOT"] = @"C:\Program Files\dotnet",
+            ["WINEDLLOVERRIDES"] = "version=n,b",
         };
 
         return new ProcessRequest(

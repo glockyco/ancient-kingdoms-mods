@@ -40,19 +40,36 @@ public sealed class UpdateCommand : AsyncCommand<UpdateCommand.Settings>
     public sealed class Settings : BaseSettings { }
 
     public static Task<int> Invoke(string repoRoot, LocalConfig config, IProcessRunner runner) =>
-        new UpdateCommand(repoRoot, config, runner).ExecuteAsync(null!, new Settings());
+        new UpdateCommand(repoRoot, config, runner).ExecuteAsync(
+            null!, new Settings(), CancellationToken.None);
 
-    public override Task<int> ExecuteAsync(CommandContext context, Settings settings) =>
-        RunSteamUpdateAsync(_repoRoot, _config, _runner, _resultStore);
+    internal Task<int> RunAsync(Settings settings, CancellationToken cancellationToken = default) =>
+        ExecuteAsync(null!, settings, cancellationToken);
+
+    protected override Task<int> ExecuteAsync(
+        CommandContext context,
+        Settings settings,
+        CancellationToken cancellationToken) =>
+        RunSteamUpdateAsync(_repoRoot, _config, _runner, _resultStore, cancellationToken);
 
     internal static Task<int> RunSteamUpdateAsync(string repoRoot, LocalConfig config, IProcessRunner runner) =>
-        RunSteamUpdateAsync(repoRoot, config, runner, resultStore: null);
+        RunSteamUpdateAsync(
+            repoRoot, config, runner, resultStore: null, cancellationToken: CancellationToken.None);
+
+    internal static Task<int> RunSteamUpdateAsync(
+        string repoRoot,
+        LocalConfig config,
+        IProcessRunner runner,
+        CancellationToken cancellationToken) =>
+        RunSteamUpdateAsync(
+            repoRoot, config, runner, resultStore: null, cancellationToken: cancellationToken);
 
     private static async Task<int> RunSteamUpdateAsync(
         string repoRoot,
         LocalConfig config,
         IProcessRunner runner,
-        CommandResultStore? resultStore)
+        CommandResultStore? resultStore,
+        CancellationToken cancellationToken)
     {
         var steamUser = ReadSteamUsername(Path.Combine(repoRoot, "config.toml"));
         if (string.IsNullOrEmpty(steamUser))
@@ -85,7 +102,7 @@ public sealed class UpdateCommand : AsyncCommand<UpdateCommand.Settings>
         ProcessResult result;
         try
         {
-            result = await runner.RunAsync(request, CancellationToken.None);
+            result = await runner.RunAsync(request, cancellationToken);
         }
         catch (Exception ex)
         {

@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using BuildTool.Abstractions;
 using BuildTool.Commands;
 using BuildTool.Configuration;
@@ -54,7 +55,7 @@ public static class Program
         TextWriter output,
         TextWriter error)
     {
-        return RunJson(app.Run, args, resultStore, output, error);
+        return RunJson(commandArgs => app.Run(commandArgs, CancellationToken.None), args, resultStore, output, error);
     }
 
     internal static int RunJson(

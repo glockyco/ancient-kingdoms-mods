@@ -50,6 +50,9 @@ Execute in order:
 #    (e.g. GameManager.*, ScriptableItem on enums). Update the exporter to match before building.
 
 # 3. Refresh Il2Cpp interop before building a changed exporter
+#    On a fresh macOS workstation, install the MelonLoader x64 release into the
+#    game directory first. CrossOver runs the Windows game as x86-64 even on
+#    Apple Silicon. The build tool supplies the required Wine version.dll override.
 #    When exporter code reads a field introduced by the patch, run this complete
 #    sequence. Mods compile against `$(Il2CppAssembliesPath)`, and MelonLoader
 #    regenerates those interop assemblies when the updated game runs after a Steam

@@ -27,7 +27,7 @@ public class DeployCommandTests
             WinePrefix: null);
         var command = new DeployCommand(tempRoot, config);
 
-        var result = await command.ExecuteAsync(null!, new DeployCommand.Settings());
+        var result = await command.RunAsync(new DeployCommand.Settings());
 
         Assert.Equal(0, result);
         Assert.Equal("data", File.ReadAllText(Path.Combine(modsPath, "DataExporter.dll")));

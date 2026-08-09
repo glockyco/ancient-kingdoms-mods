@@ -26,7 +26,7 @@ public class UpdateCommandTests
         runner.Enqueue(new ProcessResult(0, "", "", default));
         var command = new UpdateCommand(tempRoot, config, runner);
 
-        var result = await command.ExecuteAsync(null!, new UpdateCommand.Settings());
+        var result = await command.RunAsync(new UpdateCommand.Settings());
 
         Assert.Equal(0, result);
         Assert.Single(runner.Calls);

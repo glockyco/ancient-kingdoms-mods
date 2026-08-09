@@ -60,6 +60,8 @@ internal static class HotReplDeployer
             return 1;
         }
 
+        PrepareUnityReferences(paths);
+
         var request = new ProcessRequest(
             Program: "dotnet",
             Arguments: new[]
@@ -79,6 +81,28 @@ internal static class HotReplDeployer
         if (!string.IsNullOrWhiteSpace(result.StandardError))
             Console.Error.WriteLine(result.StandardError);
         return result.ExitCode;
+    }
+
+    private static void PrepareUnityReferences(HotReplPaths paths)
+    {
+        var unityDependenciesPath = Path.Combine(
+            paths.MelonLoaderPath,
+            "Dependencies",
+            "Il2CppAssemblyGenerator",
+            "UnityDependencies");
+        var destinationPath = Path.Combine(paths.HotReplRepoPath, "src", "HotRepl.BepInEx", "lib");
+        Directory.CreateDirectory(destinationPath);
+
+        foreach (var fileName in new[] { "UnityEngine.dll", "UnityEngine.CoreModule.dll" })
+        {
+            var sourcePath = Path.Combine(unityDependenciesPath, fileName);
+            if (!File.Exists(sourcePath))
+                throw new FileNotFoundException(
+                    $"Required Unity reference assembly not found. Launch the game once to generate it: {sourcePath}",
+                    sourcePath);
+
+            File.Copy(sourcePath, Path.Combine(destinationPath, fileName), overwrite: true);
+        }
     }
 
     public static HotReplDeploymentReport Deploy(string hostOutputPath, string modsPath)
