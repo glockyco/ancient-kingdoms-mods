@@ -38,7 +38,6 @@ public class ZoneInfoExporter : BaseExporter
                 is_dungeon = zone.isDungeon,
                 weather_type = zone.weatherType.ToString(),
                 weather_probability = zone.probabilityWeather,
-                required_level = zone.requiredLevel,
                 description = zone.description ?? "",
                 min_zoom_map = zone.minZoomMap,
                 max_zoom_map = zone.maxZoomMap

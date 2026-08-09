@@ -437,6 +437,7 @@ class NpcRoles(BaseModel):
     is_faction_vendor: bool = False
     is_essence_trader: bool = False
     is_priestess: bool = False
+    is_barber: bool = False
     is_augmenter: bool = False
     is_guild_management: bool = False
 
@@ -930,7 +931,6 @@ class ZoneData(BaseModel):
     is_dungeon: bool = False
     weather_type: str = "None"
     weather_probability: float = 0.0
-    required_level: int = 0
     description: str = ""
     min_zoom_map: float = 80.0
     max_zoom_map: float = 210.0

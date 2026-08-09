@@ -66,9 +66,9 @@ public class AchievementExporter : BaseExporter
 
     private List<SchemaAchievement> ReadAchievementSchema()
     {
-        var steamPath = ReadUtf8(SteamAPI_GetSteamInstallPath());
-        if (string.IsNullOrWhiteSpace(steamPath))
-            throw new InvalidOperationException("Steam did not return its installation path.");
+        var steamPath = ResolveSteamInstallPath();
+        if (steamPath == null)
+            throw new InvalidOperationException("Steam's installation path could not be resolved from its API or the game directory.");
 
         var schemaPath = Path.Combine(steamPath, "appcache", "stats", $"UserGameStatsSchema_{AppId}.bin");
         if (!File.Exists(schemaPath))
@@ -105,6 +105,22 @@ public class AchievementExporter : BaseExporter
         }
 
         return achievements;
+    }
+
+    private static string ResolveSteamInstallPath()
+    {
+        var apiPath = ReadUtf8(SteamAPI_GetSteamInstallPath());
+        if (!string.IsNullOrWhiteSpace(apiPath))
+            return apiPath;
+
+        for (var directory = new DirectoryInfo(Directory.GetCurrentDirectory()); directory != null; directory = directory.Parent)
+        {
+            var manifestPath = Path.Combine(directory.FullName, "steamapps", $"appmanifest_{AppId}.acf");
+            if (File.Exists(manifestPath))
+                return directory.FullName;
+        }
+
+        return null;
     }
 
     private void DownloadIcon(string hash, string relativePath)

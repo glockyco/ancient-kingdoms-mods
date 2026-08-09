@@ -55,7 +55,6 @@ CREATE TABLE zones (
     is_dungeon BOOLEAN DEFAULT 0,
     weather_type TEXT DEFAULT 'None',
     weather_probability REAL DEFAULT 0.0,
-    required_level INTEGER DEFAULT 0,
     description TEXT DEFAULT '',
     min_zoom_map REAL DEFAULT 80.0,
     max_zoom_map REAL DEFAULT 80.0,
@@ -72,7 +71,6 @@ CREATE TABLE zones (
 
 CREATE INDEX idx_zones_zone_id ON zones(zone_id);
 CREATE INDEX idx_zones_is_dungeon ON zones(is_dungeon);
-CREATE INDEX idx_zones_required_level ON zones(required_level);
 
 -- =============================================================================
 -- ACHIEVEMENTS
