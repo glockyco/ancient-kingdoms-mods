@@ -115,6 +115,7 @@ export const NPC_ROLE_BITS = {
   isTeleporter: 18,
   isVillager: 19,
   isGuildManagement: 20,
+  isBarber: 21,
 } as const;
 
 /**
@@ -310,6 +311,7 @@ export interface LayerVisibility {
   npcTeleporters: boolean;
   npcVillagers: boolean;
   npcGuildManagers: boolean;
+  npcBarbers: boolean;
 
   // Interactables section
   portals: boolean;

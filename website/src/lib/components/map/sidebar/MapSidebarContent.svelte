@@ -240,6 +240,12 @@
       color: LAYER_COLORS.npc,
       icon: Users,
     },
+    {
+      key: "npcBarbers",
+      label: "Barbers",
+      color: LAYER_COLORS.npc,
+      icon: Users,
+    },
   ];
 
   // Interactable layers

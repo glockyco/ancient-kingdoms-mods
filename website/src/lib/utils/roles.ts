@@ -59,6 +59,7 @@ export const ROLE_CONFIG: RoleConfig[] = [
   { key: "is_veteran_master", label: "Veteran Master", category: "service" },
   { key: "is_reset_attributes", label: "Attribute Reset", category: "service" },
   { key: "is_soul_binder", label: "Soul Binder", category: "service" },
+  { key: "is_barber", label: "Barber", category: "service" },
   { key: "is_inkeeper", label: "Innkeeper", category: "service" },
   {
     key: "is_recruiter_mercenaries",
@@ -112,6 +113,7 @@ export function getRoleLabel(key: string): string {
 export function normalizeRoles(partial: Partial<NpcRoles>): NpcRoles {
   return {
     is_merchant: partial.is_merchant ?? false,
+    is_barber: partial.is_barber ?? false,
     is_quest_giver: partial.is_quest_giver ?? false,
     can_repair_equipment: partial.can_repair_equipment ?? false,
     is_bank: partial.is_bank ?? false,
@@ -201,7 +203,12 @@ export const ROLE_DESCRIPTIONS: Partial<
     description: "Sells food and drinks.",
     details: ["Cost: 25 gold"],
   },
-  // Source: server-scripts/Npc.cs:1850-1860 — the mercenary recruiter opens at level 10.
+  // Source: server-scripts/Npc.cs:16 — BarberPrice is 100 gold.
+  is_barber: {
+    description: "Changes your character's appearance.",
+    details: ["Cost: 100 gold"],
+  },
+  // Source: server-scripts/Npc.cs:1854-1864 — the mercenary recruiter opens at level 10.
   // Source: server-scripts/UIMercenaries.cs:295-297,352-365,735-737 — active mercenary limits follow level thresholds 20, 30, and 40.
   // Source: server-scripts/UIMercenaries.cs:41,373 — the roster holds ten mercenaries.
   is_recruiter_mercenaries: {
@@ -211,7 +218,7 @@ export const ROLE_DESCRIPTIONS: Partial<
       "Active limit: 1 (lvl 10-19), 2 (20-29), 3 (30-39), 4 (40+)",
     ],
   },
-  // Source: server-scripts/Npc.cs:1832 — finalPrice = num (count of Cursed Runes) * 75
+  // Source: server-scripts/Npc.cs:1830-1837 — finalPrice = num (count of Cursed Runes) * 75
   is_priestess: {
     description:
       'Converts <a href="/items/cursed_rune" class="text-blue-600 dark:text-blue-400 hover:underline">Cursed Runes</a> into <a href="/items/blessed_rune" class="text-blue-600 dark:text-blue-400 hover:underline">Blessed Runes</a>.',

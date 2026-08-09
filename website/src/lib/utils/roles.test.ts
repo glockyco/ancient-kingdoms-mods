@@ -19,4 +19,19 @@ describe("NPC role configuration", () => {
     expect(bit).toBe(20);
     expect(getNpcRoles(1 << bit)).toContain("Guild Manager");
   });
+
+  it("surfaces barber NPCs in role config and map bitmasks", () => {
+    const roles = normalizeRoles({
+      is_barber: true,
+    } as Partial<NpcRoles>);
+
+    expect(roles.is_barber).toBe(true);
+    expect(
+      ROLE_CONFIG.find((config) => config.key === "is_barber"),
+    ).toMatchObject({ label: "Barber", category: "service" });
+
+    const bit = (NPC_ROLE_BITS as Record<string, number>).isBarber;
+    expect(bit).toBe(21);
+    expect(getNpcRoles(1 << bit)).toContain("Barber");
+  });
 });

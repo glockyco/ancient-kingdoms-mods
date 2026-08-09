@@ -81,6 +81,7 @@ export function getDefaultLayerVisibility(): LayerVisibility {
     npcTeleporters: false,
     npcVillagers: false,
     npcGuildManagers: false,
+    npcBarbers: false,
     // Interactables
     portals: false,
     portalArcs: false,
@@ -157,9 +158,15 @@ export function parseUrlState(): MapUrlState | null {
   };
 
   if (params.has("layers")) {
+    const validLayerKeys = new Set(
+      Object.keys(getDefaultLayerVisibility()) as (keyof LayerVisibility)[],
+    );
     state.layers = params
       .get("layers")!
-      .split(",") as (keyof LayerVisibility)[];
+      .split(",")
+      .filter((key): key is keyof LayerVisibility =>
+        validLayerKeys.has(key as keyof LayerVisibility),
+      );
   }
 
   // Parse level filter (only if any filter param is present)
@@ -240,6 +247,7 @@ export function urlStateToLayerVisibility(
     npcTeleporters: urlLayers.includes("npcTeleporters"),
     npcVillagers: urlLayers.includes("npcVillagers"),
     npcGuildManagers: urlLayers.includes("npcGuildManagers"),
+    npcBarbers: urlLayers.includes("npcBarbers"),
     // Interactables
     portals: urlLayers.includes("portals"),
     portalArcs: urlLayers.includes("portalArcs"),

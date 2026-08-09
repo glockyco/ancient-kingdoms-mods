@@ -40,6 +40,7 @@ const defaultRoles: NpcRoles = {
   is_soul_binder: false,
   is_inkeeper: false,
   is_taskgiver_adventurer: false,
+  is_barber: false,
   is_merchant_adventurer: false,
   is_recruiter_mercenaries: false,
   is_guard: false,

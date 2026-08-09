@@ -36,6 +36,7 @@ public class NpcRoles
     public bool is_soul_binder { get; set; }
     public bool is_inkeeper { get; set; }
     public bool is_taskgiver_adventurer { get; set; }
+    public bool is_barber { get; set; }
     public bool is_merchant_adventurer { get; set; }
     public bool is_recruiter_mercenaries { get; set; }
     public bool is_guard { get; set; }

@@ -1,6 +1,7 @@
 import type { EntityVisualAsset } from "$lib/types/visual-assets";
 export interface NpcRoles {
   is_merchant: boolean;
+  is_barber: boolean;
   is_quest_giver: boolean;
   can_repair_equipment: boolean;
   is_bank: boolean;

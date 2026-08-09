@@ -80,6 +80,7 @@ public class NpcExporter : BaseExporter
                     is_reset_attributes = canonical.isResetAttributes,
                     is_soul_binder = canonical.isSoulBinder,
                     is_inkeeper = canonical.isInkeeper,
+                    is_barber = canonical.isBarber,
                     is_taskgiver_adventurer = canonical.isTaskgiverAdventurer,
                     is_merchant_adventurer = canonical.isMerchantAdventurer,
                     is_recruiter_mercenaries = canonical.isRecruiterMercenaries,

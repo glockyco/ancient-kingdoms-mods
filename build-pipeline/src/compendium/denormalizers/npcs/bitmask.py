@@ -34,6 +34,7 @@ ROLE_BITS = {
     "is_teleporter": 18,
     "is_villager": 19,
     "is_guild_management": 20,
+    "is_barber": 21,
 }
 
 
