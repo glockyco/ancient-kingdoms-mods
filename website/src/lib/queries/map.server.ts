@@ -95,11 +95,10 @@ export function loadZoneListServer(): ZoneListItem[] {
   const db = new Database(resolve(DB_STATIC_PATH), { readonly: true });
 
   try {
+    const excludedZoneIds = Object.keys(EXCLUDED_ZONE_IDS);
     const exclusionList =
-      EXCLUDED_ZONE_IDS.size > 0
-        ? Array.from(EXCLUDED_ZONE_IDS)
-            .map((id) => `'${id}'`)
-            .join(", ")
+      excludedZoneIds.length > 0
+        ? excludedZoneIds.map((id) => `'${id}'`).join(", ")
         : null;
 
     const rows = db
@@ -588,7 +587,7 @@ function loadPortalsServer(db: Database.Database): PortalMapEntity[] {
       p.is_closed,
       p.required_item_id,
       i.name as required_item_name,
-      MAX(COALESCE(p.level_required, 0), COALESCE(tz.required_level, 0)) as required_level,
+      COALESCE(p.level_required, 0) as required_level,
       COALESCE(p.item_level_required, 0) as required_item_level,
       p.need_monster_dead_id,
       m.name as need_monster_dead_name,

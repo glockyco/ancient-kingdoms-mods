@@ -32,6 +32,10 @@ from compendium.denormalizers.exclusions import (
 
 console = Console()
 
+# Zone triggers are gameplay volumes. Tilemap borders can render a few world units
+# beyond them, so exclusion rectangles need a small art-bleed margin.
+EXCLUDED_ZONE_RENDER_PADDING = 8.0
+
 
 def load_excluded_zones(export_dir: Path) -> list[dict]:
     """Load bounds for all excluded zones and sub-zones.
@@ -56,41 +60,35 @@ def load_excluded_zones(export_dir: Path) -> list[dict]:
 
     results: list[dict] = []
 
-    # Zone-level exclusions: map string IDs → numeric zone_ids, combine all trigger bounds
+    # Zone-level exclusions: combine trigger bounds separately per parent zone.
+    # Combining all excluded parents into one rectangle erases unrelated map regions
+    # between spatially separated dungeons.
     if EXCLUDED_ZONE_IDS:
-        excluded_numeric_ids: set[int] = set()
-        for zone in zone_info:
-            if zone.get("id") in EXCLUDED_ZONE_IDS:
-                excluded_numeric_ids.add(zone["zone_id"])
+        excluded_zones = {
+            zone["zone_id"]: zone.get("name", zone["id"])
+            for zone in zone_info
+            if zone.get("id") in EXCLUDED_ZONE_IDS
+        }
 
-        if excluded_numeric_ids:
-            min_x = float("inf")
-            min_y = float("inf")
-            max_x = float("-inf")
-            max_y = float("-inf")
-            names = []
+        for zone_id, zone_name in excluded_zones.items():
+            triggers = [
+                trigger
+                for trigger in zone_triggers
+                if trigger.get("zone_id") == zone_id
+                and trigger.get("bounds_min_x") is not None
+            ]
+            if not triggers:
+                continue
 
-            for trigger in zone_triggers:
-                if (
-                    trigger.get("zone_id") in excluded_numeric_ids
-                    and trigger.get("bounds_min_x") is not None
-                ):
-                    min_x = min(min_x, trigger["bounds_min_x"])
-                    min_y = min(min_y, trigger["bounds_min_y"])
-                    max_x = max(max_x, trigger["bounds_max_x"])
-                    max_y = max(max_y, trigger["bounds_max_y"])
-                    names.append(trigger.get("name", "unknown"))
-
-            if names:
-                results.append(
-                    {
-                        "name": " + ".join(names),
-                        "bounds_min_x": min_x,
-                        "bounds_min_y": min_y,
-                        "bounds_max_x": max_x,
-                        "bounds_max_y": max_y,
-                    }
-                )
+            results.append(
+                {
+                    "name": zone_name,
+                    "bounds_min_x": min(t["bounds_min_x"] for t in triggers),
+                    "bounds_min_y": min(t["bounds_min_y"] for t in triggers),
+                    "bounds_max_x": max(t["bounds_max_x"] for t in triggers),
+                    "bounds_max_y": max(t["bounds_max_y"] for t in triggers),
+                }
+            )
 
     # Sub-zone trigger exclusions: each excluded trigger ID gets its own rectangle
     if EXCLUDED_ZONE_TRIGGER_IDS:
@@ -139,10 +137,12 @@ def blank_excluded_zones(
     for zone in zones:
         # Zone bounds are in game coordinates (X, Z)
         # Note: bounds_min_y/max_y in DB are actually game Z coordinates
-        zone_min_x = zone["bounds_min_x"]
-        zone_max_x = zone["bounds_max_x"]
-        zone_min_z = zone["bounds_min_y"]  # DB uses Y for game Z
-        zone_max_z = zone["bounds_max_y"]
+        zone_min_x = zone["bounds_min_x"] - EXCLUDED_ZONE_RENDER_PADDING
+        zone_max_x = zone["bounds_max_x"] + EXCLUDED_ZONE_RENDER_PADDING
+        zone_min_z = (
+            zone["bounds_min_y"] - EXCLUDED_ZONE_RENDER_PADDING
+        )  # DB uses Y for game Z
+        zone_max_z = zone["bounds_max_y"] + EXCLUDED_ZONE_RENDER_PADDING
 
         # Convert to pixel coordinates (source has north/high Z at top)
         px_left = (zone_min_x - world_min_x) * px_per_unit_x

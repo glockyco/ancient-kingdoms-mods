@@ -16,7 +16,7 @@ console = Console()
 
 # Entire zones without in-game maps - coordinates should not be exposed
 # Use parent zone IDs (from zones table), not subzone/trigger IDs
-EXCLUDED_ZONE_IDS = ["temple_of_valaark"]
+EXCLUDED_ZONE_IDS = ["temple_of_valaark", "old_valorath"]
 
 # Individual sub-zones to exclude within otherwise-visible parent zones
 EXCLUDED_ZONE_TRIGGER_IDS: list[str] = []

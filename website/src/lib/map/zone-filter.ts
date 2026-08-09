@@ -67,7 +67,7 @@ export function createZoneFocusedData(
     houses: rawData.houses.filter((h) => h.position !== null),
     // Sort by area descending so smaller/enclosed zones render on top and remain hoverable
     subZones: rawData.subZones
-      .filter((z) => !EXCLUDED_ZONE_IDS.has(z.zoneId))
+      .filter((z) => !EXCLUDED_ZONE_IDS[z.zoneId])
       .sort(
         (a, b) =>
           calculatePolygonArea(b.polygon) - calculatePolygonArea(a.polygon),
