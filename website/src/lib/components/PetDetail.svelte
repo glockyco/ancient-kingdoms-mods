@@ -451,7 +451,7 @@
               <dt class="text-muted-foreground w-40 shrink-0">On Death</dt>
               <dd>
                 <!-- Source: server-scripts/UIMercenaries.cs:436-442 — resurrect = round(5 + 295 × ((clamp(level, 1, 50) − 1) / 49)^2.8 + veteranLevel × 10) (0.9.19.1+). -->
-                <!-- Source: server-scripts/Pet.cs:3529-3541 — OnDeath only sets the death timer; equipment durability is untouched. -->
+                <!-- Source: server-scripts/Pet.cs:OnDeath — OnDeath sets the mercenary death timer without changing equipment durability. -->
                 Stays dead until resurrected for 5–2,300
                 <span class="text-yellow-600 dark:text-yellow-400">gold</span>.
                 Equipped gear stays on the mercenary and keeps its durability.
@@ -461,7 +461,7 @@
               <dt class="text-muted-foreground w-40 shrink-0">If You Die</dt>
               <dd>
                 <!-- Source: server-scripts/Player.cs:DestroyLivingMercenariesOnOwnerDeath — living mercenaries are removed on owner death; dead ones keep their corpse. -->
-                <!-- Source: server-scripts/Player.cs:3258-3260,11779-11783 — respawning and resurrection re-summon the stored mercenaries. -->
+                <!-- Source: server-scripts/Player.cs:3411-3413,12427-12431 — respawning and resurrection re-summon the stored mercenaries. -->
                 Living mercenaries are dismissed and re-summoned once you respawn.
                 A mercenary that already died keeps its corpse and still needs a resurrection.
               </dd>

@@ -164,6 +164,8 @@ Grammar rules worth knowing:
 
 ## Game Mechanics — Common Mistakes
 
+**Never use semicolons in user-facing prose.** Split the thought into separate sentences or use a conjunction. This applies to every visible description, note, label, tooltip, and mechanics explanation.
+
 **Damage types and resist stats are 1-to-1.** There is no fallback or catch-all. Each damage type has its own dedicated resist stat:
 
 | Damage type             | Resist stat    |

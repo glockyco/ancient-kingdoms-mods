@@ -147,7 +147,7 @@
     <Card.Content class="space-y-5">
       <ul class="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
         <li>
-          <!-- Source: server-scripts/UIBigBackpack.cs + server-scripts/GameManager.cs:457-458,1340-1355 + server-scripts/UIInventory.cs:124-125 — OnBackpackKeyPressed is subscribed to the "Backpack" input action and shows or hides the UIBigBackpack panel. -->Open
+          <!-- Source: server-scripts/UIBigBackpack.cs + server-scripts/GameManager.cs:459-460,1348-1363 + server-scripts/UIInventory.cs:124-125 — OnBackpackKeyPressed is subscribed to the "Backpack" input action and shows or hides the UIBigBackpack panel. -->Open
           the equipped-bag panel with the Backpack key (default
           <kbd
             class="rounded border border-border bg-muted px-1 py-0.5 font-mono text-xs"
@@ -155,16 +155,16 @@
           >) or the skillbar button.
         </li>
         <li>
-          <!-- Source: server-scripts/PlayerInventory.cs:383-389 — backpack slots reject non-backpack items. -->Backpack
+          <!-- Source: server-scripts/PlayerInventory.cs:387-393 — backpack slots reject non-backpack items. -->Backpack
           slots accept backpacks only.
         </li>
         <li>
-          <!-- Source: server-scripts/PlayerInventory.cs:428-442 and server-scripts/BackpackItem.cs:7,11-18 — only backpacks marked Unique are blocked when the same name is already equipped. -->Unique
+          <!-- Source: server-scripts/PlayerInventory.cs:432-446 and server-scripts/BackpackItem.cs:7,11-18 — only backpacks marked Unique are blocked when the same name is already equipped. -->Unique
           backpacks can only be equipped once. Any other backpack can fill
           several bag slots at once.
         </li>
         <li>
-          <!-- Source: server-scripts/PlayerInventory.cs:413-429 — removal or downgrade is blocked if items would be locked away. -->Removing
+          <!-- Source: server-scripts/PlayerInventory.cs:417-433 — removal or downgrade is blocked if items would be locked away. -->Removing
           or downgrading a bag is blocked when items would be locked away.
         </li>
       </ul>
@@ -269,15 +269,15 @@
     </Card.Header>
     <Card.Content class="space-y-5">
       <p class="text-sm text-muted-foreground">
-        <!-- Source: server-scripts/Player.cs:397 — characters start with one bank tab unlocked. -->
-        <!-- Source: server-scripts/Player.cs:12092-12117 and 12127-12155 — bank gold withdraw and deposit commands. -->
+        <!-- Source: server-scripts/Player.cs:403 — characters start with one bank tab unlocked. -->
+        <!-- Source: server-scripts/Player.cs:12740-12765 and 12775-12803 — bank gold withdraw and deposit commands. -->
         New characters start with tab 1 unlocked. Additional tabs unlock in order.
         Banked gold is stored separately from carried gold. Depositing moves carried
         gold into the account vault and withdrawing moves it back to the character.
       </p>
       <div class="overflow-x-auto">
         <!-- Source: server-scripts/UIBank.cs:294-307 — bank tab unlock price ladder. -->
-        <!-- Source: server-scripts/Player.cs:12048-12061 — server charges current unlock price before increasing unlocked bank tabs. -->
+        <!-- Source: server-scripts/Player.cs:12696-12709 — server charges current unlock price before increasing unlocked bank tabs. -->
         <table class="w-full border-collapse text-sm">
           <thead>
             <tr class="border-b border-border">
@@ -335,7 +335,7 @@
         </p>
         <p>
           <!-- Source: server-scripts/CustomStrucUI.cs:203-226 — left click or F places the selected structure, or drops a moved one at the new spot. -->
-          <!-- Source: server-scripts/CustomStrucUI.cs:80-86, 328-347 and Player.cs:11854-11866 — move mode hides the structure, then repositions the same one without charging gold. -->
+          <!-- Source: server-scripts/CustomStrucUI.cs:80-86, 328-347 and Player.cs:12502-12514 — move mode hides the structure, then repositions the same one without charging gold. -->
           Place the selected chest with left click or
           <kbd
             class="rounded border border-border bg-muted px-1.5 py-0.5 text-xs text-foreground"
@@ -345,7 +345,7 @@
         </p>
         <p>
           <!-- Source: server-scripts/CustomStrucUI.cs:72-77 and 259-277 — remove mode destroys a selected structure. -->
-          <!-- Source: server-scripts/CustomStrucUI.cs:102-109 and Player.cs:8846-8879 — selling a house pays its resale value and destroys the placed structures; warning says chest items can be retrieved after buying another house. -->
+          <!-- Source: server-scripts/CustomStrucUI.cs:102-109 and Player.cs:9494-9527 — selling a house pays its resale value and destroys the placed structures; warning says chest items can be retrieved after buying another house. -->
           Individual chests can be destroyed, but there is no chest resale flow. Selling
           the house removes placed furniture, while the account-wide chest items remain
           retrievable if you buy another house.
@@ -450,11 +450,11 @@
           items try base carried slots first, then unlocked backpack slots.
         </li>
         <li>
-          <!-- Source: server-scripts/ItemSlot.cs:23-27 and PlayerInventory.cs:1791-1805 — stack increases are clamped by target max stack. -->Matching
+          <!-- Source: server-scripts/ItemSlot.cs:23-27 and PlayerInventory.cs:1795-1809 — stack increases are clamped by target max stack. -->Matching
           stacks merge up to the target stack limit.
         </li>
         <li>
-          <!-- Source: server-scripts/PlayerInventory.cs:489-500 and 1706-1721 — Shift-click opens an amount picker, then the server validates and splits the requested amount. -->Shift-click
+          <!-- Source: server-scripts/PlayerInventory.cs:493-504 and 1710-1725 — Shift-click opens an amount picker, then the server validates and splits the requested amount. -->Shift-click
           opens an amount picker and moves the chosen amount into an empty
           target slot.
         </li>
@@ -534,8 +534,8 @@
           is not consumed by that quest update.
         </li>
         <li>
-          <!-- Source: server-scripts/ChestLoot.cs:314-331 and Npc.cs:2586-2599 — eligible shared chest/NPC drops route through group roll when more than one player can loot. -->
-          <!-- Source: server-scripts/Monster.cs:4082 — monster loot also rolls MergeItem and ScrollItem drops. -->When
+          <!-- Source: server-scripts/ChestLoot.cs:314-331 and Npc.cs:2612-2625 — eligible shared chest/NPC drops route through group roll when more than one player can loot. -->
+          <!-- Source: server-scripts/Monster.cs:UserCode_CmdLootMonster — monster loot also rolls MergeItem and ScrollItem drops. -->When
           more than one player can loot the same enemy, NPC, or world loot
           chest, uncommon-or-better items, keys, chest keys, items worth more
           than 200 gold, and XP potions use group rolls instead of direct
@@ -616,7 +616,7 @@
           durability is depleted.
         </li>
         <li>
-          <!-- Source: server-scripts/GatherItem.cs:287-298 and PlayerInventory.cs:133-151 — mining consumes selected pickaxe durability; 0-durability pickaxes cannot mine until repaired. -->Mining
+          <!-- Source: server-scripts/GatherItem.cs:287-298 and PlayerInventory.cs:137-155 — mining consumes selected pickaxe durability; 0-durability pickaxes cannot mine until repaired. -->Mining
           consumes pickaxe durability. A 0-durability pickaxe remains in
           inventory but cannot be used for mining until repaired.
         </li>

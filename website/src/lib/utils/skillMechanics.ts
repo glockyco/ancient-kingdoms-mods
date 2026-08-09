@@ -138,7 +138,11 @@ function playerDamageFormula(
 
   // Source: TargetDamageSkill.cs — Magic + !isSpell + requiredWeaponCategory.StartsWith("Weapon")
   // adds combat.damage on top of combat.magicDamage; must be checked before the broad elemental guard.
-  // Rangers additionally subtract the bow slot bonus (line 218-222), same reduction as ranger_melee.
+  // Rangers additionally subtract the bow slot bonus (TargetDamageSkill.cs:218-222),
+  // the same reduction as ranger_melee.
+  // The reusable Ranger formula remains the unbuffed calculation. Wild Strike's
+  // active-buff conversion, rounding, and target effect are rendered by its
+  // skill-specific mechanics note rather than changing this shared dispatch.
   if (dt === "Magic" && !isSpell && reqWeapon?.startsWith("Weapon"))
     return cls === "ranger" ? "magic_weapon_ranger" : "magic_weapon";
 
@@ -458,8 +462,8 @@ export function computeMechanicsSpec(
   // ---------- timing ----------
   // Only populated when followup_default_attack=true.
   // Source: server-scripts/Skills.cs:942-946 — followupDefaultAttack + !isSpell + isMercenary → cooldown×(1-haste), Combat.cs:304-310 (haste cap)
-  // Source: server-scripts/Player.cs:3051-3054,3084-3086 — weapon-delay refractory for all non-spell weapon skills (!isSpell && hasReqWeapon)
-  // Source: server-scripts/Player.cs:3050-3052,3088-3091 — spell skills get flat 0.75s refractory (isSpell=true, no required_weapon_category)
+  // Source: server-scripts/Player.cs:3203-3244 — weapon-delay refractory for all non-spell weapon skills (!isSpell && hasReqWeapon)
+  // Source: server-scripts/Player.cs:3203-3244 — spell skills get flat 0.75s refractory (isSpell=true, no required_weapon_category)
   // Source: server-scripts/Monster.cs:UpdateServer_CASTING — FinishCastMeleeAttackMonster vs FinishCast for monsters
   const timingPairs: Array<{ label: string; model: TimingModel }> = [];
 

@@ -52,8 +52,8 @@ function roundToInt(value: number): number {
  * Reputation changed per kill for a monster, formatted as a range across its
  * spawn levels (level_min..level_max).
  *
- * Source: server-scripts/Monster.cs:515-541 (formula),
- * 2710-2722 and 2746-2758 (party/solo reward application).
+ * Source: server-scripts/Monster.cs:517-543 (formula),
+ * 2724-2736 and 2760-2772 (party/solo reward application).
  * Improve adds (level.current + Mathf.RoundToInt(health.max / 2000)) *
  * (boss 20 / elite 10 / normal 2); decrease subtracts level.current *
  * (boss 2 / elite 1 / normal 0.5).
@@ -102,7 +102,7 @@ export function monsterKillReputation(
 /**
  * Reputation changed per kill for an NPC.
  *
- * Source: server-scripts/Npc.cs:1600-1610 (solo) / 1567-1577 (party share).
+ * Source: server-scripts/Npc.cs:1604-1614 (solo) / 1571-1581 (party share).
  * Improve adds level.current * 1.5; decrease subtracts level.current * 5.
  */
 export function npcKillReputation(

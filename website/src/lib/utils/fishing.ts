@@ -65,7 +65,7 @@ function fishingLevelFraction(fishingPercent: number): number {
 const FISHING_SUCCESS_FLOOR = mechanics.success.floor;
 const CEILING_FISHERMAN_PIECES = 3;
 
-// Source: server-scripts/Utils.cs:560-569 — GetSuccessProbFishing.
+// Source: server-scripts/Utils.cs:562-571 — GetSuccessProbFishing.
 // Source: server-scripts/GatherItem.cs:650-653 — values below 0.2 show "skill too low" and do not fish.
 export function fishingSpotSuccessChance({
   rodQuality,
@@ -171,7 +171,7 @@ export function fishingClickWindowSeconds(spotTier: number): number {
   }
 }
 
-// Source: server-scripts/Player.cs:8483-8484 — TargetRpcSetFishWindow(Random.Range(3, 8)) (int upper bound exclusive).
+// Source: server-scripts/Player.cs:9131-9132 — TargetRpcSetFishWindow(Random.Range(3, 8)) (int upper bound exclusive).
 export function fishingCastDelaySecondsRange(): { min: number; max: number } {
   return { min: 3, max: 7 };
 }

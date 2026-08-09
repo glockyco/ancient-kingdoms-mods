@@ -17,6 +17,7 @@
   import TriangleAlert from "@lucide/svelte/icons/triangle-alert";
   import DungeonRestrictionBadge from "$lib/components/DungeonRestrictionBadge.svelte";
   import SkillEffect from "$lib/components/SkillEffect.svelte";
+  import FormulaDisplay from "$lib/components/FormulaDisplay.svelte";
   import MonsterTypeIcon from "$lib/components/MonsterTypeIcon.svelte";
   import Skull from "@lucide/svelte/icons/skull";
   import Cat from "@lucide/svelte/icons/cat";
@@ -24,8 +25,10 @@
   import Ghost from "@lucide/svelte/icons/ghost";
   import TrendingUp from "@lucide/svelte/icons/trending-up";
   import FlaskConical from "@lucide/svelte/icons/flask-conical";
-  import FormulaDisplay from "$lib/components/FormulaDisplay.svelte";
-  import { renderFormulaDisplay } from "$lib/utils/formula-eval";
+  import {
+    renderFormulaDisplay,
+    renderWildStrikeFormulaDisplay,
+  } from "$lib/utils/formula-eval";
   import { petHref } from "$lib/utils/pets";
   import Seo from "$lib/components/Seo.svelte";
   import { TRAP_TYPE_LABELS } from "$lib/constants/traps";
@@ -33,6 +36,7 @@
   let { data }: { data: PageData } = $props();
 
   const skill = $derived(data.skill);
+  const isWildStrike = $derived(skill.id === "wild_strike");
   const isScrollTriggered = $derived(
     data.grantedByItems.some((item) => item.type === "scroll"),
   );
@@ -735,8 +739,8 @@
       data.mechanicsSpec.timingContexts.length > 0 ||
       // E2. Cleanse mechanics
       skill.is_cleanse ||
-      // G. Special notes
       skill.is_assassination_skill ||
+      skill.id === "wild_strike" ||
       skill.id === "parry" ||
       hasScrollMasteryScaling ||
       skill.is_decrease_resists_skill ||
@@ -1912,7 +1916,7 @@
           </div>
         {/if}
         <!-- A. Damage Formula (spec-driven, one block per distinct formula/context) -->
-        {#if isDamageType && data.mechanicsSpec.damageContexts.length > 0 && hasActualDamage}
+        {#if isDamageType && !isWildStrike && data.mechanicsSpec.damageContexts.length > 0 && hasActualDamage}
           <div class="space-y-3">
             <h3 class="font-semibold">Damage Formula</h3>
             {#each data.mechanicsSpec.damageContexts as ctx (ctx.formula)}
@@ -2250,7 +2254,8 @@
                   </p>
                 {:else}
                   <!-- companion: companions, familiars -->
-                  <!-- Source: server-scripts/Pet.cs:2024-2029, server-scripts/Pet.cs:4390-4395, server-scripts/Pet.cs:4474-4479 — non-merc pets always pass 0f spellHasteBonus; server-scripts/Skills.cs:947-950 — flat cooldown -->
+                  <!-- Source: server-scripts/Pet.cs -->
+                  <!-- Source: server-scripts/Skills.cs:947-950 — companion cooldown remains flat -->
                   <p class="font-mono">interval = cast time + cooldown</p>
                   <p class="text-muted-foreground">No haste reduction.</p>
                 {/if}
@@ -2353,7 +2358,7 @@
         {/if}
 
         <!-- D2. Resist Chance — shown for debuffs and dispels (both roll to resist); hidden for cleanse (no resist roll) -->
-        <!-- Source: server-scripts/Combat.cs:1296-1329 GetProbResistMeleeDebuff/Magic/Poison/Fire/Cold/Disease; resist gate TargetDebuffSkill.cs:104-142 / AreaDebuffSkill.cs:103-138 -->
+        <!-- Source: server-scripts/Combat.cs:1305-1338 GetProbResistMeleeDebuff/Magic/Poison/Fire/Cold/Disease; resist gate TargetDebuffSkill.cs:104-142 / AreaDebuffSkill.cs:103-138 -->
         {#if isDebuffType && !skill.is_cleanse && (skill.is_melee_debuff || skill.is_poison_debuff || skill.is_fire_debuff || skill.is_cold_debuff || skill.is_disease_debuff || skill.is_magic_debuff)}
           <div class="space-y-1">
             <h4 class="font-medium text-muted-foreground">Resist Chance</h4>
@@ -2377,7 +2382,7 @@
         {/if}
 
         <!-- E. Cleanse Resistance (on debuff skill pages) -->
-        <!-- Source: server-scripts/Buff.cs:18 (3 counters); TargetBuffSkill.cs:299-320 (counter rolls); Skills.cs:1531-1536 (DoT per-counter scaling) -->
+        <!-- Source: server-scripts/Buff.cs:18 (3 counters); TargetBuffSkill.cs:134-158 (HasMatchingCleanseDebuff), 236-458 (Apply cleanse branch and counter rolls); Skills.cs:1531-1536 (DoT per-counter scaling) -->
         {#if isDebuffType && !skill.is_cleanse && !skill.is_dispel && skill.prob_ignore_cleanse != null}
           <div class="space-y-1">
             <h3 class="font-semibold">Cleanse Resistance</h3>
@@ -2404,7 +2409,7 @@
         {/if}
 
         <!-- E2. Cleanse Mechanics (on cleanse skill pages) -->
-        <!-- Source: server-scripts/TargetBuffSkill.cs:299-325 / AreaBuffSkill.cs:179-195,271-288 (cleanse); Buff.cs:18 (3 counters); Skills.cs:1531-1536 (DoT per-counter scaling) -->
+        <!-- Source: server-scripts/RelicItem.cs:20-35 (finite-charge item gate); TargetBuffSkill.cs:134-158 (HasMatchingCleanseDebuff), 236-458 (Apply cleanse branch and counter rolls); Buff.cs:18 (3 counters); Skills.cs:1531-1536 (DoT per-counter scaling) -->
         {#if skill.is_cleanse}
           <div class="space-y-1">
             <h3 class="font-semibold">
@@ -2417,15 +2422,18 @@
             <p class="text-muted-foreground">
               Cast on yourself or an ally, this skill removes harmful debuffs of
               the elements it cleanses. It cannot be resisted and is not
-              affected by Accuracy. Every debuff carries 3 counters and is fully
-              removed only when its counters reach 0. If a matching debuff has a
-              Cleanse Resist of 0, all 3 counters are removed in a single cast.
-              Otherwise the cast removes 1 counter for certain, then makes 2
-              more attempts that each remove another counter with a chance of
-              (100% &minus; Cleanse Resist), and a debuff with a Cleanse Resist
-              of 100% cannot be cleansed. For damage-over-time debuffs, losing
-              counters also lowers each tick of damage, to 80% of full at 2
-              counters and 60% at 1 counter.
+              affected by Accuracy. Finite-charge cleanse items require an
+              active matching debuff before use. This item check does not block
+              a cleanse skill cast, which follows the normal cleanse rules.
+              Every debuff carries 3 counters and is fully removed only when its
+              counters reach 0. If a matching debuff has a Cleanse Resist of 0,
+              all 3 counters are removed in a single cast. Otherwise the cast
+              removes 1 counter for certain, then makes 2 more attempts that
+              each remove another counter with a chance of (100% &minus; Cleanse
+              Resist), and a debuff with a Cleanse Resist of 100% cannot be
+              cleansed. For damage-over-time debuffs, losing counters also
+              lowers each tick of damage, to 80% of full at 2 counters and 60%
+              at 1 counter.
             </p>
           </div>
         {/if}
@@ -2435,7 +2443,7 @@
           {@const playerCast =
             skill.is_scroll || skill.player_classes.length > 0}
           <div class="space-y-1">
-            <!-- Source: server-scripts/TargetDebuffSkill.cs:104-142 (resist gate), 172-204,208-233,237-249 (removal); AreaDebuffSkill.cs:103-138 (resist gate), 163-204,208-232,237-257 (removal); Combat.cs:1302-1329 GetProbResistMagic/Disease -->
+            <!-- Source: server-scripts/TargetDebuffSkill.cs:104-142 (resist gate), 172-204,208-233,237-249 (removal); AreaDebuffSkill.cs:103-138 (resist gate), 163-204,208-232,237-257 (removal); Combat.cs:1311-1338 GetProbResistMagic/Disease -->
             <h3 class="font-semibold">
               <a
                 href="/mechanics/combat#dispel"
@@ -2518,8 +2526,18 @@
         {/if}
 
         <!-- G. Special Mechanic Notes -->
+        {#if isWildStrike}
+          <!-- Source: server-scripts/DamageSkill.cs:47-63 (TryConsumeWildStrike) -->
+          <!-- Source: server-scripts/TargetDamageSkill.cs:239,282 (Apply) -->
+          <!-- Source: server-scripts/TargetProjectileSkill.cs:221-222,251-255 (Apply) -->
+          <!-- Source: server-scripts/Combat.cs:368,601,678-685,944-955 (DealDamageAt) -->
+          <div class="space-y-1">
+            <h3 class="font-semibold">Wild Strike</h3>
+            <FormulaDisplay display={renderWildStrikeFormulaDisplay()} />
+          </div>
+        {/if}
         {#if skill.id === "parry"}
-          <!-- Source: server-scripts/Combat.cs:1106-1119, 1329-1339; Player.cs:10842-10846 -->
+          <!-- Source: server-scripts/Combat.cs:1106-1119, 1338-1348; Player.cs:11490-11494 -->
           <div class="space-y-1">
             <h3 class="font-semibold">
               <a
@@ -2622,8 +2640,8 @@
         {/if}
         {#if skill.speed_bonus && skill.speed_bonus.base_value <= -50}
           <!-- Source: server-scripts/Skills.cs:1346-1351 (BreakMezz — entity.speed <= -50f) -->
-          <!-- Source: server-scripts/Combat.cs:567 (any damage > 0 calls BreakMezz) -->
-          <!-- Source: server-scripts/Monster.cs:1483-1497 (monster self-break roll every 6s) -->
+          <!-- Source: server-scripts/Combat.cs:DealDamageAt (any damage > 0 calls BreakMezz) -->
+          <!-- Source: server-scripts/Monster.cs:1497-1511 (monster self-break roll every 6s) -->
           <!-- Source: server-scripts/TargetDebuffSkill.cs:140 (boss/elite auto-resist speedBonus < -10) -->
           <div class="space-y-1">
             <h3 class="font-semibold">Sleep</h3>
@@ -2680,7 +2698,7 @@
           </div>
         {/if}
         {#if hasLinearValue(skill.critical_resist_bonus)}
-          <!-- Source: server-scripts/Combat.cs:258-270 (criticalResist, clamped 0-1), 361-366 (ApplyCriticalResistToMultiplier), 699-714 (crit damage), Dexterity.cs:34-37 -->
+          <!-- Source: server-scripts/Combat.cs:258-270 (criticalResist, clamped 0-1), 361-366 (ApplyCriticalResistToMultiplier), 701-716 (crit damage), Dexterity.cs:34-37 -->
           <div class="space-y-1">
             <h3 class="font-semibold">Critical Resist</h3>
             <p class="text-muted-foreground">
@@ -2717,7 +2735,7 @@
           </div>
         {/if}
         {#if hasLinearValue(skill.heal_on_hit_percent)}
-          <!-- Source: server-scripts/Combat.cs:728-742 (heal on hit, melee non-spell only) -->
+          <!-- Source: server-scripts/Combat.cs:730-744 (heal on hit, melee non-spell only) -->
           <div class="space-y-1">
             <h3 class="font-semibold">Heal on Hit</h3>
             <p class="text-muted-foreground">
@@ -2728,7 +2746,7 @@
           </div>
         {/if}
         {#if hasLinearValue(skill.cooldown_reduction_percent)}
-          <!-- Source: server-scripts/TargetBuffSkill.cs:239-254 (instant CD reduction on buff apply) -->
+          <!-- Source: server-scripts/TargetBuffSkill.cs:266-281 (instant CD reduction on buff apply) -->
           <div class="space-y-1">
             <h3 class="font-semibold">Cooldown Reduction</h3>
             <p class="text-muted-foreground">
@@ -2740,7 +2758,7 @@
           </div>
         {/if}
         {#if hasLinearValue(skill.damage_shield)}
-          <!-- Source: server-scripts/Combat.cs:742-752,754-775,779-789,794-818 (damage_shield reflect block; gated by !isProcWeapon && !isScroll) -->
+          <!-- Source: server-scripts/Combat.cs:744-754,756-777,781-791,796-820 (damage_shield reflect block; gated by !isProcWeapon && !isScroll) -->
           <div class="space-y-1">
             <h3 class="font-semibold">Damage Shield</h3>
             <p class="text-muted-foreground">
@@ -2754,7 +2772,7 @@
           </div>
         {/if}
         {#if skill.is_blindness}
-          <!-- Source: server-scripts/Player.cs:10127-10159 (TargetRpcAddBlind/RemoveBlind) -->
+          <!-- Source: server-scripts/Player.cs:10775-10807 (TargetRpcAddBlind/RemoveBlind) -->
           <!-- Source: server-scripts/Skills.cs:912 (isBlindness check, Player only) -->
           <div class="space-y-1">
             <h3 class="font-semibold">Blindness</h3>

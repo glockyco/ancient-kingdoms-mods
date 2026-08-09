@@ -237,7 +237,7 @@
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/Monster.cs:515-540 — GetFactionGain and GetFactionLoss. -->
+      <!-- Source: server-scripts/Monster.cs:517-542 — GetFactionGain and GetFactionLoss. -->
       <p>
         What you gain depends on the monster's level and its maximum health,
         multiplied by its rank. What you lose depends only on level.
@@ -276,7 +276,7 @@
           </tbody>
         </table>
       </div>
-      <!-- Source: server-scripts/Monster.cs:2746-2758 — the solo kill applies both lists. -->
+      <!-- Source: server-scripts/Monster.cs:2760-2772 — the solo kill applies both lists. -->
       <p>
         Because health counts, high-health bosses are worth far more than
         anything else.
@@ -303,7 +303,7 @@
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/Npc.cs:1600-1610 — the aggro player's faction changes on an NPC death. -->
+      <!-- Source: server-scripts/Npc.cs:1604-1614 — the aggro player's faction changes on an NPC death. -->
       <p>
         Every faction on the NPC's improve list goes up by
         <span class="font-mono">NPC level × 1.5</span>
@@ -385,7 +385,7 @@
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
       <!-- Source: server-scripts/PetFriendly.cs:688-702 — clicking within 3 units pets the animal and grants faction at most every 30 seconds. -->
-      <!-- Source: server-scripts/Player.cs:11931-11935 — CmdIncreaseFaction adds the value unchanged. -->
+      <!-- Source: server-scripts/Player.cs:12579-12583 — CmdIncreaseFaction adds the value unchanged. -->
       <p>
         Clicking one from up close pets it and gives 1 to 4 reputation with the
         animal's faction. Each animal only pays out once every 30 seconds, so
@@ -404,7 +404,7 @@
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
       <ul class="list-disc space-y-2 pl-5">
         <li>
-          <!-- Source: server-scripts/Npc.cs:1895-1904 — faction vendors require 15,000 standing. -->
+          <!-- Source: server-scripts/Npc.cs:InteractNpc — faction vendors require 15,000 standing. -->
           <strong class="text-foreground">Faction vendors</strong> will not open their
           shop below 15,000 reputation.
         </li>
@@ -426,7 +426,7 @@
           the quest up.
         </li>
         <li>
-          <!-- Source: server-scripts/Npc.cs:1684-1688 — NPCs refuse to talk below -500. -->
+          <!-- Source: server-scripts/Npc.cs:1688-1692 — NPCs refuse to talk below -500. -->
           <strong class="text-foreground">Below −500</strong> reputation, NPCs of
           that faction will not talk to you. No shop, no quests, no services.
         </li>
@@ -452,7 +452,7 @@
         of the sources above applies, so a faction you ignore keeps whatever
         value it had.
       </p>
-      <!-- Source: server-scripts/Player.cs:11931-11935, Monster.cs:2746-2758, Npc.cs:1600-1610, PlayerQuests.cs:440-443, GatherItem.cs:336-344 — every write adds or subtracts without clamping. -->
+      <!-- Source: server-scripts/Player.cs:12579-12583, Monster.cs:2760-2772, Npc.cs:1604-1614, PlayerQuests.cs:440-443, GatherItem.cs:336-344 — every write adds or subtracts without clamping. -->
       <!-- Source: server-scripts/Database.cs:3677-3685 — setFactionValue stores the raw value. -->
       <p>
         There is no cap and no floor. Every source adds to or subtracts from the

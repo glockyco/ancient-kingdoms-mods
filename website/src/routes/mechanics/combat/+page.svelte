@@ -36,7 +36,7 @@
     magic_weapon:
       "INT×1.5 + STR×1.0 + equipment, physical and magic components mitigated separately",
     magic_weapon_ranger:
-      "Like magic_weapon, but the physical component excludes the bow's flat damage bonus",
+      "Generic Ranger magic-weapon formula. Wild Strike uses its dedicated empowered attack rule below",
     manaburn: "Current Rage or Mana × 2 (bypasses all mitigation and resist)",
     monster_melee: "baseDamage(level), scales with monster level",
     monster_magic: "baseMagicDamage(level), scales with monster level",
@@ -241,7 +241,7 @@
     </Card.Header>
     <Card.Content class="space-y-5">
       <div>
-        <!-- Source: server-scripts/Combat.cs:1301-1304,1307-1310,1313-1316,1319-1322,1325-1328 GetProbResist* (formula), Combat.cs:479-486 (damage); TargetDebuffSkill.cs:104-142 / AreaDebuffSkill.cs:103-138 (debuff & dispel landing) -->
+        <!-- Source: server-scripts/Combat.cs:1310-1313,1316-1319,1322-1325,1328-1331,1334-1337 GetProbResist* (formula), Combat.cs:481-488 (damage); TargetDebuffSkill.cs:104-142 / AreaDebuffSkill.cs:103-138 (debuff & dispel landing) -->
         <h3 class="font-semibold mb-1">Resist Roll</h3>
         <pre
           class="text-xs bg-muted px-3 py-2 rounded overflow-x-auto">P(resist) = clamp(
@@ -783,7 +783,7 @@ finalDamage = damage − reduction</pre>
                   >Reduces cast time (cap: 50%). Refractory (0.75s) unaffected.</td
                 >
               </tr>
-              <!-- Source: server-scripts/Pet.cs:2024-2029, server-scripts/Pet.cs:4390-4395, server-scripts/Pet.cs:4474-4479 — non-merc pets always pass 0f spellHasteBonus -->
+              <!-- Source: server-scripts/Pet.cs -->
               <tr class="border-b border-border/40">
                 <td class="py-2 pr-4 font-mono text-xs">companion</td>
                 <td class="py-2 pr-4 text-muted-foreground text-xs"
@@ -814,7 +814,7 @@ finalDamage = damage − reduction</pre>
                   >Reduces cooldown for non-spell attacks. Spell attack
                   cooldowns are unaffected by haste</td
                 >
-                <!-- Source: server-scripts/Monster.cs:2898-2900, server-scripts/Npc.cs:624-627 — hardcoded StartCast(skill, 0f) bypasses spell haste entirely -->
+                <!-- Source: server-scripts/Monster.cs:UpdateServer_CASTING, server-scripts/Npc.cs — hardcoded StartCast(skill, 0f) bypasses spell haste entirely -->
                 <td class="py-2 text-muted-foreground text-xs">No effect</td>
               </tr>
             </tbody>
@@ -842,8 +842,23 @@ finalDamage = damage − reduction</pre>
         </p>
       </div>
       <div>
-        <!-- Source: server-scripts/Combat.cs:841-845,1195-1199 — auto-attack rage gain on dealing damage. -->
-        <!-- Source: server-scripts/Combat.cs:875-895,898-905,1167-1171,1356-1363 — GenerateRageOnHit: rage gain on taking Normal damage. -->
+        <!-- Source: server-scripts/DamageSkill.cs:47-63 — TryConsumeWildStrike checks the active Ranger follow-up buff, rounds ×1.1, sets DamageType.Magic, and selects WildStrikeTargetEffect. -->
+        <!-- Source: server-scripts/TargetDamageSkill.cs:239,282 — Apply consumes the override for a sword follow-up and passes it to DealDamageAt. -->
+        <!-- Source: server-scripts/TargetProjectileSkill.cs:221-222,251-255 — Apply consumes the override for a bow follow-up and passes it to the projectile effect. -->
+        <!-- Source: server-scripts/Combat.cs:368,601,678-685,944-955 — DealDamageAt runs the common pipeline, mitigates Magic once, and instantiates the override effect. -->
+        <h3 id="wild-strike" class="font-semibold mb-1 scroll-mt-24">
+          Wild Strike
+        </h3>
+        <p class="text-sm text-muted-foreground">
+          Wild Strike empowers the Ranger's next sword or bow auto attack. Add
+          Wild Strike's damage to the auto attack, multiply the total by
+          &times;1.1, and round it. The whole hit then deals Magic damage and is
+          reduced by Magic Defense and Magic Resist.
+        </p>
+      </div>
+      <div>
+        <!-- Source: server-scripts/Combat.cs:DealDamageAt — auto-attack rage gain on dealing damage. -->
+        <!-- Source: server-scripts/Combat.cs:DealDamageAt — damage received by Warrior/Rogue entities invokes the shared rage formula. -->
         <h3 class="font-semibold mb-1">Rage Generation</h3>
         <p class="text-sm text-muted-foreground mb-2">
           Warrior and Rogue generate Rage from two sources:
@@ -921,9 +936,9 @@ finalDamage = damage − reduction</pre>
 
       <div>
         <!-- Source: server-scripts/Skills.cs:1346-1351 (BreakMezz — entity.speed <= -50f) -->
-        <!-- Source: server-scripts/Combat.cs:567 (damage > 0 calls BreakMezz) -->
+        <!-- Source: server-scripts/Combat.cs:DealDamageAt (damage > 0 calls BreakMezz) -->
         <!-- Source: server-scripts/Skills.cs:156 (DoT tick also calls BreakMezz) -->
-        <!-- Source: server-scripts/Monster.cs:1483-1497 (monster self-break: magic resist roll every 6s) -->
+        <!-- Source: server-scripts/Monster.cs:1497-1511 (monster self-break: magic resist roll every 6s) -->
         <!-- Source: server-scripts/TargetDebuffSkill.cs:140 (boss/elite auto-resist speedBonus < -10) -->
         <h3 class="font-semibold mb-1">Sleep</h3>
         <p class="text-sm text-muted-foreground">
@@ -946,7 +961,7 @@ finalDamage = damage − reduction</pre>
       </div>
 
       <div>
-        <!-- Source: server-scripts/Combat.cs:1106-1119, 1329-1339; Player.cs:10842-10846 -->
+        <!-- Source: server-scripts/Combat.cs:1106-1119, 1338-1348; Player.cs:11490-11494 -->
         <h3 id="parry" class="font-semibold mb-1 scroll-mt-24">Parry</h3>
         <p class="text-sm text-muted-foreground">
           Parry is a timed counter. If an eligible player is casting Parry and
@@ -967,7 +982,7 @@ finalDamage = damage − reduction</pre>
 
       <div>
         <!-- Source: server-scripts/TargetDamageSkill.cs — slot 13 fires at procEffectProbability * 0.5f; durability > 0 guard on both slots -->
-        <!-- Source: server-scripts/Combat.cs:1043 — proc weapons and scrolls are excluded from the damage-shield trigger. -->
+        <!-- Source: server-scripts/Combat.cs:1021 — proc weapons and scrolls are excluded from the damage-shield trigger. -->
         <h3 class="font-semibold mb-1">Weapon On-Hit Procs</h3>
         <p class="text-sm text-muted-foreground">
           Weapons with an on-hit effect trigger it at the listed probability on
@@ -990,7 +1005,7 @@ finalDamage = damage − reduction</pre>
       </div>
 
       <div>
-        <!-- Source: server-scripts/Buff.cs:18 (3 counters); TargetBuffSkill.cs:299-325 / AreaBuffSkill.cs:179-195,271-288 (cleanse counter rolls); Skills.cs:1531-1536 (DoT per-counter scaling) -->
+        <!-- Source: server-scripts/Buff.cs:18 (3 counters); RelicItem.cs:20-35 (finite-charge item gate); TargetBuffSkill.cs:134-158 (HasMatchingCleanseDebuff), 236-458 (Apply cleanse branch and counter rolls); AreaBuffSkill.cs:179-195,271-288 (area cleanse counter rolls); Skills.cs:1531-1536 (DoT per-counter scaling) -->
         <h3 id="cleanse" class="font-semibold mb-1 scroll-mt-24">Cleanse</h3>
         <p class="text-sm text-muted-foreground mb-2">
           Cleanse is cast on yourself or an ally and removes harmful debuffs. It
@@ -998,6 +1013,11 @@ finalDamage = damage − reduction</pre>
           acts on debuffs whose element matches it. For example, a fire-and-cold
           cleanse removes fire and cold debuffs but not poison, disease, or
           magic ones.
+        </p>
+        <p class="text-sm text-muted-foreground mb-2">
+          Finite-charge cleanse items require an active debuff that matches the
+          item. Cleanse skill casts still proceed and apply the normal cleanse
+          rules.
         </p>
         <p class="text-sm text-muted-foreground mb-2">
           Every debuff carries 3 counters and is fully removed only when its
@@ -1046,7 +1066,7 @@ finalDamage = damage − reduction</pre>
       </div>
 
       <div>
-        <!-- Source: server-scripts/TargetDebuffSkill.cs:104-142 (resist gate), 172-204,208-233,237-249 (removal); AreaDebuffSkill.cs:103-138 (resist gate), 163-204,208-232,237-257 (removal); Combat.cs:1302-1329 GetProbResistMagic/Disease -->
+        <!-- Source: server-scripts/TargetDebuffSkill.cs:104-142 (resist gate), 172-204,208-233,237-249 (removal); AreaDebuffSkill.cs:103-138 (resist gate), 163-204,208-232,237-257 (removal); Combat.cs:1311-1338 GetProbResistMagic/Disease -->
         <h3 id="dispel" class="font-semibold mb-1 scroll-mt-24">Dispel</h3>
         <p class="text-sm text-muted-foreground mb-2">
           Dispel removes beneficial buffs from its target. Players cast it on

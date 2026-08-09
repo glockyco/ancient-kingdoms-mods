@@ -20,12 +20,12 @@ const mechanics = PROFESSION_MECHANICS.alchemy;
 // differences: the skill-gain divisor is 1000 (cooking uses 3000) and the
 // success roll applies to every output (cooking exempts non-FoodItem results).
 
-// Source: server-scripts/Player.cs:11716 and TableUI.cs:92 — an alchemy/scribing
+// Source: server-scripts/Player.cs:12652-12655 and TableUI.cs:92 — an alchemy/scribing
 // table refuses to craft when GetSuccessProbAlchemy(...) < 0.1, so a recipe only
 // becomes craftable once its raw success chance reaches 10%.
 export const ALCHEMY_SUCCESS_FLOOR = mechanics.success.floor;
 
-// Source: server-scripts/Utils.cs:532-542 — GetSuccessProbAlchemy(levelPotion,
+// Source: server-scripts/Utils.cs:534-544 — GetSuccessProbAlchemy(levelPotion,
 // alchemyLevel). Returns the raw success probability (0..1), ignoring the gate.
 export function rawAlchemySuccessChance(
   level: number,
@@ -54,7 +54,7 @@ export function alchemySuccessPercent(
   return rawAlchemySuccessChance(level, skillPercent) * 100;
 }
 
-// Source: server-scripts/Player.cs:11741 — a high enough Alchemy skill turns
+// Source: server-scripts/Player.cs:12678-12682 — a high enough Alchemy skill turns
 // low-level recipes into "too simple" tasks that grant no skill gain (strict >).
 export function isAlchemyEffortless(
   level: number,
@@ -63,13 +63,13 @@ export function isAlchemyEffortless(
   return isEffortlessAtTier(mechanics.effortless, level, skillPercent);
 }
 
-// Source: server-scripts/Player.cs:12034 — skill gain fires when
+// Source: server-scripts/Player.cs:12682 — skill gain fires when
 // Random.value > 0.1 + alchemyLevel/2, i.e. with probability 0.9 - alchemyLevel/2.
 export function alchemySkillGainChancePercent(skillPercent: number): number {
   return skillGainChance(mechanics.skillGain, skillPercent) * 100;
 }
 
-// Source: server-scripts/Player.cs:12036 — num4 = Random.Range(1, 4) /
+// Source: server-scripts/Player.cs:12684 — num4 = Random.Range(1, 4) /
 // (successChanceProb * 1000). Note the 1000 divisor (cooking uses 3000). Skill
 // gain only happens when the recipe is craftable and still grants skill (not
 // "effortless"). Returns percentage-point bounds, or null when none applies.

@@ -296,7 +296,7 @@ function formatHealing(
     parts.push(`${formatLinearValue(healMana, monsterContext)} mana`);
   }
 
-  // Source: server-scripts/Player.cs:11779-11786 — resurrection restores 60% max HP, 20% max HP as mana, and +75% of lossExp.
+  // Source: server-scripts/Player.cs:12426-12434 — resurrection restores 60% max HP, 20% max HP as mana, and +75% of lossExp.
   if (skill.is_resurrect_skill) {
     parts.push("resurrect (60% max HP, 20% max HP as mana, +75% lost XP)");
   }
@@ -428,10 +428,10 @@ function formatBuffDebuffStats(
 
   // 1. Special flags (binary game-changers that define the skill's identity)
   // Source: server-scripts/TargetBuffSkill.cs:15 (isDoubleExpSpell flag);
-  // Skills.cs:1334-1344; Monster.cs:2699-2709,2735-2745 — hasDoubleExp() doubles XP awarded on kill.
+  // Skills.cs:1334-1344; Monster.cs:2713-2723,2749-2759 — hasDoubleExp() doubles XP awarded on kill.
   if (skill.is_double_exp_spell) parts.push("2× XP from kills");
   if (skill.is_dispel) parts.push("dispels buffs");
-  // Source: server-scripts/TargetBuffSkill.cs:284 — cleanse matches on the skill's own debuff type flags
+  // Source: server-scripts/TargetBuffSkill.cs:134-158 (HasMatchingCleanseDebuff) — cleanse matches on the skill's own debuff type flags
   if (skill.is_cleanse) {
     const all =
       skill.is_poison_debuff &&

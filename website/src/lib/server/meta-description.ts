@@ -45,11 +45,16 @@ export interface ItemMetaContext {
    * Base duration of the linked buff in seconds, if the item applies one
    * (potions/food/relics). Source: skills.duration_base on the row keyed
    * by potion_buff_id / food_buff_id / relic_buff_id. We only surface the
-   * base value because per-level scaling depends on the player's Elixir
-   * Endurance veteran rank (PotionItem.cs:127-138) and similar runtime
-   * factors that aren't known at SSR time.
+   * base value because PotionItem.GetBuffLevelWithElixirEndurance resolves
+   * the applied level at use time (server-scripts/PotionItem.cs:24-39,
+   * 143-145). Non-bandage potions can use Elixir Endurance; bandages keep
+   * their base buff level. Mercenary utility potions pass the owner's Player
+   * (server-scripts/Pet.cs:2071-2095), so that owner's veteran rank applies.
+   * We cannot predict that runtime rank at SSR time.
    */
   buffDurationSeconds?: number | null;
+  /** Whether the linked relic buff is a cleanse spell. */
+  relicIsCleanse?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -190,7 +195,7 @@ export function itemTypeSuffix(item: Item): string {
     case "scroll":
       return item.is_repair_kit ? "Repair Scroll" : "Cast Scroll";
     case "relic":
-      // Source: server-scripts/RelicItem.cs:12,17-20 — isOrnamentationToken splits the type
+      // Source: server-scripts/RelicItem.cs:12,39-46 — isOrnamentationToken splits the type
       return item.is_ornamentation_token ? "Ornamentation Token" : `${q} Relic`;
     case "book":
       return "Tome";
@@ -337,8 +342,13 @@ function buffPhrase(
 }
 
 function potionDescription(item: Item, ctx: ItemMetaContext): string {
-  // Source: server-scripts/PotionItem.cs — usage_health/mana/energy/pet_health/experience
-  // and an optional buff are applied on use.
+  // Source: server-scripts/PotionItem.cs:24-39,143-145 — non-bandage buff
+  // levels can use Elixir Endurance; bandages return their base buff level.
+  // Source: server-scripts/Pet.cs:2071-2095 — mercenary utility potions
+  // resolve that level from the owner's veteran rank.
+  const isBandage = item.cooldown_category === "Bandages";
+  // Source: server-scripts/PotionItem.cs:8-17,41-124 — health, mana, energy,
+  // pet-health, and experience usage values are applied on use.
   const restored: string[] = [];
   if (item.usage_health > 0) restored.push(`${item.usage_health} Hit Points`);
   if (item.usage_mana > 0)
@@ -352,12 +362,15 @@ function potionDescription(item: Item, ctx: ItemMetaContext): string {
   const restorePhrase =
     restored.length > 0 ? ` Restores ${joinList(restored)}.` : "";
   const buff = item.potion_buff_name
-    ? ` ${buffPhrase("Applies", item.potion_buff_name, ctx.buffDurationSeconds)}`
+    ? ` ${buffPhrase("Applies", item.potion_buff_name, ctx.buffDurationSeconds)}${
+        isBandage
+          ? " Uses its base buff level."
+          : " Non-bandage buff levels can use Elixir Endurance; mercenary utility potions use their owner's veteran rank."
+      }`
     : "";
-  // Source: server-scripts/PotionItem.cs — cooldownCategory "Bandages" marks the bandage subtype
-  const isBandage = item.cooldown_category === "Bandages";
   const subtype = isBandage ? "Bandage" : "Potion";
-  // Source: server-scripts/PotionItem.cs — potion_buff_allow_dungeon flags whether buff persists in dungeons
+  // Source: server-scripts/PotionItem.cs:138-142 — dungeon-disabled buffs
+  // reject use before the buff is applied.
   const dungeon =
     !item.potion_buff_allow_dungeon && item.potion_buff_name
       ? " Dungeon use disabled."
@@ -390,29 +403,38 @@ function scrollDescription(item: Item): string {
 }
 
 function relicDescription(item: Item, ctx: ItemMetaContext): string {
-  // Source: server-scripts/RelicItem.cs:12,17-20 — isOrnamentationToken saves armor appearance
+  // Source: server-scripts/RelicItem.cs:12-13,39-46 — ornamentation tokens
+  // save armor appearance instead of activating a buff.
   const isOrnament = item.is_ornamentation_token;
   if (isOrnament) {
     return `Saves an armor piece's appearance to your wardrobe collection.`;
   }
   const q = quality(item);
-  // Source: server-scripts/RelicItem.cs:31 — buff applied at buffEffect.maxLevel,
-  // not at the relic's own buff_level. We surface base duration only;
-  // ctx.buffDurationSeconds is null when the linked buff has no timer.
+  // Source: server-scripts/RelicItem.cs:54-58 — relic buffs apply at
+  // buffEffect.maxLevel, not at the relic's own buff_level. We surface base
+  // duration only; ctx.buffDurationSeconds is null when no timer is known.
   const buffName = item.relic_buff_name ?? "a buff";
   const dur =
     ctx.buffDurationSeconds && ctx.buffDurationSeconds > 0
       ? ` for ${formatDuration(ctx.buffDurationSeconds)}`
       : "";
   const buff = ` Triggers ${buffName}${dur}.`;
+  // Source: server-scripts/RelicItem.cs:20-37 — finite-charge cleanse relics
+  // require an active matching cleanseable debuff; CanUse rejects the use
+  // before Use can decrement a charge. Infinite-charge relics skip this gate.
+  const cleanseGate = ctx.relicIsCleanse
+    ? item.infinite_charges
+      ? " Infinite-charge cleanse relics can be used without a matching debuff."
+      : " Requires an active matching cleanseable debuff; no charge is consumed when none exists."
+    : "";
   const dungeon = !item.relic_buff_allow_dungeon
     ? " Cannot be used inside dungeons."
     : "";
-  return `${q} relic.${buff}${dungeon}`;
+  return `${q} relic.${buff}${cleanseGate}${dungeon}`;
 }
 
 function bookDescription(item: Item): string {
-  // Source: server-scripts/BookItem.cs, server-scripts/Player.cs:9518-9553 — one-time read,
+  // Source: server-scripts/BookItem.cs, server-scripts/Player.cs:10166-10201 — one-time read,
   // permanent attribute increase, then consumed.
   const gains: string[] = [];
   if (item.book_strength_gain > 0)
@@ -431,12 +453,12 @@ function bookDescription(item: Item): string {
 }
 
 function mountDescription(): string {
-  // Source: server-scripts/MountItem.cs:8, server-scripts/Player.cs:113-121,571-575 — speedMount is the mounted base movement speed, replacing equipped speed bonuses.
+  // Source: server-scripts/MountItem.cs:8, server-scripts/Player.cs:113-121,577-581 — speedMount is the mounted base movement speed, replacing equipped speed bonuses.
   return `Mountable creature. Replaces your base movement speed while mounted. Cannot mount in dungeons or while in combat.`;
 }
 
 function backpackDescription(item: Item): string {
-  // Source: server-scripts/BackpackItem.cs:7,9, server-scripts/PlayerInventory.cs:31-42,428-442 (IsUniqueBackpackAlreadyEquipped)
+  // Source: server-scripts/BackpackItem.cs:7,9, server-scripts/PlayerInventory.cs:31-42,432-446 (IsUniqueBackpackAlreadyEquipped)
   // — numSlots adds inventory capacity, and isUnique restricts duplicate equipped backpacks by nameItem.
   const slots = item.backpack_slots > 0 ? item.backpack_slots : 0;
   const slotPhrase =
@@ -542,7 +564,7 @@ function mergeDescription(item: Item, ctx: ItemMetaContext): string {
 }
 
 function structureDescription(item: Item): string {
-  // Source: server-scripts/HousingManager.cs:21-32, server-scripts/Player.cs:11447-11451,10416-10431
+  // Source: server-scripts/HousingManager.cs:21-32, server-scripts/Player.cs:12095-12099,11064-11079
   // — players buy a named house, then place CustomStructureItems inside it.
   const price =
     item.structure_price > 0
@@ -747,6 +769,7 @@ interface NpcRoles {
   is_renewal_sage: boolean;
   is_teleporter: boolean;
   is_villager: boolean;
+  is_barber: boolean;
 }
 
 interface NpcDescriptionInput {
@@ -771,6 +794,7 @@ const NPC_ROLE_PRIORITY: Array<{ flag: keyof NpcRoles; label: string }> = [
   { flag: "is_essence_trader", label: "essence trader" },
   { flag: "is_priestess", label: "priestess" },
   { flag: "is_augmenter", label: "augmenter" },
+  { flag: "is_barber", label: "barber" },
   { flag: "is_guild_management", label: "guild manager" },
   { flag: "is_renewal_sage", label: "renewal sage" },
   { flag: "is_teleporter", label: "teleporter" },
@@ -871,7 +895,6 @@ export function zoneDescription(
   const typeLabel = zone.is_dungeon ? "Dungeon" : "Overworld zone";
 
   // Source: schema — zones expose level_min/level_max derived from monsters.
-  // No row in the current DB sets required_level > 0, so we omit any gating phrase.
   let levelPhrase = "";
   if (zone.level_min && zone.level_max) {
     levelPhrase =
@@ -1497,9 +1520,9 @@ export function skillDescription(skill: SkillDescriptionInput): string {
   // skill row, so emitting "Unlocks at level X" there would mislead.
   // Source: server-scripts/PlayerSkills.cs:456-458 — veteran upgrades check
   //   regular character level, available veteran points, and spent points.
-  // Source: server-scripts/PlayerSkills.cs:879-896 — CmdUpgradeVeteran spends
+  // Source: server-scripts/PlayerSkills.cs:891-908 — CmdUpgradeVeteran spends
   //   available veteran points before increasing the skill level.
-  // Source: server-scripts/Player.cs:6233-6243 and ScriptableSkill.cs:199-201
+  // Source: server-scripts/Player.cs:6636-6646 and ScriptableSkill.cs:203-205
   //   — requiredSpentPoints means already-spent veteran points, not veteran
   //   level.
   const veteranPointText = `${skill.required_skill_points} veteran ${
@@ -1574,7 +1597,7 @@ function petOriginPhrase(input: PetDescriptionInput): string {
       }
       return " Summoned by a class skill. Level matches the summoner.";
     case "Mercenary":
-      // Source: server-scripts/Player.cs:8087 — hired at player level, gains attributes per level
+      // Source: server-scripts/Player.cs:9576-9620,9638-9639 — hired at player level, gains attributes per level
       return " Recruited from any Mercenary Recruiter NPC. Hired at the player's current level and continues to gain attributes as the player levels.";
   }
 }

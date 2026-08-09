@@ -2,10 +2,24 @@ import { test } from "vitest";
 import assert from "node:assert/strict";
 import {
   itemDescription,
+  npcDescription,
   questDescription,
   skillDescription,
 } from "./meta-description.ts";
 import type { Item } from "$lib/queries/items";
+
+test("npcDescription identifies a barber as the primary service role", () => {
+  const out = npcDescription(
+    {
+      name: "Aveline",
+      faction: null,
+      roles: { is_barber: true } as never,
+    },
+    ["Stonehaven"],
+  );
+
+  assert.equal(out, "Barber in Stonehaven.");
+});
 
 const baseQuest = {
   name: "Quest",
@@ -448,12 +462,14 @@ test("questDescription: alchemy — single brew with destination", () => {
 });
 
 // =============================================================================
-// Buff duration on potion / food / relic descriptions
+// Buff duration and use-time buff levels on potion / food / relic descriptions
 //
 // The duration we surface is `skills.duration_base` (LinearFloat baseValue)
-// for the linked buff. Per-level scaling exists (PotionItem.cs:127-138 +
-// LinearFloat.Get) but depends on Elixir Endurance veteran rank at runtime,
-// which we can't predict server-side.
+// for the linked buff. PotionItem resolves the applied level at use time:
+// non-bandages can use Elixir Endurance, while bandages use their base level
+// (server-scripts/PotionItem.cs:24-39,143-145). Mercenary utility potions
+// pass their owner's Player, so the owner's veteran rank is used
+// (server-scripts/Pet.cs:2071-2095); SSR cannot predict that rank.
 // =============================================================================
 
 /**
@@ -465,10 +481,11 @@ function makeItem(overrides: Partial<Item>): Item {
   return overrides as Item;
 }
 
-test("potionDescription: buff phrase includes base duration when known", () => {
+test("potionDescription: buff phrase includes base duration and current level rules", () => {
   // Cold Resistance Potion: buff name == item name, base duration 600s = 10m.
-  // Without the duration the sentence would just be "Applies Cold Resistance
-  // Potion." which echoes the title and adds nothing.
+  // PotionItem.cs:24-39 lets non-bandage potions use Elixir Endurance, and
+  // Pet.cs:2071-2095 passes the mercenary owner's Player. The runtime veteran
+  // rank is intentionally not predicted in this generated description.
   const out = itemDescription(
     makeItem({
       name: "Cold Resistance Potion",
@@ -479,13 +496,15 @@ test("potionDescription: buff phrase includes base duration when known", () => {
     }),
     { buffDurationSeconds: 600 },
   );
-  assert.equal(out, "Potion. Applies Cold Resistance Potion for 10m.");
+  assert.equal(
+    out,
+    "Potion. Applies Cold Resistance Potion for 10m. Non-bandage buff levels can use Elixir Endurance; mercenary utility potions use their owner's veteran rank.",
+  );
 });
 
-test("potionDescription: bandage subtype shows short heal-over-time window", () => {
-  // Bandages: buff_level=0, duration_base=5. Bandage subtype label keeps
-  // the cooldown-category signal; duration explains why "Applies Bandages"
-  // isn't circular — it persists for 5s as a HoT.
+test("potionDescription: bandages use their base buff level", () => {
+  // Source: server-scripts/PotionItem.cs:24-30 — Bandages return buffLevel
+  // before checking Elixir Endurance.
   const out = itemDescription(
     makeItem({
       name: "Bandages",
@@ -496,7 +515,10 @@ test("potionDescription: bandage subtype shows short heal-over-time window", () 
     }),
     { buffDurationSeconds: 5 },
   );
-  assert.equal(out, "Bandage. Applies Bandages for 5s.");
+  assert.equal(
+    out,
+    "Bandage. Applies Bandages for 5s. Uses its base buff level.",
+  );
 });
 
 test("potionDescription: omits duration when buff has no timer", () => {
@@ -512,7 +534,10 @@ test("potionDescription: omits duration when buff has no timer", () => {
     }),
     { buffDurationSeconds: null },
   );
-  assert.equal(out, "Potion. Applies Mystery Effect.");
+  assert.equal(
+    out,
+    "Potion. Applies Mystery Effect. Non-bandage buff levels can use Elixir Endurance; mercenary utility potions use their owner's veteran rank.",
+  );
 });
 
 test("foodDescription: buff phrase includes base duration when known", () => {
@@ -542,6 +567,48 @@ test("relicDescription: includes buff name with base duration when known", () =>
     { buffDurationSeconds: 600 },
   );
   assert.equal(out, "Epic relic. Triggers Ancestral Wrath for 10m.");
+});
+test("relicDescription: finite-charge cleanse requires a matching debuff", () => {
+  // Source: server-scripts/RelicItem.cs:20-37 — finite-charge cleanse relics
+  // are rejected by CanUse when no matching cleanseable debuff is active, so
+  // Use never reaches the charge decrement (server-scripts/RelicItem.cs:48-53).
+  const out = itemDescription(
+    makeItem({
+      name: "Cleansing Relic",
+      item_type: "relic",
+      quality: 2,
+      relic_buff_name: "Cleanse",
+      relic_buff_allow_dungeon: true,
+      is_ornamentation_token: false,
+      infinite_charges: false,
+    }),
+    { relicIsCleanse: true },
+  );
+  assert.equal(
+    out,
+    "Magic relic. Triggers Cleanse. Requires an active matching cleanseable debuff; no charge is consumed when none exists.",
+  );
+});
+
+test("relicDescription: infinite-charge cleanse keeps its distinct no-target behavior", () => {
+  // Source: server-scripts/RelicItem.cs:20-35 — the cleanse target gate only
+  // runs when infiniteCharges is false.
+  const out = itemDescription(
+    makeItem({
+      name: "Endless Cleansing Relic",
+      item_type: "relic",
+      quality: 2,
+      relic_buff_name: "Cleanse",
+      relic_buff_allow_dungeon: true,
+      is_ornamentation_token: false,
+      infinite_charges: true,
+    }),
+    { relicIsCleanse: true },
+  );
+  assert.equal(
+    out,
+    "Magic relic. Triggers Cleanse. Infinite-charge cleanse relics can be used without a matching debuff.",
+  );
 });
 
 // =============================================================================

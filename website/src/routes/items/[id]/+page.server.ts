@@ -260,18 +260,21 @@ export const load: PageServerLoad = ({ params }): ItemDetailPageData => {
       .get(params.id) as { name: string } | undefined;
     mergeResultName = row?.name ?? null;
   }
-  // Source: server-scripts/BuffSkill.cs:8 — buffTime is a LinearFloat with
-  // baseValue = duration_base. We surface only the level-1 base because the
-  // per-level slope depends on Elixir Endurance veteran rank at runtime
-  // (PotionItem.cs:127-138), which we can't predict server-side.
+  // Source: server-scripts/BuffSkill.cs:6-11 — buffTime is a LinearFloat with
+  // baseValue = duration_base. Potion buff level is resolved at use time by
+  // GetBuffLevelWithElixirEndurance (server-scripts/PotionItem.cs:24-39,
+  // 143-145); mercenary utility potions pass Networkowner
+  // (server-scripts/Pet.cs:2071-2095). Runtime veteran rank is unknown here.
   const buffId =
     item.potion_buff_id || item.food_buff_id || item.relic_buff_id || null;
   let buffDurationSeconds: number | null = null;
+  let relicIsCleanse = false;
   if (buffId) {
     const row = db
-      .prepare("SELECT duration_base FROM skills WHERE id = ?")
-      .get(buffId) as { duration_base: number } | undefined;
+      .prepare("SELECT duration_base, is_cleanse FROM skills WHERE id = ?")
+      .get(buffId) as { duration_base: number; is_cleanse: number } | undefined;
     buffDurationSeconds = row?.duration_base ?? null;
+    relicIsCleanse = Boolean(item.relic_buff_id && row?.is_cleanse);
   }
 
   // Pet whistles carry the creature they summon; the icon alone does not show
@@ -294,6 +297,7 @@ export const load: PageServerLoad = ({ params }): ItemDetailPageData => {
     chestKeyOpens,
     mergeResultName,
     buffDurationSeconds,
+    relicIsCleanse,
   });
   const title = itemTitle(item);
 

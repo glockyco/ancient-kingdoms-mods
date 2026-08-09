@@ -199,8 +199,9 @@ export const FORMULA_EXPRS = {
     ]),
   ),
 
-  // Magic + weapon for Ranger: uses melee weapon + bow.STR contribution;
-  // bow.dmg is excluded (same reduction as ranger_melee).
+  // Generic Ranger magic-weapon formula: melee weapon + bow.STR contribution;
+  // bow.dmg is excluded (same reduction as ranger_melee). Wild Strike uses a
+  // skill-specific buffed-hit override instead of this reusable breakdown.
   // Source: TargetDamageSkill.cs:214-221
   magic_weapon_ranger: req(
     "main",
@@ -434,11 +435,13 @@ export function renderFormulaDisplay(kind: DamageFormulaKind): FormulaDisplay {
     }
 
     case "magic_weapon_ranger": {
-      // magic component: same as magic_spell
+      // Generic Ranger magic-weapon skills: magic component is same as
+      // magic_spell; physical component is ranger_melee-style (bow.STR
+      // contributes, bow.dmg excluded). Wild Strike is rendered through its
+      // skill-specific override and does not use this dual-component display.
       const magicStr = renderFormula(
         add([mul(1.5, s("int")), w("wand", "magic_damage"), other("magic")]),
       );
-      // physical component: ranger_melee style (bow.STR contributes, bow.dmg excluded)
       const physStr = renderFormula(
         add([
           mul(
@@ -475,4 +478,23 @@ export function renderFormulaDisplay(kind: DamageFormulaKind): FormulaDisplay {
         ],
       };
   }
+}
+
+/**
+ * Wild Strike has a skill-specific runtime override rather than the reusable
+ * Ranger magic-weapon component breakdown. DamageSkill applies this override
+ * after the underlying sword/bow hit is combined, before Combat.DealDamageAt
+ * performs the common hit pipeline.
+ *
+ * Source: server-scripts/DamageSkill.cs:47-63 (TryConsumeWildStrike),
+ * TargetDamageSkill.cs:239,282, TargetProjectileSkill.cs:221-222,251-255,
+ * Combat.cs:368,601,678-685,944-955 (DealDamageAt).
+ */
+export function renderWildStrikeFormulaDisplay(): FormulaDisplay {
+  return {
+    preMitigation: null,
+    terms: [],
+    specialNote:
+      "Wild Strike empowers the Ranger's next sword or bow auto attack. Add Wild Strike's damage to the auto attack, multiply the total by ×1.1, and round it. The whole hit then deals Magic damage and is reduced by Magic Defense and Magic Resist.",
+  };
 }

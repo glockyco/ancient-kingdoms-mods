@@ -18,7 +18,7 @@ const mechanics = PROFESSION_MECHANICS.cooking;
 // craftable once its raw success chance reaches 10%.
 export const COOKING_SUCCESS_FLOOR = mechanics.success.floor;
 
-// Source: server-scripts/Utils.cs:556-565 — GetSuccessProbCooking(levelFood,
+// Source: server-scripts/Utils.cs:558-567 — GetSuccessProbCooking(levelFood,
 // cookingLevel). `levelFood` is the result item's quality. Returns the raw
 // success probability (0..1), ignoring the crafting-UI gate.
 export function rawCookingSuccessChance(
@@ -53,7 +53,7 @@ export function cookingSuccessPercent(
     : 100;
 }
 
-// Source: server-scripts/Player.cs:12049 — a high enough Cooking skill turns
+// Source: server-scripts/Player.cs:12697 — a high enough Cooking skill turns
 // low-tier recipes into "simple tasks" that grant no skill gain (strict >).
 export function isCookingEffortless(
   quality: number,
@@ -62,13 +62,13 @@ export function isCookingEffortless(
   return isEffortlessAtTier(mechanics.effortless, quality, cookingPercent);
 }
 
-// Source: server-scripts/Player.cs:11741 — skill gain fires when
+// Source: server-scripts/Player.cs:UserCode_CmdCraftItem__NetworkIdentity__Int32 — skill gain fires when
 // Random.value > 0.1 + cookingLevel/2, i.e. with probability 0.9 - cookingLevel/2.
 export function cookingSkillGainChancePercent(cookingPercent: number): number {
   return skillGainChance(mechanics.skillGain, cookingPercent) * 100;
 }
 
-// Source: server-scripts/Player.cs:12055 — num3 = Random.Range(1, 4) /
+// Source: server-scripts/Player.cs:UserCode_CmdCraftItem__NetworkIdentity__Int32 — num3 = Random.Range(1, 4) /
 // (successChance * 3000). Skill gain only happens for FoodItem results
 // (Player.cs:11727), only when the recipe is craftable, and only while it still
 // grants skill (not "effortless"). Returns percentage-point bounds, or null when
