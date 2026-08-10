@@ -117,12 +117,32 @@ const monsterDecorations = ({
     : []),
 ];
 
-const MONSTER_BORDER_CLASSES = {
-  creatures: "border-l-red-500",
-  bosses: "border-l-cyan-500",
-  fabled: "border-l-emerald-500",
-  elites: "border-l-purple-500",
-  hunts: "border-l-yellow-500",
+const MONSTER_PRESENTATION = {
+  creatures: {
+    borderClass: "border-l-red-500",
+    iconSize: { base: 18, min: 16, max: 40 },
+    fallbackRadius: 4,
+  },
+  bosses: {
+    borderClass: "border-l-cyan-500",
+    iconSize: { base: 32, min: 28, max: 64 },
+    fallbackRadius: 10,
+  },
+  fabled: {
+    borderClass: "border-l-emerald-500",
+    iconSize: { base: 28, min: 26, max: 60 },
+    fallbackRadius: 7,
+  },
+  elites: {
+    borderClass: "border-l-purple-500",
+    iconSize: { base: 26, min: 24, max: 56 },
+    fallbackRadius: 6,
+  },
+  hunts: {
+    borderClass: "border-l-yellow-500",
+    iconSize: { base: 18, min: 16, max: 40 },
+    fallbackRadius: 4,
+  },
 } as const;
 
 const monsterMarker = (
@@ -143,9 +163,9 @@ const monsterMarker = (
   pluralLabel,
   color,
   icon,
-  iconSize: { base: 32, min: 18, max: 48 },
-  fallbackRadius: 10,
-  borderClass: MONSTER_BORDER_CLASSES[id],
+  iconSize: MONSTER_PRESENTATION[id].iconSize,
+  fallbackRadius: MONSTER_PRESENTATION[id].fallbackRadius,
+  borderClass: MONSTER_PRESENTATION[id].borderClass,
   selection,
   defaultVisible: id !== "creatures",
   z: precedence,
@@ -246,7 +266,7 @@ export const markerRegistry = {
     100,
     (row) => !row.isBoss && !row.isFabled && !row.isElite && !row.isHunt,
     Sword,
-    [120, 160, 180],
+    [239, 68, 68],
     altarSelection,
   ),
   hunts: monsterMarker(
@@ -256,7 +276,7 @@ export const markerRegistry = {
     200,
     (row) => row.isHunt,
     Crosshair,
-    [244, 114, 182],
+    [234, 179, 8],
   ),
   elites: monsterMarker(
     "elites",
@@ -265,7 +285,7 @@ export const markerRegistry = {
     300,
     (row) => row.isElite,
     Shield,
-    [251, 191, 36],
+    [168, 85, 247],
   ),
   fabled: monsterMarker(
     "fabled",
@@ -274,7 +294,7 @@ export const markerRegistry = {
     400,
     (row) => row.isFabled,
     Star,
-    [192, 132, 252],
+    [16, 185, 129],
   ),
   bosses: monsterMarker(
     "bosses",
@@ -283,7 +303,7 @@ export const markerRegistry = {
     500,
     (row) => row.isBoss,
     Crown,
-    [248, 113, 113],
+    [6, 182, 212],
   ),
   npc: {
     id: "npc",
@@ -294,8 +314,8 @@ export const markerRegistry = {
     pluralLabel: "NPCs",
     color: [96, 165, 250],
     icon: User,
-    iconSize: { base: 32, min: 18, max: 48 },
-    fallbackRadius: 10,
+    iconSize: { base: 18, min: 16, max: 40 },
+    fallbackRadius: 5,
     borderClass: "border-l-blue-500",
     selection: {
       kind: "by-field",
