@@ -9,7 +9,7 @@ The map displays all game entities (monsters, hunts, NPCs, portals, chests, trea
 **Architecture:**
 
 - **Rendering**: deck.gl with OrthographicView for WebGL performance
-- **Data**: Server-side SQLite queries load the map dataset during prerender. The measured renderable dataset is 5,636 points (4,360 monster spawns and 751 gathering spawns are the largest groups); the page passes prerendered props to client-side deck.gl
+- **Data**: Server-side SQLite queries load the map dataset during prerender; the page passes prerendered props to client-side deck.gl
 - **SSR**: Map data prerendered at build time; deck.gl initializes client-side
 
 ## Key Files
