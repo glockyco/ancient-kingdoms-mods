@@ -45,7 +45,7 @@ const monster = (flags: Partial<MonsterMapEntity> = {}): MonsterMapEntity => ({
 });
 
 describe("marker registry", () => {
-  test("declares unique ids and paint order for all three hard sources", () => {
+  test("declares unique ids and paint order for every marker", () => {
     const markers = Object.values(markerRegistry);
     expect(new Set(markers.map((marker) => marker.id)).size).toBe(
       markers.length,
@@ -61,6 +61,20 @@ describe("marker registry", () => {
       "bosses",
       "npc",
       "portals",
+      "chests",
+      "treasure",
+      "altars",
+      "traps",
+      "houses",
+      "gatheringPlants",
+      "gatheringMinerals",
+      "gatheringSparks",
+      "gatheringFishing",
+      "gatheringOther",
+      "alchemyTables",
+      "forges",
+      "cookingOvens",
+      "scribingTables",
     ]);
   });
 
