@@ -27,7 +27,6 @@ import {
   type MarkerId,
 } from "./marker-registry";
 import {
-  LAYER_COLORS,
   BACKGROUND_COLOR,
   WORLD_BOUNDS,
   ZONE_COLORS,
@@ -774,7 +773,7 @@ export function createLayers(context: LayerContext): any[] {
     data: filtered.trapsWithDestinations,
     visible: visibility.traps,
     getPosition: (d: TrapMapEntity) => d.teleportPosition,
-    getFillColor: LAYER_COLORS.trap,
+    getFillColor: markerRegistry.traps.color,
     getRadius: 3,
     radiusUnits: "pixels",
     radiusMinPixels: 2,
@@ -848,7 +847,7 @@ export function createLayers(context: LayerContext): any[] {
     data: filtered.portalsWithDestinations,
     visible: visibility.portals,
     getPosition: (d: PortalMapEntity) => d.destination,
-    getFillColor: LAYER_COLORS.portal,
+    getFillColor: markerRegistry.portals.color,
     getRadius: 3,
     radiusUnits: "pixels",
     radiusMinPixels: 2,

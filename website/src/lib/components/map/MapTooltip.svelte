@@ -16,7 +16,7 @@
     getNpcRoles,
     hasNpcRole,
   } from "$lib/utils/tooltip";
-  import { ENTITY_BORDER_COLORS } from "$lib/map/config";
+  import { markerRegistry, resolveMarker } from "$lib/map/marker-registry";
   import { TRAP_TYPE_LABELS } from "$lib/constants/traps";
 
   interface Props {
@@ -43,9 +43,12 @@
     calculateTooltipPosition(x, y, tooltipWidth, tooltipHeight),
   );
 
-  let borderColorClass = $derived(
-    ENTITY_BORDER_COLORS[entity.type] ?? "border-l-gray-500",
-  );
+  let borderColorClass = $derived.by(() => {
+    const markerId = resolveMarker(entity);
+    return markerId
+      ? markerRegistry[markerId].borderClass
+      : "border-l-gray-500";
+  });
 
   let typeName = $derived(getEntityTypeName(entity));
 

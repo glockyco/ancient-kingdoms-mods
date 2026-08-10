@@ -27,7 +27,7 @@ import {
   TriangleAlert,
   type IconNode,
 } from "lucide";
-import { LAYER_COLORS } from "./config";
+import { markerRegistry, type MarkerId } from "./marker-registry";
 
 // Icon size in the atlas (pixels)
 const ICON_SIZE = 64;
@@ -39,34 +39,33 @@ function rgbToHex(rgb: readonly [number, number, number]): string {
   return `#${rgb.map((c) => c.toString(16).padStart(2, "0")).join("")}`;
 }
 
-// Entity type configurations: icon + color key + optional flip
-// Colors are derived from LAYER_COLORS (single source of truth)
+// Atlas entries use registry marker IDs for their background colors.
 const ENTITY_ICONS: Record<
   string,
-  { icon: IconNode; colorKey: keyof typeof LAYER_COLORS; flipX?: boolean }
+  { icon: IconNode; markerId: MarkerId; flipX?: boolean }
 > = {
   // Sword flipped horizontally for better visual appearance
-  monster: { icon: Sword, colorKey: "monster", flipX: true },
-  boss: { icon: Crown, colorKey: "boss" },
-  elite: { icon: Shield, colorKey: "elite" },
-  fabled: { icon: Star, colorKey: "fabled" },
-  hunt: { icon: Crosshair, colorKey: "hunt" },
-  npc: { icon: User, colorKey: "npc" },
-  portal: { icon: CircleDot, colorKey: "portal" },
-  chest: { icon: Box, colorKey: "chest" },
-  altar: { icon: Flame, colorKey: "altar" },
-  trap: { icon: TriangleAlert, colorKey: "trap" },
-  gathering_plant: { icon: Leaf, colorKey: "gathering_plant" },
-  gathering_mineral: { icon: Pickaxe, colorKey: "gathering_mineral" },
-  gathering_spark: { icon: Sparkles, colorKey: "gathering_spark" },
-  gathering_fish: { icon: Fish, colorKey: "gathering_fish" },
-  gathering_other: { icon: Package, colorKey: "gathering_other" },
-  alchemy_table: { icon: FlaskConical, colorKey: "crafting" },
-  crafting_station: { icon: Hammer, colorKey: "crafting" },
-  cooking_oven: { icon: ChefHat, colorKey: "crafting" },
-  treasure: { icon: Shovel, colorKey: "treasure" },
-  scribing_table: { icon: Scroll, colorKey: "scribing" },
-  house: { icon: Home, colorKey: "house" },
+  monster: { icon: Sword, markerId: "creatures", flipX: true },
+  boss: { icon: Crown, markerId: "bosses" },
+  elite: { icon: Shield, markerId: "elites" },
+  fabled: { icon: Star, markerId: "fabled" },
+  hunt: { icon: Crosshair, markerId: "hunts" },
+  npc: { icon: User, markerId: "npc" },
+  portal: { icon: CircleDot, markerId: "portals" },
+  chest: { icon: Box, markerId: "chests" },
+  altar: { icon: Flame, markerId: "altars" },
+  trap: { icon: TriangleAlert, markerId: "traps" },
+  gathering_plant: { icon: Leaf, markerId: "gatheringPlants" },
+  gathering_mineral: { icon: Pickaxe, markerId: "gatheringMinerals" },
+  gathering_spark: { icon: Sparkles, markerId: "gatheringSparks" },
+  gathering_fish: { icon: Fish, markerId: "gatheringFishing" },
+  gathering_other: { icon: Package, markerId: "gatheringOther" },
+  alchemy_table: { icon: FlaskConical, markerId: "alchemyTables" },
+  crafting_station: { icon: Hammer, markerId: "forges" },
+  cooking_oven: { icon: ChefHat, markerId: "cookingOvens" },
+  treasure: { icon: Shovel, markerId: "treasure" },
+  scribing_table: { icon: Scroll, markerId: "scribingTables" },
+  house: { icon: Home, markerId: "houses" },
 };
 
 export type EntityIconType = keyof typeof ENTITY_ICONS;
@@ -139,8 +138,8 @@ export async function createIconAtlas(): Promise<IconAtlasResult> {
 
   // Draw each icon with colored circle background
   entityTypes.forEach((entityType, index) => {
-    const { colorKey, flipX } = ENTITY_ICONS[entityType];
-    const bgColor = rgbToHex(LAYER_COLORS[colorKey]);
+    const { markerId, flipX } = ENTITY_ICONS[entityType];
+    const bgColor = rgbToHex(markerRegistry[markerId].color);
     const img = iconImages[index];
 
     const x = index * ICON_SIZE;

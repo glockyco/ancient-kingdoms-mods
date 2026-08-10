@@ -34,7 +34,8 @@
     LevelRanges,
     ZoneListItem,
   } from "$lib/types/map";
-  import { LAYER_COLORS, ZONE_COLORS } from "$lib/map/config";
+  import { ZONE_COLORS } from "$lib/map/config";
+  import { MARKER_COLORS } from "$lib/map/marker-registry";
   import {
     toggleLayerVisibility,
     getToggleState,
@@ -115,16 +116,31 @@
 
   // Monster layers
   const monsterLayers: LayerOption[] = [
-    { key: "bosses", label: "Bosses", color: LAYER_COLORS.boss, icon: Crown },
-    { key: "fabled", label: "Fabled", color: LAYER_COLORS.fabled, icon: Star },
-    { key: "elites", label: "Elites", color: LAYER_COLORS.elite, icon: Shield },
+    {
+      key: "bosses",
+      label: "Bosses",
+      color: MARKER_COLORS.bosses,
+      icon: Crown,
+    },
+    { key: "fabled", label: "Fabled", color: MARKER_COLORS.fabled, icon: Star },
+    {
+      key: "elites",
+      label: "Elites",
+      color: MARKER_COLORS.elites,
+      icon: Shield,
+    },
     {
       key: "creatures",
       label: "Creatures",
-      color: LAYER_COLORS.monster,
+      color: MARKER_COLORS.creatures,
       icon: Sword,
     },
-    { key: "hunts", label: "Hunts", color: LAYER_COLORS.hunt, icon: Crosshair },
+    {
+      key: "hunts",
+      label: "Hunts",
+      color: MARKER_COLORS.hunts,
+      icon: Crosshair,
+    },
   ];
 
   // NPC role layers as separate toggles
@@ -132,143 +148,158 @@
     {
       key: "npcVendors",
       label: "Vendors",
-      color: LAYER_COLORS.npc,
+      color: MARKER_COLORS.npc,
       icon: Users,
     },
     {
       key: "npcQuestGivers",
       label: "Quest Givers",
-      color: LAYER_COLORS.npc,
+      color: MARKER_COLORS.npc,
       icon: Users,
     },
-    { key: "npcRepair", label: "Repair", color: LAYER_COLORS.npc, icon: Users },
-    { key: "npcBanks", label: "Banks", color: LAYER_COLORS.npc, icon: Users },
+    {
+      key: "npcRepair",
+      label: "Repair",
+      color: MARKER_COLORS.npc,
+      icon: Users,
+    },
+    { key: "npcBanks", label: "Banks", color: MARKER_COLORS.npc, icon: Users },
     {
       key: "npcInnkeepers",
       label: "Innkeepers",
-      color: LAYER_COLORS.npc,
+      color: MARKER_COLORS.npc,
       icon: Users,
     },
     {
       key: "npcSoulBinders",
       label: "Soul Binders",
-      color: LAYER_COLORS.npc,
+      color: MARKER_COLORS.npc,
       icon: Users,
     },
     {
       key: "npcSkillTrainers",
       label: "Skill Trainers",
-      color: LAYER_COLORS.npc,
+      color: MARKER_COLORS.npc,
       icon: Users,
     },
     {
       key: "npcVeteranTrainers",
       label: "Veteran Trainers",
-      color: LAYER_COLORS.npc,
+      color: MARKER_COLORS.npc,
       icon: Users,
     },
     {
       key: "npcAttributeReset",
       label: "Attribute Reset",
-      color: LAYER_COLORS.npc,
+      color: MARKER_COLORS.npc,
       icon: Users,
     },
     {
       key: "npcFactionVendors",
       label: "Faction Vendors",
-      color: LAYER_COLORS.npc,
+      color: MARKER_COLORS.npc,
       icon: Users,
     },
     {
       key: "npcEssenceTraders",
       label: "Essence Traders",
-      color: LAYER_COLORS.npc,
+      color: MARKER_COLORS.npc,
       icon: Users,
     },
     {
       key: "npcAugmenters",
       label: "Augmenters",
-      color: LAYER_COLORS.npc,
+      color: MARKER_COLORS.npc,
       icon: Users,
     },
     {
       key: "npcPriestesses",
       label: "Priestesses",
-      color: LAYER_COLORS.npc,
+      color: MARKER_COLORS.npc,
       icon: Users,
     },
     {
       key: "npcRenewalSages",
       label: "Renewal Sages",
-      color: LAYER_COLORS.npc,
+      color: MARKER_COLORS.npc,
       icon: Users,
     },
     {
       key: "npcAdventurerTasks",
       label: "Adventurer Tasks",
-      color: LAYER_COLORS.npc,
+      color: MARKER_COLORS.npc,
       icon: Users,
     },
     {
       key: "npcAdventurerVendors",
       label: "Adventurer Vendors",
-      color: LAYER_COLORS.npc,
+      color: MARKER_COLORS.npc,
       icon: Users,
     },
     {
       key: "npcMercenaryRecruiters",
       label: "Mercenary Recruiters",
-      color: LAYER_COLORS.npc,
+      color: MARKER_COLORS.npc,
       icon: Users,
     },
-    { key: "npcGuards", label: "Guards", color: LAYER_COLORS.npc, icon: Users },
+    {
+      key: "npcGuards",
+      label: "Guards",
+      color: MARKER_COLORS.npc,
+      icon: Users,
+    },
     {
       key: "npcTeleporters",
       label: "Teleporters",
-      color: LAYER_COLORS.npc,
+      color: MARKER_COLORS.npc,
       icon: Compass,
     },
     {
       key: "npcVillagers",
       label: "Villagers",
-      color: LAYER_COLORS.npc,
+      color: MARKER_COLORS.npc,
       icon: Users,
     },
     {
       key: "npcGuildManagers",
       label: "Guild Managers",
-      color: LAYER_COLORS.npc,
+      color: MARKER_COLORS.npc,
       icon: Users,
     },
     {
       key: "npcBarbers",
       label: "Barbers",
-      color: LAYER_COLORS.npc,
+      color: MARKER_COLORS.npc,
       icon: Users,
     },
   ];
 
   // Interactable layers
   const interactableLayers: LayerOption[] = [
-    { key: "altars", label: "Altars", color: LAYER_COLORS.altar, icon: Flame },
+    {
+      key: "altars",
+      label: "Altars",
+      color: MARKER_COLORS.altars,
+      icon: Flame,
+    },
     {
       key: "traps",
       label: "Traps",
-      color: LAYER_COLORS.trap,
+      color: MARKER_COLORS.traps,
       icon: TriangleAlert,
     },
     {
       key: "portals",
       label: "Portals",
-      color: LAYER_COLORS.portal,
+      color: MARKER_COLORS.portals,
       icon: CircleDot,
     },
-    { key: "chests", label: "Chests", color: LAYER_COLORS.chest, icon: Box },
-    { key: "houses", label: "Houses", color: LAYER_COLORS.house, icon: Home },
+    { key: "chests", label: "Chests", color: MARKER_COLORS.chests, icon: Box },
+    { key: "houses", label: "Houses", color: MARKER_COLORS.houses, icon: Home },
     {
       key: "treasure",
       label: "Treasure",
-      color: LAYER_COLORS.treasure,
+      color: MARKER_COLORS.treasure,
       icon: Shovel,
     },
   ];
@@ -278,25 +309,25 @@
     {
       key: "alchemyTables",
       label: "Alchemy Tables",
-      color: LAYER_COLORS.crafting,
+      color: MARKER_COLORS.alchemyTables,
       icon: FlaskConical,
     },
     {
       key: "cookingOvens",
       label: "Cooking Ovens",
-      color: LAYER_COLORS.crafting,
+      color: MARKER_COLORS.cookingOvens,
       icon: ChefHat,
     },
     {
       key: "forges",
       label: "Forges",
-      color: LAYER_COLORS.crafting,
+      color: MARKER_COLORS.forges,
       icon: Hammer,
     },
     {
       key: "scribingTables",
       label: "Scribing Tables",
-      color: LAYER_COLORS.scribing,
+      color: MARKER_COLORS.scribingTables,
       icon: Scroll,
     },
   ];
@@ -305,31 +336,31 @@
     {
       key: "gatheringPlants",
       label: "Plants",
-      color: LAYER_COLORS.gathering_plant,
+      color: MARKER_COLORS.gatheringPlants,
       icon: Leaf,
     },
     {
       key: "gatheringMinerals",
       label: "Minerals",
-      color: LAYER_COLORS.gathering_mineral,
+      color: MARKER_COLORS.gatheringMinerals,
       icon: Pickaxe,
     },
     {
       key: "gatheringFishing",
       label: "Fishing Spots",
-      color: LAYER_COLORS.gathering_fish,
+      color: MARKER_COLORS.gatheringFishing,
       icon: Fish,
     },
     {
       key: "gatheringSparks",
       label: "Radiant Sparks",
-      color: LAYER_COLORS.gathering_spark,
+      color: MARKER_COLORS.gatheringSparks,
       icon: Sparkles,
     },
     {
       key: "gatheringOther",
       label: "Other",
-      color: LAYER_COLORS.gathering_other,
+      color: MARKER_COLORS.gatheringOther,
       icon: Package,
     },
   ];

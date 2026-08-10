@@ -33,7 +33,6 @@
     LevelRanges,
     ZoneListItem,
   } from "$lib/types/map";
-  import { LAYER_COLORS } from "$lib/map/config";
   import {
     MARKER_COLORS,
     MARKER_PLURAL_LABELS,
@@ -152,7 +151,7 @@
   const npcToggle: QuickToggle = {
     key: "allNpcs",
     icon: Users,
-    color: LAYER_COLORS.npc,
+    color: MARKER_COLORS.npc,
     label: "All NPCs",
   };
 
@@ -180,7 +179,7 @@
   const craftingToggle: QuickToggle = {
     key: "allCrafting",
     icon: Hammer,
-    color: LAYER_COLORS.crafting,
+    color: MARKER_COLORS.alchemyTables,
     label: "Crafting Stations",
   };
 

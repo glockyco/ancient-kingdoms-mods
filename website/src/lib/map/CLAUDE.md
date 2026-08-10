@@ -121,49 +121,13 @@ The array returned by `createLayers()` renders these layers in order:
 38. **Hover highlight outline and fill**
 39. **Zone hover highlight**
 
-## Adding a New Entity Layer
+## Adding a new marker
 
-1. **Add type** in `src/lib/types/map.ts`:
-   - Add to `EntityType` union
-   - Create interface extending `MapEntity`
-   - Add to `AnyMapEntity` union
-   - Add toggle to `LayerVisibility`
-
-2. **Add query** in `src/lib/queries/map.server.ts`:
-   - Create a server query function returning typed array
-   - Add to `loadAllMapEntitiesServer()`
-   - Add to `MapEntityData` interface
-
-3. **Add layer** in `src/lib/map/layers.ts`:
-   - Add color to `LAYER_COLORS` in config.ts
-   - Add radius to `LAYER_RADII` in config.ts
-   - Create ScatterplotLayer in `createLayers()`
-
-4. **Add toggle** in `MapSidebarContent.svelte`:
-   - Add to the layer controls with key, label, and color
-
-## Layer Colors (Tailwind)
-
-| Entity / layer    | Color                | Tailwind    |
-| ----------------- | -------------------- | ----------- |
-| Monster           | `rgb(239, 68, 68)`   | red-500     |
-| Boss              | `rgb(6, 182, 212)`   | cyan-500    |
-| Fabled            | `rgb(16, 185, 129)`  | emerald-500 |
-| Elite             | `rgb(168, 85, 247)`  | purple-500  |
-| Hunt              | `rgb(234, 179, 8)`   | yellow-500  |
-| NPC               | `rgb(59, 130, 246)`  | blue-500    |
-| Portal            | `rgb(34, 197, 94)`   | green-500   |
-| Chest             | `rgb(14, 165, 233)`  | sky-500     |
-| Treasure          | `rgb(20, 184, 166)`  | teal-500    |
-| Altar             | `rgb(249, 115, 22)`  | orange-500  |
-| Gathering plant   | `rgb(132, 204, 22)`  | lime-500    |
-| Gathering mineral | `rgb(23, 37, 84)`    | blue-950    |
-| Gathering spark   | `rgb(168, 85, 247)`  | purple-500  |
-| Gathering fish    | `rgb(6, 182, 212)`   | cyan-500    |
-| Gathering other   | `rgb(156, 163, 175)` | gray-400    |
-| Crafting          | `rgb(139, 92, 246)`  | violet-500  |
-| Scribing          | `rgb(168, 85, 247)`  | purple-500  |
-| House             | `rgb(245, 158, 11)`  | amber-500   |
+Follow `.claude/skills/add-map-entity-layer/SKILL.md`. The durable extension point is
+`src/lib/map/marker-registry.ts`, not a new config record or consumer switch. Add the
+data contract and loader first, register marker metadata once, then add only behavior that
+is genuinely specific to the entity. Preserve stable marker IDs, null-position filtering,
+and coordinate negation.
 
 ## deck.gl Integration
 
@@ -195,19 +159,6 @@ initialViewState: {
   maxZoom: 4,
 }
 ```
-
-## Entity Counts (estimated)
-
-- Monsters: ~10,000
-- Gathering: ~5,000
-- NPCs: ~500
-- Chests: ~300
-- Portals: ~200
-- Crafting: ~100
-- Altars: ~50
-- **Total: ~16,000 points**
-
-deck.gl handles millions of points efficiently, but **layer recreation is expensive**.
 
 ## Performance Design
 
