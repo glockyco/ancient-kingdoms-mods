@@ -57,7 +57,7 @@ one:
 
 | Family | Files | Bytes | Format | Median dimensions |
 | --- | ---: | ---: | --- | --- |
-| achievements | 76 | 2,095,031 | JPEG | 256 × 256, every file |
+| achievements | 76 | 2,095,031 | JPEG | 256 × 256, every file; 38 unlocked and 38 locked, the locked half dropped per §5.4 |
 | items | 1,662 | 1,589,513 | PNG | 27 × 28 |
 | monsters | 362 | 1,546,635 | PNG | 96 × 116 |
 | npcs | 234 | 1,284,304 | PNG | 55 × 85 |
@@ -127,13 +127,17 @@ photographic achievement art:
 
 | Family | Current | WebP | Change |
 | --- | ---: | ---: | ---: |
-| achievements | 2,095,031 | 954,584 | −54% |
+| achievements, unlocked only | 1,273,715 | 518,952 | −59% |
+| achievements, locked | 821,316 | dropped per §5.4 | −100% |
 | items | 1,589,513 | 833,324 | −48% |
 | monsters | 1,546,635 | 720,434 | −53% |
 | npcs | 1,284,304 | 988,018 | −23% |
 | skills | 1,201,905 | 680,762 | −43% |
 | pets | 6,223 | 2,568 | −59% |
-| **Total** | **7,723,611** | **≈4,179,690** | **−46%** |
+| **Total** | **7,723,611** | **3,744,058** | **−52%** |
+
+Quality 85 for the achievement art costs 606,264 B instead of 518,952 B, and remains the
+fallback if a spot check shows artefacts.
 
 Two results worth recording because they contradict the obvious guesses:
 
@@ -151,11 +155,12 @@ Lossless WebP is pixel-exact, so `[image-rendering:pixelated]` renders identical
 
 ### 3.1 One image system
 
-Achievements move into `visual_assets` as `domain = "achievement"`, `kind = "unlocked" |
-"locked"`. `AchievementExporter` takes the shared `VisualAssetRegistry` the way every other
-exporter already does. `achievements.unlocked_icon_path` and `locked_icon_path` are
-deleted, along with the bespoke copy path at `loaders/core.py:300-371`. One manifest, one
-loader, one table, one URL rule. Clean cutover, no compatibility column.
+Achievements move into `visual_assets` as `domain = "achievement"`, `kind = "icon"` — one
+variant, because §5.4 drops the locked art. `AchievementExporter` takes the shared
+`VisualAssetRegistry` the way every other exporter already does.
+`achievements.unlocked_icon_path` and `locked_icon_path` are both deleted, along with the
+bespoke copy path at `loaders/core.py:300-371`. One manifest, one loader, one table, one
+URL rule. Clean cutover, no compatibility column.
 
 ### 3.2 One path rule, enforced
 
@@ -244,9 +249,8 @@ Read from the decompiled scripts and the raw exports, not guessed.
 
 | Family | Art in the game data | Evidence | Work |
 | --- | --- | --- | --- |
-| Boss monsters | Yes, and entirely unexported | `Monster.cs:74-76` `imageBossBestiary` and `portraitBoss`, both static serialized sprites | new kinds `bestiary` and `portrait` alongside the existing `primary` |
 | Treasure maps | Yes, and we keep only its name | `TreasureMapItem.cs:5-15` `Sprite imageLocation`, shown by `UITreasureMap.cs:40-47`; `ItemExporter.cs:495-507` serialises `imageLocation.name` and nothing else | new kind `treasure_map` on the item domain |
-| Pets and mercenaries | Yes, but as a UI icon, not a portrait — see §4.1 | `Pet.cs:17-20` `portraitIcon`, read by `UIPartyHUD.cs:328-334` and `UIPetStatus.cs:51-59`; `PetExporter.cs:97-99` already reads its name | new kind `icon` for all 11 rows, from the sprite the exporter already holds |
+| Mercenaries | Yes, but as a UI icon, not a portrait — see §4.1 | `Pet.cs:17-20` `portraitIcon`, read by `UIPartyHUD.cs:328-334` and `UIPetStatus.cs:51-59`; `PetExporter.cs:97-99` already reads its name | new kind `icon` for the 6 mercenaries only |
 | Professions | Yes, 13 | `ProfessionExporter.cs:204-207` already holds `image.sprite` when it records `icon_path` | one export call at the same line |
 | Classes | Yes, 6 | `Player.cs:97-100` `classIcon` and `classIconCombat`; `ClassExporter.cs:42-56` already iterates the `Player` objects that carry them | one export call in the existing loop |
 | Chests | Yes | `ChestHouse.cs:13-19` `chestClosed` and `chestOpen`, swapped at runtime `:40-44` | new export call |
@@ -280,7 +284,16 @@ So the honest model is two kinds, not one:
 
 - `pet/primary` — the in-world creature sprite. Legitimate for the 5 fixed pets, impossible
   for the 6 mercenaries. Unchanged.
-- `pet/icon` — the portrait icon the game shows in UI. Legitimate for all 11.
+- `pet/icon` — the portrait icon the game shows in UI. Exported **only for the 6
+  mercenaries**, which have no sprite.
+
+**The rule behind that, decided 2026-08-10: prefer the real sprite, and export a UI icon
+only where no sprite exists.** A UI icon is a compressed stand-in drawn for a HUD slot,
+while the sprite is the thing itself. This is also why boss art is not exported: an earlier
+draft proposed `Monster.cs:74-76` `imageBossBestiary` and `portraitBoss` as new kinds, but
+every boss already has a full `monster/primary` sprite, and that sprite is better. Two
+representations of one entity would only create a question about which surface uses which.
+The five fixed pets are covered by the same rule and keep `primary` alone.
 
 **A verifiable prediction, not a claim.** The six emblem names match the six class ids
 exactly, and `Player.cs:97-100` declares a `classIcon` on the same `Player` objects
@@ -368,19 +381,24 @@ adds noise without adding identification.
 
 A family gets art in lists only when nearly every row has it, otherwise the column reads as
 broken. Measured coverage: monsters 362/362, NPCs 234/234, achievements 38/38, skills
-689/692, items 1,651/1,671. After the export work in §4: pets 11/11, classes 6/6,
-professions 13/13, recipes 155/155 by reusing the produced item's icon, zones 24/26.
+689/692, items 1,651/1,671. After the export work in §4: summons 5/5 from sprites,
+mercenaries 6/6 from emblems, classes 6/6, professions 13/13, recipes 155/155 by reusing
+the produced item's icon, zones 24/26. Mercenaries and summons are listed on separate
+pages, so the two representations never share a column.
 Factions, quests, traps, portals, altars, houses and crafting stations have no art and keep
 their glyph. That is a decision, not a gap.
 
 ### 5.4 Publish nothing that nothing renders
 
-Locked achievement art is 38 files and 821,316 B, published today and rendered nowhere —
-`achievements/+page.svelte:109-115` and `:237-248` both use the unlocked variant. A
-compendium shows what an achievement *is*, so the locked art has no obvious use. Either
-render it deliberately or stop exporting it. Shipping it unused is the same defect as
-exporting skill icons nobody displays, and this document should not create a second
-instance of the problem it opens with.
+**Decided 2026-08-10: locked achievement art is dropped.** It is 38 files and 821,316 B,
+published today and rendered nowhere — `achievements/+page.svelte:109-115` and `:237-248`
+both use the unlocked variant. A compendium documents what an achievement *is*, so the
+obscured variant has no audience. `AchievementExporter` stops downloading it, the loader
+stops publishing it, `achievements.locked_icon_path` is deleted, and the page query stops
+carrying it.
+
+That leaves one variant per achievement, so the kind is `icon` rather than
+`unlocked`/`locked`, matching `item/icon` and `skill/icon`.
 
 ---
 
@@ -407,14 +425,14 @@ monster, NPC and skill surfaces. This is the phase that turns 689 unrendered ski
 into something a visitor sees, and it does not wait on Phase D.
 
 **Phase D — new exports. Requires a game export run.**
-Pet and mercenary `icon` from `portraitIcon`, class icons, profession icons, boss
-`bestiary` and `portrait` sprites, treasure-map images, chest sprites, gathering journal
-icons, and the `IconCollection` fallback for items whose `image` is empty. Each is one call
-against a reference the exporter already holds, so the cost is the session, not the code.
+Mercenary `icon` from `portraitIcon`, class icons, profession icons, treasure-map images,
+chest sprites, gathering journal icons, and the `IconCollection` fallback for items whose
+`image` is empty. Each is one call against a reference the exporter already holds, so the
+cost is the session, not the code.
 While the game is running, verify the §4.1 prediction that `classIcon.name` matches the
 mercenary emblem names, and collapse the two exports into one if it does.
 
-**Phase E — consume the new art.** Class, profession, mercenary, zone, recipe, boss and
+**Phase E — consume the new art.** Class, profession, mercenary, zone, recipe and
 treasure-map surfaces, plus search results per
 [2026-08-09-map-marker-and-search-registry](2026-08-09-map-marker-and-search-registry.md)
 §3.2(g). The item, NPC and skill surfaces specified by
@@ -431,7 +449,7 @@ on the entity registry from that document.
 | Risk | Mitigation |
 | --- | --- |
 | WebP quality regression on pixel art | lossless for every sprite family, so the pixels are identical; only the 76 photographic achievement files are lossy |
-| Achievement re-encode is generation loss on top of JPEG | quality 80 measured at −54%; if a spot check shows artefacts, quality 85 costs 1,110,810 B and is still −47% |
+| Achievement re-encode is generation loss on top of JPEG | quality 80 measured at −59% on the 38 surviving files; if a spot check shows artefacts, quality 85 costs 606,264 B and is still −52% |
 | Using the id verbatim breaks an existing URL | the charset is validated and 0 ids violate it today; the 3 hyphenated ids currently resolve through a duplicated sanitiser, which is the defect being removed |
 | New exports drift from the manifest contract | every new family goes through `VisualAssetRegistry`, and the invariants fail the build rather than shipping a hole |
 | Zone thumbnails look wrong for excluded zones | those zones are already hidden from the map, so they stay imageless by the same rule |
