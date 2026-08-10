@@ -3,6 +3,7 @@ import { pushState, replaceState } from "$app/navigation";
 import { base } from "$app/paths";
 import type { LayerVisibility, LevelFilter, LevelRanges } from "$lib/types/map";
 import { INITIAL_VIEW_STATE } from "./config";
+import { MARKER_DEFAULT_VISIBILITY } from "./marker-registry";
 import { getNormalizedUrlSearch } from "$lib/utils/url";
 
 /**
@@ -55,11 +56,11 @@ function getDefaultLayers(): (keyof LayerVisibility)[] {
 export function getDefaultLayerVisibility(): LayerVisibility {
   return {
     // Monsters
-    bosses: true,
-    fabled: true,
-    elites: true,
-    creatures: false,
-    hunts: false,
+    bosses: MARKER_DEFAULT_VISIBILITY.bosses,
+    fabled: MARKER_DEFAULT_VISIBILITY.fabled,
+    elites: MARKER_DEFAULT_VISIBILITY.elites,
+    creatures: MARKER_DEFAULT_VISIBILITY.creatures,
+    hunts: MARKER_DEFAULT_VISIBILITY.hunts,
     // NPCs
     npcVendors: false,
     npcQuestGivers: false,
@@ -84,23 +85,23 @@ export function getDefaultLayerVisibility(): LayerVisibility {
     npcGuildManagers: false,
     npcBarbers: false,
     // Interactables
-    portals: false,
+    portals: MARKER_DEFAULT_VISIBILITY.portals,
     portalArcs: false,
-    chests: false,
-    treasure: false,
-    altars: true,
-    traps: true,
-    houses: false,
-    alchemyTables: false,
-    forges: false,
-    cookingOvens: false,
-    scribingTables: false,
+    chests: MARKER_DEFAULT_VISIBILITY.chests,
+    treasure: MARKER_DEFAULT_VISIBILITY.treasure,
+    altars: MARKER_DEFAULT_VISIBILITY.altars,
+    traps: MARKER_DEFAULT_VISIBILITY.traps,
+    houses: MARKER_DEFAULT_VISIBILITY.houses,
+    alchemyTables: MARKER_DEFAULT_VISIBILITY.alchemyTables,
+    forges: MARKER_DEFAULT_VISIBILITY.forges,
+    cookingOvens: MARKER_DEFAULT_VISIBILITY.cookingOvens,
+    scribingTables: MARKER_DEFAULT_VISIBILITY.scribingTables,
     // Resources
-    gatheringPlants: false,
-    gatheringMinerals: false,
-    gatheringSparks: false,
-    gatheringFishing: false,
-    gatheringOther: false,
+    gatheringPlants: MARKER_DEFAULT_VISIBILITY.gatheringPlants,
+    gatheringMinerals: MARKER_DEFAULT_VISIBILITY.gatheringMinerals,
+    gatheringSparks: MARKER_DEFAULT_VISIBILITY.gatheringSparks,
+    gatheringFishing: MARKER_DEFAULT_VISIBILITY.gatheringFishing,
+    gatheringOther: MARKER_DEFAULT_VISIBILITY.gatheringOther,
     // Zones
     subZones: false,
     parentZones: false,

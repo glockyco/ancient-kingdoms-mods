@@ -177,7 +177,7 @@ const monsterMarker = (
   fallbackRadius: MONSTER_PRESENTATION[id].fallbackRadius,
   borderClass: MONSTER_PRESENTATION[id].borderClass,
   selection,
-  defaultVisible: id !== "creatures",
+  defaultVisible: id === "bosses" || id === "fabled" || id === "elites",
   z: MONSTER_PRESENTATION[id].z,
   decorations: monsterDecorations,
 });
