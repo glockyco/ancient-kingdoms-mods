@@ -9,7 +9,7 @@ The map displays all game entities (monsters, hunts, NPCs, portals, chests, trea
 **Architecture:**
 
 - **Rendering**: deck.gl with OrthographicView for WebGL performance
-- **Data**: Server-side SQLite queries load ~16k entities during prerender. The page passes prerendered props to client-side deck.gl
+- **Data**: Server-side SQLite queries load the map dataset during prerender. The measured renderable dataset is 5,636 points (4,360 monster spawns and 751 gathering spawns are the largest groups); the page passes prerendered props to client-side deck.gl
 - **SSR**: Map data prerendered at build time; deck.gl initializes client-side
 
 ## Key Files
@@ -23,6 +23,7 @@ src/
 │   ├── map/
 │   │   ├── config.ts     # World bounds, colors, view settings
 │   │   ├── layers.ts     # Layer factory functions
+│   │   ├── marker-registry.ts # Marker precedence and presentation metadata
 │   │   └── CLAUDE.md     # This file
 │   ├── queries/
 │   │   ├── map.server.ts # Server-side queries for prerendering
@@ -38,6 +39,15 @@ src/
 │       ├── QuestPopup.svelte  # Quest detail panel
 │       └── MapSearch.svelte   # Entity search
 ```
+
+## Registry migration status
+
+`marker-registry.ts` is the source of truth for marker precedence and presentation
+metadata. Render-data partitioning, layer fallback styling, URL marker defaults, and
+marker-specific sidebar quick toggles consume the registry. The migration is in progress:
+selection, popup/tooltip dispatch, search, wayfinding, and the remaining hand-maintained
+layer/config switches still follow the existing architecture until their clean cutover.
+Do not add a second marker-specific registry or compatibility shim.
 
 ## Coordinate System
 

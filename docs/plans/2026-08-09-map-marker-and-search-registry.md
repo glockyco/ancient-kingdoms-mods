@@ -12,7 +12,7 @@ archived:
 
 # Map Marker Registry, Wayfinding, and First-Class Search
 
-**Status:** Requires review. Phase 0 and the registry spike are complete; migration is not implemented.
+**Status:** In progress. Phase 0, the registry spike, and the initial registry presentation migration are complete; Phases 4–11 remain.
 **Scope:** `website/` map subsystem, `website/` search (site-wide), and the pipeline
 changes those require.
 
@@ -1290,7 +1290,7 @@ but unused — for the **three worst cases**, which between them exercise every 
 | `npc` | one layer, 22 `facets` over a GPU bitmask, plus teleporter arcs and destinations |
 | `portal` | arcs, destination markers, requirement gating, and a synthesised sub-zone display name |
 
-The spike is complete. The design holds, but it exposed two fields that must be part of
+The spike and the initial production migration are complete. The design holds, but it exposed two fields that must be part of
 Phase 1 rather than hidden in predicates or fallbacks: `precedence` (separate from paint
 order `z`) and normalized portal sub-zone names. Phases 1–6 remain mechanical only after
 those contracts are added to the real registry. The loader contract is now in place; the
@@ -1300,6 +1300,12 @@ ordering or zone-name fallbacks.
 **Phase 1 — registry core, presentation only.** `MarkerDef`, `defineMarker`, all ~30
 markers populated from the existing records. Derive the five config records from the
 registry, then delete them. No consumer changes.
+
+**Current implementation note (2026-08-10):** The production registry now owns marker
+precedence, colors, labels, plural labels, atlas keys, icon sizes, radii, and default
+visibility. Partitioning, layer fallback styling, URL defaults, and marker-specific
+sidebar quick-toggle metadata consume those records. The old config records and several
+consumer switches still exist, so this phase is not yet a clean-cutover completion.
 
 **Phase 2 — visibility, URL, sidebar.** Derive `LayerVisibility`, defaults, URL conversion,
 sidebar sections and quick toggles. NPC roles become `facets`. `DEFAULT_LAYERS` becomes
