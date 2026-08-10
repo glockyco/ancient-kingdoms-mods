@@ -21,10 +21,8 @@ import {
 import type { ZoneFocusedData } from "./zone-filter";
 import { isAnyNpcTypeVisible } from "./visibility";
 import {
-  MARKER_COLORS,
   MARKER_ICON_SIZES,
-  MARKER_ICON_TYPES,
-  MARKER_RADII,
+  markerRegistry,
   resolveMarker,
   type MarkerId,
 } from "./marker-registry";
@@ -323,10 +321,6 @@ export function createLayers(
     markerId: MarkerId;
     data: T[];
     visible: boolean;
-    color:
-      | readonly [number, number, number]
-      | readonly [number, number, number, number];
-    radius: number;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     extensions?: any[];
 
@@ -337,7 +331,8 @@ export function createLayers(
     updateTriggers?: Record<string, any>;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   }): any {
-    const iconType = MARKER_ICON_TYPES[config.markerId];
+    const marker = markerRegistry[config.markerId];
+    const iconType = marker.iconType;
     const baseProps = {
       id: config.id,
       data: config.data,
@@ -353,10 +348,12 @@ export function createLayers(
     };
 
     // Ensure color has alpha channel
-    const colorWithAlpha: [number, number, number, number] =
-      config.color.length === 4
-        ? (config.color as [number, number, number, number])
-        : ([...config.color, 255] as [number, number, number, number]);
+    const colorWithAlpha = [...marker.color, 255] as [
+      number,
+      number,
+      number,
+      number,
+    ];
 
     const sizeConfig = MARKER_ICON_SIZES[config.markerId];
 
@@ -380,7 +377,7 @@ export function createLayers(
       return new ScatterplotLayer({
         ...baseProps,
         getFillColor: colorWithAlpha,
-        getRadius: config.radius,
+        getRadius: marker.fallbackRadius,
         radiusUnits: "pixels",
         radiusMinPixels: 2,
         radiusMaxPixels: 8,
@@ -519,8 +516,6 @@ export function createLayers(
     markerId: "gatheringPlants",
     data: filtered.plants,
     visible: visibility.gatheringPlants,
-    color: MARKER_COLORS.gatheringPlants,
-    radius: MARKER_RADII.gatheringPlants,
     extensions: [levelZoneFilterExt],
     getFilterValue: (d) => [d.level, isInZone(d.zoneId)],
     filterRange: [
@@ -538,8 +533,6 @@ export function createLayers(
     markerId: "gatheringMinerals",
     data: filtered.minerals,
     visible: visibility.gatheringMinerals,
-    color: MARKER_COLORS.gatheringMinerals,
-    radius: MARKER_RADII.gatheringMinerals,
     extensions: [levelZoneFilterExt],
     getFilterValue: (d) => [d.level, isInZone(d.zoneId)],
     filterRange: [
@@ -557,8 +550,6 @@ export function createLayers(
     markerId: "gatheringFishing",
     data: filtered.fishingSpots,
     visible: visibility.gatheringFishing,
-    color: MARKER_COLORS.gatheringFishing,
-    radius: MARKER_RADII.gatheringFishing,
     extensions: [levelZoneFilterExt],
     getFilterValue: (d) => [d.level, isInZone(d.zoneId)],
     filterRange: [
@@ -576,8 +567,6 @@ export function createLayers(
     markerId: "gatheringSparks",
     data: filtered.sparks,
     visible: visibility.gatheringSparks,
-    color: MARKER_COLORS.gatheringSparks,
-    radius: MARKER_RADII.gatheringSparks,
     extensions: [zoneFilterExt],
     getFilterValue: (d) => isInZone(d.zoneId),
     filterRange: [1, 1],
@@ -592,8 +581,6 @@ export function createLayers(
     markerId: "gatheringOther",
     data: filtered.otherGathering,
     visible: visibility.gatheringOther,
-    color: MARKER_COLORS.gatheringOther,
-    radius: MARKER_RADII.gatheringOther,
     extensions: [zoneFilterExt],
     getFilterValue: (d) => isInZone(d.zoneId),
     filterRange: [1, 1],
@@ -607,8 +594,6 @@ export function createLayers(
     markerId: "alchemyTables",
     data: filtered.alchemyTables,
     visible: visibility.alchemyTables,
-    color: MARKER_COLORS.alchemyTables,
-    radius: MARKER_RADII.alchemyTables,
     extensions: [zoneFilterExt],
     getFilterValue: (d) => isInZone(d.zoneId),
     filterRange: [1, 1],
@@ -622,8 +607,6 @@ export function createLayers(
     markerId: "forges",
     data: filtered.forges,
     visible: visibility.forges,
-    color: MARKER_COLORS.forges,
-    radius: MARKER_RADII.forges,
     extensions: [zoneFilterExt],
     getFilterValue: (d) => isInZone(d.zoneId),
     filterRange: [1, 1],
@@ -637,8 +620,6 @@ export function createLayers(
     markerId: "cookingOvens",
     data: filtered.cookingOvens,
     visible: visibility.cookingOvens,
-    color: MARKER_COLORS.cookingOvens,
-    radius: MARKER_RADII.cookingOvens,
     extensions: [zoneFilterExt],
     getFilterValue: (d) => isInZone(d.zoneId),
     filterRange: [1, 1],
@@ -652,8 +633,6 @@ export function createLayers(
     markerId: "scribingTables",
     data: filtered.scribingTables,
     visible: visibility.scribingTables,
-    color: MARKER_COLORS.scribingTables,
-    radius: MARKER_RADII.scribingTables,
     extensions: [zoneFilterExt],
     getFilterValue: (d) => isInZone(d.zoneId),
     filterRange: [1, 1],
@@ -667,8 +646,6 @@ export function createLayers(
     markerId: "chests",
     data: filtered.chests,
     visible: visibility.chests,
-    color: MARKER_COLORS.chests,
-    radius: MARKER_RADII.chests,
     extensions: [zoneFilterExt],
     getFilterValue: (d) => isInZone(d.zoneId),
     filterRange: [1, 1],
@@ -682,8 +659,6 @@ export function createLayers(
     markerId: "houses",
     data: filtered.houses,
     visible: visibility.houses,
-    color: MARKER_COLORS.houses,
-    radius: MARKER_RADII.houses,
     extensions: [zoneFilterExt],
     getFilterValue: (d) => isInZone(d.zoneId),
     filterRange: [1, 1],
@@ -697,8 +672,6 @@ export function createLayers(
     markerId: "treasure",
     data: filtered.treasure,
     visible: visibility.treasure,
-    color: MARKER_COLORS.treasure,
-    radius: MARKER_RADII.treasure,
     extensions: [zoneFilterExt],
     getFilterValue: (d) => isInZone(d.zoneId),
     filterRange: [1, 1],
@@ -712,8 +685,6 @@ export function createLayers(
     markerId: "altars",
     data: filtered.altars,
     visible: visibility.altars,
-    color: MARKER_COLORS.altars,
-    radius: MARKER_RADII.altars,
     extensions: [zoneFilterExt],
     getFilterValue: (d) => isInZone(d.zoneId),
     filterRange: [1, 1],
@@ -727,8 +698,6 @@ export function createLayers(
     markerId: "traps",
     data: filtered.traps,
     visible: visibility.traps,
-    color: MARKER_COLORS.traps,
-    radius: MARKER_RADII.traps,
     extensions: [zoneFilterExt],
     getFilterValue: (d) => isInZone(d.zoneId),
     filterRange: [1, 1],
@@ -829,8 +798,6 @@ export function createLayers(
     markerId: "portals",
     data: filtered.portals,
     visible: visibility.portals,
-    color: MARKER_COLORS.portals,
-    radius: MARKER_RADII.portals,
     extensions: [zoneFilterExt],
     getFilterValue: (d) =>
       !focusedZoneId ||
@@ -1037,8 +1004,6 @@ export function createLayers(
     markerId: "creatures",
     data: filtered.creatures,
     visible: visibility.creatures,
-    color: MARKER_COLORS.creatures,
-    radius: MARKER_RADII.creatures,
     extensions: [levelZoneFilterExt],
     getFilterValue: (d) => [d.level, isInZone(d.zoneId)],
     filterRange: [
@@ -1056,8 +1021,6 @@ export function createLayers(
     markerId: "hunts",
     data: filtered.hunts,
     visible: visibility.hunts,
-    color: MARKER_COLORS.hunts,
-    radius: MARKER_RADII.hunts,
     extensions: [levelZoneFilterExt],
     getFilterValue: (d) => [d.level, isInZone(d.zoneId)],
     filterRange: [
@@ -1075,8 +1038,6 @@ export function createLayers(
     markerId: "elites",
     data: filtered.elites,
     visible: visibility.elites,
-    color: MARKER_COLORS.elites,
-    radius: MARKER_RADII.elites,
     extensions: [levelZoneFilterExt],
     getFilterValue: (d) => [d.level, isInZone(d.zoneId)],
     filterRange: [
@@ -1094,8 +1055,6 @@ export function createLayers(
     markerId: "fabled",
     data: filtered.fabled,
     visible: visibility.fabled,
-    color: MARKER_COLORS.fabled,
-    radius: MARKER_RADII.fabled,
     extensions: [levelZoneFilterExt],
     getFilterValue: (d) => [d.level, isInZone(d.zoneId)],
     filterRange: [
@@ -1113,8 +1072,6 @@ export function createLayers(
     markerId: "bosses",
     data: filtered.bosses,
     visible: visibility.bosses,
-    color: MARKER_COLORS.bosses,
-    radius: MARKER_RADII.bosses,
     extensions: [levelZoneFilterExt],
     getFilterValue: (d) => [d.level, isInZone(d.zoneId)],
     filterRange: [
@@ -1132,8 +1089,6 @@ export function createLayers(
     markerId: "npc",
     data: filtered.npcs,
     visible: isAnyNpcTypeVisible(visibility),
-    color: MARKER_COLORS.npc,
-    radius: MARKER_RADII.npc,
     extensions: [levelZoneFilterExt],
     getFilterValue: (d) => [
       // Bitwise AND: if any visible role matches the NPC's roles, result > 0
