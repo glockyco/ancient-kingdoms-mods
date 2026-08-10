@@ -1,7 +1,7 @@
 ---
 title: "Map Marker Registry, Wayfinding, and First-Class Search"
 type: spec
-status: draft
+status: in-progress
 created: 2026-08-09
 parent: 2026-07-31-ancient-kingdoms-overview
 supersedes:
@@ -12,7 +12,7 @@ archived:
 
 # Map Marker Registry, Wayfinding, and First-Class Search
 
-**Status:** Requires review. Nothing implemented.
+**Status:** Requires review. Phase 0 and the registry spike are complete; migration is not implemented.
 **Scope:** `website/` map subsystem, `website/` search (site-wide), and the pipeline
 changes those require.
 
@@ -68,6 +68,39 @@ Stated plainly so nothing downstream silently assumes it:
 - **Real cold-start latency** on throttled connections. Requires a browser.
 - **Live map interaction** of the sibling Erenshor site — its DOM is JS-rendered and no
   browser was available; its *source* was read locally instead, which is stronger evidence.
+
+### 0.3 Spike results (measured 2026-08-10)
+
+The three hard cases were expressed in a compiling, test-covered spike at
+`website/src/lib/map/marker-registry-spike.ts`; it is deliberately not imported by the
+production map. Five tests pass and `svelte-check` reports 0 errors.
+
+The shape holds, with two required refinements before migration:
+
+1. **Partition precedence is a real field.** Monster flags overlap in the source data, while
+   paint order is a different concern. The spike therefore separates `precedence` from `z`
+   and resolves a row by highest declared precedence (`boss > fabled > elite > hunt >
+   creature`). Encoding this in each predicate would duplicate the precedence rule and
+   make the completeness assertion impossible to state.
+2. **Portal rows need normalized sub-zone names.** The schema has
+   `portals.from_sub_zone_id` and `portals.to_sub_zone_id` (`build-pipeline/schema.sql:1217-1246`).
+   The contract is now present on `PortalMapEntity` and `loadPortalsServer()` as nullable
+   `fromSubZoneName` and `destinationSubZoneName`; the registry does not silently fall back
+   to zone names, because that would preserve the exact ambiguity it is meant to remove.
+   A later completeness check must assert endpoint coverage and fail if these fields drift
+   back to null.
+
+The spike covers all requested escape hatches: five overlapping monster markers, `by-field`
+monster selection, delegated altar selection, patrol/wander/relation decorations, one NPC
+layer with all 22 role facets and teleporter decoration, and portal destination,
+requirement, and sub-zone display-name handling.
+
+The installed `sql.js-fts5@1.4.0` artifact was also measured directly. `sql-wasm.wasm` is
+**1,213,472 B** raw and **460,651 B** gzip; the loader is 53,775 B and the worker wrapper is
+56,351 B. Ten fresh Node 24.18.1 processes produced medians of **0.154 ms** to read the
+WASM, **4.498 ms** to initialize it, and **13.966 ms** to open the 16.9 MB compendium and
+execute one query. These are local-process measurements, not browser/network cold starts;
+the browser measurement remains open.
 
 ---
 
@@ -1256,10 +1289,12 @@ but unused — for the **three worst cases**, which between them exercise every 
 | `npc` | one layer, 22 `facets` over a GPU bitmask, plus teleporter arcs and destinations |
 | `portal` | arcs, destination markers, requirement gating, and a synthesised sub-zone display name |
 
-If all three express cleanly, the design holds and Phases 1–6 are mechanical. If any needs
-a field invented for it alone, that is the signal to reshape `MarkerDef` **now**, while
-nothing depends on it. This is a day of work that de-risks the entire map half, and it is
-the single highest-value thing to do first.
+The spike is complete. The design holds, but it exposed two fields that must be part of
+Phase 1 rather than hidden in predicates or fallbacks: `precedence` (separate from paint
+order `z`) and normalized portal sub-zone names. Phases 1–6 remain mechanical only after
+those contracts are added to the real registry. The loader contract is now in place; the
+migration must still preserve it and must not replace precedence with predicate-encoded
+ordering or zone-name fallbacks.
 
 **Phase 1 — registry core, presentation only.** `MarkerDef`, `defineMarker`, all ~30
 markers populated from the existing records. Derive the five config records from the
@@ -1495,3 +1530,15 @@ connectivity comparison in §1.6, and the Evacuate-only edge identification) and
 `/tmp/quality.py`
 (current-vs-cleaned result comparison) were used for the remaining figures; each is a
 short stdlib-only script that reads the database read-only.
+
+```sh
+# sql.js-fts5 artifact sizing
+stat -f %z website/node_modules/sql.js-fts5/dist/sql-wasm.wasm       # 1213472
+ gzip -9c website/node_modules/sql.js-fts5/dist/sql-wasm.wasm | wc -c # 460651
+stat -f %z website/node_modules/sql.js-fts5/dist/sql-wasm.js         # 53775
+stat -f %z website/node_modules/sql.js-fts5/dist/worker.sql-wasm.js   # 56351
+
+# Fresh-process timing: run /tmp/measure-sql-wasm.mjs once per fresh Node 24.18.1
+# process, with wasmBinary supplied directly and one sqlite_master query after opening
+# compendium.db. Ten runs: median read 0.154 ms, init 4.498 ms, open/query 13.966 ms.
+```

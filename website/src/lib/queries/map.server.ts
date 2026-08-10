@@ -556,10 +556,12 @@ interface PortalRow {
   position_y: number | null;
   from_zone_id: string;
   from_zone_name: string;
+  from_sub_zone_name: string | null;
   destination_x: number | null;
   destination_y: number | null;
   to_zone_id: string | null;
   to_zone_name: string | null;
+  to_sub_zone_name: string | null;
   is_closed: number;
   required_item_id: string | null;
   required_item_name: string | null;
@@ -580,10 +582,12 @@ function loadPortalsServer(db: Database.Database): PortalMapEntity[] {
       p.position_y,
       p.from_zone_id,
       fz.name as from_zone_name,
+      fsz.name as from_sub_zone_name,
       p.destination_x,
       p.destination_y,
       p.to_zone_id,
       tz.name as to_zone_name,
+      tsz.name as to_sub_zone_name,
       p.is_closed,
       p.required_item_id,
       i.name as required_item_name,
@@ -600,7 +604,9 @@ function loadPortalsServer(db: Database.Database): PortalMapEntity[] {
       ) as kill_requirement_spawn_ids
     FROM portals p
     JOIN zones fz ON fz.id = p.from_zone_id
+    LEFT JOIN zone_triggers fsz ON fsz.id = p.from_sub_zone_id
     LEFT JOIN zones tz ON tz.id = p.to_zone_id
+    LEFT JOIN zone_triggers tsz ON tsz.id = p.to_sub_zone_id
     LEFT JOIN items i ON i.id = p.required_item_id
     LEFT JOIN monsters m ON m.id = p.need_monster_dead_id
     WHERE p.is_template = 0
@@ -632,6 +638,8 @@ function loadPortalsServer(db: Database.Database): PortalMapEntity[] {
           : null,
       destinationZoneId: r.to_zone_id,
       destinationZoneName: r.to_zone_name,
+      fromSubZoneName: r.from_sub_zone_name,
+      destinationSubZoneName: r.to_sub_zone_name,
       isClosed,
       requiredItemId: r.required_item_id,
       requiredItemName: r.required_item_name,

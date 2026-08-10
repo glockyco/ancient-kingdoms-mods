@@ -148,6 +148,8 @@ export interface PortalMapEntity extends MapEntity {
   destination: [number, number] | null;
   destinationZoneId: string | null;
   destinationZoneName: string | null;
+  fromSubZoneName: string | null;
+  destinationSubZoneName: string | null;
   isClosed: boolean;
   requiredItemId: string | null;
   requiredItemName: string | null;
