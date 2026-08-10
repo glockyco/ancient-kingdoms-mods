@@ -12,7 +12,11 @@ archived:
 
 # Map Marker Registry, Wayfinding, and First-Class Search
 
-**Status:** In progress. Phase 0, the registry spike, and the initial registry presentation migration are complete; Phases 4–11 remain.
+**Status:** In progress. Phases 0–3 are complete and Phase 4 is partially complete: the
+production registry owns presentation, partitioning, URL and sidebar visibility, NPC
+facets, and layer styling, and `createLayers` now takes a single `LayerContext`. Remaining:
+the rest of Phase 4 (`markerLayer()` and `decorations()`), Phases 5–6 (selection, popups),
+and Phases 7–11 (search, wayfinding, UX, cleanup).
 **Scope:** `website/` map subsystem, `website/` search (site-wide), and the pipeline
 changes those require.
 
@@ -704,6 +708,18 @@ escape hatch without an assertion is where behaviour diverges silently.
 
 One capability, three consumers, one index.
 
+**Correction (2026-08-10): the missing spine is an entity registry, not a search
+registry.** An earlier draft of this section declared a `SearchableDef` whose `label` and
+`icon` comments both read "from the entity definition" — a definition this repo does not
+have. Measured, the site enumerates entity families independently in at least six places:
+`map-search.ts:10-23` and `:29-43` (13 categories, twice), `SearchResultItem.svelte:83-98`
+(13 icons), `MapLink.svelte:5-21` (a 16-member union that disagrees with `EntityType`),
+`EntityPopup.svelte:284-311` (10 detail routes) and `:313-347` (21 type labels),
+`build-sitemap-manifest.mjs:10-22` (11 entities) and `:45-58` (12 profession slugs), and
+`routes/+page.svelte:51-188` (17 home cards). Naming the new registry after one consumer
+would leave five of those untouched and create the second maintenance surface §8 warns
+about. So the declaration is an **entity registry**, and search is one capability on it.
+
 ```mermaid
 graph TD
   R["SearchableDef<br/>per entity type"] --> B["prebuild script<br/>website/scripts/"]
@@ -715,35 +731,69 @@ graph TD
 ```
 
 ```ts
-export interface SearchableDef {
-  type: SearchTypeId;
-  label: string;                          // group heading, from the entity definition
-  icon: IconNode;                         // from the entity definition
+// $lib/entities/registry.ts — client-safe. No Svelte imports, no better-sqlite3.
+export interface EntityDef {
+  id: EntityId;                     // "monster" | "item" | "skill" | "recipe" | …
+  label: string;
+  pluralLabel: string;
+  icon: IconNode;
+  href: (id: string) => string;     // detail route, or null when the family has none
+  overviewHref: string | null;      // list route, feeds sitemap and home cards
+  /** Tie-break for equal scores and a stable group order. Never a substitute for rank. */
   order: number;
-  href: (id: string) => string;
-  mapTargets?: MarkerId[];                // if it can be revealed on the map
-  index: (db: Database) => SearchDoc[];   // build-time only
+  searchable: boolean;
 }
+
+// $lib/server/search/documents.ts — build-time only. SvelteKit refuses to bundle
+// `$lib/server/**` into client code, so the constraint is enforced, not asserted.
+export const searchDocuments = {
+  monster: (db) => …,
+  item: (db) => …,
+} satisfies Record<SearchableEntityId, (db: Database) => SearchDoc[]>;
 
 interface SearchDoc {
   entityId: string;
-  name: string;                           // never null — synthesise for portals
+  name: string;                     // never null — synthesise for portals
   keywords: string;
-  content: string;                        // stripped of markup and placeholders
+  content: string;                  // already plain text, see (a)
 }
 ```
 
+**The map link points from the marker, not at it.** An earlier draft put
+`mapTargets?: MarkerId[]` on the search definition. That is the wrong direction: markers
+are a presentation of entities and the relation is many-to-one — five monster markers over
+one `monster` entity. So `MarkerDef` gains `entity: EntityId`, the reverse index is derived,
+and "can this result be revealed on the map" becomes a lookup rather than a hand-maintained
+array that can silently omit `fabled`.
+
 Registering a type deletes: `MapSearchCategory`, `SEARCH_CATEGORY_ORDER`,
 `resultsByCategory`, the 13-way fan-out, the round-robin interleave, the label map in
-`MapSearch.svelte:62-76`, and the icon map in `SearchResultItem.svelte:69-92`. It also
+`MapSearch.svelte:61-76`, and the icon map in `SearchResultItem.svelte:83-98`. It also
 removes the reason `SearchResultItem.svelte:35-59` duplicates `RoleBadges.svelte:26-59`.
+Because the declaration is an entity registry rather than a search registry, it further
+absorbs `MapLink.svelte:5-21`, the routing and label switches in
+`EntityPopup.svelte:284-347`, the `ENTITIES` list in `build-sitemap-manifest.mjs:10-22`,
+and the card metadata in `routes/+page.svelte:51-188`.
 
-**Six decisions, each backed by a measurement or a primary source.**
+**Seven decisions, each backed by a measurement or a primary source.**
 
-**(a) Clean the text before indexing.** Strip Unity rich-text tags and `{PLACEHOLDER}`
-tokens. This is not cosmetic: it removes 30,487 junk term occurrences, deletes `color`
-(14,984) and two hex codes from the vocabulary, and repairs IDF for every real query.
-Measured effect on corpus: items 582,079 → 300,016 B.
+**(a) Clean the text before indexing, in the pipeline, not in Node.** Strip Unity
+rich-text tags and `{PLACEHOLDER}` tokens. This is not cosmetic: it removes 30,487 junk
+term occurrences, deletes `color` (14,984) and two hex codes from the vocabulary, and
+repairs IDF for every real query. Measured effect on corpus: items 582,079 → 300,016 B.
+
+**Correction (2026-08-10): the stripper already exists, in Python.**
+`denormalizers/items/tooltips.py:59-105` and `denormalizers/quests/tooltips.py:27-108`
+already parse Unity TextMeshPro markup and `{PLACEHOLDER}` tokens, and the columns they
+emit (`items.tooltip_html`, `quests.tooltip_html`, `quests.tooltip_complete_html`) prove
+it. The website only extracts a title colour from that output
+(`utils/itemTooltip.ts:1-25`). Writing a second markup parser in TypeScript would put two
+implementations of one grammar in two languages, which is the drift this document exists
+to remove. So the pipeline gains a plain-text sibling column next to each `*_html` column,
+produced by the parser that already runs, and the index builder selects it. Ownership is
+unchanged and the §2 rule still holds: the registry owns *which* documents exist and which
+columns compose them, the pipeline owns text normalisation of columns it already parses.
+`skills.tooltip_template` has no parser yet and needs one on the same path.
 
 **(b) One unified index, not 14.** bm25 is only comparable within a single index, so a
 single ranked list — which a palette needs and round-robin fakes — requires one table.
@@ -756,8 +806,22 @@ Measured: one row per entity (3,601 rows), external-content FTS5, `optimize`, `V
 | + stripped content, `tokenize='trigram'` | 2,588,672 B | 1,041,396 B (1017 KiB) |
 
 The full-content unified index at 502 KiB gzip is **smaller than the 1,429,504 B of
-per-table FTS we already ship**, and it covers skills, which today have no FTS table at
-all. Trigram costs 2× for substring tolerance that §(e) achieves for free.
+per-table FTS we already ship** (re-measured 2026-08-10 via `dbstat`: 1,429,504 B across
+the 14 FTS tables and their shadow tables, 8.43% of the 16,949,248 B database). Trigram
+costs 2× for substring tolerance that §(e) achieves for free.
+
+**Correction (2026-08-10): 3,601 rows was scoped to the wrong population.** That figure is
+exactly the 2,909 rows in today's 14 FTS tables plus 692 skills, so it inherits the map's
+idea of what exists. The site has 14 entity detail routes. A global palette that cannot
+find a class, a faction, a mercenary, a summon, a recipe or an achievement is not a global
+palette. Adding them costs, from the generated home counts: recipes 155, achievements 38,
+classes 6, factions 6, mercenaries 6, summons 5 — **216 rows, 7.4% more**, for the
+difference between covering the map and covering the site. Professions are 12 static pages
+(`build-sitemap-manifest.mjs:45-58`) while `home-counts.ts` reports 13, so that
+discrepancy must be resolved before they are indexed rather than papered over. Traps and
+achievements have overview pages but no detail route, so their `href` is the overview page
+plus a fragment, or they are excluded — decide per family in the registry, do not let the
+absence of a route silently drop the rows.
 
 **(c) Ship it as its own artifact, built by a Node prebuild script.** Not inside
 `compendium.db`. Search must answer a keystroke on any page; forcing a 2.36 MB download to
@@ -767,30 +831,50 @@ and joins the existing `prebuild` chain — verified to exist:
 and `generate-home-counts.mjs:19` already uses `better-sqlite3` with a header explaining
 that Workers cannot.
 
-**One hard constraint the existing scripts do not yet face.** Every current build script is
-self-contained — **none imports from `src/lib`** (verified). The search-index builder would
-be the first, and it must run outside Vite, so it can load `.ts` via `tsx` (already a
-devDependency, `^4.23.1`) but **cannot load `.svelte` at all**. Therefore:
+**Correction (2026-08-10): the precedent already exists, and the constraint is milder than
+stated.** An earlier draft claimed no build script imports from `src/lib`. That is wrong:
+`website/scripts/gen-skill-effect-parity.ts:24-28` imports `$lib/db.server`,
+`$lib/utils/formatSkillEffect` and `$lib/skills/*`, and runs under
+`"gen:skill-effect-parity": "tsx scripts/gen-skill-effect-parity.ts"`. So `tsx` plus
+`$lib` path resolution is a working, shipped pattern here, not a new risk.
 
-> `SearchableDef` modules, and everything they transitively import, must be free of Svelte
-> components.
+The real constraint is only that the builder cannot load `.svelte`. The idiomatic
+enforcement is SvelteKit's own boundary rather than a bespoke test: build-time-only code
+lives in `$lib/server/**` or a `*.server.ts` module, which Vite refuses to bundle into
+client code, and which `tsx` loads without complaint — exactly what `db.server.ts` already
+does. Therefore:
 
-That is why `search.ts` is a separate module from `markers.ts` rather than a field on
-`MarkerDef`: the marker registry legitimately holds `popup?: Component`, and entangling the
-two would make the index unbuildable. A test should assert the search registry's import
-graph contains no `.svelte` file, because the failure mode otherwise appears only at build
-time in CI. **The registry must own the document list**; if Python owned it,
-adding a searchable entity would mean editing two languages and the registry would stop
-being the single source of truth — precisely the Erenshor flaw cited in §2. Python's
-remaining search job is producing source columns (`keywords.py`).
+> The client-safe entity registry holds identity, labels, icons, routes and ordering, and
+> imports no Svelte components. Document builders live in `$lib/server/search/`, and
+> per-marker popup components live in the component layer keyed by `MarkerId`.
 
-**(d) Query it in a Web Worker.** `db.ts:39-56` runs synchronously on the main thread
-today; a full-text query over a 17 MB in-memory DB during keystrokes is a jank source. Use
-a plain Worker with a small typed RPC. **Do not** adopt `sqlite3-worker1-promiser`: it was
+That split also keeps `better-sqlite3` and the build-only closures out of the browser
+bundle, which a single combined module would ship. A cheap test asserting the registry's
+import graph contains no `.svelte` file is still worth keeping, because the failure mode
+otherwise appears only at build time in CI. **The registry must own the document list**; if
+Python owned it, adding a searchable entity would mean editing two languages and the
+registry would stop being the single source of truth — precisely the Erenshor flaw cited in
+§2. Python's remaining search job is producing source columns (`keywords.py`) and the
+plain-text columns from §(a).
+
+**(d) Query it in a Web Worker — and move the existing database in with it.**
+`db.ts:49-66` runs its `prepare`/`step`/`free` loop on the main thread, and a full-text
+query over a 17 MB in-memory DB during keystrokes is a jank source. Use a plain Worker with
+a small typed RPC. **Do not** adopt `sqlite3-worker1-promiser`: it was
 deprecated 2026-04-15 and is "actively discouraged" —
 <https://sqlite.org/wasm/doc/trunk/api-worker1.md>. OPFS is not needed and carries
 COOP/COEP requirements and a Safari <17 incompatibility —
 <https://sqlite.org/wasm/doc/trunk/persistence.md>.
+
+**One worker owning both databases, not one worker per database.** Two reasons, both
+concrete. First, `db.ts:49-85` already returns promises, so relocating it behind an RPC is
+mechanical for callers, and it stops every entity page from blocking the main thread on a
+17 MB database. Leaving it in place would make search fast while the pages search leads to
+stay janky. Second, the map palette needs both artifacts to answer one query: `search.db`
+supplies identity and rank, while spawn geometry — the bounds and spawn counts that
+`map-search.ts:942-1044` computes by `UNION ALL` over spawn tables — exists only in
+`compendium.db`. Splitting them across two workers would put a message boundary in the
+middle of a single answer. One worker, two `Database` handles, one RPC surface.
 
 **(e) Tiered matching, with fuzzy as a cheap fallback.** FTS5 has no fuzzy operator. The
 tiers, in order: exact name → name prefix → FTS content match ranked by
@@ -821,6 +905,45 @@ Because the index is unified, **reciprocal rank fusion is not needed**. RRF
 incomparable corpora; unifying removes the incomparability rather than papering over it.
 It stays the documented fallback if per-type indexes ever return.
 
+**(g) Results carry the game's own art, not just a category glyph.** Requested 2026-08-10,
+and the assets already ship. Measured coverage from `visual_assets`, which is the canonical
+table for exported imagery: item icons 1,651 of 1,671 items, skill icons 689 of 692,
+monster sprites 362 of 362, NPC sprites 234 of 234, pet sprites 5, plus 11 pet icons
+attached to whistle items. Achievements carry 38 images through their own
+`achievements.unlocked_icon_path` column. `website/static/images` already holds 3,028 files
+totalling 7,723,611 B, so nothing new is exported and nothing is added to the index
+payload beyond one column.
+
+Sizes make this cheap at palette scale: item icons median 925 B (max 6,366), skill icons
+median 1,853 B, monster sprites median 3,249 B, NPC sprites median 5,470 B. Twenty visible
+results is tens of kilobytes of lazily fetched, cache-friendly static assets.
+
+Three rules keep it clean:
+
+1. **The registry declares the asset kind, the builder resolves the path.** `EntityDef`
+   gains `imageKind: "icon" | "primary" | null`, and the index builder `LEFT JOIN`s
+   `visual_assets` to write a nullable `image` column. Paths are *not* derived in the
+   browser. They look derivable — `images/{family}/{id}/{kind}.png` — but three ids already
+   deviate through hyphen-to-underscore slugging (`drake-eye_covenant`,
+   `scent-soaked_boots`, `two-handed_mastery`), and `ItemTooltip.svelte:13` currently
+   hand-rolls exactly that rule. One build-time join deletes the rule instead of copying it.
+2. **One table describes every exported image.** Achievements are the exception today, with
+   absolute paths in their own column and a different extension. Fold them into
+   `visual_assets` in the pipeline so the registry has a single uniform source. Professions
+   have `icon_path` values such as `profession_alchemy` with no matching file under
+   `website/static/images`, so they get no image until that asset is exported — the
+   registry must express "no image" rather than emit a broken URL.
+3. **Fall back to the family icon, and reserve the box.** A row with no image renders the
+   `EntityDef` Lucide icon, and an image that fails to load swaps to it. Render at a fixed
+   box with explicit `width`/`height`, `loading="lazy"`, `decoding="async"`, and
+   `[image-rendering:pixelated]` to match the existing convention at
+   `monsters/[id]/+page.svelte:848-849`, `npcs/[id]/+page.svelte:556-557` and
+   `PetDetail.svelte:270-271`. These are 25–99 px source sprites, so smoothing them looks
+   wrong next to the rest of the site.
+
+Measure the index delta when the `image` column lands. The expectation is tens of
+kilobytes gzipped against the 502 KiB baseline, but it is a measurement, not a claim.
+
 **UX**, per <https://www.w3.org/WAI/ARIA/apg/patterns/combobox/>: `role="combobox"` with
 `aria-expanded`, `aria-controls`, `aria-activedescendant`; Enter accepts, Escape closes and
 restores focus. Cmd/Ctrl-K from every route. 150 ms debounce and a 2-character minimum,
@@ -828,6 +951,13 @@ matching both `MapSearch.svelte:32-46` here and `MapSearch.svelte:50-106` in the
 project. Group by type, cap 3–5 per group, but rank globally within that. Show a
 `snippet()` so the match is explainable. Empty query renders nothing; no match renders
 `CommandEmpty`.
+
+**Groups are ordered by their best member, never by a static list.** `EntityDef.order`
+breaks ties between equal scores and gives a stable order for the empty state. If it
+ordered the groups instead, it would be `SEARCH_CATEGORY_ORDER` under a new name, and §1.5
+exists because that discards relevance. The tier cascade in §(e) needs the same discipline:
+tiers concatenate in order, a later tier never reorders an earlier one, and an entity that
+matched in an earlier tier is not emitted again.
 
 ### 3.3 Wayfinding — the answer to the portal problem
 
@@ -876,6 +1006,15 @@ export type Availability =
 demanded it: Evacuate is `["wizard"]`, scrolls need the item, the Trial of the Ancients
 teleport needs a quest and a party. A router without it will confidently tell a Warrior to
 cast a Wizard spell.
+
+**Correction (2026-08-10): gates are authored once.** As drafted, an item gate is
+expressible twice — `availability: { to: "holders", item }` and
+`requires: [{ kind: "item", … }]` — and two encodings of one fact is the defect this
+document exists to remove. So `requires: Requirement[]` is the only authored field, with
+kinds for class, item, quest, character level, item level and monster state, and
+`Availability` becomes a derived projection: an edge is available to everyone when its
+requirements are universally satisfiable, and otherwise reports the audience its
+requirements imply. Providers author requirements. The router derives audience.
 
 **Nodes are sub-zones, not zones** (§1.6). All 118 portals resolve cleanly to
 `zone_triggers` endpoints, so nodes are `PlaceId` (sub-zone) throughout and zone-level routing
@@ -1097,7 +1236,7 @@ The feature set is not closed, and these earn their removal:
 
 | Delete | Why |
 | --- | --- |
-| 14 per-table FTS tables, their 42 triggers, and `build.py:118-133` | `map-search.ts` is their **only** consumer anywhere in `website/src` (verified by grep); the unified index replaces them and saves 1,429,504 B |
+| 14 per-table FTS tables, their 42 triggers (`schema.sql:1562-1926`) and the `build.py:118-136` optimize list | `map-search.ts` is their **only** consumer anywhere in `website/src` (re-verified 2026-08-10, including `items_fts:931-933` and `quests_fts:1113-1124`); the unified index replaces them and saves 1,429,504 B, measured with `dbstat` |
 | `MapLink.svelte:5-20` duplicate entity union | disagrees with `EntityType` in both directions |
 | `HomeSearch.svelte` | dev-flag visual stub, superseded by the real palette |
 | `{#if true}` wrappers, `MapSidebar.svelte:424-446` | vestigial |
@@ -1197,16 +1336,18 @@ export const shrineMarkers = {
 } satisfies Record<string, MarkerDef>;
 ```
 
-plus `src/lib/server/entities/shrine/map.ts` (the SQL — the only irreducible work),
-`src/lib/entities/shrine/search.ts`, and a popup component if it has fields beyond name
-and zone.
+plus `src/lib/server/entities/shrine/map.ts` (the SQL — the only irreducible work), an
+`EntityDef` entry carrying label, icon, `href`, `imageKind` and `searchable`, and a popup
+component if it has fields beyond name and zone. The marker names its entity through
+`entity: "shrine"`, which is what makes the result revealable on the map without a second
+list.
 
 Down from **33 edit sites**, and none of the remaining work is a place where a missed line
 yields a silently wrong colour, label, ring size, or dead URL key.
 
-**Making any entity searchable** — one `SearchableDef` and one import. Today that is five
-edits in `map-search.ts` plus two components, and it is impossible for non-map entities
-because no global search exists.
+**Making any entity searchable** — `searchable: true` on its `EntityDef` and one document
+builder in `$lib/server/search/`. Today that is five edits in `map-search.ts` plus two
+components, and it is impossible for non-map entities because no global search exists.
 
 ---
 
@@ -1333,16 +1474,31 @@ things on the map.
 components behind `MarkerDef.popup`. `MapTooltip` reads from the def. Deduplicate the
 desktop/mobile popup trees (`+page.svelte:1212-1367`).
 
-**Phase 7 — text cleaning and the search index.** Write the markup/placeholder stripper
-(shared by items, quests, skills). Add `keywords` to `skills` plus a
-`_generate_skill_keywords` in `keywords.py` using `damage_type`, `buff_category`,
-`player_classes`, `skill_aggro_message`. Build `search.db` from the registry in a prebuild
-script with bm25 weights, one row per entity, synthesised portal names. Add index-hygiene
-test 8. Retire the 14 FTS tables, 42 triggers and the `build.py` list.
+**Phase 7 — entity registry, text cleaning, and the search index.** Land
+`$lib/entities/registry.ts` and migrate its non-search consumers first, since they are
+independent of the index: `MapLink.svelte`, `EntityPopup`'s route and label switches, the
+sitemap `ENTITIES` list, and the home cards. Extend the pipeline's existing tooltip parsers
+to emit plain-text columns and give `skills.tooltip_template` the same treatment. Add
+`keywords` to `skills` plus a `_generate_skill_keywords` in `keywords.py` using
+`damage_type`, `buff_category`, `player_classes`, `skill_aggro_message`. Fold achievement
+images into `visual_assets`. Build `search.db` from the registry in a prebuild script with
+bm25 weights, one row per entity, synthesised portal names, and the nullable `image`
+column. Add index-hygiene test 8.
 
-**Phase 8 — search consumers.** Worker RPC. `searchEntities()` with tiered matching and
-`snippet()`. Global Cmd-K palette in `routes/+layout.svelte`. Map palette becomes a
-filtered consumer (`mapTargets`). Delete `HomeSearch.svelte` and `map-search.ts`.
+**The 14 FTS tables stay until Phase 8.** An earlier draft retired them here, which would
+ship a phase whose only consumer — `map-search.ts`, verified as the sole reader of all 14 —
+still queries them. That breaks the rule at the top of this section, that every phase ends
+green. Deletion belongs in the commit that removes the last reader.
+
+**Phase 8 — search consumers, and the old index dies with them.** One Worker owning both
+`compendium.db` and `search.db` behind a typed RPC, with `db.ts` becoming its client.
+`searchEntities()` with tiered matching, `snippet()`, and entity artwork per §3.2(g).
+Global Cmd-K palette in `routes/+layout.svelte`, reusing the existing bits-ui command
+primitive at `components/ui/command/index.ts`. Map palette becomes a filtered consumer,
+selecting entities that have markers via the derived `MarkerDef.entity` index and joining
+spawn geometry in the same worker. Delete `HomeSearch.svelte`, `map-search.ts`, the
+`SearchResultItem` icon map — and, in the same commit, the 14 FTS tables, their 42
+triggers, `schema.sql:1562-1926` and the `build.py:118-136` list.
 
 **Phase 9 — wayfinding.** Two steps, because one has a pipeline dependency.
 
@@ -1355,13 +1511,20 @@ transcription-from-code in the plan and everything else in Phase 9 depends on it
 NPC teleporters, Evacuate, travel items). All-pairs directed routes at build time in two
 variants (baseline, and with scrolls). "How to get here" on zone pages — static, no JS;
 ship this before the map mode, it is the larger share of the value. Then route mode on the
-map. Delete the all-arcs layer and `portalArcs`. Surface teleport destination, price and
-the Trial-of-the-Ancients quest/party requirement on the NPC popup.
+map. Surface teleport destination, price and the Trial-of-the-Ancients quest/party
+requirement on the NPC popup.
+
+**The all-arcs layer is not deleted here.** An earlier draft said "delete the all-arcs
+layer and `portalArcs`", contradicting §3.3 item 7 and §3.6, which keep both. What changes
+is that `portalArcs` becomes the key the arc layer actually reads instead of dead URL
+state, which is how Bug 3 closes.
 
 Three tests. **(a)** Every zone is reachable from some hub using only
 `availability.to === "everyone"` edges — true today for all 26, max 3 hops — so a data
-change that strands a zone fails the build. **(b)** No emitted route contains a
-class-, item- or quest-gated step, which is the every-class rule made executable.
+change that strands a zone fails the build. **(b)** No route in the **baseline** artifact
+contains a class-, item- or quest-gated step, which is the every-class rule made
+executable. The scroll variant exists precisely to carry gated steps, so the assertion is
+scoped to the baseline rather than to every emitted route.
 **(c)** Every table carrying a `*teleport*`/`*destination*` column, and every
 `skills.is_teleport` row, is claimed by a provider or explicitly excluded — so a future
 mechanism cannot be silently dropped the way Evacuate was.
@@ -1370,9 +1533,13 @@ Unreleased zones need a flag. Old Valorath has 5 spawns, 0 NPCs and no exit beca
 WIP; the routing UI must be able to say "not yet reachable" without that looking like a
 bug, and test (a) must exempt flagged zones rather than fail on them.
 
-**Phase 10 — UX.** Portal-arc rendering: deduplicate to one connection per zone pair and
-switch `LineLayer` for `ArcLayer` (§3.3 item 7). Recent searches in the palette. No change
-to marker rendering, layer defaults, or the sidebar's control set.
+**Phase 10 — UX.** Portal-arc rendering per §3.3 item 7: `ArcLayer` instead of `LineLayer`,
+faint by default with emphasis on hover and selection, and cross-zone separated from
+intra-zone. **Not deduplication by zone pair** — an earlier draft repeated that here after
+§3.3 had already refuted it, since the six `Vault of the Vanished → Everfrost` portals are
+six physical exits at six coordinates and collapsing them erases five real objects. Recent
+searches in the palette. No change to marker rendering, layer defaults, or the sidebar's
+control set.
 
 **Phase 11 — cleanup.** Delete `MapLink.svelte`'s union and `SearchResultItem`'s duplicate
 role map. Rewrite `src/lib/map/CLAUDE.md` — including its wrong point counts. Replace the
