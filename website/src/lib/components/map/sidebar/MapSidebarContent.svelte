@@ -35,7 +35,7 @@
     ZoneListItem,
   } from "$lib/types/map";
   import { ZONE_COLORS } from "$lib/map/config";
-  import { MARKER_COLORS } from "$lib/map/marker-registry";
+  import { MARKER_COLORS, NPC_FACETS } from "$lib/map/marker-registry";
   import {
     toggleLayerVisibility,
     getToggleState,
@@ -143,136 +143,13 @@
     },
   ];
 
-  // NPC role layers as separate toggles
-  const npcLayers: LayerOption[] = [
-    {
-      key: "npcVendors",
-      label: "Vendors",
-      color: MARKER_COLORS.npc,
-      icon: Users,
-    },
-    {
-      key: "npcQuestGivers",
-      label: "Quest Givers",
-      color: MARKER_COLORS.npc,
-      icon: Users,
-    },
-    {
-      key: "npcRepair",
-      label: "Repair",
-      color: MARKER_COLORS.npc,
-      icon: Users,
-    },
-    { key: "npcBanks", label: "Banks", color: MARKER_COLORS.npc, icon: Users },
-    {
-      key: "npcInnkeepers",
-      label: "Innkeepers",
-      color: MARKER_COLORS.npc,
-      icon: Users,
-    },
-    {
-      key: "npcSoulBinders",
-      label: "Soul Binders",
-      color: MARKER_COLORS.npc,
-      icon: Users,
-    },
-    {
-      key: "npcSkillTrainers",
-      label: "Skill Trainers",
-      color: MARKER_COLORS.npc,
-      icon: Users,
-    },
-    {
-      key: "npcVeteranTrainers",
-      label: "Veteran Trainers",
-      color: MARKER_COLORS.npc,
-      icon: Users,
-    },
-    {
-      key: "npcAttributeReset",
-      label: "Attribute Reset",
-      color: MARKER_COLORS.npc,
-      icon: Users,
-    },
-    {
-      key: "npcFactionVendors",
-      label: "Faction Vendors",
-      color: MARKER_COLORS.npc,
-      icon: Users,
-    },
-    {
-      key: "npcEssenceTraders",
-      label: "Essence Traders",
-      color: MARKER_COLORS.npc,
-      icon: Users,
-    },
-    {
-      key: "npcAugmenters",
-      label: "Augmenters",
-      color: MARKER_COLORS.npc,
-      icon: Users,
-    },
-    {
-      key: "npcPriestesses",
-      label: "Priestesses",
-      color: MARKER_COLORS.npc,
-      icon: Users,
-    },
-    {
-      key: "npcRenewalSages",
-      label: "Renewal Sages",
-      color: MARKER_COLORS.npc,
-      icon: Users,
-    },
-    {
-      key: "npcAdventurerTasks",
-      label: "Adventurer Tasks",
-      color: MARKER_COLORS.npc,
-      icon: Users,
-    },
-    {
-      key: "npcAdventurerVendors",
-      label: "Adventurer Vendors",
-      color: MARKER_COLORS.npc,
-      icon: Users,
-    },
-    {
-      key: "npcMercenaryRecruiters",
-      label: "Mercenary Recruiters",
-      color: MARKER_COLORS.npc,
-      icon: Users,
-    },
-    {
-      key: "npcGuards",
-      label: "Guards",
-      color: MARKER_COLORS.npc,
-      icon: Users,
-    },
-    {
-      key: "npcTeleporters",
-      label: "Teleporters",
-      color: MARKER_COLORS.npc,
-      icon: Compass,
-    },
-    {
-      key: "npcVillagers",
-      label: "Villagers",
-      color: MARKER_COLORS.npc,
-      icon: Users,
-    },
-    {
-      key: "npcGuildManagers",
-      label: "Guild Managers",
-      color: MARKER_COLORS.npc,
-      icon: Users,
-    },
-    {
-      key: "npcBarbers",
-      label: "Barbers",
-      color: MARKER_COLORS.npc,
-      icon: Users,
-    },
-  ];
+  // NPC role layers derive labels and visibility keys from the marker registry.
+  const npcLayers: LayerOption[] = NPC_FACETS.map((facet) => ({
+    key: facet.visibilityKey,
+    label: facet.label,
+    color: MARKER_COLORS.npc,
+    icon: facet.id === "isTeleporter" ? Compass : Users,
+  }));
 
   // Interactable layers
   const interactableLayers: LayerOption[] = [

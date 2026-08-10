@@ -10,6 +10,7 @@ import {
   MARKER_PLURAL_LABELS,
   MARKER_RADII,
   MARKER_Z_ORDER,
+  NPC_FACETS,
   markerRegistry,
   resolveMarker,
 } from "./marker-registry";
@@ -157,6 +158,28 @@ describe("marker registry", () => {
       gatheringSparks: { base: 16, min: 14, max: 36 },
       gatheringFishing: { base: 16, min: 14, max: 36 },
       gatheringOther: { base: 16, min: 14, max: 36 },
+    });
+  });
+
+  test("derives unique NPC visibility facets from role bits", () => {
+    expect(NPC_FACETS).toHaveLength(22);
+    expect(new Set(NPC_FACETS.map((facet) => facet.id)).size).toBe(22);
+    expect(new Set(NPC_FACETS.map((facet) => facet.visibilityKey)).size).toBe(
+      22,
+    );
+    expect(new Set(NPC_FACETS.map((facet) => facet.mask)).size).toBe(22);
+    expect(
+      NPC_FACETS.find((facet) => facet.id === "isTeleporter"),
+    ).toMatchObject({
+      visibilityKey: "npcTeleporters",
+      label: "Teleporters",
+      mask: 1 << 18,
+    });
+    expect(
+      NPC_FACETS.find((facet) => facet.id === "isAdventurerTaskgiver"),
+    ).toMatchObject({
+      visibilityKey: "npcAdventurerTasks",
+      label: "Adventurer Tasks",
     });
   });
 

@@ -35,12 +35,19 @@ import {
   type PortalMapEntity,
   type TrapMapEntity,
   type TreasureMapEntity,
+  type LayerVisibility,
 } from "$lib/types/map";
 
 export type MarkerSource =
   "monsters" | "npcs" | "portals" | "interactables" | "resources";
 export type MarkerRow = AnyMapEntity;
 export type RGB = readonly [number, number, number];
+
+export interface IconSize {
+  base: number;
+  min: number;
+  max: number;
+}
 
 export interface SelectionTarget {
   entityId: string;
@@ -63,6 +70,7 @@ export interface DecorationContext<TRow extends MarkerRow> {
 
 export interface FacetDef<TRow extends MarkerRow> {
   id: string;
+  visibilityKey: keyof LayerVisibility;
   label: string;
   mask: number;
   matches: (row: TRow) => boolean;
@@ -79,7 +87,7 @@ export interface MarkerDef<TRow extends MarkerRow = MarkerRow> {
   color: RGB;
   icon: IconNode;
   iconType: string;
-  iconSize: { base: number; min: number; max: number };
+  iconSize: IconSize;
   fallbackRadius: number;
   borderClass: string;
   selection: SelectionStrategy<TRow>;
@@ -192,17 +200,75 @@ const monsterMarker = (
   decorations: monsterDecorations,
 });
 
+const NPC_FACET_METADATA = {
+  isVendor: { visibilityKey: "npcVendors", label: "Vendors" },
+  isQuestGiver: { visibilityKey: "npcQuestGivers", label: "Quest Givers" },
+  canRepair: { visibilityKey: "npcRepair", label: "Repair" },
+  isBank: { visibilityKey: "npcBanks", label: "Banks" },
+  isInnkeeper: { visibilityKey: "npcInnkeepers", label: "Innkeepers" },
+  isSoulBinder: { visibilityKey: "npcSoulBinders", label: "Soul Binders" },
+  isSkillTrainer: {
+    visibilityKey: "npcSkillTrainers",
+    label: "Skill Trainers",
+  },
+  isVeteranTrainer: {
+    visibilityKey: "npcVeteranTrainers",
+    label: "Veteran Trainers",
+  },
+  isAttributeReset: {
+    visibilityKey: "npcAttributeReset",
+    label: "Attribute Reset",
+  },
+  isFactionVendor: {
+    visibilityKey: "npcFactionVendors",
+    label: "Faction Vendors",
+  },
+  isEssenceTrader: {
+    visibilityKey: "npcEssenceTraders",
+    label: "Essence Traders",
+  },
+  isAugmenter: { visibilityKey: "npcAugmenters", label: "Augmenters" },
+  isPriestess: { visibilityKey: "npcPriestesses", label: "Priestesses" },
+  isRenewalSage: { visibilityKey: "npcRenewalSages", label: "Renewal Sages" },
+  isAdventurerTaskgiver: {
+    visibilityKey: "npcAdventurerTasks",
+    label: "Adventurer Tasks",
+  },
+  isAdventurerVendor: {
+    visibilityKey: "npcAdventurerVendors",
+    label: "Adventurer Vendors",
+  },
+  isMercenaryRecruiter: {
+    visibilityKey: "npcMercenaryRecruiters",
+    label: "Mercenary Recruiters",
+  },
+  isGuard: { visibilityKey: "npcGuards", label: "Guards" },
+  isTeleporter: { visibilityKey: "npcTeleporters", label: "Teleporters" },
+  isVillager: { visibilityKey: "npcVillagers", label: "Villagers" },
+  isGuildManagement: {
+    visibilityKey: "npcGuildManagers",
+    label: "Guild Managers",
+  },
+  isBarber: { visibilityKey: "npcBarbers", label: "Barbers" },
+} as const satisfies Record<
+  keyof typeof NPC_ROLE_BITS,
+  { visibilityKey: keyof LayerVisibility; label: string }
+>;
+
 const npcFacets: FacetDef<NpcMapEntity>[] = Object.entries(NPC_ROLE_BITS).map(
-  ([id, bit]) => ({
-    id,
-    label: id
-      .replace(/^is/, "")
-      .replace(/[A-Z]/g, (letter) => ` ${letter}`)
-      .trim(),
-    mask: 1 << bit,
-    matches: (row) => (row.roleBitmask & (1 << bit)) !== 0,
-  }),
+  ([id, bit]) => {
+    const metadata = NPC_FACET_METADATA[id as keyof typeof NPC_ROLE_BITS];
+    return {
+      id,
+      visibilityKey: metadata.visibilityKey,
+      label: metadata.label,
+      mask: 1 << bit,
+      matches: (row) => (row.roleBitmask & (1 << bit)) !== 0,
+    };
+  },
 );
+
+export const NPC_FACETS = npcFacets;
 
 const npcDecorations = ({
   row,
@@ -226,7 +292,7 @@ interface SimpleMarkerOptions<TRow extends MarkerRow> {
   iconType: string;
   fallbackRadius: number;
   borderClass: string;
-  iconSize?: { base: number; min: number; max: number };
+  iconSize: IconSize;
   defaultVisible?: boolean;
   z: number;
   match: (row: TRow) => boolean;

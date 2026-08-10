@@ -1,4 +1,5 @@
 import type { LayerVisibility } from "$lib/types/map";
+import { NPC_FACETS } from "./marker-registry";
 
 /**
  * Toggle a layer's visibility, handling any synced layers.
@@ -23,32 +24,9 @@ export function toggleLayerVisibility(
 }
 
 /**
- * All NPC type visibility keys
+ * All NPC facet visibility keys, derived from the marker registry.
  */
-export const NPC_TYPE_KEYS: (keyof LayerVisibility)[] = [
-  "npcVendors",
-  "npcQuestGivers",
-  "npcRepair",
-  "npcBanks",
-  "npcInnkeepers",
-  "npcSoulBinders",
-  "npcSkillTrainers",
-  "npcVeteranTrainers",
-  "npcAttributeReset",
-  "npcFactionVendors",
-  "npcEssenceTraders",
-  "npcAugmenters",
-  "npcPriestesses",
-  "npcRenewalSages",
-  "npcAdventurerTasks",
-  "npcAdventurerVendors",
-  "npcMercenaryRecruiters",
-  "npcGuards",
-  "npcTeleporters",
-  "npcVillagers",
-  "npcGuildManagers",
-  "npcBarbers",
-];
+export const NPC_TYPE_KEYS = NPC_FACETS.map((facet) => facet.visibilityKey);
 
 /**
  * All crafting type visibility keys
