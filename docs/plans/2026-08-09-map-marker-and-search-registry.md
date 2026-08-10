@@ -910,7 +910,10 @@ and the assets already ship. Measured coverage from `visual_assets`, which is th
 table for exported imagery: item icons 1,651 of 1,671 items, skill icons 689 of 692,
 monster sprites 362 of 362, NPC sprites 234 of 234, pet sprites 5, plus 11 pet icons
 attached to whistle items. Achievements carry 38 images through their own
-`achievements.unlocked_icon_path` column. `website/static/images` already holds 3,028 files
+`achievements.unlocked_icon_path` column. The six mercenaries have no sprite and never
+will, because their appearance is composed at runtime from equipment; they resolve to the
+class emblem the game itself shows in its party HUD, per
+[2026-08-10-entity-artwork-pipeline](2026-08-10-entity-artwork-pipeline.md) §4.1. `website/static/images` already holds 3,028 files
 totalling 7,723,611 B, so nothing new is exported and nothing is added to the index
 payload beyond one column.
 
