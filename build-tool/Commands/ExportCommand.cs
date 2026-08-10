@@ -9,6 +9,7 @@ using BuildTool.Configuration;
 using BuildTool.Game;
 using BuildTool.HotRepl;
 using BuildTool.Output;
+using BuildTool.UnityDependencies;
 using Spectre.Console.Cli;
 
 namespace BuildTool.Commands;
@@ -20,6 +21,7 @@ public sealed class ExportCommand : AsyncCommand<ExportCommand.Settings>
     private readonly IProcessRunner _runner;
     private readonly bool _isMacOs;
     private readonly CommandResultStore _resultStore;
+    private readonly UnityDependenciesPreflight _unityDependenciesPreflight;
     private readonly Func<HotReplRunnerOptions, CancellationToken, Task<ExportRunnerResult>> _exportRunner;
 
     private readonly TimeSpan? _hotReplReadinessTimeout;
@@ -31,7 +33,8 @@ public sealed class ExportCommand : AsyncCommand<ExportCommand.Settings>
                 Path.Combine(Directory.GetCurrentDirectory(), "Local.props")),
             new CliWrapProcessRunner(),
             OperatingSystem.IsMacOS(),
-            new CommandResultStore())
+            new CommandResultStore(),
+            unityDependenciesPreflight: new UnityDependenciesPreflight())
     {
     }
 
@@ -43,13 +46,15 @@ public sealed class ExportCommand : AsyncCommand<ExportCommand.Settings>
         CommandResultStore? resultStore = null,
         TimeSpan? hotReplReadinessTimeout = null,
         TimeSpan? hotReplPollInterval = null,
-        Func<HotReplRunnerOptions, CancellationToken, Task<ExportRunnerResult>>? exportRunner = null)
+        Func<HotReplRunnerOptions, CancellationToken, Task<ExportRunnerResult>>? exportRunner = null,
+        UnityDependenciesPreflight? unityDependenciesPreflight = null)
     {
         _repoRoot                   = repoRoot;
         _config                     = config;
         _runner                     = runner;
         _isMacOs                    = isMacOs;
         _resultStore                = resultStore ?? new CommandResultStore();
+        _unityDependenciesPreflight = unityDependenciesPreflight ?? new UnityDependenciesPreflight();
         _hotReplReadinessTimeout    = hotReplReadinessTimeout;
         _hotReplPollInterval        = hotReplPollInterval;
         _exportRunner               = exportRunner ?? RunHotReplExportAsync;
@@ -64,6 +69,10 @@ public sealed class ExportCommand : AsyncCommand<ExportCommand.Settings>
         [CommandOption("--update")]
         [Description("Run steamcmd app_update before export.")]
         public bool Update { get; set; }
+
+        [CommandOption("--unity-version <VERSION>")]
+        [Description("Override the Unity version used for MelonLoader reference assemblies.")]
+        public string? UnityVersion { get; set; }
     }
 
     internal Task<int> RunAsync(Settings settings, CancellationToken cancellationToken = default) =>
@@ -88,6 +97,34 @@ public sealed class ExportCommand : AsyncCommand<ExportCommand.Settings>
             if (updateResult != 0) return updateResult;
         }
 
+        if (settings.UnityVersion is not null)
+        {
+            Console.Error.WriteLine(
+                $"WARNING: --unity-version {settings.UnityVersion} override supplied. "
+                + "MelonLoader reference assemblies may not match the running game.");
+        }
+        else
+        {
+            var preflight = await _unityDependenciesPreflight.CheckAsync(
+                _config.MelonLoaderPath,
+                cancellationToken);
+            if (preflight.Status == UnityDependenciesPreflightStatus.ReleaseMissing)
+            {
+                var message = MissingReleaseMessage(preflight);
+                Console.Error.WriteLine($"Error: {message}");
+                _resultStore.SetErrorDetails(new { message });
+                return ExitCodes.Unreachable;
+            }
+
+            if (preflight.Status == UnityDependenciesPreflightStatus.CheckInconclusive)
+            {
+                Console.Error.WriteLine(
+                    "Warning: Could not verify the MelonLoader UnityDependencies release "
+                    + $"{preflight.UnityVersion ?? "for the detected Unity version"}; proceeding. "
+                    + (preflight.Detail ?? "The upstream check was inconclusive."));
+            }
+        }
+
         // Truncate MelonLoader log for clean streaming
         var logPath = Path.Combine(_config.MelonLoaderPath, "Latest.log");
         try
@@ -104,8 +141,11 @@ public sealed class ExportCommand : AsyncCommand<ExportCommand.Settings>
         ProcessRequest request;
         try
         {
+            var gameArgs = settings.UnityVersion is null
+                ? Array.Empty<string>()
+                : new[] { "--melonloader.unityversion", settings.UnityVersion };
             request = GameLauncher.BuildLaunchRequest(
-                _config, Array.Empty<string>(), _isMacOs);
+                _config, gameArgs, _isMacOs);
         }
         catch (InvalidOperationException ex)
         {
@@ -247,6 +287,13 @@ public sealed class ExportCommand : AsyncCommand<ExportCommand.Settings>
 
         return null;
     }
+
+    private static string MissingReleaseMessage(UnityDependenciesPreflightResult result) =>
+        "MelonLoader UnityDependencies release check returned 404. "
+        + $"URL: {result.ReleaseUrl}. Unity version detected: {result.UnityVersion}. "
+        + "Upstream publishes these releases on a weekly cadence, so it will likely appear "
+        + "within days. Pass --unity-version <version> to override with a different published "
+        + "version at the cost of generating against mismatched reference assemblies.";
 
     private static async Task ObserveGameExitAsync(Task<ProcessResult> runTask)
     {

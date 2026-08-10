@@ -8,6 +8,7 @@ using BuildTool.Abstractions;
 using BuildTool.Configuration;
 using BuildTool.Game;
 using BuildTool.Output;
+using BuildTool.UnityDependencies;
 using Spectre.Console.Cli;
 
 namespace BuildTool.Commands;
@@ -20,13 +21,15 @@ public sealed class LaunchCommand : AsyncCommand<LaunchCommand.Settings>
     private readonly IProcessRunner _runner;
     private readonly bool _isMacOs;
     private readonly CommandResultStore _resultStore;
+    private readonly UnityDependenciesPreflight _unityDependenciesPreflight;
 
     public LaunchCommand()
         : this(
             LocalConfigLoader.Load(Path.Combine(Directory.GetCurrentDirectory(), "Local.props")),
             new CliWrapProcessRunner(),
             OperatingSystem.IsMacOS(),
-            new CommandResultStore())
+            new CommandResultStore(),
+            new UnityDependenciesPreflight())
     {
     }
 
@@ -34,12 +37,14 @@ public sealed class LaunchCommand : AsyncCommand<LaunchCommand.Settings>
         LocalConfig config,
         IProcessRunner runner,
         bool isMacOs,
-        CommandResultStore? resultStore = null)
+        CommandResultStore? resultStore = null,
+        UnityDependenciesPreflight? unityDependenciesPreflight = null)
     {
         _config = config;
         _runner = runner;
         _isMacOs = isMacOs;
         _resultStore = resultStore ?? new CommandResultStore();
+        _unityDependenciesPreflight = unityDependenciesPreflight ?? new UnityDependenciesPreflight();
     }
 
     public sealed class Settings : BaseSettings
@@ -48,12 +53,20 @@ public sealed class LaunchCommand : AsyncCommand<LaunchCommand.Settings>
         [Description("Block until the MelonLoader bootstrap banner appears.")]
         public bool Wait { get; set; }
 
+        [CommandOption("--unity-version <VERSION>")]
+        [Description("Override the Unity version used for MelonLoader reference assemblies.")]
+        public string? UnityVersion { get; set; }
+
     }
 
 
     public static Task<int> Invoke(LocalConfig config, IProcessRunner runner, bool isMacOs, string[] args)
     {
-        var settings = new Settings { Wait = HasFlag(args, "--wait") };
+        var settings = new Settings
+        {
+            Wait = HasFlag(args, "--wait"),
+            UnityVersion = GetOptionValue(args, "--unity-version"),
+        };
 
         return new LaunchCommand(config, runner, isMacOs).ExecuteAsync(
             null!, settings, CancellationToken.None);
@@ -74,7 +87,37 @@ public sealed class LaunchCommand : AsyncCommand<LaunchCommand.Settings>
             return ExitCodes.Unreachable;
         }
 
-        var gameArgs = Array.Empty<string>();
+        if (settings.UnityVersion is not null)
+        {
+            Console.Error.WriteLine(
+                $"WARNING: --unity-version {settings.UnityVersion} override supplied. "
+                + "MelonLoader reference assemblies may not match the running game.");
+        }
+        else
+        {
+            var preflight = await _unityDependenciesPreflight.CheckAsync(
+                _config.MelonLoaderPath,
+                cancellationToken);
+            if (preflight.Status == UnityDependenciesPreflightStatus.ReleaseMissing)
+            {
+                var message = MissingReleaseMessage(preflight);
+                Console.Error.WriteLine($"Error: {message}");
+                _resultStore.SetErrorDetails(new { message });
+                return ExitCodes.Unreachable;
+            }
+
+            if (preflight.Status == UnityDependenciesPreflightStatus.CheckInconclusive)
+            {
+                Console.Error.WriteLine(
+                    "Warning: Could not verify the MelonLoader UnityDependencies release "
+                    + $"{preflight.UnityVersion ?? "for the detected Unity version"}; proceeding. "
+                    + (preflight.Detail ?? "The upstream check was inconclusive."));
+            }
+        }
+
+        var gameArgs = settings.UnityVersion is null
+            ? Array.Empty<string>()
+            : new[] { "--melonloader.unityversion", settings.UnityVersion };
         ProcessRequest request;
         try
         {
@@ -246,6 +289,24 @@ public sealed class LaunchCommand : AsyncCommand<LaunchCommand.Settings>
         }
 
         return false;
+    }
+
+    private static string MissingReleaseMessage(UnityDependenciesPreflightResult result) =>
+        "MelonLoader UnityDependencies release check returned 404. "
+        + $"URL: {result.ReleaseUrl}. Unity version detected: {result.UnityVersion}. "
+        + "Upstream publishes these releases on a weekly cadence, so it will likely appear "
+        + "within days. Pass --unity-version <version> to override with a different published "
+        + "version at the cost of generating against mismatched reference assemblies.";
+
+    private static string? GetOptionValue(string[] args, string name)
+    {
+        for (var index = 0; index < args.Length - 1; index++)
+        {
+            if (string.Equals(args[index], name, StringComparison.OrdinalIgnoreCase))
+                return args[index + 1];
+        }
+
+        return null;
     }
 
     private static bool HasFlag(string[] args, string name) =>
