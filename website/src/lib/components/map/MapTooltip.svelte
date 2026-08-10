@@ -99,8 +99,11 @@
       case "scribing_table":
         return "Crafting Station";
       case "chest":
+        return "Chest";
       case "treasure":
+        return "Treasure";
       case "altar":
+        return "Altar";
       case "house":
         return "House";
       case "gathering_spark":
