@@ -143,16 +143,10 @@ const npcDecorations = ({
     : []),
 ];
 
-/**
- * Spike-only portal contract. The current map row omits these two values even
- * though portals.from_sub_zone_id/to_sub_zone_id exist in the source schema.
- * The production loader must supply them before portal search/wayfinding can
- * promise sub-zone display names.
- */
-export type PortalMarkerRow = PortalMapEntity & {
-  fromSubZoneName: string | null;
-  destinationSubZoneName: string | null;
-};
+type AnyMarkerDef =
+  | MarkerDef<MonsterMapEntity>
+  | MarkerDef<NpcMapEntity>
+  | MarkerDef<PortalMapEntity>;
 
 export const markerRegistry = {
   creatures: monsterMarker(
@@ -246,30 +240,45 @@ export const markerRegistry = {
         ? [{ id: `${markerId}:requirements`, kind: "radius" as const }]
         : []),
     ],
-    displayName: (row: PortalMarkerRow) =>
+    displayName: (row: PortalMapEntity) =>
       `${row.fromSubZoneName ?? "Unknown source"} → ${row.destinationSubZoneName ?? "Unknown destination"}`,
-  } satisfies MarkerDef<PortalMarkerRow>,
-} as const satisfies Record<string, MarkerDef<never>>;
+  } satisfies MarkerDef<PortalMapEntity>,
+} as const satisfies Record<string, AnyMarkerDef>;
 
 export type MarkerId = keyof typeof markerRegistry;
 
-export function resolveMarker(row: MarkerRow): MarkerId | null {
-  const matches = Object.values(markerRegistry)
-    .filter(
-      (marker) =>
-        marker.source === sourceForRow(row) && marker.match(row as never),
-    )
+const monsterMarkers: readonly MarkerDef<MonsterMapEntity>[] = [
+  markerRegistry.creatures,
+  markerRegistry.hunts,
+  markerRegistry.elites,
+  markerRegistry.fabled,
+  markerRegistry.bosses,
+];
+
+function chooseMarker<TRow extends MarkerRow>(
+  markers: readonly MarkerDef<TRow>[],
+  row: TRow,
+): MarkerId | null {
+  const matches = markers
+    .filter((marker) => marker.match(row))
     .sort((a, b) => b.precedence - a.precedence);
-  return (matches[0]?.id as MarkerId | undefined) ?? null;
+  const first = matches[0];
+  if (!first) return null;
+  if (matches[1]?.precedence === first.precedence) {
+    throw new Error(
+      `Marker precedence tie for ${first.source}: ${first.id} and ${matches[1].id}`,
+    );
+  }
+  return first.id as MarkerId;
 }
 
-function sourceForRow(row: MarkerRow): MarkerSource {
+export function resolveMarker(row: MarkerRow): MarkerId | null {
   switch (row.type) {
     case "npc":
-      return "npcs";
+      return chooseMarker([markerRegistry.npc], row);
     case "portal":
-      return "portals";
+      return chooseMarker([markerRegistry.portals], row);
     default:
-      return "monsters";
+      return chooseMarker(monsterMarkers, row);
   }
 }

@@ -1,10 +1,10 @@
 import { describe, expect, test } from "vitest";
-import {
-  markerRegistry,
-  resolveMarker,
-  type PortalMarkerRow,
-} from "./marker-registry";
-import type { MonsterMapEntity, NpcMapEntity } from "$lib/types/map";
+import { markerRegistry, resolveMarker } from "./marker-registry";
+import type {
+  MonsterMapEntity,
+  NpcMapEntity,
+  PortalMapEntity,
+} from "$lib/types/map";
 
 const monster = (flags: Partial<MonsterMapEntity> = {}): MonsterMapEntity => ({
   id: "spawn",
@@ -44,7 +44,7 @@ const monster = (flags: Partial<MonsterMapEntity> = {}): MonsterMapEntity => ({
   ...flags,
 });
 
-describe("marker registry spike", () => {
+describe("marker registry", () => {
   test("declares unique ids and paint order for all three hard sources", () => {
     const markers = Object.values(markerRegistry);
     expect(new Set(markers.map((marker) => marker.id)).size).toBe(
@@ -122,7 +122,7 @@ describe("marker registry spike", () => {
       killRequirementSpawnIds: null,
       fromSubZoneName: "From Sub-zone",
       destinationSubZoneName: "To Sub-zone",
-    } satisfies PortalMarkerRow;
+    } satisfies PortalMapEntity;
 
     expect(markerRegistry.portals.displayName?.(row)).toBe(
       "From Sub-zone → To Sub-zone",
