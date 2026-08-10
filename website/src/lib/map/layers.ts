@@ -736,7 +736,7 @@ export function createLayers(
   const portalArcsLayer = new LineLayer({
     id: "portal-arcs",
     data: filtered.portalsWithDestinations,
-    visible: visibility.portals,
+    visible: visibility.portalArcs,
     getSourcePosition: (d: PortalMapEntity) => d.position,
     getTargetPosition: (d: PortalMapEntity) => d.destination,
     getColor: (d: PortalMapEntity) =>
@@ -1123,6 +1123,12 @@ export function createLayers(
         return "gathering_mineral";
       case "gathering_spark":
         return "gathering_spark";
+      case "gathering_fish":
+        return "gathering_fish";
+      case "gathering_other":
+        return "gathering_other";
+      case "house":
+        return "house";
       case "alchemy_table":
         return "alchemy_table";
       case "scribing_table":
