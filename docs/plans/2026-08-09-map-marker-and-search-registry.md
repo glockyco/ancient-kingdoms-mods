@@ -815,7 +815,7 @@ exactly the 2,909 rows in today's 14 FTS tables plus 692 skills, so it inherits 
 idea of what exists. The site has 14 entity detail routes. A global palette that cannot
 find a class, a faction, a mercenary, a summon, a recipe or an achievement is not a global
 palette. Adding them costs, from the generated home counts: recipes 155, achievements 38,
-classes 6, factions 6, mercenaries 6, summons 5 — **216 rows, 7.4% more**, for the
+classes 6, factions 6, mercenaries 6, summons 5 — **216 rows, 6.0% more**, for the
 difference between covering the map and covering the site. Professions are 12 static pages
 (`build-sitemap-manifest.mjs:45-58`) while `home-counts.ts` reports 13, so that
 discrepancy must be resolved before they are indexed rather than papered over. Traps and
