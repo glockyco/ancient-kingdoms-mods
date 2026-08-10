@@ -4,6 +4,7 @@ import {
   MARKER_COLORS,
   MARKER_DEFAULT_VISIBILITY,
   MARKER_ICON_SIZES,
+  MARKER_ICON_TYPES,
   MARKER_ICONS,
   MARKER_LABELS,
   MARKER_PLURAL_LABELS,
@@ -95,6 +96,7 @@ describe("marker registry", () => {
     for (const record of [
       MARKER_COLORS,
       MARKER_ICONS,
+      MARKER_ICON_TYPES,
       MARKER_ICON_SIZES,
       MARKER_RADII,
       MARKER_BORDER_CLASSES,

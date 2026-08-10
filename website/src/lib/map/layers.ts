@@ -23,6 +23,7 @@ import { isAnyNpcTypeVisible } from "./visibility";
 import {
   MARKER_COLORS,
   MARKER_ICON_SIZES,
+  MARKER_ICON_TYPES,
   MARKER_RADII,
   resolveMarker,
   type MarkerId,
@@ -322,7 +323,6 @@ export function createLayers(
     markerId: MarkerId;
     data: T[];
     visible: boolean;
-    iconType: string;
     color:
       | readonly [number, number, number]
       | readonly [number, number, number, number];
@@ -337,6 +337,7 @@ export function createLayers(
     updateTriggers?: Record<string, any>;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   }): any {
+    const iconType = MARKER_ICON_TYPES[config.markerId];
     const baseProps = {
       id: config.id,
       data: config.data,
@@ -360,16 +361,16 @@ export function createLayers(
     const sizeConfig = MARKER_ICON_SIZES[config.markerId];
 
     if (iconAtlas) {
-      if (!iconAtlas.mapping[config.iconType]) {
+      if (!iconAtlas.mapping[iconType]) {
         throw new Error(
-          `Unknown icon type "${config.iconType}" - not found in icon atlas`,
+          `Unknown icon type "${iconType}" - not found in icon atlas`,
         );
       }
       return new IconLayer({
         ...baseProps,
         iconAtlas: iconAtlas.atlas,
         iconMapping: iconAtlas.mapping,
-        getIcon: () => config.iconType,
+        getIcon: () => iconType,
         getSize: sizeConfig.base,
         sizeUnits: "pixels",
         sizeMinPixels: sizeConfig.min,
@@ -518,7 +519,6 @@ export function createLayers(
     markerId: "gatheringPlants",
     data: filtered.plants,
     visible: visibility.gatheringPlants,
-    iconType: "gathering_plant",
     color: MARKER_COLORS.gatheringPlants,
     radius: MARKER_RADII.gatheringPlants,
     extensions: [levelZoneFilterExt],
@@ -538,7 +538,6 @@ export function createLayers(
     markerId: "gatheringMinerals",
     data: filtered.minerals,
     visible: visibility.gatheringMinerals,
-    iconType: "gathering_mineral",
     color: MARKER_COLORS.gatheringMinerals,
     radius: MARKER_RADII.gatheringMinerals,
     extensions: [levelZoneFilterExt],
@@ -558,7 +557,6 @@ export function createLayers(
     markerId: "gatheringFishing",
     data: filtered.fishingSpots,
     visible: visibility.gatheringFishing,
-    iconType: "gathering_fish",
     color: MARKER_COLORS.gatheringFishing,
     radius: MARKER_RADII.gatheringFishing,
     extensions: [levelZoneFilterExt],
@@ -578,7 +576,6 @@ export function createLayers(
     markerId: "gatheringSparks",
     data: filtered.sparks,
     visible: visibility.gatheringSparks,
-    iconType: "gathering_spark",
     color: MARKER_COLORS.gatheringSparks,
     radius: MARKER_RADII.gatheringSparks,
     extensions: [zoneFilterExt],
@@ -595,7 +592,6 @@ export function createLayers(
     markerId: "gatheringOther",
     data: filtered.otherGathering,
     visible: visibility.gatheringOther,
-    iconType: "gathering_other",
     color: MARKER_COLORS.gatheringOther,
     radius: MARKER_RADII.gatheringOther,
     extensions: [zoneFilterExt],
@@ -611,7 +607,6 @@ export function createLayers(
     markerId: "alchemyTables",
     data: filtered.alchemyTables,
     visible: visibility.alchemyTables,
-    iconType: "alchemy_table",
     color: MARKER_COLORS.alchemyTables,
     radius: MARKER_RADII.alchemyTables,
     extensions: [zoneFilterExt],
@@ -627,7 +622,6 @@ export function createLayers(
     markerId: "forges",
     data: filtered.forges,
     visible: visibility.forges,
-    iconType: "crafting_station",
     color: MARKER_COLORS.forges,
     radius: MARKER_RADII.forges,
     extensions: [zoneFilterExt],
@@ -643,7 +637,6 @@ export function createLayers(
     markerId: "cookingOvens",
     data: filtered.cookingOvens,
     visible: visibility.cookingOvens,
-    iconType: "cooking_oven",
     color: MARKER_COLORS.cookingOvens,
     radius: MARKER_RADII.cookingOvens,
     extensions: [zoneFilterExt],
@@ -659,7 +652,6 @@ export function createLayers(
     markerId: "scribingTables",
     data: filtered.scribingTables,
     visible: visibility.scribingTables,
-    iconType: "scribing_table",
     color: MARKER_COLORS.scribingTables,
     radius: MARKER_RADII.scribingTables,
     extensions: [zoneFilterExt],
@@ -675,7 +667,6 @@ export function createLayers(
     markerId: "chests",
     data: filtered.chests,
     visible: visibility.chests,
-    iconType: "chest",
     color: MARKER_COLORS.chests,
     radius: MARKER_RADII.chests,
     extensions: [zoneFilterExt],
@@ -691,7 +682,6 @@ export function createLayers(
     markerId: "houses",
     data: filtered.houses,
     visible: visibility.houses,
-    iconType: "house",
     color: MARKER_COLORS.houses,
     radius: MARKER_RADII.houses,
     extensions: [zoneFilterExt],
@@ -707,7 +697,6 @@ export function createLayers(
     markerId: "treasure",
     data: filtered.treasure,
     visible: visibility.treasure,
-    iconType: "treasure",
     color: MARKER_COLORS.treasure,
     radius: MARKER_RADII.treasure,
     extensions: [zoneFilterExt],
@@ -723,7 +712,6 @@ export function createLayers(
     markerId: "altars",
     data: filtered.altars,
     visible: visibility.altars,
-    iconType: "altar",
     color: MARKER_COLORS.altars,
     radius: MARKER_RADII.altars,
     extensions: [zoneFilterExt],
@@ -739,7 +727,6 @@ export function createLayers(
     markerId: "traps",
     data: filtered.traps,
     visible: visibility.traps,
-    iconType: "trap",
     color: MARKER_COLORS.traps,
     radius: MARKER_RADII.traps,
     extensions: [zoneFilterExt],
@@ -842,7 +829,6 @@ export function createLayers(
     markerId: "portals",
     data: filtered.portals,
     visible: visibility.portals,
-    iconType: "portal",
     color: MARKER_COLORS.portals,
     radius: MARKER_RADII.portals,
     extensions: [zoneFilterExt],
@@ -1051,7 +1037,6 @@ export function createLayers(
     markerId: "creatures",
     data: filtered.creatures,
     visible: visibility.creatures,
-    iconType: "monster",
     color: MARKER_COLORS.creatures,
     radius: MARKER_RADII.creatures,
     extensions: [levelZoneFilterExt],
@@ -1071,7 +1056,6 @@ export function createLayers(
     markerId: "hunts",
     data: filtered.hunts,
     visible: visibility.hunts,
-    iconType: "hunt",
     color: MARKER_COLORS.hunts,
     radius: MARKER_RADII.hunts,
     extensions: [levelZoneFilterExt],
@@ -1091,7 +1075,6 @@ export function createLayers(
     markerId: "elites",
     data: filtered.elites,
     visible: visibility.elites,
-    iconType: "elite",
     color: MARKER_COLORS.elites,
     radius: MARKER_RADII.elites,
     extensions: [levelZoneFilterExt],
@@ -1111,7 +1094,6 @@ export function createLayers(
     markerId: "fabled",
     data: filtered.fabled,
     visible: visibility.fabled,
-    iconType: "fabled",
     color: MARKER_COLORS.fabled,
     radius: MARKER_RADII.fabled,
     extensions: [levelZoneFilterExt],
@@ -1131,7 +1113,6 @@ export function createLayers(
     markerId: "bosses",
     data: filtered.bosses,
     visible: visibility.bosses,
-    iconType: "boss",
     color: MARKER_COLORS.bosses,
     radius: MARKER_RADII.bosses,
     extensions: [levelZoneFilterExt],
@@ -1151,7 +1132,6 @@ export function createLayers(
     markerId: "npc",
     data: filtered.npcs,
     visible: isAnyNpcTypeVisible(visibility),
-    iconType: "npc",
     color: MARKER_COLORS.npc,
     radius: MARKER_RADII.npc,
     extensions: [levelZoneFilterExt],

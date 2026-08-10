@@ -78,6 +78,7 @@ export interface MarkerDef<TRow extends MarkerRow = MarkerRow> {
   pluralLabel: string;
   color: RGB;
   icon: IconNode;
+  iconType: string;
   iconSize: { base: number; min: number; max: number };
   fallbackRadius: number;
   borderClass: string;
@@ -116,6 +117,14 @@ const monsterDecorations = ({
     ? [{ id: `${markerId}:relation`, kind: "arc" as const }]
     : []),
 ];
+
+const MONSTER_ICON_TYPES = {
+  creatures: "monster",
+  bosses: "boss",
+  fabled: "fabled",
+  elites: "elite",
+  hunts: "hunt",
+} as const;
 
 const MONSTER_PRESENTATION = {
   creatures: {
@@ -173,6 +182,7 @@ const monsterMarker = (
   pluralLabel,
   color,
   icon,
+  iconType: MONSTER_ICON_TYPES[id],
   iconSize: MONSTER_PRESENTATION[id].iconSize,
   fallbackRadius: MONSTER_PRESENTATION[id].fallbackRadius,
   borderClass: MONSTER_PRESENTATION[id].borderClass,
@@ -213,6 +223,7 @@ interface SimpleMarkerOptions<TRow extends MarkerRow> {
   pluralLabel: string;
   color: RGB;
   icon: IconNode;
+  iconType: string;
   fallbackRadius: number;
   borderClass: string;
   iconSize?: { base: number; min: number; max: number };
@@ -229,6 +240,7 @@ const simpleMarker = <TRow extends MarkerRow>({
   pluralLabel,
   color,
   icon,
+  iconType,
   fallbackRadius,
   borderClass,
   iconSize = { base: 20, min: 18, max: 44 },
@@ -248,6 +260,7 @@ const simpleMarker = <TRow extends MarkerRow>({
   pluralLabel,
   color,
   icon,
+  iconType,
   iconSize,
   fallbackRadius,
   borderClass,
@@ -324,6 +337,7 @@ export const markerRegistry = {
     pluralLabel: "NPCs",
     color: [96, 165, 250],
     icon: User,
+    iconType: "npc",
     iconSize: { base: 18, min: 16, max: 40 },
     fallbackRadius: 5,
     borderClass: "border-l-blue-500",
@@ -345,6 +359,7 @@ export const markerRegistry = {
     pluralLabel: "Portals",
     color: [34, 197, 94],
     icon: CircleDot,
+    iconType: "portal",
     iconSize: { base: 22, min: 20, max: 48 },
     fallbackRadius: 6,
     borderClass: "border-l-green-500",
@@ -372,6 +387,7 @@ export const markerRegistry = {
     pluralLabel: "Chests",
     color: [14, 165, 233],
     icon: Box,
+    iconType: "chest",
     fallbackRadius: 5,
     borderClass: "border-l-sky-500",
     z: 800,
@@ -384,6 +400,7 @@ export const markerRegistry = {
     pluralLabel: "Treasure",
     color: [20, 184, 166],
     icon: Shovel,
+    iconType: "treasure",
     fallbackRadius: 5,
     borderClass: "border-l-teal-500",
     z: 810,
@@ -396,6 +413,7 @@ export const markerRegistry = {
     pluralLabel: "Altars",
     color: [249, 115, 22],
     icon: Flame,
+    iconType: "altar",
     fallbackRadius: 7,
     borderClass: "border-l-orange-500",
     defaultVisible: true,
@@ -409,6 +427,7 @@ export const markerRegistry = {
     pluralLabel: "Traps",
     color: [225, 29, 72],
     icon: TriangleAlert,
+    iconType: "trap",
     fallbackRadius: 5,
     borderClass: "border-l-rose-600",
     defaultVisible: true,
@@ -422,6 +441,7 @@ export const markerRegistry = {
     pluralLabel: "Houses",
     color: [245, 158, 11],
     icon: Home,
+    iconType: "house",
     fallbackRadius: 6,
     borderClass: "border-l-amber-500",
     z: 840,
@@ -434,6 +454,7 @@ export const markerRegistry = {
     pluralLabel: "Plants",
     color: [132, 204, 22],
     icon: Leaf,
+    iconType: "gathering_plant",
     fallbackRadius: 3,
     borderClass: "border-l-lime-500",
     z: 900,
@@ -446,6 +467,7 @@ export const markerRegistry = {
     pluralLabel: "Minerals",
     color: [23, 37, 84],
     icon: Pickaxe,
+    iconType: "gathering_mineral",
     fallbackRadius: 3,
     borderClass: "border-l-blue-950",
     z: 910,
@@ -458,6 +480,7 @@ export const markerRegistry = {
     pluralLabel: "Sparks",
     color: [168, 85, 247],
     icon: Sparkles,
+    iconType: "gathering_spark",
     fallbackRadius: 3,
     borderClass: "border-l-purple-500",
     z: 920,
@@ -470,6 +493,7 @@ export const markerRegistry = {
     pluralLabel: "Fishing Spots",
     color: [6, 182, 212],
     icon: Fish,
+    iconType: "gathering_fish",
     fallbackRadius: 3,
     borderClass: "border-l-cyan-500",
     z: 930,
@@ -486,6 +510,7 @@ export const markerRegistry = {
     pluralLabel: "Resources",
     color: [156, 163, 175],
     icon: Package,
+    iconType: "gathering_other",
     fallbackRadius: 3,
     borderClass: "border-l-gray-400",
     z: 940,
@@ -498,6 +523,7 @@ export const markerRegistry = {
     pluralLabel: "Alchemy Tables",
     color: [139, 92, 246],
     icon: FlaskConical,
+    iconType: "alchemy_table",
     fallbackRadius: 5,
     borderClass: "border-l-violet-500",
     z: 1000,
@@ -510,6 +536,7 @@ export const markerRegistry = {
     pluralLabel: "Forges",
     color: [139, 92, 246],
     icon: Hammer,
+    iconType: "crafting_station",
     fallbackRadius: 5,
     borderClass: "border-l-violet-500",
     z: 1010,
@@ -522,6 +549,7 @@ export const markerRegistry = {
     pluralLabel: "Cooking Ovens",
     color: [139, 92, 246],
     icon: ChefHat,
+    iconType: "cooking_oven",
     fallbackRadius: 5,
     borderClass: "border-l-violet-500",
     z: 1020,
@@ -534,6 +562,7 @@ export const markerRegistry = {
     pluralLabel: "Scribing Tables",
     color: [168, 85, 247],
     icon: Scroll,
+    iconType: "scribing_table",
     fallbackRadius: 5,
     borderClass: "border-l-purple-500",
     z: 1030,
@@ -571,6 +600,9 @@ function deriveMarkerRecord<T>(
 
 export const MARKER_COLORS = deriveMarkerRecord((marker) => marker.color);
 export const MARKER_ICONS = deriveMarkerRecord((marker) => marker.icon);
+export const MARKER_ICON_TYPES = deriveMarkerRecord(
+  (marker) => marker.iconType,
+);
 export const MARKER_ICON_SIZES = deriveMarkerRecord(
   (marker) => marker.iconSize,
 );
