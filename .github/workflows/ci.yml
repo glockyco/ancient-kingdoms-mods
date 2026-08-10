@@ -34,15 +34,17 @@ jobs:
           echo "OK: root pnpm-lock.yaml is the only lockfile."
 
   # `pnpm install --frozen-lockfile` doubles as the drift gate: it fails if the
-  # lockfile is out of sync with any package.json. `check`, build, test, and knip are
-  # omitted here: svelte-check, the build, five vitest suites, and knip's import
-  # resolution all need DB-derived artifacts absent from a clean checkout — the
-  # untracked website/static/compendium.db and src/lib/generated/home-counts.ts
-  # (generated from it). They stay enforced locally via the lefthook pre-commit hook.
-  # ESLint is not type-aware and ignores the generated dir, and Prettier only parses
-  # text, so both run without them.
+  # lockfile is out of sync with any package.json.
+  #
+  # Two things stay local, both because they need website/static/compendium.db,
+  # which is generated from 128 MB of untracked exported-data:
+  #   - `build`, which prerenders every detail page from it;
+  #   - the `*.db.test.ts` suites, which assert against real game data.
+  # Both remain enforced by the lefthook pre-commit hook. Everything else runs
+  # here: src/lib/generated/home-counts.ts is committed, so svelte-check, knip
+  # and the remaining suites need nothing generated.
   website:
-    name: Website (prettier + lint)
+    name: Website (prettier + lint + check + test + knip)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -60,6 +62,12 @@ jobs:
         run: pnpm --filter website format:check
       - name: Lint
         run: pnpm --filter website lint
+      - name: Type-check
+        run: pnpm --filter website check
+      - name: Tests
+        run: pnpm --filter website test:nodb
+      - name: Unused exports and dependencies
+        run: pnpm exec knip
 
   build-pipeline:
     name: Build pipeline (ruff + mypy + vulture + pytest)
