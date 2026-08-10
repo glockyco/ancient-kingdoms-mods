@@ -4,7 +4,7 @@ type: spec
 status: draft
 created: 2026-07-31
 parent: 2026-07-31-ancient-kingdoms-overview
-superseded_by:
+superseded_by: 2026-08-09-map-marker-and-search-registry
 archived:
 ---
 

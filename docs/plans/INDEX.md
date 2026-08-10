@@ -17,7 +17,8 @@
 - **Detail-Page Title Suffixes** [spec] `2026-07-31-detail-page-title-suffixes` ← 2026-07-31-ancient-kingdoms-overview
 - **Entity Image Surfacing** [spec] `2026-07-31-entity-image-surfacing` ← 2026-07-31-ancient-kingdoms-overview
 - **Entity Structured Data** [spec] `2026-07-31-entity-structured-data` ← 2026-07-31-ancient-kingdoms-overview
-- **Global Entity Search** [spec] `2026-07-31-global-entity-search` ← 2026-07-31-ancient-kingdoms-overview
+- **Global Entity Search** [spec] `2026-07-31-global-entity-search` → superseded by 2026-08-09-map-marker-and-search-registry
 - **Per-Entity Open Graph Images** [spec] `2026-07-31-per-entity-og-images` ← 2026-07-31-ancient-kingdoms-overview
+- **Map Marker Registry, Wayfinding, and First-Class Search** [spec] `2026-08-09-map-marker-and-search-registry` ← 2026-07-31-ancient-kingdoms-overview
 
 _26 archived — see `docs/plans/archive/`._
