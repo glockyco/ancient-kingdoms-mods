@@ -65,3 +65,8 @@ server-scripts-*/
 
 # OMP agent session state (local only)
 .omp/
+
+# Nix / direnv
+.direnv/
+result
+result-*

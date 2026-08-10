@@ -89,10 +89,29 @@ The mod catalog includes player-facing utilities, data exporters, and developmen
 - MelonLoader 0.7.3 installed for Ancient Kingdoms, with generated IL2CPP assemblies available under the game install.
 - .NET SDK capable of running the `net10.0` build tool. The mods themselves target `net6.0` for MelonLoader.
 - Python 3.12 or newer and `uv` for the build pipeline.
-- pnpm 10.22.0 for the root workspace and website.
+- pnpm 10.34.5 for the root workspace and website, as pinned by `packageManager` in `package.json`.
 - On macOS, CrossOver or another Wine setup is needed to launch the Windows game for automated export workflows. `build-tool setup` can detect common CrossOver paths.
 
 ## First-time setup
+
+### Toolchain
+
+`flake.nix` provides Node, pnpm, Python, uv, the .NET 10 SDK and sqlite at the
+versions this repo expects:
+
+```bash
+nix develop
+```
+
+With [direnv](https://direnv.net) and
+[nix-direnv](https://github.com/nix-community/nix-direnv), `direnv allow` enters
+the shell automatically on `cd`.
+
+Everything below assumes you are inside that shell, or are prefixing commands
+with `nix develop --command`. The game itself, CrossOver/Wine, MelonLoader and
+the generated IL2CPP assemblies are machine-local and stay outside it.
+
+### Dependencies
 
 Install JavaScript dependencies:
 
