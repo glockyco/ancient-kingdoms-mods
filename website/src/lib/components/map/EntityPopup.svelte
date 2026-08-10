@@ -410,6 +410,19 @@
     </div>
   {/if}
 
+  {#if entity.type === "npc" && npcDetails?.visualAsset}
+    {@const npcVisualAsset = npcDetails.visualAsset}
+    <div class="flex justify-center pb-2">
+      <img
+        src={`${base}/${npcVisualAsset.publicPath}`}
+        alt={`${getDisplayName(entity)} NPC portrait`}
+        width={npcVisualAsset.width}
+        height={npcVisualAsset.height}
+        class="h-auto max-h-28 w-auto max-w-full object-contain [image-rendering:pixelated]"
+      />
+    </div>
+  {/if}
+
   <!-- NPC Roles (shown first, before Zone) -->
   {#if entity.type === "npc"}
     {@const npc = entity as NpcMapEntity}

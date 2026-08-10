@@ -1,5 +1,6 @@
 import Database from "better-sqlite3";
 import { DB_STATIC_PATH } from "$lib/constants/constants";
+import { entityImageUrl } from "$lib/utils/entityImage";
 import {
   achievementGroupDetails,
   achievementGroupOrder,
@@ -22,8 +23,7 @@ export interface AchievementPageRecord {
   description: string;
   hidden: boolean;
   displayOrder: number;
-  unlockedIconPath: string;
-  lockedIconPath: string;
+  iconPath: string;
   relationships: AchievementRelationship[];
   searchText: string;
 }
@@ -46,8 +46,7 @@ interface AchievementRow {
   description: string;
   hidden: number;
   display_order: number;
-  unlocked_icon_path: string;
-  locked_icon_path: string;
+  public_path: string | null;
 }
 
 export function getAchievementsPageData(
@@ -63,12 +62,15 @@ export function getAchievementsPageData(
           id,
           name,
           description,
-          hidden,
-          display_order,
-          unlocked_icon_path,
-          locked_icon_path
-        FROM achievements
-        ORDER BY display_order
+          a.hidden,
+          a.display_order,
+          va.public_path
+        FROM achievements a
+        LEFT JOIN visual_assets va
+          ON va.domain = 'achievement'
+         AND va.entity_id = a.id
+         AND va.kind = 'icon'
+        ORDER BY a.display_order
       `,
       )
       .all() as AchievementRow[];
@@ -106,6 +108,15 @@ export function getAchievementsPageData(
     grouped.set(groupId, []);
   }
 
+  const missingArtwork = rows
+    .filter((row) => row.public_path === null)
+    .map((row) => row.id);
+  if (missingArtwork.length > 0) {
+    throw new Error(
+      `Achievements have no visual asset: ${missingArtwork.join(", ")}`,
+    );
+  }
+
   for (const row of rows) {
     const relationships = achievementRelationships[row.id] ?? [];
     const hidden = row.hidden === 1;
@@ -120,8 +131,7 @@ export function getAchievementsPageData(
       description,
       hidden,
       displayOrder: achievementOrderIndex[row.id],
-      unlockedIconPath: row.unlocked_icon_path,
-      lockedIconPath: row.locked_icon_path,
+      iconPath: entityImageUrl("achievement", row.id, "icon"),
       relationships,
       searchText: [
         name,

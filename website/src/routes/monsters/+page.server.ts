@@ -18,6 +18,7 @@ export const load: PageServerLoad = (): MonstersPageData => {
     SELECT
       m.id,
       m.name,
+      va.public_path as visual_public_path,
       m.level,
       m.level_min,
       m.level_max,
@@ -51,6 +52,10 @@ export const load: PageServerLoad = (): MonstersPageData => {
         WHERE ms.monster_id = m.id AND ms.spawn_type IN ('regular', 'summon')
       ) THEN 1 ELSE 0 END as no_respawn
     FROM monsters m
+    LEFT JOIN visual_assets va
+      ON va.domain = 'monster'
+     AND va.entity_id = m.id
+     AND va.kind = 'primary'
     ORDER BY m.level DESC, m.name ASC
   `,
     )

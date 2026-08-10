@@ -376,6 +376,7 @@ export interface MonsterDetailData {
 export interface MonsterListView extends RespawnInfo {
   id: string;
   name: string;
+  visual_public_path: string | null;
   level: number;
   level_min: number;
   level_max: number;

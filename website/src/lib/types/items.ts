@@ -8,6 +8,7 @@ import type { ItemSources, ItemUsages } from "$lib/types/item-sources";
 export interface ItemListView {
   id: string;
   name: string;
+  visual_public_path: string | null;
   item_type: string;
   quality: number;
   level_required: number;

@@ -24,6 +24,7 @@ export const load: PageServerLoad = () => {
   const items = rawItems.map((item) => ({
     id: item.id,
     name: item.name,
+    visual_public_path: item.visual_public_path,
     item_type: item.item_type,
     quality: item.quality,
     level_required: item.level_required,

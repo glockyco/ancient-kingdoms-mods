@@ -1,4 +1,8 @@
 <script lang="ts">
+  import { base } from "$app/paths";
+  import EntityIcon from "$lib/components/EntityIcon.svelte";
+  import Sparkles from "@lucide/svelte/icons/sparkles";
+  import { entityImageUrl } from "$lib/utils/entityImage";
   import {
     DataTable,
     DataTableFacetedFilter,
@@ -12,7 +16,6 @@
   import Seo from "$lib/components/Seo.svelte";
   import JsonLd from "$lib/components/JsonLd.svelte";
   import { buildCollectionPage } from "$lib/seo/jsonld";
-  import Sparkles from "@lucide/svelte/icons/sparkles";
   import { getClassConfig } from "$lib/utils/classes";
   import { petHref } from "$lib/utils/pets";
   import SkillEffect from "$lib/components/SkillEffect.svelte";
@@ -136,9 +139,17 @@
   {#if cell.column.id === "name"}
     <a
       href="/skills/{row.original.id}"
-      class="text-blue-600 dark:text-blue-400 hover:underline truncate block"
+      class="flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:underline truncate"
     >
-      {row.original.name}
+      <EntityIcon
+        src={row.original.visual_public_path
+          ? `${base}${entityImageUrl("skill", row.original.id, "icon")}`
+          : null}
+        alt={`${row.original.name} icon`}
+        fallback={Sparkles}
+        size={28}
+      />
+      <span class="truncate">{row.original.name}</span>
     </a>
   {:else if cell.column.id === "skill_type"}
     <span class="text-muted-foreground capitalize truncate block"

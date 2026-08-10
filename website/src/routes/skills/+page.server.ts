@@ -10,6 +10,7 @@ export const prerender = true;
 interface SkillRow {
   id: string;
   name: string;
+  visual_public_path: string | null;
   skill_type: string;
   tier: number;
   max_level: number;
@@ -152,6 +153,7 @@ export const load: PageServerLoad = (): SkillsPageData => {
     return {
       id: row.id,
       name: row.name,
+      visual_public_path: row.visual_public_path,
       skill_type: row.skill_type,
       tier: row.tier,
       max_level: row.max_level,

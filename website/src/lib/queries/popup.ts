@@ -110,6 +110,7 @@ export interface NpcPopupDetails {
   quests: PopupQuestInfo[];
   itemsSold: PopupItemSoldInfo[];
   worldBosses: PopupWorldBoss[];
+  visualAsset: MonsterPopupVisualAsset | null;
 }
 
 /**
@@ -337,10 +338,31 @@ export async function loadNpcPopupDetails(
   const [npc] = await query<{
     quests_offered: string | null;
     items_sold: string | null;
-  }>(`SELECT quests_offered, items_sold FROM npcs WHERE id = ?`, [npcId]);
+    visual_public_path: string | null;
+    visual_width: number | null;
+    visual_height: number | null;
+    visual_source_type: string | null;
+  }>(
+    `
+    SELECT
+      n.quests_offered,
+      n.items_sold,
+      va.public_path as visual_public_path,
+      va.width as visual_width,
+      va.height as visual_height,
+      va.source_type as visual_source_type
+    FROM npcs n
+    LEFT JOIN visual_assets va
+      ON va.domain = 'npc'
+     AND va.entity_id = n.id
+     AND va.kind = 'primary'
+    WHERE n.id = ?
+    `,
+    [npcId],
+  );
 
   if (!npc) {
-    return { quests: [], itemsSold: [], worldBosses: [] };
+    return { quests: [], itemsSold: [], worldBosses: [], visualAsset: null };
   }
 
   let quests: PopupQuestInfo[] = [];
@@ -407,7 +429,19 @@ export async function loadNpcPopupDetails(
     worldBosses = bosses;
   }
 
-  return { quests, itemsSold, worldBosses };
+  return {
+    quests,
+    itemsSold,
+    worldBosses,
+    visualAsset: npc.visual_public_path
+      ? {
+          publicPath: npc.visual_public_path,
+          width: npc.visual_width ?? 0,
+          height: npc.visual_height ?? 0,
+          sourceType: npc.visual_source_type ?? "",
+        }
+      : null,
+  };
 }
 
 interface ChestDropRow {

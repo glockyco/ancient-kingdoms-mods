@@ -107,7 +107,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
     <div class="achievement-field" aria-hidden="true">
       {#each showcase as achievement (achievement.id)}
         <img
-          src={achievement.unlockedIconPath}
+          src={achievement.iconPath}
           alt=""
           class="achievement-field-icon"
           width="64"
@@ -235,7 +235,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
                   <article class="grid grid-cols-[4rem_minmax(0,1fr)] gap-4">
                     <div class="achievement-icon-frame h-16 w-16 self-start">
                       <img
-                        src={achievement.unlockedIconPath}
+                        src={achievement.iconPath}
                         alt=""
                         width="64"
                         height="64"

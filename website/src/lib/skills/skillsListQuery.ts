@@ -11,6 +11,7 @@
 export const SKILLS_LIST_QUERY = `SELECT
       s.id,
       s.name,
+      va.public_path as visual_public_path,
       s.skill_type,
       s.tier,
       s.max_level,
@@ -105,4 +106,8 @@ export const SKILLS_LIST_QUERY = `SELECT
     FROM skills s
     LEFT JOIN monsters sm ON sm.id = s.summoned_monster_id
     LEFT JOIN pets pet_lookup ON lower(pet_lookup.name) = lower(s.pet_prefab_name)
+    LEFT JOIN visual_assets va
+      ON va.domain = 'skill'
+     AND va.entity_id = s.id
+     AND va.kind = 'icon'
     ORDER BY s.tier ASC, s.name ASC`;

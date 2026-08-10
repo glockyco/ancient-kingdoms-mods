@@ -191,6 +191,7 @@ export interface NpcDetailPageData {
 export interface NpcListView {
   id: string;
   name: string;
+  visual_public_path: string | null;
   faction: string | null;
   race: string | null;
   roles: NpcRoles;

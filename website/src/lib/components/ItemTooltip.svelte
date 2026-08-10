@@ -1,6 +1,7 @@
 <script lang="ts">
   import { base } from "$app/paths";
   import { parseItemTooltip } from "$lib/utils/itemTooltip";
+  import { entityImageUrl } from "$lib/utils/entityImage";
 
   interface Props {
     itemId: string;
@@ -10,7 +11,7 @@
   let { itemId, tooltipHtml }: Props = $props();
 
   const iconBackgroundImage = $derived(
-    `url("${base}/images/items/${itemId.replaceAll("-", "_")}/icon.png")`,
+    `url("${base}${entityImageUrl("item", itemId, "icon")}")`,
   );
 
   const parsedTooltip = $derived(parseItemTooltip(tooltipHtml));

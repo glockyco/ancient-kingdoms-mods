@@ -14,6 +14,7 @@ export interface LinearValue {
 export interface SkillListView {
   id: string;
   name: string;
+  visual_public_path: string | null;
   skill_type: string;
   tier: number;
   max_level: number;

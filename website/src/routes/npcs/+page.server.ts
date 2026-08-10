@@ -16,9 +16,19 @@ export const load: PageServerLoad = (): NpcsPageData => {
   const npcsRaw = db
     .prepare(
       `
-    SELECT id, name, faction, race, roles
-    FROM npcs
-    ORDER BY name
+    SELECT
+      n.id,
+      n.name,
+      n.faction,
+      n.race,
+      n.roles,
+      va.public_path as visual_public_path
+    FROM npcs n
+    LEFT JOIN visual_assets va
+      ON va.domain = 'npc'
+     AND va.entity_id = n.id
+     AND va.kind = 'primary'
+    ORDER BY n.name
   `,
     )
     .all() as Array<{
@@ -27,6 +37,7 @@ export const load: PageServerLoad = (): NpcsPageData => {
     faction: string | null;
     race: string | null;
     roles: string;
+    visual_public_path: string | null;
   }>;
 
   const npcs: NpcListView[] = npcsRaw.map((npc) => ({
@@ -35,6 +46,7 @@ export const load: PageServerLoad = (): NpcsPageData => {
     faction: npc.faction,
     race: npc.race,
     roles: JSON.parse(npc.roles) as NpcRoles,
+    visual_public_path: npc.visual_public_path,
   }));
 
   const npcZones = db

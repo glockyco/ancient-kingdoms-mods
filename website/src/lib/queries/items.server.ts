@@ -9,8 +9,9 @@ import type { ItemListView, ItemZoneInfo } from "$lib/types/items";
 export function getItems(): ItemListView[] {
   return query<ItemListView>(
     `SELECT
-      id,
-      name,
+      i.id,
+      i.name,
+      va.public_path as visual_public_path,
       item_type,
       quality,
       level_required,
@@ -40,8 +41,12 @@ export function getItems(): ItemListView[] {
           AND json_each.value != 0.0
           AND json_each.value != 'false'
       ) as stat_keys
-    FROM items
-    ORDER BY name`,
+    FROM items i
+    LEFT JOIN visual_assets va
+      ON va.domain = 'item'
+     AND va.entity_id = i.id
+     AND va.kind = 'icon'
+    ORDER BY i.name`,
   );
 }
 
