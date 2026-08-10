@@ -35,6 +35,10 @@
   } from "$lib/types/map";
   import { LAYER_COLORS } from "$lib/map/config";
   import {
+    MARKER_COLORS,
+    MARKER_PLURAL_LABELS,
+  } from "$lib/map/marker-registry";
+  import {
     toggleLayerVisibility,
     isAnyNpcTypeVisible,
     isAnyCraftingTypeVisible,
@@ -119,15 +123,30 @@
   }
 
   const monsterToggles: QuickToggle[] = [
-    { key: "bosses", icon: Crown, color: LAYER_COLORS.boss, label: "Bosses" },
-    { key: "elites", icon: Shield, color: LAYER_COLORS.elite, label: "Elites" },
+    {
+      key: "bosses",
+      icon: Crown,
+      color: MARKER_COLORS.bosses,
+      label: MARKER_PLURAL_LABELS.bosses,
+    },
+    {
+      key: "elites",
+      icon: Shield,
+      color: MARKER_COLORS.elites,
+      label: MARKER_PLURAL_LABELS.elites,
+    },
     {
       key: "creatures",
       icon: Sword,
-      color: LAYER_COLORS.monster,
-      label: "Creatures",
+      color: MARKER_COLORS.creatures,
+      label: MARKER_PLURAL_LABELS.creatures,
     },
-    { key: "hunts", icon: Crosshair, color: LAYER_COLORS.hunt, label: "Hunts" },
+    {
+      key: "hunts",
+      icon: Crosshair,
+      color: MARKER_COLORS.hunts,
+      label: MARKER_PLURAL_LABELS.hunts,
+    },
   ];
 
   const npcToggle: QuickToggle = {
@@ -138,14 +157,24 @@
   };
 
   const interactableToggles: QuickToggle[] = [
-    { key: "altars", icon: Flame, color: LAYER_COLORS.altar, label: "Altars" },
+    {
+      key: "altars",
+      icon: Flame,
+      color: MARKER_COLORS.altars,
+      label: MARKER_PLURAL_LABELS.altars,
+    },
     {
       key: "portals",
       icon: CircleDot,
-      color: LAYER_COLORS.portal,
-      label: "Portals",
+      color: MARKER_COLORS.portals,
+      label: MARKER_PLURAL_LABELS.portals,
     },
-    { key: "chests", icon: Box, color: LAYER_COLORS.chest, label: "Chests" },
+    {
+      key: "chests",
+      icon: Box,
+      color: MARKER_COLORS.chests,
+      label: MARKER_PLURAL_LABELS.chests,
+    },
   ];
 
   const craftingToggle: QuickToggle = {
@@ -159,32 +188,32 @@
     {
       key: "gatheringPlants",
       icon: Leaf,
-      color: LAYER_COLORS.gathering_plant,
-      label: "Plants",
+      color: MARKER_COLORS.gatheringPlants,
+      label: MARKER_PLURAL_LABELS.gatheringPlants,
     },
     {
       key: "gatheringMinerals",
       icon: Pickaxe,
-      color: LAYER_COLORS.gathering_mineral,
-      label: "Minerals",
+      color: MARKER_COLORS.gatheringMinerals,
+      label: MARKER_PLURAL_LABELS.gatheringMinerals,
     },
     {
       key: "gatheringFishing",
       icon: Fish,
-      color: LAYER_COLORS.gathering_fish,
-      label: "Fishing Spots",
+      color: MARKER_COLORS.gatheringFishing,
+      label: MARKER_PLURAL_LABELS.gatheringFishing,
     },
     {
       key: "gatheringSparks",
       icon: Sparkles,
-      color: LAYER_COLORS.gathering_spark,
-      label: "Radiant Sparks",
+      color: MARKER_COLORS.gatheringSparks,
+      label: MARKER_PLURAL_LABELS.gatheringSparks,
     },
     {
       key: "gatheringOther",
       icon: Package,
-      color: LAYER_COLORS.gathering_other,
-      label: "Other",
+      color: MARKER_COLORS.gatheringOther,
+      label: MARKER_PLURAL_LABELS.gatheringOther,
     },
   ];
 
