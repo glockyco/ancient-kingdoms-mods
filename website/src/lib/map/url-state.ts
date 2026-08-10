@@ -54,13 +54,11 @@ function getDefaultLayers(): (keyof LayerVisibility)[] {
  * Minimal view: bosses, elites, altars, and terrain only
  */
 export function getDefaultLayerVisibility(): LayerVisibility {
+  const markerDefaults = Object.fromEntries(
+    Object.entries(MARKER_DEFAULT_VISIBILITY).filter(([key]) => key !== "npc"),
+  ) as Omit<typeof MARKER_DEFAULT_VISIBILITY, "npc">;
   return {
-    // Monsters
-    bosses: MARKER_DEFAULT_VISIBILITY.bosses,
-    fabled: MARKER_DEFAULT_VISIBILITY.fabled,
-    elites: MARKER_DEFAULT_VISIBILITY.elites,
-    creatures: MARKER_DEFAULT_VISIBILITY.creatures,
-    hunts: MARKER_DEFAULT_VISIBILITY.hunts,
+    ...markerDefaults,
     // NPCs
     npcVendors: false,
     npcQuestGivers: false,
@@ -85,23 +83,9 @@ export function getDefaultLayerVisibility(): LayerVisibility {
     npcGuildManagers: false,
     npcBarbers: false,
     // Interactables
-    portals: MARKER_DEFAULT_VISIBILITY.portals,
     portalArcs: false,
-    chests: MARKER_DEFAULT_VISIBILITY.chests,
-    treasure: MARKER_DEFAULT_VISIBILITY.treasure,
-    altars: MARKER_DEFAULT_VISIBILITY.altars,
-    traps: MARKER_DEFAULT_VISIBILITY.traps,
-    houses: MARKER_DEFAULT_VISIBILITY.houses,
-    alchemyTables: MARKER_DEFAULT_VISIBILITY.alchemyTables,
-    forges: MARKER_DEFAULT_VISIBILITY.forges,
-    cookingOvens: MARKER_DEFAULT_VISIBILITY.cookingOvens,
-    scribingTables: MARKER_DEFAULT_VISIBILITY.scribingTables,
     // Resources
-    gatheringPlants: MARKER_DEFAULT_VISIBILITY.gatheringPlants,
-    gatheringMinerals: MARKER_DEFAULT_VISIBILITY.gatheringMinerals,
-    gatheringSparks: MARKER_DEFAULT_VISIBILITY.gatheringSparks,
-    gatheringFishing: MARKER_DEFAULT_VISIBILITY.gatheringFishing,
-    gatheringOther: MARKER_DEFAULT_VISIBILITY.gatheringOther,
+
     // Zones
     subZones: false,
     parentZones: false,
