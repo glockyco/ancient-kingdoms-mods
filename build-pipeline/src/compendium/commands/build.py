@@ -45,6 +45,7 @@ from compendium.loaders import (
     load_zone_triggers,
     load_zones,
 )
+from compendium.visual_assets import reconcile
 
 console = Console()
 
@@ -111,6 +112,7 @@ def run(config: dict) -> None:
         # Denormalize data (must be done after all data is loaded)
         console.print()
         denormalize_all(conn)
+        reconcile(conn, static_dir)
 
         # Optimize FTS5 indexes (merges segments, reduces size)
         console.print("\nOptimizing database...")

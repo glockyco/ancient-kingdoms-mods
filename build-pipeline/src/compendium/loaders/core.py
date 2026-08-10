@@ -10,7 +10,6 @@ import shutil
 import sqlite3
 from pathlib import Path
 
-from PIL import Image, UnidentifiedImageError
 from rich.console import Console
 
 from compendium.db import insert_model, serialize_value
@@ -49,22 +48,7 @@ from compendium.models import (
 console = Console()
 
 
-VISUAL_ASSET_DOMAIN_DIRS = {
-    "monster": "monsters",
-    "npc": "npcs",
-    "item": "items",
-    "skill": "skills",
-}
-
-
-def _safe_public_segment(value: str) -> str:
-    """Return a URL/path-safe segment while preserving identifier underscores."""
-    sanitized = "".join(
-        char.lower() if char.isalnum() else "_" for char in value.strip()
-    )
-    if not sanitized:
-        raise ValueError("Visual asset path segment cannot be empty")
-    return sanitized
+from compendium.visual_assets import Encoding, insert_asset, publish
 
 
 def _resolve_export_asset_path(export_dir: Path, export_path: str) -> Path:
@@ -73,37 +57,6 @@ def _resolve_export_asset_path(export_dir: Path, export_path: str) -> Path:
     if relative_path.is_absolute() or ".." in relative_path.parts:
         raise ValueError(f"Unsafe visual asset export path: {export_path}")
     return export_dir / relative_path
-
-
-def _public_visual_asset_path(asset: VisualAssetData) -> Path:
-    domain_dir = VISUAL_ASSET_DOMAIN_DIRS.get(
-        asset.domain, _safe_public_segment(asset.domain) + "s"
-    )
-    kind = _safe_public_segment(asset.kind)
-    entity_id = _safe_public_segment(asset.entity_id)
-    suffix = Path(asset.export_path).suffix.lower() or ".png"
-    return Path("images") / domain_dir / entity_id / f"{kind}{suffix}"
-
-
-def _copy_public_visual_asset(
-    source_path: Path, destination_path: Path
-) -> tuple[int, int]:
-    """Copy a visual asset, trimming fully transparent padding for PNGs."""
-    try:
-        with Image.open(source_path) as image:
-            rgba: Image.Image = image if image.mode == "RGBA" else image.convert("RGBA")
-
-            alpha_bbox = rgba.getchannel("A").getbbox()
-            if alpha_bbox is None:
-                rgba.save(destination_path)
-                return rgba.size
-
-            cropped = rgba.crop(alpha_bbox)
-            cropped.save(destination_path)
-            return cropped.size
-    except UnidentifiedImageError:
-        shutil.copy2(source_path, destination_path)
-        return (0, 0)
 
 
 def load_visual_assets(
@@ -135,38 +88,26 @@ def load_visual_assets(
                 f"Visual asset file listed in manifest does not exist: {source_path}"
             )
 
-        public_path = _public_visual_asset_path(asset)
-        destination_path = static_dir / public_path
-        destination_path.parent.mkdir(parents=True, exist_ok=True)
-        public_width, public_height = _copy_public_visual_asset(
-            source_path, destination_path
+        published = publish(
+            source_path,
+            static_dir,
+            domain=asset.domain,
+            entity_id=asset.entity_id,
+            kind=asset.kind,
+            encoding=Encoding.SPRITE,
         )
-
-        if public_width == 0 or public_height == 0:
-            public_width = asset.width
-            public_height = asset.height
-        cursor.execute(
-            """
-            INSERT INTO visual_assets (
-                domain, entity_id, kind, export_path, public_path,
-                source_field, source_type, source_name, sprite_name, texture_name,
-                width, height
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-            (
-                asset.domain,
-                asset.entity_id,
-                asset.kind,
-                asset.export_path,
-                public_path.as_posix(),
-                asset.source_field,
-                asset.source_type,
-                asset.source_name,
-                asset.sprite_name,
-                asset.texture_name,
-                public_width,
-                public_height,
-            ),
+        insert_asset(
+            cursor,
+            domain=asset.domain,
+            entity_id=asset.entity_id,
+            kind=asset.kind,
+            export_path=asset.export_path,
+            asset=published,
+            source_field=asset.source_field,
+            source_type=asset.source_type,
+            source_name=asset.source_name,
+            sprite_name=asset.sprite_name,
+            texture_name=asset.texture_name,
         )
 
     conn.commit()
@@ -324,10 +265,6 @@ def load_achievements(
             "Achievement display order must contain each value from 0 to 37"
         )
 
-    public_root = static_dir / "images" / "achievements"
-    if public_root.exists():
-        shutil.rmtree(public_root)
-
     cursor = conn.cursor()
     for achievement in achievements:
         if not achievement.hidden and (
@@ -337,39 +274,37 @@ def load_achievements(
                 f"Visible achievement '{achievement.id}' requires a name and description"
             )
 
-        public_paths: dict[str, str] = {}
-        for variant, export_path in (
-            ("unlocked", achievement.unlocked_icon_path),
-            ("locked", achievement.locked_icon_path),
-        ):
-            source = _resolve_export_asset_path(export_dir, export_path)
-            if not source.is_file():
-                raise FileNotFoundError(
-                    f"Achievement '{achievement.id}' {variant} icon is unavailable: {source}"
-                )
-            suffix = source.suffix.lower()
-            if suffix not in {".jpg", ".jpeg", ".png", ".webp"}:
-                raise ValueError(
-                    f"Achievement '{achievement.id}' has unsupported icon type '{suffix}'"
-                )
-
-            destination = public_root / achievement.id.lower() / f"{variant}{suffix}"
-            destination.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(source, destination)
-            public_paths[variant] = (
-                f"/images/achievements/{achievement.id.lower()}/{variant}{suffix}"
+        source = _resolve_export_asset_path(export_dir, achievement.unlocked_icon_path)
+        if not source.is_file():
+            raise FileNotFoundError(
+                f"Achievement '{achievement.id}' icon is unavailable: {source}"
+            )
+        if source.suffix.lower() not in {".jpg", ".jpeg", ".png", ".webp"}:
+            raise ValueError(
+                f"Achievement '{achievement.id}' has unsupported icon type "
+                f"'{source.suffix.lower()}'"
             )
 
-        insert_model(
-            cursor,
-            "achievements",
-            achievement.model_copy(
-                update={
-                    "unlocked_icon_path": public_paths["unlocked"],
-                    "locked_icon_path": public_paths["locked"],
-                }
-            ),
+        published = publish(
+            source,
+            static_dir,
+            domain="achievement",
+            entity_id=achievement.id,
+            kind="icon",
+            encoding=Encoding.PHOTO,
         )
+        insert_asset(
+            cursor,
+            domain="achievement",
+            entity_id=achievement.id,
+            kind="icon",
+            export_path=achievement.unlocked_icon_path,
+            asset=published,
+            source_field="unlocked_icon_path",
+            source_type="SteamAchievementIcon",
+            source_name=achievement.id,
+        )
+        insert_model(cursor, "achievements", achievement)
 
     conn.commit()
     console.print(f"  [green]OK[/green] Loaded {len(achievements)} achievements")

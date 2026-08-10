@@ -29,7 +29,7 @@ class VisualAssetLoaderTests(unittest.TestCase):
                 / "Monster.gameObject.SpriteRenderer_Cyclops_1_0_0_96_98.png"
             )
             source_path.parent.mkdir(parents=True)
-            source_path.write_bytes(b"runtime-png")
+            Image.new("RGBA", (96, 98), (32, 64, 96, 255)).save(source_path)
 
             manifest = [
                 {
@@ -69,11 +69,12 @@ class VisualAssetLoaderTests(unittest.TestCase):
             self.assertEqual(row[3], manifest[0]["export_path"])
             self.assertEqual(
                 row[4],
-                "images/monsters/ancient_cyclops/primary.png",
+                "images/monsters/ancient_cyclops/primary.webp",
             )
             self.assertEqual(row[5], 96)
             self.assertEqual(row[6], 98)
-            self.assertEqual((static_dir / row[4]).read_bytes(), b"runtime-png")
+            with Image.open(static_dir / row[4]) as output:
+                self.assertEqual(output.size, (96, 98))
 
     def test_load_visual_assets_preserves_entity_id_underscores_in_public_paths(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -94,7 +95,7 @@ class VisualAssetLoaderTests(unittest.TestCase):
                     / "Monster.gameObject.SpriteRenderer_skeleton_archer.png"
                 )
                 source_path.parent.mkdir(parents=True)
-                source_path.write_bytes(entity_id.encode())
+                Image.new("RGBA", (279, 306), (32, 64, 96, 255)).save(source_path)
                 manifest.append(
                     {
                         "domain": "monster",
@@ -130,8 +131,8 @@ class VisualAssetLoaderTests(unittest.TestCase):
             self.assertEqual(
                 public_paths,
                 {
-                    "images/monsters/skeleton_archer/primary.png",
-                    "images/monsters/skeleton_archer_/primary.png",
+                    "images/monsters/skeleton_archer/primary.webp",
+                    "images/monsters/skeleton_archer_/primary.webp",
                 },
             )
 

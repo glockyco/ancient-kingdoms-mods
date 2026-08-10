@@ -81,9 +81,7 @@ CREATE TABLE achievements (
     name TEXT NOT NULL,
     description TEXT NOT NULL,
     hidden INTEGER NOT NULL DEFAULT 0,
-    display_order INTEGER NOT NULL UNIQUE,
-    unlocked_icon_path TEXT NOT NULL,
-    locked_icon_path TEXT NOT NULL
+    display_order INTEGER NOT NULL UNIQUE
 );
 
 CREATE INDEX idx_achievements_display_order ON achievements(display_order);

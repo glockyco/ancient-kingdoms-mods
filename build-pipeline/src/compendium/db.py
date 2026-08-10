@@ -68,6 +68,10 @@ def insert_model(cursor: sqlite3.Cursor, table: str, model: BaseModel) -> None:
         "monsters": {
             "skill_ids",
         },
+        "achievements": {
+            "unlocked_icon_path",
+            "locked_icon_path",
+        },
     }
 
     values = {}
