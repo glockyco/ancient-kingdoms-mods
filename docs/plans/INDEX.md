@@ -20,5 +20,6 @@
 - **Global Entity Search** [spec] `2026-07-31-global-entity-search` → superseded by 2026-08-09-map-marker-and-search-registry
 - **Per-Entity Open Graph Images** [spec] `2026-07-31-per-entity-og-images` ← 2026-07-31-ancient-kingdoms-overview
 - **Map Marker Registry, Wayfinding, and First-Class Search** [spec] `2026-08-09-map-marker-and-search-registry` ← 2026-07-31-ancient-kingdoms-overview
+- **Entity Artwork: One Pipeline, One Path Rule, One Format** [spec] `2026-08-10-entity-artwork-pipeline` ← 2026-07-31-ancient-kingdoms-overview
 
 _26 archived — see `docs/plans/archive/`._

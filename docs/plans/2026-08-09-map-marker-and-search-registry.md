@@ -928,11 +928,13 @@ Three rules keep it clean:
    `scent-soaked_boots`, `two-handed_mastery`), and `ItemTooltip.svelte:13` currently
    hand-rolls exactly that rule. One build-time join deletes the rule instead of copying it.
 2. **One table describes every exported image.** Achievements are the exception today, with
-   absolute paths in their own column and a different extension. Fold them into
-   `visual_assets` in the pipeline so the registry has a single uniform source. Professions
-   have `icon_path` values such as `profession_alchemy` with no matching file under
-   `website/static/images`, so they get no image until that asset is exported — the
-   registry must express "no image" rather than emit a broken URL.
+   absolute paths in their own column and a different extension. Professions have
+   `icon_path` values such as `profession_alchemy` with no matching file under
+   `website/static/images`. Both, plus the underscore-versus-hyphen divergence, the format
+   policy, and the families whose art exists but is never exported, are owned by
+   [2026-08-10-entity-artwork-pipeline](2026-08-10-entity-artwork-pipeline.md). Search
+   consumes whatever that pipeline publishes and must express "no image" rather than emit a
+   broken URL.
 3. **Fall back to the family icon, and reserve the box.** A row with no image renders the
    `EntityDef` Lucide icon, and an image that fails to load swaps to it. Render at a fixed
    box with explicit `width`/`height`, `loading="lazy"`, `decoding="async"`, and

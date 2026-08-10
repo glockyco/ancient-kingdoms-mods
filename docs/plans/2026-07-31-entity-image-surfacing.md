@@ -16,12 +16,16 @@ domain whose images reach the UI. Everything else is extracted, trimmed, copied 
 
 ## Current state
 
+Counts re-measured 2026-08-10:
+
 | Domain | Kind | Assets | Entities | UI consumers |
 | --- | --- | --- | --- | --- |
-| item | `icon` | 1,638 | 1,658 | `lib/components/ItemTooltip.svelte:12-14` only |
-| npc | `primary` | 229 | 229 | none |
-| skill | `icon` | 686 | 689 | none |
-| monster | `primary` | 361 | 361 | 3 — the reference pattern |
+| item | `icon` | 1,651 | 1,671 | `lib/components/ItemTooltip.svelte:12-14` only |
+| npc | `primary` | 234 | 234 | none |
+| skill | `icon` | 689 | 692 | none |
+| monster | `primary` | 362 | 362 | 3 — the reference pattern |
+| pet | `primary` | 5 | 11 | `PetDetail.svelte:261-272` |
+| item | `pet` | 11 | — | `routes/items/[id]/+page.svelte:603-612` |
 
 The pipeline behind them:
 
@@ -47,8 +51,12 @@ The pattern to copy is the monster detail page: the query at
 kind = ?`, plus the missing-image placeholder that page renders. Do not copy
 `ItemTooltip.svelte`'s string building into new call sites.
 
-The coverage gaps — 20 items and 3 skills without art — resolve to that placeholder, so no
-special-casing is needed anywhere.
+The coverage gaps resolve to that placeholder, so no special-casing is needed anywhere.
+Re-measured 2026-08-10, they are 23 items and 3 skills, of which 18 items are
+`*_armor_bonus_set` pseudo-entities. The database also holds 3 orphan `visual_assets` rows
+pointing at items that no longer exist, which is why a naive row-count difference reads as
+20. [2026-08-10-entity-artwork-pipeline](2026-08-10-entity-artwork-pipeline.md) §3.4 makes
+both conditions build failures.
 
 ## Acceptance
 
@@ -56,6 +64,13 @@ special-casing is needed anywhere.
   `visual_assets` so no layout shift occurs on load.
 - Entities without an asset render the monster page's placeholder.
 - No new call site builds an image path from an id.
+
+**Refinement (2026-08-10).** That last rule targets ad-hoc string building of the kind in
+`ItemTooltip.svelte:12-14`, which carries its own sanitiser and its own extension. It is not
+a prohibition on the single shared URL helper introduced by
+[2026-08-10-entity-artwork-pipeline](2026-08-10-entity-artwork-pipeline.md) §3.2, which is
+the one implementation the loader itself uses and which a pipeline test pins against
+`public_path`. Existence and intrinsic dimensions still come from the table, always.
 
 ## Tasks
 
