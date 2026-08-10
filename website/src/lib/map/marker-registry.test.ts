@@ -111,6 +111,55 @@ describe("marker registry", () => {
     expect(MARKER_RADII.gatheringFishing).toBe(3);
   });
 
+  test("preserves legacy marker presentation baselines", () => {
+    expect(MARKER_COLORS).toMatchObject({
+      creatures: [239, 68, 68],
+      bosses: [6, 182, 212],
+      fabled: [16, 185, 129],
+      elites: [168, 85, 247],
+      hunts: [234, 179, 8],
+      npc: [59, 130, 246],
+      portals: [34, 197, 94],
+      chests: [14, 165, 233],
+      treasure: [20, 184, 166],
+      altars: [249, 115, 22],
+      traps: [225, 29, 72],
+      houses: [245, 158, 11],
+      gatheringPlants: [132, 204, 22],
+      gatheringMinerals: [23, 37, 84],
+      gatheringSparks: [168, 85, 247],
+      gatheringFishing: [6, 182, 212],
+      gatheringOther: [156, 163, 175],
+      alchemyTables: [139, 92, 246],
+      forges: [139, 92, 246],
+      cookingOvens: [139, 92, 246],
+      scribingTables: [168, 85, 247],
+    });
+    expect(MARKER_ICON_SIZES).toMatchObject({
+      bosses: { base: 32, min: 28, max: 64 },
+      fabled: { base: 28, min: 26, max: 60 },
+      elites: { base: 26, min: 24, max: 56 },
+      altars: { base: 26, min: 24, max: 56 },
+      traps: { base: 20, min: 18, max: 44 },
+      npc: { base: 18, min: 16, max: 40 },
+      portals: { base: 22, min: 20, max: 48 },
+      chests: { base: 20, min: 18, max: 44 },
+      treasure: { base: 20, min: 18, max: 44 },
+      houses: { base: 22, min: 20, max: 48 },
+      alchemyTables: { base: 20, min: 18, max: 44 },
+      forges: { base: 20, min: 18, max: 44 },
+      cookingOvens: { base: 20, min: 18, max: 44 },
+      scribingTables: { base: 20, min: 18, max: 44 },
+      hunts: { base: 18, min: 16, max: 40 },
+      creatures: { base: 18, min: 16, max: 40 },
+      gatheringPlants: { base: 16, min: 14, max: 36 },
+      gatheringMinerals: { base: 16, min: 14, max: 36 },
+      gatheringSparks: { base: 16, min: 14, max: 36 },
+      gatheringFishing: { base: 16, min: 14, max: 36 },
+      gatheringOther: { base: 16, min: 14, max: 36 },
+    });
+  });
+
   test("uses declared partition precedence for overlapping monster flags", () => {
     expect(resolveMarker(monster())).toBe("creatures");
     expect(resolveMarker(monster({ isHunt: true, isFabled: true }))).toBe(
