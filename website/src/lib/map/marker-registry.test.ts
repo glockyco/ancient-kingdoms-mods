@@ -1,9 +1,9 @@
 import { describe, expect, test } from "vitest";
 import {
-  markerRegistrySpike,
+  markerRegistry,
   resolveMarker,
-  type PortalSpikeRow,
-} from "./marker-registry-spike";
+  type PortalMarkerRow,
+} from "./marker-registry";
 import type { MonsterMapEntity, NpcMapEntity } from "$lib/types/map";
 
 const monster = (flags: Partial<MonsterMapEntity> = {}): MonsterMapEntity => ({
@@ -46,7 +46,7 @@ const monster = (flags: Partial<MonsterMapEntity> = {}): MonsterMapEntity => ({
 
 describe("marker registry spike", () => {
   test("declares unique ids and paint order for all three hard sources", () => {
-    const markers = Object.values(markerRegistrySpike);
+    const markers = Object.values(markerRegistry);
     expect(new Set(markers.map((marker) => marker.id)).size).toBe(
       markers.length,
     );
@@ -54,18 +54,18 @@ describe("marker registry spike", () => {
       markers.length,
     );
     expect(markers.map((marker) => marker.id)).toEqual([
-      "creature",
-      "hunt",
-      "elite",
+      "creatures",
+      "hunts",
+      "elites",
       "fabled",
-      "boss",
+      "bosses",
       "npc",
-      "portal",
+      "portals",
     ]);
   });
 
   test("uses declared partition precedence for overlapping monster flags", () => {
-    expect(resolveMarker(monster())).toBe("creature");
+    expect(resolveMarker(monster())).toBe("creatures");
     expect(resolveMarker(monster({ isHunt: true, isFabled: true }))).toBe(
       "fabled",
     );
@@ -73,12 +73,12 @@ describe("marker registry spike", () => {
       "fabled",
     );
     expect(resolveMarker(monster({ isBoss: true, isFabled: true }))).toBe(
-      "boss",
+      "bosses",
     );
   });
 
   test("keeps NPC roles as facets over one marker layer", () => {
-    const npc = markerRegistrySpike.npc as typeof markerRegistrySpike.npc;
+    const npc = markerRegistry.npc as typeof markerRegistry.npc;
     expect(npc.facets).toHaveLength(22);
     expect(new Set(npc.facets?.map((facet) => facet.mask)).size).toBe(22);
 
@@ -92,11 +92,11 @@ describe("marker registry spike", () => {
 
   test("prefixes every decoration id with its owning marker", () => {
     const row = monster({ isPatrolling: true, moveDistance: 12 });
-    const decorations = markerRegistrySpike.creature.decorations?.({
+    const decorations = markerRegistry.creatures.decorations?.({
       row,
-      markerId: markerRegistrySpike.creature.id,
+      markerId: markerRegistry.creatures.id,
     });
-    expect(decorations?.every(({ id }) => id.startsWith("creature:"))).toBe(
+    expect(decorations?.every(({ id }) => id.startsWith("creatures:"))).toBe(
       true,
     );
   });
@@ -122,9 +122,9 @@ describe("marker registry spike", () => {
       killRequirementSpawnIds: null,
       fromSubZoneName: "From Sub-zone",
       destinationSubZoneName: "To Sub-zone",
-    } satisfies PortalSpikeRow;
+    } satisfies PortalMarkerRow;
 
-    expect(markerRegistrySpike.portal.displayName?.(row)).toBe(
+    expect(markerRegistry.portals.displayName?.(row)).toBe(
       "From Sub-zone → To Sub-zone",
     );
   });

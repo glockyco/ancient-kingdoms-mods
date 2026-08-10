@@ -94,7 +94,7 @@ const monsterDecorations = ({
 ];
 
 const monsterMarker = (
-  id: "creature" | "boss" | "fabled" | "elite" | "hunt",
+  id: "creatures" | "bosses" | "fabled" | "elites" | "hunts",
   label: string,
   pluralLabel: string,
   precedence: number,
@@ -114,7 +114,7 @@ const monsterMarker = (
   iconSize: { base: 32, min: 18, max: 48 },
   fallbackRadius: 10,
   selection,
-  defaultVisible: id !== "creature",
+  defaultVisible: id !== "creatures",
   z: precedence,
   decorations: monsterDecorations,
 });
@@ -149,14 +149,14 @@ const npcDecorations = ({
  * The production loader must supply them before portal search/wayfinding can
  * promise sub-zone display names.
  */
-export type PortalSpikeRow = PortalMapEntity & {
+export type PortalMarkerRow = PortalMapEntity & {
   fromSubZoneName: string | null;
   destinationSubZoneName: string | null;
 };
 
-export const markerRegistrySpike = {
-  creature: monsterMarker(
-    "creature",
+export const markerRegistry = {
+  creatures: monsterMarker(
+    "creatures",
     "Creature",
     "Creatures",
     100,
@@ -165,8 +165,8 @@ export const markerRegistrySpike = {
     [120, 160, 180],
     altarSelection,
   ),
-  hunt: monsterMarker(
-    "hunt",
+  hunts: monsterMarker(
+    "hunts",
     "Hunt",
     "Hunts",
     200,
@@ -174,8 +174,8 @@ export const markerRegistrySpike = {
     Crosshair,
     [244, 114, 182],
   ),
-  elite: monsterMarker(
-    "elite",
+  elites: monsterMarker(
+    "elites",
     "Elite",
     "Elites",
     300,
@@ -192,8 +192,8 @@ export const markerRegistrySpike = {
     Star,
     [192, 132, 252],
   ),
-  boss: monsterMarker(
-    "boss",
+  bosses: monsterMarker(
+    "bosses",
     "Boss",
     "Bosses",
     500,
@@ -221,8 +221,8 @@ export const markerRegistrySpike = {
     facets: npcFacets,
     decorations: npcDecorations,
   } satisfies MarkerDef<NpcMapEntity>,
-  portal: {
-    id: "portal",
+  portals: {
+    id: "portals",
     source: "portals",
     precedence: 100,
     match: (row: PortalMapEntity) => row.destination !== null,
@@ -246,15 +246,15 @@ export const markerRegistrySpike = {
         ? [{ id: `${markerId}:requirements`, kind: "radius" as const }]
         : []),
     ],
-    displayName: (row: PortalSpikeRow) =>
+    displayName: (row: PortalMarkerRow) =>
       `${row.fromSubZoneName ?? "Unknown source"} → ${row.destinationSubZoneName ?? "Unknown destination"}`,
-  } satisfies MarkerDef<PortalSpikeRow>,
+  } satisfies MarkerDef<PortalMarkerRow>,
 } as const satisfies Record<string, MarkerDef<never>>;
 
-export type MarkerId = keyof typeof markerRegistrySpike;
+export type MarkerId = keyof typeof markerRegistry;
 
 export function resolveMarker(row: MarkerRow): MarkerId | null {
-  const matches = Object.values(markerRegistrySpike)
+  const matches = Object.values(markerRegistry)
     .filter(
       (marker) =>
         marker.source === sourceForRow(row) && marker.match(row as never),

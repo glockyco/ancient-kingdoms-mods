@@ -71,9 +71,9 @@ Stated plainly so nothing downstream silently assumes it:
 
 ### 0.3 Spike results (measured 2026-08-10)
 
-The three hard cases were expressed in a compiling, test-covered spike at
-`website/src/lib/map/marker-registry-spike.ts`; it is deliberately not imported by the
-production map. Five tests pass and `svelte-check` reports 0 errors.
+The three hard cases are expressed in a compiling, test-covered registry at
+`website/src/lib/map/marker-registry.ts`; it is not yet consumed by the production layer
+factory. Five tests pass and `svelte-check` reports 0 errors.
 
 The shape holds, with two required refinements before migration:
 
