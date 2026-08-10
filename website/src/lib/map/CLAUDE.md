@@ -261,7 +261,7 @@ deck.gl handles millions of points efficiently, but **layer recreation is expens
    );
    ```
 
-   - Pass pre-computed arrays to `createLayers()` as parameters
+   - Pass pre-computed arrays through the typed `LayerContext` object to `createLayers()`
    - Use `EMPTY_SELECTION` constant for stable empty array references
 
 **Key insight**: deck.gl is fast at rendering; the bottleneck is JS computation inside `createLayers()`.

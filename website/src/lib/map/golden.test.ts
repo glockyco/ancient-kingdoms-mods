@@ -73,23 +73,23 @@ const emptyLevelFilter = {
 
 describe("map golden invariants", () => {
   test("createLayers preserves deck.gl paint order", () => {
-    const layers = createLayers(
-      emptyFilteredData,
-      getDefaultLayerVisibility(),
-      deckModules,
-      emptyCallbacks,
-      emptyLevelFilter,
-      null,
-      null,
-      EMPTY_SELECTION,
-      EMPTY_PATROL_DATA,
-      EMPTY_SELECTION,
-      EMPTY_RELATION_ARCS,
-      null,
-      null,
-      EMPTY_SELECTION,
-      null,
-    );
+    const layers = createLayers({
+      filtered: emptyFilteredData,
+      visibility: getDefaultLayerVisibility(),
+      modules: deckModules,
+      callbacks: emptyCallbacks,
+      levelFilter: emptyLevelFilter,
+      selectedPortalId: null,
+      focusedZoneId: null,
+      selectionData: EMPTY_SELECTION,
+      patrolPathData: EMPTY_PATROL_DATA,
+      relatedEntities: EMPTY_SELECTION,
+      relationArcData: EMPTY_RELATION_ARCS,
+      selectedEntity: null,
+      selectedZone: null,
+      hoverSelectionData: EMPTY_SELECTION,
+      hoverZone: null,
+    });
 
     expect(layers.map((layer) => layer.id)).toEqual([
       "background",

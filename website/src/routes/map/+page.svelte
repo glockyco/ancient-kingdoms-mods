@@ -423,11 +423,11 @@
   function updateLayers() {
     if (!deckInstance || !zoneFocusedData || !deckModules) return;
 
-    const layers = createLayers(
-      zoneFocusedData,
-      layerVisibility,
-      deckModules,
-      {
+    const layers = createLayers({
+      filtered: zoneFocusedData,
+      visibility: layerVisibility,
+      modules: deckModules,
+      callbacks: {
         onHover: handleHover,
         onClick: handleClick,
       },
@@ -442,8 +442,8 @@
       selectedZone,
       hoverSelectionData,
       hoverZone,
-      iconAtlas ?? undefined,
-    );
+      iconAtlas: iconAtlas ?? undefined,
+    });
 
     deckInstance.setProps({ layers });
   }
@@ -839,27 +839,27 @@
           filteredData!,
           entityData,
         );
-        const layers = createLayers(
-          initialZoneFocusedData,
-          layerVisibility,
-          deckModules,
-          {
+        const layers = createLayers({
+          filtered: initialZoneFocusedData,
+          visibility: layerVisibility,
+          modules: deckModules,
+          callbacks: {
             onHover: handleHover,
             onClick: handleClick,
           },
           levelFilter,
-          null,
+          selectedPortalId: null,
           focusedZoneId,
           selectionData,
           patrolPathData,
-          EMPTY_SELECTION,
-          EMPTY_RELATION_ARCS,
+          relatedEntities: EMPTY_SELECTION,
+          relationArcData: EMPTY_RELATION_ARCS,
           selectedEntity,
           selectedZone,
-          EMPTY_SELECTION,
-          null,
-          iconAtlas ?? undefined,
-        );
+          hoverSelectionData: EMPTY_SELECTION,
+          hoverZone: null,
+          iconAtlas: iconAtlas ?? undefined,
+        });
 
         // Determine initial view bounds based on URL state before creating Deck.
         // The constructor receives the fitted view so the first render starts

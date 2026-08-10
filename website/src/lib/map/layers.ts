@@ -285,26 +285,56 @@ function createPatrolPathLayers(
  * @param patrolPathData - Pre-computed patrol path data (use EMPTY_PATROL_DATA when none)
  * @param selectedEntity - The actual clicked entity (for primary highlight)
  */
-export function createLayers(
-  filtered: ZoneFocusedData,
-  visibility: LayerVisibility,
-  modules: DeckModules,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  callbacks: { onHover: (info: any) => void; onClick: (info: any) => void },
-  levelFilter: LevelFilter,
-  selectedPortalId: string | null,
-  focusedZoneId: string | null,
-  selectionData: AnyMapEntity[] = EMPTY_SELECTION,
-  patrolPathData: PatrolPathData = EMPTY_PATROL_DATA,
-  relatedEntities: AnyMapEntity[] = EMPTY_SELECTION,
-  relationArcData: RelationArcData = EMPTY_RELATION_ARCS,
-  selectedEntity: AnyMapEntity | null = null,
-  selectedZone: ParentZoneBoundary | null = null,
-  hoverSelectionData: AnyMapEntity[] = EMPTY_SELECTION,
-  hoverZone: ParentZoneBoundary | null = null,
-  iconAtlas?: IconAtlasData,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-): any[] {
+export interface LayerInteractionInfo {
+  object?: unknown;
+  x?: number;
+  y?: number;
+  layer?: { id?: string };
+}
+
+export interface LayerContext {
+  filtered: ZoneFocusedData;
+  visibility: LayerVisibility;
+  modules: DeckModules;
+  callbacks: {
+    onHover: (info: LayerInteractionInfo) => void;
+    onClick: (info: LayerInteractionInfo) => void;
+  };
+  levelFilter: LevelFilter;
+  selectedPortalId: string | null;
+  focusedZoneId: string | null;
+  selectionData?: AnyMapEntity[];
+  patrolPathData?: PatrolPathData;
+  relatedEntities?: AnyMapEntity[];
+  relationArcData?: RelationArcData;
+  selectedEntity?: AnyMapEntity | null;
+  selectedZone?: ParentZoneBoundary | null;
+  hoverSelectionData?: AnyMapEntity[];
+  hoverZone?: ParentZoneBoundary | null;
+  iconAtlas?: IconAtlasData;
+}
+
+// deck.gl layer constructors are supplied dynamically by the browser bundle.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function createLayers(context: LayerContext): any[] {
+  const {
+    filtered,
+    visibility,
+    modules,
+    callbacks,
+    levelFilter,
+    selectedPortalId,
+    focusedZoneId,
+    selectionData = EMPTY_SELECTION,
+    patrolPathData = EMPTY_PATROL_DATA,
+    relatedEntities = EMPTY_SELECTION,
+    relationArcData = EMPTY_RELATION_ARCS,
+    selectedEntity = null,
+    selectedZone = null,
+    hoverSelectionData = EMPTY_SELECTION,
+    hoverZone = null,
+    iconAtlas,
+  } = context;
   const {
     ScatterplotLayer,
     IconLayer,
