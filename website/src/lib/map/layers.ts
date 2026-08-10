@@ -79,7 +79,8 @@ export interface IconAtlasData {
  * Filters out entities without positions (they're kept in entityData for popups)
  */
 export function createFilteredData(data: MapEntityData): FilteredMapData {
-  // Only include entities with valid positions for rendering
+  // Only include entities with valid positions for rendering. Partitioning uses
+  // the registry's match and precedence rules; it must not grow a second switch.
   const renderableMonsters = data.monsters.filter((m) => m.position !== null);
   const renderableGathering = data.gathering.filter((g) => g.position !== null);
   const renderableCrafting = data.crafting.filter((c) => c.position !== null);
@@ -87,36 +88,92 @@ export function createFilteredData(data: MapEntityData): FilteredMapData {
   const renderableNpcs = data.npcs.filter((n) => n.position !== null);
   const renderableHouses = data.houses.filter((h) => h.position !== null);
 
+  const creatures: MonsterMapEntity[] = [];
+  const elites: MonsterMapEntity[] = [];
+  const fabled: MonsterMapEntity[] = [];
+  const bosses: MonsterMapEntity[] = [];
+  const hunts: MonsterMapEntity[] = [];
+  for (const monster of renderableMonsters) {
+    switch (resolveMarker(monster)) {
+      case "creatures":
+        creatures.push(monster);
+        break;
+      case "elites":
+        elites.push(monster);
+        break;
+      case "fabled":
+        fabled.push(monster);
+        break;
+      case "bosses":
+        bosses.push(monster);
+        break;
+      case "hunts":
+        hunts.push(monster);
+        break;
+    }
+  }
+
+  const plants: GatheringMapEntity[] = [];
+  const minerals: GatheringMapEntity[] = [];
+  const sparks: GatheringMapEntity[] = [];
+  const fishingSpots: GatheringMapEntity[] = [];
+  const otherGathering: GatheringMapEntity[] = [];
+  for (const resource of renderableGathering) {
+    switch (resolveMarker(resource)) {
+      case "gatheringPlants":
+        plants.push(resource);
+        break;
+      case "gatheringMinerals":
+        minerals.push(resource);
+        break;
+      case "gatheringSparks":
+        sparks.push(resource);
+        break;
+      case "gatheringFishing":
+        fishingSpots.push(resource);
+        break;
+      case "gatheringOther":
+        otherGathering.push(resource);
+        break;
+    }
+  }
+
+  const alchemyTables: CraftingMapEntity[] = [];
+  const forges: CraftingMapEntity[] = [];
+  const cookingOvens: CraftingMapEntity[] = [];
+  const scribingTables: CraftingMapEntity[] = [];
+  for (const station of renderableCrafting) {
+    switch (resolveMarker(station)) {
+      case "alchemyTables":
+        alchemyTables.push(station);
+        break;
+      case "forges":
+        forges.push(station);
+        break;
+      case "cookingOvens":
+        cookingOvens.push(station);
+        break;
+      case "scribingTables":
+        scribingTables.push(station);
+        break;
+    }
+  }
+
   return {
-    // Creatures = regular monsters (not fabled, not boss, not elite, not hunt)
-    creatures: renderableMonsters.filter(
-      (m) => !m.isFabled && !m.isBoss && !m.isElite && !m.isHunt,
-    ),
-    elites: renderableMonsters.filter(
-      (m) => m.isElite && !m.isFabled && !m.isBoss,
-    ),
-    fabled: renderableMonsters.filter((m) => m.isFabled),
-    bosses: renderableMonsters.filter((m) => m.isBoss && !m.isFabled),
-    hunts: renderableMonsters.filter(
-      (m) => m.isHunt && !m.isFabled && !m.isBoss && !m.isElite,
-    ),
-    plants: renderableGathering.filter((g) => g.type === "gathering_plant"),
-    minerals: renderableGathering.filter((g) => g.type === "gathering_mineral"),
-    sparks: renderableGathering.filter((g) => g.type === "gathering_spark"),
-    fishingSpots: renderableGathering.filter(
-      (g) => g.type === "gathering_fish",
-    ),
-    otherGathering: renderableGathering.filter(
-      (g) => g.type === "gathering_other",
-    ),
-    alchemyTables: renderableCrafting.filter((c) => c.type === "alchemy_table"),
-    forges: renderableCrafting.filter(
-      (c) => c.type === "crafting_station" && !c.isCookingOven,
-    ),
-    cookingOvens: renderableCrafting.filter((c) => c.isCookingOven),
-    scribingTables: renderableCrafting.filter(
-      (c) => c.type === "scribing_table",
-    ),
+    creatures,
+    elites,
+    fabled,
+    bosses,
+    hunts,
+    plants,
+    minerals,
+    sparks,
+    fishingSpots,
+    otherGathering,
+    alchemyTables,
+    forges,
+    cookingOvens,
+    scribingTables,
     houses: renderableHouses,
     portalsWithDestinations: renderablePortals.filter(
       (p) => p.destination !== null && !p.isClosed,
