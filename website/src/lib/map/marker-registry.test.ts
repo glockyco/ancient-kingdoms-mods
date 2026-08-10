@@ -1,5 +1,17 @@
 import { describe, expect, test } from "vitest";
-import { markerRegistry, resolveMarker } from "./marker-registry";
+import {
+  MARKER_BORDER_CLASSES,
+  MARKER_COLORS,
+  MARKER_DEFAULT_VISIBILITY,
+  MARKER_ICON_SIZES,
+  MARKER_ICONS,
+  MARKER_LABELS,
+  MARKER_PLURAL_LABELS,
+  MARKER_RADII,
+  MARKER_Z_ORDER,
+  markerRegistry,
+  resolveMarker,
+} from "./marker-registry";
 import type {
   MonsterMapEntity,
   NpcMapEntity,
@@ -76,6 +88,25 @@ describe("marker registry", () => {
       "cookingOvens",
       "scribingTables",
     ]);
+  });
+
+  test("derives every presentation record from the same marker keys", () => {
+    const markerIds = Object.keys(markerRegistry).sort();
+    for (const record of [
+      MARKER_COLORS,
+      MARKER_ICONS,
+      MARKER_ICON_SIZES,
+      MARKER_RADII,
+      MARKER_BORDER_CLASSES,
+      MARKER_LABELS,
+      MARKER_PLURAL_LABELS,
+      MARKER_DEFAULT_VISIBILITY,
+      MARKER_Z_ORDER,
+    ]) {
+      expect(Object.keys(record).sort()).toEqual(markerIds);
+    }
+    expect(MARKER_BORDER_CLASSES.chests).toBe("border-l-sky-500");
+    expect(MARKER_RADII.gatheringFishing).toBe(3);
   });
 
   test("uses declared partition precedence for overlapping monster flags", () => {

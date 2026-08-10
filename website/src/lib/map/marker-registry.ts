@@ -80,6 +80,7 @@ export interface MarkerDef<TRow extends MarkerRow = MarkerRow> {
   icon: IconNode;
   iconSize: { base: number; min: number; max: number };
   fallbackRadius: number;
+  borderClass: string;
   selection: SelectionStrategy<TRow>;
   defaultVisible: boolean;
   z: number;
@@ -116,6 +117,14 @@ const monsterDecorations = ({
     : []),
 ];
 
+const MONSTER_BORDER_CLASSES = {
+  creatures: "border-l-red-500",
+  bosses: "border-l-cyan-500",
+  fabled: "border-l-emerald-500",
+  elites: "border-l-purple-500",
+  hunts: "border-l-yellow-500",
+} as const;
+
 const monsterMarker = (
   id: "creatures" | "bosses" | "fabled" | "elites" | "hunts",
   label: string,
@@ -136,6 +145,7 @@ const monsterMarker = (
   icon,
   iconSize: { base: 32, min: 18, max: 48 },
   fallbackRadius: 10,
+  borderClass: MONSTER_BORDER_CLASSES[id],
   selection,
   defaultVisible: id !== "creatures",
   z: precedence,
@@ -174,6 +184,7 @@ interface SimpleMarkerOptions<TRow extends MarkerRow> {
   color: RGB;
   icon: IconNode;
   fallbackRadius: number;
+  borderClass: string;
   iconSize?: { base: number; min: number; max: number };
   defaultVisible?: boolean;
   z: number;
@@ -189,6 +200,7 @@ const simpleMarker = <TRow extends MarkerRow>({
   color,
   icon,
   fallbackRadius,
+  borderClass,
   iconSize = { base: 20, min: 18, max: 44 },
   defaultVisible = false,
   z,
@@ -208,6 +220,7 @@ const simpleMarker = <TRow extends MarkerRow>({
   icon,
   iconSize,
   fallbackRadius,
+  borderClass,
   selection,
   defaultVisible,
   z,
@@ -283,6 +296,7 @@ export const markerRegistry = {
     icon: User,
     iconSize: { base: 32, min: 18, max: 48 },
     fallbackRadius: 10,
+    borderClass: "border-l-blue-500",
     selection: {
       kind: "by-field",
       field: (row: NpcMapEntity) => row.id,
@@ -303,6 +317,7 @@ export const markerRegistry = {
     icon: CircleDot,
     iconSize: { base: 22, min: 20, max: 48 },
     fallbackRadius: 6,
+    borderClass: "border-l-green-500",
     selection: {
       kind: "by-field",
       field: (row: PortalMapEntity) => row.id,
@@ -328,6 +343,7 @@ export const markerRegistry = {
     color: [14, 165, 233],
     icon: Box,
     fallbackRadius: 5,
+    borderClass: "border-l-sky-500",
     z: 800,
     match: (row) => row.type === "chest",
   }),
@@ -339,6 +355,7 @@ export const markerRegistry = {
     color: [20, 184, 166],
     icon: Shovel,
     fallbackRadius: 5,
+    borderClass: "border-l-teal-500",
     z: 810,
     match: (row) => row.type === "treasure",
   }),
@@ -350,6 +367,7 @@ export const markerRegistry = {
     color: [249, 115, 22],
     icon: Flame,
     fallbackRadius: 7,
+    borderClass: "border-l-orange-500",
     defaultVisible: true,
     z: 820,
     match: (row) => row.type === "altar",
@@ -362,6 +380,7 @@ export const markerRegistry = {
     color: [225, 29, 72],
     icon: TriangleAlert,
     fallbackRadius: 5,
+    borderClass: "border-l-rose-600",
     defaultVisible: true,
     z: 830,
     match: (row) => row.type === "trap",
@@ -374,6 +393,7 @@ export const markerRegistry = {
     color: [245, 158, 11],
     icon: Home,
     fallbackRadius: 6,
+    borderClass: "border-l-amber-500",
     z: 840,
     match: (row) => row.type === "house",
   }),
@@ -385,6 +405,7 @@ export const markerRegistry = {
     color: [132, 204, 22],
     icon: Leaf,
     fallbackRadius: 3,
+    borderClass: "border-l-lime-500",
     z: 900,
     match: (row) => row.type === "gathering_plant",
   }),
@@ -396,6 +417,7 @@ export const markerRegistry = {
     color: [23, 37, 84],
     icon: Pickaxe,
     fallbackRadius: 3,
+    borderClass: "border-l-blue-950",
     z: 910,
     match: (row) => row.type === "gathering_mineral",
   }),
@@ -407,6 +429,7 @@ export const markerRegistry = {
     color: [168, 85, 247],
     icon: Sparkles,
     fallbackRadius: 3,
+    borderClass: "border-l-purple-500",
     z: 920,
     match: (row) => row.type === "gathering_spark",
   }),
@@ -418,6 +441,7 @@ export const markerRegistry = {
     color: [6, 182, 212],
     icon: Fish,
     fallbackRadius: 3,
+    borderClass: "border-l-cyan-500",
     z: 930,
     match: (row) => row.type === "gathering_fish",
     selection: {
@@ -433,6 +457,7 @@ export const markerRegistry = {
     color: [156, 163, 175],
     icon: Package,
     fallbackRadius: 3,
+    borderClass: "border-l-gray-400",
     z: 940,
     match: (row) => row.type === "gathering_other",
   }),
@@ -444,6 +469,7 @@ export const markerRegistry = {
     color: [139, 92, 246],
     icon: FlaskConical,
     fallbackRadius: 5,
+    borderClass: "border-l-violet-500",
     z: 1000,
     match: (row) => row.type === "alchemy_table",
   }),
@@ -455,6 +481,7 @@ export const markerRegistry = {
     color: [139, 92, 246],
     icon: Hammer,
     fallbackRadius: 5,
+    borderClass: "border-l-violet-500",
     z: 1010,
     match: (row) => row.type === "crafting_station" && !row.isCookingOven,
   }),
@@ -466,6 +493,7 @@ export const markerRegistry = {
     color: [139, 92, 246],
     icon: ChefHat,
     fallbackRadius: 5,
+    borderClass: "border-l-violet-500",
     z: 1020,
     match: (row) => row.type === "crafting_station" && row.isCookingOven,
   }),
@@ -477,12 +505,59 @@ export const markerRegistry = {
     color: [168, 85, 247],
     icon: Scroll,
     fallbackRadius: 5,
+    borderClass: "border-l-purple-500",
     z: 1030,
     match: (row) => row.type === "scribing_table",
   }),
 } as const satisfies Record<string, AnyMarkerDef>;
 
 export type MarkerId = keyof typeof markerRegistry;
+
+export type MarkerPresentation = Pick<
+  MarkerDef,
+  | "color"
+  | "icon"
+  | "iconSize"
+  | "fallbackRadius"
+  | "borderClass"
+  | "label"
+  | "pluralLabel"
+  | "defaultVisible"
+  | "z"
+>;
+
+function deriveMarkerRecord<T>(
+  select: (marker: AnyMarkerDef) => T,
+): Record<MarkerId, T> {
+  const record = {} as Record<MarkerId, T>;
+  for (const [id, marker] of Object.entries(markerRegistry) as [
+    MarkerId,
+    AnyMarkerDef,
+  ][]) {
+    record[id] = select(marker);
+  }
+  return record;
+}
+
+export const MARKER_COLORS = deriveMarkerRecord((marker) => marker.color);
+export const MARKER_ICONS = deriveMarkerRecord((marker) => marker.icon);
+export const MARKER_ICON_SIZES = deriveMarkerRecord(
+  (marker) => marker.iconSize,
+);
+export const MARKER_RADII = deriveMarkerRecord(
+  (marker) => marker.fallbackRadius,
+);
+export const MARKER_BORDER_CLASSES = deriveMarkerRecord(
+  (marker) => marker.borderClass,
+);
+export const MARKER_LABELS = deriveMarkerRecord((marker) => marker.label);
+export const MARKER_PLURAL_LABELS = deriveMarkerRecord(
+  (marker) => marker.pluralLabel,
+);
+export const MARKER_DEFAULT_VISIBILITY = deriveMarkerRecord(
+  (marker) => marker.defaultVisible,
+);
+export const MARKER_Z_ORDER = deriveMarkerRecord((marker) => marker.z);
 
 const monsterMarkers: readonly MarkerDef<MonsterMapEntity>[] = [
   markerRegistry.creatures,
