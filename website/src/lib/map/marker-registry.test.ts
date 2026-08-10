@@ -118,7 +118,7 @@ describe("marker registry", () => {
       "fabled",
     );
     expect(resolveMarker(monster({ isBoss: true, isFabled: true }))).toBe(
-      "bosses",
+      "fabled",
     );
   });
 

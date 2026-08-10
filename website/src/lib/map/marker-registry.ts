@@ -122,26 +122,36 @@ const MONSTER_PRESENTATION = {
     borderClass: "border-l-red-500",
     iconSize: { base: 18, min: 16, max: 40 },
     fallbackRadius: 4,
+    precedence: 100,
+    z: 100,
   },
   bosses: {
     borderClass: "border-l-cyan-500",
     iconSize: { base: 32, min: 28, max: 64 },
     fallbackRadius: 10,
+    precedence: 400,
+    z: 500,
   },
   fabled: {
     borderClass: "border-l-emerald-500",
     iconSize: { base: 28, min: 26, max: 60 },
     fallbackRadius: 7,
+    precedence: 500,
+    z: 400,
   },
   elites: {
     borderClass: "border-l-purple-500",
     iconSize: { base: 26, min: 24, max: 56 },
     fallbackRadius: 6,
+    precedence: 300,
+    z: 300,
   },
   hunts: {
     borderClass: "border-l-yellow-500",
     iconSize: { base: 18, min: 16, max: 40 },
     fallbackRadius: 4,
+    precedence: 200,
+    z: 200,
   },
 } as const;
 
@@ -168,7 +178,7 @@ const monsterMarker = (
   borderClass: MONSTER_PRESENTATION[id].borderClass,
   selection,
   defaultVisible: id !== "creatures",
-  z: precedence,
+  z: MONSTER_PRESENTATION[id].z,
   decorations: monsterDecorations,
 });
 
@@ -291,7 +301,7 @@ export const markerRegistry = {
     "fabled",
     "Fabled",
     "Fabled",
-    400,
+    500,
     (row) => row.isFabled,
     Star,
     [16, 185, 129],
@@ -300,7 +310,7 @@ export const markerRegistry = {
     "bosses",
     "Boss",
     "Bosses",
-    500,
+    400,
     (row) => row.isBoss,
     Crown,
     [6, 182, 212],

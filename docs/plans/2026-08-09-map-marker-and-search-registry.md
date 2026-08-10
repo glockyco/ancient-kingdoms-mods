@@ -79,8 +79,9 @@ The shape holds, with two required refinements before migration:
 
 1. **Partition precedence is a real field.** Monster flags overlap in the source data, while
    paint order is a different concern. The spike therefore separates `precedence` from `z`
-   and resolves a row by highest declared precedence (`boss > fabled > elite > hunt >
-   creature`). Encoding this in each predicate would duplicate the precedence rule and
+   and resolves a row by highest declared precedence (`fabled > boss > elite > hunt >
+   creature`), matching the current partition filters. Paint order remains independent
+   (`bosses` still paints above `fabled`). Encoding this in each predicate would duplicate the precedence rule and
    make the completeness assertion impossible to state.
 2. **Portal rows need normalized sub-zone names.** The schema has
    `portals.from_sub_zone_id` and `portals.to_sub_zone_id` (`build-pipeline/schema.sql:1217-1246`).

@@ -20,10 +20,15 @@ import {
 } from "$lib/types/map";
 import type { ZoneFocusedData } from "./zone-filter";
 import { isAnyNpcTypeVisible } from "./visibility";
-import { MARKER_COLORS, MARKER_RADII } from "./marker-registry";
+import {
+  MARKER_COLORS,
+  MARKER_ICON_SIZES,
+  MARKER_RADII,
+  resolveMarker,
+  type MarkerId,
+} from "./marker-registry";
 import {
   LAYER_COLORS,
-  ICON_SIZES,
   BACKGROUND_COLOR,
   WORLD_BOUNDS,
   ZONE_COLORS,
@@ -257,6 +262,7 @@ export function createLayers(
   // Helper to create entity point layer (IconLayer if atlas provided, else ScatterplotLayer)
   function createEntityLayer<T extends AnyMapEntity>(config: {
     id: string;
+    markerId: MarkerId;
     data: T[];
     visible: boolean;
     iconType: string;
@@ -294,12 +300,7 @@ export function createLayers(
         ? (config.color as [number, number, number, number])
         : ([...config.color, 255] as [number, number, number, number]);
 
-    const sizeConfig = ICON_SIZES[config.iconType as keyof typeof ICON_SIZES];
-    if (!sizeConfig) {
-      throw new Error(
-        `Unknown icon type "${config.iconType}" - not found in ICON_SIZES`,
-      );
-    }
+    const sizeConfig = MARKER_ICON_SIZES[config.markerId];
 
     if (iconAtlas) {
       if (!iconAtlas.mapping[config.iconType]) {
@@ -457,6 +458,7 @@ export function createLayers(
 
   const gatheringPlantsLayer = createEntityLayer<GatheringMapEntity>({
     id: "gathering-plants",
+    markerId: "gatheringPlants",
     data: filtered.plants,
     visible: visibility.gatheringPlants,
     iconType: "gathering_plant",
@@ -476,6 +478,7 @@ export function createLayers(
 
   const gatheringMineralsLayer = createEntityLayer<GatheringMapEntity>({
     id: "gathering-minerals",
+    markerId: "gatheringMinerals",
     data: filtered.minerals,
     visible: visibility.gatheringMinerals,
     iconType: "gathering_mineral",
@@ -495,6 +498,7 @@ export function createLayers(
 
   const gatheringFishingLayer = createEntityLayer<GatheringMapEntity>({
     id: "gathering-fishing",
+    markerId: "gatheringFishing",
     data: filtered.fishingSpots,
     visible: visibility.gatheringFishing,
     iconType: "gathering_fish",
@@ -514,6 +518,7 @@ export function createLayers(
   // Radiant sparks use zone-only filtering (excluded from tier filter)
   const gatheringSparksLayer = createEntityLayer<GatheringMapEntity>({
     id: "gathering-sparks",
+    markerId: "gatheringSparks",
     data: filtered.sparks,
     visible: visibility.gatheringSparks,
     iconType: "gathering_spark",
@@ -530,6 +535,7 @@ export function createLayers(
   // Other gathering resources use zone-only filtering (excluded from tier filter)
   const gatheringOtherLayer = createEntityLayer<GatheringMapEntity>({
     id: "gathering-other",
+    markerId: "gatheringOther",
     data: filtered.otherGathering,
     visible: visibility.gatheringOther,
     iconType: "gathering_other",
@@ -545,6 +551,7 @@ export function createLayers(
 
   const alchemyTablesLayer = createEntityLayer<CraftingMapEntity>({
     id: "alchemy-tables",
+    markerId: "alchemyTables",
     data: filtered.alchemyTables,
     visible: visibility.alchemyTables,
     iconType: "alchemy_table",
@@ -560,6 +567,7 @@ export function createLayers(
 
   const forgesLayer = createEntityLayer<CraftingMapEntity>({
     id: "forges",
+    markerId: "forges",
     data: filtered.forges,
     visible: visibility.forges,
     iconType: "crafting_station",
@@ -575,6 +583,7 @@ export function createLayers(
 
   const cookingOvensLayer = createEntityLayer<CraftingMapEntity>({
     id: "cooking-ovens",
+    markerId: "cookingOvens",
     data: filtered.cookingOvens,
     visible: visibility.cookingOvens,
     iconType: "cooking_oven",
@@ -590,6 +599,7 @@ export function createLayers(
 
   const scribingTablesLayer = createEntityLayer<CraftingMapEntity>({
     id: "scribing-tables",
+    markerId: "scribingTables",
     data: filtered.scribingTables,
     visible: visibility.scribingTables,
     iconType: "scribing_table",
@@ -605,6 +615,7 @@ export function createLayers(
 
   const chestsLayer = createEntityLayer<ChestMapEntity>({
     id: "chests",
+    markerId: "chests",
     data: filtered.chests,
     visible: visibility.chests,
     iconType: "chest",
@@ -620,6 +631,7 @@ export function createLayers(
 
   const housesLayer = createEntityLayer<HouseMapEntity>({
     id: "houses",
+    markerId: "houses",
     data: filtered.houses,
     visible: visibility.houses,
     iconType: "house",
@@ -635,6 +647,7 @@ export function createLayers(
 
   const treasureLayer = createEntityLayer<TreasureMapEntity>({
     id: "treasure",
+    markerId: "treasure",
     data: filtered.treasure,
     visible: visibility.treasure,
     iconType: "treasure",
@@ -650,6 +663,7 @@ export function createLayers(
 
   const altarsLayer = createEntityLayer<AltarMapEntity>({
     id: "altars",
+    markerId: "altars",
     data: filtered.altars,
     visible: visibility.altars,
     iconType: "altar",
@@ -665,6 +679,7 @@ export function createLayers(
 
   const trapsLayer = createEntityLayer<TrapMapEntity>({
     id: "traps",
+    markerId: "traps",
     data: filtered.traps,
     visible: visibility.traps,
     iconType: "trap",
@@ -767,6 +782,7 @@ export function createLayers(
 
   const portalsLayer = createEntityLayer<PortalMapEntity>({
     id: "portals",
+    markerId: "portals",
     data: filtered.portals,
     visible: visibility.portals,
     iconType: "portal",
@@ -975,6 +991,7 @@ export function createLayers(
 
   const creaturesLayer = createEntityLayer<MonsterMapEntity>({
     id: "creatures",
+    markerId: "creatures",
     data: filtered.creatures,
     visible: visibility.creatures,
     iconType: "monster",
@@ -994,6 +1011,7 @@ export function createLayers(
 
   const huntsLayer = createEntityLayer<MonsterMapEntity>({
     id: "hunts",
+    markerId: "hunts",
     data: filtered.hunts,
     visible: visibility.hunts,
     iconType: "hunt",
@@ -1013,6 +1031,7 @@ export function createLayers(
 
   const elitesLayer = createEntityLayer<MonsterMapEntity>({
     id: "elites",
+    markerId: "elites",
     data: filtered.elites,
     visible: visibility.elites,
     iconType: "elite",
@@ -1032,6 +1051,7 @@ export function createLayers(
 
   const fabledLayer = createEntityLayer<MonsterMapEntity>({
     id: "fabled",
+    markerId: "fabled",
     data: filtered.fabled,
     visible: visibility.fabled,
     iconType: "fabled",
@@ -1051,6 +1071,7 @@ export function createLayers(
 
   const bossesLayer = createEntityLayer<MonsterMapEntity>({
     id: "bosses",
+    markerId: "bosses",
     data: filtered.bosses,
     visible: visibility.bosses,
     iconType: "boss",
@@ -1070,6 +1091,7 @@ export function createLayers(
 
   const npcsLayer = createEntityLayer<NpcMapEntity>({
     id: "npcs",
+    markerId: "npc",
     data: filtered.npcs,
     visible: isAnyNpcTypeVisible(visibility),
     iconType: "npc",
@@ -1090,64 +1112,12 @@ export function createLayers(
     },
   });
 
-  // Get the icon type key for an entity (matches ICON_SIZES keys)
-  const getIconTypeKey = (d: AnyMapEntity): keyof typeof ICON_SIZES => {
-    switch (d.type) {
-      case "fabled":
-        return "fabled";
-      case "boss":
-        return "boss";
-      case "elite":
-        return "elite";
-      case "hunt":
-        return "hunt";
-      case "monster":
-        if ("isFabled" in d && d.isFabled) return "fabled";
-        if ("isBoss" in d && d.isBoss) return "boss";
-        if ("isElite" in d && d.isElite) return "elite";
-        if ("isHunt" in d && d.isHunt) return "hunt";
-        return "monster";
-      case "npc":
-        return "npc";
-      case "portal":
-        return "portal";
-      case "chest":
-        return "chest";
-      case "treasure":
-        return "treasure";
-      case "altar":
-        return "altar";
-      case "trap":
-        return "trap";
-      case "gathering_plant":
-        return "gathering_plant";
-      case "gathering_mineral":
-        return "gathering_mineral";
-      case "gathering_spark":
-        return "gathering_spark";
-      case "gathering_fish":
-        return "gathering_fish";
-      case "gathering_other":
-        return "gathering_other";
-      case "house":
-        return "house";
-      case "alchemy_table":
-        return "alchemy_table";
-      case "scribing_table":
-        return "scribing_table";
-      case "crafting_station":
-        if ("isCookingOven" in d && d.isCookingOven) return "cooking_oven";
-        return "crafting_station";
-      default:
-        return "monster";
-    }
-  };
-
   // Ring radius = half the icon diameter (so ring matches icon circle size)
   const getRingRadius = (d: AnyMapEntity): number => {
-    const iconType = getIconTypeKey(d);
-    const iconSize = ICON_SIZES[iconType]?.base ?? 18;
-    return iconSize / 2;
+    const markerId =
+      resolveMarker(d) ?? (d.type === "portal" ? "portals" : null);
+    if (!markerId) return MARKER_ICON_SIZES.creatures.base / 2;
+    return MARKER_ICON_SIZES[markerId].base / 2;
   };
 
   // Outline layer for selection highlight (dark shadow for visibility on bright backgrounds)
