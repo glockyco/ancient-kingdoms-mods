@@ -133,7 +133,7 @@ describe("marker registry", () => {
       alchemyTables: [139, 92, 246],
       forges: [139, 92, 246],
       cookingOvens: [139, 92, 246],
-      scribingTables: [168, 85, 247],
+      scribingTables: [139, 92, 246],
     });
     expect(MARKER_ICON_SIZES).toMatchObject({
       bosses: { base: 32, min: 28, max: 64 },

@@ -573,7 +573,7 @@ export const markerRegistry = {
     source: "interactables",
     label: "Scribing Table",
     pluralLabel: "Scribing Tables",
-    color: [168, 85, 247],
+    color: [139, 92, 246],
     icon: Scroll,
     iconType: "scribing_table",
     iconSize: { base: 20, min: 18, max: 44 },
