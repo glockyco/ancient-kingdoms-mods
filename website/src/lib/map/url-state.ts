@@ -35,17 +35,18 @@ export interface MapUrlState {
 }
 
 /**
- * Default layers that are enabled when no URL parameter is present
- * Minimal view: bosses, elites, altars, and terrain only
+ * Layers enabled when no `layers` URL parameter is present.
+ *
+ * Derived from `getDefaultLayerVisibility()` so the two cannot disagree. When
+ * they did, `buildUrl` saw every fresh session as differing from the default
+ * and wrote a redundant `layers` parameter into every URL.
  */
-const DEFAULT_LAYERS: (keyof LayerVisibility)[] = [
-  "bosses",
-  "elites",
-  "altars",
-  "traps",
-  "tiles",
-  "npcRenewalSages",
-];
+function getDefaultLayers(): (keyof LayerVisibility)[] {
+  const defaults = getDefaultLayerVisibility();
+  return (Object.keys(defaults) as (keyof LayerVisibility)[]).filter(
+    (key) => defaults[key],
+  );
+}
 
 /**
  * Get default LayerVisibility state
@@ -340,7 +341,7 @@ function buildUrl(params: UrlStateParams): string {
     Object.keys(params.layers) as (keyof LayerVisibility)[]
   ).filter((k) => params.layers[k]);
   const sortedActive = [...activeLayers].sort();
-  const sortedDefault = [...DEFAULT_LAYERS].sort();
+  const sortedDefault = getDefaultLayers().sort();
   if (JSON.stringify(sortedActive) !== JSON.stringify(sortedDefault)) {
     urlParams.set("layers", activeLayers.join(","));
   }
