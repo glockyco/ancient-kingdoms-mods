@@ -17,7 +17,7 @@
   path="/professions/exploring"
 />
 
-<div class="container mx-auto p-8 space-y-8">
+<div class="container mx-auto max-w-6xl space-y-10 p-8">
   <Breadcrumb
     items={[
       { label: "Home", href: "/" },

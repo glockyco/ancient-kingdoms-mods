@@ -130,9 +130,20 @@ public class PetExporter : BaseExporter
 
             // Mercenary appearance is built per character from race, gender, hair,
             // and worn equipment, so the prefab rig is one arbitrary hire rather
-            // than what any given player sees. Only fixed-appearance pets have a
-            // portrait worth publishing.
-            if (!pet.isMercenary)
+            // than what any given player sees. Their authoritative static artwork
+            // is the portrait icon shown by the party UI.
+            if (pet.isMercenary)
+            {
+                VisualAssets?.ExportSprite(
+                    "pet",
+                    name,
+                    "icon",
+                    "Pet.portraitIcon",
+                    pet.portraitIcon != null ? pet.portraitIcon.GetType().FullName : "UnityEngine.Sprite",
+                    pet.portraitIcon != null ? pet.portraitIcon.name : null,
+                    pet.portraitIcon);
+            }
+            else
             {
                 ExportEntitySprite("pet", name, "Pet.gameObject", pet.gameObject);
             }

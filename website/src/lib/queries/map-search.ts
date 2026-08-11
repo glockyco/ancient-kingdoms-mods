@@ -1,6 +1,7 @@
 import { query } from "$lib/db";
 import { WORLD_BOSS_DUNGEON_ID } from "$lib/constants/constants";
 import { TRAP_TYPE_LABELS, type TrapType } from "$lib/constants/traps";
+import { searchEntities, type SearchResult } from "$lib/search/search";
 
 export interface MapSearchBounds {
   minX: number;
@@ -24,10 +25,7 @@ export type MapSearchCategory =
   | "item"
   | "quest";
 
-/**
- * Display order for search result categories.
- * Used for both round-robin result distribution and UI grouping.
- */
+/** Display order retained for callers which need the legacy map grouping order. */
 export const SEARCH_CATEGORY_ORDER: MapSearchCategory[] = [
   "zone",
   "altar",
@@ -48,1101 +46,458 @@ export interface MapSearchResult {
   id: string;
   name: string;
   category: MapSearchCategory;
+  /** Entity registry family used for labels and glyphs. */
+  entityType?: string;
+  entityLabel?: string;
+  image: string | null;
   subcategory?: string;
-  /** Bounding box containing all spawn locations (null if no mappable location) */
+  quality?: number;
+  /** Bounding box containing all spawn locations (null if no mappable location). */
   bounds: MapSearchBounds | null;
   zoneId?: string;
   zoneName?: string;
   level?: number;
-  /** Number of spawn locations on the map (for entities with multiple spawns) */
+  /** Number of physical source locations on the map. */
   spawnCount?: number;
-  /** Keywords matched (for displaying type badges) */
   keywords?: string;
-  /** NPC roles (only for category="npc") */
   roles?: Record<string, boolean>;
-  /** Dungeon name that this renewal sage resets (only for renewal sage NPCs) */
   renewalDungeonName?: string;
 }
 
-/**
- * Search all map entities using FTS5 prefix matching.
- * Returns entities from all zones (including excluded ones),
- * but entities in excluded zones will have position: null.
- */
-export async function searchMapEntities(
-  searchQuery: string,
-  limit = 20,
-): Promise<MapSearchResult[]> {
-  if (!searchQuery.trim()) return [];
-
-  // Wrap in double quotes to escape FTS5 special characters (apostrophes, etc.)
-  // and add * for prefix matching
-  const escaped = searchQuery.trim().replace(/"/g, '""');
-  const ftsQuery = `"${escaped}"*`;
-
-  // Fetch up to limit from each category to allow redistribution
-  const [
-    monsters,
-    npcs,
-    zones,
-    resources,
-    chests,
-    treasure,
-    altars,
-    crafting,
-    houses,
-    traps,
-    portals,
-    items,
-    quests,
-  ] = await Promise.all([
-    searchMonsters(ftsQuery, limit),
-    searchNpcs(ftsQuery, limit),
-    searchZones(ftsQuery, limit),
-    searchGatheringResources(ftsQuery, limit),
-    searchChests(ftsQuery, limit),
-    searchTreasure(ftsQuery, limit),
-    searchAltars(ftsQuery, limit),
-    searchCraftingStations(ftsQuery, limit),
-    searchHouses(ftsQuery, limit),
-    searchTraps(ftsQuery, limit),
-    searchPortals(ftsQuery, limit),
-    searchItems(ftsQuery, limit),
-    searchQuests(ftsQuery, limit),
-  ]);
-
-  // Round-robin distribution: take 1 from each category per round
-  // This ensures even distribution across all categories with results
-  // Order defined by SEARCH_CATEGORY_ORDER
-  const resultsByCategory: Record<MapSearchCategory, MapSearchResult[]> = {
-    monster: monsters,
-    npc: npcs,
-    zone: zones,
-    resource: resources,
-    chest: chests,
-    treasure: treasure,
-    altar: altars,
-    crafting: crafting,
-    portal: portals,
-    house: houses,
-    trap: traps,
-    item: items,
-    quest: quests,
-  };
-  const categories = SEARCH_CATEGORY_ORDER.map((cat) => resultsByCategory[cat]);
-  const results: MapSearchResult[] = [];
-  const taken = categories.map(() => 0);
-
-  while (results.length < limit) {
-    let addedThisRound = false;
-
-    for (let i = 0; i < categories.length; i++) {
-      if (results.length >= limit) break;
-      if (taken[i] < categories[i].length) {
-        results.push(categories[i][taken[i]]);
-        taken[i]++;
-        addedThisRound = true;
-      }
-    }
-
-    if (!addedThisRound) break;
-  }
-
-  return results;
-}
-
-interface MonsterSearchRow {
+type GeometryRow = {
   id: string;
-  name: string;
-  is_boss: number;
-  is_fabled: number;
-  is_elite: number;
-  is_hunt: number;
-  keywords: string | null;
   min_x: number | null;
   max_x: number | null;
   min_y: number | null;
   max_y: number | null;
   zone_id: string | null;
   zone_name: string | null;
-  level: number;
-  spawn_count: number;
-  is_altar_only: number;
-  altar_id: string | null;
-  altar_x: number | null;
-  altar_y: number | null;
-}
+  level: number | null;
+  spawn_count: number | null;
+  subcategory?: string | null;
+  keywords?: string | null;
+  roles?: string | null;
+  renewal_dungeon_name?: string | null;
+  quality?: number | null;
+  display_name?: string | null;
+  is_altar_only?: number | null;
+  altar_x?: number | null;
+  altar_y?: number | null;
+};
 
-async function searchMonsters(
-  ftsQuery: string,
-  limit: number,
-): Promise<MapSearchResult[]> {
-  // Query handles all spawn types (regular, summon, placeholder, altar)
-  // Altar-only monsters redirect selection to the altar marker
-  const rows = await query<MonsterSearchRow>(
-    `
-    SELECT
-      m.id,
-      m.name,
-      m.is_boss,
-      m.is_fabled,
-      m.is_elite,
-      m.is_hunt,
+type MapEntityCategory = MapSearchCategory;
+
+const ENTITY_CATEGORY: Partial<
+  Record<SearchResult["entityType"], MapEntityCategory>
+> = {
+  monster: "monster",
+  npc: "npc",
+  zone: "zone",
+  gathering_resource: "resource",
+  chest: "chest",
+  treasure: "treasure",
+  altar: "altar",
+  crafting_station: "crafting",
+  alchemy_table: "crafting",
+  scribing_table: "crafting",
+  house: "house",
+  trap: "trap",
+  portal: "portal",
+  item: "item",
+  quest: "quest",
+};
+
+/**
+ * These queries intentionally enrich the compact search result from the
+ * authoritative compendium. Search ranking stays in search.db; these rows
+ * only restore the map result contract and physical source geometry.
+ */
+const GEOMETRY_QUERY: Partial<Record<SearchResult["entityType"], string>> = {
+  monster: `
+    SELECT m.id,
+      MIN(ms.position_x) min_x, MAX(ms.position_x) max_x,
+      MIN(ms.position_y) min_y, MAX(ms.position_y) max_y,
+      COALESCE(ms.zone_id, a.zone_id) zone_id,
+      COALESCE(z.name, az.name) zone_name,
+      COALESCE(ms.level, m.level) level,
+      COUNT(ms.id) spawn_count,
+      CASE WHEN m.is_fabled THEN 'fabled'
+           WHEN m.is_boss THEN 'boss'
+           WHEN m.is_elite THEN 'elite'
+           WHEN m.is_hunt THEN 'hunt' END subcategory,
       m.keywords,
-      -- Spawn positions (all spawn types have their own positions)
-      MIN(ms.position_x) as min_x,
-      MAX(ms.position_x) as max_x,
-      MIN(ms.position_y) as min_y,
-      MAX(ms.position_y) as max_y,
-      COALESCE(ms.zone_id, a.zone_id) as zone_id,
-      COALESCE(z.name, az.name) as zone_name,
-      COALESCE(ms.level, m.level) as level,
-      COUNT(ms.id) as spawn_count,
-      -- Check if monster only appears in altars (no regular/summon/placeholder spawns)
       CASE
-        WHEN SUM(CASE WHEN ms.spawn_type IN ('regular', 'summon', 'placeholder') THEN 1 ELSE 0 END) > 0
-          THEN 0
-        WHEN SUM(CASE WHEN ms.spawn_type = 'altar' THEN 1 ELSE 0 END) > 0
-          THEN 1
+        WHEN SUM(CASE WHEN ms.spawn_type IN ('regular', 'summon', 'placeholder') THEN 1 ELSE 0 END) = 0
+         AND SUM(CASE WHEN ms.spawn_type = 'altar' THEN 1 ELSE 0 END) > 0 THEN 1
         ELSE 0
-      END as is_altar_only,
-      MAX(CASE WHEN ms.spawn_type = 'altar' THEN ms.source_altar_id END) as altar_id,
-      -- Altar position for fly-to (used when is_altar_only = 1)
-      MAX(a.position_x) as altar_x,
-      MAX(a.position_y) as altar_y
-    FROM monsters_fts mf
-    JOIN monsters m ON mf.rowid = m.rowid
+      END is_altar_only,
+      MAX(a.position_x) altar_x, MAX(a.position_y) altar_y,
+      NULL quality, NULL roles, NULL renewal_dungeon_name, NULL display_name
+    FROM monsters m
     LEFT JOIN monster_spawns ms ON ms.monster_id = m.id
     LEFT JOIN altars a ON a.id = ms.source_altar_id
     LEFT JOIN zones az ON az.id = a.zone_id
     LEFT JOIN zones z ON z.id = ms.zone_id
-    WHERE monsters_fts MATCH ?
+    WHERE m.id IN (/*IDS*/)
     GROUP BY m.id
-    ORDER BY rank
-    LIMIT ?
   `,
-    [ftsQuery, limit],
-  );
-
-  return rows.map((r) => {
-    // For altar-only monsters, use altar position for bounds (fly-to target)
-    // This centers the view on the altar marker, not the spawn positions
-    const isAltarOnly = Boolean(r.is_altar_only) && r.altar_x !== null;
-    const boundsX = isAltarOnly ? r.altar_x! : r.min_x;
-    const boundsY = isAltarOnly ? r.altar_y! : r.min_y;
-
-    return {
-      id: r.id,
-      name: r.name,
-      category: "monster" as const,
-      subcategory: r.is_fabled
-        ? "fabled"
-        : r.is_boss
-          ? "boss"
-          : r.is_elite
-            ? "elite"
-            : r.is_hunt
-              ? "hunt"
-              : undefined,
-      bounds:
-        boundsX !== null
-          ? {
-              minX: isAltarOnly ? boundsX : r.min_x!,
-              maxX: isAltarOnly ? boundsX : r.max_x!,
-              minY: isAltarOnly ? -boundsY! : -r.max_y!,
-              maxY: isAltarOnly ? -boundsY! : -r.min_y!,
-            }
-          : null,
-      zoneId: r.zone_id ?? undefined,
-      zoneName: r.zone_name ?? undefined,
-      level: r.level,
-      spawnCount: r.spawn_count > 1 ? r.spawn_count : undefined,
-      keywords: r.keywords ?? undefined,
-    };
-  });
-}
-
-interface NpcSearchRow {
-  id: string;
-  name: string;
-  roles: string | null;
-  keywords: string | null;
-  min_x: number | null;
-  max_x: number | null;
-  min_y: number | null;
-  max_y: number | null;
-  zone_id: string | null;
-  zone_name: string | null;
-  spawn_count: number;
-  renewal_dungeon_name: string | null;
-}
-
-async function searchNpcs(
-  ftsQuery: string,
-  limit: number,
-): Promise<MapSearchResult[]> {
-  const rows = await query<NpcSearchRow>(
-    `
-    SELECT
-      n.id,
-      n.name,
-      n.roles,
-      n.keywords,
-      MIN(ns.position_x) as min_x,
-      MAX(ns.position_x) as max_x,
-      MIN(ns.position_y) as min_y,
-      MAX(ns.position_y) as max_y,
-      ns.zone_id,
-      z.name as zone_name,
-      COUNT(ns.id) as spawn_count,
-      CASE
-        WHEN n.respawn_dungeon_id = ${WORLD_BOSS_DUNGEON_ID} THEN 'World Bosses'
-        ELSE rz.name
-      END as renewal_dungeon_name
-    FROM npcs_fts nf
-    JOIN npcs n ON nf.rowid = n.rowid
-    LEFT JOIN npc_spawns ns ON ns.npc_id = n.id
-      AND ns.position_x IS NOT NULL
+  npc: `
+    SELECT n.id,
+      MIN(ns.position_x) min_x, MAX(ns.position_x) max_x,
+      MIN(ns.position_y) min_y, MAX(ns.position_y) max_y,
+      ns.zone_id, z.name zone_name, n.level, COUNT(ns.id) spawn_count,
+      CASE WHEN json_extract(n.roles, '$.is_vendor') = 1
+                  OR json_extract(n.roles, '$.isVendor') = 1 THEN 'vendor'
+           WHEN json_extract(n.roles, '$.is_quest_giver') = 1
+                  OR json_extract(n.roles, '$.isQuestGiver') = 1 THEN 'quest' END subcategory,
+      n.keywords, n.roles,
+      CASE WHEN n.respawn_dungeon_id = ${WORLD_BOSS_DUNGEON_ID} THEN 'World Bosses'
+           ELSE rz.name END renewal_dungeon_name,
+      NULL quality, NULL display_name
+    FROM npcs n
+    LEFT JOIN npc_spawns ns ON ns.npc_id = n.id AND ns.position_x IS NOT NULL
     LEFT JOIN zones z ON z.id = ns.zone_id
     LEFT JOIN zones rz ON rz.zone_id = n.respawn_dungeon_id
-    WHERE npcs_fts MATCH ?
+    WHERE n.id IN (/*IDS*/)
     GROUP BY n.id
-    ORDER BY rank
-    LIMIT ?
   `,
-    [ftsQuery, limit],
-  );
-
-  return rows.map((r) => {
-    const roles = r.roles ? JSON.parse(r.roles) : {};
-    let subcategory: string | undefined;
-    if (roles.isVendor) subcategory = "vendor";
-    else if (roles.isQuestGiver) subcategory = "quest";
-
-    return {
-      id: r.id,
-      name: r.name,
-      category: "npc" as const,
-      subcategory,
-      bounds:
-        r.min_x !== null
-          ? {
-              minX: r.min_x,
-              maxX: r.max_x!,
-              minY: -r.max_y!,
-              maxY: -r.min_y!,
-            }
-          : null,
-      zoneId: r.zone_id ?? undefined,
-      zoneName: r.zone_name ?? undefined,
-      spawnCount: r.spawn_count > 1 ? r.spawn_count : undefined,
-      keywords: r.keywords ?? undefined,
-      roles: r.roles ? roles : undefined,
-      renewalDungeonName: r.renewal_dungeon_name ?? undefined,
-    };
-  });
-}
-
-interface ZoneSearchRow {
-  id: string;
-  name: string;
-  min_x: number | null;
-  max_x: number | null;
-  min_y: number | null;
-  max_y: number | null;
-}
-
-async function searchZones(
-  ftsQuery: string,
-  limit: number,
-): Promise<MapSearchResult[]> {
-  const rows = await query<ZoneSearchRow>(
-    `
-    SELECT
-      z.id,
-      z.name,
-      z.bounds_min_x as min_x,
-      z.bounds_max_x as max_x,
-      z.bounds_min_y as min_y,
-      z.bounds_max_y as max_y
-    FROM zones_fts zf
-    JOIN zones z ON zf.rowid = z.rowid
-    WHERE zf.name MATCH ?
-    ORDER BY rank
-    LIMIT ?
+  zone: `
+    SELECT z.id,
+      z.bounds_min_x min_x, z.bounds_max_x max_x,
+      z.bounds_min_y min_y, z.bounds_max_y max_y,
+      z.id zone_id, z.name zone_name, NULL level, NULL spawn_count,
+      NULL subcategory, NULL keywords, NULL roles, NULL renewal_dungeon_name,
+      NULL quality, NULL display_name
+    FROM zones z WHERE z.id IN (/*IDS*/)
   `,
-    [ftsQuery, limit],
-  );
-
-  return rows.map((r) => ({
-    id: r.id,
-    name: r.name,
-    category: "zone" as const,
-    bounds:
-      r.min_x !== null
-        ? {
-            minX: r.min_x,
-            maxX: r.max_x!,
-            minY: -r.max_y!,
-            maxY: -r.min_y!,
-          }
-        : null,
-    zoneId: r.id,
-    zoneName: r.name,
-  }));
-}
-
-interface ResourceSearchRow {
-  id: string;
-  name: string;
-  level: number;
-  keywords: string | null;
-  min_x: number | null;
-  max_x: number | null;
-  min_y: number | null;
-  max_y: number | null;
-  zone_id: string | null;
-  zone_name: string | null;
-  spawn_count: number;
-}
-
-async function searchGatheringResources(
-  ftsQuery: string,
-  limit: number,
-): Promise<MapSearchResult[]> {
-  const rows = await query<ResourceSearchRow>(
-    `
-    SELECT
-      gr.id,
-      gr.name,
-      gr.level,
-      gr.keywords,
-      MIN(gs.position_x) as min_x,
-      MAX(gs.position_x) as max_x,
-      MIN(gs.position_y) as min_y,
-      MAX(gs.position_y) as max_y,
-      gs.zone_id,
-      z.name as zone_name,
-      COUNT(gs.id) as spawn_count
-    FROM gathering_resources_fts grf
-    JOIN gathering_resources gr ON grf.rowid = gr.rowid
-    LEFT JOIN gathering_resource_spawns gs ON gs.resource_id = gr.id
-      AND gs.position_x IS NOT NULL
+  gathering_resource: `
+    SELECT gr.id,
+      MIN(gs.position_x) min_x, MAX(gs.position_x) max_x,
+      MIN(gs.position_y) min_y, MAX(gs.position_y) max_y,
+      gs.zone_id, z.name zone_name, gr.level, COUNT(gs.id) spawn_count,
+      NULL subcategory, gr.keywords, NULL roles, NULL renewal_dungeon_name,
+      NULL quality, NULL display_name
+    FROM gathering_resources gr
+    LEFT JOIN gathering_resource_spawns gs ON gs.resource_id = gr.id AND gs.position_x IS NOT NULL
     LEFT JOIN zones z ON z.id = gs.zone_id
-    WHERE gathering_resources_fts MATCH ?
+    WHERE gr.id IN (/*IDS*/)
     GROUP BY gr.id
-    ORDER BY rank
-    LIMIT ?
   `,
-    [ftsQuery, limit],
-  );
-
-  return rows.map((r) => ({
-    id: r.id,
-    name: r.name,
-    category: "resource" as const,
-    bounds:
-      r.min_x !== null
-        ? {
-            minX: r.min_x,
-            maxX: r.max_x!,
-            minY: -r.max_y!,
-            maxY: -r.min_y!,
-          }
-        : null,
-    zoneId: r.zone_id ?? undefined,
-    zoneName: r.zone_name ?? undefined,
-    level: r.level,
-    spawnCount: r.spawn_count > 1 ? r.spawn_count : undefined,
-    keywords: r.keywords ?? undefined,
-  }));
-}
-
-interface ChestSearchRow {
-  id: string;
-  name: string;
-  position_x: number | null;
-  position_y: number | null;
-  zone_id: string | null;
-  zone_name: string | null;
-}
-
-async function searchChests(
-  ftsQuery: string,
-  limit: number,
-): Promise<MapSearchResult[]> {
-  const rows = await query<ChestSearchRow>(
-    `
-    SELECT
-      c.id,
-      c.name,
-      c.position_x,
-      c.position_y,
-      c.zone_id,
-      z.name as zone_name
-    FROM chests_fts cf
-    JOIN chests c ON cf.rowid = c.rowid
-    LEFT JOIN zones z ON z.id = c.zone_id
-    WHERE cf.name MATCH ?
-    ORDER BY rank
-    LIMIT ?
+  chest: `
+    SELECT c.id, c.position_x min_x, c.position_x max_x,
+      c.position_y min_y, c.position_y max_y, c.zone_id, z.name zone_name,
+      NULL level, 1 spawn_count, NULL subcategory, NULL keywords,
+      NULL roles, NULL renewal_dungeon_name, NULL quality, 'Chest' display_name
+    FROM chests c LEFT JOIN zones z ON z.id = c.zone_id
+    WHERE c.id IN (/*IDS*/)
   `,
-    [ftsQuery, limit],
-  );
-
-  return rows.map((r) => {
-    const y = r.position_y !== null ? -r.position_y : null;
-    return {
-      id: r.id,
-      name: "Chest",
-      category: "chest" as const,
-      bounds:
-        r.position_x !== null && y !== null
-          ? { minX: r.position_x, maxX: r.position_x, minY: y, maxY: y }
-          : null,
-      zoneId: r.zone_id ?? undefined,
-      zoneName: r.zone_name ?? undefined,
-    };
-  });
-}
-
-interface TrapSearchRow {
-  id: string;
-  type: TrapType;
-  effect_skill_name: string | null;
-  teleport_zone_name: string | null;
-  position_x: number | null;
-  position_y: number | null;
-  zone_id: string | null;
-  zone_name: string | null;
-}
-
-async function searchTraps(
-  ftsQuery: string,
-  limit: number,
-): Promise<MapSearchResult[]> {
-  const rows = await query<TrapSearchRow>(
-    `
-    SELECT
-      t.id,
-      t.type,
-      s.name as effect_skill_name,
-      tz.name as teleport_zone_name,
-      t.position_x,
-      t.position_y,
-      t.zone_id,
-      z.name as zone_name
-    FROM traps_fts tf
-    JOIN traps t ON tf.rowid = t.rowid
+  treasure: `
+    SELECT tl.id, tl.position_x min_x, tl.position_x max_x,
+      tl.position_y min_y, tl.position_y max_y, tl.zone_id, z.name zone_name,
+      NULL level, 1 spawn_count, NULL subcategory, NULL keywords,
+      NULL roles, NULL renewal_dungeon_name, NULL quality, i.name display_name
+    FROM treasure_locations tl
+    LEFT JOIN items i ON i.id = tl.required_map_id
+    LEFT JOIN zones z ON z.id = tl.zone_id
+    WHERE tl.id IN (/*IDS*/)
+  `,
+  altar: `
+    SELECT a.id, a.position_x min_x, a.position_x max_x,
+      a.position_y min_y, a.position_y max_y, a.zone_id, z.name zone_name,
+      a.min_level_required level, 1 spawn_count, a.type subcategory,
+      NULL keywords, NULL roles, NULL renewal_dungeon_name, NULL quality, NULL display_name
+    FROM altars a LEFT JOIN zones z ON z.id = a.zone_id
+    WHERE a.id IN (/*IDS*/)
+  `,
+  house: `
+    SELECT h.id, h.position_x min_x, h.position_x max_x,
+      h.position_y min_y, h.position_y max_y, h.zone_id,
+      COALESCE(h.zone_name, z.name) zone_name, NULL level, 1 spawn_count,
+      printf('%d gold', h.base_price) subcategory, NULL keywords,
+      NULL roles, NULL renewal_dungeon_name, NULL quality, h.name display_name
+    FROM houses h LEFT JOIN zones z ON z.id = h.zone_id
+    WHERE h.id IN (/*IDS*/)
+  `,
+  crafting_station: `
+    SELECT c.id, c.position_x min_x, c.position_x max_x,
+      c.position_y min_y, c.position_y max_y, c.zone_id, c.zone_name,
+      NULL level, 1 spawn_count,
+      CASE WHEN c.keywords LIKE '%scribing%' THEN 'scribing'
+           WHEN c.keywords LIKE '%alchemy%' THEN 'alchemy'
+           WHEN c.is_cooking_oven THEN 'cooking' ELSE 'forge' END subcategory,
+      c.keywords, NULL roles, NULL renewal_dungeon_name, NULL quality, c.name display_name
+    FROM crafting_stations c WHERE c.id IN (/*IDS*/)
+  `,
+  alchemy_table: `
+    SELECT a.id, a.position_x min_x, a.position_x max_x,
+      a.position_y min_y, a.position_y max_y, a.zone_id, a.sub_zone_name zone_name,
+      NULL level, 1 spawn_count, 'alchemy' subcategory, a.keywords,
+      NULL roles, NULL renewal_dungeon_name, NULL quality, a.name display_name
+    FROM alchemy_tables a WHERE a.id IN (/*IDS*/)
+  `,
+  scribing_table: `
+    SELECT s.id, s.position_x min_x, s.position_x max_x,
+      s.position_y min_y, s.position_y max_y, s.zone_id, s.sub_zone_name zone_name,
+      NULL level, 1 spawn_count, 'scribing' subcategory, s.keywords,
+      NULL roles, NULL renewal_dungeon_name, NULL quality, s.name display_name
+    FROM scribing_tables s WHERE s.id IN (/*IDS*/)
+  `,
+  portal: `
+    SELECT p.id, p.position_x min_x, p.position_x max_x,
+      p.position_y min_y, p.position_y max_y, p.from_zone_id zone_id,
+      fz.name zone_name, NULL level, 1 spawn_count, NULL subcategory,
+      p.keywords, NULL roles, NULL renewal_dungeon_name, NULL quality,
+      CASE WHEN p.is_closed THEN 'Closed Portal'
+           WHEN tz.name IS NOT NULL THEN 'Portal to ' || tz.name
+           ELSE 'Portal' END display_name
+    FROM portals p
+    LEFT JOIN zones fz ON fz.id = p.from_zone_id
+    LEFT JOIN zones tz ON tz.id = p.to_zone_id
+    WHERE p.id IN (/*IDS*/) AND p.is_template = 0
+  `,
+  trap: `
+    SELECT t.id, t.position_x min_x, t.position_x max_x,
+      t.position_y min_y, t.position_y max_y, t.zone_id, z.name zone_name,
+      NULL level, 1 spawn_count, t.type subcategory, t.keywords,
+      NULL roles, NULL renewal_dungeon_name, NULL quality,
+      COALESCE(s.name, CASE WHEN tz.name IS NOT NULL THEN 'Teleport to ' || tz.name
+                            ELSE NULL END) display_name
+    FROM traps t
     LEFT JOIN zones z ON z.id = t.zone_id
     LEFT JOIN skills s ON s.id = t.effect_skill_id
     LEFT JOIN zones tz ON tz.id = t.teleport_zone_id
-    WHERE traps_fts MATCH ?
-    ORDER BY rank
-    LIMIT ?
+    WHERE t.id IN (/*IDS*/)
   `,
-    [ftsQuery, limit],
-  );
-
-  return rows.map((r) => {
-    const y = r.position_y !== null ? -r.position_y : null;
-    return {
-      id: r.id,
-      name:
-        r.effect_skill_name ??
-        (r.teleport_zone_name
-          ? `Teleport to ${r.teleport_zone_name}`
-          : TRAP_TYPE_LABELS[r.type]),
-      category: "trap" as const,
-      bounds:
-        r.position_x !== null && y !== null
-          ? { minX: r.position_x, maxX: r.position_x, minY: y, maxY: y }
-          : null,
-      zoneId: r.zone_id ?? undefined,
-      zoneName: r.zone_name ?? undefined,
-    };
-  });
-}
-
-interface TreasureSearchRow {
-  id: string;
-  map_name: string;
-  reward_name: string | null;
-  position_x: number | null;
-  position_y: number | null;
-  zone_id: string | null;
-  zone_name: string | null;
-}
-
-async function searchTreasure(
-  ftsQuery: string,
-  limit: number,
-): Promise<MapSearchResult[]> {
-  // Search treasure locations by map name or reward name
-  const rows = await query<TreasureSearchRow>(
-    `
-    SELECT
-      tl.id,
-      m.name as map_name,
-      r.name as reward_name,
-      tl.position_x,
-      tl.position_y,
-      tl.zone_id,
-      z.name as zone_name
-    FROM treasure_locations tl
-    JOIN items m ON m.id = tl.required_map_id
-    LEFT JOIN items r ON r.id = tl.reward_id
-    LEFT JOIN zones z ON z.id = tl.zone_id
-    WHERE m.name LIKE '%' || ? || '%' ESCAPE '\\'
-       OR (r.name IS NOT NULL AND r.name LIKE '%' || ? || '%' ESCAPE '\\')
-       OR (z.name IS NOT NULL AND z.name LIKE '%' || ? || '%' ESCAPE '\\')
-    LIMIT ?
+  quest: `
+    SELECT q.id,
+      MIN(ns.position_x) min_x, MAX(ns.position_x) max_x,
+      MIN(ns.position_y) min_y, MAX(ns.position_y) max_y,
+      ns.zone_id, z.name zone_name, q.level_recommended level,
+      COUNT(ns.id) spawn_count, q.display_type subcategory,
+      NULL keywords, NULL roles, NULL renewal_dungeon_name, NULL quality,
+      NULL display_name
+    FROM quests q
+    LEFT JOIN (
+      SELECT n.id npc_id, json_extract(qo.value, '$.id') quest_id
+      FROM npcs n, json_each(n.quests_offered) qo
+      UNION
+      SELECT n.id npc_id, json_extract(qc.value, '$.id') quest_id
+      FROM npcs n, json_each(n.quests_completed_here) qc
+    ) nq ON nq.quest_id = q.id
+    LEFT JOIN npc_spawns ns ON ns.npc_id = nq.npc_id AND ns.position_x IS NOT NULL
+    LEFT JOIN zones z ON z.id = ns.zone_id
+    WHERE q.id IN (/*IDS*/)
+    GROUP BY q.id
   `,
-    [
-      ftsQuery.replace(/["*]/g, ""),
-      ftsQuery.replace(/["*]/g, ""),
-      ftsQuery.replace(/["*]/g, ""),
-      limit,
-    ],
-  );
+};
 
-  return rows.map((r) => {
-    const y = r.position_y !== null ? -r.position_y : null;
-    return {
-      id: r.id,
-      name: r.map_name,
-      category: "treasure" as const,
-      bounds:
-        r.position_x !== null && y !== null
-          ? { minX: r.position_x, maxX: r.position_x, minY: y, maxY: y }
-          : null,
-      zoneId: r.zone_id ?? undefined,
-      zoneName: r.zone_name ?? undefined,
-    };
-  });
+function parseRoles(
+  value: string | null | undefined,
+): Record<string, boolean> | undefined {
+  if (!value) return undefined;
+  try {
+    const parsed = JSON.parse(value) as Record<string, unknown>;
+    return Object.fromEntries(
+      Object.entries(parsed).filter(([, enabled]) => enabled === true),
+    ) as Record<string, boolean>;
+  } catch {
+    return undefined;
+  }
 }
 
-interface AltarSearchRow {
-  id: string;
-  name: string;
-  type: string;
-  min_level_required: number;
-  position_x: number | null;
-  position_y: number | null;
-  zone_id: string | null;
-  zone_name: string | null;
-}
-
-async function searchAltars(
-  ftsQuery: string,
-  limit: number,
-): Promise<MapSearchResult[]> {
-  const rows = await query<AltarSearchRow>(
+function itemBoundsQuery(idsJson: string): Promise<GeometryRow[]> {
+  return query<GeometryRow>(
     `
-    SELECT
-      a.id,
-      a.name,
-      a.type,
-      a.min_level_required,
-      a.position_x,
-      a.position_y,
-      a.zone_id,
-      z.name as zone_name
-    FROM altars_fts af
-    JOIN altars a ON af.rowid = a.rowid
-    LEFT JOIN zones z ON z.id = a.zone_id
-    WHERE af.name MATCH ?
-    ORDER BY rank
-    LIMIT ?
-  `,
-    [ftsQuery, limit],
-  );
-
-  return rows.map((r) => {
-    const y = r.position_y !== null ? -r.position_y : null;
-    return {
-      id: r.id,
-      name: r.name,
-      category: "altar" as const,
-      subcategory: r.type,
-      bounds:
-        r.position_x !== null && y !== null
-          ? { minX: r.position_x, maxX: r.position_x, minY: y, maxY: y }
-          : null,
-      zoneId: r.zone_id ?? undefined,
-      zoneName: r.zone_name ?? undefined,
-      level: r.min_level_required,
-    };
-  });
-}
-
-interface HouseSearchRow {
-  id: string;
-  name: string;
-  base_price: number;
-  min_x: number | null;
-  max_x: number | null;
-  min_y: number | null;
-  max_y: number | null;
-  zone_id: string | null;
-  zone_name: string | null;
-}
-
-async function searchHouses(
-  ftsQuery: string,
-  limit: number,
-): Promise<MapSearchResult[]> {
-  const rows = await query<HouseSearchRow>(
-    `
-    SELECT
-      h.id,
-      h.name,
-      h.base_price,
-      h.position_x as min_x,
-      h.position_x as max_x,
-      h.position_y as min_y,
-      h.position_y as max_y,
-      h.zone_id,
-      COALESCE(h.zone_name, z.name) as zone_name
-    FROM houses_fts hf
-    JOIN houses h ON hf.rowid = h.rowid
-    LEFT JOIN zones z ON z.id = h.zone_id
-    WHERE houses_fts MATCH ?
-    ORDER BY rank
-    LIMIT ?
-    `,
-    [ftsQuery, limit],
-  );
-
-  return rows.map((row) => ({
-    id: row.id,
-    name: row.name,
-    category: "house" as const,
-    subcategory: `${row.base_price.toLocaleString()} gold`,
-    bounds:
-      row.min_x !== null && row.min_y !== null
-        ? {
-            minX: row.min_x,
-            maxX: row.max_x!,
-            minY: -row.max_y!,
-            maxY: -row.min_y,
-          }
-        : null,
-    zoneId: row.zone_id ?? undefined,
-    zoneName: row.zone_name ?? undefined,
-  }));
-}
-
-interface CraftingStationSearchRow {
-  id: string;
-  name: string;
-  keywords: string | null;
-  is_cooking_oven: number;
-  position_x: number | null;
-  position_y: number | null;
-  zone_id: string | null;
-  zone_name: string | null;
-}
-
-async function searchCraftingStations(
-  ftsQuery: string,
-  limit: number,
-): Promise<MapSearchResult[]> {
-  // Search crafting_stations, alchemy_tables, and scribing_tables
-  const [craftingRows, alchemyRows, scribingRows] = await Promise.all([
-    query<CraftingStationSearchRow>(
-      `
-      SELECT
-        cs.id,
-        cs.name,
-        cs.keywords,
-        cs.is_cooking_oven,
-        cs.position_x,
-        cs.position_y,
-        cs.zone_id,
-        cs.zone_name
-      FROM crafting_stations_fts csf
-      JOIN crafting_stations cs ON csf.rowid = cs.rowid
-      WHERE crafting_stations_fts MATCH ?
-      ORDER BY rank
-      LIMIT ?
-    `,
-      [ftsQuery, limit],
-    ),
-    query<CraftingStationSearchRow>(
-      `
-      SELECT
-        at.id,
-        at.name,
-        at.keywords,
-        0 as is_cooking_oven,
-        at.position_x,
-        at.position_y,
-        at.zone_id,
-        at.zone_name
-      FROM alchemy_tables_fts atf
-      JOIN alchemy_tables at ON atf.rowid = at.rowid
-      WHERE alchemy_tables_fts MATCH ?
-      ORDER BY rank
-      LIMIT ?
-    `,
-      [ftsQuery, limit],
-    ),
-    query<CraftingStationSearchRow>(
-      `
-      SELECT
-        st.id,
-        st.name,
-        st.keywords,
-        0 as is_cooking_oven,
-        st.position_x,
-        st.position_y,
-        st.zone_id,
-        st.zone_name
-      FROM scribing_tables_fts stf
-      JOIN scribing_tables st ON stf.rowid = st.rowid
-      WHERE scribing_tables_fts MATCH ?
-      ORDER BY rank
-      LIMIT ?
-    `,
-      [ftsQuery, limit],
-    ),
-  ]);
-
-  const allRows = [...craftingRows, ...alchemyRows, ...scribingRows].slice(
-    0,
-    limit,
-  );
-
-  return allRows.map((r) => {
-    const y = r.position_y !== null ? -r.position_y : null;
-    const subcategory = r.keywords?.includes("scribing")
-      ? "scribing"
-      : r.keywords?.includes("alchemy")
-        ? "alchemy"
-        : r.is_cooking_oven
-          ? "cooking"
-          : "forge";
-
-    return {
-      id: r.id,
-      name: r.name,
-      category: "crafting" as const,
-      subcategory,
-      bounds:
-        r.position_x !== null && y !== null
-          ? { minX: r.position_x, maxX: r.position_x, minY: y, maxY: y }
-          : null,
-      zoneId: r.zone_id ?? undefined,
-      zoneName: r.zone_name ?? undefined,
-      keywords: r.keywords ?? undefined,
-    };
-  });
-}
-
-interface PortalSearchRow {
-  id: string;
-  keywords: string | null;
-  position_x: number | null;
-  position_y: number | null;
-  from_zone_id: string | null;
-  from_zone_name: string | null;
-  to_zone_id: string | null;
-  to_zone_name: string | null;
-  is_closed: number;
-}
-
-async function searchPortals(
-  ftsQuery: string,
-  limit: number,
-): Promise<MapSearchResult[]> {
-  const rows = await query<PortalSearchRow>(
-    `
-    SELECT
-      p.id,
-      p.keywords,
-      p.position_x,
-      p.position_y,
-      p.from_zone_id,
-      fz.name as from_zone_name,
-      p.to_zone_id,
-      tz.name as to_zone_name,
-      p.is_closed
-    FROM portals_fts pf
-    JOIN portals p ON pf.rowid = p.rowid
-    LEFT JOIN zones fz ON fz.id = p.from_zone_id
-    LEFT JOIN zones tz ON tz.id = p.to_zone_id
-    WHERE portals_fts MATCH ?
-      AND p.is_template = 0
-    ORDER BY rank
-    LIMIT ?
-  `,
-    [ftsQuery, limit],
-  );
-
-  return rows.map((r) => {
-    const y = r.position_y !== null ? -r.position_y : null;
-    const isClosed = Boolean(r.is_closed);
-    const name = isClosed
-      ? "Closed Portal"
-      : r.to_zone_name
-        ? `Portal to ${r.to_zone_name}`
-        : "Portal";
-
-    return {
-      id: r.id,
-      name,
-      category: "portal" as const,
-      bounds:
-        r.position_x !== null && y !== null
-          ? { minX: r.position_x, maxX: r.position_x, minY: y, maxY: y }
-          : null,
-      zoneId: r.from_zone_id ?? undefined,
-      zoneName: r.from_zone_name ?? undefined,
-      keywords: r.keywords ?? undefined,
-    };
-  });
-}
-
-interface ItemBasicRow {
-  id: string;
-  name: string;
-  quality: number;
-  level_required: number;
-}
-
-interface ItemBoundsRow {
-  item_id: string;
-  min_x: number;
-  max_x: number;
-  min_y: number;
-  max_y: number;
-  spawn_count: number;
-}
-
-async function searchItems(
-  ftsQuery: string,
-  limit: number,
-): Promise<MapSearchResult[]> {
-  // Step 1: Fast FTS query to get matching items (no bounds computation)
-  const items = await query<ItemBasicRow>(
-    `
-    SELECT i.id, i.name, i.quality, i.level_required
-    FROM items_fts itf
-    JOIN items i ON itf.rowid = i.rowid
-    WHERE items_fts MATCH ?
-    ORDER BY rank
-    LIMIT ?
-  `,
-    [ftsQuery, limit],
-  );
-
-  if (items.length === 0) return [];
-
-  // Step 2: Get bounds for ONLY matched items from all physical sources
-  // Uses json_each to safely pass item IDs as parameter
-  const itemIdsJson = JSON.stringify(items.map((i) => i.id));
-  const boundsRows = await query<ItemBoundsRow>(
-    `
-    SELECT
-      item_id,
-      MIN(x) as min_x,
-      MAX(x) as max_x,
-      MIN(y) as min_y,
-      MAX(y) as max_y,
-      COUNT(*) as spawn_count
+    SELECT item_id id, MIN(x) min_x, MAX(x) max_x, MIN(y) min_y, MAX(y) max_y,
+      NULL zone_id, NULL zone_name, NULL level, COUNT(*) spawn_count,
+      NULL subcategory, NULL keywords, NULL roles, NULL renewal_dungeon_name,
+      NULL quality, NULL display_name
     FROM (
-      -- Monster dropper positions
-      SELECT json_extract(d.value, '$.item_id') as item_id, ms.position_x as x, ms.position_y as y
+      SELECT json_extract(d.value, '$.item_id') item_id, ms.position_x x, ms.position_y y
       FROM monsters m, json_each(m.drops) d
       JOIN monster_spawns ms ON ms.monster_id = m.id
-        AND ms.spawn_type IN ('regular', 'summon', 'placeholder')
-        AND ms.position_x IS NOT NULL
+        AND ms.spawn_type IN ('regular', 'summon', 'placeholder') AND ms.position_x IS NOT NULL
       WHERE json_extract(d.value, '$.item_id') IN (SELECT value FROM json_each(?))
-
       UNION ALL
-
-      -- Vendor NPC positions
-      SELECT isv.item_id, ns.position_x as x, ns.position_y as y
+      SELECT isv.item_id, ns.position_x, ns.position_y
       FROM item_sources_vendor isv
-      JOIN npc_spawns ns ON ns.npc_id = isv.npc_id
-        AND ns.position_x IS NOT NULL
+      JOIN npc_spawns ns ON ns.npc_id = isv.npc_id AND ns.position_x IS NOT NULL
       WHERE isv.item_id IN (SELECT value FROM json_each(?))
-
       UNION ALL
-
-      -- Gathering resource positions
-      SELECT isg.item_id, gs.position_x as x, gs.position_y as y
+      SELECT isg.item_id, gs.position_x, gs.position_y
       FROM item_sources_gather isg
-      JOIN gathering_resource_spawns gs ON gs.resource_id = isg.resource_id
-        AND gs.position_x IS NOT NULL
+      JOIN gathering_resource_spawns gs ON gs.resource_id = isg.resource_id AND gs.position_x IS NOT NULL
       WHERE isg.item_id IN (SELECT value FROM json_each(?))
-
-
       UNION ALL
-
-      -- Fishing fallback positions. Trash fish can come from any fishing spot.
-      -- Non-trash fish can come from any higher-tier spot's lower-tier fallback pool.
-      SELECT f.item_id, gs.position_x as x, gs.position_y as y
+      SELECT f.item_id, gs.position_x, gs.position_y
       FROM fish f
       JOIN items i ON i.id = f.item_id
       JOIN gathering_resources gr ON gr.is_fishing_spot = 1
-      JOIN gathering_resource_spawns gs ON gs.resource_id = gr.id
-        AND gs.position_x IS NOT NULL
+      JOIN gathering_resource_spawns gs ON gs.resource_id = gr.id AND gs.position_x IS NOT NULL
       WHERE f.item_id IN (SELECT value FROM json_each(?))
-        AND (
-          f.is_trash = 1
-          OR gr.level > COALESCE(i.quality, -1)
-        )
+        AND (f.is_trash = 1 OR gr.level > COALESCE(i.quality, -1))
         AND NOT EXISTS (
-          SELECT 1
-          FROM item_sources_gather existing
-          WHERE existing.item_id = f.item_id
-            AND existing.resource_id = gr.id
+          SELECT 1 FROM item_sources_gather existing
+          WHERE existing.item_id = f.item_id AND existing.resource_id = gr.id
         )
       UNION ALL
-
-      -- Physical chest positions
-      SELECT isc.item_id, c.position_x as x, c.position_y as y
+      SELECT isc.item_id, c.position_x, c.position_y
       FROM item_sources_chest isc
-      JOIN chests c ON c.id = isc.chest_id
-        AND c.position_x IS NOT NULL
+      JOIN chests c ON c.id = isc.chest_id AND c.position_x IS NOT NULL
       WHERE isc.item_id IN (SELECT value FROM json_each(?))
-
       UNION ALL
-
-      -- Altar positions (items that are tier rewards)
-      SELECT item_id, a.position_x as x, a.position_y as y
+      SELECT reward.item_id, a.position_x, a.position_y
       FROM (
-        SELECT reward_common_id as item_id, id as altar_id FROM altars WHERE reward_common_id IS NOT NULL
-        UNION ALL
-        SELECT reward_magic_id, id FROM altars WHERE reward_magic_id IS NOT NULL
-        UNION ALL
-        SELECT reward_epic_id, id FROM altars WHERE reward_epic_id IS NOT NULL
-        UNION ALL
-        SELECT reward_legendary_id, id FROM altars WHERE reward_legendary_id IS NOT NULL
-      ) rewards
-      JOIN altars a ON a.id = rewards.altar_id AND a.position_x IS NOT NULL
-      WHERE rewards.item_id IN (SELECT value FROM json_each(?))
-
+        SELECT reward_common_id item_id, id altar_id FROM altars WHERE reward_common_id IS NOT NULL
+        UNION ALL SELECT reward_magic_id, id FROM altars WHERE reward_magic_id IS NOT NULL
+        UNION ALL SELECT reward_epic_id, id FROM altars WHERE reward_epic_id IS NOT NULL
+        UNION ALL SELECT reward_legendary_id, id FROM altars WHERE reward_legendary_id IS NOT NULL
+      ) reward JOIN altars a ON a.id = reward.altar_id AND a.position_x IS NOT NULL
+      WHERE reward.item_id IN (SELECT value FROM json_each(?))
       UNION ALL
-
-      -- Treasure location positions (items that are treasure maps or rewards)
-      SELECT tl.required_map_id as item_id, tl.position_x as x, tl.position_y as y
+      SELECT tl.required_map_id, tl.position_x, tl.position_y
       FROM treasure_locations tl
-      WHERE tl.required_map_id IN (SELECT value FROM json_each(?))
-        AND tl.position_x IS NOT NULL
-
+      WHERE tl.required_map_id IN (SELECT value FROM json_each(?)) AND tl.position_x IS NOT NULL
       UNION ALL
-
-      SELECT tl.reward_id as item_id, tl.position_x as x, tl.position_y as y
+      SELECT tl.reward_id, tl.position_x, tl.position_y
       FROM treasure_locations tl
-      WHERE tl.reward_id IN (SELECT value FROM json_each(?))
-        AND tl.position_x IS NOT NULL
+      WHERE tl.reward_id IN (SELECT value FROM json_each(?)) AND tl.position_x IS NOT NULL
     )
     GROUP BY item_id
   `,
-    [
-      itemIdsJson,
-      itemIdsJson,
-      itemIdsJson,
-      itemIdsJson,
-
-      itemIdsJson,
-      itemIdsJson,
-      itemIdsJson,
-      itemIdsJson,
-    ],
+    Array.from({ length: 8 }, () => idsJson),
   );
-
-  // Step 3: Create bounds lookup map and combine results
-  const boundsMap = new Map(boundsRows.map((r) => [r.item_id, r]));
-
-  return items.map((item) => {
-    const bounds = boundsMap.get(item.id);
-    return {
-      id: item.id,
-      name: item.name,
-      category: "item" as const,
-      subcategory: String(item.quality),
-      bounds: bounds
-        ? {
-            minX: bounds.min_x,
-            maxX: bounds.max_x,
-            minY: -bounds.max_y,
-            maxY: -bounds.min_y,
-          }
-        : null,
-      level: item.level_required > 0 ? item.level_required : undefined,
-      spawnCount:
-        bounds?.spawn_count && bounds.spawn_count > 1
-          ? bounds.spawn_count
-          : undefined,
-    };
-  });
 }
 
-interface QuestSearchRow {
-  id: string;
-  name: string;
-  level_recommended: number;
-  display_type: string;
-  min_x: number | null;
-  max_x: number | null;
-  min_y: number | null;
-  max_y: number | null;
+async function itemRows(
+  matches: SearchResult[],
+): Promise<Map<string, GeometryRow>> {
+  const ids = matches.map((match) => match.entityId);
+  const placeholders = ids.map(() => "?").join(",");
+  const basics = await query<{
+    id: string;
+    quality: number | null;
+    level: number | null;
+  }>(
+    `SELECT id, quality, level_required level FROM items WHERE id IN (${placeholders})`,
+    ids,
+  );
+  const bounds = await itemBoundsQuery(JSON.stringify(ids));
+  const result = new Map<string, GeometryRow>();
+  for (const row of basics) {
+    const source = bounds.find((candidate) => candidate.id === row.id);
+    result.set(row.id, {
+      ...(source ?? {
+        id: row.id,
+        min_x: null,
+        max_x: null,
+        min_y: null,
+        max_y: null,
+        zone_id: null,
+        zone_name: null,
+        spawn_count: null,
+      }),
+      quality: row.quality,
+      level: row.level,
+    });
+  }
+  return result;
 }
 
-async function searchQuests(
-  ftsQuery: string,
-  limit: number,
+function toMapSearchResult(
+  match: SearchResult,
+  row: GeometryRow | undefined,
+): MapSearchResult {
+  const category = ENTITY_CATEGORY[match.entityType]!;
+  const isAltarOnly =
+    Boolean(row?.is_altar_only) && row?.altar_x != null && row.altar_y != null;
+  const bounds = isAltarOnly
+    ? {
+        minX: row!.altar_x!,
+        maxX: row!.altar_x!,
+        minY: -row!.altar_y!,
+        maxY: -row!.altar_y!,
+      }
+    : row?.min_x != null &&
+        row.max_x != null &&
+        row.min_y != null &&
+        row.max_y != null
+      ? { minX: row.min_x, maxX: row.max_x, minY: -row.max_y, maxY: -row.min_y }
+      : null;
+  const level = row?.level ?? undefined;
+  const displayName =
+    row?.display_name ??
+    (category === "trap" && row?.subcategory
+      ? TRAP_TYPE_LABELS[row.subcategory as TrapType]
+      : undefined) ??
+    match.name;
+  return {
+    id: match.entityId,
+    name: displayName,
+    category,
+    entityType: match.entityType,
+    entityLabel: match.entity.pluralLabel,
+    image: match.image,
+    subcategory: row?.subcategory ?? undefined,
+    quality: row?.quality ?? undefined,
+    bounds,
+    zoneId: row?.zone_id ?? undefined,
+    zoneName: row?.zone_name ?? undefined,
+    level: level != null && level > 0 ? level : undefined,
+    spawnCount:
+      row?.spawn_count != null && row.spawn_count > 1
+        ? row.spawn_count
+        : undefined,
+    keywords: row?.keywords ?? undefined,
+    roles: parseRoles(row?.roles),
+    renewalDungeonName: row?.renewal_dungeon_name ?? undefined,
+  };
+}
+
+/** Search registered entities and attach authoritative compendium metadata. */
+export async function searchMapEntities(
+  searchQuery: string,
+  limit = 20,
 ): Promise<MapSearchResult[]> {
-  // Search quests and get bounds from associated NPC positions
-  // Quest-NPC relationships are in npcs.quests_offered and npcs.quests_completed_here JSON
-  const rows = await query<QuestSearchRow>(
-    `
-    SELECT
-      q.id,
-      q.name,
-      q.level_recommended,
-      q.display_type,
-      MIN(ns.position_x) as min_x,
-      MAX(ns.position_x) as max_x,
-      MIN(ns.position_y) as min_y,
-      MAX(ns.position_y) as max_y
-    FROM quests_fts qf
-    JOIN quests q ON qf.rowid = q.rowid
-    LEFT JOIN (
-      SELECT n.id as npc_id, json_extract(qo.value, '$.id') as quest_id
-      FROM npcs n, json_each(n.quests_offered) qo
-      UNION
-      SELECT n.id as npc_id, json_extract(qc.value, '$.id') as quest_id
-      FROM npcs n, json_each(n.quests_completed_here) qc
-    ) nq ON nq.quest_id = q.id
-    LEFT JOIN npc_spawns ns ON ns.npc_id = nq.npc_id
-      AND ns.position_x IS NOT NULL
-    WHERE quests_fts MATCH ?
-    GROUP BY q.id
-    ORDER BY rank
-    LIMIT ?
-  `,
-    [ftsQuery, limit],
+  const matches = await searchEntities(searchQuery, Math.max(limit * 10, 100));
+  const mapMatches = matches.filter((match) =>
+    Boolean(ENTITY_CATEGORY[match.entityType]),
+  );
+  if (mapMatches.length === 0) return [];
+
+  const grouped = new Map<string, SearchResult[]>();
+  for (const match of mapMatches) {
+    const group = grouped.get(match.entityType) ?? [];
+    group.push(match);
+    grouped.set(match.entityType, group);
+  }
+
+  const geometry = new Map<string, GeometryRow>();
+  await Promise.all(
+    [...grouped.entries()].map(async ([entityType, categoryMatches]) => {
+      if (entityType === "item") {
+        for (const [id, row] of await itemRows(categoryMatches))
+          geometry.set(`${entityType}:${id}`, row);
+        return;
+      }
+      const queryText =
+        GEOMETRY_QUERY[entityType as SearchResult["entityType"]];
+      if (!queryText) return;
+      const ids = categoryMatches.map((match) => match.entityId);
+      const rows = await query<GeometryRow>(
+        queryText.replaceAll("/*IDS*/", ids.map(() => "?").join(",")),
+        ids,
+      );
+      for (const row of rows) geometry.set(`${entityType}:${row.id}`, row);
+    }),
   );
 
-  return rows.map((r) => ({
-    id: r.id,
-    name: r.name,
-    category: "quest" as const,
-    subcategory: r.display_type,
-    bounds:
-      r.min_x !== null
-        ? {
-            minX: r.min_x,
-            maxX: r.max_x!,
-            minY: -r.max_y!,
-            maxY: -r.min_y!,
-          }
-        : null,
-    level: r.level_recommended,
-  }));
+  return mapMatches
+    .slice(0, limit)
+    .map((match) =>
+      toMapSearchResult(
+        match,
+        geometry.get(`${match.entityType}:${match.entityId}`),
+      ),
+    );
 }

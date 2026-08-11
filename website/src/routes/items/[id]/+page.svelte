@@ -367,33 +367,29 @@
 
   <!-- Header -->
   <div>
-    <div class="flex items-start gap-4">
-      <div class="flex-1">
-        <div class="flex flex-wrap items-center gap-3">
-          <h1 class="text-4xl font-bold">{data.item.name}</h1>
-          <MapLink entityId={data.item.id} entityType="item" />
-          <span
-            class="px-3 py-1 rounded text-sm font-medium text-white {qualityColors[
-              data.item.quality
-            ]}"
-          >
-            {QUALITY_NAMES[data.item.quality]}
-          </span>
-          {#if data.fishing_role !== null}
-            <a
-              href="/professions/fishing"
-              class="inline-flex items-center gap-1.5 rounded-md border border-cyan-500/30 bg-cyan-500/10 px-2.5 py-1 text-sm font-medium text-cyan-700 transition-colors hover:bg-cyan-500/20 dark:text-cyan-300"
-            >
-              <FishIcon class="h-4 w-4" />
-              Fishing
-            </a>
-          {/if}
+    <div class="flex flex-wrap items-center gap-3">
+      <h1 class="text-4xl font-bold">{data.item.name}</h1>
+      <MapLink entityId={data.item.id} entityType="item" />
+      <span
+        class="px-3 py-1 rounded text-sm font-medium text-white {qualityColors[
+          data.item.quality
+        ]}"
+      >
+        {QUALITY_NAMES[data.item.quality]}
+      </span>
+      {#if data.fishing_role !== null}
+        <a
+          href="/professions/fishing"
+          class="inline-flex items-center gap-1.5 rounded-md border border-cyan-500/30 bg-cyan-500/10 px-2.5 py-1 text-sm font-medium text-cyan-700 transition-colors hover:bg-cyan-500/20 dark:text-cyan-300"
+        >
+          <FishIcon class="h-4 w-4" />
+          Fishing
+        </a>
+      {/if}
 
-          {#if (data.item.item_type === "potion" && !data.item.potion_buff_allow_dungeon) || (data.item.item_type === "food" && !data.item.food_buff_allow_dungeon) || (data.item.item_type === "scroll" && !data.item.scroll_skill_allow_dungeon) || (data.item.item_type === "relic" && !data.item.relic_buff_allow_dungeon) || data.item.mount_speed > 0}
-            <DungeonRestrictionBadge allowDungeon={false} />
-          {/if}
-        </div>
-      </div>
+      {#if (data.item.item_type === "potion" && !data.item.potion_buff_allow_dungeon) || (data.item.item_type === "food" && !data.item.food_buff_allow_dungeon) || (data.item.item_type === "scroll" && !data.item.scroll_skill_allow_dungeon) || (data.item.item_type === "relic" && !data.item.relic_buff_allow_dungeon) || data.item.mount_speed > 0}
+        <DungeonRestrictionBadge allowDungeon={false} />
+      {/if}
     </div>
   </div>
 

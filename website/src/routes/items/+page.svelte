@@ -1,8 +1,5 @@
 <script lang="ts">
-  import { base } from "$app/paths";
   import Package from "@lucide/svelte/icons/package";
-  import EntityIcon from "$lib/components/EntityIcon.svelte";
-  import { entityImageUrl } from "$lib/utils/entityImage";
   import { untrack } from "svelte";
   import { SvelteMap } from "svelte/reactivity";
   import { createStatPanelState } from "$lib/utils/stat-panel-state.svelte";
@@ -352,22 +349,16 @@
       {qualities[q]?.name ?? `Q${q}`}
     </span>
   {:else if cell.column.id === "name"}
-    <div class="flex items-center gap-2">
-      <EntityIcon
-        src={row.original.visual_public_path
-          ? `${base}${entityImageUrl("item", row.original.id, "icon")}`
-          : null}
-        alt={`${row.original.name} icon`}
-        fallback={Package}
-        size={28}
-      />
-      <ItemLink
-        itemId={row.original.id}
-        itemName={row.original.name}
-        tooltipHtml={tooltips.get(row.original.id)}
-        class="whitespace-nowrap"
-      />
-    </div>
+    <ItemLink
+      itemId={row.original.id}
+      itemName={row.original.name}
+      tooltipHtml={tooltips.get(row.original.id)}
+      imageAvailable={row.original.visual_public_path}
+      fallback={Package}
+      showIcon
+      imageKind="icon"
+      class="whitespace-nowrap"
+    />
   {:else if cell.column.id === "item_level"}
     <span class="ml-auto">{row.original.item_level || "-"}</span>
   {:else if cell.column.id === "level_required"}

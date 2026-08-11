@@ -4,7 +4,6 @@ Each loader reads a JSON export file, validates it with Pydantic models,
 and inserts the records into the database.
 """
 
-import hashlib
 import json
 import shutil
 import sqlite3
@@ -901,24 +900,50 @@ def load_traps(conn: sqlite3.Connection, export_dir: Path) -> None:
     console.print(f"  [green]OK[/green] Loaded {len(traps)} traps")
 
 
-def _gather_resource_base_id(resource: GatherItemData) -> str:
-    if resource.is_template:
-        return resource.id
-    return resource.name.lower().replace(" ", "_")
+def _gather_drop_pool(resource: GatherItemData) -> tuple[tuple[str, float], ...]:
+    """Return the sorted exported drop pool used for resource consistency checks."""
+    return tuple(sorted((drop.item_id, drop.rate) for drop in resource.random_drops))
 
 
-def _gather_resource_group_key(resource: GatherItemData) -> tuple[object, ...]:
-    if not resource.is_fishing_spot:
-        return (resource.name,)
+def _validate_exported_resource_ids(gather_items: list[GatherItemData]) -> None:
+    """Validate exporter-owned IDs before deduplicating resources or inserting links."""
+    definitions: dict[str, tuple[str, int, tuple[tuple[str, float], ...]]] = {}
+    fishing_variants: dict[tuple[str, int, tuple[tuple[str, float], ...]], str] = {}
 
-    drops = tuple(sorted((drop.item_id, drop.rate) for drop in resource.random_drops))
-    return (resource.name, resource.level, drops)
+    for gather_item in gather_items:
+        if gather_item.is_chest:
+            if gather_item.resource_id is not None:
+                raise ValueError(
+                    f"Chest GatherItem {gather_item.id!r} must have resource_id=null"
+                )
+            continue
 
+        resource_id = gather_item.resource_id
+        if not resource_id:
+            raise ValueError(
+                f"Non-chest GatherItem {gather_item.id!r} requires resource_id"
+            )
 
-def _fishing_variant_id(resource: GatherItemData) -> str:
-    signature = json.dumps(_gather_resource_group_key(resource), separators=(",", ":"))
-    suffix = hashlib.sha1(signature.encode("utf-8")).hexdigest()[:8]
-    return f"{_gather_resource_base_id(resource)}_{suffix}"
+        definition = (
+            gather_item.name,
+            gather_item.level,
+            _gather_drop_pool(gather_item),
+        )
+        previous = definitions.get(resource_id)
+        if previous is not None and previous != definition:
+            raise ValueError(
+                f"Gather resource_id {resource_id!r} describes different names, levels, or drop pools"
+            )
+
+        if gather_item.is_fishing_spot:
+            previous_resource_id = fishing_variants.get(definition)
+            if previous_resource_id is not None and previous_resource_id != resource_id:
+                raise ValueError(
+                    f"Fishing variant {definition[0]!r} has multiple resource IDs"
+                )
+            fishing_variants[definition] = resource_id
+
+        definitions[resource_id] = definition
 
 
 def load_gather_items(conn: sqlite3.Connection, export_dir: Path) -> None:
@@ -930,6 +955,7 @@ def load_gather_items(conn: sqlite3.Connection, export_dir: Path) -> None:
         data = json.load(f)
 
     gather_items = [GatherItemData(**item) for item in data]
+    _validate_exported_resource_ids(gather_items)
 
     cursor = conn.cursor()
 
@@ -938,54 +964,40 @@ def load_gather_items(conn: sqlite3.Connection, export_dir: Path) -> None:
     cursor.execute("DELETE FROM item_sources_gather")
     cursor.execute("DELETE FROM item_sources_chest")
 
-    # Split into chests vs gathering resources
+    # Deduplicate only by the canonical resource_id assigned by the exporter.
     chests = []
     resources = []
     resource_spawns = []  # All non-chest spawns with zone/position
-    resources_seen: dict[tuple[object, ...], GatherItemData] = {}
+    resources_seen: dict[str, GatherItemData] = {}
 
     for gather_item in gather_items:
         if gather_item.is_chest:
             chests.append(gather_item)
-        else:
-            # Track all spawns with zone/position for the spawns table
-            if gather_item.zone_id and gather_item.position:
-                resource_spawns.append(gather_item)
+            continue
 
-            # Deduplicate resources by name (prefer templates)
-            resource_key = _gather_resource_group_key(gather_item)
-            # Deduplicate resources by name for normal resources and by drop pool for fishing spots.
-            if resource_key not in resources_seen:
-                resources_seen[resource_key] = gather_item
-                resources.append(gather_item)
-            elif (
-                gather_item.is_template and not resources_seen[resource_key].is_template
-            ):
-                # Replace spawn with template if we find one later
-                old_idx = resources.index(resources_seen[resource_key])
-                resources[old_idx] = gather_item
-                resources_seen[resource_key] = gather_item
+        if gather_item.zone_id and gather_item.position:
+            resource_spawns.append(gather_item)
 
-    fishing_variant_counts: dict[str, int] = {}
-    for resource in resources:
-        if resource.is_fishing_spot:
-            fishing_variant_counts[resource.name] = (
-                fishing_variant_counts.get(resource.name, 0) + 1
+        resource_id = gather_item.resource_id
+        if resource_id is None:
+            raise ValueError(
+                f"Resource {gather_item.id!r} has no canonical resource_id"
             )
+        if resource_id not in resources_seen:
+            resources_seen[resource_id] = gather_item
+            resources.append(gather_item)
+        elif gather_item.is_template and not resources_seen[resource_id].is_template:
+            # Replace a scene representative with the authoritative template.
+            old_idx = resources.index(resources_seen[resource_id])
+            resources[old_idx] = gather_item
+            resources_seen[resource_id] = gather_item
 
     # Insert gathering resources
     for resource in resources:
-        # For non-template resources, derive a clean ID from the name
-        # This handles cases like radiant sparks which only exist as scene instances
-        if (
-            resource.is_fishing_spot
-            and fishing_variant_counts.get(resource.name, 0) > 1
-        ):
-            resource_id = _fishing_variant_id(resource)
-        else:
-            resource_id = _gather_resource_base_id(resource)
+        resource_id = resource.resource_id
+        if resource_id is None:
+            raise ValueError(f"Resource {resource.id!r} has no canonical resource_id")
 
-        # Insert main resource record
         values = {
             "id": resource_id,
             "name": resource.name,
@@ -1016,24 +1028,17 @@ def load_gather_items(conn: sqlite3.Connection, export_dir: Path) -> None:
                 (drop.item_id, resource_id, drop.rate),
             )
 
-    # Insert gathering resource spawns (links to deduplicated resources)
+    # Insert gathering resource spawns using the exported canonical ID directly.
     for spawn in resource_spawns:
-        # Map spawn to its deduplicated resource - derive normalized ID from name
-        deduplicated_resource = resources_seen[_gather_resource_group_key(spawn)]
-        if (
-            deduplicated_resource.is_fishing_spot
-            and fishing_variant_counts.get(deduplicated_resource.name, 0) > 1
-        ):
-            normalized_resource_id = _fishing_variant_id(deduplicated_resource)
-        else:
-            normalized_resource_id = _gather_resource_base_id(deduplicated_resource)
+        if spawn.resource_id is None:
+            raise ValueError(f"Spawn {spawn.id!r} has no canonical resource_id")
         cursor.execute(
             """INSERT INTO gathering_resource_spawns
                (id, resource_id, zone_id, sub_zone_id, position_x, position_y, position_z)
                VALUES (?, ?, ?, ?, ?, ?, ?)""",
             (
                 spawn.id,
-                normalized_resource_id,
+                spawn.resource_id,
                 spawn.zone_id,
                 spawn.sub_zone_id,
                 spawn.position.x if spawn.position else None,

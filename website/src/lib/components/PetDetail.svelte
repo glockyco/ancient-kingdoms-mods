@@ -20,8 +20,12 @@
   } from "$lib/types/pets";
   import { petHref } from "$lib/utils/pets";
   import { base } from "$app/paths";
+  import EntityIcon from "$lib/components/EntityIcon.svelte";
+  import EntityReference from "$lib/components/EntityReference.svelte";
   import type { EntityVisualAsset } from "$lib/types/visual-assets";
   import MapPin from "@lucide/svelte/icons/map-pin";
+  import PawPrint from "@lucide/svelte/icons/paw-print";
+  import User from "@lucide/svelte/icons/user";
   import Zap from "@lucide/svelte/icons/zap";
   import Info from "@lucide/svelte/icons/info";
 
@@ -38,7 +42,9 @@
   } = $props();
 
   const spriteSrc = $derived(
-    visualAsset ? `${base}/${visualAsset.public_path}` : null,
+    pet.kind === "Mercenary" || !visualAsset
+      ? null
+      : `${base}/${visualAsset.public_path}`,
   );
 
   // "Summoned By" table — one row containing the class link
@@ -156,12 +162,17 @@
   row: Row<PetRecruiter>;
 })}
   {#if cell.column.id === "npc_name"}
-    <a
+    <EntityReference
       href="/npcs/{row.original.npc_id}"
-      class="text-blue-600 dark:text-blue-400 hover:underline"
-    >
-      {row.original.npc_name}
-    </a>
+      name={row.original.npc_name}
+      domain="npc"
+      entityId={row.original.npc_id}
+      imageKind="primary"
+      imageAvailable={row.original.visual_public_path}
+      showIcon
+      fallback={User}
+      size={28}
+    />
   {:else if cell.column.id === "zone_name"}
     <a
       href="/zones/{row.original.zone_id}"
@@ -196,12 +207,17 @@
   row: Row<ClassSkill>;
 })}
   {#if cell.column.id === "name"}
-    <a
+    <EntityReference
       href="/skills/{row.original.id}"
-      class="text-blue-600 dark:text-blue-400 hover:underline"
-    >
-      {row.original.name}
-    </a>
+      name={row.original.name}
+      domain="skill"
+      entityId={row.original.id}
+      imageKind="icon"
+      imageAvailable={row.original.visual_public_path}
+      showIcon
+      fallback={Zap}
+      size={28}
+    />
   {:else if cell.column.id === "skill_type"}
     <span class="text-muted-foreground capitalize">
       {String(cell.getValue()).replace(/_/g, " ")}
@@ -258,17 +274,20 @@
     </div>
   </div>
   <!-- Header Summary Card -->
-  {#if spriteSrc && visualAsset}
+  {#if visualAsset}
     <section aria-labelledby="pet-summary-title">
       <h2 id="pet-summary-title" class="sr-only">Appearance</h2>
       <div class="bg-muted/30 rounded-md border p-4">
         <div class="flex min-h-32 w-full items-center justify-center">
-          <img
+          <EntityIcon
             src={spriteSrc}
             alt={`${pet.name} sprite`}
-            width={visualAsset.width}
-            height={visualAsset.height}
-            class="h-auto w-auto max-w-full object-contain [image-rendering:pixelated] max-h-56 md:max-h-64"
+            width={visualAsset?.width ?? 224}
+            height={visualAsset?.height ?? 224}
+            size={224}
+            fallback={pet.kind === "Mercenary" ? User : PawPrint}
+            bordered={false}
+            class="max-h-56 max-w-full object-contain [image-rendering:pixelated]"
           />
         </div>
       </div>

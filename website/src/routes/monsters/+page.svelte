@@ -1,8 +1,6 @@
 <script lang="ts">
-  import { base } from "$app/paths";
   import Skull from "@lucide/svelte/icons/skull";
-  import EntityIcon from "$lib/components/EntityIcon.svelte";
-  import { entityImageUrl } from "$lib/utils/entityImage";
+  import EntityReference from "$lib/components/EntityReference.svelte";
   import { SvelteMap } from "svelte/reactivity";
   import {
     DataTable,
@@ -248,20 +246,17 @@
       />
     </div>
   {:else if cell.column.id === "name"}
-    <a
+    <EntityReference
       href="/monsters/{row.original.id}"
-      class="flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap"
-    >
-      <EntityIcon
-        src={row.original.visual_public_path
-          ? `${base}${entityImageUrl("monster", row.original.id, "primary")}`
-          : null}
-        alt={`${row.original.name} sprite`}
-        fallback={Skull}
-        size={32}
-      />
-      <span>{row.original.name}</span>
-    </a>
+      name={row.original.name}
+      domain="monster"
+      entityId={row.original.id}
+      imageKind="primary"
+      imageAvailable={row.original.visual_public_path}
+      fallback={Skull}
+      size={32}
+      class="flex whitespace-nowrap"
+    />
   {:else if cell.column.id === "level_min"}
     {@const hasVariance = row.original.level_min !== row.original.level_max}
     <span class="ml-auto"

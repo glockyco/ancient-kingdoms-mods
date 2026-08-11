@@ -61,7 +61,6 @@
 
 <ModeWatcher />
 <LoadingOverlay />
-
 <main>
   {@render children()}
 </main>

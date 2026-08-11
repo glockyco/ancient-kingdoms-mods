@@ -1,5 +1,7 @@
 <script lang="ts">
+  import { base } from "$app/paths";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
+  import EntityIcon from "$lib/components/EntityIcon.svelte";
   import PageSections from "$lib/components/PageSections.svelte";
   import * as Card from "$lib/components/ui/card";
   import type { PageData } from "./$types";
@@ -7,6 +9,7 @@
   import { hasNonZeroField } from "$lib/utils/formatSkillEffect";
   import * as Tabs from "$lib/components/ui/tabs";
   import Sparkles from "@lucide/svelte/icons/sparkles";
+  import ImageIcon from "@lucide/svelte/icons/image";
   import Clock from "@lucide/svelte/icons/clock";
   import Zap from "@lucide/svelte/icons/zap";
   import Swords from "@lucide/svelte/icons/swords";
@@ -36,6 +39,9 @@
   let { data }: { data: PageData } = $props();
 
   const skill = $derived(data.skill);
+  const skillIconSrc = $derived(
+    data.visualAsset ? `${base}/${data.visualAsset.public_path}` : null,
+  );
   const isWildStrike = $derived(skill.id === "wild_strike");
   const isScrollTriggered = $derived(
     data.grantedByItems.some((item) => item.type === "scroll"),
@@ -767,6 +773,11 @@
   const sections = $derived(
     [
       {
+        id: "appearance",
+        label: "Appearance",
+        show: Boolean(data.visualAsset),
+      },
+      {
         id: "description",
         label: "Description",
         show: Boolean(data.effectSummary || skill.tooltip_template),
@@ -941,6 +952,31 @@
 
   <!-- Page Anchor Navigation -->
   <PageSections {sections} />
+
+  <!-- Appearance -->
+  {#if data.visualAsset}
+    <Card.Root id="appearance" class="bg-muted/30">
+      <Card.Header>
+        <Card.Title class="flex items-center gap-2">
+          <ImageIcon class="h-5 w-5 text-purple-500" />
+          Appearance
+        </Card.Title>
+      </Card.Header>
+      <Card.Content>
+        <div class="flex min-h-32 w-full items-center justify-center">
+          <EntityIcon
+            src={skillIconSrc}
+            alt={`${skill.name} icon`}
+            width={128}
+            height={128}
+            size={128}
+            fallback={ImageIcon}
+            class="max-h-40 max-w-full object-contain [image-rendering:pixelated]"
+          />
+        </div>
+      </Card.Content>
+    </Card.Root>
+  {/if}
 
   <!-- Effect / Game Tooltip -->
   {#if data.effectSummary || skill.tooltip_template}

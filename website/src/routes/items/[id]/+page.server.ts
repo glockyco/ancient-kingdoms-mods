@@ -277,6 +277,15 @@ export const load: PageServerLoad = ({ params }): ItemDetailPageData => {
     relicIsCleanse = Boolean(item.relic_buff_id && row?.is_cleanse);
   }
 
+  const visualAsset =
+    (db
+      .prepare(
+        `SELECT public_path, width, height, source_field, source_type
+         FROM visual_assets
+         WHERE domain = 'item' AND entity_id = ? AND kind = 'icon'`,
+      )
+      .get(params.id) as EntityVisualAsset | undefined) ?? null;
+
   // Pet whistles carry the creature they summon; the icon alone does not show
   // what the pet looks like, which is the first thing anyone wants to see.
   const petVisualAsset =
@@ -318,6 +327,7 @@ export const load: PageServerLoad = ({ params }): ItemDetailPageData => {
     augmenters,
     priestesses,
     worldBossRenewalSages,
+    visualAsset,
     petVisualAsset,
   };
 };

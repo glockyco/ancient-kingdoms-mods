@@ -12,17 +12,26 @@ import {
 export function getAllClasses(): Class[] {
   return query<Class>(
     `SELECT
-      id,
-      name,
-      description,
-      primary_role,
-      secondary_role,
-      difficulty,
-      resource_type,
-      compatible_races,
-      game_version
-    FROM classes
-    ORDER BY name`,
+      c.id,
+      c.name,
+      c.description,
+      c.primary_role,
+      c.secondary_role,
+      c.difficulty,
+      c.resource_type,
+      c.compatible_races,
+      c.game_version,
+      va.public_path AS visual_public_path,
+      va.width AS visual_width,
+      va.height AS visual_height,
+      va.source_field AS visual_source_field,
+      va.source_type AS visual_source_type
+    FROM classes c
+    LEFT JOIN visual_assets va
+      ON va.domain = 'class'
+     AND va.entity_id = c.id
+     AND va.kind = 'icon'
+    ORDER BY c.name`,
   );
 }
 
@@ -32,17 +41,26 @@ export function getAllClasses(): Class[] {
 export function getClassById(id: string): Class | null {
   return queryOne<Class>(
     `SELECT
-      id,
-      name,
-      description,
-      primary_role,
-      secondary_role,
-      difficulty,
-      resource_type,
-      compatible_races,
-      game_version
-    FROM classes
-    WHERE id = ?`,
+      c.id,
+      c.name,
+      c.description,
+      c.primary_role,
+      c.secondary_role,
+      c.difficulty,
+      c.resource_type,
+      c.compatible_races,
+      c.game_version,
+      va.public_path AS visual_public_path,
+      va.width AS visual_width,
+      va.height AS visual_height,
+      va.source_field AS visual_source_field,
+      va.source_type AS visual_source_type
+    FROM classes c
+    LEFT JOIN visual_assets va
+      ON va.domain = 'class'
+     AND va.entity_id = c.id
+     AND va.kind = 'icon'
+    WHERE c.id = ?`,
     [id],
   );
 }
@@ -53,6 +71,12 @@ export function getClassById(id: string): Class | null {
 export interface ClassSkill {
   id: string;
   name: string;
+  /** Published skill/icon artwork, when the optional visual asset exists. */
+  visual_public_path: string | null;
+  visual_width: number | null;
+  visual_height: number | null;
+  visual_source_field: string | null;
+  visual_source_type: string | null;
   skill_type: string;
   level_required: number;
   is_innate?: boolean;
@@ -161,6 +185,11 @@ export function getClassSkills(classId: string): ClassSkill[] {
     `SELECT
       s.id,
       s.name,
+      va.public_path AS visual_public_path,
+      va.width AS visual_width,
+      va.height AS visual_height,
+      va.source_field AS visual_source_field,
+      va.source_type AS visual_source_type,
       s.skill_type,
       s.level_required,
       s.damage_type,
@@ -257,6 +286,10 @@ export function getClassSkills(classId: string): ClassSkill[] {
       s.required_spent_points
     FROM skills s
     LEFT JOIN monsters m ON s.summoned_monster_id = m.id
+    LEFT JOIN visual_assets va
+      ON va.domain = 'skill'
+     AND va.entity_id = s.id
+     AND va.kind = 'icon'
     WHERE (? IN (SELECT value FROM json_each(s.player_classes))
        OR 'all' IN (SELECT value FROM json_each(s.player_classes)))
       AND s.id NOT IN ('alchemy', 'baking', 'crafting', 'digging', 'gathering', 'mining', 'opening', 'teleport', 'new_skill_placeholder')
@@ -281,6 +314,11 @@ export interface ClassItemSource {
 export interface ClassItem {
   id: string;
   name: string;
+  visual_public_path: string | null;
+  visual_width: number | null;
+  visual_height: number | null;
+  visual_source_field: string | null;
+  visual_source_type: string | null;
   slot: string | null;
   item_level: number;
   level_required: number;
@@ -300,28 +338,37 @@ export function getClassItemsWithSources(
     Omit<ClassItem, "sources" | "min_source_level"> & { stat_keys: string }
   >(
     `SELECT
-      id,
-      name,
-      slot,
-      item_level,
-      level_required,
-      quality,
-      item_type,
+      i.id,
+      i.name,
+      va.public_path AS visual_public_path,
+      va.width AS visual_width,
+      va.height AS visual_height,
+      va.source_field AS visual_source_field,
+      va.source_type AS visual_source_type,
+      i.slot,
+      i.item_level,
+      i.level_required,
+      i.quality,
+      i.item_type,
       (
         SELECT json_group_array(json_each.key)
-        FROM json_each(stats)
+        FROM json_each(i.stats)
         WHERE json_each.key NOT IN ('max_durability', 'has_serenity', 'is_costume', 'augment_bonus_set')
           AND json_each.value != 0
           AND json_each.value != 0.0
           AND json_each.value != 'false'
       ) as stat_keys
-    FROM items
-    WHERE item_type IN ('equipment', 'weapon')
-      AND (? IN (SELECT value FROM json_each(class_required))
-           OR 'all' IN (SELECT value FROM json_each(class_required)))
-      AND slot NOT IN ('Shovel', 'Pickaxe')
-      AND json_extract(stats, '$.is_costume') IS NOT 1
-    ORDER BY level_required, name`,
+    FROM items i
+    LEFT JOIN visual_assets va
+      ON va.domain = 'item'
+     AND va.entity_id = i.id
+     AND va.kind = 'icon'
+    WHERE i.item_type IN ('equipment', 'weapon')
+      AND (? IN (SELECT value FROM json_each(i.class_required))
+           OR 'all' IN (SELECT value FROM json_each(i.class_required)))
+      AND i.slot NOT IN ('Shovel', 'Pickaxe')
+      AND json_extract(i.stats, '$.is_costume') IS NOT 1
+    ORDER BY i.level_required, i.name`,
     [classId],
   );
 

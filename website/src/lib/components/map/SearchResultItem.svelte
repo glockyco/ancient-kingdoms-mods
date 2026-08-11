@@ -1,38 +1,60 @@
 <script lang="ts">
-  import type { MapSearchResult } from "$lib/queries/map-search";
+  import type { EntityId } from "$lib/entities/registry";
+  import { entityRegistry } from "$lib/entities/registry";
+  import EntityIcon from "$lib/components/EntityIcon.svelte";
+  import { getQualityTextColorClass, toRomanNumeral } from "$lib/utils/format";
   import {
     getActiveRoles,
     normalizeRoles,
     type RoleCategory,
   } from "$lib/utils/roles";
-  import { toRomanNumeral, getQualityTextColorClass } from "$lib/utils/format";
-  import Sword from "@lucide/svelte/icons/sword";
-  import Shield from "@lucide/svelte/icons/shield";
-  import Crown from "@lucide/svelte/icons/crown";
-  import Star from "@lucide/svelte/icons/star";
-  import Crosshair from "@lucide/svelte/icons/crosshair";
-  import Users from "@lucide/svelte/icons/users";
-  import MapIcon from "@lucide/svelte/icons/map";
-  import Leaf from "@lucide/svelte/icons/leaf";
-  import Pickaxe from "@lucide/svelte/icons/pickaxe";
-  import Sparkles from "@lucide/svelte/icons/sparkles";
-  import Box from "@lucide/svelte/icons/box";
-  import Package from "@lucide/svelte/icons/package";
-  import Flame from "@lucide/svelte/icons/flame";
-  import Hammer from "@lucide/svelte/icons/hammer";
-  import CircleDot from "@lucide/svelte/icons/circle-dot";
+  import type { Component } from "svelte";
+  import type { IconNode } from "lucide";
+  import {
+    Sword as SwordIcon,
+    Shield as ShieldIcon,
+    Crown as CrownIcon,
+    Star as StarIcon,
+    Crosshair as CrosshairIcon,
+    Leaf as LeafIcon,
+    Pickaxe as PickaxeIcon,
+    Sparkles as SparklesIcon,
+    Package as PackageIcon,
+  } from "lucide";
   import MapPinOff from "@lucide/svelte/icons/map-pin-off";
   import Scroll from "@lucide/svelte/icons/scroll";
-  import Shovel from "@lucide/svelte/icons/shovel";
+  import Sparkles from "@lucide/svelte/icons/sparkles";
+  import Shield from "@lucide/svelte/icons/shield";
   import ShoppingBag from "@lucide/svelte/icons/shopping-bag";
   import Wrench from "@lucide/svelte/icons/wrench";
   import RefreshCw from "@lucide/svelte/icons/refresh-cw";
   import Compass from "@lucide/svelte/icons/compass";
-  import Home from "@lucide/svelte/icons/home";
-  import TriangleAlert from "@lucide/svelte/icons/triangle-alert";
-  import type { Component } from "svelte";
+  import type {
+    MapSearchCategory,
+    MapSearchResult,
+  } from "$lib/queries/map-search";
 
-  // Role category colors (matching RoleBadges.svelte)
+  interface Props {
+    result: MapSearchResult;
+  }
+  let { result }: Props = $props();
+
+  const CATEGORY_ENTITY: Record<MapSearchCategory, EntityId> = {
+    monster: "monster",
+    npc: "npc",
+    zone: "zone",
+    resource: "gathering_resource",
+    chest: "chest",
+    treasure: "treasure",
+    altar: "altar",
+    house: "house",
+    trap: "trap",
+    crafting: "crafting_station",
+    portal: "portal",
+    item: "item",
+    quest: "quest",
+  };
+
   const categoryColors: Record<RoleCategory, string> = {
     quest: "text-orange-500",
     merchant: "text-green-500",
@@ -43,7 +65,6 @@
     travel: "text-cyan-500",
   };
 
-  // Role category icons (matching RoleBadges.svelte)
   const categoryIcons: Record<RoleCategory, Component> = {
     quest: Scroll,
     merchant: ShoppingBag,
@@ -54,128 +75,98 @@
     travel: Compass,
   };
 
-  interface Props {
-    result: MapSearchResult;
-  }
-  let { result }: Props = $props();
-
-  function getIcon(result: MapSearchResult): Component {
+  const entity = $derived(entityRegistry[CATEGORY_ENTITY[result.category]]);
+  const fallbackIcon = $derived.by((): IconNode => {
     if (result.category === "monster") {
-      switch (result.subcategory) {
-        case "fabled":
-          return Star;
-        case "boss":
-          return Crown;
-        case "elite":
-          return Shield;
-        case "hunt":
-          return Crosshair;
-        default:
-          return Sword;
-      }
+      if (result.subcategory === "fabled") return StarIcon;
+      if (result.subcategory === "boss") return CrownIcon;
+      if (result.subcategory === "elite") return ShieldIcon;
+      if (result.subcategory === "hunt") return CrosshairIcon;
+      return SwordIcon;
     }
     if (result.category === "resource") {
-      if (result.keywords?.includes("plant")) return Leaf;
-      if (result.keywords?.includes("mineral")) return Pickaxe;
-      if (result.keywords?.includes("spark")) return Sparkles;
-      return Package; // "other" resources
+      if (result.keywords?.includes("plant")) return LeafIcon;
+      if (result.keywords?.includes("mineral")) return PickaxeIcon;
+      if (result.keywords?.includes("spark")) return SparklesIcon;
+      return PackageIcon;
     }
-    const icons: Record<MapSearchResult["category"], Component> = {
-      monster: Sword,
-      npc: Users,
-      zone: MapIcon,
-      resource: Leaf,
-      chest: Box,
-      treasure: Shovel,
-      altar: Flame,
-      house: Home,
-      trap: TriangleAlert,
-      crafting: Hammer,
-      portal: CircleDot,
-      quest: Scroll,
-      item: Package,
-    };
-    return icons[result.category];
-  }
-
-  let Icon = $derived(getIcon(result));
-
-  function getDisplayName(result: MapSearchResult): string {
-    if (result.category === "crafting" && result.subcategory) {
-      switch (result.subcategory) {
-        case "alchemy":
-          return "Alchemy Table";
-        case "cooking":
-          return "Cooking Oven";
-        case "forge":
-          return "Forge";
-      }
-    }
-    return result.name;
-  }
-
-  // Get unique role categories for NPC results
-  let roleCategories = $derived.by(() => {
-    if (result.category !== "npc" || !result.roles) return [];
-    const normalizedRoles = normalizeRoles(result.roles);
-    const activeRoles = getActiveRoles(normalizedRoles);
-    const categories = new Set(activeRoles.map((r) => r.category));
-    return Array.from(categories) as RoleCategory[];
+    return entity.icon;
   });
 
-  // Item quality color class
-  let itemColorClass = $derived(
-    result.category === "item" && result.subcategory
-      ? getQualityTextColorClass(Number(result.subcategory))
+  const roleCategories = $derived.by(() => {
+    if (result.category !== "npc" || !result.roles) return [] as RoleCategory[];
+    const activeRoles = getActiveRoles(normalizeRoles(result.roles));
+    return Array.from(
+      new Set(activeRoles.map((role) => role.category)),
+    ) as RoleCategory[];
+  });
+
+  const itemColorClass = $derived(
+    result.category === "item" && result.quality != null
+      ? getQualityTextColorClass(result.quality)
       : "",
+  );
+  const displayName = $derived(
+    result.category === "crafting" && result.subcategory
+      ? result.subcategory === "alchemy"
+        ? "Alchemy Table"
+        : result.subcategory === "cooking"
+          ? "Cooking Oven"
+          : result.subcategory === "scribing"
+            ? "Scribing Table"
+            : "Forge"
+      : result.name,
+  );
+  const isResourceTier = $derived(
+    result.category === "resource" &&
+      (result.keywords?.includes("plant") ||
+        result.keywords?.includes("mineral")),
   );
 </script>
 
-<div class="flex items-center gap-3 w-full">
-  <Icon class="h-4 w-4 text-muted-foreground shrink-0" />
-  <div class="flex-1 min-w-0">
-    <div class="font-medium truncate {itemColorClass}">
-      {getDisplayName(result)}
-    </div>
+<div class="flex w-full items-center gap-3">
+  <EntityIcon src={result.image} alt="" {fallbackIcon} size={28} />
+  <div class="min-w-0 flex-1">
+    <div class="truncate font-medium {itemColorClass}">{displayName}</div>
     {#if result.renewalDungeonName}
-      <div class="text-xs text-muted-foreground truncate">
+      <div class="truncate text-xs text-muted-foreground">
         Resets {result.renewalDungeonName}
       </div>
     {:else if result.zoneName && result.category !== "zone" && !result.spawnCount}
-      <div class="text-xs text-muted-foreground truncate">
+      <div class="truncate text-xs text-muted-foreground">
         {result.zoneName}
       </div>
     {/if}
   </div>
   {#if roleCategories.length > 0}
-    <div class="flex gap-1 shrink-0">
-      {#each roleCategories as cat (cat)}
-        {@const RoleIcon = categoryIcons[cat]}
-        <RoleIcon class="h-3.5 w-3.5 {categoryColors[cat]}" />
+    <div class="flex shrink-0 gap-1">
+      {#each roleCategories as category (category)}
+        {@const RoleIcon = categoryIcons[category]}
+        <RoleIcon class={categoryColors[category]} size={14} />
       {/each}
     </div>
   {/if}
   {#if result.spawnCount}
-    <span class="text-xs text-muted-foreground shrink-0"
+    <span class="shrink-0 text-xs text-muted-foreground"
       >{result.spawnCount} spawns</span
     >
   {/if}
   {#if result.level != null}
-    {#if result.category === "resource" && (result.keywords?.includes("plant") || result.keywords?.includes("mineral"))}
-      <span class="text-xs text-muted-foreground shrink-0"
+    {#if isResourceTier}
+      <span class="shrink-0 text-xs text-muted-foreground"
         >Tier {toRomanNumeral(result.level)}</span
       >
     {:else if result.category !== "resource" && result.level > 0}
-      <span class="text-xs text-muted-foreground shrink-0"
+      <span class="shrink-0 text-xs text-muted-foreground"
         >Lv {result.level}</span
       >
     {/if}
   {/if}
   {#if !result.bounds}
     <span
-      class="text-xs text-muted-foreground italic flex items-center gap-1 shrink-0"
+      class="flex shrink-0 items-center gap-1 text-xs italic text-muted-foreground"
     >
-      <MapPinOff class="h-3 w-3" />
+      <MapPinOff class="size-3" />
       <span class="hidden sm:inline">No location</span>
     </span>
   {/if}

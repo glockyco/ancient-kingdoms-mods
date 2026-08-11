@@ -9,21 +9,12 @@
   import PanelLeftClose from "@lucide/svelte/icons/panel-left-close";
   import PanelLeftOpen from "@lucide/svelte/icons/panel-left-open";
   import Sword from "@lucide/svelte/icons/sword";
-  import Shield from "@lucide/svelte/icons/shield";
-  import Crown from "@lucide/svelte/icons/crown";
   import Users from "@lucide/svelte/icons/users";
-  import CircleDot from "@lucide/svelte/icons/circle-dot";
-  import Box from "@lucide/svelte/icons/box";
-  import Flame from "@lucide/svelte/icons/flame";
-  import Leaf from "@lucide/svelte/icons/leaf";
-  import Pickaxe from "@lucide/svelte/icons/pickaxe";
-  import Sparkles from "@lucide/svelte/icons/sparkles";
-  import Package from "@lucide/svelte/icons/package";
-  import Fish from "@lucide/svelte/icons/fish";
   import Hammer from "@lucide/svelte/icons/hammer";
   import Menu from "@lucide/svelte/icons/menu";
   import Search from "@lucide/svelte/icons/search";
-  import Crosshair from "@lucide/svelte/icons/crosshair";
+  import type { IconNode } from "lucide";
+  import EntityGlyph from "$lib/components/EntityGlyph.svelte";
   import * as Drawer from "$lib/components/ui/drawer";
   import { Button } from "$lib/components/ui/button";
   import MapSidebarContent from "./MapSidebarContent.svelte";
@@ -35,7 +26,8 @@
   } from "$lib/types/map";
   import {
     MARKER_COLORS,
-    MARKER_PLURAL_LABELS,
+    markerRegistry,
+    type MarkerId,
   } from "$lib/map/marker-registry";
   import {
     toggleLayerVisibility,
@@ -114,39 +106,45 @@
   // Quick toggle icons for collapsed state
   interface QuickToggle {
     key: keyof LayerVisibility | "allNpcs" | "allCrafting";
-    icon: typeof Sword;
+    icon: typeof Sword | IconNode;
     color:
       | readonly [number, number, number]
       | readonly [number, number, number, number];
     label: string;
   }
 
-  const monsterToggles: QuickToggle[] = [
-    {
-      key: "bosses",
-      icon: Crown,
-      color: MARKER_COLORS.bosses,
-      label: MARKER_PLURAL_LABELS.bosses,
-    },
-    {
-      key: "elites",
-      icon: Shield,
-      color: MARKER_COLORS.elites,
-      label: MARKER_PLURAL_LABELS.elites,
-    },
-    {
-      key: "creatures",
-      icon: Sword,
-      color: MARKER_COLORS.creatures,
-      label: MARKER_PLURAL_LABELS.creatures,
-    },
-    {
-      key: "hunts",
-      icon: Crosshair,
-      color: MARKER_COLORS.hunts,
-      label: MARKER_PLURAL_LABELS.hunts,
-    },
-  ];
+  function markerToggle(markerId: MarkerId): QuickToggle {
+    const marker = markerRegistry[markerId];
+    const visibilityKey = marker.layer.visibilityKey;
+    if (!visibilityKey) {
+      throw new Error(`Marker ${markerId} has no direct visibility toggle`);
+    }
+    return {
+      key: visibilityKey,
+      icon: marker.icon,
+      color: marker.color,
+      label: marker.pluralLabel,
+    };
+  }
+
+  const markerEntries = Object.values(
+    markerRegistry,
+  ) as (typeof markerRegistry)[MarkerId][];
+  const quickTogglesFor = (
+    section: "monsters" | "interactables" | "gathering",
+  ) =>
+    markerEntries
+      .filter(
+        (marker) =>
+          marker.layer.sidebarSection === section &&
+          "quickToggle" in marker.layer &&
+          marker.layer.quickToggle,
+      )
+      .sort((a, b) => a.z - b.z)
+      .map((marker) => markerToggle(marker.id as MarkerId));
+  const monsterToggles = quickTogglesFor("monsters");
+  const interactableToggles = quickTogglesFor("interactables");
+  const resourceToggles = quickTogglesFor("gathering");
 
   const npcToggle: QuickToggle = {
     key: "allNpcs",
@@ -155,66 +153,12 @@
     label: "All NPCs",
   };
 
-  const interactableToggles: QuickToggle[] = [
-    {
-      key: "altars",
-      icon: Flame,
-      color: MARKER_COLORS.altars,
-      label: MARKER_PLURAL_LABELS.altars,
-    },
-    {
-      key: "portals",
-      icon: CircleDot,
-      color: MARKER_COLORS.portals,
-      label: MARKER_PLURAL_LABELS.portals,
-    },
-    {
-      key: "chests",
-      icon: Box,
-      color: MARKER_COLORS.chests,
-      label: MARKER_PLURAL_LABELS.chests,
-    },
-  ];
-
   const craftingToggle: QuickToggle = {
     key: "allCrafting",
     icon: Hammer,
     color: MARKER_COLORS.alchemyTables,
     label: "Crafting Stations",
   };
-
-  const resourceToggles: QuickToggle[] = [
-    {
-      key: "gatheringPlants",
-      icon: Leaf,
-      color: MARKER_COLORS.gatheringPlants,
-      label: MARKER_PLURAL_LABELS.gatheringPlants,
-    },
-    {
-      key: "gatheringMinerals",
-      icon: Pickaxe,
-      color: MARKER_COLORS.gatheringMinerals,
-      label: MARKER_PLURAL_LABELS.gatheringMinerals,
-    },
-    {
-      key: "gatheringFishing",
-      icon: Fish,
-      color: MARKER_COLORS.gatheringFishing,
-      label: MARKER_PLURAL_LABELS.gatheringFishing,
-    },
-    {
-      key: "gatheringSparks",
-      icon: Sparkles,
-      color: MARKER_COLORS.gatheringSparks,
-      label: MARKER_PLURAL_LABELS.gatheringSparks,
-    },
-    {
-      key: "gatheringOther",
-      icon: Package,
-      color: MARKER_COLORS.gatheringOther,
-      label: MARKER_PLURAL_LABELS.gatheringOther,
-    },
-  ];
 
   function toggleLayer(key: QuickToggle["key"]) {
     if (key === "allNpcs") {
@@ -255,6 +199,15 @@
 </script>
 
 <svelte:window onkeydown={handleKeydown} />
+
+{#snippet quickToggleIcon(icon: QuickToggle["icon"])}
+  {#if Array.isArray(icon)}
+    <EntityGlyph icon={icon as IconNode} class="h-5 w-5" />
+  {:else}
+    {@const Icon = icon}
+    <Icon class="h-5 w-5" />
+  {/if}
+{/snippet}
 
 {#if initialized}
   <!-- Mobile: Home button (top-left) -->
@@ -379,7 +332,6 @@
 
         <!-- Monster toggles -->
         {#each monsterToggles as toggle (toggle.key)}
-          {@const Icon = toggle.icon}
           {@const isActive = isToggleActive(toggle.key)}
           <button
             type="button"
@@ -390,7 +342,7 @@
             onclick={() => toggleLayer(toggle.key)}
             title="{toggle.label} ({isActive ? 'on' : 'off'})"
           >
-            <Icon class="h-5 w-5" />
+            {@render quickToggleIcon(toggle.icon)}
           </button>
         {/each}
 
@@ -418,7 +370,6 @@
 
         <!-- Interactable toggles -->
         {#each interactableToggles as toggle (toggle.key)}
-          {@const Icon = toggle.icon}
           {@const isActive = isToggleActive(toggle.key)}
           <button
             type="button"
@@ -429,7 +380,7 @@
             onclick={() => toggleLayer(toggle.key)}
             title="{toggle.label} ({isActive ? 'on' : 'off'})"
           >
-            <Icon class="h-5 w-5" />
+            {@render quickToggleIcon(toggle.icon)}
           </button>
         {/each}
 
@@ -457,7 +408,6 @@
 
         <!-- Resource toggles -->
         {#each resourceToggles as toggle (toggle.key)}
-          {@const Icon = toggle.icon}
           {@const isActive = isToggleActive(toggle.key)}
           <button
             type="button"
@@ -468,7 +418,7 @@
             onclick={() => toggleLayer(toggle.key)}
             title="{toggle.label} ({isActive ? 'on' : 'off'})"
           >
-            <Icon class="h-5 w-5" />
+            {@render quickToggleIcon(toggle.icon)}
           </button>
         {/each}
       </div>

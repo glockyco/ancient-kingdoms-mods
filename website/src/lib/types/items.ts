@@ -101,6 +101,8 @@ export interface ItemDetailPageData {
     name: string;
     gold_required: number;
   }>;
+  /** Icon artwork for this item. */
+  visualAsset: EntityVisualAsset | null;
   /** Sprite of the creature a pet whistle summons. */
   petVisualAsset: EntityVisualAsset | null;
 }

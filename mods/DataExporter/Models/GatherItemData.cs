@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace DataExporter.Models;
 
@@ -7,6 +8,8 @@ public class GatherItemData
     // Identity
     public string id { get; set; }
     public string name { get; set; }
+    [JsonProperty("resource_id", NullValueHandling = NullValueHandling.Include)]
+    public string resource_id { get; set; }
     public string zone_id { get; set; }
     public string sub_zone_id { get; set; }
     public Position position { get; set; }

@@ -6,7 +6,7 @@ namespace DataExporter.Exporters;
 
 public class ProfessionExporter : BaseExporter
 {
-    public ProfessionExporter(MelonLogger.Instance logger, string exportPath) : base(logger, exportPath)
+    public ProfessionExporter(MelonLogger.Instance logger, string exportPath, VisualAssetRegistry visualAssets) : base(logger, exportPath, visualAssets)
     {
     }
 
@@ -22,7 +22,7 @@ public class ProfessionExporter : BaseExporter
                 name = "Alchemy",
                 description = "Brew potions and elixirs.",
                 category = "crafting",
-                icon_path = GetIconPath("alchemy"),
+                icon_path = null, // resolved from the authoritative UI slot below
                 achievement_id = "ALCHEMY_MASTER",
                 max_level = 100,
                 tracking_type = "float_level",
@@ -34,7 +34,7 @@ public class ProfessionExporter : BaseExporter
                 name = "Cooking",
                 description = "Prepare food at cooking stations.",
                 category = "crafting",
-                icon_path = GetIconPath("cooking"),
+                icon_path = null, // resolved from the authoritative UI slot below
                 achievement_id = "COOKING_MASTER",
                 max_level = 100,
                 tracking_type = "float_level",
@@ -46,7 +46,7 @@ public class ProfessionExporter : BaseExporter
                 name = "Herbalism",
                 description = "Gather plants and herbs.",
                 category = "gathering",
-                icon_path = GetIconPath("herbalism"),
+                icon_path = null, // resolved from the authoritative UI slot below
                 achievement_id = "FORAGING_MASTER",
                 max_level = 100,
                 tracking_type = "float_level",
@@ -58,7 +58,7 @@ public class ProfessionExporter : BaseExporter
                 name = "Mining",
                 description = "Mine ore and minerals.",
                 category = "gathering",
-                icon_path = GetIconPath("mining"),
+                icon_path = null, // resolved from the authoritative UI slot below
                 achievement_id = "MINING_MASTER",
                 max_level = 100,
                 tracking_type = "float_level",
@@ -70,7 +70,7 @@ public class ProfessionExporter : BaseExporter
                 name = "Fishing",
                 description = "Catch fish at fishing spots.",
                 category = "gathering",
-                icon_path = GetIconPath("fishing"),
+                icon_path = null, // resolved from the authoritative UI slot below
                 achievement_id = "FISHER_MASTER",
                 max_level = 100,
                 tracking_type = "float_level",
@@ -82,7 +82,7 @@ public class ProfessionExporter : BaseExporter
                 name = "Adventuring",
                 description = "Complete Adventurer's Guild quests.",
                 category = "combat",
-                icon_path = GetIconPath("adventuring"),
+                icon_path = null, // resolved from the authoritative UI slot below
                 achievement_id = "ADVENTURING_MASTER",
                 max_level = 100,
                 tracking_type = "float_level",
@@ -94,7 +94,7 @@ public class ProfessionExporter : BaseExporter
                 name = "Lore Keeping",
                 description = "Collect books and uncover lore.",
                 category = "exploration",
-                icon_path = GetIconPath("lore_keeping"),
+                icon_path = null, // resolved from the authoritative UI slot below
                 achievement_id = "LOREKEEPING_MASTER",
                 max_level = 100,
                 tracking_type = "count_based",
@@ -106,7 +106,7 @@ public class ProfessionExporter : BaseExporter
                 name = "Exploring",
                 description = "Discover areas of the world.",
                 category = "exploration",
-                icon_path = GetIconPath("exploring"),
+                icon_path = null, // resolved from the authoritative UI slot below
                 achievement_id = "EXPLORING_MASTER",
                 max_level = 100,
                 tracking_type = "count_based",
@@ -118,7 +118,7 @@ public class ProfessionExporter : BaseExporter
                 name = "Slayer",
                 description = "Defeat bosses and elites.",
                 category = "combat",
-                icon_path = GetIconPath("slayer"),
+                icon_path = null, // resolved from the authoritative UI slot below
                 achievement_id = "SLAYER_MASTER",
                 max_level = 100,
                 tracking_type = "float_level",
@@ -130,7 +130,7 @@ public class ProfessionExporter : BaseExporter
                 name = "Treasure Hunter",
                 description = "Find treasure chests.",
                 category = "exploration",
-                icon_path = GetIconPath("treasure_hunter"),
+                icon_path = null, // resolved from the authoritative UI slot below
                 achievement_id = "TREASURE_HUNTER_MASTER",
                 max_level = 100,
                 tracking_type = "float_level",
@@ -142,7 +142,7 @@ public class ProfessionExporter : BaseExporter
                 name = "Radiant Seeker",
                 description = "Collect scattered radiant sparks.",
                 category = "gathering",
-                icon_path = GetIconPath("radiant_seeker"),
+                icon_path = null, // resolved from the authoritative UI slot below
                 achievement_id = "RADIANT_SEEKER_MASTER",
                 max_level = 100,
                 tracking_type = "float_level",
@@ -154,7 +154,7 @@ public class ProfessionExporter : BaseExporter
                 name = "Hunter",
                 description = "Track and hunt creatures.",
                 category = "combat",
-                icon_path = GetIconPath("hunter"),
+                icon_path = null, // resolved from the authoritative UI slot below
                 achievement_id = "HUNTER_MASTER",
                 max_level = 100,
                 tracking_type = "float_level",
@@ -166,7 +166,7 @@ public class ProfessionExporter : BaseExporter
                 name = "Scroll Mastery",
                 description = "Craft and use scrolls at scribing tables.",
                 category = "crafting",
-                icon_path = GetIconPath("scroll_mastery"),
+                icon_path = null, // resolved from the authoritative UI slot below
                 achievement_id = "SCROLL_MASTERY_MASTER",
                 max_level = 100,
                 tracking_type = "float_level",
@@ -181,18 +181,12 @@ public class ProfessionExporter : BaseExporter
         Logger.Msg($"✓ Exported {professions.Count} professions");
     }
 
-    private string GetIconPath(string professionId)
-    {
-        // Default icon path pattern - will be updated from UI if available
-        return $"profession_{professionId}";
-    }
-
     private void TryUpdateIconsFromUI(List<ProfessionData> professions)
     {
         var uiProfessions = Il2Cpp.UIProfessions.singleton;
         if (uiProfessions == null)
         {
-            Logger.Msg("UIProfessions.singleton not available, using default icon paths");
+            Logger.Msg("UIProfessions.singleton not available, profession icons unavailable");
             return;
         }
 
@@ -205,6 +199,14 @@ public class ProfessionExporter : BaseExporter
                 if (image != null && image.sprite != null)
                 {
                     profession.icon_path = image.sprite.name;
+                    VisualAssets?.ExportSprite(
+                        "profession",
+                        profession.id,
+                        "icon",
+                        "UIProfessionSlot.Image.sprite",
+                        image.sprite.GetType().FullName,
+                        image.sprite.name,
+                        image.sprite);
                 }
             }
         }

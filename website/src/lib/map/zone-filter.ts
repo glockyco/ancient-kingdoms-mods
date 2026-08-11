@@ -1,76 +1,19 @@
-import type {
-  FilteredMapData,
-  MapEntityData,
-  PortalMapEntity,
-  NpcMapEntity,
-  ChestMapEntity,
-  TreasureMapEntity,
-  AltarMapEntity,
-  TrapMapEntity,
-  HouseMapEntity,
-  ZoneBoundary,
-} from "$lib/types/map";
-import { EXCLUDED_ZONE_IDS } from "$lib/constants/constants";
+import type { FilteredMapData } from "$lib/types/map";
 
 /**
- * Calculate polygon area using the shoelace formula.
- * Returns absolute value (always positive).
+ * Combined data passed to deck.gl layers. Entity rows are pre-filtered and
+ * partitioned by the marker registry; focused-zone filtering happens on the
+ * GPU through DataFilterExtension.
  */
-function calculatePolygonArea(polygon: [number, number][]): number {
-  let area = 0;
-  const n = polygon.length;
-  for (let i = 0; i < n; i++) {
-    const j = (i + 1) % n;
-    area += polygon[i][0] * polygon[j][1];
-    area -= polygon[j][0] * polygon[i][1];
-  }
-  return Math.abs(area / 2);
-}
+export type ZoneFocusedData = FilteredMapData;
 
 /**
- * Combined data type including all entity arrays needed for rendering.
- * Zone filtering happens on GPU via DataFilterExtension for performance.
- */
-export interface ZoneFocusedData extends FilteredMapData {
-  npcs: NpcMapEntity[];
-  portals: PortalMapEntity[];
-  chests: ChestMapEntity[];
-  treasure: TreasureMapEntity[];
-  altars: AltarMapEntity[];
-  traps: TrapMapEntity[];
-  trapsWithDestinations: TrapMapEntity[];
-  houses: HouseMapEntity[];
-  subZones: ZoneBoundary[];
-}
-
-/**
- * Combine pre-filtered data with raw entity arrays.
- * Returns STABLE array references - zone filtering is done on GPU, not here.
- * This prevents freezes when switching zones by keeping data arrays constant.
- * Filters out entities without positions (they're kept in entityData for popups).
+ * Keep the historical call signature while returning stable, registry-derived
+ * arrays. The raw entity data remains available to popups and selection but is
+ * never re-filtered for rendering.
  */
 export function createZoneFocusedData(
   filtered: FilteredMapData,
-  rawData: MapEntityData,
 ): ZoneFocusedData {
-  return {
-    ...filtered,
-    npcs: rawData.npcs.filter((n) => n.position !== null),
-    portals: rawData.portals.filter((p) => p.position !== null),
-    chests: rawData.chests.filter((c) => c.position !== null),
-    treasure: rawData.treasure.filter((t) => t.position !== null),
-    altars: rawData.altars.filter((a) => a.position !== null),
-    traps: rawData.traps.filter((t) => t.position !== null),
-    trapsWithDestinations: rawData.traps.filter(
-      (t) => t.position !== null && t.teleportPosition !== null,
-    ),
-    houses: rawData.houses.filter((h) => h.position !== null),
-    // Sort by area descending so smaller/enclosed zones render on top and remain hoverable
-    subZones: rawData.subZones
-      .filter((z) => !EXCLUDED_ZONE_IDS[z.zoneId])
-      .sort(
-        (a, b) =>
-          calculatePolygonArea(b.polygon) - calculatePolygonArea(a.polygon),
-      ),
-  };
+  return filtered;
 }

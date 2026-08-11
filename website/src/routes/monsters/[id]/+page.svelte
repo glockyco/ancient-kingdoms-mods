@@ -9,6 +9,7 @@
   } from "$lib/components/ui/data-table";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
+  import EntityReference from "$lib/components/EntityReference.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
   import Seo from "$lib/components/Seo.svelte";
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
@@ -43,6 +44,7 @@
   import Sparkles from "@lucide/svelte/icons/sparkles";
   import Cog from "@lucide/svelte/icons/cog";
   import Dna from "@lucide/svelte/icons/dna";
+  import Package from "@lucide/svelte/icons/package";
 
   let { data } = $props();
 
@@ -521,6 +523,10 @@
       itemId={row.original.item_id}
       itemName={row.original.item_name}
       tooltipHtml={row.original.tooltip_html}
+      imageAvailable={row.original.visual_public_path}
+      fallback={Package}
+      showIcon={Boolean(row.original.visual_public_path)}
+      imageKind="icon"
     />
   {:else if cell.column.id === "note"}
     <span class="text-muted-foreground">{row.original.note ?? ""}</span>
@@ -655,12 +661,19 @@
   row: Row<MonsterSkill>;
 })}
   {#if cell.column.id === "name"}
-    <a
+    <EntityReference
       href="/skills/{row.original.id}"
-      class="text-blue-600 dark:text-blue-400 hover:underline"
-    >
-      {row.original.name}
-    </a>
+      name={row.original.name}
+      domain="skill"
+      entityId={row.original.id}
+      imageKind="icon"
+      imageAvailable={row.original.visual_public_path}
+      fallback={Sparkles}
+      showIcon={Boolean(row.original.visual_public_path)}
+      size={28}
+      class="max-w-full"
+      nameClass="truncate"
+    />
     {#if row.original.skill_index === 0}
       <span class="ml-1 text-xs text-muted-foreground">(Default)</span>
     {/if}
@@ -839,8 +852,8 @@
         <div
           class="order-1 col-span-2 flex flex-col items-center gap-3 md:order-none md:col-span-1"
         >
-          <div class="flex h-56 w-full items-center justify-center md:h-64">
-            {#if monsterImageSrc && data.visualAsset}
+          {#if monsterImageSrc && data.visualAsset}
+            <div class="flex h-56 w-full items-center justify-center md:h-64">
               <img
                 src={monsterImageSrc}
                 alt={`${data.monster.name} monster sprite`}
@@ -848,18 +861,8 @@
                 height={data.visualAsset.height}
                 class="h-auto w-auto max-w-full object-contain [image-rendering:pixelated] max-h-56 md:max-h-64"
               />
-            {:else}
-              <div
-                class="flex h-44 w-56 flex-col items-center justify-center gap-2 rounded-md border border-dashed border-border/70 bg-muted/20 text-center text-muted-foreground"
-              >
-                <span
-                  class="text-5xl font-semibold leading-none"
-                  aria-hidden="true">?</span
-                >
-                <span class="text-sm font-medium">No image available</span>
-              </div>
-            {/if}
-          </div>
+            </div>
+          {/if}
 
           <div
             class="inline-flex items-center gap-2 text-lg font-semibold text-green-600 dark:text-green-400"

@@ -1,30 +1,14 @@
 <script lang="ts">
   import Sword from "@lucide/svelte/icons/sword";
-  import Shield from "@lucide/svelte/icons/shield";
-  import Crown from "@lucide/svelte/icons/crown";
-  import Star from "@lucide/svelte/icons/star";
   import Users from "@lucide/svelte/icons/users";
-  import CircleDot from "@lucide/svelte/icons/circle-dot";
-  import Box from "@lucide/svelte/icons/box";
-  import Shovel from "@lucide/svelte/icons/shovel";
-  import Flame from "@lucide/svelte/icons/flame";
   import Leaf from "@lucide/svelte/icons/leaf";
-  import Pickaxe from "@lucide/svelte/icons/pickaxe";
-  import Sparkles from "@lucide/svelte/icons/sparkles";
-  import Package from "@lucide/svelte/icons/package";
   import Hammer from "@lucide/svelte/icons/hammer";
   import MapPin from "@lucide/svelte/icons/map-pin";
   import Compass from "@lucide/svelte/icons/compass";
   import ImageIcon from "@lucide/svelte/icons/image";
   import Search from "@lucide/svelte/icons/search";
   import MousePointerClick from "@lucide/svelte/icons/mouse-pointer-click";
-  import Crosshair from "@lucide/svelte/icons/crosshair";
-  import FlaskConical from "@lucide/svelte/icons/flask-conical";
-  import Scroll from "@lucide/svelte/icons/scroll";
-  import ChefHat from "@lucide/svelte/icons/chef-hat";
-  import Home from "@lucide/svelte/icons/home";
-  import Fish from "@lucide/svelte/icons/fish";
-  import TriangleAlert from "@lucide/svelte/icons/triangle-alert";
+  import type { IconNode } from "lucide";
   import MapSidebarSection from "./MapSidebarSection.svelte";
   import ZoneFocusSelect from "./ZoneFocusSelect.svelte";
   import LevelFilter from "../LevelFilter.svelte";
@@ -35,7 +19,12 @@
     ZoneListItem,
   } from "$lib/types/map";
   import { ZONE_COLORS } from "$lib/map/config";
-  import { MARKER_COLORS, NPC_FACETS } from "$lib/map/marker-registry";
+  import {
+    MARKER_COLORS,
+    NPC_FACETS,
+    markerRegistry,
+    type MarkerSidebarSection,
+  } from "$lib/map/marker-registry";
   import {
     toggleLayerVisibility,
     getToggleState,
@@ -111,37 +100,34 @@
     color:
       | readonly [number, number, number]
       | readonly [number, number, number, number];
-    icon: typeof Sword;
+    icon: typeof Sword | IconNode;
   }
 
-  // Monster layers
-  const monsterLayers: LayerOption[] = [
-    {
-      key: "bosses",
-      label: "Bosses",
-      color: MARKER_COLORS.bosses,
-      icon: Crown,
-    },
-    { key: "fabled", label: "Fabled", color: MARKER_COLORS.fabled, icon: Star },
-    {
-      key: "elites",
-      label: "Elites",
-      color: MARKER_COLORS.elites,
-      icon: Shield,
-    },
-    {
-      key: "creatures",
-      label: "Creatures",
-      color: MARKER_COLORS.creatures,
-      icon: Sword,
-    },
-    {
-      key: "hunts",
-      label: "Hunts",
-      color: MARKER_COLORS.hunts,
-      icon: Crosshair,
-    },
-  ];
+  function registryLayerOptions(section: MarkerSidebarSection): LayerOption[] {
+    return (
+      Object.values(
+        markerRegistry,
+      ) as (typeof markerRegistry)[keyof typeof markerRegistry][]
+    )
+      .filter(
+        (marker) =>
+          marker.layer.sidebarSection === section &&
+          marker.layer.visibilityKey !== null,
+      )
+      .sort((a, b) => a.z - b.z)
+      .map((marker) => ({
+        key: marker.layer.visibilityKey as keyof LayerVisibility,
+        label: marker.pluralLabel,
+        color: marker.color,
+        icon: marker.icon,
+      }));
+  }
+
+  // Marker layers derive labels, colors, icons, and visibility keys from registry.
+  const monsterLayers = registryLayerOptions("monsters");
+  const interactableLayers = registryLayerOptions("interactables");
+  const craftingLayers = registryLayerOptions("crafting");
+  const gatheringLayers = registryLayerOptions("gathering");
 
   // NPC role layers derive labels and visibility keys from the marker registry.
   const npcLayers: LayerOption[] = NPC_FACETS.map((facet) => ({
@@ -150,97 +136,6 @@
     color: MARKER_COLORS.npc,
     icon: facet.id === "isTeleporter" ? Compass : Users,
   }));
-
-  // Interactable layers
-  const interactableLayers: LayerOption[] = [
-    {
-      key: "altars",
-      label: "Altars",
-      color: MARKER_COLORS.altars,
-      icon: Flame,
-    },
-    {
-      key: "traps",
-      label: "Traps",
-      color: MARKER_COLORS.traps,
-      icon: TriangleAlert,
-    },
-    {
-      key: "portals",
-      label: "Portals",
-      color: MARKER_COLORS.portals,
-      icon: CircleDot,
-    },
-    { key: "chests", label: "Chests", color: MARKER_COLORS.chests, icon: Box },
-    { key: "houses", label: "Houses", color: MARKER_COLORS.houses, icon: Home },
-    {
-      key: "treasure",
-      label: "Treasure",
-      color: MARKER_COLORS.treasure,
-      icon: Shovel,
-    },
-  ];
-
-  // Crafting station layers
-  const craftingLayers: LayerOption[] = [
-    {
-      key: "alchemyTables",
-      label: "Alchemy Tables",
-      color: MARKER_COLORS.alchemyTables,
-      icon: FlaskConical,
-    },
-    {
-      key: "cookingOvens",
-      label: "Cooking Ovens",
-      color: MARKER_COLORS.cookingOvens,
-      icon: ChefHat,
-    },
-    {
-      key: "forges",
-      label: "Forges",
-      color: MARKER_COLORS.forges,
-      icon: Hammer,
-    },
-    {
-      key: "scribingTables",
-      label: "Scribing Tables",
-      color: MARKER_COLORS.scribingTables,
-      icon: Scroll,
-    },
-  ];
-
-  const gatheringLayers: LayerOption[] = [
-    {
-      key: "gatheringPlants",
-      label: "Plants",
-      color: MARKER_COLORS.gatheringPlants,
-      icon: Leaf,
-    },
-    {
-      key: "gatheringMinerals",
-      label: "Minerals",
-      color: MARKER_COLORS.gatheringMinerals,
-      icon: Pickaxe,
-    },
-    {
-      key: "gatheringFishing",
-      label: "Fishing Spots",
-      color: MARKER_COLORS.gatheringFishing,
-      icon: Fish,
-    },
-    {
-      key: "gatheringSparks",
-      label: "Radiant Sparks",
-      color: MARKER_COLORS.gatheringSparks,
-      icon: Sparkles,
-    },
-    {
-      key: "gatheringOther",
-      label: "Other",
-      color: MARKER_COLORS.gatheringOther,
-      icon: Package,
-    },
-  ];
 
   const zoneLayers: LayerOption[] = [
     {

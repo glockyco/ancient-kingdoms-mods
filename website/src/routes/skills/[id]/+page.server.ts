@@ -13,6 +13,7 @@ import type {
 import { formatSkillEffect } from "$lib/utils/formatSkillEffect";
 import { parseLinear } from "$lib/utils/parseLinear";
 import { computeMechanicsSpec } from "$lib/utils/skillMechanics";
+import type { EntityVisualAsset } from "$lib/types/visual-assets";
 
 export const prerender = true;
 
@@ -31,6 +32,7 @@ export interface SkillDetailPageData {
   appliedByTraps: SkillTrapUsage[];
   description: string;
   mechanicsSpec: SkillMechanicsSpec;
+  visualAsset: EntityVisualAsset | null;
 }
 
 export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
@@ -55,6 +57,13 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
   if (!skillRaw) {
     throw error(404, `Skill not found: ${params.id}`);
   }
+
+  const visualAsset = queryOne<EntityVisualAsset>(
+    `SELECT public_path, width, height, source_field, source_type
+     FROM visual_assets
+     WHERE domain = 'skill' AND entity_id = ? AND kind = 'icon'`,
+    [params.id],
+  );
 
   const playerClasses: string[] = skillRaw.player_classes
     ? (JSON.parse(skillRaw.player_classes as string) as string[]).sort()
@@ -351,6 +360,7 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
     usedByPets,
     appliedByTraps,
     description,
+    visualAsset,
     mechanicsSpec: computeMechanicsSpec(
       skill,
       usedByPets,

@@ -98,14 +98,31 @@ public class ItemExporter : BaseExporter
             PopulateMergeFields(scriptableItem, itemData);
             PopulateRecipeFields(scriptableItem, itemData);
 
+            var icon = scriptableItem.image;
+            var iconSourceField = "ScriptableItem.image";
+            if (icon == null && !string.IsNullOrEmpty(itemData.icon_path)
+                && Il2CppAssets.HeroEditor4D.FantasyInventory.Scripts.IconCollection.Instances.ContainsKey("FantasyHeroes"))
+            {
+                var iconCollection = Il2CppAssets.HeroEditor4D.FantasyInventory.Scripts.IconCollection.Instances["FantasyHeroes"];
+                if (iconCollection != null)
+                {
+                    var resolvedIcon = iconCollection.GetIcon(itemData.icon_path);
+                    if (resolvedIcon != null && resolvedIcon != iconCollection.DefaultItemIcon)
+                    {
+                        icon = resolvedIcon;
+                        iconSourceField = "IconCollection.Instances[\"FantasyHeroes\"].GetIcon(icon_path)";
+                    }
+                }
+            }
+
             VisualAssets?.ExportSprite(
                 "item",
                 itemData.id,
                 "icon",
-                "ScriptableItem.image",
-                scriptableItem.image != null ? scriptableItem.image.GetType().FullName : "UnityEngine.Sprite",
-                scriptableItem.image != null ? scriptableItem.image.name : null,
-                scriptableItem.image);
+                iconSourceField,
+                icon != null ? icon.GetType().FullName : "UnityEngine.Sprite",
+                icon != null ? icon.name : null,
+                icon);
 
             // Friendly pet whistles carry the creature they summon. Export it so the
             // item page can show what the pet looks like, not just its icon.
@@ -504,6 +521,14 @@ public class ItemExporter : BaseExporter
         if (treasureMapItem.imageLocation != null)
         {
             itemData.treasure_map_image_location = treasureMapItem.imageLocation.name ?? "";
+            VisualAssets?.ExportSprite(
+                "item",
+                itemData.id,
+                "treasure_map",
+                "TreasureMapItem.imageLocation",
+                treasureMapItem.imageLocation.GetType().FullName,
+                treasureMapItem.imageLocation.name,
+                treasureMapItem.imageLocation);
         }
     }
 

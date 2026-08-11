@@ -4,10 +4,12 @@
 </script>
 
 <script lang="ts">
+  import type { Component } from "svelte";
   import { browser } from "$app/environment";
   import { MediaQuery } from "svelte/reactivity";
   import * as HoverCard from "$lib/components/ui/hover-card";
   import { cn } from "$lib/utils.js";
+  import EntityReference from "$lib/components/EntityReference.svelte";
   import ItemTooltip from "$lib/components/ItemTooltip.svelte";
 
   interface Props {
@@ -17,6 +19,12 @@
     class?: string;
     colorClass?: string;
     maxWidth?: string;
+    imageAvailable?: string | boolean | null;
+    imageWidth?: number | null;
+    imageHeight?: number | null;
+    showIcon?: boolean;
+    imageKind?: string;
+    fallback?: Component<{ class?: string }>;
   }
 
   let {
@@ -26,6 +34,12 @@
     class: className,
     colorClass,
     maxWidth,
+    imageAvailable,
+    imageWidth,
+    imageHeight,
+    showIcon = false,
+    imageKind = "icon",
+    fallback,
   }: Props = $props();
 
   const instanceId = crypto.randomUUID();
@@ -68,18 +82,27 @@
     >
       <HoverCard.Trigger>
         {#snippet child({ props })}
-          <a
+          <EntityReference
             {...props}
             href="/items/{itemId}"
+            name={itemName}
+            domain="item"
+            entityId={itemId}
+            {imageKind}
+            {imageAvailable}
+            {imageWidth}
+            {imageHeight}
+            {fallback}
+            {showIcon}
+            size={28}
+            colorClass={effectiveColorClass}
             class={cn(
-              displayMode,
+              showIcon ? "inline-flex" : displayMode,
               "max-w-full underline decoration-dotted hover:decoration-solid",
-              effectiveColorClass,
               className,
             )}
-          >
-            <span class={cn(maxWidth && "block truncate")}>{itemName}</span>
-          </a>
+            nameClass={cn(maxWidth && "block truncate")}
+          />
         {/snippet}
       </HoverCard.Trigger><HoverCard.Content
         class="w-80 border-0 p-0 overflow-hidden shadow-lg"
@@ -90,16 +113,23 @@
       </HoverCard.Content>
     </HoverCard.Root>
   {:else}
-    <a
+    <EntityReference
       href="/items/{itemId}"
+      name={itemName}
+      domain="item"
+      entityId={itemId}
+      {imageKind}
+      {imageAvailable}
+      {fallback}
+      {showIcon}
+      size={28}
+      colorClass={effectiveColorClass}
       class={cn(
-        displayMode,
-        "max-w-full hover:underline",
-        effectiveColorClass,
+        showIcon ? "inline-flex" : displayMode,
+        "max-w-full",
         className,
       )}
-    >
-      <span class={cn(maxWidth && "block truncate")}>{itemName}</span>
-    </a>
+      nameClass={cn(maxWidth && "block truncate")}
+    />
   {/if}
 </span>

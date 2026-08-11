@@ -126,6 +126,7 @@ export interface NpcQuestOffered {
 export interface NpcItemSold {
   item_id: string;
   item_name: string;
+  visual_public_path: string | null;
   quality: number;
   price: number;
   currency_item_id: string | null;
@@ -138,6 +139,7 @@ export interface NpcItemSold {
 export interface NpcDrop {
   item_id: string;
   item_name: string;
+  visual_public_path: string | null;
   quality: number;
   rate: number;
   tooltip_html: string | null;

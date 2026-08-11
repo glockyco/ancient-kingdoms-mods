@@ -14,6 +14,8 @@ import type {
   GatheringMapEntity,
 } from "$lib/types/map";
 import { query } from "$lib/db";
+import type { EntityId } from "$lib/entities/registry";
+import { resolveMapEntityType } from "./selection";
 
 // ============================================================================
 // Types
@@ -86,44 +88,11 @@ export function resolvePhysicalSelection(
   id: string,
   entityData: MapEntityData,
 ): ResolvedSelection {
-  switch (category) {
-    case "monster":
-    case "fabled":
-    case "boss":
-    case "elite":
-    case "hunt":
-      return resolveMonsterSelection(id, entityData);
-    case "npc":
-      return resolveNpcSelection(id, entityData);
-    case "zone":
-      return resolveZoneSelection(id, entityData);
-    case "altar":
-      return resolveAltarSelection(id, entityData);
-    case "trap":
-      return resolveTrapSelection(id, entityData);
-    case "portal":
-      return resolvePortalSelection(id, entityData);
-    case "chest":
-      return resolveChestSelection(id, entityData);
-    case "treasure":
-      return resolveTreasureSelection(id, entityData);
-    case "house":
-      return resolveHouseSelection(id, entityData);
-    case "resource":
-    case "gathering_plant":
-    case "gathering_mineral":
-    case "gathering_spark":
-    case "gathering_fish":
-    case "gathering_other":
-      return resolveGatheringSelection(id, entityData);
-    case "crafting":
-    case "alchemy_table":
-    case "crafting_station":
-    case "scribing_table":
-      return resolveCraftingSelection(id, entityData);
-    default:
-      return { popup: null, highlight: null };
-  }
+  const entityType = resolveMapEntityType(category);
+  const resolver = entityType
+    ? PHYSICAL_SELECTION_BY_ENTITY[entityType]
+    : undefined;
+  return resolver ? resolver(id, entityData) : { popup: null, highlight: null };
 }
 
 /**
@@ -477,6 +446,30 @@ function resolveCraftingSelection(
 
   return { popup: null, highlight: null };
 }
+
+/** Physical popup/highlight handlers keyed by entity-registry family. */
+type PhysicalSelectionResolver = (
+  id: string,
+  entityData: MapEntityData,
+) => ResolvedSelection;
+
+const PHYSICAL_SELECTION_BY_ENTITY: Partial<
+  Record<EntityId, PhysicalSelectionResolver>
+> = {
+  monster: resolveMonsterSelection,
+  npc: resolveNpcSelection,
+  zone: resolveZoneSelection,
+  altar: resolveAltarSelection,
+  trap: resolveTrapSelection,
+  portal: resolvePortalSelection,
+  chest: resolveChestSelection,
+  treasure: resolveTreasureSelection,
+  house: resolveHouseSelection,
+  gathering_resource: resolveGatheringSelection,
+  crafting_station: resolveCraftingSelection,
+  alchemy_table: resolveCraftingSelection,
+  scribing_table: resolveCraftingSelection,
+};
 
 // ============================================================================
 // Database Query Helpers (for virtual entities)

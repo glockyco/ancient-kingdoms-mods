@@ -411,6 +411,13 @@ export interface FilteredMapData {
   fabled: MonsterMapEntity[];
   bosses: MonsterMapEntity[];
   hunts: MonsterMapEntity[];
+  npcs: NpcMapEntity[];
+  portals: PortalMapEntity[];
+  chests: ChestMapEntity[];
+  treasure: TreasureMapEntity[];
+  altars: AltarMapEntity[];
+  traps: TrapMapEntity[];
+  trapsWithDestinations: TrapMapEntity[];
   plants: GatheringMapEntity[];
   minerals: GatheringMapEntity[];
   sparks: GatheringMapEntity[];
@@ -423,6 +430,7 @@ export interface FilteredMapData {
   houses: HouseMapEntity[];
   portalsWithDestinations: PortalMapEntity[];
   teleportersWithDestinations: NpcMapEntity[];
+  subZones: ZoneBoundary[];
   parentZones: ParentZoneBoundary[];
 }
 

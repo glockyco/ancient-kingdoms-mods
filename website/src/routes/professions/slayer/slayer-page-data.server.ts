@@ -11,6 +11,7 @@ export interface SlayerTarget extends RespawnInfo {
   is_fabled: boolean;
   is_elite: boolean;
   is_world_boss: boolean;
+  visual_public_path: string | null;
   spawn_type: "regular" | "summon" | "altar" | "placeholder";
   zone_id: string;
   zone_name: string;
@@ -78,6 +79,7 @@ export function getSlayerPageData(dbPath = DB_STATIC_PATH): SlayerPageData {
         m.is_fabled,
         m.is_elite,
         m.is_world_boss,
+        va.public_path AS visual_public_path,
         m.death_time,
         m.respawn_time,
         m.respawn_probability,
@@ -105,6 +107,10 @@ export function getSlayerPageData(dbPath = DB_STATIC_PATH): SlayerPageData {
         ms.source_summon_kill_monster_name,
         ms.source_summon_kill_count
       FROM monsters m
+      LEFT JOIN visual_assets va
+        ON va.domain = 'monster'
+       AND va.entity_id = m.id
+       AND va.kind = 'primary'
       JOIN monster_spawns ms ON ms.monster_id = m.id
       JOIN zones z ON z.id = ms.zone_id
       WHERE m.is_dummy = 0

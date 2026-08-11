@@ -1,16 +1,26 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using DataExporter.Models;
 using Il2CppInterop.Runtime;
 using MelonLoader;
+using Newtonsoft.Json;
 using UnityEngine;
 
 namespace DataExporter.Exporters;
 
 public class GatherItemExporter : BaseExporter
 {
-    public GatherItemExporter(MelonLogger.Instance logger, string exportPath)
-        : base(logger, exportPath)
+    private sealed class GatherItemRecord
+    {
+        public Il2Cpp.GatherItem Source { get; init; }
+        public GatherItemData Data { get; init; }
+    }
+
+    public GatherItemExporter(MelonLogger.Instance logger, string exportPath, VisualAssetRegistry visualAssets)
+        : base(logger, exportPath, visualAssets)
     {
     }
 
@@ -23,7 +33,7 @@ public class GatherItemExporter : BaseExporter
 
         Logger.Msg($"Found {objects.Length} gather item objects total");
 
-        var gatherItems = new List<GatherItemData>();
+        var records = new List<GatherItemRecord>();
         var templateCount = 0;
 
         foreach (var obj in objects)
@@ -47,9 +57,10 @@ public class GatherItemExporter : BaseExporter
 
             var gatherItemData = new GatherItemData
             {
-                // Identity
+                // Identity. resource_id is assigned in the canonical grouping pass below.
                 id = id,
                 name = name,
+                resource_id = null,
                 zone_id = zoneId,
                 sub_zone_id = subZoneId,
                 position = isTemplate
@@ -121,9 +132,7 @@ public class GatherItemExporter : BaseExporter
                 foreach (var msg in gatherItem.interactingChestMessages)
                 {
                     if (!string.IsNullOrEmpty(msg))
-                    {
                         gatherItemData.chest_interaction_messages.Add(msg);
-                    }
                 }
             }
 
@@ -134,9 +143,7 @@ public class GatherItemExporter : BaseExporter
             }
 
             if (gatherItem.itemConsumption != null)
-            {
                 gatherItemData.tool_required_id = SanitizeId(gatherItem.itemConsumption.name);
-            }
 
             if (gatherItem.randomDrops != null && gatherItem.randomDrops.Length > 0)
             {
@@ -153,11 +160,151 @@ public class GatherItemExporter : BaseExporter
                 }
             }
 
-            gatherItems.Add(gatherItemData);
+            records.Add(new GatherItemRecord
+            {
+                Source = gatherItem,
+                Data = gatherItemData,
+            });
         }
 
-        WriteJson(gatherItems, "gather_items.json");
-        Logger.Msg($"✓ Exported {gatherItems.Count} gather items");
+        AssignCanonicalResourceIds(records);
+        ExportResourceArtwork(records);
+        ExportChestArtwork(records);
+
+        WriteJson(records.Select(record => record.Data).ToList(), "gather_items.json");
+        Logger.Msg($"✓ Exported {records.Count} gather items ({templateCount} templates)");
     }
 
+    private void AssignCanonicalResourceIds(List<GatherItemRecord> records)
+    {
+        var resourceGroups = records
+            .Where(record => !record.Data.is_chest)
+            .GroupBy(
+                record => record.Data.is_fishing_spot
+                    ? $"fishing:{BuildFishingSignature(record.Data)}"
+                    : $"normal:{record.Data.name}",
+                StringComparer.Ordinal)
+            .ToList();
+        var fishingVariantCounts = new Dictionary<string, int>(StringComparer.Ordinal);
+        foreach (var group in resourceGroups)
+        {
+            if (!group.First().Data.is_fishing_spot)
+                continue;
+
+            var name = group.First().Data.name;
+            fishingVariantCounts.TryGetValue(name, out var count);
+            fishingVariantCounts[name] = count + 1;
+        }
+
+        var resourceIds = new HashSet<string>(StringComparer.Ordinal);
+
+        foreach (var group in resourceGroups)
+        {
+            var canonical = group
+                .OrderByDescending(record => record.Data.is_template)
+                .First();
+            var resourceId = canonical.Data.is_fishing_spot
+                && fishingVariantCounts[canonical.Data.name] > 1
+                ? $"{NormalizeResourceBaseId(canonical.Data.name)}_{GetFishingSignatureHash(canonical)}"
+                : canonical.Data.is_fishing_spot
+                    ? NormalizeResourceBaseId(canonical.Data.name)
+                    : group.Any(record => record.Data.is_template)
+                        ? canonical.Data.id
+                        : NormalizeResourceBaseId(canonical.Data.name);
+
+            if (string.IsNullOrEmpty(resourceId))
+                throw new InvalidOperationException($"Gather item group '{group.Key}' has no canonical resource ID.");
+            if (!resourceIds.Add(resourceId))
+                throw new InvalidOperationException($"Duplicate canonical gather resource ID '{resourceId}'.");
+
+            foreach (var record in group)
+                record.Data.resource_id = resourceId;
+        }
+    }
+
+    private void ExportResourceArtwork(List<GatherItemRecord> records)
+    {
+        var resourceGroups = records
+            .Where(record => !record.Data.is_chest)
+            .GroupBy(record => record.Data.resource_id ?? string.Empty, StringComparer.Ordinal);
+
+        foreach (var group in resourceGroups)
+        {
+            // Prefer the canonical template's icon, falling back to a scene instance
+            // only when the template does not carry a journal icon.
+            var iconRecord = group
+                .OrderByDescending(record => record.Data.is_template)
+                .FirstOrDefault(record => record.Source.journalIcon != null);
+            if (iconRecord == null)
+            {
+                Logger.Warning($"Gather resource '{group.Key}' has no journalIcon to export.");
+                continue;
+            }
+
+            var sprite = iconRecord.Source.journalIcon;
+            VisualAssets?.ExportSprite(
+                "gathering_resource",
+                group.Key,
+                "icon",
+                "GatherItem.journalIcon",
+                sprite.GetType().FullName,
+                sprite.name,
+                sprite);
+        }
+    }
+
+    private void ExportChestArtwork(List<GatherItemRecord> records)
+    {
+        foreach (var record in records.Where(record => record.Data.is_chest))
+        {
+            var sprite = record.Source.readySprite;
+            if (sprite == null)
+                continue;
+
+            VisualAssets?.ExportSprite(
+                "chest",
+                record.Data.id,
+                "primary",
+                "GatherItem.readySprite",
+                sprite.GetType().FullName,
+                sprite.name,
+                sprite);
+        }
+    }
+
+    private static string NormalizeResourceBaseId(string name)
+    {
+        return name?.ToLowerInvariant().Replace(" ", "_");
+    }
+
+    private static string BuildFishingSignature(GatherItemData resource)
+    {
+        var drops = resource.random_drops
+            .OrderBy(drop => drop.item_id, StringComparer.Ordinal)
+            .ThenBy(drop => drop.rate)
+            .Select(drop => new object[] { drop.item_id, drop.rate })
+            .ToArray();
+
+        // This shape intentionally matches the historical Python signature:
+        // [name, level, [[item_id, rate], ...]].
+        return JsonConvert.SerializeObject(
+            new object[] { resource.name, resource.level, drops },
+            Formatting.None);
+    }
+
+    private static string GetFishingSignatureHash(GatherItemRecord record)
+    {
+        return GetFishingSignatureHash(record.Data);
+    }
+
+    private static string GetFishingSignatureHash(GatherItemData resource)
+    {
+        var signature = BuildFishingSignature(resource);
+        using var sha1 = SHA1.Create();
+        var digest = sha1.ComputeHash(Encoding.UTF8.GetBytes(signature));
+        var builder = new StringBuilder(8);
+        for (var index = 0; index < 4; index++)
+            builder.Append(digest[index].ToString("x2"));
+        return builder.ToString();
+    }
 }

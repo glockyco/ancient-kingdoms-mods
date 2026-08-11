@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { base } from "$app/paths";
   import {
     DataTable,
     type Cell,
@@ -6,6 +7,8 @@
     type Row,
   } from "$lib/components/ui/data-table";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
+  import EntityIcon from "$lib/components/EntityIcon.svelte";
+  import EntityReference from "$lib/components/EntityReference.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
   import RoleBadges from "$lib/components/RoleBadges.svelte";
@@ -158,7 +161,7 @@
   const npcKillDecreaseColumns = $derived(npcKillColumns("decrease"));
 
   const chestColumns: ColumnDef<FactionChestRow>[] = [
-    { id: "name", header: "Chest", size: 90, enableSorting: false },
+    { id: "name", header: "Icon", size: 80, enableSorting: false },
     {
       id: "zone",
       header: "Zone",
@@ -245,11 +248,16 @@
   row: Row<FactionMonsterRow>,
 )}
   {#if cell.column.id === "name"}
-    <a
+    <EntityReference
       href="/monsters/{row.original.id}"
-      class="text-blue-600 dark:text-blue-400 hover:underline"
-      >{row.original.name}</a
-    >
+      name={row.original.name}
+      domain="monster"
+      entityId={row.original.id}
+      imageKind="primary"
+      imageAvailable={row.original.visual_public_path}
+      fallback={Skull}
+      size={28}
+    />
   {:else if cell.column.id === "level"}
     {monsterLevel(row.original)}
   {:else if cell.column.id === "rank"}
@@ -294,11 +302,16 @@
   row: Row<FactionNpcKillRow>,
 )}
   {#if cell.column.id === "name"}
-    <a
+    <EntityReference
       href="/npcs/{row.original.id}"
-      class="text-blue-600 dark:text-blue-400 hover:underline"
-      >{row.original.name}</a
-    >
+      name={row.original.name}
+      domain="npc"
+      entityId={row.original.id}
+      imageKind="primary"
+      imageAvailable={row.original.visual_public_path}
+      fallback={Users}
+      size={28}
+    />
   {:else if cell.column.id === "amount"}
     <span class={direction === "improve" ? GAIN_CLASS : LOSS_CLASS}>
       {direction === "improve" ? "+" : "−"}{npcAmount(row.original, direction)}
@@ -340,8 +353,19 @@
   {#if cell.column.id === "name"}
     <a
       href="/chests/{row.original.id}"
-      class="text-blue-600 dark:text-blue-400 hover:underline">Chest</a
+      aria-label={`Chest ${row.original.id}`}
+      title={`Chest ${row.original.id}`}
+      class="inline-flex"
     >
+      <EntityIcon
+        src={row.original.visual_public_path
+          ? `${base}/${row.original.visual_public_path}`
+          : null}
+        alt={`Chest ${row.original.id} icon`}
+        fallback={Box}
+        size={32}
+      />
+    </a>
   {:else if cell.column.id === "zone"}
     {#if row.original.zone_id && row.original.zone_name}
       <a
@@ -389,11 +413,16 @@
   row: Row<FactionMemberRow>;
 })}
   {#if cell.column.id === "name"}
-    <a
+    <EntityReference
       href="/npcs/{row.original.id}"
-      class="text-blue-600 dark:text-blue-400 hover:underline"
-      >{row.original.name}</a
-    >
+      name={row.original.name}
+      domain="npc"
+      entityId={row.original.id}
+      imageKind="primary"
+      imageAvailable={row.original.visual_public_path}
+      fallback={Users}
+      size={28}
+    />
   {:else if cell.column.id === "roles"}
     <RoleBadges roles={row.original.roles} />
   {:else if cell.column.id === "location"}
@@ -411,11 +440,16 @@
   row: Row<FactionVendorRow>;
 })}
   {#if cell.column.id === "name"}
-    <a
+    <EntityReference
       href="/npcs/{row.original.id}"
-      class="text-blue-600 dark:text-blue-400 hover:underline"
-      >{row.original.name}</a
-    >
+      name={row.original.name}
+      domain="npc"
+      entityId={row.original.id}
+      imageKind="primary"
+      imageAvailable={row.original.visual_public_path}
+      fallback={Users}
+      size={28}
+    />
   {:else if cell.column.id === "requires"}
     Requires 15,000 reputation
   {:else if cell.column.id === "location"}
@@ -437,13 +471,21 @@
       itemId={row.original.id}
       itemName={row.original.name}
       tooltipHtml={row.original.tooltip_html}
+      imageAvailable={row.original.visual_public_path}
+      showIcon
+      fallback={Box}
     />
   {:else if cell.column.id === "vendor"}
-    <a
+    <EntityReference
       href="/npcs/{row.original.vendor_id}"
-      class="text-blue-600 dark:text-blue-400 hover:underline"
-      >{row.original.vendor_name}</a
-    >
+      name={row.original.vendor_name}
+      domain="npc"
+      entityId={row.original.vendor_id}
+      imageKind="primary"
+      imageAvailable={row.original.vendor_visual_public_path}
+      fallback={Users}
+      size={28}
+    />
   {:else if cell.column.id === "faction_required_to_buy"}
     <span
       >{row.original.faction_required_tier_name ??
@@ -464,7 +506,9 @@
   cell: Cell<FactionHouseRow, unknown>;
   row: Row<FactionHouseRow>;
 })}
-  {#if cell.column.id === "zone"}
+  {#if cell.column.id === "name"}
+    {row.original.name}
+  {:else if cell.column.id === "zone"}
     {#if row.original.zone_id && row.original.zone_name}
       <a
         href="/zones/{row.original.zone_id}"

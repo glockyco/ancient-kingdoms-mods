@@ -23,6 +23,8 @@
   import Trees from "@lucide/svelte/icons/trees";
   import Castle from "@lucide/svelte/icons/castle";
   import { formatDuration } from "$lib/utils/format";
+  import EntityIcon from "$lib/components/EntityIcon.svelte";
+  import { base } from "$app/paths";
 
   let { data } = $props();
 
@@ -86,7 +88,7 @@
   const columns: ColumnDef<ChestWithDrops>[] = [
     {
       id: "name",
-      header: "Name",
+      header: "Icon",
       enableHiding: false,
       size: 80,
     },
@@ -155,7 +157,7 @@
   const columnLabels: Record<string, string> = {
     zone: "Zone",
     location: "Location",
-    name: "Name",
+    name: "Icon",
     respawn_time: "Respawn",
     key: "Key",
     gold: "Gold",
@@ -217,9 +219,18 @@
   {:else if cell.column.id === "name"}
     <a
       href="/chests/{row.original.id}"
-      class="text-blue-600 dark:text-blue-400 hover:underline"
+      aria-label={`Chest ${row.original.id}`}
+      title={`Chest ${row.original.id}`}
+      class="inline-flex"
     >
-      Chest
+      <EntityIcon
+        src={row.original.visual_public_path
+          ? `${base}/${row.original.visual_public_path}`
+          : null}
+        alt={`Chest ${row.original.id} icon`}
+        fallback={Box}
+        size={32}
+      />
     </a>
   {:else if cell.column.id === "respawn_time"}
     {formatDuration(row.original.respawn_time)}

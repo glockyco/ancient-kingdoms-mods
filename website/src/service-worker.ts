@@ -27,17 +27,24 @@ interface TilesManifest {
 }
 
 async function precacheDatabase(): Promise<void> {
-  const dbFile = files.find((f) => f.endsWith(".db"));
-  if (!dbFile) return;
-
+  const dbFiles = ["/compendium.db"];
+  if (files.some((file) => file.endsWith("search.db"))) {
+    dbFiles.push("/search.db");
+  }
   try {
     const cache = await caches.open(DB_CACHE_NAME);
-    const response = await fetch(dbFile);
-    if (response.ok) {
-      await cache.put(dbFile, response);
-    }
+    await Promise.all(
+      dbFiles.map(async (dbFile) => {
+        try {
+          const response = await fetch(dbFile);
+          if (response.ok) await cache.put(dbFile, response);
+        } catch {
+          // One artifact failing should not prevent the other from caching.
+        }
+      }),
+    );
   } catch {
-    // DB fetch failed, skip silently
+    // Cache setup failed, skip silently.
   }
 }
 

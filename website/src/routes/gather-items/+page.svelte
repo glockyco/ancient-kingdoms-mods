@@ -10,7 +10,6 @@
     type Header,
     type TanstackTable,
   } from "$lib/components/ui/data-table";
-  import { IconBadge } from "$lib/components/ui/icon-badge";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import Seo from "$lib/components/Seo.svelte";
   import JsonLd from "$lib/components/JsonLd.svelte";
@@ -21,9 +20,6 @@
   } from "$lib/types/gather-items";
   import type { ResourceZoneInfo } from "$lib/queries/gather-items.server";
   import { formatGatheringRespawn } from "$lib/utils/format";
-  import Leaf from "@lucide/svelte/icons/leaf";
-  import Trees from "@lucide/svelte/icons/trees";
-  import Castle from "@lucide/svelte/icons/castle";
 
   let { data } = $props();
 
@@ -219,7 +215,7 @@
   {:else if cell.column.id === "name"}
     <a
       href="/gather-items/{row.original.id}"
-      class="text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap"
+      class="whitespace-nowrap text-blue-600 hover:underline dark:text-blue-400"
     >
       {row.original.name}
     </a>
@@ -265,13 +261,12 @@
     {@const zones = row.original.zones}
     <div class="flex gap-1 whitespace-nowrap">
       {#if zones.length > 0}
-        <IconBadge
+        <a
           href="/zones/{zones[0].zone_id}"
-          icon={zones[0].is_dungeon ? Castle : Trees}
-          iconClass={zones[0].is_dungeon ? "text-purple-500" : "text-green-500"}
+          class="text-blue-600 hover:underline dark:text-blue-400"
         >
           {zones[0].zone_name}
-        </IconBadge>
+        </a>
         {#if zones.length > 1}
           <span class="text-muted-foreground text-xs self-center"
             >+{zones.length - 1}</span
@@ -332,8 +327,7 @@
     items={[{ label: "Home", href: "/" }, { label: "Gathering Resources" }]}
   />
 
-  <h1 class="text-3xl font-bold flex items-center gap-3">
-    <Leaf class="h-8 w-8 text-green-500" />
+  <h1 class="text-3xl font-bold">
     Gathering Resources ({data.resources.length})
   </h1>
 

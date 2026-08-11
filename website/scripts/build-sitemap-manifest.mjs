@@ -8,19 +8,14 @@ const SITE_URL = "https://ancient-kingdoms.compendiums.org";
 const DB_PATH = resolve("static/compendium.db");
 const MANIFEST_PATH = resolve("static/sitemap-manifest.json");
 
-const ENTITIES = [
-  { table: "items", route: "items" },
-  { table: "monsters", route: "monsters" },
-  { table: "npcs", route: "npcs" },
-  { table: "zones", route: "zones" },
-  { table: "quests", route: "quests" },
-  { table: "chests", route: "chests" },
-  { table: "gathering_resources", route: "gather-items" },
-  { table: "skills", route: "skills" },
-  { table: "classes", route: "classes" },
-  { table: "altars", route: "altars" },
-  { table: "factions", route: "factions" },
-];
+const ENTITY_MANIFEST_PATH = resolve("src/lib/entities/entity-manifest.json");
+const ENTITY_MANIFEST = JSON.parse(readFileSync(ENTITY_MANIFEST_PATH, "utf8"));
+const ENTITIES = ENTITY_MANIFEST.filter(
+  (entry) => entry.sitemap && entry.table && entry.detailPrefix,
+).map((entry) => ({
+  table: entry.table,
+  route: entry.overviewHref.replace(/^\//, ""),
+}));
 
 const ITEM_SOURCE_TABLES = [
   "item_source_entries",

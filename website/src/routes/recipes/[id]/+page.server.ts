@@ -107,6 +107,7 @@ function loadCraftingRecipe(
         cr.id,
         cr.result_item_id,
         i.name as result_item_name,
+        va.public_path as result_visual_public_path,
         i.tooltip_html as result_tooltip_html,
         i.quality as result_quality,
         cr.result_amount,
@@ -115,6 +116,8 @@ function loadCraftingRecipe(
         cr.materials
       FROM crafting_recipes cr
       JOIN items i ON i.id = cr.result_item_id
+      LEFT JOIN visual_assets va
+        ON va.domain = 'item' AND va.entity_id = i.id AND va.kind = 'icon'
       WHERE cr.id = ?
     `,
     )
@@ -123,6 +126,7 @@ function loadCraftingRecipe(
         id: string;
         result_item_id: string;
         result_item_name: string;
+        result_visual_public_path: string | null;
         result_tooltip_html: string | null;
         result_quality: number;
         result_amount: number;
@@ -141,6 +145,7 @@ function loadCraftingRecipe(
     id: raw.id,
     result_item_id: raw.result_item_id,
     result_item_name: raw.result_item_name,
+    result_visual_public_path: raw.result_visual_public_path,
     result_tooltip_html: raw.result_tooltip_html,
     result_quality: raw.result_quality,
     result_amount: raw.result_amount,
@@ -150,6 +155,7 @@ function loadCraftingRecipe(
     xp: raw.crafting_exp,
     taught_by_recipe_id: null,
     taught_by_recipe_name: null,
+    taught_by_recipe_visual_public_path: null,
     taught_by_recipe_tooltip_html: null,
   };
 }
@@ -165,6 +171,7 @@ function loadAlchemyRecipe(
         ar.id,
         ar.result_item_id,
         i.name as result_item_name,
+        va.public_path as result_visual_public_path,
         i.tooltip_html as result_tooltip_html,
         i.quality as result_quality,
         i.taught_by_recipe_id,
@@ -174,6 +181,8 @@ function loadAlchemyRecipe(
         ar.materials
       FROM alchemy_recipes ar
       JOIN items i ON i.id = ar.result_item_id
+      LEFT JOIN visual_assets va
+        ON va.domain = 'item' AND va.entity_id = i.id AND va.kind = 'icon'
       WHERE ar.id = ?
     `,
     )
@@ -182,6 +191,7 @@ function loadAlchemyRecipe(
         id: string;
         result_item_id: string;
         result_item_name: string;
+        result_visual_public_path: string | null;
         result_tooltip_html: string | null;
         result_quality: number;
         taught_by_recipe_id: string | null;
@@ -196,18 +206,29 @@ function loadAlchemyRecipe(
 
   // Get tooltip for the recipe item if it exists
   let taught_by_recipe_tooltip_html: string | null = null;
+  let taught_by_recipe_visual_public_path: string | null = null;
   if (raw.taught_by_recipe_id) {
     const recipeItem = db
-      .prepare(`SELECT tooltip_html FROM items WHERE id = ?`)
+      .prepare(
+        `SELECT i.tooltip_html, va.public_path AS visual_public_path
+         FROM items i
+         LEFT JOIN visual_assets va
+           ON va.domain = 'item' AND va.entity_id = i.id AND va.kind = 'icon'
+         WHERE i.id = ?`,
+      )
       .get(raw.taught_by_recipe_id) as
-      { tooltip_html: string | null } | undefined;
+      | { tooltip_html: string | null; visual_public_path: string | null }
+      | undefined;
     taught_by_recipe_tooltip_html = recipeItem?.tooltip_html ?? null;
+    taught_by_recipe_visual_public_path =
+      recipeItem?.visual_public_path ?? null;
   }
 
   return {
     id: raw.id,
     result_item_id: raw.result_item_id,
     result_item_name: raw.result_item_name,
+    result_visual_public_path: raw.result_visual_public_path,
     result_tooltip_html: raw.result_tooltip_html,
     result_quality: raw.result_quality,
     result_amount: 1,
@@ -217,6 +238,7 @@ function loadAlchemyRecipe(
     xp: raw.alchemy_exp,
     taught_by_recipe_id: raw.taught_by_recipe_id,
     taught_by_recipe_name: raw.taught_by_recipe_name,
+    taught_by_recipe_visual_public_path,
     taught_by_recipe_tooltip_html,
   };
 }
@@ -232,12 +254,15 @@ function loadScribingRecipe(
         sr.id,
         sr.result_item_id,
         i.name as result_item_name,
+        va.public_path as result_visual_public_path,
         i.tooltip_html as result_tooltip_html,
         i.quality as result_quality,
         sr.level_required,
         sr.materials
       FROM scribing_recipes sr
       JOIN items i ON i.id = sr.result_item_id
+      LEFT JOIN visual_assets va
+        ON va.domain = 'item' AND va.entity_id = i.id AND va.kind = 'icon'
       WHERE sr.id = ?
     `,
     )
@@ -246,6 +271,7 @@ function loadScribingRecipe(
         id: string;
         result_item_id: string;
         result_item_name: string;
+        result_visual_public_path: string | null;
         result_tooltip_html: string | null;
         result_quality: number;
         level_required: number;
@@ -259,6 +285,7 @@ function loadScribingRecipe(
     id: raw.id,
     result_item_id: raw.result_item_id,
     result_item_name: raw.result_item_name,
+    result_visual_public_path: raw.result_visual_public_path,
     result_tooltip_html: raw.result_tooltip_html,
     result_quality: raw.result_quality,
     result_amount: 1,
@@ -268,6 +295,7 @@ function loadScribingRecipe(
     xp: 0,
     taught_by_recipe_id: null,
     taught_by_recipe_name: null,
+    taught_by_recipe_visual_public_path: null,
     taught_by_recipe_tooltip_html: null,
   };
 }

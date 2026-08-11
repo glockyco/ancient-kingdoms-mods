@@ -6,7 +6,7 @@ namespace DataExporter.Exporters;
 
 public class ClassExporter : BaseExporter
 {
-    public ClassExporter(MelonLogger.Instance logger, string exportPath) : base(logger, exportPath)
+    public ClassExporter(MelonLogger.Instance logger, string exportPath, VisualAssetRegistry visualAssets) : base(logger, exportPath, visualAssets)
     {
     }
 
@@ -110,6 +110,15 @@ public class ClassExporter : BaseExporter
             Logger.Msg($"  {displayName}: damage={data.base_damage_value}+{data.base_damage_per_level}/lvl, " +
                        $"magic_damage={data.base_magic_damage_value}+{data.base_magic_damage_per_level}/lvl, " +
                        $"health={data.base_health_value}+{data.base_health_per_level}/lvl");
+
+            VisualAssets?.ExportSprite(
+                "class",
+                classId,
+                "icon",
+                "Player.classIcon",
+                player.classIcon != null ? player.classIcon.GetType().FullName : "UnityEngine.Sprite",
+                player.classIcon != null ? player.classIcon.name : null,
+                player.classIcon);
 
             classList.Add(data);
         }

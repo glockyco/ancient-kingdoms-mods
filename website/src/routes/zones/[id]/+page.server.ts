@@ -67,6 +67,7 @@ export const load: PageServerLoad = ({ params }): ZoneDetailData => {
     SELECT
       m.id,
       m.name,
+      va.public_path AS visual_public_path,
       m.level,
       m.health,
       m.health_base,
@@ -98,6 +99,10 @@ export const load: PageServerLoad = ({ params }): ZoneDetailData => {
        WHERE ms4.monster_id = m.id AND ms4.zone_id = ?
        AND ms4.spawn_type != 'regular' LIMIT 1) as special_spawn_type
     FROM monsters m
+    LEFT JOIN visual_assets va
+      ON va.domain = 'monster'
+     AND va.entity_id = m.id
+     AND va.kind = 'primary'
     JOIN monster_spawns ms ON ms.monster_id = m.id
     WHERE ms.zone_id = ?
     GROUP BY m.id
@@ -109,6 +114,7 @@ export const load: PageServerLoad = ({ params }): ZoneDetailData => {
       const m = row as {
         id: string;
         name: string;
+        visual_public_path: string | null;
         level: number;
         health: number;
         health_base: number;
@@ -139,6 +145,7 @@ export const load: PageServerLoad = ({ params }): ZoneDetailData => {
       return {
         id: m.id,
         name: m.name,
+        visual_public_path: m.visual_public_path,
         level: levelMin,
         level_min: levelMin,
         level_max: levelMax,
@@ -173,11 +180,16 @@ export const load: PageServerLoad = ({ params }): ZoneDetailData => {
     SELECT
       n.id,
       n.name,
+      va.public_path AS visual_public_path,
       n.roles,
       ns.position_x,
       ns.position_y,
       ns.position_z
     FROM npcs n
+    LEFT JOIN visual_assets va
+      ON va.domain = 'npc'
+     AND va.entity_id = n.id
+     AND va.kind = 'primary'
     JOIN npc_spawns ns ON ns.npc_id = n.id
     WHERE ns.zone_id = ?
     ORDER BY n.name
@@ -186,6 +198,7 @@ export const load: PageServerLoad = ({ params }): ZoneDetailData => {
     .all(params.id) as Array<{
     id: string;
     name: string;
+    visual_public_path: string | null;
     roles: string;
     position_x: number | null;
     position_y: number | null;
@@ -199,6 +212,7 @@ export const load: PageServerLoad = ({ params }): ZoneDetailData => {
       npcMap.set(npc.id, {
         id: npc.id,
         name: npc.name,
+        visual_public_path: npc.visual_public_path,
         roles: normalizeRoles(npc.roles ? JSON.parse(npc.roles) : {}),
         position_x: npc.position_x,
         position_y: npc.position_y,
@@ -235,6 +249,7 @@ export const load: PageServerLoad = ({ params }): ZoneDetailData => {
       `
     SELECT
       c.id,
+      va.public_path AS visual_public_path,
       c.respawn_time,
       c.key_required_id,
       k.name as key_required_name,
@@ -245,6 +260,10 @@ export const load: PageServerLoad = ({ params }): ZoneDetailData => {
       c.position_x,
       c.position_y
     FROM chests c
+    LEFT JOIN visual_assets va
+      ON va.domain = 'chest'
+     AND va.entity_id = c.id
+     AND va.kind = 'primary'
     LEFT JOIN items k ON c.key_required_id = k.id
     LEFT JOIN items r ON c.item_reward_id = r.id
     WHERE c.zone_id = ?

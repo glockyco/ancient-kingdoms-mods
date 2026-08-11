@@ -3,9 +3,8 @@
   import * as Drawer from "$lib/components/ui/drawer";
   import {
     searchMapEntities,
-    SEARCH_CATEGORY_ORDER,
-    type MapSearchResult,
     type MapSearchCategory,
+    type MapSearchResult,
   } from "$lib/queries/map-search";
   import SearchResultItem from "./SearchResultItem.svelte";
 
@@ -58,8 +57,7 @@
     open = false;
   }
 
-  // Group results by category
-  const categoryLabels: Record<MapSearchCategory, string> = {
+  const categoryLabels: Record<MapSearchResult["category"], string> = {
     monster: "Monsters",
     npc: "NPCs",
     zone: "Zones",
@@ -75,17 +73,20 @@
     quest: "Quests",
   };
 
+  // Group in global relevance order; preserve the first category's position.
   function groupByCategory(
     items: MapSearchResult[],
   ): [MapSearchCategory, MapSearchResult[]][] {
-    const groups: Partial<Record<MapSearchCategory, MapSearchResult[]>> = {};
+    const groups: [MapSearchCategory, MapSearchResult[]][] = [];
     for (const item of items) {
-      (groups[item.category] ??= []).push(item);
+      const group = groups.find(([category]) => category === item.category);
+      if (group) {
+        group[1].push(item);
+      } else {
+        groups.push([item.category, [item]]);
+      }
     }
-    return SEARCH_CATEGORY_ORDER.filter((cat) => groups[cat]).map((cat) => [
-      cat,
-      groups[cat]!,
-    ]);
+    return groups;
   }
 
   // Workaround: bits-ui Command doesn't fully scroll selected items into view

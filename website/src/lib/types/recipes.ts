@@ -4,6 +4,7 @@
 export interface RecipeIngredient {
   item_id: string;
   item_name: string;
+  visual_public_path: string | null;
   amount: number;
 }
 
@@ -14,6 +15,7 @@ export interface RecipeListView {
   id: string;
   result_item_id: string;
   result_item_name: string;
+  result_visual_public_path: string | null;
   result_quality: number;
   result_amount: number;
   ingredients: RecipeIngredient[];
@@ -78,6 +80,7 @@ export interface ObtainabilityNode {
   item_id: string;
   item_name: string;
   tooltip_html: string | null;
+  visual_public_path: string | null;
   quality: number;
   amount: number;
   depth: number;
@@ -112,6 +115,7 @@ export interface RecipeDetailInfo {
   id: string;
   result_item_id: string;
   result_item_name: string;
+  result_visual_public_path: string | null;
   result_tooltip_html: string | null;
   result_quality: number;
   result_amount: number;
@@ -122,6 +126,7 @@ export interface RecipeDetailInfo {
   /** For alchemy recipes: the recipe item that teaches this recipe */
   taught_by_recipe_id: string | null;
   taught_by_recipe_name: string | null;
+  taught_by_recipe_visual_public_path: string | null;
   taught_by_recipe_tooltip_html: string | null;
 }
 

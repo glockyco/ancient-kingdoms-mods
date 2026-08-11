@@ -1,86 +1,90 @@
 import { browser } from "$app/environment";
-import initSqlJs, { type Database, type SqlValue } from "sql.js-fts5";
-import sqlWasmUrl from "sql.js-fts5/dist/sql-wasm.wasm?url";
+import type { SqlValue } from "sql.js-fts5";
+import type { DatabaseTarget } from "./db.worker";
 
-let db: Database | null = null;
-let dbPromise: Promise<Database> | null = null;
-
-/**
- * Initialize and return the database.
- * Downloads full DB on first call, then cached in memory.
- */
-export async function getDb(): Promise<Database> {
-  if (!browser) {
-    throw new Error("Database can only be accessed in the browser");
-  }
-
-  if (db) return db;
-  if (dbPromise) return dbPromise;
-
-  dbPromise = (async () => {
-    const [SQL, response] = await Promise.all([
-      initSqlJs({
-        locateFile: () => sqlWasmUrl,
-      }),
-      fetch("/compendium.db"),
-    ]);
-
-    const buffer = await response.arrayBuffer();
-    db = new SQL.Database(new Uint8Array(buffer));
-    return db;
-  })();
-
-  return dbPromise;
+interface QueryResponse<T = unknown> {
+  id: number;
+  rows?: T[];
+  error?: string;
 }
 
-/**
- * Execute a SELECT query and return all rows.
- */
-export async function query<T = unknown>(
+interface PendingQuery<T> {
+  resolve: (rows: T[]) => void;
+  reject: (error: Error) => void;
+}
+
+let worker: Worker | null = null;
+let nextRequestId = 1;
+const pending = new Map<number, PendingQuery<unknown>>();
+
+function workerClient(): Worker {
+  if (!browser) throw new Error("Database can only be accessed in the browser");
+  if (worker) return worker;
+  worker = new Worker(new URL("./db.worker.ts", import.meta.url), {
+    type: "module",
+  });
+  worker.onmessage = (event: MessageEvent<QueryResponse>) => {
+    const response = event.data;
+    const request = pending.get(response.id);
+    if (!request) return;
+    pending.delete(response.id);
+    if (response.error) request.reject(new Error(response.error));
+    else request.resolve(response.rows ?? []);
+  };
+  worker.onerror = (event) => {
+    const error = new Error(event.message || "Database worker failed");
+    for (const request of pending.values()) request.reject(error);
+    pending.clear();
+  };
+  return worker;
+}
+
+export function query<T = unknown>(
+  sql: string,
+  params: SqlValue[] = [],
+  target: DatabaseTarget = "compendium",
+): Promise<T[]> {
+  const client = workerClient();
+  const id = nextRequestId++;
+  return new Promise<T[]>((resolve, reject) => {
+    pending.set(id, {
+      resolve: resolve as (rows: unknown[]) => void,
+      reject: reject as (error: Error) => void,
+    });
+    client.postMessage({ id, target, sql, params });
+  });
+}
+
+export function querySearch<T = unknown>(
   sql: string,
   params: SqlValue[] = [],
 ): Promise<T[]> {
-  const database = await getDb();
-  const stmt = database.prepare(sql);
-  stmt.bind(params);
-
-  const results: T[] = [];
-  while (stmt.step()) {
-    results.push(stmt.getAsObject() as T);
-  }
-  stmt.free();
-  return results;
+  return query<T>(sql, params, "search");
 }
 
-/**
- * Execute a SELECT query and return the first row.
- */
 export async function queryOne<T = unknown>(
   sql: string,
   params: SqlValue[] = [],
+  target: DatabaseTarget = "compendium",
 ): Promise<T | null> {
-  const rows = await query<T>(sql, params);
-  return rows[0] || null;
+  const rows = await query<T>(sql, params, target);
+  return rows[0] ?? null;
 }
 
-/**
- * Execute a SELECT query and return a single value.
- */
 export async function queryScalar<T = unknown>(
   sql: string,
   params: SqlValue[] = [],
+  target: DatabaseTarget = "compendium",
 ): Promise<T | null> {
-  const row = await queryOne<Record<string, unknown>>(sql, params);
-  if (!row) return null;
-  return Object.values(row)[0] as T;
+  const row = await queryOne<Record<string, unknown>>(sql, params, target);
+  return row ? (Object.values(row)[0] as T) : null;
 }
 
-/**
- * Preload the database (call on map page mount).
- * Returns immediately if already loaded.
- */
-export function preloadDb(): void {
-  if (browser) {
-    getDb().catch(console.error);
-  }
+/** Start the shared worker and load one database without blocking the caller. */
+export function preloadDb(target: DatabaseTarget = "compendium"): void {
+  if (!browser) return;
+  query("SELECT 1", [], target).catch(() => {
+    // A missing optional artifact (for example before prebuild) is surfaced by
+    // the query that requested it; preload must remain best-effort.
+  });
 }

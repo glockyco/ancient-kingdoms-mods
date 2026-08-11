@@ -1,8 +1,6 @@
 <script lang="ts">
-  import { base } from "$app/paths";
-  import EntityIcon from "$lib/components/EntityIcon.svelte";
   import Sparkles from "@lucide/svelte/icons/sparkles";
-  import { entityImageUrl } from "$lib/utils/entityImage";
+  import EntityReference from "$lib/components/EntityReference.svelte";
   import {
     DataTable,
     DataTableFacetedFilter,
@@ -137,20 +135,18 @@
   row: Row<SkillRow>;
 })}
   {#if cell.column.id === "name"}
-    <a
+    <EntityReference
       href="/skills/{row.original.id}"
-      class="flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:underline truncate"
-    >
-      <EntityIcon
-        src={row.original.visual_public_path
-          ? `${base}${entityImageUrl("skill", row.original.id, "icon")}`
-          : null}
-        alt={`${row.original.name} icon`}
-        fallback={Sparkles}
-        size={28}
-      />
-      <span class="truncate">{row.original.name}</span>
-    </a>
+      name={row.original.name}
+      domain="skill"
+      entityId={row.original.id}
+      imageKind="icon"
+      imageAvailable={row.original.visual_public_path}
+      fallback={Sparkles}
+      size={28}
+      class="flex truncate"
+      nameClass="truncate"
+    />
   {:else if cell.column.id === "skill_type"}
     <span class="text-muted-foreground capitalize truncate block"
       >{String(cell.getValue()).replace(/_/g, " ")}</span

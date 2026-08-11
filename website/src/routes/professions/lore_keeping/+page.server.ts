@@ -17,6 +17,7 @@ interface LoreBook {
   id: string;
   name: string;
   tooltip_html: string | null;
+  visual_public_path: string | null;
   book_text: string;
   obtainabilityTree: ObtainabilityNode;
   sourceSummary: SourceSummary;
@@ -48,6 +49,7 @@ interface RawBook {
   id: string;
   name: string;
   tooltip_html: string | null;
+  visual_public_path: string | null;
   book_text: string;
   book_strength_gain: number;
   book_dexterity_gain: number;
@@ -82,19 +84,22 @@ export const load: PageServerLoad = (): LoreKeepingPageData => {
     .prepare(
       `
     SELECT
-      id,
-      name,
-      tooltip_html,
-      book_text,
+      i.id,
+      i.name,
+      i.tooltip_html,
+      va.public_path AS visual_public_path,
+      i.book_text,
       book_strength_gain,
       book_dexterity_gain,
       book_constitution_gain,
       book_intelligence_gain,
       book_wisdom_gain,
       book_charisma_gain
-    FROM items
-    WHERE book_text IS NOT NULL AND book_text != ''
-    ORDER BY name
+    FROM items i
+    LEFT JOIN visual_assets va
+      ON va.domain = 'item' AND va.entity_id = i.id AND va.kind = 'icon'
+    WHERE i.book_text IS NOT NULL AND i.book_text != ''
+    ORDER BY i.name
   `,
     )
     .all() as RawBook[];
@@ -117,6 +122,7 @@ export const load: PageServerLoad = (): LoreKeepingPageData => {
       id: raw.id,
       name: raw.name,
       tooltip_html: raw.tooltip_html,
+      visual_public_path: raw.visual_public_path,
       book_text: raw.book_text,
       obtainabilityTree,
       sourceSummary,

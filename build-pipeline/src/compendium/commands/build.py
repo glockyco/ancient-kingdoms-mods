@@ -46,6 +46,7 @@ from compendium.loaders import (
     load_zones,
 )
 from compendium.visual_assets import reconcile
+from compendium.zone_artwork import publish_zone_thumbnails
 
 console = Console()
 
@@ -112,6 +113,7 @@ def run(config: dict) -> None:
         # Denormalize data (must be done after all data is loaded)
         console.print()
         denormalize_all(conn)
+        publish_zone_thumbnails(conn, export_dir, static_dir)
         reconcile(conn, static_dir)
 
         # Optimize FTS5 indexes (merges segments, reduces size)

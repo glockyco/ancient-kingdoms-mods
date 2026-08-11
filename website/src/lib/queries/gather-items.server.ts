@@ -10,12 +10,60 @@ import type {
   ResourceDropListView,
 } from "$lib/types/gather-items";
 
+function hasVisualAssetsTable(db: Database.Database): boolean {
+  return Boolean(
+    db
+      .prepare(
+        "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'visual_assets'",
+      )
+      .get(),
+  );
+}
+
+function visualAssetColumns(enabled: boolean): string {
+  return enabled
+    ? "va.public_path as visual_public_path, va.width as visual_width, va.height as visual_height"
+    : "NULL as visual_public_path, NULL as visual_width, NULL as visual_height";
+}
+
+function visualAssetJoin(
+  enabled: boolean,
+  domain: string,
+  entityExpression: string,
+  kind: string,
+): string {
+  return enabled
+    ? `LEFT JOIN visual_assets va
+        ON va.domain = '${domain}'
+       AND va.entity_id = ${entityExpression}
+       AND va.kind = '${kind}'`
+    : "";
+}
+
 /**
  * Get all gather items (resources + chests) for list view.
  */
 export function getGatherItemsFromDb(
   db: Database.Database,
 ): GatherItemListView[] {
+  const assetsEnabled = hasVisualAssetsTable(db);
+  const assetColumns = visualAssetColumns(assetsEnabled);
+  const fishingAssetColumns = assetsEnabled
+    ? "MAX(va.public_path) as visual_public_path, MAX(va.width) as visual_width, MAX(va.height) as visual_height"
+    : "NULL as visual_public_path, NULL as visual_width, NULL as visual_height";
+  const resourceAssetJoin = visualAssetJoin(
+    assetsEnabled,
+    "gathering_resource",
+    "gr.id",
+    "icon",
+  );
+  const chestAssetJoin = visualAssetJoin(
+    assetsEnabled,
+    "chest",
+    "c.id",
+    "primary",
+  );
+
   return db
     .prepare(
       `SELECT
@@ -29,7 +77,10 @@ export function getGatherItemsFromDb(
       zone_count,
       item_reward_id,
       item_reward_name,
-      item_reward_amount
+      item_reward_amount,
+      visual_public_path,
+      visual_width,
+      visual_height
     FROM (
       -- Non-fishing gathering resources
       SELECT
@@ -48,10 +99,12 @@ export function getGatherItemsFromDb(
         (SELECT COUNT(DISTINCT zone_id) FROM gathering_resource_spawns WHERE resource_id = gr.id) as zone_count,
         gr.item_reward_id,
         r.name as item_reward_name,
-        gr.item_reward_amount
+        gr.item_reward_amount,
+        ${assetColumns}
       FROM gathering_resources gr
       LEFT JOIN items t ON gr.tool_required_id = t.id
       LEFT JOIN items r ON gr.item_reward_id = r.id
+      ${resourceAssetJoin}
       WHERE gr.is_fishing_spot = 0
 
       UNION ALL
@@ -68,10 +121,12 @@ export function getGatherItemsFromDb(
         COUNT(DISTINCT grs.zone_id) as zone_count,
         NULL as item_reward_id,
         NULL as item_reward_name,
-        0 as item_reward_amount
+        0 as item_reward_amount,
+        ${fishingAssetColumns}
       FROM gathering_resources gr
       LEFT JOIN gathering_resource_spawns grs ON grs.resource_id = gr.id
       LEFT JOIN items t ON gr.tool_required_id = t.id
+      ${resourceAssetJoin}
       WHERE gr.is_fishing_spot = 1
       GROUP BY replace(substr(gr.id, 1, length(gr.id) - 9), '__never__', ''), gr.name, gr.level, gr.tool_required_id, t.name
 
@@ -89,10 +144,12 @@ export function getGatherItemsFromDb(
         1 as zone_count,
         c.item_reward_id,
         r.name as item_reward_name,
-        c.item_reward_amount
+        c.item_reward_amount,
+        ${assetColumns}
       FROM chests c
       LEFT JOIN items k ON c.key_required_id = k.id
       LEFT JOIN items r ON c.item_reward_id = r.id
+      ${chestAssetJoin}
     )
     ORDER BY type, name`,
     )
@@ -122,12 +179,16 @@ export interface ChestListView {
   item_reward_id: string | null;
   item_reward_name: string | null;
   item_reward_amount: number;
+  visual_public_path: string | null;
+  visual_width: number | null;
+  visual_height: number | null;
 }
 
 /**
  * Get all chests with zone info for list view.
  */
 export function getChestsList(): ChestListView[] {
+  const assetsEnabled = hasVisualAssetsTable(getDb());
   return query<ChestListView>(
     `SELECT
       c.id,
@@ -144,11 +205,13 @@ export function getChestsList(): ChestListView[] {
       c.gold_max,
       c.item_reward_id,
       r.name as item_reward_name,
-      c.item_reward_amount
+      c.item_reward_amount,
+      ${visualAssetColumns(assetsEnabled)}
     FROM chests c
     JOIN zones z ON c.zone_id = z.id
     LEFT JOIN items k ON c.key_required_id = k.id
     LEFT JOIN items r ON c.item_reward_id = r.id
+    ${visualAssetJoin(assetsEnabled, "chest", "c.id", "primary")}
     ORDER BY z.name, c.name`,
   );
 }
@@ -164,7 +227,9 @@ function fishingSpotVariantGlob(baseId: string): string {
   return `${baseId}_[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]`;
 }
 
-const gatheringResourceSelect = `SELECT
+function gatheringResourceSelect(db: Database.Database): string {
+  const assetsEnabled = hasVisualAssetsTable(db);
+  return `SELECT
       gr.id,
       gr.name,
       gr.is_plant,
@@ -179,24 +244,27 @@ const gatheringResourceSelect = `SELECT
       r.name as item_reward_name,
       gr.item_reward_amount,
       gr.gathering_exp,
-      gr.description
+      gr.description,
+      ${visualAssetColumns(assetsEnabled)}
     FROM gathering_resources gr
     LEFT JOIN items t ON gr.tool_required_id = t.id
-    LEFT JOIN items r ON gr.item_reward_id = r.id`;
+    LEFT JOIN items r ON gr.item_reward_id = r.id
+    ${visualAssetJoin(assetsEnabled, "gathering_resource", "gr.id", "icon")}`;
+}
 
 export function getGatheringResourceByIdFromDb(
   db: Database.Database,
   id: string,
 ): GatheringResource | null {
   const exact = db
-    .prepare(`${gatheringResourceSelect} WHERE gr.id = ?`)
+    .prepare(`${gatheringResourceSelect(db)} WHERE gr.id = ?`)
     .get(id) as GatheringResource | undefined;
   if (exact) return exact;
 
   return (
     (db
       .prepare(
-        `${gatheringResourceSelect}
+        `${gatheringResourceSelect(db)}
         WHERE gr.is_fishing_spot = 1
           AND gr.id GLOB ?
         ORDER BY gr.level, gr.name, gr.id
@@ -342,7 +410,7 @@ export function getFishingSpotVariantDetails(
   const baseId = fishingSpotBaseId(resource.id);
   const resources = db
     .prepare(
-      `${gatheringResourceSelect}
+      `${gatheringResourceSelect(db)}
       WHERE gr.id = ?
         OR gr.id GLOB ?
       ORDER BY gr.level, gr.name, gr.id`,
@@ -454,6 +522,7 @@ export function getAllChestDrops(): ChestDropListView[] {
  * Get a chest by ID.
  */
 export function getChestById(id: string): Chest | null {
+  const assetsEnabled = hasVisualAssetsTable(getDb());
   return queryOne<Chest>(
     `SELECT
       c.id,
@@ -469,11 +538,13 @@ export function getChestById(id: string): Chest | null {
       c.item_reward_id,
       r.name as item_reward_name,
       c.item_reward_amount,
-      c.respawn_time
+      c.respawn_time,
+      ${visualAssetColumns(assetsEnabled)}
     FROM chests c
     JOIN zones z ON c.zone_id = z.id
     LEFT JOIN items k ON c.key_required_id = k.id
     LEFT JOIN items r ON c.item_reward_id = r.id
+    ${visualAssetJoin(assetsEnabled, "chest", "c.id", "primary")}
     WHERE c.id = ?`,
     [id],
   );

@@ -14,6 +14,7 @@
   import { buildCollectionPage } from "$lib/seo/jsonld";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import ExternalLink from "@lucide/svelte/icons/external-link";
+  import Package from "@lucide/svelte/icons/package";
   import { getItemTooltips } from "$lib/queries/items";
 
   let { data } = $props();
@@ -202,6 +203,9 @@
       itemId={row.original.result_item_id}
       itemName={row.original.result_item_name}
       tooltipHtml={tooltips.get(row.original.result_item_id) ?? null}
+      imageAvailable={row.original.result_visual_public_path}
+      fallback={Package}
+      showIcon
     />
     {#if row.original.result_amount > 1}
       <span class="text-muted-foreground ml-1"
@@ -211,11 +215,11 @@
   {:else if cell.column.id === "ingredient1"}
     {#if row.original.ingredients[0]}
       <span class="whitespace-nowrap">
-        <a
-          href="/items/{row.original.ingredients[0].item_id}"
-          class="text-blue-600 dark:text-blue-400 hover:underline"
-          >{row.original.ingredients[0].item_name}</a
-        >
+        <ItemLink
+          itemId={row.original.ingredients[0].item_id}
+          itemName={row.original.ingredients[0].item_name}
+          imageAvailable={row.original.ingredients[0].visual_public_path}
+        />
         <span class="text-muted-foreground">
           x{row.original.ingredients[0].amount}</span
         >
@@ -226,11 +230,11 @@
   {:else if cell.column.id === "ingredient2"}
     {#if row.original.ingredients[1]}
       <span class="whitespace-nowrap">
-        <a
-          href="/items/{row.original.ingredients[1].item_id}"
-          class="text-blue-600 dark:text-blue-400 hover:underline"
-          >{row.original.ingredients[1].item_name}</a
-        >
+        <ItemLink
+          itemId={row.original.ingredients[1].item_id}
+          itemName={row.original.ingredients[1].item_name}
+          imageAvailable={row.original.ingredients[1].visual_public_path}
+        />
         <span class="text-muted-foreground">
           x{row.original.ingredients[1].amount}</span
         >
@@ -241,11 +245,11 @@
   {:else if cell.column.id === "ingredient3"}
     {#if row.original.ingredients[2]}
       <span class="whitespace-nowrap">
-        <a
-          href="/items/{row.original.ingredients[2].item_id}"
-          class="text-blue-600 dark:text-blue-400 hover:underline"
-          >{row.original.ingredients[2].item_name}</a
-        >
+        <ItemLink
+          itemId={row.original.ingredients[2].item_id}
+          itemName={row.original.ingredients[2].item_name}
+          imageAvailable={row.original.ingredients[2].visual_public_path}
+        />
         <span class="text-muted-foreground">
           x{row.original.ingredients[2].amount}</span
         >

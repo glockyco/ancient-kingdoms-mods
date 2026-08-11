@@ -81,15 +81,41 @@ export const load: PageServerLoad = ({ params }): NpcDetailPageData => {
     ? JSON.parse(npcRaw.quests_completed_here as string)
     : [];
 
-  // Items sold - denormalized with item names, quality, faction requirements
-  const itemsSold: NpcItemSold[] = npcRaw.items_sold
-    ? JSON.parse(npcRaw.items_sold as string)
-    : [];
+  // Items sold and drops are denormalized with item names; artwork remains
+  // canonical in visual_assets, so attach the published path in one query.
+  const itemsSoldRaw: Array<Omit<NpcItemSold, "visual_public_path">> =
+    npcRaw.items_sold ? JSON.parse(npcRaw.items_sold as string) : [];
 
-  // Drops - denormalized with item names
-  const drops: NpcDrop[] = npcRaw.drops
+  const dropsRaw: Array<Omit<NpcDrop, "visual_public_path">> = npcRaw.drops
     ? JSON.parse(npcRaw.drops as string)
     : [];
+
+  const itemIds = [
+    ...new Set([...itemsSoldRaw, ...dropsRaw].map((item) => item.item_id)),
+  ];
+  const itemVisuals = new Map<string, string | null>();
+  if (itemIds.length > 0) {
+    const placeholders = itemIds.map(() => "?").join(", ");
+    const visualRows = db
+      .prepare(
+        `SELECT i.id, va.public_path
+         FROM items i
+         LEFT JOIN visual_assets va
+           ON va.domain = 'item' AND va.entity_id = i.id AND va.kind = 'icon'
+         WHERE i.id IN (${placeholders})`,
+      )
+      .all(...itemIds) as Array<{ id: string; public_path: string | null }>;
+    for (const row of visualRows) itemVisuals.set(row.id, row.public_path);
+  }
+
+  const itemsSold: NpcItemSold[] = itemsSoldRaw.map((item) => ({
+    ...item,
+    visual_public_path: itemVisuals.get(item.item_id) ?? null,
+  }));
+  const drops: NpcDrop[] = dropsRaw.map((item) => ({
+    ...item,
+    visual_public_path: itemVisuals.get(item.item_id) ?? null,
+  }));
 
   // Skills - denormalized with skill names
   const skills: NpcSkill[] = npcRaw.skill_ids

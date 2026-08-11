@@ -22,6 +22,7 @@ import {
   User,
   type IconNode,
 } from "lucide";
+import { type EntityId } from "$lib/entities/registry";
 import {
   NPC_ROLE_BITS,
   type AltarMapEntity,
@@ -30,6 +31,7 @@ import {
   type CraftingMapEntity,
   type GatheringMapEntity,
   type HouseMapEntity,
+  type FilteredMapData,
   type MonsterMapEntity,
   type NpcMapEntity,
   type PortalMapEntity,
@@ -76,8 +78,25 @@ export interface FacetDef<TRow extends MarkerRow> {
   matches: (row: TRow) => boolean;
 }
 
+export type MarkerLayerFilter =
+  "zone" | "monster-level" | "gathering-level" | "npc" | "portal";
+
+export type MarkerSidebarSection =
+  "monsters" | "npcs" | "interactables" | "crafting" | "gathering";
+
+export interface MarkerLayerOptions {
+  /** Stable deck.gl ID for the primary point layer. */
+  id: string;
+  /** Null for facet-controlled markers such as NPCs. */
+  visibilityKey: keyof LayerVisibility | null;
+  filter: MarkerLayerFilter;
+  sidebarSection: MarkerSidebarSection;
+  quickToggle?: boolean;
+}
+
 export interface MarkerDef<TRow extends MarkerRow = MarkerRow> {
   id: string;
+  entity: EntityId;
   source: MarkerSource;
   /** Partition precedence is distinct from paint order. Source rows can overlap. */
   precedence: number;
@@ -93,6 +112,9 @@ export interface MarkerDef<TRow extends MarkerRow = MarkerRow> {
   selection: SelectionStrategy<TRow>;
   defaultVisible: boolean;
   z: number;
+  /** Key used by FilteredMapData for this marker's render rows. */
+  filteredDataKey: keyof FilteredMapData;
+  layer: MarkerLayerOptions;
   displayName?: (row: TRow) => string;
   decorations?: (context: DecorationContext<TRow>) => MarkerDecoration[];
   facets?: FacetDef<TRow>[];
@@ -147,28 +169,28 @@ const MONSTER_PRESENTATION = {
     iconSize: { base: 32, min: 28, max: 64 },
     fallbackRadius: 10,
     precedence: 400,
-    z: 500,
+    z: 2100,
   },
   fabled: {
     borderClass: "border-l-emerald-500",
     iconSize: { base: 28, min: 26, max: 60 },
     fallbackRadius: 7,
     precedence: 500,
-    z: 400,
+    z: 2000,
   },
   elites: {
     borderClass: "border-l-purple-500",
     iconSize: { base: 26, min: 24, max: 56 },
     fallbackRadius: 6,
     precedence: 300,
-    z: 300,
+    z: 1900,
   },
   hunts: {
     borderClass: "border-l-yellow-500",
     iconSize: { base: 18, min: 16, max: 40 },
     fallbackRadius: 4,
     precedence: 200,
-    z: 200,
+    z: 1100,
   },
 } as const;
 
@@ -183,9 +205,16 @@ const monsterMarker = (
   selection: SelectionStrategy<MonsterMapEntity> = monsterSelection,
 ): MarkerDef<MonsterMapEntity> => ({
   id,
+  entity: "monster",
   source: "monsters",
   precedence,
-  match,
+  match: (row) =>
+    (row.type === "monster" ||
+      row.type === "boss" ||
+      row.type === "fabled" ||
+      row.type === "elite" ||
+      row.type === "hunt") &&
+    match(row),
   label,
   pluralLabel,
   color,
@@ -197,6 +226,14 @@ const monsterMarker = (
   selection,
   defaultVisible: id === "bosses" || id === "fabled" || id === "elites",
   z: MONSTER_PRESENTATION[id].z,
+  filteredDataKey: id,
+  layer: {
+    id,
+    visibilityKey: id,
+    filter: "monster-level",
+    sidebarSection: "monsters",
+    quickToggle: id !== "fabled",
+  },
   decorations: monsterDecorations,
 });
 
@@ -284,6 +321,7 @@ const npcDecorations = ({
 
 interface SimpleMarkerOptions<TRow extends MarkerRow> {
   id: string;
+  entity: EntityId;
   source: MarkerSource;
   label: string;
   pluralLabel: string;
@@ -295,6 +333,8 @@ interface SimpleMarkerOptions<TRow extends MarkerRow> {
   iconSize: IconSize;
   defaultVisible?: boolean;
   z: number;
+  filteredDataKey?: keyof FilteredMapData;
+  layer: MarkerLayerOptions;
   match: (row: TRow) => boolean;
   selection?: SelectionStrategy<TRow>;
 }
@@ -312,13 +352,17 @@ const simpleMarker = <TRow extends MarkerRow>({
   iconSize = { base: 20, min: 18, max: 44 },
   defaultVisible = false,
   z,
+  filteredDataKey = id as keyof FilteredMapData,
+  layer,
   match,
   selection = {
     kind: "by-field",
     field: (row: TRow) => row.id,
   },
+  entity,
 }: SimpleMarkerOptions<TRow>): MarkerDef<TRow> => ({
   id,
+  entity,
   source,
   precedence: 100,
   match,
@@ -333,6 +377,8 @@ const simpleMarker = <TRow extends MarkerRow>({
   selection,
   defaultVisible,
   z,
+  filteredDataKey,
+  layer,
 });
 
 type AnyMarkerDef =
@@ -396,9 +442,10 @@ export const markerRegistry = {
   ),
   npc: {
     id: "npc",
+    entity: "npc",
     source: "npcs",
     precedence: 100,
-    match: () => true,
+    match: (row: NpcMapEntity) => row.type === "npc",
     label: "NPC",
     pluralLabel: "NPCs",
     color: [59, 130, 246],
@@ -412,15 +459,23 @@ export const markerRegistry = {
       field: (row: NpcMapEntity) => row.id,
     },
     defaultVisible: false,
-    z: 600,
+    z: 1600,
+    filteredDataKey: "npcs",
+    layer: {
+      id: "npcs",
+      visibilityKey: null,
+      filter: "npc",
+      sidebarSection: "npcs",
+    },
     facets: npcFacets,
     decorations: npcDecorations,
   } satisfies MarkerDef<NpcMapEntity>,
   portals: {
     id: "portals",
+    entity: "portal",
     source: "portals",
     precedence: 100,
-    match: (row: PortalMapEntity) => row.destination !== null,
+    match: (row: PortalMapEntity) => row.type === "portal",
     label: "Portal",
     pluralLabel: "Portals",
     color: [34, 197, 94],
@@ -434,7 +489,15 @@ export const markerRegistry = {
       field: (row: PortalMapEntity) => row.id,
     },
     defaultVisible: false,
-    z: 700,
+    z: 1500,
+    filteredDataKey: "portals",
+    layer: {
+      id: "portals",
+      visibilityKey: "portals",
+      filter: "portal",
+      sidebarSection: "interactables",
+      quickToggle: true,
+    },
     decorations: ({ row, markerId }) => [
       ...(row.destination
         ? [{ id: `${markerId}:destination`, kind: "arc" as const }]
@@ -448,6 +511,7 @@ export const markerRegistry = {
   } satisfies MarkerDef<PortalMapEntity>,
   chests: simpleMarker<ChestMapEntity>({
     id: "chests",
+    entity: "chest",
     source: "interactables",
     label: "Chest",
     pluralLabel: "Chests",
@@ -457,11 +521,19 @@ export const markerRegistry = {
     iconSize: { base: 20, min: 18, max: 44 },
     fallbackRadius: 5,
     borderClass: "border-l-sky-500",
-    z: 800,
+    z: 1200,
+    layer: {
+      id: "chests",
+      visibilityKey: "chests",
+      filter: "zone",
+      sidebarSection: "interactables",
+      quickToggle: true,
+    },
     match: (row) => row.type === "chest",
   }),
   treasure: simpleMarker<TreasureMapEntity>({
     id: "treasure",
+    entity: "treasure",
     source: "interactables",
     label: "Treasure",
     pluralLabel: "Treasure",
@@ -471,11 +543,18 @@ export const markerRegistry = {
     iconSize: { base: 20, min: 18, max: 44 },
     fallbackRadius: 5,
     borderClass: "border-l-teal-500",
-    z: 810,
+    z: 1400,
+    layer: {
+      id: "treasure",
+      visibilityKey: "treasure",
+      filter: "zone",
+      sidebarSection: "interactables",
+    },
     match: (row) => row.type === "treasure",
   }),
   altars: simpleMarker<AltarMapEntity>({
     id: "altars",
+    entity: "altar",
     source: "interactables",
     label: "Altar",
     pluralLabel: "Altars",
@@ -486,11 +565,19 @@ export const markerRegistry = {
     fallbackRadius: 7,
     borderClass: "border-l-orange-500",
     defaultVisible: true,
-    z: 820,
+    z: 1700,
+    layer: {
+      id: "altars",
+      visibilityKey: "altars",
+      filter: "zone",
+      sidebarSection: "interactables",
+      quickToggle: true,
+    },
     match: (row) => row.type === "altar",
   }),
   traps: simpleMarker<TrapMapEntity>({
     id: "traps",
+    entity: "trap",
     source: "interactables",
     label: "Trap",
     pluralLabel: "Traps",
@@ -501,11 +588,18 @@ export const markerRegistry = {
     fallbackRadius: 5,
     borderClass: "border-l-rose-600",
     defaultVisible: true,
-    z: 830,
+    z: 1800,
+    layer: {
+      id: "traps",
+      visibilityKey: "traps",
+      filter: "zone",
+      sidebarSection: "interactables",
+    },
     match: (row) => row.type === "trap",
   }),
   houses: simpleMarker<HouseMapEntity>({
     id: "houses",
+    entity: "house",
     source: "interactables",
     label: "House",
     pluralLabel: "Houses",
@@ -515,63 +609,105 @@ export const markerRegistry = {
     iconSize: { base: 22, min: 20, max: 48 },
     fallbackRadius: 6,
     borderClass: "border-l-amber-500",
-    z: 840,
+    z: 1300,
+    layer: {
+      id: "houses",
+      visibilityKey: "houses",
+      filter: "zone",
+      sidebarSection: "interactables",
+    },
     match: (row) => row.type === "house",
   }),
   gatheringPlants: simpleMarker<GatheringMapEntity>({
     id: "gatheringPlants",
+    entity: "gathering_resource",
     source: "resources",
     label: "Plant",
     pluralLabel: "Plants",
     color: [132, 204, 22],
     icon: Leaf,
     iconType: "gathering_plant",
+    filteredDataKey: "plants",
     iconSize: { base: 16, min: 14, max: 36 },
     fallbackRadius: 3,
     borderClass: "border-l-lime-500",
-    z: 900,
+    z: 200,
+    layer: {
+      id: "gathering-plants",
+      visibilityKey: "gatheringPlants",
+      filter: "gathering-level",
+      sidebarSection: "gathering",
+      quickToggle: true,
+    },
     match: (row) => row.type === "gathering_plant",
   }),
   gatheringMinerals: simpleMarker<GatheringMapEntity>({
     id: "gatheringMinerals",
+    entity: "gathering_resource",
     source: "resources",
     label: "Mineral",
     pluralLabel: "Minerals",
     color: [23, 37, 84],
     icon: Pickaxe,
     iconType: "gathering_mineral",
+    filteredDataKey: "minerals",
     iconSize: { base: 16, min: 14, max: 36 },
     fallbackRadius: 3,
     borderClass: "border-l-blue-950",
-    z: 910,
+    z: 300,
+    layer: {
+      id: "gathering-minerals",
+      visibilityKey: "gatheringMinerals",
+      filter: "gathering-level",
+      sidebarSection: "gathering",
+      quickToggle: true,
+    },
     match: (row) => row.type === "gathering_mineral",
   }),
   gatheringSparks: simpleMarker<GatheringMapEntity>({
     id: "gatheringSparks",
+    entity: "gathering_resource",
     source: "resources",
     label: "Spark",
     pluralLabel: "Sparks",
     color: [168, 85, 247],
     icon: Sparkles,
     iconType: "gathering_spark",
+    filteredDataKey: "sparks",
     iconSize: { base: 16, min: 14, max: 36 },
     fallbackRadius: 3,
     borderClass: "border-l-purple-500",
-    z: 920,
+    z: 500,
+    layer: {
+      id: "gathering-sparks",
+      visibilityKey: "gatheringSparks",
+      filter: "zone",
+      sidebarSection: "gathering",
+      quickToggle: true,
+    },
     match: (row) => row.type === "gathering_spark",
   }),
   gatheringFishing: simpleMarker<GatheringMapEntity>({
     id: "gatheringFishing",
+    entity: "gathering_resource",
     source: "resources",
     label: "Fishing Spot",
     pluralLabel: "Fishing Spots",
     color: [6, 182, 212],
     icon: Fish,
     iconType: "gathering_fish",
+    filteredDataKey: "fishingSpots",
     iconSize: { base: 16, min: 14, max: 36 },
     fallbackRadius: 3,
     borderClass: "border-l-cyan-500",
-    z: 930,
+    z: 400,
+    layer: {
+      id: "gathering-fishing",
+      visibilityKey: "gatheringFishing",
+      filter: "gathering-level",
+      sidebarSection: "gathering",
+      quickToggle: true,
+    },
     match: (row) => row.type === "gathering_fish",
     selection: {
       kind: "by-field",
@@ -580,20 +716,30 @@ export const markerRegistry = {
   }),
   gatheringOther: simpleMarker<GatheringMapEntity>({
     id: "gatheringOther",
+    entity: "gathering_resource",
     source: "resources",
     label: "Resource",
     pluralLabel: "Resources",
     color: [156, 163, 175],
     icon: Package,
     iconType: "gathering_other",
+    filteredDataKey: "otherGathering",
     iconSize: { base: 16, min: 14, max: 36 },
     fallbackRadius: 3,
     borderClass: "border-l-gray-400",
-    z: 940,
+    z: 600,
+    layer: {
+      id: "gathering-other",
+      visibilityKey: "gatheringOther",
+      filter: "zone",
+      sidebarSection: "gathering",
+      quickToggle: true,
+    },
     match: (row) => row.type === "gathering_other",
   }),
   alchemyTables: simpleMarker<CraftingMapEntity>({
     id: "alchemyTables",
+    entity: "alchemy_table",
     source: "interactables",
     label: "Alchemy Table",
     pluralLabel: "Alchemy Tables",
@@ -603,11 +749,18 @@ export const markerRegistry = {
     iconSize: { base: 20, min: 18, max: 44 },
     fallbackRadius: 5,
     borderClass: "border-l-violet-500",
-    z: 1000,
+    z: 700,
+    layer: {
+      id: "alchemy-tables",
+      visibilityKey: "alchemyTables",
+      filter: "zone",
+      sidebarSection: "crafting",
+    },
     match: (row) => row.type === "alchemy_table",
   }),
   forges: simpleMarker<CraftingMapEntity>({
     id: "forges",
+    entity: "crafting_station",
     source: "interactables",
     label: "Forge",
     pluralLabel: "Forges",
@@ -617,11 +770,18 @@ export const markerRegistry = {
     iconSize: { base: 20, min: 18, max: 44 },
     fallbackRadius: 5,
     borderClass: "border-l-violet-500",
-    z: 1010,
+    z: 800,
+    layer: {
+      id: "forges",
+      visibilityKey: "forges",
+      filter: "zone",
+      sidebarSection: "crafting",
+    },
     match: (row) => row.type === "crafting_station" && !row.isCookingOven,
   }),
   cookingOvens: simpleMarker<CraftingMapEntity>({
     id: "cookingOvens",
+    entity: "crafting_station",
     source: "interactables",
     label: "Cooking Oven",
     pluralLabel: "Cooking Ovens",
@@ -631,11 +791,18 @@ export const markerRegistry = {
     iconSize: { base: 20, min: 18, max: 44 },
     fallbackRadius: 5,
     borderClass: "border-l-violet-500",
-    z: 1020,
+    z: 900,
+    layer: {
+      id: "cooking-ovens",
+      visibilityKey: "cookingOvens",
+      filter: "zone",
+      sidebarSection: "crafting",
+    },
     match: (row) => row.type === "crafting_station" && row.isCookingOven,
   }),
   scribingTables: simpleMarker<CraftingMapEntity>({
     id: "scribingTables",
+    entity: "scribing_table",
     source: "interactables",
     label: "Scribing Table",
     pluralLabel: "Scribing Tables",
@@ -645,12 +812,28 @@ export const markerRegistry = {
     iconSize: { base: 20, min: 18, max: 44 },
     fallbackRadius: 5,
     borderClass: "border-l-purple-500",
-    z: 1030,
+    z: 1000,
+    layer: {
+      id: "scribing-tables",
+      visibilityKey: "scribingTables",
+      filter: "zone",
+      sidebarSection: "crafting",
+    },
     match: (row) => row.type === "scribing_table",
   }),
 } as const satisfies Record<string, AnyMarkerDef>;
 
 export type MarkerId = keyof typeof markerRegistry;
+
+/** All marker presentations that can reveal a registered entity family. */
+export const MARKERS_BY_ENTITY = Object.entries(markerRegistry).reduce(
+  (index, [markerId, marker]) => {
+    const ids = index[marker.entity] ?? [];
+    index[marker.entity] = [...ids, markerId as MarkerId];
+    return index;
+  },
+  {} as Partial<Record<EntityId, MarkerId[]>>,
+);
 
 export type MarkerPresentation = Pick<
   MarkerDef,
@@ -700,14 +883,9 @@ export const MARKER_DEFAULT_VISIBILITY = deriveMarkerRecord(
   (marker) => marker.defaultVisible,
 );
 export const MARKER_Z_ORDER = deriveMarkerRecord((marker) => marker.z);
-
-const monsterMarkers: readonly MarkerDef<MonsterMapEntity>[] = [
-  markerRegistry.creatures,
-  markerRegistry.hunts,
-  markerRegistry.elites,
-  markerRegistry.fabled,
-  markerRegistry.bosses,
-];
+export const MARKER_FILTERED_DATA_KEYS = deriveMarkerRecord(
+  (marker) => marker.filteredDataKey,
+);
 
 function chooseMarker<TRow extends MarkerRow>(
   markers: readonly MarkerDef<TRow>[],
@@ -726,42 +904,10 @@ function chooseMarker<TRow extends MarkerRow>(
   return first.id as MarkerId;
 }
 
+const allMarkers = Object.values(
+  markerRegistry,
+) as unknown as readonly MarkerDef<MarkerRow>[];
+
 export function resolveMarker(row: MarkerRow): MarkerId | null {
-  switch (row.type) {
-    case "npc":
-      return chooseMarker([markerRegistry.npc], row);
-    case "portal":
-      return chooseMarker([markerRegistry.portals], row);
-    case "chest":
-      return chooseMarker([markerRegistry.chests], row);
-    case "treasure":
-      return chooseMarker([markerRegistry.treasure], row);
-    case "altar":
-      return chooseMarker([markerRegistry.altars], row);
-    case "trap":
-      return chooseMarker([markerRegistry.traps], row);
-    case "house":
-      return chooseMarker([markerRegistry.houses], row);
-    case "gathering_plant":
-      return chooseMarker([markerRegistry.gatheringPlants], row);
-    case "gathering_mineral":
-      return chooseMarker([markerRegistry.gatheringMinerals], row);
-    case "gathering_spark":
-      return chooseMarker([markerRegistry.gatheringSparks], row);
-    case "gathering_fish":
-      return chooseMarker([markerRegistry.gatheringFishing], row);
-    case "gathering_other":
-      return chooseMarker([markerRegistry.gatheringOther], row);
-    case "alchemy_table":
-      return chooseMarker([markerRegistry.alchemyTables], row);
-    case "crafting_station":
-      return chooseMarker(
-        [markerRegistry.forges, markerRegistry.cookingOvens],
-        row,
-      );
-    case "scribing_table":
-      return chooseMarker([markerRegistry.scribingTables], row);
-    default:
-      return chooseMarker(monsterMarkers, row);
-  }
+  return chooseMarker(allMarkers, row);
 }

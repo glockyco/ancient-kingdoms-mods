@@ -379,9 +379,7 @@
 
   // Derived: combined data for layer rendering (stable array references)
   let zoneFocusedData = $derived(
-    entityData && filteredData
-      ? createZoneFocusedData(filteredData, entityData)
-      : null,
+    entityData && filteredData ? createZoneFocusedData(filteredData) : null,
   );
 
   function handleVisibilityChange(newVisibility: LayerVisibility) {
@@ -835,10 +833,7 @@
         );
 
         // Create initial layers with zone-focused data
-        const initialZoneFocusedData = createZoneFocusedData(
-          filteredData!,
-          entityData,
-        );
+        const initialZoneFocusedData = createZoneFocusedData(filteredData!);
         const layers = createLayers({
           filtered: initialZoneFocusedData,
           visibility: layerVisibility,

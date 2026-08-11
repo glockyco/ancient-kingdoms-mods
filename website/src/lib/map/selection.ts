@@ -7,6 +7,8 @@ import type {
   PortalMapEntity,
 } from "$lib/types/map";
 import type { OverrideGroup, HighlightCategory } from "./resolve-selection";
+import { markerRegistry } from "./marker-registry";
+import type { EntityId } from "$lib/entities/registry";
 
 /**
  * Stable empty array - use this instead of [] to avoid creating new references
@@ -78,6 +80,73 @@ export interface EntityIndex {
   crafting: Map<string, AnyMapEntity[]>;
   /** Gathering resources indexed by concrete resource/spawn id for item-source highlights */
   gatheringById: Map<string, AnyMapEntity[]>;
+}
+
+/**
+ * Marker icon types are the URL-facing subtype names (boss, gathering_fish, ...).
+ * Keep the two historical aggregate names as aliases without duplicating the
+ * marker subtype list in selection consumers.
+ */
+const LEGACY_ENTITY_TYPE_ALIASES = {
+  resource: "gathering_resource",
+  gathering: "gathering_resource",
+  crafting: "crafting_station",
+} as const satisfies Record<string, EntityId>;
+
+const ENTITY_TYPE_BY_URL_TYPE = new Map<string, EntityId>([
+  ["zone", "zone"],
+  ...Object.values(markerRegistry).flatMap((marker) => [
+    [marker.entity, marker.entity] as [string, EntityId],
+    [marker.iconType, marker.entity] as [string, EntityId],
+  ]),
+  ...Object.entries(LEGACY_ENTITY_TYPE_ALIASES).map(
+    ([type, entity]) => [type, entity] as [string, EntityId],
+  ),
+]);
+
+/** Resolve a URL/search subtype to the canonical entity registry family. */
+export function resolveMapEntityType(entityType: string): EntityId | null {
+  return ENTITY_TYPE_BY_URL_TYPE.get(entityType) ?? null;
+}
+
+/**
+ * Physical map indexes keyed by entity-registry family.  Gathering and
+ * crafting subtypes intentionally share their family indexes.
+ */
+type SelectionIndexKey =
+  | "monsters"
+  | "npcs"
+  | "portals"
+  | "chests"
+  | "treasure"
+  | "altars"
+  | "traps"
+  | "houses"
+  | "gathering"
+  | "crafting";
+
+const ENTITY_INDEX_KEY_BY_ENTITY: Partial<Record<EntityId, SelectionIndexKey>> =
+  {
+    monster: "monsters",
+    npc: "npcs",
+    portal: "portals",
+    chest: "chests",
+    treasure: "treasure",
+    altar: "altars",
+    trap: "traps",
+    house: "houses",
+    gathering_resource: "gathering",
+    crafting_station: "crafting",
+    alchemy_table: "crafting",
+    scribing_table: "crafting",
+  };
+
+function getIndexForEntity(
+  index: EntityIndex,
+  entityType: EntityId,
+): Map<string, AnyMapEntity[]> | null {
+  const indexKey = ENTITY_INDEX_KEY_BY_ENTITY[entityType];
+  return indexKey ? index[indexKey] : null;
 }
 
 /**
@@ -263,28 +332,14 @@ function getIndexForCategory(
   index: EntityIndex,
   category: HighlightCategory,
 ): Map<string, AnyMapEntity[]> | null {
-  switch (category) {
-    case "monster":
-      return index.monsters;
-    case "npc":
-      return index.npcs;
-    case "portal":
-      return index.portals;
-    case "chest":
-      return index.chests;
-    case "treasure":
-      return index.treasure;
-    case "altar":
-      return index.altars;
-    case "house":
-      return index.houses;
-    case "resource":
-      return index.gatheringById;
-    case "crafting":
-      return index.crafting;
-    default:
-      return null;
+  // Item/quest overrides use concrete resource IDs rather than the shared
+  // selection group used by direct resource links.
+  if (category === "resource") {
+    return index.gatheringById;
   }
+
+  const entityType = resolveMapEntityType(category);
+  return entityType ? getIndexForEntity(index, entityType) : null;
 }
 
 /**
@@ -292,17 +347,17 @@ function getIndexForCategory(
  */
 type PatrollingEntity = MonsterMapEntity | NpcMapEntity;
 
+const PATROLLING_ENTITY_TYPES = new Set(
+  Object.values(markerRegistry)
+    .filter((marker) => marker.entity === "monster" || marker.entity === "npc")
+    .map((marker) => marker.iconType),
+);
+
 /**
  * Type guard for entities with patrol capability
  */
 function isPatrollingEntity(e: AnyMapEntity): e is PatrollingEntity {
-  return (
-    e.type === "monster" ||
-    e.type === "boss" ||
-    e.type === "elite" ||
-    e.type === "hunt" ||
-    e.type === "npc"
-  );
+  return PATROLLING_ENTITY_TYPES.has(e.type);
 }
 
 /**
@@ -465,47 +520,8 @@ function getIndexForType(
   index: EntityIndex,
   entityType: string,
 ): Map<string, AnyMapEntity[]> | null {
-  switch (entityType) {
-    // Search categories
-    case "monster":
-      return index.monsters;
-    case "npc":
-      return index.npcs;
-    case "resource":
-      return index.gathering;
-    case "chest":
-      return index.chests;
-    case "treasure":
-      return index.treasure;
-    case "altar":
-      return index.altars;
-    case "trap":
-      return index.traps;
-    case "portal":
-      return index.portals;
-    case "crafting":
-      return index.crafting;
-    case "house":
-      return index.houses;
-    // Entity types (when clicking directly on map)
-    case "fabled":
-    case "boss":
-    case "elite":
-    case "hunt":
-      return index.monsters;
-    case "gathering_plant":
-    case "gathering_mineral":
-    case "gathering_spark":
-    case "gathering_fish":
-    case "gathering_other":
-      return index.gathering;
-    case "alchemy_table":
-    case "crafting_station":
-    case "scribing_table":
-      return index.crafting;
-    default:
-      return null;
-  }
+  const canonicalType = resolveMapEntityType(entityType);
+  return canonicalType ? getIndexForEntity(index, canonicalType) : null;
 }
 
 /**

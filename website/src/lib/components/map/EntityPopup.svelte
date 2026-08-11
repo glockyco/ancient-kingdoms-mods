@@ -43,6 +43,7 @@
     type AltarPopupDetails,
   } from "$lib/queries/popup";
   import { TRAP_TYPE_LABELS } from "$lib/constants/traps";
+  import { markerRegistry, resolveMarker } from "$lib/map/marker-registry";
   interface Props {
     entity: AnyMapEntity;
     onClose: () => void;
@@ -311,48 +312,14 @@
   }
 
   function getEntityTypeName(entity: AnyMapEntity): string {
-    switch (entity.type) {
-      case "monster":
-        return "Creature";
-      case "fabled":
-        return "Fabled";
-      case "boss":
-        return (entity as MonsterMapEntity).isWorldBoss ? "World Boss" : "Boss";
-      case "elite":
-        return "Elite";
-      case "hunt":
-        return "Hunt";
-      case "npc":
-        return "NPC";
-      case "portal":
-        return "Portal";
-      case "chest":
-        return "Chest";
-      case "treasure":
-        return "Treasure";
-      case "altar":
-        return "Altar";
-      case "trap":
-        return TRAP_TYPE_LABELS[(entity as TrapMapEntity).trapType];
-      case "house":
-        return "House";
-      case "gathering_plant":
-        return "Plant";
-      case "gathering_mineral":
-        return "Mineral";
-      case "gathering_spark":
-        return "Spark";
-      case "gathering_fish":
-        return "Fishing Spot";
-      case "gathering_other":
-        return "Resource";
-      case "alchemy_table":
-      case "crafting_station":
-      case "scribing_table":
-        return "Crafting Station";
-      default:
-        return "Unknown";
+    if (entity.type === "boss") {
+      return entity.isWorldBoss ? "World Boss" : "Boss";
     }
+    if (entity.type === "trap") {
+      return TRAP_TYPE_LABELS[entity.trapType];
+    }
+    const markerId = resolveMarker(entity);
+    return markerId ? markerRegistry[markerId].label : "Entity";
   }
 
   function getDisplayName(entity: AnyMapEntity): string {

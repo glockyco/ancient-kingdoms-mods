@@ -72,48 +72,18 @@
   }
 
   function getEntityTypeName(entity: AnyMapEntity): string | null {
-    switch (entity.type) {
-      case "monster":
-        return "Creature";
-      case "fabled":
-        return "Fabled";
-      case "boss":
-        return "Boss";
-      case "elite":
-        return "Elite";
-      case "hunt":
-        return "Hunt";
-      case "npc":
-        return "NPC";
-      case "portal":
-        return isHoveringDestination ? "Portal Destination" : null;
-      case "trap":
-        return TRAP_TYPE_LABELS[(entity as TrapMapEntity).trapType];
-      case "gathering_plant":
-        return "Plant";
-      case "gathering_mineral":
-        return "Mineral";
-      case "gathering_fish":
-        return "Fishing Spot";
-      case "gathering_other":
-        return "Resource";
-      case "alchemy_table":
-      case "crafting_station":
-      case "scribing_table":
-        return "Crafting Station";
-      case "chest":
-        return "Chest";
-      case "treasure":
-        return "Treasure";
-      case "altar":
-        return "Altar";
-      case "house":
-        return "House";
-      case "gathering_spark":
-        return null;
-      default:
-        return null;
+    if (entity.type === "portal") {
+      return isHoveringDestination ? "Portal Destination" : null;
     }
+    if (entity.type === "trap") {
+      return TRAP_TYPE_LABELS[(entity as TrapMapEntity).trapType];
+    }
+    if (entity.type === "gathering_spark") {
+      return null;
+    }
+
+    const markerId = resolveMarker(entity);
+    return markerId ? markerRegistry[markerId].label : null;
   }
 </script>
 

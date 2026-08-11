@@ -4,6 +4,7 @@
   import MasteryCurve from "$lib/components/professions/MasteryCurve.svelte";
   import ProfessionHeader from "$lib/components/professions/ProfessionHeader.svelte";
   import MonsterTypeIcon from "$lib/components/MonsterTypeIcon.svelte";
+  import EntityReference from "$lib/components/EntityReference.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
   import {
     DataTable,
@@ -115,7 +116,8 @@
       accessorKey: "name",
       header: "Name",
       enableHiding: false,
-      size: 170,
+      size: 220,
+      minSize: 220,
     },
     {
       accessorKey: "level_min",
@@ -144,7 +146,8 @@
     {
       id: "zones",
       header: "Zone",
-      size: 170,
+      size: 220,
+      minSize: 220,
       enableSorting: false,
       accessorFn: (row) => row.zone_name,
     },
@@ -223,13 +226,18 @@
       />
     </div>
   {:else if cell.column.id === "name"}
-    <a
+    <EntityReference
       href="/monsters/{target.id}"
-      class="block truncate text-blue-600 hover:underline dark:text-blue-400"
+      name={target.name}
+      domain="monster"
+      entityId={target.id}
+      imageKind="primary"
+      imageAvailable={target.visual_public_path}
+      size={32}
       title={target.name}
-    >
-      {target.name}
-    </a>
+      class="flex min-w-0 max-w-full"
+      nameClass="truncate"
+    />
   {:else if cell.column.id === "level_min"}
     {@const hasVariance = target.level_min !== target.level_max}
     <span class="ml-auto"
@@ -327,7 +335,7 @@
   path="/professions/slayer"
 />
 
-<div class="container mx-auto max-w-4xl space-y-10 p-8">
+<div class="container mx-auto max-w-6xl space-y-10 p-8">
   <Breadcrumb
     items={[
       { label: "Home", href: "/" },

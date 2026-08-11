@@ -113,7 +113,7 @@ namespace DataExporter
             }));
             result.Exporters.Add(RunExporter("gatherItems", required: true, () =>
             {
-                var exporter = new GatherItemExporter(LoggerInstance, ExportPath);
+                var exporter = new GatherItemExporter(LoggerInstance, ExportPath, visualAssets);
                 exporter.Export();
             }));
             result.Exporters.Add(RunExporter("craftingRecipes", required: true, () =>
@@ -163,7 +163,7 @@ namespace DataExporter
             }));
             result.Exporters.Add(RunExporter("professions", required: true, () =>
             {
-                var exporter = new ProfessionExporter(LoggerInstance, ExportPath);
+                var exporter = new ProfessionExporter(LoggerInstance, ExportPath, visualAssets);
                 exporter.Export();
             }));
             result.Exporters.Add(RunExporter("craftingStations", required: true, () =>
@@ -203,7 +203,7 @@ namespace DataExporter
             }));
             result.Exporters.Add(RunExporter("classes", required: true, () =>
             {
-                var exporter = new ClassExporter(LoggerInstance, ExportPath);
+                var exporter = new ClassExporter(LoggerInstance, ExportPath, visualAssets);
                 exporter.Export();
             }));
             result.Exporters.Add(RunExporter("visualAssets.manifest", required: true, visualAssets.WriteManifest));

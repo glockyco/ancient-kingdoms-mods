@@ -52,8 +52,7 @@ export function loadPetPage(id: string, isMercenary: boolean): PetPageData {
   return {
     pet,
     description,
-    // A mercenary's look is assembled per character from race, gender, hair, and
-    // gear, so there is no single portrait that is true for the reader.
+    // Mercenaries have no single portrait; their appearance varies by character.
     visualAsset: isMercenary ? null : getPetVisualAsset(id),
   };
 }

@@ -40,6 +40,7 @@
   import Zap from "@lucide/svelte/icons/zap";
   import Gem from "@lucide/svelte/icons/gem";
   import Scroll from "@lucide/svelte/icons/scroll";
+  import EntityReference from "$lib/components/EntityReference.svelte";
 
   let { data } = $props();
 
@@ -468,12 +469,18 @@
   row: Row<ClassSkill>;
 })}
   {#if cell.column.id === "name"}
-    <a
+    <EntityReference
       href="/skills/{row.original.id}"
-      class="text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap"
-    >
-      {row.original.name}
-    </a>
+      name={row.original.name}
+      domain="skill"
+      entityId={row.original.id}
+      imageKind="icon"
+      imageAvailable={row.original.visual_public_path}
+      fallback={Zap}
+      showIcon={Boolean(row.original.visual_public_path)}
+      size={28}
+      class="whitespace-nowrap"
+    />
   {:else if cell.column.id === "category"}
     <span class="text-muted-foreground"
       >{getSkillCategoryDisplay(row.original)}</span
@@ -570,6 +577,9 @@
       itemName={row.original.name}
       tooltipHtml={tooltips.get(row.original.id)}
       colorClass={getQualityTextColorClass(row.original.quality)}
+      imageAvailable={row.original.visual_public_path}
+      fallback={Gem}
+      showIcon={Boolean(row.original.visual_public_path)}
       maxWidth="185px"
     />
   {:else if cell.column.id === "sources"}

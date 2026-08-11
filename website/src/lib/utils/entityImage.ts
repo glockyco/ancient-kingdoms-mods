@@ -5,6 +5,11 @@ const DOMAIN_DIRECTORIES = {
   npc: "npcs",
   pet: "pets",
   skill: "skills",
+  class: "classes",
+  profession: "professions",
+  gathering_resource: "gathering_resources",
+  chest: "chests",
+  zone: "zones",
 } as const;
 
 export type EntityImageDomain = keyof typeof DOMAIN_DIRECTORIES;

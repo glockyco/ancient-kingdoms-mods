@@ -3,6 +3,7 @@ import {
   MARKER_BORDER_CLASSES,
   MARKER_COLORS,
   MARKER_DEFAULT_VISIBILITY,
+  MARKER_FILTERED_DATA_KEYS,
   MARKER_ICON_SIZES,
   MARKER_ICON_TYPES,
   MARKER_ICONS,
@@ -10,6 +11,7 @@ import {
   MARKER_PLURAL_LABELS,
   MARKER_RADII,
   MARKER_Z_ORDER,
+  MARKERS_BY_ENTITY,
   NPC_FACETS,
   markerRegistry,
   resolveMarker,
@@ -92,6 +94,24 @@ describe("marker registry", () => {
     ]);
   });
 
+  test("indexes marker presentations by entity family", () => {
+    expect(MARKERS_BY_ENTITY.monster).toEqual([
+      "creatures",
+      "hunts",
+      "elites",
+      "fabled",
+      "bosses",
+    ]);
+    expect(MARKERS_BY_ENTITY.gathering_resource).toEqual([
+      "gatheringPlants",
+      "gatheringMinerals",
+      "gatheringSparks",
+      "gatheringFishing",
+      "gatheringOther",
+    ]);
+    expect(MARKERS_BY_ENTITY.alchemy_table).toEqual(["alchemyTables"]);
+  });
+
   test("derives every presentation record from the same marker keys", () => {
     const markerIds = Object.keys(markerRegistry).sort();
     for (const record of [
@@ -105,11 +125,19 @@ describe("marker registry", () => {
       MARKER_PLURAL_LABELS,
       MARKER_DEFAULT_VISIBILITY,
       MARKER_Z_ORDER,
+      MARKER_FILTERED_DATA_KEYS,
     ]) {
       expect(Object.keys(record).sort()).toEqual(markerIds);
     }
     expect(MARKER_BORDER_CLASSES.chests).toBe("border-l-sky-500");
     expect(MARKER_RADII.gatheringFishing).toBe(3);
+    expect(MARKER_FILTERED_DATA_KEYS).toMatchObject({
+      npc: "npcs",
+      portals: "portals",
+      gatheringPlants: "plants",
+      gatheringFishing: "fishingSpots",
+      gatheringOther: "otherGathering",
+    });
   });
 
   test("preserves legacy marker presentation baselines", () => {

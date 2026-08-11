@@ -11,6 +11,8 @@
   import Sparkles from "@lucide/svelte/icons/sparkles";
   import Leaf from "@lucide/svelte/icons/leaf";
   import Crosshair from "@lucide/svelte/icons/crosshair";
+  import EntityIcon from "$lib/components/EntityIcon.svelte";
+  import { base } from "$app/paths";
 
   let { data } = $props();
 
@@ -86,10 +88,18 @@
           <Card.Header class="space-y-4 !px-6 !pt-6">
             <div class="flex justify-center">
               <div
-                class="p-6 rounded-2xl"
-                style="background-color: {config.color}10;"
+                class="rounded-2xl bg-muted/30 p-6"
+                style="color: {config.color};"
               >
-                <ClassIcon class="h-14 w-14" style="color: {config.color};" />
+                <EntityIcon
+                  src={classData.visual_public_path
+                    ? `${base}/${classData.visual_public_path}`
+                    : null}
+                  alt={`${classData.name} class icon`}
+                  fallback={ClassIcon}
+                  size={56}
+                  class="h-14 w-14 border-0 bg-transparent"
+                />
               </div>
             </div>
 

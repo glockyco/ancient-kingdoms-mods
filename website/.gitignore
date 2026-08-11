@@ -11,6 +11,7 @@ node_modules
 
 # Generated files (from build-pipeline)
 /static/compendium.db*
+/static/search.db*
 /static/tiles/
 /static/images/
 /static/sitemap-manifest.json

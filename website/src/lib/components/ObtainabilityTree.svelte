@@ -3,6 +3,7 @@
   import { SOURCE_TYPE_CONFIG } from "$lib/constants/source-types";
   import ObtainabilityTree from "./ObtainabilityTree.svelte";
   import ItemLink from "./ItemLink.svelte";
+  import Package from "@lucide/svelte/icons/package";
   import ChevronRight from "@lucide/svelte/icons/chevron-right";
   import ChevronDown from "@lucide/svelte/icons/chevron-down";
   import Combine from "@lucide/svelte/icons/combine";
@@ -99,6 +100,9 @@
         itemId={node.item_id}
         itemName={node.item_name}
         tooltipHtml={node.tooltip_html}
+        imageAvailable={node.visual_public_path}
+        fallback={Package}
+        showIcon={Boolean(node.visual_public_path)}
       />
     {/if}
 

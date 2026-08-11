@@ -21,6 +21,8 @@
   } from "$lib/components/ui/data-table";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
+  import EntityIcon from "$lib/components/EntityIcon.svelte";
+  import EntityReference from "$lib/components/EntityReference.svelte";
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
   import RoleBadges from "$lib/components/RoleBadges.svelte";
   import { ROLE_CONFIG, getActiveRoles } from "$lib/utils/roles";
@@ -45,6 +47,7 @@
   import TriangleAlert from "@lucide/svelte/icons/triangle-alert";
   import BookOpen from "@lucide/svelte/icons/book-open";
   import { formatDuration } from "$lib/utils/format";
+  import { base } from "$app/paths";
   import Seo from "$lib/components/Seo.svelte";
   import TrapMechanics from "$lib/components/TrapMechanics.svelte";
   import TrapEffect from "$lib/components/TrapEffect.svelte";
@@ -148,7 +151,7 @@
   const chestColumns: ColumnDef<ZoneChest>[] = [
     {
       id: "name",
-      header: "Chest",
+      header: "Icon",
       size: 80,
     },
     {
@@ -244,12 +247,19 @@
 })}
   {@const hasVariance = row.original.level_min !== row.original.level_max}
   {#if cell.column.id === "name"}
-    <a
+    <EntityReference
       href="/monsters/{row.original.id}"
-      class="text-blue-600 dark:text-blue-400 hover:underline"
-    >
-      {row.original.name}
-    </a>
+      name={row.original.name}
+      domain="monster"
+      entityId={row.original.id}
+      imageKind="primary"
+      imageAvailable={row.original.visual_public_path}
+      showIcon={Boolean(row.original.visual_public_path)}
+      size={32}
+      title={row.original.name}
+      class="min-w-0 max-w-full"
+      nameClass="truncate"
+    />
   {:else if cell.column.id === "level"}
     <span class="ml-auto"
       >{row.original.level_min}<span
@@ -302,7 +312,10 @@
   row: Row<ZoneAltar>;
 })}
   {#if cell.column.id === "name"}
-    {row.original.name}
+    <span class="inline-flex items-center gap-2">
+      <EntityIcon src={null} alt="" fallback={Flame} size={28} />
+      <span>{row.original.name}</span>
+    </span>
   {:else if cell.column.id === "required_activation_item_name"}
     {#if row.original.required_activation_item_id}
       <a
@@ -345,12 +358,19 @@
   row: Row<ZoneNpc>;
 })}
   {#if cell.column.id === "name"}
-    <a
+    <EntityReference
       href="/npcs/{row.original.id}"
-      class="text-blue-600 dark:text-blue-400 hover:underline"
-    >
-      {row.original.name}
-    </a>
+      name={row.original.name}
+      domain="npc"
+      entityId={row.original.id}
+      imageKind="primary"
+      imageAvailable={row.original.visual_public_path}
+      showIcon={Boolean(row.original.visual_public_path)}
+      size={32}
+      title={row.original.name}
+      class="min-w-0 max-w-full"
+      nameClass="truncate"
+    />
   {:else if cell.column.id === "roles"}
     <RoleBadges roles={row.original.roles} />
   {:else}
@@ -380,9 +400,18 @@
   {#if cell.column.id === "name"}
     <a
       href="/chests/{row.original.id}"
-      class="text-blue-600 dark:text-blue-400 hover:underline"
+      aria-label={`Chest ${row.original.id}`}
+      title={`Chest ${row.original.id}`}
+      class="inline-flex"
     >
-      Chest
+      <EntityIcon
+        src={row.original.visual_public_path
+          ? `${base}/${row.original.visual_public_path}`
+          : null}
+        alt={`Chest ${row.original.id} icon`}
+        fallback={Box}
+        size={32}
+      />
     </a>
   {:else if cell.column.id === "key"}
     {#if row.original.key_required_id && row.original.key_required_name}

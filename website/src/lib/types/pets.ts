@@ -1,4 +1,5 @@
 import type { ClassSkill } from "$lib/queries/classes.server";
+import type { EntityVisualAsset } from "$lib/types/visual-assets";
 
 export type PetKind = "Mercenary" | "Companion" | "Familiar";
 
@@ -28,6 +29,8 @@ export interface SummonListView {
   kind: SummonKind;
   type_monster: string;
   level: number;
+  /** Primary artwork exported for summons; absent when unavailable. */
+  visualAsset: EntityVisualAsset | null;
   summoning_class_id: string | null;
   summoning_skill_id: string | null;
   summoning_skill_name: string | null;
@@ -48,6 +51,11 @@ export interface PetClassLink {
 export interface PetRecruiter {
   npc_id: string;
   npc_name: string;
+  visual_public_path: string | null;
+  visual_width: number | null;
+  visual_height: number | null;
+  visual_source_field: string | null;
+  visual_source_type: string | null;
   zone_id: string;
   zone_name: string;
 }

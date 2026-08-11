@@ -83,13 +83,25 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
     const placeholders = itemIds.map(() => "?").join(",");
     const itemInfo = db
       .prepare(
-        `SELECT id, name, is_bestiary_drop, tooltip_html FROM items WHERE id IN (${placeholders})`,
+        `SELECT
+          i.id,
+          i.name,
+          i.is_bestiary_drop,
+          i.tooltip_html,
+          va.public_path AS visual_public_path
+        FROM items i
+        LEFT JOIN visual_assets va
+          ON va.domain = 'item'
+         AND va.entity_id = i.id
+         AND va.kind = 'icon'
+        WHERE i.id IN (${placeholders})`,
       )
       .all(...itemIds) as Array<{
       id: string;
       name: string;
       is_bestiary_drop: boolean;
       tooltip_html: string | null;
+      visual_public_path: string | null;
     }>;
     const infoMap = new Map(itemInfo.map((i) => [i.id, i]));
 
@@ -98,6 +110,7 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
       drop.item_name = info?.name || drop.item_id;
       drop.is_bestiary = info?.is_bestiary_drop ?? false;
       drop.tooltip_html = info?.tooltip_html ?? null;
+      drop.visual_public_path = info?.visual_public_path ?? null;
     }
   }
 
@@ -771,6 +784,7 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
         ms.skill_index,
         s.id,
         s.name,
+        va.public_path AS visual_public_path,
         s.skill_type,
         s.damage_type,
         s.cooldown,
@@ -827,6 +841,10 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
       FROM monster_skills ms
       JOIN skills s ON s.id = ms.skill_id
       LEFT JOIN monsters sm ON sm.id = s.summoned_monster_id
+      LEFT JOIN visual_assets va
+        ON va.domain = 'skill'
+       AND va.entity_id = s.id
+       AND va.kind = 'icon'
       WHERE ms.monster_id = ?
       ORDER BY ms.skill_index
     `,

@@ -8,6 +8,8 @@ import type { RespawnInfo } from "./respawn";
 export interface MonsterDrop {
   item_id: string;
   item_name: string;
+  /** Published item/icon artwork, when the optional visual asset exists. */
+  visual_public_path: string | null;
   tooltip_html: string | null;
   quality: number;
   rate: number;
@@ -286,6 +288,8 @@ export interface MonsterSkill {
   skill_index: number;
   id: string;
   name: string;
+  /** Published skill/icon artwork, when the optional visual asset exists. */
+  visual_public_path: string | null;
   skill_type: string;
   damage_type: string | null;
   cooldown: string | null;

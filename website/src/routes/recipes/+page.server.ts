@@ -13,6 +13,7 @@ interface RawRecipe {
   id: string;
   result_item_id: string;
   result_item_name: string;
+  result_visual_public_path: string | null;
   result_quality: number;
   result_amount: number;
   materials: string;
@@ -32,6 +33,7 @@ export const load: PageServerLoad = (): RecipesPageData => {
           ar.id,
           ar.result_item_id,
           i.name as result_item_name,
+          va.public_path as result_visual_public_path,
           i.quality as result_quality,
           1 as result_amount,
           ar.materials,
@@ -39,6 +41,8 @@ export const load: PageServerLoad = (): RecipesPageData => {
           ar.level_required as tier
         FROM alchemy_recipes ar
         JOIN items i ON i.id = ar.result_item_id
+        LEFT JOIN visual_assets va
+          ON va.domain = 'item' AND va.entity_id = i.id AND va.kind = 'icon'
 
         UNION ALL
 
@@ -47,6 +51,7 @@ export const load: PageServerLoad = (): RecipesPageData => {
           cr.id,
           cr.result_item_id,
           i.name as result_item_name,
+          va.public_path as result_visual_public_path,
           i.quality as result_quality,
           cr.result_amount,
           cr.materials,
@@ -54,6 +59,8 @@ export const load: PageServerLoad = (): RecipesPageData => {
           i.quality as tier
         FROM crafting_recipes cr
         JOIN items i ON i.id = cr.result_item_id
+        LEFT JOIN visual_assets va
+          ON va.domain = 'item' AND va.entity_id = i.id AND va.kind = 'icon'
 
         UNION ALL
 
@@ -62,6 +69,7 @@ export const load: PageServerLoad = (): RecipesPageData => {
           sr.id,
           sr.result_item_id,
           i.name as result_item_name,
+          va.public_path as result_visual_public_path,
           i.quality as result_quality,
           1 as result_amount,
           sr.materials,
@@ -69,6 +77,8 @@ export const load: PageServerLoad = (): RecipesPageData => {
           sr.level_required as tier
         FROM scribing_recipes sr
         JOIN items i ON i.id = sr.result_item_id
+        LEFT JOIN visual_assets va
+          ON va.domain = 'item' AND va.entity_id = i.id AND va.kind = 'icon'
       )
       SELECT * FROM all_recipes
       ORDER BY
@@ -83,17 +93,37 @@ export const load: PageServerLoad = (): RecipesPageData => {
     )
     .all() as RawRecipe[];
 
+  const itemVisualRows = db
+    .prepare(
+      `SELECT entity_id, public_path
+       FROM visual_assets
+       WHERE domain = 'item' AND kind = 'icon'`,
+    )
+    .all() as Array<{ entity_id: string; public_path: string | null }>;
+  const itemVisuals = new Map(
+    itemVisualRows.map((row) => [row.entity_id, row.public_path] as const),
+  );
+
   db.close();
 
-  // Materials JSON is pre-enriched with item_name by the build pipeline
+  // Materials JSON is pre-enriched with item_name by the build pipeline.
+  // Artwork is joined by item ID from the canonical visual_assets table.
   const recipes: RecipeListView[] = rawRecipes.map((raw) => ({
     id: raw.id,
     result_item_id: raw.result_item_id,
     result_item_name: raw.result_item_name,
+    result_visual_public_path: raw.result_visual_public_path,
     result_quality: raw.result_quality,
     result_amount: raw.result_amount,
     ingredients: raw.materials
-      ? (JSON.parse(raw.materials) as RecipeIngredient[])
+      ? (
+          JSON.parse(raw.materials) as Array<
+            Omit<RecipeIngredient, "visual_public_path">
+          >
+        ).map((ingredient) => ({
+          ...ingredient,
+          visual_public_path: itemVisuals.get(ingredient.item_id) ?? null,
+        }))
       : [],
     type: raw.type,
     tier: raw.tier,

@@ -36,6 +36,7 @@
   import ShoppingBag from "@lucide/svelte/icons/shopping-bag";
   import Gem from "@lucide/svelte/icons/gem";
   import MessageCircle from "@lucide/svelte/icons/message-circle";
+  import Package from "@lucide/svelte/icons/package";
   import Sword from "@lucide/svelte/icons/sword";
   import User from "@lucide/svelte/icons/user";
   import Wrench from "@lucide/svelte/icons/wrench";
@@ -258,7 +259,8 @@
       {
         id: "currency",
         header: "Currency",
-        size: 140,
+        size: 220,
+        minSize: 220,
         accessorFn: (row) => row.currency_item_name ?? "Gold",
       },
     );
@@ -387,6 +389,9 @@
       itemId={row.original.item_id}
       itemName={row.original.item_name}
       tooltipHtml={row.original.tooltip_html}
+      imageAvailable={row.original.visual_public_path}
+      showIcon
+      fallback={Package}
     />
   {:else if cell.column.id === "price"}
     <span class="ml-auto">{row.original.price.toLocaleString()}</span>
@@ -441,6 +446,9 @@
       itemId={row.original.item_id}
       itemName={row.original.item_name}
       tooltipHtml={row.original.tooltip_html}
+      imageAvailable={row.original.visual_public_path}
+      showIcon
+      fallback={Package}
     />
   {:else if cell.column.id === "rate"}
     <span class="ml-auto">{formatPercent(row.original.rate)}</span>

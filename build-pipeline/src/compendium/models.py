@@ -5,7 +5,7 @@ These models match the JSON structure exported by the C# DataExporter mod.
 
 from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 # =============================================================================
 # Common Models
@@ -974,6 +974,9 @@ class GatherItemData(BaseModel):
 
     id: str
     name: str
+    # Canonical resource identity assigned by the runtime exporter. Chests must
+    # carry an explicit null; all other gather items must carry an ID.
+    resource_id: str | None
     zone_id: str | None = None
     sub_zone_id: str | None = None
     position: Position | None = None
@@ -1009,6 +1012,14 @@ class GatherItemData(BaseModel):
     tool_required_id: str | None = (
         None  # Tool/key required to access (e.g., "dragonfire_chest_key")
     )
+
+    @model_validator(mode="after")
+    def validate_resource_id(self) -> "GatherItemData":
+        if self.is_chest and self.resource_id is not None:
+            raise ValueError("chest GatherItems must have resource_id=null")
+        if not self.is_chest and not self.resource_id:
+            raise ValueError("non-chest GatherItems require a canonical resource_id")
+        return self
 
 
 # =============================================================================

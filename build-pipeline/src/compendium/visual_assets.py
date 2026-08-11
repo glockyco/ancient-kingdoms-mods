@@ -31,6 +31,11 @@ DOMAIN_DIRECTORIES = {
     "npc": "npcs",
     "pet": "pets",
     "skill": "skills",
+    "class": "classes",
+    "profession": "professions",
+    "gathering_resource": "gathering_resources",
+    "chest": "chests",
+    "zone": "zones",
 }
 
 # The table that owns each domain's entities, used to reconcile artwork against
@@ -42,6 +47,11 @@ DOMAIN_TABLES = {
     "npc": "npcs",
     "pet": "pets",
     "skill": "skills",
+    "class": "classes",
+    "profession": "professions",
+    "gathering_resource": "gathering_resources",
+    "chest": "chests",
+    "zone": "zones",
 }
 
 # Path segments must survive a URL and a filesystem untouched. Uppercase is allowed
@@ -108,6 +118,37 @@ def derive_public_path(domain: str, entity_id: str, kind: str) -> str:
     return f"images/{directory}/{entity_id}/{kind}{PUBLISHED_SUFFIX}"
 
 
+def publish_image(
+    image: Image.Image,
+    static_dir: Path,
+    *,
+    domain: str,
+    entity_id: str,
+    kind: str,
+    encoding: Encoding,
+) -> PublishedAsset:
+    """Encode a loaded PIL image into the website's static directory as WebP."""
+    public_path = derive_public_path(domain, entity_id, kind)
+    destination = static_dir / public_path
+    destination.parent.mkdir(parents=True, exist_ok=True)
+
+    image.load()
+    if encoding is Encoding.SPRITE:
+        rgba = image if image.mode == "RGBA" else image.convert("RGBA")
+        alpha_bbox = rgba.getchannel("A").getbbox()
+        published = rgba if alpha_bbox is None else rgba.crop(alpha_bbox)
+        published.save(
+            destination, "WEBP", lossless=True, quality=100, method=ENCODE_METHOD
+        )
+    else:
+        published = image
+        published.save(destination, "WEBP", quality=PHOTO_QUALITY, method=ENCODE_METHOD)
+
+    return PublishedAsset(
+        public_path=public_path, width=published.width, height=published.height
+    )
+
+
 def publish(
     source_path: Path,
     static_dir: Path,
@@ -117,28 +158,16 @@ def publish(
     kind: str,
     encoding: Encoding,
 ) -> PublishedAsset:
-    """Encode one source image into the website's static directory as WebP."""
-    public_path = derive_public_path(domain, entity_id, kind)
-    destination = static_dir / public_path
-    destination.parent.mkdir(parents=True, exist_ok=True)
-
+    """Encode one source image file into the website's static directory as WebP."""
     with Image.open(source_path) as image:
-        image.load()
-        if encoding is Encoding.SPRITE:
-            rgba = image if image.mode == "RGBA" else image.convert("RGBA")
-            alpha_bbox = rgba.getchannel("A").getbbox()
-            published = rgba if alpha_bbox is None else rgba.crop(alpha_bbox)
-            published.save(
-                destination, "WEBP", lossless=True, quality=100, method=ENCODE_METHOD
-            )
-        else:
-            published = image
-            published.save(
-                destination, "WEBP", quality=PHOTO_QUALITY, method=ENCODE_METHOD
-            )
-        width, height = published.size
-
-    return PublishedAsset(public_path=public_path, width=width, height=height)
+        return publish_image(
+            image,
+            static_dir,
+            domain=domain,
+            entity_id=entity_id,
+            kind=kind,
+            encoding=encoding,
+        )
 
 
 def insert_asset(

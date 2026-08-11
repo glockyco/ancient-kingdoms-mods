@@ -16,6 +16,34 @@ function getPetKind(is_mercenary: boolean, is_familiar: boolean): PetKind {
   return "Companion";
 }
 
+type PetVisualAssetColumns = {
+  visual_public_path: string | null;
+  visual_width: number | null;
+  visual_height: number | null;
+  visual_source_field: string | null;
+  visual_source_type: string | null;
+};
+
+function getVisualAsset(row: PetVisualAssetColumns): EntityVisualAsset | null {
+  if (
+    row.visual_public_path == null ||
+    row.visual_width == null ||
+    row.visual_height == null ||
+    row.visual_source_field == null ||
+    row.visual_source_type == null
+  ) {
+    return null;
+  }
+
+  return {
+    public_path: row.visual_public_path,
+    width: row.visual_width,
+    height: row.visual_height,
+    source_field: row.visual_source_field,
+    source_type: row.visual_source_type,
+  };
+}
+
 /**
  * Get all mercenaries for the /mercenaries overview.
  *
@@ -31,35 +59,52 @@ export function getAllMercenaries(): MercenaryListView[] {
     type_monster: string;
     level: number;
   }>(
-    `SELECT id, name, type_monster, level
-     FROM pets
-     WHERE is_mercenary = 1
-     ORDER BY name ASC`,
+    `SELECT p.id, p.name, p.type_monster, p.level
+     FROM pets p
+     WHERE p.is_mercenary = 1
+     ORDER BY p.name ASC`,
   );
 
-  return rows.map((r) => ({ ...r, recruiters }));
+  return rows.map((r) => ({
+    id: r.id,
+    name: r.name,
+    type_monster: r.type_monster,
+    level: r.level,
+    recruiters,
+  }));
 }
 
 /**
  * Get all summons (companions and familiars) for the /summons overview.
  */
 export function getAllSummons(): SummonListView[] {
-  const rows = query<{
-    id: string;
-    name: string;
-    is_familiar: boolean;
-    type_monster: string;
-    level: number;
-    summoning_class_id: string | null;
-    summoning_skill_id: string | null;
-    summoning_skill_name: string | null;
-  }>(
+  const rows = query<
+    {
+      id: string;
+      name: string;
+      is_familiar: boolean;
+      type_monster: string;
+      level: number;
+      summoning_class_id: string | null;
+      summoning_skill_id: string | null;
+      summoning_skill_name: string | null;
+    } & PetVisualAssetColumns
+  >(
     `SELECT p.id, p.name, p.is_familiar, p.type_monster, p.level,
             json_extract(s.player_classes, '$[0]') as summoning_class_id,
             s.id as summoning_skill_id,
-            s.name as summoning_skill_name
+            s.name as summoning_skill_name,
+            va.public_path as visual_public_path,
+            va.width as visual_width,
+            va.height as visual_height,
+            va.source_field as visual_source_field,
+            va.source_type as visual_source_type
      FROM pets p
      LEFT JOIN skills s ON lower(s.pet_prefab_name) = lower(p.name)
+     LEFT JOIN visual_assets va
+       ON va.domain = 'pet'
+      AND va.entity_id = p.id
+      AND va.kind = 'primary'
      WHERE p.is_mercenary = 0
      ORDER BY p.is_familiar ASC, p.name ASC`,
   );
@@ -70,6 +115,7 @@ export function getAllSummons(): SummonListView[] {
     kind: r.is_familiar ? "Familiar" : "Companion",
     type_monster: r.type_monster,
     level: r.level,
+    visualAsset: getVisualAsset(r),
     summoning_class_id: r.summoning_class_id,
     summoning_skill_id: r.summoning_skill_id,
     summoning_skill_name: r.summoning_skill_name,
@@ -77,10 +123,7 @@ export function getAllSummons(): SummonListView[] {
 }
 
 /**
- * Get a single pet's full detail data.
- */
-/**
- * Sprite for a pet, exported from its prefab at runtime.
+ * Primary sprite for a summon, exported from its prefab at runtime.
  */
 export function getPetVisualAsset(petId: string): EntityVisualAsset | null {
   return (
@@ -93,6 +136,9 @@ export function getPetVisualAsset(petId: string): EntityVisualAsset | null {
   );
 }
 
+/**
+ * Get a single pet's full detail data.
+ */
 export function getPetById(petId: string): PetDetailView | null {
   const row = queryOne<{
     id: string;
@@ -179,10 +225,20 @@ export function getPetById(petId: string): PetDetailView | null {
  */
 function getMercenaryRecruiters(): PetRecruiter[] {
   return query<PetRecruiter>(
-    `SELECT n.id as npc_id, n.name as npc_name, z.id as zone_id, z.name as zone_name
+    `SELECT n.id as npc_id, n.name as npc_name,
+            va.public_path as visual_public_path,
+            va.width as visual_width,
+            va.height as visual_height,
+            va.source_field as visual_source_field,
+            va.source_type as visual_source_type,
+            z.id as zone_id, z.name as zone_name
      FROM npcs n
      JOIN npc_spawns s ON s.npc_id = n.id
      JOIN zones z ON z.id = s.zone_id
+     LEFT JOIN visual_assets va
+       ON va.domain = 'npc'
+      AND va.entity_id = n.id
+      AND va.kind = 'primary'
      WHERE json_extract(n.roles, '$.is_recruiter_mercenaries') = 1
      ORDER BY z.name`,
   );
@@ -214,6 +270,11 @@ function getPetSkills(petId: string): ClassSkill[] {
     `SELECT
       s.id,
       s.name,
+      va.public_path as visual_public_path,
+      va.width as visual_width,
+      va.height as visual_height,
+      va.source_field as visual_source_field,
+      va.source_type as visual_source_type,
       s.skill_type,
       s.level_required,
       s.damage_type,
@@ -311,6 +372,10 @@ function getPetSkills(petId: string): ClassSkill[] {
     FROM pet_skills ps
     JOIN skills s ON s.id = ps.skill_id
     LEFT JOIN monsters m ON s.summoned_monster_id = m.id
+    LEFT JOIN visual_assets va
+      ON va.domain = 'skill'
+     AND va.entity_id = s.id
+     AND va.kind = 'icon'
     WHERE ps.pet_id = ?
     ORDER BY ps.is_innate ASC, ps.skill_index`,
     [petId],

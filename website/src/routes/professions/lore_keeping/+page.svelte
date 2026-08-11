@@ -11,6 +11,7 @@
   import ScrollText from "@lucide/svelte/icons/scroll-text";
   import Combine from "@lucide/svelte/icons/combine";
   import HelpCircle from "@lucide/svelte/icons/help-circle";
+  import Package from "@lucide/svelte/icons/package";
   import { SvelteSet } from "svelte/reactivity";
 
   let { data } = $props();
@@ -87,7 +88,7 @@
   path="/professions/lore_keeping"
 />
 
-<div class="container mx-auto p-8 space-y-8">
+<div class="container mx-auto max-w-6xl space-y-10 p-8">
   <Breadcrumb
     items={[
       { label: "Home", href: "/" },
@@ -132,20 +133,20 @@
       <BookOpen class="h-5 w-5 text-indigo-500" />
       Books ({data.books.length})
     </h2>
-    <div class="rounded-lg border overflow-hidden">
-      <table class="w-full table-fixed">
+    <div class="rounded-lg border overflow-x-auto">
+      <table class="w-full min-w-[1200px] table-fixed">
         <colgroup>
           <col class="w-10" />
-          <col class="w-[35%]" />
           <col class="w-[30%]" />
-          <col />
+          <col class="w-[25%]" />
+          <col class="w-[40%]" />
         </colgroup>
         <thead class="bg-muted/50">
           <tr>
             <th class="p-3"></th>
-            <th class="text-left p-3 font-medium">Name</th>
-            <th class="text-left p-3 font-medium">Stats</th>
-            <th class="text-left p-3 font-medium">Source</th>
+            <th class="text-left p-3 font-medium whitespace-nowrap">Name</th>
+            <th class="text-left p-3 font-medium whitespace-nowrap">Stats</th>
+            <th class="text-left p-3 font-medium whitespace-nowrap">Source</th>
           </tr>
         </thead>
         <tbody>
@@ -171,7 +172,7 @@
                   {/if}
                 </button>
               </td>
-              <td class="p-3">
+              <td class="p-3 whitespace-nowrap">
                 <span
                   role="presentation"
                   onclick={(e) => e.stopPropagation()}
@@ -181,10 +182,13 @@
                     itemId={book.id}
                     itemName={book.name}
                     tooltipHtml={book.tooltip_html}
+                    imageAvailable={book.visual_public_path}
+                    showIcon
+                    fallback={Package}
                   />
                 </span>
               </td>
-              <td class="p-3">
+              <td class="p-3 whitespace-nowrap">
                 {#if hasStatGains(book.statGains)}
                   <span class="text-green-600 dark:text-green-400 text-sm">
                     {formatStatGains(book.statGains).join(", ")}
@@ -193,7 +197,7 @@
                   <span class="text-muted-foreground">—</span>
                 {/if}
               </td>
-              <td class="p-3">
+              <td class="p-3 whitespace-nowrap">
                 <div class="flex items-center gap-2">
                   <SourceIcon
                     class="h-4 w-4 shrink-0 {sourceColors[
@@ -203,16 +207,17 @@
                   {#if book.sourceSummary.linkHref}
                     <a
                       href={book.sourceSummary.linkHref}
-                      class="text-blue-600 dark:text-blue-400 hover:underline"
+                      class="text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap"
                       onclick={(e) => e.stopPropagation()}
                     >
                       {book.sourceSummary.label}
                     </a>
                   {:else}
                     <span
-                      class={book.sourceSummary.type === "unknown"
-                        ? "text-muted-foreground"
-                        : ""}
+                      class="whitespace-nowrap {book.sourceSummary.type ===
+                      'unknown'
+                        ? 'text-muted-foreground'
+                        : ''}"
                     >
                       {book.sourceSummary.label}
                     </span>

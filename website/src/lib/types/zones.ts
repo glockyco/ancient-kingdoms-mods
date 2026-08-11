@@ -38,6 +38,7 @@ export interface ZoneMonster extends RespawnInfo {
   gold_min: number | null;
   gold_max: number | null;
   spawn_count: number;
+  visual_public_path: string | null;
   position_x: number | null;
   position_y: number | null;
   position_z: number | null;
@@ -50,6 +51,7 @@ export interface ZoneNpc {
   id: string;
   name: string;
   roles: NpcRoles;
+  visual_public_path: string | null;
   position_x: number | null;
   position_y: number | null;
   position_z: number | null;
@@ -120,6 +122,7 @@ export interface ZoneRenewalSage {
  */
 export interface ZoneChest {
   id: string;
+  visual_public_path: string | null;
   respawn_time: number;
   key_required_id: string | null;
   key_required_name: string | null;

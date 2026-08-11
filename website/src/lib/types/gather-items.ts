@@ -13,6 +13,9 @@ export interface GatherItemListView {
   item_reward_id: string | null;
   item_reward_name: string | null;
   item_reward_amount: number;
+  visual_public_path: string | null;
+  visual_width: number | null;
+  visual_height: number | null;
 }
 
 /**
@@ -41,6 +44,9 @@ export interface GatheringResource {
   item_reward_amount: number;
   gathering_exp: number | null;
   description: string | null;
+  visual_public_path: string | null;
+  visual_width: number | null;
+  visual_height: number | null;
 }
 
 /**
@@ -92,6 +98,9 @@ export interface Chest {
   item_reward_name: string | null;
   item_reward_amount: number;
   respawn_time: number;
+  visual_public_path: string | null;
+  visual_width: number | null;
+  visual_height: number | null;
 }
 
 /**

@@ -8,11 +8,13 @@
     type TanstackTable,
   } from "$lib/components/ui/data-table";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
+  import EntityReference from "$lib/components/EntityReference.svelte";
   import Seo from "$lib/components/Seo.svelte";
   import JsonLd from "$lib/components/JsonLd.svelte";
   import { buildCollectionPage } from "$lib/seo/jsonld";
   import { getClassConfig } from "$lib/utils/classes";
   import type { SummonListView } from "$lib/types/pets";
+  import PawPrint from "@lucide/svelte/icons/paw-print";
 
   let { data } = $props();
 
@@ -62,12 +64,17 @@
   row: Row<SummonListView>;
 })}
   {#if cell.column.id === "name"}
-    <a
+    <EntityReference
       href="/summons/{row.original.id}"
-      class="text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap"
-    >
-      {row.original.name}
-    </a>
+      name={row.original.name}
+      domain="pet"
+      entityId={row.original.id}
+      imageKind="primary"
+      imageAvailable={Boolean(row.original.visualAsset)}
+      fallback={PawPrint}
+      size={32}
+      class="whitespace-nowrap"
+    />
   {:else if cell.column.id === "summoned_by_class"}
     {#if row.original.summoning_class_id}
       {@const config = getClassConfig(row.original.summoning_class_id)}

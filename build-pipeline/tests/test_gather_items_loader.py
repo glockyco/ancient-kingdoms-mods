@@ -21,6 +21,7 @@ class GatherItemsLoaderTests(unittest.TestCase):
                         {
                             "id": "lake_fishing_spot_elven_1",
                             "name": "Lake Fishing Spot",
+                            "resource_id": "lake_fishing_spot",
                             "zone_id": "elven_kingdom",
                             "sub_zone_id": "elven_lake",
                             "position": {"x": 10, "y": 20, "z": 0},
@@ -107,6 +108,7 @@ class GatherItemsLoaderTests(unittest.TestCase):
                         {
                             "id": "calm_fishing_spot_lone_lands_1",
                             "name": "Calm Fishing Spot",
+                            "resource_id": "calm_fishing_spot_826f6bc9",
                             "zone_id": "the_lone-lands",
                             "position": {"x": 10, "y": 20, "z": 0},
                             "is_fishing_spot": True,
@@ -120,6 +122,7 @@ class GatherItemsLoaderTests(unittest.TestCase):
                         {
                             "id": "calm_fishing_spot_crescent_coast_1",
                             "name": "Calm Fishing Spot",
+                            "resource_id": "calm_fishing_spot_3ab961e4",
                             "zone_id": "crescent_coast",
                             "position": {"x": 30, "y": 40, "z": 0},
                             "is_fishing_spot": True,
@@ -179,6 +182,93 @@ class GatherItemsLoaderTests(unittest.TestCase):
 
         self.assertEqual(len(resources), 2)
         self.assertEqual(ironjaw_sources, [("Calm Fishing Spot", "the_lone-lands")])
+
+    def test_load_gather_items_deduplicates_by_exported_resource_id_and_links_spawns(
+        self,
+    ):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            export_dir = root / "exported-data"
+            export_dir.mkdir(parents=True)
+            (export_dir / "gather_items.json").write_text(
+                json.dumps(
+                    [
+                        {
+                            "id": "iron_ore",
+                            "name": "Iron Ore",
+                            "resource_id": "ore_canonical",
+                            "is_template": True,
+                            "is_mineral": True,
+                            "level": 1,
+                        },
+                        {
+                            "id": "iron_ore_green_fields_1",
+                            "name": "Iron Ore",
+                            "resource_id": "ore_canonical",
+                            "zone_id": "green_fields",
+                            "position": {"x": 4, "y": 5, "z": 0},
+                            "is_mineral": True,
+                            "level": 1,
+                        },
+                    ]
+                ),
+                encoding="utf-8",
+            )
+
+            conn = create_database(root / "test.db", SCHEMA_PATH)
+            conn.execute(
+                "INSERT INTO zones (id, zone_id, name) VALUES ('green_fields', 1, 'Green Fields')"
+            )
+            try:
+                load_gather_items(conn, export_dir)
+                resources = conn.execute(
+                    "SELECT id, name, level FROM gathering_resources"
+                ).fetchall()
+                spawns = conn.execute(
+                    "SELECT id, resource_id, zone_id FROM gathering_resource_spawns"
+                ).fetchall()
+            finally:
+                conn.close()
+
+        self.assertEqual(resources, [("ore_canonical", "Iron Ore", 1)])
+        self.assertEqual(
+            spawns,
+            [("iron_ore_green_fields_1", "ore_canonical", "green_fields")],
+        )
+
+    def test_load_gather_items_rejects_resource_id_definition_conflicts(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            export_dir = root / "exported-data"
+            export_dir.mkdir(parents=True)
+            (export_dir / "gather_items.json").write_text(
+                json.dumps(
+                    [
+                        {
+                            "id": "one",
+                            "name": "Iron Ore",
+                            "resource_id": "ore_canonical",
+                            "level": 1,
+                        },
+                        {
+                            "id": "two",
+                            "name": "Iron Ore",
+                            "resource_id": "ore_canonical",
+                            "level": 2,
+                        },
+                    ]
+                ),
+                encoding="utf-8",
+            )
+
+            conn = create_database(root / "test.db", SCHEMA_PATH)
+            try:
+                with self.assertRaisesRegex(
+                    ValueError, "different names, levels, or drop pools"
+                ):
+                    load_gather_items(conn, export_dir)
+            finally:
+                conn.close()
 
 
 if __name__ == "__main__":

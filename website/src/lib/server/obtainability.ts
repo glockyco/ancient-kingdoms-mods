@@ -25,6 +25,7 @@ interface BasicItemData {
   id: string;
   name: string;
   tooltip_html: string | null;
+  visual_public_path: string | null;
   quality: number;
 }
 
@@ -44,8 +45,16 @@ export function buildObtainabilityTree(
   const item = db
     .prepare(
       `
-      SELECT id, name, tooltip_html, quality
-      FROM items WHERE id = ?
+      SELECT
+        i.id,
+        i.name,
+        i.tooltip_html,
+        va.public_path AS visual_public_path,
+        i.quality
+      FROM items i
+      LEFT JOIN visual_assets va
+        ON va.domain = 'item' AND va.entity_id = i.id AND va.kind = 'icon'
+      WHERE i.id = ?
     `,
     )
     .get(itemId) as BasicItemData | undefined;
@@ -55,6 +64,7 @@ export function buildObtainabilityTree(
       item_id: itemId,
       item_name: itemId,
       tooltip_html: null,
+      visual_public_path: null,
       quality: 0,
       amount,
       depth,
@@ -298,6 +308,7 @@ export function buildObtainabilityTree(
     item_id: item.id,
     item_name: item.name,
     tooltip_html: item.tooltip_html,
+    visual_public_path: item.visual_public_path,
     quality: item.quality,
     amount,
     depth,

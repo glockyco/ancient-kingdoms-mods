@@ -1,23 +1,11 @@
 <script lang="ts">
   import MapPin from "@lucide/svelte/icons/map-pin";
   import { base } from "$app/paths";
+  import type { EntityId } from "$lib/entities/registry";
 
-  type EntityType =
-    | "monster"
-    | "npc"
-    | "zone"
-    | "item"
-    | "quest"
-    | "chest"
-    | "altar"
-    | "trap"
-    | "house"
-    | "resource"
-    | "treasure"
-    | "portal"
-    | "alchemy_table"
-    | "crafting_station"
-    | "scribing_table";
+  // EntityId supplies canonical registry families; resource remains a legacy
+  // map URL alias used by gathering-resource pages.
+  type EntityType = EntityId | "resource";
 
   interface Props {
     entityId: string;
