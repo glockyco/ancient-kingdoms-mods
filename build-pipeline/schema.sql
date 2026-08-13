@@ -1102,6 +1102,8 @@ CREATE TABLE skills (
     damage TEXT,                    -- JSON: {"base_value": X, "bonus_per_level": Y}
     damage_percent TEXT,
     damage_type TEXT,
+    damage_over_time_type TEXT,
+    damage_shield_type TEXT,
     heals_health TEXT,
     heals_mana TEXT,
     lifetap_percent TEXT,

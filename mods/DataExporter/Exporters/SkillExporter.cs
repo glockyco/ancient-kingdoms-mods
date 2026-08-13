@@ -123,6 +123,60 @@ public class SkillExporter : BaseExporter
         Logger.Msg($"✓ Exported {skillList.Count} skills");
     }
 
+    private static string ToExportedDamageType(Il2Cpp.DamageType damageType)
+    {
+        return damageType switch
+        {
+            Il2Cpp.DamageType.Normal => "Physical",
+            Il2Cpp.DamageType.Magic => "Magic",
+            Il2Cpp.DamageType.Poison => "Poison",
+            Il2Cpp.DamageType.Fire => "Fire",
+            Il2Cpp.DamageType.Cold => "Cold",
+            Il2Cpp.DamageType.Disease => "Disease",
+            _ => "Unknown"
+        };
+    }
+
+    private static bool HasNegative(Il2Cpp.LinearFloat value)
+    {
+        return value.baseValue < 0f || value.bonusPerLevel < 0f;
+    }
+
+    private static bool HasNegative(Il2Cpp.LinearInt value)
+    {
+        return value.baseValue < 0 || value.bonusPerLevel < 0;
+    }
+
+    private static bool HasPositive(Il2Cpp.LinearInt value)
+    {
+        return value.baseValue > 0 || value.bonusPerLevel > 0;
+    }
+
+    // Source: server-scripts/Skills.cs:GetOverTimeDamageType — the runtime checks
+    // poison, fire, cold, disease, and melee flags in this order, then uses Magic.
+    private static string ResolveDamageOverTimeType(Il2Cpp.BuffSkill buffSkill)
+    {
+        if (buffSkill.isPoisonDebuff) return "Poison";
+        if (buffSkill.isFireDebuff) return "Fire";
+        if (buffSkill.isColdDebuff) return "Cold";
+        if (buffSkill.isDiseaseDebuff) return "Disease";
+        if (buffSkill.isMeleeDebuff) return "Physical";
+        return "Magic";
+    }
+
+    // Source: server-scripts/Combat.cs:749-777 — shield mitigation follows the
+    // same flag order and has no typed fallback when no flag is present.
+    private static string ResolveDamageShieldType(Il2Cpp.BuffSkill buffSkill)
+    {
+        if (buffSkill.isMeleeDebuff) return "Physical";
+        if (buffSkill.isPoisonDebuff) return "Poison";
+        if (buffSkill.isFireDebuff) return "Fire";
+        if (buffSkill.isColdDebuff) return "Cold";
+        if (buffSkill.isDiseaseDebuff) return "Disease";
+        if (buffSkill.isMagicDebuff) return "Magic";
+        return "Unknown";
+    }
+
     private string DetermineSkillType(Il2Cpp.ScriptableSkill skill)
     {
         // Check specific types in order of specificity
@@ -189,7 +243,7 @@ public class SkillExporter : BaseExporter
             base_value = damageSkill.damagePercent.baseValue,
             bonus_per_level = damageSkill.damagePercent.bonusPerLevel
         };
-        skillData.damage_type = damageSkill.damageType.ToString();
+        skillData.damage_type = ToExportedDamageType(damageSkill.damageType);
         skillData.is_assassination_skill = damageSkill.isAssasinationSkill;
         skillData.is_manaburn_skill = damageSkill.isManaburnSkill;
         skillData.lifetap_percent = new LinearStatBonusFloat
@@ -344,6 +398,10 @@ public class SkillExporter : BaseExporter
             skillData.is_disease_debuff = buffSkill.isDiseaseDebuff;
             skillData.is_melee_debuff = buffSkill.isMeleeDebuff;
             skillData.is_magic_debuff = buffSkill.isMagicDebuff;
+            if (HasNegative(bonusSkill.healingPerSecondBonus) || HasNegative(bonusSkill.healthPercentPerSecondBonus))
+                skillData.damage_over_time_type = ResolveDamageOverTimeType(buffSkill);
+            if (HasPositive(bonusSkill.damageShield))
+                skillData.damage_shield_type = ResolveDamageShieldType(buffSkill);
             skillData.is_cleanse = buffSkill.isCleanseSpell;
             skillData.is_dispel = buffSkill.isDispel;
             skillData.ward_bonus = new LinearStatBonus { base_value = buffSkill.wardBonus.baseValue, bonus_per_level = buffSkill.wardBonus.bonusPerLevel };

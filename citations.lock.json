@@ -248,6 +248,10 @@
       "sha256": "8369d842d21c02a6095bbac9599ca04c24e44261387b4d88576863a0822b2347",
       "span": 11
     },
+    "Combat.cs:749-777": {
+      "sha256": "5e009bb93f988916ca9e3bdd15dfead13f5d1c4db0f06a0fe46f5772e50b0751",
+      "span": 29
+    },
     "Combat.cs:756-777": {
       "sha256": "155086d6ce2386992ae67bfd274e0c2936ac777d53afc8b037e0b8289eeac031",
       "span": 22
@@ -1612,6 +1616,9 @@
     "Skills.cs:947-950": {
       "sha256": "ac7c2374bc43efc996fb17b85c3e14e61b9ae7ca75cd5b304f786bc0ef44caa2",
       "span": 4
+    },
+    "Skills.cs:GetOverTimeDamageType": {
+      "span": 0
     },
     "Strength.cs:15-17": {
       "sha256": "5540467264dbd3ebfd8a8568de76cb9d1c02816f3b93ae7c621f44ff4a373342",

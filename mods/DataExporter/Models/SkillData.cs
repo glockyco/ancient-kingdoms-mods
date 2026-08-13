@@ -65,7 +65,9 @@ public class SkillData
     // === DamageSkill fields (when skill_type contains "damage") ===
     public LinearStatBonus damage { get; set; }
     public LinearStatBonusFloat damage_percent { get; set; }
-    public string damage_type { get; set; }  // Normal/Magic/Poison/Fire/Cold/Disease
+    public string damage_type { get; set; }  // Physical/Magic/Poison/Fire/Cold/Disease
+    public string damage_over_time_type { get; set; }
+    public string damage_shield_type { get; set; }
     public bool is_assassination_skill { get; set; }
     public bool is_manaburn_skill { get; set; }
     public LinearStatBonusFloat lifetap_percent { get; set; }

@@ -3,9 +3,13 @@
 These models match the JSON structure exported by the C# DataExporter mod.
 """
 
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field, model_validator
+
+DamageType = Literal[
+    "Physical", "Magic", "Poison", "Fire", "Cold", "Disease", "Unknown"
+]
 
 # =============================================================================
 # Common Models
@@ -716,7 +720,9 @@ class SkillData(BaseModel):
     # Damage
     damage: SkillBonus | None = None
     damage_percent: SkillBonus | None = None
-    damage_type: str | None = None
+    damage_type: DamageType | None = None
+    damage_over_time_type: DamageType | None = None
+    damage_shield_type: DamageType | None = None
     lifetap_percent: SkillBonus | None = None
     aggro: SkillBonus | None = None
     break_armor_prob: float = 0.0
