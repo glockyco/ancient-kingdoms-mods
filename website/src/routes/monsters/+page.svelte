@@ -1,6 +1,6 @@
 <script lang="ts">
   import Skull from "@lucide/svelte/icons/skull";
-  import EntityReference from "$lib/components/EntityReference.svelte";
+  import EntityLink from "$lib/components/EntityLink.svelte";
   import { SvelteMap } from "svelte/reactivity";
   import {
     DataTable,
@@ -246,9 +246,10 @@
       />
     </div>
   {:else if cell.column.id === "name"}
-    <EntityReference
+    <EntityLink
       href="/monsters/{row.original.id}"
       name={row.original.name}
+      variant="reference"
       domain="monster"
       entityId={row.original.id}
       imageKind="primary"

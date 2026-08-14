@@ -22,7 +22,7 @@
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
   import EntityIcon from "$lib/components/EntityIcon.svelte";
-  import EntityReference from "$lib/components/EntityReference.svelte";
+  import EntityLink from "$lib/components/EntityLink.svelte";
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
   import RoleBadges from "$lib/components/RoleBadges.svelte";
   import { ROLE_CONFIG, getActiveRoles } from "$lib/utils/roles";
@@ -247,14 +247,14 @@
 })}
   {@const hasVariance = row.original.level_min !== row.original.level_max}
   {#if cell.column.id === "name"}
-    <EntityReference
+    <EntityLink
       href="/monsters/{row.original.id}"
       name={row.original.name}
       domain="monster"
       entityId={row.original.id}
       imageKind="primary"
       imageAvailable={row.original.visual_public_path}
-      showIcon={Boolean(row.original.visual_public_path)}
+      variant={row.original.visual_public_path ? "reference" : "text"}
       size={32}
       title={row.original.name}
       class="min-w-0 max-w-full"
@@ -355,14 +355,14 @@
   row: Row<ZoneNpc>;
 })}
   {#if cell.column.id === "name"}
-    <EntityReference
+    <EntityLink
       href="/npcs/{row.original.id}"
       name={row.original.name}
       domain="npc"
       entityId={row.original.id}
       imageKind="primary"
       imageAvailable={row.original.visual_public_path}
-      showIcon={Boolean(row.original.visual_public_path)}
+      variant={row.original.visual_public_path ? "reference" : "text"}
       size={32}
       title={row.original.name}
       class="min-w-0 max-w-full"
@@ -654,14 +654,14 @@
       </h2>
       <div class="bg-muted/30 rounded-md border p-4">
         <p class="flex flex-wrap items-center gap-x-1 gap-y-2">
-          <EntityReference
+          <EntityLink
             href="/npcs/{data.renewalSage.id}"
             name={data.renewalSage.name}
             domain="npc"
             entityId={data.renewalSage.id}
             imageKind="primary"
             imageAvailable={data.renewalSage.visual_public_path}
-            showIcon={Boolean(data.renewalSage.visual_public_path)}
+            variant={data.renewalSage.visual_public_path ? "reference" : "text"}
             size={32}
           />
           <span>in</span>

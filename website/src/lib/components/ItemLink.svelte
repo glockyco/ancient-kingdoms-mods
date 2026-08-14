@@ -9,7 +9,7 @@
   import { MediaQuery } from "svelte/reactivity";
   import * as HoverCard from "$lib/components/ui/hover-card";
   import { cn } from "$lib/utils.js";
-  import EntityReference from "$lib/components/EntityReference.svelte";
+  import EntityLink from "$lib/components/EntityLink.svelte";
   import ItemTooltip from "$lib/components/ItemTooltip.svelte";
 
   interface Props {
@@ -82,7 +82,7 @@
     >
       <HoverCard.Trigger>
         {#snippet child({ props })}
-          <EntityReference
+          <EntityLink
             {...props}
             href="/items/{itemId}"
             name={itemName}
@@ -93,7 +93,7 @@
             {imageWidth}
             {imageHeight}
             {fallback}
-            {showIcon}
+            variant={showIcon ? "reference" : "text"}
             size={28}
             colorClass={effectiveColorClass}
             class={cn(
@@ -113,7 +113,7 @@
       </HoverCard.Content>
     </HoverCard.Root>
   {:else}
-    <EntityReference
+    <EntityLink
       href="/items/{itemId}"
       name={itemName}
       domain="item"
@@ -121,7 +121,7 @@
       {imageKind}
       {imageAvailable}
       {fallback}
-      {showIcon}
+      variant={showIcon ? "reference" : "text"}
       size={28}
       colorClass={effectiveColorClass}
       class={cn(

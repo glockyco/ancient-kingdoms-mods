@@ -9,7 +9,7 @@
   } from "$lib/components/ui/data-table";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
-  import EntityReference from "$lib/components/EntityReference.svelte";
+  import EntityLink from "$lib/components/EntityLink.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
   import Seo from "$lib/components/Seo.svelte";
   import MechanicsLink from "$lib/components/MechanicsLink.svelte";
@@ -661,7 +661,7 @@
   row: Row<MonsterSkill>;
 })}
   {#if cell.column.id === "name"}
-    <EntityReference
+    <EntityLink
       href="/skills/{row.original.id}"
       name={row.original.name}
       domain="skill"
@@ -669,7 +669,7 @@
       imageKind="icon"
       imageAvailable={row.original.visual_public_path}
       fallback={Sparkles}
-      showIcon={Boolean(row.original.visual_public_path)}
+      variant={row.original.visual_public_path ? "reference" : "text"}
       size={28}
       class="max-w-full"
       nameClass="truncate"

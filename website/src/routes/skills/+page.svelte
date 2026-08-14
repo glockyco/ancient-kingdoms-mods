@@ -1,6 +1,6 @@
 <script lang="ts">
   import Sparkles from "@lucide/svelte/icons/sparkles";
-  import EntityReference from "$lib/components/EntityReference.svelte";
+  import EntityLink from "$lib/components/EntityLink.svelte";
   import {
     DataTable,
     DataTableFacetedFilter,
@@ -135,9 +135,10 @@
   row: Row<SkillRow>;
 })}
   {#if cell.column.id === "name"}
-    <EntityReference
+    <EntityLink
       href="/skills/{row.original.id}"
       name={row.original.name}
+      variant="reference"
       domain="skill"
       entityId={row.original.id}
       imageKind="icon"

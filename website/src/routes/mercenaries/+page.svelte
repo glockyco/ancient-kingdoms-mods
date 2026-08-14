@@ -7,7 +7,7 @@
   } from "$lib/components/ui/data-table";
   import { IconBadge } from "$lib/components/ui/icon-badge";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
-  import EntityReference from "$lib/components/EntityReference.svelte";
+  import EntityLink from "$lib/components/EntityLink.svelte";
   import Seo from "$lib/components/Seo.svelte";
   import JsonLd from "$lib/components/JsonLd.svelte";
   import { buildCollectionPage } from "$lib/seo/jsonld";
@@ -47,10 +47,9 @@
   row: Row<MercenaryListView>;
 })}
   {#if cell.column.id === "name"}
-    <EntityReference
+    <EntityLink
       href="/mercenaries/{row.original.id}"
       name={row.original.name}
-      showIcon={false}
       class="whitespace-nowrap"
     />
   {:else if cell.column.id === "recruited_at"}

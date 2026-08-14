@@ -1,6 +1,6 @@
 <script lang="ts">
   import Users from "@lucide/svelte/icons/users";
-  import EntityReference from "$lib/components/EntityReference.svelte";
+  import EntityLink from "$lib/components/EntityLink.svelte";
   import { SvelteMap } from "svelte/reactivity";
   import {
     DataTable,
@@ -184,9 +184,10 @@
   row: Row<NpcRow>;
 })}
   {#if cell.column.id === "name"}
-    <EntityReference
+    <EntityLink
       href="/npcs/{row.original.id}"
       name={row.original.name}
+      variant="reference"
       domain="npc"
       entityId={row.original.id}
       imageKind="primary"

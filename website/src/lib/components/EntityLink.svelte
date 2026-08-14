@@ -10,7 +10,12 @@
   import { cn } from "$lib/utils.js";
 
   /**
-   * A link to an entity which optionally includes its published artwork.
+   * A link to an entity with an explicit presentation contract.
+   *
+   * The default `text` variant participates in the surrounding text baseline.
+   * The `reference` variant is an atomic icon-and-label unit for structured
+   * flex, grid, and table layouts. A parent containing a reference alongside
+   * other content remains responsible for aligning that complete composition.
    *
    * `imageAvailable` is deliberately nullable: callers can pass the raw
    * `visual_public_path` LEFT JOIN sentinel and the component will not build an
@@ -29,7 +34,7 @@
     imageHeight?: number | null;
     fallback?: Component<{ class?: string }>;
     size?: number;
-    showIcon?: boolean;
+    variant?: "text" | "reference";
     colorClass?: string;
     qualityClass?: string;
     nameClass?: string;
@@ -50,7 +55,7 @@
     imageHeight,
     fallback,
     size = 28,
-    showIcon = true,
+    variant = "text",
     colorClass = "text-blue-600 dark:text-blue-400",
     qualityClass,
     class: className,
@@ -61,8 +66,10 @@
     ...rest
   }: Props = $props();
 
+  const isReference = $derived(variant === "reference");
+
   const resolvedImageSrc = $derived.by(() => {
-    if (!showIcon) return null;
+    if (!isReference) return null;
     if (imageSrc) return imageSrc;
     if (imageAvailable == null || imageAvailable === false) return null;
     if (!domain) return null;
@@ -82,8 +89,10 @@
 <a
   {href}
   class={cn(
-    "min-w-0 max-w-full items-center hover:underline",
-    showIcon ? "inline-flex gap-2 align-middle" : "align-baseline",
+    "min-w-0 max-w-full hover:underline",
+    isReference
+      ? "inline-flex items-center gap-2 align-middle"
+      : "align-baseline",
     colorClass,
     maxWidth && "overflow-hidden whitespace-nowrap",
     className,
@@ -91,7 +100,7 @@
   style:max-width={maxWidth}
   {...rest}
 >
-  {#if showIcon}
+  {#if isReference}
     <EntityIcon
       src={resolvedImageSrc}
       alt=""

@@ -40,7 +40,7 @@
   import Zap from "@lucide/svelte/icons/zap";
   import Gem from "@lucide/svelte/icons/gem";
   import Scroll from "@lucide/svelte/icons/scroll";
-  import EntityReference from "$lib/components/EntityReference.svelte";
+  import EntityLink from "$lib/components/EntityLink.svelte";
 
   let { data } = $props();
 
@@ -469,7 +469,7 @@
   row: Row<ClassSkill>;
 })}
   {#if cell.column.id === "name"}
-    <EntityReference
+    <EntityLink
       href="/skills/{row.original.id}"
       name={row.original.name}
       domain="skill"
@@ -477,7 +477,7 @@
       imageKind="icon"
       imageAvailable={row.original.visual_public_path}
       fallback={Zap}
-      showIcon={Boolean(row.original.visual_public_path)}
+      variant={row.original.visual_public_path ? "reference" : "text"}
       size={28}
       class="whitespace-nowrap"
     />

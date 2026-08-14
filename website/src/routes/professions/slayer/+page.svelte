@@ -4,7 +4,7 @@
   import MasteryCurve from "$lib/components/professions/MasteryCurve.svelte";
   import ProfessionHeader from "$lib/components/professions/ProfessionHeader.svelte";
   import MonsterTypeIcon from "$lib/components/MonsterTypeIcon.svelte";
-  import EntityReference from "$lib/components/EntityReference.svelte";
+  import EntityLink from "$lib/components/EntityLink.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
   import {
     DataTable,
@@ -226,9 +226,10 @@
       />
     </div>
   {:else if cell.column.id === "name"}
-    <EntityReference
+    <EntityLink
       href="/monsters/{target.id}"
       name={target.name}
+      variant="reference"
       domain="monster"
       entityId={target.id}
       imageKind="primary"

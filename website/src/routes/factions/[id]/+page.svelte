@@ -8,7 +8,7 @@
   } from "$lib/components/ui/data-table";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import EntityIcon from "$lib/components/EntityIcon.svelte";
-  import EntityReference from "$lib/components/EntityReference.svelte";
+  import EntityLink from "$lib/components/EntityLink.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
   import RoleBadges from "$lib/components/RoleBadges.svelte";
@@ -248,9 +248,10 @@
   row: Row<FactionMonsterRow>,
 )}
   {#if cell.column.id === "name"}
-    <EntityReference
+    <EntityLink
       href="/monsters/{row.original.id}"
       name={row.original.name}
+      variant="reference"
       domain="monster"
       entityId={row.original.id}
       imageKind="primary"
@@ -302,9 +303,10 @@
   row: Row<FactionNpcKillRow>,
 )}
   {#if cell.column.id === "name"}
-    <EntityReference
+    <EntityLink
       href="/npcs/{row.original.id}"
       name={row.original.name}
+      variant="reference"
       domain="npc"
       entityId={row.original.id}
       imageKind="primary"
@@ -413,9 +415,10 @@
   row: Row<FactionMemberRow>;
 })}
   {#if cell.column.id === "name"}
-    <EntityReference
+    <EntityLink
       href="/npcs/{row.original.id}"
       name={row.original.name}
+      variant="reference"
       domain="npc"
       entityId={row.original.id}
       imageKind="primary"
@@ -440,9 +443,10 @@
   row: Row<FactionVendorRow>;
 })}
   {#if cell.column.id === "name"}
-    <EntityReference
+    <EntityLink
       href="/npcs/{row.original.id}"
       name={row.original.name}
+      variant="reference"
       domain="npc"
       entityId={row.original.id}
       imageKind="primary"
@@ -476,9 +480,10 @@
       fallback={Box}
     />
   {:else if cell.column.id === "vendor"}
-    <EntityReference
+    <EntityLink
       href="/npcs/{row.original.vendor_id}"
       name={row.original.vendor_name}
+      variant="reference"
       domain="npc"
       entityId={row.original.vendor_id}
       imageKind="primary"

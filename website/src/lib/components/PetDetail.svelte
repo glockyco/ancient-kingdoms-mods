@@ -21,7 +21,7 @@
   import { petHref } from "$lib/utils/pets";
   import { base } from "$app/paths";
   import EntityIcon from "$lib/components/EntityIcon.svelte";
-  import EntityReference from "$lib/components/EntityReference.svelte";
+  import EntityLink from "$lib/components/EntityLink.svelte";
   import type { EntityVisualAsset } from "$lib/types/visual-assets";
   import MapPin from "@lucide/svelte/icons/map-pin";
   import PawPrint from "@lucide/svelte/icons/paw-print";
@@ -162,14 +162,14 @@
   row: Row<PetRecruiter>;
 })}
   {#if cell.column.id === "npc_name"}
-    <EntityReference
+    <EntityLink
       href="/npcs/{row.original.npc_id}"
       name={row.original.npc_name}
       domain="npc"
       entityId={row.original.npc_id}
       imageKind="primary"
       imageAvailable={row.original.visual_public_path}
-      showIcon
+      variant="reference"
       fallback={User}
       size={28}
     />
@@ -207,14 +207,14 @@
   row: Row<ClassSkill>;
 })}
   {#if cell.column.id === "name"}
-    <EntityReference
+    <EntityLink
       href="/skills/{row.original.id}"
       name={row.original.name}
       domain="skill"
       entityId={row.original.id}
       imageKind="icon"
       imageAvailable={row.original.visual_public_path}
-      showIcon
+      variant="reference"
       fallback={Zap}
       size={28}
     />
