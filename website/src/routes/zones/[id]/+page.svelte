@@ -656,24 +656,31 @@
         Renewal Sage
       </h2>
       <div class="bg-muted/30 rounded-md border p-4">
-        <p>
-          <a
+        <p class="flex flex-wrap items-center gap-x-1 gap-y-2">
+          <EntityReference
             href="/npcs/{data.renewalSage.id}"
-            class="text-blue-600 dark:text-blue-400 hover:underline"
-          >
-            {data.renewalSage.name}
-          </a>
-          in
+            name={data.renewalSage.name}
+            domain="npc"
+            entityId={data.renewalSage.id}
+            imageKind="primary"
+            imageAvailable={data.renewalSage.visual_public_path}
+            showIcon={Boolean(data.renewalSage.visual_public_path)}
+            size={32}
+          />
+          <span>in</span>
           <a
             href="/zones/{data.renewalSage.zone_id}"
             class="text-blue-600 dark:text-blue-400 hover:underline"
           >
             {data.renewalSage.zone_name}
           </a>
-          can reset all spawns in this dungeon{#if data.renewalSage.gold_cost > 0}&nbsp;for
-            <span class="text-yellow-600 dark:text-yellow-400"
-              >{data.renewalSage.gold_cost.toLocaleString()} gold</span
-            >{/if}.
+          <span>
+            can reset all spawns in this dungeon{#if data.renewalSage.gold_cost > 0}&nbsp;for
+              <span
+                class="whitespace-nowrap text-yellow-600 dark:text-yellow-400"
+                >{data.renewalSage.gold_cost.toLocaleString()} gold</span
+              >{/if}.
+          </span>
         </p>
       </div>
     </section>

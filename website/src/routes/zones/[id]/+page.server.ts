@@ -361,10 +361,15 @@ export const load: PageServerLoad = ({ params }): ZoneDetailData => {
     SELECT
       n.id,
       n.name,
+      va.public_path AS visual_public_path,
       n.gold_required_respawn_dungeon as gold_cost,
       sage_zone.id as zone_id,
       sage_zone.name as zone_name
     FROM npcs n
+    LEFT JOIN visual_assets va
+      ON va.domain = 'npc'
+     AND va.entity_id = n.id
+     AND va.kind = 'primary'
     JOIN zones z ON z.zone_id = n.respawn_dungeon_id
     JOIN npc_spawns ns ON ns.npc_id = n.id
     JOIN zones sage_zone ON sage_zone.id = ns.zone_id

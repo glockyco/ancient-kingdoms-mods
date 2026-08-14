@@ -112,6 +112,7 @@ export interface ZoneAltar {
 export interface ZoneRenewalSage {
   id: string;
   name: string;
+  visual_public_path: string | null;
   gold_cost: number;
   zone_id: string;
   zone_name: string;
