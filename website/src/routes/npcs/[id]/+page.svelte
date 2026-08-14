@@ -390,7 +390,7 @@
       itemName={row.original.item_name}
       tooltipHtml={row.original.tooltip_html}
       imageAvailable={row.original.visual_public_path}
-      showIcon
+      variant="reference"
       fallback={Package}
     />
   {:else if cell.column.id === "price"}
@@ -447,7 +447,7 @@
       itemName={row.original.item_name}
       tooltipHtml={row.original.tooltip_html}
       imageAvailable={row.original.visual_public_path}
-      showIcon
+      variant="reference"
       fallback={Package}
     />
   {:else if cell.column.id === "rate"}

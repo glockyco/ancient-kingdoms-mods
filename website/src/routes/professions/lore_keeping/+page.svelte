@@ -183,7 +183,7 @@
                     itemName={book.name}
                     tooltipHtml={book.tooltip_html}
                     imageAvailable={book.visual_public_path}
-                    showIcon
+                    variant="reference"
                     fallback={Package}
                   />
                 </span>

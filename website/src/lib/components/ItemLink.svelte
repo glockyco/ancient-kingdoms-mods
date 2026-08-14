@@ -22,7 +22,8 @@
     imageAvailable?: string | boolean | null;
     imageWidth?: number | null;
     imageHeight?: number | null;
-    showIcon?: boolean;
+    /** Text is baseline-safe; reference renders an atomic icon-and-label unit. */
+    variant?: "text" | "reference";
     imageKind?: string;
     fallback?: Component<{ class?: string }>;
   }
@@ -37,7 +38,7 @@
     imageAvailable,
     imageWidth,
     imageHeight,
-    showIcon = false,
+    variant = "text",
     imageKind = "icon",
     fallback,
   }: Props = $props();
@@ -93,11 +94,11 @@
             {imageWidth}
             {imageHeight}
             {fallback}
-            variant={showIcon ? "reference" : "text"}
+            {variant}
             size={28}
             colorClass={effectiveColorClass}
             class={cn(
-              showIcon ? "inline-flex" : displayMode,
+              variant === "reference" ? "inline-flex" : displayMode,
               "max-w-full underline decoration-dotted hover:decoration-solid",
               className,
             )}
@@ -120,12 +121,14 @@
       entityId={itemId}
       {imageKind}
       {imageAvailable}
+      {imageWidth}
+      {imageHeight}
       {fallback}
-      variant={showIcon ? "reference" : "text"}
+      {variant}
       size={28}
       colorClass={effectiveColorClass}
       class={cn(
-        showIcon ? "inline-flex" : displayMode,
+        variant === "reference" ? "inline-flex" : displayMode,
         "max-w-full",
         className,
       )}

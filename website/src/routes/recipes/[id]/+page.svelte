@@ -128,7 +128,9 @@
             itemName={data.recipe.taught_by_recipe_name}
             tooltipHtml={data.recipe.taught_by_recipe_tooltip_html}
             imageAvailable={data.recipe.taught_by_recipe_visual_public_path}
-            showIcon={Boolean(data.recipe.taught_by_recipe_visual_public_path)}
+            variant={data.recipe.taught_by_recipe_visual_public_path
+              ? "reference"
+              : "text"}
             fallback={Package}
           />
         </div>
@@ -145,7 +147,7 @@
                   itemName={mat.item_name}
                   tooltipHtml={mat.tooltip_html}
                   imageAvailable={mat.visual_public_path}
-                  showIcon
+                  variant="reference"
                   fallback={Package}
                 />
                 <span class="text-muted-foreground">x{mat.amount}</span>
@@ -163,7 +165,9 @@
             itemName={data.recipe.result_item_name}
             tooltipHtml={data.recipe.result_tooltip_html}
             imageAvailable={data.recipe.result_visual_public_path}
-            showIcon={Boolean(data.recipe.result_visual_public_path)}
+            variant={data.recipe.result_visual_public_path
+              ? "reference"
+              : "text"}
             fallback={Package}
           />
           {#if data.recipe.result_amount > 1}

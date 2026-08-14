@@ -205,7 +205,7 @@
       tooltipHtml={tooltips.get(row.original.result_item_id) ?? null}
       imageAvailable={row.original.result_visual_public_path}
       fallback={Package}
-      showIcon
+      variant="reference"
     />
     {#if row.original.result_amount > 1}
       <span class="text-muted-foreground ml-1"

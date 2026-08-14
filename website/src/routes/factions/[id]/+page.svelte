@@ -476,7 +476,7 @@
       itemName={row.original.name}
       tooltipHtml={row.original.tooltip_html}
       imageAvailable={row.original.visual_public_path}
-      showIcon
+      variant="reference"
       fallback={Box}
     />
   {:else if cell.column.id === "vendor"}

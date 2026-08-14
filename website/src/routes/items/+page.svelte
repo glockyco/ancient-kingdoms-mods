@@ -355,7 +355,7 @@
       tooltipHtml={tooltips.get(row.original.id)}
       imageAvailable={row.original.visual_public_path}
       fallback={Package}
-      showIcon
+      variant="reference"
       imageKind="icon"
       class="whitespace-nowrap"
     />

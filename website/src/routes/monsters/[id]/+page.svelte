@@ -525,7 +525,7 @@
       tooltipHtml={row.original.tooltip_html}
       imageAvailable={row.original.visual_public_path}
       fallback={Package}
-      showIcon={Boolean(row.original.visual_public_path)}
+      variant={row.original.visual_public_path ? "reference" : "text"}
       imageKind="icon"
     />
   {:else if cell.column.id === "note"}

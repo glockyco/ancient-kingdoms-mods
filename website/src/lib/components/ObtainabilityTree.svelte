@@ -102,7 +102,7 @@
         tooltipHtml={node.tooltip_html}
         imageAvailable={node.visual_public_path}
         fallback={Package}
-        showIcon={Boolean(node.visual_public_path)}
+        variant={node.visual_public_path ? "reference" : "text"}
       />
     {/if}
 

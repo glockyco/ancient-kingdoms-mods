@@ -579,7 +579,7 @@
       colorClass={getQualityTextColorClass(row.original.quality)}
       imageAvailable={row.original.visual_public_path}
       fallback={Gem}
-      showIcon={Boolean(row.original.visual_public_path)}
+      variant={row.original.visual_public_path ? "reference" : "text"}
       maxWidth="185px"
     />
   {:else if cell.column.id === "sources"}
