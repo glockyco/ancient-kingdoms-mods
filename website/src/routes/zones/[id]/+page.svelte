@@ -312,10 +312,7 @@
   row: Row<ZoneAltar>;
 })}
   {#if cell.column.id === "name"}
-    <span class="inline-flex items-center gap-2">
-      <EntityIcon src={null} alt="" fallback={Flame} size={28} />
-      <span>{row.original.name}</span>
-    </span>
+    <span>{row.original.name}</span>
   {:else if cell.column.id === "required_activation_item_name"}
     {#if row.original.required_activation_item_id}
       <a
