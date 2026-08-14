@@ -18,6 +18,8 @@ internal sealed class SkillEffectInput
     public string id { get; set; }
     public string skill_type { get; set; }
     public string damage_type { get; set; }
+    public string damage_over_time_type { get; set; }
+    public string damage_shield_type { get; set; }
     public int? max_level { get; set; }
 
     // Damage

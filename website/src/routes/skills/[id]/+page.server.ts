@@ -145,7 +145,11 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
     // Damage
     damage: parseLinear(skillRaw.damage),
     damage_percent: parseLinear(skillRaw.damage_percent),
-    damage_type: skillRaw.damage_type as string | null,
+    damage_type: skillRaw.damage_type as SkillDetailView["damage_type"],
+    damage_over_time_type:
+      skillRaw.damage_over_time_type as SkillDetailView["damage_over_time_type"],
+    damage_shield_type:
+      skillRaw.damage_shield_type as SkillDetailView["damage_shield_type"],
     lifetap_percent: parseLinear(skillRaw.lifetap_percent),
     aggro: parseLinear(skillRaw.aggro),
     break_armor_prob: (skillRaw.break_armor_prob as number) || 0,

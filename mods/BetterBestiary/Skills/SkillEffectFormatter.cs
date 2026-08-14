@@ -81,14 +81,36 @@ internal static class SkillEffectFormatter
 
         if (skillDmg != null)
         {
-            var typeLabel = skill.damage_type != null && skill.damage_type != "Normal"
-                ? " " + skill.damage_type.ToLowerInvariant()
+            var formattedType = skill.damage_type != null
+                ? FormatDamageType(skill.damage_type)
                 : "";
+            var typeLabel = formattedType.Length > 0 ? " " + formattedType : "";
             parts.Add($"{FormatLinearValue(skillDmg)}{typeLabel} dmg");
         }
 
         if (damagePercent != null && damagePercent.base_value > 0)
-            parts.Add($"{FormatLinearPercent(damagePercent)} weapon dmg");
+        {
+            var formattedType = skill.damage_type != null
+                ? FormatDamageType(skill.damage_type)
+                : "";
+            var typeLabel = formattedType.Length > 0 ? " " + formattedType : "";
+            parts.Add($"{FormatLinearPercent(damagePercent)}{typeLabel} weapon dmg");
+        }
+    }
+
+    private static string FormatDamageType(string type)
+    {
+        return type switch
+        {
+            "Physical" => "physical",
+            "Magic" => "magic",
+            "Poison" => "poison",
+            "Fire" => "fire",
+            "Cold" => "cold",
+            "Disease" => "disease",
+            "Unknown" => "",
+            _ => "",
+        };
     }
 
     private static void FormatHealing(SkillEffectInput skill, List<string> parts)
@@ -271,7 +293,13 @@ internal static class SkillEffectFormatter
         // 9. On-hit procs
         var dmgShield = ParseLinearValue(skill.damage_shield);
         if (dmgShield != null && dmgShield.base_value > 0)
-            parts.Add($"{FormatLinearValue(dmgShield)} dmg shield");
+        {
+            var formattedType = skill.damage_shield_type != null
+                ? FormatDamageType(skill.damage_shield_type)
+                : "";
+            var typeLabel = formattedType.Length > 0 ? " " + formattedType : "";
+            parts.Add($"{FormatLinearValue(dmgShield)}{typeLabel} dmg shield");
+        }
 
         var healOnHit = ParseLinearValue(skill.heal_on_hit_percent);
         if (healOnHit != null && healOnHit.base_value > 0)
@@ -284,10 +312,23 @@ internal static class SkillEffectFormatter
             if (hps.base_value > 0)
                 parts.Add($"{FormatLinearValue(hps)} hp/s");
             else
-                parts.Add($"{FormatLinearValue(Abs(hps))} dmg/s");
+            {
+                var formattedType = skill.damage_over_time_type != null
+                    ? FormatDamageType(skill.damage_over_time_type)
+                    : "";
+                var typeLabel = formattedType.Length > 0 ? " " + formattedType : "";
+                parts.Add($"{FormatLinearValue(Abs(hps))}{typeLabel} dmg/s");
+            }
         }
 
-        AddSignedPercent(parts, ParseLinearValue(skill.health_percent_per_second_bonus), "hp/s", true);
+        var hpPct = ParseLinearValue(skill.health_percent_per_second_bonus);
+        if (hpPct != null && hpPct.base_value != 0)
+        {
+            var typeLabel = hpPct.base_value < 0 && skill.damage_over_time_type != null
+                ? FormatDamageType(skill.damage_over_time_type)
+                : "";
+            AddSignedPercent(parts, hpPct, typeLabel.Length > 0 ? typeLabel + " hp/s" : "hp/s", true);
+        }
 
         var mps = ParseLinearValue(skill.mana_per_second_bonus);
         if (mps != null && mps.base_value != 0)

@@ -5,7 +5,7 @@ These models match the JSON structure exported by the C# DataExporter mod.
 
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 DamageType = Literal[
     "Physical", "Magic", "Poison", "Fire", "Cold", "Disease", "Unknown"
@@ -716,6 +716,47 @@ class SkillData(BaseModel):
     area_object_size: float = 0.0
     area_object_delay_damage: float = 0.0
     area_objects_to_spawn: int = 0
+
+    @field_validator(
+        "damage_type", "damage_over_time_type", "damage_shield_type", mode="before"
+    )
+    @classmethod
+    def normalize_damage_type(cls, value: object) -> object:
+        return "Physical" if value == "Normal" else value
+
+    @model_validator(mode="after")
+    def resolve_legacy_damage_sources(self) -> "SkillData":
+        if self.damage_over_time_type is None and (
+            self._has_negative(self.healing_per_second_bonus)
+            or self._has_negative(self.health_percent_per_second_bonus)
+        ):
+            self.damage_over_time_type = self._flagged_damage_type()
+        if self.damage_shield_type is None and self._has_positive(self.damage_shield):
+            self.damage_shield_type = self._flagged_damage_type()
+        return self
+
+    def _flagged_damage_type(self) -> DamageType:
+        if self.is_poison_debuff:
+            return "Poison"
+        if self.is_fire_debuff:
+            return "Fire"
+        if self.is_cold_debuff:
+            return "Cold"
+        if self.is_disease_debuff:
+            return "Disease"
+        if self.is_melee_debuff:
+            return "Physical"
+        if self.is_magic_debuff:
+            return "Magic"
+        return "Unknown"
+
+    @staticmethod
+    def _has_negative(value: SkillBonus | None) -> bool:
+        return value is not None and (value.base_value < 0 or value.bonus_per_level < 0)
+
+    @staticmethod
+    def _has_positive(value: SkillBonus | None) -> bool:
+        return value is not None and (value.base_value > 0 or value.bonus_per_level > 0)
 
     # Damage
     damage: SkillBonus | None = None

@@ -3,6 +3,9 @@ import type { TrapType } from "$lib/constants/traps";
 /**
  * Linear scaling value (base + bonus_per_level * (level - 1))
  */
+export type DamageType =
+  "Physical" | "Magic" | "Poison" | "Fire" | "Cold" | "Disease" | "Unknown";
+
 export interface LinearValue {
   base_value: number;
   bonus_per_level: number;
@@ -87,7 +90,9 @@ export interface SkillDetailView {
   // Damage
   damage: LinearValue | null;
   damage_percent: LinearValue | null;
-  damage_type: string | null;
+  damage_type: DamageType | null;
+  damage_over_time_type: DamageType | null;
+  damage_shield_type: DamageType | null;
   lifetap_percent: LinearValue | null;
   aggro: LinearValue | null;
   break_armor_prob: number;

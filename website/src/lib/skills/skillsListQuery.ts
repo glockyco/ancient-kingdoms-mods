@@ -22,6 +22,8 @@ export const SKILLS_LIST_QUERY = `SELECT
       s.is_pet_skill,
       s.is_mercenary_skill,
       s.damage_type,
+      s.damage_over_time_type,
+      s.damage_shield_type,
       s.damage,
       s.damage_percent,
       s.lifetap_percent,

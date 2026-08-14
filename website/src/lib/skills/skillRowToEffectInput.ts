@@ -15,6 +15,8 @@ export function skillRowToEffectInput(row: unknown): Skill {
     id: r.id,
     skill_type: r.skill_type,
     damage_type: r.damage_type,
+    damage_over_time_type: r.damage_over_time_type,
+    damage_shield_type: r.damage_shield_type,
     max_level: r.max_level,
     damage: r.damage,
     damage_percent: r.damage_percent,

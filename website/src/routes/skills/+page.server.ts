@@ -22,6 +22,8 @@ interface SkillRow {
   is_mercenary_skill: number;
   // Fields needed by formatSkillEffect (stored as JSON TEXT or number in DB)
   damage_type: string | null;
+  damage_over_time_type: string | null;
+  damage_shield_type: string | null;
   damage: string | null;
   damage_percent: string | null;
   lifetap_percent: string | null;

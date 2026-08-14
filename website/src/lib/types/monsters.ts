@@ -1,4 +1,5 @@
 import type { EntityVisualAsset } from "$lib/types/visual-assets";
+import type { DamageType } from "$lib/types/skills";
 
 import type { RespawnInfo } from "./respawn";
 
@@ -291,7 +292,9 @@ export interface MonsterSkill {
   /** Published skill/icon artwork, when the optional visual asset exists. */
   visual_public_path: string | null;
   skill_type: string;
-  damage_type: string | null;
+  damage_type: DamageType | null;
+  damage_over_time_type: DamageType | null;
+  damage_shield_type: DamageType | null;
   cooldown: string | null;
   cast_time: string | null;
   damage: string | null;

@@ -86,7 +86,7 @@ internal static class SkillEffectExtractor
 
         input.damage = new LinearValue(damageSkill.damage.baseValue, damageSkill.damage.bonusPerLevel);
         input.damage_percent = new LinearValue(damageSkill.damagePercent.baseValue, damageSkill.damagePercent.bonusPerLevel);
-        input.damage_type = damageSkill.damageType.ToString();
+        input.damage_type = ExportDamageType(damageSkill.damageType);
         input.is_assassination_skill = damageSkill.isAssasinationSkill;
         input.is_manaburn_skill = damageSkill.isManaburnSkill;
         input.lifetap_percent = new LinearValue(damageSkill.lifetapPercent.baseValue, damageSkill.lifetapPercent.bonusPerLevel);
@@ -191,6 +191,8 @@ internal static class SkillEffectExtractor
             input.is_magic_debuff = buffSkill.isMagicDebuff;
             input.is_cleanse = buffSkill.isCleanseSpell;
             input.is_dispel = buffSkill.isDispel;
+            input.damage_over_time_type = ResolveDamageOverTimeType(buffSkill);
+            input.damage_shield_type = ResolveDamageShieldType(buffSkill);
             input.ward_bonus = new LinearValue(buffSkill.wardBonus.baseValue, buffSkill.wardBonus.bonusPerLevel);
             input.fear_resist_chance_bonus = new LinearValue(buffSkill.fearResistChanceBonus.baseValue, buffSkill.fearResistChanceBonus.bonusPerLevel);
             input.is_blindness = buffSkill.isBlindness;
@@ -204,6 +206,64 @@ internal static class SkillEffectExtractor
         var passiveSkill = skill.TryCast<PassiveSkill>();
         if (passiveSkill != null)
             input.is_enrage = passiveSkill.isEnrage;
+    }
+
+    private static string ExportDamageType(DamageType damageType)
+    {
+        return damageType switch
+        {
+            DamageType.Normal => "Physical",
+            DamageType.Magic => "Magic",
+            DamageType.Poison => "Poison",
+            DamageType.Fire => "Fire",
+            DamageType.Cold => "Cold",
+            DamageType.Disease => "Disease",
+            _ => "Unknown",
+        };
+    }
+
+    private static string ResolveDamageOverTimeType(BuffSkill buffSkill)
+    {
+        if (!HasNegative(buffSkill.healingPerSecondBonus) &&
+            !HasNegative(buffSkill.healthPercentPerSecondBonus))
+            return null;
+
+        if (buffSkill.isPoisonDebuff) return "Poison";
+        if (buffSkill.isFireDebuff) return "Fire";
+        if (buffSkill.isColdDebuff) return "Cold";
+        if (buffSkill.isDiseaseDebuff) return "Disease";
+        if (buffSkill.isMeleeDebuff) return "Physical";
+        if (buffSkill.isMagicDebuff) return "Magic";
+        return "Unknown";
+    }
+
+    private static string ResolveDamageShieldType(BuffSkill buffSkill)
+    {
+        if (!HasPositive(buffSkill.damageShield))
+            return null;
+
+        if (buffSkill.isPoisonDebuff) return "Poison";
+        if (buffSkill.isFireDebuff) return "Fire";
+        if (buffSkill.isColdDebuff) return "Cold";
+        if (buffSkill.isDiseaseDebuff) return "Disease";
+        if (buffSkill.isMeleeDebuff) return "Physical";
+        if (buffSkill.isMagicDebuff) return "Magic";
+        return "Unknown";
+    }
+
+    private static bool HasNegative(Il2Cpp.LinearFloat value)
+    {
+        return value.baseValue < 0 || value.bonusPerLevel < 0;
+    }
+
+    private static bool HasNegative(Il2Cpp.LinearInt value)
+    {
+        return value.baseValue < 0 || value.bonusPerLevel < 0;
+    }
+
+    private static bool HasPositive(Il2Cpp.LinearInt value)
+    {
+        return value.baseValue > 0 || value.bonusPerLevel > 0;
     }
 
     private static void PopulateSummon(ScriptableSkill skill, SkillEffectInput input)

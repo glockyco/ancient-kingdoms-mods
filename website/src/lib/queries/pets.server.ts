@@ -278,6 +278,8 @@ function getPetSkills(petId: string): ClassSkill[] {
       s.skill_type,
       s.level_required,
       s.damage_type,
+      s.damage_over_time_type,
+      s.damage_shield_type,
       s.max_level,
       s.damage,
       s.damage_percent,

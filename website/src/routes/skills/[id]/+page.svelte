@@ -852,7 +852,7 @@
   const resistType = $derived.by((): string | null => {
     if (!isDamageType) return null;
     const dt = skill.damage_type;
-    if (dt === "Normal") return "melee";
+    if (dt === "Physical") return "physical";
     if (dt === "Magic") return "magic";
     if (dt === "Fire") return "fire";
     if (dt === "Cold") return "cold";
@@ -1219,10 +1219,22 @@
               </dd>
             </div>
           {/if}
-          {#if skill.damage_type}
+          {#if skill.damage_type && skill.damage_type !== "Unknown"}
             <div>
               <dt class="text-muted-foreground">Damage Type</dt>
               <dd class="font-medium">{skill.damage_type}</dd>
+            </div>
+          {/if}
+          {#if skill.damage_over_time_type && skill.damage_over_time_type !== "Unknown"}
+            <div>
+              <dt class="text-muted-foreground">Damage-over-Time Type</dt>
+              <dd class="font-medium">{skill.damage_over_time_type}</dd>
+            </div>
+          {/if}
+          {#if skill.damage_shield_type && skill.damage_shield_type !== "Unknown"}
+            <div>
+              <dt class="text-muted-foreground">Damage Shield Type</dt>
+              <dd class="font-medium">{skill.damage_shield_type}</dd>
             </div>
           {/if}
           {#if hasLinearValue(skill.lifetap_percent)}

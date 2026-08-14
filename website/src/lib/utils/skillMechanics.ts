@@ -159,7 +159,7 @@ function playerDamageFormula(
   // Ranger subtracts bow slot bonus from combat.damage (Normal type only)
   if (
     (skillType === "target_damage" || skillType === "frontal_damage") &&
-    dt === "Normal" &&
+    dt === "Physical" &&
     cls === "ranger"
   )
     return "ranger_melee";
@@ -167,7 +167,7 @@ function playerDamageFormula(
   // Source: TargetDamageSkill.cs:223-226 — Rogue subtracts ceil(off-hand × 0.5)
   if (
     (skillType === "target_damage" || skillType === "frontal_damage") &&
-    dt === "Normal" &&
+    dt === "Physical" &&
     cls === "rogue"
   )
     return "rogue_melee";
@@ -220,7 +220,7 @@ function mercDamageFormula(
   // at full damage (no 0.5× off-hand penalty).
   if (
     (skillType === "target_damage" || skillType === "frontal_damage") &&
-    dt === "Normal" &&
+    dt === "Physical" &&
     typeMonster === "Rogue"
   )
     return "rogue_melee_merc";

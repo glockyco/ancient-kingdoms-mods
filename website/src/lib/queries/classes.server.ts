@@ -1,5 +1,6 @@
 import { getDb, query, queryOne } from "$lib/db.server";
 import type { Class } from "$lib/types/classes";
+import type { DamageType } from "$lib/types/skills";
 import {
   getItemSourceSummaries,
   getMinimumSourceLevel,
@@ -81,7 +82,9 @@ export interface ClassSkill {
   level_required: number;
   is_innate?: boolean;
   // All fields needed by formatSkillEffect
-  damage_type: string | null;
+  damage_type: DamageType | null;
+  damage_over_time_type: DamageType | null;
+  damage_shield_type: DamageType | null;
   max_level: number;
   damage: string | null;
   damage_percent: string | null;
@@ -193,6 +196,8 @@ export function getClassSkills(classId: string): ClassSkill[] {
       s.skill_type,
       s.level_required,
       s.damage_type,
+      s.damage_over_time_type,
+      s.damage_shield_type,
       s.max_level,
       s.damage,
       s.damage_percent,

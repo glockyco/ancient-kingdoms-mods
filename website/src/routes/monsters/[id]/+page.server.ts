@@ -787,6 +787,8 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
         va.public_path AS visual_public_path,
         s.skill_type,
         s.damage_type,
+        s.damage_over_time_type,
+        s.damage_shield_type,
         s.cooldown,
         s.cast_time,
         s.damage,

@@ -1,4 +1,4 @@
-import type { LinearValue } from "$lib/types/skills";
+import type { DamageType, LinearValue } from "$lib/types/skills";
 import { formatDuration } from "./format";
 
 /** Returns true when a LinearValue field has at least one non-zero component.
@@ -23,7 +23,9 @@ export interface MonsterContext {
 export interface Skill {
   id?: string;
   skill_type: string;
-  damage_type: string | null;
+  damage_type: DamageType | null;
+  damage_over_time_type?: DamageType | null;
+  damage_shield_type?: DamageType | null;
   max_level?: number;
 
   // Damage fields
@@ -191,6 +193,27 @@ function formatLinearValue(
  * Format percentage (0.15 → "15%", 0.025 → "2.5%", 0.002 → "0.2%")
  * Uses one decimal place whenever the value is not a whole number.
  */
+export function formatDamageType(type: DamageType | null | undefined): string {
+  switch (type) {
+    case "Physical":
+      return "physical";
+    case "Magic":
+      return "magic";
+    case "Poison":
+      return "poison";
+    case "Fire":
+      return "fire";
+    case "Cold":
+      return "cold";
+    case "Disease":
+      return "disease";
+    case "Unknown":
+      return "";
+    default:
+      return "";
+  }
+}
+
 function formatPercent(value: number): string {
   const pct = value * 100;
   const rounded = parseFloat(pct.toFixed(1));
@@ -251,26 +274,28 @@ function formatDamage(
       totalDmg = Math.round(totalDmg * damagePercent.base_value);
     }
 
-    const typeLabel =
-      skill.damage_type && skill.damage_type !== "Normal"
-        ? ` ${skill.damage_type.toLowerCase()}`
-        : "";
+    const formattedType = formatDamageType(skill.damage_type);
+    const typeLabel = formattedType ? ` ${formattedType}` : "";
     parts.push(`${totalDmg.toLocaleString()}${typeLabel} dmg`);
   }
   // Player context: show base damage with scaling
   else {
     if (skillDmg) {
       const dmgStr = formatLinearValue(skillDmg, undefined);
-      const typeLabel =
-        skill.damage_type && skill.damage_type !== "Normal"
-          ? ` ${skill.damage_type.toLowerCase()}`
-          : "";
+      const typeLabel = skill.damage_type
+        ? ` ${formatDamageType(skill.damage_type)}`
+        : "";
       parts.push(`${dmgStr}${typeLabel} dmg`);
     }
 
     // Damage percent (rare case: damage_percent without base damage)
     if (damagePercent && damagePercent.base_value > 0) {
-      parts.push(`${formatLinearPercent(damagePercent, undefined)} weapon dmg`);
+      const typeLabel = skill.damage_type
+        ? ` ${formatDamageType(skill.damage_type)}`
+        : "";
+      parts.push(
+        `${formatLinearPercent(damagePercent, undefined)}${typeLabel} weapon dmg`,
+      );
     }
   }
 
@@ -642,7 +667,11 @@ function formatBuffDebuffStats(
   // 9. On-hit proc effects
   const dmgShield = parseLinearValue(skill.damage_shield);
   if (dmgShield && dmgShield.base_value > 0) {
-    parts.push(`${formatLinearValue(dmgShield, monsterContext)} dmg shield`);
+    const formattedType = formatDamageType(skill.damage_shield_type);
+    const typeLabel = formattedType ? ` ${formattedType}` : "";
+    parts.push(
+      `${formatLinearValue(dmgShield, monsterContext)}${typeLabel} dmg shield`,
+    );
   }
 
   const healOnHit = parseLinearValue(skill.heal_on_hit_percent);
@@ -656,8 +685,10 @@ function formatBuffDebuffStats(
     if (hps.base_value > 0) {
       parts.push(`${formatLinearValue(hps, monsterContext)} hp/s`);
     } else {
+      const formattedType = formatDamageType(skill.damage_over_time_type);
+      const typeLabel = formattedType ? ` ${formattedType}` : "";
       parts.push(
-        `${formatLinearValue({ base_value: Math.abs(hps.base_value), bonus_per_level: Math.abs(hps.bonus_per_level) }, monsterContext)} dmg/s`,
+        `${formatLinearValue({ base_value: Math.abs(hps.base_value), bonus_per_level: Math.abs(hps.bonus_per_level) }, monsterContext)}${typeLabel} dmg/s`,
       );
     }
   }
@@ -665,7 +696,12 @@ function formatBuffDebuffStats(
   const hpPct = parseLinearValue(skill.health_percent_per_second_bonus);
   if (hpPct && hpPct.base_value !== 0) {
     const sign = hpPct.base_value > 0 ? "+" : "";
-    parts.push(`${sign}${formatLinearPercent(hpPct, monsterContext)} hp/s`);
+    const formattedType =
+      hpPct.base_value < 0 ? formatDamageType(skill.damage_over_time_type) : "";
+    const typeLabel = formattedType ? ` ${formattedType}` : "";
+    parts.push(
+      `${sign}${formatLinearPercent(hpPct, monsterContext)}${typeLabel} hp/s`,
+    );
   }
 
   const mps = parseLinearValue(skill.mana_per_second_bonus);
