@@ -3,11 +3,27 @@
 /// <reference lib="esnext" />
 /// <reference lib="webworker" />
 
-import { files, version } from "$service-worker";
+import { build, version } from "$service-worker";
 
 const sw = self as unknown as ServiceWorkerGlobalScope;
 
-const DB_CACHE_NAME = `db-cache-${version}`;
+/**
+ * The database URLs are content-hashed, so the cache does not need the build
+ * version in its name. A deploy that leaves the game data untouched now keeps
+ * the cached copy instead of downloading 19 MB again. Stale entries are
+ * dropped on activate by comparing against the current URLs.
+ *
+ * The URLs are read from the build manifest rather than imported. Importing
+ * the assets here would emit a second copy of each database under a different
+ * hashed name, and this worker would then cache a URL the page never requests.
+ * src/lib/database-assets.ts owns the only import.
+ */
+const DB_CACHE_NAME = "db-cache";
+const DB_URLS = build.filter((url) =>
+  /\/(compendium|search)\.db[.-][\w-]+\.gz$/.test(url),
+);
+
+// Tile URLs are not content-hashed, so this cache is still keyed by build.
 const TILES_CACHE_NAME = `tiles-cache-${version}`;
 
 // Zoom levels to pre-cache for offline map overview
@@ -24,28 +40,6 @@ interface TilesManifest {
   >;
   total_count: number;
   total_size_bytes: number;
-}
-
-async function precacheDatabase(): Promise<void> {
-  const dbFiles = ["/compendium.db"];
-  if (files.some((file) => file.endsWith("search.db"))) {
-    dbFiles.push("/search.db");
-  }
-  try {
-    const cache = await caches.open(DB_CACHE_NAME);
-    await Promise.all(
-      dbFiles.map(async (dbFile) => {
-        try {
-          const response = await fetch(dbFile);
-          if (response.ok) await cache.put(dbFile, response);
-        } catch {
-          // One artifact failing should not prevent the other from caching.
-        }
-      }),
-    );
-  } catch {
-    // Cache setup failed, skip silently.
-  }
 }
 
 async function precacheEssentialTiles(): Promise<void> {
@@ -86,13 +80,16 @@ async function precacheEssentialTiles(): Promise<void> {
   }
 }
 
+/**
+ * Installation must stay cheap.
+ *
+ * This used to download both databases and the four overview zoom levels of
+ * map tiles, about 19 MB, for every new client on every route, before the
+ * visitor had asked for anything. A page view of /traps paid for the whole
+ * compendium. Everything is now fetched on demand and kept once it arrives.
+ */
 sw.addEventListener("install", (event) => {
-  event.waitUntil(
-    (async () => {
-      await Promise.all([precacheDatabase(), precacheEssentialTiles()]);
-      await sw.skipWaiting();
-    })(),
-  );
+  event.waitUntil(sw.skipWaiting());
 });
 
 sw.addEventListener("activate", (event) => {
@@ -104,6 +101,17 @@ sw.addEventListener("activate", (event) => {
           .filter((key) => key !== DB_CACHE_NAME && key !== TILES_CACHE_NAME)
           .map((key) => caches.delete(key)),
       );
+
+      // The database cache outlives a deploy, so it has to drop entries whose
+      // content hash no longer matches the build being activated.
+      const dbCache = await caches.open(DB_CACHE_NAME);
+      const cached = await dbCache.keys();
+      await Promise.all(
+        cached
+          .filter((request) => !DB_URLS.includes(new URL(request.url).pathname))
+          .map((request) => dbCache.delete(request)),
+      );
+
       await sw.clients.claim();
     })(),
   );
@@ -115,8 +123,9 @@ sw.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
   if (url.origin !== sw.location.origin) return;
 
-  // Database: cache-first
-  if (url.pathname.endsWith(".db")) {
+  // Database: cache-first. The URL carries a content hash, so a cache hit is
+  // always the right bytes and never needs revalidation.
+  if (DB_URLS.includes(url.pathname)) {
     event.respondWith(
       (async () => {
         const cache = await caches.open(DB_CACHE_NAME);
@@ -161,5 +170,12 @@ sw.addEventListener("message", (event) => {
 
   if (event.data?.type === "GET_VERSION") {
     event.ports[0]?.postMessage({ version });
+  }
+
+  // The map page asks for the overview zoom levels once it is open. Warming
+  // them on install instead would charge every visitor for a feature most of
+  // them never reach.
+  if (event.data?.type === "WARM_MAP_TILES") {
+    event.waitUntil(precacheEssentialTiles());
   }
 });

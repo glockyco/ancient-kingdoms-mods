@@ -696,6 +696,15 @@
     // Start database download immediately in background
     preloadDb();
 
+    // Keep the overview zoom levels for offline use. The service worker no
+    // longer warms them on install, because that charged every visitor for a
+    // feature only map users reach.
+    if ("serviceWorker" in navigator) {
+      void navigator.serviceWorker.ready.then((registration) => {
+        registration.active?.postMessage({ type: "WARM_MAP_TILES" });
+      });
+    }
+
     async function initialize() {
       // Clean up any existing instance first
       if (deckInstance) {
