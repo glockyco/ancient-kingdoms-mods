@@ -109,9 +109,14 @@ prose disappears. Model each test on `website/src/lib/map/marker-registry.test.t
       `description`; every description contains a usage trigger; every backticked repository path
       in an instruction file, rule, or skill resolves; every named skill or rule exists. Exclude
       `docs/plans/archive/**`. Report all violations in one run and exit non-zero.
-- [ ] 7.2 Wire the script into `lefthook.yml` beside the existing plans job at `:69-75`.
-- [ ] 7.3 Run the script and fix everything it reports.
-- [ ] 7.4 Verify the script actually fails: temporarily add a `CLAUDE.md`, an over-long
+- [ ] 7.2 Extend the script to validate `server-scripts/<File>.cs:<lines>` citations appearing in
+      instruction files, rules, and skills. `citations.lock.json` tracks only citations made from
+      source files, so a Markdown citation is currently unverified: `website/CLAUDE.md` cited
+      `Combat.cs:480-487` as proof of a damage-type mapping, that region is an invulnerability
+      gate, and no check ever looked. At minimum assert the file and line range exist.
+- [ ] 7.3 Wire the script into `lefthook.yml` beside the existing plans job at `:69-75`.
+- [ ] 7.4 Run the script and fix everything it reports.
+- [ ] 7.5 Verify the script actually fails: temporarily add a `CLAUDE.md`, an over-long
       `AGENTS.md`, and a dead path reference; confirm each is caught; then remove them. A check
       that has never failed is not known to work.
 

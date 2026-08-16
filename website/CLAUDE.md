@@ -179,15 +179,17 @@ Grammar rules worth knowing:
 
 **Damage types and resist stats are 1-to-1.** There is no fallback or catch-all. Each damage type has its own dedicated resist stat:
 
-| Damage type             | Resist stat    |
-| ----------------------- | -------------- |
-| Magic                   | Magic Resist   |
-| Fire                    | Fire Resist    |
-| Cold                    | Cold Resist    |
-| Disease                 | Disease Resist |
-| Poison                  | Poison Resist  |
-| Physical (melee debuff) | Defense        |
+| Damage type | Resist stat    |
+| ----------- | -------------- |
+| Magic       | Magic Resist   |
+| Fire        | Fire Resist    |
+| Cold        | Cold Resist    |
+| Disease     | Disease Resist |
+| Poison      | Poison Resist  |
+| Physical    | Defense        |
 
-Never write 'magicResist (magic/fire/cold/disease default)' or anything implying Magic Resist is a fallback for other damage types. Each has its own stat, verified in `server-scripts/Combat.cs:480-487` and `server-scripts/Combat.cs:1245-1274`.
+Never write 'magicResist (magic/fire/cold/disease default)' or anything implying Magic Resist is a fallback for other damage types. Each has its own stat, verified in `server-scripts/Combat.cs:680-697` — the per-damage-type mitigation switch. Defense covers all physical damage, not only melee debuffs.
+
+Defense is the only stat that does double duty. It reduces physical damage at 0.0005 per point, and it also raises block chance at 0.0001 per point, because `server-scripts/Combat.cs:272-284` derives blockChance from it. A physical skill page therefore names Defense in both its mitigation line and its block line.
 
 **Source code references must not appear in visible page content.** Internal flag names (`is_melee_debuff`, `prob_ignore_cleanse`, `buff_category`, etc.), file names (`skillMechanics.ts`, `Skills.cs`), and code identifiers belong only in invisible HTML comments (`<!-- Source: ... -->`) or TypeScript source files. Describe behavior in plain English for page visitors.

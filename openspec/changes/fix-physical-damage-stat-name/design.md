@@ -82,10 +82,13 @@ because it checks all 538 cards including the 433 that must not move.
 ### Citations are repaired, not merely re-anchored
 
 `website/CLAUDE.md` cites `Combat.cs:480-487` and `:1245-1274` for the Physical-to-Defense mapping.
-Those regions are an invulnerability gate and RPC serialization. This is the exact failure mode the
-repository's own guidance warns about: a citation that hashes green while pointing at the wrong
-code. The citation is repointed to `Combat.cs:680-682`, and the lockfile is re-synced with
-`uv run compendium citations sync`, not with `fix`, because the target moves rather than drifts.
+Those regions are an invulnerability gate and RPC serialization.
+
+The reason nobody caught it is narrower than "a citation hashed green while pointing at the wrong
+code". The checker never saw it: `citations.lock.json` holds only `.cs` targets cited from source
+files, and it contains no entry for `Combat.cs:480-487` even though that citation existed. Prose
+citations in Markdown are unverified, full stop. The citation is repointed to `Combat.cs:680-697`,
+and the coverage gap is handed to the agent-docs check in the separate migration change.
 
 ## Risks / Trade-offs
 

@@ -52,7 +52,13 @@ with `--update` would have written the fabricated stat into the baseline.
 - **Correct the citations.** `website/CLAUDE.md` claims Physical maps to Defense on the authority
   of `server-scripts/Combat.cs:480-487` and `:1245-1274`. Neither region supports it: `:480-487` is
   an invulnerability gate, and `:1245-1274` is RPC serialization. The real evidence is
-  `Combat.cs:680-682`. The lockfile is re-synced.
+  `Combat.cs:680-697`. The table also says "Physical (melee debuff)", understating the stat, since
+  `Combat.cs:681` applies Defense to all physical damage rather than only to debuffs.
+- **Record that Markdown citations are unverified.** The citation checker tracks `.cs` targets
+  cited from source files only; `citations.lock.json` contains no entry for `Combat.cs:480-487`
+  despite `website/CLAUDE.md` having cited it. So this citation was never wrong-but-green, it was
+  never checked. That gap belongs to the agent-docs check being added separately, and is noted
+  there.
 - **No snapshot update.** The fix must restore all 105 snapshots to their committed text exactly.
   That is the acceptance test.
 
