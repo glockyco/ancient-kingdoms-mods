@@ -87,6 +87,46 @@ skills for "when editing this file, remember X", and they cost only a listing li
 
 The keep test for any line remains: would removing it cause an agent to make a mistake?
 
+### A skill must encode knowledge the repository does not already contain
+
+The existing 15 skills were written on the assumption that a new contributor needs a written
+scaffold. An agent does not: it reads two existing examples and copies the pattern, and those
+examples are executable and kept true by the build, while the skill is prose kept true by nobody.
+
+Dissecting `create-new-loader` (156 lines) shows the ratio. The Pydantic model template, schema
+template, loader template, foreign-key and JSON-field patterns, key-file list, and Pydantic v2
+gotchas — roughly 150 lines — are all visible in any of the 32 existing loader functions, and
+several are general Pydantic facts rather than project knowledge. The only content a contributor
+could not get by copying one loader is the cross-file registration sequence: export from
+`loaders/__init__.py`, then call in `commands/build.py` in foreign-key order.
+
+So the keep test for a skill is: **does it encode something absent from the codebase?**
+
+| Verdict | Skills | Basis |
+| --- | --- | --- |
+| Delete, pattern is in the code | `create-new-loader`, `create-new-denormalizer`, `create-new-exporter`, `create-entity-detail-page`, `create-entity-overview-page`, `add-map-entity-layer`, `create-new-mod` | 32 loaders, 11 denormalizer packages, 32 exporters, 14 detail pages, 18 overview pages, an existing `marker-registry.test.ts`, 12 mods |
+| Delete, a linter should own it | `svelte-5-patterns` | 196 components plus `eslint-plugin-svelte` rules for legacy syntax |
+| Delete, becomes a routing rule in root `AGENTS.md` | `edit-claude-md`, `writing-skills` | The policy is ten lines once the duplication is removed |
+| Keep | `update-game-version`, `bootstrap-worktree`, `hotrepl-runtime-inspection`, `ancient-kingdoms-save-files`, `export-game-data` | A cross-cutting release workflow, an environment bootstrap needing an external trusted checkout, a live-process protocol, an external binary format, and export policy that records decisions rather than patterns |
+
+`create-new-mod` is the proof of the failure mode: it cites `BossTracker` source files that no
+longer exist. It rotted precisely because it described code instead of pointing at it.
+
+### Registration invariants become tests, not prose
+
+The residue of each deleted scaffolding skill is a cross-file registration step, which is the one
+thing copying a single example genuinely misses. Prose is the wrong tool: it only helps an agent
+that reads it, and it goes stale silently. A test fails at the moment of the mistake and cannot
+drift.
+
+The repository already does this for one case — `website/src/lib/map/marker-registry.test.ts` —
+which is the precedent to generalise. The invariants are cheap to assert: `loaders/__init__.py`
+exports and `commands/build.py` calls are currently 64 and 64, and `entity-manifest.json` has 23
+entries whose detail routes can be checked by existence.
+
+Alternative considered: keep a short checklist skill per pattern. Rejected — a checklist is still
+prose an agent may not load, and the check it describes is mechanically decidable.
+
 ### No Task Triggers table
 
 OMP already lists every skill and rule with its description and selects by task. The table was a

@@ -35,67 +35,96 @@
 - [ ] 2.4 Move the per-mod path-specific gotchas that survive the keep test into rules scoped to
       each mod directory. Anything that merely describes what the mod does is dropped, not moved.
 
-## 3. Relocate and consolidate the skills
+## 3. Replace scaffolding skills with tests
 
-- [ ] 3.1 Move all 15 skills from `.claude/skills/` to `.agent/skills/` and delete `.claude/`
-      **in the same commit**. `.claude/skills` is priority 80 and `.agent/skills` is 70, and dedup
-      is first-wins by name, so leaving both in place makes the move a silent no-op.
-- [ ] 3.2 Delete `.claude/settings.local.json`. It grants Claude Code Bash permissions that OMP
-      does not read.
-- [ ] 3.3 Merge `edit-claude-md` and `writing-skills` into a new `authoring-agent-docs` skill
-      stating the 200-line budget, the OMP discovery rules, and the routing test from the spec.
-      Delete both source directories.
-- [ ] 3.4 Fold `mods/DataExporter/CLAUDE.md:14-51` into `export-game-data`, reconciling with
-      `docs/data-export-guide.md`, which covers the same ground.
-- [ ] 3.5 Fold the command catalogue and artifact contract from `mods/HotReplCommands/CLAUDE.md`
+Do this before deleting the skills, so the invariant each one described is asserted before its
+prose disappears. Model each test on `website/src/lib/map/marker-registry.test.ts`.
+
+- [ ] 3.1 Add a build-pipeline test asserting every loader exported from
+      `build-pipeline/src/compendium/loaders/__init__.py` is called in
+      `build-pipeline/src/compendium/commands/build.py`. Both sides currently count 64. This
+      replaces the registration steps in `create-new-loader`.
+- [ ] 3.2 Add a build-pipeline test asserting every denormalizer package under
+      `build-pipeline/src/compendium/denormalizers/` is invoked by `run_all`. Eleven packages
+      exist. This replaces `create-new-denormalizer`.
+- [ ] 3.3 Add a website test asserting every entity in
+      `website/src/lib/entities/entity-manifest.json` that declares a `detailPrefix` has a
+      corresponding route directory, and every entity with an overview declares a route. Twenty
+      three entries exist. This replaces `create-entity-detail-page` and
+      `create-entity-overview-page`.
+- [ ] 3.4 Confirm `marker-registry.test.ts` already asserts that every map layer is registered.
+      Extend it if it does not. This replaces `add-map-entity-layer`.
+- [ ] 3.5 Confirm the DataExporter build or an existing analyzer fails when an exporter is not
+      registered. Add the assertion if it does not exist. This replaces the registration half of
+      `create-new-exporter`.
+- [ ] 3.6 Determine which `svelte-5-patterns` rules `eslint-plugin-svelte` can enforce, and enable
+      them. Anything it cannot enforce and that still passes the keep test becomes a rule scoped to
+      `**/*.svelte`; the rest is dropped.
+- [ ] 3.7 Verify each new test fails when the registration is removed. A test that has never failed
+      is not known to work.
+
+## 4. Reduce the skill set from 15 to 5
+
+- [ ] 4.1 Delete the eight scaffolding skills now covered by tests, examples, or lint:
+      `create-new-loader`, `create-new-denormalizer`, `create-new-exporter`,
+      `create-entity-detail-page`, `create-entity-overview-page`, `add-map-entity-layer`,
+      `create-new-mod`, `svelte-5-patterns`.
+- [ ] 4.2 Delete `edit-claude-md` and `writing-skills`; their surviving content is the routing rule
+      written into the root `AGENTS.md` in task 1.1.
+- [ ] 4.3 Move the five survivors to `.agent/skills/` and delete `.claude/` **in the same commit**.
+      `.claude/skills` is priority 80 and `.agent/skills` is 70, and dedup is first-wins by name,
+      so leaving both in place makes the move a silent no-op.
+- [ ] 4.4 Delete `.claude/settings.local.json`. It grants Claude Code Bash permissions that OMP does
+      not read.
+- [ ] 4.5 Fold `mods/DataExporter/CLAUDE.md:14-51` into `export-game-data`, reconciling with
+      `docs/data-export-guide.md`, which covers the same ground. Keep only the policy and decisions,
+      not the exporter pattern.
+- [ ] 4.6 Fold the command catalogue and artifact contract from `mods/HotReplCommands/CLAUDE.md`
       into `hotrepl-runtime-inspection`.
-- [ ] 3.6 Rewrite the seven vague descriptions so each states what the skill does and when to use
-      it: `add-map-entity-layer`, `create-entity-detail-page`, `create-entity-overview-page`,
-      `create-new-denormalizer`, `create-new-exporter`, `create-new-loader`, `svelte-5-patterns`.
-- [ ] 3.7 Repair stale skill references: `create-new-mod:13,113-114` cites `BossTracker` sources
-      that do not exist; `bootstrap-worktree:37-38` cites `exported-data/README.md`,
-      `classes.json`, and `static_data.json`, none of which exist.
-- [ ] 3.8 Remove skill content duplicating an instruction file:
-      `create-new-denormalizer:12-16,95-98` against `build-pipeline/CLAUDE.md:71-79`, and
-      `create-new-loader:12-16,112-116` against `build-pipeline/CLAUDE.md:89-95`.
+- [ ] 4.7 Repair `bootstrap-worktree:37-38`, which cites `exported-data/README.md`, `classes.json`,
+      and `static_data.json`, none of which exist.
+- [ ] 4.8 Confirm each of the five survivors states both what it covers and when to use it. Trim
+      `update-game-version`, currently 220 lines, to the steps that are genuinely not derivable.
 
-## 4. Delete the old surface
+## 5. Delete the old surface
 
-- [ ] 4.1 Delete all 17 `CLAUDE.md` files.
-- [ ] 4.2 Delete `docs/claude-md-guide.md`.
-- [ ] 4.3 Confirm no `CLAUDE.md` and no `.claude/` remain outside `node_modules`.
+- [ ] 5.1 Delete all 17 `CLAUDE.md` files.
+- [ ] 5.2 Delete `docs/claude-md-guide.md`.
+- [ ] 5.3 Confirm no `CLAUDE.md` and no `.claude/` remain outside `node_modules`.
 
-## 5. Repair references
+## 6. Repair references
 
-- [ ] 5.1 Rewrite live prose references to `CLAUDE.md`: `README.md`, `docs/project-map.md:48-50`,
+- [ ] 6.1 Rewrite live prose references to `CLAUDE.md`: `README.md`, `docs/project-map.md:48-50`,
       `knip.config.ts:33`, `docs/plans/2026-07-31-ancient-kingdoms-overview.md:107`,
       `docs/plans/2026-07-31-profession-content-coverage.md:351`, and
       `docs/plans/2026-08-09-map-marker-and-search-registry.md:41,1550,1571`.
-- [ ] 5.2 Update the skill-internal references at `create-new-mod:15,112` and
+- [ ] 6.2 Update the skill-internal references at `create-new-mod:15,112` and
       `export-game-data:90`, including the `.claude/skills` to `.agent/skills` path change.
-- [ ] 5.3 Leave every file under `docs/plans/archive/**` untouched. Verify none were modified.
+- [ ] 6.3 Leave every file under `docs/plans/archive/**` untouched. Verify none were modified.
 
-## 6. Enforce
+## 7. Enforce
 
-- [ ] 6.1 Write `scripts/check-agent-docs.sh`. Check: no `CLAUDE.md` and no `.claude/`; every
+- [ ] 7.1 Write `scripts/check-agent-docs.sh`. Check: no `CLAUDE.md` and no `.claude/`; every
       `AGENTS.md` under 200 lines; every skill has `name` and `description`; every rule has
       `description`; every description contains a usage trigger; every backticked repository path
       in an instruction file, rule, or skill resolves; every named skill or rule exists. Exclude
       `docs/plans/archive/**`. Report all violations in one run and exit non-zero.
-- [ ] 6.2 Wire the script into `lefthook.yml` beside the existing plans job at `:69-75`.
-- [ ] 6.3 Run the script and fix everything it reports.
-- [ ] 6.4 Verify the script actually fails: temporarily add a `CLAUDE.md`, an over-long
+- [ ] 7.2 Wire the script into `lefthook.yml` beside the existing plans job at `:69-75`.
+- [ ] 7.3 Run the script and fix everything it reports.
+- [ ] 7.4 Verify the script actually fails: temporarily add a `CLAUDE.md`, an over-long
       `AGENTS.md`, and a dead path reference; confirm each is caught; then remove them. A check
       that has never failed is not known to work.
 
-## 7. Verify
+## 8. Verify
 
-- [ ] 7.1 Open a session at the repository root and confirm the root `AGENTS.md` is in the loaded
+- [ ] 8.1 Open a session at the repository root and confirm the root `AGENTS.md` is in the loaded
       context. Doc-reading is not evidence; observe the context.
-- [ ] 7.2 Open a session in `website/` and confirm both files load, with the subproject file more
+- [ ] 8.2 Open a session in `website/` and confirm both files load, with the subproject file more
       prominent.
-- [ ] 7.3 Open a session in `website/src/lib/map/` and confirm all three levels load.
-- [ ] 7.4 Confirm all 14 skills are discovered from `.agent/skills/` after the move, and that the
-      count is 14 rather than 15 or 29.
-- [ ] 7.5 Confirm the new rules appear in the session's rule listing and resolve via `rule://`.
-- [ ] 7.6 Record the total line count across all `AGENTS.md` files against the 1,460 baseline.
+- [ ] 8.3 Open a session in `website/src/lib/map/` and confirm all three levels load.
+- [ ] 8.4 Confirm exactly 5 skills are discovered, all from `.agent/skills/`. A count of 15 means
+      `.claude/skills` still shadows them; a count of 20 means both trees are live.
+- [ ] 8.5 Confirm the registration tests from section 3 run in CI and that the deleted scaffolding
+      skills left no uncovered invariant behind.
+- [ ] 8.6 Confirm the new rules appear in the session's rule listing and resolve via `rule://`.
+- [ ] 8.7 Record the total line count across all `AGENTS.md` files against the 1,460 baseline.

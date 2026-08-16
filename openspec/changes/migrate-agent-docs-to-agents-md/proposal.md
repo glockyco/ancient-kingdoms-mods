@@ -63,8 +63,21 @@ Target: **OMP only.** No compatibility shims for other agents.
   `rule://`. Guidance that applies only when touching certain files becomes a rule with `globs`
   instead of bloating an always-loaded `AGENTS.md`. This is the mechanism that keeps the five
   files small.
-- **Move skills to `.agent/skills/` and delete `.claude/` entirely.** `.claude/settings.local.json`
-  configures a tool that is not used. **BREAKING** for anyone who relied on those permissions.
+- **Cut the skills from 15 to 5, and delete `.claude/` entirely.** Eight of the fifteen are
+  scaffolding guides that re-describe a code pattern the repository already demonstrates many
+  times over: `create-new-loader` is 156 lines against 32 existing loader functions,
+  `create-new-exporter` is 156 against 32 exporters, `svelte-5-patterns` is 112 against 196
+  components, `add-map-entity-layer` is 77 against a `marker-registry.test.ts` that already
+  enforces the same thing. Prose that restates code loses to the code and then rots, which is
+  exactly what happened to `create-new-mod`, whose cited `BossTracker` sources no longer exist.
+  Two more (`edit-claude-md`, `writing-skills`) become ten lines of routing rule in the root
+  `AGENTS.md`. The survivors are the five that encode knowledge the repository does not contain.
+- **Replace registration prose with tests.** The only non-derivable content in those scaffolding
+  skills is the cross-file registration step that copying one example would miss. A test asserts
+  it, fails at the right moment, and cannot drift. `marker-registry.test.ts` is the existing
+  precedent.
+- `.claude/settings.local.json` configures a tool that is not used. **BREAKING** for anyone who
+  relied on those permissions.
 - **Delete the Task Triggers table.** OMP surfaces every skill by name and description and selects
   by task. A hand-maintained router duplicating that mechanism is exactly how `CLAUDE.md:16` rotted
   into pointing at a skill that does not exist.
@@ -101,10 +114,15 @@ None. No existing spec covers agent instructions.
 
 - **Deleted:** 17 `CLAUDE.md`, `docs/claude-md-guide.md`, `.claude/` (including
   `settings.local.json`).
-- **Created:** 5 `AGENTS.md`, `.agent/rules/`, `.agent/skills/` (15 moved skills),
-  `scripts/check-agent-docs.sh`.
-- **Skills:** `edit-claude-md` and `writing-skills` merge into `authoring-agent-docs`; 7
-  descriptions rewritten; 4 skills absorb folded content or reference fixes. Count goes 15 to 14.
+- **Created:** 5 `AGENTS.md`, `.agent/rules/`, `.agent/skills/` (5 surviving skills),
+  `scripts/check-agent-docs.sh`, and the registration tests that replace the deleted scaffolding
+  prose.
+- **Skills:** 15 to 5. Deleted: `create-new-loader`, `create-new-denormalizer`,
+  `create-new-exporter`, `create-entity-detail-page`, `create-entity-overview-page`,
+  `add-map-entity-layer`, `create-new-mod`, `svelte-5-patterns`, `edit-claude-md`,
+  `writing-skills`. Kept and retitled with explicit triggers: `update-game-version`,
+  `bootstrap-worktree`, `hotrepl-runtime-inspection`, `ancient-kingdoms-save-files`,
+  `export-game-data`. Roughly 1,400 lines of skill prose removed.
 - **Automation:** `lefthook.yml` gains an agent-docs check.
 - **Prose references:** live mentions of `CLAUDE.md` in `README.md`, `docs/project-map.md`,
   `knip.config.ts:33`, and three active plans. Archived plans excluded.

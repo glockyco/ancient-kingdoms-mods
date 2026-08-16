@@ -83,6 +83,31 @@ listed to the model and read on demand rather than injected unconditionally.
 - **WHEN** guidance restates a rule the configured linter or formatter already enforces
 - **THEN** it is omitted from every instruction file
 
+### Requirement: Documentation does not restate the codebase
+
+Guidance SHALL NOT describe a code pattern that the repository already demonstrates. Where a
+contributor or agent can learn the pattern by reading existing instances, the guidance SHALL point
+at those instances rather than reproduce them.
+
+A mechanical invariant, such as a registration that must accompany a new file, SHALL be enforced
+by a test rather than described in prose. Prose only helps a reader who loads it, and it drifts
+from the code silently; a test fails at the moment of the mistake.
+
+Rationale: a skill that reproduced the loader pattern reached 156 lines against 32 working
+examples, and a skill that reproduced the mod pattern rotted into citing source files that no
+longer exist.
+
+#### Scenario: Author proposes a scaffolding guide
+
+- **WHEN** proposed guidance explains how to write a new instance of an existing pattern
+- **THEN** it is not added
+- **AND** any cross-file registration it would have described is asserted by a test instead
+
+#### Scenario: A required registration is omitted
+
+- **WHEN** a new instance of a registered pattern is added without its registration
+- **THEN** a test fails and identifies the missing registration
+
 ### Requirement: Each fact has exactly one home
 
 A given instruction SHALL appear in exactly one place. An `AGENTS.md` SHALL NOT restate content
