@@ -5,7 +5,6 @@ status: in-progress
 created: 2026-08-09
 parent: 2026-07-31-ancient-kingdoms-overview
 supersedes:
-  - 2026-07-31-global-entity-search
 superseded_by:
 archived:
 ---

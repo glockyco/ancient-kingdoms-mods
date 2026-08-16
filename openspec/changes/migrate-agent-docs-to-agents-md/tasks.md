@@ -2,7 +2,7 @@
 
 - [ ] 1.1 Write root `AGENTS.md`: data-flow summary, the universal rules that survived the audit
       (logging, comments, fail-fast, modern standards), and pointers to `docs/plans/INDEX.md` and
-      `docs/project-map.md`. Do NOT restate `README.md:20-27`, `:34-41`, `:139-151`, `:174-187`,
+      `docs/plans/INDEX.md`. Do NOT restate `README.md:20-27`, `:34-41`, `:139-151`, `:174-187`,
       or `:252+`. Do NOT include a Task Triggers table. Under 200 lines.
 - [ ] 1.2 Write `mods/AGENTS.md` from `mods/CLAUDE.md` always-on content, hoisting the shared
       per-mod facts exactly once: the server-time expression
@@ -92,12 +92,12 @@ prose disappears. Model each test on `website/src/lib/map/marker-registry.test.t
 ## 5. Delete the old surface
 
 - [ ] 5.1 Delete all 17 `CLAUDE.md` files.
-- [ ] 5.2 Delete `docs/claude-md-guide.md`.
+- [x] 5.2 Delete `docs/claude-md-guide.md`. Done ahead of this change by prune-stale-docs.
 - [ ] 5.3 Confirm no `CLAUDE.md` and no `.claude/` remain outside `node_modules`.
 
 ## 6. Repair references
 
-- [ ] 6.1 Rewrite live prose references to `CLAUDE.md`: `README.md`, `docs/project-map.md:48-50`,
+- [ ] 6.1 Rewrite live prose references to `CLAUDE.md`: `README.md`,
       `knip.config.ts:33`, `docs/plans/2026-07-31-ancient-kingdoms-overview.md:107`,
       `docs/plans/2026-07-31-profession-content-coverage.md:351`, and
       `docs/plans/2026-08-09-map-marker-and-search-registry.md:41,1550,1571`.

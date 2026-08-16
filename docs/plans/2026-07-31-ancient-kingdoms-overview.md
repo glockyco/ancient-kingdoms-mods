@@ -32,7 +32,7 @@ owning spec, not here.
 | --- | --- | --- | --- |
 | P1.1 | Surface exported entity images | `2026-07-31-entity-image-surfacing` | 229/229 NPC and 686/689 skill assets exist with zero UI consumers; 1638/1658 item icons reach only the tooltip |
 | P1.2 | Compact map links on list pages | — (small item) | 2 of 11 overviews done; position data present for 359/361 monsters, 228/229 NPCs, 7/7 altars, 49/49 resources |
-| P2.1 | Global entity search | `2026-07-31-global-entity-search` | No `searchAllEntities`; `+layout.svelte` has no nav or palette; Cmd/K exists only on the map |
+| P2.1 | Global entity search | `2026-08-09-map-marker-and-search-registry` | No `searchAllEntities`; `+layout.svelte` has no nav or palette; Cmd/K exists only on the map |
 | P2.2 | Pack and random sources in item popups | — (small item) | 10 of 12 source types render; both junction tables already populated |
 | P2.3 | Detail-page title suffixes | `2026-07-31-detail-page-title-suffixes` | `itemTitle` is the only generator; 8 route families emit a bare `{name} - Ancient Kingdoms` |
 | P3.1 | Recipe materials off JSON | — (small item) | 3 website readers; blocked on one ordering decision stated in the bullet |
@@ -100,9 +100,7 @@ owning spec, not here.
   consolidation.
 - `2026-05-28-compendium-data-contract-design` *(spec)* — entity-addition architecture and
   the exporter → pipeline → website data contract.
-- `2026-06-20-agent-modding-toolbox-findings` *(note)* — modding-toolbox research.
 
 ## Pointers
 
 - Conventions and commands: `CLAUDE.md`. Navigation: `docs/plans/INDEX.md`.
-- Codebase structure: `docs/project-map.md`.

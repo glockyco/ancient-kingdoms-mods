@@ -39,7 +39,7 @@ Use the closest first-party schema.org type for each entity. The primary node sh
 
 ## Remaining scope
 
-Add the per-entity node builders beside the existing builders in `lib/seo/jsonld.ts`. Do not create a separate `structured-data.ts` module. Wire each detail route's loader to build the appropriate node and pass it to the page's JSON-LD output. Add `potentialAction.SearchAction` to the homepage `WebSite` node once a real search route exists. This search action is gated on `2026-07-31-global-entity-search`. The entity builders and detail-route wiring are independent of that search dependency.
+Add the per-entity node builders beside the existing builders in `lib/seo/jsonld.ts`. Do not create a separate `structured-data.ts` module. Wire each detail route's loader to build the appropriate node and pass it to the page's JSON-LD output. Add `potentialAction.SearchAction` to the homepage `WebSite` node once a real search route exists. This search action is gated on `2026-08-09-map-marker-and-search-registry`. The entity builders and detail-route wiring are independent of that search dependency.
 
 All nodes should include `@context: "https://schema.org"` and a stable canonical URL in `@id`. Entity-specific structured data should add relationships such as factions, zones, quest-chain position, and recipe ingredients rather than merely duplicating the page description meta tag.
 
@@ -48,4 +48,4 @@ All nodes should include `@context: "https://schema.org"` and a stable canonical
 - [ ] Add typed per-entity JSON-LD node builders to `lib/seo/jsonld.ts` for items, monsters, NPCs, quests, zones, skills, pets, altars, recipes, chests, gather resources, and classes using the mapping above.
 - [ ] Ensure each builder emits the schema context, a canonical `@id`, the entity name, available descriptions and images, and the applicable structured relationships.
 - [ ] Wire every entity detail route loader to build and provide its corresponding JSON-LD node through `JsonLd.svelte`.
-- [ ] Add `potentialAction.SearchAction` to the homepage `WebSite` node after `2026-07-31-global-entity-search` provides a real search route, including its target and `query-input`.
+- [ ] Add `potentialAction.SearchAction` to the homepage `WebSite` node after `2026-08-09-map-marker-and-search-registry` provides a real search route, including its target and `query-input`.

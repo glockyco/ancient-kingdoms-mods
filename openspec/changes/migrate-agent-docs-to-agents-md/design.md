@@ -177,7 +177,7 @@ the first.
 2. Extract the path-specific content into `.agent/rules/*.md` with `globs` and `description`.
 3. Move the 15 skills to `.agent/skills/`, merge and repair them, and delete `.claude/` in the same
    commit.
-4. Delete the 17 `CLAUDE.md` and `docs/claude-md-guide.md`.
+4. Delete the 17 `CLAUDE.md`. `docs/claude-md-guide.md` already went with prune-stale-docs.
 5. Rewrite live prose references; leave `docs/plans/archive/**` untouched.
 6. Add the check, wire it into `lefthook.yml`, and prove it fails before trusting it.
 7. Verify empirically by opening sessions at three depths and observing the loaded context.

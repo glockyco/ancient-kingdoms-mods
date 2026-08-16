@@ -30,7 +30,8 @@ have no effect. That explains the second finding.
 - `mods/MonsterRespawner/CLAUDE.md:32-33` and `:42` contradict each other on whether the respawn
   write uses the server clock or `Time.timeAsDouble`.
 
-**The governing policy is itself wrong and duplicated.** `docs/claude-md-guide.md` and
+**The governing policy was wrong and duplicated.** `docs/claude-md-guide.md`, since deleted by
+prune-stale-docs, and
 `.claude/skills/edit-claude-md/SKILL.md` are near-identical copies of one policy, both capping
 root files at 150 lines and subproject files at 100. The published guidance is a single target of
 under 200 lines, plus a mechanism neither copy mentions: move procedures and path-scoped guidance
@@ -84,7 +85,7 @@ Target: **OMP only.** No compatibility shims for other agents.
 - **Stop restating the README.** Root `CLAUDE.md` repeats the README's architecture diagram
   (`README.md:20-27`), subproject table (`:34-41`), and command blocks (`:139-151`, `:174-187`,
   `:252+`).
-- **Collapse the doc policy into one skill.** Delete `docs/claude-md-guide.md`; replace
+- **Collapse the doc policy into one skill.** Replace
   `edit-claude-md` and `writing-skills` with `authoring-agent-docs`, stating the real limit, the
   OMP discovery rules, and the routing test.
 - **Fix the seven vague skill descriptions.** OMP selects skills by matching the description, so a
@@ -112,7 +113,7 @@ None. No existing spec covers agent instructions.
 
 ## Impact
 
-- **Deleted:** 17 `CLAUDE.md`, `docs/claude-md-guide.md`, `.claude/` (including
+- **Deleted:** 17 `CLAUDE.md`, `.claude/` (including
   `settings.local.json`).
 - **Created:** 5 `AGENTS.md`, `.agent/rules/`, `.agent/skills/` (5 surviving skills),
   `scripts/check-agent-docs.sh`, and the registration tests that replace the deleted scaffolding
@@ -124,7 +125,7 @@ None. No existing spec covers agent instructions.
   `bootstrap-worktree`, `hotrepl-runtime-inspection`, `ancient-kingdoms-save-files`,
   `export-game-data`. Roughly 1,400 lines of skill prose removed.
 - **Automation:** `lefthook.yml` gains an agent-docs check.
-- **Prose references:** live mentions of `CLAUDE.md` in `README.md`, `docs/project-map.md`,
+- **Prose references:** live mentions of `CLAUDE.md` in `README.md`,
   `knip.config.ts:33`, and three active plans. Archived plans excluded.
 - **Risk:** nothing in CI, the build, or the deploy reads these files, so the blast radius is
   limited to interactive agent quality.
