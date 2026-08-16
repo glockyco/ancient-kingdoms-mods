@@ -847,18 +847,43 @@
     ].filter((section) => section.show),
   );
 
-  // Damage/resist type helpers — kept for the damage pipeline and resist section
-  // Source: server-scripts/Combat.cs — GetProbResist* methods
-  const resistType = $derived.by((): string | null => {
+  /**
+   * How each damage type is mitigated and avoided, mirroring the game one row per type.
+   *
+   * `stat` is the stat that reduces the damage. Source: server-scripts/Combat.cs:680-697 — the
+   * per-damage-type switch, each read multiplied by 0.0005.
+   * `avoidance` is which roll can prevent the hit. Source: server-scripts/Combat.cs:501-508 —
+   * Normal damage goes to GetProbResistMeleeDamage, every other type to its own GetProbResist*.
+   *
+   * Physical is the one type whose stat does double duty. `defense` reduces the damage at 0.0005
+   * per point, and it also feeds the block roll at 0.0001 per point, because blockChance is
+   * derived from it. Source: server-scripts/Combat.cs:272-284. So the two physical formulas are
+   * not independent, and both already name `defense`.
+   *
+   * Stat names are looked up here and never assembled from a fragment. Appending "Resist" to a
+   * damage type once produced `physicalResist`, which the game does not implement.
+   */
+  type DamageMechanics = {
+    stat: string;
+    avoidance: "block" | "resist";
+  };
+
+  const DAMAGE_MECHANICS: Record<string, DamageMechanics> = {
+    Physical: { stat: "defense", avoidance: "block" },
+    Magic: { stat: "magicResist", avoidance: "resist" },
+    Fire: { stat: "fireResist", avoidance: "resist" },
+    Cold: { stat: "coldResist", avoidance: "resist" },
+    Poison: { stat: "poisonResist", avoidance: "resist" },
+    Disease: { stat: "diseaseResist", avoidance: "resist" },
+  };
+
+  const damageMechanics = $derived.by((): DamageMechanics | null => {
     if (!isDamageType) return null;
-    const dt = skill.damage_type;
-    if (dt === "Physical") return "physical";
-    if (dt === "Magic") return "magic";
-    if (dt === "Fire") return "fire";
-    if (dt === "Cold") return "cold";
-    if (dt === "Poison") return "poison";
-    if (dt === "Disease") return "disease";
-    return "melee";
+    // The game's enum value is DamageType.Normal and "Physical" is only its exported spelling, so
+    // a damage skill that declares no type is physical rather than untyped.
+    if (!skill.damage_type) return DAMAGE_MECHANICS.Physical;
+    // An unrecognised type means the exported vocabulary grew. Render nothing rather than guess.
+    return DAMAGE_MECHANICS[skill.damage_type] ?? null;
   });
 </script>
 
@@ -2010,12 +2035,12 @@
                     Enrage (non-spell): players +33% below 50% HP. Monsters
                     +50&ndash;75% below 10% HP.
                   </li>
-                  <li>
-                    Mitigation: &minus;ceil(dmg &times; clamp(target.{resistType ===
-                    "melee"
-                      ? "defense"
-                      : `${resistType}Resist`} &times; 0.0005, 0, 0.9))
-                  </li>
+                  {#if damageMechanics}
+                    <li>
+                      Mitigation: &minus;ceil(dmg &times; clamp(target.{damageMechanics.stat}
+                      &times; 0.0005, 0, 0.9))
+                    </li>
+                  {/if}
                   <li>Crit: &times;1.5</li>
                   <li>
                     Radiant Aether (15% on crit, consumes 1 item): &times;2 on
@@ -2026,15 +2051,16 @@
             {/if}
 
             <!-- Block/Resist Chance -->
-            {#if resistType && !data.mechanicsSpec.damageContexts.some((c) => c.formula === "manaburn")}
+            {#if damageMechanics && !data.mechanicsSpec.damageContexts.some((c) => c.formula === "manaburn")}
               <div class="space-y-1">
                 <h4 class="font-medium text-muted-foreground">
-                  {resistType === "melee"
+                  {damageMechanics.avoidance === "block"
                     ? "Block/Miss Chance"
                     : "Resist Chance"}
                 </h4>
-                {#if resistType === "melee"}
-                  <!-- Source: Combat.cs — GetProbResistMeleeDamage -->
+                {#if damageMechanics.avoidance === "block"}
+                  <!-- Source: Combat.cs:1310-1314 — GetProbResistMeleeDamage -->
+                  <!-- Source: Combat.cs:272-284 — blockChance is defense × 0.0001 plus bonuses -->
                   <p class="font-mono">
                     clamp(<br />&nbsp;&nbsp;clamp(target.baseBlock +
                     target.defense &times; 0.0001 + buffs, 0, 0.8)<br
@@ -2043,10 +2069,10 @@
                     attacker.accuracy<br />, 0, 0.9)
                   </p>
                 {:else}
-                  <!-- Source: Combat.cs — GetProbResistMagic/Fire/Cold/Poison/Disease -->
+                  <!-- Source: Combat.cs:1322-1349 — GetProbResistMagic/Fire/Cold/Poison/Disease -->
                   <p class="font-mono">
-                    clamp(<br />&nbsp;&nbsp;target.{resistType}Resist &times;
-                    0.0005<br />&nbsp;&nbsp;+ (target.level &minus;
+                    clamp(<br />&nbsp;&nbsp;target.{damageMechanics.stat}
+                    &times; 0.0005<br />&nbsp;&nbsp;+ (target.level &minus;
                     attacker.level) &times; 0.005<br />&nbsp;&nbsp;&minus;
                     attacker.accuracy<br />, 0, 0.9)
                   </p>

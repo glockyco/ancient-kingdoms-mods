@@ -9,12 +9,18 @@ Ground truth in the game:
 
 | Damage type (`DamageType`) | Mitigation stat, `Combat.cs:680-697` | Avoidance method, `Combat.cs:501-508` |
 | --- | --- | --- |
-| `Normal`, exported as `Physical` | `defense` | `GetProbResistMeleeDamage` — reads `blockChance` |
+| `Normal`, exported as `Physical` | `defense` | `GetProbResistMeleeDamage` — reads `blockChance`, which is itself `defense × 0.0001` plus bonuses (`Combat.cs:272-284`) |
 | `Magic` | `magicResist` | `GetProbResistMagic` |
 | `Fire` | `fireResist` | `GetProbResistFire` |
 | `Cold` | `coldResist` | `GetProbResistCold` |
 | `Poison` | `poisonResist` | `GetProbResistPoison` |
 | `Disease` | `diseaseResist` | `GetProbResistDisease` |
+
+Physical is the only type whose stat does double duty. `defense` reduces the damage at 0.0005 per
+point and separately raises the block roll at 0.0001 per point, because `blockChance` is derived
+from it and capped at 0.8 before the level and accuracy terms apply. Both physical formulas
+therefore name `defense`, which is a further reason the fabricated `physicalResist` was visibly
+wrong: it made the mitigation line disagree with the block line on the very same page.
 
 ## Goals / Non-Goals
 
@@ -53,12 +59,18 @@ Alternatives considered:
 - **Keep the concatenation but special-case `physical` as well.** Rejected for the same reason,
   with the added cost of two literals to keep in step.
 
-### Fail visibly on an unknown damage type
+### An absent damage type is physical, and stays that way
 
-The current fallback returns `"melee"` for anything unrecognised, which is why an unmapped type
-silently renders a plausible formula. An unmapped damage type should instead surface as a missing
-mechanics section rather than as confident wrong text. A skill with no damage type continues to
-render no damage section, as today.
+The existing fallback returns `"melee"` for anything unrecognised, and it is load-bearing:
+`isDamageType` keys off `skill_type`, not `damage_type`, so a damage skill whose `damage_type` is
+null reaches it. 443 of 561 skills have a null `damage_type`. That fallback is correct, because the
+game's enum value is `DamageType.Normal` and `Physical` is only the exported spelling of it, so an
+absent type is the physical row rather than a missing one.
+
+The table therefore treats a null damage type as physical explicitly, with a comment saying why.
+An unrecognised non-null value is a different case: it means the exported vocabulary grew, and the
+card renders no damage-mechanics section rather than guessing. No such value exists today — the
+data holds only the six known types and null — so this cannot change current output.
 
 ### The snapshots are the acceptance test, and are not to be updated
 
