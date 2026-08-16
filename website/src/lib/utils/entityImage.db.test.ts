@@ -11,7 +11,7 @@ interface VisualAssetRow {
 
 describe("entityImageUrl database integration", () => {
   test("matches every published visual asset path", () => {
-    const db = new Database("static/compendium.db", { readonly: true });
+    const db = new Database("data/compendium.db", { readonly: true });
     try {
       const rows = db
         .prepare(

@@ -26,7 +26,7 @@ the ordered work lives in `2026-07-31-profession-page-migration`.
 
 ## Verified inventory
 
-Counts queried from `website/static/compendium.db`.
+Counts queried from `website/data/compendium.db`.
 
 | Profession | Category | Track | Page lines | Core entities |
 | --- | --- | --- | ---: | --- |

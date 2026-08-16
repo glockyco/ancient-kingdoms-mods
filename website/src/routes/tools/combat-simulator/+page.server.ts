@@ -1,6 +1,6 @@
 import Database from "better-sqlite3";
 import type { PageServerLoad } from "./$types";
-import { DB_STATIC_PATH } from "$lib/constants/constants";
+import { DB_SOURCE_PATH } from "$lib/constants/constants";
 import type { WeaponItem } from "$lib/utils/combat-sim";
 
 // Re-export so +page.svelte can import WeaponItem from "./+page.server" as planned.
@@ -13,7 +13,7 @@ export interface CombatPageData {
 }
 
 export const load: PageServerLoad = (): CombatPageData => {
-  const db = new Database(DB_STATIC_PATH, { readonly: true });
+  const db = new Database(DB_SOURCE_PATH, { readonly: true });
 
   const rows = db
     .prepare(

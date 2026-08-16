@@ -41,7 +41,7 @@ The script preserves tracked worktree files already present under
 
 Outputs regenerated inside the current worktree:
 
-- `website/static/compendium.db`
+- `website/data/compendium.db`
 - `website/static/images/`
 - `website/static/tiles/`
 - `website/src/lib/generated/home-counts.ts`
@@ -57,7 +57,7 @@ Before bootstrap succeeds, these are setup failures, not code failures:
 - missing `node_modules`
 - `vitest: command not found`
 - missing `$lib/generated/home-counts`
-- missing `website/static/compendium.db`
+- missing `website/data/compendium.db`
 - prerender 404s for `website/static/images/...`
 - missing `website/static/tiles/`
 

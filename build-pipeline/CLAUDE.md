@@ -7,12 +7,12 @@ Python CLI for processing game data exports into deployment-ready artifacts.
 ```
 exported-data/ (JSON + Screenshots + Runtime Images)
     ↓ compendium build
-website/static/compendium.db + website/static/images/
+website/data/compendium.db + website/static/images/
     ↓ compendium tiles
 website/static/tiles/
 ```
 
-Output goes directly to `website/static/`.
+The database goes to `website/data/`. Images and tiles go to `website/static/`.
 
 ## CLI Commands
 

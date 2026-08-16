@@ -10,8 +10,10 @@ node_modules
 /.sitemap-manifest.prev.json
 
 # Generated files (from build-pipeline)
-/static/compendium.db*
-/static/search.db*
+# The databases are build inputs, not published files. They live outside
+# static/ so they are never served verbatim at a stable, unhashed URL; the
+# client copies are gzipped and content-hashed into the Vite asset graph.
+/data/
 /static/tiles/
 /static/images/
 /static/sitemap-manifest.json

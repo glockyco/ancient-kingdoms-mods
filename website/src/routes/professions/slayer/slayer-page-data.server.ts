@@ -1,5 +1,5 @@
 import Database from "better-sqlite3";
-import { DB_STATIC_PATH } from "$lib/constants/constants";
+import { DB_SOURCE_PATH } from "$lib/constants/constants";
 import type { RespawnInfo } from "$lib/types/respawn";
 
 export interface SlayerTarget extends RespawnInfo {
@@ -44,7 +44,7 @@ export interface SlayerPageData {
   targets: SlayerTarget[];
 }
 
-export function getSlayerPageData(dbPath = DB_STATIC_PATH): SlayerPageData {
+export function getSlayerPageData(dbPath = DB_SOURCE_PATH): SlayerPageData {
   const db = new Database(dbPath, { readonly: true });
 
   const profession = db

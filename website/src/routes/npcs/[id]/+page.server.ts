@@ -13,7 +13,7 @@ import type {
 } from "$lib/types/npcs";
 import {
   WORLD_BOSS_DUNGEON_ID,
-  DB_STATIC_PATH,
+  DB_SOURCE_PATH,
 } from "$lib/constants/constants";
 import { npcDescription } from "$lib/server/meta-description";
 import { getFactionIdsByName } from "$lib/queries/factions.server";
@@ -22,7 +22,7 @@ import type { EntityVisualAsset } from "$lib/types/visual-assets";
 export const prerender = true;
 
 export const entries: EntryGenerator = () => {
-  const db = new Database(DB_STATIC_PATH, { readonly: true });
+  const db = new Database(DB_SOURCE_PATH, { readonly: true });
   const npcs = db.prepare("SELECT id FROM npcs").all() as Array<{ id: string }>;
   db.close();
 
@@ -55,7 +55,7 @@ const defaultRoles: NpcRoles = {
 };
 
 export const load: PageServerLoad = ({ params }): NpcDetailPageData => {
-  const db = new Database(DB_STATIC_PATH, { readonly: true });
+  const db = new Database(DB_SOURCE_PATH, { readonly: true });
 
   const npcRaw = db
     .prepare("SELECT * FROM npcs WHERE id = ?")

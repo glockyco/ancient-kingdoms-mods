@@ -1,7 +1,7 @@
 import Database from "better-sqlite3";
 import { error } from "@sveltejs/kit";
 import type { PageServerLoad, EntryGenerator } from "./$types";
-import { DB_STATIC_PATH } from "$lib/constants/constants";
+import { DB_SOURCE_PATH } from "$lib/constants/constants";
 import type {
   ZoneDetailData,
   ZoneMonster,
@@ -21,7 +21,7 @@ export const prerender = true;
 
 // Generate entries for all zones at build time
 export const entries: EntryGenerator = () => {
-  const db = new Database(DB_STATIC_PATH, { readonly: true });
+  const db = new Database(DB_SOURCE_PATH, { readonly: true });
   const zones = db.prepare("SELECT id FROM zones").all() as Array<{
     id: string;
   }>;
@@ -31,7 +31,7 @@ export const entries: EntryGenerator = () => {
 };
 
 export const load: PageServerLoad = ({ params }): ZoneDetailData => {
-  const db = new Database(DB_STATIC_PATH, { readonly: true });
+  const db = new Database(DB_SOURCE_PATH, { readonly: true });
 
   // Get zone basic info with pre-computed level range
   const zone = db

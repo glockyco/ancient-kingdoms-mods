@@ -23,7 +23,7 @@ Game (IL2CPP Unity)
   ↓ MelonLoader export mods
 exported-data/*.json + exported-data/images/ + exported-data/screenshots/
   ↓ Python build pipeline
-website/static/compendium.db + website/static/images/ + website/static/tiles/
+website/data/compendium.db + website/static/images/ + website/static/tiles/
   ↓ SvelteKit mostly prerendered site
 Cloudflare Worker + Static Assets
 ```
@@ -183,7 +183,7 @@ The automated exporter requires at least one existing character because it selec
 ```bash
 cd build-pipeline
 
-# JSON exports → website/static/compendium.db and website/static/images/
+# JSON exports → website/data/compendium.db and website/static/images/
 uv run compendium build
 
 # exported-data/screenshots/ → website/static/tiles/
@@ -193,7 +193,7 @@ uv run compendium tiles
 uv run compendium stats
 ```
 
-`compendium build` writes the database to `website/static/compendium.db`, while `compendium stats` currently looks under `build_dir` (default `build/`). These commands therefore use different database paths. Unless a database is placed under `build_dir`, `stats` reports a missing database or reads a stale one.
+`compendium build` and `compendium stats` both use `website/data/compendium.db`. The database stays outside `website/static/`, because `static/` is published verbatim. The web build compresses the database and gives it a content-hashed name, so the browser downloads about 2.3 MB instead of 16.3 MB and can cache it permanently.
 
 Tile generation requires screenshot metadata from `MapScreenshotter` or `build-tool export --screenshots`.
 `uv run compendium tiles` validates boss/world-boss spawn coverage before publishing `website/static/tiles`; if boss positions sample as black/blank, re-run the in-game screenshot export before regenerating tiles.
@@ -221,7 +221,7 @@ cd website
 pnpm cf-deploy
 ```
 
-The website expects generated assets in `website/static/`. In particular, `website/static/compendium.db` is gitignored and must be created by the build pipeline before local browsing or production builds that depend on the database.
+The pipeline writes the database to `website/data/` and image and tile assets to `website/static/`. The database is gitignored and must be created by the build pipeline before local browsing or production builds that depend on it.
 
 ### HotRepl runtime inspection
 

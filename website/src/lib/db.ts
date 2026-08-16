@@ -1,6 +1,7 @@
 import { browser } from "$app/environment";
 import type { SqlValue } from "sql.js-fts5";
 import type { DatabaseTarget } from "./db.worker";
+import { DATABASE_URLS } from "./database-assets";
 
 interface QueryResponse<T = unknown> {
   id: number;
@@ -23,6 +24,9 @@ function workerClient(): Worker {
   worker = new Worker(new URL("./db.worker.ts", import.meta.url), {
     type: "module",
   });
+  // The worker cannot resolve the hashed database URLs itself; see
+  // src/lib/database-assets.ts. This message is queued before any query.
+  worker.postMessage({ kind: "configure", urls: DATABASE_URLS });
   worker.onmessage = (event: MessageEvent<QueryResponse>) => {
     const response = event.data;
     const request = pending.get(response.id);
@@ -51,7 +55,7 @@ export function query<T = unknown>(
       resolve: resolve as (rows: unknown[]) => void,
       reject: reject as (error: Error) => void,
     });
-    client.postMessage({ id, target, sql, params });
+    client.postMessage({ kind: "query", id, target, sql, params });
   });
 }
 

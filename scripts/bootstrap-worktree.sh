@@ -17,7 +17,7 @@ The script links input artifacts into the current worktree:
   Local.props, when present in the trusted checkout
 
 It regenerates worktree-local outputs:
-  website/static/compendium.db
+  website/data/compendium.db
   website/static/images/
   website/static/tiles/
   website/src/lib/generated/home-counts.ts
@@ -157,7 +157,7 @@ run bash -lc 'cd website && pnpm exec svelte-kit sync'
 run bash -lc 'cd website && node scripts/generate-home-counts.mjs'
 
 require_path "$repo_root/website/node_modules" "website dependencies"
-require_path "$repo_root/website/static/compendium.db" "generated website database"
+require_path "$repo_root/website/data/compendium.db" "generated website database"
 require_path "$repo_root/website/static/images" "generated website images"
 require_path "$repo_root/website/static/tiles" "generated map tiles"
 require_path "$repo_root/website/src/lib/generated/home-counts.ts" "generated home counts module"

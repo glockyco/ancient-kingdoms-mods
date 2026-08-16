@@ -124,7 +124,7 @@
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: website/static/compendium.db monsters table — most common configuration is death_time 120 with respawn_time 360. -->
+      <!-- Source: website/data/compendium.db monsters table — most common configuration is death_time 120 with respawn_time 360. -->
       <div class="text-sm">
         <div
           class="grid grid-cols-4 overflow-hidden rounded border border-border text-center"
@@ -179,7 +179,7 @@
         </li>
       </ol>
       <p>
-        <!-- Source: website/static/compendium.db monsters table — regular respawning monsters use respawn_time 40-7200 and death_time 5-300. -->
+        <!-- Source: website/data/compendium.db monsters table — regular respawning monsters use respawn_time 40-7200 and death_time 5-300. -->
         Timers are set per monster. For regular monsters the respawn timer ranges
         from 40 seconds up to 2 hours, and 6 minutes is by far the most common. Bosses
         run far longer (<a
@@ -256,7 +256,7 @@
           a restart they all start alive.
         </li>
         <li>
-          <!-- Source: website/static/compendium.db monsters table — bosses use death_time 300; respawnTimeEnd = deathTimeEnd + respawnTime, fixed at death (Monster.cs:2078-2079). -->
+          <!-- Source: website/data/compendium.db monsters table — bosses use death_time 300; respawnTimeEnd = deathTimeEnd + respawnTime, fixed at death (Monster.cs:2078-2079). -->
           Total time from kill to respawn is the timer below plus the boss's corpse
           time (about 5 minutes).
         </li>
@@ -1101,7 +1101,7 @@
           the Large Shade Beast, which always leaves a Keeper Remnant behind.
         </li>
         <li>
-          <!-- Source: website/static/compendium.db monster_spawns table — 231 spawns have spawn_type 'altar', spawned in waves by altar events. -->
+          <!-- Source: website/data/compendium.db monster_spawns table — 231 spawns have spawn_type 'altar', spawned in waves by altar events. -->
           <span class="font-medium text-foreground">Altar events:</span>
           <a
             href="/altars"

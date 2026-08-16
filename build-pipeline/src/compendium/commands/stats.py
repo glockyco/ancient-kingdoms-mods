@@ -15,7 +15,7 @@ def run(config: dict) -> None:
     repo_root = get_repo_root()
     website_dir = repo_root / config["paths"]["website_dir"]
     db_name = config["build_pipeline"]["db_name"]
-    db_path = website_dir / "static" / db_name
+    db_path = website_dir / "data" / db_name
 
     if not db_path.exists():
         console.print(f"[red]Error:[/red] Database not found: {db_path}")

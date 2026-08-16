@@ -26,7 +26,7 @@ import { dirname, resolve } from "node:path";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const projectRoot = resolve(__dirname, "..");
-const dbPath = resolve(projectRoot, "static/compendium.db");
+const dbPath = resolve(projectRoot, "data/compendium.db");
 const outDir = resolve(projectRoot, "src/lib/generated");
 const outPath = resolve(outDir, "home-counts.ts");
 

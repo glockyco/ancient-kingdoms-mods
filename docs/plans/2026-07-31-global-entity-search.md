@@ -32,7 +32,7 @@ total**.
 
 ### Measured sizing
 
-From `dbstat` and `LENGTH()` sums over `website/static/compendium.db`:
+From `dbstat` and `LENGTH()` sums over `website/data/compendium.db`:
 
 | Quantity | Size |
 | --- | --- |

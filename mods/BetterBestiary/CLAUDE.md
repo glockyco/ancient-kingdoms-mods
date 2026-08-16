@@ -53,7 +53,7 @@ Regenerate it with:
 pnpm --filter website gen:skill-effect-parity
 ```
 
-The generator needs `website/static/compendium.db`. The `website-skill-effect-parity-drift` pre-commit job in `lefthook.yml` watches the formatter inputs, the generator, and the fixture. It reruns the generator and fails when `git diff --exit-code` finds a fixture change. `tests/BetterBestiary.Tests/SkillEffectFormatterTests.cs` embeds the same fixture and compares every case with the C# formatter, so changes to the TypeScript source require regenerating the fixture and porting the formatter change together.
+The generator needs `website/data/compendium.db`. The `website-skill-effect-parity-drift` pre-commit job in `lefthook.yml` watches the formatter inputs, the generator, and the fixture. It reruns the generator and fails when `git diff --exit-code` finds a fixture change. `tests/BetterBestiary.Tests/SkillEffectFormatterTests.cs` embeds the same fixture and compares every case with the C# formatter, so changes to the TypeScript source require regenerating the fixture and porting the formatter change together.
 
 ## Project Layout
 

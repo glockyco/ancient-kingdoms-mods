@@ -3,7 +3,7 @@ import { error } from "@sveltejs/kit";
 import type { EntityVisualAsset } from "$lib/types/visual-assets";
 import type { PageServerLoad, EntryGenerator } from "./$types";
 import {
-  DB_STATIC_PATH,
+  DB_SOURCE_PATH,
   WORLD_BOSS_DUNGEON_ID,
 } from "$lib/constants/constants";
 import type {
@@ -26,7 +26,7 @@ import { getFactionIdsByName } from "$lib/queries/factions.server";
 export const prerender = true;
 
 export const entries: EntryGenerator = () => {
-  const db = new Database(DB_STATIC_PATH, { readonly: true });
+  const db = new Database(DB_SOURCE_PATH, { readonly: true });
   const monsters = db.prepare("SELECT id FROM monsters").all() as Array<{
     id: string;
   }>;
@@ -40,7 +40,7 @@ function calculateStat(base: number, perLevel: number, level: number): number {
 }
 
 export const load: PageServerLoad = ({ params }): MonsterDetailData => {
-  const db = new Database(DB_STATIC_PATH, { readonly: true });
+  const db = new Database(DB_SOURCE_PATH, { readonly: true });
 
   // Get monster basic data with placeholder name
   const monsterRaw = db

@@ -1,5 +1,5 @@
 import Database from "better-sqlite3";
-import { DB_STATIC_PATH } from "$lib/constants/constants";
+import { DB_SOURCE_PATH } from "$lib/constants/constants";
 import { entityImageUrl } from "$lib/utils/entityImage";
 import {
   achievementGroupDetails,
@@ -50,7 +50,7 @@ interface AchievementRow {
 }
 
 export function getAchievementsPageData(
-  dbPath = DB_STATIC_PATH,
+  dbPath = DB_SOURCE_PATH,
 ): AchievementsPageData {
   const db = new Database(dbPath, { readonly: true });
   let rows: AchievementRow[];

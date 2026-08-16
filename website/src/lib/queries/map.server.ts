@@ -4,7 +4,7 @@
  */
 import Database from "better-sqlite3";
 import { resolve } from "path";
-import { DB_STATIC_PATH } from "$lib/constants/constants";
+import { DB_SOURCE_PATH } from "$lib/constants/constants";
 import {
   EXCLUDED_ZONE_IDS,
   WORLD_BOSS_DUNGEON_ID,
@@ -50,7 +50,7 @@ function computeLevelRanges(
  * Load all map entities for prerendering
  */
 export function loadAllMapEntitiesServer(): MapEntityData {
-  const db = new Database(resolve(DB_STATIC_PATH), { readonly: true });
+  const db = new Database(resolve(DB_SOURCE_PATH), { readonly: true });
 
   try {
     const monsters = loadMonsterSpawnsServer(db);
@@ -92,7 +92,7 @@ export function loadAllMapEntitiesServer(): MapEntityData {
  * Load zone list for the zone focus dropdown
  */
 export function loadZoneListServer(): ZoneListItem[] {
-  const db = new Database(resolve(DB_STATIC_PATH), { readonly: true });
+  const db = new Database(resolve(DB_SOURCE_PATH), { readonly: true });
 
   try {
     const excludedZoneIds = Object.keys(EXCLUDED_ZONE_IDS);

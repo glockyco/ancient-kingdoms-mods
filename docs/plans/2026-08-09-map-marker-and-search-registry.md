@@ -25,7 +25,7 @@ changes those require.
 ## 0. Provenance of every claim in this document
 
 Prior planning documents were treated as **untrusted**. Every number below was
-re-derived from source, from `website/static/compendium.db`, or from a primary external
+re-derived from source, from `website/data/compendium.db`, or from a primary external
 document that was actually fetched. Where a prior document was wrong, that is recorded.
 
 Three tiers are used throughout:
@@ -1659,19 +1659,19 @@ All numbers in §0 and §1 come from these. `sqlite3` and `python3` only.
 
 ```sh
 # DB and FTS sizing
-stat -f %z website/static/compendium.db          # 16949248
-gzip -9c website/static/compendium.db | wc -c    # 2471087
-sqlite3 website/static/compendium.db \
+stat -f %z website/data/compendium.db          # 16949248
+gzip -9c website/data/compendium.db | wc -c    # 2471087
+sqlite3 website/data/compendium.db \
   "SELECT sum(pgsize) FROM dbstat WHERE name LIKE '%_fts%';"   # 1429504
 
 # Renderable point counts
-sqlite3 website/static/compendium.db "
+sqlite3 website/data/compendium.db "
   SELECT 'monster',count(*) FROM monster_spawns WHERE position_x IS NOT NULL
   UNION ALL SELECT 'gathering',count(*) FROM gathering_resource_spawns WHERE position_x IS NOT NULL
   UNION ALL SELECT 'npc',count(*) FROM npc_spawns WHERE position_x IS NOT NULL;"
 
 # FTS vocabulary pollution
-sqlite3 website/static/compendium.db "
+sqlite3 website/data/compendium.db "
   CREATE VIRTUAL TABLE temp.v USING fts5vocab(main, items_fts, 'row');
   SELECT term, cnt FROM temp.v ORDER BY cnt DESC LIMIT 25;"
 
@@ -1688,7 +1688,7 @@ done
 ```sh
 # Exhaustive discovery of travel mechanisms in DATA — this is the query that found the
 # NPC teleporters and travel scrolls the first graph analysis missed.
-sqlite3 website/static/compendium.db "
+sqlite3 website/data/compendium.db "
   SELECT m.name||'.'||p.name FROM sqlite_master m JOIN pragma_table_info(m.name) p
   WHERE m.type='table' AND m.name NOT LIKE '%_fts%'
     AND (p.name LIKE '%teleport%' OR p.name LIKE '%destination%'

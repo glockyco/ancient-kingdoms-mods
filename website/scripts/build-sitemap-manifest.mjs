@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import Database from "better-sqlite3";
 
 const SITE_URL = "https://ancient-kingdoms.compendiums.org";
-const DB_PATH = resolve("static/compendium.db");
+const DB_PATH = resolve("data/compendium.db");
 const MANIFEST_PATH = resolve("static/sitemap-manifest.json");
 
 const ENTITY_MANIFEST_PATH = resolve("src/lib/entities/entity-manifest.json");

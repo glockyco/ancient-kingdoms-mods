@@ -477,7 +477,7 @@ PY
 # Integrity checks
 python3 -c "
 import sqlite3
-c=sqlite3.connect('file:website/static/compendium.db?mode=ro',uri=True)
+c=sqlite3.connect('file:website/data/compendium.db?mode=ro',uri=True)
 print(c.execute('SELECT count(*) FROM visual_assets v LEFT JOIN items i ON i.id=v.entity_id WHERE v.domain=\"item\" AND i.id IS NULL').fetchone())
 "
 ```

@@ -9,7 +9,7 @@ When working on the map component, see src/lib/map/CLAUDE.md.
 ## Overview
 
 - **Stack**: SvelteKit 2 + Svelte 5 + TypeScript + Tailwind 4
-- **Database**: Client-side SQLite via sql.js-fts5 (full DB downloaded to browser)
+- **Database**: Client-side SQLite via sql.js-fts5 (full DB downloaded to browser, gzipped and content-hashed)
 - **Map**: deck.gl with OrthographicView for WebGL rendering
 - **UI**: bits-ui components (shadcn-svelte compatible)
 - **Deploy**: Cloudflare Static Assets via wrangler
@@ -60,10 +60,15 @@ src/
 │   ├── queries/         # SQL query functions
 │   ├── types/           # TypeScript types
 │   ├── db.ts            # SQLite wrapper (sql.js-fts5)
+│   ├── database-assets.ts # Content-hashed URLs for the gzipped databases
 │   ├── map/config.ts     # Map configuration constants
 │   ├── constants/constants.ts # Shared constants
-static/
-├── compendium.db        # SQLite database — gitignored, populate with build pipeline
+data/                    # Build inputs — gitignored, produced by the build pipeline
+├── compendium.db        # SQLite database
+├── compendium.db.gz     # Client copy, written by scripts/compress-databases.mjs
+├── search.db            # Search index, built from compendium.db
+└── search.db.gz
+static/                  # Published verbatim at stable, unhashed URLs
 ├── tiles/               # Map tiles
 └── icons/               # Game icons
 ```
@@ -81,6 +86,12 @@ static/
 - sql.js-fts5 (full DB download, FTS5 search support)
 - Queries in `lib/queries/` return typed results
 - Use `query<T>()`, `queryOne<T>()`, `queryScalar<T>()` from `lib/db.ts`
+
+**Database delivery.** Databases are build inputs in `data/`, never files in
+`static/`. Files in `static/` are published unhashed, which Cloudflare serves
+uncompressed and uncacheable. Only `src/lib/database-assets.ts` may import the
+`.gz` assets: each rollup bundle that imports a file emits its own copy under a
+different hashed name.
 
 **Svelte 5 Runes:**
 
@@ -156,9 +167,9 @@ Grammar rules worth knowing:
 
 **Map prerendering:** Map data is prerendered at build time via `+page.server.ts`. deck.gl initializes client-side with `browser` guards.
 
-**Database loading:** DB is downloaded fully on first client query (~15MB). Use `preloadDb()` on map page mount.
+**Database loading:** DB is downloaded fully on first client query (2.3 MB gzipped, 16.3 MB inflated). Use `preloadDb()` on map page mount.
 
-**Database path:** `static/compendium.db` is gitignored. For direct SQL queries (debugging, data exploration), use the absolute path: `website/static/compendium.db` (relative to repo root).
+**Database path:** `data/compendium.db` is gitignored. For direct SQL queries (debugging, data exploration), use the absolute path: `website/data/compendium.db` (relative to repo root).
 
 **Build validation:** Always run `pnpm check && pnpm lint && pnpm build` before committing.
 

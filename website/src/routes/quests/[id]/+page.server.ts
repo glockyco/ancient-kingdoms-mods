@@ -1,7 +1,7 @@
 import Database from "better-sqlite3";
 import { error } from "@sveltejs/kit";
 import type { PageServerLoad, EntryGenerator } from "./$types";
-import { DB_STATIC_PATH } from "$lib/constants/constants";
+import { DB_SOURCE_PATH } from "$lib/constants/constants";
 import type {
   QuestDetailPageData,
   QuestInfo,
@@ -24,7 +24,7 @@ import { getFactionIdsByName } from "$lib/queries/factions.server";
 export const prerender = true;
 
 export const entries: EntryGenerator = () => {
-  const db = new Database(DB_STATIC_PATH, { readonly: true });
+  const db = new Database(DB_SOURCE_PATH, { readonly: true });
   const quests = db.prepare("SELECT id FROM quests").all() as Array<{
     id: string;
   }>;
@@ -40,7 +40,7 @@ const defaultRewards: QuestRewards = {
 };
 
 export const load: PageServerLoad = ({ params }): QuestDetailPageData => {
-  const db = new Database(DB_STATIC_PATH, { readonly: true });
+  const db = new Database(DB_SOURCE_PATH, { readonly: true });
 
   const questRaw = db
     .prepare("SELECT * FROM quests WHERE id = ?")

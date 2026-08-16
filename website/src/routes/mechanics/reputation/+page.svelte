@@ -321,7 +321,7 @@
         highest-level NPCs are level 50, so they give +75 to The Forsaken and
         cost −250 with their own faction.
       </p>
-      <!-- Source: website/static/compendium.db monsters table — spirit_of_the_forest is a level 55 boss with 500,000 health and improves The Forsaken. -->
+      <!-- Source: website/data/compendium.db monsters table — spirit_of_the_forest is a level 55 boss with 500,000 health and improves The Forsaken. -->
       <p>
         Killing NPCs is not the quickest way to raise The Forsaken either. The
         <a

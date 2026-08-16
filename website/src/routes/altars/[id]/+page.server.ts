@@ -2,7 +2,7 @@ import Database from "better-sqlite3";
 import { error } from "@sveltejs/kit";
 import type { PageServerLoad, EntryGenerator } from "./$types";
 import { altarDescription } from "$lib/server/meta-description";
-import { DB_STATIC_PATH } from "$lib/constants/constants";
+import { DB_SOURCE_PATH } from "$lib/constants/constants";
 import type {
   AltarDetailPageData,
   AltarInfo,
@@ -15,7 +15,7 @@ import type {
 export const prerender = true;
 
 export const entries: EntryGenerator = () => {
-  const db = new Database(DB_STATIC_PATH, { readonly: true });
+  const db = new Database(DB_SOURCE_PATH, { readonly: true });
   const altars = db.prepare("SELECT id FROM altars").all() as Array<{
     id: string;
   }>;
@@ -25,7 +25,7 @@ export const entries: EntryGenerator = () => {
 };
 
 export const load: PageServerLoad = ({ params }): AltarDetailPageData => {
-  const db = new Database(DB_STATIC_PATH, { readonly: true });
+  const db = new Database(DB_SOURCE_PATH, { readonly: true });
 
   const altarRaw = db
     .prepare(

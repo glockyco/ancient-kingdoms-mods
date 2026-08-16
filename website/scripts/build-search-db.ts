@@ -12,8 +12,8 @@ import { resolve } from "node:path";
 import { buildSearchDocuments } from "$lib/server/search/documents";
 
 const root = resolve(import.meta.dirname, "..");
-const sourcePath = resolve(root, "static/compendium.db");
-const outputPath = resolve(root, "static/search.db");
+const sourcePath = resolve(root, "data/compendium.db");
+const outputPath = resolve(root, "data/search.db");
 
 const source = new Database(sourcePath, { readonly: true });
 const docs = buildSearchDocuments(source);

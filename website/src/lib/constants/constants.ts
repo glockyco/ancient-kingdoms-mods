@@ -17,7 +17,12 @@ export const EXCLUDED_ZONE_IDS: Record<string, true> = {
 export const WORLD_BOSS_DUNGEON_ID = 100;
 
 /**
- * Database file paths.
+ * Build-time path to the compendium database, relative to the website root.
+ *
+ * The database lives outside static/ on purpose. Anything in static/ is
+ * published verbatim at a stable, unhashed URL, which cannot carry an
+ * immutable cache header. Prerendering and the other build scripts read this
+ * file from disk; the browser gets a gzipped, content-hashed copy emitted by
+ * the Vite asset graph (see src/lib/db.worker.ts).
  */
-export const DB_FILENAME = "compendium.db";
-export const DB_STATIC_PATH = "static/compendium.db";
+export const DB_SOURCE_PATH = "data/compendium.db";

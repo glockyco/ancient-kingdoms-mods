@@ -6,7 +6,7 @@
 #
 #   1. File state. CI checks out tracked files only, while the working tree also
 #      holds gitignored inputs - config.toml, server-scripts/,
-#      website/static/compendium.db - so a test can accidentally depend on one.
+#      website/data/compendium.db - so a test can accidentally depend on one.
 #      Reproduced here with a temporary git worktree, which contains tracked
 #      files only by construction.
 #
@@ -39,7 +39,7 @@ trap cleanup EXIT
 echo "Creating pristine worktree at HEAD..."
 git -C "$REPO_DIR" worktree add --detach --quiet "$WORKTREE" HEAD
 
-for leaked in config.toml server-scripts website/static/compendium.db; do
+for leaked in config.toml server-scripts website/data/compendium.db; do
   if [ -e "$WORKTREE/$leaked" ]; then
     echo "Error: $leaked is tracked but expected to be gitignored."
     exit 1

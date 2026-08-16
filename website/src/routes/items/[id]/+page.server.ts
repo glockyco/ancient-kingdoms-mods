@@ -1,7 +1,7 @@
 import Database from "better-sqlite3";
 import { error } from "@sveltejs/kit";
 import type { PageServerLoad, EntryGenerator } from "./$types";
-import { DB_STATIC_PATH } from "$lib/constants/constants";
+import { DB_SOURCE_PATH } from "$lib/constants/constants";
 import type { ItemDetailPageData } from "$lib/types/items";
 import type { EntityVisualAsset } from "$lib/types/visual-assets";
 import type { Item } from "$lib/queries/items";
@@ -20,7 +20,7 @@ export const prerender = true;
 
 // Generate entries for all items at build time
 export const entries: EntryGenerator = () => {
-  const db = new Database(DB_STATIC_PATH, { readonly: true });
+  const db = new Database(DB_SOURCE_PATH, { readonly: true });
   const items = db.prepare("SELECT id FROM items").all() as Array<{
     id: string;
   }>;
@@ -31,7 +31,7 @@ export const entries: EntryGenerator = () => {
 
 // Load item data at build time (for SSR/prerendering)
 export const load: PageServerLoad = ({ params }): ItemDetailPageData => {
-  const db = new Database(DB_STATIC_PATH, { readonly: true });
+  const db = new Database(DB_SOURCE_PATH, { readonly: true });
 
   const item = db.prepare("SELECT * FROM items WHERE id = ?").get(params.id) as
     Item | undefined;

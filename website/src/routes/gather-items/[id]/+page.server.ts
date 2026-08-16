@@ -6,7 +6,7 @@ import {
   getGatheringResourceDropsFromDb,
   getGatheringResourceSpawnsFromDb,
 } from "$lib/queries/gather-items.server";
-import { DB_STATIC_PATH } from "$lib/constants/constants";
+import { DB_SOURCE_PATH } from "$lib/constants/constants";
 import { buildObtainabilityTree } from "$lib/server/obtainability";
 import type { PageServerLoad, EntryGenerator } from "./$types";
 import type { ObtainabilityNode } from "$lib/types/recipes";
@@ -15,7 +15,7 @@ import { gatheringResourceDescription } from "$lib/server/meta-description";
 export const prerender = true;
 
 export const entries: EntryGenerator = () => {
-  const db = new Database(DB_STATIC_PATH, { readonly: true });
+  const db = new Database(DB_SOURCE_PATH, { readonly: true });
   const resources = db
     .prepare("SELECT id, is_fishing_spot FROM gathering_resources")
     .all() as { id: string; is_fishing_spot: number }[];
@@ -33,7 +33,7 @@ export const entries: EntryGenerator = () => {
 };
 
 export const load: PageServerLoad = ({ params }) => {
-  const db = new Database(DB_STATIC_PATH, { readonly: true });
+  const db = new Database(DB_SOURCE_PATH, { readonly: true });
   const resource = getGatheringResourceByIdFromDb(db, params.id);
 
   if (!resource) {

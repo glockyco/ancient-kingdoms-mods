@@ -24,7 +24,7 @@ Game (IL2CPP Unity)
   -> MelonLoader DataExporter / MapScreenshotter
 exported-data/*.json + exported-data/images/ + exported-data/screenshots/
   -> Python build-pipeline
-website/static/compendium.db + website/static/images/ + website/static/tiles/
+website/data/compendium.db + website/static/images/ + website/static/tiles/
   -> SvelteKit prerendered pages + browser sql.js map/search/popup queries
 Cloudflare Static Assets
 ```

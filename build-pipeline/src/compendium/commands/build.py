@@ -61,12 +61,19 @@ def run(config: dict) -> None:
     export_dir = repo_root / config["paths"]["export_dir"]
     website_dir = repo_root / config["paths"]["website_dir"]
     static_dir = website_dir / "static"
+    # The database is a build input, not a published file. Keeping it out of
+    # static/ stops it from being served verbatim at a stable, unhashed URL,
+    # which cannot be cached immutably. The web build gzips it and gives it a
+    # content-hashed name. Images stay in static/ because pages link to them
+    # directly.
+    data_dir = website_dir / "data"
     schema_path = repo_root / "build-pipeline" / "schema.sql"
 
-    # Ensure static directory exists
+    # Ensure output directories exist
     static_dir.mkdir(parents=True, exist_ok=True)
+    data_dir.mkdir(parents=True, exist_ok=True)
 
-    db_path = static_dir / config["build_pipeline"]["db_name"]
+    db_path = data_dir / config["build_pipeline"]["db_name"]
 
     console.print("[bold]Building database from JSON exports...[/bold]\n")
 

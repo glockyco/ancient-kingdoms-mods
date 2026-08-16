@@ -39,7 +39,7 @@
             pkgs.nodejs_24
             pkgs.pnpm_10
 
-            # Ad-hoc inspection of website/static/compendium.db.
+            # Ad-hoc inspection of website/data/compendium.db.
             pkgs.sqlite
           ];
 

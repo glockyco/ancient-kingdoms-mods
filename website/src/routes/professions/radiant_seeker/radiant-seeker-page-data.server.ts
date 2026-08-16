@@ -1,5 +1,5 @@
 import Database from "better-sqlite3";
-import { DB_STATIC_PATH } from "$lib/constants/constants";
+import { DB_SOURCE_PATH } from "$lib/constants/constants";
 
 interface SparkZone {
   zone_id: string;
@@ -34,7 +34,7 @@ export interface RadiantSeekerPageData {
 }
 
 export function getRadiantSeekerPageData(
-  dbPath = DB_STATIC_PATH,
+  dbPath = DB_SOURCE_PATH,
 ): RadiantSeekerPageData {
   const db = new Database(dbPath, { readonly: true });
 

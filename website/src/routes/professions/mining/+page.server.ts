@@ -1,6 +1,6 @@
 import Database from "better-sqlite3";
 import type { PageServerLoad } from "./$types";
-import { DB_STATIC_PATH } from "$lib/constants/constants";
+import { DB_SOURCE_PATH } from "$lib/constants/constants";
 import {
   getItemSourceSummaries,
   getMinimumSourceLevel,
@@ -97,7 +97,7 @@ interface RawOre {
 }
 
 export const load: PageServerLoad = (): MiningPageData => {
-  const db = new Database(DB_STATIC_PATH, { readonly: true });
+  const db = new Database(DB_SOURCE_PATH, { readonly: true });
 
   const profession = db
     .prepare(

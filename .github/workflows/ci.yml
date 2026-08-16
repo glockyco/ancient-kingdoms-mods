@@ -36,7 +36,7 @@ jobs:
   # `pnpm install --frozen-lockfile` doubles as the drift gate: it fails if the
   # lockfile is out of sync with any package.json.
   #
-  # Two things stay local, both because they need website/static/compendium.db,
+  # Two things stay local, both because they need website/data/compendium.db,
   # which is generated from 128 MB of untracked exported-data:
   #   - `build`, which prerenders every detail page from it;
   #   - the `*.db.test.ts` suites, which assert against real game data.

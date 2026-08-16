@@ -29,7 +29,7 @@ A hand-edited wiki cannot truthfully claim this, and it is why the site can be e
 
 ## Operating Context
 
-- Pipeline: `Game (IL2CPP Unity) → MelonLoader export mods → exported-data/*.json → Python build-pipeline → website/static/compendium.db → SvelteKit site`.
+- Pipeline: `Game (IL2CPP Unity) → MelonLoader export mods → exported-data/*.json → Python build-pipeline → website/data/compendium.db → SvelteKit site`.
 - The site is mostly prerendered against the SQLite database at build time and deployed to Cloudflare Static Assets; the home page alone renders dynamically in a Worker for the live game version.
 - The map downloads the full ~16 MB database into the browser via sql.js-fts5. Detail pages do not, and must not start.
 - Each game patch triggers a re-export, a pipeline rebuild, and a re-verification of every source-cited mechanic against a new `server-scripts/` snapshot. Archived snapshots per version are kept for diffing.
@@ -54,7 +54,7 @@ A hand-edited wiki cannot truthfully claim this, and it is why the site can be e
 
 ## Evidence on Hand
 
-- `website/static/compendium.db` — 58 content tables, generated, gitignored.
+- `website/data/compendium.db` — 58 content tables, generated, gitignored.
 - `exported-data/*.json` — raw per-entity exports including `professions.json`, `static_data.json`, `game_config.json`.
 - `server-scripts/` — 379 decompiled C# files for the current version, plus ~40 archived per-version snapshots for diffing. Gitignored.
 - `citations.lock.json` and `pnpm check:citations` — machine-verified provenance for every hardcoded mechanic.

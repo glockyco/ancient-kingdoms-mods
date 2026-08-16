@@ -7,7 +7,7 @@ Game (IL2CPP Unity)
   ↓ MelonLoader Mods
 exported-data/*.json + exported-data/images/ + exported-data/screenshots/
   ↓ Python Build Pipeline
-website/static/compendium.db + website/static/images/ + website/static/tiles/
+website/data/compendium.db + website/static/images/ + website/static/tiles/
   ↓ Website prebuild (`generate-home-counts.mjs`)
 website/src/lib/generated/
   ↓ SvelteKit mostly prerendered site

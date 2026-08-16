@@ -15,7 +15,7 @@
  * Output: `tests/BetterBestiary.Tests/Fixtures/skill-effect-parity.json`
  * (a stable, sorted `SkillEffectParityCase[]`).
  *
- * Run: `pnpm --filter website gen:skill-effect-parity` (needs website/static/compendium.db).
+ * Run: `pnpm --filter website gen:skill-effect-parity` (needs website/data/compendium.db).
  * The lefthook pre-commit drift guard re-runs this and fails on any diff.
  */
 import { writeFileSync, mkdirSync } from "node:fs";
