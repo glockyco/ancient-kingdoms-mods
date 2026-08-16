@@ -57,7 +57,7 @@ prose disappears. Model each test on `website/src/lib/map/marker-registry.test.t
 - [x] 3.5 Confirm the DataExporter build or an existing analyzer fails when an exporter is not
       registered. Add the assertion if it does not exist. This replaces the registration half of
       `create-new-exporter`.
-- [ ] 3.6 Determine which `svelte-5-patterns` rules `eslint-plugin-svelte` can enforce, and enable
+- [x] 3.6 Determine which `svelte-5-patterns` rules `eslint-plugin-svelte` can enforce, and enable
       them. Anything it cannot enforce and that still passes the keep test becomes a rule scoped to
       `**/*.svelte`; the rest is dropped.
 - [x] 3.7 Verify each new test fails when the registration is removed. A test that has never failed
@@ -65,10 +65,13 @@ prose disappears. Model each test on `website/src/lib/map/marker-registry.test.t
 
 ## 4. Reduce the skill set from 15 to 5
 
-- [ ] 4.1 Delete the eight scaffolding skills now covered by tests, examples, or lint:
+- [x] 4.1 Delete the seven scaffolding skills now covered by tests or examples:
       `create-new-loader`, `create-new-denormalizer`, `create-new-exporter`,
-      `create-entity-detail-page`, `create-entity-overview-page`, `add-map-entity-layer`,
-      `create-new-mod`, `svelte-5-patterns`.
+      `create-entity-detail-page`, `create-entity-overview-page`, `create-new-mod`,
+      `svelte-5-patterns`.
+- [ ] 4.1a Delete `add-map-entity-layer` once task 2.3 has landed its rule. Held back because its
+      registration is covered by `marker-registry.test.ts` but its procedural content has nowhere
+      to go until that rule exists, and it is the only skill that currently loads for map work.
 - [ ] 4.2 Delete `edit-claude-md` and `writing-skills`; their surviving content is the routing rule
       written into the root `AGENTS.md` in task 1.1.
 - [ ] 4.3 Move the five survivors to `.agent/skills/` and delete `.claude/` **in the same commit**.
