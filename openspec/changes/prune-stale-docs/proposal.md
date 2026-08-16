@@ -79,13 +79,12 @@ None.
 
 ## Impact
 
-- **Deleted:** 5 files, 473 lines.
+- **Deleted:** 31 files, 18,084 lines.
 - **Edited:** `CLAUDE.md`, `docs/plans/INDEX.md`,
   `docs/plans/2026-07-31-ancient-kingdoms-overview.md`, and the migration change's `tasks.md`.
 - **Risk:** low. Nothing in CI, the build, or the deploy reads these files. `omp-plans` is not
   installed on this machine, so the `lefthook.yml:68-75` plans job skips and `INDEX.md` is edited
   by hand.
-- **Deferred, needs a decision:** `docs/plans/archive/` holds 26 documents and 17,611 lines,
-  roughly ten times the material this change removes. Whether a completed plan retains value after
-  the work ships is a policy question with one defensible answer either way, so it is raised rather
-  than assumed.
+- **The plan archive is removed too:** 26 documents and 17,611 lines. Audited individually against
+  the completed-plan requirement; 25 held nothing the code does not already carry. Six passages of
+  genuine rationale were relocated into the files that own those decisions before deletion.

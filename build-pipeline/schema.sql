@@ -211,7 +211,14 @@ CREATE TABLE houses (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
     description TEXT,
+    -- The game applies player-specific modifiers on purchase, so this is the
+    -- pre-modifier figure and must be labelled as a base price.
+    -- Source: server-scripts/Housing.cs:47 — CalculatePurchaseItemPrice(price_house, player)
     base_price INTEGER NOT NULL DEFAULT 0,
+    -- Deliberately not a foreign key to factions(id). The game stores a display
+    -- name here, not a normalized id, so exported values look like
+    -- "Elven Kingdom". Preserve the exported value rather than inventing a join.
+    -- Source: server-scripts/Housing.cs:13 — public string faction_house
     faction_id TEXT,
     faction_required REAL DEFAULT 0,
     zone_id TEXT REFERENCES zones(id),

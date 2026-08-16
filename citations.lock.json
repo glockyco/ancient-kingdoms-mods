@@ -647,6 +647,10 @@
     "GatherItem.cs:Update": {
       "span": 0
     },
+    "Housing.cs:13": {
+      "sha256": "9c841860b2f57982b47cdbbae6d9d37fc94593a5dab2b9fdd35802518b660f3e",
+      "span": 1
+    },
     "Housing.cs:33-38": {
       "sha256": "1abd246c6643d86377d6cf23df143c0a85277da364b1b69fbb4ffea5662b09f0",
       "span": 6
@@ -654,6 +658,10 @@
     "Housing.cs:33-49": {
       "sha256": "80fc1a7e189254ede031aa206f607901cb2f51c4e6c940c62f2b4d542b274fcd",
       "span": 17
+    },
+    "Housing.cs:47": {
+      "sha256": "7d4f145372a62c5dbb30d07b000d9109fa5377d68a20c9f4801a81032fada134",
+      "span": 1
     },
     "HousingManager.cs:21-32": {
       "sha256": "a4d308ba8f7191c0a0b7d96ad53a3548d0ccaf79bda570087325a8d592f6d466",

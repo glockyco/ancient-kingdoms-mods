@@ -32,3 +32,17 @@
       `plans/`.
 - [x] 3.3 Run `pnpm check:citations` and the website and pipeline test suites, to confirm no
       tooling read the deleted files.
+
+## 4. Prune the plan archive
+
+- [x] 4.1 Audit all 26 documents in `docs/plans/archive/` against the completed-plan requirement.
+      Verdicts: 25 delete, 1 holding rationale worth relocating.
+- [x] 4.2 Relocate the rationale that survives the audit, before deleting anything:
+      the measured popup timings into `website/src/lib/map/interaction.ts`; the `houses.faction_id`
+      and `houses.base_price` constraints into `build-pipeline/schema.sql`; the deliberate JSON-LD
+      omissions into `website/src/lib/seo/jsonld.ts`; the bare-URL hashing reason into
+      `website/scripts/build-sitemap-manifest.mjs`; the per-entry symlink reason into
+      `scripts/bootstrap-worktree.sh`; the native-CTA choice into `SupportButton.svelte`.
+- [x] 4.3 Verify every relocated game-source claim against `server-scripts/` before writing it.
+- [x] 4.4 Delete `docs/plans/archive/` and remove the archive count line from `docs/plans/INDEX.md`.
+- [x] 4.5 Confirm no live document referenced any archived plan.

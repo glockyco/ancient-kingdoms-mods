@@ -113,6 +113,9 @@ link_if_missing() {
   printf 'Linked %s: %s -> %s\n' "$label" "$dest" "$source"
 }
 
+# Links entries individually rather than symlinking exported-data/ wholesale.
+# A fresh worktree already contains tracked files inside that directory, so
+# replacing the whole thing would either fail or discard them.
 link_exported_data_entries() {
   local source_dir="$1"
   local dest_dir="$2"

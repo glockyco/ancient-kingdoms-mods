@@ -41,6 +41,17 @@ export interface WebSiteNode {
   publisher: IdRef;
 }
 
+/**
+ * Three standard WebSite properties are omitted on purpose, each because the
+ * thing it would point at does not exist:
+ * - `potentialAction.SearchAction` needs a `/search?q=` route, and the route
+ *   tree has none. Add it when a real search endpoint ships.
+ * - `Dataset` needs a published data dump. The compendium database is a build
+ *   artifact, not a published dataset.
+ * - `about.sameAs` needs a curated Wikidata QID for the game. None exists.
+ *
+ * Emitting any of them unbacked would assert something untrue to crawlers.
+ */
 export function buildWebSite(): WebSiteNode {
   return {
     "@type": "WebSite",

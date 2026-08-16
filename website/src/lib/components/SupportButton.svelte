@@ -1,3 +1,8 @@
+<!--
+  A native CTA, deliberately not Ko-fi's official widget. The widget injects
+  third-party scripts; this is a plain link built from existing site components
+  and the shared KOFI_URL constant.
+-->
 <script lang="ts">
   import KofiIcon from "$lib/components/KofiIcon.svelte";
   import { KOFI_URL } from "$lib/constants/links";
