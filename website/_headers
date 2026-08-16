@@ -1,0 +1,32 @@
+# Cache policy for the files that are not content-hashed.
+#
+# Cloudflare's asset layer defaults every unhashed file to
+# `public, max-age=0, must-revalidate`. Nothing on this site was edge-cacheable
+# except /_app/immutable/, so the edge re-read whole objects on every hit. The
+# prerendered /map document alone is 3.7 MB, and it was the single largest
+# source of sustained 504s.
+#
+# The SvelteKit Cloudflare adapter appends its own block to this file at build
+# time. That block owns /_app/ and /_app/immutable/, so those paths are absent
+# here. A more specific rule has to unset Cache-Control before setting it,
+# otherwise the value from /* is merged with it.
+
+/*
+  Cache-Control: public, max-age=0, s-maxage=60
+
+# Documents are deliberately held for one minute and no longer. A deploy
+# replaces the hashed bundles that the HTML references, so serving a stale
+# document for hours would point browsers at chunks that no longer exist.
+# Sixty seconds is enough to collapse a request flood into one origin read.
+
+/tiles/*
+  ! Cache-Control
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+
+/images/*
+  ! Cache-Control
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+
+/icons/*
+  ! Cache-Control
+  Cache-Control: public, max-age=604800
