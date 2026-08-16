@@ -40,27 +40,27 @@
 Do this before deleting the skills, so the invariant each one described is asserted before its
 prose disappears. Model each test on `website/src/lib/map/marker-registry.test.ts`.
 
-- [ ] 3.1 Add a build-pipeline test asserting every loader exported from
+- [x] 3.1 Add a build-pipeline test asserting every loader exported from
       `build-pipeline/src/compendium/loaders/__init__.py` is called in
       `build-pipeline/src/compendium/commands/build.py`. Both sides currently count 64. This
       replaces the registration steps in `create-new-loader`.
-- [ ] 3.2 Add a build-pipeline test asserting every denormalizer package under
+- [x] 3.2 Add a build-pipeline test asserting every denormalizer package under
       `build-pipeline/src/compendium/denormalizers/` is invoked by `run_all`. Eleven packages
       exist. This replaces `create-new-denormalizer`.
-- [ ] 3.3 Add a website test asserting every entity in
+- [x] 3.3 Add a website test asserting every entity in
       `website/src/lib/entities/entity-manifest.json` that declares a `detailPrefix` has a
       corresponding route directory, and every entity with an overview declares a route. Twenty
       three entries exist. This replaces `create-entity-detail-page` and
       `create-entity-overview-page`.
-- [ ] 3.4 Confirm `marker-registry.test.ts` already asserts that every map layer is registered.
+- [x] 3.4 Confirm `marker-registry.test.ts` already asserts that every map layer is registered.
       Extend it if it does not. This replaces `add-map-entity-layer`.
-- [ ] 3.5 Confirm the DataExporter build or an existing analyzer fails when an exporter is not
+- [x] 3.5 Confirm the DataExporter build or an existing analyzer fails when an exporter is not
       registered. Add the assertion if it does not exist. This replaces the registration half of
       `create-new-exporter`.
 - [ ] 3.6 Determine which `svelte-5-patterns` rules `eslint-plugin-svelte` can enforce, and enable
       them. Anything it cannot enforce and that still passes the keep test becomes a rule scoped to
       `**/*.svelte`; the rest is dropped.
-- [ ] 3.7 Verify each new test fails when the registration is removed. A test that has never failed
+- [x] 3.7 Verify each new test fails when the registration is removed. A test that has never failed
       is not known to work.
 
 ## 4. Reduce the skill set from 15 to 5
