@@ -850,7 +850,7 @@
   /**
    * How each damage type is mitigated and avoided, mirroring the game one row per type.
    *
-   * `stat` is the stat that reduces the damage. Source: server-scripts/Combat.cs:680-697 — the
+   * `stat` is the stat that reduces the damage. Source: server-scripts/Combat.cs:669-686 — the
    * per-damage-type switch, each read multiplied by 0.0005.
    * `avoidance` is which roll can prevent the hit. Source: server-scripts/Combat.cs:501-508 —
    * Normal damage goes to GetProbResistMeleeDamage, every other type to its own GetProbResist*.
@@ -2293,7 +2293,7 @@
                     </p>
                   {/if}
                 {:else if ctx.model === "player_spell"}
-                  <!-- Source: server-scripts/Skills.cs:820-824, server-scripts/Combat.cs:314-324 -->
+                  <!-- Source: server-scripts/Skills.cs:843-848, server-scripts/Combat.cs:314-324 -->
                   <!-- Source: server-scripts/Player.cs:refractoryPeriodSkill — refractoryPeriodSkill = 0.75f; blocks next cast after FinishCast -->
                   <p class="font-mono">
                     interval = cast time &times; (1 &minus; spell haste) + 0.75s
@@ -2312,7 +2312,7 @@
                     haste (cap: &minus;80%).
                   </p>
                 {:else if ctx.model === "merc_spell"}
-                  <!-- Source: server-scripts/Skills.cs:820-824, server-scripts/Skills.cs:947-950, server-scripts/Combat.cs:314-324 -->
+                  <!-- Source: server-scripts/Skills.cs:843-848, server-scripts/Skills.cs:971-974, server-scripts/Combat.cs:314-324 -->
                   <p class="font-mono">
                     interval = cast time &times; (1 &minus; spell haste) +
                     cooldown
@@ -2329,7 +2329,7 @@
                 {:else}
                   <!-- companion: companions, familiars -->
                   <!-- Source: server-scripts/Pet.cs -->
-                  <!-- Source: server-scripts/Skills.cs:947-950 — companion cooldown remains flat -->
+                  <!-- Source: server-scripts/Skills.cs:971-974 — companion cooldown remains flat -->
                   <p class="font-mono">interval = cast time + cooldown</p>
                   <p class="text-muted-foreground">No haste reduction.</p>
                 {/if}
@@ -2363,7 +2363,7 @@
                         ? "DEX"
                         : "INT"}
                   </p>
-                  <!-- Source: server-scripts/Buff.cs:95-109 — defense getter, negative branch: bonusAttribute × 0.4 -->
+                  <!-- Source: server-scripts/Buff.cs:97-111 — defense getter, negative branch: bonusAttribute × 0.4 -->
                   <dl
                     class="grid grid-cols-1 sm:grid-cols-[16rem_1fr] gap-x-4 gap-y-1 font-mono"
                   >
@@ -2412,7 +2412,7 @@
                     {#if hasNonZeroField(skill.healing_per_second_bonus)}
                       <dt class="text-muted-foreground">DoT</dt>
                       {#if skill.is_poison_debuff || skill.is_disease_debuff}
-                        <!-- Source: server-scripts/Skills.cs:1406-1429 — the shared poison/disease branch adds round(bonusAttribute × 1.5) before Poison Resist mitigation. Its ordering takes precedence over the later disease-specific branch. -->
+                        <!-- Source: server-scripts/Skills.cs:1430-1453 — the shared poison/disease branch adds round(bonusAttribute × 1.5) before Poison Resist mitigation. Its ordering takes precedence over the later disease-specific branch. -->
                         <dd>
                           skillValue(level) + round(bonusAttribute &times; 1.5)
                         </dd>
@@ -2432,7 +2432,7 @@
         {/if}
 
         <!-- D2. Resist Chance — shown for debuffs and dispels (both roll to resist); hidden for cleanse (no resist roll) -->
-        <!-- Source: server-scripts/Combat.cs:1305-1338 GetProbResistMeleeDebuff/Magic/Poison/Fire/Cold/Disease; resist gate TargetDebuffSkill.cs:104-142 / AreaDebuffSkill.cs:103-138 -->
+        <!-- Source: server-scripts/Combat.cs:1294-1327 GetProbResistMeleeDebuff/Magic/Poison/Fire/Cold/Disease; resist gate TargetDebuffSkill.cs:104-142 / AreaDebuffSkill.cs:103-138 -->
         {#if isDebuffType && !skill.is_cleanse && (skill.is_melee_debuff || skill.is_poison_debuff || skill.is_fire_debuff || skill.is_cold_debuff || skill.is_disease_debuff || skill.is_magic_debuff)}
           <div class="space-y-1">
             <h4 class="font-medium text-muted-foreground">Resist Chance</h4>
@@ -2456,7 +2456,7 @@
         {/if}
 
         <!-- E. Cleanse Resistance (on debuff skill pages) -->
-        <!-- Source: server-scripts/Buff.cs:18 (3 counters); TargetBuffSkill.cs:134-158 (HasMatchingCleanseDebuff), 236-458 (Apply cleanse branch and counter rolls); Skills.cs:1531-1536 (DoT per-counter scaling) -->
+        <!-- Source: server-scripts/Buff.cs:18 (3 counters); BuffSkill.cs:136-158 (GetCleanseCountersRemoved); TargetBuffSkill.cs:134-158 (HasMatchingCleanseDebuff), 236-458 (Apply cleanse branch); Skills.cs:1555-1560 (DoT per-counter scaling) -->
         {#if isDebuffType && !skill.is_cleanse && !skill.is_dispel && skill.prob_ignore_cleanse != null}
           <div class="space-y-1">
             <h3 class="font-semibold">Cleanse Resistance</h3>
@@ -2475,7 +2475,7 @@
                 counters reach 0. A matching cleanse removes 1 counter for
                 certain, then makes 2 more attempts that each remove another
                 counter with a {formatPercent(1 - skill.prob_ignore_cleanse)} chance.{skill.healing_per_second_bonus
-                  ? " While counters remain, each tick of its damage is reduced, to 80% of full at 2 counters and 60% at 1 counter."
+                  ? " While counters remain, each tick of its damage is reduced, to 85% of full at 2 counters and 70% at 1 counter."
                   : ""}
               </p>
             {/if}
@@ -2483,7 +2483,7 @@
         {/if}
 
         <!-- E2. Cleanse Mechanics (on cleanse skill pages) -->
-        <!-- Source: server-scripts/RelicItem.cs:20-35 (finite-charge item gate); TargetBuffSkill.cs:134-158 (HasMatchingCleanseDebuff), 236-458 (Apply cleanse branch and counter rolls); Buff.cs:18 (3 counters); Skills.cs:1531-1536 (DoT per-counter scaling) -->
+        <!-- Source: server-scripts/RelicItem.cs:20-35 (finite-charge item gate); BuffSkill.cs:136-158 (GetCleanseCountersRemoved); TargetBuffSkill.cs:134-158 (HasMatchingCleanseDebuff), 236-458 (Apply cleanse branch); Buff.cs:18 (3 counters); Skills.cs:1555-1560 (DoT per-counter scaling) -->
         {#if skill.is_cleanse}
           <div class="space-y-1">
             <h3 class="font-semibold">
@@ -2506,7 +2506,7 @@
               each remove another counter with a chance of (100% &minus; Cleanse
               Resist), and a debuff with a Cleanse Resist of 100% cannot be
               cleansed. For damage-over-time debuffs, losing counters also
-              lowers each tick of damage, to 80% of full at 2 counters and 60%
+              lowers each tick of damage, to 85% of full at 2 counters and 70%
               at 1 counter.
             </p>
           </div>
@@ -2517,7 +2517,7 @@
           {@const playerCast =
             skill.is_scroll || skill.player_classes.length > 0}
           <div class="space-y-1">
-            <!-- Source: server-scripts/TargetDebuffSkill.cs:104-142 (resist gate), 172-204,208-233,237-249 (removal); AreaDebuffSkill.cs:103-138 (resist gate), 163-204,208-232,237-257 (removal); Combat.cs:1311-1338 GetProbResistMagic/Disease -->
+            <!-- Source: server-scripts/TargetDebuffSkill.cs:104-142 (resist gate), 172-204,208-233,237-249 (removal); AreaDebuffSkill.cs:103-138 (resist gate), 163-204,208-232,237-257 (removal); Combat.cs:1300-1327 GetProbResistMagic/Disease -->
             <h3 class="font-semibold">
               <a
                 href="/mechanics/combat#dispel"
@@ -2601,17 +2601,17 @@
 
         <!-- G. Special Mechanic Notes -->
         {#if isWildStrike}
-          <!-- Source: server-scripts/DamageSkill.cs:47-63 (TryConsumeWildStrike) -->
+          <!-- Source: server-scripts/DamageSkill.cs:47-65 (TryConsumeWildStrike) -->
           <!-- Source: server-scripts/TargetDamageSkill.cs:239,282 (Apply) -->
           <!-- Source: server-scripts/TargetProjectileSkill.cs:221-222,251-255 (Apply) -->
-          <!-- Source: server-scripts/Combat.cs:368,601,678-685,944-955 (DealDamageAt) -->
+          <!-- Source: server-scripts/Combat.cs:368,601,667-674,944-955 (DealDamageAt) -->
           <div class="space-y-1">
             <h3 class="font-semibold">Wild Strike</h3>
             <FormulaDisplay display={renderWildStrikeFormulaDisplay()} />
           </div>
         {/if}
         {#if skill.id === "parry"}
-          <!-- Source: server-scripts/Combat.cs:1106-1119, 1338-1348; Player.cs:11490-11494 -->
+          <!-- Source: server-scripts/Combat.cs:1106-1119, 1327-1337; Player.cs:11610-11614 -->
           <div class="space-y-1">
             <h3 class="font-semibold">
               <a
@@ -2687,7 +2687,7 @@
           </div>
         {/if}
         {#if hasLinearValue(skill.knockback_chance)}
-          <!-- Source: server-scripts/Combat.cs:67 (knockbackTime = 0.25f), 919-924 -->
+          <!-- Source: server-scripts/Combat.cs:67 (knockbackTime = 0.25f), 908-913 -->
           <div class="space-y-1">
             <h3 class="font-semibold">Knockback</h3>
             <p class="text-muted-foreground">
@@ -2713,7 +2713,7 @@
           </div>
         {/if}
         {#if skill.speed_bonus && skill.speed_bonus.base_value <= -50}
-          <!-- Source: server-scripts/Skills.cs:1346-1351 (BreakMezz — entity.speed <= -50f) -->
+          <!-- Source: server-scripts/Skills.cs:1370-1375 (BreakMezz — entity.speed <= -50f) -->
           <!-- Source: server-scripts/Combat.cs:DealDamageAt (any damage > 0 calls BreakMezz) -->
           <!-- Source: server-scripts/Monster.cs:1497-1511 (monster self-break roll every 6s) -->
           <!-- Source: server-scripts/TargetDebuffSkill.cs:140 (boss/elite auto-resist speedBonus < -10) -->
@@ -2740,7 +2740,7 @@
         {/if}
         {#if hasLinearValue(skill.block_chance_bonus)}
           <!-- Source: server-scripts/Combat.cs:280-290 (blockChance property) -->
-          <!-- Source: server-scripts/Skills.cs:473-488 (GetBlockChanceBonus) -->
+          <!-- Source: server-scripts/Skills.cs:497-512 (GetBlockChanceBonus) -->
           <div class="space-y-1">
             <h3 class="font-semibold">Block Chance</h3>
             <p class="text-muted-foreground">
@@ -2832,7 +2832,7 @@
           </div>
         {/if}
         {#if hasLinearValue(skill.damage_shield)}
-          <!-- Source: server-scripts/Combat.cs:744-754,756-777,781-791,796-820 (damage_shield reflect block; gated by !isProcWeapon && !isScroll) -->
+          <!-- Source: server-scripts/Combat.cs:733-743,745-766,781-791,796-820 (damage_shield reflect block; gated by !isProcWeapon && !isScroll) -->
           <div class="space-y-1">
             <h3 class="font-semibold">Damage Shield</h3>
             <p class="text-muted-foreground">
@@ -2846,8 +2846,8 @@
           </div>
         {/if}
         {#if skill.is_blindness}
-          <!-- Source: server-scripts/Player.cs:10775-10807 (TargetRpcAddBlind/RemoveBlind) -->
-          <!-- Source: server-scripts/Skills.cs:912 (isBlindness check, Player only) -->
+          <!-- Source: server-scripts/Player.cs:10895-10927 (TargetRpcAddBlind/RemoveBlind) -->
+          <!-- Source: server-scripts/Skills.cs:936 (isBlindness check, Player only) -->
           <div class="space-y-1">
             <h3 class="font-semibold">Blindness</h3>
             <p class="text-muted-foreground">

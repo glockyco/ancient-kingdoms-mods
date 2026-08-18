@@ -651,8 +651,8 @@ finalDamage = damage − reduction</pre>
           absorption apply afterward.
         </p>
         <p class="text-sm text-muted-foreground mt-2">
-          <strong>DoT counter decay:</strong> 3 counters full damage, 2 → ×0.8, 1
-          → ×0.6.
+          <strong>DoT counter decay:</strong> 3 counters full damage, 2 → ×0.85, 1
+          → ×0.7.
         </p>
         <p class="text-sm text-muted-foreground mt-2">
           <strong>DoT critical ticks:</strong> damage-over-time ticks can crit for
@@ -1060,9 +1060,8 @@ finalDamage = damage − reduction</pre>
         <p class="text-sm text-muted-foreground mt-2">
           A debuff with counters left stays on the target and can be reduced
           further by cleansing again. For damage-over-time debuffs, losing
-          counters also lowers each tick of damage, to 80% of full at 2 counters
-          and 60% at 1 counter. Nothing the caster does, Accuracy included,
-          changes how many counters a cleanse removes.
+          counters also lowers each tick of damage, to 85% of full at 2 counters
+          and 70% at 1 counter.
         </p>
       </div>
 
