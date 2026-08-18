@@ -1,4 +1,7 @@
 #nullable disable
+using System;
+using System.Reflection;
+
 namespace BetterBestiary.Skills;
 
 /// <summary>
@@ -15,6 +18,10 @@ namespace BetterBestiary.Skills;
 /// </summary>
 internal sealed class SkillEffectInput
 {
+    private static readonly PropertyInfo[] LinearProperties = Array.FindAll(
+        typeof(SkillEffectInput).GetProperties(BindingFlags.Instance | BindingFlags.Public),
+        property => property.PropertyType == typeof(LinearValue));
+
     public string id { get; set; }
     public string skill_type { get; set; }
     public string damage_type { get; set; }
@@ -123,4 +130,24 @@ internal sealed class SkillEffectInput
 
     // Cleanse resistance
     public double? prob_ignore_cleanse { get; set; }
+
+    public void ResolveAtLevel(int level)
+    {
+        if (duration_per_level.HasValue)
+        {
+            duration_base += duration_per_level.Value * (level - 1);
+            duration_per_level = 0;
+        }
+
+        foreach (var property in LinearProperties)
+        {
+            var value = (LinearValue)property.GetValue(this);
+            if (value == null)
+                continue;
+
+            property.SetValue(this, new LinearValue(
+                value.base_value + value.bonus_per_level * (level - 1),
+                0));
+        }
+    }
 }

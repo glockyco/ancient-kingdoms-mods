@@ -586,19 +586,25 @@ def load_monster_skills(conn: sqlite3.Connection, export_dir: Path) -> None:
 
     cursor = conn.cursor()
 
-    # Build set of valid skill IDs for referential integrity
-    valid_skills = {
-        row[0] for row in cursor.execute("SELECT id FROM skills").fetchall()
+    # Skill(ScriptableSkill) initializes level directly from learn_default.
+    # MonsterSkills adds that instance without applying the monster's entity level.
+    runtime_levels = {
+        skill_id: 1 if learn_default else 0
+        for skill_id, learn_default in cursor.execute(
+            "SELECT id, learn_default FROM skills"
+        ).fetchall()
     }
 
     count = 0
     skipped = 0
     for monster in monsters:
         for index, skill_id in enumerate(monster.skill_ids):
-            if skill_id in valid_skills:
+            if skill_id in runtime_levels:
                 cursor.execute(
-                    "INSERT INTO monster_skills (monster_id, skill_id, skill_index) VALUES (?, ?, ?)",
-                    (monster.id, skill_id, index),
+                    "INSERT INTO monster_skills "
+                    "(monster_id, skill_id, skill_index, runtime_level) "
+                    "VALUES (?, ?, ?, ?)",
+                    (monster.id, skill_id, index, runtime_levels[skill_id]),
                 )
                 count += 1
             else:

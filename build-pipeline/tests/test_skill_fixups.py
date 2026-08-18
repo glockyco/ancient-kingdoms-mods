@@ -14,8 +14,7 @@ def _linear(base: float, per_level: float) -> str:
 
 
 class SkillFixupTests(unittest.TestCase):
-    """A LinearValue resolves to bonus_per_level * (level - 1) + base_value, so a
-    single-level skill can never reach its per-level growth."""
+    """Fixups must preserve formula inputs that runtime contexts still use."""
 
     def _run(self, rows: list[tuple[str, int, str, str]]) -> dict[str, tuple[str, str]]:
         with tempfile.TemporaryDirectory() as tmp:
@@ -38,14 +37,16 @@ class SkillFixupTests(unittest.TestCase):
             finally:
                 conn.close()
 
-    def test_zeroes_per_level_growth_a_single_level_skill_cannot_reach(self):
+    def test_keeps_per_level_growth_used_by_level_zero_monster_skills(self):
         result = self._run(
             [("ant_attack", 1, _linear(0.01, 0.003), _linear(2, 1))],
         )
 
         stun, damage = result["ant_attack"]
-        self.assertEqual(json.loads(stun), {"base_value": 0.01, "bonus_per_level": 0})
-        self.assertEqual(json.loads(damage), {"base_value": 2, "bonus_per_level": 0})
+        self.assertEqual(
+            json.loads(stun), {"base_value": 0.01, "bonus_per_level": 0.003}
+        )
+        self.assertEqual(json.loads(damage), {"base_value": 2, "bonus_per_level": 1})
 
     def test_keeps_per_level_growth_a_multi_level_skill_reaches(self):
         result = self._run(

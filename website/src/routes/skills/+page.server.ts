@@ -19,6 +19,11 @@ export interface SkillsPageData {
 
 export const load: PageServerLoad = (): SkillsPageData => {
   const rows = query<SkillEffectRow>(SKILLS_LIST_QUERY);
+  const levelZeroMonsterSkills = new Set(
+    query<{ skill_id: string }>(
+      "SELECT DISTINCT skill_id FROM monster_skills WHERE runtime_level = 0",
+    ).map((row) => row.skill_id),
+  );
 
   // Separate query for pet/mercenary relationships — plain object lookup, not Map
   // (Map is not serializable through SvelteKit's data passing)
@@ -66,7 +71,9 @@ export const load: PageServerLoad = (): SkillsPageData => {
       is_veteran: Boolean(row.is_veteran),
       is_pet_skill: Boolean(row.is_pet_skill),
       is_mercenary_skill: Boolean(row.is_mercenary_skill),
-      effect: formatSkillEffect(skillForEffect),
+      effect: formatSkillEffect(skillForEffect, {
+        levelZeroScaling: levelZeroMonsterSkills.has(row.id),
+      }),
       used_by_mercenaries: usedByMercenaries.has(row.id),
       used_by_pets: usedByPets.has(row.id),
       pet_id: row.pet_id,

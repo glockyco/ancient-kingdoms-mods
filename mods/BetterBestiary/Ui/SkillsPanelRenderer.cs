@@ -67,10 +67,16 @@ internal static class SkillsPanelRenderer
             icon.enabled = skill.image != null;
             name.text = skill.nameSkill;
 
+            var runtimeLevel = skills.skills != null && i < skills.skills.Count
+                ? skills.skills[i].level
+                : (skill.learnDefault ? 1 : 0);
+
             string summaryText;
             try
             {
-                summaryText = SkillEffectFormatter.Format(SkillEffectExtractor.From(skill), monsterContext: true);
+                var effect = SkillEffectExtractor.From(skill);
+                effect.ResolveAtLevel(runtimeLevel);
+                summaryText = SkillEffectFormatter.Format(effect, monsterContext: true);
             }
             catch (Exception ex)
             {
@@ -79,9 +85,11 @@ internal static class SkillsPanelRenderer
             }
             summary.text = string.IsNullOrEmpty(summaryText) ? "\u2014" : summaryText;
 
-            var passive = skill.castTime.Get(1) <= 0f && skill.cooldown.Get(1) <= 0f;
-            cd.text = passive ? "Passive" : Pretty(skill.cooldown.Get(1));
-            cast.text = passive ? "" : Pretty(skill.castTime.Get(1));
+            var castTime = skill.castTime.Get(runtimeLevel);
+            var cooldown = skill.cooldown.Get(runtimeLevel);
+            var passive = castTime <= 0f && cooldown <= 0f;
+            cd.text = passive ? "Passive" : Pretty(cooldown);
+            cast.text = passive ? "" : Pretty(castTime);
         }
     }
 

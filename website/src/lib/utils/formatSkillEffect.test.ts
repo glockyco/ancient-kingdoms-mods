@@ -33,6 +33,25 @@ describe("formatSkillEffect stat bonuses", () => {
   });
 });
 
+describe("formatSkillEffect level-zero scaling", () => {
+  it("shows the exact skill-level formula when level zero is used", () => {
+    const attack = {
+      skill_type: "target_damage",
+      damage_type: "Physical",
+      damage: { base_value: 2, bonus_per_level: 0 },
+      stun_chance: { base_value: 0.01, bonus_per_level: 0.003 },
+      stun_time: { base_value: 1, bonus_per_level: 0 },
+    } as Skill;
+
+    expect(formatSkillEffect(attack, { levelZeroScaling: true })).toBe(
+      "2 physical dmg, (0.7% + 0.3% × skill lvl) stun (1s)",
+    );
+    expect(formatSkillEffect(attack)).toBe(
+      "2 physical dmg, 1% (+0.3%/lvl) stun (1s)",
+    );
+  });
+});
+
 describe("formatSkillEffect enrage passives", () => {
   const enrageSkill = {
     skill_type: "passive",
@@ -45,8 +64,10 @@ describe("formatSkillEffect enrage passives", () => {
   });
 
   it("formats the passive enrage threshold with a monster context", () => {
-    expect(formatSkillEffect(enrageSkill, { damage: 0, magicDamage: 0 })).toBe(
-      "+50-75% damage below 10% HP",
-    );
+    expect(
+      formatSkillEffect(enrageSkill, {
+        monster: { damage: 0, magicDamage: 0 },
+      }),
+    ).toBe("+50-75% damage below 10% HP");
   });
 });

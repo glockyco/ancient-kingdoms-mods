@@ -10,11 +10,9 @@ namespace BetterBestiary.Skills;
 /// NO data export (unreleased/dev game versions): every value comes straight off the
 /// in-memory game object.
 ///
-/// Field selection mirrors the website's <c>skillRowToEffectInput</c> — INCLUDING its
-/// omissions. <c>is_double_exp_spell</c>, <c>is_permanent</c> and <c>duration_per_level</c>
-/// exist on the game object but the website never feeds them to <c>formatSkillEffect</c>,
-/// so they are deliberately left unset here, keeping the panel output identical to the
-/// site (and to the parity corpus).
+/// Field selection mirrors the website's <c>skillRowToEffectInput</c>. Every field
+/// read by <c>formatSkillEffect</c> is populated so the live panel and website use
+/// the same effect contract.
 /// </summary>
 internal static class SkillEffectExtractor
 {
@@ -132,6 +130,7 @@ internal static class SkillEffectExtractor
             return;
 
         input.is_mana_shield = targetBuffSkill.isManaShield;
+        input.is_double_exp_spell = targetBuffSkill.isDoubleExpSpell;
     }
 
     private static void PopulateBonus(ScriptableSkill skill, SkillEffectInput input)
@@ -182,6 +181,8 @@ internal static class SkillEffectExtractor
         if (buffSkill != null)
         {
             input.duration_base = buffSkill.buffTime.baseValue;
+            input.duration_per_level = buffSkill.buffTime.bonusPerLevel;
+            input.is_permanent = buffSkill.isPermanent;
             input.is_invisibility = buffSkill.invisibility;
             input.illusion_race = string.IsNullOrWhiteSpace(buffSkill.illusionRace)
                 ? null

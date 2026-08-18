@@ -651,6 +651,7 @@ CREATE TABLE monster_skills (
     monster_id TEXT NOT NULL REFERENCES monsters(id),
     skill_id TEXT NOT NULL REFERENCES skills(id),
     skill_index INTEGER NOT NULL,   -- 0 = default attack, 1+ = special abilities
+    runtime_level INTEGER NOT NULL, -- Skill(ScriptableSkill) uses 1 when learn_default, otherwise 0
     PRIMARY KEY (monster_id, skill_id, skill_index)
 );
 

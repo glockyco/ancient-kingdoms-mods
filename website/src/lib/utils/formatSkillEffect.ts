@@ -17,6 +17,11 @@ export interface MonsterContext {
   magicDamage: number;
 }
 
+export interface SkillEffectFormatOptions {
+  monster?: MonsterContext;
+  levelZeroScaling?: boolean;
+}
+
 /**
  * Base skill interface with all fields that formatSkillEffect needs to handle
  */
@@ -167,27 +172,45 @@ function parseLinearValue(
 
 /**
  * Format LinearValue for display
- * Monster context: show computed value at fixed level
- * Player context: show "base (+X/lvl)" scaling notation
+ * Monster context: show the supplied resolved value.
+ * Formula context: show compact scaling, including level zero when reachable.
  */
-function formatLinearValue(
+export function formatLinearValue(
   lv: LinearValue,
-  monsterContext: MonsterContext | undefined,
+  options: SkillEffectFormatOptions | undefined,
   skillLevel: number = 1,
 ): string {
-  // Monster context: compute at fixed skill level
-  if (monsterContext) {
+  if (options?.monster) {
     const value = lv.base_value + lv.bonus_per_level * (skillLevel - 1);
     return value.toLocaleString();
   }
 
-  // Player context: show scaling notation
   if (lv.bonus_per_level === 0) {
     return lv.base_value.toLocaleString();
   }
 
+  if (options?.levelZeroScaling) {
+    return formatLevelZeroFormula(lv, (value) => value.toLocaleString());
+  }
+
   const sign = lv.bonus_per_level > 0 ? "+" : "";
   return `${lv.base_value.toLocaleString()} (${sign}${lv.bonus_per_level.toLocaleString()}/lvl)`;
+}
+
+function formatLevelZeroFormula(
+  value: LinearValue,
+  formatValue: (value: number) => string,
+): string {
+  const baseAtLevelZero = value.base_value - value.bonus_per_level;
+  const operator = value.bonus_per_level > 0 ? "+" : "−";
+  const perLevel = formatValue(Math.abs(value.bonus_per_level));
+
+  if (baseAtLevelZero === 0) {
+    const sign = value.bonus_per_level < 0 ? "−" : "";
+    return `(${sign}${perLevel} × skill lvl)`;
+  }
+
+  return `(${formatValue(baseAtLevelZero)} ${operator} ${perLevel} × skill lvl)`;
 }
 
 /**
@@ -226,18 +249,22 @@ function formatPercent(value: number): string {
 /**
  * Format LinearValue as percentage with optional scaling
  */
-function formatLinearPercent(
+export function formatLinearPercent(
   lv: LinearValue,
-  monsterContext: MonsterContext | undefined,
+  options: SkillEffectFormatOptions | undefined,
   skillLevel: number = 1,
 ): string {
-  if (monsterContext) {
+  if (options?.monster) {
     const value = lv.base_value + lv.bonus_per_level * (skillLevel - 1);
     return formatPercent(value);
   }
 
   if (lv.bonus_per_level === 0) {
     return formatPercent(lv.base_value);
+  }
+
+  if (options?.levelZeroScaling) {
+    return formatLevelZeroFormula(lv, formatPercent);
   }
 
   const sign = lv.bonus_per_level > 0 ? "+" : "";
@@ -249,7 +276,7 @@ function formatLinearPercent(
  */
 function formatDamage(
   skill: Skill,
-  monsterContext: MonsterContext | undefined,
+  options: SkillEffectFormatOptions | undefined,
 ): string[] {
   const parts: string[] = [];
 
@@ -259,14 +286,14 @@ function formatDamage(
   if (!skillDmg && !damagePercent) return parts;
 
   // Monster context: add combat stat to skill damage
-  if (monsterContext) {
+  if (options?.monster) {
     const combatStat =
       skill.damage_type === "Magic" ||
       skill.damage_type === "Fire" ||
       skill.damage_type === "Cold" ||
       skill.damage_type === "Disease"
-        ? monsterContext.magicDamage
-        : monsterContext.damage;
+        ? options.monster.magicDamage
+        : options.monster.damage;
 
     let totalDmg = combatStat + (skillDmg?.base_value ?? 0);
 
@@ -282,7 +309,7 @@ function formatDamage(
   // Player context: show base damage with scaling
   else {
     if (skillDmg) {
-      const dmgStr = formatLinearValue(skillDmg, undefined);
+      const dmgStr = formatLinearValue(skillDmg, options);
       const typeLabel = skill.damage_type
         ? ` ${formatDamageType(skill.damage_type)}`
         : "";
@@ -295,7 +322,7 @@ function formatDamage(
         ? ` ${formatDamageType(skill.damage_type)}`
         : "";
       parts.push(
-        `${formatLinearPercent(damagePercent, undefined)}${typeLabel} weapon dmg`,
+        `${formatLinearPercent(damagePercent, options)}${typeLabel} weapon dmg`,
       );
     }
   }
@@ -308,18 +335,18 @@ function formatDamage(
  */
 function formatHealing(
   skill: Skill,
-  monsterContext: MonsterContext | undefined,
+  options: SkillEffectFormatOptions | undefined,
 ): string[] {
   const parts: string[] = [];
 
   const heal = parseLinearValue(skill.heals_health);
   if (heal) {
-    parts.push(`${formatLinearValue(heal, monsterContext)} hp`);
+    parts.push(`${formatLinearValue(heal, options)} hp`);
   }
 
   const healMana = parseLinearValue(skill.heals_mana);
   if (healMana) {
-    parts.push(`${formatLinearValue(healMana, monsterContext)} mana`);
+    parts.push(`${formatLinearValue(healMana, options)} mana`);
   }
 
   // Source: server-scripts/Player.cs:12564-12571 — resurrection restores 60% max HP, 20% max HP as mana, and +75% of lossExp.
@@ -339,13 +366,13 @@ function formatHealing(
  */
 function formatCrowdControl(
   skill: Skill,
-  monsterContext: MonsterContext | undefined,
+  options: SkillEffectFormatOptions | undefined,
 ): string[] {
   const parts: string[] = [];
 
   const lifetap = parseLinearValue(skill.lifetap_percent);
   if (lifetap) {
-    parts.push(`${formatLinearPercent(lifetap, monsterContext)} lifetap`);
+    parts.push(`${formatLinearPercent(lifetap, options)} lifetap`);
   }
 
   if (skill.break_armor_prob && skill.break_armor_prob > 0) {
@@ -357,7 +384,7 @@ function formatCrowdControl(
     const stunDur = parseLinearValue(skill.stun_time);
     const durSuffix =
       stunDur && stunDur.base_value > 0 ? ` (${stunDur.base_value}s)` : "";
-    parts.push(`${formatLinearPercent(stun, monsterContext)} stun${durSuffix}`);
+    parts.push(`${formatLinearPercent(stun, options)} stun${durSuffix}`);
   }
 
   const fear = parseLinearValue(skill.fear_chance);
@@ -365,12 +392,12 @@ function formatCrowdControl(
     const fearDur = parseLinearValue(skill.fear_time);
     const durSuffix =
       fearDur && fearDur.base_value > 0 ? ` (${fearDur.base_value}s)` : "";
-    parts.push(`${formatLinearPercent(fear, monsterContext)} fear${durSuffix}`);
+    parts.push(`${formatLinearPercent(fear, options)} fear${durSuffix}`);
   }
 
   const knockback = parseLinearValue(skill.knockback_chance);
   if (knockback) {
-    parts.push(`${formatLinearPercent(knockback, monsterContext)} knockback`);
+    parts.push(`${formatLinearPercent(knockback, options)} knockback`);
   }
 
   // AoE properties
@@ -388,7 +415,7 @@ function formatCrowdControl(
   const aggro = parseLinearValue(skill.aggro);
   if (aggro && aggro.base_value !== 0) {
     parts.push(
-      `${aggro.base_value > 0 ? "+" : ""}${formatLinearValue(aggro, monsterContext)} aggro`,
+      `${aggro.base_value > 0 ? "+" : ""}${formatLinearValue(aggro, options)} aggro`,
     );
   }
 
@@ -448,7 +475,7 @@ function formatSummons(skill: Skill): string[] {
  */
 function formatBuffDebuffStats(
   skill: Skill,
-  monsterContext: MonsterContext | undefined,
+  options: SkillEffectFormatOptions | undefined,
 ): string[] {
   const parts: string[] = [];
 
@@ -499,9 +526,7 @@ function formatBuffDebuffStats(
       parts.push("root");
     } else if (speedBonus.base_value !== 0) {
       const sign = speedBonus.base_value > 0 ? "+" : "";
-      parts.push(
-        `${sign}${formatLinearValue(speedBonus, monsterContext)} speed`,
-      );
+      parts.push(`${sign}${formatLinearValue(speedBonus, options)} speed`);
     }
   }
 
@@ -509,71 +534,63 @@ function formatBuffDebuffStats(
   const healthMaxBonus = parseLinearValue(skill.health_max_bonus);
   if (healthMaxBonus) {
     const sign = healthMaxBonus.base_value > 0 ? "+" : "";
-    parts.push(
-      `${sign}${formatLinearValue(healthMaxBonus, monsterContext)} max hp`,
-    );
+    parts.push(`${sign}${formatLinearValue(healthMaxBonus, options)} max hp`);
   }
 
   const healthMaxPctBonus = parseLinearValue(skill.health_max_percent_bonus);
   if (healthMaxPctBonus) {
     const sign = healthMaxPctBonus.base_value > 0 ? "+" : "";
     parts.push(
-      `${sign}${formatLinearPercent(healthMaxPctBonus, monsterContext)} max hp`,
+      `${sign}${formatLinearPercent(healthMaxPctBonus, options)} max hp`,
     );
   }
 
   const manaMaxBonus = parseLinearValue(skill.mana_max_bonus);
   if (manaMaxBonus) {
     const sign = manaMaxBonus.base_value > 0 ? "+" : "";
-    parts.push(
-      `${sign}${formatLinearValue(manaMaxBonus, monsterContext)} max mana`,
-    );
+    parts.push(`${sign}${formatLinearValue(manaMaxBonus, options)} max mana`);
   }
 
   const manaMaxPctBonus = parseLinearValue(skill.mana_max_percent_bonus);
   if (manaMaxPctBonus) {
     const sign = manaMaxPctBonus.base_value > 0 ? "+" : "";
     parts.push(
-      `${sign}${formatLinearPercent(manaMaxPctBonus, monsterContext)} max mana`,
+      `${sign}${formatLinearPercent(manaMaxPctBonus, options)} max mana`,
     );
   }
 
   const energyMaxBonus = parseLinearValue(skill.energy_max_bonus);
   if (energyMaxBonus) {
     const sign = energyMaxBonus.base_value > 0 ? "+" : "";
-    parts.push(
-      `${sign}${formatLinearValue(energyMaxBonus, monsterContext)} max rage`,
-    );
+    parts.push(`${sign}${formatLinearValue(energyMaxBonus, options)} max rage`);
   }
 
   // 4. Offense
   const damageBonus = parseLinearValue(skill.damage_bonus);
   if (damageBonus && damageBonus.base_value !== 0) {
     const sign = damageBonus.base_value > 0 ? "+" : "";
-    parts.push(`${sign}${formatLinearValue(damageBonus, monsterContext)} dmg`);
+    parts.push(`${sign}${formatLinearValue(damageBonus, options)} dmg`);
   }
 
   const damagePctBonus = parseLinearValue(skill.damage_percent_bonus);
   if (damagePctBonus && damagePctBonus.base_value !== 0) {
     const sign = damagePctBonus.base_value > 0 ? "+" : "";
     parts.push(
-      `${sign}${formatLinearPercent(damagePctBonus, monsterContext)} phys dmg`,
+      `${sign}${formatLinearPercent(damagePctBonus, options)} phys dmg`,
     );
   }
 
   const magicDmgBonus = parseLinearValue(skill.magic_damage_bonus);
   if (magicDmgBonus && magicDmgBonus.base_value !== 0) {
     const sign = magicDmgBonus.base_value > 0 ? "+" : "";
-    parts.push(
-      `${sign}${formatLinearValue(magicDmgBonus, monsterContext)} magic dmg`,
-    );
+    parts.push(`${sign}${formatLinearValue(magicDmgBonus, options)} magic dmg`);
   }
 
   const magicDmgPctBonus = parseLinearValue(skill.magic_damage_percent_bonus);
   if (magicDmgPctBonus && magicDmgPctBonus.base_value !== 0) {
     const sign = magicDmgPctBonus.base_value > 0 ? "+" : "";
     parts.push(
-      `${sign}${formatLinearPercent(magicDmgPctBonus, monsterContext)} magic dmg`,
+      `${sign}${formatLinearPercent(magicDmgPctBonus, options)} magic dmg`,
     );
   }
 
@@ -581,13 +598,13 @@ function formatBuffDebuffStats(
   const defenseBonus = parseLinearValue(skill.defense_bonus);
   if (defenseBonus && defenseBonus.base_value !== 0) {
     const sign = defenseBonus.base_value > 0 ? "+" : "";
-    parts.push(`${sign}${formatLinearValue(defenseBonus, monsterContext)} def`);
+    parts.push(`${sign}${formatLinearValue(defenseBonus, options)} def`);
   }
 
   const wardBonus = parseLinearValue(skill.ward_bonus);
   if (wardBonus && wardBonus.base_value !== 0) {
     const sign = wardBonus.base_value > 0 ? "+" : "";
-    parts.push(`${sign}${formatLinearValue(wardBonus, monsterContext)} ward`);
+    parts.push(`${sign}${formatLinearValue(wardBonus, options)} ward`);
   }
 
   const resistFields: [string | LinearValue | null | undefined, string][] = [
@@ -602,7 +619,7 @@ function formatBuffDebuffStats(
     const val = parseLinearValue(field);
     if (val && val.base_value !== 0) {
       const sign = val.base_value > 0 ? "+" : "";
-      parts.push(`${sign}${formatLinearValue(val, monsterContext)} ${label}`);
+      parts.push(`${sign}${formatLinearValue(val, options)} ${label}`);
     }
   }
 
@@ -610,16 +627,14 @@ function formatBuffDebuffStats(
   const hasteBonus = parseLinearValue(skill.haste_bonus);
   if (hasteBonus && hasteBonus.base_value !== 0) {
     const sign = hasteBonus.base_value > 0 ? "+" : "";
-    parts.push(
-      `${sign}${formatLinearPercent(hasteBonus, monsterContext)} haste`,
-    );
+    parts.push(`${sign}${formatLinearPercent(hasteBonus, options)} haste`);
   }
 
   const spellHasteBonus = parseLinearValue(skill.spell_haste_bonus);
   if (spellHasteBonus && spellHasteBonus.base_value !== 0) {
     const sign = spellHasteBonus.base_value > 0 ? "+" : "";
     parts.push(
-      `${sign}${formatLinearPercent(spellHasteBonus, monsterContext)} spell haste`,
+      `${sign}${formatLinearPercent(spellHasteBonus, options)} spell haste`,
     );
   }
 
@@ -627,38 +642,34 @@ function formatBuffDebuffStats(
   const critBonus = parseLinearValue(skill.critical_chance_bonus);
   if (critBonus && critBonus.base_value !== 0) {
     const sign = critBonus.base_value > 0 ? "+" : "";
-    parts.push(`${sign}${formatLinearPercent(critBonus, monsterContext)} crit`);
+    parts.push(`${sign}${formatLinearPercent(critBonus, options)} crit`);
   }
 
   const criticalResistBonus = parseLinearValue(skill.critical_resist_bonus);
   if (criticalResistBonus && criticalResistBonus.base_value !== 0) {
     const sign = criticalResistBonus.base_value > 0 ? "+" : "";
     parts.push(
-      `${sign}${formatLinearPercent(criticalResistBonus, monsterContext)} critical resist`,
+      `${sign}${formatLinearPercent(criticalResistBonus, options)} critical resist`,
     );
   }
 
   const accBonus = parseLinearValue(skill.accuracy_bonus);
   if (accBonus && accBonus.base_value !== 0) {
     const sign = accBonus.base_value > 0 ? "+" : "";
-    parts.push(
-      `${sign}${formatLinearPercent(accBonus, monsterContext)} accuracy`,
-    );
+    parts.push(`${sign}${formatLinearPercent(accBonus, options)} accuracy`);
   }
 
   const blockBonus = parseLinearValue(skill.block_chance_bonus);
   if (blockBonus && blockBonus.base_value !== 0) {
     const sign = blockBonus.base_value > 0 ? "+" : "";
-    parts.push(
-      `${sign}${formatLinearPercent(blockBonus, monsterContext)} block`,
-    );
+    parts.push(`${sign}${formatLinearPercent(blockBonus, options)} block`);
   }
 
   const fearResistBonus = parseLinearValue(skill.fear_resist_chance_bonus);
   if (fearResistBonus && fearResistBonus.base_value !== 0) {
     const sign = fearResistBonus.base_value > 0 ? "+" : "";
     parts.push(
-      `${sign}${formatLinearPercent(fearResistBonus, monsterContext)} fear resist`,
+      `${sign}${formatLinearPercent(fearResistBonus, options)} fear resist`,
     );
   }
 
@@ -666,7 +677,7 @@ function formatBuffDebuffStats(
   const cdrBonus = parseLinearValue(skill.cooldown_reduction_percent);
   if (cdrBonus && cdrBonus.base_value !== 0) {
     const sign = cdrBonus.base_value > 0 ? "+" : "";
-    parts.push(`${sign}${formatLinearPercent(cdrBonus, monsterContext)} CDR`);
+    parts.push(`${sign}${formatLinearPercent(cdrBonus, options)} CDR`);
   }
 
   // 9. On-hit proc effects
@@ -675,25 +686,25 @@ function formatBuffDebuffStats(
     const formattedType = formatDamageType(skill.damage_shield_type);
     const typeLabel = formattedType ? ` ${formattedType}` : "";
     parts.push(
-      `${formatLinearValue(dmgShield, monsterContext)}${typeLabel} dmg shield`,
+      `${formatLinearValue(dmgShield, options)}${typeLabel} dmg shield`,
     );
   }
 
   const healOnHit = parseLinearValue(skill.heal_on_hit_percent);
   if (healOnHit && healOnHit.base_value > 0) {
-    parts.push(`${formatLinearPercent(healOnHit, monsterContext)} heal on hit`);
+    parts.push(`${formatLinearPercent(healOnHit, options)} heal on hit`);
   }
 
   // 10. Regen / DoT
   const hps = parseLinearValue(skill.healing_per_second_bonus);
   if (hps && hps.base_value !== 0) {
     if (hps.base_value > 0) {
-      parts.push(`${formatLinearValue(hps, monsterContext)} hp/s`);
+      parts.push(`${formatLinearValue(hps, options)} hp/s`);
     } else {
       const formattedType = formatDamageType(skill.damage_over_time_type);
       const typeLabel = formattedType ? ` ${formattedType}` : "";
       parts.push(
-        `${formatLinearValue({ base_value: Math.abs(hps.base_value), bonus_per_level: Math.abs(hps.bonus_per_level) }, monsterContext)}${typeLabel} dmg/s`,
+        `${formatLinearValue({ base_value: Math.abs(hps.base_value), bonus_per_level: Math.abs(hps.bonus_per_level) }, options)}${typeLabel} dmg/s`,
       );
     }
   }
@@ -705,17 +716,17 @@ function formatBuffDebuffStats(
       hpPct.base_value < 0 ? formatDamageType(skill.damage_over_time_type) : "";
     const typeLabel = formattedType ? ` ${formattedType}` : "";
     parts.push(
-      `${sign}${formatLinearPercent(hpPct, monsterContext)}${typeLabel} hp/s`,
+      `${sign}${formatLinearPercent(hpPct, options)}${typeLabel} hp/s`,
     );
   }
 
   const mps = parseLinearValue(skill.mana_per_second_bonus);
   if (mps && mps.base_value !== 0) {
     if (mps.base_value > 0) {
-      parts.push(`${formatLinearValue(mps, monsterContext)} mana/s`);
+      parts.push(`${formatLinearValue(mps, options)} mana/s`);
     } else {
       parts.push(
-        `${formatLinearValue({ base_value: Math.abs(mps.base_value), bonus_per_level: Math.abs(mps.bonus_per_level) }, monsterContext)} mana drain/s`,
+        `${formatLinearValue({ base_value: Math.abs(mps.base_value), bonus_per_level: Math.abs(mps.bonus_per_level) }, options)} mana drain/s`,
       );
     }
   }
@@ -723,21 +734,19 @@ function formatBuffDebuffStats(
   const manaPct = parseLinearValue(skill.mana_percent_per_second_bonus);
   if (manaPct && manaPct.base_value !== 0) {
     const sign = manaPct.base_value > 0 ? "+" : "";
-    parts.push(`${sign}${formatLinearPercent(manaPct, monsterContext)} mana/s`);
+    parts.push(`${sign}${formatLinearPercent(manaPct, options)} mana/s`);
   }
 
   const eps = parseLinearValue(skill.energy_per_second_bonus);
   if (eps && eps.base_value !== 0) {
     const sign = eps.base_value > 0 ? "+" : "";
-    parts.push(`${sign}${formatLinearValue(eps, monsterContext)} rage/s`);
+    parts.push(`${sign}${formatLinearValue(eps, options)} rage/s`);
   }
 
   const energyPct = parseLinearValue(skill.energy_percent_per_second_bonus);
   if (energyPct && energyPct.base_value !== 0) {
     const sign = energyPct.base_value > 0 ? "+" : "";
-    parts.push(
-      `${sign}${formatLinearPercent(energyPct, monsterContext)} rage/s`,
-    );
+    parts.push(`${sign}${formatLinearPercent(energyPct, options)} rage/s`);
   }
 
   // 11. Primary stats
@@ -754,7 +763,7 @@ function formatBuffDebuffStats(
     const val = parseLinearValue(field);
     if (val && val.base_value !== 0) {
       const sign = val.base_value > 0 ? "+" : "";
-      parts.push(`${sign}${formatLinearValue(val, monsterContext)} ${label}`);
+      parts.push(`${sign}${formatLinearValue(val, options)} ${label}`);
     }
   }
 
@@ -783,7 +792,7 @@ function formatBuffDebuffStats(
  * Format a skill's effect as a concise summary string
  *
  * @param skill - Skill data to format
- * @param monsterContext - Optional monster combat stats for damage calculation
+ * @param options - Optional resolved monster stats or level-zero formula mode
  * @returns Formatted skill effect string (empty if no effects)
  *
  * Category order: Damage > Healing > CC > Summons > Buffs/Debuffs
@@ -850,7 +859,7 @@ const HARDCODED_EFFECTS: Record<string, string> = {
 
 export function formatSkillEffect(
   skill: Skill,
-  monsterContext?: MonsterContext,
+  options?: SkillEffectFormatOptions,
 ): string {
   if (
     skill.id &&
@@ -866,13 +875,13 @@ export function formatSkillEffect(
   const parts: string[] = [];
 
   // 1. Damage
-  parts.push(...formatDamage(skill, monsterContext));
+  parts.push(...formatDamage(skill, options));
 
   // 2. Healing
-  parts.push(...formatHealing(skill, monsterContext));
+  parts.push(...formatHealing(skill, options));
 
   // 3. Crowd control
-  parts.push(...formatCrowdControl(skill, monsterContext));
+  parts.push(...formatCrowdControl(skill, options));
 
   // 4. Summons
   parts.push(...formatSummons(skill));
@@ -895,7 +904,7 @@ export function formatSkillEffect(
     skill.skill_type === "target_debuff" ||
     skill.skill_type === "passive"
   ) {
-    const buffStats = formatBuffDebuffStats(skill, monsterContext);
+    const buffStats = formatBuffDebuffStats(skill, options);
     parts.push(...buffStats);
   }
 

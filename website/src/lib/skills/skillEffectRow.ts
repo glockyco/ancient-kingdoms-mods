@@ -81,6 +81,9 @@ export interface SkillEffectRow {
   wisdom_bonus: string | null;
   charisma_bonus: string | null;
   duration_base: number;
+  duration_per_level: number;
+  is_permanent: number;
+  is_double_exp_spell: number;
   is_invisibility: number;
   illusion_race: string | null;
   is_mana_shield: number;

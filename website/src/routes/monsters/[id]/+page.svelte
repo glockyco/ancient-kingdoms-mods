@@ -280,9 +280,11 @@
       id: "effect",
       header: "Effect",
       accessorFn: (row) =>
-        formatSkillEffect(skillRowToEffectInput(row), {
-          damage: displayDamage,
-          magicDamage: displayMagicDamage,
+        formatSkillEffect(skillRowToEffectInput(row, row.runtime_level), {
+          monster: {
+            damage: displayDamage,
+            magicDamage: displayMagicDamage,
+          },
         }),
       enableSorting: false,
     },

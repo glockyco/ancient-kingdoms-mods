@@ -10,6 +10,7 @@ import { SKILL_EFFECT_COLUMNS, SKILL_EFFECT_JOINS } from "./skillsListQuery";
  */
 export const MONSTER_ABILITIES_QUERY = `SELECT
     ms.skill_index,
+    ms.runtime_level,
     s.cooldown,
     s.cast_time,
     ${SKILL_EFFECT_COLUMNS}

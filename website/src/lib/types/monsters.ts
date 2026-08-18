@@ -284,12 +284,12 @@ export interface SummonsInfo {
 /**
  * A skill/ability used by a monster.
  *
- * The effect columns come from the shared projection, so a monster ability and
- * the same row on `/skills` carry identical data; only the game's cast slot and
- * the ability table's timing columns are monster-specific.
+ * The effect columns come from the shared projection. The runtime level records
+ * the level that MonsterSkills assigns when it constructs the live Skill.
  */
 export interface MonsterSkill extends SkillEffectRow {
   skill_index: number;
+  runtime_level: number;
   cooldown: string | null;
   cast_time: string | null;
 }

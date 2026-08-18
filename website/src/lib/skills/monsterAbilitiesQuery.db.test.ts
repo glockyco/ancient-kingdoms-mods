@@ -6,12 +6,9 @@ import { SKILLS_LIST_QUERY } from "$lib/skills/skillsListQuery";
 import { MONSTER_ABILITIES_QUERY } from "$lib/skills/monsterAbilitiesQuery";
 
 /**
- * A monster ability and the same row on `/skills` must produce the same effect
- * text. Both projections are built from `SKILL_EFFECT_COLUMNS`; this proves no
- * page drops a stat the formatter reads. Enrage is the case that motivated it:
- * the monster ability table showed only its damage bonus while the skill page
- * also showed the maximum-health cost, because the monster projection omitted
- * `health_max_percent_bonus`.
+ * The monster and skills-list projections carry the same intrinsic effect data.
+ * Monster rendering then resolves those formulas at the level assigned by
+ * MonsterSkills; the skills list keeps its general skill-level presentation.
  */
 describe("monster ability effects", () => {
   const listEffects: Record<string, string> = Object.fromEntries(
@@ -25,7 +22,7 @@ describe("monster ability effects", () => {
     "SELECT DISTINCT monster_id FROM monster_skills",
   ).map((row) => row.monster_id);
 
-  test("render identically to the same skill on the skills list", () => {
+  test("project the same intrinsic effects as the skills list", () => {
     expect(monsterIds.length).toBeGreaterThan(0);
 
     const mismatches: string[] = [];
@@ -46,6 +43,54 @@ describe("monster ability effects", () => {
 
     expect(compared).toBeGreaterThan(0);
     expect(mismatches).toEqual([]);
+  });
+
+  test("show the Ant Attack formula and its runtime result", () => {
+    const intrinsic = query<{ id: string }>(SKILLS_LIST_QUERY).find(
+      (row) => row.id === "ant_attack",
+    );
+    expect(intrinsic).toBeDefined();
+    expect(
+      formatSkillEffect(skillRowToEffectInput(intrinsic), {
+        levelZeroScaling: true,
+      }),
+    ).toBe("2 physical dmg, (0.7% + 0.3% × skill lvl) stun (1s)");
+
+    const antAttack = query<{ id: string; runtime_level: number }>(
+      MONSTER_ABILITIES_QUERY,
+      ["giant_ant"],
+    ).find((row) => row.id === "ant_attack");
+
+    expect(antAttack).toBeDefined();
+    expect(antAttack?.runtime_level).toBe(0);
+    expect(
+      formatSkillEffect(
+        skillRowToEffectInput(antAttack, antAttack?.runtime_level),
+      ),
+    ).toContain("0.7% stun");
+  });
+
+  test("keep one exact formula for player and level-zero monster use", () => {
+    const dragonBreath = query<{
+      id: string;
+      player_classes: string;
+    }>(SKILLS_LIST_QUERY).find((row) => row.id === "dragons_breath");
+
+    expect(dragonBreath).toBeDefined();
+    expect(JSON.parse(dragonBreath?.player_classes ?? "[]")).toContain(
+      "wizard",
+    );
+    expect(
+      query<{ runtime_level: number }>(
+        "SELECT runtime_level FROM monster_skills WHERE skill_id = ?",
+        ["dragons_breath"],
+      ).some((usage) => usage.runtime_level === 0),
+    ).toBe(true);
+    expect(
+      formatSkillEffect(skillRowToEffectInput(dragonBreath), {
+        levelZeroScaling: true,
+      }),
+    ).toBe("(115% + 25% × skill lvl) fire weapon dmg");
   });
 
   test("keep the maximum-health cost of a shared buff", () => {

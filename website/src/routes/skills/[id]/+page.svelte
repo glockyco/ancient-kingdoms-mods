@@ -6,7 +6,11 @@
   import * as Card from "$lib/components/ui/card";
   import type { PageData } from "./$types";
   import type { LinearValue } from "$lib/types/skills";
-  import { hasNonZeroField } from "$lib/utils/formatSkillEffect";
+  import {
+    formatLinearPercent as formatSkillLinearPercent,
+    formatLinearValue as formatSkillLinear,
+    hasNonZeroField,
+  } from "$lib/utils/formatSkillEffect";
   import * as Tabs from "$lib/components/ui/tabs";
   import Sparkles from "@lucide/svelte/icons/sparkles";
   import ImageIcon from "@lucide/svelte/icons/image";
@@ -67,12 +71,9 @@
     suffix: string = "",
   ): string {
     if (!value) return "-";
-    const base = formatNumber(value.base_value);
-    if (value.bonus_per_level === 0) {
-      return `${base}${suffix}`;
-    }
-    const bonus = formatNumber(value.bonus_per_level);
-    return `${base} (+${bonus}/lvl)${suffix}`;
+    return `${formatSkillLinear(value, {
+      levelZeroScaling: data.levelZeroScaling,
+    })}${suffix}`;
   }
 
   function formatLinearAbs(
@@ -91,12 +92,9 @@
 
   function formatLinearPercent(value: LinearValue | null): string {
     if (!value) return "-";
-    const basePct = formatPercent(value.base_value);
-    if (value.bonus_per_level === 0) {
-      return basePct;
-    }
-    const bonusPct = formatPercent(value.bonus_per_level);
-    return `${basePct} (+${bonusPct}/lvl)`;
+    return formatSkillLinearPercent(value, {
+      levelZeroScaling: data.levelZeroScaling,
+    });
   }
 
   function formatLinearPercentAbs(value: LinearValue | null): string {

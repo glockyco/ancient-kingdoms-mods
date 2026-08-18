@@ -9,9 +9,12 @@ import type { Skill } from "$lib/utils/formatSkillEffect";
  * object previously inlined in `website/src/routes/skills/+page.server.ts` — the
  * boolean coercions and the `pet_prefab_name` -> `pet_name` rename.
  */
-export function skillRowToEffectInput(row: unknown): Skill {
+export function skillRowToEffectInput(
+  row: unknown,
+  runtimeLevel?: number,
+): Skill {
   const r = row as Record<string, never>;
-  return {
+  const skill: Skill = {
     id: r.id,
     skill_type: r.skill_type,
     damage_type: r.damage_type,
@@ -74,6 +77,9 @@ export function skillRowToEffectInput(row: unknown): Skill {
     wisdom_bonus: r.wisdom_bonus,
     charisma_bonus: r.charisma_bonus,
     duration_base: r.duration_base,
+    duration_per_level: r.duration_per_level,
+    is_permanent: Boolean(r.is_permanent),
+    is_double_exp_spell: Boolean(r.is_double_exp_spell),
     is_invisibility: Boolean(r.is_invisibility),
     illusion_race: (r.illusion_race as string | null) ?? null,
     is_mana_shield: Boolean(r.is_mana_shield),
@@ -100,4 +106,49 @@ export function skillRowToEffectInput(row: unknown): Skill {
     area_object_size: r.area_object_size,
     area_objects_to_spawn: r.area_objects_to_spawn,
   };
+
+  if (runtimeLevel === undefined) return skill;
+  const resolvedLevel = runtimeLevel;
+
+  if (typeof skill.duration_per_level === "number") {
+    skill.duration_base += skill.duration_per_level * (resolvedLevel - 1);
+    skill.duration_per_level = 0;
+  }
+
+  for (const [key, rawValue] of Object.entries(skill)) {
+    const value = parseLinearValue(rawValue);
+    if (value === null) continue;
+
+    (skill as unknown as Record<string, unknown>)[key] = {
+      base_value:
+        value.base_value + value.bonus_per_level * (resolvedLevel - 1),
+      bonus_per_level: 0,
+    };
+  }
+
+  return skill;
+}
+
+function parseLinearValue(
+  rawValue: unknown,
+): { base_value: number; bonus_per_level: number } | null {
+  let value = rawValue;
+  if (typeof value === "string") {
+    if (!value.startsWith("{")) return null;
+    try {
+      value = JSON.parse(value);
+    } catch {
+      return null;
+    }
+  }
+
+  if (typeof value !== "object" || value === null) return null;
+  const candidate = value as Record<string, unknown>;
+  return typeof candidate.base_value === "number" &&
+    typeof candidate.bonus_per_level === "number"
+    ? {
+        base_value: candidate.base_value,
+        bonus_per_level: candidate.bonus_per_level,
+      }
+    : null;
 }
