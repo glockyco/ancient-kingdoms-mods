@@ -703,6 +703,14 @@
       "sha256": "afee63d5f00438ade638efa0f9749b2db1b6ce894984ed1d1a9747f0c18e9cf9",
       "span": 5
     },
+    "LinearFloat.cs:10-13": {
+      "sha256": "763cec18a21f78f199b888f0cb3d89253af53f25196e69b3b73ff41891d167f0",
+      "span": 4
+    },
+    "LinearInt.cs:10-13": {
+      "sha256": "942f5130d58b1f024aee055d3eac07fc871de26b7f7f91d9dec16a17cb49c661",
+      "span": 4
+    },
     "Monster.cs": {
       "span": 0
     },
@@ -982,6 +990,10 @@
     "PetFriendly.cs:688-702": {
       "sha256": "fd1a7fc798c9537be81e025464d317e8dc3d43be65d243be53c0e7a04dadd40a",
       "span": 15
+    },
+    "PetSkills.cs:26-47": {
+      "sha256": "49e21978f78415922bc3d40a2d496316eb7eaa027d7a5bc5b9bdd65554e94c96",
+      "span": 22
     },
     "Player.cs": {
       "span": 0

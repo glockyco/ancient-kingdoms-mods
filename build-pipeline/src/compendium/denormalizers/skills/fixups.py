@@ -6,6 +6,7 @@ game data. These fixups zero out the spurious fields so the website
 displays accurate information.
 """
 
+import json
 import sqlite3
 
 from rich.console import Console
@@ -107,4 +108,83 @@ def run(conn: sqlite3.Connection) -> None:
     else:
         console.print("  [yellow]WARN[/yellow] No dispel skills found — fixup skipped")
 
+    _zero_unreachable_level_scaling(cursor)
+
     conn.commit()
+
+
+def _linear_value_columns(cursor: sqlite3.Cursor) -> list[str]:
+    """Columns on skills that hold a LinearValue object.
+
+    Discovered from the stored rows rather than listed, so a new exported
+    LinearValue column is covered without editing this module.
+    """
+    columns = [row[1] for row in cursor.execute("PRAGMA table_info(skills)")]
+    linear: list[str] = []
+    for column in columns:
+        row = cursor.execute(
+            f"""
+            SELECT 1 FROM skills
+            WHERE json_valid({column})
+              AND json_type({column}, '$.bonus_per_level') IS NOT NULL
+            LIMIT 1
+            """
+        ).fetchone()
+        if row is not None:
+            linear.append(column)
+    return linear
+
+
+def _zero_unreachable_level_scaling(cursor: sqlite3.Cursor) -> None:
+    """Drop per-level growth that no level can reach.
+
+    A LinearValue resolves to `bonus_per_level * (level - 1) + base_value`, and a
+    skill's level never exceeds its max level: PetSkills clamps every mercenary,
+    familiar and companion skill with Math.Min(item.maxLevel, ...). A skill with
+    a single level therefore always resolves to its base value, yet game data
+    still carries growth on some of them - Ant Attack's stun chance reads
+    "1% (+0.3%/lvl)" for a level the skill cannot reach.
+
+    Source: server-scripts/LinearFloat.cs:10-13, LinearInt.cs:10-13 (Get), PetSkills.cs:26-47
+    """
+    columns = _linear_value_columns(cursor)
+    if not columns:
+        console.print(
+            "  [yellow]WARN[/yellow] No LinearValue columns on skills — fixup skipped"
+        )
+        return
+
+    selection = ", ".join(columns)
+    rows = cursor.execute(
+        f"SELECT id, {selection} FROM skills WHERE max_level <= 1"
+    ).fetchall()
+
+    skills_changed = 0
+    values_changed = 0
+    for row in rows:
+        skill_id = row[0]
+        updates: dict[str, str] = {}
+        for column, raw in zip(columns, row[1:], strict=True):
+            if not raw:
+                continue
+            value = json.loads(raw)
+            if value.get("bonus_per_level"):
+                value["bonus_per_level"] = 0
+                updates[column] = json.dumps(value)
+        if not updates:
+            continue
+        set_clause = ", ".join(f"{column} = ?" for column in updates)
+        cursor.execute(
+            f"UPDATE skills SET {set_clause} WHERE id = ?",
+            [*updates.values(), skill_id],
+        )
+        skills_changed += 1
+        values_changed += len(updates)
+
+    if skills_changed > 0:
+        console.print(
+            f"  [green]OK[/green] Zeroed {values_changed} unreachable per-level "
+            f"value(s) on {skills_changed} single-level skill(s)"
+        )
+    else:
+        console.print("  [green]OK[/green] No unreachable per-level values found")
