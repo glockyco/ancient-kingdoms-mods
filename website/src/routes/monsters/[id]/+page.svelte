@@ -264,8 +264,28 @@
       data.monster.accuracy_per_level * (combatDisplayLevel - 1),
   );
 
+  type DisplayMonsterSkill = MonsterSkill & { effect: string };
+
+  // Materialize the effect text from the active spawn variant. TanStack caches
+  // accessor results, so reading reactive stats inside an accessor leaves stale
+  // cells when the variant changes.
+  const displayedSkills: DisplayMonsterSkill[] = $derived(
+    data.skills.map((skill) => ({
+      ...skill,
+      effect: formatSkillEffect(
+        skillRowToEffectInput(skill, skill.runtime_level),
+        {
+          monster: {
+            damage: displayDamage,
+            magicDamage: displayMagicDamage,
+          },
+        },
+      ),
+    })),
+  );
+
   // Skill columns for the abilities table
-  const skillColumns: ColumnDef<MonsterSkill>[] = [
+  const skillColumns: ColumnDef<DisplayMonsterSkill>[] = [
     {
       accessorKey: "name",
       header: "Skill",
@@ -277,15 +297,8 @@
       enableSorting: false,
     },
     {
-      id: "effect",
+      accessorKey: "effect",
       header: "Effect",
-      accessorFn: (row) =>
-        formatSkillEffect(skillRowToEffectInput(row, row.runtime_level), {
-          monster: {
-            damage: displayDamage,
-            magicDamage: displayMagicDamage,
-          },
-        }),
       enableSorting: false,
     },
     {
@@ -660,8 +673,8 @@
   cell,
   row,
 }: {
-  cell: Cell<MonsterSkill, unknown>;
-  row: Row<MonsterSkill>;
+  cell: Cell<DisplayMonsterSkill, unknown>;
+  row: Row<DisplayMonsterSkill>;
 })}
   {#if cell.column.id === "name"}
     <EntityLink
@@ -700,7 +713,7 @@
 {#snippet renderSkillHeader({
   header,
 }: {
-  header: Header<MonsterSkill, unknown>;
+  header: Header<DisplayMonsterSkill, unknown>;
 })}
   {#if header.id === "cooldown" || header.id === "cast_time"}
     <span class="ml-auto">{header.column.columnDef.header}</span>
@@ -1363,7 +1376,7 @@
         Abilities ({data.skills.length})
       </h2>
       <DataTable
-        data={data.skills}
+        data={displayedSkills}
         columns={skillColumns}
         renderCell={renderSkillCell}
         renderHeader={renderSkillHeader}
