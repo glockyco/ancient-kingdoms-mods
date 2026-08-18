@@ -58,9 +58,9 @@ public sealed partial class PublishModsCommand : AsyncCommand<PublishModsCommand
 
         Console.WriteLine($"Publishing {config.Mods.Count} downloadable mods...");
         var artifacts = new List<PublishedMod>(config.Mods.Count);
-        var downloadsRoot = Path.Combine(_repoRoot, "website", "static", "downloads");
-        var targetDir = Path.Combine(downloadsRoot, "mods");
-        var stagingDir = Path.Combine(downloadsRoot, $".mods-{Guid.NewGuid():N}");
+        var staticRoot = Path.Combine(_repoRoot, "website", "static");
+        var targetDir = Path.Combine(staticRoot, "mods");
+        var stagingDir = Path.Combine(staticRoot, $".mods-{Guid.NewGuid():N}");
 
         try
         {
@@ -99,9 +99,7 @@ public sealed partial class PublishModsCommand : AsyncCommand<PublishModsCommand
                 if (!File.Exists(sourcePath))
                     throw new InvalidDataException($"Build did not produce {sourcePath}.");
 
-                var modDir = Path.Combine(stagingDir, mod.Id);
-                Directory.CreateDirectory(modDir);
-                File.Copy(sourcePath, Path.Combine(modDir, fileName));
+                File.Copy(sourcePath, Path.Combine(stagingDir, fileName));
 
                 using var stream = File.OpenRead(sourcePath);
                 var sha256 = Convert.ToHexString(SHA256.HashData(stream)).ToLowerInvariant();
@@ -110,7 +108,7 @@ public sealed partial class PublishModsCommand : AsyncCommand<PublishModsCommand
                     mod.Name,
                     mod.Description,
                     fileName,
-                    $"/downloads/mods/{mod.Id}/{fileName}",
+                    $"/mods/{fileName}",
                     stream.Length,
                     sha256));
             }

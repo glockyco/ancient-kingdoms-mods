@@ -21,9 +21,7 @@ public class PublishModsCommandTests
                 tempRoot,
                 "website",
                 "static",
-                "downloads",
                 "mods",
-                "old-mod",
                 "OldMod.dll");
             Directory.CreateDirectory(Path.GetDirectoryName(stalePath)!);
             File.WriteAllText(stalePath, "stale-dll");
@@ -45,9 +43,7 @@ public class PublishModsCommandTests
                 tempRoot,
                 "website",
                 "static",
-                "downloads",
                 "mods",
-                "better-bestiary",
                 "BetterBestiary.dll");
             Assert.Equal("current-dll", File.ReadAllText(publishedDll));
             Assert.False(File.Exists(stalePath));
@@ -56,7 +52,6 @@ public class PublishModsCommandTests
                 tempRoot,
                 "website",
                 "static",
-                "downloads",
                 "mods",
                 "manifest.json");
             using var manifest = JsonDocument.Parse(File.ReadAllText(manifestPath));
@@ -66,7 +61,7 @@ public class PublishModsCommandTests
             Assert.Equal("Better Bestiary", mod.GetProperty("name").GetString());
             Assert.Equal("BetterBestiary.dll", mod.GetProperty("fileName").GetString());
             Assert.Equal(
-                "/downloads/mods/better-bestiary/BetterBestiary.dll",
+                "/mods/BetterBestiary.dll",
                 mod.GetProperty("downloadPath").GetString());
             Assert.Equal(new FileInfo(publishedDll).Length, mod.GetProperty("sizeBytes").GetInt64());
             Assert.Matches("^[0-9a-f]{64}$", mod.GetProperty("sha256").GetString());
@@ -89,9 +84,7 @@ public class PublishModsCommandTests
                 tempRoot,
                 "website",
                 "static",
-                "downloads",
                 "mods",
-                "boss-tracker",
                 "BossTracker.dll");
             Directory.CreateDirectory(Path.GetDirectoryName(currentPath)!);
             File.WriteAllText(currentPath, "current-dll");

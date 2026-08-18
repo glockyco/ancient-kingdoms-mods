@@ -69,7 +69,7 @@ data/                    # Build inputs — gitignored, produced by the build pi
 ├── search.db            # Search index, built from compendium.db
 └── search.db.gz
 static/                  # Published verbatim at stable, unhashed URLs
-├── downloads/mods/      # Generated DLLs and public download manifest
+├── mods/                # Generated DLLs and public download manifest
 ├── tiles/               # Map tiles
 └── icons/               # Game icons
 ```

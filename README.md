@@ -223,7 +223,7 @@ pnpm cf-deploy
 
 The pipeline writes the database to `website/data/` and image and tile assets to `website/static/`. The database is gitignored and must be created by the build pipeline before local browsing or production builds that depend on it.
 
-`website/mod-downloads.json` selects the mods that the website publishes. Website development and production builds run `build-tool publish-mods`, which builds those projects and writes a public manifest to `/downloads/mods/manifest.json`. Each DLL has a stable path at `/downloads/mods/<id>/<project>.dll`. The generated download directory is gitignored and replaced only after all configured projects build successfully.
+`website/mod-downloads.json` selects the mods that the website publishes. Website development and production builds run `build-tool publish-mods`, which builds those projects and writes a public manifest to `/mods/manifest.json`. Each DLL has a stable path at `/mods/<project>.dll`. The generated download directory is gitignored and replaced only after all configured projects build successfully.
 
 ### HotRepl runtime inspection
 
