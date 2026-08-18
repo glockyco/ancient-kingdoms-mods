@@ -1,1 +1,1 @@
-Mechanics Wild Strike Wild Strike empowers the Ranger's next sword or bow auto attack. Add Wild Strike's damage to the auto attack, multiply the total by ×1.1, and round it. The whole hit then deals Magic damage and is reduced by Magic Defense and Magic Resist.
+Mechanics Wild Strike Wild Strike empowers the Ranger's next sword or bow auto attack. Add Wild Strike's damage to the auto attack, multiply the total by ×(1 + 0.1 × Wild Strike's level), and round it. The whole hit then deals Magic damage and is reduced by Magic Defense and Magic Resist.
