@@ -45,5 +45,5 @@ tile_world_size = 200.0
 tile_resolution = 1024
 
 [steam]
-# Steam username for downloading game via steamcmd (used by update-server-scripts.sh)
+# Steam username for updating the game via steamcmd (used by `build-tool update`)
 username = "your_steam_username"

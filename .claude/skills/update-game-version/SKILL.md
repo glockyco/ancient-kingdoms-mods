@@ -20,27 +20,16 @@ Execute in order:
 
 ```bash
 # 1. Decompile server scripts FIRST — before touching mods or running an export.
-#    Steam username is read from config.toml [steam] username (this file is gitignored — trust it exists)
-#    Homebrew alternative (one-time): brew install steamcmd dotnet@10
-#    Apple Silicon Nix (tested; make the Steam directory once, then run):
-#      mkdir -p ~/.local/share/Steam
-#      NIXPKGS_ALLOW_UNFREE=1 nix shell --impure \
-#        nixpkgs#dotnet-sdk_10 \
-#        nixpkgs#coreutils \
-#        nixpkgs#legacyPackages.x86_64-darwin.steamcmd \
-#        --command ./scripts/update-server-scripts.sh <version>
-#    nixpkgs#coreutils supplies the GNU core utilities used by this script
-#    (date, head, cp, rm, wc, and similar commands) instead of relying on
-#    macOS's variants. The x86_64-darwin steamcmd package is required because
-#    SteamCMD is packaged for Intel macOS and runs under Rosetta on Apple Silicon.
-#    The script installs the pinned ILSpy 10.1.1.8388 tool locally and invokes
-#    its managed ilspycmd.dll through dotnet; no global DOTNET_ROOT is needed.
+#    Reads server/server_Data/Managed/Assembly-CSharp.dll straight out of the game
+#    install in Local.props (the CrossOver bottle), so there is nothing to download
+#    and the scripts always match the build the exporter runs against. The script
+#    installs the pinned ILSpy 10.1.1.8388 locally and invokes its managed
+#    ilspycmd.dll through dotnet; no global DOTNET_ROOT and no steamcmd needed.
 #    Running this first surfaces game-side API changes (renamed/removed fields the DataExporter binds to)
 #    before the long export run. A failing export caused by a renamed Il2Cpp member wastes the whole launch cycle.
-#    Note: this script downloads to .steam-download/ (a separate install) — it does NOT update the
-#    CrossOver bottle that --export uses. For an unchanged exporter, use --update
-#    on the single-shot export below. For a changed exporter, use build-tool update
-#    in step 3 before regenerating interop assemblies.
+#    The bottle's own Steam client usually has the patch already; the script aborts
+#    if the install still carries the previous snapshot's assembly. Bring it current
+#    with `dotnet run --project build-tool update` and re-run.
 ./scripts/update-server-scripts.sh <version>
 
 # 2. Diff server scripts and patch mods if needed (see Diff Analysis below)
