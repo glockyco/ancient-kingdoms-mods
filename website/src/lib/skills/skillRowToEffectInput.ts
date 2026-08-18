@@ -75,6 +75,7 @@ export function skillRowToEffectInput(row: unknown): Skill {
     charisma_bonus: r.charisma_bonus,
     duration_base: r.duration_base,
     is_invisibility: Boolean(r.is_invisibility),
+    illusion_race: (r.illusion_race as string | null) ?? null,
     is_mana_shield: Boolean(r.is_mana_shield),
     is_cleanse: Boolean(r.is_cleanse),
     is_dispel: Boolean(r.is_dispel),

@@ -91,6 +91,7 @@ internal sealed class SkillEffectInput
     // Special flags
     public bool is_double_exp_spell { get; set; }
     public bool is_invisibility { get; set; }
+    public string illusion_race { get; set; }
     public bool is_mana_shield { get; set; }
     public bool is_cleanse { get; set; }
     public bool is_dispel { get; set; }

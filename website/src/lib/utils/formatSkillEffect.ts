@@ -97,6 +97,7 @@ export interface Skill {
   // Special flags
   is_double_exp_spell?: boolean;
   is_invisibility?: boolean;
+  illusion_race?: string | null;
   is_mana_shield?: boolean;
   is_cleanse?: boolean;
   is_dispel?: boolean;
@@ -321,7 +322,7 @@ function formatHealing(
     parts.push(`${formatLinearValue(healMana, monsterContext)} mana`);
   }
 
-  // Source: server-scripts/Player.cs:12426-12434 — resurrection restores 60% max HP, 20% max HP as mana, and +75% of lossExp.
+  // Source: server-scripts/Player.cs:12564-12571 — resurrection restores 60% max HP, 20% max HP as mana, and +75% of lossExp.
   if (skill.is_resurrect_skill) {
     parts.push("resurrect (60% max HP, 20% max HP as mana, +75% lost XP)");
   }
@@ -453,7 +454,7 @@ function formatBuffDebuffStats(
 
   // 1. Special flags (binary game-changers that define the skill's identity)
   // Source: server-scripts/TargetBuffSkill.cs:15 (isDoubleExpSpell flag);
-  // Skills.cs:1334-1344; Monster.cs:2713-2723,2749-2759 — hasDoubleExp() doubles XP awarded on kill.
+  // Skills.cs:1358-1368; Monster.cs:2713-2723,2749-2759 — hasDoubleExp() doubles XP awarded on kill.
   if (skill.is_double_exp_spell) parts.push("2× XP from kills");
   if (skill.is_dispel) parts.push("dispels buffs");
   // Source: server-scripts/TargetBuffSkill.cs:134-158 (HasMatchingCleanseDebuff) — cleanse matches on the skill's own debuff type flags
@@ -478,6 +479,10 @@ function formatBuffDebuffStats(
   }
   if (skill.is_blindness) parts.push("blinds");
   if (skill.is_invisibility) parts.push("grants invis");
+  // A buff carrying illusionRace redraws the wearer as that race until it ends.
+  // Source: server-scripts/BuffSkill.cs:25,58-68 (illusionRace, HasAppearanceIllusion),
+  // server-scripts/Player.cs:6194-6204 (ReSkinPlayer picks the illusion race)
+  if (skill.illusion_race) parts.push(`${skill.illusion_race} illusion`);
   if (skill.is_mana_shield) parts.push("mana shield");
 
   // 2. Movement (matches game tooltip order)
@@ -873,10 +878,12 @@ export function formatSkillEffect(
   parts.push(...formatSummons(skill));
 
   // 5. Passives (special case: enrage)
+  // Only monsters enrage from a passive: DealDamageAt scans monster and NPC skill
+  // lists alone, and no NPC carries a skill, so a player passive with the flag
+  // changes no damage.
+  // Source: server-scripts/Combat.cs:617-660 (enrage scan and damage bonus)
   if (skill.skill_type === "passive" && skill.is_enrage) {
-    const enrageValue = monsterContext ? "+50-75%" : "+33%";
-    const enrageThreshold = monsterContext ? "10%" : "50%";
-    parts.push(`${enrageValue} damage below ${enrageThreshold} HP`);
+    parts.push("+50-75% damage below 10% HP");
   }
 
   // 6. Buffs/debuffs

@@ -239,6 +239,7 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
     is_resurrect_skill: Boolean(skillRaw.is_resurrect_skill),
     is_balance_health: Boolean(skillRaw.is_balance_health),
     is_invisibility: Boolean(skillRaw.is_invisibility),
+    illusion_race: (skillRaw.illusion_race as string | null) ?? null,
     is_mana_shield: Boolean(skillRaw.is_mana_shield),
     is_cleanse: Boolean(skillRaw.is_cleanse),
     is_dispel: Boolean(skillRaw.is_dispel),

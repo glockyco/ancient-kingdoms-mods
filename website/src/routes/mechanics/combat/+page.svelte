@@ -161,9 +161,8 @@
             <tr class="border-b border-border/50">
               <td class="py-2 pr-4 text-muted-foreground">6</td>
               <td class="py-2"
-                ><strong>Enrage</strong>: players deal 33% more damage below 50%
-                HP. Monsters deal 50–75% more damage below 10% HP. Non-spell
-                skills only</td
+                ><strong>Enrage</strong>: monsters with an enrage passive deal
+                50–75% more damage below 10% HP. Non-spell skills only</td
               >
             </tr>
             <tr class="border-b border-border/50">
@@ -954,10 +953,11 @@ finalDamage = damage − reduction</pre>
       <div>
         <h3 class="font-semibold mb-1">Enrage</h3>
         <p class="text-sm text-muted-foreground">
-          Non-spell skills only. Players deal 33% more damage below 50% HP.
-          Monsters deal 50–75% more damage below 10% HP, rolled separately for
-          each hit.
-          <!-- Source: server-scripts/Combat.cs — Player threshold: health/max < 0.5f; Monster/NPC threshold: health/max < 0.1f -->
+          Non-spell skills only. A monster with an enrage passive deals 50–75%
+          more damage below 10% HP, rolled separately for each hit. The Warrior
+          skill Enrage is unrelated to this step: it is an active buff whose
+          damage and maximum-health changes are listed on its own skill page.
+          <!-- Source: server-scripts/Combat.cs:617-660 — only Monster and Npc skill lists are scanned for PassiveSkill.isEnrage; threshold health/max < 0.1f -->
         </p>
       </div>
 

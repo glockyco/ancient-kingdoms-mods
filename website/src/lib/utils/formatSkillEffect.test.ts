@@ -40,11 +40,11 @@ describe("formatSkillEffect enrage passives", () => {
     is_enrage: true,
   } as Skill;
 
-  it("formats player enrage with the runtime player threshold", () => {
-    expect(formatSkillEffect(enrageSkill)).toBe("+33% damage below 50% HP");
+  it("formats the passive enrage threshold without a monster context", () => {
+    expect(formatSkillEffect(enrageSkill)).toBe("+50-75% damage below 10% HP");
   });
 
-  it("formats monster enrage with the runtime monster threshold and bonus range", () => {
+  it("formats the passive enrage threshold with a monster context", () => {
     expect(formatSkillEffect(enrageSkill, { damage: 0, magicDamage: 0 })).toBe(
       "+50-75% damage below 10% HP",
     );

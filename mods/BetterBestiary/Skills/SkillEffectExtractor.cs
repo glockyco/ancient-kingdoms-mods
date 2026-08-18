@@ -183,6 +183,9 @@ internal static class SkillEffectExtractor
         {
             input.duration_base = buffSkill.buffTime.baseValue;
             input.is_invisibility = buffSkill.invisibility;
+            input.illusion_race = string.IsNullOrWhiteSpace(buffSkill.illusionRace)
+                ? null
+                : buffSkill.illusionRace;
             input.is_poison_debuff = buffSkill.isPoisonDebuff;
             input.is_fire_debuff = buffSkill.isFireDebuff;
             input.is_cold_debuff = buffSkill.isColdDebuff;

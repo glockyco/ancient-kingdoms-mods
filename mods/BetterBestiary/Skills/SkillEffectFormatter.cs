@@ -44,8 +44,12 @@ internal static class SkillEffectFormatter
         FormatCrowdControl(skill, parts);
         FormatSummons(skill, parts);
 
+        // Only monsters enrage from a passive: DealDamageAt scans monster and NPC skill
+        // lists alone, and no NPC carries a skill, so a player passive with the flag
+        // changes no damage.
+        // Source: server-scripts/Combat.cs:617-660 (enrage scan and damage bonus)
         if (skill.skill_type == "passive" && skill.is_enrage)
-            parts.Add(monsterContext ? "+50-75% damage below 10% HP" : "+33% damage below 50% HP");
+            parts.Add("+50-75% damage below 10% HP");
 
         if (skill.skill_type is "area_buff" or "area_debuff" or "target_buff" or "target_debuff" or "passive")
             FormatBuffDebuffStats(skill, parts);
@@ -239,6 +243,11 @@ internal static class SkillEffectFormatter
             parts.Add("blinds");
         if (skill.is_invisibility)
             parts.Add("grants invis");
+        // A buff carrying illusionRace redraws the wearer as that race until it ends.
+        // Source: server-scripts/BuffSkill.cs:25,58-68 (illusionRace, HasAppearanceIllusion),
+        // server-scripts/Player.cs:6194-6204 (ReSkinPlayer picks the illusion race)
+        if (!string.IsNullOrWhiteSpace(skill.illusion_race))
+            parts.Add($"{skill.illusion_race} illusion");
         if (skill.is_mana_shield)
             parts.Add("mana shield");
 

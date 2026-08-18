@@ -172,6 +172,8 @@ export interface SkillDetailView {
   is_resurrect_skill: boolean;
   is_balance_health: boolean;
   is_invisibility: boolean;
+  /** Player race the buff disguises the caster as, or null when it grants no illusion. */
+  illusion_race: string | null;
   is_mana_shield: boolean;
   is_cleanse: boolean;
   is_dispel: boolean;
@@ -320,12 +322,12 @@ export type TimingModel =
   // Warrior and Rogue generate Rage; all other classes use Mana.
   | "player_auto" // e.g. crush_strike
   // interval = cast_time × (1 − spellHaste) + 0.75s refractory; hard cap: 50% (Combat.cs:314-324).
-  // Source: server-scripts/Skills.cs:820-824, server-scripts/Combat.cs:314-324, server-scripts/Player.cs:refractoryPeriodSkill
+  // Source: server-scripts/Skills.cs:843-848, server-scripts/Combat.cs:314-324, server-scripts/Player.cs:refractoryPeriodSkill
   | "player_spell" // e.g. fire_blast, wind_shock, smite, mystic_spark
   | "companion" // interval = cast_time + cooldown; companions, familiars, no-weapon followup
   | "merc_auto" // interval = cast_time + cooldown×(1−haste); merc non-spell — e.g. explorer_shot
   // interval = cast_time × (1 − spellHaste) + cooldown; cast reduced by spell haste (cap 50%), cooldown not.
-  // Source: server-scripts/Skills.cs:820-824 (cast reduction), server-scripts/Skills.cs:947-950 (flat cooldown), server-scripts/Combat.cs:314-324 (cap)
+  // Source: server-scripts/Skills.cs:843-848 (cast reduction), server-scripts/Skills.cs:971-974 (flat cooldown), server-scripts/Combat.cs:314-324 (cap)
   | "merc_spell" // e.g. flame_blast, gale_burst, divine_smite
   // Monster.cs and Npc.cs both call FinishCastMeleeAttackMonster which haste-reduces
   // cooldown unconditionally regardless of isSpell — one model covers both.

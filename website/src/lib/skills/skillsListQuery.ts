@@ -81,6 +81,7 @@ export const SKILLS_LIST_QUERY = `SELECT
       s.charisma_bonus,
       s.duration_base,
       s.is_invisibility,
+      s.illusion_race,
       s.is_mana_shield,
       s.is_cleanse,
       s.is_dispel,

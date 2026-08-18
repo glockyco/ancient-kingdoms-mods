@@ -1849,8 +1849,8 @@
           <div class="space-y-1 text-sm">
             {#if skill.is_enrage}
               <p class="text-red-600 dark:text-red-400">
-                Enrage: players deal +33% damage below 50% HP. Monsters deal
-                +50–75% damage below 10% HP. Non-spell skills only.
+                Enrage: monsters deal +50–75% damage below 10% HP. Non-spell
+                skills only.
               </p>
             {/if}
             {#if skill.is_invisibility}
@@ -2032,8 +2032,7 @@
                     &minus;slayerLevel &times; 10%
                   </li>
                   <li>
-                    Enrage (non-spell): players +33% below 50% HP. Monsters
-                    +50&ndash;75% below 10% HP.
+                    Enrage (non-spell): monsters +50&ndash;75% below 10% HP.
                   </li>
                   {#if damageMechanics}
                     <li>
