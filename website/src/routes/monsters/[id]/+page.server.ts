@@ -22,6 +22,7 @@ import type {
 } from "$lib/types/monsters";
 import { monsterDescription } from "$lib/server/meta-description";
 import { getFactionIdsByName } from "$lib/queries/factions.server";
+import { MONSTER_ABILITIES_QUERY } from "$lib/skills/monsterAbilitiesQuery";
 
 export const prerender = true;
 
@@ -778,79 +779,7 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
 
   // Get monster skills/abilities
   const skills = db
-    .prepare(
-      `
-      SELECT
-        ms.skill_index,
-        s.id,
-        s.name,
-        va.public_path AS visual_public_path,
-        s.skill_type,
-        s.damage_type,
-        s.damage_over_time_type,
-        s.damage_shield_type,
-        s.cooldown,
-        s.cast_time,
-        s.damage,
-        s.damage_percent,
-        s.stun_chance,
-        s.fear_chance,
-        s.heals_health,
-        s.summoned_monster_id,
-        sm.name as summoned_monster_name,
-        s.summoned_monster_level,
-        s.summon_count_per_cast,
-        s.max_active_summons,
-        s.is_enrage,
-        s.duration_base,
-        s.is_dispel,
-        s.is_blindness,
-        s.is_poison_debuff,
-        s.is_fire_debuff,
-        s.is_cold_debuff,
-        s.is_disease_debuff,
-        s.is_melee_debuff,
-        s.is_magic_debuff,
-        s.speed_bonus,
-        s.defense_bonus,
-        s.damage_bonus,
-        s.damage_percent_bonus,
-        s.haste_bonus,
-        s.critical_chance_bonus,
-        s.critical_resist_bonus,
-        s.block_chance_bonus,
-        s.healing_per_second_bonus,
-        s.health_percent_per_second_bonus,
-        s.mana_per_second_bonus,
-        s.mana_percent_per_second_bonus,
-        s.damage_shield,
-        s.knockback_chance,
-        s.stun_time,
-        s.fear_time,
-        s.lifetap_percent,
-        s.break_armor_prob,
-        s.affects_random_target,
-        s.area_object_size,
-        s.area_objects_to_spawn,
-        s.accuracy_bonus,
-        s.magic_damage_bonus,
-        s.magic_resist_bonus,
-        s.poison_resist_bonus,
-        s.fire_resist_bonus,
-        s.cold_resist_bonus,
-        s.disease_resist_bonus,
-        s.prob_ignore_cleanse
-      FROM monster_skills ms
-      JOIN skills s ON s.id = ms.skill_id
-      LEFT JOIN monsters sm ON sm.id = s.summoned_monster_id
-      LEFT JOIN visual_assets va
-        ON va.domain = 'skill'
-       AND va.entity_id = s.id
-       AND va.kind = 'icon'
-      WHERE ms.monster_id = ?
-      ORDER BY ms.skill_index
-    `,
-    )
+    .prepare(MONSTER_ABILITIES_QUERY)
     .all(params.id) as MonsterSkill[];
 
   const visualAsset =

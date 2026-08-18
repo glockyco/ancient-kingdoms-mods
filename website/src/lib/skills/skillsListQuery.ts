@@ -1,14 +1,20 @@
 /**
- * Shared SELECT for the skills list.
+ * Shared SQL for every projection that feeds `formatSkillEffect`.
  *
- * Used by the `/skills` page loader (`routes/skills/+page.server.ts`) and the
- * BetterBestiary parity-corpus bake (`scripts/gen-skill-effect-parity.ts`) so both
- * read identical rows — notably `summoned_monster_name`, which comes from a JOIN
- * on `monsters` and is used by `formatSkillEffect` for summon summaries. Keeping
- * one query string is what lets the mod's runtime port stay matched to the
- * website overview; the lefthook drift guard then enforces it.
+ * `SKILL_EFFECT_COLUMNS` and `SKILL_EFFECT_JOINS` are the single definition of
+ * the columns and joins the effect formatter reads. Every page that renders a
+ * skill effect composes them, so a stat can never be visible on one page and
+ * missing on another: a monster ability and the same row on `/skills` render
+ * from identical data. `monsterAbilitiesQuery.ts` composes them for a monster's
+ * ability table.
+ *
+ * `SKILLS_LIST_QUERY` is used by the `/skills` page loader
+ * (`routes/skills/+page.server.ts`) and the BetterBestiary parity-corpus bake
+ * (`scripts/gen-skill-effect-parity.ts`) so both read identical rows. Keeping one
+ * query string is what lets the mod's runtime port stay matched to the website
+ * overview; the lefthook drift guard then enforces it.
  */
-export const SKILLS_LIST_QUERY = `SELECT
+export const SKILL_EFFECT_COLUMNS = `
       s.id,
       s.name,
       va.public_path as visual_public_path,
@@ -105,12 +111,17 @@ export const SKILLS_LIST_QUERY = `SELECT
       s.is_familiar,
       s.affects_random_target,
       s.area_object_size,
-      s.area_objects_to_spawn
-    FROM skills s
-    LEFT JOIN monsters sm ON sm.id = s.summoned_monster_id
+      s.area_objects_to_spawn`;
+
+export const SKILL_EFFECT_JOINS = `    LEFT JOIN monsters sm ON sm.id = s.summoned_monster_id
     LEFT JOIN pets pet_lookup ON lower(pet_lookup.name) = lower(s.pet_prefab_name)
     LEFT JOIN visual_assets va
       ON va.domain = 'skill'
      AND va.entity_id = s.id
-     AND va.kind = 'icon'
+     AND va.kind = 'icon'`;
+
+export const SKILLS_LIST_QUERY = `SELECT
+    ${SKILL_EFFECT_COLUMNS}
+    FROM skills s
+    ${SKILL_EFFECT_JOINS}
     ORDER BY s.tier ASC, s.name ASC`;

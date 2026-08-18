@@ -1,6 +1,5 @@
+import type { SkillEffectRow } from "$lib/skills/skillEffectRow";
 import type { EntityVisualAsset } from "$lib/types/visual-assets";
-import type { DamageType } from "$lib/types/skills";
-
 import type { RespawnInfo } from "./respawn";
 
 /**
@@ -283,74 +282,16 @@ export interface SummonsInfo {
 }
 
 /**
- * A skill/ability used by a monster
+ * A skill/ability used by a monster.
+ *
+ * The effect columns come from the shared projection, so a monster ability and
+ * the same row on `/skills` carry identical data; only the game's cast slot and
+ * the ability table's timing columns are monster-specific.
  */
-export interface MonsterSkill {
+export interface MonsterSkill extends SkillEffectRow {
   skill_index: number;
-  id: string;
-  name: string;
-  /** Published skill/icon artwork, when the optional visual asset exists. */
-  visual_public_path: string | null;
-  skill_type: string;
-  damage_type: DamageType | null;
-  damage_over_time_type: DamageType | null;
-  damage_shield_type: DamageType | null;
   cooldown: string | null;
   cast_time: string | null;
-  damage: string | null;
-  damage_percent: string | null;
-  stun_chance: string | null;
-  fear_chance: string | null;
-  heals_health: string | null;
-  summoned_monster_id: string | null;
-  summoned_monster_name: string | null;
-  summoned_monster_level: number | null;
-  summon_count_per_cast: number | null;
-  max_active_summons: number | null;
-  is_enrage: boolean;
-  // Buff/debuff fields
-  duration_base: number;
-  is_dispel: boolean;
-  is_blindness: boolean;
-  is_poison_debuff: boolean;
-  is_fire_debuff: boolean;
-  is_cold_debuff: boolean;
-  is_disease_debuff: boolean;
-  is_melee_debuff: boolean;
-  is_magic_debuff: boolean;
-  speed_bonus: string | null;
-  defense_bonus: string | null;
-  damage_bonus: string | null;
-  damage_percent_bonus: string | null;
-  haste_bonus: string | null;
-  critical_chance_bonus: string | null;
-  critical_resist_bonus: string | null;
-  block_chance_bonus: string | null;
-  healing_per_second_bonus: string | null;
-  health_percent_per_second_bonus: string | null;
-  mana_per_second_bonus: string | null;
-  mana_percent_per_second_bonus: string | null;
-  damage_shield: string | null;
-  // CC effects (LinearStatBonusFloat JSON)
-  knockback_chance: string | null;
-  stun_time: string | null;
-  fear_time: string | null;
-  // Damage skill extras
-  lifetap_percent: string | null;
-  break_armor_prob: number;
-  // AoE properties
-  affects_random_target: boolean;
-  area_object_size: number;
-  area_objects_to_spawn: number;
-  // Buff/debuff extras
-  accuracy_bonus: string | null;
-  magic_damage_bonus: string | null;
-  magic_resist_bonus: string | null;
-  poison_resist_bonus: string | null;
-  fire_resist_bonus: string | null;
-  cold_resist_bonus: string | null;
-  disease_resist_bonus: string | null;
-  prob_ignore_cleanse: number;
 }
 
 /**

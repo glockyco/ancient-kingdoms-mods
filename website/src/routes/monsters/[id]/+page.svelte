@@ -26,6 +26,7 @@
   import type { LinearValue } from "$lib/types/skills";
   import { formatPercent, formatDuration } from "$lib/utils/format";
   import { formatSkillEffect } from "$lib/utils/formatSkillEffect";
+  import { skillRowToEffectInput } from "$lib/skills/skillRowToEffectInput";
   import { getMonsterSpecialMechanics } from "$lib/special-mechanics";
   import { monsterKillReputation } from "$lib/utils/killReputation";
   import Sword from "@lucide/svelte/icons/sword";
@@ -279,7 +280,7 @@
       id: "effect",
       header: "Effect",
       accessorFn: (row) =>
-        formatSkillEffect(row, {
+        formatSkillEffect(skillRowToEffectInput(row), {
           damage: displayDamage,
           magicDamage: displayMagicDamage,
         }),
