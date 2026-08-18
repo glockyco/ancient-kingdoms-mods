@@ -155,6 +155,66 @@ def _apply_ignore_journal_exclusions(conn: sqlite3.Connection) -> None:
     conn.commit()
 
 
+def _apply_monster_zone_exclusions(
+    conn: sqlite3.Connection, redactions: RedactionConfig
+) -> None:
+    """Remove excluded-zone spawns and monsters with no public spawns."""
+    zone_ids = tuple(sorted(redactions.exclude_monster_zone_ids))
+    if not zone_ids:
+        return
+
+    cursor = conn.cursor()
+    placeholders = ",".join("?" * len(zone_ids))
+    cursor.execute(
+        f"SELECT DISTINCT monster_id FROM monster_spawns "
+        f"WHERE zone_id IN ({placeholders})",
+        zone_ids,
+    )
+    candidate_ids = {row[0] for row in cursor.fetchall()}
+
+    cursor.execute(
+        f"""
+        DELETE FROM summon_trigger_placeholders
+        WHERE spawn_id IN (
+            SELECT id FROM monster_spawns WHERE zone_id IN ({placeholders})
+        )
+        """,
+        zone_ids,
+    )
+    cursor.execute(
+        f"DELETE FROM monster_spawns WHERE zone_id IN ({placeholders})", zone_ids
+    )
+    removed_spawns = cursor.rowcount
+
+    excluded_ids = {
+        monster_id
+        for monster_id in candidate_ids
+        if cursor.execute(
+            "SELECT 1 FROM monster_spawns WHERE monster_id = ? LIMIT 1",
+            (monster_id,),
+        ).fetchone()
+        is None
+    }
+
+    if excluded_ids:
+        monster_placeholders = ",".join("?" * len(excluded_ids))
+        parameters = tuple(sorted(excluded_ids))
+        for table in ("monster_skills", "item_sources_monster"):
+            cursor.execute(
+                f"DELETE FROM {table} WHERE monster_id IN ({monster_placeholders})",
+                parameters,
+            )
+        cursor.execute(
+            f"DELETE FROM monsters WHERE id IN ({monster_placeholders})", parameters
+        )
+
+    console.print(
+        f"  [dim]Excluded {removed_spawns} monster spawns from "
+        f"{len(zone_ids)} zones and {len(excluded_ids)} orphaned monsters[/dim]"
+    )
+    conn.commit()
+
+
 def run_all(conn: sqlite3.Connection) -> None:
     """Run all denormalizations in dependency order.
 
@@ -184,6 +244,11 @@ def run_all(conn: sqlite3.Connection) -> None:
     # Monster spawn inference (before levels and items so altar/placeholder
     # spawns exist for level range calculation and item zone association)
     monsters.run_spawns(conn)
+
+    # Monster exclusions depend on the complete inferred spawn set. Remove only
+    # monsters that have no remaining spawn in public content.
+    if redactions.exclude_monster_zone_ids:
+        _apply_monster_zone_exclusions(conn, redactions)
 
     # Monster level ranges (from spawns, needed before item sources)
     monsters.run_levels(conn)

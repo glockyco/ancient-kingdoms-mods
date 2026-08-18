@@ -15,6 +15,7 @@ class RedactionConfig:
 
     hide_crafting_item_ids: set[str] = field(default_factory=set)
     exclude_quest_ids: set[str] = field(default_factory=set)
+    exclude_monster_zone_ids: set[str] = field(default_factory=set)
     exclude_ignore_journal: bool = False
 
 
@@ -38,6 +39,9 @@ def load_redactions(config_path: Path | None = None) -> RedactionConfig:
             data.get("items", {}).get("hide_crafting", {}).get("ids", [])
         ),
         exclude_quest_ids=set(data.get("quests", {}).get("exclude", {}).get("ids", [])),
+        exclude_monster_zone_ids=set(
+            data.get("monsters", {}).get("exclude", {}).get("zone_ids", [])
+        ),
         exclude_ignore_journal=data.get("items", {}).get(
             "exclude_ignore_journal", False
         ),
@@ -51,5 +55,10 @@ def load_redactions(config_path: Path | None = None) -> RedactionConfig:
         )
     if config.exclude_quest_ids:
         console.print(f"  Excluding {len(config.exclude_quest_ids)} quests")
+    if config.exclude_monster_zone_ids:
+        console.print(
+            "  Excluding monster spawns from "
+            f"{len(config.exclude_monster_zone_ids)} zones"
+        )
 
     return config

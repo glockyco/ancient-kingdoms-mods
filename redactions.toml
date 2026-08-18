@@ -22,6 +22,11 @@ ids = [
 
 # Quests to completely exclude from the database.
 # These quests won't appear in any listings or relationships.
+# Remove monster spawns from unreleased zones. Monsters that also spawn in
+# released content remain visible without the excluded-zone spawn records.
+[monsters.exclude]
+zone_ids = ["old_valorath"]
+
 [quests.exclude]
 ids = [
     "relics_of_the_ancient_faith",
