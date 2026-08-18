@@ -1010,15 +1010,15 @@ finalDamage = damage − reduction</pre>
         <h3 id="cleanse" class="font-semibold mb-1 scroll-mt-24">Cleanse</h3>
         <p class="text-sm text-muted-foreground mb-2">
           Cleanse is cast on yourself or an ally and removes harmful debuffs. It
-          cannot be resisted and is not affected by Accuracy. A cleanse only
-          acts on debuffs whose element matches it. For example, a fire-and-cold
-          cleanse removes fire and cold debuffs but not poison, disease, or
-          magic ones.
+          cannot be resisted, but the caster's Accuracy raises how many counters
+          it strips. A cleanse only acts on debuffs whose element matches it.
+          For example, a fire-and-cold cleanse removes fire and cold debuffs but
+          not poison, disease, or magic ones.
         </p>
         <p class="text-sm text-muted-foreground mb-2">
-          Finite-charge cleanse items require an active debuff that matches the
-          item. Cleanse skill casts still proceed and apply the normal cleanse
-          rules.
+          A cleanse item with limited charges refuses to be used while the
+          target carries no debuff it can remove, so it never wastes a charge.
+          Casting a cleanse skill has no such restriction.
         </p>
         <p class="text-sm text-muted-foreground mb-2">
           Every debuff carries 3 counters and is fully removed only when its
@@ -1046,7 +1046,8 @@ finalDamage = damage − reduction</pre>
                   class="py-1 text-muted-foreground"
                   >1 counter removed for certain, then 2 more attempts that each
                   remove another counter with a chance of (100% &minus; Cleanse
-                  Resist)</td
+                  Resist) &times; (1 + caster Accuracy). All 3 counters are
+                  removed at once when that chance reaches 100%</td
                 ></tr
               >
               <tr

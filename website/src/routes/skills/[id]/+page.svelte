@@ -2474,7 +2474,9 @@
                 This debuff carries 3 counters and is gone only when its
                 counters reach 0. A matching cleanse removes 1 counter for
                 certain, then makes 2 more attempts that each remove another
-                counter with a {formatPercent(1 - skill.prob_ignore_cleanse)} chance.{skill.healing_per_second_bonus
+                counter with a {formatPercent(1 - skill.prob_ignore_cleanse)}
+                chance, multiplied by (1 + the caster's Accuracy). All 3 counters
+                are removed at once when that chance reaches 100%.{skill.healing_per_second_bonus
                   ? " While counters remain, each tick of its damage is reduced, to 85% of full at 2 counters and 70% at 1 counter."
                   : ""}
               </p>
@@ -2495,17 +2497,16 @@
             </h3>
             <p class="text-muted-foreground">
               Cast on yourself or an ally, this skill removes harmful debuffs of
-              the elements it cleanses. It cannot be resisted and is not
-              affected by Accuracy. Finite-charge cleanse items require an
-              active matching debuff before use. This item check does not block
-              a cleanse skill cast, which follows the normal cleanse rules.
-              Every debuff carries 3 counters and is fully removed only when its
-              counters reach 0. If a matching debuff has a Cleanse Resist of 0,
-              all 3 counters are removed in a single cast. Otherwise the cast
-              removes 1 counter for certain, then makes 2 more attempts that
-              each remove another counter with a chance of (100% &minus; Cleanse
-              Resist), and a debuff with a Cleanse Resist of 100% cannot be
-              cleansed. For damage-over-time debuffs, losing counters also
+              the elements it cleanses. It cannot be resisted, but the caster's
+              Accuracy raises how many counters it strips. Every debuff carries
+              3 counters and is fully removed only when its counters reach 0. If
+              a matching debuff has a Cleanse Resist of 0, all 3 counters are
+              removed in a single cast. Otherwise the cast removes 1 counter for
+              certain, then makes 2 more attempts that each remove another
+              counter with a chance of (100% &minus; Cleanse Resist) &times; (1
+              + caster Accuracy). All 3 counters are removed at once when that
+              chance reaches 100%. A debuff with a Cleanse Resist of 100% cannot
+              be cleansed. For damage-over-time debuffs, losing counters also
               lowers each tick of damage, to 85% of full at 2 counters and 70%
               at 1 counter.
             </p>
