@@ -101,7 +101,22 @@ internal static class HotReplDeployer
                     $"Required Unity reference assembly not found. Launch the game once to generate it: {sourcePath}",
                     sourcePath);
 
-            File.Copy(sourcePath, Path.Combine(destinationPath, fileName), overwrite: true);
+            // A prior run of this method can leave the destination as a symlink
+            // back into UnityDependencies (observed after a manual `ln -s` setup
+            // there). Once a game update regenerates UnityDependencies via
+            // Il2CppAssemblyGenerator, source and destination resolve to the same
+            // file, and File.Copy(overwrite: true) refuses to copy a file onto
+            // itself: it fails with "being used by another process", which is the
+            // OS's generic message for the self-copy case and names no symlink.
+            // Deleting the destination first makes the copy unconditionally
+            // fresh regardless of what previously sat there. File.Delete is a
+            // no-op when nothing exists at the path, and - unlike File.Exists,
+            // which resolves a symlink to check its target and so misreports a
+            // broken symlink as absent - it removes a symlink entry itself
+            // without resolving it, broken or not.
+            var destinationFile = Path.Combine(destinationPath, fileName);
+            File.Delete(destinationFile);
+            File.Copy(sourcePath, destinationFile);
         }
     }
 
