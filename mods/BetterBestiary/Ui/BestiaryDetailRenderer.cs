@@ -46,6 +46,7 @@ internal static class BestiaryDetailRenderer
         SetText(detail.typeBoss, monster.typeMonster);
         SetText(detail.classBoss, monster.classMonster);
         SetText(detail.zoneBoss, ZoneText(monster));
+        SetText(detail.kills, KillText(monster));
 
         BestiaryLootRenderer.Reveal(detail, monster);
     }
@@ -66,6 +67,15 @@ internal static class BestiaryDetailRenderer
         return health > 10000
             ? (health / 1000).ToString("N0", CultureInfo.InvariantCulture) + "K"
             : health.ToString("N0", CultureInfo.InvariantCulture);
+    }
+
+    private static string KillText(Monster monster)
+    {
+        var player = Player.localPlayer;
+        if (player != null && player.bossesKilled.TryGetValue(monster.nameEntity, out var kills) && kills > 0)
+            return $"<color=green>{kills}</color>";
+
+        return "<color=red>0</color>";
     }
 
     private static string ZoneText(Monster monster)
