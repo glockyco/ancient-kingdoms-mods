@@ -6,8 +6,8 @@ describe("Slayer page data", () => {
     const data = getSlayerPageData();
 
     expect(data.profession.id).toBe("slayer");
-    expect(data.targets).toHaveLength(143);
-    expect(data.targets.filter((target) => target.is_boss)).toHaveLength(76);
+    expect(data.targets).toHaveLength(144);
+    expect(data.targets.filter((target) => target.is_boss)).toHaveLength(77);
     expect(data.targets.filter((target) => target.is_elite)).toHaveLength(67);
     expect(data.targets.filter((target) => target.is_world_boss)).toHaveLength(
       6,
