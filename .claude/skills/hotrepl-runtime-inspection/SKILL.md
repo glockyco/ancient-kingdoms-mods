@@ -36,6 +36,7 @@ dotnet run --project build-tool launch --wait
 hotrepl --url ws://127.0.0.1:18590 info --json
 hotrepl --url ws://127.0.0.1:18590 run world.summary '{}' --json
 hotrepl --url ws://127.0.0.1:18590 run compendium.preflight '{}' --json
+hotrepl --url ws://127.0.0.1:18590 run world.enter '{}' --json
 hotrepl --url ws://127.0.0.1:18590 describe compendium.export --json
 ```
 
@@ -51,12 +52,13 @@ token concepts in older notes are stale.
 
 ## Available game-specific control commands
 
-The `HotReplCommands` mod registers four typed commands (MelonLoader mod in `mods/HotReplCommands/`):
+The `HotReplCommands` mod registers five typed commands (MelonLoader mod in `mods/HotReplCommands/`):
 
 | Command                | Kind | Description                                                                                                                           |
-| ---------------------- | ---- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| ----------------------- | ---- | ------------------------------------------------------------------------------------------------------------------------------------- |
 | `compendium.preflight` | sync | Checks mod visibility, directory existence, scene, and player readiness.                                                              |
 | `world.summary`        | sync | Returns active scene, network state, character count, and local-player status.                                                        |
+| `world.enter`          | job  | Drives the game to a spawned local player, without exporting.                                                                         |
 | `compendium.export`    | job  | Runs world entry if needed, calls DataExporter and optionally MapScreenshotter, returns artifact refs. Args: `{"screenshots": bool}`. |
 | `game.quit`            | sync | Calls `Application.Quit()` and returns `{"quitting": true}`.                                                                          |
 

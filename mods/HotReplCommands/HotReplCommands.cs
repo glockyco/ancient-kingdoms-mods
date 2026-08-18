@@ -12,6 +12,7 @@ namespace HotReplCommands
     {
         private IDisposable _preflight;
         private IDisposable _worldSummary;
+        private IDisposable _worldEnter;
         private IDisposable _export;
         private IDisposable _quit;
 
@@ -23,17 +24,19 @@ namespace HotReplCommands
             var registry = GlobalControlCommandRegistry.Instance;
             _preflight = registry.Register(new PreflightCommand(exportDir, screenshotDir));
             _worldSummary = registry.Register(new WorldSummaryCommand());
+            _worldEnter = registry.Register(new WorldEnterCommand());
             _export = registry.Register(new ExportJobCommand(exportDir, screenshotDir));
             _quit = registry.Register(new GameQuitCommand());
 
             LoggerInstance.Msg(
-                $"HotReplCommands: registered 4 typed commands (exportDir={exportDir}).");
+                $"HotReplCommands: registered 5 typed commands (exportDir={exportDir}).");
         }
 
         public override void OnDeinitializeMelon()
         {
             _preflight?.Dispose();
             _worldSummary?.Dispose();
+            _worldEnter?.Dispose();
             _export?.Dispose();
             _quit?.Dispose();
         }

@@ -7,20 +7,16 @@ using System.Threading.Tasks;
 using HotRepl.Control;
 using HotReplCommands.Artifacts;
 using HotReplCommands.Dtos;
+using HotReplCommands.World;
 using Il2Cpp;
 using Il2CppMirror;
 using MelonLoader;
 using Newtonsoft.Json.Linq;
-using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace HotReplCommands.Commands
 {
     public sealed class ExportJobCommand : IControlCommandHandler<CompendiumExportArgs, CompendiumExportResult>
     {
-        private static readonly TimeSpan MaxWait = TimeSpan.FromMinutes(5);
-        private static readonly TimeSpan SettleTime = TimeSpan.FromSeconds(3);
-
         private readonly string _exportDir;
         private readonly string _screenshotDir;
 
@@ -114,7 +110,7 @@ namespace HotReplCommands.Commands
             if (NetworkClient.localPlayer == null)
             {
                 WorldEntryOutcome worldResult = null;
-                yield return EnterWorldCoroutine(
+                yield return WorldEntry.EnterCoroutine(
                     cancellationToken,
                     outcome => worldResult = outcome);
                 if (worldResult == null || !worldResult.Ok)
@@ -150,7 +146,7 @@ namespace HotReplCommands.Commands
                     yield break;
                 }
 
-                var deadline = DateTime.UtcNow + MaxWait;
+                var deadline = DateTime.UtcNow + WorldEntry.MaxWait;
                 while (screenshotter.IsCapturing)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
@@ -195,109 +191,5 @@ namespace HotReplCommands.Commands
             => new ControlCommandProgress(
                 Snapshot: new JObject { ["phase"] = phase, ["message"] = message },
                 Message: message);
-
-        private sealed class WorldEntryOutcome
-        {
-            public bool Ok { get; set; }
-            public string Code { get; set; }
-            public string Message { get; set; }
-
-            public static WorldEntryOutcome Success() => new WorldEntryOutcome { Ok = true };
-            public static WorldEntryOutcome Failed(string code, string msg)
-                => new WorldEntryOutcome { Ok = false, Code = code, Message = msg };
-        }
-
-        private static IEnumerator EnterWorldCoroutine(
-            CancellationToken ct,
-            Action<WorldEntryOutcome> complete)
-        {
-            var scene = SceneManager.GetActiveScene().name;
-
-            if (scene == "Start")
-            {
-                yield return null;
-                ct.ThrowIfCancellationRequested();
-                var login = UnityEngine.Object.FindObjectOfType<UILogin>();
-                if (login == null)
-                {
-                    complete(WorldEntryOutcome.Failed(
-                        "worldEntryUnavailable",
-                        "UILogin not found in Start scene."));
-                    yield break;
-                }
-                login.singlePlayerButton.onClick.Invoke();
-            }
-
-            var deadline = DateTime.UtcNow + MaxWait;
-            while (UICharacterSelection.singleton == null)
-            {
-                ct.ThrowIfCancellationRequested();
-                if (DateTime.UtcNow >= deadline)
-                {
-                    complete(WorldEntryOutcome.Failed(
-                        "worldEntryUnavailable",
-                        "Timed out waiting for UICharacterSelection."));
-                    yield break;
-                }
-                yield return null;
-            }
-
-            var charSelect = UICharacterSelection.singleton;
-            var manager = charSelect.manager;
-
-            while (manager.state != NetworkState.Lobby ||
-                   manager.charactersAvailableMsg.characters == null)
-            {
-                ct.ThrowIfCancellationRequested();
-                if (DateTime.UtcNow >= deadline)
-                {
-                    complete(WorldEntryOutcome.Failed(
-                        "worldEntryUnavailable",
-                        "Timed out waiting for lobby/character data."));
-                    yield break;
-                }
-                yield return null;
-            }
-
-            var characters = manager.charactersAvailableMsg.characters;
-            if (characters.Length == 0)
-            {
-                complete(WorldEntryOutcome.Failed(
-                    "characterMissing",
-                    "No characters found. Create a character first."));
-                yield break;
-            }
-
-            var firstName = characters[0].name;
-            manager.selection = 0;
-            ((NetworkManagerMMO)NetworkManager.singleton).name_character_selected = firstName;
-            PlayerPrefs.SetString("selected_char", firstName);
-            PlayerPrefs.SetInt(firstName + "_intro_run", 1);
-            PlayerPrefs.Save();
-            ((NetworkManagerMMO)NetworkManager.singleton).ClearPreviews();
-            UIServerList.singleton.StartConnect(null);
-
-            while (NetworkClient.localPlayer == null)
-            {
-                ct.ThrowIfCancellationRequested();
-                if (DateTime.UtcNow >= deadline)
-                {
-                    complete(WorldEntryOutcome.Failed(
-                        "worldEntryUnavailable",
-                        "Timed out waiting for local player to spawn."));
-                    yield break;
-                }
-                yield return null;
-            }
-
-            var settleEnd = DateTime.UtcNow + SettleTime;
-            while (DateTime.UtcNow < settleEnd)
-            {
-                ct.ThrowIfCancellationRequested();
-                yield return null;
-            }
-
-            complete(WorldEntryOutcome.Success());
-        }
     }
 }

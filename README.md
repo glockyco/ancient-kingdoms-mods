@@ -77,7 +77,7 @@ The mod catalog includes player-facing utilities, data exporters, and developmen
 | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `DataExporter`     | Shift-F9 exports game data to JSON and writes the visual asset manifest used by the build pipeline.                                                                                                                                                 |
 | `FieldDefaultValueHookFix` | Harmony-patches Il2CppInterop's `Class_GetFieldDefaultValue_Hook.FindTargetMethod` so the byte-signature scan does not land on the wrong function and crash the game on world entry. |
-| `HotReplCommands`  | Registers typed HotRepl commands: `compendium.preflight`, `world.summary`, `compendium.export` (job — handles world entry, data export, optional screenshots, artifact collection), and `game.quit`. Invoked by `build-tool export` over WebSocket. |
+| `HotReplCommands`  | Registers typed HotRepl commands: `compendium.preflight`, `world.summary`, `world.enter` (job — drives the game to a spawned local player without exporting), `compendium.export` (job — handles world entry, data export, optional screenshots, artifact collection), and `game.quit`. Invoked by `build-tool export` over WebSocket. |
 | `MapScreenshotter` | Shift-F10 captures map screenshots for tile generation. `build-tool export --screenshots` triggers it via the `compendium.export` HotRepl job.                                                                                                      |
 | `HierarchyLogger`  | F9 in the World scene dumps the Unity scene hierarchy and fog-related components to `hierarchy_dump.txt`.                                                                                                                                           |
 
@@ -238,6 +238,7 @@ dotnet run --project build-tool launch --wait
 hotrepl --url ws://127.0.0.1:18590 info --json
 hotrepl --url ws://127.0.0.1:18590 run world.summary '{}' --json
 hotrepl --url ws://127.0.0.1:18590 run compendium.preflight '{}' --json
+hotrepl --url ws://127.0.0.1:18590 run world.enter '{}' --json
 hotrepl --url ws://127.0.0.1:18590 describe compendium.export --json
 hotrepl --url ws://127.0.0.1:18590 eval 'UnityEngine.Application.productName'
 ```

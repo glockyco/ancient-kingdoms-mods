@@ -14,12 +14,13 @@ The startup log reports the four registered commands and the export directory. T
 |---------|---------|------|---------------|
 | `compendium.preflight` | 1 | `Sync` | No |
 | `world.summary` | 1 | `Sync` | No |
+| `world.enter` | 1 | `Job` | Yes |
 | `compendium.export` | 1 | `Job` | Yes |
 | `game.quit` | 1 | `Sync` | Yes |
 
 ## Typed Commands
 
-All four handlers implement `IControlCommandHandler<TArgs, TResult>`. Empty-argument commands receive `EmptyArgs` and the wire caller sends an empty JSON object.
+All five handlers implement `IControlCommandHandler<TArgs, TResult>`. Empty-argument commands receive `EmptyArgs` and the wire caller sends an empty JSON object.
 
 ### `compendium.preflight`
 
@@ -39,6 +40,15 @@ The result contains `ready`, `exportDirExists`, `screenshotDirExists`, `dataExpo
 
 The result contains the active `scene`, the character-selection manager's `networkState` when available, `characterCount`, the selected character's `selectedChar` when the selection index is valid, and `localPlayerReady`. Character fields are nullable when the character-selection UI or its data is unavailable.
 
+### `world.enter`
+
+- **Kind:** `Job`
+- **Arguments:** `EmptyArgs`, `{}`
+- **Returns:** `WorldEnterResult`
+- **State:** Mutates state by driving the game from the `Start` scene to a spawned local player.
+
+Calls `World/WorldEntry.cs`'s `EnterCoroutine` (shared with `compendium.export`) and returns once it succeeds, without exporting anything. No-ops when `NetworkClient.localPlayer` is already present. `WorldEnterResult` contains `localPlayerReady` and `scene`; failures return the same precondition codes as export's world-entry step.
+
 ### `compendium.export`
 
 - **Kind:** `Job`
@@ -57,15 +67,11 @@ The result contains the active `scene`, the character-selection manager's `netwo
 
 The handler calls `UnityEngine.Application.Quit()` and returns the typed result.
 
-## Export Job
+## World Entry
 
-`ExportJobCommand` starts a Melon coroutine and completes the typed job result through a `TaskCompletionSource`. It uses a five-minute deadline for world-entry waits and screenshot capture waits, and honors cancellation throughout those waits.
+`World/WorldEntry.cs` drives the game from the `Start` scene to a spawned local player. `WorldEnterCommand` and `ExportJobCommand` both call its `EnterCoroutine`.
 
-### World Entry
-
-The command checks for a registered DataExporter before doing any game work. It returns the precondition code `dataExporterMissing` when that mod is absent. When screenshots are requested, it also requires a registered MapScreenshotter and returns `mapScreenshotterMissing` when it is absent.
-
-If `NetworkClient.localPlayer` is already present, the job proceeds directly to export. Otherwise `EnterWorldCoroutine` performs this sequence:
+`EnterCoroutine` uses a five-minute deadline for every wait and honors cancellation throughout:
 
 1. In the `Start` scene, wait one frame, find `UILogin`, and invoke its single-player button. A missing `UILogin` returns `worldEntryUnavailable`.
 2. Wait for `UICharacterSelection.singleton`, then wait for the manager to reach `NetworkState.Lobby` with character data. Timeout returns `worldEntryUnavailable`.
@@ -73,7 +79,15 @@ If `NetworkClient.localPlayer` is already present, the job proceeds directly to 
 4. Wait for `NetworkClient.localPlayer` to spawn. Timeout returns `worldEntryUnavailable`.
 5. Wait an additional three-second settle period before reporting successful world entry.
 
-The command chooses the first available character rather than the character that was selected in the UI. Cancellation raises `OperationCanceledException` from each waiting loop and cancels the job task.
+The coroutine chooses the first available character rather than the character that was selected in the UI. Cancellation raises `OperationCanceledException` from each waiting loop and cancels the calling job.
+
+## Export Job
+
+`ExportJobCommand` starts a Melon coroutine and completes the typed job result through a `TaskCompletionSource`. Screenshot capture waits use `WorldEntry.MaxWait` as their own deadline.
+
+The command checks for a registered DataExporter before doing any game work. It returns the precondition code `dataExporterMissing` when that mod is absent. When screenshots are requested, it also requires a registered MapScreenshotter and returns `mapScreenshotterMissing` when it is absent.
+
+If `NetworkClient.localPlayer` is already present, the job proceeds directly to export. Otherwise it calls `WorldEntry.EnterCoroutine` (see World Entry above) and surfaces that outcome's code and message on failure.
 
 ### Data and Screenshots
 
@@ -100,7 +114,7 @@ The artifact collector ignores the screenshot directory when screenshots are not
 
 ## `build-tool export` Driver
 
-`build-tool/HotRepl/HotReplExportRunner.cs` is the client for this command surface. Its required-command list must contain the same four names as the catalog.
+`build-tool/HotRepl/HotReplExportRunner.cs` is the client for this command surface. Its required-command list names the four commands the export path needs; `world.enter` is not in it.
 
 The runner performs this sequence:
 
@@ -119,7 +133,8 @@ The runner also attempts `game.quit` before returning an artifact-verification f
 ```text
 HotReplCommands.cs             # MelonLoader registration and disposal
 HotReplCommandCatalog.cs       # Unity-free command metadata
-Commands/                       # Four typed command handlers
+Commands/                       # Five typed command handlers
+World/                          # Shared world-entry coroutine (WorldEnterCommand + ExportJobCommand)
 Dtos/                           # Command arguments, results, and progress shapes
 Artifacts/                      # Stable export artifact collection and hashing
 ```
