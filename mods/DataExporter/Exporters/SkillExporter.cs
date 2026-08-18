@@ -164,7 +164,7 @@ public class SkillExporter : BaseExporter
         return "Magic";
     }
 
-    // Source: server-scripts/Combat.cs:749-777 — shield mitigation follows the
+    // Source: server-scripts/Combat.cs:738-766 — shield mitigation follows the
     // same flag order and has no typed fallback when no flag is present.
     private static string ResolveDamageShieldType(Il2Cpp.BuffSkill buffSkill)
     {
@@ -392,6 +392,9 @@ public class SkillExporter : BaseExporter
             skillData.buff_category = buffSkill.categoryBuff ?? "unknown";
             skillData.is_invisibility = buffSkill.invisibility;
             skillData.is_undead_illusion = buffSkill.undeadIlussion;
+            skillData.illusion_race = string.IsNullOrWhiteSpace(buffSkill.illusionRace)
+                ? null
+                : buffSkill.illusionRace;
             skillData.is_poison_debuff = buffSkill.isPoisonDebuff;
             skillData.is_fire_debuff = buffSkill.isFireDebuff;
             skillData.is_cold_debuff = buffSkill.isColdDebuff;

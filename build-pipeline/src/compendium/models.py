@@ -793,6 +793,7 @@ class SkillData(BaseModel):
     buff_category: str = ""
     is_invisibility: bool = False
     is_undead_illusion: bool = False
+    illusion_race: str | None = None
     is_mana_shield: bool = False
     is_poison_debuff: bool = False
     is_fire_debuff: bool = False

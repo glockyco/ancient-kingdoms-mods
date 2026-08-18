@@ -1137,6 +1137,7 @@ CREATE TABLE skills (
     buff_category TEXT,
     is_invisibility BOOLEAN DEFAULT 0,
     is_undead_illusion BOOLEAN DEFAULT 0,
+    illusion_race TEXT,
     is_poison_debuff BOOLEAN DEFAULT 0,
     is_fire_debuff BOOLEAN DEFAULT 0,
     is_cold_debuff BOOLEAN DEFAULT 0,

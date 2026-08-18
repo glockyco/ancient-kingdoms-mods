@@ -106,6 +106,10 @@ public class SkillData
     // Buff behavior flags
     public bool is_invisibility { get; set; }
     public bool is_undead_illusion { get; set; }
+
+    /// <summary>Player race the buff disguises the wearer as, or null when it grants no race illusion.</summary>
+    public string illusion_race { get; set; }
+
     public bool is_mana_shield { get; set; }
     public bool is_poison_debuff { get; set; }
     public bool is_fire_debuff { get; set; }
