@@ -486,15 +486,15 @@ export function renderFormulaDisplay(kind: DamageFormulaKind): FormulaDisplay {
  * after the underlying sword/bow hit is combined, before Combat.DealDamageAt
  * performs the common hit pipeline.
  *
- * Source: server-scripts/DamageSkill.cs:47-63 (TryConsumeWildStrike),
+ * Source: server-scripts/DamageSkill.cs:47-65 (TryConsumeWildStrike),
  * TargetDamageSkill.cs:239,282, TargetProjectileSkill.cs:221-222,251-255,
- * Combat.cs:368,601,678-685,944-955 (DealDamageAt).
+ * Combat.cs:368,601,667-674,944-955 (DealDamageAt).
  */
 export function renderWildStrikeFormulaDisplay(): FormulaDisplay {
   return {
     preMitigation: null,
     terms: [],
     specialNote:
-      "Wild Strike empowers the Ranger's next sword or bow auto attack. Add Wild Strike's damage to the auto attack, multiply the total by ×1.1, and round it. The whole hit then deals Magic damage and is reduced by Magic Defense and Magic Resist.",
+      "Wild Strike empowers the Ranger's next sword or bow auto attack. Add Wild Strike's damage to the auto attack, multiply the total by ×(1 + 0.1 × Wild Strike's level), and round it. The whole hit then deals Magic damage and is reduced by Magic Defense and Magic Resist.",
   };
 }
