@@ -19,7 +19,6 @@ export interface MonsterContext {
 
 export interface SkillEffectFormatOptions {
   monster?: MonsterContext;
-  levelZeroScaling?: boolean;
 }
 
 /**
@@ -173,7 +172,7 @@ function parseLinearValue(
 /**
  * Format LinearValue for display
  * Monster context: show the supplied resolved value.
- * Formula context: show compact scaling, including level zero when reachable.
+ * Formula context: show the exact value as a function of skill level.
  */
 export function formatLinearValue(
   lv: LinearValue,
@@ -189,28 +188,23 @@ export function formatLinearValue(
     return lv.base_value.toLocaleString();
   }
 
-  if (options?.levelZeroScaling) {
-    return formatLevelZeroFormula(lv, (value) => value.toLocaleString());
-  }
-
-  const sign = lv.bonus_per_level > 0 ? "+" : "";
-  return `${lv.base_value.toLocaleString()} (${sign}${lv.bonus_per_level.toLocaleString()}/lvl)`;
+  return formatSkillLevelFormula(lv, (value) => value.toLocaleString());
 }
 
-function formatLevelZeroFormula(
+function formatSkillLevelFormula(
   value: LinearValue,
   formatValue: (value: number) => string,
 ): string {
-  const baseAtLevelZero = value.base_value - value.bonus_per_level;
+  const constant = value.base_value - value.bonus_per_level;
   const operator = value.bonus_per_level > 0 ? "+" : "−";
   const perLevel = formatValue(Math.abs(value.bonus_per_level));
 
-  if (baseAtLevelZero === 0) {
+  if (constant === 0) {
     const sign = value.bonus_per_level < 0 ? "−" : "";
-    return `(${sign}${perLevel} × skill lvl)`;
+    return `${sign}${perLevel} × skill lvl`;
   }
 
-  return `(${formatValue(baseAtLevelZero)} ${operator} ${perLevel} × skill lvl)`;
+  return `${formatValue(constant)} ${operator} ${perLevel} × skill lvl`;
 }
 
 /**
@@ -249,6 +243,17 @@ function formatPercent(value: number): string {
 /**
  * Format LinearValue as percentage with optional scaling
  */
+export function formatLinearDuration(
+  baseValue: number,
+  bonusPerLevel: number,
+): string {
+  if (bonusPerLevel === 0) return formatDuration(baseValue);
+  return formatSkillLevelFormula(
+    { base_value: baseValue, bonus_per_level: bonusPerLevel },
+    (value) => `${value.toLocaleString()}s`,
+  );
+}
+
 export function formatLinearPercent(
   lv: LinearValue,
   options: SkillEffectFormatOptions | undefined,
@@ -263,12 +268,7 @@ export function formatLinearPercent(
     return formatPercent(lv.base_value);
   }
 
-  if (options?.levelZeroScaling) {
-    return formatLevelZeroFormula(lv, formatPercent);
-  }
-
-  const sign = lv.bonus_per_level > 0 ? "+" : "";
-  return `${formatPercent(lv.base_value)} (${sign}${formatPercent(lv.bonus_per_level)}/lvl)`;
+  return formatSkillLevelFormula(lv, formatPercent);
 }
 
 /**
@@ -792,7 +792,7 @@ function formatBuffDebuffStats(
  * Format a skill's effect as a concise summary string
  *
  * @param skill - Skill data to format
- * @param options - Optional resolved monster stats or level-zero formula mode
+ * @param options - Optional resolved monster stats for damage calculation
  * @returns Formatted skill effect string (empty if no effects)
  *
  * Category order: Damage > Healing > CC > Summons > Buffs/Debuffs
@@ -801,10 +801,11 @@ const HARDCODED_EFFECTS: Record<string, string> = {
   improved_backstab: "+25% combat advantage dmg",
   bind_affinity: "set custom respawn & portal scroll destination",
   binding: "set custom respawn & portal scroll destination",
-  elixir_endurance: "+60s potion buff duration/lvl",
+  elixir_endurance: "potion buff duration +60s × skill lvl",
   veteran_awareness: "reveals nearby monsters on minimap",
   parry: "negate & counter melee attack",
-  symbiosis: "pet inherits +10%/lvl of your attributes & resistances (max 50%)",
+  symbiosis:
+    "pet inherits 10% × skill lvl of your attributes & resistances (max 50%)",
   summon_player: "teleport target to caster, stun (2s)",
   disarm_trap: "detect and disarm traps",
   alchemy: "craft potions and elixirs",
@@ -828,7 +829,7 @@ const HARDCODED_EFFECTS: Record<string, string> = {
   // Source: server-scripts/TargetBuffSkill.cs:15 (isDoubleExpSpell flag) — lasts for the event duration
   halloween_event: "2× XP from kills, event duration",
   winter_festival: "2× XP from kills, event duration",
-  elixir_of_enlightened_learning: "2× XP from kills, 1800s (+60s/lvl)",
+  elixir_of_enlightened_learning: "2× XP from kills, 1740s + 60s × skill lvl",
   // Source: server-scripts/TargetDamageSkill.cs:162-171, 183-200 — while active,
   // Rogue followup (Weapon Strike) attacks switch to Poison damage type and gain
   // +DEX*2.5 bonus on top of normal combat.damage. Resisted by Poison Resist
@@ -849,10 +850,10 @@ const HARDCODED_EFFECTS: Record<string, string> = {
   new_skill_placeholder: "",
   // Source: server-scripts/Combat.cs — isResourceDepending passive: damage_percent_bonus × (energy.current / energy.max)
   razor_of_wrath:
-    "+1%/lvl attack power, scales with current rage (full rage = full bonus)",
+    "attack power +1% × skill lvl, scales with current rage (full rage = full bonus)",
   // Source: server-scripts/Combat.cs — isResourceDepending passive: magic_damage_percent_bonus × (mana.current / mana.max)
   arcane_edge:
-    "+1%/lvl spell power, scales with current mana (full mana = full bonus)",
+    "spell power +1% × skill lvl, scales with current mana (full mana = full bonus)",
   // Divine Intervention: +10000 all resists for 3s in area is effectively invulnerability; generic formatter would show confusing +10000 values
   divine_intervention: "grants invulnerability to nearby allies, 3s",
 };
@@ -926,10 +927,10 @@ export function formatSkillEffect(
       skill.skill_type === "target_debuff";
 
     if (hasBuffStats) {
-      const dur =
-        skill.duration_per_level && skill.duration_per_level > 0
-          ? `${skill.duration_base}s (+${skill.duration_per_level}s/lvl)`
-          : formatDuration(skill.duration_base);
+      const dur = formatLinearDuration(
+        skill.duration_base,
+        skill.duration_per_level ?? 0,
+      );
       return `${parts.join(", ")}, ${dur}`;
     }
   }

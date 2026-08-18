@@ -30,7 +30,11 @@
   import { QUALITY_NAMES } from "$lib/constants/quality";
   import Seo from "$lib/components/Seo.svelte";
   import { getQualityTextColorClass } from "$lib/utils/format";
-  import { formatSkillEffect } from "$lib/utils/formatSkillEffect";
+  import {
+    formatLinearDuration,
+    formatLinearValue,
+    formatSkillEffect,
+  } from "$lib/utils/formatSkillEffect";
   import { getItemTooltips } from "$lib/queries/items";
   import type {
     ClassSkill,
@@ -109,17 +113,15 @@
 
   // --- Skills Table ---
 
-  // Format a LinearValue JSON string as a cost display (e.g. "20 (+20/lvl)", "400", "—")
+  // Format a LinearValue JSON string as a cost display.
   function formatSkillCost(raw: string | null): string {
     if (!raw) return "—";
     const lv = JSON.parse(raw) as {
       base_value: number;
       bonus_per_level: number;
     };
-    if (lv.base_value === 0) return "—";
-    if (lv.bonus_per_level === 0) return String(lv.base_value);
-    const sign = lv.bonus_per_level > 0 ? "+" : "";
-    return `${lv.base_value} (${sign}${lv.bonus_per_level}/lvl)`;
+    if (lv.base_value === 0 && lv.bonus_per_level === 0) return "—";
+    return formatLinearValue(lv, undefined);
   }
 
   // Format a LinearValue JSON string as a cooldown display (e.g. "8s", "—")
@@ -129,8 +131,8 @@
       base_value: number;
       bonus_per_level: number;
     };
-    if (lv.base_value === 0) return "—";
-    return `${lv.base_value}s`;
+    if (lv.base_value === 0 && lv.bonus_per_level === 0) return "—";
+    return formatLinearDuration(lv.base_value, lv.bonus_per_level);
   }
 
   // Cost column header: "Mana Cost" for mana classes, "Rage Cost" for energy classes

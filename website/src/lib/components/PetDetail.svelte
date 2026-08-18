@@ -10,7 +10,11 @@
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import MapLink from "$lib/components/MapLink.svelte";
   import Seo from "$lib/components/Seo.svelte";
-  import { formatSkillEffect } from "$lib/utils/formatSkillEffect";
+  import {
+    formatLinearDuration,
+    formatLinearValue,
+    formatSkillEffect,
+  } from "$lib/utils/formatSkillEffect";
   import { getClassConfig } from "$lib/utils/classes";
   import type { ClassSkill } from "$lib/queries/classes.server";
   import type {
@@ -80,16 +84,17 @@
           ? energy
           : null;
     if (!lv) return "—";
-    if (lv.bonus_per_level === 0) return String(lv.base_value);
-    const sign = lv.bonus_per_level > 0 ? "+" : "";
-    return `${lv.base_value} (${sign}${lv.bonus_per_level}/lvl)`;
+    return formatLinearValue(lv, undefined);
   }
 
   function formatCooldown(raw: string | null): string {
     if (!raw) return "—";
-    const lv = JSON.parse(raw) as { base_value: number };
-    if (lv.base_value === 0) return "—";
-    return `${lv.base_value}s`;
+    const lv = JSON.parse(raw) as {
+      base_value: number;
+      bonus_per_level: number;
+    };
+    if (lv.base_value === 0 && lv.bonus_per_level === 0) return "—";
+    return formatLinearDuration(lv.base_value, lv.bonus_per_level);
   }
 
   const skillColumns: ColumnDef<ClassSkill>[] = [

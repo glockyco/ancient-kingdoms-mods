@@ -29,25 +29,22 @@ describe("formatSkillEffect stat bonuses", () => {
         critical_resist_bonus: { base_value: 0.05, bonus_per_level: 0.01 },
         duration_base: 60,
       } as Skill),
-    ).toBe("+5% (+1%/lvl) critical resist, 1m");
+    ).toBe("+4% + 1% × skill lvl critical resist, 1m");
   });
 });
 
-describe("formatSkillEffect level-zero scaling", () => {
-  it("shows the exact skill-level formula when level zero is used", () => {
+describe("formatSkillEffect scaling formulas", () => {
+  it("uses one exact, unwrapped formula for every scaling effect", () => {
     const attack = {
       skill_type: "target_damage",
       damage_type: "Physical",
-      damage: { base_value: 2, bonus_per_level: 0 },
+      damage: { base_value: 30, bonus_per_level: 30 },
       stun_chance: { base_value: 0.01, bonus_per_level: 0.003 },
       stun_time: { base_value: 1, bonus_per_level: 0 },
     } as Skill;
 
-    expect(formatSkillEffect(attack, { levelZeroScaling: true })).toBe(
-      "2 physical dmg, (0.7% + 0.3% × skill lvl) stun (1s)",
-    );
     expect(formatSkillEffect(attack)).toBe(
-      "2 physical dmg, 1% (+0.3%/lvl) stun (1s)",
+      "30 × skill lvl physical dmg, 0.7% + 0.3% × skill lvl stun (1s)",
     );
   });
 });

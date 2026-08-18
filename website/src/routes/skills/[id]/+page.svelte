@@ -7,6 +7,7 @@
   import type { PageData } from "./$types";
   import type { LinearValue } from "$lib/types/skills";
   import {
+    formatLinearDuration as formatSkillLinearDuration,
     formatLinearPercent as formatSkillLinearPercent,
     formatLinearValue as formatSkillLinear,
     hasNonZeroField,
@@ -71,9 +72,7 @@
     suffix: string = "",
   ): string {
     if (!value) return "-";
-    return `${formatSkillLinear(value, {
-      levelZeroScaling: data.levelZeroScaling,
-    })}${suffix}`;
+    return `${formatSkillLinear(value, undefined)}${suffix}`;
   }
 
   function formatLinearAbs(
@@ -92,9 +91,7 @@
 
   function formatLinearPercent(value: LinearValue | null): string {
     if (!value) return "-";
-    return formatSkillLinearPercent(value, {
-      levelZeroScaling: data.levelZeroScaling,
-    });
+    return formatSkillLinearPercent(value, undefined);
   }
 
   function formatLinearPercentAbs(value: LinearValue | null): string {
@@ -116,8 +113,7 @@
 
   function formatDuration(base: number, perLevel: number): string {
     if (base === 0 && perLevel === 0) return "-";
-    if (perLevel === 0) return `${formatNumber(base)}s`;
-    return `${formatNumber(base)}s (+${formatNumber(perLevel)}s/lvl)`;
+    return formatSkillLinearDuration(base, perLevel);
   }
 
   function hasLinearValue(value: LinearValue | null): boolean {

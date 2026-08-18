@@ -26,7 +26,6 @@ export const entries: EntryGenerator = () => {
 export interface SkillDetailPageData {
   skill: SkillDetailView;
   effectSummary: string;
-  levelZeroScaling: boolean;
   grantedByItems: SkillItemSource[];
   usedByMonsters: SkillMonster[];
   usedByPets: SkillPet[];
@@ -45,12 +44,7 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
       sm.name as summoned_monster_name,
       pet_lookup.id as pet_id,
       pet_lookup.name as pet_name,
-      pet_lookup.is_mercenary as pet_is_mercenary,
-      EXISTS (
-        SELECT 1
-        FROM monster_skills ms
-        WHERE ms.skill_id = s.id AND ms.runtime_level = 0
-      ) as has_level_zero_monster_use
+      pet_lookup.is_mercenary as pet_is_mercenary
     FROM skills s
     LEFT JOIN skills ps ON ps.id = s.prerequisite_skill_id
     LEFT JOIN skills ps2 ON ps2.id = s.prerequisite2_skill_id
@@ -321,8 +315,7 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
     [params.id],
   );
 
-  const levelZeroScaling = Boolean(skillRaw.has_level_zero_monster_use);
-  const effectSummary = formatSkillEffect(skill, { levelZeroScaling });
+  const effectSummary = formatSkillEffect(skill);
 
   // Mercenaries are pets with is_mercenary=1; familiars/companions are the
   // rest. We split because mercenary ownership is most actionable for the
@@ -366,7 +359,6 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
   return {
     skill,
     effectSummary,
-    levelZeroScaling,
     grantedByItems,
     usedByMonsters,
     usedByPets,

@@ -50,11 +50,9 @@ describe("monster ability effects", () => {
       (row) => row.id === "ant_attack",
     );
     expect(intrinsic).toBeDefined();
-    expect(
-      formatSkillEffect(skillRowToEffectInput(intrinsic), {
-        levelZeroScaling: true,
-      }),
-    ).toBe("2 physical dmg, (0.7% + 0.3% × skill lvl) stun (1s)");
+    expect(formatSkillEffect(skillRowToEffectInput(intrinsic))).toBe(
+      "2 physical dmg, 0.7% + 0.3% × skill lvl stun (1s)",
+    );
 
     const antAttack = query<{ id: string; runtime_level: number }>(
       MONSTER_ABILITIES_QUERY,
@@ -86,11 +84,9 @@ describe("monster ability effects", () => {
         ["dragons_breath"],
       ).some((usage) => usage.runtime_level === 0),
     ).toBe(true);
-    expect(
-      formatSkillEffect(skillRowToEffectInput(dragonBreath), {
-        levelZeroScaling: true,
-      }),
-    ).toBe("(115% + 25% × skill lvl) fire weapon dmg");
+    expect(formatSkillEffect(skillRowToEffectInput(dragonBreath))).toBe(
+      "115% + 25% × skill lvl fire weapon dmg",
+    );
   });
 
   test("keep the maximum-health cost of a shared buff", () => {

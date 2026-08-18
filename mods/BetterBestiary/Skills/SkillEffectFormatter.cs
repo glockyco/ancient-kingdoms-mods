@@ -64,8 +64,10 @@ internal static class SkillEffectFormatter
             var hasBuffStats = skill.skill_type is "area_buff" or "area_debuff" or "target_buff" or "target_debuff";
             if (hasBuffStats)
             {
-                var dur = skill.duration_per_level is > 0
-                    ? $"{JsNum(skill.duration_base)}s (+{JsNum(skill.duration_per_level.Value)}s/lvl)"
+                var dur = skill.duration_per_level is not null and not 0
+                    ? FormatSkillLevelFormula(
+                        new LinearValue(skill.duration_base, skill.duration_per_level.Value),
+                        value => $"{JsNum(value)}s")
                     : FormatDuration(skill.duration_base);
                 return string.Join(", ", parts) + ", " + dur;
             }
@@ -411,21 +413,36 @@ internal static class SkillEffectFormatter
     private static LinearValue Abs(LinearValue lv) =>
         new(System.Math.Abs(lv.base_value), System.Math.Abs(lv.bonus_per_level));
 
-    /// <summary>Player-context formatting: base, plus <c>(+X/lvl)</c> scaling when non-zero.</summary>
+    /// <summary>Exact player-context formula as a function of skill level.</summary>
     private static string FormatLinearValue(LinearValue lv)
     {
         if (lv.bonus_per_level == 0)
             return Loc(lv.base_value);
-        var sign = lv.bonus_per_level > 0 ? "+" : "";
-        return $"{Loc(lv.base_value)} ({sign}{Loc(lv.bonus_per_level)}/lvl)";
+        return FormatSkillLevelFormula(lv, Loc);
     }
 
     private static string FormatLinearPercent(LinearValue lv)
     {
         if (lv.bonus_per_level == 0)
             return FormatPercent(lv.base_value);
-        var sign = lv.bonus_per_level > 0 ? "+" : "";
-        return $"{FormatPercent(lv.base_value)} ({sign}{FormatPercent(lv.bonus_per_level)}/lvl)";
+        return FormatSkillLevelFormula(lv, FormatPercent);
+    }
+
+    private static string FormatSkillLevelFormula(
+        LinearValue value,
+        System.Func<double, string> formatValue)
+    {
+        var constant = value.base_value - value.bonus_per_level;
+        var operation = value.bonus_per_level > 0 ? "+" : "−";
+        var perLevel = formatValue(System.Math.Abs(value.bonus_per_level));
+
+        if (constant == 0)
+        {
+            var sign = value.bonus_per_level < 0 ? "−" : "";
+            return $"{sign}{perLevel} × skill lvl";
+        }
+
+        return $"{formatValue(constant)} {operation} {perLevel} × skill lvl";
     }
 
     /// <summary>Mirror of formatSkillEffect's local <c>formatPercent</c>: value*100, one
@@ -475,10 +492,10 @@ internal static class SkillEffectFormatter
         ["improved_backstab"] = "+25% combat advantage dmg",
         ["bind_affinity"] = "set custom respawn & portal scroll destination",
         ["binding"] = "set custom respawn & portal scroll destination",
-        ["elixir_endurance"] = "+60s potion buff duration/lvl",
+        ["elixir_endurance"] = "potion buff duration +60s × skill lvl",
         ["veteran_awareness"] = "reveals nearby monsters on minimap",
         ["parry"] = "negate & counter melee attack",
-        ["symbiosis"] = "pet inherits +10%/lvl of your attributes & resistances (max 50%)",
+        ["symbiosis"] = "pet inherits 10% × skill lvl of your attributes & resistances (max 50%)",
         ["summon_player"] = "teleport target to caster, stun (2s)",
         ["disarm_trap"] = "detect and disarm traps",
         ["alchemy"] = "craft potions and elixirs",
@@ -496,14 +513,14 @@ internal static class SkillEffectFormatter
         ["detect_traps"] = "passive — reveal and disarm traps (Rogue only)",
         ["halloween_event"] = "2× XP from kills, event duration",
         ["winter_festival"] = "2× XP from kills, event duration",
-        ["elixir_of_enlightened_learning"] = "2× XP from kills, 1800s (+60s/lvl)",
+        ["elixir_of_enlightened_learning"] = "2× XP from kills, 1740s + 60s × skill lvl",
         ["master_poisoner"] = "weapon strikes deal poison dmg (Attack Damage + DEX×2.5), resisted by Poison Resist, 10s",
         ["call_of_the_heroes"] = "teleport all active mercenaries to you, remove their fear",
         ["charge"] = "charge toward target, removes roots, +3.5 speed, +100% accuracy, +5% rage/s, 2s",
         ["teleport"] = "",
         ["new_skill_placeholder"] = "",
-        ["razor_of_wrath"] = "+1%/lvl attack power, scales with current rage (full rage = full bonus)",
-        ["arcane_edge"] = "+1%/lvl spell power, scales with current mana (full mana = full bonus)",
+        ["razor_of_wrath"] = "attack power +1% × skill lvl, scales with current rage (full rage = full bonus)",
+        ["arcane_edge"] = "spell power +1% × skill lvl, scales with current mana (full mana = full bonus)",
         ["divine_intervention"] = "grants invulnerability to nearby allies, 3s",
     };
 }
