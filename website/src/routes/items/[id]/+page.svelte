@@ -1645,7 +1645,7 @@
           <Card.Title>Mechanics</Card.Title>
         </Card.Header>
         <Card.Content class="space-y-3 text-sm text-muted-foreground">
-          <!-- Source: server-scripts/Player.cs:3993-4023 — using the item summons the pet, or dismisses the one it already summoned. -->
+          <!-- Source: server-scripts/Player.cs:4016-4046 — using the item summons the pet, or dismisses the one it already summoned. -->
           <p>
             Use the whistle to summon the pet. Using it again dismisses that
             pet. Three pets can follow you at once.
@@ -1658,7 +1658,7 @@
             character&gt;'s pet".
           </p>
           <!-- Source: server-scripts/PetFriendly.cs:389-396 — the follower teleports to its owner past 24 units. -->
-          <!-- Source: server-scripts/Player.cs:10407-10410 — portals respawn the followers at the destination. -->
+          <!-- Source: server-scripts/Player.cs:10527-10530 — portals respawn the followers at the destination. -->
           <p>
             The pet follows you, catches up when it falls far behind, and
             reappears beside you after you take a portal. It is cosmetic and

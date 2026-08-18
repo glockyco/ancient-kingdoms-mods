@@ -2,7 +2,7 @@
 // Source citations refer to Ancient Kingdoms server-scripts/*.cs.
 // Engine-faithful: float32 (Math.fround) plus banker's rounding to match Unity/C#.
 
-// Source: server-scripts/Player.cs:9377-9389 — each veteran point adds +0.25% to Health and Mana multipliers.
+// Source: server-scripts/Player.cs:9497-9509 — each veteran point adds +0.25% to Health and Mana multipliers.
 export const VET_MULT_PER_POINT = 0.0025;
 // Source: server-scripts/Constitution.cs:13-15 — Constitution adds 25 Health per point.
 const CON_HEALTH = 25;
@@ -32,7 +32,7 @@ export interface RaceBands {
   bc: number;
 }
 
-// Source: server-scripts/Player.cs:9306-9335 — per-race roll bands and base-combat factors.
+// Source: server-scripts/Player.cs:9426-9455 — per-race roll bands and base-combat factors.
 export const RACES: Record<string, RaceBands> = {
   Human: { hp: [0.95, 1.0], mana: [0.95, 1.0], energy: [0.95, 1.0], bc: 0.9 },
   Elf: { hp: [0.9, 0.95], mana: [1.0, 1.05], energy: [0.9, 0.95], bc: 0.7 },
@@ -76,7 +76,7 @@ export interface ClassDef {
 }
 
 // Source: server-scripts/Utils.cs:628-636 — class race pools.
-// Source: server-scripts/Player.cs:7861-7897,7898-7926,7927-7955,7956-7984,7985-8013,8014-8045 — per-class attribute divisors.
+// Source: server-scripts/Player.cs:7975-8011,8012-8040,8041-8069,8070-8098,8099-8127,8128-8159 — per-class attribute divisors.
 export const CLASSES: Record<string, ClassDef> = {
   Warrior: {
     type: "Warrior",
@@ -127,7 +127,7 @@ export type Curves = Record<string, Curve>;
 const linear = (base: number, per: number, level: number): number =>
   base + per * (level - 1);
 
-// Source: server-scripts/Player.cs:7861-7897,7898-7926,7927-7955,7956-7984,7985-8013,8014-8045 — mercenary attributes are floor(level / class divisor).
+// Source: server-scripts/Player.cs:7975-8011,8012-8040,8041-8069,8070-8098,8099-8127,8128-8159 — mercenary attributes are floor(level / class divisor).
 export function attrs(cls: string, level: number): Record<string, number> {
   const out: Record<string, number> = {};
   for (const [a, n] of Object.entries(CLASSES[cls].div))
@@ -135,13 +135,13 @@ export function attrs(cls: string, level: number): Record<string, number> {
   return out;
 }
 
-// Source: server-scripts/Constitution.cs:13-15, server-scripts/Player.cs:9362-9379 — Health curve times multiplier plus Constitution.
+// Source: server-scripts/Constitution.cs:13-15, server-scripts/Player.cs:9482-9499 — Health curve times multiplier plus Constitution.
 const hpAt = (hpCurve: number, mult: number, con: number): number =>
   iround(f32(f32(hpCurve) * f32(mult))) + con * CON_HEALTH;
-// Source: server-scripts/Intelligence.cs:21-23, server-scripts/Player.cs:9362-9389 — Mana curve times multiplier plus Intelligence.
+// Source: server-scripts/Intelligence.cs:21-23, server-scripts/Player.cs:9482-9509 — Mana curve times multiplier plus Intelligence.
 const manaAt = (manaCurve: number, mult: number, intl: number): number =>
   iround(f32(f32(manaCurve) * f32(mult))) + intl * INT_MANA;
-// Source: server-scripts/Player.cs:9306-9335 — base-combat max is round(level × race factor) − 1.
+// Source: server-scripts/Player.cs:9426-9455 — base-combat max is round(level × race factor) − 1.
 const baseCombatMax = (level: number, factor: number): number =>
   iround(f32(f32(level) * f32(factor))) - 1;
 
@@ -165,9 +165,9 @@ export interface ClassResult {
   rows: MercRow[];
 }
 
-/** Source: server-scripts/Player.cs:9576-9580,9582-9612,9638-9650 — hire rolls race, multipliers, and shared base-combat value. */
-/** Source: server-scripts/Player.cs:9362-9389 — summoned mercenaries apply level, veteran points, Health, Mana, Attack Power, and Spell Power. */
-/** Source: server-scripts/Player.cs:7861-7897,7898-7926,7927-7955,7956-7984,7985-8013,8014-8045 — class attributes are rebuilt from level. */
+/** Source: server-scripts/Player.cs:9696-9700,9702-9732,9758-9770 — hire rolls race, multipliers, and shared base-combat value. */
+/** Source: server-scripts/Player.cs:9482-9509 — summoned mercenaries apply level, veteran points, Health, Mana, Attack Power, and Spell Power. */
+/** Source: server-scripts/Player.cs:7975-8011,8012-8040,8041-8069,8070-8098,8099-8127,8128-8159 — class attributes are rebuilt from level. */
 export function computeAll(
   level: number,
   veteran: number,

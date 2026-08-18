@@ -171,7 +171,7 @@ export function fishingClickWindowSeconds(spotTier: number): number {
   }
 }
 
-// Source: server-scripts/Player.cs:9131-9132 — TargetRpcSetFishWindow(Random.Range(3, 8)) (int upper bound exclusive).
+// Source: server-scripts/Player.cs:9251-9252 — TargetRpcSetFishWindow(Random.Range(3, 8)) (int upper bound exclusive).
 export function fishingCastDelaySecondsRange(): { min: number; max: number } {
   return { min: 3, max: 7 };
 }

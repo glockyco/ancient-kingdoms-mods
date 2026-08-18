@@ -461,9 +461,9 @@ export function computeMechanicsSpec(
 
   // ---------- timing ----------
   // Only populated when followup_default_attack=true.
-  // Source: server-scripts/Skills.cs:942-946 — followupDefaultAttack + !isSpell + isMercenary → cooldown×(1-haste), Combat.cs:304-310 (haste cap)
-  // Source: server-scripts/Player.cs:3203-3244 — weapon-delay refractory for all non-spell weapon skills (!isSpell && hasReqWeapon)
-  // Source: server-scripts/Player.cs:3203-3244 — spell skills get flat 0.75s refractory (isSpell=true, no required_weapon_category)
+  // Source: server-scripts/Skills.cs:966-970 — followupDefaultAttack + !isSpell + isMercenary → cooldown×(1-haste), Combat.cs:304-310 (haste cap)
+  // Source: server-scripts/Player.cs:3226-3267 — weapon-delay refractory for all non-spell weapon skills (!isSpell && hasReqWeapon)
+  // Source: server-scripts/Player.cs:3226-3267 — spell skills get flat 0.75s refractory (isSpell=true, no required_weapon_category)
   // Source: server-scripts/Monster.cs:UpdateServer_CASTING — FinishCastMeleeAttackMonster vs FinishCast for monsters
   const timingPairs: Array<{ label: string; model: TimingModel }> = [];
 

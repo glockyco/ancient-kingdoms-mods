@@ -1,6 +1,6 @@
 {
   "snapshot": {
-    "game_version": "0.9.28.1",
+    "game_version": "0.9.29.0",
     "ilspycmd_version": "10.1.1.8388"
   },
   "targets": {
@@ -11,13 +11,13 @@
       "sha256": "c7a9c9f8795d557bf9e37a83021763c9c018717c0d60f546a898f14cf1b47b8c",
       "span": 10
     },
-    "AreaBuffSkill.cs:179-195": {
-      "sha256": "3972c4ec961913579d6ab1454becb86e857ea125f173ff62a745e52f5f52c11b",
-      "span": 17
+    "AreaBuffSkill.cs:179": {
+      "sha256": "e9f7655d0ea0761a3f75537ccd59a918ee78b831e603ae1bc01799480a2aacf4",
+      "span": 1
     },
-    "AreaBuffSkill.cs:271-288": {
-      "sha256": "e5eddecf8aca55129a71cb4751513ce6a204c9fdd1342e8299f14ded1ee04715",
-      "span": 18
+    "AreaBuffSkill.cs:257": {
+      "sha256": "06b2b3ae29c04cfad8703e674150e300e5bab2a893630874adfce5a7847bd9a3",
+      "span": 1
     },
     "AreaDamageSkill.cs": {
       "span": 0
@@ -34,7 +34,7 @@
       "span": 36
     },
     "AreaDebuffSkill.cs:163-204": {
-      "sha256": "a2bdc6daaf3584fbddc57f4e453b11c5858393b94fef5e409913a3d8af32f2fe",
+      "sha256": "9e6fb5ce46551038e0dec667b7eea8d7e7f66b795c1449073de324e8d90b1a9f",
       "span": 42
     },
     "AreaDebuffSkill.cs:208-232": {
@@ -78,9 +78,21 @@
       "sha256": "a86273c97a2fbd04185b8ae8ada63be74fae6a3fd7f8ca6e7c9e2adf2f5a6d99",
       "span": 1
     },
-    "Buff.cs:95-109": {
+    "Buff.cs:97-111": {
       "sha256": "b13868306c73b93bad2e518f2852ef086a328a492d32ca0ab0540b36f0d59f89",
       "span": 15
+    },
+    "BuffSkill.cs:136-158": {
+      "sha256": "6e59ea17aa453656ac35d918f330d7e0e3bca9a58c5d61ae4e33e8f57840ee4e",
+      "span": 23
+    },
+    "BuffSkill.cs:25": {
+      "sha256": "5c5234712e6c42f9a196742db4236ebde94ed463b0ef5fc56081ecfbde7fdd4b",
+      "span": 1
+    },
+    "BuffSkill.cs:58-68": {
+      "sha256": "8b32d6149a986adc58660e3c21b38464076bc60972581c5e59be8429643d9afa",
+      "span": 11
     },
     "BuffSkill.cs:6-11": {
       "sha256": "a81cd66dd210393e8c6b716d753b564a77d542dc6125726368901f5a547a561c",
@@ -132,51 +144,51 @@
     "Combat.cs": {
       "span": 0
     },
-    "Combat.cs:1021": {
+    "Combat.cs:1019": {
       "sha256": "feae588cd7010377ff87f53db7cd3170cce1a1e9c4a25ae8e55f94ef0b535ac8",
       "span": 1
     },
     "Combat.cs:1056-1060": {
-      "sha256": "86d0c92092e7f33006647494f36fbb41e871b29d1e71baab6a19d09bd9275a4e",
+      "sha256": "629f293dbfa848662e1f83f85a601415969c6bc2edea5c67620e7a315b18e9b2",
       "span": 5
     },
     "Combat.cs:1106-1119": {
-      "sha256": "727b8241112ac45932118edf01ffc0f401d79cbb5ae6c8aa73fff823ff6467c0",
+      "sha256": "e24ca00e1613b0ec90cd3706068265d57288a9fd9278237f28523e72e3d95eeb",
       "span": 14
     },
     "Combat.cs:1235-1238": {
-      "sha256": "f123a3051d9298c2216d7b211523fd09954a9ea97b75fd6b04636a21ad3251d7",
+      "sha256": "d137709b59f337588b73f56120fd1cec4336ea26cc41d42f5d837a87a665565b",
       "span": 4
     },
-    "Combat.cs:1305-1338": {
+    "Combat.cs:1294-1327": {
       "sha256": "e7b8e23942cc7535cf07d2f111966d9e7603ba5ce2d687afa863d66c6b1ac365",
       "span": 34
     },
-    "Combat.cs:1310-1313": {
+    "Combat.cs:1299-1302": {
       "sha256": "a65a91c2f7ea032231332940b2eccb15366bf92cb26a7366abf34772c7d4dbf8",
       "span": 4
     },
-    "Combat.cs:1311-1338": {
+    "Combat.cs:1300-1327": {
       "sha256": "9b0842b14d2ce46030e5fffeb143379a7a0a1013386df2f399fc4ea989a59f1d",
       "span": 28
     },
-    "Combat.cs:1316-1319": {
+    "Combat.cs:1305-1308": {
       "sha256": "1be7e79bf0ed54c6986b035ba7116ad5ffe821267bc44d491697c15262b680f2",
       "span": 4
     },
-    "Combat.cs:1322-1325": {
+    "Combat.cs:1311-1314": {
       "sha256": "83ae1ffbe32c465526b27e402cb53e46ca3222490b7629b3aba2d3b92275a1fd",
       "span": 4
     },
-    "Combat.cs:1328-1331": {
+    "Combat.cs:1317-1320": {
       "sha256": "f240f5a35cbc51b4b621e4ae95b95c374975ccde60fc76c320bfb3f33f2b268d",
       "span": 4
     },
-    "Combat.cs:1334-1337": {
+    "Combat.cs:1323-1326": {
       "sha256": "978fa227948a2225f64de0ca70e299e87751196628ded867d366fa2d4d0f64a2",
       "span": 4
     },
-    "Combat.cs:1338-1348": {
+    "Combat.cs:1327-1337": {
       "sha256": "47dd0cea639dce5e99e5fa46ebd98cc6be718f3ccfc9964324f61a661ea32c6f",
       "span": 11
     },
@@ -229,71 +241,75 @@
       "span": 8
     },
     "Combat.cs:539-567": {
-      "sha256": "f113fd41a907074d47e20eda5f69daff7d887cf152734e1595328ba9351a316e",
+      "sha256": "28fb9c4dc833aec174448e350a0b2012fdb282f7c2557a195ad3a760d40a862d",
       "span": 29
     },
     "Combat.cs:601": {
       "sha256": "1f003cfd7baac216e54a0e7f9cd3b45dd2d9abe1ab31a018b6c22cd646020854",
       "span": 1
     },
+    "Combat.cs:617-660": {
+      "sha256": "d349a09e3ce85541e879b30d285db9f85ace84e609047d4b3d34ce67e124d489",
+      "span": 44
+    },
+    "Combat.cs:667-674": {
+      "sha256": "33bc369656e46d2aeba5721b5b019e4897c27fe36aa4cb1bc23ad41d7528706e",
+      "span": 8
+    },
+    "Combat.cs:669-686": {
+      "sha256": "27346174649e7bdde412da23759b741d997bb760c098ff679ad875a1dd5daf85",
+      "span": 18
+    },
     "Combat.cs:67": {
       "sha256": "542a7da8d15723650c35c82e22a7772dea394df84375ef90bb8ae548e4232696",
       "span": 1
     },
-    "Combat.cs:678-685": {
-      "sha256": "33bc369656e46d2aeba5721b5b019e4897c27fe36aa4cb1bc23ad41d7528706e",
-      "span": 8
-    },
-    "Combat.cs:680-697": {
-      "sha256": "27346174649e7bdde412da23759b741d997bb760c098ff679ad875a1dd5daf85",
-      "span": 18
-    },
     "Combat.cs:701-716": {
-      "sha256": "7d658a6dd21696f0108c43090afe8fc5ae099d5ca90223b47803527cc6cd0fd7",
+      "sha256": "cdbd95bad4655c377ffe7447b632aa64b203414427c164b25cd2b514aab9d049",
       "span": 16
     },
     "Combat.cs:730-744": {
-      "sha256": "d7f2944076ac31517c0431d8f63d2e9c3d76ede395b5fc1ffc36a99e62f1499b",
+      "sha256": "c7f90d22a4afb5d6417ee423ffb465278d7adf4ff8ae7666280ef3d15acbdbab",
       "span": 15
     },
-    "Combat.cs:744-754": {
+    "Combat.cs:733-743": {
       "sha256": "8369d842d21c02a6095bbac9599ca04c24e44261387b4d88576863a0822b2347",
       "span": 11
     },
-    "Combat.cs:749-777": {
+    "Combat.cs:738-766": {
       "sha256": "5e009bb93f988916ca9e3bdd15dfead13f5d1c4db0f06a0fe46f5772e50b0751",
       "span": 29
     },
-    "Combat.cs:756-777": {
+    "Combat.cs:745-766": {
       "sha256": "155086d6ce2386992ae67bfd274e0c2936ac777d53afc8b037e0b8289eeac031",
       "span": 22
     },
     "Combat.cs:781-791": {
-      "sha256": "d4d448deb9c9d26f9e14113ebbe7f16b7d781bb319d9bd43aabe34349e71fe24",
+      "sha256": "2a5511ddce50e8c42707f424da91c7d2bb0368e11637e4d3ce3328c08653efc0",
       "span": 11
     },
     "Combat.cs:796-820": {
-      "sha256": "7e7705d7de448574f9a275f91504a2442ee5e03213d51b530fcbedef58f4de3b",
+      "sha256": "442dafa094da1e5f453d414ad2497951903af83d5b484fec6192da6a687d7052",
       "span": 25
     },
     "Combat.cs:847-884": {
-      "sha256": "3e0b394abb4ddfdd8e1fd8a21bc3b4c72ae80c8c82d16e482d6ada57584d8293",
+      "sha256": "e4d2c27563e512091a09c13dce8cbb1281f899b784b3fcf35586655687ebaf98",
       "span": 38
     },
     "Combat.cs:885-910": {
-      "sha256": "103e7164fec2499a8235585ab14fdb4b7273fe6326b7ab3431e6fcb7539c394b",
+      "sha256": "39c412ef6fb1fc4ced31fd33851f82d697caf481e9a8768f9247d47e268437d4",
       "span": 26
     },
-    "Combat.cs:919-924": {
+    "Combat.cs:908-913": {
       "sha256": "ad10e5fdb19c81f7a11db23ee29dfb18e080a2a9199a5111aab890b47bcb30d4",
       "span": 6
     },
     "Combat.cs:944-955": {
-      "sha256": "b43f52bf3cecf4b56e180f02591f2147d7c9a167385bf00310c9096c0c9312ab",
+      "sha256": "533afe7f8602077834088a566bad33f37cf4667307517a0c8a5ae919fb892fd9",
       "span": 12
     },
     "Combat.cs:978-1011": {
-      "sha256": "da1a564d789143f0f2bacc3eb96796d76a2ecd7c5ec6952d7e6da77d419ec136",
+      "sha256": "5fc59291e0203032fefcbe491eccad8bf4a39edc513805c90163eaf167600435",
       "span": 34
     },
     "Combat.cs:DealDamageAt": {
@@ -335,9 +351,9 @@
       "sha256": "144676cb831a510e9cea7d748dd5b1cfd85a58d2312262865af5953ab9647ae9",
       "span": 7
     },
-    "DamageSkill.cs:47-63": {
-      "sha256": "d7a065d1a39e986f27dadc82d05e3fef8304d3042f75d2701bb93066fe727481",
-      "span": 17
+    "DamageSkill.cs:47-65": {
+      "sha256": "6e8c209752a2cf2c4d71454d0e1bfd22119671baa59dd8cdf6ba5dc501d195da",
+      "span": 19
     },
     "DangerousGround.cs:24-31": {
       "sha256": "bef83485d18ff4a3730647e405ed8cb0dc99587524c98afa11bee824fc776e06",
@@ -529,7 +545,7 @@
     "FrontalProjectilesSkill.cs": {
       "span": 0
     },
-    "GameManager.cs:1348-1363": {
+    "GameManager.cs:1352-1367": {
       "sha256": "098a110a5b220bec26438192c1c1504fdd4cf599bdcbf50850429eff20705825",
       "span": 16
     },
@@ -970,35 +986,39 @@
     "Player.cs": {
       "span": 0
     },
-    "Player.cs:10013-10048": {
+    "Player.cs:10133-10168": {
       "sha256": "ca1d2469230762267161b1d3d4c2870af0d198961c89612bfd31bb2a7e2b0919",
       "span": 36
     },
-    "Player.cs:10166-10201": {
+    "Player.cs:10286-10321": {
       "sha256": "e33740fc28cd74de8510ebd91e39d8de35d8714d6f6b1335a8fc21e8f8420cbc",
       "span": 36
     },
-    "Player.cs:10407-10410": {
+    "Player.cs:10527-10530": {
       "sha256": "d32a10a2361248d0114defe62311e4652490a43a520d5fa749ac48de25da93c8",
       "span": 4
     },
-    "Player.cs:10691-10703": {
+    "Player.cs:10550": {
+      "sha256": "645311e217c53539db846ec2e76c26009e85a42b465928ad78540017f7ab7f0b",
+      "span": 1
+    },
+    "Player.cs:10811-10823": {
       "sha256": "488f8059086224105c9350a8717f697438176977b3c3edff141b474f83b9ae91",
       "span": 13
     },
-    "Player.cs:10775-10807": {
+    "Player.cs:10895-10927": {
       "sha256": "a2c824871efdddcd1ba876d3265c226c615f168c630237b43d38b1414ebf18f8",
       "span": 33
     },
-    "Player.cs:10929-10958": {
+    "Player.cs:11049-11078": {
       "sha256": "8aacce02ea28ab54a904eb7c276793c8d05f5978fe5f597ae838ab20bf8b33ca",
       "span": 30
     },
-    "Player.cs:11064-11079": {
+    "Player.cs:11184-11199": {
       "sha256": "dcc00f402cfe746ca29ba65cb33ab32c2b21eef89ad8b7cf28594b0a0c828c49",
       "span": 16
     },
-    "Player.cs:11176-11183": {
+    "Player.cs:11296-11303": {
       "sha256": "f82cfed35b232e8e2ca5237c34b789287d1d8078b39b8d33983800aa19d915f3",
       "span": 8
     },
@@ -1006,119 +1026,119 @@
       "sha256": "a521440e9642f9879a618a93dc6e0ebd3acb8777af03a22cd39c3398b7c01751",
       "span": 9
     },
-    "Player.cs:11420-11445": {
+    "Player.cs:11540-11565": {
       "sha256": "27a37fd214d6e5ce892b888e53edbff3e6f1df4c68206265fd4719a8a00e601e",
       "span": 26
     },
-    "Player.cs:11490-11494": {
+    "Player.cs:11610-11614": {
       "sha256": "03953bf1d86a7060725a2b14d37fd39aa331861d5f3100e1cc51d34971b1fd6b",
       "span": 5
     },
-    "Player.cs:12095-12099": {
+    "Player.cs:12215-12219": {
       "sha256": "93a48315e4fff0bb6c76d21eb6913d04cff2442bbc67b247d06f4e5423d5b36d",
       "span": 5
     },
-    "Player.cs:12426-12434": {
-      "sha256": "c3e702535b8d1eb684d46aabe23a98c58c4dcda86b018c37b8b762bb8df77013",
-      "span": 9
-    },
-    "Player.cs:12427-12431": {
+    "Player.cs:12564-12568": {
       "sha256": "dd4fe4e09859262fc38da5ac089e2275828cf19afca42b394e7270a1a88ccab4",
       "span": 5
     },
-    "Player.cs:12438": {
+    "Player.cs:12564-12571": {
+      "sha256": "1d7828775034b43d1e452bf04a6283e08af3bcbee3826b164c91cc4f7398722f",
+      "span": 8
+    },
+    "Player.cs:12575": {
       "sha256": "e5823f42ae8281ab01a68884d64e76585bb830180793533869ba1b78a5d7fb47",
       "span": 1
     },
-    "Player.cs:12502-12514": {
+    "Player.cs:12639-12651": {
       "sha256": "ac8a8aa1c73bc093f762ebc009351584efdb584d6781581cdd22aa905c26e46b",
       "span": 13
     },
-    "Player.cs:12579-12583": {
+    "Player.cs:12716-12720": {
       "sha256": "f50f03b7611dc8b1f526f04014f5396a525ca7902f87b3a22557c671919ec543",
       "span": 5
     },
-    "Player.cs:12652-12655": {
+    "Player.cs:12789-12792": {
       "sha256": "32997cd4147ffefc95e56abd259bff225ffb93d0d1621f5fe684df6d1f8cd36f",
       "span": 4
     },
-    "Player.cs:12678-12682": {
+    "Player.cs:12815-12819": {
       "sha256": "f61629d0c6e656ccd00b9b82954558e6fbff7d3d6eb0d43c6d5ed98cb013fb3e",
       "span": 5
     },
-    "Player.cs:12682": {
+    "Player.cs:12819": {
       "sha256": "ba4243b1ffa9e9463836bdf699ea0b507b27e449c92b15c0aec0d3daa4829cbf",
       "span": 1
     },
-    "Player.cs:12684": {
+    "Player.cs:12821": {
       "sha256": "004ed169341daf2954fb2bf45e18780dd60339db52f9dfa227934ceec379e111",
       "span": 1
     },
-    "Player.cs:12696-12709": {
+    "Player.cs:12833-12846": {
       "sha256": "7420d5302f54530f3c21365a0606ded4e3a3f35baca4460a3ab74412eca609f5",
       "span": 14
     },
-    "Player.cs:12697": {
-      "sha256": "3088d2a709fe989dae6e8ff5331d026bbcec877d1b723ef0ec22b7fbca23f4d7",
-      "span": 1
-    },
-    "Player.cs:12705": {
+    "Player.cs:12842": {
       "sha256": "d8be763d9dc1b34c42bac5e3dcfc26a4f2e9e266cefa8df64924f81a832c7ed3",
       "span": 1
     },
-    "Player.cs:12740-12765": {
+    "Player.cs:12877-12902": {
       "sha256": "d958428f89965f24b25583fa531f4f4b630289395c42b475b6ad8458b48f6a81",
       "span": 26
     },
-    "Player.cs:12775-12803": {
+    "Player.cs:12912-12940": {
       "sha256": "327f11d048f751aaa613d9eebe3ae14dc614dc6df4e05785f98ee30365496fc6",
       "span": 29
     },
-    "Player.cs:12932-12938": {
+    "Player.cs:13069-13075": {
       "sha256": "2be5114f52ec07bc062b05921b2f565db5a4702ce08187384bf235258adcb9f0",
       "span": 7
     },
-    "Player.cs:13345-13351": {
+    "Player.cs:13097": {
+      "sha256": "d4a1295c5abdad86838c6781c2af9eb0100726f8e271b9c13f77b7bb2cdd1d39",
+      "span": 1
+    },
+    "Player.cs:13482-13488": {
       "sha256": "dc7566fc8a4b055e1c21bda8238bcfa1ed8680cdd6d31d6a294caeb93a4f9c1f",
       "span": 7
     },
-    "Player.cs:13359-13370": {
+    "Player.cs:13496-13507": {
       "sha256": "8d7d3ccf18dc3ff85bb61eeeb9032c2851d4ef1f80778811233d9dd2d8d73fd3",
       "span": 12
     },
-    "Player.cs:13365-13369": {
+    "Player.cs:13502-13506": {
       "sha256": "66c6fa228aaabc288e7a08866395bf9aeabc826df72849df61f79ffb5e7050f1",
       "span": 5
     },
-    "Player.cs:13620-13632": {
+    "Player.cs:13757-13769": {
       "sha256": "99969bb73deebfaf6db78f960d6f855c0fde63d49f7866fefba51ad793a43ea9",
       "span": 13
     },
     "Player.cs:3051-3054": {
-      "sha256": "54bf6980782ac661f0bd256419c862cb51a1fb9e8b87b24ed8fa6a8c617c0eb6",
+      "sha256": "bf50f6051230d64c07ff1fd23ef0883e590ed79fbc4a2d37b36131770c71271e",
       "span": 4
     },
-    "Player.cs:3084-3086": {
+    "Player.cs:3107-3109": {
       "sha256": "cc1be66a0cdd1cc16b5525cdbe2a3100b79e69ec39d6b26e8e7a431df894b0eb",
       "span": 3
     },
-    "Player.cs:3203-3244": {
+    "Player.cs:3226-3267": {
       "sha256": "13792aead171bb39523c81d508ebeebab840e775a7fed5ac3cf51cf992016dd6",
       "span": 42
     },
-    "Player.cs:3261": {
-      "sha256": "84214fb981d4e6968e954801e4f0d9cf394867c0a70706038e9a599bb18df653",
-      "span": 1
-    },
-    "Player.cs:3277-3299": {
+    "Player.cs:3300-3322": {
       "sha256": "4b3f193520fc4afb46dd5f44bdc640c4f2e9b0193869ada4996298f5c0f0b858",
       "span": 23
     },
-    "Player.cs:3411-3413": {
+    "Player.cs:3434-3436": {
       "sha256": "95bb71d80606fb217156723a2b28cc81ffc5f8a185b3873385e0557d4b8de9f6",
       "span": 3
     },
-    "Player.cs:3993-4023": {
+    "Player.cs:3437": {
+      "sha256": "645311e217c53539db846ec2e76c26009e85a42b465928ad78540017f7ab7f0b",
+      "span": 1
+    },
+    "Player.cs:4016-4046": {
       "sha256": "9465f7d5eae3e3a7ffa4841cb8f89d8c0e1cd6c10b75597eb61fb5113a837ca9",
       "span": 31
     },
@@ -1130,89 +1150,89 @@
       "sha256": "36816a7f97d0c52715ea71141ce1e67a2522479e4bdac8731756f377cb172c97",
       "span": 5
     },
-    "Player.cs:6636-6646": {
+    "Player.cs:6194-6204": {
+      "sha256": "3c10c423fdf6f784fda2e2e1c9c488f5418a1c0846640bf5a57e69d634549806",
+      "span": 11
+    },
+    "Player.cs:6750-6760": {
       "sha256": "22cc9d2d51bdba8f539e111d815a5d0543fad0a0c9b6d7b871ece50f54d87b67",
       "span": 11
     },
-    "Player.cs:7809-7826": {
+    "Player.cs:7923-7940": {
       "sha256": "b90196d65c14ccabbc904b00c5801d404475dcc806c72310452e8a5bdcf93d35",
       "span": 18
     },
-    "Player.cs:7861-7897": {
+    "Player.cs:7975-8011": {
       "sha256": "a6e74e99610bd4fbb5b7621249c083521ca8861df25a0e7e5f3376231f9ed03c",
       "span": 37
     },
-    "Player.cs:7898-7926": {
+    "Player.cs:8012-8040": {
       "sha256": "b94d7e6f6d6667501fbc3fe15db137fd1796cfc70ffe5d2105b5126dd182a1c6",
       "span": 29
     },
-    "Player.cs:7927-7955": {
+    "Player.cs:8041-8069": {
       "sha256": "cf984da9d2e508059a1c018bcb8b38e0cb5e3cc9f0e3697ddacba6501871eb03",
       "span": 29
     },
-    "Player.cs:7956-7984": {
+    "Player.cs:8070-8098": {
       "sha256": "b003f81543195217e6e417032805c13c6a0c26a69d757f089eec3a1e9a9097a4",
       "span": 29
     },
-    "Player.cs:7985-8013": {
+    "Player.cs:8099-8127": {
       "sha256": "6ae202684f43041b05bacd165ce25c6e702f78136d9edb86981e3d1553f81d5a",
       "span": 29
     },
-    "Player.cs:8014-8045": {
+    "Player.cs:8128-8159": {
       "sha256": "468f608c0ba76fbac819225c66c6eadcd749ad3e57cb5eda929648f57fef3aa4",
       "span": 32
     },
-    "Player.cs:8186-8205": {
+    "Player.cs:8300-8319": {
       "sha256": "a6c1d6d3291bbc0db018fe74dcb97e6f0b692ba8d3d3547329bb8933ad41ba22",
       "span": 20
     },
-    "Player.cs:9131-9132": {
+    "Player.cs:9251-9252": {
       "sha256": "8dd5b5cfa681c742cde6cdaf71f69f38af88231326cc22f55f2540c312bdf2e2",
       "span": 2
     },
-    "Player.cs:9306-9335": {
+    "Player.cs:9426-9455": {
       "sha256": "be4dad13af396ed23aba453e275337aa03a4b2de3ccad199b958eeb2a5c3dc0b",
       "span": 30
     },
-    "Player.cs:9362-9379": {
+    "Player.cs:9482-9499": {
       "sha256": "2c8aa820ae419c4029efbfd9aa09360c4359587c3fd16967126763e81b113083",
       "span": 18
     },
-    "Player.cs:9362-9389": {
+    "Player.cs:9482-9509": {
       "sha256": "2f7ca815b3bc79f4674ad232d088a2d0e660bc95a9b662aeea513c1fd729b00a",
       "span": 28
     },
-    "Player.cs:9377-9389": {
+    "Player.cs:9497-9509": {
       "sha256": "2fccaeb8325dbcdf6474981407ce837d9005ca328c62b9b43b629adb967a94c2",
       "span": 13
     },
-    "Player.cs:9494-9527": {
+    "Player.cs:9614-9647": {
       "sha256": "9ad9dba9506188716e3e663a7d0208afd60ee567114d6ba3e6f72bac75838c9a",
       "span": 34
     },
-    "Player.cs:9576-9580": {
+    "Player.cs:9696-9700": {
       "sha256": "fcc4e409310f12ca62573f9b5c0db4a0b864627f2694fac1235a07eaba71798c",
       "span": 5
     },
-    "Player.cs:9576-9620": {
+    "Player.cs:9696-9740": {
       "sha256": "7e3ccaae5718f6b2a75514e1da3535f05c2049d63c1a84c5691b04fd7c12b637",
       "span": 45
     },
-    "Player.cs:9582-9612": {
+    "Player.cs:9702-9732": {
       "sha256": "7326baa04d7cfc24128e52243b7436358114b695b5b5f8190e561e245ef85a13",
       "span": 31
     },
-    "Player.cs:9638-9639": {
+    "Player.cs:9758-9759": {
       "sha256": "84c47a1cbcacefe44cf58d9f557ae70f64ab6c9b4ea79dd578eacda4006b6b61",
       "span": 2
     },
-    "Player.cs:9638-9650": {
+    "Player.cs:9758-9770": {
       "sha256": "4b7f6e23fffa227f853fd75d831e123f56ef31985d4ebf1ea777185c529ee13f",
       "span": 13
-    },
-    "Player.cs:9782": {
-      "sha256": "21f7c1da00bdb1a08ac940029b5b8b52e24b61c0379de83ccbca337bd0570632",
-      "span": 1
     },
     "Player.cs:DestroyLivingMercenariesOnOwnerDeath": {
       "span": 0
@@ -1585,55 +1605,55 @@
     "Skills.cs": {
       "span": 0
     },
-    "Skills.cs:1334-1344": {
+    "Skills.cs:1358-1368": {
       "sha256": "733d4192714d1d16d1312d15587ffd475e2714f8d292e19f40469ba1fc022bad",
       "span": 11
     },
-    "Skills.cs:1346-1351": {
+    "Skills.cs:1370-1375": {
       "sha256": "f73967f3a8dd8dfd5eac61f7debddd62f17b191b6bac210ada3a5b4c44948f35",
       "span": 6
     },
-    "Skills.cs:1406-1429": {
+    "Skills.cs:1430-1453": {
       "sha256": "31fca5658d6fd4ee12677d70cd9304cb2d5220bee87ab194b154fc5116ab0075",
       "span": 24
     },
-    "Skills.cs:1531-1536": {
-      "sha256": "6bd399443d0505ae8214df45f735fce406bb4a5b08ba87509033336855f41b3f",
+    "Skills.cs:1555-1560": {
+      "sha256": "5573623a12c3a004323d2feb711d22c1f480c45c4becc15bbea5dc805a00ecf2",
       "span": 6
     },
-    "Skills.cs:156": {
-      "sha256": "9008353d11b0bd3f650d5fec6190249157ca4e76a704c56bd823f1af6ee759b1",
-      "span": 1
+    "Skills.cs:227-230": {
+      "sha256": "1f09605f67d86b2b8014b24c28d0c5f0368da3eb0cc43e9c737b378d9a00bf43",
+      "span": 4
     },
-    "Skills.cs:473-488": {
+    "Skills.cs:497-512": {
       "sha256": "d6b87eaa264d0a168c91e3feb42392d34816f3efb046f844a24a8aab00262d64",
       "span": 16
     },
-    "Skills.cs:803-806": {
+    "Skills.cs:827-830": {
       "sha256": "61167fe9def73bcef4173d63f07c7cbb2c4c0baca13fc820dcc0dd1a21d5dc59",
       "span": 4
     },
-    "Skills.cs:820-824": {
-      "sha256": "4729fd7e0aa271a226bb5206a7942ed89705c05b4903229299b06510790e0a6a",
-      "span": 5
+    "Skills.cs:843-848": {
+      "sha256": "07fcea24d52e0d8c7abb9925d1b2798e6cd9149dd94181ba5d14f784b6e1cb9e",
+      "span": 6
     },
-    "Skills.cs:852-853": {
+    "Skills.cs:876-877": {
       "sha256": "b636269124fd2b3937a7b323b72b58d0a47de8e9abbebc8b745fd88d3d8d37de",
       "span": 2
     },
-    "Skills.cs:876-896": {
+    "Skills.cs:900-920": {
       "sha256": "b7982e29c9020a944eb6cc1a8fd50f4b0703c63b6bee3530cb27b3151b07cc83",
       "span": 21
     },
-    "Skills.cs:912": {
+    "Skills.cs:936": {
       "sha256": "64eb1ca6dfe8a6b3511ec702b24a443f0895825b5b861e3dc1421b433c03b1d3",
       "span": 1
     },
-    "Skills.cs:942-946": {
+    "Skills.cs:966-970": {
       "sha256": "13e12f77e418c1198774ba739e6933338ae9862a44955e07bd59912b4b56bcb8",
       "span": 5
     },
-    "Skills.cs:947-950": {
+    "Skills.cs:971-974": {
       "sha256": "ac7c2374bc43efc996fb17b85c3e14e61b9ae7ca75cd5b304f786bc0ef44caa2",
       "span": 4
     },
@@ -1691,7 +1711,7 @@
       "span": 1
     },
     "TargetBuffSkill.cs:236-458": {
-      "sha256": "2f048ed5cdf8a2fa1f81b7e2eb2c0a1cd31f24d822e5fb7ada7f75633cab6d96",
+      "sha256": "f195bd02e3ced62e49549e0759d9ae26ce6f21197edb0b972ba9373aa7c49e62",
       "span": 223
     },
     "TargetBuffSkill.cs:266-281": {
@@ -1726,7 +1746,7 @@
       "span": 1
     },
     "TargetDebuffSkill.cs:172-204": {
-      "sha256": "ab6401326f2a5f225fd1e9b9a7b4f91a86525cdc2a119215b66a0951a8410d74",
+      "sha256": "db1ff9db1b1b118949cbb68232c82fde9d0954d52b218ebbc74f7d1a07ccd081",
       "span": 33
     },
     "TargetDebuffSkill.cs:208-233": {

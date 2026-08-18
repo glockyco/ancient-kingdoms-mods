@@ -385,7 +385,7 @@
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
       <!-- Source: server-scripts/PetFriendly.cs:688-702 — clicking within 3 units pets the animal and grants faction at most every 30 seconds. -->
-      <!-- Source: server-scripts/Player.cs:12579-12583 — CmdIncreaseFaction adds the value unchanged. -->
+      <!-- Source: server-scripts/Player.cs:12716-12720 — CmdIncreaseFaction adds the value unchanged. -->
       <p>
         Clicking one from up close pets it and gives 1 to 4 reputation with the
         animal's faction. Each animal only pays out once every 30 seconds, so
@@ -452,7 +452,7 @@
         of the sources above applies, so a faction you ignore keeps whatever
         value it had.
       </p>
-      <!-- Source: server-scripts/Player.cs:12579-12583, Monster.cs:2760-2772, Npc.cs:1604-1614, PlayerQuests.cs:440-443, GatherItem.cs:336-344 — every write adds or subtracts without clamping. -->
+      <!-- Source: server-scripts/Player.cs:12716-12720, Monster.cs:2760-2772, Npc.cs:1604-1614, PlayerQuests.cs:440-443, GatherItem.cs:336-344 — every write adds or subtracts without clamping. -->
       <!-- Source: server-scripts/Database.cs:3677-3685 — setFactionValue stores the raw value. -->
       <p>
         There is no cap and no floor. Every source adds to or subtracts from the

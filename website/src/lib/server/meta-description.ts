@@ -434,7 +434,7 @@ function relicDescription(item: Item, ctx: ItemMetaContext): string {
 }
 
 function bookDescription(item: Item): string {
-  // Source: server-scripts/BookItem.cs, server-scripts/Player.cs:10166-10201 — one-time read,
+  // Source: server-scripts/BookItem.cs, server-scripts/Player.cs:10286-10321 — one-time read,
   // permanent attribute increase, then consumed.
   const gains: string[] = [];
   if (item.book_strength_gain > 0)
@@ -564,7 +564,7 @@ function mergeDescription(item: Item, ctx: ItemMetaContext): string {
 }
 
 function structureDescription(item: Item): string {
-  // Source: server-scripts/HousingManager.cs:21-32, server-scripts/Player.cs:12095-12099,11064-11079
+  // Source: server-scripts/HousingManager.cs:21-32, server-scripts/Player.cs:12215-12219,11184-11199
   // — players buy a named house, then place CustomStructureItems inside it.
   const price =
     item.structure_price > 0
@@ -1522,7 +1522,7 @@ export function skillDescription(skill: SkillDescriptionInput): string {
   //   regular character level, available veteran points, and spent points.
   // Source: server-scripts/PlayerSkills.cs:891-908 — CmdUpgradeVeteran spends
   //   available veteran points before increasing the skill level.
-  // Source: server-scripts/Player.cs:6636-6646 and ScriptableSkill.cs:203-205
+  // Source: server-scripts/Player.cs:6750-6760 and ScriptableSkill.cs:203-205
   //   — requiredSpentPoints means already-spent veteran points, not veteran
   //   level.
   const veteranPointText = `${skill.required_skill_points} veteran ${
@@ -1597,7 +1597,7 @@ function petOriginPhrase(input: PetDescriptionInput): string {
       }
       return " Summoned by a class skill. Level matches the summoner.";
     case "Mercenary":
-      // Source: server-scripts/Player.cs:9576-9620,9638-9639 — hired at player level, gains attributes per level
+      // Source: server-scripts/Player.cs:9696-9740,9758-9759 — hired at player level, gains attributes per level
       return " Recruited from any Mercenary Recruiter NPC. Hired at the player's current level and continues to gain attributes as the player levels.";
   }
 }
