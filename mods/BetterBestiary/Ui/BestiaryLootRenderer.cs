@@ -35,6 +35,20 @@ internal static class BestiaryLootRenderer
         }
     }
 
+    internal static void AddNativeLootNames(Monster monster, HashSet<string> names)
+    {
+        if (monster?.dropChances == null || names == null)
+            return;
+
+        foreach (var drop in monster.dropChances)
+        {
+            if (drop?.item == null || !TryBuildVisibleItem(drop.item, out _, out var itemData))
+                continue;
+
+            names.Add(itemData.nameItem);
+        }
+    }
+
     private static List<ScriptableItem> BuildDisplayItems(Monster monster)
     {
         var items = new List<ScriptableItem>();

@@ -38,6 +38,11 @@
       <Private>False</Private>
     </Reference>
 
+    <Reference Include="Il2CppSystem.Core">
+      <HintPath>$(Il2CppAssembliesPath)\Il2CppSystem.Core.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>$(Il2CppAssembliesPath)\UnityEngine.CoreModule.dll</HintPath>
       <Private>False</Private>
