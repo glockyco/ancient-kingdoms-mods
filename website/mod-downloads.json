@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "mods": [
+    {
+      "id": "field-default-value-hook-fix",
+      "project": "FieldDefaultValueHookFix",
+      "name": "Field Default Value Hook Fix",
+      "description": "Prevents a game crash caused by an incorrect Il2Cpp method match."
+    },
+    {
+      "id": "better-bestiary",
+      "project": "BetterBestiary",
+      "name": "Better Bestiary",
+      "description": "Reveals Bestiary details and adds direct navigation, loot tooltips, and monster skill summaries."
+    },
+    {
+      "id": "boss-skill-tracker",
+      "project": "BossSkillTracker",
+      "name": "Boss Skill Tracker",
+      "description": "Shows ability cooldowns for bosses, elites, and fabled monsters during combat."
+    },
+    {
+      "id": "boss-tracker",
+      "project": "BossTracker",
+      "name": "Boss Tracker",
+      "description": "Shows nearby bosses, elites, and fabled monsters with their status, direction, distance, and respawn time."
+    }
+  ]
+}

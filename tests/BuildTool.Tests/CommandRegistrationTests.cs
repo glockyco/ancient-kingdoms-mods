@@ -14,6 +14,7 @@ public class CommandRegistrationTests
         {
             config.AddCommand<SetupCommand>("setup");
             config.AddCommand<BuildCommand>("build");
+            config.AddCommand<PublishModsCommand>("publish-mods");
             config.AddCommand<DeployCommand>("deploy");
             config.AddCommand<DeployHostCommand>("deploy-host");
             config.AddCommand<LaunchCommand>("launch");

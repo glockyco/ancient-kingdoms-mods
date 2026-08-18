@@ -22,7 +22,7 @@ pnpm dev        # Dev server with HMR
 pnpm check      # TypeScript + Svelte validation
 pnpm lint       # ESLint
 pnpm build      # Production build
-pnpm cf-deploy  # Build + deploy to Cloudflare
+pnpm cf-deploy  # Deploy the existing build output to Cloudflare
 ```
 
 In fresh git worktrees, load the root `bootstrap-worktree` skill before these
@@ -69,6 +69,7 @@ data/                    # Build inputs — gitignored, produced by the build pi
 ├── search.db            # Search index, built from compendium.db
 └── search.db.gz
 static/                  # Published verbatim at stable, unhashed URLs
+├── downloads/mods/      # Generated DLLs and public download manifest
 ├── tiles/               # Map tiles
 └── icons/               # Game icons
 ```

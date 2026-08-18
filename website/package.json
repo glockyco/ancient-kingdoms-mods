@@ -5,10 +5,11 @@
   "type": "module",
   "scripts": {
     "clean:workerd": "pkill -f 'workerd serve --binary --experimental' || true",
-    "predev": "pnpm clean:workerd && pnpm exec tsx scripts/build-search-db.ts && node scripts/compress-databases.mjs",
+    "predev": "pnpm publish:mods && pnpm clean:workerd && pnpm exec tsx scripts/build-search-db.ts && node scripts/compress-databases.mjs",
     "dev": "vite dev",
     "build": "vite build",
-    "prebuild": "node scripts/generate-og-image.mjs && node scripts/generate-home-counts.mjs && node scripts/build-sitemap-manifest.mjs && pnpm exec tsx scripts/build-search-db.ts && node scripts/compress-databases.mjs",
+    "prebuild": "pnpm publish:mods && node scripts/generate-og-image.mjs && node scripts/generate-home-counts.mjs && node scripts/build-sitemap-manifest.mjs && pnpm exec tsx scripts/build-search-db.ts && node scripts/compress-databases.mjs",
+    "publish:mods": "dotnet run --project ../build-tool publish-mods",
     "generate-og": "node scripts/generate-og-image.mjs",
     "preview": "vite preview",
     "prepare": "svelte-kit sync || echo ''",

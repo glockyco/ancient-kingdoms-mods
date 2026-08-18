@@ -126,6 +126,7 @@ public class ProgramJsonTests
     [InlineData("deploy-host", true)]
     [InlineData("launch", true)]
     [InlineData("export", true)]
+    [InlineData("publish-mods", true)]
     [InlineData("update", true)]
     [InlineData("build", false)]
     [InlineData("setup", false)]

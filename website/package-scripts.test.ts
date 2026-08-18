@@ -6,6 +6,14 @@ const packageJson = JSON.parse(
 ) as { scripts: Record<string, string> };
 
 describe("package scripts", () => {
+  test("development and production builds publish configured mods", () => {
+    expect(packageJson.scripts["publish:mods"]).toBe(
+      "dotnet run --project ../build-tool publish-mods",
+    );
+    expect(packageJson.scripts.predev).toContain("pnpm publish:mods");
+    expect(packageJson.scripts.prebuild).toContain("pnpm publish:mods");
+  });
+
   test("cf-deploy deploys the existing build output without rebuilding", () => {
     const script = packageJson.scripts["cf-deploy"];
 
