@@ -30,6 +30,9 @@ dotnet run --project build-tool launch --wait
 
 # 3. From another terminal, query HotRepl. Connect by URL; the current
 #    HotRepl CLI has no profile/auth/lease/control-list surface.
+#    The `hotrepl` binary is `@hotrepl/cli`, a root pnpm devDependency
+#    (`pnpm add -D -w @hotrepl/cli`), so a checkout with `pnpm install` run
+#    already has it at ./node_modules/.bin/hotrepl.
 hotrepl --url ws://127.0.0.1:18590 info --json
 hotrepl --url ws://127.0.0.1:18590 run world.summary '{}' --json
 hotrepl --url ws://127.0.0.1:18590 run compendium.preflight '{}' --json

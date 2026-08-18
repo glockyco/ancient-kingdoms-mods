@@ -232,7 +232,9 @@ dotnet run --project build-tool deploy-host --hotrepl-repo /path/to/HotRepl
 # Launch the game and wait for MelonLoader bootstrap.
 dotnet run --project build-tool launch --wait
 
-# Inspect the runtime (either the published CLI or the local HotRepl checkout).
+# The published CLI is a root pnpm devDependency (`pnpm add -D -w @hotrepl/cli`),
+# so `pnpm install` puts it at ./node_modules/.bin/hotrepl. Run it directly or
+# through pnpm; both resolve the same binary.
 hotrepl --url ws://127.0.0.1:18590 info --json
 hotrepl --url ws://127.0.0.1:18590 run world.summary '{}' --json
 hotrepl --url ws://127.0.0.1:18590 run compendium.preflight '{}' --json

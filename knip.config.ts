@@ -18,6 +18,9 @@ const config: KnipConfig = {
       // workspace; those jobs declare `root: website/` and resolve the binaries from the
       // website workspace, which knip's lefthook handling does not follow.
       ignoreBinaries: ["uv", "prettier", "eslint"],
+      // @hotrepl/cli provides the `hotrepl` binary invoked directly from the shell
+      // per README.md and the hotrepl-runtime-inspection skill, not from a tracked script.
+      ignoreDependencies: ["@hotrepl/cli"],
     },
     // Website workspace: SvelteKit + Vite project
     website: {
