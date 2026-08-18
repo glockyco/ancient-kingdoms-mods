@@ -14,7 +14,7 @@ namespace BetterBestiary.Ui;
 internal sealed class SkillsPanel
 {
     private const float Gap = 12f;
-    private const float Width = 640f;
+    private const float Width = 660f;
 
     private GameObject _root;
     private RectTransform _rect;

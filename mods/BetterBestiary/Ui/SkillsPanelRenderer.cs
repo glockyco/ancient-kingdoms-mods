@@ -17,7 +17,7 @@ internal static class SkillsPanelRenderer
     private const float IconSize = 36f;
     private const float NameWidth = 190f;
     private const float SummaryWidth = 250f;
-    private const float CdWidth = 52f;
+    private const float CdWidth = 72f;
     private const float CastWidth = 52f;
 
     public static GameObject BuildRowTemplate(Transform parent)
