@@ -59,6 +59,30 @@ Rationale: a maintained table list silently omits entity types added later, and 
 - **WHEN** a JSON value holds a zone identifier for a redacted zone, in either identifier space
 - **THEN** the applicable mechanism acts on that value
 
+### Requirement: Each reference has one declared meaning
+
+Every reference the build acts on SHALL carry one declaration stating whether it makes its target reachable and which geometry it governs. Every pass SHALL read that one declaration rather than keeping its own list, so that no two passes can disagree about the same column.
+
+A reference that a row uses to name a destination SHALL NOT make that destination reachable. Otherwise a boundary into redacted content makes the redacted content reachable through the boundary itself.
+
+Rationale: reachability, deletion, and geometry were each derived separately from the same references. Three lists over one set of columns is three chances to classify a column three ways.
+
+#### Scenario: A pass needs a reference's meaning
+
+- **WHEN** any pass decides what to do with a reference
+- **THEN** it uses the single declaration for that reference
+
+#### Scenario: A reference into redacted content
+
+- **WHEN** a published row names a redacted zone as a destination
+- **THEN** the redacted zone is not reachable through that row
+
+#### Scenario: An undeclared reference
+
+- **WHEN** the data holds a reference form that no declaration covers
+- **THEN** the entity it names is not removed on account of it
+- **AND** the surviving reference to removed content fails the build
+
 ### Requirement: Position suppression removes geometry and keeps entities
 
 For a zone under position suppression, the published output SHALL contain no position, boundary, destination coordinate, or path geometry belonging to that zone, including geometry embedded in JSON values. Every entity of that zone SHALL remain published with its non-geometric data.
@@ -89,13 +113,15 @@ Prose that merely names a zone is not a reference. Content SHALL NOT be removed 
 - **WHEN** a quest, item, or monster names an excluded zone in text and holds no reference to it
 - **THEN** it remains published unchanged
 
-### Requirement: Dependent removal reaches a fixpoint
+### Requirement: Removal follows references to any depth
 
-Removal SHALL repeat until no further entity qualifies. An entity SHALL be removed when every source, spawn, or user that made it reachable has itself been removed.
+An entity SHALL be removed when every source, spawn, or user that made it reachable has itself been removed, however many references separate it from the excluded content.
 
-A single pass is not sufficient: removing spawns orphans monsters, removing monsters orphans items and skills, and removing those orphans further records.
+Following one step is not sufficient: removing spawns orphans monsters, removing monsters orphans items and skills, and removing those orphans further records.
 
-#### Scenario: Cascade beyond the first step
+An entity that was reachable from nothing before the redaction SHALL NOT be removed by it. Unconnected content is not evidence of unreleased content, and the published compendium contains such content deliberately.
+
+#### Scenario: Removal beyond the first step
 
 - **WHEN** excluding a zone removes the only spawns of a monster
 - **AND** that monster was the only source of an item
@@ -107,21 +133,33 @@ A single pass is not sufficient: removing spawns orphans monsters, removing mons
 - **THEN** it stays published
 - **AND** only the references to removed content are gone from it
 
-#### Scenario: Iteration terminates
+#### Scenario: Unreachable content is untouched
 
-- **WHEN** the cascade runs
-- **THEN** it stops after a pass that removes nothing
+- **WHEN** an entity was reachable from no released content before the redaction
+- **AND** it holds no reference to redacted content
+- **THEN** the redaction neither removes it nor reports it
 
 ### Requirement: Reachability considers every reference kind
 
 Deciding whether an entity is still reachable SHALL consider every kind of reference the data supports, including references embedded in JSON values, and SHALL NOT rely on one relationship alone.
 
-Rationale: a skill can be reachable through a monster, a weapon proc, a scroll, a relic, a potion or food buff, a pet, or a class list. Judging skills by monster use alone would remove a skill that is a live weapon's proc.
+Rationale: a skill can be reachable through a monster, a weapon proc, a scroll, a relic, a potion or food buff, a pet, or a class list. Judging skills by monster use alone would remove a skill that is a live weapon's proc. A monster can be reachable through a summon rather than a spawn, and two monsters in the current data have no spawn record at all.
 
 #### Scenario: Reachable through a non-obvious relationship
 
 - **WHEN** an entity's only remaining reference comes from a relationship other than the one that made it a candidate
 - **THEN** the entity stays published
+
+#### Scenario: A monster that is only ever summoned
+
+- **WHEN** a monster has no spawn record and is summoned by content that remains published
+- **THEN** the monster remains published
+
+#### Scenario: A summoner in an excluded zone
+
+- **WHEN** the only content that summons a monster is removed
+- **AND** the monster has no spawn record and no other reference
+- **THEN** the monster is absent from the published output
 
 #### Scenario: No remaining reference of any kind
 
