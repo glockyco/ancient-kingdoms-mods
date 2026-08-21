@@ -14,13 +14,12 @@
 - [x] 2.5 Prove the check fails on drift: edit one tracked adapter file, run the check, confirm a non-zero exit that names the file, then restore the file and confirm the check passes.
 - [x] 2.6 Confirm the check left the working tree unchanged with `git status --short`.
 
-## 3. Make the workflow discoverable
+## 3. Cancelled by supersession
 
-- [ ] 3.1 Add a Task Triggers row to `CLAUDE.md` that routes permanent behavior changes to the OpenSpec workflow and names `openspec/specs/` for accepted behavior and `openspec/changes/` for active work.
-- [ ] 3.2 Check whether `migrate-agent-docs-to-agents-md` has already moved the Task Triggers table to `AGENTS.md`; if it has, add the row there instead and record in that change that this row exists.
+Groups 1 and 2 were carried out and then reversed. `centralize-openspec-workflow-adapters` in `glockyco/omp-agent-setup` made the personal plugin the only tracked source of the generated workflow, because 108 identical files across nine repositories had acquired two owners and three distinct contents. Commits `d1d08d02` and `e1592a1c` performed the work here, and `4cac89f2` removed the adapters, the freshness check, its pinned generator dependency, the pre-commit job and the CI job.
 
-## 4. Verify
+The remaining work was cancelled rather than completed, so it is recorded here instead of left pending:
 
-- [ ] 4.1 Run `openspec validate setup-openspec-workflow --strict` and confirm it passes.
-- [ ] 4.2 Confirm from a clean checkout of the committed state that `.omp/commands/` and `.omp/skills/` are present without running any generator.
-- [ ] 4.3 Confirm the OpenSpec commands are offered by the agent after a session restart.
+- **The Task Triggers row in `CLAUDE.md`, and the check for whether the table had already moved.** `migrate-agent-docs-to-agents-md` deletes the table this row would have joined, and its task 1.1 forbids restating one in `AGENTS.md`. The discoverability requirement moves to that change in full.
+- **Confirming from a clean checkout that `.omp/commands/` and `.omp/skills/` are present without running a generator.** This can no longer hold. Both directories are absent here by design, and the plugin supplies the workflow.
+- **Confirming the commands are offered after a session restart, and validating this change under `--strict`.** The superseding change verified command resolution against the built plugin payload instead, including that each command registers exactly once.
