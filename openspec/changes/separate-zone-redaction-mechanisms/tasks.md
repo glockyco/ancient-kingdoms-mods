@@ -21,32 +21,32 @@
 
 ## 4. Position suppression
 
-- [ ] 4.1 Rewrite the coordinate pass in `build-pipeline/src/compendium/denormalizers/exclusions.py` to take its zones from configuration and its columns from discovery, deleting the hardcoded `EXCLUDED_ZONE_IDS` and `SPAWN_TABLES`.
-- [ ] 4.2 Null geometry embedded in JSON values for suppressed zones, including positions inside `quests.objectives` and `quests.finish_quest_locations`.
-- [ ] 4.3 Confirm Temple of Valaark keeps all 345 monster spawns with no coordinates, and that its entity counts are unchanged from task 1.1.
+- [x] 4.1 Rewrite the coordinate pass in `build-pipeline/src/compendium/denormalizers/exclusions.py` to take its zones from configuration and its columns from discovery, deleting the hardcoded `EXCLUDED_ZONE_IDS` and `SPAWN_TABLES`.
+- [x] 4.2 Null geometry embedded in JSON values for suppressed zones, including positions inside `quests.objectives` and `quests.finish_quest_locations`.
+- [x] 4.3 Confirm Temple of Valaark keeps all 345 monster spawns with no coordinates, and that its entity counts are unchanged from task 1.1.
 
 ## 5. Reference semantics
 
-- [ ] 5.1 Define one declaration per reference carrying `reaches` and `locus`, covering the discovered zone columns, the discovered entity reference columns, and the declared JSON carriers.
-- [ ] 5.2 Read direction from the declaration: a zone reference reaches backwards because a zone contains the row naming it, and an entity reference reaches forwards because an entity provides what it names.
-- [ ] 5.3 Declare the destination references `to_zone_id`, `teleport_zone_id`, and `travel_zone_id` as reaching nothing, so a boundary into redacted content does not make it reachable.
-- [ ] 5.4 Declare summoning as reaching: `skills.summoned_monster_id` and `summon_triggers.summoned_entity_id`. Two monsters, `cinderbone_skeleton` and `spectral_wolf`, have no spawn record and are reachable only this way.
-- [ ] 5.5 Replace the geometry governance map with the `locus` attribute, so position suppression stops keeping a second list over the same columns.
-- [ ] 5.6 Assert in tests that every discovered reference has exactly one declaration, so a schema addition fails the suite instead of being classified silently.
+- [x] 5.1 Define one declaration per reference carrying `reaches` and `locus`, covering the discovered zone columns, the discovered entity reference columns, and the declared JSON carriers.
+- [x] 5.2 Read direction from the declaration: a zone reference reaches backwards because a zone contains the row naming it, and an entity reference reaches forwards because an entity provides what it names.
+- [x] 5.3 Declare the destination references `to_zone_id`, `teleport_zone_id`, and `travel_zone_id` as reaching nothing, so a boundary into redacted content does not make it reachable.
+- [x] 5.4 Declare summoning as reaching: `skills.summoned_monster_id` and `summon_triggers.summoned_entity_id`. Two monsters, `cinderbone_skeleton` and `spectral_wolf`, have no spawn record and are reachable only this way.
+- [x] 5.5 Replace the geometry governance map with the `locus` attribute, so position suppression stops keeping a second list over the same columns.
+- [x] 5.6 Assert in tests that every discovered reference has exactly one declaration, so a schema addition fails the suite instead of being classified silently.
 
 ## 6. Unreleased-zone exclusion
 
-- [ ] 6.1 Build the reference graph from the declarations, with a node per row that can be reached and an edge per reaching reference.
-- [ ] 6.2 Compute reachability from every zone, and reachability from the zones that remain over a graph without the manually named entities and the `ignore_journal` items.
-- [ ] 6.3 Remove the difference between the two, together with the excluded zones and the named entities. Confirm no loop and no pass counter is needed.
-- [ ] 6.4 Confirm content reachable from nothing is in neither result and is never removed, using `gold`, a furniture item, and one published `draconium_*` item as the cases.
-- [ ] 6.5 Delete the rows of removed nodes, and clear references to them from rows that survive.
-- [ ] 6.6 Scrub references to removed entities out of JSON carriers on surviving rows, so no surviving value names a removed entity.
-- [ ] 6.7 Place the pass in `run_all()` after spawn inference and before item source denormalization, and record in a comment why that position is required.
-- [ ] 6.8 Record provenance from the closure: the mechanism, the reason, the distance from the zone it was reached through, and the referrers whose removal orphaned it. Take all of it from the walk rather than recomputing it.
-- [ ] 6.9 Report what was removed, grouped by mechanism and by kind.
-- [ ] 6.10 Confirm the outcome: `old_valorath`, the 4 monsters, `drassari_lance`, the 7 skills, and `old_valorath_token` are all absent, Earth Elemental is still present with its released-zone spawns, and every item in task 1.3 is still present.
-- [ ] 6.11 Confirm `shadows_over_old_valorath` survives on its givers `maeri_sunstripe` and `shavara_swiftclaw`, both of which spawn only in Northern Wastes.
+- [x] 6.1 Build the reference graph from the declarations, with a node per row that can be reached and an edge per reaching reference.
+- [x] 6.2 Compute reachability from every zone, and reachability from the zones that remain over a graph without the manually named entities and the `ignore_journal` items.
+- [x] 6.3 Remove the difference between the two, together with the excluded zones and the named entities. Confirm no loop and no pass counter is needed.
+- [x] 6.4 Confirm content reachable from nothing is in neither result and is never removed, using `gold`, a furniture item, and one published `draconium_*` item as the cases.
+- [x] 6.5 Delete the rows of removed nodes, and clear references to them from rows that survive.
+- [x] 6.6 Scrub references to removed entities out of JSON carriers on surviving rows, so no surviving value names a removed entity.
+- [x] 6.7 Place the pass in `run_all()` after spawn inference and before item source denormalization, and record in a comment why that position is required.
+- [x] 6.8 Record provenance from the closure: the mechanism, the reason, the distance from the zone it was reached through, and the referrers whose removal orphaned it. Take all of it from the walk rather than recomputing it.
+- [x] 6.9 Report what was removed, grouped by mechanism and by kind.
+- [x] 6.10 Confirm the outcome: `old_valorath`, the 4 monsters, `drassari_lance`, the 7 skills, and `old_valorath_token` are all absent, Earth Elemental is still present with its released-zone spawns, and every item in task 1.3 is still present.
+- [x] 6.11 Confirm `shadows_over_old_valorath` survives on its givers `maeri_sunstripe` and `shavara_swiftclaw`, both of which spawn only in Northern Wastes.
 
 ## 7. Boundary scrubbing
 
