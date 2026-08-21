@@ -65,6 +65,12 @@ pre-commit:
       run: cd build-pipeline && uv run compendium citations check
       skip:
         - run: "! test -d server-scripts"
+    - name: openspec-adapters
+      # Also globs the manifest and lockfile: the generator stamps its version
+      # into every generated skill, so bumping @fission-ai/openspec makes the
+      # tracked adapters stale without touching a file under .omp/.
+      glob: "{.omp/**,package.json,pnpm-lock.yaml}"
+      run: pnpm check:openspec
     - name: plans docs
       glob:
         - "docs/plans/*.md"

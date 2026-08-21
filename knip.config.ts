@@ -20,7 +20,11 @@ const config: KnipConfig = {
       ignoreBinaries: ["uv", "prettier", "eslint"],
       // @hotrepl/cli provides the `hotrepl` binary invoked directly from the shell
       // per README.md and the hotrepl-runtime-inspection skill, not from a tracked script.
-      ignoreDependencies: ["@hotrepl/cli"],
+      // @fission-ai/openspec is used by scripts/check-openspec-adapters.sh, which invokes
+      // it through a node_modules/.bin path held in a variable rather than by bare name:
+      // the check must run the pinned generator, and a bare name would let a globally
+      // installed CLI decide the result. Knip cannot resolve a binary behind a variable.
+      ignoreDependencies: ["@hotrepl/cli", "@fission-ai/openspec"],
     },
     // Website workspace: SvelteKit + Vite project
     website: {

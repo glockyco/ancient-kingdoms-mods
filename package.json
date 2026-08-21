@@ -21,6 +21,7 @@
     "check:py": "cd build-pipeline && uv run mypy . && uv run vulture src/ --min-confidence 80",
     "check:citations": "cd build-pipeline && uv run compendium citations check",
     "check:clean": "./scripts/check-clean-checkout.sh",
+    "check:openspec": "./scripts/check-openspec-adapters.sh",
     "check:knip": "knip"
   },
   "packageManager": "pnpm@10.34.5",
@@ -30,6 +31,7 @@
   "devDependencies": {
     "@commitlint/cli": "^21.2.1",
     "@commitlint/config-conventional": "^21.2.0",
+    "@fission-ai/openspec": "1.9.0",
     "@hotrepl/cli": "^3.0.2",
     "knip": "^6.29.0",
     "lefthook": "^2.1.10"
