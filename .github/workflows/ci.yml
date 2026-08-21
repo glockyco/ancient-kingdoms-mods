@@ -69,6 +69,19 @@ jobs:
       - name: Unused exports and dependencies
         run: pnpm exec knip
 
+  # The OpenSpec artifacts are repository content, and nothing verified them
+  # until now. The check itself is defined once for the whole workstation in the
+  # fleet input: it fails on an invalid artifact and on a change archived with
+  # unfinished tasks.
+  openspec:
+    name: OpenSpec artifacts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: DeterminateSystems/determinate-nix-action@v3
+      - name: Validate OpenSpec artifacts
+        run: nix build --no-link ".#checks.$(nix eval --raw --impure --expr builtins.currentSystem).openspec"
+
   build-pipeline:
     name: Build pipeline (ruff + mypy + vulture + pytest)
     runs-on: ubuntu-latest

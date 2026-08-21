@@ -5,10 +5,21 @@
     # Same nixpkgs release the workstation pins, so the dev shell and the host
     # system share one evaluated package set and one binary cache.
     nixpkgs.url = "https://flakehub.com/f/NixOS/nixpkgs/0.2605";
+
+    # Defines the OpenSpec artifact check every repository on this workstation
+    # runs, so the commands and the pinned CLI live in one place.
+    fleet = {
+      url = "github:glockyco/omp-agent-setup";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
-    { self, nixpkgs }:
+    {
+      self,
+      nixpkgs,
+      fleet,
+    }:
     let
       systems = [
         "aarch64-darwin"
@@ -57,6 +68,7 @@
       formatter = forAllSystems (pkgs: pkgs.nixfmt-tree);
 
       checks = forAllSystems (pkgs: {
+        openspec = fleet.lib.openspecCheck { inherit pkgs; src = ./.; };
         devShell = self.devShells.${pkgs.stdenv.hostPlatform.system}.default;
       });
     };
