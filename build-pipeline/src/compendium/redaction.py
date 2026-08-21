@@ -11,12 +11,26 @@ console = Console()
 
 @dataclass
 class RedactionConfig:
-    """Redaction rules loaded from redactions.toml."""
+    """Redaction rules loaded from redactions.toml.
+
+    Two zone mechanisms act independently, and a zone is subject only to the
+    mechanisms that name it:
+
+    - ``suppress_position_zone_ids`` keeps every entity of the zone and removes
+      its geometry, for a released zone in which the game itself withholds
+      positional information from the player.
+    - ``exclude_zone_ids`` removes the zone and everything related to it, for a
+      zone that has not shipped.
+
+    ``exclude_entity_ids`` names unreleased content that holds no reference edge
+    at all, which no rule over the data can select.
+    """
 
     hide_crafting_item_ids: set[str] = field(default_factory=set)
     exclude_quest_ids: set[str] = field(default_factory=set)
-    exclude_monster_zone_ids: set[str] = field(default_factory=set)
-    exclude_ignore_journal: bool = False
+    suppress_position_zone_ids: set[str] = field(default_factory=set)
+    exclude_zone_ids: set[str] = field(default_factory=set)
+    exclude_entity_ids: set[str] = field(default_factory=set)
 
 
 def load_redactions(config_path: Path | None = None) -> RedactionConfig:
@@ -34,31 +48,42 @@ def load_redactions(config_path: Path | None = None) -> RedactionConfig:
     with open(config_path, "rb") as f:
         data = tomllib.load(f)
 
+    zones = data.get("zones", {})
     config = RedactionConfig(
         hide_crafting_item_ids=set(
             data.get("items", {}).get("hide_crafting", {}).get("ids", [])
         ),
         exclude_quest_ids=set(data.get("quests", {}).get("exclude", {}).get("ids", [])),
-        exclude_monster_zone_ids=set(
-            data.get("monsters", {}).get("exclude", {}).get("zone_ids", [])
+        suppress_position_zone_ids=set(
+            zones.get("suppress_positions", {}).get("zone_ids", [])
         ),
-        exclude_ignore_journal=data.get("items", {}).get(
-            "exclude_ignore_journal", False
+        exclude_zone_ids=set(zones.get("exclude_unreleased", {}).get("zone_ids", [])),
+        exclude_entity_ids=set(
+            data.get("entities", {}).get("exclude", {}).get("ids", [])
         ),
     )
 
-    if config.exclude_ignore_journal:
-        console.print("  Excluding items with ignore_journal=true")
     if config.hide_crafting_item_ids:
         console.print(
             f"  Hiding crafting for {len(config.hide_crafting_item_ids)} items"
         )
     if config.exclude_quest_ids:
         console.print(f"  Excluding {len(config.exclude_quest_ids)} quests")
-    if config.exclude_monster_zone_ids:
+    if config.suppress_position_zone_ids:
         console.print(
-            "  Excluding monster spawns from "
-            f"{len(config.exclude_monster_zone_ids)} zones"
+            "  Suppressing positions in "
+            f"{len(config.suppress_position_zone_ids)} zones: "
+            + ", ".join(sorted(config.suppress_position_zone_ids))
+        )
+    if config.exclude_zone_ids:
+        console.print(
+            f"  Excluding {len(config.exclude_zone_ids)} unreleased zones: "
+            + ", ".join(sorted(config.exclude_zone_ids))
+        )
+    if config.exclude_entity_ids:
+        console.print(
+            f"  Excluding {len(config.exclude_entity_ids)} named entities: "
+            + ", ".join(sorted(config.exclude_entity_ids))
         )
 
     return config
