@@ -189,7 +189,9 @@ Content removed by a redaction SHALL be absent from every published surface, not
 
 ### Requirement: Boundary references are scrubbed rather than left dangling
 
-A published entity that references excluded content across the boundary SHALL remain published with that reference cleared. It SHALL NOT retain an identifier, a generated name, or coordinates that disclose the excluded content, and SHALL NOT hold a reference to a removed row.
+A published entity that references excluded content across the boundary SHALL remain published with that reference cleared. It SHALL NOT retain the destination's identifier, a name generated from the destination, or coordinates of the destination, and SHALL NOT hold a reference to a removed row.
+
+The entity's own identifier is not a reference. An identifier that contains the name of a redacted zone SHALL NOT be rewritten, for the same reason that prose naming the zone stays.
 
 #### Scenario: Portal into an excluded zone
 
@@ -201,6 +203,12 @@ A published entity that references excluded content across the boundary SHALL re
 
 - **WHEN** an entity's displayed name was generated from a removed destination
 - **THEN** the published name does not disclose the removed destination
+
+#### Scenario: The entity's own identifier contains the zone name
+
+- **WHEN** a published entity has an identifier that contains the name of a redacted zone
+- **THEN** the identifier is published unchanged
+- **AND** the verification does not report it
 
 ### Requirement: Manually excluded identifiers
 

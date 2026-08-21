@@ -106,13 +106,16 @@ An entity that straddles the boundary keeps its row and loses its reference. The
 
 This keeps the frontend ignorant of redaction: it renders a portal with no destination, which needs no exclusion list. `constants.ts` can then stop carrying one, removing the third source of truth.
 
-The portal's own key names the destination. It reads `iportal_northern_wastes_to_old_valorath_1646438`, so clearing its destination columns would leave the disclosure in the primary key. The key is rebuilt without the destination segment as `iportal_northern_wastes_1646438`, keeping the game object id that makes it stable. Two rows reference it, `portals.id` and `item_usages_portal.portal_id`, and the search index and the map payload both derive from the database, so they follow. No page is prerendered per portal, so no published URL changes.
+The portal's own key contains the zone name. It reads `iportal_northern_wastes_to_old_valorath_1646438`, and it keeps that form. Two published survivors already carry the same token in their identifier and in their displayed name: `key_to_old_valorath`, named "Key to Old Valorath", and `shadows_over_old_valorath`, named "Shadows Over Old Valorath". The redaction keeps both, because a name is not a reference.
+
+The name of the zone is therefore already public, and renaming one identifier out of three would hide nothing. What the redaction hides is the content of the zone and its position. The portal keeps its key and loses its destination.
+
+This also keeps the treatment uniform. The value scan matches a whole identifier, so it passes over `old_valorath` inside `key_to_old_valorath` and inside the portal key for the same reason. No exemption is needed for either.
 
 Alternatives considered:
 
+- **Rebuild the key without the destination segment.** Rejected: it changes a published identifier for consumers, and it leaves the same token in two other published identifiers, so the disclosure it removes is not removed.
 - **Delete the portal.** Rejected: the gate is real, reachable, and visible to players in a released zone.
-- **Keep the key and record an exemption.** Rejected: the published data would still carry a string naming the unreleased zone, which is the disclosure this requirement exists to prevent.
-- **Replace the key with the object id alone.** Rejected: `iportal_1646438` discards the origin zone that every other portal key carries, for no gain.
 - **Keep the destination and filter in the website.** Rejected: it puts redaction knowledge back into the frontend, which is the defect being removed, and it leaves the identity in shipped data.
 
 ### Manual identifiers are named, never inferred
