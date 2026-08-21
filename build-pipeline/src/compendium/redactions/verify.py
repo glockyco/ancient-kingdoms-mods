@@ -41,6 +41,9 @@ class Finding:
     identifier: str
 
     def __str__(self) -> str:
+        # A file has no column, and its row is a path.
+        if not self.column:
+            return f"{self.table} {self.row} names {self.identifier}"
         return f"{self.table}.{self.column} row {self.row} names {self.identifier}"
 
 
@@ -180,7 +183,9 @@ def numeric_findings(
     return findings
 
 
-def path_findings(root: Path, identifiers: set[str]) -> list[Finding]:
+def path_findings(
+    root: Path, identifiers: set[str], surface: str = "images"
+) -> list[Finding]:
     """Published files whose path names removed content.
 
     `reconcile` deletes the file for a removed entity. This pass reads the
@@ -198,7 +203,34 @@ def path_findings(root: Path, identifiers: set[str]) -> list[Finding]:
         relative = path.relative_to(root).as_posix()
         for identifier in wanted:
             if _holds_identifier(relative, identifier):
-                findings.append(Finding("files", str(root), relative, identifier))
+                findings.append(Finding(surface, "", relative, identifier))
+    return findings
+
+
+def content_findings(
+    root: Path,
+    identifiers: set[str],
+    suffixes: tuple[str, ...],
+    surface: str = "prerendered",
+) -> list[Finding]:
+    """Published text that names removed content.
+
+    The prerendered pages and their payloads are written after the pipeline
+    exits, so this pass reads them from disk.
+    """
+    if not identifiers or not root.exists():
+        return []
+
+    wanted = sorted(identifiers)
+    findings: list[Finding] = []
+    for path in sorted(root.rglob("*")):
+        if path.suffix not in suffixes or not path.is_file():
+            continue
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        relative = path.relative_to(root).as_posix()
+        for identifier in wanted:
+            if _holds_identifier(text, identifier):
+                findings.append(Finding(surface, "", relative, identifier))
     return findings
 
 

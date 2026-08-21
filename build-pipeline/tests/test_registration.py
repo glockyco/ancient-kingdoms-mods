@@ -55,21 +55,34 @@ class DenormalizerRegistrationTests(unittest.TestCase):
         }
         self.assertTrue(imported, "no denormalizer modules imported")
 
-        run_all = next(
-            (
-                node
-                for node in ast.walk(tree)
-                if isinstance(node, ast.FunctionDef) and node.name == "run_all"
-            ),
-            None,
-        )
-        self.assertIsNotNone(
-            run_all, "run_all is missing from denormalizers/__init__.py"
-        )
+        defined = {
+            node.name: node
+            for node in ast.walk(tree)
+            if isinstance(node, ast.FunctionDef)
+        }
+        self.assertIn("run_all", defined, "run_all is missing from denormalizers")
+
+        # `run_all` delegates part of the order to helpers in the same module,
+        # so follow every local call it makes.
+        reached: set[str] = set()
+        pending = ["run_all"]
+        while pending:
+            name = pending.pop()
+            if name in reached:
+                continue
+            reached.add(name)
+            pending.extend(
+                node.func.id
+                for node in ast.walk(defined[name])
+                if isinstance(node, ast.Call)
+                and isinstance(node.func, ast.Name)
+                and node.func.id in defined
+            )
 
         used = {
             node.func.value.id
-            for node in ast.walk(run_all)
+            for name in reached
+            for node in ast.walk(defined[name])
             if isinstance(node, ast.Call)
             and isinstance(node.func, ast.Attribute)
             and isinstance(node.func.value, ast.Name)

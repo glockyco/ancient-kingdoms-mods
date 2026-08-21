@@ -65,6 +65,9 @@ pre-commit:
       run: cd build-pipeline && uv run compendium citations check
       skip:
         - run: "! test -d server-scripts"
+    - name: redactions-check
+      glob: "{redactions.toml,redactions.lock.json,build-pipeline/src/compendium/redactions/**/*.py,build-pipeline/src/compendium/redaction.py}"
+      run: cd build-pipeline && uv run compendium redactions check
     - name: plans docs
       glob:
         - "docs/plans/*.md"

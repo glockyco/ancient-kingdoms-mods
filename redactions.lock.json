@@ -1,0 +1,510 @@
+{
+  "removed": {
+    "items:divine_essence": {
+      "mechanism": "ignore_journal",
+      "reason": "the game marks the item ignore_journal"
+    },
+    "items:drassari_lance": {
+      "mechanism": "cascade",
+      "pass": 3,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "monsters:drassar_warlock",
+        "monsters:drassar_warrior"
+      ]
+    },
+    "items:old_valorath_token": {
+      "mechanism": "manual",
+      "reason": "named in the manual exclusion list"
+    },
+    "items:steel_of_ancient_dragons": {
+      "mechanism": "ignore_journal",
+      "reason": "the game marks the item ignore_journal"
+    },
+    "items:valaark_ancient_coin": {
+      "mechanism": "ignore_journal",
+      "reason": "the game marks the item ignore_journal"
+    },
+    "monster_spawns:avatar_of_earth_old_valorath_1789382": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:drassar_warlock_old_valorath_1903684": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:drassar_warlock_old_valorath_1903754": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:drassar_warlock_old_valorath_1903816": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:drassar_warlock_old_valorath_1903902": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:drassar_warlock_old_valorath_1903908": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:drassar_warlock_old_valorath_1903920": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:drassar_warrior_old_valorath_1903670": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:drassar_warrior_old_valorath_1903752": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:drassar_warrior_old_valorath_1903808": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:drassar_warrior_old_valorath_1903810": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:drassar_warrior_old_valorath_1903852": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:drassar_warrior_old_valorath_1903856": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:earth_elemental_old_valorath_1783684": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:earth_elemental_old_valorath_1785360": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:earth_elemental_old_valorath_1785474": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:earth_elemental_old_valorath_1785764": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:earth_elemental_old_valorath_1785960": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:earth_elemental_old_valorath_1789328": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:earth_elemental_old_valorath_1789402": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:earth_elemental_old_valorath_1790658": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:earth_elemental_old_valorath_1791166": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:earth_elemental_old_valorath_1791918": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:earth_elemental_old_valorath_1792094": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:plague_rat_old_valorath_1783790": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:plague_rat_old_valorath_1785070": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:plague_rat_old_valorath_1785246": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:plague_rat_old_valorath_1786420": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:plague_rat_old_valorath_1786436": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:plague_rat_old_valorath_1787162": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:plague_rat_old_valorath_1787462": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:plague_rat_old_valorath_1787464": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:plague_rat_old_valorath_1787594": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:plague_rat_old_valorath_1788706": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:plague_rat_old_valorath_1789000": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:plague_rat_old_valorath_1790018": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:plague_rat_old_valorath_1791124": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:plague_rat_old_valorath_1791334": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monster_spawns:plague_rat_old_valorath_1792012": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zone_triggers:zone_trigger_upper_old_valorath",
+        "zones:old_valorath"
+      ]
+    },
+    "monsters:avatar_of_earth": {
+      "mechanism": "cascade",
+      "pass": 2,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "monster_spawns:avatar_of_earth_old_valorath_1789382"
+      ]
+    },
+    "monsters:drassar_warlock": {
+      "mechanism": "cascade",
+      "pass": 2,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "monster_spawns:drassar_warlock_old_valorath_1903684",
+        "monster_spawns:drassar_warlock_old_valorath_1903754",
+        "monster_spawns:drassar_warlock_old_valorath_1903816",
+        "monster_spawns:drassar_warlock_old_valorath_1903902",
+        "monster_spawns:drassar_warlock_old_valorath_1903908",
+        "monster_spawns:drassar_warlock_old_valorath_1903920"
+      ]
+    },
+    "monsters:drassar_warrior": {
+      "mechanism": "cascade",
+      "pass": 2,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "monster_spawns:drassar_warrior_old_valorath_1903670",
+        "monster_spawns:drassar_warrior_old_valorath_1903752",
+        "monster_spawns:drassar_warrior_old_valorath_1903808",
+        "monster_spawns:drassar_warrior_old_valorath_1903810",
+        "monster_spawns:drassar_warrior_old_valorath_1903852",
+        "monster_spawns:drassar_warrior_old_valorath_1903856"
+      ]
+    },
+    "monsters:plague_rat": {
+      "mechanism": "cascade",
+      "pass": 2,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "monster_spawns:plague_rat_old_valorath_1783790",
+        "monster_spawns:plague_rat_old_valorath_1785070",
+        "monster_spawns:plague_rat_old_valorath_1785246",
+        "monster_spawns:plague_rat_old_valorath_1786420",
+        "monster_spawns:plague_rat_old_valorath_1786436",
+        "monster_spawns:plague_rat_old_valorath_1787162",
+        "monster_spawns:plague_rat_old_valorath_1787462",
+        "monster_spawns:plague_rat_old_valorath_1787464",
+        "monster_spawns:plague_rat_old_valorath_1787594",
+        "monster_spawns:plague_rat_old_valorath_1788706",
+        "monster_spawns:plague_rat_old_valorath_1789000",
+        "monster_spawns:plague_rat_old_valorath_1790018",
+        "monster_spawns:plague_rat_old_valorath_1791124",
+        "monster_spawns:plague_rat_old_valorath_1791334",
+        "monster_spawns:plague_rat_old_valorath_1792012"
+      ]
+    },
+    "skills:chaotic_bolt": {
+      "mechanism": "cascade",
+      "pass": 3,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "monsters:drassar_warlock"
+      ]
+    },
+    "skills:crippling_dust": {
+      "mechanism": "cascade",
+      "pass": 3,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "monsters:avatar_of_earth"
+      ]
+    },
+    "skills:earth_circle": {
+      "mechanism": "cascade",
+      "pass": 3,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "monsters:avatar_of_earth"
+      ]
+    },
+    "skills:earthen_spines": {
+      "mechanism": "cascade",
+      "pass": 3,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "monsters:avatar_of_earth"
+      ]
+    },
+    "skills:plague_infection": {
+      "mechanism": "cascade",
+      "pass": 3,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "monsters:plague_rat"
+      ]
+    },
+    "skills:spear_strike": {
+      "mechanism": "cascade",
+      "pass": 3,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "monsters:drassar_warrior"
+      ]
+    },
+    "skills:summon_earth_elemental": {
+      "mechanism": "cascade",
+      "pass": 3,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "monsters:avatar_of_earth"
+      ]
+    },
+    "zone_triggers:zone_trigger_upper_old_valorath": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "zones:old_valorath"
+      ]
+    },
+    "zones:old_valorath": {
+      "mechanism": "unreleased_zone",
+      "reason": "configured as an unreleased zone"
+    }
+  },
+  "snapshot": {
+    "game_version": "0.9.29.0"
+  },
+  "suppressed_positions": {
+    "temple_of_valaark": 885
+  }
+}

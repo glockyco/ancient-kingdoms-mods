@@ -6,6 +6,9 @@ This module orchestrates the build pipeline:
 3. Runs denormalizations to create derived fields
 """
 
+import sqlite3
+from pathlib import Path
+
 from rich.console import Console
 
 from compendium.config import get_repo_root
@@ -53,6 +56,48 @@ from compendium.zone_artwork import publish_zone_thumbnails
 console = Console()
 
 
+def load_all(conn: sqlite3.Connection, export_dir: Path, static_dir: Path) -> None:
+    """Load every export into the database, in foreign key order.
+
+    `redactions check` recomputes the removal decisions, so it needs the same
+    starting state as a build.
+    """
+    load_static_data(conn, export_dir)  # Factions, reputation tiers (before NPCs)
+    load_classes(conn, export_dir)  # Player classes (early, no dependencies)
+    load_zones(conn, export_dir)
+    load_visual_assets(conn, export_dir, static_dir)  # Runtime images for website
+    load_achievements(conn, export_dir, static_dir)
+    load_professions(conn, export_dir)
+    load_skills(conn, export_dir)
+    load_zone_triggers(
+        conn, export_dir
+    )  # After skills (environment_hazard_skill_id FK)
+    load_houses(conn, export_dir)  # After zones + zone_triggers
+    load_items(conn, export_dir)
+    load_fish(conn, export_dir)
+    load_luck_tokens(conn, export_dir)  # After zones + items
+    load_altars(conn, export_dir)  # After zones + items
+    load_monsters(conn, export_dir)
+    load_monster_spawns(conn, export_dir)  # After monsters
+    load_monster_skills(conn, export_dir)  # After monsters + skills
+    load_pets(conn, export_dir)  # After skills
+    load_pet_skills(conn, export_dir)  # After pets + skills
+    load_npcs(conn, export_dir)
+    load_npc_spawns(conn, export_dir)  # After NPCs
+    load_summon_triggers(conn, export_dir)  # After monsters/NPCs
+    load_quests(conn, export_dir)
+    load_portals(conn, export_dir)
+    load_treasure_locations(conn, export_dir)  # After items
+    load_traps(conn, export_dir)  # After zones + zone_triggers + skills
+    load_gather_items(conn, export_dir)
+    load_crafting_recipes(conn, export_dir)
+    load_alchemy_recipes(conn, export_dir)
+    load_alchemy_tables(conn, export_dir)  # After zones + zone_triggers
+    load_scribing_recipes(conn, export_dir)  # After items
+    load_scribing_tables(conn, export_dir)  # After zones + zone_triggers
+    load_crafting_stations(conn, export_dir)  # After zones + zone_triggers
+
+
 def run(config: dict) -> None:
     """Build SQLite database from JSON exports.
 
@@ -84,40 +129,7 @@ def run(config: dict) -> None:
 
     try:
         # Load data in order (respecting foreign keys)
-        load_static_data(conn, export_dir)  # Factions, reputation tiers (before NPCs)
-        load_classes(conn, export_dir)  # Player classes (early, no dependencies)
-        load_zones(conn, export_dir)
-        load_visual_assets(conn, export_dir, static_dir)  # Runtime images for website
-        load_achievements(conn, export_dir, static_dir)
-        load_professions(conn, export_dir)
-        load_skills(conn, export_dir)
-        load_zone_triggers(
-            conn, export_dir
-        )  # After skills (environment_hazard_skill_id FK)
-        load_houses(conn, export_dir)  # After zones + zone_triggers
-        load_items(conn, export_dir)
-        load_fish(conn, export_dir)
-        load_luck_tokens(conn, export_dir)  # After zones + items
-        load_altars(conn, export_dir)  # After zones + items
-        load_monsters(conn, export_dir)
-        load_monster_spawns(conn, export_dir)  # After monsters
-        load_monster_skills(conn, export_dir)  # After monsters + skills
-        load_pets(conn, export_dir)  # After skills
-        load_pet_skills(conn, export_dir)  # After pets + skills
-        load_npcs(conn, export_dir)
-        load_npc_spawns(conn, export_dir)  # After NPCs
-        load_summon_triggers(conn, export_dir)  # After monsters/NPCs
-        load_quests(conn, export_dir)
-        load_portals(conn, export_dir)
-        load_treasure_locations(conn, export_dir)  # After items
-        load_traps(conn, export_dir)  # After zones + zone_triggers + skills
-        load_gather_items(conn, export_dir)
-        load_crafting_recipes(conn, export_dir)
-        load_alchemy_recipes(conn, export_dir)
-        load_alchemy_tables(conn, export_dir)  # After zones + zone_triggers
-        load_scribing_recipes(conn, export_dir)  # After items
-        load_scribing_tables(conn, export_dir)  # After zones + zone_triggers
-        load_crafting_stations(conn, export_dir)  # After zones + zone_triggers
+        load_all(conn, export_dir, static_dir)
 
         # Denormalize data (must be done after all data is loaded)
         console.print()

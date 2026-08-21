@@ -86,20 +86,22 @@ def _suppress_embedded(
     return updated
 
 
-def run(conn: sqlite3.Connection, redactions: RedactionConfig) -> None:
-    """Remove geometry for every zone configured for position suppression."""
+def run(conn: sqlite3.Connection, redactions: RedactionConfig) -> dict[str, int]:
+    """Remove geometry for every zone configured for position suppression.
+
+    Returns the number of values cleared for each zone, for the ledger. The
+    work runs one zone at a time so that each count names one zone. No row
+    belongs to two suppressed zones through one column, so the counts add up.
+    """
     zone_ids = redactions.suppress_position_zone_ids
     if not zone_ids:
         console.print("  [dim]No zones configured for position suppression[/dim]")
-        return
+        return {}
 
     console.print(
         f"Suppressing positions in {len(zone_ids)} zones: "
         + ", ".join(sorted(zone_ids))
     )
-
-    sub_zone_ids = resolve_sub_zones(conn, zone_ids)
-    numeric_ids = numeric_zone_ids(conn, zone_ids)
 
     references = [r for r in resolve(conn) if r.to_zone]
     by_table: dict[str, list[Reference]] = {}
@@ -110,37 +112,46 @@ def run(conn: sqlite3.Connection, redactions: RedactionConfig) -> None:
     updates = 0
     embedded = 0
     touched: list[str] = []
+    per_zone: dict[str, int] = {}
 
-    for reference in references:
-        if reference.numeric:
-            wanted: set[Any] = set(numeric_ids)
-        elif reference.to_sub_zone:
-            wanted = set(sub_zone_ids)
-        else:
-            wanted = set(zone_ids)
-        if not wanted:
-            continue
+    for zone_id in sorted(zone_ids):
+        one = {zone_id}
+        sub_zone_ids = resolve_sub_zones(conn, one)
+        numeric_ids = numeric_zone_ids(conn, one)
 
-        if reference.embedded:
-            embedded += _suppress_embedded(conn, reference, wanted)
-            continue
+        for reference in references:
+            if reference.numeric:
+                wanted: set[Any] = set(numeric_ids)
+            elif reference.to_sub_zone:
+                wanted = set(sub_zone_ids)
+            else:
+                wanted = set(one)
+            if not wanted:
+                continue
 
-        governed = _governed(conn, reference, by_table[reference.table])
-        if not governed:
-            continue
+            if reference.embedded:
+                cleared = _suppress_embedded(conn, reference, wanted)
+                embedded += cleared
+                per_zone[zone_id] = per_zone.get(zone_id, 0) + cleared
+                continue
 
-        placeholders = ",".join("?" * len(wanted))
-        assignments = ", ".join(f"{column} = NULL" for column in governed)
-        cursor.execute(
-            f"UPDATE {reference.table} SET {assignments} "
-            f"WHERE {reference.column} IN ({placeholders})",
-            tuple(sorted(wanted, key=str)),
-        )
-        if cursor.rowcount > 0:
-            updates += cursor.rowcount
-            touched.append(
-                f"{reference.table} via {reference.column}: {cursor.rowcount}"
+            governed = _governed(conn, reference, by_table[reference.table])
+            if not governed:
+                continue
+
+            placeholders = ",".join("?" * len(wanted))
+            assignments = ", ".join(f"{column} = NULL" for column in governed)
+            cursor.execute(
+                f"UPDATE {reference.table} SET {assignments} "
+                f"WHERE {reference.column} IN ({placeholders})",
+                tuple(sorted(wanted, key=str)),
             )
+            if cursor.rowcount > 0:
+                updates += cursor.rowcount
+                per_zone[zone_id] = per_zone.get(zone_id, 0) + cursor.rowcount
+                touched.append(
+                    f"{reference.table} via {reference.column}: {cursor.rowcount}"
+                )
 
     for line in touched:
         console.print(f"  [green]OK[/green] {line}")
@@ -151,3 +162,4 @@ def run(conn: sqlite3.Connection, redactions: RedactionConfig) -> None:
     console.print(
         f"  Removed geometry in {updates} column updates and {embedded} JSON values"
     )
+    return per_zone

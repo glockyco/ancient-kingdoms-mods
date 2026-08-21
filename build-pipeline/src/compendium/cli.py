@@ -111,3 +111,51 @@ def citations_suggest(ctx: typer.Context):
 
 if __name__ == "__main__":
     app()
+
+
+redactions_app = typer.Typer(
+    help="Record and verify what redaction removes from the compendium."
+)
+app.add_typer(redactions_app, name="redactions")
+
+
+@redactions_app.command("check")
+def redactions_check(ctx: typer.Context):
+    """Compare the recorded redaction decisions against the current data."""
+    from compendium.commands import redactions as redactions_cmd
+
+    raise typer.Exit(redactions_cmd.run(ctx.obj, "check"))
+
+
+@redactions_app.command("sync")
+def redactions_sync(
+    ctx: typer.Context,
+    game_version: str = typer.Option(
+        None,
+        "--game-version",
+        help="Game version the current export came from",
+    ),
+):
+    """Rewrite redactions.lock.json from the current export."""
+    from compendium.commands import redactions as redactions_cmd
+
+    raise typer.Exit(redactions_cmd.run(ctx.obj, "sync", game_version=game_version))
+
+
+@redactions_app.command("verify")
+def redactions_verify(ctx: typer.Context):
+    """Scan every published surface for identifiers of removed content."""
+    from compendium.commands import redactions as redactions_cmd
+
+    raise typer.Exit(redactions_cmd.run(ctx.obj, "verify"))
+
+
+@redactions_app.command("explain")
+def redactions_explain(
+    ctx: typer.Context,
+    entity_id: str = typer.Argument(..., help="Entity that is absent from the site"),
+):
+    """Print why one entity is absent from the published compendium."""
+    from compendium.commands import redactions as redactions_cmd
+
+    raise typer.Exit(redactions_cmd.run(ctx.obj, "explain", entity_id=entity_id))

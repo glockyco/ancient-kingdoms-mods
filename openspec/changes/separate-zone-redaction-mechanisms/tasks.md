@@ -65,7 +65,7 @@
 - [x] 9.1 Implement a check that scans published values of any shape for identifiers of excluded zones and removed entities, and fails the build reporting table, column, and row. Match identifiers with `instr` rather than `LIKE`, because `_` is a single-character wildcard and `LIKE '%divine_essence%'` matches the prose "divine essence" in `gathering_resources.description`. Match on a whole identifier, because `key_to_old_valorath` and `shadows_over_old_valorath` both contain `old_valorath` and both survive.
 - [x] 9.1a Run the check at the end of denormalization rather than straight after the cascade. No denormalizer reads the export, but they copy references between tables, and `item_sources_monster` is built from `monsters.drops` after the cascade has run.
 - [x] 9.2a Extend the check across the published image set, scanning `website/static/images` after `reconcile` deletes the files it removes.
-- [ ] 9.2b Extend the check across `search.db` and the prerendered output. Both are built after `compendium build` exits, so the check needs the removed identifiers from the ledger in group 10.
+- [x] 9.2b Extend the check across `search.db` and the prerendered output. Both are built after `compendium build` exits, so the check needs the removed identifiers from the ledger in group 10.
 - [x] 9.3 Support recording an explicit, justified exemption, so an intentional match does not require weakening the check.
 - [x] 9.3a Declare `summon_triggers.summoned_entity_id` once per target kind, reading `summoned_entity_type` to select the rows each declaration covers. No exemption is needed: the value resolves, and it names an NPC rather than a monster.
 - [x] 9.4a Record that the JSON scrub is correct but unexercised: no surviving row in today's export names a removed entity inside a JSON value. Reachability cannot produce that case, because a dropped item is reachable. Only a manual exclusion or `ignore_journal` can, and `tests/test_embedded_scrub.py` covers it.
@@ -73,14 +73,15 @@
 
 ## 10. Redaction ledger and reporting
 
-- [ ] 10.1 Write `redactions.lock.json` at the repository root from the recorded provenance: a snapshot header carrying the game version, an entry per removed entity giving mechanism, reason, pass, and the entities it followed, and a per-zone summary for position suppression. Model the file and its handling on `citations.lock.json`.
-- [ ] 10.2 Sort the ledger deterministically so an unchanged build produces a byte-identical file and a real change produces a readable diff.
-- [ ] 10.3 Add a `redactions` sub-app to `build-pipeline/src/compendium/cli.py` following the shape of the existing `citations` sub-app.
-- [ ] 10.4 Implement `redactions check`: recompute the redaction decisions, compare against the committed ledger, and exit non-zero listing entities that appeared or disappeared.
-- [ ] 10.5 Implement `redactions sync`: rewrite the ledger as a deliberate, reviewed step, never as a side effect of `build`.
-- [ ] 10.6 Implement `redactions explain <entity-id>`: print the reason chain for one entity, so "why is this missing from the site" is answerable without reading the pipeline.
-- [ ] 10.7 Add a `check:redactions` script to the root `package.json` next to `check:citations`, and register it in `lefthook.yml` with a glob covering `redactions.toml`, the redaction sources, and `redactions.lock.json`.
-- [ ] 10.8 Commit the generated ledger and confirm it records the expected entries, including `item:drassari_lance` reached through the two Drassar monsters and `item:old_valorath_token` as a manual exclusion.
+- [x] 10.1 Write `redactions.lock.json` at the repository root from the recorded provenance: a snapshot header carrying the game version, an entry per removed entity giving mechanism, reason, pass, and the entities it followed, and a per-zone summary for position suppression. Model the file and its handling on `citations.lock.json`.
+- [x] 10.2 Sort the ledger deterministically so an unchanged build produces a byte-identical file and a real change produces a readable diff.
+- [x] 10.3 Add a `redactions` sub-app to `build-pipeline/src/compendium/cli.py` following the shape of the existing `citations` sub-app.
+- [x] 10.4 Implement `redactions check`: recompute the redaction decisions, compare against the committed ledger, and exit non-zero listing entities that appeared or disappeared.
+- [x] 10.5 Implement `redactions sync`: rewrite the ledger as a deliberate, reviewed step, never as a side effect of `build`.
+- [x] 10.6 Implement `redactions explain <entity-id>`: print the reason chain for one entity, so "why is this missing from the site" is answerable without reading the pipeline.
+- [x] 10.7 Add a `check:redactions` script to the root `package.json` next to `check:citations`, and register it in `lefthook.yml` with a glob covering `redactions.toml`, the redaction sources, and `redactions.lock.json`.
+- [x] 10.7a Give the recomputation its own static directory. `load_visual_assets` and `load_achievements` copy image files into the directory they receive, so `redactions check` republished the icons that redaction had deleted.
+- [x] 10.8 Commit the generated ledger and confirm it records the expected entries, including `item:drassari_lance` reached through the two Drassar monsters and `item:old_valorath_token` as a manual exclusion.
 
 ## 11. Website cleanup
 

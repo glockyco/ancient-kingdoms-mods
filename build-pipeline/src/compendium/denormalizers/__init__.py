@@ -95,16 +95,21 @@ def _apply_crafting_exclusions(
     conn.commit()
 
 
-def run_all(conn: sqlite3.Connection) -> verify.Subject:
-    """Run all denormalizations in dependency order.
+def run_before_closure(
+    conn: sqlite3.Connection,
+) -> tuple[RedactionConfig, dict[str, int]]:
+    """Run every step the unreleased-zone closure depends on.
+
+    `redactions check` recomputes the removal decisions without writing a
+    database, and it needs this state to reach the same answer as a build.
 
     Args:
         conn: Database connection with all base data loaded
 
     Returns:
-        What the verification must not find in the published database.
+        The redaction configuration, and the count of geometry values cleared
+        for each zone under position suppression.
     """
-    # Load redaction config
     redactions = load_redactions()
 
     # Apply exclusions before any denormalizer reads the data
@@ -114,7 +119,7 @@ def run_all(conn: sqlite3.Connection) -> verify.Subject:
         _apply_crafting_exclusions(conn, redactions)
 
     # Remove geometry for zones in which the game withholds it from the player
-    exclusions.run(conn, redactions)
+    suppressed = exclusions.run(conn, redactions)
 
     # Enrich altar waves with monster boss/elite info (before altar data is read)
     altars.run_waves(conn)
@@ -125,6 +130,20 @@ def run_all(conn: sqlite3.Connection) -> verify.Subject:
     # Monster spawn inference (before levels and items so altar/placeholder
     # spawns exist for level range calculation and item zone association)
     monsters.run_spawns(conn)
+
+    return redactions, suppressed
+
+
+def run_all(conn: sqlite3.Connection) -> verify.Subject:
+    """Run all denormalizations in dependency order.
+
+    Args:
+        conn: Database connection with all base data loaded
+
+    Returns:
+        What the verification must not find in the published database.
+    """
+    redactions, _ = run_before_closure(conn)
 
     # Unreleased-zone exclusion runs here for two reasons. The spawn set must be
     # complete, because a monster is reachable where it spawns and inference adds

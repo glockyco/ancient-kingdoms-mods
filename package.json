@@ -20,6 +20,7 @@
     "check:ts": "pnpm --filter website check",
     "check:py": "cd build-pipeline && uv run mypy . && uv run vulture src/ --min-confidence 80",
     "check:citations": "cd build-pipeline && uv run compendium citations check",
+    "check:redactions": "cd build-pipeline && uv run compendium redactions check",
     "check:clean": "./scripts/check-clean-checkout.sh",
     "check:knip": "knip"
   },
