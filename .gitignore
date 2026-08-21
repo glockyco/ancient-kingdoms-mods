@@ -63,7 +63,9 @@ server-scripts-*/
 # Steam download cache
 .steam-download/
 
-# OMP plugin installs (local only; commands, skills, and rules are tracked)
+# OMP plugin installs are local only. Anything else under .omp/ is tracked:
+# repository-specific skills and rules belong in version control. The OpenSpec
+# workflow does not, and ships in the personal plugin instead.
 .omp/plugins/
 
 # Nix / direnv
