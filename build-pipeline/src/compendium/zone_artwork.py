@@ -8,8 +8,11 @@ from pathlib import Path
 from PIL import Image
 from rich.console import Console
 
-from compendium.commands.tiles import blank_excluded_zones, load_excluded_zones
-from compendium.denormalizers.exclusions import EXCLUDED_ZONE_IDS
+from compendium.commands.tiles import (
+    blank_excluded_zones,
+    load_excluded_zones,
+    redacted_zone_ids,
+)
 from compendium.visual_assets import Encoding, insert_asset, publish_image
 
 console = Console()
@@ -143,7 +146,8 @@ def publish_zone_thumbnails(
     with Image.open(world_path) as source_file:
         source = source_file.convert("RGB")
 
-    excluded = load_excluded_zones(export_dir)
+    redacted = redacted_zone_ids()
+    excluded = load_excluded_zones(export_dir, redacted)
     blank_excluded_zones(source, excluded, world_bounds, (0, 0, 0))
 
     cursor = conn.cursor()
@@ -156,7 +160,7 @@ def publish_zone_thumbnails(
     ).fetchall()
     published_count = 0
     for zone_id, min_x, min_z, max_x, max_z in rows:
-        if zone_id in EXCLUDED_ZONE_IDS:
+        if zone_id in redacted:
             continue
         if None in (min_x, min_z, max_x, max_z):
             continue

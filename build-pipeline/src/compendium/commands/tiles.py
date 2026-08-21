@@ -25,10 +25,7 @@ from PIL import Image, ImageDraw
 from rich.console import Console
 from rich.progress import Progress
 
-from compendium.denormalizers.exclusions import (
-    EXCLUDED_ZONE_IDS,
-    EXCLUDED_ZONE_TRIGGER_IDS,
-)
+from compendium.redaction import load_redactions
 
 console = Console()
 
@@ -37,15 +34,28 @@ console = Console()
 EXCLUDED_ZONE_RENDER_PADDING = 8.0
 
 
-def load_excluded_zones(export_dir: Path) -> list[dict]:
-    """Load bounds for all excluded zones and sub-zones.
+def redacted_zone_ids() -> set[str]:
+    """Zones whose map artwork must not be published.
 
-    Handles two exclusion levels:
-    - EXCLUDED_ZONE_IDS: entire zones — finds all triggers for those zone_ids
-      and combines their bounds into one rectangle per zone.
-    - EXCLUDED_ZONE_TRIGGER_IDS: individual sub-zone triggers — each trigger
-      produces its own rectangle using its own bounds directly.
+    Both mechanisms qualify. A suppressed zone withholds positions, and rendered
+    tiles are positions drawn as pictures. An excluded zone is not published at
+    all. The artwork therefore follows the union rather than either list.
     """
+    redactions = load_redactions()
+    return redactions.suppress_position_zone_ids | redactions.exclude_zone_ids
+
+
+def load_excluded_zones(
+    export_dir: Path, zone_ids: set[str] | None = None
+) -> list[dict]:
+    """Load bounds for every zone whose artwork must be blanked.
+
+    Trigger bounds are combined per parent zone. Combining all of them into one
+    rectangle would erase unrelated map regions lying between two spatially
+    separate dungeons.
+    """
+    if zone_ids is None:
+        zone_ids = redacted_zone_ids()
     zone_info_path = export_dir / "zone_info.json"
     zone_triggers_path = export_dir / "zone_triggers.json"
 
@@ -60,14 +70,11 @@ def load_excluded_zones(export_dir: Path) -> list[dict]:
 
     results: list[dict] = []
 
-    # Zone-level exclusions: combine trigger bounds separately per parent zone.
-    # Combining all excluded parents into one rectangle erases unrelated map regions
-    # between spatially separated dungeons.
-    if EXCLUDED_ZONE_IDS:
+    if zone_ids:
         excluded_zones = {
             zone["zone_id"]: zone.get("name", zone["id"])
             for zone in zone_info
-            if zone.get("id") in EXCLUDED_ZONE_IDS
+            if zone.get("id") in zone_ids
         }
 
         for zone_id, zone_name in excluded_zones.items():
@@ -89,23 +96,6 @@ def load_excluded_zones(export_dir: Path) -> list[dict]:
                     "bounds_max_y": max(t["bounds_max_y"] for t in triggers),
                 }
             )
-
-    # Sub-zone trigger exclusions: each excluded trigger ID gets its own rectangle
-    if EXCLUDED_ZONE_TRIGGER_IDS:
-        for trigger in zone_triggers:
-            if (
-                trigger.get("id") in EXCLUDED_ZONE_TRIGGER_IDS
-                and trigger.get("bounds_min_x") is not None
-            ):
-                results.append(
-                    {
-                        "name": trigger.get("name", trigger["id"]),
-                        "bounds_min_x": trigger["bounds_min_x"],
-                        "bounds_min_y": trigger["bounds_min_y"],
-                        "bounds_max_x": trigger["bounds_max_x"],
-                        "bounds_max_y": trigger["bounds_max_y"],
-                    }
-                )
 
     return results
 
@@ -160,8 +150,15 @@ def blank_excluded_zones(
     return count
 
 
-def load_boss_spawn_validation_points(export_dir: Path) -> list[dict]:
-    """Load boss/world-boss spawn points that should have visible terrain coverage."""
+def load_boss_spawn_validation_points(
+    export_dir: Path, zone_ids: set[str] | None = None
+) -> list[dict]:
+    """Load boss spawn points that must have visible terrain coverage.
+
+    A redacted zone has no terrain to check, because its artwork is blanked.
+    """
+    if zone_ids is None:
+        zone_ids = redacted_zone_ids()
     monsters_path = export_dir / "monsters.json"
     spawns_path = export_dir / "monster_spawns.json"
 
@@ -182,9 +179,7 @@ def load_boss_spawn_validation_points(export_dir: Path) -> list[dict]:
             continue
         if not (monster.get("is_boss") or monster.get("is_world_boss")):
             continue
-        if spawn.get("zone_id") in EXCLUDED_ZONE_IDS:
-            continue
-        if spawn.get("sub_zone_id") in EXCLUDED_ZONE_TRIGGER_IDS:
+        if spawn.get("zone_id") in zone_ids:
             continue
 
         position = spawn.get("position") or {}
