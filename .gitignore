@@ -63,8 +63,8 @@ server-scripts-*/
 # Steam download cache
 .steam-download/
 
-# OMP agent session state (local only)
-.omp/
+# OMP plugin installs (local only; commands, skills, and rules are tracked)
+.omp/plugins/
 
 # Nix / direnv
 .direnv/
