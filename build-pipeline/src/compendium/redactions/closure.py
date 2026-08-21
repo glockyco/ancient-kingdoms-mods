@@ -124,7 +124,10 @@ def build_graph(conn: sqlite3.Connection, references: list[Reference]) -> Graph:
         if not reaching:
             continue
         identified = node_tables.get(table, False)
-        selected = sorted({r.column for r in group})
+        selected = sorted(
+            {r.column for r in group}
+            | {r.condition[0] for r in group if r.condition is not None}
+        )
         key = "id" if identified else "rowid"
         rows = conn.execute(
             f"SELECT {key}, {', '.join(selected)} FROM {table}"
@@ -141,6 +144,8 @@ def build_graph(conn: sqlite3.Connection, references: list[Reference]) -> Graph:
             # so the path runs from the zone to the sub-zone to the row.
             for reference in group:
                 if not (reference.reaches and reference.to_zone):
+                    continue
+                if not _covers(reference, row, index):
                     continue
                 for value in _values(reference, row[index[reference.column]]):
                     place: str | None
@@ -163,7 +168,7 @@ def build_graph(conn: sqlite3.Connection, references: list[Reference]) -> Graph:
 
             # The row provides what it names.
             for reference in reaching:
-                if reference.to_zone:
+                if reference.to_zone or not _covers(reference, row, index):
                     continue
                 for value in _values(reference, row[index[reference.column]]):
                     child = (reference.target_table, str(value))
@@ -175,6 +180,15 @@ def build_graph(conn: sqlite3.Connection, references: list[Reference]) -> Graph:
                     ):
                         graph.add(parent, child)
     return graph
+
+
+def _covers(reference: Reference, row: tuple[Any, ...], index: dict[str, int]) -> bool:
+    """Whether this reference speaks for this row. A row that names another kind
+    belongs to the reference declared for that kind."""
+    if reference.condition is None:
+        return True
+    column, value = reference.condition
+    return row[index[column]] == value
 
 
 def _values(reference: Reference, raw: object) -> list[Any]:
@@ -220,6 +234,8 @@ def _sources(
     for reference in group:
         if reference is reaching or reference.reaches:
             continue
+        if not _covers(reference, row, index):
+            continue
         for value in _values(reference, row[index[reference.column]]):
             found.append((reference.target_table, str(value)))
     return found
@@ -232,6 +248,8 @@ def _targets(
     found: list[Node] = []
     for reference in group:
         if reference is zone_reference or reference.to_zone:
+            continue
+        if not _covers(reference, row, index):
             continue
         for value in _values(reference, row[index[reference.column]]):
             found.append((reference.target_table, str(value)))
@@ -347,6 +365,11 @@ def apply(
 
         placeholders = ",".join("?" * len(wanted))
         parameters = tuple(sorted(wanted))
+        # A reference that covers part of a table speaks only for its own rows.
+        covered = ""
+        if reference.condition is not None:
+            covered = f" AND {reference.condition[0]} = ?"
+            parameters += (reference.condition[1],)
         # A destination reference also governs the coordinates of the place it
         # points at. Clearing the identifier alone leaves the position of
         # removed content in the published data, and the map draws a line to it.
@@ -377,7 +400,8 @@ def apply(
             else f"DELETE FROM {reference.table}"
         )
         conn.execute(
-            f"{statement} WHERE {reference.column} IN ({placeholders})", parameters
+            f"{statement} WHERE {reference.column} IN ({placeholders}){covered}",
+            parameters,
         )
 
     # A removed row can reference another removed row. A sub-zone references its

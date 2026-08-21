@@ -32,12 +32,21 @@ UNDECLARED_ZONE_REFERENCES: tuple[tuple[str, str, str], ...] = (
     ("quests", "zone_id_quest_action", "zone_id"),
 )
 
-# A column whose target kind changes from row to row. No constraint can express
-# this. `summoned_entity_id` names monsters, and one value that is absent from
-# every table.
-POLYMORPHIC_REFERENCES: tuple[tuple[str, str, str], ...] = (
-    # table, column, target table
-    ("summon_triggers", "summoned_entity_id", "monsters"),
+# A column whose target kind changes from row to row, so no constraint can
+# express it. A second column on the row says which kind each value names, and
+# the schema comment on `summoned_entity_id` declares the pair. Read that column
+# rather than looking for the value, because an identifier can name a monster
+# and an NPC at once.
+POLYMORPHIC_REFERENCES: tuple[tuple[str, str, str, str, str], ...] = (
+    # table, column, target table, discriminator column, discriminator value
+    (
+        "summon_triggers",
+        "summoned_entity_id",
+        "monsters",
+        "summoned_entity_type",
+        "Monster",
+    ),
+    ("summon_triggers", "summoned_entity_id", "npcs", "summoned_entity_type", "Npc"),
 )
 
 # Columns holding a zone identifier inside a JSON value, with the key that holds
@@ -86,6 +95,9 @@ class ForeignKey:
     column: str
     target_table: str
     target_column: str
+    # The column and value that select the rows this reference covers, for a
+    # column whose target kind changes from row to row.
+    condition: tuple[str, str] | None = None
 
     @property
     def numeric(self) -> bool:
@@ -133,8 +145,8 @@ def foreign_keys(conn: sqlite3.Connection) -> list[ForeignKey]:
         for table, column, target in UNDECLARED_ZONE_REFERENCES
     ]
     found += [
-        ForeignKey(table, column, target, "id")
-        for table, column, target in POLYMORPHIC_REFERENCES
+        ForeignKey(table, column, target, "id", (type_column, type_value))
+        for table, column, target, type_column, type_value in POLYMORPHIC_REFERENCES
     ]
     return found
 

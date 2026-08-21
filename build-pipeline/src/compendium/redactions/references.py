@@ -207,6 +207,9 @@ class Reference:
     locus: Locus
     json_keys: tuple[str, ...] = ()
     geometry_prefixes: tuple[str, ...] = ()
+    # The column and value that select the rows this reference covers. A row
+    # that fails the test holds a value in another identifier space.
+    condition: tuple[str, str] | None = None
 
     @property
     def to_zone(self) -> bool:
@@ -285,6 +288,7 @@ def resolve(conn: sqlite3.Connection) -> list[Reference]:
                 target_column=key.target_column,
                 reaches=reaches,
                 locus="none",
+                condition=key.condition,
             )
         )
 

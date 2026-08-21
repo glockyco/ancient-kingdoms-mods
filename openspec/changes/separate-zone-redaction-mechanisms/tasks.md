@@ -66,7 +66,7 @@
 - [ ] 9.1a Run the check at the end of denormalization rather than straight after the cascade. No denormalizer reads the export, but they copy references between tables, and `item_sources_monster` is built from `monsters.drops` after the cascade has run.
 - [ ] 9.2 Extend the check across `search.db`, the published image set, and the prerendered output.
 - [ ] 9.3 Support recording an explicit, justified exemption, so an intentional match does not require weakening the check.
-- [ ] 9.3a Decide what to do about `summon_triggers.summoned_entity_id`, which names `astral_projection`, an entity present in no table. The reference dangles in data that ships today and is not produced by this change, so record it as an exemption with that reason or fix it upstream.
+- [x] 9.3a Declare `summon_triggers.summoned_entity_id` once per target kind, reading `summoned_entity_type` to select the rows each declaration covers. No exemption is needed: the value resolves, and it names an NPC rather than a monster.
 - [ ] 9.4 Prove the check fires: temporarily skip one cascade step, confirm the build fails and names the surviving reference, then restore it.
 
 ## 10. Redaction ledger and reporting
