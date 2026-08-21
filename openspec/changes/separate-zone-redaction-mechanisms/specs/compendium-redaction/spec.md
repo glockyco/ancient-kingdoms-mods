@@ -1,0 +1,231 @@
+## Purpose
+
+Governs how configured redactions keep private or unreleased game content out of the published compendium. It defines which references a redaction follows, how far removal cascades, which publish surfaces it covers, and how the build proves that nothing survived.
+
+## ADDED Requirements
+
+### Requirement: Two independent zone redaction mechanisms
+
+The pipeline SHALL provide two separately configured zone mechanisms, and a zone SHALL be subject only to the mechanisms that name it.
+
+- **Position suppression** applies to a released zone in which the game withholds positional information from the player. It preserves every entity and removes geometry, so the compendium discloses no more than the game does.
+- **Unreleased-zone exclusion** applies to a zone that has not shipped. It removes everything related to the zone.
+
+Each mechanism SHALL accept an arbitrary set of zone identifiers from configuration. Neither mechanism SHALL hardcode a zone identifier.
+
+#### Scenario: A released zone without a map
+
+- **WHEN** a zone is configured for position suppression only
+- **THEN** its monsters, items, quests, and other entities remain published
+- **AND** no position, boundary, or other geometry for that zone is published
+
+#### Scenario: An unreleased zone
+
+- **WHEN** a zone is configured for unreleased-zone exclusion
+- **THEN** the zone and everything related to it is absent from the published output
+
+#### Scenario: Mechanisms stay independent
+
+- **WHEN** one zone is configured for each mechanism
+- **THEN** the released zone keeps its entities
+- **AND** the unreleased zone's removal does not depend on the other zone's configuration
+
+#### Scenario: Adding a zone
+
+- **WHEN** a zone identifier is added to either mechanism's configuration
+- **THEN** that mechanism applies to it on the next build with no code change
+
+### Requirement: Zone references are discovered from the schema
+
+Both mechanisms SHALL determine the columns they act on by inspecting the database schema rather than from a maintained list of tables. Discovery SHALL cover direct zone references and sub-zone references, and SHALL resolve a sub-zone reference to its parent zone.
+
+Discovery SHALL also cover zone identifiers embedded in JSON values, in both the numeric and the string zone-identifier spaces.
+
+Rationale: a maintained table list silently omits entity types added later, and today already omits nine tables that carry a zone reference.
+
+#### Scenario: A new entity type is added
+
+- **WHEN** a table carrying a zone reference is added to the schema
+- **AND** a row in it references a redacted zone
+- **THEN** the applicable mechanism acts on that row without a change to the redaction code
+
+#### Scenario: Sub-zone reference
+
+- **WHEN** a row references a sub-zone belonging to a redacted zone
+- **THEN** the row is treated as referencing that zone
+
+#### Scenario: Zone identifier inside JSON
+
+- **WHEN** a JSON value holds a zone identifier for a redacted zone, in either identifier space
+- **THEN** the applicable mechanism acts on that value
+
+### Requirement: Position suppression removes geometry and keeps entities
+
+For a zone under position suppression, the published output SHALL contain no position, boundary, destination coordinate, or path geometry belonging to that zone, including geometry embedded in JSON values. Every entity of that zone SHALL remain published with its non-geometric data.
+
+#### Scenario: Entities survive
+
+- **WHEN** a zone is under position suppression
+- **THEN** its monsters, spawn records, and other entities remain published without coordinates
+
+#### Scenario: Geometry inside JSON
+
+- **WHEN** a JSON value holds a position for a location in a suppressed zone
+- **THEN** that position is not published
+
+### Requirement: Unreleased-zone exclusion removes related rows
+
+For a zone under unreleased-zone exclusion, the published output SHALL contain no row that references the zone, and no row for the zone itself.
+
+Prose that merely names a zone is not a reference. Content SHALL NOT be removed because its name, tooltip, description, or lore text mentions a redacted zone.
+
+#### Scenario: Row references the zone
+
+- **WHEN** a row references an excluded zone through a column or an embedded identifier
+- **THEN** the row is absent from the published output
+
+#### Scenario: Prose mention only
+
+- **WHEN** a quest, item, or monster names an excluded zone in text and holds no reference to it
+- **THEN** it remains published unchanged
+
+### Requirement: Dependent removal reaches a fixpoint
+
+Removal SHALL repeat until no further entity qualifies. An entity SHALL be removed when every source, spawn, or user that made it reachable has itself been removed.
+
+A single pass is not sufficient: removing spawns orphans monsters, removing monsters orphans items and skills, and removing those orphans further records.
+
+#### Scenario: Cascade beyond the first step
+
+- **WHEN** excluding a zone removes the only spawns of a monster
+- **AND** that monster was the only source of an item
+- **THEN** both the monster and the item are absent from the published output
+
+#### Scenario: A surviving source keeps an entity
+
+- **WHEN** an entity remains reachable from content outside the excluded zone
+- **THEN** it stays published
+- **AND** only the references to removed content are gone from it
+
+#### Scenario: Iteration terminates
+
+- **WHEN** the cascade runs
+- **THEN** it stops after a pass that removes nothing
+
+### Requirement: Reachability considers every reference kind
+
+Deciding whether an entity is still reachable SHALL consider every kind of reference the data supports, including references embedded in JSON values, and SHALL NOT rely on one relationship alone.
+
+Rationale: a skill can be reachable through a monster, a weapon proc, a scroll, a relic, a potion or food buff, a pet, or a class list. Judging skills by monster use alone would remove a skill that is a live weapon's proc.
+
+#### Scenario: Reachable through a non-obvious relationship
+
+- **WHEN** an entity's only remaining reference comes from a relationship other than the one that made it a candidate
+- **THEN** the entity stays published
+
+#### Scenario: No remaining reference of any kind
+
+- **WHEN** no reference of any kind to an entity remains
+- **AND** the entity became a candidate through excluded content
+- **THEN** the entity is removed
+
+### Requirement: Removal covers every publish surface
+
+Content removed by a redaction SHALL be absent from every published surface, not from the compendium database alone. This includes the search index, published image files, and prerendered pages including any data payload they embed.
+
+#### Scenario: Image files
+
+- **WHEN** an entity is removed
+- **THEN** no image file for it is published
+
+#### Scenario: Search index
+
+- **WHEN** an entity is removed
+- **THEN** no search entry names or returns it
+
+#### Scenario: Prerendered pages
+
+- **WHEN** a zone is excluded
+- **THEN** no page is published for it
+- **AND** no published page links to it or names it as a destination
+
+### Requirement: Boundary references are scrubbed rather than left dangling
+
+A published entity that references excluded content across the boundary SHALL remain published with that reference cleared. It SHALL NOT retain an identifier, a generated name, or coordinates that disclose the excluded content, and SHALL NOT hold a reference to a removed row.
+
+#### Scenario: Portal into an excluded zone
+
+- **WHEN** a portal in a published zone leads to an excluded zone
+- **THEN** the portal remains published with its requirements
+- **AND** its destination identity, destination name, and destination coordinates are absent
+
+#### Scenario: Generated text naming the destination
+
+- **WHEN** an entity's displayed name was generated from a removed destination
+- **THEN** the published name does not disclose the removed destination
+
+### Requirement: Manually excluded identifiers
+
+The configuration SHALL accept an explicit list of entity identifiers to exclude, and the build SHALL remove them together with their dependents.
+
+Rationale: unreleased content can exist with no reference edge at all. `old_valorath_token` has no source, no usage, and no zone reference, and is indistinguishable by reference from 81 other unconnected items, several of which are deliberately published. Such content can only be named.
+
+#### Scenario: Identifier listed explicitly
+
+- **WHEN** an entity identifier is listed for manual exclusion
+- **THEN** the entity is absent from every publish surface
+
+#### Scenario: Unconnected content is not removed automatically
+
+- **WHEN** an entity has no source and no usage
+- **AND** it is not named for manual exclusion and holds no reference to redacted content
+- **THEN** it remains published
+
+### Requirement: Redaction decisions are recorded and reviewable
+
+The build SHALL record every redaction decision in a version-controlled ledger. Each removed entity's record SHALL state the mechanism that removed it, the reason, and the already-removed entities the decision followed.
+
+A verification step SHALL compare the recorded decisions against those the current data produces and SHALL fail when they differ. Updating the ledger SHALL be a deliberate step, never a side effect of building.
+
+Rationale: the invariant check proves nothing excluded survived. The ledger proves nothing was excluded by accident. A change in what is redacted then arrives as a reviewable diff rather than as content silently disappearing.
+
+#### Scenario: An entity is removed
+
+- **WHEN** redaction removes an entity
+- **THEN** the ledger records its mechanism, its reason, and the removals it followed
+
+#### Scenario: The excluded set changes
+
+- **WHEN** a data or configuration change alters which entities are removed
+- **AND** the ledger still records the previous set
+- **THEN** the verification fails and reports what appeared and what disappeared
+
+#### Scenario: Explaining one entity
+
+- **WHEN** somebody asks why a specific entity is absent from the published output
+- **THEN** the recorded chain answers it without reading the pipeline source
+
+#### Scenario: Unchanged build
+
+- **WHEN** the data and configuration are unchanged
+- **THEN** rebuilding produces an identical ledger
+
+### Requirement: The build fails when a redacted reference survives
+
+After redaction and the cascade complete, the build SHALL verify that no published content references redacted content, and SHALL fail when it finds one. The verification SHALL cover values of any shape, including text and JSON, so that an undeclared reference form is still caught.
+
+#### Scenario: Surviving reference
+
+- **WHEN** a published value still holds an excluded zone or removed entity identifier
+- **THEN** the build fails and reports where the reference was found
+
+#### Scenario: Clean build
+
+- **WHEN** no reference to redacted content remains
+- **THEN** the verification passes and the build continues
+
+#### Scenario: A new reference shape appears
+
+- **WHEN** a schema change introduces a reference form the discovery step does not know
+- **AND** a published value holds a redacted identifier in that form
+- **THEN** the build fails rather than publishing it
