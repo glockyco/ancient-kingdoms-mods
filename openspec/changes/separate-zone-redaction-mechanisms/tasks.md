@@ -50,15 +50,15 @@
 
 ## 7. Boundary scrubbing
 
-- [ ] 7.1 Clear destination identity, destination sub-zone, destination name, and destination coordinates on portals leading into an excluded zone, keeping the row and its requirements.
-- [ ] 7.2 Rebuild every string derived from a removed destination so none discloses it. The `portals` table stores no name, so this covers `portals.keywords`, which ends with the destination name, and the map payload fields `name` and `destinationSubZoneName`, which currently read `"Portal to Old Valorath"` and `"Upper Old Valorath"`.
+- [x] 7.1 Clear destination identity, destination sub-zone, destination name, and destination coordinates on portals leading into an excluded zone, keeping the row and its requirements.
+- [x] 7.2 Rebuild every string derived from a removed destination so none discloses it. The `portals` table stores no name, so this covers `portals.keywords`, which ends with the destination name, and the map payload fields `name` and `destinationSubZoneName`, which currently read `"Portal to Old Valorath"` and `"Upper Old Valorath"`.
 - [ ] 7.3 Rebuild the portal's own key so it does not name the destination, turning `iportal_northern_wastes_to_old_valorath_1646438` into `iportal_northern_wastes_1646438`, and update `item_usages_portal.portal_id` with it.
-- [ ] 7.4 Confirm the inbound Northern Wastes portal is still published with its level, item level, and key requirements, and names no destination.
+- [x] 7.4 Confirm the inbound Northern Wastes portal is still published with its level, item level, and key requirements, and names no destination.
 
 ## 8. Publish surfaces
 
-- [ ] 8.1 Exclude removed entities from the search index build so `search.db` gains no entry for them, and confirm no entry remains for the zone, the portal destination, the removed items, or the removed skills.
-- [ ] 8.2 Stop publishing image files for removed entities, and remove stale directories from `website/static/images/` on rebuild so a previously published icon does not survive. The manifest that drives publishing is the `visual_assets` table, which holds a row per image with the entity id and its public path, so removing an entity SHALL remove its rows there.
+- [x] 8.1 Exclude removed entities from the search index build so `search.db` gains no entry for them, and confirm no entry remains for the zone, the portal destination, the removed items, or the removed skills.
+- [x] 8.2 Stop publishing image files for removed entities, and remove stale directories from `website/static/images/` on rebuild so a previously published icon does not survive. The manifest that drives publishing is the `visual_assets` table, which holds a row per image with the entity id and its public path, so removing an entity SHALL remove its rows there.
 - [ ] 8.3 Confirm no page is prerendered for an excluded zone, that no connected-zone link points at one, and that the map payload contains no excluded zone identifier or name.
 
 ## 9. Invariant check

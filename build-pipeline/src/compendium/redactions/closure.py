@@ -32,6 +32,7 @@ from compendium.redaction import RedactionConfig
 from compendium.redactions.discovery import (
     ZONE_TABLE,
     decode,
+    geometry_columns,
     has_identifier,
     is_required,
     json_identifiers,
@@ -346,6 +347,24 @@ def apply(
 
         placeholders = ",".join("?" * len(wanted))
         parameters = tuple(sorted(wanted))
+        # A destination reference also governs the coordinates of the place it
+        # points at. Clearing the identifier alone leaves the position of
+        # removed content in the published data, and the map draws a line to it.
+        if reference.locus == "destination" and reference.geometry_prefixes:
+            governed = [
+                column
+                for column in geometry_columns(conn, reference.table)
+                if column.startswith(reference.geometry_prefixes)
+            ]
+            if governed:
+                assignments = ", ".join(f"{column} = NULL" for column in governed)
+                conn.execute(
+                    f"UPDATE {reference.table} SET {assignments} "
+                    f"WHERE {reference.column} IN "
+                    f"({','.join('?' * len(wanted))})",
+                    tuple(sorted(wanted)),
+                )
+
         # A row with its own identifier keeps the row and loses the reference.
         # Delete the row in two other conditions. A junction row is the
         # reference. A required column cannot hold NULL.
@@ -364,16 +383,16 @@ def apply(
     # A removed row can reference another removed row. A sub-zone references its
     # zone. Defer the constraints so the order of these deletions does not
     # matter.
+    # The rows in visual_assets stay. `visual_assets.reconcile` finds an asset
+    # whose entity is absent, deletes the row, and deletes the published file.
+    # Deleting the row here would hide the asset from that step and leave the
+    # file in website/static/images.
     cursor = conn.cursor()
     cursor.execute("PRAGMA defer_foreign_keys = ON")
     for table, identifiers in sorted(by_table.items()):
         placeholders = ",".join("?" * len(identifiers))
         parameters = tuple(sorted(identifiers))
         cursor.execute(f"DELETE FROM {table} WHERE id IN ({placeholders})", parameters)
-        cursor.execute(
-            f"DELETE FROM visual_assets WHERE entity_id IN ({placeholders})",
-            parameters,
-        )
 
     conn.commit()
 
