@@ -6,6 +6,8 @@ from pathlib import Path
 
 from rich.console import Console
 
+from compendium.redactions.verify import Allowance
+
 console = Console()
 
 
@@ -24,6 +26,11 @@ class RedactionConfig:
 
     ``exclude_entity_ids`` names unreleased content that holds no reference edge
     at all, which no rule over the data can select.
+
+    ``allowances`` records a match that the verification must not report, with
+    the reason for it. Each entry names one table, one column, and one
+    identifier, so an allowance covers the case somebody justified and nothing
+    else.
     """
 
     hide_crafting_item_ids: set[str] = field(default_factory=set)
@@ -31,6 +38,7 @@ class RedactionConfig:
     suppress_position_zone_ids: set[str] = field(default_factory=set)
     exclude_zone_ids: set[str] = field(default_factory=set)
     exclude_entity_ids: set[str] = field(default_factory=set)
+    allowances: list[Allowance] = field(default_factory=list)
 
 
 def load_redactions(config_path: Path | None = None) -> RedactionConfig:
@@ -61,6 +69,15 @@ def load_redactions(config_path: Path | None = None) -> RedactionConfig:
         exclude_entity_ids=set(
             data.get("entities", {}).get("exclude", {}).get("ids", [])
         ),
+        allowances=[
+            Allowance(
+                table=entry["table"],
+                column=entry["column"],
+                identifier=entry["identifier"],
+                reason=entry["reason"],
+            )
+            for entry in data.get("verify", {}).get("allow", [])
+        ],
     )
 
     if config.hide_crafting_item_ids:
@@ -85,5 +102,7 @@ def load_redactions(config_path: Path | None = None) -> RedactionConfig:
             f"  Excluding {len(config.exclude_entity_ids)} named entities: "
             + ", ".join(sorted(config.exclude_entity_ids))
         )
+    if config.allowances:
+        console.print(f"  Allowing {len(config.allowances)} verified matches")
 
     return config

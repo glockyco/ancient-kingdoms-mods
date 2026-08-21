@@ -27,7 +27,7 @@ from compendium.denormalizers import (
 )
 from compendium.denormalizers.items import crafting_source_level, source_entries
 from compendium.redaction import RedactionConfig, load_redactions
-from compendium.redactions import closure
+from compendium.redactions import closure, verify
 
 console = Console()
 
@@ -95,11 +95,14 @@ def _apply_crafting_exclusions(
     conn.commit()
 
 
-def run_all(conn: sqlite3.Connection) -> None:
+def run_all(conn: sqlite3.Connection) -> verify.Subject:
     """Run all denormalizations in dependency order.
 
     Args:
         conn: Database connection with all base data loaded
+
+    Returns:
+        What the verification must not find in the published database.
     """
     # Load redaction config
     redactions = load_redactions()
@@ -123,20 +126,19 @@ def run_all(conn: sqlite3.Connection) -> None:
     # spawns exist for level range calculation and item zone association)
     monsters.run_spawns(conn)
 
-    # Unreleased-zone exclusion and its cascade run here for two reasons. The
-    # spawn set must be complete, because a monster is reachable where it spawns
-    # and inference adds altar and placeholder spawns above. Item sources are not
-    # denormalized yet, so nothing has copied a reference to content this removes
-    # into another table. Moving this earlier judges reachability on a partial
-    # spawn set, and moving it later leaves copies behind.
-
     # Unreleased-zone exclusion runs here for two reasons. The spawn set must be
     # complete, because a monster is reachable where it spawns and inference adds
     # the altar and placeholder spawns above. Item sources are not denormalized
     # yet, so nothing has copied a reference to removed content into another
     # table. Running it earlier judges reachability on a partial spawn set, and
     # running it later leaves those copies behind.
-    closure.run(conn, redactions)
+    # Read the numeric key of every zone before the closure deletes rows. A
+    # removed zone cannot be looked up afterwards, and the verification needs
+    # the number to check the columns written in the numeric zone space.
+    zone_numbers = {
+        row[0]: row[1] for row in conn.execute("SELECT id, zone_id FROM zones")
+    }
+    removals = closure.run(conn, redactions)
 
     # Monster level ranges (from spawns, needed before item sources)
     monsters.run_levels(conn)
@@ -173,3 +175,13 @@ def run_all(conn: sqlite3.Connection) -> None:
 
     # Search keywords for FTS5 indexing
     search.run_all(conn)
+
+    return verify.Subject(
+        identifiers={removal.entity_id for removal in removals},
+        zone_numbers={
+            zone_numbers[removal.entity_id]
+            for removal in removals
+            if removal.table == "zones" and removal.entity_id in zone_numbers
+        },
+        allowances=redactions.allowances,
+    )

@@ -62,12 +62,14 @@
 
 ## 9. Invariant check
 
-- [ ] 9.1 Implement a check that scans published values of any shape for identifiers of excluded zones and removed entities, and fails the build reporting table, column, and row. Match identifiers with `instr` rather than `LIKE`, because `_` is a single-character wildcard and `LIKE '%divine_essence%'` matches the prose "divine essence" in `gathering_resources.description`. Match on a whole identifier, because `key_to_old_valorath` and `shadows_over_old_valorath` both contain `old_valorath` and both survive.
-- [ ] 9.1a Run the check at the end of denormalization rather than straight after the cascade. No denormalizer reads the export, but they copy references between tables, and `item_sources_monster` is built from `monsters.drops` after the cascade has run.
-- [ ] 9.2 Extend the check across `search.db`, the published image set, and the prerendered output.
-- [ ] 9.3 Support recording an explicit, justified exemption, so an intentional match does not require weakening the check.
+- [x] 9.1 Implement a check that scans published values of any shape for identifiers of excluded zones and removed entities, and fails the build reporting table, column, and row. Match identifiers with `instr` rather than `LIKE`, because `_` is a single-character wildcard and `LIKE '%divine_essence%'` matches the prose "divine essence" in `gathering_resources.description`. Match on a whole identifier, because `key_to_old_valorath` and `shadows_over_old_valorath` both contain `old_valorath` and both survive.
+- [x] 9.1a Run the check at the end of denormalization rather than straight after the cascade. No denormalizer reads the export, but they copy references between tables, and `item_sources_monster` is built from `monsters.drops` after the cascade has run.
+- [x] 9.2a Extend the check across the published image set, scanning `website/static/images` after `reconcile` deletes the files it removes.
+- [ ] 9.2b Extend the check across `search.db` and the prerendered output. Both are built after `compendium build` exits, so the check needs the removed identifiers from the ledger in group 10.
+- [x] 9.3 Support recording an explicit, justified exemption, so an intentional match does not require weakening the check.
 - [x] 9.3a Declare `summon_triggers.summoned_entity_id` once per target kind, reading `summoned_entity_type` to select the rows each declaration covers. No exemption is needed: the value resolves, and it names an NPC rather than a monster.
-- [ ] 9.4 Prove the check fires: temporarily skip one cascade step, confirm the build fails and names the surviving reference, then restore it.
+- [x] 9.4a Record that the JSON scrub is correct but unexercised: no surviving row in today's export names a removed entity inside a JSON value. Reachability cannot produce that case, because a dropped item is reachable. Only a manual exclusion or `ignore_journal` can, and `tests/test_embedded_scrub.py` covers it.
+- [x] 9.4 Prove the check fires: temporarily skip one cascade step, confirm the build fails and names the surviving reference, then restore it.
 
 ## 10. Redaction ledger and reporting
 
@@ -91,7 +93,7 @@
 - [ ] 12.2 Add a test that proves removal follows references beyond one step, and one that proves content reachable from nothing is untouched.
 - [ ] 12.3 Add a reachability test per reference kind, including the case that a skill used only as a weapon proc survives when no monster uses it, and the case that a monster with no spawn record survives on its summoner.
 - [ ] 12.4 Add a test that prose naming an excluded zone does not cause removal.
-- [ ] 12.5 Add a test that the invariant check fails on a planted surviving reference.
+- [x] 12.5 Add a test that the invariant check fails on a planted surviving reference.
 
 ## 13. Close out
 

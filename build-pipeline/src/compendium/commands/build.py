@@ -45,6 +45,8 @@ from compendium.loaders import (
     load_zone_triggers,
     load_zones,
 )
+from compendium.redactions import verify
+from compendium.redactions.references import resolve
 from compendium.visual_assets import reconcile
 from compendium.zone_artwork import publish_zone_thumbnails
 
@@ -119,9 +121,14 @@ def run(config: dict) -> None:
 
         # Denormalize data (must be done after all data is loaded)
         console.print()
-        denormalize_all(conn)
+        subject = denormalize_all(conn)
         publish_zone_thumbnails(conn, export_dir, static_dir)
         reconcile(conn, static_dir)
+
+        # The verification runs after every step that removes published content.
+        # `reconcile` is one of them: the rows in `visual_assets` for a removed
+        # entity stay until it deletes the row and the image file together.
+        verify.check(conn, subject, resolve(conn), static_dir / "images")
 
         # Optimize FTS5 indexes (merges segments, reduces size)
         console.print("\nOptimizing database...")
