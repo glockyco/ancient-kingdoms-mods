@@ -1,4 +1,3 @@
-import { EXCLUDED_ZONE_IDS } from "$lib/constants/constants";
 import {
   NPC_ROLE_BITS,
   type MapEntityData,
@@ -149,21 +148,21 @@ export function createFilteredData(data: MapEntityData): FilteredMapData {
     teleportersWithDestinations: renderableNpcs.filter(
       (npc) => npc.hasTeleport && npc.teleportDestination !== null,
     ),
-    subZones: data.subZones
-      .filter((zone) => !EXCLUDED_ZONE_IDS[zone.zoneId])
-      .sort((a, b) => {
-        const area = (polygon: [number, number][]) => {
-          let value = 0;
-          for (let index = 0; index < polygon.length; index += 1) {
-            const next = (index + 1) % polygon.length;
-            value +=
-              polygon[index][0] * polygon[next][1] -
-              polygon[next][0] * polygon[index][1];
-          }
-          return Math.abs(value / 2);
-        };
-        return area(b.polygon) - area(a.polygon);
-      }),
+    // Sub-zones arrive already filtered: the query drops any without bounds,
+    // which is how a zone under position suppression disappears from the map.
+    subZones: data.subZones.slice().sort((a, b) => {
+      const area = (polygon: [number, number][]) => {
+        let value = 0;
+        for (let index = 0; index < polygon.length; index += 1) {
+          const next = (index + 1) % polygon.length;
+          value +=
+            polygon[index][0] * polygon[next][1] -
+            polygon[next][0] * polygon[index][1];
+        }
+        return Math.abs(value / 2);
+      };
+      return area(b.polygon) - area(a.polygon);
+    }),
     parentZones: data.parentZones,
   };
 }

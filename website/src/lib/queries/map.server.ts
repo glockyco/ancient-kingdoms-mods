@@ -5,10 +5,7 @@
 import Database from "better-sqlite3";
 import { resolve } from "path";
 import { DB_SOURCE_PATH } from "$lib/constants/constants";
-import {
-  EXCLUDED_ZONE_IDS,
-  WORLD_BOSS_DUNGEON_ID,
-} from "$lib/constants/constants";
+import { WORLD_BOSS_DUNGEON_ID } from "$lib/constants/constants";
 import type {
   MapEntityData,
   MonsterMapEntity,
@@ -95,18 +92,19 @@ export function loadZoneListServer(): ZoneListItem[] {
   const db = new Database(resolve(DB_SOURCE_PATH), { readonly: true });
 
   try {
-    const excludedZoneIds = Object.keys(EXCLUDED_ZONE_IDS);
-    const exclusionList =
-      excludedZoneIds.length > 0
-        ? excludedZoneIds.map((id) => `'${id}'`).join(", ")
-        : null;
-
+    // A zone the map cannot focus on does not belong in the focus dropdown.
+    // The build removes an unreleased zone entirely, and it removes the
+    // geometry of a zone whose positions the game withholds, so the data says
+    // which zones those are.
     const rows = db
       .prepare(
         `
       SELECT id, name
       FROM zones
-      ${exclusionList ? `WHERE id NOT IN (${exclusionList})` : ""}
+      WHERE bounds_min_x IS NOT NULL
+        AND bounds_min_y IS NOT NULL
+        AND bounds_max_x IS NOT NULL
+        AND bounds_max_y IS NOT NULL
       ORDER BY name
     `,
       )

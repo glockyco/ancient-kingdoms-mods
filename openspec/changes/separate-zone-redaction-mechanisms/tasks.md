@@ -85,8 +85,8 @@
 
 ## 11. Website cleanup
 
-- [ ] 11.1 Remove `EXCLUDED_ZONE_IDS` from `website/src/lib/constants/constants.ts` and its uses in `map.server.ts` and `layers.ts`, after confirming excluded content is absent from the data.
-- [ ] 11.2 Confirm in a browser that the map renders Temple of Valaark as before, that Northern Wastes shows the gated portal with no destination, and that searching the map for "Valorath" returns only content that legitimately survives.
+- [x] 11.1 Remove `EXCLUDED_ZONE_IDS` from `website/src/lib/constants/constants.ts` and its uses in `map.server.ts` and `layers.ts`, after confirming excluded content is absent from the data. The zone focus query now asks for a zone the map can focus on, which is one holding bounds, because an unreleased zone has no row and a suppressed zone has no geometry. The sub-zone filter is deleted outright: `loadZoneTriggersServer` already drops a trigger without bounds.
+- [x] 11.2 Confirm in a browser that the map renders Temple of Valaark as before, that Northern Wastes shows the gated portal with no destination, and that searching the map for "Valorath" returns only content that legitimately survives. Verified: the map renders with no page error and no console error, 24 of 25 zones are focusable with Temple of Valaark absent as before, its 345 monster spawns stay published with no coordinates, 114 portals draw a destination line and the gated one is among the 4 that do not, and the search returns only `key_to_old_valorath`, `the_fall_of_valorath`, and `shadows_over_old_valorath`.
 
 ## 12. Consolidate every mechanism into the model
 
