@@ -13,9 +13,9 @@
 
 ## 3. Encode settings
 
-- [ ] 3.1 Lower the lossless sprite encode to method 4, leaving the lossy path at 6.
-- [ ] 3.2 Record the measured encode time and the total published size against the task 1.1 and 1.2 baseline.
-- [ ] 3.3 Add a test that encoding one source twice produces the same bytes, so a toolchain change that breaks determinism fails rather than passes quietly.
+- [x] 3.1 Lower the lossless sprite encode to method 4, leaving the lossy path at 6.
+- [x] 3.2 Record the measured encode time and the total published size against the task 1.1 and 1.2 baseline. Measured: build 146.2s to 27.7s, encoding 126.4s to 6.9s, published set 4,969,726 to 5,027,472 bytes, which is +1.16 percent over the same 3195 files.
+- [x] 3.3 Add a test that encoding one source twice produces the same bytes, so a toolchain change that breaks determinism fails rather than passes quietly.
 
 ## 4. Recording separated from publishing
 

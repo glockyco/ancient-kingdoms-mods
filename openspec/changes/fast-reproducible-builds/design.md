@@ -28,7 +28,7 @@ Three facts shape the approach.
 
 ### The lossless sprite encode uses method 4
 
-Measured over 400 random icons: method 6 takes 16.91 seconds, method 4 takes 0.64 seconds, and 109 of the 400 outputs differ by a total of 7.5 KB. That is 27 times faster for about 62 KiB more across the 4.74 MiB published set, which is 1.3 percent. Note that `du -sh` reports 15M for that directory, which is block padding across 3195 small files rather than content.
+Measured over 400 random icons: method 6 takes 16.91 seconds, method 4 takes 0.64 seconds, and 109 of the 400 outputs differ by a total of 7.5 KB. Confirmed against a full build: the published set grew by 57,746 bytes, which is 1.16 percent of 4.74 MiB, and the encoding step fell from 126.4 seconds to 6.9. Note that `du -sh` reports 15M for that directory, which is block padding across 3195 small files rather than content.
 
 The lossy path stays at method 6. It covers about 70 images at roughly 1 ms each, so the setting costs nothing there.
 

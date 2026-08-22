@@ -60,8 +60,17 @@ SEGMENT_PATTERN = re.compile(r"^[A-Za-z0-9._-]+$")
 
 PUBLISHED_SUFFIX = ".webp"
 
-# WebP effort. Encoding runs once per build and the bytes ship to every visitor.
-ENCODE_METHOD = 6
+# WebP effort, per encoding. Higher settings search harder for a smaller file.
+#
+# Lossless sprites use 4. Measured over 400 random icons, setting 6 took 16.91
+# seconds against 0.64 for setting 4, and produced 7.5 KiB less across the
+# sample. Extrapolated over the whole set that is 27 times the encoding time of
+# a build for 1.3 percent of 4.74 MiB.
+#
+# Photographs use 6. About 70 images take that path at roughly 1 ms each, so the
+# effort costs nothing there.
+SPRITE_ENCODE_METHOD = 4
+PHOTO_ENCODE_METHOD = 6
 
 # Quality for photographic sources. Measured at -59% against the JPEG originals with
 # no visible change at the sizes the site renders them.
@@ -138,11 +147,17 @@ def publish_image(
         alpha_bbox = rgba.getchannel("A").getbbox()
         published = rgba if alpha_bbox is None else rgba.crop(alpha_bbox)
         published.save(
-            destination, "WEBP", lossless=True, quality=100, method=ENCODE_METHOD
+            destination,
+            "WEBP",
+            lossless=True,
+            quality=100,
+            method=SPRITE_ENCODE_METHOD,
         )
     else:
         published = image
-        published.save(destination, "WEBP", quality=PHOTO_QUALITY, method=ENCODE_METHOD)
+        published.save(
+            destination, "WEBP", quality=PHOTO_QUALITY, method=PHOTO_ENCODE_METHOD
+        )
 
     return PublishedAsset(
         public_path=public_path, width=published.width, height=published.height
