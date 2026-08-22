@@ -127,6 +127,60 @@ def derive_public_path(domain: str, entity_id: str, kind: str) -> str:
     return f"images/{directory}/{entity_id}/{kind}{PUBLISHED_SUFFIX}"
 
 
+def _published_form(image: Image.Image, encoding: Encoding) -> Image.Image:
+    """The image as it will be published.
+
+    A sprite loses its fully transparent padding, so its published size differs
+    from its source size. Anything that reports the size of a published asset
+    must read it from here.
+    """
+    image.load()
+    if encoding is not Encoding.SPRITE:
+        return image
+
+    rgba = image if image.mode == "RGBA" else image.convert("RGBA")
+    alpha_bbox = rgba.getchannel("A").getbbox()
+    return rgba if alpha_bbox is None else rgba.crop(alpha_bbox)
+
+
+def _encode(published: Image.Image, destination: Path, encoding: Encoding) -> None:
+    """Write one published image as WebP."""
+    if encoding is Encoding.SPRITE:
+        published.save(
+            destination,
+            "WEBP",
+            lossless=True,
+            quality=100,
+            method=SPRITE_ENCODE_METHOD,
+        )
+    else:
+        published.save(
+            destination, "WEBP", quality=PHOTO_QUALITY, method=PHOTO_ENCODE_METHOD
+        )
+
+
+def measure(
+    source_path: Path,
+    *,
+    domain: str,
+    entity_id: str,
+    kind: str,
+    encoding: Encoding,
+) -> PublishedAsset:
+    """The record a source produces, without writing its file.
+
+    A caller that needs the manifest rather than the artwork pays for a decode
+    and not for an encode, and it publishes nothing.
+    """
+    with Image.open(source_path) as image:
+        published = _published_form(image, encoding)
+        return PublishedAsset(
+            public_path=derive_public_path(domain, entity_id, kind),
+            width=published.width,
+            height=published.height,
+        )
+
+
 def publish_image(
     image: Image.Image,
     static_dir: Path,
@@ -141,23 +195,8 @@ def publish_image(
     destination = static_dir / public_path
     destination.parent.mkdir(parents=True, exist_ok=True)
 
-    image.load()
-    if encoding is Encoding.SPRITE:
-        rgba = image if image.mode == "RGBA" else image.convert("RGBA")
-        alpha_bbox = rgba.getchannel("A").getbbox()
-        published = rgba if alpha_bbox is None else rgba.crop(alpha_bbox)
-        published.save(
-            destination,
-            "WEBP",
-            lossless=True,
-            quality=100,
-            method=SPRITE_ENCODE_METHOD,
-        )
-    else:
-        published = image
-        published.save(
-            destination, "WEBP", quality=PHOTO_QUALITY, method=PHOTO_ENCODE_METHOD
-        )
+    published = _published_form(image, encoding)
+    _encode(published, destination, encoding)
 
     return PublishedAsset(
         public_path=public_path, width=published.width, height=published.height

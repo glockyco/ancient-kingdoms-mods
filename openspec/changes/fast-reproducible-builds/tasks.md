@@ -19,10 +19,10 @@
 
 ## 4. Recording separated from publishing
 
-- [ ] 4.1 Split the visual asset loader so that recording the manifest rows and publishing the encoded files are separate steps, without a flag that switches off most of one function.
-- [ ] 4.2 Point the redaction recomputation at the recording step, and delete the scratch static directory that compensates for the fused one.
-- [ ] 4.3 Prove the recomputation publishes nothing: count the files in `website/static/images` before and after `redactions check`, and confirm the directories for removed entities stay absent.
-- [ ] 4.4 Prove the build still publishes every recorded asset, by confirming `visual_assets.reconcile` reports no orphan and the file count matches the row count.
+- [x] 4.1 Split the visual asset loader so that recording the manifest rows and publishing the encoded files are separate steps, without a flag that switches off most of one function.
+- [x] 4.2 Point the redaction recomputation at the recording step, and delete the scratch static directory that compensates for the fused one.
+- [x] 4.3 Prove the recomputation publishes nothing: count the files in `website/static/images` before and after `redactions check`, and confirm the directories for removed entities stay absent. Measured: 3195 files before and after, and the four directories for removed entities stay absent. The check fell from 131.6s to 2.06s.
+- [x] 4.4 Prove the build still publishes every recorded asset, by confirming `visual_assets.reconcile` reports no orphan and the file count matches the row count. Measured: 3195 rows and 3195 files, with no row lacking a file and no file lacking a row. Reconcile removed the 16 assets of excluded entities as before.
 
 ## 5. Invariant scan
 

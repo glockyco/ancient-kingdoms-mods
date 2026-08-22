@@ -33,6 +33,8 @@ from compendium.loaders.core import (
     load_visual_assets,
     load_zone_triggers,
     load_zones,
+    record_achievements,
+    record_visual_assets,
 )
 
 __all__ = [
@@ -68,4 +70,6 @@ __all__ = [
     "load_visual_assets",
     "load_zone_triggers",
     "load_zones",
+    "record_achievements",
+    "record_visual_assets",
 ]

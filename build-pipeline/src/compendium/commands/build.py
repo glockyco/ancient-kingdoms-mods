@@ -47,6 +47,8 @@ from compendium.loaders import (
     load_visual_assets,
     load_zone_triggers,
     load_zones,
+    record_achievements,
+    record_visual_assets,
 )
 from compendium.redactions import verify
 from compendium.redactions.references import resolve
@@ -56,17 +58,27 @@ from compendium.zone_artwork import publish_zone_thumbnails
 console = Console()
 
 
-def load_all(conn: sqlite3.Connection, export_dir: Path, static_dir: Path) -> None:
+def load_all(
+    conn: sqlite3.Connection, export_dir: Path, static_dir: Path | None = None
+) -> None:
     """Load every export into the database, in foreign key order.
 
     `redactions check` recomputes the removal decisions, so it needs the same
     starting state as a build.
+
+    Args:
+        static_dir: Where to publish image files. Without one, the two loaders
+            that hold artwork record their manifest rows and write no file.
     """
     load_static_data(conn, export_dir)  # Factions, reputation tiers (before NPCs)
     load_classes(conn, export_dir)  # Player classes (early, no dependencies)
     load_zones(conn, export_dir)
-    load_visual_assets(conn, export_dir, static_dir)  # Runtime images for website
-    load_achievements(conn, export_dir, static_dir)
+    if static_dir is None:
+        record_visual_assets(conn, export_dir)
+        record_achievements(conn, export_dir)
+    else:
+        load_visual_assets(conn, export_dir, static_dir)  # Runtime images for website
+        load_achievements(conn, export_dir, static_dir)
     load_professions(conn, export_dir)
     load_skills(conn, export_dir)
     load_zone_triggers(

@@ -32,13 +32,10 @@ def _recompute(repo_root: Path, config: dict) -> Ledger:
 
     with tempfile.TemporaryDirectory() as directory:
         conn = create_database(Path(directory) / "recompute.db", schema_path)
-        # `load_visual_assets` and `load_achievements` copy image files into the
-        # static directory they receive. This recomputation must publish
-        # nothing, so it receives a directory that goes away with the database.
-        scratch_static = Path(directory) / "static"
-        scratch_static.mkdir()
         try:
-            load_all(conn, export_dir, scratch_static)
+            # Without a static directory the loaders record their manifest rows
+            # and write no file, so this reads the export without publishing.
+            load_all(conn, export_dir)
             redactions, suppressed = run_before_closure(conn)
             removals, _ = closure.decide(conn, redactions)
         finally:

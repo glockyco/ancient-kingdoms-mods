@@ -7,6 +7,7 @@ and inserts the records into the database.
 import json
 import shutil
 import sqlite3
+from collections.abc import Callable
 from pathlib import Path
 
 from rich.console import Console
@@ -47,7 +48,13 @@ from compendium.models import (
 console = Console()
 
 
-from compendium.visual_assets import Encoding, insert_asset, publish
+from compendium.visual_assets import (
+    Encoding,
+    PublishedAsset,
+    insert_asset,
+    measure,
+    publish,
+)
 
 
 def _resolve_export_asset_path(export_dir: Path, export_path: str) -> Path:
@@ -58,21 +65,20 @@ def _resolve_export_asset_path(export_dir: Path, export_path: str) -> Path:
     return export_dir / relative_path
 
 
-def load_visual_assets(
-    conn: sqlite3.Connection, export_dir: Path, static_dir: Path
-) -> None:
-    """Load runtime visual asset manifest rows and copy public images."""
-    console.print("Loading visual assets...")
+def _record_visual_assets(
+    conn: sqlite3.Connection,
+    export_dir: Path,
+    produce: Callable[[Path, VisualAssetData], PublishedAsset],
+) -> int:
+    """Insert one manifest row per asset, using `produce` for the published form.
 
-    images_dir = static_dir / "images"
-    if images_dir.exists():
-        shutil.rmtree(images_dir)
-
+    Returns the number of rows inserted.
+    """
     filepath = export_dir / "visual_assets.json"
     if not filepath.exists():
         console.print("  [yellow]SKIP[/yellow] No visual_assets.json found")
         conn.commit()
-        return
+        return 0
 
     with open(filepath, "r", encoding="utf-8") as f:
         data = json.load(f)
@@ -87,21 +93,13 @@ def load_visual_assets(
                 f"Visual asset file listed in manifest does not exist: {source_path}"
             )
 
-        published = publish(
-            source_path,
-            static_dir,
-            domain=asset.domain,
-            entity_id=asset.entity_id,
-            kind=asset.kind,
-            encoding=Encoding.SPRITE,
-        )
         insert_asset(
             cursor,
             domain=asset.domain,
             entity_id=asset.entity_id,
             kind=asset.kind,
             export_path=asset.export_path,
-            asset=published,
+            asset=produce(source_path, asset),
             source_field=asset.source_field,
             source_type=asset.source_type,
             source_name=asset.source_name,
@@ -110,7 +108,54 @@ def load_visual_assets(
         )
 
     conn.commit()
-    console.print(f"  [green]OK[/green] Loaded {len(assets)} visual assets")
+    return len(assets)
+
+
+def record_visual_assets(conn: sqlite3.Connection, export_dir: Path) -> None:
+    """Record the visual asset manifest without publishing any image file.
+
+    A caller that reads the manifest rather than the artwork uses this. It takes
+    no static directory, so it cannot write into the published image set.
+    """
+    console.print("Recording visual assets...")
+
+    count = _record_visual_assets(
+        conn,
+        export_dir,
+        lambda source_path, asset: measure(
+            source_path,
+            domain=asset.domain,
+            entity_id=asset.entity_id,
+            kind=asset.kind,
+            encoding=Encoding.SPRITE,
+        ),
+    )
+    console.print(f"  [green]OK[/green] Recorded {count} visual assets")
+
+
+def load_visual_assets(
+    conn: sqlite3.Connection, export_dir: Path, static_dir: Path
+) -> None:
+    """Load runtime visual asset manifest rows and publish public images."""
+    console.print("Loading visual assets...")
+
+    images_dir = static_dir / "images"
+    if images_dir.exists():
+        shutil.rmtree(images_dir)
+
+    count = _record_visual_assets(
+        conn,
+        export_dir,
+        lambda source_path, asset: publish(
+            source_path,
+            static_dir,
+            domain=asset.domain,
+            entity_id=asset.entity_id,
+            kind=asset.kind,
+            encoding=Encoding.SPRITE,
+        ),
+    )
+    console.print(f"  [green]OK[/green] Loaded {count} visual assets")
 
 
 def load_static_data(conn: sqlite3.Connection, export_dir: Path) -> None:
@@ -237,11 +282,15 @@ def load_zones(conn: sqlite3.Connection, export_dir: Path) -> None:
     console.print(f"  [green]OK[/green] Loaded {len(zones)} zones")
 
 
-def load_achievements(
-    conn: sqlite3.Connection, export_dir: Path, static_dir: Path
-) -> None:
-    """Load Steam achievements and copy their icon files."""
-    console.print("Loading achievements...")
+def _load_achievements(
+    conn: sqlite3.Connection,
+    export_dir: Path,
+    produce: Callable[[Path, str], PublishedAsset],
+) -> int:
+    """Insert the achievements and their icon rows, using `produce` for the icon.
+
+    Returns the number of achievements inserted.
+    """
 
     filepath = export_dir / "achievements.json"
     if not filepath.exists():
@@ -284,21 +333,13 @@ def load_achievements(
                 f"'{source.suffix.lower()}'"
             )
 
-        published = publish(
-            source,
-            static_dir,
-            domain="achievement",
-            entity_id=achievement.id,
-            kind="icon",
-            encoding=Encoding.PHOTO,
-        )
         insert_asset(
             cursor,
             domain="achievement",
             entity_id=achievement.id,
             kind="icon",
             export_path=achievement.unlocked_icon_path,
-            asset=published,
+            asset=produce(source, achievement.id),
             source_field="unlocked_icon_path",
             source_type="SteamAchievementIcon",
             source_name=achievement.id,
@@ -306,7 +347,46 @@ def load_achievements(
         insert_model(cursor, "achievements", achievement)
 
     conn.commit()
-    console.print(f"  [green]OK[/green] Loaded {len(achievements)} achievements")
+    return len(achievements)
+
+
+def record_achievements(conn: sqlite3.Connection, export_dir: Path) -> None:
+    """Record the achievements without publishing any icon file."""
+    console.print("Recording achievements...")
+
+    count = _load_achievements(
+        conn,
+        export_dir,
+        lambda source, entity_id: measure(
+            source,
+            domain="achievement",
+            entity_id=entity_id,
+            kind="icon",
+            encoding=Encoding.PHOTO,
+        ),
+    )
+    console.print(f"  [green]OK[/green] Recorded {count} achievements")
+
+
+def load_achievements(
+    conn: sqlite3.Connection, export_dir: Path, static_dir: Path
+) -> None:
+    """Load Steam achievements and publish their icon files."""
+    console.print("Loading achievements...")
+
+    count = _load_achievements(
+        conn,
+        export_dir,
+        lambda source, entity_id: publish(
+            source,
+            static_dir,
+            domain="achievement",
+            entity_id=entity_id,
+            kind="icon",
+            encoding=Encoding.PHOTO,
+        ),
+    )
+    console.print(f"  [green]OK[/green] Loaded {count} achievements")
 
 
 def load_professions(conn: sqlite3.Connection, export_dir: Path) -> None:
