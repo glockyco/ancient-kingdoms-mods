@@ -1,4 +1,14 @@
 {
+  "hidden_crafting": {
+    "divine_essence": 1,
+    "draconium_crownhelm": 1,
+    "draconium_scalegrasp": 1,
+    "draconium_scaleplate": 1,
+    "draconium_wyrmguard": 1,
+    "draconium_wyrmtreads": 1,
+    "steel_of_ancient_dragons": 1,
+    "valaark_ancient_coin": 1
+  },
   "removed": {
     "items:divine_essence": {
       "mechanism": "ignore_journal",
@@ -11,6 +21,14 @@
       "via": [
         "monsters:drassar_warlock",
         "monsters:drassar_warrior"
+      ]
+    },
+    "items:key_to_the_north_wing": {
+      "mechanism": "cascade",
+      "pass": 2,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "quests:relics_of_the_ancient_faith"
       ]
     },
     "items:old_valorath_token": {
@@ -432,6 +450,14 @@
         "monster_spawns:plague_rat_old_valorath_1792012"
       ]
     },
+    "quests:relics_of_the_ancient_faith": {
+      "mechanism": "manual",
+      "reason": "named in the manual exclusion list"
+    },
+    "quests:the_lost_warden": {
+      "mechanism": "manual",
+      "reason": "named in the manual exclusion list"
+    },
     "skills:chaotic_bolt": {
       "mechanism": "cascade",
       "pass": 3,
@@ -505,6 +531,6 @@
     "game_version": "0.9.29.0"
   },
   "suppressed_positions": {
-    "temple_of_valaark": 885
+    "temple_of_valaark": 887
   }
 }

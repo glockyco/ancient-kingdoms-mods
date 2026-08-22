@@ -16,8 +16,8 @@ from rich.table import Table
 from compendium.config import get_repo_root
 from compendium.db import create_database
 from compendium.denormalizers import run_before_closure
-from compendium.redaction import load_redactions
 from compendium.redactions import closure, verify
+from compendium.redactions.config import load_redactions
 from compendium.redactions.ledger import LEDGER_NAME, Entry, Ledger, compare
 
 console = Console()
@@ -36,7 +36,7 @@ def _recompute(repo_root: Path, config: dict) -> Ledger:
             # Without a static directory the loaders record their manifest rows
             # and write no file, so this reads the export without publishing.
             load_all(conn, export_dir)
-            redactions, suppressed = run_before_closure(conn)
+            redactions, suppressed, hidden_crafting = run_before_closure(conn)
             removals, _ = closure.decide(conn, redactions)
         finally:
             conn.close()
@@ -53,6 +53,7 @@ def _recompute(repo_root: Path, config: dict) -> Ledger:
             for removal in removals
         },
         suppressed_zones=suppressed,
+        hidden_crafting=hidden_crafting,
     )
 
 
@@ -75,6 +76,8 @@ def _summarise(ledger: Ledger) -> None:
 
     for zone, cleared in sorted(ledger.suppressed_zones.items()):
         console.print(f"  positions suppressed in {zone}: {cleared} values")
+    for item, removed in sorted(ledger.hidden_crafting.items()):
+        console.print(f"  crafting hidden for {item}: {removed} recipes")
 
 
 def _check(repo_root: Path, config: dict) -> int:

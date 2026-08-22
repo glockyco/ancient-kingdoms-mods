@@ -4,8 +4,8 @@ import unittest
 from pathlib import Path
 
 from compendium.db import create_database
-from compendium.redaction import RedactionConfig
 from compendium.redactions import closure
+from compendium.redactions.config import RedactionConfig
 
 SCHEMA_PATH = Path(__file__).resolve().parents[1] / "schema.sql"
 

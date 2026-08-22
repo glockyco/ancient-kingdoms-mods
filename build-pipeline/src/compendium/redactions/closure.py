@@ -28,7 +28,7 @@ from typing import Any
 
 from rich.console import Console
 
-from compendium.redaction import RedactionConfig
+from compendium.redactions.config import RedactionConfig
 from compendium.redactions.discovery import (
     ZONE_TABLE,
     decode,

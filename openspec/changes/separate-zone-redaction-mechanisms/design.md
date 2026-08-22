@@ -147,7 +147,11 @@ Redaction does two different things, and naming them separates the mechanisms th
 
 Both families report what they removed to the ledger, and both feed the verification. That is the property that was missing: two mechanisms deleted published rows through paths of their own, so the ledger recorded none of it.
 
-Naming follows the families rather than the history. `denormalizers/exclusions.py` implements suppression while exclusion lives in `redactions/closure.py`, so the module carries the name of the mechanism it does not implement. It moves into the redaction package as `geometry.py`, hidden crafting joins it as `sources.py`, and `compendium/redaction.py` becomes `redactions/config.py` rather than sitting one letter away from the package it configures.
+Naming follows the families rather than the history. `denormalizers/exclusions.py` implements suppression while exclusion lives in `redactions/closure.py`, so the module carries the name of the mechanism it does not implement. It moves into the redaction package as `geometry.py`, hidden crafting joins it as `crafting.py`, and `compendium/redaction.py` becomes `redactions/config.py` rather than sitting one letter away from the package it configures.
+
+`crafting.py` takes the name of its configuration key. `sources.py` was the first choice and two modules under `denormalizers` already carry it, and `recipes.py` collides with `denormalizers/recipes.py` inside the same import list.
+
+Moving the configuration module exposed a path built by counting parent directories. One level deeper it resolved to `build-pipeline` rather than the repository root, and the loader answered with an empty configuration and a dim note. That publishes every unreleased zone and every withheld position while reporting success, so the loader now asks for the repository root and raises when the file is absent.
 
 Alternatives considered:
 

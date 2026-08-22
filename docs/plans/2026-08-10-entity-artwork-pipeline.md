@@ -85,11 +85,16 @@ published icons but no `items` row. An earlier draft of this document called the
 and proposed failing the build. That was wrong, and the correct explanation matters more
 than the symptom.
 
+> **Resolved by `separate-zone-redaction-mechanisms`.** Redaction now reaches artwork.
+> `visual_assets.reconcile` runs after the removal and deletes the row and the published
+> file together, and `compendium redactions verify` scans the image tree for the
+> identifier of anything removed. The rest of this section records the original analysis.
+
 All three are real game items. They carry `ignore_journal: true` in
 `exported-data/items.json` (`:123647-123656`, `:126297-126306`, `:126456-126465`), and
-`redactions.toml:3-4` sets `exclude_ignore_journal = true` because, in that file's own
-words, they are "internal/meta items that shouldn't appear in the compendium". The
-deletion happens in `denormalizers/__init__.py:97-155`.
+the build removed them because they are, in the configuration's own words, internal items
+that should not appear in the compendium. The switch that once allowed this to be turned
+off is gone: the game marks them, so the pipeline always removes them.
 
 The leak is one of ordering. `commands/build.py:72-80` publishes visual assets, `:81`
 loads items, and `:108-109` runs the denormalizers that delete them. Artwork is published

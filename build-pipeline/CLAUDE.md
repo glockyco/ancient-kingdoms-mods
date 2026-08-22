@@ -80,10 +80,38 @@ Builds reverse relationships and derived fields. Organized by **target entity** 
 
 ## Redaction System
 
-Optional `redactions.toml` at repo root excludes sensitive data:
-- `items.hide_crafting.ids` - Hide crafting recipes for specific items
-- `quests.exclude.ids` - Exclude specific quests
-- `items.exclude_ignore_journal` - Exclude items with ignore_journal=true
+`redactions.toml` at the repo root is required. The build fails without it,
+because an empty configuration publishes everything redaction removes.
+
+Two families of mechanism live in `src/compendium/redactions/`.
+
+**Attribute redaction** keeps the entity and removes part of its data:
+- `zones.suppress_positions.zone_ids` - clear the geometry of a released zone
+  whose positions the game withholds from the player (`geometry.py`)
+- `items.hide_crafting.ids` - remove the recipes producing an item, and publish
+  the item (`crafting.py`)
+
+**Entity redaction** removes the entity and everything left with no other
+source, by following declared references to a fixpoint (`closure.py`):
+- `zones.exclude_unreleased.zone_ids` - a zone that has not shipped
+- `entities.exclude.ids` - content that no rule over the references can select
+- items carrying `ignore_journal`, which the game marks internal
+
+Supporting modules: `config.py` reads the file, `discovery.py` reads the
+reference graph from the schema, `references.py` declares what each reference
+means, `ledger.py` records every decision, `verify.py` fails the build when a
+published value still names removed content.
+
+`redactions.lock.json` records each removal with its mechanism, reason, pass
+number, and the entities it followed, plus the per-zone and per-item counts of
+the attribute mechanisms.
+
+```bash
+uv run compendium redactions check              # decisions match the ledger
+uv run compendium redactions sync               # rewrite the ledger, deliberately
+uv run compendium redactions explain <entity>   # why something is absent
+uv run compendium redactions verify             # scan the published surfaces
+```
 
 ## Adding New Data Types
 

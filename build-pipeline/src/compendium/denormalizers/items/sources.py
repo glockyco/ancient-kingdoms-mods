@@ -24,7 +24,7 @@ from compendium.types.denormalized import (
 )
 
 if TYPE_CHECKING:
-    from compendium.redaction import RedactionConfig
+    from compendium.redactions.config import RedactionConfig
 
 console = Console()
 

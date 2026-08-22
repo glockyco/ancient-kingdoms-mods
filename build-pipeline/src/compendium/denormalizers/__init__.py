@@ -7,14 +7,12 @@ entity (the table being updated).
 Execution order matters - some denormalizers depend on others having run first.
 """
 
-import json
 import sqlite3
 
 from rich.console import Console
 
 from compendium.denormalizers import (
     altars,
-    exclusions,
     experience,
     items,
     monsters,
@@ -26,78 +24,15 @@ from compendium.denormalizers import (
     zones,
 )
 from compendium.denormalizers.items import crafting_source_level, source_entries
-from compendium.redaction import RedactionConfig, load_redactions
-from compendium.redactions import closure, verify
+from compendium.redactions import closure, crafting, geometry, verify
+from compendium.redactions.config import RedactionConfig, load_redactions
 
 console = Console()
 
 
-def _apply_quest_exclusions(
-    conn: sqlite3.Connection, redactions: RedactionConfig
-) -> None:
-    """Delete excluded quests and remove references to them."""
-    cursor = conn.cursor()
-
-    for quest_id in redactions.exclude_quest_ids:
-        cursor.execute("DELETE FROM quests WHERE id = ?", (quest_id,))
-        if cursor.rowcount > 0:
-            console.print(f"  [dim]Excluded quest: {quest_id}[/dim]")
-
-    # Filter predecessor_ids on remaining quests to remove references to deleted quests
-    cursor.execute(
-        "SELECT id, predecessor_ids FROM quests WHERE predecessor_ids IS NOT NULL"
-    )
-    quests_with_predecessors = cursor.fetchall()
-
-    for quest_id, pred_ids_json in quests_with_predecessors:
-        if not pred_ids_json:
-            continue
-
-        pred_ids = json.loads(pred_ids_json)
-        filtered_ids = [
-            q_id for q_id in pred_ids if q_id not in redactions.exclude_quest_ids
-        ]
-
-        if filtered_ids != pred_ids:
-            if filtered_ids:
-                cursor.execute(
-                    "UPDATE quests SET predecessor_ids = ? WHERE id = ?",
-                    (json.dumps(filtered_ids), quest_id),
-                )
-            else:
-                cursor.execute(
-                    "UPDATE quests SET predecessor_ids = NULL WHERE id = ?",
-                    (quest_id,),
-                )
-
-    conn.commit()
-
-
-def _apply_crafting_exclusions(
-    conn: sqlite3.Connection, redactions: RedactionConfig
-) -> None:
-    """Delete crafting/alchemy recipes for items with hidden crafting."""
-    cursor = conn.cursor()
-
-    for item_id in redactions.hide_crafting_item_ids:
-        cursor.execute(
-            "DELETE FROM crafting_recipes WHERE result_item_id = ?", (item_id,)
-        )
-        if cursor.rowcount > 0:
-            console.print(f"  [dim]Excluded crafting recipe for: {item_id}[/dim]")
-
-        cursor.execute(
-            "DELETE FROM alchemy_recipes WHERE result_item_id = ?", (item_id,)
-        )
-        if cursor.rowcount > 0:
-            console.print(f"  [dim]Excluded alchemy recipe for: {item_id}[/dim]")
-
-    conn.commit()
-
-
 def run_before_closure(
     conn: sqlite3.Connection,
-) -> tuple[RedactionConfig, dict[str, int]]:
+) -> tuple[RedactionConfig, dict[str, int], dict[str, int]]:
     """Run every step the unreleased-zone closure depends on.
 
     `redactions check` recomputes the removal decisions without writing a
@@ -107,19 +42,16 @@ def run_before_closure(
         conn: Database connection with all base data loaded
 
     Returns:
-        The redaction configuration, and the count of geometry values cleared
-        for each zone under position suppression.
+        The redaction configuration, the count of geometry values cleared for
+        each zone under position suppression, and the count of recipes removed
+        for each item with hidden crafting.
     """
     redactions = load_redactions()
 
-    # Apply exclusions before any denormalizer reads the data
-    if redactions.exclude_quest_ids:
-        _apply_quest_exclusions(conn, redactions)
-    if redactions.hide_crafting_item_ids:
-        _apply_crafting_exclusions(conn, redactions)
-
-    # Remove geometry for zones in which the game withholds it from the player
-    suppressed = exclusions.run(conn, redactions)
+    # Attribute redaction runs before any denormalizer reads the data. Each
+    # pass keeps its entities and removes part of what is published about them.
+    hidden_recipes = crafting.run(conn, redactions)
+    suppressed = geometry.run(conn, redactions)
 
     # Enrich altar waves with monster boss/elite info (before altar data is read)
     altars.run_waves(conn)
@@ -131,7 +63,7 @@ def run_before_closure(
     # spawns exist for level range calculation and item zone association)
     monsters.run_spawns(conn)
 
-    return redactions, suppressed
+    return redactions, suppressed, hidden_recipes
 
 
 def run_all(conn: sqlite3.Connection) -> verify.Subject:
@@ -143,7 +75,9 @@ def run_all(conn: sqlite3.Connection) -> verify.Subject:
     Returns:
         What the verification must not find in the published database.
     """
-    redactions, _ = run_before_closure(conn)
+    # The build needs the configuration. The two attribute counts belong to the
+    # ledger, which `redactions sync` writes from its own recomputation.
+    redactions, _, _ = run_before_closure(conn)
 
     # Unreleased-zone exclusion runs here for two reasons. The spawn set must be
     # complete, because a monster is reachable where it spawns and inference adds

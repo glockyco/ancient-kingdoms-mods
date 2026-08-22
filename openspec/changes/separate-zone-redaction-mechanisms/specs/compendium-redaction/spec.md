@@ -251,6 +251,18 @@ Rationale: two configured mechanisms deleted rows outside the closure. Two quest
 - **WHEN** two configuration keys would remove an entity by naming it
 - **THEN** the specification keeps one of them
 
+#### Scenario: The configuration is absent
+
+- **WHEN** the redaction configuration cannot be read
+- **THEN** the build fails
+- **AND** it publishes nothing
+
+#### Scenario: A mechanism removes no entity
+
+- **WHEN** a mechanism keeps its entities and removes part of their data
+- **THEN** it reports what it cleared to the ledger
+- **AND** it adds no identifier to the verification, because it removed none
+
 ### Requirement: Redaction decisions are recorded and reviewable
 
 The build SHALL record every redaction decision in a version-controlled ledger. Each removed entity's record SHALL state the mechanism that removed it, the reason, and the already-removed entities the decision followed.

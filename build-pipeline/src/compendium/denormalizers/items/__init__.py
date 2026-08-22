@@ -16,7 +16,7 @@ from compendium.denormalizers.items import (
 )
 
 if TYPE_CHECKING:
-    from compendium.redaction import RedactionConfig
+    from compendium.redactions.config import RedactionConfig
 
 
 def run_all(

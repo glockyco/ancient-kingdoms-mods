@@ -56,6 +56,7 @@ class Ledger:
     game_version: str | None = None
     removed: dict[str, Entry] = field(default_factory=dict)
     suppressed_zones: dict[str, int] = field(default_factory=dict)
+    hidden_crafting: dict[str, int] = field(default_factory=dict)
 
     def to_dict(self) -> dict:
         return {
@@ -66,6 +67,10 @@ class Ledger:
             "suppressed_positions": {
                 zone: self.suppressed_zones[zone]
                 for zone in sorted(self.suppressed_zones)
+            },
+            "hidden_crafting": {
+                item: self.hidden_crafting[item]
+                for item in sorted(self.hidden_crafting)
             },
         }
 
@@ -81,6 +86,7 @@ class Ledger:
                 for key, record in data.get("removed", {}).items()
             },
             suppressed_zones=dict(data.get("suppressed_positions", {})),
+            hidden_crafting=dict(data.get("hidden_crafting", {})),
         )
 
     def write(self, path: Path) -> None:
@@ -142,5 +148,11 @@ def compare(recorded: Ledger, current: Ledger) -> list[Difference]:
         differences.append(
             Difference(zone, "disappeared", "positions no longer suppressed")
         )
+
+    for item in sorted(set(current.hidden_crafting) - set(recorded.hidden_crafting)):
+        differences.append(Difference(item, "appeared", "crafting hidden"))
+
+    for item in sorted(set(recorded.hidden_crafting) - set(current.hidden_crafting)):
+        differences.append(Difference(item, "disappeared", "crafting no longer hidden"))
 
     return differences

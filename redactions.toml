@@ -34,20 +34,21 @@ zone_ids = ["temple_of_valaark"]
 [zones.exclude_unreleased]
 zone_ids = ["old_valorath"]
 
-# Entities of unreleased content that hold no reference to a redacted zone and
-# no source or usage of any kind. Nothing in the data distinguishes them from
-# unconnected content that is deliberately published, so they can only be named.
+# Entities named for removal. Each one is removed together with everything left
+# with no other source, and each removal is recorded in redactions.lock.json.
+#
+# Name an entity here when nothing in the data distinguishes it from content
+# that is deliberately published, so no rule over the references can select it.
 #
 # old_valorath_token: no source, no usage, no zone reference. It is one of 82
 # items with neither source nor usage, several of which are published on
 # purpose, so no derivable rule can select it.
+#
+# relics_of_the_ancient_faith and the_lost_warden: quests that must not appear
+# in any listing or relationship.
 [entities.exclude]
-ids = ["old_valorath_token"]
-
-# Quests to completely exclude from the database.
-# These quests won't appear in any listings or relationships.
-[quests.exclude]
 ids = [
+    "old_valorath_token",
     "relics_of_the_ancient_faith",
     "the_lost_warden",
 ]

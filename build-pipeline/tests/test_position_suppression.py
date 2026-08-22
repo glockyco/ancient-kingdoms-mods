@@ -4,8 +4,8 @@ import unittest
 from pathlib import Path
 
 from compendium.db import create_database
-from compendium.denormalizers import exclusions
-from compendium.redaction import RedactionConfig
+from compendium.redactions import geometry
+from compendium.redactions.config import RedactionConfig
 
 SCHEMA_PATH = Path(__file__).resolve().parents[1] / "schema.sql"
 
@@ -57,7 +57,7 @@ class PositionSuppressionTests(unittest.TestCase):
         self.tmp.cleanup()
 
     def test_entities_of_a_suppressed_zone_survive_without_coordinates(self):
-        exclusions.run(self.conn, self.config)
+        geometry.run(self.conn, self.config)
 
         row = self.conn.execute(
             "SELECT monster_id, position_x, position_y FROM monster_spawns WHERE id = 's1'"
@@ -68,7 +68,7 @@ class PositionSuppressionTests(unittest.TestCase):
         )
 
     def test_a_published_zone_keeps_its_coordinates(self):
-        exclusions.run(self.conn, self.config)
+        geometry.run(self.conn, self.config)
 
         self.assertEqual(
             self.conn.execute(
@@ -85,7 +85,7 @@ class PositionSuppressionTests(unittest.TestCase):
         )
         self.conn.commit()
 
-        exclusions.run(self.conn, self.config)
+        geometry.run(self.conn, self.config)
 
         row = self.conn.execute(
             "SELECT position_x, position_y, destination_x, destination_y "
@@ -101,7 +101,7 @@ class PositionSuppressionTests(unittest.TestCase):
         )
         self.conn.commit()
 
-        exclusions.run(self.conn, self.config)
+        geometry.run(self.conn, self.config)
 
         row = self.conn.execute(
             "SELECT position_x, position_y, destination_x, destination_y "
@@ -131,7 +131,7 @@ class PositionSuppressionTests(unittest.TestCase):
         )
         self.conn.commit()
 
-        exclusions.run(self.conn, self.config)
+        geometry.run(self.conn, self.config)
 
         stored = json.loads(
             self.conn.execute(
@@ -155,7 +155,7 @@ class PositionSuppressionTests(unittest.TestCase):
         )
         self.conn.commit()
 
-        exclusions.run(self.conn, self.config)
+        geometry.run(self.conn, self.config)
 
         stored = json.loads(
             self.conn.execute(
@@ -166,7 +166,7 @@ class PositionSuppressionTests(unittest.TestCase):
         self.assertEqual(stored[1]["position"], {"x": 3.0, "y": 4.0, "z": 0.0})
 
     def test_no_configured_zone_changes_nothing(self):
-        exclusions.run(self.conn, RedactionConfig())
+        geometry.run(self.conn, RedactionConfig())
 
         self.assertEqual(
             self.conn.execute(

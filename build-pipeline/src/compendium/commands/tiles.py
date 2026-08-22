@@ -25,7 +25,7 @@ from PIL import Image, ImageDraw
 from rich.console import Console
 from rich.progress import Progress
 
-from compendium.redaction import load_redactions
+from compendium.redactions.config import load_redactions
 
 console = Console()
 
