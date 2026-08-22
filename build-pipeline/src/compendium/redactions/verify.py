@@ -16,6 +16,7 @@ The second rule matches identifiers and not names. Prose that names a redacted
 zone remains published, so a display name is not a match.
 """
 
+import re
 import sqlite3
 from dataclasses import dataclass
 from pathlib import Path
@@ -25,10 +26,6 @@ from rich.console import Console
 from .references import Reference
 
 console = Console()
-
-IDENTIFIER_CHARACTERS = set(
-    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_"
-)
 
 
 @dataclass(frozen=True)
@@ -81,22 +78,25 @@ class SurvivingReference(Exception):
     """Published content still names removed content."""
 
 
-def _holds_identifier(haystack: str, needle: str) -> bool:
-    """Whether the text contains the identifier and not a longer one.
+def _matcher(identifiers: set[str]) -> re.Pattern[str]:
+    """One pattern that finds any of the identifiers, whole.
 
-    A neighbouring identifier character means the match is part of a different
-    name. This rule prevents a report of `old_valorath` inside
-    `key_to_old_valorath`.
+    A value is read once rather than once per identifier. The surrounding
+    lookarounds carry the whole-identifier rule, so `key_to_old_valorath` does
+    not report `old_valorath`.
+
+    The longest identifier is tried first, so a value holding
+    `old_valorath_token` reports that name rather than the shorter one it
+    contains.
     """
-    start = haystack.find(needle)
-    while start != -1:
-        before = haystack[start - 1] if start > 0 else ""
-        after_index = start + len(needle)
-        after = haystack[after_index] if after_index < len(haystack) else ""
-        if before not in IDENTIFIER_CHARACTERS and after not in IDENTIFIER_CHARACTERS:
-            return True
-        start = haystack.find(needle, start + 1)
-    return False
+    ordered = sorted(identifiers, key=lambda name: (-len(name), name))
+    alternatives = "|".join(re.escape(name) for name in ordered)
+    return re.compile(rf"(?<![A-Za-z0-9_])(?:{alternatives})(?![A-Za-z0-9_])")
+
+
+def _found_in(matcher: re.Pattern[str], text: str) -> list[str]:
+    """The identifiers this text names, each reported once."""
+    return sorted(set(matcher.findall(text)))
 
 
 def _text_columns(conn: sqlite3.Connection, table: str) -> list[str]:
@@ -129,7 +129,7 @@ def scan(conn: sqlite3.Connection, identifiers: set[str]) -> list[Finding]:
     if not identifiers:
         return []
 
-    wanted = sorted(identifiers)
+    matcher = _matcher(identifiers)
     findings: list[Finding] = []
 
     for table in _tables(conn):
@@ -145,9 +145,8 @@ def scan(conn: sqlite3.Connection, identifiers: set[str]) -> list[Finding]:
                     value = value.decode("utf-8", errors="ignore")
                 if not isinstance(value, str) or not value:
                     continue
-                for identifier in wanted:
-                    if _holds_identifier(value, identifier):
-                        findings.append(Finding(table, column, str(row[0]), identifier))
+                for identifier in _found_in(matcher, value):
+                    findings.append(Finding(table, column, str(row[0]), identifier))
     return findings
 
 
@@ -195,15 +194,14 @@ def path_findings(
     if not identifiers or not root.exists():
         return []
 
-    wanted = sorted(identifiers)
+    matcher = _matcher(identifiers)
     findings: list[Finding] = []
     for path in sorted(root.rglob("*")):
         if path.is_dir():
             continue
         relative = path.relative_to(root).as_posix()
-        for identifier in wanted:
-            if _holds_identifier(relative, identifier):
-                findings.append(Finding(surface, "", relative, identifier))
+        for identifier in _found_in(matcher, relative):
+            findings.append(Finding(surface, "", relative, identifier))
     return findings
 
 
@@ -221,16 +219,15 @@ def content_findings(
     if not identifiers or not root.exists():
         return []
 
-    wanted = sorted(identifiers)
+    matcher = _matcher(identifiers)
     findings: list[Finding] = []
     for path in sorted(root.rglob("*")):
         if path.suffix not in suffixes or not path.is_file():
             continue
         text = path.read_text(encoding="utf-8", errors="ignore")
         relative = path.relative_to(root).as_posix()
-        for identifier in wanted:
-            if _holds_identifier(text, identifier):
-                findings.append(Finding(surface, "", relative, identifier))
+        for identifier in _found_in(matcher, text):
+            findings.append(Finding(surface, "", relative, identifier))
     return findings
 
 

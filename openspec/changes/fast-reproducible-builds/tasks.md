@@ -26,8 +26,8 @@
 
 ## 5. Invariant scan
 
-- [ ] 5.1 Match every identifier in one pass per value rather than one pass per identifier, keeping the whole-identifier rule that lets `key_to_old_valorath` pass.
-- [ ] 5.2 Confirm the existing scan tests still pass unchanged, including the underscore wildcard case and the allowance cases.
+- [x] 5.1 Match every identifier in one pass per value rather than one pass per identifier, keeping the whole-identifier rule that lets `key_to_old_valorath` pass. Measured: the scan over the published database fell from 2.3s to 0.28s. The rule now has one implementation, shared by the database scan, the file path scan, and the prerendered content scan.
+- [x] 5.2 Confirm the existing scan tests still pass unchanged, including the underscore wildcard case and the allowance cases. Measured: 23 tests pass with no edit to any test file.
 
 ## 6. Close out
 
