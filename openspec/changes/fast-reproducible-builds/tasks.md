@@ -31,8 +31,8 @@
 
 ## 6. Close out
 
-- [ ] 6.1 Run `cd build-pipeline && uv run pytest`, `uv run mypy .`, and `uv run ruff check`.
-- [ ] 6.2 Rebuild end to end and record the new build time against the task 1.1 baseline, explaining any step that did not move as expected.
-- [ ] 6.3 Run `compendium redactions check` and record its time. Confirm it is fast enough to keep in the pre-commit hook.
-- [ ] 6.4 Rebuild a second time and confirm the published values are identical to the first, which is the reproducibility requirement measured rather than asserted.
-- [ ] 6.5 Decide the open question on a fixture hash test, and either add it or record why not.
+- [x] 6.1 Run `cd build-pipeline && uv run pytest`, `uv run mypy .`, and `uv run ruff check`. Measured: 149 tests and 13 subtests pass, mypy clean over 96 files, ruff clean and formatted.
+- [x] 6.2 Rebuild end to end and record the new build time against the task 1.1 baseline, explaining any step that did not move as expected. Measured: 13.79s and 14.14s against 135s before the change, which is 9.7 times. The baseline of 146.2s recorded in task 1.1 was taken under cProfile, so the fair comparison uses the six unprofiled runs of 133.8 to 137.7 seconds observed before the change.
+- [x] 6.3 Run `compendium redactions check` and record its time. Confirm it is fast enough to keep in the pre-commit hook. Measured: 2.06s directly and 2.35s through `pnpm check:redactions`, against 131.6s before. Its sibling `citations check` takes 0.52s, so it stays in pre-commit.
+- [x] 6.4 Rebuild a second time and confirm the published values are identical to the first, which is the reproducibility requirement measured rather than asserted. Measured: two consecutive builds give the same sha256 for `compendium.db` and the same combined sha256 over all 3195 published images.
+- [x] 6.5 Decide the open question on a fixture hash test, and either add it or record why not. Added, for a fixture drawn in code rather than an exported image. A synthetic source never changes, so a failure means the encoder changed and not the game data. Lowering the sprite effort to 0 makes it fail, which is how I checked that it catches drift.

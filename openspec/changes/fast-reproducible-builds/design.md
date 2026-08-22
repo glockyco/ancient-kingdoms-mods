@@ -77,4 +77,6 @@ No data migration. The build rewrites the published image set on the next run. R
 
 ## Open Questions
 
-- Should a fixture test record image hashes to catch a Pillow or libwebp upgrade changing the output? It costs a few small images and one test. The protection matters most for the lossy path, where a silent settings change would degrade quality invisibly. This does not affect the specs, the approach, or the task breakdown.
+Resolved during implementation.
+
+- **Should a fixture test record image hashes?** Yes, against a fixture drawn in code rather than an exported image. A synthetic source never changes, so a failure means the encoder changed rather than the game data, which is a signal with no false positives from a new export. The recorded hashes name the versions they belong to, and the test states what to do when they move.
