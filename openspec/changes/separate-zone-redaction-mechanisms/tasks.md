@@ -110,7 +110,7 @@
 
 ## 14. Close out
 
-- [ ] 14.1 Run `cd build-pipeline && uv run pytest`, `uv run mypy .`, and `uv run ruff check`.
-- [ ] 14.2 Rebuild end to end with `uv run compendium build` and the website build, and compare against the task 1.1 baseline, explaining every count that moved.
-- [ ] 14.3 Run `pnpm check:redactions` and confirm the committed ledger matches the rebuild.
-- [ ] 14.4 Update `build-pipeline/CLAUDE.md`, whose Redaction System section lists only the three old keys and does not mention the ledger.
+- [x] 14.1 Run `cd build-pipeline && uv run pytest`, `uv run mypy .`, and `uv run ruff check`. Measured: 169 tests and 13 subtests pass, mypy clean over 99 files, ruff clean and formatted.
+- [x] 14.2 Rebuild end to end with `uv run compendium build` and the website build, and compare against the task 1.1 baseline, explaining every count that moved. Seven tables moved and 51 did not. `zones` -1 and `zone_triggers` -1 are the zone and its sub-zone. `skills` -7 are the skills whose only users were the four removed monsters. `items` -3 are `drassari_lance`, `old_valorath_token`, and `key_to_the_north_wing`. `item_usages_portal` -1 and `item_zones_usable` -1 both belong to that key, which opens one portal. `visual_assets` -10 because 3211 are recorded each build and reconcile removed 7 before and 17 now. Search entities 3859 to 3847. `monsters` and `monster_spawns` did not move, because the mechanism this change replaces had already removed the same 4 monsters and 39 spawns.
+- [x] 14.3 Run `pnpm check:redactions` and confirm the committed ledger matches the rebuild. Measured: 60 recorded removals match, in 2.75s. `redactions verify` reports no published surface naming any of them.
+- [x] 14.4 Update `build-pipeline/CLAUDE.md`, whose Redaction System section lists only the three old keys and does not mention the ledger. Rewritten under task 12.8 to name the two families, the five keys, the modules, and the four commands.

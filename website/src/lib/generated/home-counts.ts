@@ -24,7 +24,7 @@ export interface HomeCounts {
 }
 
 export const HOME_COUNTS: HomeCounts = {
-  items: 1677,
+  items: 1676,
   monsters: 360,
   npcs: 234,
   classes: 6,

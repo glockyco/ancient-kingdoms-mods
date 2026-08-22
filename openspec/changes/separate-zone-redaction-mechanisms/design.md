@@ -176,6 +176,8 @@ The check runs across every publish surface, not only the database, since three 
 - **A column whose target kind changes from row to row** → `summon_triggers.summoned_entity_id` names a monster on ten rows and an NPC on one. The schema declares the pair in a comment and carries `summoned_entity_type` to tell them apart, so the reference is declared once per kind and each declaration reads that column. Resolving the kind by looking for the value instead would repeat the value-sniffing this design removed, because a monster and an NPC can share an identifier.
 - **Prerendered pages are produced downstream of the pipeline** → Removal must precede the site build for the page and payload surfaces to be clean, so the ordering is a build-graph constraint, not a pipeline-internal one.
 
+**A gate in released content can lose its stated requirement** → clearing a reference to removed content is what the boundary rule asks for, and it can leave a real gate looking open. One gate is affected today. `relics_of_the_ancient_faith` is the only source of `key_to_the_north_wing`, so excluding the quest removes the key, and the portal it opens inside Temple of Valaark publishes no requirement. Accepted: no player can obtain a key whose only source is hidden, and naming the key in the published data would disclose the quest that grants it. The reason is recorded beside the exclusion in `redactions.toml`, because a reader meeting the portal will ask.
+
 ## Migration Plan
 
 No data migration. The pipeline rebuilds the published artifacts from the exported JSON on every run, so the change takes effect on the next `compendium build` plus site build. Rollback is reverting the change and rebuilding.

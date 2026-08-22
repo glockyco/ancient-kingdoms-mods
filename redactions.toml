@@ -45,7 +45,11 @@ zone_ids = ["old_valorath"]
 # purpose, so no derivable rule can select it.
 #
 # relics_of_the_ancient_faith and the_lost_warden: quests that must not appear
-# in any listing or relationship.
+# in any listing or relationship. Naming a quest also removes what only that
+# quest gives. relics_of_the_ancient_faith is the only source of
+# key_to_the_north_wing, so the key goes with it, and the portal it opens inside
+# Temple of Valaark is published without a stated requirement. That is intended:
+# no player can obtain a key whose only source is hidden.
 [entities.exclude]
 ids = [
     "old_valorath_token",
