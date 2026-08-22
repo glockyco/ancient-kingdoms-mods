@@ -20,20 +20,28 @@ from compendium.types.denormalized import ChestSourceInfo
 console = Console()
 
 
-def _calculate_exact_chest_probabilities(
+def _estimate_chest_drop_chances(
     rewards: list[dict], num_items: int
 ) -> dict[str, float]:
-    """Calculate drop probabilities using Monte Carlo simulation.
+    """Estimate the chance of each reward, by simulating the game's own rolls.
 
-    Fast and accurate - matches actual game behavior exactly.
+    The chance of a reward depends on the order of the rolls and on how many
+    rewards the chest has already given, so a closed form is impractical. This
+    simulation reproduces the loop the game runs. With 100,000 trials the
+    estimate holds about three decimal digits.
+
+    The generator starts from a fixed seed inside this call, which makes the
+    result depend on the arguments alone. A generator shared between chests
+    would make each result depend on how many numbers the earlier chests drew.
 
     Args:
         rewards: List of reward dicts with item_id and probability
         num_items: Number of items the chest drops
 
     Returns:
-        Dict mapping item_id to probability of being selected
+        Dict mapping item_id to the estimated chance of being selected
     """
+    rng = random.Random(0)
     num_simulations = 100000
     max_passes = 10
 
@@ -51,7 +59,7 @@ def _calculate_exact_chest_probabilities(
                     continue
 
                 # Roll for this item
-                if random.random() < reward["probability"]:
+                if rng.random() < reward["probability"]:
                     selected_ids.add(reward["item_id"])
                     item_counts[reward["item_id"]] += 1
 
@@ -118,14 +126,12 @@ def _denormalize_chest_rewards(
                     }
                 )
 
-        # Calculate exact drop chances
+        # Estimate the chance of each reward
         if updated_rewards and num_items > 0:
-            exact_probs = _calculate_exact_chest_probabilities(
-                updated_rewards, num_items
-            )
+            drop_chances = _estimate_chest_drop_chances(updated_rewards, num_items)
 
             for reward in updated_rewards:
-                reward["actual_drop_chance"] = exact_probs.get(reward["item_id"], 0.0)
+                reward["actual_drop_chance"] = drop_chances.get(reward["item_id"], 0.0)
 
         # Build found_in_chests using actual drop chances
         chest_name_cursor = conn.cursor()

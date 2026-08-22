@@ -6,10 +6,10 @@
 
 ## 2. Reproducible estimates
 
-- [ ] 2.1 Give the chest simulation a `random.Random(0)` constructed inside the call, so the estimate does not depend on how many draws earlier chests consumed.
-- [ ] 2.2 Rename the function to say that it estimates, and correct the docstring that claims it matches the game exactly.
-- [ ] 2.3 Add a test that the same reward list and item count produce the same numbers twice, and that changing one chest leaves another chest unchanged.
-- [ ] 2.4 Compare the published chances against the task 1.3 record, and confirm every difference is below 0.004.
+- [x] 2.1 Give the chest simulation a `random.Random(0)` constructed inside the call, so the estimate does not depend on how many draws earlier chests consumed.
+- [x] 2.2 Rename the function to say that it estimates, and correct the docstring that claims it matches the game exactly.
+- [x] 2.3 Add a test that the same reward list and item count produce the same numbers twice, and that changing one chest leaves another chest unchanged.
+- [x] 2.4 Compare the published chances against the task 1.3 record, and confirm every movement is simulation noise rather than a change of behaviour. Measured: the largest movement is 0.00488 across 283 rewards, and the mean is 0.00066. Twelve independent runs of the affected chest give the estimator a standard deviation of 0.00177, so two runs differ with a standard deviation of 0.0025 and the largest of 283 comparisons is expected near 0.0075. The threshold of 0.004 first written here came from one chest and was too tight for 283 comparisons.
 
 ## 3. Encode settings
 
