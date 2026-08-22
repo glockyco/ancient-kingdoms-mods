@@ -102,10 +102,10 @@
 
 ## 13. Tests
 
-- [ ] 13.1 Restore the shared-source case that `test_monster_redactions.py` held before it was deleted: an entity that spawns in both an excluded zone and a published zone keeps its published spawns and stays published. Nothing covers this today, and it is the behaviour that keeps Earth Elemental on the site.
-- [ ] 13.2 Add a test that proves removal follows references beyond one step, and one that proves content reachable from nothing is untouched.
-- [ ] 13.3 Add a reachability test per reference kind, including the case that a skill used only as a weapon proc survives when no monster uses it, and the case that a monster with no spawn record survives on its summoner.
-- [ ] 13.4 Add a test that prose naming an excluded zone does not cause removal.
+- [x] 13.1 Restore the shared-source case that `test_monster_redactions.py` held before it was deleted: an entity that spawns in both an excluded zone and a published zone keeps its published spawns and stays published. Nothing covers this today, and it is the behaviour that keeps Earth Elemental on the site.
+- [x] 13.2 Add a test that proves removal follows references beyond one step, and one that proves content reachable from nothing is untouched.
+- [x] 13.3 Add a reachability test per reference kind, including the case that a skill used only as a weapon proc survives when no monster uses it, and the case that a monster with no spawn record survives on its summoner. The summon case is covered by `tests/test_polymorphic_summons.py`. Writing the weapon proc case showed the requirement turns on the weapon being live: an item no zone can reach is published but is not a source, so it cannot keep a skill alive. A test pins that boundary.
+- [x] 13.4 Add a test that prose naming an excluded zone does not cause removal.
 - [x] 13.5 Add a test that the invariant check fails on a planted surviving reference.
 
 ## 14. Close out
