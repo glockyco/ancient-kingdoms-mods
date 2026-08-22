@@ -138,6 +138,23 @@ Alternatives considered:
 - **Generating the ledger from the published database by diffing against the export.** Rejected: it recovers what is missing but not why, and the reason is the part that cannot be reconstructed.
 - **A separate follow-up change for reporting.** Rejected: the cascade would ship without provenance and be rewritten to add it.
 
+### Two families of redaction, and one module for both
+
+Redaction does two different things, and naming them separates the mechanisms that keep an entity from those that remove it.
+
+- **Attribute redaction** keeps the entity and removes part of its data. Position suppression clears geometry. Hidden crafting clears the recipes that produce an item.
+- **Entity redaction** removes the entity and everything left with no other source. An unreleased zone, a manually named identifier, and the journal flag are its three seeds.
+
+Both families report what they removed to the ledger, and both feed the verification. That is the property that was missing: two mechanisms deleted published rows through paths of their own, so the ledger recorded none of it.
+
+Naming follows the families rather than the history. `denormalizers/exclusions.py` implements suppression while exclusion lives in `redactions/closure.py`, so the module carries the name of the mechanism it does not implement. It moves into the redaction package as `geometry.py`, hidden crafting joins it as `sources.py`, and `compendium/redaction.py` becomes `redactions/config.py` rather than sitting one letter away from the package it configures.
+
+Alternatives considered:
+
+- **Leave the two legacy passes where they are and add ledger entries.** Rejected. It keeps two cascades, and the hand-written one follows a single JSON column while the declared one follows every reference.
+- **Fold hidden crafting into entity redaction too.** Rejected. It publishes the item on purpose and removes only the recipes, so it is not a removal of the entity.
+- **Keep `[quests.exclude]` as an alias.** Rejected. Two keys for one meaning is the defect, and a deprecated alias preserves it.
+
 ### The invariant check is a value scan, not a schema walk
 
 After the cascade, the build scans published values for identifiers of redacted zones and removed entities, and fails on a hit. It scans values of any shape rather than following declared references, because its purpose is catching the reference form that discovery does not know about. A schema-driven check would only re-verify what the schema-driven removal already did.

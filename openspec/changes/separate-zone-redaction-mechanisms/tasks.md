@@ -88,17 +88,28 @@
 - [ ] 11.1 Remove `EXCLUDED_ZONE_IDS` from `website/src/lib/constants/constants.ts` and its uses in `map.server.ts` and `layers.ts`, after confirming excluded content is absent from the data.
 - [ ] 11.2 Confirm in a browser that the map renders Temple of Valaark as before, that Northern Wastes shows the gated portal with no destination, and that searching the map for "Valorath" returns only content that legitimately survives.
 
-## 12. Tests
+## 12. Consolidate every mechanism into the model
 
-- [ ] 12.1 Rewrite `build-pipeline/tests/test_monster_redactions.py` for the two mechanisms, keeping the existing shared-source case that proves an entity with a surviving source is not removed.
-- [ ] 12.2 Add a test that proves removal follows references beyond one step, and one that proves content reachable from nothing is untouched.
-- [ ] 12.3 Add a reachability test per reference kind, including the case that a skill used only as a weapon proc survives when no monster uses it, and the case that a monster with no spawn record survives on its summoner.
-- [ ] 12.4 Add a test that prose naming an excluded zone does not cause removal.
-- [x] 12.5 Add a test that the invariant check fails on a planted surviving reference.
+- [ ] 12.1 Move the two quest identifiers from `[quests.exclude].ids` to `[entities.exclude].ids`, and confirm the closure removes both. The manual seed already searches the quests table.
+- [ ] 12.2 Delete `_apply_quest_exclusions` and the `exclude_quest_ids` field. Confirm no reference to a removed quest survives, and note that `npcs.quests_offered` is rebuilt by a later denormalizer rather than scrubbed.
+- [ ] 12.3 Prove the ledger now records both quests with a mechanism and a reason, and that `redactions explain the_lost_warden` answers.
+- [ ] 12.4 Report what hidden crafting removed to the ledger, per item, in the way position suppression reports per zone.
+- [ ] 12.5 Extend the verification subject to cover every mechanism, so an identifier removed outside the closure is scanned for. Prove it by planting a surviving reference to an excluded quest.
+- [ ] 12.6 Move position suppression into the redaction package as `geometry.py`, and hidden crafting as `sources.py`. The module named `exclusions` implements suppression today, which is the name of the other mechanism.
+- [ ] 12.7 Rename `compendium/redaction.py` to `redactions/config.py`, so the configuration no longer sits one letter from the package it configures.
+- [ ] 12.8 Update `redactions.toml` comments and `build-pipeline/CLAUDE.md` for the removed key and the moved modules.
 
-## 13. Close out
+## 13. Tests
 
-- [ ] 13.1 Run `cd build-pipeline && uv run pytest`, `uv run mypy .`, and `uv run ruff check`.
-- [ ] 13.2 Rebuild end to end with `uv run compendium build` and the website build, and compare against the task 1.1 baseline, explaining every count that moved.
-- [ ] 13.3 Run `pnpm check:redactions` and confirm the committed ledger matches the rebuild.
-- [ ] 13.4 Update `build-pipeline/CLAUDE.md`, whose Redaction System section lists only the three old keys and does not mention the ledger.
+- [ ] 13.1 Restore the shared-source case that `test_monster_redactions.py` held before it was deleted: an entity that spawns in both an excluded zone and a published zone keeps its published spawns and stays published. Nothing covers this today, and it is the behaviour that keeps Earth Elemental on the site.
+- [ ] 13.2 Add a test that proves removal follows references beyond one step, and one that proves content reachable from nothing is untouched.
+- [ ] 13.3 Add a reachability test per reference kind, including the case that a skill used only as a weapon proc survives when no monster uses it, and the case that a monster with no spawn record survives on its summoner.
+- [ ] 13.4 Add a test that prose naming an excluded zone does not cause removal.
+- [x] 13.5 Add a test that the invariant check fails on a planted surviving reference.
+
+## 14. Close out
+
+- [ ] 14.1 Run `cd build-pipeline && uv run pytest`, `uv run mypy .`, and `uv run ruff check`.
+- [ ] 14.2 Rebuild end to end with `uv run compendium build` and the website build, and compare against the task 1.1 baseline, explaining every count that moved.
+- [ ] 14.3 Run `pnpm check:redactions` and confirm the committed ledger matches the rebuild.
+- [ ] 14.4 Update `build-pipeline/CLAUDE.md`, whose Redaction System section lists only the three old keys and does not mention the ledger.

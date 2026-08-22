@@ -29,7 +29,9 @@ The consequences are measurable in the published output:
 - Accept an explicit list of manually excluded identifiers for unreleased content that has no reference edges at all.
 - Fail the build when any reference to excluded content survives.
 - Record every redaction decision and its reason in a committed `redactions.lock.json`, verified by `compendium redactions check` and explained per entity by `compendium redactions explain`, following the existing `citations.lock.json` pattern.
+- Route every configured removal through that one mechanism. `[quests.exclude]` names entities for removal, which `[entities.exclude]` already does for quests among other kinds, so the duplicate key and its hand-written cascade are removed. Hidden crafting keeps its own meaning, because it removes recipes and keeps the item, and it reports what it removed to the ledger.
 - **BREAKING** for consumers of the published data: `old_valorath` and its dependents disappear from the database, the search index, the image set, and the prerendered pages.
+- **BREAKING** for the configuration: `[quests.exclude].ids` is replaced by `[entities.exclude].ids`.
 
 ## Capabilities
 

@@ -227,6 +227,30 @@ Rationale: unreleased content can exist with no reference edge at all. `old_valo
 - **AND** it is not named for manual exclusion and holds no reference to redacted content
 - **THEN** it remains published
 
+### Requirement: Configured removal has one implementation
+
+Every configured way to remove an entity SHALL use the same removal machinery. A mechanism SHALL NOT delete published rows through a path of its own, because such a path follows only the references its author remembered, records no provenance, and is invisible to the verification.
+
+A mechanism that keeps an entity and removes part of its data SHALL report what it cleared, so that the ledger covers it as well.
+
+Rationale: two configured mechanisms deleted rows outside the closure. Two quests were absent from the published database and absent from the ledger, so the record of what redaction removed was incomplete while claiming to be complete. Both were correct only because a later denormalizer rebuilt the derived columns that would otherwise hold a dangling reference.
+
+#### Scenario: An entity is named for removal in configuration
+
+- **WHEN** configuration names an entity of any kind for removal
+- **THEN** the entity and its dependents are removed by following declared references
+- **AND** the ledger records the entity, its mechanism, and its reason
+
+#### Scenario: A configured removal is verified
+
+- **WHEN** any configured mechanism removes an entity
+- **THEN** the verification scans the published output for that entity's identifier
+
+#### Scenario: One configuration key for one meaning
+
+- **WHEN** two configuration keys would remove an entity by naming it
+- **THEN** the specification keeps one of them
+
 ### Requirement: Redaction decisions are recorded and reviewable
 
 The build SHALL record every redaction decision in a version-controlled ledger. Each removed entity's record SHALL state the mechanism that removed it, the reason, and the already-removed entities the decision followed.
