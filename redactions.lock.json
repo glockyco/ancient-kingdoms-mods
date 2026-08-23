@@ -10,6 +10,54 @@
     "valaark_ancient_coin": 1
   },
   "removed": {
+    "items:ashen_magus_armor_bonus_set": {
+      "mechanism": "manual",
+      "reason": "named in the manual exclusion list"
+    },
+    "items:ashen_magus_cowl": {
+      "mechanism": "manual",
+      "reason": "named in the manual exclusion list"
+    },
+    "items:ashen_magus_gloves": {
+      "mechanism": "manual",
+      "reason": "named in the manual exclusion list"
+    },
+    "items:ashen_magus_leggings": {
+      "mechanism": "manual",
+      "reason": "named in the manual exclusion list"
+    },
+    "items:ashen_magus_robe": {
+      "mechanism": "manual",
+      "reason": "named in the manual exclusion list"
+    },
+    "items:ashen_magus_slippers": {
+      "mechanism": "manual",
+      "reason": "named in the manual exclusion list"
+    },
+    "items:deathwhisper_armor_bonus_set": {
+      "mechanism": "manual",
+      "reason": "named in the manual exclusion list"
+    },
+    "items:deathwhisper_boots": {
+      "mechanism": "manual",
+      "reason": "named in the manual exclusion list"
+    },
+    "items:deathwhisper_gloves": {
+      "mechanism": "manual",
+      "reason": "named in the manual exclusion list"
+    },
+    "items:deathwhisper_helm": {
+      "mechanism": "manual",
+      "reason": "named in the manual exclusion list"
+    },
+    "items:deathwhisper_jerkin": {
+      "mechanism": "manual",
+      "reason": "named in the manual exclusion list"
+    },
+    "items:deathwhisper_leggings": {
+      "mechanism": "manual",
+      "reason": "named in the manual exclusion list"
+    },
     "items:divine_essence": {
       "mechanism": "ignore_journal",
       "reason": "the game marks the item ignore_journal"
@@ -31,6 +79,94 @@
       "via": [
         "monsters:drassar_soulreaver"
       ]
+    },
+    "items:dreadguard_armor_bonus_set": {
+      "mechanism": "manual",
+      "reason": "named in the manual exclusion list"
+    },
+    "items:dreadguard_breastplate": {
+      "mechanism": "manual",
+      "reason": "named in the manual exclusion list"
+    },
+    "items:dreadguard_gauntlets": {
+      "mechanism": "manual",
+      "reason": "named in the manual exclusion list"
+    },
+    "items:dreadguard_greaves": {
+      "mechanism": "manual",
+      "reason": "named in the manual exclusion list"
+    },
+    "items:dreadguard_helmet": {
+      "mechanism": "manual",
+      "reason": "named in the manual exclusion list"
+    },
+    "items:dreadguard_sabatons": {
+      "mechanism": "manual",
+      "reason": "named in the manual exclusion list"
+    },
+    "items:elderthorn_armor_bonus_set": {
+      "mechanism": "manual",
+      "reason": "named in the manual exclusion list"
+    },
+    "items:elderthorn_boots": {
+      "mechanism": "manual",
+      "reason": "named in the manual exclusion list"
+    },
+    "items:elderthorn_gloves": {
+      "mechanism": "manual",
+      "reason": "named in the manual exclusion list"
+    },
+    "items:elderthorn_helm": {
+      "mechanism": "manual",
+      "reason": "named in the manual exclusion list"
+    },
+    "items:elderthorn_leggings": {
+      "mechanism": "manual",
+      "reason": "named in the manual exclusion list"
+    },
+    "items:elderthorn_tunic": {
+      "mechanism": "manual",
+      "reason": "named in the manual exclusion list"
+    },
+    "items:gloomwarden_chainmail": {
+      "mechanism": "manual",
+      "reason": "named in the manual exclusion list"
+    },
+    "items:gloomwarden_coif": {
+      "mechanism": "manual",
+      "reason": "named in the manual exclusion list"
+    },
+    "items:gloomwarden_gloves": {
+      "mechanism": "manual",
+      "reason": "named in the manual exclusion list"
+    },
+    "items:gloomwarden_leggings": {
+      "mechanism": "manual",
+      "reason": "named in the manual exclusion list"
+    },
+    "items:gloomwarden_sabatons": {
+      "mechanism": "manual",
+      "reason": "named in the manual exclusion list"
+    },
+    "items:hallowed_keeper_breastplate": {
+      "mechanism": "manual",
+      "reason": "named in the manual exclusion list"
+    },
+    "items:hallowed_keeper_gauntlets": {
+      "mechanism": "manual",
+      "reason": "named in the manual exclusion list"
+    },
+    "items:hallowed_keeper_greaves": {
+      "mechanism": "manual",
+      "reason": "named in the manual exclusion list"
+    },
+    "items:hallowed_keeper_helm": {
+      "mechanism": "manual",
+      "reason": "named in the manual exclusion list"
+    },
+    "items:hallowed_keeper_sabatons": {
+      "mechanism": "manual",
+      "reason": "named in the manual exclusion list"
     },
     "items:key_to_the_north_wing": {
       "mechanism": "cascade",

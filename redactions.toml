@@ -66,6 +66,19 @@ zone_ids = ["old_valorath"]
 # key then reaches no zone at all, and the closure keeps an item that no zone
 # reaches. Without this entry the compendium publishes a key that no player can
 # obtain, for a door it does not show.
+#
+# The six Old Valorath armour sets: no drop table names them yet, so no monster,
+# vendor, chest or recipe gives them and nothing in a row says Old Valorath.
+# A rule over the references cannot select them either. They carry
+# is_bestiary_drop, but that flag marks what the bestiary shows when a boss,
+# elite or fabled monster is given the item, so it does not promise a source.
+# Forty-two released items are equally sourceless, the draconium set and the
+# starting clothes among them.
+#
+# Ashen Magus, Deathwhisper, Dreadguard and Elderthorn each bring their own set
+# bonus, which is named with the pieces. Gloomwarden grants Wildshade Battlegear
+# and Hallowed Keeper grants Dawnforged Battlegear. Both of those bonuses belong
+# to released sets and stay.
 [entities.exclude]
 ids = [
     "old_valorath_token",
@@ -74,4 +87,44 @@ ids = [
     "zharvok",
     "the_royal_key_of_valorath",
     "valorath_royal_key",
+
+    "ashen_magus_armor_bonus_set",
+    "ashen_magus_cowl",
+    "ashen_magus_gloves",
+    "ashen_magus_leggings",
+    "ashen_magus_robe",
+    "ashen_magus_slippers",
+
+    "deathwhisper_armor_bonus_set",
+    "deathwhisper_boots",
+    "deathwhisper_gloves",
+    "deathwhisper_helm",
+    "deathwhisper_jerkin",
+    "deathwhisper_leggings",
+
+    "dreadguard_armor_bonus_set",
+    "dreadguard_breastplate",
+    "dreadguard_gauntlets",
+    "dreadguard_greaves",
+    "dreadguard_helmet",
+    "dreadguard_sabatons",
+
+    "elderthorn_armor_bonus_set",
+    "elderthorn_boots",
+    "elderthorn_gloves",
+    "elderthorn_helm",
+    "elderthorn_leggings",
+    "elderthorn_tunic",
+
+    "gloomwarden_chainmail",
+    "gloomwarden_coif",
+    "gloomwarden_gloves",
+    "gloomwarden_leggings",
+    "gloomwarden_sabatons",
+
+    "hallowed_keeper_breastplate",
+    "hallowed_keeper_gauntlets",
+    "hallowed_keeper_greaves",
+    "hallowed_keeper_helm",
+    "hallowed_keeper_sabatons",
 ]
