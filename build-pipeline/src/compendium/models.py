@@ -770,6 +770,7 @@ class SkillData(BaseModel):
 
     # Crowd control
     knockback_chance: SkillBonus | None = None
+    knockback_distance: float = 0.0
     stun_chance: SkillBonus | None = None
     stun_time: SkillBonus | None = None
     fear_chance: SkillBonus | None = None
@@ -792,6 +793,7 @@ class SkillData(BaseModel):
     remain_after_death: bool = False
     buff_category: str = ""
     is_invisibility: bool = False
+    ignores_see_invisibility: bool = False
     is_undead_illusion: bool = False
     illusion_race: str | None = None
     is_mana_shield: bool = False

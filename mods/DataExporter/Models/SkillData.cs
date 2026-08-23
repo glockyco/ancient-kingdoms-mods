@@ -73,6 +73,10 @@ public class SkillData
     public LinearStatBonusFloat lifetap_percent { get; set; }
     public bool base_skill { get; set; }
     public LinearStatBonusFloat knockback_chance { get; set; }
+
+    /// <summary>How far a knocked-back victim travels. A flat distance, not scaled by skill level.</summary>
+    public float knockback_distance { get; set; }
+
     public LinearStatBonusFloat stun_chance { get; set; }
     public LinearStatBonusFloat stun_time { get; set; }
     public LinearStatBonusFloat fear_chance { get; set; }
@@ -105,6 +109,10 @@ public class SkillData
 
     // Buff behavior flags
     public bool is_invisibility { get; set; }
+
+    /// <summary>Whether the invisibility this buff grants also hides the target from monsters that see invisibility.</summary>
+    public bool ignores_see_invisibility { get; set; }
+
     public bool is_undead_illusion { get; set; }
 
     /// <summary>Player race the buff disguises the wearer as, or null when it grants no race illusion.</summary>

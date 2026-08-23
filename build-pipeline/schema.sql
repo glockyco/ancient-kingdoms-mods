@@ -1130,6 +1130,8 @@ CREATE TABLE skills (
     fear_chance TEXT,
     fear_time TEXT,
     knockback_chance TEXT,
+    -- Flat travel distance for a knocked-back victim; not scaled by skill level.
+    knockback_distance REAL DEFAULT 0.0,
 
     -- Buff/Debuff properties
     duration_base REAL DEFAULT 0.0,
@@ -1137,6 +1139,8 @@ CREATE TABLE skills (
     remain_after_death BOOLEAN DEFAULT 0,
     buff_category TEXT,
     is_invisibility BOOLEAN DEFAULT 0,
+    -- Whether the invisibility also hides the target from monsters that see invisibility.
+    ignores_see_invisibility BOOLEAN DEFAULT 0,
     is_undead_illusion BOOLEAN DEFAULT 0,
     illusion_race TEXT,
     is_poison_debuff BOOLEAN DEFAULT 0,
