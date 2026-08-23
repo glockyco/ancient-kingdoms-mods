@@ -26,12 +26,11 @@
 
 ## 3. Verify against the game
 
-- [ ] 3.1 Run `pnpm build && node scripts/snapshot-mechanics.mjs`. It must report zero changed and
+- [x] 3.1 Run `pnpm build && node scripts/snapshot-mechanics.mjs`. It must report zero changed and
       zero new. Do NOT pass `--update`, and do not edit any fixture.
-      BLOCKED, and not by this change. The run reports 14 changed, none of them a
-      `defense`/`physicalResist` difference. They are a scaling-notation difference introduced by
-      `71277e63` and `b109de98`, both of which landed after the last rebaseline `dccb3d63`. This
-      task passes once that drift is resolved on its own terms.
+      Passes: all snapshots match. The 14 differences seen earlier were a scaling-notation drift
+      from `71277e63` and `b109de98`, which landed after the rebaseline `dccb3d63` and were
+      rebaselined separately. No fixture was edited for this change.
 - [x] 3.2 Open a physical skill page in a browser and confirm it reads
       `target.defense × 0.0005` under Mitigation and shows the Block/Miss Chance heading.
 - [x] 3.3 Open a magic skill page and confirm `target.magicResist` and the Resist Chance heading
