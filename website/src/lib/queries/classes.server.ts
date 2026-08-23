@@ -90,6 +90,7 @@ export interface ClassSkill {
   damage_percent: string | null;
   lifetap_percent: string | null;
   knockback_chance: string | null;
+  knockback_distance: number | null;
   stun_chance: string | null;
   stun_time: string | null;
   fear_chance: string | null;
@@ -144,6 +145,7 @@ export interface ClassSkill {
   duration_base: number;
   duration_per_level: number;
   is_invisibility: boolean;
+  ignores_see_invisibility: boolean;
   is_mana_shield: boolean;
   is_cleanse: boolean;
   is_dispel: boolean;
@@ -203,6 +205,7 @@ export function getClassSkills(classId: string): ClassSkill[] {
       s.damage_percent,
       s.lifetap_percent,
       s.knockback_chance,
+      s.knockback_distance,
       s.stun_chance,
       s.stun_time,
       s.fear_chance,
@@ -257,6 +260,7 @@ export function getClassSkills(classId: string): ClassSkill[] {
       s.duration_base,
       s.duration_per_level,
       s.is_invisibility,
+      s.ignores_see_invisibility,
       s.is_mana_shield,
       s.is_cleanse,
       s.is_dispel,

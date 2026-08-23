@@ -168,6 +168,7 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
     fear_chance: parseLinear(skillRaw.fear_chance),
     fear_time: parseLinear(skillRaw.fear_time),
     knockback_chance: parseLinear(skillRaw.knockback_chance),
+    knockback_distance: Number(skillRaw.knockback_distance ?? 0),
 
     // Buff duration
     duration_base: (skillRaw.duration_base as number) || 0,
@@ -239,6 +240,7 @@ export const load: PageServerLoad = ({ params }): SkillDetailPageData => {
     is_resurrect_skill: Boolean(skillRaw.is_resurrect_skill),
     is_balance_health: Boolean(skillRaw.is_balance_health),
     is_invisibility: Boolean(skillRaw.is_invisibility),
+    ignores_see_invisibility: Boolean(skillRaw.ignores_see_invisibility),
     illusion_race: (skillRaw.illusion_race as string | null) ?? null,
     is_mana_shield: Boolean(skillRaw.is_mana_shield),
     is_cleanse: Boolean(skillRaw.is_cleanse),

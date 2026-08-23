@@ -29,6 +29,7 @@ export interface SkillEffectRow {
   damage_percent: string | null;
   lifetap_percent: string | null;
   knockback_chance: string | null;
+  knockback_distance: number | null;
   stun_chance: string | null;
   stun_time: string | null;
   fear_chance: string | null;
@@ -85,6 +86,7 @@ export interface SkillEffectRow {
   is_permanent: number;
   is_double_exp_spell: number;
   is_invisibility: number;
+  ignores_see_invisibility: number;
   illusion_race: string | null;
   is_mana_shield: number;
   is_cleanse: number;

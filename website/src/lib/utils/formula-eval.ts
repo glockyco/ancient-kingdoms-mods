@@ -486,9 +486,9 @@ export function renderFormulaDisplay(kind: DamageFormulaKind): FormulaDisplay {
  * after the underlying sword/bow hit is combined, before Combat.DealDamageAt
  * performs the common hit pipeline.
  *
- * Source: server-scripts/DamageSkill.cs:47-65 (TryConsumeWildStrike),
- * TargetDamageSkill.cs:239,282, TargetProjectileSkill.cs:221-222,251-255,
- * Combat.cs:368,601,667-674,944-955 (DealDamageAt).
+ * Source: server-scripts/DamageSkill.cs:49-67 (TryConsumeWildStrike),
+ * TargetDamageSkill.cs:239,282, TargetProjectileSkill.cs:221-222,252-256,
+ * Combat.cs:368,752,818-825,944-955 (DealDamageAt).
  */
 export function renderWildStrikeFormulaDisplay(): FormulaDisplay {
   return {
