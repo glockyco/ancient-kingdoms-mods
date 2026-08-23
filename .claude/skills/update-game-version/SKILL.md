@@ -117,6 +117,21 @@ dotnet run --project build-tool export --update
 # 6. Rebuild database from new exports
 cd build-pipeline && uv run compendium build
 
+# 6b. Bring the recorded redaction decisions level with the new export
+#     A patch that advances an unreleased zone adds rows the existing rules already
+#     remove, so the lockfile falls behind and `redactions check` fails. Read the
+#     drift before accepting it: every entry should be something a configured rule
+#     reaches. An entry you cannot explain that way is a leak or a new decision, and
+#     needs deciding rather than syncing.
+uv run compendium redactions check
+uv run compendium redactions sync     # only once the drift is understood
+#     This is its own commit. The drift belongs to the patch, not to any change of
+#     policy, so it does not travel with an exclusion someone asked for.
+#
+#     Its pre-commit hook only runs when redaction files are staged, so it stays
+#     silent through an update that never touches them. Run it here rather than
+#     discovering it from an unrelated change months later.
+
 # 7. Apply all manual website changes (mechanic updates, removed features, etc.)
 #    Write docs describing how the game works NOW — present tense, current behavior only.
 #    No historical framing ("now", "previously", "no longer", "changed from X to Y"): the
