@@ -27,7 +27,6 @@ public static class Program
         services.AddSingleton<string>(_ => rootDir);
         services.AddSingleton(_ => propsExists ? LocalConfigLoader.Load(propsPath) : LocalConfig.Empty);
         services.AddSingleton(resultStore);
-        services.AddSingleton(typeof(bool), OperatingSystem.IsMacOS());
 
         var registrar = new TypeRegistrar(services);
         var app = new CommandApp(registrar);
@@ -41,7 +40,7 @@ public static class Program
             config.AddCommand<DeployHostCommand>("deploy-host").WithDescription("Build and deploy HotRepl host.");
             config.AddCommand<LaunchCommand>("launch").WithDescription("Launch Ancient Kingdoms.");
             config.AddCommand<ExportCommand>("export").WithDescription("Launch the game and drive compendium.export over HotRepl.");
-            config.AddCommand<UpdateCommand>("update").WithDescription("Run steamcmd app_update.");
+            config.AddCommand<UpdateCommand>("update").WithDescription("Ask the bottle's Steam client to bring the game current.");
         });
         return Run(app, args, resultStore);
     }

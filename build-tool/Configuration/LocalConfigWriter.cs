@@ -11,19 +11,16 @@ public static class LocalConfigWriter
         string path,
         string gamePath,
         string exportPath,
-        string? winePath,
-        string? winePrefix,
-        bool includeWine)
+        string winePath,
+        string winePrefix)
     {
         var sb = new StringBuilder();
         sb.AppendLine("<Project>");
         sb.AppendLine("  <PropertyGroup>");
         AppendProperty(sb, "ANCIENT_KINGDOMS_PATH", gamePath);
         AppendProperty(sb, "DATA_EXPORT_PATH", exportPath);
-        if (includeWine && !string.IsNullOrEmpty(winePath))
-            AppendProperty(sb, "WINE_PATH", winePath);
-        if (includeWine && !string.IsNullOrEmpty(winePrefix))
-            AppendProperty(sb, "WINE_PREFIX", winePrefix);
+        AppendProperty(sb, "WINE_PATH", winePath);
+        AppendProperty(sb, "WINE_PREFIX", winePrefix);
         sb.AppendLine("  </PropertyGroup>");
         sb.AppendLine("</Project>");
 
@@ -36,18 +33,14 @@ public static class LocalConfigWriter
         IReadOnlyDictionary<string, string> existing,
         string gamePath,
         string exportPath,
-        string? winePath,
-        string? winePrefix,
-        bool includeWine,
+        string winePath,
+        string winePrefix,
         TextWriter output)
     {
         NoteChange(existing, "ANCIENT_KINGDOMS_PATH", gamePath, output);
         NoteChange(existing, "DATA_EXPORT_PATH", exportPath, output);
-        if (includeWine)
-        {
-            NoteChange(existing, "WINE_PATH", winePath ?? string.Empty, output);
-            NoteChange(existing, "WINE_PREFIX", winePrefix ?? string.Empty, output);
-        }
+        NoteChange(existing, "WINE_PATH", winePath, output);
+        NoteChange(existing, "WINE_PREFIX", winePrefix, output);
     }
 
     private static void NoteChange(

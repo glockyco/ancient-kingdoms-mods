@@ -8,11 +8,6 @@ public static class GameLauncher
 {
     public static ProcessRequest BuildLaunchRequest(
         LocalConfig config,
-        IReadOnlyList<string> gameArgs,
-        bool isMacOs)
-    {
-        return isMacOs
-            ? WineEnvironment.BuildLaunchRequest(config, gameArgs)
-            : WindowsEnvironment.BuildLaunchRequest(config, gameArgs);
-    }
+        IReadOnlyList<string> gameArgs) =>
+        WineEnvironment.BuildLaunchRequest(config, gameArgs);
 }

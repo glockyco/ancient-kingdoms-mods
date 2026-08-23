@@ -95,7 +95,6 @@ owning spec, not here.
 ## Reference map — design authorities, read on demand
 
 - `2026-06-13-compendiums-site-design` *(spec)* — the apex-domain directory site.
-- `2026-05-27-server-auto-update-design` *(spec)* — dedicated-server auto-update research.
 - `2026-05-27-website-design-system-audit-consolidation` *(plan)* — design-system
   consolidation.
 - `2026-05-28-compendium-data-contract-design` *(spec)* — entity-addition architecture and

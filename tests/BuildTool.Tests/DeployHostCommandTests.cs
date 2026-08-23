@@ -37,8 +37,8 @@ public class DeployHostCommandTests
         var config = new LocalConfig(
             GamePath: gamePath,
             DataExportPath: Path.Combine(tempRoot, "exported-data"),
-            WinePath: null,
-            WinePrefix: null);
+            WinePath: "/wine",
+            WinePrefix: "/prefix");
         var command = new DeployHostCommand(tempRoot, config, runner);
 
         var result = await command.RunAsync(new DeployHostCommand.Settings { HotReplRepo = hotReplRepo });

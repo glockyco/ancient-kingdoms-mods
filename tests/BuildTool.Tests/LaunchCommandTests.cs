@@ -15,7 +15,7 @@ public class LaunchCommandTests
         var tempRoot = Directory.CreateTempSubdirectory().FullName;
         var runner = new FakeProcessRunner();
         runner.Enqueue(new ProcessResult(42, "", "failed", default));
-        var command = CreateCommand(tempRoot, runner, isMacOs: false);
+        var command = CreateCommand(tempRoot, runner);
 
         var result = await command.RunAsync(new LaunchCommand.Settings());
 
@@ -28,7 +28,7 @@ public class LaunchCommandTests
     {
         var tempRoot = Directory.CreateTempSubdirectory().FullName;
         var runner = new FakeProcessRunner();
-        var command = CreateCommand(tempRoot, runner, isMacOs: false);
+        var command = CreateCommand(tempRoot, runner);
 
         var result = await command.RunAsync(new LaunchCommand.Settings { Wait = true });
 
@@ -42,7 +42,7 @@ public class LaunchCommandTests
         var tempRoot = Directory.CreateTempSubdirectory().FullName;
         var runner = new FakeProcessRunner();
         runner.Enqueue(new ProcessResult(0, "", "", default));
-        var command = CreateCommand(tempRoot, runner, isMacOs: false);
+        var command = CreateCommand(tempRoot, runner);
 
         var result = await command.RunAsync(new LaunchCommand.Settings { Wait = true });
 
@@ -59,7 +59,7 @@ public class LaunchCommandTests
         Assert.True(LaunchCommand.IsMelonLoaderReadyLog(line));
     }
 
-    private static LaunchCommand CreateCommand(string tempRoot, FakeProcessRunner runner, bool isMacOs)
+    private static LaunchCommand CreateCommand(string tempRoot, FakeProcessRunner runner)
     {
         var gamePath = Path.Combine(tempRoot, "game");
         Directory.CreateDirectory(gamePath);
@@ -69,6 +69,6 @@ public class LaunchCommandTests
             DataExportPath: Path.Combine(tempRoot, "exported-data"),
             WinePath: "/wine",
             WinePrefix: "/prefix");
-        return new LaunchCommand(config, runner, isMacOs);
+        return new LaunchCommand(config, runner);
     }
 }

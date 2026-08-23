@@ -19,7 +19,6 @@ public sealed class LaunchCommand : AsyncCommand<LaunchCommand.Settings>
     private const string SupportModuleLoadedBanner = "Support Module Loaded:";
     private readonly LocalConfig _config;
     private readonly IProcessRunner _runner;
-    private readonly bool _isMacOs;
     private readonly CommandResultStore _resultStore;
     private readonly UnityDependenciesPreflight _unityDependenciesPreflight;
 
@@ -27,7 +26,6 @@ public sealed class LaunchCommand : AsyncCommand<LaunchCommand.Settings>
         : this(
             LocalConfigLoader.Load(Path.Combine(Directory.GetCurrentDirectory(), "Local.props")),
             new CliWrapProcessRunner(),
-            OperatingSystem.IsMacOS(),
             new CommandResultStore(),
             new UnityDependenciesPreflight())
     {
@@ -36,13 +34,11 @@ public sealed class LaunchCommand : AsyncCommand<LaunchCommand.Settings>
     public LaunchCommand(
         LocalConfig config,
         IProcessRunner runner,
-        bool isMacOs,
         CommandResultStore? resultStore = null,
         UnityDependenciesPreflight? unityDependenciesPreflight = null)
     {
         _config = config;
         _runner = runner;
-        _isMacOs = isMacOs;
         _resultStore = resultStore ?? new CommandResultStore();
         _unityDependenciesPreflight = unityDependenciesPreflight ?? new UnityDependenciesPreflight();
     }
@@ -60,7 +56,7 @@ public sealed class LaunchCommand : AsyncCommand<LaunchCommand.Settings>
     }
 
 
-    public static Task<int> Invoke(LocalConfig config, IProcessRunner runner, bool isMacOs, string[] args)
+    public static Task<int> Invoke(LocalConfig config, IProcessRunner runner, string[] args)
     {
         var settings = new Settings
         {
@@ -68,7 +64,7 @@ public sealed class LaunchCommand : AsyncCommand<LaunchCommand.Settings>
             UnityVersion = GetOptionValue(args, "--unity-version"),
         };
 
-        return new LaunchCommand(config, runner, isMacOs).ExecuteAsync(
+        return new LaunchCommand(config, runner).ExecuteAsync(
             null!, settings, CancellationToken.None);
     }
 
@@ -121,7 +117,7 @@ public sealed class LaunchCommand : AsyncCommand<LaunchCommand.Settings>
         ProcessRequest request;
         try
         {
-            request = GameLauncher.BuildLaunchRequest(_config, gameArgs, _isMacOs);
+            request = GameLauncher.BuildLaunchRequest(_config, gameArgs);
         }
         catch (InvalidOperationException ex)
         {

@@ -10,7 +10,6 @@
 
 ## draft
 
-- **Ancient Kingdoms Server Auto-Update Design Research** [spec] `2026-05-27-server-auto-update-design` ← 2026-07-31-ancient-kingdoms-overview
 - **Website Design System Audit & Consolidation Plan** [plan] `2026-05-27-website-design-system-audit-consolidation` (—) ← 2026-07-31-ancient-kingdoms-overview
 - **Entity Addition Architecture Design** [spec] `2026-05-28-compendium-data-contract-design` ← 2026-07-31-ancient-kingdoms-overview
 - **Detail-Page Title Suffixes** [spec] `2026-07-31-detail-page-title-suffixes` ← 2026-07-31-ancient-kingdoms-overview

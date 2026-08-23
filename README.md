@@ -85,12 +85,12 @@ The mod catalog includes player-facing utilities, data exporters, and developmen
 
 ## Requirements
 
-- Ancient Kingdoms installed locally. The setup tool detects common Steam and CrossOver Steam paths, and `export --update` uses steamcmd.
+- Ancient Kingdoms installed by the Steam client inside a CrossOver bottle. `build-tool setup` finds it by reading the Steam application manifest for app id 2241380, and `build-tool update` asks that same client to bring it current.
 - MelonLoader 0.7.3 installed for Ancient Kingdoms, with generated IL2CPP assemblies available under the game install.
 - .NET SDK capable of running the `net10.0` build tool. The mods themselves target `net6.0` for MelonLoader.
 - Python 3.12 or newer and `uv` for the build pipeline.
 - pnpm 10.34.5 for the root workspace and website, as pinned by `packageManager` in `package.json`.
-- On macOS, CrossOver or another Wine setup is needed to launch the Windows game for automated export workflows. `build-tool setup` can detect common CrossOver paths.
+- macOS with CrossOver. The tooling launches the game through the CrossOver wine binary and drives Steam through CrossOver's launcher beside it, so `Local.props` requires `WINE_PATH` and `WINE_PREFIX`. `build-tool setup` detects both.
 
 ## First-time setup
 

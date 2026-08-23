@@ -1,6 +1,6 @@
 # Mods Development
 
-Shared patterns for all MelonLoader mods. Requires .NET SDK and game installation. Works on macOS via CrossOver and natively on Windows.
+Shared patterns for all MelonLoader mods. Requires the .NET SDK and the game installed by the Steam client inside a CrossOver bottle on macOS.
 
 ## Quick Start
 

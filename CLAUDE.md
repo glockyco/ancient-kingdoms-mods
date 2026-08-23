@@ -107,6 +107,6 @@ cd website && pnpm check && pnpm lint && pnpm build
 
 | Subproject      | Purpose                                         | Docs                     |
 | --------------- | ----------------------------------------------- | ------------------------ |
-| mods/           | MelonLoader mods (macOS via CrossOver, Windows) | mods/CLAUDE.md           |
+| mods/           | MelonLoader mods (macOS via CrossOver)         | mods/CLAUDE.md           |
 | build-pipeline/ | Python CLI (JSON → SQLite)                      | build-pipeline/CLAUDE.md |
 | website/        | SvelteKit site, mostly prerendered by the Cloudflare adapter with a dynamic home page | website/CLAUDE.md        |

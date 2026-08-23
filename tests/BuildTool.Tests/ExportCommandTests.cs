@@ -25,23 +25,23 @@ public class ExportCommandTests
         Directory.Delete(tempRoot, recursive: true);
     }
 
+    /// <summary>
+    /// The update runs before the game does, and a failed update stops the export. Here the
+    /// configured bottle holds no CrossOver launcher, so the update cannot start and the game
+    /// is never launched.
+    /// </summary>
     [Fact]
-    public async Task Export_RunsSteamcmdUpdateFirst_WhenUpdateFlagSet()
+    public async Task Export_RunsTheUpdateFirstAndStopsWhenItFails_WhenUpdateFlagSet()
     {
         var tempRoot = Directory.CreateTempSubdirectory().FullName;
-        File.WriteAllText(
-            Path.Combine(tempRoot, "config.toml"),
-            "[steam]\nusername = \"user\"");
         var runner = new FakeProcessRunner();
-        runner.Enqueue(new ProcessResult(0, "", "", default)); // steamcmd
-        runner.Enqueue(new ProcessResult(0, "", "", default)); // game launch
         var command = CreateCommand(tempRoot, runner: runner);
 
-        // Export fails after launch (no real HotRepl) — we only verify order
-        await command.RunAsync(new ExportCommand.Settings { Update = true });
+        var result = await command.RunAsync(new ExportCommand.Settings { Update = true });
 
-        Assert.True(runner.Calls.Count >= 1);
-        Assert.Equal("steamcmd", runner.Calls[0].Program);
+        Assert.NotEqual(0, result);
+        Assert.Empty(runner.Calls);
+        Directory.Delete(tempRoot, recursive: true);
     }
 
     [Fact]
@@ -118,15 +118,14 @@ public class ExportCommandTests
         var config = new LocalConfig(
             GamePath: gamePath,
             DataExportPath: Path.Combine(tempRoot, "exported-data"),
-            WinePath: null,
-            WinePrefix: null,
+            WinePath: "/wine",
+            WinePrefix: "/prefix",
             HotReplEndpoint: hotReplEndpoint);
 
         return new ExportCommand(
             tempRoot,
             config,
             runner ?? new FakeProcessRunner(),
-            isMacOs: false,
             resultStore ?? new CommandResultStore(),
             hotReplReadinessTimeout: hotReplReadinessTimeout ?? TimeSpan.Zero,
             hotReplPollInterval: TimeSpan.Zero,

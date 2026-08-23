@@ -23,8 +23,8 @@ public class DeployCommandTests
         var config = new LocalConfig(
             GamePath: gamePath,
             DataExportPath: Path.Combine(tempRoot, "exported-data"),
-            WinePath: null,
-            WinePrefix: null);
+            WinePath: "/wine",
+            WinePrefix: "/prefix");
         var command = new DeployCommand(tempRoot, config);
 
         var result = await command.RunAsync(new DeployCommand.Settings());

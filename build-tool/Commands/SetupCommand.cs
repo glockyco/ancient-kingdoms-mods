@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using BuildTool.Configuration;
+using BuildTool.Game;
 using BuildTool.HotRepl;
 using BuildTool.Output;
 using Spectre.Console.Cli;
@@ -74,7 +75,19 @@ public sealed class SetupCommand : AsyncCommand<SetupCommand.Settings>
         if (settings.NonInteractive)
             return RunNonInteractive(propsPath, existing);
 
-        var detectedGamePath = DetectGamePath();
+        var discovery = GameDiscovery.Discover();
+        if (discovery.Outcome == GameDiscoveryOutcome.Ambiguous)
+        {
+            Console.Error.WriteLine(
+                $"Error: {discovery.Candidates.Count} bottles hold an Ancient Kingdoms installation "
+                + $"for app id {SteamAppManifests.AncientKingdomsAppId}:");
+            foreach (var candidate in discovery.Candidates)
+                Console.Error.WriteLine($"  {candidate}");
+            Console.Error.WriteLine("Remove all but one, then run setup again.");
+            return ExitCodes.InvalidUsage;
+        }
+
+        var detectedGamePath = discovery.GamePath;
         var currentGamePath = existing.GetValueOrDefault("ANCIENT_KINGDOMS_PATH", "");
         var defaultGamePath = !string.IsNullOrEmpty(currentGamePath) ? currentGamePath : detectedGamePath;
 
@@ -97,38 +110,45 @@ public sealed class SetupCommand : AsyncCommand<SetupCommand.Settings>
         Console.WriteLine($"Data export path: {exportPath}");
         Console.WriteLine();
 
-        var winePath = string.Empty;
-        var winePrefix = string.Empty;
-        if (IsMacOS())
+        var detectedWinePath = DetectWinePath();
+        var currentWinePath = existing.GetValueOrDefault("WINE_PATH", "");
+        var defaultWinePath = !string.IsNullOrEmpty(currentWinePath) ? currentWinePath : detectedWinePath;
+
+        var winePath = Prompt("Wine binary", defaultWinePath);
+        if (string.IsNullOrWhiteSpace(winePath))
         {
-            var detectedWinePath = DetectWinePath();
-            var currentWinePath = existing.GetValueOrDefault("WINE_PATH", "");
-            var defaultWinePath = !string.IsNullOrEmpty(currentWinePath) ? currentWinePath : detectedWinePath;
-
-            winePath = Prompt("Wine binary (macOS)", defaultWinePath);
-            if (!string.IsNullOrEmpty(winePath) && !File.Exists(winePath))
-            {
-                Console.Error.WriteLine($"Error: Wine binary not found at: {winePath}");
-                return ExitCodes.Unreachable;
-            }
-
-            var detectedWinePrefix = DeriveWinePrefix(gamePath);
-            var currentWinePrefix = existing.GetValueOrDefault("WINE_PREFIX", "");
-            var defaultWinePrefix = !string.IsNullOrEmpty(currentWinePrefix) ? currentWinePrefix : detectedWinePrefix;
-
-            if (string.IsNullOrEmpty(defaultWinePrefix))
-                Console.WriteLine("  Could not auto-detect wine prefix from game path.");
-
-            winePrefix = Prompt("Wine prefix (macOS)", defaultWinePrefix);
-            if (!string.IsNullOrEmpty(winePrefix) && !Directory.Exists(winePrefix))
-            {
-                Console.Error.WriteLine($"Error: Wine prefix directory not found at: {winePrefix}");
-                return ExitCodes.InvalidUsage;
-            }
+            Console.Error.WriteLine("Error: Wine binary path is required.");
+            return ExitCodes.InvalidUsage;
         }
 
-        LocalConfigWriter.NoteChanges(existing, gamePath, exportPath, winePath, winePrefix, IsMacOS(), Console.Out);
-        LocalConfigWriter.Write(propsPath, gamePath, exportPath, winePath, winePrefix, IsMacOS());
+        if (!File.Exists(winePath))
+        {
+            Console.Error.WriteLine($"Error: Wine binary not found at: {winePath}");
+            return ExitCodes.Unreachable;
+        }
+
+        var detectedWinePrefix = DeriveWinePrefix(gamePath);
+        var currentWinePrefix = existing.GetValueOrDefault("WINE_PREFIX", "");
+        var defaultWinePrefix = !string.IsNullOrEmpty(currentWinePrefix) ? currentWinePrefix : detectedWinePrefix;
+
+        if (string.IsNullOrEmpty(defaultWinePrefix))
+            Console.WriteLine("  Could not auto-detect wine prefix from game path.");
+
+        var winePrefix = Prompt("Wine prefix", defaultWinePrefix);
+        if (string.IsNullOrWhiteSpace(winePrefix))
+        {
+            Console.Error.WriteLine("Error: Wine prefix is required.");
+            return ExitCodes.InvalidUsage;
+        }
+
+        if (!Directory.Exists(winePrefix))
+        {
+            Console.Error.WriteLine($"Error: Wine prefix directory not found at: {winePrefix}");
+            return ExitCodes.InvalidUsage;
+        }
+
+        LocalConfigWriter.NoteChanges(existing, gamePath, exportPath, winePath, winePrefix, Console.Out);
+        LocalConfigWriter.Write(propsPath, gamePath, exportPath, winePath, winePrefix);
 
         Console.WriteLine();
         Console.WriteLine("Saved to Local.props.");
@@ -165,10 +185,19 @@ public sealed class SetupCommand : AsyncCommand<SetupCommand.Settings>
             return ExitCodes.InvalidUsage;
         }
 
-        existing.TryGetValue("WINE_PATH", out var winePath);
-        existing.TryGetValue("WINE_PREFIX", out var winePrefix);
-        var includeWine = !string.IsNullOrEmpty(winePath) || !string.IsNullOrEmpty(winePrefix);
-        LocalConfigWriter.Write(propsPath, gamePath, exportPath, winePath, winePrefix, includeWine);
+        if (!existing.TryGetValue("WINE_PATH", out var winePath) || string.IsNullOrWhiteSpace(winePath))
+        {
+            Console.Error.WriteLine("Error: WINE_PATH missing from Local.props.");
+            return ExitCodes.InvalidUsage;
+        }
+
+        if (!existing.TryGetValue("WINE_PREFIX", out var winePrefix) || string.IsNullOrWhiteSpace(winePrefix))
+        {
+            Console.Error.WriteLine("Error: WINE_PREFIX missing from Local.props.");
+            return ExitCodes.InvalidUsage;
+        }
+
+        LocalConfigWriter.Write(propsPath, gamePath, exportPath, winePath, winePrefix);
         _resultStore.SetData(new { propsPath, gamePath, exportPath });
 
         Console.WriteLine("Saved to Local.props.");
@@ -206,35 +235,6 @@ public sealed class SetupCommand : AsyncCommand<SetupCommand.Settings>
         var result = string.IsNullOrEmpty(input) ? (defaultValue ?? string.Empty) : input;
         Console.WriteLine();
         return result;
-    }
-
-    private static string? DetectGamePath()
-    {
-        var candidates = new List<string>();
-        if (IsMacOS())
-        {
-            var bottlesDir = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-                "Library", "Application Support", "CrossOver", "Bottles");
-            if (Directory.Exists(bottlesDir))
-            {
-                foreach (var bottle in Directory.GetDirectories(bottlesDir))
-                {
-                    var candidate = Path.Combine(bottle, "drive_c", "Program Files (x86)",
-                        "Steam", "steamapps", "common", "Ancient Kingdoms");
-                    candidates.Add(candidate);
-                }
-            }
-        }
-        else
-        {
-            candidates.Add(@"C:\Program Files (x86)\Steam\steamapps\common\Ancient Kingdoms");
-            candidates.Add(@"C:\Steam\steamapps\common\Ancient Kingdoms");
-            candidates.Add(@"D:\SteamLibrary\steamapps\common\Ancient Kingdoms");
-            candidates.Add(@"E:\SteamLibrary\steamapps\common\Ancient Kingdoms");
-        }
-
-        return candidates.FirstOrDefault(p => File.Exists(Path.Combine(p, "ancientkingdoms.exe")));
     }
 
     private static string? DetectWinePath()
@@ -304,6 +304,4 @@ public sealed class SetupCommand : AsyncCommand<SetupCommand.Settings>
             : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".config");
         return Path.Combine(configRoot, "hotrepl", "profiles.json");
     }
-
-    private static bool IsMacOS() => RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
 }

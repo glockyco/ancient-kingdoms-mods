@@ -10,9 +10,6 @@ public static class WineEnvironment
 {
     public static ProcessRequest BuildLaunchRequest(LocalConfig config, IReadOnlyList<string> gameArgs)
     {
-        if (config.WinePath is null || config.WinePrefix is null)
-            throw new InvalidOperationException("WINE_PATH and WINE_PREFIX are required for macOS launch.");
-
         var bottleName = Path.GetFileName(config.WinePrefix);
         var args = new List<string> { "ancientkingdoms.exe" };
         args.AddRange(gameArgs);

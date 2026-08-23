@@ -24,7 +24,7 @@ Execute in order:
 #    install in Local.props (the CrossOver bottle), so there is nothing to download
 #    and the scripts always match the build the exporter runs against. The script
 #    installs the pinned ILSpy 10.1.1.8388 locally and invokes its managed
-#    ilspycmd.dll through dotnet; no global DOTNET_ROOT and no steamcmd needed.
+#    ilspycmd.dll through dotnet; no global DOTNET_ROOT needed.
 #    Running this first surfaces game-side API changes (renamed/removed fields the DataExporter binds to)
 #    before the long export run. A failing export caused by a renamed Il2Cpp member wastes the whole launch cycle.
 #    The bottle's own Steam client usually has the patch already; the script aborts
@@ -47,7 +47,9 @@ Execute in order:
 #    regenerates those interop assemblies when the updated game runs after a Steam
 #    update. Building first can fail with
 #    `CS1061: 'X' does not contain a definition for 'y'`.
-#    1. Update the CrossOver bottle with steamcmd:
+#    1. Ask the bottle's Steam client to bring the game current. The command starts that
+#       client, requests a validation, and waits on the application manifest, reporting the
+#       build id it settles on:
 dotnet run --project build-tool update
 #    2. Launch the updated game. This returns once MelonLoader is up, after
 #       Il2Cpp interop regeneration. Stop the game before continuing:
@@ -69,14 +71,14 @@ dotnet run --project build-tool export
 dotnet run --project build-tool build
 dotnet run --project build-tool deploy
 # 5. Export fresh game data (launches game, exports JSON, quits)
-#    --update runs steamcmd app_update against the CrossOver bottle (separate from .steam-download/).
+#    --update asks the bottle's Steam client to bring the game current before exporting.
 #    Use --screenshots if the world map changed (user confirmed in Before Starting).
 dotnet run --project build-tool export --update
 # dotnet run --project build-tool export --update --screenshots  # if map changed
 #
 # Note: MelonLoader logs `Game Version: UNKNOWN` for this game — the build does not expose
 # its version string to MelonLoader. Do NOT use that line to verify the install is current.
-# Instead, confirm via steamcmd's `Success! App '2241380' fully installed.` line during --update,
+# Instead, confirm via the build id that `update` reports from the Steam application manifest,
 # or by checking the in-game main menu.
 #
 # If MelonLoader fails with `UnityDependencies_<unity-version>.zip does not Exist!`

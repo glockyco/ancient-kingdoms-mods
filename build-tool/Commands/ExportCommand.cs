@@ -19,7 +19,6 @@ public sealed class ExportCommand : AsyncCommand<ExportCommand.Settings>
     private readonly string _repoRoot;
     private readonly LocalConfig _config;
     private readonly IProcessRunner _runner;
-    private readonly bool _isMacOs;
     private readonly CommandResultStore _resultStore;
     private readonly UnityDependenciesPreflight _unityDependenciesPreflight;
     private readonly Func<HotReplRunnerOptions, CancellationToken, Task<ExportRunnerResult>> _exportRunner;
@@ -32,7 +31,6 @@ public sealed class ExportCommand : AsyncCommand<ExportCommand.Settings>
             LocalConfigLoader.Load(
                 Path.Combine(Directory.GetCurrentDirectory(), "Local.props")),
             new CliWrapProcessRunner(),
-            OperatingSystem.IsMacOS(),
             new CommandResultStore(),
             unityDependenciesPreflight: new UnityDependenciesPreflight())
     {
@@ -42,7 +40,6 @@ public sealed class ExportCommand : AsyncCommand<ExportCommand.Settings>
         string repoRoot,
         LocalConfig config,
         IProcessRunner runner,
-        bool isMacOs,
         CommandResultStore? resultStore = null,
         TimeSpan? hotReplReadinessTimeout = null,
         TimeSpan? hotReplPollInterval = null,
@@ -52,7 +49,6 @@ public sealed class ExportCommand : AsyncCommand<ExportCommand.Settings>
         _repoRoot                   = repoRoot;
         _config                     = config;
         _runner                     = runner;
-        _isMacOs                    = isMacOs;
         _resultStore                = resultStore ?? new CommandResultStore();
         _unityDependenciesPreflight = unityDependenciesPreflight ?? new UnityDependenciesPreflight();
         _hotReplReadinessTimeout    = hotReplReadinessTimeout;
@@ -67,7 +63,7 @@ public sealed class ExportCommand : AsyncCommand<ExportCommand.Settings>
         public bool Screenshots { get; set; }
 
         [CommandOption("--update")]
-        [Description("Run steamcmd app_update before export.")]
+        [Description("Ask Steam to bring the game current before exporting.")]
         public bool Update { get; set; }
 
         [CommandOption("--unity-version <VERSION>")]
@@ -93,7 +89,7 @@ public sealed class ExportCommand : AsyncCommand<ExportCommand.Settings>
         if (settings.Update)
         {
             var updateResult = await UpdateCommand.RunSteamUpdateAsync(
-                _repoRoot, _config, _runner, cancellationToken);
+                _config, _runner, cancellationToken);
             if (updateResult != 0) return updateResult;
         }
 
@@ -144,8 +140,7 @@ public sealed class ExportCommand : AsyncCommand<ExportCommand.Settings>
             var gameArgs = settings.UnityVersion is null
                 ? Array.Empty<string>()
                 : new[] { "--melonloader.unityversion", settings.UnityVersion };
-            request = GameLauncher.BuildLaunchRequest(
-                _config, gameArgs, _isMacOs);
+            request = GameLauncher.BuildLaunchRequest(_config, gameArgs);
         }
         catch (InvalidOperationException ex)
         {

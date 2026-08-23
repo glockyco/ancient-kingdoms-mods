@@ -12,12 +12,6 @@ public class PlatformEnvironmentTests
         WinePath: "/Applications/CrossOver.app/Contents/SharedSupport/CrossOver/bin/wine",
         WinePrefix: "/Users/me/Library/Application Support/CrossOver/Bottles/Steam");
 
-    private static LocalConfig WindowsConfig() => new(
-        GamePath: @"C:\Games\Ancient Kingdoms",
-        DataExportPath: @"C:\Projects\AK\exported-data",
-        WinePath: null,
-        WinePrefix: null);
-
     [Fact]
     public void Wine_BuildsRequestWithCrossOverBottleAndDotnetRoot()
     {
@@ -45,33 +39,13 @@ public class PlatformEnvironmentTests
     }
 
     [Fact]
-    public void Windows_BuildsRequestPointingAtGameExe()
-    {
-        var request = WindowsEnvironment.BuildLaunchRequest(WindowsConfig(), gameArgs: new string[0]);
-
-        Assert.Equal(System.IO.Path.Combine(WindowsConfig().GamePath, "ancientkingdoms.exe"), request.Program);
-        Assert.Empty(request.Arguments);
-        Assert.Equal(WindowsConfig().GamePath, request.WorkingDirectory);
-    }
-
-    [Fact]
-    public void GameLauncher_DispatchesToWineWhenWineConfigured()
+    public void GameLauncher_BuildsTheWineRequest()
     {
         var config = MacConfig();
 
-        var request = GameLauncher.BuildLaunchRequest(config, gameArgs: new[] { "--export-data" }, isMacOs: true);
+        var request = GameLauncher.BuildLaunchRequest(config, gameArgs: new[] { "--export-data" });
 
         Assert.Equal(config.WinePath, request.Program);
         Assert.Contains("--export-data", request.Arguments);
-    }
-
-    [Fact]
-    public void GameLauncher_DispatchesToWindowsWhenNotMacOs()
-    {
-        var config = WindowsConfig();
-
-        var request = GameLauncher.BuildLaunchRequest(config, gameArgs: new string[0], isMacOs: false);
-
-        Assert.EndsWith("ancientkingdoms.exe", request.Program);
     }
 }

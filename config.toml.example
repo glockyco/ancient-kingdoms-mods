@@ -43,7 +43,3 @@ bounds_max_y = 1300.0
 # Reference values from MapScreenshotter. Changes here do not affect tile generation.
 tile_world_size = 200.0
 tile_resolution = 1024
-
-[steam]
-# Steam username for updating the game via steamcmd (used by `build-tool update`)
-username = "your_steam_username"
