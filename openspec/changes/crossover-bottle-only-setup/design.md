@@ -69,6 +69,15 @@ The previous workstation shows the first shape on disk, with the executable and 
 
 **The manifest is the proof, not the exit status.** A protocol URL returns as soon as the client accepts it, so the exit status says nothing about the download. `StateFlags` and `buildid` describe the installation itself. The observed transition is `6 → 1030 → 4`, where `1030` is the running update and `4` is the settled state, which also lets the command distinguish an installation that was already current from one it updated.
 
+**The client's log says when it finished; the manifest says what it did.** Measured after the first implementation: when a validation changes nothing, Steam never rewrites the manifest at all, leaving `LastUpdated` and `buildid` untouched. A command that watched only the manifest therefore could not tell "Steam is still working" from "Steam finished and changed nothing", and reached the second answer by exhausting a timeout — two minutes for the common case, with a request Steam never received producing the same confident "already current" as one it completed. The client records its own lifecycle in `logs/content_log.txt`:
+
+```
+AppID 2241380 App update changed : Running Update,Verifying Installed,
+AppID 2241380 scheduler finished : removed from schedule (result No Error, state 0xc)
+```
+
+The command waits for that line, then reads the manifest for the result. The two dispositions are not equivalent: `removed from schedule` means Steam is done with the application, while `staying in schedule` is what a suspended download writes before it resumes, so only the first ends the wait. The log is read from the offset taken after the client is ready, so scheduler activity from the client's own startup cannot be mistaken for a response. Alternative rejected: shortening the manifest timeout, which trades a wrong answer given slowly for the same wrong answer given quickly.
+
 **The launcher path is derived, not configured.** `cxstart` is a sibling of the recorded wine binary. Adding a configuration key for a path that is always one directory entry away from a key we already require would be a second fact that can disagree with the first.
 
 **Discovery reads the manifest rather than a directory name.** Alternative: keep the hardcoded name and add the application id as a second check. Rejected because two facts about one installation can disagree, and the manifest is the record Steam maintains. This also makes the C# agree with the shell script, which reads the same file.
@@ -82,6 +91,8 @@ The previous workstation shows the first shape on disk, with the executable and 
 ## Risks / Trade-offs
 
 **Steam may present a window, so the update is not fully unattended.** → Accepted. The client has always been the real updater on both machines, and the manifest makes the outcome checkable even when the interaction is not.
+
+**Reading the client's log couples the command to a format Steam owns.** → Accepted, and it is the same dependency the readiness wait already carries on `connection_log.txt`. The alternative is a timeout, which was measured to give a confident wrong answer when the request never arrived. A format change here makes the command fail and name the log, rather than report a result it did not observe.
 
 **A validation verifies every file, so the update costs more input and output than the delta needs.** → Measured at about forty seconds for 7.4 GB against a local disk, against a download that would otherwise be deferred by roughly a day. The trade is accepted, and the alternative is recorded above so a later reader does not "optimise" it back to `install`.
 

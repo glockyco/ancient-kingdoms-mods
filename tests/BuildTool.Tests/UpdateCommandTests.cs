@@ -20,8 +20,9 @@ public class UpdateCommandTests
     [Fact]
     public async Task StartsTheClientInTheBottleThenAsksItToValidate()
     {
-        using var bottle = new FakeBottle(buildId: "24878482", stateFlags: 4);
+        using var bottle = new FakeBottle(buildId: "24878482");
         var runner = bottle.Runner();
+        runner.OnValidate = () => bottle.SchedulerFinished("No Error");
 
         var result = await bottle.Command(runner).RunAsync(new UpdateCommand.Settings());
 
@@ -49,8 +50,9 @@ public class UpdateCommandTests
     [Fact]
     public async Task RequestsAValidationAndNeverAnInstall()
     {
-        using var bottle = new FakeBottle(buildId: "24878482", stateFlags: 4);
+        using var bottle = new FakeBottle(buildId: "24878482");
         var runner = bottle.Runner();
+        runner.OnValidate = () => bottle.SchedulerFinished("No Error");
 
         await bottle.Command(runner).RunAsync(new UpdateCommand.Settings());
 
@@ -63,32 +65,15 @@ public class UpdateCommandTests
     }
 
     [Fact]
-    public async Task WaitsForTheManifestToSettleAndReportsTheNewBuild()
+    public async Task ReportsTheNewBuildWhenSteamUpdatedTheInstallation()
     {
-        using var bottle = new FakeBottle(buildId: "24771490", stateFlags: 4);
+        using var bottle = new FakeBottle(buildId: "24771490");
         var runner = bottle.Runner();
-        var store = new CommandResultStore();
-
-        // The measured transition: the client starts work, then settles on the newer build.
         runner.OnValidate = () =>
         {
-            bottle.WriteManifest("24771490", stateFlags: 1030);
-            bottle.WriteManifestAfter(TimeSpan.FromMilliseconds(50), "24878482", stateFlags: 4);
+            bottle.WriteManifest("24878482", stateFlags: 4);
+            bottle.SchedulerFinished("No Error");
         };
-
-        var result = await bottle.Command(runner, store).RunAsync(new UpdateCommand.Settings());
-
-        Assert.Equal(0, result);
-        var settled = SteamAppManifests.Read(bottle.ManifestPath)!;
-        Assert.Equal("24878482", settled.BuildId);
-        Assert.True(settled.IsFullyInstalled);
-    }
-
-    [Fact]
-    public async Task ReportsAlreadyCurrentWhenNoWorkStarts()
-    {
-        using var bottle = new FakeBottle(buildId: "24878482", stateFlags: 4);
-        var runner = bottle.Runner();
 
         var result = await bottle.Command(runner).RunAsync(new UpdateCommand.Settings());
 
@@ -96,25 +81,134 @@ public class UpdateCommandTests
         Assert.Equal("24878482", SteamAppManifests.Read(bottle.ManifestPath)!.BuildId);
     }
 
+    /// <summary>
+    /// The case that exposed the defect. A validation that changes nothing never causes Steam to
+    /// rewrite the manifest, so the command must reach its answer from the client's own report
+    /// rather than by waiting for a manifest change that will not come.
+    /// </summary>
     [Fact]
-    public async Task FailsAndReportsTheObservedStateWhenItNeverSettles()
+    public async Task ReportsAlreadyCurrentWithoutWaitingWhenTheManifestNeverChanges()
     {
-        using var bottle = new FakeBottle(buildId: "24771490", stateFlags: 4);
+        using var bottle = new FakeBottle(buildId: "24878482");
         var runner = bottle.Runner();
-        runner.OnValidate = () => bottle.WriteManifest("24771490", stateFlags: 1030);
+        runner.OnValidate = () => bottle.SchedulerFinished("No Error");
+
+        var elapsed = System.Diagnostics.Stopwatch.StartNew();
+        var result = await bottle
+            .Command(runner, completionTimeout: TimeSpan.FromSeconds(30))
+            .RunAsync(new UpdateCommand.Settings());
+        elapsed.Stop();
+
+        Assert.Equal(0, result);
+        Assert.Equal("24878482", SteamAppManifests.Read(bottle.ManifestPath)!.BuildId);
+
+        // It must not have reached that answer by exhausting the timeout.
+        Assert.True(elapsed.Elapsed < TimeSpan.FromSeconds(10), $"took {elapsed.Elapsed}");
+    }
+
+    /// <summary>A request Steam never acts on is a failure, not a quiet success.</summary>
+    [Fact]
+    public async Task FailsWhenSteamNeverFinishesWithTheApplication()
+    {
+        using var bottle = new FakeBottle(buildId: "24878482");
+        var runner = bottle.Runner();
 
         var result = await bottle
-            .Command(runner, settleTimeout: TimeSpan.FromMilliseconds(200))
+            .Command(runner, completionTimeout: TimeSpan.FromMilliseconds(200))
             .RunAsync(new UpdateCommand.Settings());
 
         Assert.NotEqual(0, result);
-        Assert.Equal(1030, SteamAppManifests.Read(bottle.ManifestPath)!.StateFlags);
+    }
+
+    /// <summary>A suspended pass is not the end of the work, so it must not end the wait.</summary>
+    [Fact]
+    public async Task FailsWhenSteamOnlySuspendsAndStaysInTheSchedule()
+    {
+        using var bottle = new FakeBottle(buildId: "24878482");
+        var runner = bottle.Runner();
+        runner.OnValidate = () => bottle.AppendContentLog(
+            $"[2026-08-08 17:00:10] AppID {AppId} scheduler finished : staying in schedule (result Suspended, state 0x40a) ");
+
+        var result = await bottle
+            .Command(runner, completionTimeout: TimeSpan.FromMilliseconds(200))
+            .RunAsync(new UpdateCommand.Settings());
+
+        Assert.NotEqual(0, result);
+    }
+
+    [Fact]
+    public async Task FailsWhenSteamFinishesWithAResultOtherThanSuccess()
+    {
+        using var bottle = new FakeBottle(buildId: "24878482");
+        var runner = bottle.Runner();
+        runner.OnValidate = () => bottle.SchedulerFinished("Suspended");
+
+        var result = await bottle.Command(runner).RunAsync(new UpdateCommand.Settings());
+
+        Assert.NotEqual(0, result);
+    }
+
+    /// <summary>
+    /// Scheduler activity from the client's own startup belongs to no request of ours, so it
+    /// must not be read as the answer to one.
+    /// </summary>
+    [Fact]
+    public async Task IgnoresSchedulerActivityRecordedBeforeTheRequest()
+    {
+        using var bottle = new FakeBottle(buildId: "24878482");
+        var runner = bottle.Runner();
+        runner.OnClientStart = () => bottle.SchedulerFinished("No Error");
+
+        var result = await bottle
+            .Command(runner, completionTimeout: TimeSpan.FromMilliseconds(200))
+            .RunAsync(new UpdateCommand.Settings());
+
+        Assert.NotEqual(0, result);
+    }
+
+    [Fact]
+    public async Task FailsWhenSteamReportsSuccessButTheInstallationIsNotFullyInstalled()
+    {
+        using var bottle = new FakeBottle(buildId: "24878482");
+        var runner = bottle.Runner();
+        runner.OnValidate = () =>
+        {
+            bottle.WriteManifest("24878482", stateFlags: 6);
+            bottle.SchedulerFinished("No Error");
+        };
+
+        var result = await bottle
+            .Command(runner, manifestFlushTimeout: TimeSpan.FromMilliseconds(200))
+            .RunAsync(new UpdateCommand.Settings());
+
+        Assert.NotEqual(0, result);
+    }
+
+    /// <summary>Steam writes the log entry and rewrites the manifest separately.</summary>
+    [Fact]
+    public async Task ToleratesTheManifestCatchingUpAfterSteamReportsSuccess()
+    {
+        using var bottle = new FakeBottle(buildId: "24771490");
+        var runner = bottle.Runner();
+        runner.OnValidate = () =>
+        {
+            bottle.WriteManifest("24771490", stateFlags: 1030);
+            bottle.SchedulerFinished("No Error");
+            bottle.WriteManifestAfter(TimeSpan.FromMilliseconds(60), "24878482", stateFlags: 4);
+        };
+
+        var result = await bottle
+            .Command(runner, manifestFlushTimeout: TimeSpan.FromSeconds(10))
+            .RunAsync(new UpdateCommand.Settings());
+
+        Assert.Equal(0, result);
+        Assert.Equal("24878482", SteamAppManifests.Read(bottle.ManifestPath)!.BuildId);
     }
 
     [Fact]
     public async Task FailsBeforeStartingAnythingWhenTheLauncherIsAbsent()
     {
-        using var bottle = new FakeBottle("24878482", stateFlags: 4, createLauncher: false);
+        using var bottle = new FakeBottle("24878482", createLauncher: false);
         var runner = bottle.Runner();
 
         var result = await bottle.Command(runner).RunAsync(new UpdateCommand.Settings());
@@ -126,7 +220,7 @@ public class UpdateCommandTests
     [Fact]
     public async Task FailsBeforeStartingAnythingWhenTheManifestIsAbsent()
     {
-        using var bottle = new FakeBottle("24878482", stateFlags: 4);
+        using var bottle = new FakeBottle("24878482");
         File.Delete(bottle.ManifestPath);
         var runner = bottle.Runner();
 
@@ -136,12 +230,12 @@ public class UpdateCommandTests
         Assert.Empty(runner.Calls);
     }
 
-    /// <summary>A bottle on disk: wine binary, launcher, Steam manifest, and connection log.</summary>
+    /// <summary>A bottle on disk: wine binary, launcher, Steam manifest, and the client's logs.</summary>
     private sealed class FakeBottle : IDisposable
     {
         private readonly string _root;
 
-        public FakeBottle(string buildId, int stateFlags, bool createLauncher = true)
+        public FakeBottle(string buildId, int stateFlags = 4, bool createLauncher = true)
         {
             _root = Directory.CreateTempSubdirectory().FullName;
 
@@ -154,7 +248,7 @@ public class UpdateCommandTests
 
             WinePrefix = Path.Combine(_root, "Bottles", "Steam");
             Directory.CreateDirectory(GameDiscovery.SteamAppsDirectory(WinePrefix));
-            Directory.CreateDirectory(Path.GetDirectoryName(SteamBottle.ConnectionLogPath(WinePrefix))!);
+            Directory.CreateDirectory(Path.GetDirectoryName(SteamLogs.ConnectionLogPath(WinePrefix))!);
             WriteManifest(buildId, stateFlags);
         }
 
@@ -181,21 +275,30 @@ public class UpdateCommandTests
                 WriteManifest(buildId, stateFlags);
             });
 
+        public void AppendContentLog(string line) =>
+            File.AppendAllText(SteamLogs.ContentLogPath(WinePrefix), line + "\n");
+
+        public void SchedulerFinished(string result) =>
+            AppendContentLog(
+                $"[2026-08-23 15:02:29] AppID {AppId} scheduler finished : removed from schedule (result {result}, state 0xc) ");
+
         public void AppendLogon() =>
             File.AppendAllText(
-                SteamBottle.ConnectionLogPath(WinePrefix),
-                $"[2026-08-23 10:00:01] {SteamBottle.LoggedOnMarker}() : 'OK'\n");
+                SteamLogs.ConnectionLogPath(WinePrefix),
+                "[2026-08-23 10:00:01] RecvMsgClientLogOnResponse() : 'OK'\n");
 
         public ScriptedRunner Runner()
         {
-            File.AppendAllText(SteamBottle.ConnectionLogPath(WinePrefix), "[2026-08-23 09:59:00] starting\n");
+            File.AppendAllText(SteamLogs.ConnectionLogPath(WinePrefix), "[2026-08-23 09:59:00] starting\n");
+            AppendContentLog("[2026-08-23 09:59:00] AppID 228980 scheduler finished : removed from schedule (result No Error, state 0xc) ");
             return new ScriptedRunner { Bottle = this };
         }
 
         public UpdateCommand Command(
             IProcessRunner runner,
             CommandResultStore? store = null,
-            TimeSpan? settleTimeout = null) =>
+            TimeSpan? completionTimeout = null,
+            TimeSpan? manifestFlushTimeout = null) =>
             new(
                 new LocalConfig(
                     GamePath: Path.Combine(WinePrefix, "drive_c", "Game"),
@@ -205,8 +308,8 @@ public class UpdateCommandTests
                 runner,
                 store,
                 clientReadyTimeout: TimeSpan.FromSeconds(10),
-                workStartTimeout: TimeSpan.FromMilliseconds(150),
-                settleTimeout: settleTimeout ?? TimeSpan.FromSeconds(10),
+                completionTimeout: completionTimeout ?? TimeSpan.FromSeconds(10),
+                manifestFlushTimeout: manifestFlushTimeout ?? TimeSpan.FromSeconds(10),
                 pollInterval: TimeSpan.FromMilliseconds(10));
 
         public void Dispose() => Directory.Delete(_root, recursive: true);
@@ -219,6 +322,7 @@ public class UpdateCommandTests
     private sealed class ScriptedRunner : IProcessRunner
     {
         public FakeBottle? Bottle { get; set; }
+        public Action? OnClientStart { get; set; }
         public Action? OnValidate { get; set; }
         public List<ProcessRequest> Calls { get; } = new();
 
@@ -233,6 +337,7 @@ public class UpdateCommandTests
             }
 
             Bottle?.AppendLogon();
+            OnClientStart?.Invoke();
 
             try
             {

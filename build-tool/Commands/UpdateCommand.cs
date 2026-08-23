@@ -19,14 +19,14 @@ public sealed class UpdateCommand : AsyncCommand<UpdateCommand.Settings>
     /// <summary>How long the client has to log on before the command gives up.</summary>
     private static readonly TimeSpan DefaultClientReadyTimeout = TimeSpan.FromMinutes(3);
 
-    /// <summary>
-    /// How long to wait for the client to start working after the request. When nothing starts,
-    /// the installation was already current.
-    /// </summary>
-    private static readonly TimeSpan DefaultWorkStartTimeout = TimeSpan.FromMinutes(2);
+    /// <summary>How long the client has to finish with the application after the request.</summary>
+    private static readonly TimeSpan DefaultCompletionTimeout = TimeSpan.FromMinutes(60);
 
-    /// <summary>How long the client has to bring the installation back to a settled state.</summary>
-    private static readonly TimeSpan DefaultSettleTimeout = TimeSpan.FromMinutes(60);
+    /// <summary>
+    /// How long the manifest has to catch up once the client reports it has finished. Steam
+    /// writes the log entry and rewrites the manifest separately.
+    /// </summary>
+    private static readonly TimeSpan DefaultManifestFlushTimeout = TimeSpan.FromSeconds(30);
 
     private static readonly TimeSpan DefaultPollInterval = TimeSpan.FromSeconds(2);
 
@@ -34,8 +34,8 @@ public sealed class UpdateCommand : AsyncCommand<UpdateCommand.Settings>
     private readonly IProcessRunner _runner;
     private readonly CommandResultStore _resultStore;
     private readonly TimeSpan _clientReadyTimeout;
-    private readonly TimeSpan _workStartTimeout;
-    private readonly TimeSpan _settleTimeout;
+    private readonly TimeSpan _completionTimeout;
+    private readonly TimeSpan _manifestFlushTimeout;
     private readonly TimeSpan _pollInterval;
 
     public UpdateCommand()
@@ -51,16 +51,16 @@ public sealed class UpdateCommand : AsyncCommand<UpdateCommand.Settings>
         IProcessRunner runner,
         CommandResultStore? resultStore = null,
         TimeSpan? clientReadyTimeout = null,
-        TimeSpan? workStartTimeout = null,
-        TimeSpan? settleTimeout = null,
+        TimeSpan? completionTimeout = null,
+        TimeSpan? manifestFlushTimeout = null,
         TimeSpan? pollInterval = null)
     {
         _config = config;
         _runner = runner;
         _resultStore = resultStore ?? new CommandResultStore();
         _clientReadyTimeout = clientReadyTimeout ?? DefaultClientReadyTimeout;
-        _workStartTimeout = workStartTimeout ?? DefaultWorkStartTimeout;
-        _settleTimeout = settleTimeout ?? DefaultSettleTimeout;
+        _completionTimeout = completionTimeout ?? DefaultCompletionTimeout;
+        _manifestFlushTimeout = manifestFlushTimeout ?? DefaultManifestFlushTimeout;
         _pollInterval = pollInterval ?? DefaultPollInterval;
     }
 
@@ -113,8 +113,8 @@ public sealed class UpdateCommand : AsyncCommand<UpdateCommand.Settings>
         Console.WriteLine($"  Installed build: {before.BuildId}");
         Console.WriteLine();
 
-        var logPath = SteamBottle.ConnectionLogPath(_config.WinePrefix);
-        var logOffset = FileLength(logPath);
+        var connectionLogPath = SteamLogs.ConnectionLogPath(_config.WinePrefix);
+        var connectionLogOffset = SteamLogs.Length(connectionLogPath);
 
         using var clientCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         Task<ProcessResult> clientTask;
@@ -132,16 +132,21 @@ public sealed class UpdateCommand : AsyncCommand<UpdateCommand.Settings>
 
         try
         {
-            if (!await WaitForClientAsync(clientTask, logPath, logOffset, cancellationToken))
+            if (!await WaitForClientAsync(clientTask, connectionLogPath, connectionLogOffset, cancellationToken))
             {
                 Console.Error.WriteLine(
                     $"Error: the Steam client did not log on within {Describe(_clientReadyTimeout)}.");
-                Console.Error.WriteLine($"  Connection log: {logPath}");
-                _resultStore.SetErrorDetails(new { bottle = bottleName, connectionLog = logPath });
+                Console.Error.WriteLine($"  Connection log: {connectionLogPath}");
+                _resultStore.SetErrorDetails(new { bottle = bottleName, connectionLog = connectionLogPath });
                 return ExitCodes.CommandFailed;
             }
 
             Console.WriteLine("  Steam client ready. Requesting validation...");
+
+            // Read the content log only from here on, so scheduler activity the client performed
+            // while starting up cannot be mistaken for a response to this request.
+            var contentLogPath = SteamLogs.ContentLogPath(_config.WinePrefix);
+            var contentLogOffset = SteamLogs.Length(contentLogPath);
 
             try
             {
@@ -157,34 +162,61 @@ public sealed class UpdateCommand : AsyncCommand<UpdateCommand.Settings>
                 return ExitCodes.Unreachable;
             }
 
-            var started = await WaitAsync(
-                manifestPath, _workStartTimeout, m => !m.IsFullyInstalled, cancellationToken);
+            // Steam says when it has finished with the application; the manifest says what the
+            // result was. The manifest cannot serve as the completion signal, because a
+            // validation that changes nothing never causes Steam to rewrite it.
+            var schedulerResult = await WaitForSchedulerAsync(
+                contentLogPath, contentLogOffset, appId, cancellationToken);
 
-            if (started is null)
+            if (schedulerResult is null)
             {
-                var current = SteamAppManifests.Read(manifestPath) ?? before;
-                Console.WriteLine($"Already current at build {current.BuildId}. Nothing to download.");
-                _resultStore.SetData(new
+                var observed = SteamAppManifests.Read(manifestPath);
+                Console.Error.WriteLine(
+                    $"Error: Steam did not finish with app {appId} within {Describe(_completionTimeout)}.");
+                Console.Error.WriteLine(
+                    observed is null
+                        ? $"  The manifest became unreadable: {manifestPath}"
+                        : $"  Observed StateFlags {observed.StateFlags}, build {observed.BuildId}.");
+                Console.Error.WriteLine($"  Content log: {contentLogPath}");
+                _resultStore.SetErrorDetails(new
                 {
                     appId,
-                    installDir = current.InstallDir,
-                    buildId = current.BuildId,
-                    stateFlags = current.StateFlags,
-                    updated = false,
+                    manifestPath,
+                    contentLog = contentLogPath,
+                    stateFlags = observed?.StateFlags,
+                    buildId = observed?.BuildId,
                 });
-                return ExitCodes.Success;
+                return ExitCodes.CommandFailed;
             }
 
-            Console.WriteLine($"  Steam is working (StateFlags {started.StateFlags})...");
+            if (schedulerResult != SteamLogs.NoErrorResult)
+            {
+                var observed = SteamAppManifests.Read(manifestPath);
+                Console.Error.WriteLine($"Error: Steam finished with app {appId} reporting '{schedulerResult}'.");
+                if (observed is not null)
+                    Console.Error.WriteLine($"  Observed StateFlags {observed.StateFlags}, build {observed.BuildId}.");
+                Console.Error.WriteLine($"  Content log: {contentLogPath}");
+                _resultStore.SetErrorDetails(new
+                {
+                    appId,
+                    result = schedulerResult,
+                    contentLog = contentLogPath,
+                    stateFlags = observed?.StateFlags,
+                    buildId = observed?.BuildId,
+                });
+                return ExitCodes.CommandFailed;
+            }
 
+            // Steam writes the log entry and rewrites the manifest separately, so give the
+            // manifest a bounded moment to agree before reading the result from it.
             var settled = await WaitAsync(
-                manifestPath, _settleTimeout, m => m.IsFullyInstalled, cancellationToken);
+                manifestPath, _manifestFlushTimeout, m => m.IsFullyInstalled, cancellationToken);
 
             if (settled is null)
             {
                 var observed = SteamAppManifests.Read(manifestPath);
                 Console.Error.WriteLine(
-                    $"Error: the installation did not settle within {Describe(_settleTimeout)}.");
+                    "Error: Steam reported it finished, but the installation is not fully installed.");
                 Console.Error.WriteLine(
                     observed is null
                         ? $"  The manifest became unreadable: {manifestPath}"
@@ -204,7 +236,7 @@ public sealed class UpdateCommand : AsyncCommand<UpdateCommand.Settings>
             Console.WriteLine(
                 updated
                     ? $"Updated from build {before.BuildId} to {settled.BuildId}."
-                    : $"Already current at build {settled.BuildId}. Files were verified.");
+                    : $"Already current at build {settled.BuildId}. Steam verified the installed files.");
 
             _resultStore.SetData(new
             {
@@ -219,8 +251,9 @@ public sealed class UpdateCommand : AsyncCommand<UpdateCommand.Settings>
         }
         finally
         {
-            // Release only the client this command started. When Steam was already running, the
-            // launcher forwarded the request and exited, so there is nothing left to cancel.
+            // Stop waiting on the launcher. The client keeps running in the bottle, which is
+            // where the operator's Steam belongs and what lets a second run reuse it, so this
+            // releases the wait rather than the client.
             clientCts.Cancel();
         }
     }
@@ -237,18 +270,46 @@ public sealed class UpdateCommand : AsyncCommand<UpdateCommand.Settings>
     {
         var deadline = DateTimeOffset.UtcNow + _clientReadyTimeout;
 
-        while (DateTimeOffset.UtcNow < deadline)
+        while (true)
         {
-            if (LoggedOnSince(logPath, logOffset))
+            if (SteamLogs.ShowsLogon(SteamLogs.ReadFrom(logPath, logOffset)))
                 return true;
 
+            // The launcher exits when Steam was already running and it forwarded the request.
             if (clientTask.IsCompleted)
                 return true;
 
+            if (DateTimeOffset.UtcNow >= deadline)
+                return false;
+
             await Task.Delay(_pollInterval, cancellationToken);
         }
+    }
 
-        return LoggedOnSince(logPath, logOffset) || clientTask.IsCompleted;
+    /// <summary>
+    /// Waits for Steam to record that it has finished with the application, and returns the
+    /// result it recorded, or null if it never finished within the time allowed.
+    /// </summary>
+    private async Task<string?> WaitForSchedulerAsync(
+        string contentLogPath,
+        long contentLogOffset,
+        string appId,
+        CancellationToken cancellationToken)
+    {
+        var deadline = DateTimeOffset.UtcNow + _completionTimeout;
+
+        while (true)
+        {
+            var appended = SteamLogs.ReadFrom(contentLogPath, contentLogOffset);
+            var result = SteamLogs.FindSchedulerResult(appended, appId);
+            if (result is not null)
+                return result;
+
+            if (DateTimeOffset.UtcNow >= deadline)
+                return null;
+
+            await Task.Delay(_pollInterval, cancellationToken);
+        }
     }
 
     /// <summary>Polls the manifest until it satisfies <paramref name="predicate"/>, or times out.</summary>
@@ -270,40 +331,6 @@ public sealed class UpdateCommand : AsyncCommand<UpdateCommand.Settings>
                 return null;
 
             await Task.Delay(_pollInterval, cancellationToken);
-        }
-    }
-
-    private static bool LoggedOnSince(string logPath, long offset)
-    {
-        try
-        {
-            if (!File.Exists(logPath))
-                return false;
-
-            using var stream = new FileStream(
-                logPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
-            if (stream.Length <= offset)
-                return false;
-
-            stream.Seek(offset, SeekOrigin.Begin);
-            using var reader = new StreamReader(stream);
-            return reader.ReadToEnd().Contains(SteamBottle.LoggedOnMarker, StringComparison.Ordinal);
-        }
-        catch (IOException)
-        {
-            return false;
-        }
-    }
-
-    private static long FileLength(string path)
-    {
-        try
-        {
-            return File.Exists(path) ? new FileInfo(path).Length : 0;
-        }
-        catch (IOException)
-        {
-            return 0;
         }
     }
 

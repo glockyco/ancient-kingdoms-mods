@@ -120,3 +120,29 @@
         and still branches on Windows and XDG. Recorded rather than removed: it is not a game
         launch path, and the proposal's removal list does not name it. On the one supported
         host those branches are unreachable, so it is a candidate for a later change.
+
+## 9. Corrections found in verification
+
+- [x] 9.1 Take the completion signal from the client's own `logs/content_log.txt` rather than from
+      the manifest, because a validation that changes nothing never causes Steam to rewrite the
+      manifest. Match `scheduler finished : removed from schedule` for the application id only,
+      and never `staying in schedule`, which a suspended download writes before it resumes.
+- [x] 9.2 Read the content log from the offset taken once the client is ready, so scheduler
+      activity from the client's own startup cannot be read as a response to this request.
+- [x] 9.3 Fail when Steam never finishes with the application, and fail naming the result when it
+      finishes with anything other than `No Error`. A request Steam never received previously
+      produced the same "already current" as one it completed.
+- [x] 9.4 Keep the manifest as the proof of the result: after Steam reports it finished, confirm
+      the installation reads fully installed, allowing a bounded moment for Steam to rewrite the
+      file, and report the build identifier from it.
+- [x] 9.5 Move the log reading to `SteamLogs`, leaving `SteamBottle` the launcher and the
+      requests, and delete the private log helpers from `UpdateCommand`.
+- [x] 9.6 Reduce `SetupCommand.DefaultProfilePath` to the one supported host, deleting the Windows
+      and XDG branches and the `System.Runtime.InteropServices` import they needed. Recorded in
+      task 8.7 as the last unreachable host branch.
+- [x] 9.7 Correct the comment on releasing the client. Cancelling the launcher stops the wait and
+      leaves Steam running in the bottle, which is what the second measured run observed.
+- [x] 9.8 Re-measure against the live bottle. The already-current run fell from 2m25s to 17.6s and
+      now ends when Steam records `removed from schedule (result No Error)` at 15:21:44, eleven
+      seconds after it began verifying. A second run against the warm client took 17.2s and left
+      the client count unchanged at two.

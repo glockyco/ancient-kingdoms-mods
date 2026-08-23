@@ -27,13 +27,6 @@ public static class SteamBottle
     public static string ManifestPath(string winePrefix, string appId) =>
         Path.Combine(GameDiscovery.SteamAppsDirectory(winePrefix), SteamAppManifests.FileName(appId));
 
-    /// <summary>The client's own log, which records each logon and so shows when it is ready.</summary>
-    public static string ConnectionLogPath(string winePrefix) =>
-        Path.Combine(winePrefix, "drive_c", "Program Files (x86)", "Steam", "logs", "connection_log.txt");
-
-    /// <summary>Marks a completed logon in the connection log.</summary>
-    public const string LoggedOnMarker = "RecvMsgClientLogOnResponse";
-
     /// <summary>
     /// Starts the client itself and holds it. The request deliberately omits <c>--no-wait</c>:
     /// this invocation is what keeps the client alive while it works.
