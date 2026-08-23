@@ -57,6 +57,15 @@ zone_ids = ["old_valorath"]
 # Old Valorath. Both are named because the pairing can change. A later patch may
 # move the quest to another giver or give this one a second quest, and naming
 # only one would publish the other.
+#
+# valorath_royal_key: the reward of the_royal_key_of_valorath, and that quest is
+# its only source. The cascade cannot take it the way it takes
+# key_to_the_north_wing. That key stays reachable through the portal it opens,
+# because the portal stands in Temple of Valaark, a published zone. This portal
+# stands inside Old Valorath, so the unreleased-zone rule removes it first. The
+# key then reaches no zone at all, and the closure keeps an item that no zone
+# reaches. Without this entry the compendium publishes a key that no player can
+# obtain, for a door it does not show.
 [entities.exclude]
 ids = [
     "old_valorath_token",
@@ -64,4 +73,5 @@ ids = [
     "the_lost_warden",
     "zharvok",
     "the_royal_key_of_valorath",
+    "valorath_royal_key",
 ]

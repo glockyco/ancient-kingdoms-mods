@@ -56,6 +56,10 @@
       "mechanism": "ignore_journal",
       "reason": "the game marks the item ignore_journal"
     },
+    "items:valorath_royal_key": {
+      "mechanism": "manual",
+      "reason": "named in the manual exclusion list"
+    },
     "monster_spawns:ancient_warden_drazzark_old_valorath_1764166": {
       "mechanism": "cascade",
       "pass": 1,
