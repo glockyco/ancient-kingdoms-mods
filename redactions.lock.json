@@ -1081,6 +1081,10 @@
         "monster_spawns:valorath_sentinel_old_valorath_1844974"
       ]
     },
+    "npcs:zharvok": {
+      "mechanism": "manual",
+      "reason": "named in the manual exclusion list"
+    },
     "portals:portal_old_valorath_to_old_valorath_1674940": {
       "mechanism": "cascade",
       "pass": 1,
@@ -1104,6 +1108,10 @@
       "reason": "named in the manual exclusion list"
     },
     "quests:the_lost_warden": {
+      "mechanism": "manual",
+      "reason": "named in the manual exclusion list"
+    },
+    "quests:the_royal_key_of_valorath": {
       "mechanism": "manual",
       "reason": "named in the manual exclusion list"
     },

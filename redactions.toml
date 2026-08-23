@@ -50,9 +50,18 @@ zone_ids = ["old_valorath"]
 # key_to_the_north_wing, so the key goes with it, and the portal it opens inside
 # Temple of Valaark is published without a stated requirement. That is intended:
 # no player can obtain a key whose only source is hidden.
+#
+# zharvok and the_royal_key_of_valorath: Old Valorath content placed in released
+# territory. The NPC stands in The Molten Summit and gives the quest, so the
+# unreleased-zone rule cannot reach either of them: nothing in their rows says
+# Old Valorath. Both are named because the pairing can change. A later patch may
+# move the quest to another giver or give this one a second quest, and naming
+# only one would publish the other.
 [entities.exclude]
 ids = [
     "old_valorath_token",
     "relics_of_the_ancient_faith",
     "the_lost_warden",
+    "zharvok",
+    "the_royal_key_of_valorath",
 ]
