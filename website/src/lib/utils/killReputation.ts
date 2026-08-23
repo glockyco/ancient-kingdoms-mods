@@ -53,7 +53,7 @@ function roundToInt(value: number): number {
  * spawn levels (level_min..level_max).
  *
  * Source: server-scripts/Monster.cs:517-543 (formula),
- * 2724-2736 and 2760-2772 (party/solo reward application).
+ * 2715-2727 and 2751-2763 (party/solo reward application).
  * Improve adds (level.current + Mathf.RoundToInt(health.max / 2000)) *
  * (boss 20 / elite 10 / normal 2); decrease subtracts level.current *
  * (boss 2 / elite 1 / normal 0.5).
