@@ -53,7 +53,7 @@ export function cookingSuccessPercent(
     : 100;
 }
 
-// Source: server-scripts/Player.cs:13097 — a high enough Cooking skill turns
+// Source: server-scripts/Player.cs:13145 — a high enough Cooking skill turns
 // low-tier recipes into "simple tasks" that grant no skill gain (strict >).
 export function isCookingEffortless(
   quality: number,

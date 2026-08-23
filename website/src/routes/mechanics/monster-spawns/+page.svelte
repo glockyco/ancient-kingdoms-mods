@@ -163,7 +163,7 @@
           looted — disappears almost immediately instead.
         </li>
         <li>
-          <!-- Source: server-scripts/Monster.cs:1865-1873 and 2495-2499 — hidden corpse is warped back to its start position. -->
+          <!-- Source: server-scripts/Monster.cs:1857-1865 and 2486-2490 — hidden corpse is warped back to its start position. -->
           When the corpse disappears, the monster is invisibly moved back to its original
           spawn point.
         </li>
@@ -174,7 +174,7 @@
           sooner, but never speeds up the respawn.
         </li>
         <li>
-          <!-- Source: server-scripts/Monster.cs:1850-1862 — on respawn aggro, debuffs, gold, and loot state are cleared, then the monster is shown and revived. -->
+          <!-- Source: server-scripts/Monster.cs:1842-1854 — on respawn aggro, debuffs, gold, and loot state are cleared, then the monster is shown and revived. -->
           When the timer ends, the monster reappears at its spawn point at full health.
         </li>
       </ol>
@@ -205,25 +205,25 @@
     <Card.Content class="space-y-3 text-sm text-muted-foreground">
       <p>
         <!-- Source: server-scripts/ZoneInfo.cs:185-201 — zones with no online player inside are deactivated. -->
-        <!-- Source: server-scripts/Player.cs:3437, 10550, 12575 — zone cleanup runs 5 seconds after respawn, portal travel, or resurrection; NetworkManagerMMO.cs:718 and 820 — and on disconnect. -->
+        <!-- Source: server-scripts/Player.cs:3437, 10598, 12623 — zone cleanup runs 5 seconds after respawn, portal travel, or resurrection; NetworkManagerMMO.cs:718 and 820 — and on disconnect. -->
         About 5 seconds after the last player leaves a zone (immediately, on a logout),
         the entire zone is switched off. Monsters in it stop acting entirely — they
         do not move, fight, or respawn until a player enters again.
       </p>
       <ul class="list-disc space-y-1 pl-5">
         <li>
-          <!-- Source: server-scripts/Monster.cs:2698-2719 — on zone deactivation dead monsters are hidden, warped home, and their corpse deadline is set to now. -->
+          <!-- Source: server-scripts/Monster.cs:2689-2710 — on zone deactivation dead monsters are hidden, warped home, and their corpse deadline is set to now. -->
           Corpses are removed the moment the zone shuts down. Loot you left on a corpse
           is gone when you come back.
         </li>
         <li>
-          <!-- Source: server-scripts/Monster.cs:2677-2696 — on zone reactivation living monsters warp to start position, heal to full, and clear target, aggro, pets, and debuffs. -->
+          <!-- Source: server-scripts/Monster.cs:2668-2687 — on zone reactivation living monsters warp to start position, heal to full, and clear target, aggro, pets, and debuffs. -->
           When the zone wakes up again, monsters that were alive snap back to their
           spawn point at full health with aggro cleared. You cannot pull a monster
           away or damage it, leave the zone, and expect it to stay put or stay hurt.
         </li>
         <li>
-          <!-- Source: server-scripts/Monster.cs:888-895 and Entity.cs:207-215 — respawn deadlines are absolute server timestamps, but the state machine that acts on them only runs while the zone object is active. -->
+          <!-- Source: server-scripts/Monster.cs:888-895 and Entity.cs:221-229 — respawn deadlines are absolute server timestamps, but the state machine that acts on them only runs while the zone object is active. -->
           Respawn timers are deadlines on the clock, so time spent with the zone empty
           still counts toward them — but the respawn itself only executes while the
           zone is active. A monster whose deadline passed while the zone was empty
@@ -261,7 +261,7 @@
           time (about 5 minutes).
         </li>
         <li>
-          <!-- Source: server-scripts/Player.cs:13502-13506 — a dungeon renewal zeroes boss and elite deadlines, including the saved ones. -->
+          <!-- Source: server-scripts/Player.cs:13550-13554 — a dungeon renewal zeroes boss and elite deadlines, including the saved ones. -->
           For dungeon bosses these timers can be wiped for gold — see
           <a
             href="#renewal-sages"
@@ -308,7 +308,7 @@
     </Card.Header>
     <Card.Content class="space-y-4">
       <p class="text-sm text-muted-foreground">
-        <!-- Source: server-scripts/Monster.cs:2170-2175 — a failed spawn roll keeps the monster hidden and re-arms the timer for another full interval. -->
+        <!-- Source: server-scripts/Monster.cs:2162-2167 — a failed spawn roll keeps the monster hidden and re-arms the timer for another full interval. -->
         <!-- Source: server-scripts/Monster.cs:659-664 — the same roll happens once at server start. -->
         When a rare monster's respawn timer ends, the game rolls its spawn chance.
         On a failure it stays hidden and the timer re-arms for another full interval.
@@ -522,17 +522,17 @@
     <Card.Content class="space-y-4">
       <ul class="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
         <li>
-          <!-- Source: server-scripts/Player.cs:13496-13507 — the renewal sets respawnTimeEnd to 0 for every respawn-enabled monster in the dungeon; boss and elite saved deadlines are zeroed too. -->
+          <!-- Source: server-scripts/Player.cs:13544-13555 — the renewal sets respawnTimeEnd to 0 for every respawn-enabled monster in the dungeon; boss and elite saved deadlines are zeroed too. -->
           A renewal marks every respawn timer in the dungeon as due — regular monsters,
           elites, and bosses alike, including saved boss deadlines.
         </li>
         <li>
-          <!-- Source: server-scripts/Player.cs:13496-13507 — the renewal only writes timers; health and state of living monsters are untouched. -->
+          <!-- Source: server-scripts/Player.cs:13544-13555 — the renewal only writes timers; health and state of living monsters are untouched. -->
           Nothing despawns. Monsters that are alive — including a rare or boss that
           is already up — are not touched. A renewal only affects the dead.
         </li>
         <li>
-          <!-- Source: server-scripts/Player.cs:13482-13488 — the renewal is refused while any player is inside the dungeon. -->
+          <!-- Source: server-scripts/Player.cs:13530-13536 — the renewal is refused while any player is inside the dungeon. -->
           A renewal is refused while anyone is inside the dungeon. The respawns therefore
           happen the moment the next player walks in, since the empty zone is switched
           off at the time of purchase.
@@ -545,7 +545,7 @@
       </ul>
 
       <p class="text-sm text-muted-foreground">
-        <!-- Source: server-scripts/Player.cs:13757-13769 and Monster.cs:2170-2175 — a zeroed deadline triggers the spawn roll on the next zone activation; a failed roll re-arms the full interval until the next renewal zeroes it again. -->
+        <!-- Source: server-scripts/Player.cs:13805-13817 and Monster.cs:2162-2167 — a zeroed deadline triggers the spawn roll on the next zone activation; a failed roll re-arms the full interval until the next renewal zeroes it again. -->
         Renewals interact with rare spawns in a useful way. Buying several renewals
         back-to-back is wasted gold: the roll only fires when someone enters, so you
         get one roll on the next entry no matter how many renewals you stacked. But
@@ -721,7 +721,7 @@
         <!-- Source: server-scripts/Monster.cs:EventTimeSpawn — game hour = ((server time % 3600) / 2.5) / 60, so one in-game day lasts exactly one real hour and one game hour lasts 2.5 real minutes. -->
         One in-game day lasts exactly one real hour, so each game hour is 2.5 real
         minutes.
-        <!-- Source: server-scripts/Monster.cs:1829-1832 — respawn is held while outside the spawn window. -->
+        <!-- Source: server-scripts/Monster.cs:1821-1824 — respawn is held while outside the spawn window. -->
         <!-- Source: server-scripts/Monster.cs:844-851 and 1297-1301 — outside its window a monster with no aggro is hidden and warped home. -->
         These monsters only respawn inside their window, and despawn once the window
         closes — unless they are in combat, which keeps them around until they kill
@@ -768,7 +768,7 @@
         </table>
       </div>
       <p class="text-sm text-muted-foreground">
-        <!-- Source: server-scripts/Monster.cs:1825-1828 — Halloween monsters additionally only respawn while the Halloween event is active. -->
+        <!-- Source: server-scripts/Monster.cs:1817-1820 — Halloween monsters additionally only respawn while the Halloween event is active. -->
         The Pumpkin Head and the Witch additionally require the Halloween event to
         be active.
       </p>
@@ -787,7 +787,7 @@
       <p class="text-sm text-muted-foreground">
         <!-- Source: server-scripts/Monster.cs:619-627 — summonable monsters start hidden; only chance-based non-elite summons start with their respawn timer armed. -->
         <!-- Source: server-scripts/SummonMonster.cs:26,36-46,52-69 — once per second the trigger checks for a fresh alive-to-all-dead placeholder cycle; kills are not counted. -->
-        <!-- Source: server-scripts/Monster.cs:1817 and 1833-1848 — the spawn check requires the summon's own respawn timer elapsed plus all trigger monsters dead at the same time; a zone-wide message is broadcast on success. -->
+        <!-- Source: server-scripts/Monster.cs:1809 and 1825-1840 — the spawn check requires the summon's own respawn timer elapsed plus all trigger monsters dead at the same time; a zone-wide message is broadcast on success. -->
         Each summon watches a fixed set of nearby spawns. There is no kill counter
         — kills do not add up. The watched group must be alive before a fresh clear
         can qualify. What matters is that every watched monster is then dead at the
@@ -796,7 +796,7 @@
         announce themselves to everyone in the zone.
       </p>
       <p class="text-sm text-muted-foreground">
-        <!-- Source: server-scripts/Monster.cs:2170-2175 — summons with a spawn chance below 100% roll on the check; a failed roll re-arms the timer for a full interval. -->
+        <!-- Source: server-scripts/Monster.cs:2162-2167 — summons with a spawn chance below 100% roll on the check; a failed roll re-arms the timer for a full interval. -->
         Watch the chance column: some summons are rare spawns on top. For those the
         check is only a roll, and a failed roll re-arms the summon's timer for a full
         interval. The chance is not lost if the watched monsters revive in the meantime
@@ -1064,13 +1064,13 @@
         </li>
         <li>
           <!-- Source: server-scripts/Monster.cs:665-666 and 1249-1254 — the distance check is skipped entirely for non-boss, non-elite monsters in dungeon zones. -->
-          <!-- Source: server-scripts/Monster.cs:1548-1556 — chasing ends when the target is no longer reachable by pathfinding. -->
+          <!-- Source: server-scripts/Monster.cs:1540-1548 — chasing ends when the target is no longer reachable by pathfinding. -->
           Regular monsters inside dungeons have no distance limit. They chase you
           for as long as they can reach you, and only give up when no path to you
           exists. Bosses and elites leash normally even in dungeons.
         </li>
         <li>
-          <!-- Source: server-scripts/Monster.cs:2270 and Monster.cs:665-666 — while returning, a monster only re-engages targets within 80% of its follow distance; normal dungeon monsters always re-engage (flag set at Monster.cs:663-664). -->
+          <!-- Source: server-scripts/Monster.cs:2262 and Monster.cs:665-666 — while returning, a monster only re-engages targets within 80% of its follow distance; normal dungeon monsters always re-engage (flag set at Monster.cs:663-664). -->
           While heading home it only re-engages if you stay close (within 80% of its
           chase range). Regular dungeon monsters are the exception — they always turn
           around and re-engage.
@@ -1094,7 +1094,7 @@
     <Card.Content>
       <ul class="list-disc space-y-2 pl-5 text-sm text-muted-foreground">
         <li>
-          <!-- Source: server-scripts/Monster.cs:2121-2131 — on death a monster can spawn a replacement at its corpse position with a configured probability; the replacement never respawns. -->
+          <!-- Source: server-scripts/Monster.cs:2113-2123 — on death a monster can spawn a replacement at its corpse position with a configured probability; the replacement never respawns. -->
           <span class="font-medium text-foreground">Spawn on death:</span>
           a monster can spawn a different monster at its corpse when it dies. The
           replacement is a one-off and never respawns. Currently the only case is
@@ -1112,7 +1112,7 @@
           their own.
         </li>
         <li>
-          <!-- Source: server-scripts/Monster.cs:502-510 and 1825-1828 — Halloween monsters start hidden and only respawn while the seasonal event is active. -->
+          <!-- Source: server-scripts/Monster.cs:502-510 and 1817-1820 — Halloween monsters start hidden and only respawn while the seasonal event is active. -->
           <span class="font-medium text-foreground">Seasonal monsters:</span>
           Halloween monsters are hidden year-round and only spawn while the event
           is active (and only at night — see the spawn windows above).

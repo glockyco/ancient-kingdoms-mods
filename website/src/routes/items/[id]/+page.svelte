@@ -1658,7 +1658,7 @@
             character&gt;'s pet".
           </p>
           <!-- Source: server-scripts/PetFriendly.cs:389-396 — the follower teleports to its owner past 24 units. -->
-          <!-- Source: server-scripts/Player.cs:10527-10530 — portals respawn the followers at the destination. -->
+          <!-- Source: server-scripts/Player.cs:10575-10578 — portals respawn the followers at the destination. -->
           <p>
             The pet follows you, catches up when it falls far behind, and
             reappears beside you after you take a portal. It is cosmetic and

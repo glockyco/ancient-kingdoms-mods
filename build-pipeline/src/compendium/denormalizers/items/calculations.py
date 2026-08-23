@@ -166,7 +166,7 @@ def _calculate_bestiary_drop(conn: sqlite3.Connection) -> int:
     """)
     updated = cursor.rowcount
 
-    # Source: server-scripts/Monster.cs:3629-3635 — boss/elite scroll drops update bestiary discovery.
+    # Source: server-scripts/Monster.cs:3620-3626 — boss/elite scroll drops update bestiary discovery.
     cursor.execute("""
         UPDATE items
         SET is_bestiary_drop = 1

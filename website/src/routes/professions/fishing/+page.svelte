@@ -339,7 +339,7 @@
     <!-- Source: server-scripts/GatherItem.cs:659-677 — selected fish chance = drop rate + Fishing/2 + 2pp per Fisherman costume piece. -->
     <!-- Source: server-scripts/GatherItem.cs:748-779 — Fishing mastery gain and XP table. -->
     <!-- Source: server-scripts/GatherItem.cs:929-935 — click-window length per tier. -->
-    <!-- Source: server-scripts/Player.cs:8300-8319 — auto-equips best rod and starts the cast with Random.Range(3, 8) second window delay. -->
+    <!-- Source: server-scripts/Player.cs:8345-8364 — auto-equips best rod and starts the cast with Random.Range(3, 8) second window delay. -->
 
     <div class="mt-4 divide-y">
       <div class="grid gap-3 py-4 first:pt-0 md:grid-cols-[2rem_1fr]">

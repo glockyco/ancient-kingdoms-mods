@@ -147,7 +147,7 @@
     <Card.Content class="space-y-5">
       <ul class="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
         <li>
-          <!-- Source: server-scripts/UIBigBackpack.cs + server-scripts/GameManager.cs:459-460,1352-1367 + server-scripts/UIInventory.cs:124-125 — OnBackpackKeyPressed is subscribed to the "Backpack" input action and shows or hides the UIBigBackpack panel. -->Open
+          <!-- Source: server-scripts/UIBigBackpack.cs + server-scripts/GameManager.cs:465-466,1358-1373 + server-scripts/UIInventory.cs:124-125 — OnBackpackKeyPressed is subscribed to the "Backpack" input action and shows or hides the UIBigBackpack panel. -->Open
           the equipped-bag panel with the Backpack key (default
           <kbd
             class="rounded border border-border bg-muted px-1 py-0.5 font-mono text-xs"
@@ -270,14 +270,14 @@
     <Card.Content class="space-y-5">
       <p class="text-sm text-muted-foreground">
         <!-- Source: server-scripts/Player.cs:403 — characters start with one bank tab unlocked. -->
-        <!-- Source: server-scripts/Player.cs:12877-12902 and 12912-12940 — bank gold withdraw and deposit commands. -->
+        <!-- Source: server-scripts/Player.cs:12925-12950 and 12960-12988 — bank gold withdraw and deposit commands. -->
         New characters start with tab 1 unlocked. Additional tabs unlock in order.
         Banked gold is stored separately from carried gold. Depositing moves carried
         gold into the account vault and withdrawing moves it back to the character.
       </p>
       <div class="overflow-x-auto">
         <!-- Source: server-scripts/UIBank.cs:294-307 — bank tab unlock price ladder. -->
-        <!-- Source: server-scripts/Player.cs:12833-12846 — server charges current unlock price before increasing unlocked bank tabs. -->
+        <!-- Source: server-scripts/Player.cs:12881-12894 — server charges current unlock price before increasing unlocked bank tabs. -->
         <table class="w-full border-collapse text-sm">
           <thead>
             <tr class="border-b border-border">
@@ -335,7 +335,7 @@
         </p>
         <p>
           <!-- Source: server-scripts/CustomStrucUI.cs:203-226 — left click or F places the selected structure, or drops a moved one at the new spot. -->
-          <!-- Source: server-scripts/CustomStrucUI.cs:80-86, 328-347 and Player.cs:12639-12651 — move mode hides the structure, then repositions the same one without charging gold. -->
+          <!-- Source: server-scripts/CustomStrucUI.cs:80-86, 328-347 and Player.cs:12687-12699 — move mode hides the structure, then repositions the same one without charging gold. -->
           Place the selected chest with left click or
           <kbd
             class="rounded border border-border bg-muted px-1.5 py-0.5 text-xs text-foreground"
@@ -345,7 +345,7 @@
         </p>
         <p>
           <!-- Source: server-scripts/CustomStrucUI.cs:72-77 and 259-277 — remove mode destroys a selected structure. -->
-          <!-- Source: server-scripts/CustomStrucUI.cs:102-109 and Player.cs:9614-9647 — selling a house pays its resale value and destroys the placed structures; warning says chest items can be retrieved after buying another house. -->
+          <!-- Source: server-scripts/CustomStrucUI.cs:102-109 and Player.cs:9660-9693 — selling a house pays its resale value and destroys the placed structures; warning says chest items can be retrieved after buying another house. -->
           Individual chests can be destroyed, but there is no chest resale flow. Selling
           the house removes placed furniture, while the account-wide chest items remain
           retrievable if you buy another house.

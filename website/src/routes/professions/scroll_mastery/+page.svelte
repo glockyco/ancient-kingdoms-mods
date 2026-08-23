@@ -53,7 +53,7 @@
   }
 
   // Source: server-scripts/Player.cs:UserCode_CmdMakePotion__Int32 — isScribingTable craft path
-  // Source: server-scripts/ScrollItem.cs:66-104 — scroll use path
+  // Source: server-scripts/ScrollItem.cs:67-105 — scroll use path
   // Both paths share the same gain chance:
   //   Mathf.Lerp(0.9, 0.02, scrollMasteryLevel^2) > Random.value, only while level < 1.
   function getMasteryGainChance(): number {
@@ -64,7 +64,7 @@
   }
 
   // Source: server-scripts/Player.cs:UserCode_CmdMakePotion__Int32 — crafting: Random.Range(5, 10) / 10000f
-  // Source: server-scripts/ScrollItem.cs:85 — use: Random.Range(10, 20) / 10000f
+  // Source: server-scripts/ScrollItem.cs:86 — use: Random.Range(10, 20) / 10000f
   const CRAFT_MASTERY_GAIN_MIN = 0.05;
   const CRAFT_MASTERY_GAIN_MAX = 0.09;
   const USE_MASTERY_GAIN_MIN = 0.1;

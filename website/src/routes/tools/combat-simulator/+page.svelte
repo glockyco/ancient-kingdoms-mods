@@ -162,7 +162,7 @@
 
   // Clamp haste to the game cap of 80%.
   const h = $derived(Math.min(hastePercent / 100, 0.8));
-  // Spell haste is capped at 50%. Source: server-scripts/Combat.cs:332
+  // Spell haste is capped at 50%. Source: server-scripts/Combat.cs:357
   const sp = $derived(Math.min(spellHastePercent / 100, SPELL_HASTE_CAP));
 
   // Haste contributed by secondary equipped weapons, mode-aware.

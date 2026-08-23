@@ -112,7 +112,7 @@ export const SPELL_PLAYER_CAST: Partial<Record<PlayerClass, number>> = {
   cleric: 1.2,
 };
 
-// Hard cap on spell haste. Source: server-scripts/Combat.cs:332 — Mathf.Clamp(num, -0.5f, 0.5f)
+// Hard cap on spell haste. Source: server-scripts/Combat.cs:346-358 — Mathf.Clamp(num, -0.5f, 0.5f)
 export const SPELL_HASTE_CAP = 0.5;
 // Post-cast refractory period for player spell auto-attacks (is_spell=true, no required_weapon_category).
 // The server FSM sets this window after FinishCast; the next auto-attack cast is blocked until it expires.
