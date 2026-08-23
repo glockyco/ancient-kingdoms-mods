@@ -159,7 +159,30 @@ anything older and says what it removed. The version you pass on the command lin
 
 **Do not investigate the old server scripts** to understand changes — diff the new scripts first. The diff is the primary source of truth for what changed.
 
-**Commit atomically** — one logical change per commit. Never a single big-bang commit for the whole update. Split the work: each game-mechanic doc change (one combat formula, one cleanse rule, one scaling change) is its own commit, data-only snapshot deltas are their own commit, and the version bump (step 9) is always the final commit. Stage per-skill snapshot files individually (`git add …/mechanics-snapshots/<skill>.txt`) so each commit carries only the snapshot deltas its own code or data change caused (see step 8).
+## Committing
+
+**Commit as you go, not at the end.** One logical change per commit. A single big-bang commit for
+the whole update is prohibited, and so is reaching the version bump with everything still
+uncommitted: by then the working tree holds several unrelated concerns and no one can review them
+apart. Commit each concern as soon as it is complete and verified.
+
+The usual sequence for one update:
+
+| # | Subject | Contents |
+|---|---|---|
+| 1 | An exported field is added | `mods/DataExporter` model and exporter, `build-pipeline/schema.sql`, `models.py`. Lands **before** the export run, because the export is what fills the new column. One commit per field or per coherent group of fields. |
+| 2 | Citations are re-anchored | `citations.lock.json` and the `Source:` comments that `citations fix` relocated. A game patch shifts hundreds of line numbers; this diff is large, mechanical, and must not be mixed with anything a reviewer has to think about. |
+| 3…n | One game-mechanic change each | The prose or formula edit, plus only the snapshot files that edit caused. One combat formula, one cleanse rule, one scaling change per commit. |
+| n+1 | Data-only snapshot deltas | Snapshots that moved because the game's data changed, with no code change of ours. Say in the body which game change moved them. |
+| last | Version bump | `website/src/lib/constants/version.ts` alone. |
+
+Stage per-skill snapshot files individually (`git add …/mechanics-snapshots/<skill>.txt`) so each
+commit carries only the snapshot deltas its own code or data change caused (see step 8).
+
+`uv run compendium citations check` gates CI, so it exits 0 before the version bump, not after.
+
+A commit body explains why the change exists. For a data-only commit that is the game change
+behind it; for a mechanic commit it is the server-script evidence, cited by file and line.
 
 ## Diff Analysis
 
