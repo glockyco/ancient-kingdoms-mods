@@ -161,8 +161,10 @@ Grammar rules worth knowing:
 - A bare range attaches to the nearest preceding filename: `Foo.cs:10-20, 40-50`.
 - Prefer `File.cs:symbolName` over a line number when the claim is about a single
   named member. A symbol reference never rots.
-- Do not pin an archived snapshot directory (`server-scripts-0.9.25.1/...`); the
-  lockfile records the game version centrally.
+- Cite through `server-scripts/`, which is a symlink to the current entry in the
+  decompile store. Do not name a store entry (`.decompiled/steam-24771490-.../...`);
+  entries are pruned as the game moves on, and the lockfile records the game
+  version centrally.
 
 ## Gotchas
 

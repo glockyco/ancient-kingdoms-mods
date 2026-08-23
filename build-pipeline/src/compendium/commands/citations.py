@@ -27,7 +27,10 @@ from compendium.config import get_repo_root
 console = Console()
 
 LOCKFILE_NAME = "citations.lock.json"
+# The citation path. A symlink to the current entry in the store below.
 SNAPSHOT_DIR = "server-scripts"
+# One entry per decompiled assembly, named `steam-<build id>-<digest>`.
+STORE_DIR = ".decompiled"
 
 FAILING_STATUSES = frozenset({"changed", "unresolved", "ambiguous", "unsupported"})
 _STATUS_STYLE = {
@@ -449,22 +452,36 @@ def _fix(repo_root: Path) -> int:
 
 
 def _archived_snapshots(repo_root: Path) -> list[tuple[str, Snapshot]]:
-    """Archived snapshots, newest version first."""
+    """Stored decompiles other than the current one, newest first.
 
-    def version_key(path: Path) -> tuple[int, ...]:
-        raw = path.name.removeprefix(f"{SNAPSHOT_DIR}-")
-        parts = []
-        for chunk in raw.split("."):
-            parts.append(int(chunk) if chunk.isdigit() else 0)
-        return tuple(parts)
+    Store entries are named `steam-<build id>-<digest>`, so the build identifier
+    orders them chronologically. An entry whose build identifier was never
+    recorded sorts last, because nothing places it in that sequence. The entry the
+    citation path resolves to is the current snapshot rather than an archive, so it
+    is excluded: locating a region in a tree identical to the current one proposes
+    the position it already has.
+    """
+    store = repo_root / STORE_DIR
+    if not store.is_dir():
+        return []
+
+    current = (repo_root / SNAPSHOT_DIR).resolve()
+
+    def build_key(path: Path) -> tuple[int, int]:
+        parts = path.name.split("-")
+        if len(parts) >= 3 and parts[1].isdigit():
+            return (1, int(parts[1]))
+        return (0, 0)
 
     directories = [
-        path for path in repo_root.glob(f"{SNAPSHOT_DIR}-*") if path.is_dir()
+        entry
+        for entry in store.iterdir()
+        if entry.is_dir() and entry.resolve() != current
     ]
-    directories.sort(key=version_key, reverse=True)
+    directories.sort(key=build_key, reverse=True)
     return [
-        (path.name.removeprefix(f"{SNAPSHOT_DIR}-"), Snapshot(path))
-        for path in directories
+        (Snapshot(entry).identity.game_version or entry.name, Snapshot(entry))
+        for entry in directories
     ]
 
 

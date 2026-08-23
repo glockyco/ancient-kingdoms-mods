@@ -55,9 +55,11 @@ exported-data/*
 # Node.js (root workspace)
 node_modules/
 
-# Server scripts (decompiled, for reference only)
-server-scripts/
-server-scripts-*/
+# Decompiled server scripts, for reference only. The store holds one entry per
+# decompiled assembly and server-scripts is a symlink to the current entry, which
+# is the path every Source: citation resolves against.
+.decompiled/
+server-scripts
 .ilspycmd/
 
 # OMP plugin installs are local only. Anything else under .omp/ is tracked:

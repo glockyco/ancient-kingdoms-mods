@@ -33,8 +33,12 @@ Execute in order:
 ./scripts/update-server-scripts.sh <version>
 
 # 2. Diff server scripts and patch mods if needed (see Diff Analysis below)
-/usr/bin/diff -b -rq server-scripts-<old-version> server-scripts-<new-version>
-/usr/bin/diff -b server-scripts-<old-version>/<file>.cs server-scripts-<new-version>/<file>.cs
+#    The step above moved server-scripts to the new entry. The store also holds the
+#    entry it replaced, which is what to diff against. List the store to name it:
+ls -1 .decompiled                       # the new entry and the one before it
+readlink server-scripts                 # which of them is current
+/usr/bin/diff -b -rq .decompiled/<previous entry> server-scripts
+/usr/bin/diff -b .decompiled/<previous entry>/<file>.cs server-scripts/<file>.cs
 #    Pay particular attention to fields/properties referenced by mods/DataExporter/
 #    (e.g. GameManager.*, ScriptableItem on enums). Update the exporter to match before building.
 
@@ -144,9 +148,14 @@ node scripts/snapshot-mechanics.mjs --update
 ```
 
 Server scripts are **reference only** — for understanding game mechanics, not for data export.
-Versioned backups are stored in `server-scripts-<version>/`; the working copy is `server-scripts/`.
+Each decompile is stored once under `.decompiled/`, in an entry named `steam-<build id>-<digest>`
+from values the script reads off the installation. `server-scripts` is a symlink to the current
+entry, and it is the path every `Source:` citation resolves against. The store keeps the current
+entry and the one before it, which is what the diff step above compares against; the script prunes
+anything older and says what it removed. The version you pass on the command line is recorded in
+`SNAPSHOT.toml` and names nothing.
 
-**Gitignored, never commit:** `server-scripts/`, `server-scripts-<version>/`, `exported-data/`, and `website/data/compendium.db`. The decompiled scripts are not ours to redistribute, and the export/DB artifacts are reproducible build output. They will not appear in `git status` after re-running the workflow — this is expected. Do not `git add` them, do not `git add -f` them.
+**Gitignored, never commit:** `.decompiled/`, `server-scripts`, `exported-data/`, and `website/data/compendium.db`. The decompiled scripts are not ours to redistribute, and the export/DB artifacts are reproducible build output. They will not appear in `git status` after re-running the workflow — this is expected. Do not `git add` them, do not `git add -f` them.
 
 **Do not investigate the old server scripts** to understand changes — diff the new scripts first. The diff is the primary source of truth for what changed.
 
