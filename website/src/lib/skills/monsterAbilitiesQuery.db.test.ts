@@ -51,7 +51,7 @@ describe("monster ability effects", () => {
     );
     expect(intrinsic).toBeDefined();
     expect(formatSkillEffect(skillRowToEffectInput(intrinsic))).toBe(
-      "2 physical dmg, 0.7% + 0.3% × skill lvl stun (1s)",
+      "2 physical dmg, 0.9% + 0.1% × skill lvl stun (1s)",
     );
 
     const antAttack = query<{ id: string; runtime_level: number }>(
@@ -65,7 +65,7 @@ describe("monster ability effects", () => {
       formatSkillEffect(
         skillRowToEffectInput(antAttack, antAttack?.runtime_level),
       ),
-    ).toContain("0.7% stun");
+    ).toContain("0.9% stun");
   });
 
   test("keep one exact formula for player and level-zero monster use", () => {
