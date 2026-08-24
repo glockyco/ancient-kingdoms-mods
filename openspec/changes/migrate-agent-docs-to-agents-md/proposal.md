@@ -64,7 +64,7 @@ Target: **OMP only.** No compatibility shims for other agents.
   `rule://`. Guidance that applies only when touching certain files becomes a rule with `globs`
   instead of bloating an always-loaded `AGENTS.md`. This is the mechanism that keeps the five
   files small.
-- **Cut the skills from 15 to 5, and delete `.claude/` entirely.** Eight of the fifteen are
+- **Cut the skills from 15 to 4, and delete `.claude/` entirely.** Eight of the fifteen are
   scaffolding guides that re-describe a code pattern the repository already demonstrates many
   times over: `create-new-loader` is 156 lines against 32 existing loader functions,
   `create-new-exporter` is 156 against 32 exporters, `svelte-5-patterns` is 112 against 196
@@ -72,7 +72,9 @@ Target: **OMP only.** No compatibility shims for other agents.
   enforces the same thing. Prose that restates code loses to the code and then rots, which is
   exactly what happened to `create-new-mod`, whose cited `BossTracker` sources no longer exist.
   Two more (`edit-claude-md`, `writing-skills`) become ten lines of routing rule in the root
-  `AGENTS.md`. The survivors are the five that encode knowledge the repository does not contain.
+  `AGENTS.md`. `bootstrap-worktree` and its script are removed because repository work now occurs
+  only in the primary checkout. The four survivors encode knowledge the repository does not
+  contain.
 - **Replace registration prose with tests.** The only non-derivable content in those scaffolding
   skills is the cross-file registration step that copying one example would miss. A test asserts
   it, fails at the right moment, and cannot drift. `marker-registry.test.ts` is the existing
@@ -90,8 +92,10 @@ Target: **OMP only.** No compatibility shims for other agents.
   OMP discovery rules, and the routing test.
 - **Fix the seven vague skill descriptions.** OMP selects skills by matching the description, so a
   description without a trigger makes its skill unreachable in practice.
-- **Repair stale skill references.** `create-new-mod` cites `BossTracker` sources that do not
-  exist; `bootstrap-worktree` cites `exported-data/` files that do not exist.
+- **Remove obsolete worktree setup.** Delete `bootstrap-worktree`,
+  `scripts/bootstrap-worktree.sh`, and live instructions that recommend repository worktrees.
+  Keep the temporary worktree inside `check-clean-checkout.sh`; it is test isolation, not a
+  development workflow.
 - **Add enforcement.** `scripts/check-agent-docs.sh`, wired into `lefthook.yml`, fails on an
   oversized instruction file, a reappearing `CLAUDE.md`, a skill or rule missing required
   frontmatter, and a dead path reference.
@@ -115,15 +119,16 @@ None. No existing spec covers agent instructions.
 
 - **Deleted:** 17 `CLAUDE.md`, `.claude/` (including
   `settings.local.json`).
-- **Created:** 5 `AGENTS.md`, `.agent/rules/`, `.agent/skills/` (5 surviving skills),
+- **Created:** 5 `AGENTS.md`, `.agent/rules/`, `.agent/skills/` (4 surviving skills),
   `scripts/check-agent-docs.sh`, and the registration tests that replace the deleted scaffolding
   prose.
-- **Skills:** 15 to 5. Deleted: `create-new-loader`, `create-new-denormalizer`,
+- **Skills:** 15 to 4. Deleted: `create-new-loader`, `create-new-denormalizer`,
   `create-new-exporter`, `create-entity-detail-page`, `create-entity-overview-page`,
   `add-map-entity-layer`, `create-new-mod`, `svelte-5-patterns`, `edit-claude-md`,
-  `writing-skills`. Kept and retitled with explicit triggers: `update-game-version`,
-  `bootstrap-worktree`, `hotrepl-runtime-inspection`, `ancient-kingdoms-save-files`,
-  `export-game-data`. Roughly 1,400 lines of skill prose removed.
+  `writing-skills`, and `bootstrap-worktree`. Kept and retitled with explicit triggers:
+  `update-game-version`, `hotrepl-runtime-inspection`, `ancient-kingdoms-save-files`, and
+  `export-game-data`. Roughly 1,400 lines of skill prose are removed.
+- **Worktree setup:** `scripts/bootstrap-worktree.sh` and its live README instructions are deleted.
 - **Automation:** `lefthook.yml` gains an agent-docs check.
 - **Prose references:** live mentions of `CLAUDE.md` in `README.md`,
   `knip.config.ts:33`, and three active plans. Archived plans excluded.

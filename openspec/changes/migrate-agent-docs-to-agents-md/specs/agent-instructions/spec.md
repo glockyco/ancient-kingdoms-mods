@@ -108,6 +108,17 @@ longer exist.
 - **WHEN** a new instance of a registered pattern is added without its registration
 - **THEN** a test fails and identifies the missing registration
 
+### Requirement: Guidance describes the supported workflow
+
+Agent guidance SHALL describe only workflows that the repository uses. When a workflow is retired,
+its skills, commands, and live instructions SHALL be removed together.
+
+#### Scenario: A repository workflow is retired
+
+- **WHEN** repository work no longer uses a documented workflow
+- **THEN** no discovered skill or live instruction recommends that workflow
+- **AND** no public setup command remains solely to support it
+
 ### Requirement: Each fact has exactly one home
 
 A given instruction SHALL appear in exactly one place. An `AGENTS.md` SHALL NOT restate content

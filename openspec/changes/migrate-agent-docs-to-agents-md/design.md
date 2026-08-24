@@ -107,7 +107,12 @@ So the keep test for a skill is: **does it encode something absent from the code
 | Delete, pattern is in the code | `create-new-loader`, `create-new-denormalizer`, `create-new-exporter`, `create-entity-detail-page`, `create-entity-overview-page`, `add-map-entity-layer`, `create-new-mod` | 32 loaders, 11 denormalizer packages, 32 exporters, 14 detail pages, 18 overview pages, an existing `marker-registry.test.ts`, 12 mods |
 | Delete, a linter should own it | `svelte-5-patterns` | 196 components plus `eslint-plugin-svelte` rules for legacy syntax |
 | Delete, becomes a routing rule in root `AGENTS.md` | `edit-claude-md`, `writing-skills` | The policy is ten lines once the duplication is removed |
-| Keep | `update-game-version`, `bootstrap-worktree`, `hotrepl-runtime-inspection`, `ancient-kingdoms-save-files`, `export-game-data` | A cross-cutting release workflow, an environment bootstrap needing an external trusted checkout, a live-process protocol, an external binary format, and export policy that records decisions rather than patterns |
+| Delete, obsolete workflow | `bootstrap-worktree` | Repository work now occurs only in the primary checkout; retaining the skill would bias agents toward an unused workflow |
+| Keep | `update-game-version`, `hotrepl-runtime-inspection`, `ancient-kingdoms-save-files`, `export-game-data` | A cross-cutting release workflow, a live-process protocol, an external binary format, and export policy that records decisions rather than patterns |
+
+The `bootstrap-worktree` script and its documentation are deleted with the skill. The temporary
+worktree in `check-clean-checkout.sh` remains because it creates a controlled test fixture. It does
+not direct contributors or agents to develop in another checkout.
 
 `create-new-mod` is the proof of the failure mode: it cites `BossTracker` source files that no
 longer exist. It rotted precisely because it described code instead of pointing at it.

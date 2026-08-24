@@ -63,7 +63,7 @@ prose disappears. Model each test on `website/src/lib/map/marker-registry.test.t
 - [x] 3.7 Verify each new test fails when the registration is removed. A test that has never failed
       is not known to work.
 
-## 4. Reduce the skill set from 15 to 5
+## 4. Reduce the skill set from 15 to 4
 
 - [x] 4.1 Delete the seven scaffolding skills now covered by tests or examples:
       `create-new-loader`, `create-new-denormalizer`, `create-new-exporter`,
@@ -74,9 +74,11 @@ prose disappears. Model each test on `website/src/lib/map/marker-registry.test.t
       to go until that rule exists, and it is the only skill that currently loads for map work.
 - [ ] 4.2 Delete `edit-claude-md` and `writing-skills`; their surviving content is the routing rule
       written into the root `AGENTS.md` in task 1.1.
-- [ ] 4.3 Move the five survivors to `.agent/skills/` and delete `.claude/` **in the same commit**.
-      `.claude/skills` is priority 80 and `.agent/skills` is 70, and dedup is first-wins by name,
-      so leaving both in place makes the move a silent no-op.
+- [ ] 4.3 Delete `bootstrap-worktree`, `scripts/bootstrap-worktree.sh`, and live instructions that
+      recommend repository worktrees. Keep the temporary worktree in `check-clean-checkout.sh` as
+      an internal test-isolation mechanism. Move the four survivors to `.agent/skills/` and delete
+      `.claude/` **in the same commit**. `.claude/skills` is priority 80 and `.agent/skills` is 70,
+      and dedup is first-wins by name, so leaving both in place makes the move a silent no-op.
 - [ ] 4.4 Delete `.claude/settings.local.json`. It grants Claude Code Bash permissions that OMP does
       not read.
 - [ ] 4.5 Fold `mods/DataExporter/CLAUDE.md:14-51` into `export-game-data`, reconciling with
@@ -84,9 +86,9 @@ prose disappears. Model each test on `website/src/lib/map/marker-registry.test.t
       not the exporter pattern.
 - [ ] 4.6 Fold the command catalogue and artifact contract from `mods/HotReplCommands/CLAUDE.md`
       into `hotrepl-runtime-inspection`.
-- [ ] 4.7 Repair `bootstrap-worktree:37-38`, which cites `exported-data/README.md`, `classes.json`,
-      and `static_data.json`, none of which exist.
-- [ ] 4.8 Confirm each of the five survivors states both what it covers and when to use it. Trim
+- [ ] 4.7 Confirm no live guidance, flake application, or command references
+      `bootstrap-worktree` or `scripts/bootstrap-worktree.sh`.
+- [ ] 4.8 Confirm each of the four survivors states both what it covers and when to use it. Trim
       `update-game-version`, currently 220 lines, to the steps that are genuinely not derivable.
 
 ## 5. Delete the old surface
