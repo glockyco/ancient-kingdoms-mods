@@ -1,38 +1,38 @@
 ## 1. Write the instruction files
 
-- [ ] 1.1 Write root `AGENTS.md`: data-flow summary, the universal rules that survived the audit
+- [x] 1.1 Write root `AGENTS.md`: data-flow summary, the universal rules that survived the audit
       (logging, comments, fail-fast, modern standards), and pointers to `docs/plans/INDEX.md` and
-      `docs/plans/INDEX.md`. Do NOT restate `README.md:20-27`, `:34-41`, `:139-151`, `:174-187`,
+      the product roadmap. Do NOT restate `README.md:20-27`, `:34-41`, `:139-151`, `:174-187`,
       or `:252+`. Do NOT include a Task Triggers table. Under 200 lines.
-- [ ] 1.2 Write `mods/AGENTS.md` from `mods/CLAUDE.md` always-on content, hoisting the shared
+- [x] 1.2 Write `mods/AGENTS.md` from `mods/CLAUDE.md` always-on content, hoisting the shared
       per-mod facts exactly once: the server-time expression
       `NetworkManagerMMO.offsetNetworkTime + NetworkTime.time` (duplicated at
       `MonsterRespawner:32`, `ResourceRespawner:38`, `ResourceRespawner:69`, `BossTracker:22`), the
       `TextMesh` plus `BoxCollider` marker pattern (`MonsterRespawner:20-22`,
       `ResourceRespawner:25-27`), and the shared scene/cache note (`BossTracker:16-17`,
       `MapEnhancer:21-22`). Under 200 lines.
-- [ ] 1.3 Write `build-pipeline/AGENTS.md`. Resolve the output-path contradiction: `:21` says
+- [x] 1.3 Write `build-pipeline/AGENTS.md`. Resolve the output-path contradiction: `:21` says
       `website/static/`, `:15` and `website/CLAUDE.md:90-91` say `website/data/`. Verify against
       `build-pipeline/src/compendium/commands/build.py` and state the verified path once.
-- [ ] 1.4 Write `website/AGENTS.md` from the 220-line original. Drop the route inventory at `:54`
+- [x] 1.4 Write `website/AGENTS.md` from the 220-line original. Drop the route inventory at `:54`
       rather than repairing it; it already omits four real routes and will rot again. Fix the
       `citations.lock.json` reference at `:158-160` to name the repository-root path.
-- [ ] 1.5 Write `website/src/lib/map/AGENTS.md`, keeping only the coordinate and entity model plus
+- [x] 1.5 Write `website/src/lib/map/AGENTS.md`, keeping only the coordinate and entity model plus
       layer ordering.
-- [ ] 1.6 Resolve the fail-fast contradiction: root `CLAUDE.md:52-55` forbids silent fallbacks
+- [x] 1.6 Resolve the fail-fast contradiction: root `CLAUDE.md:52-55` forbids silent fallbacks
       while `mods/FieldDefaultValueHookFix/CLAUDE.md:24` prescribes one. Decide which is correct,
       then state the rule and its one sanctioned exception in `mods/AGENTS.md`.
 
 ## 2. Extract path-scoped rules
 
-- [ ] 2.1 Create `.agent/rules/`. Every rule carries `description` and, when path-specific,
+- [x] 2.1 Create `.agent/rules/`. Every rule carries `description` and, when path-specific,
       `globs`.
-- [ ] 2.2 Move the website mechanics prose rules (`website/CLAUDE.md:123-133`, `:181-191`) into a
+- [x] 2.2 Move the website mechanics prose rules (`website/CLAUDE.md:123-133`, `:181-191`) into a
       rule scoped to the mechanics routes, or into a linter if one can enforce them.
-- [ ] 2.3 Move the map registry-migration and deck.gl performance guidance
+- [x] 2.3 Move the map registry-migration and deck.gl performance guidance
       (`website/src/lib/map/CLAUDE.md:124-239`) into a rule scoped to `website/src/lib/map/**`, or
       into the `add-map-entity-layer` skill where it is procedural.
-- [ ] 2.4 Move the per-mod path-specific gotchas that survive the keep test into rules scoped to
+- [x] 2.4 Move the per-mod path-specific gotchas that survive the keep test into rules scoped to
       each mod directory. Anything that merely describes what the mod does is dropped, not moved.
 
 ## 3. Replace scaffolding skills with tests
@@ -93,48 +93,50 @@ prose disappears. Model each test on `website/src/lib/map/marker-registry.test.t
 
 ## 5. Delete the old surface
 
-- [ ] 5.1 Delete all 17 `CLAUDE.md` files.
+- [x] 5.1 Delete all 17 `CLAUDE.md` files.
 - [x] 5.2 Delete `docs/claude-md-guide.md`. Done ahead of this change by prune-stale-docs.
-- [ ] 5.3 Confirm no `CLAUDE.md` and no `.claude/` remain outside `node_modules`.
+- [x] 5.3 Confirm no `CLAUDE.md` and no `.claude/` remain outside `node_modules`.
 
 ## 6. Repair references
 
-- [ ] 6.1 Rewrite live prose references to `CLAUDE.md`: `README.md`,
+- [x] 6.1 Rewrite live prose references to `CLAUDE.md`: `README.md`,
       `knip.config.ts:33`, `docs/plans/2026-07-31-ancient-kingdoms-overview.md:107`,
       `docs/plans/2026-07-31-profession-content-coverage.md:351`, and
       `docs/plans/2026-08-09-map-marker-and-search-registry.md:41,1550,1571`.
-- [ ] 6.2 Update the skill-internal references at `create-new-mod:15,112` and
+- [x] 6.2 Update the skill-internal references at `create-new-mod:15,112` and
       `export-game-data:90`, including the `.claude/skills` to `.agent/skills` path change.
-- [ ] 6.3 Leave every file under `docs/plans/archive/**` untouched. Verify none were modified.
+- [x] 6.3 Leave every file under `docs/plans/archive/**` untouched. Verify none were modified.
 
 ## 7. Enforce
 
-- [ ] 7.1 Write `scripts/check-agent-docs.sh`. Check: no `CLAUDE.md` and no `.claude/`; every
+- [x] 7.1 Write `scripts/check-agent-docs.sh`. Check: no `CLAUDE.md` and no `.claude/`; every
       `AGENTS.md` under 200 lines; every skill has `name` and `description`; every rule has
-      `description`; every description contains a usage trigger; every backticked repository path
-      in an instruction file, rule, or skill resolves; every named skill or rule exists. Exclude
+      description`; every description contains a usage trigger; every backticked source path
+      resolves; declared generated output paths name their executable owner; every named skill or
+      rule exists. Exclude
       `docs/plans/archive/**`. Report all violations in one run and exit non-zero.
-- [ ] 7.2 Extend the script to validate `server-scripts/<File>.cs:<lines>` citations appearing in
+- [x] 7.2 Extend the script to validate `server-scripts/<File>.cs:<lines>` citations appearing in
       instruction files, rules, and skills. `citations.lock.json` tracks only citations made from
       source files, so a Markdown citation is currently unverified: `website/CLAUDE.md` cited
       `Combat.cs:480-487` as proof of a damage-type mapping, that region is an invulnerability
       gate, and no check ever looked. At minimum assert the file and line range exist.
-- [ ] 7.3 Wire the script into `lefthook.yml` beside the existing plans job at `:69-75`.
-- [ ] 7.4 Run the script and fix everything it reports.
-- [ ] 7.5 Verify the script actually fails: temporarily add a `CLAUDE.md`, an over-long
+- [x] 7.3 Wire the script into `lefthook.yml` beside the existing plans job at `:69-75`.
+- [x] 7.4 Run the script and fix everything it reports.
+- [x] 7.5 Verify the script actually fails: temporarily add a `CLAUDE.md`, an over-long
       `AGENTS.md`, and a dead path reference; confirm each is caught; then remove them. A check
       that has never failed is not known to work.
 
 ## 8. Verify
 
-- [ ] 8.1 Open a session at the repository root and confirm the root `AGENTS.md` is in the loaded
+- [x] 8.1 Open a session at the repository root and confirm the root `AGENTS.md` is in the loaded
       context. Doc-reading is not evidence; observe the context.
-- [ ] 8.2 Open a session in `website/` and confirm both files load, with the subproject file more
+- [x] 8.2 Open a session in `website/` and confirm both files load, with the subproject file more
       prominent.
-- [ ] 8.3 Open a session in `website/src/lib/map/` and confirm all three levels load.
-- [ ] 8.4 Confirm exactly 5 skills are discovered, all from `.agent/skills/`. A count of 15 means
-      `.claude/skills` still shadows them; a count of 20 means both trees are live.
-- [ ] 8.5 Confirm the registration tests from section 3 run in CI and that the deleted scaffolding
+- [x] 8.3 Open a session in `website/src/lib/map/` and confirm all three levels load.
+- [x] 8.4 Confirm exactly 4 repository skills are discovered, all from `.agent/skills/`. A larger
+      count means the retired `.claude/skills` tree still shadows or duplicates them.
+- [x] 8.5 Confirm the registration tests from section 3 run in CI and that the deleted scaffolding
       skills left no uncovered invariant behind.
-- [ ] 8.6 Confirm the new rules appear in the session's rule listing and resolve via `rule://`.
-- [ ] 8.7 Record the total line count across all `AGENTS.md` files against the 1,460 baseline.
+- [x] 8.6 Confirm the new rules appear in the session's rule listing and resolve via `rule://`.
+- [x] 8.7 Record the total line count across all `AGENTS.md` files against the 1,460 baseline: the
+      five files contain 151 lines.

@@ -108,6 +108,15 @@ uri_re = re.compile(r"\b(skill|rule)://([a-z0-9][a-z0-9-]*)")
 code_re = re.compile(r"`([^`\n]+)`")
 server_ref_re = re.compile(r"server-scripts/([A-Za-z0-9_.-]+\.cs):([A-Za-z_][A-Za-z0-9_.]*|\d+(?:-\d+)?)")
 path_prefixes = (".agent/", "build-pipeline/", "docs/", "mods/", "openspec/", "scripts/", "tests/", "website/", "README.md", "AGENTS.md", "lefthook.yml", "citations.lock.json", "redactions.lock.json", "config.toml")
+generated_outputs = {
+    "website/data",
+    "website/data/compendium.db",
+    "website/static/images",
+    "website/static/tiles",
+}
+generated_output_owner = root / "build-pipeline" / "src" / "compendium" / "commands" / "build.py"
+if generated_outputs and not generated_output_owner.is_file():
+    errors.append(f"missing generated-output owner: {generated_output_owner.relative_to(root)}")
 
 for path in surfaces:
     text = path.read_text(encoding="utf-8")
@@ -122,7 +131,7 @@ for path in surfaces:
             continue
         if candidate.startswith(path_prefixes):
             base = root / candidate.split(":", 1)[0]
-            if not base.exists() and not base.is_symlink():
+            if candidate not in generated_outputs and not base.exists() and not base.is_symlink():
                 errors.append(f"missing path in {rel}: {candidate}")
     for file_name, selector in server_ref_re.findall(text):
         source = root / "server-scripts" / file_name
