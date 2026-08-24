@@ -133,21 +133,6 @@ Setup creates `config.toml` only when it is absent and rewrites `Local.props`:
 `deploy`, `deploy-host`, `launch`, `export`, and `update` require `Local.props`.
 `build` and `setup` do not require it, although mod MSBuild still needs the configured game paths.
 
-### Fresh worktree setup
-
-Git worktrees contain tracked files only. Before running website checks or
-builds in a fresh worktree, bootstrap it from a trusted checkout that already
-has current local export inputs:
-
-```bash
-scripts/bootstrap-worktree.sh <trusted-source-checkout>
-```
-
-The script links missing source-export inputs from the trusted checkout, links
-`Local.props` when present, then regenerates worktree-local website outputs. It
-does not symlink `node_modules` or generated website outputs from another
-worktree.
-
 ## Common workflows
 
 ### Build and deploy mods

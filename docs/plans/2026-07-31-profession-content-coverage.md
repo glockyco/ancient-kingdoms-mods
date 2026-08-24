@@ -348,7 +348,7 @@ is not coverage. 1083 lines, 12.5 mobile screens.
   begin with. Any mechanic held as a hand-transcribed literal is exposed to this class of
   error, and green citations are not evidence of correctness.
 - **`pnpm check:citations` is a root script**, not a website script, though
-  `website/CLAUDE.md` documents it under the website's commands. The `lefthook.yml`
+  `website/AGENTS.md` documents the repository-root ledger boundary. The `lefthook.yml`
   `citations-check` job invokes it correctly and skips when `server-scripts/` is absent.
 - **`static_data.json` must not be loaded as-is.** It is manually maintained, last
   verified 2025-11-25, and its profession block contradicts current code in at least four

@@ -37,7 +37,7 @@ Three tiers are used throughout:
 
 | Claim | Source | Reality (measured) |
 | --- | --- | --- |
-| "Monsters: ~10,000 … Gathering: ~5,000 … **Total: ~16,000 points**" | `website/src/lib/map/CLAUDE.md:188-194` | **4,360** monster spawns, **751** gathering spawns; **5,636** renderable points total. Off by ~3×. |
+| "Monsters: ~10,000 … Gathering: ~5,000 … **Total: ~16,000 points**" | the retired map guidance | **4,360** monster spawns, **751** gathering spawns; **5,636** renderable points total. Off by ~3×. |
 | "Full `compendium.db` … 16.1 MiB" used as the transfer cost | prior search plan | 16,949,248 B raw but **2,471,087 B gzip**. Compresses 6.9×. Any cost argument built on the raw figure is void. |
 | "All 14 existing `*_fts` shadow tables — 1,396 KiB" | prior search plan | **1,429,504 B** via `dbstat`. Close, but re-measured. |
 | Candidate search index "~1.4 MiB" | prior search plan | A cleaned unified full-content index is **502 KiB gzipped**; names+keywords only is **146 KiB**. |
@@ -1546,8 +1546,7 @@ searches in the palette. No change to marker rendering, layer defaults, or the s
 control set.
 
 **Phase 11 — cleanup.** Delete `MapLink.svelte`'s union and `SearchResultItem`'s duplicate
-role map. Rewrite `src/lib/map/CLAUDE.md` — including its wrong point counts. Replace the
-`add-map-entity-layer` skill with a much shorter one.
+role map. Replace the stale map guide with scoped `AGENTS.md` and `rule://interactive-map` guidance. Registration completeness remains test-owned.
 
 Phases 1–6 (map) and 7–8 (search) are independent after Phase 0. Phase 9 depends on 7 (the
 same prebuild script) and Phase 10 on 1.
@@ -1567,7 +1566,7 @@ same prebuild script) and Phase 10 on 1.
 | Text stripping destroys real content | the stripper is pure and unit-tested against fixtures from all three sources; test 8 guards the inverse |
 | Route mode gives wrong directions | the first draft of this plan got exactly this wrong by using portals alone. Mitigations: edges come from a `TravelEdgeProvider` registry so no mechanism can be silently omitted; open, non-closed, cross-zone edges only; directed; two variants (with/without scrolls); requirements per hop; a reachability test with an explicit 25-pair known-unreachable fixture; the `zones.id` vs `zones.zone_id` join hazard documented in §1.6 |
 | A future travel mechanism is missed | Evacuate was missed twice precisely because it is not in the data. The provider registry makes adding a mechanism one module; one test asserts every table with a `*teleport*`/`*destination*` column is claimed by a provider or explicitly excluded, another asserts strong connectivity |
-| Transcribed `ZoneInfo.cs` values rot on a game update | `citations.lock.json` hashes the cited region and `citations.py` fails on drift. Note the standing caveat in `website/CLAUDE.md`: a green citation proves the bytes are unchanged, not that the transcription was right — so the initial transcription needs a second reader |
+| Transcribed `ZoneInfo.cs` values rot on a game update | `citations.lock.json` hashes the cited region and `citations.py` fails on drift. The standing caveat in `website/AGENTS.md` applies: a green citation proves the bytes are unchanged, not that the transcription was right — so the initial transcription needs a second reader |
 | Route implies a guarantee the game does not give | `needMonsterDead` is live server state, portal keys can be satisfied by a party member via an unexported `requiresEveryoneKey`, and the click and walk-in portal paths enforce different rules. Present requirements as conditions, never as "this route works" |
 | Cold start regresses | search.db is 502 KiB gz and *replaces* 1.43 MB of shipped FTS; measured before/after in Phase 8 |
 | Over-generalisation | monsters, NPCs, portals and gathering stay explicit via `decorations`/`delegated`/`facets`; NPC roles are explicitly not 22 markers |

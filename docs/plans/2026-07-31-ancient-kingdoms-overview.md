@@ -102,4 +102,4 @@ owning spec, not here.
 
 ## Pointers
 
-- Conventions and commands: `CLAUDE.md`. Navigation: `docs/plans/INDEX.md`.
+- Repository constraints: `AGENTS.md`. Setup and commands: `README.md`. Navigation: `docs/plans/INDEX.md`.

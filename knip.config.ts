@@ -14,13 +14,11 @@ const config: KnipConfig = {
       entry: ["scripts/*.sh"],
       project: ["scripts/**"],
       // uv is a Python package manager invoked from package.json scripts; not a Node binary.
-      // prettier/eslint are referenced by lefthook.yml, which knip attributes to the root
-      // workspace; those jobs declare `root: website/` and resolve the binaries from the
-      // website workspace, which knip's lefthook handling does not follow.
-      ignoreBinaries: ["uv", "prettier", "eslint"],
+      ignoreBinaries: ["uv"],
       // @hotrepl/cli provides the `hotrepl` binary invoked directly from the shell
-      // per README.md and the hotrepl-runtime-inspection skill, not from a tracked script.
-      ignoreDependencies: ["@hotrepl/cli"],
+      // per README.md and the hotrepl-runtime-inspection skill. Commitlint is invoked
+      // by the commit-msg hook; Knip does not attribute that hook to its package.
+      ignoreDependencies: ["@hotrepl/cli", "@commitlint/cli"],
     },
     // Website workspace: SvelteKit + Vite project
     website: {
@@ -33,7 +31,7 @@ const config: KnipConfig = {
         "src/routes/**/+{page,layout,error}.server.ts",
         "src/app.{ts,html,css,d.ts}",
         // scripts/ includes snapshot-mechanics.mjs (mechanics regression-test tool,
-        // documented in CLAUDE.md; invoked via `node scripts/...`, not a package.json script)
+        // documented in website/AGENTS.md; invoked via `node scripts/...`, not a package.json script)
         "scripts/*.{mjs,ts}",
         "wrangler.toml",
         "wrangler.redirect.toml",
