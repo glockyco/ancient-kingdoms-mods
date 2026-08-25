@@ -40,23 +40,33 @@ public class ItemExporter : BaseExporter
             PlayerEmphasisedTokens(item, usableItem));
 
         var travelItem = item.TryCast<Il2Cpp.TravelItem>();
-        if (travelItem == null || travelItem.nameDestination != "Bind Point")
-            return tooltip;
-
-        var genericBindPoint = Il2Cpp.ScriptableItem.LocalizedTerm(
-            "label.bind_point",
-            "Bind Point");
-        var renderedBindPoint = genericBindPoint;
-        var player = Il2Cpp.Player.localPlayer;
-        if (player != null && Il2Cpp.ZoneInfo.zones.TryGetValue(player.idZoneBindPoint, out var zone))
+        if (travelItem != null && travelItem.nameDestination == "Bind Point")
         {
-            renderedBindPoint = Il2Cpp.ScriptableItem.LocalizedZoneName(zone.id, zone.name);
+            var genericBindPoint = Il2Cpp.ScriptableItem.LocalizedTerm(
+                "label.bind_point",
+                "Bind Point");
+            var renderedBindPoint = genericBindPoint;
+            var player = Il2Cpp.Player.localPlayer;
+            if (player != null && Il2Cpp.ZoneInfo.zones.TryGetValue(player.idZoneBindPoint, out var zone))
+            {
+                renderedBindPoint = Il2Cpp.ScriptableItem.LocalizedZoneName(zone.id, zone.name);
+            }
+
+            tooltip = TooltipNormalizer.WithGenericBindPoint(
+                tooltip,
+                renderedBindPoint,
+                genericBindPoint);
         }
 
-        return TooltipNormalizer.WithGenericBindPoint(
-            tooltip,
-            renderedBindPoint,
-            genericBindPoint);
+        var fragmentItem = item.TryCast<Il2CppuMMORPG.Scripts.ScriptableItems.FragmentItem>();
+        if (fragmentItem != null)
+        {
+            tooltip = TooltipNormalizer.WithRequiredFragmentCount(
+                tooltip,
+                fragmentItem.amountNeeded.ToString());
+        }
+
+        return tooltip;
     }
 
     private static long CalculateSellPriceInGold(Il2Cpp.ScriptableItem scriptableItem)

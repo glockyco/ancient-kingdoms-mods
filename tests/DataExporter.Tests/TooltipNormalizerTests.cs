@@ -58,6 +58,26 @@ public class TooltipNormalizerTests
     }
 
     [Fact]
+    public void FragmentProgressExportsTheSameRequiredTotal()
+    {
+        const string incomplete =
+            "Fragments:  <b><color=#FF0000>0</color></b> / 5";
+        const string complete =
+            "Fragments:  <b><color=#00FF00>5 / 5</color></b>";
+        const string expected = "Fragments:  5";
+
+        Assert.Equal(
+            expected,
+            TooltipNormalizer.WithRequiredFragmentCount(incomplete, "5"));
+        Assert.Equal(
+            expected,
+            TooltipNormalizer.WithRequiredFragmentCount(complete, "5"));
+        Assert.Equal(
+            incomplete,
+            TooltipNormalizer.WithRequiredFragmentCount(incomplete, "6"));
+    }
+
+    [Fact]
     public void OtherTagsAndAuthoredRedTextStayUntouched()
     {
         const string level = "50";
