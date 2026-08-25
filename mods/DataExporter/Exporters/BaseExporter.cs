@@ -78,6 +78,17 @@ public abstract class BaseExporter
             return;
         }
 
+        // A root renderer can be driven by a live Animator. Sample the controller's
+        // initial state instead of the frame visible when the export runs.
+        var animator = gameObject.GetComponent<Animator>();
+        if (gameObject.activeInHierarchy
+            && animator != null
+            && animator.runtimeAnimatorController != null)
+        {
+            animator.Rebind();
+            animator.Update(0f);
+        }
+
         var primaryRenderer = gameObject.GetComponent<SpriteRenderer>();
         if (primaryRenderer == null || primaryRenderer.sprite == null)
         {
