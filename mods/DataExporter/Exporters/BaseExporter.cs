@@ -42,6 +42,24 @@ public abstract class BaseExporter
     public abstract void Export();
 
     /// <summary>
+    /// Selects the source whose lifecycle owns the visual branch.
+    ///
+    /// A Front composite needs the appearance applied to a scene instance. A root
+    /// renderer uses the canonical object, whose template holds the initial frame.
+    /// </summary>
+    protected static GameObject SelectEntityVisualSource(
+        GameObject canonical,
+        GameObject sceneInstance)
+    {
+        if (canonical == null)
+            return sceneInstance;
+
+        return VisualAssetRendererSelector.FindFrontSubtree(canonical) != null
+            ? sceneInstance ?? canonical
+            : canonical;
+    }
+
+    /// <summary>
     /// Exports the primary sprite from the source the object's structure names.
     ///
     /// A layered creature holds its renderers under a Front child. Every other
@@ -58,6 +76,17 @@ public abstract class BaseExporter
     {
         if (VisualAssets == null || gameObject == null)
             return;
+
+        // A live Animator can advance either a root sprite or a layered character.
+        // Keep the initialized source, but sample its controller's initial state.
+        var animator = gameObject.GetComponent<Animator>();
+        if (gameObject.activeInHierarchy
+            && animator != null
+            && animator.runtimeAnimatorController != null)
+        {
+            animator.Rebind();
+            animator.Update(0f);
+        }
 
         var front = VisualAssetRendererSelector.FindFrontSubtree(gameObject);
         if (front != null)
@@ -76,17 +105,6 @@ public abstract class BaseExporter
                 $"{sourceField}.Front.SpriteRenderers",
                 renderers);
             return;
-        }
-
-        // A root renderer can be driven by a live Animator. Sample the controller's
-        // initial state instead of the frame visible when the export runs.
-        var animator = gameObject.GetComponent<Animator>();
-        if (gameObject.activeInHierarchy
-            && animator != null
-            && animator.runtimeAnimatorController != null)
-        {
-            animator.Rebind();
-            animator.Update(0f);
         }
 
         var primaryRenderer = gameObject.GetComponent<SpriteRenderer>();

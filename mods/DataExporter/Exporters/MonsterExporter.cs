@@ -240,7 +240,12 @@ public class MonsterExporter : BaseExporter
                 }
             }
 
-            ExportEntitySprite("monster", name, "Monster.gameObject", canonical.gameObject);
+            var sceneVisualSource = group.FirstOrDefault(m =>
+                m.gameObject != null && m.gameObject.scene.IsValid());
+            var visualSource = SelectEntityVisualSource(
+                canonical.gameObject,
+                sceneVisualSource?.gameObject);
+            ExportEntitySprite("monster", name, "Monster.gameObject", visualSource);
 
 
             monsterList.Add(monsterData);

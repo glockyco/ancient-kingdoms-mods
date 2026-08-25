@@ -276,7 +276,12 @@ public class NpcExporter : BaseExporter
                 }
             }
 
-            ExportEntitySprite("npc", name, "Npc.gameObject", canonical.gameObject);
+            var sceneVisualSource = group.FirstOrDefault(n =>
+                n.gameObject != null && n.gameObject.scene.IsValid());
+            var visualSource = SelectEntityVisualSource(
+                canonical.gameObject,
+                sceneVisualSource?.gameObject);
+            ExportEntitySprite("npc", name, "Npc.gameObject", visualSource);
 
             npcList.Add(npcData);
 
