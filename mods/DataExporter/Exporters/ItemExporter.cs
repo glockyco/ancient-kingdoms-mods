@@ -61,7 +61,7 @@ public class ItemExporter : BaseExporter
         var fragmentItem = item.TryCast<Il2CppuMMORPG.Scripts.ScriptableItems.FragmentItem>();
         if (fragmentItem != null)
         {
-            tooltip = TooltipNormalizer.WithRequiredFragmentCount(
+            tooltip = TooltipNormalizer.WithZeroFragmentProgress(
                 tooltip,
                 fragmentItem.amountNeeded.ToString());
         }

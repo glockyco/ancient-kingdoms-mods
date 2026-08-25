@@ -59,21 +59,22 @@ internal static class TooltipNormalizer
     }
 
     /// <summary>
-    /// Replaces fragment inventory progress with the amount the item requires.
+    /// Replaces fragment inventory progress with a plain zero baseline.
     /// </summary>
-    public static string WithRequiredFragmentCount(
+    public static string WithZeroFragmentProgress(
         string tooltip,
         string requiredCount)
     {
         if (string.IsNullOrEmpty(tooltip) || string.IsNullOrEmpty(requiredCount))
             return tooltip;
 
+        var baseline = "0 / " + requiredCount;
         var completed = "<b><color=#00FF00>"
             + requiredCount
             + " / "
             + requiredCount
             + "</color></b>";
-        var result = tooltip.Replace(completed, requiredCount);
+        var result = tooltip.Replace(completed, baseline);
 
         const string incompleteOpen = "<b><color=#FF0000>";
         const string incompleteMiddle = "</color></b> / ";
@@ -102,6 +103,6 @@ internal static class TooltipNormalizer
             return result;
         }
 
-        return result.Remove(start, requiredEnd - start).Insert(start, requiredCount);
+        return result.Remove(start, requiredEnd - start).Insert(start, baseline);
     }
 }

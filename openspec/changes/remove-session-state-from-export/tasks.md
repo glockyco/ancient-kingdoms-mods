@@ -18,7 +18,7 @@
 - [x] 3.2 Remove the emphasis on a required level and on a required class, covering every decoration task 1.1 recorded
 - [x] 3.3 Apply it at the single call site in `ItemExporter.cs` and confirm no other exporter reads a rendered tooltip: `QuestExporter.cs:62-63` and `SkillExporter.cs:99` read raw template fields and must stay untouched
 - [x] 3.4 Replace a Gate Scroll's rendered bind-point zone with the generic localized bind-point label, and leave fixed travel destinations unchanged
-- [ ] 3.5 Replace a fragment's rendered owned-count progress with plain `0 / amountNeeded`, and leave non-fragment count markup unchanged
+- [x] 3.5 Replace a fragment's rendered owned-count progress with plain `0 / amountNeeded`, and leave non-fragment count markup unchanged
 
 ## 4. Read the field no lifecycle method assigns
 
@@ -47,7 +47,7 @@
 - [x] 7.4 Add a pipeline test that a build fails on an unexpected recorded locale and on a missing one, and passes on the expected one
 - [x] 7.5 Run `dotnet test tests/DataExporter.Tests`, then the pipeline tests, `uv run mypy .` and `uv run ruff check .`
 - [x] 7.6 Add a `DataExporter.Tests` test that two rendered Gate Scroll tooltips with different bind-point zones normalize to the same generic tooltip
-- [ ] 7.7 Add a `DataExporter.Tests` test that incomplete and complete fragment progress normalize to the same plain `0 / amountNeeded` baseline
+- [x] 7.7 Add a `DataExporter.Tests` test that incomplete and complete fragment progress normalize to the same plain `0 / amountNeeded` baseline
 
 ## 8. Verify against the game
 

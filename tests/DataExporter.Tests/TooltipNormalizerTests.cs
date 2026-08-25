@@ -58,23 +58,28 @@ public class TooltipNormalizerTests
     }
 
     [Fact]
-    public void FragmentProgressExportsTheSameRequiredTotal()
+    public void FragmentProgressExportsZeroBaseline()
     {
         const string incomplete =
             "Fragments:  <b><color=#FF0000>0</color></b> / 5";
+        const string partial =
+            "Fragments:  <b><color=#FF0000>3</color></b> / 5";
         const string complete =
             "Fragments:  <b><color=#00FF00>5 / 5</color></b>";
-        const string expected = "Fragments:  5";
+        const string expected = "Fragments:  0 / 5";
 
         Assert.Equal(
             expected,
-            TooltipNormalizer.WithRequiredFragmentCount(incomplete, "5"));
+            TooltipNormalizer.WithZeroFragmentProgress(incomplete, "5"));
         Assert.Equal(
             expected,
-            TooltipNormalizer.WithRequiredFragmentCount(complete, "5"));
+            TooltipNormalizer.WithZeroFragmentProgress(partial, "5"));
+        Assert.Equal(
+            expected,
+            TooltipNormalizer.WithZeroFragmentProgress(complete, "5"));
         Assert.Equal(
             incomplete,
-            TooltipNormalizer.WithRequiredFragmentCount(incomplete, "6"));
+            TooltipNormalizer.WithZeroFragmentProgress(incomplete, "6"));
     }
 
     [Fact]
