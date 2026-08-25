@@ -35,7 +35,8 @@ Triage each blocking status:
 
 - The code moved and the claim still holds. Relocate the citation.
 - The anchor names unrelated code. Correct the anchor. Run `citations suggest` for a proposal.
-- The patch made the claim false. The code that carries the claim is now wrong. Record the claim in this phase's commit body, and fix it with its code in phase 4.
+- The patch made the claim false, and the check reports `unsupported`. A re-anchor refuses that claim, so it cannot wait. Fix it here, together with the code that carries it.
+- The patch made the claim false, and the check reports only `changed`. The tool cannot see the contradiction. Record the claim in this phase's commit body, and fix it with its code in phase 4.
 
 Prefer a symbol citation for one named member.
 
@@ -47,7 +48,7 @@ uv run compendium citations sync --game-version <version>
 uv run compendium citations check
 ```
 
-Commit this phase before you change an exporter or a mechanic.
+Commit this phase before you change an exporter. A mechanic whose claim the tool refuses to anchor belongs in this commit, because the reconciliation cannot finish without it.
 
 ## 3. Update exporter compatibility
 
@@ -93,7 +94,7 @@ The ledger version and `COMPENDIUM_VERSION` describe different things. The ledge
 
 Run focused tests as each concern lands. Then run the repository release gate and use the actual site in a browser. Confirm the game export, pipeline database, map if changed, mechanics pages, downloads, and live version banner.
 
-Commit coherent concerns as they pass, in this order: citation reconciliation, exporter contract, each mechanic with its prose and snapshots, the tests and generated fixtures the new data invalidated, generated data, redaction ledger, map artifacts, and version publication. Use `skill://commit-policy`. Do not hold a completed concern for a later big-bang split.
+Commit coherent concerns as they pass, in this order: citation reconciliation with any mechanic it had to carry, exporter contract, each mechanic with its prose and snapshots, the tests and generated fixtures the new data invalidated, generated data, redaction ledger, map artifacts, and version publication. Use `skill://commit-policy`. Do not hold a completed concern for a later big-bang split.
 
 ## Known runtime failure
 
