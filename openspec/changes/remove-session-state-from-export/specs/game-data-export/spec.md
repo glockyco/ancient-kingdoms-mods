@@ -46,6 +46,12 @@ Rationale: the game renders an item tooltip for the player in front of it, and c
 - **THEN** the exported tooltip states the generic bind-point destination
 - **AND** it does not name that character's zone
 
+#### Scenario: A fragment item reports the character's inventory
+
+- **WHEN** a fragment item renders how many pieces the exporting character owns
+- **THEN** the exported tooltip states the number required to combine the item
+- **AND** it does not state that character's progress
+
 #### Scenario: An actor has moved
 
 - **WHEN** an actor is not standing where the game placed it
@@ -58,11 +64,12 @@ Rationale: the game renders an item tooltip for the player in front of it, and c
 - **THEN** the captured visual asset is the one its structure selects
 - **AND** the recorded source names the structure the asset came from
 
-#### Scenario: An actor's root sprite is animated
+#### Scenario: An actor's sprite is animated
 
-- **WHEN** an actor's root sprite is on any frame of its animation
+- **WHEN** an actor's sprite is on any frame of its animation
 - **THEN** the export captures the controller's initial frame
-- **AND** it prefers the canonical template over a live scene instance when that template exists
+- **AND** a root-renderer branch prefers the canonical template over a live scene instance when that template exists
+- **AND** a layered composite preserves the initialized scene instance
 
 ### Requirement: A value is read from a field no lifecycle method overwrites
 

@@ -4,6 +4,8 @@ See `proposal.md` for motivation and the measured differences. This section reco
 
 **The tooltip.** `ItemExporter.cs:61-67` writes `tooltip = scriptableItem.ToolTip(false, false) ?? ""`. The two booleans are `compareEquipment` and `showPrice` (`ScriptableItem.cs:423-425`); neither governs player-conditional markup. `UsableItem.cs:62-73` wraps `{MINLEVEL}` in `<color=red>` when `minLevel > 1 && GameManager.isLocalPlayerActive && Player.localPlayer.level.current < minLevel`. `EquipmentItem.cs:347-355` and `:520-522` wrap the required class the same way when `Player.localPlayer.className` cannot use the item. `ScriptableItem.cs:64-68` and `:178-196` resolve the template through `LocalizationSettings.SelectedLocale`, and `:212-229` lets the locale choose the culture that formats numbers. `TravelItem.ToolTip` adds one more player-dependent value after the base render: when the item targets `"Bind Point"`, it reads `Player.localPlayer.idZoneBindPoint` and replaces `[BINDPOINT]` with that zone's localized name (`TravelItem.cs:45-54`). Two verification runs therefore wrote `[Twilight Forest]` and `[Everfrost]` for the same Gate Scroll.
 
+`FragmentItem.ToolTip` loops over `Player.localPlayer.inventory`, then renders the owned and required counts as red while incomplete or the required count twice in green when complete (`uMMORPG.Scripts.ScriptableItems/FragmentItem.cs:52-68`). Two runs therefore wrote `0 / 5` and `5 / 5` for Krom Razz Fatecharm Fragment. The item property is `amountNeeded`; the owned count belongs to one character.
+
 The game exposes no player-independent rendering: the raw `toolTip` field is protected-internal (`ScriptableItem.cs:42-44`) and `LocalizedToolTipTemplate()` is protected.
 
 **The spawn position.** `MonsterExporter.cs:282` derives the zone from `monster.transform.position` and `:289-293` writes the position from the same live transform; `NpcExporter.cs:313` and `:320-324` do likewise. The runtime keeps the placed point: `Monster.cs:99` declares `startPosition`, `:545-546` captures it in `Awake`, and the movement and respawn code reads it without assigning it (`:1570`, `:1633`, `:1660-1669`, `:2816`, `:3000-3035`). `Npc.cs:110` and `:305-306` do the same in `Start`. `Entity.cs` has no such field, so this is specific to the two types that move.
@@ -30,7 +32,9 @@ Activation is not incidental. `ZoneInfo.ClearDynamicZones` collects the zone of 
 
 `Aelindis Gemweaver` is one of the two root-only NPCs, and it is the row that differed. Monsters never reach the filter, because their exporter tests the root component first, which is why only one asset differed in the original comparison.
 
-The structural correction exposed a second visual dependency. `MonsterExporter` and `NpcExporter` prefer the first scene instance over the canonical template for the visual source. Two verification runs selected different live animation frames for Injured Werebear (`catbearmonster_55` and `catbearmonster_90`) and Orc Oracle (`icy_orc_oracle_1` and `icy_orc_oracle_38`). Both groups have a canonical template whose root renderer holds the controller's initial frame. Groups without a template still need their root animator reset before capture.
+The structural correction exposed a second visual dependency. `MonsterExporter` and `NpcExporter` prefer the first scene instance over the canonical template for the visual source. Two verification runs selected different live animation frames for Injured Werebear (`catbearmonster_55` and `catbearmonster_90`) and Orc Oracle (`icy_orc_oracle_1` and `icy_orc_oracle_38`). Both groups have a canonical template whose root renderer holds the controller's initial frame. Groups without a template still need their animator reset before capture.
+
+The same timing affects composites. Two later runs captured Taelora Nightbloom's initialized `Front` subtree at heights 123 and 149. Replacing all scene sources with templates is not sound: it changed 58 layered images because their appearance is applied to the scene instance. The source must remain the initialized scene object, but its animator must be sampled at time zero before the composite reads the sprites.
 
 The same filter also mislabels: a root-only NPC that passes it is recorded as `Npc.gameObject.Front.SpriteRenderers` with `1 renderers`, naming a `Front` child that does not exist.
 
@@ -51,13 +55,13 @@ The same filter also mislabels: a root-only NPC that passes it is recorded as `N
 
 ### The tooltip is rendered, then the character's answers are removed
 
-The export keeps calling `ToolTip`, then removes three contributions from the exporting character: the emphasis on a required level, the emphasis on a required class, and the character's bind-point zone. The first two are `<color=red>` wrappers applied at known sites. The third is the localized zone that `TravelItem.ToolTip` substitutes for `[BINDPOINT]`. Each removal is the inverse of a transformation the game code states; authored red text and fixed travel destinations stay unchanged.
+The export keeps calling `ToolTip`, then removes four contributions from the exporting character: the emphasis on a required level, the emphasis on a required class, the character's bind-point zone, and the character's fragment inventory progress. The first two are `<color=red>` wrappers applied at known sites. The third is the localized zone that `TravelItem.ToolTip` substitutes for `[BINDPOINT]`. The fourth is the red or green owned-count markup that `FragmentItem.ToolTip` substitutes for `[FRAGMENTS]`; the export keeps only `amountNeeded`. Each removal is the inverse of a transformation the game code states; authored red text and fixed travel destinations stay unchanged.
 
 Alternative: render under a fixed character. Rejected on the evidence: the class emphasis depends on `Player.localPlayer.className`, and no class can use every item, so no character exists for which the rendering is correct. A max-level character would fix the level emphasis and leave the class emphasis wrong for most of the catalogue.
 
 Alternative: rebuild the tooltip from the raw template. Rejected because it duplicates the game's whole tooltip pipeline - placeholder substitution, stat lines, set bonuses, prices - in our code, where it would drift from the game silently. The mechanics pages already carry that cost deliberately for the damage pipeline, and they have a snapshot gate to hold them to it; a tooltip has no such contract.
 
-The required level and required class are already exported as their own fields, so removing the emphasis loses nothing a consumer cannot reconstruct. The Gate Scroll always targets the character's bind point, not one fixed zone (`TravelItem.cs:22-29`), so the generic localized `Bind Point` label is the item property and a zone name is session data.
+The required level and required class are already exported as their own fields, so removing the emphasis loses nothing a consumer cannot reconstruct. The Gate Scroll always targets the character's bind point, not one fixed zone (`TravelItem.cs:22-29`), so the generic localized `Bind Point` label is the item property and a zone name is session data. A fragment's `amountNeeded` is also exported as `fragment_amount_needed`; the character's owned count is neither an item property nor useful to another reader.
 
 ### The locale is declared and checked, not corrected
 
@@ -87,9 +91,11 @@ The parenthesised suffix stays. `Chest RF Interiors (10)` is what the object is 
 
 ### The visual asset source is canonical, then chosen by structure
 
-The exporter uses the canonical template as the visual source when the group has one. A template is game data; a scene instance is a running copy whose animator has advanced. For groups without a template, the shared capture resets a root animator and samples time zero before reading its sprite. This uses the controller's initial frame instead of the frame that happened to be visible when export started.
+The source follows the same structural branch. A `Front` composite keeps the initialized scene instance: switching every group to its template changed 58 layered images, because the scene initialization supplies their appearance. A root-renderer branch uses the canonical template when the group has one. A template holds the controller's initial sprite instead of a live animation frame.
 
-The capture then decides between the composite and the root renderer by whether a `Front` child exists. The sources are mutually exclusive in the data, so this reproduces every structural outcome except the one that was unstable, and it removes the activation test that made it unstable.
+The shared capture resets an active source's animator and samples time zero before it reads either branch. This keeps an initialized composite's appearance while removing its current frame, and it covers a root-renderer group for which the game exposes no template. The source choice and the root-or-composite choice live in shared helpers so the exporters cannot disagree again.
+
+The capture decides between the composite and the root renderer by whether a `Front` child exists. The sources are mutually exclusive in the data, so this reproduces every structural outcome except the one that was unstable, and it removes the activation test that made it unstable.
 
 No failure path is needed, and none is added. The earlier plan failed the export on a `Front` child whose renderers hold no sprite; the measurement found no such entity, and all 208 monster and 234 NPC `Front` subtrees are populated.
 
@@ -97,7 +103,9 @@ Because the three call sites disagree about the order, and that disagreement is 
 
 Alternative: keep the fallback and accept whichever source has sprites. Rejected: that is the current behaviour, and it published two different images for one NPC across two exports of one build, one of them under a source name describing a child the NPC does not have.
 
-Alternative: keep preferring a scene instance and capture its current root sprite. Rejected: Injured Werebear and Orc Oracle each published two animation frames in two runs. The canonical template already carries the initial frame, and sampling time zero covers groups for which the game exposes no template.
+Alternative: keep preferring a scene instance for a root renderer and capture its current sprite. Rejected: Injured Werebear and Orc Oracle each published two animation frames in two runs. The canonical template already carries the initial frame, and sampling time zero covers root-renderer groups for which the game exposes no template.
+
+Alternative: use the canonical template for `Front` composites too. Rejected after runtime verification: that changed 58 layered images because those templates do not carry the appearance that scene initialization applies. A composite therefore keeps its initialized scene source; it had already been byte-stable across runs.
 
 ## Risks / Trade-offs
 
@@ -105,7 +113,8 @@ Alternative: keep preferring a scene instance and capture its current root sprit
 - Removing markup by pattern could remove emphasis the game applies for a reason unrelated to the player → remove it only at the two decorations identified, and add a test that an item whose requirement the character meets and one whose requirement it does not produce the same exported tooltip.
 - A third player-conditional decoration may exist that neither export exposed, because both ran as one character → enumerate the conditional markup in the tooltip pipeline as part of the work, rather than inferring the set from the observed diff.
 - Replacing the bind-point zone could alter an authored bracketed zone elsewhere in a tooltip → apply it only to a `TravelItem` whose destination is `"Bind Point"`, and replace the exact localized value that `TravelItem.ToolTip` generated.
-- Resetting an animator could alter a layered composite whose controller governs renderer visibility → sample time zero only for a root-renderer branch; a `Front` composite keeps its authored renderer set.
+- Removing fragment progress could alter similar authored count markup → apply it only to `FragmentItem`, match the two exact red and green shapes that its override emits, and keep `amountNeeded`.
+- Resetting a layered animator could discard the initialized appearance → reset the initialized scene instance rather than its template; sampling time zero changes the frame but keeps the scene object's renderer assets.
 - `Npc` captures its start point in `Start`, which does not run while its zone is deactivated, so which NPCs read the zero vector depends on where the exporting character stands → both branches report the placed point, so the exported value does not depend on the branch. `Monster` captures in `Awake` and all 4572 hold a value.
 - Correcting a position moves a placement, and the redaction ledger keys a removed placement by its position → none of the twelve is in an excluded zone, so no recorded key changes. A corrected position inside an excluded zone would rekey that entry, which the ledger reports as one line.
 
