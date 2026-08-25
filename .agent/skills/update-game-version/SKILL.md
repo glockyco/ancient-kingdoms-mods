@@ -64,6 +64,8 @@ dotnet run --project build-tool export
 
 If exporter code is unchanged, use `dotnet run --project build-tool export --update`. Add `--screenshots` only when the world map changed. Deployment copies Release DLLs but does not prune stale DLLs.
 
+After an exporter change, run a second export without updating the game or changing its configuration or scope. Preserve the first output outside `exported-data/`, then compare the complete trees with `/usr/bin/diff -rq`. The comparison includes JSON and published images. Any difference is an exporter defect; do not regenerate consumers until the trees are byte-identical.
+
 ## 4. Regenerate consumers
 
 ```bash
