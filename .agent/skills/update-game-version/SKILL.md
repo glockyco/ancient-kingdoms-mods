@@ -39,7 +39,7 @@ Triage each blocking status:
 
 Prefer a symbol citation for one named member.
 
-Run `citations fix` before `citations sync`. A sync writes every anchor and stamps one game version, so it refuses while a relocation is pending.
+Run `citations fix` before `citations sync`. A sync writes every anchor and stamps one game version. It refuses an anchor it knows is wrong, which means a relocated reference or a claim that names code the region lacks. A reference whose code merely changed is accepted, so review it before you sync.
 
 ```bash
 uv run compendium citations fix

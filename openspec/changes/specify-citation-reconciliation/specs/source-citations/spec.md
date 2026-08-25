@@ -54,22 +54,40 @@ Re-anchoring SHALL apply to the whole ledger and SHALL require the game version 
 - **WHEN** an operator re-anchors the ledger and supplies no game version
 - **THEN** the tool refuses and names the missing version
 
-### Requirement: Re-anchoring refuses a tree with pending relocations
+### Requirement: Re-anchoring refuses an anchor the tool knows is wrong
 
-When any reference reports as moved, re-anchoring SHALL refuse to run and SHALL name the pending references.
+Re-anchoring SHALL refuse to run when a finding is positive evidence that the recorded anchor would name the wrong code, and SHALL name each such reference.
 
-A moved reference means the locator in repository code still names the old position. Re-anchoring that tree would record an anchor for the region that now sits at the old position. Verification compares content only, so the wrong anchor reports as unchanged from then on and no later run can detect it.
+A reference found at another position is such a finding. Its locator still names the old position, so an anchor taken now records the region that has moved into that position.
 
-#### Scenario: A relocation is pending
+A claim that names code absent from the cited region is such a finding. Either the anchor names the wrong region or the claim is stale, and an anchor taken now records the contradiction as verified.
 
-- **WHEN** an operator re-anchors the ledger while at least one reference reports as moved
-- **THEN** the tool refuses and names the pending references
+A reference whose content merely differs is not such a finding. The new content may still carry the claim, so an operator who reviewed it SHALL be able to accept it.
+
+The refusal exists because verification compares content. Once a wrong anchor is recorded, it reports as unchanged from then on and no later run can detect it.
+
+#### Scenario: The recorded content sits at another position
+
+- **WHEN** an operator re-anchors the ledger and a reference reports as moved
+- **THEN** the tool refuses and names that reference
 - **AND** the ledger is unchanged
 
-#### Scenario: No relocation is pending
+#### Scenario: A claim names code the region lacks
 
-- **WHEN** an operator re-anchors the ledger and no reference reports as moved
+- **WHEN** an operator re-anchors the ledger and a claim reports as unsupported
+- **THEN** the tool refuses and names that reference
+- **AND** the ledger is unchanged
+
+#### Scenario: A reviewed change is accepted
+
+- **WHEN** an operator re-anchors the ledger and a reference reports only as changed
 - **THEN** the tool writes the ledger
+
+#### Scenario: Nothing can be anchored for a reference
+
+- **WHEN** a reference names a file or symbol that cannot be resolved
+- **THEN** re-anchoring records no content for it
+- **AND** a later verification reports it as changed rather than as verified
 
 ### Requirement: Claim support is a keyword test, not a proof
 

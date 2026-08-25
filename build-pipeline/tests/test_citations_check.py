@@ -8,10 +8,10 @@ from compendium.citations.lockfile import Lockfile
 from compendium.commands.citations import (
     Target,
     _compare,
-    _pending_relocations,
     _shift,
     _sync,
     _tool_mismatch,
+    _unsafe_to_anchor,
 )
 
 
@@ -125,12 +125,11 @@ class CompareTests(unittest.TestCase):
             self.assertEqual(target.suspect, "cited line is a brace")
 
 
-class PendingRelocationTests(unittest.TestCase):
-    """A locator the source has left must be relocated before it is anchored.
+class UnsafeToAnchorTests(unittest.TestCase):
+    """An anchor the tool knows is wrong must not be recorded.
 
-    Anchoring it records whatever region now sits at the old position, and a
-    later check compares content only, so the wrong anchor reads as verified
-    from then on.
+    A later check compares content only, so a wrong anchor reads as verified
+    from then on and nothing can detect it.
     """
 
     def build(self, directory: str, body: str) -> Snapshot:
@@ -147,7 +146,7 @@ class PendingRelocationTests(unittest.TestCase):
             target.span = 1
             lock = Lockfile(targets={target.key: LockEntry(digest(["beta"]), 1, None)})
 
-            pending = _pending_relocations(snapshot, [target], lock)
+            pending = _unsafe_to_anchor(snapshot, [target], lock)
 
             self.assertEqual([entry.moved_to for entry in pending], ["3"])
 
@@ -159,7 +158,49 @@ class PendingRelocationTests(unittest.TestCase):
             target.span = 1
             lock = Lockfile(targets={target.key: LockEntry(digest(["beta"]), 1, None)})
 
-            self.assertEqual(_pending_relocations(snapshot, [target], lock), [])
+            self.assertEqual(_unsafe_to_anchor(snapshot, [target], lock), [])
+
+    def test_an_unsupported_claim_is_unsafe(self):
+        # The claim names code the cited region does not contain, so anchoring
+        # would record the contradiction as verified.
+        with tempfile.TemporaryDirectory() as directory:
+            snapshot = self.build(directory, "alpha\nbeta\ngamma\n")
+            target = make_target("Player.cs", "2")
+            target.sha256 = snapshot.digest(["beta"])
+            target.span = 1
+            target.status = "unsupported"
+            lock = Lockfile(targets={target.key: LockEntry(digest(["beta"]), 1, None)})
+
+            unsafe = _unsafe_to_anchor(snapshot, [target], lock)
+
+            self.assertEqual([entry.status for entry in unsafe], ["unsupported"])
+
+    def test_an_unsupported_claim_is_unsafe_when_the_ledger_lacks_the_key(self):
+        # The live case: an edited locator produces a key the ledger does not
+        # list. A comparison would report that as changed and lose the claim
+        # finding, so the claim status must be read before comparing.
+        with tempfile.TemporaryDirectory() as directory:
+            snapshot = self.build(directory, "alpha\nbeta\ngamma\n")
+            target = make_target("Player.cs", "2")
+            target.sha256 = snapshot.digest(["beta"])
+            target.span = 1
+            target.status = "unsupported"
+
+            unsafe = _unsafe_to_anchor(snapshot, [target], Lockfile(targets={}))
+
+            self.assertEqual([entry.status for entry in unsafe], ["unsupported"])
+
+    def test_a_reviewed_change_is_not_unsafe(self):
+        # Content differs and is nowhere else. The new content may still carry
+        # the claim, so accepting it after review is what this command is for.
+        with tempfile.TemporaryDirectory() as directory:
+            snapshot = self.build(directory, "alpha\nrewritten\ngamma\n")
+            target = make_target("Player.cs", "2")
+            target.sha256 = snapshot.digest(["rewritten"])
+            target.span = 1
+            lock = Lockfile(targets={target.key: LockEntry(digest(["beta"]), 1, None)})
+
+            self.assertEqual(_unsafe_to_anchor(snapshot, [target], lock), [])
 
     def test_the_caller_targets_keep_their_loaded_status(self):
         # A sync that proceeds reports what it anchored. Comparing in place would
@@ -171,7 +212,7 @@ class PendingRelocationTests(unittest.TestCase):
             target.span = 1
             lock = Lockfile(targets={target.key: LockEntry(digest(["beta"]), 1, None)})
 
-            _pending_relocations(snapshot, [target], lock)
+            _unsafe_to_anchor(snapshot, [target], lock)
 
             self.assertEqual(target.status, "ok")
             self.assertIsNone(target.moved_to)
@@ -182,7 +223,9 @@ class SyncGuardTests(unittest.TestCase):
 
     CITED_FILE = Path("website/src/lib/example.ts")
 
-    def build(self, root: Path, body: str, locator: str) -> None:
+    def build(
+        self, root: Path, body: str, locator: str, claim: str = "beta is the anchor"
+    ) -> None:
         scripts = root / "server-scripts"
         scripts.mkdir()
         (scripts / "SNAPSHOT.toml").write_text(
@@ -193,7 +236,7 @@ class SyncGuardTests(unittest.TestCase):
         source = root / self.CITED_FILE
         source.parent.mkdir(parents=True)
         source.write_text(
-            f"// Source: server-scripts/Player.cs:{locator} — beta is the anchor\n",
+            f"// Source: server-scripts/Player.cs:{locator} — {claim}\n",
             encoding="utf-8",
         )
 
@@ -209,6 +252,30 @@ class SyncGuardTests(unittest.TestCase):
             root = Path(directory)
             # The cited line still says 2, but "beta" now sits on line 3.
             self.build(root, "inserted\nalpha\nbeta\ngamma\n", "2")
+            self.anchor(root, "2")
+            lock_path = root / "citations.lock.json"
+            before = lock_path.read_bytes()
+
+            with patch(
+                "compendium.commands.citations.iter_citation_files",
+                return_value=[self.CITED_FILE],
+            ):
+                code = _sync(root, "1.2.3")
+
+            self.assertEqual(code, 1)
+            self.assertEqual(lock_path.read_bytes(), before)
+
+    def test_sync_refuses_a_claim_naming_code_the_region_lacks(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            # The locator names its own content, so nothing has moved, but the
+            # claim names a member the region does not contain.
+            self.build(
+                root,
+                "alpha\nbeta\ngamma\n",
+                "2",
+                claim="GetSuccessProbCooking() produces this value",
+            )
             self.anchor(root, "2")
             lock_path = root / "citations.lock.json"
             before = lock_path.read_bytes()

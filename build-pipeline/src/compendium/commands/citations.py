@@ -299,21 +299,37 @@ def _tool_mismatch(snapshot: Snapshot, lock: Lockfile) -> str | None:
     )
 
 
-def _pending_relocations(
+def _unsafe_to_anchor(
     snapshot: Snapshot, targets: list[Target], lock: Lockfile
 ) -> list[Target]:
-    """Targets whose recorded content sits at a position the source does not name.
+    """Targets the tool already knows would be anchored to the wrong code.
+
+    `moved` means the locator names a position its code has left. `unsupported`
+    means the claim names code the cited region does not contain. Either way an
+    anchor taken now records a region the claim does not describe, and a later
+    check compares content only, so nothing can detect it afterwards.
+
+    `changed` is absent on purpose: the new content may still carry the claim, so
+    accepting it after review is the reason this command exists. `unresolved` and
+    `ambiguous` need no guard, because they record no content and a later check
+    reports them as changed rather than as verified.
 
     Compared on copies: the caller's targets keep the statuses `_load` gave them,
     so a sync that proceeds reports what it anchored rather than what it found.
     """
-    pending = []
+    unsafe = []
     for target in targets:
+        # An unsupported claim is a property of the claim and the region, so it
+        # holds whatever the ledger records. Comparing first would lose it: a
+        # target the ledger does not list yet is reported as changed instead.
+        if target.status == "unsupported":
+            unsafe.append(target)
+            continue
         probe = copy(target)
         _compare(snapshot, probe, lock.targets.get(probe.key))
         if probe.status == "moved":
-            pending.append(probe)
-    return pending
+            unsafe.append(probe)
+    return unsafe
 
 
 def _load(repo_root: Path) -> tuple[Snapshot, list[Target]] | None:
@@ -382,30 +398,29 @@ def _sync(repo_root: Path, game_version: str | None) -> int:
         )
         return 1
 
-    # Anchoring a locator the source no longer names records the region that now
-    # sits at the old position. A later check compares content only, so the wrong
-    # anchor reads as verified from then on and nothing can detect it.
     lock_path = repo_root / LOCKFILE_NAME
     if lock_path.exists():
-        pending = _pending_relocations(snapshot, targets, Lockfile.load(lock_path))
-        if pending:
+        unsafe = _unsafe_to_anchor(snapshot, targets, Lockfile.load(lock_path))
+        if unsafe:
             console.print(
-                f"[red]Error (pending-relocation):[/red] {len(pending)} citation(s) "
-                f"name a position their code has left. Anchoring now would record "
-                f"the wrong region."
+                f"[red]Error (unsafe-anchor):[/red] {len(unsafe)} citation(s) would "
+                f"be anchored to code their claim does not describe."
             )
             console.print()
-            for target in pending:
+            for target in unsafe:
                 origin = target.references[0]
+                style = _STATUS_STYLE.get(target.status, "white")
+                detail = target.detail or target.suspect or ""
                 console.print(
-                    f"  [yellow]moved     [/] {escape(target.key)}"
-                    f"  [dim]{escape(target.detail)}[/dim]"
-                    f"  [dim]({escape(origin.source_path)}:{origin.line})[/dim]"
+                    f"  [{style}]{target.status:<12}[/] {escape(target.key)}"
+                    + (f"  [dim]{escape(detail)}[/dim]" if detail else "")
+                    + f"  [dim]({escape(origin.source_path)}:{origin.line})[/dim]"
                 )
             console.print()
             console.print(
-                "Run [cyan]compendium citations fix[/cyan] first, then re-run this "
-                "command."
+                "Relocate a moved citation with [cyan]compendium citations fix[/cyan]. "
+                "Re-anchor an unsupported claim onto the code it describes, or correct "
+                "the claim. Then re-run this command."
             )
             return 1
 
