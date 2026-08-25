@@ -131,7 +131,7 @@ def redactions_check(ctx: typer.Context):
 def redactions_sync(
     ctx: typer.Context,
     game_version: str = typer.Option(
-        None,
+        ...,
         "--game-version",
         help="Game version the current export came from",
     ),

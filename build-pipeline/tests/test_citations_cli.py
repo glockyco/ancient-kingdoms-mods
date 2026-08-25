@@ -53,6 +53,34 @@ class CitationsCliTests(unittest.TestCase):
                 self.assertEqual(required, [])
 
 
+class RedactionsCliTests(unittest.TestCase):
+    """The redaction ledger stamps a game version, so a sync must be told it.
+
+    Inheriting the recorded value stamped one export with the version of an
+    older one, and no command reported the difference.
+    """
+
+    def redactions(self):
+        return typer.main.get_command(app).commands["redactions"]
+
+    def test_sync_requires_game_version(self):
+        params = self.redactions().commands["sync"].params
+        option = next(param for param in params if "--game-version" in param.opts)
+
+        self.assertTrue(option.required)
+
+    def test_gate_actions_are_runnable_without_arguments(self):
+        # lefthook invokes check bare, so a required option would break the gate.
+        for name in ("check", "verify"):
+            with self.subTest(action=name):
+                required = [
+                    param
+                    for param in self.redactions().commands[name].params
+                    if param.required
+                ]
+                self.assertEqual(required, [])
+
+
 class CitationDiscoveryTests(unittest.TestCase):
     def test_discovery_skips_tests_and_unsupported_extensions(self):
         repo_root = Path(__file__).resolve().parents[2]

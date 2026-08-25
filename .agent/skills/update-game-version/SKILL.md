@@ -73,7 +73,7 @@ uv run compendium build
 uv run compendium redactions check
 ```
 
-Tile validation must pass before replacement. Investigate redaction drift. Run `uv run compendium redactions sync` only after every new decision is explained.
+Tile validation must pass before replacement. Investigate redaction drift. Run `uv run compendium redactions sync --game-version <version>` only after every new decision is explained. The ledger stamps that version, so it states which export the decisions were taken against.
 
 Apply current-tense website changes. Fix each claim that phase 2 recorded, together with the code that carries it. New data also invalidates tests that assert on it and changes generated fixtures, so treat each one as its own concern.
 

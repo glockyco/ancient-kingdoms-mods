@@ -103,22 +103,17 @@ def _check(repo_root: Path, config: dict) -> int:
     return 1
 
 
-def _sync(repo_root: Path, config: dict, game_version: str | None) -> int:
+def _sync(repo_root: Path, config: dict, game_version: str) -> int:
+    # The version is required rather than inherited from the ledger. Carrying the
+    # recorded value forward stamped decisions taken against one export with the
+    # version of an older one, and nothing reported the difference.
     path = _ledger_path(repo_root)
-    recorded = Ledger.read(path)
-
-    version = game_version or (recorded.game_version if recorded else None)
-    if not version:
-        console.print(
-            "[red]No game version. Pass --game-version for the first sync.[/red]"
-        )
-        return 1
 
     current = _recompute(repo_root, config)
-    current.game_version = version
+    current.game_version = game_version
     current.write(path)
 
-    console.print(f"[green]Wrote[/green] {path.name} for game {version}")
+    console.print(f"[green]Wrote[/green] {path.name} for game {game_version}")
     _summarise(current)
     return 0
 
@@ -234,6 +229,9 @@ def run(
     if action == "verify":
         return _verify(repo_root, config)
     if action == "sync":
+        if not game_version:
+            console.print("[red]Error:[/red] --game-version is required")
+            return 1
         return _sync(repo_root, config, game_version)
     if action == "explain":
         if not entity_id:
