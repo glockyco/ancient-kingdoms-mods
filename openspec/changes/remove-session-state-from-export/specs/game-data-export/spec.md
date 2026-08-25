@@ -46,10 +46,11 @@ Rationale: the game renders an item tooltip for the player in front of it, and c
 - **THEN** the exported position is the position the game placed it at
 - **AND** the row's zone is the zone of that same position
 
-#### Scenario: An actor is facing a direction
+#### Scenario: An actor is not active
 
-- **WHEN** an actor's appearance depends on the direction it faces
-- **THEN** the captured visual asset does not depend on the direction it faced when the export ran
+- **WHEN** an actor's object is inactive at the moment the export runs
+- **THEN** the captured visual asset is the one its structure selects
+- **AND** the recorded source names the structure the asset came from
 
 ### Requirement: A value is read from a field no lifecycle method overwrites
 

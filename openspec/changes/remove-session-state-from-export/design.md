@@ -8,9 +8,21 @@ See `proposal.md` for motivation and the measured differences. This section reco
 
 `startPosition` is private in the game source, and that does not matter: Il2CppInterop regenerates it as `public unsafe Vector2 startPosition` on `Il2Cpp.Monster` (interop assembly line 1847, field pointer at `:3942`), because interop ignores source accessibility. The mod can read it directly.
 
+The two types differ in when they capture it, and it matters. `Monster` captures in `Awake`, so all 4572 instances hold a non-zero value, including the 4102 that are inactive. `Npc` captures in `Start`, which never runs on an object that is inactive from load, so 219 of 236 hold the zero vector.
+
+The actors that stand away from that point are not drifting. They are doing what they are built to do, and the two behaviours differ in kind. 57 monsters are wandering: `Monster.cs:1660` navigates to `startPosition + Random.insideUnitCircle * moveDistance`, and every one of the 57 is within its own `moveDistance` of its start, the furthest 7.6 units. One monster is patrolling a route from `waypointsPatrol` and stands 356.8 units away.
+
+So the exported position is not a corrupted spawn point; it is a correct reading of the wrong thing. For a wanderer it is a sample from a disc around the home point, and for a patroller it is a point on a route. Both are already described by fields the export publishes separately: `move_distance` and `is_patrolling` at `MonsterExporter.cs:304-306`, and the waypoints at `:310-317`. What is missing is the point the game places the actor at, which is what a spawn position means and what the map needs.
+
 **The gather item name.** `GatherItemExporter.cs:41-63` builds the identifier from `gatherItem.name` and the exported name from `gatherItem.nameGatherItem`, falling back to `gatherItem.name`. `GatherItem.cs:118-156` has `Start` assign `nameGatherItem = base.name`. The exporter enumerates objects through `Resources.FindObjectsOfTypeAll`, which returns objects whose `Start` has not run. The two exports agreed on every identifier and differed on 14 names, which is exactly the authored value against the object name.
 
-**The visual asset.** `NpcExporter.cs:279-289` selects composite renderers and calls `ExportComposite`; `:290-302` falls back to the root `SpriteRenderer` only when that returned `null`. `VisualAssetRegistry.cs:132-137` returns `null` when no renderer has a non-null `sprite`. `VisualAssetRendererSelector.cs:21` collects renderers including inactive ones, then filters on `sprite != null`. So the branch is decided by whether a sprite has been assigned at the moment the export runs, and the observed row flipped between `Npc.gameObject.SpriteRenderer` and a `Front.SpriteRenderers` composite reporting `1 renderers`, with a different published image file.
+**The visual asset.** An entity's sprite comes from a root `SpriteRenderer` or from compositing the renderers under a `Front` child. The two are mutually exclusive in the data: of 4572 monster instances, 4364 carry a root renderer and 208 carry a `Front` child, and none carries both or neither; of 236 NPCs, 2 and 234. Structure already decides the branch.
+
+The code decides it by runtime state instead, and does so differently in three places. `MonsterExporter.cs:243-254` takes the root renderer when its `sprite` is set and otherwise composites. `NpcExporter.cs:279-302` composites first and falls back to the root renderer only when `ExportComposite` returned `null`, which `VisualAssetRegistry.cs:132-137` does when no renderer survived selection. `BaseExporter.cs:45-81` documents a third order, root first, for the callers that share it.
+
+The selector is what flips: `VisualAssetRendererSelector.cs:31-32` drops a renderer outside a `Front` subtree unless `renderer.gameObject.activeInHierarchy`. Activation is volatile - 219 of 236 NPCs and 4102 of 4572 monsters are inactive at a given moment - so for the two root-only NPCs the branch depends on whether the object happened to be active. `Aelindis Gemweaver` is one of them, and it is the row that differed. Monsters never reach the filter, because their exporter tests the root component first, which is why only one asset differed.
+
+The same filter also mislabels: a root-only NPC that passes it is recorded as `Npc.gameObject.Front.SpriteRenderers` with `1 renderers`, naming a `Front` child that does not exist.
 
 ## Goals / Non-Goals
 
@@ -51,7 +63,11 @@ The exporter reads `startPosition` for a monster and an NPC, and derives the row
 
 Alternative: `originFollowPosition`. Rejected: `Monster.cs:639-642` assigns it from `startPosition` only when it is zero, so an authored follow origin is a different point, and the value would silently mean one thing for most monsters and another for those that follow.
 
-This is also a correctness improvement rather than only a determinism one. The published map currently plots where twelve actors were standing when the export ran.
+A zero `startPosition` is not an error and SHALL NOT fail the export. It means the capture has not run, and for an `Npc` that capture is in `Start`, which never runs on an object inactive from load: 219 of 236 NPCs read zero. An object whose `Start` has not run has not moved either, so its transform still holds the point it was placed at, and the export reads that. The two branches therefore both answer the same question, and neither publishes a moving actor's position.
+
+This leaves one ambiguity, stated rather than handled: an actor authored at exactly the world origin is indistinguishable from one whose capture has not run. No monster or NPC currently reads zero for that reason, and both branches would answer the origin anyway.
+
+`origin_follow_position` carries the same defect and was not visible in the comparison. `Npc.cs:310-312` fills an unset origin from the start position, so 219 NPCs export zero, 17 export their start point, and none holds a distinct authored value. The two exports agreed only because the same 17 were active in both. The export publishes the value the game settles on, and keeps the authored value when one exists, so a future patch that authors a distinct origin still exports it.
 
 ### A read never resolves through a lifecycle method
 
@@ -61,16 +77,20 @@ The parenthesised suffix stays. `Chest RF Interiors (10)` is what the object is 
 
 ### The visual asset source is chosen by structure
 
-The capture decides between the composite and the root renderer by whether a `Front` child exists, not by whether sprites are currently populated. When the structure selects the composite and no renderer under it has a sprite, the export fails and names the entity instead of quietly publishing a different image from a different source.
+The capture decides between the composite and the root renderer by whether a `Front` child exists. The sources are mutually exclusive in the data, so this reproduces every current outcome except the one that was unstable, and it removes the activation test that made it unstable.
 
-Alternative: keep the fallback and accept whichever source has sprites. Rejected: that is the current behaviour, and it published two different images for one NPC across two exports of one build.
+No failure path is needed, and none is added. The earlier plan failed the export on a `Front` child whose renderers hold no sprite; the measurement found no such entity, and all 208 monster and 234 NPC `Front` subtrees are populated.
+
+Because the three call sites disagree about the order, and that disagreement is what let one of them depend on activation, the choice moves into one helper that all three use. The selector then only ever receives a `Front` subtree, which makes `VisualAssetRendererSelector.cs:31-32` unreachable, so the activation test and the `front ?? root` fallback are removed rather than left to be rediscovered.
+
+Alternative: keep the fallback and accept whichever source has sprites. Rejected: that is the current behaviour, and it published two different images for one NPC across two exports of one build, one of them under a source name describing a child the NPC does not have.
 
 ## Risks / Trade-offs
 
-- Failing on an empty composite could stop an export that previously produced an image → count how many entities take each branch, and how many would fail, before changing the rule. If entities legitimately have a spriteless `Front` rig, the structural test needs a narrower condition than "a `Front` child exists".
+- A structural rule could change an image for an entity whose branch it decides differently → measured before writing: no monster or NPC carries both a root renderer and a `Front` child, and none carries neither, so the rule reproduces every current branch. Only the two root-only NPCs change, and only to the branch their structure names.
 - Removing markup by pattern could remove emphasis the game applies for a reason unrelated to the player → remove it only at the two decorations identified, and add a test that an item whose requirement the character meets and one whose requirement it does not produce the same exported tooltip.
 - A third player-conditional decoration may exist that neither export exposed, because both ran as one character → enumerate the conditional markup in the tooltip pipeline as part of the work, rather than inferring the set from the observed diff.
-- `startPosition` is captured in `Awake` and `Start`, so an export taken before those run would read a zero vector → the export already requires a spawned local player, and the value must be rejected when it is zero rather than published.
+- `Npc` captures its start point in `Start`, which never runs on an object inactive from load, so 219 of 236 read the zero vector → the export reads the transform for those, which is sound because an object whose `Start` has not run has not moved. `Monster` captures in `Awake` and all 4572 hold a value.
 - Correcting a position moves a placement, and the redaction ledger keys a removed placement by its position → none of the twelve is in an excluded zone, so no recorded key changes. A corrected position inside an excluded zone would rekey that entry, which the ledger reports as one line.
 
 ## Migration Plan
