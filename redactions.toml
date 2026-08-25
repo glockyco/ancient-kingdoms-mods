@@ -75,10 +75,9 @@ zone_ids = ["old_valorath"]
 # Forty-two released items are equally sourceless, the draconium set and the
 # starting clothes among them.
 #
-# Ashen Magus, Deathwhisper, Dreadguard and Elderthorn each bring their own set
-# bonus, which is named with the pieces. Gloomwarden grants Wildshade Battlegear
-# and Hallowed Keeper grants Dawnforged Battlegear. Both of those bonuses belong
-# to released sets and stay.
+# Only the pieces are named. Each set bonus is an item that names the pieces it
+# is composed of, and the closure removes an aggregate whose every member is
+# gone, so naming a bonus would record a fact the members already decide.
 [entities.exclude]
 ids = [
     "old_valorath_token",
@@ -88,28 +87,24 @@ ids = [
     "the_royal_key_of_valorath",
     "valorath_royal_key",
 
-    "ashen_magus_armor_bonus_set",
     "ashen_magus_cowl",
     "ashen_magus_gloves",
     "ashen_magus_leggings",
     "ashen_magus_robe",
     "ashen_magus_slippers",
 
-    "deathwhisper_armor_bonus_set",
     "deathwhisper_boots",
     "deathwhisper_gloves",
     "deathwhisper_helm",
     "deathwhisper_jerkin",
     "deathwhisper_leggings",
 
-    "dreadguard_armor_bonus_set",
     "dreadguard_breastplate",
     "dreadguard_gauntlets",
     "dreadguard_greaves",
     "dreadguard_helmet",
     "dreadguard_sabatons",
 
-    "elderthorn_armor_bonus_set",
     "elderthorn_boots",
     "elderthorn_gloves",
     "elderthorn_helm",

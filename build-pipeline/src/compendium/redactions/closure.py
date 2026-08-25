@@ -140,26 +140,26 @@ def build_graph(conn: sqlite3.Connection, references: list[Reference]) -> Graph:
                 continue
             source: Node | None = (table, str(row_id)) if identified else None
 
-            # A place reaches the row it contains. A zone contains a sub-zone,
-            # so the path runs from the zone to the sub-zone to the row.
+            # What the row names reaches the row. A place contains the row that
+            # names it, and a zone contains a sub-zone, so the path runs from the
+            # zone to the sub-zone to the row. An aggregate names the members
+            # that provide it, so the path runs from each member to the row.
             for reference in group:
-                if not (reference.reaches and reference.to_zone):
-                    continue
-                if not _covers(reference, row, index):
+                if not reference.backwards or not _covers(reference, row, index):
                     continue
                 for value in _values(reference, row[index[reference.column]]):
-                    place: str | None
+                    named: str | None
                     if reference.numeric:
-                        place = (
+                        named = (
                             numeric_to_zone.get(value)
                             if isinstance(value, int)
                             else None
                         )
                     else:
-                        place = str(value)
-                    if place is None:
+                        named = str(value)
+                    if named is None:
                         continue
-                    parent = (reference.target_table, str(place))
+                    parent = (reference.target_table, str(named))
                     if identified and source is not None:
                         graph.add(parent, source)
                     else:
@@ -168,7 +168,7 @@ def build_graph(conn: sqlite3.Connection, references: list[Reference]) -> Graph:
 
             # The row provides what it names.
             for reference in reaching:
-                if reference.to_zone or not _covers(reference, row, index):
+                if reference.backwards or not _covers(reference, row, index):
                     continue
                 for value in _values(reference, row[index[reference.column]]):
                     child = (reference.target_table, str(value))
@@ -180,6 +180,50 @@ def build_graph(conn: sqlite3.Connection, references: list[Reference]) -> Graph:
                     ):
                         graph.add(parent, child)
     return graph
+
+
+def memberships(
+    conn: sqlite3.Connection, references: list[Reference]
+) -> dict[Node, set[Node]]:
+    """The members each row declares, for the references read as provided_by.
+
+    A place is excluded: a zone contains the row that names it rather than being
+    composed of it. Only a row with its own identifier can be an aggregate,
+    because a junction row is an edge and has nothing to remove.
+
+    Rows with no member are absent. The caller must not remove a row on the
+    strength of an empty member set, or every row that names nothing would go.
+    """
+    composed = [r for r in references if r.backwards and not r.to_zone]
+    if not composed:
+        return {}
+
+    found: dict[Node, set[Node]] = {}
+    by_table: dict[str, list[Reference]] = {}
+    for reference in composed:
+        by_table.setdefault(reference.table, []).append(reference)
+
+    for table, group in by_table.items():
+        if not has_identifier(conn, table):
+            continue
+        selected = sorted(
+            {r.column for r in group}
+            | {r.condition[0] for r in group if r.condition is not None}
+        )
+        index = {column: position + 1 for position, column in enumerate(selected)}
+        rows = conn.execute(f"SELECT id, {', '.join(selected)} FROM {table}").fetchall()
+        for row in rows:
+            if row[0] is None:
+                continue
+            members: set[Node] = set()
+            for reference in group:
+                if not _covers(reference, row, index):
+                    continue
+                for value in _values(reference, row[index[reference.column]]):
+                    members.add((reference.target_table, str(value)))
+            if members:
+                found[(table, str(row[0]))] = members
+    return found
 
 
 def _covers(reference: Reference, row: tuple[Any, ...], index: dict[str, int]) -> bool:
@@ -242,12 +286,12 @@ def _sources(
 
 
 def _targets(
-    group: list[Reference], row: tuple, index: dict[str, int], zone_reference: Reference
+    group: list[Reference], row: tuple, index: dict[str, int], parent: Reference
 ) -> list[Node]:
-    """The content of a junction row that a place contains."""
+    """The content of a junction row that what the row names reaches."""
     found: list[Node] = []
     for reference in group:
-        if reference is zone_reference or reference.to_zone:
+        if reference is parent or reference.backwards:
             continue
         if not _covers(reference, row, index):
             continue
@@ -333,6 +377,32 @@ def decide(
                 via=followed,
             )
         )
+
+    # An aggregate that only its members reach cannot come out of the closure
+    # subtraction, because a member with no source of its own is in neither
+    # closure. It is removed here instead, once every member it declares is
+    # gone. The loop repeats because one aggregate can name another.
+    aggregates = memberships(conn, references)
+    while True:
+        emptied = [
+            (node, members)
+            for node, members in sorted(aggregates.items())
+            if node not in removed_nodes and members and members <= removed_nodes
+        ]
+        if not emptied:
+            break
+        for node, members in emptied:
+            removed_nodes.add(node)
+            removals.append(
+                Removal(
+                    table=node[0],
+                    entity_id=node[1],
+                    mechanism=MECHANISM_CASCADE,
+                    reason="every member it is composed of was removed",
+                    distance=1 + max(reached_all.get(m, 0) for m in members),
+                    via=sorted(f"{member[0]}:{member[1]}" for member in members),
+                )
+            )
     return removals, references
 
 

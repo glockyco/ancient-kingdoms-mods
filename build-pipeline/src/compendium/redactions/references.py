@@ -9,9 +9,14 @@ Each reference carries one declaration with two independent attributes:
     The geometry the reference governs. The value is the row's own position, a
     destination, or nothing.
 
-Direction comes from the target and is not declared. A reference to a place is
-read backwards, because a place contains the row that names it. Every other
-reference is read forwards, because a row provides what it names.
+``reaches`` follows from the direction: a reference that carries no reachability
+is read in neither direction.
+
+The direction is declared, not guessed from the target. A row provides what it
+names, or the rows it names provide the row, or neither. A reference to a place
+is read backwards because a place contains the row that names it, and a row that
+lists the members it is composed of is read backwards for the same reason: the
+members provide the row, so removing every member removes the row.
 
 A destination reaches nothing. ``portals.to_zone_id`` therefore cannot make an
 excluded zone reachable, and ``portals.from_zone_id`` still puts the portal in
@@ -33,6 +38,11 @@ from compendium.redactions.discovery import (
 )
 
 Locus = Literal["own", "destination", "none"]
+
+# Which way a reference carries reachability. "provides" reads forwards, from the
+# row to what it names. "provided_by" reads backwards, from what it names to the
+# row. "none" carries no reachability in either direction.
+Direction = Literal["provides", "provided_by", "none"]
 
 # References to a place a row points at, and the geometry each one governs. A
 # reference that is absent from this table governs the row's own position. A new
@@ -165,8 +175,6 @@ MENTIONS: frozenset[tuple[str, str]] = frozenset(
 JSON_PROVIDES: frozenset[tuple[str, str]] = frozenset(
     {
         ("altars", "waves"),
-        ("items", "augment_armor_set_item_ids"),
-        ("items", "augment_armor_set_members"),
         ("items", "augment_skill_bonuses"),
         ("items", "augment_skill_bonuses_with_names"),
         ("items", "chest_rewards"),
@@ -179,6 +187,23 @@ JSON_PROVIDES: frozenset[tuple[str, str]] = frozenset(
         ("quests", "predecessor_ids"),
         ("quests", "rewards"),
         ("skills", "granted_by_items"),
+    }
+)
+
+# References through which the rows a row names provide it. Removing all of them
+# removes the row, because nothing is left to reach it.
+#
+# No plain foreign key is a composed relation today. A single-valued column names
+# one member, and a row with one member is that member's dependent rather than an
+# aggregate of it, so a new composed relation belongs in JSON_PROVIDED_BY below.
+PROVIDED_BY: frozenset[tuple[str, str]] = frozenset()
+
+# An armour set bonus is reached by wearing its pieces, so the pieces provide it.
+# A set whose every piece is removed is unobtainable.
+JSON_PROVIDED_BY: frozenset[tuple[str, str]] = frozenset(
+    {
+        ("items", "augment_armor_set_item_ids"),
+        ("items", "augment_armor_set_members"),
     }
 )
 
@@ -203,13 +228,23 @@ class Reference:
     column: str
     target_table: str
     target_column: str
-    reaches: bool
+    direction: Direction
     locus: Locus
     json_keys: tuple[str, ...] = ()
     geometry_prefixes: tuple[str, ...] = ()
     # The column and value that select the rows this reference covers. A row
     # that fails the test holds a value in another identifier space.
     condition: tuple[str, str] | None = None
+
+    @property
+    def reaches(self) -> bool:
+        """Whether the reference puts anything in a reachability closure."""
+        return self.direction != "none"
+
+    @property
+    def backwards(self) -> bool:
+        """Whether reachability runs from what the row names to the row."""
+        return self.direction == "provided_by"
 
     @property
     def to_zone(self) -> bool:
@@ -229,11 +264,10 @@ class Reference:
         return bool(self.json_keys)
 
     def __str__(self) -> str:
-        direction = "◀" if self.to_zone else "▶"
-        meaning = "reaches" if self.reaches else "mentions"
+        arrow = {"provides": "▶", "provided_by": "◀", "none": "·"}[self.direction]
         return (
-            f"{self.table}.{self.column} {direction} {self.target_table} "
-            f"({meaning}, {self.locus})"
+            f"{self.table}.{self.column} {arrow} {self.target_table} "
+            f"({self.direction}, {self.locus})"
         )
 
 
@@ -241,13 +275,16 @@ class UndeclaredReference(Exception):
     """The data holds a reference that no declaration covers."""
 
 
-def _semantics(key: tuple[str, str], embedded: bool) -> bool | None:
+def _semantics(key: tuple[str, str], embedded: bool) -> Direction | None:
     provides = JSON_PROVIDES if embedded else PROVIDES
+    provided_by = JSON_PROVIDED_BY if embedded else PROVIDED_BY
     mentions = JSON_MENTIONS if embedded else MENTIONS
     if key in provides:
-        return True
+        return "provides"
+    if key in provided_by:
+        return "provided_by"
     if key in mentions:
-        return False
+        return "none"
     return None
 
 
@@ -269,15 +306,15 @@ def resolve(conn: sqlite3.Connection) -> list[Reference]:
                     column=key.column,
                     target_table=key.target_table,
                     target_column=key.target_column,
-                    reaches=prefixes is None,
+                    direction="none" if prefixes is not None else "provided_by",
                     locus="destination" if prefixes is not None else "own",
                     geometry_prefixes=prefixes or (),
                 )
             )
             continue
 
-        reaches = _semantics((key.table, key.column), embedded=False)
-        if reaches is None:
+        direction = _semantics((key.table, key.column), embedded=False)
+        if direction is None:
             undeclared.append(f"{key.table}.{key.column} -> {key.target_table}")
             continue
         references.append(
@@ -286,15 +323,15 @@ def resolve(conn: sqlite3.Connection) -> list[Reference]:
                 column=key.column,
                 target_table=key.target_table,
                 target_column=key.target_column,
-                reaches=reaches,
+                direction=direction,
                 locus="none",
                 condition=key.condition,
             )
         )
 
     for table, column, keys, target in ENTITY_JSON_CARRIERS:
-        reaches = _semantics((table, column), embedded=True)
-        if reaches is None:
+        direction = _semantics((table, column), embedded=True)
+        if direction is None:
             undeclared.append(f"{table}.{column} -> {target} (embedded)")
             continue
         references.append(
@@ -303,7 +340,7 @@ def resolve(conn: sqlite3.Connection) -> list[Reference]:
                 column=column,
                 target_table=target,
                 target_column="id",
-                reaches=reaches,
+                direction=direction,
                 locus="none",
                 json_keys=keys,
             )
@@ -316,7 +353,7 @@ def resolve(conn: sqlite3.Connection) -> list[Reference]:
                 column=column,
                 target_table=ZONE_TABLE,
                 target_column=target_column,
-                reaches=True,
+                direction="provided_by",
                 locus="own",
                 json_keys=(key_name,),
             )

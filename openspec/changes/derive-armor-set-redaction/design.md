@@ -29,11 +29,15 @@ A third direction keeps every pass reading one declaration, which is an existing
 
 Alternative: a special case in the closure for armour sets, or a derived rule in the configuration loader. Rejected because it would put a second classification of the same column beside the declaration, which is the defect that requirement exists to prevent.
 
-### The existing fixpoint decides removal
+### Removal propagates over the member edges, because the closure cannot reach them
 
-With the direction inverted, an aggregate whose members are all removed has no remaining parent and the existing closure removes it. No new predicate such as "all members removed" is needed, and the recorded reason stays the one the ledger already uses for a cascade.
+The inverted direction is necessary but not sufficient. Removal is the difference of two closures rooted at zones, `reached_all - reached_kept - seeds`, and an armour set piece has no source at all: no drop table, vendor, chest or recipe names it, which is why the pieces are named seeds in the first place. The pieces are therefore in neither closure, so an aggregate whose only parents are those pieces never enters `reached_all` and the subtraction can never select it. Declaring the direction alone left all six set bonuses published.
 
-Alternative: a predicate that removes an aggregate when a threshold of members is gone, matching set bonuses that require three or five pieces. Rejected as speculative: the game data does not state a threshold per set, and one surviving member is the conservative reading.
+The aggregate rule is therefore a second propagation over the removed set: a row that declares members, all of which are removed, is removed too, recorded as a cascade that followed them. It runs to a fixpoint, because one aggregate can name another.
+
+The predicate is "declares at least one member and every member is removed", not "has no surviving parent". The closure deliberately keeps content that nothing reaches, including 96 items with no source, so a rule phrased over absent parents would remove them.
+
+Alternative: keep naming each aggregate in the configuration. Rejected because that is the fact that expired. Alternative: a threshold matching set bonuses that require three or five pieces. Rejected as speculative: the data states no threshold, and one surviving member is the conservative reading.
 
 ### The configuration loses four identifiers and a fact
 

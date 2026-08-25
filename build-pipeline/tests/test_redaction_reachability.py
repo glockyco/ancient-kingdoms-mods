@@ -84,6 +84,47 @@ class ReachabilityTestCase(unittest.TestCase):
         }
 
 
+class AggregateTests(ReachabilityTestCase):
+    """A row composed of members goes when every member goes.
+
+    An armour set bonus names the pieces that grant it. The pieces have no
+    source of their own, so neither they nor the bonus appear in either
+    closure, and the subtraction cannot select the bonus. It is removed for
+    the one reason that holds: nothing it is composed of survives.
+    """
+
+    def _set_bonus(self, set_id, *piece_ids):
+        for piece in piece_ids:
+            self._item(piece)
+        members = ", ".join(f'"{piece}"' for piece in piece_ids)
+        self._item(set_id, augment_armor_set_item_ids=f"[{members}]")
+
+    def test_a_bonus_whose_every_piece_is_removed_goes_with_them(self):
+        self._set_bonus("set_bonus", "piece_one", "piece_two")
+
+        removals = self._run(exclude_entity_ids={"piece_one", "piece_two"})
+
+        self.assertFalse(self._present("items", "set_bonus"))
+        followed = next(r.via for r in removals if r.entity_id == "set_bonus")
+        self.assertEqual(followed, ["items:piece_one", "items:piece_two"])
+
+    def test_a_bonus_keeps_standing_while_one_piece_remains(self):
+        self._set_bonus("set_bonus", "piece_one", "piece_two")
+
+        self._run(exclude_entity_ids={"piece_one"})
+
+        self.assertTrue(self._present("items", "set_bonus"))
+
+    def test_an_item_that_names_no_member_is_untouched(self):
+        # The closure keeps content that nothing reaches, so a rule phrased over
+        # absent parents rather than removed members would take this item.
+        self._item("sourceless")
+
+        self._run(exclude_entity_ids=set())
+
+        self.assertTrue(self._present("items", "sourceless"))
+
+
 class SharedSourceTests(ReachabilityTestCase):
     """An entity with a surviving public source stays published.
 
