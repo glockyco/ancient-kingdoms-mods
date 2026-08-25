@@ -31,6 +31,34 @@ public class ItemExporter : BaseExporter
             yield return item.LocalizedRequiredClass();
     }
 
+    private static string PlayerNeutralTooltip(
+        Il2Cpp.ScriptableItem item,
+        Il2Cpp.UsableItem usableItem)
+    {
+        var tooltip = TooltipNormalizer.WithoutPlayerEmphasis(
+            item.ToolTip(false, false) ?? "",
+            PlayerEmphasisedTokens(item, usableItem));
+
+        var travelItem = item.TryCast<Il2Cpp.TravelItem>();
+        if (travelItem == null || travelItem.nameDestination != "Bind Point")
+            return tooltip;
+
+        var genericBindPoint = Il2Cpp.ScriptableItem.LocalizedTerm(
+            "label.bind_point",
+            "Bind Point");
+        var renderedBindPoint = genericBindPoint;
+        var player = Il2Cpp.Player.localPlayer;
+        if (player != null && Il2Cpp.ZoneInfo.zones.TryGetValue(player.idZoneBindPoint, out var zone))
+        {
+            renderedBindPoint = Il2Cpp.ScriptableItem.LocalizedZoneName(zone.id, zone.name);
+        }
+
+        return TooltipNormalizer.WithGenericBindPoint(
+            tooltip,
+            renderedBindPoint,
+            genericBindPoint);
+    }
+
     private static long CalculateSellPriceInGold(Il2Cpp.ScriptableItem scriptableItem)
     {
         return scriptableItem.buyToken != null
@@ -84,9 +112,7 @@ public class ItemExporter : BaseExporter
                 is_quest_item = scriptableItem.isOnlyQuestItem,
 
                 icon_path = scriptableItem.image_name ?? "",
-                tooltip = TooltipNormalizer.WithoutPlayerEmphasis(
-                    scriptableItem.ToolTip(false, false) ?? "",
-                    PlayerEmphasisedTokens(scriptableItem, usableItem)),
+                tooltip = PlayerNeutralTooltip(scriptableItem, usableItem),
                 comments = scriptableItem.comments ?? ""
             };
 

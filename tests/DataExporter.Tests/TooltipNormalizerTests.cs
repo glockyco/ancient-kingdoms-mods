@@ -8,12 +8,13 @@ public class TooltipNormalizerTests
     [Fact]
     public void RequiredLevelExportsTheSameWithOrWithoutPlayerEmphasis()
     {
+        const string level = "50";
         const string plain = "Requires Level 50";
-        const string emphasized = "<color=red>Requires Level 50</color>";
+        const string emphasized = "Requires Level <color=red>50</color>";
 
         Assert.Equal(
-            TooltipNormalizer.WithoutPlayerEmphasis(plain, [plain]),
-            TooltipNormalizer.WithoutPlayerEmphasis(emphasized, [plain]));
+            TooltipNormalizer.WithoutPlayerEmphasis(plain, [level]),
+            TooltipNormalizer.WithoutPlayerEmphasis(emphasized, [level]));
     }
 
     [Fact]
@@ -30,14 +31,41 @@ public class TooltipNormalizerTests
     }
 
     [Fact]
+    public void DifferentPlayerBindPointsExportTheSameGenericDestination()
+    {
+        const string twilight = "Returns to your bind point.\n\n[Twilight Forest]";
+        const string everfrost = "Returns to your bind point.\n\n[Everfrost]";
+        const string expected = "Returns to your bind point.\n\n[Bind Point]";
+
+        Assert.Equal(
+            expected,
+            TooltipNormalizer.WithGenericBindPoint(
+                twilight,
+                "Twilight Forest",
+                "Bind Point"));
+        Assert.Equal(
+            expected,
+            TooltipNormalizer.WithGenericBindPoint(
+                everfrost,
+                "Everfrost",
+                "Bind Point"));
+        Assert.Equal(
+            twilight,
+            TooltipNormalizer.WithGenericBindPoint(
+                twilight,
+                "Everfrost",
+                "Bind Point"));
+    }
+
+    [Fact]
     public void OtherTagsAndAuthoredRedTextStayUntouched()
     {
-        const string level = "Requires Level 50";
+        const string level = "50";
         const string tooltip =
             "<b>Relic</b>\n"
             + "<color=#32FF00>Usable</color>\n"
             + "<color=red>A dangerous secret</color>\n"
-            + "<color=red>Requires Level 50</color>";
+            + "Requires Level <color=red>50</color>";
 
         const string expected =
             "<b>Relic</b>\n"

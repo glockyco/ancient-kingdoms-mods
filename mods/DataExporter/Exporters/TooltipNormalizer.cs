@@ -3,13 +3,10 @@ using System.Collections.Generic;
 namespace DataExporter.Exporters;
 
 /// <summary>
-/// Removes the emphasis a rendered tooltip carries about one player.
+/// Removes values a rendered tooltip reads from one player.
 ///
-/// The game renders a tooltip for the character in front of it. UsableItem
-/// reddens a required level that character has not reached, and EquipmentItem
-/// reddens a required class it cannot use. Neither statement describes the item,
-/// and no character can use every class of item, so no choice of exporting
-/// character makes the rendering correct.
+/// The game reddens requirements that the player does not meet, and a Gate Scroll
+/// names that player's bind-point zone. Those values do not describe the item.
 ///
 /// Only the given tokens lose their wrapper. A tooltip template can author red
 /// text of its own, and 145 of them do.
@@ -37,5 +34,25 @@ internal static class TooltipNormalizer
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// Replaces the player's rendered bind-point zone with the generic label.
+    /// </summary>
+    public static string WithGenericBindPoint(
+        string tooltip,
+        string renderedBindPoint,
+        string genericBindPoint)
+    {
+        if (string.IsNullOrEmpty(tooltip)
+            || string.IsNullOrEmpty(renderedBindPoint)
+            || string.IsNullOrEmpty(genericBindPoint))
+        {
+            return tooltip;
+        }
+
+        return tooltip.Replace(
+            "[" + renderedBindPoint + "]",
+            "[" + genericBindPoint + "]");
     }
 }
