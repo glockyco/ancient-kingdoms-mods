@@ -2,7 +2,9 @@
 
 See `proposal.md` for motivation and the measured differences. This section records what the code does today and what the runtime offers instead. Every anchor below was read; `server-scripts/` is the decompiled 0.9.31.0 assembly.
 
-**The tooltip.** `ItemExporter.cs:61-67` writes `tooltip = scriptableItem.ToolTip(false, false) ?? ""`. The two booleans are `compareEquipment` and `showPrice` (`ScriptableItem.cs:423-425`); neither governs player-conditional markup. `UsableItem.cs:62-73` wraps `{MINLEVEL}` in `<color=red>` when `minLevel > 1 && GameManager.isLocalPlayerActive && Player.localPlayer.level.current < minLevel`. `EquipmentItem.cs:347-355` and `:520-522` wrap the required class the same way when `Player.localPlayer.className` cannot use the item. `ScriptableItem.cs:64-68` and `:178-196` resolve the template through `LocalizationSettings.SelectedLocale`, and `:212-229` lets the locale choose the culture that formats numbers. The game exposes no player-independent rendering: the raw `toolTip` field is protected-internal (`ScriptableItem.cs:42-44`) and `LocalizedToolTipTemplate()` is protected.
+**The tooltip.** `ItemExporter.cs:61-67` writes `tooltip = scriptableItem.ToolTip(false, false) ?? ""`. The two booleans are `compareEquipment` and `showPrice` (`ScriptableItem.cs:423-425`); neither governs player-conditional markup. `UsableItem.cs:62-73` wraps `{MINLEVEL}` in `<color=red>` when `minLevel > 1 && GameManager.isLocalPlayerActive && Player.localPlayer.level.current < minLevel`. `EquipmentItem.cs:347-355` and `:520-522` wrap the required class the same way when `Player.localPlayer.className` cannot use the item. `ScriptableItem.cs:64-68` and `:178-196` resolve the template through `LocalizationSettings.SelectedLocale`, and `:212-229` lets the locale choose the culture that formats numbers. `TravelItem.ToolTip` adds one more player-dependent value after the base render: when the item targets `"Bind Point"`, it reads `Player.localPlayer.idZoneBindPoint` and replaces `[BINDPOINT]` with that zone's localized name (`TravelItem.cs:45-54`). Two verification runs therefore wrote `[Twilight Forest]` and `[Everfrost]` for the same Gate Scroll.
+
+The game exposes no player-independent rendering: the raw `toolTip` field is protected-internal (`ScriptableItem.cs:42-44`) and `LocalizedToolTipTemplate()` is protected.
 
 **The spawn position.** `MonsterExporter.cs:282` derives the zone from `monster.transform.position` and `:289-293` writes the position from the same live transform; `NpcExporter.cs:313` and `:320-324` do likewise. The runtime keeps the placed point: `Monster.cs:99` declares `startPosition`, `:545-546` captures it in `Awake`, and the movement and respawn code reads it without assigning it (`:1570`, `:1633`, `:1660-1669`, `:2816`, `:3000-3035`). `Npc.cs:110` and `:305-306` do the same in `Start`. `Entity.cs` has no such field, so this is specific to the two types that move.
 
@@ -26,7 +28,9 @@ The selector is what flips: `VisualAssetRendererSelector.cs:31-32` drops a rende
 
 Activation is not incidental. `ZoneInfo.ClearDynamicZones` collects the zone of every online player and activates a zone object only while a player stands in it (`ZoneInfo.cs:185-201`), and `ZoneTrigger.cs:114` does the same for the static environment. Activation therefore follows the exporting character, and one character leaves most of the world inactive: from zone 2, 219 of 236 NPCs and 4102 of 4572 monsters were inactive, and 451 of the 470 active monsters were in that zone. Which objects are inactive changes as the character moves, so the branch a root-only NPC takes depends on where the export was started from.
 
-`Aelindis Gemweaver` is one of the two root-only NPCs, and it is the row that differed. Monsters never reach the filter, because their exporter tests the root component first, which is why only one asset differed.
+`Aelindis Gemweaver` is one of the two root-only NPCs, and it is the row that differed. Monsters never reach the filter, because their exporter tests the root component first, which is why only one asset differed in the original comparison.
+
+The structural correction exposed a second visual dependency. `MonsterExporter` and `NpcExporter` prefer the first scene instance over the canonical template for the visual source. Two verification runs selected different live animation frames for Injured Werebear (`catbearmonster_55` and `catbearmonster_90`) and Orc Oracle (`icy_orc_oracle_1` and `icy_orc_oracle_38`). Both groups have a canonical template whose root renderer holds the controller's initial frame. Groups without a template still need their root animator reset before capture.
 
 The same filter also mislabels: a root-only NPC that passes it is recorded as `Npc.gameObject.Front.SpriteRenderers` with `1 renderers`, naming a `Front` child that does not exist.
 
@@ -45,15 +49,15 @@ The same filter also mislabels: a root-only NPC that passes it is recorded as `N
 
 ## Decisions
 
-### The tooltip is rendered, then the character's answer is removed
+### The tooltip is rendered, then the character's answers are removed
 
-The export keeps calling `ToolTip`, then removes the two decorations that describe the exporting character: the emphasis on a required level and the emphasis on a required class. Both are `<color=red>` wrappers applied at known sites, so each removal is the inverse of a transformation the game code states.
+The export keeps calling `ToolTip`, then removes three contributions from the exporting character: the emphasis on a required level, the emphasis on a required class, and the character's bind-point zone. The first two are `<color=red>` wrappers applied at known sites. The third is the localized zone that `TravelItem.ToolTip` substitutes for `[BINDPOINT]`. Each removal is the inverse of a transformation the game code states; authored red text and fixed travel destinations stay unchanged.
 
 Alternative: render under a fixed character. Rejected on the evidence: the class emphasis depends on `Player.localPlayer.className`, and no class can use every item, so no character exists for which the rendering is correct. A max-level character would fix the level emphasis and leave the class emphasis wrong for most of the catalogue.
 
 Alternative: rebuild the tooltip from the raw template. Rejected because it duplicates the game's whole tooltip pipeline - placeholder substitution, stat lines, set bonuses, prices - in our code, where it would drift from the game silently. The mechanics pages already carry that cost deliberately for the damage pipeline, and they have a snapshot gate to hold them to it; a tooltip has no such contract.
 
-The required level and required class are already exported as their own fields, so removing the emphasis loses nothing a consumer cannot reconstruct.
+The required level and required class are already exported as their own fields, so removing the emphasis loses nothing a consumer cannot reconstruct. The Gate Scroll always targets the character's bind point, not one fixed zone (`TravelItem.cs:22-29`), so the generic localized `Bind Point` label is the item property and a zone name is session data.
 
 ### The locale is declared and checked, not corrected
 
@@ -81,9 +85,11 @@ The gather item name comes from the field `Start` does not assign. `gatherItem.n
 
 The parenthesised suffix stays. `Chest RF Interiors (10)` is what the object is called, some rows already publish it, and removing it is the content decision this change excludes. The requirement is that the value stops depending on when the exporter ran.
 
-### The visual asset source is chosen by structure
+### The visual asset source is canonical, then chosen by structure
 
-The capture decides between the composite and the root renderer by whether a `Front` child exists. The sources are mutually exclusive in the data, so this reproduces every current outcome except the one that was unstable, and it removes the activation test that made it unstable.
+The exporter uses the canonical template as the visual source when the group has one. A template is game data; a scene instance is a running copy whose animator has advanced. For groups without a template, the shared capture resets a root animator and samples time zero before reading its sprite. This uses the controller's initial frame instead of the frame that happened to be visible when export started.
+
+The capture then decides between the composite and the root renderer by whether a `Front` child exists. The sources are mutually exclusive in the data, so this reproduces every structural outcome except the one that was unstable, and it removes the activation test that made it unstable.
 
 No failure path is needed, and none is added. The earlier plan failed the export on a `Front` child whose renderers hold no sprite; the measurement found no such entity, and all 208 monster and 234 NPC `Front` subtrees are populated.
 
@@ -91,17 +97,21 @@ Because the three call sites disagree about the order, and that disagreement is 
 
 Alternative: keep the fallback and accept whichever source has sprites. Rejected: that is the current behaviour, and it published two different images for one NPC across two exports of one build, one of them under a source name describing a child the NPC does not have.
 
+Alternative: keep preferring a scene instance and capture its current root sprite. Rejected: Injured Werebear and Orc Oracle each published two animation frames in two runs. The canonical template already carries the initial frame, and sampling time zero covers groups for which the game exposes no template.
+
 ## Risks / Trade-offs
 
 - A structural rule could change an image for an entity whose branch it decides differently → measured before writing: no monster or NPC carries both a root renderer and a `Front` child, and none carries neither, so the rule reproduces every current branch. Only the two root-only NPCs change, and only to the branch their structure names.
 - Removing markup by pattern could remove emphasis the game applies for a reason unrelated to the player → remove it only at the two decorations identified, and add a test that an item whose requirement the character meets and one whose requirement it does not produce the same exported tooltip.
 - A third player-conditional decoration may exist that neither export exposed, because both ran as one character → enumerate the conditional markup in the tooltip pipeline as part of the work, rather than inferring the set from the observed diff.
+- Replacing the bind-point zone could alter an authored bracketed zone elsewhere in a tooltip → apply it only to a `TravelItem` whose destination is `"Bind Point"`, and replace the exact localized value that `TravelItem.ToolTip` generated.
+- Resetting an animator could alter a layered composite whose controller governs renderer visibility → sample time zero only for a root-renderer branch; a `Front` composite keeps its authored renderer set.
 - `Npc` captures its start point in `Start`, which does not run while its zone is deactivated, so which NPCs read the zero vector depends on where the exporting character stands → both branches report the placed point, so the exported value does not depend on the branch. `Monster` captures in `Awake` and all 4572 hold a value.
 - Correcting a position moves a placement, and the redaction ledger keys a removed placement by its position → none of the twelve is in an excluded zone, so no recorded key changes. A corrected position inside an excluded zone would rekey that entry, which the ledger reports as one line.
 
 ## Migration Plan
 
-One export, one build, one publication. The corrected values are a single diff in the generated database, the search index, the map and one image file. Nothing is versioned, so there is no rollback beyond reverting the mod change and re-exporting.
+One export, one build, one publication. The corrected values are a single diff in the generated database, the search index, the map and published image set. Nothing is versioned, so there is no rollback beyond reverting the mod change and re-exporting.
 
 The verification is a second export of the same build, compared file by file. That requires launching the game twice and cannot run in CI, so it belongs to the release procedure rather than to a gate.
 

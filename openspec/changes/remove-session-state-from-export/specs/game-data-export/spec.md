@@ -40,6 +40,12 @@ Rationale: the game renders an item tooltip for the player in front of it, and c
 - **WHEN** two exports of one build are taken by characters of different level and class
 - **THEN** they write the same values
 
+#### Scenario: A travel item resolves the character's bind point
+
+- **WHEN** a travel item renders the exporting character's bind-point zone
+- **THEN** the exported tooltip states the generic bind-point destination
+- **AND** it does not name that character's zone
+
 #### Scenario: An actor has moved
 
 - **WHEN** an actor is not standing where the game placed it
@@ -51,6 +57,12 @@ Rationale: the game renders an item tooltip for the player in front of it, and c
 - **WHEN** an actor's object is inactive at the moment the export runs
 - **THEN** the captured visual asset is the one its structure selects
 - **AND** the recorded source names the structure the asset came from
+
+#### Scenario: An actor's root sprite is animated
+
+- **WHEN** an actor's root sprite is on any frame of its animation
+- **THEN** the export captures the controller's initial frame
+- **AND** it prefers the canonical template over a live scene instance when that template exists
 
 ### Requirement: A value is read from a field no lifecycle method overwrites
 

@@ -17,6 +17,7 @@
 - [x] 3.1 Put the removal of player-conditional decoration in its own type in `mods/DataExporter/`, taking a rendered tooltip and returning the item's description, so it can be tested without the game
 - [x] 3.2 Remove the emphasis on a required level and on a required class, covering every decoration task 1.1 recorded
 - [x] 3.3 Apply it at the single call site in `ItemExporter.cs` and confirm no other exporter reads a rendered tooltip: `QuestExporter.cs:62-63` and `SkillExporter.cs:99` read raw template fields and must stay untouched
+- [x] 3.4 Replace a Gate Scroll's rendered bind-point zone with the generic localized bind-point label, and leave fixed travel destinations unchanged
 
 ## 4. Read the field no lifecycle method assigns
 
@@ -28,6 +29,7 @@
 - [x] 5.1 Put the branch choice in one helper that decides on the presence of a `Front` child, and use it from `MonsterExporter.cs`, `NpcExporter.cs` and `BaseExporter.ExportEntitySprite`, which disagree about the order today
 - [x] 5.2 Record the source name the structure selects, so a root-only entity is no longer recorded as `Front.SpriteRenderers` naming a child it does not have
 - [x] 5.3 Remove the now-unreachable activation test and `front ?? root` fallback from `VisualAssetRendererSelector.cs`, since the selector only ever receives a `Front` subtree
+- [x] 5.4 Prefer the canonical template to a live scene instance, and sample time zero before reading a root sprite whose animator can advance
 
 ## 6. Declare the session state
 
@@ -42,12 +44,13 @@
 - [x] 7.3 Add a `DataExporter.Tests` test that the removal leaves every other tag in the tooltip untouched, including a colour that is not player-conditional
 - [x] 7.4 Add a pipeline test that a build fails on an unexpected recorded locale and on a missing one, and passes on the expected one
 - [x] 7.5 Run `dotnet test tests/DataExporter.Tests`, then the pipeline tests, `uv run mypy .` and `uv run ruff check .`
+- [x] 7.6 Add a `DataExporter.Tests` test that two rendered Gate Scroll tooltips with different bind-point zones normalize to the same generic tooltip
 
 ## 8. Verify against the game
 
 - [ ] 8.1 Build and deploy the mods, then export
 - [ ] 8.2 Export a second time from the same game build and confirm every file is byte-identical, including the published image set
-- [ ] 8.3 Confirm the corrected values are the expected ones: 240 tooltips lose their colour markup, 14 gather item names take the object name, 12 positions move, and one image is replaced
+- [ ] 8.3 Confirm the corrected values are the expected ones: 240 tooltips lose their colour markup, the Gate Scroll names the generic bind point, 14 gather item names take the object name, 12 positions move, one NPC image takes its structural source, and two monsters take their initial frame
 - [ ] 8.4 Rebuild the database, run `uv run compendium redactions check`, and confirm the ledger is unchanged because no corrected position is in an excluded zone
 - [ ] 8.5 Rebuild the website and confirm in a browser that an item tooltip renders without red requirement text, that a corrected spawn appears on the map, and that the replaced NPC image renders
 - [ ] 8.6 Record the two-export comparison in the release procedure, since it needs the game twice and cannot run in CI
