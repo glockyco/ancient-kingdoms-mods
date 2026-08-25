@@ -37,6 +37,7 @@ from compendium.redactions.discovery import (
     is_required,
     json_identifiers,
 )
+from compendium.redactions.placement import placements
 from compendium.redactions.references import Reference, resolve
 
 console = Console()
@@ -59,10 +60,14 @@ class Removal:
     reason: str
     distance: int = 0
     via: list[str] = field(default_factory=list)
+    # Where the row stands, when its own identifier does not survive a build.
+    # `identify` fills this in while the row is still there to read.
+    placement: str | None = None
 
     @property
     def key(self) -> str:
-        return f"{self.table}:{self.entity_id}"
+        """The identity the ledger records this removal under."""
+        return f"{self.table}:{self.placement or self.entity_id}"
 
 
 @dataclass
@@ -403,7 +408,26 @@ def decide(
                     via=sorted(f"{member[0]}:{member[1]}" for member in members),
                 )
             )
+
+    identify(conn, removals)
     return removals, references
+
+
+def identify(conn: sqlite3.Connection, removals: list[Removal]) -> None:
+    """Record where each removed placement stands, before anything deletes it."""
+    wanted: dict[str, set[str]] = {}
+    for removal in removals:
+        wanted.setdefault(removal.table, set()).add(removal.entity_id)
+
+    found = placements(conn, wanted)
+    for removal in removals:
+        removal.placement = found.get((removal.table, removal.entity_id))
+
+    # A parent is named by the identity it is recorded under, so that the chain
+    # an entry states resolves to the entries beside it.
+    recorded = {f"{r.table}:{r.entity_id}": r.key for r in removals}
+    for removal in removals:
+        removal.via = sorted(recorded.get(parent, parent) for parent in removal.via)
 
 
 def apply(

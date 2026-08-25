@@ -18,13 +18,22 @@ from compendium.db import create_database
 from compendium.denormalizers import run_before_closure
 from compendium.redactions import closure, verify
 from compendium.redactions.config import load_redactions
-from compendium.redactions.ledger import LEDGER_NAME, Entry, Ledger, compare
+from compendium.redactions.ledger import (
+    LEDGER_NAME,
+    Entry,
+    Ledger,
+    UnknownKeySpace,
+    compare,
+)
+from compendium.redactions.placement import stem
 
 console = Console()
 
 
-def _recompute(repo_root: Path, config: dict) -> Ledger:
-    """Work out what the current export and configuration remove."""
+def _removals(
+    repo_root: Path, config: dict
+) -> tuple[list[closure.Removal], dict[str, int], dict[str, int]]:
+    """The removals the current export and configuration produce."""
     from compendium.commands.build import load_all
 
     export_dir = repo_root / config["paths"]["export_dir"]
@@ -41,10 +50,17 @@ def _recompute(repo_root: Path, config: dict) -> Ledger:
         finally:
             conn.close()
 
+    return removals, suppressed, hidden_crafting
+
+
+def _recompute(repo_root: Path, config: dict) -> Ledger:
+    """Work out what the current export and configuration remove."""
+    removals, suppressed, hidden_crafting = _removals(repo_root, config)
+
     return Ledger(
         removed={
-            f"{removal.table}:{removal.entity_id}": Entry(
-                key=f"{removal.table}:{removal.entity_id}",
+            removal.key: Entry(
+                key=removal.key,
                 mechanism=removal.mechanism,
                 reason=removal.reason,
                 distance=removal.distance,
@@ -59,6 +75,18 @@ def _recompute(repo_root: Path, config: dict) -> Ledger:
 
 def _ledger_path(repo_root: Path) -> Path:
     return repo_root / LEDGER_NAME
+
+
+def _read_ledger(repo_root: Path) -> Ledger | None:
+    """The recorded ledger, or None with the reason printed."""
+    try:
+        recorded = Ledger.read(_ledger_path(repo_root))
+    except UnknownKeySpace as unusable:
+        console.print(f"[red]{unusable}[/red]")
+        return None
+    if recorded is None:
+        console.print(f"[red]No {LEDGER_NAME}. Run `compendium redactions sync`.[/red]")
+    return recorded
 
 
 def _summarise(ledger: Ledger) -> None:
@@ -81,9 +109,8 @@ def _summarise(ledger: Ledger) -> None:
 
 
 def _check(repo_root: Path, config: dict) -> int:
-    recorded = Ledger.read(_ledger_path(repo_root))
+    recorded = _read_ledger(repo_root)
     if recorded is None:
-        console.print(f"[red]No {LEDGER_NAME}. Run `compendium redactions sync`.[/red]")
         return 1
 
     current = _recompute(repo_root, config)
@@ -118,14 +145,28 @@ def _sync(repo_root: Path, config: dict, game_version: str) -> int:
     return 0
 
 
-def _verify(repo_root: Path, config: dict) -> int:
-    """Scan the surfaces the website build produces after the pipeline exits."""
-    recorded = Ledger.read(_ledger_path(repo_root))
-    if recorded is None:
-        console.print(f"[red]No {LEDGER_NAME}. Run `compendium redactions sync`.[/red]")
-        return 1
+def _scan_identifiers(repo_root: Path, config: dict) -> set[str]:
+    """What the verification must not find, in the form published data carries it.
 
-    identifiers = {key.split(":", 1)[1] for key in recorded.removed}
+    These are the published identifiers of the current removals, and never the
+    recorded ledger's keys: a placement is recorded under where it stands, and a
+    ledger that has not been synced names the previous removals.
+    """
+    removals, _, _ = _removals(repo_root, config)
+    return {removal.entity_id for removal in removals}
+
+
+def _verify(repo_root: Path, config: dict) -> int:
+    """Scan the surfaces the website build produces after the pipeline exits.
+
+    The identifiers come from the removals the current data produces, in the
+    form the published data carries them. Taking them from the recorded ledger
+    made the proof conditional on the ledger being synced, which is exactly when
+    it is not: during the 0.9.31.0 update this reported a clean result while two
+    unreleased armour set bonuses were published, because the recorded set
+    predated them.
+    """
+    identifiers = _scan_identifiers(repo_root, config)
     website_dir = repo_root / config["paths"]["website_dir"]
     search_db = website_dir / "data" / "search.db"
     images = website_dir / "static" / "images"
@@ -173,15 +214,20 @@ def _verify(repo_root: Path, config: dict) -> int:
 
 
 def _explain(repo_root: Path, entity_id: str) -> int:
-    recorded = Ledger.read(_ledger_path(repo_root))
+    recorded = _read_ledger(repo_root)
     if recorded is None:
-        console.print(f"[red]No {LEDGER_NAME}. Run `compendium redactions sync`.[/red]")
         return 1
 
+    # A placement is recorded under where it stands, so neither its published
+    # identifier nor a bare entity name is a recorded key. Both reach it through
+    # the part of the identifier that survives a build.
+    wanted = {entity_id, stem(entity_id)}
     matches = [
         entry
         for key, entry in sorted(recorded.removed.items())
-        if key == entity_id or key.split(":", 1)[1] == entity_id
+        if key == entity_id
+        or key.split(":", 1)[1] in wanted
+        or key.split(":", 1)[1].split("@", 1)[0] in wanted
     ]
     if not matches:
         console.print(f"{entity_id} is not recorded as removed")

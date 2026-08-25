@@ -4,7 +4,7 @@ See `proposal.md` for motivation. Four measurements shape the approach.
 
 `(zone, round(x), round(y))` identifies every spawn uniquely: 4572 rows, 4572 keys, no collision, and no collision either at a tenth or a hundredth of a unit. No ordinal or other disambiguator is needed.
 
-The largest coordinate magnitude is 884.86, where a 32-bit float resolves to about `1.1e-4`. Some exported positions carry five to eight decimals, which is that noise. Rounding to whole units absorbs it with four orders of magnitude to spare.
+Two exports of one game build agree on every identifier, 4572 of 4572, and disagree on twelve spawn positions by up to 2.4 units. The exporter reads the live actor, so a monster that has walked away from where it started exports where it stands. Rounding to whole units covers the float artefacts of the export, which reach eight decimals, and does not cover that. It affects no recorded placement, because no excluded zone holds a wandering monster, and `redactions check` passes against a second export of the same build.
 
 Thirteen tables carry their own position. Eleven of them take their identifier from the runtime object: `monster_spawns`, `npc_spawns`, `traps`, `portals`, `chests`, `altars`, `gathering_resource_spawns`, `crafting_stations`, `alchemy_tables`, `scribing_tables` and `treasure_locations`. The two that do not, `houses` and `zone_triggers`, use authored names.
 
@@ -30,7 +30,9 @@ Every positioned row the ledger records today is in Old Valorath. No row of a su
 
 A placement is a position. Keying it by the runtime object the exporter happened to read records an accident of the build, which is why one added spawn rewrote ninety-eight unrelated rows.
 
-Rounding is to whole units, because that is unique in the current data and absorbs the float noise. The recorded precision is part of the contract: a placement moved by less than the rounding does not register.
+Rounding is to whole units, because that is unique in the current data. The recorded precision is part of the contract: a placement moved by less than the rounding does not register.
+
+A coarser rounding would also cover a wandering monster, and is rejected: the wander is unbounded, so no quantum both covers it and keeps two placements apart. The instability belongs to the exporter reading a live actor, and it is recorded as a risk rather than papered over with a tolerance in a lock file.
 
 Alternative: an ordinal over the positions of each entity in each zone. Rejected because inserting one placement renumbers the tail of its group, which is the churn again on a smaller scale, and because it discloses relative order without buying anything the position does not.
 
@@ -59,6 +61,7 @@ This is a defect today, not only a consequence of the new key: during the 0.9.31
 ## Risks / Trade-offs
 
 - A moved placement reads as one line gone and one line added rather than as a move → accepted. The placement did change, and rounding absorbs a nudge below a unit.
+- A wandering monster inside an excluded zone would make `redactions check` report a difference between two exports of one build, where recording the runtime number reported none → **open**. It affects nothing today, and no rounding fixes it. The exporter reading the spawn point rather than the live actor would, and that is a separate change: the same reading also publishes wandered positions to the map.
 - The key depends on the exporters' identifier convention → the fallback keeps an identifier that has no trailing number, so a table that stops following the convention degrades to its own identifier rather than to a wrong one.
 - The ledger and the published data identify the same row differently → stated in the spec, so that a later change does not "unify" them and reintroduce the disclosure.
 - A patch that moves a placement and adds another at its old position reads as no change → accepted. The surviving-reference check still tests the published surfaces against the current removals.

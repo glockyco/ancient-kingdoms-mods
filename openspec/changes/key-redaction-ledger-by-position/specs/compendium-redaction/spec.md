@@ -31,7 +31,8 @@ Rationale: the invariant check proves nothing excluded survived. The ledger prov
 #### Scenario: A placement appears or moves
 
 - **WHEN** a removed placement is added, moved beyond the recorded precision, or taken away
-- **THEN** the ledger changes for that placement alone
+- **THEN** the ledger changes for that placement
+- **AND** for any entry whose recorded chain names it, because the chain names the identity the placement is recorded under
 
 #### Scenario: The excluded set changes
 

@@ -15,6 +15,16 @@ from pathlib import Path
 
 LEDGER_NAME = "redactions.lock.json"
 
+# The identity the entries are keyed by. A ledger written before placements were
+# keyed by position names every one of them by the runtime object it came from,
+# and comparing the two spaces would report every placement as both appeared and
+# disappeared. The marker turns that into one clear failure.
+KEY_SPACE = "placement"
+
+
+class UnknownKeySpace(Exception):
+    """The ledger keys its entries by an identity this build does not produce."""
+
 
 @dataclass(frozen=True)
 class Entry:
@@ -60,7 +70,7 @@ class Ledger:
 
     def to_dict(self) -> dict:
         return {
-            "snapshot": {"game_version": self.game_version},
+            "snapshot": {"game_version": self.game_version, "keys": KEY_SPACE},
             "removed": {
                 key: self.removed[key].to_dict() for key in sorted(self.removed)
             },
@@ -79,11 +89,19 @@ class Ledger:
 
     @staticmethod
     def from_dict(data: dict) -> "Ledger":
+        removed = data.get("removed", {})
+        keys = data.get("snapshot", {}).get("keys")
+        if removed and keys != KEY_SPACE:
+            raise UnknownKeySpace(
+                f"{LEDGER_NAME} keys its entries by "
+                f"{keys or 'the runtime objects the export read'}, and this build "
+                f"keys them by {KEY_SPACE}. Run `compendium redactions sync "
+                "--game-version <version>` to record the current removals."
+            )
         return Ledger(
             game_version=data.get("snapshot", {}).get("game_version"),
             removed={
-                key: Entry.from_dict(key, record)
-                for key, record in data.get("removed", {}).items()
+                key: Entry.from_dict(key, record) for key, record in removed.items()
             },
             suppressed_zones=dict(data.get("suppressed_positions", {})),
             hidden_crafting=dict(data.get("hidden_crafting", {})),
