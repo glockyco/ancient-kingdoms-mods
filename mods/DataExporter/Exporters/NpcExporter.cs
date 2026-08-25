@@ -310,23 +310,23 @@ public class NpcExporter : BaseExporter
                 if (isTemplate)
                     continue;  // Skip templates - they don't have spawn locations
 
-                var zoneInfo = GetZoneInfoFromPosition(npc.transform.position);
+                // The zone comes from the same point as the position.
+                var placed = PlacedPosition(npc.startPosition, npc.transform.position);
+                var zoneInfo = GetZoneInfoFromPosition(placed);
+
+                // Npc.Start fills an unset origin from the start position. Publish
+                // the value the game settles on, not the zero it holds before that.
+                var followOrigin = npc.originFollowPosition == Vector2.zero
+                    ? new Vector2(placed.x, placed.y)
+                    : npc.originFollowPosition;
                 var spawnData = new NpcSpawnData
                 {
                     id = $"{name}_{zoneInfo.ZoneId}_{npc.GetInstanceID()}",
                     npc_id = name,  // reference to canonical NPC
                     zone_id = zoneInfo.ZoneId,
                     sub_zone_id = zoneInfo.SubZoneId,
-                    position = new Position(
-                        npc.transform.position.x,
-                        npc.transform.position.y,
-                        npc.transform.position.z
-                    ),
-                    origin_follow_position = new Position(
-                        npc.originFollowPosition.x,
-                        npc.originFollowPosition.y,
-                        0
-                    ),
+                    position = new Position(placed.x, placed.y, placed.z),
+                    origin_follow_position = new Position(followOrigin.x, followOrigin.y, 0),
                     follow_distance = npc.followDistance,
                     move_distance = npc.moveDistance,
                     move_probability = npc.moveProbability

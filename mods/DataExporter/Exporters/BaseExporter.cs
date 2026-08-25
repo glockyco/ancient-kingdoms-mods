@@ -81,6 +81,25 @@ public abstract class BaseExporter
     }
 
     /// <summary>
+    /// The point the game places an actor at.
+    ///
+    /// The transform holds where the actor stands now. A monster that wanders or
+    /// patrols stands somewhere else, so two exports of one build disagree.
+    ///
+    /// A zero captured point means the capture did not run. Monster captures in
+    /// Awake. Npc captures in Start, which does not run on an object that is
+    /// inactive from load. An actor that did not start did not move, so its
+    /// transform still holds the placed point.
+    /// </summary>
+    protected static Vector3 PlacedPosition(Vector2 captured, Vector3 current)
+    {
+        if (captured == Vector2.zero)
+            return current;
+
+        return new Vector3(captured.x, captured.y, current.z);
+    }
+
+    /// <summary>
     /// Sanitizes a Unity object name to create a URL-safe ID.
     /// Converts to lowercase, replaces spaces with underscores, and removes special characters.
     /// </summary>

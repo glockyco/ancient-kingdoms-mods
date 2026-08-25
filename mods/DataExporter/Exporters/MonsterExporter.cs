@@ -279,18 +279,17 @@ public class MonsterExporter : BaseExporter
                 if (isTemplate)
                     continue;  // Skip templates - they don't have spawn locations
 
-                var zoneInfo = GetZoneInfoFromPosition(monster.transform.position);
+                // The zone comes from the same point as the position. Two points
+                // give a patrolling monster a zone that contradicts its coordinates.
+                var placed = PlacedPosition(monster.startPosition, monster.transform.position);
+                var zoneInfo = GetZoneInfoFromPosition(placed);
                 var spawnData = new MonsterSpawnData
                 {
                     id = $"{name}_{zoneInfo.ZoneId}_{monster.GetInstanceID()}",
                     monster_id = name,  // reference to canonical monster
                     zone_id = zoneInfo.ZoneId,
                     sub_zone_id = zoneInfo.SubZoneId,
-                    position = new Position(
-                        monster.transform.position.x,
-                        monster.transform.position.y,
-                        monster.transform.position.z
-                    ),
+                    position = new Position(placed.x, placed.y, placed.z),
                     level = monster.level.current,
                     health = monster.health?.max ?? 0,
                     damage = monster.combat?.damage ?? 0,
