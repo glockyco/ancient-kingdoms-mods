@@ -54,6 +54,6 @@
 - [x] 8.1 Build and deploy the mods, then export
 - [x] 8.2 Export a second time from the same game build and confirm every file is byte-identical, including the published image set
 - [x] 8.3 Confirm the corrected values are the expected ones: 240 tooltips lose their colour markup, the Gate Scroll names the generic bind point, one fragment states its required total, 14 gather item names take the object name, 12 positions move, one NPC image takes its structural source, and animated sources take their initial frame
-- [ ] 8.4 Rebuild the database, run `uv run compendium redactions check`, and confirm the ledger is unchanged because no corrected position is in an excluded zone
-- [ ] 8.5 Rebuild the website and confirm in a browser that an item tooltip renders without red requirement text, that a corrected spawn appears on the map, and that the replaced NPC image renders
+- [x] 8.4 Rebuild the database, run `uv run compendium redactions check`, and confirm the ledger is unchanged because no corrected position is in an excluded zone
+- [x] 8.5 Rebuild the website and confirm in a browser that an item tooltip renders without red requirement text, that a corrected spawn appears on the map, and that the replaced NPC image renders
 - [x] 8.6 Record the two-export comparison in the release procedure, since it needs the game twice and cannot run in CI
