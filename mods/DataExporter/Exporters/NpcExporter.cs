@@ -91,6 +91,7 @@ public class NpcExporter : BaseExporter
                     is_augmenter = canonical.isAugmenter,
                     is_guild_management = canonical.isGuildManagement,
                 },
+                preferred_mercenary_race = canonical.preferredMercenaryRace ?? "",
 
                 // Base stats
                 level = canonical.level?.current ?? 1,

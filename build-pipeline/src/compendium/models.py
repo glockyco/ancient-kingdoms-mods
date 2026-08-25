@@ -480,6 +480,10 @@ class NpcData(BaseModel):
     # Roles
     roles: NpcRoles = NpcRoles()
 
+    # Race this recruiter always hires. Empty when the NPC recruits no
+    # mercenaries or states no preference.
+    preferred_mercenary_race: str = ""
+
     # What they offer
     quests_offered: list[str] = []
     items_sold: list[NpcItemSale] = []

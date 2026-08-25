@@ -845,6 +845,9 @@ CREATE TABLE npcs (
     -- Roles as JSON object
     roles TEXT,                     -- JSON object
 
+    -- Race a mercenary recruiter always hires ('' when unset)
+    preferred_mercenary_race TEXT DEFAULT '',
+
     -- What they offer
     quests_offered TEXT,            -- JSON array: [{id, name, level_required, level_recommended}]
     quests_completed_here TEXT,     -- JSON array: [{id, name, level_required, level_recommended}] - denormalized

@@ -64,6 +64,12 @@ public class NpcData
 
     // Roles and services
     public NpcRoles roles { get; set; } = new();
+
+    // Race this recruiter always hires. Empty when the NPC recruits no
+    // mercenaries or states no preference, in which case the race is rolled
+    // uniformly over the mercenary class race pool.
+    public string preferred_mercenary_race { get; set; } = "";
+
     public List<string> quests_offered { get; set; } = new();
     public List<ItemSold> items_sold { get; set; } = new();
 
