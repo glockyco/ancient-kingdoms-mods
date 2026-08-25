@@ -13,6 +13,24 @@ public class ItemExporter : BaseExporter
     {
     }
 
+    /// <summary>
+    /// The tokens the game reddens against the exporting character.
+    ///
+    /// UsableItem reddens a required level above level 1. EquipmentItem reddens a
+    /// required class when the item names one other than "All". These conditions
+    /// match the game, so red text from any other source stays.
+    /// </summary>
+    private static IEnumerable<string> PlayerEmphasisedTokens(
+        Il2Cpp.ScriptableItem item,
+        Il2Cpp.UsableItem usableItem)
+    {
+        if (usableItem != null && usableItem.minLevel > 1)
+            yield return usableItem.minLevel.ToString();
+
+        if (!string.IsNullOrWhiteSpace(item.requiredClass) && item.requiredClass != "All")
+            yield return item.LocalizedRequiredClass();
+    }
+
     private static long CalculateSellPriceInGold(Il2Cpp.ScriptableItem scriptableItem)
     {
         return scriptableItem.buyToken != null
@@ -36,6 +54,10 @@ public class ItemExporter : BaseExporter
             var scriptableItem = obj.TryCast<Il2Cpp.ScriptableItem>();
             if (scriptableItem == null || string.IsNullOrEmpty(scriptableItem.name))
                 continue;
+
+            // The cast comes first because the required level is one of the tokens
+            // the tooltip loses its player emphasis on.
+            var usableItem = obj.TryCast<Il2Cpp.UsableItem>();
 
             var itemData = new ItemData
             {
@@ -62,12 +84,12 @@ public class ItemExporter : BaseExporter
                 is_quest_item = scriptableItem.isOnlyQuestItem,
 
                 icon_path = scriptableItem.image_name ?? "",
-                tooltip = scriptableItem.ToolTip(false, false) ?? "",
+                tooltip = TooltipNormalizer.WithoutPlayerEmphasis(
+                    scriptableItem.ToolTip(false, false) ?? "",
+                    PlayerEmphasisedTokens(scriptableItem, usableItem)),
                 comments = scriptableItem.comments ?? ""
             };
 
-            // Try to cast to UsableItem for level requirement and cooldown fields
-            var usableItem = obj.TryCast<Il2Cpp.UsableItem>();
             if (usableItem != null)
             {
                 itemData.level_required = usableItem.minLevel;
