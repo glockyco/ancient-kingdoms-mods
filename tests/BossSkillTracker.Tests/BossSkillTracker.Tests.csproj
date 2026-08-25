@@ -1,9 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
+    <!-- Compiles repository sources only; the game install is not a build input. -->
+    <RequiresGameInstall>false</RequiresGameInstall>
     <RollForward>Major</RollForward>
   </PropertyGroup>
   <ItemGroup>

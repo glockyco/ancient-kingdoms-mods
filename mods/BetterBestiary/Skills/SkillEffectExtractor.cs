@@ -89,6 +89,7 @@ internal static class SkillEffectExtractor
         input.is_manaburn_skill = damageSkill.isManaburnSkill;
         input.lifetap_percent = new LinearValue(damageSkill.lifetapPercent.baseValue, damageSkill.lifetapPercent.bonusPerLevel);
         input.knockback_chance = new LinearValue(damageSkill.knockbackChance.baseValue, damageSkill.knockbackChance.bonusPerLevel);
+        input.knockback_distance = damageSkill.knockbackDistance;
         input.stun_chance = new LinearValue(damageSkill.stunChance.baseValue, damageSkill.stunChance.bonusPerLevel);
         input.stun_time = new LinearValue(damageSkill.stunTime.baseValue, damageSkill.stunTime.bonusPerLevel);
         input.fear_chance = new LinearValue(damageSkill.fearChance.baseValue, damageSkill.fearChance.bonusPerLevel);

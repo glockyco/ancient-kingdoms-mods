@@ -34,6 +34,7 @@ internal sealed class SkillEffectInput
     public LinearValue damage_percent { get; set; }
     public LinearValue lifetap_percent { get; set; }
     public LinearValue knockback_chance { get; set; }
+    public double? knockback_distance { get; set; }
     public LinearValue stun_chance { get; set; }
     public LinearValue stun_time { get; set; }
     public LinearValue fear_chance { get; set; }

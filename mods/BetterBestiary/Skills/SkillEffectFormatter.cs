@@ -164,7 +164,11 @@ internal static class SkillEffectFormatter
 
         var knockback = ParseLinearValue(skill.knockback_chance);
         if (knockback != null)
-            parts.Add($"{FormatLinearPercent(knockback)} knockback");
+        {
+            var distance = skill.knockback_distance ?? 0;
+            var reach = distance > 0 ? $" {JsNum(distance)}m" : "";
+            parts.Add($"{FormatLinearPercent(knockback)} knockback{reach}");
+        }
 
         if (skill.affects_random_target)
             parts.Add("random target");

@@ -4,6 +4,8 @@
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
+    <!-- Compiles repository sources only; the game install is not a build input. -->
+    <RequiresGameInstall>false</RequiresGameInstall>
     <RollForward>Major</RollForward>
   </PropertyGroup>
 

@@ -69,6 +69,26 @@ jobs:
       - name: Unused exports and dependencies
         run: pnpm exec knip
 
+  # The mod and build-tool test projects compile repository sources directly and
+  # reference no game assembly, so they need neither the game nor Local.props.
+  # They ran nowhere until now: the pre-commit hook built the mods without testing
+  # them, and this workflow had no .NET job at all. One of them had been unable to
+  # build since the test SDK dropped net6.0, and its 32 tests never ran.
+  # Building a mod still requires the game install, so mods stay out of CI.
+  dotnet:
+    name: Mods and build tool (tests)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.x
+      - name: Tests
+        run: |
+          for project in tests/*/; do
+            dotnet test "$project"
+          done
+
   # The OpenSpec artifacts are repository content, and nothing verified them
   # until now. The check itself is defined once for the whole workstation in the
   # fleet input: it fails on an invalid artifact and on a change archived with
