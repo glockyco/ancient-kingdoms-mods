@@ -100,8 +100,8 @@ public abstract class BaseExporter
     /// patrols stands somewhere else, so two exports of one build disagree.
     ///
     /// A zero captured point means the capture did not run. Monster captures in
-    /// Awake. Npc captures in Start, which does not run on an object that is
-    /// inactive from load. An actor that did not start did not move, so its
+    /// Awake. Npc captures in Start, which does not run while its zone is
+    /// inactive. An actor that did not start did not move, so its
     /// transform still holds the placed point.
     /// </summary>
     protected static Vector3 PlacedPosition(Vector2 captured, Vector3 current)

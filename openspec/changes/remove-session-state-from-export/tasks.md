@@ -8,8 +8,8 @@
 
 - [x] 2.1 Read the spawn position for a monster from `startPosition` in `MonsterExporter.cs`, and derive the row's zone from that same point rather than from the live transform
 - [x] 2.2 Read the spawn position for an NPC from `startPosition` in `NpcExporter.cs`, and derive its zone from that same point
-- [x] 2.3 Read the transform when `startPosition` is the zero vector, because the capture has not run and an actor that has not started has not moved, and record why in a comment: `Npc` captures in `Start`, so 219 of 236 read zero
-- [x] 2.4 Publish the follow origin the game settles on: `Npc.Start` fills an unset origin from the start position, so 219 of 236 NPCs export zero and 17 export the start point, and no NPC holds a distinct authored origin
+- [x] 2.3 Read the transform when `startPosition` is the zero vector, because the capture has not run and an actor that has not started has not moved, and record why in a comment: `Npc` captures in `Start`, which does not run while its zone is inactive
+- [x] 2.4 Publish the follow origin the game settles on: `Npc.Start` fills an unset origin from the start position, so publish the placed point while the field is zero and preserve the field after the game fills it; no NPC holds a distinct authored origin
 - [x] 2.5 Leave the patrol waypoints as they are, because they are authored and no lifecycle method assigns them
 
 ## 3. Publish a tooltip that describes the item
@@ -37,11 +37,11 @@
 
 ## 7. Test
 
-- [ ] 7.1 Add a `DataExporter.Tests` test that a tooltip whose required level is emphasised and the same tooltip without the emphasis both export to the same value
-- [ ] 7.2 Add a `DataExporter.Tests` test for the required-class emphasis, and one per decoration task 1.1 found beyond the two
-- [ ] 7.3 Add a `DataExporter.Tests` test that the removal leaves every other tag in the tooltip untouched, including a colour that is not player-conditional
+- [x] 7.1 Add a `DataExporter.Tests` test that a tooltip whose required level is emphasised and the same tooltip without the emphasis both export to the same value
+- [x] 7.2 Add a `DataExporter.Tests` test for the required-class emphasis, and one per decoration task 1.1 found beyond the two
+- [x] 7.3 Add a `DataExporter.Tests` test that the removal leaves every other tag in the tooltip untouched, including a colour that is not player-conditional
 - [x] 7.4 Add a pipeline test that a build fails on an unexpected recorded locale and on a missing one, and passes on the expected one
-- [ ] 7.5 Run `dotnet test tests/DataExporter.Tests`, then the pipeline tests, `uv run mypy .` and `uv run ruff check .`
+- [x] 7.5 Run `dotnet test tests/DataExporter.Tests`, then the pipeline tests, `uv run mypy .` and `uv run ruff check .`
 
 ## 8. Verify against the game
 
