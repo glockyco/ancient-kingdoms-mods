@@ -11,8 +11,16 @@
   },
   "removed": {
     "items:ashen_magus_armor_bonus_set": {
-      "mechanism": "manual",
-      "reason": "named in the manual exclusion list"
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every member it is composed of was removed",
+      "via": [
+        "items:ashen_magus_cowl",
+        "items:ashen_magus_gloves",
+        "items:ashen_magus_leggings",
+        "items:ashen_magus_robe",
+        "items:ashen_magus_slippers"
+      ]
     },
     "items:ashen_magus_cowl": {
       "mechanism": "manual",
@@ -35,8 +43,16 @@
       "reason": "named in the manual exclusion list"
     },
     "items:deathwhisper_armor_bonus_set": {
-      "mechanism": "manual",
-      "reason": "named in the manual exclusion list"
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every member it is composed of was removed",
+      "via": [
+        "items:deathwhisper_boots",
+        "items:deathwhisper_gloves",
+        "items:deathwhisper_helm",
+        "items:deathwhisper_jerkin",
+        "items:deathwhisper_leggings"
+      ]
     },
     "items:deathwhisper_boots": {
       "mechanism": "manual",
@@ -81,8 +97,16 @@
       ]
     },
     "items:dreadguard_armor_bonus_set": {
-      "mechanism": "manual",
-      "reason": "named in the manual exclusion list"
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every member it is composed of was removed",
+      "via": [
+        "items:dreadguard_breastplate",
+        "items:dreadguard_gauntlets",
+        "items:dreadguard_greaves",
+        "items:dreadguard_helmet",
+        "items:dreadguard_sabatons"
+      ]
     },
     "items:dreadguard_breastplate": {
       "mechanism": "manual",
@@ -105,8 +129,16 @@
       "reason": "named in the manual exclusion list"
     },
     "items:elderthorn_armor_bonus_set": {
-      "mechanism": "manual",
-      "reason": "named in the manual exclusion list"
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every member it is composed of was removed",
+      "via": [
+        "items:elderthorn_boots",
+        "items:elderthorn_gloves",
+        "items:elderthorn_helm",
+        "items:elderthorn_leggings",
+        "items:elderthorn_tunic"
+      ]
     },
     "items:elderthorn_boots": {
       "mechanism": "manual",
@@ -128,6 +160,18 @@
       "mechanism": "manual",
       "reason": "named in the manual exclusion list"
     },
+    "items:gloomwarden_armor_bonus_set": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every member it is composed of was removed",
+      "via": [
+        "items:gloomwarden_chainmail",
+        "items:gloomwarden_coif",
+        "items:gloomwarden_gloves",
+        "items:gloomwarden_leggings",
+        "items:gloomwarden_sabatons"
+      ]
+    },
     "items:gloomwarden_chainmail": {
       "mechanism": "manual",
       "reason": "named in the manual exclusion list"
@@ -147,6 +191,18 @@
     "items:gloomwarden_sabatons": {
       "mechanism": "manual",
       "reason": "named in the manual exclusion list"
+    },
+    "items:hallowed_keeper_armor_bonus_set": {
+      "mechanism": "cascade",
+      "pass": 1,
+      "reason": "every member it is composed of was removed",
+      "via": [
+        "items:hallowed_keeper_breastplate",
+        "items:hallowed_keeper_gauntlets",
+        "items:hallowed_keeper_greaves",
+        "items:hallowed_keeper_helm",
+        "items:hallowed_keeper_sabatons"
+      ]
     },
     "items:hallowed_keeper_breastplate": {
       "mechanism": "manual",
