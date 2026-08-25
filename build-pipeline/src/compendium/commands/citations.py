@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections import Counter
+from copy import copy
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -298,6 +299,23 @@ def _tool_mismatch(snapshot: Snapshot, lock: Lockfile) -> str | None:
     )
 
 
+def _pending_relocations(
+    snapshot: Snapshot, targets: list[Target], lock: Lockfile
+) -> list[Target]:
+    """Targets whose recorded content sits at a position the source does not name.
+
+    Compared on copies: the caller's targets keep the statuses `_load` gave them,
+    so a sync that proceeds reports what it anchored rather than what it found.
+    """
+    pending = []
+    for target in targets:
+        probe = copy(target)
+        _compare(snapshot, probe, lock.targets.get(probe.key))
+        if probe.status == "moved":
+            pending.append(probe)
+    return pending
+
+
 def _load(repo_root: Path) -> tuple[Snapshot, list[Target]] | None:
     snapshot_root = repo_root / SNAPSHOT_DIR
     if not snapshot_root.is_dir():
@@ -363,6 +381,33 @@ def _sync(repo_root: Path, game_version: str | None) -> int:
             f"{identity.game_version} but --game-version says {game_version}"
         )
         return 1
+
+    # Anchoring a locator the source no longer names records the region that now
+    # sits at the old position. A later check compares content only, so the wrong
+    # anchor reads as verified from then on and nothing can detect it.
+    lock_path = repo_root / LOCKFILE_NAME
+    if lock_path.exists():
+        pending = _pending_relocations(snapshot, targets, Lockfile.load(lock_path))
+        if pending:
+            console.print(
+                f"[red]Error (pending-relocation):[/red] {len(pending)} citation(s) "
+                f"name a position their code has left. Anchoring now would record "
+                f"the wrong region."
+            )
+            console.print()
+            for target in pending:
+                origin = target.references[0]
+                console.print(
+                    f"  [yellow]moved     [/] {escape(target.key)}"
+                    f"  [dim]{escape(target.detail)}[/dim]"
+                    f"  [dim]({escape(origin.source_path)}:{origin.line})[/dim]"
+                )
+            console.print()
+            console.print(
+                "Run [cyan]compendium citations fix[/cyan] first, then re-run this "
+                "command."
+            )
+            return 1
 
     lock = Lockfile(
         game_version=game_version,
