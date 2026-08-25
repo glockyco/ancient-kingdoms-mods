@@ -89,14 +89,23 @@ describe("monster ability effects", () => {
     );
   });
 
-  test("keep the maximum-health cost of a shared buff", () => {
-    const enrage = query<{ id: string }>(MONSTER_ABILITIES_QUERY, [
-      "overseer_garok",
-    ]).find((row) => row.id === "enrage");
+  test("keep the maximum-health cost of a player buff", () => {
+    const enrage = query<{ id: string; player_classes: string }>(
+      SKILLS_LIST_QUERY,
+    ).find((row) => row.id === "enrage");
 
     expect(enrage).toBeDefined();
+    expect(JSON.parse(enrage?.player_classes ?? "[]")).toContain("warrior");
     expect(formatSkillEffect(skillRowToEffectInput(enrage))).toBe(
       "-50% max hp, +33% phys dmg, 30s",
     );
+  });
+
+  test("no monster uses the player skill Enrage", () => {
+    expect(
+      query<{ monster_id: string }>(
+        "SELECT monster_id FROM monster_skills WHERE skill_id = 'enrage'",
+      ),
+    ).toEqual([]);
   });
 });
