@@ -25,9 +25,9 @@
 
 ## 5. Choose the visual asset source by structure
 
-- [ ] 5.1 Put the branch choice in one helper that decides on the presence of a `Front` child, and use it from `MonsterExporter.cs`, `NpcExporter.cs` and `BaseExporter.ExportEntitySprite`, which disagree about the order today
-- [ ] 5.2 Record the source name the structure selects, so a root-only entity is no longer recorded as `Front.SpriteRenderers` naming a child it does not have
-- [ ] 5.3 Remove the now-unreachable activation test and `front ?? root` fallback from `VisualAssetRendererSelector.cs`, since the selector only ever receives a `Front` subtree
+- [x] 5.1 Put the branch choice in one helper that decides on the presence of a `Front` child, and use it from `MonsterExporter.cs`, `NpcExporter.cs` and `BaseExporter.ExportEntitySprite`, which disagree about the order today
+- [x] 5.2 Record the source name the structure selects, so a root-only entity is no longer recorded as `Front.SpriteRenderers` naming a child it does not have
+- [x] 5.3 Remove the now-unreachable activation test and `front ?? root` fallback from `VisualAssetRendererSelector.cs`, since the selector only ever receives a `Front` subtree
 
 ## 6. Declare the session state
 

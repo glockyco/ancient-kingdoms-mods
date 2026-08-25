@@ -7,28 +7,33 @@ namespace DataExporter.Exporters;
 
 internal static class VisualAssetRendererSelector
 {
-    public static List<SpriteRenderer> SelectPrimaryCompositeRenderers(GameObject rootObject)
+    /// <summary>
+    /// The Front child that holds a layered creature's renderers, or null.
+    /// </summary>
+    public static Transform FindFrontSubtree(GameObject rootObject)
+    {
+        if (rootObject == null)
+            return null;
+
+        return FindDirectChild(rootObject.transform, "Front");
+    }
+
+    /// <summary>
+    /// The renderers of a Front subtree, in the order they are drawn.
+    /// </summary>
+    public static List<SpriteRenderer> SelectFrontRenderers(Transform front, Transform root)
     {
         var selected = new List<SpriteRenderer>();
-        if (rootObject == null)
+        if (front == null || root == null)
             return selected;
 
-        var root = rootObject.transform;
-        var front = FindDirectChild(root, "Front");
-        var searchRoot = front ?? root;
-        var isFrontSubtree = front != null;
-
-        var renderers = searchRoot.GetComponentsInChildren<SpriteRenderer>(true);
+        var renderers = front.GetComponentsInChildren<SpriteRenderer>(true);
         foreach (var renderer in renderers)
         {
             if (renderer == null || renderer.sprite == null)
                 continue;
 
-            var relativePath = GetRelativePath(renderer.transform, root);
-            if (IsExcludedRendererPath(relativePath))
-                continue;
-
-            if (!isFrontSubtree && !renderer.gameObject.activeInHierarchy)
+            if (IsExcludedRendererPath(GetRelativePath(renderer.transform, root)))
                 continue;
 
             selected.Add(renderer);
@@ -37,7 +42,7 @@ internal static class VisualAssetRendererSelector
         return selected
             .OrderBy(renderer => SortingLayer.GetLayerValueFromID(renderer.sortingLayerID))
             .ThenBy(renderer => renderer.sortingOrder)
-            .ThenBy(renderer => GetDepth(renderer.transform, searchRoot))
+            .ThenBy(renderer => GetDepth(renderer.transform, front))
             .ThenBy(renderer => GetRelativePath(renderer.transform, root), StringComparer.Ordinal)
             .ToList();
     }

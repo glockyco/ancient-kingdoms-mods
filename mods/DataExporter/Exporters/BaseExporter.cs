@@ -42,9 +42,12 @@ public abstract class BaseExporter
     public abstract void Export();
 
     /// <summary>
-    /// Exports the primary sprite of an entity prefab or scene object.
-    /// Prefers a SpriteRenderer on the root; falls back to compositing the
-    /// front-facing child renderers, which is how layered creatures are built.
+    /// Exports the primary sprite from the source the object's structure names.
+    ///
+    /// A layered creature holds its renderers under a Front child. Every other
+    /// entity holds one SpriteRenderer on the root. No monster or NPC holds both,
+    /// so the structure decides the source. Deciding it on a populated sprite or
+    /// an active object instead made the choice depend on the moment of export.
     /// </summary>
     protected void ExportEntitySprite(
         string domain,
@@ -56,28 +59,38 @@ public abstract class BaseExporter
         if (VisualAssets == null || gameObject == null)
             return;
 
-        var primaryRenderer = gameObject.GetComponent<SpriteRenderer>();
-        if (primaryRenderer != null && primaryRenderer.sprite != null)
+        var front = VisualAssetRendererSelector.FindFrontSubtree(gameObject);
+        if (front != null)
         {
-            VisualAssets.ExportRendererSprite(
+            var renderers = VisualAssetRendererSelector.SelectFrontRenderers(front, gameObject.transform);
+            if (renderers.Count == 0)
+            {
+                Logger.Warning($"{entityId}: Front subtree holds no sprite, no {kind} image exported");
+                return;
+            }
+
+            VisualAssets.ExportComposite(
                 domain,
                 entityId,
                 kind,
-                $"{sourceField}.SpriteRenderer",
-                primaryRenderer);
+                $"{sourceField}.Front.SpriteRenderers",
+                renderers);
             return;
         }
 
-        var compositeRenderers = VisualAssetRendererSelector.SelectPrimaryCompositeRenderers(gameObject);
-        if (compositeRenderers.Count == 0)
+        var primaryRenderer = gameObject.GetComponent<SpriteRenderer>();
+        if (primaryRenderer == null || primaryRenderer.sprite == null)
+        {
+            Logger.Warning($"{entityId}: no Front subtree and no root sprite, no {kind} image exported");
             return;
+        }
 
-        VisualAssets.ExportComposite(
+        VisualAssets.ExportRendererSprite(
             domain,
             entityId,
             kind,
-            $"{sourceField}.Front.SpriteRenderers",
-            compositeRenderers);
+            $"{sourceField}.SpriteRenderer",
+            primaryRenderer);
     }
 
     /// <summary>
