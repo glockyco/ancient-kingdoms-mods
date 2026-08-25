@@ -53,7 +53,11 @@ public class GatherItemExporter : BaseExporter
             var id = isTemplate
                 ? SanitizeId(gatherItem.name)
                 : $"{SanitizeId(gatherItem.name)}_{zoneId}_{gatherItem.GetInstanceID()}";
-            var name = string.IsNullOrEmpty(gatherItem.nameGatherItem) ? gatherItem.name : gatherItem.nameGatherItem;
+            // GatherItem.Start copies the object name over nameGatherItem, so that
+            // field holds the authored value until the object starts. The id already
+            // reads the object name, which is why ids stayed stable while names did
+            // not.
+            var name = gatherItem.name;
 
             var gatherItemData = new GatherItemData
             {
