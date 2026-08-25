@@ -18,7 +18,7 @@
 - [x] 3.2 Remove the emphasis on a required level and on a required class, covering every decoration task 1.1 recorded
 - [x] 3.3 Apply it at the single call site in `ItemExporter.cs` and confirm no other exporter reads a rendered tooltip: `QuestExporter.cs:62-63` and `SkillExporter.cs:99` read raw template fields and must stay untouched
 - [x] 3.4 Replace a Gate Scroll's rendered bind-point zone with the generic localized bind-point label, and leave fixed travel destinations unchanged
-- [x] 3.5 Replace a fragment's rendered owned-count progress with its required total, and leave non-fragment count markup unchanged
+- [ ] 3.5 Replace a fragment's rendered owned-count progress with plain `0 / amountNeeded`, and leave non-fragment count markup unchanged
 
 ## 4. Read the field no lifecycle method assigns
 
@@ -47,13 +47,13 @@
 - [x] 7.4 Add a pipeline test that a build fails on an unexpected recorded locale and on a missing one, and passes on the expected one
 - [x] 7.5 Run `dotnet test tests/DataExporter.Tests`, then the pipeline tests, `uv run mypy .` and `uv run ruff check .`
 - [x] 7.6 Add a `DataExporter.Tests` test that two rendered Gate Scroll tooltips with different bind-point zones normalize to the same generic tooltip
-- [x] 7.7 Add a `DataExporter.Tests` test that incomplete and complete fragment progress normalize to the same required total
+- [ ] 7.7 Add a `DataExporter.Tests` test that incomplete and complete fragment progress normalize to the same plain `0 / amountNeeded` baseline
 
 ## 8. Verify against the game
 
-- [x] 8.1 Build and deploy the mods, then export
-- [x] 8.2 Export a second time from the same game build and confirm every file is byte-identical, including the published image set
-- [x] 8.3 Confirm the corrected values are the expected ones: 240 tooltips lose their colour markup, the Gate Scroll names the generic bind point, one fragment states its required total, 14 gather item names take the object name, 12 positions move, one NPC image takes its structural source, and animated sources take their initial frame
-- [x] 8.4 Rebuild the database, run `uv run compendium redactions check`, and confirm the ledger is unchanged because no corrected position is in an excluded zone
-- [x] 8.5 Rebuild the website and confirm in a browser that an item tooltip renders without red requirement text, that a corrected spawn appears on the map, and that the replaced NPC image renders
+- [ ] 8.1 Build and deploy the mods, then export
+- [ ] 8.2 Export a second time from the same game build and confirm every file is byte-identical, including the published image set
+- [ ] 8.3 Confirm the corrected values are the expected ones: 240 tooltips lose their colour markup, the Gate Scroll names the generic bind point, one fragment states plain `0 / 5`, 14 gather item names take the object name, 12 positions move, one NPC image takes its structural source, and animated sources take their initial frame
+- [ ] 8.4 Rebuild the database, run `uv run compendium redactions check`, and confirm the ledger is unchanged because no corrected position is in an excluded zone
+- [ ] 8.5 Rebuild the website and confirm in a browser that the fragment states `0 / 5`, an item tooltip renders without red requirement text, a corrected spawn appears on the map, and the replaced NPC image renders
 - [x] 8.6 Record the two-export comparison in the release procedure, since it needs the game twice and cannot run in CI

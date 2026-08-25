@@ -49,8 +49,9 @@ Rationale: the game renders an item tooltip for the player in front of it, and c
 #### Scenario: A fragment item reports the character's inventory
 
 - **WHEN** a fragment item renders how many pieces the exporting character owns
-- **THEN** the exported tooltip states the number required to combine the item
+- **THEN** the exported tooltip states `0 / X`, where `X` is the number required to combine the item
 - **AND** it does not state that character's progress
+- **AND** the baseline carries no completion colour
 
 #### Scenario: An actor has moved
 

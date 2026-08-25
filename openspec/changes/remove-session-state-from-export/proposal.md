@@ -23,11 +23,11 @@ The next comparison exposed the same mechanisms in two more places. `FragmentIte
 ## What Changes
 
 - Publish the position the game gives a spawn rather than the position its actor currently occupies, and derive a row's zone from the same point as its position.
-- Publish an item tooltip that describes the item: render it, then remove requirement decoration, bind-point substitution and fragment inventory progress that answer questions about the exporting character.
+- Publish an item tooltip that describes the item: render it, then remove requirement decoration and bind-point substitution. Replace fragment inventory progress with a plain `0 / amountNeeded` baseline.
 - Require the export to state the locale it was taken under, and fail the build when that is not the locale the published data assumes.
 - Read a value from a field that no lifecycle method overwrites, so the value does not depend on when the exporter runs.
 - Choose a visual asset branch by structure. A layered composite keeps its initialized scene instance; a root renderer uses the canonical template when one exists. Sample an active source's controller at time zero before either branch is captured.
-- **BREAKING** for published values: 240 item tooltips lose colour markup, the Gate Scroll names the generic bind point, one fragment states its required total instead of the exporting character's inventory progress, 14 gather item names change, 12 spawn positions move by up to 2.4 units, one NPC image takes its structural source, and animated sources take their initial frame.
+- **BREAKING** for published values: 240 item tooltips lose colour markup, the Gate Scroll names the generic bind point, one fragment states a neutral `0 / 5` baseline instead of the exporting character's inventory progress, 14 gather item names change, 12 spawn positions move by up to 2.4 units, one NPC image takes its structural source, and animated sources take their initial frame.
 
 ## Capabilities
 
