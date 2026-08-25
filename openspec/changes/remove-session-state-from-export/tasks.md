@@ -31,16 +31,16 @@
 
 ## 6. Declare the session state
 
-- [ ] 6.1 Record the selected locale in the export manifest that `game_config.json` carries
-- [ ] 6.2 Fail the pipeline build when the recorded locale is not the one the published data assumes, naming both
-- [ ] 6.3 Fail the pipeline build when an export carries no recorded locale, rather than assuming the expected one
+- [x] 6.1 Record the selected locale in the export manifest that `game_config.json` carries
+- [x] 6.2 Fail the pipeline build when the recorded locale is not the one the published data assumes, naming both
+- [x] 6.3 Fail the pipeline build when an export carries no recorded locale, rather than assuming the expected one
 
 ## 7. Test
 
 - [ ] 7.1 Add a `DataExporter.Tests` test that a tooltip whose required level is emphasised and the same tooltip without the emphasis both export to the same value
 - [ ] 7.2 Add a `DataExporter.Tests` test for the required-class emphasis, and one per decoration task 1.1 found beyond the two
 - [ ] 7.3 Add a `DataExporter.Tests` test that the removal leaves every other tag in the tooltip untouched, including a colour that is not player-conditional
-- [ ] 7.4 Add a pipeline test that a build fails on an unexpected recorded locale and on a missing one, and passes on the expected one
+- [x] 7.4 Add a pipeline test that a build fails on an unexpected recorded locale and on a missing one, and passes on the expected one
 - [ ] 7.5 Run `dotnet test tests/DataExporter.Tests`, then the pipeline tests, `uv run mypy .` and `uv run ruff check .`
 
 ## 8. Verify against the game

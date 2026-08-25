@@ -1,5 +1,6 @@
 using DataExporter.Models;
 using MelonLoader;
+using UnityEngine.Localization.Settings;
 
 namespace DataExporter.Exporters;
 
@@ -14,15 +15,16 @@ public class GameConfigExporter : BaseExporter
     {
         Logger.Msg("Exporting game config...");
 
+        var config = new GameConfigData { export_locale = SelectedLocaleCode() };
+        Logger.Msg($"Export locale: {config.export_locale ?? "none"}");
+
         var gameManager = Il2Cpp.GameManager.singleton;
         if (gameManager == null)
         {
             Logger.Warning("GameManager.singleton is null, skipping game config export");
-            WriteJson(new GameConfigData(), "game_config.json");
+            WriteJson(config, "game_config.json");
             return;
         }
-
-        var config = new GameConfigData();
 
         // Export bestiary monsters (elites/bosses for Slayer skill)
         if (gameManager.elitesBosses != null)
@@ -86,6 +88,22 @@ public class GameConfigExporter : BaseExporter
 
         WriteJson(config, "game_config.json");
         Logger.Msg($"✓ Exported game config with {config.bestiary_monsters.Count} bestiary monsters, {config.mounts.Count} mounts");
+    }
+
+    /// <summary>
+    /// The code of the locale the game has selected, or null when it has none.
+    ///
+    /// ScriptableItem resolves a tooltip through this locale, and the locale also
+    /// chooses the culture that formats its numbers.
+    /// </summary>
+    private static string SelectedLocaleCode()
+    {
+        var locale = LocalizationSettings.SelectedLocale;
+        if (locale == null)
+            return null;
+
+        var code = locale.Identifier.Code;
+        return string.IsNullOrEmpty(code) ? null : code;
     }
 
     private string GetItemId(Il2Cpp.ScriptableItem item)

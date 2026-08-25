@@ -52,6 +52,7 @@ from compendium.loaders import (
 )
 from compendium.redactions import verify
 from compendium.redactions.references import resolve
+from compendium.session import verify_export_locale
 from compendium.visual_assets import reconcile
 from compendium.zone_artwork import publish_zone_thumbnails
 
@@ -70,6 +71,7 @@ def load_all(
         static_dir: Where to publish image files. Without one, the two loaders
             that hold artwork record their manifest rows and write no file.
     """
+    verify_export_locale(export_dir)  # Before anything reads a localized string
     load_static_data(conn, export_dir)  # Factions, reputation tiers (before NPCs)
     load_classes(conn, export_dir)  # Player classes (early, no dependencies)
     load_zones(conn, export_dir)

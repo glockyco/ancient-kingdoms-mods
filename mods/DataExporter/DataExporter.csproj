@@ -88,6 +88,12 @@ public static class ExportConfig
       <Private>False</Private>
     </Reference>
 
+    <!-- Unity Localization -->
+    <Reference Include="Unity.Localization">
+      <HintPath>$(Il2CppAssembliesPath)\Unity.Localization.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+
     <!-- Unity TextMeshPro -->
     <Reference Include="Unity.TextMeshPro">
       <HintPath>$(Il2CppAssembliesPath)\Unity.TextMeshPro.dll</HintPath>

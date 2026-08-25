@@ -4,6 +4,13 @@ namespace DataExporter.Models;
 
 public class GameConfigData
 {
+    /// <summary>
+    /// The locale the export was taken under. A localized string is in some
+    /// language, so this dependency cannot be removed. The build reads it and
+    /// fails on any language other than the one the compendium publishes.
+    /// </summary>
+    public string export_locale { get; set; }
+
     public List<string> bestiary_monsters { get; set; } = new();
     public List<string> mounts { get; set; } = new();
     public SeasonalItemsData seasonal_items { get; set; } = new();
