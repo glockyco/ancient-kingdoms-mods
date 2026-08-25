@@ -71,19 +71,28 @@ jobs:
 
   # The mod and build-tool test projects compile repository sources directly and
   # reference no game assembly, so they need neither the game nor Local.props.
-  # They ran nowhere until now: the pre-commit hook built the mods without testing
-  # them, and this workflow had no .NET job at all. One of them had been unable to
-  # build since the test SDK dropped net6.0, and its 32 tests never ran.
+  # HotRepl.Core is packable but is not published to NuGet. Pin and build the
+  # matching source revision so HotReplCommands.Tests uses the real command API.
   # Building a mod still requires the game install, so mods stay out of CI.
   dotnet:
     name: Mods and build tool (tests)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+      - name: Check out HotRepl dependency
+        uses: actions/checkout@v7
+        with:
+          repository: glockyco/HotRepl
+          ref: 7d9c49ed57f5436bf7b258207ea14236333b4ac6
+          path: HotRepl
       - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: 10.x
+      - name: Build HotRepl Core
+        run: dotnet build HotRepl/src/HotRepl.Core/HotRepl.Core.csproj --framework netstandard2.1
       - name: Tests
+        env:
+          HOTREPL_REPO_PATH: ${{ github.workspace }}/HotRepl
         run: |
           for project in tests/*/; do
             dotnet test "$project"
