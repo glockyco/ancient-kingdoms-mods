@@ -8,7 +8,7 @@
     "predev": "pnpm publish:mods && pnpm clean:workerd && pnpm exec tsx scripts/build-search-db.ts && node scripts/compress-databases.mjs",
     "dev": "vite dev",
     "build": "vite build",
-    "prebuild": "pnpm publish:mods && node scripts/generate-og-image.mjs && node scripts/generate-home-counts.mjs && node scripts/build-sitemap-manifest.mjs && pnpm exec tsx scripts/build-search-db.ts && node scripts/compress-databases.mjs",
+    "prebuild": "pnpm publish:mods && node scripts/generate-og-image.mjs && pnpm gen:home-counts && node scripts/build-sitemap-manifest.mjs && pnpm exec tsx scripts/build-search-db.ts && node scripts/compress-databases.mjs",
     "publish:mods": "dotnet run --project ../build-tool publish-mods",
     "generate-og": "node scripts/generate-og-image.mjs",
     "preview": "vite preview",
@@ -21,6 +21,7 @@
     "format:check": "prettier --check .",
     "test": "vitest run",
     "test:nodb": "vitest run --exclude '**/node_modules/**' --exclude '**/*.db.test.ts'",
+    "gen:home-counts": "node scripts/generate-home-counts.mjs",
     "gen:skill-effect-parity": "tsx scripts/gen-skill-effect-parity.ts",
     "cf-deploy": "(curl -fsSL --retry 3 --retry-delay 2 https://ancient-kingdoms.compendiums.org/sitemap-manifest.json -o .sitemap-manifest.prev.json || rm -f .sitemap-manifest.prev.json) && wrangler deploy && node scripts/indexnow-ping.mjs .sitemap-manifest.prev.json static/sitemap-manifest.json && rm -f .sitemap-manifest.prev.json",
     "cf-deploy:redirect": "wrangler deploy --config wrangler.redirect.toml"
