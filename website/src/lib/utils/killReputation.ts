@@ -102,7 +102,7 @@ export function monsterKillReputation(
 /**
  * Reputation changed per kill for an NPC.
  *
- * Source: server-scripts/Npc.cs:1604-1614 (solo) / 1571-1581 (party share).
+ * Source: server-scripts/Npc.cs:1606-1616 (solo) / 1573-1583 (party share).
  * Improve adds level.current * 1.5; decrease subtracts level.current * 5.
  */
 export function npcKillReputation(

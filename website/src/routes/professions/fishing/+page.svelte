@@ -333,7 +333,7 @@
 
   <section class="rounded-lg border p-5">
     <h2 class="text-xl font-semibold">How It Works</h2>
-    <!-- Source: server-scripts/Utils.cs:562-571 — Fishing spot success chance per tier. -->
+    <!-- Source: server-scripts/Utils.cs:561-570 — Fishing spot success chance per tier. -->
     <!-- Source: server-scripts/GatherItem.cs:650-653 — < 0.2 spot success hard-blocks fishing. -->
     <!-- Source: server-scripts/GatherItem.cs:648-670,672-683,685-702,704-720,722-739 — successful spot rolls pick one configured fish; a failed primary roll gives tier-specific trash / lower-tier fish / escape. -->
     <!-- Source: server-scripts/GatherItem.cs:659-677 — selected fish chance = drop rate + Fishing/2 + 2pp per Fisherman costume piece. -->

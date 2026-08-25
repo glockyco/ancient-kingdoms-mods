@@ -32,7 +32,7 @@ export interface RaceBands {
   bc: number;
 }
 
-// Source: server-scripts/Player.cs:9472-9501 — per-race roll bands and base-combat factors.
+// Source: server-scripts/Player.cs:9747-9784 — per-race roll bands and base-combat factors.
 export const RACES: Record<string, RaceBands> = {
   Human: { hp: [0.95, 1.0], mana: [0.95, 1.0], energy: [0.95, 1.0], bc: 0.9 },
   Elf: { hp: [0.9, 0.95], mana: [1.0, 1.05], energy: [0.9, 0.95], bc: 0.7 },
@@ -55,27 +55,28 @@ export const RACES: Record<string, RaceBands> = {
     energy: [1.0, 1.05],
     bc: 0.95,
   },
+  Drassar: {
+    hp: [0.95, 1.0],
+    mana: [0.9, 0.95],
+    energy: [1.0, 1.05],
+    bc: 0.95,
+  },
 };
 
-export const RACE_ORDER = [
-  "Human",
-  "Elf",
-  "Dark Elf",
-  "Dwarf",
-  "Fire Goblin",
-  "Felarii",
-];
+/** Display order of every race a mercenary can be. */
+export const RACE_ORDER = Object.keys(RACES);
 
 export type Role = "mana" | "energy";
 
 export interface ClassDef {
   type: string;
   role: Role;
+  /** Races the uniform roll can produce. */
   pool: string[];
   div: Record<string, number>;
 }
 
-// Source: server-scripts/Utils.cs:628-636 — class race pools.
+// Source: server-scripts/Utils.cs:629-638 — class race pools.
 // Source: server-scripts/Player.cs:7979-8015,8016-8044,8045-8073,8074-8102,8103-8131,8132-8163 — per-class attribute divisors.
 export const CLASSES: Record<string, ClassDef> = {
   Warrior: {
@@ -141,13 +142,15 @@ const hpAt = (hpCurve: number, mult: number, con: number): number =>
 // Source: server-scripts/Intelligence.cs:21-23, server-scripts/Player.cs:9528-9555 — Mana curve times multiplier plus Intelligence.
 const manaAt = (manaCurve: number, mult: number, intl: number): number =>
   iround(f32(f32(manaCurve) * f32(mult))) + intl * INT_MANA;
-// Source: server-scripts/Player.cs:9472-9501 — base-combat max is round(level × race factor) − 1.
+// Source: server-scripts/Player.cs:9747-9784 — base-combat max is round(level × race factor) − 1.
 const baseCombatMax = (level: number, factor: number): number =>
   iround(f32(f32(level) * f32(factor))) - 1;
 
 export interface MercRow {
   race: string;
   eligible: boolean;
+  /** True when only a recruiter preference can produce this race for the class. */
+  preferredOnly: boolean;
   hp?: [number, number];
   mana?: [number, number] | null;
   atk?: [number, number];
@@ -165,7 +168,7 @@ export interface ClassResult {
   rows: MercRow[];
 }
 
-/** Source: server-scripts/Player.cs:9742-9746,9748-9778,9804-9816 — hire rolls race, multipliers, and shared base-combat value. */
+/** Source: server-scripts/Player.cs:9742-9743,9747-9784,9810-9822 — the recruiter preference decides the race, then the hire rolls multipliers and a shared base-combat value. */
 /** Source: server-scripts/Player.cs:9528-9555 — summoned mercenaries apply level, veteran points, Health, Mana, Attack Power, and Spell Power. */
 /** Source: server-scripts/Player.cs:7979-8015,8016-8044,8045-8073,8074-8102,8103-8131,8132-8163 — class attributes are rebuilt from level. */
 export function computeAll(
@@ -181,10 +184,11 @@ export function computeAll(
     const manaCurve = linear(cur.mana_base, cur.mana_per, level);
     const hasMana = c.role === "mana" && manaCurve > 0;
     const magAdd = iround(f32(a.INT * INT_MAGIC));
-    const pool = new Set(c.pool);
-
     const rows: MercRow[] = RACE_ORDER.map((race) => {
-      if (!pool.has(race)) return { race, eligible: false };
+      const inPool = c.pool.includes(race);
+      const preferredOnly = !inPool && classCanBe(cls, race);
+      if (!inPool && !preferredOnly)
+        return { race, eligible: false, preferredOnly: false };
       const R = RACES[race];
       const bc = baseCombatMax(level, R.bc);
       const hp: [number, number] = [
@@ -202,7 +206,7 @@ export function computeAll(
             manaAt(manaCurve, f32(R.mana[1]) + vetAdd, a.INT),
           ]
         : null;
-      return { race, eligible: true, hp, mana, atk, spell };
+      return { race, eligible: true, preferredOnly, hp, mana, atk, spell };
     });
 
     return {
@@ -218,45 +222,60 @@ export function computeAll(
   });
 }
 
-// Source: server-scripts/Utils.cs:639-660 — tavern zone race bias used by GetRandomChar.
-export const ZONE_RACES: Record<number, string[]> = {
-  1: ["Elf"],
-  3: ["Dwarf"],
-  4: ["Human"],
-  5: ["Dark Elf", "Fire Goblin"],
-  22: ["Felarii"],
+/**
+ * Races a recruiter preference can produce although no class pool lists them,
+ * with the classes that accept each one.
+ * Source: server-scripts/Utils.cs:639-640 — the server names the race and the
+ * class indices that honour it, so the pool alone does not decide the outcome.
+ */
+export const PREFERRED_ONLY_RACES: Record<string, string[]> = {
+  Drassar: ["Warrior", "Cleric", "Rogue", "Wizard", "Ranger"],
 };
 
-export function raceHomeZone(race: string): number | null {
-  for (const [z, rs] of Object.entries(ZONE_RACES))
-    if (rs.includes(race)) return Number(z);
-  return null;
+/** Whether a class can be this race at all, by roll or by recruiter preference. */
+export function classCanBe(cls: string, race: string): boolean {
+  return (
+    CLASSES[cls].pool.includes(race) ||
+    (PREFERRED_ONLY_RACES[race]?.includes(cls) ?? false)
+  );
 }
 
 /**
- * P(roll this race) when hiring a class in a zone.
- * Source: server-scripts/Utils.cs:639-660 — zone-pinned in-pool races are forced, otherwise the roll is uniform over the pool.
+ * Races this class can actually be, given the recruiters that exist. A race
+ * whose recruiters are all absent is unreachable whatever the class pool says.
  */
-export function pRaceInZone(
+export function obtainableRaces(
   cls: string,
-  race: string,
-  zoneId: number | null,
-): number {
-  const pool = CLASSES[cls].pool;
-  if (!pool.includes(race)) return 0;
-  const pinned = (zoneId != null ? (ZONE_RACES[zoneId] ?? []) : []).filter(
-    (r) => pool.includes(r),
+  preferredRaces: readonly string[],
+): string[] {
+  return RACE_ORDER.filter((race) =>
+    preferredRaces.some((pref) => pRaceAtRecruiter(cls, race, pref) > 0),
   );
-  const list = pinned.length ? pinned : pool;
-  return list.includes(race) ? 1 / list.length : 0;
 }
 
-/** Source: server-scripts/uMMORPG.Scripts.PlayerAttributes/Charisma.cs:13-15, server-scripts/UINpcTrading.cs:822-829 — purchase discount is Charisma×0.002, capped by the shop. */
+/**
+ * P(get this race) when hiring a class from a recruiter that prefers `preferredRace`.
+ * Source: server-scripts/Utils.cs:639-640 — a preference the class can be is forced,
+ * otherwise the race is uniform over the class pool.
+ */
+export function pRaceAtRecruiter(
+  cls: string,
+  race: string,
+  preferredRace: string | null,
+): number {
+  if (!classCanBe(cls, race)) return 0;
+  if (preferredRace && classCanBe(cls, preferredRace))
+    return race === preferredRace ? 1 : 0;
+  const pool = CLASSES[cls].pool;
+  return pool.includes(race) ? 1 / pool.length : 0;
+}
+
+/** Source: server-scripts/uMMORPG.Scripts.PlayerAttributes/Charisma.cs:13-15, server-scripts/UINpcTrading.cs:824-831 — purchase discount is Charisma×0.002, capped by the shop. */
 export function charismaDiscount(charisma: number): number {
   return Math.min(0.25, Math.max(0, charisma) * 0.002);
 }
 
-/** Source: server-scripts/UIMercenaries.cs:427-433, server-scripts/UINpcTrading.cs:808-815 — mercenary hire price plus Charisma discount. */
+/** Source: server-scripts/UIMercenaries.cs:427-433, server-scripts/UINpcTrading.cs:810-817 — mercenary hire price plus Charisma discount. */
 export function hirePrice(
   level: number,
   veteran: number,

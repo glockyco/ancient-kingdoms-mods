@@ -965,7 +965,7 @@ finalDamage = damage − reduction</pre>
       </div>
 
       <div>
-        <!-- Source: server-scripts/Combat.cs:1106-1119, 1534-1544; Player.cs:11658-11662 -->
+        <!-- Source: server-scripts/Combat.cs:1106-1119, 1534-1544; Player.cs:11664-11668 -->
         <h3 id="parry" class="font-semibold mb-1 scroll-mt-24">Parry</h3>
         <p class="text-sm text-muted-foreground">
           Parry is a timed counter. If an eligible player is casting Parry and

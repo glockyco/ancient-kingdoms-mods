@@ -46,11 +46,14 @@ export interface PetClassLink {
 }
 
 /**
- * An NPC that can recruit mercenaries, with their zone location.
+ * An NPC that can recruit mercenaries, with their zone location and the race
+ * they hire.
  */
 export interface PetRecruiter {
   npc_id: string;
   npc_name: string;
+  /** Race this recruiter always hires; empty when it states no preference. */
+  preferred_race: string;
   visual_public_path: string | null;
   visual_width: number | null;
   visual_height: number | null;

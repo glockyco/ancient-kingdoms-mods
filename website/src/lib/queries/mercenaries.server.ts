@@ -5,6 +5,8 @@ export interface Tavern {
   npc_name: string;
   zone_name: string;
   zone_num: number;
+  /** Race this recruiter always hires; empty when it states no preference. */
+  preferred_race: string;
 }
 
 /** Base HP/Mana LinearInt curves for each mercenary class, keyed by type_monster. */
@@ -31,10 +33,11 @@ export function getMercenaryCurves(): Record<string, Curve> {
   return out;
 }
 
-/** Mercenary recruiters with their zone, including numeric zone id for race bias. */
+/** Mercenary recruiters with their zone and the race each one hires. */
 export function getTaverns(): Tavern[] {
   return query<Tavern>(
-    `SELECT DISTINCT n.name AS npc_name, z.name AS zone_name, z.zone_id AS zone_num
+    `SELECT DISTINCT n.name AS npc_name, z.name AS zone_name, z.zone_id AS zone_num,
+            n.preferred_mercenary_race AS preferred_race
      FROM npcs n
      JOIN npc_spawns s ON s.npc_id = n.id
      JOIN zones z ON z.id = s.zone_id

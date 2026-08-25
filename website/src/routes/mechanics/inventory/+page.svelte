@@ -270,14 +270,14 @@
     <Card.Content class="space-y-5">
       <p class="text-sm text-muted-foreground">
         <!-- Source: server-scripts/Player.cs:403 — characters start with one bank tab unlocked. -->
-        <!-- Source: server-scripts/Player.cs:12925-12950 and 12960-12988 — bank gold withdraw and deposit commands. -->
+        <!-- Source: server-scripts/Player.cs:12931-12956 and 12966-12994 — bank gold withdraw and deposit commands. -->
         New characters start with tab 1 unlocked. Additional tabs unlock in order.
         Banked gold is stored separately from carried gold. Depositing moves carried
         gold into the account vault and withdrawing moves it back to the character.
       </p>
       <div class="overflow-x-auto">
         <!-- Source: server-scripts/UIBank.cs:294-307 — bank tab unlock price ladder. -->
-        <!-- Source: server-scripts/Player.cs:12881-12894 — server charges current unlock price before increasing unlocked bank tabs. -->
+        <!-- Source: server-scripts/Player.cs:12887-12900 — server charges current unlock price before increasing unlocked bank tabs. -->
         <table class="w-full border-collapse text-sm">
           <thead>
             <tr class="border-b border-border">
@@ -335,7 +335,7 @@
         </p>
         <p>
           <!-- Source: server-scripts/CustomStrucUI.cs:203-226 — left click or F places the selected structure, or drops a moved one at the new spot. -->
-          <!-- Source: server-scripts/CustomStrucUI.cs:80-86, 328-347 and Player.cs:12687-12699 — move mode hides the structure, then repositions the same one without charging gold. -->
+          <!-- Source: server-scripts/CustomStrucUI.cs:80-86, 328-347 and Player.cs:12693-12705 — move mode hides the structure, then repositions the same one without charging gold. -->
           Place the selected chest with left click or
           <kbd
             class="rounded border border-border bg-muted px-1.5 py-0.5 text-xs text-foreground"
@@ -534,7 +534,7 @@
           is not consumed by that quest update.
         </li>
         <li>
-          <!-- Source: server-scripts/ChestLoot.cs:314-331 and Npc.cs:2612-2625 — eligible shared chest/NPC drops route through group roll when more than one player can loot. -->
+          <!-- Source: server-scripts/ChestLoot.cs:314-331 and Npc.cs:2618-2631 — eligible shared chest/NPC drops route through group roll when more than one player can loot. -->
           <!-- Source: server-scripts/Monster.cs:UserCode_CmdLootMonster — monster loot also rolls MergeItem and ScrollItem drops. -->When
           more than one player can loot the same enemy, NPC, or world loot
           chest, uncommon-or-better items, keys, chest keys, items worth more

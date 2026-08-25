@@ -344,7 +344,7 @@ function buffPhrase(
 function potionDescription(item: Item, ctx: ItemMetaContext): string {
   // Source: server-scripts/PotionItem.cs:24-39,143-145 — non-bandage buff
   // levels can use Elixir Endurance; bandages return their base buff level.
-  // Source: server-scripts/Pet.cs:2071-2095 — mercenary utility potions
+  // Source: server-scripts/Pet.cs:2076-2100 — mercenary utility potions
   // resolve that level from the owner's veteran rank.
   const isBandage = item.cooldown_category === "Bandages";
   // Source: server-scripts/PotionItem.cs:8-17,41-124 — health, mana, energy,
@@ -434,7 +434,7 @@ function relicDescription(item: Item, ctx: ItemMetaContext): string {
 }
 
 function bookDescription(item: Item): string {
-  // Source: server-scripts/BookItem.cs, server-scripts/Player.cs:10332-10367 — one-time read,
+  // Source: server-scripts/BookItem.cs, server-scripts/Player.cs:10338-10373 — one-time read,
   // permanent attribute increase, then consumed.
   const gains: string[] = [];
   if (item.book_strength_gain > 0)
@@ -564,7 +564,7 @@ function mergeDescription(item: Item, ctx: ItemMetaContext): string {
 }
 
 function structureDescription(item: Item): string {
-  // Source: server-scripts/HousingManager.cs:21-32, server-scripts/Player.cs:12263-12267,11232-11247
+  // Source: server-scripts/HousingManager.cs:21-32, server-scripts/Player.cs:12269-12273,11238-11253
   // — players buy a named house, then place CustomStructureItems inside it.
   const price =
     item.structure_price > 0
@@ -595,7 +595,7 @@ function chestKeyDescription(item: Item, ctx: ItemMetaContext): string {
 function keyDescription(ctx: ItemMetaContext): string {
   // Source: server-scripts/Portal.cs:49 and InteractablePortal.cs:101 —
   // portals gated by a key check `player.keys` (or any party member's
-  // keyring) for the matching name. Source: server-scripts/ScriptableItem.cs:39
+  // keyring) for the matching name. Source: server-scripts/ScriptableItem.cs:47
   // — items flagged `isKey` are routed to the keyring (`player.AddKey(...)`)
   // by every loot path (PlayerLooting.cs:146, ChestItem.cs:50,
   // GatherItem.cs:455, …) instead of taking an inventory slot.
@@ -1522,7 +1522,7 @@ export function skillDescription(skill: SkillDescriptionInput): string {
   //   regular character level, available veteran points, and spent points.
   // Source: server-scripts/PlayerSkills.cs:891-908 — CmdUpgradeVeteran spends
   //   available veteran points before increasing the skill level.
-  // Source: server-scripts/Player.cs:6754-6764 and ScriptableSkill.cs:203-205
+  // Source: server-scripts/Player.cs:6754-6764 and ScriptableSkill.cs:220-222
   //   — requiredSpentPoints means already-spent veteran points, not veteran
   //   level.
   const veteranPointText = `${skill.required_skill_points} veteran ${
@@ -1597,7 +1597,7 @@ function petOriginPhrase(input: PetDescriptionInput): string {
       }
       return " Summoned by a class skill. Level matches the summoner.";
     case "Mercenary":
-      // Source: server-scripts/Player.cs:9742-9786,9804-9805 — hired at player level, gains attributes per level
+      // Source: server-scripts/Player.cs:9742-9786,9810-9811 — hired at player level, gains attributes per level
       return " Recruited from any Mercenary Recruiter NPC. Hired at the player's current level and continues to gain attributes as the player levels.";
   }
 }

@@ -928,7 +928,7 @@
               </div>
               <div>
                 <div class={styles.label}>Amount received</div>
-                <!-- Source: server-scripts/Utils.cs:522-525 — getPrimalEssenceAmount: ceil(sellPrice * 0.06f) -->
+                <!-- Source: server-scripts/Utils.cs:521-524 — getPrimalEssenceAmount: ceil(sellPrice * 0.06f) -->
                 <div class={styles.value}>6% of sell price</div>
               </div>
             </div>
@@ -948,7 +948,7 @@
               </div>
               <div>
                 <div class={styles.label}>Cost</div>
-                <!-- Source: server-scripts/Utils.cs:priceResetVeteranSkills (priceResetVeteranSkills = 10000), Npc.cs:1776-1783 -->
+                <!-- Source: server-scripts/Utils.cs:priceResetVeteranSkills (priceResetVeteranSkills = 10000), Npc.cs:1786-1793 -->
                 <div class={styles.value}>
                   {formatGold(10000)}g + Token of Redemption
                 </div>
@@ -1658,7 +1658,7 @@
             character&gt;'s pet".
           </p>
           <!-- Source: server-scripts/PetFriendly.cs:389-396 — the follower teleports to its owner past 24 units. -->
-          <!-- Source: server-scripts/Player.cs:10575-10578 — portals respawn the followers at the destination. -->
+          <!-- Source: server-scripts/Player.cs:10581-10584 — portals respawn the followers at the destination. -->
           <p>
             The pet follows you, catches up when it falls far behind, and
             reappears beside you after you take a portal. It is cosmetic and

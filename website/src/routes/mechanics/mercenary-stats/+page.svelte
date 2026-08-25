@@ -4,15 +4,15 @@
   import {
     CLASSES,
     RACE_ORDER,
-    ZONE_RACES,
     charismaDiscount,
+    classCanBe,
     computeAll,
+    obtainableRaces,
     hirePrice,
     pAtLeast,
     pHealthAtLeast,
     pManaAtLeast,
-    pRaceInZone,
-    raceHomeZone,
+    pRaceAtRecruiter,
     type ClassResult,
     type MercRow,
   } from "$lib/utils/merc-stats";
@@ -74,9 +74,8 @@
   let active = new SvelteSet(CLASS_NAMES);
   let cCls = $state("Wizard");
   let cRace = $state<string>(CLASSES["Wizard"].pool[0]);
-  let cTavernZone = $state<number | null>(
-    raceHomeZone(CLASSES["Wizard"].pool[0]),
-  );
+  /** Explicit recruiter choice; empty means "the one that hires the chosen race". */
+  let cRecruiter = $state<string>("");
   let cCharisma = $state(0);
   let frac = $state<Record<TargetKey, number>>({ hp: 0, mana: 0, atk: 0 });
 
@@ -87,12 +86,25 @@
   const meaningful = $derived<TargetKey[]>(
     cd.hasMana ? ["hp", "mana", "atk"] : ["hp", "atk"],
   );
+  /** Races every listed recruiter can hire, in class-pool order. */
+  const preferredRaces = $derived(
+    data.taverns.map((t) => t.preferred_race).filter((r) => r !== ""),
+  );
   const classRaceOptions = $derived(
-    RACE_ORDER.filter((r) => CLASSES[cCls].pool.includes(r)),
+    RACE_ORDER.filter((r) => classCanBe(cCls, r)),
+  );
+  const listedByClass = $derived(
+    Object.fromEntries(
+      CLASS_NAMES.map((cls) => [cls, obtainableRaces(cls, preferredRaces)]),
+    ) as Record<string, string[]>,
   );
   const discount = $derived(charismaDiscount(cCharisma));
   const price = $derived(hirePrice(level, veteran, discount));
-  const pRace = $derived(pRaceInZone(cCls, cRace, cTavernZone));
+  const recruiter = $derived(
+    cRecruiter || recruiterFor(cCls, cRace) || data.taverns[0]?.npc_name || "",
+  );
+  const preferredRace = $derived(preferredRaceOf(recruiter));
+  const pRace = $derived(pRaceAtRecruiter(cCls, cRace, preferredRace));
   const targetReadout = $derived.by(() =>
     buildTargetReadout(cd, row, meaningful, veteran, frac),
   );
@@ -215,46 +227,54 @@
     frac = { ...frac, [k]: Math.max(0, Math.min(1, v)) };
   }
 
-  function fixTavern() {
-    if (cTavernZone == null || pRaceInZone(cCls, cRace, cTavernZone) === 0) {
-      cTavernZone = raceHomeZone(cRace);
-    }
+  /** The recruiter whose preference yields this race for this class, if any. */
+  function recruiterFor(cls: string, race: string): string | null {
+    if (!classCanBe(cls, race)) return null;
+    return (
+      data.taverns.find((t) => t.preferred_race === race)?.npc_name ?? null
+    );
+  }
+
+  function preferredRaceOf(npcName: string): string | null {
+    const t = data.taverns.find((x) => x.npc_name === npcName);
+    return t && t.preferred_race ? t.preferred_race : null;
+  }
+
+  /** Switch to the recruiter that hires the chosen race, when one is released. */
+  function fixRecruiter() {
+    if (pRaceAtRecruiter(cCls, cRace, preferredRaceOf(cRecruiter)) > 0) return;
+    const better = recruiterFor(cCls, cRace);
+    if (better) cRecruiter = better;
   }
 
   function onClassChange(v: string) {
     cCls = v;
-    if (!CLASSES[v].pool.includes(cRace))
-      cRace = RACE_ORDER.find((r) => CLASSES[v].pool.includes(r))!;
-    fixTavern();
+    if (!classCanBe(v, cRace))
+      cRace = RACE_ORDER.find((r) => classCanBe(v, r))!;
+    fixRecruiter();
   }
 
   function onRaceChange(v: string) {
     cRace = v;
-    fixTavern();
+    fixRecruiter();
   }
 
-  function onTavernChange(v: string) {
-    cTavernZone = Number(v);
+  function onRecruiterChange(v: string) {
+    cRecruiter = v;
   }
 
-  function tavernSpecialty(zoneNum: number) {
-    return ZONE_RACES[zoneNum]?.join(" / ") ?? "any race";
-  }
-
-  function zoneName(zoneNum: number | null) {
-    return (
-      data.taverns.find((t) => t.zone_num === zoneNum)?.zone_name ??
-      "This tavern"
-    );
+  function recruiterSpecialty(preferred: string) {
+    return preferred ? `hires ${preferred}` : "hires any race in the pool";
   }
 
   function impossibleMessage() {
-    if (cTavernZone == null || pRace !== 0) return "";
-    const pinned = (ZONE_RACES[cTavernZone] ?? []).filter((r) =>
-      CLASSES[cCls].pool.includes(r),
-    );
-    if (pinned.length === 0) return "";
-    return `${zoneName(cTavernZone)} only recruits ${pinned.join(" or ")} — you can't roll a ${cRace} here.`;
+    if (pRace !== 0) return "";
+    if (!classCanBe(cCls, cRace)) return `A ${cCls} is never ${cRace}.`;
+    if (!listedByClass[cCls].includes(cRace))
+      return `No recruiter listed here hires ${cRace}, so a ${cRace} ${cCls} cannot be hired.`;
+    if (preferredRace)
+      return `${recruiter} only hires ${preferredRace}, so no ${cRace} ${cCls} comes from this recruiter.`;
+    return "";
   }
 
   function drawChart(
@@ -332,20 +352,21 @@
   <h1>Mercenary Stat Ranges</h1>
   <p class="lead">
     Compare the stat ranges every mercenary class and race can roll, at any
-    level and veteran-point total. Hiring rolls a random race and hidden
-    modifiers, so two mercenaries of the same class and level can still differ —
-    the tables show every roll you might get.
+    level and veteran-point total. The recruiter decides the race, and hiring
+    rolls hidden modifiers, so two mercenaries of the same class, race and level
+    can still differ — the tables show every roll you might get.
   </p>
 
   <details class="howto">
     <summary>How to read these ranges</summary>
     <div class="howto-body">
       <p>
-        Hiring rolls a random race from the class pool plus three values saved
-        to that mercenary: a Health multiplier, a resource multiplier, and a
-        base-combat value. Warriors and Rogues roll a resource multiplier too,
-        but their Rage ignores it — only casters' Mana uses it. You never see
-        these numbers. They set where in each range your mercenary lands.
+        Each recruiter hires one race, so the race is not a roll. Hiring then
+        rolls three values saved to that mercenary: a Health multiplier, a
+        resource multiplier, and a base-combat value. Warriors and Rogues roll a
+        resource multiplier too, but their Rage ignores it — only casters' Mana
+        uses it. You never see these numbers. They set where in each range your
+        mercenary lands.
       </p>
       <ul>
         <li>
@@ -361,8 +382,10 @@
           these columns are exact for a mercenary hired at the shown level.
         </li>
         <li>
-          <b>Every class lists all six races.</b> A "–" marks a race that class can't
-          be.
+          <b>Every class lists every race.</b> A "–" marks a race that class can never
+          be. Some races are in no class pool at all: only a recruiter that hires
+          that race produces one, and only for the classes the game allows. A race
+          no listed recruiter hires cannot be hired at all.
         </li>
       </ul>
       <p>
@@ -456,7 +479,17 @@
               {#each RACE_ORDER as race (race)}
                 {@const r = c.rows.find((x) => x.race === race)!}
                 <tr class:ineligible={!r.eligible}>
-                  <td class="race">{race}</td>
+                  <td class="race"
+                    >{race}{#if r.eligible && !listedByClass[c.cls].includes(race)}<span
+                        class="racenote"
+                        title="No recruiter listed here hires this race."
+                        >no recruiter listed</span
+                      >{:else if r.preferredOnly}<span
+                        class="racenote"
+                        title="No class pool contains this race, so only a recruiter that hires it produces it."
+                        >recruiter only</span
+                      >{/if}</td
+                  >
                   {#if r.eligible}
                     {#each cols as k (k)}
                       {@const cell = statRange(r, k)}
@@ -487,10 +520,10 @@
   <section class="cost-sec" aria-label="Hiring cost and odds">
     <h2>Hiring odds &amp; cost</h2>
     <p class="sub">
-      Every hire re-rolls the race and the hidden modifiers, so chasing a great
-      mercenary means re-hiring. Set the minimums you'd accept and see the odds
-      per hire and the gold it takes on average — at the Level and Veteran
-      points chosen above.
+      Every hire re-rolls the hidden modifiers, so chasing a great mercenary
+      means re-hiring — from the recruiter that hires the race you want. Set the
+      minimums you'd accept and see the odds per hire and the gold it takes on
+      average — at the Level and Veteran points chosen above.
     </p>
     <div class="cost-grid">
       <div class="cost-inputs">
@@ -517,15 +550,15 @@
             </select>
           </label>
           <label class="field span2"
-            ><span>Tavern</span>
+            ><span>Recruiter</span>
             <select
-              value={String(cTavernZone)}
-              onchange={(e) => onTavernChange(e.currentTarget.value)}
+              value={recruiter}
+              onchange={(e) => onRecruiterChange(e.currentTarget.value)}
             >
-              {#each data.taverns as tavern (tavern.zone_num)}
-                <option value={String(tavern.zone_num)}
-                  >{tavern.zone_name} · {tavern.npc_name} — {tavernSpecialty(
-                    tavern.zone_num,
+              {#each data.taverns as tavern (tavern.npc_name)}
+                <option value={tavern.npc_name}
+                  >{tavern.zone_name} · {tavern.npc_name} — {recruiterSpecialty(
+                    tavern.preferred_race,
                   )}</option
                 >
               {/each}
@@ -1033,6 +1066,12 @@
   .race {
     font-weight: 550;
     white-space: nowrap;
+  }
+  .racenote {
+    display: block;
+    font-weight: 400;
+    font-size: 0.6875rem;
+    color: var(--muted-foreground);
   }
   .cell {
     min-width: 132px;

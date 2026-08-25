@@ -303,7 +303,7 @@
       </Card.Description>
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
-      <!-- Source: server-scripts/Npc.cs:1604-1614 — the aggro player's faction changes on an NPC death. -->
+      <!-- Source: server-scripts/Npc.cs:1606-1616 — the aggro player's faction changes on an NPC death. -->
       <p>
         Every faction on the NPC's improve list goes up by
         <span class="font-mono">NPC level × 1.5</span>
@@ -385,7 +385,7 @@
     </Card.Header>
     <Card.Content class="space-y-4 text-sm text-muted-foreground">
       <!-- Source: server-scripts/PetFriendly.cs:688-702 — clicking within 3 units pets the animal and grants faction at most every 30 seconds. -->
-      <!-- Source: server-scripts/Player.cs:12764-12768 — CmdIncreaseFaction adds the value unchanged. -->
+      <!-- Source: server-scripts/Player.cs:12770-12774 — CmdIncreaseFaction adds the value unchanged. -->
       <p>
         Clicking one from up close pets it and gives 1 to 4 reputation with the
         animal's faction. Each animal only pays out once every 30 seconds, so
@@ -426,7 +426,7 @@
           the quest up.
         </li>
         <li>
-          <!-- Source: server-scripts/Npc.cs:1688-1692 — NPCs refuse to talk below -500. -->
+          <!-- Source: server-scripts/Npc.cs:1698-1702 — NPCs refuse to talk below -500. -->
           <strong class="text-foreground">Below −500</strong> reputation, NPCs of
           that faction will not talk to you. No shop, no quests, no services.
         </li>
@@ -452,7 +452,7 @@
         of the sources above applies, so a faction you ignore keeps whatever
         value it had.
       </p>
-      <!-- Source: server-scripts/Player.cs:12764-12768, Monster.cs:2751-2763, Npc.cs:1604-1614, PlayerQuests.cs:440-443, GatherItem.cs:336-344 — every write adds or subtracts without clamping. -->
+      <!-- Source: server-scripts/Player.cs:12770-12774, Monster.cs:2751-2763, Npc.cs:1606-1616, PlayerQuests.cs:440-443, GatherItem.cs:336-344 — every write adds or subtracts without clamping. -->
       <!-- Source: server-scripts/Database.cs:3677-3685 — setFactionValue stores the raw value. -->
       <p>
         There is no cap and no floor. Every source adds to or subtracts from the

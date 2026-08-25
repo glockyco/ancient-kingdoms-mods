@@ -1,7 +1,7 @@
 /**
  * Special respawn_dungeon_id value used for World Boss NPCs.
  * This is not a real zone — it identifies NPCs/monsters associated with world bosses.
- * Source: server-scripts/Npc.cs:1695, Utils.cs:worldBosses
+ * Source: server-scripts/Npc.cs:1705, Utils.cs:worldBosses
  * Note: Sage Renewal for World Bosses was removed in v0.9.13.0;
  * the Player-side renewal branch is gone; this constant still identifies world boss entities in the DB.
  */

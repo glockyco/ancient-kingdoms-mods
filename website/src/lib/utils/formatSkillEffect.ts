@@ -351,7 +351,7 @@ function formatHealing(
     parts.push(`${formatLinearValue(healMana, options)} mana`);
   }
 
-  // Source: server-scripts/Player.cs:12612-12622 — resurrection restores 60% max HP, 20% max HP as mana, and +75% of lossExp.
+  // Source: server-scripts/Player.cs:12618-12625 — resurrection restores 60% max HP, 20% max HP as mana, and +75% of lossExp.
   if (skill.is_resurrect_skill) {
     parts.push("resurrect (60% max HP, 20% max HP as mana, +75% lost XP)");
   }

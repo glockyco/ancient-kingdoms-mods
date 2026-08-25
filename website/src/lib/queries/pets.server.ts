@@ -220,12 +220,14 @@ export function getPetById(petId: string): PetDetailView | null {
 }
 
 /**
- * Get all NPCs that recruit mercenaries, with their zone locations.
- * All recruiters sell all mercenaries, so this is not filtered per pet.
+ * Get all NPCs that recruit mercenaries, with their zone locations and the race
+ * each one hires. Every recruiter offers every mercenary class, so this is not
+ * filtered per pet, but the recruiter fixes the race of the hire.
  */
 function getMercenaryRecruiters(): PetRecruiter[] {
   return query<PetRecruiter>(
     `SELECT n.id as npc_id, n.name as npc_name,
+            n.preferred_mercenary_race as preferred_race,
             va.public_path as visual_public_path,
             va.width as visual_width,
             va.height as visual_height,

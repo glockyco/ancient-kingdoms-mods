@@ -64,6 +64,7 @@
   // "Recruited At" table
   const recruitedAtColumns: ColumnDef<PetRecruiter>[] = [
     { accessorKey: "npc_name", header: "Recruiter" },
+    { accessorKey: "preferred_race", header: "Race Hired" },
     { accessorKey: "zone_name", header: "Zone" },
     { id: "map", header: "Map", size: 80, enableSorting: false },
   ];
@@ -178,6 +179,12 @@
       fallback={User}
       size={28}
     />
+  {:else if cell.column.id === "preferred_race"}
+    {#if row.original.preferred_race}
+      {row.original.preferred_race}
+    {:else}
+      <span class="text-muted-foreground">Any in class pool</span>
+    {/if}
   {:else if cell.column.id === "zone_name"}
     <a
       href="/zones/{row.original.zone_id}"
@@ -485,7 +492,7 @@
               <dt class="text-muted-foreground w-40 shrink-0">If You Die</dt>
               <dd>
                 <!-- Source: server-scripts/Player.cs:DestroyLivingMercenariesOnOwnerDeath — living mercenaries are removed on owner death; dead ones keep their corpse. -->
-                <!-- Source: server-scripts/Player.cs:3434-3436,12612-12616 — respawning and resurrection re-summon the stored mercenaries. -->
+                <!-- Source: server-scripts/Player.cs:3434-3436,12618-12622 — respawning and resurrection re-summon the stored mercenaries. -->
                 Living mercenaries are dismissed and re-summoned once you respawn.
                 A mercenary that already died keeps its corpse and still needs a resurrection.
               </dd>

@@ -3,7 +3,8 @@ import {
   computeAll,
   hirePrice,
   charismaDiscount,
-  pRaceInZone,
+  obtainableRaces,
+  pRaceAtRecruiter,
   type Curves,
 } from "./merc-stats";
 
@@ -49,6 +50,19 @@ describe("computeAll", () => {
   test("ineligible race is marked, not computed", () => {
     expect(row("Rogue", "Elf", 50, 0).eligible).toBe(false);
   });
+
+  test("Drassar is recruiter-only for a class that can be it", () => {
+    const r = row("Wizard", "Drassar", 50, 200);
+    expect(r.eligible).toBe(true);
+    expect(r.preferredOnly).toBe(true);
+    expect(r.hp).toEqual([3875, 4000]);
+    expect(r.mana).toEqual([1557, 1595]);
+    expect(r.spell).toEqual([38, 85]);
+  });
+
+  test("a Druid is never Drassar", () => {
+    expect(row("Druid", "Drassar", 50, 200).eligible).toBe(false);
+  });
 });
 
 describe("hiring cost helpers", () => {
@@ -65,10 +79,46 @@ describe("hiring cost helpers", () => {
     expect(charismaDiscount(200)).toBe(0.25);
   });
 
-  test("race probability by zone", () => {
-    expect(pRaceInZone("Wizard", "Human", 4)).toBe(1);
-    expect(pRaceInZone("Wizard", "Human", 24)).toBe(1 / 5);
-    expect(pRaceInZone("Wizard", "Felarii", 4)).toBe(0);
-    expect(pRaceInZone("Wizard", "Human", 3)).toBe(1 / 5);
+  test("a race no recruiter hires is unobtainable, whatever the pool says", () => {
+    // One recruiter, hiring Dwarf: a Wizard cannot be Dwarf, so the preference
+    // cannot apply and the roll falls back to the whole Wizard pool.
+    expect(obtainableRaces("Wizard", ["Dwarf"])).toEqual([
+      "Human",
+      "Elf",
+      "Dark Elf",
+      "Fire Goblin",
+      "Felarii",
+    ]);
+    // Every recruiter states a race, so only those races are reachable.
+    expect(obtainableRaces("Wizard", ["Human", "Elf"])).toEqual([
+      "Human",
+      "Elf",
+    ]);
+    // Losing the only Felarii recruiter removes Felarii, with no rule per race.
+    expect(obtainableRaces("Druid", ["Human", "Elf", "Fire Goblin"])).toEqual([
+      "Human",
+      "Elf",
+      "Fire Goblin",
+    ]);
+    // A pool-less race needs its own recruiter.
+    expect(obtainableRaces("Wizard", ["Drassar"])).toEqual(["Drassar"]);
+    expect(obtainableRaces("Druid", ["Drassar"])).toEqual([
+      "Human",
+      "Elf",
+      "Fire Goblin",
+      "Felarii",
+    ]);
+  });
+
+  test("race probability follows the recruiter preference", () => {
+    expect(pRaceAtRecruiter("Wizard", "Human", "Human")).toBe(1);
+    expect(pRaceAtRecruiter("Wizard", "Felarii", "Human")).toBe(0);
+    expect(pRaceAtRecruiter("Wizard", "Drassar", "Drassar")).toBe(1);
+    // Dwarf is outside the Wizard pool, so the preference cannot apply.
+    expect(pRaceAtRecruiter("Wizard", "Human", "Dwarf")).toBe(1 / 5);
+    expect(pRaceAtRecruiter("Wizard", "Dwarf", "Dwarf")).toBe(0);
+    // A Druid cannot be Drassar, so that recruiter rolls the Druid pool.
+    expect(pRaceAtRecruiter("Druid", "Human", "Drassar")).toBe(1 / 4);
+    expect(pRaceAtRecruiter("Druid", "Drassar", "Drassar")).toBe(0);
   });
 });
