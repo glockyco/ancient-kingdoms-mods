@@ -36,10 +36,10 @@ namespace CombatVerification.Fixtures
                 return Result(problems);
             }
 
-            if (!rules.SupportedSchemaVersions.Contains(fixture.SchemaVersion))
+            if (!FixtureSchema.Supported.Contains(fixture.SchemaVersion))
                 Add(problems, "schemaVersion",
                     $"Version {fixture.SchemaVersion} is not supported. Supported: "
-                    + $"{string.Join(", ", rules.SupportedSchemaVersions.OrderBy(v => v))}.");
+                    + $"{string.Join(", ", FixtureSchema.Supported.OrderBy(v => v))}.");
 
             Require(problems, "name", fixture.Name);
             Require(problems, "gameVersion", fixture.GameVersion);
@@ -192,12 +192,21 @@ namespace CombatVerification.Fixtures
 
                 if (skill.Level > 0 && !string.IsNullOrWhiteSpace(rule.PrerequisiteSkill))
                 {
-                    var prerequisite = character.Skills
-                        .FirstOrDefault(s => s.Name == rule.PrerequisiteSkill);
-                    if (prerequisite == null || prerequisite.Level < rule.PrerequisiteLevel)
+                    // Both sides resolve through the same lookup. A fixture may name a skill as
+                    // the game displays it while a rule names it by identifier, and comparing the
+                    // two strings directly reports a prerequisite the fixture actually declares.
+                    var wanted = rules.TryGetSkill(rule.PrerequisiteSkill, out var prerequisiteRule)
+                        ? prerequisiteRule.Name
+                        : rule.PrerequisiteSkill;
+
+                    var declared = character.Skills.FirstOrDefault(s =>
+                        !string.IsNullOrWhiteSpace(s.Name)
+                        && rules.TryGetSkill(s.Name, out var declaredRule)
+                        && declaredRule.Name == wanted);
+
+                    if (declared == null || declared.Level < rule.PrerequisiteLevel)
                         Add(problems, field,
-                            $"Requires '{rule.PrerequisiteSkill}' at level "
-                            + $"{rule.PrerequisiteLevel} or above.");
+                            $"Requires '{wanted}' at level {rule.PrerequisiteLevel} or above.");
                 }
 
                 var cost = CostOf(rule, skill.Level);

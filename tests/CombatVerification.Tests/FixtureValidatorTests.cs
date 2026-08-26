@@ -163,6 +163,26 @@ namespace CombatVerification.Tests
         }
 
         [Fact]
+        public void APrerequisiteNamedInEitherFormIsAccepted()
+        {
+            // The game names a skill for display and identifies an asset by a slug. A fixture may
+            // carry either, so a prerequisite must resolve rather than string-match.
+            var rules = Rules()
+                .WithSkill("Charge", maxLevel: 1, classes: new[] { "Warrior" })
+                .WithSkill("Vindication", maxLevel: 8, classes: new[] { "Warrior" },
+                    prerequisite: "charge", prerequisiteLevel: 1);
+
+            var f = Valid();
+            f.Character.Skills = new System.Collections.Generic.List<SkillSpec>
+            {
+                new() { Name = "Charge", Level = 1 },
+                new() { Name = "Vindication", Level = 1 },
+            };
+
+            Assert.Empty(FixtureValidator.Validate(f, rules).Problems);
+        }
+
+        [Fact]
         public void ARaceTheValidatorCannotCheckIsNotRefusedHere()
         {
             // Whether a class accepts a race is held by the character creator, which is gone by

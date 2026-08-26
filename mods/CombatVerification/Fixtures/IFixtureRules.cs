@@ -14,9 +14,6 @@ namespace CombatVerification.Fixtures
     /// </remarks>
     public interface IFixtureRules
     {
-        /// <summary>Schema versions the harness can materialize.</summary>
-        IReadOnlyCollection<int> SupportedSchemaVersions { get; }
-
         /// <summary>Highest level a character can reach.</summary>
         int MaxLevel { get; }
 
@@ -40,8 +37,17 @@ namespace CombatVerification.Fixtures
         /// <summary>Skill points granted by reaching this level.</summary>
         int SkillPointsAtLevel(int level);
 
+        /// <summary>
+        /// Finds a skill by the name the game displays or by its asset identifier.
+        /// </summary>
+        /// <remarks>
+        /// A fixture authored by hand carries display names, and a build captured from a game
+        /// carries identifiers, so both resolve. An implementation that accepts only one form
+        /// makes a fixture fail for a reason that has nothing to do with the game.
+        /// </remarks>
         bool TryGetSkill(string skillName, out SkillRule rule);
 
+        /// <summary>Finds an item by display name or asset identifier, as for a skill.</summary>
         bool TryGetItem(string itemName, out ItemRule rule);
 
         bool AugmentExists(string augmentName);

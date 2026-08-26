@@ -5,6 +5,22 @@ using Newtonsoft.Json;
 namespace CombatVerification.Fixtures
 {
     /// <summary>
+    /// Descriptor versions this harness can materialize.
+    /// </summary>
+    /// <remarks>
+    /// A schema version is this harness's own contract, not something the game knows, so it is
+    /// not read through the rules the game supplies. A run refuses a version it does not know
+    /// rather than parsing what it recognises and ignoring the rest.
+    /// </remarks>
+    public static class FixtureSchema
+    {
+        /// <summary>Version written by this build of the harness.</summary>
+        public const int Current = 1;
+
+        public static IReadOnlyCollection<int> Supported { get; } = new[] { Current };
+    }
+
+    /// <summary>
     /// One build fixture. Authored fixtures and builds captured from a player's game
     /// use this same shape, so a player's report is runnable without conversion.
     /// </summary>

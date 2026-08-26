@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using CombatVerification.Fixtures;
 
 namespace CombatVerification.Tests
@@ -9,7 +10,6 @@ namespace CombatVerification.Tests
     /// </summary>
     internal sealed class SyntheticRules : IFixtureRules
     {
-        public IReadOnlyCollection<int> SupportedSchemaVersions { get; set; } = new[] { 1 };
         public int MaxLevel { get; set; } = 50;
         public int MaxVeteranPoints { get; set; } = 200;
         public IReadOnlyCollection<string> AttributeNames { get; set; } =
@@ -36,15 +36,46 @@ namespace CombatVerification.Tests
 
         public bool ClassExists(string className) => Classes.ContainsKey(className);
 
+        /// <summary>
+        /// Resolution accepts a display name or an identifier, as the port requires. A double
+        /// that accepted only one form would be more permissive than the game in one direction
+        /// and stricter in the other.
+        /// </summary>
+        private static string Key(string name)
+            => name == null
+                ? string.Empty
+                : name.ToLowerInvariant().Replace(" ", "").Replace("_", "").Replace("-", "");
+
+        private static bool Lookup<T>(Dictionary<string, T> source, string name, out T found)
+        {
+            if (source.TryGetValue(name ?? string.Empty, out found!))
+                return true;
+
+            var key = Key(name);
+            foreach (var pair in source)
+            {
+                if (Key(pair.Key) == key)
+                {
+                    found = pair.Value;
+                    return true;
+                }
+            }
+
+            found = default!;
+            return false;
+        }
+
         public bool TryGetSkill(string skillName, out SkillRule rule)
-            => Skills.TryGetValue(skillName, out rule!);
+            => Lookup(Skills, skillName, out rule!);
 
         public bool TryGetItem(string itemName, out ItemRule rule)
-            => Items.TryGetValue(itemName, out rule!);
+            => Lookup(Items, itemName, out rule!);
 
-        public bool AugmentExists(string augmentName) => Augments.Contains(augmentName);
+        public bool AugmentExists(string augmentName)
+            => Augments.Any(name => Key(name) == Key(augmentName));
 
-        public bool ConsumableExists(string consumableName) => Consumables.Contains(consumableName);
+        public bool ConsumableExists(string consumableName)
+            => Consumables.Any(name => Key(name) == Key(consumableName));
 
         // --- builders ---
 

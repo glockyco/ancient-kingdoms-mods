@@ -20,7 +20,6 @@ namespace CombatVerification.Fixtures
     public sealed class GameFixtureRules : IFixtureRules
     {
         /// <summary>Descriptor schema this build of the harness materializes.</summary>
-        public const int CurrentSchemaVersion = 1;
 
         private readonly Dictionary<string, Player> _classes;
         private readonly Dictionary<string, SkillRule> _skills;
@@ -83,9 +82,6 @@ namespace CombatVerification.Fixtures
                 ReadConsumables(),
                 classes.Values.First());
         }
-
-        public IReadOnlyCollection<int> SupportedSchemaVersions { get; } =
-            new[] { CurrentSchemaVersion };
 
         /// <summary>Level cap, read from a class prefab's own level component.</summary>
         public int MaxLevel => _reference.level.max;
@@ -187,9 +183,11 @@ namespace CombatVerification.Fixtures
                     CumulativeCost = ReadCumulativeCost(asset),
                     Tier = asset.tier,
                     RequiredSpentPoints = asset.requiredSpentPoints,
+                    // Named as this record names its own skill. Mixing an identifier here with a
+                    // display name in Name would make the two impossible to compare.
                     PrerequisiteSkill = asset.predecessor == null
                         ? null
-                        : GameIds.Sanitize(asset.predecessor.name),
+                        : asset.predecessor.nameSkill,
                     PrerequisiteLevel = asset.predecessorLevel,
                 };
             }
