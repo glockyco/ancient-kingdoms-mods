@@ -38,6 +38,37 @@ Verification SHALL compare a content hash of each copied file against its source
 - **WHEN** any copied file's hash does not match its source
 - **THEN** the run does not proceed
 
+### Requirement: A build is identified by a value that can be recomputed
+
+A run SHALL identify the game build by the content hash of the assembly the repository's decompiled
+evidence was produced from. The version string the game reports SHALL be recorded as a label beside it,
+not used as the identifier, because nothing can recompute a version string from the installation.
+
+Before measuring, a run SHALL confirm that the installed assembly still hashes to the recorded value.
+Where it does not, the run SHALL report that the installation and the evidence describe different
+builds, and SHALL name the step that records a new snapshot.
+
+#### Scenario: The installation matches the recorded evidence
+
+- **WHEN** the installed assembly hashes to the recorded value
+- **THEN** the run proceeds and stamps its results with that hash
+
+#### Scenario: The game was updated without refreshing the evidence
+
+- **WHEN** the installed assembly hashes to a different value than the evidence records
+- **THEN** the run reports that the two describe different builds
+- **AND** it names the step that records a new snapshot
+
+#### Scenario: No snapshot has been recorded
+
+- **WHEN** no usable build snapshot exists
+- **THEN** the run reports that rather than treating the installation as identified
+
+#### Scenario: A recorded snapshot is incomplete
+
+- **WHEN** a snapshot omits the hash, the version, or the build identifier
+- **THEN** it is treated as unusable rather than stamping a result with a partial identity
+
 ### Requirement: A run reports the game version it measured against
 
 A verification run SHALL record the installed game version with its results, so a measurement can be

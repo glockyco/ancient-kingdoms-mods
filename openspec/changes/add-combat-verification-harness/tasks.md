@@ -33,7 +33,10 @@
       build-tool run still has to refuse on the reported value.
 - [ ] 2.4 Create and hash-verify a timestamped backup of the player save, including write-ahead and
       shared-memory sidecars, before any run that could reach it.
-- [ ] 2.5 Record the installed game version with every run result.
+- [x] 2.5 Identify the build by the content hash of the assembly the decompiled evidence was produced
+      from, recording the version string and Steam build identifier as labels beside it. Confirm the
+      installed assembly still hashes to the recorded value before measuring, so a run cannot attribute
+      results to source that no longer describes the build.
 - [ ] 2.6 Add a scratch reuse check: reuse an existing scratch database when the recorded game version
       and the fixture definitions both match, and rebuild otherwise.
 - [ ] 2.7 Verify isolation with an automated assertion that the player save's content hash is unchanged
