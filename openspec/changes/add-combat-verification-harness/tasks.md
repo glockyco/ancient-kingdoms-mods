@@ -46,8 +46,9 @@
 
 ## 3. Materialization commands
 
-- [ ] 3.1 Add a mod project that registers typed runtime commands, following the existing command-mod
-      pattern.
+- [x] 3.1 Add a mod project that registers typed runtime commands, following the existing command-mod
+      pattern. It registers a read-only check of a fixture against the game's own definitions, which runs
+      before anything is materialized.
 - [ ] 3.2 Implement character creation for a fixture through the engine's creation entry point, choosing
       the class's own basic skill and a race compatible with that class.
 - [ ] 3.3 Reuse the existing world-entry character selection so a fixture matrix can address any of the

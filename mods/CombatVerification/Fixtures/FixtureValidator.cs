@@ -272,9 +272,10 @@ namespace CombatVerification.Fixtures
                     continue;
                 }
 
-                if (rule.Slot != entry.Slot)
+                if (!rule.Slots.Contains(entry.Slot))
                     Add(problems, field,
-                        $"'{entry.ItemId}' belongs in slot {rule.Slot}, not {entry.Slot}.");
+                        $"'{entry.ItemId}' does not fit slot {entry.Slot}. It fits: "
+                        + $"{(rule.Slots.Count == 0 ? "no slot" : string.Join(", ", rule.Slots))}.");
 
                 if (rule.LevelRequired > character.Level)
                     Add(problems, $"{field}.itemId",

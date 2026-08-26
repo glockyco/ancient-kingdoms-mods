@@ -413,11 +413,27 @@ namespace CombatVerification.Tests
         }
 
         [Fact]
-        public void AnItemInTheWrongSlotIsRefused()
+        public void AnItemFittingSeveralSlotsIsAcceptedInEither()
+        {
+            // The game gives a character two ring slots, so an item is not tied to one index.
+            var rules = Rules().WithItem("Signet", slot: 4, alsoFitsSlots: new[] { 10 });
+
+            foreach (var slot in new[] { 4, 10 })
+            {
+                var f = Valid();
+                f.Character.Equipment = new List<EquipmentSpec>
+                    { new EquipmentSpec { Slot = slot, ItemId = "Signet" } };
+
+                Assert.Empty(Check(f, rules));
+            }
+        }
+
+        [Fact]
+        public void AnItemInASlotItDoesNotFitIsRefused()
         {
             var f = Valid();
             f.Character.Equipment = new List<EquipmentSpec>
-                { new EquipmentSpec { Slot = 5, ItemId = "Rusty Sword" } };   // belongs in 12
+                { new EquipmentSpec { Slot = 5, ItemId = "Rusty Sword" } };   // fits 12 only
             AssertRefused(f, "character.equipment[5]");
         }
 

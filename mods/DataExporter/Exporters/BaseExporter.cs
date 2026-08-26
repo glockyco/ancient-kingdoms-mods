@@ -145,19 +145,11 @@ public abstract class BaseExporter
     /// Sanitizes a Unity object name to create a URL-safe ID.
     /// Converts to lowercase, replaces spaces with underscores, and removes special characters.
     /// </summary>
-    protected static string SanitizeId(string input)
-    {
-        if (string.IsNullOrEmpty(input))
-            return input;
-
-        // Convert to lowercase and replace spaces with underscores
-        var sanitized = input.ToLowerInvariant().Replace(" ", "_");
-
-        // Remove URL-unsafe characters: # % ? & / \ and other special chars except _ and -
-        sanitized = Regex.Replace(sanitized, @"[^a-z0-9_\-]", "");
-
-        return sanitized;
-    }
+    /// <summary>
+    /// Identifier for an asset name. The rule lives in <see cref="GameIds"/>, because anything
+    /// resolving an exported identifier back to a game asset must apply the same one.
+    /// </summary>
+    protected static string SanitizeId(string input) => GameIds.Sanitize(input);
 
     protected void WriteJson<T>(T data, string filename)
     {

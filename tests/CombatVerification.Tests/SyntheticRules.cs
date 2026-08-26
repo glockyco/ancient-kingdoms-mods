@@ -81,16 +81,21 @@ namespace CombatVerification.Tests
             int levelRequired = 1,
             string[]? classes = null,
             bool twoHanded = false,
-            string? weaponCategory = null)
+            string? category = null,
+            int[]? alsoFitsSlots = null)
         {
+            var slots = new List<int> { slot };
+            if (alsoFitsSlots is not null)
+                slots.AddRange(alsoFitsSlots);
+
             Items[name] = new ItemRule
             {
                 Name = name,
-                Slot = slot,
+                Slots = slots,
                 LevelRequired = levelRequired,
                 Classes = classes ?? System.Array.Empty<string>(),
                 IsTwoHanded = twoHanded,
-                WeaponCategory = weaponCategory!,
+                Category = category!,
             };
             return this;
         }

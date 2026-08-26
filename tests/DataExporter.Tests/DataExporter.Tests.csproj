@@ -17,6 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\..\mods\DataExporter\GameIds.cs" Link="GameIds.cs" />
     <Compile Include="..\..\mods\DataExporter\Exporters\TooltipNormalizer.cs" Link="Exporters\TooltipNormalizer.cs" />
     <Compile Include="..\..\mods\DataExporter\Models\ExporterRunError.cs" Link="Models\ExporterRunError.cs" />
     <Compile Include="..\..\mods\DataExporter\Models\ExporterRunResult.cs" Link="Models\ExporterRunResult.cs" />

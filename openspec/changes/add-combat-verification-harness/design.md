@@ -199,6 +199,34 @@ definitions it was materialized from. A run compares both and rebuilds when eith
 covers each definition's name as well as its content, because a baseline is keyed on the fixture name
 and a rename therefore describes a different fixture.
 
+### The rules are readable only once the host exists
+
+`NetworkManager.singleton` is null at the start scene, so the class prefabs a fixture is checked against
+cannot be read before the game reaches character selection. Validation is therefore sequenced after
+world entry and before materialization, not before launch.
+
+Three identity translations happen at that boundary. An item's identifier is the sanitized asset name,
+not its displayed name, which is why a stored fixture survives a rename. A class prefab is named
+`Player Warrior`, so a class identifier drops that prefix. An item's own class restriction holds
+displayed names, so those are translated to identifiers before they are compared. Each of these was
+found by running a real fixture against the game: the class restriction silently rejected a legal build
+until the last of them was applied.
+
+An item is not tied to one slot. A character has two ring slots and two ear slots, and the game decides
+acceptance by matching the item's category against each slot's required category, so a fixture entry is
+checked against the set of slots the item fits. Two-handedness is likewise read from the category rather
+than a flag, because the game has no such flag.
+
+### Class and race pairing is not an engine rule
+
+Character creation takes a class and a race as independent strings and cross-checks neither, and no
+runtime structure lists the races a class allows. The engine only branches on a race where it applies
+racial effects. The pairing the compendium publishes is curated by hand.
+
+The rules read from the game therefore do not answer it. Restating the curated table inside the game
+adapter would create a second copy that drifts, and answering that no race fits would reject every
+fixture. The pairing is checked where the table lives.
+
 ### One session client, one flow for each purpose
 
 Connecting, confirming the protocol, waiting until the game has registered the commands a flow calls,

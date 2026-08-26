@@ -75,13 +75,26 @@ namespace CombatVerification.Fixtures
     public sealed class ItemRule
     {
         public string Name { get; set; }
-        public int Slot { get; set; }
+
+        /// <summary>
+        /// Slots this item may occupy. A category can be accepted by more than one slot: the
+        /// game gives a character two ring slots and two ear slots, so an item is not tied to
+        /// a single index.
+        /// </summary>
+        public IReadOnlyCollection<int> Slots { get; set; }
+
         public int LevelRequired { get; set; }
 
         /// <summary>Classes that can equip it. Empty means every class can.</summary>
         public IReadOnlyCollection<string> Classes { get; set; }
 
-        public string WeaponCategory { get; set; }
+        /// <summary>Equipment category, which is also what marks a weapon two-handed.</summary>
+        public string Category { get; set; }
+
+        /// <summary>
+        /// Whether the game treats it as two-handed. The game reads this from the category
+        /// rather than from a flag, so this is derived the same way.
+        /// </summary>
         public bool IsTwoHanded { get; set; }
     }
 }
