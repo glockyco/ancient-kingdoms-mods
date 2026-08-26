@@ -45,6 +45,25 @@ commands run directly: HotRepl v2 has no auth/lease handshake, loopback plus sin
 replacement is the trust boundary. Use `build-tool export` for the orchestrated `compendium.export`
 job when the goal is producing exports, not poking the live runtime.
 
+## One instance at a time
+
+`build-tool launch --wait` returns once the runtime host is ready, and the game keeps running after
+it returns. A session that ends without `game.quit` therefore leaves the game running.
+
+A second instance does not take the endpoint. The first one keeps port 18590, so every later command
+answers from the older process while the newer window is the one on screen. Readings then describe a
+game that is not the one under test, and the mistake looks like a defect in the code being verified.
+
+Before a launch, confirm that no instance is running. Quit with `game.quit` at the end of a session.
+
+```sh
+ps aux | grep "[a]ncientkingdoms.exe"     # expect no output before launching
+pkill -f ancientkingdoms.exe              # only when an orphan is confirmed
+```
+
+A hard kill is safe for player data when the run redirected the database. The player save keeps its
+content hash and no write-ahead sidecar is left behind.
+
 ## Endpoint configuration
 
 Use `--url` or set `HOTREPL_URL`. The current HotRepl CLI does not read profile files. Profile and
@@ -63,12 +82,13 @@ The `HotReplCommands` mod registers six typed commands (MelonLoader mod in `mods
 | `game.quit`            | sync | Calls `Application.Quit()` and returns `{"quitting": true}`.                                                                           |
 | `game.useScratchDatabase` | sync | Points the database at a scratch file beside the game's own, so a run that creates or changes characters cannot reach player data. Refuses once the connection is open, so call it before entering the world. |
 
-The `CombatVerification` mod registers two typed commands (MelonLoader mod in `mods/CombatVerification/`):
+The `CombatVerification` mod registers three typed commands (MelonLoader mod in `mods/CombatVerification/`):
 
 | Command                     | Kind | Description                                                                                                                                                                 |
 | --------------------------- | ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `fixture.validate`          | sync | Checks a fixture against rules read from the running game. Needs a spawned player, because the class prefabs are unreadable before one exists. Reads only.                    |
-| `fixture.createCharacter`   | job  | Creates one character by driving the character creator. Needs character selection open, so call it before world entry. Args: `{"characterName": string, "class": string, "race": string}`. Reports the stored class, race and level. |
+| `fixture.createCharacter`   | job  | Creates one character by driving the character creator. Needs character selection open, so call it before world entry. Refuses when the roster holds eight characters. Args: `{"characterName": string, "class": string, "race": string}`. Reports the stored class, race and level. |
+| `fixture.buildCharacter`    | job  | Brings the spawned player to a fixture's declared level, veteran points, attributes and skill levels. Runs once on a newly created character. Args: `{"character": <the character section of a fixture>}`. Reports each step. |
 
 Run `hotrepl --url ws://127.0.0.1:18590 info --json` and inspect handshake metadata, or call
 `hotrepl --url ws://127.0.0.1:18590 describe <name> --json` for individual command descriptors.
