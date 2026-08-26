@@ -42,6 +42,7 @@ namespace HotReplCommands.Tests
             reg.Register(new SyncStub<EmptyArgs, PreflightResult>("compendium.preflight"));
             reg.Register(new SyncStub<EmptyArgs, WorldSummaryResult>("world.summary"));
             reg.Register(new JobStub<CompendiumExportArgs, CompendiumExportResult>("compendium.export"));
+            reg.Register(new JobStub<WorldEnterArgs, WorldEnterResult>("world.enter"));
             reg.Register(new SyncStub<EmptyArgs, GameQuitResult>("game.quit"));
             return reg;
         }
@@ -50,7 +51,34 @@ namespace HotReplCommands.Tests
 
         [Fact]
         public void AllCommandsDescribed()
-            => Assert.Equal(4, BuildRegistry().Describe().Count);
+            => Assert.Equal(5, BuildRegistry().Describe().Count);
+
+        [Fact]
+        public void WorldEnterArgs_CharacterIsOptional()
+        {
+            // A caller sending an empty object must keep working, so the character
+            // must not be required.
+            var descriptor = BuildRegistry().Describe()
+                .Single(d => d.Name == "world.enter");
+            var props = descriptor.ArgsSchema["properties"] as JObject;
+            Assert.NotNull(props);
+            Assert.True(props!.ContainsKey("character"),
+                "Expected lower-camel 'character' property in schema");
+            var required = descriptor.ArgsSchema["required"]?.Values<string>().ToList();
+            Assert.True(required is null || !required.Contains("character"),
+                "'character' must be optional");
+        }
+
+        [Fact]
+        public void WorldEnterResult_ReportsCharacter()
+        {
+            var descriptor = BuildRegistry().Describe()
+                .Single(d => d.Name == "world.enter");
+            var props = descriptor.ResultSchema["properties"] as JObject;
+            Assert.NotNull(props);
+            Assert.True(props!.ContainsKey("character"),
+                "Expected 'character' in the world.enter result schema");
+        }
 
         [Fact]
         public void CompendiumExportArgs_ScreenshotsIsRequired()

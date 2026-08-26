@@ -27,7 +27,7 @@ namespace HotReplCommands
         {
             new Entry("compendium.preflight", 1, ControlCommandKind.Sync, false),
             new Entry("world.summary",        1, ControlCommandKind.Sync, false),
-            new Entry("world.enter",          1, ControlCommandKind.Job,  true),
+            new Entry("world.enter",          2, ControlCommandKind.Job,  true),
             new Entry("compendium.export",    1, ControlCommandKind.Job,         true),
             new Entry("game.quit",            1, ControlCommandKind.Sync, true),
         };

@@ -19,7 +19,11 @@ namespace HotReplCommands.World
         public string Code { get; set; }
         public string Message { get; set; }
 
-        public static WorldEntryOutcome Success() => new WorldEntryOutcome { Ok = true };
+        /// <summary>Character the run entered as. Set on success.</summary>
+        public string Character { get; set; }
+
+        public static WorldEntryOutcome Success(string character)
+            => new WorldEntryOutcome { Ok = true, Character = character };
         public static WorldEntryOutcome Failed(string code, string msg)
             => new WorldEntryOutcome { Ok = false, Code = code, Message = msg };
     }
@@ -33,8 +37,19 @@ namespace HotReplCommands.World
         public static readonly TimeSpan MaxWait = TimeSpan.FromMinutes(5);
         private static readonly TimeSpan SettleTime = TimeSpan.FromSeconds(3);
 
+        /// <summary>
+        /// Name of the character currently in the world, or null when none is.
+        /// </summary>
+        public static string HeldCharacterName()
+            => Player.localPlayer == null ? null : Player.localPlayer.name;
+
+        /// <param name="requestedCharacter">
+        /// Character to enter as. When null or blank, <see cref="CharacterSelector"/>
+        /// picks deterministically.
+        /// </param>
         public static IEnumerator EnterCoroutine(
             CancellationToken ct,
+            string requestedCharacter,
             Action<WorldEntryOutcome> complete)
         {
             var scene = SceneManager.GetActiveScene().name;
@@ -86,19 +101,24 @@ namespace HotReplCommands.World
             }
 
             var characters = manager.charactersAvailableMsg.characters;
-            if (characters.Length == 0)
+            var available = new string[characters.Length];
+            for (var i = 0; i < characters.Length; i++)
+                available[i] = characters[i].name;
+
+            var selection = CharacterSelector.Select(available, requestedCharacter);
+            if (!selection.Ok)
             {
-                complete(WorldEntryOutcome.Failed(
-                    "characterMissing",
-                    "No characters found. Create a character first."));
+                complete(WorldEntryOutcome.Failed(selection.Code, selection.Message));
                 yield break;
             }
 
-            var firstName = characters[0].name;
-            manager.selection = 0;
-            ((NetworkManagerMMO)NetworkManager.singleton).name_character_selected = firstName;
-            PlayerPrefs.SetString("selected_char", firstName);
-            PlayerPrefs.SetInt(firstName + "_intro_run", 1);
+            var chosenName = selection.Name;
+            var chosenIndex = Array.IndexOf(available, chosenName);
+
+            manager.selection = chosenIndex;
+            ((NetworkManagerMMO)NetworkManager.singleton).name_character_selected = chosenName;
+            PlayerPrefs.SetString("selected_char", chosenName);
+            PlayerPrefs.SetInt(chosenName + "_intro_run", 1);
             PlayerPrefs.Save();
             ((NetworkManagerMMO)NetworkManager.singleton).ClearPreviews();
             UIServerList.singleton.StartConnect(null);
@@ -123,7 +143,7 @@ namespace HotReplCommands.World
                 yield return null;
             }
 
-            complete(WorldEntryOutcome.Success());
+            complete(WorldEntryOutcome.Success(chosenName));
         }
     }
 }

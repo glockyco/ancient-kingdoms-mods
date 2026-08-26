@@ -58,7 +58,7 @@ The `HotReplCommands` mod registers five typed commands (MelonLoader mod in `mod
 | ----------------------- | ---- | ------------------------------------------------------------------------------------------------------------------------------------- |
 | `compendium.preflight` | sync | Checks mod visibility, directory existence, scene, and player readiness.                                                              |
 | `world.summary`        | sync | Returns active scene, network state, character count, and local-player status.                                                        |
-| `world.enter`          | job  | Drives the game to a spawned local player, without exporting.                                                                         |
+| `world.enter`          | job  | Drives the game to a spawned local player, without exporting. Reports the character it entered as. Args: `{"character": string?}`; omitted selects the lowest name in ordinal order. |
 | `compendium.export`    | job  | Runs world entry if needed, calls DataExporter and optionally MapScreenshotter, returns artifact refs. Args: `{"screenshots": bool}`. |
 | `game.quit`            | sync | Calls `Application.Quit()` and returns `{"quitting": true}`.                                                                          |
 

@@ -112,6 +112,9 @@ namespace HotReplCommands.Commands
                 WorldEntryOutcome worldResult = null;
                 yield return WorldEntry.EnterCoroutine(
                     cancellationToken,
+                    // The export reads world data, not one character, so it takes the
+                    // deterministic default rather than naming a character.
+                    requestedCharacter: null,
                     outcome => worldResult = outcome);
                 if (worldResult == null || !worldResult.Ok)
                 {

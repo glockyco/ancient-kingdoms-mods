@@ -31,8 +31,14 @@
   <ItemGroup>
     <Compile Include="..\..\mods\HotReplCommands\HotReplCommandCatalog.cs"
              Link="HotReplCommandCatalog.cs" />
+    <Compile Include="..\..\mods\HotReplCommands\World\CharacterSelector.cs"
+             Link="World\CharacterSelector.cs" />
     <Compile Include="..\..\mods\HotReplCommands\Dtos\CompendiumExportArgs.cs"
              Link="Dtos\CompendiumExportArgs.cs" />
+    <Compile Include="..\..\mods\HotReplCommands\Dtos\WorldEnterArgs.cs"
+             Link="Dtos\WorldEnterArgs.cs" />
+    <Compile Include="..\..\mods\HotReplCommands\Dtos\WorldEnterResult.cs"
+             Link="Dtos\WorldEnterResult.cs" />
     <Compile Include="..\..\mods\HotReplCommands\Dtos\PreflightResult.cs"
              Link="Dtos\PreflightResult.cs" />
     <Compile Include="..\..\mods\HotReplCommands\Dtos\WorldSummaryResult.cs"

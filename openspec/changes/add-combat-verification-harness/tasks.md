@@ -40,8 +40,9 @@
       pattern.
 - [ ] 3.2 Implement character creation for a fixture through the engine's creation entry point, choosing
       the class's own basic skill and a race compatible with that class.
-- [ ] 3.3 Implement character selection by name, so a fixture matrix can address any of the six classes
-      rather than whichever character happens to be first.
+- [ ] 3.3 Reuse the existing world-entry character selection so a fixture matrix can address any of the
+      six classes. Selection by name already exists and is covered by the runtime control capability, so
+      do not add a second selector.
 - [ ] 3.4 Implement level and veteran progression by awarding experience incrementally so the engine
       grants attribute points, skill points, the class attribute progression and veteran points itself.
       Award one requirement at a time and stop at the target, because awarding an unbounded amount at the

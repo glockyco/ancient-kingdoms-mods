@@ -26,7 +26,7 @@ namespace HotReplCommands.Tests
         [Theory]
         [InlineData("compendium.preflight", 1, ControlCommandKind.Sync, false)]
         [InlineData("world.summary",        1, ControlCommandKind.Sync, false)]
-        [InlineData("world.enter",          1, ControlCommandKind.Job,  true)]
+        [InlineData("world.enter",          2, ControlCommandKind.Job,  true)]
         [InlineData("compendium.export",    1, ControlCommandKind.Job,         true)]
         [InlineData("game.quit",            1, ControlCommandKind.Sync, true)]
         public void Catalog_EntryHasExpectedMetadata(
