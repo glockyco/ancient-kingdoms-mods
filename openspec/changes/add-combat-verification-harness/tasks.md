@@ -1,19 +1,23 @@
 ## 1. Fixture descriptor
 
-- [ ] 1.1 Define the descriptor schema covering class, race, level, veteran progression, attribute
+- [x] 1.1 Define the descriptor schema covering class, race, level, veteran progression, attribute
       allocation, skill levels per point pool, all sixteen equipment slots with augments, companions with
       their own equipment and rolled values, declared consumables, the target spawn, the action sequence,
       the facing for each action, and a seed. Include a schema version and the game version the
       descriptor was written against.
-- [ ] 1.2 Implement legality validation: skill allocation within each pool's budget, tier gates
+- [x] 1.2 Implement legality validation: skill allocation within each pool's budget, tier gates
       satisfied, prerequisite chains satisfied, attribute totals consistent with the class progression at
       the stated level, equipment satisfying slot class, level and weapon category, a two-handed weapon
       leaving the offhand empty, and companion rolled values inside the race and archetype envelope.
-- [ ] 1.3 Make validation report the specific field and the permitted range on failure, and make it
+      Take the rules the checks need as an injected input rather than restating them. The running game
+      supplies them from its own definitions, so they cannot drift from the game, and a test supplies
+      synthetic ones. Restating the game's cost, tier and prerequisite tables in the validator would
+      create a second source of truth.
+- [x] 1.3 Make validation report the specific field and the permitted range on failure, and make it
       refuse rather than clamp.
-- [ ] 1.4 Add unit tests for legality, one per rejection reason, using descriptors that fail exactly one
+- [x] 1.4 Add unit tests for legality, one per rejection reason, using descriptors that fail exactly one
       rule each.
-- [ ] 1.5 Confirm the descriptor round-trips with the planner's character export payload, so a captured
+- [x] 1.5 Confirm the descriptor round-trips with the planner's character export payload, so a captured
       build is usable as a fixture without conversion.
 
 ## 2. Run isolation and lifecycle
@@ -32,9 +36,7 @@
 - [ ] 2.5 Record the installed game version with every run result.
 - [ ] 2.6 Add a scratch reuse check: reuse an existing scratch database when the recorded game version
       and the fixture definitions both match, and rebuild otherwise.
-- [ ] 2.7 Add the scratch location to version-control ignore rules and confirm no scratch artifact is
-      tracked.
-- [ ] 2.8 Verify isolation with an automated assertion that the player save's content hash is unchanged
+- [ ] 2.7 Verify isolation with an automated assertion that the player save's content hash is unchanged
       across a full run.
 
 ## 3. Materialization commands

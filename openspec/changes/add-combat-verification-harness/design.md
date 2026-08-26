@@ -164,6 +164,30 @@ for diffing but is not the pass condition.
 A tier D failure with A, B, and C passing points at the rotation. A single whole-build fixture would
 only report that something is wrong.
 
+### The descriptor keys items by identifier, and one gate refuses
+
+A fixture names an item by the identifier the game uses, and carries the display name only as context.
+The planner's export capability already requires this, and a fixture and a captured build share one
+schema, so keying by name would have forced a conversion step and broken a stored fixture whenever a
+game update renamed an item.
+
+An absent section and an empty section mean different things. A section the stat sheet depends on must
+be present, and an empty list states that it holds nothing. Absent means the section was never read,
+which no default may stand in for. Companions and actions may be absent, because a fixture naming
+neither measures the stat sheet alone.
+
+Reading a descriptor is permissive, and validation is the only gate. A reader that rejected the first
+absent field would report one fault where a fixture often has several, and the contract is to name every
+field at fault together with its permitted range.
+
+### Legality is checked against injected rules, not a restated table
+
+The validator takes the rules it needs as an input. The running game supplies them from its own
+definitions, and a test supplies synthetic ones. Restating the game's cost, tier, and prerequisite
+tables inside the validator would create a second source of truth that drifts from the game silently,
+which is the failure this change exists to prevent. The engine remains the final authority: a
+materialization step that the engine refuses fails the run.
+
 ### Isolation by redirecting the database path
 
 A run points the game's database path at a scratch file. Fixture characters therefore never exist in a
