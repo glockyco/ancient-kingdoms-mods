@@ -58,7 +58,7 @@ for path in agents:
 
 skills = sorted(path for path in (root / ".agent" / "skills").glob("*/SKILL.md") if path.is_file())
 rules = sorted(path for path in (root / ".agent" / "rules").glob("*.md") if path.is_file())
-expected_skills = {"export-game-data", "hotrepl-runtime-inspection", "ancient-kingdoms-save-files", "update-game-version"}
+expected_skills = {"export-game-data", "game-defect-reports", "hotrepl-runtime-inspection", "ancient-kingdoms-save-files", "update-game-version"}
 expected_rules = {"website-mechanics", "interactive-map", "mod-runtime-special-cases"}
 actual_skills = {path.parent.name for path in skills}
 actual_rules = {path.stem for path in rules}
