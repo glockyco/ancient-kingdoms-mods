@@ -36,14 +36,13 @@ internal sealed class HotReplExportRunner
         "compendium.preflight", "world.summary", "compendium.export", "game.quit",
     };
 
-    private readonly IHotReplTransport _transport;
     private readonly HotReplRunnerOptions _options;
-    private int _nextId = 1;
+    private readonly HotReplSession _session;
 
     internal HotReplExportRunner(IHotReplTransport transport, HotReplRunnerOptions options)
     {
-        _transport = transport;
         _options = options;
+        _session = new HotReplSession(transport, options);
     }
 
     public static HotReplExportRunner Create(HotReplRunnerOptions options)
@@ -68,66 +67,24 @@ internal sealed class HotReplExportRunner
 
     private async Task<ExportRunnerResult> RunCoreAsync(CancellationToken ct)
     {
-        var handshakeError = await ConnectAndValidateHandshakeAsync(ct);
-        if (handshakeError != null)
-            return handshakeError;
+        var failure = await _session.ConnectAsync(ct);
+        if (failure != null)
+            return Failed(failure);
 
-        // 2. commands_list — retry until catalog contains required commands or timeout
-        var readinessDeadline = DateTime.UtcNow + _options.ReadinessTimeout;
-        while (true)
-        {
-            try
-            {
-                using var listDoc = await SendReceiveAsync(
-                    $"{{\"type\":\"commands_list\",\"id\":\"{Id()}\"}}", ct);
-
-                if (listDoc.RootElement.TryGetProperty("type", out var lt)
-                    && lt.GetString() == "commands_list_result"
-                    && listDoc.RootElement.TryGetProperty("commands", out var cmds))
-                {
-                    var missing = FindMissingCommands(cmds);
-                    if (missing == null) break;   // catalog ready
-
-                    if (DateTime.UtcNow >= readinessDeadline)
-                        return new(false, ExitCodes.ReadinessFailed,
-                            $"HotRepl command catalog not ready: {missing}");
-                }
-                else if (DateTime.UtcNow >= readinessDeadline)
-                {
-                    return new(false, ExitCodes.ReadinessFailed,
-                        "Timed out waiting for commands_list_result.");
-                }
-            }
-            catch (OperationCanceledException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                if (DateTime.UtcNow >= readinessDeadline)
-                    return new(false, ExitCodes.ReadinessFailed,
-                        $"HotRepl command catalog connection failed: {ex.Message}");
-
-                handshakeError = await ConnectAndValidateHandshakeAsync(ct);
-                if (handshakeError != null)
-                    return handshakeError;
-            }
-
-            await Task.Delay(_options.PollInterval, ct);
-        }
+        failure = await _session.WaitForCommandsAsync(RequiredCommands, ct);
+        if (failure != null)
+            return Failed(failure);
 
         // Use a fresh connection for the export after startup/catalog readiness.
         // HotRepl can accept an early socket before Unity finishes registering
         // game commands; that startup connection may be closed by the host before
         // the long-running export job begins.
-        handshakeError = await ConnectAndValidateHandshakeAsync(ct);
-        if (handshakeError != null)
-            return handshakeError;
+        failure = await _session.ConnectAsync(ct);
+        if (failure != null)
+            return Failed(failure);
 
         // 3. compendium.preflight
-        using var preflightDoc = await SendReceiveAsync(
-            $"{{\"type\":\"command_call\",\"id\":\"{Id()}\",\"name\":\"compendium.preflight\",\"args\":{{}}}}",
-            ct);
+        using var preflightDoc = await _session.CallAsync("compendium.preflight", "{}", ct);
         var preflightStatus = preflightDoc.RootElement.TryGetProperty("status", out var ps)
             ? ps.GetString() : null;
         if (preflightStatus != "ok")
@@ -137,9 +94,7 @@ internal sealed class HotReplExportRunner
         var exportArgs = _options.Screenshots
             ? "{\"screenshots\":true}"
             : "{\"screenshots\":false}";
-        using var acceptedDoc = await SendReceiveAsync(
-            $"{{\"type\":\"command_call\",\"id\":\"{Id()}\",\"name\":\"compendium.export\",\"args\":{exportArgs}}}",
-            ct);
+        using var acceptedDoc = await _session.CallAsync("compendium.export", exportArgs, ct);
         var jobId = acceptedDoc.RootElement.TryGetProperty("jobId", out var jid)
             ? jid.GetString() ?? throw new InvalidOperationException("Missing jobId in job_accepted")
             : throw new InvalidOperationException("No jobId property in response");
@@ -159,8 +114,8 @@ internal sealed class HotReplExportRunner
 
             await Task.Delay(_options.PollInterval, ct);
 
-            using var pollDoc = await SendReceiveAsync(
-                $"{{\"type\":\"job_status\",\"id\":\"{Id()}\",\"jobId\":\"{jobId}\"}}",
+            using var pollDoc = await _session.SendReceiveAsync(
+                $"{{\"type\":\"job_status\",\"id\":\"{_session.Id()}\",\"jobId\":\"{jobId}\"}}",
                 ct);
 
             var msgType = pollDoc.RootElement.TryGetProperty("type", out var mt)
@@ -196,13 +151,13 @@ internal sealed class HotReplExportRunner
             if (verifyError != null)
             {
                 // Attempt game.quit before returning failure
-                await TryQuitAsync(ct);
+                await _session.TryQuitAsync(ct);
                 return new(false, ExitCodes.CommandFailed, verifyError, artifacts);
             }
         }
 
         // 7. game.quit (always attempt after terminal result)
-        await TryQuitAsync(ct);
+        await _session.TryQuitAsync(ct);
 
         return jobOk
             ? new(true, ExitCodes.Success, jobMessage, artifacts)
@@ -211,64 +166,9 @@ internal sealed class HotReplExportRunner
 
     // ---- helpers ----
 
-    private async Task<ExportRunnerResult?> ConnectAndValidateHandshakeAsync(CancellationToken ct)
-    {
-        using var hsDoc = await ConnectAndReadHandshakeWhenReadyAsync(ct);
-        if (hsDoc.RootElement.TryGetProperty("protocolVersion", out var pvEl)
-            && pvEl.GetInt32() == 2)
-            return null;
+    private static ExportRunnerResult Failed(HotReplFailure failure)
+        => new(false, failure.ExitCode, failure.Message);
 
-        var pv = hsDoc.RootElement.TryGetProperty("protocolVersion", out var x)
-            ? x.ToString() : "?";
-        return new(false, ExitCodes.Internal,
-            $"Unsupported HotRepl protocol version {pv}; expected 2.");
-    }
-
-    private async Task<JsonDocument> ConnectAndReadHandshakeWhenReadyAsync(CancellationToken ct)
-    {
-        var deadline = DateTime.UtcNow + _options.ReadinessTimeout;
-        Exception? lastError = null;
-
-        while (DateTime.UtcNow < deadline)
-        {
-            try
-            {
-                await _transport.ConnectAsync(_options.Endpoint, ct);
-                return JsonDocument.Parse(await _transport.ReceiveMessageAsync(ct));
-            }
-            catch (OperationCanceledException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                lastError = ex;
-                await Task.Delay(_options.PollInterval, ct);
-            }
-        }
-
-        throw new TimeoutException(
-            $"Timed out connecting to HotRepl at {_options.Endpoint}: {lastError?.Message}");
-    }
-
-    private string Id() => (_nextId++).ToString();
-
-    private async Task<JsonDocument> SendReceiveAsync(string json, CancellationToken ct)
-    {
-        await _transport.SendAsync(json, ct);
-        return JsonDocument.Parse(await _transport.ReceiveMessageAsync(ct));
-    }
-
-    private async Task TryQuitAsync(CancellationToken ct)
-    {
-        try
-        {
-            using var doc = await SendReceiveAsync(
-                $"{{\"type\":\"command_call\",\"id\":\"{Id()}\",\"name\":\"game.quit\",\"args\":{{}}}}",
-                ct);
-        }
-        catch { /* game may have already exited */ }
-    }
 
     private static string DescribeJobFailure(
         string? state,
@@ -289,20 +189,6 @@ internal sealed class HotReplExportRunner
             return message;
 
         return $"{message} {code}: {detail}";
-    }
-
-    private static string? FindMissingCommands(JsonElement commands)
-    {
-        var present = new HashSet<string>(StringComparer.Ordinal);
-        foreach (var cmd in commands.EnumerateArray())
-        {
-            if (cmd.TryGetProperty("name", out var n))
-                present.Add(n.GetString()!);
-        }
-        var missing = new List<string>();
-        foreach (var req in RequiredCommands)
-            if (!present.Contains(req)) missing.Add(req);
-        return missing.Count == 0 ? null : string.Join(", ", missing);
     }
 
     private static string? VerifyArtifacts(

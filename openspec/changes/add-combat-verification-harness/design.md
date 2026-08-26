@@ -188,6 +188,24 @@ tables inside the validator would create a second source of truth that drifts fr
 which is the failure this change exists to prevent. The engine remains the final authority: a
 materialization step that the engine refuses fails the run.
 
+### Committed fixtures live beside the baseline, and scratch state records what built it
+
+Fixture definitions and the recorded baseline are committed, and a scratch database is not. They
+therefore live apart: definitions and baselines under a `verification/` directory in the repository,
+and scratch state inside the game installation where the redirect points.
+
+Retained scratch state carries a marker naming the build identity and a digest of the fixture
+definitions it was materialized from. A run compares both and rebuilds when either moved. The digest
+covers each definition's name as well as its content, because a baseline is keyed on the fixture name
+and a rename therefore describes a different fixture.
+
+### One session client, one flow for each purpose
+
+Connecting, confirming the protocol, waiting until the game has registered the commands a flow calls,
+calling one, and quitting are the same for every flow. They live in one session client. The export flow
+and the verification flow each compose it and differ only in the commands they call and what they do
+with the answers.
+
 ### Isolation by redirecting the database path
 
 A run points the game's database path at a scratch file. Fixture characters therefore never exist in a
