@@ -53,8 +53,12 @@
 - [x] 3.1 Add a mod project that registers typed runtime commands, following the existing command-mod
       pattern. It registers a read-only check of a fixture against the game's own definitions, which runs
       before anything is materialized.
-- [ ] 3.2 Implement character creation for a fixture through the engine's creation entry point, choosing
-      the class's own basic skill and a race compatible with that class.
+- [x] 3.2 Implement character creation by driving the character creator, not by calling the database
+      entry point. The creator chooses the class's basic skill, the starting city and the appearance, and
+      it disables the tutorial, none of which is data a fixture could supply without copying a decision
+      the creator already makes. It also holds the class and race pairing, and it reports a refused name
+      in its own words. Select the race before the class, because a race that forbids the selected class
+      changes the selection.
 - [ ] 3.3 Reuse the existing world-entry character selection so a fixture matrix can address any of the
       six classes. Selection by name already exists and is covered by the runtime control capability, so
       do not add a second selector.

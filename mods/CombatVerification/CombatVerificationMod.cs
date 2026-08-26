@@ -14,18 +14,21 @@ namespace CombatVerification
     public class CombatVerificationMod : MelonMod
     {
         private IDisposable _validateFixture;
+        private IDisposable _createCharacter;
 
         public override void OnLateInitializeMelon()
         {
             var registry = GlobalControlCommandRegistry.Instance;
             _validateFixture = registry.Register(new ValidateFixtureCommand());
+            _createCharacter = registry.Register(new CreateCharacterCommand());
 
-            LoggerInstance.Msg("CombatVerification: registered 1 typed command.");
+            LoggerInstance.Msg("CombatVerification: registered 2 typed commands.");
         }
 
         public override void OnDeinitializeMelon()
         {
             _validateFixture?.Dispose();
+            _createCharacter?.Dispose();
         }
     }
 }

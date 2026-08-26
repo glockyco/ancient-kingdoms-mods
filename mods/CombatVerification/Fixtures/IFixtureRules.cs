@@ -34,9 +34,6 @@ namespace CombatVerification.Fixtures
 
         bool ClassExists(string className);
 
-        /// <summary>Whether the class accepts the race, as the character creator allows.</summary>
-        bool IsRaceCompatible(string className, string race);
-
         /// <summary>Attribute points allocatable at this level, from levels and veteran awards.</summary>
         int AllocatableAttributePoints(int level, int veteranPoints);
 

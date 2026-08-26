@@ -163,10 +163,14 @@ namespace CombatVerification.Tests
         }
 
         [Fact]
-        public void AnIncompatibleRaceIsRefused()
+        public void ARaceTheValidatorCannotCheckIsNotRefusedHere()
         {
-            var f = Valid(); f.Character.Race = "Elf";   // Elf cannot be a Warrior
-            AssertRefused(f, "character.race");
+            // Whether a class accepts a race is held by the character creator, which is gone by
+            // the time these rules are readable. Refusing here would need a second copy of that
+            // table. Creation checks it against the creator instead, so a race that names
+            // something is accepted at this stage.
+            var f = Valid(); f.Character.Race = "Elf";
+            Assert.Empty(FixtureValidator.Validate(f, Rules()).Problems);
         }
 
         [Theory]

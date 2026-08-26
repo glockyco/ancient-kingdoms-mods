@@ -24,5 +24,7 @@
              Link="Fixtures\IFixtureRules.cs" />
     <Compile Include="..\..\mods\CombatVerification\Fixtures\FixtureValidator.cs"
              Link="Fixtures\FixtureValidator.cs" />
+    <Compile Include="..\..\mods\CombatVerification\Materialization\CreatorMethods.cs"
+             Link="Materialization\CreatorMethods.cs" />
   </ItemGroup>
 </Project>

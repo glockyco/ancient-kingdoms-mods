@@ -42,6 +42,21 @@
       <Private>False</Private>
     </Reference>
 
+    <!-- The character creator holds the class and race pairing as button state, and it names
+         the character through a text field, so creation reads both. -->
+    <Reference Include="UnityEngine.UI">
+      <HintPath>$(Il2CppAssembliesPath)\UnityEngine.UI.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UIModule">
+      <HintPath>$(Il2CppAssembliesPath)\UnityEngine.UIModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.TextMeshPro">
+      <HintPath>$(Il2CppAssembliesPath)\Unity.TextMeshPro.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+
     <!-- HotRepl typed command API -->
     <Reference Include="HotRepl.Core">
       <HintPath>$(HotReplCoreOutput)\HotRepl.Core.dll</HintPath>

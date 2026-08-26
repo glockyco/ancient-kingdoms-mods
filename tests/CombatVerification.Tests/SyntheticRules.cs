@@ -36,9 +36,6 @@ namespace CombatVerification.Tests
 
         public bool ClassExists(string className) => Classes.ContainsKey(className);
 
-        public bool IsRaceCompatible(string className, string race)
-            => Classes.TryGetValue(className, out var races) && System.Array.IndexOf(races, race) >= 0;
-
         public bool TryGetSkill(string skillName, out SkillRule rule)
             => Skills.TryGetValue(skillName, out rule!);
 

@@ -72,9 +72,9 @@ namespace CombatVerification.Fixtures
 
             if (hasClass && !rules.ClassExists(character.Class))
                 Add(problems, "character.class", $"'{character.Class}' is not a class the game defines.");
-            else if (hasClass && hasRace && !rules.IsRaceCompatible(character.Class, character.Race))
-                Add(problems, "character.race",
-                    $"'{character.Race}' cannot be a {character.Class}.");
+
+            // Whether a class accepts a race is checked when the character is created, because the
+            // character creator is the only place that holds the pairing and it is gone by now.
 
             if (character.Level < 1 || character.Level > rules.MaxLevel)
                 Add(problems, "character.level",

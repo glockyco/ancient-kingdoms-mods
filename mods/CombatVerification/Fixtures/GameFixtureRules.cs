@@ -140,20 +140,6 @@ namespace CombatVerification.Fixtures
 
         public bool ClassExists(string className) => _classes.ContainsKey(className);
 
-        /// <summary>
-        /// Whether the class accepts the race. Always true here, and deliberately so.
-        /// </summary>
-        /// <remarks>
-        /// The engine does not pair races with classes. Character creation takes both as
-        /// independent strings and cross-checks neither, and no runtime structure lists the
-        /// races a class allows: the engine only branches on a race name where it applies racial
-        /// effects. The pairing published by the compendium is curated by hand, so it is not a
-        /// fact this adapter can discover. Answering false would reject every fixture, and
-        /// restating the curated table here would create a second copy of it that drifts.
-        /// The pairing is therefore checked where the table lives, not here.
-        /// </remarks>
-        public bool IsRaceCompatible(string className, string race) => ClassExists(className);
-
         /// <summary>One point per level after the first, plus one per veteran award.</summary>
         public int AllocatableAttributePoints(int level, int veteranPoints)
             => SkillPointsAtLevel(level) + veteranPoints;
