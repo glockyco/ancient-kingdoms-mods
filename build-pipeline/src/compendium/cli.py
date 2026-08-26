@@ -109,6 +109,20 @@ def citations_suggest(ctx: typer.Context):
     raise typer.Exit(citations_cmd.run(ctx.obj, "suggest"))
 
 
+classes_app = typer.Typer(
+    help="Verify curated class metadata against the decompiled snapshot."
+)
+app.add_typer(classes_app, name="classes")
+
+
+@classes_app.command("check-races")
+def classes_check_races(ctx: typer.Context):
+    """Compare each class's compatible races against the character creator."""
+    from compendium.commands import class_races as class_races_cmd
+
+    raise typer.Exit(class_races_cmd.run(ctx.obj))
+
+
 if __name__ == "__main__":
     app()
 

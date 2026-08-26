@@ -18,7 +18,7 @@
     "secondary_role": "Tank",
     "difficulty": 2,
     "resource_type": "mana",
-    "compatible_races": ["human", "dark_elf", "dwarf", "fire_goblin", "felarii", "drassar"],
+    "compatible_races": ["human", "dark_elf", "dwarf", "fire_goblin", "felarii", "drassar", "elf"],
     "game_version": "0.9.7.1"
   },
   {
@@ -62,7 +62,7 @@
     "secondary_role": "Ranged Nature",
     "difficulty": 3,
     "resource_type": "mana",
-    "compatible_races": ["human", "elf", "dark_elf", "fire_goblin", "felarii"],
+    "compatible_races": ["human", "elf", "fire_goblin", "felarii"],
     "game_version": "0.9.7.1"
   }
 ]

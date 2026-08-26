@@ -1839,6 +1839,10 @@
     "UIBigBackpack.cs": {
       "span": 0
     },
+    "UICharacterEditor.cs:921-1483": {
+      "sha256": "d6e3b78098b9e06afbd659451ae10a6a8712b12224bdb82ea1c0824500ddaa5d",
+      "span": 563
+    },
     "UICharacterInfo.cs:206": {
       "sha256": "f911cd631f38ebd5b1273cd65b55adef1e77ed96c5dbc6f04e8e963a71ab058e",
       "span": 1
