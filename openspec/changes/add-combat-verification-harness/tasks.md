@@ -20,10 +20,13 @@
 
 - [ ] 2.1 Add a build-tool verification command that launches the game and waits for the runtime host,
       reusing the existing launch path rather than duplicating it.
-- [ ] 2.2 Redirect the game's database path to a scratch location before the login screen opens its
-      connection, then open the connection so the schema self-initialises.
+- [x] 2.2 Redirect the game's database path to a scratch location before the login screen opens its
+      connection, then open the connection so the schema self-initialises. This is a runtime command on
+      the existing command mod rather than a new one: isolating game state is a command-surface concern
+      that serves any run, not only a fixture run.
 - [ ] 2.3 Refuse to start unless the resolved database path lies inside the run's scratch location, and
-      report the resolved path when refusing.
+      report the resolved path when refusing. The runtime command already refuses and reports; the
+      build-tool run still has to refuse on the reported value.
 - [ ] 2.4 Create and hash-verify a timestamped backup of the player save, including write-ahead and
       shared-memory sidecars, before any run that could reach it.
 - [ ] 2.5 Record the installed game version with every run result.

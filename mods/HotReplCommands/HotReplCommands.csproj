@@ -44,6 +44,11 @@
       <HintPath>$(Il2CppAssembliesPath)\Il2CppMirror.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <!-- Database.connection is an SQLiteConnection; the scratch redirect checks it. -->
+    <Reference Include="Il2CppSqlCipher4Unity3D">
+      <HintPath>$(Il2CppAssembliesPath)\Il2CppSqlCipher4Unity3D.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
 
     <!-- HotRepl typed command API (NJsonSchema + Namotion internalized into HotRepl.Core.dll) -->
     <Reference Include="HotRepl.Core">

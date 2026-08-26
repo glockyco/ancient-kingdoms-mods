@@ -52,7 +52,7 @@ token concepts in older notes are stale.
 
 ## Available game-specific control commands
 
-The `HotReplCommands` mod registers five typed commands (MelonLoader mod in `mods/HotReplCommands/`):
+The `HotReplCommands` mod registers six typed commands (MelonLoader mod in `mods/HotReplCommands/`):
 
 | Command                | Kind | Description                                                                                                                           |
 | ----------------------- | ---- | ------------------------------------------------------------------------------------------------------------------------------------- |
@@ -60,7 +60,8 @@ The `HotReplCommands` mod registers five typed commands (MelonLoader mod in `mod
 | `world.summary`        | sync | Returns active scene, network state, character count, and local-player status.                                                        |
 | `world.enter`          | job  | Drives the game to a spawned local player, without exporting. Reports the character it entered as. Args: `{"character": string?}`; omitted selects the lowest name in ordinal order. |
 | `compendium.export`    | job  | Runs world entry if needed, calls DataExporter and optionally MapScreenshotter, returns artifact refs. Args: `{"screenshots": bool}`. |
-| `game.quit`            | sync | Calls `Application.Quit()` and returns `{"quitting": true}`.                                                                          |
+| `game.quit`            | sync | Calls `Application.Quit()` and returns `{"quitting": true}`.                                                                           |
+| `game.useScratchDatabase` | sync | Points the database at a scratch file beside the game's own, so a run that creates or changes characters cannot reach player data. Refuses once the connection is open, so call it before entering the world. |
 
 Run `hotrepl --url ws://127.0.0.1:18590 info --json` and inspect handshake metadata, or call
 `hotrepl --url ws://127.0.0.1:18590 describe <name> --json` for individual command descriptors.

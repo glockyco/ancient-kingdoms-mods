@@ -15,6 +15,7 @@ namespace HotReplCommands
         private IDisposable _worldEnter;
         private IDisposable _export;
         private IDisposable _quit;
+        private IDisposable _useScratchDatabase;
 
         public override void OnLateInitializeMelon()
         {
@@ -27,9 +28,10 @@ namespace HotReplCommands
             _worldEnter = registry.Register(new WorldEnterCommand());
             _export = registry.Register(new ExportJobCommand(exportDir, screenshotDir));
             _quit = registry.Register(new GameQuitCommand());
+            _useScratchDatabase = registry.Register(new UseScratchDatabaseCommand());
 
             LoggerInstance.Msg(
-                $"HotReplCommands: registered 5 typed commands (exportDir={exportDir}).");
+                $"HotReplCommands: registered 6 typed commands (exportDir={exportDir}).");
         }
 
         public override void OnDeinitializeMelon()
@@ -39,6 +41,7 @@ namespace HotReplCommands
             _worldEnter?.Dispose();
             _export?.Dispose();
             _quit?.Dispose();
+            _useScratchDatabase?.Dispose();
         }
     }
 }

@@ -33,6 +33,8 @@
              Link="HotReplCommandCatalog.cs" />
     <Compile Include="..\..\mods\HotReplCommands\World\CharacterSelector.cs"
              Link="World\CharacterSelector.cs" />
+    <Compile Include="..\..\mods\HotReplCommands\Isolation\ScratchDatabase.cs"
+             Link="Isolation\ScratchDatabase.cs" />
     <Compile Include="..\..\mods\HotReplCommands\Dtos\CompendiumExportArgs.cs"
              Link="Dtos\CompendiumExportArgs.cs" />
     <Compile Include="..\..\mods\HotReplCommands\Dtos\WorldEnterArgs.cs"
