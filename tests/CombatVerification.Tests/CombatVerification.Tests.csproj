@@ -26,5 +26,9 @@
              Link="Fixtures\FixtureValidator.cs" />
     <Compile Include="..\..\mods\CombatVerification\Materialization\CreatorMethods.cs"
              Link="Materialization\CreatorMethods.cs" />
+    <Compile Include="..\..\mods\CombatVerification\Materialization\ICharacterUnderConstruction.cs"
+             Link="Materialization\ICharacterUnderConstruction.cs" />
+    <Compile Include="..\..\mods\CombatVerification\Materialization\CharacterBuilder.cs"
+             Link="Materialization\CharacterBuilder.cs" />
   </ItemGroup>
 </Project>

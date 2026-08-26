@@ -62,16 +62,16 @@
 - [ ] 3.3 Reuse the existing world-entry character selection so a fixture matrix can address any of the
       six classes. Selection by name already exists and is covered by the runtime control capability, so
       do not add a second selector.
-- [ ] 3.4 Implement level and veteran progression by awarding experience incrementally so the engine
+- [x] 3.4 Implement level and veteran progression by awarding experience incrementally so the engine
       grants attribute points, skill points, the class attribute progression and veteran points itself.
       Award one requirement at a time and stop at the target, because awarding an unbounded amount at the
       cap makes the engine's loop spin.
-- [ ] 3.5 Implement skill allocation by spending points through the engine's upgrade commands for the
+- [x] 3.5 Implement skill allocation by spending points through the engine's upgrade commands for the
       normal and veteran pools separately. Spend in an order that satisfies each purchase's own
       requirement on points already spent, because a skill row unlocks on the spend total rather than on
       the level. Repeat a pass while any declared level is still reachable, and stop when a pass buys
       nothing. Report the blocked skill when declared levels remain.
-- [ ] 3.6 Implement attribute allocation by spending points through the engine's attribute commands.
+- [x] 3.6 Implement attribute allocation by spending points through the engine's attribute commands.
 - [ ] 3.7 Implement item granting and equipping by assigning equipment slots, so the equipment-changed
       callback applies attribute bonuses and armour set thresholds.
 - [ ] 3.8 Implement companion acquisition through the engine's hire command, ordered after the owner's
