@@ -294,10 +294,11 @@ damage and debuff skills every 2 to 4 seconds, and a healer archetype refuses a 
 it below 35 percent mana (`PetSkills.cs:65-178`). The design models mercenary output as the
 expectation over that uniform selection, and states that it is an expectation rather than a schedule.
 
-Mercenary base stats derive from owner progression on a per-archetype cadence, and the initial base
-damage of a new hire is random up to 0.8 times owner level (`Player.cs:7979-8205, 4510-4685,
-9780-10023`). A mercenary is therefore a rolled asset. The planner treats its base stats as an input,
-not as a value it can assume.
+Mercenary base stats derive from owner progression on a per-archetype cadence, and the base combat value
+of a new hire is drawn from a range whose upper bound is the owner's level times a factor of that
+companion's race (`Player.cs:7979-8205, 4510-4685, 9780-10023`). The harness design records the measured
+factor for each race, and this design does not restate it. A mercenary is therefore a rolled asset, and the
+planner treats its base stats as an input rather than a value it can assume.
 
 ### Companions are modelled as newly hired
 
@@ -386,16 +387,21 @@ per-request CPU limits and cost nothing.
 `Combat.cs:427-490` maintains per-entity damage and healing totals with an active-seconds
 denominator, and `Player.cs:8256-8285` resets them across the player, the pet, and four mercenaries.
 
-The level 55 dummy has a `damage` value of 0 and is immobile. A predicted number can therefore be
-compared against a measured one under controlled conditions. This is the only mechanism that can
-detect a modelling error, so the export and capture mod belongs in this change and not in a later
-one.
+The level 55 dummy has a `damage` value of 0 and is immobile, so a predicted number can be compared
+against a measured one under controlled conditions.
+
+Two mechanisms use that, and they answer different questions. The verification harness measures authored
+fixtures on every run and fails on drift, which is what detects a modelling error systematically. This
+capture answers a reader's own question: whether the number published for *their* build matches what
+their game reports. Neither replaces the other, and the capture belongs in this change because a planner
+that cannot be checked against the reader's own game is not trustworthy to that reader.
 
 ## Risks / Trade-offs
 
 - Absolute accuracy is unverified against the running game. Every figure in this design compares one
-  model against another. → The capture mod ships in the same change, and a golden-master baseline is
-  recorded before the planner is published.
+  model against another. → The verification harness records a golden baseline against the running game
+  before the planner is published, and the capture mod in this change lets a reader repeat the
+  comparison on their own build.
 - Reading a sample of a code region reliably misses mechanics, because the damage path branches on
   class, skill type, damage school, and entity kind. → Model coverage is established by enumerating a
   code region, not by sampling it. Each formula carries a source citation and a unit test with fixed

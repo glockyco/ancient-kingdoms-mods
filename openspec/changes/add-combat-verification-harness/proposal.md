@@ -52,14 +52,18 @@ Non-goals:
 - `game-toolchain`: A verification run launches the game, redirects its database path, and drives it
   through registered commands. The capability currently defines one game installation and how tooling
   reaches it, so the added run mode changes its requirements.
+- `runtime-control`: The run needs a command that points the game's database at a location the run owns,
+  and needs a reported path to be resolvable on the host before it is acted on. The capability defines
+  the command surface, so those guarantees belong to it.
 
 ## Impact
 
 - `mods/`: a new mod registering typed HotRepl commands for materialize and probe, plus a Harmony
   postfix on the damage entry point to record a per-hit trace with skill attribution. The existing
   `HotReplCommands` and `FieldDefaultValueHookFix` mods establish both patterns.
-- `build-tool/`: a new command that orchestrates launch, materialize, probe, compare, and report,
-  mirroring the existing export command.
+- `build-tool/`: a new command that orchestrates launch, materialize, probe, compare, and report. It
+  shares the launch session and the protocol session with the export command rather than repeating
+  either.
 - Fixture descriptors and the golden baseline are committed. Scratch save files are not.
 - `openspec/specs/game-toolchain`: a delta for the verification run mode.
 - The planner change `add-gear-and-rotation-planner` depends on this harness to satisfy its

@@ -62,6 +62,32 @@ target.
 - **THEN** the recommendation differs between them
 - **AND** the planner explains which cap caused the difference
 
+### Requirement: A target that cannot exercise a modelled mechanic says so
+
+Where the selected target cannot exercise a mechanic the build relies on, the planner SHALL say so
+alongside the figure.
+
+A target that deals no damage cannot trigger anything that a build gains from being attacked. A target
+whose mitigation sits far below the point where it saturates gains little from a debuff that removes
+mitigation, while a tougher target gains much more. In both cases the figure is correct for that target
+and understates the build elsewhere, so the reader is told rather than left to discover it.
+
+#### Scenario: The build depends on being attacked
+
+- **WHEN** a build gains from incoming damage and the selected target deals none
+- **THEN** the planner states that the figure omits that gain
+
+#### Scenario: The build maintains a debuff against a soft target
+
+- **WHEN** a build maintains a mitigation debuff and the selected target is far below the mitigation
+  ceiling
+- **THEN** the planner states that the debuff is worth more against a tougher target
+
+#### Scenario: The target exercises everything the build uses
+
+- **WHEN** the selected target can exercise every mechanic the build relies on
+- **THEN** no such statement is shown
+
 ### Requirement: A build is shareable by link
 
 The planner SHALL encode the build, the character level and progression, and the selected target in

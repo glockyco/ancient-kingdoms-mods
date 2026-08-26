@@ -19,6 +19,11 @@
       rule each.
 - [x] 1.5 Confirm the descriptor round-trips with the planner's character export payload, so a captured
       build is usable as a fixture without conversion.
+- [ ] 1.6 Supply the curated class and race pairing to the check as data, because the engine does not
+      pair them and the game adapter therefore cannot answer it. Read it from the published compendium,
+      which is where the pairing is curated, and pass it in alongside the rules read from the game.
+      Report the pairing as unchecked when it is not supplied, rather than answering that every race
+      fits.
 
 ## 2. Run isolation and lifecycle
 

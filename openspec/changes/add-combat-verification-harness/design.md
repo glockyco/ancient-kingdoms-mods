@@ -120,11 +120,18 @@ reads `multiplierEnergy` (`server-scripts/Energy.cs:12-37`), while `Health.max` 
 Warrior or Rogue companion, including its veteran accumulation. The harness records the value for
 fidelity but must not treat it as affecting output.
 
-### Mirror the export architecture
+### Share the export architecture rather than resemble it
 
 The repository already runs a game-driving pipeline: a build-tool command invokes a typed command
-registered by a mod, which performs work and returns artifact references. The verification run takes
-the same shape rather than inventing a second one.
+registered by a mod, which performs work and returns artifact references. The verification run does not
+take a similar shape. It takes the same code.
+
+Launching the game, watching its log for a fatal start-up error, and shutting down cleanly are one
+session. Connecting, confirming the protocol, waiting until the game has registered the commands a flow
+calls, calling one, and quitting are another. Both were private to the export path and are now shared,
+so each flow contributes only the commands it calls and what it does with the answers. A second copy of
+either would have drifted, and the failure would have appeared as a verification defect rather than as
+the duplication it was.
 
 Evaluated expressions were rejected as the interface. They are untyped, unversioned, and not
 reviewable, which is the ad-hoc situation this change exists to replace. Evaluation remains appropriate
@@ -166,10 +173,11 @@ only report that something is wrong.
 
 ### The descriptor keys items by identifier, and one gate refuses
 
-A fixture names an item by the identifier the game uses, and carries the display name only as context.
-The planner's export capability already requires this, and a fixture and a captured build share one
-schema, so keying by name would have forced a conversion step and broken a stored fixture whenever a
-game update renamed an item.
+A fixture names an item by the identifier derived from its asset name, and carries the displayed name
+only as context. The distinction matters: the game's own runtime lookup is keyed by the displayed name,
+so resolving that way would break a stored fixture the moment an update renamed an item. The asset name
+does not move. The planner's export capability already requires this, and a fixture and a captured build
+share one schema, so keying on the displayed name would also have forced a conversion step.
 
 An absent section and an empty section mean different things. A section the stat sheet depends on must
 be present, and an empty list states that it holds nothing. Absent means the section was never read,
@@ -205,12 +213,10 @@ and a rename therefore describes a different fixture.
 cannot be read before the game reaches character selection. Validation is therefore sequenced after
 world entry and before materialization, not before launch.
 
-Three identity translations happen at that boundary. An item's identifier is the sanitized asset name,
-not its displayed name, which is why a stored fixture survives a rename. A class prefab is named
-`Player Warrior`, so a class identifier drops that prefix. An item's own class restriction holds
-displayed names, so those are translated to identifiers before they are compared. Each of these was
-found by running a real fixture against the game: the class restriction silently rejected a legal build
-until the last of them was applied.
+Two further identity translations happen at that boundary. A class prefab is named `Player Warrior`, so
+a class identifier drops that prefix. An item's own class restriction holds displayed names, so those
+are translated to identifiers before they are compared. Both were found by running a real fixture
+against the game, and the second silently rejected a legal build until it was applied.
 
 An item is not tied to one slot. A character has two ring slots and two ear slots, and the game decides
 acceptance by matching the item's category against each slot's required category, so a fixture entry is
@@ -227,13 +233,6 @@ The rules read from the game therefore do not answer it. Restating the curated t
 adapter would create a second copy that drifts, and answering that no race fits would reject every
 fixture. The pairing is checked where the table lives.
 
-### One session client, one flow for each purpose
-
-Connecting, confirming the protocol, waiting until the game has registered the commands a flow calls,
-calling one, and quitting are the same for every flow. They live in one session client. The export flow
-and the verification flow each compose it and differ only in the commands they call and what they do
-with the answers.
-
 ### Isolation by redirecting the database path
 
 A run points the game's database path at a scratch file. Fixture characters therefore never exist in a
@@ -245,8 +244,10 @@ it matters most, which is when a run crashes.
 ### Scratch saves are reused and are not committed
 
 Materializing a full fixture matrix costs real time, so a scratch save is retained between runs and
-reused when the game version and the fixture definitions are both unchanged. It is rebuilt when either
-changes, because a game update can add or alter class abilities.
+reused when the build identity and the fixture definitions are both unchanged. It is rebuilt when either
+moves, because a game update can add or alter class abilities. The identity compared is the assembly
+hash, not a version string, for the reason the toolchain records: a version string cannot be recomputed
+from the installation.
 
 Scratch saves are not committed. Fixture descriptors and the golden baseline are, because those are the
 reviewable artifacts.
@@ -256,24 +257,6 @@ reviewable artifacts.
 Measured quantities are recorded per fixture. A run compares against that baseline and fails on drift,
 in the same posture the repository already applies to source citations. This folds the harness into the
 existing per-version update workflow, which is where a game change is already expected to surface.
-
-## Risks / Trade-offs
-
-- A patch target for the trace postfix can move or disappear. → Tiers one and two need no patch, so a
-  moved target degrades fidelity rather than stopping verification. The run reports which tier it
-  achieved.
-- A fixture can drift out of legality when the game changes point budgets or gates. → Materialization
-  spends points through the engine, so an illegal request fails during materialization rather than
-  producing a quietly wrong measurement.
-- Redirecting the database path is a global mutation and could touch a real save if it were wrong. →
-  The run refuses to start unless the resolved path is inside its own scratch directory, and a backup of
-  the live save is verified before a run that could reach it.
-- The measurement is only as good as the fixture's realism. Measuring an unreachable build gives a
-  precise answer to the wrong question. → Legality is a requirement, not a convention.
-- Time cost grows with the matrix. → Tiers A and B need no combat and dominate the coverage, so the
-  expensive tiers stay small.
-- The harness could be mistaken for gameplay automation. → It runs only when invoked for verification,
-  performs no action outside a fixture, and is not published to players.
 
 ### A player rotation is scripted, a companion rotation is an expectation
 
@@ -297,3 +280,21 @@ reproducible. A baseline that stored one would produce failures that carry no in
 
 The baseline therefore stores the seed, the event count, the mean, and the predicted bounds. A full
 observed sequence is retained beside it as a non-gating artifact for inspection.
+
+## Risks / Trade-offs
+
+- A patch target for the trace postfix can move or disappear. → Tiers one and two need no patch, so a
+  moved target degrades fidelity rather than stopping verification. The run reports which tier it
+  achieved.
+- A fixture can drift out of legality when the game changes point budgets or gates. → Materialization
+  spends points through the engine, so an illegal request fails during materialization rather than
+  producing a quietly wrong measurement.
+- Redirecting the database path is a global mutation and could touch a real save if it were wrong. →
+  The run refuses to start unless the resolved path is inside its own scratch directory, and a backup of
+  the live save is verified before a run that could reach it.
+- The measurement is only as good as the fixture's realism. Measuring an unreachable build gives a
+  precise answer to the wrong question. → Legality is a requirement, not a convention.
+- Time cost grows with the matrix. → Tiers A and B need no combat and dominate the coverage, so the
+  expensive tiers stay small.
+- The harness could be mistaken for gameplay automation. → It runs only when invoked for verification,
+  performs no action outside a fixture, and is not published to players.

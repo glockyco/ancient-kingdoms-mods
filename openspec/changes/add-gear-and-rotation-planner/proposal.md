@@ -71,7 +71,9 @@ Non-goals for this change, recorded so later work does not treat them as omissio
 
 None. `skill-mechanics-card` constrains what a skill page displays about the damage pipeline. This
 change adds an evaluation engine and does not change that display contract. `game-data-export` and
-`compendium-build` gain a new derived artifact, which their existing requirements already cover.
+`compendium-build` gain a new derived artifact, which their existing requirements already cover. The
+capture command joins the surface that `runtime-control` defines and has to satisfy its guarantees,
+but it does not change them.
 
 ## Impact
 

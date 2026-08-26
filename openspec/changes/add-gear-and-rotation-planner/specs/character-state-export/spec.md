@@ -57,10 +57,13 @@ read SHALL be marked as missing rather than emitted as empty.
 
 ### Requirement: Items are identified by stable identifier
 
-Equipment and inventory entries SHALL be identified by the identifier the game uses. A display name
-SHALL be carried only as human-readable context.
+Equipment and inventory entries SHALL be identified by the identifier derived from the item's asset
+name, which is the identifier the compendium publishes. A displayed name SHALL be carried only as
+human-readable context.
 
-The consumer SHALL resolve an item by identifier, never by name.
+The consumer SHALL resolve an item by that identifier, never by its displayed name. The game's own
+runtime lookup is keyed by the displayed name, so resolving that way would lose exactly the stability
+this requirement exists to provide.
 
 #### Scenario: A display name is unavailable
 

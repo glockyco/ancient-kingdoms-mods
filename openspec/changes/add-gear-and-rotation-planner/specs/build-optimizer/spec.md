@@ -118,7 +118,11 @@ the expectation over that selection and the report SHALL state that the figure i
 
 ### Requirement: Owned-gear planning treats inventory as shared
 
-When the search is limited to owned items, it SHALL NOT assign one physical item to two entities.
+When the search is limited to owned items, it SHALL NOT assign one physical item twice. This holds
+across entities and equally within one character, because a category can be accepted by more than one
+slot: a character has two ring slots and two ear slots, so one owned ring cannot fill both.
+
+Where an item is available in more than one copy, the search MAY use as many copies as are owned.
 
 When the search is not limited to owned items, entities MAY be optimized independently.
 
@@ -127,6 +131,16 @@ When the search is not limited to owned items, entities MAY be optimized indepen
 - **WHEN** two entities would both take the same single owned item
 - **THEN** only one receives it
 - **AND** the other receives the best remaining option
+
+#### Scenario: One copy fits two slots on one character
+
+- **WHEN** a single owned item fits two slots of the same character
+- **THEN** it is assigned to at most one of them
+
+#### Scenario: Several copies are owned
+
+- **WHEN** a character owns two copies of an item that fits two slots
+- **THEN** both slots may be filled
 
 #### Scenario: Planning is not limited to owned items
 

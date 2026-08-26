@@ -30,8 +30,16 @@ equipment, the declared consumables, the target, and the version of the game it 
 
 A fixture SHALL NOT request a state the game cannot produce. Skill levels SHALL respect the point
 budget of their pool, the tier gates, and the prerequisite chains. Attribute totals SHALL be consistent
-with the class progression for the requested level. Equipment SHALL satisfy the class, level, and
-weapon category requirements of its slot, and a two-handed weapon SHALL leave the offhand empty.
+with the class progression for the requested level.
+
+An equipment entry SHALL name a slot the item fits, and SHALL satisfy the item's class and level
+requirements. A slot accepts an item when the item's category satisfies that slot's required category,
+and more than one slot can accept the same category, so an item is not tied to a single index. A
+two-handed weapon SHALL leave the offhand empty, and two-handedness is a property of the item's
+category rather than a separate flag.
+
+Where the engine itself decides a question, that decision SHALL be the authority rather than a
+restatement of it.
 
 #### Scenario: A fixture requests more skill levels than its points allow
 
@@ -41,8 +49,18 @@ weapon category requirements of its slot, and a two-handed weapon SHALL leave th
 
 #### Scenario: A fixture requests an item its class cannot equip
 
-- **WHEN** an equipment entry fails the slot's class, level, or category requirement
+- **WHEN** an equipment entry fails the item's class or level requirement
 - **THEN** materialization fails and names the offending slot
+
+#### Scenario: An item fits more than one slot
+
+- **WHEN** an item's category is accepted by several slots
+- **THEN** a fixture naming any one of them is accepted
+
+#### Scenario: An item is placed in a slot it does not fit
+
+- **WHEN** an equipment entry names a slot whose required category the item does not satisfy
+- **THEN** materialization fails and reports the slots the item does fit
 
 ### Requirement: Materialization uses the game's own paths
 

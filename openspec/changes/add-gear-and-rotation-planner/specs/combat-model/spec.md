@@ -386,10 +386,13 @@ takes a ceiling.
 
 ### Requirement: Predicted values are validated against the running game
 
-Before a figure is published, the model SHALL be compared against the same quantity read from a
-running game for at least one real character.
+Before a figure is published, the model SHALL be compared against the same quantity read from a running
+game, for a character built to a stated definition rather than for whichever character happened to be
+available.
 
-A comparison SHALL cover the stat sheet, the action interval, and the damage of a single hit.
+A comparison SHALL cover the stat sheet, the action interval, and the damage of a single hit, and SHALL
+be recorded so that a later run can detect a change. Each recorded comparison SHALL name the game build
+it was taken against.
 
 #### Scenario: The model changes
 
@@ -400,6 +403,11 @@ A comparison SHALL cover the stat sheet, the action interval, and the damage of 
 
 - **WHEN** a live reading disagrees with the model
 - **THEN** the model is corrected and the live reading is treated as authoritative
+
+#### Scenario: The game changes under a recorded comparison
+
+- **WHEN** the installed build differs from the build a recorded comparison names
+- **THEN** the difference is reported before the comparison is used
 
 ### Requirement: The target is an explicit parameter set
 
