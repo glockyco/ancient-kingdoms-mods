@@ -33,14 +33,7 @@ public static class Program
         app.Configure(config =>
         {
             config.SetApplicationName("build-tool");
-            config.AddCommand<SetupCommand>("setup").WithDescription("Configure Local.props (interactive).");
-            config.AddCommand<BuildCommand>("build").WithDescription("Build all mods.");
-            config.AddCommand<PublishModsCommand>("publish-mods").WithDescription("Build and publish configured website mod downloads.");
-            config.AddCommand<DeployCommand>("deploy").WithDescription("Copy built mods to the game Mods directory.");
-            config.AddCommand<DeployHostCommand>("deploy-host").WithDescription("Build and deploy HotRepl host.");
-            config.AddCommand<LaunchCommand>("launch").WithDescription("Launch Ancient Kingdoms.");
-            config.AddCommand<ExportCommand>("export").WithDescription("Launch the game and drive compendium.export over HotRepl.");
-            config.AddCommand<UpdateCommand>("update").WithDescription("Ask the bottle's Steam client to bring the game current.");
+            CommandCatalog.RegisterAll(config);
         });
         return Run(app, args, resultStore);
     }

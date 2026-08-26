@@ -19,6 +19,18 @@ public sealed class ScratchStateTests : IDisposable
     private string RepoRoot => Path.Combine(_root, "repo");
     private string ScratchDir => Path.Combine(_root, "scratch");
 
+    /// <summary>Resolves a recorded path on this host, as the command does via the wine prefix.</summary>
+    private static bool Exists(string? path) => path is not null && File.Exists(path);
+
+    /// <summary>A scratch database that exists, so reuse is not refused for being gone.</summary>
+    private string ExistingDatabase()
+    {
+        var path = Path.Combine(_root, "scratch-db", "game.dat");
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        File.WriteAllText(path, "scratch");
+        return path;
+    }
+
     private void WriteFixture(string name, string body)
     {
         var dir = ScratchStates.FixturesDirectory(RepoRoot);
@@ -93,7 +105,7 @@ public sealed class ScratchStateTests : IDisposable
     [Fact]
     public void AMarkerRoundTrips()
     {
-        var marker = new ScratchMarker("aaa111", "bbb222");
+        var marker = new ScratchMarker("aaa111", "bbb222", ExistingDatabase());
         ScratchStates.WriteMarker(ScratchDir, marker);
 
         Assert.Equal(marker, ScratchStates.ReadMarker(ScratchDir));
@@ -117,7 +129,7 @@ public sealed class ScratchStateTests : IDisposable
     [Fact]
     public void WithoutRetainedStateItIsBuilt()
     {
-        var plan = ScratchStates.Plan(ScratchDir, new ScratchMarker("aaa", "bbb"));
+        var plan = ScratchStates.Plan(ScratchDir, new ScratchMarker("aaa", "bbb", ExistingDatabase()), Exists);
 
         Assert.Equal(ScratchDecision.Build, plan.Decision);
         Assert.False(plan.CanReuse);
@@ -126,10 +138,10 @@ public sealed class ScratchStateTests : IDisposable
     [Fact]
     public void MatchingStateIsReused()
     {
-        var marker = new ScratchMarker("aaa", "bbb");
+        var marker = new ScratchMarker("aaa", "bbb", ExistingDatabase());
         ScratchStates.WriteMarker(ScratchDir, marker);
 
-        var plan = ScratchStates.Plan(ScratchDir, marker);
+        var plan = ScratchStates.Plan(ScratchDir, marker, Exists);
 
         Assert.Equal(ScratchDecision.Reuse, plan.Decision);
         Assert.True(plan.CanReuse);
@@ -138,9 +150,9 @@ public sealed class ScratchStateTests : IDisposable
     [Fact]
     public void ADifferentGameBuildForcesARebuild()
     {
-        ScratchStates.WriteMarker(ScratchDir, new ScratchMarker("aaa", "bbb"));
+        ScratchStates.WriteMarker(ScratchDir, new ScratchMarker("aaa", "bbb", ExistingDatabase()));
 
-        var plan = ScratchStates.Plan(ScratchDir, new ScratchMarker("zzz", "bbb"));
+        var plan = ScratchStates.Plan(ScratchDir, new ScratchMarker("zzz", "bbb", ExistingDatabase()), Exists);
 
         Assert.Equal(ScratchDecision.RebuildGameChanged, plan.Decision);
         Assert.False(plan.CanReuse);
@@ -150,9 +162,9 @@ public sealed class ScratchStateTests : IDisposable
     [Fact]
     public void ChangedFixturesForceARebuild()
     {
-        ScratchStates.WriteMarker(ScratchDir, new ScratchMarker("aaa", "bbb"));
+        ScratchStates.WriteMarker(ScratchDir, new ScratchMarker("aaa", "bbb", ExistingDatabase()));
 
-        var plan = ScratchStates.Plan(ScratchDir, new ScratchMarker("aaa", "zzz"));
+        var plan = ScratchStates.Plan(ScratchDir, new ScratchMarker("aaa", "zzz", ExistingDatabase()), Exists);
 
         Assert.Equal(ScratchDecision.RebuildFixturesChanged, plan.Decision);
         Assert.False(plan.CanReuse);
@@ -162,19 +174,35 @@ public sealed class ScratchStateTests : IDisposable
     public void AGameChangeIsReportedAheadOfAFixtureChange()
     {
         // Both moved. The game is the more fundamental difference, so it is named.
-        ScratchStates.WriteMarker(ScratchDir, new ScratchMarker("aaa", "bbb"));
+        ScratchStates.WriteMarker(ScratchDir, new ScratchMarker("aaa", "bbb", ExistingDatabase()));
 
-        var plan = ScratchStates.Plan(ScratchDir, new ScratchMarker("zzz", "zzz"));
+        var plan = ScratchStates.Plan(ScratchDir, new ScratchMarker("zzz", "zzz", ExistingDatabase()), Exists);
 
         Assert.Equal(ScratchDecision.RebuildGameChanged, plan.Decision);
     }
 
     [Fact]
+    public void AMissingScratchDatabaseForcesABuildEvenWhenHashesMatch()
+    {
+        // The marker can outlive the database it describes, so its existence is checked.
+        var database = ExistingDatabase();
+        var marker = new ScratchMarker("aaa", "bbb", database);
+        ScratchStates.WriteMarker(ScratchDir, marker);
+        File.Delete(database);
+
+        var plan = ScratchStates.Plan(ScratchDir, marker, Exists);
+
+        Assert.Equal(ScratchDecision.Build, plan.Decision);
+        Assert.Contains("is gone", plan.Detail);
+    }
+
+    [Fact]
     public void MarkerComparisonIgnoresHashLetterCase()
     {
-        ScratchStates.WriteMarker(ScratchDir, new ScratchMarker("AAA", "BBB"));
+        var database = ExistingDatabase();
+        ScratchStates.WriteMarker(ScratchDir, new ScratchMarker("AAA", "BBB", database));
 
         Assert.Equal(ScratchDecision.Reuse,
-            ScratchStates.Plan(ScratchDir, new ScratchMarker("aaa", "bbb")).Decision);
+            ScratchStates.Plan(ScratchDir, new ScratchMarker("aaa", "bbb", database), Exists).Decision);
     }
 }

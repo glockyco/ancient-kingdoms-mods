@@ -7,14 +7,22 @@ using System.Text;
 
 namespace BuildTool.Game;
 
-/// <summary>What a retained scratch database was built from.</summary>
+/// <summary>What a retained scratch database was built from, and where it is.</summary>
 /// <param name="AssemblySha256">Build identity the fixtures were materialized against.</param>
 /// <param name="FixturesSha256">Digest of the fixture definitions that were materialized.</param>
-public sealed record ScratchMarker(string AssemblySha256, string FixturesSha256);
+/// <param name="DatabasePath">
+/// Database the run actually opened, as the game reported it. Recorded rather than
+/// reconstructed: the game owns where its scratch database lives, so restating that
+/// location here would be a second source of truth that could disagree with it.
+/// </param>
+public sealed record ScratchMarker(
+    string AssemblySha256,
+    string FixturesSha256,
+    string? DatabasePath = null);
 
 public enum ScratchDecision
 {
-    /// <summary>Nothing retained, so materialize from the beginning.</summary>
+    /// <summary>Nothing retained, or what was retained is gone, so materialize afresh.</summary>
     Build,
 
     /// <summary>Retained state was built from this build and these fixtures.</summary>
@@ -85,6 +93,7 @@ public static class ScratchStates
 
         string? assembly = null;
         string? fixtures = null;
+        string? database = null;
 
         foreach (var line in File.ReadLines(path))
         {
@@ -103,11 +112,12 @@ public static class ScratchStates
 
             if (key == "assembly_sha256") assembly = value;
             else if (key == "fixtures_sha256") fixtures = value;
+            else if (key == "database_path") database = value;
         }
 
         return assembly is null || fixtures is null
             ? null
-            : new ScratchMarker(assembly, fixtures);
+            : new ScratchMarker(assembly, fixtures, database);
     }
 
     public static void WriteMarker(string scratchDirectory, ScratchMarker marker)
@@ -119,6 +129,7 @@ public static class ScratchStates
             # built from, so a later run can tell whether it may be measured again.
             assembly_sha256 = "{marker.AssemblySha256}"
             fixtures_sha256 = "{marker.FixturesSha256}"
+            database_path = "{marker.DatabasePath}"
 
             """);
     }
@@ -126,7 +137,14 @@ public static class ScratchStates
     /// <summary>
     /// Compares retained state against the current build and fixtures.
     /// </summary>
-    public static ScratchPlan Plan(string scratchDirectory, ScratchMarker current)
+    /// <param name="databaseExists">
+    /// Whether the recorded database is present. Supplied by the caller, because the game
+    /// reports its path in its own terms and only the caller knows how to resolve one.
+    /// </param>
+    public static ScratchPlan Plan(
+        string scratchDirectory,
+        ScratchMarker current,
+        Func<string?, bool> databaseExists)
     {
         var recorded = ReadMarker(scratchDirectory);
         if (recorded is null)
@@ -143,6 +161,10 @@ public static class ScratchStates
                 StringComparison.OrdinalIgnoreCase))
             return new ScratchPlan(ScratchDecision.RebuildFixturesChanged,
                 "A fixture definition changed since the scratch state was built, so it is rebuilt.");
+
+        if (!databaseExists(recorded.DatabasePath))
+            return new ScratchPlan(ScratchDecision.Build,
+                "The scratch database the marker names is gone, so it is materialized afresh.");
 
         return new ScratchPlan(ScratchDecision.Reuse,
             "Retained scratch state was built from this game build and these fixtures.");

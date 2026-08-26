@@ -22,10 +22,10 @@
 
 ## 2. Run isolation and lifecycle
 
-- [ ] 2.1 Add a build-tool verification command that launches the game and waits for the runtime host,
+- [x] 2.1 Add a build-tool verification command that launches the game and waits for the runtime host,
       reusing the existing launch path rather than duplicating it. Launching, streaming the game log for a
-      fatal start-up error, and shutting down cleanly currently sit inside the export command. Extract
-      that orchestration first so both commands share it.
+      fatal start-up error, and shutting down cleanly now sit in one session that the export command and
+      the verification command each compose.
 - [x] 2.2 Redirect the game's database path to a scratch location before the login screen opens its
       connection, then open the connection so the schema self-initialises. This is a runtime command on
       the existing command mod rather than a new one: isolating game state is a command-surface concern
@@ -41,7 +41,7 @@
       results to source that no longer describes the build.
 - [x] 2.6 Add a scratch reuse check: reuse an existing scratch database when the recorded game version
       and the fixture definitions both match, and rebuild otherwise.
-- [ ] 2.7 Verify isolation with an automated assertion that the player save's content hash is unchanged
+- [x] 2.7 Verify isolation with an automated assertion that the player save's content hash is unchanged
       across a full run.
 
 ## 3. Materialization commands

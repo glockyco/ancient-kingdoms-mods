@@ -2,7 +2,6 @@ using System;
 using System.ComponentModel;
 using System.IO;
 using System.Threading;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using BuildTool.Abstractions;
 using BuildTool.Configuration;
@@ -79,98 +78,6 @@ public sealed class ExportCommand : AsyncCommand<ExportCommand.Settings>
         Settings settings,
         CancellationToken cancellationToken)
     {
-        var gameExe = Path.Combine(_config.GamePath, "ancientkingdoms.exe");
-        if (!File.Exists(gameExe))
-        {
-            Console.Error.WriteLine($"Error: Game executable not found at: {gameExe}");
-            return ExitCodes.Unreachable;
-        }
-
-        if (settings.Update)
-        {
-            var updateResult = await UpdateCommand.RunSteamUpdateAsync(
-                _config, _runner, cancellationToken);
-            if (updateResult != 0) return updateResult;
-        }
-
-        if (settings.UnityVersion is not null)
-        {
-            Console.Error.WriteLine(
-                $"WARNING: --unity-version {settings.UnityVersion} override supplied. "
-                + "MelonLoader reference assemblies may not match the running game.");
-        }
-        else
-        {
-            var preflight = await _unityDependenciesPreflight.CheckAsync(
-                _config.MelonLoaderPath,
-                cancellationToken);
-            if (preflight.Status == UnityDependenciesPreflightStatus.ReleaseMissing)
-            {
-                var message = MissingReleaseMessage(preflight);
-                Console.Error.WriteLine($"Error: {message}");
-                _resultStore.SetErrorDetails(new { message });
-                return ExitCodes.Unreachable;
-            }
-
-            if (preflight.Status == UnityDependenciesPreflightStatus.CheckInconclusive)
-            {
-                Console.Error.WriteLine(
-                    "Warning: Could not verify the MelonLoader UnityDependencies release "
-                    + $"{preflight.UnityVersion ?? "for the detected Unity version"}; proceeding. "
-                    + (preflight.Detail ?? "The upstream check was inconclusive."));
-            }
-        }
-
-        // Truncate MelonLoader log for clean streaming
-        var logPath = Path.Combine(_config.MelonLoaderPath, "Latest.log");
-        try
-        {
-            Directory.CreateDirectory(Path.GetDirectoryName(logPath)!);
-            File.WriteAllText(logPath, string.Empty);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Warning: Could not truncate log: {ex.Message}");
-        }
-
-        // Launch WITHOUT --export-data or --export-screenshots
-        ProcessRequest request;
-        try
-        {
-            var gameArgs = settings.UnityVersion is null
-                ? Array.Empty<string>()
-                : new[] { "--melonloader.unityversion", settings.UnityVersion };
-            request = GameLauncher.BuildLaunchRequest(_config, gameArgs);
-        }
-        catch (InvalidOperationException ex)
-        {
-            Console.Error.WriteLine($"Error: {ex.Message}");
-            return ExitCodes.InvalidUsage;
-        }
-
-        Console.WriteLine("Launching game for HotRepl export...");
-        Console.WriteLine($"  Game:   {_config.GamePath}");
-        Console.WriteLine($"  HotRepl: {_config.HotReplEndpoint}");
-        Console.WriteLine();
-
-        using var gameCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        Task<ProcessResult> runTask;
-        try
-        {
-            runTask = _runner.RunAsync(request, gameCts.Token);
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error: failed to launch game: {ex.Message}");
-            return ExitCodes.CommandFailed;
-        }
-
-        // Stream log concurrently while runner orchestrates the export. Some
-        // MelonLoader startup failures never make it to HotRepl, so the log
-        // monitor must also surface known fatal startup errors.
-        using var logCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        var logTask = StreamLogAndDetectFatalAsync(logPath, logCts.Token);
-
         var runnerOptions = new HotReplRunnerOptions
         {
             Endpoint = new Uri(_config.HotReplEndpoint),
@@ -180,36 +87,26 @@ public sealed class ExportCommand : AsyncCommand<ExportCommand.Settings>
             PollInterval = _hotReplPollInterval ?? TimeSpan.FromSeconds(3),
         };
 
-        ExportRunnerResult runnerResult;
-        using var runnerCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        var runnerTask = _exportRunner(runnerOptions, runnerCts.Token);
-        var completedTask = await Task.WhenAny((Task)runnerTask, logTask);
+        var session = new GameSession(_config, _runner, _unityDependenciesPreflight);
+        var outcome = await session.RunAsync(
+            new GameSessionRequest
+            {
+                RunSteamUpdate = settings.Update,
+                UnityVersionOverride = settings.UnityVersion,
+                Purpose = "HotRepl export",
+            },
+            ct => _exportRunner(runnerOptions, ct),
+            cancellationToken);
 
-        if (completedTask == logTask)
+        if (!outcome.Ok)
         {
-            var logResult = await logTask;
-            if (logResult is not null)
-            {
-                runnerCts.Cancel();
-                gameCts.Cancel();
-                await ObserveGameExitAsync(runTask);
-                runnerResult = logResult;
-            }
-            else
-            {
-                runnerResult = await runnerTask;
-            }
-        }
-        else
-        {
-            runnerResult = await runnerTask;
+            var failure = outcome.Failure!;
+            Console.Error.WriteLine($"Error: {failure.Message}");
+            _resultStore.SetErrorDetails(new { ok = false, message = failure.Message });
+            return failure.ExitCode;
         }
 
-        logCts.Cancel();
-        try { await logTask; } catch (OperationCanceledException) { }
-
-        Console.WriteLine("---");
-        Console.WriteLine();
+        var runnerResult = outcome.Work!;
 
         if (runnerResult.Ok)
         {
@@ -236,68 +133,6 @@ public sealed class ExportCommand : AsyncCommand<ExportCommand.Settings>
         {
             return new ExportRunnerResult(false, ExitCodes.Internal,
                 $"Runner threw: {ex.Message}");
-        }
-    }
-
-    private static async Task<ExportRunnerResult?> StreamLogAndDetectFatalAsync(
-        string logPath, CancellationToken cancellationToken)
-    {
-        var stream = new LogStream(logPath, TimeSpan.FromMilliseconds(100));
-        var recentLog = string.Empty;
-        await foreach (var chunk in stream.ReadAsync(cancellationToken))
-        {
-            Console.Write(chunk);
-            recentLog = recentLog.Length + chunk.Length > 8192
-                ? string.Concat(recentLog, chunk)[^8192..]
-                : string.Concat(recentLog, chunk);
-
-            var fatalMessage = TryDetectFatalMelonLoaderError(recentLog);
-            if (fatalMessage is not null)
-                return new ExportRunnerResult(false, ExitCodes.ReadinessFailed, fatalMessage);
-        }
-
-        return null;
-    }
-
-    private static string? TryDetectFatalMelonLoaderError(string logText)
-    {
-        if (logText.Contains("UnityDependencies_", StringComparison.OrdinalIgnoreCase)
-            && logText.Contains("does not Exist!", StringComparison.OrdinalIgnoreCase))
-        {
-            var match = Regex.Match(logText, @"UnityDependencies_[^\\/\s]+\.zip",
-                RegexOptions.IgnoreCase);
-            var dependency = match.Success ? match.Value : "UnityDependencies_<unity-version>.zip";
-            return "MelonLoader failed before HotRepl startup: missing Unity dependency "
-                + $"{dependency}. Download Managed.zip from the matching "
-                + "LavaGang/MelonLoader.UnityDependencies release and save it with that filename "
-                + "under MelonLoader/Dependencies/Il2CppAssemblyGenerator, then rerun export.";
-        }
-
-        if (logText.Contains("Failed to Process UnityDependencies", StringComparison.OrdinalIgnoreCase))
-        {
-            return "MelonLoader failed before HotRepl startup while processing Unity dependencies. "
-                + "Refresh the matching UnityDependencies_<unity-version>.zip from "
-                + "LavaGang/MelonLoader.UnityDependencies, then rerun export.";
-        }
-
-        return null;
-    }
-
-    private static string MissingReleaseMessage(UnityDependenciesPreflightResult result) =>
-        "MelonLoader UnityDependencies release check returned 404. "
-        + $"URL: {result.ReleaseUrl}. Unity version detected: {result.UnityVersion}. "
-        + "Upstream publishes these releases on a weekly cadence, so it will likely appear "
-        + "within days. Pass --unity-version <version> to override with a different published "
-        + "version at the cost of generating against mismatched reference assemblies.";
-
-    private static async Task ObserveGameExitAsync(Task<ProcessResult> runTask)
-    {
-        try
-        {
-            await runTask;
-        }
-        catch (OperationCanceledException)
-        {
         }
     }
 }
