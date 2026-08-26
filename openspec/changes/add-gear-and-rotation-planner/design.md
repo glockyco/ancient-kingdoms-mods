@@ -302,21 +302,25 @@ planner treats its base stats as an input rather than a value it can assume.
 
 ### Companions are modelled as newly hired
 
-The engine adds one point of base damage and one of base magic damage to a mercenary for every level-up
-the mercenary was present for (`server-scripts/Player.cs:4510-4685`). Its skill level, by contrast, is
-computed from the owner's state when it spawns (`server-scripts/PetSkills.cs:27-41`). Two otherwise
-identical mercenaries therefore differ by the whole of the owner's progression based only on when each
-was hired.
+A veteran level adds one base damage and one base magic damage to an active mercenary, and 0.0025 to its
+health and resource multipliers (`server-scripts/Player.cs:4527-4537`). Its skill level, by contrast, is
+computed from the owner's state when it spawns (`server-scripts/PetSkills.cs:27-41`).
 
-This was measured. A mercenary hired by a character already holding 200 veteran points showed a base
-damage of 1, while its skill level was correctly 30.
+Only the multipliers survive a restart. The save holds the values rolled at hire and nothing else, and
+the load path rebuilds the multipliers from the owner's veteran total while assigning the two damage
+values from the stored roll (`server-scripts/Player.cs:9971-9993`). The damage accumulation is therefore
+transient, and it is lost every time the game loads.
 
-That asymmetry is a defect, and the model represents the intended behaviour: a companion is modelled with
-the base damage a newly hired one receives, and the accumulated increment is excluded.
+This was measured across a reload at ten veteran points. Base damage rose from 27 to 37 and returned to
+27. The health multiplier rose from 1.004374 to 1.029374 and stayed there. The defect is recorded in
+`docs/game-bugs/mercenary-veteran-damage-lost-on-load.md`.
 
-The consequence must be stated to a reader. A player whose mercenary accumulated the increment will
-measure more output than the model reports. The model under-reports for that player by design, and says
-so.
+The model therefore takes the stable value in each case. Base damage is the value a newly hired companion
+receives, because that is what a player holds after any restart. The health and resource multipliers
+include the veteran contribution, because the engine reconstructs it deterministically.
+
+The consequence must be stated to a reader. A player who has not restarted since earning veteran levels
+will measure more damage than the model reports, and will match it again after a restart.
 
 Which roll to assume follows the distinction the planner already draws. Dismissal has no cost beyond the
 hire price (`server-scripts/Player.cs`, the dismiss command destroys the companion outright), and

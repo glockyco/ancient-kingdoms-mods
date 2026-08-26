@@ -223,15 +223,38 @@ acceptance by matching the item's category against each slot's required category
 checked against the set of slots the item fits. Two-handedness is likewise read from the category rather
 than a flag, because the game has no such flag.
 
-### Class and race pairing is not an engine rule
+### Class and race pairing is checked in the character creator
 
-Character creation takes a class and a race as independent strings and cross-checks neither, and no
-runtime structure lists the races a class allows. The engine only branches on a race where it applies
-racial effects. The pairing the compendium publishes is curated by hand.
+`Database.CharacterCreate` takes a class and a race as independent strings and cross-checks neither, and
+no runtime structure lists the races a class allows. The rule is real, but it lives in the character
+creator: each `changeRace` method enables one class button per race and disables the rest
+(`server-scripts/UICharacterEditor.cs:921-1483`).
 
-The rules read from the game therefore do not answer it. Restating the curated table inside the game
-adapter would create a second copy that drifts, and answering that no race fits would reject every
-fixture. The pairing is checked where the table lives.
+The creator is live exactly where a fixture is created, and dead by the time the class prefabs are
+readable. The pairing is therefore checked at creation, against the creator, rather than answered later
+from a copy of it. Nothing reports the pairing as unchecked, because nothing has to guess.
+
+### An engine refusal is silent, so a step verifies its own effect
+
+No mutation path reports a refusal. `PlayerSkills.CmdUpgrade` returns without an effect when the index
+is out of range, when the entity is not in a permitted state, and when the affordability check fails
+(`server-scripts/PlayerSkills.cs:850-877`). The attribute commands return without an effect when no
+point is unspent (`server-scripts/Player.cs:13296-13303`). None of them raises, logs, or answers.
+
+A step therefore reads the value it intends to change, acts, and reads it again. The harness supplies
+the reason the engine does not. Trusting a call that returned would build a fixture that is silently
+not the one requested, which is the precise failure this change exists to prevent.
+
+### Skill allocation is ordered by what has already been spent
+
+A skill's own gate is the number of points already spent in its pool, not the character's level. The
+veteran tree states this in its row headings, which read as veteran levels but are spend thresholds,
+and the normal tree carries the same gate through `requiredSpentPoints`.
+
+Allocation therefore cannot follow the order a fixture happens to list. A pass buys every declared level
+that is currently reachable and repeats while a pass buys something. When declared levels remain and a
+pass buys nothing, the fixture names a state its own gates forbid, and materialization reports the
+blocked skill.
 
 ### Isolation by redirecting the database path
 

@@ -19,11 +19,10 @@
       rule each.
 - [x] 1.5 Confirm the descriptor round-trips with the planner's character export payload, so a captured
       build is usable as a fixture without conversion.
-- [ ] 1.6 Supply the curated class and race pairing to the check as data, because the engine does not
-      pair them and the game adapter therefore cannot answer it. Read it from the published compendium,
-      which is where the pairing is curated, and pass it in alongside the rules read from the game.
-      Report the pairing as unchecked when it is not supplied, rather than answering that every race
-      fits.
+- [x] 1.6 Remove the class and race pairing from the rules read after world entry. The pairing is a game
+      rule, but it lives in the character creator, which enables one class button per race. The creator is
+      live exactly where creation happens, so the pairing is checked there rather than answered from a
+      copy. Nothing reports it as unchecked, because nothing has to guess.
 
 ## 2. Run isolation and lifecycle
 
@@ -64,7 +63,10 @@
       Award one requirement at a time and stop at the target, because awarding an unbounded amount at the
       cap makes the engine's loop spin.
 - [ ] 3.5 Implement skill allocation by spending points through the engine's upgrade commands for the
-      normal and veteran pools separately.
+      normal and veteran pools separately. Spend in an order that satisfies each purchase's own
+      requirement on points already spent, because a skill row unlocks on the spend total rather than on
+      the level. Repeat a pass while any declared level is still reachable, and stop when a pass buys
+      nothing. Report the blocked skill when declared levels remain.
 - [ ] 3.6 Implement attribute allocation by spending points through the engine's attribute commands.
 - [ ] 3.7 Implement item granting and equipping by assigning equipment slots, so the equipment-changed
       callback applies attribute bonuses and armour set thresholds.
@@ -73,8 +75,11 @@
 - [ ] 3.9 Assign companion rolled values directly after acquisition, validating each against the race and
       archetype envelope, and record a value the engine never reads without letting it affect output.
 - [ ] 3.10 Implement companion equipping through the companion's equipment slots.
-- [ ] 3.11 Fail materialization loudly when the engine refuses a step, naming the step and the engine's
-      reason, rather than continuing with a partially built fixture.
+- [ ] 3.11 Fail materialization loudly when a step does not take effect, naming the step and the value
+      that did not change. The engine reports nothing: an out-of-range index, a wrong entity state, and a
+      failed affordability check all return without an error and without an effect. A step therefore
+      reads the value it intends to change, acts, and reads again, and the harness supplies the reason
+      the engine does not.
 
 ## 4. Probe: stat sheet and cadence
 
