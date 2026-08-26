@@ -63,6 +63,13 @@ The `HotReplCommands` mod registers six typed commands (MelonLoader mod in `mods
 | `game.quit`            | sync | Calls `Application.Quit()` and returns `{"quitting": true}`.                                                                           |
 | `game.useScratchDatabase` | sync | Points the database at a scratch file beside the game's own, so a run that creates or changes characters cannot reach player data. Refuses once the connection is open, so call it before entering the world. |
 
+The `CombatVerification` mod registers two typed commands (MelonLoader mod in `mods/CombatVerification/`):
+
+| Command                     | Kind | Description                                                                                                                                                                 |
+| --------------------------- | ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `fixture.validate`          | sync | Checks a fixture against rules read from the running game. Needs a spawned player, because the class prefabs are unreadable before one exists. Reads only.                    |
+| `fixture.createCharacter`   | job  | Creates one character by driving the character creator. Needs character selection open, so call it before world entry. Args: `{"characterName": string, "class": string, "race": string}`. Reports the stored class, race and level. |
+
 Run `hotrepl --url ws://127.0.0.1:18590 info --json` and inspect handshake metadata, or call
 `hotrepl --url ws://127.0.0.1:18590 describe <name> --json` for individual command descriptors.
 
