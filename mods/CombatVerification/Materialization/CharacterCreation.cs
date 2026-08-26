@@ -33,6 +33,9 @@ namespace CombatVerification.Materialization
         /// <summary>How long to wait for the creator's own coroutine to finish.</summary>
         private static readonly TimeSpan CreateTimeout = TimeSpan.FromSeconds(30);
 
+        /// <summary>How long to wait for the creator to become available after the click.</summary>
+        private static readonly TimeSpan OpenTimeout = TimeSpan.FromSeconds(10);
+
         /// <summary>Why a creation attempt was refused, or null when it succeeded.</summary>
         public sealed class Refusal
         {
@@ -75,15 +78,37 @@ namespace CombatVerification.Materialization
                 yield break;
             }
 
-            selection.createButton.onClick.Invoke();
-            yield return null;
-
-            var editor = UICharacterEditor.singleton;
-            if (editor == null)
+            // The roster has a limit, and past it the selection screen disables the button and
+            // registers no handler, so a click does nothing and reports nothing. The button's own
+            // state is the gate, so the limit is not restated here.
+            if (selection.createButton == null || !selection.createButton.interactable)
             {
-                Fail("creatorUnavailable", "The character creator did not open.");
+                var held = Database.GetCharacters()?.Count ?? 0;
+                Fail("rosterFull",
+                    $"The selection screen is not offering character creation. It holds {held} "
+                    + "characters. Delete one before creating another.");
                 yield break;
             }
+
+            selection.createButton.onClick.Invoke();
+
+            // The creator's own component sets the singleton when its object becomes active, which
+            // is not the same frame as the click. Waiting one frame happens to work and happens to
+            // fail, so the wait is bounded rather than assumed.
+            var openDeadline = DateTime.UtcNow + OpenTimeout;
+            while (UICharacterEditor.singleton == null)
+            {
+                if (DateTime.UtcNow >= openDeadline)
+                {
+                    Fail("creatorUnavailable",
+                        $"The character creator did not open within {OpenTimeout.TotalSeconds:0} seconds.");
+                    yield break;
+                }
+
+                yield return null;
+            }
+
+            var editor = UICharacterEditor.singleton;
 
             // Selecting the race sets which classes the creator offers, so it comes first.
             if (!Invoke(editor, CreatorMethods.RaceMethod(race), out var raceError))
