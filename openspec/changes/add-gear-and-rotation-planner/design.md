@@ -446,12 +446,18 @@ through strength and dexterity while contributing none of its damage.
 | Ranger, melee | bow worn, durability 10 | 864 | 490 | 283.9 per landed hit |
 | Ranger, melee | bow worn, durability 0 | 469 | 95 | 53.2 per landed hit |
 | Ranger, melee | slot 13 empty | 469 | 470 | 271.2 per landed hit |
-| Rogue, melee | offhand worn | 878 | 696 | 398.8 per landed hit |
-| Rogue, melee | slot 13 empty | 463 | 464 | 273.5 per landed hit |
+| Rogue, melee | offhand worn | 878 | 696 | 404.4 per landed hit |
+| Rogue, melee | slot 13 empty | 463 | 464 | 268.2 per landed hit |
 | Ranger companion, bow | bow and melee worn | 873 | 1085 | 691.4 per landed hit |
 
 The Rogue pair separates the three candidate rules cleanly. Calibrated on the empty case, a full offhand
-predicts 518, none predicts 303, and half predicts 410 against 398.8 observed.
+predicts 508, none predicts 268, and half predicts 402.3 against 404.4 observed.
+
+The Rogue rows were taken per hit, from the event the engine raises for each landing. The others were
+taken by sampling the caster's running total every frame, which is exact per hit while one action is in
+flight at a time but reports two hits as one where that fails. A figure to be compared against a model
+term should be taken the first way: the same pair measured by sampling put the half rule 2.6 percent out
+rather than 0.5, which is the difference between confirming a rule and choosing between two.
 
 The companion figure excludes the player rule outright. Applying it would predict 660 against 691.4
 observed, which would need the target to amplify damage.
