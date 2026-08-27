@@ -67,7 +67,16 @@ for path in skills:
     if count >= 200:
         errors.append(f"oversized SKILL.md: {path.relative_to(root)} ({count} lines; limit is 199)")
 expected_skills = {"export-game-data", "game-defect-reports", "hotrepl-runtime-inspection", "ancient-kingdoms-save-files", "update-game-version"}
-expected_rules = {"website-mechanics", "interactive-map", "mod-runtime-special-cases"}
+expected_rules = {
+    "website-mechanics",
+    "interactive-map",
+    "mod-runtime-special-cases",
+    "absence-needs-a-count",
+    "build-is-not-runtime-proof",
+    "game-measurement-round-trips",
+    "let-the-engine-drive",
+    "monster-curve-columns",
+}
 actual_skills = {path.parent.name for path in skills}
 actual_rules = {path.stem for path in rules}
 for missing in sorted(expected_skills - actual_skills):

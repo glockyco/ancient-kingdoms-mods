@@ -11,26 +11,35 @@ enforces invariants that sections 2 to 5 must already satisfy.
 Each rule follows the shape the runtime's own rules use: opening directive, `## Why`, `## Avoid`,
 `## Use`, `## Exceptions`. Each states the incident that motivated it. One concern per rule.
 
-- [ ] 1.1 Add `.agent/rules/game-measurement-round-trips.md`: a trigger on a HotRepl `eval`
+- [x] 1.1 Add `.agent/rules/game-measurement-round-trips.md`: a trigger on a HotRepl `eval`
       invocation in a tool argument. Directive is to run setup and sampling inside one in-game
       coroutine. Incident: four measurement points returned nothing because the subject died between
       calls. Point at `skill://hotrepl-runtime-inspection/references/observing-behaviour.md`.
-- [ ] 1.2 Add `.agent/rules/absence-needs-a-count.md`: a trigger on a single-row fetch against the
+- [x] 1.2 Add `.agent/rules/absence-needs-a-count.md`: a trigger on a single-row fetch against the
       compendium database. Directive is to read a count, or run the same query against a case known
       to have the value, before concluding absence. Incident: one row in `monsters` was read as proof
       that five spawn variants did not exist.
-- [ ] 1.3 Add `.agent/rules/let-the-engine-drive.md`: a trigger on the game's skill-use command.
+- [x] 1.3 Add `.agent/rules/let-the-engine-drive.md`: a trigger on the game's skill-use command.
       Directive is to issue a repeating action once and let the engine re-issue it. Incident: sending
       the command repeatedly competed with the engine's own loop and measured the sender.
-- [ ] 1.4 Add `.agent/rules/monster-curve-columns.md`: a trigger on a denormalised monster scalar
+- [x] 1.4 Add `.agent/rules/monster-curve-columns.md`: a trigger on a denormalised monster scalar
       column. Directive is to read the curve columns with the spawn's own values. Incident: a
       published block chance omitted the defense term and understated the default target 2.6-fold.
-- [ ] 1.5 Add `.agent/rules/build-is-not-runtime-proof.md`: a trigger on a mod build or deploy
+- [x] 1.5 Add `.agent/rules/build-is-not-runtime-proof.md`: a trigger on a mod build or deploy
       invocation. Directive is to exercise the changed path in the running game. Incident: a Harmony
       patch and a probe were declared working from a green build.
+      Narrowed while implementing: the trigger matches a deploy only, not every `dotnet build`. A mod
+      session builds many times and deploys once before each launch, so the deploy is the moment the
+      directive is actionable and the build is the moment it would become wallpaper.
 - [ ] 1.6 Verify each rule's trigger fires by producing text that matches it and observing the
       injection, and record the observation in the change. A rule whose trigger cannot be observed to
       fire is removed rather than kept on the assumption that it works.
+      Partly done, and the remainder needs a new session. Rules are discovered when a session starts,
+      confirmed by `rule://absence-needs-a-count` reporting the name as unknown while the file exists
+      on disk, so a rule authored inside a session cannot be observed firing in it. Verified now
+      instead: every frontmatter parses, every condition compiles, and each condition matches command
+      strings taken verbatim from the run that motivated it while not matching a near-miss string
+      (seven matches and six non-matches). Remaining: start a session and observe each injection.
 
 ## 2. Relocate subproject constraints into rules
 
