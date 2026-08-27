@@ -15,6 +15,7 @@ namespace CombatVerification
     {
         private IDisposable _validateFixture;
         private IDisposable _createCharacter;
+        private IDisposable _statSheet;
         private IDisposable _buildCharacter;
 
         public override void OnLateInitializeMelon()
@@ -22,6 +23,7 @@ namespace CombatVerification
             var registry = GlobalControlCommandRegistry.Instance;
             _validateFixture = registry.Register(new ValidateFixtureCommand());
             _createCharacter = registry.Register(new CreateCharacterCommand());
+            _statSheet = registry.Register(new StatSheetCommand());
             _buildCharacter = registry.Register(new BuildCharacterCommand());
 
             LoggerInstance.Msg("CombatVerification: registered 3 typed commands.");
@@ -31,6 +33,7 @@ namespace CombatVerification
         {
             _validateFixture?.Dispose();
             _createCharacter?.Dispose();
+            _statSheet?.Dispose();
             _buildCharacter?.Dispose();
         }
     }

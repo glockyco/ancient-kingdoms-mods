@@ -93,12 +93,13 @@ The `HotReplCommands` mod registers six typed commands (MelonLoader mod in `mods
 | `game.quit`            | sync | Calls `Application.Quit()` and returns `{"quitting": true}`.                                                                           |
 | `game.useScratchDatabase` | sync | Points the database at a scratch file beside the game's own, so a run that creates or changes characters cannot reach player data. Refuses once the connection is open, so call it first, before any `Il2Cpp.Database` call and before entering the world. |
 
-The `CombatVerification` mod registers three typed commands (MelonLoader mod in `mods/CombatVerification/`):
+The `CombatVerification` mod registers four typed commands (MelonLoader mod in `mods/CombatVerification/`):
 
 | Command                     | Kind | Description                                                                                                                                                                 |
 | --------------------------- | ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `fixture.validate`          | sync | Checks a fixture against rules read from the running game. Needs a spawned player, because the class prefabs are unreadable before one exists. Reads only.                    |
 | `fixture.createCharacter`   | job  | Creates one character by driving the character creator. Needs character selection open, so call it before world entry. Refuses when the roster holds eight characters. Args: `{"characterName": string, "class": string, "race": string}`. Reports the stored class, race and level. |
+| `probe.statSheet`           | sync | Reads the complete combat state of the player and each companion: every attribute, every stat the combat component computes, resource maxima and multipliers, each occupied slot with what it contributes, and each armour set with its piece count and declared bonuses. Reads only, so two readings with no action between them agree. Args: `{}`. |
 | `fixture.buildCharacter`    | job  | Brings the spawned player to a fixture's declared level, veteran points, attributes, skill levels, equipment and companions. Empties a slot the fixture does not declare, because a created character wears starter equipment. Runs once on a newly created character, and world entry serves one character per session. Args: `{"character": <the character section of a fixture>, "companions": [...]}`. Reports each step. |
 
 Run `hotrepl --url ws://127.0.0.1:18590 info --json` and inspect handshake metadata, or call

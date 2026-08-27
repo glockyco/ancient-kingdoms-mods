@@ -118,8 +118,11 @@
 
 ## 4. Probe: stat sheet and cadence
 
-- [ ] 4.1 Implement a stat sheet probe that reads every combat stat, every attribute, both resource
-      maxima, health maximum, and the per-slot equipment contribution.
+- [x] 4.1 Implement a stat sheet probe that reads every combat stat, every attribute, both resource
+      maxima, health maximum, and the per-slot equipment contribution. Discover each set from the game
+      rather than listing it, so a stat a patch adds is reported. Report each armour set's piece count and
+      declared bonuses beside the slots, because a set bonus is a threshold effect rather than a per-slot
+      one and the totals cannot be accounted for without it.
 - [ ] 4.2 Implement an action interval probe that records action timestamps and derives the observed
       interval, and have it report the weapon delay and haste it observed alongside.
 - [ ] 4.3 Implement a per-hit probe by subscribing to the target's damage event, recording attacker,

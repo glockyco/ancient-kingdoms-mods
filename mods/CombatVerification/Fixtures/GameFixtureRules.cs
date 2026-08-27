@@ -93,10 +93,11 @@ namespace CombatVerification.Fixtures
         /// Attribute names the game defines. These are the six components a player carries, and
         /// the descriptor names them in the same lower-case form the export uses.
         /// </summary>
-        public IReadOnlyCollection<string> AttributeNames { get; } = new[]
-        {
-            "strength", "constitution", "dexterity", "intelligence", "wisdom", "charisma",
-        };
+        /// <summary>
+        /// The attributes the game declares. Read from the class prefab rather than listed here,
+        /// because a list would be a second definition that a game update could contradict.
+        /// </summary>
+        public IReadOnlyCollection<string> AttributeNames => GameAttributes.NamesOn(typeof(Player));
 
         public int EquipmentSlotCount => SlotInfoOf(_reference).Length;
 

@@ -114,7 +114,7 @@ namespace CombatVerification.Materialization
 
         public int AttributeValue(string attribute)
         {
-            var component = FindAttribute(attribute);
+            var component = GameAttributes.On(_player, attribute);
             return component == null ? 0 : component.value;
         }
 
@@ -127,31 +127,6 @@ namespace CombatVerification.Materialization
             // A name with no command changes nothing. The builder notices, because it reads the
             // value again rather than trusting this call.
             method?.Invoke(_player, Array.Empty<object>());
-        }
-
-        /// <summary>
-        /// The component holding one attribute, found by the name the player declares it under.
-        /// </summary>
-        /// <remarks>
-        /// Enumerating components does not work here. The interop layer hands back every
-        /// component wrapped as the base type that was asked for, so all six attributes report the
-        /// same type name and cannot be told apart. The player names each one, so the member is
-        /// what identifies it.
-        /// </remarks>
-        private PlayerAttribute FindAttribute(string attribute)
-        {
-            var pascal = CreatorMethods.PascalCase(attribute);
-            var camel = char.ToLowerInvariant(pascal[0]) + pascal.Substring(1);
-
-            const BindingFlags Public = BindingFlags.Public | BindingFlags.Instance;
-            var value = typeof(Player).GetProperty(camel, Public)?.GetValue(_player)
-                        ?? typeof(Player).GetProperty(pascal, Public)?.GetValue(_player)
-                        ?? typeof(Player).GetField(camel, Public)?.GetValue(_player)
-                        ?? typeof(Player).GetField(pascal, Public)?.GetValue(_player);
-
-            // The interop layer mirrors the game's inheritance, so a Strength wrapper is a
-            // PlayerAttribute and its value is readable without knowing which attribute it is.
-            return value as PlayerAttribute;
         }
 
         // --- skills ---
