@@ -1,4 +1,5 @@
 #nullable disable
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using CombatVerification.Fixtures;
@@ -60,12 +61,24 @@ namespace CombatVerification.Materialization
             if (!CheckUntouched(character, steps))
                 return new BuildOutcome { Steps = steps };
 
-            if (AdvanceLevel(character, spec, steps))
-                if (AdvanceVeteran(character, spec, steps))
-                    if (SpendAttributes(character, spec, steps))
-                        if (SpendSkills(character, spec, steps))
-                            if (EquipItems(character, spec, steps))
-                                HireCompanions(character, companions, steps);
+            // The order is fixed and each step depends on the one before it: progression grants
+            // the points allocation spends, allocation is what equipment adds to, and a companion
+            // hired before the owner finishes progressing carries an increment no fixture asked
+            // for. A failed step therefore ends the build rather than leaving a later one to act
+            // on a character that is quietly not the one requested.
+            var order = new Func<bool>[]
+            {
+                () => AdvanceLevel(character, spec, steps),
+                () => AdvanceVeteran(character, spec, steps),
+                () => SpendAttributes(character, spec, steps),
+                () => SpendSkills(character, spec, steps),
+                () => EquipItems(character, spec, steps),
+                () => HireCompanions(character, companions, steps),
+            };
+
+            foreach (var step in order)
+                if (!step())
+                    break;
 
             return new BuildOutcome { Steps = steps };
         }
@@ -295,7 +308,8 @@ namespace CombatVerification.Materialization
                     "The engine refuses an item operation while the character is "
                     + $"{character.ActivityState}.");
 
-            var slotCount = character.Equipment.Count;
+            var equipment = character.Equipment;
+            var slotCount = equipment.Slots.Count;
             foreach (var entry in requested)
             {
                 if (entry.Slot < 0 || entry.Slot >= slotCount)
@@ -310,13 +324,13 @@ namespace CombatVerification.Materialization
             var cleared = 0;
             for (var slot = 0; slot < slotCount; slot++)
             {
-                if (declared.Contains(slot) || character.Equipment[slot].ItemId == null)
+                if (declared.Contains(slot) || !equipment.At(slot).Occupied)
                     continue;
 
-                var before = character.Equipment[slot].ItemId;
-                character.Unequip(slot);
+                var before = equipment.At(slot).ItemId;
+                equipment.Unequip(slot);
 
-                if (character.Equipment[slot].ItemId != null)
+                if (equipment.At(slot).Occupied)
                     return Fail(steps, "equipment",
                         $"Slot {slot} still holds '{before}' after unequipping it. The engine "
                         + "refuses when the inventory has no room, and reports nothing.");
@@ -344,13 +358,13 @@ namespace CombatVerification.Materialization
                         $"'{entry.ItemId}' did not reach the inventory. The engine refuses a grant "
                         + "it has no room for and reports nothing.");
 
-                if (!character.CanEquip(inventoryIndex, entry.Slot))
+                if (!equipment.CanEquip(inventoryIndex, entry.Slot))
                     return Fail(steps, "equipment",
                         $"The game refuses '{entry.ItemId}' in slot {entry.Slot}.");
 
-                character.Equip(inventoryIndex, entry.Slot);
+                equipment.Equip(inventoryIndex, entry.Slot);
 
-                var after = character.Equipment[entry.Slot];
+                var after = equipment.At(entry.Slot);
                 if (after.ItemId != entry.ItemId)
                     return Fail(steps, "equipment",
                         $"Slot {entry.Slot} holds "
@@ -395,46 +409,37 @@ namespace CombatVerification.Materialization
         /// progression is complete is therefore the only way to get the value a newly hired
         /// companion carries, which is also the only value that survives a reload.
         /// </remarks>
-        private static void HireCompanions(
+        private static bool HireCompanions(
             ICharacterUnderConstruction character,
             IReadOnlyList<CompanionSpec> companions,
             List<BuildStep> steps)
         {
             if (companions == null)
-            {
-                Pass(steps, "companions", "Not stated.");
-                return;
-            }
+                return Pass(steps, "companions", "Not stated.");
 
             var requested = companions
                 .Where(companion => !string.IsNullOrWhiteSpace(companion.Archetype))
                 .ToList();
             if (requested.Count == 0)
-            {
-                Pass(steps, "companions", "None declared.");
-                return;
-            }
+                return Pass(steps, "companions", "None declared.");
 
             foreach (var wanted in requested)
             {
                 if (!character.ArchetypeExists(wanted.Archetype))
-                {
-                    Fail(steps, "companions",
+                    return Fail(steps, "companions",
                         $"The game offers no companion archetype '{wanted.Archetype}'.");
-                    return;
-                }
 
                 var price = character.HirePrice(wanted.Archetype);
 
                 var companion = HireOne(character, wanted, price, steps);
                 if (companion == null)
-                    return;
+                    return false;
 
                 if (!AssignCompanionValues(companion, wanted, steps))
-                    return;
+                    return false;
 
                 if (!EquipCompanion(character, companion, wanted, steps))
-                    return;
+                    return false;
             }
 
             var equipped = requested.Count(
@@ -443,7 +448,7 @@ namespace CombatVerification.Materialization
             if (equipped > 0)
                 detail += $", {equipped} equipped";
 
-            Pass(steps, "companions", detail + ".");
+            return Pass(steps, "companions", detail + ".");
         }
 
         /// <summary>
@@ -553,7 +558,8 @@ namespace CombatVerification.Materialization
             if (wanted.Equipment == null || wanted.Equipment.Count == 0)
                 return true;
 
-            var slotCount = companion.Equipment.Count;
+            var equipment = companion.Equipment;
+            var slotCount = equipment.Slots.Count;
             foreach (var entry in wanted.Equipment)
             {
                 if (string.IsNullOrWhiteSpace(entry.ItemId))
@@ -580,13 +586,13 @@ namespace CombatVerification.Materialization
                         $"'{entry.ItemId}' did not reach the owner's inventory, which is where a "
                         + "companion's own command reads from.");
 
-                if (!companion.CanEquip(inventoryIndex, entry.Slot))
+                if (!equipment.CanEquip(inventoryIndex, entry.Slot))
                     return Fail(steps, "companions",
                         $"The game refuses '{entry.ItemId}' in a companion's slot {entry.Slot}.");
 
-                companion.Equip(inventoryIndex, entry.Slot);
+                equipment.Equip(inventoryIndex, entry.Slot);
 
-                var after = companion.Equipment[entry.Slot];
+                var after = equipment.At(entry.Slot);
                 if (after.ItemId != entry.ItemId)
                     return Fail(steps, "companions",
                         $"A companion's slot {entry.Slot} holds "

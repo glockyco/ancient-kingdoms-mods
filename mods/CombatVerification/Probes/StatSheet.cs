@@ -45,16 +45,32 @@ namespace CombatVerification.Probes
                 player.activeMercenary3, player.activeMercenary4,
             })
                 if (pet != null)
-                    companions.Add(Of(pet, "companion", pet.typeMonster, pet.raceName,
-                        pet.level.current, pet.combat, pet.health, pet.mana, pet.energy,
-                        SlotsOf(pet)));
+                    companions.Add(Of(
+                        owner: pet,
+                        kind: "companion",
+                        archetype: pet.typeMonster,
+                        race: pet.raceName,
+                        level: pet.level.current,
+                        combat: pet.combat,
+                        health: pet.health,
+                        mana: pet.mana,
+                        energy: pet.energy,
+                        equipment: pet.equipment));
 
             unavailable = null;
             return new StatSheetResult
             {
-                Character = Of(player, "player", player.className, player.raceName,
-                    player.level.current, player.combat, player.health, player.mana, player.energy,
-                    SlotsOf(player)),
+                Character = Of(
+                    owner: player,
+                    kind: "player",
+                    archetype: player.className,
+                    race: player.raceName,
+                    level: player.level.current,
+                    combat: player.combat,
+                    health: player.health,
+                    mana: player.mana,
+                    energy: player.energy,
+                    equipment: player.equipment),
                 Companions = companions,
             };
         }
@@ -69,7 +85,7 @@ namespace CombatVerification.Probes
             Health health,
             Mana mana,
             Energy energy,
-            IReadOnlyList<ItemSlot> slots)
+            ItemContainer equipment)
         {
             var attributes = new Dictionary<string, int>();
             foreach (var name in GameAttributes.NamesOn(owner.GetType()))
@@ -100,8 +116,8 @@ namespace CombatVerification.Probes
                     EnergyRecoveryRate = energy == null ? null : energy.recoveryRate,
                     EnergyMultiplier = energy == null ? null : energy.multiplierEnergy,
                 },
-                Equipment = Pieces(slots),
-                ActiveSets = Sets(slots, owner),
+                Equipment = Pieces(equipment),
+                ActiveSets = Sets(equipment, owner),
             };
         }
 
@@ -133,18 +149,17 @@ namespace CombatVerification.Probes
         /// bonuses the set declares. The threshold that turns a count into an effect belongs to the
         /// game, so it is not applied here.
         /// </summary>
-        private static List<ActiveSet> Sets(IReadOnlyList<ItemSlot> slots, object owner)
+        private static List<ActiveSet> Sets(ItemContainer equipment, object owner)
         {
             var byName = new Dictionary<string, ActiveSet>(StringComparer.Ordinal);
 
-            for (var index = 0; index < slots.Count; index++)
+            foreach (var slot in Containers.Read(equipment))
             {
-                var slot = slots[index];
-                if (slot.amount <= 0 || slot.durability <= 0 || slot.item.data == null)
+                if (!slot.Counts)
                     continue;
 
-                var equipment = slot.item.data.TryCast<EquipmentItem>();
-                var set = equipment == null ? null : equipment.augmentArmorBonusSet;
+                var item = Containers.EquipmentIn(equipment, slot.Index);
+                var set = item == null ? null : item.augmentArmorBonusSet;
                 if (set == null)
                     continue;
 
@@ -196,54 +211,29 @@ namespace CombatVerification.Probes
             return granted;
         }
 
-        private static IReadOnlyList<ItemSlot> SlotsOf(Player player)
-        {
-            var equipment = player.equipment.TryCast<PlayerEquipment>();
-            return equipment == null ? new List<ItemSlot>() : Copy(equipment.slots);
-        }
-
-        private static IReadOnlyList<ItemSlot> SlotsOf(Pet pet)
-        {
-            var equipment = pet.equipment.TryCast<MercenaryEquipment>();
-            return equipment == null ? new List<ItemSlot>() : Copy(equipment.slots);
-        }
-
-        private static List<ItemSlot> Copy(Il2CppMirror.SyncList<ItemSlot> slots)
-        {
-            var copied = new List<ItemSlot>();
-            for (var index = 0; index < slots.Count; index++)
-                copied.Add(slots[index]);
-
-            return copied;
-        }
-
-        private static List<EquippedPiece> Pieces(IReadOnlyList<ItemSlot> slots)
+        private static List<EquippedPiece> Pieces(ItemContainer equipment)
         {
             var pieces = new List<EquippedPiece>();
 
-            for (var index = 0; index < slots.Count; index++)
+            foreach (var slot in Containers.Read(equipment))
             {
-                var slot = slots[index];
-                if (slot.amount <= 0 || slot.item.data == null)
+                if (!slot.Occupied)
                     continue;
 
-                var equipment = slot.item.data.TryCast<EquipmentItem>();
+                var item = Containers.EquipmentIn(equipment, slot.Index);
 
                 pieces.Add(new EquippedPiece
                 {
-                    Slot = index,
-                    ItemId = GameIds.Sanitize(slot.item.data.name),
-                    AugmentId = string.IsNullOrEmpty(slot.augmentName)
-                        ? null
-                        : GameIds.Sanitize(slot.augmentName),
-                    Durability = slot.durability,
+                    Slot = slot.Index,
+                    ItemId = slot.ItemId,
+                    AugmentId = slot.AugmentId,
+                    Durability = slot.Durability,
 
-                    // The engine counts a slot only above zero durability, so a piece that
-                    // contributes nothing is reported with an empty contribution rather than with
-                    // the numbers it would have carried.
-                    Contributes = slot.durability > 0,
-                    Contribution = slot.durability > 0 && equipment != null
-                        ? Bonuses(equipment, slot.augmentName)
+                    // A piece the engine does not count is reported with an empty contribution
+                    // rather than with the numbers it would have carried.
+                    Contributes = slot.Counts,
+                    Contribution = slot.Counts && item != null
+                        ? Bonuses(item, slot.AugmentId)
                         : new Dictionary<string, double>(),
                 });
             }
@@ -255,17 +245,17 @@ namespace CombatVerification.Probes
         /// What one slot adds, which is the item's own bonuses plus its augment's. The engine reads
         /// these fields directly when it aggregates, so this is the same data and not a model of it.
         /// </summary>
-        private static Dictionary<string, double> Bonuses(EquipmentItem item, string augmentName)
+        private static Dictionary<string, double> Bonuses(EquipmentItem item, string augmentId)
         {
             var totals = new Dictionary<string, double>();
             Accumulate(totals, item);
 
-            if (!string.IsNullOrEmpty(augmentName)
-                && GameManager.cacheItems.TryGetValue(augmentName.GetStableHashCode(), out var cached))
+            var augment = GameItems.Find(augmentId);
+            if (augment != null)
             {
-                var augment = cached.TryCast<AugmentItem>();
-                if (augment != null)
-                    Accumulate(totals, augment);
+                var asAugment = augment.TryCast<AugmentItem>();
+                if (asAugment != null)
+                    Accumulate(totals, asAugment);
             }
 
             return totals;

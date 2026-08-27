@@ -51,47 +51,7 @@ namespace CombatVerification.Materialization
         /// <summary>Energy is the Warrior's and the Rogue's resource, and mana is everyone's else.</summary>
         private bool UsesEnergy => _pet.typeMonster == "Warrior" || _pet.typeMonster == "Rogue";
 
-        public IReadOnlyList<EquipmentSlotState> Equipment
-        {
-            get
-            {
-                var states = new List<EquipmentSlotState>();
-                var slots = Slots.slots;
-
-                for (var index = 0; index < slots.Count; index++)
-                {
-                    var slot = slots[index];
-                    var occupied = slot.amount > 0 && slot.item.data != null;
-
-                    states.Add(new EquipmentSlotState
-                    {
-                        Index = index,
-                        ItemId = occupied ? GameIds.Sanitize(slot.item.data.name) : null,
-                        AugmentId = string.IsNullOrEmpty(slot.augmentName)
-                            ? null
-                            : GameIds.Sanitize(slot.augmentName),
-                        Durability = occupied ? slot.durability : 0,
-                    });
-                }
-
-                return states;
-            }
-        }
-
-        private MercenaryEquipment Slots
-        {
-            get
-            {
-                var equipment = _pet.equipment == null
-                    ? null
-                    : _pet.equipment.TryCast<MercenaryEquipment>();
-                if (equipment == null)
-                    throw new InvalidOperationException(
-                        $"The companion '{_pet.nameEntity}' has no mercenary equipment.");
-
-                return equipment;
-            }
-        }
+        public IEquipmentSurface Equipment => EquipmentSurface.Of(_pet);
 
         public void SetHealthMultiplier(float value)
             => _pet.health.NetworkmultiplierHealth = value;
@@ -120,23 +80,5 @@ namespace CombatVerification.Materialization
             _pet.combat.baseMagicDamage = magic;
         }
 
-        public bool CanEquip(int ownerInventoryIndex, int equipmentSlot)
-        {
-            var owner = _pet.Networkowner;
-            if (owner == null)
-                return false;
-
-            var slot = owner.inventory.slots[ownerInventoryIndex];
-            var equipment = slot.item.data == null ? null : slot.item.data.TryCast<EquipmentItem>();
-            if (equipment == null)
-                return false;
-
-            return equipment.CanEquipMercenary(_pet, equipmentSlot, showMessage: false);
-        }
-
-        public void Equip(int ownerInventoryIndex, int equipmentSlot)
-            => Slots.CmdSwapInventoryEquip(ownerInventoryIndex, equipmentSlot);
-
-        public void Unequip(int equipmentSlot) => Slots.CmdUnequip(equipmentSlot);
     }
 }

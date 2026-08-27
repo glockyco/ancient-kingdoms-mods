@@ -169,12 +169,92 @@ namespace CombatVerification.Tests
             public HashSet<int> Slots { get; set; } = new();
         }
 
-        private readonly List<EquipmentSlotState> _equipment =
-            Enumerable.Range(0, 16)
-                .Select(index => new EquipmentSlotState { Index = index })
-                .ToList();
+        /// <summary>
+        /// Equipment that refuses the way the engine refuses. It permits an operation it will then
+        /// silently decline, because that is the case a returned call cannot detect.
+        /// </summary>
+        internal sealed class FakeEquipment : IEquipmentSurface
+        {
+            private readonly List<EquippedSlot> _slots =
+                Enumerable.Range(0, 16)
+                    .Select(index => new EquippedSlot { Index = index })
+                    .ToList();
 
-        private readonly List<EquipmentSlotState> _inventory = new();
+            private readonly FakeCharacter _owner;
+
+            public FakeEquipment(FakeCharacter owner)
+            {
+                _owner = owner;
+            }
+
+            /// <summary>Slots this surface permits and then declines to change.</summary>
+            public HashSet<int> Ignore { get; } = new();
+
+            /// <summary>Counts calls that act, including the ones that were ignored.</summary>
+            public int EquipCalls { get; private set; }
+
+            public IReadOnlyList<EquippedSlot> Slots => _slots;
+
+            public EquippedSlot At(int index) => _slots[index];
+
+            public FakeEquipment Wearing(int slot, string itemId, int durability = 20)
+            {
+                _slots[slot] = new EquippedSlot
+                {
+                    Index = slot,
+                    ItemId = itemId,
+                    Durability = durability,
+                };
+                return this;
+            }
+
+            public bool CanEquip(int inventoryIndex, int equipmentSlot)
+            {
+                var held = _owner.InInventory(inventoryIndex);
+                return held != null
+                    && _owner.Items.TryGetValue(held.ItemId, out var item)
+                    && item.Slots.Contains(equipmentSlot);
+            }
+
+            public void Equip(int inventoryIndex, int equipmentSlot)
+            {
+                EquipCalls++;
+
+                if (!_owner.ItemOperationsAllowed
+                    || equipmentSlot < 0 || equipmentSlot >= _slots.Count
+                    || !CanEquip(inventoryIndex, equipmentSlot)
+                    || Ignore.Contains(equipmentSlot))
+                    return;
+
+                var held = _owner.TakeFromInventory(inventoryIndex);
+                _slots[equipmentSlot] = new EquippedSlot
+                {
+                    Index = equipmentSlot,
+                    ItemId = held.ItemId,
+                    AugmentId = held.AugmentId,
+                    Durability = held.Durability,
+                };
+            }
+
+            public void Unequip(int equipmentSlot)
+            {
+                if (!_owner.ItemOperationsAllowed
+                    || equipmentSlot < 0 || equipmentSlot >= _slots.Count
+                    || Ignore.Contains(equipmentSlot))
+                    return;
+
+                var held = _slots[equipmentSlot];
+                if (!held.Occupied || !_owner.HasInventoryRoom)
+                    return;
+
+                _owner.PutInInventory(held);
+                _slots[equipmentSlot] = new EquippedSlot { Index = equipmentSlot };
+            }
+        }
+
+        private readonly List<EquippedSlot> _inventory = new();
+
+        private FakeEquipment? _equipment;
 
         /// <summary>Items the game defines, by identifier.</summary>
         public Dictionary<string, FakeItem> Items { get; } = new(StringComparer.OrdinalIgnoreCase);
@@ -186,19 +266,15 @@ namespace CombatVerification.Tests
 
         public string ActivityState { get; set; } = "IDLE";
 
-        /// <summary>Counts equip calls, including the ones the engine ignored.</summary>
-        public int EquipCalls { get; private set; }
+        public IEquipmentSurface Equipment => _equipment ??= new FakeEquipment(this);
 
-        /// <summary>
-        /// Slots the engine permits and then silently declines to fill. This is the case a
-        /// returned call cannot detect, and the only defence is reading the slot back.
-        /// </summary>
-        public HashSet<int> IgnoreEquipInto { get; } = new();
+        /// <summary>Counts equip calls on the character's own equipment.</summary>
+        public int EquipCalls => ((FakeEquipment)Equipment).EquipCalls;
 
-        public IReadOnlyList<EquipmentSlotState> Equipment => _equipment;
+        /// <summary>Slots the character's equipment permits and then declines to fill.</summary>
+        public HashSet<int> IgnoreEquipInto => ((FakeEquipment)Equipment).Ignore;
 
-        public FakeCharacter WithItem(
-            string id, int maxDurability = 100, params int[] slots)
+        public FakeCharacter WithItem(string id, int maxDurability = 100, params int[] slots)
         {
             Items[id] = new FakeItem
             {
@@ -211,12 +287,7 @@ namespace CombatVerification.Tests
         /// <summary>Dresses a slot, as character creation does before a build runs.</summary>
         public FakeCharacter Wearing(int slot, string itemId, int durability = 20)
         {
-            _equipment[slot] = new EquipmentSlotState
-            {
-                Index = slot,
-                ItemId = itemId,
-                Durability = durability,
-            };
+            ((FakeEquipment)Equipment).Wearing(slot, itemId, durability);
             return this;
         }
 
@@ -227,10 +298,10 @@ namespace CombatVerification.Tests
 
         public void GrantItem(string itemId, int durability, string augmentId)
         {
-            if (!ItemExists(itemId) || _inventory.Count >= InventoryCapacity)
+            if (!ItemExists(itemId) || !HasInventoryRoom)
                 return;
 
-            _inventory.Add(new EquipmentSlotState
+            _inventory.Add(new EquippedSlot
             {
                 Index = _inventory.Count,
                 ItemId = itemId,
@@ -254,59 +325,38 @@ namespace CombatVerification.Tests
             return -1;
         }
 
-        public bool CanEquip(int inventoryIndex, int equipmentSlot)
-        {
-            if (inventoryIndex < 0 || inventoryIndex >= _inventory.Count)
-                return false;
+        internal bool HasInventoryRoom => _inventory.Count < InventoryCapacity;
 
-            var held = _inventory[inventoryIndex];
-            return Items.TryGetValue(held.ItemId, out var item) && item.Slots.Contains(equipmentSlot);
+        internal EquippedSlot? InInventory(int index)
+            => index < 0 || index >= _inventory.Count ? null : _inventory[index];
+
+        internal EquippedSlot TakeFromInventory(int index)
+        {
+            var held = _inventory[index];
+            _inventory.RemoveAt(index);
+            return held;
         }
 
-        /// <summary>Slots the engine permits and then silently declines to empty.</summary>
-        public HashSet<int> IgnoreUnequipOf { get; } = new();
-
-        public void Unequip(int equipmentSlot)
-        {
-            if (equipmentSlot < 0 || equipmentSlot >= _equipment.Count
-                || !ItemOperationsAllowed
-                || IgnoreUnequipOf.Contains(equipmentSlot)
-                || _inventory.Count >= InventoryCapacity)
-                return;
-
-            var held = _equipment[equipmentSlot];
-            if (held.ItemId == null)
-                return;
-
-            _inventory.Add(new EquipmentSlotState
+        internal void PutInInventory(EquippedSlot slot)
+            => _inventory.Add(new EquippedSlot
             {
                 Index = _inventory.Count,
-                ItemId = held.ItemId,
-                AugmentId = held.AugmentId,
-                Durability = held.Durability,
+                ItemId = slot.ItemId,
+                AugmentId = slot.AugmentId,
+                Durability = slot.Durability,
             });
-            _equipment[equipmentSlot] = new EquipmentSlotState { Index = equipmentSlot };
-        }
 
         // --- companions ---
 
-        /// <summary>
-        /// A companion that refuses the way a pet does: a value written to the wrong resource is
-        /// dropped, and the archetype decides which resource that is.
-        /// </summary>
+        /// <summary>A companion whose values are set and whose equipment refuses like the rest.</summary>
         internal sealed class FakeCompanion : ICompanionUnderConstruction
         {
-            private readonly List<EquipmentSlotState> _slots =
-                Enumerable.Range(0, 16)
-                    .Select(index => new EquipmentSlotState { Index = index })
-                    .ToList();
-
-            private readonly FakeCharacter _owner;
+            private readonly FakeEquipment _equipment;
 
             public FakeCompanion(FakeCharacter owner, string archetype)
             {
-                _owner = owner;
                 Archetype = archetype;
+                _equipment = new FakeEquipment(owner);
             }
 
             public string Archetype { get; }
@@ -317,39 +367,14 @@ namespace CombatVerification.Tests
             public float ResourceMultiplier { get; private set; } = 1f;
             public int BaseCombat { get; private set; }
 
-            /// <summary>Slots the engine permits and then silently declines to fill.</summary>
-            public HashSet<int> IgnoreEquipInto { get; } = new();
+            public IEquipmentSurface Equipment => _equipment;
 
-            public IReadOnlyList<EquipmentSlotState> Equipment => _slots;
+            /// <summary>Slots its equipment permits and then declines to fill.</summary>
+            public HashSet<int> IgnoreEquipInto => _equipment.Ignore;
 
             public void SetHealthMultiplier(float value) => HealthMultiplier = value;
             public void SetResourceMultiplier(float value) => ResourceMultiplier = value;
             public void SetBaseCombat(int value) => BaseCombat = value;
-
-            public bool CanEquip(int ownerInventoryIndex, int equipmentSlot)
-                => _owner.CanEquip(ownerInventoryIndex, equipmentSlot);
-
-            public void Equip(int ownerInventoryIndex, int equipmentSlot)
-            {
-                if (!CanEquip(ownerInventoryIndex, equipmentSlot)
-                    || IgnoreEquipInto.Contains(equipmentSlot))
-                    return;
-
-                var held = _owner.TakeFromInventory(ownerInventoryIndex);
-                if (held == null)
-                    return;
-
-                _slots[equipmentSlot] = new EquipmentSlotState
-                {
-                    Index = equipmentSlot,
-                    ItemId = held.ItemId,
-                    AugmentId = held.AugmentId,
-                    Durability = held.Durability,
-                };
-            }
-
-            public void Unequip(int equipmentSlot)
-                => _slots[equipmentSlot] = new EquipmentSlotState { Index = equipmentSlot };
         }
 
         private readonly List<ICompanionUnderConstruction> _companions = new();
@@ -406,7 +431,7 @@ namespace CombatVerification.Tests
         }
 
         /// <summary>Forces the archetype a hire produces, so a mismatch can be tested.</summary>
-        public string HiredArchetype { get; set; }
+        public string? HiredArchetype { get; set; }
 
         /// <summary>
         /// Races each archetype can roll. A hire draws from this, so a race outside it is one the
@@ -424,38 +449,5 @@ namespace CombatVerification.Tests
         /// </summary>
         public HashSet<int> CompanionIgnoresEquipInto { get; } = new();
 
-        internal EquipmentSlotState TakeFromInventory(int index)
-        {
-            if (index < 0 || index >= _inventory.Count)
-                return null;
-
-            var held = _inventory[index];
-            _inventory.RemoveAt(index);
-            return held;
-        }
-
-        public void Equip(int inventoryIndex, int equipmentSlot)
-        {
-            EquipCalls++;
-
-            // Every reason the engine ignores the request, and it ignores it in silence.
-            if (!ItemOperationsAllowed
-                || inventoryIndex < 0 || inventoryIndex >= _inventory.Count
-                || equipmentSlot < 0 || equipmentSlot >= _equipment.Count
-                || !CanEquip(inventoryIndex, equipmentSlot)
-                || IgnoreEquipInto.Contains(equipmentSlot))
-                return;
-
-            var held = _inventory[inventoryIndex];
-            _inventory.RemoveAt(inventoryIndex);
-
-            _equipment[equipmentSlot] = new EquipmentSlotState
-            {
-                Index = equipmentSlot,
-                ItemId = held.ItemId,
-                AugmentId = held.AugmentId,
-                Durability = held.Durability,
-            };
-        }
     }
 }

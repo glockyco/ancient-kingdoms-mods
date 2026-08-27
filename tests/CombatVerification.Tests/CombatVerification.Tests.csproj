@@ -28,6 +28,10 @@
              Link="Materialization\CreatorMethods.cs" />
     <Compile Include="..\..\mods\CombatVerification\Materialization\ICharacterUnderConstruction.cs"
              Link="Materialization\ICharacterUnderConstruction.cs" />
+    <Compile Include="..\..\mods\CombatVerification\Materialization\IEquipmentSurface.cs"
+             Link="Materialization\IEquipmentSurface.cs" />
+    <Compile Include="..\..\mods\CombatVerification\Materialization\EquippedSlot.cs"
+             Link="Materialization\EquippedSlot.cs" />
     <Compile Include="..\..\mods\CombatVerification\Materialization\CharacterBuilder.cs"
              Link="Materialization\CharacterBuilder.cs" />
   </ItemGroup>

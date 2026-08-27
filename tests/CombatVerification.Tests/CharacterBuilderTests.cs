@@ -306,8 +306,8 @@ namespace CombatVerification.Tests
                 equipment: new List<EquipmentSpec> { Entry(0, "plate_helm") }));
 
             Assert.True(outcome.Ok, outcome.Failure?.ToString());
-            Assert.Equal("plate_helm", character.Equipment[0].ItemId);
-            Assert.Equal(80, character.Equipment[0].Durability);
+            Assert.Equal("plate_helm", character.Equipment.At(0).ItemId);
+            Assert.Equal(80, character.Equipment.At(0).Durability);
         }
 
         [Fact]
@@ -318,7 +318,7 @@ namespace CombatVerification.Tests
                 equipment: new List<EquipmentSpec> { Entry(0, "plate_helm", durability: 7) }));
 
             Assert.True(outcome.Ok, outcome.Failure?.ToString());
-            Assert.Equal(7, character.Equipment[0].Durability);
+            Assert.Equal(7, character.Equipment.At(0).Durability);
         }
 
         [Fact]
@@ -332,7 +332,7 @@ namespace CombatVerification.Tests
                 }));
 
             Assert.True(outcome.Ok, outcome.Failure?.ToString());
-            Assert.Equal("jagged_shard", character.Equipment[2].AugmentId);
+            Assert.Equal("jagged_shard", character.Equipment.At(2).AugmentId);
             Assert.Contains("1 augmented", Step(outcome, "equipment").Detail);
         }
 
@@ -452,9 +452,9 @@ namespace CombatVerification.Tests
                 equipment: new List<EquipmentSpec> { Entry(0, "plate_helm") }));
 
             Assert.True(outcome.Ok, outcome.Failure?.ToString());
-            Assert.Equal("plate_helm", character.Equipment[0].ItemId);
-            Assert.Null(character.Equipment[2].ItemId);
-            Assert.Null(character.Equipment[9].ItemId);
+            Assert.Equal("plate_helm", character.Equipment.At(0).ItemId);
+            Assert.Null(character.Equipment.At(2).ItemId);
+            Assert.Null(character.Equipment.At(9).ItemId);
             Assert.Contains("cleared 2 slots", Step(outcome, "equipment").Detail);
         }
 
@@ -466,7 +466,7 @@ namespace CombatVerification.Tests
                 equipment: new List<EquipmentSpec> { Entry(2, "plate_chest") }));
 
             Assert.True(outcome.Ok, outcome.Failure?.ToString());
-            Assert.Equal("plate_chest", character.Equipment[2].ItemId);
+            Assert.Equal("plate_chest", character.Equipment.At(2).ItemId);
         }
 
         [Fact]
@@ -479,7 +479,7 @@ namespace CombatVerification.Tests
             var outcome = CharacterBuilder.Run(character, spec);
 
             Assert.True(outcome.Ok, outcome.Failure?.ToString());
-            Assert.Equal("starter_shirt", character.Equipment[2].ItemId);
+            Assert.Equal("starter_shirt", character.Equipment.At(2).ItemId);
             Assert.Contains("Not stated", Step(outcome, "equipment").Detail);
         }
 
@@ -491,7 +491,7 @@ namespace CombatVerification.Tests
                 equipment: new List<EquipmentSpec>()));
 
             Assert.True(outcome.Ok, outcome.Failure?.ToString());
-            Assert.All(character.Equipment, slot => Assert.Null(slot.ItemId));
+            Assert.All(character.Equipment.Slots, slot => Assert.Null(slot.ItemId));
         }
 
         // --- companions ---
@@ -664,7 +664,7 @@ namespace CombatVerification.Tests
 
             Assert.True(outcome.Ok, outcome.Failure?.ToString());
             var companion = Assert.Single(character.Companions);
-            Assert.Equal("plate_chest", companion.Equipment[2].ItemId);
+            Assert.Equal("plate_chest", companion.Equipment.At(2).ItemId);
             Assert.Contains("1 equipped", Step(outcome, "companions").Detail);
         }
 
@@ -684,7 +684,7 @@ namespace CombatVerification.Tests
 
             Assert.False(outcome.Ok);
             Assert.Contains("holds nothing", outcome.Failure!.Detail);
-            Assert.Null(character.Companions[0].Equipment[0].ItemId);
+            Assert.Null(character.Companions[0].Equipment.At(0).ItemId);
         }
 
         [Fact]
@@ -722,7 +722,7 @@ namespace CombatVerification.Tests
                 }));
 
             Assert.True(outcome.Ok, outcome.Failure?.ToString());
-            Assert.Equal(3, character.Equipment.Count(slot => slot.ItemId != null));
+            Assert.Equal(3, character.Equipment.Slots.Count(slot => slot.Occupied));
             Assert.Contains("Equipped 3 items", Step(outcome, "equipment").Detail);
         }
     }

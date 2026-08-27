@@ -15,23 +15,6 @@ namespace CombatVerification.Materialization
         public bool IsVeteran { get; set; }
     }
 
-    /// <summary>What one equipment slot holds.</summary>
-    public sealed class EquipmentSlotState
-    {
-        public int Index { get; set; }
-
-        /// <summary>Identifier of the item in the slot, or null when the slot is empty.</summary>
-        public string ItemId { get; set; }
-
-        public string AugmentId { get; set; }
-
-        /// <summary>
-        /// Remaining durability. The engine counts a slot's bonuses only while this is above
-        /// zero, so a slot holding a worn-out item contributes nothing.
-        /// </summary>
-        public int Durability { get; set; }
-    }
-
     /// <summary>
     /// A companion the owner has hired.
     /// </summary>
@@ -68,19 +51,12 @@ namespace CombatVerification.Materialization
 
         int BaseCombat { get; }
 
-        IReadOnlyList<EquipmentSlotState> Equipment { get; }
+        /// <summary>Its equipment, whose commands read from the owner's inventory.</summary>
+        IEquipmentSurface Equipment { get; }
 
         void SetHealthMultiplier(float value);
         void SetResourceMultiplier(float value);
         void SetBaseCombat(int value);
-
-        /// <summary>The engine's own answer for this companion's slot.</summary>
-        bool CanEquip(int ownerInventoryIndex, int equipmentSlot);
-
-        /// <summary>Equips from the owner's inventory through the companion's own command.</summary>
-        void Equip(int ownerInventoryIndex, int equipmentSlot);
-
-        void Unequip(int equipmentSlot);
     }
 
     /// <summary>
@@ -146,8 +122,8 @@ namespace CombatVerification.Materialization
         /// <summary>The activity state the engine reports, so a refusal can name it.</summary>
         string ActivityState { get; }
 
-        /// <summary>Every equipment slot, in the order the engine addresses them.</summary>
-        IReadOnlyList<EquipmentSlotState> Equipment { get; }
+        /// <summary>Its equipment, and the commands that change it.</summary>
+        IEquipmentSurface Equipment { get; }
 
         /// <summary>Whether the game defines an item under this identifier.</summary>
         bool ItemExists(string itemId);
@@ -166,22 +142,6 @@ namespace CombatVerification.Materialization
         /// nothing about where it landed, so the position is read back.
         /// </summary>
         int FindInInventory(string itemId, string augmentId);
-
-        /// <summary>
-        /// The engine's own answer to whether this item may occupy this slot. Asking it is not a
-        /// restatement of its rules: the class, level, category, occupancy and two-handed checks
-        /// stay where the game implements them.
-        /// </summary>
-        bool CanEquip(int inventoryIndex, int equipmentSlot);
-
-        /// <summary>Equips through the same command the interface sends.</summary>
-        void Equip(int inventoryIndex, int equipmentSlot);
-
-        /// <summary>
-        /// Empties a slot through the game's own command, which moves the item to the inventory
-        /// and therefore needs room there.
-        /// </summary>
-        void Unequip(int equipmentSlot);
 
         // --- companions ---
 
