@@ -113,7 +113,7 @@ namespace CombatVerification.Probes
         /// Everything the window observed, with the totals that bound it.
         /// </summary>
         public PerHitDamageResult Measured(
-            ActionTimeline timeline, double openedAt, double closedAt)
+            ActionTimeline timeline, int seed, double openedAt, double closedAt)
         {
             var hits = new List<LandedHit>(_log.Hits.Count);
             long total = 0;
@@ -143,6 +143,8 @@ namespace CombatVerification.Probes
                 Absorbed = absorbed,
                 Resets = _log.Resets,
                 Total = total,
+                Seed = seed,
+                Tier = Tiers.PerHit,
                 Actions = timeline.Completions.Count,
                 ActionIntervals = new List<double>(timeline.Intervals),
             };

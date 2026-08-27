@@ -132,8 +132,12 @@
       an amount take two arguments and cannot be subscribed to on this platform, so the probe listens
       to the caster's single-argument hit event and reads the amount from the running total inside it.
       A damage type is not on that event, so it belongs to 5.1 alone.
-- [ ] 4.4 Seed the random generator before a measurement and record the seed with the results.
-- [ ] 4.5 Have every probe declare the fidelity tier it achieved.
+- [x] 4.4 Seed the random generator before a measurement and record the seed with the results. An
+      identical seed does not reproduce the sequence, tested twice against one fixture: the engine
+      draws from one generator for every system, so the seed is provenance rather than determinism.
+- [x] 4.5 Have a damage measurement declare the fidelity tier it achieved. The tiers the specification
+      defines are tiers of damage attribution, so a stat reading has none; the probes that read state
+      declare instead whether their reading is attributable, which is the same question for them.
 - [x] 4.6 Implement a target-state probe that reads the target's defense, block chance, magic resist and
       each elemental resist, plus its active effect list with each entry's category and remaining
       duration. It reads the target, not the caster.

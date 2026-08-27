@@ -36,6 +36,13 @@ namespace CombatVerification.Dtos
         /// </summary>
         [JsonProperty("windowSeconds", Required = Required.Always)]
         public double WindowSeconds { get; set; }
+
+        /// <summary>
+        /// The value to seed the engine's generator with. Absent takes one from the clock, which is
+        /// still recorded, so every run states the seed it used whether or not one was asked for.
+        /// </summary>
+        [JsonProperty("seed", Required = Required.Default)]
+        public int? Seed { get; set; }
     }
 
     /// <summary>Every hit one caster landed inside a window.</summary>
@@ -92,5 +99,30 @@ namespace CombatVerification.Dtos
         /// <summary>Health taken across every hit in the window.</summary>
         [JsonProperty("total")]
         public long Total { get; set; }
+
+        /// <summary>
+        /// The value the engine's generator was seeded with before the window opened.
+        /// </summary>
+        /// <remarks>
+        /// Recording it does not make the run repeat. The engine draws from one generator for every
+        /// system, so an identical seed reproduces an identical sequence only when the same consumers
+        /// draw in the same order, which a live world does not promise. The seed is here so a run that
+        /// does reproduce can be identified, and so a run that does not can be told apart from one
+        /// that was never seeded.
+        /// </remarks>
+        [JsonProperty("seed")]
+        public int Seed { get; set; }
+
+        /// <summary>
+        /// How directly the amounts were obtained: <c>aggregate</c>, <c>perHit</c>, or
+        /// <c>perHitAttributed</c> when each hit also names the skill the engine chose.
+        /// </summary>
+        /// <remarks>
+        /// This probe reaches <c>perHit</c>. The skill is not on the event it listens to, so
+        /// attribution needs the patch on the damage entry point, and a rotation comparison needs
+        /// that tier rather than this one.
+        /// </remarks>
+        [JsonProperty("tier")]
+        public string Tier { get; set; }
     }
 }

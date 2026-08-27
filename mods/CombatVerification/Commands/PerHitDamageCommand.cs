@@ -28,7 +28,7 @@ namespace CombatVerification.Commands
     /// </para>
     /// <para>
     /// It attaches one listener to the caster and removes it when the window closes, including when
-    /// the job is cancelled. That is the only change it makes.
+    /// the job is cancelled, and it seeds the engine's generator. Those are the only changes it makes.
     /// </para>
     /// </remarks>
     public sealed class PerHitDamageCommand
@@ -96,6 +96,12 @@ namespace CombatVerification.Commands
             // The same loop derives how often the caster acted, because a landing count alone
             // cannot say whether an action missed, and the interval probe cannot be asked: it
             // stills the attack loop that this measurement needs running.
+            // Seeded before the window so the run states its starting point. This does not make the
+            // run repeat: the engine draws from one generator for every system, so the sequence
+            // depends on which other consumers drew and in what order.
+            var seed = args.Seed ?? Environment.TickCount;
+            UnityEngine.Random.InitState(seed);
+
             var timeline = new ActionTimeline();
             var closedAt = openedAt;
 
@@ -124,7 +130,7 @@ namespace CombatVerification.Commands
                 }
 
                 completion.TrySetResult(ControlCommandResult.Ok(
-                    events.Measured(timeline, openedAt, closedAt)));
+                    events.Measured(timeline, seed, openedAt, closedAt)));
             }
             finally
             {
