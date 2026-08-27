@@ -76,6 +76,7 @@ The mod catalog includes player-facing utilities, data exporters, and developmen
 
 | Mod                | Summary                                                                                                                                                                                                                                             |
 | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CombatVerification` | Registers typed HotRepl commands for checking a combat fixture against the running game: `fixture.validate` (needs the world loaded, because the game's class definitions arrive with it), `fixture.createCharacter` (needs character selection open), and `fixture.buildCharacter` (brings a newly created character to a declared level, attribute allocation, and skill levels). Used by the combat verification harness, not during play. |
 | `DataExporter`     | Shift-F9 exports game data to JSON and writes the visual asset manifest used by the build pipeline.                                                                                                                                                 |
 | `FieldDefaultValueHookFix` | Harmony-patches Il2CppInterop's `Class_GetFieldDefaultValue_Hook.FindTargetMethod` so the byte-signature scan does not land on the wrong function and crash the game on world entry. |
 | `HotReplCommands`  | Registers typed HotRepl commands: `compendium.preflight`, `world.summary`, `world.enter` (job — drives the game to a spawned local player without exporting), `compendium.export` (job — handles world entry, data export, optional screenshots, artifact collection), and `game.quit`. Invoked by `build-tool export` over WebSocket. |
@@ -177,6 +178,9 @@ uv run compendium tiles
 
 # Print database statistics
 uv run compendium stats
+
+# Check the curated class and race pairing against the game's character creator
+uv run compendium classes check-races
 ```
 
 `compendium build` and `compendium stats` both use `website/data/compendium.db`. The database stays outside `website/static/`, because `static/` is published verbatim. The web build compresses the database and gives it a content-hashed name, so the browser downloads about 2.3 MB instead of 16.3 MB and can cache it permanently.

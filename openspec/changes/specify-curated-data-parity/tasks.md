@@ -30,7 +30,7 @@
       citations, so a patch that moves the region is handled in one place
 - [x] 4.2 State in the exporter policy that the class file is curated rather than exported, and name the
       command that guards it
-- [ ] 4.3 Record the command in the pipeline's own guidance and in the repository command reference
+- [x] 4.3 Record the command in the pipeline's own guidance and in the repository command reference
 
 ## 5. Verification
 

@@ -17,6 +17,7 @@ The Python CLI validates JSON exports, loads SQLite, applies redactions, produce
 - Entity redaction follows declared references to a fixpoint. Attribute redaction keeps the entity and removes only the selected data.
 - `redactions.lock.json` and `citations.lock.json` are generated ledgers. Use their `check`, `explain`, `fix`, `suggest`, or `sync` commands. Do not edit them by hand.
 - A changed server-script citation requires review of the claim before re-anchoring.
+- A curated value that restates a game rule has a check. `compendium classes check-races` compares the class and race pairing in `exported-data/classes.json` against the character creator. It reads the gitignored snapshot, so it stays out of `compendium build`.
 - Data models validate external JSON at the boundary. Avoid assertions after data enters typed internal code.
 
 ## Verification
