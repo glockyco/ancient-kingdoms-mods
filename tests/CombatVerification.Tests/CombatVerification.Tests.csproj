@@ -30,6 +30,8 @@
              Link="Materialization\ICharacterUnderConstruction.cs" />
     <Compile Include="..\..\mods\CombatVerification\Materialization\IEquipmentSurface.cs"
              Link="Materialization\IEquipmentSurface.cs" />
+    <Compile Include="..\..\mods\CombatVerification\Probes\ActionTimeline.cs"
+             Link="Probes\ActionTimeline.cs" />
     <Compile Include="..\..\mods\CombatVerification\Materialization\EquippedSlot.cs"
              Link="Materialization\EquippedSlot.cs" />
     <Compile Include="..\..\mods\CombatVerification\Materialization\CharacterBuilder.cs"
