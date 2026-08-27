@@ -177,6 +177,11 @@ for path in rules:
     # never fires.
     if triggered and path_scoped:
         errors.append(f"rule carries both globs and a trigger condition: {path.relative_to(root)} (the path gate suppresses the trigger)")
+    # A condition that matches anything is not a trigger, so something else has to be the gate. A
+    # path-qualified scope is one; nothing is not, and a rule with neither fires on every tool call.
+    vacuous = re.search(r'^\s*condition:\s*["\']?\.\*["\']?\s*$', raw, re.M)
+    if vacuous and not re.search(r"^\s*scope:.*\(.+\)", raw, re.M):
+        errors.append(f"rule matches anything and names no gate: {path.relative_to(root)} (qualify the scope with paths, or write a real condition)")
 
 # Research reports are destroyed by a structured channel unless the agent writes them to a file.
 agent_defs = sorted(path for path in (root / ".omp" / "agents").glob("*.md") if path.is_file())
