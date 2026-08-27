@@ -6,7 +6,7 @@ DataExporter output must come from authoritative runtime game data. Prefer direc
 
 - Export direct game object fields and explicit references.
 - Use IL2CPP runtime type checks (`TryCast<T>()`) when subtype identity matters.
-- Use `null` or `"unknown"` for missing data; do not invent values.
+- Follow each field's model and exporter contract for absence. Use `null` for missing references, `""` for missing text, and a declared default for value types only when the contract defines it. Use `"unknown"` only when the domain contract explicitly defines it, such as an unresolved zone. Do not invent values.
 - Document derivations that are not direct fields, such as spatial zone containment.
 - Keep JSON property names snake_case.
 

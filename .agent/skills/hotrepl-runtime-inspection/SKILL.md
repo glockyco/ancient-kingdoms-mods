@@ -5,49 +5,24 @@ description: Inspect or control the running Ancient Kingdoms game through HotRep
 
 # HotRepl runtime inspection
 
-Use HotRepl to inspect or control Ancient Kingdoms while it runs. This is rare. Most work is served
-by static exports, the build pipeline, or website code. Reach for HotRepl only when a live runtime
-view is the only source of the answer.
-
-## When to use
-
-- Reading live IL2CPP or Unity state, such as monster counts, the scene graph, or a player position.
-- Measuring behaviour the source only implies, such as how often a monster acts.
-- Verifying behaviour that only a client of a remote server shows.
-- Running a registered control command.
-- Diagnosing why the game's exporter produces no data.
-
-## When not to use
-
-- Verifying exported JSON. Read the file or use `build-pipeline`.
-- Verifying website pages. Use the website's own tooling.
-- Adding a control command. That is mod work.
-
 ## Workflow
 
+1. Deploy the host with `build-tool deploy-host`. See `build-tool/Commands/DeployHostCommand.cs:DeployHostCommand`.
+2. Launch the game and wait for the bootstrap. See `build-tool/Commands/LaunchCommand.cs:LaunchCommand`.
+3. Query the running game from another terminal with `hotrepl`.
+
 ```sh
-# 1. Deploy the HotRepl host into the game's Mods/.
-dotnet run --project build-tool deploy-host --hotrepl-repo /path/to/HotRepl
-
-# 2. Launch the game and wait for the MelonLoader bootstrap.
+dotnet run --project build-tool deploy-host --hotrepl-repo <HotRepl-repo>
 dotnet run --project build-tool launch --wait
-
-# 3. Query from another terminal. `hotrepl` is @hotrepl/cli, a root pnpm devDependency, so a
-#    checkout with `pnpm install` run already has ./node_modules/.bin/hotrepl.
-hotrepl --url ws://127.0.0.1:18590 info --json
-hotrepl --url ws://127.0.0.1:18590 run world.summary '{}' --json
-hotrepl --url ws://127.0.0.1:18590 run world.enter '{}' --json
+hotrepl info --json
+hotrepl run world.summary '{}' --json
+hotrepl run world.enter '{}' --json
 ```
-
-Each subcommand has its own `--help`, which this skill does not restate. Mutating commands run
-without a handshake. Loopback plus single-client replacement is the trust boundary. Use
-`build-tool export` for an orchestrated export instead of driving `compendium.export` by hand.
 
 ## Redirect the database before the first call
 
-`Il2Cpp.Database` reaches whichever database the game has open. At the start screen the connection is
-closed, so a read throws an IL2CPP stack trace, and `Il2Cpp.Database.Connect()` opens the game's own
-database.
+The redirect command owns the database selection and refuses a late redirect. See
+`mods/HotReplCommands/Commands/UseScratchDatabaseCommand.cs:UseScratchDatabaseCommand`.
 
 Call `game.useScratchDatabase` as the first command of a session. Then read what you came for. The
 result reports the path it opened and whether that path is a scratch one, so the redirect is
@@ -56,8 +31,7 @@ roster comes from the local database.
 
 ## The roster is capped, and the selection screen caches it
 
-A database holds eight characters. A ninth cannot be created, and the refusal reads as the selection
-screen not offering creation rather than as a full roster.
+The selection screen caps the roster in `server-scripts/UICharacterSelection.cs:SelectCharacterPreview`.
 
 `Il2Cpp.Database.CharacterDelete(name)` frees a slot, but the selection screen keeps the list it already
 read, so creation stays refused in that session. Delete, then relaunch, then create.
@@ -75,25 +49,16 @@ character after it, because the target is then player data. Quit, relaunch, and 
 
 ## One endpoint for each instance
 
-`build-tool launch --wait` returns once the host is ready, and the game keeps running afterwards. A
-session that ends without `game.quit` leaves the game running.
+Two instances on one port do not both serve. The first keeps the endpoint, so every later command
+answers from the older process while the newer window is the one on screen. Give a second instance a
+different `HOTREPL_PORT`; `build-tool launch` passes it through via
+`build-tool/Game/WineEnvironment.cs:ReplPortVariable`. The default endpoint is documented in
+`node_modules/@hotrepl/cli/README.md`.
 
-Two instances on one port do not both serve. The first keeps 18590, so every later command answers
-from the older process while the newer window is the one on screen. Give a second instance its own
-port with `HOTREPL_PORT`, which `build-tool launch` passes through.
-
-```sh
-ps aux | grep "[a]ncientkingdoms.exe"     # expect no output before the first launch
-pkill -f ancientkingdoms.exe              # only when an orphan is confirmed
-```
+Before relaunching, check for an orphaned `ancientkingdoms.exe` process.
 
 Quit with `game.quit` at the end of a session. A hard kill is safe for player data when the run
 redirected the database. The player save keeps its content hash and leaves no write-ahead sidecar.
-
-## Endpoint configuration
-
-Use `--url` or set `HOTREPL_URL`. The CLI reads no profile file. Profile and token concepts in older
-notes are stale.
 
 ## References
 
@@ -112,8 +77,3 @@ usually decides the topic does not apply.
   reporting any figure read from a client. Without it a plain server field reads as zero rather than
   failing, and the zero is published as a measurement.
 
-## Boundary
-
-`build-tool` owns deploy, launch, export orchestration, and Steam updates. `hotrepl` owns connection,
-handshake metadata, eval, typed-command `run` and `describe`, artifact access, and journal queries.
-Compose them. Do not wrap one with the other.

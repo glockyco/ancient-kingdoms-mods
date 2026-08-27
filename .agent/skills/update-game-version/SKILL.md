@@ -8,45 +8,19 @@ The server-script diff is the planning source. A changelog omits implementation 
 
 ## 1. Acquire and diff evidence
 
-```bash
-./scripts/update-server-scripts.sh <version>
-readlink server-scripts
-/usr/bin/diff -b -rq .decompiled/<previous-entry> server-scripts
-```
-
-The update script reads the installed assembly, installs the pinned ILSpy tool when needed, writes one content-addressed entry under `.decompiled/`, updates the `server-scripts` symlink, and keeps one previous entry. If the install still contains the old build, run `dotnet run --project build-tool update` and repeat.
+See `scripts/update-server-scripts.sh` for the evidence-acquisition commands and snapshot behavior.
 
 Read focused diffs for every game field used by DataExporter and every mechanic named by the changelog. When a diff touches a cited region, confirm that the anchor still names the code its claim describes. Verification compares content, so a passing check proves that the region did not change, not that the claim describes it.
 
-Decompiled scripts are evidence, not export input. Never commit `.decompiled/`, `server-scripts`, `exported-data/`, or `website/data/`.
+Decompiled scripts are evidence, not export input.
 
 ## 2. Reconcile citations first
 
-The pre-commit hook checks every citation in the tree, not the staged files. A new snapshot therefore blocks every later commit until this phase ends.
+See `build-pipeline/src/compendium/commands/citations.py` for citation-check statuses and reconciliation commands.
 
-```bash
-cd build-pipeline
-uv run compendium citations check
-```
-
-Four statuses block a commit: `changed`, `unresolved`, `ambiguous`, and `unsupported`. A `moved` or `suspect` status is advisory and blocks nothing, so bulk relocation is not a prerequisite for the work in later phases.
-
-Triage each blocking status:
-
-- The code moved and the claim still holds. Relocate the citation.
-- The anchor names unrelated code. Correct the anchor. Run `citations suggest` for a proposal.
-- The patch made the claim false, and the check reports `unsupported`. A re-anchor refuses that claim, so it cannot wait. Fix it here, together with the code that carries it.
-- The patch made the claim false, and the check reports only `changed`. The tool cannot see the contradiction. Record the claim in this phase's commit body, and fix it with its code in phase 4.
+The check cannot detect when a patch falsifies a claim but reports only `changed`. Record that claim in this phase's commit body, and fix it with its code in phase 4.
 
 Prefer a symbol citation for one named member.
-
-Run `citations fix` before `citations sync`. A sync writes every anchor and stamps one game version. It refuses an anchor it knows is wrong, which means a relocated reference or a claim that names code the region lacks. A reference whose code merely changed is accepted, so review it before you sync.
-
-```bash
-uv run compendium citations fix
-uv run compendium citations sync --game-version <version>
-uv run compendium citations check
-```
 
 A curated value that restates a game rule needs the same reconciliation, and the ledger cannot detect a
 rule that changed without moving:
@@ -64,15 +38,9 @@ Commit this phase before you change an exporter. A mechanic whose claim the tool
 
 ## 3. Update exporter compatibility
 
-When an exporter reads a changed field, update its model, exporter, pipeline schema, and validation before generating new data. MelonLoader must regenerate IL2CPP assemblies after a Unity or metadata change:
+See `build-tool/Commands/CommandCatalog.cs` for the update, launch, build, deploy, and export workflow.
 
-```bash
-dotnet run --project build-tool update
-dotnet run --project build-tool launch
-dotnet run --project build-tool build
-dotnet run --project build-tool deploy
-dotnet run --project build-tool export
-```
+When an exporter reads a changed field, update its model, exporter, pipeline schema, and validation before generating new data. MelonLoader must regenerate IL2CPP assemblies after a Unity or metadata change.
 
 If exporter code is unchanged, use `dotnet run --project build-tool export --update`. Add `--screenshots` only when the world map changed. Deployment copies Release DLLs but does not prune stale DLLs.
 
@@ -80,25 +48,13 @@ After an exporter change, run a second export without updating the game or chang
 
 ## 4. Regenerate consumers
 
-```bash
-cd build-pipeline
-uv run compendium tiles       # only after a map-changing screenshot export
-uv run compendium build
-uv run compendium redactions check
-```
+See `build-pipeline/src/compendium/cli.py` for `tiles`, `build`, and `redactions check`.
 
 Tile validation must pass before replacement. Investigate redaction drift. Run `uv run compendium redactions sync --game-version <version>` only after every new decision is explained. The ledger stamps that version, so it states which export the decisions were taken against.
 
 Apply current-tense website changes. Fix each claim that phase 2 recorded, together with the code that carries it. New data also invalidates tests that assert on it and changes generated fixtures, so treat each one as its own concern.
 
-Rebuild and inspect mechanics snapshots:
-
-```bash
-cd website
-pnpm build
-node scripts/snapshot-mechanics.mjs
-node scripts/snapshot-mechanics.mjs --update  # only after every diff is explained
-```
+See `website/scripts/snapshot-mechanics.mjs` for mechanics snapshot generation and its `--update` option.
 
 ## 5. Publish and verify the release
 

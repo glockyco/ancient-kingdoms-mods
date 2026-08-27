@@ -109,8 +109,7 @@ then `You have entered Milldenn` - a death and a town teleport that four separat
 revealed.
 
 Take the screenshot first, then form the explanation. Delete a diagnostic capture afterwards; keep only
-what a report cites. `'/Users/glockyco/src/github.com/glockyco/ancient-kingdoms-mods/.agent/skills/game-defect-reports'` holds the capture call and its two traps, a Windows
-path and a frame to wait before the file exists.
+what a report cites. `skill://game-defect-reports` holds the capture call and its two traps, a Windows path and a frame to wait before the file exists.
 
 ## Prefer an event to a sample, and check that it can be subscribed to
 
@@ -183,13 +182,11 @@ no events. Each of the three fails in a way that looks like the others.
 
 ## Record absolute deadlines
 
-The game stores deadlines, not remaining times: `castTimeEnd`, `cooldownEnd`, and
-`server-scripts/MonsterSkills.cs:nextSpecialCastTime` are all absolute server-corrected times. Record
-the deadline rather than the difference. Coarse samples then reconstruct exact events, and a deadline
-that moves between samples reveals a decision the game made without a visible action.
+The monster deadline is `server-scripts/MonsterSkills.cs:nextSpecialCastTime`; use the synchronized
+server time defined in `.agent/rules/mods-runtime.md`.
 
-Read the clock as `NetworkTime.time` plus `NetworkManagerMMO.offsetNetworkTime`, which is the clock
-every deadline uses.
+Record the deadline rather than the difference. Coarse samples then reconstruct exact events, and a
+deadline that moves between samples reveals a decision the game made without a visible action.
 
 ## Hold the fixture alive
 

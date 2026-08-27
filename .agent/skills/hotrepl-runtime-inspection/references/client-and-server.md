@@ -5,13 +5,8 @@ of the process that produced it, so establish the mode before you trust a field.
 
 ## Which process holds the server
 
-`server-scripts/UICharacterSelection.cs:gameMode` selects the mode and the transport.
-
-| Mode | Menu entry          | Transport      | `NetworkServer.active` |
-| ---- | ------------------- | -------------- | ---------------------- |
-| 0    | Single Player       | none, no listen | true                   |
-| 1    | Multiplayer Online  | `EosTransport`  | true when hosting, false when joining |
-| 2    | Multiplayer LAN     | `KcpTransport`  | true when hosting, false when joining |
+`server-scripts/UICharacterSelection.cs:gameMode` owns the mode, transport, and hosting or joining
+selection.
 
 A local world runs its own server in the same process, so every server field is readable there.
 `NetworkServer.active` is the only test that matters. Read it before you read anything else.

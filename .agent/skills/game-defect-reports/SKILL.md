@@ -5,10 +5,6 @@ description: Reproduce, record, and prepare a report for a defect in the Ancient
 
 # Game defect reports
 
-Record a defect in the game so the developer can act on it without access to this repository.
-
-Reports live in `docs/game-bugs/`. One file holds one defect. `docs/game-bugs/README.md` indexes them.
-
 ## Boundary
 
 Decide who owns the defect before you write anything.
@@ -53,20 +49,6 @@ Screenshots are about 2.5 MB each. Convert an image to WebP before you commit it
 ```sh
 nix shell nixpkgs#libwebp --command cwebp -q 82 -resize 1400 0 in.png -o docs/game-bugs/evidence/out.webp
 ```
-
-## Report contents
-
-Use these sections. Keep the summary to one sentence.
-
-- **Summary**: what the game does that it should not.
-- **Build**: the version, the Steam build identifier, and the assembly hash. Read them from `server-scripts/SNAPSHOT.toml`.
-- **Impact**: what a player loses or sees. State the size of the effect.
-- **Steps to reproduce**: numbered player actions. A developer must be able to follow them without this repository and without mods.
-- **Observed**: the measurements, as a table when there is more than one.
-- **Expected**: the behaviour the game's own code or interface implies.
-- **Cause**: the source lines that produce the behaviour, with file and line. Quote the decisive line.
-- **Evidence**: screenshots and the commands that produced the readings.
-- **Notes**: instrumentation used, and anything the report did not test.
 
 ## Mods and credibility
 
