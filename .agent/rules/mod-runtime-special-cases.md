@@ -25,3 +25,5 @@ Eligibility and countdowns use synchronized server time. `MonsterRespawner` back
 ## BetterBestiary and BossSkillTracker
 
 An assembly marked `[HarmonyDontPatchAll]` must call `PatchAll()` explicitly. Keep the BetterBestiary TypeScript/C# formatter parity fixture synchronized. BossSkillTracker discovery remains combat-gated and bounded; do not add global object enumeration, per-frame spatial scans, or UI fallbacks that hide missing required resources.
+
+`MonsterSkills.nextSpecialCastTime`, `Monster.startCombatTime` and `Monster.basicOnlySkillTimeEnd` are plain server fields. A client of a remote server reads them as zero, so any use must branch on `NetworkServer.active` and state which source the reader used. The skill list, the aggro list and the entity state are synchronized, and `Skill.cooldown`, `Skill.castTime` and `Skill.name` resolve from the local asset cache, so cooldown rows work for a client.

@@ -18,11 +18,16 @@ public static class Readout
     /// <summary>A single countdown, as a row shows a remaining cooldown.</summary>
     public static string Seconds(double seconds) => Number(seconds) + "s";
 
-    /// <summary>The span between the exact deadline and the latest the cast is due.</summary>
-    public static string Span(double from, double to) => "in " + Number(from) + "-" + Number(to) + "s";
+    /// <summary>
+    /// The span between the deadline and the latest the cast is due. A window derived from
+    /// observation carries a tilde, because the game's bounds are not this monster's schedule.
+    /// </summary>
+    public static string Span(double from, double to, bool approximate = false)
+        => (approximate ? "~" : string.Empty) + "in " + Number(from) + "-" + Number(to) + "s";
 
     /// <summary>An upper bound alone, once the deadline has passed.</summary>
-    public static string UpTo(double seconds) => "\u2264 " + Number(seconds) + "s";
+    public static string UpTo(double seconds, bool approximate = false)
+        => (approximate ? "~" : string.Empty) + "\u2264 " + Number(seconds) + "s";
 
     private static string Number(double seconds)
     {

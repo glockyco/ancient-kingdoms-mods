@@ -48,7 +48,7 @@ public sealed class GateStripView
 
     public void Update(GateVm gate, double now)
     {
-        bool hasSpan = gate.Status != GateStatus.Unknown;
+        bool hasSpan = gate.Status is not (GateStatus.Inactive or GateStatus.Unknown);
         _track.gameObject.SetActive(hasSpan);
         _windowZone.gameObject.SetActive(hasSpan);
         _lockedFill.gameObject.SetActive(hasSpan);
@@ -70,9 +70,13 @@ public sealed class GateStripView
 
         switch (gate.Status)
         {
-            case GateStatus.Unknown:
+            case GateStatus.Inactive:
                 _status.Value = "OUT OF FIGHT";
                 _readout.Value = "no gate";
+                break;
+            case GateStatus.Unknown:
+                _status.Value = "UNKNOWN";
+                _readout.Value = "no cast seen";
                 break;
             case GateStatus.Warmup:
                 _status.Value = "WARMUP";
@@ -92,7 +96,9 @@ public sealed class GateStripView
                 break;
             case GateStatus.Armed:
                 _status.Value = "ARMED";
-                _readout.Value = now < gate.LatestAt ? Readout.UpTo(gate.LatestAt - now) : "any moment";
+                _readout.Value = now < gate.LatestAt
+                    ? Readout.UpTo(gate.LatestAt - now, Approximate(gate))
+                    : "any moment";
                 break;
             default:
                 _status.Value = "IDLE";
@@ -102,7 +108,10 @@ public sealed class GateStripView
     }
 
     private static string Span(GateVm gate, double now)
-        => Readout.Span(gate.ReadyAt - now, gate.LatestAt - now);
+        => Readout.Span(gate.ReadyAt - now, gate.LatestAt - now, Approximate(gate));
+
+    /// <summary>An observed window states what the game allows, not what this monster scheduled.</summary>
+    private static bool Approximate(GateVm gate) => gate.Provenance == GateProvenance.Observed;
 
     private static void WidthFrac(Image image, float frac)
     {

@@ -54,15 +54,24 @@ public static class SkillReader
     }
 
     /// <summary>
-    /// Reads the monster's special-cast gate. The cast mirrors the game's own unconditional cast in
-    /// Monster.SelectNextCombatSkillIndex, so a monster without MonsterSkills is a defect, not a case.
+    /// Reads what this process can see of the monster's special-cast gate. The cast mirrors the
+    /// game's own unconditional cast in Monster.SelectNextCombatSkillIndex, so a monster without
+    /// MonsterSkills is a defect, not a case.
     /// </summary>
     public static GateReading ReadGate(Monster monster)
     {
         var skills = monster.skills.Cast<MonsterSkills>();
         Skill basic = skills.skills[0];
         double cycle = basic.castTime + basic.cooldown + Tuning.RefractorySeconds;
-        return new GateReading(skills.nextSpecialCastTime, monster.startCombatTime, monster.basicOnlySkillTimeEnd, cycle);
+
+        int current = skills.currentSkill;
+        double specialCastEnd = IsCasting(monster) && current >= 1 && current < skills.skills.Count
+            ? skills.skills[current].castTimeEnd
+            : 0.0;
+
+        return GameAccess.HostsServer
+            ? GateReading.FromServer(skills.nextSpecialCastTime, monster.startCombatTime, monster.basicOnlySkillTimeEnd, specialCastEnd, cycle)
+            : GateReading.FromObservation(specialCastEnd, cycle);
     }
 
     private static bool IsNonCastable(ScriptableSkill data)

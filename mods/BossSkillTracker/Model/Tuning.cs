@@ -14,8 +14,11 @@ public static class Tuning
     public const double RefractorySeconds = 0.5;
 
     // MonsterSkills.NextSkill pushes its deadline by Random.Range(6, 12) after it selects a skill
-    // and by Random.Range(2, 4) after it finds none. A push below this came from the second branch.
+    // and by Random.Range(2, 4) after it finds none. A push below the lower bound came from the
+    // second branch. A client of a remote server never receives the deadline, so it derives a
+    // window from these two bounds instead.
     public const double SpecialGateMinSeconds = 6.0;
+    public const double SpecialGateMaxSeconds = 12.0;
 
     // Discovery loop.
     public const float ScanIntervalSeconds = 0.2f;
@@ -47,7 +50,7 @@ public static class Tuning
     public const float RowCastWidth = 60f;
     public const float GateTrackHeight = 12f;
     public const float GateStatusWidth = 72f;
-    public const float GateReadoutWidth = 86f;
+    public const float GateReadoutWidth = 96f;
     public const float StripeHeight = 2f;
     public const float LineWidth = 1f;
     public const float Pad = 6f;

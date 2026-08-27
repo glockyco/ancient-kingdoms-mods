@@ -12,6 +12,12 @@ public static class GameAccess
 
     public static Player LocalPlayer => Player.localPlayer;
 
+    /// <summary>
+    /// Whether this process runs the world's server. A local world does; a client that joined a
+    /// remote server through UIServerList does not, and its monsters carry no server-side fields.
+    /// </summary>
+    public static bool HostsServer => NetworkServer.active;
+
     public static double ServerTime
     {
         get
