@@ -510,6 +510,44 @@ Order matters because each step rounds separately. The steps are integer operati
 `CeilToInt` and `RoundToInt`, so the model has to walk them in the engine's order rather than multiply
 one set of factors.
 
+## The mitigation coefficient, measured
+
+The model reads `clamp(defense * 0.0005, 0, 0.9)` from source. It has now been measured, by holding one
+target and changing only its defense, so the level difference, the block chance floor and every caster
+term stay fixed and the coefficient is the only thing moving.
+
+Ancient Kingdoms 0.9.31.0, Steam build 24925347. Ancient Cyclops at level 55, a level 50 Rogue, Stab at
+level 1, intent 464 read from the engine's own argument on every hit. Critical hits excluded by median
+filter; a critical is unambiguous at this scale.
+
+| Defense | Hits | Observed ratio | Predicted at 0.0005 | Difference |
+|---|---|---|---|---|
+| 300 | 17 | 0.7561 | 0.7650 | -1.2 percent |
+| 500 | 17 | 0.6917 | 0.6750 | +2.5 percent |
+| 700 | 11 | 0.5956 | 0.5850 | +1.8 percent |
+| 1000 | 18 | 0.4407 | 0.4500 | -2.1 percent |
+| 2000 | 9 | 0.0881 | 0.0900 | -2.1 percent |
+| 10000 | 6 | 0.0916 | 0.0900 | +1.8 percent |
+
+A fit over the four unclamped points gives 0.000498 against 0.000500 in source, a difference of 0.5
+percent. Each residual sits inside what a sample mean of a plus or minus ten percent roll allows.
+
+The ceiling is confirmed by the last two rows rather than argued from the source. Raising defense from
+2000 to 10000 is a fivefold rise and changed nothing: the target still took nine percent of intent, where
+an unclamped coefficient would have taken it to zero and past it. Mitigation saturates at 1800 defense,
+so a defense debuff is worth nothing at all above that and everything below it.
+
+### A defense debuff moves two things
+
+Block chance is `clamp(baseBlockChance + defense * 0.0001, 0, 0.8)`, and the same target read 0.17 at
+defense 700 and 0.80 at defense 10000, which places its own base at 0.10 and puts the second reading at
+the cap. The published value for the one boss that carries 10000 defense is also 0.80, so the cap is
+reached in the game's own data rather than only under instrumentation.
+
+The landing rate followed: 6 hits from 23 actions at defense 10000 against roughly 11 from 18 at defense
+700. A defense debuff therefore raises damage twice, through mitigation and through how often a hit
+lands, and both saturate. The model already requires this coupling; it is now measured.
+
 ## A companion is a different machine
 
 A companion's period comes from `Monster.StartRefractoryPeriod`, which sets a flat 1.0 s for a special

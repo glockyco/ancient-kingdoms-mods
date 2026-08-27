@@ -206,9 +206,13 @@ section checks a model and waits for one.
       smaller equipment pool are covered.
 - [ ] 7.6 Add a companion fixture that measures contribution with and without equipment, reported as an
       expectation over the engine's random action selection.
-- [ ] 7.7 Add target-state fixtures that measure the physical mitigation coefficient directly: identical
-      hits against targets of differing defense, solving the coefficient from the observed reduction. The
-      model reads this coefficient from source and it has never been measured.
+- [x] 7.7 Measure the physical mitigation coefficient directly: identical hits against differing defense,
+      solving the coefficient from the observed reduction. Measured as 0.000498 against 0.000500 in
+      source, fitted over four defense values. One target was held and only its defense changed, because
+      the reachable bosses differ in level as well as defense and a second variable would have to be
+      removed again. The ceiling is confirmed rather than argued: defense 2000 and defense 10000 took the
+      same nine percent of intent. The same series also measured the block chance coupling, 0.17 at
+      defense 700 against 0.80 at defense 10000, which is its cap.
 - [ ] 7.8 Add a fixture that measures the debuff landing rate over repeated attempts against targets of
       differing defense and at differing caster accuracy, reporting the observed rate against the
       predicted probability. This also resolves the level-difference term, which is currently unknown and
