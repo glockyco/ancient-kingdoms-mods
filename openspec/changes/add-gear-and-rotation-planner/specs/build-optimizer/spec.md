@@ -65,6 +65,11 @@ A single start is not sufficient, because the objective has multiple local optim
 The search SHALL treat equipment selection, attribute point allocation, and skill point allocation as
 one coupled problem. It SHALL NOT fix one of them arbitrarily.
 
+#### Scenario: A tier restricts which skills can be learned together
+
+- **WHEN** the search allocates skill points within a tier that admits a limited number of skills
+- **THEN** it enumerates the permitted combinations rather than treating each skill independently
+
 #### Scenario: A skill grants a damage percentage
 
 - **WHEN** a skill allocation raises a damage percentage bonus

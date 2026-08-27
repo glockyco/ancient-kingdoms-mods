@@ -306,10 +306,15 @@ A veteran level adds one base damage and one base magic damage to an active merc
 health and resource multipliers (`server-scripts/Player.cs:4527-4537`). Its skill level, by contrast, is
 computed from the owner's state when it spawns (`server-scripts/PetSkills.cs:27-41`).
 
-Only the multipliers survive a restart. The save holds the values rolled at hire and nothing else, and
-the load path rebuilds the multipliers from the owner's veteran total while assigning the two damage
-values from the stored roll (`server-scripts/Player.cs:9971-9993`). The damage accumulation is therefore
-transient, and it is lost every time the game loads.
+The rolled values survive a restart and the accumulation on top of them does not. The save holds what
+was rolled at hire, and the load path rebuilds the multipliers from the owner's veteran total while
+assigning the two damage values from the stored roll verbatim
+(`server-scripts/Player.cs:9971-9993`). The damage accumulation is therefore transient, and it is lost
+every time the game loads, while the multiplier accumulation is restored.
+
+A stored roll of zero is treated as missing rather than as a value, so the load path rolls a fresh
+number from a different range instead. A companion whose hire roll produced zero therefore has
+different damage in every session.
 
 This was measured across a reload at ten veteran points. Base damage rose from 27 to 37 and returned to
 27. The health multiplier rose from 1.004374 to 1.029374 and stayed there. The defect is recorded in
@@ -327,6 +332,9 @@ hire price (`server-scripts/Player.cs`, the dismiss command destroys the compani
 re-hiring draws a fresh roll, so the best roll is reachable. A best-in-slot plan therefore assumes the
 best reachable roll, exactly as it assumes the best obtainable item. A plan limited to what a player owns
 uses that player's supplied value.
+
+The playable races are Human, Elf, Dark Elf, Dwarf, Fire Goblin, Felarii and Drassar. `dark_alliance`
+is a faction shared by Dark Elf and Fire Goblin, so it is not a value this table is keyed on.
 
 At the level cap the best reachable base damage is 47, for a Felarii or Drassar companion whose race
 factor is 0.95. The accumulated value reaches 247. On the geared companion that was measured, that is 508

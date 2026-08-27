@@ -196,18 +196,33 @@ that ceiling SHALL contribute nothing to mitigation.
 The model SHALL evaluate a build at the skill levels the build actually allocates. It SHALL NOT
 assume that every skill sits at its maximum level.
 
-Normal and veteran skill points SHALL be treated as separate budgets. Tier gates and prerequisite
-chains SHALL be enforced.
+Normal and veteran skill points SHALL be treated as separate budgets. Each budget SHALL be one point
+per level after the first, plus one per veteran point.
+
+Every gate a skill carries SHALL be enforced: the level it requires, the points already spent in its
+own budget, up to two predecessor skills each at its own level, and the number of skills already
+learned in its tier. A tier admits at most two learned skills at tiers one and three, and at most one
+at tiers two and four. A tier is therefore a choice between skills and not only a threshold to pass.
 
 #### Scenario: A build requests more points than it has
 
 - **WHEN** an allocation exceeds the available points in either budget
 - **THEN** the model rejects the allocation as infeasible
 
-#### Scenario: A skill sits behind a tier gate
+#### Scenario: A skill sits behind a spend threshold
 
 - **WHEN** a skill requires a number of already-spent points
 - **THEN** the model treats it as unavailable until that many points are spent in the same budget
+
+#### Scenario: A tier already holds its permitted skills
+
+- **WHEN** an allocation learns a third skill in a tier that admits two
+- **THEN** the model rejects the allocation as infeasible
+
+#### Scenario: A skill has two predecessors
+
+- **WHEN** a skill names two predecessor skills
+- **THEN** both are required at their stated levels
 
 ### Requirement: Each damaging skill class is evaluated by its own rule
 
@@ -346,7 +361,9 @@ rotation, because that selection is random among available skills.
 #### Scenario: Two mercenaries of the same archetype are compared
 
 - **WHEN** two mercenaries share an archetype and a race
-- **THEN** the model assigns them the same base damage regardless of when each was acquired
+- **THEN** the model may still assign them different base damage, because that value is rolled at hire
+- **AND** a plan that may re-hire uses the best roll the race can produce, while a plan limited to what
+  a player owns uses the value that player supplied
 
 ### Requirement: A target stat is derived from its curve and its spawn, not from a denormalised scalar
 
