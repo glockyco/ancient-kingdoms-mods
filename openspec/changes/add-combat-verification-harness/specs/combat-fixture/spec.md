@@ -152,6 +152,11 @@ fixture needs no captured roll to reproduce one.
 A companion's health multiplier, resource multiplier, and base combat value SHALL be assigned directly
 rather than obtained by repeated hiring.
 
+A companion's race SHALL NOT be assigned. The engine draws it from a list the archetype allows, so an
+assigned race produces a companion the game never offers. Where a fixture states a race, the drawn race
+SHALL be compared against it and a difference SHALL be reported, because the seed the fixture records
+is what makes the draw reproducible.
+
 Each assigned value SHALL fall inside the range the hire path can produce for that companion's race and
 archetype at the owner's level.
 
@@ -161,6 +166,16 @@ construction, and the increment is excluded deliberately because it is a defect.
 
 A value the engine never reads SHALL be recorded for fidelity but SHALL NOT be treated as affecting
 output.
+
+#### Scenario: A fixture states a race the draw did not produce
+
+- **WHEN** a fixture states a companion race and the engine draws another
+- **THEN** materialization fails and reports both races
+
+#### Scenario: A fixture states no companion race
+
+- **WHEN** a fixture states no race for a companion
+- **THEN** the drawn race is kept and recorded
 
 #### Scenario: A companion value is outside the reachable range
 

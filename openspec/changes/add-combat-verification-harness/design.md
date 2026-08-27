@@ -207,6 +207,27 @@ definitions it was materialized from. A run compares both and rebuilds when eith
 covers each definition's name as well as its content, because a baseline is keyed on the fixture name
 and a rename therefore describes a different fixture.
 
+### A companion's race is drawn, so it is checked rather than assigned
+
+A hire rolls the race from a list the archetype allows, and the lists differ: a Rogue is never an Elf,
+a Druid is never a Dwarf or a Dark Elf, and Drassar appears only when a recruiter prefers it. Those
+lists are literals inside the roll, so nothing can be asked what an archetype offers.
+
+Three options exist and two are wrong.
+
+Assigning the race after the hire is the cheap one. It produces a companion the game never offers,
+and nothing downstream can tell, so a measured figure would describe a build no player can hold.
+
+Hiring until the draw matches was tried and reverted. A dismissal is deferred to the end of the
+frame, and the owner's slot keeps pointing at the destroyed companion, so a hire issued in the same
+frame finds every slot occupied and spawns a companion that belongs to none. The run leaks a
+companion into the world and reports that the engine refused a hire it actually performed.
+
+The remaining option is to accept the draw and check it. A fixture that names a race is reproducible
+through the seed the harness already records, and a mismatch is reported against the fixture rather
+than papered over. The three continuous values keep being assigned, because a range cannot be waited
+for.
+
 ### The rules are readable only once the world is loaded
 
 The class prefabs a fixture is checked against hang off `NetworkManagerMMO`, and they are unavailable at

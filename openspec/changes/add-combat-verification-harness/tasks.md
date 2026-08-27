@@ -97,13 +97,19 @@
       fixture does not declare, because a created character wears starter equipment and an undeclared
       piece would contribute to every measurement. An augment needs no separate step: it rides in the
       inventory slot and the swap carries it.
-- [ ] 3.8 Implement companion acquisition through the engine's hire command, ordered after the owner's
-      progression is complete so the companion receives no part of the per-level increment.
-- [ ] 3.9 Assign companion rolled values directly after acquisition, validating each against the race and
-      archetype envelope, and record a value the engine never reads without letting it affect output. The
-      load path restores the value stored at hire, so an assigned value lives only until the game reloads,
+- [x] 3.8 Implement companion acquisition through the engine's hire command, ordered after the owner's
+      progression is complete so the companion receives no part of the per-level increment. Supply a
+      generated name and the game's own price, because the engine stores an empty name verbatim and a
+      dismissal addresses a companion by name.
+- [x] 3.9 Assign the health multiplier, the resource multiplier and the base combat value directly after
+      acquisition, reading each one back. The resource follows the archetype. Do not assign the race: it is
+      drawn from a list the archetype allows, so an assigned one produces a companion the game never
+      offers. Check the drawn race against the fixture instead, and let the seed make it reproducible. The
+      load path restores the values stored at hire, so an assigned value lives only until the game reloads,
       and no later step may reload it.
-- [ ] 3.10 Implement companion equipping through the companion's equipment slots.
+- [x] 3.10 Implement companion equipping through the companion's own command, granting each item into the
+      owner's inventory because that is where the command reads from. The item's level requirement is
+      checked against the owner's level, not the companion's.
 - [ ] 3.11 Fail materialization loudly when a step does not take effect, naming the step and the value
       that did not change. The engine reports nothing: an out-of-range index, a wrong entity state, and a
       failed affordability check all return without an error and without an effect. A step therefore
