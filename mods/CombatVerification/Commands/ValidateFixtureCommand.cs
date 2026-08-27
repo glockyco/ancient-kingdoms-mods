@@ -52,7 +52,7 @@ namespace CombatVerification.Commands
                     Problems = problems,
                     MaxLevel = rules.MaxLevel,
                     MaxVeteranPoints = rules.MaxVeteranPoints,
-                    EquipmentSlotCount = rules.EquipmentSlotCount,
+                    EquipmentSlotCount = rules.EquipmentSlotCount(fixture.Character?.Class),
                     OffhandSlot = rules.OffhandSlot,
                     Classes = classes,
                 }));

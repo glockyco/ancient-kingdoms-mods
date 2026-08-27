@@ -23,8 +23,23 @@ namespace CombatVerification.Fixtures
         /// <summary>Attribute names the game defines.</summary>
         IReadOnlyCollection<string> AttributeNames { get; }
 
-        /// <summary>Equipment slot count, so a slot index can be bounds-checked.</summary>
-        int EquipmentSlotCount { get; }
+        /// <summary>
+        /// Equipment slots one archetype carries, so a slot index can be bounds-checked.
+        /// </summary>
+        /// <remarks>
+        /// Per archetype, because the slot table is serialized on each prefab rather than shared.
+        /// </remarks>
+        int EquipmentSlotCount(string archetype);
+
+        /// <summary>
+        /// Slots of this archetype that accept the category, which is the test the game applies.
+        /// </summary>
+        /// <remarks>
+        /// The same category belongs to different slots for different archetypes. Slot 13 requires
+        /// "Shield" for a Warrior, "Bow" for a Ranger and "Weapon" for a Rogue, so a bow fits no
+        /// slot at all when the question is asked without naming the archetype.
+        /// </remarks>
+        IReadOnlyCollection<int> SlotsAccepting(string archetype, string category);
 
         /// <summary>Offhand slot index, used to enforce that a two-handed weapon leaves it empty.</summary>
         int OffhandSlot { get; }
@@ -78,13 +93,6 @@ namespace CombatVerification.Fixtures
     public sealed class ItemRule
     {
         public string Name { get; set; }
-
-        /// <summary>
-        /// Slots this item may occupy. A category can be accepted by more than one slot: the
-        /// game gives a character two ring slots and two ear slots, so an item is not tied to
-        /// a single index.
-        /// </summary>
-        public IReadOnlyCollection<int> Slots { get; set; }
 
         public int LevelRequired { get; set; }
 

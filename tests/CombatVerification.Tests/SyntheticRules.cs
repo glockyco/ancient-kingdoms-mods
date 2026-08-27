@@ -14,14 +14,64 @@ namespace CombatVerification.Tests
         public int MaxVeteranPoints { get; set; } = 200;
         public IReadOnlyCollection<string> AttributeNames { get; set; } =
             new[] { "strength", "constitution", "dexterity", "intelligence", "wisdom", "charisma" };
-        public int EquipmentSlotCount { get; set; } = 16;
         public int OffhandSlot { get; set; } = 13;
 
         public Dictionary<string, string[]> Classes { get; } = new()
         {
             ["Warrior"] = new[] { "Human", "Dwarf" },
             ["Wizard"] = new[] { "Human", "Elf" },
+            ["Ranger"] = new[] { "Human", "Elf" },
+            ["Rogue"] = new[] { "Human", "Dark Elf" },
         };
+
+        /// <summary>
+        /// The slot table each archetype declares. Slot 13 differs by archetype in the game, so
+        /// a double that shared one table would accept a fixture the game refuses, and refuse one
+        /// the game accepts.
+        /// </summary>
+        public Dictionary<string, string[]> SlotTables { get; } = new()
+        {
+            ["Warrior"] = SlotsWithOffhand("Shield"),
+            ["Wizard"] = SlotsWithOffhand("Shield"),
+            ["Ranger"] = SlotsWithOffhand("Bow"),
+            ["Rogue"] = SlotsWithOffhand("Weapon"),
+        };
+
+        private static string[] SlotsWithOffhand(string offhand) => new[]
+        {
+            "Head", "Ear", "Chest", "Legs", "Ring", "Hands", "Neck", "Ear", "Belt", "Feet",
+            "Ring", "Artifact", "Weapon", offhand, "Bracers", "Charm",
+        };
+
+        public int EquipmentSlotCount(string archetype)
+            => TableFor(archetype) is { } table ? table.Length : 0;
+
+        public IReadOnlyCollection<int> SlotsAccepting(string archetype, string category)
+        {
+            var accepting = new List<int>();
+            var table = TableFor(archetype);
+            if (table is null || string.IsNullOrEmpty(category))
+                return accepting;
+
+            for (var index = 0; index < table.Length; index++)
+            {
+                if (!string.IsNullOrEmpty(table[index]) && category.StartsWith(table[index]))
+                    accepting.Add(index);
+            }
+
+            return accepting;
+        }
+
+        private string[]? TableFor(string? archetype)
+        {
+            foreach (var pair in SlotTables)
+            {
+                if (Key(pair.Key) == Key(archetype))
+                    return pair.Value;
+            }
+
+            return null;
+        }
 
         public Dictionary<string, SkillRule> Skills { get; } = new();
         public Dictionary<string, ItemRule> Items { get; } = new();
@@ -34,7 +84,8 @@ namespace CombatVerification.Tests
         public int AllocatableAttributePoints(int level, int veteranPoints)
             => (level < 1 ? 0 : level - 1) + veteranPoints;
 
-        public bool ClassExists(string className) => Classes.ContainsKey(className);
+        public bool ClassExists(string className)
+            => Classes.Keys.Any(name => Key(name) == Key(className));
 
         /// <summary>
         /// Resolution accepts a display name or an identifier, as the port requires. A double
@@ -110,20 +161,22 @@ namespace CombatVerification.Tests
             string[]? classes = null,
             bool twoHanded = false,
             string? category = null,
-            int[]? alsoFitsSlots = null)
+            string archetype = "Warrior")
         {
-            var slots = new List<int> { slot };
-            if (alsoFitsSlots is not null)
-                slots.AddRange(alsoFitsSlots);
+            // A test that names no category means "an item belonging in this slot", so the
+            // category that slot requires is used, which is how the game decides where it fits.
+            var table = TableFor(archetype);
+            var derived = category ?? (table is not null && slot >= 0 && slot < table.Length
+                ? table[slot]
+                : null);
 
             Items[name] = new ItemRule
             {
                 Name = name,
-                Slots = slots,
                 LevelRequired = levelRequired,
                 Classes = classes ?? System.Array.Empty<string>(),
                 IsTwoHanded = twoHanded,
-                Category = category!,
+                Category = derived!,
             };
             return this;
         }

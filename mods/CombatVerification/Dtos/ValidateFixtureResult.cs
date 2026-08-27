@@ -26,6 +26,10 @@ namespace CombatVerification.Dtos
         public int MaxVeteranPoints { get; set; }
 
         [JsonProperty("equipmentSlotCount", Required = Required.Default)]
+        /// <summary>
+        /// Slots the fixture's own class carries. Each archetype serializes its own slot table,
+        /// so this describes the class that was checked rather than every class.
+        /// </summary>
         public int EquipmentSlotCount { get; set; }
 
         [JsonProperty("offhandSlot", Required = Required.Default)] public int OffhandSlot { get; set; }

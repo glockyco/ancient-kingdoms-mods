@@ -18,6 +18,8 @@
 
   <!-- Production source files with no game-assembly dependencies, compiled directly -->
   <ItemGroup>
+    <Compile Include="..\..\mods\DataExporter\GameIds.cs"
+             Link="GameIds.cs" />
     <Compile Include="..\..\mods\CombatVerification\Fixtures\FixtureDescriptor.cs"
              Link="Fixtures\FixtureDescriptor.cs" />
     <Compile Include="..\..\mods\CombatVerification\Fixtures\IFixtureRules.cs"

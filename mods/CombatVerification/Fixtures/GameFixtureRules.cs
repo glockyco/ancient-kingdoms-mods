@@ -6,6 +6,7 @@ using DataExporter;
 using Il2Cpp;
 using Il2CppMirror;
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
+using System.Reflection;
 using UnityEngine;
 
 namespace CombatVerification.Fixtures
@@ -23,6 +24,7 @@ namespace CombatVerification.Fixtures
         /// <summary>Descriptor schema this build of the harness materializes.</summary>
 
         private readonly Dictionary<string, Player> _classes;
+        private readonly Dictionary<string, string[]> _slots;
         private readonly Dictionary<string, SkillRule> _skills;
         private readonly Dictionary<string, ItemRule> _items;
         private readonly HashSet<string> _augments;
@@ -31,6 +33,7 @@ namespace CombatVerification.Fixtures
 
         private GameFixtureRules(
             Dictionary<string, Player> classes,
+            Dictionary<string, string[]> slots,
             Dictionary<string, SkillRule> skills,
             Dictionary<string, ItemRule> items,
             HashSet<string> augments,
@@ -38,6 +41,7 @@ namespace CombatVerification.Fixtures
             Player reference)
         {
             _classes = classes;
+            _slots = slots;
             _skills = skills;
             _items = items;
             _augments = augments;
@@ -77,8 +81,9 @@ namespace CombatVerification.Fixtures
 
             return new GameFixtureRules(
                 classes,
+                ReadSlotTables(classes),
                 ReadSkills(classes),
-                ReadItems(classes.Values.First()),
+                ReadItems(),
                 ReadItemsOfKind<AugmentItem>(),
                 ReadConsumables(),
                 classes.Values.First());
@@ -100,25 +105,105 @@ namespace CombatVerification.Fixtures
         /// </summary>
         public IReadOnlyCollection<string> AttributeNames => GameAttributes.NamesOn(typeof(Player));
 
-        public int EquipmentSlotCount => SlotInfoOf(_reference).Length;
+        public int EquipmentSlotCount(string archetype)
+            => _slots.TryGetValue(GameIds.ClassId(archetype ?? ""), out var slots) ? slots.Length : 0;
+
+        public IReadOnlyCollection<int> SlotsAccepting(string archetype, string category)
+        {
+            var accepting = new List<int>();
+            if (!_slots.TryGetValue(GameIds.ClassId(archetype ?? ""), out var slots)
+                || string.IsNullOrEmpty(category))
+                return accepting;
+
+            for (var index = 0; index < slots.Length; index++)
+            {
+                if (!string.IsNullOrEmpty(slots[index]) && category.StartsWith(slots[index]))
+                    accepting.Add(index);
+            }
+
+            return accepting;
+        }
 
         /// <summary>
-        /// Offhand slot, found by its own slot definition rather than by a remembered index, so
-        /// a change to the game's slot order does not silently move it.
+        /// The slot a two-handed weapon must leave empty.
         /// </summary>
-        public int OffhandSlot
-        {
-            get
-            {
-                var slots = SlotInfoOf(_reference);
-                for (var i = 0; i < slots.Length; i++)
-                {
-                    if (slots[i] != null && slots[i].requiredCategory == "Shield")
-                        return i;
-                }
+        /// <remarks>
+        /// Stated as the index the game states. Its own two-handed check reads
+        /// <c>slots[13]</c> directly (<c>EquipmentItem.cs:112</c> for a player and
+        /// <c>EquipmentItem.cs:158</c> for a companion), so there is nothing to derive it from.
+        /// Searching for the slot that requires "Shield" was wrong: a Ranger declares "Bow" there
+        /// and a Rogue declares "Weapon", so the search found no slot and the rule never ran.
+        /// </remarks>
+        public int OffhandSlot => 13;
 
-                return -1;
+        /// <summary>
+        /// The slot table each archetype declares, for player classes and for companions.
+        /// </summary>
+        /// <remarks>
+        /// Every prefab serializes its own table, so one prefab does not describe the others.
+        /// Read live, slot 13 requires "Shield" for a Warrior, a Cleric, a Wizard and a Druid,
+        /// "Bow" for a Ranger, and "Weapon" for a Rogue, and the companion prefabs match their
+        /// namesakes. Companion archetypes are absent until the scene holding their prefabs is
+        /// loaded, and an absent table is reported as unknown rather than replaced by another
+        /// archetype's.
+        /// </remarks>
+        private static Dictionary<string, string[]> ReadSlotTables(Dictionary<string, Player> classes)
+        {
+            var tables = new Dictionary<string, string[]>();
+
+            foreach (var pair in classes)
+                tables[pair.Key] = CategoriesOf(SlotInfoOf(pair.Value));
+
+            foreach (var pair in CompanionSlotTables())
+                tables[pair.Key] = pair.Value;
+
+            return tables;
+        }
+
+        /// <summary>
+        /// Companion slot tables, taken from the prefabs the mercenary interface declares.
+        /// </summary>
+        /// <remarks>
+        /// The prefabs are separate members rather than a list, so they are enumerated by
+        /// reflection and each one names its own archetype. An archetype a game update adds is
+        /// therefore read without an edit here.
+        /// </remarks>
+        private static Dictionary<string, string[]> CompanionSlotTables()
+        {
+            var tables = new Dictionary<string, string[]>();
+            var mercenaries = UIMercenaries.singleton;
+            if (mercenaries == null)
+                return tables;
+
+            foreach (var member in typeof(UIMercenaries).GetProperties(
+                         BindingFlags.Public | BindingFlags.Instance))
+            {
+                if (member.PropertyType != typeof(GameObject))
+                    continue;
+
+                var prefab = member.GetValue(mercenaries) as GameObject;
+                if (prefab == null)
+                    continue;
+
+                var pet = prefab.GetComponent<Pet>();
+                var equipment = prefab.GetComponent<MercenaryEquipment>();
+                if (pet == null || equipment == null || string.IsNullOrWhiteSpace(pet.typeMonster))
+                    continue;
+
+                tables[GameIds.ClassId(pet.typeMonster)] = CategoriesOf(equipment.slotInfo);
             }
+
+            return tables;
+        }
+
+        /// <summary>The required category of each slot, in the engine's slot order.</summary>
+        private static string[] CategoriesOf(Il2CppReferenceArray<EquipmentInfo> slotInfo)
+        {
+            var categories = new string[slotInfo == null ? 0 : slotInfo.Length];
+            for (var index = 0; index < categories.Length; index++)
+                categories[index] = slotInfo[index] == null ? null : slotInfo[index].requiredCategory;
+
+            return categories;
         }
 
         /// <summary>
@@ -136,7 +221,8 @@ namespace CombatVerification.Fixtures
         /// <summary>Classes the game defines, reported so a result names what it checked against.</summary>
         public IReadOnlyCollection<string> ClassNames => _classes.Keys;
 
-        public bool ClassExists(string className) => _classes.ContainsKey(className);
+        public bool ClassExists(string className)
+            => className != null && _classes.ContainsKey(GameIds.ClassId(className));
 
         /// <summary>One point per level after the first, plus one per veteran award.</summary>
         public int AllocatableAttributePoints(int level, int veteranPoints)
@@ -250,11 +336,8 @@ namespace CombatVerification.Fixtures
             return cumulative;
         }
 
-        private Dictionary<string, ItemRule> ReadItems() => ReadItems(_reference);
-
-        private static Dictionary<string, ItemRule> ReadItems(Player reference)
+        private static Dictionary<string, ItemRule> ReadItems()
         {
-            var slotInfo = SlotInfoOf(reference);
             var items = new Dictionary<string, ItemRule>();
 
             foreach (var pair in GameItems.Enumerate())
@@ -269,7 +352,6 @@ namespace CombatVerification.Fixtures
                 items[id] = new ItemRule
                 {
                     Name = asset.nameItem,
-                    Slots = SlotsAccepting(slotInfo, category),
                     LevelRequired = usable == null ? 0 : usable.minLevel,
                     Classes = ReadItemClasses(asset),
                     Category = category,
@@ -278,27 +360,6 @@ namespace CombatVerification.Fixtures
             }
 
             return items;
-        }
-
-        /// <summary>
-        /// Slots whose required category the item's category satisfies. This is the same test
-        /// the game applies, and it can match more than one slot.
-        /// </summary>
-        private static IReadOnlyCollection<int> SlotsAccepting(
-            Il2CppReferenceArray<EquipmentInfo> slotInfo, string category)
-        {
-            var slots = new List<int>();
-            if (string.IsNullOrEmpty(category))
-                return slots;
-
-            for (var i = 0; i < slotInfo.Length; i++)
-            {
-                var required = slotInfo[i].requiredCategory;
-                if (!string.IsNullOrEmpty(required) && category.StartsWith(required))
-                    slots.Add(i);
-            }
-
-            return slots;
         }
 
         /// <summary>

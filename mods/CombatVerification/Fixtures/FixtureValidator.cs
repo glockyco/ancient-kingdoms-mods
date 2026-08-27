@@ -1,5 +1,6 @@
 #nullable disable
 using System.Collections.Generic;
+using DataExporter;
 using System.Linq;
 
 namespace CombatVerification.Fixtures
@@ -180,7 +181,7 @@ namespace CombatVerification.Fixtures
                     continue;
                 }
 
-                if (rule.Classes.Count > 0 && !rule.Classes.Contains(character.Class))
+                if (rule.Classes.Count > 0 && !Includes(rule.Classes, character.Class))
                     Add(problems, field,
                         $"A {character.Class} cannot learn it. Classes: "
                         + $"{string.Join(", ", rule.Classes)}.");
@@ -252,15 +253,23 @@ namespace CombatVerification.Fixtures
             if (character.Equipment.Count == 0)
                 return;
 
+            var slotCount = rules.EquipmentSlotCount(character.Class);
+            if (slotCount <= 0)
+            {
+                Add(problems, "character.equipment",
+                    $"The game publishes no slot table for '{character.Class}', so the equipment "
+                    + "cannot be checked.");
+                return;
+            }
+
             var occupied = new Dictionary<int, EquipmentSpec>();
             foreach (var entry in character.Equipment)
             {
                 var field = $"character.equipment[{entry.Slot}]";
 
-                if (entry.Slot < 0 || entry.Slot >= rules.EquipmentSlotCount)
+                if (entry.Slot < 0 || entry.Slot >= slotCount)
                 {
-                    Add(problems, field,
-                        $"Slot is outside the range 0 to {rules.EquipmentSlotCount - 1}.");
+                    Add(problems, field, $"Slot is outside the range 0 to {slotCount - 1}.");
                     continue;
                 }
 
@@ -281,17 +290,18 @@ namespace CombatVerification.Fixtures
                     continue;
                 }
 
-                if (!rule.Slots.Contains(entry.Slot))
+                var fits = rules.SlotsAccepting(character.Class, rule.Category);
+                if (!fits.Contains(entry.Slot))
                     Add(problems, field,
-                        $"'{entry.ItemId}' does not fit slot {entry.Slot}. It fits: "
-                        + $"{(rule.Slots.Count == 0 ? "no slot" : string.Join(", ", rule.Slots))}.");
+                        $"'{entry.ItemId}' does not fit slot {entry.Slot} of a {character.Class}. "
+                        + $"It fits: {(fits.Count == 0 ? "no slot" : string.Join(", ", fits))}.");
 
                 if (rule.LevelRequired > character.Level)
                     Add(problems, $"{field}.itemId",
                         $"Requires level {rule.LevelRequired}; this fixture is level "
                         + $"{character.Level}.");
 
-                if (rule.Classes.Count > 0 && !rule.Classes.Contains(character.Class))
+                if (rule.Classes.Count > 0 && !Includes(rule.Classes, character.Class))
                     Add(problems, $"{field}.itemId",
                         $"A {character.Class} cannot equip it. Classes: "
                         + $"{string.Join(", ", rule.Classes)}.");
@@ -306,6 +316,26 @@ namespace CombatVerification.Fixtures
             }
 
             CheckTwoHandedOffhand(problems, occupied, rules);
+        }
+
+        /// <summary>
+        /// Whether a class list names this class.
+        /// </summary>
+        /// <remarks>
+        /// The game holds identifiers and a fixture is authored with the name a player reads, so
+        /// both sides are reduced to the identifier before they are compared. Comparing the two
+        /// forms directly made every Ranger fixture fail on an item only a Ranger can equip.
+        /// </remarks>
+        private static bool Includes(IReadOnlyCollection<string> classes, string className)
+        {
+            var wanted = GameIds.ClassId(className ?? "");
+            foreach (var candidate in classes)
+            {
+                if (GameIds.ClassId(candidate ?? "") == wanted)
+                    return true;
+            }
+
+            return false;
         }
 
         private static void CheckTwoHandedOffhand(
