@@ -157,5 +157,159 @@ namespace CombatVerification.Tests
 
         private int SpentInPool(bool veteran)
             => _skills.Where(skill => skill.IsVeteran == veteran).Sum(skill => skill.Level);
+
+        // --- equipment ---
+
+        /// <summary>One item as the game would define it.</summary>
+        internal sealed class FakeItem
+        {
+            public int MaxDurability { get; set; } = 100;
+
+            /// <summary>Slots the game would let it occupy. Empty means none.</summary>
+            public HashSet<int> Slots { get; set; } = new();
+        }
+
+        private readonly List<EquipmentSlotState> _equipment =
+            Enumerable.Range(0, 16)
+                .Select(index => new EquipmentSlotState { Index = index })
+                .ToList();
+
+        private readonly List<EquipmentSlotState> _inventory = new();
+
+        /// <summary>Items the game defines, by identifier.</summary>
+        public Dictionary<string, FakeItem> Items { get; } = new(StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>Inventory capacity. A grant beyond it is refused silently, as a full bag is.</summary>
+        public int InventoryCapacity { get; set; } = 24;
+
+        public bool ItemOperationsAllowed { get; set; } = true;
+
+        public string ActivityState { get; set; } = "IDLE";
+
+        /// <summary>Counts equip calls, including the ones the engine ignored.</summary>
+        public int EquipCalls { get; private set; }
+
+        /// <summary>
+        /// Slots the engine permits and then silently declines to fill. This is the case a
+        /// returned call cannot detect, and the only defence is reading the slot back.
+        /// </summary>
+        public HashSet<int> IgnoreEquipInto { get; } = new();
+
+        public IReadOnlyList<EquipmentSlotState> Equipment => _equipment;
+
+        public FakeCharacter WithItem(
+            string id, int maxDurability = 100, params int[] slots)
+        {
+            Items[id] = new FakeItem
+            {
+                MaxDurability = maxDurability,
+                Slots = new HashSet<int>(slots),
+            };
+            return this;
+        }
+
+        /// <summary>Dresses a slot, as character creation does before a build runs.</summary>
+        public FakeCharacter Wearing(int slot, string itemId, int durability = 20)
+        {
+            _equipment[slot] = new EquipmentSlotState
+            {
+                Index = slot,
+                ItemId = itemId,
+                Durability = durability,
+            };
+            return this;
+        }
+
+        public bool ItemExists(string itemId) => itemId != null && Items.ContainsKey(itemId);
+
+        public int MaxDurability(string itemId)
+            => Items.TryGetValue(itemId ?? "", out var item) ? item.MaxDurability : 0;
+
+        public void GrantItem(string itemId, int durability, string augmentId)
+        {
+            if (!ItemExists(itemId) || _inventory.Count >= InventoryCapacity)
+                return;
+
+            _inventory.Add(new EquipmentSlotState
+            {
+                Index = _inventory.Count,
+                ItemId = itemId,
+                AugmentId = string.IsNullOrWhiteSpace(augmentId) ? null : augmentId,
+                Durability = durability,
+            });
+        }
+
+        public int FindInInventory(string itemId, string augmentId)
+        {
+            var wanted = string.IsNullOrWhiteSpace(augmentId) ? null : augmentId;
+            for (var index = 0; index < _inventory.Count; index++)
+            {
+                var held = _inventory[index];
+                if (string.Equals(held.ItemId, itemId, StringComparison.OrdinalIgnoreCase)
+                    && string.Equals(held.AugmentId ?? "", wanted ?? "",
+                        StringComparison.OrdinalIgnoreCase))
+                    return index;
+            }
+
+            return -1;
+        }
+
+        public bool CanEquip(int inventoryIndex, int equipmentSlot)
+        {
+            if (inventoryIndex < 0 || inventoryIndex >= _inventory.Count)
+                return false;
+
+            var held = _inventory[inventoryIndex];
+            return Items.TryGetValue(held.ItemId, out var item) && item.Slots.Contains(equipmentSlot);
+        }
+
+        /// <summary>Slots the engine permits and then silently declines to empty.</summary>
+        public HashSet<int> IgnoreUnequipOf { get; } = new();
+
+        public void Unequip(int equipmentSlot)
+        {
+            if (equipmentSlot < 0 || equipmentSlot >= _equipment.Count
+                || !ItemOperationsAllowed
+                || IgnoreUnequipOf.Contains(equipmentSlot)
+                || _inventory.Count >= InventoryCapacity)
+                return;
+
+            var held = _equipment[equipmentSlot];
+            if (held.ItemId == null)
+                return;
+
+            _inventory.Add(new EquipmentSlotState
+            {
+                Index = _inventory.Count,
+                ItemId = held.ItemId,
+                AugmentId = held.AugmentId,
+                Durability = held.Durability,
+            });
+            _equipment[equipmentSlot] = new EquipmentSlotState { Index = equipmentSlot };
+        }
+
+        public void Equip(int inventoryIndex, int equipmentSlot)
+        {
+            EquipCalls++;
+
+            // Every reason the engine ignores the request, and it ignores it in silence.
+            if (!ItemOperationsAllowed
+                || inventoryIndex < 0 || inventoryIndex >= _inventory.Count
+                || equipmentSlot < 0 || equipmentSlot >= _equipment.Count
+                || !CanEquip(inventoryIndex, equipmentSlot)
+                || IgnoreEquipInto.Contains(equipmentSlot))
+                return;
+
+            var held = _inventory[inventoryIndex];
+            _inventory.RemoveAt(inventoryIndex);
+
+            _equipment[equipmentSlot] = new EquipmentSlotState
+            {
+                Index = equipmentSlot,
+                ItemId = held.ItemId,
+                AugmentId = held.AugmentId,
+                Durability = held.Durability,
+            };
+        }
     }
 }

@@ -41,7 +41,7 @@ namespace CombatVerification.Tests
         /// that accepted only one form would be more permissive than the game in one direction
         /// and stricter in the other.
         /// </summary>
-        private static string Key(string name)
+        private static string Key(string? name)
             => name == null
                 ? string.Empty
                 : name.ToLowerInvariant().Replace(" ", "").Replace("_", "").Replace("-", "");

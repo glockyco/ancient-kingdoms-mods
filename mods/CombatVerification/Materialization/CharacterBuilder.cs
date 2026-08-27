@@ -61,7 +61,8 @@ namespace CombatVerification.Materialization
             if (AdvanceLevel(character, spec, steps))
                 if (AdvanceVeteran(character, spec, steps))
                     if (SpendAttributes(character, spec, steps))
-                        SpendSkills(character, spec, steps);
+                        if (SpendSkills(character, spec, steps))
+                            EquipItems(character, spec, steps);
 
             return new BuildOutcome { Steps = steps };
         }
@@ -195,17 +196,14 @@ namespace CombatVerification.Materialization
 
         // --- skills ---
 
-        private static void SpendSkills(
+        private static bool SpendSkills(
             ICharacterUnderConstruction character, CharacterSpec spec, List<BuildStep> steps)
         {
             var requested = (spec.Skills ?? new List<SkillSpec>())
                 .Where(skill => skill.Level > 0 && !string.IsNullOrWhiteSpace(skill.Name))
                 .ToList();
             if (requested.Count == 0)
-            {
-                Pass(steps, "skills", "None requested.");
-                return;
-            }
+                return Pass(steps, "skills", "None requested.");
 
             // A skill's own gate is the number of points already spent in its pool, so the order
             // a fixture lists is not a spending order. Each pass buys whatever is reachable now,
@@ -256,16 +254,164 @@ namespace CombatVerification.Materialization
             }
 
             if (unreached.Count > 0)
-            {
-                Fail(steps, "skills",
+                return Fail(steps, "skills",
                     $"Bought {bought} levels, then no further purchase was accepted. Short: "
                     + $"{string.Join(", ", unreached)}. A skill's gate is the points already spent "
                     + "in its pool, so an unreachable level means the fixture asks for a state its "
                     + "own gates forbid.");
+
+            return Pass(steps, "skills",
+                $"Bought {bought} levels across {requested.Count} skills.");
+        }
+
+        // --- equipment ---
+
+        /// <summary>
+        /// Grants each declared item and equips it, so the engine's own equipment callback applies
+        /// the attribute bonuses and the armour set thresholds.
+        /// </summary>
+        /// <remarks>
+        /// The declared order is followed but does not matter to the outcome. The engine recounts a
+        /// set's matching pieces from every slot on each change, so a threshold is crossed by
+        /// whichever piece happens to be third or fifth.
+        /// </remarks>
+        private static void EquipItems(
+            ICharacterUnderConstruction character, CharacterSpec spec, List<BuildStep> steps)
+        {
+            if (spec.Equipment == null)
+            {
+                // An absent section was never read, so it states nothing about the slots. An empty
+                // one states that nothing is worn, which is a different measurement.
+                Pass(steps, "equipment", "Not stated, so the slots are left as they are.");
                 return;
             }
 
-            Pass(steps, "skills", $"Bought {bought} levels across {requested.Count} skills.");
+            var requested = spec.Equipment
+                .Where(entry => !string.IsNullOrWhiteSpace(entry.ItemId))
+                .ToList();
+
+            if (!character.ItemOperationsAllowed)
+            {
+                Fail(steps, "equipment",
+                    $"The engine refuses an item operation while the character is "
+                    + $"{character.ActivityState}.");
+                return;
+            }
+
+            var slotCount = character.Equipment.Count;
+            foreach (var entry in requested)
+            {
+                if (entry.Slot < 0 || entry.Slot >= slotCount)
+                {
+                    Fail(steps, "equipment",
+                        $"Slot {entry.Slot} is outside the {slotCount} the game gives a character.");
+                    return;
+                }
+            }
+
+            // A character is created wearing starter equipment, so a slot the fixture does not
+            // declare has to be emptied. Left alone it would contribute to every measurement while
+            // no fixture mentioned it.
+            var declared = new HashSet<int>(requested.Select(entry => entry.Slot));
+            var cleared = 0;
+            for (var slot = 0; slot < slotCount; slot++)
+            {
+                if (declared.Contains(slot) || character.Equipment[slot].ItemId == null)
+                    continue;
+
+                var before = character.Equipment[slot].ItemId;
+                character.Unequip(slot);
+
+                if (character.Equipment[slot].ItemId != null)
+                {
+                    Fail(steps, "equipment",
+                        $"Slot {slot} still holds '{before}' after unequipping it. The engine "
+                        + "refuses when the inventory has no room, and reports nothing.");
+                    return;
+                }
+
+                cleared++;
+            }
+
+            foreach (var entry in requested)
+            {
+                if (!character.ItemExists(entry.ItemId))
+                {
+                    Fail(steps, "equipment", $"The game defines no item '{entry.ItemId}'.");
+                    return;
+                }
+
+                var durability = entry.Durability ?? character.MaxDurability(entry.ItemId);
+                if (durability <= 0)
+                {
+                    Fail(steps, "equipment",
+                        $"'{entry.ItemId}' would be worn at durability {durability}, and the engine "
+                        + "counts a slot's bonuses only above zero, so the piece could not "
+                        + "contribute and no measurement would say so.");
+                    return;
+                }
+
+                character.GrantItem(entry.ItemId, durability, entry.AugmentId);
+
+                var inventoryIndex = character.FindInInventory(entry.ItemId, entry.AugmentId);
+                if (inventoryIndex < 0)
+                {
+                    Fail(steps, "equipment",
+                        $"'{entry.ItemId}' did not reach the inventory. The engine refuses a grant "
+                        + "it has no room for and reports nothing.");
+                    return;
+                }
+
+                if (!character.CanEquip(inventoryIndex, entry.Slot))
+                {
+                    Fail(steps, "equipment",
+                        $"The game refuses '{entry.ItemId}' in slot {entry.Slot}.");
+                    return;
+                }
+
+                character.Equip(inventoryIndex, entry.Slot);
+
+                var after = character.Equipment[entry.Slot];
+                if (after.ItemId != entry.ItemId)
+                {
+                    Fail(steps, "equipment",
+                        $"Slot {entry.Slot} holds "
+                        + $"{(after.ItemId == null ? "nothing" : $"'{after.ItemId}'")} after "
+                        + $"equipping '{entry.ItemId}'. The engine did not accept it and reported "
+                        + "nothing.");
+                    return;
+                }
+
+                if (after.Durability != durability)
+                {
+                    Fail(steps, "equipment",
+                        $"Slot {entry.Slot} holds '{entry.ItemId}' at durability "
+                        + $"{after.Durability}, not the {durability} it was granted with.");
+                    return;
+                }
+
+                // The augment rides in the slot, so equipping moves it with the item. Asserting it
+                // here is what proves the augment needs no separate path.
+                if (!string.Equals(after.AugmentId ?? "", entry.AugmentId ?? "",
+                        System.StringComparison.OrdinalIgnoreCase))
+                {
+                    Fail(steps, "equipment",
+                        $"Slot {entry.Slot} holds augment "
+                        + $"{(after.AugmentId == null ? "none" : $"'{after.AugmentId}'")} rather "
+                        + $"than {(entry.AugmentId == null ? "none" : $"'{entry.AugmentId}'")}.");
+                    return;
+                }
+
+            }
+
+            var augmented = requested.Count(entry => !string.IsNullOrWhiteSpace(entry.AugmentId));
+            var detail = $"Equipped {requested.Count} items";
+            if (augmented > 0)
+                detail += $", {augmented} augmented";
+            if (cleared > 0)
+                detail += $", cleared {cleared} slots the fixture does not declare";
+
+            Pass(steps, "equipment", detail + ".");
         }
 
         private static SkillState Find(ICharacterUnderConstruction character, string name)

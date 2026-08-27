@@ -255,14 +255,10 @@ namespace CombatVerification.Fixtures
             var slotInfo = SlotInfoOf(reference);
             var items = new Dictionary<string, ItemRule>();
 
-            foreach (var asset in Resources.LoadAll<ScriptableItem>("Items"))
+            foreach (var pair in GameItems.Enumerate())
             {
-                if (asset == null)
-                    continue;
-
-                var id = GameIds.Sanitize(asset.name);
-                if (items.ContainsKey(id))
-                    continue;
+                var id = pair.Key;
+                var asset = pair.Value;
 
                 var equipment = asset.TryCast<EquipmentItem>();
                 var usable = asset.TryCast<UsableItem>();

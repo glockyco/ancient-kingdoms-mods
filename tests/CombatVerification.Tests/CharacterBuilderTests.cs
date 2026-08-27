@@ -15,7 +15,8 @@ namespace CombatVerification.Tests
             int level = 1,
             int veteranPoints = 0,
             Dictionary<string, int>? attributes = null,
-            List<SkillSpec>? skills = null)
+            List<SkillSpec>? skills = null,
+            List<EquipmentSpec>? equipment = null)
             => new()
             {
                 Class = "Warrior",
@@ -24,8 +25,19 @@ namespace CombatVerification.Tests
                 VeteranPoints = veteranPoints,
                 AllocatedAttributes = attributes ?? new Dictionary<string, int>(),
                 Skills = skills ?? new List<SkillSpec>(),
-                Equipment = new List<EquipmentSpec>(),
+                Equipment = equipment ?? new List<EquipmentSpec>(),
             };
+
+        /// <summary>A character that can equip, so an equipment test states only its own subject.</summary>
+        private static FakeCharacter Equipper()
+            => new FakeCharacter()
+                .WithItem("plate_helm", maxDurability: 80, 0)
+                .WithItem("plate_chest", maxDurability: 80, 2)
+                .WithItem("iron_ring", maxDurability: 50, 4, 10);
+
+        private static EquipmentSpec Entry(
+            int slot, string itemId, string? augmentId = null, int? durability = null)
+            => new() { Slot = slot, ItemId = itemId, AugmentId = augmentId, Durability = durability };
 
         private static BuildStep StepNamed(BuildOutcome outcome, string name)
             => outcome.Steps.Single(step => step.Name == name);
@@ -259,7 +271,7 @@ namespace CombatVerification.Tests
                 skills: new List<SkillSpec> { new() { Name = "Melee Attack", Level = 2 } }));
 
             Assert.True(outcome.Ok, outcome.Failure?.ToString());
-            Assert.Equal(new[] { "level", "veteran", "attributes", "skills" },
+            Assert.Equal(new[] { "level", "veteran", "attributes", "skills", "equipment" },
                 outcome.Steps.Select(step => step.Name).ToArray());
         }
 
@@ -278,6 +290,221 @@ namespace CombatVerification.Tests
             Assert.Equal(new[] { "level", "veteran", "attributes" },
                 outcome.Steps.Select(step => step.Name).ToArray());
             Assert.Equal(0, character.Skills.Single().Level);
+        }
+
+        // --- equipment ---
+
+        [Fact]
+        public void ADeclaredItemReachesItsSlotAtTheItemsOwnDurability()
+        {
+            var character = Equipper();
+            var outcome = CharacterBuilder.Run(character, Spec(
+                equipment: new List<EquipmentSpec> { Entry(0, "plate_helm") }));
+
+            Assert.True(outcome.Ok, outcome.Failure?.ToString());
+            Assert.Equal("plate_helm", character.Equipment[0].ItemId);
+            Assert.Equal(80, character.Equipment[0].Durability);
+        }
+
+        [Fact]
+        public void AStatedDurabilityIsCarriedIntoTheSlot()
+        {
+            var character = Equipper();
+            var outcome = CharacterBuilder.Run(character, Spec(
+                equipment: new List<EquipmentSpec> { Entry(0, "plate_helm", durability: 7) }));
+
+            Assert.True(outcome.Ok, outcome.Failure?.ToString());
+            Assert.Equal(7, character.Equipment[0].Durability);
+        }
+
+        [Fact]
+        public void AnAugmentTravelsWithTheItemIntoItsSlot()
+        {
+            var character = Equipper().WithItem("jagged_shard");
+            var outcome = CharacterBuilder.Run(character, Spec(
+                equipment: new List<EquipmentSpec>
+                {
+                    Entry(2, "plate_chest", augmentId: "jagged_shard"),
+                }));
+
+            Assert.True(outcome.Ok, outcome.Failure?.ToString());
+            Assert.Equal("jagged_shard", character.Equipment[2].AugmentId);
+            Assert.Contains("1 augmented", outcome.Steps.Last().Detail);
+        }
+
+        [Fact]
+        public void AnItemTheGameDoesNotDefineIsNamedRatherThanSkipped()
+        {
+            var character = Equipper();
+            var outcome = CharacterBuilder.Run(character, Spec(
+                equipment: new List<EquipmentSpec> { Entry(0, "helm_of_nothing") }));
+
+            Assert.False(outcome.Ok);
+            Assert.Contains("helm_of_nothing", outcome.Failure!.Detail);
+        }
+
+        [Fact]
+        public void AnItemTheGameRefusesInThatSlotFailsWithoutIssuingTheCommand()
+        {
+            // The engine's own answer is read first, so a refusal is reported rather than
+            // discovered by acting and finding nothing changed.
+            var character = Equipper();
+            var outcome = CharacterBuilder.Run(character, Spec(
+                equipment: new List<EquipmentSpec> { Entry(3, "plate_helm") }));
+
+            Assert.False(outcome.Ok);
+            Assert.Contains("refuses", outcome.Failure!.Detail);
+            Assert.Equal(0, character.EquipCalls);
+        }
+
+        [Fact]
+        public void AGrantTheInventoryCannotHoldIsCaughtByReadingItBack()
+        {
+            var character = Equipper();
+            character.InventoryCapacity = 0;
+
+            var outcome = CharacterBuilder.Run(character, Spec(
+                equipment: new List<EquipmentSpec> { Entry(0, "plate_helm") }));
+
+            Assert.False(outcome.Ok);
+            Assert.Contains("did not reach the inventory", outcome.Failure!.Detail);
+        }
+
+        [Fact]
+        public void AnEquipThePermittedEngineThenIgnoresIsCaughtByReadingTheSlot()
+        {
+            // The case a returned call cannot detect: permitted, issued, and silently dropped.
+            var character = Equipper();
+            character.IgnoreEquipInto.Add(0);
+
+            var outcome = CharacterBuilder.Run(character, Spec(
+                equipment: new List<EquipmentSpec> { Entry(0, "plate_helm") }));
+
+            Assert.False(outcome.Ok);
+            Assert.Equal(1, character.EquipCalls);
+            Assert.Contains("holds nothing", outcome.Failure!.Detail);
+            Assert.Contains("reported nothing", outcome.Failure.Detail);
+        }
+
+        [Fact]
+        public void AStateThatForbidsItemOperationsIsNamed()
+        {
+            var character = Equipper();
+            character.ItemOperationsAllowed = false;
+            character.ActivityState = "DEAD";
+
+            var outcome = CharacterBuilder.Run(character, Spec(
+                equipment: new List<EquipmentSpec> { Entry(0, "plate_helm") }));
+
+            Assert.False(outcome.Ok);
+            Assert.Contains("DEAD", outcome.Failure!.Detail);
+            Assert.Equal(0, character.EquipCalls);
+        }
+
+        [Fact]
+        public void ASlotOutsideTheGamesRangeIsReportedWithTheCount()
+        {
+            var character = Equipper();
+            var outcome = CharacterBuilder.Run(character, Spec(
+                equipment: new List<EquipmentSpec> { Entry(99, "plate_helm") }));
+
+            Assert.False(outcome.Ok);
+            Assert.Contains("16", outcome.Failure!.Detail);
+        }
+
+        [Fact]
+        public void AnItemThatCouldNotContributeIsRefusedBeforeItIsGranted()
+        {
+            var character = new FakeCharacter().WithItem("paper_hat", maxDurability: 0, 0);
+            var outcome = CharacterBuilder.Run(character, Spec(
+                equipment: new List<EquipmentSpec> { Entry(0, "paper_hat") }));
+
+            Assert.False(outcome.Ok);
+            Assert.Contains("could not", outcome.Failure!.Detail);
+            Assert.Equal(0, character.EquipCalls);
+        }
+
+        [Fact]
+        public void EquipmentRunsOnlyAfterTheAllocationStepsSucceed()
+        {
+            var character = Equipper().WithSkill("Melee Attack", maxLevel: 5);
+            var outcome = CharacterBuilder.Run(character, Spec(
+                level: 3,
+                attributes: new Dictionary<string, int> { ["strength"] = 9 },
+                equipment: new List<EquipmentSpec> { Entry(0, "plate_helm") }));
+
+            Assert.False(outcome.Ok);
+            Assert.DoesNotContain("equipment", outcome.Steps.Select(step => step.Name));
+            Assert.Equal(0, character.EquipCalls);
+        }
+
+        [Fact]
+        public void ASlotTheFixtureDoesNotDeclareIsEmptied()
+        {
+            // A created character wears starter equipment. Left on, it would contribute to every
+            // measurement while no fixture mentioned it.
+            var character = Equipper().Wearing(2, "starter_shirt").Wearing(9, "starter_shoes");
+            var outcome = CharacterBuilder.Run(character, Spec(
+                equipment: new List<EquipmentSpec> { Entry(0, "plate_helm") }));
+
+            Assert.True(outcome.Ok, outcome.Failure?.ToString());
+            Assert.Equal("plate_helm", character.Equipment[0].ItemId);
+            Assert.Null(character.Equipment[2].ItemId);
+            Assert.Null(character.Equipment[9].ItemId);
+            Assert.Contains("cleared 2 slots", outcome.Steps.Last().Detail);
+        }
+
+        [Fact]
+        public void ADeclaredSlotHoldingStarterEquipmentIsSwapped()
+        {
+            var character = Equipper().Wearing(2, "starter_shirt");
+            var outcome = CharacterBuilder.Run(character, Spec(
+                equipment: new List<EquipmentSpec> { Entry(2, "plate_chest") }));
+
+            Assert.True(outcome.Ok, outcome.Failure?.ToString());
+            Assert.Equal("plate_chest", character.Equipment[2].ItemId);
+        }
+
+        [Fact]
+        public void AnAbsentEquipmentSectionLeavesTheSlotsAlone()
+        {
+            var character = Equipper().Wearing(2, "starter_shirt");
+            var spec = Spec();
+            spec.Equipment = null;
+
+            var outcome = CharacterBuilder.Run(character, spec);
+
+            Assert.True(outcome.Ok, outcome.Failure?.ToString());
+            Assert.Equal("starter_shirt", character.Equipment[2].ItemId);
+            Assert.Contains("Not stated", outcome.Steps.Last().Detail);
+        }
+
+        [Fact]
+        public void AnEmptyEquipmentSectionStripsEverySlot()
+        {
+            var character = Equipper().Wearing(2, "starter_shirt").Wearing(9, "starter_shoes");
+            var outcome = CharacterBuilder.Run(character, Spec(
+                equipment: new List<EquipmentSpec>()));
+
+            Assert.True(outcome.Ok, outcome.Failure?.ToString());
+            Assert.All(character.Equipment, slot => Assert.Null(slot.ItemId));
+        }
+
+        [Fact]
+        public void EveryDeclaredPieceIsEquippedSoASetThresholdCanBeReached()
+        {
+            var character = Equipper().WithItem("plate_legs", maxDurability: 80, 3);
+            var outcome = CharacterBuilder.Run(character, Spec(
+                equipment: new List<EquipmentSpec>
+                {
+                    Entry(0, "plate_helm"),
+                    Entry(2, "plate_chest"),
+                    Entry(3, "plate_legs"),
+                }));
+
+            Assert.True(outcome.Ok, outcome.Failure?.ToString());
+            Assert.Equal(3, character.Equipment.Count(slot => slot.ItemId != null));
+            Assert.Contains("Equipped 3 items", outcome.Steps.Last().Detail);
         }
     }
 }
