@@ -417,6 +417,67 @@ capture answers a reader's own question: whether the number published for *their
 their game reports. Neither replaces the other, and the capture belongs in this change because a planner
 that cannot be checked against the reader's own game is not trustworthy to that reader.
 
+## Slot 13 and the weapons in it
+
+Slot 13 is not one slot. Every class prefab and every mercenary prefab serializes its own slot table, and
+read from the running game at version 0.9.31.0 the offhand requires "Shield" for a Warrior, a Cleric, a
+Wizard and a Druid, "Bow" for a Ranger, and "Weapon" for a Rogue. A Ranger and a Rogue can therefore
+never hold a shield, and the search space for those two classes differs in kind rather than in degree.
+The static table in `GameManager` that names the slot "Shield" is a display default, and the initializer
+in the decompiled `PlayerEquipment` is one prefab's value.
+
+Attack power sums every worn slot, so each damage path removes the part that should not count. The
+corrections are gated on the wielder being a player, which is where the asymmetry comes from.
+
+| Case | Slot 12 damage | Slot 13 damage | Site |
+|---|---|---|---|
+| Player melee or target skill, Ranger | all | none | `TargetDamageSkill.cs:218` |
+| Player melee or target skill, Rogue | all | half, removal rounded up | `TargetDamageSkill.cs:223` |
+| Player bow skill | none | all | `TargetProjectileSkill.cs:196` |
+| Companion, any of the above | all | all | the same lines, gated on `caster is Player` |
+
+Only the weapon's own damage is removed. Attribute bonuses survive, so a melee weapon raises a bow attack
+through strength and dexterity while contributing none of its damage.
+
+### Measured, level 50, against Ancient Cyclops at defense 700
+
+| Subject | Configuration | Attack power | Expected | Mean dealt |
+|---|---|---|---|---|
+| Ranger, melee | bow worn, durability 10 | 864 | 490 | 283.9 per landed hit |
+| Ranger, melee | bow worn, durability 0 | 469 | 95 | 53.2 per landed hit |
+| Ranger, melee | slot 13 empty | 469 | 470 | 271.2 per landed hit |
+| Rogue, melee | offhand worn | 878 | 696 | 398.8 per landed hit |
+| Rogue, melee | slot 13 empty | 463 | 464 | 273.5 per landed hit |
+| Ranger companion, bow | bow and melee worn | 873 | 1085 | 691.4 per landed hit |
+
+The Rogue pair separates the three candidate rules cleanly. Calibrated on the empty case, a full offhand
+predicts 518, none predicts 303, and half predicts 410 against 398.8 observed.
+
+The companion figure excludes the player rule outright. Applying it would predict 660 against 691.4
+observed, which would need the target to amplify damage.
+
+Two of these rows are recorded defects rather than intended behaviour, and the model represents the
+intent: `docs/game-bugs/broken-offhand-subtracts-damage-it-never-gave.md` and
+`docs/game-bugs/a-bow-without-a-melee-weapon-cancels-its-own-damage.md`.
+
+## A companion is a different machine
+
+A companion's period comes from `Monster.StartRefractoryPeriod`, which sets a flat 1.0 s for a special
+skill and 0.5 s otherwise. Weapon delay and haste do not enter it, so delay on a companion's weapon is
+worth nothing and the player formula does not transfer. A companion also closes distance between actions,
+so its observed rate is below its cadence and a modelled rate is an upper bound rather than a prediction.
+
+A companion needs no ammunition either. Both the check and the consumption return early for a caster that
+is not a player, while a player's bow skill requires an arrow in the inventory and consumes one, halved
+in expectation while an `Endless Quiver` is held.
+
+## Haste and spell haste do not overlap
+
+`Skills.StartCast` reduces a cast time by spell haste and only when the skill is a spell. Haste reduces
+the weapon interval and nothing else. A caster's skills take the flat period, which haste never touches,
+so spell haste is the only timing stat a caster has, and the model must credit the two stats to different
+terms. Neither appeared in this design before it was measured.
+
 ## Risks / Trade-offs
 
 - Absolute accuracy is unverified against the running game. Every figure in this design compares one

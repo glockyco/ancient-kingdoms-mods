@@ -365,6 +365,99 @@ rotation, because that selection is random among available skills.
 - **AND** a plan that may re-hire uses the best roll the race can produce, while a plan limited to what
   a player owns uses the value that player supplied
 
+### Requirement: The offhand slot differs by archetype
+
+Slot 13 SHALL be treated as a property of the archetype. It accepts a shield for a Warrior, a Cleric, a
+Wizard and a Druid, a bow for a Ranger, and a weapon for a Rogue, and the companion archetypes match
+their namesakes. A Ranger and a Rogue therefore have no shield available at all.
+
+The model SHALL read the accepted category per archetype and SHALL NOT apply one archetype's slot table
+to another.
+
+#### Scenario: A search considers a shield for a Ranger
+
+- **WHEN** the search enumerates items for slot 13 of a Ranger
+- **THEN** only bows are candidates, and no shield is offered
+
+#### Scenario: A Rogue fills the offhand
+
+- **WHEN** the search enumerates items for slot 13 of a Rogue
+- **THEN** one-handed weapons are candidates
+
+### Requirement: An offhand item contributes damage by wielder and class
+
+Aggregate attack power contains every worn weapon. Each damage path SHALL then remove the part that does
+not apply, and the model SHALL follow the same rule per case rather than one shared rule.
+
+For a player, a melee or target skill SHALL exclude all of a Ranger's bow damage and half of a Rogue's
+offhand damage, rounded up before removal. A player's bow skill SHALL exclude the melee weapon's damage.
+For a companion, none of these exclusions SHALL apply, so a companion's bow attack keeps the melee
+weapon's damage.
+
+An excluded weapon's attribute bonuses SHALL still count. Only the weapon's own damage value is removed,
+so a melee weapon raises a bow attack through its strength and its dexterity while contributing none of
+its damage.
+
+#### Scenario: A Ranger's bow is valued for a melee rotation
+
+- **WHEN** a bow occupies slot 13 and the rotation is melee
+- **THEN** the bow's damage contributes nothing, and its attributes contribute
+
+#### Scenario: A Rogue's offhand is valued
+
+- **WHEN** a one-handed weapon occupies slot 13 of a Rogue
+- **THEN** half its damage contributes, and the removed half is rounded up
+
+#### Scenario: The same pair is valued for a companion
+
+- **WHEN** a companion of the Ranger archetype wears a bow and a melee weapon
+- **THEN** both weapons' damage contributes to its bow attack
+
+### Requirement: A companion's action cadence is fixed, not derived from its weapon
+
+A companion SHALL be modelled with the flat period the engine gives it, which does not depend on weapon
+delay or haste. The model SHALL NOT value delay or haste on a companion's weapon as a cadence change.
+
+The model SHALL state that a companion's observed rate is lower than its cadence implies, because a
+companion closes distance between actions, and SHALL NOT publish a companion rate as an upper bound
+without that qualification.
+
+#### Scenario: A faster weapon is considered for a companion
+
+- **WHEN** two companion weapons differ only in delay
+- **THEN** the modelled cadence is identical
+
+### Requirement: Spell haste is distinct from haste
+
+Haste SHALL reduce the weapon interval only. Spell haste SHALL reduce a spell's cast time only, and
+SHALL NOT reduce the cast time of a skill that is not a spell.
+
+A caster's skills set the flat period, which haste never shortens, so spell haste SHALL be the only
+timing stat the model credits to a caster.
+
+#### Scenario: A caster gains haste
+
+- **WHEN** haste rises and every skill in the rotation sets the flat period
+- **THEN** neither the cast time nor the period falls
+
+#### Scenario: A caster gains spell haste
+
+- **WHEN** spell haste rises for a rotation of spells
+- **THEN** each cast time falls and the period does not
+
+### Requirement: A known defect is modelled as the behaviour it should have
+
+Where the game holds a recorded defect, the model SHALL represent the intended behaviour, and the
+affected output SHALL name the defect and the report that records it.
+
+The model SHALL NOT value a build by an outcome that depends on a defect, because a published figure
+that rests on one becomes wrong when it is fixed.
+
+#### Scenario: A build would gain from a defect
+
+- **WHEN** an arrangement scores higher only because of a recorded defect
+- **THEN** the model scores the intended behaviour and the report is cited
+
 ### Requirement: A resource multiplier is applied only where the game applies it
 
 The model SHALL scale a resource pool by its multiplier only where the game's own maximum reads that
