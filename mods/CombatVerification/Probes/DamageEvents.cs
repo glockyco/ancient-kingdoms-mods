@@ -121,11 +121,11 @@ namespace CombatVerification.Probes
         public PerHitDamageResult Measured(
             ActionTimeline timeline, int seed, double openedAt, double closedAt)
         {
-            var attributed = DamageAttribution.Applied && _log.AllAttributed;
-            var limit = attributed
-                ? null
-                : DamageAttribution.Unavailable
-                    ?? "a hit in the window named no skill, so a rotation cannot be told apart";
+            var tier = Tiers.Reached(
+                DamageAttribution.Applied,
+                DamageAttribution.Unavailable,
+                _log.AllAttributed,
+                out var limit);
 
             var hits = new List<LandedHit>(_log.Hits.Count);
             long total = 0;
@@ -159,7 +159,7 @@ namespace CombatVerification.Probes
                 Resets = _log.Resets,
                 Total = total,
                 Seed = seed,
-                Tier = attributed ? Tiers.PerHitAttributed : Tiers.PerHit,
+                Tier = tier,
                 TierLimit = limit,
                 Actions = timeline.Completions.Count,
                 ActionIntervals = new List<double>(timeline.Intervals),
