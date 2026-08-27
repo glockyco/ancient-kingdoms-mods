@@ -25,26 +25,34 @@ namespace CombatVerification.Dtos
         [JsonProperty("contribution")] public Dictionary<string, double> Contribution { get; set; }
     }
 
-    /// <summary>Resource maxima and the multipliers that feed them.</summary>
+    /// <summary>
+    /// Resource maxima and the multipliers that feed them.
+    /// </summary>
+    /// <remarks>
+    /// An entity carries only the resources it uses. A player has both, while a companion carries
+    /// mana or energy according to its archetype and genuinely lacks the other. An absent resource
+    /// is reported as absent, because reporting it as zero would be a maximum the entity does not
+    /// have, and a comparison would then treat a missing component as an empty pool.
+    /// </remarks>
     public sealed class ResourceSheet
     {
-        [JsonProperty("healthMax")] public int HealthMax { get; set; }
-        [JsonProperty("healthCurrent")] public int HealthCurrent { get; set; }
-        [JsonProperty("healthRecoveryRate")] public int HealthRecoveryRate { get; set; }
-        [JsonProperty("healthMultiplier")] public float HealthMultiplier { get; set; }
+        [JsonProperty("healthMax")] public int? HealthMax { get; set; }
+        [JsonProperty("healthCurrent")] public int? HealthCurrent { get; set; }
+        [JsonProperty("healthRecoveryRate")] public int? HealthRecoveryRate { get; set; }
+        [JsonProperty("healthMultiplier")] public float? HealthMultiplier { get; set; }
 
-        [JsonProperty("manaMax")] public int ManaMax { get; set; }
-        [JsonProperty("manaRecoveryRate")] public int ManaRecoveryRate { get; set; }
-        [JsonProperty("manaMultiplier")] public float ManaMultiplier { get; set; }
+        [JsonProperty("manaMax")] public int? ManaMax { get; set; }
+        [JsonProperty("manaRecoveryRate")] public int? ManaRecoveryRate { get; set; }
+        [JsonProperty("manaMultiplier")] public float? ManaMultiplier { get; set; }
 
-        [JsonProperty("energyMax")] public int EnergyMax { get; set; }
-        [JsonProperty("energyRecoveryRate")] public int EnergyRecoveryRate { get; set; }
+        [JsonProperty("energyMax")] public int? EnergyMax { get; set; }
+        [JsonProperty("energyRecoveryRate")] public int? EnergyRecoveryRate { get; set; }
 
         /// <summary>
-        /// Reported because the game stores, accumulates and persists it. Whether it reaches the
+        /// Reported because the game rolls, accumulates and persists it. Whether it reaches the
         /// maximum is a question a comparison answers, not one this probe assumes.
         /// </summary>
-        [JsonProperty("energyMultiplier")] public float EnergyMultiplier { get; set; }
+        [JsonProperty("energyMultiplier")] public float? EnergyMultiplier { get; set; }
     }
 
     /// <summary>One armour set among the worn pieces, and what the set itself declares.</summary>
