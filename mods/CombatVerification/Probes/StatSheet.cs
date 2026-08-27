@@ -102,7 +102,7 @@ namespace CombatVerification.Probes
                 Race = race,
                 Level = level,
                 Attributes = attributes,
-                Combat = CombatStats(combat),
+                Combat = Engine.CombatStats.Read(combat),
                 Resources = new ResourceSheet
                 {
                     HealthMax = health == null ? null : health.max,
@@ -119,29 +119,6 @@ namespace CombatVerification.Probes
                 Equipment = Pieces(equipment),
                 ActiveSets = Sets(equipment, owner),
             };
-        }
-
-        /// <summary>
-        /// Every combat stat, which is every numeric value the component computes and does not
-        /// accept. A stat has no setter because it is derived from the base curve, the level and
-        /// each bonus component, so that is what distinguishes one from a stored field.
-        /// </summary>
-        private static Dictionary<string, double> CombatStats(Combat combat)
-        {
-            var stats = new Dictionary<string, double>();
-
-            foreach (var property in typeof(Combat)
-                .GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                .Where(property => property.CanRead && !property.CanWrite)
-                .Where(property => property.PropertyType == typeof(int)
-                    || property.PropertyType == typeof(float))
-                .OrderBy(property => property.Name, StringComparer.Ordinal))
-            {
-                var value = property.GetValue(combat);
-                stats[property.Name] = value is float single ? single : (int)value;
-            }
-
-            return stats;
         }
 
         /// <summary>

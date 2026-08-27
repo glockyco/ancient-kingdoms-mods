@@ -36,6 +36,8 @@
              Link="Probes\ActionTimeline.cs" />
     <Compile Include="..\..\mods\CombatVerification\Probes\DamageLog.cs"
              Link="Probes\DamageLog.cs" />
+    <Compile Include="..\..\mods\CombatVerification\Probes\TimedEffect.cs"
+             Link="Probes\TimedEffect.cs" />
     <Compile Include="..\..\mods\CombatVerification\Materialization\EquippedSlot.cs"
              Link="Materialization\EquippedSlot.cs" />
     <Compile Include="..\..\mods\CombatVerification\Materialization\CharacterBuilder.cs"

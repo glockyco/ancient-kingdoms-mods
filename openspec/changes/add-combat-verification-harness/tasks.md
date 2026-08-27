@@ -134,14 +134,16 @@
       A damage type is not on that event, so it belongs to 5.1 alone.
 - [ ] 4.4 Seed the random generator before a measurement and record the seed with the results.
 - [ ] 4.5 Have every probe declare the fidelity tier it achieved.
-- [ ] 4.6 Implement a target-state probe that reads the target's defense, block chance, magic resist and
+- [x] 4.6 Implement a target-state probe that reads the target's defense, block chance, magic resist and
       each elemental resist, plus its active effect list with each entry's category and remaining
       duration. It reads the target, not the caster.
 - [x] 4.7 Make the probe quiesce the caster before a reading: stop the follow-up attack loop, clear the
       pending action and the target, then confirm the refractory value is unchanged across two samples.
       Without this an auto-attack rewrites the value between samples and the reading is unattributable.
-- [ ] 4.8 Have the target-state probe re-read after the engine's cleanup pass, because an expired effect
-      still contributes for one tick and a single reading captures the pre-cleanup value.
+- [x] 4.8 Have the target-state probe re-read after the engine's cleanup pass, because an expired effect
+      still contributes for one tick and a single reading captures the pre-cleanup value. The pass is
+      also skipped entirely when the engine does not update the entity, so the probe reports whether it
+      could have run: an unchanged pair otherwise reads as a settled state.
 
 ## 5. Probe: skill attribution
 
