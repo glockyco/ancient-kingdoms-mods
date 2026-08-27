@@ -26,26 +26,6 @@ A runtime change is not verified until the game exercises it. `rule://build-is-n
 - Scene and singleton caches become invalid across scene changes. Clear held Unity references on scene transition and reacquire them before use.
 - A plain server field reads as zero on a client of a remote server rather than failing. A mod that reads one must branch on `NetworkServer.active` and say which source produced the figures it shows. `.agent/skills/hotrepl-runtime-inspection/references/client-and-server.md` lists what a client receives.
 
-## Where a type belongs
-
-A mod's own namespaces name purposes: declaring a subject, building one, reading one, and the wire
-surface that exposes them. One namespace is different and holds the game's own data read as plain
-values, shared by every purpose. It depends on nothing else in the mod.
-
-Put a type with its purpose. Put it in the shared namespace only when it holds the game's own data and
-more than one purpose reads it.
-
-Do not sort a type by whether it touches the game. Most purposes touch the game, so that test sorts
-nothing and leaves two answers for every type.
-
-A single-purpose adapter returns a type its own purpose owns. Keeping such an adapter in the shared
-namespace inverts the dependency. Check the direction after a move: the shared namespace must reference
-nothing.
-
-Logic that a test needs without the game must live in a file that imports no game namespace, and the
-test project lists that file. A file that mixes the two cannot be tested, so split the reading of game
-state from the rule applied to what was read. The rule is the part worth a test.
-
 ## Failure policy
 
 Fail fast for required runtime resources. A missing singleton, component, field, or authoritative value is an error unless the owning contract defines absence as valid.
@@ -54,4 +34,6 @@ A refused engine call reports nothing. An out-of-range index, a wrong entity sta
 
 Read the value, act, then read it again. Give the reason the engine withholds.
 
-`FieldDefaultValueHookFix` is the one sanctioned exception, and it concerns a function pointer, not a field value. Il2CppInterop's signature scan for `Class::GetDefaultFieldValue` matches the wrong function on this build and crashes at world entry. The mod redirects the lookup to Il2CppInterop's signature-free traversal (`mods/FieldDefaultValueHookFix/FieldDefaultValueHookFix.cs`). Its failure paths leave the hook alone, so the game keeps unpatched behaviour. Do not generalize it.
+Do not add a second sanctioned fallback. One exists, and `rule://mod-runtime-special-cases` states it.
+
+A new type's placement is decided when the file is created, and `rule://mod-type-placement` arrives then.

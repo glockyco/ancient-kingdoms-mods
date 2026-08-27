@@ -70,6 +70,7 @@ expected_rules = {
     "website-mechanics",
     "interactive-map",
     "mod-runtime-special-cases",
+    "mod-type-placement",
     "absence-needs-a-count",
     "generated-artifacts",
     "instruction-placement",

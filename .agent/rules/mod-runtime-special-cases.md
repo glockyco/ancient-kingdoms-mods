@@ -7,6 +7,7 @@ globs:
   - "mods/ResourceRespawner/**"
   - "mods/BetterBestiary/**"
   - "mods/BossSkillTracker/**"
+  - "mods/FieldDefaultValueHookFix/**"
 ---
 # Mod runtime special cases
 
@@ -25,3 +26,7 @@ Eligibility, countdowns and the respawn deadline are all on the synchronized ser
 ## BetterBestiary and BossSkillTracker
 
 Keep the BetterBestiary TypeScript/C# formatter parity fixture synchronized. BossSkillTracker discovery remains combat-gated and bounded. Do not add global object enumeration, per-frame spatial scans, or UI fallbacks that hide a missing required resource.
+
+## FieldDefaultValueHookFix
+
+`FieldDefaultValueHookFix` is the one sanctioned exception, and it concerns a function pointer, not a field value. Il2CppInterop's signature scan for `Class::GetDefaultFieldValue` matches the wrong function on this build and crashes at world entry. The mod redirects the lookup to Il2CppInterop's signature-free traversal (`mods/FieldDefaultValueHookFix/FieldDefaultValueHookFix.cs`). Its failure paths leave the hook alone, so the game keeps unpatched behaviour. Do not generalize it.
