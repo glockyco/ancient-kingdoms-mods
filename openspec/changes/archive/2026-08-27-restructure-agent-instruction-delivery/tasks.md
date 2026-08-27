@@ -185,7 +185,7 @@ run rather than stopping at the first.
       two rule bodies arrive at once. This is a cost the section-2 relocation introduced.
       As with 1.6, none of this observes a rule firing. It reads frontmatter and matches conditions
       against recorded command strings.
-- [ ] 7.4 Sync the delta into `openspec/specs/agent-instructions/spec.md` and archive the change.
+- [x] 7.4 Sync the delta into `openspec/specs/agent-instructions/spec.md` and archive the change.
       Runs last, after section 8. Archiving before the corpus is audited would freeze a plan whose own
       measurement says it is unfinished.
 
