@@ -39,7 +39,10 @@ adding text to a channel that loads at session open.
 
 - Place each instruction in the channel whose arrival moment matches the moment it is needed.
 - Make a subproject constraint reachable from a session started anywhere in the repository.
-- Reduce the always-loaded set rather than grow it.
+- Reduce the always-loaded set rather than grow it, and end with a corpus no larger than the one this
+  change started from.
+- Replace a stated value about the code with a pointer to the symbol that owns it, so the instruction
+  cannot go stale without something failing.
 - Make an instruction's effectiveness observable, so a useless one can be deleted.
 
 **Non-Goals**
@@ -50,6 +53,55 @@ adding text to a channel that loads at session open.
 - Changing product behaviour in the mods, the pipeline, or the website.
 
 ## Decisions
+
+### Keeping is decided before placing
+
+Placement presupposes that the instruction should exist, and the first version of this design never
+asked. That omission is measurable: after three sections the unconditionally loaded surface had fallen
+twenty percent and the whole corpus had risen twenty-six, because a routing table offers no move except
+moving.
+
+So each instruction is first tested by deleting it and asking what the agent does next.
+
+| The agent would | Then the instruction is | Because |
+|---|---|---|
+| re-derive it correctly from the source, in seconds | deleted | it is a cache with no hit worth its upkeep |
+| re-derive it only after a costly mistake | a pointer to the authority | the cost is one file read, paid once |
+| never derive it, because it is not in the source | kept as written | method, an incident, or a decision is not recoverable by reading code |
+
+The third row is the only one that earns a fact. It is also the only one that cannot rot, because it is
+not a claim about the code.
+
+### A value becomes a pointer, or it goes
+
+A value copied out of the source is correct until the source changes, and then it is silently wrong.
+The repository has two mechanisms that would catch that, and neither covers an instruction file.
+
+| Written in the instruction surface | Symbol existence checked | Content change detected |
+|---|---|---|
+| a pointer, `server-scripts/Combat.cs:blockChance` | yes, the agent-docs check resolves every one | not needed; a pointer survives a content change |
+| a value, `0.0001` | no | no, even when the file cites a symbol nearby |
+
+The citation ledger hashes each cited span and forces review when the hash moves, which is why a value
+in a source file is safe to state. It indexes source files only: of the twenty-one citations in the
+instruction surface, none is in the ledger. So a value there has exactly two safe fates.
+
+This change created a counter-example and keeps it as the first correction.
+`.agent/rules/monster-curve-columns.md` restates a block chance formula including its coefficient and
+cites no symbol at all.
+
+### The trap outlives the value
+
+A pointer fixes staleness and not misreading. The offhand slot table was read from the source and
+generalised from one class prefab to all six, which no re-read instruction would have prevented,
+because the source was read.
+
+What would have prevented it is the trap: that the array is serialised per prefab, so one class does
+not speak for another. A trap survives a change to the value it guards, and it tells a reader what to
+look for once the pointer sends them to the authority.
+
+So a kept instruction about the code states the trap and points at the authority, and states the value
+only when the value is the trap.
 
 ### Placement is decided by arrival moment, not by breadth
 
@@ -134,6 +186,26 @@ asks for the reason instead, while the runtime's own rules do use a capitalised 
 prohibition is genuine. The resolution adopted here is that a rule states its directive plainly,
 always gives the reason, and reserves an absolute for a case where no exception exists.
 
+### A trigger is a reminder, not a lesson
+
+The published guidance not to explain what the model already knows applies to a channel whose value is
+information. A trigger's value is timing.
+
+| Channel | Value comes from | So redundant content is |
+|---|---|---|
+| a skill, a reference | information | waste |
+| a triggered rule | timing | acceptable, because the failure was not ignorance |
+
+Every instruction that failed in the run behind this change was already known. One row is not evidence
+about a table; a build is not a runtime. Knowing was never the gap, so a trigger may restate the
+obvious and still work.
+
+The consequence is length. A reminder that arrives at the right moment needs the directive and the
+place the reasoning lives, not the argument. The rules written in section 1 run to forty and fifty
+lines because they were written in the shape of the runtime's own code-pattern rules, where the body
+carries a replacement the reader applies directly. A method reminder has no such replacement to carry,
+and that difference is where most of the corpus growth went.
+
 ### A rule that never fires is removed
 
 The repository already requires that a mechanism producing nothing be repaired or removed. An
@@ -208,9 +280,16 @@ mode. Every rule states the behaviour it wants in its own frontmatter.
 ## Risks / Trade-offs
 
 - **A trigger is a regex against text that changes.** A rule keyed to an API name stops firing
-  silently when the API is renamed, which is the same class of failure as a stale citation. The
-  repository already solved that for source citations with a ledger and a check; this change accepts
-  the exposure and records it rather than building a second ledger now.
+  silently when the API is renamed. This is not the same exposure as a stale value, and the difference
+  decides the remedy: a pointer is resolved by the existing check, a value is checked by nothing, and a
+  trigger regex is checked by nothing either. A trigger that stops matching fails safe, because the
+  result is a missing reminder rather than a false claim. A value that stops being true fails unsafe.
+  So this change converts values into pointers and accepts the trigger exposure, rather than treating
+  the two as one problem.
+- **A trigger cannot tell a mention from an intent.** Three rules fired on a shell argument that merely
+  quoted their trigger strings, and two fired on a database query that already complied with them. The
+  cost of a false positive is a body of text delivered for nothing, which is why the shape decision
+  above bounds that body.
 - **Human and agent read different files.** Splitting subproject constraints into rules leaves the
   subproject `AGENTS.md` thinner than a new human contributor might want. Mitigation: that file
   names the rule that carries the constraints.

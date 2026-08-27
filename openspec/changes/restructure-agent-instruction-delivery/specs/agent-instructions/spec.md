@@ -4,8 +4,12 @@
 
 ### Requirement: Guidance is routed by when it applies
 
-Content SHALL be placed according to the moment it must reach the agent, not according to how
-broadly it applies:
+Content SHALL be routed only after it has passed the keep test below. Routing SHALL NOT be treated as
+an alternative to deletion, because a routing table permits no move except moving, and relocation grows
+the corpus while the loaded surface shrinks.
+
+Content that is kept SHALL be placed according to the moment it must reach the agent, not according to
+how broadly it applies:
 
 - At session open, or the agent misorients — root `AGENTS.md`
 - Every turn, where a violation is unrecoverable — a rule with `alwaysApply: true`
@@ -92,6 +96,12 @@ instruction given in an earlier turn decays with turn count. A per-file limit do
   list
 - **THEN** the agent-docs check fails and names the file
 
+#### Scenario: A change relocates instructions between channels
+
+- **WHEN** a change moves content between instruction channels
+- **THEN** the size of the whole corpus is measured before and after
+- **AND** growth is either reversed or stated with the reason it was accepted
+
 ## ADDED Requirements
 
 ### Requirement: A subproject constraint an agent must not miss lives in a rule
@@ -138,6 +148,13 @@ A triggered rule body SHALL state its directive, the reason the directive exists
 under which it does not apply. Where an exception exists it SHALL name an observable condition
 rather than leaving the judgement unstated.
 
+A triggered rule body SHALL be a reminder rather than an argument. Its value is the moment it arrives,
+not the information it carries, so extended reasoning SHALL live in the skill or reference the rule
+names and the body SHALL state the directive, the exception, and where the reasoning lives.
+
+A triggered rule SHALL be assumed to fire on a mention of its trigger as well as on an intent to act,
+and on a compliant action as well as a mistaken one. Its length SHALL be chosen on that basis.
+
 Rationale: the runtime ships 28 triggered rules and the repository had written none. Across a full
 working day exactly one instruction changed the agent's behaviour at the moment of action, and it
 was one of those 28.
@@ -181,6 +198,55 @@ repaired.
 
 - **WHEN** a triggered rule has no recorded firing and its motivating incident has not recurred
 - **THEN** it is deleted
+
+### Requirement: An instruction the agent would re-derive is not written
+
+Before an instruction is placed it SHALL be tested by deletion. The test asks what the agent does with
+the instruction absent:
+
+- Re-derives it correctly from the repository or the decompiled source, in seconds — the instruction
+  SHALL NOT be written.
+- Re-derives it only after a costly mistake — the instruction SHALL be a pointer to the authority, not
+  a copy of what the authority says.
+- Never derives it, because it is not recoverable by reading code — the instruction SHALL be kept.
+
+The third case covers method, a recorded incident, and a decision with its reason. Those are the only
+instructions that earn a full statement, and they are also the only ones that cannot go stale, because
+they are not claims about the code.
+
+Rationale: relocation without deletion grew the corpus by twenty-six percent while the loaded surface
+fell twenty percent, because the routing table offered no other move.
+
+#### Scenario: Guidance restates something the source states
+
+- **WHEN** proposed guidance states a fact the agent would read correctly from the source
+- **THEN** it is not added, and any trap in reading that source is added instead
+
+#### Scenario: A fact is expensive to locate
+
+- **WHEN** a fact is in the source but an agent would not think to look for it
+- **THEN** a pointer to the owning symbol is written rather than the fact
+
+### Requirement: A stated value carries its authority or is not stated
+
+An instruction file SHALL NOT state a numeric constant, a formula, or a field value taken from the game
+or the codebase without a pointer to the symbol that owns it. Where the value itself is not the point,
+the instruction SHALL state the pointer and the trap and omit the value.
+
+Rationale: a pointer of the form `server-scripts/<file>.cs:<symbol>` is resolved by the automated check
+and cannot be invalidated by a change to what it points at. A value can be invalidated and nothing
+detects it: the citation ledger hashes cited spans in source files, and no citation in the instruction
+surface is in that ledger. A value there is unprotected even when a symbol is cited nearby.
+
+#### Scenario: A rule states a coefficient
+
+- **WHEN** a rule body states a numeric constant from the game
+- **THEN** the check fails unless the file also points at the symbol that owns it
+
+#### Scenario: The value is the trap
+
+- **WHEN** the point of the instruction is that a value is surprising
+- **THEN** the value may be stated, with the pointer beside it
 
 ### Requirement: A reference list states what not reading it costs
 

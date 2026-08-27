@@ -19,11 +19,25 @@ exactly one instruction changed the agent's behaviour mid-action all day: one of
 The response to each failure has been to write more prose. Today that added 466 lines to channels
 that only load when the agent elects to read them, which is the failure being repaired.
 
+Routing alone cannot fix that, and this proposal originally offered nothing else. Measured after the
+first three sections landed, the surface that loads unconditionally had shrunk by twenty percent while
+the whole corpus had grown by twenty-six. Moving an instruction is the only move a routing table
+allows, so growth was the guaranteed outcome. The missing question is whether an instruction should
+exist at all, and the missing answer is that most facts about the code belong in the code.
+
 ## What Changes
 
 - **BREAKING** The routing table in `agent-instructions` is replaced. Placement is decided by the
   moment an instruction must arrive, not by how broadly it applies. Two existing rows are wrong and
   are removed.
+- An instruction is tested for whether it should exist before it is placed. One the agent would
+  re-derive correctly from the source in seconds is deleted rather than routed.
+- A stated value about the game or the code becomes a pointer to the authority that owns it, or is
+  dropped. A pointer cannot be invalidated by a change to what it points at, and the existing check
+  already resolves every one. A value can, and nothing checks it: the citation ledger indexes source
+  files, and none of the citations in the instruction surface are in it.
+- A trigger body is a reminder rather than a lesson. Its value is arrival, not information, so the
+  reasoning lives in the skill it points at and the body stays short.
 - A subproject constraint that an agent must not miss moves out of that subproject's `AGENTS.md`
   into a rule with `globs`, so it is listed and addressable from a session started anywhere in the
   repository. Subproject `AGENTS.md` files keep only orientation for a human reader.
@@ -73,4 +87,7 @@ None. The change corrects and extends an existing capability.
 - `.agent/skills/*/SKILL.md` reference lists are rewritten to state the cost of not loading.
 - `scripts/check-agent-docs.sh` gains checks for the new invariants.
 - `.omp/agents/` is introduced for repository-owned research agent definitions.
+- Every rule and skill is audited against the keep test, and the corpus is measured before and after.
+  `.agent/rules/monster-curve-columns.md` is the first correction, because this change created it and
+  it restates a coefficient with no pointer to the symbol that owns it.
 - No product code, exporter, pipeline, or website behaviour changes.

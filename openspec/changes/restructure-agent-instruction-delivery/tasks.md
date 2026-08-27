@@ -31,15 +31,24 @@ Each rule follows the shape the runtime's own rules use: opening directive, `## 
       Narrowed while implementing: the trigger matches a deploy only, not every `dotnet build`. A mod
       session builds many times and deploys once before each launch, so the deploy is the moment the
       directive is actionable and the build is the moment it would become wallpaper.
-- [ ] 1.6 Verify each rule's trigger fires by producing text that matches it and observing the
+- [x] 1.6 Verify each rule's trigger fires by producing text that matches it and observing the
       injection, and record the observation in the change. A rule whose trigger cannot be observed to
       fire is removed rather than kept on the assumption that it works.
-      Partly done, and the remainder needs a new session. Rules are discovered when a session starts,
-      confirmed by `rule://absence-needs-a-count` reporting the name as unknown while the file exists
-      on disk, so a rule authored inside a session cannot be observed firing in it. Verified now
-      instead: every frontmatter parses, every condition compiles, and each condition matches command
-      strings taken verbatim from the run that motivated it while not matching a near-miss string
-      (seven matches and six non-matches). Remaining: start a session and observe each injection.
+      Observed after a restart, because rules are discovered when a session starts: a rule authored
+      inside a session cannot fire in it, which was confirmed by the runtime reporting a new rule's
+      name as unknown while its file sat on disk.
+      Five of the six triggered rules fired and were read. A database query naming the monsters table
+      and fetching one row delivered `absence-needs-a-count` and `monster-curve-columns` together. One
+      shell argument carrying a HotRepl eval, a skill-use call and a deploy invocation delivered
+      `game-measurement-round-trips`, `let-the-engine-drive` and `build-is-not-runtime-proof`. Each
+      arrived as a reminder that did not interrupt, as its frontmatter asks.
+      `generated-artifacts` was not fired. Its scope is an edit or a write to a generated artifact, so
+      firing it means doing the thing it exists to prevent. Its condition matches any text, so the gate
+      is entirely the scope, and the scope is the part left unobserved.
+      Two costs were observed rather than predicted. The rules fired on a compliant call: the query
+      already read the curve columns and a count, and the reminders arrived anyway. And three rules
+      fired on an argument that merely quoted their trigger strings, with no action behind it. A
+      trigger cannot tell intent from mention.
 
 ## 2. Relocate subproject constraints into rules
 
@@ -177,3 +186,37 @@ run rather than stopping at the first.
       As with 1.6, none of this observes a rule firing. It reads frontmatter and matches conditions
       against recorded command strings.
 - [ ] 7.4 Sync the delta into `openspec/specs/agent-instructions/spec.md` and archive the change.
+      Runs last, after section 8. Archiving before the corpus is audited would freeze a plan whose own
+      measurement says it is unfinished.
+
+## 8. Earn the corpus
+
+Relocation without deletion grew the corpus twenty-six percent while the loaded surface fell twenty.
+This section applies the keep test to what already exists, and the pointer rule to what it states.
+
+- [ ] 8.1 Rewrite `.agent/rules/monster-curve-columns.md`: drop the block chance formula and its
+      coefficient, point at `server-scripts/Combat.cs:blockChance` and at the website owner that
+      already implements it, and keep the trap, that a stat can take a term from another stat so the
+      curve alone is not the answer. This rule is the change's own counter-example and is corrected
+      first.
+- [ ] 8.2 Audit every file in `.agent/rules/` for a stated value taken from the game or the codebase.
+      For each, either add the pointer to the owning symbol or remove the value and keep the trap.
+      Report the count found and the disposition of each.
+- [ ] 8.3 Apply the keep test to every skill body and reference section. Delete what the agent would
+      re-derive correctly from the source in seconds, convert what it would find only after a mistake
+      into a pointer, and keep method, incidents and decisions. Record what was deleted and why, so the
+      deletion can be argued with rather than discovered.
+- [ ] 8.4 Shorten each triggered rule body to a reminder: the directive, the exception, and where the
+      reasoning lives. Move the extended reasoning into the skill or reference the rule names. The five
+      rules from section 1 run to forty and fifty lines and were written in the shape of a
+      code-pattern rule, which carries a replacement a method reminder does not have.
+- [ ] 8.5 Extend `scripts/check-agent-docs.sh` to fail when a rule body states a bare numeric constant
+      or a formula and the file carries no `server-scripts/<file>.cs:<symbol>` pointer. Prove it by
+      introducing the violation and confirming the message, as section 6 did for its checks.
+- [ ] 8.6 Re-measure the corpus and the unconditionally loaded surface. The change SHALL NOT end larger
+      than it started. Record both figures against the starting ones, 9,777 words of corpus and 445
+      words loaded.
+- [ ] 8.7 Decide the `generated-artifacts` question raised by the rule inventory: its condition matches
+      any text and it gates entirely on a fourteen-clause scope, so the check for a rule carrying both
+      globs and a condition cannot see it. Either express the gate so the check reaches it, or state in
+      the rule why a scope gate is correct there and exempt it deliberately.
