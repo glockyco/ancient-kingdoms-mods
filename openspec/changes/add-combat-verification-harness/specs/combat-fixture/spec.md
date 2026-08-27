@@ -108,6 +108,45 @@ State SHALL NOT be assigned directly where an engine path exists.
 - **WHEN** a fixture requests a class no existing character has
 - **THEN** a new character of that class is created through the creation path
 
+### Requirement: A stated equipment section describes every slot
+
+Where a fixture states its equipment, that statement SHALL describe the whole of it. A slot the
+fixture does not name SHALL be emptied.
+
+A character created through the game's own creator wears starter equipment. A slot left as created
+would contribute to every measurement while no fixture named it, and the report would attribute that
+contribution to the fixture.
+
+An absent equipment section SHALL leave every slot as it is, because absent means the section was
+never read, while an empty section states that nothing is worn.
+
+#### Scenario: A fixture names some slots and not others
+
+- **WHEN** a fixture states equipment for three slots and the character was created wearing five
+- **THEN** the three are equipped and the other two are emptied
+
+#### Scenario: A fixture states an empty equipment section
+
+- **WHEN** a fixture states equipment and names no slot
+- **THEN** every slot is emptied
+
+#### Scenario: A fixture omits the equipment section
+
+- **WHEN** a fixture has no equipment section
+- **THEN** the slots are left as they are, and the report says so
+
+### Requirement: An item is described completely by what a fixture can state
+
+An item instance SHALL be reproducible from its identifier, its durability, and its augment.
+
+The game holds no rolled value on an item instance, so those three describe it completely and a
+fixture needs no captured roll to reproduce one.
+
+#### Scenario: The same fixture is materialized twice
+
+- **WHEN** one fixture is materialized in two runs
+- **THEN** both runs produce the same items, with no random component
+
 ### Requirement: Companion rolled values are set directly and constrained to the reachable envelope
 
 A companion's health multiplier, resource multiplier, and base combat value SHALL be assigned directly

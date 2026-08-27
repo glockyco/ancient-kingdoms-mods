@@ -75,7 +75,10 @@
       in its own words. Select the race before the class, because a race that forbids the selected class
       changes the selection.
 - [ ] 3.3 Reuse the existing world-entry character selection so a fixture matrix can address any of the
-      six classes. Selection by name already exists and is covered by the runtime control capability, so
+      six classes. World entry serves one character per session, and it refuses to switch once a
+      character is loaded, so a matrix either runs one fixture per session or gains a way back to
+      selection. A failed build also consumes its character, because the build refuses one that has
+      already been advanced, so an attempt needs a character of its own. Selection by name already exists and is covered by the runtime control capability, so
       do not add a second selector. The order is forced rather than chosen: the creator lives on the
       selection screen and the game's definitions arrive with the loaded world, so a run creates, enters,
       and then checks against the game.
@@ -89,8 +92,11 @@
       the level. Repeat a pass while any declared level is still reachable, and stop when a pass buys
       nothing. Report the blocked skill when declared levels remain.
 - [x] 3.6 Implement attribute allocation by spending points through the engine's attribute commands.
-- [ ] 3.7 Implement item granting and equipping by assigning equipment slots, so the equipment-changed
-      callback applies attribute bonuses and armour set thresholds.
+- [x] 3.7 Implement item granting and equipping through the game's own grant and swap, so the
+      equipment-changed callback applies attribute bonuses and armour set thresholds. Empty a slot the
+      fixture does not declare, because a created character wears starter equipment and an undeclared
+      piece would contribute to every measurement. An augment needs no separate step: it rides in the
+      inventory slot and the swap carries it.
 - [ ] 3.8 Implement companion acquisition through the engine's hire command, ordered after the owner's
       progression is complete so the companion receives no part of the per-level increment.
 - [ ] 3.9 Assign companion rolled values directly after acquisition, validating each against the race and
