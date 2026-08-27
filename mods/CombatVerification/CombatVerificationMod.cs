@@ -24,6 +24,7 @@ namespace CombatVerification
             _registered.Add(registry.Register(new CreateCharacterCommand()));
             _registered.Add(registry.Register(new StatSheetCommand()));
             _registered.Add(registry.Register(new BuildCharacterCommand()));
+            _registered.Add(registry.Register(new PerHitDamageCommand()));
             _registered.Add(registry.Register(new ActionIntervalCommand()));
 
             LoggerInstance.Msg($"CombatVerification: registered {_registered.Count} typed commands.");
