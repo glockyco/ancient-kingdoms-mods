@@ -38,6 +38,6 @@ Run checks that cover the changed subsystem and observable contract. Use the rel
 - Mods: relevant `dotnet test` project, then `dotnet run --project build-tool build`.
 - Pipeline: relevant tests under `build-pipeline/tests/` through the pinned `uv` environment.
 - Website: relevant tests, `pnpm check`, and `pnpm lint`. Run `pnpm build` for prerender, asset, or release behavior.
-- Agent guidance: `scripts/check-agent-docs.sh`.
+- Agent guidance: `scripts/check-agent-docs.sh`. When changing the checker, also run `python3 scripts/check_agent_docs_test.py`.
 
 Commit through `skill://commit-policy`. Never push without explicit approval.
