@@ -99,7 +99,7 @@ The `CombatVerification` mod registers three typed commands (MelonLoader mod in 
 | --------------------------- | ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `fixture.validate`          | sync | Checks a fixture against rules read from the running game. Needs a spawned player, because the class prefabs are unreadable before one exists. Reads only.                    |
 | `fixture.createCharacter`   | job  | Creates one character by driving the character creator. Needs character selection open, so call it before world entry. Refuses when the roster holds eight characters. Args: `{"characterName": string, "class": string, "race": string}`. Reports the stored class, race and level. |
-| `fixture.buildCharacter`    | job  | Brings the spawned player to a fixture's declared level, veteran points, attributes and skill levels. Runs once on a newly created character. Args: `{"character": <the character section of a fixture>}`. Reports each step. |
+| `fixture.buildCharacter`    | job  | Brings the spawned player to a fixture's declared level, veteran points, attributes, skill levels and equipment. Empties a slot the fixture does not declare, because a created character wears starter equipment. Runs once on a newly created character, and world entry serves one character per session. Args: `{"character": <the character section of a fixture>}`. Reports each step. |
 
 Run `hotrepl --url ws://127.0.0.1:18590 info --json` and inspect handshake metadata, or call
 `hotrepl --url ws://127.0.0.1:18590 describe <name> --json` for individual command descriptors.
