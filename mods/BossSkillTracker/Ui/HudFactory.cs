@@ -16,11 +16,21 @@ public sealed class Label
 {
     public readonly GameObject Go;
     private readonly TextMeshProUGUI _text;
+    private readonly bool _monospaced;
+    private string _value = string.Empty;
 
-    public Label(GameObject go, TextMeshProUGUI text)
+    /// <summary>
+    /// Glyph advances differ per digit in this font, so a countdown rendered as ordinary text
+    /// shifts on every change. TMP monospaces the enclosed run, which fixes the columns.
+    /// </summary>
+    private const string MonospaceOpen = "<mspace=0.55em>";
+    private const string MonospaceClose = "</mspace>";
+
+    public Label(GameObject go, TextMeshProUGUI text, bool monospaced = false)
     {
         Go = go;
         _text = text;
+        _monospaced = monospaced;
     }
 
     public RectTransform Rect => Go.GetComponent<RectTransform>();
@@ -34,7 +44,10 @@ public sealed class Label
     {
         set
         {
-            if (_text.text != value) _text.text = value;
+            if (_value == value) return;
+
+            _value = value;
+            _text.text = _monospaced ? MonospaceOpen + value + MonospaceClose : value;
         }
     }
 
@@ -91,7 +104,7 @@ public static class HudFactory
         return image;
     }
 
-    public static Label Label(string name, Transform parent, float size, Color color, Align align, bool bold = false)
+    public static Label Label(string name, Transform parent, float size, Color color, Align align, bool bold = false, bool monospaced = false)
     {
         var font = TMP_Settings.defaultFontAsset;
         if (font == null)
@@ -112,7 +125,7 @@ public static class HudFactory
             : align == Align.Center
                 ? TextAlignmentOptions.Midline
                 : TextAlignmentOptions.MidlineLeft;
-        return new Label(go, text);
+        return new Label(go, text, monospaced);
     }
 
     public static RectTransform Stretch(Component component, Vector2 offsetMin, Vector2 offsetMax)

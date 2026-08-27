@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using BossSkillTracker.Model;
 using Il2Cpp;
 
 namespace BossSkillTracker.Game;
@@ -50,6 +51,18 @@ public static class SkillReader
     {
         Skill skill = monster.skills.skills[index];
         return new LiveSkill(skill.cooldownEnd, skill.castTimeEnd);
+    }
+
+    /// <summary>
+    /// Reads the monster's special-cast gate. The cast mirrors the game's own unconditional cast in
+    /// Monster.SelectNextCombatSkillIndex, so a monster without MonsterSkills is a defect, not a case.
+    /// </summary>
+    public static GateReading ReadGate(Monster monster)
+    {
+        var skills = monster.skills.Cast<MonsterSkills>();
+        Skill basic = skills.skills[0];
+        double cycle = basic.castTime + basic.cooldown + Tuning.RefractorySeconds;
+        return new GateReading(skills.nextSpecialCastTime, monster.startCombatTime, monster.basicOnlySkillTimeEnd, cycle);
     }
 
     private static bool IsNonCastable(ScriptableSkill data)

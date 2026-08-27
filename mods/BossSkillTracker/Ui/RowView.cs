@@ -44,7 +44,7 @@ public sealed class RowView
         _cast = HudFactory.Label("cast", Root.transform, Tuning.SmallSize, Theme.Cast, Align.Right);
         _cast.Value = "CASTING";
         _cast.SetActive(false);
-        _state = HudFactory.Label("state", Root.transform, Tuning.StateSize, Theme.Text, Align.Right);
+        _state = HudFactory.Label("state", Root.transform, Tuning.StateSize, Theme.Text, Align.Right, monospaced: true);
     }
 
     public void Bind(TrackedSkill skill)
@@ -96,7 +96,7 @@ public sealed class RowView
         _name.SetActive(!_compact);
         _state.SetActive(!_compact);
         _name.Color = casting ? Theme.Cast : ready ? Theme.Text : Theme.Muted;
-        _state.Value = casting ? "cast" : ready ? "ready" : $"{CooldownMath.Remaining(live.CooldownEnd, now):0.#}s";
+        _state.Value = casting ? "cast" : ready ? "ready" : Readout.Seconds(CooldownMath.Remaining(live.CooldownEnd, now));
         _state.Color = casting || ready ? Theme.Ready : Theme.Text;
     }
 

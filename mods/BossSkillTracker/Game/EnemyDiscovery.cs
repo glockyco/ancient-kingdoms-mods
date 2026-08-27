@@ -47,7 +47,7 @@ public sealed class EnemyDiscovery
 
             if (ContainsNetId(into, monster.netId)) continue;
 
-            var info = CreateInfo(monster, tier.Value, engaged: true);
+            var info = CreateInfo(monster, tier.Value, engaged);
             into.Add(info);
             any = true;
         }

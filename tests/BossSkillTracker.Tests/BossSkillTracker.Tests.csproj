@@ -21,7 +21,9 @@
     <Compile Include="..\..\mods\BossSkillTracker\Model\SkillOrdering.cs" Link="Model\SkillOrdering.cs" />
     <Compile Include="..\..\mods\BossSkillTracker\Model\RelevanceFilter.cs" Link="Model\RelevanceFilter.cs" />
     <Compile Include="..\..\mods\BossSkillTracker\Model\GateVm.cs" Link="Model\GateVm.cs" />
-    <Compile Include="..\..\mods\BossSkillTracker\Model\SpecialGateEstimator.cs" Link="Model\SpecialGateEstimator.cs" />
+    <Compile Include="..\..\mods\BossSkillTracker\Model\GateReading.cs" Link="Model\GateReading.cs" />
+    <Compile Include="..\..\mods\BossSkillTracker\Model\Readout.cs" Link="Model\Readout.cs" />
+    <Compile Include="..\..\mods\BossSkillTracker\Model\SpecialGate.cs" Link="Model\SpecialGate.cs" />
     <Compile Include="..\..\mods\BossSkillTracker\Model\PanelPlacement.cs" Link="Model\PanelPlacement.cs" />
     <Compile Include="..\..\mods\BossSkillTracker\Model\RowLayout.cs" Link="Model\RowLayout.cs" />
     <Compile Include="..\..\mods\BossSkillTracker\Model\RawImageRows.cs" Link="Model\RawImageRows.cs" />

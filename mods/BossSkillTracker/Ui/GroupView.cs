@@ -21,7 +21,7 @@ public sealed class GroupView
     private readonly Transform _rowsParent;
     private readonly List<RowView> _rows = new();
     private bool _engaged;
-    private readonly SpecialGateEstimator _estimator = new();
+    private readonly SpecialGate _gateState = new();
 
     public GroupView(Transform parent, EnemyInfo info)
     {
@@ -98,9 +98,6 @@ public sealed class GroupView
 
         int currentSkill = SkillReader.CurrentSkill(_monster);
         bool casting = SkillReader.IsCasting(_monster);
-        int skillCount = _monster.skills != null && _monster.skills.skills != null ? _monster.skills.skills.Count : 0;
-        bool currentIsSpecial = currentSkill >= 1 && currentSkill < skillCount;
-        double castEnd = currentIsSpecial ? SkillReader.ReadLive(_monster, currentSkill).CastTimeEnd : 0;
 
         bool anyReady = false;
         foreach (var row in _rows)
@@ -110,8 +107,7 @@ public sealed class GroupView
             row.Update(live, casting && currentSkill == row.SkillIndex, now);
         }
 
-        _estimator.Observe(now, engaged: _engaged, currentSkill, casting, currentIsSpecial, castEnd);
-        _gate.Update(_estimator.Evaluate(now, anyReady), now);
+        _gate.Update(_gateState.Evaluate(now, _engaged, SkillReader.ReadGate(_monster), anyReady), now);
     }
 
     public void Destroy() => UnityEngine.Object.Destroy(Root);

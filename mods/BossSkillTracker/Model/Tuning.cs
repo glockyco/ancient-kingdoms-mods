@@ -2,11 +2,20 @@ namespace BossSkillTracker.Model;
 
 public static class Tuning
 {
-    // Gate timing (seconds).
-    public const double WarmupSeconds = 5.0;
-    public const double GateMin = 5.0;
-    public const double GateMax = 9.0;
+    // Gate timing (seconds). The two gate constants are the game's own, not estimates:
+    // Monster.EventStartUsingSpecialSkill withholds specials until startCombatTime + 5, and
+    // Monster.TryStartBossEliteBackReposition opens a 2.5 + 10 second basic-only window.
+    public const double SpecialWarmupSeconds = 5.0;
+    public const double BasicOnlySeconds = 12.5;
     public const double CombatGraceSeconds = 3.0;
+
+    // Monster.StartRefractoryPeriod holds a monster for half a second after a basic attack, so a
+    // basic attack cycle is its cast plus its cooldown plus this.
+    public const double RefractorySeconds = 0.5;
+
+    // MonsterSkills.NextSkill pushes its deadline by Random.Range(6, 12) after it selects a skill
+    // and by Random.Range(2, 4) after it finds none. A push below this came from the second branch.
+    public const double SpecialGateMinSeconds = 6.0;
 
     // Discovery loop.
     public const float ScanIntervalSeconds = 0.2f;
