@@ -189,10 +189,20 @@ run rather than stopping at the first.
       Runs last, after section 8. Archiving before the corpus is audited would freeze a plan whose own
       measurement says it is unfinished.
 
-## 8. Earn the corpus
+## 8. Earn each instruction
 
 Relocation without deletion grew the corpus twenty-six percent while the loaded surface fell twenty.
-This section applies the keep test to what already exists, and the pointer rule to what it states.
+That number is what exposed the omission, and it is not this section's target. A total over unlike
+channels prices a reference line the same as an always-loaded line, and as a target it argues for
+deleting a true instruction and keeping a false one.
+
+Each instruction is judged on its own merit, in this order:
+
+1. It is false or stale. Not neutral, harmful, and fixed whatever its size.
+2. Two copies of one fact exist, so one will drift.
+3. A stated value names no owner.
+4. It cannot change an action.
+5. It arrives often and argues at length.
 
 - [x] 8.1 Rewrite `.agent/rules/monster-curve-columns.md`: drop the block chance formula and its
       coefficient, point at `server-scripts/Combat.cs:blockChance` and at the website owner that
@@ -237,10 +247,29 @@ This section applies the keep test to what already exists, and the pointer rule 
       context file; deleting that file, the migration wrote the pre-fix wording into `mods/AGENTS.md`
       even though the file it replaced held the correct wording at that moment. This change then carried
       the inversion into a rule that loads. See design.md.
-- [ ] 8.6 Re-measure the corpus and the unconditionally loaded surface. The change SHALL NOT end larger
-      than it started. Record both figures against the starting ones, 9,777 words of corpus and 445
-      words loaded.
-- [ ] 8.7 Decide the `generated-artifacts` question raised by the rule inventory: its condition matches
+- [ ] 8.6 Repair every claim that contradicts the code. Five were found by audit, each needing a
+      replacement rather than a deletion, because each sentence carries a true obligation beside the
+      false value:
+      `interactive-map.md` says `MapEntity.id` holds the entity id, and for a monster it holds the spawn
+      id, verified at `website/src/lib/queries/map.server.ts:374` against the NPC case at `:515`.
+      `mods-runtime.md` and root `AGENTS.md` both describe `FieldDefaultValueHookFix` as preserving a
+      value for a request with no `FieldInfo`; the mod redirects an Il2CppInterop function-pointer
+      resolution from a byte signature to an xref traversal, and `FieldInfo` occurs zero times in it.
+      This one is in the always-loaded surface, which makes it the most expensive false claim in the
+      repository.
+      `website-boundaries.md` and `website-mechanics.md` both require preserving `Title` and `subtitle`
+      fields, which occur nowhere in the mechanics surface those rules govern.
+      `pipeline-invariants.md` lists five ledger subcommands; citations has check, fix, suggest and sync,
+      and redactions has check, explain, sync and verify.
+- [ ] 8.7 Collapse the duplication that will drift. Six duplicated facts were found, and one is
+      structural: every glob in `mod-runtime-special-cases.md` is a subset of `mods/**` in
+      `mods-runtime.md`, so the narrow rule cannot fire without the broad one, and both state the
+      respawn clock and the `PatchAll` requirement. Two correct copies today are two places the next
+      correction must reach, which is exactly how the respawn claim was reverted after being fixed.
+- [ ] 8.8 Record what was learned about the measurement itself, so the next change does not repeat it.
+      Report the count of false claims found and fixed, the count of duplicated facts collapsed, and the
+      channels each sat in. Report size only as a consequence, per channel, never as a total.
+- [ ] 8.9 Decide the `generated-artifacts` question raised by the rule inventory: its condition matches
       any text and it gates entirely on a fourteen-clause scope, so the check for a rule carrying both
       globs and a condition cannot see it. Either express the gate so the check reaches it, or state in
       the rule why a scope gate is correct there and exempt it deliberately.

@@ -99,8 +99,9 @@ instruction given in an earlier turn decays with turn count. A per-file limit do
 #### Scenario: A change relocates instructions between channels
 
 - **WHEN** a change moves content between instruction channels
-- **THEN** the size of the whole corpus is measured before and after
-- **AND** growth is either reversed or stated with the reason it was accepted
+- **THEN** each moved instruction is tested for whether it should exist before it is placed
+- **AND** a total word count over unlike channels SHALL NOT be used as the success criterion, because a
+  reference line and an always-loaded line differ in cost by orders of magnitude
 
 ## ADDED Requirements
 

@@ -39,8 +39,8 @@ adding text to a channel that loads at session open.
 
 - Place each instruction in the channel whose arrival moment matches the moment it is needed.
 - Make a subproject constraint reachable from a session started anywhere in the repository.
-- Reduce the always-loaded set rather than grow it, and end with a corpus no larger than the one this
-  change started from.
+- Judge each instruction on whether it changes an action, arrives when that action is taken, and is
+  true. Size is a consequence of those answers and is not a target.
 - Replace a stated value about the code with a pointer to the symbol that owns it, so the instruction
   cannot go stale without something failing.
 - Make an instruction's effectiveness observable, so a useless one can be deleted.
@@ -57,11 +57,16 @@ adding text to a channel that loads at session open.
 ### Keeping is decided before placing
 
 Placement presupposes that the instruction should exist, and the first version of this design never
-asked. That omission is measurable: after three sections the unconditionally loaded surface had fallen
-twenty percent and the whole corpus had risen twenty-six, because a routing table offers no move except
-moving.
+asked. Growth made the omission visible: after three sections the whole corpus had risen twenty-six
+percent while the unconditionally loaded surface fell twenty, because a routing table offers no move
+except moving.
 
-So each instruction is first tested by deleting it and asking what the agent does next.
+That number is the symptom and not the criterion. A word count cannot say whether a sentence is worth
+its place, it prices every channel alike when their costs differ by orders of magnitude, and taken as a
+target it argues for deleting a true instruction and keeping a false one. What it did do is prove that
+relocation was being used as a substitute for judgement.
+
+So each instruction is tested by deleting it and asking what the agent does next.
 
 | The agent would | Then the instruction is | Because |
 |---|---|---|
@@ -71,6 +76,27 @@ So each instruction is first tested by deleting it and asking what the agent doe
 
 The third row is the only one that earns a fact. It is also the only one that cannot rot, because it is
 not a claim about the code.
+
+### Cost is per arrival, not per word
+
+A total over every instruction file is the wrong unit, because the channels it adds together do not
+cost the same thing.
+
+| Channel | Arrives | A line there costs |
+|---|---|---|
+| root `AGENTS.md` | every session, unconditionally | every future session, forever |
+| a triggered rule | every match, including matches where the agent was already complying | one delivery per match |
+| a skill body | once a task loads it | the remainder of that session |
+| a reference | only when a reader opens it | nothing until then |
+
+A reference line and a root line differ by orders of magnitude, so a sum over both measures nothing.
+The consequence is not academic: the keep-test audit ranked its deletions by word count, and its five
+largest sat in references, which is the channel that costs nothing until read. Optimising that total
+would have spent the whole effort in the one place where it buys least.
+
+Length is therefore an argument only where arrival is frequent. A trigger body is delivered on every
+match and a match does not imply a mistake, so brevity there is a real economy. In a reference it is
+not.
 
 ### A value becomes a pointer, or it goes
 
