@@ -34,10 +34,6 @@ it must reach the agent, not by how broadly it applies.
 
 ## Avoid
 
-- A rule carrying both `globs` and `condition`. The path gate suppresses every trigger that names no
-  file, so a rule about a shell command never fires.
-- A triggered rule whose subject is a mistake nobody has made. State the incident in the body. A rule
-  with no incident behind it is a guess.
 - One rule covering several concerns. The trigger that fires for one delivers the rest as noise.
 - A task-routing table. Skills and rules are discovered from their descriptions.
 
@@ -45,9 +41,6 @@ it must reach the agent, not by how broadly it applies.
 
 Each reference entry in a skill body states what a reader who skips it gets wrong, rather than naming
 the file's subject. An entry that names a topic is read as optional.
-
-Every `AGENTS.md` and every `SKILL.md` stays under 200 lines, which `scripts/check-agent-docs.sh`
-enforces. That is stricter than the published ceiling for a skill body.
 
 ## Exceptions
 
