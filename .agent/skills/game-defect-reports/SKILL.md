@@ -32,6 +32,8 @@ Treat a reading of the decompiled source as a hypothesis. A report needs an obse
 5. Repeat the sequence. A defect that appears once is an observation. A defect that repeats is evidence.
 6. Confirm that the player save is unchanged. Compare its content hash against the hash from before the run.
 
+A timing, a cadence, or any behaviour that needs a held state also needs a sampler inside the game. Use `.agent/skills/hotrepl-runtime-inspection/references/observing-behaviour.md`. A behaviour that only a client of a remote server shows needs the pair in `.agent/skills/hotrepl-runtime-inspection/references/client-and-server.md`.
+
 State plainly which parts you observed and which parts you derived from source. Never present a derivation as a measurement.
 
 ## Instrumentation is not part of the defect
@@ -42,15 +44,7 @@ A defect claim must not depend on a value that only a tool can set. When the cla
 
 ## Screenshots
 
-A screenshot shows an interface defect that numbers cannot. Capture one for every defect a player can see.
-
-```sh
-# The game writes to a Windows path. Create the directory on the host first.
-H="./node_modules/.bin/hotrepl --url ws://127.0.0.1:18590"
-SHOT='C:/Program Files (x86)/Steam/steamapps/common/Ancient Kingdoms/ui-shots'
-$H eval "UnityEngine.ScreenCapture.CaptureScreenshot(\"$SHOT/name.png\"); \"requested\""
-# The capture completes at the end of a frame. Wait before reading the file.
-```
+A screenshot shows an interface defect that numbers cannot. Capture one for every defect a player can see. `UnityEngine.ScreenCapture.CaptureScreenshot` takes a Windows path, so create the directory on the host first, and wait a frame before you read the file.
 
 Capture the state before the action and the state after it. Capture a correct case beside the defect when the game handles a similar case correctly, because the contrast shows the intended behaviour.
 

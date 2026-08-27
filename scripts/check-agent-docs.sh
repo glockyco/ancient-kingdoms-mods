@@ -57,7 +57,15 @@ for path in agents:
         errors.append(f"oversized AGENTS.md: {path.relative_to(root)} ({count} lines; limit is 199)")
 
 skills = sorted(path for path in (root / ".agent" / "skills").glob("*/SKILL.md") if path.is_file())
+references = sorted(path for path in (root / ".agent" / "skills").glob("*/references/*.md") if path.is_file())
 rules = sorted(path for path in (root / ".agent" / "rules").glob("*.md") if path.is_file())
+
+# A skill body stays in context for the rest of a session once it loads, so detail belongs in a
+# reference file, which loads only when a task needs it. Reference files carry no limit.
+for path in skills:
+    count = len(path.read_text(encoding="utf-8").splitlines())
+    if count >= 200:
+        errors.append(f"oversized SKILL.md: {path.relative_to(root)} ({count} lines; limit is 199)")
 expected_skills = {"export-game-data", "game-defect-reports", "hotrepl-runtime-inspection", "ancient-kingdoms-save-files", "update-game-version"}
 expected_rules = {"website-mechanics", "interactive-map", "mod-runtime-special-cases"}
 actual_skills = {path.parent.name for path in skills}
@@ -103,10 +111,10 @@ for path in rules:
 
 skill_names = {path.parent.name for path in skills}
 rule_names = {path.stem for path in rules}
-surfaces = agents + skills + rules
+surfaces = agents + skills + references + rules
 uri_re = re.compile(r"\b(skill|rule)://([a-z0-9][a-z0-9-]*)")
 code_re = re.compile(r"`([^`\n]+)`")
-server_ref_re = re.compile(r"server-scripts/([A-Za-z0-9_.-]+\.cs):([A-Za-z_][A-Za-z0-9_.]*|\d+(?:-\d+)?)")
+server_ref_re = re.compile(r"server-scripts/((?:[A-Za-z0-9_.-]+/)*[A-Za-z0-9_.-]+\.cs):([A-Za-z_][A-Za-z0-9_.]*|\d+(?:-\d+)?)")
 path_prefixes = (".agent/", "build-pipeline/", "docs/", "mods/", "openspec/", "scripts/", "tests/", "website/", "README.md", "AGENTS.md", "lefthook.yml", "citations.lock.json", "redactions.lock.json", "config.toml")
 generated_outputs = {
     "website/data",
@@ -152,5 +160,5 @@ if errors:
     for error in sorted(set(errors)):
         print(f"- {error}", file=sys.stderr)
     raise SystemExit(1)
-print(f"agent-docs check passed: {len(agents)} AGENTS.md, {len(skills)} skills, {len(rules)} rules")
+print(f"agent-docs check passed: {len(agents)} AGENTS.md, {len(skills)} skills, {len(references)} skill references, {len(rules)} rules")
 PY

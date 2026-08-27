@@ -20,6 +20,7 @@ Keep an instruction only when its removal can cause a mistake.
 - Subproject facts belong in that subproject's `AGENTS.md`.
 - Path-specific constraints belong in `.agent/rules/` with `globs`.
 - Multi-step procedures belong in `.agent/skills/`.
+- Long reference material belongs in `.agent/skills/<name>/references/`, because a skill body stays in context after it loads and a reference file loads only when a task needs it.
 - Mechanically enforceable rules belong in tests, linters, or formatters.
 - Patterns visible in working code do not need prose copies.
 

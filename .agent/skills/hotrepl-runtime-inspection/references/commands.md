@@ -1,0 +1,30 @@
+# Typed control commands
+
+Two mods register the commands below. Run
+`hotrepl --url ws://127.0.0.1:18590 describe <name> --json` for a descriptor, and `info --json` for
+handshake metadata.
+
+## HotReplCommands
+
+MelonLoader mod in `mods/HotReplCommands/`.
+
+| Command                   | Kind | Description                                                                                                                                                                                      |
+| ------------------------- | ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `compendium.preflight`    | sync | Checks mod visibility, directory existence, scene, and player readiness.                                                                                                                          |
+| `world.summary`           | sync | Returns the active scene, the network state, the character count, and local-player status.                                                                                                        |
+| `world.enter`             | job  | Drives the game to a spawned local player, without exporting. Reports the character it entered as. Args: `{"character": string?}`; an absent value selects the lowest name in ordinal order.       |
+| `compendium.export`       | job  | Runs world entry if needed, calls DataExporter and optionally MapScreenshotter, and returns artifact refs. Args: `{"screenshots": bool}`.                                                         |
+| `game.quit`               | sync | Calls `Application.Quit()` and returns `{"quitting": true}`.                                                                                                                                      |
+| `game.useScratchDatabase` | sync | Points the database at a scratch file beside the game's own, so a run that creates or changes characters cannot reach player data. Refuses once the connection is open, so call it first.           |
+
+## CombatVerification
+
+MelonLoader mod in `mods/CombatVerification/`.
+
+| Command                   | Kind | Description                                                                                                                                                                                                                                                                        |
+| ------------------------- | ---- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `fixture.validate`        | sync | Checks a fixture against rules read from the running game. Needs a spawned player, because the class prefabs are unreadable before one exists. Reads only.                                                                                                                          |
+| `fixture.createCharacter` | job  | Creates one character by driving the character creator. Needs character selection open, so call it before world entry. Refuses when the roster holds eight characters. Args: `{"characterName": string, "class": string, "race": string}`.                                            |
+| `probe.statSheet`         | sync | Reads the complete combat state of the player and each companion: every attribute, every computed stat, resource maxima and multipliers, each occupied slot with what it contributes, and each armour set with its piece count and declared bonuses. Reads only. Args: `{}`.          |
+| `probe.actionInterval`    | job  | Reads how often the local player can act. Stills the attack loop first and reports every value it cleared, then samples for `windowSeconds` and reports the completed actions with the gaps between them. Args: `{"windowSeconds": number?}`.                                        |
+| `fixture.buildCharacter`  | job  | Brings the spawned player to a fixture's declared level, veteran points, attributes, skill levels, equipment, and companions. Empties a slot the fixture does not declare, because a created character wears starter equipment. Args: `{"character": {...}, "companions": [...]}`.     |
