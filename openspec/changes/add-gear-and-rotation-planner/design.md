@@ -495,6 +495,17 @@ Two terms this exposes that the earlier calibrations had absorbed:
   mitigation. A single hit therefore tells almost nothing, and the band is wide enough to admit a wrong
   model. Seventeen hits put the mean within 0.2 percent.
 
+The intent term is no longer derived either. The harness stamps the damage entry point and reads the
+amount the caster asked for, which was 464 on every hit and matches the 463 plus 1 derived above. With
+the health taken beside it, the engine's whole reduction is one ratio per hit, and the band that ratio
+must fall in follows from the source: variance from 0.9 to 1.1, then -10 percent, then -35 percent, so
+0.5265 to 0.6435. Fourteen of fourteen hits fell inside it with a mean of 0.5779 against a centre of
+0.585.
+
+This is the standard a model term should be held to. A mean over a dozen hits agreeing is weak evidence
+next to every individual hit falling inside a band derived from the source, because a wrong model with
+the right mean fails the second test and passes the first.
+
 Order matters because each step rounds separately. The steps are integer operations with their own
 `CeilToInt` and `RoundToInt`, so the model has to walk them in the engine's order rather than multiply
 one set of factors.
