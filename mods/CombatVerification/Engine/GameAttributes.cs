@@ -5,7 +5,7 @@ using System.Linq;
 using System.Reflection;
 using Il2Cpp;
 
-namespace CombatVerification.Fixtures
+namespace CombatVerification.Engine
 {
     /// <summary>
     /// The attributes an entity carries, read from the members that hold them.

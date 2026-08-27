@@ -4,7 +4,7 @@ using DataExporter;
 using Il2Cpp;
 using UnityEngine;
 
-namespace CombatVerification.Fixtures
+namespace CombatVerification.Engine
 {
     /// <summary>
     /// Resolves the identifier a fixture uses to the item asset the game holds.

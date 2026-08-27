@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using CombatVerification.Dtos;
+using CombatVerification.Engine;
 using CombatVerification.Fixtures;
 using DataExporter;
 using Il2Cpp;

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using CombatVerification.Engine;
 using CombatVerification.Fixtures;
 using DataExporter;
 using Il2Cpp;

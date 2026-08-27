@@ -1,6 +1,7 @@
 #nullable disable
 using System.Collections.Generic;
 using System.Linq;
+using CombatVerification.Engine;
 using DataExporter;
 using Il2Cpp;
 using Il2CppMirror;
