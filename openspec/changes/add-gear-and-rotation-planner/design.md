@@ -466,6 +466,39 @@ Two of these rows are recorded defects rather than intended behaviour, and the m
 intent: `docs/game-bugs/broken-offhand-subtracts-damage-it-never-gave.md` and
 `docs/game-bugs/a-bow-without-a-melee-weapon-cancels-its-own-damage.md`.
 
+## One hit, derived rather than calibrated
+
+Every figure above was obtained by calibrating a mitigation factor on one configuration and predicting
+another. That works for choosing between two rules whose predictions are far apart, and it hides
+whatever the factor absorbed. Reading the target's own stats removes the need for it.
+
+A level 50 Rogue with one dagger, Stab at level 1, against Ancient Cyclops at level 55:
+
+| Step | Source | Value |
+|---|---|---|
+| Intent | `combat.damage` 463 plus the skill's flat 1 | 464 |
+| Variance | `RoundToInt(amount * Random.Range(0.9, 1.1))`, `Combat.cs:756` | 418 to 510 |
+| Level difference | `+= CeilToInt(amount * clamp((50 - 55) * 0.02, -0.2, 0.2))`, `:758` | -10 percent |
+| Physical mitigation | `-= CeilToInt(amount * clamp(defense * 0.0005, 0, 0.9))`, `:821` | -35 percent |
+| Predicted | mean 271, band 244 to 298 | |
+| Observed | mean 270.4 over 17 hits, range 246 to 294 | |
+
+Nothing was fitted. `defense` 700 and the target's level were read from the target, the skill's flat
+damage and percent were read from the skill, and the arithmetic is the engine's.
+
+Two terms this exposes that the earlier calibrations had absorbed:
+
+- **The level difference is a damage term, not a target property.** Two percent per level, bounded at
+  twenty percent either way. A factor fitted against the level 55 dummy carries a hidden -10 percent
+  into every prediction at another target level.
+- **Variance is plus or minus ten percent of the intent**, applied before the level term and before
+  mitigation. A single hit therefore tells almost nothing, and the band is wide enough to admit a wrong
+  model. Seventeen hits put the mean within 0.2 percent.
+
+Order matters because each step rounds separately. The steps are integer operations with their own
+`CeilToInt` and `RoundToInt`, so the model has to walk them in the engine's order rather than multiply
+one set of factors.
+
 ## A companion is a different machine
 
 A companion's period comes from `Monster.StartRefractoryPeriod`, which sets a flat 1.0 s for a special

@@ -164,6 +164,53 @@ A skill that produces no damage SHALL be charged the same cost as one that does.
 - **WHEN** a target debuff that produces no damage completes
 - **THEN** it is charged a full delay
 
+### Requirement: One hit is derived in the engine's own order
+
+A hit SHALL be derived as a sequence of integer steps in the order the engine applies them, and not as
+one product of factors. Each step rounds, so a different order gives a different integer.
+
+The order is: the caster's aggregate damage plus the skill's own flat damage, then the skill's damage
+percent where it declares one, then a variance roll, then the level difference between caster and
+target, then school mitigation, then the critical multiplier.
+
+The level difference SHALL be a damage term rather than a property of the target. It adds two percent of
+the running amount for each level the caster holds above the target and removes two percent for each
+level below, bounded at twenty percent either way. A model that omits it is correct only where caster
+and target are the same level.
+
+The variance roll SHALL be a factor from 0.9 to 1.1 around the amount, applied before the level
+difference and before mitigation. The model SHALL report a fixed-state expectation with the roll at its
+mean, and SHALL state the band a single hit can fall in.
+
+#### Scenario: A build is evaluated against a higher-level target
+
+- **WHEN** a level 50 build is evaluated against a level 55 target
+- **THEN** ten percent of the amount is removed before mitigation is applied
+
+#### Scenario: The level difference exceeds the bound
+
+- **WHEN** caster and target differ by more than ten levels
+- **THEN** the term is held at twenty percent
+
+#### Scenario: A single hit is compared with a prediction
+
+- **WHEN** one measured hit is compared with a fixed-state prediction
+- **THEN** agreement is judged against the variance band and not against the mean alone
+
+### Requirement: A prediction is derived from the target's own state
+
+A predicted amount SHALL be derived from stats read from the target. The model SHALL NOT obtain a
+mitigation factor by calibrating against another measured amount.
+
+A calibrated factor absorbs every term the model is missing, so it agrees with the measurement it was
+fitted to and fails wherever the missing term differs. The level difference term is one such term: a
+factor fitted at one target level silently carries that level's difference into every other.
+
+#### Scenario: A model term is missing
+
+- **WHEN** a prediction is derived from read stats and disagrees with a measurement
+- **THEN** the disagreement is attributable to a named missing term rather than absorbed
+
 ### Requirement: Target avoidance and mitigation are reducible, and reduction is not certain
 
 The model SHALL treat a target's avoidance and mitigation as reducible by a maintained debuff rather
