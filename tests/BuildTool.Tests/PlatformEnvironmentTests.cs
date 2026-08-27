@@ -39,6 +39,40 @@ public class PlatformEnvironmentTests
     }
 
     [Fact]
+    public void Wine_PassesTheReplPortThrough()
+    {
+        var previous = System.Environment.GetEnvironmentVariable("HOTREPL_PORT");
+        System.Environment.SetEnvironmentVariable("HOTREPL_PORT", "18591");
+        try
+        {
+            var request = WineEnvironment.BuildLaunchRequest(MacConfig(), gameArgs: new string[0]);
+
+            Assert.Equal("18591", request.Environment!["HOTREPL_PORT"]);
+        }
+        finally
+        {
+            System.Environment.SetEnvironmentVariable("HOTREPL_PORT", previous);
+        }
+    }
+
+    [Fact]
+    public void Wine_OmitsTheReplPortWhenUnset()
+    {
+        var previous = System.Environment.GetEnvironmentVariable("HOTREPL_PORT");
+        System.Environment.SetEnvironmentVariable("HOTREPL_PORT", null);
+        try
+        {
+            var request = WineEnvironment.BuildLaunchRequest(MacConfig(), gameArgs: new string[0]);
+
+            Assert.False(request.Environment!.ContainsKey("HOTREPL_PORT"));
+        }
+        finally
+        {
+            System.Environment.SetEnvironmentVariable("HOTREPL_PORT", previous);
+        }
+    }
+
+    [Fact]
     public void GameLauncher_BuildsTheWineRequest()
     {
         var config = MacConfig();

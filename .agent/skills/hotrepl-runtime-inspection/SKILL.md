@@ -61,11 +61,26 @@ rather than assumed.
 `build-tool launch --wait` returns once the runtime host is ready, and the game keeps running after
 it returns. A session that ends without `game.quit` therefore leaves the game running.
 
-A second instance does not take the endpoint. The first one keeps port 18590, so every later command
-answers from the older process while the newer window is the one on screen. Readings then describe a
-game that is not the one under test, and the mistake looks like a defect in the code being verified.
+Two instances on one port do not both serve. The first keeps 18590, so every later command answers
+from the older process while the newer window is the one on screen. Readings then describe a game
+that is not the one under test, and the mistake looks like a defect in the code being verified.
 
 Before a launch, confirm that no instance is running. Quit with `game.quit` at the end of a session.
+
+Give a second instance its own port with `HOTREPL_PORT`, which `build-tool launch` passes through.
+A pair is what verifies client-only behaviour: the first instance hosts a LAN world and holds server
+authority, and the second joins it as a client, where `NetworkServer.active` is false and no
+server-only field arrives.
+
+```sh
+dotnet run --project build-tool launch --wait                        # host, port 18590
+HOTREPL_PORT=18591 dotnet run --project build-tool launch            # client, port 18591
+```
+
+Both instances derive their account from the same platform identity, and the server refuses a second
+login for an account already online. Rename the host player's `account` in memory before the client
+connects. A client that joins uploads its own character, because `OnServerCharacterSelect` builds the
+player from the client's message rather than from the server's database.
 
 ```sh
 ps aux | grep "[a]ncientkingdoms.exe"     # expect no output before launching

@@ -8,6 +8,8 @@ namespace BuildTool.Game;
 
 public static class WineEnvironment
 {
+    private const string ReplPortVariable = "HOTREPL_PORT";
+
     public static ProcessRequest BuildLaunchRequest(LocalConfig config, IReadOnlyList<string> gameArgs)
     {
         var bottleName = Path.GetFileName(config.WinePrefix);
@@ -21,6 +23,12 @@ public static class WineEnvironment
             ["DOTNET_ROOT"] = @"C:\Program Files\dotnet",
             ["WINEDLLOVERRIDES"] = "version=n,b",
         };
+
+        // The runtime host reads its listen port from the environment. The value belongs to one
+        // launch rather than to Local.props, because two instances need different ports.
+        var replPort = Environment.GetEnvironmentVariable(ReplPortVariable);
+        if (!string.IsNullOrWhiteSpace(replPort))
+            env[ReplPortVariable] = replPort;
 
         return new ProcessRequest(
             Program: config.WinePath,
