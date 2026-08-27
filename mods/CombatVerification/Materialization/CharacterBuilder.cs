@@ -51,7 +51,9 @@ namespace CombatVerification.Materialization
         private const int StepSlack = 4;
 
         public static BuildOutcome Run(
-            ICharacterUnderConstruction character, CharacterSpec spec)
+            ICharacterUnderConstruction character,
+            CharacterSpec spec,
+            IReadOnlyList<CompanionSpec> companions = null)
         {
             var steps = new List<BuildStep>();
 
@@ -62,7 +64,8 @@ namespace CombatVerification.Materialization
                 if (AdvanceVeteran(character, spec, steps))
                     if (SpendAttributes(character, spec, steps))
                         if (SpendSkills(character, spec, steps))
-                            EquipItems(character, spec, steps);
+                            if (EquipItems(character, spec, steps))
+                                HireCompanions(character, companions, steps);
 
             return new BuildOutcome { Steps = steps };
         }
@@ -275,38 +278,29 @@ namespace CombatVerification.Materialization
         /// set's matching pieces from every slot on each change, so a threshold is crossed by
         /// whichever piece happens to be third or fifth.
         /// </remarks>
-        private static void EquipItems(
+        private static bool EquipItems(
             ICharacterUnderConstruction character, CharacterSpec spec, List<BuildStep> steps)
         {
             if (spec.Equipment == null)
-            {
                 // An absent section was never read, so it states nothing about the slots. An empty
                 // one states that nothing is worn, which is a different measurement.
-                Pass(steps, "equipment", "Not stated, so the slots are left as they are.");
-                return;
-            }
+                return Pass(steps, "equipment", "Not stated, so the slots are left as they are.");
 
             var requested = spec.Equipment
                 .Where(entry => !string.IsNullOrWhiteSpace(entry.ItemId))
                 .ToList();
 
             if (!character.ItemOperationsAllowed)
-            {
-                Fail(steps, "equipment",
-                    $"The engine refuses an item operation while the character is "
+                return Fail(steps, "equipment",
+                    "The engine refuses an item operation while the character is "
                     + $"{character.ActivityState}.");
-                return;
-            }
 
             var slotCount = character.Equipment.Count;
             foreach (var entry in requested)
             {
                 if (entry.Slot < 0 || entry.Slot >= slotCount)
-                {
-                    Fail(steps, "equipment",
+                    return Fail(steps, "equipment",
                         $"Slot {entry.Slot} is outside the {slotCount} the game gives a character.");
-                    return;
-                }
             }
 
             // A character is created wearing starter equipment, so a slot the fixture does not
@@ -323,12 +317,9 @@ namespace CombatVerification.Materialization
                 character.Unequip(slot);
 
                 if (character.Equipment[slot].ItemId != null)
-                {
-                    Fail(steps, "equipment",
+                    return Fail(steps, "equipment",
                         $"Slot {slot} still holds '{before}' after unequipping it. The engine "
                         + "refuses when the inventory has no room, and reports nothing.");
-                    return;
-                }
 
                 cleared++;
             }
@@ -336,71 +327,50 @@ namespace CombatVerification.Materialization
             foreach (var entry in requested)
             {
                 if (!character.ItemExists(entry.ItemId))
-                {
-                    Fail(steps, "equipment", $"The game defines no item '{entry.ItemId}'.");
-                    return;
-                }
+                    return Fail(steps, "equipment", $"The game defines no item '{entry.ItemId}'.");
 
                 var durability = entry.Durability ?? character.MaxDurability(entry.ItemId);
                 if (durability <= 0)
-                {
-                    Fail(steps, "equipment",
+                    return Fail(steps, "equipment",
                         $"'{entry.ItemId}' would be worn at durability {durability}, and the engine "
                         + "counts a slot's bonuses only above zero, so the piece could not "
                         + "contribute and no measurement would say so.");
-                    return;
-                }
 
                 character.GrantItem(entry.ItemId, durability, entry.AugmentId);
 
                 var inventoryIndex = character.FindInInventory(entry.ItemId, entry.AugmentId);
                 if (inventoryIndex < 0)
-                {
-                    Fail(steps, "equipment",
+                    return Fail(steps, "equipment",
                         $"'{entry.ItemId}' did not reach the inventory. The engine refuses a grant "
                         + "it has no room for and reports nothing.");
-                    return;
-                }
 
                 if (!character.CanEquip(inventoryIndex, entry.Slot))
-                {
-                    Fail(steps, "equipment",
+                    return Fail(steps, "equipment",
                         $"The game refuses '{entry.ItemId}' in slot {entry.Slot}.");
-                    return;
-                }
 
                 character.Equip(inventoryIndex, entry.Slot);
 
                 var after = character.Equipment[entry.Slot];
                 if (after.ItemId != entry.ItemId)
-                {
-                    Fail(steps, "equipment",
+                    return Fail(steps, "equipment",
                         $"Slot {entry.Slot} holds "
                         + $"{(after.ItemId == null ? "nothing" : $"'{after.ItemId}'")} after "
                         + $"equipping '{entry.ItemId}'. The engine did not accept it and reported "
                         + "nothing.");
-                    return;
-                }
 
                 if (after.Durability != durability)
-                {
-                    Fail(steps, "equipment",
+                    return Fail(steps, "equipment",
                         $"Slot {entry.Slot} holds '{entry.ItemId}' at durability "
                         + $"{after.Durability}, not the {durability} it was granted with.");
-                    return;
-                }
 
                 // The augment rides in the slot, so equipping moves it with the item. Asserting it
                 // here is what proves the augment needs no separate path.
                 if (!string.Equals(after.AugmentId ?? "", entry.AugmentId ?? "",
                         System.StringComparison.OrdinalIgnoreCase))
-                {
-                    Fail(steps, "equipment",
+                    return Fail(steps, "equipment",
                         $"Slot {entry.Slot} holds augment "
                         + $"{(after.AugmentId == null ? "none" : $"'{after.AugmentId}'")} rather "
                         + $"than {(entry.AugmentId == null ? "none" : $"'{entry.AugmentId}'")}.");
-                    return;
-                }
 
             }
 
@@ -411,7 +381,220 @@ namespace CombatVerification.Materialization
             if (cleared > 0)
                 detail += $", cleared {cleared} slots the fixture does not declare";
 
-            Pass(steps, "equipment", detail + ".");
+            return Pass(steps, "equipment", detail + ".");
+        }
+
+        // --- companions ---
+
+        /// <summary>
+        /// Hires each declared companion, sets the three values a hire rolls, and equips it.
+        /// </summary>
+        /// <remarks>
+        /// This runs last because a companion gains a point of base damage and base magic damage
+        /// for every level its owner gains while it is present. Hiring after the owner's
+        /// progression is complete is therefore the only way to get the value a newly hired
+        /// companion carries, which is also the only value that survives a reload.
+        /// </remarks>
+        private static void HireCompanions(
+            ICharacterUnderConstruction character,
+            IReadOnlyList<CompanionSpec> companions,
+            List<BuildStep> steps)
+        {
+            if (companions == null)
+            {
+                Pass(steps, "companions", "Not stated.");
+                return;
+            }
+
+            var requested = companions
+                .Where(companion => !string.IsNullOrWhiteSpace(companion.Archetype))
+                .ToList();
+            if (requested.Count == 0)
+            {
+                Pass(steps, "companions", "None declared.");
+                return;
+            }
+
+            foreach (var wanted in requested)
+            {
+                if (!character.ArchetypeExists(wanted.Archetype))
+                {
+                    Fail(steps, "companions",
+                        $"The game offers no companion archetype '{wanted.Archetype}'.");
+                    return;
+                }
+
+                var price = character.HirePrice(wanted.Archetype);
+
+                var companion = HireOne(character, wanted, price, steps);
+                if (companion == null)
+                    return;
+
+                if (!AssignCompanionValues(companion, wanted, steps))
+                    return;
+
+                if (!EquipCompanion(character, companion, wanted, steps))
+                    return;
+            }
+
+            var equipped = requested.Count(
+                companion => companion.Equipment != null && companion.Equipment.Count > 0);
+            var detail = $"Hired {requested.Count}";
+            if (equipped > 0)
+                detail += $", {equipped} equipped";
+
+            Pass(steps, "companions", detail + ".");
+        }
+
+        /// <summary>
+        /// Hires one companion and checks the race the engine rolled against the fixture.
+        /// </summary>
+        /// <remarks>
+        /// The race is drawn from a list the archetype allows, so it can be neither requested nor
+        /// resampled. Resampling would mean dismissing the misses, and the engine defers a
+        /// destruction to the end of the frame while leaving the owner's slot pointing at the
+        /// destroyed companion, so a hire issued in the same frame spawns a companion that occupies
+        /// no slot at all. A fixture that names a race is therefore reproducible through the seed
+        /// that governs the draw, not through repetition.
+        /// </remarks>
+        private static ICompanionUnderConstruction HireOne(
+            ICharacterUnderConstruction character,
+            CompanionSpec wanted,
+            long price,
+            List<BuildStep> steps)
+        {
+            if (character.Gold < price)
+                character.AddGold(price - character.Gold);
+
+            var before = character.Companions.Count;
+            character.Hire(wanted.Archetype, price);
+
+            if (character.Companions.Count == before)
+            {
+                Fail(steps, "companions",
+                    $"Hiring a {wanted.Archetype} left {before} companions. The engine caps how many "
+                    + "an owner may hold, and it charges the price and records the hire without "
+                    + "producing one.");
+                return null;
+            }
+
+            var companion = character.Companions[character.Companions.Count - 1];
+
+            if (!string.Equals(companion.Archetype, wanted.Archetype,
+                    System.StringComparison.OrdinalIgnoreCase))
+            {
+                Fail(steps, "companions",
+                    $"Hiring a {wanted.Archetype} produced a {companion.Archetype}.");
+                return null;
+            }
+
+            if (!string.IsNullOrWhiteSpace(wanted.Race)
+                && !string.Equals(companion.Race, wanted.Race,
+                    System.StringComparison.OrdinalIgnoreCase))
+            {
+                Fail(steps, "companions",
+                    $"The fixture states a {wanted.Race} {wanted.Archetype} and the engine rolled a "
+                    + $"{companion.Race} one. A companion's race is drawn from a list its archetype "
+                    + "allows, so a fixture that names one depends on the seed that governs the "
+                    + "draw.");
+                return null;
+            }
+
+            return companion;
+        }
+
+        /// <summary>
+        /// Sets the values a hire rolls, each one read back. The engine holds the range these come
+        /// from as literals inside the hire, so nothing can be asked whether a value is reachable.
+        /// </summary>
+        private static bool AssignCompanionValues(
+            ICompanionUnderConstruction companion, CompanionSpec wanted, List<BuildStep> steps)
+        {
+            if (wanted.HealthMultiplier.HasValue)
+            {
+                companion.SetHealthMultiplier(wanted.HealthMultiplier.Value);
+                if (companion.HealthMultiplier != wanted.HealthMultiplier.Value)
+                    return Fail(steps, "companions",
+                        $"The health multiplier is {companion.HealthMultiplier} after setting it to "
+                        + $"{wanted.HealthMultiplier.Value}.");
+            }
+
+            if (wanted.ResourceMultiplier.HasValue)
+            {
+                companion.SetResourceMultiplier(wanted.ResourceMultiplier.Value);
+                if (companion.ResourceMultiplier != wanted.ResourceMultiplier.Value)
+                    return Fail(steps, "companions",
+                        $"The resource multiplier is {companion.ResourceMultiplier} after setting it "
+                        + $"to {wanted.ResourceMultiplier.Value}. A Warrior and a Rogue use energy, "
+                        + "and every other archetype uses mana.");
+            }
+
+            if (wanted.BaseCombat.HasValue)
+            {
+                companion.SetBaseCombat(wanted.BaseCombat.Value);
+                if (companion.BaseCombat != wanted.BaseCombat.Value)
+                    return Fail(steps, "companions",
+                        $"The base combat value is {companion.BaseCombat} after setting it to "
+                        + $"{wanted.BaseCombat.Value}.");
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Equips a companion from the owner's inventory, which is where its own command reads.
+        /// </summary>
+        private static bool EquipCompanion(
+            ICharacterUnderConstruction character,
+            ICompanionUnderConstruction companion,
+            CompanionSpec wanted,
+            List<BuildStep> steps)
+        {
+            if (wanted.Equipment == null || wanted.Equipment.Count == 0)
+                return true;
+
+            var slotCount = companion.Equipment.Count;
+            foreach (var entry in wanted.Equipment)
+            {
+                if (string.IsNullOrWhiteSpace(entry.ItemId))
+                    continue;
+
+                if (entry.Slot < 0 || entry.Slot >= slotCount)
+                    return Fail(steps, "companions",
+                        $"Slot {entry.Slot} is outside the {slotCount} a companion has.");
+
+                if (!character.ItemExists(entry.ItemId))
+                    return Fail(steps, "companions", $"The game defines no item '{entry.ItemId}'.");
+
+                var durability = entry.Durability ?? character.MaxDurability(entry.ItemId);
+                if (durability <= 0)
+                    return Fail(steps, "companions",
+                        $"'{entry.ItemId}' would be worn at durability {durability}, which the "
+                        + "engine counts as contributing nothing.");
+
+                character.GrantItem(entry.ItemId, durability, entry.AugmentId);
+
+                var inventoryIndex = character.FindInInventory(entry.ItemId, entry.AugmentId);
+                if (inventoryIndex < 0)
+                    return Fail(steps, "companions",
+                        $"'{entry.ItemId}' did not reach the owner's inventory, which is where a "
+                        + "companion's own command reads from.");
+
+                if (!companion.CanEquip(inventoryIndex, entry.Slot))
+                    return Fail(steps, "companions",
+                        $"The game refuses '{entry.ItemId}' in a companion's slot {entry.Slot}.");
+
+                companion.Equip(inventoryIndex, entry.Slot);
+
+                var after = companion.Equipment[entry.Slot];
+                if (after.ItemId != entry.ItemId)
+                    return Fail(steps, "companions",
+                        $"A companion's slot {entry.Slot} holds "
+                        + $"{(after.ItemId == null ? "nothing" : $"'{after.ItemId}'")} after "
+                        + $"equipping '{entry.ItemId}'.");
+            }
+
+            return true;
         }
 
         private static SkillState Find(ICharacterUnderConstruction character, string name)

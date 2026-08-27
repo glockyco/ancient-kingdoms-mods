@@ -14,6 +14,14 @@ namespace CombatVerification.Dtos
         /// </summary>
         [JsonProperty("character", Required = Required.Always)]
         public CharacterSpec Character { get; set; }
+
+        /// <summary>
+        /// Companions the fixture declares. A fixture keeps these beside the character rather than
+        /// inside it, so they are named separately here too. Absent means the fixture states
+        /// nothing about companions, and an empty list means it states that there are none.
+        /// </summary>
+        [JsonProperty("companions", Required = Required.Default)]
+        public List<CompanionSpec> Companions { get; set; }
     }
 
     /// <summary>One step of the build and what it achieved.</summary>

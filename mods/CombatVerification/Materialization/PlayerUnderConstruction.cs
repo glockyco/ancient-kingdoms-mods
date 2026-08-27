@@ -289,6 +289,104 @@ namespace CombatVerification.Materialization
 
         public void Unequip(int equipmentSlot) => _equipment.CmdUnequip(equipmentSlot);
 
+        // --- companions ---
+
+        /// <summary>
+        /// The archetype each hire index produces, as the hire's own switch decides
+        /// (<c>server-scripts/Player.cs:9772-9779</c>). Nothing exposes this mapping, so it is
+        /// stated once here and every hire checks the archetype it actually received.
+        /// </summary>
+        private static readonly string[] HireArchetypes =
+            { null, "Warrior", "Cleric", "Rogue", "Wizard", "Druid", "Ranger" };
+
+        public IReadOnlyList<ICompanionUnderConstruction> Companions
+        {
+            get
+            {
+                var held = new List<ICompanionUnderConstruction>();
+
+                foreach (var pet in new[]
+                {
+                    _player.activeMercenary, _player.activeMercenary2,
+                    _player.activeMercenary3, _player.activeMercenary4,
+                })
+                    if (pet != null)
+                        held.Add(new PetUnderConstruction(pet));
+
+                return held;
+            }
+        }
+
+        public bool ArchetypeExists(string archetype) => HireIndexOf(archetype) > 0;
+
+        public long Gold => _player.gold;
+
+        public void AddGold(long amount) => _player.CmdAddGold(amount);
+
+        public long HirePrice(string archetype)
+        {
+            // The game's own arithmetic, so a fixture cannot drift from what a player pays. The
+            // mercenary price is not public, and restating it here would be a second copy that a
+            // balance change would silently invalidate.
+            var method = typeof(UIMercenaries).GetMethod(
+                "CalculatePriceMercenaryLevel",
+                BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Public);
+            if (method == null)
+                throw new InvalidOperationException(
+                    "UIMercenaries has no CalculatePriceMercenaryLevel, so the hire price the game "
+                    + "asks cannot be read.");
+
+            var basePrice = (long)method.Invoke(
+                null, new object[] { _player.level.current, _skills.GetTotalVeteranPoints() });
+
+            return UINpcTrading.singleton.CalculatePurchaseItemPrice(basePrice, _player);
+        }
+
+        public void Hire(string archetype, long price)
+        {
+            var index = HireIndexOf(archetype);
+            if (index <= 0)
+                throw new InvalidOperationException(
+                    $"The game offers no companion archetype '{archetype}'.");
+
+            // The interface rolls the gender and generates the name, retrying against the names
+            // already taken. An empty name is not a state a player can produce: the engine stores
+            // whatever it is given, so a blank one would leave a companion no report can name.
+            var female = UnityEngine.Random.value > 0.5f;
+            var name = GenerateCompanionName(female);
+
+            _player.CmdBuyMercenary(index, price, name, female);
+        }
+
+        /// <summary>
+        /// A name from the game's own generator, avoiding one already taken, the way the hire
+        /// interface does.
+        /// </summary>
+        private static string GenerateCompanionName(bool female)
+        {
+            var taken = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var stored = Database.LoadAllMercenaries();
+            if (stored != null)
+                foreach (var row in stored)
+                    taken.Add(row.name_mercenary);
+
+            var name = NameGenerator.GiveAName(female ? 5 : 6);
+            for (var attempt = 0; attempt < 3 && taken.Contains(name); attempt++)
+                name = NameGenerator.GiveAName(female ? 5 : 6);
+
+            return name;
+        }
+
+        private static int HireIndexOf(string archetype)
+        {
+            for (var index = 1; index < HireArchetypes.Length; index++)
+                if (string.Equals(HireArchetypes[index], archetype,
+                        StringComparison.OrdinalIgnoreCase))
+                    return index;
+
+            return -1;
+        }
+
         private static string IdentifierOf(ScriptableItem data) => GameIds.Sanitize(data.name);
 
         private static ScriptableItem Required(string itemId)

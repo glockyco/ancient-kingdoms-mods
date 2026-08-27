@@ -288,6 +288,152 @@ namespace CombatVerification.Tests
             _equipment[equipmentSlot] = new EquipmentSlotState { Index = equipmentSlot };
         }
 
+        // --- companions ---
+
+        /// <summary>
+        /// A companion that refuses the way a pet does: a value written to the wrong resource is
+        /// dropped, and the archetype decides which resource that is.
+        /// </summary>
+        internal sealed class FakeCompanion : ICompanionUnderConstruction
+        {
+            private readonly List<EquipmentSlotState> _slots =
+                Enumerable.Range(0, 16)
+                    .Select(index => new EquipmentSlotState { Index = index })
+                    .ToList();
+
+            private readonly FakeCharacter _owner;
+
+            public FakeCompanion(FakeCharacter owner, string archetype)
+            {
+                _owner = owner;
+                Archetype = archetype;
+            }
+
+            public string Archetype { get; }
+            public string Name { get; set; } = "Nameless";
+            public string Race { get; set; } = "Human";
+            public int Level { get; set; } = 1;
+            public float HealthMultiplier { get; private set; } = 1f;
+            public float ResourceMultiplier { get; private set; } = 1f;
+            public int BaseCombat { get; private set; }
+
+            /// <summary>Slots the engine permits and then silently declines to fill.</summary>
+            public HashSet<int> IgnoreEquipInto { get; } = new();
+
+            public IReadOnlyList<EquipmentSlotState> Equipment => _slots;
+
+            public void SetHealthMultiplier(float value) => HealthMultiplier = value;
+            public void SetResourceMultiplier(float value) => ResourceMultiplier = value;
+            public void SetBaseCombat(int value) => BaseCombat = value;
+
+            public bool CanEquip(int ownerInventoryIndex, int equipmentSlot)
+                => _owner.CanEquip(ownerInventoryIndex, equipmentSlot);
+
+            public void Equip(int ownerInventoryIndex, int equipmentSlot)
+            {
+                if (!CanEquip(ownerInventoryIndex, equipmentSlot)
+                    || IgnoreEquipInto.Contains(equipmentSlot))
+                    return;
+
+                var held = _owner.TakeFromInventory(ownerInventoryIndex);
+                if (held == null)
+                    return;
+
+                _slots[equipmentSlot] = new EquipmentSlotState
+                {
+                    Index = equipmentSlot,
+                    ItemId = held.ItemId,
+                    AugmentId = held.AugmentId,
+                    Durability = held.Durability,
+                };
+            }
+
+            public void Unequip(int equipmentSlot)
+                => _slots[equipmentSlot] = new EquipmentSlotState { Index = equipmentSlot };
+        }
+
+        private readonly List<ICompanionUnderConstruction> _companions = new();
+
+        /// <summary>Archetypes the game offers for hire.</summary>
+        public HashSet<string> Archetypes { get; } =
+            new(new[] { "Warrior", "Cleric", "Rogue", "Wizard", "Druid", "Ranger" },
+                StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>How many companions the engine will produce before it silently stops.</summary>
+        public int CompanionCap { get; set; } = 4;
+
+        public long HirePriceEach { get; set; } = 500;
+
+        /// <summary>Counts hire calls, including the ones the engine ignored.</summary>
+        public int HireCalls { get; private set; }
+
+        public IReadOnlyList<ICompanionUnderConstruction> Companions => _companions;
+
+        public bool ArchetypeExists(string archetype)
+            => archetype != null && Archetypes.Contains(archetype);
+
+        public long Gold { get; private set; }
+
+        public void AddGold(long amount) => Gold += amount;
+
+        public long HirePrice(string archetype) => HirePriceEach;
+
+        public void Hire(string archetype, long price)
+        {
+            HireCalls++;
+
+            // The engine charges and records the hire even when it produces nothing.
+            if (Gold < price)
+                return;
+
+            Gold -= price;
+            if (_companions.Count >= CompanionCap)
+                return;
+
+            var produced = HiredArchetype ?? archetype;
+            var companion = new FakeCompanion(this, produced)
+            {
+                Name = $"Hire{HireCalls}",
+            };
+
+            if (RacesByArchetype.TryGetValue(produced, out var races) && races.Length > 0)
+                companion.Race = races[_raceDraw++ % races.Length];
+
+            foreach (var slot in CompanionIgnoresEquipInto)
+                companion.IgnoreEquipInto.Add(slot);
+
+            _companions.Add(companion);
+        }
+
+        /// <summary>Forces the archetype a hire produces, so a mismatch can be tested.</summary>
+        public string HiredArchetype { get; set; }
+
+        /// <summary>
+        /// Races each archetype can roll. A hire draws from this, so a race outside it is one the
+        /// engine never produces however many times it is asked.
+        /// </summary>
+        public Dictionary<string, string[]> RacesByArchetype { get; } =
+            new(StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>Draws in order rather than at random, so a test is deterministic.</summary>
+        private int _raceDraw;
+
+        /// <summary>
+        /// Slots every hired companion permits and then silently declines to fill. A companion is
+        /// created inside the build, so this is set on the owner beforehand.
+        /// </summary>
+        public HashSet<int> CompanionIgnoresEquipInto { get; } = new();
+
+        internal EquipmentSlotState TakeFromInventory(int index)
+        {
+            if (index < 0 || index >= _inventory.Count)
+                return null;
+
+            var held = _inventory[index];
+            _inventory.RemoveAt(index);
+            return held;
+        }
+
         public void Equip(int inventoryIndex, int equipmentSlot)
         {
             EquipCalls++;

@@ -33,6 +33,57 @@ namespace CombatVerification.Materialization
     }
 
     /// <summary>
+    /// A companion the owner has hired.
+    /// </summary>
+    /// <remarks>
+    /// The three values a hire rolls are assigned rather than obtained by hiring repeatedly. The
+    /// engine draws them from a range it holds as literals inside the hire itself, so nothing can
+    /// ask it for the range, and a fixture that waited for a matching roll would not terminate.
+    /// <para>
+    /// A declared multiplier is the value the companion ends with, not the value the roll produced.
+    /// The engine adds the owner's veteran accumulation on top of the roll at hire, so the two
+    /// differ for any owner that holds veteran points.
+    /// </para>
+    /// </remarks>
+    public interface ICompanionUnderConstruction
+    {
+        /// <summary>The archetype the engine reports, which is what decides its resource.</summary>
+        string Archetype { get; }
+
+        /// <summary>The name the engine gave it, which is how a dismissal addresses it.</summary>
+        string Name { get; }
+
+        /// <summary>
+        /// The race the engine rolled. A companion's race is drawn from a list its archetype
+        /// allows, so it is neither a value a hire can request nor one worth assigning: assigning
+        /// it would produce a companion the game never offers. A fixture that names a race is
+        /// reproducible through the seed that governs the draw.
+        /// </summary>
+        string Race { get; }
+        int Level { get; }
+        float HealthMultiplier { get; }
+
+        /// <summary>Energy for a Warrior or a Rogue, mana for every other archetype.</summary>
+        float ResourceMultiplier { get; }
+
+        int BaseCombat { get; }
+
+        IReadOnlyList<EquipmentSlotState> Equipment { get; }
+
+        void SetHealthMultiplier(float value);
+        void SetResourceMultiplier(float value);
+        void SetBaseCombat(int value);
+
+        /// <summary>The engine's own answer for this companion's slot.</summary>
+        bool CanEquip(int ownerInventoryIndex, int equipmentSlot);
+
+        /// <summary>Equips from the owner's inventory through the companion's own command.</summary>
+        void Equip(int ownerInventoryIndex, int equipmentSlot);
+
+        void Unequip(int equipmentSlot);
+    }
+
+    /// <summary>
     /// The character a build step acts on.
     /// </summary>
     /// <remarks>
@@ -131,5 +182,28 @@ namespace CombatVerification.Materialization
         /// and therefore needs room there.
         /// </summary>
         void Unequip(int equipmentSlot);
+
+        // --- companions ---
+
+        /// <summary>Companions the owner currently holds, in the order the engine keeps them.</summary>
+        IReadOnlyList<ICompanionUnderConstruction> Companions { get; }
+
+        /// <summary>Whether the game offers this companion archetype for hire.</summary>
+        bool ArchetypeExists(string archetype);
+
+        long Gold { get; }
+
+        /// <summary>Adds gold through the game's own command, so a hire can meet its price.</summary>
+        void AddGold(long amount);
+
+        /// <summary>The price the game itself asks for this archetype at the owner's standing.</summary>
+        long HirePrice(string archetype);
+
+        /// <summary>
+        /// Hires through the same command the interface sends, including the gender roll and the
+        /// generated name the interface supplies. The engine caps how many companions an owner may
+        /// hold and reports nothing when the cap is reached, so the caller counts.
+        /// </summary>
+        void Hire(string archetype, long price);
     }
 }

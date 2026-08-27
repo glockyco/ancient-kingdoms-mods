@@ -65,7 +65,7 @@ namespace CombatVerification.Commands
             BuildOutcome outcome;
             try
             {
-                outcome = CharacterBuilder.Run(character, args.Character);
+                outcome = CharacterBuilder.Run(character, args.Character, args.Companions);
             }
             catch (Exception exception)
             {

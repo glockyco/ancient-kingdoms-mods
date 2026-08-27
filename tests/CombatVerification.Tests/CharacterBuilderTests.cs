@@ -28,6 +28,9 @@ namespace CombatVerification.Tests
                 Equipment = equipment ?? new List<EquipmentSpec>(),
             };
 
+        private static BuildStep Step(BuildOutcome outcome, string name)
+            => outcome.Steps.Single(step => step.Name == name);
+
         /// <summary>A character that can equip, so an equipment test states only its own subject.</summary>
         private static FakeCharacter Equipper()
             => new FakeCharacter()
@@ -271,7 +274,8 @@ namespace CombatVerification.Tests
                 skills: new List<SkillSpec> { new() { Name = "Melee Attack", Level = 2 } }));
 
             Assert.True(outcome.Ok, outcome.Failure?.ToString());
-            Assert.Equal(new[] { "level", "veteran", "attributes", "skills", "equipment" },
+            Assert.Equal(
+                new[] { "level", "veteran", "attributes", "skills", "equipment", "companions" },
                 outcome.Steps.Select(step => step.Name).ToArray());
         }
 
@@ -329,7 +333,7 @@ namespace CombatVerification.Tests
 
             Assert.True(outcome.Ok, outcome.Failure?.ToString());
             Assert.Equal("jagged_shard", character.Equipment[2].AugmentId);
-            Assert.Contains("1 augmented", outcome.Steps.Last().Detail);
+            Assert.Contains("1 augmented", Step(outcome, "equipment").Detail);
         }
 
         [Fact]
@@ -451,7 +455,7 @@ namespace CombatVerification.Tests
             Assert.Equal("plate_helm", character.Equipment[0].ItemId);
             Assert.Null(character.Equipment[2].ItemId);
             Assert.Null(character.Equipment[9].ItemId);
-            Assert.Contains("cleared 2 slots", outcome.Steps.Last().Detail);
+            Assert.Contains("cleared 2 slots", Step(outcome, "equipment").Detail);
         }
 
         [Fact]
@@ -476,7 +480,7 @@ namespace CombatVerification.Tests
 
             Assert.True(outcome.Ok, outcome.Failure?.ToString());
             Assert.Equal("starter_shirt", character.Equipment[2].ItemId);
-            Assert.Contains("Not stated", outcome.Steps.Last().Detail);
+            Assert.Contains("Not stated", Step(outcome, "equipment").Detail);
         }
 
         [Fact]
@@ -488,6 +492,221 @@ namespace CombatVerification.Tests
 
             Assert.True(outcome.Ok, outcome.Failure?.ToString());
             Assert.All(character.Equipment, slot => Assert.Null(slot.ItemId));
+        }
+
+        // --- companions ---
+
+        private static CompanionSpec Companion(
+            string archetype,
+            string? race = null,
+            float? health = null,
+            float? resource = null,
+            int? baseCombat = null,
+            List<EquipmentSpec>? equipment = null)
+            => new()
+            {
+                Archetype = archetype,
+                Race = race,
+                HealthMultiplier = health,
+                ResourceMultiplier = resource,
+                BaseCombat = baseCombat,
+                Equipment = equipment,
+            };
+
+        [Fact]
+        public void ACompanionIsHiredAndTheValuesAFixtureStatesAreSet()
+        {
+            var character = Equipper();
+            character.RacesByArchetype["Rogue"] = new[] { "Felarii" };
+
+            var outcome = CharacterBuilder.Run(character, Spec(), new List<CompanionSpec>
+            {
+                Companion("Rogue", race: "Felarii", health: 0.93f, resource: 1.02f, baseCombat: 47),
+            });
+
+            Assert.True(outcome.Ok, outcome.Failure?.ToString());
+            var companion = Assert.Single(character.Companions);
+            Assert.Equal("Rogue", companion.Archetype);
+            Assert.Equal("Felarii", companion.Race);
+            Assert.Equal(0.93f, companion.HealthMultiplier);
+            Assert.Equal(1.02f, companion.ResourceMultiplier);
+            Assert.Equal(47, companion.BaseCombat);
+            Assert.Equal(1, character.HireCalls);
+        }
+
+        [Fact]
+        public void ARaceTheDrawDidNotProduceIsReportedAgainstTheFixture()
+        {
+            // The race cannot be requested and must not be assigned, so a fixture that names one
+            // depends on the seed. A mismatch is reported rather than resampled, because
+            // resampling would leak a companion the engine spawns into no slot.
+            var character = Equipper();
+            character.RacesByArchetype["Rogue"] = new[] { "Dwarf" };
+
+            var outcome = CharacterBuilder.Run(character, Spec(), new List<CompanionSpec>
+            {
+                Companion("Rogue", race: "Felarii"),
+            });
+
+            Assert.False(outcome.Ok);
+            Assert.Contains("rolled a Dwarf", outcome.Failure!.Detail);
+            Assert.Contains("seed", outcome.Failure.Detail);
+            Assert.Equal(1, character.HireCalls);
+        }
+
+        [Fact]
+        public void ACompanionWithNoStatedRaceKeepsWhateverWasRolled()
+        {
+            var character = Equipper();
+            character.RacesByArchetype["Druid"] = new[] { "Fire Goblin" };
+
+            var outcome = CharacterBuilder.Run(character, Spec(), new List<CompanionSpec>
+            {
+                Companion("Druid"),
+            });
+
+            Assert.True(outcome.Ok, outcome.Failure?.ToString());
+            Assert.Equal("Fire Goblin", Assert.Single(character.Companions).Race);
+            Assert.Equal(1, character.HireCalls);
+        }
+
+        [Fact]
+        public void CompanionsAreHiredOnlyAfterTheOwnersProgressionIsComplete()
+        {
+            // A companion gains base damage for every level its owner gains while present, so a
+            // hire before progression would carry an increment no fixture asked for.
+            var character = Equipper().WithSkill("Melee Attack", maxLevel: 5);
+            var outcome = CharacterBuilder.Run(
+                character,
+                Spec(level: 6, skills: new List<SkillSpec>
+                {
+                    new() { Name = "Melee Attack", Level = 2 },
+                }),
+                new List<CompanionSpec> { Companion("Warrior") });
+
+            Assert.True(outcome.Ok, outcome.Failure?.ToString());
+            Assert.Equal("companions", outcome.Steps.Last().Name);
+        }
+
+        [Fact]
+        public void AHireTheEngineChargesForButDoesNotProduceIsReported()
+        {
+            var character = Equipper();
+            character.CompanionCap = 1;
+
+            var outcome = CharacterBuilder.Run(character, Spec(), new List<CompanionSpec>
+            {
+                Companion("Warrior"),
+                Companion("Cleric"),
+            });
+
+            Assert.False(outcome.Ok);
+            Assert.Contains("caps how many", outcome.Failure!.Detail);
+            Assert.Equal(2, character.HireCalls);
+            Assert.Single(character.Companions);
+        }
+
+        [Fact]
+        public void AnArchetypeTheGameDoesNotOfferIsNamed()
+        {
+            var character = Equipper();
+            var outcome = CharacterBuilder.Run(character, Spec(), new List<CompanionSpec>
+            {
+                Companion("Necromancer"),
+            });
+
+            Assert.False(outcome.Ok);
+            Assert.Contains("Necromancer", outcome.Failure!.Detail);
+            Assert.Equal(0, character.HireCalls);
+        }
+
+        [Fact]
+        public void AHireThatProducesAnotherArchetypeIsReported()
+        {
+            var character = Equipper();
+            character.HiredArchetype = "Druid";
+
+            var outcome = CharacterBuilder.Run(character, Spec(), new List<CompanionSpec>
+            {
+                Companion("Warrior"),
+            });
+
+            Assert.False(outcome.Ok);
+            Assert.Contains("produced a Druid", outcome.Failure!.Detail);
+        }
+
+        [Fact]
+        public void GoldIsAddedThroughTheGameSoAHireCanMeetItsPrice()
+        {
+            var character = Equipper();
+            character.HirePriceEach = 1234;
+
+            var outcome = CharacterBuilder.Run(character, Spec(), new List<CompanionSpec>
+            {
+                Companion("Ranger"),
+            });
+
+            Assert.True(outcome.Ok, outcome.Failure?.ToString());
+            Assert.Equal(0, character.Gold);
+        }
+
+        [Fact]
+        public void ACompanionIsEquippedFromTheOwnersInventory()
+        {
+            var character = Equipper();
+            var outcome = CharacterBuilder.Run(character, Spec(), new List<CompanionSpec>
+            {
+                Companion("Warrior", equipment: new List<EquipmentSpec>
+                {
+                    Entry(2, "plate_chest"),
+                }),
+            });
+
+            Assert.True(outcome.Ok, outcome.Failure?.ToString());
+            var companion = Assert.Single(character.Companions);
+            Assert.Equal("plate_chest", companion.Equipment[2].ItemId);
+            Assert.Contains("1 equipped", Step(outcome, "companions").Detail);
+        }
+
+        [Fact]
+        public void ACompanionEquipTheEngineIgnoresIsCaughtByReadingTheSlot()
+        {
+            var character = Equipper();
+            character.CompanionIgnoresEquipInto.Add(0);
+
+            var outcome = CharacterBuilder.Run(character, Spec(), new List<CompanionSpec>
+            {
+                Companion("Warrior", equipment: new List<EquipmentSpec>
+                {
+                    Entry(0, "plate_helm"),
+                }),
+            });
+
+            Assert.False(outcome.Ok);
+            Assert.Contains("holds nothing", outcome.Failure!.Detail);
+            Assert.Null(character.Companions[0].Equipment[0].ItemId);
+        }
+
+        [Fact]
+        public void AnAbsentCompanionSectionStatesNothing()
+        {
+            var character = Equipper();
+            var outcome = CharacterBuilder.Run(character, Spec());
+
+            Assert.True(outcome.Ok, outcome.Failure?.ToString());
+            Assert.Contains("Not stated", Step(outcome, "companions").Detail);
+            Assert.Equal(0, character.HireCalls);
+        }
+
+        [Fact]
+        public void AnEmptyCompanionSectionStatesThereAreNone()
+        {
+            var character = Equipper();
+            var outcome = CharacterBuilder.Run(character, Spec(), new List<CompanionSpec>());
+
+            Assert.True(outcome.Ok, outcome.Failure?.ToString());
+            Assert.Contains("None declared", Step(outcome, "companions").Detail);
+            Assert.Equal(0, character.HireCalls);
         }
 
         [Fact]
@@ -504,7 +723,7 @@ namespace CombatVerification.Tests
 
             Assert.True(outcome.Ok, outcome.Failure?.ToString());
             Assert.Equal(3, character.Equipment.Count(slot => slot.ItemId != null));
-            Assert.Contains("Equipped 3 items", outcome.Steps.Last().Detail);
+            Assert.Contains("Equipped 3 items", Step(outcome, "equipment").Detail);
         }
     }
 }
