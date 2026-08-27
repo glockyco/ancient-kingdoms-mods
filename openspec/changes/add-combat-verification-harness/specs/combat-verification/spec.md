@@ -6,15 +6,30 @@ of opinion.
 
 ## ADDED Requirements
 
-### Requirement: The probe only reads
+### Requirement: A probe reads, and reports whatever it must stop
 
-Measurement SHALL read game state. It SHALL NOT change state except through the actions a fixture
-declares.
+Measurement SHALL read game state. It SHALL NOT change state, except through the actions a fixture
+declares, or to stop a mechanism that rewrites the value under measurement.
+
+A value that another mechanism rewrites between two samples belongs to neither sample. A probe MAY stop
+such a mechanism before it reads. The probe SHALL report every value it cleared, and it SHALL NOT
+change a value that a fixture declared.
 
 #### Scenario: A measurement completes
 
 - **WHEN** a probe finishes
-- **THEN** no state has changed beyond the effects of the declared actions
+- **THEN** no state has changed beyond the declared actions and the reported stops
+
+#### Scenario: The subject acts while it is measured
+
+- **WHEN** a probe measures a value that the subject's own actions rewrite
+- **THEN** the probe stops those actions before it reads
+- **AND** the report names each value it cleared and the value held before
+
+#### Scenario: The subject does not settle
+
+- **WHEN** two consecutive samples disagree after the stop
+- **THEN** the probe reports the reading as unattributable instead of a number
 
 #### Scenario: A required object is absent
 
