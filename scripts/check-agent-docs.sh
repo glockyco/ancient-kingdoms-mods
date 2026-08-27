@@ -226,31 +226,66 @@ numeric_re = re.compile(r"(?<![A-Za-z0-9_.\[])\d+(?:\.\d+)?f?(?![A-Za-z0-9_.]|\]
 # A formula of identifiers carries no number and escapes the scan above, so arithmetic is matched too.
 # The operator must be spaced, which a path separator never is.
 formula_re = re.compile(r"[A-Za-z0-9_.)\]]\s[-+*/]\s[A-Za-z0-9_.(\[]")
-authority_prefixes = ("mods/", "website/", "build-pipeline/", "scripts/", "tests/")
-for path in rules:
-    body = body_of(path)
-    code = " ".join(fence_re.findall(body)) + " " + " ".join(code_re.findall(fence_re.sub(" ", body)))
-    stated = sorted({value for value in numeric_re.findall(code) if value not in {"0", "1", "2"}})
+authority_prefixes = ("mods/", "website/", "build-pipeline/", "scripts/", "tests/", "server-scripts/")
+
+
+def sections(body: str) -> list[tuple[str, str]]:
+    """Heading and text for each `##` section. A pointer in one section does not cover another."""
+    parts = re.split(r"^#+ +(.+)$", body, flags=re.M)
+    result = [("the opening", parts[0])]
+    for index in range(1, len(parts), 2):
+        result.append((parts[index].strip(), parts[index + 1]))
+    return result
+
+
+def stated_values(text: str) -> tuple[list[str], list[str]]:
+    """Numbers and formulas written as code. Prose is excluded: a number there records a past
+    measurement, which cannot rot."""
+    inline = code_re.findall(fence_re.sub(" ", text))
+    code = " ".join(fence_re.findall(text)) + " " + " ".join(inline)
+    numbers = sorted({v for v in numeric_re.findall(code) if v not in {"0", "1", "2"}})
     # A query is not an arithmetic claim about the game, and `SELECT *` reads as multiplication.
     spans = [
         span
-        for span in fence_re.findall(body) + code_re.findall(fence_re.sub(" ", body))
+        for span in fence_re.findall(text) + inline
         if not re.search(r"(?i)\b(select|from|where)\b", span)
     ]
-    stated += sorted({span.strip() for span in spans if formula_re.search(span)})
-    if not stated:
-        continue
-    # Another instruction file is not an authority: it is the same unchecked prose one step away.
-    owners = [
-        token.rstrip("/.,:;")
-        for token in code_re.findall(body)
-        if token.startswith(authority_prefixes) and (root / token.split(":", 1)[0]).is_file()
-    ]
-    if not owners and not server_ref_re.search(body):
-        errors.append(
-            f"rule states a value with no authority: {path.relative_to(root)} "
-            f"({', '.join(stated[:6])}; name the file that owns it or drop the value)"
+    return numbers, sorted({s.strip() for s in spans if formula_re.search(s)})
+
+
+for path in rules:
+    rel = path.relative_to(root)
+    for heading, text in sections(body_of(path)):
+        numbers, formulas = stated_values(text)
+        if not numbers and not formulas:
+            continue
+        # Another instruction file is not an authority: it is the same unchecked prose one step away.
+        owners = [
+            token.rstrip("/.,:;").split(":", 1)[0]
+            for token in code_re.findall(text)
+            if token.startswith(authority_prefixes) and (root / token.split(":", 1)[0]).is_file()
+        ]
+        owners += [f"server-scripts/{name}" for name, _ in server_ref_re.findall(text)]
+        shown = ", ".join((numbers + formulas)[:4])
+        if not owners:
+            errors.append(
+                f"value with no authority in its section: {rel} under '{heading}' "
+                f"({shown}; name the file that owns it in this section, or drop the value)"
+            )
+            continue
+        # A pointer proves nothing when the file it names does not contain the number. Either the
+        # value drifted or the pointer is wrong, and both need a reader.
+        owner_text = "\n".join(
+            (root / owner).read_text(encoding="utf-8", errors="replace")
+            for owner in dict.fromkeys(owners)
+            if (root / owner).is_file()
         )
+        for number in numbers:
+            if number.rstrip("f") not in owner_text:
+                errors.append(
+                    f"value absent from the file cited beside it: {rel} under '{heading}' "
+                    f"({number} is not in {', '.join(dict.fromkeys(owners))})"
+                )
 
 # `skill://simplified-technical-english` bounds a descriptive sentence at 25 words and rejects a
 # semicolon, which joins two statements a reader can misread as one. Both are mechanical, so they are
