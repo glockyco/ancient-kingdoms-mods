@@ -351,6 +351,15 @@ Ordinary damage against a target with 2000 defense keeps one tenth of its value.
 keeps all of it. The relative value of maximum resource therefore rises with target mitigation, and
 the model must express resource capacity as an output term and not only as a rotation budget.
 
+Energy and mana do not reach capacity the same way. `Mana.max` multiplies its base curve by the
+entity's mana multiplier, and `Energy.max` does not read its energy multiplier at all
+(`server-scripts/Energy.cs:27-39`). For a companion that uses energy, which is a Warrior or a Rogue,
+the quality rolled at hire and the whole veteran accumulation therefore change nothing. This is a
+defect, recorded in `docs/game-bugs/mercenary-energy-multiplier-is-never-used.md`, and the model
+represents what the game does rather than what the multiplier implies. A figure that assumed the
+multiplier applied would become wrong twice: it is wrong now, and it would need changing again when
+the defect is fixed.
+
 ### Consumables are part of an honest maximum
 
 The strongest food effects add 25 damage or 3 percent damage for 1800 seconds. The strongest potions

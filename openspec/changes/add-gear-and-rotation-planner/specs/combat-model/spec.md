@@ -365,6 +365,26 @@ rotation, because that selection is random among available skills.
 - **AND** a plan that may re-hire uses the best roll the race can produce, while a plan limited to what
   a player owns uses the value that player supplied
 
+### Requirement: A resource multiplier is applied only where the game applies it
+
+The model SHALL scale a resource pool by its multiplier only where the game's own maximum reads that
+multiplier.
+
+Mana and health are scaled by theirs. Energy is not, so an entity whose resource is energy SHALL be
+modelled at its base curve plus its flat bonuses, whatever multiplier the game stores for it.
+
+#### Scenario: A companion uses energy
+
+- **WHEN** a companion's archetype uses energy
+- **THEN** its resource capacity ignores the stored multiplier
+- **AND** veteran progression adds no resource capacity for it
+
+#### Scenario: A companion uses mana
+
+- **WHEN** a companion's archetype uses mana
+- **THEN** its resource capacity is scaled by the stored multiplier, including the veteran
+  accumulation in it
+
 ### Requirement: A target stat is derived from its curve and its spawn, not from a denormalised scalar
 
 The model SHALL compute a target's combat stats from the level-scaling curve and the spawn's own
