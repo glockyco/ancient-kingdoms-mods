@@ -85,6 +85,37 @@ a type, and reaching a component all fail on their first call, before the loop.
 Read `MelonLoader/Latest.log` when a job stops answering. An unhandled coroutine exception is logged
 there with its stack, which names the line the job died on.
 
+## Let the game drive a repeated action
+
+A basic attack re-issues itself. One use of a skill that follows up with the default attack arms the
+engine's own loop, and the loop keeps acting at the cadence the engine enforces. Sending the command
+repeatedly does not measure that cadence, it competes with it, and the interval that comes back belongs
+to the sender rather than the game.
+
+Issue the action once, then read. A window with nothing acting in it is a window with an unarmed loop,
+not a subject that cannot act.
+
+The loop stops on its own in ways a reading has to account for:
+
+- It is cleared when the subject has no attackable target, so a target that dies or despawns silently
+  ends the window.
+- Every reader of the loop flag also requires the target to be inside cast range, which for a melee
+  skill is about one unit. A subject knocked back or walked away stops acting while still looking
+  ready.
+
+## Keep the subject alive and in place
+
+A subject that dies stops measuring, and the state it leaves behind is not obvious:
+
+- Restoring health does not clear the death state. The game's own respawn command does.
+- A respawn sends the subject to its graveyard and gives it a destination to walk to, so warping it
+  back is not enough. Clear the movement first, then warp, then re-arm the action.
+- Invincibility set before a fight holds. Set after the subject is already being hit, it arrives too
+  late; a subject placed next to a boss during a slow start-up can be dead before the first command.
+
+Check the subject's state, its distance to the target and its loop flag together when a window returns
+no events. Each of the three fails in a way that looks like the others.
+
 ## Record absolute deadlines
 
 The game stores deadlines, not remaining times: `castTimeEnd`, `cooldownEnd`, and

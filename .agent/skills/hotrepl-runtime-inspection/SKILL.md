@@ -54,6 +54,25 @@ result reports the path it opened and whether that path is a scratch one, so the
 confirmed rather than assumed. The redirect also decides which characters a run can use, because the
 roster comes from the local database.
 
+## The roster is capped, and the selection screen caches it
+
+A database holds eight characters. A ninth cannot be created, and the refusal reads as the selection
+screen not offering creation rather than as a full roster.
+
+`Il2Cpp.Database.CharacterDelete(name)` frees a slot, but the selection screen keeps the list it already
+read, so creation stays refused in that session. Delete, then relaunch, then create.
+
+A run that creates characters therefore has a budget. Give each fixture a name that says which run made
+it, and clear them when a session ends rather than accumulating across sessions.
+
+## Refusals are the guard, not an obstacle
+
+`game.useScratchDatabase` refuses once the game has opened its own database, which happens when the
+start screen appears. A slow start to a session reaches that point.
+
+Treat the refusal as the guard working. Do not continue into anything that creates or changes a
+character after it, because the target is then player data. Quit, relaunch, and redirect first.
+
 ## One endpoint for each instance
 
 `build-tool launch --wait` returns once the host is ready, and the game keeps running afterwards. A
