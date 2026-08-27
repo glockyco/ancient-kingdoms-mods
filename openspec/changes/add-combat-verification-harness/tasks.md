@@ -123,16 +123,18 @@
       rather than listing it, so a stat a patch adds is reported. Report each armour set's piece count and
       declared bonuses beside the slots, because a set bonus is a threshold effect rather than a per-slot
       one and the totals cannot be accounted for without it.
-- [ ] 4.2 Implement an action interval probe that records action timestamps and derives the observed
+- [x] 4.2 Implement an action interval probe that records action timestamps and derives the observed
       interval, and have it report the weapon delay and haste it observed alongside.
 - [ ] 4.3 Implement a per-hit probe by subscribing to the target's damage event, recording attacker,
-      amount and damage type with a server timestamp.
+      amount and damage type with a server timestamp. Needed before any damage rule can be measured
+      exactly: a mean over completed actions mixes landed hits with the ones the target blocked, and
+      two configurations with different accuracy are not comparable through it.
 - [ ] 4.4 Seed the random generator before a measurement and record the seed with the results.
 - [ ] 4.5 Have every probe declare the fidelity tier it achieved.
 - [ ] 4.6 Implement a target-state probe that reads the target's defense, block chance, magic resist and
       each elemental resist, plus its active effect list with each entry's category and remaining
       duration. It reads the target, not the caster.
-- [ ] 4.7 Make the probe quiesce the caster before a reading: stop the follow-up attack loop, clear the
+- [x] 4.7 Make the probe quiesce the caster before a reading: stop the follow-up attack loop, clear the
       pending action and the target, then confirm the refractory value is unchanged across two samples.
       Without this an auto-attack rewrites the value between samples and the reading is unattributable.
 - [ ] 4.8 Have the target-state probe re-read after the engine's cleanup pass, because an expired effect
