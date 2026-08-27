@@ -124,6 +124,8 @@ Safe runtime reads:
 
 Avoid `Il2Cpp.Database.CharacterLoad(name)` for inspection because it updates `lastsaved`.
 
+Do not experiment against the player's database. `game.useScratchDatabase`, called before world entry, points the game at a scratch file for the rest of the session, and the player save then keeps its content hash even through a hard kill. Use it for anything that creates, changes, or deletes a character. See `'/Users/glockyco/src/github.com/glockyco/ancient-kingdoms-mods/.agent/skills/hotrepl-runtime-inspection'`.
+
 If item/quest caches are not loaded in the current scene, preview equipment or load lists may appear empty even though DB rows exist. In that case, rely on direct DB row counts or enter the game world before checking resolved item objects.
 
 ## Reporting
