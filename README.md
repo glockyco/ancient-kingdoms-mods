@@ -39,7 +39,8 @@ The compendium is a fan-made wiki, interactive world map, and game database. It 
 | `build-pipeline/`  | Python CLI that turns exported game data into SQLite, images, and map tiles for the website.             |
 | `website/`         | SvelteKit compendium site, mostly prerendered on Cloudflare with a dynamic home page.                     |
 | `exported-data/`   | Local game export output. Most generated files are gitignored.                                           |
-| `website/static/`  | Generated database, image, and tile assets used by the site. Generated compendium assets are gitignored. |
+| `website/data/`    | Generated database the site reads. Gitignored.                                                           |
+| `website/static/`  | Published image and tile assets. Generated compendium assets are gitignored.                              |
 | `server-scripts*/` | Local decompiled server-script snapshots used to verify hardcoded mechanics. These are gitignored.       |
 | `tests/`           | C# test projects.                                                                                        |
 | `docs/`            | Project notes, task plans, and contributor-oriented guides.                                              |
