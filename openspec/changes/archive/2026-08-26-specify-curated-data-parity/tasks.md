@@ -35,4 +35,4 @@
 ## 5. Verification
 
 - [x] 5.1 Run the pipeline tests, the citation check, and the race check
-- [ ] 5.2 Run the agent documentation check after the documentation tasks
+- [x] 5.2 Run the agent documentation check after the documentation tasks
