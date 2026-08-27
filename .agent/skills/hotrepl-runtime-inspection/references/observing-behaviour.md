@@ -47,6 +47,49 @@ return "probe started";
 Capture a screenshot from inside the probe when a moment of interest arrives. The capture completes at
 the end of a frame, so read the file afterwards.
 
+The setup belongs in the same coroutine as the measurement. A state established from the shell in one
+call and used in the next has a turn of game time between them, which is long enough for the subject to
+die, be teleported, lose its target or wander out of range. Establish the state and take the reading
+without returning in between.
+
+Assert the state every frame rather than once. The game undoes it: a warp lands the subject somewhere
+hostile, death moves it to a town, and a flag set before the trip arrives after the damage. The loop
+that worked reads like this, and the distance test is what makes it survive a death teleport.
+
+```csharp
+for (int f = 0; f < 180; f++)
+{
+    p.combat.Networkinvincible = true;
+    if (p.state == "DEAD") p.CmdRespawn();
+    if (UnityEngine.Vector2.Distance(p.transform.position, dest) > 3f)
+    {
+        p.movement.Reset();          // a respawn leaves a destination to walk to
+        p.movement.Warp(dest);
+    }
+    yield return null;
+}
+```
+
+Then survey, screenshot, and append one line to a static list. Read the list once at the end. Four
+destinations measured this way cost one round trip; measured a call at a time they cost ten and produced
+nothing, because the subject was dead for most of them.
+
+## Take a screenshot before explaining an empty result
+
+A reading of zero events has many causes and they look identical through scalars: the subject is dead,
+it has no target, the target is out of range, the loop was never armed, or the thing being measured did
+not happen. Guessing between them wastes a run each time.
+
+One screenshot separates them. It carries the subject's health, its position, what is on screen around
+it, the target frame, and the chat log, which narrates what the game did in the reader's own words. In
+one capture the log read `You have entered Crescent Coast`, then a boss line, then `You have been slain`,
+then `You have entered Milldenn` - a death and a town teleport that four separate scalar reads had not
+revealed.
+
+Take the screenshot first, then form the explanation. Delete a diagnostic capture afterwards; keep only
+what a report cites. `'/Users/glockyco/src/github.com/glockyco/ancient-kingdoms-mods/.agent/skills/game-defect-reports'` holds the capture call and its two traps, a Windows
+path and a frame to wait before the file exists.
+
 ## Prefer an event to a sample, and check that it can be subscribed to
 
 A sample taken on a timer cannot measure a per-occurrence quantity. Two occurrences inside one
