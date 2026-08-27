@@ -47,6 +47,44 @@ return "probe started";
 Capture a screenshot from inside the probe when a moment of interest arrives. The capture completes at
 the end of a frame, so read the file afterwards.
 
+## Prefer an event to a sample, and check that it can be subscribed to
+
+A sample taken on a timer cannot measure a per-occurrence quantity. Two occurrences inside one
+sampling gap are reported as one, and a gap with none invents an occurrence of zero. When the game
+raises an event for the thing being measured, listen to it and read the state inside the callback.
+
+Not every event can be listened to. The game is compiled ahead of time, so a generic instantiation
+exists only where the game's own code needs it. Adding a listener to `UnityEvent<T0,T1>` constructs
+`InvokableCall<T0,T1>`, and the game adds a listener to no two-argument event, so every one of them
+throws `MissingMethodException` at `AddListener`. A single-argument event the game subscribes to
+itself works.
+
+Try both arities in one call, so the contrast is the evidence rather than one failure:
+
+```csharp
+var a = Il2CppInterop.Runtime.DelegateSupport.ConvertDelegate<UnityEngine.Events.UnityAction<Il2Cpp.Entity>>(
+    new System.Action<Il2Cpp.Entity>((e) => { }));
+p.combat.onDamageDealtTo.AddListener(a);          // works
+```
+
+When the event that carries the value cannot be subscribed to, listen to one that fires at the same
+moment and read the value from the state. Confirm the ordering in the source first: a total read in a
+callback is the occurrence's own value only if the engine advances it before it raises the event.
+
+## Guard the setup of a job, because a dead coroutine answers nothing
+
+A command that runs as a job starts a coroutine. An exception inside it ends the run without
+completing the job, the job holds a concurrency slot for as long as the game runs, and every later
+job is refused with `Maximum concurrent command jobs reached.` The failure looks like a broken
+endpoint rather than a broken command.
+
+A coroutine cannot catch around a `yield`, so do the fallible work in a method that does not yield
+and have it report a failure instead of throwing. Setup is where this matters: subscribing, resolving
+a type, and reaching a component all fail on their first call, before the loop.
+
+Read `MelonLoader/Latest.log` when a job stops answering. An unhandled coroutine exception is logged
+there with its stack, which names the line the job died on.
+
 ## Record absolute deadlines
 
 The game stores deadlines, not remaining times: `castTimeEnd`, `cooldownEnd`, and

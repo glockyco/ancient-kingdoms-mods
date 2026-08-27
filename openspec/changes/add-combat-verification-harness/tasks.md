@@ -125,10 +125,13 @@
       one and the totals cannot be accounted for without it.
 - [x] 4.2 Implement an action interval probe that records action timestamps and derives the observed
       interval, and have it report the weapon delay and haste it observed alongside.
-- [ ] 4.3 Implement a per-hit probe by subscribing to the target's damage event, recording attacker,
-      amount and damage type with a server timestamp. Needed before any damage rule can be measured
-      exactly: a mean over completed actions mixes landed hits with the ones the target blocked, and
-      two configurations with different accuracy are not comparable through it.
+- [x] 4.3 Implement a per-hit probe by subscribing to a damage event, recording the victim, the
+      amount and a server timestamp. Needed before any damage rule can be measured exactly: a mean
+      over completed actions mixes landed hits with the ones the target blocked, and two
+      configurations with different accuracy are not comparable through it. The two events that carry
+      an amount take two arguments and cannot be subscribed to on this platform, so the probe listens
+      to the caster's single-argument hit event and reads the amount from the running total inside it.
+      A damage type is not on that event, so it belongs to 5.1 alone.
 - [ ] 4.4 Seed the random generator before a measurement and record the seed with the results.
 - [ ] 4.5 Have every probe declare the fidelity tier it achieved.
 - [ ] 4.6 Implement a target-state probe that reads the target's defense, block chance, magic resist and
@@ -143,7 +146,8 @@
 ## 5. Probe: skill attribution
 
 - [ ] 5.1 Add a postfix on the damage entry point that records the skill, damage type, victim, and final
-      amount per hit. The method resolves as a single overload and retains its interop method-info
+      amount per hit. This is the only route to a damage type per hit, because the event that carries
+      one cannot be subscribed to. The method resolves as a single overload and retains its interop method-info
       pointer, so it is patchable.
 - [ ] 5.2 Make the trace tolerate the patch failing to apply: fall back to the lower fidelity tier and
       report the tier reached rather than aborting the run.
