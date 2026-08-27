@@ -1,0 +1,113 @@
+# Tasks: restructure agent instruction delivery
+
+Design has no Open Questions. The one decision that could have become an unstated assumption, whether
+to introduce a runtime hook, is settled in design.md with the condition for revisiting it.
+
+Order matters. Section 1 creates the channel that later sections move content into, and section 6
+enforces invariants that sections 2 to 5 must already satisfy.
+
+## 1. Triggered rules for the recorded traps
+
+Each rule follows the shape the runtime's own rules use: opening directive, `## Why`, `## Avoid`,
+`## Use`, `## Exceptions`. Each states the incident that motivated it. One concern per rule.
+
+- [ ] 1.1 Add `.agent/rules/game-measurement-round-trips.md`: a trigger on a HotRepl `eval`
+      invocation in a tool argument. Directive is to run setup and sampling inside one in-game
+      coroutine. Incident: four measurement points returned nothing because the subject died between
+      calls. Point at `skill://hotrepl-runtime-inspection/references/observing-behaviour.md`.
+- [ ] 1.2 Add `.agent/rules/absence-needs-a-count.md`: a trigger on a single-row fetch against the
+      compendium database. Directive is to read a count, or run the same query against a case known
+      to have the value, before concluding absence. Incident: one row in `monsters` was read as proof
+      that five spawn variants did not exist.
+- [ ] 1.3 Add `.agent/rules/let-the-engine-drive.md`: a trigger on the game's skill-use command.
+      Directive is to issue a repeating action once and let the engine re-issue it. Incident: sending
+      the command repeatedly competed with the engine's own loop and measured the sender.
+- [ ] 1.4 Add `.agent/rules/monster-curve-columns.md`: a trigger on a denormalised monster scalar
+      column. Directive is to read the curve columns with the spawn's own values. Incident: a
+      published block chance omitted the defense term and understated the default target 2.6-fold.
+- [ ] 1.5 Add `.agent/rules/build-is-not-runtime-proof.md`: a trigger on a mod build or deploy
+      invocation. Directive is to exercise the changed path in the running game. Incident: a Harmony
+      patch and a probe were declared working from a green build.
+- [ ] 1.6 Verify each rule's trigger fires by producing text that matches it and observing the
+      injection, and record the observation in the change. A rule whose trigger cannot be observed to
+      fire is removed rather than kept on the assumption that it works.
+
+## 2. Relocate subproject constraints into rules
+
+For each subproject: move the constraints that change agent behaviour into a rule carrying that
+subproject's paths as `globs`; leave orientation in the `AGENTS.md`; have the `AGENTS.md` name the
+rule. Do not reword the constraints while moving them.
+
+- [ ] 2.1 Create `.agent/rules/mods-runtime.md` from the behavioural content of `mods/AGENTS.md`
+      (runtime boundaries, the Il2CppInterop property-before-field rule, the `GetComponents<T>`
+      attribute-component rule, the failure policy, the refused-call reading rule, and the placement
+      rule added for game-free logic). Trim `mods/AGENTS.md` to orientation plus the rule name.
+- [ ] 2.2 Create `.agent/rules/website-boundaries.md` from the behavioural content of
+      `website/AGENTS.md` (database asset import boundary, `static/` boundary, typed query boundary,
+      the citation ledger rule, the no-JavaScript path, and the citation requirement). Trim
+      `website/AGENTS.md` to orientation plus the rule name.
+- [ ] 2.3 Create `.agent/rules/pipeline-invariants.md` from the behavioural content of
+      `build-pipeline/AGENTS.md` (foreign-key load order, the two registration invariants, the
+      redaction configuration requirement, the ledger rules, and the boundary-validation rule). Trim
+      `build-pipeline/AGENTS.md` to orientation plus the rule name.
+- [ ] 2.4 Fold `website/src/lib/map/AGENTS.md` into the existing `rule://interactive-map`, whose
+      globs already cover those paths, and delete the file. Its coordinate and identity contracts are
+      constraints, not orientation, and the file duplicates a rule that already loads.
+- [ ] 2.5 Confirm no constraint was lost: every bullet removed from a subproject `AGENTS.md` appears
+      in exactly one rule, and no rule restates another.
+
+## 3. Shrink the always-loaded surface
+
+- [ ] 3.1 Rewrite the routing table in the root `AGENTS.md` instruction-ownership section to match
+      the corrected routing, including the row for a triggered rule and the correction that a
+      subproject constraint belongs in a rule.
+- [ ] 3.2 Move the root `AGENTS.md` imperatives that only matter at one action into triggered rules
+      or delete them with a stated reason. The generated-artifact prohibition and the deploy
+      precondition are candidates; the sources-of-truth and verification sections stay.
+- [ ] 3.3 Record the before and after line counts of everything that loads unconditionally, so the
+      claim that the surface shrank is checkable rather than asserted.
+
+## 4. Skill and reference hygiene
+
+- [ ] 4.1 Rewrite the reference list in `.agent/skills/hotrepl-runtime-inspection/SKILL.md` so each
+      entry states what a reader who skips it gets wrong, and remove the invitation to load a
+      reference only if the task appears to need it.
+- [ ] 4.2 Add a contents list to
+      `.agent/skills/hotrepl-runtime-inspection/references/observing-behaviour.md`, which is past the
+      hundred-line threshold, and to any other reference that is.
+- [ ] 4.3 Audit every skill `description` against the 1024-character cap and the requirement to state
+      both what it covers and when it applies in the third person. Report each one's length.
+- [ ] 4.4 Audit every skill body against the 500-line limit and split any that exceeds it, moving the
+      excess into a reference rather than a second skill.
+
+## 5. Subagent report integrity
+
+- [ ] 5.1 Add a repository-owned research agent definition under `.omp/agents/` that requires the
+      report to be written to a file whose path is returned, so a structured output shape cannot
+      discard the body.
+- [ ] 5.2 Verify it by dispatching one research task through the definition and confirming the report
+      arrives with its tables intact.
+
+## 6. Enforcement
+
+Every check below fails with the offending path and the reason, and reports all violations in one
+run rather than stopping at the first.
+
+- [ ] 6.1 Extend `scripts/check-agent-docs.sh` to fail when a `SKILL.md` reaches 500 lines.
+- [ ] 6.2 Extend it to fail when a skill `description` exceeds 1024 characters.
+- [ ] 6.3 Extend it to fail when a file under a skill's `references/` exceeds 100 lines without an
+      opening contents list.
+- [ ] 6.4 Extend it to fail when an `AGENTS.md` below the repository root contains a behavioural
+      imperative, so a constraint cannot be reintroduced into a file that does not load. Use the
+      imperative forms the repository already writes and state the matched line.
+- [ ] 6.5 Extend it to fail when a rule carrying a trigger condition does not name an incident.
+- [ ] 6.6 Add the new checks to the existing commit-time hook path, and confirm they run there rather
+      than only when invoked by hand.
+
+## 7. Verification
+
+- [ ] 7.1 Run `./scripts/check-agent-docs.sh` and confirm it passes against the restructured surface.
+- [ ] 7.2 Run `openspec validate --all --strict`.
+- [ ] 7.3 Confirm each rule from section 1 is listed or fires as its frontmatter intends, and that no
+      rule intended to be triggered has instead become a rulebook entry through a missing condition.
+- [ ] 7.4 Sync the delta into `openspec/specs/agent-instructions/spec.md` and archive the change.
