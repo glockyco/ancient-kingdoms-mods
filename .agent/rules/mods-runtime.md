@@ -17,14 +17,14 @@ globs:
 - Il2CppInterop exposes a game field as a property. Reflection by field name finds nothing, so read a property first and fall back to a field.
 - `GetComponents<T>()` returns every match wrapped as `T`. All six attribute components report `PlayerAttribute`, so identify one by the member that holds it rather than by its type.
 
-For a runtime change, launch the real game and exercise the affected behavior. A successful build is not runtime proof.
+A runtime change is not verified until the game exercises it. `rule://build-is-not-runtime-proof` arrives at deploy and states what counts.
 
 ## Shared game patterns
 
 - Synchronized server time comes from the network manager's offset added to Mirror's network time. Use it for eligibility, countdowns, and any state defined on the server clock.
-- A respawn deadline is on that same server clock, backdated so the next respawn check finds the monster eligible. `mods/MonsterRespawner/MonsterRespawner.cs` owns the write. Read it rather than recalling the expression.
 - Clickable world markers use a `TextMesh` with a `BoxCollider`. Keep the collider aligned with the visible marker and use the game input filters before raycasting.
 - Scene and singleton caches become invalid across scene changes. Clear held Unity references on scene transition and reacquire them before use.
+- A plain server field reads as zero on a client of a remote server rather than failing. A mod that reads one must branch on `NetworkServer.active` and say which source produced the figures it shows. `.agent/skills/hotrepl-runtime-inspection/references/client-and-server.md` lists what a client receives.
 
 ## Where a type belongs
 

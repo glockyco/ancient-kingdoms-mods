@@ -211,14 +211,14 @@ Each instruction is judged on its own merit, in this order:
       first.
       Done: 45 lines to 35, the coefficient and the formula gone, `server-scripts/Combat.cs:blockChance`
       and `website/src/lib/utils/monster-stats.ts` named instead. Both pointers verified to resolve.
-- [ ] 8.2 Audit every file in `.agent/rules/` for a stated value taken from the game or the codebase.
+- [x] 8.2 Audit every file in `.agent/rules/` for a stated value taken from the game or the codebase.
       For each, either add the pointer to the owning symbol or remove the value and keep the trap.
       Report the count found and the disposition of each.
-- [ ] 8.3 Apply the keep test to every skill body and reference section. Delete what the agent would
+- [x] 8.3 Apply the keep test to every skill body and reference section. Delete what the agent would
       re-derive correctly from the source in seconds, convert what it would find only after a mistake
       into a pointer, and keep method, incidents and decisions. Record what was deleted and why, so the
       deletion can be argued with rather than discovered.
-- [ ] 8.4 Shorten each triggered rule body to a reminder: the directive, the exception, and where the
+- [x] 8.4 Shorten each triggered rule body to a reminder: the directive, the exception, and where the
       reasoning lives. Move the extended reasoning into the skill or reference the rule names. The five
       rules from section 1 run to forty and fifty lines and were written in the shape of a
       code-pattern rule, which carries a replacement a method reminder does not have.
@@ -226,7 +226,7 @@ Each instruction is judged on its own merit, in this order:
       and `game-measurement-round-trips.md` from 51 to 27, in both cases by deleting a code block the
       reference already carries and naming the section that owns it. Each pointer target was read to
       confirm it holds what the rule now claims it holds.
-- [ ] 8.5 Extend `scripts/check-agent-docs.sh` to fail when a rule body states a bare numeric constant
+- [x] 8.5 Extend `scripts/check-agent-docs.sh` to fail when a rule body states a bare numeric constant
       or a formula and the file carries no `server-scripts/<file>.cs:<symbol>` pointer. Prove it by
       introducing the violation and confirming the message, as section 6 did for its checks.
       Built and tuned against real fires rather than in the abstract, in four rounds. Numeric literals
@@ -247,7 +247,7 @@ Each instruction is judged on its own merit, in this order:
       context file; deleting that file, the migration wrote the pre-fix wording into `mods/AGENTS.md`
       even though the file it replaced held the correct wording at that moment. This change then carried
       the inversion into a rule that loads. See design.md.
-- [ ] 8.6 Repair every claim that contradicts the code. Five were found by audit, each needing a
+- [x] 8.6 Repair every claim that contradicts the code. Five were found by audit, each needing a
       replacement rather than a deletion, because each sentence carries a true obligation beside the
       false value:
       `interactive-map.md` says `MapEntity.id` holds the entity id, and for a monster it holds the spawn
@@ -261,15 +261,55 @@ Each instruction is judged on its own merit, in this order:
       fields, which occur nowhere in the mechanics surface those rules govern.
       `pipeline-invariants.md` lists five ledger subcommands; citations has check, fix, suggest and sync,
       and redactions has check, explain, sync and verify.
-- [ ] 8.7 Collapse the duplication that will drift. Six duplicated facts were found, and one is
+      All five repaired as replacements. The map rule now states both conventions and names
+      `EntityPopup.svelte`. The mod rule states what the hook fix actually redirects, and root
+      `AGENTS.md` keeps only the policy and names the rule, which removes the false detail from the one
+      channel that is read every session. The ledger rule names the registry instead of a subcommand
+      list. The `Title` and `subtitle` requirement was deleted rather than moved: where the distinction
+      is real it is a prop against a component in map popups, and `svelte-check` already rejects a wrong
+      prop.
+- [x] 8.7 Collapse the duplication that will drift. Six duplicated facts were found, and one is
       structural: every glob in `mod-runtime-special-cases.md` is a subset of `mods/**` in
       `mods-runtime.md`, so the narrow rule cannot fire without the broad one, and both state the
       respawn clock and the `PatchAll` requirement. Two correct copies today are two places the next
       correction must reach, which is exactly how the respawn claim was reverted after being fixed.
-- [ ] 8.8 Record what was learned about the measurement itself, so the next change does not repeat it.
+      Each fact now has one owner, verified by query rather than by reading. `PatchAll` and the
+      client-side zero moved to `mods-runtime`, which fires for every mod. The respawn write stayed in
+      `mod-runtime-special-cases`, which owns that mod. `mods-runtime` now points at
+      `rule://build-is-not-runtime-proof` instead of restating it. On the website side, the citation
+      requirement belongs to `website-boundaries` and the prose rule to `website-mechanics`, because the
+      broader rule's globs contain the narrower rule's paths.
+- [x] 8.8 Record what was learned about the measurement itself, so the next change does not repeat it.
       Report the count of false claims found and fixed, the count of duplicated facts collapsed, and the
       channels each sat in. Report size only as a consequence, per channel, never as a total.
-- [ ] 8.9 Decide the `generated-artifacts` question raised by the rule inventory: its condition matches
+
+      | Channel | Arrives | Start | Now | Change |
+      | --- | --- | --- | --- | --- |
+      | root `AGENTS.md` | every session | 445 | 337 | -24% |
+      | triggered rules | every match | 0 | 1144 | new |
+      | path rules | on a matching edit | 549 | 2153 | +292% |
+      | subproject `AGENTS.md` | never injected | 1367 | 248 | -82% |
+      | skill bodies | once loaded | 4255 | 3008 | -29% |
+      | references | only when opened | 3161 | 2829 | -11% |
+
+      Every channel that delivers unconditionally shrank. The growth is in the two conditional channels,
+      and most of it is content that moved out of the subproject files, which delivered nothing. The
+      total moved from 9,777 words to 9,719, which is the figure this change stopped steering by.
+
+      Six false claims found and repaired: the respawn clock in two rules, a backup directory name, an
+      enforcing test that does not exist, `Title` and `subtitle` in two rules, the hook fix in a rule and
+      in the always-loaded file, and the ledger subcommands. Six duplicated facts collapsed to one owner
+      each. Ranking by size had found none of these.
+
+- [x] 8.10 Apply the repository's own prose policy to this change's output. The policy requires
+      `skill://simplified-technical-english` before writing technical prose, and a full day of writing
+      went out without it: 24 semicolons and 33 sentences over the 25-word limit, including a semicolon
+      added to the root context file in the same edit that removed another. Both limits are mechanical,
+      so `scripts/check-agent-docs.sh` now enforces them, with code, fences, tables and headings treated
+      as protected text. Seven probes: three violations caught, four near-misses silent. No sentence was
+      fixed by inserting a period. Two lists written as sentences became lists, and the five causes of an
+      empty measurement became five bullets.
+- [x] 8.9 Decide the `generated-artifacts` question raised by the rule inventory: its condition matches
       any text and it gates entirely on a fourteen-clause scope, so the check for a rule carrying both
       globs and a condition cannot see it. Either express the gate so the check reaches it, or state in
       the rule why a scope gate is correct there and exempt it deliberately.

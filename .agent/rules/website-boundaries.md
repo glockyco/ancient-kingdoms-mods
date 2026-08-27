@@ -20,5 +20,5 @@ globs:
 - Detail pages must render all rows in prerendered HTML. Overview pages may paginate to control output size.
 - Keep the no-JavaScript path functional. Do not hide required content behind hydration.
 - Browser guards belong around browser-only APIs such as deck.gl.
-- Visible mechanics prose must not use semicolons. Preserve title-case `Title`, lower-case `subtitle`, and the existing snapshot normalization.
+- Preserve the existing mechanics snapshot normalization.
 - Every hardcoded game value needs a `Source:` citation to `server-scripts/`, preferably by symbol. A green hash proves unchanged bytes, not a correct claim.

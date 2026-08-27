@@ -24,6 +24,4 @@ Eligibility, countdowns and the respawn deadline are all on the synchronized ser
 
 ## BetterBestiary and BossSkillTracker
 
-An assembly marked `[HarmonyDontPatchAll]` must call `PatchAll()` explicitly. Keep the BetterBestiary TypeScript/C# formatter parity fixture synchronized. BossSkillTracker discovery remains combat-gated and bounded. Do not add global object enumeration, per-frame spatial scans, or UI fallbacks that hide a missing required resource.
-
-A plain server field reads as zero on a client of a remote server rather than failing. Any mod that reads one must branch on `NetworkServer.active` and state which source produced the figures it shows. `.agent/skills/hotrepl-runtime-inspection/references/client-and-server.md` lists what a client receives.
+Keep the BetterBestiary TypeScript/C# formatter parity fixture synchronized. BossSkillTracker discovery remains combat-gated and bounded. Do not add global object enumeration, per-frame spatial scans, or UI fallbacks that hide a missing required resource.
