@@ -48,6 +48,18 @@ uv run compendium citations sync --game-version <version>
 uv run compendium citations check
 ```
 
+A curated value that restates a game rule needs the same reconciliation, and the ledger cannot detect a
+rule that changed without moving:
+
+```bash
+uv run compendium classes check-races
+```
+
+The class and race pairing is typed by hand and the game holds it in the character creator, so this
+compares the two and names each disagreement. A failure means the patch changed which classes a race
+allows. Correct `exported-data/classes.json` and regenerate, because the published value is wrong and
+the check is not.
+
 Commit this phase before you change an exporter. A mechanic whose claim the tool refuses to anchor belongs in this commit, because the reconciliation cannot finish without it.
 
 ## 3. Update exporter compatibility

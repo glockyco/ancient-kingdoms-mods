@@ -26,9 +26,9 @@
 
 ## 4. Documentation
 
-- [ ] 4.1 Record the check in the per-version update procedure, in the phase that already reconciles
+- [x] 4.1 Record the check in the per-version update procedure, in the phase that already reconciles
       citations, so a patch that moves the region is handled in one place
-- [ ] 4.2 State in the exporter policy that the class file is curated rather than exported, and name the
+- [x] 4.2 State in the exporter policy that the class file is curated rather than exported, and name the
       command that guards it
 - [ ] 4.3 Record the command in the pipeline's own guidance and in the repository command reference
 

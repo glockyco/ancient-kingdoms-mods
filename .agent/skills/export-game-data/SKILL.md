@@ -20,6 +20,8 @@ A derived value must name its source and algorithm. Spatial containment and boun
 
 `ClassExporter` is a deliberate exception to ordinary object discovery. It reads `NetworkManagerMMO.playerClasses` prefabs and writes `classes_combat.json` for the pipeline to merge with curated class metadata.
 
+That curated half is `exported-data/classes.json`, and it is typed by hand because the game holds no runtime structure for it. Its race pairing restates a rule the character creator enforces, so `compendium classes check-races` compares the two. Do not extend `ClassExporter` to cover it: the pairing exists only as button state in the creator, which an exporter would have to drive one race at a time.
+
 ## Visual scope
 
 The supported selected assets are:
