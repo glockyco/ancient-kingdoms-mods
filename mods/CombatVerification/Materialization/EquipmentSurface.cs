@@ -1,10 +1,10 @@
 #nullable disable
+using CombatVerification.Engine;
 using System;
 using System.Collections.Generic;
-using CombatVerification.Materialization;
 using Il2Cpp;
 
-namespace CombatVerification.Engine
+namespace CombatVerification.Materialization
 {
     /// <summary>A player's equipment, driven by the commands the interface sends.</summary>
     internal sealed class PlayerEquipmentSurface : IEquipmentSurface

@@ -102,7 +102,7 @@ namespace CombatVerification.Probes
                 Race = race,
                 Level = level,
                 Attributes = attributes,
-                Combat = Engine.CombatStats.Read(combat),
+                Combat = CombatStats.Read(combat),
                 Resources = new ResourceSheet
                 {
                     HealthMax = health == null ? null : health.max,

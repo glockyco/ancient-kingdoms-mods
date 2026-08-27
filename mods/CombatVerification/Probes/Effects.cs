@@ -1,9 +1,8 @@
 #nullable disable
 using System.Collections.Generic;
-using CombatVerification.Probes;
 using Il2Cpp;
 
-namespace CombatVerification.Engine
+namespace CombatVerification.Probes
 {
     /// <summary>
     /// Reads the timed effects any entity carries.

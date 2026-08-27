@@ -29,10 +29,10 @@ namespace CombatVerification
             _registered.Add(registry.Register(new TargetStateCommand()));
             _registered.Add(registry.Register(new ActionIntervalCommand()));
 
-            Engine.DamageAttribution.Apply(HarmonyInstance);
-            LoggerInstance.Msg(Engine.DamageAttribution.Applied
+            Probes.DamageAttribution.Apply(HarmonyInstance);
+            LoggerInstance.Msg(Probes.DamageAttribution.Applied
                 ? "CombatVerification: hit attribution active."
-                : $"CombatVerification: hit attribution unavailable, {Engine.DamageAttribution.Unavailable}. "
+                : $"CombatVerification: hit attribution unavailable, {Probes.DamageAttribution.Unavailable}. "
                     + "Damage readings continue at the per-hit tier.");
 
             LoggerInstance.Msg($"CombatVerification: registered {_registered.Count} typed commands.");

@@ -3,7 +3,7 @@ using System;
 using HarmonyLib;
 using Il2Cpp;
 
-namespace CombatVerification.Engine
+namespace CombatVerification.Probes
 {
     /// <summary>
     /// Names the skill behind the hit the engine is dealing right now.

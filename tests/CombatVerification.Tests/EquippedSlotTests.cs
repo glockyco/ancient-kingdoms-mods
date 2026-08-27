@@ -1,3 +1,4 @@
+using CombatVerification.Engine;
 using CombatVerification.Materialization;
 using Xunit;
 

@@ -38,8 +38,8 @@
              Link="Probes\DamageLog.cs" />
     <Compile Include="..\..\mods\CombatVerification\Probes\TimedEffect.cs"
              Link="Probes\TimedEffect.cs" />
-    <Compile Include="..\..\mods\CombatVerification\Materialization\EquippedSlot.cs"
-             Link="Materialization\EquippedSlot.cs" />
+    <Compile Include="..\..\mods\CombatVerification\Engine\EquippedSlot.cs"
+             Link="Engine\EquippedSlot.cs" />
     <Compile Include="..\..\mods\CombatVerification\Materialization\CharacterBuilder.cs"
              Link="Materialization\CharacterBuilder.cs" />
   </ItemGroup>

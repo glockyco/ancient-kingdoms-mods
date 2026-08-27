@@ -1,6 +1,6 @@
 #nullable disable
 
-namespace CombatVerification.Materialization
+namespace CombatVerification.Engine
 {
     /// <summary>
     /// What one slot of a container holds.

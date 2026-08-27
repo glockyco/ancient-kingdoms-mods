@@ -5,7 +5,7 @@ using System.Linq;
 using System.Reflection;
 using Il2Cpp;
 
-namespace CombatVerification.Engine
+namespace CombatVerification.Probes
 {
     /// <summary>
     /// Reads every combat stat any entity computes.

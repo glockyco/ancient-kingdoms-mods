@@ -22,6 +22,24 @@ Use `skill://hotrepl-runtime-inspection` for live state and typed command work. 
 - Clickable world markers use a `TextMesh` with a `BoxCollider`. Keep the collider aligned with the visible marker and use the game input filters before raycasting.
 - Scene and singleton caches become invalid across scene changes. Clear held Unity references on scene transition and reacquire them before use.
 
+## Where a type belongs in a mod that is tested without the game
+
+A mod's own namespaces name purposes: declaring a subject, building one, reading one, and the wire
+surface that exposes them. One namespace is different and holds the game's own data read as plain
+values, shared by every purpose. It depends on nothing else in the mod.
+
+Put a type with its purpose. Put it in the shared namespace only when it is the game's own data and
+more than one purpose reads it. Do not put a type there because it touches the game: most purposes
+touch the game, so that rule sorts nothing and leaves two answers for every type.
+
+A single-purpose adapter returns a type that purpose owns, so keeping one in the shared namespace makes
+the shared namespace depend on the layer above it. Check the direction after a move: the shared
+namespace must reference nothing.
+
+Logic that a test needs without the game must live in a file that imports no game namespace, and the
+test project lists that file. A file that mixes the two cannot be tested, so split the reading of game
+state from the rule applied to what was read. The rule is the part worth a test.
+
 ## Failure policy
 
 Fail fast for required runtime resources. A missing singleton, component, field, or authoritative value is an error unless the owning contract defines absence as valid.

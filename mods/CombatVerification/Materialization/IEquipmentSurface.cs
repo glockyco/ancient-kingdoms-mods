@@ -1,4 +1,5 @@
 #nullable disable
+using CombatVerification.Engine;
 using System.Collections.Generic;
 
 namespace CombatVerification.Materialization
