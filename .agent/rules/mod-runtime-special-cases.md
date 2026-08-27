@@ -16,11 +16,11 @@ Use the `localMap` rectangle, not the outer `rectTransformMap`. Screen-space ove
 
 ## MapScreenshotter
 
-Capture uses an orthographic camera with `orthographicSize = tileSize / 2`. Zone bounds are authoritative when available. Entity bounds with padding are only the documented fallback. Screenshot capture hides world entities and deactivates the player; verify lifecycle restoration before changing capture shutdown.
+Capture uses an orthographic camera sized from the tile's world size, in `mods/MapScreenshotter/MapScreenshotter.cs`. Zone bounds are authoritative when available. Entity bounds with padding are only the documented fallback. Screenshot capture hides world entities and deactivates the player; verify lifecycle restoration before changing capture shutdown.
 
 ## Respawners
 
-Eligibility and countdowns use synchronized server time. `MonsterRespawner` backdates `respawnTimeEnd` with `Time.timeAsDouble - 1.0` because the game compares that field to Unity elapsed time. Do not replace that write with synchronized time.
+Eligibility, countdowns and the respawn deadline are all on the synchronized server clock. The respawn write backdates that deadline so the next respawn check finds the monster eligible, in `mods/MonsterRespawner/MonsterRespawner.cs`. Read the write before changing it.
 
 ## BetterBestiary and BossSkillTracker
 

@@ -90,6 +90,24 @@ This change created a counter-example and keeps it as the first correction.
 `.agent/rules/monster-curve-columns.md` restates a block chance formula including its coefficient and
 cites no symbol at all.
 
+The check written for this section then found a worse one, and its history settles the argument.
+
+| Date | Event |
+|---|---|
+| 2026-07-27 | The respawn write changed from Unity elapsed time to the synchronized server clock, and the instruction beside it was corrected in the same commit |
+| later | That per-mod context file was deleted, and the migration wrote the **pre-fix** claim into `mods/AGENTS.md`, although the file it replaced held the correct wording at that moment |
+| 2026-08-27 | This change relocated that text into a rule, carrying the inverted claim forward again |
+
+For a month two instruction files told the agent to use Unity elapsed time and not to substitute
+synchronized server time, which is the reverse of what
+`mods/MonsterRespawner/MonsterRespawner.cs` does. Nothing detected it, because a value in an
+instruction file is checked by nothing, and the file that carried it was never read.
+
+Two conclusions follow. A correction is not durable while it lives beside a copy: the fix landed and
+was undone by a migration. And **routing a wrong instruction into a channel that works makes it more
+harmful, not less** — this change was about to start delivering a month-old inversion at the moment of
+action. Placement multiplies whatever it delivers, which is why keeping is decided first.
+
 ### The trap outlives the value
 
 A pointer fixes staleness and not misreading. The offhand slot table was read from the source and

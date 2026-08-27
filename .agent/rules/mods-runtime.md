@@ -21,8 +21,8 @@ For a runtime change, launch the real game and exercise the affected behavior; a
 
 ## Shared game patterns
 
-- Synchronized server time is `NetworkManagerMMO.offsetNetworkTime + NetworkTime.time`. Use it for eligibility, countdowns, and state that is defined on the server clock.
-- Respawn writes are different: the game compares `respawnTimeEnd` with Unity elapsed time. Backdate it with `Time.timeAsDouble - 1.0`; do not substitute synchronized server time.
+- Synchronized server time comes from the network manager's offset added to Mirror's network time. Use it for eligibility, countdowns, and any state defined on the server clock.
+- A respawn deadline is on that same server clock, backdated so the next respawn check finds the monster eligible. `mods/MonsterRespawner/MonsterRespawner.cs` owns the write. Read it rather than recalling the expression.
 - Clickable world markers use a `TextMesh` with a `BoxCollider`. Keep the collider aligned with the visible marker and use the game input filters before raycasting.
 - Scene and singleton caches become invalid across scene changes. Clear held Unity references on scene transition and reacquire them before use.
 

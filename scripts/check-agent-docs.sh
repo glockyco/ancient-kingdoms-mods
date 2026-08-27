@@ -211,6 +211,42 @@ generated_output_owner = root / "build-pipeline" / "src" / "compendium" / "comma
 if generated_outputs and not generated_output_owner.is_file():
     errors.append(f"missing generated-output owner: {generated_output_owner.relative_to(root)}")
 
+# A value copied out of the game rots silently: nothing hashes a number written in an instruction file,
+# while a pointer is resolved below and survives a change to the thing it names. So a rule that states
+# arithmetic has to name the file it came from. Only code is scanned, because a number in prose records
+# a past measurement, which cannot rot. Subscripts and the integers 0, 1 and 2 are indices and arities
+# far more often than they are game values.
+fence_re = re.compile(r"```[a-z]*\n(.*?)```", re.S)
+numeric_re = re.compile(r"(?<![A-Za-z0-9_.\[])\d+(?:\.\d+)?f?(?![A-Za-z0-9_.]|\])")
+# A formula of identifiers carries no number and escapes the scan above, so arithmetic is matched too.
+# The operator must be spaced, which a path separator never is.
+formula_re = re.compile(r"[A-Za-z0-9_.)\]]\s[-+*/]\s[A-Za-z0-9_.(\[]")
+authority_prefixes = ("mods/", "website/", "build-pipeline/", "scripts/", "tests/")
+for path in rules:
+    body = body_of(path)
+    code = " ".join(fence_re.findall(body)) + " " + " ".join(code_re.findall(fence_re.sub(" ", body)))
+    stated = sorted({value for value in numeric_re.findall(code) if value not in {"0", "1", "2"}})
+    # A query is not an arithmetic claim about the game, and `SELECT *` reads as multiplication.
+    spans = [
+        span
+        for span in fence_re.findall(body) + code_re.findall(fence_re.sub(" ", body))
+        if not re.search(r"(?i)\b(select|from|where)\b", span)
+    ]
+    stated += sorted({span.strip() for span in spans if formula_re.search(span)})
+    if not stated:
+        continue
+    # Another instruction file is not an authority: it is the same unchecked prose one step away.
+    owners = [
+        token.rstrip("/.,:;")
+        for token in code_re.findall(body)
+        if token.startswith(authority_prefixes) and (root / token.split(":", 1)[0]).is_file()
+    ]
+    if not owners and not server_ref_re.search(body):
+        errors.append(
+            f"rule states a value with no authority: {path.relative_to(root)} "
+            f"({', '.join(stated[:6])}; name the file that owns it or drop the value)"
+        )
+
 for path in surfaces:
     text = path.read_text(encoding="utf-8")
     rel = path.relative_to(root)

@@ -194,11 +194,13 @@ run rather than stopping at the first.
 Relocation without deletion grew the corpus twenty-six percent while the loaded surface fell twenty.
 This section applies the keep test to what already exists, and the pointer rule to what it states.
 
-- [ ] 8.1 Rewrite `.agent/rules/monster-curve-columns.md`: drop the block chance formula and its
+- [x] 8.1 Rewrite `.agent/rules/monster-curve-columns.md`: drop the block chance formula and its
       coefficient, point at `server-scripts/Combat.cs:blockChance` and at the website owner that
       already implements it, and keep the trap, that a stat can take a term from another stat so the
       curve alone is not the answer. This rule is the change's own counter-example and is corrected
       first.
+      Done: 45 lines to 35, the coefficient and the formula gone, `server-scripts/Combat.cs:blockChance`
+      and `website/src/lib/utils/monster-stats.ts` named instead. Both pointers verified to resolve.
 - [ ] 8.2 Audit every file in `.agent/rules/` for a stated value taken from the game or the codebase.
       For each, either add the pointer to the owning symbol or remove the value and keep the trap.
       Report the count found and the disposition of each.
@@ -210,9 +212,31 @@ This section applies the keep test to what already exists, and the pointer rule 
       reasoning lives. Move the extended reasoning into the skill or reference the rule names. The five
       rules from section 1 run to forty and fifty lines and were written in the shape of a
       code-pattern rule, which carries a replacement a method reminder does not have.
+      Two of five done, both forced by 8.5's check. `let-the-engine-drive.md` went from 45 lines to 26
+      and `game-measurement-round-trips.md` from 51 to 27, in both cases by deleting a code block the
+      reference already carries and naming the section that owns it. Each pointer target was read to
+      confirm it holds what the rule now claims it holds.
 - [ ] 8.5 Extend `scripts/check-agent-docs.sh` to fail when a rule body states a bare numeric constant
       or a formula and the file carries no `server-scripts/<file>.cs:<symbol>` pointer. Prove it by
       introducing the violation and confirming the message, as section 6 did for its checks.
+      Built and tuned against real fires rather than in the abstract, in four rounds. Numeric literals
+      in prose are not scanned, because a number in an incident records a past measurement and cannot
+      rot. Subscripts and the integers 0, 1 and 2 are excluded as indices and arities: the first version
+      failed `absence-needs-a-count.md` for `fetchone()[0]`. An authority must be a code file, not
+      another instruction file: the second version passed `mod-runtime-special-cases.md` because it
+      names a reference file, which is the same unchecked prose one step away. A formula of identifiers
+      carries no number, so spaced arithmetic is matched too, which is how the sibling claim about
+      synchronized server time had escaped. A query is excluded by keyword, because `SELECT *` reads as
+      multiplication.
+      Four genuine fires, all repaired: two mod rules stating values with no owner named, and two
+      measurement rules carrying procedure code that duplicates the reference.
+      The check found a defect worth more than itself. Two rules told the agent to write a respawn
+      deadline on Unity elapsed time and not to substitute synchronized server time, which is the
+      reverse of what `mods/MonsterRespawner/MonsterRespawner.cs` does. It had been wrong for a month.
+      The correction had landed a month earlier in the same commit as the code change, in a per-mod
+      context file; deleting that file, the migration wrote the pre-fix wording into `mods/AGENTS.md`
+      even though the file it replaced held the correct wording at that moment. This change then carried
+      the inversion into a rule that loads. See design.md.
 - [ ] 8.6 Re-measure the corpus and the unconditionally loaded surface. The change SHALL NOT end larger
       than it started. Record both figures against the starting ones, 9,777 words of corpus and 445
       words loaded.

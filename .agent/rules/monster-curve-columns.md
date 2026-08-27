@@ -1,45 +1,35 @@
 ---
-description: Read curve columns with the spawn's own values when querying monster stats, before using a denormalised scalar.
+description: Read the engine's own combination of a monster stat when querying the monsters table, before using a scalar column.
 condition: "(?i)from\\s+monsters\\b"
 scope: "tool"
 interruptMode: "never"
 ---
-A scalar column on `monsters` is sampled at one level with one spawn's values. Where `_base` and
-`_per_level` columns sit beside it, read those and combine them with the spawn's own level and
-defense.
+Read the curve columns with the spawn's own values, and read the engine for how it combines them.
 
-## Why
+## The trap
 
-- A monster's spawn variants differ in level, health, defense and resistance, and those per-spawn
-  values live in `monster_spawns`.
-- A scalar already folds in terms that vary per spawn, so reusing it for another spawn is wrong twice
-  over.
-- Some engine stats add a term from another stat, so the curve alone is not the answer either.
+A scalar column on `monsters` is sampled at one level with one spawn's values, so reusing it for
+another spawn is wrong twice over. The curve alone is not the answer either, because a stat can take a
+term from a different stat. Spawn variants differ in level, health, defense and each resistance, and
+those values live in `monster_spawns`.
 
-## Avoid
+## Authorities
 
-```python
-con.execute("SELECT block_chance FROM monsters WHERE id='dummy'")   # 0.084, the level 50 spawn
-```
+| Claim | Owner |
+|---|---|
+| how the engine combines a combat stat | `server-scripts/Combat.cs:blockChance` and its siblings |
+| block chance, as the website computes it | `website/src/lib/utils/monster-stats.ts` |
 
-## Use
-
-Combine the curve with the spawn, then add whatever the engine adds:
-
-```python
-# block chance = clamp(base + per_level * (level - 1) + defense * 0.0001, 0, 0.8)
-```
-
-`website/src/lib/utils/monster-stats.ts` owns this one for the website. Check whether an owner
-already exists before computing a stat again.
+Read the owner rather than recalling the formula, and check whether an owner already exists before
+computing a stat again.
 
 ## Exceptions
 
-Reporting the canonical row itself, as the prefab defines it, rather than a spawn. Say which spawn a
-figure describes.
+Reporting the canonical row as the prefab defines it, rather than a spawn. Say which spawn a figure
+describes.
 
 ## Incident
 
-A published block chance used the base curve without the defense term, understating the level 55
-training dummy by a factor of 2.6. The dummy is the gear planner's default target, so the error
-would have reached every ranking it published.
+A published block chance used a base curve without the term the engine adds, understating the level 55
+training dummy by a factor of 2.6. That dummy is the gear planner's default target, so the error would
+have reached every ranking it published.
