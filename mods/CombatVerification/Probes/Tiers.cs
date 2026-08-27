@@ -9,12 +9,14 @@ namespace CombatVerification.Probes
     /// than leaving a reader to infer one from the shape of the output. A rotation comparison needs
     /// <see cref="PerHitAttributed"/>: without the skill behind each hit, two rotations that produce
     /// the same total are indistinguishable.
+    /// <para>
+    /// The specification also names an aggregate tier, for a total with no separation into hits. No
+    /// probe produces one, so it is not named here; a constant nothing can return would read as a
+    /// reachable outcome.
+    /// </para>
     /// </remarks>
     public static class Tiers
     {
-        /// <summary>A total over a window, with no separation into hits.</summary>
-        public const string Aggregate = "aggregate";
-
         /// <summary>One amount per hit, with no skill behind it.</summary>
         public const string PerHit = "perHit";
 

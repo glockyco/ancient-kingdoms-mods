@@ -127,26 +127,17 @@ namespace CombatVerification.Probes
             _hits.Add(new Hit(
                 victim, victimNetId, (int)(totalNow - _total), at, skill, damageType, intent));
             _total = totalNow;
+
+            if (skill == null)
+                AllAttributed = false;
         }
 
         /// <summary>Whether every hit recorded names the skill behind it.</summary>
         /// <remarks>
         /// All of them or none of them, as far as a tier is concerned. One unattributed hit is enough
         /// to make a rotation comparison wrong, because the hit it cannot place is the one whose skill
-        /// the comparison is about.
+        /// the comparison is about. An empty window is attributed: it has nothing it failed to name.
         /// </remarks>
-        public bool AllAttributed
-        {
-            get
-            {
-                foreach (var hit in _hits)
-                {
-                    if (!hit.Attributed)
-                        return false;
-                }
-
-                return true;
-            }
-        }
+        public bool AllAttributed { get; private set; } = true;
     }
 }

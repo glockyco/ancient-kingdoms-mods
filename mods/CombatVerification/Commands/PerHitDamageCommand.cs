@@ -69,19 +69,10 @@ namespace CombatVerification.Commands
                 yield break;
             }
 
-            var player = Player.localPlayer;
-            if (player == null)
+            if (!Subject.TryRead(context, out var player, out var refused)
+                || !Subject.TryReadClock(context, out var openedAt, out refused))
             {
-                completion.TrySetResult(context.PreconditionFailed(
-                    "noLocalPlayer", "No local player exists. Enter the world before reading."));
-                yield break;
-            }
-
-            if (!ServerClock.TryRead(out var openedAt))
-            {
-                completion.TrySetResult(context.PreconditionFailed(
-                    "noServerClock",
-                    "No network manager holds the time offset, so no moment can be stated."));
+                completion.TrySetResult(refused);
                 yield break;
             }
 

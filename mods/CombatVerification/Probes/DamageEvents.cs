@@ -45,6 +45,7 @@ namespace CombatVerification.Probes
         private readonly DamageLog _log;
         private readonly UnityAction<Entity> _onHit;
         private readonly uint _casterNetId;
+        private readonly IDisposable _attribution;
         private bool _listening;
 
         private DamageEvents(Player caster, Combat combat)
@@ -56,6 +57,8 @@ namespace CombatVerification.Probes
             _onHit = DelegateSupport.ConvertDelegate<UnityAction<Entity>>(
                 new Action<Entity>(OnHit));
 
+            // The stamp costs an allocation per hit, so it is kept only while this probe is open.
+            _attribution = DamageAttribution.Read();
             combat.onDamageDealtTo.AddListener(_onHit);
             _listening = true;
         }
@@ -109,6 +112,7 @@ namespace CombatVerification.Probes
 
             _listening = false;
             _combat.onDamageDealtTo.RemoveListener(_onHit);
+            _attribution.Dispose();
         }
 
         /// <summary>
@@ -186,8 +190,8 @@ namespace CombatVerification.Probes
                 netId,
                 _combat.meterDamageDone,
                 at,
-                stamp.Value.Skill,
-                stamp.Value.DamageType,
+                stamp.Value.SkillName,
+                stamp.Value.DamageType.ToString(),
                 stamp.Value.Intent);
         }
     }

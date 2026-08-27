@@ -4,6 +4,7 @@ using System.Collections;
 using System.Threading;
 using System.Threading.Tasks;
 using CombatVerification.Dtos;
+using CombatVerification.Engine;
 using CombatVerification.Probes;
 using HotRepl.Control;
 using Il2Cpp;
@@ -67,19 +68,10 @@ namespace CombatVerification.Commands
                 yield break;
             }
 
-            var player = Player.localPlayer;
-            if (player == null)
+            if (!Subject.TryRead(context, out var player, out var refused)
+                || !Subject.TryReadClock(context, out _, out refused))
             {
-                completion.TrySetResult(context.PreconditionFailed(
-                    "noLocalPlayer", "No local player exists. Enter the world before reading."));
-                yield break;
-            }
-
-            if (!ActionInterval.TryReadClock(out _))
-            {
-                completion.TrySetResult(context.PreconditionFailed(
-                    "noServerClock",
-                    "No network manager holds the time offset, so no moment can be stated."));
+                completion.TrySetResult(refused);
                 yield break;
             }
 
@@ -128,7 +120,7 @@ namespace CombatVerification.Commands
             var timeline = new ActionTimeline();
             timeline.Observe(settled.End, settled.Period);
 
-            ActionInterval.TryReadClock(out var openedAt);
+            ServerClock.TryRead(out var openedAt);
             var closedAt = openedAt;
 
             while (closedAt - openedAt < window)
@@ -150,7 +142,7 @@ namespace CombatVerification.Commands
 
                 var reading = ActionInterval.Read(player);
                 timeline.Observe(reading.End, reading.Period);
-                ActionInterval.TryReadClock(out closedAt);
+                ServerClock.TryRead(out closedAt);
             }
 
             completion.TrySetResult(ControlCommandResult.Ok(ActionInterval.Measured(

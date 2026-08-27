@@ -156,9 +156,6 @@ namespace CombatVerification.Probes
                 Resets = timeline.Resets,
             };
 
-        /// <summary>Reads the game's server time, which every reported moment is stated in.</summary>
-        public static bool TryReadClock(out double now) => ServerClock.TryRead(out now);
-
         private static string SkillName(Player player, int index)
         {
             var skills = player.skills;

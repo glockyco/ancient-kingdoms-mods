@@ -54,11 +54,9 @@ namespace CombatVerification.Commands
             CancellationToken cancellationToken,
             TaskCompletionSource<ControlCommandResult<TargetStateResult>> completion)
         {
-            var player = Player.localPlayer;
-            if (player == null)
+            if (!Subject.TryRead(context, out var player, out var refused))
             {
-                completion.TrySetResult(context.PreconditionFailed(
-                    "noLocalPlayer", "No local player exists. Enter the world before reading."));
+                completion.TrySetResult(refused);
                 yield break;
             }
 
@@ -72,11 +70,9 @@ namespace CombatVerification.Commands
                 yield break;
             }
 
-            if (!ServerClock.TryRead(out _))
+            if (!Subject.TryReadClock(context, out _, out refused))
             {
-                completion.TrySetResult(context.PreconditionFailed(
-                    "noServerClock",
-                    "No network manager holds the time offset, so no moment can be stated."));
+                completion.TrySetResult(refused);
                 yield break;
             }
 

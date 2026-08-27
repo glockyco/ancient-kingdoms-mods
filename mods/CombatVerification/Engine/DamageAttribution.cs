@@ -20,13 +20,23 @@ namespace CombatVerification.Engine
     /// health the victim actually lost beside it, mitigation becomes a measured quantity per hit
     /// rather than a derived one.
     /// </para>
+    /// <para>
+    /// The entry point runs for every hit any entity deals, so the stamp is kept only while something
+    /// is reading it, and it holds the values the engine already had rather than converting them.
+    /// Both strings a reader wants cost an allocation each: the skill name is an IL2CPP field that
+    /// marshals a fresh string, and the damage type is an enum whose name has to be built. Paying
+    /// that per hit across a populated world would make the harness a cost during play, and a
+    /// measurement reads at most a few hundred hits.
+    /// </para>
     /// </remarks>
     public static class DamageAttribution
     {
+        private static int _readers;
+
         /// <summary>What the engine is dealing, while it is dealing it.</summary>
         public readonly struct Attribution
         {
-            public Attribution(string skill, string damageType, int intent, uint casterNetId)
+            public Attribution(ScriptableSkill skill, DamageType damageType, int intent, uint casterNetId)
             {
                 Skill = skill;
                 DamageType = damageType;
@@ -34,23 +44,28 @@ namespace CombatVerification.Engine
                 CasterNetId = casterNetId;
             }
 
-            /// <summary>The name of the skill the engine selected for this hit.</summary>
-            public string Skill { get; }
+            /// <summary>The skill the engine selected for this hit, or null when it named none.</summary>
+            public ScriptableSkill Skill { get; }
 
             /// <summary>The school the hit is dealt in, which selects its mitigation.</summary>
-            public string DamageType { get; }
+            public DamageType DamageType { get; }
 
             /// <summary>The amount the caster asked for, before the engine's own steps.</summary>
             public int Intent { get; }
 
             /// <summary>The caster, so a hit from another source is not read as the subject's.</summary>
             public uint CasterNetId { get; }
+
+            /// <summary>
+            /// The skill's name, built on demand because building it is the expensive part.
+            /// </summary>
+            public string SkillName => Skill == null ? null : Skill.nameSkill;
         }
 
         /// <summary>The hit in flight, or null when the engine is between hits.</summary>
         public static Attribution? Current { get; private set; }
 
-        /// <summary>Whether the stamp is being applied at all.</summary>
+        /// <summary>Whether the stamp applied at all.</summary>
         public static bool Applied { get; private set; }
 
         /// <summary>Why the stamp is unavailable, or null when it is available.</summary>
@@ -78,6 +93,31 @@ namespace CombatVerification.Engine
             }
         }
 
+        /// <summary>Starts keeping the stamp, until the returned reader is disposed.</summary>
+        /// <remarks>
+        /// Counted rather than a flag, so two measurements running at once cannot switch each other
+        /// off. Between readers the stamp costs a comparison per hit and nothing else.
+        /// </remarks>
+        public static IDisposable Read() => new Reader();
+
+        private sealed class Reader : IDisposable
+        {
+            private bool _released;
+
+            public Reader() => _readers++;
+
+            public void Dispose()
+            {
+                if (_released)
+                    return;
+
+                _released = true;
+                _readers--;
+                if (_readers == 0)
+                    Current = null;
+            }
+        }
+
         [HarmonyPatch(typeof(Combat), nameof(Combat.DealDamageAt))]
         private static class DealDamageAtPatch
         {
@@ -97,17 +137,27 @@ namespace CombatVerification.Engine
                 DamageType damageType,
                 out Attribution? __state)
             {
+                if (_readers == 0)
+                {
+                    __state = null;
+                    return;
+                }
+
                 __state = Current;
 
                 Current = new Attribution(
-                    skill == null ? null : skill.nameSkill,
-                    damageType.ToString(),
+                    skill,
+                    damageType,
                     amountDamage,
                     __instance == null || __instance.entity == null ? 0u : __instance.entity.netId);
             }
 
             [HarmonyPostfix]
-            private static void Restore(Attribution? __state) => Current = __state;
+            private static void Restore(Attribution? __state)
+            {
+                if (_readers != 0)
+                    Current = __state;
+            }
         }
     }
 }
