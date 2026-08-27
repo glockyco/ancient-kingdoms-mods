@@ -207,6 +207,23 @@ definitions it was materialized from. A run compares both and rebuilds when eith
 covers each definition's name as well as its content, because a baseline is keyed on the fixture name
 and a rename therefore describes a different fixture.
 
+### The comparison waits for a model, and three fixtures do not
+
+This change measures the game. The planner change predicts it. The comparison, the baseline gate and
+the reported-build parity report all put a prediction beside a measurement, so none of them can be
+finished while the planner has no model. That is not a defect in either plan, but the task order hides
+it: read straight through, the sections after the probes look ready to start.
+
+Three tasks are unlike the rest of their section. The physical mitigation coefficient is read from
+source and has never been measured. The level difference term in the debuff landing rate is assumed to
+be zero. Effective debuff uptime is assumed to be the product of a duration bound and a landing
+probability. Each of those is an input the model needs rather than an output it produces, so measuring
+them needs only the probes.
+
+The order that follows is therefore: finish the probes, run those three experiments, and let their
+results reach the planner's design before its formulas are written. A model built on a guessed
+coefficient and then checked against a measurement of the same coefficient would agree with itself.
+
 ### A companion's race is drawn, so it is checked rather than assigned
 
 A hire rolls the race from a list the archetype allows, and the lists differ: a Rogue is never an Elf,

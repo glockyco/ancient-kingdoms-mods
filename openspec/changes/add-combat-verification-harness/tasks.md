@@ -110,7 +110,7 @@
 - [x] 3.10 Implement companion equipping through the companion's own command, granting each item into the
       owner's inventory because that is where the command reads from. The item's level requirement is
       checked against the owner's level, not the companion's.
-- [ ] 3.11 Fail materialization loudly when a step does not take effect, naming the step and the value
+- [x] 3.11 Fail materialization loudly when a step does not take effect, naming the step and the value
       that did not change. The engine reports nothing: an out-of-range index, a wrong entity state, and a
       failed affordability check all return without an error and without an effect. A step therefore
       reads the value it intends to change, acts, and reads again, and the harness supplies the reason
@@ -151,6 +151,10 @@
 
 ## 6. Comparison and reporting
 
+Every task in this section compares a predicted quantity against a measured one, so none of them can
+be finished before a model predicts something. See the design's note on what the comparison waits for.
+
+
 - [ ] 6.1 Implement per-quantity comparison covering every stat, the action interval, per-hit damage and
       sustained output, reporting each result separately rather than one verdict.
 - [ ] 6.2 Assert on a mean within tolerance and an observed range within predicted bounds, and fail when
@@ -162,6 +166,11 @@
 - [ ] 6.5 Record actions the engine refused, with the reason, and exclude them from the action count.
 
 ## 7. Fixture matrix
+
+Tasks 7.7, 7.8 and 7.9 are experiments rather than checks. They measure quantities the model currently
+reads from source or assumes, so they run before the model is written against a guess. The rest of the
+section checks a model and waits for one.
+
 
 - [ ] 7.1 Add tier A fixtures, needing no combat: one per class at the level cap with full veteran
       progression, plus targeted fixtures for a three-piece armour set, an exactly-five-piece set, the
