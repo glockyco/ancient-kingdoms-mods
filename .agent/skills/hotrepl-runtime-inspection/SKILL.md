@@ -45,6 +45,17 @@ commands run directly: HotRepl v2 has no auth/lease handshake, loopback plus sin
 replacement is the trust boundary. Use `build-tool export` for the orchestrated `compendium.export`
 job when the goal is producing exports, not poking the live runtime.
 
+## Redirect before the first database call
+
+`Il2Cpp.Database` reaches whichever database the game has open. At the start screen the connection is
+closed, so a read throws an IL2CPP stack trace, and `Il2Cpp.Database.Connect()` would open the game's
+own. Either way, reading an asset first and redirecting later is the order that puts player data in
+reach.
+
+Call `game.useScratchDatabase` as the first command of a session, then read what you came for. Its
+result reports the path it opened and whether that path is a scratch one, so the redirect is confirmed
+rather than assumed.
+
 ## One instance at a time
 
 `build-tool launch --wait` returns once the runtime host is ready, and the game keeps running after
@@ -80,7 +91,7 @@ The `HotReplCommands` mod registers six typed commands (MelonLoader mod in `mods
 | `world.enter`          | job  | Drives the game to a spawned local player, without exporting. Reports the character it entered as. Args: `{"character": string?}`; omitted selects the lowest name in ordinal order. |
 | `compendium.export`    | job  | Runs world entry if needed, calls DataExporter and optionally MapScreenshotter, returns artifact refs. Args: `{"screenshots": bool}`. |
 | `game.quit`            | sync | Calls `Application.Quit()` and returns `{"quitting": true}`.                                                                           |
-| `game.useScratchDatabase` | sync | Points the database at a scratch file beside the game's own, so a run that creates or changes characters cannot reach player data. Refuses once the connection is open, so call it before entering the world. |
+| `game.useScratchDatabase` | sync | Points the database at a scratch file beside the game's own, so a run that creates or changes characters cannot reach player data. Refuses once the connection is open, so call it first, before any `Il2Cpp.Database` call and before entering the world. |
 
 The `CombatVerification` mod registers three typed commands (MelonLoader mod in `mods/CombatVerification/`):
 
