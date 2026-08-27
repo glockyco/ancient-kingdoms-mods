@@ -10,6 +10,10 @@
 
   <ItemGroup>
     <!-- MelonLoader -->
+    <Reference Include="0Harmony">
+      <HintPath>$(MelonLoaderPath)\net6\0Harmony.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="MelonLoader">
       <HintPath>$(MelonLoaderPath)\net6\MelonLoader.dll</HintPath>
       <Private>False</Private>

@@ -5,6 +5,7 @@ using HotRepl.Control;
 using MelonLoader;
 
 [assembly: MelonInfo(typeof(CombatVerification.CombatVerificationMod), "CombatVerification", "1.0.0", "WoW_Much")]
+[assembly: HarmonyDontPatchAll]
 [assembly: MelonGame("ancientpixels", "ancientkingdoms")]
 
 namespace CombatVerification
@@ -27,6 +28,12 @@ namespace CombatVerification
             _registered.Add(registry.Register(new PerHitDamageCommand()));
             _registered.Add(registry.Register(new TargetStateCommand()));
             _registered.Add(registry.Register(new ActionIntervalCommand()));
+
+            Engine.DamageAttribution.Apply(HarmonyInstance);
+            LoggerInstance.Msg(Engine.DamageAttribution.Applied
+                ? "CombatVerification: hit attribution active."
+                : $"CombatVerification: hit attribution unavailable, {Engine.DamageAttribution.Unavailable}. "
+                    + "Damage readings continue at the per-hit tier.");
 
             LoggerInstance.Msg($"CombatVerification: registered {_registered.Count} typed commands.");
         }

@@ -44,12 +44,14 @@ namespace CombatVerification.Probes
         private readonly Combat _combat;
         private readonly DamageLog _log;
         private readonly UnityAction<Entity> _onHit;
+        private readonly uint _casterNetId;
         private bool _listening;
 
         private DamageEvents(Player caster, Combat combat)
         {
             _caster = caster;
             _combat = combat;
+            _casterNetId = caster.netId;
             _log = new DamageLog(combat.meterDamageDone);
             _onHit = DelegateSupport.ConvertDelegate<UnityAction<Entity>>(
                 new Action<Entity>(OnHit));
@@ -115,6 +117,12 @@ namespace CombatVerification.Probes
         public PerHitDamageResult Measured(
             ActionTimeline timeline, int seed, double openedAt, double closedAt)
         {
+            var attributed = DamageAttribution.Applied && _log.AllAttributed;
+            var limit = attributed
+                ? null
+                : DamageAttribution.Unavailable
+                    ?? "a hit in the window named no skill, so a rotation cannot be told apart";
+
             var hits = new List<LandedHit>(_log.Hits.Count);
             long total = 0;
             var absorbed = 0;
@@ -131,6 +139,9 @@ namespace CombatVerification.Probes
                     VictimNetId = hit.VictimNetId,
                     Amount = hit.Amount,
                     At = hit.At,
+                    Skill = hit.Skill,
+                    DamageType = hit.DamageType,
+                    Intent = hit.Intent,
                 });
             }
 
@@ -144,7 +155,8 @@ namespace CombatVerification.Probes
                 Resets = _log.Resets,
                 Total = total,
                 Seed = seed,
-                Tier = Tiers.PerHit,
+                Tier = attributed ? Tiers.PerHitAttributed : Tiers.PerHit,
+                TierLimit = limit,
                 Actions = timeline.Completions.Count,
                 ActionIntervals = new List<double>(timeline.Intervals),
             };
@@ -157,14 +169,26 @@ namespace CombatVerification.Probes
         private void OnHit(Entity victim)
         {
             var at = ServerClock.TryRead(out var now) ? now : 0.0;
+            var name = victim == null ? "unknown" : victim.nameEntity;
+            var netId = victim == null ? 0u : victim.netId;
 
-            if (victim == null)
+            // The stamp belongs to the hit in flight, and the event fires inside that same call. A
+            // stamp naming another caster is not this subject's hit, so it is not read.
+            var stamp = DamageAttribution.Current;
+            if (stamp == null || stamp.Value.CasterNetId != _casterNetId)
             {
-                _log.Observe("unknown", 0u, _combat.meterDamageDone, at);
+                _log.Observe(name, netId, _combat.meterDamageDone, at);
                 return;
             }
 
-            _log.Observe(victim.nameEntity, victim.netId, _combat.meterDamageDone, at);
+            _log.Observe(
+                name,
+                netId,
+                _combat.meterDamageDone,
+                at,
+                stamp.Value.Skill,
+                stamp.Value.DamageType,
+                stamp.Value.Intent);
         }
     }
 }

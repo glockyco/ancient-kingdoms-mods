@@ -25,6 +25,24 @@ namespace CombatVerification.Dtos
         /// <summary>The moment the hit was recorded, in the game's server time.</summary>
         [JsonProperty("at")]
         public double At { get; set; }
+
+        /// <summary>
+        /// The skill the engine selected for this hit, or null when it could not be named. Two
+        /// rotations that produce the same total are indistinguishable without it.
+        /// </summary>
+        [JsonProperty("skill")]
+        public string Skill { get; set; }
+
+        /// <summary>The school the hit was dealt in, which selects its mitigation.</summary>
+        [JsonProperty("damageType")]
+        public string DamageType { get; set; }
+
+        /// <summary>
+        /// The amount the caster asked for, before the engine's variance, the level difference and
+        /// mitigation. With the amount taken beside it, the whole reduction is one subtraction.
+        /// </summary>
+        [JsonProperty("intent")]
+        public int Intent { get; set; }
     }
 
     /// <summary>Arguments for a per-hit damage reading.</summary>
@@ -118,11 +136,17 @@ namespace CombatVerification.Dtos
         /// <c>perHitAttributed</c> when each hit also names the skill the engine chose.
         /// </summary>
         /// <remarks>
-        /// This probe reaches <c>perHit</c>. The skill is not on the event it listens to, so
-        /// attribution needs the patch on the damage entry point, and a rotation comparison needs
-        /// that tier rather than this one.
+        /// The attributing tier needs the stamp on the damage entry point to be in place and every
+        /// hit in the window to have carried it. One hit that named no skill holds the whole window
+        /// at the lower tier, because that hit is the one a comparison would misplace.
         /// </remarks>
         [JsonProperty("tier")]
         public string Tier { get; set; }
+
+        /// <summary>
+        /// What held the tier below the attributing one, or null when it was reached.
+        /// </summary>
+        [JsonProperty("tierLimit")]
+        public string TierLimit { get; set; }
     }
 }

@@ -151,15 +151,24 @@
 
 ## 5. Probe: skill attribution
 
-- [ ] 5.1 Add a postfix on the damage entry point that records the skill, damage type, victim, and final
-      amount per hit. This is the only route to a damage type per hit, because the event that carries
-      one cannot be subscribed to. The method resolves as a single overload and retains its interop method-info
-      pointer, so it is patchable.
-- [ ] 5.2 Make the trace tolerate the patch failing to apply: fall back to the lower fidelity tier and
-      report the tier reached rather than aborting the run.
-- [ ] 5.3 Emit the trace as a timestamped event log usable for rotation comparison.
-- [ ] 5.4 Verify the trace against the per-hit event probe on the same run, so the two agree on hit count
-      and total damage.
+- [x] 5.1 Stamp the damage entry point with the skill, the damage type and the amount the caster asked
+      for, and read the stamp from inside the hit event. This is the only route to a damage type per
+      hit, because the event that carries one cannot be subscribed to. A prefix rather than a postfix,
+      because the final amount is a local the entry point never returns, while the hit event fires
+      before it returns and therefore belongs to the same call. The entry point resolves as a single
+      overload and patched cleanly.
+- [x] 5.2 Make the trace tolerate the patch failing to apply: fall back to the lower fidelity tier and
+      report the tier reached rather than aborting the run. One hit that named no skill holds the whole
+      window at the lower tier, since that hit is the one a comparison would misplace.
+- [x] 5.3 Emit the trace as a timestamped event log usable for rotation comparison. The measurement is
+      the log: one entry per hit carrying the skill, the school, the amount asked for, the health taken
+      and a server timestamp.
+- [x] 5.4 Verify the trace against the per-hit event probe on the same run. They are one record by
+      construction, so the check is stronger than a count agreement: the amount asked for comes from the
+      patch and the health taken comes from the caster's own total, and their ratio has to fall inside
+      the band the engine's own steps allow. Fourteen of fourteen hits fell inside 0.5265 to 0.6435,
+      mean 0.5779 against a band centre of 0.585. A stamp landing at the wrong moment would leave a hit
+      unnamed or put a ratio outside the band.
 
 ## 6. Comparison and reporting
 

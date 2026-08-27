@@ -42,12 +42,22 @@ namespace CombatVerification.Probes
         /// <summary>One hit, as the difference between two readings of the caster's total.</summary>
         public readonly struct Hit
         {
-            public Hit(string victim, uint victimNetId, int amount, double at)
+            public Hit(
+                string victim,
+                uint victimNetId,
+                int amount,
+                double at,
+                string skill,
+                string damageType,
+                int intent)
             {
                 Victim = victim;
                 VictimNetId = victimNetId;
                 Amount = amount;
                 At = at;
+                Skill = skill;
+                DamageType = damageType;
+                Intent = intent;
             }
 
             /// <summary>The entity the engine named as the subject of this hit.</summary>
@@ -65,6 +75,23 @@ namespace CombatVerification.Probes
 
             /// <summary>The moment the hit was recorded, in the game's server time.</summary>
             public double At { get; }
+
+            /// <summary>
+            /// The skill the engine selected, or null when the hit could not be attributed to one.
+            /// </summary>
+            public string Skill { get; }
+
+            /// <summary>The school the hit was dealt in, or null when it is unknown.</summary>
+            public string DamageType { get; }
+
+            /// <summary>
+            /// The amount the caster asked for, before the engine's own steps, or zero when unknown.
+            /// With the amount taken beside it, the engine's whole reduction is one subtraction.
+            /// </summary>
+            public int Intent { get; }
+
+            /// <summary>Whether the hit names the skill behind it.</summary>
+            public bool Attributed => Skill != null;
         }
 
         /// <summary>Hits recorded, in arrival order.</summary>
@@ -81,7 +108,14 @@ namespace CombatVerification.Probes
         public int Resets { get; private set; }
 
         /// <summary>Records one hit against the total the caster holds at that moment.</summary>
-        public void Observe(string victim, uint victimNetId, long totalNow, double at)
+        public void Observe(
+            string victim,
+            uint victimNetId,
+            long totalNow,
+            double at,
+            string skill = null,
+            string damageType = null,
+            int intent = 0)
         {
             if (totalNow < _total)
             {
@@ -90,8 +124,29 @@ namespace CombatVerification.Probes
                 return;
             }
 
-            _hits.Add(new Hit(victim, victimNetId, (int)(totalNow - _total), at));
+            _hits.Add(new Hit(
+                victim, victimNetId, (int)(totalNow - _total), at, skill, damageType, intent));
             _total = totalNow;
+        }
+
+        /// <summary>Whether every hit recorded names the skill behind it.</summary>
+        /// <remarks>
+        /// All of them or none of them, as far as a tier is concerned. One unattributed hit is enough
+        /// to make a rotation comparison wrong, because the hit it cannot place is the one whose skill
+        /// the comparison is about.
+        /// </remarks>
+        public bool AllAttributed
+        {
+            get
+            {
+                foreach (var hit in _hits)
+                {
+                    if (!hit.Attributed)
+                        return false;
+                }
+
+                return true;
+            }
         }
     }
 }

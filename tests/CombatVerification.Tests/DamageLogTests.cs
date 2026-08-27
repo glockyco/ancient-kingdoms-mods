@@ -126,6 +126,51 @@ namespace CombatVerification.Tests
             Assert.Equal(new[] { 283, 217 }, GetAmounts(log));
         }
 
+        /// <summary>
+        /// A hit keeps what the stamp named, so a rotation can be told apart afterwards.
+        /// </summary>
+        [Fact]
+        public void AnAttributedHitNamesItsSkillAndSchool()
+        {
+            var log = new DamageLog(0);
+
+            log.Observe("Ancient Cyclops", 1u, 283, 1.0, "Stab", "Normal", intent: 464);
+
+            var hit = Assert.Single(log.Hits);
+            Assert.Equal("Stab", hit.Skill);
+            Assert.Equal("Normal", hit.DamageType);
+            Assert.Equal(464, hit.Intent);
+            Assert.True(hit.Attributed);
+            Assert.True(log.AllAttributed);
+        }
+
+        /// <summary>
+        /// One unattributed hit holds the whole window down, because that hit is the one a rotation
+        /// comparison would place against the wrong skill.
+        /// </summary>
+        [Fact]
+        public void OneUnnamedHitWithdrawsAttributionFromTheWindow()
+        {
+            var log = new DamageLog(0);
+
+            log.Observe("Ancient Cyclops", 1u, 283, 1.0, "Stab", "Normal", 464);
+            log.Observe("Ancient Cyclops", 1u, 550, 2.0);
+
+            Assert.False(log.AllAttributed);
+            Assert.True(log.Hits[0].Attributed);
+            Assert.False(log.Hits[1].Attributed);
+        }
+
+        /// <summary>
+        /// A window with no hit is attributed, so an empty measurement is not reported as a failure
+        /// of the mechanism that had nothing to attribute.
+        /// </summary>
+        [Fact]
+        public void AnEmptyWindowIsAttributed()
+        {
+            Assert.True(new DamageLog(0).AllAttributed);
+        }
+
         private static int[] GetAmounts(DamageLog log)
         {
             var amounts = new int[log.Hits.Count];
