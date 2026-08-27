@@ -26,6 +26,31 @@ equipment, the declared consumables, the target, and the version of the game it 
 - **THEN** materialization fails and names the missing field
 - **AND** no default is substituted
 
+### Requirement: A descriptor is checked for shape before the game runs
+
+A check that needs no game state SHALL run before the game is launched. It covers the schema version,
+the presence of every section a measurement depends on, a slot named more than once, and a value
+outside its own domain such as a negative level.
+
+A question the game answers SHALL NOT be answered by this check, because the game's own definitions
+become readable only once the world is loaded, which is after a character has been created.
+
+#### Scenario: A descriptor states an unsupported schema version
+
+- **WHEN** a descriptor names a schema version the harness does not support
+- **THEN** it is refused before the game is launched
+
+#### Scenario: A descriptor names one slot twice
+
+- **WHEN** two equipment entries name the same slot index
+- **THEN** it is refused before the game is launched
+
+#### Scenario: A descriptor is well formed but requests an unreachable state
+
+- **WHEN** a descriptor is well formed and requests skill levels its points cannot reach
+- **THEN** the earlier check accepts it
+- **AND** the check against the game refuses it once the world is loaded
+
 ### Requirement: A fixture is reachable in normal play
 
 A fixture SHALL NOT request a state the game cannot produce. Skill levels SHALL respect the point

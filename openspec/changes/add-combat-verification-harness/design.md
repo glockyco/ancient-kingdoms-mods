@@ -207,11 +207,23 @@ definitions it was materialized from. A run compares both and rebuilds when eith
 covers each definition's name as well as its content, because a baseline is keyed on the fixture name
 and a rename therefore describes a different fixture.
 
-### The rules are readable only once the host exists
+### The rules are readable only once the world is loaded
 
-`NetworkManager.singleton` is null at the start scene, so the class prefabs a fixture is checked against
-cannot be read before the game reaches character selection. Validation is therefore sequenced after
-world entry and before materialization, not before launch.
+The class prefabs a fixture is checked against hang off `NetworkManagerMMO`, and they are unavailable at
+the start screen and at character selection alike. The same descriptor that passes after world entry is
+refused at both earlier points, with the reason rather than a verdict.
+
+That forces an order the harness does not get to choose. The character creator lives on the selection
+screen, so creation runs before world entry, while the definitions that decide whether a fixture is
+legal arrive only with the loaded world:
+
+    selection -> create -> world entry -> check against the game -> build, equip, hire
+
+A descriptor no character could satisfy therefore costs a creation and a world entry before anything
+says so. The cheap defence is an earlier check that needs no game: the schema version, the sections a
+measurement depends on, a slot named twice, a negative level. Those are questions about the descriptor,
+not about the game, so they run before launch and in a unit test. The check that needs the game keeps
+every question the game answers, and neither side restates the other.
 
 Two further identity translations happen at that boundary. A class prefab is named `Player Warrior`, so
 a class identifier drops that prefix. An item's own class restriction holds displayed names, so those

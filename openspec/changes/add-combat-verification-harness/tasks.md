@@ -24,6 +24,11 @@
       live exactly where creation happens, so the pairing is checked there rather than answered from a
       copy. Nothing reports it as unchecked, because nothing has to guess.
 
+- [ ] 1.7 Split the checks by what each one needs. The schema version, the presence of the sections a
+      measurement depends on, a slot named twice and a negative level are questions about the descriptor,
+      so answer them without the game and before launch. Every question the game answers stays in the
+      check that runs against it, and neither side restates the other.
+
 ## 2. Run isolation and lifecycle
 
 - [x] 2.1 Add a build-tool verification command that launches the game and waits for the runtime host,
@@ -48,11 +53,16 @@
 - [x] 2.7 Verify isolation with an automated assertion that the player save's content hash is unchanged
       across a full run.
 
+- [ ] 2.8 Keep a character slot free before creating one. The roster holds at most eight characters, and
+      past that the selection screen disables creation and registers no handler, so a matrix over six
+      classes and the targeted fixtures beside them exhausts it. Reuse a character whose class a fixture
+      needs, or remove one an earlier run created.
+
 ## 3. Materialization commands
 
 - [x] 3.1 Add a mod project that registers typed runtime commands, following the existing command-mod
-      pattern. It registers a read-only check of a fixture against the game's own definitions, which runs
-      before anything is materialized.
+      pattern. It registers a read-only check of a fixture against the game's own definitions. The check
+      runs once the world is loaded, because that is when those definitions exist.
 - [x] 3.2 Implement character creation by driving the character creator, not by calling the database
       entry point. The creator chooses the class's basic skill, the starting city and the appearance, and
       it disables the tutorial, none of which is data a fixture could supply without copying a decision
@@ -61,7 +71,9 @@
       changes the selection.
 - [ ] 3.3 Reuse the existing world-entry character selection so a fixture matrix can address any of the
       six classes. Selection by name already exists and is covered by the runtime control capability, so
-      do not add a second selector.
+      do not add a second selector. The order is forced rather than chosen: the creator lives on the
+      selection screen and the game's definitions arrive with the loaded world, so a run creates, enters,
+      and then checks against the game.
 - [x] 3.4 Implement level and veteran progression by awarding experience incrementally so the engine
       grants attribute points, skill points, the class attribute progression and veteran points itself.
       Award one requirement at a time and stop at the target, because awarding an unbounded amount at the
@@ -77,7 +89,9 @@
 - [ ] 3.8 Implement companion acquisition through the engine's hire command, ordered after the owner's
       progression is complete so the companion receives no part of the per-level increment.
 - [ ] 3.9 Assign companion rolled values directly after acquisition, validating each against the race and
-      archetype envelope, and record a value the engine never reads without letting it affect output.
+      archetype envelope, and record a value the engine never reads without letting it affect output. The
+      load path restores the value stored at hire, so an assigned value lives only until the game reloads,
+      and no later step may reload it.
 - [ ] 3.10 Implement companion equipping through the companion's equipment slots.
 - [ ] 3.11 Fail materialization loudly when a step does not take effect, naming the step and the value
       that did not change. The engine reports nothing: an out-of-range index, a wrong entity state, and a
@@ -182,7 +196,9 @@
 ## 10. Documentation and verification
 
 - [ ] 10.1 Document the verification run in the repository's command documentation, including the scratch
-      isolation guarantee and the backup step.
+      isolation guarantee, the backup step, and the requirement that no other instance is already running.
+      A launch does not take the runtime endpoint from an instance that already holds it, so a stale one
+      answers every command while the new window is the one on screen.
 - [ ] 10.2 Add a skill or procedure document for authoring a fixture and interpreting a parity report,
       covering the tier ladder and what a failure at each tier implies.
 - [ ] 10.3 Record every formula the comparison relies on as a source citation in the citation ledger.
