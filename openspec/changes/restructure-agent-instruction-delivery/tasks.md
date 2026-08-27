@@ -91,45 +91,89 @@ rule. Do not reword the constraints while moving them.
 
 ## 4. Skill and reference hygiene
 
-- [ ] 4.1 Rewrite the reference list in `.agent/skills/hotrepl-runtime-inspection/SKILL.md` so each
+- [x] 4.1 Rewrite the reference list in `.agent/skills/hotrepl-runtime-inspection/SKILL.md` so each
       entry states what a reader who skips it gets wrong, and remove the invitation to load a
       reference only if the task appears to need it.
-- [ ] 4.2 Add a contents list to
+- [x] 4.2 Add a contents list to
       `.agent/skills/hotrepl-runtime-inspection/references/observing-behaviour.md`, which is past the
       hundred-line threshold, and to any other reference that is.
-- [ ] 4.3 Audit every skill `description` against the 1024-character cap and the requirement to state
+      Only that file qualifies; the other two references are 81 and 32 lines. Its contents list is
+      grouped by when each section applies, before a measurement, while it runs, and when it returns
+      nothing, rather than by heading order.
+- [x] 4.3 Audit every skill `description` against the 1024-character cap and the requirement to state
       both what it covers and when it applies in the third person. Report each one's length.
-- [ ] 4.4 Audit every skill body against the 500-line limit and split any that exceeds it, moving the
-      excess into a reference rather than a second skill.
+      All five pass. Lengths: save-files 104, export-game-data 191, game-defect-reports 410,
+      hotrepl-runtime-inspection 274, update-game-version 166. Each states what it covers and opens
+      its trigger clause with "Use when", in the third person.
+- [x] 4.4 Audit every skill body against the repository's 200-line limit and split any that exceeds
+      it, moving the excess into a reference rather than a second skill.
+      All five pass: 146, 115, 115, 84, 48 lines. Corrected while implementing: the specification
+      delta said 500 lines, taken from the published ceiling, while this repository already enforces
+      200 with a stated reason, that a skill body stays in context for the rest of a session once it
+      loads. Importing the looser external number would have relaxed a better-justified local limit,
+      so the delta and this task now say 200 and record 500 as the external ceiling.
 
 ## 5. Subagent report integrity
 
-- [ ] 5.1 Add a repository-owned research agent definition under `.omp/agents/` that requires the
+- [x] 5.1 Add a repository-owned research agent definition under `.omp/agents/` that requires the
       report to be written to a file whose path is returned, so a structured output shape cannot
       discard the body.
-- [ ] 5.2 Verify it by dispatching one research task through the definition and confirming the report
+- [x] 5.2 Verify it by dispatching one research task through the definition and confirming the report
       arrives with its tables intact.
+      Dispatched a rule inventory through the definition. The report arrived whole: a thirteen-row
+      table with all six requested columns, three requested sections, and three findings beyond the
+      brief. The returned answer carried only the file URI and one sentence, as the definition
+      requires. Project agent definitions are rediscovered at execution, so the definition worked in
+      the session that created it, unlike a rule.
 
 ## 6. Enforcement
 
 Every check below fails with the offending path and the reason, and reports all violations in one
 run rather than stopping at the first.
 
-- [ ] 6.1 Extend `scripts/check-agent-docs.sh` to fail when a `SKILL.md` reaches 500 lines.
-- [ ] 6.2 Extend it to fail when a skill `description` exceeds 1024 characters.
-- [ ] 6.3 Extend it to fail when a file under a skill's `references/` exceeds 100 lines without an
+- [x] 6.1 Extend `scripts/check-agent-docs.sh` to fail when a `SKILL.md` reaches the line limit.
+      Already satisfied: the check has enforced 200 lines for a `SKILL.md` since before this change.
+      The task originally said 500, taken from the published ceiling, which would have relaxed a
+      stricter local limit that carries its own reason. Corrected in the specification delta and here;
+      no code change was needed.
+- [x] 6.2 Extend it to fail when a skill `description` exceeds 1024 characters.
+- [x] 6.3 Extend it to fail when a file under a skill's `references/` exceeds 100 lines without an
       opening contents list.
-- [ ] 6.4 Extend it to fail when an `AGENTS.md` below the repository root contains a behavioural
+- [x] 6.4 Extend it to fail when an `AGENTS.md` below the repository root contains a behavioural
       imperative, so a constraint cannot be reintroduced into a file that does not load. Use the
       imperative forms the repository already writes and state the matched line.
-- [ ] 6.5 Extend it to fail when a rule carrying a trigger condition does not name an incident.
-- [ ] 6.6 Add the new checks to the existing commit-time hook path, and confirm they run there rather
+- [x] 6.5 Extend it to fail when a rule carrying a trigger condition does not name an incident.
+- [x] 6.6 Add the new checks to the existing commit-time hook path, and confirm they run there rather
       than only when invoked by hand.
+      The hook already ran the check for a staged `AGENTS.md`, skill, or rule. Its glob gained
+      `.omp/agents/**` so the new task-agent registration check reaches the hook too.
+      Each new check was proved against the violation it exists to catch, by introducing the fault and
+      confirming the reported message, then reverting: an oversized description, a long reference with
+      no contents list, a constraint in a context file that does not load, a triggered rule with no
+      incident, a rule carrying both globs and a condition, and a missing task agent definition. Six
+      introduced, six caught.
+      The harness reverted with `git checkout`, which destroyed the uncommitted contents list from 4.2
+      and exposed a worse defect: the commit for section 2 had never staged the map file's deletion,
+      so it did not pass its own check. Both were repaired and the commit amended.
 
 ## 7. Verification
 
-- [ ] 7.1 Run `./scripts/check-agent-docs.sh` and confirm it passes against the restructured surface.
-- [ ] 7.2 Run `openspec validate --all --strict`.
-- [ ] 7.3 Confirm each rule from section 1 is listed or fires as its frontmatter intends, and that no
+- [x] 7.1 Run `./scripts/check-agent-docs.sh` and confirm it passes against the restructured surface.
+- [x] 7.2 Run `openspec validate --all --strict`.
+- [x] 7.3 Confirm each rule from section 1 is listed or fires as its frontmatter intends, and that no
       rule intended to be triggered has instead become a rulebook entry through a missing condition.
+      Inventoried all thirteen rules: six triggered, seven path-scoped, none carrying both, none
+      always-apply. Every rule from section 1 carries a condition, a scope and an interrupt mode, so
+      none has silently become a rulebook entry. Every description carries one of the words the check
+      requires.
+      One rule needs stating plainly. `generated-artifacts` sets its condition to match any text and
+      gates entirely on a fourteen-clause scope of edit and write paths. That is deliberate, and it is
+      the documented way to express a path gate for a tool stream rather than for a file the agent is
+      editing, but it also means the check for a rule carrying both globs and a condition does not
+      reach it, because the gate is written as scope rather than globs.
+      Path overlap is now real and worth recording: an ordinary edit under `website/src/` delivers
+      `website-boundaries` plus whichever of `interactive-map` or `website-mechanics` also matches, so
+      two rule bodies arrive at once. This is a cost the section-2 relocation introduced.
+      As with 1.6, none of this observes a rule firing. It reads frontmatter and matches conditions
+      against recorded command strings.
 - [ ] 7.4 Sync the delta into `openspec/specs/agent-instructions/spec.md` and archive the change.

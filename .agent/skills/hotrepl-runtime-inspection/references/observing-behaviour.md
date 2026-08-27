@@ -3,6 +3,28 @@
 A behaviour the source only implies needs a measurement. The obstacles are the agent's own latency
 and the difficulty of holding a subject in the state under measurement.
 
+## Contents
+
+Before a measurement:
+
+- Sample inside the game, not from the shell — and put the setup in the same coroutine.
+- Prefer an event to a sample, and check that it can be subscribed to.
+- Guard the setup of a job, because a dead coroutine answers nothing.
+- Choose the subject before the method.
+
+While it runs:
+
+- Let the game drive a repeated action.
+- Keep the subject alive and in place.
+- Hold the fixture alive, and hold the subject engaged.
+- Record absolute deadlines.
+
+When it returns nothing, or a number to report:
+
+- Take a screenshot before explaining an empty result.
+- State the provenance of every number.
+- Prefer a band from source to a mean.
+
 ## Sample inside the game, not from the shell
 
 One `eval` for each sample costs seconds of round trip, and the agent's turn adds tens of seconds.

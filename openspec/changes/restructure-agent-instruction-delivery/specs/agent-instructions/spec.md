@@ -63,9 +63,11 @@ Every `AGENTS.md` SHALL be under 200 lines. Content that would push a file over 
 moved to a rule or a skill, or deleted, and SHALL NOT be relocated into a second instruction file
 that exists only to evade the limit.
 
-A skill body SHALL be under 500 lines. A skill `description` SHALL be within 1024 characters. A
-reference file longer than 100 lines SHALL open with a contents list, because a reader that opens it
-part way must be able to see its scope.
+A skill body SHALL be under 200 lines. That is stricter than the published ceiling of 500, because a
+skill body stays in context for the rest of a session once it loads, while a reference loads only when
+the body sends a reader to it. A skill `description` SHALL be within 1024 characters. A reference file
+longer than 100 lines SHALL open with a contents list, because a reader that opens it part way must be
+able to see its scope.
 
 The budget applies to the sum of what loads unconditionally, not to each file alone. Adding a rule
 with `alwaysApply: true` SHALL be treated as spending the same budget as adding lines to an
@@ -81,7 +83,7 @@ instruction given in an earlier turn decays with turn count. A per-file limit do
 
 #### Scenario: A skill body exceeds its budget
 
-- **WHEN** a `SKILL.md` reaches 500 lines or more
+- **WHEN** a `SKILL.md` reaches 200 lines or more
 - **THEN** the agent-docs check fails and reports the path and its line count
 
 #### Scenario: A long reference has no contents list

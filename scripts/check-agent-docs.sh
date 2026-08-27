@@ -122,6 +122,78 @@ for path in rules:
     elif not trigger_words.search(values["description"]):
         errors.append(f"rule description has no usage trigger: {path.relative_to(root)}")
 
+def raw_frontmatter(path: Path) -> str:
+    text = path.read_text(encoding="utf-8")
+    if not text.startswith("---\n") or "\n---\n" not in text[4:]:
+        return ""
+    return text[4:].split("\n---\n", 1)[0]
+
+
+def body_of(path: Path) -> str:
+    text = path.read_text(encoding="utf-8")
+    if not text.startswith("---\n") or "\n---\n" not in text[4:]:
+        return text
+    return text[4:].split("\n---\n", 1)[1]
+
+
+# The description is the only text the runtime uses to select a skill, and it is capped.
+for path in skills:
+    values, _ = frontmatter(path)
+    description = values.get("description", "")
+    if len(description) > 1024:
+        errors.append(f"oversized skill description: {path.relative_to(root)} ({len(description)} characters; limit is 1024)")
+
+# A reader who opens a long reference part way must be able to see its scope.
+for path in references:
+    lines = path.read_text(encoding="utf-8").splitlines()
+    if len(lines) > 100 and not any(line.strip() == "## Contents" for line in lines[:30]):
+        errors.append(f"long reference without a contents list: {path.relative_to(root)} ({len(lines)} lines)")
+
+# Only a context file at or above the repository root has its content injected, so a constraint in a
+# deeper one never reaches the agent. Command guidance under Verification is allowed to stay.
+prohibition = re.compile(r"\b(do not|don't|never|must not|shall not)\b", re.I)
+for path in agents:
+    rel = path.relative_to(root)
+    if rel == Path("AGENTS.md"):
+        continue
+    section = ""
+    for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
+        if line.startswith("## "):
+            section = line[3:].strip()
+        if section == "Verification":
+            continue
+        if prohibition.search(line):
+            errors.append(f"constraint in a context file that does not load: {rel}:{number} (move it to a rule with globs)")
+
+for path in rules:
+    raw = raw_frontmatter(path)
+    triggered = bool(re.search(r"^\s*(condition|astCondition):", raw, re.M))
+    path_scoped = bool(re.search(r"^\s*globs:", raw, re.M))
+    body = body_of(path)
+    # A rule about a mistake nobody has made is a guess, and a guess is not evidence that it fires.
+    if triggered and "## Incident" not in body:
+        errors.append(f"triggered rule without an incident: {path.relative_to(root)} (state the failure that motivated it)")
+    # A trigger rule carrying globs is gated on a matching file path, so a trigger that names no file
+    # never fires.
+    if triggered and path_scoped:
+        errors.append(f"rule carries both globs and a trigger condition: {path.relative_to(root)} (the path gate suppresses the trigger)")
+
+# Research reports are destroyed by a structured channel unless the agent writes them to a file.
+agent_defs = sorted(path for path in (root / ".omp" / "agents").glob("*.md") if path.is_file())
+expected_agent_defs = {"repo-researcher"}
+actual_agent_defs = {path.stem for path in agent_defs}
+for missing in sorted(expected_agent_defs - actual_agent_defs):
+    errors.append(f"missing task agent registration: .omp/agents/{missing}.md")
+for unexpected in sorted(actual_agent_defs - expected_agent_defs):
+    errors.append(f"unexpected task agent registration: {unexpected}")
+for path in agent_defs:
+    values, _ = frontmatter(path)
+    for key in ("name", "description"):
+        if not values.get(key):
+            errors.append(f"task agent missing {key}: {path.relative_to(root)}")
+    if values.get("name") and values["name"] != path.stem:
+        errors.append(f"task agent name/path mismatch: {path.relative_to(root)}")
+
 skill_names = {path.parent.name for path in skills}
 rule_names = {path.stem for path in rules}
 surfaces = agents + skills + references + rules

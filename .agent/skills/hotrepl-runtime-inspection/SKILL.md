@@ -97,16 +97,20 @@ notes are stale.
 
 ## References
 
-Load one of these when the task needs it.
+Each entry states what goes wrong without it, because a reader who judges relevance from a topic
+usually decides the topic does not apply.
 
-- `.agent/skills/hotrepl-runtime-inspection/references/commands.md`: the typed control commands the
-  repository's mods register, with their arguments and what each reports.
-- `.agent/skills/hotrepl-runtime-inspection/references/client-and-server.md`: which process holds
-  server authority, which state reaches a client, what a client write does, and how to run a host and
-  a client together.
-- `.agent/skills/hotrepl-runtime-inspection/references/observing-behaviour.md`: how to measure live
-  behaviour without the agent's own latency, and how to hold a subject in the state under
-  measurement.
+- `.agent/skills/hotrepl-runtime-inspection/references/observing-behaviour.md`. Read this before any
+  measurement. Without it a measurement is driven one shell call at a time, the subject dies or walks
+  away between calls, and the window returns nothing with no indication why. It also carries the two
+  events that cannot be subscribed to, the coroutine failure that holds the only job slot until the
+  game restarts, and why a screenshot settles an empty result that scalars cannot.
+- `.agent/skills/hotrepl-runtime-inspection/references/commands.md`. Read this before driving the game
+  by hand. Without it a typed command that already does the work is reimplemented as an `eval`, and
+  its arguments and reported fields are guessed.
+- `.agent/skills/hotrepl-runtime-inspection/references/client-and-server.md`. Read this before
+  reporting any figure read from a client. Without it a plain server field reads as zero rather than
+  failing, and the zero is published as a measurement.
 
 ## Boundary
 

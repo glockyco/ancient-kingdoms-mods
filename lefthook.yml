@@ -93,7 +93,7 @@ pre-commit:
       skip:
         - run: "! command -v omp-plans"
     - name: agent-docs
-      glob: "{AGENTS.md,**/AGENTS.md,.agent/skills/**,.agent/rules/**,scripts/check-agent-docs.sh}"
+      glob: "{AGENTS.md,**/AGENTS.md,.agent/skills/**,.agent/rules/**,.omp/agents/**,scripts/check-agent-docs.sh}"
       run: ./scripts/check-agent-docs.sh
 
 commit-msg:
