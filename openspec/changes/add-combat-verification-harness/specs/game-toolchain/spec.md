@@ -20,6 +20,26 @@ run SHALL report the resolved path when it refuses.
 - **THEN** the run refuses to start
 - **AND** it reports the path it resolved
 
+### Requirement: A run refuses to start beside another game instance
+
+A run SHALL confirm that no other instance is answering the runtime endpoint before it launches, and
+SHALL refuse while one is.
+
+Launching does not take the endpoint from an instance that already holds it. A run that starts beside a
+stale instance therefore sends every command to that instance while the window on screen belongs to the
+new one, and every reading describes a process the run does not control. Such a reading looks like a
+defect in the thing being measured.
+
+#### Scenario: An instance already answers the endpoint
+
+- **WHEN** a run starts while another instance is answering the runtime endpoint
+- **THEN** it refuses and reports that an instance is already running
+
+#### Scenario: A run ends
+
+- **WHEN** a run completes, fails, or is interrupted
+- **THEN** it shuts the game down, so the endpoint is free for the next run
+
 ### Requirement: A run that can reach player data verifies a backup first
 
 Where a run mode cannot fully isolate itself from the player save, the tooling SHALL create and verify a

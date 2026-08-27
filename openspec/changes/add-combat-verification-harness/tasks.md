@@ -53,6 +53,11 @@
 - [x] 2.7 Verify isolation with an automated assertion that the player save's content hash is unchanged
       across a full run.
 
+- [ ] 2.9 Refuse to launch while another instance answers the runtime endpoint, and report that rather
+      than proceeding. A launch does not take the endpoint from the instance holding it, so a run beside a
+      stale one measures a process it does not control. Shut the game down when a run ends, including when
+      it fails.
+
 - [ ] 2.8 Keep a character slot free before creating one. The roster holds at most eight characters, and
       past that the selection screen disables creation and registers no handler, so a matrix over six
       classes and the targeted fixtures beside them exhausts it. Reuse a character whose class a fixture
