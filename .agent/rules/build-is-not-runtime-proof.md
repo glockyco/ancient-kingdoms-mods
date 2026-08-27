@@ -4,30 +4,26 @@ condition: "build-tool\\s+deploy"
 scope: "tool"
 interruptMode: "never"
 ---
-A deploy that copies is not a change that works. Launch the game and exercise the path that changed
-before reporting anything about it.
+A deploy that copies is not a change that works. Launch the game, drive the path that changed, and read
+the result.
 
 ## Why
 
-- A Harmony patch, a registered command, and an interop call all compile and then fail to apply,
-  register, or resolve at runtime.
-- A missing generic instantiation, a refused engine call and an unhandled coroutine each present as
-  a silent nothing rather than an error.
-- The log records what the build cannot: read `MelonLoader/Latest.log` when a runtime step reports
-  nothing.
+A Harmony patch, a registered command and an interop call each compile, then fail at runtime. They fail
+silently: a missing generic instantiation, a refused engine call and a dead coroutine all return
+nothing rather than an error. Read `MelonLoader/Latest.log` when a runtime step reports nothing.
 
 ## Use
 
-Launch, drive the changed path, and read the result. For a patch, confirm it reports as applied. For
-a command, confirm it is registered. For a reading, confirm the value is what the game holds.
+For a patch, confirm it reports as applied. For a command, confirm it is registered. For a reading,
+confirm the value is what the game holds.
 
 ## Exceptions
 
-A change that only alters code the runtime cannot reach, such as a test double or a comment. State
-which, rather than leaving the reason unsaid.
+Code the runtime cannot reach, such as a test double. Say which.
 
 ## Incident
 
-A patch and two probes were reported as working from a green build. One patch had moved namespace,
-one probe held the only job slot after dying inside its coroutine, and one listener could not attach
-at all because the generic instantiation does not exist ahead of time.
+A patch and two probes were reported working from a green build. The patch had moved namespace. One
+probe held the only job slot after dying inside its coroutine. One listener could not attach, because
+its generic instantiation does not exist ahead of time.

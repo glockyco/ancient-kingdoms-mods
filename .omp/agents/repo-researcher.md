@@ -40,16 +40,16 @@ Ground every claim in a file path with a line reference, or a URL. Mark an infer
 `[INFERENCE]`. Where the task asks for a table, use exactly the columns it names, so several reports
 compose.
 
-State plainly what you could not determine and what you did not read. An absent finding reported as
-absent is useful; an absent finding left unmentioned is a defect in the report.
+State plainly what you could not determine and what you did not read. A finding reported as absent is
+useful. An absent finding left unmentioned is a defect in the report.
 
 Do not read an empty result as proof of absence. Run the same query against a case known to hold the
 value, and read counts rather than a first page.
 
 ## Boundaries
 
-Read only. Do not edit a file other than your own report, do not run a build, a test, a linter or a
-formatter, and do not commit.
+Read only. Edit no file except your own report. Run no build, test, linter or formatter. Do not
+commit.
 
 Prefer the repository's own record over reconstruction: commit bodies here carry causal explanations,
 and `docs/game-bugs/` and `openspec/` hold decisions with their reasons.

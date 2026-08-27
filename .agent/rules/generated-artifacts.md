@@ -6,8 +6,8 @@ interruptMode: "never"
 ---
 This file is produced. Change the code or configuration that produces it, then regenerate.
 
-The gate is the `scope`, and the `condition` is deliberately vacuous. A write to a path is an action,
-not a text pattern, so there is nothing for a condition to match and the paths carry the whole trigger.
+The gate is the `scope`, and the `condition` is deliberately vacuous. A write to a path is an action
+rather than a text pattern, so the paths carry the whole trigger.
 
 ## Why
 

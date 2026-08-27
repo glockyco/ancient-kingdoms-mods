@@ -23,10 +23,11 @@ A client receives synchronized state only.
 | Skill name, cast time, cooldown, icon   | yes, computed    | `server-scripts/Skill.cs:castTime` resolves from the local asset cache through the synchronized hash |
 | Plain server fields                     | no               | `server-scripts/MonsterSkills.cs:nextSpecialCastTime`, `server-scripts/Monster.cs:startCombatTime`, `server-scripts/Monster.cs:basicOnlySkillTimeEnd` all read zero on a client |
 
-A plain server field reads as its default on a client rather than failing, so a reader that does not
-branch on `NetworkServer.active` reports a confident wrong answer. A client of a public server and a
-client of a LAN host both read the three fields above as `0.000` throughout a live fight, while the
-server clock stood far from zero.
+A plain server field reads as its default on a client rather than failing. A reader that does not branch
+on `NetworkServer.active` therefore reports a confident wrong answer.
+
+Measured: a public-server client and a LAN client both read the three fields above as `0.000`
+throughout a live fight. The server clock stood far from zero.
 
 ## What a client can do
 

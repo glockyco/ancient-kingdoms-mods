@@ -16,7 +16,7 @@ Use the `localMap` rectangle, not the outer `rectTransformMap`. Screen-space ove
 
 ## MapScreenshotter
 
-Capture uses an orthographic camera sized from the tile's world size, in `mods/MapScreenshotter/MapScreenshotter.cs`. Zone bounds are authoritative when available. Entity bounds with padding are only the documented fallback. Screenshot capture hides world entities and deactivates the player; verify lifecycle restoration before changing capture shutdown.
+Capture uses an orthographic camera sized from the tile's world size, in `mods/MapScreenshotter/MapScreenshotter.cs`. Zone bounds are authoritative when available. Entity bounds with padding are only the documented fallback. Screenshot capture hides world entities and deactivates the player. Verify lifecycle restoration before changing capture shutdown.
 
 ## Respawners
 
@@ -24,6 +24,6 @@ Eligibility, countdowns and the respawn deadline are all on the synchronized ser
 
 ## BetterBestiary and BossSkillTracker
 
-An assembly marked `[HarmonyDontPatchAll]` must call `PatchAll()` explicitly. Keep the BetterBestiary TypeScript/C# formatter parity fixture synchronized. BossSkillTracker discovery remains combat-gated and bounded; do not add global object enumeration, per-frame spatial scans, or UI fallbacks that hide missing required resources.
+An assembly marked `[HarmonyDontPatchAll]` must call `PatchAll()` explicitly. Keep the BetterBestiary TypeScript/C# formatter parity fixture synchronized. BossSkillTracker discovery remains combat-gated and bounded. Do not add global object enumeration, per-frame spatial scans, or UI fallbacks that hide a missing required resource.
 
 A plain server field reads as zero on a client of a remote server rather than failing. Any mod that reads one must branch on `NetworkServer.active` and state which source produced the figures it shows. `.agent/skills/hotrepl-runtime-inspection/references/client-and-server.md` lists what a client receives.

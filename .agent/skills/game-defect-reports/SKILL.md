@@ -56,7 +56,8 @@ The measurements come from a modded, macOS CrossOver installation. A developer c
 
 - Cite the source lines. The developer can then confirm the defect by reading, without reproducing it.
 - Give steps a player can follow with no mods installed.
-- Say that the mods only read state and drive the game's own commands, and that the defect is in game logic rather than in the platform.
+- Say that the mods only read state and drive the game's own commands.
+- Say that the defect is in game logic rather than in the platform.
 - Do not report a defect that only appears under Wine until you have separated the platform from the game.
 
 ## Do not exploit a defect

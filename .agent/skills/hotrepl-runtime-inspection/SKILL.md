@@ -51,7 +51,7 @@ character after it, because the target is then player data. Quit, relaunch, and 
 
 Two instances on one port do not both serve. The first keeps the endpoint, so every later command
 answers from the older process while the newer window is the one on screen. Give a second instance a
-different `HOTREPL_PORT`; `build-tool launch` passes it through via
+different `HOTREPL_PORT`. `build-tool launch` passes it through via
 `build-tool/Game/WineEnvironment.cs:ReplPortVariable`. The default endpoint is documented in
 `node_modules/@hotrepl/cli/README.md`.
 
@@ -66,10 +66,10 @@ Each entry states what goes wrong without it, because a reader who judges releva
 usually decides the topic does not apply.
 
 - `.agent/skills/hotrepl-runtime-inspection/references/observing-behaviour.md`. Read this before any
-  measurement. Without it a measurement is driven one shell call at a time, the subject dies or walks
-  away between calls, and the window returns nothing with no indication why. It also carries the two
-  events that cannot be subscribed to, the coroutine failure that holds the only job slot until the
-  game restarts, and why a screenshot settles an empty result that scalars cannot.
+  measurement. Without it a measurement runs one shell call at a time, the subject dies between calls,
+  and the window returns nothing. It also covers the two events that refuse a listener and the
+  coroutine failure that holds the only job slot. A screenshot settles an empty result that scalars
+  cannot.
 - `.agent/skills/hotrepl-runtime-inspection/references/commands.md`. Read this before driving the game
   by hand. Without it a typed command that already does the work is reimplemented as an `eval`, and
   its arguments and reported fields are guessed.

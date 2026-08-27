@@ -12,7 +12,7 @@ globs:
 - Only `src/lib/database-assets.ts` imports database archives. A second import can emit a duplicate hashed bundle.
 - `static/` is for stable public assets such as mods, tiles, icons, and selected images. Do not publish the database there.
 - SQL access lives in `src/lib/queries/` and returns typed rows. Type assertions belong only at I/O boundaries.
-- `citations.lock.json` is at the repository root. Run citation commands from `build-pipeline/` as documented in the root scripts; do not edit the ledger.
+- `citations.lock.json` is at the repository root. Run citation commands from `build-pipeline/` as documented in the root scripts. Do not edit the ledger.
 
 ## Svelte and rendering
 

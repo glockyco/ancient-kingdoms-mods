@@ -23,8 +23,8 @@ it must reach the agent, not by how broadly it applies.
 ## Why
 
 - Only a context file at or above the session directory has its content injected. A file below it
-  contributes its path alone, which is why a subproject constraint belongs in a rule whose `globs`
-  name that subproject, and why a subproject `AGENTS.md` holds orientation and names its rule.
+  contributes its path alone. So a subproject constraint belongs in a rule whose `globs` name that
+  subproject, and the subproject `AGENTS.md` keeps orientation and names that rule.
 - A rule carrying `condition` costs nothing until the agent's own output matches it, then arrives
   beside the action. Guidance about a mistake made at one action belongs there.
 - A skill body stays in context once it loads, so detail belongs in a reference.
@@ -36,7 +36,7 @@ it must reach the agent, not by how broadly it applies.
 
 - A rule carrying both `globs` and `condition`. The path gate suppresses every trigger that names no
   file, so a rule about a shell command never fires.
-- A triggered rule whose subject is a mistake nobody has made. State the incident in the body; a rule
+- A triggered rule whose subject is a mistake nobody has made. State the incident in the body. A rule
   with no incident behind it is a guess.
 - One rule covering several concerns. The trigger that fires for one delivers the rest as noise.
 - A task-routing table. Skills and rules are discovered from their descriptions.
@@ -46,8 +46,8 @@ it must reach the agent, not by how broadly it applies.
 Each reference entry in a skill body states what a reader who skips it gets wrong, rather than naming
 the file's subject. An entry that names a topic is read as optional.
 
-Every `AGENTS.md` stays under 200 lines and every `SKILL.md` under 200, which is stricter than the
-published ceiling for a skill body and is the repository's own budget.
+Every `AGENTS.md` and every `SKILL.md` stays under 200 lines, which `scripts/check-agent-docs.sh`
+enforces. That is stricter than the published ceiling for a skill body.
 
 ## Exceptions
 

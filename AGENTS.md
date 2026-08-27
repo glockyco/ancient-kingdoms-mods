@@ -25,7 +25,7 @@ Before writing or materially revising technical prose anywhere in the repository
 
 - Read existing implementations before adding another instance of a pattern.
 - Fail when required game data, files, or runtime objects are absent. Do not hide defects with silent defaults.
-- A field-specific exporter default is permitted only when its contract defines absence as a valid domain value. `FieldDefaultValueHookFix` is the narrow runtime exception: when the requested field has no `FieldInfo`, return the original value and log the unsupported hook instead of crashing the game.
+- A field-specific exporter default needs a contract that defines absence as a valid value. One mod is a sanctioned exception to failing fast. `rule://mods-runtime` names it.
 - During debugging, log the lookup result, relevant values before mutation, and the final result. Remove diagnostic noise after the defect is understood.
 - Comments explain non-obvious invariants. Do not record edit history or use temporal narration.
 - Prefer official tool defaults and existing repository conventions. Add custom configuration only for a verified repository constraint.
@@ -37,7 +37,7 @@ Run checks that cover the changed subsystem and observable contract. Use the rel
 
 - Mods: relevant `dotnet test` project, then `dotnet run --project build-tool build`.
 - Pipeline: relevant tests under `build-pipeline/tests/` through the pinned `uv` environment.
-- Website: relevant tests, `pnpm check`, and `pnpm lint`; run `pnpm build` for prerender, asset, or release behavior.
+- Website: relevant tests, `pnpm check`, and `pnpm lint`. Run `pnpm build` for prerender, asset, or release behavior.
 - Agent guidance: `scripts/check-agent-docs.sh`.
 
 Commit through `skill://commit-policy`. Never push without explicit approval.

@@ -69,14 +69,15 @@ return "probe started";
 Capture a screenshot from inside the probe when a moment of interest arrives. The capture completes at
 the end of a frame, so read the file afterwards.
 
-The setup belongs in the same coroutine as the measurement. A state established from the shell in one
-call and used in the next has a turn of game time between them, which is long enough for the subject to
-die, be teleported, lose its target or wander out of range. Establish the state and take the reading
-without returning in between.
+The setup belongs in the same coroutine as the measurement. A state set from the shell in one call and
+used in the next has a turn of game time between them. In that turn the subject can die, be teleported,
+lose its target, or wander out of range. Establish the state and take the reading without returning in
+between.
 
-Assert the state every frame rather than once. The game undoes it: a warp lands the subject somewhere
-hostile, death moves it to a town, and a flag set before the trip arrives after the damage. The loop
-that worked reads like this, and the distance test is what makes it survive a death teleport.
+Assert the state every frame rather than once, because the game undoes it. A warp lands the subject
+somewhere hostile. Death moves it to a town. A flag set before the trip arrives after the damage.
+
+The loop below worked. Its distance test is what makes it survive a death teleport.
 
 ```csharp
 for (int f = 0; f < 180; f++)
@@ -93,22 +94,29 @@ for (int f = 0; f < 180; f++)
 ```
 
 Then survey, screenshot, and append one line to a static list. Read the list once at the end. Four
-destinations measured this way cost one round trip; measured a call at a time they cost ten and produced
+destinations measured this way cost one round trip. Measured a call at a time they cost ten and produced
 nothing, because the subject was dead for most of them.
 
 ## Take a screenshot before explaining an empty result
 
-A reading of zero events has many causes and they look identical through scalars: the subject is dead,
-it has no target, the target is out of range, the loop was never armed, or the thing being measured did
-not happen. Guessing between them wastes a run each time.
+Five causes of zero events look identical through scalars:
 
-One screenshot separates them. It carries the subject's health, its position, what is on screen around
-it, the target frame, and the chat log, which narrates what the game did in the reader's own words. In
-one capture the log read `You have entered Crescent Coast`, then a boss line, then `You have been slain`,
-then `You have entered Milldenn` - a death and a town teleport that four separate scalar reads had not
-revealed.
+- the subject is dead
+- it has no target
+- the target is out of range
+- the loop was never armed
+- the thing being measured did not happen
 
-Take the screenshot first, then form the explanation. Delete a diagnostic capture afterwards; keep only
+Guessing between them wastes a run each time.
+
+One screenshot separates them. It carries the subject's health, its position, the target frame, and what
+is on screen around it. The chat log narrates what the game did in the game's own words.
+
+In one capture the log read `You have entered Crescent Coast`, then a boss line, then `You have been
+slain`, then `You have entered Milldenn`. Four scalar reads had revealed neither the death nor the town
+teleport.
+
+Take the screenshot first, then form the explanation. Delete a diagnostic capture afterwards. Keep only
 what a report cites. `skill://game-defect-reports` holds the capture call and its two traps, a Windows path and a frame to wait before the file exists.
 
 ## Prefer an event to a sample, and check that it can be subscribed to
@@ -118,10 +126,9 @@ sampling gap are reported as one, and a gap with none invents an occurrence of z
 raises an event for the thing being measured, listen to it and read the state inside the callback.
 
 Not every event can be listened to. The game is compiled ahead of time, so a generic instantiation
-exists only where the game's own code needs it. Adding a listener to `UnityEvent<T0,T1>` constructs
-`InvokableCall<T0,T1>`, and the game adds a listener to no two-argument event, so every one of them
-throws `MissingMethodException` at `AddListener`. A single-argument event the game subscribes to
-itself works.
+exists only where the game's own code needs it. Adding a listener to `UnityEvent<T0,T1>` constructs `InvokableCall<T0,T1>`. The game subscribes to no
+two-argument event, so that instantiation does not exist and `AddListener` throws
+`MissingMethodException`. A single-argument event the game subscribes to itself works.
 
 Try both arities in one call, so the contrast is the evidence rather than one failure:
 
@@ -131,20 +138,20 @@ var a = Il2CppInterop.Runtime.DelegateSupport.ConvertDelegate<UnityEngine.Events
 p.combat.onDamageDealtTo.AddListener(a);          // works
 ```
 
-When the event that carries the value cannot be subscribed to, listen to one that fires at the same
-moment and read the value from the state. Confirm the ordering in the source first: a total read in a
-callback is the occurrence's own value only if the engine advances it before it raises the event.
+When the event that carries the value refuses a listener, listen to one that fires at the same moment.
+Read the value from the state. Confirm the ordering in the source first. A total read in a callback
+is the occurrence's own value only when the engine advances it before raising the event.
 
 ## Guard the setup of a job, because a dead coroutine answers nothing
 
-A command that runs as a job starts a coroutine. An exception inside it ends the run without
-completing the job, the job holds a concurrency slot for as long as the game runs, and every later
-job is refused with `Maximum concurrent command jobs reached.` The failure looks like a broken
-endpoint rather than a broken command.
+A command that runs as a job starts a coroutine. An exception inside it ends the run without completing
+the job. The job then holds a concurrency slot for as long as the game runs, and every later job is
+refused with `Maximum concurrent command jobs reached.` The failure looks like a broken endpoint rather
+than a broken command.
 
-A coroutine cannot catch around a `yield`, so do the fallible work in a method that does not yield
-and have it report a failure instead of throwing. Setup is where this matters: subscribing, resolving
-a type, and reaching a component all fail on their first call, before the loop.
+A coroutine cannot catch around a `yield`. Do the fallible work in a method that does not yield, and
+have it report a failure instead of throwing. Setup is where this matters. Subscribing, resolving a type
+and reaching a component all fail on their first call, before the loop.
 
 Read `MelonLoader/Latest.log` when a job stops answering. An unhandled coroutine exception is logged
 there with its stack, which names the line the job died on.
@@ -152,9 +159,10 @@ there with its stack, which names the line the job died on.
 ## Let the game drive a repeated action
 
 A basic attack re-issues itself. One use of a skill that follows up with the default attack arms the
-engine's own loop, and the loop keeps acting at the cadence the engine enforces. Sending the command
-repeatedly does not measure that cadence, it competes with it, and the interval that comes back belongs
-to the sender rather than the game.
+engine's own loop. The loop then acts at the cadence the engine enforces.
+
+Sending the command repeatedly competes with that loop instead of measuring it. The interval that comes
+back belongs to the sender rather than to the game.
 
 Issue the action once, then read. A window with nothing acting in it is a window with an unarmed loop,
 not a subject that cannot act.
@@ -175,14 +183,14 @@ A subject that dies stops measuring, and the state it leaves behind is not obvio
 - A respawn sends the subject to its graveyard and gives it a destination to walk to, so warping it
   back is not enough. Clear the movement first, then warp, then re-arm the action.
 - Invincibility set before a fight holds. Set after the subject is already being hit, it arrives too
-  late; a subject placed next to a boss during a slow start-up can be dead before the first command.
+  late. A slow start-up can kill a subject placed beside a boss before the first command.
 
 Check the subject's state, its distance to the target and its loop flag together when a window returns
 no events. Each of the three fails in a way that looks like the others.
 
 ## Record absolute deadlines
 
-The monster deadline is `server-scripts/MonsterSkills.cs:nextSpecialCastTime`; use the synchronized
+The monster deadline is `server-scripts/MonsterSkills.cs:nextSpecialCastTime`. Use the synchronized
 server time defined in `.agent/rules/mods-runtime.md`.
 
 Record the deadline rather than the difference. Coarse samples then reconstruct exact events, and a
@@ -218,10 +226,10 @@ A monster fights only while several conditions hold at once. Check them in this 
 Pick a subject that cannot kill the fixture and that the fixture cannot kill. A boss with a large
 health pool and a low level satisfies both.
 
-Read the subject's skills before you conclude that a cadence is broken. A cast can be impossible
-rather than delayed: `server-scripts/MonsterSkills.cs:NextSkill` refuses a summon whose target is
-closer than three yards, and it refuses any skill whose cast range excludes the target. The monster
-then re-rolls its deadline, which looks like a stalled gate.
+Read the subject's skills before you conclude that a cadence is broken. A cast can be impossible rather
+than delayed. `server-scripts/MonsterSkills.cs:NextSkill` refuses a summon whose target is too close,
+and refuses any skill whose cast range excludes the target. The monster then re-rolls its deadline,
+which looks like a stalled gate.
 
 ## State the provenance of every number
 
@@ -229,11 +237,14 @@ Say which figures you measured and which you derived from source. A derivation i
 a measurement agrees with it. When a measurement and the source disagree, trust the measurement and
 find the branch that explains it.
 
-A measurement also owes the reader the reason it can be trusted, in whatever terms fit it. An interval
-says whether its subject settled before it was read. A target state says whether the engine's cleanup
-pass could have run. A damage figure says which tier it reached and what held it there. These are
-different questions and a shared wrapper over them would say less than each says on its own, but every
-reading has one, and a reading that reports a number and no reason cannot be argued with.
+A measurement also owes the reader the reason it can be trusted. That reason differs by kind:
+
+- an interval says whether its subject settled before it was read
+- a target state says whether the engine's cleanup pass could have run
+- a damage figure says which tier it reached and what held it there
+
+Do not wrap these in one shared form, because each says more on its own. Every reading owes one, and a
+number with no reason cannot be argued with.
 
 ## Prefer a band from source to a mean
 
@@ -241,6 +252,6 @@ A mean agreeing with a prediction is weak evidence, because a wrong model with t
 Where the engine's steps are known, derive the range one occurrence can fall in and check that every
 occurrence falls inside it. A wrong model fails that.
 
-Two independent readings of one occurrence are worth more than more samples of one reading. The amount
-a caster asked for and the health a target lost come from different places, and the ratio between them
-is a whole pipeline checked per hit rather than on an average.
+Two independent readings of one occurrence beat more samples of one reading. The amount a caster asked
+for and the health a target lost come from different places. Their ratio checks the whole pipeline per
+hit rather than on an average.

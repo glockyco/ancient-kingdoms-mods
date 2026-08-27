@@ -7,7 +7,7 @@ globs:
 ---
 # Website mechanics
 
-Use one statement per visible line. Do not join user-facing clauses with semicolons. Preserve the distinction between title-case `Title` and lower-case `subtitle` fields.
+Use one statement per visible line. Do not join user-facing clauses with semicolons.
 
 When a mechanics card changes intentionally, run the website build and `node scripts/snapshot-mechanics.mjs --update`. Inspect the changed visible text, then run the command without `--update`. Do not update snapshots to hide an unexplained output change.
 

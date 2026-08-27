@@ -16,7 +16,7 @@ Use this for any work on Ancient Kingdoms save data, especially `game.dat` in th
 
 ## Locate the save
 
-Resolve the save path and create verified backups through `build-tool/Game/PlayerSave.cs:DatabasePath` and `build-tool/Game/PlayerSave.cs:Create`; load configuration keys through `build-tool/Configuration/LocalConfigLoader.cs:Load`.
+Resolve the save path and create verified backups through `build-tool/Game/PlayerSave.cs:DatabasePath` and `build-tool/Game/PlayerSave.cs:Create`. Load configuration keys through `build-tool/Configuration/LocalConfigLoader.cs:Load`.
 
 ## Find the SQLCipher key
 
@@ -37,17 +37,17 @@ The plaintext export is sensitive. Keep it inside the timestamped work/backup di
 Start with table/row counts, then narrow to the affected character names. Use `server-scripts/Database.cs:1968-1976` for the character-keyed table inventory.
 
 - Detect orphaned child rows: names present in child tables but absent from `characters`.
-- Detect duplicate/corrupt core rows with `NOT INDEXED` when an index is corrupt; corrupt indexes can hide physical rows.
+- Detect duplicate/corrupt core rows with `NOT INDEXED`. A corrupt index can hide physical rows.
 - Compare against old `game.dat.corrupt_backup_*` files if present, but treat them as corrupt evidence sources, not safe restore targets.
 
-Class/talent recovery requires code evidence. For skill defaults, inspect `Skill` construction and `Database.LoadSkills`/`SaveSkills`; do not infer from class level alone.
+Class/talent recovery requires code evidence. For skill defaults, inspect `Skill` construction and `Database.LoadSkills`/`SaveSkills`. Do not infer from class level alone.
 
 ## Repair principles
 
 - Prefer renaming/restoring primary character rows over rewriting child tables when child rows are already under the correct character names.
 - If exact talent allocation is missing, do not fabricate it. Restore unspent points only when code/save evidence proves the points were earned and the original allocation is unrecoverable.
 - Clear stale class-incompatible `character_skills`/`character_buffs` only when they are demonstrably attached to the wrong character/class.
-- Use explicit column lists for `INSERT ... SELECT` between databases/backups. Avoid `SELECT *`; schemas can match by count yet still be fragile, and accidental `rowid` projection changes column count.
+- Use explicit column lists for `INSERT ... SELECT` between databases/backups. Avoid `SELECT *`. Two schemas can match by count and still differ, and an accidental `rowid` projection changes the column count.
 
 After repair, run:
 
@@ -69,7 +69,7 @@ Safe runtime reads:
 
 Avoid `Il2Cpp.Database.CharacterLoad(name)` for inspection because it updates `lastsaved`.
 
-Redirect the database before the first call, or a title-scene read reaches the player's file; see `skill://hotrepl-runtime-inspection`.
+Redirect the database before the first call, or a title-scene read reaches the player's file. See `skill://hotrepl-runtime-inspection`.
 
 If item/quest caches are not loaded in the current scene, preview equipment or load lists may appear empty even though DB rows exist. In that case, rely on direct DB row counts or enter the game world before checking resolved item objects.
 

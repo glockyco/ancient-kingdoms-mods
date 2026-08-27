@@ -252,6 +252,53 @@ for path in rules:
             f"({', '.join(stated[:6])}; name the file that owns it or drop the value)"
         )
 
+# `skill://simplified-technical-english` bounds a descriptive sentence at 25 words and rejects a
+# semicolon, which joins two statements a reader can misread as one. Both are mechanical, so they are
+# checked rather than asked for. Code, tables, and headings are protected technical text.
+sentence_re = re.compile(r"(?<=[.!?])\s+")
+bullet_re = re.compile(r"^(?:[-*]|\d+\.)\s")
+
+
+def prose_units(text: str) -> list[str]:
+    lines = text.splitlines()
+    if lines and lines[0] == "---" and "---" in lines[1:]:
+        lines = lines[lines[1:].index("---") + 2:]
+    units: list[str] = []
+    paragraph: list[str] = []
+    in_fence = False
+    for line in lines:
+        if line.lstrip().startswith("```"):
+            in_fence = not in_fence
+            continue
+        if in_fence or line.startswith(("    ", "\t", "|", "#")):
+            continue
+        stripped = line.strip()
+        if not stripped or bullet_re.match(stripped):
+            if paragraph:
+                units.append(" ".join(paragraph))
+                paragraph = []
+            if bullet_re.match(stripped):
+                units.append(bullet_re.sub("", stripped))
+            continue
+        paragraph.append(stripped)
+    if paragraph:
+        units.append(" ".join(paragraph))
+    return units
+
+
+for path in agents + skills + references + rules + agent_defs:
+    rel = path.relative_to(root)
+    for unit in prose_units(path.read_text(encoding="utf-8")):
+        # A code span may end a sentence, so keep its terminal punctuation when masking it. Without
+        # this the sentence merges with the next one and reports a length neither of them has.
+        bare = code_re.sub(lambda m: "X" + m.group(1)[-1] if m.group(1)[-1] in ".!?" else "X", unit)
+        if ";" in bare:
+            errors.append(f"semicolon in prose: {rel} ({unit[:60]}...)")
+        for sentence in sentence_re.split(bare):
+            words = len(sentence.split())
+            if words > 25:
+                errors.append(f"sentence over 25 words: {rel} ({words} words: {sentence[:60]}...)")
+
 for path in surfaces:
     text = path.read_text(encoding="utf-8")
     rel = path.relative_to(root)

@@ -29,9 +29,8 @@ rule that changed without moving:
 uv run compendium classes check-races
 ```
 
-The class and race pairing is typed by hand and the game holds it in the character creator, so this
-compares the two and names each disagreement. A failure means the patch changed which classes a race
-allows. Correct `exported-data/classes.json` and regenerate, because the published value is wrong and
+The pairing is typed by hand, and the game holds it in the character creator. This command compares the
+two and names each disagreement. A failure means the patch changed which classes a race allows. Correct `exported-data/classes.json` and regenerate, because the published value is wrong and
 the check is not.
 
 Commit this phase before you change an exporter. A mechanic whose claim the tool refuses to anchor belongs in this commit, because the reconciliation cannot finish without it.
@@ -44,7 +43,7 @@ When an exporter reads a changed field, update its model, exporter, pipeline sch
 
 If exporter code is unchanged, use `dotnet run --project build-tool export --update`. Add `--screenshots` only when the world map changed. Deployment copies Release DLLs but does not prune stale DLLs.
 
-After an exporter change, run a second export without updating the game or changing its configuration or scope. Preserve the first output outside `exported-data/`, then compare the complete trees with `/usr/bin/diff -rq`. The comparison includes JSON and published images. Any difference is an exporter defect; do not regenerate consumers until the trees are byte-identical.
+After an exporter change, run a second export without updating the game or changing its configuration or scope. Preserve the first output outside `exported-data/`, then compare the complete trees with `/usr/bin/diff -rq`. The comparison includes JSON and published images. Any difference is an exporter defect. Do not regenerate consumers until the trees are byte-identical.
 
 ## 4. Regenerate consumers
 
@@ -64,8 +63,19 @@ The ledger version and `COMPENDIUM_VERSION` describe different things. The ledge
 
 Run focused tests as each concern lands. Then run the repository release gate and use the actual site in a browser. Confirm the game export, pipeline database, map if changed, mechanics pages, downloads, and live version banner.
 
-Commit coherent concerns as they pass, in this order: citation reconciliation with any mechanic it had to carry, exporter contract, each mechanic with its prose and snapshots, the tests and generated fixtures the new data invalidated, generated data, redaction ledger, map artifacts, and version publication. Use `skill://commit-policy`. Do not hold a completed concern for a later big-bang split.
+Commit coherent concerns as they pass, in this order:
+
+1. citation reconciliation, with any mechanic it had to carry
+2. exporter contract
+3. each mechanic with its prose and snapshots
+4. the tests and generated fixtures the new data invalidated
+5. generated data
+6. redaction ledger
+7. map artifacts
+8. version publication
+
+Use `skill://commit-policy`. Do not hold a completed concern for a later big-bang split.
 
 ## Known runtime failure
 
-If MelonLoader reports a missing Unity dependency, install the matching `Managed.zip` as `UnityDependencies_<unity-version>.zip` in its IL2CPP generator dependency directory and rerun. If world entry crashes in `Class_GetFieldDefaultValue_Hook`, verify the existing `FieldDefaultValueHookFix` against the new build; do not add another fallback while it works.
+If MelonLoader reports a missing Unity dependency, install the matching `Managed.zip` as `UnityDependencies_<unity-version>.zip` in its IL2CPP generator dependency directory and rerun. If world entry crashes in `Class_GetFieldDefaultValue_Hook`, verify the existing `FieldDefaultValueHookFix` against the new build. Do not add another fallback while it works.
