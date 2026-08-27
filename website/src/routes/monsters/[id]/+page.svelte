@@ -7,6 +7,7 @@
     type Row,
     type Header,
   } from "$lib/components/ui/data-table";
+  import { effectiveBlockChance, statAtLevel } from "$lib/utils/monster-stats";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import ItemLink from "$lib/components/ItemLink.svelte";
   import EntityLink from "$lib/components/EntityLink.svelte";
@@ -128,15 +129,6 @@
     ),
   );
 
-  // Calculate scaled stats using LinearInt formula: base + per_level * (level - 1)
-  function calculateStat(
-    base: number,
-    perLevel: number,
-    level: number,
-  ): number {
-    return base + perLevel * (level - 1);
-  }
-
   function formatCompactNumber(value: number): string {
     if (value >= 10000) {
       return `${Math.round(value / 1000).toLocaleString()}K`;
@@ -181,7 +173,7 @@
   );
   const displayHealth = $derived(
     selectedSpawnCombatStats?.health ??
-      calculateStat(
+      statAtLevel(
         data.monster.health_base,
         data.monster.health_per_level,
         combatDisplayLevel,
@@ -189,7 +181,7 @@
   );
   const displayDamage = $derived(
     selectedSpawnCombatStats?.damage ??
-      calculateStat(
+      statAtLevel(
         data.monster.damage_base,
         data.monster.damage_per_level,
         combatDisplayLevel,
@@ -197,7 +189,7 @@
   );
   const displayMagicDamage = $derived(
     selectedSpawnCombatStats?.magic_damage ??
-      calculateStat(
+      statAtLevel(
         data.monster.magic_damage_base,
         data.monster.magic_damage_per_level,
         combatDisplayLevel,
@@ -205,7 +197,7 @@
   );
   const displayDefense = $derived(
     selectedSpawnCombatStats?.defense ??
-      calculateStat(
+      statAtLevel(
         data.monster.defense_base,
         data.monster.defense_per_level,
         combatDisplayLevel,
@@ -213,7 +205,7 @@
   );
   const displayMagicResist = $derived(
     selectedSpawnCombatStats?.magic_resist ??
-      calculateStat(
+      statAtLevel(
         data.monster.magic_resist_base,
         data.monster.magic_resist_per_level,
         combatDisplayLevel,
@@ -221,7 +213,7 @@
   );
   const displayPoisonResist = $derived(
     selectedSpawnCombatStats?.poison_resist ??
-      calculateStat(
+      statAtLevel(
         data.monster.poison_resist_base,
         data.monster.poison_resist_per_level,
         combatDisplayLevel,
@@ -229,7 +221,7 @@
   );
   const displayFireResist = $derived(
     selectedSpawnCombatStats?.fire_resist ??
-      calculateStat(
+      statAtLevel(
         data.monster.fire_resist_base,
         data.monster.fire_resist_per_level,
         combatDisplayLevel,
@@ -237,7 +229,7 @@
   );
   const displayColdResist = $derived(
     selectedSpawnCombatStats?.cold_resist ??
-      calculateStat(
+      statAtLevel(
         data.monster.cold_resist_base,
         data.monster.cold_resist_per_level,
         combatDisplayLevel,
@@ -245,15 +237,22 @@
   );
   const displayDiseaseResist = $derived(
     selectedSpawnCombatStats?.disease_resist ??
-      calculateStat(
+      statAtLevel(
         data.monster.disease_resist_base,
         data.monster.disease_resist_per_level,
         combatDisplayLevel,
       ),
   );
+  // Defense contributes to block chance, so a spawn variant with more defense blocks more
+  // often even though its curve is unchanged. Reading the curve alone understates the
+  // level 55 dummy by more than half.
   const displayBlockChance = $derived(
-    data.monster.block_chance_base +
-      data.monster.block_chance_per_level * (combatDisplayLevel - 1),
+    effectiveBlockChance({
+      base: data.monster.block_chance_base,
+      perLevel: data.monster.block_chance_per_level,
+      level: combatDisplayLevel,
+      defense: displayDefense,
+    }),
   );
   const displayCriticalChance = $derived(
     data.monster.critical_chance_base +

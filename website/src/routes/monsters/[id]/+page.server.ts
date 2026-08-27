@@ -23,6 +23,7 @@ import type {
 import { monsterDescription } from "$lib/server/meta-description";
 import { getFactionIdsByName } from "$lib/queries/factions.server";
 import { MONSTER_ABILITIES_QUERY } from "$lib/skills/monsterAbilitiesQuery";
+import { statAtLevel } from "$lib/utils/monster-stats";
 
 export const prerender = true;
 
@@ -35,10 +36,6 @@ export const entries: EntryGenerator = () => {
 
   return monsters.map((monster) => ({ id: monster.id }));
 };
-
-function calculateStat(base: number, perLevel: number, level: number): number {
-  return base + perLevel * (level - 1);
-}
 
 export const load: PageServerLoad = ({ params }): MonsterDetailData => {
   const db = new Database(DB_SOURCE_PATH, { readonly: true });
@@ -344,63 +341,63 @@ export const load: PageServerLoad = ({ params }): MonsterDetailData => {
         health:
           useExportedSpawnStats && spawn.health > 0
             ? spawn.health
-            : calculateStat(
+            : statAtLevel(
                 monster.health_base,
                 monster.health_per_level,
                 spawnLevel,
               ),
         damage: useExportedSpawnStats
           ? spawn.damage
-          : calculateStat(
+          : statAtLevel(
               monster.damage_base,
               monster.damage_per_level,
               spawnLevel,
             ),
         magic_damage: useExportedSpawnStats
           ? spawn.magic_damage
-          : calculateStat(
+          : statAtLevel(
               monster.magic_damage_base,
               monster.magic_damage_per_level,
               spawnLevel,
             ),
         defense: useExportedSpawnStats
           ? spawn.defense
-          : calculateStat(
+          : statAtLevel(
               monster.defense_base,
               monster.defense_per_level,
               spawnLevel,
             ),
         magic_resist: useExportedSpawnStats
           ? spawn.magic_resist
-          : calculateStat(
+          : statAtLevel(
               monster.magic_resist_base,
               monster.magic_resist_per_level,
               spawnLevel,
             ),
         poison_resist: useExportedSpawnStats
           ? spawn.poison_resist
-          : calculateStat(
+          : statAtLevel(
               monster.poison_resist_base,
               monster.poison_resist_per_level,
               spawnLevel,
             ),
         fire_resist: useExportedSpawnStats
           ? spawn.fire_resist
-          : calculateStat(
+          : statAtLevel(
               monster.fire_resist_base,
               monster.fire_resist_per_level,
               spawnLevel,
             ),
         cold_resist: useExportedSpawnStats
           ? spawn.cold_resist
-          : calculateStat(
+          : statAtLevel(
               monster.cold_resist_base,
               monster.cold_resist_per_level,
               spawnLevel,
             ),
         disease_resist: useExportedSpawnStats
           ? spawn.disease_resist
-          : calculateStat(
+          : statAtLevel(
               monster.disease_resist_base,
               monster.disease_resist_per_level,
               spawnLevel,

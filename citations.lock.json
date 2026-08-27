@@ -319,6 +319,9 @@
     "Combat.cs:DealDamageAt": {
       "span": 0
     },
+    "Combat.cs:blockChance": {
+      "span": 0
+    },
     "Constitution.cs:13-15": {
       "sha256": "496a1e56c2558dafba0139d95f092282bfbd375bf06aa645450900b62e911e7f",
       "span": 3
@@ -710,6 +713,12 @@
     "ItemSlot.cs:23-27": {
       "sha256": "afee63d5f00438ade638efa0f9749b2db1b6ce894984ed1d1a9747f0c18e9cf9",
       "span": 5
+    },
+    "LinearFloat.cs:Get": {
+      "span": 0
+    },
+    "LinearInt.cs:Get": {
+      "span": 0
     },
     "Monster.cs": {
       "span": 0
