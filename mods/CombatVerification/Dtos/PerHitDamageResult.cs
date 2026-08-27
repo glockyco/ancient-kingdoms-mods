@@ -91,7 +91,11 @@ namespace CombatVerification.Dtos
         [JsonProperty("hits")]
         public List<LandedHit> Hits { get; set; }
 
-        /// <summary>Hits that took no health, which means something absorbed them.</summary>
+        /// <summary>
+        /// Hits that took no health. A mana shield absorbing the hit produces this, and so does a hit
+        /// on a target that had already reached zero, so a count here is a question rather than a
+        /// finding.
+        /// </summary>
         [JsonProperty("absorbed")]
         public int Absorbed { get; set; }
 

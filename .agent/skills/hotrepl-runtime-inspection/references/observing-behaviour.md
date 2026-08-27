@@ -166,3 +166,19 @@ then re-rolls its deadline, which looks like a stalled gate.
 Say which figures you measured and which you derived from source. A derivation is a hypothesis until
 a measurement agrees with it. When a measurement and the source disagree, trust the measurement and
 find the branch that explains it.
+
+A measurement also owes the reader the reason it can be trusted, in whatever terms fit it. An interval
+says whether its subject settled before it was read. A target state says whether the engine's cleanup
+pass could have run. A damage figure says which tier it reached and what held it there. These are
+different questions and a shared wrapper over them would say less than each says on its own, but every
+reading has one, and a reading that reports a number and no reason cannot be argued with.
+
+## Prefer a band from source to a mean
+
+A mean agreeing with a prediction is weak evidence, because a wrong model with the right mean passes it.
+Where the engine's steps are known, derive the range one occurrence can fall in and check that every
+occurrence falls inside it. A wrong model fails that.
+
+Two independent readings of one occurrence are worth more than more samples of one reading. The amount
+a caster asked for and the health a target lost come from different places, and the ratio between them
+is a whole pipeline checked per hit rather than on an average.

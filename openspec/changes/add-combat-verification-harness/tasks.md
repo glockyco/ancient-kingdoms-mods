@@ -177,7 +177,9 @@ be finished before a model predicts something. See the design's note on what the
 
 
 - [ ] 6.1 Implement per-quantity comparison covering every stat, the action interval, per-hit damage and
-      sustained output, reporting each result separately rather than one verdict.
+      sustained output, reporting each result separately rather than one verdict. Per-hit damage is two
+      quantities: the amount the caster asked for, which the probe reads from the engine, and the
+      reduction applied to it. A model can be right about one and wrong about the other.
 - [ ] 6.2 Assert on a mean within tolerance and an observed range within predicted bounds, and fail when
       any observed value falls outside its bounds regardless of the mean.
 - [ ] 6.3 Record fixture identity, target, game version, model version, seed and event count in every

@@ -79,6 +79,16 @@ A parity report SHALL compare each measured quantity separately and report each 
 include every stat on the sheet, the observed action interval, the per-hit damage, and the sustained
 output.
 
+The per-hit damage SHALL be compared as two quantities rather than one: the amount the caster asked for,
+and the reduction the engine applied to it. The harness reads both, and a model can be right about one
+and wrong about the other, so a single damage figure hides which half disagrees. The first covers the
+caster's gear, attributes and skill arithmetic; the second covers variance, the level difference and
+school mitigation.
+
+A comparison of the reduction SHALL be made against a range derived from the engine's steps, and SHALL
+fail when any single hit falls outside it. A mean alone SHALL NOT be sufficient, because a model with a
+correct mean and a wrong distribution passes it.
+
 A report SHALL identify the fixture, the target, the game version, and the model version.
 
 #### Scenario: One quantity disagrees
@@ -86,6 +96,11 @@ A report SHALL identify the fixture, the target, the game version, and the model
 - **WHEN** a single stat disagrees and the rest match
 - **THEN** the report identifies that stat
 - **AND** the matching quantities are still reported as compared
+
+#### Scenario: The caster's arithmetic is right and the mitigation model is wrong
+
+- **WHEN** the amount asked for matches and the reduction does not
+- **THEN** the report attributes the disagreement to the reduction and reports the amount as compared
 
 #### Scenario: A report is read later
 
