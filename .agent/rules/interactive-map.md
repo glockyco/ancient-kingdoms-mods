@@ -7,9 +7,24 @@ globs:
 ---
 # Interactive map
 
-`marker-registry.ts` is the single marker registry. Add the data contract and loader first, then register presentation metadata once. Do not add a parallel config record or a compatibility switch in a consumer. Keep stable marker ids and filter null positions before layer creation.
+## Coordinate contract
 
-Convert game `(x, z)` to deck `[x, -z]` once. Navigation ids are entity ids, not spawn-row ids.
+- Deck X is game X.
+- Deck Y is negative game Z. Do not use game Y on the two-dimensional map.
+- Negating Z keeps north at the top because screen Y increases downward.
+- Convert coordinates once at the data boundary. Do not mix game and deck coordinates inside layers.
+
+## Identity contract
+
+- Spawn-table `id` values identify spawn rows. Detail routes require entity ids such as `monster_id` or `npc_id`. `MapEntity.id` stores the entity id used for navigation, not the spawn id.
+
+## Layer ownership
+
+`marker-registry.ts` owns marker precedence and presentation metadata. Add the data contract and loader first, then register presentation metadata once. Do not add another marker registry, compatibility map, or consumer-specific marker switch. Do not add a parallel config record. Keep stable marker ids and filter null positions before layer creation. The registration test must fail when a layer is omitted.
+
+Render order is semantic: terrain and zones first, paths and ranges next, ordinary markers next, important markers above them, and relationship, selection, hover, and zone highlights last. Preserve relative ordering when inserting a layer.
+
+## Layer performance
 
 Keep layer creation cheap:
 
@@ -20,6 +35,4 @@ Keep layer creation cheap:
 - Compute state-dependent arrays with `$derived` outside `createLayers()`.
 - Reuse stable empty arrays and typed layer context values.
 
-Preserve semantic layer order. Background, tiles, and zones stay below paths and ranges. Ordinary markers stay below important markers. Relationship, selection, hover, and zone highlights stay above marker layers.
-
-The marker registration test owns completeness. A new layer is incomplete until that test passes and the real map shows selection, search, tooltip, popup, and visibility behavior required by its contract.
+A new layer is incomplete until that test passes and the real map shows selection, search, tooltip, popup, and visibility behavior required by its contract.

@@ -47,34 +47,47 @@ For each subproject: move the constraints that change agent behaviour into a rul
 subproject's paths as `globs`; leave orientation in the `AGENTS.md`; have the `AGENTS.md` name the
 rule. Do not reword the constraints while moving them.
 
-- [ ] 2.1 Create `.agent/rules/mods-runtime.md` from the behavioural content of `mods/AGENTS.md`
+- [x] 2.1 Create `.agent/rules/mods-runtime.md` from the behavioural content of `mods/AGENTS.md`
       (runtime boundaries, the Il2CppInterop property-before-field rule, the `GetComponents<T>`
       attribute-component rule, the failure policy, the refused-call reading rule, and the placement
       rule added for game-free logic). Trim `mods/AGENTS.md` to orientation plus the rule name.
-- [ ] 2.2 Create `.agent/rules/website-boundaries.md` from the behavioural content of
+- [x] 2.2 Create `.agent/rules/website-boundaries.md` from the behavioural content of
       `website/AGENTS.md` (database asset import boundary, `static/` boundary, typed query boundary,
       the citation ledger rule, the no-JavaScript path, and the citation requirement). Trim
       `website/AGENTS.md` to orientation plus the rule name.
-- [ ] 2.3 Create `.agent/rules/pipeline-invariants.md` from the behavioural content of
+- [x] 2.3 Create `.agent/rules/pipeline-invariants.md` from the behavioural content of
       `build-pipeline/AGENTS.md` (foreign-key load order, the two registration invariants, the
       redaction configuration requirement, the ledger rules, and the boundary-validation rule). Trim
       `build-pipeline/AGENTS.md` to orientation plus the rule name.
-- [ ] 2.4 Fold `website/src/lib/map/AGENTS.md` into the existing `rule://interactive-map`, whose
+- [x] 2.4 Fold `website/src/lib/map/AGENTS.md` into the existing `rule://interactive-map`, whose
       globs already cover those paths, and delete the file. Its coordinate and identity contracts are
       constraints, not orientation, and the file duplicates a rule that already loads.
-- [ ] 2.5 Confirm no constraint was lost: every bullet removed from a subproject `AGENTS.md` appears
+- [x] 2.5 Confirm no constraint was lost: every bullet removed from a subproject `AGENTS.md` appears
       in exactly one rule, and no rule restates another.
+      Checked by comparing every line this section removed from a context file against the rule
+      directory: 80 lines removed, 63 present verbatim in a rule, and each of the remaining 17
+      accounted for as an intentional replacement, a sentence split between a rule and retained
+      orientation, or a pointer whose target moved. The map fold also replaced five constraints the
+      rule already stated in different words, so the rule holds one copy of each.
 
 ## 3. Shrink the always-loaded surface
 
-- [ ] 3.1 Rewrite the routing table in the root `AGENTS.md` instruction-ownership section to match
+- [x] 3.1 Rewrite the routing table in the root `AGENTS.md` instruction-ownership section to match
       the corrected routing, including the row for a triggered rule and the correction that a
       subproject constraint belongs in a rule.
-- [ ] 3.2 Move the root `AGENTS.md` imperatives that only matter at one action into triggered rules
+- [x] 3.2 Move the root `AGENTS.md` imperatives that only matter at one action into triggered rules
       or delete them with a stated reason. The generated-artifact prohibition and the deploy
       precondition are candidates; the sources-of-truth and verification sections stay.
-- [ ] 3.3 Record the before and after line counts of everything that loads unconditionally, so the
+- [x] 3.3 Record the before and after line counts of everything that loads unconditionally, so the
       claim that the surface shrank is checkable rather than asserted.
+      The root `AGENTS.md` is the whole unconditionally loaded surface, because the other four context
+      files sit below the repository root and contribute a path rather than content. It went from 49
+      lines and 445 words to 40 lines and 355 words, a reduction of 20 percent.
+      The first attempt grew it by 37 percent, because the corrected placement table plus its
+      explanation is longer than the seven bullets it replaced. Placement guidance applies when an
+      instruction file is edited, which is a path-scoped moment, so it moved to
+      `rule://instruction-placement` and the root file keeps a pointer. Applying this change's own
+      routing to this change's own content is what produced the reduction.
 
 ## 4. Skill and reference hygiene
 

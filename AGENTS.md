@@ -14,17 +14,12 @@ Use OpenSpec for permanent behavior changes. Read all artifacts for the selected
 
 ## Instruction ownership
 
-Keep an instruction only when its removal can cause a mistake.
+Keep an instruction only when its removal can cause a mistake, and place it by the moment it must
+reach the agent. `rule://instruction-placement` carries the placement table and fires when an
+instruction file is edited.
 
-- Repository-wide facts belong here.
-- Subproject facts belong in that subproject's `AGENTS.md`.
-- Path-specific constraints belong in `.agent/rules/` with `globs`.
-- Multi-step procedures belong in `.agent/skills/`.
-- Long reference material belongs in `.agent/skills/<name>/references/`, because a skill body stays in context after it loads and a reference file loads only when a task needs it.
-- Mechanically enforceable rules belong in tests, linters, or formatters.
-- Patterns visible in working code do not need prose copies.
-
-Keep every `AGENTS.md` under 200 lines. Do not add a task-routing table. OMP discovers skills and rules from their descriptions. Before writing or materially revising technical prose, use `skill://simplified-technical-english`.
+Before writing or materially revising technical prose anywhere in the repository, use
+`skill://simplified-technical-english`.
 
 ## Engineering rules
 
@@ -34,7 +29,6 @@ Keep every `AGENTS.md` under 200 lines. Do not add a task-routing table. OMP dis
 - During debugging, log the lookup result, relevant values before mutation, and the final result. Remove diagnostic noise after the defect is understood.
 - Comments explain non-obvious invariants. Do not record edit history or use temporal narration.
 - Prefer official tool defaults and existing repository conventions. Add custom configuration only for a verified repository constraint.
-- Do not edit generated exports, databases, website assets, decompiled server scripts, or lock ledgers by hand. Change the owner and regenerate.
 - Repository development occurs in the primary checkout. Temporary worktrees created inside a verification script are test fixtures, not a development workflow.
 
 ## Verification

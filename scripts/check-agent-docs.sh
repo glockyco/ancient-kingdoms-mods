@@ -44,7 +44,6 @@ expected_agents = {
     Path("mods/AGENTS.md"),
     Path("build-pipeline/AGENTS.md"),
     Path("website/AGENTS.md"),
-    Path("website/src/lib/map/AGENTS.md"),
 }
 actual_agents = {path.relative_to(root) for path in agents}
 for missing in sorted(expected_agents - actual_agents):
@@ -72,10 +71,15 @@ expected_rules = {
     "interactive-map",
     "mod-runtime-special-cases",
     "absence-needs-a-count",
+    "generated-artifacts",
+    "instruction-placement",
     "build-is-not-runtime-proof",
     "game-measurement-round-trips",
     "let-the-engine-drive",
+    "mods-runtime",
     "monster-curve-columns",
+    "pipeline-invariants",
+    "website-boundaries",
 }
 actual_skills = {path.parent.name for path in skills}
 actual_rules = {path.stem for path in rules}
