@@ -80,10 +80,11 @@ one coupled problem. It SHALL NOT fix one of them arbitrarily.
 - **WHEN** an attribute allocation changes maximum resource or raw damage
 - **THEN** the skill allocation is reconsidered against the new resource budget
 
-### Requirement: Every controlled entity is optimized
+### Requirement: The player and active mercenaries are optimized
 
-The search SHALL optimize the equipment of each entity the owner controls, not the player alone. A
-mercenary contributes output through the same stat pipeline as a player.
+The search SHALL optimize the player and each active mercenary. It SHALL capture a pet for provenance
+and meter accounting but SHALL NOT optimize a pet build in this change. A mercenary contributes output
+through the same stat pipeline as a player.
 
 A reported total output SHALL state which entities it includes.
 
@@ -213,3 +214,41 @@ nothing further.
 
 - **WHEN** accumulated accuracy drives target avoidance to zero
 - **THEN** the excess accuracy is reported as contributing nothing against that target
+
+
+### Requirement: The optimization objective is scenario-bound
+
+The search SHALL optimize sustained output for one explicit build, model, game-data, and evaluation
+scenario version tuple. It SHALL NOT reuse a score across different tuples.
+
+#### Scenario: Fight duration changes
+
+- **WHEN** the reader changes the scenario duration
+- **THEN** the search re-evaluates candidates under the new duration
+- **AND** the result records that duration
+
+#### Scenario: Two results use different scenarios
+
+- **WHEN** a reader compares results with different scenario versions
+- **THEN** the planner refuses a direct numerical comparison until one scenario is selected
+
+### Requirement: Unsupported effects cannot win a ranking
+
+The search SHALL exclude a candidate with an unsupported effect and SHALL explain the exclusion. It
+SHALL NOT treat an unknown effect as a zero contribution and continue.
+
+#### Scenario: A candidate contains an unsupported damage proc
+
+- **WHEN** that candidate enters the search frontier
+- **THEN** it is excluded before ranking
+- **AND** the unsupported proc is named
+
+### Requirement: Search-gap evidence defines equivalence
+
+The search SHALL report a measured search-gap bound for its benchmark domain. Candidates whose
+objective values differ by no more than that bound SHALL be grouped as equivalent.
+
+#### Scenario: Two candidates fall inside the bound
+
+- **WHEN** the objective difference is no greater than the measured search-gap bound
+- **THEN** neither candidate is presented as the unique better build

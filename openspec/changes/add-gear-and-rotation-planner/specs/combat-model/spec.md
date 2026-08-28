@@ -643,3 +643,113 @@ mitigation value for each damage school.
 
 - **WHEN** a required target parameter is absent
 - **THEN** the evaluation fails rather than substituting a default
+
+
+### Requirement: Every evaluation names its scenario
+
+The model SHALL evaluate a build only with a scenario that states the target, fight duration, initial
+resource and cooldown state, active buffs and consumables, ammunition supply, incoming-damage events,
+included controlled entities, and target count.
+
+The model SHALL refuse a missing required scenario field. It SHALL support one target in this change
+and SHALL refuse another target count.
+
+#### Scenario: A default evaluation runs
+
+- **WHEN** the planner evaluates its default build
+- **THEN** the result names the stationary, non-attacking, full-health training dummy scenario
+- **AND** the scenario states every required initial condition
+
+#### Scenario: A multi-target scenario is requested
+
+- **WHEN** the scenario requests more than one target
+- **THEN** evaluation fails with the unsupported target-count field named
+
+### Requirement: Equipment and skill effects are exhaustively classified
+
+Every equipment, ammunition, consumable, and skill effect admitted to an evaluation SHALL be
+classified as modelled, excluded by a stated domain rule, or unsupported. The model SHALL NOT score an
+unsupported effect as zero.
+
+Publication SHALL fail when the planner payload admits an effect kind for which the model has no
+classification.
+
+#### Scenario: A new proc effect enters the payload
+
+- **WHEN** an exported proc-effect kind has no model classification
+- **THEN** planner publication fails and names that effect kind
+
+#### Scenario: An equipped effect is outside the model
+
+- **WHEN** an imported build contains an unsupported effect
+- **THEN** the build is not ranked
+- **AND** the result names the unsupported effect
+
+### Requirement: Refresh procs and cooldown changes affect steady state
+
+A refresh-on-proc effect SHALL contribute according to its proc probability, duration, and triggering
+cadence. A cooldown-reduction effect SHALL alter every active cooldown that the game alters and no
+other timing gate.
+
+#### Scenario: A proc duration can be refreshed
+
+- **WHEN** another eligible hit lands before the proc expires
+- **THEN** the steady-state uptime accounts for the refresh
+
+#### Scenario: A cooldown-reduction buff is active
+
+- **WHEN** the game applies that buff to a skill cooldown
+- **THEN** the model applies the same reduction before solving the rotation
+
+### Requirement: Ammunition and durability have explicit policies
+
+A ranged evaluation SHALL consume the selected ammunition and SHALL refuse a horizon for which the
+stated supply is insufficient. The model SHALL carry initial durability for provenance.
+
+The default non-attacking-dummy scenario SHALL state that it causes no durability loss. A scenario
+that would cause durability loss SHALL be refused until that transition is modelled.
+
+#### Scenario: Ammunition runs out
+
+- **WHEN** the solved ranged rotation needs more ammunition than the scenario supplies
+- **THEN** evaluation fails and reports the required and available quantities
+
+#### Scenario: Incoming damage would reduce durability
+
+- **WHEN** a scenario includes a durability-loss condition
+- **THEN** evaluation fails and names durability loss as unsupported
+
+### Requirement: Incoming damage is an event-stream input
+
+Resource returned from taking damage SHALL be derived only from the scenario's incoming-damage event
+stream. The model SHALL NOT infer target attack cadence from defensive target statistics or from total
+damage alone.
+
+#### Scenario: The target does not attack
+
+- **WHEN** the incoming-damage event stream is empty
+- **THEN** taking-damage resource generation is zero
+
+#### Scenario: Incoming damage is supplied
+
+- **WHEN** the scenario supplies timed incoming-damage events
+- **THEN** the resource engine derives returns from those events in their stated order
+
+### Requirement: Uncertainty components remain separate
+
+A result SHALL report model error, finite-run variance, and search gap as separate quantities when they
+apply. A ranking equivalence band SHALL derive from search-gap evidence. A prediction boundary SHALL
+derive from model validation evidence.
+
+An intentional game-defect normalization SHALL be listed separately and SHALL NOT be absorbed into
+model error.
+
+#### Scenario: Two candidate builds are close
+
+- **WHEN** their objective difference falls inside the ranking equivalence band
+- **THEN** the planner presents them as equivalent rather than as an ordered pair
+
+#### Scenario: A measured rate is compared with a prediction
+
+- **WHEN** finite-run variance and model error both apply
+- **THEN** the report names both values and their derivations

@@ -1,283 +1,243 @@
 # Tasks: add gear and rotation planner
 
-Order follows dependency. Two facts set the spine.
+Order follows dependency. The combat-verification harness produces measurements and fixtures before
+model formulas are finalized. Each model task has a separate verification task. The prior simulator is
+removed only after the replacement passes the runtime and release gates.
 
-The model cannot start from source alone. The per-archetype slot 13 table exists in no decompiled file
-and in no exporter, so section 1 exports it before section 5 needs it. The published `items.slot` column
-repeats `items.weapon_category` on every row. A payload cannot learn from it that a Ranger offhand takes
-a bow while a Warrior offhand takes a shield.
+## 1. Verification prerequisites
 
-The pipeline has never written a derived JSON artifact. Every derived value today is a column on
-`compendium.db`. Section 2 adds a writer, its registration assertion, and an extension of
-`compendium redactions verify`. That command scans three surfaces today and would miss the payload.
+- [ ] 1.1 Complete harness tasks 1.7, 2.8, 2.9, and the matrix lifecycle in 3.3, then attach their reports to the planner evidence set.
+- [ ] 1.2 Complete harness task 7.8 for debuff landing across defense, accuracy, and level difference, then record the fitted terms and bounds.
+- [ ] 1.3 Complete harness task 7.9 for effective debuff uptime, then record whether duration times landing probability is valid.
+- [ ] 1.4 Complete harness tasks 7.10 and 7.11 for same-entity replacement and cross-entity category collision, then record the event rules.
+- [ ] 1.5 Add and run a harness experiment for integer-schedule gaps at cooldowns of 45 seconds and above, then set the rotation policy from the result.
+- [ ] 1.6 Add and run a harness experiment that compares Rogue and Warrior resource behavior, then set their separate model policies.
+- [ ] 1.7 Add and run companion-output experiments by archetype, range style, initial distance, target movement, haste, and cooldown reduction.
+- [ ] 1.8 Record every prerequisite result with game build, fixture, sample size, observed bound, and the formula or policy it controls.
 
-Three claims in `design.md` were checked against source before this list was written. Two were wrong and
-are corrected in the artifacts. `requiredWeaponCategory2` is read at `Skills.cs:1387`, where it selects a
-cast effect. A companion's cadence is bound by a haste-reduced cooldown as well as a flat refractory.
+## 2. Runtime data foundations
 
-The third gap was a missing requirement rather than wrong prose, and `combat-model` gained it. The engine
-refuses an assassination cast above a quarter of target health, so the rotation must not schedule one.
+- [ ] 2.1 Add a `DataExporter` model and exporter for every player class slot, accepted item category, race rule, and every mercenary prefab slot.
+- [ ] 2.2 Register the slot exporter explicitly and add tests that cover Shield for Warrior, Cleric, Wizard, and Druid; Bow for Ranger; and Weapon for Rogue.
+- [ ] 2.3 Run a real game export, compare the offhand values with the live reading in `design.md`, and record the export artifact and game build.
+- [ ] 2.4 Load the slot table through the ordered pipeline schema, loader, and required-registration assertion, keeping raw exports out of version control.
+- [ ] 2.5 Export or derive class and race progression curves, level and veteran budgets, skill trees, mercenary archetypes, consumables, and ammunition inputs.
+- [ ] 2.6 Add pipeline tests that fail when any required progression, slot, skill, consumable, ammunition, or effect-classification input is absent.
 
-## 1. Export the slot table the source does not carry
+## 3. Serialized contracts and planner payload
 
-- [ ] 1.1 Add a `DataExporter` model and exporter for the equipment slot table of every player class
-      prefab and every mercenary prefab, recording the slot index and the accepted item category.
-      Register it in `DataExporter.ExportAllData()`, which
-      `tests/DataExporter.Tests/ExporterRegistrationTests.cs` enforces.
-- [ ] 1.2 Run a real export and confirm the offhand values against the reading in `design.md`: `Shield`
-      for Warrior, Cleric, Wizard and Druid, `Bow` for Ranger, and `Weapon` for Rogue. A successful build
-      is not evidence, so `rule://build-is-not-runtime-proof` applies.
-- [ ] 1.3 Load the table into the pipeline: schema, loader, and the registration assertion the build
-      command already checks. Keep the exported JSON out of version control.
-- [ ] 1.4 Record in `design.md` that the table is now derived from an export rather than from one live
-      reading, and cite the exporter instead of the reading.
+- [ ] 3.1 Define one logical build envelope with separate serialized-schema, capture-schema, model, and game-data versions and thin C# and TypeScript adapters.
+- [ ] 3.2 Define the evaluation-scenario record for target, horizon, initial resources and cooldowns, buffs, consumables, ammunition, incoming events, roster, and target count.
+- [ ] 3.3 Define explicit refusal policies for unknown schemas, unsupported target counts, incompatible game data, stale model markers, and incomplete captures.
+- [ ] 3.4 Add one owned build-pipeline writer for the deterministic planner payload path, stale-output deletion, required-output assertion, and deterministic serialization.
+- [ ] 3.5 Emit equipment, progression, skills, mercenary archetypes, consumables, ammunition, and effect classifications into the planner payload.
+- [ ] 3.6 Register one content-hashed browser import and extend redaction verification to the raw and compressed planner payload.
+- [ ] 3.7 Add reproducibility tests for stable raw bytes, compressed bytes, content hash, stale-output deletion, and missing-output failure.
+- [ ] 3.8 Compare every emitted effect kind with modelled, excluded, and unsupported registries; fail publication for an unclassified admitted kind.
+- [ ] 3.9 Measure and record the final raw and compressed payload sizes after all required domains are present.
 
-## 2. The derived planner payload
+## 4. Numeric kernel and evaluation scenario
 
-- [ ] 2.1 Add the payload writer to `build-pipeline`, emitting one compact artifact for the planner.
-      Register it where `compendium build` discovers derived outputs, and add the assertion that fails
-      when it is absent.
-- [ ] 2.2 Emit the equippable item set: identity, level and class gating, the stat vector, weapon delay
-      and ammunition, procs, and both augment set bonuses. Read the slot table from section 1 rather than
-      the `items.slot` column.
-- [ ] 2.3 Emit per-class skill trees with point costs, prerequisites, tier caps, and weapon gates,
-      including which skills are veteran.
-- [ ] 2.4 Emit mercenary archetype data and the per-race base value factors the archetype needs.
-- [ ] 2.5 Emit the consumable buff set: food and potion effects with their magnitudes, durations, and
-      buff categories.
-- [ ] 2.6 Extend `compendium redactions verify` to scan the payload. A payload that publishes a redacted
-      item is a defect, and the current three surfaces do not include it.
-- [ ] 2.7 Confirm the payload is reproducible: build twice without changing input and compare bytes.
-      Record the measured gzipped size beside the design's figure of 21,488 B for 887 items.
+- [ ] 4.1 Extract shared `f32`, `iround`, ceiling, floor, clamp, and expectation-substitution primitives from the existing source-cited stat module.
+- [ ] 4.2 Add boundary tests that fail when an intermediate round, clamp, or float narrowing moves from its engine position.
+- [ ] 4.3 Implement the versioned scenario parser and reject missing fields, unsupported target counts, and incompatible version tuples.
+- [ ] 4.4 Implement timed initial state for resource, cooldown, buff, consumable, ammunition, and incoming-damage events.
+- [ ] 4.5 Add scenario tests for the default stationary dummy, empty incoming events, supplied incoming events, ammunition exhaustion, and unsupported durability loss.
 
-## 3. The evaluation kernel
+## 5. Target, caster, and hit evaluation
 
-- [ ] 3.1 Lift `f32` and `iround` out of `website/src/lib/utils/merc-stats.ts` into a shared kernel, and
-      add the ceiling and floor forms the damage path needs. One owner, with the existing tests moved
-      or extended rather than duplicated.
-- [ ] 3.2 Define the expectation substitution for each random term, so evaluation is deterministic. Cover
-      the three Bernoulli terms and the one uniform damage range.
-- [ ] 3.3 Define the error boundary type that every reported figure carries, and the rule that turns a
-      substituted expectation into a stated band.
-- [ ] 3.4 Define the target parameter record and its refusal path, so a target that cannot exercise a
-      mechanic is reported rather than silently evaluated.
-- [ ] 3.5 Write the module header that states the citation convention, following
-      `website/src/lib/utils/merc-stats.ts`. Every constant carries its own `Source:` line.
+- [ ] 5.1 Extend the source-cited monster stat module with defense, magic resist, and four elemental resist curves plus spawn values.
+- [ ] 5.2 Implement target avoidance, mitigation, debuff landing, mitigation ceilings, and explicit target parameters using the measured harness results.
+- [ ] 5.3 Add target tests for level difference, all resist schools, defense saturation, debuff floors and ceilings, and stale denormalized fields.
+- [ ] 5.4 Build the caster stat sheet for attack power, spell power, passive damage, resource capacities, four clamps, armour thresholds, and integer boundaries.
+- [ ] 5.5 Add live character stat-sheet comparisons and synthetic boundary tests for every caster-state term.
+- [ ] 5.6 Implement one ordered hit pipeline with separate handlers for each damaging skill class, avoidance, mitigation, criticals, and post-hit effects.
+- [ ] 5.7 Implement resource-burn damage, weapon-category gates, archetype-specific offhands, wielder-specific offhand damage, and engine skill refusals.
+- [ ] 5.8 Add per-skill-class tests, including the populated fields the engine ignores, and cover normal, poison, fire, cold, magic, and disease damage.
+- [ ] 5.9 Add hit tests for resource-burn bypass, assassination health gate, slot 13 category selection, offhand wielders, and known game defects.
 
-## 4. Target and caster state
+## 6. Timing, effects, resources, and companions
 
-- [ ] 4.1 Extend `website/src/lib/utils/monster-stats.ts` from block chance alone to defense, magic
-      resist, and the four elemental resists, each from curve columns plus the spawn's own values.
-- [ ] 4.2 Add the resource capacity functions, reproducing that `Energy.max` ignores its multiplier while
-      `Mana.max` applies it. Cite the defect report rather than the multiplier's intent.
-- [ ] 4.3 Build the caster stat sheet: attack power, spell power, the passive percentage term with its
-      rounding, the four clamps, and both armour set thresholds. This has no requirement of its own and
-      every damage task depends on it.
-- [ ] 4.4 Test the stat sheet against a live reading from a known character, not only against source.
+- [ ] 6.1 Implement weapon interval, cast time, skill cooldown, skill refractory, follow-up delay, haste, spell haste, and measured long-cooldown policy.
+- [ ] 6.2 Implement the resource engine for regeneration, damage return, costs, maximum-resource burn, and distinct Rogue and Warrior policies.
+- [ ] 6.3 Implement steady-state refresh-proc uptime and cooldown-reduction effects with source citations and harness-calibrated bounds.
+- [ ] 6.4 Implement buff-category exclusivity within and across controlled entities, including stronger-effect replacement and deliberate action omission.
+- [ ] 6.5 Implement declared consumables, ammunition consumption, and the default scenario's no-durability-loss policy.
+- [ ] 6.6 Implement normal and veteran skill budget, tier, prerequisite, level, weapon, assassination, and other engine precondition gates.
+- [ ] 6.7 Implement player rotation solving with explicit skill inclusion and exclusion and no free-form action-priority language.
+- [ ] 6.8 Implement mercenary state, equipment, autonomous action expectation, two-gate cadence, movement policy, and healer reserve.
+- [ ] 6.9 Add timing tests for haste, spell haste, flat refractory, reduced cooldown, follow-up attacks, and long-cooldown integer schedules.
+- [ ] 6.10 Add resource tests for mana, energy, Rogue Fury, Warrior behavior, damage return, burn skills, and the inert mercenary energy multiplier defect.
+- [ ] 6.11 Add effect tests for proc refresh, cooldown reduction, consumables, ammunition, category replacement, cross-entity collisions, and excluded durability loss.
+- [ ] 6.12 Add skill-legality and rotation tests for every gate and for deliberate omission of an available skill.
+- [ ] 6.13 Add companion tests for each archetype, melee and ranged behavior, movement state, cadence bound, healer reserve, and equipment contribution.
 
-## 5. The per-hit damage pipeline
+## 7. Model verification and calibration
 
-- [ ] 5.1 Implement the ordered integer walk of one hit, one function per engine step, in the engine's
-      own order.
-- [ ] 5.2 Implement avoidance, mitigation, and the seven resist functions as one shape. Treat accuracy as
-      a term with three consumers, and do not cap it when avoidance reaches its floor.
-- [ ] 5.3 Implement the mitigation ceiling and state its consequence: defense above the saturation point
-      buys nothing, which is why a dummy understates a debuff.
-- [ ] 5.4 Implement debuff landing probability as the factor that multiplies a duration bound.
-- [ ] 5.5 Implement the resource-burn bypass, which ignores avoidance and mitigation entirely.
-- [ ] 5.6 Give each damaging skill class its own evaluation path and its own test, including the class
-      that ignores its own damage multiplier and the class that ignores the caster's combat stat.
-- [ ] 5.7 Implement the weapon category gate, including both slot 13 categories from section 1.
-- [ ] 5.8 Implement the offhand damage rules per wielder and class, including the half removal rounded up
-      and the companion case that applies no removal.
-- [ ] 5.9 Implement the two skill point budgets and the tier caps, so a build cannot hold every skill at
-      maximum.
-- [ ] 5.10 Implement the engine-refused precondition constraint, so the solver never schedules an
-      assassination skill against a target above a quarter health.
+- [ ] 7.1 Implement deterministic fixture evaluation against the shared build envelope and scenario schema.
+- [ ] 7.2 Run source-only fixtures for rounding, stat aggregation, hit order, target terms, resource transitions, timing gates, and effect classifications.
+- [ ] 7.3 Complete the harness model-comparison and baseline tasks only after sections 4 through 6 are complete.
+- [ ] 7.4 Compare predicted and measured per-quantity values across player classes, damage schools, weapon branches, resource engines, and mercenary archetypes.
+- [ ] 7.5 Record model error separately from finite-run variance, search gap, and every intentional game-defect normalization.
+- [ ] 7.6 Calibrate the displayed prediction boundary from the comparison corpus and fail when a fixture falls outside it.
+- [ ] 7.7 Add a regression fixture for every corrected formula or newly classified effect before changing the model.
+- [ ] 7.8 Add the verified model comparison and baseline run to the game-version update procedure.
 
-## 6. Cadence, resources, and buffs
+## 8. Build optimizer
 
-- [ ] 6.1 Implement the refractory period, selecting the branch on the skill's own fields rather than on
-      the followup flag. Correct `website/src/lib/types/skills.ts` where it encodes the wrong selector.
-- [ ] 6.2 Implement the weapon interval clamp and the unarmed default.
-- [ ] 6.3 Implement haste and spell haste as disjoint consumers with their own clamps.
-- [ ] 6.4 Implement resource income as a function of post-mitigation output rather than of capacity,
-      including the four floor sites and the square-root term.
-- [ ] 6.5 Implement the one-second recovery tick as a fixed-tick event, distinct from the exact-timestamp
-      events.
-- [ ] 6.6 Implement steady-state buff uptime from duration and cooldown, and charge maintenance against
-      time and resource.
-- [ ] 6.7 Implement buff category exclusivity: one member per category, selected by recency and never by
-      magnitude. Cover the cross-entity collision.
-- [ ] 6.8 Implement the declared consumable set as part of the build, including its category collisions.
+- [ ] 8.1 Enumerate class, race, main-hand, offhand, two-handed, ammunition, and other discrete legality branches before local search.
+- [ ] 8.2 Implement deterministic multi-start block coordinate ascent with a recorded seed, start count, convergence rule, and fixed-point spread.
+- [ ] 8.3 Optimize equipment, attributes, normal skills, and veteran skills against one explicit scenario and version tuple.
+- [ ] 8.4 Enforce level, class, race, slot, weapon, point-budget, tier, prerequisite, consumable, ammunition, and scenario constraints.
+- [ ] 8.5 Solve weapon choice and rotation jointly and re-solve the rotation after every weapon-branch change.
+- [ ] 8.6 Solve category-exclusive effects jointly and allow an action to be omitted when it would replace a stronger effect.
+- [ ] 8.7 Optimize the player and each active mercenary, capture pets for accounting only, and label every entity included in the total.
+- [ ] 8.8 Compare the heuristic with the exact reference search on a bounded corpus and record objective gap, fixed-point spread, and missed branches.
+- [ ] 8.9 Measure any surrogate against the display objective and justify the number of candidates carried forward; reject rank correlation alone.
+- [ ] 8.10 Enforce owned-item quantities across slots and entities while allowing independent full-catalog searches.
+- [ ] 8.11 Derive the ranking equivalence band from measured search-gap evidence and group candidates inside it.
+- [ ] 8.12 Add optimizer tests for every branch, constraint, interaction, unsupported effect, owned-item conflict, and scenario-version change.
+- [ ] 8.13 Report wasted stat allocation and the cap or threshold that caused it.
+- [ ] 8.14 Verify the explanation against a candidate with each capped stat and each thresholded set bonus.
 
-## 7. Companions and live validation
+## 9. Planner page and worker
 
-- [ ] 7.1 Run a companion through sections 4 to 6 unchanged, confirming the equipment stat pipeline is
-      shared rather than reimplemented.
-- [ ] 7.2 Implement the companion cadence from both gates, and record which gate binds for a reported
-      figure.
-- [ ] 7.3 Implement companion output as an expectation over uniform action selection, and label it an
-      expectation rather than a schedule.
-- [ ] 7.4 Implement the newly hired policy for base damage and the reconstructed multipliers, citing the
-      two defect reports.
-- [ ] 7.5 Implement the defect policy: model intended behaviour where a defect is recorded, and name the
-      report beside the term.
-- [ ] 7.6 Validate the model against the running game with the harness that already exists under
-      `mods/CombatVerification/`, and record the measured gap.
-- [ ] 7.7 Close the tasks in `openspec/changes/add-combat-verification-harness/tasks.md` that state they
-      wait for a model. Sections 6, 8, 9 and 10 and tasks 7.1 to 7.6 there become reachable.
+- [ ] 9.1 Add the planner route with a server load that returns the default versioned build, scenario, and result.
+- [ ] 9.2 Render the default build, target, scenario, total, uncertainty components, and explanation in prerendered HTML with a working no-JavaScript path.
+- [ ] 9.3 Add controls for class, race, level, veteran points, equipment, attributes, normal and veteran skills, consumables, ammunition, and active mercenaries.
+- [ ] 9.4 Add owned-catalog selection, target selection, scenario controls, and automatic-rotation skill inclusion and exclusion.
+- [ ] 9.5 Add a dedicated optimizer worker and client with correlated start, progress, result, cancel, cancelled, error, and termination states.
+- [ ] 9.6 Discard stale messages and unknown request identifiers, clean up worker errors, and preserve the last complete result after cancellation.
+- [ ] 9.7 Add a planner-specific versioned link encoder that preserves the build and scenario, omits defaults, and refuses unknown schema fields.
+- [ ] 9.8 Add a sitemap entry as an explicit bare URL and verify restored links across supported model and game-data version combinations.
+- [ ] 9.9 Add result breakdowns for per-entity, per-ability, stat, buff uptime, consumable, ammunition, and scenario contributions.
+- [ ] 9.10 Show target limitations, unsupported effects, game-build mismatch, model-version warning, and separate uncertainty components beside the result.
+- [ ] 9.11 Add browser interaction checks for manual build editing, target and scenario changes, progress, cancellation, permalink restore, and no-JavaScript content.
 
-## 8. The optimizer
+## 10. Character capture mod
 
-- [ ] 8.1 Define the decision variables across equipment, attribute allocation, and normal and veteran
-      skill allocation, as one build record. Reuse the fixture descriptor shape from
-      `mods/CombatVerification/Fixtures/FixtureDescriptor.cs` rather than inventing a second.
-- [ ] 8.2 Implement discrete branch enumeration over hand configuration, weapon candidate, and both
-      armour set thresholds.
-- [ ] 8.3 Implement block coordinate ascent over the three coupled blocks, with the start count as a
-      named recorded parameter.
-- [ ] 8.4 Implement multi-start and record the measured fixed-point spread, so a single start cannot be
-      configured silently.
-- [ ] 8.5 Solve weapon choice and rotation together, because a damaging skill can require a weapon
-      category.
-- [ ] 8.6 Implement the analytic surrogate for ranking, and the fidelity check that runs against the
-      event timeline whenever the model changes.
-- [ ] 8.7 Implement per-entity optimization for the player and each active companion, independent for a
-      best-in-slot plan.
-- [ ] 8.8 Implement owned-gear planning as an assignment across entities, because one item cannot be
-      equipped twice.
-- [ ] 8.9 Implement interference between controlled entities, including the option to not use an action.
-- [ ] 8.10 Implement the equivalence band, so results inside the error boundary are not presented as
-      ranked.
-- [ ] 8.11 Report wasted allocation: the excess above a cap and any contribution of zero.
-- [ ] 8.12 State what the search does not guarantee, with the measured gap against a reference search.
+- [ ] 10.1 Create the distributable mod project and shared capture core for the versioned build envelope.
+- [ ] 10.2 Capture player progression, attributes, skills, all equipped slots, inventory, storage, stable item identities, quantities, containers, augments, and durability.
+- [ ] 10.3 Capture active mercenaries and pets with completeness markers and explicit exclusions for any unavailable section.
+- [ ] 10.4 Implement read-only character and meter capture paths that refuse missing runtime objects and cannot mutate gameplay or meter state.
+- [ ] 10.5 Add game-free core tests and game-backed checks for schema rejection, completeness, containers, duplicate items, missing runtime state, and mutation absence.
+- [ ] 10.6 Add separate typed commands for read-only meter capture and explicit mutating meter reset, with reset prohibited as a capture side effect.
+- [ ] 10.7 Write one local JSON file, report its exact path, and register the same file as an optional HotRepl automation artifact.
+- [ ] 10.8 Add the mod to the solution, build tool, package output, and player-facing download registry.
+- [ ] 10.9 Build and deploy the mod, invoke it in a loaded game, inspect the file, and confirm the player's build and game state before and after capture.
 
-## 9. The planner page
+## 11. Import and measured comparison
 
-- [ ] 9.1 Add the route with a server load that returns the default build and its numbers, following the
-      split that `website/src/routes/mechanics/mercenary-stats` uses for compute and that
-      `website/src/routes/monsters/[id]` uses for marking a control as script-only.
-- [ ] 9.2 Render the default result in prerendered HTML, and confirm the no-JavaScript path shows the
-      numbers with the controls hidden.
-- [ ] 9.3 Add a target selector defaulting to the level 55 dummy in Northern Wastes, with the result
-      labelled by the target it belongs to. Existing queries filter dummies out, so the selector needs a
-      query that returns them.
-- [ ] 9.4 Report when a selected target cannot exercise a modelled mechanic, as a function of the target
-      rather than as a per-skill constant.
-- [ ] 9.5 Add the build permalink encoder. The map encoder is typed to the map end to end, so this needs
-      its own, keeping the omit-defaults rule and reading through the existing search normaliser.
-- [ ] 9.6 Carry a version marker in the link and state when a stored build came from an earlier model. No
-      URL in the site carries one today.
-- [ ] 9.7 Present uncertainty rather than hiding it, including the equivalence band from task 8.10.
-- [ ] 9.8 Render the result breakdown: per-ability contribution, buff uptime, and why an item was
-      selected. Mark an item effect the model does not cover.
-- [ ] 9.9 Extend the worker protocol for compute: a discriminated response, a progress message, and a
-      cancel path. The database protocol has none of these, and a pending request can only be resolved
-      by a matching response.
-- [ ] 9.10 Run the optimizer in its own worker, so a long search does not starve database reads behind
-      the single existing worker.
-- [ ] 9.11 Add the route to the sitemap manifest, in the list for a route whose freshness no single hash
-      captures.
+- [ ] 11.1 Add a browser-local file picker and parser that never uploads capture contents.
+- [ ] 11.2 Populate the editor from a compatible capture and preserve the current build after a rejected import.
+- [ ] 11.3 Apply schema, capture, model, game-data, and game-build compatibility rules with field-specific errors.
+- [ ] 11.4 Apply owned-item quantities and containers from the capture to the optimizer's shared-inventory constraint.
+- [ ] 11.5 Compare the current or imported build with a selected candidate under one scenario and list every equipment, attribute, skill, consumable, and roster change.
+- [ ] 11.6 Show per-change contributions and refuse a numerical comparison when scenario or required version tuples differ.
+- [ ] 11.7 Compare captured meter totals and denominators with the model, naming target, build, model, game data, run variance, and prediction boundary.
+- [ ] 11.8 Add browser checks for valid import, every refusal policy, owned-copy conflicts, current-versus-candidate comparison, and meter comparison.
 
-## 10. Capture a live character and its measured output
+## 12. Performance and release gates
 
-- [ ] 10.1 Add the mod project, following the smallest existing mod as the template, and register its
-      typed commands without changing another project.
-- [ ] 10.2 Capture the player build read-only: level, veteran points, attributes, skills, all sixteen
-      slots with augments, and durability.
-- [ ] 10.3 Capture companion state, or state explicitly that a companion was excluded and why.
-- [ ] 10.4 Identify every item by its stable identifier, so a captured build resolves against the
-      published payload.
-- [ ] 10.5 Report the payload's own completeness, naming what it could not read rather than omitting it.
-- [ ] 10.6 Carry provenance and a version: game build, mod version, and the payload schema version.
-- [ ] 10.7 Read the combat meter and its active-seconds denominator, and reset it through the command the
-      engine already exposes. All four fields are synchronized, so a client can read them.
-- [ ] 10.8 Return the capture as an artifact rather than an inline result, following the existing
-      artifact key conventions.
-- [ ] 10.9 Split the mod so the rule applied to what was read is testable without the game, and add the
-      test project entry.
-- [ ] 10.10 Verify the capture in the running game and confirm the meter figure against a hand
-      measurement.
+- [ ] 12.1 Benchmark representative and worst-case searches in the supported browser and record latency, peak worker memory, and first-progress latency.
+- [ ] 12.2 Measure cancellation acknowledgement, main-thread responsiveness, and maximum permalink length for a maximum-size build.
+- [ ] 12.3 Set release budgets from the recorded measurements and add regression checks for every budget.
+- [ ] 12.4 Run model, optimizer, pipeline, capture-core, website, browser, and strict OpenSpec checks with the final payload and fixture corpus.
+- [ ] 12.5 Run the real-game default-build comparison and one imported-player comparison, then record model, run-variance, and search-gap evidence separately.
+- [ ] 12.6 Document the planner workflow, local-only capture privacy, version mismatch policy, unsupported-effect behavior, benchmark scenario, and known model limits.
 
-## 11. Retire the prior attempt
+## 13. Retire the prior attempt
 
-- [ ] 11.1 Remove the earlier simulator route and its page, and drop its sitemap entry.
-- [ ] 11.2 Remove the type coupling in `website/src/lib/types/formula.ts`, which states that a type from
-      the earlier attempt satisfies the weapon stat shape.
-- [ ] 11.3 Repoint the link on the combat mechanics page at the planner.
-- [ ] 11.4 Relocate any measured result or rejected alternative the earlier attempt recorded, then delete
-      the rest. `documentation-lifecycle` states which four kinds of rationale survive a deletion.
+- [ ] 13.1 Inventory every route, sitemap entry, type, import, and shared helper owned only by the prior simulator after the replacement passes section 12.
+- [ ] 13.2 Remove the prior simulator route and its simulator-specific types, helpers, tests, and sitemap entry without deleting shared formula code still in use.
+- [ ] 13.3 Re-run website checks, sitemap generation, browser smoke checks, and dead-reference searches after removal.
 
-## 12. Verification and release
+## 14. Requirement coverage
+Each requirement has an implementation task and a distinct verification task.
 
-- [ ] 12.1 Run `uv run compendium citations check` and confirm every new constant carries a resolvable
-      source citation.
-- [ ] 12.2 Run the website tests, `pnpm check`, and `pnpm lint`, then `pnpm build` to confirm the route
-      prerenders.
-- [ ] 12.3 Run the mod test projects and `dotnet run --project build-tool build`.
-- [ ] 12.4 Drive the planner in a browser: default render, target change, optimize, permalink round trip,
-      and the no-JavaScript path.
-- [ ] 12.5 Compare a published figure against the reader-facing capture from section 10 on one real
-      build, and record the gap.
-- [ ] 12.6 Update the mechanics snapshot only for an intentional visible change, and explain each diff.
+### `combat-model`
+| Requirement | Implementation | Verification |
+|---|---|---|
+| Every formula traces to decompiled source | 4.1, 5.1, 5.2, 5.4, 5.6, 6.1-6.8 | 7.2, 12.4 |
+| Evaluation is deterministic and reproducible | 4.1, 7.1 | 7.2, 12.4 |
+| The model reports a stated error boundary | 7.5, 7.6 | 12.5 |
+| Resource generation from combat is modelled | 4.4, 6.2 | 4.5, 6.10 |
+| Buff contributions are weighted by uptime | 6.3-6.5 | 6.11, 7.4 |
+| A buff category holds at most one buff | 6.4 | 1.4, 6.11 |
+| The refractory a skill sets is selected by the skill's own fields | 6.1 | 6.9 |
+| One hit is derived in the engine's own order | 5.6 | 5.8, 5.9 |
+| A prediction is derived from the target's own state | 5.1, 5.2 | 5.3, 7.4 |
+| Target avoidance and mitigation are reducible, and reduction is not certain | 5.2 | 1.2, 1.3, 5.3 |
+| Skill levels respect the allocation budget | 6.6 | 6.12 |
+| Each damaging skill class is evaluated by its own rule | 5.6 | 5.8 |
+| Resource-burn damage bypasses avoidance and mitigation | 5.7 | 5.9 |
+| A skill that requires a weapon category is gated on it | 5.7, 6.6 | 5.9, 6.12 |
+| A declared consumable set is part of the build | 4.4, 6.5 | 4.5, 6.11 |
+| A controlled companion is evaluated by the same pipeline | 6.8 | 6.13, 7.4 |
+| The offhand slot differs by archetype | 2.1, 5.7 | 2.2, 2.3, 5.9 |
+| An offhand item contributes damage by wielder and class | 5.7 | 5.9 |
+| A companion's cadence is bound by two gates, and weapon delay is not one of them | 1.7, 6.8 | 6.13, 7.4 |
+| A skill the engine would refuse is not scheduled | 6.6, 6.7 | 6.12 |
+| Spell haste is distinct from haste | 6.1 | 6.9 |
+| A known defect is modelled as the behaviour it should have | 5.9, 6.10 | 7.4, 7.5 |
+| A resource multiplier is applied only where the game applies it | 5.4, 6.2 | 5.5, 6.10 |
+| A target stat is derived from its curve and its spawn, not from a denormalised scalar | 5.1 | 5.3 |
+| Integer rounding follows the engine | 4.1, 5.6 | 4.2, 5.8 |
+| Predicted values are validated against the running game | 7.3, 7.4 | 7.6, 12.5 |
+| The target is an explicit parameter set | 3.2, 4.3 | 4.5, 5.3 |
+| Every evaluation names its scenario | 3.2, 4.3 | 4.5, 9.11 |
+| Equipment and skill effects are exhaustively classified | 3.8, 5.6, 6.3-6.6 | 2.6, 6.11, 7.2 |
+| Refresh procs and cooldown changes affect steady state | 6.3 | 1.4, 6.11 |
+| Ammunition and durability have explicit policies | 4.4, 6.5 | 4.5, 6.11 |
+| Incoming damage is an event-stream input | 3.2, 4.4, 6.2 | 4.5, 6.10 |
+| Uncertainty components remain separate | 7.5, 8.11 | 9.10, 12.5 |
 
-## Requirement coverage
+### `build-optimizer`
+| Requirement | Implementation | Verification |
+|---|---|---|
+| The search states what it does not guarantee | 8.8, 8.11 | 8.12 |
+| Discrete branches are enumerated, not searched locally | 8.1 | 8.8, 8.12 |
+| The local search uses multiple independent starts | 8.2 | 8.8, 8.12 |
+| The search covers equipment, attributes, and skill allocation | 8.3, 8.4 | 8.12 |
+| The player and active mercenaries are optimized | 8.7 | 6.13, 8.12 |
+| Controlled entities can interfere, and the search accounts for it | 8.6 | 6.11, 8.12 |
+| Owned-gear planning treats inventory as shared | 8.10, 11.4 | 8.12, 11.8 |
+| Weapon choice and rotation are solved together | 8.5 | 8.12 |
+| Ranking uses a surrogate whose fidelity is measured | 8.9 | 8.12 |
+| Results within the error boundary form an equivalence band | 8.11 | 8.12 |
+| Wasted stat allocation is reported | 8.13 | 8.14 |
+| The optimization objective is scenario-bound | 8.3 | 8.12 |
+| Unsupported effects cannot win a ranking | 3.8, 8.12 | 7.2, 9.11 |
+| Search-gap evidence defines equivalence | 8.11 | 8.8, 8.12 |
 
-Every requirement in the four specs maps to at least one task above.
+### `gear-planner`
+| Requirement | Implementation | Verification |
+|---|---|---|
+| Core facts render without JavaScript | 9.1, 9.2 | 9.11 |
+| The default target is the endgame training dummy | 9.1, 9.2 | 9.11, 12.5 |
+| The target is selectable and the result is per-target | 9.4, 9.9 | 9.11 |
+| A target that cannot exercise a modelled mechanic says so | 9.10 | 9.11 |
+| A build is shareable by link | 9.7, 9.8 | 9.11 |
+| Uncertainty is presented, not hidden | 9.10 | 9.11, 12.5 |
+| The result explains itself | 9.9, 9.10 | 9.11 |
+| Compute does not block the interface | 9.5, 9.6 | 9.11, 12.1-12.3 |
+| A reader can author a complete build | 9.3, 9.4 | 9.11 |
+| A reader can import a local character capture | 11.1-11.4 | 11.8 |
+| Current and candidate builds are comparable | 11.5, 11.6 | 11.8 |
+| Unsupported effects block a best-build claim | 3.8, 9.10 | 7.2, 9.11 |
+| Planner performance is measured and gated | 12.1-12.3 | 12.4 |
+| Serialized, model, and data versions remain distinct | 3.1, 3.3, 9.7 | 9.8, 11.3, 11.8 |
 
-| capability | requirement | tasks |
-| --- | --- | --- |
-| combat-model | Every formula traces to decompiled source | 3.5, 12.1 |
-| combat-model | Evaluation is deterministic and reproducible | 3.2 |
-| combat-model | The model reports a stated error boundary | 3.3, 9.7 |
-| combat-model | Resource generation from combat is modelled | 6.4, 6.5 |
-| combat-model | Buff contributions are weighted by uptime | 6.6 |
-| combat-model | A buff category holds at most one buff | 6.7 |
-| combat-model | The refractory a skill sets is selected by the skill's own fields | 6.1 |
-| combat-model | One hit is derived in the engine's own order | 5.1 |
-| combat-model | A prediction is derived from the target's own state | 4.1 |
-| combat-model | Target avoidance and mitigation are reducible, and reduction is not certain | 5.2, 5.3, 5.4 |
-| combat-model | Skill levels respect the allocation budget | 5.9 |
-| combat-model | Each damaging skill class is evaluated by its own rule | 5.6 |
-| combat-model | Resource-burn damage bypasses avoidance and mitigation | 5.5 |
-| combat-model | A skill that requires a weapon category is gated on it | 5.7 |
-| combat-model | A declared consumable set is part of the build | 2.5, 6.8 |
-| combat-model | A controlled companion is evaluated by the same pipeline | 7.1 |
-| combat-model | The offhand slot differs by archetype | 1.1, 1.2, 1.3 |
-| combat-model | An offhand item contributes damage by wielder and class | 5.8 |
-| combat-model | A companion's cadence is bound by two gates | 7.2 |
-| combat-model | A skill the engine would refuse is not scheduled | 5.10 |
-| combat-model | Spell haste is distinct from haste | 6.3 |
-| combat-model | A known defect is modelled as the behaviour it should have | 7.5 |
-| combat-model | A resource multiplier is applied only where the game applies it | 4.2 |
-| combat-model | A target stat is derived from its curve and its spawn | 4.1 |
-| combat-model | Integer rounding follows the engine | 3.1 |
-| combat-model | Predicted values are validated against the running game | 4.4, 7.6, 12.5 |
-| combat-model | The target is an explicit parameter set | 3.4 |
-| build-optimizer | The search states what it does not guarantee | 8.12 |
-| build-optimizer | Discrete branches are enumerated, not searched locally | 8.2 |
-| build-optimizer | The local search uses multiple independent starts | 8.3, 8.4 |
-| build-optimizer | The search covers equipment, attributes, and skill allocation | 8.1, 8.3 |
-| build-optimizer | Every controlled entity is optimized | 8.7 |
-| build-optimizer | Controlled entities can interfere | 8.9 |
-| build-optimizer | Owned-gear planning treats inventory as shared | 8.8 |
-| build-optimizer | Weapon choice and rotation are solved together | 8.5 |
-| build-optimizer | Ranking uses a surrogate whose fidelity is measured | 8.6 |
-| build-optimizer | Results within the error boundary form an equivalence band | 8.10 |
-| build-optimizer | Wasted stat allocation is reported | 8.11 |
-| gear-planner | Core facts render without JavaScript | 9.1, 9.2 |
-| gear-planner | The default target is the endgame training dummy | 9.3 |
-| gear-planner | The target is selectable and the result is per-target | 9.3 |
-| gear-planner | A target that cannot exercise a modelled mechanic says so | 9.4 |
-| gear-planner | A build is shareable by link | 9.5, 9.6 |
-| gear-planner | Uncertainty is presented, not hidden | 9.7 |
-| gear-planner | The result explains itself | 9.8 |
-| gear-planner | Compute does not block the interface | 9.9, 9.10 |
-| character-state-export | The export is read-only | 10.2 |
-| character-state-export | The payload carries provenance and a version | 10.6 |
-| character-state-export | The payload reports its own completeness | 10.5 |
-| character-state-export | Items are identified by stable identifier | 10.4 |
-| character-state-export | The export covers what a build needs | 10.2 |
-| character-state-export | Companion state is captured or explicitly excluded | 10.3 |
-| character-state-export | Measured combat output is capturable | 10.7, 10.8 |
+### `character-state-export`
+| Requirement | Implementation | Verification |
+|---|---|---|
+| The export is read-only | 10.4 | 10.5, 10.9 |
+| The payload carries provenance and a version | 3.1, 10.1 | 10.5, 11.3 |
+| The payload reports its own completeness | 10.3 | 10.5 |
+| Items are identified by stable identifier | 10.2 | 10.5 |
+| The export covers what a build needs | 10.2, 10.3 | 10.5, 10.9 |
+| Companion state is captured or explicitly excluded | 10.3 | 10.5, 10.9 |
+| Measured combat output is capturable | 10.6 | 11.7, 12.5 |
+| The player transport is one local file | 10.7, 11.1 | 10.9, 11.8 |
+| Owned items include quantities and containers | 10.2, 11.4 | 10.5, 11.8 |
+| Meter reset is explicit and mutating | 10.6 | 10.5, 10.9 |

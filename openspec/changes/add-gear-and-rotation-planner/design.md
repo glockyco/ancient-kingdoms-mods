@@ -117,20 +117,96 @@ gates application, and caster accuracy subtracts from the resist probability
 
 **Goals:**
 
-- Produce a ranked build list whose ordering is reproducible and whose displayed numbers carry a
-  stated error boundary.
-- Keep every published formula traceable to a cited region of decompiled source.
-- Run the whole search and evaluation in the browser within interactive latency.
-- Make the default result verifiable inside the game.
+- Produce a ranked build list whose ordering is reproducible and whose displayed numbers carry named
+  model, run-variance, and search-gap bounds.
+- Keep every published formula traceable to decompiled code, exported data, or a repeatable runtime
+  measurement.
+- Cover every effect admitted to the search domain, or fail publication when an effect has no model.
+- Run search and evaluation in a dedicated browser worker and measure its latency, memory, progress,
+  cancellation, and link-size behavior before release.
+- Make a manually authored or locally imported player build comparable with an optimized build.
 
 **Non-Goals:**
 
-- Bit-exact reproduction of integer rounding at every pipeline step. The model targets ranking
-  fidelity and a bounded absolute error.
+- Bit-exact emulation of floating-point behavior outside the named integer-rounding boundaries that can
+  change a ranking.
 - A provably optimal build. Measurement showed that exactness costs 204 s and buys under 0.5 %.
-- Any evaluation of allied player behaviour. The design models effects on the planned character only.
+- Allied-player or pet-build optimization. The solved roster is the player and active mercenaries.
+- Multi-target, movement, threat, healing, and survivability simulation in this change.
 
 ## Decisions
+
+### One evaluation scenario owns every result
+
+A build alone does not determine sustained output. Every evaluation therefore consumes a versioned
+scenario containing the target, fight duration, initial resource and cooldown state, active buffs and
+consumables, ammunition supply, incoming-damage event stream, included controlled entities, and target
+count. The default scenario is one stationary, non-attacking, full-health training dummy with one
+player and the selected active mercenaries.
+
+A result and its permalink carry the scenario. Two results are comparable only when their scenario and
+model versions match. Area skills are evaluated against the scenario's explicit target count; this
+change supports one target and refuses another value rather than silently treating an area skill as a
+single-target skill.
+
+### Complete effect coverage is a release invariant
+
+The derived payload classifies every equippable item effect, ammunition effect, consumable effect, and
+skill behavior that can influence the objective. The model registry classifies each kind as modelled,
+excluded by a stated search-domain rule, or unsupported. Publication fails when an admitted kind is
+unsupported. Search never scores an unknown effect as zero.
+
+Refresh-on-proc effects use their closed-form steady state. Cooldown-reduction buffs alter every active
+cooldown the engine alters. Ammunition supply constrains ranged attacks. Initial durability is captured
+for comparison, but durability loss remains outside the default non-attacking-dummy scenario and is
+labelled unsupported when another scenario would exercise it.
+
+### One versioned build envelope crosses C# and TypeScript
+
+Fixture definitions, captures, planner builds, and permalink state share one logical build envelope and
+thin language-specific adapters. The envelope separates four version axes: serialized schema, capture
+schema, model, and game data. An unknown serialized schema is refused. A model-version difference is a
+comparison warning. A game-build difference is shown and requires an explicit compatibility decision;
+it is never silently accepted.
+
+The derived planner payload remains a separate, explicit build-pipeline output. One writer owns its
+deterministic path, stale-output deletion, required-output assertion, serialization, compression, and
+redaction verification. A generic derived-artifact registry is deferred until a second output proves
+that abstraction useful.
+
+### Character capture is a local file, not a HotRepl workflow
+
+The player-facing mod writes one versioned JSON file and reports its exact path. The planner reads it
+through a browser file picker, parses it locally, and never uploads it. HotRepl may register the same
+file as an automation artifact, but developer infrastructure is not the user transport.
+
+Capture, meter read, and meter reset are separate operations. Capture and meter read are read-only.
+Meter reset is explicit, labelled as mutating, and never runs as a side effect of capture. The mod is
+packaged and listed with the repository's other player-facing downloads.
+
+### The database worker remains database-only
+
+The planner uses a separate optimizer worker and client. It may reuse the database worker's correlated
+request pattern, but not its protocol or runtime. The optimizer protocol is
+`start -> progress* -> result`, with an independent `cancel -> cancelled` path. The client discards stale
+progress and results, handles unknown request identifiers, terminates the worker on page teardown, and
+cleans up errors without replacing the last complete result.
+
+### Uncertainty has three named components
+
+Run variance, model error, and search gap answer different questions and are never collapsed into one
+percentage. The ranking equivalence band derives from the measured search gap. Displayed predictions
+use a separately calibrated model-error boundary. Meter comparisons report finite-run variance from the
+recorded event count and duration. Intentional game-versus-model defect normalization is listed beside
+those components rather than hidden inside model error.
+
+### Browser performance is measured before a budget is stated
+
+The 204 s exact-search result rejects exhaustive search; it does not establish that the heuristic is
+usable in a browser. Before the page claims interactive behavior, the representative and worst-case
+searches record latency, peak worker memory, first-progress latency, cancellation acknowledgement,
+maximum permalink length, and main-thread responsiveness. The release budget is set from those results
+and becomes a regression gate.
 
 ### Deterministic evaluation instead of Monte Carlo simulation
 
@@ -397,11 +473,13 @@ evaluating one that does overstates output.
 
 ### Client-side compute, no server endpoint
 
-The measured payload is 21,488 B gzipped for all 887 equippable non-costume items. This is under 1
-percent of the compressed database the map route already downloads.
+The measured equipment subset is 21,488 B gzipped for all 887 equippable non-costume items. The final
+payload also needs class and race progression, skill trees, mercenary archetypes, consumables,
+ammunition, and classified effects. Its final raw and compressed sizes must be measured rather than
+inferred from the equipment subset.
 
-A Cloudflare Worker endpoint is possible but unnecessary. Static assets plus a browser worker avoid
-per-request CPU limits and cost nothing.
+A Cloudflare Worker endpoint is possible but unnecessary. Static assets plus a dedicated optimizer
+worker avoid per-request CPU limits and keep local capture data on the reader's machine.
 
 ### Validation through the game's own combat meter
 
@@ -604,11 +682,15 @@ terms. Neither appeared in this design before it was measured.
 - Displayed precision can imply false confidence. → Results within the stated error boundary are
   presented as an equivalence band, following the sidegrade pattern that Raidbots documents.
 
-## Open Questions
+## Required measurements before model formulas
 
-- The integrality gap of the fractional rotation relaxation was measured in aggregate. Whether it
-  varies at cooldowns of 45 s and above is not known. This affects the calibration constant, not the
-  approach.
-- Rogue resource behaviour may differ qualitatively from Warrior behaviour, because `Fury` carries a
-  negative regeneration term while the damage return is unchanged. This affects a per-class default,
-  not the architecture.
+- Measure the integer schedule gap for cooldowns of 45 s and above. Use the result to set the per-class
+  rotation policy rather than assuming the aggregate relaxation result applies.
+- Measure Rogue resource behavior separately from Warrior behavior because `Fury` has negative
+  regeneration while the damage return is unchanged.
+- Measure companion output by archetype, ranged or melee behavior, initial distance, target movement,
+  and relevant haste and cooldown-reduction combinations. Treat engine cadence as an upper bound until
+  these measurements establish a movement policy.
+
+These are implementation prerequisites, not architectural choices. Their results update the formulas,
+scenario defaults, and validation bounds before those parts of the model are finalized.

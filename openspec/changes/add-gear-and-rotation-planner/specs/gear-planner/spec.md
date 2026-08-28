@@ -157,3 +157,101 @@ that does not complete immediately, and SHALL allow it to be cancelled.
 
 - **WHEN** a reader cancels a running search
 - **THEN** the search stops and the previous result remains displayed
+
+
+### Requirement: A reader can author a complete build
+
+The planner SHALL provide controls for class, race, level, veteran progression, all equipment slots,
+attribute allocation, normal and veteran skill allocation, consumables, ammunition, active
+mercenaries, owned-gear limits, target, and evaluation scenario.
+
+The rotation SHALL remain automatic. A reader MAY include or exclude eligible skills but SHALL NOT
+need to author an action-priority language.
+
+#### Scenario: A reader creates a build without a capture
+
+- **WHEN** the reader selects the build and scenario inputs
+- **THEN** the planner evaluates that build and shows its complete state
+
+#### Scenario: A reader excludes a legal skill
+
+- **WHEN** the reader excludes that skill
+- **THEN** the automatic rotation is solved without it
+
+### Requirement: A reader can import a local character capture
+
+The planner SHALL import the versioned character-state JSON through a local file picker. Parsing and
+validation SHALL occur locally. The planner SHALL NOT upload the file.
+
+#### Scenario: A valid capture is selected
+
+- **WHEN** the reader selects a compatible capture file
+- **THEN** the editor is populated with its build, owned items, controlled entities, and provenance
+
+#### Scenario: An incompatible capture is selected
+
+- **WHEN** the selected file has an unsupported schema or game-build policy
+- **THEN** the planner preserves the current build
+- **AND** the import error names the incompatible field
+
+### Requirement: Current and candidate builds are comparable
+
+The planner SHALL compare a manually authored or imported current build with a selected candidate
+under the same scenario and model. It SHALL show the total difference and the slot, attribute, skill,
+consumable, and controlled-entity changes that produce it.
+
+#### Scenario: A reader selects an optimized build
+
+- **WHEN** the selected candidate differs from the current build
+- **THEN** the planner shows each change and its contribution before the reader applies it
+
+#### Scenario: The scenarios differ
+
+- **WHEN** the current and candidate figures use different scenarios
+- **THEN** the planner refuses the numerical comparison until one scenario is selected
+
+### Requirement: Unsupported effects block a best-build claim
+
+The planner SHALL NOT label a result best-in-slot when an admitted candidate or equipped effect is
+unsupported by the model. It SHALL name every blocking effect and the affected build or item.
+
+#### Scenario: An imported item has an unknown proc
+
+- **WHEN** the model has no handler or exclusion rule for that proc
+- **THEN** optimization is unavailable for that search domain
+- **AND** the proc is shown as the reason
+
+### Requirement: Planner performance is measured and gated
+
+Before release, the planner SHALL record representative and worst-case search latency, peak worker
+memory, first-progress latency, cancellation acknowledgement, maximum permalink length, and
+main-thread responsiveness on a named browser and hardware profile. The release SHALL set and enforce
+budgets from those measurements.
+
+#### Scenario: A search exceeds a release budget
+
+- **WHEN** the benchmark exceeds any recorded budget
+- **THEN** the release check fails and names the metric
+
+#### Scenario: A reader cancels a search
+
+- **WHEN** cancellation is requested
+- **THEN** the worker acknowledges cancellation within the recorded budget
+- **AND** the last complete result remains displayed
+
+### Requirement: Serialized, model, and data versions remain distinct
+
+A shared link and imported capture SHALL distinguish serialized-schema, capture-schema, model, and
+game-data versions. An unknown serialized schema SHALL be refused. A model-version difference SHALL
+produce a warning. A game-data mismatch SHALL follow an explicit compatibility policy.
+
+#### Scenario: An old model link is opened
+
+- **WHEN** its serialized schema remains supported but its model marker differs
+- **THEN** the build and scenario are restored
+- **AND** the planner warns that recomputation can change the result
+
+#### Scenario: An unknown serialized schema is opened
+
+- **WHEN** the planner cannot interpret the link schema
+- **THEN** it refuses the state instead of dropping unknown fields
