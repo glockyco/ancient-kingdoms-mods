@@ -72,14 +72,20 @@ creates an account when the table is empty (`server-scripts/Database.cs:837-857`
 
 ## Decisions
 
-### One descriptor for fixtures and for reported builds
+### One build envelope inside fixtures and captures
 
-An authored validation fixture and a build captured from a player's game describe the same thing. Using
-one schema means the bug-report path and the regression suite are the same code, and a player's report
-becomes a runnable fixture rather than a description to be interpreted.
+An authored fixture and a build captured from a player's game share the same versioned build envelope:
+progression, attributes, skills, equipment, controlled entities, consumables, and provenance. A fixture
+adds execution-only data such as target, action sequence, facing, and seed. A capture adds capture-time
+completeness and container state. Thin C# and TypeScript adapters preserve one logical contract without
+pretending those outer records are identical.
 
-The alternative is two formats with a converter. That adds a translation layer whose bugs would be
-indistinguishable from the model bugs it is meant to help find.
+The serialized schema, capture schema, model version, and game-data version remain separate axes. An
+unknown serialized or capture schema is refused. A model mismatch is reported. A game-data mismatch
+follows an explicit compatibility policy.
+
+The alternative is two unrelated build formats with a converter. Its translation bugs would be
+indistinguishable from the model bugs this harness is meant to expose.
 
 ### Materialize through engine paths, with one bounded exception
 
@@ -207,22 +213,23 @@ definitions it was materialized from. A run compares both and rebuilds when eith
 covers each definition's name as well as its content, because a baseline is keyed on the fixture name
 and a rename therefore describes a different fixture.
 
-### The comparison waits for a model, and three fixtures do not
+### Experiments precede the model, and comparisons follow it
 
-This change measures the game. The planner change predicts it. The comparison, the baseline gate and
-the reported-build parity report all put a prediction beside a measurement, so none of them can be
-finished while the planner has no model. That is not a defect in either plan, but the task order hides
-it: read straight through, the sections after the probes look ready to start.
+This change measures the game. The planner change predicts it. Per-quantity comparison, the baseline
+gate, and reported-build parity put a prediction beside a measurement, so they wait until the planner
+has a model. Planner tasks do not close harness tasks; the harness owns its comparison reports and
+baseline lifecycle.
 
-Three tasks are unlike the rest of their section. The physical mitigation coefficient is read from
-source and has never been measured. The level difference term in the debuff landing rate is assumed to
-be zero. Effective debuff uptime is assumed to be the product of a duration bound and a landing
-probability. Each of those is an input the model needs rather than an output it produces, so measuring
-them needs only the probes.
+Several harness runs instead establish model inputs and need only the existing probes. They measure the
+physical mitigation coefficient, debuff landing across defense, accuracy and level difference,
+effective debuff uptime, same-entity and cross-entity buff replacement, long-cooldown integer-schedule
+gaps, Rogue versus Warrior resource behavior, and companion output under movement and timing changes.
+Those experiments run before the corresponding planner formulas and policies are finalized.
 
-The order that follows is therefore: finish the probes, run those three experiments, and let their
-results reach the planner's design before its formulas are written. A model built on a guessed
-coefficient and then checked against a measurement of the same coefficient would agree with itself.
+The dependency order is: finish descriptor and lifecycle gaps, finish the multi-character matrix,
+run the input experiments, implement the planner model, complete per-quantity comparison and the
+baseline, then enable reported-build parity. A model built on a guessed coefficient and later checked
+against the same assumption would agree with itself and prove nothing.
 
 ### A companion's race is drawn, so it is checked rather than assigned
 

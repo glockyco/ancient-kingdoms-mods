@@ -17,8 +17,9 @@
       refuse rather than clamp.
 - [x] 1.4 Add unit tests for legality, one per rejection reason, using descriptors that fail exactly one
       rule each.
-- [x] 1.5 Confirm the descriptor round-trips with the planner's character export payload, so a captured
-      build is usable as a fixture without conversion.
+- [ ] 1.5 After planner tasks 3.1 and 10.1 define both adapters, round-trip the shared build envelope
+      between a fixture and a character capture. Verify fixture-only execution fields and capture-only
+      completeness and container fields remain outside that envelope.
 - [x] 1.6 Remove the class and race pairing from the rules read after world entry. The pairing is a game
       rule, but it lives in the character creator, which enables one class button per race. The creator is
       live exactly where creation happens, so the pairing is checked there rather than answered from a
@@ -53,15 +54,14 @@
 - [x] 2.7 Verify isolation with an automated assertion that the player save's content hash is unchanged
       across a full run.
 
+- [ ] 2.8 Reconcile the existing roster-full handling with the matrix lifecycle. Keep a character slot
+      free before creation, reuse a character whose class a fixture needs, or remove one an earlier run
+      created. Add a game-backed run that starts with all eight slots occupied.
+
 - [ ] 2.9 Refuse to launch while another instance answers the runtime endpoint, and report that rather
       than proceeding. A launch does not take the endpoint from the instance holding it, so a run beside a
-      stale one measures a process it does not control. Shut the game down when a run ends, including when
-      it fails.
-
-- [ ] 2.8 Keep a character slot free before creating one. The roster holds at most eight characters, and
-      past that the selection screen disables creation and registers no handler, so a matrix over six
-      classes and the targeted fixtures beside them exhausts it. Reuse a character whose class a fixture
-      needs, or remove one an earlier run created.
+      stale one measures a process it does not control. Shut the owned game process down on success and
+      every failure path, and prove endpoint ownership with a stale-instance run.
 
 ## 3. Materialization commands
 
@@ -172,8 +172,9 @@
 
 ## 6. Comparison and reporting
 
-Every task in this section compares a predicted quantity against a measured one, so none of them can
-be finished before a model predicts something. See the design's note on what the comparison waits for.
+Every task in this section compares a predicted quantity against a measured one. Start it only after
+the planner model tasks for those quantities are complete. Complete and close these tasks in this
+change; no planner task closes them on the harness's behalf.
 
 
 - [ ] 6.1 Implement per-quantity comparison covering every stat, the action interval, per-hit damage and
@@ -190,9 +191,9 @@ be finished before a model predicts something. See the design's note on what the
 
 ## 7. Fixture matrix
 
-Tasks 7.7, 7.8 and 7.9 are experiments rather than checks. They measure quantities the model currently
-reads from source or assumes, so they run before the model is written against a guess. The rest of the
-section checks a model and waits for one.
+Tasks 7.7 through 7.14 are experiments rather than model checks. They establish quantities and
+policies the model needs, so they run before the corresponding formulas are finalized. Tasks 7.1
+through 7.6 are comparison fixtures and wait for the model where they require predictions.
 
 
 - [ ] 7.1 Add tier A fixtures, needing no combat: one per class at the level cap with full veteran
@@ -227,6 +228,13 @@ section checks a model and waits for one.
 - [ ] 7.11 Add a cross-entity category fixture: have a companion and its owner hold effects in one shared
       category and record which survives, so the planner's interference requirement is measured rather
       than argued.
+- [ ] 7.12 Measure integer-schedule gaps for skills with cooldowns of 45 seconds and above across
+      representative fight horizons. Record the fractional relaxation, executable schedule, and gap.
+- [ ] 7.13 Measure Rogue and Warrior resource behavior separately under matched damage, skill cost, and
+      horizon inputs. Record the negative `Fury` regeneration effect instead of applying one class policy.
+- [ ] 7.14 Measure companion output by archetype, melee or ranged behavior, initial distance, target
+      movement state, haste, and cooldown reduction. Record observed cadence and output bounds so the
+      planner does not treat engine cadence as a reachable rate without qualification.
 
 ## 8. Baseline and drift gate
 
@@ -260,5 +268,5 @@ section checks a model and waits for one.
 - [ ] 10.3 Record every formula the comparison relies on as a source citation in the citation ledger.
 - [ ] 10.4 Run the relevant mod tests, then the build-tool build, then a full verification run against a
       freshly built scratch database, and confirm the player save hash is unchanged.
-- [ ] 10.5 Confirm the planner change's requirement that predicted values are validated against the
-      running game is satisfied by a recorded baseline.
+- [ ] 10.5 After the planner model and sections 6 through 8 are complete, record the baseline that
+      satisfies the planner's running-game validation requirement and link the report from both changes.
