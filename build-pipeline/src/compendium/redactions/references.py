@@ -67,6 +67,7 @@ PROVIDES: frozenset[tuple[str, str]] = frozenset(
         # monsters have no spawn record and are only summoned.
         ("summon_triggers", "summoned_entity_id"),
         ("monsters", "placeholder_monster_id"),
+        ("skills", "summoned_monster_id"),
         # These references grant a skill.
         ("monster_skills", "skill_id"),
         ("pet_skills", "skill_id"),

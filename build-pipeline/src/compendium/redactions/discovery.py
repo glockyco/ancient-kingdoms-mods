@@ -10,9 +10,11 @@ A foreign key also gives the identifier space of a reference. ``chests.zone_id``
 targets ``zones.id`` and holds a string. ``items.travel_zone_id`` targets
 ``zones.zone_id`` and holds a number.
 
-Three references have no foreign key and are declared below. Two of them cannot
+Four references have no foreign key and are declared below. Two of them cannot
 become constraints, because ``quests.zone_id_final_npc`` and
-``quests.zone_id_quest_action`` use -1 for "no zone".
+``quests.zone_id_quest_action`` use -1 for "no zone". The skill loader runs
+before the monster loader, so ``skills.summoned_monster_id`` cannot use an
+immediate foreign key.
 """
 
 import json
@@ -30,6 +32,11 @@ UNDECLARED_ZONE_REFERENCES: tuple[tuple[str, str, str], ...] = (
     ("items", "luck_token_zone_id", "id"),
     ("quests", "zone_id_final_npc", "zone_id"),
     ("quests", "zone_id_quest_action", "zone_id"),
+)
+
+UNDECLARED_ENTITY_REFERENCES: tuple[tuple[str, str, str, str], ...] = (
+    # table, column, target table, target column
+    ("skills", "summoned_monster_id", "monsters", "id"),
 )
 
 # A column whose target kind changes from row to row, so no constraint can
@@ -143,6 +150,10 @@ def foreign_keys(conn: sqlite3.Connection) -> list[ForeignKey]:
     found += [
         ForeignKey(table, column, ZONE_TABLE, target)
         for table, column, target in UNDECLARED_ZONE_REFERENCES
+    ]
+    found += [
+        ForeignKey(table, column, target_table, target_column)
+        for table, column, target_table, target_column in UNDECLARED_ENTITY_REFERENCES
     ]
     found += [
         ForeignKey(table, column, target, "id", (type_column, type_value))
