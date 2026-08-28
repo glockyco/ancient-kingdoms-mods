@@ -2610,7 +2610,8 @@
         "monster_spawns:crypt_crawler_old_valorath@-665,275",
         "monster_spawns:crypt_crawler_old_valorath@-665,286",
         "monster_spawns:crypt_crawler_old_valorath@-667,280",
-        "monster_spawns:crypt_crawler_old_valorath@-668,270"
+        "monster_spawns:crypt_crawler_old_valorath@-668,270",
+        "skills:fabled_brood_call"
       ]
     },
     "monsters:cursed_drassar": {
@@ -2804,6 +2805,14 @@
         "monster_spawns:plague_rat_old_valorath@-867,297",
         "monster_spawns:plague_rat_old_valorath@-876,180",
         "monster_spawns:plague_rat_old_valorath@-876,190"
+      ]
+    },
+    "monsters:spectral_direwolf": {
+      "mechanism": "cascade",
+      "pass": 4,
+      "reason": "every source that made it reachable was removed",
+      "via": [
+        "skills:fabled_summon_spectral_wolves"
       ]
     },
     "monsters:valorath_sentinel": {
