@@ -460,10 +460,15 @@ its damage.
 - **WHEN** a companion of the Ranger archetype wears a bow and a melee weapon
 - **THEN** both weapons' damage contributes to its bow attack
 
-### Requirement: A companion's action cadence is fixed, not derived from its weapon
+### Requirement: A companion's cadence is bound by two gates, and weapon delay is not one of them
 
-A companion SHALL be modelled with the flat period the engine gives it, which does not depend on weapon
-delay or haste. The model SHALL NOT value delay or haste on a companion's weapon as a cadence change.
+A companion's action rate SHALL be modelled from the two gates the engine applies, and the binding one
+is whichever is later. The engine sets a flat refractory period that does not read weapon
+delay. It also reduces a companion's non-spell followup skill cooldown by that companion's haste.
+
+The model SHALL NOT value weapon delay on a companion as a cadence change. It SHALL value haste on a
+companion only while the reduced cooldown is the binding gate. It SHALL record which gate binds for the
+figure it reports.
 
 The model SHALL state that a companion's observed rate is lower than its cadence implies, because a
 companion closes distance between actions, and SHALL NOT publish a companion rate as an upper bound
@@ -473,6 +478,40 @@ without that qualification.
 
 - **WHEN** two companion weapons differ only in delay
 - **THEN** the modelled cadence is identical
+
+#### Scenario: Haste is added to a companion
+
+- **WHEN** a companion gains haste
+- **AND** the flat refractory period is the later of the two gates
+- **THEN** the modelled cadence is unchanged, and the report names the refractory as the binding gate
+
+#### Scenario: The reduced cooldown becomes the binding gate
+
+- **WHEN** a companion's haste-reduced skill cooldown exceeds its flat refractory period
+- **THEN** the modelled cadence follows the reduced cooldown
+
+### Requirement: A skill the engine would refuse is not scheduled
+
+The rotation SHALL NOT schedule an action the engine refuses at the modelled state. A skill can carry a precondition the engine
+tests before the cast. The solver SHALL treat such a precondition as a constraint, not as a cost.
+
+The engine refuses an assassination cast above a quarter of target health. Such a skill SHALL be
+excluded from a sustained rotation against that target. Where such a skill is excluded, the model
+SHALL say so rather than omitting the skill silently.
+
+Rationale: a solver that ignores a precondition reports output the game will not produce, and the
+reader cannot tell which of the two is wrong.
+
+#### Scenario: An assassination skill is available against a full-health target
+
+- **WHEN** the rotation is solved against the default target at full health
+- **THEN** the assassination skill contributes nothing
+- **AND** the result states that the skill was excluded and why
+
+#### Scenario: A skill has no precondition
+
+- **WHEN** a damaging skill carries no engine-tested precondition
+- **THEN** it is available to the rotation on its cost and cadence alone
 
 ### Requirement: Spell haste is distinct from haste
 

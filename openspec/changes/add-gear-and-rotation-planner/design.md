@@ -582,10 +582,13 @@ terms. Neither appeared in this design before it was measured.
   percent, confirmed against a live reading. → The model reads `block_chance_base` and
   `block_chance_per_level` with the spawn's own defense. A denormalised scalar is never read where
   curve columns exist beside it.
-- Three exported data fields have no runtime behaviour: `requiredWeaponCategory2` is never checked,
-  `multiplierEnergy` is never applied, and `is_assassination_skill` has no consumer. → The model reads
-  behaviour from code, never from the presence of an exported field. Each such field is recorded so a
-  later reader does not implement it.
+- An exported field can carry less behaviour than its name implies, or more. `multiplierEnergy` is
+  never applied, because `Energy.max` does not read it. `requiredWeaponCategory2` gates nothing, but it
+  is read: `Skills.cs:1387` uses it to select `castEffect2` over `castEffect`. `is_assassination_skill`
+  has a behavioural consumer that constrains the rotation. `PlayerSkills.cs:126-138` refuses the cast
+  unless the target sits at or below a quarter of its maximum health. → The model reads behaviour from
+  code, never from a field's name or its presence. A field with no consumer is recorded so a later
+  reader does not implement it.
 - Skill classes disagree with their own data. `FrontalProjectilesSkill` ignores a populated
   `damagePercent`, and `AreaObjectSpawnSkill` ignores the caster's combat stat entirely. → Each
   damaging skill class gets its own evaluation path and its own test, rather than one shared formula.
