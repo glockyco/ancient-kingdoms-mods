@@ -2609,7 +2609,7 @@
           </div>
         {/if}
         {#if skill.id === "parry"}
-          <!-- Source: server-scripts/Combat.cs:1106-1119, 1534-1544; Player.cs:11664-11668 -->
+          <!-- Source: server-scripts/Combat.cs:1106-1119, 1534-1544; Player.cs:11671-11675 -->
           <div class="space-y-1">
             <h3 class="font-semibold">
               <a
@@ -2848,7 +2848,7 @@
           </div>
         {/if}
         {#if skill.is_blindness}
-          <!-- Source: server-scripts/Player.cs:10949-10981 (TargetRpcAddBlind/RemoveBlind) -->
+          <!-- Source: server-scripts/Player.cs:10956-10988 (TargetRpcAddBlind/RemoveBlind) -->
           <!-- Source: server-scripts/Skills.cs:1131-1133 (isBlindness check, Player only) -->
           <div class="space-y-1">
             <h3 class="font-semibold">Blindness</h3>

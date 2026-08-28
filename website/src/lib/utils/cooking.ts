@@ -18,7 +18,7 @@ const mechanics = PROFESSION_MECHANICS.cooking;
 // craftable once its raw success chance reaches 10%.
 export const COOKING_SUCCESS_FLOOR = mechanics.success.floor;
 
-// Source: server-scripts/Utils.cs:557-566 — GetSuccessProbCooking(levelFood,
+// Source: server-scripts/Utils.cs:563-572 — GetSuccessProbCooking(levelFood,
 // cookingLevel). `levelFood` is the result item's quality. Returns the raw
 // success probability (0..1), ignoring the crafting-UI gate.
 export function rawCookingSuccessChance(
@@ -53,7 +53,7 @@ export function cookingSuccessPercent(
     : 100;
 }
 
-// Source: server-scripts/Player.cs:13151 — a high enough Cooking skill turns
+// Source: server-scripts/Player.cs:13158 — a high enough Cooking skill turns
 // low-tier recipes into "simple tasks" that grant no skill gain (strict >).
 export function isCookingEffortless(
   quality: number,

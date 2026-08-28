@@ -696,7 +696,7 @@
           them never lowers it.
         </p>
         <p class="text-sm text-muted-foreground">
-          <!-- Source: server-scripts/Player.cs:10185-10220 and server-scripts/Npc.cs:1788-1806 — a veteran master refunds spent veteran skill points for gold and a token. -->
+          <!-- Source: server-scripts/Player.cs:10192-10227 and server-scripts/Npc.cs:1788-1806 — a veteran master refunds spent veteran skill points for gold and a token. -->
           A veteran master refunds every spent Veteran Point for 10,000 gold and a
           {#if data.redemptionToken}
             <ItemLink
@@ -912,8 +912,8 @@
         </div>
         <!-- Source: server-scripts/Monster.cs:OnDeath — double XP applies to kills -->
         <!-- Source: server-scripts/GatherItem.cs:582 — double XP applies to gathering -->
-        <!-- Source: server-scripts/Player.cs:12896 — double XP applies to alchemy -->
-        <!-- Source: server-scripts/Player.cs:12896 — double XP applies to scribing -->
+        <!-- Source: server-scripts/Player.cs:12903 — double XP applies to alchemy -->
+        <!-- Source: server-scripts/Player.cs:12903 — double XP applies to scribing -->
         <!-- Source: server-scripts/Player.cs:UserCode_CmdCraftItem__NetworkIdentity__Int32 — double XP applies to crafting and cooking -->
         <!-- Source: server-scripts/PlayerQuests.cs:390-391 — no double XP for quests -->
         <!-- Source: server-scripts/ZoneTrigger.cs — no double XP for zone discovery -->
@@ -1176,7 +1176,7 @@
       </Card.Description>
     </Card.Header>
     <Card.Content>
-      <!-- Source: server-scripts/Player.cs:11350-11357 — alchemy XP by recipe tier -->
+      <!-- Source: server-scripts/Player.cs:11357-11364 — alchemy XP by recipe tier -->
       <table class="w-full text-sm border-collapse">
         <thead>
           <tr class="border-b">
@@ -1233,8 +1233,8 @@
       </Card.Description>
     </Card.Header>
     <Card.Content>
-      <!-- Source: server-scripts/Player.cs:13123-13129 — cooking XP by item quality (same table as crafting) -->
-      <!-- Source: server-scripts/Player.cs:11594-11619 — cooking branch awards XP on success only -->
+      <!-- Source: server-scripts/Player.cs:13130-13136 — cooking XP by item quality (same table as crafting) -->
+      <!-- Source: server-scripts/Player.cs:11601-11626 — cooking branch awards XP on success only -->
       <table class="w-full text-sm border-collapse">
         <thead>
           <tr class="border-b">
@@ -1273,7 +1273,7 @@
       </Card.Description>
     </Card.Header>
     <Card.Content>
-      <!-- Source: server-scripts/Player.cs:13123-13129 — crafting XP by item quality -->
+      <!-- Source: server-scripts/Player.cs:13130-13136 — crafting XP by item quality -->
       <table class="w-full text-sm border-collapse">
         <thead>
           <tr class="border-b">

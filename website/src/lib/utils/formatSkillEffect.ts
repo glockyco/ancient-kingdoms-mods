@@ -351,7 +351,7 @@ function formatHealing(
     parts.push(`${formatLinearValue(healMana, options)} mana`);
   }
 
-  // Source: server-scripts/Player.cs:12618-12625 — resurrection restores 60% max HP, 20% max HP as mana, and +75% of lossExp.
+  // Source: server-scripts/Player.cs:UserCode_CmdResurrect__Int32__Single__Single__NetworkIdentity — resurrection restores 60% max HP, 20% max HP as mana, and +75% of lossExp.
   if (skill.is_resurrect_skill) {
     parts.push("resurrect (60% max HP, 20% max HP as mana, +75% lost XP)");
   }
@@ -512,7 +512,7 @@ function formatBuffDebuffStats(
   if (skill.is_invisibility) parts.push("grants invis");
   // A buff carrying illusionRace redraws the wearer as that race until it ends.
   // Source: server-scripts/BuffSkill.cs:28,61-71 (illusionRace, HasAppearanceIllusion),
-  // server-scripts/Player.cs:6198-6208 (ReSkinPlayer picks the illusion race)
+  // server-scripts/Player.cs:6199-6209 (ReSkinPlayer picks the illusion race)
   if (skill.illusion_race) parts.push(`${skill.illusion_race} illusion`);
   if (skill.is_mana_shield) parts.push("mana shield");
 

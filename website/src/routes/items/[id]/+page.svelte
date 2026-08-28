@@ -928,7 +928,7 @@
               </div>
               <div>
                 <div class={styles.label}>Amount received</div>
-                <!-- Source: server-scripts/Utils.cs:521-524 — getPrimalEssenceAmount: ceil(sellPrice * 0.06f) -->
+                <!-- Source: server-scripts/Utils.cs:getPrimalEssenceAmount — ceil(sellPrice * 0.06f) -->
                 <div class={styles.value}>6% of sell price</div>
               </div>
             </div>
@@ -1658,7 +1658,7 @@
             character&gt;'s pet".
           </p>
           <!-- Source: server-scripts/PetFriendly.cs:389-396 — the follower teleports to its owner past 24 units. -->
-          <!-- Source: server-scripts/Player.cs:10581-10584 — portals respawn the followers at the destination. -->
+          <!-- Source: server-scripts/Player.cs:10588-10591 — portals respawn the followers at the destination. -->
           <p>
             The pet follows you, catches up when it falls far behind, and
             reappears beside you after you take a portal. It is cosmetic and

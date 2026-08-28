@@ -492,7 +492,7 @@
               <dt class="text-muted-foreground w-40 shrink-0">If You Die</dt>
               <dd>
                 <!-- Source: server-scripts/Player.cs:DestroyLivingMercenariesOnOwnerDeath — living mercenaries are removed on owner death; dead ones keep their corpse. -->
-                <!-- Source: server-scripts/Player.cs:3434-3436,12618-12622 — respawning and resurrection re-summon the stored mercenaries. -->
+                <!-- Source: server-scripts/Player.cs:3434-3436,12625-12629 — respawning and resurrection re-summon the stored mercenaries. -->
                 Living mercenaries are dismissed and re-summoned once you respawn.
                 A mercenary that already died keeps its corpse and still needs a resurrection.
               </dd>

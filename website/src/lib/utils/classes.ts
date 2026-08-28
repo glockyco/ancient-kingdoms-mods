@@ -69,7 +69,7 @@ export function formatClassName(classId: string): string {
 
 /**
  * Resource type mapping (database ID -> display name)
- * Source: server-scripts/EquipmentItem.cs:677-685, UICharacterInfo.cs:206 — energy field is displayed as "Rage" throughout the game UI
+ * Source: server-scripts/EquipmentItem.cs:674-682, UICharacterInfo.cs:206 — energy field is displayed as "Rage" throughout the game UI
  */
 const RESOURCE_DISPLAY_NAMES: Record<string, string> = {
   energy: "Rage",

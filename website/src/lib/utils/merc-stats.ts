@@ -2,7 +2,7 @@
 // Source citations refer to Ancient Kingdoms server-scripts/*.cs.
 // Engine-faithful: float32 (Math.fround) plus banker's rounding to match Unity/C#.
 
-// Source: server-scripts/Player.cs:9543-9555 — each veteran point adds +0.25% to Health and Mana multipliers.
+// Source: server-scripts/Player.cs:9549-9561 — each veteran point adds +0.25% to Health and Mana multipliers.
 export const VET_MULT_PER_POINT = 0.0025;
 // Source: server-scripts/Constitution.cs:13-15 — Constitution adds 25 Health per point.
 const CON_HEALTH = 25;
@@ -32,7 +32,7 @@ export interface RaceBands {
   bc: number;
 }
 
-// Source: server-scripts/Player.cs:9747-9784 — per-race roll bands and base-combat factors.
+// Source: server-scripts/Player.cs:9753-9790 — per-race roll bands and base-combat factors.
 export const RACES: Record<string, RaceBands> = {
   Human: { hp: [0.95, 1.0], mana: [0.95, 1.0], energy: [0.95, 1.0], bc: 0.9 },
   Elf: { hp: [0.9, 0.95], mana: [1.0, 1.05], energy: [0.9, 0.95], bc: 0.7 },
@@ -76,8 +76,8 @@ export interface ClassDef {
   div: Record<string, number>;
 }
 
-// Source: server-scripts/Utils.cs:629-638 — class race pools.
-// Source: server-scripts/Player.cs:7979-8015,8016-8044,8045-8073,8074-8102,8103-8131,8132-8163 — per-class attribute divisors.
+// Source: server-scripts/Utils.cs:635-644 — class race pools.
+// Source: server-scripts/Player.cs:7980-8016,8017-8045,8046-8074,8075-8103,8104-8132,8133-8164 — per-class attribute divisors.
 export const CLASSES: Record<string, ClassDef> = {
   Warrior: {
     type: "Warrior",
@@ -128,7 +128,7 @@ export type Curves = Record<string, Curve>;
 const linear = (base: number, per: number, level: number): number =>
   base + per * (level - 1);
 
-// Source: server-scripts/Player.cs:7979-8015,8016-8044,8045-8073,8074-8102,8103-8131,8132-8163 — mercenary attributes are floor(level / class divisor).
+// Source: server-scripts/Player.cs:7980-8016,8017-8045,8046-8074,8075-8103,8104-8132,8133-8164 — mercenary attributes are floor(level / class divisor).
 export function attrs(cls: string, level: number): Record<string, number> {
   const out: Record<string, number> = {};
   for (const [a, n] of Object.entries(CLASSES[cls].div))
@@ -136,13 +136,13 @@ export function attrs(cls: string, level: number): Record<string, number> {
   return out;
 }
 
-// Source: server-scripts/Constitution.cs:13-15, server-scripts/Player.cs:9528-9545 — Health curve times multiplier plus Constitution.
+// Source: server-scripts/Constitution.cs:13-15, server-scripts/Player.cs:9534-9551 — Health curve times multiplier plus Constitution.
 const hpAt = (hpCurve: number, mult: number, con: number): number =>
   iround(f32(f32(hpCurve) * f32(mult))) + con * CON_HEALTH;
-// Source: server-scripts/Intelligence.cs:21-23, server-scripts/Player.cs:9528-9555 — Mana curve times multiplier plus Intelligence.
+// Source: server-scripts/Intelligence.cs:21-23, server-scripts/Player.cs:9534-9561 — Mana curve times multiplier plus Intelligence.
 const manaAt = (manaCurve: number, mult: number, intl: number): number =>
   iround(f32(f32(manaCurve) * f32(mult))) + intl * INT_MANA;
-// Source: server-scripts/Player.cs:9747-9784 — base-combat max is round(level × race factor) − 1.
+// Source: server-scripts/Player.cs:9753-9790 — base-combat max is round(level × race factor) − 1.
 const baseCombatMax = (level: number, factor: number): number =>
   iround(f32(f32(level) * f32(factor))) - 1;
 
@@ -168,9 +168,9 @@ export interface ClassResult {
   rows: MercRow[];
 }
 
-/** Source: server-scripts/Player.cs:9742-9743,9747-9784,9810-9822 — the recruiter preference decides the race, then the hire rolls multipliers and a shared base-combat value. */
-/** Source: server-scripts/Player.cs:9528-9555 — summoned mercenaries apply level, veteran points, Health, Mana, Attack Power, and Spell Power. */
-/** Source: server-scripts/Player.cs:7979-8015,8016-8044,8045-8073,8074-8102,8103-8131,8132-8163 — class attributes are rebuilt from level. */
+/** Source: server-scripts/Player.cs:9748-9749,9753-9790,9816-9828 — the recruiter preference decides the race, then the hire rolls multipliers and a shared base-combat value. */
+/** Source: server-scripts/Player.cs:9534-9561 — summoned mercenaries apply level, veteran points, Health, Mana, Attack Power, and Spell Power. */
+/** Source: server-scripts/Player.cs:7980-8016,8017-8045,8046-8074,8075-8103,8104-8132,8133-8164 — class attributes are rebuilt from level. */
 export function computeAll(
   level: number,
   veteran: number,
@@ -225,7 +225,7 @@ export function computeAll(
 /**
  * Races a recruiter preference can produce although no class pool lists them,
  * with the classes that accept each one.
- * Source: server-scripts/Utils.cs:639-640 — the server names the race and the
+ * Source: server-scripts/Utils.cs:645-646 — the server names the race and the
  * class indices that honour it, so the pool alone does not decide the outcome.
  */
 export const PREFERRED_ONLY_RACES: Record<string, string[]> = {
@@ -255,7 +255,7 @@ export function obtainableRaces(
 
 /**
  * P(get this race) when hiring a class from a recruiter that prefers `preferredRace`.
- * Source: server-scripts/Utils.cs:639-640 — a preference the class can be is forced,
+ * Source: server-scripts/Utils.cs:645-646 — a preference the class can be is forced,
  * otherwise the race is uniform over the class pool.
  */
 export function pRaceAtRecruiter(

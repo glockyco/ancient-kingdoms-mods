@@ -183,7 +183,7 @@ export const load: PageServerLoad = (): AdventuringPageData => {
     )
     .all() as RawQuest[];
 
-  // Source: server-scripts/Utils.cs:595-602 — daily Adventurer quest selection reads the shared npcAdventurerReference quest list.
+  // Source: server-scripts/Utils.cs:GetDailyAdventurerQuest — daily Adventurer quest selection reads the shared npcAdventurerReference quest list.
   const questPoolOrder = (() => {
     const row = db
       .prepare(

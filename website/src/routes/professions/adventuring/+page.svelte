@@ -266,7 +266,7 @@
       : null;
   }
 
-  // Source: server-scripts/Utils.cs:608-624 — adventurer quest order uses Unity/Mono's seeded System.Random with a Fisher-Yates shuffle.
+  // Source: server-scripts/Utils.cs:614-630 — adventurer quest order uses Unity/Mono's seeded System.Random with a Fisher-Yates shuffle.
   function shuffleWithDotNetRandom<T>(items: T[], seed: number): T[] {
     const shuffled = [...items];
     const random = new DotNetRandom(seed);
@@ -387,7 +387,7 @@
             Each Adventurer quest has its own per-character 24-hour cooldown.
           </div>
           <p class="mt-1 text-sm leading-6 text-muted-foreground">
-            <!-- Source: server-scripts/Utils.cs:595-600 — the daily offer requires a recommended level at or below the character level and no completion in the last 24 hours. -->
+            <!-- Source: server-scripts/Utils.cs:601-606 — the daily offer requires a recommended level at or below the character level and no completion in the last 24 hours. -->
             The taskgiver offers the first quest in today's queue that meets both
             requirements:
           </p>

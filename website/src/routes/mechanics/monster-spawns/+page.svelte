@@ -205,7 +205,7 @@
     <Card.Content class="space-y-3 text-sm text-muted-foreground">
       <p>
         <!-- Source: server-scripts/ZoneInfo.cs:185-201 — zones with no online player inside are deactivated. -->
-        <!-- Source: server-scripts/Player.cs:3437, 10598, 12629 — zone cleanup runs 5 seconds after respawn, portal travel, or resurrection; NetworkManagerMMO.cs:718 and 820 — and on disconnect. -->
+        <!-- Source: server-scripts/Player.cs:3437,10605,12636 — zone cleanup runs 5 seconds after respawn, portal travel, or resurrection; NetworkManagerMMO.cs:718 and 820 — and on disconnect. -->
         About 5 seconds after the last player leaves a zone (immediately, on a logout),
         the entire zone is switched off. Monsters in it stop acting entirely — they
         do not move, fight, or respawn until a player enters again.
@@ -261,7 +261,7 @@
           time (about 5 minutes).
         </li>
         <li>
-          <!-- Source: server-scripts/Player.cs:13556-13560 — a dungeon renewal zeroes boss and elite deadlines, including the saved ones. -->
+          <!-- Source: server-scripts/Player.cs:13563-13567 — a dungeon renewal zeroes boss and elite deadlines, including the saved ones. -->
           For dungeon bosses these timers can be wiped for gold — see
           <a
             href="#renewal-sages"
@@ -522,17 +522,17 @@
     <Card.Content class="space-y-4">
       <ul class="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
         <li>
-          <!-- Source: server-scripts/Player.cs:13550-13561 — the renewal sets respawnTimeEnd to 0 for every respawn-enabled monster in the dungeon; boss and elite saved deadlines are zeroed too. -->
+          <!-- Source: server-scripts/Player.cs:13557-13568 — the renewal sets respawnTimeEnd to 0 for every respawn-enabled monster in the dungeon; boss and elite saved deadlines are zeroed too. -->
           A renewal marks every respawn timer in the dungeon as due — regular monsters,
           elites, and bosses alike, including saved boss deadlines.
         </li>
         <li>
-          <!-- Source: server-scripts/Player.cs:13550-13561 — the renewal only writes timers; health and state of living monsters are untouched. -->
+          <!-- Source: server-scripts/Player.cs:13557-13568 — the renewal only writes timers; health and state of living monsters are untouched. -->
           Nothing despawns. Monsters that are alive — including a rare or boss that
           is already up — are not touched. A renewal only affects the dead.
         </li>
         <li>
-          <!-- Source: server-scripts/Player.cs:13536-13542 — the renewal is refused while any player is inside the dungeon. -->
+          <!-- Source: server-scripts/Player.cs:13543-13549 — the renewal is refused while any player is inside the dungeon. -->
           A renewal is refused while anyone is inside the dungeon. The respawns therefore
           happen the moment the next player walks in, since the empty zone is switched
           off at the time of purchase.
@@ -545,7 +545,7 @@
       </ul>
 
       <p class="text-sm text-muted-foreground">
-        <!-- Source: server-scripts/Player.cs:13811-13823 and Monster.cs:2162-2167 — a zeroed deadline triggers the spawn roll on the next zone activation; a failed roll re-arms the full interval until the next renewal zeroes it again. -->
+        <!-- Source: server-scripts/Player.cs:13818-13830 and Monster.cs:2162-2167 — a zeroed deadline triggers the spawn roll on the next zone activation; a failed roll re-arms the full interval until the next renewal zeroes it again. -->
         Renewals interact with rare spawns in a useful way. Buying several renewals
         back-to-back is wasted gold: the roll only fires when someone enters, so you
         get one roll on the next entry no matter how many renewals you stacked. But
