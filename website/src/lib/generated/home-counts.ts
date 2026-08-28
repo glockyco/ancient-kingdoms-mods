@@ -28,7 +28,7 @@ export const HOME_COUNTS: HomeCounts = {
   monsters: 360,
   npcs: 234,
   classes: 6,
-  skills: 699,
+  skills: 698,
   mercenaries: 6,
   summons: 5,
   zones: 25,
