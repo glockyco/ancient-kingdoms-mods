@@ -1350,7 +1350,7 @@
         {/if}
 
         <!-- Attribute Bonuses (3-piece) -->
-        <!-- Source: server-scripts/PlayerEquipment.cs:265,280 — set bonuses apply at 3 pieces (attributes) and 5 pieces (skills) -->
+        <!-- Source: server-scripts/PlayerEquipment.cs:OnEquipmentChanged — set bonuses apply at 3 pieces (attributes) and 5 pieces (skills) -->
         {#if computed.armorSetAttributeBonuses && computed.armorSetAttributeBonuses.length > 0}
           <div>
             <h4 class="text-sm font-semibold mb-2">Set Bonuses (3 pieces)</h4>

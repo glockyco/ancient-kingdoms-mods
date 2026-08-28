@@ -1331,14 +1331,6 @@
       "sha256": "3c7a9e19497a76553b48b4171ee5fc21edf0f05247c8e794087e97c486afe546",
       "span": 23
     },
-    "PlayerEquipment.cs:265": {
-      "sha256": "fa8d338fd5cd5087db4cb4a4decf00386170ea46a3e32aa52b5bfce28b955791",
-      "span": 1
-    },
-    "PlayerEquipment.cs:280": {
-      "sha256": "b16a44d17034db6f14b3c8ed917aad7b3b943644e8eb92365b6c0f76e4ef4fd7",
-      "span": 1
-    },
     "PlayerEquipment.cs:32": {
       "sha256": "e6a0f986b674d99fc76cf00ef1a5f6e44c0ef66930c9b4c4446c8d2dad0f80e2",
       "span": 1
@@ -1374,6 +1366,9 @@
     "PlayerEquipment.cs:57-58": {
       "sha256": "ef9272f0c56fa6c11e6d7b31b9b9dcef08215dfc251fb2fdfa054ad08f8a50f4",
       "span": 2
+    },
+    "PlayerEquipment.cs:OnEquipmentChanged": {
+      "span": 0
     },
     "PlayerInventory.cs:137-155": {
       "sha256": "91f168be19201336c513e20c1476403c0af8b62d50e76ad29ec86a50e88c9b26",
