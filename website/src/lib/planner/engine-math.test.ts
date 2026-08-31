@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   addF32,
   ceilToInt,
+  divideF32,
   clamp,
   expectedBernoulli,
   expectedUniform,
@@ -24,6 +25,10 @@ describe("engine numeric primitives", () => {
 
   it("narrows each accumulated float term", () => {
     expect(addF32(16_777_216, 1)).toBe(16_777_216);
+  });
+
+  it("narrows float division at the operation", () => {
+    expect(divideF32(28, 25)).toBe(Math.fround(Math.fround(28) / 25));
   });
 
   it.each([

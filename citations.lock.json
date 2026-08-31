@@ -1146,6 +1146,10 @@
       "sha256": "13792aead171bb39523c81d508ebeebab840e775a7fed5ac3cf51cf992016dd6",
       "span": 42
     },
+    "Player.cs:3236-3275": {
+      "sha256": "4267c7c7261d7534abd8caac03cdd9269f4f43b5fe634c9839c43f55d12b081c",
+      "span": 40
+    },
     "Player.cs:3300-3322": {
       "sha256": "4b3f193520fc4afb46dd5f44bdc640c4f2e9b0193869ada4996298f5c0f0b858",
       "span": 23
@@ -1659,6 +1663,10 @@
       "sha256": "d6b87eaa264d0a168c91e3feb42392d34816f3efb046f844a24a8aab00262d64",
       "span": 16
     },
+    "Skills.cs:862-887": {
+      "sha256": "21b41bb0e7a50a522038f22a9c13f8b2244bf3f599b871f7b66a028906160742",
+      "span": 26
+    },
     "Skills.cs:865-868": {
       "sha256": "61167fe9def73bcef4173d63f07c7cbb2c4c0baca13fc820dcc0dd1a21d5dc59",
       "span": 4
@@ -1678,6 +1686,10 @@
     "Skills.cs:938-958": {
       "sha256": "b7982e29c9020a944eb6cc1a8fd50f4b0703c63b6bee3530cb27b3151b07cc83",
       "span": 21
+    },
+    "Skills.cs:990-1014": {
+      "sha256": "b1ddecd42fa0cd56884d1ab96992e1b83a52038759667026d420589707a003f4",
+      "span": 25
     },
     "Skills.cs:GetOverTimeDamageType": {
       "span": 0
@@ -1739,6 +1751,10 @@
     "TargetBuffSkill.cs:266-281": {
       "sha256": "237623feeefe1f9d21910526f97beca966df9b8ef54ac3124ecca2c32fea039e",
       "span": 16
+    },
+    "TargetBuffSkill.cs:277-297": {
+      "sha256": "3127fe76a997a53a01a8fa4663243f7ae08f9274384f29ea1b90be8ae8bf5f63",
+      "span": 21
     },
     "TargetDamageSkill.cs": {
       "span": 0

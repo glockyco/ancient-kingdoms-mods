@@ -13,6 +13,11 @@ export function addF32(left: number, right: number): number {
   return f32(f32(left) + f32(right));
 }
 
+/** Divides two Unity `float` values and narrows the result. */
+export function divideF32(left: number, right: number): number {
+  return f32(f32(left) / f32(right));
+}
+
 /** Matches `Mathf.RoundToInt` and `(int)Math.Round(double)`. */
 export function iround(value: number): number {
   const lower = Math.floor(value);
