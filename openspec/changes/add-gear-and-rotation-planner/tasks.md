@@ -20,9 +20,9 @@ removed only after the replacement passes the runtime and release gates.
 - [x] 2.1 Add a `DataExporter` model and exporter for every player-class slot, accepted item category, and mercenary prefab slot. Keep class and race compatibility in curated metadata and its character-creator check.
 - [x] 2.2 Register the slot exporter explicitly and add tests that cover Shield for Warrior, Cleric, Wizard, and Druid; Bow for Ranger; and Weapon for Rogue.
 - [x] 2.3 Run a real game export, compare the offhand values with the live reading in `design.md`, and record the export artifact and game build.
-- [ ] 2.4 Load the slot table through the ordered pipeline schema, loader, and required-registration assertion, keeping raw exports out of version control.
-- [ ] 2.5 Export or derive class and race progression curves, level and veteran budgets, skill trees, mercenary archetypes, consumables, and ammunition inputs.
-- [ ] 2.6 Add pipeline tests that fail when any required progression, slot, skill, consumable, ammunition, or effect-classification input is absent.
+- [x] 2.4 Load the slot table through the ordered pipeline schema, loader, and required-registration assertion, keeping raw exports out of version control.
+- [x] 2.5 Export or derive class and race progression curves, level and veteran budgets, skill trees, mercenary archetypes, consumables, and ammunition inputs.
+- [x] 2.6 Add pipeline tests that fail when any required progression, slot, skill, consumable, ammunition, or effect-classification input is absent.
 
 ## 3. Serialized contracts and planner payload
 

@@ -152,6 +152,61 @@ CREATE TABLE classes (
 );
 
 -- =============================================================================
+-- ARCHETYPE EQUIPMENT SLOTS
+-- =============================================================================
+
+CREATE TABLE equipment_slots (
+    owner_type TEXT NOT NULL CHECK (owner_type IN ('player', 'mercenary')),
+    owner_id TEXT NOT NULL,
+    slot_index INTEGER NOT NULL CHECK (slot_index >= 0),
+    accepted_category TEXT NOT NULL,
+    PRIMARY KEY (owner_type, owner_id, slot_index)
+);
+
+CREATE INDEX idx_equipment_slots_owner ON equipment_slots(owner_type, owner_id);
+
+-- =============================================================================
+-- CHARACTER PROGRESSION
+-- =============================================================================
+
+CREATE TABLE progression_rules (
+    id INTEGER PRIMARY KEY CHECK (id = 1),
+    max_level INTEGER NOT NULL CHECK (max_level >= 1),
+    max_veteran_points INTEGER NOT NULL CHECK (max_veteran_points >= 0),
+    attribute_points_per_veteran INTEGER NOT NULL CHECK (attribute_points_per_veteran >= 0),
+    veteran_skill_points_per_veteran INTEGER NOT NULL CHECK (veteran_skill_points_per_veteran >= 0)
+);
+
+CREATE TABLE race_progression (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    strength INTEGER NOT NULL,
+    constitution INTEGER NOT NULL,
+    dexterity INTEGER NOT NULL,
+    intelligence INTEGER NOT NULL,
+    wisdom INTEGER NOT NULL,
+    charisma INTEGER NOT NULL
+);
+
+CREATE TABLE class_level_progression (
+    class_id TEXT NOT NULL REFERENCES classes(id),
+    level INTEGER NOT NULL CHECK (level >= 1),
+    strength INTEGER NOT NULL,
+    constitution INTEGER NOT NULL,
+    dexterity INTEGER NOT NULL,
+    intelligence INTEGER NOT NULL,
+    wisdom INTEGER NOT NULL,
+    charisma INTEGER NOT NULL,
+    PRIMARY KEY (class_id, level)
+);
+
+CREATE TABLE level_budgets (
+    level INTEGER PRIMARY KEY CHECK (level >= 1),
+    normal_skill_points INTEGER NOT NULL CHECK (normal_skill_points >= 0),
+    attribute_points INTEGER NOT NULL CHECK (attribute_points >= 0)
+);
+
+-- =============================================================================
 -- LUCK TOKENS
 -- =============================================================================
 

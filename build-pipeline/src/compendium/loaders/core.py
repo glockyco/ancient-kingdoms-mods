@@ -21,6 +21,7 @@ from compendium.models import (
     ClassData,
     CraftingRecipeData,
     CraftingStationData,
+    EquipmentSlotData,
     FishData,
     GatherItemData,
     HouseData,
@@ -33,6 +34,7 @@ from compendium.models import (
     PetData,
     PortalData,
     ProfessionData,
+    ProgressionExportData,
     QuestData,
     ScribingRecipeData,
     ScribingTableData,
@@ -262,6 +264,131 @@ def load_classes(conn: sqlite3.Connection, export_dir: Path) -> None:
 
     conn.commit()
     console.print(f"  [green]OK[/green] Loaded {len(classes)} classes")
+
+
+def load_equipment_slots(conn: sqlite3.Connection, export_dir: Path) -> None:
+    """Load accepted equipment categories for player and mercenary archetypes."""
+    console.print("Loading equipment slots...")
+
+    filepath = export_dir / "equipment_slots.json"
+    with open(filepath, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    slots = [EquipmentSlotData(**item) for item in data]
+    if not slots:
+        raise ValueError("equipment_slots.json contains no slots")
+
+    cursor = conn.cursor()
+    for slot in slots:
+        insert_model(cursor, "equipment_slots", slot)
+
+    conn.commit()
+    console.print(f"  [green]OK[/green] Loaded {len(slots)} equipment slots")
+
+
+def load_progression(conn: sqlite3.Connection, export_dir: Path) -> None:
+    """Load complete character progression curves and point budgets."""
+    console.print("Loading character progression...")
+
+    filepath = export_dir / "progression.json"
+    with open(filepath, "r", encoding="utf-8") as f:
+        progression = ProgressionExportData(**json.load(f))
+
+    class_ids = {row[0] for row in conn.execute("SELECT id FROM classes")}
+    expected_class_levels = {
+        (class_id, level)
+        for class_id in class_ids
+        for level in range(1, progression.max_level + 1)
+    }
+    actual_class_levels = {
+        (row.class_id, row.level) for row in progression.class_levels
+    }
+    if len(actual_class_levels) != len(progression.class_levels):
+        raise ValueError("progression.json contains duplicate class-level rows")
+    if actual_class_levels != expected_class_levels:
+        missing = sorted(expected_class_levels - actual_class_levels)
+        unexpected = sorted(actual_class_levels - expected_class_levels)
+        raise ValueError(
+            "progression.json class-level rows do not match classes and level range; "
+            f"missing={missing}, unexpected={unexpected}"
+        )
+
+    expected_levels = set(range(1, progression.max_level + 1))
+    actual_levels = {row.level for row in progression.level_budgets}
+    if len(actual_levels) != len(progression.level_budgets):
+        raise ValueError("progression.json contains duplicate level budgets")
+    if actual_levels != expected_levels:
+        raise ValueError(
+            "progression.json level budgets do not cover every level; "
+            f"missing={sorted(expected_levels - actual_levels)}, "
+            f"unexpected={sorted(actual_levels - expected_levels)}"
+        )
+
+    expected_races: set[str] = set()
+    for (compatible_races,) in conn.execute("SELECT compatible_races FROM classes"):
+        expected_races.update(json.loads(compatible_races))
+    actual_races = {race.id for race in progression.races}
+    if len(actual_races) != len(progression.races):
+        raise ValueError("progression.json contains duplicate race rows")
+    if actual_races != expected_races:
+        raise ValueError(
+            "progression.json races do not match class compatibility metadata; "
+            f"missing={sorted(expected_races - actual_races)}, "
+            f"unexpected={sorted(actual_races - expected_races)}"
+        )
+
+    cursor = conn.cursor()
+    cursor.execute(
+        "INSERT INTO progression_rules VALUES (1, ?, ?, ?, ?)",
+        (
+            progression.max_level,
+            progression.max_veteran_points,
+            progression.attribute_points_per_veteran,
+            progression.veteran_skill_points_per_veteran,
+        ),
+    )
+    for race in progression.races:
+        attributes = race.starting_attributes
+        cursor.execute(
+            "INSERT INTO race_progression VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            (
+                race.id,
+                race.name,
+                attributes.strength,
+                attributes.constitution,
+                attributes.dexterity,
+                attributes.intelligence,
+                attributes.wisdom,
+                attributes.charisma,
+            ),
+        )
+    for row in progression.class_levels:
+        attributes = row.automatic_attributes
+        cursor.execute(
+            "INSERT INTO class_level_progression VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            (
+                row.class_id,
+                row.level,
+                attributes.strength,
+                attributes.constitution,
+                attributes.dexterity,
+                attributes.intelligence,
+                attributes.wisdom,
+                attributes.charisma,
+            ),
+        )
+    for budget in progression.level_budgets:
+        cursor.execute(
+            "INSERT INTO level_budgets VALUES (?, ?, ?)",
+            (budget.level, budget.normal_skill_points, budget.attribute_points),
+        )
+
+    conn.commit()
+    console.print(
+        f"  [green]OK[/green] Loaded {len(progression.races)} races, "
+        f"{len(progression.class_levels)} class levels, and "
+        f"{len(progression.level_budgets)} point budgets"
+    )
 
 
 def load_zones(conn: sqlite3.Connection, export_dir: Path) -> None:

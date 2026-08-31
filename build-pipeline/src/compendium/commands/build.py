@@ -22,6 +22,7 @@ from compendium.loaders import (
     load_classes,
     load_crafting_recipes,
     load_crafting_stations,
+    load_equipment_slots,
     load_fish,
     load_gather_items,
     load_houses,
@@ -36,6 +37,7 @@ from compendium.loaders import (
     load_pets,
     load_portals,
     load_professions,
+    load_progression,
     load_quests,
     load_scribing_recipes,
     load_scribing_tables,
@@ -50,6 +52,7 @@ from compendium.loaders import (
     record_achievements,
     record_visual_assets,
 )
+from compendium.planner_inputs import verify_planner_inputs
 from compendium.redactions import verify
 from compendium.redactions.references import resolve
 from compendium.session import verify_export_locale
@@ -74,6 +77,8 @@ def load_all(
     verify_export_locale(export_dir)  # Before anything reads a localized string
     load_static_data(conn, export_dir)  # Factions, reputation tiers (before NPCs)
     load_classes(conn, export_dir)  # Player classes (early, no dependencies)
+    load_equipment_slots(conn, export_dir)
+    load_progression(conn, export_dir)  # After classes (class and race coverage)
     load_zones(conn, export_dir)
     if static_dir is None:
         record_visual_assets(conn, export_dir)
@@ -142,6 +147,7 @@ def run(config: dict) -> None:
     conn = create_database(db_path, schema_path)
 
     try:
+        verify_planner_inputs(export_dir)
         # Load data in order (respecting foreign keys)
         load_all(conn, export_dir, static_dir)
 

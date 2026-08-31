@@ -914,6 +914,81 @@ class ClassData(BaseModel):
     base_critical_chance_per_level: float = 0
 
 
+EquipmentCategory = Literal[
+    "Head",
+    "Ear",
+    "Chest",
+    "Legs",
+    "Ring",
+    "Hands",
+    "Neck",
+    "Belt",
+    "Feet",
+    "Artifact",
+    "Weapon",
+    "Shield",
+    "Bracers",
+    "Charm",
+    "Bow",
+]
+
+
+class EquipmentSlotData(BaseModel):
+    """Accepted item category for one player or mercenary equipment slot."""
+
+    owner_type: Literal["player", "mercenary"]
+    owner_id: str = Field(min_length=1)
+    slot_index: int = Field(ge=0)
+    accepted_category: EquipmentCategory
+
+
+class AttributeValuesData(BaseModel):
+    """Six base attributes at one progression point."""
+
+    strength: int = Field(ge=0)
+    constitution: int = Field(ge=0)
+    dexterity: int = Field(ge=0)
+    intelligence: int = Field(ge=0)
+    wisdom: int = Field(ge=0)
+    charisma: int = Field(ge=0)
+
+
+class RaceProgressionData(BaseModel):
+    """Starting attributes for one playable race."""
+
+    id: str = Field(min_length=1)
+    name: str = Field(min_length=1)
+    starting_attributes: AttributeValuesData
+
+
+class ClassLevelProgressionData(BaseModel):
+    """Cumulative automatic class attributes at one level."""
+
+    class_id: str = Field(min_length=1)
+    level: int = Field(ge=1)
+    automatic_attributes: AttributeValuesData
+
+
+class LevelBudgetData(BaseModel):
+    """Normal skill and attribute points earned by one level."""
+
+    level: int = Field(ge=1)
+    normal_skill_points: int = Field(ge=0)
+    attribute_points: int = Field(ge=0)
+
+
+class ProgressionExportData(BaseModel):
+    """Character progression rules from progression.json."""
+
+    max_level: int = Field(ge=1)
+    max_veteran_points: int = Field(ge=0)
+    attribute_points_per_veteran: int = Field(ge=0)
+    veteran_skill_points_per_veteran: int = Field(ge=0)
+    races: list[RaceProgressionData] = Field(min_length=1)
+    class_levels: list[ClassLevelProgressionData] = Field(min_length=1)
+    level_budgets: list[LevelBudgetData] = Field(min_length=1)
+
+
 # =============================================================================
 # Portal Models
 # =============================================================================

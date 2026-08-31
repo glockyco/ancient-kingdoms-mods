@@ -82,6 +82,11 @@ A character allocates 249 attribute points at the cap, and 336 is the largest at
 character can reach. A save whose totals exceed 336 is not a valid reference, so a measurement must come
 from a character the harness built rather than from arbitrary save data.
 
+A real export on Ancient Kingdoms 0.9.31.1, Steam build 24986533, wrote `progression.json` with seven
+race starts, 300 class-level rows, and 50 level budgets. The required-input preflight joins those rows to
+the six exported classes. It also requires the existing skill-tree, mercenary, food, potion, and
+ammunition fields before a database build can publish planner data.
+
 Companion equipment is first order. Placing one dagger on a mercenary raised its damage from 17 to 462.
 Of that 445 increase, 410 came from the inherited equipment getter and 35 came through the Strength the
 item grants. A single item is worth more than twenty times the mercenary's ungeared damage.

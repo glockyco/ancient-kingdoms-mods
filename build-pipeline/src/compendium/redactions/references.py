@@ -118,6 +118,7 @@ MENTIONS: frozenset[tuple[str, str]] = frozenset(
     {
         ("altars", "required_activation_item_id"),
         ("chests", "key_required_id"),
+        ("class_level_progression", "class_id"),
         ("gathering_resources", "tool_required_id"),
         ("items", "buy_token_id"),
         ("items", "taught_by_recipe_id"),
