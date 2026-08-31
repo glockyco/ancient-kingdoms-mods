@@ -237,10 +237,18 @@ through 7.6 are comparison fixtures and wait for the model where they require pr
       and the companion held `Tangle Trap`. Both effects use the `Debuff AC` category. Each retained its
       full 30-second duration. Categories are therefore local to an entity's `Skills` list and do not
       interfere across party members.
-- [ ] 7.12 Measure integer-schedule gaps for skills with cooldowns of 45 seconds and above across
-      representative fight horizons. Record the fractional relaxation, executable schedule, and gap.
-- [ ] 7.13 Measure Rogue and Warrior resource behavior separately under matched damage, skill cost, and
-      horizon inputs. Record the negative `Fury` regeneration effect instead of applying one class policy.
+- [x] 7.12 Measure integer-schedule gaps for exported cooldowns of 45, 60, 90, 120, 180, and
+      300 seconds across 30, 60, 90, 120, 180, and 300-second horizons. A ready skill has fractional
+      capacity `1 + horizon / cooldown`. Its executable schedule starts at zero and includes cooldown
+      multiples through the horizon. The 36-case matrix had gaps from zero to 0.75 casts. For example,
+      a 45-second skill over 60 seconds relaxed to 2.333 casts, scheduled at 0 and 45 seconds, and had a
+      0.333-cast gap. A 120-second skill over 90 seconds relaxed to 1.75 casts, scheduled only at zero,
+      and had the maximum 0.75-cast gap. Exact cooldown multiples had no gap.
+- [x] 7.13 Measure Rogue and Warrior resources with matched inputs. A 20-damage follow-up supplied
+      5 resource, and a 100-damage received hit supplied 3. After an equal cost of 4, both classes had
+      4 resource. Over the next 3 one-second recovery ticks, Warrior stayed at 4. Rogue finished at 1
+      while `Fury` was active because its -0.04 maximum resource per second rounded to -1 per tick.
+      Resource projection must therefore include active class effects instead of using one shared policy.
 - [ ] 7.14 Measure companion output by archetype, melee or ranged behavior, initial distance, target
       movement state, haste, and cooldown reduction. Record observed cadence and output bounds so the
       planner does not treat engine cadence as a reachable rate without qualification.
