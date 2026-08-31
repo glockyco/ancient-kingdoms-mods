@@ -206,6 +206,11 @@ namespace DataExporter
                 var exporter = new ClassExporter(LoggerInstance, ExportPath, visualAssets);
                 exporter.Export();
             }));
+            result.Exporters.Add(RunExporter("equipmentSlots", required: true, () =>
+            {
+                var exporter = new EquipmentSlotExporter(LoggerInstance, ExportPath);
+                exporter.Export();
+            }));
             result.Exporters.Add(RunExporter("visualAssets.manifest", required: true, visualAssets.WriteManifest));
 
             result.Ok = result.Exporters.TrueForAll(exporter => !exporter.Required || exporter.Ok);

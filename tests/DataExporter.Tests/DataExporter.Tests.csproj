@@ -18,7 +18,9 @@
 
   <ItemGroup>
     <Compile Include="..\..\mods\DataExporter\GameIds.cs" Link="GameIds.cs" />
+    <Compile Include="..\..\mods\DataExporter\Exporters\EquipmentSlotRows.cs" Link="Exporters\EquipmentSlotRows.cs" />
     <Compile Include="..\..\mods\DataExporter\Exporters\TooltipNormalizer.cs" Link="Exporters\TooltipNormalizer.cs" />
+    <Compile Include="..\..\mods\DataExporter\Models\EquipmentSlotData.cs" Link="Models\EquipmentSlotData.cs" />
     <Compile Include="..\..\mods\DataExporter\Models\ExporterRunError.cs" Link="Models\ExporterRunError.cs" />
     <Compile Include="..\..\mods\DataExporter\Models\ExporterRunResult.cs" Link="Models\ExporterRunResult.cs" />
     <Compile Include="..\..\mods\DataExporter\Models\ExportRunResult.cs" Link="Models\ExportRunResult.cs" />

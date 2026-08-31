@@ -497,10 +497,12 @@ that cannot be checked against the reader's own game is not trustworthy to that 
 
 ## Slot 13 and the weapons in it
 
-Slot 13 is not one slot. Every class prefab and every mercenary prefab serializes its own slot table, and
-read from the running game at version 0.9.31.0 the offhand requires "Shield" for a Warrior, a Cleric, a
-Wizard and a Druid, "Bow" for a Ranger, and "Weapon" for a Rogue. A Ranger and a Rogue can therefore
-never hold a shield, and the search space for those two classes differs in kind rather than in degree.
+Slot 13 is not one slot. Every class prefab and every mercenary prefab serializes its own slot table.
+A real export on Ancient Kingdoms 0.9.31.1, Steam build 24986533, wrote 192 rows for 12 owners to the
+ignored runtime artifact `exported-data/equipment_slots.json`. Player and mercenary rows agreed: the
+offhand requires "Shield" for a Warrior, a Cleric, a Wizard and a Druid, "Bow" for a Ranger, and
+"Weapon" for a Rogue. A Ranger and a Rogue can therefore never hold a shield, and the search space for
+those two classes differs in kind rather than in degree.
 The static table in `GameManager` that names the slot "Shield" is a display default, and the initializer
 in the decompiled `PlayerEquipment` is one prefab's value.
 
