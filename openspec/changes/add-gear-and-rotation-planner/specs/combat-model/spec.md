@@ -466,35 +466,39 @@ its damage.
 - **WHEN** a companion of the Ranger archetype wears a bow and a melee weapon
 - **THEN** both weapons' damage contributes to its bow attack
 
-### Requirement: A companion's cadence is bound by two gates, and weapon delay is not one of them
+### Requirement: A companion's special-action cadence is bound by two gates, and weapon delay is not one of them
 
-A companion's action rate SHALL be modelled from the two gates the engine applies, and the binding one
-is whichever is later. The engine sets a flat refractory period that does not read weapon
-delay. It also reduces a companion's non-spell followup skill cooldown by that companion's haste.
+A companion's special-action rate SHALL be modelled from the shared selection timer and each skill's
+cooldown. The engine draws the selection timer from 2 to 4 seconds. It then selects uniformly from the
+offensive skills that are ready. A skill's cooldown starts when its cast completes.
 
-The model SHALL NOT value weapon delay on a companion as a cadence change. It SHALL value haste on a
-companion only while the reduced cooldown is the binding gate. It SHALL record which gate binds for the
-figure it reports.
+The model SHALL NOT value weapon delay on a companion as a cadence change. It SHALL reduce a
+companion's non-spell followup skill cooldown by that companion's haste. It SHALL record whether a
+skill cooldown or the shared special-action selection gate limits each reported rate.
 
-The model SHALL state that a companion's observed rate is lower than its cadence implies, because a
-companion closes distance between actions, and SHALL NOT publish a companion rate as an upper bound
-without that qualification.
+The model SHALL state that movement can make the in-range cadence unreachable. It SHALL NOT publish
+that cadence as a reachable prediction while a companion must close distance between actions.
 
 #### Scenario: A faster weapon is considered for a companion
 
 - **WHEN** two companion weapons differ only in delay
 - **THEN** the modelled cadence is identical
 
-#### Scenario: Haste is added to a companion
+#### Scenario: Haste is added to a companion's default attack
 
 - **WHEN** a companion gains haste
-- **AND** the flat refractory period is the later of the two gates
-- **THEN** the modelled cadence is unchanged, and the report names the refractory as the binding gate
+- **AND** its default attack is a non-spell followup skill
+- **THEN** the modelled default-attack cooldown falls
 
-#### Scenario: The reduced cooldown becomes the binding gate
+#### Scenario: A special skill has a short cooldown
 
-- **WHEN** a companion's haste-reduced skill cooldown exceeds its flat refractory period
-- **THEN** the modelled cadence follows the reduced cooldown
+- **WHEN** a special skill is ready more often than the shared selection process chooses it
+- **THEN** the report names special selection as the binding gate
+
+#### Scenario: A special skill has a long cooldown
+
+- **WHEN** a special skill is ready less often than its uniform selection share
+- **THEN** the report names the skill cooldown as the binding gate
 
 ### Requirement: A skill the engine would refuse is not scheduled
 

@@ -642,10 +642,15 @@ lands, and both saturate. The model already requires this coupling; it is now me
 
 ## A companion is a different machine
 
-A companion's period comes from `Monster.StartRefractoryPeriod`, which sets a flat 1.0 s for a special
-skill and 0.5 s otherwise. Weapon delay and haste do not enter it, so delay on a companion's weapon is
-worth nothing and the player formula does not transfer. A companion also closes distance between actions,
-so its observed rate is below its cadence and a modelled rate is an upper bound rather than a prediction.
+A companion does not run the `Monster` state machine or call `Monster.StartRefractoryPeriod`.
+`PetSkills.NextAttackSkill` checks the default skill whenever the companion is idle. It samples a special
+action only when a shared timer drawn from 2 to 4 seconds expires, then chooses uniformly from the ready
+offensive skills. Each selected skill also carries its own cooldown, which starts when its cast completes.
+Weapon delay does not enter either gate. Haste reduces only a companion's non-spell followup cooldown.
+
+A companion also closes distance between actions. The in-range action-selection expectation is therefore
+an upper bound while movement is uncontrolled, not a reachable prediction. The model reports the
+movement state with the bound instead of applying the unrelated monster refractory periods.
 
 A companion needs no ammunition either. Both the check and the consumption return early for a caster that
 is not a player, while a player's bow skill requires an arrow in the inventory and consumes one, halved

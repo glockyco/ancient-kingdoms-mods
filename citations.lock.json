@@ -1031,6 +1031,14 @@
       "sha256": "fd1a7fc798c9537be81e025464d317e8dc3d43be65d243be53c0e7a04dadd40a",
       "span": 15
     },
+    "PetSkills.cs:27-41": {
+      "sha256": "045027efc68141e89cc278f9369eba7ae22ec2274bbae3af733325741a490b6a",
+      "span": 15
+    },
+    "PetSkills.cs:60-119": {
+      "sha256": "c02c979932fbf5a6e0ba22e909e032359b2e2d38fbc938af65f3a29a91380cf7",
+      "span": 60
+    },
     "Player.cs": {
       "span": 0
     },
@@ -1213,6 +1221,10 @@
     "Player.cs:7980-8016": {
       "sha256": "a6e74e99610bd4fbb5b7621249c083521ca8861df25a0e7e5f3376231f9ed03c",
       "span": 37
+    },
+    "Player.cs:7980-8187": {
+      "sha256": "5d1c80f7df39d4339102fb38075b685a03efc952ba50ad572176b4782df813e7",
+      "span": 208
     },
     "Player.cs:8017-8045": {
       "sha256": "b94d7e6f6d6667501fbc3fe15db137fd1796cfc70ffe5d2105b5126dd182a1c6",
