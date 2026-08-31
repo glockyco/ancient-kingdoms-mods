@@ -110,6 +110,12 @@ describe("buildCasterStatSheet", () => {
     expect(sheet.spellHaste).toBe(-0.5);
   });
 
+  it("ignores the stored energy multiplier for capacity", () => {
+    const exaggerated = buildCasterStatSheet(input());
+    const neutral = buildCasterStatSheet({ ...input(), energyMultiplier: 1 });
+    expect(exaggerated.energy).toBe(neutral.energy);
+  });
+
   it("does not scale companion resource-dependent passives by current resource", () => {
     const player = buildCasterStatSheet(input());
     const companion = buildCasterStatSheet({ ...input(), kind: "companion" });
