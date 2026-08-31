@@ -211,6 +211,11 @@ namespace DataExporter
                 var exporter = new EquipmentSlotExporter(LoggerInstance, ExportPath);
                 exporter.Export();
             }));
+            result.Exporters.Add(RunExporter("progression", required: true, () =>
+            {
+                var exporter = new ProgressionExporter(LoggerInstance, ExportPath);
+                exporter.Export();
+            }));
             result.Exporters.Add(RunExporter("visualAssets.manifest", required: true, visualAssets.WriteManifest));
 
             result.Ok = result.Exporters.TrueForAll(exporter => !exporter.Required || exporter.Ok);
