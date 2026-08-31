@@ -9,8 +9,7 @@ public sealed class FixtureShapeValidatorTests
 {
     private static FixtureDescriptor Valid() => new()
     {
-        SchemaVersion = FixtureSchema.Current,
-        GameVersion = "0.9.31.0",
+        Build = BuildEnvelopeTestData.Create(),
         Name = "shape-check",
         Seed = 7,
         Character = new CharacterSpec
@@ -44,7 +43,8 @@ public sealed class FixtureShapeValidatorTests
     public void RefusesUnsupportedSchemaAndMissingSectionsTogether()
     {
         var fixture = Valid();
-        fixture.SchemaVersion = 99;
+        fixture.Build.SerializedSchemaVersion = 99;
+        fixture.Build.CaptureSchemaVersion = 99;
         fixture.Character.Skills = null!;
         fixture.Character.Equipment = null!;
         fixture.Consumables = null!;
@@ -53,7 +53,8 @@ public sealed class FixtureShapeValidatorTests
             .Select(problem => problem.Field)
             .ToArray();
 
-        Assert.Contains("schemaVersion", fields);
+        Assert.Contains("build.serializedSchemaVersion", fields);
+        Assert.Contains("build.captureSchemaVersion", fields);
         Assert.Contains("character.skills", fields);
         Assert.Contains("character.equipment", fields);
         Assert.Contains("consumables", fields);

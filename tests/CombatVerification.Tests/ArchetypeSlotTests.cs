@@ -19,9 +19,8 @@ namespace CombatVerification.Tests
         private static FixtureDescriptor Fixture(string className, params EquipmentSpec[] worn)
             => new()
             {
-                SchemaVersion = 1,
+                Build = BuildEnvelopeTestData.Create(),
                 Name = "slots",
-                GameVersion = "0.9.31.0",
                 Seed = 1,
                 Character = new CharacterSpec
                 {

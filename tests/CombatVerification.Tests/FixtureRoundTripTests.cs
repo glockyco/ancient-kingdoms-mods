@@ -17,8 +17,16 @@ namespace CombatVerification.Tests
         // alongside as context, provenance, and every stat-bearing section stated.
         private const string CapturedPayload = """
         {
-          "schemaVersion": 1,
-          "gameVersion": "1.4.2",
+          "build": {
+            "serializedSchemaVersion": 1,
+            "captureSchemaVersion": 1,
+            "modelVersion": "1",
+            "gameData": {
+              "gameVersion": "1.4.2",
+              "steamBuildId": "4821",
+              "assemblySha256": "12dada1fff4d4787ade3333147202c3b443e376f9023d150371d7c9a06aa4b90"
+            }
+          },
           "name": "reported-build-4821",
           "seed": 1234,
           "capturedAt": "2026-08-26T12:00:00Z",
@@ -51,8 +59,11 @@ namespace CombatVerification.Tests
         {
             var fixture = JsonConvert.DeserializeObject<FixtureDescriptor>(CapturedPayload)!;
 
-            Assert.Equal(1, fixture.SchemaVersion);
-            Assert.Equal("1.4.2", fixture.GameVersion);
+            Assert.Equal(1, fixture.Build.SerializedSchemaVersion);
+            Assert.Equal(1, fixture.Build.CaptureSchemaVersion);
+            Assert.Equal("1", fixture.Build.ModelVersion);
+            Assert.Equal("1.4.2", fixture.Build.GameData.GameVersion);
+            Assert.Equal("4821", fixture.Build.GameData.SteamBuildId);
             Assert.Equal("reported-build-4821", fixture.Name);
             Assert.Equal(1234, fixture.Seed);
             Assert.Equal("2026-08-26T12:00:00Z", fixture.CapturedAt);
@@ -97,7 +108,8 @@ namespace CombatVerification.Tests
 
             var emitted = JObject.Parse(JsonConvert.SerializeObject(fixture));
 
-            Assert.True(emitted.ContainsKey("schemaVersion"));
+            Assert.True(emitted.ContainsKey("build"));
+            Assert.True(((JObject)emitted["build"]!).ContainsKey("serializedSchemaVersion"));
             Assert.True(emitted.ContainsKey("capturedAt"));
             var slot = (JObject)emitted["character"]!["equipment"]![0]!;
             Assert.True(slot.ContainsKey("itemId"));
@@ -109,7 +121,7 @@ namespace CombatVerification.Tests
         {
             // The distinction is the contract: absent means unread, empty means nothing.
             var fixture = JsonConvert.DeserializeObject<FixtureDescriptor>("""
-            { "schemaVersion": 1, "name": "n", "gameVersion": "g", "seed": 1 }
+            { "build": {}, "name": "n", "seed": 1 }
             """)!;
 
             Assert.Null(fixture.Companions);
@@ -146,9 +158,8 @@ namespace CombatVerification.Tests
             var fields = System.Linq.Enumerable.ToList(
                 System.Linq.Enumerable.Select(problems, p => p.Field));
 
-            Assert.Contains("schemaVersion", fields);
+            Assert.Contains("build", fields);
             Assert.Contains("name", fields);
-            Assert.Contains("gameVersion", fields);
             Assert.Contains("seed", fields);
             Assert.Contains("character", fields);
             Assert.Contains("consumables", fields);

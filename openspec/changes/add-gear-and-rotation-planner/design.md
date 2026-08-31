@@ -174,6 +174,12 @@ schema, model, and game data. An unknown serialized schema is refused. A model-v
 comparison warning. A game-build difference is shown and requires an explicit compatibility decision;
 it is never silently accepted.
 
+The fixture and browser adapters serialize this as `build.serializedSchemaVersion`,
+`build.captureSchemaVersion`, `build.modelVersion`, and `build.gameData`. Game-data identity contains the
+game version, Steam build ID, and server-assembly SHA-256. Unknown serialized and capture schemas are
+refused. A model mismatch marks results as not comparable. A game-data mismatch requires an explicit
+compatibility decision.
+
 The derived planner payload remains a separate, explicit build-pipeline output. One writer owns its
 deterministic path, stale-output deletion, required-output assertion, serialization, compression, and
 redaction verification. A generic derived-artifact registry is deferred until a second output proves

@@ -111,8 +111,16 @@ public sealed class VerifyCommandTests : IDisposable
         WriteSnapshot(assemblySha);
         WriteFixture("""
         {
-          "schemaVersion": 99,
-          "gameVersion": "0.9.31.0",
+          "build": {
+            "serializedSchemaVersion": 99,
+            "captureSchemaVersion": 1,
+            "modelVersion": "1",
+            "gameData": {
+              "gameVersion": "0.9.31.1",
+              "steamBuildId": "24986533",
+              "assemblySha256": "bd2521453b35dfb58c4feec344d7fa5c8de5a8e73c58b5ff5aa5a4c12a9466fc"
+            }
+          },
           "name": "invalid",
           "seed": 7,
           "character": {

@@ -5,22 +5,6 @@ using Newtonsoft.Json;
 namespace CombatVerification.Fixtures
 {
     /// <summary>
-    /// Descriptor versions this harness can materialize.
-    /// </summary>
-    /// <remarks>
-    /// A schema version is this harness's own contract, not something the game knows, so it is
-    /// not read through the rules the game supplies. A run refuses a version it does not know
-    /// rather than parsing what it recognises and ignoring the rest.
-    /// </remarks>
-    public static class FixtureSchema
-    {
-        /// <summary>Version written by this build of the harness.</summary>
-        public const int Current = 1;
-
-        public static IReadOnlyCollection<int> Supported { get; } = new[] { Current };
-    }
-
-    /// <summary>
     /// One build fixture. Authored fixtures and builds captured from a player's game
     /// use this same shape, so a player's report is runnable without conversion.
     /// </summary>
@@ -33,13 +17,9 @@ namespace CombatVerification.Fixtures
     /// </remarks>
     public sealed class FixtureDescriptor
     {
-        /// <summary>Schema of this descriptor. A run refuses a version it does not know.</summary>
-        [JsonProperty("schemaVersion", Required = Required.Default)]
-        public int SchemaVersion { get; set; }
-
-        /// <summary>Game build this descriptor was written against.</summary>
-        [JsonProperty("gameVersion", Required = Required.Default)]
-        public string GameVersion { get; set; }
+        /// <summary>Independent schema, capture, model, and game-data versions.</summary>
+        [JsonProperty("build", Required = Required.Default)]
+        public BuildEnvelope Build { get; set; }
 
         /// <summary>Identity of the fixture. The recorded baseline is keyed on it.</summary>
         [JsonProperty("name", Required = Required.Default)]

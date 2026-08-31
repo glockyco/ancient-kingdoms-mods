@@ -18,6 +18,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\mods\CombatVerification\Fixtures\BuildEnvelope.cs"
+             Link="CombatVerification\BuildEnvelope.cs" />
     <Compile Include="..\mods\CombatVerification\Fixtures\FixtureDescriptor.cs"
              Link="CombatVerification\FixtureDescriptor.cs" />
     <Compile Include="..\mods\CombatVerification\Fixtures\FixtureShapeValidator.cs"

@@ -28,8 +28,7 @@ namespace CombatVerification.Tests
         /// <summary>A fixture that passes, which every test below mutates in one way.</summary>
         private static FixtureDescriptor Valid() => new FixtureDescriptor
         {
-            SchemaVersion = 1,
-            GameVersion = "1.0.0",
+            Build = BuildEnvelopeTestData.Create("1.0.0"),
             Name = "warrior-cap",
             Seed = 7,
             Character = new CharacterSpec
@@ -105,10 +104,10 @@ namespace CombatVerification.Tests
             => AssertRefused(null!, "fixture");
 
         [Fact]
-        public void AnUnsupportedSchemaVersionIsRefused()
+        public void AnUnsupportedSerializedSchemaVersionIsRefused()
         {
-            var f = Valid(); f.SchemaVersion = 99;
-            AssertRefused(f, "schemaVersion");
+            var f = Valid(); f.Build.SerializedSchemaVersion = 99;
+            AssertRefused(f, "build.serializedSchemaVersion");
         }
 
         [Fact]
@@ -121,8 +120,8 @@ namespace CombatVerification.Tests
         [Fact]
         public void AMissingGameVersionIsRefused()
         {
-            var f = Valid(); f.GameVersion = "  ";
-            AssertRefused(f, "gameVersion");
+            var f = Valid(); f.Build.GameData.GameVersion = "  ";
+            AssertRefused(f, "build.gameData.gameVersion");
         }
 
         [Fact]

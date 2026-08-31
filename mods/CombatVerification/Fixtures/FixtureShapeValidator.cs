@@ -35,13 +35,8 @@ namespace CombatVerification.Fixtures
                 return Result(problems);
             }
 
-            if (!FixtureSchema.Supported.Contains(fixture.SchemaVersion))
-                Add(problems, "schemaVersion",
-                    $"Version {fixture.SchemaVersion} is not supported. Supported: "
-                    + $"{string.Join(", ", FixtureSchema.Supported.OrderBy(v => v))}.");
-
+            ValidateBuild(problems, fixture.Build);
             Require(problems, "name", fixture.Name);
-            Require(problems, "gameVersion", fixture.GameVersion);
 
             if (fixture.Seed == null)
                 Add(problems, "seed", "A seed is required so a measurement can be repeated.");
@@ -72,6 +67,37 @@ namespace CombatVerification.Fixtures
 
             ValidateActions(problems, fixture.Actions);
             return Result(problems);
+        }
+
+        private static void ValidateBuild(
+            List<FixtureProblem> problems, BuildEnvelope build)
+        {
+            if (build == null)
+            {
+                Add(problems, "build", "A build envelope is required.");
+                return;
+            }
+
+            if (!BuildContract.SupportedSerializedSchemas.Contains(build.SerializedSchemaVersion))
+                Add(problems, "build.serializedSchemaVersion",
+                    $"Version {build.SerializedSchemaVersion} is not supported. Supported: "
+                    + $"{string.Join(", ", BuildContract.SupportedSerializedSchemas.OrderBy(v => v))}.");
+
+            if (!BuildContract.SupportedCaptureSchemas.Contains(build.CaptureSchemaVersion))
+                Add(problems, "build.captureSchemaVersion",
+                    $"Version {build.CaptureSchemaVersion} is not supported. Supported: "
+                    + $"{string.Join(", ", BuildContract.SupportedCaptureSchemas.OrderBy(v => v))}.");
+
+            Require(problems, "build.modelVersion", build.ModelVersion);
+            if (build.GameData == null)
+            {
+                Add(problems, "build.gameData", "Game-data identity is required.");
+                return;
+            }
+
+            Require(problems, "build.gameData.gameVersion", build.GameData.GameVersion);
+            Require(problems, "build.gameData.steamBuildId", build.GameData.SteamBuildId);
+            Require(problems, "build.gameData.assemblySha256", build.GameData.AssemblySha256);
         }
 
         private static void ValidateCharacter(
