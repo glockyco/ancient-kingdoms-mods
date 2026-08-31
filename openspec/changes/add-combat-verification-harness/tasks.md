@@ -249,9 +249,15 @@ through 7.6 are comparison fixtures and wait for the model where they require pr
       4 resource. Over the next 3 one-second recovery ticks, Warrior stayed at 4. Rogue finished at 1
       while `Fury` was active because its -0.04 maximum resource per second rounded to -1 per tick.
       Resource projection must therefore include active class effects instead of using one shared policy.
-- [ ] 7.14 Measure companion output by archetype, melee or ranged behavior, initial distance, target
-      movement state, haste, and cooldown reduction. Record observed cadence and output bounds so the
-      planner does not treat engine cadence as a reachable rate without qualification.
+- [x] 7.14 Measure companion output in 20-second windows against a level-5 target with zero defenses.
+      Each companion used 50 base damage and 50 base magic damage. Near-stationary totals were Warrior
+      0, Cleric 67, Rogue 688, Wizard 525, Druid 266, and Ranger 339. Warrior remained in its priority
+      taunt path in the base, distant, moving, and 0.2-haste runs. A 0.25 cooldown reduction after
+      5 seconds produced 389 damage over 7 hits, with gaps from 1.533 to 9.165 seconds. Ranger produced
+      339 damage near, 563 from a 12-unit start, 382 against a moving target, 651 with 0.2 haste, and
+      406 after the same cooldown reduction. Its hit gaps ranged from 0.834 to 11.232 seconds, and its
+      first hit ranged from 0.991 to 5.200 seconds. These non-monotonic samples confirm that random skill
+      selection and movement state make companion output an observed bound, not a reachable fixed rate.
 
 ## 8. Baseline and drift gate
 
