@@ -33,11 +33,13 @@ roster comes from the local database.
 
 The selection screen caps the roster in `server-scripts/UICharacterSelection.cs:SelectCharacterPreview`.
 
-`Il2Cpp.Database.CharacterDelete(name)` frees a slot, but the selection screen keeps the list it already
-read, so creation stays refused in that session. Delete, then relaunch, then create.
+`fixture.createCharacter` can remove the exact `replaceCharacterName` from an earlier fixture attempt.
+It returns `rosterSlotFreed` without creating the replacement because the selection screen keeps the list
+it already read. Quit, relaunch, redirect the database again, then retry the creation.
 
 A run that creates characters therefore has a budget. Give each fixture a name that says which run made
-it, and clear them when a session ends rather than accumulating across sessions.
+it. Pass only one of those owned names as `replaceCharacterName`. Never let the command choose a player
+character to remove.
 
 ## Refusals are the guard, not an obstacle
 

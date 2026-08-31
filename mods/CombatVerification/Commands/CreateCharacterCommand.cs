@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using CombatVerification.Dtos;
 using CombatVerification.Materialization;
 using HotRepl.Control;
+using HotReplCommands.World;
 using Il2Cpp;
 using MelonLoader;
 
@@ -53,11 +54,45 @@ namespace CombatVerification.Commands
                 yield break;
             }
 
+            if (UICharacterSelection.singleton == null)
+            {
+                WorldEntryOutcome selection = null;
+                var openSelection = WorldEntry.OpenCharacterSelectionCoroutine(
+                    cancellationToken, outcome => selection = outcome);
+                while (true)
+                {
+                    object current;
+                    try
+                    {
+                        if (!openSelection.MoveNext())
+                            break;
+                        current = openSelection.Current;
+                    }
+                    catch (Exception exception)
+                    {
+                        completion.TrySetResult(context.PreconditionFailed(
+                            "creatorUnavailable", exception.Message));
+                        yield break;
+                    }
+
+                    yield return current;
+                }
+
+                if (selection == null || !selection.Ok)
+                {
+                    completion.TrySetResult(context.PreconditionFailed(
+                        selection?.Code ?? "creatorUnavailable",
+                        selection?.Message ?? "Character selection failed with no error detail."));
+                    yield break;
+                }
+            }
+
             var creation = new CharacterCreation();
             IEnumerator run;
             try
             {
-                run = creation.Run(args.CharacterName, args.Class, args.Race);
+                run = creation.Run(
+                    args.CharacterName, args.Class, args.Race, args.ReplaceCharacterName);
             }
             catch (Exception exception)
             {

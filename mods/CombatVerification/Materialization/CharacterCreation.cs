@@ -62,7 +62,11 @@ namespace CombatVerification.Materialization
         /// Drives the creator to produce one character. Yields until the creator finishes or the
         /// attempt is refused. Inspect <see cref="Failure"/> afterwards.
         /// </summary>
-        public IEnumerator Run(string characterName, string className, string race)
+        public IEnumerator Run(
+            string characterName,
+            string className,
+            string race,
+            string replaceCharacterName = null)
         {
             var selection = UICharacterSelection.singleton;
             if (selection == null)
@@ -72,21 +76,61 @@ namespace CombatVerification.Materialization
                 yield break;
             }
 
-            if (Database.CharacterExists(characterName))
+            var requestedExists = Database.CharacterExists(characterName);
+            var creationOffered = selection.createButton != null
+                                  && selection.createButton.interactable;
+            if (requestedExists || !creationOffered)
             {
-                Fail("characterExists", $"A character named '{characterName}' already exists.");
-                yield break;
-            }
+                var held = Database.GetCharacters();
+                var heldCount = held?.Count ?? 0;
+                var replacementExists = false;
+                for (var i = 0; i < heldCount; i++)
+                {
+                    if (string.Equals(
+                            held[i], replaceCharacterName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        replacementExists = true;
+                        break;
+                    }
+                }
 
-            // The roster has a limit, and past it the selection screen disables the button and
-            // registers no handler, so a click does nothing and reports nothing. The button's own
-            // state is the gate, so the limit is not restated here.
-            if (selection.createButton == null || !selection.createButton.interactable)
-            {
-                var held = Database.GetCharacters()?.Count ?? 0;
+                var replacementBlocksCreation = requestedExists
+                    ? string.Equals(
+                        replaceCharacterName, characterName, StringComparison.OrdinalIgnoreCase)
+                    : heldCount >= 8;
+
+                if (replacementBlocksCreation
+                    && !string.IsNullOrWhiteSpace(replaceCharacterName)
+                    && replacementExists)
+                {
+                    Database.CharacterDelete(replaceCharacterName);
+                    if (Database.CharacterExists(replaceCharacterName))
+                    {
+                        Fail("rosterCleanupFailed",
+                            $"Deleting the earlier fixture character '{replaceCharacterName}' "
+                            + "did not take effect.");
+                        yield break;
+                    }
+
+                    Fail("rosterSlotFreed",
+                        $"Deleted the earlier fixture character '{replaceCharacterName}'. "
+                        + "Restart the game before retrying because character selection caches "
+                        + "the roster it loaded.");
+                    yield break;
+                }
+
+                if (requestedExists)
+                {
+                    Fail("characterExists", $"A character named '{characterName}' already exists.");
+                    yield break;
+                }
+
+                var reason = heldCount < 8
+                    ? "Restart the game because character selection is using a stale roster."
+                    : "Name one character from an earlier fixture attempt to remove.";
                 Fail("rosterFull",
-                    $"The selection screen is not offering character creation. It holds {held} "
-                    + "characters. Delete one before creating another.");
+                    $"The selection screen is not offering character creation. It holds "
+                    + $"{heldCount} characters. {reason}");
                 yield break;
             }
 

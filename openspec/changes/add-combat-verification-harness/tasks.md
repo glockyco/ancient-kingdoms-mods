@@ -54,7 +54,7 @@
 - [x] 2.7 Verify isolation with an automated assertion that the player save's content hash is unchanged
       across a full run.
 
-- [ ] 2.8 Reconcile the existing roster-full handling with the matrix lifecycle. Keep a character slot
+- [x] 2.8 Reconcile the existing roster-full handling with the matrix lifecycle. Keep a character slot
       free before creation, reuse a character whose class a fixture needs, or remove one an earlier run
       created. Add a game-backed run that starts with all eight slots occupied.
 
@@ -74,7 +74,7 @@
       the creator already makes. It also holds the class and race pairing, and it reports a refused name
       in its own words. Select the race before the class, because a race that forbids the selected class
       changes the selection.
-- [ ] 3.3 Reuse the existing world-entry character selection so a fixture matrix can address any of the
+- [x] 3.3 Reuse the existing world-entry character selection so a fixture matrix can address any of the
       six classes. World entry serves one character per session, and it refuses to switch once a
       character is loaded, so a matrix either runs one fixture per session or gains a way back to
       selection. A failed build also consumes its character, because the build refuses one that has

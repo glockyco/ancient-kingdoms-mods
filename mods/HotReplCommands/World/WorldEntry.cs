@@ -43,13 +43,13 @@ namespace HotReplCommands.World
         public static string HeldCharacterName()
             => Player.localPlayer == null ? null : Player.localPlayer.name;
 
-        /// <param name="requestedCharacter">
-        /// Character to enter as. When null or blank, <see cref="CharacterSelector"/>
-        /// picks deterministically.
-        /// </param>
-        public static IEnumerator EnterCoroutine(
+        /// <summary>
+        /// Drives the game to character selection and waits until the roster is ready.
+        /// Character creation and world entry share this path because both begin at the same
+        /// single-player button.
+        /// </summary>
+        public static IEnumerator OpenCharacterSelectionCoroutine(
             CancellationToken ct,
-            string requestedCharacter,
             Action<WorldEntryOutcome> complete)
         {
             var scene = SceneManager.GetActiveScene().name;
@@ -83,9 +83,7 @@ namespace HotReplCommands.World
                 yield return null;
             }
 
-            var charSelect = UICharacterSelection.singleton;
-            var manager = charSelect.manager;
-
+            var manager = UICharacterSelection.singleton.manager;
             while (manager.state != NetworkState.Lobby ||
                    manager.charactersAvailableMsg.characters == null)
             {
@@ -100,6 +98,31 @@ namespace HotReplCommands.World
                 yield return null;
             }
 
+            complete(WorldEntryOutcome.Success(null));
+        }
+
+        /// <summary>Enters the world with one character from the ready selection roster.</summary>
+        /// <param name="requestedCharacter">
+        /// Character to enter as. When null or blank, <see cref="CharacterSelector"/>
+        /// picks deterministically.
+        /// </param>
+        public static IEnumerator EnterCoroutine(
+            CancellationToken ct,
+            string requestedCharacter,
+            Action<WorldEntryOutcome> complete)
+        {
+            WorldEntryOutcome selectionReady = null;
+            yield return OpenCharacterSelectionCoroutine(ct, outcome => selectionReady = outcome);
+            if (selectionReady == null || !selectionReady.Ok)
+            {
+                complete(selectionReady ?? WorldEntryOutcome.Failed(
+                    "worldEntryUnavailable",
+                    "Character selection failed with no error detail."));
+                yield break;
+            }
+
+            var charSelect = UICharacterSelection.singleton;
+            var manager = charSelect.manager;
             var characters = manager.charactersAvailableMsg.characters;
             var available = new string[characters.Length];
             for (var i = 0; i < characters.Length; i++)
@@ -123,6 +146,7 @@ namespace HotReplCommands.World
             ((NetworkManagerMMO)NetworkManager.singleton).ClearPreviews();
             UIServerList.singleton.StartConnect(null);
 
+            var deadline = DateTime.UtcNow + MaxWait;
             while (NetworkClient.localPlayer == null)
             {
                 ct.ThrowIfCancellationRequested();

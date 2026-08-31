@@ -80,6 +80,9 @@
     <ProjectReference Include="..\DataExporter\DataExporter.csproj">
       <Private>False</Private>
     </ProjectReference>
+    <ProjectReference Include="..\HotReplCommands\HotReplCommands.csproj">
+      <Private>False</Private>
+    </ProjectReference>
   </ItemGroup>
 
 </Project>
