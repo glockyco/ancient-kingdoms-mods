@@ -574,6 +574,10 @@
     "FoodItem.cs": {
       "span": 0
     },
+    "FoodItem.cs:26-45": {
+      "sha256": "a7f170d5bfc33d98b206e66cf70ce811e699d3775cf1281d3a877bf57ee02557",
+      "span": 20
+    },
     "FriendlyPetFollowerItem.cs:16-23": {
       "sha256": "3eb0b8ef4f745e2188a793dbd6861de6ec32cd4480649c5bb95f2308af222dfe",
       "span": 8
@@ -1545,6 +1549,10 @@
       "sha256": "4f103f02cec1f25483ad56ff0766abf8f67ccbdf054fb955b8417d3ea35d6859",
       "span": 1
     },
+    "PotionItem.cs:121-154": {
+      "sha256": "8b2f36ce6ac4e7d4fd7fc4ebea3ff30766dd0300596cd6ee2f0651a190e7ac1b",
+      "span": 34
+    },
     "PotionItem.cs:138-142": {
       "sha256": "3e5baf955aa06b67997399ca44ffbece573945527fc1403f7857dc2c8dcedd44",
       "span": 5
@@ -1654,6 +1662,10 @@
     "Skills.cs:1009-1012": {
       "sha256": "ac7c2374bc43efc996fb17b85c3e14e61b9ae7ca75cd5b304f786bc0ef44caa2",
       "span": 4
+    },
+    "Skills.cs:1077-1120": {
+      "sha256": "66295fdeb042a16d69f0ca4c60a9427aaff8f15d99094e63089b7463391ccd7c",
+      "span": 44
     },
     "Skills.cs:1131-1133": {
       "sha256": "06485cb714fee867b915d4fbbca7b8ce07907b050972dd1a26da84ba1293e5bc",
@@ -1834,6 +1846,10 @@
     "TargetProjectileSkill.cs": {
       "span": 0
     },
+    "TargetProjectileSkill.cs:141-146": {
+      "sha256": "7cf9b642338ce65b3665ba54095e33030f496d89a4b9fd41d41f818d15fdb93c",
+      "span": 6
+    },
     "TargetProjectileSkill.cs:216-220": {
       "sha256": "3ce86db37c1c3a37bc7526e0804c649c272d2147a525dc97ba9f171b8413e461",
       "span": 5
@@ -1845,6 +1861,10 @@
     "TargetProjectileSkill.cs:252-256": {
       "sha256": "a1cc4672a7d17680346bd74a68ef74b4b93ccdc0ebb62997e61863e4cc5fde48",
       "span": 5
+    },
+    "TargetProjectileSkill.cs:30-101": {
+      "sha256": "3c904e1be25db7d1d12c6e1e10459c6b9462650dabad1227b6c9794e3c1293d9",
+      "span": 72
     },
     "Trap.cs:142-146": {
       "sha256": "8c3cabc01d78ff1b811fe26e86936751f6bc6ffa9223f5883f8cb08f952c3307",
