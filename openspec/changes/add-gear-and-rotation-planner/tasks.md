@@ -6,14 +6,14 @@ removed only after the replacement passes the runtime and release gates.
 
 ## 1. Verification prerequisites
 
-- [ ] 1.1 Complete harness tasks 1.7, 2.8, 2.9, and the matrix lifecycle in 3.3, then attach their reports to the planner evidence set.
-- [ ] 1.2 Complete harness task 7.8 for debuff landing across defense, accuracy, and level difference, then record the fitted terms and bounds.
-- [ ] 1.3 Complete harness task 7.9 for effective debuff uptime, then record whether duration times landing probability is valid.
-- [ ] 1.4 Complete harness tasks 7.10 and 7.11 for same-entity replacement and cross-entity category collision, then record the event rules.
-- [ ] 1.5 Add and run a harness experiment for integer-schedule gaps at cooldowns of 45 seconds and above, then set the rotation policy from the result.
-- [ ] 1.6 Add and run a harness experiment that compares Rogue and Warrior resource behavior, then set their separate model policies.
-- [ ] 1.7 Add and run companion-output experiments by archetype, range style, initial distance, target movement, haste, and cooldown reduction.
-- [ ] 1.8 Record every prerequisite result with game build, fixture, sample size, observed bound, and the formula or policy it controls.
+- [x] 1.1 Complete harness tasks 1.7, 2.8, 2.9, and the matrix lifecycle in 3.3, then attach their reports to the planner evidence set.
+- [x] 1.2 Complete harness task 7.8 for debuff landing across defense, accuracy, and level difference, then record the fitted terms and bounds.
+- [x] 1.3 Complete harness task 7.9 for effective debuff uptime, then record whether duration times landing probability is valid.
+- [x] 1.4 Complete harness tasks 7.10 and 7.11 for same-entity replacement and cross-entity category isolation, then record the event rules.
+- [x] 1.5 Add and run a harness experiment for integer-schedule gaps at cooldowns of 45 seconds and above, then set the rotation policy from the result.
+- [x] 1.6 Add and run a harness experiment that compares Rogue and Warrior resource behavior, then set their separate model policies.
+- [x] 1.7 Add and run companion-output experiments by archetype, range style, initial distance, target movement, haste, and cooldown reduction.
+- [x] 1.8 Record every prerequisite result with game build, fixture, sample size, observed bound, and the formula or policy it controls.
 
 ## 2. Runtime data foundations
 
@@ -61,14 +61,14 @@ removed only after the replacement passes the runtime and release gates.
 - [ ] 6.1 Implement weapon interval, cast time, skill cooldown, skill refractory, follow-up delay, haste, spell haste, and measured long-cooldown policy.
 - [ ] 6.2 Implement the resource engine for regeneration, damage return, costs, maximum-resource burn, and distinct Rogue and Warrior policies.
 - [ ] 6.3 Implement steady-state refresh-proc uptime and cooldown-reduction effects with source citations and harness-calibrated bounds.
-- [ ] 6.4 Implement buff-category exclusivity within and across controlled entities, including stronger-effect replacement and deliberate action omission.
+- [ ] 6.4 Implement buff-category exclusivity within each controlled entity, cross-entity isolation, stronger-effect replacement, and deliberate action omission.
 - [ ] 6.5 Implement declared consumables, ammunition consumption, and the default scenario's no-durability-loss policy.
 - [ ] 6.6 Implement normal and veteran skill budget, tier, prerequisite, level, weapon, assassination, and other engine precondition gates.
 - [ ] 6.7 Implement player rotation solving with explicit skill inclusion and exclusion and no free-form action-priority language.
 - [ ] 6.8 Implement mercenary state, equipment, autonomous action expectation, two-gate cadence, movement policy, and healer reserve.
 - [ ] 6.9 Add timing tests for haste, spell haste, flat refractory, reduced cooldown, follow-up attacks, and long-cooldown integer schedules.
 - [ ] 6.10 Add resource tests for mana, energy, Rogue Fury, Warrior behavior, damage return, burn skills, and the inert mercenary energy multiplier defect.
-- [ ] 6.11 Add effect tests for proc refresh, cooldown reduction, consumables, ammunition, category replacement, cross-entity collisions, and excluded durability loss.
+- [ ] 6.11 Add effect tests for proc refresh, cooldown reduction, consumables, ammunition, category replacement, cross-entity isolation, and excluded durability loss.
 - [ ] 6.12 Add skill-legality and rotation tests for every gate and for deliberate omission of an available skill.
 - [ ] 6.13 Add companion tests for each archetype, melee and ranged behavior, movement state, cadence bound, healer reserve, and equipment contribution.
 
@@ -90,7 +90,7 @@ removed only after the replacement passes the runtime and release gates.
 - [ ] 8.3 Optimize equipment, attributes, normal skills, and veteran skills against one explicit scenario and version tuple.
 - [ ] 8.4 Enforce level, class, race, slot, weapon, point-budget, tier, prerequisite, consumable, ammunition, and scenario constraints.
 - [ ] 8.5 Solve weapon choice and rotation jointly and re-solve the rotation after every weapon-branch change.
-- [ ] 8.6 Solve category-exclusive effects jointly and allow an action to be omitted when it would replace a stronger effect.
+- [ ] 8.6 Solve category-exclusive effects per entity and allow an action to be omitted when it would replace that entity's stronger effect.
 - [ ] 8.7 Optimize the player and each active mercenary, capture pets for accounting only, and label every entity included in the total.
 - [ ] 8.8 Compare the heuristic with the exact reference search on a bounded corpus and record objective gap, fixed-point spread, and missed branches.
 - [ ] 8.9 Measure any surrogate against the display objective and justify the number of candidates carried forward; reject rank correlation alone.
@@ -200,7 +200,7 @@ Each requirement has an implementation task and a distinct verification task.
 | The local search uses multiple independent starts | 8.2 | 8.8, 8.12 |
 | The search covers equipment, attributes, and skill allocation | 8.3, 8.4 | 8.12 |
 | The player and active mercenaries are optimized | 8.7 | 6.13, 8.12 |
-| Controlled entities can interfere, and the search accounts for it | 8.6 | 6.11, 8.12 |
+| Categorised effects are solved within their owning entity | 8.6 | 6.11, 8.12 |
 | Owned-gear planning treats inventory as shared | 8.10, 11.4 | 8.12, 11.8 |
 | Weapon choice and rotation are solved together | 8.5 | 8.12 |
 | Ranking uses a surrogate whose fidelity is measured | 8.9 | 8.12 |

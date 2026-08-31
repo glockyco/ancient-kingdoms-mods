@@ -323,11 +323,11 @@ Two consequences shape the model.
 The subset enumeration cannot treat same-category effects as independent. One category contributes at
 most one effect, so the enumeration selects at most one member per category.
 
-The collision crosses entity boundaries. A mercenary and its owner draw from separate skill lists that
-share categories, so a mercenary can expire the player's debuff and the player can expire the
-mercenary's. Mercenary action selection is uniformly random among ready skills, so the outcome is a
-random mixture rather than a schedule. An owned entity's action can therefore lower total output, and
-the optimizer must be able to select **not** using an action.
+The collision does not cross entity boundaries. A mercenary and its owner draw from separate `Skills`
+lists. A runtime measurement placed `Hunter's Sigil` on the owner and `Tangle Trap` on the companion;
+both effects use `Debuff AC`, and both retained their full 30-second duration. The optimizer therefore
+enforces category exclusivity within each entity. It can omit an entity's weaker action when that action
+would replace the same entity's stronger effect, but it adds effects held by separate entities.
 
 Expiry is lazy. An expired buff still contributes until a cleanup pass removes it. The window is one
 tick and does not affect a sustained rate, so the model treats expiry as immediate and records the
@@ -675,22 +675,33 @@ terms. Neither appeared in this design before it was measured.
   timeline whenever the model changes.
 - Block coordinate ascent is start-dependent at 4.00 percent. → Multiple starts are required, and the
   start count is a recorded parameter rather than an implementation detail.
-- The fractional relaxation of the rotation cannot be realised by an integer cast schedule. The
-  measured gap is stable at about 10 percent. → The event timeline produces every displayed number.
+- The fractional relaxation of the rotation cannot be realised by an integer cast schedule. Across
+  36 cooldown and horizon pairs, the relaxation exceeded the executable schedule by 0 to 0.75 casts.
+  → The relaxation ranks candidates only. The event timeline produces every displayed number.
 - A game patch can silently invalidate a formula. → The citation ledger already fails on drift, and
   the derived payload regenerates from the pipeline.
 - Displayed precision can imply false confidence. → Results within the stated error boundary are
   presented as an equivalence band, following the sidegrade pattern that Raidbots documents.
 
-## Required measurements before model formulas
+## Planner prerequisite evidence
 
-- Measure the integer schedule gap for cooldowns of 45 s and above. Use the result to set the per-class
-  rotation policy rather than assuming the aggregate relaxation result applies.
-- Measure Rogue resource behavior separately from Warrior behavior because `Fury` has negative
-  regeneration while the damage return is unchanged.
-- Measure companion output by archetype, ranged or melee behavior, initial distance, target movement,
-  and relevant haste and cooldown-reduction combinations. Treat engine cadence as an upper bound until
-  these measurements establish a movement policy.
+All game-backed rows use Ancient Kingdoms 0.9.31.1, Steam build 24986533, assembly
+`bd2521453b35dfb58c4fec344d7fa5c8de5a8e73c58b5ff5aa5a4c12a9466fc0`. The harness task is the
+report reference.
 
-These are implementation prerequisites, not architectural choices. Their results update the formulas,
-scenario defaults, and validation bounds before those parts of the model are finalized.
+| Harness task and fixture | Sample | Observed bound | Controlled formula or policy |
+|---|---:|---|---|
+| 1.7, split descriptor and game validation | Complete descriptor rejection set | No validation rule was evaluated in both layers | Validate serialized shape before launch; evaluate runtime facts only in the game |
+| 2.8, full-roster lifecycle | One all-eight-slots run | The matrix obtained a usable character without exceeding eight slots | Reuse or remove harness-created characters before materialization |
+| 2.9, stale-endpoint ownership | One stale-host run and one clean shutdown run | Zero launches beside an answering host; zero owned processes after shutdown | Refuse an occupied runtime endpoint and own the launched process through every exit path |
+| 3.3, six-class selection lifecycle | Six classes, one selected character per session | Every class reached its named fixture through the existing world-entry selector | Run one loaded character per session; do not add another selector |
+| 7.8, `Hunter's Sigil` landing | Six conditions, 1,000 attempts each | Observed landing 0.607 to 0.958; maximum absolute prediction error 0.016 | Include 0.005 resistance per level difference, capped at 0.1, and subtract caster accuracy |
+| 7.9, `Wyrmbrand Hex (A)` refresh | 60 attempts over 120 seconds, seed 7901 | Uptime 0.9001 against finite-horizon expectation 0.9057 | Duration times landing probability is not valid for repeated refresh attempts; model the refresh process |
+| 7.10, same-entity `Debuff AC` replacement | One stronger-then-weaker application | Stronger remaining time fell from 30 seconds to zero | The newest non-empty category member replaces every existing member in that entity's list |
+| 7.11, owner and companion `Debuff AC` | One simultaneous owner-companion pair | Both effects retained 30 seconds | Category ownership is local to each entity's `Skills` list |
+| 7.12, long cooldown schedule matrix | 36 cooldown-horizon pairs | Fractional gap 0 to 0.75 casts | Use the relaxation for search only; use executable integer schedules for displayed output |
+| 7.13, matched Warrior and Rogue resource transition | One transition per class and three recovery ticks | Both reached 4 resource after returns and cost; Warrior stayed at 4, Rogue fell to 1 | Apply combat returns identically, then apply each class's active recovery effects separately |
+| 7.14, companion cadence and output | Eleven accepted 20-second windows | Damage 0 to 688; observed hit gaps 0.834 to 11.232 seconds | Model output as an action-selection expectation with movement-qualified bounds, not a reachable fixed rate |
+
+These measurements close the formula prerequisites. They do not replace the fixture comparison and
+baseline work that follows the model implementation.

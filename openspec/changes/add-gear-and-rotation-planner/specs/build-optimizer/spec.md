@@ -99,28 +99,25 @@ A reported total output SHALL state which entities it includes.
 - **WHEN** companion output is excluded by choice
 - **THEN** the reported figure is labelled as the player's own output
 
-### Requirement: Controlled entities can interfere, and the search accounts for it
+### Requirement: Categorised effects are solved within their owning entity
 
-Entity contributions SHALL NOT be assumed additive. Entities the owner controls draw from separate skill
-lists that share buff categories, so one entity's action can remove another entity's stronger effect.
+Each controlled entity owns a separate `Skills` list. Category exclusivity SHALL apply within one list
+and SHALL NOT make an owner's effect replace a companion's effect.
 
-The search SHALL be able to select the absence of an action. When an action would replace a stronger
-effect held by another controlled entity, withholding it SHALL be a reachable result.
+The search SHALL be able to omit an action when it would replace a stronger effect held by the same
+entity. Where a companion selects its own actions and the model cannot schedule them, the search SHALL
+evaluate the expectation over that selection and state that the figure is an expectation.
 
-Where a companion selects its own actions and the model cannot schedule them, the search SHALL evaluate
-the expectation over that selection and the report SHALL state that the figure is an expectation.
+#### Scenario: A player action would replace the player's stronger effect
 
-#### Scenario: A player action would replace a stronger companion effect
+- **WHEN** two player skills share a buff category and the maintained effect is stronger
+- **THEN** the search can return a rotation that omits the weaker player skill
+- **AND** the report explains that the omission avoids replacing the stronger effect
 
-- **WHEN** a player skill and a companion skill share a buff category and the companion effect is
-  stronger
-- **THEN** the search can return a rotation that omits the player skill
-- **AND** the report explains that the omission avoids replacing a stronger effect
+#### Scenario: An owner and companion use one category name
 
-#### Scenario: Total output is reported for a party
-
-- **WHEN** several controlled entities contribute categorised effects
-- **THEN** the reported total accounts for category exclusivity across all of them
+- **WHEN** the owner and a companion each contribute an effect in the same named category
+- **THEN** both effects contribute from their separate skill lists
 
 ### Requirement: Owned-gear planning treats inventory as shared
 

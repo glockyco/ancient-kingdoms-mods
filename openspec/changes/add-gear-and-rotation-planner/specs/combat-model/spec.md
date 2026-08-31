@@ -115,8 +115,9 @@ Selection SHALL follow the engine, which keeps the buff applied most recently an
 buff in that category. The engine compares category names only, so the model SHALL NOT assume that the
 larger effect survives.
 
-The model SHALL apply this rule to any source of a categorised effect, including a skill, a consumable,
-and an entity other than the one being optimised.
+The model SHALL apply this rule to every categorised effect held in one entity's `Skills` list,
+including skills and consumables. Category ownership is local to that list. An owner's effect and a
+companion's effect SHALL NOT replace one another.
 
 #### Scenario: A weaker effect is applied over a stronger one in the same category
 
@@ -132,6 +133,11 @@ and an entity other than the one being optimised.
 
 - **WHEN** an effect has an empty category
 - **THEN** it does not expire any other effect
+
+#### Scenario: An owner and companion use the same category
+
+- **WHEN** an owner and a companion each hold an effect with the same category
+- **THEN** both effects remain active in their separate skill lists
 
 ### Requirement: The refractory a skill sets is selected by the skill's own fields
 
