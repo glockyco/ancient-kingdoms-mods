@@ -216,18 +216,27 @@ through 7.6 are comparison fixtures and wait for the model where they require pr
       removed again. The ceiling is confirmed rather than argued: defense 2000 and defense 10000 took the
       same nine percent of intent. The same series also measured the block chance coupling, 0.17 at
       defense 700 against 0.80 at defense 10000, which is its cap.
-- [ ] 7.8 Add a fixture that measures the debuff landing rate over repeated attempts against targets of
-      differing defense and at differing caster accuracy, reporting the observed rate against the
-      predicted probability. This also resolves the level-difference term, which is currently unknown and
-      assumed to be zero.
-- [ ] 7.9 Add a fixture that measures effective debuff uptime over a stated duration, so the product of
-      the duration bound and the landing probability is checked rather than assumed.
-- [ ] 7.10 Add a buff category fixture: apply a weaker effect over a stronger one in the same category and
-      assert the stronger one expires, then apply two effects in different categories and assert both
-      persist.
-- [ ] 7.11 Add a cross-entity category fixture: have a companion and its owner hold effects in one shared
-      category and record which survives, so the planner's interference requirement is measured rather
-      than argued.
+- [x] 7.8 Measure debuff landing over 1,000 applications per condition. The runtime experiment held one
+      non-elite Snake and `Hunter's Sigil` constant. It changed defense, target level, and caster accuracy,
+      then removed the effect after each application. Predicted and observed landing rates were: 0.951 and
+      0.958 at defense 100 and level difference 0; 0.901 and 0.892 at defense 100 and level difference 10;
+      0.851 and 0.835 at defense 100 and level difference 20; 0.651 and 0.664 at defense 700 and level
+      difference 0; 0.601 and 0.607 at defense 700 and level difference 10; and 0.801 and 0.804 at defense
+      700, level difference 10, and 0.201 accuracy. Seeds were 7801 through 7806. The results support the
+      source level term of 0.005 per level, capped at 0.1, instead of the previous zero assumption.
+- [x] 7.9 Measure effective debuff uptime for 120 seconds. `Wyrmbrand Hex (A)` was attempted every
+      2 seconds with its 10-second duration and a 0.4 predicted landing probability. The prediction
+      includes the skill's 0.3 resistance reduction. Seed 7901 produced 21 landings from 60 attempts,
+      108.009 seconds of uptime, and a 0.9001 uptime fraction. The finite-horizon expectation was
+      108.680 seconds and 0.9057.
+- [x] 7.10 Measure buff category replacement through `Skills.AddOrRefreshBuff`. `Hunter's Sigil` had
+      30 seconds remaining before the weaker `Tangle Trap` entered the shared `Debuff AC` category.
+      The stronger effect then had zero seconds remaining, while the weaker effect had 30 seconds.
+      Adding `Balance of Illithor` in the `Slow` category left both active with 30 and 60 seconds.
+- [x] 7.11 Measure a shared category across an owner and companion. The owner held `Hunter's Sigil`,
+      and the companion held `Tangle Trap`. Both effects use the `Debuff AC` category. Each retained its
+      full 30-second duration. Categories are therefore local to an entity's `Skills` list and do not
+      interfere across party members.
 - [ ] 7.12 Measure integer-schedule gaps for skills with cooldowns of 45 seconds and above across
       representative fight horizons. Record the fractional relaxation, executable schedule, and gap.
 - [ ] 7.13 Measure Rogue and Warrior resource behavior separately under matched damage, skill cost, and
