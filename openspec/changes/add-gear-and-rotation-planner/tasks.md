@@ -74,8 +74,8 @@ removed only after the replacement passes the runtime and release gates.
 
 ## 7. Model verification and calibration
 
-- [ ] 7.1 Implement deterministic fixture evaluation against the shared build envelope and scenario schema.
-- [ ] 7.2 Run source-only fixtures for rounding, stat aggregation, hit order, target terms, resource transitions, timing gates, and effect classifications.
+- [x] 7.1 Implement deterministic fixture evaluation against the shared build envelope and scenario schema.
+- [x] 7.2 Run source-only fixtures for rounding, stat aggregation, hit order, target terms, resource transitions, timing gates, and effect classifications.
 - [ ] 7.3 Complete the harness model-comparison and baseline tasks only after sections 4 through 6 are complete.
 - [ ] 7.4 Compare predicted and measured per-quantity values across player classes, damage schools, weapon branches, resource engines, and mercenary archetypes.
 - [ ] 7.5 Record model error separately from finite-run variance, search gap, and every intentional game-defect normalization.
