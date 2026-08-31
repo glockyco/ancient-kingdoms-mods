@@ -403,7 +403,7 @@ namespace CombatVerification.Tests
         {
             var f = Valid();
             f.Character.Equipment = new List<EquipmentSpec>
-                { new EquipmentSpec { Slot = slot, ItemId = "Rusty Sword" } };
+                { new EquipmentSpec { Slot = slot, ItemId = "Rusty Sword", Durability = 10 } };
             AssertRefused(f, $"character.equipment[{slot}]");
         }
 
@@ -413,8 +413,8 @@ namespace CombatVerification.Tests
             var f = Valid();
             f.Character.Equipment = new List<EquipmentSpec>
             {
-                new EquipmentSpec { Slot = 12, ItemId = "Rusty Sword" },
-                new EquipmentSpec { Slot = 12, ItemId = "Great Axe" },
+                new EquipmentSpec { Slot = 12, ItemId = "Rusty Sword", Durability = 10 },
+                new EquipmentSpec { Slot = 12, ItemId = "Great Axe", Durability = 10 },
             };
             AssertRefused(f, "character.equipment[12]");
         }
@@ -423,7 +423,7 @@ namespace CombatVerification.Tests
         public void AMissingItemNameIsRefused()
         {
             var f = Valid();
-            f.Character.Equipment = new List<EquipmentSpec> { new EquipmentSpec { Slot = 12 } };
+            f.Character.Equipment = new List<EquipmentSpec> { new EquipmentSpec { Slot = 12, Durability = 10 } };
             AssertRefused(f, "character.equipment[12].itemId");
         }
 
@@ -432,7 +432,7 @@ namespace CombatVerification.Tests
         {
             var f = Valid();
             f.Character.Equipment = new List<EquipmentSpec>
-                { new EquipmentSpec { Slot = 12, ItemId = "Sword of Nothing" } };
+                { new EquipmentSpec { Slot = 12, ItemId = "Sword of Nothing", Durability = 10 } };
             AssertRefused(f, "character.equipment[12].itemId");
         }
 
@@ -446,7 +446,7 @@ namespace CombatVerification.Tests
             {
                 var f = Valid();
                 f.Character.Equipment = new List<EquipmentSpec>
-                    { new EquipmentSpec { Slot = slot, ItemId = "Signet" } };
+                    { new EquipmentSpec { Slot = slot, ItemId = "Signet", Durability = 10 } };
 
                 Assert.Empty(Check(f, rules));
             }
@@ -457,7 +457,7 @@ namespace CombatVerification.Tests
         {
             var f = Valid();
             f.Character.Equipment = new List<EquipmentSpec>
-                { new EquipmentSpec { Slot = 5, ItemId = "Rusty Sword" } };   // fits 12 only
+                { new EquipmentSpec { Slot = 5, ItemId = "Rusty Sword", Durability = 10 } };   // fits 12 only
             AssertRefused(f, "character.equipment[5]");
         }
 
@@ -470,7 +470,7 @@ namespace CombatVerification.Tests
             f.Character.AllocatedAttributes = new Dictionary<string, int>();
             f.Character.Skills = new List<SkillSpec>();
             f.Character.Equipment = new List<EquipmentSpec>
-                { new EquipmentSpec { Slot = 12, ItemId = "Epic Blade" } };   // needs 45
+                { new EquipmentSpec { Slot = 12, ItemId = "Epic Blade", Durability = 10 } };   // needs 45
             AssertRefused(f, "character.equipment[12].itemId");
         }
 
@@ -479,7 +479,7 @@ namespace CombatVerification.Tests
         {
             var f = Valid();
             f.Character.Equipment = new List<EquipmentSpec>
-                { new EquipmentSpec { Slot = 0, ItemId = "Wizard Hat" } };
+                { new EquipmentSpec { Slot = 0, ItemId = "Wizard Hat", Durability = 10 } };
             AssertRefused(f, "character.equipment[0].itemId");
         }
 
@@ -488,7 +488,7 @@ namespace CombatVerification.Tests
         {
             var f = Valid();
             f.Character.Equipment = new List<EquipmentSpec>
-                { new EquipmentSpec { Slot = 12, ItemId = "Rusty Sword", AugmentId = "Gem of Lies" } };
+                { new EquipmentSpec { Slot = 12, ItemId = "Rusty Sword", AugmentId = "Gem of Lies", Durability = 10 } };
             AssertRefused(f, "character.equipment[12].augmentId");
         }
 
@@ -507,8 +507,8 @@ namespace CombatVerification.Tests
             var f = Valid();
             f.Character.Equipment = new List<EquipmentSpec>
             {
-                new EquipmentSpec { Slot = 12, ItemId = "Great Axe" },
-                new EquipmentSpec { Slot = 13, ItemId = "Rusty Shield" },
+                new EquipmentSpec { Slot = 12, ItemId = "Great Axe", Durability = 10 },
+                new EquipmentSpec { Slot = 13, ItemId = "Rusty Shield", Durability = 10 },
             };
             AssertRefused(f, "character.equipment[13]");
         }
@@ -518,7 +518,7 @@ namespace CombatVerification.Tests
         {
             var f = Valid();
             f.Character.Equipment = new List<EquipmentSpec>
-                { new EquipmentSpec { Slot = 12, ItemId = "Great Axe" } };
+                { new EquipmentSpec { Slot = 12, ItemId = "Great Axe", Durability = 10 } };
             Assert.Empty(Check(f));
         }
 
@@ -528,8 +528,8 @@ namespace CombatVerification.Tests
             var f = Valid();
             f.Character.Equipment = new List<EquipmentSpec>
             {
-                new EquipmentSpec { Slot = 12, ItemId = "Rusty Sword" },
-                new EquipmentSpec { Slot = 13, ItemId = "Rusty Shield" },
+                new EquipmentSpec { Slot = 12, ItemId = "Rusty Sword", Durability = 10 },
+                new EquipmentSpec { Slot = 13, ItemId = "Rusty Shield", Durability = 10 },
             };
             Assert.Empty(Check(f));
         }

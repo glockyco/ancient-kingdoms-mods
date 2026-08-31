@@ -66,6 +66,13 @@ public sealed class VerifyCommandTests : IDisposable
             """);
     }
 
+    private void WriteFixture(string body)
+    {
+        var directory = ScratchStates.FixturesDirectory(RepoRoot);
+        Directory.CreateDirectory(directory);
+        File.WriteAllText(Path.Combine(directory, "invalid.json"), body);
+    }
+
     private (int ExitCode, CommandResultStore Store, FakeProcessRunner Runner) Run(
         Func<HotReplRunnerOptions, CancellationToken, Task<VerificationRunnerResult>>? runner = null)
     {
@@ -92,6 +99,38 @@ public sealed class VerifyCommandTests : IDisposable
 
         var exit = command.RunAsync(new VerifyCommand.Settings()).GetAwaiter().GetResult();
         return (exit, store, processRunner);
+    }
+
+    // --- fixture shape gate ---
+
+    [Fact]
+    public void RefusesMalformedFixtureBeforeLaunchingTheGame()
+    {
+        var assemblySha = WriteInstallation();
+        WriteSnapshot(assemblySha);
+        WriteFixture("""
+        {
+          "schemaVersion": 99,
+          "gameVersion": "0.9.31.0",
+          "name": "invalid",
+          "seed": 7,
+          "character": {
+            "class": "Warrior",
+            "race": "Human",
+            "level": -1
+          }
+        }
+        """);
+
+        var (exit, store, runner) = Run();
+
+        Assert.NotEqual(ExitCodes.Success, exit);
+        Assert.Contains("Fixture shape validation failed before launch", store.ErrorDetails?.ToString());
+        Assert.Contains("verification/fixtures/invalid.json", store.ErrorDetails?.ToString());
+        Assert.Contains("character.level", store.ErrorDetails?.ToString());
+        Assert.Contains("character.skills", store.ErrorDetails?.ToString());
+        Assert.Contains("consumables", store.ErrorDetails?.ToString());
+        Assert.Empty(runner.Calls);
     }
 
     // --- build identity gate ---

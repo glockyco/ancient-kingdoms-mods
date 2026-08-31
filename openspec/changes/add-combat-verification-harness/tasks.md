@@ -25,7 +25,7 @@
       live exactly where creation happens, so the pairing is checked there rather than answered from a
       copy. Nothing reports it as unchecked, because nothing has to guess.
 
-- [ ] 1.7 Split the checks by what each one needs. The schema version, the presence of the sections a
+- [x] 1.7 Split the checks by what each one needs. The schema version, the presence of the sections a
       measurement depends on, a slot named twice and a negative level are questions about the descriptor,
       so answer them without the game and before launch. Every question the game answers stays in the
       check that runs against it, and neither side restates the other.

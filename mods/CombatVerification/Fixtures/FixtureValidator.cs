@@ -5,21 +5,6 @@ using System.Linq;
 
 namespace CombatVerification.Fixtures
 {
-    /// <summary>One reason a fixture was refused, naming the field at fault.</summary>
-    public sealed class FixtureProblem
-    {
-        public string Field { get; set; }
-        public string Message { get; set; }
-
-        public override string ToString() => $"{Field}: {Message}";
-    }
-
-    public sealed class FixtureValidation
-    {
-        public IReadOnlyList<FixtureProblem> Problems { get; set; }
-        public bool Ok => Problems.Count == 0;
-    }
-
     /// <summary>
     /// Checks that a fixture describes a character the game could produce. Refuses rather
     /// than clamping, and names the field and the permitted range, because a clamped
@@ -29,38 +14,17 @@ namespace CombatVerification.Fixtures
     {
         public static FixtureValidation Validate(FixtureDescriptor fixture, IFixtureRules rules)
         {
-            var problems = new List<FixtureProblem>();
-
-            if (fixture == null)
-            {
-                Add(problems, "fixture", "No descriptor was supplied.");
+            var shape = FixtureShapeValidator.Validate(fixture);
+            var problems = shape.Problems.ToList();
+            if (fixture?.Character == null)
                 return Result(problems);
-            }
 
-            if (!FixtureSchema.Supported.Contains(fixture.SchemaVersion))
-                Add(problems, "schemaVersion",
-                    $"Version {fixture.SchemaVersion} is not supported. Supported: "
-                    + $"{string.Join(", ", FixtureSchema.Supported.OrderBy(v => v))}.");
-
-            Require(problems, "name", fixture.Name);
-            Require(problems, "gameVersion", fixture.GameVersion);
-
-            if (fixture.Seed == null)
-                Add(problems, "seed", "A seed is required so a measurement can be repeated.");
-
-            if (fixture.Character == null)
-                Add(problems, "character", "A descriptor must state its character.");
-            else
-                ValidateCharacter(problems, fixture.Character, rules);
-
-            // Absent is not empty. The stat sheet depends on the declared consumables, so an
-            // absent list means nobody looked, and no default may stand in for that.
-            if (fixture.Consumables == null)
-                Add(problems, "consumables",
-                    "Required. State an empty list to declare that none are used.");
-            else
+            ValidateCharacter(problems, fixture.Character, rules);
+            ValidateCompanions(
+                problems, fixture.Companions, fixture.Character.Level, rules);
+            if (fixture.Consumables != null
+                && fixture.Consumables.All(value => !string.IsNullOrWhiteSpace(value)))
                 ValidateConsumables(problems, fixture.Consumables, rules);
-            ValidateActions(problems, fixture.Actions);
 
             return Result(problems);
         }
@@ -68,53 +32,50 @@ namespace CombatVerification.Fixtures
         private static void ValidateCharacter(
             List<FixtureProblem> problems, CharacterSpec character, IFixtureRules rules)
         {
-            var hasClass = Require(problems, "character.class", character.Class);
-            var hasRace = Require(problems, "character.race", character.Race);
-
-            if (hasClass && !rules.ClassExists(character.Class))
+            if (!string.IsNullOrWhiteSpace(character.Class)
+                && !rules.ClassExists(character.Class))
                 Add(problems, "character.class", $"'{character.Class}' is not a class the game defines.");
 
             // Whether a class accepts a race is checked when the character is created, because the
             // character creator is the only place that holds the pairing and it is gone by now.
 
-            if (character.Level < 1 || character.Level > rules.MaxLevel)
+            if (character.Level > rules.MaxLevel)
                 Add(problems, "character.level",
                     $"{character.Level} is outside the reachable range 1 to {rules.MaxLevel}.");
 
             ValidateVeteranPoints(problems, character, rules);
 
-            // Each of these changes the stat sheet, so an absent section is a refusal
-            // rather than an assumption of nothing.
-            if (character.AllocatedAttributes == null)
-                Add(problems, "character.allocatedAttributes",
-                    "Required. State an empty object to allocate nothing.");
-            else
+            if (character.AllocatedAttributes != null
+                && character.AllocatedAttributes.Values.All(value => value >= 0))
                 ValidateAttributes(problems, character, rules);
 
-            if (character.Skills == null)
-                Add(problems, "character.skills",
-                    "Required. State an empty list to learn nothing.");
-            else
+            if (character.Skills != null
+                && character.Skills.All(skill => skill != null
+                    && !string.IsNullOrWhiteSpace(skill.Name)
+                    && skill.Level >= 0))
                 ValidateSkills(problems, character, rules);
 
-            if (character.Equipment == null)
-                Add(problems, "character.equipment",
-                    "Required. State an empty list to equip nothing.");
-            else
-                ValidateEquipment(problems, character, rules);
+            if (EquipmentHasValidShape(character.Equipment))
+                ValidateEquipment(
+                    problems,
+                    "character.equipment",
+                    character.Class,
+                    character.Level,
+                    character.Equipment,
+                    rules);
         }
 
         private static void ValidateVeteranPoints(
             List<FixtureProblem> problems, CharacterSpec character, IFixtureRules rules)
         {
-            if (character.VeteranPoints == 0)
+            if (character.VeteranPoints <= 0)
                 return;
 
             if (character.Level < rules.MaxLevel)
                 Add(problems, "character.veteranPoints",
                     $"Veteran points exist only at level {rules.MaxLevel}; this fixture is level "
                     + $"{character.Level}. Permitted here: 0.");
-            else if (character.VeteranPoints < 0 || character.VeteranPoints > rules.MaxVeteranPoints)
+            else if (character.VeteranPoints > rules.MaxVeteranPoints)
                 Add(problems, "character.veteranPoints",
                     $"{character.VeteranPoints} is outside the obtainable range 0 to "
                     + $"{rules.MaxVeteranPoints}.");
@@ -132,9 +93,6 @@ namespace CombatVerification.Fixtures
                     Add(problems, $"character.allocatedAttributes.{pair.Key}",
                         $"Not an attribute the game defines. Defined: "
                         + $"{string.Join(", ", rules.AttributeNames)}.");
-                else if (pair.Value < 0)
-                    Add(problems, $"character.allocatedAttributes.{pair.Key}",
-                        $"{pair.Value} is negative; a fixture spends points, it does not remove them.");
             }
 
             var budget = rules.AllocatableAttributePoints(character.Level, character.VeteranPoints);
@@ -151,22 +109,12 @@ namespace CombatVerification.Fixtures
             if (character.Skills.Count == 0)
                 return;
 
-            var duplicates = character.Skills
-                .Where(s => !string.IsNullOrWhiteSpace(s.Name))
-                .GroupBy(s => s.Name)
-                .Where(g => g.Count() > 1);
-            foreach (var duplicate in duplicates)
-                Add(problems, $"character.skills.{duplicate.Key}",
-                    "Named more than once; a skill has one level.");
-
             var normalSpend = 0;
             var veteranSpend = 0;
 
             foreach (var skill in character.Skills)
             {
-                var field = $"character.skills.{skill.Name ?? "<unnamed>"}";
-                if (!Require(problems, field, skill.Name))
-                    continue;
+                var field = $"character.skills.{skill.Name}";
 
                 if (!rules.TryGetSkill(skill.Name, out var rule))
                 {
@@ -174,7 +122,7 @@ namespace CombatVerification.Fixtures
                     continue;
                 }
 
-                if (skill.Level < 0 || skill.Level > rule.MaxLevel)
+                if (skill.Level > rule.MaxLevel)
                 {
                     Add(problems, field,
                         $"Level {skill.Level} is outside the range 0 to {rule.MaxLevel}.");
@@ -247,75 +195,103 @@ namespace CombatVerification.Fixtures
             }
         }
 
-        private static void ValidateEquipment(
-            List<FixtureProblem> problems, CharacterSpec character, IFixtureRules rules)
+        private static void ValidateCompanions(
+            List<FixtureProblem> problems,
+            IReadOnlyList<CompanionSpec> companions,
+            int level,
+            IFixtureRules rules)
         {
-            if (character.Equipment.Count == 0)
+            if (companions == null)
                 return;
 
-            var slotCount = rules.EquipmentSlotCount(character.Class);
+            for (var i = 0; i < companions.Count; i++)
+            {
+                var companion = companions[i];
+                if (companion == null
+                    || string.IsNullOrWhiteSpace(companion.Archetype)
+                    || !EquipmentHasValidShape(companion.Equipment))
+                    continue;
+
+                ValidateEquipment(
+                    problems,
+                    $"companions[{i}].equipment",
+                    companion.Archetype,
+                    level,
+                    companion.Equipment,
+                    rules);
+            }
+        }
+
+        private static bool EquipmentHasValidShape(IReadOnlyList<EquipmentSpec> equipment)
+            => equipment != null
+               && equipment.All(entry => entry != null
+                   && entry.Slot >= 0
+                   && !string.IsNullOrWhiteSpace(entry.ItemId)
+                   && entry.Durability > 0)
+               && equipment.Select(entry => entry.Slot).Distinct().Count() == equipment.Count;
+
+        private static void ValidateEquipment(
+            List<FixtureProblem> problems,
+            string field,
+            string archetype,
+            int level,
+            IReadOnlyList<EquipmentSpec> equipment,
+            IFixtureRules rules)
+        {
+            if (equipment.Count == 0)
+                return;
+
+            var slotCount = rules.EquipmentSlotCount(archetype);
             if (slotCount <= 0)
             {
-                Add(problems, "character.equipment",
-                    $"The game publishes no slot table for '{character.Class}', so the equipment "
+                Add(problems, field,
+                    $"The game publishes no slot table for '{archetype}', so the equipment "
                     + "cannot be checked.");
                 return;
             }
 
             var occupied = new Dictionary<int, EquipmentSpec>();
-            foreach (var entry in character.Equipment)
+            foreach (var entry in equipment)
             {
-                var field = $"character.equipment[{entry.Slot}]";
+                var entryField = $"{field}[{entry.Slot}]";
 
-                if (entry.Slot < 0 || entry.Slot >= slotCount)
+                if (entry.Slot >= slotCount)
                 {
-                    Add(problems, field, $"Slot is outside the range 0 to {slotCount - 1}.");
-                    continue;
-                }
-
-                if (occupied.ContainsKey(entry.Slot))
-                {
-                    Add(problems, field, "Slot is filled more than once.");
+                    Add(problems, entryField, $"Slot is outside the range 0 to {slotCount - 1}.");
                     continue;
                 }
 
                 occupied[entry.Slot] = entry;
 
-                if (!Require(problems, $"{field}.itemId", entry.ItemId))
-                    continue;
-
                 if (!rules.TryGetItem(entry.ItemId, out var rule))
                 {
-                    Add(problems, $"{field}.itemId", $"'{entry.ItemId}' is not an item the game defines.");
+                    Add(problems, $"{entryField}.itemId",
+                        $"'{entry.ItemId}' is not an item the game defines.");
                     continue;
                 }
 
-                var fits = rules.SlotsAccepting(character.Class, rule.Category);
+                var fits = rules.SlotsAccepting(archetype, rule.Category);
                 if (!fits.Contains(entry.Slot))
-                    Add(problems, field,
-                        $"'{entry.ItemId}' does not fit slot {entry.Slot} of a {character.Class}. "
+                    Add(problems, entryField,
+                        $"'{entry.ItemId}' does not fit slot {entry.Slot} of a {archetype}. "
                         + $"It fits: {(fits.Count == 0 ? "no slot" : string.Join(", ", fits))}.");
 
-                if (rule.LevelRequired > character.Level)
-                    Add(problems, $"{field}.itemId",
-                        $"Requires level {rule.LevelRequired}; this fixture is level "
-                        + $"{character.Level}.");
+                if (rule.LevelRequired > level)
+                    Add(problems, $"{entryField}.itemId",
+                        $"Requires level {rule.LevelRequired}; this fixture is level {level}.");
 
-                if (rule.Classes.Count > 0 && !Includes(rule.Classes, character.Class))
-                    Add(problems, $"{field}.itemId",
-                        $"A {character.Class} cannot equip it. Classes: "
+                if (rule.Classes.Count > 0 && !Includes(rule.Classes, archetype))
+                    Add(problems, $"{entryField}.itemId",
+                        $"A {archetype} cannot equip it. Classes: "
                         + $"{string.Join(", ", rule.Classes)}.");
 
-                if (!string.IsNullOrWhiteSpace(entry.AugmentId) && !rules.AugmentExists(entry.AugmentId))
-                    Add(problems, $"{field}.augmentId",
+                if (!string.IsNullOrWhiteSpace(entry.AugmentId)
+                    && !rules.AugmentExists(entry.AugmentId))
+                    Add(problems, $"{entryField}.augmentId",
                         $"'{entry.AugmentId}' is not an augment the game defines.");
-
-                if (entry.Durability is <= 0)
-                    Add(problems, $"{field}.durability",
-                        "Must be above zero; the game ignores an item at zero durability.");
             }
 
-            CheckTwoHandedOffhand(problems, occupied, rules);
+            CheckTwoHandedOffhand(problems, field, occupied, rules);
         }
 
         /// <summary>
@@ -340,6 +316,7 @@ namespace CombatVerification.Fixtures
 
         private static void CheckTwoHandedOffhand(
             List<FixtureProblem> problems,
+            string field,
             Dictionary<int, EquipmentSpec> occupied,
             IFixtureRules rules)
         {
@@ -351,7 +328,7 @@ namespace CombatVerification.Fixtures
             if (!occupied.TryGetValue(rules.OffhandSlot, out var offhand)) return;
             if (ReferenceEquals(offhand, twoHanded)) return;
 
-            Add(problems, $"character.equipment[{rules.OffhandSlot}]",
+            Add(problems, $"{field}[{rules.OffhandSlot}]",
                 $"'{twoHanded.ItemId}' is two-handed, so the offhand must be empty. It holds "
                 + $"'{offhand.ItemId}'.");
         }
@@ -363,25 +340,9 @@ namespace CombatVerification.Fixtures
 
             foreach (var consumable in consumables)
             {
-                if (string.IsNullOrWhiteSpace(consumable))
-                    Add(problems, "consumables", "An entry is blank.");
-                else if (!rules.ConsumableExists(consumable))
+                if (!rules.ConsumableExists(consumable))
                     Add(problems, "consumables",
                         $"'{consumable}' is not a consumable the game defines.");
-            }
-        }
-
-        private static void ValidateActions(List<FixtureProblem> problems, List<ActionSpec> actions)
-        {
-            if (actions == null) return;
-
-            for (var i = 0; i < actions.Count; i++)
-            {
-                Require(problems, $"actions[{i}].skill", actions[i].Skill);
-
-                if (string.IsNullOrWhiteSpace(actions[i].Facing))
-                    Add(problems, $"actions[{i}].facing",
-                        "A facing is required, because facing changes both avoidance and damage.");
             }
         }
 
@@ -403,13 +364,6 @@ namespace CombatVerification.Fixtures
                 Add(problems, field,
                     $"Spends {spend} {pool} skill points against {budget} available. "
                     + $"Shortfall: {spend - budget}.");
-        }
-
-        private static bool Require(List<FixtureProblem> problems, string field, string value)
-        {
-            if (!string.IsNullOrWhiteSpace(value)) return true;
-            Add(problems, field, "Required, and no default is substituted.");
-            return false;
         }
 
         private static void Add(List<FixtureProblem> problems, string field, string message)

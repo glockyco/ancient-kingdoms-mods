@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using BuildTool.Abstractions;
 using BuildTool.Configuration;
+using BuildTool.CombatVerification;
 using BuildTool.Game;
 using BuildTool.HotRepl;
 using BuildTool.Output;
@@ -88,6 +89,11 @@ public sealed class VerifyCommand : AsyncCommand<VerifyCommand.Settings>
         Settings settings,
         CancellationToken cancellationToken)
     {
+        var fixtureProblems = FixtureFiles.ValidateShapes(_repoRoot);
+        if (fixtureProblems.Count > 0)
+            return Fail("Fixture shape validation failed before launch:\n- "
+                + string.Join("\n- ", fixtureProblems));
+
         var build = GameBuildIdentities.Check(_repoRoot, _config.GamePath);
         Console.WriteLine($"Build: {build.Detail}");
 
