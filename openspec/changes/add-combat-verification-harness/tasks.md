@@ -177,17 +177,17 @@ the planner model tasks for those quantities are complete. Complete and close th
 change; no planner task closes them on the harness's behalf.
 
 
-- [ ] 6.1 Implement per-quantity comparison covering every stat, the action interval, per-hit damage and
+- [x] 6.1 Implement per-quantity comparison covering every stat, the action interval, per-hit damage and
       sustained output, reporting each result separately rather than one verdict. Per-hit damage is two
       quantities: the amount the caster asked for, which the probe reads from the engine, and the
       reduction applied to it. A model can be right about one and wrong about the other.
-- [ ] 6.2 Assert on a mean within tolerance and an observed range within predicted bounds, and fail when
+- [x] 6.2 Assert on a mean within tolerance and an observed range within predicted bounds, and fail when
       any observed value falls outside its bounds regardless of the mean.
-- [ ] 6.3 Record fixture identity, target, game version, model version, seed and event count in every
+- [x] 6.3 Record fixture identity, target, game version, model version, seed and event count in every
       report.
-- [ ] 6.4 Present tier results in order so the lowest failing tier is evident, and mark higher tiers
+- [x] 6.4 Present tier results in order so the lowest failing tier is evident, and mark higher tiers
       unreliable when a lower tier fails.
-- [ ] 6.5 Record actions the engine refused, with the reason, and exclude them from the action count.
+- [x] 6.5 Record actions the engine refused, with the reason, and exclude them from the action count.
 
 ## 7. Fixture matrix
 
@@ -261,12 +261,12 @@ through 7.6 are comparison fixtures and wait for the model where they require pr
 
 ## 8. Baseline and drift gate
 
-- [ ] 8.1 Define the baseline format storing, per fixture and per quantity, the seed, event count, mean
+- [x] 8.1 Define the baseline format storing, per fixture and per quantity, the seed, event count, mean
       and predicted bounds. Retain a full observed sequence beside it as a non-gating artifact.
-- [ ] 8.2 Implement comparison against the baseline and fail the run when a quantity has changed,
+- [x] 8.2 Implement comparison against the baseline and fail the run when a quantity has changed,
       reporting the quantity and both values.
-- [ ] 8.3 Make baseline updates an explicit, reviewed operation rather than an automatic rewrite.
-- [ ] 8.4 Report a game version difference before comparing, so a change is attributed to the update
+- [x] 8.3 Make baseline updates an explicit, reviewed operation rather than an automatic rewrite.
+- [x] 8.4 Report a game version difference before comparing, so a change is attributed to the update
       rather than to the model.
 - [ ] 8.5 Add the verification run to the per-version update procedure alongside the existing source
       citation check.
