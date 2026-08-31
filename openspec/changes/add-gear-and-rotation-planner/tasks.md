@@ -64,12 +64,12 @@ removed only after the replacement passes the runtime and release gates.
 - [x] 6.4 Implement buff-category exclusivity within each controlled entity, cross-entity isolation, stronger-effect replacement, and deliberate action omission.
 - [x] 6.5 Implement declared consumables, ammunition consumption, and the default scenario's no-durability-loss policy.
 - [x] 6.6 Implement normal and veteran skill budget, tier, prerequisite, level, weapon, assassination, and other engine precondition gates.
-- [ ] 6.7 Implement player rotation solving with explicit skill inclusion and exclusion and no free-form action-priority language.
+- [x] 6.7 Implement player rotation solving with explicit skill inclusion and exclusion and no free-form action-priority language.
 - [ ] 6.8 Implement mercenary state, equipment, autonomous action expectation, two-gate cadence, movement policy, and healer reserve.
 - [x] 6.9 Add timing tests for haste, spell haste, flat refractory, reduced cooldown, follow-up attacks, and long-cooldown integer schedules.
 - [x] 6.10 Add resource tests for mana, energy, Rogue Fury, Warrior behavior, damage return, burn skills, and the inert mercenary energy multiplier defect.
 - [x] 6.11 Add effect tests for proc refresh, cooldown reduction, consumables, ammunition, category replacement, cross-entity isolation, and excluded durability loss.
-- [ ] 6.12 Add skill-legality and rotation tests for every gate and for deliberate omission of an available skill.
+- [x] 6.12 Add skill-legality and rotation tests for every gate and for deliberate omission of an available skill.
 - [ ] 6.13 Add companion tests for each archetype, melee and ranged behavior, movement state, cadence bound, healer reserve, and equipment contribution.
 
 ## 7. Model verification and calibration
