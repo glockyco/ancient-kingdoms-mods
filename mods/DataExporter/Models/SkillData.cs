@@ -29,7 +29,9 @@ public class SkillData
 
     // Requirements
     public int level_required { get; set; }
+    public LinearStatBonus level_requirement { get; set; }
     public int required_skill_points { get; set; }
+    public LinearStatBonus skill_point_cost { get; set; }
     public int required_spent_points { get; set; }
     public string prerequisite_skill_id { get; set; }
     public int prerequisite_level { get; set; }

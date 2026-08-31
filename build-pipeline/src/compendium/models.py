@@ -676,7 +676,9 @@ class SkillData(BaseModel):
     max_level: int = 1
     player_classes: list[str] = []  # Classes that have this skill
     level_required: int = 0
+    level_requirement: SkillBonus | None = None
     required_skill_points: int = 0
+    skill_point_cost: SkillBonus | None = None
     required_spent_points: int = 0
     prerequisite_skill_id: str | None = None
     prerequisite_level: int = 0

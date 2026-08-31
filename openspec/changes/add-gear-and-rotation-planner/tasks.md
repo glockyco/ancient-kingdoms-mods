@@ -63,7 +63,7 @@ removed only after the replacement passes the runtime and release gates.
 - [x] 6.3 Implement steady-state refresh-proc uptime and cooldown-reduction effects with source citations and harness-calibrated bounds.
 - [x] 6.4 Implement buff-category exclusivity within each controlled entity, cross-entity isolation, stronger-effect replacement, and deliberate action omission.
 - [x] 6.5 Implement declared consumables, ammunition consumption, and the default scenario's no-durability-loss policy.
-- [ ] 6.6 Implement normal and veteran skill budget, tier, prerequisite, level, weapon, assassination, and other engine precondition gates.
+- [x] 6.6 Implement normal and veteran skill budget, tier, prerequisite, level, weapon, assassination, and other engine precondition gates.
 - [ ] 6.7 Implement player rotation solving with explicit skill inclusion and exclusion and no free-form action-priority language.
 - [ ] 6.8 Implement mercenary state, equipment, autonomous action expectation, two-gate cadence, movement policy, and healer reserve.
 - [x] 6.9 Add timing tests for haste, spell haste, flat refractory, reduced cooldown, follow-up attacks, and long-cooldown integer schedules.

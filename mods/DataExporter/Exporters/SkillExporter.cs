@@ -47,7 +47,17 @@ public class SkillExporter : BaseExporter
                 tier = skill.tier,
                 max_level = skill.maxLevel,
                 level_required = skill.requiredLevel.Get(1),
+                level_requirement = new LinearStatBonus
+                {
+                    base_value = skill.requiredLevel.baseValue,
+                    bonus_per_level = skill.requiredLevel.bonusPerLevel
+                },
                 required_skill_points = skill.requiredSkillPoints.Get(1),
+                skill_point_cost = new LinearStatBonus
+                {
+                    base_value = skill.requiredSkillPoints.baseValue,
+                    bonus_per_level = skill.requiredSkillPoints.bonusPerLevel
+                },
                 required_spent_points = skill.requiredSpentPoints,
                 prerequisite_skill_id = skill.predecessor != null && !string.IsNullOrEmpty(skill.predecessor.name)
                     ? SanitizeId(skill.predecessor.name)

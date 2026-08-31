@@ -1541,6 +1541,10 @@
       "sha256": "a2351298960d849f3cd5726bf79f470f7151ff8235f89e60b136ed4cf058ed44",
       "span": 3
     },
+    "PlayerSkills.cs:480-535": {
+      "sha256": "e3611fd868f2c7bdcaa343a24d42335912812d0d982888cb9181b0767f8f8c99",
+      "span": 56
+    },
     "PlayerSkills.cs:891-908": {
       "sha256": "c881cf3bfc13ed22183442eba4c1c726e8db31a56e725c9eeacf85d42e86ef1a",
       "span": 18
@@ -1624,6 +1628,10 @@
     "ScriptableSkill.cs:220-222": {
       "sha256": "3efdd0f0d0a984c2b4b89b670428354938f4182ec30b63d405e35308945d035d",
       "span": 3
+    },
+    "ScriptableSkill.cs:84-120": {
+      "sha256": "06f6fd83707231d02201108bbbfea7fbad9e3aca118d026477ac164dd4cb83f1",
+      "span": 37
     },
     "ScriptableSkill.cs:TryActivateRadiantAetherForArea": {
       "span": 0

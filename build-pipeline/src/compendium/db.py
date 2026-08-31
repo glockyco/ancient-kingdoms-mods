@@ -48,6 +48,7 @@ def insert_model(cursor: sqlite3.Cursor, table: str, model: BaseModel) -> None:
     - random_items
     - merge_items_needed_ids, merge_result_item_id
     - treasure_map_reward_id
+    - level_requirement, skill_point_cost
 
     Args:
         cursor: Database cursor
@@ -64,6 +65,10 @@ def insert_model(cursor: sqlite3.Cursor, table: str, model: BaseModel) -> None:
             "merge_items_needed_ids",
             "merge_result_item_id",
             "treasure_map_reward_id",
+        },
+        "skills": {
+            "level_requirement",
+            "skill_point_cost",
         },
         "monsters": {
             "skill_ids",
