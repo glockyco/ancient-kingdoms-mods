@@ -25,6 +25,18 @@ namespace CombatVerification.Fixtures
         [JsonProperty("name", Required = Required.Default)]
         public string Name { get; set; }
 
+        [JsonProperty("tier", Required = Required.Default)]
+        public string Tier { get; set; }
+
+        [JsonProperty("coverage", Required = Required.Default)]
+        public string Coverage { get; set; }
+
+        [JsonProperty("durationSeconds", Required = Required.Default)]
+        public double? DurationSeconds { get; set; }
+
+        [JsonProperty("repetitions", Required = Required.Default)]
+        public int Repetitions { get; set; } = 1;
+
         /// <summary>Seed applied before measurement, recorded with the results.</summary>
         [JsonProperty("seed", Required = Required.Default)]
         public int? Seed { get; set; }

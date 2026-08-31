@@ -1,0 +1,38 @@
+{
+  "build": {
+    "captureSchemaVersion": 1,
+    "gameData": {
+      "assemblySha256": "bd2521453b35dfb58c4fec344d7fa5c8de5a8e73c58b5ff5aa5a4c12a9466fc0",
+      "gameVersion": "0.9.31.1",
+      "steamBuildId": "24986533"
+    },
+    "modelVersion": "1",
+    "serializedSchemaVersion": 1
+  },
+  "name": "A-consumables",
+  "tier": "A",
+  "coverage": "A.consumables",
+  "durationSeconds": null,
+  "repetitions": 1,
+  "seed": 902793843,
+  "capturedAt": null,
+  "character": {
+    "class": "Warrior",
+    "race": "Human",
+    "level": 50,
+    "veteranPoints": 200,
+    "allocatedAttributes": {},
+    "skills": [],
+    "equipment": []
+  },
+  "companions": null,
+  "consumables": [
+    "bread",
+    "minor_potion_of_rage"
+  ],
+  "target": {
+    "spawn": "Snake",
+    "level": 5
+  },
+  "actions": null
+}

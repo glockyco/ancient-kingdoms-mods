@@ -1,0 +1,61 @@
+{
+  "build": {
+    "captureSchemaVersion": 1,
+    "gameData": {
+      "assemblySha256": "bd2521453b35dfb58c4fec344d7fa5c8de5a8e73c58b5ff5aa5a4c12a9466fc0",
+      "gameVersion": "0.9.31.1",
+      "steamBuildId": "24986533"
+    },
+    "modelVersion": "1",
+    "serializedSchemaVersion": 1
+  },
+  "name": "D-class-druid",
+  "tier": "D",
+  "coverage": "D.class.Druid",
+  "durationSeconds": 60,
+  "repetitions": 1,
+  "seed": 1177663475,
+  "capturedAt": null,
+  "character": {
+    "class": "Druid",
+    "race": "Human",
+    "level": 50,
+    "veteranPoints": 200,
+    "allocatedAttributes": {},
+    "skills": [
+      {
+        "name": "Wind Shock",
+        "level": 5
+      },
+      {
+        "name": "Staff Strike",
+        "level": 1
+      }
+    ],
+    "equipment": [
+      {
+        "slot": 12,
+        "itemId": "natures_staff",
+        "itemName": null,
+        "augmentId": null,
+        "durability": 100
+      }
+    ]
+  },
+  "companions": null,
+  "consumables": [],
+  "target": {
+    "spawn": "Snake",
+    "level": 5
+  },
+  "actions": [
+    {
+      "skill": "Wind Shock",
+      "facing": "front"
+    },
+    {
+      "skill": "Staff Strike",
+      "facing": "front"
+    }
+  ]
+}

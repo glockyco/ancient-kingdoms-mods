@@ -20,6 +20,12 @@ public sealed class HotReplVerificationRunnerTests
         @"{""type"":""commands_list_result"",""id"":""1"",""commands"":[" +
         @"{""name"":""game.useScratchDatabase""},{""name"":""world.summary""},{""name"":""game.quit""}]}";
 
+    private const string MatrixCommandsListResult =
+        @"{""type"":""commands_list_result"",""id"":""1"",""commands"":[" +
+        @"{""name"":""game.useScratchDatabase""},{""name"":""world.summary""}," +
+        @"{""name"":""world.enter""},{""name"":""fixture.validateMatrix""}," +
+        @"{""name"":""game.quit""}]}";
+
     private const string QuitOk =
         @"{""type"":""command_result"",""id"":""9"",""status"":""ok"",""output"":{""quitting"":true}}";
 
@@ -100,6 +106,39 @@ public sealed class HotReplVerificationRunnerTests
         Assert.False(result.Ok);
         Assert.Contains("databaseAlreadyOpen", result.Message);
         Assert.Contains("game.quit", string.Join("\n", transport.SentMessages));
+    }
+
+    [Fact]
+    public async Task EntersTheScratchWorldAndValidatesTheFixtureMatrix()
+    {
+        var transport = new FakeHotReplTransport();
+        transport.EnqueueServerMessage(Handshake);
+        transport.EnqueueServerMessage(MatrixCommandsListResult);
+        transport.EnqueueServerMessage(Handshake);
+        transport.EnqueueServerMessage(RedirectOk());
+        transport.EnqueueServerMessage(
+            @"{""type"":""job_accepted"",""id"":""3"",""jobId"":""enter-1""}");
+        transport.EnqueueServerMessage(
+            @"{""type"":""job_status_result"",""id"":""4"",""jobId"":""enter-1"",""state"":""done"",""status"":""ok""}");
+        transport.EnqueueServerMessage(
+            @"{""type"":""command_result"",""id"":""5"",""status"":""ok"",""output"":{""ok"":true}}" );
+        transport.EnqueueServerMessage(QuitOk);
+        var options = Options();
+        options = new HotReplRunnerOptions
+        {
+            Endpoint = options.Endpoint,
+            ReadinessTimeout = options.ReadinessTimeout,
+            PollInterval = options.PollInterval,
+            FixtureMatrixJson = @"{""schemaVersion"":1,""fixtures"":[{""coverage"":""A.class.Warrior""}]}",
+        };
+
+        var result = await new HotReplVerificationRunner(transport, options)
+            .RunAsync(CancellationToken.None);
+
+        Assert.True(result.Ok, result.Message);
+        Assert.Contains("runtime fixture matrix accepted", result.Message);
+        Assert.Contains("world.enter", string.Join("\n", transport.SentMessages));
+        Assert.Contains("fixture.validateMatrix", string.Join("\n", transport.SentMessages));
     }
 
     [Fact]

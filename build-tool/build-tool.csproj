@@ -24,6 +24,18 @@
              Link="CombatVerification\FixtureDescriptor.cs" />
     <Compile Include="..\mods\CombatVerification\Fixtures\FixtureShapeValidator.cs"
              Link="CombatVerification\FixtureShapeValidator.cs" />
+    <Compile Include="..\mods\DataExporter\GameIds.cs"
+             Link="CombatVerification\GameIds.cs" />
+    <Compile Include="..\mods\CombatVerification\Fixtures\IFixtureRules.cs"
+             Link="CombatVerification\IFixtureRules.cs" />
+    <Compile Include="..\mods\CombatVerification\Fixtures\FixtureValidator.cs"
+             Link="CombatVerification\FixtureValidator.cs" />
+    <Compile Include="..\mods\CombatVerification\Fixtures\FixtureMatrix.cs"
+             Link="CombatVerification\FixtureMatrix.cs" />
+    <Compile Include="..\mods\CombatVerification\Fixtures\FixtureMatrixValidator.cs"
+             Link="CombatVerification\FixtureMatrixValidator.cs" />
+    <Compile Include="..\mods\CombatVerification\Dtos\ValidateFixtureResult.cs"
+             Link="CombatVerification\ValidateFixtureResult.cs" />
   </ItemGroup>
 
   <ItemGroup>

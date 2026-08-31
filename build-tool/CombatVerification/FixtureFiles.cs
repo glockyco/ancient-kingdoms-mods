@@ -10,6 +10,31 @@ namespace BuildTool.CombatVerification;
 /// <summary>Reads committed fixtures and checks their structure before the game starts.</summary>
 internal static class FixtureFiles
 {
+    internal static FixtureMatrix ReadMatrix(string repoRoot)
+    {
+        var directory = BuildTool.Game.ScratchStates.FixturesDirectory(repoRoot);
+        var files = Directory.Exists(directory)
+            ? Directory.GetFiles(directory, "*.json", SearchOption.AllDirectories)
+            : Array.Empty<string>();
+        var fixtures = files
+            .OrderBy(path => path, StringComparer.Ordinal)
+            .Select(path => JsonConvert.DeserializeObject<FixtureDescriptor>(File.ReadAllText(path))!)
+            .Select(fixture => new FixtureMatrixEntry
+            {
+                Tier = fixture.Tier,
+                Coverage = fixture.Coverage,
+                DurationSeconds = fixture.DurationSeconds,
+                Repetitions = fixture.Repetitions,
+                Fixture = fixture,
+            })
+            .ToList();
+        return new FixtureMatrix
+        {
+            SchemaVersion = FixtureMatrixValidator.SchemaVersion,
+            Fixtures = fixtures,
+        };
+    }
+
     internal static IReadOnlyList<string> ValidateShapes(string repoRoot)
     {
         var directory = BuildTool.Game.ScratchStates.FixturesDirectory(repoRoot);
@@ -17,6 +42,7 @@ internal static class FixtureFiles
             return Array.Empty<string>();
 
         var problems = new List<string>();
+        var entries = new List<(string Path, FixtureMatrixEntry Entry)>();
         foreach (var file in Directory.GetFiles(directory, "*.json", SearchOption.AllDirectories)
                      .OrderBy(path => path, StringComparer.Ordinal))
         {
@@ -44,6 +70,33 @@ internal static class FixtureFiles
 
             foreach (var problem in FixtureShapeValidator.Validate(fixture).Problems)
                 problems.Add($"{relativePath}: {problem}");
+            if (fixture is not null)
+            {
+                entries.Add((relativePath, new FixtureMatrixEntry
+                {
+                    Tier = fixture.Tier,
+                    Coverage = fixture.Coverage,
+                    DurationSeconds = fixture.DurationSeconds,
+                    Repetitions = fixture.Repetitions,
+                    Fixture = fixture,
+                }));
+            }
+        }
+
+        if (entries.Count > 0)
+        {
+            var matrix = FixtureMatrixValidator.Validate(new FixtureMatrix
+            {
+                SchemaVersion = FixtureMatrixValidator.SchemaVersion,
+                Fixtures = entries.Select(entry => entry.Entry).ToList(),
+            }, rules: null!);
+            foreach (var problem in matrix.MatrixProblems)
+                problems.Add($"verification/fixtures: {problem.Field}: {problem.Message}");
+            for (var index = 0; index < matrix.Fixtures.Count; index++)
+            {
+                foreach (var problem in matrix.Fixtures[index].Problems)
+                    problems.Add($"{entries[index].Path}: {problem.Field}: {problem.Message}");
+            }
         }
 
         return problems;

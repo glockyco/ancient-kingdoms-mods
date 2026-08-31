@@ -26,15 +26,25 @@ public sealed record VerificationRunnerResult(
 /// </remarks>
 internal sealed class HotReplVerificationRunner
 {
-    private static readonly string[] RequiredCommands =
+    private static readonly string[] BaseCommands =
     {
         "game.useScratchDatabase", "world.summary", "game.quit",
     };
 
+    private static readonly string[] MatrixCommands =
+    {
+        "game.useScratchDatabase", "world.summary", "world.enter",
+        "fixture.validateMatrix", "game.quit",
+    };
+
     private readonly HotReplSession _session;
+    private readonly HotReplRunnerOptions _options;
 
     internal HotReplVerificationRunner(IHotReplTransport transport, HotReplRunnerOptions options)
-        => _session = new HotReplSession(transport, options);
+    {
+        _session = new HotReplSession(transport, options);
+        _options = options;
+    }
 
     public static HotReplVerificationRunner Create(HotReplRunnerOptions options)
         => new(new ClientWebSocketTransport(), options);
@@ -62,7 +72,8 @@ internal sealed class HotReplVerificationRunner
         if (failure != null)
             return Failed(failure);
 
-        failure = await _session.WaitForCommandsAsync(RequiredCommands, ct);
+        failure = await _session.WaitForCommandsAsync(
+            HasFixtureMatrix() ? MatrixCommands : BaseCommands, ct);
         if (failure != null)
             return Failed(failure);
 
@@ -108,10 +119,100 @@ internal sealed class HotReplVerificationRunner
                 resolvedPath);
         }
 
+        if (HasFixtureMatrix())
+        {
+            if (!(characters > 0))
+            {
+                await _session.TryQuitAsync(ct);
+                return new(false, ExitCodes.CommandFailed,
+                    "The scratch database has no character, so runtime fixture rules are unavailable.",
+                    resolvedPath, characters);
+            }
+
+            var enterError = await CallJobAsync("world.enter", "{}", ct);
+            if (enterError != null)
+            {
+                await _session.TryQuitAsync(ct);
+                return new(false, ExitCodes.CommandFailed,
+                    "The fixture validator could not enter the scratch world: " + enterError,
+                    resolvedPath, characters);
+            }
+
+            using var validation = await _session.CallAsync(
+                "fixture.validateMatrix", _options.FixtureMatrixJson!, ct);
+            var validationRoot = validation.RootElement;
+            var validationStatus = validationRoot.TryGetProperty("status", out var validationStatusElement)
+                ? validationStatusElement.GetString()
+                : null;
+            var validationOutput = validationRoot.TryGetProperty("output", out var validationOutputElement)
+                ? validationOutputElement
+                : default;
+            var matrixOk = validationOutput.ValueKind == JsonValueKind.Object
+                           && validationOutput.TryGetProperty("ok", out var matrixOkElement)
+                           && matrixOkElement.ValueKind == JsonValueKind.True;
+            if (validationStatus != "ok" || !matrixOk)
+            {
+                await _session.TryQuitAsync(ct);
+                return new(false, ExitCodes.CommandFailed,
+                    "Runtime fixture validation failed: " + validationRoot.GetRawText(),
+                    resolvedPath, characters);
+            }
+        }
+
         await _session.TryQuitAsync(ct);
 
         return new(true, ExitCodes.Success,
-            $"Redirected to {resolvedPath}.", resolvedPath, characters);
+            HasFixtureMatrix()
+                ? $"Redirected to {resolvedPath}; runtime fixture matrix accepted."
+                : $"Redirected to {resolvedPath}.",
+            resolvedPath, characters);
+    }
+
+    private bool HasFixtureMatrix()
+    {
+        if (string.IsNullOrWhiteSpace(_options.FixtureMatrixJson)) return false;
+        using var matrix = JsonDocument.Parse(_options.FixtureMatrixJson);
+        return matrix.RootElement.TryGetProperty("fixtures", out var fixtures)
+               && fixtures.ValueKind == JsonValueKind.Array
+               && fixtures.GetArrayLength() > 0;
+    }
+
+    private async Task<string?> CallJobAsync(
+        string command, string argsJson, CancellationToken ct)
+    {
+        using var accepted = await _session.CallAsync(command, argsJson, ct);
+        var jobId = accepted.RootElement.TryGetProperty("jobId", out var jobIdElement)
+            ? jobIdElement.GetString()
+            : null;
+        if (string.IsNullOrWhiteSpace(jobId))
+            return "the command did not return a job id: " + accepted.RootElement.GetRawText();
+
+        var deadline = DateTime.UtcNow + _options.JobTimeout;
+        while (DateTime.UtcNow < deadline)
+        {
+            await Task.Delay(_options.PollInterval, ct);
+            using var poll = await _session.SendReceiveAsync(
+                $"{{\"type\":\"job_status\",\"id\":\"{_session.Id()}\",\"jobId\":\"{jobId}\"}}",
+                ct);
+            var root = poll.RootElement;
+            var type = root.TryGetProperty("type", out var typeElement)
+                ? typeElement.GetString()
+                : null;
+            var state = root.TryGetProperty("state", out var stateElement)
+                ? stateElement.GetString()
+                : null;
+            if (type == "job_status_result" && state == "running") continue;
+            if (type == "job_result" || type == "job_status_result")
+            {
+                var status = root.TryGetProperty("status", out var statusElement)
+                    ? statusElement.GetString()
+                    : null;
+                return status == "ok" && state == "done"
+                    ? null
+                    : root.GetRawText();
+            }
+        }
+        return "the command did not finish before the job timeout";
     }
 
     private static VerificationRunnerResult Failed(HotReplFailure failure)

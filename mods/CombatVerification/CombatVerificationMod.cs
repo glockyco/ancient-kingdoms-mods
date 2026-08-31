@@ -22,6 +22,7 @@ namespace CombatVerification
             var registry = GlobalControlCommandRegistry.Instance;
 
             _registered.Add(registry.Register(new ValidateFixtureCommand()));
+            _registered.Add(registry.Register(new ValidateFixtureMatrixCommand()));
             _registered.Add(registry.Register(new CreateCharacterCommand()));
             _registered.Add(registry.Register(new StatSheetCommand()));
             _registered.Add(registry.Register(new BuildCharacterCommand()));

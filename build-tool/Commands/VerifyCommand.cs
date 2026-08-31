@@ -10,6 +10,7 @@ using BuildTool.Game;
 using BuildTool.HotRepl;
 using BuildTool.Output;
 using BuildTool.UnityDependencies;
+using Newtonsoft.Json;
 using Spectre.Console.Cli;
 
 namespace BuildTool.Commands;
@@ -126,6 +127,7 @@ public sealed class VerifyCommand : AsyncCommand<VerifyCommand.Settings>
             Endpoint = new Uri(_config.HotReplEndpoint),
             ReadinessTimeout = _hotReplReadinessTimeout ?? TimeSpan.FromMinutes(5),
             PollInterval = _hotReplPollInterval ?? TimeSpan.FromSeconds(3),
+            FixtureMatrixJson = JsonConvert.SerializeObject(FixtureFiles.ReadMatrix(_repoRoot)),
         };
 
         var session = new GameSession(

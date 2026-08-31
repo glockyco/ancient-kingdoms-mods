@@ -30,6 +30,12 @@
              Link="Fixtures\FixtureShapeValidator.cs" />
     <Compile Include="..\..\mods\CombatVerification\Fixtures\FixtureValidator.cs"
              Link="Fixtures\FixtureValidator.cs" />
+    <Compile Include="..\..\mods\CombatVerification\Fixtures\FixtureMatrix.cs"
+             Link="Fixtures\FixtureMatrix.cs" />
+    <Compile Include="..\..\mods\CombatVerification\Fixtures\FixtureMatrixValidator.cs"
+             Link="Fixtures\FixtureMatrixValidator.cs" />
+    <Compile Include="..\..\mods\CombatVerification\Dtos\ValidateFixtureResult.cs"
+             Link="Dtos\ValidateFixtureResult.cs" />
     <Compile Include="..\..\mods\CombatVerification\Materialization\CreatorMethods.cs"
              Link="Materialization\CreatorMethods.cs" />
     <Compile Include="..\..\mods\CombatVerification\Materialization\ICharacterUnderConstruction.cs"

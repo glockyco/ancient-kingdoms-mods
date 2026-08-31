@@ -196,18 +196,18 @@ policies the model needs, so they run before the corresponding formulas are fina
 through 7.6 are comparison fixtures and wait for the model where they require predictions.
 
 
-- [ ] 7.1 Add tier A fixtures, needing no combat: one per class at the level cap with full veteran
+- [x] 7.1 Add tier A fixtures, needing no combat: one per class at the level cap with full veteran
       progression, plus targeted fixtures for a three-piece armour set, an exactly-five-piece set, the
       attack speed floor, the avoidance floor, an augment, and a declared consumable set.
-- [ ] 7.2 Add tier B fixtures: a single hit per damaging skill class, including the class that ignores its
+- [x] 7.2 Add tier B fixtures: a single hit per damaging skill class, including the class that ignores its
       damage multiplier field and the class that ignores the caster's combat stat entirely.
-- [ ] 7.3 Add tier C fixtures: basic attack only, swept across weapon delay and haste, including a case
+- [x] 7.3 Add tier C fixtures: basic attack only, swept across weapon delay and haste, including a case
       at the attack speed floor.
-- [ ] 7.4 Add tier D fixtures: a full build over a stated duration with an explicit action sequence, per
+- [x] 7.4 Add tier D fixtures: a full build over a stated duration with an explicit action sequence, per
       class.
-- [ ] 7.5 Add lower-level fixtures at the pre-veteran levels so the level difference terms and the
+- [x] 7.5 Add lower-level fixtures at the pre-veteran levels so the level difference terms and the
       smaller equipment pool are covered.
-- [ ] 7.6 Add a companion fixture that measures contribution with and without equipment, reported as an
+- [x] 7.6 Add a companion fixture that measures contribution with and without equipment, reported as an
       expectation over the engine's random action selection.
 - [x] 7.7 Measure the physical mitigation coefficient directly: identical hits against differing defense,
       solving the coefficient from the observed reduction. Measured as 0.000498 against 0.000500 in

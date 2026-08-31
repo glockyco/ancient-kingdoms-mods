@@ -1,0 +1,62 @@
+{
+  "build": {
+    "captureSchemaVersion": 1,
+    "gameData": {
+      "assemblySha256": "bd2521453b35dfb58c4fec344d7fa5c8de5a8e73c58b5ff5aa5a4c12a9466fc0",
+      "gameVersion": "0.9.31.1",
+      "steamBuildId": "24986533"
+    },
+    "modelVersion": "1",
+    "serializedSchemaVersion": 1
+  },
+  "name": "D-companion-ranger-bare",
+  "tier": "D",
+  "coverage": "D.companion.Ranger.bare",
+  "durationSeconds": 20,
+  "repetitions": 12,
+  "seed": 384235887,
+  "capturedAt": null,
+  "character": {
+    "class": "Ranger",
+    "race": "Human",
+    "level": 50,
+    "veteranPoints": 200,
+    "allocatedAttributes": {},
+    "skills": [
+      {
+        "name": "Archer Shot",
+        "level": 5
+      }
+    ],
+    "equipment": [
+      {
+        "slot": 13,
+        "itemId": "wooden_bow",
+        "itemName": null,
+        "augmentId": null,
+        "durability": 100
+      }
+    ]
+  },
+  "companions": [
+    {
+      "archetype": "Ranger",
+      "race": "Human",
+      "healthMultiplier": 1.0,
+      "resourceMultiplier": 1.0,
+      "baseCombat": 50,
+      "equipment": []
+    }
+  ],
+  "consumables": [],
+  "target": {
+    "spawn": "Snake",
+    "level": 5
+  },
+  "actions": [
+    {
+      "skill": "Archer Shot",
+      "facing": "front"
+    }
+  ]
+}
