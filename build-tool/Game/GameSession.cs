@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using BuildTool.Abstractions;
 using BuildTool.Configuration;
+using BuildTool.HotRepl;
 using BuildTool.Output;
 using BuildTool.UnityDependencies;
 
@@ -47,15 +48,20 @@ internal sealed class GameSession
     private readonly LocalConfig _config;
     private readonly IProcessRunner _runner;
     private readonly UnityDependenciesPreflight _unityDependenciesPreflight;
+    private readonly Func<Uri, CancellationToken, Task<bool>> _endpointAnswers;
 
     internal GameSession(
         LocalConfig config,
         IProcessRunner runner,
-        UnityDependenciesPreflight? unityDependenciesPreflight = null)
+        UnityDependenciesPreflight? unityDependenciesPreflight = null,
+        Func<Uri, CancellationToken, Task<bool>>? endpointAnswers = null)
     {
         _config = config;
         _runner = runner;
         _unityDependenciesPreflight = unityDependenciesPreflight ?? new UnityDependenciesPreflight();
+        _endpointAnswers = endpointAnswers ?? ((endpoint, cancellationToken) =>
+            HotReplEndpointProbe.AnswersAsync(
+                endpoint, TimeSpan.FromSeconds(1), cancellationToken));
     }
 
     internal async Task<GameSessionOutcome<T>> RunAsync<T>(
@@ -67,6 +73,15 @@ internal sealed class GameSession
         if (!File.Exists(gameExe))
             return Failed<T>(ExitCodes.Unreachable,
                 $"Game executable not found at: {gameExe}");
+
+        if (!Uri.TryCreate(_config.HotReplEndpoint, UriKind.Absolute, out var endpoint))
+            return Failed<T>(ExitCodes.InvalidUsage,
+                $"HotRepl endpoint is not an absolute URI: {_config.HotReplEndpoint}");
+
+        if (await _endpointAnswers(endpoint, cancellationToken))
+            return Failed<T>(ExitCodes.CommandFailed,
+                $"Another game instance already answers the runtime endpoint at {endpoint}. "
+                + "Quit that instance before launching this session.");
 
         if (request.RunSteamUpdate)
         {
@@ -114,35 +129,44 @@ internal sealed class GameSession
         var logTask = StreamLogAndDetectFatalAsync(logPath, logCts.Token);
 
         using var workCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        var workTask = work(workCts.Token);
-
         GameSessionOutcome<T> outcome;
-        var finished = await Task.WhenAny((Task)workTask, logTask);
-
-        if (finished == logTask)
+        try
         {
-            var fatal = await logTask;
-            if (fatal is not null)
+            var workTask = work(workCts.Token);
+            var finished = await Task.WhenAny((Task)workTask, logTask);
+
+            if (finished == logTask)
             {
-                // The game will not reach a usable state, so stop waiting on the work.
-                workCts.Cancel();
-                gameCts.Cancel();
-                await ObserveGameExitAsync(gameTask);
-                outcome = new GameSessionOutcome<T>(default,
-                    new GameSessionFailure(ExitCodes.ReadinessFailed, fatal));
+                var fatal = await logTask;
+                outcome = fatal is null
+                    ? new GameSessionOutcome<T>(await workTask, null)
+                    : new GameSessionOutcome<T>(default,
+                        new GameSessionFailure(ExitCodes.ReadinessFailed, fatal));
             }
             else
             {
                 outcome = new GameSessionOutcome<T>(await workTask, null);
             }
         }
-        else
+        catch (OperationCanceledException)
         {
-            outcome = new GameSessionOutcome<T>(await workTask, null);
+            outcome = Failed<T>(ExitCodes.Cancelled, $"{request.Purpose} was cancelled.");
         }
-
-        logCts.Cancel();
-        try { await logTask; } catch (OperationCanceledException) { }
+        catch (Exception exception)
+        {
+            outcome = Failed<T>(ExitCodes.Internal,
+                $"{request.Purpose} failed: {exception.GetType().Name}: {exception.Message}");
+        }
+        finally
+        {
+            workCts.Cancel();
+            logCts.Cancel();
+            gameCts.Cancel();
+            try { await logTask; }
+            catch (OperationCanceledException) { }
+            catch (Exception) { }
+            await ObserveGameExitAsync(gameTask);
+        }
 
         Console.WriteLine("---");
         Console.WriteLine();

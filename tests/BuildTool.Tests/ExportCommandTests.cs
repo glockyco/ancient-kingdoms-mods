@@ -129,6 +129,7 @@ public class ExportCommandTests
             resultStore ?? new CommandResultStore(),
             hotReplReadinessTimeout: hotReplReadinessTimeout ?? TimeSpan.Zero,
             hotReplPollInterval: TimeSpan.Zero,
-            exportRunner: exportRunner);
+            exportRunner: exportRunner,
+            endpointAnswers: (_, _) => Task.FromResult(false));
     }
 }

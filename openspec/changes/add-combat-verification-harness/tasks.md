@@ -58,7 +58,7 @@
       free before creation, reuse a character whose class a fixture needs, or remove one an earlier run
       created. Add a game-backed run that starts with all eight slots occupied.
 
-- [ ] 2.9 Refuse to launch while another instance answers the runtime endpoint, and report that rather
+- [x] 2.9 Refuse to launch while another instance answers the runtime endpoint, and report that rather
       than proceeding. A launch does not take the endpoint from the instance holding it, so a run beside a
       stale one measures a process it does not control. Shut the owned game process down on success and
       every failure path, and prove endpoint ownership with a stale-instance run.

@@ -33,6 +33,7 @@ public sealed class VerifyCommand : AsyncCommand<VerifyCommand.Settings>
     private readonly UnityDependenciesPreflight _unityDependenciesPreflight;
     private readonly Func<HotReplRunnerOptions, CancellationToken, Task<VerificationRunnerResult>>
         _verificationRunner;
+    private readonly Func<Uri, CancellationToken, Task<bool>>? _endpointAnswers;
     private readonly TimeSpan? _hotReplReadinessTimeout;
     private readonly TimeSpan? _hotReplPollInterval;
     private readonly Func<DateTimeOffset> _now;
@@ -57,7 +58,8 @@ public sealed class VerifyCommand : AsyncCommand<VerifyCommand.Settings>
         Func<HotReplRunnerOptions, CancellationToken, Task<VerificationRunnerResult>>?
             verificationRunner = null,
         UnityDependenciesPreflight? unityDependenciesPreflight = null,
-        Func<DateTimeOffset>? now = null)
+        Func<DateTimeOffset>? now = null,
+        Func<Uri, CancellationToken, Task<bool>>? endpointAnswers = null)
     {
         _repoRoot = repoRoot;
         _config = config;
@@ -68,6 +70,7 @@ public sealed class VerifyCommand : AsyncCommand<VerifyCommand.Settings>
         _hotReplPollInterval = hotReplPollInterval;
         _verificationRunner = verificationRunner ?? RunVerificationAsync;
         _now = now ?? (() => DateTimeOffset.UtcNow);
+        _endpointAnswers = endpointAnswers;
     }
 
     public sealed class Settings : BaseSettings
@@ -125,7 +128,8 @@ public sealed class VerifyCommand : AsyncCommand<VerifyCommand.Settings>
             PollInterval = _hotReplPollInterval ?? TimeSpan.FromSeconds(3),
         };
 
-        var session = new GameSession(_config, _runner, _unityDependenciesPreflight);
+        var session = new GameSession(
+            _config, _runner, _unityDependenciesPreflight, _endpointAnswers);
         var outcome = await session.RunAsync(
             new GameSessionRequest
             {

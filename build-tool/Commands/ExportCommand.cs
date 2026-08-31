@@ -21,6 +21,7 @@ public sealed class ExportCommand : AsyncCommand<ExportCommand.Settings>
     private readonly CommandResultStore _resultStore;
     private readonly UnityDependenciesPreflight _unityDependenciesPreflight;
     private readonly Func<HotReplRunnerOptions, CancellationToken, Task<ExportRunnerResult>> _exportRunner;
+    private readonly Func<Uri, CancellationToken, Task<bool>>? _endpointAnswers;
 
     private readonly TimeSpan? _hotReplReadinessTimeout;
     private readonly TimeSpan? _hotReplPollInterval;
@@ -43,7 +44,8 @@ public sealed class ExportCommand : AsyncCommand<ExportCommand.Settings>
         TimeSpan? hotReplReadinessTimeout = null,
         TimeSpan? hotReplPollInterval = null,
         Func<HotReplRunnerOptions, CancellationToken, Task<ExportRunnerResult>>? exportRunner = null,
-        UnityDependenciesPreflight? unityDependenciesPreflight = null)
+        UnityDependenciesPreflight? unityDependenciesPreflight = null,
+        Func<Uri, CancellationToken, Task<bool>>? endpointAnswers = null)
     {
         _repoRoot                   = repoRoot;
         _config                     = config;
@@ -53,6 +55,7 @@ public sealed class ExportCommand : AsyncCommand<ExportCommand.Settings>
         _hotReplReadinessTimeout    = hotReplReadinessTimeout;
         _hotReplPollInterval        = hotReplPollInterval;
         _exportRunner               = exportRunner ?? RunHotReplExportAsync;
+        _endpointAnswers            = endpointAnswers;
     }
 
     public sealed class Settings : BaseSettings
@@ -87,7 +90,8 @@ public sealed class ExportCommand : AsyncCommand<ExportCommand.Settings>
             PollInterval = _hotReplPollInterval ?? TimeSpan.FromSeconds(3),
         };
 
-        var session = new GameSession(_config, _runner, _unityDependenciesPreflight);
+        var session = new GameSession(
+            _config, _runner, _unityDependenciesPreflight, _endpointAnswers);
         var outcome = await session.RunAsync(
             new GameSessionRequest
             {

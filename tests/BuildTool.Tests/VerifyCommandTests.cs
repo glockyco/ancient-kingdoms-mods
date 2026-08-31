@@ -95,7 +95,8 @@ public sealed class VerifyCommandTests : IDisposable
                 Task.FromResult(new VerificationRunnerResult(
                     true, ExitCodes.Success, "redirected",
                     "C:/game/ancientkingdoms_Data/verification-scratch/game.dat", 6))),
-            now: () => new DateTimeOffset(2026, 8, 26, 12, 0, 0, TimeSpan.Zero));
+            now: () => new DateTimeOffset(2026, 8, 26, 12, 0, 0, TimeSpan.Zero),
+            endpointAnswers: (_, _) => Task.FromResult(false));
 
         var exit = command.RunAsync(new VerifyCommand.Settings()).GetAwaiter().GetResult();
         return (exit, store, processRunner);
