@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any
 
 PLANNER_EXPORT_FILES = (
+    "game_config.json",
     "classes.json",
     "classes_combat.json",
     "equipment_slots.json",
@@ -89,6 +90,10 @@ def _require_fields(rows: list[dict[str, Any]], fields: set[str], domain: str) -
 def verify_planner_inputs(export_dir: Path) -> None:
     """Verify that every planner data domain and required field is present."""
     exports = {name: _read_json(export_dir, name) for name in PLANNER_EXPORT_FILES}
+
+    game_config = exports["game_config.json"]
+    if not isinstance(game_config, dict) or not game_config.get("game_version"):
+        raise ValueError("Planner game_config.json must declare game_version")
 
     classes = _require_rows(exports["classes.json"], "classes.json")
     _require_fields(classes, {"id", "compatible_races"}, "class")

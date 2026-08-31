@@ -16,6 +16,7 @@ The second rule matches identifiers and not names. Prose that names a redacted
 zone remains published, so a display name is not a match.
 """
 
+import gzip
 import re
 import sqlite3
 from dataclasses import dataclass
@@ -229,6 +230,29 @@ def content_findings(
         for identifier in _found_in(matcher, text):
             findings.append(Finding(surface, "", relative, identifier))
     return findings
+
+
+def check_payload_files(paths: tuple[Path, ...], subject: Subject) -> None:
+    """Fail when raw or compressed payload bytes name removed content."""
+    if not subject.identifiers:
+        return
+
+    matcher = _matcher(subject.identifiers)
+    found: list[Finding] = []
+    for path in paths:
+        content = path.read_bytes()
+        if path.suffix == ".gz":
+            content = gzip.decompress(content)
+        text = content.decode("utf-8", errors="ignore")
+        for identifier in _found_in(matcher, text):
+            found.append(Finding("planner_payload", "", path.name, identifier))
+
+    surviving = report(found, subject.allowances)
+    if surviving:
+        lines = "\n  ".join(str(finding) for finding in sorted(surviving, key=str))
+        raise SurvivingReference(
+            f"{len(surviving)} planner payload values name removed content:\n  {lines}"
+        )
 
 
 def report(findings: list[Finding], allowances: list[Allowance]) -> list[Finding]:

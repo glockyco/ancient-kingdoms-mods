@@ -42,6 +42,7 @@ class PlannerInputTests(unittest.TestCase):
             for slot_index in range(16)
         ]
         return {
+            "game_config.json": {"game_version": "0.9.31.1"},
             "classes.json": [{"id": "warrior", "compatible_races": ["human"]}],
             "classes_combat.json": [class_combat],
             "equipment_slots.json": slots,
@@ -110,6 +111,7 @@ class PlannerInputTests(unittest.TestCase):
 
     def test_missing_required_domains_and_fields_are_refused(self):
         mutations = {
+            "game version": lambda data: data["game_config.json"].pop("game_version"),
             "progression": lambda data: data.pop("progression.json"),
             "slot": lambda data: data["equipment_slots.json"].pop(),
             "skill tree": lambda data: data["skills.json"][0].pop(

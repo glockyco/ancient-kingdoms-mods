@@ -4,6 +4,9 @@ namespace DataExporter.Models;
 
 public class GameConfigData
 {
+    /// <summary>The game version that produced every file in this export run.</summary>
+    public string game_version { get; set; }
+
     /// <summary>
     /// The locale the export was taken under. A localized string is in some
     /// language, so this dependency cannot be removed. The build reads it and

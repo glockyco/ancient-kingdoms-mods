@@ -29,12 +29,12 @@ removed only after the replacement passes the runtime and release gates.
 - [x] 3.1 Define one logical build envelope with separate serialized-schema, capture-schema, model, and game-data versions and thin C# and TypeScript adapters.
 - [x] 3.2 Define the evaluation-scenario record for target, horizon, initial resources and cooldowns, buffs, consumables, ammunition, incoming events, roster, and target count.
 - [x] 3.3 Define explicit refusal policies for unknown schemas, unsupported target counts, incompatible game data, stale model markers, and incomplete captures.
-- [ ] 3.4 Add one owned build-pipeline writer for the deterministic planner payload path, stale-output deletion, required-output assertion, and deterministic serialization.
-- [ ] 3.5 Emit equipment, progression, skills, mercenary archetypes, consumables, ammunition, and effect classifications into the planner payload.
-- [ ] 3.6 Register one content-hashed browser import and extend redaction verification to the raw and compressed planner payload.
-- [ ] 3.7 Add reproducibility tests for stable raw bytes, compressed bytes, content hash, stale-output deletion, and missing-output failure.
-- [ ] 3.8 Compare every emitted effect kind with modelled, excluded, and unsupported registries; fail publication for an unclassified admitted kind.
-- [ ] 3.9 Measure and record the final raw and compressed payload sizes after all required domains are present.
+- [x] 3.4 Add one owned build-pipeline writer for the deterministic planner payload path, stale-output deletion, required-output assertion, and deterministic serialization.
+- [x] 3.5 Emit equipment, progression, skills, mercenary archetypes, consumables, ammunition, and effect classifications into the planner payload.
+- [x] 3.6 Register one content-hashed browser import and extend redaction verification to the raw and compressed planner payload.
+- [x] 3.7 Add reproducibility tests for stable raw bytes, compressed bytes, content hash, stale-output deletion, and missing-output failure.
+- [x] 3.8 Compare every emitted effect kind with modelled, excluded, and unsupported registries; fail publication for an unclassified admitted kind.
+- [x] 3.9 Measure and record the final raw and compressed payload sizes after all required domains are present.
 
 ## 4. Numeric kernel and evaluation scenario
 

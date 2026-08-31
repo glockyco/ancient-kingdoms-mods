@@ -1,5 +1,6 @@
 using DataExporter.Models;
 using MelonLoader;
+using UnityEngine;
 using UnityEngine.Localization.Settings;
 
 namespace DataExporter.Exporters;
@@ -15,8 +16,14 @@ public class GameConfigExporter : BaseExporter
     {
         Logger.Msg("Exporting game config...");
 
-        var config = new GameConfigData { export_locale = SelectedLocaleCode() };
-        Logger.Msg($"Export locale: {config.export_locale ?? "none"}");
+        var config = new GameConfigData
+        {
+            game_version = Application.version,
+            export_locale = SelectedLocaleCode()
+        };
+        Logger.Msg(
+            $"Export game version: {config.game_version ?? "none"}; "
+            + $"locale: {config.export_locale ?? "none"}");
 
         var gameManager = Il2Cpp.GameManager.singleton;
         if (gameManager == null)

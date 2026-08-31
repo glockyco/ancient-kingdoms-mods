@@ -53,6 +53,10 @@ from compendium.loaders import (
     record_visual_assets,
 )
 from compendium.planner_inputs import verify_planner_inputs
+from compendium.planner_payload import (
+    remove_planner_payload_outputs,
+    write_planner_payload,
+)
 from compendium.redactions import verify
 from compendium.redactions.references import resolve
 from compendium.session import verify_export_locale
@@ -138,6 +142,7 @@ def run(config: dict) -> None:
     # Ensure output directories exist
     static_dir.mkdir(parents=True, exist_ok=True)
     data_dir.mkdir(parents=True, exist_ok=True)
+    remove_planner_payload_outputs(data_dir)
 
     db_path = data_dir / config["build_pipeline"]["db_name"]
 
@@ -161,6 +166,18 @@ def run(config: dict) -> None:
         # `reconcile` is one of them: the rows in `visual_assets` for a removed
         # entity stay until it deletes the row and the image file together.
         verify.check(conn, subject, resolve(conn), static_dir / "images")
+        planner_payload = write_planner_payload(
+            conn,
+            export_dir,
+            data_dir,
+            repo_root / "server-scripts" / "SNAPSHOT.toml",
+            subject,
+        )
+        console.print(
+            "  [green]OK[/green] Published planner payload "
+            f"({planner_payload.raw_size:,} raw bytes, "
+            f"{planner_payload.compressed_size:,} compressed bytes)"
+        )
 
         # Optimize FTS5 indexes (merges segments, reduces size)
         console.print("\nOptimizing database...")

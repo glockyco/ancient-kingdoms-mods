@@ -484,10 +484,11 @@ evaluating one that does overstates output.
 
 ### Client-side compute, no server endpoint
 
-The measured equipment subset is 21,488 B gzipped for all 887 equippable non-costume items. The final
-payload also needs class and race progression, skill trees, mercenary archetypes, consumables,
-ammunition, and classified effects. Its final raw and compressed sizes must be measured rather than
-inferred from the equipment subset.
+The measured equipment subset was 21,488 B gzipped for all 887 equippable non-costume items. The final
+payload from Ancient Kingdoms 0.9.31.1 contains 889 surviving equipment items, 54 augments, 295 skills,
+six mercenary archetypes, 120 consumables, two ammunition items, 192 equipment slots, and 59 effect
+classifications. Deterministic serialization produces 3,515,206 raw bytes and 155,858 gzip bytes. The
+browser budget uses the final compressed measurement, not the equipment-only estimate.
 
 A Cloudflare Worker endpoint is possible but unnecessary. Static assets plus a dedicated optimizer
 worker avoid per-request CPU limits and keep local capture data on the reader's machine.

@@ -42,6 +42,18 @@ class LoaderRegistrationTests(unittest.TestCase):
         )
 
 
+class PlannerPayloadRegistrationTests(unittest.TestCase):
+    def test_build_deletes_and_rewrites_the_owned_planner_payload(self):
+        called = {
+            node.func.id
+            for node in ast.walk(_parse(BUILD_COMMAND))
+            if isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+        }
+
+        self.assertIn("remove_planner_payload_outputs", called)
+        self.assertIn("write_planner_payload", called)
+
+
 class DenormalizerRegistrationTests(unittest.TestCase):
     def test_every_imported_denormalizer_runs_in_run_all(self):
         tree = _parse(DENORMALIZERS)
