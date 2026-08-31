@@ -38,11 +38,11 @@ removed only after the replacement passes the runtime and release gates.
 
 ## 4. Numeric kernel and evaluation scenario
 
-- [ ] 4.1 Extract shared `f32`, `iround`, ceiling, floor, clamp, and expectation-substitution primitives from the existing source-cited stat module.
-- [ ] 4.2 Add boundary tests that fail when an intermediate round, clamp, or float narrowing moves from its engine position.
-- [ ] 4.3 Implement the versioned scenario parser and reject missing fields, unsupported target counts, and incompatible version tuples.
-- [ ] 4.4 Implement timed initial state for resource, cooldown, buff, consumable, ammunition, and incoming-damage events.
-- [ ] 4.5 Add scenario tests for the default stationary dummy, empty incoming events, supplied incoming events, ammunition exhaustion, and unsupported durability loss.
+- [x] 4.1 Extract shared `f32`, `iround`, ceiling, floor, clamp, and expectation-substitution primitives from the existing source-cited stat module.
+- [x] 4.2 Add boundary tests that fail when an intermediate round, clamp, or float narrowing moves from its engine position.
+- [x] 4.3 Implement the versioned scenario parser and reject missing fields, unsupported target counts, and incompatible version tuples.
+- [x] 4.4 Implement timed initial state for resource, cooldown, buff, consumable, ammunition, and incoming-damage events.
+- [x] 4.5 Add scenario tests for the default stationary dummy, empty incoming events, supplied incoming events, ammunition exhaustion, and unsupported durability loss.
 
 ## 5. Target, caster, and hit evaluation
 

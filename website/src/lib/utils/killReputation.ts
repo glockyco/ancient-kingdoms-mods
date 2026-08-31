@@ -1,3 +1,5 @@
+import { iround } from "$lib/planner/engine-math";
+
 export type KillReputationDirection = "improve" | "decrease";
 
 /**
@@ -39,15 +41,6 @@ const reputationAmountFormat = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 1,
 });
 
-// Unity's Mathf.RoundToInt uses midpoint-to-even rounding.
-function roundToInt(value: number): number {
-  const lower = Math.floor(value);
-  const fraction = value - lower;
-  if (fraction < 0.5) return lower;
-  if (fraction > 0.5) return lower + 1;
-  return lower % 2 === 0 ? lower : lower + 1;
-}
-
 /**
  * Reputation changed per kill for a monster, formatted as a range across its
  * spawn levels (level_min..level_max).
@@ -66,7 +59,7 @@ function monsterReputationAmount(
   let max: number;
   if (direction === "improve") {
     const rankMultiplier = monster.is_boss ? 20 : monster.is_elite ? 10 : 2;
-    const healthBonus = roundToInt(monster.health / 2000);
+    const healthBonus = iround(monster.health / 2000);
     min = (monster.level_min + healthBonus) * rankMultiplier;
     max = (monster.level_max + healthBonus) * rankMultiplier;
   } else {

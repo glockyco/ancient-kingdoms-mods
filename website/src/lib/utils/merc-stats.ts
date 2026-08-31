@@ -1,6 +1,14 @@
+import {
+  ceilToInt,
+  clamp,
+  f32,
+  floorToInt,
+  iround,
+  multiplyF32,
+} from "$lib/planner/engine-math";
+
 // merc-stats.ts — Pure mercenary stat-range math and hiring-cost helpers.
 // Source citations refer to Ancient Kingdoms server-scripts/*.cs.
-// Engine-faithful: float32 (Math.fround) plus banker's rounding to match Unity/C#.
 
 // Source: server-scripts/Player.cs:9549-9561 — each veteran point adds +0.25% to Health and Mana multipliers.
 export const VET_MULT_PER_POINT = 0.0025;
@@ -12,18 +20,6 @@ const INT_MANA = 20;
 const STR_PHYS = 1.0;
 // Source: server-scripts/Intelligence.cs:7,36-38 — Intelligence contributes round(INT×1.5) Spell Power.
 const INT_MAGIC = 1.5;
-
-/** Round to float32 precision, as Unity stores/computes. */
-export const f32 = (x: number): number => Math.fround(x);
-
-/** (int)Math.Round(double) using banker's rounding. */
-export function iround(x: number): number {
-  const floor = Math.floor(x);
-  const diff = x - floor;
-  if (diff < 0.5) return floor;
-  if (diff > 0.5) return floor + 1;
-  return floor % 2 === 0 ? floor : floor + 1;
-}
 
 export interface RaceBands {
   hp: [number, number];
@@ -132,19 +128,19 @@ const linear = (base: number, per: number, level: number): number =>
 export function attrs(cls: string, level: number): Record<string, number> {
   const out: Record<string, number> = {};
   for (const [a, n] of Object.entries(CLASSES[cls].div))
-    out[a] = Math.floor(level / n);
+    out[a] = floorToInt(level / n);
   return out;
 }
 
 // Source: server-scripts/Constitution.cs:13-15, server-scripts/Player.cs:9534-9551 — Health curve times multiplier plus Constitution.
 const hpAt = (hpCurve: number, mult: number, con: number): number =>
-  iround(f32(f32(hpCurve) * f32(mult))) + con * CON_HEALTH;
+  iround(multiplyF32(hpCurve, mult)) + con * CON_HEALTH;
 // Source: server-scripts/Intelligence.cs:21-23, server-scripts/Player.cs:9534-9561 — Mana curve times multiplier plus Intelligence.
 const manaAt = (manaCurve: number, mult: number, intl: number): number =>
-  iround(f32(f32(manaCurve) * f32(mult))) + intl * INT_MANA;
+  iround(multiplyF32(manaCurve, mult)) + intl * INT_MANA;
 // Source: server-scripts/Player.cs:9753-9790 — base-combat max is round(level × race factor) − 1.
 const baseCombatMax = (level: number, factor: number): number =>
-  iround(f32(f32(level) * f32(factor))) - 1;
+  iround(multiplyF32(level, factor)) - 1;
 
 export interface MercRow {
   race: string;
@@ -183,7 +179,7 @@ export function computeAll(
     const hpCurve = linear(cur.hp_base, cur.hp_per, level);
     const manaCurve = linear(cur.mana_base, cur.mana_per, level);
     const hasMana = c.role === "mana" && manaCurve > 0;
-    const magAdd = iround(f32(a.INT * INT_MAGIC));
+    const magAdd = iround(multiplyF32(a.INT, INT_MAGIC));
     const rows: MercRow[] = RACE_ORDER.map((race) => {
       const inPool = c.pool.includes(race);
       const preferredOnly = !inPool && classCanBe(cls, race);
@@ -272,7 +268,7 @@ export function pRaceAtRecruiter(
 
 /** Source: server-scripts/uMMORPG.Scripts.PlayerAttributes/Charisma.cs:13-15, server-scripts/UINpcTrading.cs:824-831 — purchase discount is Charisma×0.002, capped by the shop. */
 export function charismaDiscount(charisma: number): number {
-  return Math.min(0.25, Math.max(0, charisma) * 0.002);
+  return clamp(charisma, 0, 125) * 0.002;
 }
 
 /** Source: server-scripts/UIMercenaries.cs:427-433, server-scripts/UINpcTrading.cs:810-817 — mercenary hire price plus Charisma discount. */
@@ -281,12 +277,12 @@ export function hirePrice(
   veteran: number,
   discount = 0,
 ): number {
-  const L = Math.max(10, Math.min(50, level));
-  const base = Math.round(
+  const L = clamp(level, 10, 50);
+  const base = iround(
     20 + 400 * ((L - 10) / 40) ** 2 + Math.max(0, veteran) * 15,
   );
-  const d = Math.min(0.25, Math.max(0, discount));
-  return Math.max(1, base - Math.ceil(base * d));
+  const d = clamp(discount, 0, 0.25);
+  return Math.max(1, base - ceilToInt(base * d));
 }
 
 /** P(stat >= target), discrete uniform over integers [lo, hi]. Use for base-combat. */
@@ -310,7 +306,7 @@ export function pCurveRollAtLeast(
   const lo = f32(band[0]) + vetAdd;
   const hi = f32(band[1]) + vetAdd;
   if (hi <= lo)
-    return target <= iround(f32(f32(curve) * f32(lo))) + flatBonus ? 1 : 0;
+    return target <= iround(multiplyF32(curve, lo)) + flatBonus ? 1 : 0;
   const required = (target - flatBonus - 0.5) / curve;
   if (required <= lo) return 1;
   if (required > hi) return 0;

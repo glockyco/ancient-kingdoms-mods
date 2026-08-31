@@ -1,3 +1,5 @@
+import { clamp } from "$lib/planner/engine-math";
+
 // monster-stats.ts — Pure stat math for a monster or NPC spawn.
 // Source citations refer to Ancient Kingdoms server-scripts/*.cs.
 
@@ -37,5 +39,5 @@ export function effectiveBlockChance(args: {
   defense: number;
 }): number {
   const fromCurve = statAtLevel(args.base, args.perLevel, args.level);
-  return Math.min(fromCurve + args.defense * BLOCK_PER_DEFENSE, BLOCK_MAX);
+  return clamp(fromCurve + args.defense * BLOCK_PER_DEFENSE, 0, BLOCK_MAX);
 }
