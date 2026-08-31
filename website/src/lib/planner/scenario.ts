@@ -20,6 +20,16 @@ export interface EvaluationScenario {
     id: string;
     level: number;
     stationary: boolean;
+    defense: number;
+    magicResist: number;
+    poisonResist: number;
+    fireResist: number;
+    coldResist: number;
+    diseaseResist: number;
+    blockChance: number;
+    criticalResist: number;
+    bossOrElite: boolean;
+    immuneDebuffs: boolean;
   };
   horizonSeconds: number;
   initialResources: Array<{
@@ -107,6 +117,60 @@ export function parseEvaluationScenario(
       targetRecord,
       "stationary",
       "scenario.target.stationary",
+    ),
+    defense: requireNonNegativeNumber(
+      targetRecord,
+      "defense",
+      "scenario.target.defense",
+    ),
+    magicResist: requireNonNegativeNumber(
+      targetRecord,
+      "magicResist",
+      "scenario.target.magicResist",
+    ),
+    poisonResist: requireNonNegativeNumber(
+      targetRecord,
+      "poisonResist",
+      "scenario.target.poisonResist",
+    ),
+    fireResist: requireNonNegativeNumber(
+      targetRecord,
+      "fireResist",
+      "scenario.target.fireResist",
+    ),
+    coldResist: requireNonNegativeNumber(
+      targetRecord,
+      "coldResist",
+      "scenario.target.coldResist",
+    ),
+    diseaseResist: requireNonNegativeNumber(
+      targetRecord,
+      "diseaseResist",
+      "scenario.target.diseaseResist",
+    ),
+    blockChance: requireBoundedNumber(
+      targetRecord,
+      "blockChance",
+      "scenario.target.blockChance",
+      0,
+      0.8,
+    ),
+    criticalResist: requireBoundedNumber(
+      targetRecord,
+      "criticalResist",
+      "scenario.target.criticalResist",
+      0,
+      1,
+    ),
+    bossOrElite: requireBoolean(
+      targetRecord,
+      "bossOrElite",
+      "scenario.target.bossOrElite",
+    ),
+    immuneDebuffs: requireBoolean(
+      targetRecord,
+      "immuneDebuffs",
+      "scenario.target.immuneDebuffs",
     ),
   };
   const horizonSeconds = requirePositiveNumber(
@@ -281,8 +345,7 @@ export function parseEvaluationScenario(
 
 export function createDefaultEvaluationScenario(args: {
   build: BuildEnvelope;
-  targetId: string;
-  targetLevel: number;
+  target: EvaluationScenario["target"];
   targetMaximumHealth: number;
   roster: string[];
   horizonSeconds: number;
@@ -293,16 +356,12 @@ export function createDefaultEvaluationScenario(args: {
       schemaVersion: SCENARIO_SCHEMA_VERSION,
       build: args.build,
       name: DEFAULT_SCENARIO_NAME,
-      target: {
-        id: args.targetId,
-        level: args.targetLevel,
-        stationary: true,
-      },
+      target: { ...args.target, stationary: true },
       horizonSeconds: args.horizonSeconds,
       initialResources: [
         ...(args.initialResources ?? []),
         {
-          entityId: args.targetId,
+          entityId: args.target.id,
           resource: "health",
           current: args.targetMaximumHealth,
           maximum: args.targetMaximumHealth,
@@ -451,6 +510,20 @@ function requireNonNegativeNumber(
 ): number {
   const value = requireFiniteNumber(record, key, path);
   if (value < 0) throw new RangeError(`${path} must not be negative`);
+  return value;
+}
+
+function requireBoundedNumber(
+  record: Record<string, unknown>,
+  key: string,
+  path: string,
+  minimum: number,
+  maximum: number,
+): number {
+  const value = requireFiniteNumber(record, key, path);
+  if (value < minimum || value > maximum) {
+    throw new RangeError(`${path} must be between ${minimum} and ${maximum}`);
+  }
   return value;
 }
 

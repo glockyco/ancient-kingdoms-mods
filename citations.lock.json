@@ -172,6 +172,10 @@
       "sha256": "a65a91c2f7ea032231332940b2eccb15366bf92cb26a7366abf34772c7d4dbf8",
       "span": 4
     },
+    "Combat.cs:1506-1545": {
+      "sha256": "2a7bc5839fb9100f63383d3f60dd8f65fcc45b7f1e819b85f0245cabff2e7bcc",
+      "span": 40
+    },
     "Combat.cs:1507-1534": {
       "sha256": "9b0842b14d2ce46030e5fffeb143379a7a0a1013386df2f399fc4ea989a59f1d",
       "span": 28
@@ -244,6 +248,10 @@
       "sha256": "e2d4747d5bf13353e2388d495523270253c2f8ce8d9ae8948a976b5b13b71e87",
       "span": 8
     },
+    "Combat.cs:635-643": {
+      "sha256": "9f8409806295be06d911b32ffe1cb15a6fd9bb3f42cf53c8488addb4820b62fa",
+      "span": 9
+    },
     "Combat.cs:652-659": {
       "sha256": "f1c9ceadb7f16c7da7f56fedf0fc374adbb60719fbd80ec5aee0056f5fb88ea8",
       "span": 8
@@ -259,6 +267,10 @@
     "Combat.cs:796-820": {
       "sha256": "91ba529acfe34f1c342c080b4542ebc9b3853f063cbdec0f83cd2ec1cbe70a70",
       "span": 25
+    },
+    "Combat.cs:812-838": {
+      "sha256": "df1e5b06049c7b545a6c9f09dc93f75774b35f9774949111583625308ced664a",
+      "span": 27
     },
     "Combat.cs:818-825": {
       "sha256": "33bc369656e46d2aeba5721b5b019e4897c27fe36aa4cb1bc23ad41d7528706e",
@@ -1327,9 +1339,17 @@
       "sha256": "c7f64b70703e64c00282e7dac9ed4be6aad5623ea74bcf0cda3ee3c3ebb4b9f4",
       "span": 1
     },
+    "PlayerEquipment.cs:1615-1627": {
+      "sha256": "8cb6bc084b65aea25af5680dbce071fca45a28565f9e2dc05260c166bd9046ad",
+      "span": 13
+    },
     "PlayerEquipment.cs:1670-1692": {
       "sha256": "3c7a9e19497a76553b48b4171ee5fc21edf0f05247c8e794087e97c486afe546",
       "span": 23
+    },
+    "PlayerEquipment.cs:186-327": {
+      "sha256": "c2cfb29593649619f34bc6908288af09c0b2b2e9457e6949b3e9a205342a0a5a",
+      "span": 142
     },
     "PlayerEquipment.cs:32": {
       "sha256": "e6a0f986b674d99fc76cf00ef1a5f6e44c0ef66930c9b4c4446c8d2dad0f80e2",
@@ -1738,6 +1758,10 @@
     "TargetDamageSkill.cs:282": {
       "sha256": "b461db9bf044cbf2945cf6a233c88d605cc09c3d3c8e8eee6d8e3b12e1eb761d",
       "span": 1
+    },
+    "TargetDebuffSkill.cs:101-171": {
+      "sha256": "30521db7b0749526cd114e2ea3ef5a8684ceac2c0d07c12c7f56e98ee4ad936a",
+      "span": 71
     },
     "TargetDebuffSkill.cs:104-142": {
       "sha256": "300de2db672363ed14f5fa7689d884b74b1d988503c8aa3cdfca168882541477",

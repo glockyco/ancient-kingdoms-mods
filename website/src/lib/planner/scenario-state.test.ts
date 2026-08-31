@@ -25,7 +25,21 @@ function scenarioWithEvents() {
       schemaVersion: 1,
       build,
       name: "Incoming damage fixture",
-      target: { id: "dummy", level: 55, stationary: true },
+      target: {
+        id: "dummy",
+        level: 55,
+        stationary: true,
+        defense: 1_000,
+        magicResist: 500,
+        poisonResist: 400,
+        fireResist: 300,
+        coldResist: 200,
+        diseaseResist: 100,
+        blockChance: 0.164,
+        criticalResist: 0,
+        bossOrElite: false,
+        immuneDebuffs: false,
+      },
       horizonSeconds: 20,
       initialResources: [
         {

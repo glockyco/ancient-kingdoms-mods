@@ -1,5 +1,9 @@
 import { describe, expect, test } from "vitest";
-import { effectiveBlockChance, statAtLevel } from "./monster-stats";
+import {
+  effectiveBlockChance,
+  monsterTargetCombatStats,
+  statAtLevel,
+} from "./monster-stats";
 
 describe("statAtLevel", () => {
   test("reads the curve at the level, counting from one", () => {
@@ -68,5 +72,61 @@ describe("effectiveBlockChance", () => {
     expect(
       effectiveBlockChance({ base: 0.05, perLevel: 0, level: 30, defense: 0 }),
     ).toBeCloseTo(0.05, 6);
+  });
+});
+
+describe("monsterTargetCombatStats", () => {
+  const curves = {
+    defense_base: 100,
+    defense_per_level: 10,
+    magic_resist_base: 200,
+    magic_resist_per_level: 5,
+    poison_resist_base: 300,
+    poison_resist_per_level: 4,
+    fire_resist_base: 400,
+    fire_resist_per_level: 3,
+    cold_resist_base: 500,
+    cold_resist_per_level: 2,
+    disease_resist_base: 600,
+    disease_resist_per_level: 1,
+    block_chance_base: 0.01,
+    block_chance_per_level: 0.001,
+  };
+
+  test("uses every resistance curve at the selected level", () => {
+    const target = monsterTargetCombatStats(curves, 10);
+    expect(target).toMatchObject({
+      level: 10,
+      defense: 190,
+      magicResist: 245,
+      poisonResist: 336,
+      fireResist: 427,
+      coldResist: 518,
+      diseaseResist: 609,
+    });
+    expect(target.blockChance).toBeCloseTo(0.038);
+  });
+
+  test("prefers populated spawn values and recomputes block", () => {
+    const target = monsterTargetCombatStats(curves, 10, {
+      level: 20,
+      defense: 700,
+      magic_resist: 710,
+      poison_resist: 720,
+      fire_resist: 730,
+      cold_resist: 740,
+      disease_resist: 750,
+    });
+
+    expect(target).toMatchObject({
+      level: 20,
+      defense: 700,
+      magicResist: 710,
+      poisonResist: 720,
+      fireResist: 730,
+      coldResist: 740,
+      diseaseResist: 750,
+    });
+    expect(target.blockChance).toBeCloseTo(0.099);
   });
 });

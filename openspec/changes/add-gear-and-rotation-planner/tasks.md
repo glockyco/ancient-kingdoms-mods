@@ -46,15 +46,15 @@ removed only after the replacement passes the runtime and release gates.
 
 ## 5. Target, caster, and hit evaluation
 
-- [ ] 5.1 Extend the source-cited monster stat module with defense, magic resist, and four elemental resist curves plus spawn values.
-- [ ] 5.2 Implement target avoidance, mitigation, debuff landing, mitigation ceilings, and explicit target parameters using the measured harness results.
-- [ ] 5.3 Add target tests for level difference, all resist schools, defense saturation, debuff floors and ceilings, and stale denormalized fields.
-- [ ] 5.4 Build the caster stat sheet for attack power, spell power, passive damage, resource capacities, four clamps, armour thresholds, and integer boundaries.
-- [ ] 5.5 Add live character stat-sheet comparisons and synthetic boundary tests for every caster-state term.
-- [ ] 5.6 Implement one ordered hit pipeline with separate handlers for each damaging skill class, avoidance, mitigation, criticals, and post-hit effects.
-- [ ] 5.7 Implement resource-burn damage, weapon-category gates, archetype-specific offhands, wielder-specific offhand damage, and engine skill refusals.
-- [ ] 5.8 Add per-skill-class tests, including the populated fields the engine ignores, and cover normal, poison, fire, cold, magic, and disease damage.
-- [ ] 5.9 Add hit tests for resource-burn bypass, assassination health gate, slot 13 category selection, offhand wielders, and known game defects.
+- [x] 5.1 Extend the source-cited monster stat module with defense, magic resist, and four elemental resist curves plus spawn values.
+- [x] 5.2 Implement target avoidance, mitigation, debuff landing, mitigation ceilings, and explicit target parameters using the measured harness results.
+- [x] 5.3 Add target tests for level difference, all resist schools, defense saturation, debuff floors and ceilings, and stale denormalized fields.
+- [x] 5.4 Build the caster stat sheet for attack power, spell power, passive damage, resource capacities, four clamps, armour thresholds, and integer boundaries.
+- [x] 5.5 Add live character stat-sheet comparisons and synthetic boundary tests for every caster-state term.
+- [x] 5.6 Implement one ordered hit pipeline with separate handlers for each damaging skill class, avoidance, mitigation, criticals, and post-hit effects.
+- [x] 5.7 Implement resource-burn damage, weapon-category gates, archetype-specific offhands, wielder-specific offhand damage, and engine skill refusals.
+- [x] 5.8 Add per-skill-class tests, including the populated fields the engine ignores, and cover normal, poison, fire, cold, magic, and disease damage.
+- [x] 5.9 Add hit tests for resource-burn bypass, assassination health gate, slot 13 category selection, offhand wielders, and known game defects.
 
 ## 6. Timing, effects, resources, and companions
 

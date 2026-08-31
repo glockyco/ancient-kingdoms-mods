@@ -25,7 +25,21 @@ function validScenario(): Record<string, unknown> {
     schemaVersion: SCENARIO_SCHEMA_VERSION,
     build,
     name: "Fixture",
-    target: { id: "dummy", level: 55, stationary: true },
+    target: {
+      id: "dummy",
+      level: 55,
+      stationary: true,
+      defense: 1_000,
+      magicResist: 500,
+      poisonResist: 400,
+      fireResist: 300,
+      coldResist: 200,
+      diseaseResist: 100,
+      blockChance: 0.164,
+      criticalResist: 0,
+      bossOrElite: false,
+      immuneDebuffs: false,
+    },
     horizonSeconds: 60,
     initialResources: [
       {
@@ -80,6 +94,15 @@ describe("parseEvaluationScenario", () => {
     expect(() => parseEvaluationScenario(scenario, build)).toThrow();
   });
 
+  it("refuses a missing target combat parameter", () => {
+    const scenario = validScenario();
+    const target = scenario.target as Record<string, unknown>;
+    delete target.fireResist;
+    expect(() => parseEvaluationScenario(scenario, build)).toThrow(
+      "scenario.target.fireResist",
+    );
+  });
+
   it("refuses an incompatible version tuple", () => {
     const scenario = validScenario();
     scenario.build = { ...build, modelVersion: "2" };
@@ -107,8 +130,21 @@ describe("parseEvaluationScenario", () => {
   it("creates the explicit stationary dummy default at full health", () => {
     const scenario = createDefaultEvaluationScenario({
       build,
-      targetId: "training_dummy",
-      targetLevel: 55,
+      target: {
+        id: "training_dummy",
+        level: 55,
+        stationary: true,
+        defense: 1_000,
+        magicResist: 500,
+        poisonResist: 400,
+        fireResist: 300,
+        coldResist: 200,
+        diseaseResist: 100,
+        blockChance: 0.164,
+        criticalResist: 0,
+        bossOrElite: false,
+        immuneDebuffs: false,
+      },
       targetMaximumHealth: 1_000_000,
       roster: ["player"],
       horizonSeconds: 120,

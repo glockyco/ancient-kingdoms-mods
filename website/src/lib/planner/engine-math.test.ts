@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  addF32,
   ceilToInt,
   clamp,
   expectedBernoulli,
@@ -19,6 +20,10 @@ describe("engine numeric primitives", () => {
     expect(narrowedOnlyAfterMultiplication).toBe(31.5);
     expect(iround(staged)).toBe(31);
     expect(iround(narrowedOnlyAfterMultiplication)).toBe(32);
+  });
+
+  it("narrows each accumulated float term", () => {
+    expect(addF32(16_777_216, 1)).toBe(16_777_216);
   });
 
   it.each([
