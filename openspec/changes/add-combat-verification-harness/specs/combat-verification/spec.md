@@ -163,6 +163,52 @@ A report SHALL identify the fixture, the target, the game version, and the model
 - **WHEN** a stored report is reviewed
 - **THEN** the fixture, target, game version, and model version are recoverable from it
 
+### Requirement: Book-aware parity uses declared and achieved progression
+
+A verification run SHALL compare both no-book and book-bearing cases. Each case SHALL compare the
+attribute totals, every affected stat, and both damage intent and damage reduction against the planner's
+production evaluator.
+The evaluator SHALL resolve current gains from the versioned planner/game catalog for the declared
+`learnedBookIds` and apply those gains once. Learned-book progression is separate from allocated
+attribute points, skill budgets, inventory consumables, equipped bonuses, and transient effects. It SHALL
+NOT infer books from inventory ownership or grant books silently.
+
+The report SHALL preserve declared and achieved `learnedBookIds`, the catalog identity and gain or effect
+resolution, and the resulting achieved live attributes. Live totals SHALL NOT be labelled as base
+attributes or allocated points. A requested-versus-achieved mismatch, unknown or duplicate identity, or
+unresolved catalog contribution SHALL stop dependent parity and preserve its diagnostics.
+
+A captured build SHALL qualify for parity only when its learned-book section is complete. Qualification
+SHALL reference runtime evidence that the capture producer reads actual learned state without learning,
+resetting, or otherwise mutating the character. A capture's own read-only declaration and inventory
+ownership are not that evidence. The linked planner change owns the capture producer and planner
+behavior. The harness consumes the capture without changing the original file and materializes only
+its owned scratch character.
+
+#### Scenario: A no-book case reaches parity
+
+- **WHEN** a complete fixture declares an empty `learnedBookIds` and the achieved state is also empty
+- **THEN** the run compares its attributes, affected stats, damage intent, and damage reduction with the production evaluator
+- **AND** it records the empty declaration and achieved state as complete provenance
+
+#### Scenario: A book-bearing case reaches parity
+
+- **WHEN** a complete fixture declares learned books and readback confirms the same IDs and resulting attributes
+- **THEN** the run compares book-aware attributes, affected stats, damage intent, and damage reduction with catalog gains applied once
+- **AND** it records the declared and achieved IDs and catalog resolution provenance
+
+#### Scenario: Capture evidence is inventory-only
+
+- **WHEN** a capture reports inventory ownership but not the actual learned-book state and read-only evidence
+- **THEN** parity qualification stops as incomplete
+- **AND** the report preserves the missing section and its diagnostics
+
+#### Scenario: A catalog contribution cannot be resolved
+
+- **WHEN** the production catalog cannot resolve a declared book's gains or effect classification
+- **THEN** book-aware parity is refused
+- **AND** the report preserves the catalog identity and unresolved contribution
+
 ### Requirement: Fixtures are tiered so a failure localises
 
 The fixture set SHALL include tiers that exercise the stat sheet without combat, a single hit per skill

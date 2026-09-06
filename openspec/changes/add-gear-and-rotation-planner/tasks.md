@@ -34,9 +34,12 @@ The prior simulator is removed only after the replacement passes runtime and rel
 ## 3. Serialized contracts and planner payload
 
 - [ ] 3.1 Define shared logical build data and checked C# and TypeScript adapters, distinct from the
-      version-only BuildEnvelope. Keep fixture execution and capture completeness/container metadata
-      separate. Verify a fixture and capture round-trip build contents and reach the same production
-      evaluation path without silent defaults.
+      version-only BuildEnvelope. Include stable learned-book asset IDs (`learnedBookIds`) with
+      complete-empty versus missing/unread state, and distinguish raw observed attributes,
+      base/class-race progression, allocated points, and derived totals. Keep fixture execution and
+      capture completeness/container metadata separate. Verify a fixture and capture round-trip build
+      contents and reach the same production evaluation path without silent defaults; reject unknown or
+      duplicate book identities and keep catalog gains out of authored build records.
 - [x] 3.2 Define the evaluation-scenario record for target, horizon, initial resources and cooldowns, buffs, consumables, ammunition, incoming events, roster, and target count.
 - [x] 3.3 Define explicit refusal policies for unknown schemas, unsupported target counts, incompatible game data, stale model markers, and incomplete captures.
 - [x] 3.4 Add one owned build-pipeline writer for the deterministic planner payload path, stale-output deletion, required-output assertion, and deterministic serialization.
@@ -44,7 +47,8 @@ The prior simulator is removed only after the replacement passes runtime and rel
 - [x] 3.6 Register one content-hashed browser import and extend redaction verification to the raw and compressed planner payload.
 - [x] 3.7 Add reproducibility tests for stable raw bytes, compressed bytes, content hash, stale-output deletion, and missing-output failure.
 - [x] 3.8 Compare every emitted effect kind with modelled, excluded, and unsupported registries; fail publication for an unclassified admitted kind.
-- [x] 3.9 Measure and record the final raw and compressed payload sizes after all required domains are present.
+- [x] 3.9 Measure and record the raw and compressed payload baseline for the non-book domains then present; do not treat it as book-inclusive.
+- [ ] 3.10 Publish required learned-book definitions/effect classifications with preflight/publication checks and refreshed payload measurement.
 
 ## 4. Numeric kernel and evaluation scenario
 
@@ -74,6 +78,7 @@ The prior simulator is removed only after the replacement passes runtime and rel
 - [x] 5.7 Implement resource-burn damage, weapon-category gates, archetype-specific offhands, wielder-specific offhand damage, and engine skill refusals.
 - [x] 5.8 Add per-skill-class tests, including the populated fields the engine ignores, and cover normal, poison, fire, cold, magic, and disease damage.
 - [x] 5.9 Add hit tests for resource-burn bypass, assassination health gate, slot 13 category selection, offhand wielders, and known game defects.
+- [ ] 5.10 Model catalog-resolved learned-book gains without budget consumption or double counting.
 
 ## 6. Timing, effects, resources, and companions
 
@@ -140,6 +145,7 @@ The prior simulator is removed only after the replacement passes runtime and rel
 - [ ] 7.10 Run a same-input raw/normalized defect spike and an independent calibration spike under a
       predeclared protocol. Verify mode separation, failed-baseline rejection, nonlinear
       approximation scope, and out-of-domain unverified status; retain complete report identities.
+- [ ] 7.11 Qualify book-aware stat/damage parity with complete, independently sourced inputs and current catalog identities. For captured inputs, link runtime qualification of the read-only capture producer.
 
 ## 8. Build optimizer
 
@@ -163,6 +169,7 @@ The prior simulator is removed only after the replacement passes runtime and rel
 - [ ] 8.12 Add optimizer tests for every branch, constraint, interaction, unsupported effect, owned-item conflict, and scenario-version change.
 - [ ] 8.13 Report wasted stat allocation and the cap or threshold that caused it.
 - [ ] 8.14 Verify the explanation against a candidate with each capped stat and each thresholded set bonus.
+- [ ] 8.15 Hold declared learned-book progression fixed in optimization; do not silently grant books.
 
 ## 9. Planner page and worker
 
@@ -179,6 +186,7 @@ The prior simulator is removed only after the replacement passes runtime and rel
       separate model/finite-run/search evidence beside the result. Verify unverified domains have no
       numeric accuracy claim and normalized recommendations do not hide raw comparison failures.
 - [ ] 9.11 Add browser interaction checks for manual build editing, target and scenario changes, progress, cancellation, permalink restore, and no-JavaScript content.
+- [ ] 9.12 Add explicit hypothetical learned-book controls and preserve declarations in links and sharing without mutating the source capture or live character.
 
 ## 10. Character capture mod
 
@@ -200,6 +208,7 @@ The prior simulator is removed only after the replacement passes runtime and rel
 - [ ] 10.7 Write one local JSON file, report its exact path, and register the same file as an optional HotRepl automation artifact.
 - [ ] 10.8 Add the mod to the solution, build tool, package output, and player-facing download registry.
 - [ ] 10.9 Build and deploy the mod, invoke it in a loaded game, inspect the file, and confirm the player's build and game state before and after capture.
+- [ ] 10.10 Capture actual learned-book state read-only, using stable IDs and completeness, without inferring learning from inventory ownership or invoking learning/reset/mutation paths; record independent runtime proof of the read-only behavior.
 
 ## 11. Import and measured comparison
 
@@ -219,6 +228,7 @@ The prior simulator is removed only after the replacement passes runtime and rel
       context remains diagnostic, units/windows and identities are recorded, and capture alone
       cannot qualify a verified harness baseline.
 - [ ] 11.8 Add browser checks for valid import, every refusal policy, owned-copy conflicts, current-versus-candidate comparison, and meter comparison.
+- [ ] 11.9 Preserve learned-book declarations during import and comparison. Refuse dependent comparisons for missing, unknown, or duplicate identities while retaining diagnostic inspection and leaving the source capture unchanged.
 
 ## 12. Performance and release gates
 
@@ -231,6 +241,7 @@ The prior simulator is removed only after the replacement passes runtime and rel
       separate raw/normalized outputs, and independently supported accuracy domains. Report search
       evidence separately from finite-run and model evidence.
 - [ ] 12.6 Document the planner workflow, local-only capture privacy, version mismatch policy, unsupported-effect behavior, benchmark scenario, and known model limits.
+- [ ] 12.7 Qualify release with the learned-book domain, including catalog completeness, redaction, refreshed payload measurement, book-aware parity, fixed progression, and independently recorded read-only capture evidence.
 
 ## 13. Retire the prior attempt
 
@@ -245,19 +256,20 @@ Each requirement has an implementation task and a distinct verification task.
 | Requirement | Implementation | Verification |
 |---|---|---|
 | State-dependent decisions follow the ordered event timeline | 4.4, 6.14 | 4.6, 7.9 |
-| Verified claims require a complete qualified harness report | 7.1, 7.3, 7.5 | 7.9, 7.10, 12.5 |
-| Shared build data and checked adapters preserve provenance | 3.1, 10.1, 11.3 | 7.9, 10.5, 11.8 |
-| Every formula traces to decompiled source | 4.1, 5.1, 5.2, 5.4, 5.6, 6.1-6.8 | 7.2, 12.4 |
-| Evaluation is deterministic without overstating stochastic exactness | 4.1, 7.1 | 4.6, 7.2, 7.10 |
-| Accuracy claims are scoped and independently validated | 7.5, 7.6 | 7.10, 12.5 |
-| Resource generation and spending follow the event state | 4.4, 6.2, 6.14 | 4.5, 6.10, 7.9 |
+| Verified claims require a complete qualified harness report | 7.1, 7.3, 7.5, 10.10 | 7.9, 7.10, 7.11, 12.5, 12.7 |
+| Shared build data and checked adapters preserve provenance | 3.1, 10.1, 10.10, 11.3 | 7.9, 10.5, 11.8, 11.9 |
+| Learned-book gains are catalog-owned and applied once | 3.1, 3.10, 5.10 | 7.11, 12.7 |
+| Every formula traces to decompiled source | 3.10, 4.1, 5.1, 5.2, 5.4, 5.6, 5.10, 6.1-6.8 | 7.2, 7.11, 12.4 |
+| Evaluation is deterministic without overstating stochastic exactness | 4.1, 5.10, 7.1 | 4.6, 7.2, 7.10, 7.11 |
+| Accuracy claims are scoped and independently validated | 7.5, 7.6 | 7.10, 7.11, 12.5, 12.7 |
+| Resource generation and spending follow the event state | 4.4, 5.10, 6.2, 6.14 | 4.5, 6.10, 7.9, 7.11 |
 | Buff timing distinguishes finite windows from steady state | 6.3-6.5, 6.14 | 6.11, 7.4, 7.9 |
 | A buff category holds at most one buff | 6.4 | 1.4, 6.11 |
 | The refractory a skill sets is selected by the skill's own fields | 6.1 | 6.9 |
 | One hit is derived in the engine's own order | 5.6 | 5.8, 5.9 |
 | A prediction is derived from the target's own state | 5.1, 5.2 | 5.3, 7.4 |
 | Target avoidance and mitigation are reducible, and reduction is not certain | 5.2 | 1.2, 1.3, 5.3 |
-| Skill levels respect the allocation budget | 6.6 | 6.12 |
+| Skill levels respect the allocation budget | 5.10, 6.6 | 6.12, 7.11 |
 | Each damaging skill class is evaluated by its own rule | 5.6 | 5.8 |
 | Resource-burn damage bypasses avoidance and mitigation | 5.7 | 5.9 |
 | A skill that requires a weapon category is gated on it | 5.7, 6.6 | 5.9, 6.12 |
@@ -272,10 +284,10 @@ Each requirement has an implementation task and a distinct verification task.
 | A resource multiplier is applied only where the game applies it | 5.4, 6.2 | 5.5, 6.10 |
 | A target stat is derived from its curve and its spawn, not from a denormalised scalar | 5.1 | 5.3 |
 | Integer rounding follows the engine | 4.1, 5.6 | 4.2, 5.8 |
-| Published values require per-quantity production parity evidence | 7.1, 7.3, 7.4 | 7.9, 12.5 |
+| Published values require per-quantity production parity evidence | 5.10, 7.1, 7.3, 7.4 | 7.9, 7.11, 12.5, 12.7 |
 | The target is an explicit parameter set | 3.2, 4.3 | 4.5, 5.3 |
 | Every evaluation names a complete scenario | 3.2, 4.3, 4.4, 7.1 | 4.5, 7.9, 9.11 |
-| Equipment and skill effects are exhaustively classified | 3.8, 5.6, 6.3-6.6 | 2.6, 6.11, 7.2 |
+| Equipment and skill effects are exhaustively classified | 3.8, 3.10, 5.6, 5.10, 6.3-6.6 | 2.6, 6.11, 7.2, 7.11, 12.7 |
 | Refresh procs and cooldown changes follow event state | 6.3, 6.14 | 6.11, 7.4, 7.9 |
 | Ammunition and durability have explicit policies | 4.4, 6.5 | 4.5, 6.11 |
 | Incoming damage is an event-stream input | 3.2, 4.4, 6.2 | 4.5, 6.10 |
@@ -288,11 +300,12 @@ Each requirement has an implementation task and a distinct verification task.
 | Consumables and ammunition are part of the coupled search | 6.5, 8.3, 8.4 | 6.11, 8.12 |
 | Dynamic state drives displayed evaluation | 4.4, 6.14 | 4.5, 7.9 |
 | Recommendations prefer intended behaviour | 6.16, 8.3 | 7.10, 8.12 |
-| Captured builds pass checked adapters and completeness gates | 3.1, 11.3 | 10.5, 11.8 |
+| Captured builds pass checked adapters and completeness gates | 3.1, 10.10, 11.3 | 10.5, 11.8, 11.9 |
 | The search states search quality separately from prediction accuracy | 8.8, 8.11 | 8.12 |
 | Discrete branches are enumerated, not searched locally | 8.1 | 8.8, 8.12 |
 | The local search uses multiple independent starts | 8.2 | 8.8, 8.12 |
 | The search covers equipment, attributes, and skill allocation | 8.3, 8.4 | 8.12 |
+| Declared learned-book progression is fixed | 3.1, 8.15 | 7.11, 8.12, 12.7 |
 | The player and active mercenaries are optimized | 8.7 | 6.13, 8.12 |
 | Categorised effects are solved within their owning entity | 8.6 | 6.11, 8.12 |
 | Owned-gear planning treats inventory as shared | 8.10, 11.4 | 8.12, 11.8 |
@@ -300,7 +313,7 @@ Each requirement has an implementation task and a distinct verification task.
 | Ranking uses a surrogate whose fidelity is measured | 8.9 | 8.12 |
 | Wasted stat allocation is reported | 8.13 | 8.14 |
 | The optimization objective is bound to one evaluation identity | 8.3 | 8.12 |
-| Unsupported effects cannot win a ranking | 3.8, 8.12 | 7.2, 9.11 |
+| Unsupported effects cannot win a ranking | 3.8, 3.10, 8.12 | 7.2, 9.11, 11.9 |
 | Search-gap evidence defines ranking equivalence | 8.11 | 8.8, 8.12 |
 
 ### `gear-planner`
@@ -311,26 +324,28 @@ Each requirement has an implementation task and a distinct verification task.
 | The default target is the endgame training dummy | 9.1, 9.2 | 9.11, 12.5 |
 | The target is selectable and the result is per-target | 9.4, 9.9 | 9.11 |
 | A target that cannot exercise a modelled mechanic says so | 9.10 | 9.11 |
-| A build is shareable by link | 9.7, 9.8 | 9.11 |
+| A build is shareable by link | 9.7, 9.8, 9.12 | 9.11 |
+| Learned-book declarations are explicit and shareable | 9.12 | 9.11, 11.9, 12.7 |
 | Prediction accuracy, finite-run variance, and search gap remain separate | 9.10 | 9.11, 12.5 |
 | The result explains itself | 9.9, 9.10 | 9.11 |
 | Compute does not block the interface | 9.5, 9.6 | 9.11, 12.1-12.3 |
-| A reader can author a complete build | 9.3, 9.4 | 9.11 |
-| A reader can import a local character capture | 11.1-11.4 | 11.8 |
-| Current and candidate builds are comparable | 11.5, 11.6 | 11.8 |
-| Unsupported effects block a best-build claim | 3.8, 9.10 | 7.2, 9.11 |
+| A reader can author a complete build | 9.3, 9.4, 9.12 | 9.11 |
+| A reader can import a local character capture | 10.10, 11.1-11.4 | 11.8, 11.9 |
+| Current and candidate builds are comparable | 11.5, 11.6 | 11.8, 11.9 |
+| Unsupported effects block a best-build claim | 3.8, 3.10, 9.10 | 7.2, 9.11, 11.9 |
 | Planner performance is measured and gated | 12.1-12.3 | 12.4 |
-| Serialized, capture, evaluator, model, and data versions remain distinct | 3.1, 3.3, 9.7 | 9.8, 11.3, 11.8 |
+| Serialized, capture, evaluator, model, and data versions remain distinct | 3.1, 3.3, 9.7, 9.12 | 9.8, 11.3, 11.8, 11.9 |
 
 ### `character-state-export`
 | Requirement | Implementation | Verification |
 |---|---|---|
-| Logical build data is separate from capture metadata | 3.1, 10.1, 10.2 | 7.9, 10.5 |
-| The export is read-only | 10.4 | 10.5, 10.9 |
+| Logical build data is separate from capture metadata | 3.1, 10.1, 10.2, 10.10 | 7.9, 10.5, 11.9 |
+| Learned-book state uses stable identities | 3.1, 10.10 | 7.11, 10.5, 11.9 |
+| The export is read-only | 10.4, 10.10 | 10.5, 10.9, 11.9 |
 | Producer and evaluator provenance remain distinct | 3.1, 10.1 | 10.5, 11.3 |
-| Completeness and adapter checks gate dependent evaluation | 10.3 | 10.5 |
+| Completeness and adapter checks gate dependent evaluation | 3.1, 10.3, 10.10 | 10.5, 11.9 |
 | Items are identified by stable identifier | 10.2 | 10.5 |
-| The export covers the logical build inputs | 10.2, 10.3 | 10.5, 10.9 |
+| The export covers the logical build inputs | 10.2, 10.3, 10.10 | 10.5, 10.9, 11.9 |
 | Companion roll and state contents are captured or explicitly excluded | 10.3 | 10.5, 10.9 |
 | Measured combat output is capturable | 10.6 | 11.7, 12.5 |
 | The player transport is one local file | 10.7, 11.1 | 10.9, 11.8 |

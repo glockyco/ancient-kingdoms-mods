@@ -8,8 +8,10 @@ Those implementations remain unqualified. Do not close those dependencies from t
 
 - [ ] 1.1 Complete the shared build-data and fixture execution schemas. Keep the current
       version-only BuildEnvelope distinct from build data and capture metadata. Verify required
-      fields, initial state, consumables/ammunition, and scheduling policies round-trip without
-      silent defaults; the existing descriptor is component evidence only.
+      fields, initial state, consumables/ammunition, scheduling policies, and permanent learned-book
+      declarations round-trip without silent defaults; the existing descriptor is component evidence
+      only. Shared logical player data SHALL declare learned books as stable `learnedBookIds`; keep
+      catalog-owned gains and effect classifications out of user-authored build records.
 
       Component evidence: fixture outer schema 2 separates declared `buildData` and provenance
       from `execution`. All 33 authored fixtures retain their values and missing sections. Both
@@ -18,11 +20,18 @@ Those implementations remain unqualified. Do not close those dependencies from t
       This was validation only, not combat parity or shared-adapter qualification. The focused
       suites passed 184 CombatVerification and 216 BuildTool tests; the mod build passed.
 
-      Unresolved input domain: permanent learned books. `Player.UserCode_CmdTryLearnBook__String`
-      records the book and adds its gains to the live attribute fields. The item export has 17
-      books with permanent attribute gains; the published planner payload contains none. Neither
-      linked plan defines learned-book progression. Resolve this scope before deriving base
-      attributes or qualifying captured builds.
+      Approved learned-book contract: `learnedBookIds` is permanent progression, separate from
+      allocated attribute points, skill budgets, inventory consumables, equipped bonuses, and
+      transient effects. An empty declaration means no books learned; missing or unread is incomplete.
+      Refuse unknown or duplicate identities without silently deduplicating them. Capture reads actual
+      learned-book state, not inventory ownership, and never calls learning, reset, or other mutation
+      paths to obtain it. The harness materializes legal books through normal engine learning paths,
+      verifies IDs and resulting live attributes, and proves retained-state reload does not apply
+      persisted gains twice. Report live totals as achieved state, never as base attributes or allocated
+      points. If a catalog contribution is unresolved, refuse dependent qualification and preserve
+      diagnostics. The production model resolves current catalog gains and applies them once; the
+      optimizer holds declared progression fixed, and the editor preserves explicit hypothetical
+      declarations in links and imports without editing the original capture or a live character.
 
 - [x] 1.2 Implement legality validation: skill allocation within each pool's budget, tier gates
       satisfied, prerequisite chains satisfied, attribute totals consistent with the class progression at
@@ -37,9 +46,12 @@ Those implementations remain unqualified. Do not close those dependencies from t
 - [x] 1.4 Add unit tests for legality, one per rejection reason, using descriptors that fail exactly one
       rule each.
 - [ ] 1.5 After the linked planner defines build/capture adapters, round-trip shared build data
-      through C# and TypeScript. Verify completeness and container metadata stay capture-only,
-      execution stays fixture-only, and the adapter reaches the production evaluator without copying
-      formulas.
+      through C# and TypeScript. Preserve `learnedBookIds`, including empty, missing, unread, unknown,
+      and duplicate outcomes, while keeping catalog gains and effect classifications catalog-owned.
+      Verify completeness and container metadata stay capture-only, execution stays fixture-only, capture
+      reads actual learned state without mutation, and the adapter reaches the production evaluator
+      without copying formulas. Preserve explicit hypothetical learned-book declarations in editor links
+      and imports without changing an original capture or live character.
 
 - [x] 1.6 Remove the class and race pairing from the rules read after world entry. The pairing is a game
       rule, but it lives in the character creator, which enables one class button per race. The creator is
@@ -175,6 +187,15 @@ matrix execution, combat parity, or production scratch reuse.
 - [ ] 3.13 Drive the explicit player schedule with declared repetition, start/end, in-flight action,
       and refusal policies while leaving companions autonomous. Verify a finite game-backed window
       records attempts, acceptance, completion, and hits separately.
+- [ ] 3.14 Materialize declared `learnedBookIds` through the game's normal book-learning path, not
+      direct assignment. Refuse unknown or duplicate IDs and record empty, missing, and unread
+      declarations distinctly. Verify each legal learning by reading before and after learned IDs and
+      resulting live attribute totals; report those totals as achieved state, never as base attributes
+      or allocated points. Preserve catalog provenance and stop dependent measurement when a contribution
+      cannot be resolved.
+- [ ] 3.15 Reload retained learned-book state and read back learned IDs and achieved live attributes
+      without learning or resetting again. Verify permanent gains are not applied twice. A reload that
+      cannot prove no double-counting is not reusable and retains its mismatch diagnostics.
 
 ## 4. Probe: stat sheet and cadence
 
@@ -278,6 +299,12 @@ change; no planner task closes them on the harness's behalf.
 - [ ] 6.8 Separate raw parity from known-defect-normalized predictions with explicit evidence
       references and affected quantities. Verify a normalized result cannot hide a raw mismatch or
       enter a raw baseline.
+- [ ] 6.9 Compare book-aware attribute totals, affected stats, damage intent, and damage reduction for
+      explicit no-book and book-bearing fixtures through the planner's production evaluator, with
+      current catalog gains applied once. Require declared and achieved `learnedBookIds` and catalog
+      provenance. For captured inputs, require complete learned-book state and runtime qualification
+      of the read-only producer. Inventory ownership or an unresolved contribution is insufficient;
+      preserve diagnostics.
 
 ## 7. Fixture matrix
 

@@ -12,8 +12,9 @@ The version envelope SHALL identify the serialized schema and game-data versions
 build data. A capture schema, model version, and evaluator version SHALL remain separate identities.
 
 Build data SHALL contain progression, attributes, skills for each point pool, equipment, controlled
-companions, consumable identity and quantity, and the build provenance needed to identify its source.
-Each item SHALL use its stable asset identifier rather than its displayed name as its identity.
+companions, consumable identity and quantity, declared permanent learned books as `learnedBookIds`,
+and the build provenance needed to identify its source. Each item SHALL use its stable asset identifier
+rather than its displayed name as its identity.
 
 A fixture record SHALL add execution data. Execution data SHALL include the target, initial state, action
 schedule, facing for each action, seed, and consumption policy. A captured build SHALL add completeness
@@ -45,6 +46,59 @@ NOT claim that no adaptation is needed.
 - **WHEN** container metadata does not match the captured payload
 - **THEN** the harness refuses the capture before reading shared build data
 - **AND** it reports the integrity failure
+
+### Requirement: Learned-book declarations are explicit and read-only captures are complete
+
+Shared build data SHALL declare permanent learned books as stable item asset identifiers in
+`learnedBookIds`. This declaration SHALL remain separate from allocated attribute points, skill budgets,
+inventory consumables, equipped bonuses, and transient effects. An empty `learnedBookIds` declaration
+means that no books are learned. A missing or unread declaration SHALL be incomplete.
+
+The versioned planner/game catalog SHALL define each book's current attribute gains and effect
+classifications. Build data SHALL NOT copy those gains or classifications. The fixture and capture
+adapter SHALL refuse an unknown or duplicate book identity and SHALL NOT silently deduplicate it. A
+capture SHALL read the character's actual learned-book state, not inventory ownership, and SHALL NOT
+call learning, reset, or any other mutation path to obtain it.
+
+A capture with unresolved book contributions SHALL preserve the observations and diagnostics, but SHALL
+refuse every dependent qualification. Live attribute totals SHALL be reported as achieved totals, never
+as base attributes or allocated points.
+
+#### Scenario: No books are declared
+
+- **WHEN** a fixture declares an empty `learnedBookIds`
+- **THEN** the harness materializes no learned books
+- **AND** it records the empty declaration as complete
+
+#### Scenario: The learned-book declaration is missing or unread
+
+- **WHEN** a capture omits or cannot read the learned-book section
+- **THEN** the section is marked incomplete
+- **AND** a dependent materialization or measurement stops
+
+#### Scenario: A book identity is unknown or repeated
+
+- **WHEN** `learnedBookIds` contains an unknown identity or a duplicate identity
+- **THEN** dependent materialization and evaluation are refused
+- **AND** the harness retains diagnostics naming the identity without silently deduplicating it
+
+#### Scenario: Inventory ownership is mistaken for learning
+
+- **WHEN** an item is present in inventory but the learned-book state does not contain its identity
+- **THEN** the harness records the book as not learned
+- **AND** it does not infer a learned book from inventory ownership
+
+#### Scenario: Learned state cannot be read without mutation
+
+- **WHEN** capture cannot obtain learned-book state without a learning, reset, or other mutation path
+- **THEN** it marks that section unread instead of mutating the character
+- **AND** it preserves other readable observations and the reason
+
+#### Scenario: A catalog contribution is unresolved
+
+- **WHEN** the catalog cannot resolve a declared book's gains or effect classifications
+- **THEN** dependent qualification is refused
+- **AND** the report preserves the unresolved identity and catalog diagnostics
 
 ### Requirement: Completeness gates every dependent measurement
 
@@ -136,12 +190,50 @@ table in the harness.
 
 ### Requirement: Materialization uses the game's own paths
 
-Character creation, level progression, skill spending, item granting, and equipping SHALL use the
-methods the game itself uses. Level progression SHALL award experience so the engine grants attribute
-points, skill points, class progression, veteran points, and companion scaling.
+Character creation, level progression, skill spending, item granting, equipping, and learned-book
+progression SHALL use the methods the game itself uses. Level progression SHALL award experience so the
+engine grants attribute points, skill points, class progression, veteran points, and companion scaling.
+A declared learned book SHALL be learned through the normal game learning path rather than by
+assigning its identity or gains directly.
 
 State SHALL NOT be assigned directly where an engine path exists. The bounded exception for companion
-rolled values is defined separately.
+rolled values is defined separately. Learned-book gains SHALL have no direct-assignment exception.
+
+#### Scenario: A declared book is learned through the normal path
+
+- **WHEN** a legal fixture declares a book identity
+- **THEN** the harness invokes the game's normal book-learning path
+- **AND** it does not assign the book or its catalog gains directly
+
+#### Scenario: Learning does not produce the declared state
+
+- **WHEN** the declared identity is not learned or the observed attribute delta differs from the catalog's expected delta
+- **THEN** materialization fails with the book identity and before-and-after values
+- **AND** no dependent measurement is produced
+
+#### Scenario: Achieved learned state differs from the declaration
+
+- **WHEN** final readback finds a learned-book identity or resulting live attribute total differs from the fixture
+- **THEN** materialization fails and reports the requested and achieved state
+- **AND** it does not label the live total as a base attribute or allocated points
+
+#### Scenario: Learned-book achieved state is read back
+
+- **WHEN** materialization completes a fixture with declared learned books
+- **THEN** the harness reads back the complete learned-book ID set and the resulting live attribute totals
+- **AND** it compares both with the requested state before dependent measurement
+
+#### Scenario: A retained learned-book state is reloaded
+
+- **WHEN** a retained character with learned books is loaded for a measurement
+- **THEN** the harness reads back the learned IDs and achieved live attributes before measurement
+- **AND** it does not learn or reset a book during reload
+
+#### Scenario: Reload must not apply permanent gains twice
+
+- **WHEN** reload would apply a persisted book gain a second time
+- **THEN** the run refuses the retained state
+- **AND** it preserves the before-and-after attributes and reload diagnostics
 
 #### Scenario: A fixture requests the level cap with full veteran progression
 

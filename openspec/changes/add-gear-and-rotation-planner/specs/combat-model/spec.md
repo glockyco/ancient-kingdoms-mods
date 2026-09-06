@@ -1,8 +1,9 @@
 ## Purpose
 
 Defines the guarantees and limits of the production combat evaluator. The evaluator reproduces the
-game's ordered combat pipeline over a state-changing event timeline. A result is deterministic for a
-fixed input, but its accuracy claim depends on qualified, current, independently validated evidence.
+game's ordered combat pipeline over a state-changing event timeline and resolves learned-book gains
+from the versioned catalog. A result is deterministic for a fixed input, but its accuracy claim depends
+on qualified, current, independently validated evidence.
 
 ## ADDED Requirements
 
@@ -784,9 +785,12 @@ data identity, and model identity used for planner output. It SHALL not use a te
 measured caster totals as prediction inputs.
 
 The comparison SHALL cover every required quantity separately, including stat totals, action interval,
-resource transitions, effect and target-state transitions where applicable, and damage quantities. A
-reported damage comparison SHALL preserve requested damage and health taken separately. Raw parity and
-known-defect-normalized output SHALL be compared and reported separately.
+resource transitions, effect and target-state transitions where applicable, and damage quantities. When
+learned books are present, stat and damage parity SHALL include their catalog-resolved gains and the
+learned-book identity and catalog version. A reported damage comparison SHALL preserve requested damage
+and health taken separately. Raw parity and known-defect-normalized output SHALL be compared and
+reported separately. For captured inputs, read-only producer qualification SHALL establish how the
+learned state was read. Inventory ownership or a mutating learning or reset command is not that proof.
 
 A mismatch SHALL preserve the running-game observation and report the failed quantity, state, identities,
 and protocol. A statistical rejection SHALL identify the rejected criterion and evidence, but SHALL NOT
@@ -829,7 +833,9 @@ A verified model claim SHALL require a complete harness report that records the 
 achieved state, fixture execution data, target input provenance, game assembly identity and label,
 serialized schema and any applicable capture schema identity, game-data identity, evaluator and model identities, objective
 mode, scenario and protocol versions, units and windows, per-quantity action and event counts, raw
-observations and sequences, attribution fidelity, comparison outcomes, and any normalization output.
+observations and sequences, attribution fidelity, comparison outcomes, and any normalization output. For
+a book-aware claim, the report SHALL include the learned-book IDs, catalog identity, resulting stat and
+damage quantities, and, for captured inputs, runtime qualification of the read-only capture producer.
 
 The report SHALL distinguish setup failure, incomplete evidence, statistical rejection, model
 mismatch, and qualified success. A missing required artifact, incompatible identity, insufficient
@@ -852,6 +858,12 @@ generate it, and a capture SHALL not generate it as a side effect.
 - **WHEN** a report lacks a required identity, achieved state, quantity observation, protocol field, or raw sequence
 - **THEN** the result is incomplete or diagnostic
 - **AND** it has no verified accuracy claim
+
+#### Scenario: Book-aware evidence is missing
+
+- **WHEN** a book-aware report lacks learned IDs, catalog identity, resulting stat or damage quantities, or required capture-producer qualification
+- **THEN** the result is incomplete or diagnostic
+- **AND** it has no verified book-domain claim
 
 #### Scenario: A statistical comparison rejects
 
@@ -926,14 +938,22 @@ meter accounting and provenance, but the evaluator SHALL not optimize pet builds
 ### Requirement: Shared build data and checked adapters preserve provenance
 
 Fixtures, local captures, and planner inputs SHALL share versioned logical build data without sharing
-identical outer records. Logical build data SHALL include progression, allocations, equipment and
-augments, controlled companions and their rolls and equipment, consumables, ammunition, and quantities.
-The version-only `BuildEnvelope` SHALL identify version axes only. It SHALL not replace the logical
-build data. This requirement does not prescribe new serialized field names.
+identical outer records. Logical build data SHALL include progression, `learnedBookIds`, allocations,
+equipment and augments, controlled companions and their rolls and equipment, consumables, ammunition,
+and quantities. The learned-book declaration SHALL distinguish complete-empty from missing or unread
+state. It SHALL distinguish raw observed attributes, base or class/race progression contributions,
+allocated points, and derived totals; a live total SHALL NOT be labelled as base attributes or
+allocated points. The version-only `BuildEnvelope` SHALL identify version axes only. It SHALL not
+replace the logical build data.
 
 Fixture execution data SHALL remain separate from build data and SHALL contain target, initial state,
 action schedule, facing, horizon, and sampling policy. Capture completeness, container integrity,
-producer provenance, and capture state SHALL remain separate from build data.
+producer provenance, and capture state SHALL remain separate from build data. Capture SHALL read actual
+learned-book state rather than inventory ownership, and SHALL not invoke learning, reset, or another
+mutation path. Read-only behavior SHALL be proven by an independently recorded runtime qualification of
+the capture producer, not by a self-declared capture flag. If learned state would require mutation to
+read, the adapter SHALL retain that section as unread and refuse only dependent evaluation or
+normalization.
 
 Checked adapters SHALL reject unknown schemas or failed container integrity, preserve missing versus
 empty sections, and invoke the same production evaluator used for planner results. A required missing
@@ -976,14 +996,61 @@ optimizer SHALL not select a pet build.
 - **THEN** the evaluator can inspect or use complete build data according to its input policy
 - **AND** the result does not claim harness verification merely because capture succeeded
 
+### Requirement: Learned-book gains are catalog-owned and applied once
+
+The model SHALL resolve each stable identity in `learnedBookIds` through the versioned game catalog.
+The catalog SHALL provide the required book gain definitions and effect classifications; the logical
+build record SHALL carry identities, not copied gains. Capture completeness SHALL remain in the outer
+capture metadata. The source behavior is
+`Player.UserCode_CmdTryLearnBook__String`, which adds the learned book and its attribute gains, and
+`CmdResetAttributes`, which includes those book gains. The model SHALL apply each resolved gain once as
+a permanent progression contribution. It SHALL NOT spend attribute or skill points for a book, treat a
+learned book as an inventory consumable, or count its gain again in derived stats. A complete empty
+declaration means no book gain. Missing or unread state, an unknown identity, a duplicate identity, a
+missing catalog definition, or an unclassified effect SHALL refuse dependent evaluation or publication
+rather than receive a silent default.
+
+The harness, not the browser evaluator, SHALL materialize books through the normal game learning paths
+on an owned scratch character. It SHALL never mutate the original capture or a player's save. It SHALL
+verify learned IDs and resulting attributes, and prove that reload does not apply persisted bonuses
+twice. Harness materialization mutates the scratch character. Model evaluation resolves catalog
+contributions; it does not perform learning or reset operations.
+
+#### Scenario: A learned book resolves to a catalog gain
+
+- **WHEN** a complete build declares a known learned-book identity
+- **THEN** the model applies its catalog-resolved gain once to the progression contribution
+- **AND** it leaves attribute and skill point budgets unchanged
+
+#### Scenario: A learned book is already represented in derived state
+
+- **WHEN** a capture includes a learned-book identity and an observed derived total containing that gain
+- **THEN** the model derives its prediction from independent declared inputs and catalog gains applied once
+- **AND** it compares the observed total without feeding that total back into its own prediction
+
+#### Scenario: Book data is missing or unclassified
+
+- **WHEN** a required book field, catalog definition, or effect classification is missing
+- **THEN** dependent publication or evaluation is refused
+- **AND** the report names the missing field or classification
+
+#### Scenario: The harness reloads a learned character
+
+- **WHEN** the harness reloads a character after normal book-learning materialization
+- **THEN** it verifies learned IDs and resulting attributes
+- **AND** it fails if persisted book bonuses apply twice
+
 ### Requirement: Equipment and skill effects are exhaustively classified
 
-Every equipment, ammunition, consumable, and skill effect admitted to an evaluation SHALL be
-classified as modelled, excluded by a stated domain rule, or unsupported. The model SHALL NOT score an
-unsupported effect as zero.
+Every equipment, ammunition, consumable, learned-book, and skill effect admitted to an evaluation
+SHALL be classified as modelled, excluded by a stated domain rule, or unsupported. The model SHALL NOT
+score an unsupported effect as zero.
 
 Publication SHALL fail when the planner payload admits an effect kind for which the model has no
-classification.
+classification. The required existing book gain fields are `book_strength_gain`,
+`book_dexterity_gain`, `book_constitution_gain`, `book_intelligence_gain`, `book_wisdom_gain`, and
+`book_charisma_gain`; these fields and their definitions SHALL be present before publication. An
+unknown or unclassified book effect is a publication refusal.
 
 #### Scenario: A new proc effect enters the payload
 

@@ -49,21 +49,39 @@ The engine constrains the design:
 ### Shared build data, separate outer records
 
 Fixtures and captures share versioned logical build data: identity, progression, allocations,
-equipment and augments, companions and their rolls/equipment, and consumables. The current
-`BuildEnvelope` holds version axes only; it is not this complete build-data contract. Keep serialized
-schema, capture schema, model, and game-data versions distinct.
+equipment and augments, companions and their rolls/equipment, consumables, and the declared
+`learnedBookIds`. Each learned-book identity is a stable item asset ID. `learnedBookIds` declares
+permanent progression, not inventory ownership, and remains separate from allocated attribute points,
+skill budgets, inventory consumables, equipped bonuses, and transient effects. An empty declaration means
+that no books are learned. A missing or unread declaration is incomplete. Unknown and duplicate IDs are
+refused; the harness does not silently deduplicate them.
+
+The versioned planner/game catalog owns each book's current attribute gains and effect classifications.
+Build records carry identities, not copied gains or classifications. The current `BuildEnvelope` holds
+version axes only; it is not this complete build-data contract. Keep serialized schema, capture schema,
+model, and game-data versions distinct.
+
+The planner change owns the shared capture and adapter contract, catalog resolution and production
+evaluator, optimizer treatment, and editor handling of explicit hypothetical declarations. The editor may
+preserve `learnedBookIds` in links and imports, but it does not edit an original capture or a live
+character.
 
 Fixture execution metadata contains targets, initial state, actions, facing, windows, and sampling
 policy. Capture metadata contains completeness and container state. Neither belongs in shared build
 data. Use thin C# and TypeScript adapters with a checked round trip, rather than claiming identical
 outer schemas. An unknown schema fails. An unread section remains missing, not empty. Required
 measurement inputs must be complete before evaluation or materialization. Stable asset identifiers
-are keys; display names provide context, not identity.
+are keys; display names provide context, not identity. Capture reads the character's actual learned-book
+state, not inventory ownership, and never calls learning, reset, or other mutation paths to obtain it.
+A capture with unresolved book contributions is incomplete for dependent qualification and preserves its
+observations and diagnostics.
 
-The linked planner change owns the shared build/capture adapters and production evaluator. The harness
-owns fixture execution, observation, and comparison. Tests of an isolated evaluator do not satisfy
-this dependency. The adapter must invoke the same evaluation path used for planner results, with
-matching data and model identities, rather than a verification-only formula copy.
+The linked planner change owns the shared build/capture adapters and production evaluator. Its
+production model resolves the current catalog gains for `learnedBookIds` and applies them once. The
+optimizer holds the declared progression fixed and never silently grants books. The harness owns fixture
+execution, observation, and comparison. Tests of an isolated evaluator do not satisfy this dependency.
+The adapter must invoke the same evaluation path used for planner results, with matching data and model
+identities, rather than a verification-only formula copy.
 
 ### Requested state is not achieved state
 
@@ -74,11 +92,14 @@ restrictions and multi-slot item categories.
 
 Create through the creator, progress one experience requirement at a time, and spend attributes and
 skills through engine commands. Allocate skills in reachable passes; stop and name the blocked skill
-when no purchase succeeds. Grant and equip through the engine, clear undeclared equipment, and verify
-set effects. Materialize declared consumables, ammunition, target, position, facing, resources, and
-initial effects before the measurement that depends on them.
+when no purchase succeeds. Materialize each declared `learnedBookIds` entry through the normal game
+learning path, never by assigning a book or its gains directly. Grant and equip through the engine, clear
+undeclared equipment, and verify set effects. Materialize declared consumables, ammunition, target,
+position, facing, resources, and initial effects before the measurement that depends on them.
 
-Each mutation reads before and after. Compare all required achieved fields with the request before
+Each mutation reads before and after. For learned books, read back the learned IDs and resulting live
+attribute totals. Report those totals as achieved state, never as base attributes or allocated points.
+Compare all required achieved fields with the request before
 measurement. A mismatch stops dependent quantities and identifies the field; it is not silently
 accepted as a different fixture. Preserve achieved state in the report. Do not feed measured caster
 stat totals into the prediction of those same totals. Independently measured target state may be an
@@ -137,6 +158,11 @@ comparison, baseline gate, persisted report, shutdown, and isolation verificatio
 computed earlier once its declared inputs are available, but success requires every applicable stage.
 A validation-only command must identify itself as such. The first baseline is an explicit qualification
 operation, not a silent pass when no baseline exists.
+
+A retained character reload reads the learned IDs and achieved live attributes before measurement. The
+harness does not learn or reset a permanent book during reload, and it proves that persisted gains are
+not applied a second time. Failure to prove this leaves the retained state unusable and preserves the
+reload diagnostics.
 
 ### Player schedules and observation boundaries are explicit
 
@@ -203,7 +229,8 @@ that the measurement cannot establish. Do not widen tolerances after seeing a fa
 ### Reports and baselines preserve evidence identity
 
 Persist assembly hash and game labels, fixture name and content hash, build schema versions,
-model/evaluator identity, data identity, requested and achieved state, target input provenance, seed,
+model/evaluator identity, data identity, requested and achieved state, declared and achieved
+`learnedBookIds`, catalog identity and gain-resolution provenance, target input provenance, seed,
 protocol/tolerance versions, units/windows, per-quantity event counts, raw sequences, and attribution
 fidelity. Record failed, incomplete, unsupported, and inconclusive outcomes explicitly. Missing required
 artifacts prevent verified success even if in-memory comparisons passed.

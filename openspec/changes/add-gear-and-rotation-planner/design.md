@@ -74,20 +74,27 @@ an isolated database, so its state is known to be reachable in normal play.
 | Skill points at the cap | 49 |
 | Attribute points at the cap | 249, being 49 from levels and 200 from veteran awards |
 | Attributes fixed by race and class progression | 87 |
-| Reachable maximum allocated attribute total | 336 |
+| Recorded total (class/race progression plus allocated points) | 336 |
 | Health, energy, and mana maxima | exact match on all three |
 | Damage and defense composition with starting gear only | exact match |
 | Mercenary damage, magic damage, accuracy, and critical chance | exact match on all four |
 | Mercenary roll values against the reachable envelope | both inside range |
 
-A character allocates 249 attribute points at the cap, and 336 is the largest attribute total any
-character can reach. A save whose totals exceed 336 is not a valid reference, so a measurement must come
-from a character the harness built rather than from arbitrary save data.
+In this probe, the allocation budget is 249 points and class/race progression contributes 87 points;
+the recorded total is 336. The 336 value is not an allocated-only total or a universal attribute
+ceiling. A reproducible comparison must use a character the harness built with the same recorded
+progression and allocation state rather than arbitrary save data.
 
 A real export on Ancient Kingdoms 0.9.31.1, Steam build 24986533, wrote `progression.json` with seven
 race starts, 300 class-level rows, and 50 level budgets. The required-input preflight joins those rows to
 the six exported classes. It also requires the existing skill-tree, mercenary, food, potion, and
-ammunition fields before a database build can publish planner data.
+ammunition fields. Book support must additionally require `book_strength_gain`, `book_dexterity_gain`,
+`book_constitution_gain`, `book_intelligence_gain`, `book_wisdom_gain`, and `book_charisma_gain` before
+publication. Task 3.10 adds that preflight; the existing exporter already emits these six fields.
+The item export contains 17 gain-bearing books, while the inspected planner payload contained zero
+book rows. A positive-control source query found all 17. These observations do
+not define a future book count, so publication checks the required fields and classifications rather
+than hardcoding 17.
 
 Companion equipment is first order. Placing one dagger on a mercenary raised its damage from 17 to 462.
 Of that 445 increase, 410 came from the inherited equipment getter and 35 came through the Strength the
@@ -159,10 +166,12 @@ single-target skill.
 
 ### Complete effect coverage is a release invariant
 
-The derived payload classifies every equippable item effect, ammunition effect, consumable effect, and
-skill behavior that can influence the objective. The model registry classifies each kind as modelled,
-excluded by a stated search-domain rule, or unsupported. Publication fails when an admitted kind is
-unsupported. Search never scores an unknown effect as zero.
+The derived payload classifies every equippable item effect, ammunition effect, consumable effect,
+learned-book gain effect, and skill behavior that can influence the objective. It admits the required
+existing book gain fields and their versioned definitions. The model registry classifies each kind as
+modelled, excluded by a stated search-domain rule, or unsupported. Publication fails when a required
+field, book definition, or admitted kind is missing or unsupported. Search never scores an unknown
+effect as zero.
 
 A refresh-proc steady-state formula is admissible only under its stated assumptions. The displayed
 finite-window timeline accounts for initial state, applications, refresh, and expiry. Cooldown-reduction buffs alter every active
@@ -196,15 +205,47 @@ The derived planner payload remains a separate, explicit build-pipeline output. 
 path, stale-output deletion, required-output assertion, serialization, compression, and redaction
 verification. A generic derived-artifact registry remains deferred until another output needs it.
 
+### Learned books are permanent progression
+
+Shared logical build data declares stable learned-book asset IDs in `learnedBookIds`. An empty list is
+complete and means that no books are learned. A missing or unread field is incomplete. Adapters reject
+unknown or duplicate identities and do not silently deduplicate them. Capture reads the actual learned
+state, not inventory ownership, and does not invoke learning, reset, or other mutation paths.
+
+The versioned planner and game catalog owns each book's gain definition and effect classification. The
+logical build record carries IDs, not copied gain values. Completeness remains in outer capture
+metadata. `Player.UserCode_CmdTryLearnBook__String`
+adds a learned book and its attribute gains, and `CmdResetAttributes` includes those book gains. The
+production model resolves the catalog definitions and applies each gain once as a permanent progression
+contribution. It does not spend attribute or skill points for a book, and it does not count a gain again
+when it derives the stat sheet.
+Shared schema and capture fields distinguish raw observed attributes, base or class/race progression,
+allocated points, and derived totals. A live total is never labelled as base attributes or allocated
+points. Explicit hypothetical declarations are editor inputs; they do not authorize changes to an
+original capture or a live character.
+
+The harness, not the browser evaluator, materializes books through the normal game learning paths on
+an owned scratch character. It never mutates the original capture or a player's save. It verifies the
+learned IDs and resulting attributes, then proves that reload does not apply persisted bonuses twice.
+Model evaluation resolves catalog gains and applies them once; it does not invoke engine mutations.
+Read-only proof for the capture producer comes from an independently recorded runtime qualification,
+not from a self-declared capture flag. If learned state cannot be read without mutation, the capture
+keeps that section unread and diagnostics remain available while dependent normalization and evaluation
+are refused. Shared-schema and adapter round-trip gates precede materialization and runtime
+qualification. Passing one gate does not close the others.
+
 ### Character capture is a local file, not a HotRepl workflow
 
 The player-facing mod writes one versioned JSON file and reports its exact path. The planner reads it
 through a browser file picker, parses it locally, and never uploads it. HotRepl may register the same
 file as an automation artifact, but developer infrastructure is not the user transport.
 
-Capture, meter read, and meter reset are separate operations. Capture and meter read are read-only.
-Meter reset is explicit, labelled as mutating, and never runs as a side effect of capture. The mod is
-packaged and listed with the repository's other player-facing downloads.
+Capture reads the character's actual learned-book state and records `learnedBookIds` with its
+completeness state. It does not infer learned books from inventory ownership. Capture, meter read, and
+meter reset are separate operations. Capture and meter read are read-only, and learned-state capture
+never invokes learning, reset, or any other mutation path. Meter reset is explicit, labelled as
+mutating, and never runs as a side effect of capture. The mod is packaged and listed with the
+repository's other player-facing downloads.
 
 ### The database worker remains database-only
 
@@ -538,11 +579,13 @@ evaluating one that does overstates output.
 
 ### Client-side compute, no server endpoint
 
-The measured equipment subset was 21,488 B gzipped for all 887 equippable non-costume items. The final
-payload from Ancient Kingdoms 0.9.31.1 contains 889 surviving equipment items, 54 augments, 295 skills,
-six mercenary archetypes, 120 consumables, two ammunition items, 192 equipment slots, and 59 effect
-classifications. Deterministic serialization produces 3,515,206 raw bytes and 155,858 gzip bytes. The
-browser budget uses the final compressed measurement, not the equipment-only estimate.
+The measured equipment subset was 21,488 B gzipped for all 887 equippable non-costume items. The
+pre-book planner payload from Ancient Kingdoms 0.9.31.1 contains 889 surviving equipment items, 54
+augments, 295 skills, six mercenary archetypes, 120 consumables, two ammunition items, 192 equipment
+slots, and 59 effect classifications. Deterministic serialization of that pre-book payload produces
+3,515,206 raw bytes and 155,858 gzip bytes. These are baseline measurements, not book-inclusive
+measurements. After the required book fields, definitions, and classifications are added, task 3.10
+must remeasure raw and compressed sizes; browser budgets use that refreshed measurement.
 
 A Cloudflare Worker endpoint is possible but unnecessary. Static assets plus a dedicated optimizer
 worker avoid per-request CPU limits and keep local capture data on the reader's machine.
@@ -557,13 +600,17 @@ against a measured one under controlled conditions.
 
 Two mechanisms use this data. The harness owns controlled fixture execution and qualified statistical
 comparisons. A validation-only harness run does not exercise that path. The local capture records a
-reader's build and meter state without mutating either. A meter capture alone does not establish the
-action sequence, target history, or sampling sufficiency needed for verified parity.
+reader's build, actual `learnedBookIds`, and meter state without mutating either. A meter capture alone
+does not establish the action sequence, target history, or sampling sufficiency needed for verified
+parity.
 
 The comparison adapter declares those missing inputs and uses the production evaluator only when
 dependent data is complete. It retains target provenance, requested and achieved state, per-quantity
-counts, units, windows, and model/evaluator/data identities. Read-only capture need not construct a
-harness report or claim a baseline it did not measure.
+counts, units, windows, learned-book catalog identity, and model/evaluator/data identities. Book-aware
+stat and damage quantities are required before a result can qualify. Read-only capture evidence must
+come from an independently recorded runtime qualification of the capture producer; a self-declared
+read-only flag is not proof. The qualified capture must show the learned state without invoking learning
+or reset paths. It need not construct a harness report or claim a baseline it did not measure.
 
 ## Slot 13 and the weapons in it
 
@@ -802,9 +849,12 @@ being checked. Independently read target state is permitted only with declared p
 Run these spikes before closing integration or accuracy tasks:
 
 1. Round-trip shared build data through C# fixture and capture adapters and the browser evaluator.
-   Verify missing data, version mismatches, and capture-only metadata retain their meaning.
-2. Trace a fixture from request through materialization, readback, actions, production prediction,
-   statistical comparison, and persisted evidence. Include a maintained effect and autonomous companion.
+   Include `learnedBookIds`, raw/base/allocated/derived contributions, and book completeness. Verify
+   missing data, unknown or duplicate IDs, version mismatches, and capture-only metadata retain their
+   meaning.
+2. Trace a fixture from request through book materialization, readback, actions, production prediction,
+   statistical comparison, and persisted evidence. Include resulting attributes, a maintained effect,
+   and an autonomous companion. Verify reload does not apply persisted book gains twice.
 3. Exercise resource burn after depletion/recovery, an incoming-damage transition, effect refresh and
    expiry, and a target-health threshold crossing. Compare a fixed-state case with a changing-state case.
 4. Evaluate one evidenced game defect in raw and normalized modes. Verify the raw residual remains

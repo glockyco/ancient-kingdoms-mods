@@ -1,15 +1,16 @@
 ## Purpose
 
-Defines what the planner page guarantees to a reader, including what it renders without JavaScript
-and how it presents uncertainty. The planner is the only interactive compute-heavy surface besides the
-map, so its delivery and state contracts are part of its behaviour.
+Defines what the planner page guarantees to a reader, including learned progression, what it renders
+without JavaScript, and how it presents uncertainty. The planner is the only interactive compute-heavy
+surface besides the map, so its delivery and state contracts are part of its behaviour.
 
 ## ADDED Requirements
 
 ### Requirement: Core facts render without JavaScript
 
-The planner SHALL render its explanatory text, its default build, that build's stat sheet, and that
-build's predicted result in prerendered HTML.
+The planner SHALL render its explanatory text, its default build, that build's learned-book
+declaration and completeness state, that build's stat sheet, and that build's predicted result in
+prerendered HTML.
 
 Item selection, optimization, and comparison are additive enhancements. They SHALL NOT be the only
 path to a core fact.
@@ -90,11 +91,12 @@ and understates the build elsewhere, so the reader is told rather than left to d
 
 ### Requirement: A build is shareable by link
 
-The planner SHALL encode the build, the character level and progression, and the selected target in
-the page address, so a reader can share a result.
+The planner SHALL encode the build, the character level and progression, the learned-book declaration
+and completeness state, and the selected target in the page address, so a reader can share a result.
 
 The encoding SHALL carry a version marker, so a stored link can be recognised as belonging to an
-earlier model.
+earlier model. It SHALL preserve learned-book identities without treating inventory ownership as
+learned state, and SHALL refuse unknown or duplicate identities.
 
 #### Scenario: A reader shares a link
 
@@ -188,13 +190,14 @@ that does not complete immediately, and SHALL allow it to be cancelled.
 
 ### Requirement: A reader can author a complete build
 
-The planner SHALL provide controls for class, race, level, veteran progression, all equipment slots,
-attribute allocation, normal and veteran skill allocation, selected consumables and their quantities,
-selected ammunition and its supply, active mercenaries, owned-gear limits, target, and evaluation
-scenario.
+The planner SHALL provide controls for class, race, level, veteran progression, explicit learned-book
+declarations, all equipment slots, attribute allocation, normal and veteran skill allocation, selected
+consumables and their quantities, selected ammunition and its supply, active mercenaries, owned-gear
+limits, target, and evaluation scenario.
 
 The rotation SHALL remain automatic. A reader MAY include or exclude eligible skills but SHALL NOT
-need to author an action-priority language.
+need to author an action-priority language. Hypothetical book declarations are editor inputs and SHALL
+not authorize mutation of an imported capture or a live character.
 
 #### Scenario: A reader creates a build without a capture
 
@@ -212,27 +215,61 @@ need to author an action-priority language.
 - **WHEN** the reader excludes that skill
 - **THEN** the automatic rotation is solved without it
 
+### Requirement: Learned-book declarations are explicit and shareable
+
+The planner SHALL display learned-book identities and completeness separately from inventory and
+allocated points. It SHALL allow a reader to declare hypothetical `learnedBookIds` explicitly. It SHALL
+preserve those declarations in links, imports, and shared build state, including a complete empty
+state. Missing or unread state, unknown identities, duplicate identities, missing catalog definitions,
+and unclassified book effects SHALL be reported and SHALL block dependent evaluation. An editor change
+SHALL NOT mutate the original capture or a live character.
+
+#### Scenario: A reader declares a hypothetical book
+
+- **WHEN** the reader adds a known identity to the explicit hypothetical book declaration
+- **THEN** the editor includes that identity in the evaluated build state
+- **AND** it does not change an imported capture or a live character
+
+#### Scenario: A reader shares a book declaration
+
+- **WHEN** a reader shares a link containing explicit learned-book declarations
+- **THEN** opening the link restores the same identities and completeness state
+- **AND** the link does not require inventory ownership to represent learned progression
+
+#### Scenario: A book declaration is incomplete or invalid
+
+- **WHEN** learned-book state is missing, unread, unknown, duplicated, or unclassified
+- **THEN** the planner refuses the dependent evaluation
+- **AND** it names the failed identity, field, or classification
+
 ### Requirement: A reader can import a local character capture
 
 The planner SHALL import versioned character-state JSON through a local file picker. Parsing, container
-integrity checks, schema checks, and game-build compatibility checks SHALL occur locally. The planner
-SHALL NOT upload the file. A checked capture adapter SHALL keep producer provenance separate from the
-planner evaluator and SHALL preserve completeness markers.
+integrity checks, schema checks, game-build compatibility checks, and learned-book identity checks
+SHALL occur locally. The planner SHALL NOT upload the file. A checked capture adapter SHALL keep producer
+provenance separate from the planner evaluator and SHALL preserve completeness markers, including the
+learned-book section. It SHALL preserve the imported `learnedBookIds` as capture data; hypothetical
+editor declarations SHALL be a separate layer. A read-only guarantee SHALL require independently
+recorded runtime qualification of the capture producer, not a self-declared capture flag.
 
-A partial capture MAY populate read-only editor views. Evaluation or owned-gear planning SHALL be
-blocked when a required logical-build section is missing, unread, or incompatible.
+A partial capture MAY populate read-only editor views. If learned state cannot be read without mutation,
+the planner SHALL retain that section as unread and refuse only dependent normalization or evaluation.
+Evaluation or owned-gear planning SHALL be blocked when a required logical-build section, learned-book
+field, definition, or classification is missing, unread, or incompatible.
 
 #### Scenario: A valid complete capture is selected
 
 - **WHEN** the reader selects a compatible complete capture file
-- **THEN** the editor is populated with its logical build, owned items, controlled entities, and producer provenance
+- **THEN** the editor is populated with its logical build, `learnedBookIds`, owned items, controlled entities, and producer provenance
 - **AND** the evaluator records its own identity separately
+- **AND** the capture's learned declarations remain distinct from hypothetical editor declarations
 
 #### Scenario: A partial capture is selected
 
-- **WHEN** the selected file has a valid schema but a required section is marked missing
+- **WHEN** the selected file has a valid schema but a required section, including learned-book state, is marked missing
 - **THEN** the planner can show the captured sections and completeness state
 - **AND** it blocks only evaluations that require the missing section
+- **AND** it does not substitute an empty learned-book declaration
 
 #### Scenario: An incompatible capture is selected
 
@@ -240,12 +277,19 @@ blocked when a required logical-build section is missing, unread, or incompatibl
 - **THEN** the planner preserves the current build
 - **AND** the import error names the failed check or incompatible identity
 
+#### Scenario: A capture has invalid learned-book identities
+
+- **WHEN** an otherwise readable capture contains unknown or duplicate learned-book identities
+- **THEN** diagnostic inspection remains available and dependent normalization and evaluation are refused
+- **AND** the planner reports the identities without silently repairing the declaration
+
 ### Requirement: Current and candidate builds are comparable
 
 The planner SHALL compare a manually authored or imported current build with a selected candidate only
-when both use the same evaluator identity, model, game-data identity, scenario version, and objective
-mode. It SHALL show the total difference and the slot, attribute, skill, consumable, ammunition, and
-controlled-entity changes that produce it.
+when both use the same evaluator identity, model, game-data identity including the book catalog,
+scenario version, and objective mode. It SHALL show the total difference and the slot, attribute, skill,
+learned-book, consumable, ammunition, and controlled-entity changes that produce it. A comparison SHALL
+preserve imported learned-book declarations and SHALL not mutate the source capture or live character.
 
 Raw game mode and a named known-defect-normalized mode SHALL remain distinct. A normalized comparison
 requires evidence for the named defect. A comparison SHALL NOT mix modes or silently normalize raw output.
@@ -254,6 +298,12 @@ requires evidence for the named defect. A comparison SHALL NOT mix modes or sile
 
 - **WHEN** the selected candidate differs from the current build under the same evaluation tuple
 - **THEN** the planner shows each change and its contribution before the reader applies it
+
+#### Scenario: A candidate changes learned books
+
+- **WHEN** the selected candidate declares a different learned-book set
+- **THEN** the planner shows that progression change separately from allocated points
+- **AND** it does not modify the imported capture or live character
 
 #### Scenario: The scenarios or evaluator differ
 
@@ -296,8 +346,10 @@ and diagnostic.
 
 ### Requirement: Unsupported effects block a best-build claim
 
-The planner SHALL NOT label a result best-in-slot when an admitted candidate or equipped effect is
-unsupported by the model. It SHALL name every blocking effect and the affected build or item.
+The planner SHALL NOT label a result best-in-slot when an admitted candidate, learned-book gain, or
+equipped effect is unsupported by the model. It SHALL name every blocking effect and the affected build
+or item. Missing required book definitions or effect classifications SHALL block publication and the
+affected result rather than silently treating the gain as zero.
 
 #### Scenario: An imported item has an unknown proc
 

@@ -1,8 +1,8 @@
 ## Purpose
 
 Defines what the build search guarantees about the builds it returns, so a recommendation can be
-trusted without the reader inspecting the search. The search is a heuristic, so this capability
-constrains what it may claim.
+trusted without the reader inspecting the search. Declared learned-book progression is fixed input,
+not a search dimension. The search is a heuristic, so this capability constrains what it may claim.
 
 ## ADDED Requirements
 
@@ -90,6 +90,39 @@ one coupled problem. It SHALL NOT fix one of them arbitrarily.
 
 - **WHEN** an attribute allocation changes maximum resource or raw damage
 - **THEN** the skill allocation is reconsidered against the new resource budget
+
+### Requirement: Declared learned-book progression is fixed
+
+The search SHALL accept the declared learned-book identities as progression input, separate from
+attribute and skill point budgets. It SHALL hold that progression fixed while it searches equipment,
+attributes, and skills, and it SHALL never silently grant, remove, or optimize books. The catalog SHALL
+resolve each identity to its versioned gain definition and effect classification. A complete empty
+`learnedBookIds` declaration means that no books are learned; missing or unread state is incomplete.
+Unknown or duplicate identities SHALL be refused rather than silently deduplicated.
+
+#### Scenario: A build declares learned books
+
+- **WHEN** a complete build declares `learnedBookIds`
+- **THEN** every candidate uses exactly those learned books
+- **AND** the search does not spend attribute or skill points for their gains
+
+#### Scenario: A build declares no learned books
+
+- **WHEN** the build marks `learnedBookIds` complete and empty
+- **THEN** the search evaluates no learned-book gains
+- **AND** it does not treat the declaration as missing
+
+#### Scenario: Learned-book state is missing
+
+- **WHEN** a required learned-book field is missing or unread
+- **THEN** book-dependent evaluation stops as incomplete
+- **AND** the search does not substitute an empty declaration
+
+#### Scenario: A book identity is unknown or repeated
+
+- **WHEN** `learnedBookIds` contains an unknown or duplicate identity
+- **THEN** the adapter refuses the build before scoring
+- **AND** it reports the identity instead of silently deduplicating it
 
 ### Requirement: The evaluation is deterministic without claiming false exactness
 
@@ -360,7 +393,9 @@ ranking and recommendation SHALL label its objective mode.
 ### Requirement: Unsupported effects cannot win a ranking
 
 The search SHALL exclude a candidate with an unsupported effect and SHALL explain the exclusion. It
-SHALL NOT treat an unknown effect as a zero contribution and continue.
+SHALL NOT treat an unknown effect as a zero contribution and continue. This rule includes every
+learned-book gain admitted by the catalog; an unclassified book effect blocks the affected search
+instead of being scored as zero.
 
 #### Scenario: A candidate contains an unsupported damage proc
 
@@ -372,9 +407,10 @@ SHALL NOT treat an unknown effect as a zero contribution and continue.
 
 A capture adapter SHALL validate its serialized and capture schemas, container integrity, producer
 provenance, and game-data compatibility before the search consumes its logical build data. The search
-SHALL distinguish complete, empty, missing, and excluded sections. A missing required section SHALL
-block dependent evaluation, but it SHALL not prevent inspection of available build data. The search
-SHALL not infer or substitute missing values.
+SHALL distinguish complete, empty, missing, and excluded sections, including the learned-book section.
+A missing required section SHALL block dependent evaluation, but it SHALL not prevent inspection of
+available build data. The search SHALL not infer or substitute missing values or treat an unread
+learned-book section as an empty declaration.
 
 #### Scenario: A captured skills section is unread
 

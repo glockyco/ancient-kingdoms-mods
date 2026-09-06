@@ -1,15 +1,19 @@
 ## Purpose
 
 Defines what a captured character export guarantees about its contents, so the planner can plan
-against real gear instead of a hypothetical inventory. The same mod can read the game's own combat
-meter, which provides evidence for comparison with a predicted number.
+against real gear and actual learned progression instead of a hypothetical inventory. The same mod can
+read the game's own combat meter, which provides evidence for comparison with a predicted number.
 
 ## ADDED Requirements
 
 ### Requirement: The export is read-only
 
 Character capture and meter capture SHALL read game state. They SHALL NOT write a networked field,
-invoke a gameplay action, change meter state, or change any value the server owns.
+invoke a gameplay action, change meter state, or change any value the server owns. Learned-book capture
+SHALL read the game's actual learned state, not inventory ownership, and SHALL NOT invoke a learning,
+reset, or other mutation path to obtain it. Proof of this read-only behavior SHALL come from an
+independently recorded runtime qualification of the capture producer, not from a self-declared capture
+flag.
 
 #### Scenario: A capture runs during combat
 
@@ -21,15 +25,26 @@ invoke a gameplay action, change meter state, or change any value the server own
 - **WHEN** the local player or the world scene is not available
 - **THEN** the capture reports that it cannot run rather than substituting a default
 
+#### Scenario: Learned state would require mutation to read
+
+- **WHEN** learned-book state cannot be read without invoking a learning or reset path
+- **THEN** the capture marks only that section unread and preserves other captured sections
+- **AND** dependent evaluation or normalization is refused without blocking read-only inspection
+
 ### Requirement: Logical build data is separate from capture metadata
 
 A capture SHALL expose logical build data that an authored fixture and the planner can consume. Logical
-build data SHALL include progression, attributes, skill allocations, equipment, controlled companions,
-consumables and ammunition with their identities and quantities. Future consumption and supply
-policies belong to the evaluation scenario or fixture execution data, not to observed build state. Capture metadata SHALL
-remain outside that logical build data and SHALL describe when, where, and how the capture was produced.
-The outer record for a capture MAY differ from the outer record for a fixture or planner state. This
-requirement SHALL NOT prescribe implementation field names.
+build data SHALL include progression, `learnedBookIds`, attributes, skill allocations, equipment,
+controlled companions, consumables and ammunition with their identities and quantities. The learned-book
+field SHALL distinguish complete-empty from missing or unread state. Shared data SHALL distinguish raw
+observed attributes, base or class/race progression contributions, allocated points, and derived totals;
+a live total SHALL NOT be labelled as base attributes or allocated points. Future consumption and supply
+policies belong to the evaluation scenario or fixture execution data, not to observed build state.
+Capture metadata SHALL remain outside that logical build data and SHALL describe when, where, and how
+the capture was produced. The capture SHALL carry learned identities and completeness, not copied
+book gain values or effect classifications; the versioned planner and game catalog owns those
+resolutions. The outer record for a capture MAY differ from the outer record for a fixture or planner
+state.
 
 #### Scenario: A fixture and capture use different outer metadata
 
@@ -41,6 +56,18 @@ requirement SHALL NOT prescribe implementation field names.
 
 - **WHEN** the planner reads a valid capture
 - **THEN** it adapts the logical build data without treating capture-only metadata as build state
+
+#### Scenario: A capture has no learned books
+
+- **WHEN** the learned-book section is read successfully and contains no identities
+- **THEN** the capture marks it complete and empty
+- **AND** the planner evaluates no book gains
+
+#### Scenario: A capture cannot read learned-book state
+
+- **WHEN** the learned-book section is absent or unread
+- **THEN** the capture marks it missing
+- **AND** dependent evaluation is blocked without substituting an empty list
 
 ### Requirement: Producer and evaluator provenance remain distinct
 
@@ -78,10 +105,10 @@ report.
 
 The export SHALL state which logical-build sections and containers it captured, which it read as empty,
 and which it could not read. A section that could not be read SHALL be marked missing rather than
-emitted as empty. A checked adapter SHALL validate schema support, container integrity, and the selected
-game-build compatibility policy before it exposes the logical build to evaluation. A missing required
-section SHALL block only the dependent planning or evaluation; it SHALL NOT prevent read-only inspection
-of the remaining captured sections.
+emitted as empty. This completeness state SHALL include learned-book state. A checked adapter SHALL
+validate schema support, container integrity, and the selected game-build compatibility policy before it
+exposes the logical build to evaluation. A missing required section SHALL block only the dependent
+planning or evaluation; it SHALL NOT prevent read-only inspection of the remaining captured sections.
 
 #### Scenario: A storage container was not loaded
 
@@ -129,13 +156,35 @@ this requirement exists to provide.
 - **WHEN** an item's display name changes between versions
 - **THEN** a stored export still resolves to the same item
 
+### Requirement: Learned-book state uses stable identities
+
+The export SHALL declare learned books by stable item asset ID in `learnedBookIds`. It SHALL preserve
+identity order and duplicates for validation, and the checked adapter SHALL reject unknown or duplicate
+identities rather than silently deduplicating them. The export SHALL not infer a learned book from an
+owned inventory item. A complete empty declaration means none learned; missing or unread state is
+incomplete.
+
+#### Scenario: An inventory book has not been learned
+
+- **WHEN** an item appears in inventory but the game's learned-book state does not contain its identity
+- **THEN** the export does not add that identity to `learnedBookIds`
+- **AND** the planner does not apply its gain
+
+#### Scenario: A learned identity is unknown or duplicated
+
+- **WHEN** `learnedBookIds` contains an unknown or duplicate identity
+- **THEN** the checked adapter refuses dependent normalization and evaluation
+- **AND** it preserves diagnostic inspection and reports the identity without silently deduplicating it
+
 ### Requirement: The export covers the logical build inputs
 
-The payload SHALL carry the class, level, veteran progression, attribute values, learned skill levels,
-every equipped slot, and every augment attached to an equipped item. It SHALL carry observed
-consumable and ammunition identities and quantities. Future use policies SHALL be supplied explicitly
-by the scenario rather than inferred during capture. It SHALL carry candidate items held in inventory and storage, distinguished from
-equipped items, so a plan can be limited to owned gear.
+The payload SHALL carry the class, level, veteran progression, `learnedBookIds`, attribute values,
+learned skill levels, every equipped slot, and every augment attached to an equipped item. It SHALL
+carry observed consumable and ammunition identities and quantities. Future use policies SHALL be
+supplied explicitly by the scenario rather than inferred during capture. It SHALL carry candidate items
+held in inventory and storage, distinguished from equipped items, so a plan can be limited to owned gear.
+Book identities SHALL come from actual learned state, not inventory ownership, and book gain values SHALL
+be resolved from the versioned catalog rather than copied into the capture.
 
 #### Scenario: A reader plans against owned gear
 
