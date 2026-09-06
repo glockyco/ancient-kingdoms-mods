@@ -113,16 +113,6 @@ public sealed class PlayerSaveTests : IDisposable
     }
 
     [Fact]
-    public void TheBackupDirectoryCarriesTheTimestamp()
-    {
-        WriteSave("db");
-
-        var result = PlayerSave.Create(GamePath, BackupRoot, When);
-
-        Assert.Equal("game-dat-backup-20260826-170405", Path.GetFileName(result.Directory));
-    }
-
-    [Fact]
     public void TheBackupContentEqualsTheSource()
     {
         WriteSave("original bytes", wal: "log bytes");
@@ -157,15 +147,19 @@ public sealed class PlayerSaveTests : IDisposable
     }
 
     [Fact]
-    public void BackingUpTwiceAtDifferentTimesKeepsBothCopies()
+    public void BackupsAtTheSameTimestampPreserveBothSaveVersions()
     {
-        WriteSave("db");
-
+        WriteSave("first save", wal: "first log");
         var first = PlayerSave.Create(GamePath, BackupRoot, When);
-        var second = PlayerSave.Create(GamePath, BackupRoot, When.AddSeconds(1));
+        WriteSave("second save", wal: "second log");
+        var second = PlayerSave.Create(GamePath, BackupRoot, When);
 
+        Assert.True(first.Ok, first.Detail);
+        Assert.True(second.Ok, second.Detail);
         Assert.NotEqual(first.Directory, second.Directory);
-        Assert.True(Directory.Exists(first.Directory));
-        Assert.True(Directory.Exists(second.Directory));
+        Assert.Equal("first save", File.ReadAllText(Path.Combine(first.Directory!, "game.dat")));
+        Assert.Equal("first log", File.ReadAllText(Path.Combine(first.Directory!, "game.dat-wal")));
+        Assert.Equal("second save", File.ReadAllText(Path.Combine(second.Directory!, "game.dat")));
+        Assert.Equal("second log", File.ReadAllText(Path.Combine(second.Directory!, "game.dat-wal")));
     }
 }

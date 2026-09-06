@@ -125,7 +125,7 @@ public static class PlayerSave
                 $"No save database at {DatabasePath(gamePath)}, so nothing can be backed up.");
 
         var stamp = now.UtcDateTime.ToString("yyyyMMdd-HHmmss");
-        var directory = Path.Combine(backupRoot, $"game-dat-backup-{stamp}");
+        var directory = Path.Combine(backupRoot, $"game-dat-backup-{stamp}-{Guid.NewGuid():N}");
         System.IO.Directory.CreateDirectory(directory);
 
         var hashes = new List<SaveFileHash>();
@@ -133,7 +133,7 @@ public static class PlayerSave
         {
             var name = Path.GetFileName(source);
             var destination = Path.Combine(directory, name);
-            File.Copy(source, destination, overwrite: true);
+            File.Copy(source, destination, overwrite: false);
 
             var sourceHash = HashFile(source);
             var copyHash = HashFile(destination);
