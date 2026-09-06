@@ -250,6 +250,10 @@ dotnet run --project build-tool verify --fresh-scratch
 A successful result reports `verified: false` and `status: validation-only`.
 Fixture-file loading rejects unsupported JSON fields, including nested fields, before launch. Planner build-envelope and scenario parsing also reject unsupported fields instead of discarding them.
 
+Fixture outer schema 2 separates `buildData` from `execution`. The `build` envelope still holds version identifiers.
+`buildData` contains the declared character, companions, consumables, and source provenance. `execution` contains the seed, window, repetitions, target, and actions.
+Capture timestamps are not fixture fields. This composition does not qualify the unfinished shared-data extensions, capture adapters, or executable scheduling policies.
+
 The command takes installation and port locks before changing scratch state. It backs up the existing player database and sidecars, then confirms the runtime launch identity and exact scratch path.
 Scratch paths with traversal or symbolic links are refused. An absent player database remains an absence to check after the run.
 

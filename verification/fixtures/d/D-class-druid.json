@@ -1,4 +1,5 @@
 {
+  "schemaVersion": 2,
   "build": {
     "captureSchemaVersion": 1,
     "gameData": {
@@ -12,50 +13,57 @@
   "name": "D-class-druid",
   "tier": "D",
   "coverage": "D.class.Druid",
-  "durationSeconds": 60,
-  "repetitions": 1,
-  "seed": 1177663475,
-  "capturedAt": null,
-  "character": {
-    "class": "Druid",
-    "race": "Human",
-    "level": 50,
-    "veteranPoints": 200,
-    "allocatedAttributes": {},
-    "skills": [
+  "buildData": {
+    "provenance": {
+      "kind": "authored",
+      "source": "verification/fixtures/d/D-class-druid.json"
+    },
+    "character": {
+      "class": "Druid",
+      "race": "Human",
+      "level": 50,
+      "veteranPoints": 200,
+      "allocatedAttributes": {},
+      "skills": [
+        {
+          "name": "Wind Shock",
+          "level": 5
+        },
+        {
+          "name": "Staff Strike",
+          "level": 1
+        }
+      ],
+      "equipment": [
+        {
+          "slot": 12,
+          "itemId": "natures_staff",
+          "itemName": null,
+          "augmentId": null,
+          "durability": 100
+        }
+      ]
+    },
+    "companions": null,
+    "consumables": []
+  },
+  "execution": {
+    "durationSeconds": 60,
+    "repetitions": 1,
+    "seed": 1177663475,
+    "target": {
+      "spawn": "Snake",
+      "level": 5
+    },
+    "actions": [
       {
-        "name": "Wind Shock",
-        "level": 5
+        "skill": "Wind Shock",
+        "facing": "front"
       },
       {
-        "name": "Staff Strike",
-        "level": 1
-      }
-    ],
-    "equipment": [
-      {
-        "slot": 12,
-        "itemId": "natures_staff",
-        "itemName": null,
-        "augmentId": null,
-        "durability": 100
+        "skill": "Staff Strike",
+        "facing": "front"
       }
     ]
-  },
-  "companions": null,
-  "consumables": [],
-  "target": {
-    "spawn": "Snake",
-    "level": 5
-  },
-  "actions": [
-    {
-      "skill": "Wind Shock",
-      "facing": "front"
-    },
-    {
-      "skill": "Staff Strike",
-      "facing": "front"
-    }
-  ]
+  }
 }

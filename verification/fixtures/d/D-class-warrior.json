@@ -1,4 +1,5 @@
 {
+  "schemaVersion": 2,
   "build": {
     "captureSchemaVersion": 1,
     "gameData": {
@@ -12,50 +13,57 @@
   "name": "D-class-warrior",
   "tier": "D",
   "coverage": "D.class.Warrior",
-  "durationSeconds": 60,
-  "repetitions": 1,
-  "seed": 1351711731,
-  "capturedAt": null,
-  "character": {
-    "class": "Warrior",
-    "race": "Human",
-    "level": 50,
-    "veteranPoints": 200,
-    "allocatedAttributes": {},
-    "skills": [
+  "buildData": {
+    "provenance": {
+      "kind": "authored",
+      "source": "verification/fixtures/d/D-class-warrior.json"
+    },
+    "character": {
+      "class": "Warrior",
+      "race": "Human",
+      "level": 50,
+      "veteranPoints": 200,
+      "allocatedAttributes": {},
+      "skills": [
+        {
+          "name": "Slam",
+          "level": 5
+        },
+        {
+          "name": "Melee Attack",
+          "level": 1
+        }
+      ],
+      "equipment": [
+        {
+          "slot": 12,
+          "itemId": "rusty_sword",
+          "itemName": null,
+          "augmentId": null,
+          "durability": 100
+        }
+      ]
+    },
+    "companions": null,
+    "consumables": []
+  },
+  "execution": {
+    "durationSeconds": 60,
+    "repetitions": 1,
+    "seed": 1351711731,
+    "target": {
+      "spawn": "Snake",
+      "level": 5
+    },
+    "actions": [
       {
-        "name": "Slam",
-        "level": 5
+        "skill": "Slam",
+        "facing": "front"
       },
       {
-        "name": "Melee Attack",
-        "level": 1
-      }
-    ],
-    "equipment": [
-      {
-        "slot": 12,
-        "itemId": "rusty_sword",
-        "itemName": null,
-        "augmentId": null,
-        "durability": 100
+        "skill": "Melee Attack",
+        "facing": "front"
       }
     ]
-  },
-  "companions": null,
-  "consumables": [],
-  "target": {
-    "spawn": "Snake",
-    "level": 5
-  },
-  "actions": [
-    {
-      "skill": "Slam",
-      "facing": "front"
-    },
-    {
-      "skill": "Melee Attack",
-      "facing": "front"
-    }
-  ]
+  }
 }

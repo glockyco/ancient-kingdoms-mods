@@ -35,8 +35,8 @@ internal static class FixtureFiles
             {
                 Tier = fixture.Tier,
                 Coverage = fixture.Coverage,
-                DurationSeconds = fixture.DurationSeconds,
-                Repetitions = fixture.Repetitions,
+                DurationSeconds = fixture.Execution?.DurationSeconds,
+                Repetitions = fixture.Execution?.Repetitions ?? 1,
                 Fixture = fixture,
             })
             .ToList();
@@ -88,8 +88,8 @@ internal static class FixtureFiles
                 {
                     Tier = fixture.Tier,
                     Coverage = fixture.Coverage,
-                    DurationSeconds = fixture.DurationSeconds,
-                    Repetitions = fixture.Repetitions,
+                    DurationSeconds = fixture.Execution?.DurationSeconds,
+                    Repetitions = fixture.Execution?.Repetitions ?? 1,
                     Fixture = fixture,
                 }));
             }

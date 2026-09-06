@@ -1,4 +1,5 @@
 {
+  "schemaVersion": 2,
   "build": {
     "captureSchemaVersion": 1,
     "gameData": {
@@ -12,112 +13,119 @@
   "name": "C-haste-floor",
   "tier": "C",
   "coverage": "C.haste.floor",
-  "durationSeconds": 20,
-  "repetitions": 1,
-  "seed": 825323343,
-  "capturedAt": null,
-  "character": {
-    "class": "Warrior",
-    "race": "Human",
-    "level": 50,
-    "veteranPoints": 200,
-    "allocatedAttributes": {},
-    "skills": [
+  "buildData": {
+    "provenance": {
+      "kind": "authored",
+      "source": "verification/fixtures/c/C-haste-floor.json"
+    },
+    "character": {
+      "class": "Warrior",
+      "race": "Human",
+      "level": 50,
+      "veteranPoints": 200,
+      "allocatedAttributes": {},
+      "skills": [
+        {
+          "name": "Melee Attack",
+          "level": 1
+        }
+      ],
+      "equipment": [
+        {
+          "slot": 1,
+          "itemId": "sentinels_wrath_stud",
+          "itemName": null,
+          "augmentId": null,
+          "durability": 100
+        },
+        {
+          "slot": 2,
+          "itemId": "elven_hero_chestplate",
+          "itemName": null,
+          "augmentId": null,
+          "durability": 100
+        },
+        {
+          "slot": 4,
+          "itemId": "fabled_lord_darish_signet",
+          "itemName": null,
+          "augmentId": null,
+          "durability": 100
+        },
+        {
+          "slot": 6,
+          "itemId": "valaarks_worldheart",
+          "itemName": null,
+          "augmentId": null,
+          "durability": 100
+        },
+        {
+          "slot": 7,
+          "itemId": "sentinels_wrath_stud",
+          "itemName": null,
+          "augmentId": null,
+          "durability": 100
+        },
+        {
+          "slot": 8,
+          "itemId": "northgates_frenzy_cord",
+          "itemName": null,
+          "augmentId": null,
+          "durability": 100
+        },
+        {
+          "slot": 10,
+          "itemId": "fabled_lord_darish_signet",
+          "itemName": null,
+          "augmentId": null,
+          "durability": 100
+        },
+        {
+          "slot": 11,
+          "itemId": "horn_of_victory",
+          "itemName": null,
+          "augmentId": null,
+          "durability": 100
+        },
+        {
+          "slot": 12,
+          "itemId": "waveforged_hammer",
+          "itemName": null,
+          "augmentId": null,
+          "durability": 100
+        },
+        {
+          "slot": 13,
+          "itemId": "drum_of_war",
+          "itemName": null,
+          "augmentId": null,
+          "durability": 100
+        },
+        {
+          "slot": 15,
+          "itemId": "frostwind_charm",
+          "itemName": null,
+          "augmentId": null,
+          "durability": 100
+        }
+      ]
+    },
+    "companions": null,
+    "consumables": []
+  },
+  "execution": {
+    "durationSeconds": 20,
+    "repetitions": 1,
+    "seed": 825323343,
+    "target": {
+      "spawn": "Snake",
+      "level": 5
+    },
+    "actions": [
       {
-        "name": "Melee Attack",
-        "level": 1
-      }
-    ],
-    "equipment": [
-      {
-        "slot": 1,
-        "itemId": "sentinels_wrath_stud",
-        "itemName": null,
-        "augmentId": null,
-        "durability": 100
-      },
-      {
-        "slot": 2,
-        "itemId": "elven_hero_chestplate",
-        "itemName": null,
-        "augmentId": null,
-        "durability": 100
-      },
-      {
-        "slot": 4,
-        "itemId": "fabled_lord_darish_signet",
-        "itemName": null,
-        "augmentId": null,
-        "durability": 100
-      },
-      {
-        "slot": 6,
-        "itemId": "valaarks_worldheart",
-        "itemName": null,
-        "augmentId": null,
-        "durability": 100
-      },
-      {
-        "slot": 7,
-        "itemId": "sentinels_wrath_stud",
-        "itemName": null,
-        "augmentId": null,
-        "durability": 100
-      },
-      {
-        "slot": 8,
-        "itemId": "northgates_frenzy_cord",
-        "itemName": null,
-        "augmentId": null,
-        "durability": 100
-      },
-      {
-        "slot": 10,
-        "itemId": "fabled_lord_darish_signet",
-        "itemName": null,
-        "augmentId": null,
-        "durability": 100
-      },
-      {
-        "slot": 11,
-        "itemId": "horn_of_victory",
-        "itemName": null,
-        "augmentId": null,
-        "durability": 100
-      },
-      {
-        "slot": 12,
-        "itemId": "waveforged_hammer",
-        "itemName": null,
-        "augmentId": null,
-        "durability": 100
-      },
-      {
-        "slot": 13,
-        "itemId": "drum_of_war",
-        "itemName": null,
-        "augmentId": null,
-        "durability": 100
-      },
-      {
-        "slot": 15,
-        "itemId": "frostwind_charm",
-        "itemName": null,
-        "augmentId": null,
-        "durability": 100
+        "skill": "Melee Attack",
+        "facing": "front"
       }
     ]
-  },
-  "companions": null,
-  "consumables": [],
-  "target": {
-    "spawn": "Snake",
-    "level": 5
-  },
-  "actions": [
-    {
-      "skill": "Melee Attack",
-      "facing": "front"
-    }
-  ]
+  }
 }

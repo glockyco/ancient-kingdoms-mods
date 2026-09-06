@@ -21,7 +21,7 @@ namespace CombatVerification.Commands
         : IControlCommandHandler<FixtureDescriptor, ValidateFixtureResult>
     {
         public string Name => "fixture.validate";
-        public int Version => 1;
+        public int Version => 2;
         public ControlCommandKind Kind => ControlCommandKind.Sync;
         public bool MutatesState => false;
 
@@ -52,7 +52,7 @@ namespace CombatVerification.Commands
                     Problems = problems,
                     MaxLevel = rules.MaxLevel,
                     MaxVeteranPoints = rules.MaxVeteranPoints,
-                    EquipmentSlotCount = rules.EquipmentSlotCount(fixture.Character?.Class),
+                    EquipmentSlotCount = rules.EquipmentSlotCount(fixture?.BuildData?.Character?.Class),
                     OffhandSlot = rules.OffhandSlot,
                     Classes = classes,
                 }));

@@ -1,4 +1,5 @@
 {
+  "schemaVersion": 2,
   "build": {
     "captureSchemaVersion": 1,
     "gameData": {
@@ -12,24 +13,31 @@
   "name": "A-class-rogue",
   "tier": "A",
   "coverage": "A.class.Rogue",
-  "durationSeconds": null,
-  "repetitions": 1,
-  "seed": 2070699336,
-  "capturedAt": null,
-  "character": {
-    "class": "Rogue",
-    "race": "Human",
-    "level": 50,
-    "veteranPoints": 200,
-    "allocatedAttributes": {},
-    "skills": [],
-    "equipment": []
+  "buildData": {
+    "provenance": {
+      "kind": "authored",
+      "source": "verification/fixtures/a/A-class-rogue.json"
+    },
+    "character": {
+      "class": "Rogue",
+      "race": "Human",
+      "level": 50,
+      "veteranPoints": 200,
+      "allocatedAttributes": {},
+      "skills": [],
+      "equipment": []
+    },
+    "companions": null,
+    "consumables": []
   },
-  "companions": null,
-  "consumables": [],
-  "target": {
-    "spawn": "Snake",
-    "level": 5
-  },
-  "actions": null
+  "execution": {
+    "durationSeconds": null,
+    "repetitions": 1,
+    "seed": 2070699336,
+    "target": {
+      "spawn": "Snake",
+      "level": 5
+    },
+    "actions": null
+  }
 }

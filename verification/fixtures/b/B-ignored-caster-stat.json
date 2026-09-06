@@ -1,4 +1,5 @@
 {
+  "schemaVersion": 2,
   "build": {
     "captureSchemaVersion": 1,
     "gameData": {
@@ -12,62 +13,69 @@
   "name": "B-ignored-caster-stat",
   "tier": "B",
   "coverage": "B.special.ignoresCasterCombatStat",
-  "durationSeconds": null,
-  "repetitions": 1,
-  "seed": 1766568286,
-  "capturedAt": null,
-  "character": {
-    "class": "Wizard",
-    "race": "Human",
-    "level": 50,
-    "veteranPoints": 200,
-    "allocatedAttributes": {},
-    "skills": [
+  "buildData": {
+    "provenance": {
+      "kind": "authored",
+      "source": "verification/fixtures/b/B-ignored-caster-stat.json"
+    },
+    "character": {
+      "class": "Wizard",
+      "race": "Human",
+      "level": 50,
+      "veteranPoints": 200,
+      "allocatedAttributes": {},
+      "skills": [
+        {
+          "name": "Battlefield Restoration",
+          "level": 10
+        },
+        {
+          "name": "Innate Constitution",
+          "level": 10
+        },
+        {
+          "name": "Innate Intelligence",
+          "level": 10
+        },
+        {
+          "name": "Innate Strength",
+          "level": 10
+        },
+        {
+          "name": "Innate Wisdom",
+          "level": 10
+        },
+        {
+          "name": "Mana Burn",
+          "level": 1
+        }
+      ],
+      "equipment": [
+        {
+          "slot": 12,
+          "itemId": "rusty_staff",
+          "itemName": null,
+          "augmentId": null,
+          "durability": 100
+        }
+      ]
+    },
+    "companions": null,
+    "consumables": []
+  },
+  "execution": {
+    "durationSeconds": null,
+    "repetitions": 1,
+    "seed": 1766568286,
+    "target": {
+      "spawn": "Snake",
+      "level": 5
+    },
+    "actions": [
       {
-        "name": "Battlefield Restoration",
-        "level": 10
-      },
-      {
-        "name": "Innate Constitution",
-        "level": 10
-      },
-      {
-        "name": "Innate Intelligence",
-        "level": 10
-      },
-      {
-        "name": "Innate Strength",
-        "level": 10
-      },
-      {
-        "name": "Innate Wisdom",
-        "level": 10
-      },
-      {
-        "name": "Mana Burn",
-        "level": 1
-      }
-    ],
-    "equipment": [
-      {
-        "slot": 12,
-        "itemId": "rusty_staff",
-        "itemName": null,
-        "augmentId": null,
-        "durability": 100
+        "skill": "Mana Burn",
+        "facing": "front"
       }
     ]
-  },
-  "companions": null,
-  "consumables": [],
-  "target": {
-    "spawn": "Snake",
-    "level": 5
-  },
-  "actions": [
-    {
-      "skill": "Mana Burn",
-      "facing": "front"
-    }
-  ]
+  }
 }

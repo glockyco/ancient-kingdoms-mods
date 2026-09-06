@@ -1,4 +1,5 @@
 {
+  "schemaVersion": 2,
   "build": {
     "captureSchemaVersion": 1,
     "gameData": {
@@ -12,42 +13,49 @@
   "name": "C-delay-23",
   "tier": "C",
   "coverage": "C.weaponDelay.23",
-  "durationSeconds": 20,
-  "repetitions": 1,
-  "seed": 320135142,
-  "capturedAt": null,
-  "character": {
-    "class": "Warrior",
-    "race": "Human",
-    "level": 50,
-    "veteranPoints": 200,
-    "allocatedAttributes": {},
-    "skills": [
+  "buildData": {
+    "provenance": {
+      "kind": "authored",
+      "source": "verification/fixtures/c/C-delay-23.json"
+    },
+    "character": {
+      "class": "Warrior",
+      "race": "Human",
+      "level": 50,
+      "veteranPoints": 200,
+      "allocatedAttributes": {},
+      "skills": [
+        {
+          "name": "Melee Attack",
+          "level": 1
+        }
+      ],
+      "equipment": [
+        {
+          "slot": 12,
+          "itemId": "silver_dagger",
+          "itemName": null,
+          "augmentId": null,
+          "durability": 100
+        }
+      ]
+    },
+    "companions": null,
+    "consumables": []
+  },
+  "execution": {
+    "durationSeconds": 20,
+    "repetitions": 1,
+    "seed": 320135142,
+    "target": {
+      "spawn": "Snake",
+      "level": 5
+    },
+    "actions": [
       {
-        "name": "Melee Attack",
-        "level": 1
-      }
-    ],
-    "equipment": [
-      {
-        "slot": 12,
-        "itemId": "silver_dagger",
-        "itemName": null,
-        "augmentId": null,
-        "durability": 100
+        "skill": "Melee Attack",
+        "facing": "front"
       }
     ]
-  },
-  "companions": null,
-  "consumables": [],
-  "target": {
-    "spawn": "Snake",
-    "level": 5
-  },
-  "actions": [
-    {
-      "skill": "Melee Attack",
-      "facing": "front"
-    }
-  ]
+  }
 }

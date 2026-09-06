@@ -1,4 +1,5 @@
 {
+  "schemaVersion": 2,
   "build": {
     "captureSchemaVersion": 1,
     "gameData": {
@@ -12,24 +13,31 @@
   "name": "A-lower-level-10",
   "tier": "A",
   "coverage": "A.lowerLevel.10",
-  "durationSeconds": null,
-  "repetitions": 1,
-  "seed": 1287593841,
-  "capturedAt": null,
-  "character": {
-    "class": "Warrior",
-    "race": "Human",
-    "level": 10,
-    "veteranPoints": 0,
-    "allocatedAttributes": {},
-    "skills": [],
-    "equipment": []
+  "buildData": {
+    "provenance": {
+      "kind": "authored",
+      "source": "verification/fixtures/a/A-lower-level-10.json"
+    },
+    "character": {
+      "class": "Warrior",
+      "race": "Human",
+      "level": 10,
+      "veteranPoints": 0,
+      "allocatedAttributes": {},
+      "skills": [],
+      "equipment": []
+    },
+    "companions": null,
+    "consumables": []
   },
-  "companions": null,
-  "consumables": [],
-  "target": {
-    "spawn": "Snake",
-    "level": 5
-  },
-  "actions": null
+  "execution": {
+    "durationSeconds": null,
+    "repetitions": 1,
+    "seed": 1287593841,
+    "target": {
+      "spawn": "Snake",
+      "level": 5
+    },
+    "actions": null
+  }
 }

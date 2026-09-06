@@ -1,4 +1,5 @@
 {
+  "schemaVersion": 2,
   "build": {
     "captureSchemaVersion": 1,
     "gameData": {
@@ -12,24 +13,31 @@
   "name": "A-class-ranger",
   "tier": "A",
   "coverage": "A.class.Ranger",
-  "durationSeconds": null,
-  "repetitions": 1,
-  "seed": 1901919527,
-  "capturedAt": null,
-  "character": {
-    "class": "Ranger",
-    "race": "Human",
-    "level": 50,
-    "veteranPoints": 200,
-    "allocatedAttributes": {},
-    "skills": [],
-    "equipment": []
+  "buildData": {
+    "provenance": {
+      "kind": "authored",
+      "source": "verification/fixtures/a/A-class-ranger.json"
+    },
+    "character": {
+      "class": "Ranger",
+      "race": "Human",
+      "level": 50,
+      "veteranPoints": 200,
+      "allocatedAttributes": {},
+      "skills": [],
+      "equipment": []
+    },
+    "companions": null,
+    "consumables": []
   },
-  "companions": null,
-  "consumables": [],
-  "target": {
-    "spawn": "Snake",
-    "level": 5
-  },
-  "actions": null
+  "execution": {
+    "durationSeconds": null,
+    "repetitions": 1,
+    "seed": 1901919527,
+    "target": {
+      "spawn": "Snake",
+      "level": 5
+    },
+    "actions": null
+  }
 }

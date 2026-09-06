@@ -1,4 +1,5 @@
 {
+  "schemaVersion": 2,
   "build": {
     "captureSchemaVersion": 1,
     "gameData": {
@@ -12,24 +13,31 @@
   "name": "A-class-druid",
   "tier": "A",
   "coverage": "A.class.Druid",
-  "durationSeconds": null,
-  "repetitions": 1,
-  "seed": 2057872496,
-  "capturedAt": null,
-  "character": {
-    "class": "Druid",
-    "race": "Human",
-    "level": 50,
-    "veteranPoints": 200,
-    "allocatedAttributes": {},
-    "skills": [],
-    "equipment": []
+  "buildData": {
+    "provenance": {
+      "kind": "authored",
+      "source": "verification/fixtures/a/A-class-druid.json"
+    },
+    "character": {
+      "class": "Druid",
+      "race": "Human",
+      "level": 50,
+      "veteranPoints": 200,
+      "allocatedAttributes": {},
+      "skills": [],
+      "equipment": []
+    },
+    "companions": null,
+    "consumables": []
   },
-  "companions": null,
-  "consumables": [],
-  "target": {
-    "spawn": "Snake",
-    "level": 5
-  },
-  "actions": null
+  "execution": {
+    "durationSeconds": null,
+    "repetitions": 1,
+    "seed": 2057872496,
+    "target": {
+      "spawn": "Snake",
+      "level": 5
+    },
+    "actions": null
+  }
 }

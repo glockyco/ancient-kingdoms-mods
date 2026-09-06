@@ -1,4 +1,5 @@
 {
+  "schemaVersion": 2,
   "build": {
     "captureSchemaVersion": 1,
     "gameData": {
@@ -12,24 +13,31 @@
   "name": "A-class-wizard",
   "tier": "A",
   "coverage": "A.class.Wizard",
-  "durationSeconds": null,
-  "repetitions": 1,
-  "seed": 2052805565,
-  "capturedAt": null,
-  "character": {
-    "class": "Wizard",
-    "race": "Human",
-    "level": 50,
-    "veteranPoints": 200,
-    "allocatedAttributes": {},
-    "skills": [],
-    "equipment": []
+  "buildData": {
+    "provenance": {
+      "kind": "authored",
+      "source": "verification/fixtures/a/A-class-wizard.json"
+    },
+    "character": {
+      "class": "Wizard",
+      "race": "Human",
+      "level": 50,
+      "veteranPoints": 200,
+      "allocatedAttributes": {},
+      "skills": [],
+      "equipment": []
+    },
+    "companions": null,
+    "consumables": []
   },
-  "companions": null,
-  "consumables": [],
-  "target": {
-    "spawn": "Snake",
-    "level": 5
-  },
-  "actions": null
+  "execution": {
+    "durationSeconds": null,
+    "repetitions": 1,
+    "seed": 2052805565,
+    "target": {
+      "spawn": "Snake",
+      "level": 5
+    },
+    "actions": null
+  }
 }

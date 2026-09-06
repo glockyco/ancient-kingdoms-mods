@@ -16,49 +16,54 @@ namespace CombatVerification.Fixtures
         {
             var shape = FixtureShapeValidator.Validate(fixture);
             var problems = shape.Problems.ToList();
-            if (fixture?.Character == null)
+            if (fixture?.BuildData?.Character == null)
                 return Result(problems);
 
-            ValidateCharacter(problems, fixture.Character, rules);
+            var buildData = fixture.BuildData;
+            var character = buildData.Character;
+            ValidateCharacter(problems, "buildData.character", character, rules);
             ValidateCompanions(
-                problems, fixture.Companions, fixture.Character.Level, rules);
-            if (fixture.Consumables != null
-                && fixture.Consumables.All(value => !string.IsNullOrWhiteSpace(value)))
-                ValidateConsumables(problems, fixture.Consumables, rules);
+                problems, "buildData.companions", buildData.Companions, character.Level, rules);
+            if (buildData.Consumables != null
+                && buildData.Consumables.All(value => !string.IsNullOrWhiteSpace(value)))
+                ValidateConsumables(problems, "buildData.consumables", buildData.Consumables, rules);
 
             return Result(problems);
         }
 
         private static void ValidateCharacter(
-            List<FixtureProblem> problems, CharacterSpec character, IFixtureRules rules)
+            List<FixtureProblem> problems,
+            string field,
+            CharacterSpec character,
+            IFixtureRules rules)
         {
             if (!string.IsNullOrWhiteSpace(character.Class)
                 && !rules.ClassExists(character.Class))
-                Add(problems, "character.class", $"'{character.Class}' is not a class the game defines.");
+                Add(problems, $"{field}.class", $"'{character.Class}' is not a class the game defines.");
 
             // Whether a class accepts a race is checked when the character is created, because the
             // character creator is the only place that holds the pairing and it is gone by now.
 
             if (character.Level > rules.MaxLevel)
-                Add(problems, "character.level",
+                Add(problems, $"{field}.level",
                     $"{character.Level} is outside the reachable range 1 to {rules.MaxLevel}.");
 
-            ValidateVeteranPoints(problems, character, rules);
+            ValidateVeteranPoints(problems, field, character, rules);
 
             if (character.AllocatedAttributes != null
                 && character.AllocatedAttributes.Values.All(value => value >= 0))
-                ValidateAttributes(problems, character, rules);
+                ValidateAttributes(problems, field, character, rules);
 
             if (character.Skills != null
                 && character.Skills.All(skill => skill != null
                     && !string.IsNullOrWhiteSpace(skill.Name)
                     && skill.Level >= 0))
-                ValidateSkills(problems, character, rules);
+                ValidateSkills(problems, field, character, rules);
 
             if (EquipmentHasValidShape(character.Equipment))
                 ValidateEquipment(
                     problems,
-                    "character.equipment",
+                    $"{field}.equipment",
                     character.Class,
                     character.Level,
                     character.Equipment,
@@ -66,23 +71,29 @@ namespace CombatVerification.Fixtures
         }
 
         private static void ValidateVeteranPoints(
-            List<FixtureProblem> problems, CharacterSpec character, IFixtureRules rules)
+            List<FixtureProblem> problems,
+            string field,
+            CharacterSpec character,
+            IFixtureRules rules)
         {
             if (character.VeteranPoints <= 0)
                 return;
 
             if (character.Level < rules.MaxLevel)
-                Add(problems, "character.veteranPoints",
+                Add(problems, $"{field}.veteranPoints",
                     $"Veteran points exist only at level {rules.MaxLevel}; this fixture is level "
                     + $"{character.Level}. Permitted here: 0.");
             else if (character.VeteranPoints > rules.MaxVeteranPoints)
-                Add(problems, "character.veteranPoints",
+                Add(problems, $"{field}.veteranPoints",
                     $"{character.VeteranPoints} is outside the obtainable range 0 to "
                     + $"{rules.MaxVeteranPoints}.");
         }
 
         private static void ValidateAttributes(
-            List<FixtureProblem> problems, CharacterSpec character, IFixtureRules rules)
+            List<FixtureProblem> problems,
+            string field,
+            CharacterSpec character,
+            IFixtureRules rules)
         {
             if (character.AllocatedAttributes.Count == 0)
                 return;
@@ -90,7 +101,7 @@ namespace CombatVerification.Fixtures
             foreach (var pair in character.AllocatedAttributes)
             {
                 if (!rules.AttributeNames.Contains(pair.Key))
-                    Add(problems, $"character.allocatedAttributes.{pair.Key}",
+                    Add(problems, $"{field}.allocatedAttributes.{pair.Key}",
                         $"Not an attribute the game defines. Defined: "
                         + $"{string.Join(", ", rules.AttributeNames)}.");
             }
@@ -98,13 +109,16 @@ namespace CombatVerification.Fixtures
             var budget = rules.AllocatableAttributePoints(character.Level, character.VeteranPoints);
             var spent = character.AllocatedAttributes.Values.Where(v => v > 0).Sum();
             if (spent > budget)
-                Add(problems, "character.allocatedAttributes",
+                Add(problems, $"{field}.allocatedAttributes",
                     $"Spends {spent} points against {budget} allocatable at level {character.Level} "
                     + $"with {character.VeteranPoints} veteran points. Shortfall: {spent - budget}.");
         }
 
         private static void ValidateSkills(
-            List<FixtureProblem> problems, CharacterSpec character, IFixtureRules rules)
+            List<FixtureProblem> problems,
+            string field,
+            CharacterSpec character,
+            IFixtureRules rules)
         {
             if (character.Skills.Count == 0)
                 return;
@@ -114,28 +128,28 @@ namespace CombatVerification.Fixtures
 
             foreach (var skill in character.Skills)
             {
-                var field = $"character.skills.{skill.Name}";
+                var skillField = $"{field}.skills.{skill.Name}";
 
                 if (!rules.TryGetSkill(skill.Name, out var rule))
                 {
-                    Add(problems, field, "Not a skill the game defines.");
+                    Add(problems, skillField, "Not a skill the game defines.");
                     continue;
                 }
 
                 if (skill.Level > rule.MaxLevel)
                 {
-                    Add(problems, field,
+                    Add(problems, skillField,
                         $"Level {skill.Level} is outside the range 0 to {rule.MaxLevel}.");
                     continue;
                 }
 
                 if (rule.Classes.Count > 0 && !Includes(rule.Classes, character.Class))
-                    Add(problems, field,
+                    Add(problems, skillField,
                         $"A {character.Class} cannot learn it. Classes: "
                         + $"{string.Join(", ", rule.Classes)}.");
 
                 if (rule.IsVeteran && character.Level < rules.MaxLevel)
-                    Add(problems, field,
+                    Add(problems, skillField,
                         $"A veteran skill needs level {rules.MaxLevel}; this fixture is level "
                         + $"{character.Level}.");
 
@@ -154,7 +168,7 @@ namespace CombatVerification.Fixtures
                         && declaredRule.Name == wanted);
 
                     if (declared == null || declared.Level < rule.PrerequisiteLevel)
-                        Add(problems, field,
+                        Add(problems, skillField,
                             $"Requires '{wanted}' at level {rule.PrerequisiteLevel} or above.");
                 }
 
@@ -162,16 +176,19 @@ namespace CombatVerification.Fixtures
                 if (rule.IsVeteran) veteranSpend += cost; else normalSpend += cost;
             }
 
-            CheckPool(problems, "character.skills", "normal", normalSpend,
+            CheckPool(problems, $"{field}.skills", "normal", normalSpend,
                 rules.SkillPointsAtLevel(character.Level));
-            CheckPool(problems, "character.skills", "veteran", veteranSpend,
+            CheckPool(problems, $"{field}.skills", "veteran", veteranSpend,
                 character.Level < rules.MaxLevel ? 0 : character.VeteranPoints);
 
-            CheckTierAndSpendGates(problems, character, rules);
+            CheckTierAndSpendGates(problems, field, character, rules);
         }
 
         private static void CheckTierAndSpendGates(
-            List<FixtureProblem> problems, CharacterSpec character, IFixtureRules rules)
+            List<FixtureProblem> problems,
+            string field,
+            CharacterSpec character,
+            IFixtureRules rules)
         {
             foreach (var skill in character.Skills)
             {
@@ -189,7 +206,7 @@ namespace CombatVerification.Fixtures
                     .Sum();
 
                 if (spentElsewhere < rule.RequiredSpentPoints)
-                    Add(problems, $"character.skills.{skill.Name}",
+                    Add(problems, $"{field}.skills.{skill.Name}",
                         $"Needs {rule.RequiredSpentPoints} points already spent in its pool; the "
                         + $"fixture spends {spentElsewhere} elsewhere.");
             }
@@ -197,6 +214,7 @@ namespace CombatVerification.Fixtures
 
         private static void ValidateCompanions(
             List<FixtureProblem> problems,
+            string field,
             IReadOnlyList<CompanionSpec> companions,
             int level,
             IFixtureRules rules)
@@ -214,7 +232,7 @@ namespace CombatVerification.Fixtures
 
                 ValidateEquipment(
                     problems,
-                    $"companions[{i}].equipment",
+                    $"{field}[{i}].equipment",
                     companion.Archetype,
                     level,
                     companion.Equipment,
@@ -334,14 +352,17 @@ namespace CombatVerification.Fixtures
         }
 
         private static void ValidateConsumables(
-            List<FixtureProblem> problems, List<string> consumables, IFixtureRules rules)
+            List<FixtureProblem> problems,
+            string field,
+            List<string> consumables,
+            IFixtureRules rules)
         {
             if (consumables == null) return;
 
             foreach (var consumable in consumables)
             {
                 if (!rules.ConsumableExists(consumable))
-                    Add(problems, "consumables",
+                    Add(problems, field,
                         $"'{consumable}' is not a consumable the game defines.");
             }
         }

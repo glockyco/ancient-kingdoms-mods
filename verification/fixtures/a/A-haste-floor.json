@@ -1,4 +1,5 @@
 {
+  "schemaVersion": 2,
   "build": {
     "captureSchemaVersion": 1,
     "gameData": {
@@ -12,102 +13,109 @@
   "name": "A-haste-floor",
   "tier": "A",
   "coverage": "A.haste.floor",
-  "durationSeconds": null,
-  "repetitions": 1,
-  "seed": 1412129357,
-  "capturedAt": null,
-  "character": {
-    "class": "Warrior",
-    "race": "Human",
-    "level": 50,
-    "veteranPoints": 200,
-    "allocatedAttributes": {},
-    "skills": [],
-    "equipment": [
-      {
-        "slot": 1,
-        "itemId": "sentinels_wrath_stud",
-        "itemName": null,
-        "augmentId": null,
-        "durability": 100
-      },
-      {
-        "slot": 2,
-        "itemId": "elven_hero_chestplate",
-        "itemName": null,
-        "augmentId": null,
-        "durability": 100
-      },
-      {
-        "slot": 4,
-        "itemId": "fabled_lord_darish_signet",
-        "itemName": null,
-        "augmentId": null,
-        "durability": 100
-      },
-      {
-        "slot": 6,
-        "itemId": "valaarks_worldheart",
-        "itemName": null,
-        "augmentId": null,
-        "durability": 100
-      },
-      {
-        "slot": 7,
-        "itemId": "sentinels_wrath_stud",
-        "itemName": null,
-        "augmentId": null,
-        "durability": 100
-      },
-      {
-        "slot": 8,
-        "itemId": "northgates_frenzy_cord",
-        "itemName": null,
-        "augmentId": null,
-        "durability": 100
-      },
-      {
-        "slot": 10,
-        "itemId": "fabled_lord_darish_signet",
-        "itemName": null,
-        "augmentId": null,
-        "durability": 100
-      },
-      {
-        "slot": 11,
-        "itemId": "horn_of_victory",
-        "itemName": null,
-        "augmentId": null,
-        "durability": 100
-      },
-      {
-        "slot": 12,
-        "itemId": "waveforged_hammer",
-        "itemName": null,
-        "augmentId": null,
-        "durability": 100
-      },
-      {
-        "slot": 13,
-        "itemId": "drum_of_war",
-        "itemName": null,
-        "augmentId": null,
-        "durability": 100
-      },
-      {
-        "slot": 15,
-        "itemId": "frostwind_charm",
-        "itemName": null,
-        "augmentId": null,
-        "durability": 100
-      }
-    ]
+  "buildData": {
+    "provenance": {
+      "kind": "authored",
+      "source": "verification/fixtures/a/A-haste-floor.json"
+    },
+    "character": {
+      "class": "Warrior",
+      "race": "Human",
+      "level": 50,
+      "veteranPoints": 200,
+      "allocatedAttributes": {},
+      "skills": [],
+      "equipment": [
+        {
+          "slot": 1,
+          "itemId": "sentinels_wrath_stud",
+          "itemName": null,
+          "augmentId": null,
+          "durability": 100
+        },
+        {
+          "slot": 2,
+          "itemId": "elven_hero_chestplate",
+          "itemName": null,
+          "augmentId": null,
+          "durability": 100
+        },
+        {
+          "slot": 4,
+          "itemId": "fabled_lord_darish_signet",
+          "itemName": null,
+          "augmentId": null,
+          "durability": 100
+        },
+        {
+          "slot": 6,
+          "itemId": "valaarks_worldheart",
+          "itemName": null,
+          "augmentId": null,
+          "durability": 100
+        },
+        {
+          "slot": 7,
+          "itemId": "sentinels_wrath_stud",
+          "itemName": null,
+          "augmentId": null,
+          "durability": 100
+        },
+        {
+          "slot": 8,
+          "itemId": "northgates_frenzy_cord",
+          "itemName": null,
+          "augmentId": null,
+          "durability": 100
+        },
+        {
+          "slot": 10,
+          "itemId": "fabled_lord_darish_signet",
+          "itemName": null,
+          "augmentId": null,
+          "durability": 100
+        },
+        {
+          "slot": 11,
+          "itemId": "horn_of_victory",
+          "itemName": null,
+          "augmentId": null,
+          "durability": 100
+        },
+        {
+          "slot": 12,
+          "itemId": "waveforged_hammer",
+          "itemName": null,
+          "augmentId": null,
+          "durability": 100
+        },
+        {
+          "slot": 13,
+          "itemId": "drum_of_war",
+          "itemName": null,
+          "augmentId": null,
+          "durability": 100
+        },
+        {
+          "slot": 15,
+          "itemId": "frostwind_charm",
+          "itemName": null,
+          "augmentId": null,
+          "durability": 100
+        }
+      ]
+    },
+    "companions": null,
+    "consumables": []
   },
-  "companions": null,
-  "consumables": [],
-  "target": {
-    "spawn": "Snake",
-    "level": 5
-  },
-  "actions": null
+  "execution": {
+    "durationSeconds": null,
+    "repetitions": 1,
+    "seed": 1412129357,
+    "target": {
+      "spawn": "Snake",
+      "level": 5
+    },
+    "actions": null
+  }
 }

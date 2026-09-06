@@ -1,4 +1,5 @@
 {
+  "schemaVersion": 2,
   "build": {
     "captureSchemaVersion": 1,
     "gameData": {
@@ -12,50 +13,57 @@
   "name": "D-class-wizard",
   "tier": "D",
   "coverage": "D.class.Wizard",
-  "durationSeconds": 60,
-  "repetitions": 1,
-  "seed": 536129690,
-  "capturedAt": null,
-  "character": {
-    "class": "Wizard",
-    "race": "Human",
-    "level": 50,
-    "veteranPoints": 200,
-    "allocatedAttributes": {},
-    "skills": [
+  "buildData": {
+    "provenance": {
+      "kind": "authored",
+      "source": "verification/fixtures/d/D-class-wizard.json"
+    },
+    "character": {
+      "class": "Wizard",
+      "race": "Human",
+      "level": 50,
+      "veteranPoints": 200,
+      "allocatedAttributes": {},
+      "skills": [
+        {
+          "name": "Fire Blast",
+          "level": 5
+        },
+        {
+          "name": "Staff Strike",
+          "level": 1
+        }
+      ],
+      "equipment": [
+        {
+          "slot": 12,
+          "itemId": "rusty_staff",
+          "itemName": null,
+          "augmentId": null,
+          "durability": 100
+        }
+      ]
+    },
+    "companions": null,
+    "consumables": []
+  },
+  "execution": {
+    "durationSeconds": 60,
+    "repetitions": 1,
+    "seed": 536129690,
+    "target": {
+      "spawn": "Snake",
+      "level": 5
+    },
+    "actions": [
       {
-        "name": "Fire Blast",
-        "level": 5
+        "skill": "Fire Blast",
+        "facing": "front"
       },
       {
-        "name": "Staff Strike",
-        "level": 1
-      }
-    ],
-    "equipment": [
-      {
-        "slot": 12,
-        "itemId": "rusty_staff",
-        "itemName": null,
-        "augmentId": null,
-        "durability": 100
+        "skill": "Staff Strike",
+        "facing": "front"
       }
     ]
-  },
-  "companions": null,
-  "consumables": [],
-  "target": {
-    "spawn": "Snake",
-    "level": 5
-  },
-  "actions": [
-    {
-      "skill": "Fire Blast",
-      "facing": "front"
-    },
-    {
-      "skill": "Staff Strike",
-      "facing": "front"
-    }
-  ]
+  }
 }

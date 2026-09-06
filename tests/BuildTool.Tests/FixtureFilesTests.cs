@@ -9,6 +9,7 @@ public sealed class FixtureFilesTests : IDisposable
 {
     private const string ValidFixture = """
         {
+          "schemaVersion": 2,
           "build": {
             "serializedSchemaVersion": 1,
             "captureSchemaVersion": 1,
@@ -22,17 +23,21 @@ public sealed class FixtureFilesTests : IDisposable
           "name": "strict-fixture",
           "tier": "A",
           "coverage": "A.class.Warrior",
-          "seed": 7,
-          "character": {
-            "class": "Warrior",
-            "race": "Human",
-            "level": 1,
-            "veteranPoints": 0,
-            "allocatedAttributes": { "strength": 2 },
-            "skills": [],
-            "equipment": []
+          "buildData": {
+            "character": {
+              "class": "Warrior",
+              "race": "Human",
+              "level": 1,
+              "veteranPoints": 0,
+              "allocatedAttributes": { "strength": 2 },
+              "skills": [],
+              "equipment": []
+            },
+            "companions": [],
+            "consumables": [],
+            "provenance": { "kind": "authored", "source": "test" }
           },
-          "consumables": []
+          "execution": { "seed": 7 }
         }
         """;
 
@@ -42,7 +47,7 @@ public sealed class FixtureFilesTests : IDisposable
 
     [Theory]
     [InlineData(false, "unknownRoot")]
-    [InlineData(true, "character.unknownNested")]
+    [InlineData(true, "buildData.character.unknownNested")]
     public void ReadMatrixRejectsUnknownFields(bool nested, string expectedPath)
     {
         WriteFixture(WithUnknownField(nested));
@@ -55,7 +60,7 @@ public sealed class FixtureFilesTests : IDisposable
 
     [Theory]
     [InlineData(false, "unknownRoot")]
-    [InlineData(true, "character.unknownNested")]
+    [InlineData(true, "buildData.character.unknownNested")]
     public void ValidateShapesReportsUnknownFieldsWithRelativePath(
         bool nested, string expectedPath)
     {
@@ -77,7 +82,7 @@ public sealed class FixtureFilesTests : IDisposable
         var entry = Assert.Single(matrix.Fixtures);
         var fixture = entry.Fixture;
 
-        Assert.Equal(2, fixture.Character.AllocatedAttributes["strength"]);
+        Assert.Equal(2, fixture.BuildData.Character.AllocatedAttributes["strength"]);
 
         var problems = BuildTool.CombatVerification.FixtureFiles.ValidateShapes(_root);
         Assert.DoesNotContain(problems, problem => problem.Contains("Invalid JSON", StringComparison.Ordinal));

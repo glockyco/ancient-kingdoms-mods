@@ -1,4 +1,5 @@
 {
+  "schemaVersion": 2,
   "build": {
     "captureSchemaVersion": 1,
     "gameData": {
@@ -12,60 +13,67 @@
   "name": "A-armour-set-five",
   "tier": "A",
   "coverage": "A.armorSet.fivePieces",
-  "durationSeconds": null,
-  "repetitions": 1,
-  "seed": 1795638653,
-  "capturedAt": null,
-  "character": {
-    "class": "Warrior",
-    "race": "Human",
-    "level": 50,
-    "veteranPoints": 200,
-    "allocatedAttributes": {},
-    "skills": [],
-    "equipment": [
-      {
-        "slot": 0,
-        "itemId": "cobalts_helmet",
-        "itemName": null,
-        "augmentId": null,
-        "durability": 100
-      },
-      {
-        "slot": 2,
-        "itemId": "cobalts_chestplate",
-        "itemName": null,
-        "augmentId": null,
-        "durability": 100
-      },
-      {
-        "slot": 5,
-        "itemId": "cobalts_gauntlets",
-        "itemName": null,
-        "augmentId": null,
-        "durability": 100
-      },
-      {
-        "slot": 3,
-        "itemId": "cobalts_greaves",
-        "itemName": null,
-        "augmentId": null,
-        "durability": 100
-      },
-      {
-        "slot": 9,
-        "itemId": "cobalts_boots",
-        "itemName": null,
-        "augmentId": null,
-        "durability": 100
-      }
-    ]
+  "buildData": {
+    "provenance": {
+      "kind": "authored",
+      "source": "verification/fixtures/a/A-armour-set-five.json"
+    },
+    "character": {
+      "class": "Warrior",
+      "race": "Human",
+      "level": 50,
+      "veteranPoints": 200,
+      "allocatedAttributes": {},
+      "skills": [],
+      "equipment": [
+        {
+          "slot": 0,
+          "itemId": "cobalts_helmet",
+          "itemName": null,
+          "augmentId": null,
+          "durability": 100
+        },
+        {
+          "slot": 2,
+          "itemId": "cobalts_chestplate",
+          "itemName": null,
+          "augmentId": null,
+          "durability": 100
+        },
+        {
+          "slot": 5,
+          "itemId": "cobalts_gauntlets",
+          "itemName": null,
+          "augmentId": null,
+          "durability": 100
+        },
+        {
+          "slot": 3,
+          "itemId": "cobalts_greaves",
+          "itemName": null,
+          "augmentId": null,
+          "durability": 100
+        },
+        {
+          "slot": 9,
+          "itemId": "cobalts_boots",
+          "itemName": null,
+          "augmentId": null,
+          "durability": 100
+        }
+      ]
+    },
+    "companions": null,
+    "consumables": []
   },
-  "companions": null,
-  "consumables": [],
-  "target": {
-    "spawn": "Snake",
-    "level": 5
-  },
-  "actions": null
+  "execution": {
+    "durationSeconds": null,
+    "repetitions": 1,
+    "seed": 1795638653,
+    "target": {
+      "spawn": "Snake",
+      "level": 5
+    },
+    "actions": null
+  }
 }

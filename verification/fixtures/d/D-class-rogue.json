@@ -1,4 +1,5 @@
 {
+  "schemaVersion": 2,
   "build": {
     "captureSchemaVersion": 1,
     "gameData": {
@@ -12,50 +13,57 @@
   "name": "D-class-rogue",
   "tier": "D",
   "coverage": "D.class.Rogue",
-  "durationSeconds": 60,
-  "repetitions": 1,
-  "seed": 1190490315,
-  "capturedAt": null,
-  "character": {
-    "class": "Rogue",
-    "race": "Human",
-    "level": 50,
-    "veteranPoints": 200,
-    "allocatedAttributes": {},
-    "skills": [
+  "buildData": {
+    "provenance": {
+      "kind": "authored",
+      "source": "verification/fixtures/d/D-class-rogue.json"
+    },
+    "character": {
+      "class": "Rogue",
+      "race": "Human",
+      "level": 50,
+      "veteranPoints": 200,
+      "allocatedAttributes": {},
+      "skills": [
+        {
+          "name": "Ambush",
+          "level": 5
+        },
+        {
+          "name": "Stab",
+          "level": 1
+        }
+      ],
+      "equipment": [
+        {
+          "slot": 12,
+          "itemId": "rusty_dagger",
+          "itemName": null,
+          "augmentId": null,
+          "durability": 100
+        }
+      ]
+    },
+    "companions": null,
+    "consumables": []
+  },
+  "execution": {
+    "durationSeconds": 60,
+    "repetitions": 1,
+    "seed": 1190490315,
+    "target": {
+      "spawn": "Snake",
+      "level": 5
+    },
+    "actions": [
       {
-        "name": "Ambush",
-        "level": 5
+        "skill": "Ambush",
+        "facing": "front"
       },
       {
-        "name": "Stab",
-        "level": 1
-      }
-    ],
-    "equipment": [
-      {
-        "slot": 12,
-        "itemId": "rusty_dagger",
-        "itemName": null,
-        "augmentId": null,
-        "durability": 100
+        "skill": "Stab",
+        "facing": "front"
       }
     ]
-  },
-  "companions": null,
-  "consumables": [],
-  "target": {
-    "spawn": "Snake",
-    "level": 5
-  },
-  "actions": [
-    {
-      "skill": "Ambush",
-      "facing": "front"
-    },
-    {
-      "skill": "Stab",
-      "facing": "front"
-    }
-  ]
+  }
 }

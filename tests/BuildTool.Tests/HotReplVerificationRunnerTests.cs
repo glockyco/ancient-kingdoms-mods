@@ -202,7 +202,7 @@ public sealed class HotReplVerificationRunnerTests : IDisposable
             VerificationWinePrefix = _prefix,
             ReadinessTimeout = TimeSpan.FromSeconds(5),
             PollInterval = TimeSpan.FromMilliseconds(1),
-            FixtureMatrixJson = @"{""schemaVersion"":1,""fixtures"":[{""fixture"":{""character"":{""class"":""Warrior"",""race"":""Human""}}}]}",
+            FixtureMatrixJson = @"{""schemaVersion"":1,""fixtures"":[{""fixture"":{""schemaVersion"":2,""buildData"":{""character"":{""class"":""Warrior"",""race"":""Human""}}}}]}",
         };
 
         var result = await new HotReplVerificationRunner(transport, options)

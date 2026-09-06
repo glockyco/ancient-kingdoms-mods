@@ -228,7 +228,7 @@ internal sealed class HotReplVerificationRunner
     {
         using var matrix = JsonDocument.Parse(_options.FixtureMatrixJson!);
         var fixture = matrix.RootElement.GetProperty("fixtures")[0].GetProperty("fixture");
-        var character = fixture.GetProperty("character");
+        var character = fixture.GetProperty("buildData").GetProperty("character");
         return JsonSerializer.Serialize(new System.Collections.Generic.Dictionary<string, string>
         {
             ["characterName"] = "Verifier",

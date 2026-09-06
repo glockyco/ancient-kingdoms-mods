@@ -7,16 +7,14 @@ using Xunit;
 namespace CombatVerification.Tests
 {
     /// <summary>
-    /// A build captured from a player's game has to be runnable as a fixture without
-    /// conversion, so the serialized shape is part of the contract, not an detail of
-    /// whichever writer produced it.
+    /// A fixture stores logical build data and execution data as separate containers,
+    /// so the serialized composition is part of the contract.
     /// </summary>
     public class FixtureRoundTripTests
     {
-        // A payload as a capture would emit it: identifiers for items, a display name
-        // alongside as context, provenance, and every stat-bearing section stated.
-        private const string CapturedPayload = """
+        private const string FixturePayload = """
         {
+          "schemaVersion": 2,
           "build": {
             "serializedSchemaVersion": 1,
             "captureSchemaVersion": 1,
@@ -28,70 +26,76 @@ namespace CombatVerification.Tests
             }
           },
           "name": "reported-build-4821",
-          "seed": 1234,
-          "capturedAt": "2026-08-26T12:00:00Z",
-          "character": {
-            "class": "Warrior",
-            "race": "Human",
-            "level": 50,
-            "veteranPoints": 200,
-            "allocatedAttributes": { "strength": 120, "constitution": 129 },
-            "skills": [ { "name": "Melee Attack", "level": 3 } ],
-            "equipment": [
-              {
-                "slot": 12,
-                "itemId": "rusty_sword",
-                "itemName": "Rusty Sword",
-                "augmentId": "jagged_shard",
-                "durability": 100
-              }
-            ]
+          "buildData": {
+            "character": {
+              "class": "Warrior",
+              "race": "Human",
+              "level": 50,
+              "veteranPoints": 200,
+              "allocatedAttributes": { "strength": 120, "constitution": 129 },
+              "skills": [ { "name": "Melee Attack", "level": 3 } ],
+              "equipment": [
+                {
+                  "slot": 12,
+                  "itemId": "rusty_sword",
+                  "itemName": "Rusty Sword",
+                  "augmentId": "jagged_shard",
+                  "durability": 100
+                }
+              ]
+            },
+            "companions": [],
+            "consumables": [ "roast_boar" ],
+            "provenance": { "kind": "capture", "source": "player-save" }
           },
-          "companions": [],
-          "consumables": [ "roast_boar" ],
-          "actions": [ { "skill": "Melee Attack", "facing": "front" } ],
-          "target": { "spawn": "dummy", "level": 55 }
+          "execution": {
+            "seed": 1234,
+            "actions": [ { "skill": "Melee Attack", "facing": "front" } ],
+            "target": { "spawn": "dummy", "level": 55 }
+          }
         }
         """;
 
         [Fact]
-        public void ACapturedPayloadDeserialisesWithEveryFieldRead()
+        public void AFixturePayloadDeserialisesWithEveryFieldRead()
         {
-            var fixture = JsonConvert.DeserializeObject<FixtureDescriptor>(CapturedPayload)!;
+            var fixture = JsonConvert.DeserializeObject<FixtureDescriptor>(FixturePayload)!;
 
+            Assert.Equal(2, fixture.SchemaVersion);
             Assert.Equal(1, fixture.Build.SerializedSchemaVersion);
             Assert.Equal(1, fixture.Build.CaptureSchemaVersion);
             Assert.Equal("1", fixture.Build.ModelVersion);
             Assert.Equal("1.4.2", fixture.Build.GameData.GameVersion);
             Assert.Equal("4821", fixture.Build.GameData.SteamBuildId);
             Assert.Equal("reported-build-4821", fixture.Name);
-            Assert.Equal(1234, fixture.Seed);
-            Assert.Equal("2026-08-26T12:00:00Z", fixture.CapturedAt);
+            Assert.Equal("capture", fixture.BuildData.Provenance.Kind);
+            Assert.Equal("player-save", fixture.BuildData.Provenance.Source);
+            Assert.Equal(1234, fixture.Execution.Seed);
 
-            Assert.Equal("Warrior", fixture.Character.Class);
-            Assert.Equal(50, fixture.Character.Level);
-            Assert.Equal(200, fixture.Character.VeteranPoints);
-            Assert.Equal(120, fixture.Character.AllocatedAttributes["strength"]);
-            Assert.Equal(3, Assert.Single(fixture.Character.Skills).Level);
+            Assert.Equal("Warrior", fixture.BuildData.Character.Class);
+            Assert.Equal(50, fixture.BuildData.Character.Level);
+            Assert.Equal(200, fixture.BuildData.Character.VeteranPoints);
+            Assert.Equal(120, fixture.BuildData.Character.AllocatedAttributes["strength"]);
+            Assert.Equal(3, Assert.Single(fixture.BuildData.Character.Skills).Level);
 
-            var slot = Assert.Single(fixture.Character.Equipment);
+            var slot = Assert.Single(fixture.BuildData.Character.Equipment);
             Assert.Equal(12, slot.Slot);
             Assert.Equal("rusty_sword", slot.ItemId);
             Assert.Equal("Rusty Sword", slot.ItemName);
             Assert.Equal("jagged_shard", slot.AugmentId);
             Assert.Equal(100, slot.Durability);
 
-            Assert.Empty(fixture.Companions);
-            Assert.Equal("roast_boar", Assert.Single(fixture.Consumables));
-            Assert.Equal("front", Assert.Single(fixture.Actions).Facing);
-            Assert.Equal("dummy", fixture.Target.Spawn);
-            Assert.Equal(55, fixture.Target.Level);
+            Assert.Empty(fixture.BuildData.Companions);
+            Assert.Equal("roast_boar", Assert.Single(fixture.BuildData.Consumables));
+            Assert.Equal("front", Assert.Single(fixture.Execution.Actions).Facing);
+            Assert.Equal("dummy", fixture.Execution.Target.Spawn);
+            Assert.Equal(55, fixture.Execution.Target.Level);
         }
 
         [Fact]
         public void SerialisingAndReadingBackPreservesEveryValue()
         {
-            var original = JsonConvert.DeserializeObject<FixtureDescriptor>(CapturedPayload)!;
+            var original = JsonConvert.DeserializeObject<FixtureDescriptor>(FixturePayload)!;
 
             var again = JsonConvert.DeserializeObject<FixtureDescriptor>(
                 JsonConvert.SerializeObject(original))!;
@@ -104,14 +108,20 @@ namespace CombatVerification.Tests
         [Fact]
         public void EmittedPropertyNamesAreLowerCamel()
         {
-            var fixture = JsonConvert.DeserializeObject<FixtureDescriptor>(CapturedPayload)!;
+            var fixture = JsonConvert.DeserializeObject<FixtureDescriptor>(FixturePayload)!;
 
             var emitted = JObject.Parse(JsonConvert.SerializeObject(fixture));
 
+            Assert.True(emitted.ContainsKey("schemaVersion"));
             Assert.True(emitted.ContainsKey("build"));
             Assert.True(((JObject)emitted["build"]!).ContainsKey("serializedSchemaVersion"));
-            Assert.True(emitted.ContainsKey("capturedAt"));
-            var slot = (JObject)emitted["character"]!["equipment"]![0]!;
+            Assert.True(emitted.ContainsKey("buildData"));
+            var provenance = (JObject)emitted["buildData"]!["provenance"]!;
+            Assert.True(provenance.ContainsKey("kind"));
+            Assert.True(provenance.ContainsKey("source"));
+            Assert.True(emitted.ContainsKey("execution"));
+            Assert.False(emitted.ContainsKey("capturedAt"));
+            var slot = (JObject)emitted["buildData"]!["character"]!["equipment"]![0]!;
             Assert.True(slot.ContainsKey("itemId"));
             Assert.True(slot.ContainsKey("itemName"));
         }
@@ -121,20 +131,18 @@ namespace CombatVerification.Tests
         {
             // The distinction is the contract: absent means unread, empty means nothing.
             var fixture = JsonConvert.DeserializeObject<FixtureDescriptor>("""
-            { "build": {}, "name": "n", "seed": 1 }
+            { "schemaVersion": 2, "build": {}, "name": "n" }
             """)!;
 
-            Assert.Null(fixture.Companions);
-            Assert.Null(fixture.Consumables);
-            Assert.Null(fixture.Actions);
-            Assert.Null(fixture.Character);
+            Assert.Null(fixture.BuildData);
+            Assert.Null(fixture.Execution);
         }
 
         [Fact]
-        public void ACapturedPayloadWithAnUnreadSectionIsRefusedNotAssumed()
+        public void AFixturePayloadWithAnUnreadSectionIsRefusedNotAssumed()
         {
-            var fixture = JsonConvert.DeserializeObject<FixtureDescriptor>(CapturedPayload)!;
-            fixture.Consumables = null;   // capture could not read it
+            var fixture = JsonConvert.DeserializeObject<FixtureDescriptor>(FixturePayload)!;
+            fixture.BuildData.Consumables = null;   // capture could not read it
 
             var rules = new SyntheticRules()
                 .WithSkill("Melee Attack", classes: new[] { "Warrior" })
@@ -144,7 +152,7 @@ namespace CombatVerification.Tests
 
             var problems = FixtureValidator.Validate(fixture, rules).Problems;
 
-            Assert.Contains("consumables", System.Linq.Enumerable.Select(problems, p => p.Field));
+            Assert.Contains("buildData.consumables", System.Linq.Enumerable.Select(problems, p => p.Field));
         }
 
         [Fact]
@@ -158,17 +166,17 @@ namespace CombatVerification.Tests
             var fields = System.Linq.Enumerable.ToList(
                 System.Linq.Enumerable.Select(problems, p => p.Field));
 
+            Assert.Contains("schemaVersion", fields);
             Assert.Contains("build", fields);
             Assert.Contains("name", fields);
-            Assert.Contains("seed", fields);
-            Assert.Contains("character", fields);
-            Assert.Contains("consumables", fields);
+            Assert.Contains("buildData", fields);
+            Assert.Contains("execution", fields);
         }
 
         [Fact]
-        public void ACapturedPayloadPassesValidationAgainstMatchingRules()
+        public void AFixturePayloadPassesValidationAgainstMatchingRules()
         {
-            var fixture = JsonConvert.DeserializeObject<FixtureDescriptor>(CapturedPayload)!;
+            var fixture = JsonConvert.DeserializeObject<FixtureDescriptor>(FixturePayload)!;
 
             var rules = new SyntheticRules()
                 .WithSkill("Melee Attack", classes: new[] { "Warrior" })

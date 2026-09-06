@@ -1,4 +1,5 @@
 {
+  "schemaVersion": 2,
   "build": {
     "captureSchemaVersion": 1,
     "gameData": {
@@ -12,62 +13,69 @@
   "name": "B-frontal-damage",
   "tier": "B",
   "coverage": "B.skill.frontalDamage",
-  "durationSeconds": null,
-  "repetitions": 1,
-  "seed": 38965828,
-  "capturedAt": null,
-  "character": {
-    "class": "Warrior",
-    "race": "Human",
-    "level": 50,
-    "veteranPoints": 200,
-    "allocatedAttributes": {},
-    "skills": [
+  "buildData": {
+    "provenance": {
+      "kind": "authored",
+      "source": "verification/fixtures/b/B-frontal-damage.json"
+    },
+    "character": {
+      "class": "Warrior",
+      "race": "Human",
+      "level": 50,
+      "veteranPoints": 200,
+      "allocatedAttributes": {},
+      "skills": [
+        {
+          "name": "Challenging Strike",
+          "level": 5
+        },
+        {
+          "name": "Slam",
+          "level": 5
+        },
+        {
+          "name": "Relentless Guard",
+          "level": 5
+        },
+        {
+          "name": "Rupture",
+          "level": 5
+        },
+        {
+          "name": "Charge",
+          "level": 1
+        },
+        {
+          "name": "Mighty Sweep",
+          "level": 1
+        }
+      ],
+      "equipment": [
+        {
+          "slot": 12,
+          "itemId": "rusty_sword",
+          "itemName": null,
+          "augmentId": null,
+          "durability": 100
+        }
+      ]
+    },
+    "companions": null,
+    "consumables": []
+  },
+  "execution": {
+    "durationSeconds": null,
+    "repetitions": 1,
+    "seed": 38965828,
+    "target": {
+      "spawn": "Snake",
+      "level": 5
+    },
+    "actions": [
       {
-        "name": "Challenging Strike",
-        "level": 5
-      },
-      {
-        "name": "Slam",
-        "level": 5
-      },
-      {
-        "name": "Relentless Guard",
-        "level": 5
-      },
-      {
-        "name": "Rupture",
-        "level": 5
-      },
-      {
-        "name": "Charge",
-        "level": 1
-      },
-      {
-        "name": "Mighty Sweep",
-        "level": 1
-      }
-    ],
-    "equipment": [
-      {
-        "slot": 12,
-        "itemId": "rusty_sword",
-        "itemName": null,
-        "augmentId": null,
-        "durability": 100
+        "skill": "Mighty Sweep",
+        "facing": "front"
       }
     ]
-  },
-  "companions": null,
-  "consumables": [],
-  "target": {
-    "spawn": "Snake",
-    "level": 5
-  },
-  "actions": [
-    {
-      "skill": "Mighty Sweep",
-      "facing": "front"
-    }
-  ]
+  }
 }

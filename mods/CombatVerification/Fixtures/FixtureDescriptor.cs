@@ -5,8 +5,8 @@ using Newtonsoft.Json;
 namespace CombatVerification.Fixtures
 {
     /// <summary>
-    /// One build fixture. Authored fixtures and builds captured from a player's game
-    /// use this same shape, so a player's report is runnable without conversion.
+    /// One fixture record. The logical build and the execution scenario are separate
+    /// sections so they can be shared without making either section depend on the other.
     /// </summary>
     /// <remarks>
     /// An absent section and an empty section mean different things. A section the stat
@@ -17,7 +17,11 @@ namespace CombatVerification.Fixtures
     /// </remarks>
     public sealed class FixtureDescriptor
     {
-        /// <summary>Independent schema, capture, model, and game-data versions.</summary>
+        /// <summary>Schema version for this fixture's outer record.</summary>
+        [JsonProperty("schemaVersion", Required = Required.Default)]
+        public int SchemaVersion { get; set; }
+
+        /// <summary>Build identity and compatibility versions, independent from the fixture schema.</summary>
         [JsonProperty("build", Required = Required.Default)]
         public BuildEnvelope Build { get; set; }
 
@@ -31,22 +35,16 @@ namespace CombatVerification.Fixtures
         [JsonProperty("coverage", Required = Required.Default)]
         public string Coverage { get; set; }
 
-        [JsonProperty("durationSeconds", Required = Required.Default)]
-        public double? DurationSeconds { get; set; }
+        [JsonProperty("buildData", Required = Required.Default)]
+        public LogicalBuildData BuildData { get; set; }
 
-        [JsonProperty("repetitions", Required = Required.Default)]
-        public int Repetitions { get; set; } = 1;
+        [JsonProperty("execution", Required = Required.Default)]
+        public FixtureExecution Execution { get; set; }
+    }
 
-        /// <summary>Seed applied before measurement, recorded with the results.</summary>
-        [JsonProperty("seed", Required = Required.Default)]
-        public int? Seed { get; set; }
-
-        /// <summary>
-        /// When a captured build was read from a player's game. Null for an authored fixture.
-        /// </summary>
-        [JsonProperty("capturedAt", Required = Required.Default)]
-        public string CapturedAt { get; set; }
-
+    /// <summary>Character, companion, consumable, and provenance inputs for a fixture.</summary>
+    public sealed class LogicalBuildData
+    {
         [JsonProperty("character", Required = Required.Default)]
         public CharacterSpec Character { get; set; }
 
@@ -56,6 +54,33 @@ namespace CombatVerification.Fixtures
         /// <summary>Consumables the build declares. An empty list means none are assumed.</summary>
         [JsonProperty("consumables", Required = Required.Default)]
         public List<string> Consumables { get; set; }
+
+        [JsonProperty("provenance", Required = Required.Default)]
+        public BuildProvenance Provenance { get; set; }
+    }
+
+    /// <summary>Source marker for the logical build data.</summary>
+    public sealed class BuildProvenance
+    {
+        [JsonProperty("kind", Required = Required.Default)]
+        public string Kind { get; set; }
+
+        [JsonProperty("source", Required = Required.Default)]
+        public string Source { get; set; }
+    }
+
+    /// <summary>Target and measurement controls for a fixture run.</summary>
+    public sealed class FixtureExecution
+    {
+        [JsonProperty("durationSeconds", Required = Required.Default)]
+        public double? DurationSeconds { get; set; }
+
+        [JsonProperty("repetitions", Required = Required.Default)]
+        public int Repetitions { get; set; } = 1;
+
+        /// <summary>Seed applied before measurement, recorded with the results.</summary>
+        [JsonProperty("seed", Required = Required.Default)]
+        public int? Seed { get; set; }
 
         [JsonProperty("target", Required = Required.Default)]
         public TargetSpec Target { get; set; }

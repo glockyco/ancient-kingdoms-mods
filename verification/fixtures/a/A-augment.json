@@ -1,4 +1,5 @@
 {
+  "schemaVersion": 2,
   "build": {
     "captureSchemaVersion": 1,
     "gameData": {
@@ -12,32 +13,39 @@
   "name": "A-augment",
   "tier": "A",
   "coverage": "A.augment",
-  "durationSeconds": null,
-  "repetitions": 1,
-  "seed": 2039976980,
-  "capturedAt": null,
-  "character": {
-    "class": "Warrior",
-    "race": "Human",
-    "level": 50,
-    "veteranPoints": 200,
-    "allocatedAttributes": {},
-    "skills": [],
-    "equipment": [
-      {
-        "slot": 12,
-        "itemId": "rusty_sword",
-        "itemName": null,
-        "augmentId": "jagged_shard",
-        "durability": 100
-      }
-    ]
+  "buildData": {
+    "provenance": {
+      "kind": "authored",
+      "source": "verification/fixtures/a/A-augment.json"
+    },
+    "character": {
+      "class": "Warrior",
+      "race": "Human",
+      "level": 50,
+      "veteranPoints": 200,
+      "allocatedAttributes": {},
+      "skills": [],
+      "equipment": [
+        {
+          "slot": 12,
+          "itemId": "rusty_sword",
+          "itemName": null,
+          "augmentId": "jagged_shard",
+          "durability": 100
+        }
+      ]
+    },
+    "companions": null,
+    "consumables": []
   },
-  "companions": null,
-  "consumables": [],
-  "target": {
-    "spawn": "Snake",
-    "level": 5
-  },
-  "actions": null
+  "execution": {
+    "durationSeconds": null,
+    "repetitions": 1,
+    "seed": 2039976980,
+    "target": {
+      "spawn": "Snake",
+      "level": 5
+    },
+    "actions": null
+  }
 }

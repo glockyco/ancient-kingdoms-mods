@@ -1,4 +1,5 @@
 {
+  "schemaVersion": 2,
   "build": {
     "captureSchemaVersion": 1,
     "gameData": {
@@ -12,46 +13,53 @@
   "name": "D-class-ranger",
   "tier": "D",
   "coverage": "D.class.Ranger",
-  "durationSeconds": 60,
-  "repetitions": 1,
-  "seed": 385243652,
-  "capturedAt": null,
-  "character": {
-    "class": "Ranger",
-    "race": "Human",
-    "level": 50,
-    "veteranPoints": 200,
-    "allocatedAttributes": {},
-    "skills": [
+  "buildData": {
+    "provenance": {
+      "kind": "authored",
+      "source": "verification/fixtures/d/D-class-ranger.json"
+    },
+    "character": {
+      "class": "Ranger",
+      "race": "Human",
+      "level": 50,
+      "veteranPoints": 200,
+      "allocatedAttributes": {},
+      "skills": [
+        {
+          "name": "Archer Shot",
+          "level": 5
+        }
+      ],
+      "equipment": [
+        {
+          "slot": 13,
+          "itemId": "wooden_bow",
+          "itemName": null,
+          "augmentId": null,
+          "durability": 100
+        }
+      ]
+    },
+    "companions": null,
+    "consumables": []
+  },
+  "execution": {
+    "durationSeconds": 60,
+    "repetitions": 1,
+    "seed": 385243652,
+    "target": {
+      "spawn": "Snake",
+      "level": 5
+    },
+    "actions": [
       {
-        "name": "Archer Shot",
-        "level": 5
-      }
-    ],
-    "equipment": [
+        "skill": "Archer Shot",
+        "facing": "front"
+      },
       {
-        "slot": 13,
-        "itemId": "wooden_bow",
-        "itemName": null,
-        "augmentId": null,
-        "durability": 100
+        "skill": "Archer Shot",
+        "facing": "front"
       }
     ]
-  },
-  "companions": null,
-  "consumables": [],
-  "target": {
-    "spawn": "Snake",
-    "level": 5
-  },
-  "actions": [
-    {
-      "skill": "Archer Shot",
-      "facing": "front"
-    },
-    {
-      "skill": "Archer Shot",
-      "facing": "front"
-    }
-  ]
+  }
 }

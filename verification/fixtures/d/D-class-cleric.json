@@ -1,4 +1,5 @@
 {
+  "schemaVersion": 2,
   "build": {
     "captureSchemaVersion": 1,
     "gameData": {
@@ -12,46 +13,53 @@
   "name": "D-class-cleric",
   "tier": "D",
   "coverage": "D.class.Cleric",
-  "durationSeconds": 60,
-  "repetitions": 1,
-  "seed": 2113191327,
-  "capturedAt": null,
-  "character": {
-    "class": "Cleric",
-    "race": "Human",
-    "level": 50,
-    "veteranPoints": 200,
-    "allocatedAttributes": {},
-    "skills": [
+  "buildData": {
+    "provenance": {
+      "kind": "authored",
+      "source": "verification/fixtures/d/D-class-cleric.json"
+    },
+    "character": {
+      "class": "Cleric",
+      "race": "Human",
+      "level": 50,
+      "veteranPoints": 200,
+      "allocatedAttributes": {},
+      "skills": [
+        {
+          "name": "Crush Strike",
+          "level": 1
+        }
+      ],
+      "equipment": [
+        {
+          "slot": 12,
+          "itemId": "rusty_hammer",
+          "itemName": null,
+          "augmentId": null,
+          "durability": 100
+        }
+      ]
+    },
+    "companions": null,
+    "consumables": []
+  },
+  "execution": {
+    "durationSeconds": 60,
+    "repetitions": 1,
+    "seed": 2113191327,
+    "target": {
+      "spawn": "Snake",
+      "level": 5
+    },
+    "actions": [
       {
-        "name": "Crush Strike",
-        "level": 1
-      }
-    ],
-    "equipment": [
+        "skill": "Crush Strike",
+        "facing": "front"
+      },
       {
-        "slot": 12,
-        "itemId": "rusty_hammer",
-        "itemName": null,
-        "augmentId": null,
-        "durability": 100
+        "skill": "Crush Strike",
+        "facing": "front"
       }
     ]
-  },
-  "companions": null,
-  "consumables": [],
-  "target": {
-    "spawn": "Snake",
-    "level": 5
-  },
-  "actions": [
-    {
-      "skill": "Crush Strike",
-      "facing": "front"
-    },
-    {
-      "skill": "Crush Strike",
-      "facing": "front"
-    }
-  ]
+  }
 }

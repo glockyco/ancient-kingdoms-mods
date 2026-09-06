@@ -11,7 +11,7 @@ namespace CombatVerification.Commands
         : IControlCommandHandler<FixtureMatrix, FixtureMatrixResult>
     {
         public string Name => "fixture.validateMatrix";
-        public int Version => 1;
+        public int Version => 2;
         public ControlCommandKind Kind => ControlCommandKind.Sync;
         public bool MutatesState => false;
 

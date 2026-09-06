@@ -1,4 +1,5 @@
 {
+  "schemaVersion": 2,
   "build": {
     "captureSchemaVersion": 1,
     "gameData": {
@@ -12,58 +13,65 @@
   "name": "B-ignored-multiplier",
   "tier": "B",
   "coverage": "B.special.ignoresDamageMultiplier",
-  "durationSeconds": null,
-  "repetitions": 1,
-  "seed": 1397233304,
-  "capturedAt": null,
-  "character": {
-    "class": "Ranger",
-    "race": "Human",
-    "level": 50,
-    "veteranPoints": 200,
-    "allocatedAttributes": {},
-    "skills": [
+  "buildData": {
+    "provenance": {
+      "kind": "authored",
+      "source": "verification/fixtures/b/B-ignored-multiplier.json"
+    },
+    "character": {
+      "class": "Ranger",
+      "race": "Human",
+      "level": 50,
+      "veteranPoints": 200,
+      "allocatedAttributes": {},
+      "skills": [
+        {
+          "name": "Battlefield Restoration",
+          "level": 10
+        },
+        {
+          "name": "Innate Constitution",
+          "level": 10
+        },
+        {
+          "name": "Innate Intelligence",
+          "level": 10
+        },
+        {
+          "name": "Innate Strength",
+          "level": 10
+        },
+        {
+          "name": "Forest Guardians Aid",
+          "level": 1
+        }
+      ],
+      "equipment": [
+        {
+          "slot": 13,
+          "itemId": "wooden_bow",
+          "itemName": null,
+          "augmentId": null,
+          "durability": 100
+        }
+      ]
+    },
+    "companions": null,
+    "consumables": []
+  },
+  "execution": {
+    "durationSeconds": null,
+    "repetitions": 1,
+    "seed": 1397233304,
+    "target": {
+      "spawn": "Snake",
+      "level": 5
+    },
+    "actions": [
       {
-        "name": "Battlefield Restoration",
-        "level": 10
-      },
-      {
-        "name": "Innate Constitution",
-        "level": 10
-      },
-      {
-        "name": "Innate Intelligence",
-        "level": 10
-      },
-      {
-        "name": "Innate Strength",
-        "level": 10
-      },
-      {
-        "name": "Forest Guardians Aid",
-        "level": 1
-      }
-    ],
-    "equipment": [
-      {
-        "slot": 13,
-        "itemId": "wooden_bow",
-        "itemName": null,
-        "augmentId": null,
-        "durability": 100
+        "skill": "Forest Guardians Aid",
+        "facing": "front"
       }
     ]
-  },
-  "companions": null,
-  "consumables": [],
-  "target": {
-    "spawn": "Snake",
-    "level": 5
-  },
-  "actions": [
-    {
-      "skill": "Forest Guardians Aid",
-      "facing": "front"
-    }
-  ]
+  }
 }

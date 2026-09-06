@@ -140,42 +140,43 @@ namespace CombatVerification.Fixtures
                 Add(problems, prefix + ".fixture.coverage", "Descriptor coverage does not match its matrix entry.");
             if (!string.Equals(entry.Fixture.Tier, entry.Tier, StringComparison.Ordinal))
                 Add(problems, prefix + ".fixture.tier", "Descriptor tier does not match its matrix entry.");
-            if (entry.Fixture.DurationSeconds != entry.DurationSeconds)
-                Add(problems, prefix + ".fixture.durationSeconds", "Descriptor duration does not match its matrix entry.");
-            if (entry.Fixture.Repetitions != entry.Repetitions)
-                Add(problems, prefix + ".fixture.repetitions", "Descriptor repetitions do not match its matrix entry.");
+            FixtureExecution execution = entry.Fixture.Execution;
+            if (execution?.DurationSeconds != entry.DurationSeconds)
+                Add(problems, prefix + ".fixture.execution.durationSeconds", "Descriptor duration does not match its matrix entry.");
+            if (execution?.Repetitions != entry.Repetitions)
+                Add(problems, prefix + ".fixture.execution.repetitions", "Descriptor repetitions do not match its matrix entry.");
 
-            List<ActionSpec> actions = entry.Fixture.Actions;
+            List<ActionSpec> actions = execution?.Actions;
             int actionCount = actions?.Count ?? 0;
             if (entry.Tier == "B" && actionCount != 1)
-                Add(problems, prefix + ".fixture.actions", "A tier B fixture must declare exactly one action.");
+                Add(problems, prefix + ".fixture.execution.actions", "A tier B fixture must declare exactly one action.");
             if ((entry.Tier == "C" || entry.Tier == "D") && actionCount == 0)
-                Add(problems, prefix + ".fixture.actions", "A timed fixture must declare its action sequence.");
+                Add(problems, prefix + ".fixture.execution.actions", "A timed fixture must declare its action sequence.");
 
             const string classPrefix = ".class.";
             int classAt = entry.Coverage?.IndexOf(classPrefix, StringComparison.Ordinal) ?? -1;
             if (classAt >= 0)
             {
                 string expected = entry.Coverage.Substring(classAt + classPrefix.Length);
-                if (!string.Equals(entry.Fixture.Character?.Class, expected, StringComparison.Ordinal))
-                    Add(problems, prefix + ".fixture.character.class",
+                if (!string.Equals(entry.Fixture.BuildData?.Character?.Class, expected, StringComparison.Ordinal))
+                    Add(problems, prefix + ".fixture.buildData.character.class",
                         "Class does not match the coverage branch '" + expected + "'.");
             }
             if (entry.Coverage == "D.companion.Ranger.bare" ||
                 entry.Coverage == "D.companion.Ranger.equipped")
             {
-                CompanionSpec companion = entry.Fixture.Companions != null &&
-                    entry.Fixture.Companions.Count == 1
-                    ? entry.Fixture.Companions[0]
+                CompanionSpec companion = entry.Fixture.BuildData?.Companions != null &&
+                    entry.Fixture.BuildData.Companions.Count == 1
+                    ? entry.Fixture.BuildData.Companions[0]
                     : null;
                 if (companion == null || companion.Archetype != "Ranger")
-                    Add(problems, prefix + ".fixture.companions", "The companion branch needs one Ranger.");
+                    Add(problems, prefix + ".fixture.buildData.companions", "The companion branch needs one Ranger.");
                 else
                 {
                     bool equipped = companion.Equipment != null && companion.Equipment.Count > 0;
                     bool expected = entry.Coverage.EndsWith(".equipped", StringComparison.Ordinal);
                     if (equipped != expected)
-                        Add(problems, prefix + ".fixture.companions[0].equipment",
+                        Add(problems, prefix + ".fixture.buildData.companions[0].equipment",
                             expected ? "The equipped branch needs equipment." : "The bare branch must have no equipment.");
                 }
             }

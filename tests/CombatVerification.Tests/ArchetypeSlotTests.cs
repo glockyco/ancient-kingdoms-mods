@@ -19,19 +19,25 @@ namespace CombatVerification.Tests
         private static FixtureDescriptor Fixture(string className, params EquipmentSpec[] worn)
             => new()
             {
+                SchemaVersion = FixtureShapeValidator.SupportedFixtureSchemaVersion,
                 Build = BuildEnvelopeTestData.Create(),
                 Name = "slots",
-                Seed = 1,
-                Character = new CharacterSpec
+                BuildData = new LogicalBuildData
                 {
-                    Class = className,
-                    Race = "Human",
-                    Level = 50,
-                    AllocatedAttributes = new(),
-                    Skills = new(),
-                    Equipment = worn.ToList(),
+                    Character = new CharacterSpec
+                    {
+                        Class = className,
+                        Race = "Human",
+                        Level = 50,
+                        AllocatedAttributes = new(),
+                        Skills = new(),
+                        Equipment = worn.ToList(),
+                    },
+                    Companions = new(),
+                    Consumables = new(),
+                    Provenance = new BuildProvenance { Kind = "authored", Source = "test" },
                 },
-                Consumables = new(),
+                Execution = new FixtureExecution { Seed = 1 },
             };
 
         private static SyntheticRules Rules() => new();

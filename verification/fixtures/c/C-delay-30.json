@@ -1,4 +1,5 @@
 {
+  "schemaVersion": 2,
   "build": {
     "captureSchemaVersion": 1,
     "gameData": {
@@ -12,42 +13,49 @@
   "name": "C-delay-30",
   "tier": "C",
   "coverage": "C.weaponDelay.30",
-  "durationSeconds": 20,
-  "repetitions": 1,
-  "seed": 320135170,
-  "capturedAt": null,
-  "character": {
-    "class": "Cleric",
-    "race": "Human",
-    "level": 50,
-    "veteranPoints": 200,
-    "allocatedAttributes": {},
-    "skills": [
+  "buildData": {
+    "provenance": {
+      "kind": "authored",
+      "source": "verification/fixtures/c/C-delay-30.json"
+    },
+    "character": {
+      "class": "Cleric",
+      "race": "Human",
+      "level": 50,
+      "veteranPoints": 200,
+      "allocatedAttributes": {},
+      "skills": [
+        {
+          "name": "Crush Strike",
+          "level": 1
+        }
+      ],
+      "equipment": [
+        {
+          "slot": 12,
+          "itemId": "rusty_hammer",
+          "itemName": null,
+          "augmentId": null,
+          "durability": 100
+        }
+      ]
+    },
+    "companions": null,
+    "consumables": []
+  },
+  "execution": {
+    "durationSeconds": 20,
+    "repetitions": 1,
+    "seed": 320135170,
+    "target": {
+      "spawn": "Snake",
+      "level": 5
+    },
+    "actions": [
       {
-        "name": "Crush Strike",
-        "level": 1
-      }
-    ],
-    "equipment": [
-      {
-        "slot": 12,
-        "itemId": "rusty_hammer",
-        "itemName": null,
-        "augmentId": null,
-        "durability": 100
+        "skill": "Crush Strike",
+        "facing": "front"
       }
     ]
-  },
-  "companions": null,
-  "consumables": [],
-  "target": {
-    "spawn": "Snake",
-    "level": 5
-  },
-  "actions": [
-    {
-      "skill": "Crush Strike",
-      "facing": "front"
-    }
-  ]
+  }
 }

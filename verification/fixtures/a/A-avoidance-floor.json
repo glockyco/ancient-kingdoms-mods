@@ -1,4 +1,5 @@
 {
+  "schemaVersion": 2,
   "build": {
     "captureSchemaVersion": 1,
     "gameData": {
@@ -12,69 +13,76 @@
   "name": "A-avoidance-floor",
   "tier": "A",
   "coverage": "A.avoidance.floor",
-  "durationSeconds": null,
-  "repetitions": 1,
-  "seed": 915771334,
-  "capturedAt": null,
-  "character": {
-    "class": "Ranger",
-    "race": "Human",
-    "level": 50,
-    "veteranPoints": 200,
-    "allocatedAttributes": {
-      "dexterity": 249
+  "buildData": {
+    "provenance": {
+      "kind": "authored",
+      "source": "verification/fixtures/a/A-avoidance-floor.json"
     },
-    "skills": [],
-    "equipment": [
-      {
-        "slot": 1,
-        "itemId": "sentinels_wrath_stud",
-        "itemName": null,
-        "augmentId": null,
-        "durability": 100
+    "character": {
+      "class": "Ranger",
+      "race": "Human",
+      "level": 50,
+      "veteranPoints": 200,
+      "allocatedAttributes": {
+        "dexterity": 249
       },
-      {
-        "slot": 2,
-        "itemId": "duskblade_attire",
-        "itemName": null,
-        "augmentId": null,
-        "durability": 100
-      },
-      {
-        "slot": 7,
-        "itemId": "sentinels_wrath_stud",
-        "itemName": null,
-        "augmentId": null,
-        "durability": 100
-      },
-      {
-        "slot": 12,
-        "itemId": "lamentation",
-        "itemName": null,
-        "augmentId": null,
-        "durability": 100
-      },
-      {
-        "slot": 14,
-        "itemId": "scaled_bracers",
-        "itemName": null,
-        "augmentId": null,
-        "durability": 100
-      },
-      {
-        "slot": 15,
-        "itemId": "emberwake_charm",
-        "itemName": null,
-        "augmentId": null,
-        "durability": 100
-      }
-    ]
+      "skills": [],
+      "equipment": [
+        {
+          "slot": 1,
+          "itemId": "sentinels_wrath_stud",
+          "itemName": null,
+          "augmentId": null,
+          "durability": 100
+        },
+        {
+          "slot": 2,
+          "itemId": "duskblade_attire",
+          "itemName": null,
+          "augmentId": null,
+          "durability": 100
+        },
+        {
+          "slot": 7,
+          "itemId": "sentinels_wrath_stud",
+          "itemName": null,
+          "augmentId": null,
+          "durability": 100
+        },
+        {
+          "slot": 12,
+          "itemId": "lamentation",
+          "itemName": null,
+          "augmentId": null,
+          "durability": 100
+        },
+        {
+          "slot": 14,
+          "itemId": "scaled_bracers",
+          "itemName": null,
+          "augmentId": null,
+          "durability": 100
+        },
+        {
+          "slot": 15,
+          "itemId": "emberwake_charm",
+          "itemName": null,
+          "augmentId": null,
+          "durability": 100
+        }
+      ]
+    },
+    "companions": null,
+    "consumables": []
   },
-  "companions": null,
-  "consumables": [],
-  "target": {
-    "spawn": "Snake",
-    "level": 5
-  },
-  "actions": null
+  "execution": {
+    "durationSeconds": null,
+    "repetitions": 1,
+    "seed": 915771334,
+    "target": {
+      "spawn": "Snake",
+      "level": 5
+    },
+    "actions": null
+  }
 }

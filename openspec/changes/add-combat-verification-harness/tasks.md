@@ -1,8 +1,8 @@
 Checked tasks below record local component work or named experiments, not complete harness acceptance.
 Reopened tasks retain useful existing implementations but require the corrected observable contract.
-The linked `add-gear-and-rotation-planner` change needs a separate planning revision for shared adapters,
-production evaluator integration, dynamic state evaluation, raw/normalized separation, and independently
-validated accuracy claims. Do not close those dependencies from this change.
+The linked `add-gear-and-rotation-planner` change owns shared adapters, production evaluator integration,
+dynamic state evaluation, raw/normalized separation, and independently validated accuracy claims.
+Those implementations remain unqualified. Do not close those dependencies from this change.
 
 ## 1. Fixture descriptor
 
@@ -10,6 +10,19 @@ validated accuracy claims. Do not close those dependencies from this change.
       version-only BuildEnvelope distinct from build data and capture metadata. Verify required
       fields, initial state, consumables/ammunition, and scheduling policies round-trip without
       silent defaults; the existing descriptor is component evidence only.
+
+      Component evidence: fixture outer schema 2 separates declared `buildData` and provenance
+      from `execution`. All 33 authored fixtures retain their values and missing sections. Both
+      fixture validation commands use version 2. The deployed game accepted the migrated matrix
+      in a fresh scratch world; the command exited successfully with unchanged player-save hashes.
+      This was validation only, not combat parity or shared-adapter qualification. The focused
+      suites passed 184 CombatVerification and 216 BuildTool tests; the mod build passed.
+
+      Unresolved input domain: permanent learned books. `Player.UserCode_CmdTryLearnBook__String`
+      records the book and adds its gains to the live attribute fields. The item export has 17
+      books with permanent attribute gains; the published planner payload contains none. Neither
+      linked plan defines learned-book progression. Resolve this scope before deriving base
+      attributes or qualifying captured builds.
 
 - [x] 1.2 Implement legality validation: skill allocation within each pool's budget, tier gates
       satisfied, prerequisite chains satisfied, attribute totals consistent with the class progression at

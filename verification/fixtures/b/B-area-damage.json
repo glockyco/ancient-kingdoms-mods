@@ -1,4 +1,5 @@
 {
+  "schemaVersion": 2,
   "build": {
     "captureSchemaVersion": 1,
     "gameData": {
@@ -12,70 +13,77 @@
   "name": "B-area-damage",
   "tier": "B",
   "coverage": "B.skill.areaDamage",
-  "durationSeconds": null,
-  "repetitions": 1,
-  "seed": 1662058291,
-  "capturedAt": null,
-  "character": {
-    "class": "Wizard",
-    "race": "Human",
-    "level": 50,
-    "veteranPoints": 200,
-    "allocatedAttributes": {},
-    "skills": [
+  "buildData": {
+    "provenance": {
+      "kind": "authored",
+      "source": "verification/fixtures/b/B-area-damage.json"
+    },
+    "character": {
+      "class": "Wizard",
+      "race": "Human",
+      "level": 50,
+      "veteranPoints": 200,
+      "allocatedAttributes": {},
+      "skills": [
+        {
+          "name": "Fire Blast",
+          "level": 5
+        },
+        {
+          "name": "Slow",
+          "level": 5
+        },
+        {
+          "name": "Frozen Barrier",
+          "level": 5
+        },
+        {
+          "name": "Icestrike",
+          "level": 5
+        },
+        {
+          "name": "Pool of Mana",
+          "level": 5
+        },
+        {
+          "name": "Spellrend",
+          "level": 5
+        },
+        {
+          "name": "Mystic Spark",
+          "level": 1
+        },
+        {
+          "name": "Dragon's Breath",
+          "level": 1
+        }
+      ],
+      "equipment": [
+        {
+          "slot": 12,
+          "itemId": "rusty_staff",
+          "itemName": null,
+          "augmentId": null,
+          "durability": 100
+        }
+      ]
+    },
+    "companions": null,
+    "consumables": []
+  },
+  "execution": {
+    "durationSeconds": null,
+    "repetitions": 1,
+    "seed": 1662058291,
+    "target": {
+      "spawn": "Snake",
+      "level": 5
+    },
+    "actions": [
       {
-        "name": "Fire Blast",
-        "level": 5
-      },
-      {
-        "name": "Slow",
-        "level": 5
-      },
-      {
-        "name": "Frozen Barrier",
-        "level": 5
-      },
-      {
-        "name": "Icestrike",
-        "level": 5
-      },
-      {
-        "name": "Pool of Mana",
-        "level": 5
-      },
-      {
-        "name": "Spellrend",
-        "level": 5
-      },
-      {
-        "name": "Mystic Spark",
-        "level": 1
-      },
-      {
-        "name": "Dragon's Breath",
-        "level": 1
-      }
-    ],
-    "equipment": [
-      {
-        "slot": 12,
-        "itemId": "rusty_staff",
-        "itemName": null,
-        "augmentId": null,
-        "durability": 100
+        "skill": "Dragon's Breath",
+        "facing": "front"
       }
     ]
-  },
-  "companions": null,
-  "consumables": [],
-  "target": {
-    "spawn": "Snake",
-    "level": 5
-  },
-  "actions": [
-    {
-      "skill": "Dragon's Breath",
-      "facing": "front"
-    }
-  ]
+  }
 }

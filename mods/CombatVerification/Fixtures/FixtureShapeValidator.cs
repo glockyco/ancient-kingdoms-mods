@@ -25,6 +25,8 @@ namespace CombatVerification.Fixtures
     /// </summary>
     public static class FixtureShapeValidator
     {
+        public const int SupportedFixtureSchemaVersion = 2;
+
         public static FixtureValidation Validate(FixtureDescriptor fixture)
         {
             var problems = new List<FixtureProblem>();
@@ -35,38 +37,75 @@ namespace CombatVerification.Fixtures
                 return Result(problems);
             }
 
+            if (fixture.SchemaVersion != SupportedFixtureSchemaVersion)
+                Add(problems, "schemaVersion",
+                    $"Unsupported fixture schema version {fixture.SchemaVersion}. Supported: "
+                    + $"{SupportedFixtureSchemaVersion}.");
+
             ValidateBuild(problems, fixture.Build);
             Require(problems, "name", fixture.Name);
 
-            if (fixture.Seed == null)
-                Add(problems, "seed", "A seed is required so a measurement can be repeated.");
-
-            if (fixture.Character == null)
-                Add(problems, "character", "A descriptor must state its character.");
+            if (fixture.BuildData == null)
+                Add(problems, "buildData", "A logical build-data section is required.");
             else
-                ValidateCharacter(problems, fixture.Character);
+                ValidateBuildData(problems, fixture.BuildData);
 
-            if (fixture.Companions != null)
-                ValidateCompanions(problems, fixture.Companions);
+            if (fixture.Execution == null)
+                Add(problems, "execution", "An execution section is required.");
+            else
+            {
+                if (fixture.Execution.Seed == null)
+                    Add(problems, "execution.seed",
+                        "A seed is required as measurement context. It does not guarantee the random sequence.");
 
-            if (fixture.Consumables == null)
-                Add(problems, "consumables",
+                if (fixture.Execution.Target != null)
+                {
+                    Require(problems, "execution.target.spawn", fixture.Execution.Target.Spawn);
+                    if (fixture.Execution.Target.Level is < 1)
+                        Add(problems, "execution.target.level", "Must be at least 1 when stated.");
+                }
+
+                ValidateActions(problems, "execution.actions", fixture.Execution.Actions);
+            }
+
+            return Result(problems);
+        }
+
+        private static void ValidateBuildData(
+            List<FixtureProblem> problems, LogicalBuildData buildData)
+        {
+            if (buildData.Character == null)
+                Add(problems, "buildData.character", "A descriptor must state its character.");
+            else
+                ValidateCharacter(problems, "buildData.character", buildData.Character);
+
+            if (buildData.Companions != null)
+                ValidateCompanions(problems, "buildData.companions", buildData.Companions);
+
+            if (buildData.Consumables == null)
+                Add(problems, "buildData.consumables",
                     "Required. State an empty list to declare that none are used.");
             else
             {
-                foreach (var consumable in fixture.Consumables)
-                    Require(problems, "consumables", consumable);
+                foreach (var consumable in buildData.Consumables)
+                    Require(problems, "buildData.consumables", consumable);
             }
 
-            if (fixture.Target != null)
+            if (buildData.Provenance == null)
             {
-                Require(problems, "target.spawn", fixture.Target.Spawn);
-                if (fixture.Target.Level is < 1)
-                    Add(problems, "target.level", "Must be at least 1 when stated.");
+                Add(problems, "buildData.provenance", "Build provenance is required.");
+                return;
             }
 
-            ValidateActions(problems, fixture.Actions);
-            return Result(problems);
+            if (Require(problems, "buildData.provenance.kind", buildData.Provenance.Kind)
+                && buildData.Provenance.Kind != "authored"
+                && buildData.Provenance.Kind != "capture")
+            {
+                Add(problems, "buildData.provenance.kind",
+                    "Must be authored or capture.");
+            }
+
+            Require(problems, "buildData.provenance.source", buildData.Provenance.Source);
         }
 
         private static void ValidateBuild(
@@ -101,52 +140,52 @@ namespace CombatVerification.Fixtures
         }
 
         private static void ValidateCharacter(
-            List<FixtureProblem> problems, CharacterSpec character)
+            List<FixtureProblem> problems, string field, CharacterSpec character)
         {
-            Require(problems, "character.class", character.Class);
-            Require(problems, "character.race", character.Race);
+            Require(problems, $"{field}.class", character.Class);
+            Require(problems, $"{field}.race", character.Race);
 
             if (character.Level < 1)
-                Add(problems, "character.level", "Must be at least 1.");
+                Add(problems, $"{field}.level", "Must be at least 1.");
 
             if (character.VeteranPoints < 0)
-                Add(problems, "character.veteranPoints", "Must be zero or greater.");
+                Add(problems, $"{field}.veteranPoints", "Must be zero or greater.");
 
             if (character.AllocatedAttributes == null)
-                Add(problems, "character.allocatedAttributes",
+                Add(problems, $"{field}.allocatedAttributes",
                     "Required. State an empty object to allocate nothing.");
             else
             {
                 foreach (var pair in character.AllocatedAttributes)
                 {
                     if (pair.Value < 0)
-                        Add(problems, $"character.allocatedAttributes.{pair.Key}",
+                        Add(problems, $"{field}.allocatedAttributes.{pair.Key}",
                             $"{pair.Value} is negative; a fixture spends points, it does not remove them.");
                 }
             }
 
             if (character.Skills == null)
-                Add(problems, "character.skills",
+                Add(problems, $"{field}.skills",
                     "Required. State an empty list to learn nothing.");
             else
-                ValidateSkills(problems, character.Skills);
+                ValidateSkills(problems, field, character.Skills);
 
             if (character.Equipment == null)
-                Add(problems, "character.equipment",
+                Add(problems, $"{field}.equipment",
                     "Required. State an empty list to equip nothing.");
             else
-                ValidateEquipment(problems, "character.equipment", character.Equipment);
+                ValidateEquipment(problems, $"{field}.equipment", character.Equipment);
         }
 
         private static void ValidateSkills(
-            List<FixtureProblem> problems, IReadOnlyList<SkillSpec> skills)
+            List<FixtureProblem> problems, string field, IReadOnlyList<SkillSpec> skills)
         {
             var duplicates = skills
                 .Where(skill => skill != null && !string.IsNullOrWhiteSpace(skill.Name))
                 .GroupBy(skill => skill.Name)
                 .Where(group => group.Count() > 1);
             foreach (var duplicate in duplicates)
-                Add(problems, $"character.skills.{duplicate.Key}",
+                Add(problems, $"{field}.skills.{duplicate.Key}",
                     "Named more than once; a skill has one level.");
 
             for (var i = 0; i < skills.Count; i++)
@@ -154,36 +193,38 @@ namespace CombatVerification.Fixtures
                 var skill = skills[i];
                 if (skill == null)
                 {
-                    Add(problems, $"character.skills[{i}]", "An entry is required.");
+                    Add(problems, $"{field}.skills[{i}]", "An entry is required.");
                     continue;
                 }
 
-                var field = $"character.skills.{skill.Name ?? "<unnamed>"}";
-                Require(problems, field, skill.Name);
+                var skillField = $"{field}.skills.{skill.Name ?? "<unnamed>"}";
+                Require(problems, skillField, skill.Name);
                 if (skill.Level < 0)
-                    Add(problems, field, "Level must be zero or greater.");
+                    Add(problems, skillField, "Level must be zero or greater.");
             }
         }
 
         private static void ValidateCompanions(
-            List<FixtureProblem> problems, IReadOnlyList<CompanionSpec> companions)
+            List<FixtureProblem> problems,
+            string field,
+            IReadOnlyList<CompanionSpec> companions)
         {
             for (var i = 0; i < companions.Count; i++)
             {
                 var companion = companions[i];
-                var field = $"companions[{i}]";
+                var companionField = $"{field}[{i}]";
                 if (companion == null)
                 {
-                    Add(problems, field, "An entry is required.");
+                    Add(problems, companionField, "An entry is required.");
                     continue;
                 }
 
-                Require(problems, $"{field}.archetype", companion.Archetype);
+                Require(problems, $"{companionField}.archetype", companion.Archetype);
                 if (companion.Equipment == null)
-                    Add(problems, $"{field}.equipment",
+                    Add(problems, $"{companionField}.equipment",
                         "Required. State an empty list to equip nothing.");
                 else
-                    ValidateEquipment(problems, $"{field}.equipment", companion.Equipment);
+                    ValidateEquipment(problems, $"{companionField}.equipment", companion.Equipment);
             }
         }
 
@@ -217,7 +258,9 @@ namespace CombatVerification.Fixtures
         }
 
         private static void ValidateActions(
-            List<FixtureProblem> problems, IReadOnlyList<ActionSpec> actions)
+            List<FixtureProblem> problems,
+            string field,
+            IReadOnlyList<ActionSpec> actions)
         {
             if (actions == null)
                 return;
@@ -225,14 +268,15 @@ namespace CombatVerification.Fixtures
             for (var i = 0; i < actions.Count; i++)
             {
                 var action = actions[i];
+                var actionField = $"{field}[{i}]";
                 if (action == null)
                 {
-                    Add(problems, $"actions[{i}]", "An entry is required.");
+                    Add(problems, actionField, "An entry is required.");
                     continue;
                 }
 
-                Require(problems, $"actions[{i}].skill", action.Skill);
-                Require(problems, $"actions[{i}].facing", action.Facing);
+                Require(problems, $"{actionField}.skill", action.Skill);
+                Require(problems, $"{actionField}.facing", action.Facing);
             }
         }
 

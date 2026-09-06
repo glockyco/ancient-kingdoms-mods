@@ -116,6 +116,7 @@ public sealed class VerifyCommandTests : IDisposable
         WriteSnapshot(assemblySha);
         WriteFixture("""
         {
+          "schemaVersion": 99,
           "build": {
             "serializedSchemaVersion": 99,
             "captureSchemaVersion": 1,
@@ -127,12 +128,15 @@ public sealed class VerifyCommandTests : IDisposable
             }
           },
           "name": "invalid",
-          "seed": 7,
-          "character": {
-            "class": "Warrior",
-            "race": "Human",
-            "level": -1
-          }
+          "buildData": {
+            "character": {
+              "class": "Warrior",
+              "race": "Human",
+              "level": -1
+            },
+            "provenance": { "kind": "authored", "source": "test" }
+          },
+          "execution": { "seed": 7 }
         }
         """);
 
@@ -141,9 +145,9 @@ public sealed class VerifyCommandTests : IDisposable
         Assert.NotEqual(ExitCodes.Success, exit);
         Assert.Contains("Fixture shape validation failed before launch", store.ErrorDetails?.ToString());
         Assert.Contains("verification/fixtures/invalid.json", store.ErrorDetails?.ToString());
-        Assert.Contains("character.level", store.ErrorDetails?.ToString());
-        Assert.Contains("character.skills", store.ErrorDetails?.ToString());
-        Assert.Contains("consumables", store.ErrorDetails?.ToString());
+        Assert.Contains("buildData.character.level", store.ErrorDetails?.ToString());
+        Assert.Contains("buildData.character.skills", store.ErrorDetails?.ToString());
+        Assert.Contains("buildData.consumables", store.ErrorDetails?.ToString());
         Assert.Empty(runner.Calls);
     }
 
