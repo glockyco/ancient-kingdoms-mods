@@ -29,8 +29,8 @@ path to a core fact.
 
 The planner SHALL default to the level 55 training dummy in Northern Wastes.
 
-That target deals no damage and does not move, so the default result depends only on the build and
-the rotation. The default SHALL NOT require a survivability, threat, or healing assumption.
+That target deals no damage and does not move, so the default result depends only on the build and the
+rotation. The default SHALL NOT require a survivability, threat, or healing assumption.
 
 #### Scenario: A reader opens the planner
 
@@ -44,8 +44,8 @@ the rotation. The default SHALL NOT require a survivability, threat, or healing 
 
 ### Requirement: The target is selectable and the result is per-target
 
-A reader SHALL be able to select the target. The planner SHALL recompute on selection and SHALL
-label which target a displayed result belongs to.
+A reader SHALL be able to select the target. The planner SHALL recompute on selection and SHALL label
+which target a displayed result belongs to.
 
 The planner SHALL NOT present a result as applying to all targets, because the best build differs by
 target.
@@ -106,31 +106,58 @@ earlier model.
 - **WHEN** a link carries an earlier version marker
 - **THEN** the planner states that the stored build was produced by an earlier model
 
-### Requirement: Uncertainty is presented, not hidden
+### Requirement: Prediction accuracy, finite-run variance, and search gap remain separate
 
-The planner SHALL show the error boundary alongside a predicted figure, and SHALL group results that
-fall within it.
+The planner SHALL show a prediction boundary beside a predicted figure only when current corpus and
+independent validation evidence supports that boundary for the displayed build, mechanic, game-data,
+and model domain. An unsupported or unverified domain SHALL have no numeric prediction boundary.
 
-The planner SHALL NOT present stat weights as its primary recommendation, because a single local
-gradient misranks builds.
+When a measured finite run is compared with a prediction, the planner SHALL show finite-run variance
+under a declared sampling protocol separately from model error. Event count and duration alone SHALL
+NOT establish variance; insufficient evidence SHALL remain unverified. For ranked candidates, the
+planner SHALL group candidates only when their objective difference falls inside the measured search-gap
+band for the named benchmark domain. The search-gap band SHALL describe ranking equivalence, not model
+accuracy. The planner SHALL keep these three quantities separate and SHALL NOT merge them into one
+number.
 
-#### Scenario: A ranked list is displayed
+The planner SHALL NOT present stat weights as its primary recommendation. If offered as advanced
+detail, stat weights SHALL state that a local gradient can misrank complete builds.
 
-- **WHEN** the planner shows more than one candidate build
-- **THEN** candidates within the error boundary are grouped as equivalent
+#### Scenario: A supported prediction is displayed
 
-#### Scenario: A reader wants stat weights
+- **WHEN** independent validation supports a prediction domain
+- **THEN** the planner shows that domain and its prediction boundary beside the figure
+- **AND** it does not extend the boundary to another domain
 
-- **WHEN** stat weights are offered at all
-- **THEN** they appear as advanced detail with their limitation stated
+#### Scenario: An unverified domain is displayed
+
+- **WHEN** the selected build or mechanic is outside the validated domain
+- **THEN** the planner labels the prediction unverified
+- **AND** it shows no numeric prediction boundary
+
+#### Scenario: A measured result is compared
+
+- **WHEN** a finite-run measurement and model prediction are compared
+- **THEN** the planner shows finite-run variance and model error as separate quantities
+- **AND** it identifies their respective derivations
+
+#### Scenario: Ranked candidates are close
+
+- **WHEN** candidate objective values fall inside the measured search-gap band for the same benchmark domain
+- **THEN** the planner presents them as ranking-equivalent alternatives
+- **AND** it does not call them equivalent because of a prediction boundary
+
+#### Scenario: A reader views stat weights
+
+- **WHEN** stat weights are offered
+- **THEN** they appear as advanced detail with their local-gradient limitation stated
 
 ### Requirement: The result explains itself
 
 The planner SHALL show which parts of the build produce the result, including per-ability
 contribution and buff uptime.
 
-A recommendation SHALL state why an item was chosen, in terms of the stats and thresholds that
-caused it.
+A recommendation SHALL state why an item was chosen, in terms of the stats and thresholds that caused it.
 
 #### Scenario: A reader inspects a result
 
@@ -162,8 +189,9 @@ that does not complete immediately, and SHALL allow it to be cancelled.
 ### Requirement: A reader can author a complete build
 
 The planner SHALL provide controls for class, race, level, veteran progression, all equipment slots,
-attribute allocation, normal and veteran skill allocation, consumables, ammunition, active
-mercenaries, owned-gear limits, target, and evaluation scenario.
+attribute allocation, normal and veteran skill allocation, selected consumables and their quantities,
+selected ammunition and its supply, active mercenaries, owned-gear limits, target, and evaluation
+scenario.
 
 The rotation SHALL remain automatic. A reader MAY include or exclude eligible skills but SHALL NOT
 need to author an action-priority language.
@@ -173,6 +201,12 @@ need to author an action-priority language.
 - **WHEN** the reader selects the build and scenario inputs
 - **THEN** the planner evaluates that build and shows its complete state
 
+#### Scenario: A reader selects consumables and ammunition
+
+- **WHEN** the reader selects a consumable or ammunition supply
+- **THEN** the resulting evaluation shows that identity and quantity in the build state
+- **AND** a ranged horizon that exceeds the ammunition supply is refused
+
 #### Scenario: A reader excludes a legal skill
 
 - **WHEN** the reader excludes that skill
@@ -180,35 +214,85 @@ need to author an action-priority language.
 
 ### Requirement: A reader can import a local character capture
 
-The planner SHALL import the versioned character-state JSON through a local file picker. Parsing and
-validation SHALL occur locally. The planner SHALL NOT upload the file.
+The planner SHALL import versioned character-state JSON through a local file picker. Parsing, container
+integrity checks, schema checks, and game-build compatibility checks SHALL occur locally. The planner
+SHALL NOT upload the file. A checked capture adapter SHALL keep producer provenance separate from the
+planner evaluator and SHALL preserve completeness markers.
 
-#### Scenario: A valid capture is selected
+A partial capture MAY populate read-only editor views. Evaluation or owned-gear planning SHALL be
+blocked when a required logical-build section is missing, unread, or incompatible.
 
-- **WHEN** the reader selects a compatible capture file
-- **THEN** the editor is populated with its build, owned items, controlled entities, and provenance
+#### Scenario: A valid complete capture is selected
+
+- **WHEN** the reader selects a compatible complete capture file
+- **THEN** the editor is populated with its logical build, owned items, controlled entities, and producer provenance
+- **AND** the evaluator records its own identity separately
+
+#### Scenario: A partial capture is selected
+
+- **WHEN** the selected file has a valid schema but a required section is marked missing
+- **THEN** the planner can show the captured sections and completeness state
+- **AND** it blocks only evaluations that require the missing section
 
 #### Scenario: An incompatible capture is selected
 
-- **WHEN** the selected file has an unsupported schema or game-build policy
+- **WHEN** the selected file has an unsupported schema, failed integrity check, or incompatible game-build policy
 - **THEN** the planner preserves the current build
-- **AND** the import error names the incompatible field
+- **AND** the import error names the failed check or incompatible identity
 
 ### Requirement: Current and candidate builds are comparable
 
-The planner SHALL compare a manually authored or imported current build with a selected candidate
-under the same scenario and model. It SHALL show the total difference and the slot, attribute, skill,
-consumable, and controlled-entity changes that produce it.
+The planner SHALL compare a manually authored or imported current build with a selected candidate only
+when both use the same evaluator identity, model, game-data identity, scenario version, and objective
+mode. It SHALL show the total difference and the slot, attribute, skill, consumable, ammunition, and
+controlled-entity changes that produce it.
+
+Raw game mode and a named known-defect-normalized mode SHALL remain distinct. A normalized comparison
+requires evidence for the named defect. A comparison SHALL NOT mix modes or silently normalize raw output.
 
 #### Scenario: A reader selects an optimized build
 
-- **WHEN** the selected candidate differs from the current build
+- **WHEN** the selected candidate differs from the current build under the same evaluation tuple
 - **THEN** the planner shows each change and its contribution before the reader applies it
 
-#### Scenario: The scenarios differ
+#### Scenario: The scenarios or evaluator differ
 
-- **WHEN** the current and candidate figures use different scenarios
-- **THEN** the planner refuses the numerical comparison until one scenario is selected
+- **WHEN** the current and candidate figures use different scenarios, evaluator identities, model versions, or game-data identities
+- **THEN** the planner refuses the numerical comparison until one tuple is selected
+
+#### Scenario: The objective modes differ
+
+- **WHEN** one figure uses raw game mode and the other uses known-defect-normalized mode
+- **THEN** the planner refuses the numerical comparison
+- **AND** it does not hide the raw result
+
+### Requirement: Recommendations use intended behaviour
+
+A recommendation SHALL NOT gain a ranking advantage from a known game defect. Where a defect changes
+the recommendation, the planner SHALL use an evidenced named normalization or withhold that
+recommendation. Raw results unaffected by known defects MAY support recommendations. Raw diagnostic
+output SHALL remain available without recommending defect exploitation.
+A known-defect-normalized result MAY support a recommendation only when the defect is named and its
+supporting evidence is recorded. The planner SHALL label the objective mode beside every recommendation
+and diagnostic.
+
+#### Scenario: A known defect changes raw ranking
+
+- **WHEN** raw game mode ranks a defect-exploiting build above an intended-behaviour build
+- **THEN** the planner may show that raw ordering as a diagnostic
+- **AND** it does not recommend the defect-exploiting build
+
+#### Scenario: A normalized recommendation is supported
+
+- **WHEN** a named known defect has supporting evidence and normalized mode is selected for evaluation
+- **THEN** the planner labels the normalized objective and may recommend its result
+- **AND** it retains the raw result separately
+
+#### Scenario: No defect evidence exists
+
+- **WHEN** a normalized result has no named supporting defect evidence
+- **THEN** the planner refuses to use it for recommendation
+- **AND** it retains any raw diagnostic with that diagnostic's own verification status
 
 ### Requirement: Unsupported effects block a best-build claim
 
@@ -239,11 +323,14 @@ budgets from those measurements.
 - **THEN** the worker acknowledges cancellation within the recorded budget
 - **AND** the last complete result remains displayed
 
-### Requirement: Serialized, model, and data versions remain distinct
+### Requirement: Serialized, capture, evaluator, model, and data versions remain distinct
 
-A shared link and imported capture SHALL distinguish serialized-schema, capture-schema, model, and
-game-data versions. An unknown serialized schema SHALL be refused. A model-version difference SHALL
-produce a warning. A game-data mismatch SHALL follow an explicit compatibility policy.
+The planner SHALL distinguish serialized-schema, capture-schema, evaluator, model, and game-data
+identities where applicable. A capture identifies its producer; the consuming evaluation supplies its
+own evaluator identity. A shared link without a capture SHALL NOT require capture-only metadata. An unknown serialized or capture schema SHALL be refused. An evaluator or
+model-version difference SHALL produce a warning or make results not comparable according to the
+comparison policy. A game-data mismatch SHALL follow an explicit compatibility policy. Capture producer
+identity SHALL remain distinct from evaluator identity.
 
 #### Scenario: An old model link is opened
 
@@ -251,7 +338,13 @@ produce a warning. A game-data mismatch SHALL follow an explicit compatibility p
 - **THEN** the build and scenario are restored
 - **AND** the planner warns that recomputation can change the result
 
-#### Scenario: An unknown serialized schema is opened
+#### Scenario: An unknown capture schema is imported
 
-- **WHEN** the planner cannot interpret the link schema
+- **WHEN** the planner cannot interpret the capture schema
 - **THEN** it refuses the state instead of dropping unknown fields
+- **AND** it names the producer schema as unsupported
+
+#### Scenario: An evaluator identity differs
+
+- **WHEN** two displayed results use different evaluator identities
+- **THEN** the planner marks them not comparable until one evaluator is selected

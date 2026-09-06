@@ -1,8 +1,8 @@
 ## Purpose
 
 Defines what a captured character export guarantees about its contents, so the planner can plan
-against real gear instead of a hypothetical inventory. The same capture reads the game's own combat
-meter, which is the only evidence that a predicted number matches the game.
+against real gear instead of a hypothetical inventory. The same mod can read the game's own combat
+meter, which provides evidence for comparison with a predicted number.
 
 ## ADDED Requirements
 
@@ -21,39 +21,92 @@ invoke a gameplay action, change meter state, or change any value the server own
 - **WHEN** the local player or the world scene is not available
 - **THEN** the capture reports that it cannot run rather than substituting a default
 
-### Requirement: The payload carries provenance and a version
+### Requirement: Logical build data is separate from capture metadata
 
-Every export SHALL carry a capture timestamp, serialized-schema version, capture-schema version,
-model compatibility marker, game build, and game-data identity.
+A capture SHALL expose logical build data that an authored fixture and the planner can consume. Logical
+build data SHALL include progression, attributes, skill allocations, equipment, controlled companions,
+consumables and ammunition with their identities and quantities. Future consumption and supply
+policies belong to the evaluation scenario or fixture execution data, not to observed build state. Capture metadata SHALL
+remain outside that logical build data and SHALL describe when, where, and how the capture was produced.
+The outer record for a capture MAY differ from the outer record for a fixture or planner state. This
+requirement SHALL NOT prescribe implementation field names.
 
-The consumer SHALL refuse an unknown serialized or capture schema instead of parsing it partially. A
-game-build difference SHALL be reported and handled by an explicit compatibility policy.
+#### Scenario: A fixture and capture use different outer metadata
+
+- **WHEN** a fixture and a capture contain the same logical build data
+- **THEN** each retains its own execution or capture metadata
+- **AND** the logical build data remains comparable without making the outer records identical
+
+#### Scenario: A planner imports the logical build
+
+- **WHEN** the planner reads a valid capture
+- **THEN** it adapts the logical build data without treating capture-only metadata as build state
+
+### Requirement: Producer and evaluator provenance remain distinct
+
+Every capture SHALL carry a capture timestamp, producer identity and version, serialized-schema version,
+capture-schema version, model compatibility marker, game build, and game-data identity. An evaluation
+that consumes a capture SHALL identify its evaluator identity, model identity, game-data identity,
+scenario identity, and objective mode separately while retaining the capture producer provenance. Capture
+SHALL NOT be required to create a fixture, run a harness measurement, or manufacture a verification
+report.
 
 #### Scenario: A payload is loaded
 
 - **WHEN** the planner loads an export
-- **THEN** it verifies the schema version and the game build before using the contents
+- **THEN** it verifies the schema and game-build policy before using the logical build data
+- **AND** it retains the producer provenance for the imported build
 
-#### Scenario: A payload is from an unknown producer
+#### Scenario: An evaluation uses a captured build
 
-- **WHEN** a payload does not carry a recognised schema version
-- **THEN** the planner rejects it and states why
+- **WHEN** an evaluator produces a prediction from a capture
+- **THEN** the result names the evaluator, model, game data, scenario, and objective mode
+- **AND** it does not present the capture producer as the evaluator
 
-### Requirement: The payload reports its own completeness
+#### Scenario: A player captures without harness infrastructure
 
-The export SHALL state which sections it captured and which it could not. A section that could not be
-read SHALL be marked as missing rather than emitted as empty.
+- **WHEN** the player invokes character capture without a fixture or verification run
+- **THEN** the capture still writes its local payload
+- **AND** it does not claim to be harness evidence
+
+#### Scenario: A payload is from an unknown producer schema
+
+- **WHEN** a payload does not carry a recognised serialized or capture schema
+- **THEN** the planner rejects it and states the unsupported identity
+
+### Requirement: Completeness and adapter checks gate dependent evaluation
+
+The export SHALL state which logical-build sections and containers it captured, which it read as empty,
+and which it could not read. A section that could not be read SHALL be marked missing rather than
+emitted as empty. A checked adapter SHALL validate schema support, container integrity, and the selected
+game-build compatibility policy before it exposes the logical build to evaluation. A missing required
+section SHALL block only the dependent planning or evaluation; it SHALL NOT prevent read-only inspection
+of the remaining captured sections.
 
 #### Scenario: A storage container was not loaded
 
 - **WHEN** a bank or bag container is not loaded at capture time
-- **THEN** the export marks that section as missing
-- **AND** the planner does not treat the absent items as unavailable
+- **THEN** the export marks that container as missing
+- **AND** owned-gear evaluation that needs it is blocked
+- **AND** the planner can still show the captured equipment and provenance
 
-#### Scenario: A section is complete
+#### Scenario: A section is complete and empty
 
-- **WHEN** every requested section was read
-- **THEN** the export records that it is complete
+- **WHEN** every requested entry in a section was read and no entries exist
+- **THEN** the export marks that section complete and empty
+- **AND** evaluation treats it as an empty section rather than an unread section
+
+#### Scenario: Capture container integrity fails
+
+- **WHEN** container metadata does not match the payload
+- **THEN** the adapter rejects the capture before evaluation
+- **AND** it reports the integrity failure
+
+#### Scenario: A required build section is missing
+
+- **WHEN** an evaluation needs skills or equipment and the capture marks that section missing
+- **THEN** the dependent evaluation stops as incomplete
+- **AND** it does not infer, default, or substitute the missing values
 
 ### Requirement: Items are identified by stable identifier
 
@@ -76,81 +129,113 @@ this requirement exists to provide.
 - **WHEN** an item's display name changes between versions
 - **THEN** a stored export still resolves to the same item
 
-### Requirement: The export covers what a build needs
+### Requirement: The export covers the logical build inputs
 
-The payload SHALL carry the class, the level, the veteran progression, attribute values, learned skill
-levels, every equipped slot, and any augment attached to an equipped item.
-
-The payload SHALL carry candidate items held in inventory and storage, distinguished from equipped
-items, so a plan can be limited to owned gear.
+The payload SHALL carry the class, level, veteran progression, attribute values, learned skill levels,
+every equipped slot, and every augment attached to an equipped item. It SHALL carry observed
+consumable and ammunition identities and quantities. Future use policies SHALL be supplied explicitly
+by the scenario rather than inferred during capture. It SHALL carry candidate items held in inventory and storage, distinguished from
+equipped items, so a plan can be limited to owned gear.
 
 #### Scenario: A reader plans against owned gear
 
 - **WHEN** an export is loaded and owned-gear planning is selected
 - **THEN** the search considers only items the export reports as held or equipped
+- **AND** it applies the captured item quantities
+
+#### Scenario: A ranged plan has limited ammunition
+
+- **WHEN** an export selects ammunition with a finite captured quantity
+- **THEN** the evaluator uses that quantity for the selected scenario
+- **AND** it refuses a horizon that needs more ammunition
 
 #### Scenario: A reader plans against all gear
 
 - **WHEN** owned-gear planning is not selected
 - **THEN** the search considers the full published item set
+- **AND** it does not treat the capture's inventory as the full catalogue
 
-### Requirement: Companion state is captured or explicitly excluded
+### Requirement: Companion roll and state contents are captured or explicitly excluded
 
-The payload SHALL carry active mercenary and pet state where it is available, including their
-equipped items. Where companion state is not captured, the payload SHALL mark it as excluded.
+The payload SHALL carry each active mercenary and pet where it is available. For each captured companion,
+it SHALL carry the entity identity and kind, race as observed or drawn, archetype, level or progression,
+equipped items and augments, learned skills, current resources and effects, and the rolled health
+multiplier, resource multiplier, and base combat value when the game exposes them. A value that the game
+does not expose SHALL be marked unavailable rather than inferred. Where companion state is not captured,
+the payload SHALL mark it excluded. Pet state is captured for provenance and meter accounting; this
+change SHALL NOT optimize a pet build.
 
-#### Scenario: Mercenaries are active
+#### Scenario: A mercenary is active
 
-- **WHEN** the player has active mercenaries at capture time
-- **THEN** their identity and equipped items appear in the payload
+- **WHEN** the player has an active mercenary at capture time
+- **THEN** its identity, observed race, archetype, progression, equipment, skills, and exposed rolled and current state appear in the payload
+
+#### Scenario: A companion roll is not exposed
+
+- **WHEN** the game does not expose one rolled companion value
+- **THEN** that value is marked unavailable
+- **AND** the planner does not substitute a player or model value
 
 #### Scenario: No companion is active
 
 - **WHEN** no companion is active
-- **THEN** the payload records that rather than omitting the section
+- **THEN** the payload records that state rather than omitting the companion section
+
+#### Scenario: Pet state is captured
+
+- **WHEN** a pet is active during capture
+- **THEN** its state is retained for provenance and meter accounting
+- **AND** it is not offered as an optimizer build
 
 ### Requirement: Measured combat output is capturable
 
 The mod SHALL expose three separate operations: read-only character capture, read-only meter capture,
 and explicit meter reset. A character or meter capture SHALL NOT reset the meter. The meter capture
 SHALL read the damage total and active-time denominator for the player, pet, and each active mercenary.
+It SHALL retain elapsed-window and event-count evidence when available. Missing window or count
+evidence SHALL be marked unavailable, not reconstructed from a rate or invented.
 
-A reported measured rate SHALL state which denominator it used, because active time and elapsed time
-differ.
+A reported measured rate SHALL state its denominator and whether the elapsed measurement window is
+known, because active time and elapsed time differ. A meter capture SHALL report observations and SHALL NOT claim model
+accuracy by itself.
 
 #### Scenario: A benchmark run is measured
 
 - **WHEN** a reader resets the meter, attacks a training dummy, and reads the result
-- **THEN** the captured damage total, active seconds, and derived rate are reported
+- **THEN** the damage total, active seconds, derived rate, and available window/count evidence are reported
+- **AND** missing evidence blocks comparisons that require it
 - **AND** the denominator is named
 
 #### Scenario: A measured rate is compared against a prediction
 
 - **WHEN** a measured rate is compared against a predicted rate
-- **THEN** the comparison records the target, the build, and the model version
-
+- **THEN** the comparison records the target, logical build, producer provenance, evaluator, model, game-data identity, scenario, and objective mode
+- **AND** finite-run variance and model error remain separate when they apply
 
 ### Requirement: The player transport is one local file
 
 A character capture SHALL write one versioned JSON file and report its exact local path. The browser
 SHALL be able to read that file without a server or HotRepl connection. Capture SHALL NOT upload data.
+Capture SHALL NOT require harness infrastructure or generate harness evidence as a side effect. HotRepl
+MAY register the same file as an automation artifact, but it SHALL not change the player transport.
 
 #### Scenario: A player captures a build
 
 - **WHEN** the player invokes character capture in the mod
 - **THEN** one JSON file is written
-- **AND** the player is shown its exact path
+- **AND** the player is shown its exact local path
 
 #### Scenario: Automation captures the same build
 
 - **WHEN** HotRepl invokes character capture
 - **THEN** the same file contract is returned as an automation artifact
+- **AND** no upload or harness report is required
 
 ### Requirement: Owned items include quantities and containers
 
 The capture SHALL report candidate items held in equipped slots, inventory, and storage. It SHALL
-preserve stable identity, quantity, container, slot when equipped, augment state, and current
-durability. An owned-gear search SHALL distinguish physical copies.
+preserve stable identity, quantity, container, slot when equipped, augment state, and current durability.
+An owned-gear search SHALL distinguish physical copies.
 
 #### Scenario: One item is equipped and another copy is stored
 
@@ -159,7 +244,7 @@ durability. An owned-gear search SHALL distinguish physical copies.
 
 #### Scenario: A stack is captured
 
-- **WHEN** an ammunition stack has a quantity greater than one
+- **WHEN** an ammunition or consumable stack has a quantity greater than one
 - **THEN** the payload records its quantity and container
 
 ### Requirement: Meter reset is explicit and mutating

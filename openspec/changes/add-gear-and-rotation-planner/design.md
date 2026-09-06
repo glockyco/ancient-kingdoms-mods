@@ -2,20 +2,22 @@
 
 See `proposal.md` for motivation. This section records only the constraints that shape the approach.
 
-The decompiled server source in `server-scripts/` contains the complete combat implementation. Three
-properties of that implementation determine the whole design.
+The decompiled server source in `server-scripts/` supplies combat rules. Exported prefab data and
+runtime measurements establish the inputs and behavior that source alone cannot confirm. The following
+constraints shape the design.
 
 Equipment contributes a plain sum. `Equipment.cs` computes every stat bonus as a loop over occupied
-slots with positive durability. No item multiplies another item. The map from equipment to stats is
-therefore linear.
+slots with positive durability. This additive slot contribution does not make the whole build objective linear: progression, passives,
+set thresholds, caps, and skill rules still interact.
 
-Every stochastic term has an exact expectation. `Combat.cs:1506-1546` resolves avoidance as one
-Bernoulli trial. `Combat.cs:751` applies a symmetric uniform damage range with mean 1.0.
-`Combat.cs:842` resolves critical hits as one Bernoulli trial. Weapon procs are memoryless per swing.
-Refresh-on-proc effects reach a closed-form steady state.
+Individual random draws have known distributions. `Combat.cs:1506-1546` resolves avoidance as a
+Bernoulli trial, `Combat.cs:751` applies a symmetric damage range, and `Combat.cs:842` resolves critical
+hits. Their means do not establish the expectation of a timeline with rounding, resource gates,
+refresh effects, or health thresholds. Each approximation needs an explicit validity domain.
 
-The rotation is small and deterministic. Each class has 7 to 10 damaging actions on fixed cooldowns
-between 4 and 180 seconds. The game has no global cooldown. No proc gates an action.
+The player action set is small, but an executable rotation depends on current resources, cooldowns,
+target health, and effects. Cooldown reduction and random resource returns can change later actions.
+A repeatable deterministic evaluator is not proof that these state transitions have exact expectations.
 
 Action timing is asymmetric. The weapon refractory period gates only a follow-up default attack, and
 every completed skill resets it (`Player.cs:2517-2525, 3220-3269`). A skill is limited by its own cast
@@ -37,7 +39,7 @@ Two constraints come from the repository. The site must remain functional withou
 hardcoded game value needs a citation to `server-scripts/` that the citation ledger verifies.
 
 The following measurements were taken during exploration against `website/data/compendium.db` and the
-level 55 Northern Wastes dummy. They are the evidence for the decisions below.
+level 55 Northern Wastes dummy. They support the search decisions below, not current game-parity or universal search-gap claims.
 
 | Measurement | Result |
 |---|---|
@@ -122,8 +124,8 @@ gates application, and caster accuracy subtracts from the resist probability
 
 **Goals:**
 
-- Produce a ranked build list whose ordering is reproducible and whose displayed numbers carry named
-  model, run-variance, and search-gap bounds.
+- Produce repeatable rankings and name model accuracy, finite-run variance, and search quality
+  separately. Publish numeric boundaries only within domains supported by their evidence.
 - Keep every published formula traceable to decompiled code, exported data, or a repeatable runtime
   measurement.
 - Cover every effect admitted to the search domain, or fail publication when an effect has no model.
@@ -149,8 +151,9 @@ consumables, ammunition supply, incoming-damage event stream, included controlle
 count. The default scenario is one stationary, non-attacking, full-health training dummy with one
 player and the selected active mercenaries.
 
-A result and its permalink carry the scenario. Two results are comparable only when their scenario and
-model versions match. Area skills are evaluated against the scenario's explicit target count; this
+A result and its permalink carry the scenario and result mode. Numeric comparisons require matching
+scenario, model, evaluator, and game-data identities, or an explicit compatible interpretation that does
+not claim verified parity across an incompatible boundary. Area skills are evaluated against the scenario's explicit target count; this
 change supports one target and refuses another value rather than silently treating an area skill as a
 single-target skill.
 
@@ -161,29 +164,37 @@ skill behavior that can influence the objective. The model registry classifies e
 excluded by a stated search-domain rule, or unsupported. Publication fails when an admitted kind is
 unsupported. Search never scores an unknown effect as zero.
 
-Refresh-on-proc effects use their closed-form steady state. Cooldown-reduction buffs alter every active
+A refresh-proc steady-state formula is admissible only under its stated assumptions. The displayed
+finite-window timeline accounts for initial state, applications, refresh, and expiry. Cooldown-reduction buffs alter every active
 cooldown the engine alters. Ammunition supply constrains ranged attacks. Initial durability is captured
 for comparison, but durability loss remains outside the default non-attacking-dummy scenario and is
 labelled unsupported when another scenario would exercise it.
 
-### One versioned build envelope crosses C# and TypeScript
+### Shared build data crosses checked language boundaries
 
-Fixture definitions, captures, planner builds, and permalink state share one logical build envelope and
-thin language-specific adapters. The envelope separates four version axes: serialized schema, capture
-schema, model, and game data. An unknown serialized schema is refused. A model-version difference is a
-comparison warning. A game-build difference is shown and requires an explicit compatibility decision;
-it is never silently accepted.
+Fixtures, captures, planner builds, and permalinks share logical build data, not identical outer records.
+The current `BuildEnvelope` contains version axes only. Shared build data includes progression,
+allocations, equipment and augments, companions and their rolls/equipment, consumables, ammunition,
+and source provenance. The schema must distinguish raw attributes from allocations and derived totals.
 
-The fixture and browser adapters serialize this as `build.serializedSchemaVersion`,
-`build.captureSchemaVersion`, `build.modelVersion`, and `build.gameData`. Game-data identity contains the
-game version, Steam build ID, and server-assembly SHA-256. Unknown serialized and capture schemas are
-refused. A model mismatch marks results as not comparable. A game-data mismatch requires an explicit
-compatibility decision.
+Keep fixture targets, action schedules, facing, and sampling policy in execution data. Keep capture
+completeness and container state outside shared build data. Producer schema and integrity describe a
+capture; model and evaluator identities describe the computation that consumes it. A capture need not
+pretend that it was produced by the current browser evaluator.
+
+Thin C# and TypeScript adapters preserve this logical contract. Verify an authored fixture and a local
+capture reach the same production evaluation path. An unread required section blocks dependent
+computation rather than becoming an empty build section. A partial capture can still be inspected.
+Unknown schemas and integrity failures are refused before their contents are trusted.
+
+The result records serialized/capture schemas, model/evaluator identity, and game-data identity
+separately. Game-data identity includes the assembly hash and game/build labels. A stale model marker
+can be shown as context when the build is re-evaluated, but old and new scores are not automatically
+comparable. An incompatible tuple may be inspected diagnostically; it cannot qualify as verified parity.
 
 The derived planner payload remains a separate, explicit build-pipeline output. One writer owns its
-deterministic path, stale-output deletion, required-output assertion, serialization, compression, and
-redaction verification. A generic derived-artifact registry is deferred until a second output proves
-that abstraction useful.
+path, stale-output deletion, required-output assertion, serialization, compression, and redaction
+verification. A generic derived-artifact registry remains deferred until another output needs it.
 
 ### Character capture is a local file, not a HotRepl workflow
 
@@ -203,13 +214,28 @@ request pattern, but not its protocol or runtime. The optimizer protocol is
 progress and results, handles unknown request identifiers, terminates the worker on page teardown, and
 cleans up errors without replacing the last complete result.
 
-### Uncertainty has three named components
+### Uncertainty has separate evidence domains
 
-Run variance, model error, and search gap answer different questions and are never collapsed into one
-percentage. The ranking equivalence band derives from the measured search gap. Displayed predictions
-use a separately calibrated model-error boundary. Meter comparisons report finite-run variance from the
-recorded event count and duration. Intentional game-versus-model defect normalization is listed beside
-those components rather than hidden inside model error.
+Finite-run variation, model accuracy, and search quality answer different questions. The ranking
+equivalence band derives only from reference-search gap evidence for its benchmark domain. Fixed-point
+spread is a separate search observation, not proof of the gap to an optimum. Neither establishes the
+accuracy of the combat model.
+
+A prediction accuracy boundary requires an adequate current corpus and independent validation not
+used to fit that boundary. Record build/mechanic/version scope, units, denominators, sampling protocol,
+and evidence identity. Unsupported or unverified domains have no numeric accuracy claim. An in-sample
+maximum residual rounded to 2.5 percent does not supply this evidence.
+
+Meter comparisons require a declared sampling unit, sufficient observations, dependence treatment,
+confidence/error control, and a stopping rule. A count and duration alone do not establish finite-run
+uncertainty. Statistical rejection identifies a failed criterion, not a proven causal model defect.
+Keep protocol changes reviewed rather than widening a tolerance to accept an observed failure.
+
+Known-defect normalization is a separate result mode, not an uncertainty component or hidden
+calibration. Raw predictions follow the achieved game state. A normalized result identifies the defect,
+evidence, transformation, and affected quantities. Recommendations retain the policy against valuing
+defect exploitation, while raw diagnostics remain available for parity. Compare and rank only like
+modes; a normalized match cannot change a raw failure or enter a raw baseline.
 
 ### Browser performance is measured before a budget is stated
 
@@ -219,20 +245,23 @@ searches record latency, peak worker memory, first-progress latency, cancellatio
 maximum permalink length, and main-thread responsiveness. The release budget is set from those results
 and becomes a regression gate.
 
-### Deterministic evaluation instead of Monte Carlo simulation
+### Deterministic evaluation does not imply exact expectation
 
-Every random term in the pipeline has an exact expectation, so sampling adds variance without adding
-information.
+The production evaluator returns the same result for the same build, scenario, mode, and identities.
+Keep published evaluation deterministic; this change does not introduce random sampling into ranking.
 
-The alternative is the Raidbots and SimulationCraft approach. SimulationCraft reports a 95 percent
-confidence interval of plus or minus 1.96 sigma over the square root of the iteration count. To
-separate two independent means by a relative delta of 1 percent at a coefficient of variation of 0.5
-requires about 19,208 iterations per pair. A delta of 0.1 percent requires about 1,920,801. Against a
-large candidate set this is not affordable, and it would introduce ranking noise into a problem that
-has none.
+Use exact expectations where their validity is established. In general, evaluating a rounded or
+state-dependent function at mean inputs does not equal its expectation. Damage variance can change
+rounding, resource affordability, target-health gates, proc timing, and later actions. Symmetric input
+variance alone cannot justify a mean-substitution timeline.
 
-SimulationCraft already provides `average_range`, which averages damage ranges instead of sampling
-them. That option validates the technique.
+For nonlinear cases, use a justified deterministic expectation calculation or declare and independently
+validate the approximation within its supported domain. A targeted spike must compare small exact
+reference cases and game-backed transition windows before the contract is accepted. Sampling may be
+used as an investigation reference; it does not replace the deterministic production contract.
+
+The choice avoids ranking noise, not the need for evidence. Another simulator's average-range option
+is not proof that this game's coupled state transitions preserve expectations.
 
 ### Two evaluation layers with different jobs
 
@@ -256,6 +285,22 @@ value.
 
 The event timeline also produces the per-ability attribution and buff uptime breakdown. A reader
 needs that breakdown to trust a number.
+
+These surrogate measurements belong to the exploratory objective and corpus. Revalidate candidate
+retention, objective gap, and fixed-point spread against the complete production objective. Do not
+carry a fitted ratio or a top-20 retention claim into a new domain without evidence.
+
+The production timeline evaluates a scripted sequence for harness parity and a solved sequence for
+planner recommendations. Both use the same event/state engine. A parity adapter does not silently
+replace the fixture sequence with a better one. Record repetition, start/end inclusion, in-flight
+actions, facing, and refusal policy. Track attempted, accepted, completed, and landed actions separately.
+
+Recompute dependent quantities at their engine event: resources and costs, resource-burn intent,
+assassination eligibility from current target health, ammunition, effects, target defenses, and cooldown
+changes. Handle projectile intent at cast and outcome at arrival. A precomputed hit multiplied by a
+use count does not satisfy this contract when any of those inputs changes. Companions retain their
+autonomous selection and movement-qualified model rather than receiving a scripted player rotation.
+
 
 An auto-attack-only surrogate was measured and rejected. Its rank correlation of 0.975 looks healthy,
 but the true best build sat at rank 188, and its own top pick was 16.6 percent worse. Rank
@@ -299,25 +344,30 @@ calculation (`Combat.cs:1509-1515`). Against a target whose block chance accurac
 accuracy keeps paying through debuff uptime. The model therefore SHALL NOT treat accuracy as capped once
 avoidance reaches its floor.
 
-Measured convergence is 3 sweeps from every start. Measured fixed-point spread across four starts is
-4.00 percent, so multiple starts are required and a single start is not acceptable.
+The historical experiment converged in 3 sweeps from each start, with a 4.00 percent fixed-point
+spread across four starts. This supports multiple starts but does not establish a release-wide bound.
 
 The alternative was an exact Pareto dynamic program. It was measured at 86,584 frontier points and
 204 s for six stat dimensions, with frontier size growing geometrically at a factor of about 3.2 per
 added dimension. Branch and bound removed no points, because the multiplicative objective makes an
-admissible completion bound far too loose. Exactness was rejected because the heuristic gap is under
-0.5 percent and exactness cannot afford a faithful objective.
+admissible completion bound far too loose. That experiment favored heuristic search for its measured domain. The final objective still needs
+reference-search comparisons and browser benchmarks before it can claim a search-gap or latency bound.
 
-### Buffs are binary maintenance decisions
+### Maintenance selection and achieved uptime are different decisions
 
-Each buff has a fixed duration and cooldown, so its steady-state uptime is the smaller of 1 and the
-duration divided by the cooldown. Maintaining it costs a fixed energy rate and a fixed time rate.
+The search may enumerate which buffs to maintain, but selecting a subset does not establish its
+schedule, affordability, or achieved uptime. At most one member of a non-empty category contributes at
+a time in one entity. Temporal replacement still follows actual applications.
 
-Duration over cooldown is an upper bound, not the uptime. A debuff on a target must also survive a
-resist roll, so its uptime is that bound multiplied by the landing probability.
+For an always-successful, affordable periodic buff, duration divided by cooldown can describe a
+steady-state duty cycle under stated assumptions. It is not a general finite-window formula. A
+resist-gated refreshing effect requires its refresh process, initial state, application schedule, and
+landing probability. Multiplying the duty cycle by landing probability is not generally valid.
 
-The evaluation therefore enumerates the subset of buffs to maintain. For the Warrior this is 2 to the
-power of 7 subsets. This is exact and avoids a scheduling search.
+The event timeline charges cast time and resources, handles application/refusal and replacement, and
+updates the target defenses or caster bonuses while the effect is active. It accounts for cleanup and
+expiry boundaries before a dependent action. Verify maintained-effect damage and resource output in a
+finite-window spike; a binary subset calculation alone cannot close that task.
 
 ### A buff category holds one buff, and the newest wins
 
@@ -340,9 +390,9 @@ both effects use `Debuff AC`, and both retained their full 30-second duration. T
 enforces category exclusivity within each entity. It can omit an entity's weaker action when that action
 would replace the same entity's stronger effect, but it adds effects held by separate entities.
 
-Expiry is lazy. An expired buff still contributes until a cleanup pass removes it. The window is one
-tick and does not affect a sustained rate, so the model treats expiry as immediate and records the
-divergence.
+Expiry is lazy. An expired buff can contribute until the engine cleanup pass removes it, and that
+pass depends on entity updates. The timeline must represent the relevant boundary or label a measured
+approximation. Do not assume the tick has no effect on a finite window or threshold-sensitive action.
 
 Buff uptime matters. Warrior buff bonuses total 123 percent damage at nominal values but 85 percent
 after uptime weighting, against 25 percent from always-on passives.
@@ -357,8 +407,10 @@ Rogue takes physical damage.
 Buff-driven percentage regeneration exists but is a minor term. Nominal rates of 3 to 5 percent per
 second reduce to under 1 percent per second after duty cycle, and some buffs are net negative.
 
-Energy income is therefore proportional to auto-attack output, not to resource capacity. The model
-must express this, because the direction of the dependency changes which builds win.
+Combat returns depend on actual damage events rather than maximum resource alone. At each event, the
+timeline applies the engine return, current resource cap, and relevant rounding. It also applies
+incoming damage, recovery ticks, costs, burns, and active class effects. Average income is a
+ranking-layer approximation, not a replacement for event-state affordability.
 
 ### Each controlled entity is solved by the same solver
 
@@ -371,7 +423,8 @@ A solo owner can field four mercenaries at once (`Player.cs:9800-9870`), which i
 equipment decisions. Their output is not a rounding error, so a total-output figure that ignores it is
 wrong.
 
-The design therefore runs the same solver per controlled entity. For a best-in-slot plan the entities
+The design shares equipment evaluation across controlled entities. Player actions use an executable
+schedule; companion output uses the autonomous policy rather than the player rotation solver. For a best-in-slot plan the entities
 are independent, because each draws from the full published item set. For an owned-gear plan they are
 coupled by a shared inventory, because one physical item cannot be equipped twice. The owned-gear case
 is therefore an assignment problem across entities rather than five independent searches.
@@ -383,11 +436,11 @@ expectation over that uniform selection, and states that it is an expectation ra
 
 Mercenary base stats derive from owner progression on a per-archetype cadence, and the base combat value
 of a new hire is drawn from a range whose upper bound is the owner's level times a factor of that
-companion's race (`Player.cs:7979-8205, 4510-4685, 9780-10023`). The harness design records the measured
-factor for each race, and this design does not restate it. A mercenary is therefore a rolled asset, and the
+companion's race (`Player.cs:7979-8205, 4510-4685, 9780-10023`). Current hire-path evidence defines the race-dependent envelope; the harness checks it rather than
+assuming that a field name or historical table establishes current legality. A mercenary is therefore a rolled asset, and the
 planner treats its base stats as an input rather than a value it can assume.
 
-### Companions are modelled as newly hired
+### Companion state and reload normalization are explicit
 
 A veteran level adds one base damage and one base magic damage to an active mercenary, and 0.0025 to its
 health and resource multipliers (`server-scripts/Player.cs:4527-4537`). Its skill level, by contrast, is
@@ -407,18 +460,21 @@ This was measured across a reload at ten veteran points. Base damage rose from 2
 27. The health multiplier rose from 1.004374 to 1.029374 and stayed there. The defect is recorded in
 `docs/game-bugs/mercenary-veteran-damage-lost-on-load.md`.
 
-The model therefore takes the stable value in each case. Base damage is the value a newly hired companion
-receives, because that is what a player holds after any restart. The health and resource multipliers
-include the veteran contribution, because the engine reconstructs it deterministically.
+Raw evaluation uses the supplied achieved companion state, including transient veteran accumulation.
+A capture must distinguish a live value from a saved hire roll; neither can silently stand in for the
+other. A reload can change raw inputs, including a zero-roll reroll.
 
-The consequence must be stated to a reader. A player who has not restarted since earning veteran levels
-will measure more damage than the model reports, and will match it again after a restart.
+A recommendation may use an explicitly identified post-reload planning assumption instead of valuing
+transient damage. The result names that assumption and the defect evidence. It is not raw parity for
+a companion whose current state differs. A normalized result must define its transformation rather
+than claim that every defect has one obvious intended formula.
 
 Which roll to assume follows the distinction the planner already draws. Dismissal has no cost beyond the
 hire price (`server-scripts/Player.cs`, the dismiss command destroys the companion outright), and
 re-hiring draws a fresh roll, so the best roll is reachable. A best-in-slot plan therefore assumes the
 best reachable roll, exactly as it assumes the best obtainable item. A plan limited to what a player owns
-uses that player's supplied value.
+uses that player's supplied state. Best-roll assumptions remain declared planning inputs, not evidence
+that a harness hire will draw the requested race or roll.
 
 The playable races are Human, Elf, Dark Elf, Dwarf, Fire Goblin, Felarii and Drassar. `dark_alliance`
 is a faction shared by Dark Elf and Fire Goblin, so it is not a value this table is keyed on.
@@ -441,11 +497,9 @@ the model must express resource capacity as an output term and not only as a rot
 Energy and mana do not reach capacity the same way. `Mana.max` multiplies its base curve by the
 entity's mana multiplier, and `Energy.max` does not read its energy multiplier at all
 (`server-scripts/Energy.cs:27-39`). For a companion that uses energy, which is a Warrior or a Rogue,
-the quality rolled at hire and the whole veteran accumulation therefore change nothing. This is a
-defect, recorded in `docs/game-bugs/mercenary-energy-multiplier-is-never-used.md`, and the model
-represents what the game does rather than what the multiplier implies. A figure that assumed the
-multiplier applied would become wrong twice: it is wrong now, and it would need changing again when
-the defect is fixed.
+the quality rolled at hire and the whole veteran accumulation therefore change nothing. This defect is recorded in `docs/game-bugs/mercenary-energy-multiplier-is-never-used.md`. Raw evaluation
+follows the getter and ignores the inert multiplier. Any separately requested normalization must
+state its evidenced rule and affected quantities; it cannot change the raw result or baseline.
 
 ### Consumables are part of an honest maximum
 
@@ -501,11 +555,15 @@ denominator, and `Player.cs:8256-8285` resets them across the player, the pet, a
 The level 55 dummy has a `damage` value of 0 and is immobile, so a predicted number can be compared
 against a measured one under controlled conditions.
 
-Two mechanisms use that, and they answer different questions. The verification harness measures authored
-fixtures on every run and fails on drift, which is what detects a modelling error systematically. This
-capture answers a reader's own question: whether the number published for *their* build matches what
-their game reports. Neither replaces the other, and the capture belongs in this change because a planner
-that cannot be checked against the reader's own game is not trustworthy to that reader.
+Two mechanisms use this data. The harness owns controlled fixture execution and qualified statistical
+comparisons. A validation-only harness run does not exercise that path. The local capture records a
+reader's build and meter state without mutating either. A meter capture alone does not establish the
+action sequence, target history, or sampling sufficiency needed for verified parity.
+
+The comparison adapter declares those missing inputs and uses the production evaluator only when
+dependent data is complete. It retains target provenance, requested and achieved state, per-quantity
+counts, units, windows, and model/evaluator/data identities. Read-only capture need not construct a
+harness report or claim a baseline it did not measure.
 
 ## Slot 13 and the weapons in it
 
@@ -554,8 +612,8 @@ rather than 0.5, which is the difference between confirming a rule and choosing 
 The companion figure excludes the player rule outright. Applying it would predict 660 against 691.4
 observed, which would need the target to amplify damage.
 
-Two of these rows are recorded defects rather than intended behaviour, and the model represents the
-intent: `docs/game-bugs/broken-offhand-subtracts-damage-it-never-gave.md` and
+Two rows document game defects. Raw evaluation must reproduce their observed behavior; separately
+identified normalized recommendations may remove the defect benefit with evidence: `docs/game-bugs/broken-offhand-subtracts-damage-it-never-gave.md` and
 `docs/game-bugs/a-bow-without-a-melee-weapon-cancels-its-own-damage.md`.
 
 ## One hit, derived rather than calibrated
@@ -594,9 +652,10 @@ must fall in follows from the source: variance from 0.9 to 1.1, then -10 percent
 0.5265 to 0.6435. Fourteen of fourteen hits fell inside it with a mean of 0.5779 against a centre of
 0.585.
 
-This is the standard a model term should be held to. A mean over a dozen hits agreeing is weak evidence
-next to every individual hit falling inside a band derived from the source, because a wrong model with
-the right mean fails the second test and passes the first.
+These samples provide local evidence, not a complete distribution check or an accuracy boundary.
+A hard support check can reject an impossible hit, but a wrong distribution may still fit the same
+support. The qualified harness combines justified support checks with predeclared statistical
+acceptance and sample sufficiency; neither this observed mean nor this band alone proves parity.
 
 Order matters because each step rounds separately. The steps are integer operations with their own
 `CeilToInt` and `RoundToInt`, so the model has to walk them in the engine's order rather than multiply
@@ -622,7 +681,8 @@ filter; a critical is unambiguous at this scale.
 | 10000 | 6 | 0.0916 | 0.0900 | +1.8 percent |
 
 A fit over the four unclamped points gives 0.000498 against 0.000500 in source, a difference of 0.5
-percent. Each residual sits inside what a sample mean of a plus or minus ten percent roll allows.
+percent. The recorded residuals are historical observations. They lack the predeclared repeated-run protocol
+needed to qualify a current statistical accuracy boundary.
 
 The ceiling is confirmed by the last two rows rather than argued from the source. Raising defense from
 2000 to 10000 is a fivefold rise and changed nothing: the target still took nine percent of intent, where
@@ -665,10 +725,9 @@ terms. Neither appeared in this design before it was measured.
 
 ## Risks / Trade-offs
 
-- Absolute accuracy is unverified against the running game. Every figure in this design compares one
-  model against another. → The verification harness records a golden baseline against the running game
-  before the planner is published, and the capture mod in this change lets a reader repeat the
-  comparison on their own build.
+- Full-domain absolute accuracy is unverified. This design contains both model-to-model comparisons
+  and specific live experiments, neither of which is a qualified full baseline. → Complete the harness
+  production-evaluator comparison and independently validate any scoped accuracy claim before release.
 - Reading a sample of a code region reliably misses mechanics, because the damage path branches on
   class, skill type, damage school, and entity kind. → Model coverage is established by enumerating a
   code region, not by sampling it. Each formula carries a source citation and a unit test with fixed
@@ -699,14 +758,17 @@ terms. Neither appeared in this design before it was measured.
   → The relaxation ranks candidates only. The event timeline produces every displayed number.
 - A game patch can silently invalidate a formula. → The citation ledger already fails on drift, and
   the derived payload regenerates from the pipeline.
-- Displayed precision can imply false confidence. → Results within the stated error boundary are
-  presented as an equivalence band, following the sidegrade pattern that Raidbots documents.
+- Displayed precision can imply false confidence. → Use measured search-gap evidence for ranking
+  equivalence. Report prediction accuracy and finite-run variance separately, with no numeric claim
+  outside their validated domains.
 
 ## Planner prerequisite evidence
 
-All game-backed rows use Ancient Kingdoms 0.9.31.1, Steam build 24986533, assembly
-`bd2521453b35dfb58c4fec344d7fa5c8de5a8e73c58b5ff5aa5a4c12a9466fc0`. The harness task is the
-report reference.
+The recorded game-backed prerequisite rows name Ancient Kingdoms 0.9.31.1, Steam build 24986533,
+assembly `bd2521453b35dfb58c4fec344d7fa5c8de5a8e73c58b5ff5aa5a4c12a9466fc0`. Harness task references
+locate their experiment descriptions; they are not substitutes for persisted run provenance. Earlier
+measurements elsewhere in this design have their own recorded build or remain incompletely identified.
+Do not attribute them all to this snapshot.
 
 | Harness task and fixture | Sample | Observed bound | Controlled formula or policy |
 |---|---:|---|---|
@@ -722,5 +784,49 @@ report reference.
 | 7.13, matched Warrior and Rogue resource transition | One transition per class and three recovery ticks | Both reached 4 resource after returns and cost; Warrior stayed at 4, Rogue fell to 1 | Apply combat returns identically, then apply each class's active recovery effects separately |
 | 7.14, companion cadence and output | Eleven accepted 20-second windows | Damage 0 to 688; observed hit gaps 0.834 to 11.232 seconds | Model output as an action-selection expectation with movement-qualified bounds, not a reachable fixed rate |
 
-These measurements close the formula prerequisites. They do not replace the fixture comparison and
-baseline work that follows the model implementation.
+These experiments inform the named formulas and policies. They do not close the reopened lifecycle
+acceptance, complete dynamic evaluator integration, or qualify current accuracy. The harness owns the
+full comparison report and reviewed baseline; planner tasks cannot close those gates on its behalf.
+
+
+## Integration acceptance and targeted spikes
+
+The existing fixture evaluator computes hits from initial state before solving a rotation. Its local
+tests do not establish shared-build adaptation or production integration. Treat helpers for effects,
+resources, and uncertainty as component evidence until the same production path consumes them.
+
+The harness must compare independent model inputs with achieved, legal state. Requested-versus-achieved
+mismatches stop dependent measurements. Do not supply measured caster totals as the predicted totals
+being checked. Independently read target state is permitted only with declared provenance and scope.
+
+Run these spikes before closing integration or accuracy tasks:
+
+1. Round-trip shared build data through C# fixture and capture adapters and the browser evaluator.
+   Verify missing data, version mismatches, and capture-only metadata retain their meaning.
+2. Trace a fixture from request through materialization, readback, actions, production prediction,
+   statistical comparison, and persisted evidence. Include a maintained effect and autonomous companion.
+3. Exercise resource burn after depletion/recovery, an incoming-damage transition, effect refresh and
+   expiry, and a target-health threshold crossing. Compare a fixed-state case with a changing-state case.
+4. Evaluate one evidenced game defect in raw and normalized modes. Verify the raw residual remains
+   visible and neither a normalized score nor a mode mismatch can pass the raw baseline gate.
+5. Define calibration and independent validation domains before fitting an accuracy boundary. Verify
+   adequate current samples and declared statistical acceptance, including nonlinear approximation cases.
+
+A full verified result requires the harness's complete materialization, measurement, comparison,
+provenance, baseline, and isolation gates. Baseline qualification is explicit; missing or failed
+baseline evidence cannot become success. The initial qualification follows the harness's reviewed
+promotion procedure rather than requiring a nonexistent prior baseline. Historical experiments remain
+useful evidence for narrow questions but cannot bypass these stages.
+
+## Migration Plan
+
+1. Reconcile the shared contracts and task acceptance without removing proven local components.
+2. Complete checked adapters and dynamic production evaluation, then run the integration spikes.
+3. Complete the harness matrix and qualify its reviewed current baseline. Independently validate each
+   published accuracy domain; leave unsupported domains without numeric claims.
+4. Connect optimizer, browser, capture, and import consumers to that production contract. Verify each
+   actual surface and the release gates before retiring the prior simulator.
+
+If a model, protocol, or data migration fails, preserve the failed report and prior baseline. Do not
+rewrite evidence to make the migration pass. Retain the prior published surface until the replacement
+passes its release gates. No implementation migration occurs as part of this planning revision.

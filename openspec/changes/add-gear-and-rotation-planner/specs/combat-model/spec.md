@@ -1,8 +1,8 @@
 ## Purpose
 
-Defines what the deterministic combat evaluation guarantees about the numbers it produces, so a
-reader can rely on a predicted damage figure and know its boundary. The model reproduces the game's
-own combat pipeline, so its value depends entirely on matching that pipeline.
+Defines the guarantees and limits of the production combat evaluator. The evaluator reproduces the
+game's ordered combat pipeline over a state-changing event timeline. A result is deterministic for a
+fixed input, but its accuracy claim depends on qualified, current, independently validated evidence.
 
 ## ADDED Requirements
 
@@ -25,86 +25,189 @@ The model SHALL NOT introduce a stat, a cap, or a coefficient that the game does
 - **THEN** the citation check fails
 - **AND** the model is not published until the formula is re-verified
 
-### Requirement: Evaluation is deterministic and reproducible
+### Requirement: Evaluation is deterministic without overstating stochastic exactness
 
-The model SHALL produce the same output for the same input. It SHALL NOT sample random outcomes to
-produce a published number.
+The evaluator SHALL produce the same output for the same build data, scenario, game-data identity,
+model identity, evaluator identity, and evaluation mode. It SHALL NOT sample random outcomes to produce a published
+number.
 
-Each stochastic term in the game pipeline SHALL be replaced by its exact expectation. An avoidance
-roll and a critical roll are Bernoulli trials, so each contributes its probability. The damage
-variance range is symmetric, so it contributes its mean.
+The evaluator SHALL use an exact expectation only where the engine ordering, probability law,
+rounding, and state transitions prove that expectation. Where those conditions are not proven, it
+SHALL label the deterministic approximation and its validity domain. A verified prediction SHALL
+require independent validation of that approximation. Diagnostic evaluation MAY show an unverified
+approximation without a numeric accuracy claim. The evaluator SHALL record the expectation or approximation
+method and SHALL NOT require a new Monte Carlo product or sampling mode.
+
+Deterministic repeatability SHALL NOT be presented as proof that a mean substitution is exact, and a
+statistical rejection SHALL NOT by itself identify the model term that caused it.
 
 #### Scenario: The same build is evaluated twice
 
-- **WHEN** an unchanged build is evaluated against an unchanged target
-- **THEN** both evaluations return an identical number
+- **WHEN** an unchanged build is evaluated with the same scenario, identities, and mode
+- **THEN** both evaluations return identical values and method and identity metadata
 
-#### Scenario: Two builds differ by a small amount
+#### Scenario: A stochastic term has a proven expectation
 
-- **WHEN** two builds differ in predicted output by less than one percent
-- **THEN** the ordering between them is stable across evaluations
-- **AND** the ordering is not attributed to sampling variance, because none exists
+- **WHEN** the engine's probability, ordering, rounding, and state transitions prove an exact expectation
+- **THEN** the evaluator uses that expectation
+- **AND** the report identifies the proof boundary
 
-### Requirement: The model reports a stated error boundary
+#### Scenario: A stochastic term has interacting state transitions
 
-A published damage figure SHALL carry the boundary within which it is claimed to be accurate. The
-model SHALL NOT present a figure as exact.
+- **WHEN** no exact expectation is proven for resource decisions, thresholds, rounding, or event timing
+- **THEN** the evaluator identifies the deterministic approximation and its validation status
+- **AND** the report does not call that approximation exact
 
-The boundary SHALL distinguish error against the game from error between internal layers.
+#### Scenario: Two close builds are evaluated repeatedly
 
-#### Scenario: A reader views a predicted figure
+- **WHEN** two builds have close deterministic objective values
+- **THEN** each evaluation repeats the same values and ordering
+- **AND** any reported ranking equivalence cites search-gap evidence rather than sampling variance
 
-- **WHEN** the planner displays a predicted damage per second
-- **THEN** the stated boundary accompanies it
+### Requirement: Accuracy claims are scoped and independently validated
 
-#### Scenario: Two results fall inside the boundary
+A numeric accuracy boundary SHALL be published only for a stated build, mechanic, game-version, and
+scenario domain that has an adequate current corpus and independent validation. The validation set
+SHALL not be used to fit the boundary. Historical samples and an in-sample maximum residual SHALL not
+establish a global boundary, including a global 2.5 percent bound.
 
-- **WHEN** two builds differ by less than the stated boundary
-- **THEN** they are presented as equivalent rather than ranked against each other
+A result outside the qualified domain, or without current independent validation, SHALL carry no
+numeric accuracy boundary and SHALL not be presented as exact. A qualified boundary SHALL distinguish
+model error against the running game from finite-window variation and internal comparison error.
 
-### Requirement: Resource generation from combat is modelled
+#### Scenario: A qualified prediction is displayed
 
-The model SHALL account for resource returned by dealing and by taking damage, because that return
-dominates the resource budget for the affected classes.
+- **WHEN** the planner displays a prediction within a domain with current corpus and independent validation
+- **THEN** it displays the qualified numeric boundary with its domain and evidence identity
+- **AND** it does not present the boundary as global
 
-Auto-attack damage returns a fraction of post-mitigation damage as energy for melee classes.
-A named Wizard skill returns a fraction of damage as mana. Taking physical damage returns a
-square-root scaled amount of energy.
+#### Scenario: A prediction has no qualified validation
 
-The model SHALL express resource income as a function of combat output rather than of resource
-capacity.
+- **WHEN** the build, mechanic, version, or scenario is outside the qualified domain
+- **THEN** the result has no numeric accuracy boundary
+- **AND** the report states that accuracy is unverified
+
+#### Scenario: A historical residual is available
+
+- **WHEN** only historical samples or an in-sample maximum residual support a proposed boundary
+- **THEN** the planner refuses that numeric boundary
+- **AND** it does not convert the residual into a global percentage claim
+
+### Requirement: Resource generation and spending follow the event state
+
+The evaluator SHALL update each resource pool at every relevant cast, completion, hit, incoming
+damage, effect, and expiry event. Resource returned by dealing and taking damage SHALL use the
+post-mitigation amount and the event order implemented by the engine.
+
+Auto-attack damage returns a fraction of post-mitigation damage as energy for melee classes. A named
+Wizard skill returns a fraction of damage as mana. Taking physical damage returns a square-root scaled
+amount of energy. A resource-burn skill SHALL spend and damage from the resource pool that exists at
+its cast event, not from maximum resource or a steady-state average.
+
+The evaluator SHALL express resource income as a function of combat output and incoming-damage events,
+not as a function of resource capacity. It SHALL record the initial pool, every gain and spend, and
+any refusal caused by insufficient resource.
 
 #### Scenario: A melee build increases its auto-attack output
 
 - **WHEN** a build raises auto-attack damage or attack rate
-- **THEN** the modelled resource income rises with it
-- **AND** the number of affordable skill casts rises
+- **THEN** the modelled event returns rise with that output
+- **AND** the timeline can schedule more affordable skill casts
 
 #### Scenario: A build raises resource capacity alone
 
 - **WHEN** a build raises maximum resource without raising combat output
-- **THEN** the modelled sustained resource income does not rise proportionally
+- **THEN** event-generated resource income does not rise proportionally
+- **AND** the report distinguishes capacity from income
 
-### Requirement: Buff contributions are weighted by uptime
+#### Scenario: A resource-burn cast follows a resource gain
 
-A stat bonus from a maintained buff SHALL contribute in proportion to the buff's steady-state uptime,
-derived from its duration and cooldown. A bonus from an always-on passive SHALL contribute in full.
+- **WHEN** damage or an incoming event changes the pool before a resource-burn cast
+- **THEN** the cast uses the updated current pool
+- **AND** the report records the gain, spend, and resulting damage in order
 
-Duration over cooldown is the uptime only where application always succeeds. An effect applied to a
-target is additionally gated by a resist roll, and its uptime is covered by the target-state requirement.
+#### Scenario: A resource-dependent action is unaffordable
 
-The model SHALL charge the time and the resource cost of maintaining each buff.
+- **WHEN** the current pool is below an action's cost at its event
+- **THEN** the evaluator does not schedule the action
+- **AND** it records the refusal without using future resource income
 
-#### Scenario: A buff has a duration shorter than its cooldown
+### Requirement: Buff timing distinguishes finite windows from steady state
 
-- **WHEN** a buff lasts ten seconds on a thirty-second cooldown
-- **THEN** its stat bonus contributes one third of its nominal value
-- **AND** its cast time and resource cost are charged against the rotation budget
+An always-on passive SHALL contribute in full. For a finite evaluation window, a maintained buff SHALL
+contribute only while its event-timeline state is active, including its initial state, cast time,
+application result, expiry, refresh, and cooldown. The evaluator SHALL not replace a finite window with
+a duration-over-cooldown ratio. Effect removal SHALL follow the engine cleanup boundary, not merely
+the timestamp at which remaining duration reaches zero.
 
-#### Scenario: A buff cannot be afforded
+For a steady-state result, the evaluator MAY use duration and cooldown uptime only when the application,
+refresh, resource, and timing process is stationary and the expectation or approximation is proven or
+validated for the stated domain. An effect applied to a target SHALL also use the target's current
+resistance, landing result, and maintained target state at each relevant event.
 
-- **WHEN** maintaining a buff costs more resource than the build generates
-- **THEN** the model does not credit that buff's bonus
+The evaluator SHALL charge each maintenance cast's time and resource cost and SHALL update those costs
+when the rotation or state changes.
+
+#### Scenario: A finite window ends during a buff
+
+- **WHEN** a buff lasts ten seconds, its cooldown is thirty seconds, and the finite window ends at fifteen seconds
+- **THEN** only the active timeline interval contributes
+- **AND** the report does not substitute one third uptime for the window
+
+#### Scenario: A steady-state buff has proven uptime
+
+- **WHEN** application and refresh form a stationary process with a validated uptime calculation
+- **THEN** the sustained result uses that uptime
+- **AND** the report identifies it as steady-state rather than finite-window evidence
+
+#### Scenario: A maintained target effect expires
+
+- **WHEN** the engine cleanup boundary removes a target effect before the next action
+- **THEN** the next action uses the target's unmodified state
+- **AND** the report records the expiry before that action
+
+#### Scenario: A buff cannot be afforded at its cast event
+
+- **WHEN** maintenance costs more resource than the current pool provides
+- **THEN** the cast is refused and its bonus is not credited
+- **AND** an existing application remains active only until its own removal boundary
+
+### Requirement: State-dependent decisions follow the ordered event timeline
+
+The evaluator SHALL process cast, completion, projectile arrival, hit, incoming damage, resource,
+cooldown, effect application, refresh, expiry, target-health, and death events in the engine's order.
+The deterministic event model SHALL represent the applicable probabilities or a declared approximation,
+not fabricate a sampled live trajectory. At each relevant event it SHALL recompute dependent values,
+including resource-burn damage, resource cost,
+maintained target avoidance and mitigation, effect landing, effect expiry, and health thresholds.
+
+A finite scenario SHALL state its horizon and boundary treatment for an action at the horizon or a hit
+that remains in flight. The evaluator SHALL not use a steady-state value for a finite event window
+unless the result labels and validates that approximation.
+
+#### Scenario: A maintained target effect expires before a hit
+
+- **WHEN** the engine cleanup boundary removes a defense effect before a later hit lands
+- **THEN** that hit uses the target's current defense without the effect
+- **AND** the report records the expiry before the hit
+
+#### Scenario: A threshold changes during the fight
+
+- **WHEN** target health crosses an engine-tested threshold after an earlier event
+- **THEN** the next cast checks the updated health
+- **AND** a skill becomes available or unavailable according to that state
+
+#### Scenario: A resource burn follows a state update
+
+- **WHEN** a resource gain or spend occurs before a resource-burn cast
+- **THEN** the cast damage uses the current post-update pool
+- **AND** the evaluator does not reuse a prior or steady-state resource value
+
+#### Scenario: A delayed hit arrives after target death
+
+- **WHEN** a projectile reaches a target that died before arrival
+- **THEN** the delayed hit contributes no damage
+- **AND** the report records the cast and arrival separately
 
 ### Requirement: A buff category holds at most one buff
 
@@ -185,8 +288,12 @@ level below, bounded at twenty percent either way. A model that omits it is corr
 and target are the same level.
 
 The variance roll SHALL be a factor from 0.9 to 1.1 around the amount, applied before the level
-difference and before mitigation. The model SHALL report a fixed-state expectation with the roll at its
-mean, and SHALL state the band a single hit can fall in.
+difference and before mitigation. The evaluator SHALL use the roll at its mean only where the resulting
+fixed-state expectation is proven under the engine's rounding and later steps. Otherwise it SHALL label
+the approximation and its validation status under the deterministic-evaluation requirement.
+A report SHALL state a justified hard single-hit
+support band separately from any mean or accuracy claim. A mean approximation SHALL NOT be used to
+assert hard support without a separate derivation.
 
 #### Scenario: A build is evaluated against a higher-level target
 
@@ -205,17 +312,19 @@ mean, and SHALL state the band a single hit can fall in.
 
 ### Requirement: A prediction is derived from the target's own state
 
-A predicted amount SHALL be derived from stats read from the target. The model SHALL NOT obtain a
+A predicted amount SHALL use explicit target inputs derived from exported spawn rules or an
+independent target readback. The result SHALL retain their provenance. The model SHALL NOT obtain a
 mitigation factor by calibrating against another measured amount.
 
 A calibrated factor absorbs every term the model is missing, so it agrees with the measurement it was
 fitted to and fails wherever the missing term differs. The level difference term is one such term: a
 factor fitted at one target level silently carries that level's difference into every other.
 
-#### Scenario: A model term is missing
+#### Scenario: A model term may be missing
 
 - **WHEN** a prediction is derived from read stats and disagrees with a measurement
-- **THEN** the disagreement is attributable to a named missing term rather than absorbed
+- **THEN** the report preserves the disagreement without absorbing it into a calibrated factor
+- **AND** it names a missing term only when independent evidence supports that attribution
 
 ### Requirement: Target avoidance and mitigation are reducible, and reduction is not certain
 
@@ -223,8 +332,9 @@ The model SHALL treat a target's avoidance and mitigation as reducible by a main
 than as fixed properties of the target.
 
 Applying a debuff SHALL be gated by a resist probability derived from the target and reduced by the
-caster's accuracy. The modelled uptime of a debuff SHALL be its duration and cooldown bound multiplied
-by its landing probability.
+caster's accuracy. In a finite window, the evaluator SHALL apply the actual landing, expiry, refresh,
+and target-state events. In a stationary steady state, it MAY use the duration and cooldown bound
+multiplied by landing probability only when that expectation or approximation is proven or validated.
 
 Physical mitigation SHALL be modelled with its ceiling. A reduction that does not bring the target below
 that ceiling SHALL contribute nothing to mitigation.
@@ -249,8 +359,8 @@ that ceiling SHALL contribute nothing to mitigation.
 The model SHALL evaluate a build at the skill levels the build actually allocates. It SHALL NOT
 assume that every skill sits at its maximum level.
 
-Normal and veteran skill points SHALL be treated as separate budgets. Each budget SHALL be one point
-per level after the first, plus one per veteran point.
+Normal and veteran skill points SHALL be treated as separate budgets from their exported progression
+rules. Normal-level and veteran awards SHALL NOT be added to both pools.
 
 Every gate a skill carries SHALL be enforced: the level it requires, the points already spent in its
 own budget, up to two predecessor skills each at its own level, and the number of skills already
@@ -304,22 +414,31 @@ Where a class ignores the caster's combat stats, the model SHALL not apply them.
 
 ### Requirement: Resource-burn damage bypasses avoidance and mitigation
 
-A resource-burn skill SHALL be modelled as converting the current resource pool into damage that
-receives no avoidance roll and no mitigation reduction.
+A resource-burn skill SHALL convert the current resource pool at its cast event into damage that
+receives no avoidance roll and no mitigation reduction. The evaluator SHALL spend the converted
+resource in the same event order as the engine.
 
-The model SHALL therefore treat maximum resource as contributing to output, and SHALL show that its
-value rises with target mitigation.
+Maximum resource SHALL affect output only through the current resource that the scenario makes
+available. Increasing maximum resource alone SHALL not increase a burn at a fixed current pool. The
+relative value of a burn can rise when target mitigation reduces ordinary damage, but the burn amount
+itself SHALL not change because of that mitigation.
 
 #### Scenario: A resource-burn skill is used against a high-mitigation target
 
 - **WHEN** a target reduces ordinary damage by ninety percent
-- **THEN** the resource-burn contribution is not reduced
-- **AND** the model reports the resulting relative value of maximum resource
+- **THEN** the resource-burn amount is unchanged
+- **AND** the report shows its relative contribution beside the reduced ordinary damage
 
 #### Scenario: The resource pool is empty
 
 - **WHEN** the resource pool is empty at the moment of use
-- **THEN** the modelled contribution is zero
+- **THEN** the modelled burn contribution and resource spend are zero
+
+#### Scenario: Maximum resource rises at a fixed current pool
+
+- **WHEN** maximum resource rises but current resource at the cast event does not
+- **THEN** the burn damage does not rise
+- **AND** the report distinguishes maximum from current resource
 
 ### Requirement: A skill that requires a weapon category is gated on it
 
@@ -361,21 +480,29 @@ The model SHALL NOT assume a consumable that the build does not declare.
 The model SHALL evaluate a mercenary through the same stat and damage pipeline as a player, because a
 mercenary equipment component inherits the player equipment stat contribution.
 
-A mercenary SHALL be modelled with the base damage a newly hired mercenary receives. The model SHALL
-NOT include the increment the engine adds for each level-up a mercenary was present for.
+In raw mode, a mercenary SHALL use its achieved supplied state, including any increment the engine
+has accumulated while it was present. A named normalization for the transient companion progression defect MAY use a declared post-reload
+base-damage assumption and exclude that increment. Other defect normalizations SHALL NOT silently
+apply this unrelated transformation.
 
-That increment is a defect. The engine derives a mercenary's skill level from the owner's current state
-but accumulates its base damage per event, so two otherwise identical mercenaries differ by the whole of
-the owner's progression depending only on when each was hired. The model represents the intended
-behaviour rather than the accumulated one.
+The increment is a recorded defect. The engine derives a mercenary's skill level from the owner's
+current state but accumulates its base damage per event, so otherwise identical mercenaries differ by
+the owner's progression depending only on when each was hired. A normalized result SHALL cite the defect
+record and identify the declared post-reload planning assumption; it SHALL NOT call that state an
+achieved raw observation.
 
-A model figure SHALL state that it assumes a newly hired mercenary, because a player holding a
-mercenary that accumulated the increment will measure more output than the model reports.
+A planning figure without an achieved companion SHALL state its newly hired or best-roll assumption.
+A player holding a mercenary with an accumulated increment can therefore measure more raw output than a
+normalized planning figure reports.
 
-A value the engine assigns but never reads SHALL NOT contribute to a predicted figure.
+Companion skills SHALL follow supplied state or the declared legal owner progression. Companion rolls
+SHALL be supplied achieved inputs or explicitly declared reachable best-roll planning assumptions. They SHALL not become new optimizer decision dimensions. A value the engine
+assigns but never reads SHALL NOT contribute to a predicted figure.
 
-Mercenary output SHALL be reported as an expectation over its action selection, not as a fixed
-rotation, because that selection is random among available skills.
+Mercenary output SHALL account for random selection among available skills rather than present a fixed
+rotation. It SHALL use an exact expectation only where the selection, timing, resource, and state
+transitions prove one; otherwise it SHALL label the deterministic approximation and its validation status. A verified
+companion prediction SHALL require independent validation within its stated domain.
 
 #### Scenario: A mercenary is given equipment
 
@@ -385,13 +512,15 @@ rotation, because that selection is random among available skills.
 
 #### Scenario: Mercenary output is reported
 
-- **WHEN** the model reports a mercenary contribution
-- **THEN** it states that the figure is an expectation over random action selection
+- **WHEN** the evaluator reports a mercenary contribution
+- **THEN** it states that selection is random and identifies the expectation or approximation method and validation status
+- **AND** it does not present a sampled sequence as the predicted contribution
 
 #### Scenario: A mercenary base stat is unknown
 
 - **WHEN** a mercenary's rolled base damage is not supplied
-- **THEN** the model states the assumption it used rather than presenting the result as measured
+- **THEN** dependent evaluation stops unless the planning scenario explicitly supplies a reachable roll assumption
+- **AND** such an assumption is never presented as measured state
 
 #### Scenario: A best-in-slot plan assumes a companion roll
 
@@ -408,8 +537,8 @@ rotation, because that selection is random among available skills.
 
 - **WHEN** a player's mercenary was present during the owner's progression and carries the accumulated
   increment
-- **THEN** the model still reports the newly hired value
-- **AND** the report states that the player's own output will be higher
+- **THEN** raw mode reports the achieved increment
+- **AND** named known-defect-normalized mode reports the newly hired value with the defect reference
 
 #### Scenario: Two mercenaries of the same archetype are compared
 
@@ -502,26 +631,33 @@ that cadence as a reachable prediction while a companion must close distance bet
 
 ### Requirement: A skill the engine would refuse is not scheduled
 
-The rotation SHALL NOT schedule an action the engine refuses at the modelled state. A skill can carry a precondition the engine
-tests before the cast. The solver SHALL treat such a precondition as a constraint, not as a cost.
+The rotation SHALL check every engine-tested precondition at the skill's cast event. The solver SHALL
+treat a precondition as a state constraint, not as a cost, and SHALL update the constraint after every
+event that can change it.
 
-The engine refuses an assassination cast above a quarter of target health. Such a skill SHALL be
-excluded from a sustained rotation against that target. Where such a skill is excluded, the model
-SHALL say so rather than omitting the skill silently.
+The engine refuses an assassination cast above a quarter of target health. The evaluator SHALL exclude
+that cast while the target is above the threshold, and SHALL consider it only after the timeline reaches
+the threshold. A result SHALL name each excluded action and its state-based reason.
 
-Rationale: a solver that ignores a precondition reports output the game will not produce, and the
-reader cannot tell which of the two is wrong.
+A solver that ignores a precondition reports output the game will not produce, and the reader cannot
+tell which of the two is wrong.
 
 #### Scenario: An assassination skill is available against a full-health target
 
 - **WHEN** the rotation is solved against the default target at full health
-- **THEN** the assassination skill contributes nothing
-- **AND** the result states that the skill was excluded and why
+- **THEN** the assassination skill is excluded at that state
+- **AND** the result states the health threshold that caused the exclusion
+
+#### Scenario: An assassination threshold is crossed
+
+- **WHEN** earlier landed damage reduces target health below one quarter
+- **THEN** a later assassination cast is eligible if its other gates pass
+- **AND** the timeline records the threshold crossing before the cast
 
 #### Scenario: A skill has no precondition
 
 - **WHEN** a damaging skill carries no engine-tested precondition
-- **THEN** it is available to the rotation on its cost and cadence alone
+- **THEN** it is available to the rotation on its current cost and cadence alone
 
 ### Requirement: Spell haste is distinct from haste
 
@@ -541,23 +677,52 @@ timing stat the model credits to a caster.
 - **WHEN** spell haste rises for a rotation of spells
 - **THEN** each cast time falls and the period does not
 
-### Requirement: A known defect is modelled as the behaviour it should have
+### Requirement: Known-defect normalization is separate from raw parity
 
-Where the game holds a recorded defect, the model SHALL represent the intended behaviour, and the
-affected output SHALL name the defect and the report that records it.
+The running game SHALL remain authoritative for raw parity. Where an evidenced, recorded defect
+changes a supported quantity, the evaluator MAY produce a known-defect-normalized result that models
+the intended behavior. The normalized result SHALL name the defect, evidence reference, affected
+quantities, and evaluation mode. It SHALL not alter, hide, or overwrite the raw diagnostic result.
 
-The model SHALL NOT value a build by an outcome that depends on a defect, because a published figure
-that rests on one becomes wrong when it is fixed.
+The planner SHALL make objective mode explicit and SHALL compare candidates only within the same mode.
+The only objective modes SHALL be raw and a named known-defect-normalized mode. A raw result MAY support
+a recommendation when no known defect affects the compared objective. When a defect affects the
+objective, raw output SHALL remain diagnostic and SHALL not give a recommendation an advantage from
+that defect. A named normalized mode MAY support the affected recommendation only with current evidence
+for that defect; otherwise the affected recommendation SHALL be withheld.
 
-#### Scenario: A build would gain from a defect
+A defect SHALL not be normalized without current evidence. If no evidence supports normalization, the
+result SHALL remain raw or unverified, and the planner SHALL withhold any recommendation affected by
+that defect.
 
-- **WHEN** an arrangement scores higher only because of a recorded defect
-- **THEN** the model scores the intended behaviour and the report is cited
+#### Scenario: A raw game result differs from normalized output
+
+- **WHEN** a recorded defect changes a measured quantity
+- **THEN** the report contains separate raw and normalized outputs
+- **AND** each output names its mode and evidence identity
+
+#### Scenario: A build gains only from a known defect
+
+- **WHEN** a build ranks higher in raw mode only because of a recorded defect
+- **THEN** a named, evidenced normalized mode scores the intended behavior
+- **AND** the raw higher score remains a diagnostic, not an affected recommendation
+
+#### Scenario: Candidates use different objective modes
+
+- **WHEN** one candidate is raw and another is known-defect-normalized
+- **THEN** the planner refuses to compare them as one ranking
+- **AND** it requires an explicit common mode
+
+#### Scenario: A defect lacks evidence
+
+- **WHEN** a suspected defect has no current evidence reference
+- **THEN** the evaluator does not normalize it
+- **AND** the result states that normalized accuracy is unverified and withholds any affected recommendation
 
 ### Requirement: A resource multiplier is applied only where the game applies it
 
-The model SHALL scale a resource pool by its multiplier only where the game's own maximum reads that
-multiplier.
+Raw evaluation SHALL scale a resource pool by its multiplier only where the game's own maximum reads
+that multiplier. A named normalization may differ only under the separate known-defect contract.
 
 Mana and health are scaled by theirs. Energy is not, so an entity whose resource is energy SHALL be
 modelled at its base curve plus its flat bonuses, whatever multiplier the game stores for it.
@@ -610,30 +775,95 @@ takes a ceiling.
 - **WHEN** the attacker is below the target's level and the level term is negative
 - **THEN** the model applies a ceiling to the negative product, matching the engine
 
-### Requirement: Predicted values are validated against the running game
+### Requirement: Published values require per-quantity production parity evidence
 
-Before a figure is published, the model SHALL be compared against the same quantity read from a running
-game, for a character built to a stated definition rather than for whichever character happened to be
-available.
+Before a figure is published as verified, the production evaluator SHALL be compared with the same
+quantity read from a running game through a complete, qualified harness report. The harness SHALL use
+the shared logical build data through a checked adapter and SHALL invoke the same production evaluator,
+data identity, and model identity used for planner output. It SHALL not use a test-only formula or
+measured caster totals as prediction inputs.
 
-A comparison SHALL cover the stat sheet, the action interval, and the damage of a single hit, and SHALL
-be recorded so that a later run can detect a change. Each recorded comparison SHALL name the game build
-it was taken against.
+The comparison SHALL cover every required quantity separately, including stat totals, action interval,
+resource transitions, effect and target-state transitions where applicable, and damage quantities. A
+reported damage comparison SHALL preserve requested damage and health taken separately. Raw parity and
+known-defect-normalized output SHALL be compared and reported separately.
+
+A mismatch SHALL preserve the running-game observation and report the failed quantity, state, identities,
+and protocol. A statistical rejection SHALL identify the rejected criterion and evidence, but SHALL NOT
+claim a model cause without independent evidence. A game-version or identity mismatch SHALL prevent a
+verified claim.
 
 #### Scenario: The model changes
 
-- **WHEN** a formula or coefficient in the model changes
-- **THEN** the affected quantity is re-compared against a live reading before publication
+- **WHEN** a formula, coefficient, event rule, or approximation changes
+- **THEN** every affected quantity is re-compared with current qualified live evidence before publication
+- **AND** unaffected quantities retain their evidence identity
 
-#### Scenario: A comparison disagrees
+#### Scenario: One quantity disagrees
 
-- **WHEN** a live reading disagrees with the model
-- **THEN** the model is corrected and the live reading is treated as authoritative
+- **WHEN** one measured quantity disagrees with production prediction
+- **THEN** the report identifies that quantity and preserves the matching quantities as separate results
+- **AND** it does not replace the prediction with the measured value
+
+#### Scenario: A statistical criterion rejects a comparison
+
+- **WHEN** a declared statistical test rejects a quantity
+- **THEN** the report records the test, sample, and rejection
+- **AND** it does not label a particular model term as the cause from rejection alone
+
+#### Scenario: The evaluator identity differs
+
+- **WHEN** a harness report uses an evaluator, data, or model identity different from the planner result
+- **THEN** the evidence is not qualified for publication
+- **AND** the identity mismatch is named
 
 #### Scenario: The game changes under a recorded comparison
 
-- **WHEN** the installed build differs from the build a recorded comparison names
+- **WHEN** the installed assembly or game-data identity differs from a recorded comparison
 - **THEN** the difference is reported before the comparison is used
+- **AND** the old evidence does not qualify the new result
+
+### Requirement: Verified claims require a complete qualified harness report
+
+A verified model claim SHALL require a complete harness report that records the logical build data and
+achieved state, fixture execution data, target input provenance, game assembly identity and label,
+serialized schema and any applicable capture schema identity, game-data identity, evaluator and model identities, objective
+mode, scenario and protocol versions, units and windows, per-quantity action and event counts, raw
+observations and sequences, attribution fidelity, comparison outcomes, and any normalization output.
+
+The report SHALL distinguish setup failure, incomplete evidence, statistical rejection, model
+mismatch, and qualified success. A missing required artifact, incompatible identity, insufficient
+sample, or unqualified approximation SHALL prevent a verified claim. A diagnostic report MAY preserve
+observations, but SHALL not qualify a claim by itself. Qualification SHALL require passing all required
+comparisons, the reviewed baseline gate, persisted evidence, cleanup, and final isolation readback.
+Initial baseline qualification SHALL follow the harness's explicit reviewed promotion procedure rather
+than silently pass a missing baseline. A numeric accuracy boundary additionally requires independent
+validation. The harness report SHALL not require capture to
+generate it, and a capture SHALL not generate it as a side effect.
+
+#### Scenario: A complete report qualifies a claim
+
+- **WHEN** all required state, comparisons, identities, protocol, reviewed baseline, persistence, cleanup, and isolation gates pass
+- **THEN** the report may qualify the stated quantities and domain
+- **AND** it identifies the production evaluator and model used
+
+#### Scenario: A required evidence artifact is missing
+
+- **WHEN** a report lacks a required identity, achieved state, quantity observation, protocol field, or raw sequence
+- **THEN** the result is incomplete or diagnostic
+- **AND** it has no verified accuracy claim
+
+#### Scenario: A statistical comparison rejects
+
+- **WHEN** a complete report fails a predeclared statistical criterion
+- **THEN** the report records the rejection as a failed comparison
+- **AND** it does not convert that rejection into a proven model cause or qualified evidence
+
+#### Scenario: A capture is read without harness execution
+
+- **WHEN** a local capture is inspected or evaluated without a complete harness run
+- **THEN** capture provenance remains available
+- **AND** the result is not called a qualified harness report
 
 ### Requirement: The target is an explicit parameter set
 
@@ -655,25 +885,96 @@ mitigation value for each damage school.
 - **THEN** the evaluation fails rather than substituting a default
 
 
-### Requirement: Every evaluation names its scenario
+### Requirement: Every evaluation names a complete scenario
 
-The model SHALL evaluate a build only with a scenario that states the target, fight duration, initial
-resource and cooldown state, active buffs and consumables, ammunition supply, incoming-damage events,
-included controlled entities, and target count.
+The evaluator SHALL evaluate a build only with a scenario that states the named target and its
+independent parameters, finite or steady-state horizon, initial resources and cooldowns, initial
+health and effects, active buffs and consumables, ammunition and durability policy, incoming-damage
+events, included controlled entities, target count, schedule policy, event-boundary rules, and
+objective mode. Harness parity SHALL retain the explicit fixture action sequence and refusal policy.
+Planner recommendations MAY solve the sequence from declared skill inclusion and exclusion; both
+paths SHALL use the same production event/state evaluator.
 
-The model SHALL refuse a missing required scenario field. It SHALL support one target in this change
-and SHALL refuse another target count.
+A harness comparison SHALL distinguish requested state from achieved state and stop dependent
+measurement when they differ. A planning scenario without a live character SHALL declare hypothetical
+inputs rather than fabricate achieved-state evidence. The scenario SHALL identify the source and
+provenance of independently supplied target state. A missing required input SHALL block the dependent
+evaluation rather than receive a default or measured replacement. A partial local capture MAY remain
+available for read-only inspection, but it SHALL not satisfy a missing required input.
+
+This change supports one target. It SHALL refuse another target count. Pet state MAY be recorded for
+meter accounting and provenance, but the evaluator SHALL not optimize pet builds.
 
 #### Scenario: A default evaluation runs
 
 - **WHEN** the planner evaluates its default build
 - **THEN** the result names the stationary, non-attacking, full-health training dummy scenario
-- **AND** the scenario states every required initial condition
+- **AND** it states initial resources, cooldowns, effects, schedule, horizon, boundary rules, ammunition,
+  durability, included entities, target count, and objective mode
+
+#### Scenario: A required target input is absent
+
+- **WHEN** the selected scenario does not provide a target value required by the evaluator
+- **THEN** the dependent evaluation stops as incomplete
+- **AND** it does not copy a caster value or prediction into the target input
 
 #### Scenario: A multi-target scenario is requested
 
 - **WHEN** the scenario requests more than one target
 - **THEN** evaluation fails with the unsupported target-count field named
+
+### Requirement: Shared build data and checked adapters preserve provenance
+
+Fixtures, local captures, and planner inputs SHALL share versioned logical build data without sharing
+identical outer records. Logical build data SHALL include progression, allocations, equipment and
+augments, controlled companions and their rolls and equipment, consumables, ammunition, and quantities.
+The version-only `BuildEnvelope` SHALL identify version axes only. It SHALL not replace the logical
+build data. This requirement does not prescribe new serialized field names.
+
+Fixture execution data SHALL remain separate from build data and SHALL contain target, initial state,
+action schedule, facing, horizon, and sampling policy. Capture completeness, container integrity,
+producer provenance, and capture state SHALL remain separate from build data.
+
+Checked adapters SHALL reject unknown schemas or failed container integrity, preserve missing versus
+empty sections, and invoke the same production evaluator used for planner results. A required missing
+or unread section SHALL block only its dependent evaluation. It SHALL not block read-only inspection
+of the captured sections, and capture alone SHALL not claim a harness report or verified parity.
+
+Character and meter capture SHALL be read-only. Meter reset SHALL be an explicit, separate mutating
+operation and SHALL never run as a capture side effect. Local capture parsing SHALL remain local and
+SHALL not upload its contents. Pet state MAY be captured for provenance and meter accounting, but the
+optimizer SHALL not select a pet build.
+
+#### Scenario: A fixture and capture use different outer records
+
+- **WHEN** a fixture and a capture contain the same logical build data
+- **THEN** each retains its execution or capture metadata
+- **AND** the evaluator adapts both to the same production evaluation path
+
+#### Scenario: A capture section is missing
+
+- **WHEN** a capture marks skills or equipment as missing or unread
+- **THEN** read-only inspection can show the captured sections and completeness state
+- **AND** an evaluation that needs that section stops as incomplete
+- **AND** it does not treat the section as empty
+
+#### Scenario: A capture is unknown or corrupt
+
+- **WHEN** a schema is unsupported or container integrity does not match the payload
+- **THEN** the adapter refuses the capture before evaluation
+- **AND** it reports the failed identity or integrity check
+
+#### Scenario: Capture and meter operations are requested
+
+- **WHEN** character capture or meter capture runs
+- **THEN** it does not mutate gameplay or reset the meter
+- **AND** an explicit meter-reset command is required for reset
+
+#### Scenario: A local capture is used without a harness
+
+- **WHEN** a player imports a valid local capture without running a fixture
+- **THEN** the evaluator can inspect or use complete build data according to its input policy
+- **AND** the result does not claim harness verification merely because capture succeeded
 
 ### Requirement: Equipment and skill effects are exhaustively classified
 
@@ -695,21 +996,37 @@ classification.
 - **THEN** the build is not ranked
 - **AND** the result names the unsupported effect
 
-### Requirement: Refresh procs and cooldown changes affect steady state
+### Requirement: Refresh procs and cooldown changes follow event state
 
-A refresh-on-proc effect SHALL contribute according to its proc probability, duration, and triggering
-cadence. A cooldown-reduction effect SHALL alter every active cooldown that the game alters and no
-other timing gate.
+At each eligible landed event, the evaluator SHALL apply the proc probability and refresh rule.
+Eligibility alone SHALL NOT guarantee a proc or extend its expiry. A
+steady-state contribution SHALL use the proc probability, duration, and triggering cadence only when
+the stationary expectation is proven or validated for the stated domain. A cooldown-reduction effect
+SHALL alter every active cooldown that the game alters and no other timing gate.
 
-#### Scenario: A proc duration can be refreshed
+#### Scenario: A proc duration is refreshed in a finite window
 
-- **WHEN** another eligible hit lands before the proc expires
-- **THEN** the steady-state uptime accounts for the refresh
+- **WHEN** the modelled proc triggers from an eligible hit before the effect expires
+- **THEN** the effect expiry is extended according to the engine rule
+- **AND** the finite-window contribution records the refresh event
+
+#### Scenario: A proc lands after expiry
+
+- **WHEN** the modelled proc triggers after the effect has expired
+- **THEN** the evaluator applies a new proc under the landing rule
+- **AND** it does not treat the event as a continuous refresh
+
+#### Scenario: A steady-state proc has validated uptime
+
+- **WHEN** repeated event windows validate a stationary proc expectation
+- **THEN** the sustained result uses the stated expectation or approximation
+- **AND** it identifies the validation domain instead of claiming finite-window exactness
 
 #### Scenario: A cooldown-reduction buff is active
 
 - **WHEN** the game applies that buff to a skill cooldown
-- **THEN** the model applies the same reduction before solving the rotation
+- **THEN** the evaluator applies the same reduction before scheduling the affected skill
+- **AND** it leaves unrelated timing gates unchanged
 
 ### Requirement: Ammunition and durability have explicit policies
 
@@ -745,21 +1062,38 @@ damage alone.
 - **WHEN** the scenario supplies timed incoming-damage events
 - **THEN** the resource engine derives returns from those events in their stated order
 
-### Requirement: Uncertainty components remain separate
+### Requirement: Accuracy, finite-run variation, and search gap remain separate
 
-A result SHALL report model error, finite-run variance, and search gap as separate quantities when they
-apply. A ranking equivalence band SHALL derive from search-gap evidence. A prediction boundary SHALL
-derive from model validation evidence.
+A result SHALL report model error, finite-window variation, and search gap as separate quantities when
+they apply. Model error SHALL come only from qualified current validation. Finite-window variation
+SHALL come from the declared observation protocol. Search gap SHALL come only from independent search
+comparison for a named benchmark domain and SHALL describe ranking equivalence, not model accuracy or
+a prediction boundary.
 
-An intentional game-defect normalization SHALL be listed separately and SHALL NOT be absorbed into
-model error.
+A ranking equivalence band SHALL apply only to candidates with the same evaluator, model, game-data,
+scenario, and objective mode. It SHALL not be reused as a numeric prediction boundary. An intentional
+game-defect normalization SHALL remain separate from all three quantities and from raw parity.
 
-#### Scenario: Two candidate builds are close
+#### Scenario: Two candidates fall inside a measured search gap
 
-- **WHEN** their objective difference falls inside the ranking equivalence band
-- **THEN** the planner presents them as equivalent rather than as an ordered pair
+- **WHEN** candidates share the comparison tuple and their objective difference falls inside the named search-gap band
+- **THEN** the planner presents them as ranking-equivalent alternatives
+- **AND** it does not describe the band as model accuracy
 
 #### Scenario: A measured rate is compared with a prediction
 
-- **WHEN** finite-run variance and model error both apply
+- **WHEN** finite-window variation and qualified model error both apply
 - **THEN** the report names both values and their derivations
+- **AND** it does not replace either with the search gap
+
+#### Scenario: Search evidence lacks model validation
+
+- **WHEN** a search-gap benchmark exists without current independent model validation
+- **THEN** it can support ranking equivalence only
+- **AND** the result has no numeric model-accuracy boundary
+
+#### Scenario: Objective modes differ
+
+- **WHEN** candidates use raw and known-defect-normalized modes
+- **THEN** no shared equivalence band is applied
+- **AND** each mode remains separately reported
