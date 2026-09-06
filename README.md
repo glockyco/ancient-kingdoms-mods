@@ -238,6 +238,26 @@ hotrepl --url ws://127.0.0.1:18590 eval 'UnityEngine.Application.productName'
 `build-tool` owns host deployment and game launch. HotRepl clients connect directly to
 `ws://127.0.0.1:18590` for inspection and automation.
 
+### Combat fixture validation
+
+Close other Ancient Kingdoms instances before running:
+
+```bash
+dotnet run --project build-tool verify --fresh-scratch
+```
+
+`verify` currently validates fixture descriptors in a scratch world. It does not measure every fixture, compare planner predictions, or promote a baseline.
+A successful result reports `verified: false` and `status: validation-only`.
+
+The command takes installation and port locks before changing scratch state. It backs up the existing player database and sidecars, then confirms the runtime launch identity and exact scratch path.
+Scratch paths with traversal or symbolic links are refused. An absent player database remains an absence to check after the run.
+
+Validation does not qualify scratch reuse. Each run prepares fresh scratch state, even without `--fresh-scratch`. Legacy validation markers cannot authorize reuse.
+After shutdown, the command removes unqualified scratch state only when both the endpoint and native game process have stopped.
+If shutdown cannot be confirmed, it reports failure and leaves scratch state untouched. Player-save and sidecar hashes are checked after shutdown handling.
+
+Do not attach another HotRepl client during verification or export. A new WebSocket client disconnects the active client.
+
 ## Development checks
 
 Run the checks for the area you changed:

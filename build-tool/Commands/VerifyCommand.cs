@@ -16,13 +16,13 @@ using Spectre.Console.Cli;
 namespace BuildTool.Commands;
 
 /// <summary>
-/// Runs a verification session: confirms the installation matches the decompiled evidence,
+/// Runs an isolated fixture-validation session: confirms the installation matches the evidence,
 /// backs up the player save, launches the game pointed at a scratch database, and confirms
 /// the save is untouched afterwards.
 /// </summary>
 /// <remarks>
 /// The isolation is confirmed at three points rather than trusted once: the game reports
-/// which database it opened, the run refuses unless that path is a scratch one, and the
+/// which database it opened, the run requires the exact owned canonical path, and the
 /// save's content hash is compared before and after.
 /// </remarks>
 public sealed class VerifyCommand : AsyncCommand<VerifyCommand.Settings>
@@ -83,6 +83,10 @@ public sealed class VerifyCommand : AsyncCommand<VerifyCommand.Settings>
         [CommandOption("--allow-build-mismatch")]
         [Description("Measure even when the installation does not match the decompiled evidence.")]
         public bool AllowBuildMismatch { get; set; }
+
+        [CommandOption("--fresh-scratch")]
+        [Description("Delete verification-owned scratch state and rebuild it before the run.")]
+        public bool FreshScratch { get; set; }
     }
 
     internal Task<int> RunAsync(Settings settings, CancellationToken cancellationToken = default) =>
@@ -106,116 +110,119 @@ public sealed class VerifyCommand : AsyncCommand<VerifyCommand.Settings>
                 + " Pass --allow-build-mismatch to measure anyway, accepting that results and "
                 + "citations describe different builds.");
 
-        // The recorded path is the one the game reported, in its own terms, so it is
-        // translated before it is looked for.
-        var scratch = ScratchStates.Plan(
-            MarkerDirectory(),
-            CurrentMarker(build, databasePath: null),
-            path => WinePath.ExistsOnHost(path, _config.WinePrefix));
-        Console.WriteLine($"Scratch: {scratch.Detail}");
-
-        var backup = PlayerSave.Create(_config.GamePath, BackupRoot(), _now());
-        Console.WriteLine($"Save: {backup.Detail}");
-        if (!backup.Ok)
-            return Fail(backup.Detail);
-
-        var before = backup.Snapshot!;
-        Console.WriteLine();
-
+        SaveSnapshot? before = null;
+        string? backupDirectory = null;
+        var scratchPrepared = false;
+        var sessionToken = Guid.NewGuid().ToString("N");
         var runnerOptions = new HotReplRunnerOptions
         {
             Endpoint = new Uri(_config.HotReplEndpoint),
             ReadinessTimeout = _hotReplReadinessTimeout ?? TimeSpan.FromMinutes(5),
             PollInterval = _hotReplPollInterval ?? TimeSpan.FromSeconds(3),
             FixtureMatrixJson = JsonConvert.SerializeObject(FixtureFiles.ReadMatrix(_repoRoot)),
+            VerificationSession = sessionToken,
+            VerificationGamePath = _config.GamePath,
+            VerificationWinePrefix = _config.WinePrefix,
         };
 
+        VerificationRunnerResult? completedRun = null;
         var session = new GameSession(
             _config, _runner, _unityDependenciesPreflight, _endpointAnswers);
         var outcome = await session.RunAsync(
             new GameSessionRequest
             {
                 UnityVersionOverride = settings.UnityVersion,
-                Purpose = "combat verification",
+                Purpose = "combat fixture validation",
+                SessionToken = sessionToken,
+                BeforeLaunch = ct =>
+                {
+                    ct.ThrowIfCancellationRequested();
+                    VerificationScratch.Validate(_config.GamePath);
+                    before = PlayerSave.Read(_config.GamePath)
+                        ?? new SaveSnapshot(Array.Empty<SaveFileHash>());
+                    if (before.Files.Count == 0)
+                    {
+                        Console.WriteLine("Save: absent before the run; no backup is required.");
+                    }
+                    else
+                    {
+                        var backup = PlayerSave.Create(_config.GamePath,
+                            PlayerSave.DirectoryFor(_config.GamePath), _now());
+                        Console.WriteLine($"Save: {backup.Detail}");
+                        if (!backup.Ok)
+                            throw new IOException(backup.Detail);
+                        if (!before.Matches(backup.Snapshot!))
+                            throw new IOException("The player save changed while creating its backup.");
+                        backupDirectory = backup.Directory;
+                    }
+
+                    ct.ThrowIfCancellationRequested();
+                    // Validation does not produce a per-fixture materialization record.
+                    // Neither a legacy marker nor a prior validation can qualify reuse.
+                    scratchPrepared = true;
+                    VerificationScratch.Prepare(_config.GamePath, reset: true);
+                    Console.WriteLine(settings.FreshScratch
+                        ? "Scratch: fresh validation state requested."
+                        : "Scratch: no qualified materialization; preparing fresh validation state.");
+                    return Task.CompletedTask;
+                },
+                AfterShutdown = () =>
+                {
+                    if (scratchPrepared)
+                        VerificationScratch.Prepare(_config.GamePath, reset: true);
+                    return Task.CompletedTask;
+                },
+                AfterSession = () =>
+                {
+                    if (before is not null)
+                    {
+                        var after = PlayerSave.Read(_config.GamePath)
+                            ?? new SaveSnapshot(Array.Empty<SaveFileHash>());
+                        if (!before.Matches(after))
+                            throw new IOException("The player save changed during the run. Changed: "
+                                + string.Join(", ", before.Differences(after)) + ".");
+                        Console.WriteLine("Isolation: the player save and sidecars are unchanged.");
+                    }
+                    return Task.CompletedTask;
+                },
             },
-            ct => _verificationRunner(runnerOptions, ct),
+            async ct =>
+            {
+                completedRun = await _verificationRunner(runnerOptions, ct);
+                Console.WriteLine(completedRun.Ok
+                    ? $"Run: {completedRun.Message}" : $"Run failed: {completedRun.Message}");
+                if (completedRun.ResolvedDatabasePath is not null)
+                    Console.WriteLine($"Runtime database: {completedRun.ResolvedDatabasePath}");
+                return completedRun;
+            },
             cancellationToken);
 
         if (!outcome.Ok)
         {
-            var failure = outcome.Failure!;
-            // Isolation still has to be proven: the game ran, however it ended.
-            ReportIsolation(before);
-            return Fail(failure.Message, failure.ExitCode);
+            var primary = completedRun is { Ok: false } ? completedRun.Message + "\n" : "";
+            return Fail(primary + outcome.Failure!.Message, outcome.Failure.ExitCode);
         }
 
         var run = outcome.Work!;
-        Console.WriteLine(run.Ok ? $"Run: {run.Message}" : $"Run failed: {run.Message}");
-
-        var isolation = ReportIsolation(before);
-
         if (!run.Ok)
             return Fail(run.Message, run.ExitCode);
-
-        if (isolation is not null)
-            return Fail(isolation);
-
-        // Record what was measured, including the database the game actually opened, so a
-        // later run can tell whether it may reuse this state.
-        ScratchStates.WriteMarker(
-            MarkerDirectory(), CurrentMarker(build, run.ResolvedDatabasePath));
 
         _resultStore.SetData(new
         {
             ok = true,
+            verified = false,
+            status = "validation-only",
             build = build.Recorded?.ShortName,
             gameVersion = build.Recorded?.GameVersion,
             resolvedDatabasePath = run.ResolvedDatabasePath,
             characterCount = run.CharacterCount,
-            scratch = scratch.Decision.ToString(),
-            backupDirectory = backup.Directory,
+            scratch = "fresh-validation",
+            backupDirectory,
         });
 
-        Console.WriteLine("Verification run complete.");
+        Console.WriteLine("Fixture validation complete. Combat parity and baseline verification were not run.");
         return ExitCodes.Success;
     }
-
-    /// <summary>
-    /// Compares the save against the snapshot taken before the run. Returns null when it is
-    /// unchanged, or a message naming what moved.
-    /// </summary>
-    private string? ReportIsolation(SaveSnapshot before)
-    {
-        var after = PlayerSave.Read(_config.GamePath);
-        if (after is null)
-            return "The player save is absent after the run, so isolation cannot be confirmed.";
-
-        if (before.Matches(after))
-        {
-            Console.WriteLine("Isolation: the player save is unchanged.");
-            return null;
-        }
-
-        return "The player save changed during the run, which the redirect exists to prevent. "
-            + $"Changed: {string.Join(", ", before.Differences(after))}.";
-    }
-
-    /// <summary>
-    /// Where the record of the retained scratch state lives. Beside the save rather than in
-    /// the repository, because it describes the installation and is not a committed artifact.
-    /// </summary>
-    private string MarkerDirectory() => PlayerSave.DirectoryFor(_config.GamePath);
-
-    private ScratchMarker CurrentMarker(GameBuildCheck build, string? databasePath) =>
-        new(build.InstalledAssemblySha256 ?? build.Recorded?.AssemblySha256 ?? "unknown",
-            ScratchStates.HashFixtures(_repoRoot),
-            databasePath);
-
-    /// <summary>
-    /// A backup belongs beside the save it copies, so that finding one never depends on
-    /// knowing where the tooling was run from.
-    /// </summary>
-    private string BackupRoot() => PlayerSave.DirectoryFor(_config.GamePath);
 
     private int Fail(string message, int exitCode = ExitCodes.CommandFailed)
     {

@@ -80,6 +80,22 @@ validated accuracy claims. Do not close those dependencies from this change.
       parent, and cleanup preserves original failure plus isolation results. Run a fresh/reused
       scratch safety spike before matrix execution.
 
+### Safety component evidence
+
+The validation-only safety spike passed against game 0.9.31.1, Steam build 24986533
+(assembly prefix `bd2521453b35`). It confirmed the launch identity, exact scratch database
+path, descriptor validation, native shutdown, scratch cleanup, and unchanged player-save
+hashes. The endpoint stopped after 4.6 seconds, and the native process stopped after
+6.5 seconds. Shutdown checks retain ownership while waiting for both.
+
+A separate process holding the installation lock caused refusal before backup or scratch
+mutation. A concurrent verification command refused the occupied endpoint without a
+WebSocket handshake. The command does not write validation-only reuse markers.
+
+Tasks 2.9 and 2.10 remain open. Native shutdown before the first authenticated runtime
+response and an actual retained-scratch reuse spike still need acceptance evidence.
+These results do not qualify per-fixture materialization, matrix execution, or combat parity.
+
 ## 3. Materialization commands
 
 - [x] 3.1 Add a mod project that registers typed runtime commands, following the existing command-mod

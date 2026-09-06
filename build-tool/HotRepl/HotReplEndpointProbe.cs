@@ -1,5 +1,5 @@
 using System;
-using System.Net.WebSockets;
+using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -15,18 +15,16 @@ internal static class HotReplEndpointProbe
     {
         using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         timeoutCts.CancelAfter(timeout);
-        using var socket = new ClientWebSocket();
+        using var socket = new TcpClient();
 
         try
         {
-            await socket.ConnectAsync(endpoint, timeoutCts.Token);
-            return socket.State == WebSocketState.Open;
+            // A WebSocket handshake replaces HotRepl's active client. Occupancy checks
+            // must not send an application handshake to a session they do not own.
+            await socket.ConnectAsync(endpoint.Host, endpoint.Port, timeoutCts.Token);
+            return true;
         }
-        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
-        {
-            return false;
-        }
-        catch (WebSocketException)
+        catch (SocketException exception) when (exception.SocketErrorCode == SocketError.ConnectionRefused)
         {
             return false;
         }

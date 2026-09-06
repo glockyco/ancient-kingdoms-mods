@@ -10,9 +10,12 @@ namespace BuildTool.CombatVerification;
 /// <summary>Reads committed fixtures and checks their structure before the game starts.</summary>
 internal static class FixtureFiles
 {
+    internal static string DirectoryFor(string repoRoot) =>
+        Path.Combine(repoRoot, "verification", "fixtures");
+
     internal static FixtureMatrix ReadMatrix(string repoRoot)
     {
-        var directory = BuildTool.Game.ScratchStates.FixturesDirectory(repoRoot);
+        var directory = DirectoryFor(repoRoot);
         var files = Directory.Exists(directory)
             ? Directory.GetFiles(directory, "*.json", SearchOption.AllDirectories)
             : Array.Empty<string>();
@@ -37,7 +40,7 @@ internal static class FixtureFiles
 
     internal static IReadOnlyList<string> ValidateShapes(string repoRoot)
     {
-        var directory = BuildTool.Game.ScratchStates.FixturesDirectory(repoRoot);
+        var directory = DirectoryFor(repoRoot);
         if (!Directory.Exists(directory))
             return Array.Empty<string>();
 

@@ -12,6 +12,9 @@ public sealed class HotReplRunnerOptions
     public required Uri Endpoint { get; init; }
     public bool Screenshots { get; init; }
     public string? FixtureMatrixJson { get; init; }
+    public string? VerificationSession { get; init; }
+    public string? VerificationGamePath { get; init; }
+    public string? VerificationWinePrefix { get; init; }
     public TimeSpan ReadinessTimeout { get; init; } = TimeSpan.FromMinutes(3);
     public TimeSpan JobTimeout { get; init; } = TimeSpan.FromMinutes(60);
     public TimeSpan PollInterval { get; init; } = TimeSpan.FromSeconds(3);

@@ -47,13 +47,22 @@ namespace HotReplCommands.Commands
                     "scratchPathUnresolved",
                     $"Could not resolve a scratch path beside '{previous}'.");
 
-            if (!ScratchDatabase.IsScratch(resolved))
-                return Failed(context,
-                    "scratchPathRejected",
-                    $"Resolved path is not inside a scratch directory: {resolved}");
+            try
+            {
+                resolved = ScratchDatabase.ValidateOwnedPath(UnityEngine.Application.dataPath, resolved);
+            }
+            catch (System.IO.IOException exception)
+            {
+                return Failed(context, "scratchPathRejected", exception.Message);
+            }
+            catch (System.UnauthorizedAccessException exception)
+            {
+                return Failed(context, "scratchPathRejected", exception.Message);
+            }
 
             GameManager.pathFileDB = resolved;
             Il2Cpp.Database.Connect();
+            ScratchDatabase.ValidateOwnedPath(UnityEngine.Application.dataPath, GameManager.pathFileDB);
 
             return new ValueTask<ControlCommandResult<UseScratchDatabaseResult>>(
                 ControlCommandResult.Ok(new UseScratchDatabaseResult

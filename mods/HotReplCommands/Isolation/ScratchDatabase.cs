@@ -4,15 +4,9 @@ using System;
 namespace HotReplCommands.Isolation
 {
     /// <summary>
-    /// Resolves the scratch database path a verification run uses, and recognises
-    /// whether a path lies inside it. No game-assembly references, so the test
-    /// project compiles this directly.
+    /// Resolves a verification scratch path and checks the exact installation-owned path
+    /// before the runtime opens it. The helper has no game-assembly references.
     /// </summary>
-    /// <remarks>
-    /// The game runs under Wine and reports a Windows-style path, so both separators
-    /// occur. Every comparison here normalises to forward slashes rather than relying
-    /// on the host's separator.
-    /// </remarks>
     public static class ScratchDatabase
     {
         /// <summary>Directory, beside the game's own database, that a run owns.</summary>
@@ -36,8 +30,8 @@ namespace HotReplCommands.Isolation
         }
 
         /// <summary>
-        /// True when <paramref name="databasePath"/> lies inside a scratch directory.
-        /// A run refuses to start when this is false.
+        /// Recognises the absolute scratch database path shape without checking ownership.
+        /// The runtime must also call <see cref="ValidateOwnedPath"/> before opening it.
         /// </summary>
         public static bool IsScratch(string databasePath)
         {
@@ -45,11 +39,42 @@ namespace HotReplCommands.Isolation
                 return false;
 
             var normalized = Normalize(databasePath);
-            var segment = $"/{DirectoryName}/";
+            var absolute = normalized.StartsWith("/", StringComparison.Ordinal)
+                || (normalized.Length > 3 && char.IsLetter(normalized[0])
+                    && normalized[1] == ':' && normalized[2] == '/');
+            if (!absolute) return false;
+            foreach (var part in normalized.Split('/'))
+                if (part == "." || part == "..") return false;
+            return normalized.EndsWith($"/{DirectoryName}/{FileName}", StringComparison.Ordinal);
+        }
 
-            // A trailing directory name is not a database file, so require a following segment.
-            return normalized.IndexOf(segment, StringComparison.Ordinal) >= 0
-                   && !normalized.EndsWith(segment, StringComparison.Ordinal);
+        /// <summary>Checks the exact installation-owned path before the game opens it.</summary>
+        public static string ValidateOwnedPath(string dataDirectory, string databasePath)
+        {
+            if (!IsScratch(databasePath))
+                throw new System.IO.IOException($"Database path is not an absolute scratch database path: {databasePath}");
+            var data = System.IO.Path.GetFullPath(dataDirectory);
+            var directory = System.IO.Path.Combine(data, DirectoryName);
+            var expected = System.IO.Path.Combine(directory, FileName);
+            var actual = System.IO.Path.GetFullPath(databasePath);
+            var comparison = System.OperatingSystem.IsWindows()
+                ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+            if (!string.Equals(expected, actual, comparison))
+                throw new System.IO.IOException($"Database path '{actual}' differs from owned path '{expected}'.");
+
+            if (!System.IO.Directory.Exists(directory))
+                throw new System.IO.DirectoryNotFoundException($"Scratch parent directory is missing: {directory}");
+            foreach (var path in new[] { System.IO.Path.GetDirectoryName(data), data, directory, expected })
+            {
+                try
+                {
+                    var attributes = System.IO.File.GetAttributes(path);
+                    if ((attributes & System.IO.FileAttributes.ReparsePoint) != 0)
+                        throw new System.IO.IOException($"Owned database path contains a link: {path}");
+                }
+                catch (System.IO.FileNotFoundException) when (path == expected) { }
+            }
+            return actual;
         }
 
         private static string DirectoryOf(string path)

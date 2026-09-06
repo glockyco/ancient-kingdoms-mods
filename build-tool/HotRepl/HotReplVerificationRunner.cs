@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using BuildTool.Output;
+using BuildTool.Game;
 
 namespace BuildTool.HotRepl;
 
@@ -34,11 +35,12 @@ internal sealed class HotReplVerificationRunner
     private static readonly string[] MatrixCommands =
     {
         "game.useScratchDatabase", "world.summary", "world.enter",
-        "fixture.validateMatrix", "game.quit",
+        "fixture.createCharacter", "fixture.validateMatrix", "game.quit",
     };
 
     private readonly HotReplSession _session;
     private readonly HotReplRunnerOptions _options;
+    private bool _ownsRuntime;
 
     internal HotReplVerificationRunner(IHotReplTransport transport, HotReplRunnerOptions options)
     {
@@ -51,6 +53,7 @@ internal sealed class HotReplVerificationRunner
 
     public async Task<VerificationRunnerResult> RunAsync(CancellationToken ct)
     {
+        _ownsRuntime = false;
         try
         {
             return await RunCoreAsync(ct);
@@ -63,6 +66,39 @@ internal sealed class HotReplVerificationRunner
         {
             return new(false, ExitCodes.Internal,
                 $"Runner error: {ex.GetType().Name}: {ex.Message}");
+        }
+        finally
+        {
+            if (_ownsRuntime)
+            {
+                using var cleanup = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+                try
+                {
+                    var connectionFailure = await _session.ConnectAsync(cleanup.Token);
+                    if (connectionFailure is null)
+                    {
+                        using var identity = await _session.CallAsync("world.summary", "{}", cleanup.Token);
+                        var root = identity.RootElement;
+                        var matched = Text(root, "status") == "ok"
+                            && root.TryGetProperty("output", out var output)
+                            && Text(output, "verificationSession") == _options.VerificationSession;
+                        if (matched)
+                        {
+                            using var quit = await _session.CallAsync("game.quit", "{}", cleanup.Token);
+                            if (Text(quit.RootElement, "status") != "ok")
+                                Console.Error.WriteLine($"Shutdown request refused: {quit.RootElement.GetRawText()}");
+                        }
+                        else
+                            Console.Error.WriteLine("Shutdown refused: the runtime launch identity no longer matches.");
+                    }
+                    else
+                        Console.Error.WriteLine($"Shutdown connection failed: {connectionFailure.Message}");
+                }
+                catch (Exception exception)
+                {
+                    Console.Error.WriteLine($"Shutdown request failed: {exception.GetType().Name}: {exception.Message}");
+                }
+            }
         }
     }
 
@@ -83,6 +119,23 @@ internal sealed class HotReplVerificationRunner
         if (failure != null)
             return Failed(failure);
 
+        if (string.IsNullOrWhiteSpace(_options.VerificationSession)
+            || string.IsNullOrWhiteSpace(_options.VerificationGamePath)
+            || string.IsNullOrWhiteSpace(_options.VerificationWinePrefix))
+            return new(false, ExitCodes.InvalidUsage,
+                "Verification requires a launch session identity and an owned installation path.");
+
+        using var identity = await _session.CallAsync("world.summary", "{}", ct);
+        var identityRoot = identity.RootElement;
+        var identityOutput = identityRoot.TryGetProperty("output", out var identityValue)
+            ? identityValue : default;
+        if (Text(identityRoot, "status") != "ok"
+            || !string.Equals(Text(identityOutput, "verificationSession"),
+                _options.VerificationSession, StringComparison.Ordinal))
+            return new(false, ExitCodes.CommandFailed,
+                "Runtime session identity does not match the owned launch. No mutation or quit was sent.");
+        _ownsRuntime = true;
+
         using var redirect = await _session.CallAsync("game.useScratchDatabase", "{}", ct);
         var root = redirect.RootElement;
 
@@ -91,7 +144,6 @@ internal sealed class HotReplVerificationRunner
             : null;
         if (status != "ok")
         {
-            await _session.TryQuitAsync(ct);
             return new(false, ExitCodes.CommandFailed,
                 $"The game refused to use a scratch database: {DescribeError(root)}");
         }
@@ -112,27 +164,33 @@ internal sealed class HotReplVerificationRunner
 
         if (!isScratch)
         {
-            await _session.TryQuitAsync(ct);
             return new(false, ExitCodes.CommandFailed,
                 "The game did not confirm a scratch database, so the run stops before it can "
                 + $"reach player data. Resolved path: {resolvedPath ?? "not reported"}.",
                 resolvedPath);
         }
 
+        VerificationScratch.ConfirmReportedPath(
+            _options.VerificationGamePath, _options.VerificationWinePrefix, resolvedPath!);
+
         if (HasFixtureMatrix())
         {
             if (!(characters > 0))
             {
-                await _session.TryQuitAsync(ct);
-                return new(false, ExitCodes.CommandFailed,
-                    "The scratch database has no character, so runtime fixture rules are unavailable.",
-                    resolvedPath, characters);
+                var createError = await CallJobAsync(
+                    "fixture.createCharacter", FirstFixtureCharacterArgs(), ct);
+                if (createError != null)
+                {
+                    return new(false, ExitCodes.CommandFailed,
+                        "The fresh scratch database could not create a validation character: "
+                        + createError, resolvedPath, characters);
+                }
+                characters = 1;
             }
 
             var enterError = await CallJobAsync("world.enter", "{}", ct);
             if (enterError != null)
             {
-                await _session.TryQuitAsync(ct);
                 return new(false, ExitCodes.CommandFailed,
                     "The fixture validator could not enter the scratch world: " + enterError,
                     resolvedPath, characters);
@@ -152,20 +210,31 @@ internal sealed class HotReplVerificationRunner
                            && matrixOkElement.ValueKind == JsonValueKind.True;
             if (validationStatus != "ok" || !matrixOk)
             {
-                await _session.TryQuitAsync(ct);
                 return new(false, ExitCodes.CommandFailed,
                     "Runtime fixture validation failed: " + validationRoot.GetRawText(),
                     resolvedPath, characters);
             }
         }
 
-        await _session.TryQuitAsync(ct);
 
         return new(true, ExitCodes.Success,
             HasFixtureMatrix()
-                ? $"Redirected to {resolvedPath}; runtime fixture matrix accepted."
+                ? $"Redirected to {resolvedPath}; runtime fixture matrix accepted (validation only; not verified parity)."
                 : $"Redirected to {resolvedPath}.",
             resolvedPath, characters);
+    }
+
+    private string FirstFixtureCharacterArgs()
+    {
+        using var matrix = JsonDocument.Parse(_options.FixtureMatrixJson!);
+        var fixture = matrix.RootElement.GetProperty("fixtures")[0].GetProperty("fixture");
+        var character = fixture.GetProperty("character");
+        return JsonSerializer.Serialize(new System.Collections.Generic.Dictionary<string, string>
+        {
+            ["characterName"] = "Verifier",
+            ["class"] = character.GetProperty("class").GetString()!,
+            ["race"] = character.GetProperty("race").GetString()!,
+        });
     }
 
     private bool HasFixtureMatrix()

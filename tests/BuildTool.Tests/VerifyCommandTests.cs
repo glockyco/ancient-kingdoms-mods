@@ -20,6 +20,8 @@ namespace BuildTool.Tests;
 /// </summary>
 public sealed class VerifyCommandTests : IDisposable
 {
+    private static int _nextEndpointPort = 40000;
+    private readonly int _endpointPort = Interlocked.Increment(ref _nextEndpointPort);
     private readonly string _root = Directory.CreateTempSubdirectory("ak-verify").FullName;
 
     public void Dispose() => Directory.Delete(_root, recursive: true);
@@ -32,7 +34,7 @@ public sealed class VerifyCommandTests : IDisposable
         DataExportPath: Path.Combine(_root, "export"),
         WinePath: "/usr/bin/true",
         WinePrefix: Path.Combine(_root, "prefix"),
-        HotReplEndpoint: "ws://127.0.0.1:18590");
+        HotReplEndpoint: $"ws://127.0.0.1:{_endpointPort}");
 
     /// <summary>An installation complete enough to reach the gates under test.</summary>
     private string WriteInstallation(string assemblyContents = "build A", bool withSave = true)
@@ -68,13 +70,15 @@ public sealed class VerifyCommandTests : IDisposable
 
     private void WriteFixture(string body)
     {
-        var directory = ScratchStates.FixturesDirectory(RepoRoot);
+        var directory = BuildTool.CombatVerification.FixtureFiles.DirectoryFor(RepoRoot);
         Directory.CreateDirectory(directory);
         File.WriteAllText(Path.Combine(directory, "invalid.json"), body);
     }
 
     private (int ExitCode, CommandResultStore Store, FakeProcessRunner Runner) Run(
-        Func<HotReplRunnerOptions, CancellationToken, Task<VerificationRunnerResult>>? runner = null)
+        Func<HotReplRunnerOptions, CancellationToken, Task<VerificationRunnerResult>>? runner = null,
+        VerifyCommand.Settings? settings = null,
+        bool occupied = false)
     {
         var store = new CommandResultStore();
         var processRunner = new FakeProcessRunner();
@@ -96,9 +100,9 @@ public sealed class VerifyCommandTests : IDisposable
                     true, ExitCodes.Success, "redirected",
                     "C:/game/ancientkingdoms_Data/verification-scratch/game.dat", 6))),
             now: () => new DateTimeOffset(2026, 8, 26, 12, 0, 0, TimeSpan.Zero),
-            endpointAnswers: (_, _) => Task.FromResult(false));
+            endpointAnswers: (_, _) => Task.FromResult(occupied));
 
-        var exit = command.RunAsync(new VerifyCommand.Settings()).GetAwaiter().GetResult();
+        var exit = command.RunAsync(settings ?? new VerifyCommand.Settings()).GetAwaiter().GetResult();
         return (exit, store, processRunner);
     }
 
@@ -171,7 +175,7 @@ public sealed class VerifyCommandTests : IDisposable
     }
 
     [Fact]
-    public void AMismatchCanBeOverriddenDeliberately()
+    public async Task AMismatchCanBeOverriddenDeliberately()
     {
         WriteInstallation("build A");
         WriteSnapshot("0000000000000000");
@@ -189,10 +193,11 @@ public sealed class VerifyCommandTests : IDisposable
             hotReplPollInterval: TimeSpan.FromMilliseconds(1),
             verificationRunner: (_, _) => Task.FromResult(
                 new VerificationRunnerResult(true, ExitCodes.Success, "redirected", "C:/x", 1)),
-            now: () => DateTimeOffset.UnixEpoch);
+            now: () => DateTimeOffset.UnixEpoch,
+            endpointAnswers: (_, _) => Task.FromResult(false));
 
-        var exit = command.RunAsync(
-            new VerifyCommand.Settings { AllowBuildMismatch = true }).GetAwaiter().GetResult();
+        var exit = await command.RunAsync(
+            new VerifyCommand.Settings { AllowBuildMismatch = true });
 
         // It proceeds past the gate; the run itself is what decides the outcome.
         Assert.DoesNotContain("does not match the decompiled evidence",
@@ -203,16 +208,16 @@ public sealed class VerifyCommandTests : IDisposable
     // --- save gate ---
 
     [Fact]
-    public void RefusesWhenThereIsNoSaveToBackUp()
+    public void AnAbsentPlayerSaveRemainsAbsentAfterValidation()
     {
         var sha = WriteInstallation(withSave: false);
         WriteSnapshot(sha);
 
         var (exit, store, runner) = Run();
 
-        Assert.NotEqual(ExitCodes.Success, exit);
-        Assert.Contains("nothing can be backed up", store.ErrorDetails?.ToString());
-        Assert.Empty(runner.Calls);
+        Assert.Equal(ExitCodes.Success, exit);
+        Assert.Null(PlayerSave.Read(GamePath));
+        Assert.Contains("validation-only", store.Data?.ToString());
     }
 
     [Fact]
@@ -221,12 +226,15 @@ public sealed class VerifyCommandTests : IDisposable
         var sha = WriteInstallation();
         WriteSnapshot(sha);
 
-        Run();
+        var (exit, _, _) = Run(runner: (_, _) =>
+        {
+            var backup = Assert.Single(Directory.GetDirectories(
+                PlayerSave.DirectoryFor(GamePath), "game-dat-backup-*"));
+            Assert.Equal("player save", File.ReadAllText(Path.Combine(backup, "game.dat")));
+            return Task.FromResult(new VerificationRunnerResult(true, ExitCodes.Success, "redirected"));
+        });
 
-        var backup = Path.Combine(
-            PlayerSave.DirectoryFor(GamePath), "game-dat-backup-20260826-120000", "game.dat");
-        Assert.True(File.Exists(backup), backup);
-        Assert.Equal("player save", File.ReadAllText(backup));
+        Assert.Equal(ExitCodes.Success, exit);
     }
 
     // --- isolation gate ---
@@ -259,6 +267,30 @@ public sealed class VerifyCommandTests : IDisposable
 
         Assert.Equal(ExitCodes.Success, exit);
         Assert.Contains("verification-scratch", store.Data?.ToString());
+        Assert.Contains("validation-only", store.Data?.ToString());
+        Assert.Contains("verified = False", store.Data?.ToString());
+    }
+
+    [Fact]
+    public void FreshScratchRemovesOnlyTheVerificationOwnedDirectory()
+    {
+        var sha = WriteInstallation();
+        WriteSnapshot(sha);
+        var scratch = Path.Combine(
+            GamePath, "ancientkingdoms_Data", "verification-scratch");
+        Directory.CreateDirectory(scratch);
+        File.WriteAllText(Path.Combine(scratch, "game.dat"), "stale fixture state");
+        var playerSave = PlayerSave.DatabasePath(GamePath);
+
+        var (exit, _, _) = Run(settings: new VerifyCommand.Settings
+        {
+            FreshScratch = true,
+        });
+
+        Assert.Equal(ExitCodes.Success, exit);
+        Assert.True(Directory.Exists(scratch));
+        Assert.Empty(Directory.GetFiles(scratch));
+        Assert.Equal("player save", File.ReadAllText(playerSave));
     }
 
     [Fact]
@@ -272,5 +304,40 @@ public sealed class VerifyCommandTests : IDisposable
 
         Assert.Equal(ExitCodes.CommandFailed, exit);
         Assert.Contains("did not confirm", store.ErrorDetails?.ToString());
+    }
+
+    [Fact]
+    public void AnOccupiedEndpointPreservesScratchAndDoesNotBackUpOrLaunch()
+    {
+        var sha = WriteInstallation();
+        WriteSnapshot(sha);
+        VerificationScratch.Prepare(GamePath, reset: true);
+        var scratch = VerificationScratch.DirectoryFor(GamePath);
+        var database = Path.Combine(scratch, "game.dat");
+        File.WriteAllText(database, "active fixture");
+
+        var (exit, _, runner) = Run(settings: new VerifyCommand.Settings { FreshScratch = true }, occupied: true);
+
+        Assert.NotEqual(ExitCodes.Success, exit);
+        Assert.Empty(runner.Calls);
+        Assert.Equal("active fixture", File.ReadAllText(database));
+        Assert.Equal("player save", File.ReadAllText(PlayerSave.DatabasePath(GamePath)));
+        Assert.Empty(Directory.GetDirectories(PlayerSave.DirectoryFor(GamePath), "game-dat-backup-*"));
+    }
+
+    [Fact]
+    public void ARunnerFailureAndIsolationFailureAreBothReported()
+    {
+        var sha = WriteInstallation();
+        WriteSnapshot(sha);
+        var (exit, store, _) = Run(runner: (_, _) =>
+        {
+            File.WriteAllText(PlayerSave.DatabasePath(GamePath), "modified");
+            return Task.FromResult(new VerificationRunnerResult(false, ExitCodes.CommandFailed, "fixture application refused"));
+        });
+
+        Assert.NotEqual(ExitCodes.Success, exit);
+        Assert.Contains("fixture application refused", store.ErrorDetails?.ToString());
+        Assert.Contains("player save changed", store.ErrorDetails?.ToString());
     }
 }

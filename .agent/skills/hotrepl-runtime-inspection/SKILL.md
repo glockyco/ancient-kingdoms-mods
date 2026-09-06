@@ -11,23 +11,30 @@ description: Inspect or control the running Ancient Kingdoms game through HotRep
 2. Launch the game and wait for the bootstrap. See `build-tool/Commands/LaunchCommand.cs:LaunchCommand`.
 3. Query the running game from another terminal with `hotrepl`.
 
+HotRepl accepts one WebSocket client. A new client disconnects the existing client, including one that only requests a handshake.
+Do not run `hotrepl info` or another client while `build-tool verify` or `build-tool export` owns the connection.
+Use a TCP connection without a WebSocket handshake to check whether the endpoint is occupied.
+
 ```sh
 dotnet run --project build-tool deploy-host --hotrepl-repo <HotRepl-repo>
 dotnet run --project build-tool launch --wait
 hotrepl info --json
+hotrepl run game.useScratchDatabase '{}' --json
 hotrepl run world.summary '{}' --json
 hotrepl run world.enter '{}' --json
 ```
 
-## Redirect the database before the first call
+## Redirect before database access
 
 The redirect command owns the database selection and refuses a late redirect. See
 `mods/HotReplCommands/Commands/UseScratchDatabaseCommand.cs:UseScratchDatabaseCommand`.
 
-Call `game.useScratchDatabase` as the first command of a session. Then read what you came for. The
-result reports the path it opened and whether that path is a scratch one, so the redirect is
-confirmed rather than assumed. The redirect also decides which characters a run can use, because the
-roster comes from the local database.
+Call `game.useScratchDatabase` before a command that can open or write the database.
+A read-only `world.summary` call can confirm the launch identity before the redirect.
+The redirect result reports the opened path and whether it is a scratch path.
+It also determines the available characters because the roster comes from the selected database.
+
+Confirm the reported path before continuing.
 
 ## The roster is capped, and the selection screen caches it
 

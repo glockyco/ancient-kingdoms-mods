@@ -5,6 +5,7 @@ namespace HotReplCommands.Dtos
 {
     public sealed class WorldSummaryResult
     {
+        [JsonProperty("verificationSession", Required = Required.AllowNull)] public string VerificationSession { get; set; }
         [JsonProperty("scene",           Required = Required.AllowNull)] public string Scene { get; set; }
         [JsonProperty("networkState",    Required = Required.AllowNull)] public string NetworkState { get; set; }
         [JsonProperty("characterCount",  Required = Required.AllowNull)] public int? CharacterCount { get; set; }
