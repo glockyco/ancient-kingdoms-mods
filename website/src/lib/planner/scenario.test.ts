@@ -127,6 +127,111 @@ describe("parseEvaluationScenario", () => {
     );
   });
 
+  it.each([
+    {
+      path: "scenario.policy",
+      makeScenario: () => ({ ...validScenario(), policy: "ignore" }),
+    },
+    {
+      path: "scenario.target.state",
+      makeScenario: () => {
+        const scenario = validScenario();
+        (scenario.target as Record<string, unknown>).state = "ignored";
+        return scenario;
+      },
+    },
+    {
+      path: "scenario.initialResources[0].state",
+      makeScenario: () => ({
+        ...validScenario(),
+        initialResources: [
+          {
+            entityId: "player",
+            resource: "energy",
+            current: 1,
+            maximum: 1,
+            state: "ignored",
+          },
+        ],
+      }),
+    },
+    {
+      path: "scenario.initialCooldowns[0].policy",
+      makeScenario: () => ({
+        ...validScenario(),
+        initialCooldowns: [
+          {
+            entityId: "player",
+            skillId: "strike",
+            remainingSeconds: 1,
+            policy: "ignored",
+          },
+        ],
+      }),
+    },
+    {
+      path: "scenario.activeBuffs[0].policy",
+      makeScenario: () => ({
+        ...validScenario(),
+        activeBuffs: [
+          {
+            sourceEntityId: "player",
+            targetEntityId: "player",
+            skillId: "blessing",
+            skillLevel: 1,
+            remainingSeconds: 1,
+            policy: "ignored",
+          },
+        ],
+      }),
+    },
+    {
+      path: "scenario.consumables[0].state",
+      makeScenario: () => ({
+        ...validScenario(),
+        consumables: [
+          {
+            entityId: "player",
+            itemId: "food",
+            quantity: 1,
+            state: "ignored",
+          },
+        ],
+      }),
+    },
+    {
+      path: "scenario.ammunition[0].state",
+      makeScenario: () => ({
+        ...validScenario(),
+        ammunition: [
+          {
+            entityId: "player",
+            itemId: "arrow",
+            quantity: 1,
+            state: "ignored",
+          },
+        ],
+      }),
+    },
+    {
+      path: "scenario.incomingEvents[0].state",
+      makeScenario: () => ({
+        ...validScenario(),
+        incomingEvents: [
+          {
+            atSeconds: 1,
+            targetEntityId: "player",
+            amount: 1,
+            damageType: "normal",
+            state: "ignored",
+          },
+        ],
+      }),
+    },
+  ])("refuses unsupported field $path", ({ path, makeScenario }) => {
+    expect(() => parseEvaluationScenario(makeScenario(), build)).toThrow(path);
+  });
+
   it("creates the explicit stationary dummy default at full health", () => {
     const scenario = createDefaultEvaluationScenario({
       build,

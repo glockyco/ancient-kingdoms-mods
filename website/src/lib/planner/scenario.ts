@@ -71,6 +71,78 @@ export interface EvaluationScenario {
   durabilityLoss: false;
 }
 
+const SCENARIO_FIELDS = {
+  schemaVersion: true,
+  build: true,
+  name: true,
+  target: true,
+  horizonSeconds: true,
+  initialResources: true,
+  initialCooldowns: true,
+  activeBuffs: true,
+  consumables: true,
+  ammunition: true,
+  incomingEvents: true,
+  roster: true,
+  targetCount: true,
+  durabilityLoss: true,
+} as const satisfies Readonly<Record<keyof EvaluationScenario, true>>;
+const TARGET_FIELDS = {
+  id: true,
+  level: true,
+  stationary: true,
+  defense: true,
+  magicResist: true,
+  poisonResist: true,
+  fireResist: true,
+  coldResist: true,
+  diseaseResist: true,
+  blockChance: true,
+  criticalResist: true,
+  bossOrElite: true,
+  immuneDebuffs: true,
+} as const satisfies Readonly<Record<keyof EvaluationScenario["target"], true>>;
+const RESOURCE_FIELDS = {
+  entityId: true,
+  resource: true,
+  current: true,
+  maximum: true,
+} as const satisfies Readonly<
+  Record<keyof EvaluationScenario["initialResources"][number], true>
+>;
+const COOLDOWN_FIELDS = {
+  entityId: true,
+  skillId: true,
+  remainingSeconds: true,
+} as const satisfies Readonly<
+  Record<keyof EvaluationScenario["initialCooldowns"][number], true>
+>;
+const BUFF_FIELDS = {
+  sourceEntityId: true,
+  targetEntityId: true,
+  skillId: true,
+  skillLevel: true,
+  remainingSeconds: true,
+} as const satisfies Readonly<
+  Record<keyof EvaluationScenario["activeBuffs"][number], true>
+>;
+const INVENTORY_FIELDS = {
+  entityId: true,
+  itemId: true,
+  quantity: true,
+} as const satisfies Readonly<
+  Record<keyof EvaluationScenario["consumables"][number], true> &
+    Record<keyof EvaluationScenario["ammunition"][number], true>
+>;
+const INCOMING_EVENT_FIELDS = {
+  atSeconds: true,
+  targetEntityId: true,
+  amount: true,
+  damageType: true,
+} as const satisfies Readonly<
+  Record<keyof EvaluationScenario["incomingEvents"][number], true>
+>;
+
 export function assertSupportedTargetCount(
   targetCount: number,
 ): asserts targetCount is 1 {
@@ -85,7 +157,7 @@ export function parseEvaluationScenario(
   value: unknown,
   expectedBuild: BuildEnvelope,
 ): EvaluationScenario {
-  const scenario = requireRecord(value, "scenario");
+  const scenario = requireRecord(value, "scenario", SCENARIO_FIELDS);
   const schemaVersion = requireInteger(
     scenario,
     "schemaVersion",
@@ -105,7 +177,11 @@ export function parseEvaluationScenario(
     );
   }
 
-  const targetRecord = requireRecord(scenario.target, "scenario.target");
+  const targetRecord = requireRecord(
+    scenario.target,
+    "scenario.target",
+    TARGET_FIELDS,
+  );
   const target = {
     id: requireString(targetRecord, "id", "scenario.target.id"),
     level: requirePositiveInteger(
@@ -210,7 +286,7 @@ export function parseEvaluationScenario(
     "scenario.initialResources",
   ).map((entry, index) => {
     const path = `scenario.initialResources[${index}]`;
-    const record = requireRecord(entry, path);
+    const record = requireRecord(entry, path, RESOURCE_FIELDS);
     const current = requireNonNegativeNumber(
       record,
       "current",
@@ -242,7 +318,7 @@ export function parseEvaluationScenario(
     "scenario.initialCooldowns",
   ).map((entry, index) => {
     const path = `scenario.initialCooldowns[${index}]`;
-    const record = requireRecord(entry, path);
+    const record = requireRecord(entry, path, COOLDOWN_FIELDS);
     return {
       entityId: requireEntity(record, "entityId", path, entities),
       skillId: requireString(record, "skillId", `${path}.skillId`),
@@ -264,7 +340,7 @@ export function parseEvaluationScenario(
     "scenario.activeBuffs",
   ).map((entry, index) => {
     const path = `scenario.activeBuffs[${index}]`;
-    const record = requireRecord(entry, path);
+    const record = requireRecord(entry, path, BUFF_FIELDS);
     return {
       sourceEntityId: requireEntity(record, "sourceEntityId", path, entities),
       targetEntityId: requireEntity(record, "targetEntityId", path, entities),
@@ -301,7 +377,7 @@ export function parseEvaluationScenario(
     "scenario.incomingEvents",
   ).map((entry, index) => {
     const path = `scenario.incomingEvents[${index}]`;
-    const record = requireRecord(entry, path);
+    const record = requireRecord(entry, path, INCOMING_EVENT_FIELDS);
     const atSeconds = requireNonNegativeNumber(
       record,
       "atSeconds",
@@ -388,7 +464,7 @@ function parseInventory(
 ): EvaluationScenario[typeof key] {
   const inventory = requireArray(scenario, key, path).map((entry, index) => {
     const entryPath = `${path}[${index}]`;
-    const record = requireRecord(entry, entryPath);
+    const record = requireRecord(entry, entryPath, INVENTORY_FIELDS);
     return {
       entityId: requireEntity(record, "entityId", entryPath, entities),
       itemId: requireString(record, "itemId", `${entryPath}.itemId`),
@@ -406,11 +482,21 @@ function parseInventory(
   return inventory;
 }
 
-function requireRecord(value: unknown, path: string): Record<string, unknown> {
+function requireRecord(
+  value: unknown,
+  path: string,
+  allowedFields: Readonly<Record<string, true>>,
+): Record<string, unknown> {
   if (typeof value !== "object" || value === null || Array.isArray(value)) {
     throw new TypeError(`${path} must be an object`);
   }
-  return value as Record<string, unknown>;
+  const record = value as Record<string, unknown>;
+  for (const key of Object.keys(record)) {
+    if (!Object.prototype.hasOwnProperty.call(allowedFields, key)) {
+      throw new TypeError(`${path}.${key} is not a supported field`);
+    }
+  }
+  return record;
 }
 
 function requireArray(

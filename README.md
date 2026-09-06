@@ -248,6 +248,7 @@ dotnet run --project build-tool verify --fresh-scratch
 
 `verify` currently validates fixture descriptors in a scratch world. It does not measure every fixture, compare planner predictions, or promote a baseline.
 A successful result reports `verified: false` and `status: validation-only`.
+Fixture-file loading rejects unsupported JSON fields, including nested fields, before launch. Planner build-envelope and scenario parsing also reject unsupported fields instead of discarding them.
 
 The command takes installation and port locks before changing scratch state. It backs up the existing player database and sidecars, then confirms the runtime launch identity and exact scratch path.
 Scratch paths with traversal or symbolic links are refused. An absent player database remains an absence to check after the run.

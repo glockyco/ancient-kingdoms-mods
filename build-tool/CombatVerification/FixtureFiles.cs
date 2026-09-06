@@ -10,8 +10,17 @@ namespace BuildTool.CombatVerification;
 /// <summary>Reads committed fixtures and checks their structure before the game starts.</summary>
 internal static class FixtureFiles
 {
+    private static readonly JsonSerializerSettings StrictFixtureJsonSettings = new()
+    {
+        MissingMemberHandling = MissingMemberHandling.Error,
+    };
+
     internal static string DirectoryFor(string repoRoot) =>
         Path.Combine(repoRoot, "verification", "fixtures");
+
+    private static FixtureDescriptor DeserializeFixture(string path) =>
+        JsonConvert.DeserializeObject<FixtureDescriptor>(
+            File.ReadAllText(path), StrictFixtureJsonSettings)!;
 
     internal static FixtureMatrix ReadMatrix(string repoRoot)
     {
@@ -21,7 +30,7 @@ internal static class FixtureFiles
             : Array.Empty<string>();
         var fixtures = files
             .OrderBy(path => path, StringComparer.Ordinal)
-            .Select(path => JsonConvert.DeserializeObject<FixtureDescriptor>(File.ReadAllText(path))!)
+            .Select(DeserializeFixture)
             .Select(fixture => new FixtureMatrixEntry
             {
                 Tier = fixture.Tier,
@@ -53,7 +62,7 @@ internal static class FixtureFiles
             FixtureDescriptor? fixture;
             try
             {
-                fixture = JsonConvert.DeserializeObject<FixtureDescriptor>(File.ReadAllText(file));
+                fixture = DeserializeFixture(file);
             }
             catch (JsonException exception)
             {

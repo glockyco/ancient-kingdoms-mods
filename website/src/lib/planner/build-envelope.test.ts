@@ -38,6 +38,19 @@ describe("parseBuildEnvelope", () => {
       "build.gameData.assemblySha256",
     );
   });
+
+  it.each([
+    ["build.policy", () => ({ ...matchingBuild(), policy: "ignore" })],
+    [
+      "build.gameData.state",
+      () => ({
+        ...matchingBuild(),
+        gameData: { ...matchingBuild().gameData, state: "ignored" },
+      }),
+    ],
+  ] as const)("refuses unsupported field %s", (path, makeBuild) => {
+    expect(() => parseBuildEnvelope(makeBuild())).toThrow(path);
+  });
 });
 
 describe("assessBuildCompatibility", () => {

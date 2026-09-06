@@ -22,8 +22,20 @@ export interface BuildCompatibility {
   reasons: string[];
 }
 
+const BUILD_FIELDS = {
+  serializedSchemaVersion: true,
+  captureSchemaVersion: true,
+  modelVersion: true,
+  gameData: true,
+} as const satisfies Readonly<Record<keyof BuildEnvelope, true>>;
+const GAME_DATA_FIELDS = {
+  gameVersion: true,
+  steamBuildId: true,
+  assemblySha256: true,
+} as const satisfies Readonly<Record<keyof GameDataVersion, true>>;
+
 export function parseBuildEnvelope(value: unknown): BuildEnvelope {
-  const build = requireRecord(value, "build");
+  const build = requireRecord(value, "build", BUILD_FIELDS);
   const serializedSchemaVersion = requireInteger(
     build,
     "serializedSchemaVersion",
@@ -46,7 +58,11 @@ export function parseBuildEnvelope(value: unknown): BuildEnvelope {
     );
   }
 
-  const gameData = requireRecord(build.gameData, "build.gameData");
+  const gameData = requireRecord(
+    build.gameData,
+    "build.gameData",
+    GAME_DATA_FIELDS,
+  );
   return {
     serializedSchemaVersion,
     captureSchemaVersion,
@@ -109,11 +125,21 @@ function sameGameData(a: GameDataVersion, b: GameDataVersion): boolean {
   );
 }
 
-function requireRecord(value: unknown, path: string): Record<string, unknown> {
+function requireRecord(
+  value: unknown,
+  path: string,
+  allowedFields: Readonly<Record<string, true>>,
+): Record<string, unknown> {
   if (typeof value !== "object" || value === null || Array.isArray(value)) {
     throw new TypeError(`${path} must be an object`);
   }
-  return value as Record<string, unknown>;
+  const record = value as Record<string, unknown>;
+  for (const key of Object.keys(record)) {
+    if (!Object.prototype.hasOwnProperty.call(allowedFields, key)) {
+      throw new TypeError(`${path}.${key} is not a supported field`);
+    }
+  }
+  return record;
 }
 
 function requireString(
