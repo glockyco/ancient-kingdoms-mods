@@ -100,7 +100,8 @@ public sealed class VerifyCommandTests : IDisposable
                     true, ExitCodes.Success, "redirected",
                     "C:/game/ancientkingdoms_Data/verification-scratch/game.dat", 6))),
             now: () => new DateTimeOffset(2026, 8, 26, 12, 0, 0, TimeSpan.Zero),
-            endpointAnswers: (_, _) => Task.FromResult(occupied));
+            endpointAnswers: (_, _) => Task.FromResult(occupied),
+            relevantProcessExists: _ => false);
 
         var exit = command.RunAsync(settings ?? new VerifyCommand.Settings()).GetAwaiter().GetResult();
         return (exit, store, processRunner);
@@ -194,7 +195,8 @@ public sealed class VerifyCommandTests : IDisposable
             verificationRunner: (_, _) => Task.FromResult(
                 new VerificationRunnerResult(true, ExitCodes.Success, "redirected", "C:/x", 1)),
             now: () => DateTimeOffset.UnixEpoch,
-            endpointAnswers: (_, _) => Task.FromResult(false));
+            endpointAnswers: (_, _) => Task.FromResult(false),
+            relevantProcessExists: _ => false);
 
         var exit = await command.RunAsync(
             new VerifyCommand.Settings { AllowBuildMismatch = true });

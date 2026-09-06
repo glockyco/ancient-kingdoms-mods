@@ -293,7 +293,8 @@ public sealed class GameSessionTests : IDisposable
             WinePath: "/wine",
             WinePrefix: "/prefix",
             HotReplEndpoint: $"ws://127.0.0.1:{_endpointPort}");
-        return new GameSession(config, runner, endpointAnswers: endpointAnswers);
+        return new GameSession(config, runner, endpointAnswers: endpointAnswers,
+            relevantProcessExists: _ => false);
     }
 
     private static GameSessionRequest Request() => new()

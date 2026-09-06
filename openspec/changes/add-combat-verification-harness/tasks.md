@@ -70,12 +70,12 @@ validated accuracy claims. Do not close those dependencies from this change.
       per-fixture saved-state reuse. Verify all six classes and an initially full eight-slot scratch
       roster; existing selection and roster helpers do not prove matrix execution.
 
-- [ ] 2.9 Acquire exclusive installation/session ownership before scratch mutation or launch. Refuse
+- [x] 2.9 Acquire exclusive installation/session ownership before scratch mutation or launch. Refuse
       a stale instance without touching scratch, verify process/endpoint identity, and stop only the
       owned process on every outcome. Exercise stale ownership, launch failure, and cancellation;
       the existing endpoint check alone is insufficient.
 
-- [ ] 2.10 Prove canonical owned-path checks reject escapes and symlinks before
+- [x] 2.10 Prove canonical owned-path checks reject escapes and symlinks before
       deletion/redirection. Verify backup precedes mutation, fresh reset recreates the SQLite
       parent, and cleanup preserves original failure plus isolation results. Run a fresh/reused
       scratch safety spike before matrix execution.
@@ -92,9 +92,16 @@ A separate process holding the installation lock caused refusal before backup or
 mutation. A concurrent verification command refused the occupied endpoint without a
 WebSocket handshake. The command does not write validation-only reuse markers.
 
-Tasks 2.9 and 2.10 remain open. Native shutdown before the first authenticated runtime
-response and an actual retained-scratch reuse spike still need acceptance evidence.
-These results do not qualify per-fixture materialization, matrix execution, or combat parity.
+The retained-scratch spike created one character, stopped the game, reopened the same
+database without reset, and read the same roster. Both sessions stopped, and player-save
+hashes remained unchanged. Native shutdown used the exact launch-session argument when
+the graceful shutdown timeout expired.
+
+The startup cancellation spike cancelled after the native launch appeared and before any
+runtime connection. The native process stopped, scratch cleanup completed, and player-save
+hashes remained unchanged. The build-tool suite passed 211 tests during the live scratch run.
+These results complete tasks 2.9 and 2.10. They do not qualify per-fixture materialization,
+matrix execution, combat parity, or production scratch reuse.
 
 ## 3. Materialization commands
 

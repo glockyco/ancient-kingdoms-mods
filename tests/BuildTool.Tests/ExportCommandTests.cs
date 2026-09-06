@@ -13,6 +13,7 @@ namespace BuildTool.Tests;
 
 public class ExportCommandTests
 {
+    private static int _nextEndpointPort = 50000;
     [Fact]
     public async Task Export_ReturnsUnreachable_WhenGameExeMissing()
     {
@@ -83,7 +84,6 @@ public class ExportCommandTests
             tempRoot,
             runner: runner,
             resultStore: resultStore,
-            hotReplEndpoint: "ws://127.0.0.1:9",
             exportRunner: async (_, cancellationToken) =>
             {
                 await Task.Delay(TimeSpan.FromMinutes(10), cancellationToken);
@@ -107,7 +107,6 @@ public class ExportCommandTests
         bool createExe = true,
         CommandResultStore? resultStore = null,
         TimeSpan? hotReplReadinessTimeout = null,
-        string hotReplEndpoint = "ws://127.0.0.1:18590",
         Func<HotReplRunnerOptions, CancellationToken, Task<ExportRunnerResult>>? exportRunner = null)
     {
         var gamePath = Path.Combine(tempRoot, "game");
@@ -120,7 +119,7 @@ public class ExportCommandTests
             DataExportPath: Path.Combine(tempRoot, "exported-data"),
             WinePath: "/wine",
             WinePrefix: "/prefix",
-            HotReplEndpoint: hotReplEndpoint);
+            HotReplEndpoint: $"ws://127.0.0.1:{Interlocked.Increment(ref _nextEndpointPort)}");
 
         return new ExportCommand(
             tempRoot,
@@ -130,6 +129,7 @@ public class ExportCommandTests
             hotReplReadinessTimeout: hotReplReadinessTimeout ?? TimeSpan.Zero,
             hotReplPollInterval: TimeSpan.Zero,
             exportRunner: exportRunner,
-            endpointAnswers: (_, _) => Task.FromResult(false));
+            endpointAnswers: (_, _) => Task.FromResult(false),
+            relevantProcessExists: _ => false);
     }
 }

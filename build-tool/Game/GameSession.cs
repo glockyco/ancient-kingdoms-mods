@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -81,7 +80,7 @@ internal sealed class GameSession
         _endpointAnswers = endpointAnswers ?? ((endpoint, cancellationToken) =>
             HotReplEndpointProbe.AnswersAsync(
                 endpoint, TimeSpan.FromSeconds(1), cancellationToken));
-        _relevantProcessExists = relevantProcessExists ?? HasRelevantProcess;
+        _relevantProcessExists = relevantProcessExists ?? GameProcesses.HasRelevantProcess;
     }
 
     internal async Task<GameSessionOutcome<T>> RunAsync<T>(
@@ -109,6 +108,7 @@ internal sealed class GameSession
         T? result = default;
         var beforeLaunchStarted = false;
         var gameLaunchAttempted = false;
+        var sessionToken = request.SessionToken ?? Guid.NewGuid().ToString("N");
 
         try
         {
@@ -198,7 +198,7 @@ internal sealed class GameSession
                 var gameArgs = request.UnityVersionOverride is null
                     ? Array.Empty<string>()
                     : new[] { "--melonloader.unityversion", request.UnityVersionOverride };
-                launch = AddSessionToken(GameLauncher.BuildLaunchRequest(_config, gameArgs), request.SessionToken);
+                launch = AddSessionToken(GameLauncher.BuildLaunchRequest(_config, gameArgs), sessionToken);
             }
             catch (InvalidOperationException exception)
             {
@@ -304,7 +304,8 @@ internal sealed class GameSession
 
             var endpointRelease = (Failure: failure, Confirmed: true);
             if (ownership is not null)
-                endpointRelease = await VerifyRuntimeReleaseAsync(endpoint, failure);
+                endpointRelease = await VerifyRuntimeReleaseAsync(
+                    endpoint, failure, gameLaunchAttempted ? sessionToken : null);
             failure = endpointRelease.Failure;
 
             if (beforeLaunchStarted && request.AfterShutdown is not null)
@@ -437,16 +438,14 @@ internal sealed class GameSession
         return logPath;
     }
 
-    private static ProcessRequest AddSessionToken(ProcessRequest launch, string? sessionToken)
+    private static ProcessRequest AddSessionToken(ProcessRequest launch, string sessionToken)
     {
-        if (sessionToken is null)
-            return launch;
-
         var environment = launch.Environment is null
             ? new Dictionary<string, string?>()
             : new Dictionary<string, string?>(launch.Environment);
         environment["AK_VERIFICATION_SESSION"] = sessionToken;
-        return launch with { Environment = environment };
+        string[] arguments = [.. launch.Arguments, GameProcesses.SessionArgument(sessionToken)];
+        return launch with { Environment = environment, Arguments = arguments };
     }
 
     private static GameSessionOutcome<T> Failed<T>(int exitCode, string message)
@@ -465,22 +464,19 @@ internal sealed class GameSession
 
     private async Task<(GameSessionFailure? Failure, bool Confirmed)> VerifyRuntimeReleaseAsync(
         Uri endpoint,
-        GameSessionFailure? failure)
+        GameSessionFailure? failure,
+        string? ownedSessionToken)
     {
         try
         {
-            using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            while (true)
+            if (await WaitForRuntimeReleaseAsync(endpoint, TimeSpan.FromSeconds(30)))
+                return (failure, true);
+            if (ownedSessionToken is not null)
             {
-                var answers = await _endpointAnswers(endpoint, deadline.Token)
-                    .WaitAsync(deadline.Token);
-                if (!answers && !_relevantProcessExists(_config.GamePath))
+                GameProcesses.StopOwnedProcesses(ownedSessionToken);
+                if (await WaitForRuntimeReleaseAsync(endpoint, TimeSpan.FromSeconds(5)))
                     return (failure, true);
-                await Task.Delay(TimeSpan.FromMilliseconds(100), deadline.Token);
             }
-        }
-        catch (OperationCanceledException)
-        {
             return (AddFailure(failure, ExitCodes.Internal,
                 $"The runtime endpoint or game process remained occupied after shutdown at {endpoint}."), false);
         }
@@ -488,6 +484,24 @@ internal sealed class GameSession
         {
             return (AddFailure(failure, ExitCodes.Internal,
                 $"Could not verify runtime release at {endpoint}: {exception.Message}"), false);
+        }
+    }
+
+    private async Task<bool> WaitForRuntimeReleaseAsync(Uri endpoint, TimeSpan timeout)
+    {
+        using var deadline = new CancellationTokenSource(timeout);
+        try
+        {
+            while (true)
+            {
+                var answers = await _endpointAnswers(endpoint, deadline.Token).WaitAsync(deadline.Token);
+                if (!answers && !_relevantProcessExists(_config.GamePath)) return true;
+                await Task.Delay(TimeSpan.FromMilliseconds(100), deadline.Token);
+            }
+        }
+        catch (OperationCanceledException) when (deadline.IsCancellationRequested)
+        {
+            return false;
         }
     }
 
@@ -610,35 +624,6 @@ internal sealed class GameSession
                 ExitCodes.Internal,
                 $"The game process faulted before {purpose} completed: {exception.GetType().Name}: {exception.Message}");
         }
-    }
-
-    private static bool HasRelevantProcess(string gamePath)
-    {
-        // Wine processes can share a loader image. Its filename does not identify the
-        // Windows executable, but the native command line does.
-        var start = new ProcessStartInfo("/bin/ps")
-        {
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            UseShellExecute = false,
-        };
-        start.ArgumentList.Add("-axo");
-        start.ArgumentList.Add("command=");
-        using var process = Process.Start(start)
-            ?? throw new IOException("Native game process inspection did not start.");
-        var output = process.StandardOutput.ReadToEndAsync();
-        var error = process.StandardError.ReadToEndAsync();
-        if (!process.WaitForExit(2000))
-        {
-            process.Kill(entireProcessTree: true);
-            throw new IOException("Native game process inspection timed out.");
-        }
-        if (process.ExitCode != 0)
-            throw new IOException($"Native game process inspection failed: {error.GetAwaiter().GetResult()}");
-        var executable = Regex.Escape(Path.GetFileName(Path.Combine(gamePath, "ancientkingdoms.exe")));
-        return Regex.IsMatch(output.GetAwaiter().GetResult(),
-            @"(?:^|[ /\\])" + executable + @"(?:\s|$)",
-            RegexOptions.IgnoreCase | RegexOptions.Multiline);
     }
 
     /// <summary>Echoes the game log and returns the first fatal start-up error in it.</summary>
