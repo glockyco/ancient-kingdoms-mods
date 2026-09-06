@@ -1,10 +1,16 @@
+Checked tasks below record local component work or named experiments, not complete harness acceptance.
+Reopened tasks retain useful existing implementations but require the corrected observable contract.
+The linked `add-gear-and-rotation-planner` change needs a separate planning revision for shared adapters,
+production evaluator integration, dynamic state evaluation, raw/normalized separation, and independently
+validated accuracy claims. Do not close those dependencies from this change.
+
 ## 1. Fixture descriptor
 
-- [x] 1.1 Define the descriptor schema covering class, race, level, veteran progression, attribute
-      allocation, skill levels per point pool, all sixteen equipment slots with augments, companions with
-      their own equipment and rolled values, declared consumables, the target spawn, the action sequence,
-      the facing for each action, and a seed. Include a schema version and the game version the
-      descriptor was written against.
+- [ ] 1.1 Complete the shared build-data and fixture execution schemas. Keep the current
+      version-only BuildEnvelope distinct from build data and capture metadata. Verify required
+      fields, initial state, consumables/ammunition, and scheduling policies round-trip without
+      silent defaults; the existing descriptor is component evidence only.
+
 - [x] 1.2 Implement legality validation: skill allocation within each pool's budget, tier gates
       satisfied, prerequisite chains satisfied, attribute totals consistent with the class progression at
       the stated level, equipment satisfying slot class, level and weapon category, a two-handed weapon
@@ -17,9 +23,11 @@
       refuse rather than clamp.
 - [x] 1.4 Add unit tests for legality, one per rejection reason, using descriptors that fail exactly one
       rule each.
-- [ ] 1.5 After planner tasks 3.1 and 10.1 define both adapters, round-trip the shared build envelope
-      between a fixture and a character capture. Verify fixture-only execution fields and capture-only
-      completeness and container fields remain outside that envelope.
+- [ ] 1.5 After the linked planner defines build/capture adapters, round-trip shared build data
+      through C# and TypeScript. Verify completeness and container metadata stay capture-only,
+      execution stays fixture-only, and the adapter reaches the production evaluator without copying
+      formulas.
+
 - [x] 1.6 Remove the class and race pairing from the rules read after world entry. The pairing is a game
       rule, but it lives in the character creator, which enables one class button per race. The creator is
       live exactly where creation happens, so the pairing is checked there rather than answered from a
@@ -49,19 +57,28 @@
       from, recording the version string and Steam build identifier as labels beside it. Confirm the
       installed assembly still hashes to the recorded value before measuring, so a run cannot attribute
       results to source that no longer describes the build.
-- [x] 2.6 Add a scratch reuse check: reuse an existing scratch database when the recorded game version
-      and the fixture definitions both match, and rebuild otherwise.
-- [x] 2.7 Verify isolation with an automated assertion that the player save's content hash is unchanged
-      across a full run.
+- [ ] 2.6 Qualify scratch reuse per fixture using assembly and fixture-content hashes plus
+      successful materialization. Reject interrupted or validation-only markers. Verify saved state
+      and reapply/read back transient state after reload; exercise both reuse and incompatible
+      rebuild.
 
-- [x] 2.8 Reconcile the existing roster-full handling with the matrix lifecycle. Keep a character slot
-      free before creation, reuse a character whose class a fixture needs, or remove one an earlier run
-      created. Add a game-backed run that starts with all eight slots occupied.
+- [ ] 2.7 Verify player-save and sidecar isolation across the complete matrix on success, failure,
+      and cancellation. Preserve the existing isolated lifecycle experiment as component evidence,
+      not proof of a full verification run.
 
-- [x] 2.9 Refuse to launch while another instance answers the runtime endpoint, and report that rather
-      than proceeding. A launch does not take the endpoint from the instance holding it, so a run beside a
-      stale one measures a process it does not control. Shut the owned game process down on success and
-      every failure path, and prove endpoint ownership with a stale-instance run.
+- [ ] 2.8 Execute the matrix with a fresh character/session per fixture attempt, or proven
+      per-fixture saved-state reuse. Verify all six classes and an initially full eight-slot scratch
+      roster; existing selection and roster helpers do not prove matrix execution.
+
+- [ ] 2.9 Acquire exclusive installation/session ownership before scratch mutation or launch. Refuse
+      a stale instance without touching scratch, verify process/endpoint identity, and stop only the
+      owned process on every outcome. Exercise stale ownership, launch failure, and cancellation;
+      the existing endpoint check alone is insufficient.
+
+- [ ] 2.10 Prove canonical owned-path checks reject escapes and symlinks before
+      deletion/redirection. Verify backup precedes mutation, fresh reset recreates the SQLite
+      parent, and cleanup preserves original failure plus isolation results. Run a fresh/reused
+      scratch safety spike before matrix execution.
 
 ## 3. Materialization commands
 
@@ -101,12 +118,11 @@
       progression is complete so the companion receives no part of the per-level increment. Supply a
       generated name and the game's own price, because the engine stores an empty name verbatim and a
       dismissal addresses a companion by name.
-- [x] 3.9 Assign the health multiplier, the resource multiplier and the base combat value directly after
-      acquisition, reading each one back. The resource follows the archetype. Do not assign the race: it is
-      drawn from a list the archetype allows, so an assigned one produces a companion the game never
-      offers. Check the drawn race against the fixture instead, and let the seed make it reproducible. The
-      load path restores the values stored at hire, so an assigned value lives only until the game reloads,
-      and no later step may reload it.
+- [ ] 3.9 Retain bounded post-hire assignment of companion health, resource, and base combat rolls
+      with readback. Do not assign race: fail a named-race mismatch without claiming the seed
+      guarantees it. Reapply allowed transient rolls after every reload and verify an actual reload
+      preserves the requested measured state.
+
 - [x] 3.10 Implement companion equipping through the companion's own command, granting each item into the
       owner's inventory because that is where the command reads from. The item's level requirement is
       checked against the owner's level, not the companion's.
@@ -115,6 +131,14 @@
       failed affordability check all return without an error and without an effect. A step therefore
       reads the value it intends to change, acts, and reads again, and the harness supplies the reason
       the engine does not.
+
+- [ ] 3.12 Materialize consumables, ammunition, target, positioning/facing, initial resources, and
+      effects through declared engine paths. Verify before/after and final requested-versus-achieved
+      readback; a mismatch must stop dependent measurement.
+
+- [ ] 3.13 Drive the explicit player schedule with declared repetition, start/end, in-flight action,
+      and refusal policies while leaving companions autonomous. Verify a finite game-backed window
+      records attempts, acceptance, completion, and hits separately.
 
 ## 4. Probe: stat sheet and cadence
 
@@ -149,6 +173,10 @@
       also skipped entirely when the engine does not update the entity, so the probe reports whether it
       could have run: an unchanged pair otherwise reads as a settled state.
 
+- [ ] 4.9 Connect probes to per-quantity units, windows, counts, state provenance, and sampling
+      protocols. Verify target death/overkill, misses, effect expiry/cleanup, and unattributable
+      readings cannot silently contaminate a comparable window.
+
 ## 5. Probe: skill attribution
 
 - [x] 5.1 Stamp the damage entry point with the skill, the damage type and the amount the caster asked
@@ -177,17 +205,43 @@ the planner model tasks for those quantities are complete. Complete and close th
 change; no planner task closes them on the harness's behalf.
 
 
-- [x] 6.1 Implement per-quantity comparison covering every stat, the action interval, per-hit damage and
-      sustained output, reporting each result separately rather than one verdict. Per-hit damage is two
-      quantities: the amount the caster asked for, which the probe reads from the engine, and the
-      reduction applied to it. A model can be right about one and wrong about the other.
-- [x] 6.2 Assert on a mean within tolerance and an observed range within predicted bounds, and fail when
-      any observed value falls outside its bounds regardless of the mean.
-- [x] 6.3 Record fixture identity, target, game version, model version, seed and event count in every
-      report.
-- [x] 6.4 Present tier results in order so the lowest failing tier is evident, and mark higher tiers
-      unreliable when a lower tier fails.
-- [x] 6.5 Record actions the engine refused, with the reason, and exclude them from the action count.
+- [ ] 6.1 Connect per-quantity comparisons to live observations and the planner production
+      evaluator, covering stats, cadence, damage intent/reduction, effects, and sustained output.
+      Verify one complete fixture report uses matching independent inputs, not caller-supplied
+      predictions or measured caster totals substituted for predicted totals.
+
+- [ ] 6.2 Replace generic mean/range tolerance gating with predeclared versioned deterministic and
+      stochastic protocols. Specify sampling units, sample sufficiency, dependence treatment,
+      matrix-wide error control, stopping rules, and hard support bounds where justified. Verify
+      repeated windows behave under the declared acceptance policy; insufficient evidence is
+      inconclusive.
+
+- [ ] 6.3 Persist assembly/fixture-content/model-evaluator/data identities, requested and achieved
+      state, target provenance, seeds, per-quantity counts, units/windows, protocol/tolerances,
+      fidelity, and raw sequences. Verify a report can trace each quantity to its inputs and
+      observations and fails qualification when required evidence is missing.
+
+- [ ] 6.4 Report diagnostic tiers separately from attribution fidelity and identify failed criteria
+      without invented causal labels. Verify a lower-tier failure marks dependent interpretation
+      unreliable, while lower-tier passes do not prove the cause of a higher-tier failure.
+
+- [ ] 6.5 Record attempted, accepted, completed, and landed actions separately, including refusal
+      evidence. Keep refused attempts in their proper denominators. Verify an unexpected refusal
+      invalidates dependent comparison and a declared refusal fixture reports the expected outcome.
+
+- [ ] 6.6 Run a vertical-slice spike from descriptor through materialization, readback, player
+      actions, live measurements, production evaluation, comparison, and persisted evidence. Include
+      maintained effects and an autonomous companion case. Verify validation-only and missing-stage
+      runs never report full verification success.
+
+- [ ] 6.7 Establish stochastic acceptance with repeated game windows before freezing the gate.
+      Record dependence assumptions, minimum samples, confidence/error control across the matrix,
+      and stopping policy; verify false-rejection behavior with an appropriate independent
+      experiment or simulation tied to observed sampling behavior.
+
+- [ ] 6.8 Separate raw parity from known-defect-normalized predictions with explicit evidence
+      references and affected quantities. Verify a normalized result cannot hide a raw mismatch or
+      enter a raw baseline.
 
 ## 7. Fixture matrix
 
@@ -196,19 +250,33 @@ policies the model needs, so they run before the corresponding formulas are fina
 through 7.6 are comparison fixtures and wait for the model where they require predictions.
 
 
-- [x] 7.1 Add tier A fixtures, needing no combat: one per class at the level cap with full veteran
-      progression, plus targeted fixtures for a three-piece armour set, an exactly-five-piece set, the
-      attack speed floor, the avoidance floor, an augment, and a declared consumable set.
-- [x] 7.2 Add tier B fixtures: a single hit per damaging skill class, including the class that ignores its
-      damage multiplier field and the class that ignores the caster's combat stat entirely.
-- [x] 7.3 Add tier C fixtures: basic attack only, swept across weapon delay and haste, including a case
-      at the attack speed floor.
-- [x] 7.4 Add tier D fixtures: a full build over a stated duration with an explicit action sequence, per
-      class.
-- [x] 7.5 Add lower-level fixtures at the pre-veteran levels so the level difference terms and the
-      smaller equipment pool are covered.
-- [x] 7.6 Add a companion fixture that measures contribution with and without equipment, reported as an
-      expectation over the engine's random action selection.
+- [ ] 7.1 Complete and execute tier A coverage for all six classes, veteran progression,
+      three/exactly-five-piece sets, speed/avoidance floors, augments, and consumables. Preserve
+      existing descriptors, but verify achieved state and planner parity rather than coverage
+      labels.
+
+- [ ] 7.2 Complete and execute tier B coverage for actual damaging handlers and all supported
+      schools, including ignored multiplier and ignored caster-stat branches. Add effect
+      landing/application and settled target-state cases. Verify trace evidence reaches each claimed
+      handler; Mana Burn alone does not establish AreaObjectSpawnSkill coverage.
+
+- [ ] 7.3 Execute tier C delay/haste sweeps including the speed floor. Verify intervals from
+      accepted/completed action evidence under the declared timing protocol, not descriptor
+      presence.
+
+- [ ] 7.4 Complete and execute tier D rotations for each class with explicit repetition,
+      finite-window boundaries, resource transitions, and maintained-effect upkeep. Verify dynamic
+      predictions and traced outcomes; repeated copies of one attack do not establish full rotation
+      coverage.
+
+- [ ] 7.5 Execute meaningful pre-veteran fixtures covering level-difference branches and smaller
+      equipment pools. Verify achieved levels and branch-specific comparisons, not only low-level
+      metadata.
+
+- [ ] 7.6 Cover every supported mercenary archetype, including meaningful bare/equipped comparisons
+      and autonomous behavior. Verify repeated-window contribution under the declared statistical
+      protocol; Ranger-only descriptors do not establish companion coverage.
+
 - [x] 7.7 Measure the physical mitigation coefficient directly: identical hits against differing defense,
       solving the coefficient from the observed reduction. Measured as 0.000498 against 0.000500 in
       source, fitted over four defense values. One target was held and only its defense changed, because
@@ -259,37 +327,64 @@ through 7.6 are comparison fixtures and wait for the model where they require pr
       first hit ranged from 0.991 to 5.200 seconds. These non-monotonic samples confirm that random skill
       selection and movement state make companion output an observed bound, not a reachable fixed rate.
 
+- [ ] 7.15 Replace fixed descriptor-count/label acceptance with extensible behavioral coverage
+      checks. Verify an added valid fixture is accepted and a mislabeled or missing
+      handler/school/archetype case cannot satisfy required coverage without execution evidence.
+
 ## 8. Baseline and drift gate
 
-- [x] 8.1 Define the baseline format storing, per fixture and per quantity, the seed, event count, mean
-      and predicted bounds. Retain a full observed sequence beside it as a non-gating artifact.
-- [x] 8.2 Implement comparison against the baseline and fail the run when a quantity has changed,
-      reporting the quantity and both values.
-- [x] 8.3 Make baseline updates an explicit, reviewed operation rather than an automatic rewrite.
-- [x] 8.4 Report a game version difference before comparing, so a change is attributed to the update
-      rather than to the model.
-- [ ] 8.5 Add the verification run to the per-version update procedure alongside the existing source
-      citation check.
+- [ ] 8.1 Complete the baseline schema with full report provenance, per-quantity protocols and
+      sampling summaries, raw sequences, coverage scope, and reviewed promotion reason. Verify
+      evidence can be traced independently of scratch state; existing summary serialization is
+      component evidence only.
+
+- [ ] 8.2 Honor comparison failure during baseline capture and comparison. Reject failed,
+      incomplete, incompatible, unsupported, or inconclusive required evidence and replace exact
+      stochastic equality with the declared drift policy. Verify invalid runs cannot be promoted and
+      independent valid samples are judged by that policy.
+
+- [ ] 8.3 Require explicit reviewed baseline promotion after full qualification, not merely a
+      nonempty reason. Verify promotion preserves the prior baseline and records evidence, scope,
+      identity, protocol, and review reason.
+
+- [ ] 8.4 Check assembly, fixture, model/evaluator, data, and protocol compatibility before numeric
+      comparison. Verify a diagnostic mismatch report preserves the old baseline and cannot count as
+      verified parity; a version difference alone does not establish cause.
+
+- [ ] 8.5 Integrate only the complete qualified verification command into the per-version update
+      procedure. Verify the documented sequence retains mismatch evidence before reviewed baseline
+      replacement and does not treat matrix validation as a release gate.
 
 ## 9. Reported-build intake
 
-- [ ] 9.1 Accept a build captured from a player's game as a fixture, rejecting an unrecognised schema
-      version rather than parsing it partially.
-- [ ] 9.2 Honour a payload's completeness markers, treating an unread section as missing rather than
-      empty.
-- [ ] 9.3 Produce a parity report for a reported build that distinguishes a model disagreement from a
-      difference in the reported setup, naming the differing field.
+- [ ] 9.1 Accept captured shared build data through the checked adapter with explicit execution
+      inputs. Verify unknown schema versions fail rather than partially parse, and a supported
+      capture reaches the production evaluation path.
+
+- [ ] 9.2 Honor capture completeness markers and per-measurement dependencies. Verify an unread
+      required section blocks parity rather than becoming an empty build section.
+
+- [ ] 9.3 Produce reported-build parity that separates setup mismatch, incomplete evidence, and
+      failed comparison. Verify differing fields are named and raw results remain distinct from
+      explicitly identified known-defect-normalized predictions.
 
 ## 10. Documentation and verification
 
-- [ ] 10.1 Document the verification run in the repository's command documentation, including the scratch
+- [ ] 10.1 Document the verification run in the repository's command documentation, including the
+      scratch
       isolation guarantee, the backup step, and the requirement that no other instance is already running.
       A launch does not take the runtime endpoint from an instance that already holds it, so a stale one
       answers every command while the new window is the one on screen.
-- [ ] 10.2 Add a skill or procedure document for authoring a fixture and interpreting a parity report,
-      covering the tier ladder and what a failure at each tier implies.
-- [ ] 10.3 Record every formula the comparison relies on as a source citation in the citation ledger.
-- [ ] 10.4 Run the relevant mod tests, then the build-tool build, then a full verification run against a
+- [ ] 10.2 Document fixture authoring and parity interpretation in the established documentation
+      location. Verify the procedure distinguishes diagnostic tiers, attribution fidelity,
+      statistical rejection, and unknown causes without claiming lower-tier passes prove causality.
+
+- [ ] 10.3 Record every formula the comparison relies on as a source citation in the citation
+      ledger.
+- [ ] 10.4 Run the relevant mod tests, then the build-tool build, then a full verification run
+      against a
       freshly built scratch database, and confirm the player save hash is unchanged.
-- [ ] 10.5 After the planner model and sections 6 through 8 are complete, record the baseline that
-      satisfies the planner's running-game validation requirement and link the report from both changes.
+- [ ] 10.5 After the production planner integration and sections 6 through 8 pass, qualify the
+      complete baseline and link its persisted report from both changes. Verify matching
+      assembly/model/data identities, full coverage, and independent validation before any scoped
+      numeric accuracy claim; historical in-sample residuals cannot establish a global bound.

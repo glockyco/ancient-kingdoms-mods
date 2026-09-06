@@ -1,380 +1,270 @@
 ## Context
 
-See `proposal.md` for motivation. This section records the engine facts that make the approach
-possible, all read from the decompiled source and several confirmed against a running game.
+The repository has typed fixture validation, character materialization, state and damage probes,
+comparison helpers, baseline helpers, and 33 committed descriptors. These components do not yet form a
+verified matrix runner. The runner validates descriptors after world entry; it does not materialize
+each build, execute its actions, obtain planner predictions, compare observations, or persist a
+qualified baseline. A successful validation command is not evidence of combat parity.
 
-**Action commands are the real path.** `PlayerSkills.CmdUse(int skillIndex, Vector2 direction)` is the
-command the interface itself sends. `TableUI.cs:99` and `UICraftingStation.cs:64,444` call it directly,
-and `UserCode_CmdUse` is the authoritative server handler
-(`server-scripts/PlayerSkills.cs:666-733`). It enforces the barber guard, the learned-skill check, the
-state gate of `IDLE`, `MOVING` or `CASTING`, index bounds, `CheckTarget`, the mana cost, and the energy
-cost, then sets the pending and follow-up skill and the look direction. Cooldown is enforced slightly
-later at cast start through `IsReady`. Simulating pointer input would send this same message, so
-driving actions through the command is faithful rather than a shortcut.
+The experiments recorded in tasks 7.7 through 7.14 establish specific runtime observations. They are
+not a current-version baseline or an independent accuracy study. Source evidence has an assembly hash
+in `server-scripts/SNAPSHOT.toml`; each measurement must identify the actual installed assembly.
 
-**Look direction is a damage input.** `UserCode_CmdUse` assigns `player.lookDirection = direction`, and
-`Combat.cs:649` grants a combat advantage when attacker and victim share a look direction, multiplying
-avoidance by 0.8 and adding 10 percent damage, or 25 percent for a Rogue with the relevant skill. A
-fixture that leaves direction unspecified produces an unstable damage figure.
+The engine constrains the design:
 
-**Character creation is a static method.** `Database.CharacterCreate(...)`
-(`server-scripts/Database.cs:2956`) builds a correct level-one character of any class. This matters
-because each class is a distinct player prefab with its own skill templates, so a class cannot be
-changed on an existing character at runtime.
-
-**Levelling has a single correct entry point.** The `Experience.current` setter runs the engine's own
-loop: it increments level, invokes `onLevelUp`, and calls `LevelUpMercenaries`
-(`server-scripts/Experience.cs:56-110`). Awarding experience therefore grants attribute points, skill
-points, the class attribute cadence, veteran points past the cap, and correct companion scaling,
-without any of those being assigned by hand.
-
-**Equipment changes propagate through a callback.** `PlayerEquipment` subscribes
-`slots.Callback += OnEquipmentChanged` (`server-scripts/PlayerEquipment.cs:155`), so assigning a slot
-applies attribute bonuses and armour set thresholds. `PlayerInventory.Add(Item, int, int, string)` is
-public.
-
-**Damage carries its skill.** `Combat.DealDamageAt(Entity victim, int amountDamage, ScriptableSkill
-skill, ...)` (`server-scripts/Combat.cs:519`) receives the skill, so a postfix can attribute a hit.
-Three public events also exist without patching: `onDamageDealtTo` and `onKilledEnemy` as
-`UnityEvent<Entity>`, `onServerReceivedDamage` as `UnityEvent<Entity, int>`, and
-`onClientReceivedDamage` as `UnityEvent<int, DamageType>` (`server-scripts/Combat.cs:93-99`).
-
-**The database path is a static field, and the redirect works.** `GameManager.pathFileDB`
-(`server-scripts/GameManager.cs:283`) is read when the connection is opened
-(`server-scripts/Database.cs:759`), and the connection is opened from the login screen
-(`server-scripts/UILogin.cs:732`), not at start-up. `ConnectInternal` then creates the file, sets
-write-ahead journaling, and runs `CreateAllTables` and `CreateAllIndexes`, so a fresh path
-self-initialises exactly as a first run does.
-
-The whole approach was exercised end to end before this design was written. A run redirected the path
-at the start scene, created one character of each of the six classes, levelled one of them to the cap
-and through all 200 veteran awards, hired a mercenary, and equipped it. The live save's content hash
-was identical before and after. Account provisioning needed no intervention, because `getAccount`
-creates an account when the table is empty (`server-scripts/Database.cs:837-857`).
-
-**The random generator is unseeded in combat.** `UnityEngine.Random.InitState` is called only in
-`NoticeBoardElvenVillage.cs:152,154`. Combat never seeds it, so a harness may.
+- `PlayerSkills.CmdUse` is the interface action path. Acceptance and cast completion occur at different
+  stages. Facing changes avoidance and damage, so a command return is neither proof of a cast nor a
+  complete description of its inputs.
+- `Database.CharacterCreate` does not enforce class/race pairing or perform all creator setup. The
+  character creator owns pairing, the basic skill, starting city, appearance, and tutorial setup.
+- Definitions needed for legality checks become available after world entry. Character selection
+  cannot switch the loaded character. Materialization refuses an already-advanced character.
+- Awarding experience invokes progression and companion scaling. Equipment grant and swap invoke the
+  callbacks needed for attributes and set bonuses. Skill gates depend on points already spent.
+- The database opens from the login screen. Redirecting its path before connection permits a scratch
+  database, but the parent directory must exist before SQLite opens it.
+- A damage-entry prefix can stamp skill, school, and requested damage before the single-argument hit
+  event reads health taken. The two-argument events are not subscribable on this runtime. A postfix
+  cannot provide the stamp to an event that has already fired.
+- The game shares its random generator across systems. Repeating a seed did not reproduce a combat
+  sequence. Companion rolls assigned after hire do not survive reload unchanged.
 
 ## Goals / Non-Goals
 
 **Goals:**
 
-- Make a measured disagreement between model and game cheap to produce and unambiguous to read.
-- Localise a disagreement to a mechanic rather than to a build.
-- Keep every fixture reachable in normal play, so a measurement means something.
-- Survive a game update by failing loudly rather than drifting quietly.
+- Compare the planner's production evaluation with an achieved, legal game state.
+- Separate setup failure, insufficient evidence, statistical rejection, and model disagreement.
+- Preserve enough evidence to reproduce the procedure and inspect every reported quantity.
+- Protect the player save and refuse incompatible or incomplete evidence.
 
-**Non-Goals:**
+**Non-goals:**
 
-- Bit-exact reproduction of a damage sequence.
-- Any capability that helps a player play. The harness measures and reports.
-- Modelling allied players. A fixture covers only entities its owner controls.
+- Gameplay automation or a second combat model inside the harness.
+- Bit-exact random sequences or a universal percentage accuracy guarantee.
+- Implementing the linked planner or capture changes through this planning revision.
 
 ## Decisions
 
-### One build envelope inside fixtures and captures
-
-An authored fixture and a build captured from a player's game share the same versioned build envelope:
-progression, attributes, skills, equipment, controlled entities, consumables, and provenance. A fixture
-adds execution-only data such as target, action sequence, facing, and seed. A capture adds capture-time
-completeness and container state. Thin C# and TypeScript adapters preserve one logical contract without
-pretending those outer records are identical.
-
-The serialized schema, capture schema, model version, and game-data version remain separate axes. An
-unknown serialized or capture schema is refused. A model mismatch is reported. A game-data mismatch
-follows an explicit compatibility policy.
-
-The alternative is two unrelated build formats with a converter. Its translation bugs would be
-indistinguishable from the model bugs this harness is meant to expose.
-
-### Materialize through engine paths, with one bounded exception
-
-A fixture is built by the engine. Creation, levelling, skill spending, item grant, and equip all use
-the methods listed in Context.
-
-The reason is not convenience. A hand-forged character can hold a combination the engine cannot
-produce, for example a skill level above what its point budget allows or an attribute total inconsistent
-with its class cadence. Measuring such a character validates the model against a state no player can
-reach, which is worse than not measuring.
-
-The exception is a companion's rolled values. A mercenary's health multiplier, resource multiplier, and
-base combat value are randomised at hire (`server-scripts/Player.cs:9744-9790`), so requesting a
-specific companion through the engine path would mean hiring repeatedly until the roll matched. The
-harness therefore assigns those three values directly, and constrains them to the envelope the hire
-path can produce.
-
-That envelope is race dependent and archetype dependent:
-
-| Race | Health multiplier | Resource multiplier, Warrior or Rogue | Resource multiplier, others | Base combat factor |
-|---|---|---|---|---|
-| Human | 0.95 to 1.00 | 0.95 to 1.00 | 0.95 to 1.00 | 0.90 |
-| Elf | 0.90 to 0.95 | 0.90 to 0.95 | 1.00 to 1.05 | 0.70 |
-| Dwarf | 1.00 to 1.05 | 1.00 to 1.05 | 0.90 to 0.95 | 0.70 |
-| Dark Elf | 0.90 to 0.95 | 0.90 to 0.95 | 1.00 to 1.05 | 0.90 |
-| Fire Goblin | 0.95 to 1.00 | 1.00 to 1.05 | 0.90 to 0.95 | 0.90 |
-| Felarii | 0.90 to 0.95 | 1.00 to 1.05 | 0.90 to 0.95 | 0.95 |
-| Drassar | 0.95 to 1.00 | 1.00 to 1.05 | 0.90 to 0.95 | 0.95 |
-
-Base combat at hire is an integer in the half-open interval from zero to `round(owner level × factor)`,
-because the engine uses an integer range whose upper bound is exclusive. Each veteran point then adds
-one to base damage and one to base magic damage, and adds 0.0025 to the resource multiplier
-(`server-scripts/Player.cs:4510-4685, 9822-9832`). A companion's level equals its owner's level.
-
-One entry in that table is dead. `Energy.max` is `baseEnergy.Get(level)` plus flat bonuses and never
-reads `multiplierEnergy` (`server-scripts/Energy.cs:12-37`), while `Health.max` does apply
-`multiplierHealth` (`server-scripts/Health.cs:34-40`). The resource multiplier is therefore inert for a
-Warrior or Rogue companion, including its veteran accumulation. The harness records the value for
-fidelity but must not treat it as affecting output.
-
-### Share the export architecture rather than resemble it
-
-The repository already runs a game-driving pipeline: a build-tool command invokes a typed command
-registered by a mod, which performs work and returns artifact references. The verification run does not
-take a similar shape. It takes the same code.
-
-Launching the game, watching its log for a fatal start-up error, and shutting down cleanly are one
-session. Connecting, confirming the protocol, waiting until the game has registered the commands a flow
-calls, calling one, and quitting are another. Both were private to the export path and are now shared,
-so each flow contributes only the commands it calls and what it does with the answers. A second copy of
-either would have drifted, and the failure would have appeared as a verification defect rather than as
-the duplication it was.
-
-Evaluated expressions were rejected as the interface. They are untyped, unversioned, and not
-reviewable, which is the ad-hoc situation this change exists to replace. Evaluation remains appropriate
-for one-off investigation.
-
-### Probe fidelity is a ladder, and the top rung is required
-
-| Tier | Mechanism | Yields |
-|---|---|---|
-| 1 | combat meter totals and active seconds | totals, and an action interval by inference |
-| 2 | subscribe to the public damage events | per-hit attacker and amount, and damage type |
-| 3 | postfix on the damage entry point | per-hit with the skill the engine chose |
-
-Validating a rotation requires knowing which skill the engine selected, so tier three is required.
-Tiers one and two are retained because they need no patch and therefore keep working when a patch
-target moves.
-
-### Determinism is a variance reduction, not a guarantee
-
-Seeding the generator makes combat rolls reproducible only if the draw order is also reproducible. Other
-systems draw from the same generator, so the order is stable only in an isolated encounter against a
-target that neither moves nor attacks.
-
-A comparison therefore seeds the generator, runs a stated number of events, and asserts on the mean
-within a tolerance and on the observed range within predicted bounds. The observed sequence is recorded
-for diffing but is not the pass condition.
-
-### A diagnostic ladder, so a failure localises
-
-| Tier | Fixture shape | Isolates |
-|---|---|---|
-| A | no combat | the stat sheet: attributes, equipment, passives, set thresholds, caps, consumables |
-| B | one skill, one hit | the damage pipeline, per skill class |
-| C | auto-attack only, swept over weapon delay and haste | the timing model and its clamps |
-| D | full build over a stated duration, traced | the rotation and the resource engine |
-
-A tier D failure with A, B, and C passing points at the rotation. A single whole-build fixture would
-only report that something is wrong.
-
-### The descriptor keys items by identifier, and one gate refuses
-
-A fixture names an item by the identifier derived from its asset name, and carries the displayed name
-only as context. The distinction matters: the game's own runtime lookup is keyed by the displayed name,
-so resolving that way would break a stored fixture the moment an update renamed an item. The asset name
-does not move. The planner's export capability already requires this, and a fixture and a captured build
-share one schema, so keying on the displayed name would also have forced a conversion step.
-
-An absent section and an empty section mean different things. A section the stat sheet depends on must
-be present, and an empty list states that it holds nothing. Absent means the section was never read,
-which no default may stand in for. Companions and actions may be absent, because a fixture naming
-neither measures the stat sheet alone.
-
-Reading a descriptor is permissive, and validation is the only gate. A reader that rejected the first
-absent field would report one fault where a fixture often has several, and the contract is to name every
-field at fault together with its permitted range.
-
-### Legality is checked against injected rules, not a restated table
-
-The validator takes the rules it needs as an input. The running game supplies them from its own
-definitions, and a test supplies synthetic ones. Restating the game's cost, tier, and prerequisite
-tables inside the validator would create a second source of truth that drifts from the game silently,
-which is the failure this change exists to prevent. The engine remains the final authority: a
-materialization step that the engine refuses fails the run.
-
-### Committed fixtures live beside the baseline, and scratch state records what built it
-
-Fixture definitions and the recorded baseline are committed, and a scratch database is not. They
-therefore live apart: definitions and baselines under a `verification/` directory in the repository,
-and scratch state inside the game installation where the redirect points.
-
-Retained scratch state carries a marker naming the build identity and a digest of the fixture
-definitions it was materialized from. A run compares both and rebuilds when either moved. The digest
-covers each definition's name as well as its content, because a baseline is keyed on the fixture name
-and a rename therefore describes a different fixture.
-
-### Experiments precede the model, and comparisons follow it
-
-This change measures the game. The planner change predicts it. Per-quantity comparison, the baseline
-gate, and reported-build parity put a prediction beside a measurement, so they wait until the planner
-has a model. Planner tasks do not close harness tasks; the harness owns its comparison reports and
-baseline lifecycle.
-
-Several harness runs instead establish model inputs and need only the existing probes. They measure the
-physical mitigation coefficient, debuff landing across defense, accuracy and level difference,
-effective debuff uptime, same-entity and cross-entity buff replacement, long-cooldown integer-schedule
-gaps, Rogue versus Warrior resource behavior, and companion output under movement and timing changes.
-Those experiments run before the corresponding planner formulas and policies are finalized.
-
-The dependency order is: finish descriptor and lifecycle gaps, finish the multi-character matrix,
-run the input experiments, implement the planner model, complete per-quantity comparison and the
-baseline, then enable reported-build parity. A model built on a guessed coefficient and later checked
-against the same assumption would agree with itself and prove nothing.
-
-### A companion's race is drawn, so it is checked rather than assigned
-
-A hire rolls the race from a list the archetype allows, and the lists differ: a Rogue is never an Elf,
-a Druid is never a Dwarf or a Dark Elf, and Drassar appears only when a recruiter prefers it. Those
-lists are literals inside the roll, so nothing can be asked what an archetype offers.
-
-Three options exist and two are wrong.
-
-Assigning the race after the hire is the cheap one. It produces a companion the game never offers,
-and nothing downstream can tell, so a measured figure would describe a build no player can hold.
-
-Hiring until the draw matches was tried and reverted. A dismissal is deferred to the end of the
-frame, and the owner's slot keeps pointing at the destroyed companion, so a hire issued in the same
-frame finds every slot occupied and spawns a companion that belongs to none. The run leaks a
-companion into the world and reports that the engine refused a hire it actually performed.
-
-The remaining option is to accept the draw and check it. A fixture that names a race is reproducible
-through the seed the harness already records, and a mismatch is reported against the fixture rather
-than papered over. The three continuous values keep being assigned, because a range cannot be waited
-for.
-
-### The rules are readable only once the world is loaded
-
-The class prefabs a fixture is checked against hang off `NetworkManagerMMO`, and they are unavailable at
-the start screen and at character selection alike. The same descriptor that passes after world entry is
-refused at both earlier points, with the reason rather than a verdict.
-
-That forces an order the harness does not get to choose. The character creator lives on the selection
-screen, so creation runs before world entry, while the definitions that decide whether a fixture is
-legal arrive only with the loaded world:
-
-    selection -> create -> world entry -> check against the game -> build, equip, hire
-
-A descriptor no character could satisfy therefore costs a creation and a world entry before anything
-says so. The cheap defence is an earlier check that needs no game: the schema version, the sections a
-measurement depends on, a slot named twice, a negative level. Those are questions about the descriptor,
-not about the game, so they run before launch and in a unit test. The check that needs the game keeps
-every question the game answers, and neither side restates the other.
-
-Two further identity translations happen at that boundary. A class prefab is named `Player Warrior`, so
-a class identifier drops that prefix. An item's own class restriction holds displayed names, so those
-are translated to identifiers before they are compared. Both were found by running a real fixture
-against the game, and the second silently rejected a legal build until it was applied.
-
-An item is not tied to one slot. A character has two ring slots and two ear slots, and the game decides
-acceptance by matching the item's category against each slot's required category, so a fixture entry is
-checked against the set of slots the item fits. Two-handedness is likewise read from the category rather
-than a flag, because the game has no such flag.
-
-### Class and race pairing is checked in the character creator
-
-`Database.CharacterCreate` takes a class and a race as independent strings and cross-checks neither, and
-no runtime structure lists the races a class allows. The rule is real, but it lives in the character
-creator: each `changeRace` method enables one class button per race and disables the rest
-(`server-scripts/UICharacterEditor.cs:921-1483`).
-
-The creator is live exactly where a fixture is created, and dead by the time the class prefabs are
-readable. The pairing is therefore checked at creation, against the creator, rather than answered later
-from a copy of it. Nothing reports the pairing as unchecked, because nothing has to guess.
-
-### An engine refusal is silent, so a step verifies its own effect
-
-No mutation path reports a refusal. `PlayerSkills.CmdUpgrade` returns without an effect when the index
-is out of range, when the entity is not in a permitted state, and when the affordability check fails
-(`server-scripts/PlayerSkills.cs:850-877`). The attribute commands return without an effect when no
-point is unspent (`server-scripts/Player.cs:13296-13303`). None of them raises, logs, or answers.
-
-A step therefore reads the value it intends to change, acts, and reads it again. The harness supplies
-the reason the engine does not. Trusting a call that returned would build a fixture that is silently
-not the one requested, which is the precise failure this change exists to prevent.
-
-### Skill allocation is ordered by what has already been spent
-
-A skill's own gate is the number of points already spent in its pool, not the character's level. The
-veteran tree states this in its row headings, which read as veteran levels but are spend thresholds,
-and the normal tree carries the same gate through `requiredSpentPoints`.
-
-Allocation therefore cannot follow the order a fixture happens to list. A pass buys every declared level
-that is currently reachable and repeats while a pass buys something. When declared levels remain and a
-pass buys nothing, the fixture names a state its own gates forbid, and materialization reports the
-blocked skill.
-
-### Isolation by redirecting the database path
-
-A run points the game's database path at a scratch file. Fixture characters therefore never exist in a
-player's save, and a crashed run leaves nothing to clean up.
-
-The alternative, reserved character names in the live save with deletion afterwards, fails exactly when
-it matters most, which is when a run crashes.
-
-### Scratch saves are reused and are not committed
-
-Materializing a full fixture matrix costs real time, so a scratch save is retained between runs and
-reused when the build identity and the fixture definitions are both unchanged. It is rebuilt when either
-moves, because a game update can add or alter class abilities. The identity compared is the assembly
-hash, not a version string, for the reason the toolchain records: a version string cannot be recomputed
-from the installation.
-
-Scratch saves are not committed. Fixture descriptors and the golden baseline are, because those are the
-reviewable artifacts.
-
-### A golden baseline with a drift gate
-
-Measured quantities are recorded per fixture. A run compares against that baseline and fails on drift,
-in the same posture the repository already applies to source citations. This folds the harness into the
-existing per-version update workflow, which is where a game change is already expected to surface.
-
-### A player rotation is scripted, a companion rotation is an expectation
-
-The engine has no autonomous action selection for a player. `UserCode_CmdUse` sets the pending and
-follow-up skill only for a follow-up default attack, so the engine repeats the basic attack and nothing
-else. This was observed: a single command produced an indefinite sequence of the same basic attack and
-no other skill.
-
-A player fixture therefore states its action sequence explicitly, because there is no engine selection to
-validate. Validating a rotation means validating that a stated sequence produces the predicted output,
-which is what the planner's solved rotation asserts.
-
-A companion is the opposite case. `PetSkills` selects uniformly at random among ready damage and debuff
-skills every two to four seconds, and a healer archetype withholds casts below a mana reserve. A
-companion contribution is therefore reported as an expectation over that selection and is not scripted.
-
-### The baseline stores bounds, not a sequence
-
-Because the engine shares one random generator across systems, an exact event sequence is not reliably
-reproducible. A baseline that stored one would produce failures that carry no information.
-
-The baseline therefore stores the seed, the event count, the mean, and the predicted bounds. A full
-observed sequence is retained beside it as a non-gating artifact for inspection.
+### Shared build data, separate outer records
+
+Fixtures and captures share versioned logical build data: identity, progression, allocations,
+equipment and augments, companions and their rolls/equipment, and consumables. The current
+`BuildEnvelope` holds version axes only; it is not this complete build-data contract. Keep serialized
+schema, capture schema, model, and game-data versions distinct.
+
+Fixture execution metadata contains targets, initial state, actions, facing, windows, and sampling
+policy. Capture metadata contains completeness and container state. Neither belongs in shared build
+data. Use thin C# and TypeScript adapters with a checked round trip, rather than claiming identical
+outer schemas. An unknown schema fails. An unread section remains missing, not empty. Required
+measurement inputs must be complete before evaluation or materialization. Stable asset identifiers
+are keys; display names provide context, not identity.
+
+The linked planner change owns the shared build/capture adapters and production evaluator. The harness
+owns fixture execution, observation, and comparison. Tests of an isolated evaluator do not satisfy
+this dependency. The adapter must invoke the same evaluation path used for planner results, with
+matching data and model identities, rather than a verification-only formula copy.
+
+### Requested state is not achieved state
+
+Perform structural checks before launch. Read game-owned legality rules after world entry, and check
+class/race pairing through the creator before creation. Do not copy game cost or prerequisite tables
+into the harness. Translate runtime names to stable identifiers at the boundary, including class
+restrictions and multi-slot item categories.
+
+Create through the creator, progress one experience requirement at a time, and spend attributes and
+skills through engine commands. Allocate skills in reachable passes; stop and name the blocked skill
+when no purchase succeeds. Grant and equip through the engine, clear undeclared equipment, and verify
+set effects. Materialize declared consumables, ammunition, target, position, facing, resources, and
+initial effects before the measurement that depends on them.
+
+Each mutation reads before and after. Compare all required achieved fields with the request before
+measurement. A mismatch stops dependent quantities and identifies the field; it is not silently
+accepted as a different fixture. Preserve achieved state in the report. Do not feed measured caster
+stat totals into the prediction of those same totals. Independently measured target state may be an
+input when the protocol declares this boundary and preserves its provenance.
+
+### Companion-last materialization has a bounded exception
+
+Hire companions after owner progression. Use the engine's price, name, and equip path. Assign only the
+health multiplier, resource multiplier, and base combat roll within the race/archetype envelope the
+hire path can produce. Validate the envelope from current game evidence, including the integer base
+combat upper bound's exclusion. This is the only exception to engine-driven build materialization.
+
+Do not assign race. Check the drawn race and fail a named-race mismatch. A seed records context; it
+cannot guarantee a race. Do not add an unbounded hire/dismiss loop. Companion energy multipliers are
+recorded even where the current engine does not consume them; prediction must follow the actual
+resource getter, not the field name.
+
+After every load, reapply allowed transient rolls and verify them and the companion equipment again.
+No scratch marker can substitute for that readback. Companion AI remains autonomous; the player
+sequence does not force companion skill selection.
+
+### Ownership and backup precede mutation
+
+Reuse the export path's session and typed runtime transport, not a second launcher. Acquire exclusive
+installation/session ownership before scratch mutation or launch. Refuse an existing game instance
+without deleting or changing scratch state. Check the process and endpoint identity so commands cannot
+reach an unrelated instance. Keep ownership through shutdown and the final isolation check.
+
+Verify a timestamped backup of an existing live save and its SQLite sidecars before scratch mutation
+or launch; record a missing save as absent. Resolve scratch paths canonically under an explicitly owned root; reject escapes,
+symlinks, and ambiguous ownership before deletion or redirection. Create a fresh parent directory
+before opening SQLite. Confirm the runtime-reported database path before world entry or fixture work.
+A pathname string match alone is insufficient protection.
+
+On success, failure, and cancellation, stop only the owned process, release resources, and compare the
+player save with its pre-run evidence. Report isolation or cleanup failure alongside the original
+failure. A crashed run can leave scratch state; it must never require repairing the player's save.
+Reserved names in the live save are rejected because cleanup cannot protect a crashed run.
+
+### One fixture attempt has a complete lifecycle
+
+Use a fresh character and game session per fixture attempt by default. This follows the existing
+world-entry and fresh-character constraints without inventing an in-session class switch. Repetitions
+start from the protocol's verified initial state. Handle a full scratch roster through owned-fixture
+slot management; never delete a player character.
+
+Scratch reuse is optional. A reusable per-fixture record requires successful materialization, matching
+assembly and fixture-content hashes, and a verified saved state. A whole-matrix validation marker does
+not qualify. After load, restore transient state and repeat required readbacks. An interrupted build
+is not reusable. Measurement success and baseline qualification are separate from materialization
+reuse eligibility.
+
+The full flow is structural preflight, ownership, backup, scratch preparation, launch/redirect,
+creation/world entry, game legality, materialization/readback, measurement, production prediction,
+comparison, baseline gate, persisted report, shutdown, and isolation verification. Prediction may be
+computed earlier once its declared inputs are available, but success requires every applicable stage.
+A validation-only command must identify itself as such. The first baseline is an explicit qualification
+operation, not a silent pass when no baseline exists.
+
+### Player schedules and observation boundaries are explicit
+
+A fixture states ordered player actions, timing, whether and how the sequence repeats, facing, target,
+start conditions, horizon, and stopping rule. Declare whether an action at the exact horizon is
+included and how an in-flight action is handled. Record attempted, accepted, completed, and landed
+counts separately. Record refusals with available engine evidence; do not invent a refusal reason or
+remove attempts from denominators. Unexpected refusal invalidates dependent comparison unless the
+fixture explicitly tests it.
+
+Use the same schedule and state semantics for planner and game. Re-evaluate state-dependent damage,
+resource costs/gains, effect expiry, maintained target defenses, and thresholds at the relevant events.
+The linked planner must supply this behavior before rotation parity can close. Replacing random inputs
+with means does not by itself yield an exact expectation through rounding, resource decisions, or
+thresholds; validate that assumption or label the approximation.
+
+Every quantity declares units, sampling unit, numerator/denominator, and window. Distinguish requested
+damage from health taken, misses from zero-damage hits, and target death or overkill from mitigation.
+Reset or invalidate windows whose target state no longer meets the protocol. Account for warm-up,
+server timing resolution, effect cleanup, and companion movement rather than silently mixing states.
+
+### Diagnostic tiers differ from attribution fidelity
+
+| Diagnostic tier | Required coverage |
+|---|---|
+| A | Stat totals, progression, equipment, set thresholds, augments, caps, and consumables |
+| B | Skill handler and school branches, damage intent/reduction, effect application and settled target state |
+| C | Basic-attack cadence over weapon delay and haste, including clamps |
+| D | Executable class rotations, resources, maintained effects/upkeep, and autonomous companion contribution |
+
+Tier B requires combat or effect application; it is not a stat-only tier. Maintain explicit effect
+coverage in B and D, without adding a new letter. Cover every supported player damage school and
+mercenary archetype, plus meaningful lower-level and bare/equipped cases. A coverage label is not
+proof that a descriptor reaches the claimed handler. The matrix must be extensible, not a fixed count
+of accepted labels. Existing 33 descriptors are a starting inventory, not accepted coverage evidence.
+
+A lower-tier failure makes dependent higher-tier interpretation unreliable. Passing lower tiers
+narrows the investigation but does not prove the cause of a higher-tier failure.
+
+Attribution fidelity is separate: totals, individual hits, and skill-attributed hits. The prefix plus
+hit-event path provides the highest level. Lower levels remain useful diagnostics when patching fails,
+but cannot pass a rotation comparison that requires skill attribution. State probes declare their own
+attributability and settled-state conditions rather than borrowing a damage tier.
+
+### Statistical acceptance is declared before measurement
+
+Use exact equality for deterministic discrete invariants and justified numeric tolerance for rounding
+or clock resolution. A theoretical support bound is distinct from an observed sample range. Reject an
+impossible observation only when the model actually defines a hard support bound.
+
+Stochastic quantities require a versioned protocol chosen before the run: sampling unit, minimum
+sample sufficiency, independent repetitions or an explicit dependence treatment, confidence level,
+error control across the matrix, stopping rule, and acceptance criteria. Hits in one sustained window
+are not assumed independent. Companion selection and maintained-effect uptime generally need repeated
+windows. Binomial landing analysis is appropriate only when its trial assumptions hold. Protocol
+spikes must justify these choices and demonstrate their false-rejection behavior before gating.
+
+Do not assert exact equality of stochastic means, seeds, event counts, or observed sequences across
+runs. Preserve sequences and per-quantity counts for inspection. Insufficient samples are inconclusive,
+not a pass. A failed mean test is a failed mean test, not proof of a model error; an out-of-support
+sample does not prove a variance error. Report the failed criterion and evidence without a causal label
+that the measurement cannot establish. Do not widen tolerances after seeing a failure to make it pass.
+
+### Reports and baselines preserve evidence identity
+
+Persist assembly hash and game labels, fixture name and content hash, build schema versions,
+model/evaluator identity, data identity, requested and achieved state, target input provenance, seed,
+protocol/tolerance versions, units/windows, per-quantity event counts, raw sequences, and attribution
+fidelity. Record failed, incomplete, unsupported, and inconclusive outcomes explicitly. Missing required
+artifacts prevent verified success even if in-memory comparisons passed.
+
+Check identity and compatibility before numeric baseline comparison. A diagnostic mismatch override
+may show differences but cannot count as a compatible verified run. A game-version difference is not
+proof that the game caused a numerical difference. Preserve the old baseline and diagnostic report
+before an explicit reviewed update.
+
+Baseline capture and comparison both honor comparison failure. Only complete, compatible, passing
+required coverage can qualify for promotion. A nonempty review reason alone cannot bless failed input.
+Store the reviewed reason, identities, protocol, evidence, and scope with the baseline. Apply the
+predeclared statistical drift policy, not exact stochastic summaries. Commit descriptors and reviewed
+baselines under `verification/`; retain scratch state outside version control.
+
+### Raw parity and normalized predictions are different claims
+
+The running game is authoritative for raw parity. A planner may deliberately normalize a known game
+defect only in a separately identified result with a defect/evidence reference and explicit affected
+quantities. Never mix raw and normalized residuals or hide a raw mismatch through normalization.
+
+Historical samples and an in-sample maximum residual cannot establish a global 2.5 percent bound.
+Any published accuracy boundary needs a defined build/mechanic/version domain, adequate current corpus,
+and independent validation not used to fit that boundary. Unknown or unverified domains carry no
+numeric accuracy claim. The linked planner owns presentation and uncertainty corrections; this change
+supplies qualified evidence and must not close those planner tasks on their behalf.
+
+### Targeted spikes close uncertain contracts
+
+Before implementation acceptance, exercise ownership/refusal/cancellation and fresh/reused scratch
+loads; trace one complete fixture from request through production prediction and persisted comparison;
+and establish the stochastic protocol using repeated game windows. Include a maintained-effect
+rotation and a companion case in the vertical slice. Record concrete commands, identities, observed
+state, and decisions in existing planning/evidence locations. A helper unit test or descriptor count
+cannot replace these runtime spikes.
 
 ## Risks / Trade-offs
 
-- A patch target for the trace postfix can move or disappear. → Tiers one and two need no patch, so a
-  moved target degrades fidelity rather than stopping verification. The run reports which tier it
-  achieved.
-- A fixture can drift out of legality when the game changes point budgets or gates. → Materialization
-  spends points through the engine, so an illegal request fails during materialization rather than
-  producing a quietly wrong measurement.
-- Redirecting the database path is a global mutation and could touch a real save if it were wrong. →
-  The run refuses to start unless the resolved path is inside its own scratch directory, and a backup of
-  the live save is verified before a run that could reach it.
-- The measurement is only as good as the fixture's realism. Measuring an unreachable build gives a
-  precise answer to the wrong question. → Legality is a requirement, not a convention.
-- Time cost grows with the matrix. → Tiers A and B need no combat and dominate the coverage, so the
-  expensive tiers stay small.
-- The harness could be mistaken for gameplay automation. → It runs only when invoked for verification,
-  performs no action outside a fixture, and is not published to players.
+- Separate sessions cost time. They avoid unsupported character switching and state leakage; reuse is
+  allowed only after its saved and transient state guarantees are proven.
+- Exclusive ownership may refuse a usable-looking endpoint. Refusal is safer than commanding another
+  process or deleting its database.
+- Broad statistical coverage costs repeated windows. Predeclared error control avoids a matrix that
+  fails randomly or passes because its tolerances were fitted to its own observations.
+- Patch failure lowers attribution. Preserve diagnostics, but leave dependent parity incomplete.
+- A legal descriptor may still fail materialization. Fail at readback rather than measuring a different
+  build under the requested name.
+- Planner adapters, dynamic evaluation, and defensible uncertainty remain cross-change dependencies.
+  Local comparison helpers cannot substitute for them.
+
+## Migration Plan
+
+1. Reconcile task status with component evidence; retain historical experiments without promoting them
+   to full-run acceptance. Revise the linked planner plan separately for the dependencies above.
+2. Complete shared contracts and the safety/materialization spikes before enabling matrix execution.
+3. Connect one complete vertical slice to the production evaluator, then extend behavioral coverage.
+4. Freeze and verify statistical protocols, complete the matrix, and persist its full evidence.
+5. Qualify a reviewed baseline, then enable the version-update gate and reported-build parity. Validate
+   any published accuracy boundary against independent evidence.
+
+Until qualification, retain validation and probe commands as explicitly limited diagnostics. If a
+protocol or model migration fails, retain its failed report and the prior baseline; do not rewrite the
+baseline or claim compatibility. Resume implementation through the implementation workflow, not as a
+side effect of this planning revision.
