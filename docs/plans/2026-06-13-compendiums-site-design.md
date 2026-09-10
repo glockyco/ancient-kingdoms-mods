@@ -1,7 +1,7 @@
 ---
 title: "Compendiums.org Site Design"
 type: spec
-status: active
+status: blocked
 created: 2026-06-13
 parent: 2026-07-31-ancient-kingdoms-overview
 superseded_by:
@@ -16,7 +16,14 @@ Create a small apex-domain site at `https://compendiums.org` that acts as the pu
 
 ## Current context
 
-`ancient-kingdoms.compendiums.org` is already deployed through `ancient-kingdoms-compendium-site` as a Cloudflare Workers Static Assets/SvelteKit site. `ardenfall-compendium/site/wrangler.toml` already targets `ardenfall.compendiums.org`. `Erenshor/src/maps/wrangler.jsonc` builds and deploys `erenshor-maps` as a static-assets Worker, but it does not yet declare a `compendiums.org` custom domain.
+This repository does not contain the apex site or the Ardenfall and Erenshor repositories. The
+2026-07-31 audit could not verify their deployment state, current Wrangler configuration, ownership, or
+public hostnames. Treat the repository and deployment claims below as the intended architecture, not as
+current facts.
+
+Before implementation, audit each owning repository and the active Cloudflare configuration. Update the
+hostname table and migration sequence from that evidence. This plan remains blocked until those sources
+are available.
 
 ## Decision
 

@@ -13,8 +13,8 @@ archived:
 One content model and one visual system for all 13 profession pages, replacing three
 divergent generations.
 
-Evidence: `2026-07-31-profession-content-coverage`. Ordered work:
-`2026-07-31-profession-page-migration`.
+Ordered work: `2026-07-31-profession-page-migration`. Current implementation evidence and durable
+data-source warnings are consolidated in this record and the migration plan.
 
 ## Job and audience
 
@@ -320,10 +320,20 @@ than the record it replaces.
 
 ## Data prerequisites
 
+Audit baseline: Ancient Kingdoms 0.9.31.1.
+
 - **Count denominators** must resolve to 46 and 17 before any completion UI ships.
-  `professions.tracking_denominator` is stale at 45 and 13.
+  `professions.tracking_denominator` remains stale at 45 and 13.
 - `static_data.json` is **not** a valid source for any published value. Re-verify each
   entry against `server-scripts/` before relying on it.
+- A green citation check proves that the cited bytes did not drift. It does not prove that the cited
+  region contains the intended symbol or that a hand-transcribed formula is correct. Mechanical claims
+  need symbol-anchored citations plus behavioral tests where practical.
+- `game_config.json` is exported but not loaded. Do not treat its profession-adjacent values as
+  published data until a required loader and boundary checks exist.
+- The profession exporter attempts to publish 13 icons through `visual_assets`. The current database
+  has no `profession` rows, so UI work must retain semantic glyphs until a game-backed export proves
+  those sprites are readable.
 
 ## Correctness fixes folded into this work
 
@@ -383,5 +393,5 @@ reward patterns.
 - Every mechanical claim carries a machine-checked citation; `pnpm check:citations`
   passes.
 - No fabricated content. Facts the audit marked unknown remain absent.
-- The five listed defects are fixed and the corrected values match current
+- The four listed defect groups are fixed and the corrected values match current
   `server-scripts/`.

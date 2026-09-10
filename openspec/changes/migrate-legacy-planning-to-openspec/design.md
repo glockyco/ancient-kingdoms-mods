@@ -8,9 +8,9 @@ some contain unfinished work, and several contain claims that current source con
 and which rationale can survive deletion. The missing rule is authority: it does not state that main
 OpenSpec specifications own current behavior or that active OpenSpec changes own pending behavior work.
 
-Two higher-priority OpenSpec changes are active. This migration has no runtime dependency on them, but
-running a broad planning audit beside them would compete for review and could move evidence while their
-plans are still being used.
+Two higher-priority OpenSpec changes are active. This migration has no runtime dependency on them.
+The audit can proceed without moving their artifacts. The final authority cutover still waits until
+both changes are archived, because it removes paths and guidance that active work can reference.
 
 ## Goals / Non-Goals
 
@@ -25,21 +25,21 @@ plans are still being used.
 **Non-Goals:**
 
 - Implement any feature discovered in a legacy plan.
-- Start the migration while the combat harness or gear planner change remains active.
+- Remove the legacy index, directory, or authority pointers while the combat harness or gear planner change remains active.
 - Copy old plans into OpenSpec unchanged.
 - Keep a historical mirror of deleted legacy plans.
 - Replace product, architecture, setup, or operational documentation whose purpose remains valid.
 
 ## Decisions
 
-### Execution waits for both current changes to archive
+### Audit now; defer the final authority cutover
 
-Planning this migration now prevents it from being forgotten. Applying it waits until
-`add-combat-verification-harness` and `add-gear-and-rotation-planner` are complete and archived. The
-first task is a hard gate and performs no migration when either change remains active.
+Evidence collection, reconciliation, replacement planning, and safe removal of independently stale
+records can proceed while `add-combat-verification-harness` and `add-gear-and-rotation-planner` remain
+active. These actions do not move or rename either active change.
 
-This is a priority boundary, not a technical dependency. It prevents a repository-wide documentation
-audit from changing context while those two changes are under active review.
+The final index removal, repository-guidance cutover, and legacy-directory removal wait until both
+changes are complete and archived. This is a context-stability boundary, not a technical dependency.
 
 ### One disposition ledger drives the migration
 
@@ -58,6 +58,28 @@ Implementation begins with a ledger containing one row per legacy file and these
 
 The ledger is part of this change while it is active. It is not a new permanent planning database. Its
 final state is retained with the archived OpenSpec change as evidence that every input was handled.
+
+### Audited disposition ledger
+
+Audit baseline: Ancient Kingdoms 0.9.31.1 and the repository state at commit `c46548b1`.
+Implementation evidence takes precedence over frontmatter and unchecked legacy tasks.
+
+| Path | Central premise | Implementation evidence | Current requirements | Unfinished wanted work | Durable rationale | Referrers | Disposition |
+|---|---|---|---|---|---|---|---|
+| `INDEX.md` | Legacy navigation hub | OpenSpec now owns active changes | None | Final authority cutover | None | `AGENTS.md`, overview, hook | Keep until final cutover |
+| `2026-07-31-ancient-kingdoms-overview.md` | Website backlog and product ordering | Several listed prerequisites shipped or changed | None | Remaining website subjects below | Priority rationale only | `AGENTS.md`, all child records | Correct now; delete at final cutover |
+| `2026-06-13-compendiums-site-design.md` | Separate apex directory site | Owning repositories are unavailable here | Unknown until external verification | Apex site, redirects, sibling domains | Separate-worker boundary | Overview, index | Blocked on owning-repository audit |
+| `2026-05-27-website-design-system-audit-consolidation.md` | Consolidate repeated website UI rules | `website/DESIGN.md`, shared tables, links, sections, and profession header exist | Current behavior belongs in website specifications | Measured drift, enforcement, remaining adoption | Evidence-first component threshold | Overview, index | Propose `consolidate-website-design-system`, then delete |
+| `2026-05-28-compendium-data-contract-design.md` | Reduce entity-addition touchpoints | Entity and marker registries shipped; exporter and loader orchestration remain imperative | Shipped registries need capability ownership | Export catalog, pipeline catalog, run manifest, read-model migration | Runtime-boundary and anti-generalization decisions | Overview, index | Propose `simplify-entity-addition-workflow`, then delete |
+| `2026-07-31-detail-page-title-suffixes.md` | Add contextual detail titles | Only `itemTitle` exists | None | Eight title generators and edge coverage | Title-length and suffix rules | Overview, index | Propose `add-detail-page-title-suffixes`, then delete |
+| `2026-07-31-entity-image-surfacing.md` | Render exported item, NPC, and skill art | Four of five named surfaces render art; item detail loads but does not render its primary icon | Existing artwork contracts are code- and test-owned | Prominent item-detail icon | Table-driven dimensions and shared URL rule | Overview, artwork plan, OG plan, index | Propose `finish-entity-image-surfacing`, then delete |
+| `2026-07-31-entity-structured-data.md` | Add detail-page JSON-LD | Site, organization, author, collection, and breadcrumb nodes exist; entity nodes do not | Existing JSON-LD behavior needs main-spec ownership | Entity nodes and later `SearchAction` | Conservative schema mapping | Overview, index | Propose `add-entity-structured-data`, then delete |
+| `2026-07-31-per-entity-og-images.md` | Add item and monster share images | Every route still uses `/og-default.png` | Existing default-image behavior needs main-spec ownership | Version-one item and monster images | Hashed cache invalidation and fallback | Overview, index | Propose `add-per-entity-og-images`, then delete |
+| `2026-08-10-entity-artwork-pipeline.md` | One artwork pipeline and path rule | WebP, reconciliation, shared paths, derived art, and most export families shipped | Shipped artwork invariants need main-spec ownership | Profession output, remaining consumers, global search surface | Encoding measurements and deliberate omissions | Overview, image plan, map plan, index | Propose `complete-entity-artwork-pipeline`, then delete |
+| `2026-07-31-profession-content-coverage.md` | Snapshot profession coverage | Snapshot targets 0.9.26.0; current evidence is 0.9.31.1 | None | None independent of profession system | Citation and source-data warnings | Profession system, migration, index | Relocate warnings and delete |
+| `2026-07-31-profession-page-migration.md` | Complete profession page migration | Correctness wave and three validation professions shipped; fishing and later stages remain | Shipped profession behavior needs main-spec ownership | Fishing, remaining professions, data repair, cross-page checks | Validation-set rationale | Profession system, overview, index | Propose `complete-profession-page-system`, then delete with system record |
+| `2026-07-31-profession-page-system.md` | One profession content and visual system | Shared mechanics, header, sections, curve, and three validators shipped | Shipped system needs main-spec ownership | Remaining migration scope | Content-shape and density decisions | Profession migration, overview, index | Propose `complete-profession-page-system`, then delete with migration record |
+| `2026-08-09-map-marker-and-search-registry.md` | Registry, global search, and wayfinding | Registry-driven map layers and unified map search shipped; global palette and wayfinding did not | Shipped registry and search contracts need main-spec ownership | Selection, popups, global search, wayfinding, portal UX, cleanup | Search and travel measurements | Overview, artwork plan, index | Propose `complete-map-search-and-wayfinding`, then delete |
 
 ### Audit behavior before trusting a checkbox or status label
 

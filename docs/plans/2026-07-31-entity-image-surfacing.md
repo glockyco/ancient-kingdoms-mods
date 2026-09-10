@@ -1,7 +1,7 @@
 ---
 title: "Entity Image Surfacing"
 type: spec
-status: draft
+status: in-progress
 created: 2026-07-31
 parent: 2026-07-31-ancient-kingdoms-overview
 superseded_by:
@@ -10,53 +10,35 @@ archived:
 
 # Entity Image Surfacing
 
-Show the item, NPC and skill art the export pipeline already ships. Monsters are the only
-domain whose images reach the UI. Everything else is extracted, trimmed, copied into
-`website/static/` and indexed in `visual_assets`, then never rendered.
+Finish the remaining item-detail artwork surface. NPC details, skill details, class skill tables,
+and item overview rows now render the exported artwork through shared components.
 
 ## Current state
 
-Counts re-measured 2026-08-10:
+Counts measured from the Ancient Kingdoms 0.9.31.1 database:
 
-| Domain | Kind | Assets | Entities | UI consumers |
+| Domain | Kind | Assets | Entities | Named surface state |
 | --- | --- | --- | --- | --- |
-| item | `icon` | 1,651 | 1,671 | `lib/components/ItemTooltip.svelte:12-14` only |
-| npc | `primary` | 234 | 234 | none |
-| skill | `icon` | 689 | 692 | none |
-| monster | `primary` | 362 | 362 | 3 — the reference pattern |
-| pet | `primary` | 5 | 11 | `PetDetail.svelte:261-272` |
-| item | `pet` | 11 | — | `routes/items/[id]/+page.svelte:603-612` |
+| item | `icon` | 1,655 | 1,678 | Overview complete; detail route loads the row but has no prominent icon surface |
+| npc | `primary` | 234 | 234 | Detail complete |
+| skill | `icon` | 695 | 698 | Detail and class tables complete |
+| monster | `primary` | 361 | 361 | Existing reference surfaces remain complete |
+| pet | `primary` | 5 | 11 | Detail complete for non-mercenary pets |
+| item | `pet` | 12 | — | Summoned-pet card complete |
 
-The pipeline behind them:
-
-- `mods/DataExporter/VisualAssetRegistry.cs` extracts PNGs at runtime and writes
-  `visual_assets.manifest`.
-- `DataExporter.cs` passes one registry to the Monster, Npc, Item and Skill exporters.
-- `load_visual_assets` in `build-pipeline/src/compendium/loaders/core.py` trims transparent
-  padding with PIL, copies into `website/static/images/<domain>/`, and inserts
-  `visual_assets` rows.
-
-So no exporter, loader or schema work is needed. This is UI work only.
+The pipeline now publishes deterministic WebP paths through
+`build-pipeline/src/compendium/visual_assets.py`. It reconciles artwork after redaction and uses one
+shared `entityImageUrl()` implementation. The remaining scope is UI-only.
 
 ## Design
 
-**Read images through the `visual_assets` table, not by path convention.** The table
-carries `public_path`, `width` and `height`, so the markup can reserve space and avoid
-layout shift. The path-convention read in `ItemTooltip.svelte` cannot, because it builds
-`/images/items/{id}/icon.png` as a string and knows neither the real path nor the
-dimensions.
+Read optional existence and intrinsic dimensions through `visual_assets`. Use its `public_path` when
+the query already has the row. Use `entityImageUrl()` only when a fixed-size surface already has an
+explicit availability sentinel. Do not add a second path formatter.
 
-The pattern to copy is the monster detail page: the query at
-`routes/monsters/[id]/+page.server.ts:839`, keyed on `domain = ? AND entity_id = ? AND
-kind = ?`, plus the missing-image placeholder that page renders. Do not copy
-`ItemTooltip.svelte`'s string building into new call sites.
-
-The coverage gaps resolve to that placeholder, so no special-casing is needed anywhere.
-Re-measured 2026-08-10, they are 23 items and 3 skills, of which 18 items are
-`*_armor_bonus_set` pseudo-entities. The database also holds 3 orphan `visual_assets` rows
-pointing at items that no longer exist, which is why a naive row-count difference reads as
-20. [2026-08-10-entity-artwork-pipeline](2026-08-10-entity-artwork-pipeline.md) §3.4 makes
-both conditions build failures.
+The item detail loader already returns `visualAsset`. The remaining implementation must render that
+record with its dimensions and a missing-art placeholder. It must not add another database query or
+construct a separate URL.
 
 ## Acceptance
 
@@ -74,8 +56,8 @@ the one implementation the loader itself uses and which a pipeline test pins aga
 
 ## Tasks
 
-- [ ] Item icon on the item detail page.
-- [ ] Item icon on the items overview rows.
-- [ ] NPC portrait on the NPC detail page.
-- [ ] Skill icon on the skill detail page.
-- [ ] Skill icon in the class skill tables.
+- [ ] Render the item icon prominently on the item detail page from its existing `visualAsset` row.
+- [x] Item icon on the items overview rows.
+- [x] NPC portrait on the NPC detail page.
+- [x] Skill icon on the skill detail page.
+- [x] Skill icon in the class skill tables.

@@ -2,8 +2,9 @@
 
 `docs/plans/` remains a legacy planning hub beside OpenSpec, so current work, shipped behavior, stale
 claims, and historical rationale can appear authoritative in two places. The repository needs one
-planning system. Its execution is deliberately queued until the combat-verification harness and gear
-planner changes are complete, so it does not compete with those higher-priority changes.
+planning system. Evidence collection, reconciliation, and safe removal of independently stale records
+can proceed while other changes are active. The final authority cutover waits until the combat
+verification harness and gear planner changes are complete, so their active context remains stable.
 
 ## What Changes
 
@@ -19,8 +20,10 @@ planner changes are complete, so it does not compete with those higher-priority 
   second archive.
 - Remove `docs/plans/INDEX.md`, remaining `docs/plans/` pointers, and obsolete planning-tool hooks after
   every owned record and reference is resolved.
-- Sequence implementation after `add-combat-verification-harness` and
-  `add-gear-and-rotation-planner` are complete and archived. This proposal does not migrate any record.
+- Permit evidence collection, reconciliation, replacement planning, and safe removal of independently
+  stale records while `add-combat-verification-harness` and `add-gear-and-rotation-planner` remain active.
+- Defer the final index removal, repository-guidance cutover, and legacy-directory removal until both
+  prerequisite changes are complete and archived.
 
 ## Capabilities
 

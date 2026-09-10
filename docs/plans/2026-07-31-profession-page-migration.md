@@ -11,12 +11,29 @@ archived:
 # Profession Page Migration
 
 Ordered work to bring all 13 profession pages onto the system defined in
-`2026-07-31-profession-page-system`. Evidence:
-`2026-07-31-profession-content-coverage`.
+`2026-07-31-profession-page-system`. Current implementation evidence and the retained data-source
+warnings below replace the expired 0.9.26.0 coverage snapshot.
 
 Stages run in order. Stage 2 owns the mechanics record because the progression module and
 payoff line both read it; see the spec for why it is a TypeScript module rather than a
 database table. Within Stage 3 the four validation professions gate the remaining nine.
+
+## Current state
+
+Audit baseline: Ancient Kingdoms 0.9.31.1.
+
+The correctness wave is complete. The shared mechanics record, `ProfessionHeader`, `PageSections`,
+`MasteryCurve`, and the long-table convention exist. Radiant Seeker, Mining, and Slayer use the new
+system. Fishing remains the validation gate before the other nine profession routes.
+
+The data defects remain. `ProfessionExporter.cs` still publishes 45 Exploring entries and 13 Lore
+Keeping entries. The profession index overrides only Exploring from `zone_triggers`. The gathering
+resource table still lacks the dropped reward fields. `DetermineStationType()` still maps every
+non-cooking crafting station to `unknown`.
+
+The exporter now attempts to publish profession icons through `visual_assets`, but the current database
+contains no `profession` artwork rows. Treat the source as unread until a game-backed export proves
+otherwise.
 
 ## Tasks
 
@@ -32,8 +49,9 @@ sites, all under `website/src/routes/`.
 - [x] Change the effortless boundary from `>=` to `>` in `professions/herbalism/+page.svelte:71-77` and `professions/mining/+page.svelte:76-84`
 - [x] Run `pnpm check:citations` from the repo root, then `pnpm check && pnpm lint && pnpm build`
 
-Risk is low and contained: no profession page has a test, and the 691 committed mechanics
-snapshots cover skill pages only, so none of these edits can move a snapshot.
+The initial correctness fixes predated current profession coverage. Fishing now has a page-data test,
+and Radiant Seeker and Slayer have database-backed page-data tests. New shared behavior must extend
+those observable contracts instead of relying only on type checks.
 
 The herbalism defect is the argument for the Stage 2 mechanics record. It survived a
 green citation check because the checker validates region bytes, not claim correctness,

@@ -22,18 +22,18 @@ showing the generic site logo. Version one covers items and monsters.
 takes no arguments, and `Seo.svelte:25` has no `ogImagePath` prop. The same default
 image is therefore used for every page that emits Open Graph metadata.
 
-The source-art pipeline provides usable artwork for 1,638 items, 686 skills, 361
-monsters, and 229 NPCs. The image coverage and loading path are documented in
-`2026-07-31-entity-image-surfacing`. Quests, zones, altars, recipes, gather
-resources, and classes have no source art and would need motif templates. Skills
-and NPCs have source art but remain outside the first version.
+The 0.9.31.1 database contains artwork rows for 1,655 items, 695 skills, 361 monsters,
+234 NPCs, 24 zones, 19 gathering resources, 6 classes, and 133 chests. Recipe cards can
+reuse result-item art. Quests and altars still need motif templates. Profession image export
+has not produced usable rows. Skills, NPCs, and the other available domains remain outside
+the first version.
 
 ## Version-one scope
 
-Generate entity-specific images for items and monsters only. These two domains cover
-about 90% of share traffic. All other entity types continue to use `/og-default.png`
-through the existing fallback, including entities whose source art is available but
-which are not in this version.
+Generate entity-specific images for items and monsters only. They are the largest artwork-backed
+entity domains and provide a bounded first release. No current traffic measurement supports the old
+90 percent share estimate. All other entity types continue to use `/og-default.png` through the
+existing fallback, including entities whose source art is available but which are not in this version.
 
 The fallback must also apply when an entity image is unavailable or generation fails.
 A generic preview is preferable to a broken Open Graph image URL.
@@ -103,11 +103,11 @@ for the build while preserving a valid fallback path for metadata.
 
 ## Static-asset budget
 
-The current deployment contains 15,579 files. The 1,638 item images plus 361
-monster images add approximately 2,000 files, well below the approximately 5,000
-extra-file concern for the deployment plan. The implementation must still measure
-build time and generated output size. The version-one output should keep total OG
-image storage under 100 MB and increase a full-scale build by less than 60 seconds.
+The current file-count and share-traffic baselines have not been remeasured. Before implementation,
+record the deployed asset count, compressed and uncompressed output size, and full build time. Then
+run the item-and-monster generation against the complete current database. Treat 100 MB of generated
+OG storage and 60 seconds of added full-build time as provisional limits that must be confirmed against
+the active deployment platform.
 
 ## Acceptance
 

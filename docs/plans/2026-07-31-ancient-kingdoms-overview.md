@@ -13,15 +13,15 @@ archived:
 This repo extracts Ancient Kingdoms game data and publishes it as a public compendium:
 `Game (IL2CPP Unity) → Mods (JSON export) → Build Pipeline (SQLite) → Website`.
 
-**This document is forward-looking only.** It holds the goal, the ranked queue, and the
-map of children — no evidence, no task checkboxes, no provenance. When an item ships it
-leaves the queue and its doc moves to `archive/`.
+**This document is forward-looking only.** It holds the website backlog and the map of
+legacy child records. Active OpenSpec changes own project implementation priorities and task status.
+When an item ships, it leaves this queue.
 
 ## Strategy sequence
 
-1. Surface data the pipeline already exports but the site does not show.
-2. Close the discovery gaps — global search and map links.
-3. Deepen the SEO surfaces.
+1. Complete the active combat-verification and planner changes under `openspec/changes/`.
+2. Finish the global search interface and remaining discovery links.
+3. Complete the remaining entity-art and SEO surfaces.
 
 ## Priority queue
 
@@ -30,15 +30,15 @@ owning spec, not here.
 
 | Rank | Item | Doc | Scope |
 | --- | --- | --- | --- |
-| P1.1 | Surface exported entity images | `2026-07-31-entity-image-surfacing` | 229/229 NPC and 686/689 skill assets exist with zero UI consumers; 1638/1658 item icons reach only the tooltip |
-| P1.2 | Compact map links on list pages | — (small item) | 2 of 11 overviews done; position data present for 359/361 monsters, 228/229 NPCs, 7/7 altars, 49/49 resources |
-| P2.1 | Global entity search | `2026-08-09-map-marker-and-search-registry` | No `searchAllEntities`; `+layout.svelte` has no nav or palette; Cmd/K exists only on the map |
-| P2.2 | Pack and random sources in item popups | — (small item) | 10 of 12 source types render; both junction tables already populated |
-| P2.3 | Detail-page title suffixes | `2026-07-31-detail-page-title-suffixes` | `itemTitle` is the only generator; 8 route families emit a bare `{name} - Ancient Kingdoms` |
-| P3.1 | Recipe materials off JSON | — (small item) | 3 website readers; blocked on one ordering decision stated in the bullet |
-| P3.2 | Profession links on gather items and crafted items | — (small item) | 2 of 5 original cases remain; fishing is the pattern to copy |
-| P3.3 | Entity structured data | `2026-07-31-entity-structured-data` | 4 node builders exist; 16 overviews emit `CollectionPage`; 0 detail routes emit an entity node |
-| P3.4 | Per-entity OG images | `2026-07-31-per-entity-og-images` | Single shared `/og-default.png`; source art now audited and available |
+| P1.1 | Global entity search interface | `2026-08-09-map-marker-and-search-registry` | `search.db`, `searchEntities()`, and map search use the unified index; `+layout.svelte` still has no global palette |
+| P1.2 | Compact map links on list pages | — (small item) | 2 of 11 target surfaces are complete; current position data covers 361 monsters, 234 NPCs, 7 altars, and 49 resources |
+| P2.1 | Finish entity image surfacing | `2026-07-31-entity-image-surfacing` | Four of five named surfaces render art; item detail loads `visualAsset` but has no prominent item-icon surface |
+| P2.2 | Pack and random sources in item popups | — (small item) | Both junction tables are populated, but the map popup still does not query both source families |
+| P2.3 | Detail-page title suffixes | `2026-07-31-detail-page-title-suffixes` | `itemTitle` remains the only contextual title generator |
+| P3.1 | Recipe materials off JSON | — (small item) | Three website readers still parse recipe-material JSON; ordering remains the only schema decision |
+| P3.2 | Profession links on gather items and crafted items | — (small item) | Fishing is implemented; the remaining profession relationships are not |
+| P3.3 | Entity structured data | `2026-07-31-entity-structured-data` | Shared and overview nodes exist; no detail route emits an entity node |
+| P3.4 | Per-entity OG images | `2026-07-31-per-entity-og-images` | Every route still uses `/og-default.png`; source art now covers more entity families |
 
 ## Small items — no doc needed
 

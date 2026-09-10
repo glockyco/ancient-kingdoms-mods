@@ -16,8 +16,8 @@ brand suffix.
 
 ## Current state
 
-`itemTitle` and `itemTypeSuffix` in `lib/server/meta-description.ts:164-169` are
-the existing title-generator pattern, and they are the only ones. Item titles
+`itemTitle` and `itemTypeSuffix` in `lib/server/meta-description.ts` are the existing
+title-generator pattern, and they are the only ones. Item titles
 already include a quality and type suffix. The description-body prerequisite for
 this work is complete, so title suffixes are the remaining SEO improvement.
 
@@ -40,8 +40,8 @@ Detail routes and the titles they emit today:
 | `/classes/[id]` | `{class.name} - Ancient Kingdoms` |
 | `/chests/[id]` | `Chest - {zone_name} - Ancient Kingdoms` |
 
-Summons and mercenaries share `lib/components/PetDetail.svelte`, whose `<Seo>` at
-lines 205-209 is the single title for both routes, so one generator branching on
+Summons and mercenaries share `lib/components/PetDetail.svelte`, whose `<Seo>` is
+the single title for both routes, so one generator branching on
 `pet.kind` covers them. Faction names are unique, so their existing title remains
 unchanged. Classes are also unique and remain unchanged. Chests are named after
 their zone and already carry that context. `/traps` is an overview, not a detail
